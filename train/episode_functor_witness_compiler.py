@@ -1,9 +1,11 @@
 """Proof-carrying witness compiler for the primary EFC board.
 
-This treatment receives only raw source bytes and role-free copied key spans.
-It predicts record and key-occurrence roles, assigns the thirteen opaque keys
-to anonymous semantic slots, and uses that *same* assignment to assemble
-transition/observer evidence.  A zero-parameter constrained-transport layer
+The legacy treatment receives raw source bytes and role-free copied key spans.
+The gauge-invariant mode first replaces every literal key span with one
+anonymous token while retaining only the equality partition and custody bytes.
+Both modes predict record and key-occurrence roles, assign the thirteen opaque
+keys to anonymous semantic slots, and use that *same* assignment to assemble
+transition/observer evidence. A zero-parameter constrained-transport layer
 then emits the only lawful K=8/M=3/P=2/Y=4 machine.
 
 There is no deterministic source grammar parser in the neural path.  Generic
@@ -13,7 +15,7 @@ field roles, and observer answer are model-owned.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from hashlib import sha256
 import math
 from typing import Sequence
@@ -270,6 +272,127 @@ def collate_witness_sources(
     )
 
 
+def _canonical_witness_source(
+    batch: WitnessCompilerBatch,
+    row: int,
+) -> WitnessScannedSource:
+    pointer = batch.pointer
+    valid = pointer.byte_valid[row]
+    length = int(valid.sum())
+    if not bool(valid[:length].all()) or bool(valid[length:].any()):
+        raise WitnessCompilerError(
+            "canonical witness bytes are not prefix-valid"
+        )
+    values = pointer.byte_ids[row, :length].detach().cpu()
+    if bool(values.lt(0).any()) or bool(values.gt(255).any()):
+        raise WitnessCompilerError(
+            "canonical witness payload contains non-byte values"
+        )
+    raw_payload = bytes(values.tolist())
+    if sha256(raw_payload).hexdigest() != batch.source_sha256[row]:
+        raise WitnessCompilerError(
+            "canonical witness source hash differs"
+        )
+    occurrence_count = int(pointer.occurrence_valid[row].sum())
+    unique_count = int(pointer.unique_key_valid[row].sum())
+    if (
+        not bool(pointer.occurrence_valid[row, :occurrence_count].all())
+        or bool(pointer.occurrence_valid[row, occurrence_count:].any())
+        or not bool(pointer.unique_key_valid[row, :unique_count].all())
+        or bool(pointer.unique_key_valid[row, unique_count:].any())
+    ):
+        raise WitnessCompilerError(
+            "canonical witness key masks are not prefix-valid"
+        )
+    spans = tuple(
+        tuple(
+            int(value)
+            for value in pointer.span_bounds[row, occurrence].tolist()
+        )
+        for occurrence in range(occurrence_count)
+    )
+    unique_keys = tuple(
+        bytes(pointer.unique_key_bytes[row, index].detach().cpu().tolist())
+        for index in range(unique_count)
+    )
+    occurrence_to_unique = tuple(
+        int(pointer.occurrence_to_unique[row, occurrence])
+        for occurrence in range(occurrence_count)
+    )
+    scanned = scan_source(raw_payload)
+    if (
+        spans != scanned.spans
+        or unique_keys != scanned.unique_keys
+        or occurrence_to_unique != scanned.occurrence_to_unique
+    ):
+        raise WitnessCompilerError(
+            "canonical witness key custody differs from raw source"
+        )
+    output = bytearray()
+    canonical_spans: list[tuple[int, int]] = []
+    cursor = 0
+    for start, end in spans:
+        if not cursor <= start < end <= len(raw_payload):
+            raise WitnessCompilerError(
+                "canonical opaque-key spans overlap or leave payload"
+            )
+        output.extend(raw_payload[cursor:start])
+        canonical_start = len(output)
+        output.extend(b"d1")
+        canonical_spans.append((canonical_start, len(output)))
+        cursor = end
+    output.extend(raw_payload[cursor:])
+    canonical_payload = bytes(output)
+    occurrence_keys = tuple(
+        unique_keys[index] for index in occurrence_to_unique
+    )
+    canonical_pointer = ScannedSource(
+        payload=canonical_payload,
+        spans=tuple(canonical_spans),
+        occurrence_keys=occurrence_keys,
+        unique_keys=unique_keys,
+        occurrence_to_unique=occurrence_to_unique,
+    )
+    records = _record_spans(canonical_payload)
+    occurrence_to_record: list[int] = []
+    for start, end in canonical_spans:
+        matches = tuple(
+            index
+            for index, (record_start, record_end) in enumerate(records)
+            if record_start <= start < end <= record_end
+        )
+        if len(matches) != 1:
+            raise WitnessCompilerError(
+                "canonical key occurrence lacks one record"
+            )
+        occurrence_to_record.append(matches[0])
+    return WitnessScannedSource(
+        pointer=canonical_pointer,
+        record_spans=records,
+        occurrence_to_record=tuple(occurrence_to_record),
+    )
+
+
+def canonicalize_witness_batch(
+    batch: WitnessCompilerBatch,
+) -> WitnessCompilerBatch:
+    """Create the literal-free model view while retaining raw key custody."""
+
+    if not isinstance(batch, WitnessCompilerBatch):
+        raise WitnessCompilerError(
+            "canonical witness view requires a witness batch"
+        )
+    sources = tuple(
+        _canonical_witness_source(batch, row)
+        for row in range(batch.batch_size)
+    )
+    canonical = collate_witness_sources(
+        sources,
+        device=batch.pointer.byte_ids.device,
+    )
+    return replace(canonical, source_sha256=batch.source_sha256)
+
+
 def _masked_softmax(logits: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
     if logits.shape != mask.shape or mask.dtype != torch.bool:
         raise WitnessCompilerError("witness masked softmax geometry differs")
@@ -451,6 +574,7 @@ class ProofCarryingWitnessCompiler(nn.Module):
         feedforward: int = 768,
         sinkhorn_iterations: int = 64,
         external_feature_width: int = 0,
+        opaque_key_invariant: bool = False,
         projector: nn.Module | None = None,
     ) -> None:
         super().__init__()
@@ -463,10 +587,12 @@ class ProofCarryingWitnessCompiler(nn.Module):
             or feedforward < width
             or sinkhorn_iterations < 8
             or external_feature_width < 0
+            or type(opaque_key_invariant) is not bool
         ):
             raise WitnessCompilerError("witness compiler geometry differs")
         self.width = int(width)
         self.external_feature_width = int(external_feature_width)
+        self.opaque_key_invariant = opaque_key_invariant
         self.key_sinkhorn_iterations = int(sinkhorn_iterations)
         self.byte_embedding = nn.Embedding(BYTE_PAD_ID + 1, width)
         self.external_projection = (
@@ -493,7 +619,11 @@ class ProofCarryingWitnessCompiler(nn.Module):
             num_layers=encoder_layers,
         )
         self.encoder_norm = nn.LayerNorm(width)
-        self.key_bit_projection = nn.Linear(64, width, bias=False)
+        self.key_bit_projection = (
+            None
+            if opaque_key_invariant
+            else nn.Linear(64, width, bias=False)
+        )
         self.key_fusion = nn.Sequential(
             nn.LayerNorm(2 * width),
             nn.Linear(2 * width, width),
@@ -547,6 +677,8 @@ class ProofCarryingWitnessCompiler(nn.Module):
         straight_through: bool = False,
         frozen_byte_features: torch.Tensor | None = None,
     ) -> WitnessCompilerOutput:
+        if self.opaque_key_invariant:
+            batch = canonicalize_witness_batch(batch)
         pointer = batch.pointer
         if pointer.byte_ids.numel() and (
             int(pointer.byte_ids.min()) < 0
@@ -669,19 +801,30 @@ class ProofCarryingWitnessCompiler(nn.Module):
                     device=states.device,
                 ),
             )
-        unique_states = unique_states / unique_counts.clamp_min(1.0)
-        key_bits = (
-            (
-                pointer.unique_key_bytes[..., None]
-                >> torch.arange(8, device=states.device)
+        unique_sum = unique_states
+        unique_states = unique_sum / unique_counts.clamp_min(1.0)
+        if self.opaque_key_invariant:
+            key_context = unique_sum / unique_counts.clamp_min(1.0).sqrt()
+        else:
+            if self.key_bit_projection is None:
+                raise WitnessCompilerError(
+                    "literal key projection is missing"
+                )
+            key_bits = (
+                (
+                    pointer.unique_key_bytes[..., None]
+                    >> torch.arange(8, device=states.device)
+                )
+                & 1
+            ).reshape(batch.batch_size, MAX_UNIQUE_KEYS, 64)
+            key_context = self.key_bit_projection(
+                key_bits.to(states.dtype)
             )
-            & 1
-        ).reshape(batch.batch_size, MAX_UNIQUE_KEYS, 64)
         unique_states = self.key_fusion(
             torch.cat(
                 (
                     unique_states,
-                    self.key_bit_projection(key_bits.to(states.dtype)),
+                    key_context,
                 ),
                 dim=-1,
             )
@@ -780,6 +923,7 @@ __all__ = [
     "WitnessCompilerOutput",
     "WitnessScannedSource",
     "assemble_relation_evidence",
+    "canonicalize_witness_batch",
     "collate_witness_sources",
     "scan_witness_source",
 ]
