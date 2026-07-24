@@ -22,7 +22,7 @@ import torch
 from torch import Tensor
 from torch.nn import functional as F
 
-from train.episode_functor_algebra_machine import (
+from episode_functor_algebra_machine import (
     FIELD_MODULUS,
     OP_AXPY,
     OP_HALT,
@@ -38,7 +38,7 @@ from train.episode_functor_algebra_machine import (
     execute_program,
     verify_reduction_program,
 )
-from train.episode_functor_neural_algebra_controller import (
+from episode_functor_neural_algebra_controller import (
     PREVIOUS_START,
     ControllerConfig,
     ControllerLogits,
@@ -81,6 +81,8 @@ class PilotReport:
     evaluation_maximum_rows: int
     evaluation_maximum_columns: int
     controller_parameters: int
+    carry_recurrent_state: bool
+    expose_step_signal: bool
     optimizer_updates: int
     teacher_forced_instruction_accuracy: float
     closed_loop_certified: int
@@ -171,6 +173,19 @@ def next_reference_repair_instruction(
             continue
         column = nonzero[0]
         if column <= previous_column or row[column] != 1:
+            break
+        later_leading_columns = tuple(
+            next(
+                (
+                    later_column
+                    for later_column, value in enumerate(later)
+                    if value
+                ),
+                column_count,
+            )
+            for later in rows[settled + 1 :]
+        )
+        if any(later_column <= column for later_column in later_leading_columns):
             break
         if any(
             other != settled and rows[other][column]
@@ -522,6 +537,8 @@ def train_controller(
     batch_size: int,
     learning_rate: float,
     device: torch.device,
+    carry_recurrent_state: bool = True,
+    expose_step_signal: bool = True,
 ) -> int:
     optimizer = torch.optim.AdamW(
         controller.parameters(),
@@ -547,8 +564,12 @@ def train_controller(
                     controller.config,
                     device,
                 )
+                if not expose_step_signal:
+                    inputs["step"].zero_()
                 logits, next_hidden = controller(hidden=hidden, **inputs)
                 hidden = torch.where(active[:, None], next_hidden, hidden)
+                if not carry_recurrent_state:
+                    hidden = controller.initial_hidden(len(batch), device=device)
                 if active.any():
                     loss, _, _ = _instruction_loss(
                         logits,
@@ -570,6 +591,8 @@ def teacher_forced_accuracy(
     examples: Sequence[TraceExample],
     *,
     device: torch.device,
+    carry_recurrent_state: bool = True,
+    expose_step_signal: bool = True,
 ) -> float:
     controller.eval()
     correct = 0
@@ -583,8 +606,12 @@ def teacher_forced_accuracy(
             controller.config,
             device,
         )
+        if not expose_step_signal:
+            inputs["step"].zero_()
         logits, next_hidden = controller(hidden=hidden, **inputs)
         hidden = torch.where(active[:, None], next_hidden, hidden)
+        if not carry_recurrent_state:
+            hidden = controller.initial_hidden(len(examples), device=device)
         if active.any():
             _, step_correct, step_total = _instruction_loss(
                 logits,
@@ -604,6 +631,8 @@ def closed_loop_evaluate(
     *,
     device: torch.device,
     cycle_multiplier: int = 2,
+    carry_recurrent_state: bool = True,
+    expose_step_signal: bool = True,
 ) -> tuple[int, int, int]:
     controller.eval()
     certified = 0
@@ -665,9 +694,14 @@ def closed_loop_evaluate(
                 previous_a=torch.tensor([previous[1]], device=device),
                 previous_b=torch.tensor([previous[2]], device=device),
                 previous_c=torch.tensor([previous[3]], device=device),
-                step=torch.tensor([step], device=device),
+                step=torch.tensor(
+                    [step if expose_step_signal else 0],
+                    device=device,
+                ),
                 hidden=hidden,
             )
+            if not carry_recurrent_state:
+                hidden = controller.initial_hidden(1, device=device)
             try:
                 instruction = harden_controller_instruction(
                     logits,
@@ -755,16 +789,22 @@ def run_pilot(args: argparse.Namespace) -> PilotReport:
         batch_size=args.batch_size,
         learning_rate=args.learning_rate,
         device=device,
+        carry_recurrent_state=not args.reactive,
+        expose_step_signal=not args.hide_step,
     )
     accuracy = teacher_forced_accuracy(
         controller,
         evaluation,
         device=device,
+        carry_recurrent_state=not args.reactive,
+        expose_step_signal=not args.hide_step,
     )
     certified, invalid, overlong = closed_loop_evaluate(
         controller,
         evaluation,
         device=device,
+        carry_recurrent_state=not args.reactive,
+        expose_step_signal=not args.hide_step,
     )
     return PilotReport(
         schema=PILOT_SCHEMA,
@@ -779,6 +819,8 @@ def run_pilot(args: argparse.Namespace) -> PilotReport:
         evaluation_maximum_rows=config.maximum_rows,
         evaluation_maximum_columns=config.maximum_columns,
         controller_parameters=controller.parameter_count,
+        carry_recurrent_state=not args.reactive,
+        expose_step_signal=not args.hide_step,
         optimizer_updates=updates,
         teacher_forced_instruction_accuracy=accuracy,
         closed_loop_certified=certified,
@@ -812,6 +854,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--learning-rate", type=float, default=3e-4)
     parser.add_argument("--device", default="cpu")
+    parser.add_argument("--reactive", action="store_true")
+    parser.add_argument("--hide-step", action="store_true")
     parser.add_argument("--output", type=Path)
     return parser.parse_args(argv)
 

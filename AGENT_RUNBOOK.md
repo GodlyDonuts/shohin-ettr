@@ -12684,3 +12684,105 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   and survive unseen laws, compositions, renderers, task families, source
   deletion, law swaps, and trunk-ablation controls. The protected checkpoint
   and pretraining hold remain unchanged.
+
+- **2026-07-24 18:55--19:23 EDT** -- **SSQAC exact mechanics advance, but
+  variable-geometry neural execution remains NO-GO.** The protected step-300k
+  checkpoint was not read or modified and no pretraining job was submitted.
+  The minimal four-cell law-collision board is permanently demoted to a
+  mechanics fixture because its target is a fact-bit/law-bit XOR, its two fact
+  worlds are state-isomorphic, and its late query is fixed. A new generated
+  family contains 32 units/128 cells, eight geometries, and 32 late-query
+  addresses. Each source has exactly two direct completions; opposite laws
+  select opposite completions; the paired fact worlds have incompatible
+  complete-action cycle invariants. Held-out majority, stump, depth-two tree,
+  and logistic classifiers score 50%; nearest-neighbor scores 56.25%. The
+  family is a CPU falsifier only and its promotion flag is false.
+
+  The exact quotient compiler now distinguishes emitted-generator degree from
+  closure degree and adaptively expands complete Macaulay workspaces through
+  degree eight under the existing 4,096-monomial and 256-dimensional bounds.
+  Concrete `xyz-1` and six-variable one-hot failures at degree four both
+  stabilize at degree five. Cross-field validation can now bind an
+  independently supplied intended Boolean zero set. A separately implemented
+  verifier, which does not import the producer, checks transport/semantic
+  digests, external generators/query/domain, RREF, provenance, complete
+  Macaulay spans, one-degree prolongation, stable dimension, order ideal,
+  multiplication commutation, Boolean idempotence, claimed values, normal
+  forms, and membership evidence. It accepts real adaptive degree-five
+  producer artifacts and rejects tampering.
+
+  The generated family is also connected to a gold-only quotient bridge.
+  Across all 128 cells, independently enumerated completion one-hots, source
+  selectors, and late-query polynomials pass intended-zero-set validation,
+  adaptive consequence certification, and the standalone verifier. Law
+  deletion returns `AMBIGUOUS`; opaque-key and completion-variable recodings
+  preserve the value. Receipts bind source, query, completions, generators,
+  semantics, certificate, outcome, and artifact. These completion variables
+  and artifacts are explicitly forbidden candidate inputs.
+
+  The initial absolute-index controller achieved 60/64 closed-loop
+  certificates on fresh same-geometry matrices but only 2/64 when trained on
+  at most `3x4` and evaluated on `4x5--4x6`. Its row/column output parameters
+  for unseen indices were never trained. A 2,317,847-parameter rewrite uses
+  deterministic sinusoidal row/column/step/operand coordinates and
+  content-addressed pointer heads. On the same held-out geometry it raised
+  teacher-forced instruction accuracy from 85.475% to 91.258%, but autonomous
+  certification fell to 0/64, with 57 invalid and seven overlong programs.
+  Therefore the present learned controller is not an algorithm and is not a
+  reasoning result.
+
+  Newton is reachable. Initial jobs `700847`--`700849` failed before fitting
+  because a rank-deficient reverse-pivot matrix exposed premature settled-row
+  detection in the preparation-only trace oracle. No model artifact was
+  produced. Reduced 2x3/3x3 reverse-identity counterexamples now pass after the
+  oracle was repaired to check all later leading columns. Corrected isolated
+  one-H100 scale/seed falsifiers are running: `700853` on `evc24`, `700854` on
+  `evc30`, and `700855` on `evc33`. Each trains only the scoreless SSQAC row
+  controller on generated matrices, writes to
+  `artifacts/r12/ssqac_geometry_holdout`, does not load or write the flagship,
+  and cannot authorize pretraining. Review exact reports before deciding
+  whether the 0/64 failure is undertraining or requires a different
+  closed-loop architecture. The focused regression before the gold-bridge
+  integration was 100 passed; the bridge-focused integrated suite adds 70
+  passing tests. Ruff and `py_compile` pass.
+
+- **2026-07-24 19:23--19:45 EDT** -- **SSQAC uses six isolated H100s while
+  process custody and resource accounting close locally.** The protected
+  step-300k checkpoint remains untouched and the user pretraining hold remains
+  absolute. Corrected standard recurrent scale falsifiers `700853` and
+  `700854` run on `evc24` and `evc30`. Job `700855` generated its board but
+  failed before model fitting when `evc33` reported no CUDA device; it has no
+  report or usable artifact. Replacement `700859` runs on `evc28` with
+  `evc33` excluded. Reactive, step-free, hidden-state-reset ablations `700856`,
+  `700857`, and `700858` run independently on `evc33`, `evc35`, and `evc37`.
+  All six live jobs use generated scoreless matrix traces, disjoint larger
+  geometry, one H100 each, separate output reports, and no flagship path.
+
+  The reactive DAgger CPU falsifier is complete. It flattened expert states,
+  retained pre-error states, deduplicated canonical matrices, performed two
+  bounded on-policy correction rounds, and made zero oracle calls during final
+  rollout. Its deliberately short smoke fit ended at 0/8 strict larger-
+  geometry certificates, with five invalid and three overlong programs;
+  expert-state accuracy fell from 46.3% to 33.7%. This validates the mechanics
+  but rejects naive DAgger as a sufficient repair.
+
+  A three-process user-space custody harness now separates compiler,
+  candidate, and assessor; deletes the source workspace before candidate
+  launch; binds closed-world manifests and hashes; guards reads; records
+  process order; and fails on extra files, symlinks, tamper, network attempts,
+  forbidden content, or process failure. It explicitly does not claim hostile
+  kernel isolation or reasoning. An independent structural resource receipt
+  separately replays quotient artifacts and primitive instruction streams,
+  counts variables, generators, polynomial terms, degrees, ranks, RREF and
+  provenance support, opcode schedules, abstract cycles, sequential depth,
+  and peak-workspace declarations. It refuses opaque instruction digests and
+  records wall time/device memory only as externally observed fields. The
+  custody, resource, DAgger, independent verifier, and integration tests pass
+  54/54 locally under `PYTHONPATH=.:train`.
+
+  Three further disjoint lanes are active: a vectorized reactive policy to
+  remove Python launch overhead, a bounded verifier-guided internal-search
+  falsifier with exact search receipts, and an equivariant defect-energy
+  controller inspired by local error-correcting dynamics. They may add
+  isolated mechanics and H100 jobs only. They cannot modify the protected
+  checkpoint or authorize pretraining.

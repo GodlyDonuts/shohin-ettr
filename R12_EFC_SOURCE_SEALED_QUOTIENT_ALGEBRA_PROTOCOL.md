@@ -16,6 +16,66 @@ microprogram executed by only primitive field/register operations. The fixed
 exact algebra engine remains a gold ceiling and favorable control. JASEC and
 hardcoded SLRA remain additional controls.
 
+## Current implementation gate (2026-07-24 EDT)
+
+SSQAC remains **NO-GO for source freeze and reasoning claims**. The current
+implementation has established:
+
+- an exact sparse F_257 quotient compiler with portable RREF/provenance,
+  complete-prolongation, order-ideal, commuting-multiplication, Boolean
+  idempotence, consequence, and status certificates;
+- bounded adaptive closure from emitted-generator degree at most four through
+  closure degree at most eight. This closes the concrete degree-four failures:
+  both `xyz-1` and a six-variable one-hot ideal stabilize and independently
+  replay at closure degree five;
+- an independently implemented verifier in
+  `pipeline/verify_ssqac_quotient_artifact.py` that does not import the
+  producer and accepts real degree-five producer artifacts while rejecting
+  digest, source, row, provenance, span, query, value, domain, and evidence
+  tampering;
+- an independently supplied intended-Boolean-zero-set gate in addition to the
+  F_257/F_263 consistency check;
+- a primitive branch-free row ALU and a 2,317,847-parameter recurrent neural
+  controller with deterministic coordinate encodings and content-addressed
+  row/column pointers; and
+- a generated 32-unit/128-cell law-collision CPU family spanning eight
+  geometries and 32 late-query addresses. Every unit has exactly two direct
+  completions, opposite laws select opposite completions, and fact worlds have
+  incompatible complete-action cycle invariants. Majority, stump, depth-two
+  tree, and logistic held-out attacks are 50%; nearest-neighbor is 56.25%.
+
+The generated family is now connected to the gold quotient engine through a
+strictly assessor-side bridge. For all 128 cells it independently enumerates
+the two direct completions, creates one Boolean one-hot variable per
+completion, translates the source law to a completion-selector constraint,
+translates the fresh late query to an answer polynomial, checks its
+independently enumerated zero set over F_257/F_263, exports the consequence,
+and passes the standalone verifier. Law deletion returns `AMBIGUOUS`; opaque
+key and completion-variable recoding preserve the result. The bridge receipt
+hash-binds source, query, completion set, generators, intended semantics,
+certificate, outcome, and artifact. Completion variables and bridge artifacts
+are gold-oracle data and are forbidden candidate inputs.
+
+The controller result is negative outside its training geometry. The original
+absolute-index controller reached `60/64` closed-loop certificates on fresh
+same-geometry matrices, but only `2/64` when trained on at most `3x4` and
+evaluated on `4x5--4x6`. Replacing untrained absolute row/column/step tables
+with deterministic coordinates and pointer heads improved unseen-geometry
+teacher-forced instruction accuracy from `85.475%` to `91.258%`, yet produced
+`0/64` autonomous certificates (`57` invalid, `7` overlong). This is an
+exposure-bias/control-stability failure, not evidence of an algorithm.
+
+The first H100 launch (`700847`--`700849`) failed before fitting because a
+rank-deficient reverse-pivot matrix exposed premature “settled row” detection
+in the preparation-only trace oracle. No model result was produced. The exact
+counterexample was reduced to 2x3 and 3x3 reverse-identity matrices; the oracle
+now checks later leading columns before accepting a settled row, and focused
+tests pass. Corrected three-seed jobs `700853`, `700854`, and `700855` are
+isolated one-H100 variable-geometry development fits. They do not load or
+write the flagship and cannot authorize pretraining. Their purpose is only to
+distinguish undertraining from architectural instability. No result is
+admitted until exact reports are complete and reviewed.
+
 ## Question
 
 Can a compact model compile raw anonymous source into a finite algebra of
@@ -98,6 +158,7 @@ The first implementation is bounded:
 - at most 128 source generators;
 - at most 4,096 admitted monomials;
 - maximum **emitted-generator** degree four;
+- maximum adaptive complete-closure degree eight;
 - quotient dimension at most 256;
 - exact arithmetic modulo 257;
 - no floating rank decision;
@@ -625,20 +686,43 @@ scientific component, not reported as genuine general reasoning.
 
 ## Immediate Work Order
 
-1. Implement the finite-field sparse polynomial and exact row-reduction
-   mechanics as a gold/control engine.
-2. Implement the three-variable falsifier and smallest balanced degree-three
-   law-collision quadruple; retain the latter only as a known-shortcut mechanics
-   fixture.
-3. Run exhaustive information, field-semantics, closure, status, and
-   gold-ceiling gates.
-4. Implement the primitive field/register ALU and verify that no host pivot,
-   closure, basis, or halt decision is present in the treatment path.
-5. Implement a scoreless learned-controller trace pilot on generated algebra
-   systems before connecting raw language.
-6. Implement masked variable geometry, sealed quotient wire, anonymous
-   codebook, late-query parser, and the three-process deletion boundary.
-7. Recompute the exact parameter and algorithmic resource vectors.
-8. Hostile-audit the complete CPU/controller boundary and matched controls.
-9. Freeze the neural emitter only if all prior gates pass.
-10. Do not generate scored development/confirmation data before source freeze.
+1. **PASS:** exact finite-field gold compiler and primitive row ALU.
+2. **PASS as mechanics / rejected as board:** the three-variable and minimal
+   quadruple fixtures; the minimal quadruple is permanently shortcut-tainted.
+3. **PASS at CPU gold boundary:** adaptive closure, intended semantics,
+   disjoint statuses, and independent artifact verification.
+4. **PASS as CPU falsifier only:** generated 32-unit collision family and
+   preregistered shallow-classifier audit. Promotion remains false.
+5. **FAIL:** learned-controller transfer from `<=3x4` to `4x5--4x6`; await the
+   bounded H100 scale falsifier, then change training dynamics or architecture
+   rather than interpreting teacher forcing.
+6. **PASS at gold boundary:** connect all 128 generated cells to the
+   independently verified quotient oracle with complete source/query/outcome
+   receipts; law deletion is ambiguous and recoding is exact.
+7. **PASS as user-space custody mechanics:** the compiler, candidate, and
+   assessor now run as separate processes. The source workspace is deleted
+   before candidate launch; closed-world manifests, file hashes, process
+   ordering, guarded reads, and network-denial audit hooks fail closed. This is
+   not a hostile-kernel isolation claim.
+8. **PASS as exact structural accounting:** an independent resource receipt
+   replays quotient artifacts and primitive instruction streams, counts
+   variables, generators, terms, ranks, RREF/provenance support, opcode
+   schedules, abstract cycles, sequential depth, and declared peak workspace.
+   Wall time and device memory remain external observations and cannot be
+   fabricated by the structural receipt.
+9. **FAIL in bounded CPU smoke:** reactive step-free DAgger produced 0/8
+   closed-loop certificates on strict larger geometry after two correction
+   rounds; expert-state accuracy fell from 46.3% to 33.7%. The mechanics and
+   zero-oracle final rollout pass, but this is evidence against naive
+   on-policy aggregation, not a reasoning result.
+10. **RUNNING as isolated H100 falsifiers:** standard recurrent jobs `700853`,
+    `700854`, and replacement `700859`, plus reactive step-free jobs `700856`
+    through `700858`, use six independent H100s. Job `700855` failed after
+    preparation because its node exposed no CUDA device; it produced no model
+    report and was replaced on a different node. These jobs never read or
+    write the flagship checkpoint.
+11. Implement the sealed quotient wire, anonymous codebook, and late-query
+    parser.
+12. Hostile-audit the complete CPU/controller boundary and matched controls.
+13. Freeze a neural emitter only if all prior gates pass. Do not generate
+    scored confirmation data or start pretraining.

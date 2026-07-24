@@ -15,5 +15,7 @@ def test_geometry_holdout_job_is_isolated_single_h100_reasoning_mechanics() -> N
     assert "--evaluation-minimum-rows 5" in text
     assert "--evaluation-minimum-columns 7" in text
     assert "--device cuda" in text
+    assert "EXTRA_ARGS+=(--reactive)" in text
+    assert "EXTRA_ARGS+=(--hide-step)" in text
     assert "flagship_out" not in text
     assert "train.py" not in text

@@ -5948,6 +5948,63 @@ exponential separation from matched active-automata and synthesis controls.
 
 ---
 
+## 2026-07-24: SSQAC source-sealed quotient-algebra track
+
+The active hypothesis is that Shohin should compile episode-local laws into a
+finite Boolean quotient algebra, delete the source/compiler, and let a learned
+recurrent controller construct a proof using only primitive field-row
+operations. This remains a bounded synthetic reasoning hypothesis, not a
+general-reasoning result.
+
+### Exact mechanics now established
+
+- F_257 sparse quotient certificates include canonical generators, complete
+  Macaulay workspaces, RREF rows and provenance, complete one-degree
+  prolongation, stable dimension, order-ideal structure, commuting
+  multiplication operators, Boolean idempotence, normal forms, and exact
+  consequence evidence.
+- Emitted generators remain degree at most four, while adaptive exact closure
+  may expand through degree eight under fixed monomial/dimension limits.
+  `xyz-1` and a six-variable one-hot ideal both require and pass degree five.
+- F_257/F_263 validation can bind an independently supplied intended Boolean
+  zero set, rather than merely checking that two encodings agree.
+- A standalone verifier was written without importing the producer. It accepts
+  real adaptive producer artifacts and rejects source, query, value, domain,
+  digest, RREF, provenance, span, prolongation, and evidence substitution.
+- A generated collision family contains 32 nonisomorphic balanced units and
+  128 cells across eight geometries and 32 late-query addresses. Four held-out
+  shallow classifiers are exactly at 50%; nearest-neighbor is 56.25%. It
+  remains a CPU falsifier with promotion disabled.
+- A gold-only bridge maps all 128 source/query cells to Boolean
+  completion-one-hot quotients, validates independently enumerated intended
+  zero sets over two fields, exports exact consequences, and passes the
+  standalone verifier. Law deletion is `AMBIGUOUS` and recoding is exact.
+  Bridge completion variables and artifacts are prohibited candidate inputs.
+
+### Learned-controller result
+
+The old absolute-index row controller reached 93.75% (`60/64`) autonomous
+certification in-distribution but only 3.125% (`2/64`) on unseen larger
+geometry. The architecture contained untrained embeddings and output weights
+for held-out indices. Replacing those with deterministic coordinate encodings
+and content-based pointer heads raised held-out teacher-forced instruction
+accuracy from 85.475% to 91.258%, but autonomous certification was 0/64
+(`57` invalid, `7` overlong). This is a closed-loop stability failure and
+rules out a reasoning claim.
+
+The first three H100 launches (`700847`--`700849`) found a preparation-oracle
+bug on rank-deficient reverse-pivot matrices before fitting and produced no
+model result. The reduced counterexamples now pass. Corrected isolated jobs
+`700853`, `700854`, and `700855` test the equivariant controller at larger
+data/model scale across independent seeds. They are scoreless mechanics
+experiments only. They do not touch the protected 125,081,664-parameter
+step-300k flagship or lift the user pretraining hold.
+
+The full current protocol and claim boundary are maintained in
+`R12_EFC_SOURCE_SEALED_QUOTIENT_ALGEBRA_PROTOCOL.md`.
+
+---
+
 ## Embedded source 258: `R12_GENERAL_REASONING_GATE.md`
 
 Original source path: `R12_GENERAL_REASONING_GATE.md`
@@ -51392,3 +51449,53 @@ unrestricted reasoning evidence.
 <!-- END EMBEDDED SOURCE -->
 
 ---
+
+## 2026-07-24 SSQAC Scale, Custody, and Control Update
+
+The current reasoning frontier is the Source-Sealed Quotient Algebra Compiler
+(SSQAC), not continued language-model pretraining. The protected 125,081,664-
+parameter step-300k Shohin checkpoint remains frozen under the user pretraining
+hold. SSQAC asks whether source text can be compiled into a source-independent
+finite algebra, whether a candidate can manipulate that algebra after source
+deletion, and whether a separate assessor can verify the consequence without
+an answer oracle.
+
+Exact CPU mechanics now cover adaptive Macaulay closure through degree eight,
+independently supplied Boolean semantics over two fields, a standalone
+artifact verifier that does not import the producer, a generated 128-cell
+law-collision family, and a gold quotient bridge that certifies every cell.
+Law deletion is ambiguous and opaque-key/completion-variable recodings are
+exact. These are mechanics and oracle ceilings, not native reasoning.
+
+The learned variable-geometry controller remains the bottleneck. An
+absolute-index controller certified 60/64 same-geometry cases but only 2/64
+larger unseen geometries. A 2,317,847-parameter equivariant rewrite improved
+teacher-forced instruction accuracy from 85.475% to 91.258% yet certified
+0/64 autonomous larger-geometry cases. A bounded reactive DAgger smoke run
+also certified 0/8 and reduced expert-state accuracy from 46.3% to 33.7%.
+These failures localize the problem to autonomous error recovery and
+algorithmic transfer rather than representational fit alone.
+
+Six isolated H100 falsifiers are now running. Standard recurrent jobs
+`700853`, `700854`, and replacement `700859` are matched against reactive
+step-free jobs `700856`--`700858`. The failed infrastructure attempt `700855`
+reported no CUDA device and produced no model result. Each live run uses
+generated scoreless matrices, disjoint larger geometry, a separate report,
+and no flagship path. Additional disjoint work tests vectorized reactive
+training, bounded verifier-guided internal search, and an equivariant
+defect-energy controller. Compute is deliberately parallelized across
+different hypotheses rather than repeated only as more seeds.
+
+Custody and accounting are stronger than the neural result. A three-process
+compiler/candidate/assessor harness deletes source before candidate launch and
+fails closed on manifest drift, tamper, symlinks, forbidden reads/content,
+network attempts, or process-order violations. This is a user-space mechanics
+test, not hostile-kernel isolation. An independent exact resource receipt
+replays quotient and primitive-program artifacts and counts all structural
+work; runtime wall time and device memory require external measurement.
+
+Current conclusion: Shohin does not yet have demonstrated native general
+reasoning. Exact algebraic consequence mechanics exist, the information
+boundary is increasingly auditable, and the remaining scientific question is
+whether a learned source-sealed compiler/controller can generalize
+autonomously to unseen geometry and then unseen natural task families.

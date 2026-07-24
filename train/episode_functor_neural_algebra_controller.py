@@ -15,7 +15,7 @@ from typing import Mapping
 import torch
 from torch import Tensor, nn
 
-from train.episode_functor_algebra_machine import (
+from episode_functor_algebra_machine import (
     FIELD_MODULUS,
     OP_AXPY,
     OP_HALT,

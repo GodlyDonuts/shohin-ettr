@@ -5,16 +5,15 @@ import torch
 from pipeline.ssqac_controller_trace_pilot import (
     _batch_state,
     _instruction_loss,
-    build_trace_example,
     compile_reference_program,
     generate_examples,
 )
-from train.episode_functor_algebra_machine import (
+from episode_functor_algebra_machine import (
     OP_HALT,
     execute_program,
     verify_reduction_program,
 )
-from train.episode_functor_neural_algebra_controller import (
+from episode_functor_neural_algebra_controller import (
     ControllerConfig,
     NeuralAlgebraController,
 )
@@ -28,6 +27,21 @@ def test_reference_trace_is_preparation_only_and_vm_certified() -> None:
     receipt = verify_reduction_program(matrix, state)
     assert receipt.passed
     assert receipt.rank == 2
+
+
+def test_reference_trace_repairs_reverse_pivot_order() -> None:
+    for matrix in (
+        ((0, 1, 0), (1, 0, 0)),
+        ((0, 0, 1), (0, 1, 0), (1, 0, 0)),
+    ):
+        program = compile_reference_program(matrix)
+        state = execute_program(matrix, program, register_count=4)
+        receipt = verify_reduction_program(matrix, state)
+        assert receipt.passed
+        assert state.rows == tuple(
+            tuple(int(row == column) for column in range(len(matrix[0])))
+            for row in range(len(matrix))
+        )
 
 
 def test_generated_train_and_evaluation_seeds_are_disjoint() -> None:

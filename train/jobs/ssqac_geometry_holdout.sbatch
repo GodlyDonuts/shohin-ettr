@@ -27,6 +27,8 @@ FF=${FF:-1024}
 EPOCHS=${EPOCHS:-24}
 BATCH=${BATCH:-64}
 LR=${LR:-0.0004}
+REACTIVE=${REACTIVE:-0}
+HIDE_STEP=${HIDE_STEP:-0}
 
 mkdir -p "$BASE/logs" "$RESULT_ROOT"
 test ! -e "$OUTPUT"
@@ -38,6 +40,13 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 echo "[ssqac-geometry] node=${SLURMD_NODENAME:-?} gpu=${CUDA_VISIBLE_DEVICES:-unset}"
 nvidia-smi -L
+EXTRA_ARGS=()
+if [[ "$REACTIVE" == "1" ]]; then
+  EXTRA_ARGS+=(--reactive)
+fi
+if [[ "$HIDE_STEP" == "1" ]]; then
+  EXTRA_ARGS+=(--hide-step)
+fi
 "$PYTHON" "$BASE/pipeline/ssqac_controller_trace_pilot.py" \
   --seed "$SEED" \
   --train-examples "$TRAIN" \
@@ -57,6 +66,7 @@ nvidia-smi -L
   --learning-rate "$LR" \
   --maximum-steps 512 \
   --device cuda \
+  "${EXTRA_ARGS[@]}" \
   --output "$OUTPUT"
 
 test -s "$OUTPUT"
