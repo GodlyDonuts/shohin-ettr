@@ -29,14 +29,14 @@ from episode_functor_machine import (
     MAX_STATES,
     SoftFunctorMachine,
 )
-from episode_functor_pointer_compiler import MAX_UNIQUE_KEYS
-
-
-PRIMARY_STATES = 8
-PRIMARY_ACTIONS = 3
-PRIMARY_OBSERVERS = 2
-PRIMARY_ANSWERS = 4
-PRIMARY_KEYS = PRIMARY_STATES + PRIMARY_ACTIONS + PRIMARY_OBSERVERS
+from episode_functor_runtime_constants import (
+    MAX_UNIQUE_KEYS,
+    PRIMARY_ACTIONS,
+    PRIMARY_ANSWERS,
+    PRIMARY_KEYS,
+    PRIMARY_OBSERVERS,
+    PRIMARY_STATES,
+)
 
 
 class ConstrainedTransportError(ValueError):
@@ -518,7 +518,9 @@ def project_key_assignment_logits(
             )
         rows = slot_index[:, None].expand(-1, PRIMARY_KEYS)
         columns = unique_index[None].expand(PRIMARY_KEYS, -1)
-        projected[row, rows, columns] = selected_values
+        projected[row, rows, columns] = selected_values.to(
+            projected.dtype
+        )
     return projected
 
 

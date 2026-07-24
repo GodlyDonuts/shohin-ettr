@@ -16,11 +16,6 @@ import re
 import torch
 import torch.nn as nn
 
-from episode_functor_constrained_transport import (
-    PRIMARY_ACTIONS,
-    PRIMARY_OBSERVERS,
-    PRIMARY_STATES,
-)
 from episode_functor_machine import (
     HardFunctorKeys,
     MAX_ACTIONS,
@@ -29,9 +24,12 @@ from episode_functor_machine import (
     MAX_STEPS,
     SoftFunctorQuery,
 )
-from episode_functor_pointer_compiler import (
+from episode_functor_runtime_constants import (
     BYTE_PAD_ID,
     MAX_UNIQUE_KEYS,
+    PRIMARY_ACTIONS,
+    PRIMARY_OBSERVERS,
+    PRIMARY_STATES,
 )
 
 
@@ -566,6 +564,9 @@ class NeuralOpaqueQueryParser(nn.Module):
         ):
             raise QueryParserError("neural query parser geometry differs")
         self.width = int(width)
+        self.layers = int(layers)
+        self.heads = int(heads)
+        self.feedforward = int(feedforward)
         self.max_steps = int(max_steps)
         self.external_feature_width = int(external_feature_width)
         self.byte_embedding = nn.Embedding(BYTE_PAD_ID + 1, width)
@@ -608,6 +609,18 @@ class NeuralOpaqueQueryParser(nn.Module):
 
     def parameter_count(self) -> int:
         return sum(parameter.numel() for parameter in self.parameters())
+
+    def architecture_config(self) -> dict[str, int]:
+        """Return the complete constructor geometry for a detached receipt."""
+
+        return {
+            "external_feature_width": self.external_feature_width,
+            "feedforward": self.feedforward,
+            "heads": self.heads,
+            "layers": self.layers,
+            "max_steps": self.max_steps,
+            "width": self.width,
+        }
 
     def forward(
         self,

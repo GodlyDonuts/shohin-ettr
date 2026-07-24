@@ -13,6 +13,89 @@ are tested, but no neural first fit is currently authorized.
   `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
 - **Strict future ceiling:** fewer than 200,000,000 unique parameters for the
   complete system.
+- **Current large architecture lane (JASEC):** the Joint
+  Assignment-Semantics Equilibrium Compiler is implemented in an isolated
+  branch against the exact frozen Shohin trunk. Its complete mechanics receipt
+  is **189,501,285 parameters**: 125,081,664 protected Shohin,
+  44,658,064 gauge-invariant source/witness compiler, 19,013,524 tied
+  assignment-machine equilibrium, and 748,033 detached query parser. It leaves
+  **10,498,715** below the 200M ceiling. Opaque key literals are removed from
+  the trainable view while their equality partition is retained; raw keys are
+  copied only after sealing. The system owns tokenizer loading, anonymous
+  tokenization, live parameter recounting, source-bound issuance, and detached
+  execution. The focused changed-path suite is **170/170 passing**; the broader
+  isolated EFC regression is **633 passed with 26 expected custody failures**
+  caused by absent protected artifacts and deliberate `/private/tmp` trunk
+  rejection. This is architecture mechanics, not a fit or reasoning result.
+- **Counterfactual repair negative:** a proposed 9,618,567-parameter
+  Counterfactual Machine-Repair Lattice was rejected before fit. Its
+  machine-shaped evidence exposed the exact target probability, its
+  leave-one-out control preserved that target invertibly, and its observational
+  twin removed the candidate-choice channel. Fixed-cycle gating,
+  unsupported-cell custody, and terminal-halt identification were also wrong.
+  Passing equivariance/unit tests did not rescue the scientific boundary. Its
+  parameters are not counted.
+- **Source-sealed successor:** Source-Law Residual Alignment (SLRA) has a
+  zero-parameter information gate but no neural controller or admission. It
+  separates direct source
+  compatibility, identical in all arms, from candidate residuals under the
+  source-declared permutation/balance laws. Its decisive control uses an
+  independently precommitted random derangement tensor conjugated under
+  category recoding, preserving parameters, compute, candidate spread, and the
+  complete residual multiset while breaking only candidate/residual alignment.
+  The provisional addition is 9,641,096 parameters, which would produce
+  199,142,381 complete parameters and 857,619 headroom. A hardcoded law
+  residual is an architectural executor, not native law interpretation; the
+  latter requires compiling unseen law text into a sealed operator. Its 7/7
+  focused tests recover every hidden cell across eight generated worlds,
+  preserve exact categorical equivariance, preserve the residual multiset
+  under conjugated hard derangement, reject soft/identity transport and
+  ambiguous visibility, and retain finite visible-cell gradients with exactly
+  zero hidden-placeholder gradients. Four hostile reviews found and closed ten
+  P1 defects and also forced raw source
+  capability custody: evidence is issued from raw source bytes, bound to the
+  source hashes and issuer nonce, and copied, cross-issued, mutated, or stale
+  capabilities fail closed. Behavioral consequences require a separately
+  frozen board with independent source-visible trajectories. Four successive
+  hostile audits are closed with no
+  remaining P0/P1 in this zero-parameter mechanic. The control seed is embedded
+  in issuance bytecode, stored sources are rehashed on every use, and public
+  raw-key recoding derives the bijection from occurrence-aligned sources before
+  conjugating the already-realized control. This still does not establish
+  native law interpretation or general reasoning. A final hostile scientific
+  audit makes the boundary stronger: on this board the residual packet is
+  label-equivalent because the correct candidate is exactly the unique zero
+  residual. Therefore SLRA is retained only as an oracle/mechanics diagnostic
+  and is forbidden as a confirmation-time input to any claim-bearing neural
+  model. No SLRA controller fit is authorized.
+- **Consumed QFCR gate:** exact NIST Beacon chain-2 pulse **1,874,057** at
+  **2026-07-24 21:37:00 UTC** was consumed only after public source and
+  authorization freeze. Both pulse signatures, output hashes, the previous
+  link, and precommitment reveal verified. All source, environment, count,
+  evidence, recoding, and output-custody bindings passed over 200 worlds,
+  83 eligible worlds, 666 faults, and 133,200/133,200 evidence identities.
+  The official decision is **`qfcr_mechanics_no_go`**. QFCR and equal-step
+  Euclidean both recover 100% at margins 0.05 and 0.10 in median cycle two;
+  at margin 0.20 QFCR falls to 99.6997% and minimum per-world recovery
+  66.6667%, while Euclidean remains 100%. At margins 0.40/0.80 QFCR reaches
+  98.1982%/96.6967% versus Euclidean 97.2973%/92.9429%, but both have
+  zero-recovery worlds and the preregistered every-world mechanics gate fails.
+  Quotient-Fisher geometry is closed and cannot authorize a neural fit.
+  Payload SHA-256 is
+  `71ae528e431e7aff4418446420a9c3cdbb1a197e72a3a7f272965e24ac6d30e6`;
+  full-file SHA-256 is
+  `7fc9a73717788bc423044d67b33193b5634ca298d379adbe89d2c586cc09d97b`.
+- **Next claim boundary:** the current fixed-geometry board cannot establish
+  learned law interpretation. A future candidate must receive raw bytes only,
+  compile a law without `decode_source`, SLRA residuals, a law AST interpreter,
+  a target machine, or a board-specific solver in the candidate process, and
+  score its unconstrained machine before any projector. Paired sources must
+  keep all non-law evidence identical while opposite laws select different
+  completions. Direct facts must admit at least two completions; law deletion
+  must produce calibrated abstention. Variable ontologies, unseen law
+  compositions, renderers, task families, process-level source deletion,
+  donor-law swaps, and real/zero/random/permuted Shohin trunk controls are
+  mandatory before a bounded native-law claim.
 - **Disposition of frozen mechanism `80dc07a`:** retain the 907,269-parameter
   four-slot causal bind-select workspace as a favorable control and custody
   reference. It is no longer a constraint on the candidate solution.

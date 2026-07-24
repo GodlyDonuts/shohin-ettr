@@ -21,6 +21,71 @@
 > GSM8K pass@1 `2/100`, MATH-500 `2/100`, HumanEval `6/164`, and MBPP `0/100`. This confirms a
 > low-single-digit plateau rather than a broad 120k-to-300k capability gain.
 >
+> **Latest QFCR and native-law decision (2026-07-24 EDT):** exact NIST
+> chain-2 pulse 1,874,057 at 21:37:00Z was consumed under public source and
+> authorization freeze. Signatures, output hashes, previous link,
+> precommitment reveal, source/environment/count/evidence/recoding/output
+> custody all passed. Official decision:
+> `qfcr_mechanics_no_go`. QFCR and equal-step Euclidean both recover 100% at
+> margins 0.05/0.10; QFCR falls to 99.6997% with a 66.6667% minimum-world
+> result at 0.20 while Euclidean remains 100%. Stress-margin advantages do not
+> rescue the failed every-world mechanics gate. Payload/file SHA-256 values
+> are `71ae528e431e7aff4418446420a9c3cdbb1a197e72a3a7f272965e24ac6d30e6`
+> and `7fc9a73717788bc423044d67b33193b5634ca298d379adbe89d2c586cc09d97b`.
+> Close quotient-Fisher; do not fit it.
+>
+> JASEC remains a 189,501,285-parameter mechanics/control architecture. Its
+> hardcoded SLRA primitive passes 7 focused tests and exact recoding/source
+> custody, but its unique zero residual is answer-equivalent on the current
+> one-hole board. It is forbidden as a confirmation-time neural input. The
+> next claim-bearing board must use raw bytes only, preserve at least two
+> direct-fact completions, pair identical facts with opposite laws/targets,
+> vary ontology geometry, hold out laws/renderers/tasks, score unconstrained
+> predictions before any projector, prove process-level source deletion, and
+> include law-swap plus real/zero/random/permuted-trunk controls. No neural fit
+> or pretraining is authorized.
+>
+> **Latest JASEC/SLRA architecture gate (2026-07-24 EDT):** isolated
+> mechanics connect the exact frozen Shohin trunk to a gauge-invariant
+> 44,658,064-parameter source/witness compiler, 19,013,524-parameter tied
+> assignment-machine equilibrium, and 748,033-parameter detached parser.
+> Complete JASEC is 189,501,285 parameters with 10,498,715 below 200M. Literal
+> opaque keys are absent from the trainable view; equality partitions, copied
+> post-seal keys, tokenizer identity, anonymous trunk payload, live parameter
+> recounting, and issuance-backed sealing are enforced. Focused changed-path
+> regression is 170 passed; the broader isolated EFC suite is 633 passed with
+> the same 26 known custody failures.
+> A proposed 9,618,567-parameter CMRL is rejected before fit because its
+> machine-shaped evidence leaked the target and its controls were invalid.
+> Zero-parameter Source-Law Residual Alignment now passes 7/7 gates and exactly
+> recovers all hidden cells across eight generated worlds using only the
+> source-stated permutation/balance laws. Four successive hostile reviews found
+> and the implementation closed ten P1 defects. Raw caller tensors are replaced by
+> issuer-owned raw-source capabilities with hash/nonce/value custody; visible
+> rows must be exact categorical one-hots; hidden placeholders have zero
+> gradient; and controls are independently source/row-derived hard
+> derangements bound to a precommitted seed. It is gauge-equivariant,
+> derangement-multiset preserving, soft/identity-transport rejecting,
+> ambiguity rejecting, and differentiable on visible evidence. This is a
+> law-executor information gate, not
+> native law interpretation. Four successive hostile reviews are now closed
+> with no remaining P0/P1: the committed control seed is embedded in issuance
+> bytecode rather than read through mutable runtime state; stored raw sources
+> are rehashed on every use; schema mutations fail; and the public recoding
+> path derives opaque-key bijections from occurrence-aligned raw sources before
+> conjugating the already-realized control.
+> native law compilation or reasoning. Its provisional 9,641,096-parameter
+> controller remains unimplemented and unadmitted.
+>
+> **Timed QFCR obligation (2026-07-24):** keep canonical `main` clean and
+> unchanged through exact NIST pulse 1,874,057 at 21:37:00 UTC. At or after the
+> target, verify public adjacency/maturity, fetch and independently verify the
+> target/previous pulses and certificate, write only the exact three-key
+> canonical snapshot, then run the exact committed isolated bootstrap to
+> `artifacts/r12/qfcr_fresh_oracle_20260724.json`. Do not fetch early. Only
+> after the official result may the isolated JASEC/SLRA branch be committed,
+> merged, documented, and pushed.
+>
 > **Latest HSC qualification gate (2026-07-24 EDT):** no neural fit has run.
 > The maximum Hankel-shift package remains 70,411,445 added and 195,493,109
 > complete parameters, leaving 4,506,891 below the 200M ceiling. The train-only
@@ -12594,3 +12659,28 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `0.1` bound. This kills the current positive-gradient ACSO preconditioner,
   not HSC. A signed causal retraction or second-order replacement needs a new
   architecture and preregistration.
+
+- **2026-07-24 21:37--22:06 UTC** -- **The exact fresh QFCR oracle is
+  consumed and closes quotient-Fisher; the next neural claim is narrowed to
+  raw-byte law compilation.** Public source `1e60a19`, authorization commit
+  `11e1dc9`, and exact NIST chain-2 pulse `1,874,057` satisfy the six-hour
+  maturity gate. Both consecutive NIST signatures, output hashes, previous
+  link, and precommitment reveal verify. The detached official auditor reports
+  200 worlds, 83 eligible worlds, 666 faults, 133,200/133,200 evidence
+  identities, and clean source/environment/count/recoding/output bindings.
+
+  Decision is `qfcr_mechanics_no_go`. At margins 0.05/0.10 both QFCR and
+  equal-step Euclidean reach 100% exact recovery in median cycle two. At 0.20
+  QFCR is 664/666-equivalent (99.6997%) with one represented world at 2/3,
+  while Euclidean remains 100%. At 0.40/0.80 QFCR is
+  98.1982%/96.6967% versus Euclidean 97.2973%/92.9429%, but both contain
+  zero-recovery worlds and QFCR never satisfies the frozen every-world
+  mechanics requirement. No geometry attribution or neural fit follows.
+
+  Independent claim audit also rejects any neural use of current SLRA
+  residuals: each packet directly marks the answer by one unique zero. Retain
+  JASEC/SLRA as mechanics and controls only. A future claim must compile laws
+  from raw bytes on paired ambiguous worlds, before a projector or host solver,
+  and survive unseen laws, compositions, renderers, task families, source
+  deletion, law swaps, and trunk-ablation controls. The protected checkpoint
+  and pretraining hold remain unchanged.

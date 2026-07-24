@@ -24,12 +24,11 @@ from episode_functor_machine import (
     MAX_STATES,
     SoftFunctorMachine,
 )
+from episode_functor_runtime_constants import BYTE_PAD_ID, MAX_UNIQUE_KEYS
 
 
 MAX_SOURCE_BYTES = 16_384
 MAX_KEY_OCCURRENCES = 128
-MAX_UNIQUE_KEYS = MAX_STATES + MAX_ACTIONS + MAX_OBSERVERS
-BYTE_PAD_ID = 256
 _OPAQUE_KEY = re.compile(
     rb"(?<![A-Za-z0-9])(?:h[0-9a-f]{16}|d[1-9][0-9]{0,19})(?![A-Za-z0-9])"
 )
