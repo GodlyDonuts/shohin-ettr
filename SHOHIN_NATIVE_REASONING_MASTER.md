@@ -3,10 +3,11 @@
 ## Current Status — Read First
 
 **Current frontier:** the Episodic Functor Compiler (EFC) has passed an
-externally timed, source-frozen, unmocked macOS process-custody rehearsal, and
-a train-only learned source-to-machine architecture is now implemented against
-the hash-verified frozen Shohin trunk. Its mechanics and attribution interfaces
-are tested, but no neural first fit is currently authorized.
+externally timed, source-frozen, unmocked macOS process-custody rehearsal.
+Several learned source-to-machine architectures are implemented against the
+hash-verified frozen Shohin trunk; the active Source-Sealed Quotient-Algebra
+Compiler (SSQAC) lane is CPU-falsifier-only. Its mechanics and attribution
+interfaces are tested, but no neural first fit is currently authorized.
 
 - **Protected base:** immutable step-300k Shohin checkpoint,
   125,081,664 parameters, SHA-256
@@ -96,6 +97,22 @@ are tested, but no neural first fit is currently authorized.
   compositions, renderers, task families, process-level source deletion,
   donor-law swaps, and real/zero/random/permuted Shohin trunk controls are
   mandatory before a bounded native-law claim.
+- **SSQAC pre-freeze lane:** the Source-Sealed Quotient-Algebra Compiler is
+  explicitly **rejected for source freeze / CPU falsifier only**. Its first
+  fixed-solver formulation was rejected because a host-authored
+  Macaulay/border-basis circuit would own the substantive reasoning. The
+  revised treatment must compile both source constraints and a source-deleted
+  algebra microprogram, then use only primitive finite-field/register
+  operations to certify a consequence that is forced across all legal
+  completions. The fixed exact algebra engine is retained solely as a gold
+  ceiling/control. Current CPU work supplies sparse-polynomial, quotient,
+  primitive-ALU, quotient-artifact verification, law-collision, and scoreless
+  learned-controller trace-pilot mechanics; the focused suite is **100
+  passed**. This is not a fitted controller, raw-language compiler, frozen
+  neural candidate, scored board, or reasoning result. Before any source
+  freeze it still requires the masked variable geometry, sealed quotient wire,
+  anonymous codebook, late-query/process-deletion boundary, exact resource
+  receipt, and hostile audit of the complete treatment and controls.
 - **Disposition of frozen mechanism `80dc07a`:** retain the 907,269-parameter
   four-slot causal bind-select workspace as a favorable control and custody
   reference. It is no longer a constraint on the candidate solution.
