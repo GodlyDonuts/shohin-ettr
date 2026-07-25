@@ -715,12 +715,15 @@ scientific component, not reported as genuine general reasoning.
    rounds; expert-state accuracy fell from 46.3% to 33.7%. The mechanics and
    zero-oracle final rollout pass, but this is evidence against naive
    on-policy aggregation, not a reasoning result.
-10. **RUNNING as isolated H100 falsifiers:** standard recurrent jobs `700853`,
-    `700854`, and replacement `700859`, plus reactive step-free jobs `700856`
-    through `700858`, use six independent H100s. Job `700855` failed after
-    preparation because its node exposed no CUDA device; it produced no model
-    report and was replaced on a different node. These jobs never read or
-    write the flagship checkpoint.
+10. **FAIL at H100 imitation boundary:** standard recurrent jobs `700853` and
+    `700854` certified 0/512 and 1/512 larger-geometry programs at 90.863% and
+    91.562% teacher-forced instruction accuracy. Reactive step-free jobs
+    `700857` and `700858` both certified 0/512 at 88.314% and 89.141%.
+    Replacement seed `700859` and paired larger-data/batch jobs `700873` and
+    `700874` remain active, but ordinary instruction imitation is already
+    closed as a sufficient mechanism. Jobs `700855` and `700856` were lost to
+    or stopped on anomalous `evc33`; neither provides a model result. No job
+    read or wrote the flagship checkpoint.
 11. Implement the sealed quotient wire, anonymous codebook, and late-query
     parser.
 12. Hostile-audit the complete CPU/controller boundary and matched controls.
