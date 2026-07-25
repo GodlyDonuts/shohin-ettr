@@ -457,6 +457,11 @@ class PreparationReceipt:
     states_per_case_cap: int
     preparation_search_calls: int
     preparation_oracle_calls: int
+    unique_observations: int
+    duplicate_observation_occurrences: int
+    conflicting_observations: int
+    conflicting_label_occurrences: int
+    conflict_resolution: str
     source_matrix_manifest_sha256: str
     observation_manifest_sha256: str
     search_label_manifest_sha256: str
@@ -553,15 +558,9 @@ def prepare_matched_datasets(
     search_calls = 0
     oracle_calls = 0
     completed_cases = 0
-    observations: dict[
-        str,
-        tuple[
-            tuple[tuple[int, ...], ...],
-            PolicyAction,
-            PolicyAction,
-            PolicyAction,
-        ],
-    ] = {}
+    observation_rows: dict[str, tuple[tuple[int, ...], ...]] = {}
+    search_label_counts: dict[str, dict[PolicyAction, int]] = {}
+    observation_occurrences = 0
     try:
         for case_index, matrix in enumerate(frozen_matrices):
             packet = SealedAlgebraPacket.from_rows(matrix, register_count=4)
@@ -597,29 +596,13 @@ def prepare_matched_datasets(
             for search_target in actions:
                 if retained_for_case >= states_per_case:
                     break
-                ordinary_target = _first_ordinary_oracle_action(
-                    current,
-                    compile_reference_program=compile_reference_program,
-                )
-                oracle_calls += 1
-                random_target = _randomized_alternative(
-                    current,
-                    search_target,
-                    seed=seed ^ 0x5EED,
-                )
                 key = matrix_sha256(current)
-                value = (
-                    current,
-                    search_target,
-                    ordinary_target,
-                    random_target,
-                )
-                prior = observations.get(key)
-                if prior is not None and prior != value:
-                    raise SearchDistillationError(
-                        "preparation produced conflicting labels"
-                    )
-                observations[key] = value
+                prior_rows = observation_rows.setdefault(key, current)
+                if prior_rows != current:
+                    raise RuntimeError("matrix digest collision in preparation")
+                counts = search_label_counts.setdefault(key, {})
+                counts[search_target] = counts.get(search_target, 0) + 1
+                observation_occurrences += 1
                 retained_for_case += 1
                 current = apply_policy_action(current, search_target)
             del actions, result
@@ -638,10 +621,47 @@ def prepare_matched_datasets(
     trace_deleted = not trace_directory.exists()
     if not trace_deleted:
         raise RuntimeError("preparation search trace directory survived deletion")
-    if not observations:
+    if not observation_rows:
         raise SearchDistillationError("bounded search produced no distillation states")
 
-    ordered = tuple(observations[key] for key in sorted(observations))
+    conflicting_observations = sum(
+        len(search_label_counts[key]) > 1 for key in observation_rows
+    )
+    conflicting_label_occurrences = sum(
+        sum(search_label_counts[key].values())
+        for key in observation_rows
+        if len(search_label_counts[key]) > 1
+    )
+    resolved: list[
+        tuple[
+            tuple[tuple[int, ...], ...],
+            PolicyAction,
+            PolicyAction,
+            PolicyAction,
+        ]
+    ] = []
+    for key in sorted(observation_rows):
+        rows = observation_rows[key]
+        counts = search_label_counts[key]
+        search_target = min(
+            counts,
+            key=lambda action: (
+                -counts[action],
+                tuple(action.canonical_data()),
+            ),
+        )
+        ordinary_target = _first_ordinary_oracle_action(
+            rows,
+            compile_reference_program=compile_reference_program,
+        )
+        oracle_calls += 1
+        random_target = _randomized_alternative(
+            rows,
+            search_target,
+            seed=seed ^ 0x5EED,
+        )
+        resolved.append((rows, search_target, ordinary_target, random_target))
+    ordered = tuple(resolved)
     search_states = tuple(
         LabeledPolicyState(rows=rows, target=search_target)
         for rows, search_target, _, _ in ordered
@@ -675,6 +695,13 @@ def prepare_matched_datasets(
         states_per_case_cap=states_per_case,
         preparation_search_calls=search_calls,
         preparation_oracle_calls=oracle_calls,
+        unique_observations=len(observation_rows),
+        duplicate_observation_occurrences=(
+            observation_occurrences - len(observation_rows)
+        ),
+        conflicting_observations=conflicting_observations,
+        conflicting_label_occurrences=conflicting_label_occurrences,
+        conflict_resolution="majority_vote_then_canonical_action",
         source_matrix_manifest_sha256=_digest(
             [matrix_sha256(matrix) for matrix in frozen_matrices]
         ),
@@ -690,7 +717,14 @@ def prepare_matched_datasets(
         arm_state_budgets_matched=state_budgets_matched,
     )
     # Drop the remaining aggregate preparation-only containers before fitting.
-    del ordered, observations, trace_hashes, receipt_hashes
+    del (
+        ordered,
+        resolved,
+        observation_rows,
+        search_label_counts,
+        trace_hashes,
+        receipt_hashes,
+    )
     return PreparedMatchedDatasets(
         search_teacher=search_states,
         ordinary_oracle=ordinary_states,

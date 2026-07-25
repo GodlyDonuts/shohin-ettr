@@ -15,14 +15,17 @@ set -euo pipefail
 
 ROOT=/lustre/fs1/home/sa305415/shohin
 SEED=${SEED:?SEED is required}
-OUT_ROOT="$ROOT/artifacts/r12/ssqac_search_distillation_scale_v2"
+OUT_ROOT="$ROOT/artifacts/r12/ssqac_search_distillation_scale_v3_consensus"
 OUTPUT="$OUT_ROOT/report_seed${SEED}_${SLURM_JOB_ID}.json"
 SCRATCH="${SLURM_TMPDIR:-/tmp}/ssqac_search_scale_${SLURM_JOB_ID}"
+SOURCE_SHA256=8664339392d7b23de114a4316bb0f37e5ba25b3827aae330cc10a82ce535da4b
 
 mkdir -p "$ROOT/logs" "$OUT_ROOT" "$SCRATCH"
 test ! -e "$OUTPUT"
 
 cd "$ROOT"
+test "$(sha256sum pipeline/ssqac_search_distillation_pilot.py | cut -d' ' -f1)" = \
+  "$SOURCE_SHA256"
 export PYTHONPATH="$ROOT:$ROOT/train"
 export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-8}"
 export MKL_NUM_THREADS="${SLURM_CPUS_PER_TASK:-8}"

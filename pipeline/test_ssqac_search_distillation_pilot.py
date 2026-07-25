@@ -119,6 +119,11 @@ def test_preparation_deletes_raw_search_traces_and_matches_states(
     assert receipt.failed_search_cases == 0
     assert receipt.preparation_search_calls == receipt.requested_cases
     assert receipt.preparation_oracle_calls == receipt.retained_states
+    assert receipt.unique_observations == receipt.retained_states
+    assert receipt.duplicate_observation_occurrences >= 0
+    assert receipt.conflicting_observations >= 0
+    assert receipt.conflicting_label_occurrences >= receipt.conflicting_observations
+    assert receipt.conflict_resolution == "majority_vote_then_canonical_action"
     assert receipt.trace_directory_deleted
     assert receipt.retained_search_trace_files == 0
     assert not receipt.raw_search_programs_retained
@@ -134,6 +139,30 @@ def test_preparation_deletes_raw_search_traces_and_matches_states(
         for states in arms
         for state in states
     )
+
+
+def test_preparation_resolves_duplicate_conflicts_by_majority_then_canonical() -> None:
+    source = ((2, 0), (0, 1))
+    first = pilot.PolicyAction(
+        pilot.ACTION_NORMALIZE,
+        row_a=0,
+        column=0,
+    )
+    second = pilot.PolicyAction(pilot.ACTION_SWAP, row_a=0, row_b=1)
+    observed = {
+        pilot.matrix_sha256(source): (
+            source,
+            {second: 1, first: 1},
+        )
+    }
+    selected = min(
+        observed[pilot.matrix_sha256(source)][1],
+        key=lambda action: (
+            -observed[pilot.matrix_sha256(source)][1][action],
+            tuple(action.canonical_data()),
+        ),
+    )
+    assert selected == first
 
 
 def test_randomized_control_is_a_legal_alternative_when_available(
