@@ -800,6 +800,7 @@ def _learned_global_key_classes(
     *,
     row: int,
     action_count: int,
+    score_sign: float,
 ) -> tuple[set[int], set[int]]:
     """Project occurrence-level type evidence into one episode-wide partition."""
 
@@ -825,7 +826,9 @@ def _learned_global_key_classes(
             counts[unique] += 1
     if bool(counts.eq(0).any()):
         raise MultiFamilyCompilerError("learned key evidence is incomplete")
-    scores = totals / counts
+    if score_sign not in {-1.0, 1.0}:
+        raise MultiFamilyCompilerError("learned key score sign differs")
+    scores = score_sign * totals / counts
     action_slots = torch.topk(
         scores,
         k=action_count,
@@ -849,6 +852,7 @@ def seal_machine(
     structural_key_shuffle: bool = False,
     incidence_ambiguous_fallback: bool = False,
     learned_global_key_classes: bool = False,
+    learned_key_score_sign: float = 1.0,
 ) -> SealedAnonymousMachine:
     if (
         not 0 <= row < batch.unit_ids.shape[0]
@@ -886,6 +890,7 @@ def seal_machine(
             output,
             row=row,
             action_count=action_count,
+            score_sign=learned_key_score_sign,
         )
     elif structural_key_classes:
         if cardinality == 2 * action_count and incidence_ambiguous_fallback:
@@ -899,6 +904,7 @@ def seal_machine(
                     output,
                     row=row,
                     action_count=action_count,
+                    score_sign=learned_key_score_sign,
                 )
             )
         else:

@@ -23,16 +23,14 @@ CELLS = (
 )
 ARMS = (
     "treatment",
-    "direction_shuffled",
-    "type_shuffled",
     "same_weights_direction_swapped",
+    "same_weights_key_scores_negated",
     "same_weights_query_roles_swapped",
-    "same_weights_type_swapped",
 )
 CAUSAL_CONTROLS = (
     "same_weights_direction_swapped",
+    "same_weights_key_scores_negated",
     "same_weights_query_roles_swapped",
-    "same_weights_type_swapped",
 )
 
 
@@ -146,9 +144,11 @@ def audit_reports(input_dir: Path) -> dict[str, object]:
         if (
             not isinstance(budget, dict)
             or budget.get("base_rows") != 40
+            or budget.get("control_additional_updates") != 0
             or budget.get("counterfactual_rows") != 160
-            or budget.get("initialization_identical") is not True
-            or budget.get("optimizer_updates_per_arm") != 100
+            or budget.get("models_trained") != 1
+            or budget.get("optimizer_updates") != 100
+            or budget.get("same_weights_controls") is not True
             or not isinstance(parameters, dict)
             or parameters.get("learned_compiler") != 60_613
             or parameters.get("complete_system") != 125_142_277

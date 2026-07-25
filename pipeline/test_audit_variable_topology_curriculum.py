@@ -26,12 +26,6 @@ def test_audit_accepts_complete_variable_topology_matrix(
                 "candidate_uses_query_role_logits": True,
                 "board_manifest_sha256": _board_manifest(seed),
                 "development": {
-                    "direction_shuffled": {
-                        "exact": 17,
-                        "invalid": 0,
-                        "sealed_wire_roundtrip": True,
-                        "total": 24,
-                    },
                     "same_weights_direction_swapped": {
                         "cell_exact": {
                             cell: {
@@ -46,7 +40,7 @@ def test_audit_accepts_complete_variable_topology_matrix(
                         "sealed_wire_roundtrip": True,
                         "total": 24,
                     },
-                    "same_weights_query_roles_swapped": {
+                    "same_weights_key_scores_negated": {
                         "cell_exact": {
                             cell: {"correct": 0, "total": 4}
                             for cell in CELLS
@@ -57,7 +51,7 @@ def test_audit_accepts_complete_variable_topology_matrix(
                         "sealed_wire_roundtrip": True,
                         "total": 24,
                     },
-                    "same_weights_type_swapped": {
+                    "same_weights_query_roles_swapped": {
                         "cell_exact": {
                             cell: {"correct": 0, "total": 4}
                             for cell in CELLS
@@ -80,18 +74,14 @@ def test_audit_accepts_complete_variable_topology_matrix(
                         "sealed_wire_roundtrip": True,
                         "total": 24,
                     },
-                    "type_shuffled": {
-                        "exact": 20,
-                        "invalid": 4,
-                        "sealed_wire_roundtrip": True,
-                        "total": 24,
-                    },
                 },
                 "equal_budget": {
                     "base_rows": 40,
+                    "control_additional_updates": 0,
                     "counterfactual_rows": 160,
-                    "initialization_identical": True,
-                    "optimizer_updates_per_arm": 100,
+                    "models_trained": 1,
+                    "optimizer_updates": 100,
+                    "same_weights_controls": True,
                 },
                 "held_out_family": family,
                 "parameter_receipt": {
@@ -111,10 +101,8 @@ def test_audit_accepts_complete_variable_topology_matrix(
             path.write_text(json.dumps(report), encoding="ascii")
     audit = audit_reports(tmp_path)
     assert audit["totals"]["treatment"]["correct"] == 360
-    assert audit["totals"]["direction_shuffled"]["correct"] == 255
-    assert audit["totals"]["type_shuffled"]["correct"] == 300
     assert audit["positive_seed_fold_directions"][
-        "same_weights_type_swapped"
+        "same_weights_key_scores_negated"
     ] == {
         "correct": 15,
         "total": 15,

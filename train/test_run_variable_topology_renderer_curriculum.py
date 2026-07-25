@@ -158,3 +158,44 @@ def test_fully_learned_partition_and_query_roles_execute() -> None:
             row=0,
             structural_key_classes=False,
         )
+
+
+def test_negated_global_key_scores_change_learned_partition() -> None:
+    row = generate_episode(
+        seed=93,
+        split="development",
+        family="permutation",
+        renderer=5,
+        cell="collision",
+        cardinality=8,
+        action_count=4,
+    )
+    example = _base_example(row)
+    source, _, source_labels, _ = _collate(
+        [example],
+        device=torch.device("cpu"),
+    )
+    source_logits = torch.nn.functional.one_hot(
+        source_labels.clamp_min(0),
+        num_classes=3,
+    ).to(torch.float32)
+    source_logits[source_labels.eq(-100)] = 0
+    treatment = seal_machine(
+        source,
+        CompilerOutput(source_logits),
+        row=0,
+        learned_global_key_classes=True,
+    )
+    with pytest.raises(
+        MultiFamilyCompilerError,
+        match="structural record typing differs",
+    ):
+        seal_machine(
+            source,
+            CompilerOutput(source_logits),
+            row=0,
+            learned_global_key_classes=True,
+            learned_key_score_sign=-1.0,
+        )
+    assert len(treatment.action_keys) == 4
+    assert len(treatment.state_keys) == 8

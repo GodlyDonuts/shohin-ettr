@@ -1,16 +1,15 @@
 """Learned semantic typing for the source-deleted variable-topology board.
 
-Incidence typing is used only when state and action frequencies differ. In
-collision geometries the shared byte compiler must infer all three semantic
-roles. Counterfactual preparation supplies a target/source/action renderer
-under symbols absent from the held-out renderer. Matched controls swap either
-direction or state/action type labels while preserving bytes and compute.
+The shared byte compiler must infer source direction, a global state/action
+partition, and query roles for every geometry. Counterfactual preparation
+composes held-out relation words across source orders and query orders that
+exclude the exact held-out renderer. Same-weight inference controls negate
+each learned semantic channel without retraining additional models.
 """
 
 from __future__ import annotations
 
 import argparse
-import copy
 from collections import Counter
 from dataclasses import asdict, dataclass
 from hashlib import sha256
@@ -309,11 +308,14 @@ def _evaluate(
     device: torch.device,
     source_ablation: str = "none",
     query_ablation: str = "none",
+    key_score_ablation: str = "none",
 ) -> dict[str, object]:
     if source_ablation not in {"none", "direction_swap", "type_swap"}:
         raise ValueError("source ablation leaves frozen contract")
     if query_ablation not in {"none", "role_swap"}:
         raise ValueError("query ablation leaves frozen contract")
+    if key_score_ablation not in {"none", "negate"}:
+        raise ValueError("key-score ablation leaves frozen contract")
     source, query, source_labels, query_labels = _collate(
         examples,
         device=device,
@@ -359,6 +361,9 @@ def _evaluate(
                 CompilerOutput(source_logits),
                 row=index,
                 learned_global_key_classes=True,
+                learned_key_score_sign=(
+                    -1.0 if key_score_ablation == "negate" else 1.0
+                ),
             )
             machine = type(machine).from_deployed_wire(
                 machine.deployed_wire()
@@ -386,6 +391,7 @@ def _evaluate(
         "collision_total": collision_total,
         "exact": exact,
         "invalid": invalid,
+        "key_score_ablation": key_score_ablation,
         "query_role_accuracy": query_correct / int(query_valid.sum()),
         "query_ablation": query_ablation,
         "sealed_wire_roundtrip": True,
@@ -439,24 +445,14 @@ def run_experiment(
     ]
     train_examples = [*base_examples, *counterfactual_examples]
     development_examples = [_base_example(row) for row in development_rows]
-    tensors = {
-        arm: _collate(train_examples, device=device, control=arm)
-        for arm in ("treatment", "direction_shuffled", "type_shuffled")
-    }
-    template = SharedRawMachineCompiler(width=width, layers=layers).to(device)
-    models = {
-        arm: copy.deepcopy(template)
-        for arm in tensors
-    }
-    losses = {
-        arm: _train(
-            model=models[arm],
-            tensors=tensors[arm],
-            steps=steps,
-            learning_rate=learning_rate,
-        )
-        for arm in tensors
-    }
+    tensors = _collate(train_examples, device=device, control="treatment")
+    model = SharedRawMachineCompiler(width=width, layers=layers).to(device)
+    losses = _train(
+        model=model,
+        tensors=tensors,
+        steps=steps,
+        learning_rate=learning_rate,
+    )
     return {
         "board_manifest_sha256": _json_sha256(
             [
@@ -475,55 +471,52 @@ def run_experiment(
         "candidate_uses_query_role_logits": True,
         "candidate_source_bytes_absent_from_deployed_wire": True,
         "development": {
-            **{
-                arm: _evaluate(
-                    model,
-                    development_examples,
-                    device=device,
-                )
-                for arm, model in models.items()
-            },
             "same_weights_direction_swapped": _evaluate(
-                models["treatment"],
+                model,
                 development_examples,
                 device=device,
                 source_ablation="direction_swap",
             ),
+            "same_weights_key_scores_negated": _evaluate(
+                model,
+                development_examples,
+                device=device,
+                key_score_ablation="negate",
+            ),
             "same_weights_query_roles_swapped": _evaluate(
-                models["treatment"],
+                model,
                 development_examples,
                 device=device,
                 query_ablation="role_swap",
             ),
-            "same_weights_type_swapped": _evaluate(
-                models["treatment"],
+            "treatment": _evaluate(
+                model,
                 development_examples,
                 device=device,
-                source_ablation="type_swap",
             ),
         },
         "device": str(device),
         "equal_budget": {
             "base_rows": len(base_examples),
+            "control_additional_updates": 0,
             "counterfactual_rows": len(counterfactual_examples),
-            "initialization_identical": True,
-            "optimizer_updates_per_arm": steps,
-            "parameters_per_arm": template.parameter_count(),
+            "models_trained": 1,
+            "optimizer_updates": steps,
+            "parameters_per_arm": model.parameter_count(),
+            "same_weights_controls": True,
         },
         "held_out_family": held_out_family,
-        "parameter_receipt": asdict(template.parameter_receipt()),
+        "parameter_receipt": asdict(model.parameter_receipt()),
         "preparation_exact_parser_calls": len(base_examples),
         "preparation_query_parser_calls": len(base_examples),
         "preparation_source_parser_calls": len(base_examples),
         "seed": seed,
         "status": "variable_topology_semantic_type_curriculum",
         "train": {
-            arm: _evaluate(model, train_examples, device=device)
-            for arm, model in models.items()
+            "treatment": _evaluate(model, train_examples, device=device),
         },
         "training_loss": {
-            arm: {"initial": pair[0], "final": pair[1]}
-            for arm, pair in losses.items()
+            "treatment": {"initial": losses[0], "final": losses[1]},
         },
     }
 
