@@ -85,6 +85,25 @@
 > are the claim-bearing v3 seeds; `701076` failed before Python because
 > `evc44` exposed no GPU and is now excluded.
 >
+> **Latest Lyapunov/Bellman decision (2026-07-24 EDT):** four isolated H100
+> seeds reject the tested potential-based controller as sufficient reasoning.
+> Lyapunov + Bellman + monotonic supervision certified 18/768 = 2.3438%,
+> action classification 8/768 = 1.0417%, distance regression alone 21/768 =
+> 2.7344%, and shuffled-distance, shuffled-successor, and random controls all
+> scored 0/768. The 19,845,699-parameter controller learns
+> successor-dependent distance signal, but Bellman/monotonic losses add no
+> benefit over distance regression and cycles dominate 678/768 treatment
+> failures. Decision: `lyapunov_bellman_no_go_distance_signal_only`.
+>
+> **Latest proof-carrying decision (2026-07-24 EDT):** three isolated H100
+> seeds reject the tested local-contract controller. Proof-carrying inference
+> certified 77/384 = 20.0521%, classifier-only 111/384 = 28.9063%, the same
+> proof-trained weights with proof heads zeroed 77/384, shuffled successor
+> binding 82/384, shuffled progress 49/384, and random labels 0/384. The
+> 7,323,684-parameter controller fits preparation labels but its proof heads
+> have zero aggregate causal effect. Decision:
+> `proof_carrying_local_contract_no_go_classifier_baseline_retained`.
+>
 > **Latest QFCR and native-law decision (2026-07-24 EDT):** exact NIST
 > chain-2 pulse 1,874,057 at 21:37:00Z was consumed under public source and
 > authorization freeze. Signatures, output hashes, previous link,
@@ -13140,6 +13159,8 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   and
   `05824aea519f7b4e3c29f1a2ff2742ef521f7e01918635650a523d72669e01a5`.
   Focused verification is 28 passed plus clean Ruff and byte compilation.
+  Hostile jobs consumed 8,416 H100-seconds = 2.3378 H100-hours; the earlier
+  wide-capacity jobs consumed 11,268 H100-seconds = 3.1300 H100-hours.
 
   Search-scale v2 independently exposed a teacher-data ambiguity:
   `701044` failed closed when identical matrix states received conflicting
@@ -13150,3 +13171,74 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `8664339392d7b23de114a4316bb0f37e5ba25b3827aae330cc10a82ce535da4b`;
   23 focused search/on-policy tests pass with clean Ruff and byte compilation.
   Claim-bearing consensus seeds are `701074`, `701075`, and `701077`.
+
+- **2026-07-24 22:24--22:32 EDT** -- **Learned Lyapunov/Bellman potentials
+  contain distance signal but do not establish planning.** Corrected canary
+  `701060` passed, then jobs `701070`--`701073` completed on four isolated
+  H100s. The controller adds 19,845,699 parameters for a 144,927,363-parameter
+  complete system.
+
+  | Arm | Strict certificates | Rate |
+  |---|---:|---:|
+  | Lyapunov + Bellman + monotonic | 18/768 | 2.3438% |
+  | Action classification only | 8/768 | 1.0417% |
+  | Distance regression only | **21/768** | **2.7344%** |
+  | Shuffled distance labels | 0/768 | 0% |
+  | Shuffled successor binding | 0/768 | 0% |
+  | Random labels | 0/768 | 0% |
+
+  Distance supervision is genuine because both shuffled controls collapse,
+  but Bellman consistency and monotonic margins do not improve over distance
+  regression alone. Treatment loses that control by three cases. Cycles
+  dominate 678/768 treatment and 667/768 distance-only failures. Each arm
+  received exactly 9,600 updates; the material allocation was 1,695
+  H100-seconds = 0.4708 H100-hours. Candidate-time oracle/search/verifier
+  calls were zero.
+
+  Report SHA-256 values are
+  `29923f969c342964641afc6a2e98eaf0150f7f3de6a98fed1ffe9bfde1f4df2d`,
+  `5f5f703a52fc8db5f93e21bbbb572dbd54a5b9aa074577559c5b8baae350272b`,
+  `c45d1c55e0f5ad3043e7e86454502b8dfb4bc0fa71decd6e955902881373a40e`,
+  and
+  `affc6311ac8d4ea0e07a6bc948a0a7bac979f1a89c0f41bb467273dc4911f41f`.
+  Source, tests, and launcher SHA-256 values are
+  `850eff1436c19f69824af7e66aeaa7a1cfa5195307b6f51b1db3ca6ed3a3798c`,
+  `d0f22dd76a4b8840b37cb0564cf634bcc730e41a258d33cdffdba0750cec4327`,
+  and
+  `20970569327b39d2ff6f2dc036cef374a2d2892a684df2c04e1b125e11fed8be`.
+  All 20 model files rehash against their reports with zero mismatches.
+
+- **2026-07-24 22:24--22:32 EDT** -- **Local proof contracts fit but do not
+  control autonomous composition.** Canary `701059` passed, then jobs
+  `701062`--`701064` completed concurrently on three H100s. Every arm adds
+  7,323,684 parameters for a 132,405,348-parameter complete system.
+
+  | Arm | Strict certificates | Rate |
+  |---|---:|---:|
+  | Proof-carrying contract | 77/384 | 20.0521% |
+  | Classifier-only | **111/384** | **28.9063%** |
+  | Proof heads zeroed at inference | 77/384 | 20.0521% |
+  | Shuffled action/successor binding | 82/384 | 21.3542% |
+  | Shuffled progress labels | 49/384 | 12.7604% |
+  | Random labels | 0/384 | 0% |
+
+  Proof loses classifier-only by 34 cases and has exactly zero aggregate
+  effect versus zeroing its proof heads. Treatment nearly perfectly fits
+  preparation labels, so the failure is autonomous larger-geometry
+  composition, not basic optimization. The three jobs consumed approximately
+  0.444 H100-hours, 27,000 optimizer updates, 108,000 training examples,
+  726,774 training triples, and 2,659,978 evaluation triples. Candidate-time
+  oracle/search/verifier calls were zero.
+
+  Exact report SHA-256 values are
+  `937306298674339c40ef978c84cc1d92d9ad1c5036565efc178c41d763c6331a`,
+  `6954130bf76a5e88296bcdef51526fad6bafd89e9396866810778ec81dcba656`,
+  and
+  `d05de63c5b2e1d565e219ec687a04ef47d0331d890ba64b7309e1b747fa33004`.
+  Source, tests, and launcher SHA-256 values are
+  `62ba26c92620e4fdc3107a61ce13f8286a31859da26d40b3c5b0c33e7d338abd`,
+  `bb6d9218bc7c2e2cdedcca1fb56811afd61e2d498124f3d336e11a698d0cbe25`,
+  and
+  `a11c72e8936a7feab9027c4f336d86233c232fae2e51547ba09ab9a2b85fb08a`.
+  The focused suites total 26 passed with clean Ruff, byte compilation, and
+  launcher syntax.

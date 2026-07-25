@@ -51705,6 +51705,44 @@ choose actions by learned potential decrease. It must beat equal-budget
 classification-only, shuffled-potential, zero-consistency,
 shuffled-successor, and random-label controls.
 
+That Lyapunov/Bellman hypothesis is now consumed. Four H100 seeds used a
+19,845,699-parameter controller:
+
+| Arm | Strict certificates | Rate |
+|---|---:|---:|
+| Lyapunov + Bellman + monotonic | 18/768 | 2.3438% |
+| Action classification only | 8/768 | 1.0417% |
+| Distance regression only | **21/768** | **2.7344%** |
+| Shuffled distance labels | 0/768 | 0% |
+| Shuffled successor binding | 0/768 | 0% |
+| Random labels | 0/768 | 0% |
+
+Distance regression contains genuine successor-dependent information because
+both shuffled controls collapse to zero. Bellman consistency and monotonic
+descent do not add capability: treatment trails distance-only by three cases,
+and cycles dominate both failure sets. A scalar potential is not enough to
+stabilize long-horizon execution.
+
+A separate proof-carrying controller tested whether explicit learned local
+contracts repair that failure. Three H100 seeds used 7,323,684 added
+parameters:
+
+| Arm | Strict certificates | Rate |
+|---|---:|---:|
+| Proof-carrying contract | 77/384 | 20.0521% |
+| Classifier-only | **111/384** | **28.9063%** |
+| Proof heads zeroed | 77/384 | 20.0521% |
+| Shuffled action/successor binding | 82/384 | 21.3542% |
+| Shuffled progress labels | 49/384 | 12.7604% |
+| Random labels | 0/384 | 0% |
+
+The contracts learn auxiliary targets, but they do not causally affect
+inference: zeroing them leaves the aggregate exactly unchanged, while
+classifier-only is 8.85 points better. The experiment also exposes a concrete
+next issue: the recurrent contract state was trained from zero but consumed
+autoregressively during rollout. Any successor must train persistent state on
+full candidate trajectories and must still beat a zeroed-memory control.
+
 The scientific position is now sharper:
 
 1. Exact mechanics and external search solve the proxy.
