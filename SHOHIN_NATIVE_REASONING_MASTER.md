@@ -51663,6 +51663,13 @@ This run also exposes an avoidable systems cost. Preparation used 2,083.05 of
 workers, with H100 allocation reserved for resident-tensor fitting and
 evaluation.
 
+A preregistered scale curve is now running as jobs `701043`, `701044`, and
+`701048`. It increases preparation from 256 to 1,024 matrices, retains up to
+24 states per matrix, and evaluates 512 strictly larger matrices while
+keeping the same 12.22M-parameter policy family and matched
+search-teacher/ordinary/random arms. This tests whether the offline foothold
+scales, saturates, or reverses. It is not a promotion-by-compute.
+
 The next control-theoretic hypothesis changes the supervision target rather
 than adding capacity or recurrence. A learned Lyapunov/Bellman controller will
 predict a source-independent remaining-distance potential for raw states and

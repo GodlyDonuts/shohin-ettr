@@ -69,6 +69,11 @@
 > `on_policy_dagger_not_better_than_equal_budget_offline_distillation`.
 > Preserve the larger-data offline gain, but move future search generation to
 > CPU capacity before GPU-only fitting.
+> Scale-curve jobs `701043`, `701044`, and `701048` are running isolated
+> four-times-larger offline search-distillation experiments on `evc28`,
+> `evc30`, and `evc37`. Job `701045` was canceled before Python launch after
+> `evc33` again hung in `nvidia-smi`; its replacement is `701048`, and the
+> persistent launcher now excludes `evc33`.
 >
 > **Latest QFCR and native-law decision (2026-07-24 EDT):** exact NIST
 > chain-2 pulse 1,874,057 at 21:37:00Z was consumed under public source and
@@ -13072,3 +13077,20 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   hash-bound CPU stage on Stokes or Newton CPU capacity, followed by isolated
   GPU-only fitting and evaluation. Do not spend H100 time on serial host
   search when CPU capacity is available.
+
+- **2026-07-24 22:00--22:13 EDT** -- **The positive offline
+  search-distillation foothold receives a controlled scale test.** Three
+  isolated jobs `701043`, `701044`, and `701048` use 1,024 preparation
+  matrices, up to 24 retained states per matrix, 60 epochs, 512 strict larger
+  held-out matrices, and the same 12.22M-parameter equivariant policy family.
+  Search-teacher, ordinary-imitation, and random-label arms retain identical
+  weights, examples, parameters, schedules, and optimizer updates.
+
+  `701045` was canceled before Python launch because `evc33` reproduced its
+  prior runtime anomaly and hung while querying the assigned H100. It
+  generated no report or training state. Replacement `701048` started
+  normally on `evc37`; the persistent launcher now excludes `evc33` as well
+  as down nodes `evc26` and `evc31`. Launcher SHA-256 is
+  `b846f998a4d24869ae2f62610ea06caedc31dbe72108e80a444f749ba036d8c8`.
+  These runs test a scaling curve only; they cannot promote reasoning without
+  the matched controls and strict posthoc assessor.
