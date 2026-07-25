@@ -51945,3 +51945,28 @@ described as general reasoning.
 
 The complete decision and evidence boundary are recorded in
 `R12_EXPEDITED_REASONING_CONCLUSION.md`.
+
+## 2026-07-25 Multi-Family Qualification Board
+
+The required successor gate is now concrete rather than aspirational.
+`pipeline/source_deleted_multifamily_machine_board.py` presents affine
+modular, bitwise rotate/xor, and unconstrained permutation laws through one
+anonymous finite-machine interface. Fitting and development share matched
+geometry; development holds out laws, scale, composition lengths 5--8, and a
+fourth renderer. Three leave-one-family-out folds test whether one mechanism
+can compile a family never available during fitting.
+
+The independent 1,344-row CPU audit reaches 1,344/1,344 exact execution after
+source deletion, zero family-name leaks, and 192/192 renderer orbits with
+identical sealed packets. Law swaps change 87.5% of answers and action-order
+reversal changes 69.1969% of eligible answers, proving that both the
+episode-local law and ordered composition are causally necessary. Receipt
+payload SHA-256 is
+`f30e2093048cc426a4571bd357fe6e8562ea78f14a4ff578af21bc0dfc86d172`.
+
+This is a mechanics and leakage pass, not a learned reasoning result. The
+exact CPU compiler is forbidden at candidate inference. Neural authorization
+requires a raw-token compiler, process-level source deletion, one shared
+full-trajectory recurrent executor, five matched seeds, equal-compute
+controls, and at least 85% per family/cell. The complete preregistration is
+`R12_SOURCE_DELETED_MULTIFAMILY_MACHINE_PREREG.md`.

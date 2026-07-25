@@ -36,6 +36,26 @@
 > and renderers plus matched causal controls. Full decision:
 > `R12_EXPEDITED_REASONING_CONCLUSION.md`.
 >
+> **Multi-family successor gate (2026-07-25 EDT):** the missing qualification
+> board now exists in
+> `pipeline/source_deleted_multifamily_machine_board.py`, with independent
+> audit in `pipeline/audit_source_deleted_multifamily_machine_board.py`.
+> It matches all three families at cardinality 8 for fitting and 16 for
+> law/scale holdout, freezes 576 unique fitting laws and 768 disjoint
+> development laws, holds out composition lengths 5--8 and renderer 3, and
+> defines all three leave-one-family-out folds. The 1,344-row CPU receipt is
+> exact 1,344/1,344 after source deletion, has zero family-name leaks,
+> compiles 192/192 renderer orbits to identical packets, changes 1,176/1,344
+> answers under law swaps, and changes 629/909 eligible answers under action
+> reversal. Payload SHA-256 is
+> `f30e2093048cc426a4571bd357fe6e8562ea78f14a4ff578af21bc0dfc86d172`;
+> receipt file SHA-256 is
+> `2026784b11592d9d4aca34b9141e48863beb06bd821808df13ac17ce5a3159ce`.
+> This authorizes no neural fit yet: raw-token packaging, process deletion,
+> parameter/FLOP matching, five-seed schedule, and an independent assessor
+> must be frozen first. Full contract:
+> `R12_SOURCE_DELETED_MULTIFAMILY_MACHINE_PREREG.md`.
+>
 > **Latest SSQAC controller decision (2026-07-24 21:23 EDT):** the
 > protected checkpoint and pretraining hold remain unchanged. Bounded host
 > search certifies 64/64 strict unseen reductions, but is external counted
