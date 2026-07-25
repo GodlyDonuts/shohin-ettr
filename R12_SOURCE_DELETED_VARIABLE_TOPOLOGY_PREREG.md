@@ -2,17 +2,16 @@
 
 ## Decision
 
-The five-seed renderer-curriculum result remains the strongest bounded
-reasoning result, but it is not sufficient evidence of native general
-reasoning. Its deterministic structural typer identifies state and action
-keys from a fixed incidence pattern. The variable-topology board freezes the
-next admissible falsifier and removes that shortcut in dedicated collision
-cells.
+The learned global semantic-partition compiler passed this frozen gate on
+2026-07-25:
 
-No candidate has passed this new gate as of 2026-07-25. The correct current
-conclusion is:
+`global_semantic_partition_passes_variable_topology_gate`
 
-`renderer_transfer_demonstrated_variable_topology_reasoning_unproven`
+Treatment reached 360/360 across five seeds and all three
+leave-one-family-out folds. Same-weight direction swap reached 152/360;
+negating the learned global key partition or learned query roles reached
+0/360. Full evidence:
+`R12_VARIABLE_TOPOLOGY_SEMANTIC_COMPILER_RESULT.md`.
 
 This board authorizes no continuation pretraining and changes nothing about
 the protected step-300k checkpoint.
@@ -82,14 +81,16 @@ All such calls must be reported.
 
 ## Matched Controls
 
-The treatment must be compared under identical bytes, initialization,
-parameters, optimizer updates, and sample budget against:
+The claim-bearing protocol trained one model per fold and intervened on the
+same weights at inference:
 
-- direction-shuffled counterfactual supervision;
-- state/action type-shuffled supervision in collision rows;
-- incidence-only typing;
-- renderer labels without collision-type supervision; and
-- random labels.
+- swap learned source/target direction;
+- negate the episode-global learned state/action key scores; and
+- swap learned query start/action roles.
+
+The originally proposed type-channel swap was rejected because occurrence
+evidence could cancel without changing the selected global partition. The
+direct score negation removes that ambiguity.
 
 The source-deleted candidate must also survive law swaps and action-order
 reversal. A host exact compiler is an upper bound only and cannot be counted
@@ -114,16 +115,13 @@ because transition tables are complete and all tasks share a finite-machine
 ontology. The next boundary after a pass would be incomplete-law induction
 and natural-language post-training, not more proxy-specific recurrence.
 
-## Expedited Conclusion
+## Final Conclusion
 
-Shohin has made a real but bounded advance: learned counterfactual
-representation training can produce perfect held-out-family transfer on the
-fixed-topology machine board. The current evidence does not show that the
-mechanism can infer latent semantic types when incidence statistics are
-uninformative. Therefore:
+The learned compiler infers latent semantic key types even when incidence
+statistics are uninformative. This removes the fixed-topology shortcut and is
+a genuine bounded systematic-compilation advance.
 
-- retain the 120/120 renderer-curriculum result;
-- do not call it native or general reasoning;
-- do not resume pretraining;
-- do not spend more compute on the old fixed-topology board; and
-- resume architecture work only against this frozen variable-topology gate.
+It remains a complete-table finite-machine sidecar rather than Shohin-native
+general reasoning. The next gate is sparse latent-law induction under a new
+ontology and process-level source deletion. Do not resume pretraining or spend
+more compute on this solved board.

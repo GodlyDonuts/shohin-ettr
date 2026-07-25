@@ -172,20 +172,28 @@ Shohin trunk. Full evidence and scope:
 
 ## Final Variable-Topology Boundary
 
-The next falsifier is now frozen and audited. It varies state cardinality,
-action count, topology, and six renderer forms across 132 source-deleted
-episodes. Exactly 24 collision rows make state and action key frequencies
-identical, removing the shortcut used by the successful structural typer.
-The exact upper bound remains 132/132, all 21 renderer orbits compile to
-identical packets, law swaps change 113/132 answers, and action reversal
-changes 51/78 eligible answers.
+The learned global semantic-partition compiler now passes the variable-
+topology gate. Across five independently generated boards and all three
+leave-one-family-out folds, treatment reaches 360/360. The same treatment
+weights reach 152/360 when source direction is swapped and 0/360 when either
+the episode-global key scores are negated or query roles are swapped. Every
+paired direction, collision cell, and joint cell passes the independent
+audit.
 
-No learned candidate has passed this gate. The expedited final conclusion is
-therefore:
+This revises the bounded capability conclusion:
 
-`renderer_transfer_demonstrated_variable_topology_reasoning_unproven`
+`global_semantic_partition_passes_variable_topology_gate`
 
-This is a concrete advance over the raw 300k checkpoint and the failed
-renderer smokes, but it is not evidence of genuine general reasoning. The
-pretraining hold remains in force. Full next-gate contract:
-`R12_SOURCE_DELETED_VARIABLE_TOPOLOGY_PREREG.md`.
+The 60,613-parameter sidecar has learned to compile unseen complete anonymous
+machines across variable cardinality, action count, topology, renderer,
+composition, and family. It makes zero candidate-time oracle/search/verifier
+calls. Audit SHA-256 is
+`049bbbd398e6f1456d6f1809bebb701351053302e0ce44147e70735d5b155fa2`.
+
+The general-reasoning conclusion remains negative. Every episode still
+provides a complete transition table, all tasks share one finite-machine
+ontology, execution is a fixed discrete operator, process-level source
+deletion is not attested, and the compiler is not integrated into Shohin.
+The next justified gate is sparse latent-law induction, not more optimization
+of this solved board. Full evidence:
+`R12_VARIABLE_TOPOLOGY_SEMANTIC_COMPILER_RESULT.md`.

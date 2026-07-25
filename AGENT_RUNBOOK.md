@@ -21,6 +21,21 @@
 > GSM8K pass@1 `2/100`, MATH-500 `2/100`, HumanEval `6/164`, and MBPP `0/100`. This confirms a
 > low-single-digit plateau rather than a broad 120k-to-300k capability gain.
 >
+> **Variable-topology qualification PASS (2026-07-25 EDT):** CPU array
+> `704729` completed all 15 five-seed/leave-one-family-out folds. The learned
+> global semantic-partition compiler scores 360/360; the same weights score
+> 152/360 with source direction swapped and 0/360 when either global key
+> scores or query roles are negated/swapped. Every fold, collision cell, joint
+> cell, and paired causal direction passes. The compiler adds 60,613
+> parameters for a 125,142,277-parameter conceptual system and makes zero
+> candidate-time oracle/search/verifier calls. Independent audit SHA-256 is
+> `049bbbd398e6f1456d6f1809bebb701351053302e0ce44147e70735d5b155fa2`.
+> This is causal bounded complete-table finite-machine compilation, not
+> Shohin-native general reasoning. Do not spend more compute on this solved
+> board. The next justified gate is sparse latent-law induction with
+> process-level source deletion. Pretraining remains held and no Newton jobs
+> are active.
+>
 > **Expedited reasoning closeout (2026-07-25 EDT):** open-ended architecture
 > search is closed under the current evidence and usage budget. Shohin does
 > not demonstrate native general reasoning. The retained learned baseline is
@@ -13517,3 +13532,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   No candidate has passed this new gate, so the retained conclusion is
   bounded renderer transfer, not native general reasoning. Pretraining stays
   held and no Newton job was launched.
+
+- **2026-07-25 19:47--19:52 EDT** -- **A learned global semantic partition
+  passes the variable-topology gate.** The final protocol rejected an
+  ambiguous source/action channel-swap control and instead directly negated
+  the learned episode-global key scores. Local focused verification passed
+  23 tests with clean Ruff, byte compilation, launcher syntax, and diff
+  checks. A local end-to-end smoke scored 12/12 treatment, 2/12 direction
+  swap, 0/12 key-score negation, and 0/12 query-role swap.
+
+  Newton CPU array `704729` completed all 15 claim-bearing folds in under
+  three minutes per task. Treatment scored 360/360 across five independent
+  boards and all three held-out families. Same-weight direction swap scored
+  152/360; same-weight global key-score negation and query-role swap each
+  scored 0/360 and failed closed on all 360 cases. All 15 paired directions
+  are positive for every control, and every collision/joint control margin
+  passes. Treatment per-family scores are 120/120 for affine modular,
+  bitwise rotate/xor, and permutation.
+
+  Each fold trains one 60,613-parameter compiler for 100 updates on 40 base
+  plus 160 counterfactual episodes. Controls receive zero additional updates.
+  The conceptual complete system is 125,142,277 parameters. Candidate-time
+  oracle/search/verifier calls are 0/0/0; preparation exact/source/query
+  parser calls are 600 each across the matrix. Raw source bytes are absent
+  from the deployed packet and every packet round-trip passes.
+
+  Independent audit SHA-256 is
+  `049bbbd398e6f1456d6f1809bebb701351053302e0ce44147e70735d5b155fa2`.
+  Decision:
+  `global_semantic_partition_passes_variable_topology_gate`.
+  Scope remains bounded: complete transition tables, one finite-machine
+  ontology, a fixed discrete executor, interface-level rather than
+  fresh-process source deletion, and a sidecar compiler. Stop this solved
+  lane. The only justified successor is sparse latent-law induction before
+  any Shohin integration. Pretraining remains held; no Newton jobs are active.

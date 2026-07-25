@@ -2,12 +2,12 @@
 
 ## Current Status — Read First
 
-**Current frontier:** the source-deleted renderer curriculum is the first
-retained multi-family systematic-transfer result. It is bounded anonymous
-finite-machine compilation, not native general reasoning. The broader EFC/SSQAC
-architecture campaign is closed under the current evidence and usage budget;
-no new proxy-specific architecture branch, neural source freeze, or continuation
-pretraining is authorized.
+**Current frontier:** the learned global semantic-partition compiler is the
+first retained variable-topology, multi-family systematic-transfer result. It
+is causal bounded anonymous finite-machine compilation, not native general
+reasoning. The broader EFC/SSQAC architecture campaign is closed under the
+current evidence and usage budget; no new proxy-specific architecture branch,
+neural source freeze, or continuation pretraining is authorized.
 
 - **Protected base:** immutable step-300k Shohin checkpoint,
   125,081,664 parameters, SHA-256
@@ -28,16 +28,18 @@ pretraining is authorized.
   incidence geometry, state/action cardinality, and machine topology remain
   fixed, and the compiler is a sidecar rather than a demonstrated Shohin-trunk
   capability.
-- **Variable-topology boundary:** the frozen successor board now varies
-  state cardinality 4/8/16, action count 2--5, and six renderers. Its
-  independent 132-row receipt is exact after source deletion with zero family
-  leaks and 21/21 renderer-orbit packet equality. In 24 collision rows
-  (4x2 and 8x4), every state and action key has identical occurrence
-  frequency, eliminating the retained structural typer's shortcut. No
-  learned candidate has passed this gate. Receipt SHA-256 is
-  `6711d17d4b21e0f034852e403d75ad20ffe59eb99ce05c96dc8784820adb9197`;
-  the current conclusion remains bounded systematic compilation, not native
-  general reasoning.
+- **Variable-topology result:** one 60,613-parameter shared byte compiler
+  learns source direction, an episode-global state/action key partition, and
+  late-query roles. It scores **360/360** across five seeds and all three
+  leave-one-family-out folds, including every collision and joint cell.
+  Under the same weights, direction swap scores **152/360**, global key-score
+  negation **0/360**, and query-role swap **0/360**. All 15 paired directions
+  pass; candidate-time oracle/search/verifier calls are **0/0/0**. Complete
+  system parameters are 125,142,277. Independent audit SHA-256 is
+  `049bbbd398e6f1456d6f1809bebb701351053302e0ce44147e70735d5b155fa2`.
+  This establishes causal variable-topology anonymous-machine compilation.
+  It remains a complete-table sidecar with a fixed executor and one ontology,
+  so it is not Shohin-native general reasoning.
 - **Campaign disposition:** the frozen-Shohin connected multi-family smoke
   tied the standalone compiler at 12/24 development cases and failed every
   held-out-renderer/joint probe (0/6 each). The current retained learned proxy
