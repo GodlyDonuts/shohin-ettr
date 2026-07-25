@@ -44,8 +44,10 @@ def sha256_json(value: object) -> str:
     return sha256(canonical_json(value).encode("ascii")).hexdigest()
 
 
-def _opaque(prefix: str, rng: random.Random) -> str:
-    return f"{prefix}_{rng.getrandbits(80):020x}"
+def _opaque(_prefix: str, rng: random.Random) -> str:
+    """Return one role-neutral key codec for every state and action."""
+
+    return f"h{rng.getrandbits(80):020x}"
 
 
 def _rotate_left(value: int, shift: int, width: int) -> int:

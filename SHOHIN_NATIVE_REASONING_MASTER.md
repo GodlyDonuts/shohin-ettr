@@ -51962,7 +51962,7 @@ identical sealed packets. Law swaps change 87.5% of answers and action-order
 reversal changes 69.1969% of eligible answers, proving that both the
 episode-local law and ordered composition are causally necessary. Receipt
 payload SHA-256 is
-`f30e2093048cc426a4571bd357fe6e8562ea78f14a4ff578af21bc0dfc86d172`.
+`c3b3936fedd1e9b606818822838c5a3a8609ddc62e9abdf84cc7a75a7f6c1163`.
 
 This is a mechanics and leakage pass, not a learned reasoning result. The
 exact CPU compiler is forbidden at candidate inference. Neural authorization
@@ -51970,3 +51970,15 @@ requires a raw-token compiler, process-level source deletion, one shared
 full-trajectory recurrent executor, five matched seeds, equal-compute
 controls, and at least 85% per family/cell. The complete preregistration is
 `R12_SOURCE_DELETED_MULTIFAMILY_MACHINE_PREREG.md`.
+
+The first neural mechanics smoke is now complete. A 152,933-parameter shared
+bidirectional byte compiler receives role-neutral key equality and masked raw
+records, predicts source/query roles, seals an anonymous machine, and executes
+without source, oracle, search, or verifier access. It reaches 36/36 fitting
+exactness and transfers perfectly to six unseen-law plus six
+longer-composition rows. It scores 0/6 on the held-out reverse renderer and
+0/6 on the joint cell because source-role predictions form invalid machine
+partitions. This is a useful clean negative: optimization and hard execution
+work, while byte-only renderer semantics do not transfer. Wider standalone
+models are not justified. The next matched treatment is the same compiler
+conditioned on frozen, hash-verified Shohin residual features.

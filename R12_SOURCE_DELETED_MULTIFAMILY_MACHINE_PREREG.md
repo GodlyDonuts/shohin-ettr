@@ -21,8 +21,9 @@ families behind one anonymous finite-machine interface:
 2. bitwise rotate/xor maps; and
 3. unconstrained permutations.
 
-Every episode uses three fresh opaque action names and fresh opaque state
-names. The source contains a shuffled complete transition presentation. The
+Every episode uses one role-neutral `h<20 hex>` codec for fresh action and
+state names. No lexical prefix distinguishes their semantic class. The source
+contains a shuffled complete transition presentation. The
 late query supplies a start state and an ordered action composition only after
 the source has been compiled and deleted.
 
@@ -141,20 +142,54 @@ Frozen receipt:
 - exact source-deleted execution: 1,344/1,344
 - source deletion passes: 1,344/1,344
 - family-name leaks: 0
+- role-neutral opaque-key codec: 1,344/1,344
 - renderer orbits exact and packet-identical: 192/192
 - law-swap answer changes: 1,176/1,344 = 87.5%
 - action-order answer changes: 629/909 = 69.1969%
 - candidate manifest SHA-256:
-  `e41f8233ce2247d8350a6ae3bb7c0bddd3269dfd835871547eeaf12364335283`
+  `8033200439b4ea30a626c0e6b3af56037b340feda2d281c74f04023d35c56ca3`
 - supervisor manifest SHA-256:
-  `ad0d7e8345b3fe00a8f7ac3a678116612cecc51c6b7bb783e559266fe1945c92`
+  `9343cd91d3484dfbe220b92072f88cc002b7fdea20237fe47bc4f3de22f62930`
 - payload SHA-256:
-  `f30e2093048cc426a4571bd357fe6e8562ea78f14a4ff578af21bc0dfc86d172`
+  `c3b3936fedd1e9b606818822838c5a3a8609ddc62e9abdf84cc7a75a7f6c1163`
 - receipt file SHA-256:
-  `2026784b11592d9d4aca34b9141e48863beb06bd821808df13ac17ce5a3159ce`
+  `36c64c735c0da6c987eab0872449d3f352e6dfe0f06da025f3f500b9cc5ea0e1`
 
 The focused mechanics/audit suite is 18 passed with clean Ruff and byte
 compilation.
+
+## Standalone Learned Smoke
+
+`train/multifamily_raw_machine_compiler.py` implements a candidate that sees
+only role-neutral key equality, record boundaries, masked raw bytes, and late
+query bytes. A shared bidirectional recurrent encoder predicts all source and
+query semantic roles. Constrained hard sealing emits a canonical source-free
+machine wire. The candidate imports no exact board parser.
+
+A 300-update CPU smoke uses 152,933 learned parameters:
+
+| Cell | Exact |
+|---|---:|
+| fitting renderers 0--2 | 36/36 |
+| unseen laws | 6/6 |
+| longer compositions | 6/6 |
+| unseen reverse renderer | 0/6 |
+| joint law + composition + renderer | 0/6 |
+
+Fitting source/query role accuracy is 100% and loss falls from 1.763858 to
+0.00000696. The unseen renderer produces invalid key partitions: development
+source-role accuracy is 50% overall because the two renderer-0 cells are
+exact and the two renderer-3 cells fail. Candidate-time oracle, search, and
+verifier calls are zero.
+
+Decision:
+`standalone_byte_compiler_optimizes_but_does_not_transfer_renderer_semantics`.
+Do not scale its width. The justified next treatment supplies frozen,
+hash-verified Shohin residual features to the same compiler while preserving
+all hard custody and matched controls.
+
+Smoke report SHA-256:
+`e4ff0d09abb9533e7d8c16b213f9b6a073e672572a4799c94803f7eb0c539ff3`.
 
 ## Authorization Boundary
 

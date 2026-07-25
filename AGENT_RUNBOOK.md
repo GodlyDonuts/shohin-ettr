@@ -48,13 +48,28 @@
 > compiles 192/192 renderer orbits to identical packets, changes 1,176/1,344
 > answers under law swaps, and changes 629/909 eligible answers under action
 > reversal. Payload SHA-256 is
-> `f30e2093048cc426a4571bd357fe6e8562ea78f14a4ff578af21bc0dfc86d172`;
+> `c3b3936fedd1e9b606818822838c5a3a8609ddc62e9abdf84cc7a75a7f6c1163`;
 > receipt file SHA-256 is
-> `2026784b11592d9d4aca34b9141e48863beb06bd821808df13ac17ce5a3159ce`.
-> This authorizes no neural fit yet: raw-token packaging, process deletion,
-> parameter/FLOP matching, five-seed schedule, and an independent assessor
+> `36c64c735c0da6c987eab0872449d3f352e6dfe0f06da025f3f500b9cc5ea0e1`.
+> All 1,344 rows also pass the role-neutral opaque-key codec after an audit
+> invalidated the first `s_`/`a_` prefix design.
+> This authorizes no claim-bearing H100 qualification: process deletion,
+> parameter/FLOP matching, five-seed scheduling, and an independent assessor
 > must be frozen first. Full contract:
 > `R12_SOURCE_DELETED_MULTIFAMILY_MACHINE_PREREG.md`.
+>
+> **Multi-family raw compiler smoke (2026-07-25 EDT):** the standalone shared
+> recurrent byte compiler adds 152,933 parameters for a conceptual
+> 125,234,597-parameter complete system. It imports no exact parser and makes
+> zero candidate-time oracle/search/verifier calls. After 300 CPU updates it
+> reaches 36/36 exact on fitting renderers, 6/6 unseen-law, and 6/6
+> longer-composition rows, but 0/6 on the held-out reverse renderer and 0/6
+> on the joint cell. Decision:
+> `standalone_byte_compiler_optimizes_but_does_not_transfer_renderer_semantics`.
+> Do not spend H100s scaling this byte-only model. The next treatment must add
+> frozen, hash-verified Shohin residual features to the same candidate and
+> preserve the standalone arm as the matched control. Smoke report SHA-256 is
+> `e4ff0d09abb9533e7d8c16b213f9b6a073e672572a4799c94803f7eb0c539ff3`.
 >
 > **Latest SSQAC controller decision (2026-07-24 21:23 EDT):** the
 > protected checkpoint and pretraining hold remain unchanged. Bounded host

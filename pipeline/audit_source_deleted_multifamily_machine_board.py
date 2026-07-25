@@ -8,6 +8,7 @@ from dataclasses import asdict
 from hashlib import sha256
 import json
 from pathlib import Path
+import re
 from typing import Any
 
 from source_deleted_multifamily_machine_board import (
@@ -28,6 +29,7 @@ from source_deleted_multifamily_machine_board import (
 
 
 AUDIT_VERSION = "SOURCE-DELETED-MULTIFAMILY-AUDIT-V1"
+_ROLE_NEUTRAL_KEY = re.compile(r"h[0-9a-f]{20}\Z")
 
 
 class MultiFamilyAuditError(ValueError):
@@ -87,6 +89,7 @@ def audit_board(
     exact = 0
     source_delete_passes = 0
     family_name_leaks = 0
+    role_neutral_key_passes = 0
     machines: list[SealedTransitionMachine] = []
     for row in rows:
         candidate_bytes = (
@@ -97,6 +100,12 @@ def audit_board(
         )
         machine = compile_source(row.candidate.source)
         machines.append(machine)
+        role_neutral_key_passes += int(
+            all(
+                _ROLE_NEUTRAL_KEY.fullmatch(key) is not None
+                for key in (*machine.state_keys, *machine.action_keys)
+            )
+        )
         answer = execute_late_query(machine, row.candidate.query)
         exact += int(answer == row.supervisor.answer)
         source_delete_passes += int(
@@ -107,6 +116,8 @@ def audit_board(
         raise MultiFamilyAuditError("exact source-deleted mechanics failed")
     if family_name_leaks:
         raise MultiFamilyAuditError("candidate bytes expose a family label")
+    if role_neutral_key_passes != len(rows):
+        raise MultiFamilyAuditError("opaque key codec exposes semantic roles")
 
     by_geometry: dict[tuple[str, str, str, int], list[int]] = defaultdict(list)
     for index, (row, machine) in enumerate(zip(rows, machines, strict=True)):
@@ -236,6 +247,7 @@ def audit_board(
             "total": orbit_count,
         },
         "row_count": len(rows),
+        "role_neutral_key_passes": role_neutral_key_passes,
         "source_delete_passes": source_delete_passes,
         "split_counts": dict(sorted(split_counts.items())),
         "supervisor_manifest_sha256": sha256_json(supervisor_manifest),

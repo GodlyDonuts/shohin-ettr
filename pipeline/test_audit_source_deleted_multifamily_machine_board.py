@@ -12,6 +12,7 @@ def test_independent_multifamily_audit_passes() -> None:
     )
     assert report["exact_source_deleted"]["correct"] == report["row_count"]
     assert report["family_label_leaks"] == 0
+    assert report["role_neutral_key_passes"] == report["row_count"]
     assert report["law_swap_intervention"]["rate"] >= 0.50
     assert report["order_intervention"]["rate"] >= 0.25
     assert report["renderer_orbits"]["exact"] == 9
