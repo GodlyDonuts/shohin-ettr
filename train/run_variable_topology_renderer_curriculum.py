@@ -118,13 +118,16 @@ def _counterfactual_examples(row: GeneratedEpisode) -> list[LabeledEpisode]:
         ),
     )
     query_templates = (
-        "transform-sequence::{word} departure::{start}",
-        "method-list={word}; prior={start}",
-        "{word} <=sequence-from= {start}",
-        "operations {word} source {start}",
+        ("initial state {start}; after {word}", False),
+        ("result after {word}; seed {start}", True),
+        ("actions {word}; initial state {start}", True),
+        ("from {start}; after {word}", False),
     )
     examples: list[LabeledEpisode] = []
-    for style, ((record_template, source_roles), query_template) in enumerate(
+    for style, (
+        (record_template, source_roles),
+        (query_template, query_actions_first),
+    ) in enumerate(
         zip(record_templates, query_templates, strict=True)
     ):
         records = [
@@ -165,7 +168,7 @@ def _counterfactual_examples(row: GeneratedEpisode) -> list[LabeledEpisode]:
             LabeledEpisode(
                 row=augmented,
                 source_roles=source_roles,
-                query_actions_first=True,
+                query_actions_first=query_actions_first,
                 counterfactual=True,
             )
         )
