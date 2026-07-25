@@ -125,6 +125,36 @@
 > with memory-zero and memory-shuffle controls; do not resume pretraining
 > merely because this is the remaining hypothesis.
 >
+> **Latest full-trajectory episodic-memory decision (2026-07-24 EDT):**
+> jobs `701222`, `701223`, `701224`, and replacement `701226` completed on
+> four isolated H100s with exactly matched trajectory schedules per arm.
+> Every controller adds 10,132,198 parameters for a 135,213,862-parameter
+> complete system. Each arm received 1,500 updates, 3,000 complete trajectory
+> presentations, approximately 22.25k state presentations, and approximately
+> 248k legal-action candidates per seed.
+>
+> | Arm | Strict certificates | Rate | Cycle events |
+> |---|---:|---:|---:|
+> | Episodic memory | 442/1024 | 43.1641% | 34,375 |
+> | Same weights, memory zeroed | 403/1024 | 39.3555% | 72,282 |
+> | Same weights, memory features shuffled | 442/1024 | 43.1641% | 34,743 |
+> | Full-trajectory recurrent classifier | **514/1024** | **50.1953%** | **21,694** |
+> | Randomized labels | 0/1024 | 0% | 2,974 |
+>
+> Memory occupancy reduces cycles relative to zeroing, but semantic feature
+> shuffling leaves aggregate accuracy exactly unchanged and the treatment
+> loses the classifier by 72 cases. Decision:
+> `learned_episodic_semantics_no_go_full_trajectory_recurrence_retained`.
+> Action-renderer shuffling is exactly invariant. Report SHA-256 values are
+> `6513cd5de1bd985f07af5d55b6ad4335585d8973356363bbf3b3d8f56517e1e3`,
+> `e2a36c68967bae22b379c54a579b8525f00b31a20ef336787d26bb2a21c7d193`,
+> `06ce4a5d93675bb7dd0dc9106831a6673a1c7b9e1cc3392d93c723223ec64250`,
+> and
+> `ab188ca18920ae72890c1e4daf166f182fb0be44ee7e01aa7a0f60316b87b137`.
+> A final preregistered fixed semantic-cycle barrier is pending on fresh
+> 512-case board seed `20260801` as jobs `701373`--`701376`; it must beat its
+> feature-shuffled barrier control to establish semantic-memory causality.
+>
 > **Latest QFCR and native-law decision (2026-07-24 EDT):** exact NIST
 > chain-2 pulse 1,874,057 at 21:37:00Z was consumed under public source and
 > authorization freeze. Signatures, output hashes, previous link,

@@ -51794,3 +51794,46 @@ model-owned episodic anti-cycle memory. It must beat matched memory-zero,
 memory-shuffle, classifier-only, and random-label controls on unseen larger
 geometries. Until that gate passes, continuation pretraining remains on user
 hold and no architecture should be described as genuine reasoning.
+
+## 2026-07-24 Full-Trajectory Episodic Memory
+
+The remaining episodic-memory hypothesis was implemented as a bounded
+10,132,198-parameter controller. It stores learned encodings of visited raw
+matrix states, compares every legal successor to those encodings, and trains
+the recurrent and episodic states over complete expert trajectories rather
+than resetting recurrence for every labeled state. The complete system count
+is 135,213,862 parameters.
+
+Four matched H100 seeds used identical initial weights and exact per-seed
+trajectory schedules across treatment, classifier, and randomized-label arms.
+Each arm received 1,500 optimizer updates, 3,000 full trajectories,
+approximately 22,250 state presentations, and approximately 248,000 legal
+candidate presentations per seed.
+
+| Arm | Strict certificates | Rate | Cycle events |
+|---|---:|---:|---:|
+| Episodic memory | 442/1024 | 43.1641% | 34,375 |
+| Treatment weights with memory zeroed | 403/1024 | 39.3555% | 72,282 |
+| Treatment weights with memory features shuffled | 442/1024 | 43.1641% | 34,743 |
+| Full-trajectory recurrent classifier | **514/1024** | **50.1953%** | **21,694** |
+| Randomized labels | 0/1024 | 0% | 2,974 |
+
+The memory pathway changes behavior and roughly halves cycle events relative
+to zeroing it. However, rotating every memory feature dimension leaves
+aggregate correctness exactly unchanged, and the treatment loses the matched
+full-trajectory classifier by 72 cases. The mechanism is therefore using
+generic history or occupancy rather than semantic state identity. Learned
+episodic semantics are rejected.
+
+The retained positive result is narrower: full-trajectory recurrent training
+reaches 50.20% on unseen larger matrix geometries, showing that temporal
+exposure matters. It remains task-specific controller competence and does not
+establish reasoning across rules, renderers, or task families.
+
+A final frozen-weight semantic barrier uses normalized neural state identity
+directly rather than a free learned memory residual. It applies a fixed
+near-exact-repeat penalty (`temperature=0.02`, `penalty=8.0`) and has a
+feature-shuffled barrier control. Four frozen treatment models are being
+rescored on a fresh 512-case board, seed `20260801`, excluding both training
+and prior evaluation boards. This is a causal mechanism test, not a tuned
+benchmark retry.
