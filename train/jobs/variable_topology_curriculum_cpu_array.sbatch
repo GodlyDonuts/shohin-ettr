@@ -31,9 +31,9 @@ export MKL_NUM_THREADS=4
 echo "[variable-type-curriculum] task=$SLURM_ARRAY_TASK_ID seed=$MODEL_SEED held_out=$HELD_OUT_FAMILY node=${SLURMD_NODENAME:-?}"
 "$PYTHON" train/run_variable_topology_renderer_curriculum.py \
   --seed "$MODEL_SEED" \
-  --steps 300 \
-  --width 96 \
-  --layers 2 \
+  --steps 100 \
+  --width 64 \
+  --layers 1 \
   --learning-rate 0.003 \
   --device cpu \
   --held-out-family "$HELD_OUT_FAMILY" \

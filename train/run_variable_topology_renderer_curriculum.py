@@ -55,6 +55,16 @@ from multifamily_raw_machine_compiler import (  # noqa: E402
 )
 
 
+def _json_sha256(value: object, domain: bytes) -> str:
+    payload = json.dumps(
+        value,
+        ensure_ascii=True,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("ascii")
+    return sha256(domain + b"\0" + payload).hexdigest()
+
+
 @dataclass(frozen=True, slots=True)
 class LabeledEpisode:
     row: GeneratedEpisode
@@ -90,10 +100,22 @@ def _counterfactual_examples(row: GeneratedEpisode) -> list[LabeledEpisode]:
     start, actions = decode_query(machine, row.candidate.query)
     word = ",".join(machine.action_keys[action] for action in actions)
     record_templates = (
-        "arrival::{target} departure::{source} transform::{action}",
-        "outcome={target}; prior={source}; method={action}",
-        "{target} <=outcome-of= {source} <=via= {action}",
-        "destination {target} source {source} operation {action}",
+        (
+            "from {source}; reaches {target}; using {action}",
+            (ROLE_SOURCE, ROLE_TARGET, ROLE_ACTION),
+        ),
+        (
+            "using {action}; reaches {target}; from {source}",
+            (ROLE_ACTION, ROLE_TARGET, ROLE_SOURCE),
+        ),
+        (
+            "from {source}; using {action}; reaches {target}",
+            (ROLE_SOURCE, ROLE_ACTION, ROLE_TARGET),
+        ),
+        (
+            "{target} reached; using {action}; from {source}",
+            (ROLE_TARGET, ROLE_ACTION, ROLE_SOURCE),
+        ),
     )
     query_templates = (
         "transform-sequence::{word} departure::{start}",
@@ -102,7 +124,7 @@ def _counterfactual_examples(row: GeneratedEpisode) -> list[LabeledEpisode]:
         "operations {word} source {start}",
     )
     examples: list[LabeledEpisode] = []
-    for style, (record_template, query_template) in enumerate(
+    for style, ((record_template, source_roles), query_template) in enumerate(
         zip(record_templates, query_templates, strict=True)
     ):
         records = [
@@ -120,7 +142,7 @@ def _counterfactual_examples(row: GeneratedEpisode) -> list[LabeledEpisode]:
             int.from_bytes(
                 sha256(
                     (
-                        "VARIABLE-TOPOLOGY-COUNTERFACTUAL-V2|"
+                        "VARIABLE-TOPOLOGY-COUNTERFACTUAL-V3|"
                         f"{row.supervisor.episode_seed}|"
                         f"{row.supervisor.law_sha256}|{style}"
                     ).encode("ascii")
@@ -142,7 +164,7 @@ def _counterfactual_examples(row: GeneratedEpisode) -> list[LabeledEpisode]:
         examples.append(
             LabeledEpisode(
                 row=augmented,
-                source_roles=(ROLE_TARGET, ROLE_SOURCE, ROLE_ACTION),
+                source_roles=source_roles,
                 query_actions_first=True,
                 counterfactual=True,
             )
@@ -282,17 +304,35 @@ def _evaluate(
     examples: list[LabeledEpisode],
     *,
     device: torch.device,
+    source_ablation: str = "none",
+    query_ablation: str = "none",
 ) -> dict[str, object]:
+    if source_ablation not in {"none", "direction_swap", "type_swap"}:
+        raise ValueError("source ablation leaves frozen contract")
+    if query_ablation not in {"none", "role_swap"}:
+        raise ValueError("query ablation leaves frozen contract")
     source, query, source_labels, query_labels = _collate(
         examples,
         device=device,
     )
     source_output = model.compile_source(source)
     query_output = model.parse_query(query)
+    source_logits = source_output.source_role_logits.clone()
+    query_logits = query_output.query_role_logits.clone()
+    if source_ablation == "direction_swap":
+        original = source_logits.clone()
+        source_logits[..., ROLE_SOURCE] = original[..., ROLE_TARGET]
+        source_logits[..., ROLE_TARGET] = original[..., ROLE_SOURCE]
+    elif source_ablation == "type_swap":
+        original = source_logits.clone()
+        source_logits[..., ROLE_SOURCE] = original[..., ROLE_ACTION]
+        source_logits[..., ROLE_ACTION] = original[..., ROLE_SOURCE]
+    if query_ablation == "role_swap":
+        query_logits = query_logits.flip(-1)
     source_valid = source_labels.ne(-100)
     query_valid = query_labels.ne(-100)
-    source_predictions = source_output.source_role_logits.argmax(-1)
-    query_predictions = query_output.query_role_logits.argmax(-1)
+    source_predictions = source_logits.argmax(-1)
+    query_predictions = query_logits.argmax(-1)
     source_correct = int(
         source_predictions[source_valid].eq(source_labels[source_valid]).sum()
     )
@@ -313,17 +353,19 @@ def _evaluate(
         try:
             machine = seal_machine(
                 source,
-                CompilerOutput(source_output.source_role_logits),
+                CompilerOutput(source_logits),
                 row=index,
-                structural_key_classes=True,
-                incidence_ambiguous_fallback=True,
+                learned_global_key_classes=True,
+            )
+            machine = type(machine).from_deployed_wire(
+                machine.deployed_wire()
             )
             answer = execute_query(
                 machine,
                 query,
-                QueryOutput(query_output.query_role_logits),
+                QueryOutput(query_logits),
                 row=index,
-                structural_key_classes=True,
+                structural_key_classes=False,
             ).decode("ascii")
         except ValueError:
             invalid += 1
@@ -342,6 +384,9 @@ def _evaluate(
         "exact": exact,
         "invalid": invalid,
         "query_role_accuracy": query_correct / int(query_valid.sum()),
+        "query_ablation": query_ablation,
+        "sealed_wire_roundtrip": True,
+        "source_ablation": source_ablation,
         "source_role_accuracy": source_correct / int(source_valid.sum()),
         "total": len(examples),
     }
@@ -364,7 +409,7 @@ def run_experiment(
     random.seed(seed)
     torch.manual_seed(seed)
     board = build_frozen_board(
-        seed=20260725,
+        seed=seed,
         train_per_renderer=train_per_renderer,
         development_per_cell=development_per_cell,
     )
@@ -410,16 +455,49 @@ def run_experiment(
         for arm in tensors
     }
     return {
+        "board_manifest_sha256": _json_sha256(
+            [
+                {
+                    "candidate": asdict(row.candidate),
+                    "supervisor": asdict(row.supervisor),
+                }
+                for row in board
+            ],
+            b"VARIABLE-TOPOLOGY-QUALIFICATION-BOARD-V1",
+        ),
         "candidate_time_oracle_calls": 0,
         "candidate_time_search_calls": 0,
         "candidate_time_verifier_calls": 0,
+        "candidate_uses_learned_global_partition_on_all_rows": True,
+        "candidate_uses_query_role_logits": True,
+        "candidate_source_bytes_absent_from_deployed_wire": True,
         "development": {
-            arm: _evaluate(
-                model,
+            **{
+                arm: _evaluate(
+                    model,
+                    development_examples,
+                    device=device,
+                )
+                for arm, model in models.items()
+            },
+            "same_weights_direction_swapped": _evaluate(
+                models["treatment"],
                 development_examples,
                 device=device,
-            )
-            for arm, model in models.items()
+                source_ablation="direction_swap",
+            ),
+            "same_weights_query_roles_swapped": _evaluate(
+                models["treatment"],
+                development_examples,
+                device=device,
+                query_ablation="role_swap",
+            ),
+            "same_weights_type_swapped": _evaluate(
+                models["treatment"],
+                development_examples,
+                device=device,
+                source_ablation="type_swap",
+            ),
         },
         "device": str(device),
         "equal_budget": {
@@ -432,6 +510,8 @@ def run_experiment(
         "held_out_family": held_out_family,
         "parameter_receipt": asdict(template.parameter_receipt()),
         "preparation_exact_parser_calls": len(base_examples),
+        "preparation_query_parser_calls": len(base_examples),
+        "preparation_source_parser_calls": len(base_examples),
         "seed": seed,
         "status": "variable_topology_semantic_type_curriculum",
         "train": {

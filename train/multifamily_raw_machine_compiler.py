@@ -848,6 +848,7 @@ def seal_machine(
     structural_key_classes: bool = False,
     structural_key_shuffle: bool = False,
     incidence_ambiguous_fallback: bool = False,
+    learned_global_key_classes: bool = False,
 ) -> SealedAnonymousMachine:
     if (
         not 0 <= row < batch.unit_ids.shape[0]
@@ -871,7 +872,22 @@ def seal_machine(
     state_unique: set[int] = set()
     structural_actions: set[int] | None = None
     structural_states: set[int] | None = None
-    if structural_key_classes:
+    if structural_key_classes and learned_global_key_classes:
+        raise MultiFamilyCompilerError(
+            "key-class projections are mutually exclusive"
+        )
+    if learned_global_key_classes:
+        if structural_key_shuffle or incidence_ambiguous_fallback:
+            raise MultiFamilyCompilerError(
+                "learned key projection received structural controls"
+            )
+        structural_actions, structural_states = _learned_global_key_classes(
+            batch,
+            output,
+            row=row,
+            action_count=action_count,
+        )
+    elif structural_key_classes:
         if cardinality == 2 * action_count and incidence_ambiguous_fallback:
             if structural_key_shuffle:
                 raise MultiFamilyCompilerError(
