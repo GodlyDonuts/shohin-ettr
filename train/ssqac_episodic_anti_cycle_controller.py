@@ -58,7 +58,17 @@ MODE_ZERO = "memory_zeroed"
 MODE_SHUFFLED = "memory_feature_shuffled"
 MODE_CLASSIFIER = "full_trajectory_classifier"
 MODE_RANDOM = "randomized_labels"
-MODES = (MODE_REAL, MODE_ZERO, MODE_SHUFFLED, MODE_CLASSIFIER, MODE_RANDOM)
+MODE_BARRIER = "semantic_cycle_barrier"
+MODE_BARRIER_SHUFFLED = "semantic_cycle_barrier_feature_shuffled"
+MODES = (
+    MODE_REAL,
+    MODE_ZERO,
+    MODE_SHUFFLED,
+    MODE_CLASSIFIER,
+    MODE_RANDOM,
+    MODE_BARRIER,
+    MODE_BARRIER_SHUFFLED,
+)
 
 
 class EpisodicMemoryError(ValueError):
@@ -330,6 +340,8 @@ class EpisodicConfig:
     state_hidden: int = 384
     state_layers: int = 3
     memory_slots: int = 32
+    barrier_temperature: float = 0.02
+    barrier_penalty: float = 8.0
 
     def __post_init__(self) -> None:
         for label, value in (
@@ -339,6 +351,10 @@ class EpisodicConfig:
             ("memory_slots", self.memory_slots),
         ):
             _positive_int(value, label=label)
+        if self.barrier_temperature <= 0.0:
+            raise EpisodicMemoryError("barrier_temperature must be positive")
+        if self.barrier_penalty <= 0.0:
+            raise EpisodicMemoryError("barrier_penalty must be positive")
 
 
 @dataclass(frozen=True, slots=True)
@@ -356,6 +372,7 @@ class EpisodicScores:
     current_key: Tensor
     action_hidden: Tensor
     maximum_similarity: Tensor
+    cycle_evidence: Tensor
 
 
 class EpisodicAntiCycleController(nn.Module):
@@ -526,10 +543,15 @@ class EpisodicAntiCycleController(nn.Module):
         )
         current_key = self.encode_states(current_tensor)
         successor_keys = self.encode_states(successor_tensor)
-        use_memory = mode in (MODE_REAL, MODE_SHUFFLED) and bool(memory.keys)
+        use_memory = mode in (
+            MODE_REAL,
+            MODE_SHUFFLED,
+            MODE_BARRIER,
+            MODE_BARRIER_SHUFFLED,
+        ) and bool(memory.keys)
         if use_memory:
             keys = torch.stack(memory.keys[-self.config.memory_slots :])
-            if mode == MODE_SHUFFLED:
+            if mode in (MODE_SHUFFLED, MODE_BARRIER_SHUFFLED):
                 keys = torch.roll(keys, shifts=1, dims=-1)
             similarity = successor_keys.float() @ keys.float().T
             maximum_similarity, indices = similarity.max(dim=1)
@@ -578,7 +600,20 @@ class EpisodicAntiCycleController(nn.Module):
                 dim=-1,
             )
         ).squeeze(-1)
-        logits = base.preference_logits + delta
+        cycle_evidence = torch.exp(
+            -(
+                (1.0 - maximum_similarity)
+                .clamp_min(0.0)
+                / self.config.barrier_temperature
+            )
+        ) * gate.squeeze(-1).float()
+        if mode in (MODE_BARRIER, MODE_BARRIER_SHUFFLED):
+            logits = (
+                base.preference_logits.float()
+                - self.config.barrier_penalty * cycle_evidence
+            ).to(base.preference_logits.dtype)
+        else:
+            logits = base.preference_logits + delta
         return EpisodicScores(
             actions=rendered,
             successors=successors,
@@ -587,6 +622,7 @@ class EpisodicAntiCycleController(nn.Module):
             current_key=current_key,
             action_hidden=base.action_hidden,
             maximum_similarity=maximum_similarity,
+            cycle_evidence=cycle_evidence,
         )
 
     def advance(
@@ -1065,6 +1101,85 @@ def run_experiment(args: argparse.Namespace) -> Mapping[str, object]:
     return result
 
 
+def rescore_semantic_barrier(args: argparse.Namespace) -> Mapping[str, object]:
+    """Evaluate a frozen treatment model on a fresh unseen board."""
+
+    artifact = _load_preparation(Path(args.preparation))
+    excluded = {
+        trajectory.states[0] for trajectory in artifact.trajectories
+    } | set(artifact.evaluation_matrices)
+    evaluation = generate_matrices(
+        seed=args.evaluation_seed,
+        count=args.evaluation_matrices,
+        minimum_rows=args.evaluation_minimum_rows,
+        maximum_rows=args.evaluation_maximum_rows,
+        minimum_columns=args.evaluation_minimum_columns,
+        maximum_columns=args.evaluation_maximum_columns,
+        excluded=excluded,
+    )
+    config = EpisodicConfig(
+        base=proof.ControllerConfig(
+            field_width=args.field_width,
+            width=args.width,
+            cell_hidden=args.cell_hidden,
+            matrix_layers=args.matrix_layers,
+            contract_hidden=args.contract_hidden,
+            coordinate_harmonics=args.coordinate_harmonics,
+        ),
+        state_width=args.state_width,
+        state_hidden=args.state_hidden,
+        state_layers=args.state_layers,
+        memory_slots=args.memory_slots,
+        barrier_temperature=args.barrier_temperature,
+        barrier_penalty=args.barrier_penalty,
+    )
+    model = EpisodicAntiCycleController(config).to(torch.device(args.device))
+    state = torch.load(
+        args.model,
+        map_location=args.device,
+        weights_only=True,
+    )
+    model.load_state_dict(state, strict=True)
+    evaluations = {
+        mode: evaluate(
+            model,
+            evaluation,
+            mode=mode,
+            maximum_steps=args.maximum_rollout_steps,
+        )
+        for mode in (
+            MODE_BARRIER,
+            MODE_BARRIER_SHUFFLED,
+            MODE_REAL,
+            MODE_ZERO,
+        )
+    }
+    result = {
+        "schema": "ssqac_episodic_semantic_barrier_rescore_v1",
+        "status": "fresh_board_semantic_barrier_falsifier_not_reasoning",
+        "source_sha256": sha256(Path(__file__).read_bytes()).hexdigest(),
+        "model_file_sha256": sha256(Path(args.model).read_bytes()).hexdigest(),
+        "evaluation_seed": args.evaluation_seed,
+        "evaluation_matrices": len(evaluation),
+        "evaluation_matrix_manifest_sha256": matrix_manifest(evaluation),
+        "training_board_excluded": True,
+        "prior_evaluation_board_excluded": True,
+        "config": asdict(config),
+        "candidate_oracle_calls": 0,
+        "candidate_search_calls": 0,
+        "candidate_verifier_calls": 0,
+        "evaluations": {
+            mode: {**asdict(receipt), "rate": receipt.rate}
+            for mode, receipt in evaluations.items()
+        },
+        "reasoning_claim_authorized": False,
+    }
+    output = Path(args.output)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_bytes(_canonical_bytes(result) + b"\n")
+    return result
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -1107,6 +1222,30 @@ def _parser() -> argparse.ArgumentParser:
     )
     run.add_argument("--output", required=True)
     run.add_argument("--model-dir", required=True)
+    rescore = subparsers.add_parser("rescore")
+    rescore.add_argument("--preparation", required=True)
+    rescore.add_argument("--model", required=True)
+    rescore.add_argument("--evaluation-seed", type=int, required=True)
+    rescore.add_argument("--evaluation-matrices", type=int, default=512)
+    rescore.add_argument("--evaluation-minimum-rows", type=int, default=5)
+    rescore.add_argument("--evaluation-maximum-rows", type=int, default=5)
+    rescore.add_argument("--evaluation-minimum-columns", type=int, default=7)
+    rescore.add_argument("--evaluation-maximum-columns", type=int, default=8)
+    rescore.add_argument("--maximum-rollout-steps", type=int, default=192)
+    rescore.add_argument("--field-width", type=int, default=64)
+    rescore.add_argument("--width", type=int, default=384)
+    rescore.add_argument("--cell-hidden", type=int, default=512)
+    rescore.add_argument("--matrix-layers", type=int, default=4)
+    rescore.add_argument("--contract-hidden", type=int, default=512)
+    rescore.add_argument("--coordinate-harmonics", type=int, default=4)
+    rescore.add_argument("--state-width", type=int, default=256)
+    rescore.add_argument("--state-hidden", type=int, default=384)
+    rescore.add_argument("--state-layers", type=int, default=3)
+    rescore.add_argument("--memory-slots", type=int, default=32)
+    rescore.add_argument("--barrier-temperature", type=float, default=0.02)
+    rescore.add_argument("--barrier-penalty", type=float, default=8.0)
+    rescore.add_argument("--device", default="cuda")
+    rescore.add_argument("--output", required=True)
     return parser
 
 
@@ -1138,6 +1277,18 @@ def main() -> None:
                         len(trajectory.states)
                         for trajectory in artifact.trajectories
                     ),
+                },
+                sort_keys=True,
+            )
+        )
+        return
+    if args.command == "rescore":
+        result = rescore_semantic_barrier(args)
+        print(
+            json.dumps(
+                {
+                    "output": args.output,
+                    "evaluations": result["evaluations"],
                 },
                 sort_keys=True,
             )

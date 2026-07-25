@@ -5,7 +5,7 @@
 #SBATCH -c 4
 #SBATCH --mem=64G
 #SBATCH -t 12:00:00
-#SBATCH --exclude=evc26,evc31,evc33,evc44
+#SBATCH --exclude=evc26,evc31,evc33,evc43,evc44
 #SBATCH -o /lustre/fs1/home/sa305415/shohin/logs/ssqac_episodic_%j.out
 #SBATCH --open-mode=append
 set -euo pipefail
