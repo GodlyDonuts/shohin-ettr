@@ -26,9 +26,9 @@ import torch.nn as nn
 BYTE_PAD_ID = 256
 KEY_MASK_ID = 257
 BYTE_VOCAB_SIZE = 258
-MAX_RECORDS = 48
+MAX_RECORDS = 80
 MAX_RECORD_UNITS = 192
-MAX_SOURCE_KEYS = 19
+MAX_SOURCE_KEYS = 21
 SOURCE_OCCURRENCES_PER_RECORD = 3
 MAX_QUERY_OCCURRENCES = 9
 MAX_QUERY_UNITS = 256
@@ -232,13 +232,14 @@ class SealedAnonymousMachine:
 
     def __post_init__(self) -> None:
         cardinality = len(self.state_keys)
+        action_count = len(self.action_keys)
         if (
-            cardinality not in {8, 16}
+            cardinality not in {4, 8, 16}
             or len(set(self.state_keys)) != cardinality
-            or len(self.action_keys) != 3
-            or len(set(self.action_keys)) != 3
+            or not 2 <= action_count <= 5
+            or len(set(self.action_keys)) != action_count
             or set(self.state_keys) & set(self.action_keys)
-            or len(self.transition) != 3
+            or len(self.transition) != action_count
         ):
             raise MultiFamilyCompilerError("sealed anonymous geometry differs")
         expected = set(range(cardinality))
@@ -742,6 +743,23 @@ def _best_source_role_permutation(logits: torch.Tensor) -> tuple[int, int, int]:
     return _SOURCE_ROLE_PERMUTATIONS[max(range(len(scores)), key=scores.__getitem__)]
 
 
+def _infer_machine_geometry(
+    *,
+    record_count: int,
+    unique_count: int,
+) -> tuple[int, int]:
+    candidates = [
+        (cardinality, action_count)
+        for cardinality in (4, 8, 16)
+        for action_count in range(2, 6)
+        if cardinality * action_count == record_count
+        and cardinality + action_count == unique_count
+    ]
+    if len(candidates) != 1:
+        raise MultiFamilyCompilerError("anonymous machine geometry differs")
+    return candidates[0]
+
+
 def _structural_key_classes(
     batch: SourceTensorBatch,
     *,
@@ -751,25 +769,73 @@ def _structural_key_classes(
     """Infer anonymous action/state types from the episode incidence graph."""
 
     record_count = int(batch.record_valid[row].sum())
-    cardinality, remainder = divmod(record_count, 3)
-    if cardinality not in {8, 16} or remainder:
-        raise MultiFamilyCompilerError("structural record geometry differs")
     unique_count = int(batch.unique_key_valid[row].sum())
+    cardinality, action_count = _infer_machine_geometry(
+        record_count=record_count,
+        unique_count=unique_count,
+    )
     counts = [0] * unique_count
     for record in range(record_count):
         for unique in batch.occurrence_to_unique[row, record]:
             counts[int(unique)] += 1
-    actions = {
-        index for index, count in enumerate(counts) if count == cardinality
-    }
+    if cardinality == 2 * action_count:
+        raise MultiFamilyCompilerError(
+            "structural key classes are incidence-ambiguous"
+        )
+    actions = {index for index, count in enumerate(counts) if count == cardinality}
     states = set(range(unique_count)) - actions
-    if len(actions) != 3 or len(states) != cardinality:
+    if len(actions) != action_count or len(states) != cardinality:
         raise MultiFamilyCompilerError("structural key classes differ")
     if shuffled:
         ordered_states = sorted(states)
-        displaced = set(ordered_states[:3])
+        displaced = set(ordered_states[:action_count])
         states = (states - displaced) | actions
         actions = displaced
+    return actions, states
+
+
+def _learned_global_key_classes(
+    batch: SourceTensorBatch,
+    output: CompilerOutput,
+    *,
+    row: int,
+    action_count: int,
+) -> tuple[set[int], set[int]]:
+    """Project occurrence-level type evidence into one episode-wide partition."""
+
+    record_count = int(batch.record_valid[row].sum())
+    unique_count = int(batch.unique_key_valid[row].sum())
+    totals = torch.zeros(
+        unique_count,
+        dtype=output.source_role_logits.dtype,
+        device=output.source_role_logits.device,
+    )
+    counts = torch.zeros_like(totals)
+    for record in range(record_count):
+        for occurrence, unique_tensor in enumerate(
+            batch.occurrence_to_unique[row, record]
+        ):
+            unique = int(unique_tensor)
+            logits = output.source_role_logits[row, record, occurrence]
+            state_score = torch.logsumexp(
+                logits[[ROLE_SOURCE, ROLE_TARGET]],
+                dim=0,
+            )
+            totals[unique] += logits[ROLE_ACTION] - state_score
+            counts[unique] += 1
+    if bool(counts.eq(0).any()):
+        raise MultiFamilyCompilerError("learned key evidence is incomplete")
+    scores = totals / counts
+    action_slots = torch.topk(
+        scores,
+        k=action_count,
+        largest=True,
+        sorted=False,
+    ).indices.tolist()
+    actions = {int(index) for index in action_slots}
+    states = set(range(unique_count)) - actions
+    if len(actions) != action_count:
+        raise MultiFamilyCompilerError("learned key partition differs")
     return actions, states
 
 
@@ -781,6 +847,7 @@ def seal_machine(
     binding_shuffle: bool = False,
     structural_key_classes: bool = False,
     structural_key_shuffle: bool = False,
+    incidence_ambiguous_fallback: bool = False,
 ) -> SealedAnonymousMachine:
     if (
         not 0 <= row < batch.unit_ids.shape[0]
@@ -794,17 +861,36 @@ def seal_machine(
     ):
         raise MultiFamilyCompilerError("compiler output geometry differs")
     record_count = int(batch.record_valid[row].sum())
+    unique_count = int(batch.unique_key_valid[row].sum())
+    cardinality, action_count = _infer_machine_geometry(
+        record_count=record_count,
+        unique_count=unique_count,
+    )
     role_records: list[tuple[int, int, int]] = []
     action_unique: set[int] = set()
     state_unique: set[int] = set()
     structural_actions: set[int] | None = None
     structural_states: set[int] | None = None
     if structural_key_classes:
-        structural_actions, structural_states = _structural_key_classes(
-            batch,
-            row=row,
-            shuffled=structural_key_shuffle,
-        )
+        if cardinality == 2 * action_count and incidence_ambiguous_fallback:
+            if structural_key_shuffle:
+                raise MultiFamilyCompilerError(
+                    "cannot shuffle an incidence-ambiguous partition"
+                )
+            structural_actions, structural_states = (
+                _learned_global_key_classes(
+                    batch,
+                    output,
+                    row=row,
+                    action_count=action_count,
+                )
+            )
+        else:
+            structural_actions, structural_states = _structural_key_classes(
+                batch,
+                row=row,
+                shuffled=structural_key_shuffle,
+            )
     elif structural_key_shuffle:
         raise MultiFamilyCompilerError(
             "structural key shuffle requires structural typing"
@@ -854,7 +940,10 @@ def seal_machine(
         role_records.append((source, action, target))
         action_unique.add(action)
         state_unique.update((source, target))
-    if len(action_unique) != 3 or len(state_unique) not in {8, 16}:
+    if (
+        len(action_unique) != action_count
+        or len(state_unique) != cardinality
+    ):
         raise MultiFamilyCompilerError("predicted key partition differs")
     if action_unique & state_unique:
         raise MultiFamilyCompilerError("predicted action/state keys overlap")

@@ -17,6 +17,7 @@ from source_deleted_multifamily_machine_board import (  # noqa: E402
 )
 from multifamily_raw_machine_compiler import (  # noqa: E402
     CompilerOutput,
+    MAX_RECORDS,
     MultiFamilyCompilerError,
     QUERY_ACTION,
     QUERY_START,
@@ -73,7 +74,7 @@ def test_oracle_roles_seal_and_execute_without_source(
     query = collate_queries(
         (scan_query(episode.candidate.query.encode("ascii")),)
     )
-    source_logits = torch.full((1, 48, 3, 3), -20.0)
+    source_logits = torch.full((1, MAX_RECORDS, 3, 3), -20.0)
     labels = _source_labels(renderer)
     record_count = int(source.record_valid[0].sum())
     for record in range(record_count):
@@ -151,7 +152,12 @@ def test_shared_compiler_parameter_ledger_and_forward() -> None:
     model = SharedRawMachineCompiler(width=64, layers=1)
     source_output = model.compile_source(source)
     query_output = model.parse_query(query)
-    assert source_output.source_role_logits.shape == (3, 48, 3, 3)
+    assert source_output.source_role_logits.shape == (
+        3,
+        MAX_RECORDS,
+        3,
+        3,
+    )
     assert query_output.query_role_logits.shape == (3, 9, 2)
     receipt = model.parameter_receipt()
     assert receipt.learned_compiler == model.parameter_count()
@@ -167,7 +173,7 @@ def test_shared_compiler_parameter_ledger_and_forward() -> None:
     assert connected.compile_source(
         source,
         external_unit_features=source_features,
-    ).source_role_logits.shape == (3, 48, 3, 3)
+    ).source_role_logits.shape == (3, MAX_RECORDS, 3, 3)
     assert connected.parse_query(
         query,
         external_unit_features=query_features,
@@ -212,7 +218,7 @@ def test_bad_predicted_partition_fails_closed() -> None:
     source = collate_sources(
         (scan_source(episode.candidate.source.encode("ascii")),)
     )
-    logits = torch.zeros((1, 48, 3, 3))
+    logits = torch.zeros((1, MAX_RECORDS, 3, 3))
     with pytest.raises(MultiFamilyCompilerError, match="partition"):
         seal_machine(
             source,
@@ -235,7 +241,7 @@ def test_structural_key_classes_recover_unseen_renderer_types() -> None:
     query = collate_queries(
         (scan_query(episode.candidate.query.encode("ascii")),)
     )
-    source_logits = torch.full((1, 48, 3, 3), -20.0)
+    source_logits = torch.full((1, MAX_RECORDS, 3, 3), -20.0)
     record_count = int(source.record_valid[0].sum())
     source_logits[0, :record_count, 0, ROLE_TARGET] = 20.0
     source_logits[0, :record_count, 1, ROLE_TARGET] = 20.0
