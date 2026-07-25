@@ -60,6 +60,8 @@ MODE_CLASSIFIER = "full_trajectory_classifier"
 MODE_RANDOM = "randomized_labels"
 MODE_BARRIER = "semantic_cycle_barrier"
 MODE_BARRIER_SHUFFLED = "semantic_cycle_barrier_feature_shuffled"
+MODE_EXACT_BARRIER = "exact_discrete_cycle_barrier"
+MODE_EXACT_BARRIER_SHUFFLED = "exact_discrete_cycle_barrier_feature_shuffled"
 MODES = (
     MODE_REAL,
     MODE_ZERO,
@@ -68,6 +70,8 @@ MODES = (
     MODE_RANDOM,
     MODE_BARRIER,
     MODE_BARRIER_SHUFFLED,
+    MODE_EXACT_BARRIER,
+    MODE_EXACT_BARRIER_SHUFFLED,
 )
 
 
@@ -361,6 +365,7 @@ class EpisodicConfig:
 class EpisodicState:
     keys: tuple[Tensor, ...] = ()
     recurrent: Tensor | None = None
+    raw_states: tuple[tuple[tuple[int, ...], ...], ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -373,6 +378,8 @@ class EpisodicScores:
     action_hidden: Tensor
     maximum_similarity: Tensor
     cycle_evidence: Tensor
+    exact_cycle_evidence: Tensor
+    current_rows: tuple[tuple[int, ...], ...]
 
 
 class EpisodicAntiCycleController(nn.Module):
@@ -548,6 +555,8 @@ class EpisodicAntiCycleController(nn.Module):
             MODE_SHUFFLED,
             MODE_BARRIER,
             MODE_BARRIER_SHUFFLED,
+            MODE_EXACT_BARRIER,
+            MODE_EXACT_BARRIER_SHUFFLED,
         ) and bool(memory.keys)
         if use_memory:
             keys = torch.stack(memory.keys[-self.config.memory_slots :])
@@ -614,6 +623,33 @@ class EpisodicAntiCycleController(nn.Module):
             ).to(base.preference_logits.dtype)
         else:
             logits = base.preference_logits + delta
+        exact_cycle_evidence = torch.zeros(
+            len(rendered),
+            dtype=torch.float32,
+            device=device,
+        )
+        if (
+            mode in (MODE_EXACT_BARRIER, MODE_EXACT_BARRIER_SHUFFLED)
+            and memory.raw_states
+        ):
+            raw_memory = torch.tensor(
+                memory.raw_states[-self.config.memory_slots :],
+                dtype=torch.long,
+                device=device,
+            )
+            if mode == MODE_EXACT_BARRIER_SHUFFLED:
+                raw_memory = torch.roll(raw_memory, shifts=(1, 1), dims=(-2, -1))
+            exact_cycle_evidence = (
+                successor_tensor[:, None]
+                .eq(raw_memory[None])
+                .all(dim=(-1, -2))
+                .any(dim=1)
+                .float()
+            )
+            logits = (
+                base.preference_logits.float()
+                - self.config.barrier_penalty * exact_cycle_evidence
+            ).to(base.preference_logits.dtype)
         return EpisodicScores(
             actions=rendered,
             successors=successors,
@@ -623,6 +659,8 @@ class EpisodicAntiCycleController(nn.Module):
             action_hidden=base.action_hidden,
             maximum_similarity=maximum_similarity,
             cycle_evidence=cycle_evidence,
+            exact_cycle_evidence=exact_cycle_evidence,
+            current_rows=matrix,
         )
 
     def advance(
@@ -637,6 +675,10 @@ class EpisodicAntiCycleController(nn.Module):
         return EpisodicState(
             keys=keys,
             recurrent=scores.action_hidden[selected_index],
+            raw_states=(
+                *memory.raw_states,
+                scores.current_rows,
+            )[-self.config.memory_slots :],
         )
 
 
@@ -1150,6 +1192,8 @@ def rescore_semantic_barrier(args: argparse.Namespace) -> Mapping[str, object]:
         for mode in (
             MODE_BARRIER,
             MODE_BARRIER_SHUFFLED,
+            MODE_EXACT_BARRIER,
+            MODE_EXACT_BARRIER_SHUFFLED,
             MODE_REAL,
             MODE_ZERO,
         )

@@ -154,6 +154,19 @@
 > A final preregistered fixed semantic-cycle barrier is pending on fresh
 > 512-case board seed `20260801` as jobs `701373`--`701376`; it must beat its
 > feature-shuffled barrier control to establish semantic-memory causality.
+> Those four rescoring jobs completed on a common fresh 2,048-case aggregate.
+> Learned episodic inference reached 957/2048 = 46.7285%, memory-zeroed
+> inference 817/2048 = 39.8926%, the fixed semantic barrier 553/2048 =
+> 27.0020%, and its feature-shuffled control exactly 817/2048 = 39.8926%.
+> The barrier is semantically causal but harmful: it removes 46,884 of
+> 147,094 zero-memory cycle events while losing 264 certificates. Decision:
+> `semantic_similarity_cycle_barrier_no_go_false_positive_geometry`.
+> Report SHA-256 values are
+> `cbb3d12c8fe75aed2db5fdd7d670d7d47c10bc0c51d9631a2bdd5a8d99fad9fa`,
+> `a39f5252088b27c23b9ecbb61d0c9da86c780e532f13cea8b96c58ce7646dad8`,
+> `6779e30eb92ddaa196eb60013caa08b96e89cb07f98ec34b67b8133d726174c2`,
+> and
+> `4b7af95aa2d11810ef329efaa1150ff1fba07208b239755053e4ea18250723fb`.
 >
 > **Latest QFCR and native-law decision (2026-07-24 EDT):** exact NIST
 > chain-2 pulse 1,874,057 at 21:37:00Z was consumed under public source and

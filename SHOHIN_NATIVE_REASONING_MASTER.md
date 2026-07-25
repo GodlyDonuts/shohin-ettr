@@ -51837,3 +51837,24 @@ feature-shuffled barrier control. Four frozen treatment models are being
 rescored on a fresh 512-case board, seed `20260801`, excluding both training
 and prior evaluation boards. This is a causal mechanism test, not a tuned
 benchmark retry.
+
+All four semantic-barrier rescores completed on the same fresh board:
+
+| Frozen-weight mode | Strict certificates | Rate | Cycle events |
+|---|---:|---:|---:|
+| Learned episodic residual | 957/2048 | 46.7285% | 68,308 |
+| Memory zeroed | 817/2048 | 39.8926% | 147,094 |
+| Fixed semantic barrier | 553/2048 | 27.0020% | 100,210 |
+| Feature-shuffled semantic barrier | 817/2048 | 39.8926% | 147,094 |
+
+Feature shuffling returns exactly to the zero-memory policy, proving that the
+barrier consumes semantic state coordinates rather than a generic time or
+occupancy signal. The causal effect is nevertheless strongly harmful. It
+removes 46,884 cycle events but loses 264 certificates relative to zeroing.
+The learned normalized state geometry produces false-positive revisit
+evidence, so semantic similarity is not an adequate cycle invariant.
+
+This closes learned similarity-based anti-cycle memory. A final diagnostic may
+replace similarity with exact in-architecture discrete state equality. That
+would not itself be a general reasoning claim; it only distinguishes a bad
+learned state metric from cycle avoidance being the wrong target.

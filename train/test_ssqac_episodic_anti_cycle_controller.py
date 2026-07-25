@@ -122,6 +122,26 @@ def test_semantic_barrier_uses_feature_identity() -> None:
     assert not torch.equal(barrier.logits, shuffled.logits)
 
 
+def test_exact_barrier_distinguishes_raw_state_from_control() -> None:
+    torch.manual_seed(72)
+    model = episodic.EpisodicAntiCycleController(_tiny_config())
+    trajectory = _trajectory()
+    memory = episodic.EpisodicState(raw_states=(trajectory.states[0],))
+    exact = model.score(
+        trajectory.states[0],
+        memory,
+        mode=episodic.MODE_EXACT_BARRIER,
+    )
+    shuffled = model.score(
+        trajectory.states[0],
+        memory,
+        mode=episodic.MODE_EXACT_BARRIER_SHUFFLED,
+    )
+    assert exact.exact_cycle_evidence.sum() > 0
+    assert shuffled.exact_cycle_evidence.sum() == 0
+    assert not torch.equal(exact.logits, shuffled.logits)
+
+
 def test_action_renderer_is_permutation_equivariant() -> None:
     torch.manual_seed(8)
     model = episodic.EpisodicAntiCycleController(_tiny_config()).eval()
