@@ -51545,3 +51545,88 @@ reasoning. Exact algebraic consequence mechanics exist, the information
 boundary is increasingly auditable, and the remaining scientific question is
 whether a learned source-sealed compiler/controller can generalize
 autonomously to unseen geometry and then unseen natural task families.
+
+---
+
+## 2026-07-24 SSQAC Search Distillation and Planning Update
+
+The controller frontier has advanced beyond ordinary imitation, but it has
+not reached demonstrated native reasoning.
+
+The exact bounded host-search teacher remains the structural ceiling at 64/64
+strict unseen certificates. Because it explicitly expands up to 1,312 nodes
+and 13,018 edges in the 64-case panel, it is external counted computation.
+It proves the sealed primitive state is sufficient; it does not prove that a
+model can reason over that state.
+
+A 12.22M-parameter search-distilled policy uses search only during data
+preparation. Search traces are deleted before evaluation and candidate
+rollouts make zero oracle, search, or verifier calls. Across three H100 seeds
+on 768 strictly larger unseen matrices:
+
+| Arm | Strict certificates | Rate |
+|---|---:|---:|
+| Search-distilled policy | 28/768 | 3.6458% |
+| Ordinary oracle imitation | 3/768 | 0.3906% |
+| Random labels | 0/768 | 0% |
+
+This is the first reproducible learned improvement over ordinary SSQAC
+imitation, but it remains far below reliable autonomous execution. High
+teacher-forced accuracy, approximately 99.2%, still coexists with 334 cycles
+and 343 VM errors. The result reinforces the central diagnosis: local action
+knowledge is not enough; long-horizon recovery and stable composition are the
+failure.
+
+An apparent 100% canonical-energy result was rejected after hostile controls.
+The full neural arm certified 192/192, but it received host-computed frontier,
+rank-matching, and action-admissibility structure. Zeroing the full frontier
+channel reduced it to 98/192, random-label training still reached 122/192, and
+a fixed deterministic non-neural schedule reached 192/192. The mechanism is
+therefore classified as
+`hybrid_host_algorithm_mechanics_not_learned_or_native_reasoning`. Its
+six-seed report SHA-256 is
+`c5f7ad71cc80f9144ec57517215ab88cf770ebf9ca2f56d705a2ac8cf732dade`.
+
+The strongest current model-owned mechanism is fixed-depth soft value
+iteration over legal local-action nodes. Eight default-width H100 seeds give:
+
+| Arm | Strict certificates | Rate |
+|---|---:|---:|
+| Shared-weight internal backups | 258/512 | 50.3906% |
+| Separately trained zero-iteration control | 213/512 | 41.6016% |
+| Random labels | 0/512 | 0% |
+
+The controller adds 3,567,363 parameters, for 128,649,027 complete-system
+parameters. It performs 50,496 internal recurrent iterations and 751,664
+action-value backups across the treatment evaluations, with zero candidate
+oracle/search/verifier calls. The treatment gain is 8.7891 percentage points,
+but it misses the frozen +10 point causal gate and has substantial seed
+variance: exact one-sided sign-flip `p=0.0859375`, two-sided `p=0.171875`.
+This is meaningful mechanics, not a reasoning promotion.
+
+Three 61,562,243-parameter capacity arms are running on separate H100s. Their
+complete systems remain below 200M. Capacity alone is not the decision:
+the pending hostile controls remove structural action scalars, disable or
+shuffle messages while retaining compute, and test row/column recodings.
+A separate successor-aware planner will compare correct one-step
+counterfactuals against zeroed and shuffled successor bindings, progressive
+versus fixed recurrent-depth training, and longer-depth overthinking tests.
+An on-policy search-distillation lane tests whether correction on the
+candidate's own failure states can turn the 3.65% foothold into reliable
+closed-loop control.
+
+The scientific position is now sharper:
+
+1. Exact mechanics and external search solve the proxy.
+2. Ordinary supervised action imitation does not compose.
+3. Search-based sample allocation improves a model-owned policy but remains
+   weak.
+4. Fixed shared-weight internal computation produces a larger, currently
+   unstable gain.
+5. Host-computed frontier/matching features can manufacture false
+   breakthroughs and must remain controls, not candidate inputs.
+
+Shohin still does not have demonstrated native general reasoning. The live
+question is whether recurrent model-owned state transition and value
+propagation survive equal-compute ablations and extrapolate without host
+algorithm features.

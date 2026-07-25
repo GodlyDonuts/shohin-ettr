@@ -21,6 +21,28 @@
 > GSM8K pass@1 `2/100`, MATH-500 `2/100`, HumanEval `6/164`, and MBPP `0/100`. This confirms a
 > low-single-digit plateau rather than a broad 120k-to-300k capability gain.
 >
+> **Latest SSQAC controller decision (2026-07-24 21:23 EDT):** the
+> protected checkpoint and pretraining hold remain unchanged. Bounded host
+> search certifies 64/64 strict unseen reductions, but is external counted
+> computation. Search-distilled, search-free inference improves to 28/768
+> strict certificates versus 3/768 ordinary oracle imitation and 0/768 random
+> labels; this is reproducible progress, not a solved controller. Eight
+> fixed-depth soft-value seeds reach 258/512 versus 213/512 for separately
+> trained zero-iteration controls and 0/512 random labels. The +8.79 point
+> gain has one-sided seed sign-flip `p=0.0859375`, misses both the frozen 80%
+> absolute and +10 point causal gates, and remains provisional while
+> feature/message ablations and three 61,562,243-parameter capacity arms
+> (`700970`, `700971`, `700979`) run.
+>
+> The apparent canonical-energy win is closed as
+> `hybrid_host_algorithm_mechanics_not_learned_or_native_reasoning`.
+> Full host-frontier neural arms reached 192/192, but zeroing all frontier
+> features reduced them to 98/192, random-label controls reached 122/192,
+> and a fixed deterministic host schedule also reached 192/192 with zero
+> learning. The six-seed report SHA-256 is
+> `c5f7ad71cc80f9144ec57517215ab88cf770ebf9ca2f56d705a2ac8cf732dade`.
+> Do not promote or scale this mechanism as learned reasoning.
+>
 > **Latest QFCR and native-law decision (2026-07-24 EDT):** exact NIST
 > chain-2 pulse 1,874,057 at 21:37:00Z was consumed under public source and
 > authorization freeze. Signatures, output hashes, previous link,
@@ -12882,3 +12904,57 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `91bd7cdf404c2c414f716b444ea19938bb53476ffa8b2def1a6b433168993273`.
   Reports and models are hash-matched on Newton and the Mac. Efficient
   reactive imitation is closed as a sufficient mechanism.
+
+- **2026-07-24 20:05--21:23 EDT** -- **Search distillation establishes a
+  small model-owned gain; canonical-energy is downgraded; soft value
+  iteration remains an unconfirmed frontier.** The protected step-300k
+  checkpoint was neither read nor modified, no flagship writer exists, and
+  no pretraining job was submitted.
+
+  A preparation-only structural search teacher was distilled into a
+  12.22M-parameter invariant policy. Search traces were deleted before final
+  evaluation and every final candidate arm recorded zero oracle, search, and
+  verifier calls. Across three H100 seeds and 768 strictly larger unseen
+  matrices, search-distilled policies certified 28/768 = 3.6458%, ordinary
+  canonical-oracle imitation certified 3/768 = 0.3906%, and random-label
+  controls certified 0/768. Mean teacher-forced accuracy was approximately
+  99.2%, while remaining failures were dominated by 334 cycles and 343 VM
+  errors. This is a real allocation/curriculum improvement over ordinary
+  imitation, but far below a native-reasoning gate. Report SHA-256 values for
+  jobs `700984`--`700986` are
+  `32f21b34fb309bae9c515b580c3a511de4175f9a78e8d78839e2f7161e196228`,
+  `16b60148e10f95062ec7dd22013e15af4b9ded4641ce9d1236a9428cde003f59`,
+  and
+  `9c7eb71ca6d37570650d4aed8abf335b3096156dd97c6a47c94a6cacee7aeb14`.
+
+  The six-seed canonical-energy audit prevents a false 100% result. Energy
+  alone certified 14/192; a neural policy supplied with full host-computed
+  frontier/matching features certified 192/192; zeroing the complete frontier
+  channel reduced it to 98/192; masking only four direct action-correctness
+  bits left 177/192; random labels reached 122/192; and a fixed deterministic
+  host schedule certified 192/192. The fixed baseline consumed 1,337 exact
+  field-rank calls, emitted 2,052 schedule actions, and used no learned
+  parameters, matching, or successor evaluation. The full neural arms
+  consumed hundreds of thousands of ordered matching candidates and tens of
+  thousands of action-successor evaluations. This is counted hybrid host
+  algorithm mechanics, not learned or native reasoning.
+
+  Eight fixed-depth shared-weight soft-value experiments use only the current
+  matrix and legal local action features during candidate inference. Complete
+  system size is 128,649,027 parameters. Treatment certifies 258/512 =
+  50.3906%, separately trained zero-iteration controls certify 213/512 =
+  41.6016%, and random-label controls certify 0/512. Treatment consumed 6,312
+  model decisions, 50,496 internal iterations, and 751,664 action-value
+  backups. The per-seed treatment-minus-zero differences are
+  `+1,+13,-3,-1,0,+2,+27,+6`; the one-sided exact sign-flip probability is
+  0.0859375 and the two-sided value is 0.171875. This does not satisfy the
+  preregistered 80% absolute and +10 point gates, and `backup_iterations=0`
+  is not yet a sufficient equal-compute causal control. Three wide
+  61,562,243-parameter arms remain live on isolated H100s as jobs `700970`,
+  `700971`, and `700979`. Do not interrupt them unless clearly dead.
+
+  Active next falsifiers are: structural-feature/message ablations for soft
+  value iteration; on-policy search distillation with equal-budget controls;
+  and a successor-aware recurrent planner with zeroed/shuffled-successor,
+  recurrence-disabled, random-label, progressive-depth, and overthinking
+  controls. Scale only mechanisms that survive these controls.
