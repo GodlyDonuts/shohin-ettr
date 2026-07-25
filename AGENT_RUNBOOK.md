@@ -21,6 +21,266 @@
 > GSM8K pass@1 `2/100`, MATH-500 `2/100`, HumanEval `6/164`, and MBPP `0/100`. This confirms a
 > low-single-digit plateau rather than a broad 120k-to-300k capability gain.
 >
+> **Expedited reasoning closeout (2026-07-25 EDT):** open-ended architecture
+> search is closed under the current evidence and usage budget. Shohin does
+> not demonstrate native general reasoning. The retained learned baseline is
+> the full-trajectory recurrent classifier at 1058/2048 = 51.6602% on one
+> unseen-geometry proxy family; the best seed is 332/512 = 64.8438%. Exact
+> discrete anti-revisit is a causal task-specific primitive, but exact-aware
+> training loses the simpler recurrent classifier. No retained mechanism has
+> passed unseen-law or multi-family transfer. There are zero active Newton
+> jobs, and the protected checkpoint hash remains exact. Do not launch more
+> proxy-specific architecture branches. The only admissible successor is one
+> frozen, source-deleted, shared-mechanism qualification across at least three
+> genuinely different task families with unseen laws, compositions, depths,
+> and renderers plus matched causal controls. Full decision:
+> `R12_EXPEDITED_REASONING_CONCLUSION.md`.
+>
+> **Multi-family successor gate (2026-07-25 EDT):** the missing qualification
+> board now exists in
+> `pipeline/source_deleted_multifamily_machine_board.py`, with independent
+> audit in `pipeline/audit_source_deleted_multifamily_machine_board.py`.
+> It matches all three families at cardinality 8 for fitting and 16 for
+> law/scale holdout, freezes 576 unique fitting laws and 768 disjoint
+> development laws, holds out composition lengths 5--8 and renderer 3, and
+> defines all three leave-one-family-out folds. The 1,344-row CPU receipt is
+> exact 1,344/1,344 after source deletion, has zero family-name leaks,
+> compiles 192/192 renderer orbits to identical packets, changes 1,176/1,344
+> answers under law swaps, and changes 629/909 eligible answers under action
+> reversal. Payload SHA-256 is
+> `c3b3936fedd1e9b606818822838c5a3a8609ddc62e9abdf84cc7a75a7f6c1163`;
+> receipt file SHA-256 is
+> `36c64c735c0da6c987eab0872449d3f352e6dfe0f06da025f3f500b9cc5ea0e1`.
+> All 1,344 rows also pass the role-neutral opaque-key codec after an audit
+> invalidated the first `s_`/`a_` prefix design.
+> This authorizes no claim-bearing H100 qualification: process deletion,
+> parameter/FLOP matching, five-seed scheduling, and an independent assessor
+> must be frozen first. Full contract:
+> `R12_SOURCE_DELETED_MULTIFAMILY_MACHINE_PREREG.md`.
+>
+> **Multi-family raw compiler smoke (2026-07-25 EDT):** the standalone shared
+> recurrent byte compiler adds 152,933 parameters for a conceptual
+> 125,234,597-parameter complete system. It imports no exact parser and makes
+> zero candidate-time oracle/search/verifier calls. After 300 CPU updates it
+> reaches 36/36 exact on fitting renderers, 6/6 unseen-law, and 6/6
+> longer-composition rows, but 0/6 on the held-out reverse renderer and 0/6
+> on the joint cell. Decision:
+> `standalone_byte_compiler_optimizes_but_does_not_transfer_renderer_semantics`.
+> Do not spend H100s scaling this byte-only model. The next treatment must add
+> frozen, hash-verified Shohin residual features to the same candidate and
+> preserve the standalone arm as the matched control. Smoke report SHA-256 is
+> `e4ff0d09abb9533e7d8c16b213f9b6a073e672572a4799c94803f7eb0c539ff3`.
+>
+> **Final connected closeout (2026-07-25 EDT):** job `702764` connected
+> frozen Shohin blocks 17/25/29 to the same compiler. It adds 331,589 learned
+> parameters for a 125,413,253-parameter conceptual system and fits 36/36,
+> but exactly ties the standalone development result: 6/6 unseen law, 6/6
+> longer composition, 0/6 held-out renderer, and 0/6 joint. Decision:
+> `frozen_shohin_features_do_not_transfer_renderer_semantics`. Report
+> SHA-256 is
+> `06345448d5a1696678b5eb439a3ca414b26132cbbf9ee6782af68f0606e9688d`.
+> Its checkpoint hash/count match the protected model, but strict runtime
+> attestation remained false; fail-closed repeats `702769`, `702771`, and
+> `702773` emitted no report. Treat it only as conservative negative
+> evidence. There are zero active Newton jobs. Do not launch more
+> architecture branches under the current budget. The next justified work
+> is an audited cross-renderer representation/post-training curriculum, not
+> larger recurrence or continued pretraining.
+>
+> **Latest SSQAC controller decision (2026-07-24 21:23 EDT):** the
+> protected checkpoint and pretraining hold remain unchanged. Bounded host
+> search certifies 64/64 strict unseen reductions, but is external counted
+> computation. Search-distilled, search-free inference improves to 28/768
+> strict certificates versus 3/768 ordinary oracle imitation and 0/768 random
+> labels; this is reproducible progress, not a solved controller. Eight
+> fixed-depth soft-value seeds reach 258/512 versus 213/512 for separately
+> trained zero-iteration controls and 0/512 random labels. The +8.79 point
+> gain has one-sided seed sign-flip `p=0.0859375`, misses both the frozen 80%
+> absolute and +10 point causal gates. Three 61,562,243-parameter capacity
+> arms (`700970`, `700971`, `700979`) then completed at 181/384 treatment
+> versus 186/384 zero-iteration and 0/384 random labels. Each complete system
+> was 186,643,907 parameters. Wider SVI is closed; feature/message hostile
+> ablations are also closed. Three matched hostile seeds give 96/192 for
+> eight backups, 107/192 for one backup, 103/192 with the raw matrix removed,
+> 97/192 with pair relations removed, 85/192 for zero backups, and 0/192
+> random. Repeated value propagation and the raw-matrix channel are not the
+> causal source of capability. Do not promote current SVI as internal planning.
+>
+> The apparent canonical-energy win is closed as
+> `hybrid_host_algorithm_mechanics_not_learned_or_native_reasoning`.
+> Full host-frontier neural arms reached 192/192, but zeroing all frontier
+> features reduced them to 98/192, random-label controls reached 122/192,
+> and a fixed deterministic host schedule also reached 192/192 with zero
+> learning. The six-seed report SHA-256 is
+> `c5f7ad71cc80f9144ec57517215ab88cf770ebf9ca2f56d705a2ac8cf732dade`.
+> Do not promote or scale this mechanism as learned reasoning.
+>
+> **Latest successor-planning decision (2026-07-24 EDT):** four isolated
+> H100 seeds close raw one-step successor exposure as a sufficient mechanism.
+> Fixed recurrence certified 110/384, progressive randomized-depth recurrence
+> 113/384, zeroed successors 133/384, shuffled action/successor bindings
+> 105/384, recurrence disabled 114/384, and random labels 0/384. The best
+> successor arm loses to the zeroed-successor control by 5.21 points; doubling
+> inference recurrence changes it by at most +0.52 points. All arms used
+> 6,220,225 controller parameters, 131,301,889 complete-system parameters,
+> equal optimizer updates/parameters/training successor evaluations, and zero
+> candidate-time oracle/search/verifier calls. Decision:
+> `successor_planning_falsified_or_below_material_gate`. Do not scale it.
+>
+> **Latest on-policy search-distillation decision (2026-07-24 EDT):** three
+> isolated H100 seeds reject naive DAgger as the missing controller mechanism.
+> On-policy correction certified 48/768 = 6.25%, but the matched equal-budget
+> offline search-distillation control certified 59/768 = 7.6823%; ordinary
+> oracle imitation reached 34/768 = 4.4271% and random labels 0/768. All arms
+> used the same 12,222,337 parameters and 360 optimizer updates per seed, and
+> final candidate inference made zero search/oracle/verifier calls. Preparation
+> consumed 2,083.05 of 2,765.57 allocated H100-seconds while expanding
+> 1,442,150 search nodes and 12,650,170 edges. Decision:
+> `on_policy_dagger_not_better_than_equal_budget_offline_distillation`.
+> Preserve the larger-data offline gain, but move future search generation to
+> CPU capacity before GPU-only fitting.
+> Scale-curve jobs `701043`, `701044`, and `701048` are running isolated
+> four-times-larger offline search-distillation experiments on `evc28`,
+> `evc30`, and `evc37`. Job `701045` was canceled before Python launch after
+> `evc33` again hung in `nvidia-smi`; its replacement is `701048`, and the
+> persistent launcher now excludes `evc33`.
+> The original v2 scale seed `701044` later failed closed on duplicate states
+> with conflicting search-teacher labels. Corrected v3 uses deterministic
+> majority vote with canonical action tie-breaking and records all duplicate
+> and conflict counts. Jobs `701074`, `701075`, and replacement `701077`
+> are the claim-bearing v3 seeds; `701076` failed before Python because
+> `evc44` exposed no GPU and is now excluded.
+>
+> **Latest Lyapunov/Bellman decision (2026-07-24 EDT):** four isolated H100
+> seeds reject the tested potential-based controller as sufficient reasoning.
+> Lyapunov + Bellman + monotonic supervision certified 18/768 = 2.3438%,
+> action classification 8/768 = 1.0417%, distance regression alone 21/768 =
+> 2.7344%, and shuffled-distance, shuffled-successor, and random controls all
+> scored 0/768. The 19,845,699-parameter controller learns
+> successor-dependent distance signal, but Bellman/monotonic losses add no
+> benefit over distance regression and cycles dominate 678/768 treatment
+> failures. Decision: `lyapunov_bellman_no_go_distance_signal_only`.
+>
+> **Latest proof-carrying decision (2026-07-24 EDT):** three isolated H100
+> seeds reject the tested local-contract controller. Proof-carrying inference
+> certified 77/384 = 20.0521%, classifier-only 111/384 = 28.9063%, the same
+> proof-trained weights with proof heads zeroed 77/384, shuffled successor
+> binding 82/384, shuffled progress 49/384, and random labels 0/384. The
+> 7,323,684-parameter controller fits preparation labels but its proof heads
+> have zero aggregate causal effect. Decision:
+> `proof_carrying_local_contract_no_go_classifier_baseline_retained`.
+>
+> **Expedited final reasoning decision (2026-07-24 EDT):** enlarged offline
+> search distillation does not preserve the earlier small-data advantage. Two
+> valid v3 consensus seeds (`701074`, `701077`) completed with matched data,
+> parameter, and update budgets. Search-teacher policies certified 178/1024 =
+> 17.3828%, ordinary oracle imitation certified 542/1024 = 52.9297%, and
+> randomized labels certified 0/1024. Search loses ordinary imitation by 364
+> cases. The third seed `701075` failed and is not pooled. Report SHA-256
+> values are
+> `ad23816d433872f48f3aee4e822496c20c404c55ebc72ce06049b9aa4976d0ad`
+> and
+> `1b9d999cb62d2817ab5cedc59e0e3e4931d8a063f5ddc419da1ee5dbd4dc128e`.
+> Decision: `scaled_search_distillation_reverses_below_ordinary_imitation`.
+> There is no demonstrated native general reasoning. The strongest observed
+> model-owned proxy score remains one-backup SVI at 107/192 = 55.7292%, but
+> hostile controls show that repeated value propagation is not causal, so it
+> is not a reasoning claim. Stop open-ended architecture branching under the
+> current usage budget. Preserve the checkpoint and pretraining hold. If work
+> resumes, run one preregistered full-trajectory episodic-memory experiment
+> with memory-zero and memory-shuffle controls; do not resume pretraining
+> merely because this is the remaining hypothesis.
+>
+> **Latest full-trajectory episodic-memory decision (2026-07-24 EDT):**
+> jobs `701222`, `701223`, `701224`, and replacement `701226` completed on
+> four isolated H100s with exactly matched trajectory schedules per arm.
+> Every controller adds 10,132,198 parameters for a 135,213,862-parameter
+> complete system. Each arm received 1,500 updates, 3,000 complete trajectory
+> presentations, approximately 22.25k state presentations, and approximately
+> 248k legal-action candidates per seed.
+>
+> | Arm | Strict certificates | Rate | Cycle events |
+> |---|---:|---:|---:|
+> | Episodic memory | 442/1024 | 43.1641% | 34,375 |
+> | Same weights, memory zeroed | 403/1024 | 39.3555% | 72,282 |
+> | Same weights, memory features shuffled | 442/1024 | 43.1641% | 34,743 |
+> | Full-trajectory recurrent classifier | **514/1024** | **50.1953%** | **21,694** |
+> | Randomized labels | 0/1024 | 0% | 2,974 |
+>
+> Memory occupancy reduces cycles relative to zeroing, but semantic feature
+> shuffling leaves aggregate accuracy exactly unchanged and the treatment
+> loses the classifier by 72 cases. Decision:
+> `learned_episodic_semantics_no_go_full_trajectory_recurrence_retained`.
+> Action-renderer shuffling is exactly invariant. Report SHA-256 values are
+> `6513cd5de1bd985f07af5d55b6ad4335585d8973356363bbf3b3d8f56517e1e3`,
+> `e2a36c68967bae22b379c54a579b8525f00b31a20ef336787d26bb2a21c7d193`,
+> `06ce4a5d93675bb7dd0dc9106831a6673a1c7b9e1cc3392d93c723223ec64250`,
+> and
+> `ab188ca18920ae72890c1e4daf166f182fb0be44ee7e01aa7a0f60316b87b137`.
+> A final preregistered fixed semantic-cycle barrier is pending on fresh
+> 512-case board seed `20260801` as jobs `701373`--`701376`; it must beat its
+> feature-shuffled barrier control to establish semantic-memory causality.
+> Those four rescoring jobs completed on a common fresh 2,048-case aggregate.
+> Learned episodic inference reached 957/2048 = 46.7285%, memory-zeroed
+> inference 817/2048 = 39.8926%, the fixed semantic barrier 553/2048 =
+> 27.0020%, and its feature-shuffled control exactly 817/2048 = 39.8926%.
+> The barrier is semantically causal but harmful: it removes 46,884 of
+> 147,094 zero-memory cycle events while losing 264 certificates. Decision:
+> `semantic_similarity_cycle_barrier_no_go_false_positive_geometry`.
+> Report SHA-256 values are
+> `cbb3d12c8fe75aed2db5fdd7d670d7d47c10bc0c51d9631a2bdd5a8d99fad9fa`,
+> `a39f5252088b27c23b9ecbb61d0c9da86c780e532f13cea8b96c58ce7646dad8`,
+> `6779e30eb92ddaa196eb60013caa08b96e89cb07f98ec34b67b8133d726174c2`,
+> and
+> `4b7af95aa2d11810ef329efaa1150ff1fba07208b239755053e4ea18250723fb`.
+>
+> **Exact discrete anti-revisit result (2026-07-24 EDT):** frozen-weight jobs
+> `701895`--`701898` evaluated an in-architecture raw-state equality memory on
+> a second fresh 2,048-case board, seed `20260820`. Exact repeat blocking
+> certified 957/2048 = 46.7285%, its independently feature-shuffled control
+> exactly matched memory-zero at 820/2048 = 40.0391%, and the learned episodic
+> residual reached 922/2048 = 45.0195%. Exact blocking improves every seed,
+> adds 137 certificates = +6.6895 points over the same frozen weights, and
+> reduces cycle events from 155,634 to 16,550. This is a material,
+> architecture-native mechanics result, not general reasoning: the equality
+> primitive is fixed, the board has one task family, and one-sided four-seed
+> sign probability is 0.0625. Decision:
+> `exact_discrete_anti_revisit_material_mechanics_replication_required`.
+> Report SHA-256 values are
+> `c06d17c903d2018de1d31ae148a6c239cf6b4339c0e8eacc3d1910e8407b9e46`,
+> `fafa9127de66cc04cd769b252c632ef4849f3ff55070276f75aa189ed9348950`,
+> `9a62c6fe0e0e1b809cf363b5df4d8b4a2d0183b9b9e3eaa3a7bcd30f76eb8bf9`,
+> and
+> `b965f74cb90ca8c1c0642f8e2fd4d8e149981359f5ca82f40c7d098331534175`.
+> The justified successor is matched full-trajectory training with the exact
+> barrier active, then a third fresh-board evaluation. Do not alter or resume
+> flagship pretraining.
+>
+> **Exact-barrier training decision (2026-07-24 EDT):** material jobs
+> `702567`--`702570` trained exact-barrier, recurrent-classifier, and
+> randomized-label arms from identical initialization with exact matched
+> schedules, then evaluated on third fresh 512-case board seed `20260901`.
+> Exact-trained exact inference certified 950/2048 = 46.3867%; the same
+> weights with the barrier off and feature-shuffled each certified 920/2048 =
+> 44.9219%; matched full-trajectory classifiers certified 1058/2048 =
+> 51.6602%; random labels certified 0/2048. Exact memory improves its own
+> weights in all four seeds by 30 aggregate cases = +1.4648 points and lowers
+> cycles from 57,351 to 37,224, but loses the simpler recurrent classifier by
+> 108 cases. Decision:
+> `exact_barrier_training_below_full_trajectory_recurrent_classifier`.
+> The retained task-specific baseline is full-trajectory recurrence, not
+> episodic memory. Report SHA-256 values are
+> `a051755e97366281493abadede32b940d1a2eda7038ac479c44988c26614d02a`,
+> `a15b60d50f1ed7fd2f79d533e712382371c573451e6448cdc8adbbff3c154e97`,
+> `1a7f4be4047e9b9600f5142a66644c53a35aedd296a00b26a13452ff2e8076c9`,
+> and
+> `aec0712e83c98a16dc9b5b644ddf0f4fbcfb7fecf2224b5db4d7fcb128deed19`.
+> Best observed classifier seed `20260910` scored 332/512 = 64.8438%; its
+> model is preserved on Newton and locally as
+> `best_full_trajectory_classifier_seed20260910.pt`, SHA-256
+> `a7ebd0a0487d9fa75318faa5b5693a48439b799895cc4e88277be5c666ad5d1e`.
+> This remains one proxy family and is not native general reasoning.
+>
 > **Latest QFCR and native-law decision (2026-07-24 EDT):** exact NIST
 > chain-2 pulse 1,874,057 at 21:37:00Z was consumed under public source and
 > authorization freeze. Signatures, output hashes, previous link,
@@ -12684,3 +12944,504 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   and survive unseen laws, compositions, renderers, task families, source
   deletion, law swaps, and trunk-ablation controls. The protected checkpoint
   and pretraining hold remain unchanged.
+
+- **2026-07-24 18:55--19:23 EDT** -- **SSQAC exact mechanics advance, but
+  variable-geometry neural execution remains NO-GO.** The protected step-300k
+  checkpoint was not read or modified and no pretraining job was submitted.
+  The minimal four-cell law-collision board is permanently demoted to a
+  mechanics fixture because its target is a fact-bit/law-bit XOR, its two fact
+  worlds are state-isomorphic, and its late query is fixed. A new generated
+  family contains 32 units/128 cells, eight geometries, and 32 late-query
+  addresses. Each source has exactly two direct completions; opposite laws
+  select opposite completions; the paired fact worlds have incompatible
+  complete-action cycle invariants. Held-out majority, stump, depth-two tree,
+  and logistic classifiers score 50%; nearest-neighbor scores 56.25%. The
+  family is a CPU falsifier only and its promotion flag is false.
+
+  The exact quotient compiler now distinguishes emitted-generator degree from
+  closure degree and adaptively expands complete Macaulay workspaces through
+  degree eight under the existing 4,096-monomial and 256-dimensional bounds.
+  Concrete `xyz-1` and six-variable one-hot failures at degree four both
+  stabilize at degree five. Cross-field validation can now bind an
+  independently supplied intended Boolean zero set. A separately implemented
+  verifier, which does not import the producer, checks transport/semantic
+  digests, external generators/query/domain, RREF, provenance, complete
+  Macaulay spans, one-degree prolongation, stable dimension, order ideal,
+  multiplication commutation, Boolean idempotence, claimed values, normal
+  forms, and membership evidence. It accepts real adaptive degree-five
+  producer artifacts and rejects tampering.
+
+  The generated family is also connected to a gold-only quotient bridge.
+  Across all 128 cells, independently enumerated completion one-hots, source
+  selectors, and late-query polynomials pass intended-zero-set validation,
+  adaptive consequence certification, and the standalone verifier. Law
+  deletion returns `AMBIGUOUS`; opaque-key and completion-variable recodings
+  preserve the value. Receipts bind source, query, completions, generators,
+  semantics, certificate, outcome, and artifact. These completion variables
+  and artifacts are explicitly forbidden candidate inputs.
+
+  The initial absolute-index controller achieved 60/64 closed-loop
+  certificates on fresh same-geometry matrices but only 2/64 when trained on
+  at most `3x4` and evaluated on `4x5--4x6`. Its row/column output parameters
+  for unseen indices were never trained. A 2,317,847-parameter rewrite uses
+  deterministic sinusoidal row/column/step/operand coordinates and
+  content-addressed pointer heads. On the same held-out geometry it raised
+  teacher-forced instruction accuracy from 85.475% to 91.258%, but autonomous
+  certification fell to 0/64, with 57 invalid and seven overlong programs.
+  Therefore the present learned controller is not an algorithm and is not a
+  reasoning result.
+
+  Newton is reachable. Initial jobs `700847`--`700849` failed before fitting
+  because a rank-deficient reverse-pivot matrix exposed premature settled-row
+  detection in the preparation-only trace oracle. No model artifact was
+  produced. Reduced 2x3/3x3 reverse-identity counterexamples now pass after the
+  oracle was repaired to check all later leading columns. Corrected isolated
+  one-H100 scale/seed falsifiers are running: `700853` on `evc24`, `700854` on
+  `evc30`, and `700855` on `evc33`. Each trains only the scoreless SSQAC row
+  controller on generated matrices, writes to
+  `artifacts/r12/ssqac_geometry_holdout`, does not load or write the flagship,
+  and cannot authorize pretraining. Review exact reports before deciding
+  whether the 0/64 failure is undertraining or requires a different
+  closed-loop architecture. The focused regression before the gold-bridge
+  integration was 100 passed; the bridge-focused integrated suite adds 70
+  passing tests. Ruff and `py_compile` pass.
+
+- **2026-07-24 19:23--19:45 EDT** -- **SSQAC uses six isolated H100s while
+  process custody and resource accounting close locally.** The protected
+  step-300k checkpoint remains untouched and the user pretraining hold remains
+  absolute. Corrected standard recurrent scale falsifiers `700853` and
+  `700854` run on `evc24` and `evc30`. Job `700855` generated its board but
+  failed before model fitting when `evc33` reported no CUDA device; it has no
+  report or usable artifact. Replacement `700859` runs on `evc28` with
+  `evc33` excluded. Reactive, step-free, hidden-state-reset ablations `700856`,
+  `700857`, and `700858` run independently on `evc33`, `evc35`, and `evc37`.
+  All six live jobs use generated scoreless matrix traces, disjoint larger
+  geometry, one H100 each, separate output reports, and no flagship path.
+
+  The reactive DAgger CPU falsifier is complete. It flattened expert states,
+  retained pre-error states, deduplicated canonical matrices, performed two
+  bounded on-policy correction rounds, and made zero oracle calls during final
+  rollout. Its deliberately short smoke fit ended at 0/8 strict larger-
+  geometry certificates, with five invalid and three overlong programs;
+  expert-state accuracy fell from 46.3% to 33.7%. This validates the mechanics
+  but rejects naive DAgger as a sufficient repair.
+
+  A three-process user-space custody harness now separates compiler,
+  candidate, and assessor; deletes the source workspace before candidate
+  launch; binds closed-world manifests and hashes; guards reads; records
+  process order; and fails on extra files, symlinks, tamper, network attempts,
+  forbidden content, or process failure. It explicitly does not claim hostile
+  kernel isolation or reasoning. An independent structural resource receipt
+  separately replays quotient artifacts and primitive instruction streams,
+  counts variables, generators, polynomial terms, degrees, ranks, RREF and
+  provenance support, opcode schedules, abstract cycles, sequential depth,
+  and peak-workspace declarations. It refuses opaque instruction digests and
+  records wall time/device memory only as externally observed fields. The
+  custody, resource, DAgger, independent verifier, and integration tests pass
+  54/54 locally under `PYTHONPATH=.:train`.
+
+  Three further disjoint lanes are active: a vectorized reactive policy to
+  remove Python launch overhead, a bounded verifier-guided internal-search
+  falsifier with exact search receipts, and an equivariant defect-energy
+  controller inspired by local error-correcting dynamics. They may add
+  isolated mechanics and H100 jobs only. They cannot modify the protected
+  checkpoint or authorize pretraining.
+
+  GPU telemetry sampled the standard pilots at about 12.2 GiB and 26% device
+  utilization, with the younger replacement at 67%; the Python-unrolled
+  controller is launch/host limited rather than memory limited. Two additional
+  matched scale arms are queued to test whether useful work, not padding, can
+  consume that headroom: `700873` is standard recurrent and `700874` is
+  reactive step-free, each with 8,192 train matrices, 1,024 evaluation
+  matrices, batch 128, width 256, four layers, 24 epochs, and one H100.
+  They use the same seed so the architectural comparison is paired and have
+  no flagship path.
+
+  First reports close the ordinary imitation hypothesis at this scale.
+  Standard recurrent jobs `700853` and `700854` reached teacher-forced
+  instruction accuracy 90.863% and 91.562% but certified only 0/512 and 1/512
+  autonomous larger-geometry programs. Reactive jobs `700857` and `700858`
+  reached 88.314% and 89.141% teacher-forced accuracy and both certified
+  0/512. Their local report SHA-256 values are respectively
+  `af8293a72203e458e14e02453eed9c54072833dcbbab43fa21111da66e622878`,
+  `0d94979e5edb970b5cac45aec78c919caa1d4d6925499cc3c0aa2cda529311f9`,
+  `a63f2db3cf83e56e2c0e5a0dda543efe89c12a9f63891250c16efecb9c77f62d`,
+  and
+  `accee458204b87d4cbf938a8217915640c345ae73352c9e5d58616a8efb9c6ae`.
+  Job `700856` was canceled after only 3m21s CPU across 28m03s wall time on
+  the same anomalous `evc33`; two completed reactive seeds already establish
+  the negative, so the unhealthy duplicate was not allowed to burn capacity.
+
+  Replacement standard seed `700859` then certified 1/512 at 90.441%
+  teacher-forced accuracy. Its report SHA-256 is
+  `7bd3e22b151b303a7bc22fd497e6748144872fafceb7961d403685fea336f2db`.
+  The three-seed standard aggregate is therefore 2/1,536 = 0.1302%;
+  ordinary recurrent trace imitation is closed rather than merely uncertain.
+
+  Hostile review also prevented a false architectural win. A 291,009-parameter
+  equivariant defect-energy controller initially reported 96/96 autonomous
+  certificates versus 83/96 energy-only and 85/96 random-label controls, but
+  its endpoint accepted unordered reduced bases rather than the repository's
+  canonical RREF. Replaying complete primitive programs through the original
+  `verify_reduction_program` reduces strict scores to 1/96 treatment, 2/96
+  energy-only, and 0/96 random-label. The mechanism can form useful unordered
+  bases but is not promotable.
+
+  A separate bounded structural-search ceiling is exact under the original
+  verifier: 16/16 at `4x5--4x6` and 8/8 at `5x7--5x8`, versus 1/16 and 0/8
+  randomized guidance. The harder arm expanded at most 3,771 nodes and 55,791
+  edges to depth 22 under fixed budgets. This is a conventional host search
+  over an explicit RREF defect, not native model reasoning. It is retained as
+  a source-independent teacher/ceiling whose computation must be counted.
+
+  The vectorized reactive policy was hardened after review removed normalized
+  row/column coordinates that violated arbitrary permutation equivariance.
+  Randomized recoding tests now verify invariant opcode/register logits and
+  correctly permuted row/column pointers. Its bounded CPU smoke remains 0/16.
+  A dedicated BF16, fused-AdamW, `torch.compile` H100 launcher is ready for a
+  strict 8,192-matrix scale falsifier; it writes isolated report/model
+  artifacts and contains no flagship path.
+
+  Exact commit `10313ee` is pushed and synced. Three corrected vectorized
+  H100 seeds are queued as `700913`, `700914`, and `700915`, excluding
+  anomalous `evc33`. Each uses 8,192 train matrices, 1,024 audit matrices,
+  512 strict larger-geometry evaluations, batch 1,024, 30 epochs, BF16, fused
+  AdamW, and `torch.compile`; every run has isolated report/model paths.
+
+  The paired 8,192-matrix scale arms also close without capability gain:
+  `700873` certified 1/1,024 standard recurrent programs at 88.367%
+  teacher-forced accuracy, and `700874` certified 0/1,024 reactive programs at
+  88.246%. Their report SHA-256 values are
+  `d59ce5f826b2e464e2b05f92fed5c092befa3002f47cba2d4e9d03a476c51a66`
+  and
+  `26fd8f2c0d2ca84512af7f9779eebdd6b460f2da1c2db6ef20ba342ecaefbfe3`.
+  More examples and a larger batch do not repair autonomous control.
+
+  The exact structural-search ceiling was expanded independently to 64 unseen
+  `4x5--4x6` matrices. It certified 64/64 versus 37/64 greedy and 5/64
+  randomized guidance, with maxima of 1,312 expanded nodes, 13,018 edges, and
+  depth 16. The report SHA-256 is
+  `28b8b012b5d7572c45e82fe4d271338e8428fb4168befc1f80cfd32ccfa193ed`.
+  This strengthens the source-independent teacher ceiling but remains counted
+  host search, not native reasoning.
+
+  Vectorized H100 jobs `700913`--`700915` completed with 97--99% sampled
+  device utilization, proving that resident flattened tensors, BF16, fused
+  AdamW, batching, and `torch.compile` remove the old launch bottleneck.
+  Capability did not follow: all three seeds certified 0/512, for 0/1,536
+  aggregate, at teacher-forced full-instruction accuracies 82.959%, 82.837%,
+  and 83.085%. Report SHA-256 values are
+  `e7714c1a035597183258e8f99d30cfcd77b29cb2b14f5db9824f1a0fda395386`,
+  `bbb5f7e9f11b873b3e6077fefcc8f9874bcd33e59f4e13d77705c672cecb1165`,
+  and
+  `71471a5fc32203b4b466c8c48adc031acb97f14d5b6051e2a1d425ad0056459c`.
+  Model SHA-256 values are
+  `527e4ff0674365bc6ae771e9213f332984118341e996b1b4be2135278ac66b5d`,
+  `933ab8764ee6557ea4771d654b52a9e169c0de6f742440ae4aa936c034ff338c`,
+  and
+  `91bd7cdf404c2c414f716b444ea19938bb53476ffa8b2def1a6b433168993273`.
+  Reports and models are hash-matched on Newton and the Mac. Efficient
+  reactive imitation is closed as a sufficient mechanism.
+
+- **2026-07-24 20:05--21:23 EDT** -- **Search distillation establishes a
+  small model-owned gain; canonical-energy is downgraded; soft value
+  iteration remains an unconfirmed frontier.** The protected step-300k
+  checkpoint was neither read nor modified, no flagship writer exists, and
+  no pretraining job was submitted.
+
+  A preparation-only structural search teacher was distilled into a
+  12.22M-parameter invariant policy. Search traces were deleted before final
+  evaluation and every final candidate arm recorded zero oracle, search, and
+  verifier calls. Across three H100 seeds and 768 strictly larger unseen
+  matrices, search-distilled policies certified 28/768 = 3.6458%, ordinary
+  canonical-oracle imitation certified 3/768 = 0.3906%, and random-label
+  controls certified 0/768. Mean teacher-forced accuracy was approximately
+  99.2%, while remaining failures were dominated by 334 cycles and 343 VM
+  errors. This is a real allocation/curriculum improvement over ordinary
+  imitation, but far below a native-reasoning gate. Report SHA-256 values for
+  jobs `700984`--`700986` are
+  `32f21b34fb309bae9c515b580c3a511de4175f9a78e8d78839e2f7161e196228`,
+  `16b60148e10f95062ec7dd22013e15af4b9ded4641ce9d1236a9428cde003f59`,
+  and
+  `9c7eb71ca6d37570650d4aed8abf335b3096156dd97c6a47c94a6cacee7aeb14`.
+
+  The six-seed canonical-energy audit prevents a false 100% result. Energy
+  alone certified 14/192; a neural policy supplied with full host-computed
+  frontier/matching features certified 192/192; zeroing the complete frontier
+  channel reduced it to 98/192; masking only four direct action-correctness
+  bits left 177/192; random labels reached 122/192; and a fixed deterministic
+  host schedule certified 192/192. The fixed baseline consumed 1,337 exact
+  field-rank calls, emitted 2,052 schedule actions, and used no learned
+  parameters, matching, or successor evaluation. The full neural arms
+  consumed hundreds of thousands of ordered matching candidates and tens of
+  thousands of action-successor evaluations. This is counted hybrid host
+  algorithm mechanics, not learned or native reasoning.
+
+  Eight fixed-depth shared-weight soft-value experiments use only the current
+  matrix and legal local action features during candidate inference. Complete
+  system size is 128,649,027 parameters. Treatment certifies 258/512 =
+  50.3906%, separately trained zero-iteration controls certify 213/512 =
+  41.6016%, and random-label controls certify 0/512. Treatment consumed 6,312
+  model decisions, 50,496 internal iterations, and 751,664 action-value
+  backups. The per-seed treatment-minus-zero differences are
+  `+1,+13,-3,-1,0,+2,+27,+6`; the one-sided exact sign-flip probability is
+  0.0859375 and the two-sided value is 0.171875. This does not satisfy the
+  preregistered 80% absolute and +10 point gates, and `backup_iterations=0`
+  is not yet a sufficient equal-compute causal control.
+
+  Three wide 61,562,243-parameter arms then completed cleanly as jobs
+  `700970`, `700971`, and `700979`. Their complete systems contain
+  186,643,907 parameters. Treatment certified 59/128, 60/128, and 62/128
+  for 181/384 = 47.1354%; separately trained zero-iteration controls
+  certified 61/128, 64/128, and 61/128 for 186/384 = 48.4375%; random labels
+  remained 0/384. Train-label accuracies were 96.69%--97.54%. Report SHA-256
+  values are
+  `b417cf104c5cef492a83660355f81d452e08ede27baa8e281507848c5a58318d`,
+  `fc67af8f65432c2f2fee38808da3223c9764f38e1a7fc539c559ad5eb8a6342e`,
+  and
+  `a8bd806180a378e722fd73aad6cf20ad391230aee8aea7e92e10fe162b6ac2ca`.
+  Larger capacity reverses the provisional treatment advantage. Do not
+  allocate more parameters to the present SVI graph without a new causal
+  mechanism.
+
+  Active next falsifiers are: structural-feature/message ablations for soft
+  value iteration; on-policy search distillation with equal-budget controls;
+  and a successor-aware recurrent planner with zeroed/shuffled-successor,
+  recurrence-disabled, random-label, progressive-depth, and overthinking
+  controls. Scale only mechanisms that survive these controls.
+
+- **2026-07-24 21:30--21:54 EDT** -- **Raw one-step successor planning is a
+  four-seed NO-GO.** Jobs `701025`, `701026`, `701028`, and `701029`
+  completed cleanly on isolated H100s in 2,937 aggregate H100-seconds. Each
+  arm used the same 6,220,225-parameter geometry-general controller and
+  131,301,889-parameter conceptual complete system. Across 512 training
+  matrices, 2,316 labeled states, 384 strictly disjoint larger evaluation
+  matrices, 2,503 preparation-oracle calls, and 28,800 optimizer updates,
+  every final candidate made zero oracle, search, and verifier calls.
+
+  Strict depth-eight results were 110/384 fixed recurrent, 113/384
+  progressive randomized depth, 133/384 successors zeroed, 105/384
+  action/successor bindings shuffled, 114/384 recurrence disabled, and 0/384
+  random labels. At doubled inference depth they were respectively 112, 113,
+  132, 104, 108, and 0. No trained recurrent arm exhibits material
+  overthinking, but more internal iterations also do not improve capability.
+  All matched-budget gates pass. The useful policy signal is carried mainly
+  by the current matrix and action descriptors, not the explicit
+  counterfactual successor matrices.
+
+  Report SHA-256 values are
+  `0c668bb1ca8f7b220bf2a0dff29a2d8c5ccb52a56af679f3e6172acae2bb7119`,
+  `8295b88b0d26bf590c23d5e5c82cf59637ab614a982adac3a98e1d881f6c70b1`,
+  `023c57ac3b2f9a022a36266a5f768b22ad558329cc293c2688d6297d6cdc41ee`,
+  and
+  `3ab778f2fca27f633585524f0e470f3ad50d90679b287e54a14016fb0d5a5b75`.
+  The source, tests, and launcher SHA-256 values are
+  `8b7333b1468bf292f4a8da7dd916e57462454e7f57cc6717b3ac25c255fdbb24`,
+  `cf963b5850892bf0f3ff53ea6b2dd19dd20edbe6e1b74d4d4bb4e06d4bfbc84f`,
+  and
+  `1e8fa6adcd2dcb509470f8e10a7adfb5340547fa9348080f34c84aa102f59b36`.
+
+  This closes direct successor exposure and fixed shared recurrence, not
+  learned planning generally. The next control-theoretic lane learns a
+  Lyapunov/Bellman potential from preparation-only distance supervision and
+  must beat action-classification, shuffled-potential, zero-consistency,
+  shuffled-successor, and random-label controls.
+
+- **2026-07-24 21:54--22:00 EDT** -- **Matched on-policy search distillation
+  is a NO-GO, while larger offline search distillation remains a modest
+  foothold.** Jobs `701030`--`701032` completed cleanly across three isolated
+  H100s. The complete candidate is 12,222,337 parameters. Each arm received
+  360 optimizer updates per seed; candidate-time search, oracle, and verifier
+  calls were zero.
+
+  Across 768 strictly larger held-out matrices, on-policy DAgger certified
+  48/768 = 6.25%, equal-budget offline search distillation certified 59/768 =
+  7.6823%, ordinary oracle imitation certified 34/768 = 4.4271%, and random
+  labels certified 0/768. Per-seed DAgger versus offline scores were 5/5,
+  27/21, and 16/33. The new DAgger arm exceeds the earlier 28/768 offline
+  result only because this experiment uses more examples and updates; the
+  matched comparison rejects the DAgger mechanism by 11 cases, or 1.4323
+  percentage points.
+
+  Exact report SHA-256 values are
+  `88aadcab9ef4ad64f4612cb4edb602bd0f94827cdff56b49887d865254216cc9`,
+  `86038a66f291dac33f061f6a78cbcf884be1ccc3bc3a7bb49092076ba097a39f`,
+  and
+  `ce803509dc02359e2bfb65ecf1a3ff5586914dd961227229a23b3b3f0437dee8`.
+  Source and test SHA-256 values are
+  `91fe019e0ec7232f6d319b7f8dd85cd9473e1a3a86a52505a9e2c64705b222b0`
+  and
+  `d77967203ed252bbf638fbc86888b099606bde28de7cc6541e6abf5031d8b30e`.
+  All 47 source files and 4,191 preparation search traces were hash-accounted
+  and deleted before evaluation.
+
+  The aggregate allocation was 2,765.57 H100-seconds = 0.7682 H100-hours.
+  Preparation consumed 2,083.05 seconds, 75.3% of the allocation, and
+  performed 4,191 searches, 11,906 oracle labels, 1,442,150 node expansions,
+  and 12,650,170 edge expansions. Training used 225.29 seconds and evaluation
+  364.53 seconds. Future search-trace production must therefore run as a
+  hash-bound CPU stage on Stokes or Newton CPU capacity, followed by isolated
+  GPU-only fitting and evaluation. Do not spend H100 time on serial host
+  search when CPU capacity is available.
+
+- **2026-07-24 22:00--22:13 EDT** -- **The positive offline
+  search-distillation foothold receives a controlled scale test.** Three
+  isolated jobs `701043`, `701044`, and `701048` use 1,024 preparation
+  matrices, up to 24 retained states per matrix, 60 epochs, 512 strict larger
+  held-out matrices, and the same 12.22M-parameter equivariant policy family.
+  Search-teacher, ordinary-imitation, and random-label arms retain identical
+  weights, examples, parameters, schedules, and optimizer updates.
+
+  `701045` was canceled before Python launch because `evc33` reproduced its
+  prior runtime anomaly and hung while querying the assigned H100. It
+  generated no report or training state. Replacement `701048` started
+  normally on `evc37`; the persistent launcher now excludes `evc33` as well
+  as down nodes `evc26` and `evc31`. Launcher SHA-256 is
+  `b846f998a4d24869ae2f62610ea06caedc31dbe72108e80a444f749ba036d8c8`.
+  These runs test a scaling curve only; they cannot promote reasoning without
+  the matched controls and strict posthoc assessor.
+
+- **2026-07-24 22:13--22:24 EDT** -- **Hostile SVI controls close repeated
+  value propagation as the causal mechanism.** Jobs `701013`--`701015`
+  completed cleanly on three isolated H100s. Every arm used the same
+  3,567,363 controller parameters, 128,649,027 complete-system parameters,
+  training-state presentations, optimizer updates, and initialization.
+  Candidate-time oracle, search, and verifier calls were zero.
+
+  | Arm | Strict certificates | Rate |
+  |---|---:|---:|
+  | Eight-backup treatment | 96/192 | 50.0000% |
+  | One backup | **107/192** | **55.7292%** |
+  | Raw matrix removed | 103/192 | 53.6458% |
+  | Pair relations removed | 97/192 | 50.5208% |
+  | Zero backups | 85/192 | 44.2708% |
+  | Structural action scalars removed | 73/192 | 38.0208% |
+  | Message passing disabled | 69/192 | 35.9375% |
+  | Legal operands/types only | 2/192 | 1.0417% |
+  | Random labels | 0/192 | 0% |
+
+  Eight backups lose the one-backup control by 11 cases and the raw-matrix
+  ablation by seven. Structural action scalars and some learned message
+  interaction carry useful policy signal, but deeper repeated backups do not.
+  The result is
+  `current_svi_iterative_planning_mechanism_falsified_policy_signal_remains`.
+  Exact report SHA-256 values are
+  `c89da9e537c101c676e27b6c29a906842293218b7a2cffcad887655e990216d9`,
+  `a9ea9bd2ff31b6e191f9703167ed5962ed9bbd943eda50b04a89c72cd7ea1c99`,
+  and
+  `6377bdc6ebda3468226b3ed73448f8ac38a5cccd37b84127df498173bf80b9df`.
+  Source, tests, and launcher SHA-256 values are
+  `c0b331604577f0e260d5338733c371da25fac835e0c1277383a72bbea0bb1c8c`,
+  `abd05f3ac1fd2671f2456fc592b1582abfc429e313ccf059b1812e0b8a391962`,
+  and
+  `05824aea519f7b4e3c29f1a2ff2742ef521f7e01918635650a523d72669e01a5`.
+  Focused verification is 28 passed plus clean Ruff and byte compilation.
+  Hostile jobs consumed 8,416 H100-seconds = 2.3378 H100-hours; the earlier
+  wide-capacity jobs consumed 11,268 H100-seconds = 3.1300 H100-hours.
+
+  Search-scale v2 independently exposed a teacher-data ambiguity:
+  `701044` failed closed when identical matrix states received conflicting
+  bounded-search actions. The corrected v3 preparation aggregates all
+  occurrences, selects the majority action, uses canonical action order only
+  for ties, and records duplicate/conflicting occurrence counts. Its source
+  SHA-256 is
+  `8664339392d7b23de114a4316bb0f37e5ba25b3827aae330cc10a82ce535da4b`;
+  23 focused search/on-policy tests pass with clean Ruff and byte compilation.
+  Claim-bearing consensus seeds are `701074`, `701075`, and `701077`.
+
+- **2026-07-24 22:24--22:32 EDT** -- **Learned Lyapunov/Bellman potentials
+  contain distance signal but do not establish planning.** Corrected canary
+  `701060` passed, then jobs `701070`--`701073` completed on four isolated
+  H100s. The controller adds 19,845,699 parameters for a 144,927,363-parameter
+  complete system.
+
+  | Arm | Strict certificates | Rate |
+  |---|---:|---:|
+  | Lyapunov + Bellman + monotonic | 18/768 | 2.3438% |
+  | Action classification only | 8/768 | 1.0417% |
+  | Distance regression only | **21/768** | **2.7344%** |
+  | Shuffled distance labels | 0/768 | 0% |
+  | Shuffled successor binding | 0/768 | 0% |
+  | Random labels | 0/768 | 0% |
+
+  Distance supervision is genuine because both shuffled controls collapse,
+  but Bellman consistency and monotonic margins do not improve over distance
+  regression alone. Treatment loses that control by three cases. Cycles
+  dominate 678/768 treatment and 667/768 distance-only failures. Each arm
+  received exactly 9,600 updates; the material allocation was 1,695
+  H100-seconds = 0.4708 H100-hours. Candidate-time oracle/search/verifier
+  calls were zero.
+
+  Report SHA-256 values are
+  `29923f969c342964641afc6a2e98eaf0150f7f3de6a98fed1ffe9bfde1f4df2d`,
+  `5f5f703a52fc8db5f93e21bbbb572dbd54a5b9aa074577559c5b8baae350272b`,
+  `c45d1c55e0f5ad3043e7e86454502b8dfb4bc0fa71decd6e955902881373a40e`,
+  and
+  `affc6311ac8d4ea0e07a6bc948a0a7bac979f1a89c0f41bb467273dc4911f41f`.
+  Source, tests, and launcher SHA-256 values are
+  `850eff1436c19f69824af7e66aeaa7a1cfa5195307b6f51b1db3ca6ed3a3798c`,
+  `d0f22dd76a4b8840b37cb0564cf634bcc730e41a258d33cdffdba0750cec4327`,
+  and
+  `20970569327b39d2ff6f2dc036cef374a2d2892a684df2c04e1b125e11fed8be`.
+  All 20 model files rehash against their reports with zero mismatches.
+
+- **2026-07-24 22:24--22:32 EDT** -- **Local proof contracts fit but do not
+  control autonomous composition.** Canary `701059` passed, then jobs
+  `701062`--`701064` completed concurrently on three H100s. Every arm adds
+  7,323,684 parameters for a 132,405,348-parameter complete system.
+
+  | Arm | Strict certificates | Rate |
+  |---|---:|---:|
+  | Proof-carrying contract | 77/384 | 20.0521% |
+  | Classifier-only | **111/384** | **28.9063%** |
+  | Proof heads zeroed at inference | 77/384 | 20.0521% |
+  | Shuffled action/successor binding | 82/384 | 21.3542% |
+  | Shuffled progress labels | 49/384 | 12.7604% |
+  | Random labels | 0/384 | 0% |
+
+  Proof loses classifier-only by 34 cases and has exactly zero aggregate
+  effect versus zeroing its proof heads. Treatment nearly perfectly fits
+  preparation labels, so the failure is autonomous larger-geometry
+  composition, not basic optimization. The three jobs consumed approximately
+  0.444 H100-hours, 27,000 optimizer updates, 108,000 training examples,
+  726,774 training triples, and 2,659,978 evaluation triples. Candidate-time
+  oracle/search/verifier calls were zero.
+
+  Exact report SHA-256 values are
+  `937306298674339c40ef978c84cc1d92d9ad1c5036565efc178c41d763c6331a`,
+  `6954130bf76a5e88296bcdef51526fad6bafd89e9396866810778ec81dcba656`,
+  and
+  `d05de63c5b2e1d565e219ec687a04ef47d0331d890ba64b7309e1b747fa33004`.
+  Source, tests, and launcher SHA-256 values are
+  `62ba26c92620e4fdc3107a61ce13f8286a31859da26d40b3c5b0c33e7d338abd`,
+  `bb6d9218bc7c2e2cdedcca1fb56811afd61e2d498124f3d336e11a698d0cbe25`,
+  and
+  `a11c72e8936a7feab9027c4f336d86233c232fae2e51547ba09ab9a2b85fb08a`.
+  The focused suites total 26 passed with clean Ruff, byte compilation, and
+  launcher syntax.
+
+- **2026-07-25 03:41--03:55 EDT** -- **Frozen Shohin features do not repair
+  multi-family renderer transfer.** Job `702764` completed one 300-update
+  H100 smoke on `evc24`. The 331,589-parameter connected compiler drove loss
+  from 1.866718 to 0.00001019 and fit all 36 training episodes. Development
+  exactness was 12/24: 6/6 unseen-law, 6/6 longer-composition, 0/6 held-out
+  renderer, and 0/6 joint. This exactly matches the standalone byte
+  compiler; frozen residuals add zero exact transfer on the decisive cells.
+
+  The result uses blocks 17/25/29, a 1,728-wide frozen feature, 125,413,253
+  conceptual complete parameters, and zero candidate-time oracle/search/
+  verifier calls. Report SHA-256 is
+  `06345448d5a1696678b5eb439a3ca414b26132cbbf9ee6782af68f0606e9688d`.
+  The checkpoint SHA-256 and parameter count match the protected base, but
+  the strict runtime-semantic receipt is false. Fail-closed repeats `702769`,
+  `702771`, and `702773` correctly produced no replacement report. This is
+  negative-only evidence and not a claim-bearing qualification.
+
+  Final custody state: no Newton jobs are active; protected checkpoint
+  SHA-256 remains
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`;
+  pretraining remains held. Open-ended architecture search is closed. The
+  next highest-value experiment, if capacity resumes, is a preregistered
+  cross-renderer representation curriculum with counterfactual
+  role-equivalence supervision and the existing multi-family/source-deletion
+  controls.

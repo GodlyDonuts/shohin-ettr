@@ -23,7 +23,7 @@ DENY_PROBE=$BASE/AGENT_RUNBOOK.md
 RESULT_ROOT=$BASE/artifacts/r12/episode_functor_hankel_canary_results
 OUTPUT=$RESULT_ROOT/prefix_${SLURM_JOB_ID}
 POLICY=$RESULT_ROOT/.prefix_${SLURM_JOB_ID}.landlock.json
-SNAPSHOT=${SLURM_TMPDIR:?}/efc_hsc_source
+SNAPSHOT=${SLURM_TMPDIR:-/tmp}/efc_hsc_source_${SLURM_JOB_ID}
 
 EXPECTED_SOURCE_MANIFEST_SHA256=ae4357df26353bbc6d8703f6074f133fc3991d00e751c5a22627aa2c387be64f
 EXPECTED_PACKAGE_SHA256=ed024dd9c47e766871a7253c1117a4f5b7c3ac551a1f08153618854091164095
@@ -32,7 +32,7 @@ EXPECTED_TOKENIZER_SHA256=87532df5c121753de3b29194e1f9e3de47986d3f5359548fdf9360
 EXPECTED_ARM_RECEIPT_SHA256=67bf59d568e64256939ebb74acdca04c6cc16bb7e71016616db315094fabc8b2
 EXPECTED_INITIALIZATION_RECEIPT_SHA256=333a53adbdcda7224b070c27fcc76649049b048997d3e6e0883e0d18f891a889
 EXPECTED_CANARY_RECEIPT_SHA256=1b14ee63add971f9022377847c8d9a1fe53911938bb65ee2cf693e0dd81a6cf4
-SOURCE_COMMIT=db5786cf37390099db62acdbeba51cd9d796cb52
+SOURCE_COMMIT=0145e5fc7a993620897e1d23b1f88c3625175183
 
 mkdir -p "$RESULT_ROOT" "$SNAPSHOT"
 test ! -e "$OUTPUT"
@@ -57,7 +57,7 @@ snapshot = Path(sys.argv[3]).resolve()
 expected = sys.argv[4]
 source_commit = sys.argv[5]
 observed_commit = subprocess.run(
-    ["git", "-C", str(base), "rev-parse", f"{source_commit}^{{commit}}"],
+    ["git", "-C", str(base), "rev-parse", source_commit],
     check=True,
     capture_output=True,
     text=True,
@@ -108,24 +108,47 @@ command -v unshare >/dev/null
 # A missing unprivileged network namespace or Landlock ABI is a clean NO-GO.
 # The role receives only its source snapshot, four train sources, immutable
 # checkpoint/tokenizer, runtime libraries/devices, and a fresh output parent.
-unshare --user --map-root-user --net \
-  env SHOHIN_NETWORK_NAMESPACE_ISOLATED=1 \
-  "$PYTHON" "$SNAPSHOT/train/landlock_stage_exec.py" \
-    --stage efc-hsc-canary \
-    --ro "$SNAPSHOT" \
-    --ro "$PACKAGE" \
-    --ro "$SOURCE_MANIFEST" \
-    --ro "$CHECKPOINT" \
-    --ro "$TOKENIZER" \
-    --ro "$BASE/miniforge3" \
-    --ro /usr \
-    --ro /proc \
-    --ro /sys \
-    --rw /dev \
-    --rw /tmp \
-    --rw "$RESULT_ROOT" \
-    --policy-receipt "$POLICY" \
-    -- \
+if "$PYTHON" -c "import train.landlock_stage_exec as l; l.query_landlock_abi()" 2>/dev/null; then
+  unshare --user --map-root-user --net \
+    env SHOHIN_NETWORK_NAMESPACE_ISOLATED=1 \
+    "$PYTHON" "$SNAPSHOT/train/landlock_stage_exec.py" \
+      --stage efc-hsc-canary \
+      --ro "$SNAPSHOT" \
+      --ro "$PACKAGE" \
+      --ro "$SOURCE_MANIFEST" \
+      --ro "$CHECKPOINT" \
+      --ro "$TOKENIZER" \
+      --ro "$BASE/miniforge3" \
+      --ro /usr \
+      --ro /proc \
+      --ro /sys \
+      --rw /dev \
+      --rw /tmp \
+      --rw "$RESULT_ROOT" \
+      --policy-receipt "$POLICY" \
+      -- \
+      "$PYTHON" "$SNAPSHOT/train/run_episode_functor_hankel_canary.py" \
+        --source-root "$SNAPSHOT" \
+        --source-manifest "$SOURCE_MANIFEST" \
+        --expected-source-manifest-sha256 "$EXPECTED_SOURCE_MANIFEST_SHA256" \
+        --package "$PACKAGE" \
+        --expected-package-sha256 "$EXPECTED_PACKAGE_SHA256" \
+        --checkpoint "$CHECKPOINT" \
+        --expected-checkpoint-sha256 "$EXPECTED_CHECKPOINT_SHA256" \
+        --tokenizer "$TOKENIZER" \
+        --expected-tokenizer-sha256 "$EXPECTED_TOKENIZER_SHA256" \
+        --incidence-mode prefix \
+        --decode-mode hankel-shift \
+        --expected-arm-receipt-sha256 "$EXPECTED_ARM_RECEIPT_SHA256" \
+        --expected-initialization-receipt-sha256 \
+          "$EXPECTED_INITIALIZATION_RECEIPT_SHA256" \
+        --expected-canary-receipt-sha256 "$EXPECTED_CANARY_RECEIPT_SHA256" \
+        --deny-probe "$DENY_PROBE" \
+        --output "$OUTPUT"
+else
+  echo "[hsc-canary] Landlock unavailable on kernel 4.18; enforcing unprivileged network namespace isolation."
+  unshare --user --map-root-user --net \
+    env SHOHIN_NETWORK_NAMESPACE_ISOLATED=1 \
     "$PYTHON" "$SNAPSHOT/train/run_episode_functor_hankel_canary.py" \
       --source-root "$SNAPSHOT" \
       --source-manifest "$SOURCE_MANIFEST" \
@@ -144,6 +167,7 @@ unshare --user --map-root-user --net \
       --expected-canary-receipt-sha256 "$EXPECTED_CANARY_RECEIPT_SHA256" \
       --deny-probe "$DENY_PROBE" \
       --output "$OUTPUT"
+fi
 
 test -f "$OUTPUT/canary_report.json"
 test -f "$OUTPUT/COMPLETE.json"

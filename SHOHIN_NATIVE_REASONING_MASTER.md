@@ -3,10 +3,11 @@
 ## Current Status — Read First
 
 **Current frontier:** the Episodic Functor Compiler (EFC) has passed an
-externally timed, source-frozen, unmocked macOS process-custody rehearsal, and
-a train-only learned source-to-machine architecture is now implemented against
-the hash-verified frozen Shohin trunk. Its mechanics and attribution interfaces
-are tested, but no neural first fit is currently authorized.
+externally timed, source-frozen, unmocked macOS process-custody rehearsal.
+Several learned source-to-machine architectures are implemented against the
+hash-verified frozen Shohin trunk; the active Source-Sealed Quotient-Algebra
+Compiler (SSQAC) lane is CPU-falsifier-only. Its mechanics and attribution
+interfaces are tested, but no neural first fit is currently authorized.
 
 - **Protected base:** immutable step-300k Shohin checkpoint,
   125,081,664 parameters, SHA-256
@@ -96,6 +97,22 @@ are tested, but no neural first fit is currently authorized.
   compositions, renderers, task families, process-level source deletion,
   donor-law swaps, and real/zero/random/permuted Shohin trunk controls are
   mandatory before a bounded native-law claim.
+- **SSQAC pre-freeze lane:** the Source-Sealed Quotient-Algebra Compiler is
+  explicitly **rejected for source freeze / CPU falsifier only**. Its first
+  fixed-solver formulation was rejected because a host-authored
+  Macaulay/border-basis circuit would own the substantive reasoning. The
+  revised treatment must compile both source constraints and a source-deleted
+  algebra microprogram, then use only primitive finite-field/register
+  operations to certify a consequence that is forced across all legal
+  completions. The fixed exact algebra engine is retained solely as a gold
+  ceiling/control. Current CPU work supplies sparse-polynomial, quotient,
+  primitive-ALU, quotient-artifact verification, law-collision, and scoreless
+  learned-controller trace-pilot mechanics; the focused suite is **100
+  passed**. This is not a fitted controller, raw-language compiler, frozen
+  neural candidate, scored board, or reasoning result. Before any source
+  freeze it still requires the masked variable geometry, sealed quotient wire,
+  anonymous codebook, late-query/process-deletion boundary, exact resource
+  receipt, and hostile audit of the complete treatment and controls.
 - **Disposition of frozen mechanism `80dc07a`:** retain the 907,269-parameter
   four-slot causal bind-select workspace as a favorable control and custody
   reference. It is no longer a constraint on the candidate solution.
@@ -5928,6 +5945,63 @@ separator synthesis, polynomial target-coupled queries without latent-axis
 labels, joint action-state identification up to behavioral conjugacy, and an
 exponential separation from matched active-automata and synthesis controls.
 <!-- END EMBEDDED SOURCE -->
+
+---
+
+## 2026-07-24: SSQAC source-sealed quotient-algebra track
+
+The active hypothesis is that Shohin should compile episode-local laws into a
+finite Boolean quotient algebra, delete the source/compiler, and let a learned
+recurrent controller construct a proof using only primitive field-row
+operations. This remains a bounded synthetic reasoning hypothesis, not a
+general-reasoning result.
+
+### Exact mechanics now established
+
+- F_257 sparse quotient certificates include canonical generators, complete
+  Macaulay workspaces, RREF rows and provenance, complete one-degree
+  prolongation, stable dimension, order-ideal structure, commuting
+  multiplication operators, Boolean idempotence, normal forms, and exact
+  consequence evidence.
+- Emitted generators remain degree at most four, while adaptive exact closure
+  may expand through degree eight under fixed monomial/dimension limits.
+  `xyz-1` and a six-variable one-hot ideal both require and pass degree five.
+- F_257/F_263 validation can bind an independently supplied intended Boolean
+  zero set, rather than merely checking that two encodings agree.
+- A standalone verifier was written without importing the producer. It accepts
+  real adaptive producer artifacts and rejects source, query, value, domain,
+  digest, RREF, provenance, span, prolongation, and evidence substitution.
+- A generated collision family contains 32 nonisomorphic balanced units and
+  128 cells across eight geometries and 32 late-query addresses. Four held-out
+  shallow classifiers are exactly at 50%; nearest-neighbor is 56.25%. It
+  remains a CPU falsifier with promotion disabled.
+- A gold-only bridge maps all 128 source/query cells to Boolean
+  completion-one-hot quotients, validates independently enumerated intended
+  zero sets over two fields, exports exact consequences, and passes the
+  standalone verifier. Law deletion is `AMBIGUOUS` and recoding is exact.
+  Bridge completion variables and artifacts are prohibited candidate inputs.
+
+### Learned-controller result
+
+The old absolute-index row controller reached 93.75% (`60/64`) autonomous
+certification in-distribution but only 3.125% (`2/64`) on unseen larger
+geometry. The architecture contained untrained embeddings and output weights
+for held-out indices. Replacing those with deterministic coordinate encodings
+and content-based pointer heads raised held-out teacher-forced instruction
+accuracy from 85.475% to 91.258%, but autonomous certification was 0/64
+(`57` invalid, `7` overlong). This is a closed-loop stability failure and
+rules out a reasoning claim.
+
+The first three H100 launches (`700847`--`700849`) found a preparation-oracle
+bug on rank-deficient reverse-pivot matrices before fitting and produced no
+model result. The reduced counterexamples now pass. Corrected isolated jobs
+`700853`, `700854`, and `700855` test the equivariant controller at larger
+data/model scale across independent seeds. They are scoreless mechanics
+experiments only. They do not touch the protected 125,081,664-parameter
+step-300k flagship or lift the user pretraining hold.
+
+The full current protocol and claim boundary are maintained in
+`R12_EFC_SOURCE_SEALED_QUOTIENT_ALGEBRA_PROTOCOL.md`.
 
 ---
 
@@ -51375,3 +51449,555 @@ unrestricted reasoning evidence.
 <!-- END EMBEDDED SOURCE -->
 
 ---
+
+## 2026-07-24 SSQAC Scale, Custody, and Control Update
+
+The current reasoning frontier is the Source-Sealed Quotient Algebra Compiler
+(SSQAC), not continued language-model pretraining. The protected 125,081,664-
+parameter step-300k Shohin checkpoint remains frozen under the user pretraining
+hold. SSQAC asks whether source text can be compiled into a source-independent
+finite algebra, whether a candidate can manipulate that algebra after source
+deletion, and whether a separate assessor can verify the consequence without
+an answer oracle.
+
+Exact CPU mechanics now cover adaptive Macaulay closure through degree eight,
+independently supplied Boolean semantics over two fields, a standalone
+artifact verifier that does not import the producer, a generated 128-cell
+law-collision family, and a gold quotient bridge that certifies every cell.
+Law deletion is ambiguous and opaque-key/completion-variable recodings are
+exact. These are mechanics and oracle ceilings, not native reasoning.
+
+The learned variable-geometry controller remains the bottleneck. An
+absolute-index controller certified 60/64 same-geometry cases but only 2/64
+larger unseen geometries. A 2,317,847-parameter equivariant rewrite improved
+teacher-forced instruction accuracy from 85.475% to 91.258% yet certified
+0/64 autonomous larger-geometry cases. A bounded reactive DAgger smoke run
+also certified 0/8 and reduced expert-state accuracy from 46.3% to 33.7%.
+These failures localize the problem to autonomous error recovery and
+algorithmic transfer rather than representational fit alone.
+
+The isolated H100 falsifier package matched standard recurrent jobs `700853`,
+`700854`, and replacement `700859` against reactive step-free jobs
+`700856`--`700858`. The failed infrastructure attempt `700855` reported no
+CUDA device and produced no model result. Each run uses generated scoreless
+matrices, disjoint larger geometry, a separate report, and no flagship path.
+Additional disjoint work tests vectorized reactive training, bounded
+verifier-guided internal search, and an equivariant defect-energy controller.
+Compute is deliberately parallelized across different hypotheses rather than
+repeated only as more seeds.
+
+The first four H100 reports now close instruction imitation as a sufficient
+mechanism. Standard recurrent seeds certified 0/512 and 1/512 autonomous
+larger-geometry programs despite 90.863% and 91.562% teacher-forced accuracy.
+Reactive step-free seeds both certified 0/512 despite 88.314% and 89.141%
+teacher-forced accuracy. The third reactive seed on anomalous `evc33` was
+stopped rather than allowed to burn capacity. A replacement standard seed and
+two paired larger-data/batch arms remain active, but future effort is directed
+toward vectorized reactive training, verifier-guided search, and explicit
+defect-energy dynamics rather than more ordinary trace imitation.
+
+The third standard seed later certified 1/512, fixing the ordinary recurrent
+aggregate at 2/1,536 = 0.1302%. More important, hostile endpoint review
+rejected an apparent energy-controller breakthrough. The treatment reached
+96/96 on an unordered reduced-basis predicate, but only 1/96 when complete
+primitive traces were replayed through the original canonical RREF verifier;
+energy-only reached 2/96 and random-label 0/96. This is useful evidence that an
+equivariant energy can construct a basis, but it does not solve canonical
+algorithmic control.
+
+A bounded structural-search ceiling does solve that control problem: 16/16
+strict certificates at `4x5--4x6` and 8/8 at `5x7--5x8`, versus 1/16 and 0/8
+under randomized guidance. It consumed as many as 3,771 expanded nodes,
+55,791 edges, and depth 22. Because the candidate uses an explicit
+source-independent RREF defect and host beam search, this is counted
+conventional computation, not native model reasoning. Its value is as a
+teacher and an existence proof that the sealed primitive state is sufficient.
+
+The next neural falsifier removes Python trajectory unrolling and all
+row/column coordinate features. It is a step-free, feed-forward,
+permutation-equivariant content-pointer policy trained from a resident
+flattened state dataset with BF16, fused AdamW, and `torch.compile`. Its bounded
+CPU smoke remains 0/16; the H100 run tests whether scale and efficient
+optimization can internalize the controller without host search. In parallel,
+new work targets canonical defect energy, search distillation, and fixed-depth
+neural value iteration.
+
+That H100 gate is now consumed. All three vectorized seeds certified 0/512,
+for 0/1,536 aggregate, despite 97--99% sampled device utilization and
+82.837%--83.085% teacher-forced exact-instruction accuracy. This cleanly
+separates an engineering success from a capability failure: kernel-launch
+overhead and low utilization were real and are fixed, but they were not the
+cause of failed reasoning. Ordinary recurrent, reactive, DAgger, larger-data,
+larger-batch, and vectorized imitation are therefore all closed as sufficient
+mechanisms. The live frontier is search distillation, exact canonical energy,
+and fixed-depth internal value iteration under the same strict verifier.
+
+Custody and accounting are stronger than the neural result. A three-process
+compiler/candidate/assessor harness deletes source before candidate launch and
+fails closed on manifest drift, tamper, symlinks, forbidden reads/content,
+network attempts, or process-order violations. This is a user-space mechanics
+test, not hostile-kernel isolation. An independent exact resource receipt
+replays quotient and primitive-program artifacts and counts all structural
+work; runtime wall time and device memory require external measurement.
+
+Current conclusion: Shohin does not yet have demonstrated native general
+reasoning. Exact algebraic consequence mechanics exist, the information
+boundary is increasingly auditable, and the remaining scientific question is
+whether a learned source-sealed compiler/controller can generalize
+autonomously to unseen geometry and then unseen natural task families.
+
+---
+
+## 2026-07-24 SSQAC Search Distillation and Planning Update
+
+The controller frontier has advanced beyond ordinary imitation, but it has
+not reached demonstrated native reasoning.
+
+The exact bounded host-search teacher remains the structural ceiling at 64/64
+strict unseen certificates. Because it explicitly expands up to 1,312 nodes
+and 13,018 edges in the 64-case panel, it is external counted computation.
+It proves the sealed primitive state is sufficient; it does not prove that a
+model can reason over that state.
+
+A 12.22M-parameter search-distilled policy uses search only during data
+preparation. Search traces are deleted before evaluation and candidate
+rollouts make zero oracle, search, or verifier calls. Across three H100 seeds
+on 768 strictly larger unseen matrices:
+
+| Arm | Strict certificates | Rate |
+|---|---:|---:|
+| Search-distilled policy | 28/768 | 3.6458% |
+| Ordinary oracle imitation | 3/768 | 0.3906% |
+| Random labels | 0/768 | 0% |
+
+This is the first reproducible learned improvement over ordinary SSQAC
+imitation, but it remains far below reliable autonomous execution. High
+teacher-forced accuracy, approximately 99.2%, still coexists with 334 cycles
+and 343 VM errors. The result reinforces the central diagnosis: local action
+knowledge is not enough; long-horizon recovery and stable composition are the
+failure.
+
+An apparent 100% canonical-energy result was rejected after hostile controls.
+The full neural arm certified 192/192, but it received host-computed frontier,
+rank-matching, and action-admissibility structure. Zeroing the full frontier
+channel reduced it to 98/192, random-label training still reached 122/192, and
+a fixed deterministic non-neural schedule reached 192/192. The mechanism is
+therefore classified as
+`hybrid_host_algorithm_mechanics_not_learned_or_native_reasoning`. Its
+six-seed report SHA-256 is
+`c5f7ad71cc80f9144ec57517215ab88cf770ebf9ca2f56d705a2ac8cf732dade`.
+
+The strongest current model-owned mechanism is fixed-depth soft value
+iteration over legal local-action nodes. Eight default-width H100 seeds give:
+
+| Arm | Strict certificates | Rate |
+|---|---:|---:|
+| Shared-weight internal backups | 258/512 | 50.3906% |
+| Separately trained zero-iteration control | 213/512 | 41.6016% |
+| Random labels | 0/512 | 0% |
+
+The controller adds 3,567,363 parameters, for 128,649,027 complete-system
+parameters. It performs 50,496 internal recurrent iterations and 751,664
+action-value backups across the treatment evaluations, with zero candidate
+oracle/search/verifier calls. The treatment gain is 8.7891 percentage points,
+but it misses the frozen +10 point causal gate and has substantial seed
+variance: exact one-sided sign-flip `p=0.0859375`, two-sided `p=0.171875`.
+This is meaningful mechanics, not a reasoning promotion.
+
+Three 61,562,243-parameter capacity arms completed on separate H100s. Their
+complete systems contain 186,643,907 parameters, below 200M. Treatment reached
+181/384 = 47.1354%, while separately trained zero-iteration controls reached
+186/384 = 48.4375% and random labels reached 0/384. More than 17x controller
+capacity therefore reverses rather than strengthens the provisional recurrent
+advantage.
+
+The three-seed hostile audit also closes the iterative-planning interpretation:
+
+| Arm | Strict certificates | Rate |
+|---|---:|---:|
+| Eight-backup treatment | 96/192 | 50.0000% |
+| One backup | **107/192** | **55.7292%** |
+| Raw matrix removed | 103/192 | 53.6458% |
+| Pair relations removed | 97/192 | 50.5208% |
+| Zero backups | 85/192 | 44.2708% |
+| Structural action scalars removed | 73/192 | 38.0208% |
+| Message passing disabled | 69/192 | 35.9375% |
+| Legal operands/types only | 2/192 | 1.0417% |
+| Random labels | 0/192 | 0% |
+
+Repeated backups lose the one-backup arm by 5.73 points and removing the raw
+matrix improves over treatment by 3.65 points. The architecture has learned
+policy signal, especially in structural action scalars, but its repeated
+message-passing/value-backup mechanism is not the cause of capability.
+Current SVI is therefore a policy baseline, not demonstrated internal
+planning.
+A separate successor-aware planner will compare correct one-step
+counterfactuals against zeroed and shuffled successor bindings, progressive
+versus fixed recurrent-depth training, and longer-depth overthinking tests.
+An on-policy search-distillation lane tests whether correction on the
+candidate's own failure states can turn the 3.65% foothold into reliable
+closed-loop control.
+
+The successor-aware planner is now consumed and rejected. Four H100 seeds
+used 6,220,225 controller parameters and equal training budgets:
+
+| Arm | Depth 8 | Doubled depth |
+|---|---:|---:|
+| Fixed recurrent successors | 110/384, 28.65% | 112/384, 29.17% |
+| Progressive randomized depth | 113/384, 29.43% | 113/384, 29.43% |
+| Successors zeroed | **133/384, 34.64%** | 132/384, 34.38% |
+| Action/successor bindings shuffled | 105/384, 27.34% | 104/384, 27.08% |
+| Recurrence disabled | 114/384, 29.69% | 108/384, 28.13% |
+| Random labels | 0/384 | 0/384 |
+
+All arms had equal parameters, optimizer updates, and training successor
+evaluations. The preparation oracle was locked before training/evaluation and
+candidate-time oracle/search/verifier calls were zero. The strongest true
+successor arm trails the zeroed-successor control by 5.21 percentage points,
+and longer recurrence provides no material gain. Direct counterfactual
+exposure is therefore not the missing substrate.
+
+The matched on-policy search-distillation lane is also consumed. Three H100
+seeds used the same 12,222,337-parameter policy and 360 optimizer updates per
+arm and seed:
+
+| Arm | Strict certificates | Rate |
+|---|---:|---:|
+| On-policy DAgger correction | 48/768 | 6.2500% |
+| Equal-budget offline search distillation | **59/768** | **7.6823%** |
+| Ordinary oracle imitation | 34/768 | 4.4271% |
+| Random labels | 0/768 | 0% |
+
+The new result does not contradict the earlier 28/768 search-distillation
+score: both DAgger and its matched offline control received more examples and
+updates than the earlier baseline. In the claim-bearing comparison, DAgger
+loses offline distillation by 11 cases, or 1.4323 percentage points. Reactive
+correction on the learner's own failed states is therefore not a sufficient
+repair. The larger offline result is retained as the current
+search-distillation baseline.
+
+This run also exposes an avoidable systems cost. Preparation used 2,083.05 of
+2,765.57 allocated H100-seconds while expanding 1,442,150 nodes and
+12,650,170 edges in Python. Future search generation belongs on hash-bound CPU
+workers, with H100 allocation reserved for resident-tensor fitting and
+evaluation.
+
+A preregistered scale curve is now running as jobs `701043`, `701044`, and
+`701048`. It increases preparation from 256 to 1,024 matrices, retains up to
+24 states per matrix, and evaluates 512 strictly larger matrices while
+keeping the same 12.22M-parameter policy family and matched
+search-teacher/ordinary/random arms. This tests whether the offline foothold
+scales, saturates, or reverses. It is not a promotion-by-compute.
+
+The initial scale lane exposed a previously unseen ambiguity: duplicate raw
+matrix states can receive different legal actions from noisy bounded-search
+trajectories. The implementation now records every duplicate and conflict,
+uses majority action frequency per unique state with canonical tie-breaking,
+and recomputes matched controls only after resolution. The claim-bearing v3
+seeds are `701074`, `701075`, and `701077`; earlier v2 runs are exploratory
+and cannot be pooled with them.
+
+The next control-theoretic hypothesis changes the supervision target rather
+than adding capacity or recurrence. A learned Lyapunov/Bellman controller will
+predict a source-independent remaining-distance potential for raw states and
+successors, enforce pairwise monotonic descent and Bellman consistency, and
+choose actions by learned potential decrease. It must beat equal-budget
+classification-only, shuffled-potential, zero-consistency,
+shuffled-successor, and random-label controls.
+
+That Lyapunov/Bellman hypothesis is now consumed. Four H100 seeds used a
+19,845,699-parameter controller:
+
+| Arm | Strict certificates | Rate |
+|---|---:|---:|
+| Lyapunov + Bellman + monotonic | 18/768 | 2.3438% |
+| Action classification only | 8/768 | 1.0417% |
+| Distance regression only | **21/768** | **2.7344%** |
+| Shuffled distance labels | 0/768 | 0% |
+| Shuffled successor binding | 0/768 | 0% |
+| Random labels | 0/768 | 0% |
+
+Distance regression contains genuine successor-dependent information because
+both shuffled controls collapse to zero. Bellman consistency and monotonic
+descent do not add capability: treatment trails distance-only by three cases,
+and cycles dominate both failure sets. A scalar potential is not enough to
+stabilize long-horizon execution.
+
+A separate proof-carrying controller tested whether explicit learned local
+contracts repair that failure. Three H100 seeds used 7,323,684 added
+parameters:
+
+| Arm | Strict certificates | Rate |
+|---|---:|---:|
+| Proof-carrying contract | 77/384 | 20.0521% |
+| Classifier-only | **111/384** | **28.9063%** |
+| Proof heads zeroed | 77/384 | 20.0521% |
+| Shuffled action/successor binding | 82/384 | 21.3542% |
+| Shuffled progress labels | 49/384 | 12.7604% |
+| Random labels | 0/384 | 0% |
+
+The contracts learn auxiliary targets, but they do not causally affect
+inference: zeroing them leaves the aggregate exactly unchanged, while
+classifier-only is 8.85 points better. The experiment also exposes a concrete
+next issue: the recurrent contract state was trained from zero but consumed
+autoregressively during rollout. Any successor must train persistent state on
+full candidate trajectories and must still beat a zeroed-memory control.
+
+The scientific position is now sharper:
+
+1. Exact mechanics and external search solve the proxy.
+2. Ordinary supervised action imitation does not compose.
+3. Search-based sample allocation improves a model-owned policy but remains
+   weak.
+4. Fixed shared-weight internal computation produces a larger, currently
+   unstable gain.
+5. Host-computed frontier/matching features can manufacture false
+   breakthroughs and must remain controls, not candidate inputs.
+
+Shohin still does not have demonstrated native general reasoning. The live
+question is whether recurrent model-owned state transition and value
+propagation survive equal-compute ablations and extrapolate without host
+algorithm features.
+
+## 2026-07-24 Expedited Final Decision
+
+The final enlarged-data result closes search distillation as the retained
+reasoning foothold. Two valid v3 consensus seeds completed:
+
+| Arm | Strict certificates | Rate |
+|---|---:|---:|
+| Search-teacher distillation | 178/1024 | 17.3828% |
+| Ordinary oracle imitation | **542/1024** | **52.9297%** |
+| Random labels | 0/1024 | 0% |
+
+The search teacher loses ordinary imitation by 364 cases. Per-seed
+search/ordinary scores were 54/512 versus 280/512 and 124/512 versus 262/512.
+The third claim-bearing seed failed and is excluded. This reverses the earlier
+small-data result and means no search-distillation result should be promoted
+as the current reasoning baseline.
+
+The honest conclusion after the controlled architecture campaign is:
+
+1. Shohin does not yet demonstrate native general reasoning.
+2. Raw 300k public scores remain low-single-digit.
+3. Local task competence and learned action signal exist, but autonomous
+   composition repeatedly collapses into cycles.
+4. More width, fixed recurrence, raw successor exposure, DAgger, scalar
+   potentials, and local proof heads all failed their causal controls.
+5. The highest observed model-owned proxy score is one-backup SVI at 107/192
+   = 55.7292%, but the tested iterative mechanism is not causal and therefore
+   is not evidence of internal planning.
+
+If development resumes, the only justified next experiment is a bounded,
+preregistered controller trained on full autonomous trajectories with explicit
+model-owned episodic anti-cycle memory. It must beat matched memory-zero,
+memory-shuffle, classifier-only, and random-label controls on unseen larger
+geometries. Until that gate passes, continuation pretraining remains on user
+hold and no architecture should be described as genuine reasoning.
+
+## 2026-07-24 Full-Trajectory Episodic Memory
+
+The remaining episodic-memory hypothesis was implemented as a bounded
+10,132,198-parameter controller. It stores learned encodings of visited raw
+matrix states, compares every legal successor to those encodings, and trains
+the recurrent and episodic states over complete expert trajectories rather
+than resetting recurrence for every labeled state. The complete system count
+is 135,213,862 parameters.
+
+Four matched H100 seeds used identical initial weights and exact per-seed
+trajectory schedules across treatment, classifier, and randomized-label arms.
+Each arm received 1,500 optimizer updates, 3,000 full trajectories,
+approximately 22,250 state presentations, and approximately 248,000 legal
+candidate presentations per seed.
+
+| Arm | Strict certificates | Rate | Cycle events |
+|---|---:|---:|---:|
+| Episodic memory | 442/1024 | 43.1641% | 34,375 |
+| Treatment weights with memory zeroed | 403/1024 | 39.3555% | 72,282 |
+| Treatment weights with memory features shuffled | 442/1024 | 43.1641% | 34,743 |
+| Full-trajectory recurrent classifier | **514/1024** | **50.1953%** | **21,694** |
+| Randomized labels | 0/1024 | 0% | 2,974 |
+
+The memory pathway changes behavior and roughly halves cycle events relative
+to zeroing it. However, rotating every memory feature dimension leaves
+aggregate correctness exactly unchanged, and the treatment loses the matched
+full-trajectory classifier by 72 cases. The mechanism is therefore using
+generic history or occupancy rather than semantic state identity. Learned
+episodic semantics are rejected.
+
+The retained positive result is narrower: full-trajectory recurrent training
+reaches 50.20% on unseen larger matrix geometries, showing that temporal
+exposure matters. It remains task-specific controller competence and does not
+establish reasoning across rules, renderers, or task families.
+
+A final frozen-weight semantic barrier uses normalized neural state identity
+directly rather than a free learned memory residual. It applies a fixed
+near-exact-repeat penalty (`temperature=0.02`, `penalty=8.0`) and has a
+feature-shuffled barrier control. Four frozen treatment models are being
+rescored on a fresh 512-case board, seed `20260801`, excluding both training
+and prior evaluation boards. This is a causal mechanism test, not a tuned
+benchmark retry.
+
+All four semantic-barrier rescores completed on the same fresh board:
+
+| Frozen-weight mode | Strict certificates | Rate | Cycle events |
+|---|---:|---:|---:|
+| Learned episodic residual | 957/2048 | 46.7285% | 68,308 |
+| Memory zeroed | 817/2048 | 39.8926% | 147,094 |
+| Fixed semantic barrier | 553/2048 | 27.0020% | 100,210 |
+| Feature-shuffled semantic barrier | 817/2048 | 39.8926% | 147,094 |
+
+Feature shuffling returns exactly to the zero-memory policy, proving that the
+barrier consumes semantic state coordinates rather than a generic time or
+occupancy signal. The causal effect is nevertheless strongly harmful. It
+removes 46,884 cycle events but loses 264 certificates relative to zeroing.
+The learned normalized state geometry produces false-positive revisit
+evidence, so semantic similarity is not an adequate cycle invariant.
+
+This closes learned similarity-based anti-cycle memory. A final diagnostic may
+replace similarity with exact in-architecture discrete state equality. That
+would not itself be a general reasoning claim; it only distinguishes a bad
+learned state metric from cycle avoidance being the wrong target.
+
+That exact diagnostic completed on a second fresh 2,048-case board:
+
+| Frozen-weight mode | Strict certificates | Rate | Cycle events |
+|---|---:|---:|---:|
+| Exact discrete anti-revisit barrier | **957/2048** | **46.7285%** | **16,550** |
+| Feature-shuffled exact barrier | 820/2048 | 40.0391% | 155,634 |
+| Memory zeroed | 820/2048 | 40.0391% | 155,634 |
+| Learned episodic residual | 922/2048 | 45.0195% | 76,334 |
+
+Exact repeat blocking improves all four frozen model seeds and gains 137
+certificates, or 6.6895 percentage points, over both same-weight controls.
+The feature-shuffled exact barrier reproduces zero memory exactly, so raw
+state identity is causal. It also removes 89.4% of cycle events.
+
+This is the first clean positive result from the episodic lane, but its scope
+must remain precise. It demonstrates a useful fixed architecture primitive,
+not learned semantic memory and not general reasoning. The equality
+comparison is discrete and the evaluation still covers one algebraic
+reduction family. With only four positive signs, the exact one-sided sign
+probability is 0.0625 even though the aggregate effect exceeds five points.
+
+The next claim-bearing experiment trains complete trajectories with the exact
+barrier active from initialization, using matched classifier, barrier-off,
+feature-shuffled, and randomized-label controls. Its purpose is to learn
+productive nonrepeating escape actions rather than apply the barrier only
+after fitting.
+
+That training experiment completed across four matched seeds and a third fresh
+2,048-case aggregate:
+
+| Arm | Strict certificates | Rate | Cycle events |
+|---|---:|---:|---:|
+| Exact-trained with exact barrier | 950/2048 | 46.3867% | 37,224 |
+| Same weights, barrier off | 920/2048 | 44.9219% | 57,351 |
+| Same weights, feature-shuffled barrier | 920/2048 | 44.9219% | 57,351 |
+| Full-trajectory recurrent classifier | **1058/2048** | **51.6602%** | **33,046** |
+| Randomized labels | 0/2048 | 0% | 118,276 |
+
+Exact memory remains causally useful to its own trained weights: all four
+seeds improve, aggregate correctness gains 30 cases, and cycle events fall by
+35.1%. But the effect shrinks to 1.4648 points and the exact-trained system
+loses the matched recurrent classifier by 108 cases. Training against the
+barrier does not turn cycle prevention into a superior policy.
+
+The durable conclusion of this lane is therefore:
+
+1. Full-trajectory temporal exposure is useful.
+2. Exact discrete anti-revisit state is a valid architecture primitive and
+   can rescue frozen policies.
+3. Learned semantic memory, similarity barriers, and barrier-aware training
+   do not beat a simpler full-trajectory recurrent classifier.
+4. The best aggregate task-specific baseline is 51.66%; the best individual
+   seed is 332/512 = 64.84%, but seed variance is substantial.
+5. None of these results covers unseen laws or task families, so none proves
+   native general reasoning.
+
+The best classifier model is preserved locally and on Newton as
+`best_full_trajectory_classifier_seed20260910.pt`, SHA-256
+`a7ebd0a0487d9fa75318faa5b5693a48439b799895cc4e88277be5c666ad5d1e`.
+
+## 2026-07-25 Expedited Campaign Conclusion
+
+Open-ended architecture search is closed under the accumulated evidence and
+current usage budget. Shohin has material autonomous task-specific controller
+competence, but it does not demonstrate native general reasoning.
+
+The retained result is full-trajectory recurrence at 1058/2048 = 51.6602% on
+unseen larger instances of one matrix-reduction family. Exact discrete
+anti-revisit is causally useful as a fixed execution primitive, but training
+with it does not beat the simpler recurrent classifier. Learned semantic
+memory, repeated planning, successor exposure, search distillation,
+Lyapunov/Bellman potentials, and proof-carrying contracts all fail their
+matched controls or absolute gates.
+
+The limiting failure is systematic law acquisition and composition, not
+parameter headroom. No retained mechanism has transferred across unseen rules
+and genuinely different task families. The next and only admissible
+claim-bearing experiment is a frozen, source-deleted qualification over at
+least three task families, unseen laws/compositions/depths/renderers, one
+shared mechanism, and matched recurrence-disabled, rule-shuffled,
+equal-compute classifier, and random-label controls. Until that gate exists
+and passes, continuation pretraining remains held and no mechanism should be
+described as general reasoning.
+
+The complete decision and evidence boundary are recorded in
+`R12_EXPEDITED_REASONING_CONCLUSION.md`.
+
+## 2026-07-25 Multi-Family Qualification Board
+
+The required successor gate is now concrete rather than aspirational.
+`pipeline/source_deleted_multifamily_machine_board.py` presents affine
+modular, bitwise rotate/xor, and unconstrained permutation laws through one
+anonymous finite-machine interface. Fitting and development share matched
+geometry; development holds out laws, scale, composition lengths 5--8, and a
+fourth renderer. Three leave-one-family-out folds test whether one mechanism
+can compile a family never available during fitting.
+
+The independent 1,344-row CPU audit reaches 1,344/1,344 exact execution after
+source deletion, zero family-name leaks, and 192/192 renderer orbits with
+identical sealed packets. Law swaps change 87.5% of answers and action-order
+reversal changes 69.1969% of eligible answers, proving that both the
+episode-local law and ordered composition are causally necessary. Receipt
+payload SHA-256 is
+`c3b3936fedd1e9b606818822838c5a3a8609ddc62e9abdf84cc7a75a7f6c1163`.
+
+This is a mechanics and leakage pass, not a learned reasoning result. The
+exact CPU compiler is forbidden at candidate inference. Neural authorization
+requires a raw-token compiler, process-level source deletion, one shared
+full-trajectory recurrent executor, five matched seeds, equal-compute
+controls, and at least 85% per family/cell. The complete preregistration is
+`R12_SOURCE_DELETED_MULTIFAMILY_MACHINE_PREREG.md`.
+
+The first neural mechanics smoke is now complete. A 152,933-parameter shared
+bidirectional byte compiler receives role-neutral key equality and masked raw
+records, predicts source/query roles, seals an anonymous machine, and executes
+without source, oracle, search, or verifier access. It reaches 36/36 fitting
+exactness and transfers perfectly to six unseen-law plus six
+longer-composition rows. It scores 0/6 on the held-out reverse renderer and
+0/6 on the joint cell because source-role predictions form invalid machine
+partitions. This is a useful clean negative: optimization and hard execution
+work, while byte-only renderer semantics do not transfer. Wider standalone
+models are not justified. The next matched treatment is the same compiler
+conditioned on frozen, hash-verified Shohin residual features.
+
+That connected treatment has now completed. Frozen Shohin residuals from
+blocks 17, 25, and 29 increase the learned compiler to 331,589 parameters and
+the conceptual complete system to 125,413,253 parameters. It still reaches
+36/36 fit, 6/6 unseen-law, 6/6 longer-composition, 0/6 held-out-renderer, and
+0/6 joint exactness: exactly the standalone 12/24 development score. Query
+role accuracy decreases from 89.6% to 80.8%; source-role accuracy remains
+50%. The protected checkpoint SHA-256 and parameter count match, but strict
+runtime attestation remained false, so this is conservative negative evidence
+only.
+
+The expedited conclusion is therefore stable: Shohin has useful
+task-specific controller competence but no demonstrated native general
+reasoning. Parameter growth, recurrence, and frozen residual access have not
+created renderer-invariant law acquisition. The next justified investment is
+an audited cross-renderer representation/post-training curriculum with
+counterfactual role-equivalence supervision, not another large architecture
+branch. No Newton jobs remain active and the user pretraining hold remains in
+force.
