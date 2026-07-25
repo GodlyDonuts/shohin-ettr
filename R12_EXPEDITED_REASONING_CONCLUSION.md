@@ -169,3 +169,23 @@ still receives complete transition tables, exploits fixed incidence geometry,
 shares one machine ontology across families, and is not integrated into the
 Shohin trunk. Full evidence and scope:
 `R12_RENDERER_CURRICULUM_QUALIFICATION.md`.
+
+## Final Variable-Topology Boundary
+
+The next falsifier is now frozen and audited. It varies state cardinality,
+action count, topology, and six renderer forms across 132 source-deleted
+episodes. Exactly 24 collision rows make state and action key frequencies
+identical, removing the shortcut used by the successful structural typer.
+The exact upper bound remains 132/132, all 21 renderer orbits compile to
+identical packets, law swaps change 113/132 answers, and action reversal
+changes 51/78 eligible answers.
+
+No learned candidate has passed this gate. The expedited final conclusion is
+therefore:
+
+`renderer_transfer_demonstrated_variable_topology_reasoning_unproven`
+
+This is a concrete advance over the raw 300k checkpoint and the failed
+renderer smokes, but it is not evidence of genuine general reasoning. The
+pretraining hold remains in force. Full next-gate contract:
+`R12_SOURCE_DELETED_VARIABLE_TOPOLOGY_PREREG.md`.

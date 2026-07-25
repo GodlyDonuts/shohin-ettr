@@ -14,7 +14,7 @@
 > compatibility, and isolated reasoning evaluation may continue; none of those
 > activities implies permission to pretrain.
 >
-> **Last updated:** 2026-07-24 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-25 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -101,6 +101,21 @@
 > machine ontology remain. Full scope:
 > `R12_RENDERER_CURRICULUM_QUALIFICATION.md`. No Newton jobs are active and
 > the pretraining hold remains unchanged.
+>
+> **Variable-topology falsifier frozen (2026-07-25 EDT):** the next
+> source-deleted gate now varies cardinality 4/8/16, action count 2--5, six
+> renderers, and unseen law/composition/topology/collision/renderer/joint
+> cells. Its 132-row independent CPU receipt is exact 132/132 after source
+> deletion, has zero family leaks, and compiles 21/21 renderer orbits to
+> identical packets. Exactly 24 collision rows use 4x2 or 8x4 geometry, where
+> every state and action key has the same occurrence frequency; the retained
+> fixed-incidence typer therefore has no type signal. Law swaps change
+> 113/132 answers and action reversal changes 51/78 eligible answers.
+> Receipt SHA-256 is
+> `6711d17d4b21e0f034852e403d75ad20ffe59eb99ce05c96dc8784820adb9197`.
+> No learned candidate has passed this gate. Current decision:
+> `renderer_transfer_demonstrated_variable_topology_reasoning_unproven`.
+> Full contract: `R12_SOURCE_DELETED_VARIABLE_TOPOLOGY_PREREG.md`.
 >
 > **Latest SSQAC controller decision (2026-07-24 21:23 EDT):** the
 > protected checkpoint and pretraining hold remain unchanged. Bounded host
@@ -13488,3 +13503,17 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   all families share one ontology. The next falsifier must vary topology,
   cardinality, action count, incidence profiles, and record completeness.
   Pretraining remains held and no Newton jobs remain active.
+
+- **2026-07-25 EDT** -- **The variable-topology successor gate is frozen
+  and independently audited.** The 132-row board spans state cardinalities
+  4/8/16, action counts 2--5, six renderers, and six development cells.
+  Exact source-deleted execution is 132/132 with zero family-name leaks.
+  All 21 renderer orbits compile to identical packets. Exactly 24 collision
+  rows make every state/action key frequency equal; 108 rows remain
+  incidence-separable. Law swaps change 113/132 answers and action reversal
+  changes 51/78 eligible answers. Focused verification is 21 passed with
+  clean Ruff and byte compilation. Receipt SHA-256 is
+  `6711d17d4b21e0f034852e403d75ad20ffe59eb99ce05c96dc8784820adb9197`.
+  No candidate has passed this new gate, so the retained conclusion is
+  bounded renderer transfer, not native general reasoning. Pretraining stays
+  held and no Newton job was launched.

@@ -1,0 +1,31 @@
+{
+  "board_seed": 20260725,
+  "candidate_manifest_sha256": "c569fd1b7dd409b1c69aab0e383de43a05416df4c8e62674605ce9730c3ac86f",
+  "collision_equal_incidence": 24,
+  "collision_rows": 24,
+  "development_per_cell": 4,
+  "exact_source_deleted": 132,
+  "family_name_leaks": 0,
+  "incidence_type_ambiguous": 24,
+  "incidence_type_separable": 108,
+  "law_swap_answer_changes": 113,
+  "renderer_orbits_exact": 21,
+  "renderer_orbits_packet_identical": 21,
+  "renderer_orbits_total": 21,
+  "reversal_answer_changes": 51,
+  "reversal_eligible": 78,
+  "role_neutral_key_rows": 132,
+  "source_deletion_passes": 132,
+  "supervisor_manifest_sha256": "54b56fc9ba7f9e5115dcd45fedcb5fad15242ea7b54951fb740058320a3b9cdf",
+  "topology_counts": {
+    "16x3": 15,
+    "16x5": 12,
+    "4x2": 6,
+    "4x3": 15,
+    "8x3": 51,
+    "8x4": 18,
+    "8x5": 15
+  },
+  "total_rows": 132,
+  "train_per_renderer": 4
+}

@@ -2,18 +2,51 @@
 
 ## Current Status — Read First
 
-**Current frontier:** the Episodic Functor Compiler (EFC) has passed an
-externally timed, source-frozen, unmocked macOS process-custody rehearsal.
-Several learned source-to-machine architectures are implemented against the
-hash-verified frozen Shohin trunk; the active Source-Sealed Quotient-Algebra
-Compiler (SSQAC) lane is CPU-falsifier-only. Its mechanics and attribution
-interfaces are tested, but no neural first fit is currently authorized.
+**Current frontier:** the source-deleted renderer curriculum is the first
+retained multi-family systematic-transfer result. It is bounded anonymous
+finite-machine compilation, not native general reasoning. The broader EFC/SSQAC
+architecture campaign is closed under the current evidence and usage budget;
+no new proxy-specific architecture branch, neural source freeze, or continuation
+pretraining is authorized.
 
 - **Protected base:** immutable step-300k Shohin checkpoint,
   125,081,664 parameters, SHA-256
   `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
 - **Strict future ceiling:** fewer than 200,000,000 unique parameters for the
   complete system.
+- **Renderer-curriculum breakthrough:** a 152,933-parameter standalone
+  recurrent compiler with renderer-neutral equality/incidence typing and
+  counterfactual target-first direction supervision passes **120/120** across
+  five seeds and all three leave-one-family-out folds. Its equal-budget,
+  direction-shuffled control reaches **65/120**; all 15 paired directions are
+  positive, and candidate-time oracle/search/verifier calls are **0/0/0**.
+  This covers unseen laws, longer compositions, one held-out renderer, and a
+  fully held-out law family in one fixed anonymous-machine ontology. The
+  independent audit SHA-256 is
+  `6cbf52ffe48fe79b8bf996d6b70fa244840153fd0b0d293ce47766e987b5179e`.
+  It does not establish unrestricted language reasoning: transition tables,
+  incidence geometry, state/action cardinality, and machine topology remain
+  fixed, and the compiler is a sidecar rather than a demonstrated Shohin-trunk
+  capability.
+- **Variable-topology boundary:** the frozen successor board now varies
+  state cardinality 4/8/16, action count 2--5, and six renderers. Its
+  independent 132-row receipt is exact after source deletion with zero family
+  leaks and 21/21 renderer-orbit packet equality. In 24 collision rows
+  (4x2 and 8x4), every state and action key has identical occurrence
+  frequency, eliminating the retained structural typer's shortcut. No
+  learned candidate has passed this gate. Receipt SHA-256 is
+  `6711d17d4b21e0f034852e403d75ad20ffe59eb99ce05c96dc8784820adb9197`;
+  the current conclusion remains bounded systematic compilation, not native
+  general reasoning.
+- **Campaign disposition:** the frozen-Shohin connected multi-family smoke
+  tied the standalone compiler at 12/24 development cases and failed every
+  held-out-renderer/joint probe (0/6 each). The current retained learned proxy
+  baseline is the full-trajectory recurrent classifier at 1,058/2,048 =
+  51.6602% on one unseen-geometry family; it is not a general-reasoning
+  result. Open-ended architecture search is closed. Any successor must first
+  freeze one source-deleted shared-mechanism qualification spanning genuinely
+  different task families, unseen laws, compositions, depths, and renderers,
+  with matched causal controls.
 - **Current large architecture lane (JASEC):** the Joint
   Assignment-Semantics Equilibrium Compiler is implemented in an isolated
   branch against the exact frozen Shohin trunk. Its complete mechanics receipt
@@ -97,22 +130,17 @@ interfaces are tested, but no neural first fit is currently authorized.
   compositions, renderers, task families, process-level source deletion,
   donor-law swaps, and real/zero/random/permuted Shohin trunk controls are
   mandatory before a bounded native-law claim.
-- **SSQAC pre-freeze lane:** the Source-Sealed Quotient-Algebra Compiler is
-  explicitly **rejected for source freeze / CPU falsifier only**. Its first
-  fixed-solver formulation was rejected because a host-authored
-  Macaulay/border-basis circuit would own the substantive reasoning. The
-  revised treatment must compile both source constraints and a source-deleted
-  algebra microprogram, then use only primitive finite-field/register
-  operations to certify a consequence that is forced across all legal
-  completions. The fixed exact algebra engine is retained solely as a gold
-  ceiling/control. Current CPU work supplies sparse-polynomial, quotient,
-  primitive-ALU, quotient-artifact verification, law-collision, and scoreless
-  learned-controller trace-pilot mechanics; the focused suite is **100
-  passed**. This is not a fitted controller, raw-language compiler, frozen
-  neural candidate, scored board, or reasoning result. Before any source
-  freeze it still requires the masked variable geometry, sealed quotient wire,
-  anonymous codebook, late-query/process-deletion boundary, exact resource
-  receipt, and hostile audit of the complete treatment and controls.
+- **SSQAC campaign result:** Source-Sealed Quotient-Algebra Compiler mechanics
+  (exact sparse quotient artifacts, source-deletion custody, and structural
+  receipts) remain useful controls, but the learned-controller campaign is
+  negative. Standard recurrent H100 arms certify 2/1,536 larger-geometry
+  programs; vectorized reactive arms certify 0/1,536; scaled offline
+  search-distillation loses ordinary oracle imitation (178/1,024 versus
+  542/1,024); and hostile controls reject value propagation, successor
+  exposure, proof heads, Lyapunov/Bellman objectives, and local
+  counterfactual repair as causal explanations. External bounded search is a
+  counted host ceiling, not a native mechanism. SSQAC is closed for source
+  freeze and reasoning claims under the current budget.
 - **Disposition of frozen mechanism `80dc07a`:** retain the 907,269-parameter
   four-slot causal bind-select workspace as a favorable control and custody
   reference. It is no longer a constraint on the candidate solution.
@@ -206,7 +234,7 @@ interfaces are tested, but no neural first fit is currently authorized.
   empty-observation classes but five future-behavior classes. Final report
   SHA-256 is
   `7a141efbbccdbd8328e2b38708061d9b2a4f3be8a43c3617fe4e8a413e4fd35c`.
-- **Current EFC decision:** deterministic CPU contract and macOS process
+- **Historical EFC custody decision:** deterministic CPU contract and macOS process
   custody **PASS**; the learned architecture/mechanics gate **PASS**; a neural
   fit remains **NO-GO** until exact arm-specific resource receipts, process
   custody, and controls are frozen.
@@ -244,13 +272,13 @@ interfaces are tested, but no neural first fit is currently authorized.
   Shohin reasoning result. The EFC compiler has been instantiated and connected
   read-only to the protected trunk, but it has not been fitted. No GPU score,
   development read, confirmation read, or reasoning claim exists.
-- **Immediate next task:** when Newton DNS returns, sync and hash-verify the
-  exact v6 authorization and runtime closure, then run the two-update
-  train-only H100 measurement canary. Use its measured memory/runtime/optimizer
-  receipt to define, but not automatically authorize, an equal-budget
-  train-only falsifier over HSC, direct-decode, position-scramble, and
-  stable-bag arms. Development remains sealed until train/mechanics
-  qualification passes.
+- **Current next task:** do not scale or revive historical HSC/SSQAC proxy
+  arms. The only justified research successor is a preregistered falsifier of
+  the renderer curriculum that varies topology, state/action cardinality,
+  incidence profiles, record completeness, and surface grammar while retaining
+  source deletion, zero candidate-time oracle/search/verifier access, and
+  matched direction controls. Only a pass of that broader shared mechanism can
+  justify Shohin integration and later natural-language post-training tests.
 - **Post-canary falsifier:** because the HSC compiler has approximately 265
   trainable parameters per independent train target bit, train loss alone is
   non-identifying. `R12_EFC_HSC_POST_CANARY_DECISION.md` freezes a train-only
@@ -316,20 +344,17 @@ interfaces are tested, but no neural first fit is currently authorized.
   continuation pretraining until the user explicitly lifts the hold after
   reasoning is established.
 
-**Bottom line:** the EFC move is directionally strong because it makes state,
-binding, transition semantics, and execution explicit. The supplied draft
-nevertheless misidentifies two sampled rows as the compiler's complete query
-support and omits the current query's opaque start-state binding. The old corpus
-is rejected for advancement because its challenge is not temporally independent.
-The corrected protocol now has an independently generated, hostilely audited,
-exact deployed-wire CPU rehearsal, a consumed structurally disjoint multiworld
-rehearsal, an externally timed process-separated macOS custody pass across
-three source languages, and an implemented learned compiler/no-host control
-pair. It still needs arm-specific resource freezes, process custody for the
-neural candidate, hostile-audit closure, and an unmocked Linux replay before
-any fit can be admitted. Deterministic multi-renderer compilation and an
-untrained architecture are mechanics ceilings, not evidence of native
-reasoning.
+**Bottom line:** the EFC work established strong custody, explicit-machine,
+and bounded compilation mechanics. The renderer curriculum is the first
+retained learned result to transfer systematically across all three held-out
+families, unseen laws, longer compositions, and one held-out renderer under a
+matched causal control (120/120 versus 65/120). Its scope remains deliberately
+narrow: fixed complete transition tables and one finite-machine ontology leave
+frequency/topology shortcuts available, and frozen Shohin features have not
+improved the decisive renderer boundary. Shohin therefore does **not** yet
+demonstrate native general reasoning. Preserve the protected checkpoint and
+pretraining hold; test the broader renderer-invariance falsifier before any
+further scaling or capability claim.
 
 ### 2026-07-24 learned EFC architecture and attribution gate
 
