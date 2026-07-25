@@ -45,6 +45,18 @@
 > `c5f7ad71cc80f9144ec57517215ab88cf770ebf9ca2f56d705a2ac8cf732dade`.
 > Do not promote or scale this mechanism as learned reasoning.
 >
+> **Latest successor-planning decision (2026-07-24 EDT):** four isolated
+> H100 seeds close raw one-step successor exposure as a sufficient mechanism.
+> Fixed recurrence certified 110/384, progressive randomized-depth recurrence
+> 113/384, zeroed successors 133/384, shuffled action/successor bindings
+> 105/384, recurrence disabled 114/384, and random labels 0/384. The best
+> successor arm loses to the zeroed-successor control by 5.21 points; doubling
+> inference recurrence changes it by at most +0.52 points. All arms used
+> 6,220,225 controller parameters, 131,301,889 complete-system parameters,
+> equal optimizer updates/parameters/training successor evaluations, and zero
+> candidate-time oracle/search/verifier calls. Decision:
+> `successor_planning_falsified_or_below_material_gate`. Do not scale it.
+>
 > **Latest QFCR and native-law decision (2026-07-24 EDT):** exact NIST
 > chain-2 pulse 1,874,057 at 21:37:00Z was consumed under public source and
 > authorization freeze. Signatures, output hashes, previous link,
@@ -12973,3 +12985,40 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   and a successor-aware recurrent planner with zeroed/shuffled-successor,
   recurrence-disabled, random-label, progressive-depth, and overthinking
   controls. Scale only mechanisms that survive these controls.
+
+- **2026-07-24 21:30--21:54 EDT** -- **Raw one-step successor planning is a
+  four-seed NO-GO.** Jobs `701025`, `701026`, `701028`, and `701029`
+  completed cleanly on isolated H100s in 2,937 aggregate H100-seconds. Each
+  arm used the same 6,220,225-parameter geometry-general controller and
+  131,301,889-parameter conceptual complete system. Across 512 training
+  matrices, 2,316 labeled states, 384 strictly disjoint larger evaluation
+  matrices, 2,503 preparation-oracle calls, and 28,800 optimizer updates,
+  every final candidate made zero oracle, search, and verifier calls.
+
+  Strict depth-eight results were 110/384 fixed recurrent, 113/384
+  progressive randomized depth, 133/384 successors zeroed, 105/384
+  action/successor bindings shuffled, 114/384 recurrence disabled, and 0/384
+  random labels. At doubled inference depth they were respectively 112, 113,
+  132, 104, 108, and 0. No trained recurrent arm exhibits material
+  overthinking, but more internal iterations also do not improve capability.
+  All matched-budget gates pass. The useful policy signal is carried mainly
+  by the current matrix and action descriptors, not the explicit
+  counterfactual successor matrices.
+
+  Report SHA-256 values are
+  `0c668bb1ca8f7b220bf2a0dff29a2d8c5ccb52a56af679f3e6172acae2bb7119`,
+  `8295b88b0d26bf590c23d5e5c82cf59637ab614a982adac3a98e1d881f6c70b1`,
+  `023c57ac3b2f9a022a36266a5f768b22ad558329cc293c2688d6297d6cdc41ee`,
+  and
+  `3ab778f2fca27f633585524f0e470f3ad50d90679b287e54a14016fb0d5a5b75`.
+  The source, tests, and launcher SHA-256 values are
+  `8b7333b1468bf292f4a8da7dd916e57462454e7f57cc6717b3ac25c255fdbb24`,
+  `cf963b5850892bf0f3ff53ea6b2dd19dd20edbe6e1b74d4d4bb4e06d4bfbc84f`,
+  and
+  `1e8fa6adcd2dcb509470f8e10a7adfb5340547fa9348080f34c84aa102f59b36`.
+
+  This closes direct successor exposure and fixed shared recurrence, not
+  learned planning generally. The next control-theoretic lane learns a
+  Lyapunov/Bellman potential from preparation-only distance supervision and
+  must beat action-classification, shuffled-potential, zero-consistency,
+  shuffled-successor, and random-label controls.

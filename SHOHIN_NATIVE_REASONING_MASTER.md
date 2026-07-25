@@ -51619,6 +51619,33 @@ An on-policy search-distillation lane tests whether correction on the
 candidate's own failure states can turn the 3.65% foothold into reliable
 closed-loop control.
 
+The successor-aware planner is now consumed and rejected. Four H100 seeds
+used 6,220,225 controller parameters and equal training budgets:
+
+| Arm | Depth 8 | Doubled depth |
+|---|---:|---:|
+| Fixed recurrent successors | 110/384, 28.65% | 112/384, 29.17% |
+| Progressive randomized depth | 113/384, 29.43% | 113/384, 29.43% |
+| Successors zeroed | **133/384, 34.64%** | 132/384, 34.38% |
+| Action/successor bindings shuffled | 105/384, 27.34% | 104/384, 27.08% |
+| Recurrence disabled | 114/384, 29.69% | 108/384, 28.13% |
+| Random labels | 0/384 | 0/384 |
+
+All arms had equal parameters, optimizer updates, and training successor
+evaluations. The preparation oracle was locked before training/evaluation and
+candidate-time oracle/search/verifier calls were zero. The strongest true
+successor arm trails the zeroed-successor control by 5.21 percentage points,
+and longer recurrence provides no material gain. Direct counterfactual
+exposure is therefore not the missing substrate.
+
+The next control-theoretic hypothesis changes the supervision target rather
+than adding capacity or recurrence. A learned Lyapunov/Bellman controller will
+predict a source-independent remaining-distance potential for raw states and
+successors, enforce pairwise monotonic descent and Bellman consistency, and
+choose actions by learned potential decrease. It must beat equal-budget
+classification-only, shuffled-potential, zero-consistency,
+shuffled-successor, and random-label controls.
+
 The scientific position is now sharper:
 
 1. Exact mechanics and external search solve the proxy.
