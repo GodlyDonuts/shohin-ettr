@@ -87,6 +87,21 @@
 > is an audited cross-renderer representation/post-training curriculum, not
 > larger recurrence or continued pretraining.
 >
+> **Renderer-curriculum breakthrough (2026-07-25 EDT):** the justified
+> representation treatment passes its bounded five-seed qualification.
+> Renderer-neutral incidence typing plus correct counterfactual target-first
+> supervision reaches 120/120 across all 15 seed/family-holdout folds versus
+> 65/120 for the equal-budget direction-shuffled control. Every held-out
+> family is 40/40, every cell passes, and all 15 directions are positive.
+> Candidate-time oracle/search/verifier calls remain 0/0/0. Independent audit
+> SHA-256 is
+> `6cbf52ffe48fe79b8bf996d6b70fa244840153fd0b0d293ce47766e987b5179e`.
+> This is bounded systematic anonymous-machine compilation, not general
+> reasoning: complete transition tables, fixed incidence geometry, and one
+> machine ontology remain. Full scope:
+> `R12_RENDERER_CURRICULUM_QUALIFICATION.md`. No Newton jobs are active and
+> the pretraining hold remains unchanged.
+>
 > **Latest SSQAC controller decision (2026-07-24 21:23 EDT):** the
 > protected checkpoint and pretraining hold remain unchanged. Bounded host
 > search certifies 64/64 strict unseen reductions, but is external counted
@@ -13445,3 +13460,31 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   cross-renderer representation curriculum with counterfactual
   role-equivalence supervision and the existing multi-family/source-deletion
   controls.
+
+- **2026-07-25 04:00--04:39 EDT** -- **Renderer-neutral structural typing
+  plus counterfactual direction supervision passes the bounded multi-family
+  gate.** Structural typing alone removes all invalid seals but scores only
+  13/24, including 1/6 held-out renderer and 0/6 joint. The matched
+  target-first renderer curriculum scores 24/24 versus 13/24 for swapped
+  direction labels.
+
+  CPU-only array `702775` then completed all 15 five-seed/family-holdout
+  tasks cleanly. Treatment scores 120/120; equal-budget direction-shuffled
+  controls score 65/120. Affine, bitwise, and permutation holdouts are each
+  40/40 treatment, and all 15 treatment-control directions are positive.
+  Each arm uses 152,933 learned parameters, 125,234,597 conceptual complete
+  parameters, 24 original plus 24 counterfactual rows, 300 updates, identical
+  initialization lineage, and zero candidate-time oracle/search/verifier
+  calls. Preparation used 360 counted exact-parser calls to synthesize
+  training renderings.
+
+  Independent audit SHA-256 is
+  `6cbf52ffe48fe79b8bf996d6b70fa244840153fd0b0d293ce47766e987b5179e`.
+  Decision:
+  `renderer_curriculum_passes_five_seed_three_family_holdout_smoke`.
+  Promote this only as bounded systematic finite-machine compilation. It
+  does not establish general reasoning because fixed incidence statistics
+  reveal key types, every episode exposes a complete transition table, and
+  all families share one ontology. The next falsifier must vary topology,
+  cardinality, action count, incidence profiles, and record completeness.
+  Pretraining remains held and no Newton jobs remain active.

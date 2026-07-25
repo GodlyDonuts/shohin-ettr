@@ -52001,3 +52001,25 @@ an audited cross-renderer representation/post-training curriculum with
 counterfactual role-equivalence supervision, not another large architecture
 branch. No Newton jobs remain active and the user pretraining hold remains in
 force.
+
+## 2026-07-25 Renderer-Curriculum Breakthrough
+
+The representation curriculum has produced the first multi-family systematic
+transfer result. A renderer-neutral structural typer uses only anonymous
+equality/incidence to distinguish state and action keys, while a 152,933-
+parameter recurrent compiler learns source-versus-target direction from
+counterfactual target-first examples under non-test symbols.
+
+The all-family smoke reaches 24/24 versus 13/24 for a direction-shuffled
+control. Five seeds across all three leave-one-family-out folds then reach
+120/120 treatment versus 65/120 control. Every held-out family is 40/40,
+every treatment cell is perfect, and all 15 seed-fold directions are
+positive. Candidate inference makes zero oracle, search, or verifier calls.
+
+This is a bounded breakthrough, not genuine general reasoning. Complete
+transition tables, fixed incidence geometry, and one shared finite-machine
+ontology make the problem narrower than natural-language reasoning. The
+compiler is also a standalone sidecar rather than a Shohin-trunk capability.
+The next gate must randomize topology/cardinality/action count and neutralize
+frequency shortcuts before integration. Full decision:
+`R12_RENDERER_CURRICULUM_QUALIFICATION.md`.

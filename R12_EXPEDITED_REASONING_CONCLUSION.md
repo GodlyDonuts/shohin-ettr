@@ -152,3 +152,20 @@ If that curriculum cannot transfer the held-out renderer, further recurrence,
 memory, search distillation, or parameter growth is not justified. The
 protected pretraining hold remains in force, and there are zero active Newton
 jobs at this closeout.
+
+## Post-Closeout Positive Result
+
+The authorized representation curriculum has now passed its bounded
+qualification. Renderer-neutral incidence typing plus counterfactual
+target-first supervision reaches 120/120 across five seeds and all three
+leave-one-family-out folds, versus 65/120 for the equal-budget
+direction-shuffled control. Every treatment fold scores 8/8 and all 15
+treatment-control directions are positive.
+
+This revises one conclusion: reusable transfer is possible on the anonymous
+finite-machine board when representation and execution are factorized
+correctly. It does not revise the general-reasoning conclusion. The mechanism
+still receives complete transition tables, exploits fixed incidence geometry,
+shares one machine ontology across families, and is not integrated into the
+Shohin trunk. Full evidence and scope:
+`R12_RENDERER_CURRICULUM_QUALIFICATION.md`.

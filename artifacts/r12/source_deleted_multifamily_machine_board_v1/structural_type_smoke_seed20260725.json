@@ -1,0 +1,123 @@
+{
+  "candidate_time_oracle_calls": 0,
+  "candidate_time_search_calls": 0,
+  "candidate_time_verifier_calls": 0,
+  "development": {
+    "learned_roles": {
+      "cell_exact": {
+        "composition": {
+          "correct": 6,
+          "total": 6
+        },
+        "joint": {
+          "correct": 0,
+          "total": 6
+        },
+        "law": {
+          "correct": 6,
+          "total": 6
+        },
+        "renderer": {
+          "correct": 0,
+          "total": 6
+        }
+      },
+      "exact": 12,
+      "invalid": 12,
+      "query_role_accuracy": 0.896,
+      "source_role_accuracy": 0.5,
+      "total": 24
+    },
+    "structural_key_classes": {
+      "cell_exact": {
+        "composition": {
+          "correct": 6,
+          "total": 6
+        },
+        "joint": {
+          "correct": 0,
+          "total": 6
+        },
+        "law": {
+          "correct": 6,
+          "total": 6
+        },
+        "renderer": {
+          "correct": 1,
+          "total": 6
+        }
+      },
+      "exact": 13,
+      "invalid": 0,
+      "query_role_accuracy": 0.896,
+      "source_role_accuracy": 0.5,
+      "total": 24
+    },
+    "structural_key_shuffle": {
+      "cell_exact": {
+        "composition": {
+          "correct": 0,
+          "total": 6
+        },
+        "joint": {
+          "correct": 0,
+          "total": 6
+        },
+        "law": {
+          "correct": 0,
+          "total": 6
+        },
+        "renderer": {
+          "correct": 0,
+          "total": 6
+        }
+      },
+      "exact": 0,
+      "invalid": 24,
+      "query_role_accuracy": 0.896,
+      "source_role_accuracy": 0.5,
+      "total": 24
+    }
+  },
+  "device": "cpu",
+  "final_loss": 6.955739991099108e-06,
+  "initial_loss": 1.7638580799102783,
+  "parameter_receipt": {
+    "complete_system": 125234597,
+    "global_limit": 200000000,
+    "headroom": 74765403,
+    "learned_compiler": 152933,
+    "protected_shohin": 125081664
+  },
+  "seed": 20260725,
+  "status": "renderer_neutral_structural_type_inference_smoke",
+  "steps": 300,
+  "train": {
+    "learned_roles": {
+      "cell_exact": {
+        "fit": {
+          "correct": 36,
+          "total": 36
+        }
+      },
+      "exact": 36,
+      "invalid": 0,
+      "query_role_accuracy": 1.0,
+      "source_role_accuracy": 1.0,
+      "total": 36
+    },
+    "structural_key_classes": {
+      "cell_exact": {
+        "fit": {
+          "correct": 36,
+          "total": 36
+        }
+      },
+      "exact": 36,
+      "invalid": 0,
+      "query_role_accuracy": 1.0,
+      "source_role_accuracy": 1.0,
+      "total": 36
+    }
+  }
+}

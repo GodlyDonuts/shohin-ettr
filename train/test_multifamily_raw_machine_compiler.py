@@ -219,3 +219,48 @@ def test_bad_predicted_partition_fails_closed() -> None:
             CompilerOutput(source_role_logits=logits),
             row=0,
         )
+
+
+def test_structural_key_classes_recover_unseen_renderer_types() -> None:
+    episode = generate_episode(
+        seed=811,
+        split="development",
+        family="permutation",
+        renderer=3,
+        cell="renderer",
+    )
+    source = collate_sources(
+        (scan_source(episode.candidate.source.encode("ascii")),)
+    )
+    query = collate_queries(
+        (scan_query(episode.candidate.query.encode("ascii")),)
+    )
+    source_logits = torch.full((1, 48, 3, 3), -20.0)
+    record_count = int(source.record_valid[0].sum())
+    source_logits[0, :record_count, 0, ROLE_TARGET] = 20.0
+    source_logits[0, :record_count, 1, ROLE_TARGET] = 20.0
+    source_logits[0, :record_count, 2, ROLE_SOURCE] = 20.0
+    machine = seal_machine(
+        source,
+        CompilerOutput(source_role_logits=source_logits),
+        row=0,
+        structural_key_classes=True,
+    )
+    query_logits = torch.zeros((1, 9, 2))
+    answer = execute_query(
+        machine,
+        query,
+        QueryOutput(query_role_logits=query_logits),
+        row=0,
+        structural_key_classes=True,
+    )
+    assert answer.decode("ascii") == episode.supervisor.answer
+
+    with pytest.raises(MultiFamilyCompilerError):
+        seal_machine(
+            source,
+            CompilerOutput(source_role_logits=source_logits),
+            row=0,
+            structural_key_classes=True,
+            structural_key_shuffle=True,
+        )

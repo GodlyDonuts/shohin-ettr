@@ -742,12 +742,45 @@ def _best_source_role_permutation(logits: torch.Tensor) -> tuple[int, int, int]:
     return _SOURCE_ROLE_PERMUTATIONS[max(range(len(scores)), key=scores.__getitem__)]
 
 
+def _structural_key_classes(
+    batch: SourceTensorBatch,
+    *,
+    row: int,
+    shuffled: bool,
+) -> tuple[set[int], set[int]]:
+    """Infer anonymous action/state types from the episode incidence graph."""
+
+    record_count = int(batch.record_valid[row].sum())
+    cardinality, remainder = divmod(record_count, 3)
+    if cardinality not in {8, 16} or remainder:
+        raise MultiFamilyCompilerError("structural record geometry differs")
+    unique_count = int(batch.unique_key_valid[row].sum())
+    counts = [0] * unique_count
+    for record in range(record_count):
+        for unique in batch.occurrence_to_unique[row, record]:
+            counts[int(unique)] += 1
+    actions = {
+        index for index, count in enumerate(counts) if count == cardinality
+    }
+    states = set(range(unique_count)) - actions
+    if len(actions) != 3 or len(states) != cardinality:
+        raise MultiFamilyCompilerError("structural key classes differ")
+    if shuffled:
+        ordered_states = sorted(states)
+        displaced = set(ordered_states[:3])
+        states = (states - displaced) | actions
+        actions = displaced
+    return actions, states
+
+
 def seal_machine(
     batch: SourceTensorBatch,
     output: CompilerOutput,
     *,
     row: int,
     binding_shuffle: bool = False,
+    structural_key_classes: bool = False,
+    structural_key_shuffle: bool = False,
 ) -> SealedAnonymousMachine:
     if (
         not 0 <= row < batch.unit_ids.shape[0]
@@ -764,17 +797,60 @@ def seal_machine(
     role_records: list[tuple[int, int, int]] = []
     action_unique: set[int] = set()
     state_unique: set[int] = set()
-    for record in range(record_count):
-        assignment = _best_source_role_permutation(
-            output.source_role_logits[row, record]
+    structural_actions: set[int] | None = None
+    structural_states: set[int] | None = None
+    if structural_key_classes:
+        structural_actions, structural_states = _structural_key_classes(
+            batch,
+            row=row,
+            shuffled=structural_key_shuffle,
         )
-        occurrence_for_role = {
-            role: occurrence for occurrence, role in enumerate(assignment)
-        }
+    elif structural_key_shuffle:
+        raise MultiFamilyCompilerError(
+            "structural key shuffle requires structural typing"
+        )
+    for record in range(record_count):
         equality = batch.occurrence_to_unique[row, record]
-        source = int(equality[occurrence_for_role[ROLE_SOURCE]])
-        action = int(equality[occurrence_for_role[ROLE_ACTION]])
-        target = int(equality[occurrence_for_role[ROLE_TARGET]])
+        logits = output.source_role_logits[row, record]
+        if structural_actions is None or structural_states is None:
+            assignment = _best_source_role_permutation(logits)
+            occurrence_for_role = {
+                role: occurrence for occurrence, role in enumerate(assignment)
+            }
+            source = int(equality[occurrence_for_role[ROLE_SOURCE]])
+            action = int(equality[occurrence_for_role[ROLE_ACTION]])
+            target = int(equality[occurrence_for_role[ROLE_TARGET]])
+        else:
+            action_occurrences = [
+                occurrence
+                for occurrence, unique in enumerate(equality)
+                if int(unique) in structural_actions
+            ]
+            state_occurrences = [
+                occurrence
+                for occurrence, unique in enumerate(equality)
+                if int(unique) in structural_states
+            ]
+            if len(action_occurrences) != 1 or len(state_occurrences) != 2:
+                raise MultiFamilyCompilerError(
+                    "structural record typing differs"
+                )
+            action_occurrence = action_occurrences[0]
+            first, second = state_occurrences
+            forward = (
+                float(logits[first, ROLE_SOURCE])
+                + float(logits[second, ROLE_TARGET])
+            )
+            reverse = (
+                float(logits[first, ROLE_TARGET])
+                + float(logits[second, ROLE_SOURCE])
+            )
+            source_occurrence, target_occurrence = (
+                (first, second) if forward >= reverse else (second, first)
+            )
+            source = int(equality[source_occurrence])
+            action = int(equality[action_occurrence])
+            target = int(equality[target_occurrence])
         role_records.append((source, action, target))
         action_unique.add(action)
         state_unique.update((source, target))
@@ -821,6 +897,7 @@ def execute_query(
     output: QueryOutput,
     *,
     row: int,
+    structural_key_classes: bool = False,
 ) -> bytes:
     if (
         not 0 <= row < batch.unit_ids.shape[0]
@@ -834,9 +911,29 @@ def execute_query(
         raise MultiFamilyCompilerError("query output geometry differs")
     count = int(batch.occurrence_valid[row].sum())
     logits = output.query_role_logits[row, :count]
-    start_scores = logits[:, QUERY_START] - logits[:, QUERY_ACTION]
-    start_occurrence = int(start_scores.argmax())
     keys = batch.occurrence_keys[row]
+    if structural_key_classes:
+        state_occurrences = [
+            occurrence
+            for occurrence, key in enumerate(keys)
+            if key in machine.state_keys
+        ]
+        action_occurrences = [
+            occurrence
+            for occurrence, key in enumerate(keys)
+            if key in machine.action_keys
+        ]
+        if (
+            len(state_occurrences) != 1
+            or len(action_occurrences) != count - 1
+        ):
+            raise MultiFamilyCompilerError(
+                "structural query key classes differ"
+            )
+        start_occurrence = state_occurrences[0]
+    else:
+        start_scores = logits[:, QUERY_START] - logits[:, QUERY_ACTION]
+        start_occurrence = int(start_scores.argmax())
     start_key = keys[start_occurrence]
     try:
         state = machine.state_keys.index(start_key)
