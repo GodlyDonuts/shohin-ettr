@@ -719,13 +719,26 @@ scientific component, not reported as genuine general reasoning.
     `700854` certified 0/512 and 1/512 larger-geometry programs at 90.863% and
     91.562% teacher-forced instruction accuracy. Reactive step-free jobs
     `700857` and `700858` both certified 0/512 at 88.314% and 89.141%.
-    Replacement seed `700859` and paired larger-data/batch jobs `700873` and
-    `700874` remain active, but ordinary instruction imitation is already
-    closed as a sufficient mechanism. Jobs `700855` and `700856` were lost to
-    or stopped on anomalous `evc33`; neither provides a model result. No job
-    read or wrote the flagship checkpoint.
-11. Implement the sealed quotient wire, anonymous codebook, and late-query
+    Replacement seed `700859` certified 1/512, making the standard aggregate
+    2/1,536 = 0.1302%. Paired larger-data/batch jobs `700873` and `700874`
+    remain active only as utilization/scale measurements. Jobs `700855` and
+    `700856` were lost to or stopped on anomalous `evc33`; neither provides a
+    model result. No job read or wrote the flagship checkpoint.
+11. **FAIL under strict endpoint:** a bounded equivariant defect-energy
+    treatment reached 96/96 unordered-basis certificates but only 1/96 under
+    the original canonical RREF verifier; energy-only reached 2/96 and
+    random-label 0/96. Endpoint weakening explains the apparent win.
+12. **PASS as counted host-search ceiling only:** bounded structural search
+    reaches 16/16 at `4x5--4x6` and 8/8 at `5x7--5x8`, while randomized
+    guidance reaches 1/16 and 0/8. It uses up to 3,771 expanded nodes, 55,791
+    edges, and depth 22. This is a conventional external algorithm and is not
+    native reasoning.
+13. **RUNNING next falsifier:** a corrected vectorized reactive policy has
+    exact row/column recoding tests, no recurrent state or step signal, and a
+    strict matrix-only final rollout. Its CPU smoke is 0/16; H100 scale is
+    admitted only as a falsifier.
+14. Implement the sealed quotient wire, anonymous codebook, and late-query
     parser.
-12. Hostile-audit the complete CPU/controller boundary and matched controls.
-13. Freeze a neural emitter only if all prior gates pass. Do not generate
+15. Hostile-audit the complete CPU/controller boundary and matched controls.
+16. Freeze a neural emitter only if all prior gates pass. Do not generate
     scored confirmation data or start pretraining.

@@ -51496,6 +51496,32 @@ two paired larger-data/batch arms remain active, but future effort is directed
 toward vectorized reactive training, verifier-guided search, and explicit
 defect-energy dynamics rather than more ordinary trace imitation.
 
+The third standard seed later certified 1/512, fixing the ordinary recurrent
+aggregate at 2/1,536 = 0.1302%. More important, hostile endpoint review
+rejected an apparent energy-controller breakthrough. The treatment reached
+96/96 on an unordered reduced-basis predicate, but only 1/96 when complete
+primitive traces were replayed through the original canonical RREF verifier;
+energy-only reached 2/96 and random-label 0/96. This is useful evidence that an
+equivariant energy can construct a basis, but it does not solve canonical
+algorithmic control.
+
+A bounded structural-search ceiling does solve that control problem: 16/16
+strict certificates at `4x5--4x6` and 8/8 at `5x7--5x8`, versus 1/16 and 0/8
+under randomized guidance. It consumed as many as 3,771 expanded nodes,
+55,791 edges, and depth 22. Because the candidate uses an explicit
+source-independent RREF defect and host beam search, this is counted
+conventional computation, not native model reasoning. Its value is as a
+teacher and an existence proof that the sealed primitive state is sufficient.
+
+The next neural falsifier removes Python trajectory unrolling and all
+row/column coordinate features. It is a step-free, feed-forward,
+permutation-equivariant content-pointer policy trained from a resident
+flattened state dataset with BF16, fused AdamW, and `torch.compile`. Its bounded
+CPU smoke remains 0/16; the H100 run tests whether scale and efficient
+optimization can internalize the controller without host search. In parallel,
+new work targets canonical defect energy, search distillation, and fixed-depth
+neural value iteration.
+
 Custody and accounting are stronger than the neural result. A three-process
 compiler/candidate/assessor harness deletes source before candidate launch and
 fails closed on manifest drift, tamper, symlinks, forbidden reads/content,

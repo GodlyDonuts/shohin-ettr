@@ -12811,3 +12811,33 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   Job `700856` was canceled after only 3m21s CPU across 28m03s wall time on
   the same anomalous `evc33`; two completed reactive seeds already establish
   the negative, so the unhealthy duplicate was not allowed to burn capacity.
+
+  Replacement standard seed `700859` then certified 1/512 at 90.441%
+  teacher-forced accuracy. Its report SHA-256 is
+  `7bd3e22b151b303a7bc22fd497e6748144872fafceb7961d403685fea336f2db`.
+  The three-seed standard aggregate is therefore 2/1,536 = 0.1302%;
+  ordinary recurrent trace imitation is closed rather than merely uncertain.
+
+  Hostile review also prevented a false architectural win. A 291,009-parameter
+  equivariant defect-energy controller initially reported 96/96 autonomous
+  certificates versus 83/96 energy-only and 85/96 random-label controls, but
+  its endpoint accepted unordered reduced bases rather than the repository's
+  canonical RREF. Replaying complete primitive programs through the original
+  `verify_reduction_program` reduces strict scores to 1/96 treatment, 2/96
+  energy-only, and 0/96 random-label. The mechanism can form useful unordered
+  bases but is not promotable.
+
+  A separate bounded structural-search ceiling is exact under the original
+  verifier: 16/16 at `4x5--4x6` and 8/8 at `5x7--5x8`, versus 1/16 and 0/8
+  randomized guidance. The harder arm expanded at most 3,771 nodes and 55,791
+  edges to depth 22 under fixed budgets. This is a conventional host search
+  over an explicit RREF defect, not native model reasoning. It is retained as
+  a source-independent teacher/ceiling whose computation must be counted.
+
+  The vectorized reactive policy was hardened after review removed normalized
+  row/column coordinates that violated arbitrary permutation equivariance.
+  Randomized recoding tests now verify invariant opcode/register logits and
+  correctly permuted row/column pointers. Its bounded CPU smoke remains 0/16.
+  A dedicated BF16, fused-AdamW, `torch.compile` H100 launcher is ready for a
+  strict 8,192-matrix scale falsifier; it writes isolated report/model
+  artifacts and contains no flagship path.
