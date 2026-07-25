@@ -190,6 +190,31 @@
 > barrier active, then a third fresh-board evaluation. Do not alter or resume
 > flagship pretraining.
 >
+> **Exact-barrier training decision (2026-07-24 EDT):** material jobs
+> `702567`--`702570` trained exact-barrier, recurrent-classifier, and
+> randomized-label arms from identical initialization with exact matched
+> schedules, then evaluated on third fresh 512-case board seed `20260901`.
+> Exact-trained exact inference certified 950/2048 = 46.3867%; the same
+> weights with the barrier off and feature-shuffled each certified 920/2048 =
+> 44.9219%; matched full-trajectory classifiers certified 1058/2048 =
+> 51.6602%; random labels certified 0/2048. Exact memory improves its own
+> weights in all four seeds by 30 aggregate cases = +1.4648 points and lowers
+> cycles from 57,351 to 37,224, but loses the simpler recurrent classifier by
+> 108 cases. Decision:
+> `exact_barrier_training_below_full_trajectory_recurrent_classifier`.
+> The retained task-specific baseline is full-trajectory recurrence, not
+> episodic memory. Report SHA-256 values are
+> `a051755e97366281493abadede32b940d1a2eda7038ac479c44988c26614d02a`,
+> `a15b60d50f1ed7fd2f79d533e712382371c573451e6448cdc8adbbff3c154e97`,
+> `1a7f4be4047e9b9600f5142a66644c53a35aedd296a00b26a13452ff2e8076c9`,
+> and
+> `aec0712e83c98a16dc9b5b644ddf0f4fbcfb7fecf2224b5db4d7fcb128deed19`.
+> Best observed classifier seed `20260910` scored 332/512 = 64.8438%; its
+> model is preserved on Newton and locally as
+> `best_full_trajectory_classifier_seed20260910.pt`, SHA-256
+> `a7ebd0a0487d9fa75318faa5b5693a48439b799895cc4e88277be5c666ad5d1e`.
+> This remains one proxy family and is not native general reasoning.
+>
 > **Latest QFCR and native-law decision (2026-07-24 EDT):** exact NIST
 > chain-2 pulse 1,874,057 at 21:37:00Z was consumed under public source and
 > authorization freeze. Signatures, output hashes, previous link,

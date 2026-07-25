@@ -51885,3 +51885,36 @@ barrier active from initialization, using matched classifier, barrier-off,
 feature-shuffled, and randomized-label controls. Its purpose is to learn
 productive nonrepeating escape actions rather than apply the barrier only
 after fitting.
+
+That training experiment completed across four matched seeds and a third fresh
+2,048-case aggregate:
+
+| Arm | Strict certificates | Rate | Cycle events |
+|---|---:|---:|---:|
+| Exact-trained with exact barrier | 950/2048 | 46.3867% | 37,224 |
+| Same weights, barrier off | 920/2048 | 44.9219% | 57,351 |
+| Same weights, feature-shuffled barrier | 920/2048 | 44.9219% | 57,351 |
+| Full-trajectory recurrent classifier | **1058/2048** | **51.6602%** | **33,046** |
+| Randomized labels | 0/2048 | 0% | 118,276 |
+
+Exact memory remains causally useful to its own trained weights: all four
+seeds improve, aggregate correctness gains 30 cases, and cycle events fall by
+35.1%. But the effect shrinks to 1.4648 points and the exact-trained system
+loses the matched recurrent classifier by 108 cases. Training against the
+barrier does not turn cycle prevention into a superior policy.
+
+The durable conclusion of this lane is therefore:
+
+1. Full-trajectory temporal exposure is useful.
+2. Exact discrete anti-revisit state is a valid architecture primitive and
+   can rescue frozen policies.
+3. Learned semantic memory, similarity barriers, and barrier-aware training
+   do not beat a simpler full-trajectory recurrent classifier.
+4. The best aggregate task-specific baseline is 51.66%; the best individual
+   seed is 332/512 = 64.84%, but seed variance is substantial.
+5. None of these results covers unseen laws or task families, so none proves
+   native general reasoning.
+
+The best classifier model is preserved locally and on Newton as
+`best_full_trajectory_classifier_seed20260910.pt`, SHA-256
+`a7ebd0a0487d9fa75318faa5b5693a48439b799895cc4e88277be5c666ad5d1e`.
