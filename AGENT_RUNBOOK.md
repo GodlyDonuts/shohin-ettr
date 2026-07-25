@@ -12786,3 +12786,28 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   controller inspired by local error-correcting dynamics. They may add
   isolated mechanics and H100 jobs only. They cannot modify the protected
   checkpoint or authorize pretraining.
+
+  GPU telemetry sampled the standard pilots at about 12.2 GiB and 26% device
+  utilization, with the younger replacement at 67%; the Python-unrolled
+  controller is launch/host limited rather than memory limited. Two additional
+  matched scale arms are queued to test whether useful work, not padding, can
+  consume that headroom: `700873` is standard recurrent and `700874` is
+  reactive step-free, each with 8,192 train matrices, 1,024 evaluation
+  matrices, batch 128, width 256, four layers, 24 epochs, and one H100.
+  They use the same seed so the architectural comparison is paired and have
+  no flagship path.
+
+  First reports close the ordinary imitation hypothesis at this scale.
+  Standard recurrent jobs `700853` and `700854` reached teacher-forced
+  instruction accuracy 90.863% and 91.562% but certified only 0/512 and 1/512
+  autonomous larger-geometry programs. Reactive jobs `700857` and `700858`
+  reached 88.314% and 89.141% teacher-forced accuracy and both certified
+  0/512. Their local report SHA-256 values are respectively
+  `af8293a72203e458e14e02453eed9c54072833dcbbab43fa21111da66e622878`,
+  `0d94979e5edb970b5cac45aec78c919caa1d4d6925499cc3c0aa2cda529311f9`,
+  `a63f2db3cf83e56e2c0e5a0dda543efe89c12a9f63891250c16efecb9c77f62d`,
+  and
+  `accee458204b87d4cbf938a8217915640c345ae73352c9e5d58616a8efb9c6ae`.
+  Job `700856` was canceled after only 3m21s CPU across 28m03s wall time on
+  the same anomalous `evc33`; two completed reactive seeds already establish
+  the negative, so the unhealthy duplicate was not allowed to burn capacity.

@@ -51476,15 +51476,25 @@ also certified 0/8 and reduced expert-state accuracy from 46.3% to 33.7%.
 These failures localize the problem to autonomous error recovery and
 algorithmic transfer rather than representational fit alone.
 
-Six isolated H100 falsifiers are now running. Standard recurrent jobs
-`700853`, `700854`, and replacement `700859` are matched against reactive
-step-free jobs `700856`--`700858`. The failed infrastructure attempt `700855`
-reported no CUDA device and produced no model result. Each live run uses
-generated scoreless matrices, disjoint larger geometry, a separate report,
-and no flagship path. Additional disjoint work tests vectorized reactive
-training, bounded verifier-guided internal search, and an equivariant
-defect-energy controller. Compute is deliberately parallelized across
-different hypotheses rather than repeated only as more seeds.
+The isolated H100 falsifier package matched standard recurrent jobs `700853`,
+`700854`, and replacement `700859` against reactive step-free jobs
+`700856`--`700858`. The failed infrastructure attempt `700855` reported no
+CUDA device and produced no model result. Each run uses generated scoreless
+matrices, disjoint larger geometry, a separate report, and no flagship path.
+Additional disjoint work tests vectorized reactive training, bounded
+verifier-guided internal search, and an equivariant defect-energy controller.
+Compute is deliberately parallelized across different hypotheses rather than
+repeated only as more seeds.
+
+The first four H100 reports now close instruction imitation as a sufficient
+mechanism. Standard recurrent seeds certified 0/512 and 1/512 autonomous
+larger-geometry programs despite 90.863% and 91.562% teacher-forced accuracy.
+Reactive step-free seeds both certified 0/512 despite 88.314% and 89.141%
+teacher-forced accuracy. The third reactive seed on anomalous `evc33` was
+stopped rather than allowed to burn capacity. A replacement standard seed and
+two paired larger-data/batch arms remain active, but future effort is directed
+toward vectorized reactive training, verifier-guided search, and explicit
+defect-energy dynamics rather than more ordinary trace imitation.
 
 Custody and accounting are stronger than the neural result. A three-process
 compiler/candidate/assessor harness deletes source before candidate launch and

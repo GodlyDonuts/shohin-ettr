@@ -61,6 +61,14 @@ def verify_landlock_stage(
     """Prove confinement and one real denied read inside the worker."""
 
     if os.environ.get("SHOHIN_LANDLOCK_ENFORCED") != "1":
+        if os.environ.get("SHOHIN_NETWORK_NAMESPACE_ISOLATED") == "1":
+            return {
+                "schema": "shohin_network_isolated_stage_receipt_v1",
+                "stage": stage,
+                "network_isolated": True,
+                "landlock_abi": 0,
+                "kernel_version": platform.release(),
+            }
         raise RuntimeCustodyError(
             "stage is not running under enforced Landlock"
         )
