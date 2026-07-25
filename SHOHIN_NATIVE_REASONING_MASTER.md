@@ -51918,3 +51918,30 @@ The durable conclusion of this lane is therefore:
 The best classifier model is preserved locally and on Newton as
 `best_full_trajectory_classifier_seed20260910.pt`, SHA-256
 `a7ebd0a0487d9fa75318faa5b5693a48439b799895cc4e88277be5c666ad5d1e`.
+
+## 2026-07-25 Expedited Campaign Conclusion
+
+Open-ended architecture search is closed under the accumulated evidence and
+current usage budget. Shohin has material autonomous task-specific controller
+competence, but it does not demonstrate native general reasoning.
+
+The retained result is full-trajectory recurrence at 1058/2048 = 51.6602% on
+unseen larger instances of one matrix-reduction family. Exact discrete
+anti-revisit is causally useful as a fixed execution primitive, but training
+with it does not beat the simpler recurrent classifier. Learned semantic
+memory, repeated planning, successor exposure, search distillation,
+Lyapunov/Bellman potentials, and proof-carrying contracts all fail their
+matched controls or absolute gates.
+
+The limiting failure is systematic law acquisition and composition, not
+parameter headroom. No retained mechanism has transferred across unseen rules
+and genuinely different task families. The next and only admissible
+claim-bearing experiment is a frozen, source-deleted qualification over at
+least three task families, unseen laws/compositions/depths/renderers, one
+shared mechanism, and matched recurrence-disabled, rule-shuffled,
+equal-compute classifier, and random-label controls. Until that gate exists
+and passes, continuation pretraining remains held and no mechanism should be
+described as general reasoning.
+
+The complete decision and evidence boundary are recorded in
+`R12_EXPEDITED_REASONING_CONCLUSION.md`.

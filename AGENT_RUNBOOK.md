@@ -21,6 +21,21 @@
 > GSM8K pass@1 `2/100`, MATH-500 `2/100`, HumanEval `6/164`, and MBPP `0/100`. This confirms a
 > low-single-digit plateau rather than a broad 120k-to-300k capability gain.
 >
+> **Expedited reasoning closeout (2026-07-25 EDT):** open-ended architecture
+> search is closed under the current evidence and usage budget. Shohin does
+> not demonstrate native general reasoning. The retained learned baseline is
+> the full-trajectory recurrent classifier at 1058/2048 = 51.6602% on one
+> unseen-geometry proxy family; the best seed is 332/512 = 64.8438%. Exact
+> discrete anti-revisit is a causal task-specific primitive, but exact-aware
+> training loses the simpler recurrent classifier. No retained mechanism has
+> passed unseen-law or multi-family transfer. There are zero active Newton
+> jobs, and the protected checkpoint hash remains exact. Do not launch more
+> proxy-specific architecture branches. The only admissible successor is one
+> frozen, source-deleted, shared-mechanism qualification across at least three
+> genuinely different task families with unseen laws, compositions, depths,
+> and renderers plus matched causal controls. Full decision:
+> `R12_EXPEDITED_REASONING_CONCLUSION.md`.
+>
 > **Latest SSQAC controller decision (2026-07-24 21:23 EDT):** the
 > protected checkpoint and pretraining hold remain unchanged. Bounded host
 > search certifies 64/64 strict unseen reductions, but is external counted
