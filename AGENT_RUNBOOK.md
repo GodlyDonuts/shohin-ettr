@@ -30,9 +30,11 @@
 > fixed-depth soft-value seeds reach 258/512 versus 213/512 for separately
 > trained zero-iteration controls and 0/512 random labels. The +8.79 point
 > gain has one-sided seed sign-flip `p=0.0859375`, misses both the frozen 80%
-> absolute and +10 point causal gates, and remains provisional while
-> feature/message ablations and three 61,562,243-parameter capacity arms
-> (`700970`, `700971`, `700979`) run.
+> absolute and +10 point causal gates. Three 61,562,243-parameter capacity
+> arms (`700970`, `700971`, `700979`) then completed at 181/384 treatment
+> versus 186/384 zero-iteration and 0/384 random labels. Each complete system
+> was 186,643,907 parameters. Wider SVI is closed; feature/message hostile
+> ablations remain active.
 >
 > The apparent canonical-energy win is closed as
 > `hybrid_host_algorithm_mechanics_not_learned_or_native_reasoning`.
@@ -12949,9 +12951,22 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `+1,+13,-3,-1,0,+2,+27,+6`; the one-sided exact sign-flip probability is
   0.0859375 and the two-sided value is 0.171875. This does not satisfy the
   preregistered 80% absolute and +10 point gates, and `backup_iterations=0`
-  is not yet a sufficient equal-compute causal control. Three wide
-  61,562,243-parameter arms remain live on isolated H100s as jobs `700970`,
-  `700971`, and `700979`. Do not interrupt them unless clearly dead.
+  is not yet a sufficient equal-compute causal control.
+
+  Three wide 61,562,243-parameter arms then completed cleanly as jobs
+  `700970`, `700971`, and `700979`. Their complete systems contain
+  186,643,907 parameters. Treatment certified 59/128, 60/128, and 62/128
+  for 181/384 = 47.1354%; separately trained zero-iteration controls
+  certified 61/128, 64/128, and 61/128 for 186/384 = 48.4375%; random labels
+  remained 0/384. Train-label accuracies were 96.69%--97.54%. Report SHA-256
+  values are
+  `b417cf104c5cef492a83660355f81d452e08ede27baa8e281507848c5a58318d`,
+  `fc67af8f65432c2f2fee38808da3223c9764f38e1a7fc539c559ad5eb8a6342e`,
+  and
+  `a8bd806180a378e722fd73aad6cf20ad391230aee8aea7e92e10fe162b6ac2ca`.
+  Larger capacity reverses the provisional treatment advantage. Do not
+  allocate more parameters to the present SVI graph without a new causal
+  mechanism.
 
   Active next falsifiers are: structural-feature/message ablations for soft
   value iteration; on-policy search distillation with equal-budget controls;

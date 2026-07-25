@@ -51604,10 +51604,14 @@ but it misses the frozen +10 point causal gate and has substantial seed
 variance: exact one-sided sign-flip `p=0.0859375`, two-sided `p=0.171875`.
 This is meaningful mechanics, not a reasoning promotion.
 
-Three 61,562,243-parameter capacity arms are running on separate H100s. Their
-complete systems remain below 200M. Capacity alone is not the decision:
-the pending hostile controls remove structural action scalars, disable or
-shuffle messages while retaining compute, and test row/column recodings.
+Three 61,562,243-parameter capacity arms completed on separate H100s. Their
+complete systems contain 186,643,907 parameters, below 200M. Treatment reached
+181/384 = 47.1354%, while separately trained zero-iteration controls reached
+186/384 = 48.4375% and random labels reached 0/384. More than 17x controller
+capacity therefore reverses rather than strengthens the provisional recurrent
+advantage. The pending hostile controls remove structural action scalars,
+disable or shuffle messages while retaining compute, and test row/column
+recodings.
 A separate successor-aware planner will compare correct one-step
 counterfactuals against zeroed and shuffled successor bindings, progressive
 versus fixed recurrent-depth training, and longer-depth overthinking tests.
