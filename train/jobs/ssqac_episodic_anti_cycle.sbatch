@@ -20,6 +20,8 @@ UPDATES=${UPDATES:-1500}
 BATCH=${BATCH:-2}
 LR=${LR:-0.0005}
 MAX_STEPS=${MAX_STEPS:-192}
+EVALUATION_SEED=${EVALUATION_SEED:-}
+EVALUATION_MATRICES=${EVALUATION_MATRICES:-512}
 
 OUTPUT=$RESULT_ROOT/report_${SLURM_JOB_ID}.json
 MODEL_DIR=$RESULT_ROOT/models_${SLURM_JOB_ID}
@@ -37,6 +39,13 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 echo "[ssqac-episodic] node=${SLURMD_NODENAME:-?} gpu=${CUDA_VISIBLE_DEVICES:-unset}"
 echo "[ssqac-episodic] preparation_sha256=$(sha256sum "$PREPARATION" | awk '{print $1}')"
 nvidia-smi -L
+EVALUATION_ARGS=()
+if [[ -n "$EVALUATION_SEED" ]]; then
+  EVALUATION_ARGS=(
+    --evaluation-seed "$EVALUATION_SEED"
+    --evaluation-matrices "$EVALUATION_MATRICES"
+  )
+fi
 "$PYTHON" "$BASE/train/ssqac_episodic_anti_cycle_controller.py" run \
   --preparation "$PREPARATION" \
   --seed "$SEED" \
@@ -44,6 +53,7 @@ nvidia-smi -L
   --batch-size "$BATCH" \
   --learning-rate "$LR" \
   --maximum-rollout-steps "$MAX_STEPS" \
+  "${EVALUATION_ARGS[@]}" \
   --device cuda \
   --output "$OUTPUT" \
   --model-dir "$MODEL_DIR"

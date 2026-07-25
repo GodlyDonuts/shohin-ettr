@@ -51858,3 +51858,30 @@ This closes learned similarity-based anti-cycle memory. A final diagnostic may
 replace similarity with exact in-architecture discrete state equality. That
 would not itself be a general reasoning claim; it only distinguishes a bad
 learned state metric from cycle avoidance being the wrong target.
+
+That exact diagnostic completed on a second fresh 2,048-case board:
+
+| Frozen-weight mode | Strict certificates | Rate | Cycle events |
+|---|---:|---:|---:|
+| Exact discrete anti-revisit barrier | **957/2048** | **46.7285%** | **16,550** |
+| Feature-shuffled exact barrier | 820/2048 | 40.0391% | 155,634 |
+| Memory zeroed | 820/2048 | 40.0391% | 155,634 |
+| Learned episodic residual | 922/2048 | 45.0195% | 76,334 |
+
+Exact repeat blocking improves all four frozen model seeds and gains 137
+certificates, or 6.6895 percentage points, over both same-weight controls.
+The feature-shuffled exact barrier reproduces zero memory exactly, so raw
+state identity is causal. It also removes 89.4% of cycle events.
+
+This is the first clean positive result from the episodic lane, but its scope
+must remain precise. It demonstrates a useful fixed architecture primitive,
+not learned semantic memory and not general reasoning. The equality
+comparison is discrete and the evaluation still covers one algebraic
+reduction family. With only four positive signs, the exact one-sided sign
+probability is 0.0625 even though the aggregate effect exceeds five points.
+
+The next claim-bearing experiment trains complete trajectories with the exact
+barrier active from initialization, using matched classifier, barrier-off,
+feature-shuffled, and randomized-label controls. Its purpose is to learn
+productive nonrepeating escape actions rather than apply the barrier only
+after fitting.

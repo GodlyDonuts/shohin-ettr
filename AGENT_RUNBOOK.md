@@ -168,6 +168,28 @@
 > and
 > `4b7af95aa2d11810ef329efaa1150ff1fba07208b239755053e4ea18250723fb`.
 >
+> **Exact discrete anti-revisit result (2026-07-24 EDT):** frozen-weight jobs
+> `701895`--`701898` evaluated an in-architecture raw-state equality memory on
+> a second fresh 2,048-case board, seed `20260820`. Exact repeat blocking
+> certified 957/2048 = 46.7285%, its independently feature-shuffled control
+> exactly matched memory-zero at 820/2048 = 40.0391%, and the learned episodic
+> residual reached 922/2048 = 45.0195%. Exact blocking improves every seed,
+> adds 137 certificates = +6.6895 points over the same frozen weights, and
+> reduces cycle events from 155,634 to 16,550. This is a material,
+> architecture-native mechanics result, not general reasoning: the equality
+> primitive is fixed, the board has one task family, and one-sided four-seed
+> sign probability is 0.0625. Decision:
+> `exact_discrete_anti_revisit_material_mechanics_replication_required`.
+> Report SHA-256 values are
+> `c06d17c903d2018de1d31ae148a6c239cf6b4339c0e8eacc3d1910e8407b9e46`,
+> `fafa9127de66cc04cd769b252c632ef4849f3ff55070276f75aa189ed9348950`,
+> `9a62c6fe0e0e1b809cf363b5df4d8b4a2d0183b9b9e3eaa3a7bcd30f76eb8bf9`,
+> and
+> `b965f74cb90ca8c1c0642f8e2fd4d8e149981359f5ca82f40c7d098331534175`.
+> The justified successor is matched full-trajectory training with the exact
+> barrier active, then a third fresh-board evaluation. Do not alter or resume
+> flagship pretraining.
+>
 > **Latest QFCR and native-law decision (2026-07-24 EDT):** exact NIST
 > chain-2 pulse 1,874,057 at 21:37:00Z was consumed under public source and
 > authorization freeze. Signatures, output hashes, previous link,

@@ -181,6 +181,23 @@ def test_full_trajectory_training_smoke() -> None:
     assert len(receipt.batch_schedule_sha256) == 64
 
 
+def test_exact_barrier_full_trajectory_training_smoke() -> None:
+    torch.manual_seed(10)
+    model = episodic.EpisodicAntiCycleController(_tiny_config())
+    receipt = episodic.train_full_trajectories(
+        model,
+        (_trajectory(),),
+        mode=episodic.MODE_EXACT_BARRIER,
+        optimizer_updates=1,
+        batch_size=1,
+        learning_rate=1e-3,
+        seed=10,
+        amp_bfloat16=False,
+    )
+    assert receipt.optimizer_updates == 1
+    assert receipt.state_presentations == 2
+
+
 def test_complete_system_respects_budget() -> None:
     model = episodic.EpisodicAntiCycleController(_tiny_config())
     assert model.parameter_count > 0

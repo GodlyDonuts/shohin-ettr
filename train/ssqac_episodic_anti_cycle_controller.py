@@ -741,7 +741,12 @@ def train_full_trajectories(
 ) -> TrainingReceipt:
     """Train recurrent state and episodic memory on complete trajectories."""
 
-    if mode not in (MODE_REAL, MODE_CLASSIFIER, MODE_RANDOM):
+    if mode not in (
+        MODE_REAL,
+        MODE_EXACT_BARRIER,
+        MODE_CLASSIFIER,
+        MODE_RANDOM,
+    ):
         raise EpisodicMemoryError("unsupported training mode")
     updates = _positive_int(optimizer_updates, label="optimizer_updates")
     batch = _positive_int(batch_size, label="batch_size")
@@ -779,7 +784,12 @@ def train_full_trajectories(
             visited: list[tuple[tuple[int, ...], ...]] = []
             step_losses = []
             for step, rows in enumerate(trajectory.states):
-                score_mode = MODE_REAL if mode == MODE_REAL else MODE_ZERO
+                if mode == MODE_REAL:
+                    score_mode = MODE_REAL
+                elif mode == MODE_EXACT_BARRIER:
+                    score_mode = MODE_EXACT_BARRIER
+                else:
+                    score_mode = MODE_ZERO
                 with _autocast(device, amp_bfloat16):
                     scores = model.score(rows, memory, mode=score_mode)
                     if mode == MODE_RANDOM:
@@ -1020,12 +1030,32 @@ def run_experiment(args: argparse.Namespace) -> Mapping[str, object]:
         state_layers=args.state_layers,
         memory_slots=args.memory_slots,
     )
+    evaluation_matrices = artifact.evaluation_matrices
+    fresh_evaluation = args.evaluation_seed is not None
+    if fresh_evaluation:
+        excluded = {
+            trajectory.states[0] for trajectory in artifact.trajectories
+        } | set(artifact.evaluation_matrices)
+        evaluation_matrices = generate_matrices(
+            seed=args.evaluation_seed,
+            count=args.evaluation_matrices,
+            minimum_rows=artifact.evaluation_minimum_rows,
+            maximum_rows=artifact.evaluation_maximum_rows,
+            minimum_columns=artifact.evaluation_minimum_columns,
+            maximum_columns=artifact.evaluation_maximum_columns,
+            excluded=excluded,
+        )
     torch.manual_seed(args.seed)
     template = EpisodicAntiCycleController(config)
     initial = {name: tensor.clone() for name, tensor in template.state_dict().items()}
     models = {}
     training = {}
-    for mode in (MODE_REAL, MODE_CLASSIFIER, MODE_RANDOM):
+    for mode in (
+        MODE_REAL,
+        MODE_EXACT_BARRIER,
+        MODE_CLASSIFIER,
+        MODE_RANDOM,
+    ):
         torch.manual_seed(args.seed)
         model = EpisodicAntiCycleController(config).to(device)
         model.load_state_dict(initial)
@@ -1043,40 +1073,58 @@ def run_experiment(args: argparse.Namespace) -> Mapping[str, object]:
     evaluations = {
         MODE_REAL: evaluate(
             models[MODE_REAL],
-            artifact.evaluation_matrices,
+            evaluation_matrices,
             mode=MODE_REAL,
             maximum_steps=args.maximum_rollout_steps,
         ),
         MODE_ZERO: evaluate(
             models[MODE_REAL],
-            artifact.evaluation_matrices,
+            evaluation_matrices,
             mode=MODE_ZERO,
             maximum_steps=args.maximum_rollout_steps,
         ),
         MODE_SHUFFLED: evaluate(
             models[MODE_REAL],
-            artifact.evaluation_matrices,
+            evaluation_matrices,
             mode=MODE_SHUFFLED,
             maximum_steps=args.maximum_rollout_steps,
         ),
         MODE_CLASSIFIER: evaluate(
             models[MODE_CLASSIFIER],
-            artifact.evaluation_matrices,
+            evaluation_matrices,
             mode=MODE_ZERO,
             maximum_steps=args.maximum_rollout_steps,
         ),
         MODE_RANDOM: evaluate(
             models[MODE_RANDOM],
-            artifact.evaluation_matrices,
+            evaluation_matrices,
             mode=MODE_ZERO,
             maximum_steps=args.maximum_rollout_steps,
         ),
         "episodic_memory_shuffled_renderer": evaluate(
             models[MODE_REAL],
-            artifact.evaluation_matrices,
+            evaluation_matrices,
             mode=MODE_REAL,
             maximum_steps=args.maximum_rollout_steps,
             renderer_seed=args.renderer_seed,
+        ),
+        "exact_trained_exact_barrier": evaluate(
+            models[MODE_EXACT_BARRIER],
+            evaluation_matrices,
+            mode=MODE_EXACT_BARRIER,
+            maximum_steps=args.maximum_rollout_steps,
+        ),
+        "exact_trained_feature_shuffled": evaluate(
+            models[MODE_EXACT_BARRIER],
+            evaluation_matrices,
+            mode=MODE_EXACT_BARRIER_SHUFFLED,
+            maximum_steps=args.maximum_rollout_steps,
+        ),
+        "exact_trained_barrier_off": evaluate(
+            models[MODE_EXACT_BARRIER],
+            evaluation_matrices,
+            mode=MODE_ZERO,
+            maximum_steps=args.maximum_rollout_steps,
         ),
     }
     model_dir = Path(args.model_dir)
@@ -1101,8 +1149,10 @@ def run_experiment(args: argparse.Namespace) -> Mapping[str, object]:
                 artifact.train_matrix_manifest_sha256
             ),
             "evaluation_matrix_manifest_sha256": (
-                artifact.evaluation_matrix_manifest_sha256
+                matrix_manifest(evaluation_matrices)
             ),
+            "fresh_evaluation_seed": args.evaluation_seed,
+            "fresh_evaluation_board": fresh_evaluation,
             "trajectories": len(artifact.trajectories),
             "states": sum(
                 len(trajectory.states) for trajectory in artifact.trajectories
@@ -1248,6 +1298,8 @@ def _parser() -> argparse.ArgumentParser:
     run.add_argument("--learning-rate", type=float, default=5e-4)
     run.add_argument("--maximum-rollout-steps", type=int, default=192)
     run.add_argument("--renderer-seed", type=int, default=99173)
+    run.add_argument("--evaluation-seed", type=int)
+    run.add_argument("--evaluation-matrices", type=int, default=512)
     run.add_argument("--field-width", type=int, default=64)
     run.add_argument("--width", type=int, default=384)
     run.add_argument("--cell-hidden", type=int, default=512)
