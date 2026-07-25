@@ -51758,3 +51758,39 @@ Shohin still does not have demonstrated native general reasoning. The live
 question is whether recurrent model-owned state transition and value
 propagation survive equal-compute ablations and extrapolate without host
 algorithm features.
+
+## 2026-07-24 Expedited Final Decision
+
+The final enlarged-data result closes search distillation as the retained
+reasoning foothold. Two valid v3 consensus seeds completed:
+
+| Arm | Strict certificates | Rate |
+|---|---:|---:|
+| Search-teacher distillation | 178/1024 | 17.3828% |
+| Ordinary oracle imitation | **542/1024** | **52.9297%** |
+| Random labels | 0/1024 | 0% |
+
+The search teacher loses ordinary imitation by 364 cases. Per-seed
+search/ordinary scores were 54/512 versus 280/512 and 124/512 versus 262/512.
+The third claim-bearing seed failed and is excluded. This reverses the earlier
+small-data result and means no search-distillation result should be promoted
+as the current reasoning baseline.
+
+The honest conclusion after the controlled architecture campaign is:
+
+1. Shohin does not yet demonstrate native general reasoning.
+2. Raw 300k public scores remain low-single-digit.
+3. Local task competence and learned action signal exist, but autonomous
+   composition repeatedly collapses into cycles.
+4. More width, fixed recurrence, raw successor exposure, DAgger, scalar
+   potentials, and local proof heads all failed their causal controls.
+5. The highest observed model-owned proxy score is one-backup SVI at 107/192
+   = 55.7292%, but the tested iterative mechanism is not causal and therefore
+   is not evidence of internal planning.
+
+If development resumes, the only justified next experiment is a bounded,
+preregistered controller trained on full autonomous trajectories with explicit
+model-owned episodic anti-cycle memory. It must beat matched memory-zero,
+memory-shuffle, classifier-only, and random-label controls on unseen larger
+geometries. Until that gate passes, continuation pretraining remains on user
+hold and no architecture should be described as genuine reasoning.

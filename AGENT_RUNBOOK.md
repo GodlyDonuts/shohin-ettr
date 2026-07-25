@@ -104,6 +104,27 @@
 > have zero aggregate causal effect. Decision:
 > `proof_carrying_local_contract_no_go_classifier_baseline_retained`.
 >
+> **Expedited final reasoning decision (2026-07-24 EDT):** enlarged offline
+> search distillation does not preserve the earlier small-data advantage. Two
+> valid v3 consensus seeds (`701074`, `701077`) completed with matched data,
+> parameter, and update budgets. Search-teacher policies certified 178/1024 =
+> 17.3828%, ordinary oracle imitation certified 542/1024 = 52.9297%, and
+> randomized labels certified 0/1024. Search loses ordinary imitation by 364
+> cases. The third seed `701075` failed and is not pooled. Report SHA-256
+> values are
+> `ad23816d433872f48f3aee4e822496c20c404c55ebc72ce06049b9aa4976d0ad`
+> and
+> `1b9d999cb62d2817ab5cedc59e0e3e4931d8a063f5ddc419da1ee5dbd4dc128e`.
+> Decision: `scaled_search_distillation_reverses_below_ordinary_imitation`.
+> There is no demonstrated native general reasoning. The strongest observed
+> model-owned proxy score remains one-backup SVI at 107/192 = 55.7292%, but
+> hostile controls show that repeated value propagation is not causal, so it
+> is not a reasoning claim. Stop open-ended architecture branching under the
+> current usage budget. Preserve the checkpoint and pretraining hold. If work
+> resumes, run one preregistered full-trajectory episodic-memory experiment
+> with memory-zero and memory-shuffle controls; do not resume pretraining
+> merely because this is the remaining hypothesis.
+>
 > **Latest QFCR and native-law decision (2026-07-24 EDT):** exact NIST
 > chain-2 pulse 1,874,057 at 21:37:00Z was consumed under public source and
 > authorization freeze. Signatures, output hashes, previous link,
