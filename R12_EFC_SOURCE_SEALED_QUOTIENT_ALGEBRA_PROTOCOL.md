@@ -733,10 +733,12 @@ scientific component, not reported as genuine general reasoning.
     guidance reaches 1/16 and 0/8. It uses up to 3,771 expanded nodes, 55,791
     edges, and depth 22. This is a conventional external algorithm and is not
     native reasoning.
-13. **RUNNING next falsifier:** a corrected vectorized reactive policy has
+13. **FAIL despite solved utilization:** a corrected vectorized reactive policy has
     exact row/column recoding tests, no recurrent state or step signal, and a
-    strict matrix-only final rollout. Its CPU smoke is 0/16; H100 scale is
-    admitted only as a falsifier.
+    strict matrix-only final rollout. Three H100 seeds reached 97--99% sampled
+    GPU utilization but certified 0/1,536 aggregate at approximately 83%
+    teacher-forced full-instruction accuracy. Efficient reactive imitation is
+    closed as a sufficient mechanism.
 14. Implement the sealed quotient wire, anonymous codebook, and late-query
     parser.
 15. Hostile-audit the complete CPU/controller boundary and matched controls.

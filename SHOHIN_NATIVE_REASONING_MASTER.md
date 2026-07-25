@@ -51522,6 +51522,16 @@ optimization can internalize the controller without host search. In parallel,
 new work targets canonical defect energy, search distillation, and fixed-depth
 neural value iteration.
 
+That H100 gate is now consumed. All three vectorized seeds certified 0/512,
+for 0/1,536 aggregate, despite 97--99% sampled device utilization and
+82.837%--83.085% teacher-forced exact-instruction accuracy. This cleanly
+separates an engineering success from a capability failure: kernel-launch
+overhead and low utilization were real and are fixed, but they were not the
+cause of failed reasoning. Ordinary recurrent, reactive, DAgger, larger-data,
+larger-batch, and vectorized imitation are therefore all closed as sufficient
+mechanisms. The live frontier is search distillation, exact canonical energy,
+and fixed-depth internal value iteration under the same strict verifier.
+
 Custody and accounting are stronger than the neural result. A three-process
 compiler/candidate/assessor harness deletes source before candidate launch and
 fails closed on manifest drift, tamper, symlinks, forbidden reads/content,

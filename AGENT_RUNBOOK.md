@@ -12841,3 +12841,44 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   A dedicated BF16, fused-AdamW, `torch.compile` H100 launcher is ready for a
   strict 8,192-matrix scale falsifier; it writes isolated report/model
   artifacts and contains no flagship path.
+
+  Exact commit `10313ee` is pushed and synced. Three corrected vectorized
+  H100 seeds are queued as `700913`, `700914`, and `700915`, excluding
+  anomalous `evc33`. Each uses 8,192 train matrices, 1,024 audit matrices,
+  512 strict larger-geometry evaluations, batch 1,024, 30 epochs, BF16, fused
+  AdamW, and `torch.compile`; every run has isolated report/model paths.
+
+  The paired 8,192-matrix scale arms also close without capability gain:
+  `700873` certified 1/1,024 standard recurrent programs at 88.367%
+  teacher-forced accuracy, and `700874` certified 0/1,024 reactive programs at
+  88.246%. Their report SHA-256 values are
+  `d59ce5f826b2e464e2b05f92fed5c092befa3002f47cba2d4e9d03a476c51a66`
+  and
+  `26fd8f2c0d2ca84512af7f9779eebdd6b460f2da1c2db6ef20ba342ecaefbfe3`.
+  More examples and a larger batch do not repair autonomous control.
+
+  The exact structural-search ceiling was expanded independently to 64 unseen
+  `4x5--4x6` matrices. It certified 64/64 versus 37/64 greedy and 5/64
+  randomized guidance, with maxima of 1,312 expanded nodes, 13,018 edges, and
+  depth 16. The report SHA-256 is
+  `28b8b012b5d7572c45e82fe4d271338e8428fb4168befc1f80cfd32ccfa193ed`.
+  This strengthens the source-independent teacher ceiling but remains counted
+  host search, not native reasoning.
+
+  Vectorized H100 jobs `700913`--`700915` completed with 97--99% sampled
+  device utilization, proving that resident flattened tensors, BF16, fused
+  AdamW, batching, and `torch.compile` remove the old launch bottleneck.
+  Capability did not follow: all three seeds certified 0/512, for 0/1,536
+  aggregate, at teacher-forced full-instruction accuracies 82.959%, 82.837%,
+  and 83.085%. Report SHA-256 values are
+  `e7714c1a035597183258e8f99d30cfcd77b29cb2b14f5db9824f1a0fda395386`,
+  `bbb5f7e9f11b873b3e6077fefcc8f9874bcd33e59f4e13d77705c672cecb1165`,
+  and
+  `71471a5fc32203b4b466c8c48adc031acb97f14d5b6051e2a1d425ad0056459c`.
+  Model SHA-256 values are
+  `527e4ff0674365bc6ae771e9213f332984118341e996b1b4be2135278ac66b5d`,
+  `933ab8764ee6557ea4771d654b52a9e169c0de6f742440ae4aa936c034ff338c`,
+  and
+  `91bd7cdf404c2c414f716b444ea19938bb53476ffa8b2def1a6b433168993273`.
+  Reports and models are hash-matched on Newton and the Mac. Efficient
+  reactive imitation is closed as a sufficient mechanism.
