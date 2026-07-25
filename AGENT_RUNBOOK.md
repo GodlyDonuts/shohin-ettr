@@ -34,7 +34,11 @@
 > arms (`700970`, `700971`, `700979`) then completed at 181/384 treatment
 > versus 186/384 zero-iteration and 0/384 random labels. Each complete system
 > was 186,643,907 parameters. Wider SVI is closed; feature/message hostile
-> ablations remain active.
+> ablations are also closed. Three matched hostile seeds give 96/192 for
+> eight backups, 107/192 for one backup, 103/192 with the raw matrix removed,
+> 97/192 with pair relations removed, 85/192 for zero backups, and 0/192
+> random. Repeated value propagation and the raw-matrix channel are not the
+> causal source of capability. Do not promote current SVI as internal planning.
 >
 > The apparent canonical-energy win is closed as
 > `hybrid_host_algorithm_mechanics_not_learned_or_native_reasoning`.
@@ -74,6 +78,12 @@
 > `evc30`, and `evc37`. Job `701045` was canceled before Python launch after
 > `evc33` again hung in `nvidia-smi`; its replacement is `701048`, and the
 > persistent launcher now excludes `evc33`.
+> The original v2 scale seed `701044` later failed closed on duplicate states
+> with conflicting search-teacher labels. Corrected v3 uses deterministic
+> majority vote with canonical action tie-breaking and records all duplicate
+> and conflict counts. Jobs `701074`, `701075`, and replacement `701077`
+> are the claim-bearing v3 seeds; `701076` failed before Python because
+> `evc44` exposed no GPU and is now excluded.
 >
 > **Latest QFCR and native-law decision (2026-07-24 EDT):** exact NIST
 > chain-2 pulse 1,874,057 at 21:37:00Z was consumed under public source and
@@ -13094,3 +13104,49 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `b846f998a4d24869ae2f62610ea06caedc31dbe72108e80a444f749ba036d8c8`.
   These runs test a scaling curve only; they cannot promote reasoning without
   the matched controls and strict posthoc assessor.
+
+- **2026-07-24 22:13--22:24 EDT** -- **Hostile SVI controls close repeated
+  value propagation as the causal mechanism.** Jobs `701013`--`701015`
+  completed cleanly on three isolated H100s. Every arm used the same
+  3,567,363 controller parameters, 128,649,027 complete-system parameters,
+  training-state presentations, optimizer updates, and initialization.
+  Candidate-time oracle, search, and verifier calls were zero.
+
+  | Arm | Strict certificates | Rate |
+  |---|---:|---:|
+  | Eight-backup treatment | 96/192 | 50.0000% |
+  | One backup | **107/192** | **55.7292%** |
+  | Raw matrix removed | 103/192 | 53.6458% |
+  | Pair relations removed | 97/192 | 50.5208% |
+  | Zero backups | 85/192 | 44.2708% |
+  | Structural action scalars removed | 73/192 | 38.0208% |
+  | Message passing disabled | 69/192 | 35.9375% |
+  | Legal operands/types only | 2/192 | 1.0417% |
+  | Random labels | 0/192 | 0% |
+
+  Eight backups lose the one-backup control by 11 cases and the raw-matrix
+  ablation by seven. Structural action scalars and some learned message
+  interaction carry useful policy signal, but deeper repeated backups do not.
+  The result is
+  `current_svi_iterative_planning_mechanism_falsified_policy_signal_remains`.
+  Exact report SHA-256 values are
+  `c89da9e537c101c676e27b6c29a906842293218b7a2cffcad887655e990216d9`,
+  `a9ea9bd2ff31b6e191f9703167ed5962ed9bbd943eda50b04a89c72cd7ea1c99`,
+  and
+  `6377bdc6ebda3468226b3ed73448f8ac38a5cccd37b84127df498173bf80b9df`.
+  Source, tests, and launcher SHA-256 values are
+  `c0b331604577f0e260d5338733c371da25fac835e0c1277383a72bbea0bb1c8c`,
+  `abd05f3ac1fd2671f2456fc592b1582abfc429e313ccf059b1812e0b8a391962`,
+  and
+  `05824aea519f7b4e3c29f1a2ff2742ef521f7e01918635650a523d72669e01a5`.
+  Focused verification is 28 passed plus clean Ruff and byte compilation.
+
+  Search-scale v2 independently exposed a teacher-data ambiguity:
+  `701044` failed closed when identical matrix states received conflicting
+  bounded-search actions. The corrected v3 preparation aggregates all
+  occurrences, selects the majority action, uses canonical action order only
+  for ties, and records duplicate/conflicting occurrence counts. Its source
+  SHA-256 is
+  `8664339392d7b23de114a4316bb0f37e5ba25b3827aae330cc10a82ce535da4b`;
+  23 focused search/on-policy tests pass with clean Ruff and byte compilation.
+  Claim-bearing consensus seeds are `701074`, `701075`, and `701077`.

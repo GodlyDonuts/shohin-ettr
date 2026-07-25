@@ -51609,9 +51609,28 @@ complete systems contain 186,643,907 parameters, below 200M. Treatment reached
 181/384 = 47.1354%, while separately trained zero-iteration controls reached
 186/384 = 48.4375% and random labels reached 0/384. More than 17x controller
 capacity therefore reverses rather than strengthens the provisional recurrent
-advantage. The pending hostile controls remove structural action scalars,
-disable or shuffle messages while retaining compute, and test row/column
-recodings.
+advantage.
+
+The three-seed hostile audit also closes the iterative-planning interpretation:
+
+| Arm | Strict certificates | Rate |
+|---|---:|---:|
+| Eight-backup treatment | 96/192 | 50.0000% |
+| One backup | **107/192** | **55.7292%** |
+| Raw matrix removed | 103/192 | 53.6458% |
+| Pair relations removed | 97/192 | 50.5208% |
+| Zero backups | 85/192 | 44.2708% |
+| Structural action scalars removed | 73/192 | 38.0208% |
+| Message passing disabled | 69/192 | 35.9375% |
+| Legal operands/types only | 2/192 | 1.0417% |
+| Random labels | 0/192 | 0% |
+
+Repeated backups lose the one-backup arm by 5.73 points and removing the raw
+matrix improves over treatment by 3.65 points. The architecture has learned
+policy signal, especially in structural action scalars, but its repeated
+message-passing/value-backup mechanism is not the cause of capability.
+Current SVI is therefore a policy baseline, not demonstrated internal
+planning.
 A separate successor-aware planner will compare correct one-step
 counterfactuals against zeroed and shuffled successor bindings, progressive
 versus fixed recurrent-depth training, and longer-depth overthinking tests.
@@ -51669,6 +51688,14 @@ A preregistered scale curve is now running as jobs `701043`, `701044`, and
 keeping the same 12.22M-parameter policy family and matched
 search-teacher/ordinary/random arms. This tests whether the offline foothold
 scales, saturates, or reverses. It is not a promotion-by-compute.
+
+The initial scale lane exposed a previously unseen ambiguity: duplicate raw
+matrix states can receive different legal actions from noisy bounded-search
+trajectories. The implementation now records every duplicate and conflict,
+uses majority action frequency per unique state with canonical tie-breaking,
+and recomputes matched controls only after resolution. The claim-bearing v3
+seeds are `701074`, `701075`, and `701077`; earlier v2 runs are exploratory
+and cannot be pooled with them.
 
 The next control-theoretic hypothesis changes the supervision target rather
 than adding capacity or recurrence. A learned Lyapunov/Bellman controller will

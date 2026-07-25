@@ -9,7 +9,7 @@
 #SBATCH --time=08:00:00
 #SBATCH --output=/lustre/fs1/home/sa305415/shohin/logs/ssqac_search_scale_%j.out
 #SBATCH --error=/lustre/fs1/home/sa305415/shohin/logs/ssqac_search_scale_%j.err
-#SBATCH --exclude=evc26,evc31,evc33
+#SBATCH --exclude=evc26,evc31,evc33,evc44
 
 set -euo pipefail
 
