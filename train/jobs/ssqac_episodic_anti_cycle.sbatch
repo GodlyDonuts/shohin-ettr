@@ -53,6 +53,7 @@ fi
   --batch-size "$BATCH" \
   --learning-rate "$LR" \
   --maximum-rollout-steps "$MAX_STEPS" \
+  --exact-training-only \
   "${EVALUATION_ARGS[@]}" \
   --device cuda \
   --output "$OUTPUT" \

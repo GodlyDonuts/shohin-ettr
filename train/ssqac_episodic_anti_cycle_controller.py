@@ -1050,12 +1050,12 @@ def run_experiment(args: argparse.Namespace) -> Mapping[str, object]:
     initial = {name: tensor.clone() for name, tensor in template.state_dict().items()}
     models = {}
     training = {}
-    for mode in (
-        MODE_REAL,
-        MODE_EXACT_BARRIER,
-        MODE_CLASSIFIER,
-        MODE_RANDOM,
-    ):
+    train_modes = (
+        (MODE_EXACT_BARRIER, MODE_CLASSIFIER, MODE_RANDOM)
+        if args.exact_training_only
+        else (MODE_REAL, MODE_EXACT_BARRIER, MODE_CLASSIFIER, MODE_RANDOM)
+    )
+    for mode in train_modes:
         torch.manual_seed(args.seed)
         model = EpisodicAntiCycleController(config).to(device)
         model.load_state_dict(initial)
@@ -1071,24 +1071,6 @@ def run_experiment(args: argparse.Namespace) -> Mapping[str, object]:
         )
         models[mode] = model
     evaluations = {
-        MODE_REAL: evaluate(
-            models[MODE_REAL],
-            evaluation_matrices,
-            mode=MODE_REAL,
-            maximum_steps=args.maximum_rollout_steps,
-        ),
-        MODE_ZERO: evaluate(
-            models[MODE_REAL],
-            evaluation_matrices,
-            mode=MODE_ZERO,
-            maximum_steps=args.maximum_rollout_steps,
-        ),
-        MODE_SHUFFLED: evaluate(
-            models[MODE_REAL],
-            evaluation_matrices,
-            mode=MODE_SHUFFLED,
-            maximum_steps=args.maximum_rollout_steps,
-        ),
         MODE_CLASSIFIER: evaluate(
             models[MODE_CLASSIFIER],
             evaluation_matrices,
@@ -1100,13 +1082,6 @@ def run_experiment(args: argparse.Namespace) -> Mapping[str, object]:
             evaluation_matrices,
             mode=MODE_ZERO,
             maximum_steps=args.maximum_rollout_steps,
-        ),
-        "episodic_memory_shuffled_renderer": evaluate(
-            models[MODE_REAL],
-            evaluation_matrices,
-            mode=MODE_REAL,
-            maximum_steps=args.maximum_rollout_steps,
-            renderer_seed=args.renderer_seed,
         ),
         "exact_trained_exact_barrier": evaluate(
             models[MODE_EXACT_BARRIER],
@@ -1127,6 +1102,36 @@ def run_experiment(args: argparse.Namespace) -> Mapping[str, object]:
             maximum_steps=args.maximum_rollout_steps,
         ),
     }
+    if not args.exact_training_only:
+        evaluations.update(
+            {
+                MODE_REAL: evaluate(
+                    models[MODE_REAL],
+                    evaluation_matrices,
+                    mode=MODE_REAL,
+                    maximum_steps=args.maximum_rollout_steps,
+                ),
+                MODE_ZERO: evaluate(
+                    models[MODE_REAL],
+                    evaluation_matrices,
+                    mode=MODE_ZERO,
+                    maximum_steps=args.maximum_rollout_steps,
+                ),
+                MODE_SHUFFLED: evaluate(
+                    models[MODE_REAL],
+                    evaluation_matrices,
+                    mode=MODE_SHUFFLED,
+                    maximum_steps=args.maximum_rollout_steps,
+                ),
+                "episodic_memory_shuffled_renderer": evaluate(
+                    models[MODE_REAL],
+                    evaluation_matrices,
+                    mode=MODE_REAL,
+                    maximum_steps=args.maximum_rollout_steps,
+                    renderer_seed=args.renderer_seed,
+                ),
+            }
+        )
     model_dir = Path(args.model_dir)
     model_dir.mkdir(parents=True, exist_ok=False)
     model_hashes = {}
@@ -1165,6 +1170,7 @@ def run_experiment(args: argparse.Namespace) -> Mapping[str, object]:
             "batch_size": args.batch_size,
             "learning_rate": args.learning_rate,
             "maximum_rollout_steps": args.maximum_rollout_steps,
+            "exact_training_only": args.exact_training_only,
         },
         "controller_parameters": template.parameter_count,
         "complete_system_parameters": template.complete_system_parameters,
@@ -1300,6 +1306,11 @@ def _parser() -> argparse.ArgumentParser:
     run.add_argument("--renderer-seed", type=int, default=99173)
     run.add_argument("--evaluation-seed", type=int)
     run.add_argument("--evaluation-matrices", type=int, default=512)
+    run.add_argument(
+        "--exact-training-only",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+    )
     run.add_argument("--field-width", type=int, default=64)
     run.add_argument("--width", type=int, default=384)
     run.add_argument("--cell-hidden", type=int, default=512)
