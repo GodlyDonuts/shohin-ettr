@@ -136,6 +136,7 @@ def test_full_trajectory_training_smoke() -> None:
     assert receipt.optimizer_updates == 2
     assert receipt.trajectory_presentations == 2
     assert receipt.state_presentations == 4
+    assert len(receipt.batch_schedule_sha256) == 64
 
 
 def test_complete_system_respects_budget() -> None:

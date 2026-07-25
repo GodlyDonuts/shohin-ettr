@@ -637,6 +637,7 @@ class TrainingReceipt:
     trajectory_presentations: int
     state_presentations: int
     action_candidates: int
+    batch_schedule_sha256: str
     mean_loss: float
     final_loss: float
     wall_seconds: float
@@ -679,6 +680,7 @@ def train_full_trajectories(
     order = list(range(len(trajectories)))
     cursor = len(order)
     losses = []
+    schedule_digest = sha256()
     trajectory_presentations = state_presentations = candidates = 0
     started = time.perf_counter()
     if device.type == "cuda":
@@ -693,6 +695,8 @@ def train_full_trajectories(
                 cursor = 0
             trajectory = trajectories[order[cursor]]
             cursor += 1
+            schedule_digest.update(trajectory.sha256.encode("ascii"))
+            schedule_digest.update(b"\n")
             memory = EpisodicState()
             visited: list[tuple[tuple[int, ...], ...]] = []
             step_losses = []
@@ -754,6 +758,7 @@ def train_full_trajectories(
         trajectory_presentations=trajectory_presentations,
         state_presentations=state_presentations,
         action_candidates=candidates,
+        batch_schedule_sha256=schedule_digest.hexdigest(),
         mean_loss=sum(losses) / len(losses),
         final_loss=losses[-1],
         wall_seconds=time.perf_counter() - started,
@@ -942,7 +947,7 @@ def run_experiment(args: argparse.Namespace) -> Mapping[str, object]:
     initial = {name: tensor.clone() for name, tensor in template.state_dict().items()}
     models = {}
     training = {}
-    for index, mode in enumerate((MODE_REAL, MODE_CLASSIFIER, MODE_RANDOM)):
+    for mode in (MODE_REAL, MODE_CLASSIFIER, MODE_RANDOM):
         torch.manual_seed(args.seed)
         model = EpisodicAntiCycleController(config).to(device)
         model.load_state_dict(initial)
@@ -953,7 +958,7 @@ def run_experiment(args: argparse.Namespace) -> Mapping[str, object]:
             optimizer_updates=args.optimizer_updates,
             batch_size=args.batch_size,
             learning_rate=args.learning_rate,
-            seed=args.seed + index,
+            seed=args.seed,
             amp_bfloat16=args.amp_bfloat16,
         )
         models[mode] = model
