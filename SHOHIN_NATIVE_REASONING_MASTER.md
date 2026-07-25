@@ -51638,6 +51638,31 @@ successor arm trails the zeroed-successor control by 5.21 percentage points,
 and longer recurrence provides no material gain. Direct counterfactual
 exposure is therefore not the missing substrate.
 
+The matched on-policy search-distillation lane is also consumed. Three H100
+seeds used the same 12,222,337-parameter policy and 360 optimizer updates per
+arm and seed:
+
+| Arm | Strict certificates | Rate |
+|---|---:|---:|
+| On-policy DAgger correction | 48/768 | 6.2500% |
+| Equal-budget offline search distillation | **59/768** | **7.6823%** |
+| Ordinary oracle imitation | 34/768 | 4.4271% |
+| Random labels | 0/768 | 0% |
+
+The new result does not contradict the earlier 28/768 search-distillation
+score: both DAgger and its matched offline control received more examples and
+updates than the earlier baseline. In the claim-bearing comparison, DAgger
+loses offline distillation by 11 cases, or 1.4323 percentage points. Reactive
+correction on the learner's own failed states is therefore not a sufficient
+repair. The larger offline result is retained as the current
+search-distillation baseline.
+
+This run also exposes an avoidable systems cost. Preparation used 2,083.05 of
+2,765.57 allocated H100-seconds while expanding 1,442,150 nodes and
+12,650,170 edges in Python. Future search generation belongs on hash-bound CPU
+workers, with H100 allocation reserved for resident-tensor fitting and
+evaluation.
+
 The next control-theoretic hypothesis changes the supervision target rather
 than adding capacity or recurrence. A learned Lyapunov/Bellman controller will
 predict a source-independent remaining-distance potential for raw states and

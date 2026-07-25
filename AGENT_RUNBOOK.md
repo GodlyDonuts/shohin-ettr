@@ -57,6 +57,19 @@
 > candidate-time oracle/search/verifier calls. Decision:
 > `successor_planning_falsified_or_below_material_gate`. Do not scale it.
 >
+> **Latest on-policy search-distillation decision (2026-07-24 EDT):** three
+> isolated H100 seeds reject naive DAgger as the missing controller mechanism.
+> On-policy correction certified 48/768 = 6.25%, but the matched equal-budget
+> offline search-distillation control certified 59/768 = 7.6823%; ordinary
+> oracle imitation reached 34/768 = 4.4271% and random labels 0/768. All arms
+> used the same 12,222,337 parameters and 360 optimizer updates per seed, and
+> final candidate inference made zero search/oracle/verifier calls. Preparation
+> consumed 2,083.05 of 2,765.57 allocated H100-seconds while expanding
+> 1,442,150 search nodes and 12,650,170 edges. Decision:
+> `on_policy_dagger_not_better_than_equal_budget_offline_distillation`.
+> Preserve the larger-data offline gain, but move future search generation to
+> CPU capacity before GPU-only fitting.
+>
 > **Latest QFCR and native-law decision (2026-07-24 EDT):** exact NIST
 > chain-2 pulse 1,874,057 at 21:37:00Z was consumed under public source and
 > authorization freeze. Signatures, output hashes, previous link,
@@ -13022,3 +13035,40 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   Lyapunov/Bellman potential from preparation-only distance supervision and
   must beat action-classification, shuffled-potential, zero-consistency,
   shuffled-successor, and random-label controls.
+
+- **2026-07-24 21:54--22:00 EDT** -- **Matched on-policy search distillation
+  is a NO-GO, while larger offline search distillation remains a modest
+  foothold.** Jobs `701030`--`701032` completed cleanly across three isolated
+  H100s. The complete candidate is 12,222,337 parameters. Each arm received
+  360 optimizer updates per seed; candidate-time search, oracle, and verifier
+  calls were zero.
+
+  Across 768 strictly larger held-out matrices, on-policy DAgger certified
+  48/768 = 6.25%, equal-budget offline search distillation certified 59/768 =
+  7.6823%, ordinary oracle imitation certified 34/768 = 4.4271%, and random
+  labels certified 0/768. Per-seed DAgger versus offline scores were 5/5,
+  27/21, and 16/33. The new DAgger arm exceeds the earlier 28/768 offline
+  result only because this experiment uses more examples and updates; the
+  matched comparison rejects the DAgger mechanism by 11 cases, or 1.4323
+  percentage points.
+
+  Exact report SHA-256 values are
+  `88aadcab9ef4ad64f4612cb4edb602bd0f94827cdff56b49887d865254216cc9`,
+  `86038a66f291dac33f061f6a78cbcf884be1ccc3bc3a7bb49092076ba097a39f`,
+  and
+  `ce803509dc02359e2bfb65ecf1a3ff5586914dd961227229a23b3b3f0437dee8`.
+  Source and test SHA-256 values are
+  `91fe019e0ec7232f6d319b7f8dd85cd9473e1a3a86a52505a9e2c64705b222b0`
+  and
+  `d77967203ed252bbf638fbc86888b099606bde28de7cc6541e6abf5031d8b30e`.
+  All 47 source files and 4,191 preparation search traces were hash-accounted
+  and deleted before evaluation.
+
+  The aggregate allocation was 2,765.57 H100-seconds = 0.7682 H100-hours.
+  Preparation consumed 2,083.05 seconds, 75.3% of the allocation, and
+  performed 4,191 searches, 11,906 oracle labels, 1,442,150 node expansions,
+  and 12,650,170 edge expansions. Training used 225.29 seconds and evaluation
+  364.53 seconds. Future search-trace production must therefore run as a
+  hash-bound CPU stage on Stokes or Newton CPU capacity, followed by isolated
+  GPU-only fitting and evaluation. Do not spend H100 time on serial host
+  search when CPU capacity is available.
