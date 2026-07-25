@@ -19,11 +19,15 @@ from multifamily_raw_machine_compiler import (  # noqa: E402
     scan_source,
 )
 from multifamily_shohin_feature_adapter import (  # noqa: E402
+    ConnectedFeatureReceipt,
+    PROTECTED_SHOHIN_PARAMETERS,
+    PROTECTED_SHOHIN_SHA256,
     anonymous_payload,
     build_trunk_batch,
     extract_query_unit_features,
     extract_source_unit_features,
 )
+from multifamily_raw_machine_compiler import MultiFamilyCompilerError  # noqa: E402
 
 
 @dataclass
@@ -135,3 +139,21 @@ def test_trunk_batch_offsets_partition_bytes() -> None:
     )
     assert batch.payloads == payloads
     assert batch.token_valid.sum(1).tolist() == [3, 5]
+
+
+def test_connected_receipt_fails_closed_when_checkpoint_is_not_verified() -> None:
+    try:
+        ConnectedFeatureReceipt(
+            checkpoint_sha256=PROTECTED_SHOHIN_SHA256,
+            checkpoint_verified=False,
+            protected_parameters=PROTECTED_SHOHIN_PARAMETERS,
+            frozen_feature_width=4,
+            source_payload_count=1,
+            query_payload_count=1,
+            anonymous_source_manifest_sha256="0" * 64,
+            anonymous_query_manifest_sha256="1" * 64,
+        )
+    except MultiFamilyCompilerError:
+        pass
+    else:
+        raise AssertionError("unverified checkpoint receipt did not fail closed")

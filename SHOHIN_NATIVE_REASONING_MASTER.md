@@ -51982,3 +51982,22 @@ partitions. This is a useful clean negative: optimization and hard execution
 work, while byte-only renderer semantics do not transfer. Wider standalone
 models are not justified. The next matched treatment is the same compiler
 conditioned on frozen, hash-verified Shohin residual features.
+
+That connected treatment has now completed. Frozen Shohin residuals from
+blocks 17, 25, and 29 increase the learned compiler to 331,589 parameters and
+the conceptual complete system to 125,413,253 parameters. It still reaches
+36/36 fit, 6/6 unseen-law, 6/6 longer-composition, 0/6 held-out-renderer, and
+0/6 joint exactness: exactly the standalone 12/24 development score. Query
+role accuracy decreases from 89.6% to 80.8%; source-role accuracy remains
+50%. The protected checkpoint SHA-256 and parameter count match, but strict
+runtime attestation remained false, so this is conservative negative evidence
+only.
+
+The expedited conclusion is therefore stable: Shohin has useful
+task-specific controller competence but no demonstrated native general
+reasoning. Parameter growth, recurrence, and frozen residual access have not
+created renderer-invariant law acquisition. The next justified investment is
+an audited cross-renderer representation/post-training curriculum with
+counterfactual role-equivalence supervision, not another large architecture
+branch. No Newton jobs remain active and the user pretraining hold remains in
+force.

@@ -47,6 +47,10 @@ evidence and usage budget.
 5. The raw 300k language model remains at low-single-digit public reasoning
    accuracy: GSM8K maj@4 4/100, GSM8K pass@1 2/100, MATH-500 2/100,
    HumanEval 6/164, and MBPP 0/100.
+6. Frozen Shohin residuals do not supply renderer-invariant role semantics to
+   the source-deleted multi-family compiler. The connected smoke exactly ties
+   the standalone compiler at 12/24 development cases and remains 0/6 on both
+   held-out-renderer cells.
 
 ## Mechanisms Rejected
 
@@ -95,21 +99,56 @@ law acquisition and composition: the model can learn local action policies,
 but the tested mechanisms do not induce a reusable algorithm that transfers
 to new rule systems.
 
-## Only Admissible Next Gate
+The final multi-family smoke sharpens that diagnosis. Both a 152,933-parameter
+byte compiler and a 331,589-parameter compiler connected to frozen Shohin
+blocks 17, 25, and 29 fit all 36 training episodes and solve all 12
+unseen-law/longer-composition probes. Both fail all 12 probes that require a
+new renderer. Frozen language-model features therefore add no exact transfer
+on the decisive boundary. This is a representation-learning failure before it
+is an execution-depth or parameter-capacity failure.
 
-No further architecture should be promoted, and no continuation pretraining
-should begin, until one frozen experiment tests the retained recurrent
-mechanism with all of the following:
+## Final Multi-Family Evidence
 
-1. at least three genuinely different task families;
-2. train/test separation by rule or law, not just instance geometry;
-3. unseen compositions and execution depths;
-4. opaque-name and renderer holdouts;
-5. source deletion before candidate execution;
-6. one shared mechanism with no family-specific executor or head;
-7. recurrence-disabled, rule-binding-shuffled, equal-compute classifier, and
-   random-label controls; and
-8. a preregistered minimum of 85% per family plus a material causal margin.
+Newton job `702764` completed in 3 minutes 26 seconds on one H100:
 
-Anything weaker would produce another proxy result rather than answer whether
-Shohin reasons.
+| System | Fit | Unseen law | Longer composition | Renderer | Joint | Development |
+|---|---:|---:|---:|---:|---:|---:|
+| Standalone byte compiler | 36/36 | 6/6 | 6/6 | 0/6 | 0/6 | 12/24 |
+| Frozen-Shohin connected compiler | 36/36 | 6/6 | 6/6 | 0/6 | 0/6 | 12/24 |
+
+The connected system has 331,589 learned compiler parameters and 125,413,253
+conceptual complete parameters. It uses a 1,728-wide frozen residual from
+three Shohin blocks and makes zero candidate-time oracle, search, or verifier
+calls. Its report SHA-256 is
+`06345448d5a1696678b5eb439a3ca414b26132cbbf9ee6782af68f0606e9688d`.
+
+The report is negative-only evidence, not a claim-bearing qualification. Its
+checkpoint bytes and reported parameter count match the protected checkpoint,
+and loading hard-fails on a wrong SHA-256, but the stricter runtime-semantic
+receipt remained false in the CUDA execution environment. Three fail-closed
+repeats (`702769`, `702771`, and `702773`) emitted no replacement report.
+This audit limitation can invalidate a positive claim; it cannot turn the
+observed exact tie and zero renderer transfer into evidence of success.
+
+## Highest-Value Next Step
+
+Do not spend the next budget on a larger controller. The highest-value next
+step is a frozen **representation curriculum** that trains renderer invariance
+and episode-local role binding before testing recurrent execution. It should:
+
+1. retain the frozen 1,344-row audit board and source-deletion boundary;
+2. add many training renderers while keeping one structurally distinct
+   renderer fully held out;
+3. supervise role equivalence across counterfactual renderings of the same
+   anonymous machine;
+4. train one shared encoder/compiler across all three families;
+5. measure compiler sealing separately from recurrent execution;
+6. retain rule-binding-shuffled, renderer-shuffled, recurrence-disabled,
+   equal-compute, and random-label controls; and
+7. require at least 85% exactness in every family/cell before any reasoning
+   claim or continuation pretraining decision.
+
+If that curriculum cannot transfer the held-out renderer, further recurrence,
+memory, search distillation, or parameter growth is not justified. The
+protected pretraining hold remains in force, and there are zero active Newton
+jobs at this closeout.

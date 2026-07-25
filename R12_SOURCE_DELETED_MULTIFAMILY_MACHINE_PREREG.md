@@ -191,6 +191,34 @@ all hard custody and matched controls.
 Smoke report SHA-256:
 `e4ff0d09abb9533e7d8c16b213f9b6a073e672572a4799c94803f7eb0c539ff3`.
 
+## Frozen-Shohin Connected Smoke
+
+Job `702764` connected frozen residuals from Shohin blocks 17, 25, and 29 to
+the same source-deleted compiler. The added compiler has 331,589 trainable
+parameters; the conceptual complete system has 125,413,253 parameters. It
+fits 36/36 training episodes but exactly reproduces the standalone
+development result:
+
+| Cell | Standalone | Connected |
+|---|---:|---:|
+| unseen law | 6/6 | 6/6 |
+| longer composition | 6/6 | 6/6 |
+| held-out renderer | 0/6 | 0/6 |
+| joint | 0/6 | 0/6 |
+
+Connected source-role accuracy is 50% and query-role accuracy is 80.8%.
+Candidate inference makes zero oracle, search, or verifier calls. The result
+is
+`frozen_shohin_features_do_not_transfer_renderer_semantics`.
+
+Report SHA-256:
+`06345448d5a1696678b5eb439a3ca414b26132cbbf9ee6782af68f0606e9688d`.
+
+The report's protected SHA-256 and parameter count are exact, but its stricter
+runtime-semantic receipt is false. Fail-closed repeats `702769`, `702771`, and
+`702773` emitted no report. Preserve this only as conservative negative
+evidence; it is not an authorized qualification or positive claim.
+
 ## Authorization Boundary
 
 Before an H100 run, the raw-token candidate package, process-level deletion

@@ -53,7 +53,7 @@ class ConnectedFeatureReceipt:
     def __post_init__(self) -> None:
         if (
             self.checkpoint_sha256 != PROTECTED_SHOHIN_SHA256
-            or type(self.checkpoint_verified) is not bool
+            or self.checkpoint_verified is not True
             or self.protected_parameters != PROTECTED_SHOHIN_PARAMETERS
             or self.frozen_feature_width < 1
             or self.source_payload_count < 1
@@ -284,16 +284,16 @@ def extract_query_unit_features(
 def connected_feature_receipt(
     *,
     trunk,
+    checkpoint_receipt,
     source_payload_count: int,
     query_payload_count: int,
     anonymous_source_manifest_sha256: str,
     anonymous_query_manifest_sha256: str,
 ) -> ConnectedFeatureReceipt:
-    receipt = trunk.parameter_receipt()
     return ConnectedFeatureReceipt(
-        checkpoint_sha256=receipt.checkpoint_sha256,
-        checkpoint_verified=receipt.checkpoint_verified,
-        protected_parameters=receipt.parent_unique_parameters,
+        checkpoint_sha256=checkpoint_receipt.checkpoint_sha256,
+        checkpoint_verified=checkpoint_receipt.checkpoint_verified,
+        protected_parameters=checkpoint_receipt.parent_unique_parameters,
         frozen_feature_width=trunk.feature_width,
         source_payload_count=source_payload_count,
         query_payload_count=query_payload_count,

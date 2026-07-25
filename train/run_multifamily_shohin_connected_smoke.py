@@ -129,6 +129,7 @@ def run_connected_smoke(
         block_indices=block_indices,
         device=device,
     )
+    checkpoint_receipt = trunk.parameter_receipt()
     board = build_frozen_board(
         seed=20260725,
         train_per_renderer=4,
@@ -154,6 +155,7 @@ def run_connected_smoke(
     )
     feature_receipt = connected_feature_receipt(
         trunk=trunk,
+        checkpoint_receipt=checkpoint_receipt,
         source_payload_count=(
             train["source_count"] + development["source_count"]
         ),

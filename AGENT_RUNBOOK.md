@@ -71,6 +71,22 @@
 > preserve the standalone arm as the matched control. Smoke report SHA-256 is
 > `e4ff0d09abb9533e7d8c16b213f9b6a073e672572a4799c94803f7eb0c539ff3`.
 >
+> **Final connected closeout (2026-07-25 EDT):** job `702764` connected
+> frozen Shohin blocks 17/25/29 to the same compiler. It adds 331,589 learned
+> parameters for a 125,413,253-parameter conceptual system and fits 36/36,
+> but exactly ties the standalone development result: 6/6 unseen law, 6/6
+> longer composition, 0/6 held-out renderer, and 0/6 joint. Decision:
+> `frozen_shohin_features_do_not_transfer_renderer_semantics`. Report
+> SHA-256 is
+> `06345448d5a1696678b5eb439a3ca414b26132cbbf9ee6782af68f0606e9688d`.
+> Its checkpoint hash/count match the protected model, but strict runtime
+> attestation remained false; fail-closed repeats `702769`, `702771`, and
+> `702773` emitted no report. Treat it only as conservative negative
+> evidence. There are zero active Newton jobs. Do not launch more
+> architecture branches under the current budget. The next justified work
+> is an audited cross-renderer representation/post-training curriculum, not
+> larger recurrence or continued pretraining.
+>
 > **Latest SSQAC controller decision (2026-07-24 21:23 EDT):** the
 > protected checkpoint and pretraining hold remain unchanged. Bounded host
 > search certifies 64/64 strict unseen reductions, but is external counted
@@ -13403,3 +13419,29 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `a11c72e8936a7feab9027c4f336d86233c232fae2e51547ba09ab9a2b85fb08a`.
   The focused suites total 26 passed with clean Ruff, byte compilation, and
   launcher syntax.
+
+- **2026-07-25 03:41--03:55 EDT** -- **Frozen Shohin features do not repair
+  multi-family renderer transfer.** Job `702764` completed one 300-update
+  H100 smoke on `evc24`. The 331,589-parameter connected compiler drove loss
+  from 1.866718 to 0.00001019 and fit all 36 training episodes. Development
+  exactness was 12/24: 6/6 unseen-law, 6/6 longer-composition, 0/6 held-out
+  renderer, and 0/6 joint. This exactly matches the standalone byte
+  compiler; frozen residuals add zero exact transfer on the decisive cells.
+
+  The result uses blocks 17/25/29, a 1,728-wide frozen feature, 125,413,253
+  conceptual complete parameters, and zero candidate-time oracle/search/
+  verifier calls. Report SHA-256 is
+  `06345448d5a1696678b5eb439a3ca414b26132cbbf9ee6782af68f0606e9688d`.
+  The checkpoint SHA-256 and parameter count match the protected base, but
+  the strict runtime-semantic receipt is false. Fail-closed repeats `702769`,
+  `702771`, and `702773` correctly produced no replacement report. This is
+  negative-only evidence and not a claim-bearing qualification.
+
+  Final custody state: no Newton jobs are active; protected checkpoint
+  SHA-256 remains
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`;
+  pretraining remains held. Open-ended architecture search is closed. The
+  next highest-value experiment, if capacity resumes, is a preregistered
+  cross-renderer representation curriculum with counterfactual
+  role-equivalence supervision and the existing multi-family/source-deletion
+  controls.
