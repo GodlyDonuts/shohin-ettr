@@ -91,6 +91,8 @@ def test_update_runs_complete_native_objective_and_advances_cursor() -> None:
         "packet_loss",
         "world_intervention_loss",
         "command_intervention_loss",
+        "world_query_binding_loss",
+        "command_query_binding_loss",
         "transaction_loss",
         "equivariance_loss",
         "commit_halt_loss",
@@ -101,6 +103,24 @@ def test_update_runs_complete_native_objective_and_advances_cursor() -> None:
         value = getattr(receipt, name)
         assert value.shape == ()
         assert torch.isfinite(value)
+    for name in (
+        "supervised_world_query_pairs",
+        "supervised_command_query_pairs",
+        "world_query_margin_satisfied",
+        "command_query_margin_satisfied",
+    ):
+        value = getattr(receipt, name)
+        assert value.shape == ()
+        assert value.dtype == torch.int64
+        assert value >= 0
+    torch.testing.assert_close(
+        receipt.supervised_world_query_pairs,
+        torch.tensor(8),
+    )
+    torch.testing.assert_close(
+        receipt.supervised_command_query_pairs,
+        torch.tensor(8),
+    )
     # Warmup update zero is intentional; the next scheduled update moves.
     second = trainer.update((batch, batch))
     assert second.optimizer_step == 2

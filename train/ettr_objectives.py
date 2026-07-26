@@ -22,7 +22,7 @@ from endogenous_typed_theory_reactor import (
 )
 
 
-OBJECTIVE_SCHEMA = "shohin-ettr-composite-objective-v1"
+OBJECTIVE_SCHEMA = "shohin-ettr-composite-objective-v2"
 
 
 class ETTRObjectiveError(ValueError):
@@ -112,6 +112,8 @@ class ETTRObjectiveWeights:
     packet: float = 1.0
     world_intervention: float = 1.0
     command_intervention: float = 1.0
+    world_query_binding: float = 1.0
+    command_query_binding: float = 1.0
     transaction: float = 1.0
     equivariance: float = 0.25
     commit_halt: float = 0.5
@@ -146,6 +148,7 @@ class ETTRObjectiveConfig:
     relation_edge_budget: int = 256
     ignore_index: int = -100
     probability_epsilon: float = 1e-6
+    query_binding_margin: float = 1.0
     causal_lm_shift: int = 1
     require_equivariance_pairs: bool = True
 
@@ -186,6 +189,14 @@ class ETTRObjectiveConfig:
             or not 0.0 < self.probability_epsilon < 0.5
         ):
             raise ETTRObjectiveError("probability epsilon must be between zero and 0.5")
+        if (
+            not isinstance(self.query_binding_margin, float)
+            or not math.isfinite(self.query_binding_margin)
+            or self.query_binding_margin <= 0.0
+        ):
+            raise ETTRObjectiveError(
+                "query-binding margin must be a positive finite float"
+            )
         if self.causal_lm_shift != 1:
             raise ETTRObjectiveError(
                 "token supervision must use one-token causal shift"
@@ -640,6 +651,62 @@ class ETTRVariantAlignment:
 
 
 @dataclass(frozen=True, slots=True)
+class ETTRCausalQueryPair:
+    """Matched query logits with distinct immutable factual targets."""
+
+    correct_logits: torch.Tensor
+    foil_logits: torch.Tensor
+    correct_target: torch.Tensor
+    foil_target: torch.Tensor
+
+    def __post_init__(self) -> None:
+        correct = _tensor(
+            self.correct_logits,
+            name="causal_query.correct_logits",
+            ndim=2,
+            floating=True,
+        )
+        foil = _tensor(
+            self.foil_logits,
+            name="causal_query.foil_logits",
+            shape=correct.shape,
+            floating=True,
+        )
+        pairs, vocab = correct.shape
+        if pairs < 1 or vocab < 2:
+            raise ETTRObjectiveError("causal-query pair geometry differs")
+        correct_target = _tensor(
+            self.correct_target,
+            name="causal_query.correct_target",
+            shape=(pairs,),
+            dtype=torch.long,
+        )
+        foil_target = _tensor(
+            self.foil_target,
+            name="causal_query.foil_target",
+            shape=(pairs,),
+            dtype=torch.long,
+        )
+        _same_device(
+            (correct, foil, correct_target, foil_target),
+            name="causal-query pair",
+        )
+        _async_assert(
+            (
+                (correct_target >= 0)
+                & (correct_target < vocab)
+                & (foil_target >= 0)
+                & (foil_target < vocab)
+            ).all(),
+            "causal-query target leaves vocabulary range",
+        )
+        _async_assert(
+            correct_target.ne(foil_target).all(),
+            "causal-query targets must be distinct",
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class ETTRObjectiveBatch:
     """All candidate-visible predictions and offline architecture labels."""
 
@@ -657,6 +724,8 @@ class ETTRObjectiveBatch:
     command_intervention_targets: ETTRPacketTargets
     command_intervention_transactions: ETTRTransactionPredictions
     command_intervention_transaction_targets: ETTRTransactionTargets
+    world_query_binding: ETTRCausalQueryPair
+    command_query_binding: ETTRCausalQueryPair
     transactions: ETTRTransactionPredictions
     transaction_targets: ETTRTransactionTargets
     initial_committed: torch.Tensor
@@ -680,6 +749,10 @@ class ETTRObjectiveReceipt:
     supervised_command_intervention_slots: torch.Tensor
     supervised_command_intervention_relation_cells: torch.Tensor
     supervised_command_intervention_transaction_decisions: torch.Tensor
+    supervised_world_query_pairs: torch.Tensor
+    supervised_command_query_pairs: torch.Tensor
+    world_query_margin_satisfied: torch.Tensor
+    command_query_margin_satisfied: torch.Tensor
     supervised_transaction_steps: torch.Tensor
     supervised_transaction_decisions: torch.Tensor
     supervised_opcode_decisions: torch.Tensor
@@ -720,6 +793,10 @@ class ETTRObjectiveReceipt:
                 "supervised_command_intervention_slots",
                 "supervised_command_intervention_relation_cells",
                 "supervised_command_intervention_transaction_decisions",
+                "supervised_world_query_pairs",
+                "supervised_command_query_pairs",
+                "world_query_margin_satisfied",
+                "command_query_margin_satisfied",
                 "supervised_transaction_steps",
                 "supervised_transaction_decisions",
                 "supervised_opcode_decisions",
@@ -743,6 +820,10 @@ class ETTRObjectiveReceipt:
                 "supervised_command_intervention_slots",
                 "supervised_command_intervention_relation_cells",
                 "supervised_command_intervention_transaction_decisions",
+                "supervised_world_query_pairs",
+                "supervised_command_query_pairs",
+                "world_query_margin_satisfied",
+                "command_query_margin_satisfied",
                 "supervised_transaction_steps",
                 "supervised_transaction_decisions",
                 "supervised_opcode_decisions",
@@ -776,6 +857,8 @@ class ETTRCompositeLoss:
     packet: torch.Tensor
     world_intervention: torch.Tensor
     command_intervention: torch.Tensor
+    world_query_binding: torch.Tensor
+    command_query_binding: torch.Tensor
     transaction: torch.Tensor
     equivariance: torch.Tensor
     commit_halt: torch.Tensor
@@ -1080,6 +1163,21 @@ def _validate_batch(
             getattr(intervention_targets, field.name)
             for field in fields(intervention_targets)
         )
+    query_pair_tensors: tuple[torch.Tensor, ...] = ()
+    for name, pair in (
+        ("world_query_binding", batch.world_query_binding),
+        ("command_query_binding", batch.command_query_binding),
+    ):
+        if not isinstance(pair, ETTRCausalQueryPair):
+            raise ETTRObjectiveError(f"{name} pair type differs")
+        if pair.correct_logits.shape[1] != config.vocab_size:
+            raise ETTRObjectiveError(f"{name} vocabulary geometry differs")
+        query_pair_tensors += (
+            pair.correct_logits,
+            pair.foil_logits,
+            pair.correct_target,
+            pair.foil_target,
+        )
     initial: tuple[torch.Tensor, ...] = ()
     for name in ("initial_committed", "initial_halted"):
         value = _tensor(
@@ -1142,6 +1240,7 @@ def _validate_batch(
         *(getattr(transactions, field.name) for field in fields(transactions)),
         *(getattr(targets, field.name) for field in fields(targets)),
         *intervention_transaction_tensors,
+        *query_pair_tensors,
         *initial,
         *alignment_tensors,
     )
@@ -1380,6 +1479,43 @@ def _intervention_arm_loss(
         packet_relations,
         transaction_decisions,
     )
+
+
+def _causal_query_binding_loss(
+    pair: ETTRCausalQueryPair,
+    *,
+    margin: float,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    classification = 0.5 * (
+        F.cross_entropy(pair.correct_logits, pair.correct_target)
+        + F.cross_entropy(pair.foil_logits, pair.foil_target)
+    )
+    correct_for_correct = pair.correct_logits.gather(
+        1,
+        pair.correct_target[:, None],
+    ).squeeze(1)
+    correct_for_foil = pair.correct_logits.gather(
+        1,
+        pair.foil_target[:, None],
+    ).squeeze(1)
+    foil_for_correct = pair.foil_logits.gather(
+        1,
+        pair.correct_target[:, None],
+    ).squeeze(1)
+    foil_for_foil = pair.foil_logits.gather(
+        1,
+        pair.foil_target[:, None],
+    ).squeeze(1)
+    difference_in_differences = (
+        correct_for_correct
+        - correct_for_foil
+        - foil_for_correct
+        + foil_for_foil
+    )
+    contrast = F.softplus(margin - difference_in_differences).mean()
+    support = torch.ones_like(pair.correct_target, dtype=torch.int64).sum()
+    margin_satisfied = _count(difference_in_differences.ge(margin))
+    return classification + contrast, support, margin_satisfied
 
 
 def _commit_halt_loss(
@@ -1780,6 +1916,22 @@ class ETTRCompositeObjective(nn.Module):
             batch.command_intervention_transaction_targets,
             self.config,
         )
+        (
+            world_query_binding,
+            supervised_world_query_pairs,
+            world_query_margin_satisfied,
+        ) = _causal_query_binding_loss(
+            batch.world_query_binding,
+            margin=self.config.query_binding_margin,
+        )
+        (
+            command_query_binding,
+            supervised_command_query_pairs,
+            command_query_margin_satisfied,
+        ) = _causal_query_binding_loss(
+            batch.command_query_binding,
+            margin=self.config.query_binding_margin,
+        )
         transaction, transaction_decisions = _transaction_loss(
             batch,
             self.config,
@@ -1817,6 +1969,8 @@ class ETTRCompositeObjective(nn.Module):
             "packet": packet,
             "world_intervention": world_intervention,
             "command_intervention": command_intervention,
+            "world_query_binding": world_query_binding,
+            "command_query_binding": command_query_binding,
             "transaction": transaction,
             "equivariance": equivariance,
             "commit_halt": commit_halt,
@@ -1849,6 +2003,10 @@ class ETTRCompositeObjective(nn.Module):
             supervised_command_intervention_transaction_decisions=(
                 command_intervention_transaction_decisions
             ),
+            supervised_world_query_pairs=supervised_world_query_pairs,
+            supervised_command_query_pairs=supervised_command_query_pairs,
+            world_query_margin_satisfied=world_query_margin_satisfied,
+            command_query_margin_satisfied=command_query_margin_satisfied,
             supervised_transaction_steps=_count(batch.transaction_targets.step_mask),
             supervised_transaction_decisions=transaction_decisions,
             supervised_opcode_decisions=_count(geometry.operand_masks[0]),
@@ -1878,6 +2036,7 @@ ETTRObjective = ETTRCompositeObjective
 
 
 __all__ = [
+    "ETTRCausalQueryPair",
     "ETTRCompositeLoss",
     "ETTRCompositeObjective",
     "ETTRObjective",

@@ -55,6 +55,8 @@ class ETTRUpdateReceipt:
     packet_loss: torch.Tensor
     world_intervention_loss: torch.Tensor
     command_intervention_loss: torch.Tensor
+    world_query_binding_loss: torch.Tensor
+    command_query_binding_loss: torch.Tensor
     transaction_loss: torch.Tensor
     equivariance_loss: torch.Tensor
     commit_halt_loss: torch.Tensor
@@ -62,6 +64,10 @@ class ETTRUpdateReceipt:
     anti_bypass_loss: torch.Tensor
     gradient_norm: torch.Tensor
     supervised_token_count: torch.Tensor
+    supervised_world_query_pairs: torch.Tensor
+    supervised_command_query_pairs: torch.Tensor
+    world_query_margin_satisfied: torch.Tensor
+    command_query_margin_satisfied: torch.Tensor
 
 
 class ETTRTrainStep(nn.Module):
@@ -126,10 +132,10 @@ class ETTRTrainStep(nn.Module):
         (
             world_packet,
             world_command,
-            _world_target,
+            world_target,
             command_packet,
             command_command,
-            _command_target,
+            command_target,
         ) = batch.causal_rectangles.intervention_indices()
         interventions = self.runner.intervene(
             batch.episodes,
@@ -137,8 +143,10 @@ class ETTRTrainStep(nn.Module):
             reactor_steps=steps,
             world_packet_index=world_packet,
             world_command_index=world_command,
+            world_query_index=world_target,
             command_packet_index=command_packet,
             command_command_index=command_command,
+            command_query_index=command_target,
             hard=self.step_config.hard_transactions,
         )
         return self.objective(
@@ -163,6 +171,8 @@ class ETTRTrainStep(nn.Module):
             "packet": [],
             "world_intervention": [],
             "command_intervention": [],
+            "world_query_binding": [],
+            "command_query_binding": [],
             "transaction": [],
             "equivariance": [],
             "commit_halt": [],
@@ -170,6 +180,10 @@ class ETTRTrainStep(nn.Module):
             "anti_bypass": [],
         }
         token_counts: list[torch.Tensor] = []
+        world_query_pairs: list[torch.Tensor] = []
+        command_query_pairs: list[torch.Tensor] = []
+        world_query_margin: list[torch.Tensor] = []
+        command_query_margin: list[torch.Tensor] = []
         try:
             for batch in batches:
                 device_type = batch.episodes.world.tokens.device.type
@@ -184,6 +198,18 @@ class ETTRTrainStep(nn.Module):
                 for name in fields:
                     fields[name].append(getattr(loss, name).detach())
                 token_counts.append(loss.receipt.lm_target_tokens.detach())
+                world_query_pairs.append(
+                    loss.receipt.supervised_world_query_pairs.detach()
+                )
+                command_query_pairs.append(
+                    loss.receipt.supervised_command_query_pairs.detach()
+                )
+                world_query_margin.append(
+                    loss.receipt.world_query_margin_satisfied.detach()
+                )
+                command_query_margin.append(
+                    loss.receipt.command_query_margin_satisfied.detach()
+                )
         except BaseException:
             self.optimizer.zero_grad(set_to_none=True)
             raise
@@ -214,6 +240,8 @@ class ETTRTrainStep(nn.Module):
             packet_loss=mean("packet"),
             world_intervention_loss=mean("world_intervention"),
             command_intervention_loss=mean("command_intervention"),
+            world_query_binding_loss=mean("world_query_binding"),
+            command_query_binding_loss=mean("command_query_binding"),
             transaction_loss=mean("transaction"),
             equivariance_loss=mean("equivariance"),
             commit_halt_loss=mean("commit_halt"),
@@ -221,6 +249,10 @@ class ETTRTrainStep(nn.Module):
             anti_bypass_loss=mean("anti_bypass"),
             gradient_norm=gradient_norm.detach(),
             supervised_token_count=torch.stack(token_counts).sum(),
+            supervised_world_query_pairs=torch.stack(world_query_pairs).sum(),
+            supervised_command_query_pairs=torch.stack(command_query_pairs).sum(),
+            world_query_margin_satisfied=torch.stack(world_query_margin).sum(),
+            command_query_margin_satisfied=torch.stack(command_query_margin).sum(),
         )
 
 

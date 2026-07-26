@@ -14,6 +14,7 @@ from endogenous_typed_theory_reactor import (
 )
 from ettr_objectives import (
     OBJECTIVE_SCHEMA,
+    ETTRCausalQueryPair,
     ETTRCompositeObjective,
     ETTRObjectiveBatch,
     ETTRObjectiveConfig,
@@ -157,6 +158,41 @@ def _identity_alignment() -> ETTRVariantAlignment:
     )
 
 
+def _query_pair() -> ETTRCausalQueryPair:
+    correct_target = torch.tensor([1, 2])
+    foil_target = torch.tensor([3, 4])
+    correct_logits = torch.zeros(BATCH, VOCAB)
+    foil_logits = torch.zeros(BATCH, VOCAB)
+    correct_logits.scatter_(1, correct_target[:, None], 6.0)
+    foil_logits.scatter_(1, foil_target[:, None], 6.0)
+    return ETTRCausalQueryPair(
+        correct_logits=_leaf(correct_logits),
+        foil_logits=_leaf(foil_logits),
+        correct_target=correct_target,
+        foil_target=foil_target,
+    )
+
+
+def _binding_weights(
+    *,
+    world: float,
+    command: float,
+) -> ETTRObjectiveWeights:
+    return ETTRObjectiveWeights(
+        token_lm=0.0,
+        packet=0.0,
+        world_intervention=0.0,
+        command_intervention=0.0,
+        world_query_binding=world,
+        command_query_binding=command,
+        transaction=0.0,
+        equivariance=0.0,
+        commit_halt=0.0,
+        sparsity=0.0,
+        anti_bypass=0.0,
+    )
+
+
 def _batch() -> ETTRObjectiveBatch:
     torch.manual_seed(17)
     token_ids = torch.tensor([[1, 2, 3, 4, 5], [5, 4, 3, 2, 1]])
@@ -189,6 +225,8 @@ def _batch() -> ETTRObjectiveBatch:
         initial_committed=torch.zeros(BATCH, dtype=torch.bool),
         initial_halted=torch.zeros(BATCH, dtype=torch.bool),
         equivariance=_identity_alignment(),
+        world_query_binding=_query_pair(),
+        command_query_binding=_query_pair(),
     )
 
 
@@ -278,6 +316,8 @@ def test_composite_breakdown_is_finite_weighted_and_differentiable() -> None:
         packet=0.9,
         world_intervention=1.1,
         command_intervention=1.2,
+        world_query_binding=1.4,
+        command_query_binding=1.5,
         transaction=0.8,
         equivariance=0.7,
         commit_halt=0.6,
@@ -295,6 +335,8 @@ def test_composite_breakdown_is_finite_weighted_and_differentiable() -> None:
             "packet",
             "world_intervention",
             "command_intervention",
+            "world_query_binding",
+            "command_query_binding",
             "transaction",
             "equivariance",
             "commit_halt",
@@ -329,6 +371,10 @@ def test_receipt_counts_stay_device_resident_and_auditable() -> None:
         "supervised_command_intervention_slots",
         "supervised_command_intervention_relation_cells",
         "supervised_command_intervention_transaction_decisions",
+        "supervised_world_query_pairs",
+        "supervised_command_query_pairs",
+        "world_query_margin_satisfied",
+        "command_query_margin_satisfied",
         "supervised_transaction_steps",
         "supervised_transaction_decisions",
         "supervised_opcode_decisions",
@@ -381,6 +427,22 @@ def test_receipt_counts_stay_device_resident_and_auditable() -> None:
         torch.tensor(18),
     )
     torch.testing.assert_close(
+        receipt.supervised_world_query_pairs,
+        torch.tensor(BATCH),
+    )
+    torch.testing.assert_close(
+        receipt.supervised_command_query_pairs,
+        torch.tensor(BATCH),
+    )
+    torch.testing.assert_close(
+        receipt.world_query_margin_satisfied,
+        torch.tensor(BATCH),
+    )
+    torch.testing.assert_close(
+        receipt.command_query_margin_satisfied,
+        torch.tensor(BATCH),
+    )
+    torch.testing.assert_close(
         receipt.supervised_transaction_steps,
         torch.tensor(6),
     )
@@ -426,6 +488,8 @@ def test_token_loss_is_strictly_one_step_causal() -> None:
             packet=0.0,
             world_intervention=0.0,
             command_intervention=0.0,
+            world_query_binding=0.0,
+            command_query_binding=0.0,
             transaction=0.0,
             equivariance=0.0,
             commit_halt=0.0,
@@ -462,6 +526,8 @@ def test_token_loss_never_crosses_an_explicit_segment_reset() -> None:
             packet=0.0,
             world_intervention=0.0,
             command_intervention=0.0,
+            world_query_binding=0.0,
+            command_query_binding=0.0,
             transaction=0.0,
             equivariance=0.0,
             commit_halt=0.0,
@@ -742,6 +808,159 @@ def test_factorial_world_and_command_arms_are_supervised_separately() -> None:
     )
     broken.world_intervention.backward()
     assert world.value_probabilities.grad is not None
+
+
+def test_causal_query_exact_logits_beat_identical_and_wrong_logits() -> None:
+    batch = _batch()
+    objective = ETTRCompositeObjective(
+        _config(),
+        weights=_binding_weights(world=1.0, command=0.0),
+    )
+    exact = objective(batch).world_query_binding
+    pair = batch.world_query_binding
+    assert pair is not None
+    identical = replace(
+        pair,
+        correct_logits=_leaf(torch.zeros_like(pair.correct_logits)),
+        foil_logits=_leaf(torch.zeros_like(pair.foil_logits)),
+    )
+    wrong = replace(
+        pair,
+        correct_logits=_leaf(pair.foil_logits.detach()),
+        foil_logits=_leaf(pair.correct_logits.detach()),
+    )
+    assert objective(
+        replace(batch, world_query_binding=identical)
+    ).world_query_binding > exact
+    assert objective(
+        replace(batch, world_query_binding=wrong)
+    ).world_query_binding > exact
+
+
+def test_identical_query_logits_cannot_satisfy_binding_margin() -> None:
+    batch = _batch()
+    pair = batch.world_query_binding
+    assert pair is not None
+    shared = torch.randn_like(pair.correct_logits)
+    identical = replace(
+        pair,
+        correct_logits=_leaf(shared),
+        foil_logits=_leaf(shared),
+    )
+    output = ETTRCompositeObjective(
+        _config(),
+        weights=_binding_weights(world=1.0, command=0.0),
+    )(replace(batch, world_query_binding=identical))
+    torch.testing.assert_close(
+        output.receipt.world_query_margin_satisfied,
+        torch.zeros((), dtype=torch.int64),
+    )
+
+
+def test_swapping_query_treatment_and_foil_reverses_did_and_raises_loss() -> None:
+    batch = _batch()
+    pair = batch.world_query_binding
+    assert pair is not None
+    objective = ETTRCompositeObjective(
+        _config(),
+        weights=_binding_weights(world=1.0, command=0.0),
+    )
+    exact = objective(batch)
+    swapped = replace(
+        pair,
+        correct_logits=_leaf(pair.foil_logits.detach()),
+        foil_logits=_leaf(pair.correct_logits.detach()),
+    )
+    reversed_output = objective(replace(batch, world_query_binding=swapped))
+    assert reversed_output.world_query_binding > exact.world_query_binding
+    torch.testing.assert_close(
+        reversed_output.receipt.world_query_margin_satisfied,
+        torch.zeros((), dtype=torch.int64),
+    )
+
+
+def test_corrupting_one_query_binding_arm_changes_only_that_arm() -> None:
+    batch = _batch()
+    objective = ETTRCompositeObjective(
+        _config(),
+        weights=_binding_weights(world=1.0, command=1.0),
+    )
+    exact = objective(batch)
+    world = batch.world_query_binding
+    assert world is not None
+    corrupt = replace(
+        world,
+        correct_logits=_leaf(world.correct_logits.detach().roll(1, dims=-1)),
+    )
+    broken = objective(replace(batch, world_query_binding=corrupt))
+    assert broken.world_query_binding > exact.world_query_binding
+    torch.testing.assert_close(
+        broken.command_query_binding,
+        exact.command_query_binding,
+    )
+    assert broken.total > exact.total
+
+
+@pytest.mark.parametrize(
+    ("selected", "other"),
+    (
+        ("world_query_binding", "command_query_binding"),
+        ("command_query_binding", "world_query_binding"),
+    ),
+)
+def test_isolated_query_binding_gradients_reach_only_selected_arm(
+    selected: str,
+    other: str,
+) -> None:
+    batch = _batch()
+    weights = _binding_weights(
+        world=1.0 if selected == "world_query_binding" else 0.0,
+        command=1.0 if selected == "command_query_binding" else 0.0,
+    )
+    output = ETTRCompositeObjective(_config(), weights=weights)(batch)
+    output.total.backward()
+    selected_pair = getattr(batch, selected)
+    other_pair = getattr(batch, other)
+    assert selected_pair is not None
+    assert other_pair is not None
+    assert selected_pair.correct_logits.grad is not None
+    assert selected_pair.correct_logits.grad.abs().sum() > 0
+    assert selected_pair.foil_logits.grad is not None
+    assert selected_pair.foil_logits.grad.abs().sum() > 0
+    assert other_pair.correct_logits.grad is not None
+    assert other_pair.foil_logits.grad is not None
+    torch.testing.assert_close(
+        other_pair.correct_logits.grad,
+        torch.zeros_like(other_pair.correct_logits.grad),
+    )
+    torch.testing.assert_close(
+        other_pair.foil_logits.grad,
+        torch.zeros_like(other_pair.foil_logits.grad),
+    )
+
+
+def test_query_binding_pair_type_is_required() -> None:
+    batch = replace(_batch(), world_query_binding=None)
+    with pytest.raises(ETTRObjectiveError, match="pair type"):
+        ETTRCompositeObjective(_config())(batch)
+
+
+def test_causal_query_pair_and_margin_validation_fail_closed() -> None:
+    pair = _query_pair()
+    with pytest.raises(ETTRObjectiveError, match="shape"):
+        replace(pair, foil_logits=torch.zeros(BATCH + 1, VOCAB))
+    with pytest.raises(ETTRObjectiveError, match="dtype"):
+        replace(pair, correct_target=pair.correct_target.float())
+    with pytest.raises(RuntimeError, match="vocabulary range"):
+        replace(pair, correct_target=torch.full((BATCH,), VOCAB))
+    with pytest.raises(RuntimeError, match="must be distinct"):
+        replace(pair, foil_target=pair.correct_target.clone())
+    bad_logits = pair.correct_logits.detach().clone()
+    bad_logits[0, 0] = float("nan")
+    with pytest.raises(RuntimeError, match="non-finite"):
+        replace(pair, correct_logits=bad_logits)
+    with pytest.raises(ETTRObjectiveError, match="query-binding margin"):
+        replace(_config(), query_binding_margin=0.0)
 
 
 def test_commit_halt_loss_checks_prefix_recurrence_and_labels() -> None:
