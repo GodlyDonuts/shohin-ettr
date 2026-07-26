@@ -3,7 +3,7 @@
 # No training data, optimizer, or checkpoint is read.
 #SBATCH -J shohin-ettr-runtime-smoke
 #SBATCH -p normal
-#SBATCH --gres=gpu:h100:1
+#SBATCH --gres=gpu:nvidia_h100_pcie:1
 #SBATCH -c 2
 #SBATCH --mem=12G
 #SBATCH -t 00:30:00

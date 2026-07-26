@@ -184,7 +184,7 @@
 > substitution. The focused runtime/deployment/four-process regression set is
 > **54/54** passing with clean Ruff, byte compilation, shell syntax, and diff
 > checks. The complete current ETTR/cross-ontology inventory is **315/315**
-> passing in 173.94 seconds. Exact-source build `705463` failed closed after
+> passing in 170.79 seconds. Exact-source build `705463` failed closed after
 > staged CUDA imports passed and before archive publication because five
 > ordinary dependency filenames contain printable spaces or punctuation. The
 > path policy now accepts printable ASCII segments while still rejecting
@@ -199,6 +199,19 @@
 > final normalizer uses `O_NOFOLLOW` descriptor opens, identity checks, and
 > `fchmod`, then re-verifies every object. Retry only from the corrected
 > committed source.
+> Exact-source build `705949` then completed cleanly from commit
+> `2859a1bcfbeffb15ad699f3fd4aa1e63d432fe8e`: 27,092 measured members,
+> 5,833,031,680 bytes, archive SHA-256
+> `1a1616aa620a32bb49291a53c3b774c3253d8c07678ff7aea7fe75d5825ec05c`,
+> inventory SHA-256
+> `e82e53aa0f8f83085aec72c2a499459f7dc01875b77c9b2d3a869c0d48bbb237`,
+> and independently matched source-bundle SHA-256
+> `5b642ee6196d17c5b8b4130b4b666322d5776c0ed6d58573839d16b8faac6bbe`.
+> Every output is immutable, single-link, and sidecar-admitted. Initial H100
+> test-only admission created no job because the wrapper requested Newton's
+> nonexistent `gpu:h100` alias. The wrapper now requests the scheduler's exact
+> `gpu:nvidia_h100_pcie` GRES and statically rejects the old alias. Submit the
+> confined smoke only from this corrected committed wrapper.
 > Build the next exact-source runtime only from the committed hardened source,
 > verify every sidecar hash, and then submit the pinned in-Bubblewrap H100
 > smoke. These jobs cannot read checkpoints, shards, or optimizer state. Do

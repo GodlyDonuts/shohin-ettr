@@ -54,7 +54,8 @@ def test_claim_runtime_build_is_cpu_only_commit_pinned_and_complete() -> None:
 
 def test_claim_runtime_smoke_requires_pins_h100_cuda_and_bwrap_netns() -> None:
     source = SMOKE.read_text(encoding="ascii")
-    assert "#SBATCH --gres=gpu:h100:1" in source
+    assert "#SBATCH --gres=gpu:nvidia_h100_pcie:1" in source
+    assert "#SBATCH --gres=gpu:h100:1" not in source
     assert "EXPECTED_SHA256=${EXPECTED_SHA256:?" in source
     assert "EXPECTED_INVENTORY_SHA256=${EXPECTED_INVENTORY_SHA256:?" in source
     assert "EXPECTED_SOURCE_BUNDLE_SHA256=" in source

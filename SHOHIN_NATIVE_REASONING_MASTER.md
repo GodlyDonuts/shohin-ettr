@@ -52666,7 +52666,7 @@ execution. An independent hostile rereview closed both final P1 findings:
 same-descriptor wheel consumption and extraction-to-execution substitution.
 The focused runtime/deployment/four-process regression set passes 54/54 with
 clean Ruff, byte compilation, shell syntax, and diff checks. The complete
-ETTR/cross-ontology inventory passes 315/315 in 173.94 seconds. Exact-source
+ETTR/cross-ontology inventory passes 315/315 in 170.79 seconds. Exact-source
 build `705463` passed staged CUDA imports but failed closed before archive
 publication because five normal dependency filenames contain printable spaces
 or punctuation. The corrected policy accepts printable ASCII path segments
@@ -52685,6 +52685,19 @@ confined H100 smoke. No packaging job can read checkpoints, shards, or
 optimizer state. A verifier-owned production supervisor and durable
 launch-receipt admission remain external deployment-TCB work and do not change
 the trainable architecture.
+
+Exact-source build `705949` completed cleanly from commit
+`2859a1bcfbeffb15ad699f3fd4aa1e63d432fe8e`: 27,092 measured members,
+5,833,031,680 archive bytes, archive SHA-256
+`1a1616aa620a32bb49291a53c3b774c3253d8c07678ff7aea7fe75d5825ec05c`,
+inventory SHA-256
+`e82e53aa0f8f83085aec72c2a499459f7dc01875b77c9b2d3a869c0d48bbb237`,
+and independently matched source-bundle SHA-256
+`5b642ee6196d17c5b8b4130b4b666322d5776c0ed6d58573839d16b8faac6bbe`.
+Every output is immutable and single-link, and independent sidecar admission
+passes. The first H100 test-only request created no job because the wrapper
+used Newton's nonexistent `gpu:h100` alias. The corrected wrapper requests
+the exact `gpu:nvidia_h100_pcie` GRES and statically rejects the old alias.
 
 Current decision:
 `ettr_architecture_complete_stage_specific_runtime_pass_external_supervisor_and_learning_pending`.
