@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Isolated BF16 resource profiler for the full causal ETTR episode runner.
+"""Isolated BF16 profiler for the ETTR factorial-intervention objective.
 
 This program is not a trainer. It uses deterministic synthetic token tensors,
 runs a bounded number of in-memory optimizer microsteps, writes one JSON
@@ -7,27 +7,28 @@ receipt, and never writes model or optimizer state. H100 mode may read a
 hash-bound base checkpoint, but re-hashes it after profiling and refuses any
 output directory that aliases the checkpoint or a protected repository path.
 Matched eager and ``torch.compile`` arms start from identical model
-initialization and consume identical WORLD, COMMAND, and QUERY episodes.
+initialization and consume identical immutable 2x2 causal rectangles. Every
+update executes factual WORLD/COMMAND/QUERY episodes, both intervention arms,
+the complete composite objective with hard transactions, backward, and one
+``ETTROptimizerBundle`` step.
 
 Synchronization policy
 ----------------------
 The Python profiling loop contains no ``Tensor.item()`` calls. CUDA events are
-recorded asynchronously. Explicit host synchronization occurs only:
+recorded asynchronously. Explicit CUDA host synchronization occurs only:
 
 1. after warmup, before peak-memory reset and measured event recording;
 2. once after all measured updates, before timing/gradient receipt extraction;
-3. in eager mode, inside the shared LM-loss supervision validator, which uses
-   a tensor-to-bool check and is intentionally included in the measured path.
+3. between eager and compiled arms before allocator cleanup.
 
-The third category is existing architecture behavior, not profiler logging.
-The compiled arm converts it to an asynchronous assertion. The remaining ETTR
-state and episode assertions are already asynchronous on CUDA.
+The intervention runner retains its current batch-validation path. Its tensor
+assertions are asynchronous on CUDA and therefore do not add a host sync.
 """
 
 from __future__ import annotations
 
 import argparse
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, fields
 import gc
 import hashlib
 import json
@@ -45,10 +46,20 @@ from endogenous_typed_theory_reactor import (
     EndogenousTypedTheoryReactorGPT,
     TheoryReactorConfig,
 )
+from ettr_data_contract import (
+    ETTRCausalRectangle,
+    ETTRContinuationBatch,
+)
 from ettr_episode import (
     CausalETTREpisodeRunner,
     ETTREpisodeBatch,
     ETTREpisodeSegment,
+)
+from ettr_objectives import (
+    ETTRCompositeObjective,
+    ETTRObjectiveConfig,
+    ETTRPacketTargets,
+    ETTRTransactionTargets,
 )
 from ettr_optimization import (
     ETTROptimizerBundle,
@@ -57,15 +68,26 @@ from ettr_optimization import (
 from model import GPT, GPTConfig
 
 
-SCHEMA = "shohin-ettr-h100-profile-v2"
+SCHEMA = "shohin-ettr-h100-profile-v3"
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PROTECTED_PATHS = (REPOSITORY_ROOT / "train" / "flagship_out",)
 SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 SYNC_POINTS = (
     "cuda_after_warmup_before_measurement",
     "cuda_after_all_measured_updates_before_receipt",
-    "eager_shared_lm_loss_tensor_to_bool_validation_inside_forward",
     "cuda_between_arms_before_allocator_cleanup",
+)
+OBJECTIVE_LOSS_NAMES = (
+    "total",
+    "token_lm",
+    "packet",
+    "world_intervention",
+    "command_intervention",
+    "transaction",
+    "equivariance",
+    "commit_halt",
+    "sparsity",
+    "anti_bypass",
 )
 
 
@@ -103,6 +125,10 @@ class ProfileSettings:
         )
         if any(value <= 0 for value in integer_values):
             raise ETTRProfileError("profile dimensions must be positive")
+        if self.batch_size < 4 or self.batch_size % 4:
+            raise ETTRProfileError(
+                "batch size must be at least four and divisible by four"
+            )
         if self.warmup_updates < 0:
             raise ETTRProfileError("warmup updates must be nonnegative")
         if not math.isfinite(self.learning_rate) or self.learning_rate <= 0:
@@ -118,7 +144,7 @@ class ProfileSettings:
         }:
             raise ETTRProfileError("compile mode differs")
         if self.mode == "cpu-validation" and (
-            self.batch_size > 2
+            self.batch_size > 4
             or self.microsteps > 2
             or self.warmup_updates > 1
             or self.measured_updates > 2
@@ -314,40 +340,83 @@ def load_checkpoint_read_only(
 def synthetic_batches(
     settings: ProfileSettings,
     *,
-    vocab_size: int,
-) -> tuple[tuple[ETTREpisodeBatch, ...], str]:
-    """Build validated deterministic WORLD/COMMAND/QUERY episodes."""
+    reactor_config: TheoryReactorConfig,
+    objective_config: ETTRObjectiveConfig,
+) -> tuple[tuple[ETTRContinuationBatch, ...], str]:
+    """Build deterministic factual 2x2 rectangles with no authored CF labels."""
 
+    vocab_size = objective_config.vocab_size
     if vocab_size < 8:
         raise ETTRProfileError("synthetic profile vocabulary is too small")
-    batches: list[ETTREpisodeBatch] = []
+    if (
+        reactor_config.num_value_codes < 4
+        or reactor_config.num_slots < 1
+        or objective_config.num_slots != reactor_config.num_slots
+        or objective_config.num_types != reactor_config.num_types
+        or objective_config.num_relations != reactor_config.num_relations
+        or objective_config.num_value_codes != reactor_config.num_value_codes
+    ):
+        raise ETTRProfileError("synthetic profile objective geometry differs")
+    batches: list[ETTRContinuationBatch] = []
     digest_payload: list[dict[str, object]] = []
     for microstep in range(settings.microsteps):
         offset = settings.seed + 104_729 * microstep
+        row = torch.arange(settings.batch_size, dtype=torch.long)
+        rectangle = torch.div(row, 4, rounding_mode="floor")
+        within = row.remainder(4)
+        world_factor = torch.div(within, 2, rounding_mode="floor")
+        command_factor = within.remainder(2)
 
-        def tokens(length: int, multiplier: int, bias: int) -> torch.Tensor:
-            positions = torch.arange(
-                settings.batch_size * length,
-                dtype=torch.long,
-            ).view(settings.batch_size, length)
-            rows = torch.arange(
-                settings.batch_size,
-                dtype=torch.long,
-            )[:, None]
-            return (
-                positions * multiplier + rows * (multiplier + 12) + offset + bias
+        def factor_tokens(
+            length: int,
+            factor: torch.Tensor,
+            rendering: torch.Tensor,
+            *,
+            multiplier: int,
+            bias: int,
+        ) -> torch.Tensor:
+            positions = torch.arange(length, dtype=torch.long)[None, :]
+            values = (
+                positions * multiplier
+                + factor[:, None] * (multiplier + 12)
+                + rendering[:, None] * (multiplier + 7)
+                + offset
+                + bias
             ).remainder(vocab_size)
+            return values
 
-        world = tokens(settings.world_tokens, 17, 11)
-        command = tokens(settings.command_tokens, 29, 23)
-        query = tokens(settings.query_tokens, 37, 31)
+        world_key = rectangle * 2 + world_factor
+        command_key = rectangle * 2 + command_factor
+        world = factor_tokens(
+            settings.world_tokens,
+            world_key,
+            within,
+            multiplier=17,
+            bias=11,
+        )
+        command = factor_tokens(
+            settings.command_tokens,
+            command_key,
+            within.roll(1),
+            multiplier=29,
+            bias=23,
+        )
+        query = factor_tokens(
+            settings.query_tokens,
+            rectangle * 4 + within,
+            within.flip(0),
+            multiplier=37,
+            bias=31,
+        )
+        world[:, 0] = 1 + world_factor
+        command[:, 0] = 3 + command_factor
         episode_ids = tuple(
             hashlib.sha256(
                 f"synthetic-{settings.seed}-{microstep}-{row}".encode("ascii")
             ).hexdigest()
             for row in range(settings.batch_size)
         )
-        batch = ETTREpisodeBatch(
+        episodes = ETTREpisodeBatch(
             episode_ids=episode_ids,
             reset_mask=torch.ones(
                 settings.batch_size,
@@ -357,28 +426,154 @@ def synthetic_batches(
             command=ETTREpisodeSegment.from_tokens(command),
             query=ETTREpisodeSegment.from_tokens(query),
         )
-        batch.validate()
+        active = torch.zeros(
+            settings.batch_size,
+            reactor_config.num_slots,
+            dtype=torch.bool,
+        )
+        active[:, 0] = True
+        root = active.clone()
+        slot_mask = torch.ones_like(active)
+        relations = torch.zeros(
+            settings.batch_size,
+            reactor_config.num_relations,
+            reactor_config.num_slots,
+            reactor_config.num_slots,
+            dtype=torch.bool,
+        )
+        relation_mask = torch.ones_like(relations)
+        initial_values = torch.zeros_like(active, dtype=torch.long)
+        initial_values[:, 0] = world_key.remainder(
+            reactor_config.num_value_codes
+        )
+        initial_types = torch.zeros_like(active, dtype=torch.long)
+        initial_types[:, 0] = world_factor.remainder(
+            reactor_config.num_types
+        )
+        zeros = torch.zeros(settings.batch_size, dtype=torch.bool)
+        packet_targets = ETTRPacketTargets(
+            value_code=initial_values,
+            type_index=initial_types,
+            relations=relations,
+            active=active,
+            root=root,
+            committed=zeros,
+            halted=zeros,
+            slot_mask=slot_mask,
+            relation_mask=relation_mask,
+        )
+        terminal_values = initial_values.clone()
+        terminal_values[:, 0] = (
+            rectangle * 4 + within
+        ).remainder(reactor_config.num_value_codes)
+        terminal_types = initial_types.clone()
+        committed = (within == 1) | (within == 3)
+        halted = (within == 2) | (within == 3)
+        terminal_packet_targets = ETTRPacketTargets(
+            value_code=terminal_values,
+            type_index=terminal_types,
+            relations=relations.clone(),
+            active=active.clone(),
+            root=root.clone(),
+            committed=committed,
+            halted=halted,
+            slot_mask=slot_mask.clone(),
+            relation_mask=relation_mask.clone(),
+        )
+        opcodes = torch.ones(
+            settings.batch_size,
+            settings.reactor_steps,
+            dtype=torch.long,
+        )
+        terminal_opcode = torch.tensor(
+            (1, 6, 7, 8),
+            dtype=torch.long,
+        ).index_select(0, within)
+        opcodes[:, -1] = terminal_opcode
+        transaction_committed = torch.zeros_like(opcodes, dtype=torch.bool)
+        transaction_halted = torch.zeros_like(opcodes, dtype=torch.bool)
+        transaction_committed[:, -1] = committed
+        transaction_halted[:, -1] = halted
+        transaction_targets = ETTRTransactionTargets(
+            opcode=opcodes,
+            source=torch.zeros_like(opcodes),
+            target=torch.zeros_like(opcodes),
+            relation=torch.zeros_like(opcodes),
+            type_index=terminal_types[:, :1].expand_as(opcodes).clone(),
+            value_code=terminal_values[:, :1].expand_as(opcodes).clone(),
+            committed=transaction_committed,
+            halted=transaction_halted,
+            step_mask=torch.ones_like(opcodes, dtype=torch.bool),
+        )
+        rectangles = ETTRCausalRectangle(
+            rows=torch.arange(
+                settings.batch_size,
+                dtype=torch.long,
+            ).view(-1, 2, 2)
+        )
+        manifest_sha256 = hashlib.sha256(
+            f"manifest-{settings.seed}-{microstep}".encode("ascii")
+        ).hexdigest()
+        dataset_sha256 = hashlib.sha256(
+            f"dataset-{settings.seed}-{microstep}".encode("ascii")
+        ).hexdigest()
+        batch = ETTRContinuationBatch(
+            manifest_sha256=manifest_sha256,
+            dataset_sha256=dataset_sha256,
+            episodes=episodes,
+            packet_targets=packet_targets,
+            terminal_packet_targets=terminal_packet_targets,
+            causal_rectangles=rectangles,
+            transaction_targets=transaction_targets,
+            initial_committed=zeros.clone(),
+            initial_halted=zeros.clone(),
+            equivariance=None,
+        )
+        batch.validate(reactor_config, objective_config)
         batches.append(batch)
         digest_payload.append(
             {
+                "causal_rectangles": rectangles.rows.tolist(),
+                "dataset_sha256": dataset_sha256,
                 "episode_ids": list(episode_ids),
-                "reset_mask": batch.reset_mask.tolist(),
+                "initial_committed": batch.initial_committed.tolist(),
+                "initial_halted": batch.initial_halted.tolist(),
+                "manifest_sha256": manifest_sha256,
+                "packet_targets": {
+                    field.name: getattr(packet_targets, field.name).tolist()
+                    for field in fields(packet_targets)
+                },
+                "reset_mask": episodes.reset_mask.tolist(),
                 "segments": {
                     name: {
                         "attention_mask": getattr(
-                            batch,
+                            episodes,
                             name,
                         ).attention_mask.tolist(),
                         "targets": getattr(
-                            batch,
+                            episodes,
                             name,
                         ).targets.tolist(),
                         "tokens": getattr(
-                            batch,
+                            episodes,
                             name,
                         ).tokens.tolist(),
                     }
                     for name in ("world", "command", "query")
+                },
+                "terminal_packet_targets": {
+                    field.name: getattr(
+                        terminal_packet_targets,
+                        field.name,
+                    ).tolist()
+                    for field in fields(terminal_packet_targets)
+                },
+                "transaction_targets": {
+                    field.name: getattr(
+                        transaction_targets,
+                        field.name,
+                    ).tolist()
+                    for field in fields(transaction_targets)
                 },
             }
         )
@@ -450,6 +645,22 @@ def _model_from_checkpoint(
     )
 
 
+def _objective_config(
+    model: EndogenousTypedTheoryReactorGPT,
+) -> ETTRObjectiveConfig:
+    config = model.config
+    return ETTRObjectiveConfig(
+        vocab_size=model.base.cfg.vocab_size,
+        num_slots=config.num_slots,
+        num_types=config.num_types,
+        num_relations=config.num_relations,
+        num_value_codes=config.num_value_codes,
+        active_slot_budget=config.num_slots,
+        relation_edge_budget=config.max_edges,
+        require_equivariance_pairs=False,
+    )
+
+
 def require_h100(device: torch.device) -> dict[str, object]:
     if device.type != "cuda" or not torch.cuda.is_available():
         raise ETTRProfileError("H100 profile requires CUDA")
@@ -477,6 +688,27 @@ def _component_parameters(
         "reactor": list(model.reactor.parameters()),
         "query_reader": list(model.query_reader.parameters()),
     }
+
+
+def _parameter_sha256(
+    model: EndogenousTypedTheoryReactorGPT,
+) -> str:
+    digest = hashlib.sha256()
+    for name, parameter in model.named_parameters():
+        value = parameter.detach().cpu().contiguous()
+        digest.update(
+            canonical_json_bytes(
+                {
+                    "dtype": str(value.dtype),
+                    "name": name,
+                    "shape": list(value.shape),
+                }
+            )
+        )
+        digest.update(
+            memoryview(value.reshape(-1).view(torch.uint8).numpy())
+        )
+    return digest.hexdigest()
 
 
 def _sample_parameters(
@@ -538,41 +770,96 @@ def _autocast(device: torch.device):
     )
 
 
+class ETTRCompositeFactorialInterventionSubject(torch.nn.Module):
+    """Exact factual + two-arm + composite path profiled by both arms."""
+
+    def __init__(
+        self,
+        model: EndogenousTypedTheoryReactorGPT,
+        objective_config: ETTRObjectiveConfig,
+        *,
+        reactor_steps: int,
+    ) -> None:
+        super().__init__()
+        self.runner = CausalETTREpisodeRunner(model)
+        self.objective = ETTRCompositeObjective(objective_config)
+        self.reactor_steps = reactor_steps
+
+    def forward(
+        self,
+        batch: ETTRContinuationBatch,
+    ) -> tuple[torch.Tensor, ...]:
+        output = self.runner(
+            batch.episodes,
+            reactor_steps=self.reactor_steps,
+            hard=True,
+            validate_batch=False,
+            compute_losses=False,
+        )
+        (
+            world_packet,
+            world_command,
+            _world_target,
+            command_packet,
+            command_command,
+            _command_target,
+        ) = batch.causal_rectangles.intervention_indices()
+        interventions = self.runner.intervene(
+            batch.episodes,
+            output.initial_state,
+            reactor_steps=self.reactor_steps,
+            world_packet_index=world_packet,
+            world_command_index=world_command,
+            command_packet_index=command_packet,
+            command_command_index=command_command,
+            hard=True,
+        )
+        loss = self.objective(batch.objective_batch(output, interventions))
+        return (
+            *(getattr(loss, name) for name in OBJECTIVE_LOSS_NAMES),
+            output.query_logits,
+        )
+
+
 def _run_update(
     subject: torch.nn.Module,
     optimizer: ETTROptimizerBundle,
-    batches: Sequence[ETTREpisodeBatch],
+    batches: Sequence[ETTRContinuationBatch],
     *,
     compiled: bool,
-    reactor_steps: int,
     device: torch.device,
-) -> tuple[torch.Tensor, torch.dtype]:
+) -> tuple[dict[str, torch.Tensor], torch.dtype]:
     optimizer.zero_grad(set_to_none=True)
     optimizer.apply_schedule()
-    accumulated = torch.zeros((), device=device)
+    accumulated = {
+        name: torch.zeros((), device=device)
+        for name in OBJECTIVE_LOSS_NAMES
+    }
     logits_dtype = torch.float32
     for batch in batches:
         if compiled and device.type == "cuda":
             torch.compiler.cudagraph_mark_step_begin()
         with _autocast(device):
-            output = subject(
-                batch,
-                reactor_steps=reactor_steps,
-                hard=False,
-                validate_batch=False,
-            )
-            scaled_loss = output.losses.token_lm / len(batches)
+            result = subject(batch)
+            losses = result[:-1]
+            logits = result[-1]
+            scaled_loss = losses[0] / len(batches)
         scaled_loss.backward()
-        accumulated.add_(scaled_loss.detach())
-        logits_dtype = output.query_logits.dtype
+        for name, loss in zip(
+            OBJECTIVE_LOSS_NAMES,
+            losses,
+            strict=True,
+        ):
+            accumulated[name].add_(loss.detach() / len(batches))
+        logits_dtype = logits.dtype
     optimizer.step()
     return accumulated, logits_dtype
 
 
 def _device_batches(
-    batches: Sequence[ETTREpisodeBatch],
+    batches: Sequence[ETTRContinuationBatch],
     device: torch.device,
-) -> tuple[ETTREpisodeBatch, ...]:
+) -> tuple[ETTRContinuationBatch, ...]:
     def segment(value: ETTREpisodeSegment) -> ETTREpisodeSegment:
         return ETTREpisodeSegment(
             tokens=value.tokens.to(device),
@@ -580,27 +867,56 @@ def _device_batches(
             attention_mask=value.attention_mask.to(device),
         )
 
+    def tensor_dataclass(value):
+        return type(value)(
+            **{
+                field.name: getattr(value, field.name).to(device)
+                for field in fields(value)
+            }
+        )
+
     return tuple(
-        ETTREpisodeBatch(
-            episode_ids=batch.episode_ids,
-            reset_mask=batch.reset_mask.to(device),
-            world=segment(batch.world),
-            command=segment(batch.command),
-            query=segment(batch.query),
+        ETTRContinuationBatch(
+            manifest_sha256=batch.manifest_sha256,
+            dataset_sha256=batch.dataset_sha256,
+            episodes=ETTREpisodeBatch(
+                episode_ids=batch.episodes.episode_ids,
+                reset_mask=batch.episodes.reset_mask.to(device),
+                world=segment(batch.episodes.world),
+                command=segment(batch.episodes.command),
+                query=segment(batch.episodes.query),
+            ),
+            packet_targets=tensor_dataclass(batch.packet_targets),
+            terminal_packet_targets=tensor_dataclass(
+                batch.terminal_packet_targets
+            ),
+            causal_rectangles=ETTRCausalRectangle(
+                rows=batch.causal_rectangles.rows.to(device)
+            ),
+            transaction_targets=tensor_dataclass(
+                batch.transaction_targets
+            ),
+            initial_committed=batch.initial_committed.to(device),
+            initial_halted=batch.initial_halted.to(device),
+            equivariance=(
+                None
+                if batch.equivariance is None
+                else tensor_dataclass(batch.equivariance)
+            ),
         )
         for batch in batches
     )
 
 
 def _compile_subject(
-    runner: CausalETTREpisodeRunner,
+    subject: ETTRCompositeFactorialInterventionSubject,
     *,
     device: torch.device,
     compile_mode: str,
 ) -> torch.nn.Module:
     if device.type == "cpu":
-        return torch.compile(runner, backend="eager")
-    return torch.compile(runner, mode=compile_mode)
+        return torch.compile(subject, backend="eager")
+    return torch.compile(subject, mode=compile_mode)
 
 
 def execute_profile_arm(
@@ -615,14 +931,20 @@ def execute_profile_arm(
         raise ETTRProfileError("execution arm differs")
     if settings.train_scope == "architecture":
         model.freeze_base()
+    initial_parameter_sha256 = _parameter_sha256(model)
+    objective_config = _objective_config(model)
     model.to(device)
     model.train()
-    runner = CausalETTREpisodeRunner(model)
+    composite_subject = ETTRCompositeFactorialInterventionSubject(
+        model,
+        objective_config,
+        reactor_steps=settings.reactor_steps,
+    )
     subject = (
-        runner
+        composite_subject
         if execution_arm == "eager"
         else _compile_subject(
-            runner,
+            composite_subject,
             device=device,
             compile_mode=settings.compile_mode,
         )
@@ -654,9 +976,12 @@ def execute_profile_arm(
     )
     batches, batch_sha256 = synthetic_batches(
         settings,
-        vocab_size=model.base.cfg.vocab_size,
+        reactor_config=model.config,
+        objective_config=objective_config,
     )
     batches = _device_batches(batches, device)
+    for batch in batches:
+        batch.validate(model.config, objective_config)
     before_samples = {
         name: _sample_parameters(parameters) for name, parameters in components.items()
     }
@@ -667,7 +992,6 @@ def execute_profile_arm(
             optimizer,
             batches,
             compiled=execution_arm == "compiled",
-            reactor_steps=settings.reactor_steps,
             device=device,
         )
 
@@ -690,21 +1014,27 @@ def execute_profile_arm(
         ends = []
         elapsed_started = time.perf_counter_ns()
 
-    measured_loss = torch.zeros((), device=device)
-    last_loss = torch.zeros((), device=device)
+    measured_losses = {
+        name: torch.zeros((), device=device)
+        for name in OBJECTIVE_LOSS_NAMES
+    }
+    last_losses = {
+        name: torch.zeros((), device=device)
+        for name in OBJECTIVE_LOSS_NAMES
+    }
     logits_dtype = torch.float32
     for update in range(settings.measured_updates):
         if device.type == "cuda":
             starts[update].record()
-        last_loss, logits_dtype = _run_update(
+        last_losses, logits_dtype = _run_update(
             subject,
             optimizer,
             batches,
             compiled=execution_arm == "compiled",
-            reactor_steps=settings.reactor_steps,
             device=device,
         )
-        measured_loss.add_(last_loss)
+        for name in OBJECTIVE_LOSS_NAMES:
+            measured_losses[name].add_(last_losses[name])
         if device.type == "cuda":
             ends[update].record()
 
@@ -774,14 +1104,30 @@ def execute_profile_arm(
         and gradients[name]["sampled_parameter_abs_delta"] > 0
         for name in expected_gradient_components
     )
-    loss_sum = float(host_number(measured_loss))
-    last_loss_value = float(host_number(last_loss))
-    loss_finite = math.isfinite(loss_sum) and math.isfinite(last_loss_value)
+    measured_loss_values = {
+        name: float(host_number(value))
+        for name, value in measured_losses.items()
+    }
+    last_loss_values = {
+        name: float(host_number(value))
+        for name, value in last_losses.items()
+    }
+    loss_finite = all(
+        math.isfinite(value)
+        for value in (
+            *measured_loss_values.values(),
+            *last_loss_values.values(),
+        )
+    )
     total_elapsed_ms = sum(update_ms)
     encoded_tokens_per_update = (
         settings.batch_size
         * settings.microsteps
-        * (settings.world_tokens + settings.command_tokens + settings.query_tokens)
+        * (
+            settings.world_tokens
+            + 2 * settings.command_tokens
+            + settings.query_tokens
+        )
     )
     supervised_tokens_per_update = (
         settings.batch_size
@@ -790,12 +1136,19 @@ def execute_profile_arm(
     )
     return {
         "batch": {
+            "causal_rectangles_per_microstep": settings.batch_size // 4,
             "encoded_tokens_per_update": encoded_tokens_per_update,
             "episode_segments": ["WORLD", "COMMAND", "QUERY"],
+            "factual_rows_per_microstep": settings.batch_size,
+            "immutable_factorial_geometry": "rows[rectangle,world,command]=2x2",
+            "intervention_rows_per_arm_per_microstep": settings.batch_size,
+            "objective_targets": "factual_rows_gathered_by_rectangle_indices",
             "prevalidated_before_hot_path": True,
             "reset_between_segments": True,
             "sha256": batch_sha256,
-            "source": ("validated_deterministic_synthetic_ettr_episodes"),
+            "source": (
+                "validated_deterministic_synthetic_ettr_continuation_rectangles"
+            ),
             "supervised_tokens_per_update": (supervised_tokens_per_update),
         },
         "device": dict(device_receipt),
@@ -811,16 +1164,34 @@ def execute_profile_arm(
             ),
             "executed": True,
             "execution_arm": execution_arm,
+            "factual_episode_path": True,
             "forward_backward_optimizer": True,
-            "full_token_lm_loss": True,
+            "full_composite_objective": True,
+            "hard_transactions": True,
+            "intervention_arms": ["WORLD", "COMMAND"],
+            "intervention_validate_batch_in_hot_path": True,
             "last_logits_dtype": str(logits_dtype),
-            "last_loss": last_loss_value,
+            "last_loss": last_loss_values["total"],
             "loss_finite": loss_finite,
-            "mean_loss": loss_sum / settings.measured_updates,
+            "mean_loss": (
+                measured_loss_values["total"] / settings.measured_updates
+            ),
+            "objective_losses": {
+                name: {
+                    "last": last_loss_values[name],
+                    "mean": (
+                        measured_loss_values[name]
+                        / settings.measured_updates
+                    ),
+                }
+                for name in OBJECTIVE_LOSS_NAMES
+            },
             "optimizer": "ettr_muon_plus_adamw",
             "optimizer_state_tensors": (_optimizer_state_tensor_count(optimizer)),
-            "subject": "CausalETTREpisodeRunner",
-            "validate_batch_in_hot_path": False,
+            "subject": (
+                "ETTRCompositeFactorialInterventionSubject"
+            ),
+            "factual_validate_batch_in_hot_path": False,
         },
         "gates": {
             "bf16_autocast_exercised": (logits_dtype == torch.bfloat16),
@@ -840,6 +1211,7 @@ def execute_profile_arm(
         },
         "parameters": {
             **asdict(receipt),
+            "initial_parameter_sha256": initial_parameter_sha256,
             "optimizer_receipt": asdict(optimizer.receipt),
             "profile_trainable_parameters": sum(
                 parameter.numel() for parameter in trainable
@@ -855,6 +1227,15 @@ def execute_profile_arm(
             ),
             "measured_update_ms": update_ms,
             "measured_updates": settings.measured_updates,
+            "reactor_state_steps_per_second": (
+                settings.batch_size
+                * settings.microsteps
+                * settings.reactor_steps
+                * 3
+                * settings.measured_updates
+                * 1000
+                / total_elapsed_ms
+            ),
             "supervised_tokens_per_second": (
                 supervised_tokens_per_update
                 * settings.measured_updates
@@ -913,6 +1294,7 @@ def execute_profile_arms(
     }
     matched_batch = False
     matched_parameters = False
+    matched_initial_parameters = False
     if available:
         eager_throughput = float(eager["throughput"]["encoded_tokens_per_second"])
         compiled_throughput = float(compiled["throughput"]["encoded_tokens_per_second"])
@@ -920,6 +1302,10 @@ def execute_profile_arms(
         compiled_peak = int(compiled["memory"]["peak_allocated_bytes"])
         matched_batch = eager["batch"]["sha256"] == compiled["batch"]["sha256"]
         matched_parameters = eager["parameters"] == compiled["parameters"]
+        matched_initial_parameters = (
+            eager["parameters"]["initial_parameter_sha256"]
+            == compiled["parameters"]["initial_parameter_sha256"]
+        )
         comparison.update(
             {
                 "compiled_over_eager_throughput": (
@@ -933,6 +1319,9 @@ def execute_profile_arms(
                 "eager_peak_allocated_bytes": eager_peak,
                 "eager_tokens_per_second": eager_throughput,
                 "matched_batch_sha256": matched_batch,
+                "matched_initial_parameter_sha256": (
+                    matched_initial_parameters
+                ),
                 "matched_parameter_receipt": matched_parameters,
             }
         )
@@ -943,6 +1332,7 @@ def execute_profile_arms(
             "compiled_arm_completed": (compiled["status"] == "completed"),
             "eager_arm_completed": eager["status"] == "completed",
             "matched_batch_sha256": matched_batch,
+            "matched_initial_parameter_sha256": matched_initial_parameters,
             "matched_parameter_receipt": matched_parameters,
         },
     }
@@ -958,7 +1348,7 @@ def _resolved_settings(arguments: argparse.Namespace) -> ProfileSettings:
 
     settings = ProfileSettings(
         mode=arguments.mode,
-        batch_size=selected(arguments.batch_size, 1, 1),
+        batch_size=selected(arguments.batch_size, 4, 4),
         microsteps=selected(arguments.microsteps, 1, 2),
         warmup_updates=selected(arguments.warmup_updates, 0, 2),
         measured_updates=selected(arguments.measured_updates, 1, 10),

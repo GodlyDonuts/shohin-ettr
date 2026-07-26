@@ -500,6 +500,7 @@ class GenericTransactionReactor(nn.Module):
             batch_first=True,
             norm_first=True,
             activation="gelu",
+            dropout=0.0,
         )
         self.core = nn.TransformerEncoder(
             layer,
@@ -876,6 +877,7 @@ class SourceDeletedQueryReader(nn.Module):
             batch_first=True,
             norm_first=True,
             activation="gelu",
+            dropout=0.0,
         )
         self.query_core = nn.TransformerEncoder(
             layer,

@@ -206,6 +206,16 @@ class ETTREpisodeOutput:
     losses: ETTREpisodeLosses | None
 
 
+@dataclass(frozen=True, slots=True)
+class ETTRInterventionOutput:
+    """Free-running terminal states under orthogonal causal swaps."""
+
+    world_terminal_state: TypedTheoryState
+    world_trace: ReactorTrace
+    command_terminal_state: TypedTheoryState
+    command_trace: ReactorTrace
+
+
 class CausalETTREpisodeRunner(nn.Module):
     """Run complete episodes without any cross-segment transformer cache."""
 
@@ -275,6 +285,103 @@ class CausalETTREpisodeRunner(nn.Module):
             losses=losses,
         )
 
+    def intervene(
+        self,
+        batch: ETTREpisodeBatch,
+        initial_state: TypedTheoryState,
+        *,
+        reactor_steps: int,
+        world_packet_index: torch.Tensor,
+        world_command_index: torch.Tensor,
+        command_packet_index: torch.Tensor,
+        command_command_index: torch.Tensor,
+        hard: bool = False,
+    ) -> ETTRInterventionOutput:
+        """Execute state and command swaps inside the learned reactor.
+
+        Packet swaps keep each row's command fixed. Command swaps keep each
+        row's compiled packet fixed. The two arms are concatenated into one
+        reactor call and never expose a parser, executor, or answer oracle.
+        """
+
+        batch.validate()
+        batch_size = batch.world.tokens.shape[0]
+        intervention_size = world_packet_index.shape[0]
+        if intervention_size < 1:
+            raise TheoryReactorError("intervention batch is empty")
+        for name, index in (
+            ("world_packet_index", world_packet_index),
+            ("world_command_index", world_command_index),
+            ("command_packet_index", command_packet_index),
+            ("command_command_index", command_command_index),
+        ):
+            if (
+                index.shape != (intervention_size,)
+                or index.dtype != torch.long
+                or index.device != batch.world.tokens.device
+            ):
+                raise TheoryReactorError(f"{name} geometry differs")
+            _require_tensor(
+                ((index >= 0) & (index < batch_size)).all(),
+                f"{name} leaves the batch",
+            )
+        command_hidden = self.model._encode_to_stage(
+            batch.command.tokens,
+            pos=0,
+        )
+        world_state = _index_state(initial_state, world_packet_index)
+        command_state = _index_state(initial_state, command_packet_index)
+        combined_state = _cat_states((world_state, command_state))
+        combined_command = torch.cat(
+            (
+                command_hidden.index_select(0, world_command_index),
+                command_hidden.index_select(0, command_command_index),
+            ),
+            dim=0,
+        )
+        combined_mask = torch.cat(
+            (
+                batch.command.attention_mask.index_select(
+                    0,
+                    world_command_index,
+                ),
+                batch.command.attention_mask.index_select(
+                    0,
+                    command_command_index,
+                ),
+            ),
+            dim=0,
+        )
+        terminal, trace = self.model.reactor(
+            combined_state,
+            steps=reactor_steps,
+            hard=hard,
+            command_hidden=combined_command,
+            command_attention_mask=combined_mask,
+        )
+        return ETTRInterventionOutput(
+            world_terminal_state=_slice_state(
+                terminal,
+                0,
+                intervention_size,
+            ),
+            world_trace=_slice_trace(
+                trace,
+                0,
+                intervention_size,
+            ),
+            command_terminal_state=_slice_state(
+                terminal,
+                intervention_size,
+                2 * intervention_size,
+            ),
+            command_trace=_slice_trace(
+                trace,
+                intervention_size,
+                2 * intervention_size,
+            ),
+        )
+
     def _segment_forward(
         self,
         tokens: torch.Tensor,
@@ -338,9 +445,90 @@ def _require_tensor(
         raise TheoryReactorError(message)
 
 
+def _index_state(
+    state: TypedTheoryState,
+    index: torch.Tensor,
+) -> TypedTheoryState:
+    return TypedTheoryState(
+        value_probabilities=state.value_probabilities.index_select(0, index),
+        type_probabilities=state.type_probabilities.index_select(0, index),
+        relations=state.relations.index_select(0, index),
+        active=state.active.index_select(0, index),
+        root=state.root.index_select(0, index),
+        committed=state.committed.index_select(0, index),
+        halted=state.halted.index_select(0, index),
+        step=state.step,
+    )
+
+
+def _cat_states(
+    states: tuple[TypedTheoryState, ...],
+) -> TypedTheoryState:
+    if not states or any(state.step != states[0].step for state in states):
+        raise TheoryReactorError("intervention state steps differ")
+    return TypedTheoryState(
+        value_probabilities=torch.cat(
+            tuple(state.value_probabilities for state in states),
+            dim=0,
+        ),
+        type_probabilities=torch.cat(
+            tuple(state.type_probabilities for state in states),
+            dim=0,
+        ),
+        relations=torch.cat(tuple(state.relations for state in states), dim=0),
+        active=torch.cat(tuple(state.active for state in states), dim=0),
+        root=torch.cat(tuple(state.root for state in states), dim=0),
+        committed=torch.cat(tuple(state.committed for state in states), dim=0),
+        halted=torch.cat(tuple(state.halted for state in states), dim=0),
+        step=states[0].step,
+    )
+
+
+def _slice_state(
+    state: TypedTheoryState,
+    start: int,
+    stop: int,
+) -> TypedTheoryState:
+    return TypedTheoryState(
+        value_probabilities=state.value_probabilities[start:stop],
+        type_probabilities=state.type_probabilities[start:stop],
+        relations=state.relations[start:stop],
+        active=state.active[start:stop],
+        root=state.root[start:stop],
+        committed=state.committed[start:stop],
+        halted=state.halted[start:stop],
+        step=state.step,
+    )
+
+
+def _slice_trace(
+    trace: ReactorTrace,
+    start: int,
+    stop: int,
+) -> ReactorTrace:
+    return ReactorTrace(
+        opcode=trace.opcode[start:stop],
+        source=trace.source[start:stop],
+        target=trace.target[start:stop],
+        relation=trace.relation[start:stop],
+        type_index=trace.type_index[start:stop],
+        value_code=trace.value_code[start:stop],
+        applied_opcode=trace.applied_opcode[start:stop],
+        applied_source=trace.applied_source[start:stop],
+        applied_target=trace.applied_target[start:stop],
+        applied_relation=trace.applied_relation[start:stop],
+        applied_type_index=trace.applied_type_index[start:stop],
+        applied_value_code=trace.applied_value_code[start:stop],
+        active=trace.active[start:stop],
+        committed=trace.committed[start:stop],
+        halted=trace.halted[start:stop],
+    )
+
+
 __all__ = [
     "CausalETTREpisodeRunner",
     "ETTREpisodeBatch",
+    "ETTRInterventionOutput",
     "ETTREpisodeLosses",
     "ETTREpisodeOutput",
     "ETTREpisodeSegment",

@@ -110,6 +110,8 @@ class ETTRObjectiveWeights:
 
     token_lm: float = 1.0
     packet: float = 1.0
+    world_intervention: float = 1.0
+    command_intervention: float = 1.0
     transaction: float = 1.0
     equivariance: float = 0.25
     commit_halt: float = 0.5
@@ -245,8 +247,9 @@ class ETTRTokenTargets:
 class ETTRPacketTargets:
     """Sealed packet labels with explicit support masks.
 
-    Shapes are ``value_code/type_index/active/root/slot_mask=[B,S]`` and
-    ``relations/relation_mask=[B,R,S,S]``.
+    Shapes are ``value_code/type_index/active/root/slot_mask=[B,S]``,
+    ``relations/relation_mask=[B,R,S,S]``, and
+    ``committed/halted=[B]``.
     """
 
     value_code: torch.Tensor
@@ -254,6 +257,8 @@ class ETTRPacketTargets:
     relations: torch.Tensor
     active: torch.Tensor
     root: torch.Tensor
+    committed: torch.Tensor
+    halted: torch.Tensor
     slot_mask: torch.Tensor
     relation_mask: torch.Tensor
 
@@ -283,6 +288,18 @@ class ETTRPacketTargets:
             shape=(batch, slots),
             dtype=torch.bool,
         )
+        committed = _tensor(
+            self.committed,
+            name="packet_targets.committed",
+            shape=(batch,),
+            dtype=torch.bool,
+        )
+        halted = _tensor(
+            self.halted,
+            name="packet_targets.halted",
+            shape=(batch,),
+            dtype=torch.bool,
+        )
         slot_mask = _tensor(
             self.slot_mask,
             name="packet_targets.slot_mask",
@@ -310,6 +327,8 @@ class ETTRPacketTargets:
                 relations,
                 active,
                 root,
+                committed,
+                halted,
                 slot_mask,
                 relation_mask,
             ),
@@ -409,6 +428,10 @@ class ETTRTransactionTargets:
         _async_assert(
             self.step_mask.any(),
             "transaction target mask contains no support",
+        )
+        _async_assert(
+            self.step_mask.any(dim=1).all(),
+            "every transaction target row must contain support",
         )
         _async_assert(
             (self.opcode < TRANSACTION_COUNT).all(),
@@ -626,6 +649,14 @@ class ETTRObjectiveBatch:
     packet_targets: ETTRPacketTargets
     terminal_packet_prediction: TypedTheoryState
     terminal_packet_targets: ETTRPacketTargets
+    world_intervention_prediction: TypedTheoryState
+    world_intervention_targets: ETTRPacketTargets
+    world_intervention_transactions: ETTRTransactionPredictions
+    world_intervention_transaction_targets: ETTRTransactionTargets
+    command_intervention_prediction: TypedTheoryState
+    command_intervention_targets: ETTRPacketTargets
+    command_intervention_transactions: ETTRTransactionPredictions
+    command_intervention_transaction_targets: ETTRTransactionTargets
     transactions: ETTRTransactionPredictions
     transaction_targets: ETTRTransactionTargets
     initial_committed: torch.Tensor
@@ -643,6 +674,12 @@ class ETTRObjectiveReceipt:
     lm_target_tokens: torch.Tensor
     supervised_packet_slots: torch.Tensor
     supervised_relation_cells: torch.Tensor
+    supervised_world_intervention_slots: torch.Tensor
+    supervised_world_intervention_relation_cells: torch.Tensor
+    supervised_world_intervention_transaction_decisions: torch.Tensor
+    supervised_command_intervention_slots: torch.Tensor
+    supervised_command_intervention_relation_cells: torch.Tensor
+    supervised_command_intervention_transaction_decisions: torch.Tensor
     supervised_transaction_steps: torch.Tensor
     supervised_transaction_decisions: torch.Tensor
     supervised_opcode_decisions: torch.Tensor
@@ -677,6 +714,12 @@ class ETTRObjectiveReceipt:
                 "lm_target_tokens",
                 "supervised_packet_slots",
                 "supervised_relation_cells",
+                "supervised_world_intervention_slots",
+                "supervised_world_intervention_relation_cells",
+                "supervised_world_intervention_transaction_decisions",
+                "supervised_command_intervention_slots",
+                "supervised_command_intervention_relation_cells",
+                "supervised_command_intervention_transaction_decisions",
                 "supervised_transaction_steps",
                 "supervised_transaction_decisions",
                 "supervised_opcode_decisions",
@@ -694,6 +737,12 @@ class ETTRObjectiveReceipt:
                 "lm_target_tokens",
                 "supervised_packet_slots",
                 "supervised_relation_cells",
+                "supervised_world_intervention_slots",
+                "supervised_world_intervention_relation_cells",
+                "supervised_world_intervention_transaction_decisions",
+                "supervised_command_intervention_slots",
+                "supervised_command_intervention_relation_cells",
+                "supervised_command_intervention_transaction_decisions",
                 "supervised_transaction_steps",
                 "supervised_transaction_decisions",
                 "supervised_opcode_decisions",
@@ -725,6 +774,8 @@ class ETTRCompositeLoss:
     total: torch.Tensor
     token_lm: torch.Tensor
     packet: torch.Tensor
+    world_intervention: torch.Tensor
+    command_intervention: torch.Tensor
     transaction: torch.Tensor
     equivariance: torch.Tensor
     commit_halt: torch.Tensor
@@ -896,6 +947,14 @@ def _validate_batch(
     for name, state in (
         ("packet_prediction", batch.packet_prediction),
         ("terminal_packet_prediction", batch.terminal_packet_prediction),
+        (
+            "world_intervention_prediction",
+            batch.world_intervention_prediction,
+        ),
+        (
+            "command_intervention_prediction",
+            batch.command_intervention_prediction,
+        ),
     ):
         state_tensors += _validate_state(
             state,
@@ -906,6 +965,8 @@ def _validate_batch(
     for name, packet in (
         ("packet_targets", batch.packet_targets),
         ("terminal_packet_targets", batch.terminal_packet_targets),
+        ("world_intervention_targets", batch.world_intervention_targets),
+        ("command_intervention_targets", batch.command_intervention_targets),
     ):
         if not isinstance(packet, ETTRPacketTargets):
             raise ETTRObjectiveError(f"{name} type differs")
@@ -972,6 +1033,53 @@ def _validate_batch(
             upper,
             name=f"transaction_targets.{name}",
         )
+    intervention_transaction_tensors: tuple[torch.Tensor, ...] = ()
+    for prefix, prediction, intervention_targets in (
+        (
+            "world_intervention",
+            batch.world_intervention_transactions,
+            batch.world_intervention_transaction_targets,
+        ),
+        (
+            "command_intervention",
+            batch.command_intervention_transactions,
+            batch.command_intervention_transaction_targets,
+        ),
+    ):
+        if not isinstance(prediction, ETTRTransactionPredictions):
+            raise ETTRObjectiveError(f"{prefix} transaction prediction differs")
+        if not isinstance(intervention_targets, ETTRTransactionTargets):
+            raise ETTRObjectiveError(f"{prefix} transaction target differs")
+        for name, shape in expected_prediction_shapes.items():
+            if getattr(prediction, name).shape != shape:
+                raise ETTRObjectiveError(
+                    f"{prefix} transactions.{name} geometry differs"
+                )
+        if intervention_targets.opcode.shape != (rows, steps):
+            raise ETTRObjectiveError(
+                f"{prefix} transaction target sequence geometry differs"
+            )
+        for name, upper in (
+            ("opcode", config.transaction_count),
+            ("source", config.num_slots),
+            ("target", config.num_slots),
+            ("relation", config.num_relations),
+            ("type_index", config.num_types),
+            ("value_code", config.num_value_codes),
+        ):
+            _range_check(
+                getattr(intervention_targets, name),
+                upper,
+                name=f"{prefix}_transaction_targets.{name}",
+            )
+        intervention_transaction_tensors += tuple(
+            getattr(prediction, field.name)
+            for field in fields(prediction)
+        )
+        intervention_transaction_tensors += tuple(
+            getattr(intervention_targets, field.name)
+            for field in fields(intervention_targets)
+        )
     initial: tuple[torch.Tensor, ...] = ()
     for name in ("initial_committed", "initial_halted"):
         value = _tensor(
@@ -1021,6 +1129,8 @@ def _validate_batch(
         for packet_target in (
             batch.packet_targets,
             batch.terminal_packet_targets,
+            batch.world_intervention_targets,
+            batch.command_intervention_targets,
         )
         for field in fields(packet_target)
     )
@@ -1031,6 +1141,7 @@ def _validate_batch(
         *packet_target_tensors,
         *(getattr(transactions, field.name) for field in fields(transactions)),
         *(getattr(targets, field.name) for field in fields(targets)),
+        *intervention_transaction_tensors,
         *initial,
         *alignment_tensors,
     )
@@ -1124,9 +1235,8 @@ def _packet_loss(
         batch.terminal_packet_targets,
         config,
     )
-    combined = _combine((initial, terminal), batch.packet_prediction.active)
     return (
-        combined.mean,
+        torch.stack((initial, terminal)).mean(),
         initial_slots + terminal_slots,
         initial_relations + terminal_relations,
     )
@@ -1136,7 +1246,7 @@ def _packet_state_loss(
     prediction: TypedTheoryState,
     target: ETTRPacketTargets,
     config: ETTRObjectiveConfig,
-) -> tuple[_LossCount, torch.Tensor, torch.Tensor]:
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     categorical_mask = target.slot_mask & target.active
     losses = (
         _categorical_nll(
@@ -1169,9 +1279,21 @@ def _packet_state_loss(
             target.slot_mask,
             epsilon=config.probability_epsilon,
         ),
+        _binary_nll(
+            prediction.committed,
+            target.committed,
+            torch.ones_like(target.committed),
+            epsilon=config.probability_epsilon,
+        ),
+        _binary_nll(
+            prediction.halted,
+            target.halted,
+            torch.ones_like(target.halted),
+            epsilon=config.probability_epsilon,
+        ),
     )
     return (
-        _combine(losses, prediction.active),
+        torch.stack(tuple(loss.mean for loss in losses)).mean(),
         _count(target.slot_mask),
         _count(target.relation_mask),
     )
@@ -1179,7 +1301,18 @@ def _packet_state_loss(
 
 def _transaction_loss(
     batch: ETTRObjectiveBatch,
-    geometry: _Geometry,
+    config: ETTRObjectiveConfig,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    return _transaction_prediction_loss(
+        batch.transactions,
+        batch.transaction_targets,
+        config,
+    )
+
+
+def _transaction_prediction_loss(
+    prediction: ETTRTransactionPredictions,
+    targets: ETTRTransactionTargets,
     config: ETTRObjectiveConfig,
 ) -> tuple[torch.Tensor, torch.Tensor]:
     names = (
@@ -1192,15 +1325,61 @@ def _transaction_loss(
     )
     losses = tuple(
         _categorical_nll(
-            getattr(batch.transactions, name),
-            getattr(batch.transaction_targets, name),
+            getattr(prediction, name),
+            getattr(targets, name),
             mask,
             epsilon=config.probability_epsilon,
         )
-        for name, mask in zip(names, geometry.operand_masks, strict=True)
+        for name, mask in zip(
+            names,
+            _operand_masks(targets),
+            strict=True,
+        )
     )
-    combined = _combine(losses, batch.transactions.opcode)
+    combined = _combine(losses, prediction.opcode)
     return combined.mean, combined.count
+
+
+def _intervention_arm_loss(
+    prediction: TypedTheoryState,
+    targets: ETTRPacketTargets,
+    transactions: ETTRTransactionPredictions,
+    transaction_targets: ETTRTransactionTargets,
+    config: ETTRObjectiveConfig,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    packet, packet_slots, packet_relations = _packet_state_loss(
+        prediction,
+        targets,
+        config,
+    )
+    transaction, transaction_decisions = _transaction_prediction_loss(
+        transactions,
+        transaction_targets,
+        config,
+    )
+    status = _combine(
+        (
+            _binary_nll(
+                transactions.committed,
+                transaction_targets.committed,
+                transaction_targets.step_mask,
+                epsilon=config.probability_epsilon,
+            ),
+            _binary_nll(
+                transactions.halted,
+                transaction_targets.halted,
+                transaction_targets.step_mask,
+                epsilon=config.probability_epsilon,
+            ),
+        ),
+        transactions.committed,
+    ).mean
+    return (
+        torch.stack((packet, transaction, status)).mean(),
+        packet_slots,
+        packet_relations,
+        transaction_decisions,
+    )
 
 
 def _commit_halt_loss(
@@ -1577,9 +1756,32 @@ class ETTRCompositeObjective(nn.Module):
             batch,
             self.config,
         )
+        (
+            world_intervention,
+            world_intervention_slots,
+            world_intervention_relation_cells,
+            world_intervention_transaction_decisions,
+        ) = _intervention_arm_loss(
+            batch.world_intervention_prediction,
+            batch.world_intervention_targets,
+            batch.world_intervention_transactions,
+            batch.world_intervention_transaction_targets,
+            self.config,
+        )
+        (
+            command_intervention,
+            command_intervention_slots,
+            command_intervention_relation_cells,
+            command_intervention_transaction_decisions,
+        ) = _intervention_arm_loss(
+            batch.command_intervention_prediction,
+            batch.command_intervention_targets,
+            batch.command_intervention_transactions,
+            batch.command_intervention_transaction_targets,
+            self.config,
+        )
         transaction, transaction_decisions = _transaction_loss(
             batch,
-            geometry,
             self.config,
         )
         commit_halt = _commit_halt_loss(
@@ -1594,6 +1796,8 @@ class ETTRCompositeObjective(nn.Module):
                 for state in (
                     batch.packet_prediction,
                     batch.terminal_packet_prediction,
+                    batch.world_intervention_prediction,
+                    batch.command_intervention_prediction,
                 )
             )
         ).mean()
@@ -1603,12 +1807,16 @@ class ETTRCompositeObjective(nn.Module):
                 for state in (
                     batch.packet_prediction,
                     batch.terminal_packet_prediction,
+                    batch.world_intervention_prediction,
+                    batch.command_intervention_prediction,
                 )
             )
         ).mean()
         breakdown = {
             "token_lm": token_lm,
             "packet": packet,
+            "world_intervention": world_intervention,
+            "command_intervention": command_intervention,
             "transaction": transaction,
             "equivariance": equivariance,
             "commit_halt": commit_halt,
@@ -1625,6 +1833,22 @@ class ETTRCompositeObjective(nn.Module):
             lm_target_tokens=_count(geometry.lm_mask),
             supervised_packet_slots=packet_slots,
             supervised_relation_cells=relation_cells,
+            supervised_world_intervention_slots=world_intervention_slots,
+            supervised_world_intervention_relation_cells=(
+                world_intervention_relation_cells
+            ),
+            supervised_world_intervention_transaction_decisions=(
+                world_intervention_transaction_decisions
+            ),
+            supervised_command_intervention_slots=(
+                command_intervention_slots
+            ),
+            supervised_command_intervention_relation_cells=(
+                command_intervention_relation_cells
+            ),
+            supervised_command_intervention_transaction_decisions=(
+                command_intervention_transaction_decisions
+            ),
             supervised_transaction_steps=_count(batch.transaction_targets.step_mask),
             supervised_transaction_decisions=transaction_decisions,
             supervised_opcode_decisions=_count(geometry.operand_masks[0]),

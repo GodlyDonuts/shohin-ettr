@@ -32,7 +32,7 @@ from ettr_optimization import ETTROptimizerBundle
 class ETTRTrainStepConfig:
     gradient_accumulation_steps: int = 1
     gradient_clip: float = 1.0
-    hard_transactions: bool = False
+    hard_transactions: bool = True
     autocast_dtype: torch.dtype = torch.bfloat16
 
     def validate(self) -> None:
@@ -53,6 +53,8 @@ class ETTRUpdateReceipt:
     total_loss: torch.Tensor
     token_lm_loss: torch.Tensor
     packet_loss: torch.Tensor
+    world_intervention_loss: torch.Tensor
+    command_intervention_loss: torch.Tensor
     transaction_loss: torch.Tensor
     equivariance_loss: torch.Tensor
     commit_halt_loss: torch.Tensor
@@ -121,7 +123,27 @@ class ETTRTrainStep(nn.Module):
             validate_batch=False,
             compute_losses=False,
         )
-        return self.objective(batch.objective_batch(output))
+        (
+            world_packet,
+            world_command,
+            _world_target,
+            command_packet,
+            command_command,
+            _command_target,
+        ) = batch.causal_rectangles.intervention_indices()
+        interventions = self.runner.intervene(
+            batch.episodes,
+            output.initial_state,
+            reactor_steps=steps,
+            world_packet_index=world_packet,
+            world_command_index=world_command,
+            command_packet_index=command_packet,
+            command_command_index=command_command,
+            hard=self.step_config.hard_transactions,
+        )
+        return self.objective(
+            batch.objective_batch(output, interventions)
+        )
 
     def update(
         self,
@@ -139,6 +161,8 @@ class ETTRTrainStep(nn.Module):
             "total": [],
             "token_lm": [],
             "packet": [],
+            "world_intervention": [],
+            "command_intervention": [],
             "transaction": [],
             "equivariance": [],
             "commit_halt": [],
@@ -188,6 +212,8 @@ class ETTRTrainStep(nn.Module):
             total_loss=mean("total"),
             token_lm_loss=mean("token_lm"),
             packet_loss=mean("packet"),
+            world_intervention_loss=mean("world_intervention"),
+            command_intervention_loss=mean("command_intervention"),
             transaction_loss=mean("transaction"),
             equivariance_loss=mean("equivariance"),
             commit_halt_loss=mean("commit_halt"),

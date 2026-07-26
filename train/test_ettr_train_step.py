@@ -16,9 +16,12 @@ from ettr_train_step import ETTRTrainStep, ETTRTrainStepConfig
 from test_ettr_data_contract import (
     _alignment,
     _packet,
+    _rectangle_episodes,
+    _rectangles,
+    _terminal_packet,
     _transactions,
 )
-from test_ettr_episode import _batch, _runner
+from test_ettr_episode import _runner
 
 
 MANIFEST_SHA256 = "a" * 64
@@ -60,12 +63,13 @@ def _trainer(
     batch = ETTRContinuationBatch(
         manifest_sha256=MANIFEST_SHA256,
         dataset_sha256=DATASET_SHA256,
-        episodes=_batch(2),
-        packet_targets=_packet(2),
-        terminal_packet_targets=_packet(2),
-        transaction_targets=_transactions(2),
-        initial_committed=torch.zeros(2, dtype=torch.bool),
-        initial_halted=torch.zeros(2, dtype=torch.bool),
+        episodes=_rectangle_episodes(),
+        packet_targets=_packet(4),
+        terminal_packet_targets=_terminal_packet(4),
+        causal_rectangles=_rectangles(),
+        transaction_targets=_transactions(4),
+        initial_committed=torch.zeros(4, dtype=torch.bool),
+        initial_halted=torch.zeros(4, dtype=torch.bool),
         equivariance=_alignment(),
     )
     return trainer, batch
@@ -85,6 +89,8 @@ def test_update_runs_complete_native_objective_and_advances_cursor() -> None:
         "total_loss",
         "token_lm_loss",
         "packet_loss",
+        "world_intervention_loss",
+        "command_intervention_loss",
         "transaction_loss",
         "equivariance_loss",
         "commit_halt_loss",

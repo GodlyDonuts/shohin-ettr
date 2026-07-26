@@ -16,7 +16,12 @@ from endogenous_typed_theory_reactor import (
     TheoryReactorConfig,
     TheoryReactorError,
 )
-from ettr_episode import ETTREpisodeBatch, ETTREpisodeOutput
+from ettr_episode import (
+    ETTREpisodeBatch,
+    ETTREpisodeOutput,
+    ETTREpisodeSegment,
+    ETTRInterventionOutput,
+)
 from ettr_objectives import (
     ETTRObjectiveBatch,
     ETTRObjectiveConfig,
@@ -32,6 +37,372 @@ ETTR_CONTINUATION_SCHEMA = "shohin-ettr-continuation-data-v1"
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 
+def _packet_target_rows_differ(
+    targets: ETTRPacketTargets,
+    left_index: torch.Tensor,
+    right_index: torch.Tensor,
+) -> torch.Tensor:
+    left_active = targets.active.index_select(0, left_index)
+    right_active = targets.active.index_select(0, right_index)
+    left_slot_mask = targets.slot_mask.index_select(0, left_index)
+    right_slot_mask = targets.slot_mask.index_select(0, right_index)
+    slot_support = left_slot_mask & right_slot_mask
+    categorical_support = slot_support & (left_active | right_active)
+    relation_support = (
+        targets.relation_mask.index_select(0, left_index)
+        & targets.relation_mask.index_select(0, right_index)
+    )
+    return (
+        ((left_active != right_active) & slot_support).any(dim=1)
+        | (
+            (
+                targets.root.index_select(0, left_index)
+                != targets.root.index_select(0, right_index)
+            )
+            & slot_support
+        ).any(dim=1)
+        | (
+            (
+                targets.value_code.index_select(0, left_index)
+                != targets.value_code.index_select(0, right_index)
+            )
+            & categorical_support
+        ).any(dim=1)
+        | (
+            (
+                targets.type_index.index_select(0, left_index)
+                != targets.type_index.index_select(0, right_index)
+            )
+            & categorical_support
+        ).any(dim=1)
+        | (
+            (
+                targets.relations.index_select(0, left_index)
+                != targets.relations.index_select(0, right_index)
+            )
+            & relation_support
+        ).flatten(1).any(dim=1)
+        | (
+            targets.committed.index_select(0, left_index)
+            != targets.committed.index_select(0, right_index)
+        )
+        | (
+            targets.halted.index_select(0, left_index)
+            != targets.halted.index_select(0, right_index)
+        )
+    )
+
+
+def _require_same_packet_target(
+    targets: ETTRPacketTargets,
+    left: torch.Tensor,
+    right: torch.Tensor,
+    name: str,
+) -> None:
+    torch._assert_async(
+        torch.stack(
+            tuple(
+                getattr(targets, field.name)
+                .index_select(0, left)
+                .eq(getattr(targets, field.name).index_select(0, right))
+                .all()
+                for field in fields(targets)
+            )
+        ).all(),
+        f"ETTR causal rectangle {name} packet target differs",
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class ETTRCausalRectangle:
+    """Immutable factorial rows ``[rectangle, world, command]``."""
+
+    rows: torch.Tensor
+
+    def validate(
+        self,
+        episodes: ETTREpisodeBatch,
+        factual_initial_targets: ETTRPacketTargets,
+        factual_terminal_targets: ETTRPacketTargets,
+    ) -> None:
+        batch = episodes.world.tokens.shape[0]
+        if (
+            self.rows.ndim != 3
+            or self.rows.shape[1:] != (2, 2)
+            or self.rows.dtype != torch.long
+            or self.rows.device != episodes.world.tokens.device
+            or self.rows.shape[0] < 1
+        ):
+            raise TheoryReactorError("ETTR causal rectangle geometry differs")
+        flat = self.rows.flatten()
+        expected = torch.arange(
+            batch,
+            device=episodes.world.tokens.device,
+        )
+        if flat.numel() != batch:
+            raise TheoryReactorError(
+                "ETTR causal rectangles must partition the batch"
+            )
+        torch._assert_async(
+            flat.sort().values.eq(expected).all(),
+            "ETTR causal rectangles must partition the batch",
+        )
+        r00 = self.rows[:, 0, 0]
+        r01 = self.rows[:, 0, 1]
+        r10 = self.rows[:, 1, 0]
+        r11 = self.rows[:, 1, 1]
+        _require_same_packet_target(
+            factual_initial_targets,
+            r00,
+            r01,
+            "WORLD W0",
+        )
+        _require_same_packet_target(
+            factual_initial_targets,
+            r10,
+            r11,
+            "WORLD W1",
+        )
+        torch._assert_async(
+            _packet_target_rows_differ(
+                factual_initial_targets,
+                r00,
+                r10,
+            ).all(),
+            "ETTR causal rectangle WORLD factors have identical packet targets",
+        )
+        for segment, left, right, name in (
+            (episodes.world, r00, r01, "WORLD W0"),
+            (episodes.world, r10, r11, "WORLD W1"),
+            (episodes.command, r00, r10, "COMMAND C0"),
+            (episodes.command, r01, r11, "COMMAND C1"),
+            (episodes.world, r00, r10, "WORLD factors"),
+            (episodes.command, r00, r01, "COMMAND factors"),
+        ):
+            _require_distinct_source(segment, left, right, name)
+        for field_name in ("slot_mask", "relation_mask"):
+            reference = getattr(factual_terminal_targets, field_name).index_select(
+                0,
+                r00,
+            )
+            for index in (r01, r10, r11):
+                torch._assert_async(
+                    getattr(
+                        factual_terminal_targets,
+                        field_name,
+                    ).index_select(0, index).eq(reference).all(),
+                    "ETTR causal rectangle packet support differs",
+                )
+        for left, right, name in (
+            (r00, r10, "WORLD/C0"),
+            (r01, r11, "WORLD/C1"),
+            (r00, r01, "COMMAND/W0"),
+            (r10, r11, "COMMAND/W1"),
+        ):
+            torch._assert_async(
+                _packet_target_rows_differ(
+                    factual_terminal_targets,
+                    left,
+                    right,
+                ).all(),
+                f"ETTR causal rectangle {name} has no terminal consequence",
+            )
+
+    def intervention_indices(
+        self,
+    ) -> tuple[torch.Tensor, ...]:
+        r00 = self.rows[:, 0, 0]
+        r01 = self.rows[:, 0, 1]
+        r10 = self.rows[:, 1, 0]
+        r11 = self.rows[:, 1, 1]
+        world_packet = torch.cat((r11, r10, r01, r00))
+        world_command = torch.cat((r00, r01, r10, r11))
+        world_target = torch.cat((r10, r11, r00, r01))
+        command_packet = torch.cat((r00, r01, r10, r11))
+        command_command = torch.cat((r11, r10, r01, r00))
+        command_target = torch.cat((r01, r00, r11, r10))
+        return (
+            world_packet,
+            world_command,
+            world_target,
+            command_packet,
+            command_command,
+            command_target,
+        )
+
+
+def _require_distinct_source(
+    segment: ETTREpisodeSegment,
+    left: torch.Tensor,
+    right: torch.Tensor,
+    name: str,
+) -> None:
+    left_tokens = segment.tokens.index_select(0, left)
+    right_tokens = segment.tokens.index_select(0, right)
+    left_mask = segment.attention_mask.index_select(0, left)
+    right_mask = segment.attention_mask.index_select(0, right)
+    differs = (
+        (left_tokens.ne(right_tokens) & (left_mask | right_mask))
+        | left_mask.ne(right_mask)
+    ).any(dim=1)
+    torch._assert_async(
+        differs.all(),
+        f"ETTR causal rectangle {name} raw renderings are identical",
+    )
+
+
+def _index_packet_targets(
+    targets: ETTRPacketTargets,
+    index: torch.Tensor,
+) -> ETTRPacketTargets:
+    return ETTRPacketTargets(
+        **{
+            field.name: getattr(targets, field.name).index_select(0, index)
+            for field in fields(targets)
+        }
+    )
+
+
+def _index_transaction_targets(
+    targets: ETTRTransactionTargets,
+    index: torch.Tensor,
+) -> ETTRTransactionTargets:
+    return ETTRTransactionTargets(
+        **{
+            field.name: getattr(targets, field.name).index_select(0, index)
+            for field in fields(targets)
+        }
+    )
+
+
+def _validate_target_trajectory(
+    initial: ETTRPacketTargets,
+    transactions: ETTRTransactionTargets,
+    terminal: ETTRPacketTargets,
+    reactor_config: TheoryReactorConfig,
+) -> None:
+    """Replay generic labeled transactions without any ontology semantics."""
+
+    batch, slots = initial.active.shape
+    rows = torch.arange(batch, device=initial.active.device)
+    active = initial.active.clone()
+    root = initial.root.clone()
+    values = initial.value_code.clone()
+    types = initial.type_index.clone()
+    relations = initial.relations.clone()
+    committed = initial.committed.clone()
+    halted = initial.halted.clone()
+    for step in range(transactions.opcode.shape[1]):
+        valid = transactions.step_mask[:, step]
+        open_state = valid & ~committed & ~halted
+        opcode = transactions.opcode[:, step]
+        source = transactions.source[:, step]
+        target = transactions.target[:, step]
+        relation = transactions.relation[:, step]
+        source_mask = torch.nn.functional.one_hot(
+            source,
+            slots,
+        ).bool()
+        alloc = source_mask & (
+            open_state
+            & opcode.eq(0)
+            & ~active[rows, source]
+        )[:, None]
+        write = source_mask & (
+            open_state
+            & opcode.eq(1)
+            & active[rows, source]
+        )[:, None]
+        clear = source_mask & (
+            open_state
+            & opcode.eq(2)
+            & active[rows, source]
+        )[:, None]
+        active = (active | alloc) & ~clear
+        values = torch.where(
+            (alloc | write),
+            transactions.value_code[:, step, None],
+            values,
+        )
+        types = torch.where(
+            alloc,
+            transactions.type_index[:, step, None],
+            types,
+        )
+        values = torch.where(clear, torch.zeros_like(values), values)
+        types = torch.where(clear, torch.zeros_like(types), types)
+
+        pair = (
+            torch.nn.functional.one_hot(
+                relation,
+                reactor_config.num_relations,
+            ).bool()[:, :, None, None]
+            & source_mask[:, None, :, None]
+            & torch.nn.functional.one_hot(
+                target,
+                slots,
+            ).bool()[:, None, None, :]
+        )
+        link = (
+            open_state
+            & opcode.eq(3)
+        )[:, None, None, None]
+        unlink = (
+            open_state
+            & opcode.eq(4)
+        )[:, None, None, None]
+        relations = (relations | (link & pair)) & ~(unlink & pair)
+        clear_pair = clear[:, None, :, None] | clear[:, None, None, :]
+        relations = relations & ~clear_pair
+        relations = (
+            relations
+            & active[:, None, :, None]
+            & active[:, None, None, :]
+        )
+        torch._assert_async(
+            relations.flatten(1).sum(-1).le(reactor_config.max_edges).all(),
+            "ETTR target trajectory exceeds the relation-edge budget",
+        )
+
+        set_root = open_state & opcode.eq(5)
+        requested_root = source_mask & active
+        root = torch.where(set_root[:, None], requested_root, root)
+        root = root & active
+        committed = committed | (
+            open_state & (opcode.eq(6) | opcode.eq(8))
+        )
+        halted = halted | (
+            open_state & (opcode.eq(7) | opcode.eq(8))
+        )
+        torch._assert_async(
+            (
+                ~valid
+                | (
+                    transactions.committed[:, step].eq(committed)
+                    & transactions.halted[:, step].eq(halted)
+                )
+            ).all(),
+            "ETTR transaction disposition disagrees with labeled recurrence",
+        )
+
+    slot_mask = terminal.slot_mask
+    categorical_mask = slot_mask & terminal.active
+    relation_mask = terminal.relation_mask
+    consistent = (
+        ((active == terminal.active) | ~slot_mask).all()
+        & ((root == terminal.root) | ~slot_mask).all()
+        & ((values == terminal.value_code) | ~categorical_mask).all()
+        & ((types == terminal.type_index) | ~categorical_mask).all()
+        & ((relations == terminal.relations) | ~relation_mask).all()
+        & committed.eq(terminal.committed).all()
+        & halted.eq(terminal.halted).all()
+    )
+    torch._assert_async(
+        consistent,
+        "ETTR transaction labels do not realize the terminal packet target",
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class ETTRContinuationBatch:
     """One architecture batch plus its generic offline supervision."""
@@ -41,6 +412,7 @@ class ETTRContinuationBatch:
     episodes: ETTREpisodeBatch
     packet_targets: ETTRPacketTargets
     terminal_packet_targets: ETTRPacketTargets
+    causal_rectangles: ETTRCausalRectangle
     transaction_targets: ETTRTransactionTargets
     initial_committed: torch.Tensor
     initial_halted: torch.Tensor
@@ -68,6 +440,13 @@ class ETTRContinuationBatch:
                 field.name: getattr(self.terminal_packet_targets, field.name)
                 for field in fields(self.terminal_packet_targets)
             }
+        )
+        if not isinstance(self.causal_rectangles, ETTRCausalRectangle):
+            raise TheoryReactorError("ETTR causal rectangle type differs")
+        self.causal_rectangles.validate(
+            self.episodes,
+            self.packet_targets,
+            self.terminal_packet_targets,
         )
         ETTRTransactionTargets(
             **{
@@ -101,10 +480,38 @@ class ETTRContinuationBatch:
             or self.initial_halted.dtype != torch.bool
         ):
             raise TheoryReactorError("ETTR continuation/objective geometry differs")
+        torch._assert_async(
+            self.packet_targets.committed.eq(self.initial_committed).all()
+            & self.packet_targets.halted.eq(self.initial_halted).all()
+            & ~self.initial_committed.any()
+            & ~self.initial_halted.any(),
+            "ETTR initial packet disposition differs from compiler reset state",
+        )
+        final_valid = self.transaction_targets.step_mask.sum(-1) - 1
+        final_committed = self.transaction_targets.committed.gather(
+            1,
+            final_valid[:, None],
+        ).squeeze(1)
+        final_halted = self.transaction_targets.halted.gather(
+            1,
+            final_valid[:, None],
+        ).squeeze(1)
+        padded = ~self.transaction_targets.step_mask.all(dim=1)
+        torch._assert_async(
+            (~padded | final_committed | final_halted).all(),
+            "ETTR padded transaction row remains open at its supervision boundary",
+        )
+        _validate_target_trajectory(
+            self.packet_targets,
+            self.transaction_targets,
+            self.terminal_packet_targets,
+            reactor_config,
+        )
         devices = {
             self.episodes.world.tokens.device,
             self.packet_targets.active.device,
             self.terminal_packet_targets.active.device,
+            self.causal_rectangles.rows.device,
             self.transaction_targets.opcode.device,
             self.initial_committed.device,
             self.initial_halted.device,
@@ -119,6 +526,7 @@ class ETTRContinuationBatch:
                 self,
                 self.packet_targets,
                 self.terminal_packet_targets,
+                self.causal_rectangles,
                 self.transaction_targets,
             )
             for field in fields(value)
@@ -131,11 +539,14 @@ class ETTRContinuationBatch:
     def objective_batch(
         self,
         output: ETTREpisodeOutput,
+        interventions: ETTRInterventionOutput,
     ) -> ETTRObjectiveBatch:
         """Join reset segment logits without creating boundary targets."""
 
         if not isinstance(output, ETTREpisodeOutput):
             raise TheoryReactorError("ETTR episode output type differs")
+        if not isinstance(interventions, ETTRInterventionOutput):
+            raise TheoryReactorError("ETTR intervention output type differs")
         segments = (
             self.episodes.world,
             self.episodes.command,
@@ -162,6 +573,14 @@ class ETTRContinuationBatch:
         for segment in segments:
             reset_mask[:, cursor] = True
             cursor += segment.tokens.shape[1]
+        (
+            _world_packet,
+            _world_command,
+            world_target,
+            _command_packet,
+            _command_command,
+            command_target,
+        ) = self.causal_rectangles.intervention_indices()
         return ETTRObjectiveBatch(
             token_logits=logits,
             token_targets=ETTRTokenTargets(
@@ -173,6 +592,42 @@ class ETTRContinuationBatch:
             packet_targets=self.packet_targets,
             terminal_packet_prediction=output.terminal_state,
             terminal_packet_targets=self.terminal_packet_targets,
+            world_intervention_prediction=(
+                interventions.world_terminal_state
+            ),
+            world_intervention_targets=_index_packet_targets(
+                self.terminal_packet_targets,
+                world_target,
+            ),
+            world_intervention_transactions=(
+                ETTRTransactionPredictions.from_reactor_trace(
+                    interventions.world_trace
+                )
+            ),
+            world_intervention_transaction_targets=(
+                _index_transaction_targets(
+                    self.transaction_targets,
+                    world_target,
+                )
+            ),
+            command_intervention_prediction=(
+                interventions.command_terminal_state
+            ),
+            command_intervention_targets=_index_packet_targets(
+                self.terminal_packet_targets,
+                command_target,
+            ),
+            command_intervention_transactions=(
+                ETTRTransactionPredictions.from_reactor_trace(
+                    interventions.command_trace
+                )
+            ),
+            command_intervention_transaction_targets=(
+                _index_transaction_targets(
+                    self.transaction_targets,
+                    command_target,
+                )
+            ),
             transactions=(ETTRTransactionPredictions.from_reactor_trace(output.trace)),
             transaction_targets=self.transaction_targets,
             initial_committed=self.initial_committed,
@@ -224,6 +679,7 @@ class ETTRContinuationManifest:
 
 __all__ = [
     "ETTR_CONTINUATION_SCHEMA",
+    "ETTRCausalRectangle",
     "ETTRContinuationBatch",
     "ETTRContinuationManifest",
 ]

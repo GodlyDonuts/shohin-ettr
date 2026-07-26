@@ -74,6 +74,8 @@ def _packet_labels() -> ETTRPacketTargets:
         relations=relations,
         active=active,
         root=root,
+        committed=torch.zeros(BATCH, dtype=torch.bool),
+        halted=torch.zeros(BATCH, dtype=torch.bool),
         slot_mask=torch.ones(BATCH, SLOTS, dtype=torch.bool),
         relation_mask=torch.ones(
             BATCH,
@@ -174,6 +176,14 @@ def _batch() -> ETTRObjectiveBatch:
         packet_targets=_packet_labels(),
         terminal_packet_prediction=_hard_packet_state(),
         terminal_packet_targets=_packet_labels(),
+        world_intervention_prediction=_hard_packet_state(),
+        world_intervention_targets=_packet_labels(),
+        world_intervention_transactions=_transaction_predictions(),
+        world_intervention_transaction_targets=_transaction_labels(),
+        command_intervention_prediction=_hard_packet_state(),
+        command_intervention_targets=_packet_labels(),
+        command_intervention_transactions=_transaction_predictions(),
+        command_intervention_transaction_targets=_transaction_labels(),
         transactions=_transaction_predictions(),
         transaction_targets=_transaction_labels(),
         initial_committed=torch.zeros(BATCH, dtype=torch.bool),
@@ -199,6 +209,8 @@ def test_public_target_records_expose_every_collator_shape() -> None:
     )
     assert packet.active.shape == (BATCH, SLOTS)
     assert packet.root.shape == (BATCH, SLOTS)
+    assert packet.committed.shape == (BATCH,)
+    assert packet.halted.shape == (BATCH,)
     assert packet.slot_mask.shape == (BATCH, SLOTS)
     assert packet.relation_mask.shape == (
         BATCH,
@@ -264,6 +276,8 @@ def test_composite_breakdown_is_finite_weighted_and_differentiable() -> None:
     weights = ETTRObjectiveWeights(
         token_lm=1.3,
         packet=0.9,
+        world_intervention=1.1,
+        command_intervention=1.2,
         transaction=0.8,
         equivariance=0.7,
         commit_halt=0.6,
@@ -279,6 +293,8 @@ def test_composite_breakdown_is_finite_weighted_and_differentiable() -> None:
         for name in (
             "token_lm",
             "packet",
+            "world_intervention",
+            "command_intervention",
             "transaction",
             "equivariance",
             "commit_halt",
@@ -307,6 +323,12 @@ def test_receipt_counts_stay_device_resident_and_auditable() -> None:
         "lm_target_tokens",
         "supervised_packet_slots",
         "supervised_relation_cells",
+        "supervised_world_intervention_slots",
+        "supervised_world_intervention_relation_cells",
+        "supervised_world_intervention_transaction_decisions",
+        "supervised_command_intervention_slots",
+        "supervised_command_intervention_relation_cells",
+        "supervised_command_intervention_transaction_decisions",
         "supervised_transaction_steps",
         "supervised_transaction_decisions",
         "supervised_opcode_decisions",
@@ -333,6 +355,30 @@ def test_receipt_counts_stay_device_resident_and_auditable() -> None:
     torch.testing.assert_close(
         receipt.supervised_relation_cells,
         torch.tensor(72),
+    )
+    torch.testing.assert_close(
+        receipt.supervised_world_intervention_slots,
+        torch.tensor(6),
+    )
+    torch.testing.assert_close(
+        receipt.supervised_world_intervention_relation_cells,
+        torch.tensor(36),
+    )
+    torch.testing.assert_close(
+        receipt.supervised_world_intervention_transaction_decisions,
+        torch.tensor(18),
+    )
+    torch.testing.assert_close(
+        receipt.supervised_command_intervention_slots,
+        torch.tensor(6),
+    )
+    torch.testing.assert_close(
+        receipt.supervised_command_intervention_relation_cells,
+        torch.tensor(36),
+    )
+    torch.testing.assert_close(
+        receipt.supervised_command_intervention_transaction_decisions,
+        torch.tensor(18),
     )
     torch.testing.assert_close(
         receipt.supervised_transaction_steps,
@@ -378,6 +424,8 @@ def test_token_loss_is_strictly_one_step_causal() -> None:
         weights=ETTRObjectiveWeights(
             token_lm=1.0,
             packet=0.0,
+            world_intervention=0.0,
+            command_intervention=0.0,
             transaction=0.0,
             equivariance=0.0,
             commit_halt=0.0,
@@ -412,6 +460,8 @@ def test_token_loss_never_crosses_an_explicit_segment_reset() -> None:
         weights=ETTRObjectiveWeights(
             token_lm=1.0,
             packet=0.0,
+            world_intervention=0.0,
+            command_intervention=0.0,
             transaction=0.0,
             equivariance=0.0,
             commit_halt=0.0,
@@ -650,6 +700,48 @@ def test_terminal_packet_is_directly_supervised() -> None:
     assert broken.packet > exact
     broken.packet.backward()
     assert terminal.value_probabilities.grad is not None
+
+
+def test_terminal_disposition_is_part_of_packet_supervision() -> None:
+    batch = _batch()
+    objective = ETTRCompositeObjective(_config())
+    exact = objective(batch).packet
+    terminal = replace(
+        batch.terminal_packet_prediction,
+        committed=_leaf(torch.ones(BATCH)),
+        halted=_leaf(torch.ones(BATCH)),
+    )
+    broken = objective(
+        replace(batch, terminal_packet_prediction=terminal)
+    )
+    assert broken.packet > exact
+    broken.packet.backward()
+    assert terminal.committed.grad is not None
+    assert terminal.halted.grad is not None
+
+
+def test_factorial_world_and_command_arms_are_supervised_separately() -> None:
+    batch = _batch()
+    objective = ETTRCompositeObjective(_config())
+    exact = objective(batch)
+    values = (
+        batch.world_intervention_prediction.value_probabilities.detach().clone()
+    )
+    values[:, 0] = values[:, 0].roll(1, dims=-1)
+    world = replace(
+        batch.world_intervention_prediction,
+        value_probabilities=_leaf(values),
+    )
+    broken = objective(
+        replace(batch, world_intervention_prediction=world)
+    )
+    assert broken.world_intervention > exact.world_intervention
+    torch.testing.assert_close(
+        broken.command_intervention,
+        exact.command_intervention,
+    )
+    broken.world_intervention.backward()
+    assert world.value_probabilities.grad is not None
 
 
 def test_commit_halt_loss_checks_prefix_recurrence_and_labels() -> None:

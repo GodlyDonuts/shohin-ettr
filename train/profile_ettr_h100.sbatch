@@ -1,6 +1,7 @@
 #!/bin/bash
-# Isolated ETTR resource profile. This wrapper never submits another job,
-# invokes a trainer, reads training shards, or writes a model checkpoint.
+# Isolated ETTR composite factorial-intervention resource profile. This wrapper
+# never submits another job, invokes a trainer, reads training shards, or
+# writes a model checkpoint.
 #SBATCH --job-name=ettr-h100-profile
 #SBATCH --account=skattel
 #SBATCH --partition=normal
@@ -89,7 +90,7 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
   --checkpoint "$CHECKPOINT" \
   --checkpoint-sha256 "$CHECKPOINT_SHA256" \
   --expected-step "$CHECKPOINT_STEP" \
-  --batch-size "${BATCH_SIZE:-1}" \
+  --batch-size "${BATCH_SIZE:-4}" \
   --microsteps "${MICROSTEPS:-2}" \
   --warmup-updates "${WARMUP_UPDATES:-2}" \
   --measured-updates "${MEASURED_UPDATES:-10}" \

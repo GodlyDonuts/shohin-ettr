@@ -9,6 +9,7 @@ from endogenous_typed_theory_reactor import (
     EndogenousTypedTheoryReactorGPT,
     TheoryReactorConfig,
     TheoryReactorError,
+    validate_deployed_state,
 )
 from ettr_episode import (
     CausalETTREpisodeRunner,
@@ -235,6 +236,192 @@ def test_rows_do_not_share_episode_state() -> None:
         atol=2e-6,
         rtol=2e-6,
     )
+
+
+def test_intervention_runner_holds_the_orthogonal_cause_fixed() -> None:
+    runner = _runner().eval()
+    batch = _batch(batch=2)
+    world_packet_index = torch.tensor([1, 0])
+    world_command_index = torch.tensor([0, 1])
+    command_packet_index = torch.tensor([0, 1])
+    command_command_index = torch.tensor([1, 0])
+    with torch.no_grad():
+        output = runner(batch, reactor_steps=2)
+        intervention = runner.intervene(
+            batch,
+            output.initial_state,
+            reactor_steps=2,
+            world_packet_index=world_packet_index,
+            world_command_index=world_command_index,
+            command_packet_index=command_packet_index,
+            command_command_index=command_command_index,
+        )
+        swapped_state = type(output.initial_state)(
+            value_probabilities=(
+                output.initial_state.value_probabilities.index_select(
+                    0,
+                    world_packet_index,
+                )
+            ),
+            type_probabilities=(
+                output.initial_state.type_probabilities.index_select(
+                    0,
+                    world_packet_index,
+                )
+            ),
+            relations=output.initial_state.relations.index_select(
+                0,
+                world_packet_index,
+            ),
+            active=output.initial_state.active.index_select(
+                0,
+                world_packet_index,
+            ),
+            root=output.initial_state.root.index_select(
+                0,
+                world_packet_index,
+            ),
+            committed=output.initial_state.committed.index_select(
+                0,
+                world_packet_index,
+            ),
+            halted=output.initial_state.halted.index_select(
+                0,
+                world_packet_index,
+            ),
+            step=output.initial_state.step,
+        )
+        manual_packet, manual_world_trace = runner.model.execute(
+            swapped_state,
+            steps=2,
+            command_idx=batch.command.tokens.index_select(
+                0,
+                world_command_index,
+            ),
+            command_attention_mask=(
+                batch.command.attention_mask.index_select(
+                    0,
+                    world_command_index,
+                )
+            ),
+        )
+        command_state = type(output.initial_state)(
+            value_probabilities=(
+                output.initial_state.value_probabilities.index_select(
+                    0,
+                    command_packet_index,
+                )
+            ),
+            type_probabilities=(
+                output.initial_state.type_probabilities.index_select(
+                    0,
+                    command_packet_index,
+                )
+            ),
+            relations=output.initial_state.relations.index_select(
+                0,
+                command_packet_index,
+            ),
+            active=output.initial_state.active.index_select(
+                0,
+                command_packet_index,
+            ),
+            root=output.initial_state.root.index_select(
+                0,
+                command_packet_index,
+            ),
+            committed=output.initial_state.committed.index_select(
+                0,
+                command_packet_index,
+            ),
+            halted=output.initial_state.halted.index_select(
+                0,
+                command_packet_index,
+            ),
+            step=output.initial_state.step,
+        )
+        manual_command, manual_command_trace = runner.model.execute(
+            command_state,
+            steps=2,
+            command_idx=batch.command.tokens.index_select(
+                0,
+                command_command_index,
+            ),
+            command_attention_mask=(
+                batch.command.attention_mask.index_select(
+                    0,
+                    command_command_index,
+                )
+            ),
+        )
+    for name in (
+        "value_probabilities",
+        "type_probabilities",
+        "relations",
+        "active",
+        "root",
+        "committed",
+        "halted",
+    ):
+        torch.testing.assert_close(
+            getattr(intervention.world_terminal_state, name),
+            getattr(manual_packet, name),
+        )
+        torch.testing.assert_close(
+            getattr(intervention.command_terminal_state, name),
+            getattr(manual_command, name),
+        )
+    for name in (
+        "opcode",
+        "source",
+        "target",
+        "relation",
+        "type_index",
+        "value_code",
+        "committed",
+        "halted",
+    ):
+        torch.testing.assert_close(
+            getattr(intervention.world_trace, name),
+            getattr(manual_world_trace, name),
+        )
+        torch.testing.assert_close(
+            getattr(intervention.command_trace, name),
+            getattr(manual_command_trace, name),
+        )
+
+
+def test_hard_factual_and_intervention_states_pass_deployment_validation() -> None:
+    runner = _runner().eval()
+    batch = _batch(batch=2)
+    world_packet_index = torch.tensor([1, 0])
+    world_command_index = torch.tensor([0, 1])
+    command_packet_index = torch.tensor([0, 1])
+    command_command_index = torch.tensor([1, 0])
+    with torch.no_grad():
+        output = runner(
+            batch,
+            reactor_steps=2,
+            hard=True,
+            compute_losses=False,
+        )
+        intervention = runner.intervene(
+            batch,
+            output.initial_state,
+            reactor_steps=2,
+            world_packet_index=world_packet_index,
+            world_command_index=world_command_index,
+            command_packet_index=command_packet_index,
+            command_command_index=command_command_index,
+            hard=True,
+        )
+    for state in (
+        output.initial_state,
+        output.terminal_state,
+        intervention.world_terminal_state,
+        intervention.command_terminal_state,
+    ):
+        validate_deployed_state(state, runner.model.config)
 
 
 def test_validated_episode_core_is_torch_compile_compatible() -> None:

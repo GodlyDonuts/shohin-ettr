@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import fields
 import hashlib
 import inspect
 import json
@@ -16,7 +17,7 @@ from model import GPT, GPTConfig
 def _settings(mode: str) -> profile.ProfileSettings:
     return profile.ProfileSettings(
         mode=mode,
-        batch_size=1,
+        batch_size=4,
         microsteps=1,
         warmup_updates=0,
         measured_updates=1,
@@ -55,23 +56,32 @@ def _checkpoint(path: Path, *, step: int = 7) -> str:
     return profile.sha256_file(path)
 
 
-def test_synthetic_batches_are_deterministic_and_token_only() -> None:
+def test_synthetic_batches_are_deterministic_factorial_continuations() -> None:
     settings = _settings("cpu-validation")
+    model = profile._tiny_model(settings.seed)
+    objective_config = profile._objective_config(model)
     first, first_hash = profile.synthetic_batches(
         settings,
-        vocab_size=64,
+        reactor_config=model.config,
+        objective_config=objective_config,
     )
     second, second_hash = profile.synthetic_batches(
         settings,
-        vocab_size=64,
+        reactor_config=model.config,
+        objective_config=objective_config,
     )
     assert first_hash == second_hash
     for left, right in zip(first, second, strict=True):
-        assert left.episode_ids == right.episode_ids
-        assert torch.equal(left.reset_mask, right.reset_mask)
+        assert left.manifest_sha256 == right.manifest_sha256
+        assert left.dataset_sha256 == right.dataset_sha256
+        assert left.episodes.episode_ids == right.episodes.episode_ids
+        assert torch.equal(
+            left.episodes.reset_mask,
+            right.episodes.reset_mask,
+        )
         for name in ("world", "command", "query"):
-            left_segment = getattr(left, name)
-            right_segment = getattr(right, name)
+            left_segment = getattr(left.episodes, name)
+            right_segment = getattr(right.episodes, name)
             for field in ("tokens", "targets", "attention_mask"):
                 left_tensor = getattr(left_segment, field)
                 right_tensor = getattr(right_segment, field)
@@ -80,16 +90,98 @@ def test_synthetic_batches_are_deterministic_and_token_only() -> None:
             assert left_segment.tokens.dtype == torch.long
             assert left_segment.targets.dtype == torch.long
             assert left_segment.attention_mask.dtype == torch.bool
-        left.validate()
+        assert torch.equal(
+            left.causal_rectangles.rows,
+            torch.tensor([[[0, 1], [2, 3]]]),
+        )
+        assert not torch.equal(
+            left.episodes.world.tokens[0],
+            left.episodes.world.tokens[1],
+        )
+        assert not torch.equal(
+            left.episodes.world.tokens[2],
+            left.episodes.world.tokens[3],
+        )
+        assert not torch.equal(
+            left.episodes.command.tokens[0],
+            left.episodes.command.tokens[2],
+        )
+        assert not torch.equal(
+            left.episodes.command.tokens[1],
+            left.episodes.command.tokens[3],
+        )
+        assert not torch.equal(
+            left.episodes.world.tokens[0],
+            left.episodes.world.tokens[2],
+        )
+        assert not torch.equal(
+            left.episodes.command.tokens[0],
+            left.episodes.command.tokens[1],
+        )
+        assert torch.equal(
+            left.packet_targets.value_code[0],
+            left.packet_targets.value_code[1],
+        )
+        assert torch.equal(
+            left.packet_targets.value_code[2],
+            left.packet_targets.value_code[3],
+        )
+        for target_name in (
+            "packet_targets",
+            "terminal_packet_targets",
+            "transaction_targets",
+        ):
+            left_target = getattr(left, target_name)
+            right_target = getattr(right, target_name)
+            for field in fields(left_target):
+                assert torch.equal(
+                    getattr(left_target, field.name),
+                    getattr(right_target, field.name),
+                )
+        (
+            _world_packet,
+            _world_command,
+            world_target,
+            _command_packet,
+            _command_command,
+            command_target,
+        ) = left.causal_rectangles.intervention_indices()
+        assert torch.equal(
+            left.terminal_packet_targets.value_code.index_select(
+                0,
+                world_target,
+            ),
+            left.terminal_packet_targets.value_code[
+                torch.tensor([2, 3, 0, 1])
+            ],
+        )
+        assert torch.equal(
+            left.terminal_packet_targets.value_code.index_select(
+                0,
+                command_target,
+            ),
+            left.terminal_packet_targets.value_code[
+                torch.tensor([1, 0, 3, 2])
+            ],
+        )
+        left.validate(model.config, objective_config)
 
     changed = profile.ProfileSettings(
         **{**profile.asdict(settings), "seed": settings.seed + 1}
     )
     _, changed_hash = profile.synthetic_batches(
         changed,
-        vocab_size=64,
+        reactor_config=model.config,
+        objective_config=objective_config,
     )
     assert changed_hash != first_hash
+
+
+def test_profile_geometry_requires_complete_factorial_rectangles() -> None:
+    with pytest.raises(profile.ETTRProfileError, match="divisible by four"):
+        profile.ProfileSettings(
+            **{**profile.asdict(_settings("dry-run")), "batch_size": 6}
+        ).validate()
 
 
 def test_output_custody_rejects_existing_aliases_and_symlinks(
@@ -138,6 +230,8 @@ def test_dry_run_is_explicit_sealed_and_writes_no_model_state(
         "executed": False,
         "validation_only": True,
     }
+    assert report["schema"] == "shohin-ettr-h100-profile-v3"
+    assert report["sync_points"] == list(profile.SYNC_POINTS)
     assert report["custody"]["pretraining_started"] is False
     assert report["custody"]["model_or_optimizer_state_written"] is False
     assert {path.name for path in output.iterdir()} == {"report.json"}
@@ -163,15 +257,28 @@ def test_cpu_validation_runs_bf16_microstep_and_receipts(
         "compiled_arm_completed": True,
         "eager_arm_completed": True,
         "matched_batch_sha256": True,
+        "matched_initial_parameter_sha256": True,
         "matched_parameter_receipt": True,
     }
     for arm_name in ("eager", "compiled"):
         arm = report["arms"][arm_name]
         assert arm["status"] == "completed"
         assert arm["execution"]["executed"] is True
-        assert arm["execution"]["subject"] == ("CausalETTREpisodeRunner")
-        assert arm["execution"]["full_token_lm_loss"] is True
-        assert arm["execution"]["validate_batch_in_hot_path"] is False
+        assert arm["execution"]["subject"] == (
+            "ETTRCompositeFactorialInterventionSubject"
+        )
+        assert arm["execution"]["full_composite_objective"] is True
+        assert arm["execution"]["hard_transactions"] is True
+        assert arm["execution"]["factual_episode_path"] is True
+        assert arm["execution"]["intervention_arms"] == [
+            "WORLD",
+            "COMMAND",
+        ]
+        assert arm["execution"]["factual_validate_batch_in_hot_path"] is False
+        assert (
+            arm["execution"]["intervention_validate_batch_in_hot_path"]
+            is True
+        )
         assert arm["execution"]["forward_backward_optimizer"] is True
         assert arm["execution"]["last_logits_dtype"] == "torch.bfloat16"
         assert arm["execution"]["optimizer"] == ("ettr_muon_plus_adamw")
@@ -191,14 +298,27 @@ def test_cpu_validation_runs_bf16_microstep_and_receipts(
             arm["parameters"]["optimizer_receipt"]["unique_trainable_parameters"]
             == arm["parameters"]["architecture_parameters"]
         )
+        assert len(arm["parameters"]["initial_parameter_sha256"]) == 64
         assert arm["batch"]["source"] == (
-            "validated_deterministic_synthetic_ettr_episodes"
+            "validated_deterministic_synthetic_ettr_continuation_rectangles"
+        )
+        assert arm["batch"]["causal_rectangles_per_microstep"] == 1
+        assert arm["batch"]["factual_rows_per_microstep"] == 4
+        assert arm["batch"]["intervention_rows_per_arm_per_microstep"] == 4
+        assert arm["batch"]["objective_targets"] == (
+            "factual_rows_gathered_by_rectangle_indices"
         )
         assert arm["batch"]["episode_segments"] == [
             "WORLD",
             "COMMAND",
             "QUERY",
         ]
+        assert set(arm["execution"]["objective_losses"]) == set(
+            profile.OBJECTIVE_LOSS_NAMES
+        )
+        for receipt in arm["execution"]["objective_losses"].values():
+            assert torch.isfinite(torch.tensor(receipt["last"]))
+            assert torch.isfinite(torch.tensor(receipt["mean"]))
         for name in ("compiler", "reactor", "query_reader"):
             receipt = arm["gradients"][name]
             assert receipt["gradient_nonzero_elements"] > 0
@@ -331,13 +451,19 @@ def test_profiler_has_declared_sync_points_and_no_hot_loop_item() -> None:
     assert ".item(" not in hot_loop
     assert ".cpu(" not in hot_loop
     assert "CausalETTREpisodeRunner" in source
+    assert "ETTRCompositeObjective" in source
     assert "forward_staged" not in source
-    assert "validate_batch=False" in hot_loop
-    assert "output.losses.token_lm" in hot_loop
+    assert "output.losses.token_lm" not in hot_loop
+    subject = inspect.getsource(
+        profile.ETTRCompositeFactorialInterventionSubject
+    )
+    assert "validate_batch=False" in subject
+    assert subject.count("hard=True") == 2
+    assert "batch.objective_batch(output, interventions)" in subject
+    assert "self.objective" in subject
     assert profile.SYNC_POINTS == (
         "cuda_after_warmup_before_measurement",
         "cuda_after_all_measured_updates_before_receipt",
-        "eager_shared_lm_loss_tensor_to_bool_validation_inside_forward",
         "cuda_between_arms_before_allocator_cleanup",
     )
 
@@ -361,6 +487,7 @@ def test_slurm_wrapper_is_profile_only_and_never_submits() -> None:
     assert "--expected-step" in executable
     assert "--output-dir" in executable
     assert "--compile-mode" in executable
+    assert '--batch-size "${BATCH_SIZE:-4}"' in executable
 
 
 def test_report_bytes_are_canonical() -> None:
