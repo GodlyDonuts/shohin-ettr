@@ -255,3 +255,52 @@ coordinates across every trainable tensor rather than spending the entire
 budget on the first tensor. The integrated ETTR/cross-ontology inventory is
 **193/193** passing. A fresh exact-source H100 profile and the frozen
 qualification/control matrix remain required.
+
+## Sealed Continuation and Optimizer Custody
+
+The final architecture source is
+`cf568182b75e865ddce2bb739fd42ff8d450c317`. It replaces mutable, partially
+bound packet admission with a canonical continuation manifest and immutable
+packet-sufficiency index. Separate train and validation context entries,
+full-batch payload digests, payload hashes, row/context cardinalities, and the
+combined dataset digest are bound into the manifest. Verification uses sealed
+independent admission sets; changing visible frozen-dataclass fields after
+construction cannot alter the admitted train or validation population.
+
+The training step accepts only train-split batches admitted by that exact
+manifest. Optimizer ownership is recomputed from live parameter groups,
+survives serialization of the complete trainer, and is permanently fail-stop
+after a partial update. Compiler, reactor core, command projection, and query
+reader are disjoint causal-attribution groups.
+
+Profiling schema `shohin-ettr-h100-profile-v5` isolates causal gradient probes
+from full-objective timing and memory, uses eager BF16 for attribution, and
+counts exact encoded work as `WORLD + 2*COMMAND + 3*QUERY`. The exact source
+passes **209/209** integrated tests plus Ruff, byte compilation, shell syntax,
+and diff checks. The first exact-source hardware attempt, `705281`, failed
+before model execution because CUDA was busy/unavailable on `evc43`; this is
+a node defect and provides no architecture evidence.
+
+Replacement `705285` completed on `evc30` in 11m42s. The schema-v5 report
+SHA-256 is
+`ea16f5b2c4da382edc288cbcfeb9a0e14590ddcf10debe013f5f5834d928d75f`.
+The exact report is preserved at
+`artifacts/r12/ettr_profile_cf56818_schema5_sealed/report.json`.
+Both H100 BF16 arms completed the full factorial objective, backward, and one
+architecture optimizer update with finite losses and all gates true. They
+match batch, initial-parameter, and parameter receipts. The frozen base has
+zero gradients and zero sampled delta. Every architecture group has finite
+nonzero gradients and nonzero sampled delta, and the separate causal
+attribution receipt confirms the intended WORLD and COMMAND paths while
+detached-state controls cut upstream gradients to exact zero.
+
+Eager full-objective execution measures 5,108.80 encoded tok/s at
+3,750,596,608 peak allocated bytes. Compiled execution measures 8,771.94
+encoded tok/s at 3,143,077,888 bytes: 1.7170x eager throughput and 0.8380x
+eager peak allocation. The checkpoint remains byte-identical before and after,
+no shards were read, and no model state was written.
+
+This closes the architecture implementation and hardware gate. It does not
+establish learned reasoning. The frozen control matrix must be executed after
+user-authorized training, and continuation pretraining remains under the
+user's explicit hold.

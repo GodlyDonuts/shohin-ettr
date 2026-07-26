@@ -14108,3 +14108,98 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `matched_query_binding_implemented_exact_h100_reprofile_pending_controls_unfrozen_pretraining_held_capability_unproven`.
+
+- **2026-07-26 06:12 EDT** -- **ETTR dataset and optimizer custody are
+  sealed; the exact-source schema-v5 hardware receipt is in flight.**
+  Hostile review of the matched-query implementation found that the earlier
+  support-mask receipt could bypass deployed terminal-packet sufficiency,
+  split membership and full-batch payload identity were not durably bound,
+  optimizer ownership could become stale after serialization, partial
+  optimizer failure was not permanently fail-stop, and full-objective
+  timing/memory could be contaminated by isolated gradient probes.
+
+  Commits `ec79ab4` and `cf56818` close those paths. The continuation
+  manifest now binds separate train/validation context sets, canonical
+  full-batch payload digests, row/context counts, exact dataset hash, and a
+  recomputable packet-sufficiency receipt. The immutable index seals
+  independent admission sets so mutation of visible dataclass fields cannot
+  alter train/validation authorization. The trainer accepts only manifest-
+  admitted training batches, rejects validation-only contexts, and derives
+  dataset identity from the manifest rather than a free constructor string.
+  Optimizer ownership is checked live against parameter groups, survives a
+  full trainer pickle round trip, and any partial update poisons both the
+  existing bundle and a fresh wrapper around the same optimizer.
+
+  Profiling schema `shohin-ettr-h100-profile-v5` measures the full objective
+  before separate eager-BF16 causal gradient attribution, uses disjoint
+  compiler/reactor-core/command-projection/query-reader groups, and reports
+  exact encoded work as `WORLD + 2*COMMAND + 3*QUERY`. Clean detached source
+  `cf568182b75e865ddce2bb739fd42ff8d450c317` passes **209/209** integrated
+  ETTR/cross-ontology tests in 158.02s plus Ruff, byte compilation, shell
+  syntax, and diff checks. The branch is pushed.
+
+  Newton independently reverified the protected step-300k checkpoint SHA-256
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`
+  and cloned the exact commit into
+  `/lustre/fs1/home/sa305415/shohin_ettr_profile_cf56818_v5b`. Job `705281`
+  failed before model execution because `evc43` exposed its allocated CUDA
+  device as busy/unavailable. No checkpoint or model state was touched.
+  `evc43` is excluded with `evc33`, `evc34`, and `evc44`; exactly one fresh
+  replacement, `705285`, is pending with a new isolated output path. No
+  shards are available to the job and no continuation pretraining has been
+  started, queued, resumed, prepared, or modified.
+
+  Decision:
+  `sealed_manifest_bound_ettr_source_exact_h100_v5_pending_controls_unfrozen_pretraining_held_capability_unproven`.
+
+- **2026-07-26 06:35 EDT** -- **The sealed ETTR architecture passes its
+  exact-source H100 implementation gate.** Replacement job `705285`
+  completed on `evc30` in 11m42s. Its schema-v5 report is
+  `/lustre/fs1/home/sa305415/shohin_runs/ettr_profile_cf56818_schema5_sealed_retry1/report.json`
+  with SHA-256
+  `ea16f5b2c4da382edc288cbcfeb9a0e14590ddcf10debe013f5f5834d928d75f`.
+  The only stderr text was a post-completion ignored `BrokenPipeError`; Slurm,
+  both profile arms, report persistence, and report hashing completed with
+  exit code zero.
+
+  The report strictly loads step 300,000 and preserves checkpoint SHA-256
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`
+  before and after. `SHARDS` were absent, no model or optimizer state was
+  written, and `pretraining_started` is false. Eager and compiled arms match
+  deterministic batch SHA-256, initial-parameter SHA-256, and complete
+  parameter receipts. Both exercise H100 BF16, the full factorial composite
+  objective, backward, and one Muon/AdamW architecture update with finite
+  losses and all arm gates true.
+
+  The parameter receipt is unchanged: 125,081,664 frozen base parameters,
+  67,697,771 trainable ETTR parameters, 192,779,435 complete parameters, and
+  7,220,565 remaining below the 200M cap. Compiler, reactor core, command
+  projection, and query reader all have finite nonzero gradients and sampled
+  parameter deltas; the frozen base has zero gradient and zero delta.
+  Separate eager-BF16 causal attribution confirms WORLD treatment reaches the
+  compiler, reactor core, and query reader; COMMAND treatment reaches command
+  projection, reactor core, and query reader. Detaching terminal state cuts
+  compiler/reactor/command paths to exact zero while preserving only the
+  reader-side gradient.
+
+  Eager full-objective peak allocation is 3,750,596,608 bytes at 5,108.80
+  encoded tok/s. Compiled peak is 3,143,077,888 bytes at 8,771.94 encoded
+  tok/s. Compilation therefore measures 1.7170x eager throughput with 0.8380x
+  eager peak allocation. Isolated attribution is reported separately and is
+  excluded from those timing/memory numbers.
+
+  A final independent hostile audit of `cf56818` found no remaining P0/P1.
+  It rechecked mutation, split, payload, manifest, validation, optimizer
+  poison, rewrap, and pickle attacks. Residual P2s are reporting granularity
+  only: CPU aggregate latency is not a per-update distribution, and isolated
+  H100 attribution intentionally has no elapsed-time claim.
+
+  The architecture implementation is now qualified for the user's later
+  training decision. This is not a learned reasoning result. Query-only,
+  zero-reader, shuffled/wrong-state, wrong-query, target-deranged, query-twin,
+  packet-ablation, physical-source-deletion, and autonomous-readout controls
+  are frozen in the preregistration for future learned qualification.
+  Continuation pretraining remains explicitly held.
+
+  Decision:
+  `sealed_ettr_architecture_h100_qualified_controls_frozen_untrained_pretraining_held_capability_unproven`.

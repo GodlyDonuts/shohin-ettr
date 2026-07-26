@@ -52412,3 +52412,62 @@ was started or prepared.
 
 Current decision:
 `matched_query_binding_implemented_exact_h100_reprofile_pending_controls_unfrozen_pretraining_held_capability_unproven`.
+
+## 2026-07-26 Sealed Architecture Candidate
+
+The architecture candidate is now frozen at commit
+`cf568182b75e865ddce2bb739fd42ff8d450c317`. The complete model remains
+192,779,435 parameters: 125,081,664 protected Shohin parameters and
+67,697,771 ETTR parameters, leaving 7,220,565 below the 200M ceiling.
+
+Hostile review closed the remaining high-severity custody gaps around mutable
+packet admission, train/validation leakage, partial optimizer updates,
+serialized optimizer binding, overlapping causal-gradient groups, and
+profile timing/memory contamination. The manifest now binds the complete
+train and validation payload populations and the packet-sufficiency index
+uses sealed independent admission sets. Optimizer failure poisons any wrapper
+around the same partially updated optimizer. The full integrated clean-tree
+inventory is **209/209** passing in 158.02 seconds with clean static checks.
+
+Schema-v5 exact-source H100 qualification is the remaining implementation
+receipt. Job `705281` failed before model execution because CUDA was
+busy/unavailable on `evc43`; replacement `705285` excludes that node and the
+previously established bad nodes. This is synthetic architecture profiling,
+not pretraining. The protected step-300k checkpoint remains byte-identical,
+no training shards were provided, and the user's continuation-pretraining
+hold remains absolute.
+
+Current decision:
+`sealed_manifest_bound_ettr_source_exact_h100_v5_pending_controls_unfrozen_pretraining_held_capability_unproven`.
+
+## 2026-07-26 Exact-Source H100 Architecture Pass
+
+Job `705285` completed from clean source
+`cf568182b75e865ddce2bb739fd42ff8d450c317` on `evc30` in 11m42s. Report
+SHA-256:
+`ea16f5b2c4da382edc288cbcfeb9a0e14590ddcf10debe013f5f5834d928d75f`.
+The exact JSON is preserved at
+`artifacts/r12/ettr_profile_cf56818_schema5_sealed/report.json`.
+The protected step-300k checkpoint hash was identical before and after, no
+shards were read, no model state was written, and no pretraining occurred.
+
+Both eager and compiled H100 BF16 arms completed the full factorial objective,
+backward, and one Muon/AdamW architecture update. All losses and gradients are
+finite. Compiler, reactor core, command projection, and query reader have
+nonzero gradients and sampled parameter changes; the protected base remains
+exactly frozen. Separate causal attribution proves that WORLD and COMMAND
+query-binding losses reach the intended upstream architecture paths and that
+detaching terminal state cuts those paths to zero.
+
+Eager execution reached 5,108.80 encoded tok/s with 3.751 GB peak allocation.
+Compiled execution reached 8,771.94 encoded tok/s with 3.143 GB peak
+allocation, a 1.7170x throughput gain and 0.8380x peak-memory ratio. The
+complete system remains 192,779,435 parameters.
+
+The architecture implementation is therefore ready for the user's future
+training decision. Current Shohin has not learned the mechanism yet, so no
+reasoning-capability claim is made. Learned promotion remains governed by the
+frozen causal control matrix and held-out ontology gates.
+
+Current decision:
+`sealed_ettr_architecture_h100_qualified_controls_frozen_untrained_pretraining_held_capability_unproven`.
