@@ -491,6 +491,19 @@ class EpisodicGeneratorConstraintCompiler(SparseLatentLawCompiler):
                 posterior,
                 bank,
             )
+            map_identified = (
+                transition_probability.max(dim=-1).values.min(dim=-1).values
+                > 0.999
+            )
+            uniform = torch.full_like(
+                transition_probability,
+                1.0 / cardinality,
+            )
+            transition_probability = torch.where(
+                map_identified[:, None, None],
+                transition_probability,
+                uniform,
+            )
             transition_logits[
                 row,
                 :,

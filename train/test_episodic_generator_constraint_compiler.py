@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pytest
 import torch
 
 from episodic_generator_constraint_compiler import (
@@ -8,9 +9,11 @@ from episodic_generator_constraint_compiler import (
     scan_episodic_generator_source,
     seal_episodic_generator_packet,
 )
+from run_episodic_generator_constraint import _delete_target_witness
 from sparse_latent_law_compiler import (
     MAX_ACTIONS,
     MAX_CARDINALITY,
+    SparseLawCompilerError,
     collate_sparse_sources,
     scan_sparse_query,
     scan_sparse_source,
@@ -117,3 +120,38 @@ def test_episode_local_closure_solves_held_out_generator_family() -> None:
         packet.from_deployed_wire(packet.deployed_wire())
         == packet
     )
+
+
+def test_missing_target_witness_fails_closed() -> None:
+    row = generate_episode(
+        seed=4321,
+        split="development",
+        family=HELD_OUT_FAMILY,
+        renderer=0,
+        cell="law",
+        cardinality=8,
+    )
+    batch = collate_sparse_sources(
+        (
+            scan_episodic_generator_source(
+                row.candidate.source.encode("ascii")
+            ),
+        )
+    )
+    incomplete = _delete_target_witness(batch)
+    model = EpisodicGeneratorConstraintCompiler(
+        width=32,
+        layers=1,
+        heads=4,
+        maximum_depth=6,
+    )
+    with torch.no_grad():
+        for parameter in model.parameters():
+            parameter.zero_()
+        model.direction_head[-1].bias.fill_(20.0)
+        output = model(incomplete)
+    with pytest.raises(
+        SparseLawCompilerError,
+        match="target map is not a permutation",
+    ):
+        seal_episodic_generator_packet(incomplete, output, row=0)
