@@ -67,6 +67,14 @@ def typed_state_row_sha256(state: TypedTheoryState, row: int) -> str:
     return hashlib.sha256(_canonical_json_bytes(payload)).hexdigest()
 
 
+def typed_state_sha256(state: TypedTheoryState) -> str:
+    """Hash every deployed packet tensor independent of wire padding bytes."""
+
+    return hashlib.sha256(
+        _canonical_json_bytes(_typed_state_receipt(state))
+    ).hexdigest()
+
+
 def _typed_state_receipt(state: TypedTheoryState) -> dict[str, object]:
     payload: dict[str, object] = {"step": state.step}
     for item in fields(state):
@@ -198,6 +206,7 @@ class ETTRQualificationManifest:
 
     schema: str
     dataset_sha256: str
+    producer_model_sha256: str
     row_ids: tuple[str, ...]
     packet_ids: tuple[str, ...]
     world_factor_ids: tuple[str, ...]
@@ -211,6 +220,7 @@ class ETTRQualificationManifest:
         if (
             self.schema != ETTR_QUALIFICATION_MANIFEST_SCHEMA
             or _SHA256.fullmatch(self.dataset_sha256) is None
+            or _SHA256.fullmatch(self.producer_model_sha256) is None
             or not isinstance(self.target_token_ids, tuple)
             or len(self.target_token_ids) != rows
             or any(
@@ -780,6 +790,10 @@ class ETTRQualificationHarness:
         if model_sha256 != self.expected_model_sha256:
             raise TheoryReactorError(
                 "qualification model is not the preregistered model"
+            )
+        if batch.manifest.producer_model_sha256 != model_sha256:
+            raise TheoryReactorError(
+                "qualification packets were produced by another model"
             )
         tokens, mask = _autonomous_prefix(
             batch.query_tokens,

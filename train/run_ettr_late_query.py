@@ -35,9 +35,7 @@ def _immutable_regular(path: Path) -> None:
         or not stat.S_ISREG(metadata.st_mode)
         or metadata.st_mode & 0o222
     ):
-        raise ETTRLateQueryError(
-            f"query input is not immutable regular file: {path}"
-        )
+        raise ETTRLateQueryError(f"query input is not immutable regular file: {path}")
 
 
 def _canonical_json_bytes(value: object) -> bytes:
@@ -59,13 +57,9 @@ def _read_canonical_json(path: Path) -> object:
     try:
         value = json.loads(payload.decode("ascii"))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise ETTRLateQueryError(
-            f"malformed query JSON: {path}"
-        ) from exc
+        raise ETTRLateQueryError(f"malformed query JSON: {path}") from exc
     if payload != _canonical_json_bytes(value):
-        raise ETTRLateQueryError(
-            f"noncanonical query JSON: {path}"
-        )
+        raise ETTRLateQueryError(f"noncanonical query JSON: {path}")
     return value
 
 
@@ -89,9 +83,7 @@ def _write_json_once(path: Path, value: object) -> None:
             0o600,
         )
     except FileExistsError as exc:
-        raise ETTRLateQueryError(
-            "answer path already exists"
-        ) from exc
+        raise ETTRLateQueryError("answer path already exists") from exc
     try:
         os.write(descriptor, payload)
         os.fsync(descriptor)
@@ -121,24 +113,18 @@ def answer(
         _immutable_regular(path)
     config_payload = _read_canonical_json(config_path)
     if not isinstance(config_payload, dict):
-        raise ETTRLateQueryError(
-            "query configuration differs"
-        )
+        raise ETTRLateQueryError("query configuration differs")
     try:
         config = TheoryReactorConfig(**config_payload)
     except TypeError as exc:
-        raise ETTRLateQueryError(
-            "query configuration keys differ"
-        ) from exc
+        raise ETTRLateQueryError("query configuration keys differ") from exc
     config.validate()
     if _sha256_file(checkpoint_path) != checkpoint_sha256:
-        raise ETTRLateQueryError(
-            "query checkpoint hash differs"
-        )
+        raise ETTRLateQueryError("query checkpoint hash differs")
     checkpoint = torch.load(
         checkpoint_path,
         map_location="cpu",
-        weights_only=False,
+        weights_only=True,
     )
     if (
         not isinstance(checkpoint, dict)
@@ -146,9 +132,7 @@ def answer(
         or not isinstance(checkpoint.get("cfg"), dict)
         or not isinstance(checkpoint.get("model"), dict)
     ):
-        raise ETTRLateQueryError(
-            "query checkpoint contract differs"
-        )
+        raise ETTRLateQueryError("query checkpoint contract differs")
     base = GPT(GPTConfig(**checkpoint["cfg"])).eval()
     try:
         incompatibility = base.load_state_dict(
@@ -156,17 +140,11 @@ def answer(
             strict=True,
         )
     except RuntimeError as exc:
-        raise ETTRLateQueryError(
-            "query base weights differ"
-        ) from exc
+        raise ETTRLateQueryError("query base weights differ") from exc
     if incompatibility.missing_keys or incompatibility.unexpected_keys:
-        raise ETTRLateQueryError(
-            "query base strict load differs"
-        )
+        raise ETTRLateQueryError("query base strict load differs")
     if base.cfg.d_model != config.d_model:
-        raise ETTRLateQueryError(
-            "query base and reactor widths differ"
-        )
+        raise ETTRLateQueryError("query base and reactor widths differ")
     reader = SourceDeletedQueryReader(config).eval()
     try:
         incompatibility = reader.load_state_dict(
@@ -174,22 +152,16 @@ def answer(
             strict=True,
         )
     except RuntimeError as exc:
-        raise ETTRLateQueryError(
-            "query reader weights differ"
-        ) from exc
+        raise ETTRLateQueryError("query reader weights differ") from exc
     if incompatibility.missing_keys or incompatibility.unexpected_keys:
-        raise ETTRLateQueryError(
-            "query reader strict load differs"
-        )
+        raise ETTRLateQueryError("query reader strict load differs")
     state = read_state(state_path, config)
     query_payload = _read_canonical_json(query_path)
-    if (
-        not isinstance(query_payload, dict)
-        or set(query_payload) != {"attention_mask", "token_ids"}
-    ):
-        raise ETTRLateQueryError(
-            "late query schema differs"
-        )
+    if not isinstance(query_payload, dict) or set(query_payload) != {
+        "attention_mask",
+        "token_ids",
+    }:
+        raise ETTRLateQueryError("late query schema differs")
     token_ids = torch.tensor(
         query_payload["token_ids"],
         dtype=torch.long,
@@ -201,13 +173,10 @@ def answer(
     if (
         token_ids.ndim != 2
         or attention_mask.shape != token_ids.shape
-        or token_ids.shape[0]
-        != state.value_probabilities.shape[0]
+        or token_ids.shape[0] != state.value_probabilities.shape[0]
         or token_ids.shape[1] > base.cfg.seq_len
     ):
-        raise ETTRLateQueryError(
-            "late query tensor geometry differs"
-        )
+        raise ETTRLateQueryError("late query tensor geometry differs")
     with torch.no_grad():
         hidden = base.tok(token_ids)
         cos = base.cos[: token_ids.shape[1]]

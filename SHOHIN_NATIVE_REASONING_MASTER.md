@@ -48,16 +48,19 @@ control.
   answers late queries from terminal state. Its independent
   `WORLD -> COMMAND -> QUERY` lifecycle, reset-safe composite objective,
   frozen-data contract, disjoint Muon/AdamW optimizer groups, and exact
-  checkpoint/resume path pass a 165-test complete ETTR/cross-ontology
+  checkpoint/resume path pass a 240-test complete ETTR/cross-ontology
   inventory. The objective now directly supervises both the compiled initial
   packet and the free-running terminal reactor packet; a gradient gate proves
   that terminal loss reaches both reactor and compiler. A hostile audit found
   that relation-degree
   summaries erased endpoint identity; the corrected reactor and query reader
   now use edge-aware typed neighbor messages and pass a degree-preserving
-  edge-swap falsifier. The complete system is 192,779,435 parameters. No ETTR
-  fit, neural capability score, post-training, or pretraining action exists;
-  the user hold remains active.
+  edge-swap falsifier. A direct staged qualification board now adds genuine
+  `WORLD -> post-seal COMMAND -> late QUERY` episodes across all three
+  ontologies: 12 terminal packets, 48 query rows, 12/12 independent-oracle
+  agreement, and 24/24 answer-changing edges for each factor. The complete
+  system is 192,779,435 parameters. No ETTR fit, neural capability score,
+  post-training, or pretraining action exists; the user hold remains active.
 - **Strict future ceiling:** fewer than 200,000,000 unique parameters for the
   complete system.
 - **Renderer-curriculum breakthrough:** a 152,933-parameter standalone
@@ -52493,7 +52496,7 @@ target-deranged controls while answering multiple independent paraphrased
 queries from one state. Answer suffixes are physically absent from candidate
 forward passes, and exact state/query/label/control bytes are receipt-bound.
 
-Verification is 19/19 for hostile harness tests and 226/226 for the expanded
+Verification is 19/19 for hostile harness tests and 240/240 for the expanded
 ETTR/cross-ontology inventory. Packet-sufficiency ablations remain separate
 equal-budget training arms; the existing four-process custody path enforces
 physical source deletion.
@@ -52513,6 +52516,39 @@ Method overrides, hooks, and subclasses are rejected, and arm order is
 secret-randomized and receipted. Independent final review reports no
 remaining public-path P0/P1.
 
+The final evidentiary repair replaces an implicit hybrid qualification story
+with a direct staged board. `pipeline/ettr_factorial_qualification_board.py`
+freezes Horn, typed-rewrite, and guarded-resource episodes in which WORLD,
+post-seal COMMAND, and late QUERY are separately packaged and independently
+deletable. There are 12 terminal packets and 48 query rows from exact 2x2
+WORLD x COMMAND rectangles, two query semantics, and two paraphrases.
+Independent oracles agree 12/12; all 24 WORLD and 24 COMMAND edges change the
+answer; every packet has two distinct query targets. Board payload SHA-256 is
+`18686ff7f0476b5a4432830f2a301f693833cf867656d3997a010cf17bb0149a`.
+The terminal-state adapter binds this geometry to the production sealed
+qualification harness without exposing answers to candidate processes. The
+fresh executor now consumes only immutable terminal state and post-seal
+command bytes plus hash-bound base/reactor weights, never WORLD, QUERY, or
+assessor data.
+
+The first adapter revision was rejected during hostile review because terminal
+packets and model identity were self-attestable and the package-deletion test
+was not joined to the model-execution chain. The accepted path requires
+externally preregistered complete-model, execution-manifest, compiler-receipt,
+and executor-receipt hashes. These bind the board packages, pretokenized stage
+inputs, configuration, protected checkpoint/step, compiler/reactor weights,
+parent state, terminal state file, and canonical state tensors. The integrated
+four-process test now derives real inputs from the frozen board and admits its
+terminal packet only through that chain. Checkpoint deserialization is
+weights-only.
+
+Final hostile review leaves three bounded custody tasks before claim-bearing
+use: sign the chain with a private key unavailable to candidate processes,
+recompute canonical WORLD/COMMAND tokenization from frozen raw packages, and
+prove that the exact base/compiler/reactor/query-reader component files
+assemble to the same complete model identity used by evaluation. The detached
+late-query CLI must also join that signed chain.
+
 This is the end of architecture construction, not the end of the reasoning
 program. The new parameters are not yet trained, so current Shohin does not
 yet possess evidence-backed ETTR reasoning. The next phase begins only when
@@ -52520,4 +52556,4 @@ the user authorizes training; afterward, unseen-ontology qualification and
 post-training determine whether the mechanism becomes useful intelligence.
 
 Current decision:
-`architecture_complete_learning_and_general_reasoning_unproven`.
+`architecture_code_complete_signed_tokenization_custody_pending_learning_and_general_reasoning_unproven`.

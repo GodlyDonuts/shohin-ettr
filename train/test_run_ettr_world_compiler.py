@@ -15,6 +15,14 @@ from endogenous_typed_theory_reactor import (
     TheoryReactorConfig,
 )
 from ettr_state_io import read_state
+from ettr_factorial_custody import (
+    ETTRFactorialExecutionManifest,
+    EXECUTION_MANIFEST_SCHEMA,
+)
+from ettr_factorial_qualification_board import (
+    TOTAL_PACKETS,
+    build_ettr_factorial_qualification_board,
+)
 from model import GPT, GPTConfig
 
 
@@ -77,7 +85,7 @@ def test_fresh_compiler_matches_direct_raw_token_compile(
     tmp_path: Path,
 ) -> None:
     model = _model()
-    world = torch.randint(0, 64, (2, 9))
+    world = torch.randint(0, 64, (TOTAL_PACKETS, 9))
     mask = torch.ones_like(world, dtype=torch.bool)
     with torch.no_grad():
         direct = model.compile_world(
@@ -90,6 +98,8 @@ def test_fresh_compiler_matches_direct_raw_token_compile(
     config_path = tmp_path / "config.json"
     world_path = tmp_path / "world.json"
     output_path = tmp_path / "state.safetensors"
+    manifest_path = tmp_path / "execution_manifest.json"
+    receipt_path = tmp_path / "compiler_receipt.json"
     save_file(
         {
             name: tensor.detach().cpu().contiguous()
@@ -115,9 +125,24 @@ def test_fresh_compiler_matches_direct_raw_token_compile(
             "token_ids": world.tolist(),
         },
     )
-    runner = Path(__file__).with_name(
-        "run_ettr_world_compiler.py"
+    board = build_ettr_factorial_qualification_board()
+    manifest = ETTRFactorialExecutionManifest(
+        schema=EXECUTION_MANIFEST_SCHEMA,
+        board_sha256=board.receipt.payload_sha256,
+        model_sha256="a" * 64,
+        config_sha256=_sha256(config_path),
+        checkpoint_sha256=_sha256(checkpoint_path),
+        checkpoint_step=123,
+        compiler_sha256=_sha256(compiler_path),
+        reactor_sha256="b" * 64,
+        world_package_sha256=board.receipt.world_package_sha256,
+        command_package_sha256=board.receipt.command_package_sha256,
+        world_tokens_sha256=_sha256(world_path),
+        command_tokens_sha256="c" * 64,
+        row_count=TOTAL_PACKETS,
     )
+    _canonical_json(manifest_path, asdict(manifest))
+    runner = Path(__file__).with_name("run_ettr_world_compiler.py")
     subprocess.run(
         [
             sys.executable,
@@ -134,8 +159,14 @@ def test_fresh_compiler_matches_direct_raw_token_compile(
             "123",
             "--world",
             str(world_path),
+            "--execution-manifest",
+            str(manifest_path),
+            "--execution-manifest-sha256",
+            manifest.sha256(),
             "--output",
             str(output_path),
+            "--receipt-output",
+            str(receipt_path),
             "--hard",
         ],
         check=True,
@@ -157,16 +188,16 @@ def test_fresh_compiler_matches_direct_raw_token_compile(
     assert state.step == 0
     assert world_path.read_bytes() not in output_path.read_bytes()
     assert output_path.stat().st_mode & 0o222 == 0
+    assert receipt_path.stat().st_mode & 0o222 == 0
 
 
 def test_compiler_cli_has_no_query_executor_or_assessor_input() -> None:
-    source = Path(__file__).with_name(
-        "run_ettr_world_compiler.py"
-    ).read_text()
+    source = Path(__file__).with_name("run_ettr_world_compiler.py").read_text()
     for forbidden in (
         "--query",
         "--reactor",
         "--assessor",
+        "--command",
         "GenericTransactionReactor",
         "SourceDeletedQueryReader",
     ):

@@ -194,8 +194,10 @@ four detached process surfaces:
 
 1. `run_ettr_world_compiler.py` receives world tokens, compiler weights, and
    the hash-bound Shohin checkpoint, then emits only immutable typed state.
-2. `run_ettr_state_executor.py` receives only typed state, reactor weights,
-   geometry, and a step budget.
+2. `run_ettr_state_executor.py` receives only typed state, immutable post-seal
+   command tokens, reactor weights, the hash-bound Shohin checkpoint,
+   geometry, and a step budget. It encodes the command through the protected
+   base before invoking the generic reactor.
 3. `run_ettr_late_query.py` receives only terminal state, late-query tokens,
    query-reader weights, and the hash-bound Shohin checkpoint.
 4. `run_cross_ontology_assessor.py` is model-free and receives only immutable
@@ -453,7 +455,8 @@ declared state-field supervision family must be removed in a separate arm,
 not simulated by zeroing a trained packet at evaluation. Physical source
 deletion remains process-enforced by the four-process custody runner. The
 complete integrated architecture/custody inventory, including 19 hostile
-harness tests, passes 226/226 in 164.84 seconds.
+harness tests and the direct staged qualification board, passes 240/240 in
+156.18 seconds.
 
 The sealed readout receipt binds every logit and assessor target to both the
 exact batch SHA-256 and an exact model-state SHA-256. Every candidate input is
@@ -470,3 +473,59 @@ module's class implementation; subclasses, instance method overrides, and
 hooks are inadmissible. Arm execution uses a secret-random permutation and
 returns its receipt. Independent final review found no supported-public-API
 P0/P1.
+
+## Frozen Three-Stage Qualification Board
+
+`pipeline/ettr_factorial_qualification_board.py` is the direct learned-
+qualification source of truth. It does not relabel the older hybrid challenge
+rows. It constructs Horn closure, typed rewriting, and guarded-resource
+episodes with three genuinely distinct stages:
+
+1. WORLD establishes only the initial typed state;
+2. COMMAND arrives only after that state is sealed and transforms it; and
+3. QUERY arrives only after command execution and asks one of two independent
+   semantic questions through one of two paraphrases.
+
+Each ontology is an exact 2x2 WORLD x COMMAND rectangle. The frozen board has
+12 terminal packets and 48 autonomous one-token query rows. Independent
+oracles agree on all 12 executions. Every semantic/paraphrase cell changes on
+both WORLD edges and both COMMAND edges, yielding 24 answer-changing WORLD
+edges and 24 answer-changing COMMAND edges. Every terminal packet supports
+two distinct factual query targets.
+
+The payload SHA-256 is
+`18686ff7f0476b5a4432830f2a301f693833cf867656d3997a010cf17bb0149a`.
+WORLD, COMMAND, QUERY, and assessor packages have separate immutable receipts.
+Candidate-visible packages omit answers, oracle outputs, ontology labels, and
+assessor targets. Tests physically delete earlier packages before later-stage
+materialization and reject cross-stage leakage.
+
+`train/ettr_factorial_qualification.py` binds externally produced hard
+terminal states to the board, model, packet, world-factor, and command-factor
+receipts. It tokenizes only answer-free late-query prefixes and emits the
+production `ETTRQualificationManifest` and `ETTRQualificationBatch`. The
+shuffled control is a no-fixed-point four-cycle around each factorial
+rectangle, so every donor changes exactly one factor at each edge rather than
+using a diagonal that could preserve an XOR-like answer. Wrong-WORLD,
+wrong-COMMAND, query-twin, and target-derangement controls are exact.
+
+The supported admission path requires four independently preregistered
+identities: complete model, execution manifest, compiler receipt, and executor
+receipt. The execution manifest binds the board and stage-package receipts,
+pretokenized WORLD/COMMAND files, configuration, protected checkpoint and
+step, and compiler/reactor weights. The compiler receipt binds WORLD input to
+its immutable initial-state file and canonical tensor receipt. The executor
+receipt must name that exact parent, bind the post-seal COMMAND, and bind both
+the immutable terminal-state file and canonical terminal tensor receipt.
+Directly supplying a valid tensor and an asserted model hash is unsupported
+and rejected. Checkpoint deserialization is weights-only.
+
+This board completes the qualification geometry but not the final trust root.
+Before claim-bearing use, a custody key unavailable to candidate processes
+must sign the execution chain, and a canonical tokenizer receipt must prove
+that each WORLD/COMMAND token row and mask is exactly derived from its frozen
+raw package row under the preregistered tokenizer bytes/configuration. The
+protected checkpoint plus compiler/reactor/query-reader component files must
+also recompute to the complete model identity evaluated later. The late-query
+process must join the same signed chain. This authorizes no training and
+provides no learned capability result.

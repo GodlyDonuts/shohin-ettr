@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+import hashlib
 import json
 from pathlib import Path
 import subprocess
@@ -13,7 +14,18 @@ from endogenous_typed_theory_reactor import (
     EndogenousTypedTheoryReactorGPT,
     TheoryReactorConfig,
 )
+from ettr_factorial_custody import (
+    ETTRFactorialExecutionManifest,
+    ETTRStageExecutionReceipt,
+    EXECUTION_MANIFEST_SCHEMA,
+    STAGE_RECEIPT_SCHEMA,
+)
+from ettr_factorial_qualification_board import (
+    TOTAL_PACKETS,
+    build_ettr_factorial_qualification_board,
+)
 from ettr_state_io import read_state, write_state_once
+from ettr_qualification import typed_state_sha256
 from model import GPT, GPTConfig
 
 
@@ -68,24 +80,34 @@ def _canonical_json(path: Path, value: object) -> None:
     path.chmod(0o444)
 
 
-def test_fresh_executor_receives_only_deleted_state_and_reactor(
+def test_fresh_executor_receives_state_and_post_seal_command(
     tmp_path: Path,
 ) -> None:
     model = _model().eval()
-    source = (
-        b"SOURCE_ONLY_EXECUTOR_SENTINEL_"
-        b"b1e7849f217b4f548ecbb1a88d2024d9"
-    )
+    source = b"SOURCE_ONLY_EXECUTOR_SENTINEL_b1e7849f217b4f548ecbb1a88d2024d9"
     with torch.no_grad():
         initial = model.compile_world(
-            torch.randint(0, 64, (2, 8)),
+            torch.randint(0, 64, (TOTAL_PACKETS, 8)),
             hard=True,
         )
-        direct, _ = model.execute(initial, steps=3, hard=True)
+        command = torch.randint(0, 64, (TOTAL_PACKETS, 7))
+        command_mask = torch.ones_like(command, dtype=torch.bool)
+        direct, _ = model.execute(
+            initial,
+            steps=3,
+            hard=True,
+            command_idx=command,
+            command_attention_mask=command_mask,
+        )
     state_path = tmp_path / "state.safetensors"
     output_path = tmp_path / "terminal.safetensors"
     config_path = tmp_path / "config.json"
     reactor_path = tmp_path / "reactor.safetensors"
+    checkpoint_path = tmp_path / "base.pt"
+    command_path = tmp_path / "command.json"
+    manifest_path = tmp_path / "execution_manifest.json"
+    compiler_receipt_path = tmp_path / "compiler_receipt.json"
+    executor_receipt_path = tmp_path / "executor_receipt.json"
     write_state_once(
         state_path,
         initial,
@@ -101,9 +123,56 @@ def test_fresh_executor_receives_only_deleted_state_and_reactor(
         reactor_path,
     )
     reactor_path.chmod(0o444)
-    runner = Path(__file__).with_name(
-        "run_ettr_state_executor.py"
+    torch.save(
+        {
+            "cfg": asdict(model.base.cfg),
+            "model": model.base.state_dict(),
+            "step": 123,
+        },
+        checkpoint_path,
     )
+    checkpoint_path.chmod(0o444)
+    _canonical_json(
+        command_path,
+        {
+            "attention_mask": command_mask.int().tolist(),
+            "token_ids": command.tolist(),
+        },
+    )
+    checkpoint_sha256 = hashlib.sha256(checkpoint_path.read_bytes()).hexdigest()
+    board = build_ettr_factorial_qualification_board()
+    manifest = ETTRFactorialExecutionManifest(
+        schema=EXECUTION_MANIFEST_SCHEMA,
+        board_sha256=board.receipt.payload_sha256,
+        model_sha256="a" * 64,
+        config_sha256=hashlib.sha256(config_path.read_bytes()).hexdigest(),
+        checkpoint_sha256=checkpoint_sha256,
+        checkpoint_step=123,
+        compiler_sha256="b" * 64,
+        reactor_sha256=hashlib.sha256(reactor_path.read_bytes()).hexdigest(),
+        world_package_sha256=board.receipt.world_package_sha256,
+        command_package_sha256=board.receipt.command_package_sha256,
+        world_tokens_sha256="c" * 64,
+        command_tokens_sha256=hashlib.sha256(command_path.read_bytes()).hexdigest(),
+        row_count=TOTAL_PACKETS,
+    )
+    _canonical_json(manifest_path, asdict(manifest))
+    compiler_receipt = ETTRStageExecutionReceipt(
+        schema=STAGE_RECEIPT_SCHEMA,
+        stage="world",
+        manifest_sha256=manifest.sha256(),
+        parent_receipt_sha256=None,
+        input_state_file_sha256=None,
+        input_state_tensor_sha256=None,
+        token_input_sha256=manifest.world_tokens_sha256,
+        component_sha256=manifest.compiler_sha256,
+        checkpoint_sha256=manifest.checkpoint_sha256,
+        output_state_file_sha256=hashlib.sha256(state_path.read_bytes()).hexdigest(),
+        output_state_tensor_sha256=typed_state_sha256(initial),
+        row_count=TOTAL_PACKETS,
+    )
+    _canonical_json(compiler_receipt_path, asdict(compiler_receipt))
+    runner = Path(__file__).with_name("run_ettr_state_executor.py")
     subprocess.run(
         [
             sys.executable,
@@ -114,8 +183,26 @@ def test_fresh_executor_receives_only_deleted_state_and_reactor(
             str(state_path),
             "--reactor",
             str(reactor_path),
+            "--checkpoint",
+            str(checkpoint_path),
+            "--checkpoint-sha256",
+            checkpoint_sha256,
+            "--expected-step",
+            "123",
+            "--command",
+            str(command_path),
+            "--execution-manifest",
+            str(manifest_path),
+            "--execution-manifest-sha256",
+            manifest.sha256(),
+            "--compiler-receipt",
+            str(compiler_receipt_path),
+            "--compiler-receipt-sha256",
+            compiler_receipt.sha256(),
             "--output",
             str(output_path),
+            "--receipt-output",
+            str(executor_receipt_path),
             "--steps",
             "3",
             "--hard",
@@ -138,22 +225,23 @@ def test_fresh_executor_receives_only_deleted_state_and_reactor(
         assert torch.equal(getattr(terminal, name), getattr(direct, name))
     assert terminal.step == 3
     assert source not in output_path.read_bytes()
+    assert command_path.read_bytes() not in output_path.read_bytes()
     assert output_path.stat().st_mode & 0o222 == 0
+    assert executor_receipt_path.stat().st_mode & 0o222 == 0
 
 
-def test_executor_cli_has_no_forbidden_inputs_or_model_import() -> None:
-    source = Path(__file__).with_name(
-        "run_ettr_state_executor.py"
-    ).read_text()
+def test_executor_cli_has_no_world_query_or_assessor_inputs() -> None:
+    source = Path(__file__).with_name("run_ettr_state_executor.py").read_text()
     for forbidden in (
         "--source",
         "--world",
         "--query",
         "--tokenizer",
         "--assessor",
-        "--checkpoint",
-        "from model import",
         "EndogenousTheoryCompiler",
         "SourceDeletedQueryReader",
     ):
         assert forbidden not in source
+    assert "--command" in source
+    assert "--checkpoint" in source
+    assert "from model import GPT, GPTConfig" in source

@@ -324,7 +324,7 @@ fail closed.
 
 The hostile harness suite passes 19/19. The expanded complete ETTR,
 checkpoint, optimizer, source-deletion, and cross-ontology inventory passes
-226/226 in 164.84 seconds with clean Ruff, byte compilation, and diff checks.
+240/240 in 156.18 seconds with clean Ruff, byte compilation, and diff checks.
 Physical source deletion remains independently enforced by the four-process
 custody suite. Packet-field sufficiency ablations are intentionally deferred
 to equal-budget training arms because an evaluation-time zeroing intervention
@@ -346,8 +346,62 @@ child method overrides and hooks, and randomizes all seven arm calls with an
 execution-order receipt. Final independent re-review found no remaining
 P0/P1 through the supported public API.
 
-This closes the architecture and qualification-mechanics package. It does not
-show that the untrained ETTR additions reason. Learned promotion still
+## Direct WORLD-COMMAND-QUERY Qualification Completion
+
+The earlier hybrid and factorial receipts established useful geometry, but
+they did not by themselves constitute a direct three-stage learned-
+qualification board. That final gap is closed by
+`pipeline/ettr_factorial_qualification_board.py`.
+
+The new frozen board defines direct Horn, typed-rewrite, and guarded-resource
+programs. WORLD establishes an initial state, a separately packaged COMMAND
+arrives after sealing and transforms that state, and a separately packaged
+QUERY arrives only after execution. Each ontology contains an exact 2x2 WORLD
+x COMMAND rectangle, two semantic queries, and two paraphrases. This yields 12
+terminal packets and 48 query rows. Primary and independently implemented
+oracles agree 12/12. All 24 WORLD and all 24 COMMAND semantic edges change the
+answer, and all 12 packets expose different targets for the two query
+semantics.
+
+The board payload SHA-256 is
+`18686ff7f0476b5a4432830f2a301f693833cf867656d3997a010cf17bb0149a`.
+Its WORLD, COMMAND, QUERY, and assessor packages are separately receipt-bound.
+Candidate surfaces contain no targets, oracle outputs, or ontology labels,
+and hostile tests simulate physical deletion of prior-stage packages before
+each successor runs.
+
+`train/ettr_factorial_qualification.py` converts externally produced hard
+terminal states into the existing sealed learned-qualification manifest and
+batch. It binds every packet to the exact board and model receipts and freezes
+matched wrong-WORLD, wrong-COMMAND, shuffled-state, query-twin, and target-
+derangement controls. The fresh executor was repaired to consume an immutable
+post-seal COMMAND through the hash-bound protected base while remaining unable
+to access WORLD, QUERY, tokenizer, or assessor inputs.
+
+Hostile review caught and rejected an earlier self-attestation gap before
+publication: a caller could bind handcrafted valid packets to an arbitrary
+model hash, and the package-deletion test was not the same execution that
+produced the admitted packets. The supported path now requires externally
+preregistered complete-model, execution-manifest, compiler-receipt, and
+executor-receipt hashes. That chain binds exact board/package, token,
+configuration, checkpoint/step, compiler/reactor weight, parent-state,
+terminal-state-file, and canonical-state-tensor identities. The integrated
+four-process test derives the actual compiler/command/query inputs from frozen
+board rows and admits the terminal state only through this receipt chain.
+Checkpoint loads are `weights_only=True`.
+
+This closes the architecture-side geometry and hash chain, but not the final
+qualification trust root. Independent rereview requires a custody signature
+whose private key is unavailable to candidate processes, a canonical
+raw-package-to-token transformation receipt, a recomputable receipt proving
+that the exact base/compiler/reactor/query-reader components constitute the
+complete evaluated model, and inclusion of the late-query process in that
+signed chain. It is not a neural score and does not imply that the currently
+untrained ETTR additions reason.
+
+The trainable architecture is complete; signed qualification custody remains
+open as described above. This does not show that the untrained ETTR additions
+reason. Learned promotion still
 requires user-authorized training followed by this frozen matrix on unseen
 ontologies, depths, compositions, and renderers.
 

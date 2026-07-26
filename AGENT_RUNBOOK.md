@@ -30,7 +30,8 @@
 > absolute: do not start, queue, resume, prepare, or modify continuation
 > pretraining.
 >
-> **ETTR ARCHITECTURE PACKAGE COMPLETE — 2026-07-26 EDT:** The trainable
+> **ETTR CORE ARCHITECTURE COMPLETE; QUALIFICATION TRUST ROOT PENDING —
+> 2026-07-26 EDT:** The trainable
 > architecture, exact-resume continuation contract, optimizer custody,
 > source-deleted execution boundary, matched causal objectives, H100 resource
 > qualification, and frozen learned-capability control harness are now
@@ -43,8 +44,8 @@
 > reject fixed-point controls, mislabeled factors, soft packets, target
 > mutation, batch reassociation, visible answer suffixes, and candidate-side
 > oracle channels.
-> The expanded complete ETTR/cross-ontology inventory is **226/226** passing in
-> 164.84 seconds; the new harness-focused suite is **19/19**. Ruff, byte
+> The expanded complete ETTR/cross-ontology inventory is **240/240** passing in
+> 156.18 seconds; the harness-focused suite remains **19/19**. Ruff, byte
 > compilation, and diff checks pass. Packet-sufficiency ablations remain
 > future equal-budget training arms and cannot execute under the user hold;
 > physical deletion remains enforced by the four-process custody suite. This
@@ -66,6 +67,37 @@
 > overrides/hooks, and executes the seven arms in secret-random order with an
 > order receipt. Final independent re-review found no remaining P0/P1 through
 > that public API.
+>
+> The final qualification-contract audit then closed the remaining stage-
+> separation gap. `pipeline/ettr_factorial_qualification_board.py` freezes
+> direct Horn, typed-rewrite, and guarded-resource episodes as genuine
+> `WORLD -> post-seal COMMAND -> late QUERY` programs. Each ontology has an
+> exact 2x2 WORLD x COMMAND rectangle, two independent query semantics, and
+> two paraphrases, for 12 terminal packets and 48 query rows. Independent
+> oracles agree 12/12; all 24 WORLD and 24 COMMAND semantic edges change the
+> answer; and all 12 packets have two different query targets. Separate
+> immutable WORLD, COMMAND, QUERY, and assessor packages prove capability
+> separation and survive simulated deletion of every earlier stage.
+> `train/ettr_factorial_qualification.py` binds those rows to hard terminal
+> packets and the exact protected-model receipt, materializes the production
+> learned-qualification manifest/batch, and freezes wrong-WORLD,
+> wrong-COMMAND, shuffled-state, query-twin, and target-derangement controls.
+> Admission requires an externally preregistered execution manifest plus
+> compiler and executor receipts binding exact stage packages, token files,
+> configuration, checkpoint, compiler/reactor weights, input/output state
+> files, canonical state tensors, and complete model identity. A tensor with a
+> caller-asserted model hash is inadmissible.
+> The fresh executor now receives immutable terminal state plus only the
+> post-seal COMMAND bytes and hash-bound base/reactor weights; it cannot read
+> WORLD, QUERY, tokenizer, or assessor data. Qualification payload SHA-256 is
+> `18686ff7f0476b5a4432830f2a301f693833cf867656d3997a010cf17bb0149a`.
+> This completes the trainable architecture and most qualification mechanics.
+> It does not show that the untrained ETTR parameters reason. Final
+> claim-bearing qualification still requires a custody signature produced by
+> a key unavailable to candidate processes, a canonical raw-package-to-token
+> transformation receipt, and a recomputable complete-model receipt proving
+> that the protected checkpoint plus compiler/reactor/query-reader components
+> are exactly the model evaluated later.
 >
 > **ETTR CONTINUATION CONTRACT FROZEN — 2026-07-26 EDT:** Commit
 > `ae2cf85480bedfaa96f3cf7ddfbaf64e5d067203` completes the missing
@@ -14240,3 +14272,61 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `sealed_ettr_architecture_h100_qualified_controls_frozen_untrained_pretraining_held_capability_unproven`.
+
+- **2026-07-26 EDT** -- **The direct three-stage qualification contract is
+  complete; architecture mechanics are finished.** A final adversarial audit
+  showed that the previous hybrid/factorial rows did not literally implement
+  three separately deletable `WORLD -> post-seal COMMAND -> late QUERY`
+  stages. `pipeline/ettr_factorial_qualification_board.py` now freezes direct
+  Horn, typed-rewrite, and guarded-resource programs with exact 2x2 WORLD x
+  COMMAND rectangles, two query semantics, and two paraphrases. The board has
+  12 terminal packets and 48 query rows. Primary and independent oracles agree
+  12/12; all 24 WORLD and 24 COMMAND edges change the answer; and every packet
+  has two distinct query targets. Payload SHA-256 is
+  `18686ff7f0476b5a4432830f2a301f693833cf867656d3997a010cf17bb0149a`.
+
+  `train/ettr_factorial_qualification.py` binds externally produced hard
+  terminal states and their provenance to the production sealed
+  qualification manifest/batch. Candidate-visible WORLD, COMMAND, and QUERY
+  packages omit targets, oracle outputs, and ontology labels; the assessor
+  package is separate. Hostile tests physically delete prior-stage packages
+  and reject provenance, tokenizer, codebook, packet, package, and control
+  tampering. The shuffled control is a no-fixed-point four-cycle around each
+  rectangle, avoiding the answer-preserving diagonal failure caught during
+  development.
+
+  A hostile review rejected the first adapter because it accepted a valid
+  tensor plus a caller-asserted model hash and because package deletion was
+  tested separately from model execution. The repaired supported path requires
+  an externally preregistered execution-manifest hash, compiler-receipt hash,
+  executor-receipt hash, and complete-model hash. The receipt chain binds
+  board/stage-package hashes, pretokenized WORLD/COMMAND bytes, configuration,
+  protected checkpoint and step, compiler/reactor weights, immutable state
+  files, and canonical state tensors. The four-process test now derives its
+  actual model inputs from the frozen board rows and admits its terminal state
+  only through that chain. All checkpoint loads use `weights_only=True`.
+
+  `run_ettr_state_executor.py` now implements the actual post-seal command
+  surface. A fresh process receives only immutable typed state, immutable
+  command tokens, hash-bound protected-base and reactor weights, geometry, and
+  a step count. It cannot read WORLD, QUERY, tokenizer, or assessor data.
+  Four-process custody physically deletes compiler and command-stage sources
+  before successor stages. The complete relevant inventory passes **240/240**
+  in 156.18 seconds with clean Ruff, byte compilation, and diff checks. No
+  training, checkpoint mutation, or pretraining preparation occurred.
+
+  A second hostile review accepts weights-only checkpoint loading and the
+  explicit producer/evaluator model equality repair, but correctly rejects
+  hash-only self-attestation as a final trust root. Two bounded items remain:
+  an external custody signer whose private key is unavailable to all candidate
+  processes; a canonical tokenizer receipt that recomputes every WORLD and
+  COMMAND token row from the frozen raw package and binds row order, masks,
+  tokenizer bytes, and tokenizer configuration; and a recomputable assembly
+  receipt equating the protected base plus compiler/reactor/query-reader files
+  with the complete model identity used by the evaluator. The late-query CLI
+  also needs to join the signed receipt chain. Until those are implemented and
+  rereviewed, the architecture code is complete but the claim-bearing
+  qualification package is not.
+
+  Decision:
+  `ettr_architecture_code_complete_signed_tokenization_custody_pending_untrained_pretraining_held_capability_unproven`.

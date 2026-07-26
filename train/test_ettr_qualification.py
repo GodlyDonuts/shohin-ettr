@@ -76,6 +76,9 @@ def _model() -> EndogenousTypedTheoryReactorGPT:
     return model.eval()
 
 
+_PRODUCER_MODEL_SHA256 = _model_sha256(_model())
+
+
 def _state() -> TypedTheoryState:
     packet = torch.arange(PACKETS).repeat_interleave(ROWS_PER_PACKET)
     active = torch.ones(BATCH, 2)
@@ -148,6 +151,7 @@ def _batch() -> ETTRQualificationBatch:
     manifest = ETTRQualificationManifest(
         schema=ETTR_QUALIFICATION_MANIFEST_SCHEMA,
         dataset_sha256=_digest("independently-frozen-dataset"),
+        producer_model_sha256=_PRODUCER_MODEL_SHA256,
         row_ids=tuple(_digest(f"row-{row}") for row in range(BATCH)),
         packet_ids=packet_ids,
         world_factor_ids=tuple(world_ids),
