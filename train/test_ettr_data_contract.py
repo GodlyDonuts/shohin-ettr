@@ -11,6 +11,7 @@ from ettr_data_contract import (
     ETTRContinuationBatch,
     ETTRContinuationManifest,
 )
+from ettr_episode import ETTREpisodeBatch, ETTREpisodeSegment
 from ettr_objectives import (
     ETTRObjectiveConfig,
     ETTRPacketTargets,
@@ -141,6 +142,46 @@ def test_continuation_batch_builds_reset_safe_objective() -> None:
         for field in fields(value)
     }
     assert not any("family" in name or "ontology" in name for name in declared)
+
+
+def test_padded_segments_restart_validity_only_at_declared_resets() -> None:
+    continuation, objective_config = _continuation()
+
+    def padded(segment: ETTREpisodeSegment, valid: int) -> ETTREpisodeSegment:
+        mask = torch.zeros_like(segment.attention_mask, dtype=torch.bool)
+        mask[:, :valid] = True
+        return ETTREpisodeSegment.from_tokens(
+            segment.tokens,
+            attention_mask=mask,
+        )
+
+    episodes = ETTREpisodeBatch(
+        episode_ids=continuation.episodes.episode_ids,
+        reset_mask=continuation.episodes.reset_mask,
+        world=padded(continuation.episodes.world, 6),
+        command=padded(continuation.episodes.command, 4),
+        query=padded(continuation.episodes.query, 3),
+    )
+    continuation = replace(continuation, episodes=episodes)
+    runner = _runner()
+    continuation.validate(runner.model.config, objective_config)
+    output = runner(episodes, reactor_steps=3)
+    objective_batch = continuation.objective_batch(output)
+    mask = objective_batch.token_targets.mask
+    reset = objective_batch.token_targets.reset_mask
+    rises = mask[:, 1:] & ~mask[:, :-1]
+    assert torch.equal(rises, rises & reset[:, 1:])
+    loss = runner.model.base.tok.weight.new_zeros(())
+    loss = loss + output.losses.token_lm
+    loss = loss + torch.nn.functional.cross_entropy(
+        objective_batch.token_logits[:, :-1][
+            mask[:, :-1] & mask[:, 1:] & ~reset[:, 1:]
+        ],
+        objective_batch.token_targets.token_ids[:, 1:][
+            mask[:, :-1] & mask[:, 1:] & ~reset[:, 1:]
+        ],
+    )
+    assert torch.isfinite(loss)
 
 
 def test_continuation_geometry_fails_closed() -> None:

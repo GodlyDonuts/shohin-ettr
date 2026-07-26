@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 import torch
 
@@ -108,3 +110,27 @@ def test_wrong_accumulation_window_fails_before_mutation() -> None:
     assert trainer.optimizer.next_update == 0
     for name, tensor in trainer.model.state_dict().items():
         assert torch.equal(before[name], tensor)
+
+
+def test_invalid_batch_fails_before_optimizer_mutation() -> None:
+    trainer, batch = _trainer(accumulation=1)
+    before_lrs = tuple(
+        group["lr"]
+        for optimizer in (trainer.optimizer.muon, trainer.optimizer.adam)
+        if optimizer is not None
+        for group in optimizer.param_groups
+    )
+    invalid = replace(
+        batch,
+        initial_committed=torch.zeros(1, dtype=torch.bool),
+    )
+    with pytest.raises(TheoryReactorError, match="geometry"):
+        trainer.update((invalid,))
+    after_lrs = tuple(
+        group["lr"]
+        for optimizer in (trainer.optimizer.muon, trainer.optimizer.adam)
+        if optimizer is not None
+        for group in optimizer.param_groups
+    )
+    assert after_lrs == before_lrs
+    assert trainer.optimizer.next_update == 0

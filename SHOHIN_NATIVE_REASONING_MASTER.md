@@ -14,6 +14,10 @@ control.
 - **Protected base:** immutable step-300k Shohin checkpoint,
   125,081,664 parameters, SHA-256
   `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
+- **Current phase order:** architecture construction now; substantially more
+  pretraining only after explicit user authorization; post-training after
+  pretraining. Current raw-checkpoint intelligence is not the acceptance
+  target for this phase. The pretraining hold is absolute.
 - **Rejected episodic-generator claim:** the 232,065-parameter learned
   direction reader plus symbolic solver reaches 11/11, but Shohin contributes
   zero runtime parameters. Source deletion is serialization-level only,
@@ -38,11 +42,15 @@ control.
   priors. Report SHA-256:
   `22d22d8ac9079ee1722ce971c50d2307c5ad1d9132d49c329ef779f01adb2ede`.
 - **Successor status:** the Endogenous Typed Theory Reactor (ETTR) is a frozen
-  protocol and early generic transaction-mechanics component, not a fit. It
-  requires the actual hash-verified Shohin checkpoint, raw-token compilation,
-  four fresh compiler/executor/query/assessor processes, and leave-one-ontology
-  transfer across Horn closure, typed term rewriting, and guarded resource
-  processes. No ETTR scored board, neural result, or pretraining action exists.
+  architecture and continuation-contract implementation, not a fit. It loads
+  the actual hash-verified Shohin checkpoint, compiles raw-token worlds into a
+  bounded categorical theory state, runs one generic transaction reactor, and
+  answers late queries from terminal state. Its independent
+  `WORLD -> COMMAND -> QUERY` lifecycle, reset-safe composite objective,
+  frozen-data contract, disjoint Muon/AdamW optimizer groups, and exact
+  checkpoint/resume path pass a 108-test integrated suite. The complete system
+  remains 171,403,554 parameters. No ETTR fit, neural capability score,
+  post-training, or pretraining action exists; the user hold remains active.
 - **Strict future ceiling:** fewer than 200,000,000 unique parameters for the
   complete system.
 - **Renderer-curriculum breakthrough:** a 152,933-parameter standalone

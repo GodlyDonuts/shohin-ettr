@@ -116,7 +116,11 @@ class ETTRTrainStep(nn.Module):
     ) -> ETTRUpdateReceipt:
         if len(batches) != self.step_config.gradient_accumulation_steps:
             raise TheoryReactorError("ETTR accumulation window differs")
-        scale = self.optimizer.apply_schedule()
+        for batch in batches:
+            batch.validate(
+                self.model.config,
+                self.objective_config,
+            )
         self.optimizer.zero_grad(set_to_none=True)
         fields = {
             "total": [],
@@ -129,19 +133,23 @@ class ETTRTrainStep(nn.Module):
             "anti_bypass": [],
         }
         token_counts: list[torch.Tensor] = []
-        for batch in batches:
-            device_type = batch.episodes.world.tokens.device.type
-            with torch.autocast(
-                device_type=device_type,
-                dtype=self.step_config.autocast_dtype,
-                enabled=device_type in {"cuda", "cpu"},
-            ):
-                loss = self.forward_loss(batch)
-                scaled = loss.total / self.step_config.gradient_accumulation_steps
-            scaled.backward()
-            for name in fields:
-                fields[name].append(getattr(loss, name).detach())
-            token_counts.append(loss.receipt.lm_target_tokens.detach())
+        try:
+            for batch in batches:
+                device_type = batch.episodes.world.tokens.device.type
+                with torch.autocast(
+                    device_type=device_type,
+                    dtype=self.step_config.autocast_dtype,
+                    enabled=device_type in {"cuda", "cpu"},
+                ):
+                    loss = self.forward_loss(batch)
+                    scaled = loss.total / self.step_config.gradient_accumulation_steps
+                scaled.backward()
+                for name in fields:
+                    fields[name].append(getattr(loss, name).detach())
+                token_counts.append(loss.receipt.lm_target_tokens.detach())
+        except BaseException:
+            self.optimizer.zero_grad(set_to_none=True)
+            raise
         trainable = tuple(
             parameter
             for parameter in self.model.parameters()
@@ -155,6 +163,7 @@ class ETTRTrainStep(nn.Module):
             torch.isfinite(gradient_norm),
             "ETTR gradient norm is nonfinite",
         )
+        scale = self.optimizer.apply_schedule()
         self.optimizer.step()
 
         def mean(name: str) -> torch.Tensor:

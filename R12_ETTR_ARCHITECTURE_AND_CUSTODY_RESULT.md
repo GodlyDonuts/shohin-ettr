@@ -2,12 +2,13 @@
 
 ## Decision
 
-`architecture_mechanics_hardened_primary_matrix_frozen_pretraining_interface_pending_capability_unproven`
+`architecture_continuation_contract_complete_h100_profile_pending_pretraining_held_capability_unproven`
 
-Shohin now has a concrete architecture core and a complete falsification
-matrix for later continued pretraining and post-training. It does not yet
-have demonstrated general reasoning, and its continuation-pretraining
-interface is not yet complete.
+Shohin now has a concrete architecture core, a complete falsification matrix,
+and an exact causal continuation/training contract for later pretraining and
+post-training. It does not yet have demonstrated general reasoning. The user
+has explicitly held continuation pretraining until the architecture is
+qualified.
 
 ## Architecture
 
@@ -93,24 +94,51 @@ challenges, and 2,688 primary executions. It audits 1,472 invariant cases,
 24 disjoint theory hashes, and 2,688 unique row hashes. Payload SHA-256 is
 `d1904b54a0fab8e59cfcb0b0dd464f5c8778e5b828907028ec8614aeae76d5d5`.
 
-## Remaining Before Continuation Pretraining
+## Causal Continuation Contract
 
-- Implement a standard causal autoregressive episode interface with explicit
-  segment/reset lifecycle and full-token language-model loss.
-- Freeze packet/transaction/equivariance/commit objectives and anti-bypass
-  controls.
-- Freeze an ETTR-aware checkpoint/resume schema, optimizer groups, scheduler,
-  RNG state, and protected-base provenance.
-- Profile BF16 H100 memory and throughput after removing validation
-  synchronizations from the recurrent hot path.
-- Freeze hybrid compositions and their independent assessor receipts.
-- Add packet/transaction supervision and the continuation-pretraining data
-  contract.
-- Run matched actual-Shohin, zeroed, permuted, swapped, generic-recurrent,
-  fixed-ontology, and family-routed controls.
-- Demonstrate unseen-ontology capability rather than optimizer health.
-- Only the user may lift the continuation-pretraining hold.
+The frozen architecture source adds:
 
-The architecture core is ready for isolated causal qualification. It is not
-yet authorized or technically ready for continuation pretraining. Its
-reasoning capability and scientific novelty remain empirical hypotheses.
+1. `CausalETTREpisodeRunner`, with independent batch rows and explicit
+   `WORLD`, `COMMAND`, and `QUERY` reset boundaries;
+2. reset-safe token targets plus packet, transaction, equivariance,
+   commit/halt, sparsity, and anti-bypass losses;
+3. a canonical continuation batch and immutable manifest that reject live
+   writers, family labels, malformed geometry, and snapshot drift;
+4. disjoint protected-base and architecture optimizer groups, with base
+   freezing and an embedded WSD update cursor;
+5. atomic no-replace checkpoints covering exact model/optimizer/schedule/RNG/
+   data/episode state and protected-checkpoint provenance; and
+6. a bounded accumulation/update component that has no filesystem, shard,
+   launcher, or network access.
+
+The focused integrated architecture and custody suite passes **108/108**.
+Reset-boundary tests include interior segment starts, exact native
+Muon/AdamW resume, and next-update equivalence after restore.
+
+## Cross-Ontology Hybrid Receipt
+
+The frozen hybrid board contains exactly three couplings:
+
+- arithmetic result selects a rewrite location;
+- Horn relation selects a guarded resource operator; and
+- resource state selects a Horn query.
+
+Each coupling has 16 factual/counterfactual cases. Independent executors agree
+on **96/96** executions, and interventions change both the coupling signal and
+final output on **48/48** cases. Candidate payloads expose no ontology label.
+Payload SHA-256:
+`d155f868494f9379b214028c8d7475cc2cde08192c9b3a5bbdea5a73b29f98e2`.
+
+## Remaining Architecture Gate
+
+- Complete the isolated BF16 H100 eager-versus-compiled memory/throughput
+  profile from the exact corrected source commit.
+- Record strict checkpoint load, nonzero architecture gradients, peak memory,
+  measured throughput, compiled-arm status, and unchanged checkpoint hash.
+- If profiling finds an OOM or systems defect, revise only the architecture
+  implementation and repeat the same synthetic gate.
+
+After that gate, the architecture can be called technically ready for the
+user's later pretraining decision. Capability still requires future
+pretraining, matched causal controls, unseen-ontology qualification, and
+post-training. Only the user may lift the continuation-pretraining hold.

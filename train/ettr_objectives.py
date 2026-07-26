@@ -220,9 +220,13 @@ class ETTRTokenTargets:
             (token_ids, mask, reset_mask),
             name="token targets",
         )
+        # Each causal segment is independently right padded. Concatenating
+        # WORLD, COMMAND, and QUERY therefore permits a 0 -> 1 transition only
+        # where the new valid token explicitly resets transformer context.
+        validity_rises = mask[:, 1:] & ~mask[:, :-1]
         _async_assert(
-            (~mask[:, 1:] | mask[:, :-1]).all(),
-            "token target mask must be right padded",
+            (~validity_rises | reset_mask[:, 1:]).all(),
+            "token validity may restart only at an explicit reset",
         )
         _async_assert(
             reset_mask[:, 0].all(),

@@ -105,6 +105,7 @@ _SOURCE_PATHS = {
     "ettr_episode.py": Path(__file__).with_name("ettr_episode.py"),
     "ettr_objectives.py": Path(__file__).with_name("ettr_objectives.py"),
     "ettr_optimization.py": Path(__file__).with_name("ettr_optimization.py"),
+    "ettr_train_step.py": Path(__file__).with_name("ettr_train_step.py"),
     "model.py": Path(__file__).with_name("model.py"),
     "workspace_checkpoint.py": Path(__file__).with_name("workspace_checkpoint.py"),
 }

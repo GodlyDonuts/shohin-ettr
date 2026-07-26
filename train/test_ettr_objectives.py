@@ -233,6 +233,26 @@ def test_public_target_records_expose_every_collator_shape() -> None:
     assert alignment.step_mask.shape == (1, STEPS)
 
 
+def test_token_mask_allows_only_reset_authorized_segment_restarts() -> None:
+    token_ids = torch.tensor([[1, 2, 0, 3, 4]])
+    mask = torch.tensor([[True, True, False, True, True]])
+    targets = ETTRTokenTargets(
+        token_ids=token_ids,
+        mask=mask,
+        reset_mask=torch.tensor([[True, False, False, True, False]]),
+    )
+    assert targets.mask.tolist() == [[True, True, False, True, True]]
+    with pytest.raises(
+        RuntimeError,
+        match="restart only at an explicit reset",
+    ):
+        ETTRTokenTargets(
+            token_ids=token_ids,
+            mask=mask,
+            reset_mask=torch.tensor([[True, False, False, False, False]]),
+        )
+
+
 def test_composite_breakdown_is_finite_weighted_and_differentiable() -> None:
     batch = _batch()
     weights = ETTRObjectiveWeights(

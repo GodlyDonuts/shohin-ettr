@@ -2,10 +2,12 @@
 
 ## Status
 
-Frozen successor protocol. The trainable architecture, common transaction
-schema, three exact ontology boards, seven genuine structural/semantic
-variants, and the complete 2,688-execution primary matrix are implemented.
-No continuation pretraining, post-training, or capability claim exists.
+Frozen successor protocol. The trainable architecture, causal episode
+lifecycle, composite objective, optimizer/checkpoint contract, common
+transaction schema, three exact ontology boards, seven genuine
+structural/semantic variants, and the complete 2,688-execution primary matrix
+are implemented. No continuation pretraining, post-training, or capability
+claim exists.
 
 The user pretraining hold remains active. This protocol may train only isolated
 reasoning components or adapters against the immutable step-300k checkpoint.
@@ -98,11 +100,27 @@ prefix invariance, causal use of every state field, commit freezing,
 categorical deployed packets, exact sparse transactions, parameter
 accounting, and independent base freezing.
 
-This establishes qualification-mechanics readiness, not continuation-
-pretraining readiness or reasoning capability. The causal pretraining
-interface, composite objectives, resumable ETTR checkpoint schema, and H100
-throughput profile remain mandatory architecture work. Continued pretraining
-remains under the explicit user hold.
+`train/ettr_episode.py`, `train/ettr_objectives.py`,
+`train/ettr_data_contract.py`, `train/ettr_optimization.py`,
+`train/ettr_checkpoint.py`, and `train/ettr_train_step.py` now close the
+previously missing continuation contract:
+
+- every row has independent `WORLD -> COMMAND -> QUERY` streams and explicit
+  reset boundaries;
+- language-model targets cannot cross a segment boundary;
+- packet, transaction, equivariance, commit/halt, sparsity, and anti-bypass
+  supervision share one device-resident composite objective;
+- training snapshots are immutable and hash-bound, with no live-writer or
+  family-routing field;
+- protected-base and added-architecture Muon/AdamW groups are disjoint, with
+  an embedded WSD update cursor; and
+- atomic checkpoints bind model, optimizer, schedule, RNG, data cursor,
+  episode lifecycle, source manifest, and protected-base provenance.
+
+The integrated architecture/custody suite passes 108/108 tests. This
+establishes continuation-contract mechanics, not reasoning capability. A
+healthy-node BF16 H100 memory/throughput profile remains mandatory. Continued
+pretraining remains under the explicit user hold.
 
 ## G0 Horn Mechanics
 
@@ -239,6 +257,14 @@ Hybrid confirmation must include at least:
 - arithmetic index selecting a rewrite location;
 - relation result selecting a resource operator; and
 - resource state controlling a Horn query.
+
+The frozen hybrid receipt implements exactly those three couplings with 16
+cases each. Two independent executors agree on 96/96 factual and
+counterfactual executions; all 48 interventions change the causal signal and
+the final output; candidate-visible payloads contain no family labels.
+Payload SHA-256:
+`d155f868494f9379b214028c8d7475cc2cde08192c9b3a5bbdea5a73b29f98e2`.
+This is an offline mechanics receipt, not a learned score.
 
 ## Matched Controls
 

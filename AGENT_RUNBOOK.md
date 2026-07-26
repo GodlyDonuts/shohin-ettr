@@ -14,12 +14,42 @@
 > compatibility, and isolated reasoning evaluation may continue; none of those
 > activities implies permission to pretrain.
 >
-> **Last updated:** 2026-07-25 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-26 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
 > GSM8K pass@1 `2/100`, MATH-500 `2/100`, HumanEval `6/164`, and MBPP `0/100`. This confirms a
 > low-single-digit plateau rather than a broad 120k-to-300k capability gain.
+>
+> **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
+> architecture construction and systems qualification only. The intended
+> order is: (1) establish one novel trainable architecture, (2) continue
+> pretraining only after the user explicitly authorizes it, and (3) perform
+> post-training afterward. Present raw-checkpoint benchmark weakness is not an
+> architecture rejection criterion. The USER PRETRAINING HOLD remains
+> absolute: do not start, queue, resume, prepare, or modify continuation
+> pretraining.
+>
+> **ETTR CONTINUATION CONTRACT FROZEN — 2026-07-26 EDT:** Commit
+> `ae2cf85480bedfaa96f3cf7ddfbaf64e5d067203` completes the missing
+> architecture-side continuation contract without launching pretraining. It
+> adds an explicit independent-row `WORLD -> COMMAND -> QUERY` causal episode
+> lifecycle, reset-safe token supervision, packet/transaction/equivariance/
+> commit/sparsity/anti-bypass objectives, a canonical frozen-data manifest,
+> separate base/architecture Muon and AdamW groups with embedded WSD schedule,
+> an exact no-replace checkpoint/resume contract covering model, optimizer,
+> schedule, RNG, data cursor, and episode lifecycle, and a bounded composite
+> optimizer step. The integrated architecture/custody suite is 108/108
+> passing. Three cross-ontology hybrids produce 96/96 independent-oracle
+> agreement and 48/48 causal output changes; payload SHA-256 is
+> `d155f868494f9379b214028c8d7475cc2cde08192c9b3a5bbdea5a73b29f98e2`.
+> The parameter receipt remains 46,321,890 added / 171,403,554 total.
+> Isolated synthetic one-H100 profile job `705164` was canceled while still
+> pending after static audit found and fixed a reset/padding validator defect.
+> Earlier attempts `704975` and `704985` failed closed on bad CUDA nodes `evc34` and
+> `evc44`; neither attempt reached model execution or changed the protected
+> checkpoint. No intelligence or continuation-readiness claim is authorized
+> until a healthy-node profile of the corrected source completes.
 >
 > **CURRENT REASONING CLAIM BOUNDARY — 2026-07-25 22:00 EDT:** Shohin still
 > has no demonstrated architecture-native general reasoning. Adversarial audit
@@ -47,9 +77,11 @@
 > invariance, all-state-field causality, and commit freezing are tested.
 > The seven-variant 3-fold matrix contains 2,688 executions with payload
 > SHA-256 `d1904b54a0fab8e59cfcb0b0dd464f5c8778e5b828907028ec8614aeae76d5d5`.
-> This is an architecture artifact, not an intelligence claim. A causal
-> continuation-pretraining interface, objectives, checkpoint schema, and H100
-> profile remain unfinished. The user pretraining hold remains active.
+> This is an architecture artifact, not an intelligence claim. The causal
+> episode interface, objectives, data contract, optimizer, and exact checkpoint
+> schema are now implemented in commit `ae2cf85`; only the healthy-node H100
+> profile remains open on the architecture-side continuation checklist. The
+> user pretraining hold remains active.
 >
 > **ETTR G0 HORN BOARD PASS — 2026-07-25 EDT:** Twenty typed Horn theories
 > occupy 20 distinct behavioral classes over 378 states. Independent closure
