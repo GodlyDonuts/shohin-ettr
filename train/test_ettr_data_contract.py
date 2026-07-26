@@ -146,7 +146,19 @@ def _alignment() -> ETTRVariantAlignment:
 
 
 def _rectangle_episodes() -> ETTREpisodeBatch:
-    return _batch(4)
+    query = torch.tensor(
+        [
+            [10, 11, 20, 30, 31],
+            [10, 11, 21, 40, 41],
+            [10, 11, 22, 50, 51],
+            [10, 11, 23, 60, 61],
+        ]
+    )
+    return replace(
+        _batch(4),
+        query_read_index=torch.ones(4, dtype=torch.long),
+        query=ETTREpisodeSegment.from_tokens(query),
+    )
 
 
 def _rectangles() -> ETTRCausalRectangle:
@@ -163,10 +175,10 @@ def _execute_interventions(
     (
         world_packet,
         world_command,
-        _world_target,
+        world_target,
         command_packet,
         command_command,
-        _command_target,
+        command_target,
     ) = continuation.causal_rectangles.intervention_indices()
     return runner.intervene(
         continuation.episodes,
@@ -174,8 +186,10 @@ def _execute_interventions(
         reactor_steps=3,
         world_packet_index=world_packet,
         world_command_index=world_command,
+        world_query_index=world_target,
         command_packet_index=command_packet,
         command_command_index=command_command,
+        command_query_index=command_target,
     )
 
 
@@ -297,6 +311,58 @@ def test_continuation_batch_builds_reset_safe_objective() -> None:
                 command_target,
             ),
         )
+    expected_world_foil = output.query_logits[
+        world_command,
+        continuation.episodes.query_read_index.index_select(0, world_command),
+    ]
+    expected_command_foil = output.query_logits[
+        command_packet,
+        continuation.episodes.query_read_index.index_select(0, command_packet),
+    ]
+    torch.testing.assert_close(
+        objective_batch.world_query_binding.correct_logits,
+        interventions.world_query_logits,
+    )
+    torch.testing.assert_close(
+        objective_batch.world_query_binding.foil_logits,
+        expected_world_foil,
+    )
+    torch.testing.assert_close(
+        objective_batch.command_query_binding.correct_logits,
+        interventions.command_query_logits,
+    )
+    torch.testing.assert_close(
+        objective_batch.command_query_binding.foil_logits,
+        expected_command_foil,
+    )
+    for pair, correct_index, foil_index in (
+        (
+            objective_batch.world_query_binding,
+            world_target,
+            world_command,
+        ),
+        (
+            objective_batch.command_query_binding,
+            command_target,
+            command_packet,
+        ),
+    ):
+        expected_correct = continuation.episodes.query.targets[
+            correct_index,
+            continuation.episodes.query_read_index.index_select(
+                0,
+                correct_index,
+            ),
+        ]
+        expected_foil = continuation.episodes.query.targets[
+            foil_index,
+            continuation.episodes.query_read_index.index_select(
+                0,
+                foil_index,
+            ),
+        ]
+        torch.testing.assert_close(pair.correct_target, expected_correct)
+        torch.testing.assert_close(pair.foil_target, expected_foil)
     declared = {
         field.name
         for value in (
@@ -424,6 +490,7 @@ def test_padded_segments_restart_validity_only_at_declared_resets() -> None:
     episodes = ETTREpisodeBatch(
         episode_ids=continuation.episodes.episode_ids,
         reset_mask=continuation.episodes.reset_mask,
+        query_read_index=continuation.episodes.query_read_index,
         world=padded(continuation.episodes.world, 6),
         command=padded(continuation.episodes.command, 4),
         query=padded(continuation.episodes.query, 3),
@@ -497,6 +564,69 @@ def test_causal_rectangles_require_factorial_sources_and_consequences() -> None:
             continuation,
             terminal_packet_targets=_packet(4),
         ).validate(runner.model.config, objective_config)
+
+
+def test_causal_rectangles_require_matched_query_prefix_and_read_index() -> None:
+    continuation, objective_config = _continuation()
+    runner = _runner()
+    with pytest.raises(RuntimeError, match="query read indices differ"):
+        replace(
+            continuation,
+            episodes=replace(
+                continuation.episodes,
+                query_read_index=torch.tensor([1, 1, 1, 2]),
+            ),
+        ).validate(runner.model.config, objective_config)
+    changed_prefix = continuation.episodes.query.tokens.clone()
+    changed_prefix[3, 0] += 1
+    with pytest.raises(RuntimeError, match="query prefixes differ"):
+        replace(
+            continuation,
+            episodes=replace(
+                continuation.episodes,
+                query=ETTREpisodeSegment.from_tokens(changed_prefix),
+            ),
+        ).validate(runner.model.config, objective_config)
+
+
+@pytest.mark.parametrize(
+    ("left", "right"),
+    ((0, 2), (1, 3), (0, 1), (2, 3)),
+)
+def test_causal_rectangles_require_every_query_label_contrast(
+    left: int,
+    right: int,
+) -> None:
+    continuation, objective_config = _continuation()
+    runner = _runner()
+    tokens = continuation.episodes.query.tokens.clone()
+    tokens[right, 2] = tokens[left, 2]
+    with pytest.raises(RuntimeError, match="query labels are identical"):
+        replace(
+            continuation,
+            episodes=replace(
+                continuation.episodes,
+                query=ETTREpisodeSegment.from_tokens(tokens),
+            ),
+        ).validate(runner.model.config, objective_config)
+
+
+def test_causal_query_provenance_indices_are_exact() -> None:
+    continuation, _objective_config = _continuation()
+    (
+        world_packet,
+        world_command,
+        world_target,
+        command_packet,
+        command_command,
+        command_target,
+    ) = continuation.causal_rectangles.intervention_indices()
+    assert world_packet.tolist() == [3, 2, 1, 0]
+    assert world_command.tolist() == [0, 1, 2, 3]
+    assert world_target.tolist() == [2, 3, 0, 1]
+    assert command_packet.tolist() == [0, 1, 2, 3]
+    assert command_command.tolist() == [3, 2, 1, 0]
+    assert command_target.tolist() == [1, 0, 3, 2]
 
 
 def test_continuation_binds_initial_and_terminal_dispositions() -> None:

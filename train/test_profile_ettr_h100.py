@@ -79,6 +79,10 @@ def test_synthetic_batches_are_deterministic_factorial_continuations() -> None:
             left.episodes.reset_mask,
             right.episodes.reset_mask,
         )
+        assert torch.equal(
+            left.episodes.query_read_index,
+            right.episodes.query_read_index,
+        )
         for name in ("world", "command", "query"):
             left_segment = getattr(left.episodes, name)
             right_segment = getattr(right.episodes, name)
@@ -94,6 +98,12 @@ def test_synthetic_batches_are_deterministic_factorial_continuations() -> None:
             left.causal_rectangles.rows,
             torch.tensor([[[0, 1], [2, 3]]]),
         )
+        assert left.episodes.query_read_index.tolist() == [0, 0, 0, 0]
+        assert torch.equal(
+            left.episodes.query.tokens[:, :1],
+            left.episodes.query.tokens[:1, :1].expand(4, -1),
+        )
+        assert left.episodes.query.targets[:, 0].tolist() == [4, 5, 6, 7]
         assert not torch.equal(
             left.episodes.world.tokens[0],
             left.episodes.world.tokens[1],
@@ -182,6 +192,36 @@ def test_profile_geometry_requires_complete_factorial_rectangles() -> None:
         profile.ProfileSettings(
             **{**profile.asdict(_settings("dry-run")), "batch_size": 6}
         ).validate()
+
+
+def test_parameter_sampling_detects_a_later_tensor_update() -> None:
+    first = torch.nn.Parameter(torch.arange(10_000, dtype=torch.float32))
+    later = torch.nn.Parameter(torch.arange(8, dtype=torch.float32))
+    before = profile._sample_parameters((first, later), maximum=8)
+    with torch.no_grad():
+        later[0].add_(3.0)
+    after = profile._sample_parameters((first, later), maximum=8)
+    assert torch.equal(before[:4], after[:4])
+    assert float((after - before).abs().sum()) == 3.0
+    torch.testing.assert_close(
+        before,
+        profile._sample_parameters(
+            (
+                torch.nn.Parameter(torch.arange(10_000, dtype=torch.float32)),
+                torch.nn.Parameter(torch.arange(8, dtype=torch.float32)),
+            ),
+            maximum=8,
+        ),
+    )
+
+
+def test_parameter_sampling_fails_when_budget_cannot_cover_every_tensor() -> None:
+    parameters = tuple(
+        torch.nn.Parameter(torch.zeros(1))
+        for _ in range(5)
+    )
+    with pytest.raises(profile.ETTRProfileError, match="every trainable tensor"):
+        profile._sample_parameters(parameters, maximum=4)
 
 
 def test_output_custody_rejects_existing_aliases_and_symlinks(

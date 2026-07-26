@@ -23,6 +23,7 @@ from ettr_episode import (
     ETTRInterventionOutput,
 )
 from ettr_objectives import (
+    ETTRCausalQueryPair,
     ETTRObjectiveBatch,
     ETTRObjectiveConfig,
     ETTRPacketTargets,
@@ -207,6 +208,50 @@ class ETTRCausalRectangle:
                 ).all(),
                 f"ETTR causal rectangle {name} has no terminal consequence",
             )
+        read_indices = torch.stack(
+            tuple(
+                episodes.query_read_index.index_select(0, index)
+                for index in (r00, r01, r10, r11)
+            ),
+            dim=1,
+        )
+        torch._assert_async(
+            read_indices.eq(read_indices[:, :1]).all(),
+            "ETTR causal rectangle query read indices differ",
+        )
+        positions = torch.arange(
+            episodes.query.tokens.shape[1],
+            device=episodes.query.tokens.device,
+        )[None, :]
+        prefix_mask = positions.le(read_indices[:, :1])
+        reference_tokens = episodes.query.tokens.index_select(0, r00)
+        reference_mask = episodes.query.attention_mask.index_select(0, r00)
+        for index in (r01, r10, r11):
+            candidate_tokens = episodes.query.tokens.index_select(0, index)
+            candidate_mask = episodes.query.attention_mask.index_select(0, index)
+            torch._assert_async(
+                (
+                    (~prefix_mask | candidate_tokens.eq(reference_tokens))
+                    & (~prefix_mask | candidate_mask.eq(reference_mask))
+                ).all(),
+                "ETTR causal rectangle query prefixes differ",
+            )
+        labels = tuple(
+            episodes.query.targets.index_select(0, index)
+            .gather(1, read_indices[:, :1])
+            .squeeze(1)
+            for index in (r00, r01, r10, r11)
+        )
+        for left, right, name in (
+            (labels[0], labels[2], "WORLD/C0"),
+            (labels[1], labels[3], "WORLD/C1"),
+            (labels[0], labels[1], "COMMAND/W0"),
+            (labels[2], labels[3], "COMMAND/W1"),
+        ):
+            torch._assert_async(
+                left.ne(right).all(),
+                f"ETTR causal rectangle {name} query labels are identical",
+            )
 
     def intervention_indices(
         self,
@@ -273,6 +318,27 @@ def _index_transaction_targets(
             for field in fields(targets)
         }
     )
+
+
+def _gather_query_rows(
+    values: torch.Tensor,
+    row_index: torch.Tensor,
+    read_index: torch.Tensor,
+) -> torch.Tensor:
+    selected = values.index_select(0, row_index)
+    selected_read = read_index.index_select(0, row_index)
+    if selected.ndim == 3:
+        return selected.gather(
+            1,
+            selected_read[:, None, None].expand(
+                -1,
+                1,
+                selected.shape[-1],
+            ),
+        ).squeeze(1)
+    if selected.ndim == 2:
+        return selected.gather(1, selected_read[:, None]).squeeze(1)
+    raise TheoryReactorError("ETTR causal query source rank differs")
 
 
 def _validate_target_trajectory(
@@ -575,12 +641,48 @@ class ETTRContinuationBatch:
             cursor += segment.tokens.shape[1]
         (
             _world_packet,
-            _world_command,
+            world_command,
             world_target,
-            _command_packet,
+            command_packet,
             _command_command,
             command_target,
         ) = self.causal_rectangles.intervention_indices()
+        world_query_binding = ETTRCausalQueryPair(
+            correct_logits=interventions.world_query_logits,
+            foil_logits=_gather_query_rows(
+                output.query_logits,
+                world_command,
+                self.episodes.query_read_index,
+            ),
+            correct_target=_gather_query_rows(
+                self.episodes.query.targets,
+                world_target,
+                self.episodes.query_read_index,
+            ),
+            foil_target=_gather_query_rows(
+                self.episodes.query.targets,
+                world_command,
+                self.episodes.query_read_index,
+            ),
+        )
+        command_query_binding = ETTRCausalQueryPair(
+            correct_logits=interventions.command_query_logits,
+            foil_logits=_gather_query_rows(
+                output.query_logits,
+                command_packet,
+                self.episodes.query_read_index,
+            ),
+            correct_target=_gather_query_rows(
+                self.episodes.query.targets,
+                command_target,
+                self.episodes.query_read_index,
+            ),
+            foil_target=_gather_query_rows(
+                self.episodes.query.targets,
+                command_packet,
+                self.episodes.query_read_index,
+            ),
+        )
         return ETTRObjectiveBatch(
             token_logits=logits,
             token_targets=ETTRTokenTargets(
@@ -628,6 +730,8 @@ class ETTRContinuationBatch:
                     command_target,
                 )
             ),
+            world_query_binding=world_query_binding,
+            command_query_binding=command_query_binding,
             transactions=(ETTRTransactionPredictions.from_reactor_trace(output.trace)),
             transaction_targets=self.transaction_targets,
             initial_committed=self.initial_committed,

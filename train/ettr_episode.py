@@ -144,6 +144,7 @@ class ETTREpisodeBatch:
 
     episode_ids: tuple[str, ...]
     reset_mask: torch.Tensor
+    query_read_index: torch.Tensor
     world: ETTREpisodeSegment
     command: ETTREpisodeSegment
     query: ETTREpisodeSegment
@@ -177,10 +178,37 @@ class ETTREpisodeBatch:
             reset.all(),
             "every ETTR batch row must explicitly reset",
         )
+        query_tokens = self.query.tokens.shape[1]
+        if (
+            self.query_read_index.shape != (batch,)
+            or self.query_read_index.dtype != torch.long
+            or self.query_read_index.device != self.query.tokens.device
+        ):
+            raise TheoryReactorError("episode query read index geometry differs")
+        _require_tensor(
+            (
+                (self.query_read_index >= 0)
+                & (self.query_read_index < query_tokens - 1)
+            ).all(),
+            "episode query read index leaves the causal query range",
+        )
+        read_mask = self.query.attention_mask.gather(
+            1,
+            self.query_read_index[:, None],
+        ).squeeze(1)
+        target_mask = self.query.attention_mask.gather(
+            1,
+            (self.query_read_index + 1)[:, None],
+        ).squeeze(1)
+        _require_tensor(
+            (read_mask & target_mask).all(),
+            "episode query read and next-token target must both be valid",
+        )
         devices = {
             self.world.tokens.device,
             self.command.tokens.device,
             self.query.tokens.device,
+            self.query_read_index.device,
         }
         if len(devices) != 1:
             raise TheoryReactorError("episode segments must share one device")
@@ -212,8 +240,10 @@ class ETTRInterventionOutput:
 
     world_terminal_state: TypedTheoryState
     world_trace: ReactorTrace
+    world_query_logits: torch.Tensor
     command_terminal_state: TypedTheoryState
     command_trace: ReactorTrace
+    command_query_logits: torch.Tensor
 
 
 class CausalETTREpisodeRunner(nn.Module):
@@ -293,8 +323,10 @@ class CausalETTREpisodeRunner(nn.Module):
         reactor_steps: int,
         world_packet_index: torch.Tensor,
         world_command_index: torch.Tensor,
+        world_query_index: torch.Tensor,
         command_packet_index: torch.Tensor,
         command_command_index: torch.Tensor,
+        command_query_index: torch.Tensor,
         hard: bool = False,
     ) -> ETTRInterventionOutput:
         """Execute state and command swaps inside the learned reactor.
@@ -312,8 +344,10 @@ class CausalETTREpisodeRunner(nn.Module):
         for name, index in (
             ("world_packet_index", world_packet_index),
             ("world_command_index", world_command_index),
+            ("world_query_index", world_query_index),
             ("command_packet_index", command_packet_index),
             ("command_command_index", command_command_index),
+            ("command_query_index", command_query_index),
         ):
             if (
                 index.shape != (intervention_size,)
@@ -359,6 +393,31 @@ class CausalETTREpisodeRunner(nn.Module):
             command_hidden=combined_command,
             command_attention_mask=combined_mask,
         )
+        combined_query_index = torch.cat(
+            (world_query_index, command_query_index),
+            dim=0,
+        )
+        query_logits, _ = self.model.answer_query(
+            terminal,
+            batch.query.tokens.index_select(0, combined_query_index),
+            targets=None,
+            attention_mask=batch.query.attention_mask.index_select(
+                0,
+                combined_query_index,
+            ),
+        )
+        query_read_index = batch.query_read_index.index_select(
+            0,
+            combined_query_index,
+        )
+        gathered_query_logits = query_logits.gather(
+            1,
+            query_read_index[:, None, None].expand(
+                -1,
+                1,
+                query_logits.shape[-1],
+            ),
+        ).squeeze(1)
         return ETTRInterventionOutput(
             world_terminal_state=_slice_state(
                 terminal,
@@ -370,6 +429,7 @@ class CausalETTREpisodeRunner(nn.Module):
                 0,
                 intervention_size,
             ),
+            world_query_logits=gathered_query_logits[:intervention_size],
             command_terminal_state=_slice_state(
                 terminal,
                 intervention_size,
@@ -380,6 +440,7 @@ class CausalETTREpisodeRunner(nn.Module):
                 intervention_size,
                 2 * intervention_size,
             ),
+            command_query_logits=gathered_query_logits[intervention_size:],
         )
 
     def _segment_forward(

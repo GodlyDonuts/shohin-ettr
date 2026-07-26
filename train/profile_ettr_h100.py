@@ -83,6 +83,8 @@ OBJECTIVE_LOSS_NAMES = (
     "packet",
     "world_intervention",
     "command_intervention",
+    "world_query_binding",
+    "command_query_binding",
     "transaction",
     "equivariance",
     "commit_halt",
@@ -410,6 +412,14 @@ def synthetic_batches(
         )
         world[:, 0] = 1 + world_factor
         command[:, 0] = 3 + command_factor
+        query_read_index = torch.zeros(
+            settings.batch_size,
+            dtype=torch.long,
+        )
+        query[:, 0] = (
+            rectangle + offset + 41
+        ).remainder(vocab_size)
+        query[:, 1] = 4 + within
         episode_ids = tuple(
             hashlib.sha256(
                 f"synthetic-{settings.seed}-{microstep}-{row}".encode("ascii")
@@ -422,6 +432,7 @@ def synthetic_batches(
                 settings.batch_size,
                 dtype=torch.bool,
             ),
+            query_read_index=query_read_index,
             world=ETTREpisodeSegment.from_tokens(world),
             command=ETTREpisodeSegment.from_tokens(command),
             query=ETTREpisodeSegment.from_tokens(query),
@@ -544,6 +555,7 @@ def synthetic_batches(
                     for field in fields(packet_targets)
                 },
                 "reset_mask": episodes.reset_mask.tolist(),
+                "query_read_index": episodes.query_read_index.tolist(),
                 "segments": {
                     name: {
                         "attention_mask": getattr(
@@ -716,15 +728,50 @@ def _sample_parameters(
     *,
     maximum: int = 4096,
 ) -> torch.Tensor:
+    if not isinstance(maximum, int) or isinstance(maximum, bool) or maximum < 1:
+        raise ETTRProfileError("parameter sample budget must be a positive integer")
+    trainable = tuple(
+        parameter
+        for parameter in parameters
+        if parameter.requires_grad and parameter.numel() > 0
+    )
+    if len(trainable) > maximum:
+        raise ETTRProfileError(
+            "parameter sample budget cannot cover every trainable tensor"
+        )
+    allocations = [1] * len(trainable)
+    remaining = maximum - len(trainable)
+    while remaining:
+        active = tuple(
+            index
+            for index, parameter in enumerate(trainable)
+            if allocations[index] < parameter.numel()
+        )
+        if not active:
+            break
+        share, remainder = divmod(remaining, len(active))
+        assigned = 0
+        for rank, index in enumerate(active):
+            capacity = trainable[index].numel() - allocations[index]
+            increment = min(
+                capacity,
+                share + int(rank < remainder),
+            )
+            allocations[index] += increment
+            assigned += increment
+        if assigned == 0:
+            break
+        remaining -= assigned
     samples = []
-    remaining = maximum
-    for parameter in parameters:
-        if not parameter.requires_grad or remaining == 0:
-            continue
+    for parameter, take in zip(trainable, allocations, strict=True):
         flat = parameter.detach().flatten()
-        take = min(flat.numel(), remaining)
-        samples.append(flat[:take].float().clone())
-        remaining -= take
+        coordinates = torch.linspace(
+            0,
+            flat.numel() - 1,
+            steps=take,
+            device=flat.device,
+        ).long()
+        samples.append(flat.index_select(0, coordinates).float().clone())
     if not samples:
         return torch.empty(0)
     return torch.cat(samples)
@@ -799,10 +846,10 @@ class ETTRCompositeFactorialInterventionSubject(torch.nn.Module):
         (
             world_packet,
             world_command,
-            _world_target,
+            world_target,
             command_packet,
             command_command,
-            _command_target,
+            command_target,
         ) = batch.causal_rectangles.intervention_indices()
         interventions = self.runner.intervene(
             batch.episodes,
@@ -810,8 +857,10 @@ class ETTRCompositeFactorialInterventionSubject(torch.nn.Module):
             reactor_steps=self.reactor_steps,
             world_packet_index=world_packet,
             world_command_index=world_command,
+            world_query_index=world_target,
             command_packet_index=command_packet,
             command_command_index=command_command,
+            command_query_index=command_target,
             hard=True,
         )
         loss = self.objective(batch.objective_batch(output, interventions))
@@ -882,6 +931,7 @@ def _device_batches(
             episodes=ETTREpisodeBatch(
                 episode_ids=batch.episodes.episode_ids,
                 reset_mask=batch.episodes.reset_mask.to(device),
+                query_read_index=batch.episodes.query_read_index.to(device),
                 world=segment(batch.episodes.world),
                 command=segment(batch.episodes.command),
                 query=segment(batch.episodes.query),

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+import inspect
 
 import pytest
 import torch
@@ -64,6 +65,7 @@ def _batch(batch: int = 2) -> ETTREpisodeBatch:
     return ETTREpisodeBatch(
         episode_ids=tuple(f"{index + 1:064x}" for index in range(batch)),
         reset_mask=torch.ones(batch, dtype=torch.bool),
+        query_read_index=torch.zeros(batch, dtype=torch.long),
         world=_segment(batch, 8),
         command=_segment(batch, 6),
         query=_segment(batch, 5),
@@ -111,6 +113,31 @@ def test_episode_requires_explicit_unique_resets() -> None:
         ).validate()
     with pytest.raises(TheoryReactorError, match="identity"):
         replace(batch, episode_ids=("a" * 64, "a" * 64)).validate()
+
+
+def test_episode_query_read_index_fails_closed() -> None:
+    batch = _batch()
+    with pytest.raises(TheoryReactorError, match="geometry"):
+        replace(
+            batch,
+            query_read_index=torch.zeros(2, dtype=torch.int32),
+        ).validate()
+    with pytest.raises(TheoryReactorError, match="causal query range"):
+        replace(
+            batch,
+            query_read_index=torch.full((2,), batch.query.tokens.shape[1] - 1),
+        ).validate()
+    mask = batch.query.attention_mask.clone()
+    mask[0, 2:] = False
+    with pytest.raises(TheoryReactorError, match="must both be valid"):
+        replace(
+            batch,
+            query_read_index=torch.ones(2, dtype=torch.long),
+            query=ETTREpisodeSegment.from_tokens(
+                batch.query.tokens,
+                attention_mask=mask,
+            ),
+        ).validate()
 
 
 def test_complete_episode_has_count_weighted_full_token_loss() -> None:
@@ -196,6 +223,7 @@ def test_rows_do_not_share_episode_state() -> None:
     isolated = ETTREpisodeBatch(
         episode_ids=(batch.episode_ids[1],),
         reset_mask=torch.ones(1, dtype=torch.bool),
+        query_read_index=batch.query_read_index[1:2],
         world=ETTREpisodeSegment(
             *(
                 value[1:2]
@@ -245,6 +273,8 @@ def test_intervention_runner_holds_the_orthogonal_cause_fixed() -> None:
     world_command_index = torch.tensor([0, 1])
     command_packet_index = torch.tensor([0, 1])
     command_command_index = torch.tensor([1, 0])
+    world_query_index = torch.tensor([1, 0])
+    command_query_index = torch.tensor([1, 0])
     with torch.no_grad():
         output = runner(batch, reactor_steps=2)
         intervention = runner.intervene(
@@ -253,8 +283,10 @@ def test_intervention_runner_holds_the_orthogonal_cause_fixed() -> None:
             reactor_steps=2,
             world_packet_index=world_packet_index,
             world_command_index=world_command_index,
+            world_query_index=world_query_index,
             command_packet_index=command_packet_index,
             command_command_index=command_command_index,
+            command_query_index=command_query_index,
         )
         swapped_state = type(output.initial_state)(
             value_probabilities=(
@@ -354,6 +386,32 @@ def test_intervention_runner_holds_the_orthogonal_cause_fixed() -> None:
                 )
             ),
         )
+        manual_world_query, _ = runner.model.answer_query(
+            manual_packet,
+            batch.query.tokens.index_select(0, world_query_index),
+            targets=None,
+            attention_mask=batch.query.attention_mask.index_select(
+                0,
+                world_query_index,
+            ),
+        )
+        manual_command_query, _ = runner.model.answer_query(
+            manual_command,
+            batch.query.tokens.index_select(0, command_query_index),
+            targets=None,
+            attention_mask=batch.query.attention_mask.index_select(
+                0,
+                command_query_index,
+            ),
+        )
+        manual_world_query = manual_world_query[
+            torch.arange(world_query_index.shape[0]),
+            batch.query_read_index.index_select(0, world_query_index),
+        ]
+        manual_command_query = manual_command_query[
+            torch.arange(command_query_index.shape[0]),
+            batch.query_read_index.index_select(0, command_query_index),
+        ]
     for name in (
         "value_probabilities",
         "type_probabilities",
@@ -389,6 +447,87 @@ def test_intervention_runner_holds_the_orthogonal_cause_fixed() -> None:
             getattr(intervention.command_trace, name),
             getattr(manual_command_trace, name),
         )
+    torch.testing.assert_close(
+        intervention.world_query_logits,
+        manual_world_query,
+    )
+    torch.testing.assert_close(
+        intervention.command_query_logits,
+        manual_command_query,
+    )
+
+
+def test_intervention_query_read_ignores_all_tokens_after_read() -> None:
+    runner = _runner().eval()
+    query = torch.tensor(
+        [
+            [9, 10, 20, 30, 31],
+            [9, 10, 21, 40, 41],
+        ]
+    )
+    batch = replace(
+        _batch(batch=2),
+        query_read_index=torch.ones(2, dtype=torch.long),
+        query=ETTREpisodeSegment.from_tokens(query),
+    )
+    mutated_query = query.clone()
+    mutated_query[:, 2:] = torch.tensor(
+        [[50, 51, 52], [53, 54, 55]]
+    )
+    mutated = replace(
+        batch,
+        query=ETTREpisodeSegment.from_tokens(mutated_query),
+    )
+    index = torch.tensor([1, 0])
+    fixed = torch.tensor([0, 1])
+    with torch.no_grad():
+        output = runner(batch, reactor_steps=2)
+        first = runner.intervene(
+            batch,
+            output.initial_state,
+            reactor_steps=2,
+            world_packet_index=index,
+            world_command_index=fixed,
+            world_query_index=index,
+            command_packet_index=fixed,
+            command_command_index=index,
+            command_query_index=index,
+        )
+        second = runner.intervene(
+            mutated,
+            output.initial_state,
+            reactor_steps=2,
+            world_packet_index=index,
+            world_command_index=fixed,
+            world_query_index=index,
+            command_packet_index=fixed,
+            command_command_index=index,
+            command_query_index=index,
+        )
+    torch.testing.assert_close(
+        first.world_query_logits,
+        second.world_query_logits,
+        atol=0,
+        rtol=0,
+    )
+    torch.testing.assert_close(
+        first.command_query_logits,
+        second.command_query_logits,
+        atol=0,
+        rtol=0,
+    )
+
+
+def test_intervention_runner_accepts_indices_but_no_answer_targets() -> None:
+    parameters = inspect.signature(
+        CausalETTREpisodeRunner.intervene
+    ).parameters
+    assert "world_query_index" in parameters
+    assert "command_query_index" in parameters
+    assert not any(
+        "answer" in name or "target" in name
+        for name in parameters
+    )
 
 
 def test_hard_factual_and_intervention_states_pass_deployment_validation() -> None:
@@ -398,6 +537,7 @@ def test_hard_factual_and_intervention_states_pass_deployment_validation() -> No
     world_command_index = torch.tensor([0, 1])
     command_packet_index = torch.tensor([0, 1])
     command_command_index = torch.tensor([1, 0])
+    query_index = torch.tensor([1, 0])
     with torch.no_grad():
         output = runner(
             batch,
@@ -411,8 +551,10 @@ def test_hard_factual_and_intervention_states_pass_deployment_validation() -> No
             reactor_steps=2,
             world_packet_index=world_packet_index,
             world_command_index=world_command_index,
+            world_query_index=query_index,
             command_packet_index=command_packet_index,
             command_command_index=command_command_index,
+            command_query_index=query_index,
             hard=True,
         )
     for state in (
