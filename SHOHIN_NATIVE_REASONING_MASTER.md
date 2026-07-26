@@ -52664,14 +52664,19 @@ minor assigned by Slurm, retains the verified runtime descriptor through
 Bubblewrap bind setup, and removes the runtime through that descriptor after
 execution. An independent hostile rereview closed both final P1 findings:
 same-descriptor wheel consumption and extraction-to-execution substitution.
-The focused runtime/deployment/four-process regression set passes 53/53 with
-clean Ruff, byte compilation, shell syntax, and diff checks. The next
-complete ETTR/cross-ontology inventory passes 314/314 in 171.71 seconds. The
-next exact-source build must use this committed source and its output must be
-hash-verified before the confined H100 smoke. No packaging job can read
-checkpoints, shards, or optimizer state. A verifier-owned production supervisor
-and durable launch-receipt admission remain external deployment-TCB work and do
-not change the trainable architecture.
+The focused runtime/deployment/four-process regression set passes 54/54 with
+clean Ruff, byte compilation, shell syntax, and diff checks. The complete
+ETTR/cross-ontology inventory passes 315/315 in 171.65 seconds. Exact-source
+build `705463` passed staged CUDA imports but failed closed before archive
+publication because five normal dependency filenames contain printable spaces
+or punctuation. The corrected policy accepts printable ASCII path segments
+while continuing to reject slash, backslash, NUL, controls, absolute paths,
+`.` and `..`; the five observed names are regression-tested. The next
+exact-source build must use the corrected committed source and its output must
+be hash-verified before the confined H100 smoke. No packaging job can read
+checkpoints, shards, or optimizer state. A verifier-owned production
+supervisor and durable launch-receipt admission remain external deployment-TCB
+work and do not change the trainable architecture.
 
 Current decision:
 `ettr_architecture_complete_stage_specific_runtime_pass_external_supervisor_and_learning_pending`.

@@ -182,9 +182,15 @@
 > execution. An independent hostile rereview found no remaining issue in the
 > two last P1 paths: inherited-wheel consumption and extraction-to-execution
 > substitution. The focused runtime/deployment/four-process regression set is
-> **53/53** passing with clean Ruff, byte compilation, shell syntax, and diff
-> checks. The complete current ETTR/cross-ontology inventory is **314/314**
-> passing in 171.71 seconds.
+> **54/54** passing with clean Ruff, byte compilation, shell syntax, and diff
+> checks. The complete current ETTR/cross-ontology inventory is **315/315**
+> passing in 171.65 seconds. Exact-source build `705463` failed closed after
+> staged CUDA imports passed and before archive publication because five
+> ordinary dependency filenames contain printable spaces or punctuation. The
+> path policy now accepts printable ASCII segments while still rejecting
+> slash, backslash, NUL, controls, absolute paths, `.` and `..`; a regression
+> covers the five observed dependency names. Retry only from the corrected
+> committed source.
 > Build the next exact-source runtime only from the committed hardened source,
 > verify every sidecar hash, and then submit the pinned in-Bubblewrap H100
 > smoke. These jobs cannot read checkpoints, shards, or optimizer state. Do

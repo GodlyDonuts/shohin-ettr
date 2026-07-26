@@ -64,7 +64,10 @@ TOOL_FILES = (
 )
 _COMMIT = re.compile(r"^[0-9a-f]{40}$")
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
-_SAFE_SEGMENT = re.compile(r"^[A-Za-z0-9._+@=-]+$")
+# Runtime dependency trees contain ordinary printable punctuation and spaces.
+# Path structure is validated separately; backslash, NUL, controls, slash,
+# absolute paths, "." and ".." remain inadmissible.
+_SAFE_SEGMENT = re.compile(r"^[\x20-\x7e]+$")
 
 
 class ETTRClaimRuntimeError(ValueError):

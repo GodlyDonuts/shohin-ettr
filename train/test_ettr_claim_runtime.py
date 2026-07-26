@@ -111,6 +111,41 @@ def test_runtime_archive_is_deterministic_recursive_and_exact(
     assert native.sha256 == hashlib.sha256(b"fixture-native\n").hexdigest()
 
 
+def test_inventory_accepts_printable_dependency_filenames(
+    tmp_path: Path,
+) -> None:
+    root = _runtime_tree(tmp_path)
+    dependency_root = (
+        root / "miniforge3/lib/python3.13/site-packages/safetensors"
+    )
+    dependency_names = (
+        "ripper!_.flf",
+        "patorjk's_cheese.flf",
+        "script (dev).tmpl",
+        "launcher manifest.xml",
+        "Lorem ipsum.txt",
+    )
+    dependency_root.chmod(0o755)
+    for name in dependency_names:
+        _write_file(
+            dependency_root / name,
+            name.encode("ascii"),
+        )
+    dependency_root.chmod(0o555)
+
+    inventory = runtime.build_inventory(
+        root,
+        source_commit=SOURCE_COMMIT,
+    )
+
+    paths = {member.path for member in inventory.members}
+    for name in dependency_names:
+        assert (
+            "miniforge3/lib/python3.13/site-packages/"
+            f"safetensors/{name}"
+        ) in paths
+
+
 def test_runtime_tree_rejects_deep_native_mutation(
     tmp_path: Path,
 ) -> None:
