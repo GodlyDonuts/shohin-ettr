@@ -20,6 +20,7 @@ from sparse_latent_law_compiler import (  # noqa: E402
     MAX_ACTIONS,
     MAX_CARDINALITY,
     MAX_RECORDS,
+    FactorizedSparseLatentLawCompiler,
     SealedLearnedSparseMachine,
     SparseCompilerOutput,
     SparseLatentLawCompiler,
@@ -130,6 +131,27 @@ def test_model_forward_controls_and_parameter_receipt() -> None:
     receipt = model.parameter_receipt()
     assert receipt.learned_compiler == model.parameter_count()
     assert receipt.complete_system < receipt.global_limit
+
+    factorized = FactorizedSparseLatentLawCompiler(
+        width=64,
+        layers=1,
+        heads=4,
+        generators=12,
+        composition_depth=3,
+    )
+    factorized_output = factorized(batch)
+    assert factorized_output.transition_logits.shape == (
+        3,
+        MAX_ACTIONS,
+        MAX_CARDINALITY,
+        MAX_CARDINALITY,
+    )
+    assert bool(torch.isfinite(factorized_output.transition_logits).all())
+    factorized_receipt = factorized.parameter_receipt()
+    assert (
+        factorized_receipt.learned_compiler
+        == factorized.parameter_count()
+    )
 
 
 def test_sparse_query_scanner_rejects_ambiguous_numbers() -> None:

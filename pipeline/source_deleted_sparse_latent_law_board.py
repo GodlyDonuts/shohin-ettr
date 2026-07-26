@@ -286,6 +286,12 @@ _RECORD_PATTERNS = (
     re.compile(
         r"(?P<t>\d+) is reached from (?P<s>\d+) using (?P<a>\S+)\Z"
     ),
+    re.compile(
+        r"from (?P<s>\d+), (?P<t>\d+) is reached using (?P<a>\S+)\Z"
+    ),
+    re.compile(
+        r"using (?P<a>\S+), from (?P<s>\d+) reaches (?P<t>\d+)\Z"
+    ),
 )
 _QUERY_PATTERNS = (
     re.compile(r"origin=(?P<s>\d+); program=(?P<w>\S+)\Z"),

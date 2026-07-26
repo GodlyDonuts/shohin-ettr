@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -26,6 +26,7 @@ if str(PIPELINE) not in sys.path:
 
 from source_deleted_sparse_latent_law_board import (  # noqa: E402
     FAMILIES,
+    CandidateEpisode,
     GeneratedEpisode,
     build_frozen_board,
     compile_source,
@@ -34,6 +35,7 @@ from source_deleted_sparse_latent_law_board import (  # noqa: E402
 from sparse_latent_law_compiler import (  # noqa: E402
     MAX_ACTIONS,
     MAX_CARDINALITY,
+    FactorizedSparseLatentLawCompiler,
     SparseLatentLawCompiler,
     SparseLawCompilerError,
     SparseSourceBatch,
@@ -82,11 +84,54 @@ def _auxiliary_training_rows(
     return rows
 
 
+def _counterfactual_training_rows(
+    rows: list[GeneratedEpisode],
+) -> list[GeneratedEpisode]:
+    counterfactual: list[GeneratedEpisode] = []
+    for row in rows:
+        machine = compile_source(row.candidate.source)
+        templates = (
+            "from {source}, {target} is reached using {action}",
+            "using {action}, from {source} reaches {target}",
+        )
+        for template in templates:
+            records = [
+                template.format(
+                    source=source,
+                    target=machine.transition[action][source],
+                    action=machine.action_keys[action],
+                )
+                for action in range(len(machine.action_keys))
+                for source in machine.visible_inputs[action]
+            ]
+            counterfactual.append(
+                replace(
+                    row,
+                    candidate=CandidateEpisode(
+                        source="\n".join(
+                            [
+                                f"domain-size={machine.cardinality}",
+                                *records,
+                            ]
+                        ),
+                        query=row.candidate.query,
+                    ),
+                )
+            )
+    return counterfactual
+
+
 def _prepare(
     rows: list[GeneratedEpisode],
     *,
     device: torch.device,
+    direction_overrides: list[bool] | None = None,
 ) -> tuple[SparseSourceBatch, torch.Tensor, torch.Tensor]:
+    if (
+        direction_overrides is not None
+        and len(direction_overrides) != len(rows)
+    ):
+        raise ValueError("direction override count differs")
     scanned = [
         scan_sparse_source(row.candidate.source.encode("ascii"))
         for row in rows
@@ -121,9 +166,12 @@ def _prepare(
                 device=device,
             )
         count = len(source.records)
-        direction_target[row_index, :count] = (
-            1.0 if row.supervisor.renderer in {0, 1, 2, 3} else 0.0
+        first_is_source = (
+            direction_overrides[row_index]
+            if direction_overrides is not None
+            else row.supervisor.renderer in {0, 1, 2, 3}
         )
+        direction_target[row_index, :count] = float(first_is_source)
     return batch, transition_target, direction_target
 
 
@@ -344,7 +392,9 @@ def run_experiment(
     learning_rate: float,
     batch_size: int,
     auxiliary_rows: int,
+    architecture: str,
     device: torch.device,
+    model_output: Path | None = None,
 ) -> dict[str, object]:
     random.seed(seed)
     torch.manual_seed(seed)
@@ -359,23 +409,39 @@ def run_experiment(
     development = [
         row for row in board if row.supervisor.split == "development"
     ]
-    training = [
+    original_training = [
         *frozen_train,
         *_auxiliary_training_rows(seed=seed, count=auxiliary_rows),
     ]
+    counterfactual = _counterfactual_training_rows(frozen_train)
+    training = [*original_training, *counterfactual]
+    training_direction = [
+        row.supervisor.renderer in {0, 1, 2, 3}
+        for row in original_training
+    ] + [True] * len(counterfactual)
     train_batch, train_transition, train_direction = _prepare(
         training,
         device=device,
+        direction_overrides=training_direction,
     )
     dev_batch, dev_transition, dev_direction = _prepare(
         development,
         device=device,
     )
-    model = SparseLatentLawCompiler(
-        width=width,
-        layers=layers,
-        heads=heads,
-    ).to(device)
+    if architecture == "attention":
+        model = SparseLatentLawCompiler(
+            width=width,
+            layers=layers,
+            heads=heads,
+        ).to(device)
+    elif architecture == "factorized":
+        model = FactorizedSparseLatentLawCompiler(
+            width=width,
+            layers=layers,
+            heads=heads,
+        ).to(device)
+    else:
+        raise ValueError("sparse architecture differs")
     losses = _train(
         model=model,
         batch=train_batch,
@@ -386,6 +452,27 @@ def run_experiment(
         learning_rate=learning_rate,
         seed=seed,
     )
+    model_receipt: dict[str, object] | None = None
+    if model_output is not None:
+        model_output.parent.mkdir(parents=True, exist_ok=True)
+        torch.save(
+            {
+                "architecture": architecture,
+                "heads": heads,
+                "layers": layers,
+                "seed": seed,
+                "state_dict": {
+                    name: tensor.detach().cpu()
+                    for name, tensor in model.state_dict().items()
+                },
+                "width": width,
+            },
+            model_output,
+        )
+        model_receipt = {
+            "path": str(model_output),
+            "sha256": sha256(model_output.read_bytes()).hexdigest(),
+        }
     development_report = {
         control: _evaluate(
             model=model,
@@ -424,6 +511,7 @@ def run_experiment(
             b"SPARSE-LATENT-LAW-QUALIFICATION-BOARD-V1",
         ),
         "candidate_imports_exact_compiler": False,
+        "candidate_architecture": architecture,
         "candidate_time_oracle_calls": 0,
         "candidate_time_search_calls": 0,
         "candidate_time_verifier_calls": 0,
@@ -436,6 +524,7 @@ def run_experiment(
             "optimizer_updates": steps,
             "same_weights_controls": True,
         },
+        "model_receipt": model_receipt,
         "parameter_receipt": asdict(model.parameter_receipt()),
         "preparation_exact_parser_calls": len(training) + len(development),
         "seed": seed,
@@ -458,6 +547,7 @@ def run_experiment(
         },
         "training_rows": {
             "auxiliary": auxiliary_rows,
+            "counterfactual": len(counterfactual),
             "frozen": len(frozen_train),
             "total": len(training),
         },
@@ -474,8 +564,14 @@ def main() -> None:
     parser.add_argument("--learning-rate", type=float, default=2e-3)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--auxiliary-rows", type=int, default=3_000)
+    parser.add_argument(
+        "--architecture",
+        choices=("attention", "factorized"),
+        default="factorized",
+    )
     parser.add_argument("--device", default="cpu")
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--model-output", type=Path)
     args = parser.parse_args()
     report = run_experiment(
         seed=args.seed,
@@ -486,7 +582,9 @@ def main() -> None:
         learning_rate=args.learning_rate,
         batch_size=args.batch_size,
         auxiliary_rows=args.auxiliary_rows,
+        architecture=args.architecture,
         device=torch.device(args.device),
+        model_output=args.model_output,
     )
     payload = json.dumps(report, indent=2, sort_keys=True) + "\n"
     if args.output is not None:

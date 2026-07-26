@@ -683,6 +683,214 @@ class SparseLatentLawCompiler(nn.Module):
         )
 
 
+class FactorizedSparseLatentLawCompiler(SparseLatentLawCompiler):
+    """Synthesize unseen operators from learned permutation generators."""
+
+    def __init__(
+        self,
+        *,
+        width: int = 128,
+        layers: int = 2,
+        heads: int = 4,
+        generators: int = 32,
+        composition_depth: int = 4,
+        sinkhorn_steps: int = 8,
+        selection_temperature: float = 0.35,
+    ) -> None:
+        super().__init__(width=width, layers=layers, heads=heads)
+        if (
+            generators < 8
+            or composition_depth < 2
+            or sinkhorn_steps < 2
+            or not 0.05 <= selection_temperature <= 1.0
+        ):
+            raise SparseLawCompilerError(
+                "factorized compiler geometry differs"
+            )
+        del self.cross_attention
+        del self.transition_decoder
+        self.generators = int(generators)
+        self.composition_depth = int(composition_depth)
+        self.sinkhorn_steps = int(sinkhorn_steps)
+        self.selection_temperature = float(selection_temperature)
+        initial = torch.full(
+            (2, generators, MAX_CARDINALITY, MAX_CARDINALITY),
+            -2.0,
+        )
+        for geometry, cardinality in enumerate((8, 16)):
+            for generator in range(generators):
+                permutation = torch.randperm(cardinality)
+                initial[
+                    geometry,
+                    generator,
+                    torch.arange(cardinality),
+                    permutation,
+                ] = 2.0
+        self.generator_logits = nn.Parameter(initial)
+        self.selector = nn.Sequential(
+            nn.LayerNorm(width),
+            nn.Linear(width, width * 2),
+            nn.GELU(),
+            nn.Linear(
+                width * 2,
+                composition_depth * generators,
+            ),
+        )
+
+    def _generator_probabilities(
+        self,
+        geometry: int,
+        cardinality: int,
+    ) -> torch.Tensor:
+        logits = self.generator_logits[
+            geometry,
+            :,
+            :cardinality,
+            :cardinality,
+        ]
+        for _step in range(self.sinkhorn_steps):
+            logits = logits - torch.logsumexp(
+                logits,
+                dim=-1,
+                keepdim=True,
+            )
+            logits = logits - torch.logsumexp(
+                logits,
+                dim=-2,
+                keepdim=True,
+            )
+        return logits.exp()
+
+    def forward(
+        self,
+        batch: SparseSourceBatch,
+        *,
+        direction_sign: float = 1.0,
+        observation_target_shift: int = 0,
+        observations_zeroed: bool = False,
+    ) -> SparseCompilerOutput:
+        if direction_sign not in {-1.0, 1.0}:
+            raise SparseLawCompilerError("direction sign differs")
+        if observation_target_shift not in {0, 1}:
+            raise SparseLawCompilerError(
+                "observation target shift differs"
+            )
+        rows, records, units = batch.unit_ids.shape
+        positions = torch.arange(units, device=batch.unit_ids.device)
+        hidden = (
+            self.embedding(
+                batch.unit_ids.reshape(rows * records, units)
+            )
+            + self.position(positions)[None]
+        )
+        hidden, _ = self.record_encoder(hidden)
+        number_hidden = self._gather(
+            hidden,
+            batch.number_positions.reshape(rows * records, 2),
+        )
+        direction_logits = self.direction_head(
+            number_hidden.reshape(rows * records, self.width * 2)
+        ).reshape(rows, records)
+        direction_logits = direction_sign * direction_logits
+        direction_probability = direction_logits.sigmoid()
+
+        number_values = batch.number_values
+        first = self.state_embedding(number_values[..., 0])
+        second = self.state_embedding(number_values[..., 1])
+        if observation_target_shift:
+            shifted_first = self.state_embedding(
+                (number_values[..., 0] + 1)
+                % batch.cardinalities[:, None]
+            )
+            shifted_second = self.state_embedding(
+                (number_values[..., 1] + 1)
+                % batch.cardinalities[:, None]
+            )
+        else:
+            shifted_first = first
+            shifted_second = second
+        forward_pair = self.pair_encoder(
+            torch.cat((first, shifted_second), dim=-1)
+        )
+        reverse_pair = self.pair_encoder(
+            torch.cat((second, shifted_first), dim=-1)
+        )
+        pair_tokens = (
+            direction_probability[..., None] * forward_pair
+            + (1.0 - direction_probability[..., None]) * reverse_pair
+        )
+        if observations_zeroed:
+            pair_tokens = torch.zeros_like(pair_tokens)
+
+        action_one_hot = torch.nn.functional.one_hot(
+            batch.record_action_indices,
+            num_classes=MAX_ACTIONS,
+        ).to(pair_tokens.dtype)
+        action_one_hot = (
+            action_one_hot * batch.record_valid[..., None]
+        )
+        action_sums = torch.einsum(
+            "bra,brw->baw",
+            action_one_hot,
+            pair_tokens,
+        )
+        action_counts = action_one_hot.sum(dim=1).clamp_min(1.0)
+        summaries = action_sums / action_counts[..., None]
+        selector_logits = self.selector(summaries).reshape(
+            rows,
+            MAX_ACTIONS,
+            self.composition_depth,
+            self.generators,
+        )
+        selections = (
+            selector_logits / self.selection_temperature
+        ).softmax(dim=-1)
+
+        transition_logits = torch.full(
+            (
+                rows,
+                MAX_ACTIONS,
+                MAX_CARDINALITY,
+                MAX_CARDINALITY,
+            ),
+            -1.0e4,
+            dtype=pair_tokens.dtype,
+            device=pair_tokens.device,
+        )
+        for row in range(rows):
+            cardinality = int(batch.cardinalities[row])
+            geometry = 1 if cardinality == 16 else 0
+            dictionary = self._generator_probabilities(
+                geometry,
+                cardinality,
+            )
+            selected = torch.einsum(
+                "adk,knm->adnm",
+                selections[row],
+                dictionary,
+            )
+            composed = torch.eye(
+                cardinality,
+                dtype=pair_tokens.dtype,
+                device=pair_tokens.device,
+            )[None].expand(MAX_ACTIONS, -1, -1)
+            for depth in range(self.composition_depth):
+                composed = torch.matmul(
+                    composed,
+                    selected[:, depth],
+                )
+            transition_logits[
+                row,
+                :,
+                :cardinality,
+                :cardinality,
+            ] = composed.clamp_min(1e-12).log()
+        return SparseCompilerOutput(
+            direction_logits=direction_logits,
+            transition_logits=transition_logits,
+        )
+
+
 def seal_sparse_machine(
     batch: SparseSourceBatch,
     output: SparseCompilerOutput,
@@ -771,6 +979,7 @@ __all__ = [
     "MAX_ACTIONS",
     "MAX_CARDINALITY",
     "MAX_RECORDS",
+    "FactorizedSparseLatentLawCompiler",
     "SealedLearnedSparseMachine",
     "SparseCompilerOutput",
     "SparseLatentLawCompiler",

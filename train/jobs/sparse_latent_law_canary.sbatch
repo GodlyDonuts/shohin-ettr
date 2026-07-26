@@ -20,7 +20,9 @@ LAYERS="${LAYERS:-2}"
 HEADS="${HEADS:-4}"
 BATCH="${BATCH:-64}"
 AUXILIARY="${AUXILIARY:-3000}"
-OUTPUT="$ROOT/artifacts/r12/sparse_latent_law_curriculum/seed${SEED}.json"
+ARCHITECTURE="${ARCHITECTURE:-factorized}"
+OUTPUT="$ROOT/artifacts/r12/sparse_latent_law_curriculum/seed${SEED}_${ARCHITECTURE}.json"
+MODEL="$ROOT/artifacts/r12/sparse_latent_law_curriculum/seed${SEED}_${ARCHITECTURE}.pt"
 
 cd "$ROOT"
 mkdir -p "$(dirname "$OUTPUT")" logs
@@ -39,5 +41,7 @@ export MKL_NUM_THREADS=4
   --learning-rate 0.002 \
   --batch-size "$BATCH" \
   --auxiliary-rows "$AUXILIARY" \
+  --architecture "$ARCHITECTURE" \
   --device cuda \
+  --model-output "$MODEL" \
   --output "$OUTPUT"
