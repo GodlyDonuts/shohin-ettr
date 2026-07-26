@@ -215,8 +215,11 @@
 > closure but failed closed before CUDA because pinned Bubblewrap does not
 > implement `--clearenv`. The sealed verifier already launches Bubblewrap with
 > the exact environment `{HOME, PATH}`, so the unsupported redundant flag is
-> removed and statically rejected. Submit the confined smoke only from this
-> corrected committed wrapper.
+> removed and statically rejected. Corrected confined smoke `706072` is pending
+> H100 resources from exact wrapper commit
+> `40ae864aae5bdd583485d8512239f05913103de6`; scheduler configuration
+> admission passes. Monitor it to completion before promoting the confined
+> runtime gate.
 > Build the next exact-source runtime only from the committed hardened source,
 > verify every sidecar hash, and then submit the pinned in-Bubblewrap H100
 > smoke. These jobs cannot read checkpoints, shards, or optimizer state. Do

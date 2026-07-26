@@ -52702,7 +52702,10 @@ Confined smoke `706033` then passed extraction and root-owned Python-closure
 verification but failed closed before CUDA because pinned Bubblewrap does not
 implement `--clearenv`. The sealed verifier already gives Bubblewrap the exact
 environment `{HOME, PATH}`; the unsupported redundant flag is removed and now
-statically rejected.
+statically rejected. Corrected confined smoke `706072` is pending H100
+resources from exact wrapper commit
+`40ae864aae5bdd583485d8512239f05913103de6`; scheduler configuration
+admission passes.
 
 Current decision:
 `ettr_architecture_complete_stage_specific_runtime_pass_external_supervisor_and_learning_pending`.
