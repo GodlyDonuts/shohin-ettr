@@ -14662,3 +14662,45 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `ettr_trainable_architecture_complete_verifier_signed_launch_custody_implemented_real_supervisor_smoke_and_learning_pending`.
+
+- **2026-07-26 15:06 EDT** -- **The exact three-stage supervisor smoke is
+  launch-ready; trainable architecture remains complete and capability
+  remains unmeasured.** No continuation pretraining was started, prepared,
+  queued, resumed, or modified. The protected step-300k checkpoint and data
+  lineage remain untouched.
+
+  Fresh exact-source build `706725` completed on `evc21` and produced immutable
+  runtime v2 at
+  `/lustre/fs1/home/sa305415/shohin/artifacts/runtime/ettr-claim-runtime-v2.tar`.
+  Archive SHA-256 is
+  `4cc48c3b462d643dd1d5bb453c75640376d80c70b706a7b5d68549924b2e9964`,
+  inventory SHA-256 is
+  `e8a26cb7b0f15513540d92b2a80883108daaed8608491298e069bf63b1159222`,
+  and source-bundle SHA-256 is
+  `1733529e84bfdcf062fb28c1fa1a22c24ab3cab9d7cd794d9afc282eb05d093d`.
+
+  `pipeline/prepare_ettr_supervisor_smoke.py` now prepares one deterministic
+  synthetic step-0 ETTR fixture with no flagship checkpoint, shard, or
+  optimizer input. Its stdlib-only launch phase uses one verified runtime
+  extraction, one sealed-memfd launch-verifier key, one run ID, and the
+  production supervisor for the exact signed
+  `WORLD -> COMMAND -> QUERY` parent chain. Validation strict-parses the
+  receipts and exercises public signed qualification admission.
+  `pipeline/jobs/smoke_ettr_stage_supervisor.sbatch` pins runtime v2, regular
+  Python 3.13, root-owned host Python, Bubblewrap, all runtime identities, and
+  excludes known-bad `evc33`, `evc34`, `evc43`, and `evc44`.
+
+  Focused smoke tests pass 7/7 with one Linux-only test skipped locally. The
+  complete ETTR-focused inventory passes **282 passed / 2 skipped in 48.50
+  seconds** after short-write hardening; Ruff, byte compilation, shell syntax,
+  and diff checks are clean. The real Newton/H100 smoke is not yet a result.
+  Same-account execution will establish launch mechanics, not independent
+  verifier ownership.
+
+  `R12_ETTR_ISOLATED_LEARNABILITY_PREREG.md` freezes the later scientific
+  gate across five seeds, three leave-one-ontology-out folds, unseen laws,
+  depths, renderers, compositions, and matched equal-budget controls. It
+  authorizes no dataset generation or fitting by itself.
+
+  Decision:
+  `ettr_trainable_architecture_complete_exact_runtime_and_supervisor_smoke_ready_real_h100_smoke_and_isolated_learning_pending`.

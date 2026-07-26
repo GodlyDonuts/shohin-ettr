@@ -457,3 +457,53 @@ unseen ontologies, depths, compositions, and renderers.
 
 Current decision:
 `ettr_architecture_complete_authority_validation_and_retained_source_import_pass_external_claim_deployment_pending_untrained_pretraining_held_capability_unproven`.
+
+## Verifier-Signed Supervisor And Learnability Boundary
+
+The final in-repository launch-custody layer is implemented. One verifier
+generates a run ID and a sealed-memfd Ed25519 launch key, then launches
+`WORLD -> COMMAND -> QUERY` through the production stage supervisor. Every
+stage receipt authenticates its exact parent, runtime, policy, manifest,
+descriptor-measured inputs and outputs, GPU, network namespace, environment,
+and mount map. The candidate receives no signing descriptor.
+
+A deterministic synthetic smoke harness now exercises the exact architecture
+and production custody APIs without reading the protected checkpoint,
+pretraining shards, or an optimizer. It creates an untrained step-0 fixture,
+extracts one verified runtime, runs all three source-deleted Bubblewrap
+stages, validates the signed launch chain, and exercises public signed
+qualification admission. Its Slurm wrapper pins the regular Python 3.13
+interpreter, exact v2 runtime, root-owned host Python, Bubblewrap, runtime
+inventory, source bundle, and known-bad-node exclusions. The complete
+ETTR-focused inventory passes **282/282 with two platform-only skips** after
+the final short-write hardening; Ruff, byte compilation, shell syntax, and
+diff checks are clean.
+
+Fresh exact-source runtime build `706725` completed independently on Newton.
+It produced the 5,866,106,880-byte immutable v2 archive with SHA-256
+`4cc48c3b462d643dd1d5bb453c75640376d80c70b706a7b5d68549924b2e9964`,
+inventory SHA-256
+`e8a26cb7b0f15513540d92b2a80883108daaed8608491298e069bf63b1159222`,
+and source-bundle SHA-256
+`1733529e84bfdcf062fb28c1fa1a22c24ab3cab9d7cd794d9afc282eb05d093d`.
+The remaining deployment gate is one real H100
+`extract -> supervisor -> Bubblewrap -> WORLD -> COMMAND -> QUERY` smoke.
+Same-account execution proves mechanics but cannot establish independent
+verifier ownership; that remains an explicit external claim boundary.
+
+`R12_ETTR_ISOLATED_LEARNABILITY_PREREG.md` freezes the next scientific gate:
+five seeds, three leave-one-ontology-out folds, exact equal-budget controls,
+source deletion, unseen rules, depths, renderers, compositions, and withheld
+task families. No dataset has been materialized and no fitting has been
+authorized by that document. Therefore:
+
+- trainable architecture implementation: complete;
+- exact runtime image: complete;
+- in-repository launch custody: complete;
+- real three-stage H100 smoke: pending;
+- isolated learned systematic transfer: unmeasured;
+- native general reasoning: unproven; and
+- continuation pretraining: held by the user.
+
+Current decision:
+`ettr_trainable_architecture_complete_real_supervisor_smoke_and_isolated_learning_pending`.
