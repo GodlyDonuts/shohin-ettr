@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from ettr_factorial_qualification_board import ETTRFactorialQualificationBoard
 
 
-EXECUTION_MANIFEST_SCHEMA = "ettr-factorial-execution-manifest-v2"
+EXECUTION_MANIFEST_SCHEMA = "ettr-factorial-execution-manifest-v3"
 STAGE_RECEIPT_SCHEMA = "ettr-factorial-stage-execution-receipt-v1"
 QUERY_RECEIPT_SCHEMA = "ettr-factorial-late-query-receipt-v1"
 TOTAL_PACKETS = 12
@@ -121,6 +121,8 @@ class ETTRFactorialExecutionManifest:
     tokenizer_sha256: str
     tokenization_receipt_sha256: str
     model_assembly_receipt_sha256: str
+    bootstrap_sha256: str
+    runtime_bundle_sha256: str
     compiler_runner_sha256: str
     executor_runner_sha256: str
     query_runner_sha256: str
@@ -150,6 +152,8 @@ class ETTRFactorialExecutionManifest:
             self.tokenizer_sha256,
             self.tokenization_receipt_sha256,
             self.model_assembly_receipt_sha256,
+            self.bootstrap_sha256,
+            self.runtime_bundle_sha256,
             self.compiler_runner_sha256,
             self.executor_runner_sha256,
             self.query_runner_sha256,

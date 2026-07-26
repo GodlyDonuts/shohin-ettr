@@ -23,8 +23,7 @@ from ettr_factorial_custody import (
     sha256_file,
     write_json_once,
 )
-from ettr_state_io import write_state_once
-from ettr_qualification import typed_state_sha256
+from ettr_state_io import typed_state_sha256, write_state_once
 from model import GPT, GPTConfig
 
 

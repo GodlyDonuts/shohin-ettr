@@ -52559,15 +52559,32 @@ preregistered authority record, public key, and seal hash. The physical four-
 process test uses canonical tokenizer output, deletes prior stages, and
 machine-checks that candidate runners do not import the board or signer.
 Signature/admission behavior is tested separately against valid synthetic
-packets. The complete inventory passes 267/267 in 169.97 seconds.
+packets. After rooted-authority and isolated-bootstrap hardening, the complete
+inventory passes **294/294 in 175.16 seconds**.
 
-Final independent deployment rereview leaves two external trust controls
-before a future result is independently claim-bearing: a verified bootstrap
-must hash the complete transitive runtime bundle before candidate imports
-execute, and a signer-authority record must be independently root-anchored
-before candidate execution. The current runner hashes and local Ed25519
-admission prove deterministic mechanics, not those external facts. These
-controls do not modify ETTR's trainable architecture or its freeze status.
+The final deployment pass implements root-signed authority validation. An
+offline Ed25519 root signs an immutable record binding one custody signer to
+one board, one execution manifest, and seal schema v2. Public admission loads
+the root key and record and validates a supplied root fingerprint while
+rejecting mutable, linked, forged, reassociated, or mismatched-root authority.
+Independent status requires the external verifier to own that pin and
+preregister the record before candidate execution; the repository cannot
+self-prove those operational facts.
+
+Candidate stages now start through a stdlib-only `python -I -S -B` bootstrap.
+Once launched, it verifies the canonical manifest and a closed read-only
+application source bundle before project imports; rejects caller
+manifest replacement, bytecode caches, extra sources, mutable roots, hard
+links, symlinks, adjacent shadows, `PYTHONPATH`, and `sitecustomize`; injects
+the verified manifest; executes verified runner bytes directly; and loads
+first-party modules from retained verified bytes rather than mutable paths.
+
+The remaining external public-deployment boundary is explicit: a trusted
+launcher must authenticate the bootstrap before execution, the verifier must
+own the root pin/preregistration ledger, and the complete transitive
+Torch/safetensors/native dependency closure, CPython/stdlib, OS loader, and
+CUDA driver require a content-addressed immutable image. Those tasks add no
+parameters and do not reopen architecture design.
 
 This is the end of architecture construction, not the end of the reasoning
 program. The new parameters are not yet trained, so current Shohin does not
@@ -52576,4 +52593,4 @@ the user authorizes training; afterward, unseen-ontology qualification and
 post-training determine whether the mechanism becomes useful intelligence.
 
 Current decision:
-`architecture_complete_local_custody_mechanics_pass_external_claim_deployment_pending_learning_and_general_reasoning_unproven`.
+`architecture_complete_authority_validation_retained_source_import_pass_external_claim_deployment_pending_learning_and_general_reasoning_unproven`.

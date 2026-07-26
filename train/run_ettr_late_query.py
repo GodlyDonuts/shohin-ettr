@@ -26,8 +26,7 @@ from ettr_factorial_custody import (
     token_tensor_sha256,
     write_json_once,
 )
-from ettr_state_io import read_state
-from ettr_qualification import typed_state_sha256
+from ettr_state_io import read_state, typed_state_sha256
 from model import GPT, GPTConfig
 
 

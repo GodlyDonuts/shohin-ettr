@@ -116,19 +116,25 @@
 > separately against valid synthetic packets because the untrained model is
 > not expected to pass learned qualification. Candidate runners are
 > machine-checked not to import the qualification board or signing authority.
-> The complete ETTR/cross-ontology inventory passes **267/267** in 169.97
+> The complete ETTR/cross-ontology inventory passes **294/294** in 175.16
 > seconds with clean Ruff, byte compilation, and diff checks.
 > A final independent deployment rereview found and repaired one additional
 > P1 model-identity collision: non-persistent RoPE buffers changed logits
 > without changing the receipt. Complete-model identity now binds all named
-> parameters and named buffers, including non-persistent buffers. Two external
-> claim-deployment gates remain and do not change the trainable architecture:
-> candidate execution must start from a dependency-closure-verified isolated
-> bundle before Python imports execute, and the signer authority record must
-> be anchored by an independent root before candidate execution rather than
-> supplied by the claimant during admission. Until those deployment controls
-> exist, local signatures demonstrate mechanics but are not an independently
-> anchored public capability claim.
+> parameters and named buffers, including non-persistent buffers. The signer
+> mechanism now supports independent anchoring: an offline Ed25519 root signs
+> an immutable authority record binding signer, board, manifest, and seal
+> schema, and public admission validates it under a supplied root fingerprint.
+> Independence still requires the verifier, not the claimant, to own that pin
+> and preregister the record. Candidate stages start under a stdlib-only
+> `python -I -S -B` bootstrap that verifies the canonical manifest and closed
+> in-repo source bundle, rejects manifest overrides/shadows/bytecode/links/
+> mutation, retains verified module bytes through import, and executes the
+> verified runner bytes. A public result additionally requires a trusted
+> launcher to authenticate the bootstrap before execution and a
+> content-addressed immutable Torch/native/CPython/OS/CUDA runtime image.
+> These are external claim-deployment controls, not unfinished trainable
+> architecture.
 > This is an architecture-freeze result, not evidence that the untrained ETTR
 > parameters already reason. No pretraining was started, queued, resumed,
 > prepared, or modified.
@@ -14417,7 +14423,8 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   preparation occurred; the protected checkpoint hash remains
   `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
 
-  Final deployment rereview leaves two non-neural trust controls before a
+  **Historical status, superseded by the next journal entry.** Final
+  deployment rereview leaves two non-neural trust controls before a
   future result can be called independently claim-bearing: launch candidate
   execution only after a bootstrap verifies the complete transitive runtime
   bundle before imports, and load a signer-authority record anchored by an
@@ -14428,3 +14435,45 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `ettr_architecture_complete_local_custody_mechanics_pass_external_claim_deployment_pending_untrained_pretraining_held_capability_unproven`.
+
+- **2026-07-26 EDT** -- **The ETTR architecture is complete; root-authority
+  validation and retained-byte application-source custody are implemented.**
+  No pretraining was started, prepared, queued, or modified. The
+  protected step-300k checkpoint remains unchanged, and the parameter receipt
+  remains 67,697,771 added / 192,779,435 total / 7,220,565 below 200M.
+
+  `train/ettr_factorial_authority.py` replaces the old self-hash with an
+  immutable root-signed authority record. A distinct offline Ed25519 root
+  authorizes exactly one custody signer for one board, one execution manifest,
+  and seal schema v2. Admission loads the root public key and authority record
+  from immutable single-link files and validates a supplied root fingerprint.
+  Writable, symlinked, hard-linked, wrong-board, wrong-manifest, wrong-signer,
+  forged-signature, same-root/signer, and mismatched-root substitutions fail
+  closed. The repository cannot prove who owns the supplied pin or when the
+  record was published; independent claim status therefore requires a
+  verifier-owned pin and external pre-execution preregistration.
+
+  `train/run_ettr_verified_stage.py` now requires `python -I -S -B` and,
+  once launched, verifies the one canonical execution manifest and a closed
+  read-only application source bundle before importing project or third-party
+  code. It rejects caller manifest overrides, adjacent and
+  `PYTHONPATH`/`sitecustomize` shadows, extra files, bytecode caches, mutable
+  bundle roots, symlinks, hard links, and source mutation; it injects the
+  verified manifest itself and executes the already-hashed runner bytes.
+  First-party modules load from retained verified bytes through a closed
+  importer, eliminating the verify-to-path-import race. Typed-state hashing
+  moved into `ettr_state_io.py`, removing the assessor qualification module
+  from the candidate runtime bundle.
+
+  The complete ETTR/cross-ontology inventory passes **294/294 in 175.16
+  seconds**. Ruff and byte compilation are clean, and `git diff --check` is
+  clean. The remaining
+  future public-deployment TCB is explicit: a trusted external launcher must
+  authenticate the bootstrap before execution; a verifier must own the root
+  pin and preregistration ledger; and transitive Torch/safetensors/native
+  dependencies, CPython/stdlib, OS loader, and CUDA driver require a
+  content-addressed immutable image. Those boundaries do not reopen the
+  neural architecture.
+
+  Decision:
+  `ettr_architecture_complete_authority_validation_and_retained_source_import_pass_external_claim_deployment_pending_untrained_pretraining_held_capability_unproven`.

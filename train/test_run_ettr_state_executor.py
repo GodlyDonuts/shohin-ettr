@@ -154,6 +154,8 @@ def test_fresh_executor_receives_state_and_post_seal_command(
         tokenizer_sha256="e" * 64,
         tokenization_receipt_sha256="f" * 64,
         model_assembly_receipt_sha256="0" * 64,
+        bootstrap_sha256="4" * 64,
+        runtime_bundle_sha256="5" * 64,
         compiler_runner_sha256="2" * 64,
         executor_runner_sha256=hashlib.sha256(
             Path(__file__)

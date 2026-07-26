@@ -35,6 +35,7 @@ from ettr_factorial_qualification_board import (
     build_ettr_factorial_qualification_board,
 )
 from ettr_model_assembly import ETTRModelAssemblyReceipt
+from ettr_runtime_bundle import materialize_runtime_bundle
 from model import GPT, GPTConfig
 from ettr_state_io import read_state
 from run_cross_ontology_assessor import (
@@ -121,6 +122,42 @@ def _run(*arguments: str) -> None:
     )
 
 
+def _run_verified(
+    *,
+    stage: str,
+    manifest_path: Path,
+    manifest_sha256: str,
+    runtime_receipt_path: Path,
+    bundle_root: Path,
+    runner_arguments: tuple[str, ...],
+) -> None:
+    subprocess.run(
+        [
+            sys.executable,
+            "-I",
+            "-S",
+            "-B",
+            str(TRAIN / "run_ettr_verified_stage.py"),
+            "--manifest",
+            str(manifest_path),
+            "--manifest-sha256",
+            manifest_sha256,
+            "--runtime-receipt",
+            str(runtime_receipt_path),
+            "--bundle-root",
+            str(bundle_root),
+            "--stage",
+            stage,
+            "--",
+            *runner_arguments,
+        ],
+        check=True,
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+
 def _write_character_tokenizer(path: Path) -> None:
     vocabulary = {"<pad>": 0, "<unk>": 1}
     vocabulary.update({chr(code): code + 2 for code in range(128)})
@@ -132,6 +169,7 @@ def _write_character_tokenizer(path: Path) -> None:
 
 def test_candidate_stage_sources_do_not_import_assessor_authority() -> None:
     forbidden = {
+        "ettr_factorial_authority",
         "ettr_factorial_qualification_board",
         "ettr_factorial_signed_custody",
     }
@@ -172,6 +210,10 @@ def test_four_process_chain_physically_deletes_prior_inputs(
     command_anchor = custody_dir / "command.json"
     query_anchor = custody_dir / "query.json"
     manifest_anchor = custody_dir / "execution_manifest.json"
+    runtime_receipt_anchor = custody_dir / "runtime_receipt.json"
+    runtime_bundle = tmp_path / "runtime_bundle"
+    runtime_receipt = materialize_runtime_bundle(TRAIN, runtime_bundle)
+    _write_json(runtime_receipt_anchor, asdict(runtime_receipt))
     _write_character_tokenizer(tokenizer_anchor)
     _write_json(config_anchor, asdict(model.config))
     torch.save(base_payload, checkpoint_anchor)
@@ -240,6 +282,10 @@ def test_four_process_chain_physically_deletes_prior_inputs(
         tokenizer_sha256=tokenization_receipt.tokenizer_sha256,
         tokenization_receipt_sha256=tokenization_receipt.sha256(),
         model_assembly_receipt_sha256=model_assembly_receipt.sha256(),
+        bootstrap_sha256=hashlib.sha256(
+            (TRAIN / "run_ettr_verified_stage.py").read_bytes()
+        ).hexdigest(),
+        runtime_bundle_sha256=runtime_receipt.sha256(),
         compiler_runner_sha256=hashlib.sha256(
             (TRAIN / "run_ettr_world_compiler.py").read_bytes()
         ).hexdigest(),
@@ -286,6 +332,7 @@ def test_four_process_chain_physically_deletes_prior_inputs(
         "command": command_anchor.read_bytes(),
         "query": query_anchor.read_bytes(),
         "manifest": manifest_anchor.read_bytes(),
+        "runtime_receipt": runtime_receipt_anchor.read_bytes(),
     }
     shutil.rmtree(custody_dir)
     assert not custody_dir.exists()
@@ -299,6 +346,7 @@ def test_four_process_chain_physically_deletes_prior_inputs(
     compiled_state = compiler_dir / "state.safetensors"
     manifest_path = compiler_dir / "execution_manifest.json"
     compiler_receipt = compiler_dir / "compiler_receipt.json"
+    runtime_receipt_path = compiler_dir / "runtime_receipt.json"
     config.write_bytes(anchor_bytes["config"])
     config.chmod(0o444)
     checkpoint.write_bytes(anchor_bytes["checkpoint"])
@@ -309,30 +357,34 @@ def test_four_process_chain_physically_deletes_prior_inputs(
     world_path.chmod(0o444)
     manifest_path.write_bytes(anchor_bytes["manifest"])
     manifest_path.chmod(0o444)
+    runtime_receipt_path.write_bytes(anchor_bytes["runtime_receipt"])
+    runtime_receipt_path.chmod(0o444)
     checkpoint_digest = hashlib.sha256(checkpoint.read_bytes()).hexdigest()
-    _run(
-        str(TRAIN / "run_ettr_world_compiler.py"),
-        "--config",
-        str(config),
-        "--compiler",
-        str(compiler_weights),
-        "--checkpoint",
-        str(checkpoint),
-        "--checkpoint-sha256",
-        checkpoint_digest,
-        "--expected-step",
-        "123",
-        "--world",
-        str(world_path),
-        "--execution-manifest",
-        str(manifest_path),
-        "--execution-manifest-sha256",
-        manifest.sha256(),
-        "--output",
-        str(compiled_state),
-        "--receipt-output",
-        str(compiler_receipt),
-        "--hard",
+    _run_verified(
+        stage="world",
+        manifest_path=manifest_path,
+        manifest_sha256=manifest.sha256(),
+        runtime_receipt_path=runtime_receipt_path,
+        bundle_root=runtime_bundle,
+        runner_arguments=(
+            "--config",
+            str(config),
+            "--compiler",
+            str(compiler_weights),
+            "--checkpoint",
+            str(checkpoint),
+            "--checkpoint-sha256",
+            checkpoint_digest,
+            "--expected-step",
+            "123",
+            "--world",
+            str(world_path),
+            "--output",
+            str(compiled_state),
+            "--receipt-output",
+            str(compiler_receipt),
+            "--hard",
+        ),
     )
     compiled_bytes = compiled_state.read_bytes()
     config_bytes = config.read_bytes()
@@ -355,6 +407,7 @@ def test_four_process_chain_physically_deletes_prior_inputs(
     compiler_receipt = executor_dir / "compiler_receipt.json"
     executor_receipt = executor_dir / "executor_receipt.json"
     terminal = executor_dir / "terminal.safetensors"
+    runtime_receipt_path = executor_dir / "runtime_receipt.json"
     config.write_bytes(config_bytes)
     config.chmod(0o444)
     state.write_bytes(compiled_bytes)
@@ -369,6 +422,8 @@ def test_four_process_chain_physically_deletes_prior_inputs(
     manifest_path.chmod(0o444)
     compiler_receipt.write_bytes(compiler_receipt_bytes)
     compiler_receipt.chmod(0o444)
+    runtime_receipt_path.write_bytes(anchor_bytes["runtime_receipt"])
+    runtime_receipt_path.chmod(0o444)
     assert {path.name for path in executor_dir.iterdir()} == {
         "base.pt",
         "command.json",
@@ -376,40 +431,43 @@ def test_four_process_chain_physically_deletes_prior_inputs(
         "config.json",
         "execution_manifest.json",
         "reactor.safetensors",
+        "runtime_receipt.json",
         "state.safetensors",
     }
     checkpoint_digest = hashlib.sha256(checkpoint.read_bytes()).hexdigest()
-    _run(
-        str(TRAIN / "run_ettr_state_executor.py"),
-        "--config",
-        str(config),
-        "--state",
-        str(state),
-        "--reactor",
-        str(reactor_weights),
-        "--checkpoint",
-        str(checkpoint),
-        "--checkpoint-sha256",
-        checkpoint_digest,
-        "--expected-step",
-        "123",
-        "--command",
-        str(command_path),
-        "--execution-manifest",
-        str(manifest_path),
-        "--execution-manifest-sha256",
-        manifest.sha256(),
-        "--compiler-receipt",
-        str(compiler_receipt),
-        "--compiler-receipt-sha256",
-        compiler_receipt_sha256,
-        "--output",
-        str(terminal),
-        "--receipt-output",
-        str(executor_receipt),
-        "--steps",
-        "2",
-        "--hard",
+    _run_verified(
+        stage="command",
+        manifest_path=manifest_path,
+        manifest_sha256=manifest.sha256(),
+        runtime_receipt_path=runtime_receipt_path,
+        bundle_root=runtime_bundle,
+        runner_arguments=(
+            "--config",
+            str(config),
+            "--state",
+            str(state),
+            "--reactor",
+            str(reactor_weights),
+            "--checkpoint",
+            str(checkpoint),
+            "--checkpoint-sha256",
+            checkpoint_digest,
+            "--expected-step",
+            "123",
+            "--command",
+            str(command_path),
+            "--compiler-receipt",
+            str(compiler_receipt),
+            "--compiler-receipt-sha256",
+            compiler_receipt_sha256,
+            "--output",
+            str(terminal),
+            "--receipt-output",
+            str(executor_receipt),
+            "--steps",
+            "2",
+            "--hard",
+        ),
     )
     terminal_bytes = terminal.read_bytes()
     executor_receipt_record = ETTRStageExecutionReceipt.from_path(executor_receipt)
@@ -445,6 +503,7 @@ def test_four_process_chain_physically_deletes_prior_inputs(
     executor_receipt = query_dir / "executor_receipt.json"
     candidate = query_dir / "candidate.json"
     query_receipt_path = query_dir / "query_receipt.json"
+    runtime_receipt_path = query_dir / "runtime_receipt.json"
     config.write_bytes(config_bytes)
     config.chmod(0o444)
     terminal.write_bytes(terminal_bytes)
@@ -459,44 +518,48 @@ def test_four_process_chain_physically_deletes_prior_inputs(
     manifest_path.chmod(0o444)
     executor_receipt.write_bytes(executor_receipt_bytes)
     executor_receipt.chmod(0o444)
+    runtime_receipt_path.write_bytes(anchor_bytes["runtime_receipt"])
+    runtime_receipt_path.chmod(0o444)
     query_names = {path.name for path in query_dir.iterdir()}
     assert "world.json" not in query_names
     assert "command.json" not in query_names
     assert "compiler.safetensors" not in query_names
     assert "reactor.safetensors" not in query_names
     checkpoint_digest = hashlib.sha256(checkpoint.read_bytes()).hexdigest()
-    _run(
-        str(TRAIN / "run_ettr_late_query.py"),
-        "--config",
-        str(config),
-        "--state",
-        str(terminal),
-        "--reader",
-        str(reader),
-        "--checkpoint",
-        str(checkpoint),
-        "--checkpoint-sha256",
-        checkpoint_digest,
-        "--expected-step",
-        "123",
-        "--query",
-        str(query_path),
-        "--execution-manifest",
-        str(manifest_path),
-        "--execution-manifest-sha256",
-        manifest.sha256(),
-        "--executor-receipt",
-        str(executor_receipt),
-        "--executor-receipt-sha256",
-        executor_receipt_sha256,
-        "--tokenization-receipt-sha256",
-        tokenization_receipt.sha256(),
-        "--model-assembly-receipt-sha256",
-        model_assembly_receipt.sha256(),
-        "--output",
-        str(candidate),
-        "--receipt-output",
-        str(query_receipt_path),
+    _run_verified(
+        stage="query",
+        manifest_path=manifest_path,
+        manifest_sha256=manifest.sha256(),
+        runtime_receipt_path=runtime_receipt_path,
+        bundle_root=runtime_bundle,
+        runner_arguments=(
+            "--config",
+            str(config),
+            "--state",
+            str(terminal),
+            "--reader",
+            str(reader),
+            "--checkpoint",
+            str(checkpoint),
+            "--checkpoint-sha256",
+            checkpoint_digest,
+            "--expected-step",
+            "123",
+            "--query",
+            str(query_path),
+            "--executor-receipt",
+            str(executor_receipt),
+            "--executor-receipt-sha256",
+            executor_receipt_sha256,
+            "--tokenization-receipt-sha256",
+            tokenization_receipt.sha256(),
+            "--model-assembly-receipt-sha256",
+            model_assembly_receipt.sha256(),
+            "--output",
+            str(candidate),
+            "--receipt-output",
+            str(query_receipt_path),
+        ),
     )
     candidate_payload = json.loads(candidate.read_text())
     candidate_bytes = candidate.read_bytes()

@@ -23,6 +23,7 @@ from endogenous_typed_theory_reactor import (
     TheoryReactorConfig,
     TheoryReactorError,
 )
+from ettr_factorial_authority import ETTRCustodyAuthorityRecord
 from ettr_factorial_custody import (
     ETTRFactorialExecutionManifest,
     ETTRLateQueryExecutionReceipt,
@@ -37,35 +38,14 @@ from ettr_factorial_custody import (
 from ettr_factorial_qualification_board import ETTRFactorialQualificationBoard
 from ettr_factorial_tokenization import ETTRFactorialTokenizationReceipt
 from ettr_model_assembly import ETTRModelAssemblyReceipt
-from ettr_qualification import ETTRQualificationBatch, typed_state_sha256
-from ettr_state_io import read_state
+from ettr_qualification import ETTRQualificationBatch
+from ettr_state_io import read_state, typed_state_sha256
 
 
-CUSTODY_SEAL_SCHEMA = "ettr-factorial-custody-seal-v1"
-AUTHORITY_SCHEMA = "ettr-factorial-custody-authority-v1"
+CUSTODY_SEAL_SCHEMA = "ettr-factorial-custody-seal-v2"
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _HEX_32_BYTES = re.compile(r"^[0-9a-f]{64}$")
 _HEX_64_BYTES = re.compile(r"^[0-9a-f]{128}$")
-
-
-def custody_authority_sha256(
-    *,
-    public_key_hex: str,
-    board_sha256: str,
-    execution_manifest_sha256: str,
-) -> str:
-    """Hash the authority record preregistered before candidate execution."""
-
-    return sha256_bytes(
-        canonical_json_bytes(
-            {
-                "schema": AUTHORITY_SCHEMA,
-                "public_key_hex": public_key_hex,
-                "board_sha256": board_sha256,
-                "execution_manifest_sha256": execution_manifest_sha256,
-            }
-        )
-    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -88,7 +68,7 @@ class ETTRCustodySeal:
     false_token_id: int
     true_token_id: int
     pad_token_id: int
-    authority_preregistration_sha256: str
+    authority_record_sha256: str
     public_key_hex: str
     signature_hex: str
 
@@ -101,11 +81,10 @@ class ETTRCustodySeal:
     def verify(
         self,
         *,
+        authority_record: ETTRCustodyAuthorityRecord,
         expected_seal_sha256: str,
-        expected_public_key_hex: str,
         expected_board_sha256: str,
         expected_model_sha256: str,
-        expected_authority_preregistration_sha256: str,
     ) -> None:
         hash_values = (
             expected_seal_sha256,
@@ -120,24 +99,21 @@ class ETTRCustodySeal:
             self.terminal_state_tensor_sha256,
             self.answer_token_tensor_sha256,
             self.qualification_batch_sha256,
-            self.authority_preregistration_sha256,
+            self.authority_record_sha256,
         )
         if (
             self.schema != CUSTODY_SEAL_SCHEMA
             or any(_SHA256.fullmatch(value) is None for value in hash_values)
             or _HEX_32_BYTES.fullmatch(self.public_key_hex) is None
             or _HEX_64_BYTES.fullmatch(self.signature_hex) is None
-            or self.public_key_hex != expected_public_key_hex
+            or self.public_key_hex != authority_record.custody_public_key_hex
             or self.board_sha256 != expected_board_sha256
             or self.model_sha256 != expected_model_sha256
-            or self.authority_preregistration_sha256
-            != expected_authority_preregistration_sha256
-            or self.authority_preregistration_sha256
-            != custody_authority_sha256(
-                public_key_hex=self.public_key_hex,
-                board_sha256=self.board_sha256,
-                execution_manifest_sha256=self.execution_manifest_sha256,
-            )
+            or self.authority_record_sha256
+            != authority_record.sha256()
+            or self.board_sha256 != authority_record.board_sha256
+            or self.execution_manifest_sha256
+            != authority_record.execution_manifest_sha256
             or not isinstance(self.qualification_vocab_size, int)
             or isinstance(self.qualification_vocab_size, bool)
             or self.qualification_vocab_size < 2
@@ -170,6 +146,7 @@ class ETTRCustodySeal:
 def _sign_custody_chain_unchecked(
     *,
     private_key: Ed25519PrivateKey,
+    authority_record: ETTRCustodyAuthorityRecord,
     board_sha256: str,
     model_sha256: str,
     execution_manifest_sha256: str,
@@ -192,6 +169,13 @@ def _sign_custody_chain_unchecked(
         encoding=serialization.Encoding.Raw,
         format=serialization.PublicFormat.Raw,
     ).hex()
+    if (
+        public_key_hex != authority_record.custody_public_key_hex
+        or board_sha256 != authority_record.board_sha256
+        or execution_manifest_sha256
+        != authority_record.execution_manifest_sha256
+    ):
+        raise TheoryReactorError("custody signer authority differs")
     unsigned = ETTRCustodySeal(
         schema=CUSTODY_SEAL_SCHEMA,
         board_sha256=board_sha256,
@@ -209,11 +193,7 @@ def _sign_custody_chain_unchecked(
         false_token_id=false_token_id,
         true_token_id=true_token_id,
         pad_token_id=pad_token_id,
-        authority_preregistration_sha256=custody_authority_sha256(
-            public_key_hex=public_key_hex,
-            board_sha256=board_sha256,
-            execution_manifest_sha256=execution_manifest_sha256,
-        ),
+        authority_record_sha256=authority_record.sha256(),
         public_key_hex=public_key_hex,
         signature_hex="",
     )
@@ -236,9 +216,9 @@ class ETTRSignedQualificationAdmission:
         execution_manifest: ETTRFactorialExecutionManifest,
         compiler_receipt: ETTRStageExecutionReceipt,
         executor_receipt: ETTRStageExecutionReceipt,
+        authority_record: ETTRCustodyAuthorityRecord,
         expected_query_receipt_sha256: str,
         expected_seal_sha256: str,
-        expected_public_key_hex: str,
         expected_board_sha256: str,
         expected_model_sha256: str,
         expected_qualification_batch_sha256: str,
@@ -246,7 +226,6 @@ class ETTRSignedQualificationAdmission:
         expected_false_token_id: int,
         expected_true_token_id: int,
         expected_pad_token_id: int,
-        expected_authority_preregistration_sha256: str,
     ) -> None:
         self.query_receipt.validate(
             expected_receipt_sha256=expected_query_receipt_sha256,
@@ -270,13 +249,10 @@ class ETTRSignedQualificationAdmission:
             row_count=execution_manifest.row_count,
         )
         self.custody_seal.verify(
+            authority_record=authority_record,
             expected_seal_sha256=expected_seal_sha256,
-            expected_public_key_hex=expected_public_key_hex,
             expected_board_sha256=expected_board_sha256,
             expected_model_sha256=expected_model_sha256,
-            expected_authority_preregistration_sha256=(
-                expected_authority_preregistration_sha256
-            ),
         )
         if (
             self.custody_seal.execution_manifest_sha256
@@ -373,6 +349,7 @@ def sign_validated_custody_chain(
     board: ETTRFactorialQualificationBoard,
     *,
     private_key: Ed25519PrivateKey,
+    authority_record: ETTRCustodyAuthorityRecord,
     execution_manifest: ETTRFactorialExecutionManifest,
     expected_execution_manifest_sha256: str,
     tokenization_receipt: ETTRFactorialTokenizationReceipt,
@@ -481,6 +458,7 @@ def sign_validated_custody_chain(
         raise TheoryReactorError("signed primary output artifact differs")
     return _sign_custody_chain_unchecked(
         private_key=private_key,
+        authority_record=authority_record,
         board_sha256=board.receipt.payload_sha256,
         model_sha256=model_assembly_receipt.complete_model_sha256,
         execution_manifest_sha256=expected_execution_manifest_sha256,
@@ -502,13 +480,11 @@ def sign_validated_custody_chain(
 
 
 __all__ = [
-    "AUTHORITY_SCHEMA",
     "CUSTODY_SEAL_SCHEMA",
     "ETTRCustodySeal",
     "ETTRLateQueryExecutionReceipt",
     "ETTRSignedQualificationAdmission",
     "QUERY_RECEIPT_SCHEMA",
-    "custody_authority_sha256",
     "sign_validated_custody_chain",
     "token_tensor_sha256",
     "validate_primary_custody_receipts",

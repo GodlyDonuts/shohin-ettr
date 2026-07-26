@@ -149,6 +149,8 @@ def test_fresh_late_query_matches_direct_state_only_read(
         tokenizer_sha256="5" * 64,
         tokenization_receipt_sha256="3" * 64,
         model_assembly_receipt_sha256="4" * 64,
+        bootstrap_sha256="a" * 64,
+        runtime_bundle_sha256="b" * 64,
         compiler_runner_sha256="6" * 64,
         executor_runner_sha256="7" * 64,
         query_runner_sha256=_sha256(

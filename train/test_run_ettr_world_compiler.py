@@ -139,6 +139,8 @@ def test_fresh_compiler_matches_direct_raw_token_compile(
         tokenizer_sha256="e" * 64,
         tokenization_receipt_sha256="f" * 64,
         model_assembly_receipt_sha256="0" * 64,
+        bootstrap_sha256="4" * 64,
+        runtime_bundle_sha256="5" * 64,
         compiler_runner_sha256=_sha256(
             Path(__file__).with_name("run_ettr_world_compiler.py")
         ),

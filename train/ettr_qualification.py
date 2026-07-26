@@ -25,6 +25,7 @@ from endogenous_typed_theory_reactor import (
     TypedTheoryState,
     validate_deployed_state,
 )
+from ettr_state_io import typed_state_sha256 as typed_state_sha256
 
 
 ETTR_QUALIFICATION_SCHEMA = "shohin-ettr-causal-qualification-v1"
@@ -65,14 +66,6 @@ def typed_state_row_sha256(state: TypedTheoryState, row: int) -> str:
             continue
         payload[item.name] = _tensor_receipt(getattr(state, item.name)[row])
     return hashlib.sha256(_canonical_json_bytes(payload)).hexdigest()
-
-
-def typed_state_sha256(state: TypedTheoryState) -> str:
-    """Hash every deployed packet tensor independent of wire padding bytes."""
-
-    return hashlib.sha256(
-        _canonical_json_bytes(_typed_state_receipt(state))
-    ).hexdigest()
 
 
 def _typed_state_receipt(state: TypedTheoryState) -> dict[str, object]:

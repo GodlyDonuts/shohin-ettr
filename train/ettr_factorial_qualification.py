@@ -24,6 +24,11 @@ from endogenous_typed_theory_reactor import (
     TypedTheoryState,
     validate_deployed_state,
 )
+from ettr_factorial_authority import (
+    ETTRCustodyAuthorityError,
+    load_ettr_custody_root,
+    read_root_signed_ettr_custody_authority,
+)
 from ettr_factorial_custody import (
     ETTRFactorialExecutionManifest,
     ETTRStageExecutionReceipt,
@@ -540,8 +545,10 @@ def materialize_signed_ettr_factorial_qualification(
     expected_tokenization_receipt_sha256: str,
     expected_query_receipt_sha256: str,
     expected_custody_seal_sha256: str,
-    expected_custody_public_key_hex: str,
-    expected_authority_preregistration_sha256: str,
+    authority_record_path: Path,
+    root_public_key_path: Path,
+    pinned_root_public_key_sha256: str,
+    expected_authority_record_sha256: str,
 ) -> ETTRQualificationBatch:
     """Claim-bearing materialization gated by an external Ed25519 trust root."""
 
@@ -612,13 +619,31 @@ def materialize_signed_ettr_factorial_qualification(
             raise TheoryReactorError(
                 "signed qualification query tokenization differs"
             )
+    try:
+        root_trust = load_ettr_custody_root(
+            root_public_key_path,
+            pinned_public_key_sha256=pinned_root_public_key_sha256,
+        )
+        authority_record = read_root_signed_ettr_custody_authority(
+            authority_record_path,
+            root_trust=root_trust,
+            expected_record_sha256=expected_authority_record_sha256,
+            expected_board_sha256=board.receipt.payload_sha256,
+            expected_execution_manifest_sha256=(
+                expected_execution_manifest_sha256
+            ),
+        )
+    except ETTRCustodyAuthorityError as exc:
+        raise TheoryReactorError(
+            "signed authority admission differs"
+        ) from exc
     signed_admission.validate(
         execution_manifest=artifact.execution_manifest,
         compiler_receipt=artifact.compiler_receipt,
         executor_receipt=artifact.executor_receipt,
+        authority_record=authority_record,
         expected_query_receipt_sha256=expected_query_receipt_sha256,
         expected_seal_sha256=expected_custody_seal_sha256,
-        expected_public_key_hex=expected_custody_public_key_hex,
         expected_board_sha256=board.receipt.payload_sha256,
         expected_model_sha256=expected_model_sha256,
         expected_qualification_batch_sha256=batch.sha256(),
@@ -626,9 +651,6 @@ def materialize_signed_ettr_factorial_qualification(
         expected_false_token_id=false_token_id,
         expected_true_token_id=true_token_id,
         expected_pad_token_id=pad_token_id,
-        expected_authority_preregistration_sha256=(
-            expected_authority_preregistration_sha256
-        ),
     )
     return batch
 

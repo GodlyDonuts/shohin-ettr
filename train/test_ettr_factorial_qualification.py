@@ -24,6 +24,10 @@ from ettr_factorial_qualification import (
     materialize_ettr_factorial_qualification,
     materialize_signed_ettr_factorial_qualification,
 )
+from ettr_factorial_authority import (
+    make_root_signed_ettr_custody_authority,
+    write_ettr_custody_authority_once,
+)
 from ettr_factorial_custody import (
     ETTRFactorialExecutionManifest,
     ETTRStageExecutionReceipt,
@@ -144,6 +148,8 @@ def _artifact(
         tokenizer_sha256=tokenizer_sha256,
         tokenization_receipt_sha256=tokenization_receipt_sha256,
         model_assembly_receipt_sha256="f" * 64,
+        bootstrap_sha256="b" * 64,
+        runtime_bundle_sha256="0" * 64,
         compiler_runner_sha256="7" * 64,
         executor_runner_sha256="8" * 64,
         query_runner_sha256="9" * 64,
@@ -317,9 +323,33 @@ def test_claim_bearing_materializer_requires_external_signed_chain(
         pad_token_id=255,
         **admission,
     )
+    root_key = Ed25519PrivateKey.generate()
     private_key = Ed25519PrivateKey.generate()
+    public_key_bytes = private_key.public_key().public_bytes(
+        encoding=serialization.Encoding.Raw,
+        format=serialization.PublicFormat.Raw,
+    )
+    root_public_key_bytes = root_key.public_key().public_bytes(
+        encoding=serialization.Encoding.Raw,
+        format=serialization.PublicFormat.Raw,
+    )
+    root_public_key_path = tmp_path / "custody-root.pub"
+    root_public_key_path.write_bytes(root_public_key_bytes)
+    root_public_key_path.chmod(0o444)
+    pinned_root_public_key_sha256 = hashlib.sha256(
+        root_public_key_bytes
+    ).hexdigest()
+    authority = make_root_signed_ettr_custody_authority(
+        root_private_key=root_key,
+        custody_public_key_hex=public_key_bytes.hex(),
+        board_sha256=board.receipt.payload_sha256,
+        execution_manifest_sha256=manifest.sha256(),
+    )
+    authority_path = tmp_path / "custody-authority.json"
+    write_ettr_custody_authority_once(authority_path, authority)
     seal = _sign_custody_chain_unchecked(
         private_key=private_key,
+        authority_record=authority,
         board_sha256=board.receipt.payload_sha256,
         model_sha256=artifact.model_sha256,
         execution_manifest_sha256=manifest.sha256(),
@@ -338,10 +368,12 @@ def test_claim_bearing_materializer_requires_external_signed_chain(
         true_token_id=1,
         pad_token_id=255,
     )
-    public_key_hex = private_key.public_key().public_bytes(
-        encoding=serialization.Encoding.Raw,
-        format=serialization.PublicFormat.Raw,
-    ).hex()
+    authority_arguments = {
+        "authority_record_path": authority_path,
+        "root_public_key_path": root_public_key_path,
+        "pinned_root_public_key_sha256": pinned_root_public_key_sha256,
+        "expected_authority_record_sha256": authority.sha256(),
+    }
     batch = materialize_signed_ettr_factorial_qualification(
         board,
         artifact,
@@ -358,10 +390,7 @@ def test_claim_bearing_materializer_requires_external_signed_chain(
         expected_tokenization_receipt_sha256=tokenization_receipt.sha256(),
         expected_query_receipt_sha256=query_receipt.sha256(),
         expected_custody_seal_sha256=seal.sha256(),
-        expected_custody_public_key_hex=public_key_hex,
-        expected_authority_preregistration_sha256=(
-            seal.authority_preregistration_sha256
-        ),
+        **authority_arguments,
         **admission,
     )
     assert batch.targets.shape == (TOTAL_ROWS,)
@@ -384,10 +413,7 @@ def test_claim_bearing_materializer_requires_external_signed_chain(
             ),
             expected_query_receipt_sha256=query_receipt.sha256(),
             expected_custody_seal_sha256=seal.sha256(),
-            expected_custody_public_key_hex=public_key_hex,
-            expected_authority_preregistration_sha256=(
-                seal.authority_preregistration_sha256
-            ),
+            **authority_arguments,
             **admission,
         )
     with pytest.raises(TheoryReactorError):
@@ -409,10 +435,7 @@ def test_claim_bearing_materializer_requires_external_signed_chain(
             ),
             expected_query_receipt_sha256=query_receipt.sha256(),
             expected_custody_seal_sha256=seal.sha256(),
-            expected_custody_public_key_hex=public_key_hex,
-            expected_authority_preregistration_sha256=(
-                seal.authority_preregistration_sha256
-            ),
+            **authority_arguments,
             **admission,
         )
     with pytest.raises(TheoryReactorError):
@@ -437,10 +460,7 @@ def test_claim_bearing_materializer_requires_external_signed_chain(
             ),
             expected_query_receipt_sha256=query_receipt.sha256(),
             expected_custody_seal_sha256=seal.sha256(),
-            expected_custody_public_key_hex=public_key_hex,
-            expected_authority_preregistration_sha256=(
-                seal.authority_preregistration_sha256
-            ),
+            **authority_arguments,
             **admission,
         )
 

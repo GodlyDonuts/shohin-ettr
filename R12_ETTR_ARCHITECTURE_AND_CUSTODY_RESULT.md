@@ -2,7 +2,7 @@
 
 ## Decision
 
-`architecture_continuation_contract_complete_h100_profile_pending_pretraining_held_capability_unproven`
+`architecture_complete_h100_qualified_pretraining_held_capability_unproven`
 
 Shohin now has a concrete architecture core, a complete falsification matrix,
 and an exact causal continuation/training contract for later pretraining and
@@ -414,19 +414,46 @@ candidate stage. Candidate runners are checked not to import the qualification
 board or signing authority. The integration validates the primary and query
 receipt chain; signature and signed-admission behavior are tested separately
 against valid synthetic packets rather than presenting an untrained model as
-a qualification pass. The expanded inventory passes 267/267 in 169.97 seconds
+a qualification pass. After rooted-authority and isolated-bootstrap
+hardening, the expanded inventory passes **294/294 in 175.16 seconds**
 with clean Ruff, byte compilation, and diff checks. This is not a neural score
 and does not imply that the currently untrained ETTR additions reason.
 
-The trainable architecture and local signed-qualification mechanics are
-complete. Final independent deployment rereview leaves two external trust
-controls before a future result is independently claim-bearing: a bootstrap
-must verify the complete transitive runtime bundle before candidate imports
-execute, and a signer-authority record must be independently root-anchored
-before candidate execution. These do not change the neural architecture or
-its training contract. This does not show that the untrained ETTR additions
-reason. Learned promotion still requires user-authorized training followed by
-this frozen matrix on unseen ontologies, depths, compositions, and renderers.
+The trainable architecture and signed-qualification mechanics are complete.
+The deployment hardening pass replaces the old self-hash with a root-signed
+authority mechanism. An immutable canonical record binds one custody signer
+to one board, one execution manifest, and seal schema v2. A distinct offline
+Ed25519 root signs that record; admission loads the read-only root public key
+and authority record and validates a supplied root fingerprint.
+Symlink, hard-link, mutable-file, wrong-board, wrong-manifest, wrong-signer,
+forged-signature, and attacker-root substitutions fail closed.
+Independent authority is an operational property, not something this
+repository can self-prove: the external verifier must own the root pin and
+publish the authority record before candidate execution.
+
+Candidate stages now launch through a stdlib-only bootstrap under
+`python -I -S -B`. Once launched, it verifies the one canonical execution
+manifest and the closed in-repo source inventory before project or third-party
+imports. It rejects caller manifest overrides, adjacent/PYTHONPATH/
+sitecustomize shadows, extra files, bytecode caches, symlinks, hard links,
+writable bundle roots, and source mutation. It injects the verified manifest
+itself, executes already-hashed runner bytes, and imports every first-party
+module from retained verified bytes rather than reopening its path. Candidate
+runners no longer import the assessor qualification module merely to hash
+state.
+
+One honest external claim-deployment boundary remains outside this
+repository: a trusted launcher must authenticate the bootstrap before it
+executes; the verifier must own the root pin and preregistration ledger; and
+Torch, safetensors, their transitive Python/native dependencies,
+CPython/stdlib, the OS loader, and the CUDA driver must be supplied by a
+content-addressed immutable image (or equivalent measured runtime). The
+bootstrap records the active Torch/safetensors origins but does not claim
+that hashing only their top-level modules proves the complete native closure.
+This is claim custody and packaging, not unfinished trainable architecture.
+It does not show that the untrained ETTR additions reason. Learned promotion
+still requires user-authorized training followed by this frozen matrix on
+unseen ontologies, depths, compositions, and renderers.
 
 Current decision:
-`ettr_architecture_complete_local_custody_mechanics_pass_external_claim_deployment_pending_untrained_pretraining_held_capability_unproven`.
+`ettr_architecture_complete_authority_validation_and_retained_source_import_pass_external_claim_deployment_pending_untrained_pretraining_held_capability_unproven`.

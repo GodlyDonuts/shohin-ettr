@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, fields
 import hashlib
 import json
 import os
@@ -11,6 +11,7 @@ import stat
 
 from safetensors.torch import load as load_safetensors
 from safetensors.torch import save as save_safetensors
+import torch
 
 from endogenous_typed_theory_reactor import (
     TheoryReactorConfig,
@@ -72,6 +73,24 @@ def _canonical_json(value: object) -> str:
 
 def _sha256(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
+
+
+def typed_state_sha256(state: TypedTheoryState) -> str:
+    """Hash every deployed packet tensor independent of wire padding bytes."""
+
+    payload: dict[str, object] = {"step": state.step}
+    for item in fields(state):
+        if item.name == "step":
+            continue
+        value = getattr(state, item.name).detach().cpu().contiguous()
+        digest = hashlib.sha256()
+        digest.update(memoryview(value.reshape(-1).view(torch.uint8).numpy()))
+        payload[item.name] = {
+            "dtype": str(value.dtype),
+            "shape": list(value.shape),
+            "sha256": digest.hexdigest(),
+        }
+    return hashlib.sha256(_canonical_json(payload).encode("ascii")).hexdigest()
 
 
 def state_bytes(
