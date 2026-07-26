@@ -390,20 +390,43 @@ four-process test derives the actual compiler/command/query inputs from frozen
 board rows and admits the terminal state only through this receipt chain.
 Checkpoint loads are `weights_only=True`.
 
-This closes the architecture-side geometry and hash chain, but not the final
-qualification trust root. Independent rereview requires a custody signature
-whose private key is unavailable to candidate processes, a canonical
-raw-package-to-token transformation receipt, a recomputable receipt proving
-that the exact base/compiler/reactor/query-reader components constitute the
-complete evaluated model, and inclusion of the late-query process in that
-signed chain. It is not a neural score and does not imply that the currently
-untrained ETTR additions reason.
+The final qualification trust root is now closed. A canonical tokenization
+receipt recomputes all ordered WORLD, COMMAND, selected process-level QUERY,
+and all 48 qualification-query rows and masks from the frozen raw packages
+and exact immutable tokenizer JSON.
+A complete-model assembly receipt strictly reconstructs the protected base
+plus compiler, reactor, and query reader, recomputes the evaluator's exact
+model identity including behavioral configurations, module sources, and
+runtime, every named parameter, and every named buffer including
+non-persistent RoPE buffers, and verifies the 200M parameter ledger. The
+execution manifest binds
+the exact source of every stage runner, hard execution, and the executor step
+count. The detached query process validates the terminal-state receipt and
+emits its own reader/query/answer receipt. An assessor-held Ed25519 key,
+unavailable to all candidate processes, signs the complete chain, exact
+qualification batch, answer-token codebook, and pad ID; claim-bearing
+materialization requires the separately preregistered authority record,
+public key, and exact seal hash.
 
-The trainable architecture is complete; signed qualification custody remains
-open as described above. This does not show that the untrained ETTR additions
-reason. Learned promotion still
-requires user-authorized training followed by this frozen matrix on unseen
-ontologies, depths, compositions, and renderers.
+The integrated four-process test now uses canonical tokenizer output rather
+than digest-derived placeholder tokens and physically deletes every prior
+candidate stage. Candidate runners are checked not to import the qualification
+board or signing authority. The integration validates the primary and query
+receipt chain; signature and signed-admission behavior are tested separately
+against valid synthetic packets rather than presenting an untrained model as
+a qualification pass. The expanded inventory passes 267/267 in 169.97 seconds
+with clean Ruff, byte compilation, and diff checks. This is not a neural score
+and does not imply that the currently untrained ETTR additions reason.
+
+The trainable architecture and local signed-qualification mechanics are
+complete. Final independent deployment rereview leaves two external trust
+controls before a future result is independently claim-bearing: a bootstrap
+must verify the complete transitive runtime bundle before candidate imports
+execute, and a signer-authority record must be independently root-anchored
+before candidate execution. These do not change the neural architecture or
+its training contract. This does not show that the untrained ETTR additions
+reason. Learned promotion still requires user-authorized training followed by
+this frozen matrix on unseen ontologies, depths, compositions, and renderers.
 
 Current decision:
-`ettr_architecture_and_control_mechanics_complete_untrained_pretraining_held_capability_unproven`.
+`ettr_architecture_complete_local_custody_mechanics_pass_external_claim_deployment_pending_untrained_pretraining_held_capability_unproven`.

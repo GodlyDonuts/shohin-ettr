@@ -4,9 +4,9 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import asdict
 import hashlib
 import json
-import os
 from pathlib import Path
 import stat
 
@@ -17,7 +17,17 @@ from endogenous_typed_theory_reactor import (
     SourceDeletedQueryReader,
     TheoryReactorConfig,
 )
+from ettr_factorial_custody import (
+    ETTRFactorialExecutionManifest,
+    ETTRLateQueryExecutionReceipt,
+    ETTRStageExecutionReceipt,
+    QUERY_RECEIPT_SCHEMA,
+    sha256_file,
+    token_tensor_sha256,
+    write_json_once,
+)
 from ettr_state_io import read_state
+from ettr_qualification import typed_state_sha256
 from model import GPT, GPTConfig
 
 
@@ -74,24 +84,6 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _write_json_once(path: Path, value: object) -> None:
-    payload = _canonical_json_bytes(value)
-    try:
-        descriptor = os.open(
-            path,
-            os.O_WRONLY | os.O_CREAT | os.O_EXCL,
-            0o600,
-        )
-    except FileExistsError as exc:
-        raise ETTRLateQueryError("answer path already exists") from exc
-    try:
-        os.write(descriptor, payload)
-        os.fsync(descriptor)
-    finally:
-        os.close(descriptor)
-    path.chmod(0o444)
-
-
 def answer(
     *,
     config_path: Path,
@@ -101,7 +93,14 @@ def answer(
     checkpoint_sha256: str,
     expected_step: int,
     query_path: Path,
+    execution_manifest_path: Path,
+    execution_manifest_sha256: str,
+    executor_receipt_path: Path,
+    executor_receipt_sha256: str,
+    tokenization_receipt_sha256: str,
+    model_assembly_receipt_sha256: str,
     output_path: Path,
+    receipt_output_path: Path,
 ) -> None:
     for path in (
         config_path,
@@ -109,8 +108,21 @@ def answer(
         reader_path,
         checkpoint_path,
         query_path,
+        execution_manifest_path,
+        executor_receipt_path,
     ):
         _immutable_regular(path)
+    execution_manifest = ETTRFactorialExecutionManifest.from_path(
+        execution_manifest_path
+    )
+    execution_manifest.validate_hash(execution_manifest_sha256)
+    executor_receipt = ETTRStageExecutionReceipt.from_path(executor_receipt_path)
+    executor_receipt.validate(
+        execution_manifest,
+        expected_receipt_sha256=executor_receipt_sha256,
+    )
+    if executor_receipt.stage != "command":
+        raise ETTRLateQueryError("late query executor receipt stage differs")
     config_payload = _read_canonical_json(config_path)
     if not isinstance(config_payload, dict):
         raise ETTRLateQueryError("query configuration differs")
@@ -119,8 +131,25 @@ def answer(
     except TypeError as exc:
         raise ETTRLateQueryError("query configuration keys differ") from exc
     config.validate()
-    if _sha256_file(checkpoint_path) != checkpoint_sha256:
-        raise ETTRLateQueryError("query checkpoint hash differs")
+    state = read_state(state_path, config)
+    if (
+        _sha256_file(checkpoint_path) != checkpoint_sha256
+        or checkpoint_sha256 != execution_manifest.checkpoint_sha256
+        or expected_step != execution_manifest.checkpoint_step
+        or sha256_file(config_path) != execution_manifest.config_sha256
+        or sha256_file(state_path) != executor_receipt.output_state_file_sha256
+        or typed_state_sha256(state)
+        != executor_receipt.output_state_tensor_sha256
+        or sha256_file(reader_path) != execution_manifest.reader_sha256
+        or sha256_file(query_path) != execution_manifest.query_tokens_sha256
+        or tokenization_receipt_sha256
+        != execution_manifest.tokenization_receipt_sha256
+        or model_assembly_receipt_sha256
+        != execution_manifest.model_assembly_receipt_sha256
+        or sha256_file(Path(__file__).resolve())
+        != execution_manifest.query_runner_sha256
+    ):
+        raise ETTRLateQueryError("late-query execution manifest differs")
     checkpoint = torch.load(
         checkpoint_path,
         map_location="cpu",
@@ -155,7 +184,6 @@ def answer(
         raise ETTRLateQueryError("query reader weights differ") from exc
     if incompatibility.missing_keys or incompatibility.unexpected_keys:
         raise ETTRLateQueryError("query reader strict load differs")
-    state = read_state(state_path, config)
     query_payload = _read_canonical_json(query_path)
     if not isinstance(query_payload, dict) or set(query_payload) != {
         "attention_mask",
@@ -192,13 +220,30 @@ def answer(
             hidden, _ = block(hidden, cos, sin)
         logits = base.head(base.norm(hidden))
         answers = logits.argmax(-1)
-    _write_json_once(
+    answer_payload = {
+        "schema": ANSWER_SCHEMA,
+        "token_ids": answers.tolist(),
+    }
+    answer_file_sha256 = write_json_once(
         output_path,
-        {
-            "schema": ANSWER_SCHEMA,
-            "token_ids": answers.tolist(),
-        },
+        answer_payload,
     )
+    receipt = ETTRLateQueryExecutionReceipt(
+        schema=QUERY_RECEIPT_SCHEMA,
+        execution_manifest_sha256=execution_manifest_sha256,
+        tokenization_receipt_sha256=tokenization_receipt_sha256,
+        model_assembly_receipt_sha256=model_assembly_receipt_sha256,
+        executor_receipt_sha256=executor_receipt_sha256,
+        terminal_state_file_sha256=executor_receipt.output_state_file_sha256,
+        terminal_state_tensor_sha256=executor_receipt.output_state_tensor_sha256,
+        query_tokens_sha256=sha256_file(query_path),
+        reader_sha256=sha256_file(reader_path),
+        checkpoint_sha256=checkpoint_sha256,
+        answer_file_sha256=answer_file_sha256,
+        answer_token_tensor_sha256=token_tensor_sha256(answers),
+        row_count=answers.shape[0],
+    )
+    write_json_once(receipt_output_path, asdict(receipt))
 
 
 def main() -> None:
@@ -213,7 +258,14 @@ def main() -> None:
     )
     parser.add_argument("--expected-step", type=int, required=True)
     parser.add_argument("--query", type=Path, required=True)
+    parser.add_argument("--execution-manifest", type=Path, required=True)
+    parser.add_argument("--execution-manifest-sha256", required=True)
+    parser.add_argument("--executor-receipt", type=Path, required=True)
+    parser.add_argument("--executor-receipt-sha256", required=True)
+    parser.add_argument("--tokenization-receipt-sha256", required=True)
+    parser.add_argument("--model-assembly-receipt-sha256", required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--receipt-output", type=Path, required=True)
     arguments = parser.parse_args()
     answer(
         config_path=arguments.config,
@@ -223,7 +275,14 @@ def main() -> None:
         checkpoint_sha256=arguments.checkpoint_sha256,
         expected_step=arguments.expected_step,
         query_path=arguments.query,
+        execution_manifest_path=arguments.execution_manifest,
+        execution_manifest_sha256=arguments.execution_manifest_sha256,
+        executor_receipt_path=arguments.executor_receipt,
+        executor_receipt_sha256=arguments.executor_receipt_sha256,
+        tokenization_receipt_sha256=arguments.tokenization_receipt_sha256,
+        model_assembly_receipt_sha256=arguments.model_assembly_receipt_sha256,
         output_path=arguments.output,
+        receipt_output_path=arguments.receipt_output,
     )
 
 

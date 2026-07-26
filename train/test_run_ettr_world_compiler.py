@@ -135,10 +135,24 @@ def test_fresh_compiler_matches_direct_raw_token_compile(
         checkpoint_step=123,
         compiler_sha256=_sha256(compiler_path),
         reactor_sha256="b" * 64,
+        reader_sha256="d" * 64,
+        tokenizer_sha256="e" * 64,
+        tokenization_receipt_sha256="f" * 64,
+        model_assembly_receipt_sha256="0" * 64,
+        compiler_runner_sha256=_sha256(
+            Path(__file__).with_name("run_ettr_world_compiler.py")
+        ),
+        executor_runner_sha256="2" * 64,
+        query_runner_sha256="3" * 64,
+        compiler_hard=True,
+        executor_hard=True,
+        executor_steps=2,
         world_package_sha256=board.receipt.world_package_sha256,
         command_package_sha256=board.receipt.command_package_sha256,
+        query_package_sha256=board.receipt.query_package_sha256,
         world_tokens_sha256=_sha256(world_path),
         command_tokens_sha256="c" * 64,
+        query_tokens_sha256="1" * 64,
         row_count=TOTAL_PACKETS,
     )
     _canonical_json(manifest_path, asdict(manifest))

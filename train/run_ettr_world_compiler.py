@@ -108,6 +108,9 @@ def compile_world(
         or checkpoint_sha256 != execution_manifest.checkpoint_sha256
         or expected_step != execution_manifest.checkpoint_step
         or sha256_file(world_path) != execution_manifest.world_tokens_sha256
+        or sha256_file(Path(__file__).resolve())
+        != execution_manifest.compiler_runner_sha256
+        or hard != execution_manifest.compiler_hard
     ):
         raise ETTRCompilerError("compiler execution manifest differs")
     checkpoint = torch.load(

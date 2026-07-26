@@ -48,7 +48,7 @@ control.
   answers late queries from terminal state. Its independent
   `WORLD -> COMMAND -> QUERY` lifecycle, reset-safe composite objective,
   frozen-data contract, disjoint Muon/AdamW optimizer groups, and exact
-  checkpoint/resume path pass a 240-test complete ETTR/cross-ontology
+  checkpoint/resume path pass a 267-test complete ETTR/cross-ontology
   inventory. The objective now directly supervises both the compiled initial
   packet and the free-running terminal reactor packet; a gradient gate proves
   that terminal loss reaches both reactor and compiler. A hostile audit found
@@ -52496,7 +52496,7 @@ target-deranged controls while answering multiple independent paraphrased
 queries from one state. Answer suffixes are physically absent from candidate
 forward passes, and exact state/query/label/control bytes are receipt-bound.
 
-Verification is 19/19 for hostile harness tests and 240/240 for the expanded
+Verification is 19/19 for hostile harness tests and 267/267 for the expanded
 ETTR/cross-ontology inventory. Packet-sufficiency ablations remain separate
 equal-budget training arms; the existing four-process custody path enforces
 physical source deletion.
@@ -52542,12 +52542,32 @@ four-process test now derives real inputs from the frozen board and admits its
 terminal packet only through that chain. Checkpoint deserialization is
 weights-only.
 
-Final hostile review leaves three bounded custody tasks before claim-bearing
-use: sign the chain with a private key unavailable to candidate processes,
-recompute canonical WORLD/COMMAND tokenization from frozen raw packages, and
-prove that the exact base/compiler/reactor/query-reader component files
-assemble to the same complete model identity used by evaluation. The detached
-late-query CLI must also join that signed chain.
+Those final custody tasks are now complete. Canonical tokenization receipts
+recompute WORLD, COMMAND, selected process-level QUERY, and all 48
+qualification-query token rows and masks from the exact frozen raw packages
+and immutable tokenizer JSON. Complete-model assembly strictly reconstructs
+the protected checkpoint plus compiler, reactor, and query-reader component
+files and recomputes a model identity that binds weights, behavioral
+configuration, module sources, runtime, all named parameters, all named
+buffers including non-persistent RoPE buffers, and the parameter ledger. The
+execution manifest binds runner sources, hard mode, and executor steps. The
+detached late-query CLI validates the executor terminal receipt and emits a
+reader/query/answer receipt. An assessor-held Ed25519 key, unavailable to
+candidate processes, signs the full chain plus the exact qualification batch
+and token codebook; claim-bearing materialization requires a separately
+preregistered authority record, public key, and seal hash. The physical four-
+process test uses canonical tokenizer output, deletes prior stages, and
+machine-checks that candidate runners do not import the board or signer.
+Signature/admission behavior is tested separately against valid synthetic
+packets. The complete inventory passes 267/267 in 169.97 seconds.
+
+Final independent deployment rereview leaves two external trust controls
+before a future result is independently claim-bearing: a verified bootstrap
+must hash the complete transitive runtime bundle before candidate imports
+execute, and a signer-authority record must be independently root-anchored
+before candidate execution. The current runner hashes and local Ed25519
+admission prove deterministic mechanics, not those external facts. These
+controls do not modify ETTR's trainable architecture or its freeze status.
 
 This is the end of architecture construction, not the end of the reasoning
 program. The new parameters are not yet trained, so current Shohin does not
@@ -52556,4 +52576,4 @@ the user authorizes training; afterward, unseen-ontology qualification and
 post-training determine whether the mechanism becomes useful intelligence.
 
 Current decision:
-`architecture_code_complete_signed_tokenization_custody_pending_learning_and_general_reasoning_unproven`.
+`architecture_complete_local_custody_mechanics_pass_external_claim_deployment_pending_learning_and_general_reasoning_unproven`.

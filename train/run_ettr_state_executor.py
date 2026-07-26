@@ -144,6 +144,10 @@ def execute(
         or sha256_file(command_path) != execution_manifest.command_tokens_sha256
         or compiler_receipt.output_state_file_sha256 != input_state_sha256
         or compiler_receipt.output_state_tensor_sha256 != typed_state_sha256(state)
+        or sha256_file(Path(__file__).resolve())
+        != execution_manifest.executor_runner_sha256
+        or hard != execution_manifest.executor_hard
+        or steps != execution_manifest.executor_steps
     ):
         raise ETTRExecutorError("executor execution manifest differs")
     checkpoint = torch.load(

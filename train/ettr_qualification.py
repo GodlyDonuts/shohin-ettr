@@ -8,7 +8,7 @@ factor identities are consulted only after every readout is sealed.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, fields, replace
+from dataclasses import asdict, dataclass, fields, replace
 import hashlib
 import inspect
 import json
@@ -94,6 +94,7 @@ def _clone_state(state: TypedTheoryState) -> TypedTheoryState:
 
 def _model_sha256(model: EndogenousTypedTheoryReactorGPT) -> str:
     class_receipts: dict[type[torch.nn.Module], str] = {}
+    source_receipts: dict[str, str] = {}
     module_classes = {}
     for name, module in model.named_modules():
         cls = type(module)
@@ -109,15 +110,42 @@ def _model_sha256(model: EndogenousTypedTheoryReactorGPT) -> str:
                     else (f"{cls.__module__}.{cls.__qualname__}").encode("utf-8")
                 )
             class_receipts[cls] = hashlib.sha256(implementation).hexdigest()
+        source_path = inspect.getsourcefile(cls)
+        source_key = source_path or f"{cls.__module__}.{cls.__qualname__}"
+        if source_key not in source_receipts:
+            try:
+                if source_path is None:
+                    source_bytes = source_key.encode("utf-8")
+                else:
+                    with open(source_path, "rb") as source_handle:
+                        source_bytes = source_handle.read()
+            except OSError:
+                source_bytes = source_key.encode("utf-8")
+            source_receipts[source_key] = hashlib.sha256(source_bytes).hexdigest()
         module_classes[name] = {
             "class": f"{cls.__module__}.{cls.__qualname__}",
             "implementation_sha256": class_receipts[cls],
+            "module_source": source_key,
+            "module_source_sha256": source_receipts[source_key],
         }
     payload = {
+        "base_config": asdict(model.base.cfg),
+        "reactor_config": asdict(model.config),
         "module_classes": module_classes,
         "module_training": [
             (name, module.training) for name, module in model.named_modules()
         ],
+        "runtime": {
+            "torch_version": torch.__version__,
+        },
+        "named_buffers": {
+            name: _tensor_receipt(value)
+            for name, value in sorted(model.named_buffers())
+        },
+        "named_parameters": {
+            name: _tensor_receipt(value)
+            for name, value in sorted(model.named_parameters())
+        },
         "state": {
             name: _tensor_receipt(value)
             for name, value in sorted(model.state_dict().items())

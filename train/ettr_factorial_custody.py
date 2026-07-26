@@ -9,17 +9,19 @@ import os
 from pathlib import Path
 import re
 import stat
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
+import torch
 from endogenous_typed_theory_reactor import TheoryReactorError
-from ettr_factorial_qualification_board import (
-    ETTRFactorialQualificationBoard,
-    TOTAL_PACKETS,
-)
+
+if TYPE_CHECKING:
+    from ettr_factorial_qualification_board import ETTRFactorialQualificationBoard
 
 
-EXECUTION_MANIFEST_SCHEMA = "ettr-factorial-execution-manifest-v1"
+EXECUTION_MANIFEST_SCHEMA = "ettr-factorial-execution-manifest-v2"
 STAGE_RECEIPT_SCHEMA = "ettr-factorial-stage-execution-receipt-v1"
+QUERY_RECEIPT_SCHEMA = "ettr-factorial-late-query-receipt-v1"
+TOTAL_PACKETS = 12
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 
@@ -45,6 +47,15 @@ def sha256_file(path: Path) -> str:
     with path.open("rb") as handle:
         for chunk in iter(lambda: handle.read(8 * 1024 * 1024), b""):
             digest.update(chunk)
+    return digest.hexdigest()
+
+
+def token_tensor_sha256(tensor: torch.Tensor) -> str:
+    value = tensor.detach().cpu().contiguous()
+    digest = hashlib.sha256()
+    digest.update(str(value.dtype).encode("ascii"))
+    digest.update(json.dumps(list(value.shape), separators=(",", ":")).encode("ascii"))
+    digest.update(memoryview(value.reshape(-1).view(torch.uint8).numpy()))
     return digest.hexdigest()
 
 
@@ -106,10 +117,22 @@ class ETTRFactorialExecutionManifest:
     checkpoint_step: int
     compiler_sha256: str
     reactor_sha256: str
+    reader_sha256: str
+    tokenizer_sha256: str
+    tokenization_receipt_sha256: str
+    model_assembly_receipt_sha256: str
+    compiler_runner_sha256: str
+    executor_runner_sha256: str
+    query_runner_sha256: str
+    compiler_hard: bool
+    executor_hard: bool
+    executor_steps: int
     world_package_sha256: str
     command_package_sha256: str
+    query_package_sha256: str
     world_tokens_sha256: str
     command_tokens_sha256: str
+    query_tokens_sha256: str
     row_count: int
 
     def sha256(self) -> str:
@@ -123,16 +146,32 @@ class ETTRFactorialExecutionManifest:
             self.checkpoint_sha256,
             self.compiler_sha256,
             self.reactor_sha256,
+            self.reader_sha256,
+            self.tokenizer_sha256,
+            self.tokenization_receipt_sha256,
+            self.model_assembly_receipt_sha256,
+            self.compiler_runner_sha256,
+            self.executor_runner_sha256,
+            self.query_runner_sha256,
             self.world_package_sha256,
             self.command_package_sha256,
+            self.query_package_sha256,
             self.world_tokens_sha256,
             self.command_tokens_sha256,
+            self.query_tokens_sha256,
             expected_manifest_sha256,
         )
         if (
             self.schema != EXECUTION_MANIFEST_SCHEMA
             or any(_SHA256.fullmatch(value) is None for value in hashes)
             or self.row_count != TOTAL_PACKETS
+            or not isinstance(self.compiler_hard, bool)
+            or not isinstance(self.executor_hard, bool)
+            or not self.compiler_hard
+            or not self.executor_hard
+            or not isinstance(self.executor_steps, int)
+            or isinstance(self.executor_steps, bool)
+            or not 1 <= self.executor_steps
             or not isinstance(self.checkpoint_step, int)
             or isinstance(self.checkpoint_step, bool)
             or self.checkpoint_step < 0
@@ -154,6 +193,7 @@ class ETTRFactorialExecutionManifest:
             or self.model_sha256 != expected_model_sha256
             or self.world_package_sha256 != board.receipt.world_package_sha256
             or self.command_package_sha256 != board.receipt.command_package_sha256
+            or self.query_package_sha256 != board.receipt.query_package_sha256
         ):
             raise TheoryReactorError("factorial execution manifest differs")
 
@@ -248,15 +288,88 @@ class ETTRStageExecutionReceipt:
             raise TheoryReactorError("stage receipt keys differ") from exc
 
 
+@dataclass(frozen=True, slots=True)
+class ETTRLateQueryExecutionReceipt:
+    """Immutable output receipt for the source-deleted query process."""
+
+    schema: str
+    execution_manifest_sha256: str
+    tokenization_receipt_sha256: str
+    model_assembly_receipt_sha256: str
+    executor_receipt_sha256: str
+    terminal_state_file_sha256: str
+    terminal_state_tensor_sha256: str
+    query_tokens_sha256: str
+    reader_sha256: str
+    checkpoint_sha256: str
+    answer_file_sha256: str
+    answer_token_tensor_sha256: str
+    row_count: int
+
+    def sha256(self) -> str:
+        return sha256_bytes(canonical_json_bytes(asdict(self)))
+
+    def validate(
+        self,
+        *,
+        expected_receipt_sha256: str,
+        execution_manifest_sha256: str,
+        tokenization_receipt_sha256: str,
+        model_assembly_receipt_sha256: str,
+        executor_receipt_sha256: str,
+        terminal_state_file_sha256: str,
+        terminal_state_tensor_sha256: str,
+        query_tokens_sha256: str,
+        reader_sha256: str,
+        checkpoint_sha256: str,
+        row_count: int,
+    ) -> None:
+        hash_values = (
+            expected_receipt_sha256,
+            self.execution_manifest_sha256,
+            self.tokenization_receipt_sha256,
+            self.model_assembly_receipt_sha256,
+            self.executor_receipt_sha256,
+            self.terminal_state_file_sha256,
+            self.terminal_state_tensor_sha256,
+            self.query_tokens_sha256,
+            self.reader_sha256,
+            self.checkpoint_sha256,
+            self.answer_file_sha256,
+            self.answer_token_tensor_sha256,
+        )
+        if (
+            self.schema != QUERY_RECEIPT_SCHEMA
+            or any(_SHA256.fullmatch(value) is None for value in hash_values)
+            or self.execution_manifest_sha256 != execution_manifest_sha256
+            or self.tokenization_receipt_sha256 != tokenization_receipt_sha256
+            or self.model_assembly_receipt_sha256
+            != model_assembly_receipt_sha256
+            or self.executor_receipt_sha256 != executor_receipt_sha256
+            or self.terminal_state_file_sha256 != terminal_state_file_sha256
+            or self.terminal_state_tensor_sha256 != terminal_state_tensor_sha256
+            or self.query_tokens_sha256 != query_tokens_sha256
+            or self.reader_sha256 != reader_sha256
+            or self.checkpoint_sha256 != checkpoint_sha256
+            or self.row_count != row_count
+            or self.row_count <= 0
+            or self.sha256() != expected_receipt_sha256
+        ):
+            raise TheoryReactorError("late-query execution receipt differs")
+
+
 __all__ = [
     "ETTRFactorialExecutionManifest",
+    "ETTRLateQueryExecutionReceipt",
     "ETTRStageExecutionReceipt",
     "EXECUTION_MANIFEST_SCHEMA",
+    "QUERY_RECEIPT_SCHEMA",
     "STAGE_RECEIPT_SCHEMA",
     "canonical_json_bytes",
     "immutable_regular",
     "read_canonical_json",
     "sha256_bytes",
     "sha256_file",
+    "token_tensor_sha256",
     "write_json_once",
 ]

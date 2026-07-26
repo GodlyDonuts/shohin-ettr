@@ -12,6 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 import json
+from pathlib import Path
 import re
 from typing import Any, Protocol
 
@@ -27,6 +28,8 @@ from ettr_factorial_custody import (
     ETTRFactorialExecutionManifest,
     ETTRStageExecutionReceipt,
 )
+from ettr_factorial_signed_custody import ETTRSignedQualificationAdmission
+from ettr_factorial_tokenization import ETTRFactorialTokenizationReceipt
 from ettr_qualification import (
     ETTRQualificationBatch,
     ETTRQualificationManifest,
@@ -516,6 +519,120 @@ def materialize_ettr_factorial_qualification(
     return batch
 
 
+def materialize_signed_ettr_factorial_qualification(
+    board: ETTRFactorialQualificationBoard,
+    artifact: ETTRTerminalStateArtifact,
+    signed_admission: ETTRSignedQualificationAdmission,
+    *,
+    config: TheoryReactorConfig,
+    tokenizer: QueryTokenizer,
+    tokenizer_sha256: str,
+    vocab_size: int,
+    false_token_id: int,
+    true_token_id: int,
+    pad_token_id: int,
+    expected_model_sha256: str,
+    expected_execution_manifest_sha256: str,
+    expected_compiler_receipt_sha256: str,
+    expected_executor_receipt_sha256: str,
+    tokenization_receipt: ETTRFactorialTokenizationReceipt,
+    tokenizer_path: Path,
+    expected_tokenization_receipt_sha256: str,
+    expected_query_receipt_sha256: str,
+    expected_custody_seal_sha256: str,
+    expected_custody_public_key_hex: str,
+    expected_authority_preregistration_sha256: str,
+) -> ETTRQualificationBatch:
+    """Claim-bearing materialization gated by an external Ed25519 trust root."""
+
+    tokenization_receipt.validate(
+        board,
+        tokenizer_path,
+        expected_receipt_sha256=expected_tokenization_receipt_sha256,
+    )
+    if (
+        expected_tokenization_receipt_sha256
+        != artifact.execution_manifest.tokenization_receipt_sha256
+        or tokenization_receipt.sha256()
+        != artifact.execution_manifest.tokenization_receipt_sha256
+        or tokenization_receipt.tokenizer_sha256
+        != artifact.execution_manifest.tokenizer_sha256
+        or tokenizer_sha256 != tokenization_receipt.tokenizer_sha256
+    ):
+        raise TheoryReactorError("signed tokenizer admission differs")
+    artifact.validate(
+        board,
+        config,
+        expected_model_sha256=expected_model_sha256,
+        expected_execution_manifest_sha256=expected_execution_manifest_sha256,
+        expected_compiler_receipt_sha256=expected_compiler_receipt_sha256,
+        expected_executor_receipt_sha256=expected_executor_receipt_sha256,
+    )
+    batch = materialize_ettr_factorial_qualification(
+        board,
+        artifact,
+        config=config,
+        tokenizer=tokenizer,
+        tokenizer_sha256=tokenizer_sha256,
+        vocab_size=vocab_size,
+        false_token_id=false_token_id,
+        true_token_id=true_token_id,
+        pad_token_id=pad_token_id,
+        expected_model_sha256=expected_model_sha256,
+        expected_execution_manifest_sha256=(
+            expected_execution_manifest_sha256
+        ),
+        expected_compiler_receipt_sha256=expected_compiler_receipt_sha256,
+        expected_executor_receipt_sha256=expected_executor_receipt_sha256,
+    )
+    if len(tokenization_receipt.qualification_query_rows) != TOTAL_ROWS:
+        raise TheoryReactorError("signed query token row count differs")
+    for row_index, receipt_row in enumerate(
+        tokenization_receipt.qualification_query_rows
+    ):
+        prefix = receipt_row.token_ids[: receipt_row.unpadded_length]
+        read_index = int(batch.query_read_index[row_index])
+        start = read_index + 1 - len(prefix)
+        if (
+            receipt_row.source_row_id != board.rows[row_index].row_id
+            or start < 0
+            or tuple(
+                int(value)
+                for value in batch.query_tokens[
+                    row_index,
+                    start : read_index + 1,
+                ]
+            )
+            != prefix
+            or any(
+                int(value) != pad_token_id
+                for value in batch.query_tokens[row_index, :start]
+            )
+        ):
+            raise TheoryReactorError(
+                "signed qualification query tokenization differs"
+            )
+    signed_admission.validate(
+        execution_manifest=artifact.execution_manifest,
+        compiler_receipt=artifact.compiler_receipt,
+        executor_receipt=artifact.executor_receipt,
+        expected_query_receipt_sha256=expected_query_receipt_sha256,
+        expected_seal_sha256=expected_custody_seal_sha256,
+        expected_public_key_hex=expected_custody_public_key_hex,
+        expected_board_sha256=board.receipt.payload_sha256,
+        expected_model_sha256=expected_model_sha256,
+        expected_qualification_batch_sha256=batch.sha256(),
+        expected_qualification_vocab_size=vocab_size,
+        expected_false_token_id=false_token_id,
+        expected_true_token_id=true_token_id,
+        expected_pad_token_id=pad_token_id,
+        expected_authority_preregistration_sha256=(
+            expected_authority_preregistration_sha256
+        ),
+    )
+    return batch
+
+
 __all__ = [
     "ETTRTerminalStateArtifact",
     "MATERIALIZATION_SCHEMA",
@@ -523,4 +640,5 @@ __all__ = [
     "TERMINAL_ARTIFACT_SCHEMA",
     "bind_terminal_state_artifact",
     "materialize_ettr_factorial_qualification",
+    "materialize_signed_ettr_factorial_qualification",
 ]

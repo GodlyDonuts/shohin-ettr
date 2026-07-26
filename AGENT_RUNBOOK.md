@@ -30,7 +30,8 @@
 > absolute: do not start, queue, resume, prepare, or modify continuation
 > pretraining.
 >
-> **ETTR CORE ARCHITECTURE COMPLETE; QUALIFICATION TRUST ROOT PENDING —
+> **ETTR ARCHITECTURE COMPLETE; LOCAL QUALIFICATION CUSTODY MECHANICALLY
+> COMPLETE; EXTERNAL CLAIM DEPLOYMENT PENDING —
 > 2026-07-26 EDT:** The trainable
 > architecture, exact-resume continuation contract, optimizer custody,
 > source-deleted execution boundary, matched causal objectives, H100 resource
@@ -91,13 +92,46 @@
 > post-seal COMMAND bytes and hash-bound base/reactor weights; it cannot read
 > WORLD, QUERY, tokenizer, or assessor data. Qualification payload SHA-256 is
 > `18686ff7f0476b5a4432830f2a301f693833cf867656d3997a010cf17bb0149a`.
-> This completes the trainable architecture and most qualification mechanics.
-> It does not show that the untrained ETTR parameters reason. Final
-> claim-bearing qualification still requires a custody signature produced by
-> a key unavailable to candidate processes, a canonical raw-package-to-token
-> transformation receipt, and a recomputable complete-model receipt proving
-> that the protected checkpoint plus compiler/reactor/query-reader components
-> are exactly the model evaluated later.
+> This completes the trainable architecture and the claim-bearing
+> qualification mechanics. `train/ettr_factorial_tokenization.py` recomputes
+> every ordered WORLD, COMMAND, selected process-level QUERY, and all 48
+> qualification-query token rows and masks from the frozen raw packages plus
+> the exact immutable tokenizer JSON.
+> `train/ettr_model_assembly.py` strictly reconstructs the complete model from
+> the protected checkpoint and exact compiler/reactor/query-reader
+> safetensors, recomputes a model identity that binds weights, behavioral
+> configuration, module sources, and runtime, and checks the 200M parameter
+> cap. The manifest also binds each stage runner's source, hard mode, and
+> executor step count. The late-query process validates the execution manifest
+> and executor receipt and emits its own state/query/reader/output receipt.
+> Finally, an assessor-held Ed25519 key signs the complete chain, including
+> the exact 48-row qualification batch and answer-token codebook; no compiler,
+> executor, or query candidate process receives the private key. The
+> claim-bearing materializer requires an externally pinned authority
+> preregistration, public key, and exact seal hash.
+>
+> The four-process integration uses canonical tokenizer output, physically
+> deletes each prior candidate stage, and validates the primary and detached
+> query receipt chain. Signature and signed-admission behavior are exercised
+> separately against valid synthetic packets because the untrained model is
+> not expected to pass learned qualification. Candidate runners are
+> machine-checked not to import the qualification board or signing authority.
+> The complete ETTR/cross-ontology inventory passes **267/267** in 169.97
+> seconds with clean Ruff, byte compilation, and diff checks.
+> A final independent deployment rereview found and repaired one additional
+> P1 model-identity collision: non-persistent RoPE buffers changed logits
+> without changing the receipt. Complete-model identity now binds all named
+> parameters and named buffers, including non-persistent buffers. Two external
+> claim-deployment gates remain and do not change the trainable architecture:
+> candidate execution must start from a dependency-closure-verified isolated
+> bundle before Python imports execute, and the signer authority record must
+> be anchored by an independent root before candidate execution rather than
+> supplied by the claimant during admission. Until those deployment controls
+> exist, local signatures demonstrate mechanics but are not an independently
+> anchored public capability claim.
+> This is an architecture-freeze result, not evidence that the untrained ETTR
+> parameters already reason. No pretraining was started, queued, resumed,
+> prepared, or modified.
 >
 > **ETTR CONTINUATION CONTRACT FROZEN — 2026-07-26 EDT:** Commit
 > `ae2cf85480bedfaa96f3cf7ddfbaf64e5d067203` completes the missing
@@ -14330,3 +14364,67 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `ettr_architecture_code_complete_signed_tokenization_custody_pending_untrained_pretraining_held_capability_unproven`.
+
+- **2026-07-26 EDT** -- **The ETTR architecture and local qualification
+  custody mechanics are complete; external claim deployment remains
+  separate.** The execution-manifest
+  schema now binds the exact tokenizer, canonical tokenization receipt,
+  complete-model assembly receipt, query-reader weights, QUERY package, and
+  detached QUERY token file in addition to the existing checkpoint,
+  compiler, reactor, WORLD, COMMAND, and state identities.
+  `train/ettr_factorial_tokenization.py` independently rebuilds all twelve
+  ordered WORLD rows, COMMAND rows, selected process-level QUERY rows, and all
+  48 qualification-query rows from strict ASCII raw bytes with the exact
+  immutable tokenizer JSON, explicit no-special-token mode, right padding,
+  pad ID, sequence length, token IDs, and masks. It rejects tokenizer, row,
+  order, mask, encoding, or package substitution.
+
+  `train/ettr_model_assembly.py` safely loads the protected checkpoint with
+  `weights_only=True`, strictly loads the compiler, reactor, and query-reader
+  safetensors, reconstructs `EndogenousTypedTheoryReactorGPT`, recomputes the
+  exact evaluator `_model_sha256`, including behavioral configurations,
+  module source identities, runtime, all named parameters, and all named
+  buffers including non-persistent RoPE buffers, and freezes the full
+  parameter ledger: 67,697,771 added, 192,779,435 total, 7,220,565 under
+  200M. The
+  execution manifest binds exact compiler/executor/query runner sources,
+  mandatory hard execution, and executor steps. The detached late-query
+  process verifies the execution manifest, executor receipt, terminal file
+  and canonical state tensor, reader, checkpoint, query tokens, and both
+  primary receipt hashes, then emits a hash-bound answer receipt.
+
+  `train/ettr_factorial_signed_custody.py` adds an external Ed25519 trust
+  root. Only the assessor creates and holds the private key; candidate
+  compiler, executor, and query processes receive neither a key file nor a
+  private-key CLI surface. The signed seal binds the board, complete model,
+  execution manifest, canonical tokenization, model assembly, compiler,
+  executor, late-query receipt, terminal tensor, answer tensor, exact 48-row
+  qualification batch, vocabulary, answer-token codebook, and pad ID. The
+  authority record is preregistered separately. The claim-bearing public
+  materializer rejects any absent, forged, reassociated, wrong-key, altered-
+  tokenizer, or altered-codebook chain.
+
+  The four-process custody test no longer uses SHAKE-derived placeholder
+  tokens. It uses a real immutable tokenizer JSON and exact raw-to-token
+  receipts, reconstructs the complete model, runs compiler/executor/query in
+  fresh source-deleted directories, and validates the complete primary/query
+  receipt chain. Candidate runners are statically barred from importing the
+  qualification board or signing authority. Ed25519 signature and signed-
+  admission behavior are tested separately against valid synthetic packets;
+  the untrained integration run is not represented as a capability pass. The
+  expanded relevant inventory passes **267/267** in 169.97 seconds. Ruff,
+  byte compilation, and diff checks pass. No training or pretraining
+  preparation occurred; the protected checkpoint hash remains
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
+
+  Final deployment rereview leaves two non-neural trust controls before a
+  future result can be called independently claim-bearing: launch candidate
+  execution only after a bootstrap verifies the complete transitive runtime
+  bundle before imports, and load a signer-authority record anchored by an
+  independent root before candidate execution. Current runner hashes and
+  local authority pins are useful mechanics but cannot prove those two facts
+  to an external verifier by themselves. They do not alter ETTR's parameter
+  graph, training contract, or architecture-freeze decision.
+
+  Decision:
+  `ettr_architecture_complete_local_custody_mechanics_pass_external_claim_deployment_pending_untrained_pretraining_held_capability_unproven`.

@@ -520,12 +520,24 @@ the immutable terminal-state file and canonical terminal tensor receipt.
 Directly supplying a valid tensor and an asserted model hash is unsupported
 and rejected. Checkpoint deserialization is weights-only.
 
-This board completes the qualification geometry but not the final trust root.
-Before claim-bearing use, a custody key unavailable to candidate processes
-must sign the execution chain, and a canonical tokenizer receipt must prove
-that each WORLD/COMMAND token row and mask is exactly derived from its frozen
-raw package row under the preregistered tokenizer bytes/configuration. The
-protected checkpoint plus compiler/reactor/query-reader component files must
-also recompute to the complete model identity evaluated later. The late-query
-process must join the same signed chain. This authorizes no training and
-provides no learned capability result.
+The final trust root is implemented. Canonical tokenization receipts recompute
+all ordered WORLD, COMMAND, selected process-level QUERY, and all 48
+qualification-query token rows and masks from the raw packages and exact
+immutable tokenizer JSON. Complete-model assembly strictly reconstructs the
+protected checkpoint plus compiler, reactor, and query-reader safetensors and
+recomputes a model identity that binds weights, behavioral configurations,
+module sources, runtime, all named parameters, and all named buffers including
+non-persistent RoPE buffers. The execution manifest binds runner sources, hard
+mode, and executor steps. The detached late-query process validates the
+executor terminal receipt and emits its own reader/query/answer receipt. An
+assessor-held Ed25519 key signs the entire chain plus the exact qualification
+batch and token codebook, and claim-bearing materialization requires an
+externally pinned authority preregistration, public key, and seal hash.
+Candidate processes receive no private key and are checked not to import the
+board or signer. The complete relevant inventory passes 267/267 in 169.97
+seconds. This authorizes no training and provides no learned capability
+result. Before an external result is independently claim-bearing, deployment
+must additionally verify the transitive runtime bundle before Python imports
+execute and load a signer-authority record independently root-anchored before
+candidate execution. Those are external trust controls, not changes to the
+trainable architecture.

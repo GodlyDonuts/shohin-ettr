@@ -150,10 +150,26 @@ def test_fresh_executor_receives_state_and_post_seal_command(
         checkpoint_step=123,
         compiler_sha256="b" * 64,
         reactor_sha256=hashlib.sha256(reactor_path.read_bytes()).hexdigest(),
+        reader_sha256="d" * 64,
+        tokenizer_sha256="e" * 64,
+        tokenization_receipt_sha256="f" * 64,
+        model_assembly_receipt_sha256="0" * 64,
+        compiler_runner_sha256="2" * 64,
+        executor_runner_sha256=hashlib.sha256(
+            Path(__file__)
+            .with_name("run_ettr_state_executor.py")
+            .read_bytes()
+        ).hexdigest(),
+        query_runner_sha256="3" * 64,
+        compiler_hard=True,
+        executor_hard=True,
+        executor_steps=3,
         world_package_sha256=board.receipt.world_package_sha256,
         command_package_sha256=board.receipt.command_package_sha256,
+        query_package_sha256=board.receipt.query_package_sha256,
         world_tokens_sha256="c" * 64,
         command_tokens_sha256=hashlib.sha256(command_path.read_bytes()).hexdigest(),
+        query_tokens_sha256="1" * 64,
         row_count=TOTAL_PACKETS,
     )
     _canonical_json(manifest_path, asdict(manifest))
