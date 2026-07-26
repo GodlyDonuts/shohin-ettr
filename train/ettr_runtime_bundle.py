@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 from dataclasses import asdict, dataclass
 import hashlib
 from importlib import metadata, util
@@ -11,18 +12,21 @@ from pathlib import Path
 import shutil
 import stat
 import sys
+from typing import Sequence
 
 
-RUNTIME_BUNDLE_SCHEMA = "ettr-runtime-bundle-v1"
-RUNTIME_SOURCE_FILES = (
+RUNTIME_BUNDLE_SCHEMA = "ettr-runtime-bundle-v3"
+COMMON_RUNTIME_SOURCE_FILES = (
     "endogenous_typed_theory_reactor.py",
     "ettr_factorial_custody.py",
     "ettr_state_io.py",
     "model.py",
-    "run_ettr_late_query.py",
-    "run_ettr_state_executor.py",
-    "run_ettr_world_compiler.py",
 )
+STAGE_RUNNERS = {
+    "world": "run_ettr_world_compiler.py",
+    "command": "run_ettr_state_executor.py",
+    "query": "run_ettr_late_query.py",
+}
 RUNTIME_DISTRIBUTIONS = ("safetensors", "torch")
 
 
@@ -69,12 +73,20 @@ def _distribution_receipt(name: str) -> tuple[str, str, str, str, str]:
             f"runtime distribution origin is not a file: {name}"
         )
     distribution_root = Path(metadata.distribution(name).locate_file(".")).resolve()
+    runtime_prefix = Path(sys.prefix).resolve()
+    try:
+        origin_relative = origin.relative_to(runtime_prefix)
+        root_relative = distribution_root.relative_to(runtime_prefix)
+    except ValueError as exc:
+        raise ETTRRuntimeBundleError(
+            f"runtime distribution escapes interpreter prefix: {name}"
+        ) from exc
     return (
         name,
         version,
-        str(origin),
+        origin_relative.as_posix(),
         _sha256_file(origin),
-        str(distribution_root),
+        root_relative.as_posix(),
     )
 
 
@@ -142,6 +154,7 @@ class ETTRRuntimeBundleReceipt:
     """Exact local source and interpreter identity admitted before imports."""
 
     schema: str
+    stage: str
     python_implementation: str
     python_version: str
     python_executable_sha256: str
@@ -149,14 +162,29 @@ class ETTRRuntimeBundleReceipt:
     distributions: tuple[tuple[str, str, str, str, str], ...]
 
     @classmethod
-    def build(cls, source_root: Path) -> ETTRRuntimeBundleReceipt:
+    def build(
+        cls,
+        source_root: Path,
+        *,
+        stage: str,
+    ) -> ETTRRuntimeBundleReceipt:
         source_root = source_root.resolve()
+        try:
+            source_names = (
+                *COMMON_RUNTIME_SOURCE_FILES,
+                STAGE_RUNNERS[stage],
+            )
+        except KeyError as exc:
+            raise ETTRRuntimeBundleError(
+                "runtime bundle stage differs"
+            ) from exc
         source_files = tuple(
             (name, _sha256_file(source_root / name))
-            for name in RUNTIME_SOURCE_FILES
+            for name in source_names
         )
         return cls(
             schema=RUNTIME_BUNDLE_SCHEMA,
+            stage=stage,
             python_implementation=sys.implementation.name,
             python_version=sys.version,
             python_executable_sha256=_sha256_file(
@@ -179,12 +207,16 @@ class ETTRRuntimeBundleReceipt:
         _validate_bundle_root(bundle_root)
         if (
             self.schema != RUNTIME_BUNDLE_SCHEMA
+            or self.stage not in STAGE_RUNNERS
             or self.python_implementation != sys.implementation.name
             or self.python_version != sys.version
             or self.python_executable_sha256
             != _sha256_file(Path(sys.executable).resolve())
             or tuple(name for name, _ in self.source_files)
-            != RUNTIME_SOURCE_FILES
+            != (
+                *COMMON_RUNTIME_SOURCE_FILES,
+                STAGE_RUNNERS[self.stage],
+            )
             or tuple(name for name, _, _, _, _ in self.distributions)
             != RUNTIME_DISTRIBUTIONS
             or self.distributions
@@ -200,7 +232,14 @@ class ETTRRuntimeBundleReceipt:
                 for path in bundle_root.iterdir()
             )
         )
-        if actual_names != tuple(sorted(RUNTIME_SOURCE_FILES)):
+        if actual_names != tuple(
+            sorted(
+                (
+                    *COMMON_RUNTIME_SOURCE_FILES,
+                    STAGE_RUNNERS[self.stage],
+                )
+            )
+        ):
             raise ETTRRuntimeBundleError("runtime bundle inventory differs")
         for name, expected_sha256 in self.source_files:
             path = bundle_root / name
@@ -219,6 +258,7 @@ class ETTRRuntimeBundleReceipt:
             value = json.loads(payload.decode("ascii"))
             receipt = cls(
                 schema=value["schema"],
+                stage=value["stage"],
                 python_implementation=value["python_implementation"],
                 python_version=value["python_version"],
                 python_executable_sha256=value["python_executable_sha256"],
@@ -241,10 +281,12 @@ class ETTRRuntimeBundleReceipt:
 def materialize_runtime_bundle(
     source_root: Path,
     bundle_root: Path,
+    *,
+    stage: str,
 ) -> ETTRRuntimeBundleReceipt:
     """Copy the exact allowlist into a fresh read-only runtime directory."""
 
-    receipt = ETTRRuntimeBundleReceipt.build(source_root)
+    receipt = ETTRRuntimeBundleReceipt.build(source_root, stage=stage)
     try:
         bundle_root.mkdir(mode=0o700)
     except FileExistsError as exc:
@@ -274,11 +316,67 @@ def materialize_runtime_bundle(
     return receipt
 
 
+def write_runtime_bundle_receipt_once(
+    source_root: Path,
+    receipt_path: Path,
+    *,
+    stage: str,
+) -> ETTRRuntimeBundleReceipt:
+    """Write one portable source/runtime receipt without copying sources."""
+
+    receipt = ETTRRuntimeBundleReceipt.build(
+        source_root.resolve(strict=True),
+        stage=stage,
+    )
+    payload = receipt.canonical_bytes()
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_CLOEXEC", 0)
+    descriptor = os.open(receipt_path, flags, 0o600)
+    try:
+        offset = 0
+        while offset < len(payload):
+            written = os.write(descriptor, payload[offset:])
+            if written <= 0:
+                raise ETTRRuntimeBundleError(
+                    "runtime receipt write made no progress"
+                )
+            offset += written
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+    receipt_path.chmod(0o444)
+    return receipt
+
+
+def _main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--source-root", type=Path, required=True)
+    parser.add_argument("--receipt", type=Path, required=True)
+    parser.add_argument(
+        "--stage",
+        choices=tuple(STAGE_RUNNERS),
+        required=True,
+    )
+    arguments = parser.parse_args(argv)
+    receipt = write_runtime_bundle_receipt_once(
+        arguments.source_root,
+        arguments.receipt,
+        stage=arguments.stage,
+    )
+    print(receipt.sha256())
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(_main())
+
+
 __all__ = [
+    "COMMON_RUNTIME_SOURCE_FILES",
     "ETTRRuntimeBundleError",
     "ETTRRuntimeBundleReceipt",
     "RUNTIME_BUNDLE_SCHEMA",
     "RUNTIME_DISTRIBUTIONS",
-    "RUNTIME_SOURCE_FILES",
+    "STAGE_RUNNERS",
     "materialize_runtime_bundle",
+    "write_runtime_bundle_receipt_once",
 ]

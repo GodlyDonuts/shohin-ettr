@@ -13,16 +13,13 @@ import stat
 import sys
 
 
-RUNTIME_BUNDLE_SCHEMA = "ettr-runtime-bundle-v1"
-EXECUTION_MANIFEST_SCHEMA = "ettr-factorial-execution-manifest-v3"
-RUNTIME_SOURCE_FILES = (
+RUNTIME_BUNDLE_SCHEMA = "ettr-runtime-bundle-v3"
+EXECUTION_MANIFEST_SCHEMA = "ettr-factorial-execution-manifest-v4"
+COMMON_RUNTIME_SOURCE_FILES = (
     "endogenous_typed_theory_reactor.py",
     "ettr_factorial_custody.py",
     "ettr_state_io.py",
     "model.py",
-    "run_ettr_late_query.py",
-    "run_ettr_state_executor.py",
-    "run_ettr_world_compiler.py",
 )
 RUNTIME_DISTRIBUTIONS = ("safetensors", "torch")
 STAGE_RUNNERS = {
@@ -166,13 +163,52 @@ def _verify(
     manifest, manifest_bytes = _read_immutable_canonical(manifest_path)
     receipt, receipt_bytes = _read_immutable_canonical(receipt_path)
     own_sha256 = _sha256_file(Path(__file__).resolve())
+    claim_runtime_sha256 = os.environ.get(
+        "SHOHIN_ETTR_CLAIM_RUNTIME_SHA256"
+    )
+    claim_runtime_inventory_sha256 = os.environ.get(
+        "SHOHIN_ETTR_CLAIM_RUNTIME_INVENTORY_SHA256"
+    )
+    external_launcher_sha256 = os.environ.get(
+        "SHOHIN_ETTR_EXTERNAL_LAUNCHER_SHA256"
+    )
+    bwrap_sha256 = os.environ.get("SHOHIN_ETTR_BWRAP_SHA256")
+    stage_policy_sha256 = os.environ.get(
+        "SHOHIN_ETTR_STAGE_POLICY_SHA256"
+    )
+    expected_stage_policy_sha256 = manifest.get(
+        {
+            "world": "world_stage_policy_sha256",
+            "command": "command_stage_policy_sha256",
+            "query": "query_stage_policy_sha256",
+        }[stage]
+    )
+    network_isolated = os.environ.get(
+        "SHOHIN_ETTR_NETWORK_NAMESPACE_ISOLATED"
+    )
     if (
         manifest.get("schema") != EXECUTION_MANIFEST_SCHEMA
         or hashlib.sha256(manifest_bytes).hexdigest()
         != expected_manifest_sha256
         or manifest.get("bootstrap_sha256") != own_sha256
-        or manifest.get("runtime_bundle_sha256")
+        or manifest.get(
+            {
+                "world": "world_runtime_bundle_sha256",
+                "command": "command_runtime_bundle_sha256",
+                "query": "query_runtime_bundle_sha256",
+            }[stage]
+        )
         != hashlib.sha256(receipt_bytes).hexdigest()
+        or manifest.get("claim_runtime_archive_sha256")
+        != claim_runtime_sha256
+        or manifest.get("claim_runtime_inventory_sha256")
+        != claim_runtime_inventory_sha256
+        or manifest.get("external_launcher_sha256")
+        != external_launcher_sha256
+        or manifest.get("bwrap_sha256") != bwrap_sha256
+        or expected_stage_policy_sha256 != stage_policy_sha256
+        or manifest.get("network_namespace_required") is not True
+        or network_isolated != "1"
         or receipt.get("schema") != RUNTIME_BUNDLE_SCHEMA
         or receipt.get("python_implementation") != sys.implementation.name
         or receipt.get("python_version") != sys.version
@@ -186,18 +222,31 @@ def _verify(
     except (KeyError, TypeError) as exc:
         raise VerifiedStageError("runtime receipt geometry differs") from exc
     if (
-        tuple(name for name, _ in source_files) != RUNTIME_SOURCE_FILES
+        receipt.get("stage") != stage
+        or tuple(name for name, _ in source_files)
+        != (
+            *COMMON_RUNTIME_SOURCE_FILES,
+            STAGE_RUNNERS[stage],
+        )
         or tuple(name for name, _, _, _, _ in distributions)
         != RUNTIME_DISTRIBUTIONS
     ):
         raise VerifiedStageError("runtime receipt identity differs")
+    runtime_prefix = Path(sys.prefix).resolve()
     for name, version, origin_text, expected_sha256, root_text in distributions:
+        try:
+            origin = (runtime_prefix / origin_text).resolve(strict=True)
+            root = (runtime_prefix / root_text).resolve(strict=True)
+            origin.relative_to(runtime_prefix)
+            root.relative_to(runtime_prefix)
+        except (OSError, RuntimeError, ValueError) as exc:
+            raise VerifiedStageError("external runtime TCB differs") from exc
         if (
             not name
             or not version
-            or _sha256_file(Path(origin_text)) != expected_sha256
-            or not Path(root_text).is_dir()
-            or Path(origin_text).parent.parent != Path(root_text)
+            or _sha256_file(origin) != expected_sha256
+            or not root.is_dir()
+            or origin.parent.parent != root
         ):
             raise VerifiedStageError("external runtime TCB differs")
     bundle_metadata = bundle_root.lstat()
@@ -210,11 +259,15 @@ def _verify(
     actual_names = tuple(
         sorted(path.name for path in bundle_root.iterdir())
     )
-    if actual_names != tuple(sorted(RUNTIME_SOURCE_FILES)):
+    runtime_source_files = (
+        *COMMON_RUNTIME_SOURCE_FILES,
+        STAGE_RUNNERS[stage],
+    )
+    if actual_names != tuple(sorted(runtime_source_files)):
         raise VerifiedStageError("runtime source inventory differs")
     expected_files = dict(source_files)
     verified_sources: dict[str, tuple[str, bytes]] = {}
-    for name in RUNTIME_SOURCE_FILES:
+    for name in runtime_source_files:
         path = bundle_root / name
         payload = _read_immutable_bytes(path)
         if hashlib.sha256(payload).hexdigest() != expected_files[name]:
@@ -231,7 +284,10 @@ def _verify(
     runner_path = bundle_root / runner
     runner_bytes = verified_sources[runner_path.stem][1]
     runtime_roots = tuple(
-        dict.fromkeys(root for _, _, _, _, root in distributions)
+        dict.fromkeys(
+            str((runtime_prefix / root).resolve(strict=True))
+            for _, _, _, _, root in distributions
+        )
     )
     return runner_path, runner_bytes, verified_sources, runtime_roots
 

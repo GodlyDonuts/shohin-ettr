@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from ettr_factorial_qualification_board import ETTRFactorialQualificationBoard
 
 
-EXECUTION_MANIFEST_SCHEMA = "ettr-factorial-execution-manifest-v3"
+EXECUTION_MANIFEST_SCHEMA = "ettr-factorial-execution-manifest-v4"
 STAGE_RECEIPT_SCHEMA = "ettr-factorial-stage-execution-receipt-v1"
 QUERY_RECEIPT_SCHEMA = "ettr-factorial-late-query-receipt-v1"
 TOTAL_PACKETS = 12
@@ -122,7 +122,18 @@ class ETTRFactorialExecutionManifest:
     tokenization_receipt_sha256: str
     model_assembly_receipt_sha256: str
     bootstrap_sha256: str
-    runtime_bundle_sha256: str
+    world_runtime_bundle_sha256: str
+    command_runtime_bundle_sha256: str
+    query_runtime_bundle_sha256: str
+    claim_runtime_archive_sha256: str
+    claim_runtime_archive_size: int
+    claim_runtime_inventory_sha256: str
+    external_launcher_sha256: str
+    bwrap_sha256: str
+    network_namespace_required: bool
+    world_stage_policy_sha256: str
+    command_stage_policy_sha256: str
+    query_stage_policy_sha256: str
     compiler_runner_sha256: str
     executor_runner_sha256: str
     query_runner_sha256: str
@@ -153,7 +164,16 @@ class ETTRFactorialExecutionManifest:
             self.tokenization_receipt_sha256,
             self.model_assembly_receipt_sha256,
             self.bootstrap_sha256,
-            self.runtime_bundle_sha256,
+            self.world_runtime_bundle_sha256,
+            self.command_runtime_bundle_sha256,
+            self.query_runtime_bundle_sha256,
+            self.claim_runtime_archive_sha256,
+            self.claim_runtime_inventory_sha256,
+            self.external_launcher_sha256,
+            self.bwrap_sha256,
+            self.world_stage_policy_sha256,
+            self.command_stage_policy_sha256,
+            self.query_stage_policy_sha256,
             self.compiler_runner_sha256,
             self.executor_runner_sha256,
             self.query_runner_sha256,
@@ -176,6 +196,11 @@ class ETTRFactorialExecutionManifest:
             or not isinstance(self.executor_steps, int)
             or isinstance(self.executor_steps, bool)
             or not 1 <= self.executor_steps
+            or not isinstance(self.claim_runtime_archive_size, int)
+            or isinstance(self.claim_runtime_archive_size, bool)
+            or self.claim_runtime_archive_size <= 0
+            or not isinstance(self.network_namespace_required, bool)
+            or not self.network_namespace_required
             or not isinstance(self.checkpoint_step, int)
             or isinstance(self.checkpoint_step, bool)
             or self.checkpoint_step < 0

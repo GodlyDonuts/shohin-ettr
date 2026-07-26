@@ -12,8 +12,10 @@ import sys
 import pytest
 
 from ettr_runtime_bundle import (
+    COMMON_RUNTIME_SOURCE_FILES,
     ETTRRuntimeBundleError,
     ETTRRuntimeBundleReceipt,
+    STAGE_RUNNERS,
     materialize_runtime_bundle,
 )
 from run_ettr_verified_stage import _VerifiedSourceFinder, _verify
@@ -21,7 +23,12 @@ from run_ettr_verified_stage import _VerifiedSourceFinder, _verify
 
 TRAIN = Path(__file__).resolve().parent
 BOOTSTRAP = TRAIN / "run_ettr_verified_stage.py"
-MANIFEST_SCHEMA = "ettr-factorial-execution-manifest-v3"
+MANIFEST_SCHEMA = "ettr-factorial-execution-manifest-v4"
+CLAIM_RUNTIME_SHA256 = "8" * 64
+CLAIM_RUNTIME_INVENTORY_SHA256 = "9" * 64
+EXTERNAL_LAUNCHER_SHA256 = "a" * 64
+BWRAP_SHA256 = "c" * 64
+STAGE_POLICY_SHA256 = "d" * 64
 
 
 def _write_canonical(path: Path, value: object) -> None:
@@ -47,10 +54,21 @@ def _manifest(
     source_hashes = dict(receipt.source_files)
     value = {
         "bootstrap_sha256": hashlib.sha256(BOOTSTRAP.read_bytes()).hexdigest(),
+        "bwrap_sha256": BWRAP_SHA256,
+        "claim_runtime_archive_sha256": CLAIM_RUNTIME_SHA256,
+        "claim_runtime_archive_size": 1,
+        "claim_runtime_inventory_sha256": CLAIM_RUNTIME_INVENTORY_SHA256,
+        "command_stage_policy_sha256": "e" * 64,
         "compiler_runner_sha256": source_hashes[
             "run_ettr_world_compiler.py"
         ],
-        "runtime_bundle_sha256": receipt.sha256(),
+        "external_launcher_sha256": EXTERNAL_LAUNCHER_SHA256,
+        "network_namespace_required": True,
+        "query_stage_policy_sha256": "f" * 64,
+        "world_runtime_bundle_sha256": receipt.sha256(),
+        "command_runtime_bundle_sha256": "6" * 64,
+        "query_runtime_bundle_sha256": "7" * 64,
+        "world_stage_policy_sha256": STAGE_POLICY_SHA256,
         "schema": MANIFEST_SCHEMA,
     }
     _write_canonical(path, value)
@@ -68,6 +86,23 @@ def _bootstrap(
     isolated_flags: tuple[str, ...] = ("-I", "-S", "-B"),
     environment: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
+    effective_environment = dict(
+        os.environ if environment is None else environment
+    )
+    defaults = {
+        "SHOHIN_ETTR_BWRAP_SHA256": BWRAP_SHA256,
+        "SHOHIN_ETTR_CLAIM_RUNTIME_INVENTORY_SHA256": (
+            CLAIM_RUNTIME_INVENTORY_SHA256
+        ),
+        "SHOHIN_ETTR_CLAIM_RUNTIME_SHA256": CLAIM_RUNTIME_SHA256,
+        "SHOHIN_ETTR_EXTERNAL_LAUNCHER_SHA256": (
+            EXTERNAL_LAUNCHER_SHA256
+        ),
+        "SHOHIN_ETTR_NETWORK_NAMESPACE_ISOLATED": "1",
+        "SHOHIN_ETTR_STAGE_POLICY_SHA256": STAGE_POLICY_SHA256,
+    }
+    for key, value in defaults.items():
+        effective_environment.setdefault(key, value)
     return subprocess.run(
         [
             sys.executable,
@@ -89,7 +124,7 @@ def _bootstrap(
         capture_output=True,
         text=True,
         check=False,
-        env=environment,
+        env=effective_environment,
     )
 
 
@@ -97,7 +132,7 @@ def test_runtime_bundle_round_trip_is_exact_and_immutable(
     tmp_path: Path,
 ) -> None:
     bundle = tmp_path / "bundle"
-    receipt = materialize_runtime_bundle(TRAIN, bundle)
+    receipt = materialize_runtime_bundle(TRAIN, bundle, stage="world")
     receipt_path = tmp_path / "receipt.json"
     receipt_path.write_bytes(receipt.canonical_bytes())
     receipt_path.chmod(0o444)
@@ -110,9 +145,36 @@ def test_runtime_bundle_round_trip_is_exact_and_immutable(
     loaded.validate(bundle)
 
 
+def test_runtime_bundles_physically_delete_other_stage_runners(
+    tmp_path: Path,
+) -> None:
+    receipts: dict[str, ETTRRuntimeBundleReceipt] = {}
+    bundles: dict[str, Path] = {}
+    for stage, runner in STAGE_RUNNERS.items():
+        bundle = tmp_path / stage
+        receipt = materialize_runtime_bundle(TRAIN, bundle, stage=stage)
+        receipts[stage] = receipt
+        bundles[stage] = bundle
+        assert {path.name for path in bundle.iterdir()} == {
+            *COMMON_RUNTIME_SOURCE_FILES,
+            runner,
+        }
+        for other_stage, other_runner in STAGE_RUNNERS.items():
+            assert (bundle / other_runner).exists() is (
+                other_stage == stage
+            )
+
+    assert len({receipt.sha256() for receipt in receipts.values()}) == 3
+    with pytest.raises(
+        ETTRRuntimeBundleError,
+        match="runtime bundle inventory differs",
+    ):
+        receipts["world"].validate(bundles["command"])
+
+
 def test_runtime_bundle_rejects_dependency_substitution(tmp_path: Path) -> None:
     bundle = tmp_path / "bundle"
-    receipt = materialize_runtime_bundle(TRAIN, bundle)
+    receipt = materialize_runtime_bundle(TRAIN, bundle, stage="world")
     target = bundle / "model.py"
     bundle.chmod(0o755)
     target.chmod(0o644)
@@ -128,7 +190,7 @@ def test_copied_bootstrap_ignores_adjacent_shadow_modules(
     tmp_path: Path,
 ) -> None:
     bundle = tmp_path / "bundle"
-    receipt = materialize_runtime_bundle(TRAIN, bundle)
+    receipt = materialize_runtime_bundle(TRAIN, bundle, stage="world")
     receipt_path = tmp_path / "receipt.json"
     receipt_path.write_bytes(receipt.canonical_bytes())
     receipt_path.chmod(0o444)
@@ -159,7 +221,7 @@ def test_copied_bootstrap_ignores_adjacent_shadow_modules(
 
 def test_bootstrap_rejects_mutated_bundle_before_import(tmp_path: Path) -> None:
     bundle = tmp_path / "bundle"
-    receipt = materialize_runtime_bundle(TRAIN, bundle)
+    receipt = materialize_runtime_bundle(TRAIN, bundle, stage="world")
     receipt_path = tmp_path / "receipt.json"
     receipt_path.write_bytes(receipt.canonical_bytes())
     receipt_path.chmod(0o444)
@@ -194,7 +256,7 @@ def test_bootstrap_rejects_manifest_override_and_missing_isolation(
     tmp_path: Path,
 ) -> None:
     bundle = tmp_path / "bundle"
-    receipt = materialize_runtime_bundle(TRAIN, bundle)
+    receipt = materialize_runtime_bundle(TRAIN, bundle, stage="world")
     receipt_path = tmp_path / "receipt.json"
     receipt_path.write_bytes(receipt.canonical_bytes())
     receipt_path.chmod(0o444)
@@ -230,11 +292,52 @@ def test_bootstrap_rejects_manifest_override_and_missing_isolation(
     assert "requires python -I -S -B" in missing_no_site.stderr
 
 
+def test_bootstrap_rejects_runtime_and_namespace_reassociation(
+    tmp_path: Path,
+) -> None:
+    bundle = tmp_path / "bundle"
+    receipt = materialize_runtime_bundle(TRAIN, bundle, stage="world")
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_bytes(receipt.canonical_bytes())
+    receipt_path.chmod(0o444)
+    manifest_path = tmp_path / "manifest.json"
+    manifest_sha256 = _manifest(manifest_path, receipt=receipt)
+
+    wrong_runtime_environment = dict(os.environ)
+    wrong_runtime_environment["SHOHIN_ETTR_CLAIM_RUNTIME_SHA256"] = "f" * 64
+    no_network_isolation_environment = dict(os.environ)
+    no_network_isolation_environment[
+        "SHOHIN_ETTR_NETWORK_NAMESPACE_ISOLATED"
+    ] = "0"
+
+    wrong_runtime = _bootstrap(
+        BOOTSTRAP,
+        manifest=manifest_path,
+        manifest_sha256=manifest_sha256,
+        receipt=receipt_path,
+        bundle=bundle,
+        environment=wrong_runtime_environment,
+    )
+    no_network_isolation = _bootstrap(
+        BOOTSTRAP,
+        manifest=manifest_path,
+        manifest_sha256=manifest_sha256,
+        receipt=receipt_path,
+        bundle=bundle,
+        environment=no_network_isolation_environment,
+    )
+
+    assert wrong_runtime.returncode != 0
+    assert "bootstrap identity differs" in wrong_runtime.stderr
+    assert no_network_isolation.returncode != 0
+    assert "bootstrap identity differs" in no_network_isolation.stderr
+
+
 def test_bundle_rejects_pyc_extra_hardlink_and_symlink_root(
     tmp_path: Path,
 ) -> None:
     bundle = tmp_path / "bundle"
-    receipt = materialize_runtime_bundle(TRAIN, bundle)
+    receipt = materialize_runtime_bundle(TRAIN, bundle, stage="world")
 
     bundle.chmod(0o755)
     pycache = bundle / "__pycache__"
@@ -262,7 +365,7 @@ def test_isolated_bootstrap_ignores_pythonpath_sitecustomize(
     tmp_path: Path,
 ) -> None:
     bundle = tmp_path / "bundle"
-    receipt = materialize_runtime_bundle(TRAIN, bundle)
+    receipt = materialize_runtime_bundle(TRAIN, bundle, stage="world")
     receipt_path = tmp_path / "receipt.json"
     receipt_path.write_bytes(receipt.canonical_bytes())
     receipt_path.chmod(0o444)
@@ -312,14 +415,33 @@ def test_verified_source_loader_uses_retained_bytes_after_path_mutation(
 
 def test_verified_runner_payload_survives_post_verification_path_mutation(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     bundle = tmp_path / "bundle"
-    receipt = materialize_runtime_bundle(TRAIN, bundle)
+    receipt = materialize_runtime_bundle(TRAIN, bundle, stage="world")
     receipt_path = tmp_path / "receipt.json"
     receipt_path.write_bytes(receipt.canonical_bytes())
     receipt_path.chmod(0o444)
     manifest_path = tmp_path / "manifest.json"
     manifest_sha256 = _manifest(manifest_path, receipt=receipt)
+    monkeypatch.setenv("SHOHIN_ETTR_BWRAP_SHA256", BWRAP_SHA256)
+    monkeypatch.setenv(
+        "SHOHIN_ETTR_CLAIM_RUNTIME_INVENTORY_SHA256",
+        CLAIM_RUNTIME_INVENTORY_SHA256,
+    )
+    monkeypatch.setenv(
+        "SHOHIN_ETTR_CLAIM_RUNTIME_SHA256",
+        CLAIM_RUNTIME_SHA256,
+    )
+    monkeypatch.setenv(
+        "SHOHIN_ETTR_EXTERNAL_LAUNCHER_SHA256",
+        EXTERNAL_LAUNCHER_SHA256,
+    )
+    monkeypatch.setenv("SHOHIN_ETTR_NETWORK_NAMESPACE_ISOLATED", "1")
+    monkeypatch.setenv(
+        "SHOHIN_ETTR_STAGE_POLICY_SHA256",
+        STAGE_POLICY_SHA256,
+    )
 
     runner, runner_bytes, _, _ = _verify(
         manifest_path=manifest_path,

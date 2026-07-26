@@ -48,7 +48,7 @@ control.
   answers late queries from terminal state. Its independent
   `WORLD -> COMMAND -> QUERY` lifecycle, reset-safe composite objective,
   frozen-data contract, disjoint Muon/AdamW optimizer groups, and exact
-  checkpoint/resume path pass a 267-test complete ETTR/cross-ontology
+  checkpoint/resume path pass a 304-test complete ETTR/cross-ontology
   inventory. The objective now directly supervises both the compiled initial
   packet and the free-running terminal reactor packet; a gradient gate proves
   that terminal loss reaches both reactor and compiler. A hostile audit found
@@ -61,6 +61,20 @@ control.
   agreement, and 24/24 answer-changing edges for each factor. The complete
   system is 192,779,435 parameters. No ETTR fit, neural capability score,
   post-training, or pretraining action exists; the user hold remains active.
+- **Deployment hardening status:** WORLD, COMMAND, and QUERY now have three
+  distinct immutable runtime source bundles. Each contains only the four
+  shared architecture modules plus its own runner; the other two stage
+  runners are physically absent. The deterministic claim-runtime archive
+  recursively measures the complete copied CPython/Torch/safetensors/native
+  tree and the three disjoint source bundles, rejects import metadata,
+  traversal, links, devices, mutable files, and inventory expansion, and
+  binds separate stage receipts into execution-manifest schema v4. The
+  focused hostile suite is 55/55 and the complete ETTR/cross-ontology
+  inventory is 304/304. This closes the in-repository source-deletion
+  migration. It does not close the external trust boundary: an independently
+  pinned supervisor must still construct and attest the Bubblewrap sandbox,
+  bind launch receipts into final admission, own the root/preregistration
+  record, and qualify the OS loader/CUDA-driver/device closure on H100.
 - **Strict future ceiling:** fewer than 200,000,000 unique parameters for the
   complete system.
 - **Renderer-curriculum breakthrough:** a 152,933-parameter standalone
@@ -52594,3 +52608,35 @@ post-training determine whether the mechanism becomes useful intelligence.
 
 Current decision:
 `architecture_complete_authority_validation_retained_source_import_pass_external_claim_deployment_pending_learning_and_general_reasoning_unproven`.
+
+## 2026-07-26 Stage-Specific Claim Runtime Hardening
+
+The public-deployment package now uses three disjoint application bundles
+instead of one shared candidate source directory. WORLD receives the compiler
+runner, COMMAND receives the executor runner, and QUERY receives the late-query
+runner. Each bundle contains only four shared model/state modules plus the
+single stage runner. The other stage runners are physically absent before
+Python imports. Execution-manifest schema v4 binds three independent runtime
+bundle hashes, and the stdlib-only bootstrap rejects stage or receipt
+reassociation before retaining verified source bytes.
+
+The deterministic claim-runtime archive recursively inventories every copied
+directory, regular file, and safe symlink in the CPython, Torch,
+safetensors, and native dependency tree. Its candidate inventory requires the
+exact three-stage geometry and rejects extra runners or oracle modules.
+The CPU-only builder now emits three stage receipts from one exact Git commit.
+The focused runtime/deployment/four-process suite passes **55/55**; the full
+ETTR/cross-ontology inventory passes **304/304 in 174.84 seconds**. Ruff,
+Python byte compilation, shell syntax, and diff checks are clean.
+
+This milestone completes the in-repository architecture and source-deletion
+mechanics. It does not convert caller-provided environment assertions into an
+independent launch attestation. A public claim still requires a verifier-owned
+supervisor that verifies and extracts the archive, constructs exact
+Bubblewrap mounts and namespaces, measures the host loader/CUDA driver and
+devices, emits launch receipts, and binds those receipts plus an independently
+owned root/preregistration record into final admission. Those are deployment
+TCB controls; they add no trainable parameters and do not reopen ETTR design.
+
+Current decision:
+`ettr_architecture_complete_stage_specific_runtime_pass_external_supervisor_and_learning_pending`.

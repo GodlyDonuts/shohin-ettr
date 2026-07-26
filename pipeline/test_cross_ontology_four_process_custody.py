@@ -4,6 +4,7 @@ import ast
 from dataclasses import asdict
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -131,6 +132,21 @@ def _run_verified(
     bundle_root: Path,
     runner_arguments: tuple[str, ...],
 ) -> None:
+    environment = dict(os.environ)
+    environment.update(
+        {
+            "SHOHIN_ETTR_BWRAP_SHA256": "c" * 64,
+            "SHOHIN_ETTR_CLAIM_RUNTIME_INVENTORY_SHA256": "9" * 64,
+            "SHOHIN_ETTR_CLAIM_RUNTIME_SHA256": "8" * 64,
+            "SHOHIN_ETTR_EXTERNAL_LAUNCHER_SHA256": "a" * 64,
+            "SHOHIN_ETTR_NETWORK_NAMESPACE_ISOLATED": "1",
+            "SHOHIN_ETTR_STAGE_POLICY_SHA256": {
+                "world": "d" * 64,
+                "command": "e" * 64,
+                "query": "f" * 64,
+            }[stage],
+        }
+    )
     subprocess.run(
         [
             sys.executable,
@@ -155,6 +171,7 @@ def _run_verified(
         cwd=ROOT,
         capture_output=True,
         text=True,
+        env=environment,
     )
 
 
@@ -210,10 +227,24 @@ def test_four_process_chain_physically_deletes_prior_inputs(
     command_anchor = custody_dir / "command.json"
     query_anchor = custody_dir / "query.json"
     manifest_anchor = custody_dir / "execution_manifest.json"
-    runtime_receipt_anchor = custody_dir / "runtime_receipt.json"
-    runtime_bundle = tmp_path / "runtime_bundle"
-    runtime_receipt = materialize_runtime_bundle(TRAIN, runtime_bundle)
-    _write_json(runtime_receipt_anchor, asdict(runtime_receipt))
+    runtime_receipt_anchors = {
+        stage: custody_dir / f"runtime_receipt_{stage}.json"
+        for stage in ("world", "command", "query")
+    }
+    runtime_bundles = {
+        stage: tmp_path / f"runtime_bundle_{stage}"
+        for stage in ("world", "command", "query")
+    }
+    runtime_receipts = {
+        stage: materialize_runtime_bundle(
+            TRAIN,
+            runtime_bundles[stage],
+            stage=stage,
+        )
+        for stage in ("world", "command", "query")
+    }
+    for stage, anchor in runtime_receipt_anchors.items():
+        _write_json(anchor, asdict(runtime_receipts[stage]))
     _write_character_tokenizer(tokenizer_anchor)
     _write_json(config_anchor, asdict(model.config))
     torch.save(base_payload, checkpoint_anchor)
@@ -285,7 +316,18 @@ def test_four_process_chain_physically_deletes_prior_inputs(
         bootstrap_sha256=hashlib.sha256(
             (TRAIN / "run_ettr_verified_stage.py").read_bytes()
         ).hexdigest(),
-        runtime_bundle_sha256=runtime_receipt.sha256(),
+        world_runtime_bundle_sha256=runtime_receipts["world"].sha256(),
+        command_runtime_bundle_sha256=runtime_receipts["command"].sha256(),
+        query_runtime_bundle_sha256=runtime_receipts["query"].sha256(),
+        claim_runtime_archive_sha256="8" * 64,
+        claim_runtime_archive_size=1,
+        claim_runtime_inventory_sha256="9" * 64,
+        external_launcher_sha256="a" * 64,
+        bwrap_sha256="c" * 64,
+        network_namespace_required=True,
+        world_stage_policy_sha256="d" * 64,
+        command_stage_policy_sha256="e" * 64,
+        query_stage_policy_sha256="f" * 64,
         compiler_runner_sha256=hashlib.sha256(
             (TRAIN / "run_ettr_world_compiler.py").read_bytes()
         ).hexdigest(),
@@ -332,7 +374,10 @@ def test_four_process_chain_physically_deletes_prior_inputs(
         "command": command_anchor.read_bytes(),
         "query": query_anchor.read_bytes(),
         "manifest": manifest_anchor.read_bytes(),
-        "runtime_receipt": runtime_receipt_anchor.read_bytes(),
+        **{
+            f"runtime_receipt_{stage}": anchor.read_bytes()
+            for stage, anchor in runtime_receipt_anchors.items()
+        },
     }
     shutil.rmtree(custody_dir)
     assert not custody_dir.exists()
@@ -357,7 +402,7 @@ def test_four_process_chain_physically_deletes_prior_inputs(
     world_path.chmod(0o444)
     manifest_path.write_bytes(anchor_bytes["manifest"])
     manifest_path.chmod(0o444)
-    runtime_receipt_path.write_bytes(anchor_bytes["runtime_receipt"])
+    runtime_receipt_path.write_bytes(anchor_bytes["runtime_receipt_world"])
     runtime_receipt_path.chmod(0o444)
     checkpoint_digest = hashlib.sha256(checkpoint.read_bytes()).hexdigest()
     _run_verified(
@@ -365,7 +410,7 @@ def test_four_process_chain_physically_deletes_prior_inputs(
         manifest_path=manifest_path,
         manifest_sha256=manifest.sha256(),
         runtime_receipt_path=runtime_receipt_path,
-        bundle_root=runtime_bundle,
+        bundle_root=runtime_bundles["world"],
         runner_arguments=(
             "--config",
             str(config),
@@ -422,7 +467,7 @@ def test_four_process_chain_physically_deletes_prior_inputs(
     manifest_path.chmod(0o444)
     compiler_receipt.write_bytes(compiler_receipt_bytes)
     compiler_receipt.chmod(0o444)
-    runtime_receipt_path.write_bytes(anchor_bytes["runtime_receipt"])
+    runtime_receipt_path.write_bytes(anchor_bytes["runtime_receipt_command"])
     runtime_receipt_path.chmod(0o444)
     assert {path.name for path in executor_dir.iterdir()} == {
         "base.pt",
@@ -440,7 +485,7 @@ def test_four_process_chain_physically_deletes_prior_inputs(
         manifest_path=manifest_path,
         manifest_sha256=manifest.sha256(),
         runtime_receipt_path=runtime_receipt_path,
-        bundle_root=runtime_bundle,
+        bundle_root=runtime_bundles["command"],
         runner_arguments=(
             "--config",
             str(config),
@@ -518,7 +563,7 @@ def test_four_process_chain_physically_deletes_prior_inputs(
     manifest_path.chmod(0o444)
     executor_receipt.write_bytes(executor_receipt_bytes)
     executor_receipt.chmod(0o444)
-    runtime_receipt_path.write_bytes(anchor_bytes["runtime_receipt"])
+    runtime_receipt_path.write_bytes(anchor_bytes["runtime_receipt_query"])
     runtime_receipt_path.chmod(0o444)
     query_names = {path.name for path in query_dir.iterdir()}
     assert "world.json" not in query_names
@@ -531,7 +576,7 @@ def test_four_process_chain_physically_deletes_prior_inputs(
         manifest_path=manifest_path,
         manifest_sha256=manifest.sha256(),
         runtime_receipt_path=runtime_receipt_path,
-        bundle_root=runtime_bundle,
+        bundle_root=runtime_bundles["query"],
         runner_arguments=(
             "--config",
             str(config),

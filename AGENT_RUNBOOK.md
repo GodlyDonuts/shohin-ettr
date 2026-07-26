@@ -139,6 +139,24 @@
 > parameters already reason. No pretraining was started, queued, resumed,
 > prepared, or modified.
 >
+> **STAGE-SPECIFIC CLAIM RUNTIME PASS — 2026-07-26 EDT:** The application
+> runtime is now physically split into three immutable bundles. WORLD,
+> COMMAND, and QUERY each receive the four shared architecture/state modules
+> plus only their own runner; the other two runners are absent. Execution
+> manifest schema v4 binds three separate bundle receipts. The deterministic
+> claim archive requires that exact candidate geometry while recursively
+> measuring the copied CPython/Torch/safetensors/native tree and rejecting
+> import metadata, inventory expansion, traversal, unsafe links, devices, and
+> mutable files. The focused hostile/runtime/four-process suite passes
+> **55/55** and the complete ETTR/cross-ontology inventory passes
+> **304/304 in 174.84 seconds** with clean Ruff, byte compilation, shell
+> syntax, and diff checks. This closes the in-repository stage-source
+> migration. Public claim deployment still requires a verifier-owned external
+> supervisor, independently owned root/preregistration pin, launch-receipt
+> admission, and confined H100 validation of the host loader/CUDA-driver
+> closure. Those external controls add no neural parameters. No pretraining
+> was started, queued, resumed, prepared, or modified.
+>
 > **ETTR CONTINUATION CONTRACT FROZEN — 2026-07-26 EDT:** Commit
 > `ae2cf85480bedfaa96f3cf7ddfbaf64e5d067203` completes the missing
 > architecture-side continuation contract without launching pretraining. It
