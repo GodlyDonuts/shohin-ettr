@@ -208,7 +208,6 @@ BWRAP_ARGS=(
   --unshare-ipc \
   --unshare-uts \
   --unshare-net \
-  --clearenv \
   --ro-bind "{ETTR_RUNTIME_ROOT}" /runtime \
   --proc /proc \
   --dev /dev \

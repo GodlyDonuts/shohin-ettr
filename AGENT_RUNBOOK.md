@@ -184,7 +184,7 @@
 > substitution. The focused runtime/deployment/four-process regression set is
 > **54/54** passing with clean Ruff, byte compilation, shell syntax, and diff
 > checks. The complete current ETTR/cross-ontology inventory is **315/315**
-> passing in 170.79 seconds. Exact-source build `705463` failed closed after
+> passing in 171.39 seconds. Exact-source build `705463` failed closed after
 > staged CUDA imports passed and before archive publication because five
 > ordinary dependency filenames contain printable spaces or punctuation. The
 > path policy now accepts printable ASCII segments while still rejecting
@@ -210,8 +210,13 @@
 > Every output is immutable, single-link, and sidecar-admitted. Initial H100
 > test-only admission created no job because the wrapper requested Newton's
 > nonexistent `gpu:h100` alias. The wrapper now requests the scheduler's exact
-> `gpu:nvidia_h100_pcie` GRES and statically rejects the old alias. Submit the
-> confined smoke only from this corrected committed wrapper.
+> `gpu:nvidia_h100_pcie` GRES and statically rejects the old alias. Confined
+> smoke `706033` then passed archive extraction and the root-owned Python
+> closure but failed closed before CUDA because pinned Bubblewrap does not
+> implement `--clearenv`. The sealed verifier already launches Bubblewrap with
+> the exact environment `{HOME, PATH}`, so the unsupported redundant flag is
+> removed and statically rejected. Submit the confined smoke only from this
+> corrected committed wrapper.
 > Build the next exact-source runtime only from the committed hardened source,
 > verify every sidecar hash, and then submit the pinned in-Bubblewrap H100
 > smoke. These jobs cannot read checkpoints, shards, or optimizer state. Do

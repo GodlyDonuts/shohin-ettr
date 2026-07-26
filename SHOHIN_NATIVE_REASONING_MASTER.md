@@ -52666,7 +52666,7 @@ execution. An independent hostile rereview closed both final P1 findings:
 same-descriptor wheel consumption and extraction-to-execution substitution.
 The focused runtime/deployment/four-process regression set passes 54/54 with
 clean Ruff, byte compilation, shell syntax, and diff checks. The complete
-ETTR/cross-ontology inventory passes 315/315 in 170.79 seconds. Exact-source
+ETTR/cross-ontology inventory passes 315/315 in 171.39 seconds. Exact-source
 build `705463` passed staged CUDA imports but failed closed before archive
 publication because five normal dependency filenames contain printable spaces
 or punctuation. The corrected policy accepts printable ASCII path segments
@@ -52698,6 +52698,11 @@ Every output is immutable and single-link, and independent sidecar admission
 passes. The first H100 test-only request created no job because the wrapper
 used Newton's nonexistent `gpu:h100` alias. The corrected wrapper requests
 the exact `gpu:nvidia_h100_pcie` GRES and statically rejects the old alias.
+Confined smoke `706033` then passed extraction and root-owned Python-closure
+verification but failed closed before CUDA because pinned Bubblewrap does not
+implement `--clearenv`. The sealed verifier already gives Bubblewrap the exact
+environment `{HOME, PATH}`; the unsupported redundant flag is removed and now
+statically rejected.
 
 Current decision:
 `ettr_architecture_complete_stage_specific_runtime_pass_external_supervisor_and_learning_pending`.
