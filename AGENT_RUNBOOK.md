@@ -50,6 +50,19 @@
 > remains held and there are zero active Newton jobs. Full evidence:
 > `R12_SPARSE_LAW_MICROCODE_RESULT.md`.
 >
+> **Constraint-intersection breakthrough with frozen-gate defect
+> (2026-07-25 EDT):** H100 job `704761` preserves every sparse observation as
+> a separate compatibility factor and reaches 60/60 complete hash-disjoint
+> maps, 60/60 exact hidden queries, and 100% transition accuracy after source
+> deletion. Shifted targets score 1/60 and zeroed observations 0/60. Direction
+> negation scores 20/60, exactly matching an independently computed inverse-law
+> answer-collision ceiling. The preregistered 45-query margin is therefore
+> impossible; the result misses that administrative gate while establishing
+> exact bounded capability. The fixed global program bank remains an exhaustive
+> ontology prior, so this is not general reasoning. Next justified gate:
+> construct the program space episodically from unfamiliar support generators.
+> Full result: `R12_SPARSE_LAW_CONSTRAINT_INTERSECTION_RESULT.md`.
+>
 > **Expedited reasoning closeout (2026-07-25 EDT):** open-ended architecture
 > search is closed under the current evidence and usage budget. Shohin does
 > not demonstrate native general reasoning. The retained learned baseline is
@@ -13607,3 +13620,27 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   to complete one unseen sparse map. Stop architecture branching under the
   current usage constraint. No Newton jobs are active; pretraining remains
   held and the protected checkpoint remains unchanged.
+
+- **2026-07-25 20:43--20:52 EDT** -- **Keeping records as logical factors
+  closes the sparse-map mechanics gap.** The constraint-intersection model
+  replaces amortized program classification with dense parallel version-space
+  elimination. Job `704761` completed on `evc23` in 3 minutes 7 seconds.
+  Treatment reached 2,400/2,400 transition states, 60/60 complete unseen maps,
+  60/60 exact hidden queries, and 60/60 source-free packets. Training and
+  development action-map overlap is zero.
+
+  Same-weight direction negation reached 20/60, shifted targets 1/60, and
+  zeroed observations 0/60. An independent exact inverse-law calculation also
+  reaches exactly 20/60, proving the frozen 45-query margin was impossible:
+  perfect treatment can beat this control by at most 40. Preserve the formal
+  gate miss rather than rewriting it posthoc.
+
+  The learned direction reader adds 232,065 parameters; the complete
+  conceptual system is 125,313,729. Report SHA-256 is
+  `22d22d8ac9079ee1722ce971c50d2307c5ad1d9132d49c329ef779f01adb2ede`;
+  model SHA-256 is
+  `b54fc0d2c113fff07a5a70629b5499ecc8412b6ecc2732ef3728359a2dc3de89`.
+  This is exact architecture-native law identification inside a fixed
+  hypothesis library, semantically equivalent to exhaustive elimination.
+  It is not open-ontology or general reasoning. The next board must construct
+  its hypothesis space from unfamiliar episode-local generators.

@@ -44,3 +44,17 @@ Continue only if one frozen seed:
 A pass authorizes an open-ontology falsifier. It does not authorize a native
 reasoning claim because the complete operation library is built into the
 architecture.
+
+## Frozen Outcome
+
+Job `704761` reached 60/60 complete unseen maps and 60/60 exact queries with
+100% transition accuracy and zero action-map overlap. Shifted targets scored
+1/60 and zeroed observations 0/60. Direction negation scored 20/60, so the
+frozen 45-query margin misses by five.
+
+An exact inverse-law audit reproduces all 20 direction-control answers. The
+maximum possible margin on this frozen board is therefore 40, making the
+preregistered 45 margin unattainable even for perfect treatment. Preserve the
+gate miss; classify the experiment as an exact bounded capability result with
+a defective promotion criterion. Full evidence:
+`R12_SPARSE_LAW_CONSTRAINT_INTERSECTION_RESULT.md`.
