@@ -14012,3 +14012,29 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `factorial_interchange_contract_hardened_exact_h100_profile_pending_pretraining_held_capability_unproven`.
+
+- **2026-07-26 03:53 EDT** -- **The architecture-only phase boundary is
+  reaffirmed and the exact-source full-composite H100 profile is queued.**
+  The user clarified that the present work is architecture construction and
+  qualification. Substantial pretraining will occur only after the
+  architecture works and only on later user authorization; post-training
+  follows that later pretraining. Current checkpoint intelligence is
+  therefore not an acceptance criterion for this phase. No continuation
+  pretraining was started, queued, resumed, prepared, or modified.
+
+  Stale profile `705192` completed on `evc29` in 6m50s, but it predates the
+  factorial objective and remains non-qualifying. Newton independently
+  reverified the protected physical checkpoint at step 300,000 as SHA-256
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
+  Commit `4ca7366eb5102b1f51e16c2166717ec5e02448cb` was fetched into detached,
+  clean worktree
+  `/lustre/fs1/home/sa305415/shohin_ettr_profile_4ca7366_wt`. Slurm
+  `--test-only` admitted the job on an eligible H100 configuration. Exactly
+  one replacement, job `705213`, was submitted with a fresh isolated output
+  directory and the established bad-node exclusions. It is pending resources.
+  The wrapper unsets and forbids `SHARDS`, reads the checkpoint only, writes
+  no model state, and runs only synthetic schema-v3 factual/intervention
+  forward, backward, and optimizer resource profiling.
+
+  Decision remains:
+  `factorial_interchange_contract_hardened_exact_h100_profile_pending_pretraining_held_capability_unproven`.

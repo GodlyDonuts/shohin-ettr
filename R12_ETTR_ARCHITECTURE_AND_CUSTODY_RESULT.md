@@ -187,9 +187,13 @@ Payload SHA-256:
 - Job `705188` failed closed on `evc33` before checkpoint/model execution
   because CUDA was unavailable despite allocation. The node is excluded.
 - Job `705192` predates the factorial objective and cannot qualify current
-  source even if it completes.
-- Submit one fresh isolated BF16 H100 eager-versus-compiled memory/throughput
-  profile from exact commit `5771c64` or a documentation-only descendant.
+  source. It completed cleanly on `evc29` in 6m50s and is retained only as a
+  stale systems receipt.
+- Exact documentation descendant
+  `4ca7366eb5102b1f51e16c2166717ec5e02448cb` is checked out in a detached,
+  clean Newton worktree. Exactly one fresh isolated BF16 H100
+  eager-versus-compiled memory/throughput profile, job `705213`, is pending
+  resources.
 - The schema-v3 profiler must execute factual episodes, both intervention
   arms, the complete composite objective, backward, and Muon/AdamW update
   from matched eager/compiled initial parameter hashes.

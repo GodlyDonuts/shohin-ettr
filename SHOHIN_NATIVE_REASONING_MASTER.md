@@ -52344,3 +52344,13 @@ The next architecture gates are an exact-source H100 profile of this complete
 objective, source-to-query causal binding, and the frozen qualification/
 control matrix. Later large-scale pretraining and post-training remain
 separate user decisions.
+
+At 2026-07-26 03:53 EDT, Newton independently reverified the protected
+step-300k checkpoint SHA-256 and fetched exact documentation descendant
+`4ca7366eb5102b1f51e16c2166717ec5e02448cb` into a clean detached worktree.
+Stale profile `705192` completed but cannot qualify the factorial objective.
+Exactly one schema-v3 replacement, job `705213`, is pending resources. It is
+synthetic architecture resource profiling only: `SHARDS` are forbidden, no
+model state can be written, and it does not authorize or constitute
+pretraining. Current raw capability is deliberately outside this architecture
+gate; learning and post-training are later user-controlled phases.
