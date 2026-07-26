@@ -62,6 +62,7 @@ def _trainer(
         dataset_sha256=DATASET_SHA256,
         episodes=_batch(2),
         packet_targets=_packet(2),
+        terminal_packet_targets=_packet(2),
         transaction_targets=_transactions(2),
         initial_committed=torch.zeros(2, dtype=torch.bool),
         initial_halted=torch.zeros(2, dtype=torch.bool),

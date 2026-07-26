@@ -624,6 +624,8 @@ class ETTRObjectiveBatch:
     token_targets: ETTRTokenTargets
     packet_prediction: TypedTheoryState
     packet_targets: ETTRPacketTargets
+    terminal_packet_prediction: TypedTheoryState
+    terminal_packet_targets: ETTRPacketTargets
     transactions: ETTRTransactionPredictions
     transaction_targets: ETTRTransactionTargets
     initial_committed: torch.Tensor
@@ -772,9 +774,10 @@ def _validate_state(
     *,
     config: ETTRObjectiveConfig,
     batch: int,
+    name: str,
 ) -> tuple[torch.Tensor, ...]:
     if not isinstance(state, TypedTheoryState):
-        raise ETTRObjectiveError("packet_prediction must be a TypedTheoryState")
+        raise ETTRObjectiveError(f"{name} must be a TypedTheoryState")
     expected = {
         "value_probabilities": (
             batch,
@@ -806,16 +809,16 @@ def _validate_state(
             continue
         tensor = _tensor(
             value,
-            name=f"packet_prediction.{field.name}",
+            name=f"{name}.{field.name}",
             shape=expected[field.name],
             floating=True,
         )
         _probability(
             tensor,
-            name=f"packet_prediction.{field.name}",
+            name=f"{name}.{field.name}",
         )
         tensors += (tensor,)
-    _same_device(tensors, name="packet prediction")
+    _same_device(tensors, name=name)
     return tensors
 
 
@@ -889,31 +892,43 @@ def _validate_batch(
         "causal token target mask contains no support",
     )
 
-    state_tensors = _validate_state(
-        batch.packet_prediction,
-        config=config,
-        batch=rows,
-    )
-    if not isinstance(batch.packet_targets, ETTRPacketTargets):
-        raise ETTRObjectiveError("packet target type differs")
-    packet = batch.packet_targets
-    if packet.active.shape != (rows, config.num_slots) or packet.relations.shape != (
-        rows,
-        config.num_relations,
-        config.num_slots,
-        config.num_slots,
+    state_tensors: tuple[torch.Tensor, ...] = ()
+    for name, state in (
+        ("packet_prediction", batch.packet_prediction),
+        ("terminal_packet_prediction", batch.terminal_packet_prediction),
     ):
-        raise ETTRObjectiveError("packet target config geometry differs")
-    _range_check(
-        packet.value_code,
-        config.num_value_codes,
-        name="packet_targets.value_code",
-    )
-    _range_check(
-        packet.type_index,
-        config.num_types,
-        name="packet_targets.type_index",
-    )
+        state_tensors += _validate_state(
+            state,
+            config=config,
+            batch=rows,
+            name=name,
+        )
+    for name, packet in (
+        ("packet_targets", batch.packet_targets),
+        ("terminal_packet_targets", batch.terminal_packet_targets),
+    ):
+        if not isinstance(packet, ETTRPacketTargets):
+            raise ETTRObjectiveError(f"{name} type differs")
+        if packet.active.shape != (
+            rows,
+            config.num_slots,
+        ) or packet.relations.shape != (
+            rows,
+            config.num_relations,
+            config.num_slots,
+            config.num_slots,
+        ):
+            raise ETTRObjectiveError(f"{name} config geometry differs")
+        _range_check(
+            packet.value_code,
+            config.num_value_codes,
+            name=f"{name}.value_code",
+        )
+        _range_check(
+            packet.type_index,
+            config.num_types,
+            name=f"{name}.type_index",
+        )
 
     if not isinstance(
         batch.transactions,
@@ -1001,11 +1016,19 @@ def _validate_batch(
             getattr(alignment, field.name) for field in fields(alignment)
         )
 
+    packet_target_tensors = tuple(
+        getattr(packet_target, field.name)
+        for packet_target in (
+            batch.packet_targets,
+            batch.terminal_packet_targets,
+        )
+        for field in fields(packet_target)
+    )
     target_tensors = (
         batch.token_targets.token_ids,
         batch.token_targets.mask,
         batch.token_targets.reset_mask,
-        *(getattr(packet, field.name) for field in fields(packet)),
+        *packet_target_tensors,
         *(getattr(transactions, field.name) for field in fields(transactions)),
         *(getattr(targets, field.name) for field in fields(targets)),
         *initial,
@@ -1091,8 +1114,29 @@ def _packet_loss(
     batch: ETTRObjectiveBatch,
     config: ETTRObjectiveConfig,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    prediction = batch.packet_prediction
-    target = batch.packet_targets
+    initial, initial_slots, initial_relations = _packet_state_loss(
+        batch.packet_prediction,
+        batch.packet_targets,
+        config,
+    )
+    terminal, terminal_slots, terminal_relations = _packet_state_loss(
+        batch.terminal_packet_prediction,
+        batch.terminal_packet_targets,
+        config,
+    )
+    combined = _combine((initial, terminal), batch.packet_prediction.active)
+    return (
+        combined.mean,
+        initial_slots + terminal_slots,
+        initial_relations + terminal_relations,
+    )
+
+
+def _packet_state_loss(
+    prediction: TypedTheoryState,
+    target: ETTRPacketTargets,
+    config: ETTRObjectiveConfig,
+) -> tuple[_LossCount, torch.Tensor, torch.Tensor]:
     categorical_mask = target.slot_mask & target.active
     losses = (
         _categorical_nll(
@@ -1127,7 +1171,7 @@ def _packet_loss(
         ),
     )
     return (
-        _combine(losses, prediction.active).mean,
+        _combine(losses, prediction.active),
         _count(target.slot_mask),
         _count(target.relation_mask),
     )
@@ -1344,57 +1388,24 @@ def _equivariance_loss(
         alignment.relation_permutation,
         alignment.value_permutation,
     )
-    left_packet = _aligned_packet(
-        batch.packet_prediction,
-        alignment.left_index,
-        left_maps,
-    )
-    right_packet = _aligned_packet(
-        batch.packet_prediction,
-        alignment.right_index,
-        right_maps,
-    )
     pair_mask = torch.ones_like(
         alignment.left_index,
         dtype=torch.bool,
     )
     packet = _combine(
-        (
-            _masked_square(
-                left_packet["value"],
-                right_packet["value"],
-                alignment.slot_mask,
-            ),
-            _masked_square(
-                left_packet["type"],
-                right_packet["type"],
-                alignment.slot_mask,
-            ),
-            _masked_square(
-                left_packet["relations"],
-                right_packet["relations"],
-                alignment.relation_mask,
-            ),
-            _masked_square(
-                left_packet["active"],
-                right_packet["active"],
-                alignment.slot_mask,
-            ),
-            _masked_square(
-                left_packet["root"],
-                right_packet["root"],
-                alignment.slot_mask,
-            ),
-            _masked_square(
-                left_packet["committed"],
-                right_packet["committed"],
+        tuple(
+            _equivariant_packet_loss(
+                state,
+                alignment,
+                left_maps,
+                right_maps,
                 pair_mask,
-            ),
-            _masked_square(
-                left_packet["halted"],
-                right_packet["halted"],
-                pair_mask,
-            ),
+                batch.token_logits,
+            )
+            for state in (
+                batch.packet_prediction,
+                batch.terminal_packet_prediction,
+            )
         ),
         batch.token_logits,
     )
@@ -1461,6 +1472,34 @@ def _equivariance_loss(
     )
     combined = _combine((packet, transaction), batch.token_logits)
     return combined.mean, packet.count, transaction.count
+
+
+def _equivariant_packet_loss(
+    state: TypedTheoryState,
+    alignment: ETTRVariantAlignment,
+    left_maps: tuple[torch.Tensor, ...],
+    right_maps: tuple[torch.Tensor, ...],
+    pair_mask: torch.Tensor,
+    reference: torch.Tensor,
+) -> _LossCount:
+    left = _aligned_packet(state, alignment.left_index, left_maps)
+    right = _aligned_packet(state, alignment.right_index, right_maps)
+    return _combine(
+        (
+            _masked_square(left["value"], right["value"], alignment.slot_mask),
+            _masked_square(left["type"], right["type"], alignment.slot_mask),
+            _masked_square(
+                left["relations"],
+                right["relations"],
+                alignment.relation_mask,
+            ),
+            _masked_square(left["active"], right["active"], alignment.slot_mask),
+            _masked_square(left["root"], right["root"], alignment.slot_mask),
+            _masked_square(left["committed"], right["committed"], pair_mask),
+            _masked_square(left["halted"], right["halted"], pair_mask),
+        ),
+        reference,
+    )
 
 
 def _sparsity_loss(
@@ -1549,14 +1588,24 @@ class ETTRCompositeObjective(nn.Module):
             self.config,
         )
         equivariance, equiv_packet, equiv_transaction = _equivariance_loss(batch)
-        sparsity = _sparsity_loss(
-            batch.packet_prediction,
-            self.config,
-        )
-        anti_bypass = _anti_bypass_loss(
-            batch.packet_prediction,
-            self.config,
-        )
+        sparsity = torch.stack(
+            tuple(
+                _sparsity_loss(state, self.config)
+                for state in (
+                    batch.packet_prediction,
+                    batch.terminal_packet_prediction,
+                )
+            )
+        ).mean()
+        anti_bypass = torch.stack(
+            tuple(
+                _anti_bypass_loss(state, self.config)
+                for state in (
+                    batch.packet_prediction,
+                    batch.terminal_packet_prediction,
+                )
+            )
+        ).mean()
         breakdown = {
             "token_lm": token_lm,
             "packet": packet,

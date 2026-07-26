@@ -172,6 +172,8 @@ def _batch() -> ETTRObjectiveBatch:
         ),
         packet_prediction=_hard_packet_state(),
         packet_targets=_packet_labels(),
+        terminal_packet_prediction=_hard_packet_state(),
+        terminal_packet_targets=_packet_labels(),
         transactions=_transaction_predictions(),
         transaction_targets=_transaction_labels(),
         initial_committed=torch.zeros(BATCH, dtype=torch.bool),
@@ -326,11 +328,11 @@ def test_receipt_counts_stay_device_resident_and_auditable() -> None:
     )
     torch.testing.assert_close(
         receipt.supervised_packet_slots,
-        torch.tensor(6),
+        torch.tensor(12),
     )
     torch.testing.assert_close(
         receipt.supervised_relation_cells,
-        torch.tensor(36),
+        torch.tensor(72),
     )
     torch.testing.assert_close(
         receipt.supervised_transaction_steps,
@@ -612,6 +614,7 @@ def test_equivariance_uses_declared_variant_coordinate_transport() -> None:
     transported = replace(
         batch,
         packet_prediction=state,
+        terminal_packet_prediction=state,
         transactions=transactions,
         equivariance=alignment,
     )
@@ -629,6 +632,24 @@ def test_equivariance_uses_declared_variant_coordinate_transport() -> None:
         replace(transported, packet_prediction=broken_state)
     ).equivariance
     assert broken > exact
+
+
+def test_terminal_packet_is_directly_supervised() -> None:
+    batch = _batch()
+    objective = ETTRCompositeObjective(_config())
+    exact = objective(batch).packet
+    values = batch.terminal_packet_prediction.value_probabilities.detach().clone()
+    values[:, 0] = values[:, 0].roll(1, dims=-1)
+    terminal = replace(
+        batch.terminal_packet_prediction,
+        value_probabilities=_leaf(values),
+    )
+    broken = objective(
+        replace(batch, terminal_packet_prediction=terminal)
+    )
+    assert broken.packet > exact
+    broken.packet.backward()
+    assert terminal.value_probabilities.grad is not None
 
 
 def test_commit_halt_loss_checks_prefix_recurrence_and_labels() -> None:

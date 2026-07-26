@@ -40,6 +40,7 @@ class ETTRContinuationBatch:
     dataset_sha256: str
     episodes: ETTREpisodeBatch
     packet_targets: ETTRPacketTargets
+    terminal_packet_targets: ETTRPacketTargets
     transaction_targets: ETTRTransactionTargets
     initial_committed: torch.Tensor
     initial_halted: torch.Tensor
@@ -60,6 +61,12 @@ class ETTRContinuationBatch:
             **{
                 field.name: getattr(self.packet_targets, field.name)
                 for field in fields(self.packet_targets)
+            }
+        )
+        ETTRPacketTargets(
+            **{
+                field.name: getattr(self.terminal_packet_targets, field.name)
+                for field in fields(self.terminal_packet_targets)
             }
         )
         ETTRTransactionTargets(
@@ -85,6 +92,8 @@ class ETTRContinuationBatch:
             or objective_config.relation_edge_budget != reactor_config.max_edges
             or steps > reactor_config.max_steps
             or self.packet_targets.active.shape != (batch, reactor_config.num_slots)
+            or self.terminal_packet_targets.active.shape
+            != (batch, reactor_config.num_slots)
             or self.transaction_targets.opcode.shape[0] != batch
             or self.initial_committed.shape != (batch,)
             or self.initial_halted.shape != (batch,)
@@ -95,6 +104,7 @@ class ETTRContinuationBatch:
         devices = {
             self.episodes.world.tokens.device,
             self.packet_targets.active.device,
+            self.terminal_packet_targets.active.device,
             self.transaction_targets.opcode.device,
             self.initial_committed.device,
             self.initial_halted.device,
@@ -108,6 +118,7 @@ class ETTRContinuationBatch:
             for value in (
                 self,
                 self.packet_targets,
+                self.terminal_packet_targets,
                 self.transaction_targets,
             )
             for field in fields(value)
@@ -160,6 +171,8 @@ class ETTRContinuationBatch:
             ),
             packet_prediction=output.initial_state,
             packet_targets=self.packet_targets,
+            terminal_packet_prediction=output.terminal_state,
+            terminal_packet_targets=self.terminal_packet_targets,
             transactions=(ETTRTransactionPredictions.from_reactor_trace(output.trace)),
             transaction_targets=self.transaction_targets,
             initial_committed=self.initial_committed,

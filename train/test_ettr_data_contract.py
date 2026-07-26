@@ -13,7 +13,9 @@ from ettr_data_contract import (
 )
 from ettr_episode import ETTREpisodeBatch, ETTREpisodeSegment
 from ettr_objectives import (
+    ETTRCompositeObjective,
     ETTRObjectiveConfig,
+    ETTRObjectiveWeights,
     ETTRPacketTargets,
     ETTRTransactionTargets,
     ETTRVariantAlignment,
@@ -100,6 +102,7 @@ def _continuation() -> tuple[
             dataset_sha256="b" * 64,
             episodes=episodes,
             packet_targets=_packet(2),
+            terminal_packet_targets=_packet(2),
             transaction_targets=_transactions(2),
             initial_committed=torch.zeros(2, dtype=torch.bool),
             initial_halted=torch.zeros(2, dtype=torch.bool),
@@ -134,16 +137,66 @@ def test_continuation_batch_builds_reset_safe_objective() -> None:
         3,
         64,
     )
+    assert objective_batch.terminal_packet_prediction is output.terminal_state
     declared = {
         field.name
         for value in (
             continuation,
             continuation.packet_targets,
+            continuation.terminal_packet_targets,
             continuation.transaction_targets,
         )
         for field in fields(value)
     }
     assert not any("family" in name or "ontology" in name for name in declared)
+
+
+def test_terminal_packet_loss_connects_compiler_through_reactor() -> None:
+    continuation, objective_config = _continuation()
+    runner = _runner()
+    output = runner(
+        continuation.episodes,
+        reactor_steps=3,
+    )
+    objective_batch = continuation.objective_batch(output)
+    detached_initial = type(output.initial_state)(
+        **{
+            field.name: (
+                getattr(output.initial_state, field.name)
+                if field.name == "step"
+                else getattr(output.initial_state, field.name).detach()
+            )
+            for field in fields(output.initial_state)
+        }
+    )
+    objective_batch = replace(
+        objective_batch,
+        packet_prediction=detached_initial,
+    )
+    runner.zero_grad(set_to_none=True)
+    loss = ETTRCompositeObjective(
+        objective_config,
+        weights=ETTRObjectiveWeights(
+            token_lm=0.0,
+            packet=1.0,
+            transaction=0.0,
+            equivariance=0.0,
+            commit_halt=0.0,
+            sparsity=0.0,
+            anti_bypass=0.0,
+        ),
+    )(objective_batch).total
+    loss.backward()
+    assert any(
+        parameter.grad is not None
+        and bool(parameter.grad.detach().abs().sum().gt(0))
+        for parameter in runner.model.compiler.parameters()
+    )
+    assert any(
+        parameter.grad is not None
+        and bool(parameter.grad.detach().abs().sum().gt(0))
+        for parameter in runner.model.reactor.parameters()
+    )
 
 
 def test_padded_segments_restart_validity_only_at_declared_resets() -> None:
