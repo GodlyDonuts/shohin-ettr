@@ -17,6 +17,7 @@ from source_deleted_sparse_latent_law_board import (  # noqa: E402
     generate_episode,
 )
 from sparse_latent_law_compiler import (  # noqa: E402
+    ConstraintIntersectionSparseLatentLawCompiler,
     MAX_ACTIONS,
     MAX_CARDINALITY,
     MAX_RECORDS,
@@ -197,6 +198,58 @@ def test_model_forward_controls_and_parameter_receipt() -> None:
         microcoded.parameter_receipt().learned_compiler
         == microcoded.parameter_count()
     )
+
+    intersection = ConstraintIntersectionSparseLatentLawCompiler(
+        width=64,
+        layers=1,
+        heads=4,
+    )
+    intersection_output = intersection(batch)
+    assert intersection_output.transition_logits.shape == (
+        3,
+        MAX_ACTIONS,
+        MAX_CARDINALITY,
+        MAX_CARDINALITY,
+    )
+    assert bool(torch.isfinite(intersection_output.transition_logits).all())
+    assert (
+        intersection.parameter_receipt().learned_compiler
+        == intersection.parameter_count()
+    )
+
+
+@pytest.mark.parametrize("cardinality", (8, 16))
+def test_constraint_intersection_recovers_identified_map(
+    cardinality: int,
+) -> None:
+    row = generate_episode(
+        seed=991 + cardinality,
+        split="development",
+        family="gray_conjugate_affine",
+        renderer=0,
+        cell="law",
+        cardinality=cardinality,
+        action_count=3,
+    )
+    batch = collate_sparse_sources(
+        (scan_sparse_source(row.candidate.source.encode("ascii")),)
+    )
+    model = ConstraintIntersectionSparseLatentLawCompiler(
+        width=32,
+        layers=1,
+        heads=4,
+    )
+    with torch.no_grad():
+        for parameter in model.parameters():
+            parameter.zero_()
+        model.direction_head[-1].bias.fill_(20.0)
+    output = model(batch)
+    machine = seal_sparse_machine(batch, output, row=0)
+    query = scan_sparse_query(row.candidate.query.encode("ascii"))
+    assert execute_sparse_query(machine, query) == row.supervisor.answer
+    assert machine.transition == compile_source(
+        row.candidate.source
+    ).transition
 
 
 def test_sparse_query_scanner_rejects_ambiguous_numbers() -> None:

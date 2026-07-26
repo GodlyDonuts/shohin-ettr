@@ -20,7 +20,7 @@ LAYERS="${LAYERS:-2}"
 HEADS="${HEADS:-4}"
 BATCH="${BATCH:-64}"
 AUXILIARY="${AUXILIARY:-3000}"
-ARCHITECTURE="${ARCHITECTURE:-microcoded}"
+ARCHITECTURE="${ARCHITECTURE:-constraint_intersection}"
 OUTPUT="$ROOT/artifacts/r12/sparse_latent_law_curriculum/seed${SEED}_${ARCHITECTURE}.json"
 MODEL="$ROOT/artifacts/r12/sparse_latent_law_curriculum/seed${SEED}_${ARCHITECTURE}.pt"
 

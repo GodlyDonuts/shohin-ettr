@@ -1183,6 +1183,151 @@ class MicrocodedSparseLatentLawCompiler(FactorizedSparseLatentLawCompiler):
         )
 
 
+class ConstraintIntersectionSparseLatentLawCompiler(
+    SparseLatentLawCompiler
+):
+    """Intersect per-record constraints over an internal program bank.
+
+    This is dense parallel energy evaluation, not an amortized program
+    classifier.  Every observation remains a separate factor until the
+    program posterior has been formed.
+    """
+
+    def __init__(
+        self,
+        *,
+        width: int = 128,
+        layers: int = 2,
+        heads: int = 4,
+        evidence_temperature: float = 24.0,
+    ) -> None:
+        super().__init__(width=width, layers=layers, heads=heads)
+        if not 4.0 <= evidence_temperature <= 64.0:
+            raise SparseLawCompilerError(
+                "constraint temperature differs"
+            )
+        del self.state_embedding
+        del self.cardinality_embedding
+        del self.pair_encoder
+        del self.cross_attention
+        del self.transition_decoder
+        self.evidence_temperature = float(evidence_temperature)
+        for cardinality in (8, 16):
+            bank = _microcode_bank(cardinality)[0]
+            self.register_buffer(
+                f"constraint_transition_{cardinality}",
+                bank,
+                persistent=True,
+            )
+
+    def forward(
+        self,
+        batch: SparseSourceBatch,
+        *,
+        direction_sign: float = 1.0,
+        observation_target_shift: int = 0,
+        observations_zeroed: bool = False,
+    ) -> SparseCompilerOutput:
+        if direction_sign not in {-1.0, 1.0}:
+            raise SparseLawCompilerError("direction sign differs")
+        if observation_target_shift not in {0, 1}:
+            raise SparseLawCompilerError(
+                "observation target shift differs"
+            )
+        rows, records, units = batch.unit_ids.shape
+        positions = torch.arange(units, device=batch.unit_ids.device)
+        hidden = (
+            self.embedding(
+                batch.unit_ids.reshape(rows * records, units)
+            )
+            + self.position(positions)[None]
+        )
+        hidden, _ = self.record_encoder(hidden)
+        number_hidden = self._gather(
+            hidden,
+            batch.number_positions.reshape(rows * records, 2),
+        )
+        direction_logits = self.direction_head(
+            number_hidden.reshape(rows * records, self.width * 2)
+        ).reshape(rows, records)
+        direction_logits = direction_sign * direction_logits
+        direction_soft = direction_logits.sigmoid()
+        direction_hard = direction_logits.gt(0).to(direction_soft.dtype)
+        direction = (
+            direction_hard
+            + direction_soft
+            - direction_soft.detach()
+        )
+
+        first = (
+            batch.number_values[..., 0] + observation_target_shift
+        ) % batch.cardinalities[:, None]
+        second = (
+            batch.number_values[..., 1] + observation_target_shift
+        ) % batch.cardinalities[:, None]
+        transition_logits = torch.full(
+            (
+                rows,
+                MAX_ACTIONS,
+                MAX_CARDINALITY,
+                MAX_CARDINALITY,
+            ),
+            -1.0e4,
+            dtype=direction.dtype,
+            device=direction.device,
+        )
+        for row in range(rows):
+            cardinality = int(batch.cardinalities[row])
+            bank = getattr(
+                self,
+                f"constraint_transition_{cardinality}",
+            ).to(direction.dtype)
+            forward_match = bank[
+                :,
+                first[row],
+                second[row],
+            ]
+            reverse_match = bank[
+                :,
+                second[row],
+                first[row],
+            ]
+            record_match = (
+                direction[row][None] * forward_match
+                + (1.0 - direction[row][None]) * reverse_match
+            )
+            if observations_zeroed:
+                record_match = torch.zeros_like(record_match)
+            action_evidence: list[torch.Tensor] = []
+            for action in range(MAX_ACTIONS):
+                valid = (
+                    batch.record_valid[row]
+                    & batch.record_action_indices[row].eq(action)
+                ).to(record_match.dtype)
+                action_evidence.append(
+                    torch.einsum("pr,r->p", record_match, valid)
+                )
+            evidence = torch.stack(action_evidence)
+            posterior = (
+                evidence * self.evidence_temperature
+            ).softmax(dim=-1)
+            transition_probability = torch.einsum(
+                "ap,pst->ast",
+                posterior,
+                bank,
+            )
+            transition_logits[
+                row,
+                :,
+                :cardinality,
+                :cardinality,
+            ] = transition_probability.clamp_min(1e-12).log()
+        return SparseCompilerOutput(
+            direction_logits=direction_logits,
+            transition_logits=transition_logits,
+        )
+
+
 def seal_sparse_machine(
     batch: SparseSourceBatch,
     output: SparseCompilerOutput,
@@ -1271,6 +1416,7 @@ __all__ = [
     "MAX_ACTIONS",
     "MAX_CARDINALITY",
     "MAX_RECORDS",
+    "ConstraintIntersectionSparseLatentLawCompiler",
     "FactorizedSparseLatentLawCompiler",
     "MicrocodeHeadOutput",
     "MicrocodedSparseLatentLawCompiler",

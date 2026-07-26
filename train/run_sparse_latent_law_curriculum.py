@@ -36,6 +36,7 @@ from source_deleted_sparse_latent_law_board import (  # noqa: E402
 from sparse_latent_law_compiler import (  # noqa: E402
     MAX_ACTIONS,
     MAX_CARDINALITY,
+    ConstraintIntersectionSparseLatentLawCompiler,
     FactorizedSparseLatentLawCompiler,
     MicrocodedSparseLatentLawCompiler,
     SparseLatentLawCompiler,
@@ -654,6 +655,12 @@ def run_experiment(
             layers=layers,
             heads=heads,
         ).to(device)
+    elif architecture == "constraint_intersection":
+        model = ConstraintIntersectionSparseLatentLawCompiler(
+            width=width,
+            layers=layers,
+            heads=heads,
+        ).to(device)
     else:
         raise ValueError("sparse architecture differs")
     losses = _train(
@@ -783,8 +790,13 @@ def main() -> None:
     parser.add_argument("--auxiliary-rows", type=int, default=3_000)
     parser.add_argument(
         "--architecture",
-        choices=("attention", "factorized", "microcoded"),
-        default="microcoded",
+        choices=(
+            "attention",
+            "factorized",
+            "microcoded",
+            "constraint_intersection",
+        ),
+        default="constraint_intersection",
     )
     parser.add_argument("--device", default="cpu")
     parser.add_argument("--output", type=Path)
