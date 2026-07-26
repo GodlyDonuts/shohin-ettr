@@ -2,7 +2,9 @@
 
 ## Status
 
-Frozen successor protocol; no implementation or capability claim.
+Frozen successor protocol. The trainable architecture, common transaction
+schema, and first exact Horn falsifier are implemented; no pretraining,
+post-training, or capability claim exists.
 
 The user pretraining hold remains active. This protocol may train only isolated
 reasoning components or adapters against the immutable step-300k checkpoint.
@@ -63,6 +65,51 @@ Three leave-one-ontology-out folds are mandatory.
 These families may share only the generic typed-transaction substrate. No
 family identifier, family head, domain opcode, or host semantic callback may
 enter the candidate.
+
+## Architecture Implementation
+
+`train/endogenous_typed_theory_reactor.py` implements the checkpoint-compatible
+architecture intended for later continued pretraining:
+
+1. an endogenous compiler cross-attends anonymous object slots to raw-token
+   Shohin residuals;
+2. the compiler emits only source-deleted slot values, type probabilities,
+   relation tensors, activity, root, commit, and halt state;
+3. a shared recurrent reactor emits the eight structural transaction choices
+   and applies differentiable graph updates;
+4. an exact-forward straight-through path supports discrete transactions
+   without removing training gradients; and
+5. a separate query reader consumes only the typed state and query residuals.
+
+The default architecture adds 45,090,402 parameters: 17,120,265 in the
+compiler, 20,022,808 in the reactor, and 7,947,329 in the query reader. With
+the immutable 125,081,664-parameter Shohin base, the complete system contains
+170,172,066 parameters and leaves 29,827,934 below the 200M ceiling.
+
+The actual protected checkpoint hash matches, step 300,000 loads strictly
+with zero missing or unexpected tensors, and the wrapper parameter receipt
+passes. Five focused architecture tests cover end-to-end gradients,
+allowlisted source-deleted state, exact discrete transaction choices,
+parameter accounting, and independent base freezing.
+
+This establishes architecture readiness, not reasoning capability. Continued
+pretraining remains under the explicit user hold.
+
+## G0 Horn Mechanics
+
+The first offline board is implemented in
+`pipeline/cross_ontology_horn_board.py`, with a separately implemented exact
+oracle in `pipeline/audit_cross_ontology_horn_board.py`.
+
+- 20 three-rule theories occupy 20 behavioral equivalence classes.
+- The challenge space contains 27 typed atoms and 378 initial states.
+- Independent closure engines agree on all 7,560 theory/challenge pairs.
+- Exact evidence yields singleton, ambiguous, contradictory, and coherent
+  alternate dispositions for every target theory.
+- Four opaque renderers change source bytes while preserving semantics.
+- Reference packets use only the generic transaction schema.
+
+Full mechanics disposition: `R12_ETTR_G0_HORN_BOARD_RESULT.md`.
 
 ## Architecture
 

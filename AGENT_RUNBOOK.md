@@ -33,6 +33,29 @@
 > compiler and generic transaction reactor across Horn closure, typed term
 > rewriting, and guarded resource processes under four-process custody.
 >
+> **ETTR ARCHITECTURE READY — 2026-07-25 EDT:** The checkpoint-compatible
+> trainable architecture now exists in
+> `train/endogenous_typed_theory_reactor.py`. It adds an endogenous raw-token
+> compiler, source-deleted typed object/relation state, a shared recurrent
+> structural-transaction reactor, exact-forward straight-through discrete
+> choices, and a separate state-only query reader. The default addition is
+> 45,090,402 parameters; complete system size is 170,172,066 with 29,827,934
+> remaining under 200M. The protected step-300k checkpoint hash matches and
+> loads strictly with zero missing/unexpected tensors. Five architecture tests
+> pass with gradients through compiler/reactor/query reader; Ruff and byte
+> compilation pass. This is an architecture artifact for later continued
+> pretraining and post-training, not an immediate intelligence claim. The
+> user pretraining hold remains active.
+>
+> **ETTR G0 HORN BOARD PASS — 2026-07-25 EDT:** Twenty typed Horn theories
+> occupy 20 distinct behavioral classes over 378 states. Independent closure
+> engines agree on all 7,560 theory/challenge pairs. Exact evidence yields 20
+> singleton, 20 ambiguous, 20 contradictory, and 20 coherent-alternate
+> episodes; four opaque renderers preserve semantics. This is falsifier
+> infrastructure only. Typed rewriting, guarded resources, custody, training,
+> and causal qualification remain future work. Decision:
+> `horn_version_space_falsifier_passes_candidate_reasoning_unproven`.
+>
 > **Variable-topology qualification PASS (2026-07-25 EDT):** CPU array
 > `704729` completed all 15 five-seed/leave-one-family-out folds. The learned
 > global semantic-partition compiler scores 360/360; the same weights score
@@ -13754,3 +13777,32 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   scheduler, search, repair, or answer logic. Nine focused tests pass with
   clean Ruff and byte compilation. This is G0 mechanics only, not a reasoning
   result.
+
+- **2026-07-25 22:45--23:10 EDT** -- **The trainable ETTR architecture and
+  first exact ontology falsifier are complete.** The new architecture wraps
+  the protected Shohin trunk without modifying it. A residual compiler writes
+  anonymous object slots, latent types, relations, activity, root, commit, and
+  halt state. A six-layer shared reactor emits only the eight structural
+  transactions and updates that graph recurrently. A separate query reader
+  consumes only source-deleted state. The discrete path is bit-exact in its
+  forward pass while retaining straight-through gradients.
+
+  Default additions are 17,120,265 compiler, 20,022,808 reactor, and
+  7,947,329 query-reader parameters, totaling 45,090,402. Together with the
+  125,081,664-parameter base, the architecture contains 170,172,066 parameters
+  and leaves 29,827,934 under 200M. The protected checkpoint hash remains
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`;
+  step 300,000 loads strictly with zero missing or unexpected keys. Five
+  architecture tests pass end-to-end gradients, state allowlisting, exact
+  hard transactions, parameter accounting, and base freezing.
+
+  The Horn falsifier contains 20 behaviorally distinct theories, 27 atoms,
+  and 378 initial states. Independent closure engines agree on all 7,560
+  pairs. It generates all four exact identifiability dispositions for all 20
+  targets and four renderer variants. Nine board/schema tests pass.
+
+  Current conclusion: the requested novel, trainable architecture now exists
+  and is checkpoint-compatible under the parameter ceiling. It has not been
+  pretrained or post-trained and therefore makes no intelligence claim.
+  Finish the two remaining ontology boards and custody before qualification.
+  Do not start pretraining until the user explicitly lifts the hold.
