@@ -80,6 +80,9 @@ def test_claim_runtime_smoke_requires_pins_h100_cuda_and_bwrap_netns() -> None:
     assert "confined runtime imports/CUDA pass" in source
     assert "--dev-bind" in source
     assert "/lib64" in source
+    assert "/proc/driver/nvidia" in source
+    assert "/dev/nvidia-caps" in source
+    assert "/dev/nvidia-modeset" in source
     assert "--clearenv" not in source
     assert "safetensors" in source
     assert "run_trusted_verifier extract-exec" in source

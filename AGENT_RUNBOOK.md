@@ -184,7 +184,7 @@
 > substitution. The focused runtime/deployment/four-process regression set is
 > **54/54** passing with clean Ruff, byte compilation, shell syntax, and diff
 > checks. The complete current ETTR/cross-ontology inventory is **315/315**
-> passing in 172.43 seconds. Exact-source build `705463` failed closed after
+> passing in 172.24 seconds. Exact-source build `705463` failed closed after
 > staged CUDA imports passed and before archive publication because five
 > ordinary dependency filenames contain printable spaces or punctuation. The
 > path policy now accepts printable ASCII segments while still rejecting
@@ -220,9 +220,13 @@
 > closed because renaming allocated physical `/dev/nvidia1` to
 > `/dev/nvidia0` made CUDA unavailable. The wrapper now preserves the exact
 > Slurm-assigned device pathname and sets `CUDA_VISIBLE_DEVICES` to that
-> physical minor, yielding one logical device to PyTorch. Monitor a fresh
-> exact-wrapper smoke to completion before promoting the confined runtime
-> gate.
+> physical minor, yielding one logical device to PyTorch. Smoke `706121`
+> proved that same-path binding alone is insufficient: extraction, Python
+> closure, and network isolation passed, but CUDA remained unavailable. The
+> measured host-driver closure now additionally binds read-only
+> `/proc/driver/nvidia` plus the existing NVIDIA caps and modeset devices.
+> Monitor a fresh exact-wrapper smoke to completion before promoting the
+> confined runtime gate.
 > Build the next exact-source runtime only from the committed hardened source,
 > verify every sidecar hash, and then submit the pinned in-Bubblewrap H100
 > smoke. These jobs cannot read checkpoints, shards, or optimizer state. Do

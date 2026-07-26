@@ -52666,7 +52666,7 @@ execution. An independent hostile rereview closed both final P1 findings:
 same-descriptor wheel consumption and extraction-to-execution substitution.
 The focused runtime/deployment/four-process regression set passes 54/54 with
 clean Ruff, byte compilation, shell syntax, and diff checks. The complete
-ETTR/cross-ontology inventory passes 315/315 in 172.43 seconds. Exact-source
+ETTR/cross-ontology inventory passes 315/315 in 172.24 seconds. Exact-source
 build `705463` passed staged CUDA imports but failed closed before archive
 publication because five normal dependency filenames contain printable spaces
 or punctuation. The corrected policy accepts printable ASCII path segments
@@ -52707,7 +52707,10 @@ Python-closure verification, and network isolation, then failed closed because
 renaming allocated physical `/dev/nvidia1` to `/dev/nvidia0` made CUDA
 unavailable. The wrapper now keeps the exact Slurm-assigned device pathname
 and sets `CUDA_VISIBLE_DEVICES` to that physical minor, which gives PyTorch one
-logical device.
+logical device. Smoke `706121` showed that same-path binding alone is
+insufficient: extraction, Python closure, and network isolation passed, but
+CUDA remained unavailable. The measured host-driver closure now additionally
+binds read-only `/proc/driver/nvidia` plus the NVIDIA caps and modeset devices.
 
 Current decision:
 `ettr_architecture_complete_stage_specific_runtime_pass_external_supervisor_and_learning_pending`.

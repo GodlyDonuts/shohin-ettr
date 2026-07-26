@@ -225,7 +225,15 @@ for host_path in /lib64 /usr/lib64 /usr/lib /lib /sys; do
     BWRAP_ARGS+=(--ro-bind "$host_path" "$host_path")
   fi
 done
-for device in /dev/nvidiactl /dev/nvidia-uvm /dev/nvidia-uvm-tools; do
+if [ -d /proc/driver/nvidia ]; then
+  BWRAP_ARGS+=(--ro-bind /proc/driver/nvidia /proc/driver/nvidia)
+fi
+for device in \
+  /dev/nvidiactl \
+  /dev/nvidia-modeset \
+  /dev/nvidia-uvm \
+  /dev/nvidia-uvm-tools \
+  /dev/nvidia-caps; do
   if [ -e "$device" ]; then
     BWRAP_ARGS+=(--dev-bind "$device" "$device")
   fi
