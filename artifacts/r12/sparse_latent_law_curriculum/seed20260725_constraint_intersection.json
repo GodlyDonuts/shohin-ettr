@@ -1,0 +1,293 @@
+{
+  "board_manifest_sha256": "80ba4de5e26779a8466a1b3c0db21d3b4104a65fbce47e58f7d43d0313e84bfb",
+  "candidate_architecture": "constraint_intersection",
+  "candidate_imports_exact_compiler": false,
+  "candidate_time_oracle_calls": 0,
+  "candidate_time_search_calls": 0,
+  "candidate_time_verifier_calls": 0,
+  "development": {
+    "direction_negated": {
+      "cell_exact": {
+        "composition": {
+          "correct": 5,
+          "total": 12
+        },
+        "joint": {
+          "correct": 3,
+          "total": 12
+        },
+        "law": {
+          "correct": 6,
+          "total": 12
+        },
+        "renderer": {
+          "correct": 4,
+          "total": 12
+        },
+        "topology": {
+          "correct": 2,
+          "total": 12
+        }
+      },
+      "control": "direction_negated",
+      "direction_accuracy": 0.0,
+      "direction_correct": 0,
+      "direction_total": 462,
+      "exact": 20,
+      "family_exact": {
+        "affine_modular": {
+          "correct": 10,
+          "total": 20
+        },
+        "bitwise_rotate_xor": {
+          "correct": 4,
+          "total": 20
+        },
+        "gray_conjugate_affine": {
+          "correct": 6,
+          "total": 20
+        }
+      },
+      "invalid": 0,
+      "map_exact": 6,
+      "microcode_accuracy": null,
+      "microcode_correct": 0,
+      "microcode_total": 0,
+      "source_deletion_passes": 60,
+      "state_accuracy": 0.36083333333333334,
+      "state_correct": 866,
+      "state_total": 2400,
+      "total": 60
+    },
+    "observation_targets_shifted": {
+      "cell_exact": {
+        "composition": {
+          "correct": 0,
+          "total": 12
+        },
+        "joint": {
+          "correct": 0,
+          "total": 12
+        },
+        "law": {
+          "correct": 1,
+          "total": 12
+        },
+        "renderer": {
+          "correct": 0,
+          "total": 12
+        },
+        "topology": {
+          "correct": 0,
+          "total": 12
+        }
+      },
+      "control": "observation_targets_shifted",
+      "direction_accuracy": 1.0,
+      "direction_correct": 462,
+      "direction_total": 462,
+      "exact": 1,
+      "family_exact": {
+        "affine_modular": {
+          "correct": 1,
+          "total": 20
+        },
+        "bitwise_rotate_xor": {
+          "correct": 0,
+          "total": 20
+        },
+        "gray_conjugate_affine": {
+          "correct": 0,
+          "total": 20
+        }
+      },
+      "invalid": 55,
+      "map_exact": 0,
+      "microcode_accuracy": null,
+      "microcode_correct": 0,
+      "microcode_total": 0,
+      "source_deletion_passes": 5,
+      "state_accuracy": 0.08166666666666667,
+      "state_correct": 196,
+      "state_total": 2400,
+      "total": 60
+    },
+    "observations_zeroed": {
+      "cell_exact": {
+        "composition": {
+          "correct": 0,
+          "total": 12
+        },
+        "joint": {
+          "correct": 0,
+          "total": 12
+        },
+        "law": {
+          "correct": 0,
+          "total": 12
+        },
+        "renderer": {
+          "correct": 0,
+          "total": 12
+        },
+        "topology": {
+          "correct": 0,
+          "total": 12
+        }
+      },
+      "control": "observations_zeroed",
+      "direction_accuracy": 1.0,
+      "direction_correct": 462,
+      "direction_total": 462,
+      "exact": 0,
+      "family_exact": {
+        "affine_modular": {
+          "correct": 0,
+          "total": 20
+        },
+        "bitwise_rotate_xor": {
+          "correct": 0,
+          "total": 20
+        },
+        "gray_conjugate_affine": {
+          "correct": 0,
+          "total": 20
+        }
+      },
+      "invalid": 60,
+      "map_exact": 0,
+      "microcode_accuracy": null,
+      "microcode_correct": 0,
+      "microcode_total": 0,
+      "source_deletion_passes": 0,
+      "state_accuracy": 0.08166666666666667,
+      "state_correct": 196,
+      "state_total": 2400,
+      "total": 60
+    },
+    "treatment": {
+      "cell_exact": {
+        "composition": {
+          "correct": 12,
+          "total": 12
+        },
+        "joint": {
+          "correct": 12,
+          "total": 12
+        },
+        "law": {
+          "correct": 12,
+          "total": 12
+        },
+        "renderer": {
+          "correct": 12,
+          "total": 12
+        },
+        "topology": {
+          "correct": 12,
+          "total": 12
+        }
+      },
+      "control": "treatment",
+      "direction_accuracy": 1.0,
+      "direction_correct": 462,
+      "direction_total": 462,
+      "exact": 60,
+      "family_exact": {
+        "affine_modular": {
+          "correct": 20,
+          "total": 20
+        },
+        "bitwise_rotate_xor": {
+          "correct": 20,
+          "total": 20
+        },
+        "gray_conjugate_affine": {
+          "correct": 20,
+          "total": 20
+        }
+      },
+      "invalid": 0,
+      "map_exact": 60,
+      "microcode_accuracy": null,
+      "microcode_correct": 0,
+      "microcode_total": 0,
+      "source_deletion_passes": 60,
+      "state_accuracy": 1.0,
+      "state_correct": 2400,
+      "state_total": 2400,
+      "total": 60
+    }
+  },
+  "development_action_laws": 80,
+  "device": "cuda",
+  "equal_budget": {
+    "control_additional_updates": 0,
+    "models_trained": 1,
+    "optimizer_updates": 2000,
+    "same_weights_controls": true
+  },
+  "model_receipt": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/r12/sparse_latent_law_curriculum/seed20260725_constraint_intersection.pt",
+    "sha256": "b54fc0d2c113fff07a5a70629b5499ecc8412b6ecc2732ef3728359a2dc3de89"
+  },
+  "parameter_receipt": {
+    "complete_system": 125313729,
+    "global_limit": 200000000,
+    "headroom": 74686271,
+    "learned_compiler": 232065,
+    "protected_shohin": 125081664
+  },
+  "preparation_exact_parser_calls": 3360,
+  "seed": 20260725,
+  "status": "sparse_latent_law_curriculum",
+  "train": {
+    "cell_exact": {
+      "fit": {
+        "correct": 3300,
+        "total": 3300
+      }
+    },
+    "control": "treatment",
+    "direction_accuracy": 1.0,
+    "direction_correct": 19291,
+    "direction_total": 19291,
+    "exact": 3300,
+    "family_exact": {
+      "affine_modular": {
+        "correct": 1100,
+        "total": 1100
+      },
+      "bitwise_rotate_xor": {
+        "correct": 1100,
+        "total": 1100
+      },
+      "gray_conjugate_affine": {
+        "correct": 1100,
+        "total": 1100
+      }
+    },
+    "invalid": 0,
+    "map_exact": 3300,
+    "microcode_accuracy": null,
+    "microcode_correct": 0,
+    "microcode_total": 0,
+    "source_deletion_passes": 3300,
+    "state_accuracy": 1.0,
+    "state_correct": 99000,
+    "state_total": 99000,
+    "total": 3300
+  },
+  "train_action_laws": 263,
+  "train_development_action_law_overlap": 0,
+  "training_loss": {
+    "final": 0.007271307520568371,
+    "initial": 12.583094596862793
+  },
+  "training_rows": {
+    "auxiliary": 3000,
+    "counterfactual": 240,
+    "frozen": 60,
+    "total": 3300
+  }
+}

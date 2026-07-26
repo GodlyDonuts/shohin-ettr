@@ -1,0 +1,214 @@
+{
+  "abstract_interface_zero_seal_possible": false,
+  "classification_counts": {
+    "ambiguous": 6,
+    "contradictory": 4,
+    "identified_wrong": 1
+  },
+  "development_rows": 11,
+  "episodes": [
+    {
+      "cardinality": 8,
+      "cell": "law",
+      "classification": "identified_wrong",
+      "family": "random_permutation",
+      "targets": [
+        {
+          "matching_programs": 1,
+          "matching_unique_maps": 1,
+          "true_map_survives": false
+        },
+        {
+          "matching_programs": 1,
+          "matching_unique_maps": 1,
+          "true_map_survives": false
+        }
+      ]
+    },
+    {
+      "cardinality": 8,
+      "cell": "composition",
+      "classification": "ambiguous",
+      "family": "cyclic",
+      "targets": [
+        {
+          "matching_programs": 7,
+          "matching_unique_maps": 4,
+          "true_map_survives": true
+        },
+        {
+          "matching_programs": 10,
+          "matching_unique_maps": 5,
+          "true_map_survives": true
+        }
+      ]
+    },
+    {
+      "cardinality": 8,
+      "cell": "composition",
+      "classification": "contradictory",
+      "family": "dihedral",
+      "targets": [
+        {
+          "matching_programs": 5,
+          "matching_unique_maps": 1,
+          "true_map_survives": false
+        },
+        {
+          "matching_programs": 0,
+          "matching_unique_maps": 0,
+          "true_map_survives": false
+        }
+      ]
+    },
+    {
+      "cardinality": 8,
+      "cell": "composition",
+      "classification": "contradictory",
+      "family": "bitwise",
+      "targets": [
+        {
+          "matching_programs": 0,
+          "matching_unique_maps": 0,
+          "true_map_survives": false
+        },
+        {
+          "matching_programs": 7,
+          "matching_unique_maps": 2,
+          "true_map_survives": false
+        }
+      ]
+    },
+    {
+      "cardinality": 8,
+      "cell": "renderer",
+      "classification": "ambiguous",
+      "family": "cyclic",
+      "targets": [
+        {
+          "matching_programs": 16,
+          "matching_unique_maps": 8,
+          "true_map_survives": true
+        },
+        {
+          "matching_programs": 23,
+          "matching_unique_maps": 15,
+          "true_map_survives": true
+        }
+      ]
+    },
+    {
+      "cardinality": 8,
+      "cell": "renderer",
+      "classification": "ambiguous",
+      "family": "dihedral",
+      "targets": [
+        {
+          "matching_programs": 7,
+          "matching_unique_maps": 2,
+          "true_map_survives": false
+        },
+        {
+          "matching_programs": 9,
+          "matching_unique_maps": 4,
+          "true_map_survives": false
+        }
+      ]
+    },
+    {
+      "cardinality": 8,
+      "cell": "renderer",
+      "classification": "contradictory",
+      "family": "bitwise",
+      "targets": [
+        {
+          "matching_programs": 0,
+          "matching_unique_maps": 0,
+          "true_map_survives": false
+        },
+        {
+          "matching_programs": 5,
+          "matching_unique_maps": 1,
+          "true_map_survives": true
+        }
+      ]
+    },
+    {
+      "cardinality": 16,
+      "cell": "topology",
+      "classification": "ambiguous",
+      "family": "cyclic",
+      "targets": [
+        {
+          "matching_programs": 19,
+          "matching_unique_maps": 12,
+          "true_map_survives": true
+        },
+        {
+          "matching_programs": 14,
+          "matching_unique_maps": 8,
+          "true_map_survives": true
+        }
+      ]
+    },
+    {
+      "cardinality": 16,
+      "cell": "topology",
+      "classification": "ambiguous",
+      "family": "dihedral",
+      "targets": [
+        {
+          "matching_programs": 14,
+          "matching_unique_maps": 5,
+          "true_map_survives": false
+        },
+        {
+          "matching_programs": 1,
+          "matching_unique_maps": 1,
+          "true_map_survives": false
+        }
+      ]
+    },
+    {
+      "cardinality": 16,
+      "cell": "topology",
+      "classification": "ambiguous",
+      "family": "bitwise",
+      "targets": [
+        {
+          "matching_programs": 6,
+          "matching_unique_maps": 2,
+          "true_map_survives": true
+        },
+        {
+          "matching_programs": 8,
+          "matching_unique_maps": 4,
+          "true_map_survives": false
+        }
+      ]
+    },
+    {
+      "cardinality": 16,
+      "cell": "joint",
+      "classification": "contradictory",
+      "family": "random_permutation",
+      "targets": [
+        {
+          "matching_programs": 1,
+          "matching_unique_maps": 1,
+          "true_map_survives": false
+        },
+        {
+          "matching_programs": 0,
+          "matching_unique_maps": 0,
+          "true_map_survives": false
+        }
+      ]
+    }
+  ],
+  "maximum_depth": 6,
+  "raw_source_redundancy_available": true,
+  "receipt_sha256": "4e48a77c7f3ea9995a36094467585fd99ff2164abc4c89fa0761c3950eb5d8af",
+  "seed": 20260726,
+  "syntactic_programs": 127
+}

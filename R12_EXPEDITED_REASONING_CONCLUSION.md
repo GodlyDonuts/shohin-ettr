@@ -152,3 +152,102 @@ If that curriculum cannot transfer the held-out renderer, further recurrence,
 memory, search distillation, or parameter growth is not justified. The
 protected pretraining hold remains in force, and there are zero active Newton
 jobs at this closeout.
+
+## Post-Closeout Positive Result
+
+The authorized representation curriculum has now passed its bounded
+qualification. Renderer-neutral incidence typing plus counterfactual
+target-first supervision reaches 120/120 across five seeds and all three
+leave-one-family-out folds, versus 65/120 for the equal-budget
+direction-shuffled control. Every treatment fold scores 8/8 and all 15
+treatment-control directions are positive.
+
+This revises one conclusion: reusable transfer is possible on the anonymous
+finite-machine board when representation and execution are factorized
+correctly. It does not revise the general-reasoning conclusion. The mechanism
+still receives complete transition tables, exploits fixed incidence geometry,
+shares one machine ontology across families, and is not integrated into the
+Shohin trunk. Full evidence and scope:
+`R12_RENDERER_CURRICULUM_QUALIFICATION.md`.
+
+## Final Variable-Topology Boundary
+
+The learned global semantic-partition compiler now passes the variable-
+topology gate. Across five independently generated boards and all three
+leave-one-family-out folds, treatment reaches 360/360. The same treatment
+weights reach 152/360 when source direction is swapped and 0/360 when either
+the episode-global key scores are negated or query roles are swapped. Every
+paired direction, collision cell, and joint cell passes the independent
+audit.
+
+This revises the bounded capability conclusion:
+
+`global_semantic_partition_passes_variable_topology_gate`
+
+The 60,613-parameter sidecar has learned to compile unseen complete anonymous
+machines across variable cardinality, action count, topology, renderer,
+composition, and family. It makes zero candidate-time oracle/search/verifier
+calls. Audit SHA-256 is
+`049bbbd398e6f1456d6f1809bebb701351053302e0ce44147e70735d5b155fa2`.
+
+The general-reasoning conclusion remains negative. Every episode still
+provides a complete transition table, all tasks share one finite-machine
+ontology, execution is a fixed discrete operator, process-level source
+deletion is not attested, and the compiler is not integrated into Shohin.
+The next justified gate is sparse latent-law induction, not more optimization
+of this solved board. Full evidence:
+`R12_VARIABLE_TOPOLOGY_SEMANTIC_COMPILER_RESULT.md`.
+
+## Final Sparse-Law Boundary
+
+The sparse successor gate is now closed under three distinct formulations:
+
+| Candidate | Transition accuracy | Complete maps | Exact queries |
+|---|---:|---:|---:|
+| Direct set attention | 46.5000% | 0/60 | 4/60 |
+| Learned generator factorization | 15.7083% | 0/60 | 1/60 |
+| Supervised internal microcode | 22.1250% | 0/60 | 0/60 |
+
+The microcoded model contains a fixed internal ALU and receives exact
+preparation-time family/parameter labels, yet its learned controller reaches
+only 1/204 exact unseen programs. Observation-shift and observation-zero
+controls collapse, so it uses the demonstrations; it simply does not infer a
+transferable identification procedure. Internal execution machinery is
+therefore not the missing sufficient mechanism.
+
+This makes the expedited conclusion final for the current budget: Shohin has
+bounded systematic finite-machine compilation, but no demonstrated native
+general reasoning or sparse unseen-law induction. Do not launch another
+proxy-specific architecture branch. Preserve the protected checkpoint and
+the user pretraining hold. Full result:
+`R12_SPARSE_LAW_MICROCODE_RESULT.md`.
+
+## Final Adversarial Revision: Episode-Local Solver
+
+The apparent positive revision is rejected as a Shohin reasoning claim.
+
+Hardened H100 job `704792` reaches 11/11 exact development queries and 11/11
+complete target maps, including 2/2 episodes from a completely held-out
+random-permutation generator family. Record-order reversal and consistent
+support recoding remain 11/11. Deleted necessary witnesses, zeroed
+observations, and deranged support semantics each recover 0/11 exact queries;
+witness deletion and zeroed observations reject every packet. There is zero
+training/development target-law or raw-map overlap.
+
+The actual learned component is a 232,065-parameter record-direction reader.
+Shohin is never loaded. Exact regex parsing, exhaustive 127-word enumeration,
+softmax matching, packet sealing, and Python execution are host machinery.
+Fourteen of 22 development target-word instances overlap training, and source
+deletion is not process-level. Report SHA-256 remains
+`226a36d9156101617b769f698550eb51ebec57a8ffa01464bdd7a64d8805caad`.
+
+Revised decision:
+
+`reject_architecture_native_shohin_reasoning_retain_neurosymbolic_solver`
+
+The system is useful as a bounded neuro-symbolic control, not as the best
+Shohin reasoning baseline. The general-reasoning conclusion remains negative.
+Keep pretraining held. The next claim-bearing experiment must connect the
+actual Shohin trunk, remove semantic host parsing/search/execution, enforce
+process-level deletion, and transfer across genuinely different ontologies.
+Full audit: `R12_EPISODIC_GENERATOR_ADVERSARIAL_AUDIT.md`.

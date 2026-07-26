@@ -2,18 +2,99 @@
 
 ## Current Status — Read First
 
-**Current frontier:** the Episodic Functor Compiler (EFC) has passed an
-externally timed, source-frozen, unmocked macOS process-custody rehearsal.
-Several learned source-to-machine architectures are implemented against the
-hash-verified frozen Shohin trunk; the active Source-Sealed Quotient-Algebra
-Compiler (SSQAC) lane is CPU-falsifier-only. Its mechanics and attribution
-interfaces are tested, but no neural first fit is currently authorized.
+**Current frontier:** Shohin still has no demonstrated architecture-native
+general reasoning or episodic sparse unseen-law induction beyond a fixed global
+program bank. Adversarial audit rejects the apparent 11/11 episodic-generator
+result as a Shohin claim: the checkpoint was never loaded, exact regex code
+parsed the problem, fixed code enumerated 127 words, and host code sealed and
+executed the answer. Fourteen of 22 development target-word instances overlap
+training. Retain that system only as a bounded neuro-symbolic permutation-solver
+control.
 
 - **Protected base:** immutable step-300k Shohin checkpoint,
   125,081,664 parameters, SHA-256
   `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
+- **Current phase order:** architecture construction now; substantially more
+  pretraining only after explicit user authorization; post-training after
+  pretraining. Current raw-checkpoint intelligence is not the acceptance
+  target for this phase. The pretraining hold is absolute.
+- **Rejected episodic-generator claim:** the 232,065-parameter learned
+  direction reader plus symbolic solver reaches 11/11, but Shohin contributes
+  zero runtime parameters. Source deletion is serialization-level only,
+  "intersection" is a temperature-softmax approximation, support recoding is
+  tautological under exhaustive enumeration, and abstract target programs are
+  not held out. Report SHA-256 is
+  `226a36d9156101617b769f698550eb51ebec57a8ffa01464bdd7a64d8805caad`.
+  Disposition:
+  `reject_architecture_native_shohin_reasoning_retain_neurosymbolic_solver`.
+- **Constraint-intersection bounded capability:** a 232,065-parameter byte
+  encoder preserves each sparse observation as a separate compatibility factor
+  over a fixed complete operation library, then seals the unique surviving
+  program and executes the late query after source deletion. On H100 job
+  `704761` it reaches **60/60** complete hash-disjoint unseen maps, **60/60**
+  exact hidden queries, and **60/60** source-free packets; shifted targets and
+  zeroed observations reach 1/60 and 0/60 exact queries. Its frozen 45-query
+  margin over direction negation is mathematically impossible on this board:
+  20/60 inverse-law answers collide, so a perfect treatment can exceed that
+  control by at most 40. This is exact bounded version-space execution, not
+  learned ontology discovery or general reasoning, because the complete
+  operation library and dense parallel intersection are fixed algorithmic
+  priors. Report SHA-256:
+  `22d22d8ac9079ee1722ce971c50d2307c5ad1d9132d49c329ef779f01adb2ede`.
+- **Successor status:** the Endogenous Typed Theory Reactor (ETTR) is a frozen
+  architecture and continuation-contract implementation, not a fit. It loads
+  the actual hash-verified Shohin checkpoint, compiles raw-token worlds into a
+  bounded categorical theory state, runs one generic transaction reactor, and
+  answers late queries from terminal state. Its independent
+  `WORLD -> COMMAND -> QUERY` lifecycle, reset-safe composite objective,
+  frozen-data contract, disjoint Muon/AdamW optimizer groups, and exact
+  checkpoint/resume path pass a 165-test complete ETTR/cross-ontology
+  inventory. The objective now directly supervises both the compiled initial
+  packet and the free-running terminal reactor packet; a gradient gate proves
+  that terminal loss reaches both reactor and compiler. A hostile audit found
+  that relation-degree
+  summaries erased endpoint identity; the corrected reactor and query reader
+  now use edge-aware typed neighbor messages and pass a degree-preserving
+  edge-swap falsifier. The complete system is 192,779,435 parameters. No ETTR
+  fit, neural capability score, post-training, or pretraining action exists;
+  the user hold remains active.
 - **Strict future ceiling:** fewer than 200,000,000 unique parameters for the
   complete system.
+- **Renderer-curriculum breakthrough:** a 152,933-parameter standalone
+  recurrent compiler with renderer-neutral equality/incidence typing and
+  counterfactual target-first direction supervision passes **120/120** across
+  five seeds and all three leave-one-family-out folds. Its equal-budget,
+  direction-shuffled control reaches **65/120**; all 15 paired directions are
+  positive, and candidate-time oracle/search/verifier calls are **0/0/0**.
+  This covers unseen laws, longer compositions, one held-out renderer, and a
+  fully held-out law family in one fixed anonymous-machine ontology. The
+  independent audit SHA-256 is
+  `6cbf52ffe48fe79b8bf996d6b70fa244840153fd0b0d293ce47766e987b5179e`.
+  It does not establish unrestricted language reasoning: transition tables,
+  incidence geometry, state/action cardinality, and machine topology remain
+  fixed, and the compiler is a sidecar rather than a demonstrated Shohin-trunk
+  capability.
+- **Variable-topology result:** one 60,613-parameter shared byte compiler
+  learns source direction, an episode-global state/action key partition, and
+  late-query roles. It scores **360/360** across five seeds and all three
+  leave-one-family-out folds, including every collision and joint cell.
+  Under the same weights, direction swap scores **152/360**, global key-score
+  negation **0/360**, and query-role swap **0/360**. All 15 paired directions
+  pass; candidate-time oracle/search/verifier calls are **0/0/0**. Complete
+  system parameters are 125,142,277. Independent audit SHA-256 is
+  `049bbbd398e6f1456d6f1809bebb701351053302e0ce44147e70735d5b155fa2`.
+  This establishes causal variable-topology anonymous-machine compilation.
+  It remains a complete-table sidecar with a fixed executor and one ontology,
+  so it is not Shohin-native general reasoning.
+- **Campaign disposition:** the frozen-Shohin connected multi-family smoke
+  tied the standalone compiler at 12/24 development cases and failed every
+  held-out-renderer/joint probe (0/6 each). The current retained learned proxy
+  baseline is the full-trajectory recurrent classifier at 1,058/2,048 =
+  51.6602% on one unseen-geometry family; it is not a general-reasoning
+  result. Open-ended architecture search is closed. Any successor must first
+  freeze one source-deleted shared-mechanism qualification spanning genuinely
+  different task families, unseen laws, compositions, depths, and renderers,
+  with matched causal controls.
 - **Current large architecture lane (JASEC):** the Joint
   Assignment-Semantics Equilibrium Compiler is implemented in an isolated
   branch against the exact frozen Shohin trunk. Its complete mechanics receipt
@@ -97,22 +178,17 @@ interfaces are tested, but no neural first fit is currently authorized.
   compositions, renderers, task families, process-level source deletion,
   donor-law swaps, and real/zero/random/permuted Shohin trunk controls are
   mandatory before a bounded native-law claim.
-- **SSQAC pre-freeze lane:** the Source-Sealed Quotient-Algebra Compiler is
-  explicitly **rejected for source freeze / CPU falsifier only**. Its first
-  fixed-solver formulation was rejected because a host-authored
-  Macaulay/border-basis circuit would own the substantive reasoning. The
-  revised treatment must compile both source constraints and a source-deleted
-  algebra microprogram, then use only primitive finite-field/register
-  operations to certify a consequence that is forced across all legal
-  completions. The fixed exact algebra engine is retained solely as a gold
-  ceiling/control. Current CPU work supplies sparse-polynomial, quotient,
-  primitive-ALU, quotient-artifact verification, law-collision, and scoreless
-  learned-controller trace-pilot mechanics; the focused suite is **100
-  passed**. This is not a fitted controller, raw-language compiler, frozen
-  neural candidate, scored board, or reasoning result. Before any source
-  freeze it still requires the masked variable geometry, sealed quotient wire,
-  anonymous codebook, late-query/process-deletion boundary, exact resource
-  receipt, and hostile audit of the complete treatment and controls.
+- **SSQAC campaign result:** Source-Sealed Quotient-Algebra Compiler mechanics
+  (exact sparse quotient artifacts, source-deletion custody, and structural
+  receipts) remain useful controls, but the learned-controller campaign is
+  negative. Standard recurrent H100 arms certify 2/1,536 larger-geometry
+  programs; vectorized reactive arms certify 0/1,536; scaled offline
+  search-distillation loses ordinary oracle imitation (178/1,024 versus
+  542/1,024); and hostile controls reject value propagation, successor
+  exposure, proof heads, Lyapunov/Bellman objectives, and local
+  counterfactual repair as causal explanations. External bounded search is a
+  counted host ceiling, not a native mechanism. SSQAC is closed for source
+  freeze and reasoning claims under the current budget.
 - **Disposition of frozen mechanism `80dc07a`:** retain the 907,269-parameter
   four-slot causal bind-select workspace as a favorable control and custody
   reference. It is no longer a constraint on the candidate solution.
@@ -206,7 +282,7 @@ interfaces are tested, but no neural first fit is currently authorized.
   empty-observation classes but five future-behavior classes. Final report
   SHA-256 is
   `7a141efbbccdbd8328e2b38708061d9b2a4f3be8a43c3617fe4e8a413e4fd35c`.
-- **Current EFC decision:** deterministic CPU contract and macOS process
+- **Historical EFC custody decision:** deterministic CPU contract and macOS process
   custody **PASS**; the learned architecture/mechanics gate **PASS**; a neural
   fit remains **NO-GO** until exact arm-specific resource receipts, process
   custody, and controls are frozen.
@@ -244,13 +320,13 @@ interfaces are tested, but no neural first fit is currently authorized.
   Shohin reasoning result. The EFC compiler has been instantiated and connected
   read-only to the protected trunk, but it has not been fitted. No GPU score,
   development read, confirmation read, or reasoning claim exists.
-- **Immediate next task:** when Newton DNS returns, sync and hash-verify the
-  exact v6 authorization and runtime closure, then run the two-update
-  train-only H100 measurement canary. Use its measured memory/runtime/optimizer
-  receipt to define, but not automatically authorize, an equal-budget
-  train-only falsifier over HSC, direct-decode, position-scramble, and
-  stable-bag arms. Development remains sealed until train/mechanics
-  qualification passes.
+- **Current next task:** do not scale or revive historical HSC/SSQAC proxy
+  arms. The only justified research successor is a preregistered falsifier of
+  the renderer curriculum that varies topology, state/action cardinality,
+  incidence profiles, record completeness, and surface grammar while retaining
+  source deletion, zero candidate-time oracle/search/verifier access, and
+  matched direction controls. Only a pass of that broader shared mechanism can
+  justify Shohin integration and later natural-language post-training tests.
 - **Post-canary falsifier:** because the HSC compiler has approximately 265
   trainable parameters per independent train target bit, train loss alone is
   non-identifying. `R12_EFC_HSC_POST_CANARY_DECISION.md` freezes a train-only
@@ -316,20 +392,17 @@ interfaces are tested, but no neural first fit is currently authorized.
   continuation pretraining until the user explicitly lifts the hold after
   reasoning is established.
 
-**Bottom line:** the EFC move is directionally strong because it makes state,
-binding, transition semantics, and execution explicit. The supplied draft
-nevertheless misidentifies two sampled rows as the compiler's complete query
-support and omits the current query's opaque start-state binding. The old corpus
-is rejected for advancement because its challenge is not temporally independent.
-The corrected protocol now has an independently generated, hostilely audited,
-exact deployed-wire CPU rehearsal, a consumed structurally disjoint multiworld
-rehearsal, an externally timed process-separated macOS custody pass across
-three source languages, and an implemented learned compiler/no-host control
-pair. It still needs arm-specific resource freezes, process custody for the
-neural candidate, hostile-audit closure, and an unmocked Linux replay before
-any fit can be admitted. Deterministic multi-renderer compilation and an
-untrained architecture are mechanics ceilings, not evidence of native
-reasoning.
+**Bottom line:** the EFC work established strong custody, explicit-machine,
+and bounded compilation mechanics. The renderer curriculum is the first
+retained learned result to transfer systematically across all three held-out
+families, unseen laws, longer compositions, and one held-out renderer under a
+matched causal control (120/120 versus 65/120). Its scope remains deliberately
+narrow: fixed complete transition tables and one finite-machine ontology leave
+frequency/topology shortcuts available, and frozen Shohin features have not
+improved the decisive renderer boundary. Shohin therefore does **not** yet
+demonstrate native general reasoning. Preserve the protected checkpoint and
+pretraining hold; test the broader renderer-invariance falsifier before any
+further scaling or capability claim.
 
 ### 2026-07-24 learned EFC architecture and attribution gate
 
@@ -52001,3 +52074,341 @@ an audited cross-renderer representation/post-training curriculum with
 counterfactual role-equivalence supervision, not another large architecture
 branch. No Newton jobs remain active and the user pretraining hold remains in
 force.
+
+## 2026-07-25 Renderer-Curriculum Breakthrough
+
+The representation curriculum has produced the first multi-family systematic
+transfer result. A renderer-neutral structural typer uses only anonymous
+equality/incidence to distinguish state and action keys, while a 152,933-
+parameter recurrent compiler learns source-versus-target direction from
+counterfactual target-first examples under non-test symbols.
+
+The all-family smoke reaches 24/24 versus 13/24 for a direction-shuffled
+control. Five seeds across all three leave-one-family-out folds then reach
+120/120 treatment versus 65/120 control. Every held-out family is 40/40,
+every treatment cell is perfect, and all 15 seed-fold directions are
+positive. Candidate inference makes zero oracle, search, or verifier calls.
+
+This is a bounded breakthrough, not genuine general reasoning. Complete
+transition tables, fixed incidence geometry, and one shared finite-machine
+ontology make the problem narrower than natural-language reasoning. The
+compiler is also a standalone sidecar rather than a Shohin-trunk capability.
+The next gate must randomize topology/cardinality/action count and neutralize
+frequency shortcuts before integration. Full decision:
+`R12_RENDERER_CURRICULUM_QUALIFICATION.md`.
+
+## 2026-07-25 Sparse-Law Final Gate
+
+The complete-table compiler does not extend to sparse latent-law induction.
+Three source-deleted candidates were tested on hash-disjoint unseen action
+maps. Direct attention reached 46.5000% transition accuracy and 4/60 exact
+queries; generic learned generators reached 15.7083% and 1/60; a supervised
+neural-microcode controller with a fixed internal ALU reached 22.1250% and
+0/60. None produced one complete unseen transition map.
+
+The microcode treatment is a particularly informative negative. It learned
+source direction perfectly, depended causally on the observed transitions,
+and received exact operation-family/parameter labels during preparation.
+Nevertheless it identified only 1/204 development programs. Adding execution
+machinery therefore does not solve the harder problem of inferring a new law
+from sparse evidence.
+
+Current conclusion: Shohin has a real bounded systematic compiler for fully
+specified anonymous machines, but no demonstrated native general reasoning.
+The protected 300k checkpoint remains unchanged, pretraining remains held,
+and open-ended proxy-specific architecture search is closed under the current
+usage budget. Full evidence: `R12_SPARSE_LAW_MICROCODE_RESULT.md`.
+
+## 2026-07-25 Episode-Local Program-Induction Adversarial Disposition
+
+The sparse-law conclusion has materially improved. Constraint intersection
+first solved 60/60 unseen maps inside a fixed global law library. The
+episode-local successor removes that library: two unfamiliar complete
+generators define a temporary 127-program closure, and sparse target records
+identify the episode's two target actions.
+
+Hardened H100 confirmation `704792` reaches 11/11 exact development queries
+across unseen laws, deeper compositions, cardinality 16, renderers, joint
+shifts, and a completely held-out random-permutation family. Record-order and
+support-recoding invariances are also 11/11. Deleting one necessary target
+witness yields 0/11 exact and rejects all 11 packets; deranging support
+semantics yields 0/11 exact; zeroing observations yields 0/11 exact and
+rejects all packets. Training/development target-law and raw-map overlaps are
+zero.
+
+The compiler adds 232,065 learned parameters for 125,313,729 complete
+conceptual parameters. It trained for 1,000 updates on 375 rows and makes zero
+candidate-time oracle/search/verifier calls. Report SHA-256 is
+`226a36d9156101617b769f698550eb51ebec57a8ffa01464bdd7a64d8805caad`;
+independent audit SHA-256 is
+`596039c38bbaecdd646ef8bea78c7263ea61b43bba13b7d1b067e36d35ae2e02`.
+
+Adversarial audit supersedes the initial interpretation. Shohin was not loaded
+or called; only 232,065 direction-reader parameters were trained. Exact regex
+parsing, support selection, exhaustive 127-word enumeration, sealing, and
+execution are host algorithms. Fourteen of 22 development target-word
+instances reuse training words, and deletion is serialization-level rather
+than process-level.
+
+Decision:
+`reject_architecture_native_shohin_reasoning_retain_neurosymbolic_solver`.
+
+The numerical 11/11 result remains valid for the bounded neuro-symbolic
+system. It is not a Shohin reasoning result. Full evidence:
+`R12_EPISODIC_GENERATOR_ADVERSARIAL_AUDIT.md`.
+
+## 2026-07-25 Endogenous Typed Theory Reactor Successor
+
+The next gate is now frozen around the actual missing capability rather than a
+new permutation proxy. ETTR must infer object identity, latent types, relation
+arity/roles, operator graph effects, control semantics, and late observers
+from raw tokens. One actual-Shohin compiler and one domain-blind transaction
+reactor must transfer under leave-one-ontology-out evaluation across Horn
+closure, typed term rewriting, and guarded resource processes.
+
+Compilation, execution, late querying, and assessment run in four fresh
+processes. The candidate receives no exact spans, semantic parser output,
+family labels, host solver, schedule, verifier, or answer callback. The
+primary board freezes 2,688 scored executions and separately audits singleton,
+ambiguous, contradictory, and coherent-alternate version spaces.
+
+The first G0 component is implemented in
+`pipeline/cross_ontology_schema.py`: immutable typed objects and relations plus
+eight generic structural transactions. It owns only bounds, pointer/type
+validity, atomicity, serialization, and halt. It contains no task semantics.
+This is architecture mechanics, not a capability result. Full protocol:
+`R12_ENDOGENOUS_TYPED_THEORY_REACTOR_PREREG.md`.
+
+### Architecture-phase clarification and hardening
+
+The user has explicitly frozen the phase order:
+
+1. build and falsify the novel architecture;
+2. only after explicit authorization, continue large-scale pretraining; and
+3. perform post-training after the architecture has learned a stronger base.
+
+No continuation pretraining is currently authorized or expected to produce an
+immediately intelligent model.
+
+ETTR now wraps the immutable 125,081,664-parameter step-300k Shohin with
+46,321,890 trainable architecture parameters: 17,153,097 compiler,
+21,174,360 reactor, and 7,994,433 query reader. The complete system is
+171,403,554 parameters, leaving 28,596,446 below the 200M ceiling. The
+protected checkpoint SHA-256 remains
+`211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`
+and strict loading reports no missing or unexpected tensors.
+
+A hostile audit invalidated the initial claim that a large continuous slot
+tensor was meaningfully source-deleted: 24x512 free floats could encode the
+source and bypass typed transactions. The deployed ETTR state now permits only
+64-way categorical value codes, categorical types, active/root/commit/halt
+bits, and at most 96 hard relation edges. Immutable state-wire v2 rejects
+continuous packets. The query reader is causally masked, has nonzero
+first-batch gradient flow, consumes every declared state field, and preserves
+prefix logits under future-token extension. `COMMIT` freezes further
+structural writes.
+
+All seven preregistered variants are now actual transformations in all three
+ontologies, rather than names attached to renderers: alpha/reorder, alias
+split, relation reification, type twin, execution-semantics twin, and
+ambiguity deletion. The frozen joined matrix contains 3 folds, 24 held-out
+theories, 168 source worlds, 384 canonical late challenges, and 2,688 primary
+executions. Exact audit finds 1,472 invariant executions, 750 semantic or
+directive separations, 384 required abstentions, zero candidate-visible
+family labels, 24 disjoint theory hashes, and 2,688 unique row hashes. Matrix
+SHA-256 is
+`d1904b54a0fab8e59cfcb0b0dd464f5c8778e5b828907028ec8614aeae76d5d5`.
+
+Current decision:
+`architecture_mechanics_hardened_primary_matrix_frozen_pretraining_interface_pending_capability_unproven`.
+
+This is real architectural progress, not native reasoning evidence. Before
+the user can safely authorize continuation pretraining, ETTR still needs a
+causal autoregressive episode interface, frozen composite objectives,
+ETTR-aware save/resume state, hybrid-composition receipts, and an H100
+throughput/memory gate.
+
+## 2026-07-26 ETTR Architecture Hardening and Canonical Capacity
+
+The phase boundary remains explicit: this work builds and qualifies the
+architecture. It does not start continuation pretraining or post-training.
+Low capability from the frozen step-300k base is therefore not an architecture
+failure criterion.
+
+A hostile audit found that the first reactor and query reader erased exact
+relation endpoints by reducing each graph to in/out degree counts. The current
+implementation replaces that bottleneck with relation-specific directed
+neighbor message passing. A degree-preserving edge-swap falsifier changes both
+reactor and reader outputs while holding every old degree statistic fixed.
+
+The production packet now has 64 slots, 16 relation roles, 256 categorical
+symbols, and at most 256 hard edges. Thirty-two object nodes plus reified
+ordered hyperedge/value-byte nodes can therefore represent the board schema
+without a single 64-class scalar bottleneck. Two persistent terminal bits
+encode four distinct always-visible dispositions: `OPEN`, `ANSWER`, `ABSTAIN`,
+and `REJECT`. A ninth transaction supplies explicit rejection; every terminal
+disposition freezes later mutation.
+
+Hard state transitions remain discrete, but transaction traces now retain
+pre-discretization probabilities so wrong choices receive corrective
+gradients. The training API is bound to exact optimizer/model parameter
+identities and immutable manifest/dataset hashes, revalidates mutable tensor
+targets at the update boundary, rejects scheduler overrun, removes redundant
+segment LM-loss work, and checkpoints only at an exactly resumable optimizer
+and between-episode boundary.
+
+The immutable step-300k checkpoint loads strictly. Exact parameter receipt:
+
+| Component | Parameters |
+|---|---:|
+| Protected Shohin | 125,081,664 |
+| Compiler | 21,466,377 |
+| Reactor | 29,757,217 |
+| Query reader | 16,474,177 |
+| Added architecture | 67,697,771 |
+| Complete system | 192,779,435 |
+| Remaining below 200M | 7,220,565 |
+
+The complete architecture, custody, profiler-contract, and cross-ontology
+inventory passes 165/165 tests. This is a technically coherent CPU-side
+architecture result, not evidence of learned general reasoning. A fresh
+BF16 H100 eager/compiled parameter-resource profile remains the final systems
+gate before the architecture can be presented to the user for a separate
+pretraining decision.
+
+The parameterized architecture source is commit
+`29d294f53085a254e1bf056abd7c388a5fe7ca95`; terminal-state objective
+hardening is commit `8cac6ce5a97597ab8a6cd47eda0aa4924590a762`. Profile job `705188` failed
+closed on `evc33` before checkpoint/model execution because the allocated node
+had no usable CUDA device. Replacement `705192` is the sole queued attempt,
+uses a fresh report path, excludes `evc33` and the established bad-node set,
+and cannot write model state or read training shards.
+
+## 2026-07-26 Factorial Interchange and Full-Objective Qualification
+
+The project remains in architecture construction. No continuation pretraining
+or post-training is authorized, and weak raw-checkpoint benchmark scores do
+not reject an untrained architecture.
+
+The first causal-supervision attempt was rejected before commit because it
+accepted free-standing counterfactual labels. A first 2x2 repair was also
+rejected: with token-identical factor duplicates, zero dropout, and a
+deterministic reactor, every swap was only a permutation of an already
+executed factual row.
+
+Commit `5771c64` retains the factorial structure but makes the intervention
+nontrivial. Equivalent WORLD and COMMAND factors are represented by distinct
+raw renderings. WORLD-equivalent rows must map to identical complete initial
+packet targets, while the two WORLD factors must differ in packet state. A
+WORLD intervention imports the required semantic WORLD through another raw
+rendering and composes it with a different row carrying the held-fixed COMMAND
+semantics. The COMMAND arm performs the orthogonal interchange. Every source
+row differs from its target row, and terminal packet plus transaction targets
+are gathered only from immutable factual rectangle corners.
+
+The continuation validator now acts as an independent generic transaction
+auditor. Starting from the labeled initial packet, it replays `ALLOC`, `WRITE`,
+`CLEAR`, `LINK`, `UNLINK`, `SET_ROOT`, `COMMIT`, `HALT`, and `REJECT` and
+requires exact agreement with terminal value/type codes, relations, activity,
+root, edge budget, and disposition. It rejects contradictory initial status,
+status recurrence, terminal state, and OPEN right-padding. A padded row must
+commit or halt at its final valid step so later fixed-width deployed steps are
+frozen.
+
+Training runs hard forward transactions by default, uses zero dropout in the
+interchange path, retains both intervention traces, field-balances packet
+losses, and reports separate WORLD and COMMAND losses and support receipts.
+Isolated tests prove WORLD loss reaches the compiler and COMMAND loss reaches
+the command projection. Initial, factual terminal, and both intervention
+terminal packets pass the production deployed-state validator under
+`eval()`/`hard=True`.
+
+The resource profiler is now schema v3. It no longer measures token LM alone:
+each eager or compiled update executes the factual episode, both intervention
+arms, all composite losses, backward, and Muon/AdamW update from a matched
+initial-parameter hash. It uses synthetic immutable rectangles, reads no
+shards, writes no model state, and defaults to the minimum complete batch of
+four.
+
+The complete ETTR and cross-ontology inventory is 174/174. Ruff, byte
+compilation, shell syntax, diff checks, and two rounds of hostile P0/P1 audit
+pass. Architecture parameters remain 67,697,771; the complete system remains
+192,779,435; the protected step-300k checkpoint remains byte-identical at
+SHA-256
+`211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
+
+Current decision:
+`factorial_interchange_contract_hardened_exact_h100_profile_pending_pretraining_held_capability_unproven`.
+
+The next architecture gates are an exact-source H100 profile of this complete
+objective, source-to-query causal binding, and the frozen qualification/
+control matrix. Later large-scale pretraining and post-training remain
+separate user decisions.
+
+At 2026-07-26 03:53 EDT, Newton independently reverified the protected
+step-300k checkpoint SHA-256 and fetched exact documentation descendant
+`4ca7366eb5102b1f51e16c2166717ec5e02448cb` into a clean detached worktree.
+Stale profile `705192` completed but cannot qualify the factorial objective.
+Exactly one schema-v3 replacement, job `705213`, is pending resources. It is
+synthetic architecture resource profiling only: `SHARDS` are forbidden, no
+model state can be written, and it does not authorize or constitute
+pretraining. Current raw capability is deliberately outside this architecture
+gate; learning and post-training are later user-controlled phases.
+
+Job `705213` completed on `evc25` in 10m54s. Its read-only report
+(`374edd8e41d143274fab645ec15923ec9a078ddef301442b982b37f7ac9dd408`)
+confirms strict step-300k load, unchanged protected checkpoint bytes, no shard
+reads, no state writes, finite full-composite BF16 execution, and matched
+eager/compiled initialization. The 192,779,435-parameter system peaks at
+3.207 GB eager and 2.763 GB compiled. Compiled throughput is 6,629.96 encoded
+tok/s versus 3,916.16 eager, or 1.693x.
+
+This is not yet a complete architecture pass. The query reader has millions
+of finite nonzero gradient elements but its current first-tensor-only
+parameter sample reports zero update, so the update receipt fails closed.
+The sampler must cover every trainable tensor and the profile must be
+repeated. More importantly, terminal-state interventions currently stop
+before query consumption. The next architecture addition is a matched-prefix
+causal query gate: all four factual corners share the exact query prefix up to
+one categorical read position, all WORLD and COMMAND edges have different
+factual next-token labels, and intervention answers are gathered only from
+immutable factual corners. No divergent answer prefix may enter the model.
+
+Current decision:
+`h100_resource_geometry_pass_update_receipt_and_query_binding_pending_pretraining_held_capability_unproven`.
+
+## 2026-07-26 Matched-Prefix Query Consumer Gate
+
+The terminal packet is no longer the end of the causal supervision path.
+Commits `f263616` and `19b74f2` force WORLD and COMMAND interventions to be
+consumed by the actual source-deleted late-query reader.
+
+Every factual row carries only a query read index. All four corners in one
+WORLD x COMMAND rectangle must use the same index and exact same token/mask
+prefix through it. The next-token label must change across all four WORLD and
+COMMAND edges. Intervention execution receives target row indices but no
+answers. Correct logits come from the intervened terminal state; foil logits
+come from the factual state with the changed factor held at its original
+value. Correct and foil labels are gathered afterward from immutable factual
+shifted-token targets.
+
+This makes the direct query-only transformer path insufficient: it sees the
+same prefix but is asked for contradictory factual next tokens. Separate
+WORLD/COMMAND losses use classification plus a directional
+difference-in-differences margin. The objective reports pair support and
+margin satisfaction independently. No free-standing counterfactual answer is
+admitted.
+
+This remains a bounded architecture result, not learned reasoning. It proves
+one-token categorical causal consumption mechanics. Multi-token autonomous
+answers, multiple independent late queries per sealed state, unseen-ontology
+generalization, and capability all remain later gates.
+
+The H100 receipt sampler is now stratified across every trainable tensor, so
+an unchanged first tensor cannot conceal updates elsewhere. The complete
+ETTR/cross-ontology inventory is **193/193** passing. Architecture parameters
+remain 67,697,771 and the complete system remains 192,779,435. No pretraining
+was started or prepared.
+
+Current decision:
+`matched_query_binding_implemented_exact_h100_reprofile_pending_controls_unfrozen_pretraining_held_capability_unproven`.

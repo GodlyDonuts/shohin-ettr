@@ -219,6 +219,35 @@ runtime-semantic receipt is false. Fail-closed repeats `702769`, `702771`, and
 `702773` emitted no report. Preserve this only as conservative negative
 evidence; it is not an authorized qualification or positive claim.
 
+## Renderer-Curriculum Qualification
+
+The next representation treatment passes the bounded smoke. It combines
+renderer-neutral state/action typing from the anonymous incidence graph with
+correct target-first supervision under symbols absent from renderer 3. A
+matched control receives identical bytes, initialization, parameters, and
+updates but swapped source/target labels.
+
+Across five model seeds and all three leave-one-family-out folds:
+
+- treatment: 120/120;
+- direction-shuffled control: 65/120;
+- every family: 40/40 treatment;
+- every cell in every seed: 2/2 treatment;
+- positive seed-fold directions: 15/15; and
+- candidate-time oracle/search/verifier calls: 0/0/0.
+
+Independent audit SHA-256:
+`6cbf52ffe48fe79b8bf996d6b70fa244840153fd0b0d293ce47766e987b5179e`.
+
+Decision:
+`renderer_curriculum_passes_five_seed_three_family_holdout_smoke`.
+
+This passes the current bounded board but not the broader general-reasoning
+claim. The target-first role permutation is covered under different symbols,
+all families expose complete transition tables, and fixed incidence counts
+identify key types. The next board must vary and collide those structural
+statistics. Full result: `R12_RENDERER_CURRICULUM_QUALIFICATION.md`.
+
 ## Authorization Boundary
 
 Before an H100 run, the raw-token candidate package, process-level deletion

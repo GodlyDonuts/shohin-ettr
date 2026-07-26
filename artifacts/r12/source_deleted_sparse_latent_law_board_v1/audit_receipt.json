@@ -1,0 +1,46 @@
+{
+  "board_seed": 20260725,
+  "candidate_manifest_sha256": "ebfb3ee11ede3e083617dc214e4e25f2e4ac53cea938c8f05e350077b73f702c",
+  "complete_records": 4200,
+  "deployed_wire_roundtrips": 120,
+  "development_action_laws": 80,
+  "development_per_cell": 4,
+  "exact_source_deleted": 120,
+  "family_counts": {
+    "affine_modular": 40,
+    "bitwise_rotate_xor": 40,
+    "gray_conjugate_affine": 40
+  },
+  "family_name_leaks": 0,
+  "hidden_query_rows": 120,
+  "hidden_query_steps": 387,
+  "hypothesis_counts": {
+    "16": 309,
+    "8": 78
+  },
+  "law_swap_answer_changes": 104,
+  "minimal_witness_records": 812,
+  "record_removals_nonidentifiable": 812,
+  "renderer_orbits_exact": 12,
+  "renderer_orbits_packet_identical": 12,
+  "renderer_orbits_total": 12,
+  "reversal_answer_changes": 36,
+  "reversal_eligible": 70,
+  "source_deletion_passes": 120,
+  "supervisor_manifest_sha256": "161217d08bb1ff3f1119d66465a2abb884c1e18483fe523a83ab14d78230c31b",
+  "topology_counts": {
+    "16x2": 15,
+    "16x3": 15,
+    "16x4": 24,
+    "8x2": 15,
+    "8x3": 51
+  },
+  "total_rows": 120,
+  "train_action_laws": 97,
+  "train_development_action_law_overlap": 0,
+  "train_per_renderer": 4,
+  "unique_laws": 120,
+  "visible_fraction": 0.19333333333333333,
+  "visible_query_steps": 0,
+  "visible_records": 812
+}

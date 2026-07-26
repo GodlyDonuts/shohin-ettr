@@ -1,0 +1,293 @@
+{
+  "board_manifest_sha256": "80ba4de5e26779a8466a1b3c0db21d3b4104a65fbce47e58f7d43d0313e84bfb",
+  "candidate_architecture": "microcoded",
+  "candidate_imports_exact_compiler": false,
+  "candidate_time_oracle_calls": 0,
+  "candidate_time_search_calls": 0,
+  "candidate_time_verifier_calls": 0,
+  "development": {
+    "direction_negated": {
+      "cell_exact": {
+        "composition": {
+          "correct": 0,
+          "total": 12
+        },
+        "joint": {
+          "correct": 0,
+          "total": 12
+        },
+        "law": {
+          "correct": 0,
+          "total": 12
+        },
+        "renderer": {
+          "correct": 1,
+          "total": 12
+        },
+        "topology": {
+          "correct": 0,
+          "total": 12
+        }
+      },
+      "control": "direction_negated",
+      "direction_accuracy": 0.0,
+      "direction_correct": 0,
+      "direction_total": 462,
+      "exact": 1,
+      "family_exact": {
+        "affine_modular": {
+          "correct": 0,
+          "total": 20
+        },
+        "bitwise_rotate_xor": {
+          "correct": 1,
+          "total": 20
+        },
+        "gray_conjugate_affine": {
+          "correct": 0,
+          "total": 20
+        }
+      },
+      "invalid": 53,
+      "map_exact": 0,
+      "microcode_accuracy": 0.004901960784313725,
+      "microcode_correct": 1,
+      "microcode_total": 204,
+      "source_deletion_passes": 7,
+      "state_accuracy": 0.20875,
+      "state_correct": 501,
+      "state_total": 2400,
+      "total": 60
+    },
+    "observation_targets_shifted": {
+      "cell_exact": {
+        "composition": {
+          "correct": 0,
+          "total": 12
+        },
+        "joint": {
+          "correct": 0,
+          "total": 12
+        },
+        "law": {
+          "correct": 0,
+          "total": 12
+        },
+        "renderer": {
+          "correct": 0,
+          "total": 12
+        },
+        "topology": {
+          "correct": 0,
+          "total": 12
+        }
+      },
+      "control": "observation_targets_shifted",
+      "direction_accuracy": 1.0,
+      "direction_correct": 462,
+      "direction_total": 462,
+      "exact": 0,
+      "family_exact": {
+        "affine_modular": {
+          "correct": 0,
+          "total": 20
+        },
+        "bitwise_rotate_xor": {
+          "correct": 0,
+          "total": 20
+        },
+        "gray_conjugate_affine": {
+          "correct": 0,
+          "total": 20
+        }
+      },
+      "invalid": 56,
+      "map_exact": 0,
+      "microcode_accuracy": 0.0,
+      "microcode_correct": 0,
+      "microcode_total": 204,
+      "source_deletion_passes": 4,
+      "state_accuracy": 0.052083333333333336,
+      "state_correct": 125,
+      "state_total": 2400,
+      "total": 60
+    },
+    "observations_zeroed": {
+      "cell_exact": {
+        "composition": {
+          "correct": 0,
+          "total": 12
+        },
+        "joint": {
+          "correct": 0,
+          "total": 12
+        },
+        "law": {
+          "correct": 0,
+          "total": 12
+        },
+        "renderer": {
+          "correct": 0,
+          "total": 12
+        },
+        "topology": {
+          "correct": 0,
+          "total": 12
+        }
+      },
+      "control": "observations_zeroed",
+      "direction_accuracy": 1.0,
+      "direction_correct": 462,
+      "direction_total": 462,
+      "exact": 0,
+      "family_exact": {
+        "affine_modular": {
+          "correct": 0,
+          "total": 20
+        },
+        "bitwise_rotate_xor": {
+          "correct": 0,
+          "total": 20
+        },
+        "gray_conjugate_affine": {
+          "correct": 0,
+          "total": 20
+        }
+      },
+      "invalid": 60,
+      "map_exact": 0,
+      "microcode_accuracy": 0.0,
+      "microcode_correct": 0,
+      "microcode_total": 204,
+      "source_deletion_passes": 0,
+      "state_accuracy": 0.07791666666666666,
+      "state_correct": 187,
+      "state_total": 2400,
+      "total": 60
+    },
+    "treatment": {
+      "cell_exact": {
+        "composition": {
+          "correct": 0,
+          "total": 12
+        },
+        "joint": {
+          "correct": 0,
+          "total": 12
+        },
+        "law": {
+          "correct": 0,
+          "total": 12
+        },
+        "renderer": {
+          "correct": 0,
+          "total": 12
+        },
+        "topology": {
+          "correct": 0,
+          "total": 12
+        }
+      },
+      "control": "treatment",
+      "direction_accuracy": 1.0,
+      "direction_correct": 462,
+      "direction_total": 462,
+      "exact": 0,
+      "family_exact": {
+        "affine_modular": {
+          "correct": 0,
+          "total": 20
+        },
+        "bitwise_rotate_xor": {
+          "correct": 0,
+          "total": 20
+        },
+        "gray_conjugate_affine": {
+          "correct": 0,
+          "total": 20
+        }
+      },
+      "invalid": 52,
+      "map_exact": 0,
+      "microcode_accuracy": 0.004901960784313725,
+      "microcode_correct": 1,
+      "microcode_total": 204,
+      "source_deletion_passes": 8,
+      "state_accuracy": 0.22125,
+      "state_correct": 531,
+      "state_total": 2400,
+      "total": 60
+    }
+  },
+  "development_action_laws": 80,
+  "device": "cuda",
+  "equal_budget": {
+    "control_additional_updates": 0,
+    "models_trained": 1,
+    "optimizer_updates": 2000,
+    "same_weights_controls": true
+  },
+  "model_receipt": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/r12/sparse_latent_law_curriculum/seed20260725_microcoded.pt",
+    "sha256": "a38ae69806e1dd394cb8b271fb541ed34a3f7bbbfcec290cf2b4b273ca7a6334"
+  },
+  "parameter_receipt": {
+    "complete_system": 125421816,
+    "global_limit": 200000000,
+    "headroom": 74578184,
+    "learned_compiler": 340152,
+    "protected_shohin": 125081664
+  },
+  "preparation_exact_parser_calls": 3360,
+  "seed": 20260725,
+  "status": "sparse_latent_law_curriculum",
+  "train": {
+    "cell_exact": {
+      "fit": {
+        "correct": 674,
+        "total": 3300
+      }
+    },
+    "control": "treatment",
+    "direction_accuracy": 1.0,
+    "direction_correct": 19291,
+    "direction_total": 19291,
+    "exact": 674,
+    "family_exact": {
+      "affine_modular": {
+        "correct": 86,
+        "total": 1100
+      },
+      "bitwise_rotate_xor": {
+        "correct": 516,
+        "total": 1100
+      },
+      "gray_conjugate_affine": {
+        "correct": 72,
+        "total": 1100
+      }
+    },
+    "invalid": 2331,
+    "map_exact": 456,
+    "microcode_accuracy": 0.27490909090909094,
+    "microcode_correct": 2268,
+    "microcode_total": 8250,
+    "source_deletion_passes": 969,
+    "state_accuracy": 0.5752626262626263,
+    "state_correct": 56951,
+    "state_total": 99000,
+    "total": 3300
+  },
+  "train_action_laws": 263,
+  "train_development_action_law_overlap": 0,
+  "training_loss": {
+    "final": 2.3942973613739014,
+    "initial": 5.742733478546143
+  },
+  "training_rows": {
+    "auxiliary": 3000,
+    "counterfactual": 240,
+    "frozen": 60,
+    "total": 3300
+  }
+}

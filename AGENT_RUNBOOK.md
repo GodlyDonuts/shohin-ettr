@@ -14,12 +14,188 @@
 > compatibility, and isolated reasoning evaluation may continue; none of those
 > activities implies permission to pretrain.
 >
-> **Last updated:** 2026-07-24 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-26 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
 > GSM8K pass@1 `2/100`, MATH-500 `2/100`, HumanEval `6/164`, and MBPP `0/100`. This confirms a
 > low-single-digit plateau rather than a broad 120k-to-300k capability gain.
+>
+> **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
+> architecture construction and systems qualification only. The intended
+> order is: (1) establish one novel trainable architecture, (2) continue
+> pretraining only after the user explicitly authorizes it, and (3) perform
+> post-training afterward. Present raw-checkpoint benchmark weakness is not an
+> architecture rejection criterion. The USER PRETRAINING HOLD remains
+> absolute: do not start, queue, resume, prepare, or modify continuation
+> pretraining.
+>
+> **ETTR CONTINUATION CONTRACT FROZEN — 2026-07-26 EDT:** Commit
+> `ae2cf85480bedfaa96f3cf7ddfbaf64e5d067203` completes the missing
+> architecture-side continuation contract without launching pretraining. It
+> adds an explicit independent-row `WORLD -> COMMAND -> QUERY` causal episode
+> lifecycle, reset-safe token supervision, packet/transaction/equivariance/
+> commit/sparsity/anti-bypass objectives, a canonical frozen-data manifest,
+> separate base/architecture Muon and AdamW groups with embedded WSD schedule,
+> an exact no-replace checkpoint/resume contract covering model, optimizer,
+> schedule, RNG, data cursor, and episode lifecycle, and a bounded composite
+> optimizer step. A subsequent audit removed a P0 endpoint-identity
+> bottleneck: the reactor and query reader now use edge-aware typed message
+> passing rather than relation-degree summaries. The focused architecture
+> suite is 109/109 and the complete ETTR/cross-ontology inventory is 155/155
+> passing at the prior checkpoint; the current hardened complete inventory is
+> **165/165**. Three cross-ontology hybrids produce 96/96 independent-oracle
+> agreement and 48/48 causal output changes; payload SHA-256 is
+> `d155f868494f9379b214028c8d7475cc2cde08192c9b3a5bbdea5a73b29f98e2`.
+> The current production packet uses 64 slots, 16 relation roles, 256
+> categorical symbols, explicit `OPEN/ANSWER/ABSTAIN/REJECT` disposition, and
+> endpoint-aware message passing. The exact checkpoint-backed receipt is
+> **67,697,771 added / 192,779,435 total**, leaving **7,220,565** below 200M.
+> Isolated synthetic one-H100 profile job `705164` was canceled while still
+> pending after static audit found and fixed a reset/padding validator defect.
+> Earlier attempts `704975` and `704985` failed closed on bad CUDA nodes `evc34` and
+> `evc44`; neither attempt reached model execution or changed the protected
+> checkpoint. Corrected-source profile `705175` was canceled after it began
+> loading because the endpoint-identity audit changed the architecture; its
+> isolated output is empty and the protected hash remains exact. No
+> intelligence or continuation-readiness claim is authorized
+> until a healthy-node profile of the corrected source completes.
+> The parameterized architecture source remains commit
+> `29d294f53085a254e1bf056abd7c388a5fe7ca95`. Training-contract hardening
+> commit `8cac6ce5a97597ab8a6cd47eda0aa4924590a762` adds direct supervision and
+> equivariance for the free-running terminal reactor state, includes both
+> initial and terminal state in structural anti-bypass regularization, and
+> proves by gradient test that terminal loss reaches both reactor and
+> compiler. The complete inventory is 165/165. This changes no parameters,
+> checkpoint bytes, or pretraining state.
+> H100 profile `705188` failed closed on `evc33` before checkpoint/model
+> execution because CUDA was unavailable despite Slurm allocation; add
+> `evc33` to the bad-node set. Exact-source replacement `705192` is the sole
+> pending profile, with a fresh output path and expanded exclusion set. It is
+> a synthetic resource gate only and cannot write model state or read shards.
+>
+> **ETTR FACTORIAL INTERCHANGE HARDENING — 2026-07-26 EDT:** Commit
+> `5771c64` replaces the rejected token-identical swap objective with
+> nontrivial 2x2 semantic-factor interchange. Equivalent WORLD and COMMAND
+> factors must arrive through distinct raw renderings; WORLD-equivalent rows
+> must have identical complete initial packet targets; each world or command
+> intervention uses a different raw source row and gathers its packet,
+> transaction, and terminal labels only from immutable factual rectangle
+> corners. The data boundary exactly replays every generic labeled transaction
+> into the terminal packet, binds initial status to the compiler's open reset,
+> and permits right padding only after the last supervised step commits or
+> halts, so fixed-width deployed execution cannot escape supervision. Initial,
+> factual-terminal, and both intervention-terminal states pass the hard
+> deployed-state validator under `eval()`/`hard=True`. WORLD and COMMAND
+> intervention losses, support receipts, and isolated gradient paths are
+> separate. The H100 profiler is schema v3 and now executes factual episodes,
+> both intervention arms, the complete composite objective, backward, and
+> Muon/AdamW update from identical eager/compiled initial parameters; default
+> profile batch size is four, one complete rectangle. Ruff, byte compilation,
+> shell syntax, focused tests, two hostile re-audits, and the complete ETTR/
+> cross-ontology inventory pass; the inventory is now **174/174**. Parameter
+> counts and protected checkpoint bytes are unchanged; the local checkpoint
+> still hashes to
+> `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
+> Job `705192` predates this exact objective and cannot qualify it. A fresh
+> exact-commit H100 profile is required; this authorizes no pretraining or
+> capability claim.
+>
+> **CURRENT REASONING CLAIM BOUNDARY — 2026-07-25 22:00 EDT:** Shohin still
+> has no demonstrated architecture-native general reasoning. Adversarial audit
+> rejects the apparent 11/11 episodic-generator result as a Shohin claim:
+> Shohin was never loaded, the learned model is only a 232,065-parameter
+> record-direction reader, and exact regex parsing, 127-word enumeration,
+> sealing, and execution are host machinery. Fourteen of 22 development
+> target-word instances overlap training and deletion is serialization-level.
+> Retain it only as a bounded neuro-symbolic solver. The frozen successor is
+> `R12_ENDOGENOUS_TYPED_THEORY_REACTOR_PREREG.md`: one actual-Shohin raw-token
+> compiler and generic transaction reactor across Horn closure, typed term
+> rewriting, and guarded resource processes under four-process custody.
+>
+> **ETTR ARCHITECTURE CORE + PRIMARY MATRIX READY — 2026-07-25 EDT:** The checkpoint-compatible
+> trainable architecture now exists in
+> `train/endogenous_typed_theory_reactor.py`. It adds an endogenous raw-token
+> compiler, bounded categorical typed state, a capped sparse relation ledger,
+> an edge-aware typed relation-message bus that preserves neighbor identity,
+> a shared recurrent structural-transaction reactor, exact-forward straight-
+> through choices, a separate post-seal command channel, and a causally masked
+> state-only query reader. The current addition is 67,697,771 parameters;
+> complete system size is 192,779,435 with 7,220,565 remaining under 200M.
+> The protected step-300k checkpoint hash matches and loads strictly with zero
+> missing/unexpected tensors. Deployed packets reject continuous hidden
+> payloads; first-batch architecture gradients are nonzero; query-prefix
+> invariance, all-state-field causality, and commit freezing are tested.
+> The seven-variant 3-fold matrix contains 2,688 executions with payload
+> SHA-256 `d1904b54a0fab8e59cfcb0b0dd464f5c8778e5b828907028ec8614aeae76d5d5`.
+> This is an architecture artifact, not an intelligence claim. The causal
+> episode interface, objectives, data contract, optimizer, and exact checkpoint
+> schema are now implemented in commit `ae2cf85`; only the healthy-node H100
+> profile remains open on the architecture-side continuation checklist. The
+> user pretraining hold remains active.
+>
+> **ETTR G0 HORN BOARD PASS — 2026-07-25 EDT:** Twenty typed Horn theories
+> occupy 20 distinct behavioral classes over 378 states. Independent closure
+> engines agree on all 7,560 theory/challenge pairs. Exact evidence yields 20
+> singleton, 20 ambiguous, 20 contradictory, and 20 coherent-alternate
+> episodes; four opaque renderers preserve semantics. This is falsifier
+> infrastructure only. Typed rewriting, guarded resources, custody, training,
+> and causal qualification remain future work. Decision:
+> `horn_version_space_falsifier_passes_candidate_reasoning_unproven`.
+>
+> **ETTR THREE-ONTOLOGY + CUSTODY READY — 2026-07-25 EDT:** Horn closure,
+> typed term rewriting, and guarded resource processes now have distinct
+> exact boards and independently implemented oracles. They cover 95 theories,
+> 183,480 exact oracle comparisons, unseen rule combinations and programs,
+> repeated-variable/ordered-role semantics, nonconfluence, halt/deadlock, four
+> renderers, and 352 exact identifiability episodes. The architecture state
+> has an immutable non-pickle allowlisted wire. Fresh compiler, executor,
+> late-query, and model-free assessor processes reproduce direct execution;
+> the serial test physically deletes each prior stage before starting the
+> next. Decision:
+> `trainable_cross_ontology_architecture_ready_capability_unproven`.
+>
+> **Variable-topology qualification PASS (2026-07-25 EDT):** CPU array
+> `704729` completed all 15 five-seed/leave-one-family-out folds. The learned
+> global semantic-partition compiler scores 360/360; the same weights score
+> 152/360 with source direction swapped and 0/360 when either global key
+> scores or query roles are negated/swapped. Every fold, collision cell, joint
+> cell, and paired causal direction passes. The compiler adds 60,613
+> parameters for a 125,142,277-parameter conceptual system and makes zero
+> candidate-time oracle/search/verifier calls. Independent audit SHA-256 is
+> `049bbbd398e6f1456d6f1809bebb701351053302e0ce44147e70735d5b155fa2`.
+> This is causal bounded complete-table finite-machine compilation, not
+> Shohin-native general reasoning. Do not spend more compute on this solved
+> board. The next justified gate is sparse latent-law induction with
+> process-level source deletion. Pretraining remains held and no Newton jobs
+> are active.
+>
+> **Sparse latent-law final NO-GO (2026-07-25 EDT):** H100 job `704760`
+> completed the final supervised internal-microcode gate. Treatment reached
+> 22.1250% transition accuracy, 0/60 complete unseen maps, and 0/60 exact
+> queries; direction-negated weights reached 1/60. Direct attention remains
+> better at 46.5000% and 4/60, but it also produced no complete map.
+> Training/development action-map overlap is zero and observation controls
+> collapse, proving evidence use without transferable law identification.
+> Decision:
+> `supervised_microcode_fails_hash_disjoint_sparse_law_induction`.
+> Shohin does not demonstrate native general reasoning. Stop proxy-specific
+> architecture branching under the current usage budget. Protected pretraining
+> remains held and there are zero active Newton jobs. Full evidence:
+> `R12_SPARSE_LAW_MICROCODE_RESULT.md`.
+>
+> **Constraint-intersection breakthrough with frozen-gate defect
+> (2026-07-25 EDT):** H100 job `704761` preserves every sparse observation as
+> a separate compatibility factor and reaches 60/60 complete hash-disjoint
+> maps, 60/60 exact hidden queries, and 100% transition accuracy after source
+> deletion. Shifted targets score 1/60 and zeroed observations 0/60. Direction
+> negation scores 20/60, exactly matching an independently computed inverse-law
+> answer-collision ceiling. The preregistered 45-query margin is therefore
+> impossible; the result misses that administrative gate while establishing
+> exact bounded capability. The fixed global program bank remains an exhaustive
+> ontology prior, so this is not general reasoning. Next justified gate:
+> construct the program space episodically from unfamiliar support generators.
+> Full result: `R12_SPARSE_LAW_CONSTRAINT_INTERSECTION_RESULT.md`.
 >
 > **Expedited reasoning closeout (2026-07-25 EDT):** open-ended architecture
 > search is closed under the current evidence and usage budget. Shohin does
@@ -86,6 +262,36 @@
 > architecture branches under the current budget. The next justified work
 > is an audited cross-renderer representation/post-training curriculum, not
 > larger recurrence or continued pretraining.
+>
+> **Renderer-curriculum breakthrough (2026-07-25 EDT):** the justified
+> representation treatment passes its bounded five-seed qualification.
+> Renderer-neutral incidence typing plus correct counterfactual target-first
+> supervision reaches 120/120 across all 15 seed/family-holdout folds versus
+> 65/120 for the equal-budget direction-shuffled control. Every held-out
+> family is 40/40, every cell passes, and all 15 directions are positive.
+> Candidate-time oracle/search/verifier calls remain 0/0/0. Independent audit
+> SHA-256 is
+> `6cbf52ffe48fe79b8bf996d6b70fa244840153fd0b0d293ce47766e987b5179e`.
+> This is bounded systematic anonymous-machine compilation, not general
+> reasoning: complete transition tables, fixed incidence geometry, and one
+> machine ontology remain. Full scope:
+> `R12_RENDERER_CURRICULUM_QUALIFICATION.md`. No Newton jobs are active and
+> the pretraining hold remains unchanged.
+>
+> **Variable-topology falsifier frozen (2026-07-25 EDT):** the next
+> source-deleted gate now varies cardinality 4/8/16, action count 2--5, six
+> renderers, and unseen law/composition/topology/collision/renderer/joint
+> cells. Its 132-row independent CPU receipt is exact 132/132 after source
+> deletion, has zero family leaks, and compiles 21/21 renderer orbits to
+> identical packets. Exactly 24 collision rows use 4x2 or 8x4 geometry, where
+> every state and action key has the same occurrence frequency; the retained
+> fixed-incidence typer therefore has no type signal. Law swaps change
+> 113/132 answers and action reversal changes 51/78 eligible answers.
+> Receipt SHA-256 is
+> `6711d17d4b21e0f034852e403d75ad20ffe59eb99ce05c96dc8784820adb9197`.
+> No learned candidate has passed this gate. Current decision:
+> `renderer_transfer_demonstrated_variable_topology_reasoning_unproven`.
+> Full contract: `R12_SOURCE_DELETED_VARIABLE_TOPOLOGY_PREREG.md`.
 >
 > **Latest SSQAC controller decision (2026-07-24 21:23 EDT):** the
 > protected checkpoint and pretraining hold remain unchanged. Bounded host
@@ -13445,3 +13651,460 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   cross-renderer representation curriculum with counterfactual
   role-equivalence supervision and the existing multi-family/source-deletion
   controls.
+
+- **2026-07-25 04:00--04:39 EDT** -- **Renderer-neutral structural typing
+  plus counterfactual direction supervision passes the bounded multi-family
+  gate.** Structural typing alone removes all invalid seals but scores only
+  13/24, including 1/6 held-out renderer and 0/6 joint. The matched
+  target-first renderer curriculum scores 24/24 versus 13/24 for swapped
+  direction labels.
+
+  CPU-only array `702775` then completed all 15 five-seed/family-holdout
+  tasks cleanly. Treatment scores 120/120; equal-budget direction-shuffled
+  controls score 65/120. Affine, bitwise, and permutation holdouts are each
+  40/40 treatment, and all 15 treatment-control directions are positive.
+  Each arm uses 152,933 learned parameters, 125,234,597 conceptual complete
+  parameters, 24 original plus 24 counterfactual rows, 300 updates, identical
+  initialization lineage, and zero candidate-time oracle/search/verifier
+  calls. Preparation used 360 counted exact-parser calls to synthesize
+  training renderings.
+
+  Independent audit SHA-256 is
+  `6cbf52ffe48fe79b8bf996d6b70fa244840153fd0b0d293ce47766e987b5179e`.
+  Decision:
+  `renderer_curriculum_passes_five_seed_three_family_holdout_smoke`.
+  Promote this only as bounded systematic finite-machine compilation. It
+  does not establish general reasoning because fixed incidence statistics
+  reveal key types, every episode exposes a complete transition table, and
+  all families share one ontology. The next falsifier must vary topology,
+  cardinality, action count, incidence profiles, and record completeness.
+  Pretraining remains held and no Newton jobs remain active.
+
+- **2026-07-25 EDT** -- **The variable-topology successor gate is frozen
+  and independently audited.** The 132-row board spans state cardinalities
+  4/8/16, action counts 2--5, six renderers, and six development cells.
+  Exact source-deleted execution is 132/132 with zero family-name leaks.
+  All 21 renderer orbits compile to identical packets. Exactly 24 collision
+  rows make every state/action key frequency equal; 108 rows remain
+  incidence-separable. Law swaps change 113/132 answers and action reversal
+  changes 51/78 eligible answers. Focused verification is 21 passed with
+  clean Ruff and byte compilation. Receipt SHA-256 is
+  `6711d17d4b21e0f034852e403d75ad20ffe59eb99ce05c96dc8784820adb9197`.
+  No candidate has passed this new gate, so the retained conclusion is
+  bounded renderer transfer, not native general reasoning. Pretraining stays
+  held and no Newton job was launched.
+
+- **2026-07-25 19:47--19:52 EDT** -- **A learned global semantic partition
+  passes the variable-topology gate.** The final protocol rejected an
+  ambiguous source/action channel-swap control and instead directly negated
+  the learned episode-global key scores. Local focused verification passed
+  23 tests with clean Ruff, byte compilation, launcher syntax, and diff
+  checks. A local end-to-end smoke scored 12/12 treatment, 2/12 direction
+  swap, 0/12 key-score negation, and 0/12 query-role swap.
+
+  Newton CPU array `704729` completed all 15 claim-bearing folds in under
+  three minutes per task. Treatment scored 360/360 across five independent
+  boards and all three held-out families. Same-weight direction swap scored
+  152/360; same-weight global key-score negation and query-role swap each
+  scored 0/360 and failed closed on all 360 cases. All 15 paired directions
+  are positive for every control, and every collision/joint control margin
+  passes. Treatment per-family scores are 120/120 for affine modular,
+  bitwise rotate/xor, and permutation.
+
+  Each fold trains one 60,613-parameter compiler for 100 updates on 40 base
+  plus 160 counterfactual episodes. Controls receive zero additional updates.
+  The conceptual complete system is 125,142,277 parameters. Candidate-time
+  oracle/search/verifier calls are 0/0/0; preparation exact/source/query
+  parser calls are 600 each across the matrix. Raw source bytes are absent
+  from the deployed packet and every packet round-trip passes.
+
+  Independent audit SHA-256 is
+  `049bbbd398e6f1456d6f1809bebb701351053302e0ce44147e70735d5b155fa2`.
+  Decision:
+  `global_semantic_partition_passes_variable_topology_gate`.
+  Scope remains bounded: complete transition tables, one finite-machine
+  ontology, a fixed discrete executor, interface-level rather than
+  fresh-process source deletion, and a sidecar compiler. Stop this solved
+  lane. The only justified successor is sparse latent-law induction before
+  any Shohin integration. Pretraining remains held; no Newton jobs are active.
+
+- **2026-07-25 20:28--20:39 EDT** -- **Sparse unseen-law induction remains
+  unsolved; final microcode route is closed.** Job `704760` completed 2,000
+  updates on `evc23` in 3 minutes 10 seconds. The 340,152-parameter controller
+  predicts family and operation parameters for an internal fixed-domain ALU.
+  It receives exact program labels during preparation but no labels, exact
+  parser, host callback, oracle, search, solver, or verifier at development
+  inference.
+
+  Treatment scored 531/2,400 = 22.1250% transition states, 0/60 complete
+  maps, and 0/60 exact queries. Same-weight direction negation scored 1/60;
+  shifted targets and zeroed observations each scored 0/60. Development
+  microcode identification was 1/204 = 0.4902%. Training loss fell from
+  5.742733 to 2.394297, source direction reached 100%, and training produced
+  456 complete maps, so this is failed transfer rather than a dead optimizer.
+  Training/development action-law overlap is zero.
+
+  The complete conceptual system is 125,421,816 parameters. Report SHA-256 is
+  `3f6f78d84c1ce46dc8975f609ef80a79a86ecc6e9d430446c40b309d6753a94e`;
+  model SHA-256 is
+  `a38ae69806e1dd394cb8b271fb541ed34a3f7bbbfcec290cf2b4b273ca7a6334`.
+  Decision:
+  `supervised_microcode_fails_hash_disjoint_sparse_law_induction`.
+  Direct attention, generic generators, and fixed-ontology microcode all fail
+  to complete one unseen sparse map. Stop architecture branching under the
+  current usage constraint. No Newton jobs are active; pretraining remains
+  held and the protected checkpoint remains unchanged.
+
+- **2026-07-25 20:43--20:52 EDT** -- **Keeping records as logical factors
+  closes the sparse-map mechanics gap.** The constraint-intersection model
+  replaces amortized program classification with dense parallel version-space
+  elimination. Job `704761` completed on `evc23` in 3 minutes 7 seconds.
+  Treatment reached 2,400/2,400 transition states, 60/60 complete unseen maps,
+  60/60 exact hidden queries, and 60/60 source-free packets. Training and
+  development action-map overlap is zero.
+
+  Same-weight direction negation reached 20/60, shifted targets 1/60, and
+  zeroed observations 0/60. An independent exact inverse-law calculation also
+  reaches exactly 20/60, proving the frozen 45-query margin was impossible:
+  perfect treatment can beat this control by at most 40. Preserve the formal
+  gate miss rather than rewriting it posthoc.
+
+  The learned direction reader adds 232,065 parameters; the complete
+  conceptual system is 125,313,729. Report SHA-256 is
+  `22d22d8ac9079ee1722ce971c50d2307c5ad1d9132d49c329ef779f01adb2ede`;
+  model SHA-256 is
+  `b54fc0d2c113fff07a5a70629b5499ecc8412b6ecc2732ef3728359a2dc3de89`.
+  This is exact architecture-native law identification inside a fixed
+  hypothesis library, semantically equivalent to exhaustive elimination.
+  It is not open-ontology or general reasoning. The next board must construct
+  its hypothesis space from unfamiliar episode-local generators.
+
+- **2026-07-25 21:00--21:25 EDT** -- **Episode-local sparse program induction
+  is demonstrated, but strict fail-closed promotion is withheld.**
+  Pre-hardening mechanics job `704786`
+  reached 11/11 exact development queries, including 2/2 held-out random-
+  permutation episodes, but accidentally sealed 4/11 packets after deleting
+  a necessary witness. Consensus sealing was added so a map is emitted only
+  when all surviving programs agree on every state transition. The focused
+  suite is 14 passed with clean Ruff and byte compilation.
+
+  Preregistered hardened confirmation `704792` completed on `evc29` in
+  5 minutes 38 seconds. Treatment, record-order reversal, and consistent
+  support recoding each reach 11/11 exact. Treatment is perfect in every
+  family and cell with zero train/development target-law or raw-map overlap.
+  Direction negation reaches 2/11; shifted observations recover 0/11 complete
+  maps; zeroed observations, deranged support semantics, and target-witness
+  deletion each recover 0/11 exact. Witness deletion rejects 11/11 packets,
+  zeroed observations rejects 11/11, and deranged supports rejects 10/11.
+  Every treatment packet deletes raw source and support keys.
+
+  The mechanism constructs 127 words through depth six from two unfamiliar
+  episode-local generators, intersects sparse records, and seals only
+  unanimous target maps. It adds 232,065 learned parameters for 125,313,729
+  complete conceptual parameters, trains for 1,000 updates on 375 rows, and
+  makes zero candidate-time oracle/search/verifier calls. Report SHA-256 is
+  `226a36d9156101617b769f698550eb51ebec57a8ffa01464bdd7a64d8805caad`;
+  model SHA-256 is
+  `37a28b0f9ab401d369e481f99c62393dee99125250dbd6ce1ba37c07e360512f`;
+  independent audit SHA-256 is
+  `596039c38bbaecdd646ef8bea78c7263ea61b43bba13b7d1b067e36d35ae2e02`.
+
+  The confirmation preregistration required deranged supports to seal zero
+  packets. They seal one wrong packet, so the formal promotion gate is missed
+  even though exactness is 0/11. Decision:
+  `bounded_program_induction_demonstrated_but_fail_closed_promotion_withheld`.
+  This is the strongest current reasoning baseline but not general language
+  reasoning: finite permutation typing, complete supports, bounded closure,
+  intersection, sealing, and execution remain fixed architectural algorithms.
+  Stop further proxy branching under the usage constraint. No Newton jobs
+  remain active; pretraining stays held; the protected local/Newton checkpoint
+  hashes remain identical.
+
+- **2026-07-25 21:30 EDT** -- **Exact control audit classifies the single
+  deranged-support seal as a coherent alternate world.** A new independent
+  enumerator reproduces the same 127-word closure without neural logits. Of
+  11 deranged development episodes, six are ambiguous, four contradictory,
+  and one held-out random-permutation law episode uniquely identifies two
+  wrong target maps. Thus zero sealing is impossible for a compiler restricted
+  to the perturbed abstract support/observation interface. A raw-source
+  checksum could catch the injected internal mutation, but would test
+  corruption detection rather than induction. Preserve the formal gate miss;
+  do not retrofit that checksum as reasoning.
+
+  Focused verification is now 15 passed with clean Ruff and byte compilation.
+  Identifiability receipt SHA-256 is
+  `4e48a77c7f3ea9995a36094467585fd99ff2164abc4c89fa0761c3950eb5d8af`;
+  file SHA-256 is
+  `a58f64bec1f61eb8e9e611e45e525feac54a95b93b211dbb2c1d437800e30292`.
+
+- **2026-07-25 22:00 EDT** -- **Hostile audit rejects the episodic-generator
+  result as architecture-native Shohin reasoning.** The 11/11 score is real
+  for the complete neuro-symbolic system, but the runner never loads Shohin.
+  The stored model contains 24 tensors and 232,065 parameters, all belonging
+  to the record-direction reader. Exact regex code extracts semantic fields;
+  fixed code selects supports, enumerates 127 words, seals target tables, and
+  executes queries in Python. The report's zero-search field therefore does
+  not describe the end-to-end path.
+
+  The updated board audit also proves the frozen abstract target-program
+  holdout failed: all four length-two words occur in training and 14/22
+  development target-word instances overlap. Source deletion is only
+  serialization-level, the claimed intersection is a temperature-softmax
+  approximation, and several controls are weaker than preregistered.
+
+  Decision:
+  `reject_architecture_native_shohin_reasoning_retain_neurosymbolic_solver`.
+  Keep the mechanics and exact scores, but remove every Shohin/native-
+  reasoning attribution. Updated seed-20260726 board audit SHA-256 is
+  `b29101d13632f1406d51088909607e5a3aa0af043103e51fa8df62c3dd9a0e6d`.
+  The only admissible successor is a raw-token, actual-Shohin, four-process,
+  cross-ontology gate with no semantic host parser/search/executor.
+
+- **2026-07-25 22:15 EDT** -- **The cross-ontology successor contract and
+  domain-blind transaction substrate are frozen.** ETTR requires one actual-
+  Shohin raw-token compiler and one generic reactor across Horn closure, typed
+  term rewriting, and guarded resource processes under three leave-one-
+  ontology-out folds and four-process custody. The primary board contains
+  2,688 executions and distinguishes singleton, ambiguous, contradictory, and
+  coherent-alternate version spaces. Full preregistration:
+  `R12_ENDOGENOUS_TYPED_THEORY_REACTOR_PREREG.md`.
+
+  `pipeline/cross_ontology_schema.py` now implements only immutable typed
+  objects, relation schemas, edges, serialization, and the generic
+  transactions `ALLOC`, `WRITE`, `CLEAR`, `LINK`, `UNLINK`, `SET_ROOT`,
+  `COMMIT`, and `HALT`. It contains no family labels, semantic rules, host
+  scheduler, search, repair, or answer logic. Nine focused tests pass with
+  clean Ruff and byte compilation. This is G0 mechanics only, not a reasoning
+  result.
+
+- **2026-07-25 22:45--23:10 EDT** -- **The trainable ETTR architecture and
+  first exact ontology falsifier are complete.** The new architecture wraps
+  the protected Shohin trunk without modifying it. A residual compiler writes
+  anonymous object slots, latent types, relations, activity, root, commit, and
+  halt state. A six-layer shared reactor emits only the eight structural
+  transactions and updates that graph recurrently. A separate query reader
+  consumes only source-deleted state. The discrete path is bit-exact in its
+  forward pass while retaining straight-through gradients.
+
+  Default additions are 17,120,265 compiler, 21,369,880 reactor, and
+  7,947,329 query-reader parameters, totaling 46,437,474. Together with the
+  125,081,664-parameter base, the architecture contains 171,519,138 parameters
+  and leaves 28,480,862 under 200M. The protected checkpoint hash remains
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`;
+  step 300,000 loads strictly with zero missing or unexpected keys. Five
+  architecture tests pass end-to-end gradients, state allowlisting, exact
+  hard transactions, parameter accounting, and base freezing.
+
+  The Horn falsifier contains 20 behaviorally distinct theories, 27 atoms,
+  and 378 initial states. Independent closure engines agree on all 7,560
+  pairs. It generates all four exact identifiability dispositions for all 20
+  targets and four renderer variants. Nine board/schema tests pass.
+
+  Current conclusion: the requested novel, trainable architecture now exists
+  and is checkpoint-compatible under the parameter ceiling. It has not been
+  pretrained or post-trained and therefore makes no intelligence claim.
+  The subsequent entry completes the two remaining boards and custody. Do not
+  start pretraining until the user explicitly lifts the hold.
+
+- **2026-07-25 23:10--23:55 EDT** -- **All three ETTR ontology mechanics and
+  serial process custody are implemented.** Typed rewriting contributes 15
+  distinct theories over 64 typed terms. Eight exact rule combinations are
+  held out while all six primitive rules remain in the fitting split. Two
+  normal-form engines agree on all 960 cases, including repeated-variable
+  equality, ordered child roles, and ten nonconfluent cases.
+
+  Guarded resources contributes 60 distinct operator assignments, 81 typed
+  markings, and 36 unseen length-two/three command programs. Independent
+  executors agree on all 174,960 cases: 13,362 halt normally and 161,598
+  deadlock. Together with Horn, the three boards provide 183,480 exact oracle
+  comparisons and 352 exact identifiability episodes.
+
+  Architecture audit found and fixed a missing post-seal command channel. The
+  reactor now cross-attends command residuals independently of world source
+  and late query. This raises the architecture addition to 46,437,474 and the
+  complete system to 171,519,138 parameters.
+
+  ETTR state now uses an immutable allowlisted safetensors wire. Fresh compiler,
+  executor, query, and model-free assessor processes pass independently and as
+  one serial chain. Each prior stage directory is physically deleted before
+  the next starts; expected answers are created only after candidate exit.
+
+  Decision:
+  `trainable_cross_ontology_architecture_ready_capability_unproven`.
+  Remaining work is the seven-variant/split-disjoint qualification package,
+  synthetic supervision contract, and causal training evidence. Pretraining
+  remains held.
+
+- **2026-07-25 late EDT** -- **The architecture phase is clarified and ETTR
+  is hardened before any continuation pretraining.** The user explicitly
+  confirmed that the current objective is to build the novel architecture;
+  substantial pretraining and all post-training come later under separate
+  authorization. The step-300k checkpoint remains immutable and no training
+  job was started or prepared.
+
+  A hostile architecture audit found four material defects in the initial
+  ETTR artifact: unrestricted 24x512 continuous slot values could smuggle the
+  source; the query-side transformer was bidirectional; a zero reader gate
+  blocked first-batch gradients into compiler/reactor/reader; and type,
+  relation, root, commit, and halt fields were partly decorative. The runtime
+  now uses 64-way categorical value codes, at most 96 hard relation edges,
+  immutable v2 deployed packets that reject soft state, causal query
+  attention, a nonzero warm-start gate, learned consumption of every declared
+  state field, and commit-frozen structural writes. Prefix extension changes
+  no earlier query logits within `1e-6`; every architecture component receives
+  nonzero finite first-batch gradients.
+
+  The corrected parameter receipt is 17,153,097 compiler, 21,174,360 reactor,
+  and 7,994,433 query-reader parameters, totaling 46,321,890 added and
+  171,403,554 complete, with 28,596,446 remaining under 200M. The protected
+  checkpoint still hashes to
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`,
+  loads step 300,000 strictly, and has zero missing/unexpected tensors.
+
+  Genuine seven-variant generators now exist independently for Horn closure,
+  typed rewriting, and guarded resources. They implement alpha/reorder,
+  alias split, relation reification, type twins, execution-semantics twins,
+  and ambiguity deletion as actual transformations rather than renderer
+  labels. The joined 3-fold matrix has 24 held-out theory hashes, 168 source
+  worlds, 384 canonical challenges, and exactly 2,688 executions. It audits
+  1,472 invariant cases, 750 exact semantic/directive separations, 384
+  abstentions, zero candidate-visible family labels, and 2,688 unique row
+  hashes. Payload SHA-256 is
+  `d1904b54a0fab8e59cfcb0b0dd464f5c8778e5b828907028ec8614aeae76d5d5`.
+
+  Decision:
+  `architecture_mechanics_hardened_primary_matrix_frozen_pretraining_interface_pending_capability_unproven`.
+  Do not claim native reasoning or pretraining readiness. Next architecture
+  work is the causal episodic autoregressive interface, composite objectives,
+  ETTR-aware save/resume schema, hybrid compositions, and H100 throughput
+  profile. The pretraining hold remains absolute.
+
+- **2026-07-26 EDT** -- **Factorial causal supervision is nontrivial and
+  fail-closed.** The first pairwise implementation was rejected before commit:
+  free counterfactual labels were not input-bound. Its first factorial repair
+  also failed hostile audit because token-identical factors plus zero dropout
+  reduced every swap to a factual permutation. The retained commit `5771c64`
+  instead uses distinct raw renderings for equivalent semantic factors and
+  representation interchange across all four immutable factual corners.
+  Initial packet targets must agree within each WORLD factor and differ across
+  WORLD factors; all four row/column effects must change terminal state.
+  Intervention sources are different raw rows from their targets, while every
+  label is gathered from a factual corner.
+
+  The continuation validator now replays the complete generic target
+  transaction trajectory into terminal packet state, including values, types,
+  roots, relations, activity, commit, halt, edge capacity, and OPEN/ANSWER/
+  ABSTAIN/REJECT disposition. Padded rows must terminally commit or halt at
+  their last valid step. Training defaults to hard transactions, has zero
+  transformer dropout in the interchange path, preserves both intervention
+  traces, and reports separate WORLD/COMMAND losses and support counts.
+  `eval()` plus `hard=True` factual and intervention packets pass the deployed
+  discrete-state validator.
+
+  The profiler was upgraded from token-LM-only schema v2 to full-composite
+  schema v3. It profiles factual execution, both intervention arms, all nine
+  composite losses, backward, and one Muon/AdamW step from matched eager/
+  compiled initial parameter hashes. CPU eager/compile validation passes.
+  The complete ETTR/cross-ontology inventory is 174/174 with clean Ruff,
+  byte compilation, shell syntax, and diff checks. Two successive hostile
+  re-audits report no remaining P0/P1 in this change. The checkpoint hash,
+  architecture parameter count, and pretraining state are unchanged.
+
+  Decision:
+  `factorial_interchange_contract_hardened_exact_h100_profile_pending_pretraining_held_capability_unproven`.
+
+- **2026-07-26 03:53 EDT** -- **The architecture-only phase boundary is
+  reaffirmed and the exact-source full-composite H100 profile is queued.**
+  The user clarified that the present work is architecture construction and
+  qualification. Substantial pretraining will occur only after the
+  architecture works and only on later user authorization; post-training
+  follows that later pretraining. Current checkpoint intelligence is
+  therefore not an acceptance criterion for this phase. No continuation
+  pretraining was started, queued, resumed, prepared, or modified.
+
+  Stale profile `705192` completed on `evc29` in 6m50s, but it predates the
+  factorial objective and remains non-qualifying. Newton independently
+  reverified the protected physical checkpoint at step 300,000 as SHA-256
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
+  Commit `4ca7366eb5102b1f51e16c2166717ec5e02448cb` was fetched into detached,
+  clean worktree
+  `/lustre/fs1/home/sa305415/shohin_ettr_profile_4ca7366_wt`. Slurm
+  `--test-only` admitted the job on an eligible H100 configuration. Exactly
+  one replacement, job `705213`, was submitted with a fresh isolated output
+  directory and the established bad-node exclusions. It is pending resources.
+  The wrapper unsets and forbids `SHARDS`, reads the checkpoint only, writes
+  no model state, and runs only synthetic schema-v3 factual/intervention
+  forward, backward, and optimizer resource profiling.
+
+  Decision remains:
+  `factorial_interchange_contract_hardened_exact_h100_profile_pending_pretraining_held_capability_unproven`.
+
+- **2026-07-26 04:09 EDT** -- **Exact-source schema-v3 H100 execution
+  completes, but the update receipt fails closed.** Job `705213` completed on
+  `evc25` in 10m54s from clean source
+  `4ca7366eb5102b1f51e16c2166717ec5e02448cb`. Report SHA-256 is
+  `374edd8e41d143274fab645ec15923ec9a078ddef301442b982b37f7ac9dd408`.
+  Both eager and Inductor-compiled arms strictly loaded step 300,000, matched
+  synthetic batch and initial-parameter hashes, exercised BF16 factual plus
+  WORLD/COMMAND intervention forward, all composite losses, backward, and
+  Muon/AdamW updates. The protected checkpoint hash was identical before and
+  after; no shards were read and no model or optimizer state was written.
+
+  Resource geometry is healthy: 192,779,435 complete parameters, 67,697,771
+  trainable architecture parameters, and 7,220,565 parameters of cap
+  headroom. Eager peak allocation was 3,206,544,384 bytes at 3,916.16 encoded
+  tok/s; compiled peak was 2,762,646,016 bytes at 6,629.96 encoded tok/s.
+  Compilation therefore measured 1.693x eager throughput with 0.862x peak
+  allocation. All losses were finite. Compiler, reactor, and query reader had
+  finite nonzero gradients in both arms; the base remained frozen.
+
+  The profile is not a pass. `gradient_receipt_pass` is false because the
+  query reader reported zero sampled parameter delta despite 7,944,317 eager
+  and 7,944,910 compiled nonzero gradient elements. Static inspection found
+  that `_sample_parameters` exhausts its 4,096-value budget on the first
+  trainable tensor, so its delta is not representative of the component.
+  This is an instrumentation defect, not authorization to infer that the
+  query reader updated. The gate remains closed until deterministic
+  cross-tensor sampling is implemented and reprofiled. In parallel, hostile
+  review found that current interventions stop at terminal state: a matched
+  late-query causal binding loss is also required before final architecture
+  qualification.
+
+  Decision:
+  `h100_resource_geometry_pass_update_receipt_and_query_binding_pending_pretraining_held_capability_unproven`.
+
+- **2026-07-26 04:30 EDT** -- **Matched-prefix causal query consumption is
+  implemented and the false update probe is repaired.** Commits `f263616` and
+  `19b74f2` extend each immutable WORLD x COMMAND rectangle with one
+  candidate-visible `query_read_index`, not an answer field. All four factual
+  corners must have the same valid read position and identical query tokens
+  and masks through that position. Every WORLD and COMMAND edge must have a
+  different factual next-token target at the read position.
+
+  Each intervention terminal state is now passed through the actual
+  source-deleted query reader using the target corner's query row. The runner
+  receives only row indices and never receives answer labels. Its gathered
+  read-position logits are paired with immutable factual targets inside the
+  data contract. The foil is the factual state with the intervened factor
+  unchanged under the exact same query prefix. Separate WORLD and COMMAND
+  losses combine correct/foil cross-entropy with a directional
+  difference-in-differences margin. Identical query-only logits cannot satisfy
+  the margin. Separate support and margin receipts are device-resident.
+
+  The current result proves only one-token categorical source-to-query causal
+  binding mechanics. It does not prove autonomous multi-token generation,
+  learned capability, or general reasoning. A later qualification matrix must
+  include query-only, zero-reader, shuffled/wrong-state, wrong-query,
+  target-deranged, and query-twin controls.
+
+  The H100 update sampler now assigns deterministic coordinates across every
+  trainable tensor instead of exhausting all 4,096 coordinates on the first
+  tensor. A regression proves that an unchanged first tensor cannot hide an
+  update in a later tensor. The complete ETTR/cross-ontology inventory is now
+  **193/193** passing in 160.33s; Ruff, byte compilation, shell syntax, and
+  diff checks are clean. Parameters and protected checkpoint bytes are
+  unchanged. A fresh exact-source schema-v3 H100 profile must include both new
+  query-binding losses and the corrected update receipt.
+
+  Decision:
+  `matched_query_binding_implemented_exact_h100_reprofile_pending_controls_unfrozen_pretraining_held_capability_unproven`.

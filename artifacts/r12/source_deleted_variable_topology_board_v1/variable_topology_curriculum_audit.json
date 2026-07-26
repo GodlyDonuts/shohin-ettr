@@ -1,0 +1,208 @@
+{
+  "board_manifests": {
+    "20260725": "b0d45354ee2f4bc12ec138adf53b6dbbfad70c4129cbbe9876b0e81b4085ed7c",
+    "20260726": "0612d4a1efabcca01a5845f80a1bc3c95396e79d754d2e74e219c00609c27c65",
+    "20260727": "85f8b8f8d7d549c265c467a7c37d09cfa3a7ab8e64b910e336423cc3cc0f9fa4",
+    "20260728": "27b18efc901d8210a19f65c667a2bbd22f2a54f6d649898f7ca67ee2bc046b08",
+    "20260729": "ddbb7a05dd1dfb5a666cdac28012398bb53409cfdeb7d664babfc349d2fa1e75"
+  },
+  "candidate_time_oracle_calls": 0,
+  "candidate_time_search_calls": 0,
+  "candidate_time_verifier_calls": 0,
+  "decision": "global_semantic_partition_passes_variable_topology_gate",
+  "manifest": [
+    {
+      "family": "affine_modular",
+      "file": "semantic_type_holdout_affine_modular_seed20260725.json",
+      "seed": 20260725,
+      "sha256": "afe4045769a9940f4f27d8e09225e9508bd02f1f6b60ac6df4ff4f57c6bdcf10"
+    },
+    {
+      "family": "bitwise_rotate_xor",
+      "file": "semantic_type_holdout_bitwise_rotate_xor_seed20260725.json",
+      "seed": 20260725,
+      "sha256": "bd583cd24426d6139c6a3f419229e5cd02a8550db5b054dbcdac21cff2b2c036"
+    },
+    {
+      "family": "permutation",
+      "file": "semantic_type_holdout_permutation_seed20260725.json",
+      "seed": 20260725,
+      "sha256": "21256d382da3e2c3ff97ef2d743cb9559768032e149bbfaafbc2abbb752809cc"
+    },
+    {
+      "family": "affine_modular",
+      "file": "semantic_type_holdout_affine_modular_seed20260726.json",
+      "seed": 20260726,
+      "sha256": "6bb2eab3ec0fd9050f6769949010cd6a3d4a11fa2302114e9d20e06594fd13ac"
+    },
+    {
+      "family": "bitwise_rotate_xor",
+      "file": "semantic_type_holdout_bitwise_rotate_xor_seed20260726.json",
+      "seed": 20260726,
+      "sha256": "a725112d00d38c6d4ab965abcaedaf89329dc4a557e7bc0f705d07a2a572ad64"
+    },
+    {
+      "family": "permutation",
+      "file": "semantic_type_holdout_permutation_seed20260726.json",
+      "seed": 20260726,
+      "sha256": "e3089e902e5a28e69d78a436a40f0b701c2feeb0d35e9e7d8c87ce8c5e319c22"
+    },
+    {
+      "family": "affine_modular",
+      "file": "semantic_type_holdout_affine_modular_seed20260727.json",
+      "seed": 20260727,
+      "sha256": "2ffb4c3fa252c55ed0ccb29995b6ea5ea5c6ab3db9455b5488e04239fcacf79c"
+    },
+    {
+      "family": "bitwise_rotate_xor",
+      "file": "semantic_type_holdout_bitwise_rotate_xor_seed20260727.json",
+      "seed": 20260727,
+      "sha256": "adb2b48279a0b13dad54b011cbdf992883917a0500b00e696a8a73438325f950"
+    },
+    {
+      "family": "permutation",
+      "file": "semantic_type_holdout_permutation_seed20260727.json",
+      "seed": 20260727,
+      "sha256": "da3070c81313870d503a326c82107ca66fe11823d07d57f7341685fc477dffd8"
+    },
+    {
+      "family": "affine_modular",
+      "file": "semantic_type_holdout_affine_modular_seed20260728.json",
+      "seed": 20260728,
+      "sha256": "31afd4419572c7f366838f8e86e3f9ad424992373a788f9782a499986ad9c7e4"
+    },
+    {
+      "family": "bitwise_rotate_xor",
+      "file": "semantic_type_holdout_bitwise_rotate_xor_seed20260728.json",
+      "seed": 20260728,
+      "sha256": "3a92f864ab5a0fe5d8b2e798de69c66736ca10a5582fa3bf3b953e3a1db2f0bc"
+    },
+    {
+      "family": "permutation",
+      "file": "semantic_type_holdout_permutation_seed20260728.json",
+      "seed": 20260728,
+      "sha256": "3cb4e3447ed0fe9544c29e64fe9af42660eb1bee76dcf9aad5e94021fe127c41"
+    },
+    {
+      "family": "affine_modular",
+      "file": "semantic_type_holdout_affine_modular_seed20260729.json",
+      "seed": 20260729,
+      "sha256": "7289cf253996f9a3623416f4d697a9c1d58d7023fad4841b6625c675b5df9b32"
+    },
+    {
+      "family": "bitwise_rotate_xor",
+      "file": "semantic_type_holdout_bitwise_rotate_xor_seed20260729.json",
+      "seed": 20260729,
+      "sha256": "9803bcb0f3a98bfa206a3e638f568b121d4b9f555f7776a69b46060874303d2f"
+    },
+    {
+      "family": "permutation",
+      "file": "semantic_type_holdout_permutation_seed20260729.json",
+      "seed": 20260729,
+      "sha256": "c2e85b6b6c294e8d68e4896adb2945337b9dbdceb59ffd368c4344cddb4482a9"
+    }
+  ],
+  "margins_over_control": {
+    "same_weights_direction_swapped": 0.5777777777777777,
+    "same_weights_key_scores_negated": 1.0,
+    "same_weights_query_roles_swapped": 1.0
+  },
+  "parameter_receipt": {
+    "complete_system": 125142277,
+    "learned_compiler": 60613
+  },
+  "per_family": {
+    "affine_modular": {
+      "same_weights_direction_swapped": {
+        "correct": 70,
+        "total": 120
+      },
+      "same_weights_key_scores_negated": {
+        "correct": 0,
+        "total": 120
+      },
+      "same_weights_query_roles_swapped": {
+        "correct": 0,
+        "total": 120
+      },
+      "treatment": {
+        "correct": 120,
+        "total": 120
+      }
+    },
+    "bitwise_rotate_xor": {
+      "same_weights_direction_swapped": {
+        "correct": 43,
+        "total": 120
+      },
+      "same_weights_key_scores_negated": {
+        "correct": 0,
+        "total": 120
+      },
+      "same_weights_query_roles_swapped": {
+        "correct": 0,
+        "total": 120
+      },
+      "treatment": {
+        "correct": 120,
+        "total": 120
+      }
+    },
+    "permutation": {
+      "same_weights_direction_swapped": {
+        "correct": 39,
+        "total": 120
+      },
+      "same_weights_key_scores_negated": {
+        "correct": 0,
+        "total": 120
+      },
+      "same_weights_query_roles_swapped": {
+        "correct": 0,
+        "total": 120
+      },
+      "treatment": {
+        "correct": 120,
+        "total": 120
+      }
+    }
+  },
+  "positive_seed_fold_directions": {
+    "same_weights_direction_swapped": {
+      "correct": 15,
+      "total": 15
+    },
+    "same_weights_key_scores_negated": {
+      "correct": 15,
+      "total": 15
+    },
+    "same_weights_query_roles_swapped": {
+      "correct": 15,
+      "total": 15
+    }
+  },
+  "preparation_exact_parser_calls": 600,
+  "scope_boundary": "systematic complete-table finite-machine compilation across variable topology; not incomplete-law induction, open-ended planning, or unrestricted natural-language reasoning",
+  "totals": {
+    "same_weights_direction_swapped": {
+      "correct": 152,
+      "invalid": 0,
+      "total": 360
+    },
+    "same_weights_key_scores_negated": {
+      "correct": 0,
+      "invalid": 360,
+      "total": 360
+    },
+    "same_weights_query_roles_swapped": {
+      "correct": 0,
+      "invalid": 360,
+      "total": 360
+    },
+    "treatment": {
+      "correct": 360,
+      "invalid": 0,
+      "total": 360
+    }
+  }
+}

@@ -133,6 +133,8 @@ def _evaluate(
     device: torch.device,
     source_external: torch.Tensor | None = None,
     query_external: torch.Tensor | None = None,
+    structural_key_classes: bool = False,
+    structural_key_shuffle: bool = False,
 ) -> dict[str, object]:
     source, query, source_labels, query_labels = _collate(rows, device=device)
     source_output = model.compile_source(
@@ -166,6 +168,8 @@ def _evaluate(
                     source_role_logits=source_output.source_role_logits
                 ),
                 row=index,
+                structural_key_classes=structural_key_classes,
+                structural_key_shuffle=structural_key_shuffle,
             )
             answer = execute_query(
                 machine,
@@ -174,6 +178,7 @@ def _evaluate(
                     query_role_logits=query_output.query_role_logits
                 ),
                 row=index,
+                structural_key_classes=structural_key_classes,
             ).decode("ascii")
         except ValueError:
             invalid += 1

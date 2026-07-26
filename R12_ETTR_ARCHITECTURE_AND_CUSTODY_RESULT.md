@@ -1,0 +1,257 @@
+# R12 ETTR Architecture and Custody Result
+
+## Decision
+
+`architecture_continuation_contract_complete_h100_profile_pending_pretraining_held_capability_unproven`
+
+Shohin now has a concrete architecture core, a complete falsification matrix,
+and an exact causal continuation/training contract for later pretraining and
+post-training. It does not yet have demonstrated general reasoning. The user
+has explicitly held continuation pretraining until the architecture is
+qualified.
+
+## Architecture
+
+The Endogenous Typed Theory Reactor has four causal stages:
+
+1. **World compiler:** actual Shohin residuals from raw world tokens
+   cross-attend anonymous object slots and produce categorical value codes,
+   latent types, a capped sparse relation ledger, activity, root, commit, and
+   halt state.
+2. **Command-conditioned reactor:** after world sealing, a separate raw-token
+   command stream enters a shared recurrent controller. The controller emits
+   only `ALLOC`, `WRITE`, `CLEAR`, `LINK`, `UNLINK`, `SET_ROOT`, `COMMIT`, and
+   `HALT`, plus a distinct terminal `REJECT`.
+3. **Typed graph update:** an edge-aware typed message bus preserves the
+   identities and directions of relation endpoints before each transaction;
+   each transaction changes only generic state. No
+   family opcode, arithmetic routine, rewrite matcher, resource scheduler,
+   search, repair, or answer callback exists in the runtime.
+4. **Late-query reader:** after execution, a causally masked reader receives
+   every declared terminal-state field and late-query residuals.
+
+Hard transactions are bit-exact in the forward pass, while their
+pre-discretization probabilities remain available for corrective gradients.
+The two persistent status bits encode four always-visible dispositions:
+`OPEN`, `ANSWER`, `ABSTAIN`, and `REJECT`. Deployed state rejects continuous
+value channels, non-one-hot codes/types, non-binary control state, and
+relation ledgers above 256 edges. Any terminal disposition freezes subsequent
+structural writes. The production packet has 64 slots, 16 typed relation
+roles, and 256 categorical symbols. It represents ordered hyperedges and
+multi-byte values by reifying their role/value nodes rather than collapsing
+them into one scalar label.
+
+## Parameter Receipt
+
+| Component | Parameters |
+|---|---:|
+| World compiler | 21,466,377 |
+| Command-conditioned reactor | 29,757,217 |
+| Late-query reader | 16,474,177 |
+| Added architecture | **67,697,771** |
+| Protected Shohin | 125,081,664 |
+| Complete system | **192,779,435** |
+| Remaining below 200M | **7,220,565** |
+
+The protected step-300k checkpoint hash matches
+`211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`
+and strictly loads with zero missing or unexpected tensors.
+
+## Exact Offline Ontology Mechanics
+
+| Ontology | Theories | Held-out structure | Independent comparisons |
+|---|---:|---|---:|
+| Typed Horn closure | 20 | entire ontology in leave-one-out fold | 7,560 |
+| Typed term rewriting | 15 | 8 unseen rule combinations | 960 |
+| Guarded resource process | 60 | 36 unseen length-2/3 programs | 174,960 |
+| **Total** | **95** | rules, compositions, roles, halt/deadlock | **183,480** |
+
+All independent oracle comparisons agree. The boards contain four opaque
+renderers and 352 exact singleton, ambiguous, contradictory, or coherent-
+alternate evidence episodes. These are assessor mechanics, never candidate
+runtime imports.
+
+## Four-Process Custody
+
+State crosses processes only through an immutable safetensors file with seven
+allowlisted tensors and three metadata fields. It contains no source text,
+token offsets, source hash, residual cache, KV cache, parser state, executable
+callback, or assessor product.
+
+The serial test executes:
+
+```text
+compiler -> physical compiler-directory deletion
+executor -> physical executor-directory deletion
+late query -> physical query-directory deletion
+independent assessor
+```
+
+World/compiler artifacts are absent before execution. Query inputs do not
+exist during execution. Expected answers do not exist until candidate exit.
+Every output is write-once and read-only.
+
+## Frozen Seven-Variant Matrix
+
+The three boards now materialize real alpha/reorder, alias-split, relation-
+reification, type-twin, execution-semantics-twin, and ambiguity-deletion
+transformations rather than relabeling renderer variants. The joined matrix
+contains 3 folds, 24 held-out theories, 168 source worlds, 384 canonical
+challenges, and 2,688 primary executions. It audits 1,472 invariant cases,
+750 separating outcomes/directives, 384 abstentions, zero family-label leaks,
+24 disjoint theory hashes, and 2,688 unique row hashes. Payload SHA-256 is
+`d1904b54a0fab8e59cfcb0b0dd464f5c8778e5b828907028ec8614aeae76d5d5`.
+
+## Causal Continuation Contract
+
+The frozen architecture source adds:
+
+1. `CausalETTREpisodeRunner`, with independent batch rows and explicit
+   `WORLD`, `COMMAND`, and `QUERY` reset boundaries;
+2. reset-safe token targets plus initial-packet, free-running terminal-packet,
+   transaction, initial/terminal equivariance, commit/halt, sparsity, and
+   anti-bypass losses;
+3. a canonical continuation batch and immutable manifest that reject live
+   writers, family labels, malformed geometry, and snapshot drift;
+4. disjoint protected-base and architecture optimizer groups, with base
+   freezing and an embedded WSD update cursor;
+5. atomic no-replace checkpoints covering exact model/optimizer/schedule/RNG/
+   data state and protected-checkpoint provenance, admitted only at a complete
+   optimizer and between-episode boundary; and
+6. a bounded accumulation/update component that has no filesystem, shard,
+   launcher, or network access.
+
+The complete ETTR/cross-ontology architecture and custody inventory passes
+**174/174**.
+Reset-boundary tests include interior segment starts, exact native
+Muon/AdamW resume, and next-update equivalence after restore. A
+degree-preserving edge-swap falsifier holds every per-slot in/out relation
+count fixed while changing endpoints; both the reactor and query reader change
+their outputs. The previous degree-summary architecture was invariant to this
+necessary distinction and is superseded.
+
+The training boundary additionally proves exact optimizer/model parameter
+identity, rejects mutable or forged causal targets, binds batches to immutable
+manifest and dataset hashes, prevents scheduler steps past the frozen horizon,
+and uses pre-discretization policy probabilities for hard-forward
+supervision. Redundant per-segment LM losses are disabled in the composite
+train step. Commit `8cac6ce5a97597ab8a6cd47eda0aa4924590a762` additionally
+binds `output.terminal_state` to offline terminal packet targets and proves
+that this loss backpropagates through the recurrent reactor into the compiler.
+The packet loss normalizes jointly over initial and terminal support, so the
+existing family weight does not silently double. This closes the prior
+independent-initial-packet/transaction supervision gap.
+
+Commit `5771c64` closes the paired packet/command anti-bypass gate with
+nontrivial factorial interchange. Each immutable 2x2 rectangle contains two
+semantic WORLD factors and two semantic COMMAND factors, but every equivalent
+factor is rendered through different raw token bytes. WORLD-equivalent rows
+must have identical complete initial packet targets, WORLD factors must differ
+in initial packet state, and all four row/column contrasts must change the
+terminal target. A WORLD intervention takes a packet compiled from a different
+rendering of the counterfactual WORLD factor while holding the COMMAND
+semantics fixed; the COMMAND arm performs the orthogonal operation. Every
+source row differs from its target row, and every terminal/transaction label
+is gathered from an immutable factual corner. The rejected token-identical
+version is not retained because deterministic zero-dropout execution reduced
+it to a factual permutation.
+
+The data boundary now replays every labeled generic transaction from the
+initial target packet and requires exact agreement with the terminal target,
+including value/type codes, relations, activity, root, edge capacity,
+commit/halt status, and terminal disposition. Initial status is bound to the
+compiler's open reset. Right-padded trajectories are legal only when their
+last valid step commits or halts, ensuring later fixed-width runtime steps are
+frozen. Factual and both intervention terminal states pass the deployed
+discrete-state validator under `eval()` and `hard=True`. WORLD and COMMAND
+losses, support receipts, and isolated gradient paths are separate.
+
+## Cross-Ontology Hybrid Receipt
+
+The frozen hybrid board contains exactly three couplings:
+
+- arithmetic result selects a rewrite location;
+- Horn relation selects a guarded resource operator; and
+- resource state selects a Horn query.
+
+Each coupling has 16 factual/counterfactual cases. Independent executors agree
+on **96/96** executions, and interventions change both the coupling signal and
+final output on **48/48** cases. Candidate payloads expose no ontology label.
+Payload SHA-256:
+`d155f868494f9379b214028c8d7475cc2cde08192c9b3a5bbdea5a73b29f98e2`.
+
+## Remaining Architecture Gate
+
+- Immutable architecture commit:
+  `29d294f53085a254e1bf056abd7c388a5fe7ca95`.
+- Job `705188` failed closed on `evc33` before checkpoint/model execution
+  because CUDA was unavailable despite allocation. The node is excluded.
+- Job `705192` predates the factorial objective and cannot qualify current
+  source. It completed cleanly on `evc29` in 6m50s and is retained only as a
+  stale systems receipt.
+- Exact documentation descendant
+  `4ca7366eb5102b1f51e16c2166717ec5e02448cb` is checked out in a detached,
+  clean Newton worktree. Exactly one fresh isolated BF16 H100
+  eager-versus-compiled memory/throughput profile, job `705213`, completed on
+  `evc25` in 10m54s. Report SHA-256 is
+  `374edd8e41d143274fab645ec15923ec9a078ddef301442b982b37f7ac9dd408`.
+- The schema-v3 profiler must execute factual episodes, both intervention
+  arms, the complete composite objective, backward, and Muon/AdamW update
+  from matched eager/compiled initial parameter hashes.
+- Record strict checkpoint load, nonzero architecture gradients, peak memory,
+  measured throughput, compiled-arm status, and unchanged checkpoint hash.
+- If profiling finds an OOM or systems defect, revise only the architecture
+  implementation and repeat the same synthetic gate.
+
+The resource geometry passed: eager peak allocation was 3.207 GB at 3,916.16
+encoded tok/s and compiled peak allocation was 2.763 GB at 6,629.96 encoded
+tok/s, a 1.693x throughput ratio. Both arms had finite losses, finite nonzero
+architecture gradients, frozen-base zero gradients, matched batches,
+matched initial parameters, and an unchanged checkpoint hash. The overall
+gate remains closed because the query reader's sampled parameter delta was
+zero despite more than 7.94M nonzero gradient elements. The 4,096-value probe
+currently exhausts its budget on the first component tensor and must be
+replaced by deterministic cross-tensor sampling before reprofile.
+
+Hostile review also identified the remaining causal gap: WORLD/COMMAND
+intervention terminal states are supervised but are not yet required to
+produce the corresponding late-query answer. Final architecture qualification
+therefore requires a matched-prefix, factual-corner query-binding objective
+and negative controls in addition to the corrected update receipt. Only after
+those gates can the architecture be called technically ready for the user's
+later pretraining decision. Capability still requires future pretraining,
+matched causal controls, unseen-ontology qualification, and post-training.
+Only the user may lift the continuation-pretraining hold.
+
+## Matched-Prefix Causal Query Binding
+
+Commits `f263616` and `19b74f2` close the missing consumer-side path without
+adding parameters. Each factual row declares one query read position, but no
+answer label field. Within every immutable 2x2 rectangle:
+
+- the read position is identical across all four corners;
+- query tokens and masks are exactly identical through that position;
+- each WORLD edge changes the factual next-token target; and
+- each COMMAND edge changes the factual next-token target.
+
+The intervention runner receives only target row indices. It reads each
+intervention terminal state with the target corner's query sequence and
+returns logits gathered at the pre-answer read position. Labels are gathered
+later, inside the data contract, from immutable factual shifted-token targets.
+The foil is the corresponding factual row with the intervened factor
+unchanged. Because correct and foil predictions receive the exact same prefix
+but require different factual labels, the frozen query-only LM path cannot
+satisfy the objective.
+
+WORLD and COMMAND query-binding losses are separate. Each combines
+correct/foil classification with a directional difference-in-differences
+margin, with explicit pair support and margin-satisfied receipts. The runner
+signature contains no target or answer tensor. This proves a categorical
+consumer-side causal mechanism only; multi-token autonomous reasoning remains
+unproven.
+
+The parameter update probe is also corrected. It now samples deterministic
+coordinates across every trainable tensor rather than spending the entire
+budget on the first tensor. The integrated ETTR/cross-ontology inventory is
+**193/193** passing. A fresh exact-source H100 profile and the frozen
+qualification/control matrix remain required.

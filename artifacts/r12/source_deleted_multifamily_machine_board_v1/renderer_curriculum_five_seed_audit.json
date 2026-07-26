@@ -1,0 +1,136 @@
+{
+  "candidate_time_oracle_calls": 0,
+  "candidate_time_search_calls": 0,
+  "candidate_time_verifier_calls": 0,
+  "control": {
+    "correct": 65,
+    "rate": 0.5416666666666666,
+    "total": 120
+  },
+  "decision": "renderer_curriculum_passes_five_seed_three_family_holdout_smoke",
+  "manifest": [
+    {
+      "family": "affine_modular",
+      "file": "renderer_curriculum_holdout_affine_modular_seed20260725.json",
+      "seed": 20260725,
+      "sha256": "0581c3f25191f73aeafb58061dcb0ce40c6801def04efb5cfc1b939db8f6ef52"
+    },
+    {
+      "family": "bitwise_rotate_xor",
+      "file": "renderer_curriculum_holdout_bitwise_rotate_xor_seed20260725.json",
+      "seed": 20260725,
+      "sha256": "6df42ca9da6aea26ee53887f733fe99b8d0cdeccedb1ef9408bbe98ce6bad672"
+    },
+    {
+      "family": "permutation",
+      "file": "renderer_curriculum_holdout_permutation_seed20260725.json",
+      "seed": 20260725,
+      "sha256": "d66924b351f1cca9dd91a34f93df784b72c48499d1e01b15d32713cd07fe73d7"
+    },
+    {
+      "family": "affine_modular",
+      "file": "renderer_curriculum_holdout_affine_modular_seed20260726.json",
+      "seed": 20260726,
+      "sha256": "208482f0c14892ffe9a43c5a4e28b28140a6f39e09e79df2a931b14c1a785ea8"
+    },
+    {
+      "family": "bitwise_rotate_xor",
+      "file": "renderer_curriculum_holdout_bitwise_rotate_xor_seed20260726.json",
+      "seed": 20260726,
+      "sha256": "bf3a3afabe1b656b3943cc66b94b5742b243f3b1902e5a0d1fb9d81488527862"
+    },
+    {
+      "family": "permutation",
+      "file": "renderer_curriculum_holdout_permutation_seed20260726.json",
+      "seed": 20260726,
+      "sha256": "912d6d2cd0c1c8329aa8df52203329f77646f18eddfd2b5200b6f089b47ad8bf"
+    },
+    {
+      "family": "affine_modular",
+      "file": "renderer_curriculum_holdout_affine_modular_seed20260727.json",
+      "seed": 20260727,
+      "sha256": "3f7a3b8ed09b85877ab212d8184ef6304040227ed9f4072a06089cac20e3f712"
+    },
+    {
+      "family": "bitwise_rotate_xor",
+      "file": "renderer_curriculum_holdout_bitwise_rotate_xor_seed20260727.json",
+      "seed": 20260727,
+      "sha256": "2085ac350bede185ee325df2b329bedec7307bbd948f95ce3464ddcb8daa987e"
+    },
+    {
+      "family": "permutation",
+      "file": "renderer_curriculum_holdout_permutation_seed20260727.json",
+      "seed": 20260727,
+      "sha256": "76b04c9c3de3849599f3996ea36162a2f84638e6605cb9cb088524830c8e9b25"
+    },
+    {
+      "family": "affine_modular",
+      "file": "renderer_curriculum_holdout_affine_modular_seed20260728.json",
+      "seed": 20260728,
+      "sha256": "872d81ddbde6ddcaa2e60fa951b1ae08c37f41b7b519e0d1870f50e83b791094"
+    },
+    {
+      "family": "bitwise_rotate_xor",
+      "file": "renderer_curriculum_holdout_bitwise_rotate_xor_seed20260728.json",
+      "seed": 20260728,
+      "sha256": "1ebc2e0d02cf8afda196ba38224a074f42c78359afcf663edef81d0837eb52b0"
+    },
+    {
+      "family": "permutation",
+      "file": "renderer_curriculum_holdout_permutation_seed20260728.json",
+      "seed": 20260728,
+      "sha256": "a1fde5dbcf0859b68b5099dd54b4fec6f5bb7596f29db089cb00110729b3f47f"
+    },
+    {
+      "family": "affine_modular",
+      "file": "renderer_curriculum_holdout_affine_modular_seed20260729.json",
+      "seed": 20260729,
+      "sha256": "040ec589937cab051e90b66abc7c19c557556b80b2dac78392998a4718ecb401"
+    },
+    {
+      "family": "bitwise_rotate_xor",
+      "file": "renderer_curriculum_holdout_bitwise_rotate_xor_seed20260729.json",
+      "seed": 20260729,
+      "sha256": "00023ceeaf1d9f988ec2755cc3887485cca01e8f2faddccf33a0fdfcebfc7553"
+    },
+    {
+      "family": "permutation",
+      "file": "renderer_curriculum_holdout_permutation_seed20260729.json",
+      "seed": 20260729,
+      "sha256": "976c6e0ab4c2e7e6984466929b9fdf2c0efc0de1ab666f536a63331a9e56728d"
+    }
+  ],
+  "parameter_receipt": {
+    "complete_system": 125234597,
+    "learned_compiler": 152933
+  },
+  "per_family": {
+    "affine_modular": {
+      "control_correct": 25,
+      "total": 40,
+      "treatment_correct": 40
+    },
+    "bitwise_rotate_xor": {
+      "control_correct": 20,
+      "total": 40,
+      "treatment_correct": 40
+    },
+    "permutation": {
+      "control_correct": 20,
+      "total": 40,
+      "treatment_correct": 40
+    }
+  },
+  "positive_seed_fold_directions": {
+    "correct": 15,
+    "total": 15
+  },
+  "preparation_exact_parser_calls": 360,
+  "scope_boundary": "bounded anonymous finite-machine compilation; target-first direction was covered under different symbols; not unrestricted natural-language or general reasoning",
+  "treatment": {
+    "correct": 120,
+    "margin_over_control": 0.45833333333333337,
+    "rate": 1.0,
+    "total": 120
+  }
+}

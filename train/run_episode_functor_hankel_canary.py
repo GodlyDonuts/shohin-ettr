@@ -330,6 +330,8 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         objective=objective,
     )
     if arm.receipt_sha256 != args.expected_arm_receipt_sha256:
+        print(f"[hsc-canary] Observed arm.receipt_sha256: {arm.receipt_sha256}")
+        print(f"[hsc-canary] Expected arm.receipt_sha256: {args.expected_arm_receipt_sha256}")
         raise HankelCanaryError("HSC arm receipt differs")
     initialization = create_hankel_initialization_receipt(
         compiler,
@@ -341,6 +343,8 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         initialization.receipt_sha256
         != args.expected_initialization_receipt_sha256
     ):
+        print(f"[hsc-canary] Observed initialization.receipt_sha256: {initialization.receipt_sha256}")
+        print(f"[hsc-canary] Expected initialization.receipt_sha256: {args.expected_initialization_receipt_sha256}")
         raise HankelCanaryError("HSC initialization receipt differs")
     experiment = create_hankel_experiment_receipt(
         phase="measurement-canary",
@@ -358,6 +362,8 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         ),
     )
     if experiment.receipt_sha256 != args.expected_canary_receipt_sha256:
+        print(f"[hsc-canary] Observed canary experiment.receipt_sha256: {experiment.receipt_sha256}")
+        print(f"[hsc-canary] Expected canary experiment.receipt_sha256: {args.expected_canary_receipt_sha256}")
         raise HankelCanaryError("HSC canary authorization differs")
 
     system = LearnedEFCSystem(

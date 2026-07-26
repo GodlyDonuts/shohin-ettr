@@ -1,0 +1,483 @@
+{
+  "candidate_time_oracle_calls": 0,
+  "candidate_time_search_calls": 0,
+  "candidate_time_verifier_calls": 0,
+  "closure_receipt": {
+    "generators": 2,
+    "maximum_depth": 6,
+    "syntactic_programs": 127
+  },
+  "development": {
+    "direction_negated": {
+      "cell_exact": {
+        "composition": {
+          "correct": 1,
+          "total": 3
+        },
+        "joint": {
+          "correct": 0,
+          "total": 1
+        },
+        "law": {
+          "correct": 0,
+          "total": 1
+        },
+        "renderer": {
+          "correct": 1,
+          "total": 3
+        },
+        "topology": {
+          "correct": 0,
+          "total": 3
+        }
+      },
+      "control": "direction_negated",
+      "direction_accuracy": 0.0,
+      "exact": 2,
+      "family_exact": {
+        "bitwise": {
+          "correct": 0,
+          "total": 3
+        },
+        "cyclic": {
+          "correct": 0,
+          "total": 3
+        },
+        "dihedral": {
+          "correct": 2,
+          "total": 3
+        },
+        "random_permutation": {
+          "correct": 0,
+          "total": 2
+        }
+      },
+      "invalid": 0,
+      "source_deletion_passes": 11,
+      "state_accuracy": 0.33541666666666664,
+      "support_deletion_passes": 11,
+      "target_map_exact": 2,
+      "total": 11
+    },
+    "observations_shifted": {
+      "cell_exact": {
+        "composition": {
+          "correct": 1,
+          "total": 3
+        },
+        "joint": {
+          "correct": 0,
+          "total": 1
+        },
+        "law": {
+          "correct": 0,
+          "total": 1
+        },
+        "renderer": {
+          "correct": 0,
+          "total": 3
+        },
+        "topology": {
+          "correct": 0,
+          "total": 3
+        }
+      },
+      "control": "observations_shifted",
+      "direction_accuracy": 1.0,
+      "exact": 1,
+      "family_exact": {
+        "bitwise": {
+          "correct": 0,
+          "total": 3
+        },
+        "cyclic": {
+          "correct": 0,
+          "total": 3
+        },
+        "dihedral": {
+          "correct": 1,
+          "total": 3
+        },
+        "random_permutation": {
+          "correct": 0,
+          "total": 2
+        }
+      },
+      "invalid": 0,
+      "source_deletion_passes": 11,
+      "state_accuracy": 0.10416666666666667,
+      "support_deletion_passes": 11,
+      "target_map_exact": 0,
+      "total": 11
+    },
+    "observations_zeroed": {
+      "cell_exact": {
+        "composition": {
+          "correct": 0,
+          "total": 3
+        },
+        "joint": {
+          "correct": 0,
+          "total": 1
+        },
+        "law": {
+          "correct": 0,
+          "total": 1
+        },
+        "renderer": {
+          "correct": 0,
+          "total": 3
+        },
+        "topology": {
+          "correct": 0,
+          "total": 3
+        }
+      },
+      "control": "observations_zeroed",
+      "direction_accuracy": 1.0,
+      "exact": 0,
+      "family_exact": {
+        "bitwise": {
+          "correct": 0,
+          "total": 3
+        },
+        "cyclic": {
+          "correct": 0,
+          "total": 3
+        },
+        "dihedral": {
+          "correct": 0,
+          "total": 3
+        },
+        "random_permutation": {
+          "correct": 0,
+          "total": 2
+        }
+      },
+      "invalid": 0,
+      "source_deletion_passes": 11,
+      "state_accuracy": 0.05625,
+      "support_deletion_passes": 11,
+      "target_map_exact": 0,
+      "total": 11
+    },
+    "record_order_reversed": {
+      "cell_exact": {
+        "composition": {
+          "correct": 3,
+          "total": 3
+        },
+        "joint": {
+          "correct": 1,
+          "total": 1
+        },
+        "law": {
+          "correct": 1,
+          "total": 1
+        },
+        "renderer": {
+          "correct": 3,
+          "total": 3
+        },
+        "topology": {
+          "correct": 3,
+          "total": 3
+        }
+      },
+      "control": "record_order_reversed",
+      "direction_accuracy": 0.5734767025089605,
+      "exact": 11,
+      "family_exact": {
+        "bitwise": {
+          "correct": 3,
+          "total": 3
+        },
+        "cyclic": {
+          "correct": 3,
+          "total": 3
+        },
+        "dihedral": {
+          "correct": 3,
+          "total": 3
+        },
+        "random_permutation": {
+          "correct": 2,
+          "total": 2
+        }
+      },
+      "invalid": 0,
+      "source_deletion_passes": 11,
+      "state_accuracy": 1.0,
+      "support_deletion_passes": 11,
+      "target_map_exact": 11,
+      "total": 11
+    },
+    "support_order_reversed": {
+      "cell_exact": {
+        "composition": {
+          "correct": 3,
+          "total": 3
+        },
+        "joint": {
+          "correct": 1,
+          "total": 1
+        },
+        "law": {
+          "correct": 1,
+          "total": 1
+        },
+        "renderer": {
+          "correct": 3,
+          "total": 3
+        },
+        "topology": {
+          "correct": 3,
+          "total": 3
+        }
+      },
+      "control": "support_order_reversed",
+      "direction_accuracy": 1.0,
+      "exact": 11,
+      "family_exact": {
+        "bitwise": {
+          "correct": 3,
+          "total": 3
+        },
+        "cyclic": {
+          "correct": 3,
+          "total": 3
+        },
+        "dihedral": {
+          "correct": 3,
+          "total": 3
+        },
+        "random_permutation": {
+          "correct": 2,
+          "total": 2
+        }
+      },
+      "invalid": 0,
+      "source_deletion_passes": 11,
+      "state_accuracy": 1.0,
+      "support_deletion_passes": 11,
+      "target_map_exact": 11,
+      "total": 11
+    },
+    "support_semantics_deranged": {
+      "cell_exact": {
+        "composition": {
+          "correct": 0,
+          "total": 3
+        },
+        "joint": {
+          "correct": 0,
+          "total": 1
+        },
+        "law": {
+          "correct": 0,
+          "total": 1
+        },
+        "renderer": {
+          "correct": 1,
+          "total": 3
+        },
+        "topology": {
+          "correct": 0,
+          "total": 3
+        }
+      },
+      "control": "support_semantics_deranged",
+      "direction_accuracy": 1.0,
+      "exact": 1,
+      "family_exact": {
+        "bitwise": {
+          "correct": 0,
+          "total": 3
+        },
+        "cyclic": {
+          "correct": 0,
+          "total": 3
+        },
+        "dihedral": {
+          "correct": 1,
+          "total": 3
+        },
+        "random_permutation": {
+          "correct": 0,
+          "total": 2
+        }
+      },
+      "invalid": 7,
+      "source_deletion_passes": 4,
+      "state_accuracy": 0.85625,
+      "support_deletion_passes": 4,
+      "target_map_exact": 0,
+      "total": 11
+    },
+    "target_witness_deleted": {
+      "cell_exact": {
+        "composition": {
+          "correct": 1,
+          "total": 3
+        },
+        "joint": {
+          "correct": 0,
+          "total": 1
+        },
+        "law": {
+          "correct": 0,
+          "total": 1
+        },
+        "renderer": {
+          "correct": 2,
+          "total": 3
+        },
+        "topology": {
+          "correct": 1,
+          "total": 3
+        }
+      },
+      "control": "target_witness_deleted",
+      "direction_accuracy": 1.0,
+      "exact": 4,
+      "family_exact": {
+        "bitwise": {
+          "correct": 3,
+          "total": 3
+        },
+        "cyclic": {
+          "correct": 0,
+          "total": 3
+        },
+        "dihedral": {
+          "correct": 1,
+          "total": 3
+        },
+        "random_permutation": {
+          "correct": 0,
+          "total": 2
+        }
+      },
+      "invalid": 7,
+      "source_deletion_passes": 4,
+      "state_accuracy": 0.7416666666666667,
+      "support_deletion_passes": 4,
+      "target_map_exact": 4,
+      "total": 11
+    },
+    "treatment": {
+      "cell_exact": {
+        "composition": {
+          "correct": 3,
+          "total": 3
+        },
+        "joint": {
+          "correct": 1,
+          "total": 1
+        },
+        "law": {
+          "correct": 1,
+          "total": 1
+        },
+        "renderer": {
+          "correct": 3,
+          "total": 3
+        },
+        "topology": {
+          "correct": 3,
+          "total": 3
+        }
+      },
+      "control": "treatment",
+      "direction_accuracy": 1.0,
+      "exact": 11,
+      "family_exact": {
+        "bitwise": {
+          "correct": 3,
+          "total": 3
+        },
+        "cyclic": {
+          "correct": 3,
+          "total": 3
+        },
+        "dihedral": {
+          "correct": 3,
+          "total": 3
+        },
+        "random_permutation": {
+          "correct": 2,
+          "total": 2
+        }
+      },
+      "invalid": 0,
+      "source_deletion_passes": 11,
+      "state_accuracy": 1.0,
+      "support_deletion_passes": 11,
+      "target_map_exact": 11,
+      "total": 11
+    }
+  },
+  "device": "cuda",
+  "equal_budget": {
+    "control_additional_updates": 0,
+    "models_trained": 1,
+    "optimizer_updates": 1000,
+    "same_weights_controls": true
+  },
+  "model_receipt": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/r12/episodic_generator_constraint/seed20260725.pt",
+    "sha256": "9cc9dc8db91905b7e682b5235c4f0928228bf752edf2dd3066a4cfcfeb4bf620"
+  },
+  "parameter_receipt": {
+    "complete_system": 125313729,
+    "global_limit": 200000000,
+    "headroom": 74686271,
+    "learned_compiler": 232065,
+    "protected_shohin": 125081664
+  },
+  "preparation_exact_parser_calls": 386,
+  "seed": 20260725,
+  "status": "episodic_generator_constraint",
+  "target_law_overlap": 0,
+  "train": {
+    "cell_exact": {
+      "fit": {
+        "correct": 375,
+        "total": 375
+      }
+    },
+    "control": "treatment",
+    "direction_accuracy": 1.0,
+    "exact": 375,
+    "family_exact": {
+      "bitwise": {
+        "correct": 125,
+        "total": 125
+      },
+      "cyclic": {
+        "correct": 125,
+        "total": 125
+      },
+      "dihedral": {
+        "correct": 125,
+        "total": 125
+      }
+    },
+    "invalid": 0,
+    "source_deletion_passes": 375,
+    "state_accuracy": 1.0,
+    "support_deletion_passes": 375,
+    "target_map_exact": 375,
+    "total": 375
+  },
+  "training_loss": {
+    "final": 1.8318100103442703e-07,
+    "initial": 11.327371597290039
+  },
+  "training_rows": {
+    "auxiliary": 300,
+    "counterfactual": 60,
+    "frozen": 15,
+    "total": 375
+  }
+}
