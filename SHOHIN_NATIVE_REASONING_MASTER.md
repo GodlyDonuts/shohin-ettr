@@ -52637,6 +52637,10 @@ Bubblewrap mounts and namespaces, measures the host loader/CUDA driver and
 devices, emits launch receipts, and binds those receipts plus an independently
 owned root/preregistration record into final admission. Those are deployment
 TCB controls; they add no trainable parameters and do not reopen ETTR design.
+Exact-source CPU packaging job `705416` is pending Newton priority from commit
+`fb012c244ba9006c561a823ad71169dbd4b08612`; it has no checkpoint, shard, or
+optimizer access. Its output must be hash-verified before the pinned confined
+H100 smoke.
 
 Current decision:
 `ettr_architecture_complete_stage_specific_runtime_pass_external_supervisor_and_learning_pending`.

@@ -156,6 +156,12 @@
 > admission, and confined H100 validation of the host loader/CUDA-driver
 > closure. Those external controls add no neural parameters. No pretraining
 > was started, queued, resumed, prepared, or modified.
+> Exact-source CPU packaging job `705416` is pending Newton priority from
+> commit `fb012c244ba9006c561a823ad71169dbd4b08612`. It builds only the
+> content-addressed runtime archive and three stage receipts; it cannot read
+> checkpoints, shards, or optimizer state. On completion, verify every
+> sidecar hash and submit the pinned in-Bubblewrap H100 smoke. Do not represent
+> either packaging or smoke as learned reasoning.
 >
 > **ETTR CONTINUATION CONTRACT FROZEN — 2026-07-26 EDT:** Commit
 > `ae2cf85480bedfaa96f3cf7ddfbaf64e5d067203` completes the missing
