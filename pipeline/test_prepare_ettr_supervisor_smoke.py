@@ -23,6 +23,7 @@ from prepare_ettr_supervisor_smoke import (
     PLAN_SCHEMA,
     STAGES,
     SmokeRuntimeBindings,
+    _sha256_file,
     _sealed_memfd,
     prepare_fixture,
     supervisor_command,
@@ -280,6 +281,23 @@ def test_launch_key_memfd_is_fully_sealed() -> None:
         assert fcntl.fcntl(descriptor, fcntl.F_GET_SEALS) & required == required
     finally:
         os.close(descriptor)
+
+
+def test_root_owned_system_executable_can_be_pinned() -> None:
+    executable = Path("/usr/bin/env")
+    metadata = executable.stat()
+    if (
+        metadata.st_uid != 0
+        or metadata.st_nlink != 1
+        or metadata.st_mode & 0o022
+    ):
+        pytest.skip("root-owned system executable is unavailable")
+    digest, size = _sha256_file(
+        executable,
+        root_owned_executable=True,
+    )
+    assert _SHA256.fullmatch(digest)
+    assert size == metadata.st_size
 
 
 def test_job_is_one_gpu_bounded_and_runs_all_three_phases() -> None:

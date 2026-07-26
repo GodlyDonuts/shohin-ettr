@@ -245,7 +245,11 @@ def _copy_once(source: Path, destination: Path) -> str:
     return _write_once(destination, _read_immutable(source))
 
 
-def _sha256_file(path: Path) -> tuple[str, int]:
+def _sha256_file(
+    path: Path,
+    *,
+    root_owned_executable: bool = False,
+) -> tuple[str, int]:
     flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0)
     if hasattr(os, "O_NOFOLLOW"):
         flags |= os.O_NOFOLLOW
@@ -257,10 +261,17 @@ def _sha256_file(path: Path) -> tuple[str, int]:
         ) from exc
     try:
         before = os.fstat(descriptor)
+        ordinary_immutable = not (before.st_mode & 0o222)
+        trusted_system_executable = (
+            root_owned_executable
+            and before.st_uid == 0
+            and not (before.st_mode & 0o022)
+            and bool(before.st_mode & 0o111)
+        )
         if (
             not stat.S_ISREG(before.st_mode)
             or before.st_nlink != 1
-            or before.st_mode & 0o222
+            or not (ordinary_immutable or trusted_system_executable)
         ):
             raise ETTRSupervisorSmokeError(
                 f"hashed input is not immutable single-link: {path}"
@@ -416,7 +427,10 @@ def load_runtime_bindings(
         ) from exc
     verification_receipt.validate()
     archive_sha256, archive_size = _sha256_file(runtime_archive_path)
-    bwrap_sha256, _ = _sha256_file(bwrap_path)
+    bwrap_sha256, _ = _sha256_file(
+        bwrap_path,
+        root_owned_executable=True,
+    )
     if (
         archive_sha256 != expected_archive_sha256
         or archive_size != verification_receipt.archive_size
