@@ -14830,3 +14830,45 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `ettr_architecture_mechanics_complete_public_admission_pass_learning_v1_rejected_v2_protocol_in_progress`.
+
+- **2026-07-26 16:47 EDT** -- **The isolated-learnability v2 design is
+  machine-integrated and its paired training scheduler is executable; fitting
+  remains unauthorized pending generator/materializer/custody
+  implementation.** No continuation pretraining was started, prepared,
+  queued, resumed, or modified. The protected step-300k checkpoint and its
+  lineage remain untouched. There are zero active Newton jobs.
+
+  `R12_ETTR_ISOLATED_LEARNABILITY_PREREG_V2.md` is the integration authority
+  over four strict component specifications: semantic generation, ETTR tensor
+  materialization, matched arms/statistics, and custody/leakage. Hostile
+  integration rejected and repaired three material contradictions before any
+  data existed: causal- versus semantic-rectangle scheduling, eight semantic
+  operations versus the 64-position generic transaction horizon, and a
+  removed ambiguity presentation retained in the custody tuple. Mandatory
+  equivariance then exposed a fourth defect: three training views per core
+  cannot partition into two-rectangle microbatches. V2 now emits four views
+  per training core as two explicit invariant pairs.
+
+  The frozen per-fold geometry is 576 semantic cores, 1,152 invariant pairs,
+  2,304 semantic rectangles, 9,216 four-row causal rectangles, and 36,864
+  query rows. One microbatch is one invariant pair; one update is four pairs.
+  The exact 6,000-update stream has 24,000 pair exposures and 48,000 semantic
+  rectangle exposures. Statistical resampling uses semantic cores, not
+  presentation rows, removing pseudoreplication.
+
+  `pipeline/audit_ettr_il_v2_specs.py` recomputes literal split/fold
+  preimages, fold commitments, semantic/custody candidate-schema identity,
+  paired scheduling, 64-step transaction geometry, source-deletion claim
+  boundaries, and population arithmetic. All 11 integration checks pass.
+  Receipt
+  `artifacts/r12/ettr_il_v2_spec_integration_audit.json` has SHA-256
+  `1e5be2f25d891d4136b3d800ad13f1c55b2dc1b5eee655584ad929dadbaf3930`.
+
+  `pipeline/ettr_il_v2_schedule.py` is the first implementation component. It
+  validates exact ontology/depth/core/pair geometry and emits the sole
+  admitted pair stream for each frozen seed/fold. Eight focused
+  integration/schedule tests pass. No dataset, model, optimizer, checkpoint,
+  scored split, confirmation secret, or accelerator was opened.
+
+  Decision:
+  `r12_ettr_il_v2_design_integrated_scheduler_implemented_semantic_materialization_custody_implementation_in_progress`.
