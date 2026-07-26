@@ -25,6 +25,7 @@ from prepare_ettr_supervisor_smoke import (
     SmokeRuntimeBindings,
     _sha256_file,
     _sealed_memfd,
+    _validate_root_owned_python,
     prepare_fixture,
     supervisor_command,
     validate_plan,
@@ -298,6 +299,10 @@ def test_root_owned_system_executable_can_be_pinned() -> None:
     )
     assert _SHA256.fullmatch(digest)
     assert size == metadata.st_size
+    _validate_root_owned_python(
+        executable,
+        expected_sha256=digest,
+    )
 
 
 def test_job_is_one_gpu_bounded_and_runs_all_three_phases() -> None:

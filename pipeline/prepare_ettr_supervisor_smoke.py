@@ -1092,7 +1092,10 @@ def _validate_root_owned_python(
     expected_sha256: str,
 ) -> None:
     metadata = path.lstat()
-    digest, _ = _sha256_file(path)
+    digest, _ = _sha256_file(
+        path,
+        root_owned_executable=True,
+    )
     if (
         metadata.st_uid != 0
         or not stat.S_ISREG(metadata.st_mode)
