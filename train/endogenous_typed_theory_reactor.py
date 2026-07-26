@@ -34,6 +34,8 @@ class TheoryReactorConfig:
     num_slots: int = 24
     num_types: int = 8
     num_relations: int = 8
+    num_value_codes: int = 64
+    max_edges: int = 96
     num_heads: int = 8
     compiler_layers: int = 3
     reactor_layers: int = 6
@@ -50,6 +52,8 @@ class TheoryReactorConfig:
             self.num_slots,
             self.num_types,
             self.num_relations,
+            self.num_value_codes,
+            self.max_edges,
             self.num_heads,
             self.compiler_layers,
             self.reactor_layers,
@@ -64,6 +68,12 @@ class TheoryReactorConfig:
         if self.state_width % self.num_heads:
             raise TheoryReactorError(
                 "state width must divide evenly across heads"
+            )
+        if self.max_edges > (
+            self.num_relations * self.num_slots * self.num_slots
+        ):
+            raise TheoryReactorError(
+                "max_edges exceeds the relation ledger"
             )
         if not 0 <= self.stage_after_block:
             raise TheoryReactorError(
@@ -86,7 +96,7 @@ class TheoryReactorConfig:
 class TypedTheoryState:
     """Exclusive state allowed across the source-deletion boundary."""
 
-    values: torch.Tensor
+    value_probabilities: torch.Tensor
     type_probabilities: torch.Tensor
     relations: torch.Tensor
     active: torch.Tensor
@@ -102,7 +112,7 @@ class TypedTheoryState:
                 if isinstance(value, torch.Tensor)
                 else value
                 for value in (
-                    self.values,
+                    self.value_probabilities,
                     self.type_probabilities,
                     self.relations,
                     self.active,
@@ -122,7 +132,7 @@ class TransactionPolicy:
     target: torch.Tensor
     relation: torch.Tensor
     type_index: torch.Tensor
-    payload: torch.Tensor
+    value_code: torch.Tensor
 
 
 @dataclass(frozen=True, slots=True)
@@ -152,6 +162,13 @@ def _hard_one_hot(probabilities: torch.Tensor) -> torch.Tensor:
 
 def _hard_binary(probabilities: torch.Tensor) -> torch.Tensor:
     return _ExactBinary.apply(probabilities)
+
+
+def _hard_capped_binary(
+    probabilities: torch.Tensor,
+    maximum: int,
+) -> torch.Tensor:
+    return _ExactCappedBinary.apply(probabilities, maximum)
 
 
 class _ExactOneHot(torch.autograd.Function):
@@ -191,6 +208,39 @@ class _ExactBinary(torch.autograd.Function):
     ) -> tuple[torch.Tensor]:
         del ctx
         return (gradient,)
+
+
+class _ExactCappedBinary(torch.autograd.Function):
+    @staticmethod
+    def forward(
+        ctx: object,
+        probabilities: torch.Tensor,
+        maximum: int,
+    ) -> torch.Tensor:
+        del ctx
+        flat = probabilities.flatten(1)
+        binary = flat.ge(0.5)
+        indices = flat.topk(
+            min(maximum, flat.shape[1]),
+            dim=-1,
+        ).indices
+        capped = torch.zeros_like(flat)
+        capped.scatter_(1, indices, 1.0)
+        over_capacity = binary.sum(-1, keepdim=True).gt(maximum)
+        hard = torch.where(
+            over_capacity,
+            capped,
+            binary.to(flat.dtype),
+        )
+        return hard.view_as(probabilities)
+
+    @staticmethod
+    def backward(
+        ctx: object,
+        gradient: torch.Tensor,
+    ) -> tuple[torch.Tensor, None]:
+        del ctx
+        return gradient, None
 
 
 class _CompilerLayer(nn.Module):
@@ -260,6 +310,10 @@ class EndogenousTheoryCompiler(nn.Module):
             for _ in range(config.compiler_layers)
         )
         self.value_norm = nn.LayerNorm(width)
+        self.value_head = nn.Linear(
+            width,
+            config.num_value_codes,
+        )
         self.type_head = nn.Linear(width, config.num_types)
         self.active_head = nn.Linear(width, 1)
         self.root_query = nn.Parameter(torch.empty(width))
@@ -308,16 +362,17 @@ class EndogenousTheoryCompiler(nn.Module):
         slots = slots.unsqueeze(0).expand(batch, -1, -1)
         for layer in self.layers:
             slots = layer(slots, projected, padding_mask)
-        values = self.value_norm(slots)
-        type_probabilities = self.type_head(values).float().softmax(-1)
-        active = self.active_head(values).float().sigmoid().squeeze(-1)
-        left = self.relation_left(values).view(
+        slots = self.value_norm(slots)
+        value_probabilities = self.value_head(slots).float().softmax(-1)
+        type_probabilities = self.type_head(slots).float().softmax(-1)
+        active = self.active_head(slots).float().sigmoid().squeeze(-1)
+        left = self.relation_left(slots).view(
             batch,
             self.config.num_slots,
             self.config.num_relations,
             self.config.state_width,
         )
-        right = self.relation_right(values).view_as(left)
+        right = self.relation_right(slots).view_as(left)
         relation_logits = torch.einsum(
             "bsrw,btrw->brst",
             left,
@@ -326,32 +381,50 @@ class EndogenousTheoryCompiler(nn.Module):
         relations = relation_logits.sigmoid()
         root_logits = torch.einsum(
             "bsw,w->bs",
-            values,
-            self.root_query.to(values.dtype),
+            slots,
+            self.root_query.to(slots.dtype),
         )
         root = root_logits.float().softmax(-1)
         if hard:
+            value_probabilities = _hard_one_hot(value_probabilities)
             type_probabilities = _hard_one_hot(type_probabilities)
             active = _hard_binary(active)
-            relations = _hard_binary(relations)
-            root = _hard_one_hot(root)
+            root = _hard_one_hot(
+                root_logits.float().masked_fill(
+                    active.eq(0),
+                    torch.finfo(torch.float32).min,
+                ).softmax(-1)
+            )
+        value_probabilities = (
+            value_probabilities * active.unsqueeze(-1)
+        )
+        type_probabilities = (
+            type_probabilities * active.unsqueeze(-1)
+        )
+        root = root * active
+        root = root / root.sum(-1, keepdim=True).clamp_min(1e-6)
         pair_active = active[:, None, :, None] * active[:, None, None, :]
         relations = relations * pair_active
+        if hard:
+            relations = _hard_capped_binary(
+                relations,
+                self.config.max_edges,
+            ) * pair_active
         state = TypedTheoryState(
-            values=values,
-            type_probabilities=type_probabilities.to(values.dtype),
-            relations=relations.to(values.dtype),
-            active=active.to(values.dtype),
-            root=root.to(values.dtype),
+            value_probabilities=value_probabilities.to(slots.dtype),
+            type_probabilities=type_probabilities.to(slots.dtype),
+            relations=relations.to(slots.dtype),
+            active=active.to(slots.dtype),
+            root=root.to(slots.dtype),
             committed=torch.zeros(
                 batch,
-                device=values.device,
-                dtype=values.dtype,
+                device=slots.device,
+                dtype=slots.dtype,
             ),
             halted=torch.zeros(
                 batch,
-                device=values.device,
-                dtype=values.dtype,
+                device=slots.device,
+                dtype=slots.dtype,
             ),
             step=0,
         )
@@ -372,7 +445,12 @@ class GenericTransactionReactor(nn.Module):
         self.type_embedding = nn.Parameter(
             torch.empty(config.num_types, width)
         )
+        self.value_embedding = nn.Parameter(
+            torch.empty(config.num_value_codes, width)
+        )
         self.active_projection = nn.Linear(1, width, bias=False)
+        self.root_projection = nn.Linear(1, width, bias=False)
+        self.status_projection = nn.Linear(2, width, bias=False)
         self.relation_projection = nn.Linear(
             2 * config.num_relations,
             width,
@@ -408,12 +486,13 @@ class GenericTransactionReactor(nn.Module):
         self.slot_key = nn.Linear(width, width, bias=False)
         self.relation_head = nn.Linear(width, config.num_relations)
         self.type_head = nn.Linear(width, config.num_types)
-        self.payload_head = nn.Linear(width, width)
+        self.value_head = nn.Linear(width, config.num_value_codes)
         self.reset_parameters()
 
     def reset_parameters(self) -> None:
         nn.init.normal_(self.control_seed, std=0.02)
         nn.init.normal_(self.type_embedding, std=0.02)
+        nn.init.normal_(self.value_embedding, std=0.02)
 
     def policy(
         self,
@@ -431,7 +510,8 @@ class GenericTransactionReactor(nn.Module):
         if command_hidden is not None:
             if (
                 command_hidden.ndim != 3
-                or command_hidden.shape[0] != state.values.shape[0]
+                or command_hidden.shape[0]
+                != state.value_probabilities.shape[0]
                 or command_hidden.shape[-1] != self.config.d_model
             ):
                 raise TheoryReactorError(
@@ -453,16 +533,22 @@ class GenericTransactionReactor(nn.Module):
             state.type_probabilities,
             self.type_embedding,
         )
+        value_context = torch.einsum(
+            "bsc,cw->bsw",
+            state.value_probabilities,
+            self.value_embedding,
+        )
         outgoing = state.relations.sum(-1).transpose(1, 2)
         incoming = state.relations.sum(-2).transpose(1, 2)
         relation_context = self.relation_projection(
             torch.cat((incoming, outgoing), dim=-1)
         )
         slots = (
-            state.values
+            value_context
             + type_context
             + relation_context
             + self.active_projection(state.active.unsqueeze(-1))
+            + self.root_projection(state.root.unsqueeze(-1))
         )
         pooled = (
             slots * state.active.unsqueeze(-1)
@@ -471,6 +557,12 @@ class GenericTransactionReactor(nn.Module):
             self.control_seed.to(slots.dtype).unsqueeze(0)
             + self.step_embedding.weight[state.step].to(slots.dtype)
             + pooled
+            + self.status_projection(
+                torch.stack(
+                    (state.committed, state.halted),
+                    dim=-1,
+                )
+            )
         )
         if command is not None:
             command_read, _ = self.command_attention(
@@ -498,27 +590,39 @@ class GenericTransactionReactor(nn.Module):
         opcode = self.opcode_head(control).float().softmax(-1)
         relation = self.relation_head(control).float().softmax(-1)
         type_index = self.type_head(control).float().softmax(-1)
+        value_code = self.value_head(control).float().softmax(-1)
         if hard:
             opcode = _hard_one_hot(opcode)
             source = _hard_one_hot(source)
             target = _hard_one_hot(target)
             relation = _hard_one_hot(relation)
             type_index = _hard_one_hot(type_index)
+            value_code = _hard_one_hot(value_code)
         return TransactionPolicy(
-            opcode=opcode.to(state.values.dtype),
-            source=source.to(state.values.dtype),
-            target=target.to(state.values.dtype),
-            relation=relation.to(state.values.dtype),
-            type_index=type_index.to(state.values.dtype),
-            payload=self.payload_head(control),
+            opcode=opcode.to(state.value_probabilities.dtype),
+            source=source.to(state.value_probabilities.dtype),
+            target=target.to(state.value_probabilities.dtype),
+            relation=relation.to(state.value_probabilities.dtype),
+            type_index=type_index.to(state.value_probabilities.dtype),
+            value_code=value_code.to(state.value_probabilities.dtype),
         )
 
     def apply(
         self,
         state: TypedTheoryState,
         policy: TransactionPolicy,
+        *,
+        hard: bool = False,
     ) -> TypedTheoryState:
         opcode = policy.opcode * (1.0 - state.halted[:, None])
+        structural_enabled = 1.0 - state.committed[:, None]
+        opcode = torch.cat(
+            (
+                opcode[:, :7] * structural_enabled,
+                opcode[:, 7:8],
+            ),
+            dim=-1,
+        )
         alloc = opcode[:, 0:1] * policy.source
         write = opcode[:, 1:2] * policy.source
         clear = opcode[:, 2:3] * policy.source
@@ -541,11 +645,13 @@ class GenericTransactionReactor(nn.Module):
         value_write = (
             (write * state.active) + allocated
         ).clamp(max=1.0).unsqueeze(-1)
-        values = (
-            state.values * (1.0 - value_write)
-            + policy.payload[:, None, :] * value_write
+        value_probabilities = (
+            state.value_probabilities * (1.0 - value_write)
+            + policy.value_code[:, None, :] * value_write
         )
-        values = values * (1.0 - cleared.unsqueeze(-1))
+        value_probabilities = value_probabilities * (
+            1.0 - cleared.unsqueeze(-1)
+        )
 
         pair = (
             policy.relation[:, :, None, None]
@@ -567,6 +673,14 @@ class GenericTransactionReactor(nn.Module):
         relations = relations * (
             active[:, None, :, None] * active[:, None, None, :]
         )
+        if hard:
+            relations = _hard_capped_binary(
+                relations,
+                self.config.max_edges,
+            ) * (
+                active[:, None, :, None]
+                * active[:, None, None, :]
+            )
 
         root = (
             state.root * (1.0 - set_root.sum(-1, keepdim=True))
@@ -579,7 +693,7 @@ class GenericTransactionReactor(nn.Module):
         ) * commit
         halted = state.halted + (1.0 - state.halted) * halt
         result = TypedTheoryState(
-            values=values,
+            value_probabilities=value_probabilities,
             type_probabilities=type_probabilities,
             relations=relations,
             active=active,
@@ -611,7 +725,7 @@ class GenericTransactionReactor(nn.Module):
                 command_hidden=command_hidden,
                 command_attention_mask=command_attention_mask,
             )
-            state = self.apply(state, policy)
+            state = self.apply(state, policy, hard=hard)
             policies.append(policy)
             states.append(state)
         return state, ReactorTrace(
@@ -641,6 +755,20 @@ class SourceDeletedQueryReader(nn.Module):
         config.validate()
         width = config.state_width
         self.query_projection = nn.Linear(config.d_model, width)
+        self.value_embedding = nn.Parameter(
+            torch.empty(config.num_value_codes, width)
+        )
+        self.type_embedding = nn.Parameter(
+            torch.empty(config.num_types, width)
+        )
+        self.active_projection = nn.Linear(1, width, bias=False)
+        self.root_projection = nn.Linear(1, width, bias=False)
+        self.relation_projection = nn.Linear(
+            2 * config.num_relations,
+            width,
+            bias=False,
+        )
+        self.status_projection = nn.Linear(2, width, bias=False)
         self.state_norm = nn.LayerNorm(width)
         self.cross_attention = nn.MultiheadAttention(
             width,
@@ -661,7 +789,9 @@ class SourceDeletedQueryReader(nn.Module):
             enable_nested_tensor=False,
         )
         self.output_projection = nn.Linear(width, config.d_model)
-        self.gate = nn.Parameter(torch.zeros(()))
+        self.gate = nn.Parameter(torch.tensor(0.1))
+        nn.init.normal_(self.value_embedding, std=0.02)
+        nn.init.normal_(self.type_embedding, std=0.02)
 
     def forward(
         self,
@@ -671,7 +801,7 @@ class SourceDeletedQueryReader(nn.Module):
         attention_mask: torch.Tensor | None = None,
     ) -> torch.Tensor:
         batch, tokens, _ = query_hidden.shape
-        _padding_mask(
+        query_padding = _padding_mask(
             attention_mask,
             batch,
             tokens,
@@ -683,14 +813,53 @@ class SourceDeletedQueryReader(nn.Module):
         if bool(empty.any()):
             state_padding = state_padding.clone()
             state_padding[empty, 0] = False
+        state_values = torch.einsum(
+            "bsc,cw->bsw",
+            state.value_probabilities,
+            self.value_embedding,
+        )
+        state_types = torch.einsum(
+            "bst,tw->bsw",
+            state.type_probabilities,
+            self.type_embedding,
+        )
+        outgoing = state.relations.sum(-1).transpose(1, 2)
+        incoming = state.relations.sum(-2).transpose(1, 2)
+        state_relations = self.relation_projection(
+            torch.cat((incoming, outgoing), dim=-1)
+        )
+        status = self.status_projection(
+            torch.stack(
+                (state.committed, state.halted),
+                dim=-1,
+            )
+        )[:, None, :]
+        state_values = (
+            state_values
+            + state_types
+            + state_relations
+            + self.active_projection(state.active.unsqueeze(-1))
+            + self.root_projection(state.root.unsqueeze(-1))
+            + status
+        ) * state.committed[:, None, None]
         read, _ = self.cross_attention(
             query,
-            self.state_norm(state.values),
-            self.state_norm(state.values),
+            self.state_norm(state_values),
+            self.state_norm(state_values),
             key_padding_mask=state_padding,
             need_weights=False,
         )
-        query = self.query_core(query + read)
+        causal_mask = torch.ones(
+            tokens,
+            tokens,
+            dtype=torch.bool,
+            device=query.device,
+        ).triu(diagonal=1)
+        query = self.query_core(
+            query + read,
+            mask=causal_mask,
+            src_key_padding_mask=query_padding,
+        )
         return torch.tanh(self.gate) * self.output_projection(query)
 
 
@@ -890,12 +1059,12 @@ def validate_state(
     config.validate()
     if not isinstance(state, TypedTheoryState):
         raise TheoryReactorError("typed theory state differs")
-    batch = state.values.shape[0]
+    batch = state.value_probabilities.shape[0]
     expected = {
-        "values": (
+        "value_probabilities": (
             batch,
             config.num_slots,
-            config.state_width,
+            config.num_value_codes,
         ),
         "type_probabilities": (
             batch,
@@ -933,6 +1102,75 @@ def validate_state(
     if len(devices) != 1:
         raise TheoryReactorError(
             "state tensors must share one device"
+        )
+
+
+def validate_deployed_state(
+    state: TypedTheoryState,
+    config: TheoryReactorConfig,
+) -> None:
+    """Require a bounded discrete packet at a process boundary."""
+
+    validate_state(state, config)
+
+    def require_binary(
+        name: str,
+        value: torch.Tensor,
+    ) -> None:
+        if not bool(((value == 0) | (value == 1)).all()):
+            raise TheoryReactorError(
+                f"deployed state {name} is not binary"
+            )
+
+    require_binary("active", state.active)
+    require_binary("committed", state.committed)
+    require_binary("halted", state.halted)
+    require_binary("relations", state.relations)
+    require_binary("root", state.root)
+    require_binary(
+        "type_probabilities",
+        state.type_probabilities,
+    )
+    require_binary(
+        "value_probabilities",
+        state.value_probabilities,
+    )
+    if not torch.equal(
+        state.value_probabilities.sum(-1),
+        state.active,
+    ):
+        raise TheoryReactorError(
+            "deployed value codes are not active-slot one-hot"
+        )
+    if not torch.equal(
+        state.type_probabilities.sum(-1),
+        state.active,
+    ):
+        raise TheoryReactorError(
+            "deployed types are not active-slot one-hot"
+        )
+    if (
+        bool((state.root.sum(-1) > 1).any())
+        or bool((state.root > state.active).any())
+    ):
+        raise TheoryReactorError(
+            "deployed root is not an active-slot pointer"
+        )
+    pair_active = (
+        state.active[:, None, :, None]
+        * state.active[:, None, None, :]
+    )
+    if (
+        bool((state.relations > pair_active).any())
+        or bool(
+            (
+                state.relations.sum(dim=(1, 2, 3))
+                > config.max_edges
+            ).any()
+        )
+    ):
+        raise TheoryReactorError(
+            "deployed relation ledger exceeds its sparse bounds"
         )
 
 
@@ -981,5 +1219,6 @@ __all__ = [
     "TheoryReactorError",
     "TransactionPolicy",
     "TypedTheoryState",
+    "validate_deployed_state",
     "validate_state",
 ]

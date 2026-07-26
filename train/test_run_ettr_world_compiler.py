@@ -143,7 +143,7 @@ def test_fresh_compiler_matches_direct_raw_token_compile(
     )
     state = read_state(output_path, model.config)
     for name in (
-        "values",
+        "value_probabilities",
         "type_probabilities",
         "relations",
         "active",

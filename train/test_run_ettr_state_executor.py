@@ -125,7 +125,7 @@ def test_fresh_executor_receives_only_deleted_state_and_reactor(
     )
     terminal = read_state(output_path, model.config)
     for name in (
-        "values",
+        "value_probabilities",
         "type_probabilities",
         "relations",
         "active",

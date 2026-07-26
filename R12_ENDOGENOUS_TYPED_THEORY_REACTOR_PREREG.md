@@ -3,8 +3,9 @@
 ## Status
 
 Frozen successor protocol. The trainable architecture, common transaction
-schema, and first exact Horn falsifier are implemented; no pretraining,
-post-training, or capability claim exists.
+schema, three exact ontology boards, seven genuine structural/semantic
+variants, and the complete 2,688-execution primary matrix are implemented.
+No continuation pretraining, post-training, or capability claim exists.
 
 The user pretraining hold remains active. This protocol may train only isolated
 reasoning components or adapters against the immutable step-300k checkpoint.
@@ -73,28 +74,35 @@ architecture intended for later continued pretraining:
 
 1. an endogenous compiler cross-attends anonymous object slots to raw-token
    Shohin residuals;
-2. the compiler emits only source-deleted slot values, type probabilities,
-   relation tensors, activity, root, commit, and halt state;
+2. the compiler emits only bounded categorical value codes, type
+   probabilities, a sparse relation ledger, activity, root, commit, and halt
+   state; deployed packets reject continuous values and relation counts above
+   the frozen cap;
 3. a shared recurrent reactor cross-attends a separate post-seal command
    stream, emits the eight structural transaction choices, and applies
    differentiable graph updates;
 4. an exact-forward straight-through path supports discrete transactions
    without removing training gradients; and
-5. a separate query reader consumes only the typed state and query residuals.
+5. a separate causally masked query reader consumes every declared typed-state
+   field and query residuals without seeing future query tokens.
 
-The default architecture adds 46,437,474 parameters: 17,120,265 in the
-compiler, 21,369,880 in the reactor, and 7,947,329 in the query reader. With
+The default architecture adds 46,321,890 parameters: 17,153,097 in the
+compiler, 21,174,360 in the reactor, and 7,994,433 in the query reader. With
 the immutable 125,081,664-parameter Shohin base, the complete system contains
-171,519,138 parameters and leaves 28,480,862 below the 200M ceiling.
+171,403,554 parameters and leaves 28,596,446 below the 200M ceiling.
 
 The actual protected checkpoint hash matches, step 300,000 loads strictly
 with zero missing or unexpected tensors, and the wrapper parameter receipt
-passes. Five focused architecture tests cover end-to-end gradients,
-allowlisted source-deleted state, exact discrete transaction choices,
-parameter accounting, and independent base freezing.
+passes. Focused tests require nonzero first-batch gradients, autoregressive
+prefix invariance, causal use of every state field, commit freezing,
+categorical deployed packets, exact sparse transactions, parameter
+accounting, and independent base freezing.
 
-This establishes architecture readiness, not reasoning capability. Continued
-pretraining remains under the explicit user hold.
+This establishes qualification-mechanics readiness, not continuation-
+pretraining readiness or reasoning capability. The causal pretraining
+interface, composite objectives, resumable ETTR checkpoint schema, and H100
+throughput profile remain mandatory architecture work. Continued pretraining
+remains under the explicit user hold.
 
 ## G0 Horn Mechanics
 
@@ -123,8 +131,29 @@ independent engines agree on all 174,960 held-out executions, including
 13,362 normal halts and 161,598 deadlocks.
 
 Across all three boards there are 183,480 exact independent-oracle
-comparisons and 352 exact identifiability episodes before the full seven-
-variant primary matrix is materialized.
+comparisons and 352 exact identifiability episodes.
+
+## Frozen Primary Matrix
+
+`pipeline/cross_ontology_qualification_matrix.py` materializes the exact
+preregistered geometry:
+
+- 3 leave-one-ontology-out folds;
+- 8 behaviorally distinct theories per fold;
+- 7 genuine variants per theory;
+- 16 aligned late challenges per variant;
+- 168 source worlds, 384 canonical late challenges, and 2,688 primary
+  executions;
+- 1,472 declared exact-invariance executions;
+- 750 exact outcome/directive separations from semantic or identifiability
+  twins;
+- 384 required abstentions;
+- zero candidate-visible family-label leaks; and
+- 2,688 unique row hashes and 24 disjoint theory hashes.
+
+Matrix payload SHA-256:
+`d1904b54a0fab8e59cfcb0b0dd464f5c8778e5b828907028ec8614aeae76d5d5`.
+Rules, alignments, expected outputs, and exact oracles remain assessor-side.
 
 ## Process Custody Implementation
 

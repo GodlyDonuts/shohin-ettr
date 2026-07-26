@@ -52163,3 +52163,52 @@ eight generic structural transactions. It owns only bounds, pointer/type
 validity, atomicity, serialization, and halt. It contains no task semantics.
 This is architecture mechanics, not a capability result. Full protocol:
 `R12_ENDOGENOUS_TYPED_THEORY_REACTOR_PREREG.md`.
+
+### Architecture-phase clarification and hardening
+
+The user has explicitly frozen the phase order:
+
+1. build and falsify the novel architecture;
+2. only after explicit authorization, continue large-scale pretraining; and
+3. perform post-training after the architecture has learned a stronger base.
+
+No continuation pretraining is currently authorized or expected to produce an
+immediately intelligent model.
+
+ETTR now wraps the immutable 125,081,664-parameter step-300k Shohin with
+46,321,890 trainable architecture parameters: 17,153,097 compiler,
+21,174,360 reactor, and 7,994,433 query reader. The complete system is
+171,403,554 parameters, leaving 28,596,446 below the 200M ceiling. The
+protected checkpoint SHA-256 remains
+`211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`
+and strict loading reports no missing or unexpected tensors.
+
+A hostile audit invalidated the initial claim that a large continuous slot
+tensor was meaningfully source-deleted: 24x512 free floats could encode the
+source and bypass typed transactions. The deployed ETTR state now permits only
+64-way categorical value codes, categorical types, active/root/commit/halt
+bits, and at most 96 hard relation edges. Immutable state-wire v2 rejects
+continuous packets. The query reader is causally masked, has nonzero
+first-batch gradient flow, consumes every declared state field, and preserves
+prefix logits under future-token extension. `COMMIT` freezes further
+structural writes.
+
+All seven preregistered variants are now actual transformations in all three
+ontologies, rather than names attached to renderers: alpha/reorder, alias
+split, relation reification, type twin, execution-semantics twin, and
+ambiguity deletion. The frozen joined matrix contains 3 folds, 24 held-out
+theories, 168 source worlds, 384 canonical late challenges, and 2,688 primary
+executions. Exact audit finds 1,472 invariant executions, 750 semantic or
+directive separations, 384 required abstentions, zero candidate-visible
+family labels, 24 disjoint theory hashes, and 2,688 unique row hashes. Matrix
+SHA-256 is
+`d1904b54a0fab8e59cfcb0b0dd464f5c8778e5b828907028ec8614aeae76d5d5`.
+
+Current decision:
+`architecture_mechanics_hardened_primary_matrix_frozen_pretraining_interface_pending_capability_unproven`.
+
+This is real architectural progress, not native reasoning evidence. Before
+the user can safely authorize continuation pretraining, ETTR still needs a
+causal autoregressive episode interface, frozen composite objectives,
+ETTR-aware save/resume state, hybrid-composition receipts, and an H100
+throughput/memory gate.

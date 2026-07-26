@@ -33,20 +33,23 @@
 > compiler and generic transaction reactor across Horn closure, typed term
 > rewriting, and guarded resource processes under four-process custody.
 >
-> **ETTR ARCHITECTURE READY — 2026-07-25 EDT:** The checkpoint-compatible
+> **ETTR ARCHITECTURE CORE + PRIMARY MATRIX READY — 2026-07-25 EDT:** The checkpoint-compatible
 > trainable architecture now exists in
 > `train/endogenous_typed_theory_reactor.py`. It adds an endogenous raw-token
-> compiler, source-deleted typed object/relation state, a shared recurrent
-> structural-transaction reactor, exact-forward straight-through discrete
-> choices, a separate post-seal command channel, and a state-only query
-> reader. The default addition is 46,437,474 parameters; complete system size
-> is 171,519,138 with 28,480,862
-> remaining under 200M. The protected step-300k checkpoint hash matches and
-> loads strictly with zero missing/unexpected tensors. Five architecture tests
-> pass with gradients through compiler/reactor/query reader; Ruff and byte
-> compilation pass. This is an architecture artifact for later continued
-> pretraining and post-training, not an immediate intelligence claim. The
-> user pretraining hold remains active.
+> compiler, bounded categorical typed state, a capped sparse relation ledger,
+> a shared recurrent structural-transaction reactor, exact-forward straight-
+> through choices, a separate post-seal command channel, and a causally masked
+> state-only query reader. The default addition is 46,321,890 parameters;
+> complete system size is 171,403,554 with 28,596,446 remaining under 200M.
+> The protected step-300k checkpoint hash matches and loads strictly with zero
+> missing/unexpected tensors. Deployed packets reject continuous hidden
+> payloads; first-batch architecture gradients are nonzero; query-prefix
+> invariance, all-state-field causality, and commit freezing are tested.
+> The seven-variant 3-fold matrix contains 2,688 executions with payload
+> SHA-256 `d1904b54a0fab8e59cfcb0b0dd464f5c8778e5b828907028ec8614aeae76d5d5`.
+> This is an architecture artifact, not an intelligence claim. A causal
+> continuation-pretraining interface, objectives, checkpoint schema, and H100
+> profile remain unfinished. The user pretraining hold remains active.
 >
 > **ETTR G0 HORN BOARD PASS — 2026-07-25 EDT:** Twenty typed Horn theories
 > occupy 20 distinct behavioral classes over 378 states. Independent closure
@@ -13848,3 +13851,47 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   Remaining work is the seven-variant/split-disjoint qualification package,
   synthetic supervision contract, and causal training evidence. Pretraining
   remains held.
+
+- **2026-07-25 late EDT** -- **The architecture phase is clarified and ETTR
+  is hardened before any continuation pretraining.** The user explicitly
+  confirmed that the current objective is to build the novel architecture;
+  substantial pretraining and all post-training come later under separate
+  authorization. The step-300k checkpoint remains immutable and no training
+  job was started or prepared.
+
+  A hostile architecture audit found four material defects in the initial
+  ETTR artifact: unrestricted 24x512 continuous slot values could smuggle the
+  source; the query-side transformer was bidirectional; a zero reader gate
+  blocked first-batch gradients into compiler/reactor/reader; and type,
+  relation, root, commit, and halt fields were partly decorative. The runtime
+  now uses 64-way categorical value codes, at most 96 hard relation edges,
+  immutable v2 deployed packets that reject soft state, causal query
+  attention, a nonzero warm-start gate, learned consumption of every declared
+  state field, and commit-frozen structural writes. Prefix extension changes
+  no earlier query logits within `1e-6`; every architecture component receives
+  nonzero finite first-batch gradients.
+
+  The corrected parameter receipt is 17,153,097 compiler, 21,174,360 reactor,
+  and 7,994,433 query-reader parameters, totaling 46,321,890 added and
+  171,403,554 complete, with 28,596,446 remaining under 200M. The protected
+  checkpoint still hashes to
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`,
+  loads step 300,000 strictly, and has zero missing/unexpected tensors.
+
+  Genuine seven-variant generators now exist independently for Horn closure,
+  typed rewriting, and guarded resources. They implement alpha/reorder,
+  alias split, relation reification, type twins, execution-semantics twins,
+  and ambiguity deletion as actual transformations rather than renderer
+  labels. The joined 3-fold matrix has 24 held-out theory hashes, 168 source
+  worlds, 384 canonical challenges, and exactly 2,688 executions. It audits
+  1,472 invariant cases, 750 exact semantic/directive separations, 384
+  abstentions, zero candidate-visible family labels, and 2,688 unique row
+  hashes. Payload SHA-256 is
+  `d1904b54a0fab8e59cfcb0b0dd464f5c8778e5b828907028ec8614aeae76d5d5`.
+
+  Decision:
+  `architecture_mechanics_hardened_primary_matrix_frozen_pretraining_interface_pending_capability_unproven`.
+  Do not claim native reasoning or pretraining readiness. Next architecture
+  work is the causal episodic autoregressive interface, composite objectives,
+  ETTR-aware save/resume schema, hybrid compositions, and H100 throughput
+  profile. The pretraining hold remains absolute.

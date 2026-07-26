@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import fields
+from dataclasses import fields, replace
 
 import torch
 
@@ -63,9 +63,16 @@ def test_staged_architecture_is_trainable_end_to_end() -> None:
     validate_state(state, model.config)
     assert trace.opcode.shape == (2, 3, 8)
     loss.backward()
-    assert model.compiler.token_projection.weight.grad is not None
-    assert model.reactor.opcode_head.weight.grad is not None
-    assert model.query_reader.output_projection.weight.grad is not None
+    for gradient in (
+        model.compiler.token_projection.weight.grad,
+        model.compiler.value_head.weight.grad,
+        model.reactor.opcode_head.weight.grad,
+        model.reactor.value_head.weight.grad,
+        model.query_reader.output_projection.weight.grad,
+    ):
+        assert gradient is not None
+        assert torch.isfinite(gradient).all()
+        assert torch.count_nonzero(gradient)
 
 
 def test_source_deleted_state_has_only_allowlisted_tensors() -> None:
@@ -73,7 +80,7 @@ def test_source_deleted_state_has_only_allowlisted_tensors() -> None:
     world = torch.randint(0, 64, (1, 7))
     state = model.compile_world(world)
     assert tuple(field.name for field in fields(TypedTheoryState)) == (
-        "values",
+        "value_probabilities",
         "type_probabilities",
         "relations",
         "active",
@@ -116,6 +123,16 @@ def test_hard_reactor_emits_exact_transaction_choices() -> None:
     assert torch.equal(
         trace.type_index.detach().sum(-1),
         torch.ones(2, 4),
+    )
+    assert torch.equal(
+        state.value_probabilities.sum(-1),
+        state.active,
+    )
+    assert bool(
+        (
+            state.relations.sum(dim=(1, 2, 3))
+            <= model.config.max_edges
+        ).all()
     )
     validate_state(state, model.config)
 
@@ -173,3 +190,111 @@ def test_post_seal_command_tokens_causally_enter_reactor() -> None:
     )
     assert not torch.equal(first_policy.opcode, second_policy.opcode)
     assert not torch.equal(first_policy.source, second_policy.source)
+
+
+def test_query_path_is_causal_under_future_token_extension() -> None:
+    model = _model().eval()
+    state = model.compile_world(
+        torch.randint(0, 64, (1, 8)),
+        hard=True,
+    )
+    state = replace(state, committed=torch.ones_like(state.committed))
+    prefix = torch.randint(0, 64, (1, 5))
+    extended = torch.cat(
+        (prefix, torch.randint(0, 64, (1, 4))),
+        dim=1,
+    )
+    with torch.no_grad():
+        prefix_logits, _ = model.answer_query(state, prefix)
+        extended_logits, _ = model.answer_query(state, extended)
+    torch.testing.assert_close(
+        prefix_logits,
+        extended_logits[:, : prefix.shape[1]],
+        atol=1e-6,
+        rtol=1e-6,
+    )
+
+
+def test_all_declared_state_fields_enter_the_learned_path() -> None:
+    model = _model()
+    config = model.config
+    tensors = {
+        "value_probabilities": torch.rand(
+            1,
+            config.num_slots,
+            config.num_value_codes,
+            requires_grad=True,
+        ),
+        "type_probabilities": torch.rand(
+            1,
+            config.num_slots,
+            config.num_types,
+            requires_grad=True,
+        ),
+        "relations": torch.rand(
+            1,
+            config.num_relations,
+            config.num_slots,
+            config.num_slots,
+            requires_grad=True,
+        ),
+        "active": torch.full(
+            (1, config.num_slots),
+            0.8,
+            requires_grad=True,
+        ),
+        "root": torch.rand(
+            1,
+            config.num_slots,
+            requires_grad=True,
+        ),
+        "committed": torch.full(
+            (1,),
+            0.7,
+            requires_grad=True,
+        ),
+        "halted": torch.full(
+            (1,),
+            0.2,
+            requires_grad=True,
+        ),
+    }
+    state = TypedTheoryState(**tensors, step=0)
+    output = model.query_reader(
+        torch.rand(1, 4, config.d_model),
+        state,
+    )
+    output.square().mean().backward()
+    for value in tensors.values():
+        assert value.grad is not None
+        assert torch.isfinite(value.grad).all()
+        assert torch.count_nonzero(value.grad)
+
+
+def test_hard_commit_freezes_structural_state() -> None:
+    model = _model().eval()
+    initial = model.compile_world(
+        torch.randint(0, 64, (2, 8)),
+        hard=True,
+    )
+    committed = replace(
+        initial,
+        committed=torch.ones_like(initial.committed),
+    )
+    terminal, _ = model.execute(
+        committed,
+        steps=1,
+        hard=True,
+    )
+    for name in (
+        "value_probabilities",
+        "type_probabilities",
+        "relations",
+        "active",
+        "root",
+        "committed",
+    ):
+        assert torch.equal(
+            getattr(terminal, name),
+            getattr(committed, name),
+        )

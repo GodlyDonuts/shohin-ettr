@@ -16,11 +16,11 @@ from endogenous_typed_theory_reactor import (
     TheoryReactorConfig,
     TheoryReactorError,
     TypedTheoryState,
-    validate_state,
+    validate_deployed_state,
 )
 
 
-STATE_SCHEMA = "shohin-ettr-source-deleted-state-v1"
+STATE_SCHEMA = "shohin-ettr-source-deleted-state-v2"
 STATE_TENSOR_NAMES = frozenset(
     {
         "active",
@@ -29,7 +29,7 @@ STATE_TENSOR_NAMES = frozenset(
         "relations",
         "root",
         "type_probabilities",
-        "values",
+        "value_probabilities",
     }
 )
 STATE_METADATA_NAMES = frozenset(
@@ -78,7 +78,7 @@ def state_bytes(
     state: TypedTheoryState,
     config: TheoryReactorConfig,
 ) -> bytes:
-    validate_state(state, config)
+    validate_deployed_state(state, config)
     tensors = {
         name: getattr(state, name).detach().to("cpu").contiguous()
         for name in sorted(STATE_TENSOR_NAMES)
@@ -203,7 +203,7 @@ def read_state(
             "state step differs"
         ) from exc
     state = TypedTheoryState(
-        values=tensors["values"],
+        value_probabilities=tensors["value_probabilities"],
         type_probabilities=tensors["type_probabilities"],
         relations=tensors["relations"],
         active=tensors["active"],
@@ -213,7 +213,7 @@ def read_state(
         step=step,
     )
     try:
-        validate_state(state, config)
+        validate_deployed_state(state, config)
     except TheoryReactorError as exc:
         raise ETTRStateIOError(
             "state tensor geometry differs"

@@ -201,7 +201,8 @@ def answer(
     if (
         token_ids.ndim != 2
         or attention_mask.shape != token_ids.shape
-        or token_ids.shape[0] != state.values.shape[0]
+        or token_ids.shape[0]
+        != state.value_probabilities.shape[0]
         or token_ids.shape[1] > base.cfg.seq_len
     ):
         raise ETTRLateQueryError(

@@ -9,6 +9,7 @@ import torch
 from endogenous_typed_theory_reactor import (
     EndogenousTypedTheoryReactorGPT,
     TheoryReactorConfig,
+    TheoryReactorError,
 )
 from ettr_state_io import (
     ETTRStateIOError,
@@ -59,7 +60,10 @@ def test_state_wire_round_trips_without_source_bytes(
         b"SOURCE_ONLY_SENTINEL_"
         b"47c9288df9b24788a1141132d1b8ec54"
     )
-    state = model.compile_world(torch.randint(0, 64, (2, 9)))
+    state = model.compile_world(
+        torch.randint(0, 64, (2, 9)),
+        hard=True,
+    )
     path = tmp_path / "state.safetensors"
     receipt = write_state_once(
         path,
@@ -75,7 +79,7 @@ def test_state_wire_round_trips_without_source_bytes(
     )
     assert restored.step == state.step
     for name in (
-        "values",
+        "value_probabilities",
         "type_probabilities",
         "relations",
         "active",
@@ -95,7 +99,10 @@ def test_state_wire_fails_closed_on_mutability(
     path = tmp_path / "state.safetensors"
     write_state_once(
         path,
-        model.compile_world(torch.randint(0, 64, (1, 5))),
+        model.compile_world(
+            torch.randint(0, 64, (1, 5)),
+            hard=True,
+        ),
         model.config,
     )
     path.chmod(0o644)
@@ -110,7 +117,10 @@ def test_state_wire_is_write_once(
     tmp_path: Path,
 ) -> None:
     model = _model()
-    state = model.compile_world(torch.randint(0, 64, (1, 5)))
+    state = model.compile_world(
+        torch.randint(0, 64, (1, 5)),
+        hard=True,
+    )
     path = tmp_path / "state.safetensors"
     write_state_once(path, state, model.config)
     with pytest.raises(
@@ -127,7 +137,10 @@ def test_state_wire_rejects_configuration_substitution(
     path = tmp_path / "state.safetensors"
     write_state_once(
         path,
-        model.compile_world(torch.randint(0, 64, (1, 5))),
+        model.compile_world(
+            torch.randint(0, 64, (1, 5)),
+            hard=True,
+        ),
         model.config,
     )
     wrong = TheoryReactorConfig(
@@ -141,3 +154,22 @@ def test_state_wire_rejects_configuration_substitution(
         match="configuration differs",
     ):
         read_state(path, wrong)
+
+
+def test_state_wire_rejects_continuous_source_channel(
+    tmp_path: Path,
+) -> None:
+    model = _model()
+    soft = model.compile_world(
+        torch.randint(0, 64, (1, 5)),
+        hard=False,
+    )
+    with pytest.raises(
+        TheoryReactorError,
+        match="not binary",
+    ):
+        write_state_once(
+            tmp_path / "soft-state.safetensors",
+            soft,
+            model.config,
+        )
