@@ -304,3 +304,36 @@ This closes the architecture implementation and hardware gate. It does not
 establish learned reasoning. The frozen control matrix must be executed after
 user-authorized training, and continuation pretraining remains under the
 user's explicit hold.
+
+## Frozen Qualification Harness Completion
+
+The learned-capability control matrix now has an executable assessor boundary
+in `train/ettr_qualification.py`. The harness accepts only hard deployed
+terminal packets and factorially matched query groups. It binds exact state,
+query, target, factor, paraphrase, and control-index bytes into a batch
+SHA-256, physically deletes the answer and all suffix tokens before forward,
+and never gives a target tensor to the candidate model.
+
+One invocation produces sealed treatment, query-only, zero-reader,
+shuffled-state, wrong-WORLD, wrong-COMMAND, and query-twin readouts. Detached
+post-forward scoring reports correct-query and deliberately wrong-query
+exactness, target-derangement exactness, complete-state query-twin exactness,
+packet-group exactness, packet-effect rows, and query-sensitivity rows.
+Reassociation with another same-shape batch and mutation of copied labels
+fail closed.
+
+The hostile harness suite passes 15/15. The expanded complete ETTR,
+checkpoint, optimizer, source-deletion, and cross-ontology inventory passes
+222/222 in 156.14 seconds with clean Ruff, byte compilation, and diff checks.
+Physical source deletion remains independently enforced by the four-process
+custody suite. Packet-field sufficiency ablations are intentionally deferred
+to equal-budget training arms because an evaluation-time zeroing intervention
+would test a different claim.
+
+This closes the architecture and qualification-mechanics package. It does not
+show that the untrained ETTR additions reason. Learned promotion still
+requires user-authorized training followed by this frozen matrix on unseen
+ontologies, depths, compositions, and renderers.
+
+Current decision:
+`ettr_architecture_and_control_mechanics_complete_untrained_pretraining_held_capability_unproven`.

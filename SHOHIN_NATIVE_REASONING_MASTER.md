@@ -52471,3 +52471,38 @@ frozen causal control matrix and held-out ontology gates.
 
 Current decision:
 `sealed_ettr_architecture_h100_qualified_controls_frozen_untrained_pretraining_held_capability_unproven`.
+
+## 2026-07-26 ETTR Architecture Completion Boundary
+
+The current architecture phase is complete at the implementation and
+mechanics level. Shohin's protected 125,081,664-parameter transformer is
+unchanged. ETTR adds 67,697,771 trainable parameters for a 192,779,435-
+parameter complete system, leaving 7,220,565 parameters under the 200M cap.
+The raw-token compiler, typed categorical packet, edge-aware recurrent
+reactor, post-seal command path, and late source-deleted query reader are all
+trainable and causally connected. Exact continuation checkpoints include
+model, optimizer, schedule, RNG, data cursor, and episode lifecycle state.
+
+The exact-source H100 receipt already established finite full-objective BF16
+forward/backward/update, nonzero gradients and parameter deltas in every ETTR
+group, a frozen base, strict protected-checkpoint compatibility, and 1.7170x
+compiled-versus-eager throughput. The newly implemented assessor harness now
+makes the later learned claim falsifiable: treatment must beat query-only,
+zero-reader, shuffled packet, wrong-WORLD, wrong-COMMAND, wrong-query, and
+target-deranged controls while answering multiple independent paraphrased
+queries from one state. Answer suffixes are physically absent from candidate
+forward passes, and exact state/query/label/control bytes are receipt-bound.
+
+Verification is 15/15 for hostile harness tests and 222/222 for the expanded
+ETTR/cross-ontology inventory. Packet-sufficiency ablations remain separate
+equal-budget training arms; the existing four-process custody path enforces
+physical source deletion.
+
+This is the end of architecture construction, not the end of the reasoning
+program. The new parameters are not yet trained, so current Shohin does not
+yet possess evidence-backed ETTR reasoning. The next phase begins only when
+the user authorizes training; afterward, unseen-ontology qualification and
+post-training determine whether the mechanism becomes useful intelligence.
+
+Current decision:
+`architecture_complete_learning_and_general_reasoning_unproven`.

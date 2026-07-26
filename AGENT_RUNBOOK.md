@@ -30,6 +30,27 @@
 > absolute: do not start, queue, resume, prepare, or modify continuation
 > pretraining.
 >
+> **ETTR ARCHITECTURE PACKAGE COMPLETE — 2026-07-26 EDT:** The trainable
+> architecture, exact-resume continuation contract, optimizer custody,
+> source-deleted execution boundary, matched causal objectives, H100 resource
+> qualification, and frozen learned-capability control harness are now
+> implemented. `train/ettr_qualification.py` executes treatment, query-only,
+> zero-reader, shuffled-state, wrong-WORLD, wrong-COMMAND, wrong-query/query-
+> twin, and target-derangement scoring without passing targets into any model
+> forward. It physically truncates the query at the autonomous next-token read
+> position and binds exact packet bytes, query bytes, labels, control
+> permutations into a batch SHA-256 carried by every readout. Hostile tests
+> reject fixed-point controls, mislabeled factors, soft packets, target
+> mutation, batch reassociation, visible answer suffixes, and candidate-side
+> oracle channels.
+> The expanded complete ETTR/cross-ontology inventory is **222/222** passing in
+> 156.14 seconds; the new harness-focused suite is **15/15**. Ruff, byte
+> compilation, and diff checks pass. Packet-sufficiency ablations remain
+> future equal-budget training arms and cannot execute under the user hold;
+> physical deletion remains enforced by the four-process custody suite. This
+> completes architecture mechanics, not learned reasoning. No pretraining was
+> started, queued, resumed, prepared, or modified.
+>
 > **ETTR CONTINUATION CONTRACT FROZEN — 2026-07-26 EDT:** Commit
 > `ae2cf85480bedfaa96f3cf7ddfbaf64e5d067203` completes the missing
 > architecture-side continuation contract without launching pretraining. It

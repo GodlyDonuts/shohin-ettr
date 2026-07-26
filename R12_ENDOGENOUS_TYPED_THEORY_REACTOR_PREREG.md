@@ -424,3 +424,33 @@ before separate eager-BF16 isolated gradient attribution. Compiler, reactor
 core, command projection, and query reader groups are disjoint. Encoded work
 is exactly `WORLD + 2*COMMAND + 3*QUERY`; no synthetic arm may be silently
 omitted from throughput accounting.
+
+## Executable Learned-Qualification Harness
+
+The assessor-side inference controls are implemented in
+`train/ettr_qualification.py` under schema
+`shohin-ettr-causal-qualification-v1`. This implementation does not authorize
+training and does not claim a learned result.
+
+An immutable qualification batch binds every deployed terminal-state tensor,
+query token and mask, autonomous read index, factual target, semantic-factor
+identity, paraphrase identity, and control permutation into one SHA-256.
+Packet identities separately hash every field of each deployed state row.
+Every state permutation is a no-fixed-point matched derangement. Wrong-WORLD
+and wrong-COMMAND controls change exactly one factorial identity; query twins
+hold state and paraphrase identity fixed while changing query semantics and
+factual answer.
+
+The harness zeros and masks every token after the read position before any
+forward, passes `targets=None`, seals all read-position logits, and only then
+scores factual and deranged labels. It executes treatment, query-only,
+zero-reader, shuffled-state, wrong-WORLD, wrong-COMMAND, and matched
+wrong-query/query-twin arms. The scorer rejects a different batch receipt or
+any post-forward mutation of factual, query-twin, or deranged targets.
+
+Packet-sufficiency ablation remains an equal-budget training comparison: each
+declared state-field supervision family must be removed in a separate arm,
+not simulated by zeroing a trained packet at evaluation. Physical source
+deletion remains process-enforced by the four-process custody runner. The
+complete integrated architecture/custody inventory, including 15 hostile
+harness tests, passes 222/222 in 156.14 seconds.
