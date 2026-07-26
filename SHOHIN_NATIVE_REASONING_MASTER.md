@@ -3,12 +3,13 @@
 ## Current Status — Read First
 
 **Current frontier:** Shohin still has no demonstrated architecture-native
-general reasoning or sparse unseen-law induction. Adversarial audit rejects
-the apparent 11/11 episodic-generator result as a Shohin claim: the checkpoint
-was never loaded, exact regex code parsed the problem, fixed code enumerated
-127 words, and host code sealed and executed the answer. Fourteen of 22
-development target-word instances overlap training. Retain that system only
-as a bounded neuro-symbolic permutation-solver control.
+general reasoning or episodic sparse unseen-law induction beyond a fixed global
+program bank. Adversarial audit rejects the apparent 11/11 episodic-generator
+result as a Shohin claim: the checkpoint was never loaded, exact regex code
+parsed the problem, fixed code enumerated 127 words, and host code sealed and
+executed the answer. Fourteen of 22 development target-word instances overlap
+training. Retain that system only as a bounded neuro-symbolic permutation-solver
+control.
 
 - **Protected base:** immutable step-300k Shohin checkpoint,
   125,081,664 parameters, SHA-256
@@ -22,6 +23,26 @@ as a bounded neuro-symbolic permutation-solver control.
   `226a36d9156101617b769f698550eb51ebec57a8ffa01464bdd7a64d8805caad`.
   Disposition:
   `reject_architecture_native_shohin_reasoning_retain_neurosymbolic_solver`.
+- **Constraint-intersection bounded capability:** a 232,065-parameter byte
+  encoder preserves each sparse observation as a separate compatibility factor
+  over a fixed complete operation library, then seals the unique surviving
+  program and executes the late query after source deletion. On H100 job
+  `704761` it reaches **60/60** complete hash-disjoint unseen maps, **60/60**
+  exact hidden queries, and **60/60** source-free packets; shifted targets and
+  zeroed observations reach 1/60 and 0/60 exact queries. Its frozen 45-query
+  margin over direction negation is mathematically impossible on this board:
+  20/60 inverse-law answers collide, so a perfect treatment can exceed that
+  control by at most 40. This is exact bounded version-space execution, not
+  learned ontology discovery or general reasoning, because the complete
+  operation library and dense parallel intersection are fixed algorithmic
+  priors. Report SHA-256:
+  `22d22d8ac9079ee1722ce971c50d2307c5ad1d9132d49c329ef779f01adb2ede`.
+- **Successor status:** the Endogenous Typed Theory Reactor (ETTR) is a frozen
+  protocol and early generic transaction-mechanics component, not a fit. It
+  requires the actual hash-verified Shohin checkpoint, raw-token compilation,
+  four fresh compiler/executor/query/assessor processes, and leave-one-ontology
+  transfer across Horn closure, typed term rewriting, and guarded resource
+  processes. No ETTR scored board, neural result, or pretraining action exists.
 - **Strict future ceiling:** fewer than 200,000,000 unique parameters for the
   complete system.
 - **Renderer-curriculum breakthrough:** a 152,933-parameter standalone
