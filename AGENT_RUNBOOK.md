@@ -14038,3 +14038,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision remains:
   `factorial_interchange_contract_hardened_exact_h100_profile_pending_pretraining_held_capability_unproven`.
+
+- **2026-07-26 04:09 EDT** -- **Exact-source schema-v3 H100 execution
+  completes, but the update receipt fails closed.** Job `705213` completed on
+  `evc25` in 10m54s from clean source
+  `4ca7366eb5102b1f51e16c2166717ec5e02448cb`. Report SHA-256 is
+  `374edd8e41d143274fab645ec15923ec9a078ddef301442b982b37f7ac9dd408`.
+  Both eager and Inductor-compiled arms strictly loaded step 300,000, matched
+  synthetic batch and initial-parameter hashes, exercised BF16 factual plus
+  WORLD/COMMAND intervention forward, all composite losses, backward, and
+  Muon/AdamW updates. The protected checkpoint hash was identical before and
+  after; no shards were read and no model or optimizer state was written.
+
+  Resource geometry is healthy: 192,779,435 complete parameters, 67,697,771
+  trainable architecture parameters, and 7,220,565 parameters of cap
+  headroom. Eager peak allocation was 3,206,544,384 bytes at 3,916.16 encoded
+  tok/s; compiled peak was 2,762,646,016 bytes at 6,629.96 encoded tok/s.
+  Compilation therefore measured 1.693x eager throughput with 0.862x peak
+  allocation. All losses were finite. Compiler, reactor, and query reader had
+  finite nonzero gradients in both arms; the base remained frozen.
+
+  The profile is not a pass. `gradient_receipt_pass` is false because the
+  query reader reported zero sampled parameter delta despite 7,944,317 eager
+  and 7,944,910 compiled nonzero gradient elements. Static inspection found
+  that `_sample_parameters` exhausts its 4,096-value budget on the first
+  trainable tensor, so its delta is not representative of the component.
+  This is an instrumentation defect, not authorization to infer that the
+  query reader updated. The gate remains closed until deterministic
+  cross-tensor sampling is implemented and reprofiled. In parallel, hostile
+  review found that current interventions stop at terminal state: a matched
+  late-query causal binding loss is also required before final architecture
+  qualification.
+
+  Decision:
+  `h100_resource_geometry_pass_update_receipt_and_query_binding_pending_pretraining_held_capability_unproven`.

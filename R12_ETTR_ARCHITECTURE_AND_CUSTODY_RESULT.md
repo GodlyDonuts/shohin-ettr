@@ -192,8 +192,9 @@ Payload SHA-256:
 - Exact documentation descendant
   `4ca7366eb5102b1f51e16c2166717ec5e02448cb` is checked out in a detached,
   clean Newton worktree. Exactly one fresh isolated BF16 H100
-  eager-versus-compiled memory/throughput profile, job `705213`, is pending
-  resources.
+  eager-versus-compiled memory/throughput profile, job `705213`, completed on
+  `evc25` in 10m54s. Report SHA-256 is
+  `374edd8e41d143274fab645ec15923ec9a078ddef301442b982b37f7ac9dd408`.
 - The schema-v3 profiler must execute factual episodes, both intervention
   arms, the complete composite objective, backward, and Muon/AdamW update
   from matched eager/compiled initial parameter hashes.
@@ -202,7 +203,22 @@ Payload SHA-256:
 - If profiling finds an OOM or systems defect, revise only the architecture
   implementation and repeat the same synthetic gate.
 
-After that gate, the architecture can be called technically ready for the
-user's later pretraining decision. Capability still requires future
-pretraining, matched causal controls, unseen-ontology qualification, and
-post-training. Only the user may lift the continuation-pretraining hold.
+The resource geometry passed: eager peak allocation was 3.207 GB at 3,916.16
+encoded tok/s and compiled peak allocation was 2.763 GB at 6,629.96 encoded
+tok/s, a 1.693x throughput ratio. Both arms had finite losses, finite nonzero
+architecture gradients, frozen-base zero gradients, matched batches,
+matched initial parameters, and an unchanged checkpoint hash. The overall
+gate remains closed because the query reader's sampled parameter delta was
+zero despite more than 7.94M nonzero gradient elements. The 4,096-value probe
+currently exhausts its budget on the first component tensor and must be
+replaced by deterministic cross-tensor sampling before reprofile.
+
+Hostile review also identified the remaining causal gap: WORLD/COMMAND
+intervention terminal states are supervised but are not yet required to
+produce the corresponding late-query answer. Final architecture qualification
+therefore requires a matched-prefix, factual-corner query-binding objective
+and negative controls in addition to the corrected update receipt. Only after
+those gates can the architecture be called technically ready for the user's
+later pretraining decision. Capability still requires future pretraining,
+matched causal controls, unseen-ontology qualification, and post-training.
+Only the user may lift the continuation-pretraining hold.

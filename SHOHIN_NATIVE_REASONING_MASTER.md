@@ -52354,3 +52354,25 @@ synthetic architecture resource profiling only: `SHARDS` are forbidden, no
 model state can be written, and it does not authorize or constitute
 pretraining. Current raw capability is deliberately outside this architecture
 gate; learning and post-training are later user-controlled phases.
+
+Job `705213` completed on `evc25` in 10m54s. Its read-only report
+(`374edd8e41d143274fab645ec15923ec9a078ddef301442b982b37f7ac9dd408`)
+confirms strict step-300k load, unchanged protected checkpoint bytes, no shard
+reads, no state writes, finite full-composite BF16 execution, and matched
+eager/compiled initialization. The 192,779,435-parameter system peaks at
+3.207 GB eager and 2.763 GB compiled. Compiled throughput is 6,629.96 encoded
+tok/s versus 3,916.16 eager, or 1.693x.
+
+This is not yet a complete architecture pass. The query reader has millions
+of finite nonzero gradient elements but its current first-tensor-only
+parameter sample reports zero update, so the update receipt fails closed.
+The sampler must cover every trainable tensor and the profile must be
+repeated. More importantly, terminal-state interventions currently stop
+before query consumption. The next architecture addition is a matched-prefix
+causal query gate: all four factual corners share the exact query prefix up to
+one categorical read position, all WORLD and COMMAND edges have different
+factual next-token labels, and intervention answers are gathered only from
+immutable factual corners. No divergent answer prefix may enter the model.
+
+Current decision:
+`h100_resource_geometry_pass_update_receipt_and_query_binding_pending_pretraining_held_capability_unproven`.
