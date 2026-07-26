@@ -301,6 +301,37 @@ if not stat.S_ISDIR(root_metadata.st_mode) or stat.S_ISLNK(
     root_metadata.st_mode
 ):
     raise SystemExit("[ettr-runtime] normalization root differs")
+
+
+def normalize_mode(path: Path, metadata: os.stat_result, mode: int) -> None:
+    flags = (
+        os.O_RDONLY
+        | os.O_CLOEXEC
+        | getattr(os, "O_NOFOLLOW", 0)
+    )
+    if stat.S_ISDIR(metadata.st_mode):
+        flags |= getattr(os, "O_DIRECTORY", 0)
+    descriptor = os.open(path, flags)
+    try:
+        observed = os.fstat(descriptor)
+        identity = lambda value: (
+            value.st_dev,
+            value.st_ino,
+            value.st_mode,
+            value.st_nlink,
+            value.st_size,
+            value.st_mtime_ns,
+            value.st_ctime_ns,
+        )
+        if identity(observed) != identity(metadata):
+            raise SystemExit(
+                f"[ettr-runtime] normalization object changed: {path}"
+            )
+        os.fchmod(descriptor, mode)
+    finally:
+        os.close(descriptor)
+
+
 for directory_text, directories, files in os.walk(
     root,
     topdown=True,
@@ -312,7 +343,7 @@ for directory_text, directories, files in os.walk(
         raise SystemExit(
             f"[ettr-runtime] normalization directory differs: {directory}"
         )
-    os.chmod(directory, 0o555, follow_symlinks=False)
+    normalize_mode(directory, metadata, 0o555)
     for name in (*directories, *files):
         path = directory / name
         metadata = path.lstat()
@@ -326,7 +357,7 @@ for directory_text, directories, files in os.walk(
             raise SystemExit(
                 f"[ettr-runtime] normalization object differs: {path}"
             )
-        os.chmod(path, mode, follow_symlinks=False)
+        normalize_mode(path, metadata, mode)
 for directory_text, directories, files in os.walk(
     root,
     topdown=True,

@@ -18,7 +18,8 @@ def test_claim_runtime_build_is_cpu_only_commit_pinned_and_complete() -> None:
     assert "EXPECTED_HOST_PYTHON_SHA256=" in source
     assert "zipfile.ZipFile" in source
     assert "clearing special bits" in source
-    assert "os.chmod(path, mode, follow_symlinks=False)" in source
+    assert 'getattr(os, "O_NOFOLLOW", 0)' in source
+    assert "os.fchmod(descriptor, mode)" in source
     assert "normalized directory mode differs" in source
     assert "torch.version.cuda is None" in source
     assert "export PATH=/usr/bin:/bin" in source

@@ -184,7 +184,7 @@
 > substitution. The focused runtime/deployment/four-process regression set is
 > **54/54** passing with clean Ruff, byte compilation, shell syntax, and diff
 > checks. The complete current ETTR/cross-ontology inventory is **315/315**
-> passing in 174.94 seconds. Exact-source build `705463` failed closed after
+> passing in 173.94 seconds. Exact-source build `705463` failed closed after
 > staged CUDA imports passed and before archive publication because five
 > ordinary dependency filenames contain printable spaces or punctuation. The
 > path policy now accepts printable ASCII segments while still rejecting
@@ -193,7 +193,11 @@
 > gate and staged CUDA imports but failed closed before publication on copied
 > setgid directory modes. Mode normalization is now a trusted-host Python pass
 > that clears special bits without following links and independently
-> re-verifies every object before inventory. Retry only from the corrected
+> re-verifies every object before inventory. Retry `705887` exposed that
+> Newton's trusted Python does not implement path-level
+> `chmod(..., follow_symlinks=False)`; it also failed before publication. The
+> final normalizer uses `O_NOFOLLOW` descriptor opens, identity checks, and
+> `fchmod`, then re-verifies every object. Retry only from the corrected
 > committed source.
 > Build the next exact-source runtime only from the committed hardened source,
 > verify every sidecar hash, and then submit the pinned in-Bubblewrap H100
