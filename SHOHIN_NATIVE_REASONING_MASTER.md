@@ -52272,3 +52272,10 @@ architecture result, not evidence of learned general reasoning. A fresh
 current-source BF16 H100 eager/compiled resource profile remains the final
 systems gate before the architecture can be presented to the user for a
 separate pretraining decision.
+
+The immutable source is commit
+`29d294f53085a254e1bf056abd7c388a5fe7ca95`. Profile job `705188` failed
+closed on `evc33` before checkpoint/model execution because the allocated node
+had no usable CUDA device. Replacement `705192` is the sole queued attempt,
+uses a fresh report path, excludes `evc33` and the established bad-node set,
+and cannot write model state or read training shards.

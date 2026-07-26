@@ -152,6 +152,11 @@ Payload SHA-256:
 
 ## Remaining Architecture Gate
 
+- Immutable architecture commit:
+  `29d294f53085a254e1bf056abd7c388a5fe7ca95`.
+- Job `705188` failed closed on `evc33` before checkpoint/model execution
+  because CUDA was unavailable despite allocation. The node is excluded.
+- Sole replacement job `705192` is pending with a fresh output directory.
 - Complete the isolated BF16 H100 eager-versus-compiled memory/throughput
   profile from the exact corrected source commit.
 - Record strict checkpoint load, nonzero architecture gradients, peak memory,

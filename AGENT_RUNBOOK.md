@@ -60,6 +60,13 @@
 > isolated output is empty and the protected hash remains exact. No
 > intelligence or continuation-readiness claim is authorized
 > until a healthy-node profile of the corrected source completes.
+> Current immutable architecture source is commit
+> `29d294f53085a254e1bf056abd7c388a5fe7ca95`: 163/163 complete tests pass.
+> H100 profile `705188` failed closed on `evc33` before checkpoint/model
+> execution because CUDA was unavailable despite Slurm allocation; add
+> `evc33` to the bad-node set. Exact-source replacement `705192` is the sole
+> pending profile, with a fresh output path and expanded exclusion set. It is
+> a synthetic resource gate only and cannot write model state or read shards.
 >
 > **CURRENT REASONING CLAIM BOUNDARY — 2026-07-25 22:00 EDT:** Shohin still
 > has no demonstrated architecture-native general reasoning. Adversarial audit
