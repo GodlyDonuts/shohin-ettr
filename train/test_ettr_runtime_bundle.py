@@ -85,6 +85,7 @@ def _bootstrap(
     runner_arguments: tuple[str, ...] = ("--help",),
     isolated_flags: tuple[str, ...] = ("-I", "-S", "-B"),
     environment: dict[str, str] | None = None,
+    pass_fds: tuple[int, ...] = (),
 ) -> subprocess.CompletedProcess[str]:
     effective_environment = dict(
         os.environ if environment is None else environment
@@ -125,6 +126,7 @@ def _bootstrap(
         text=True,
         check=False,
         env=effective_environment,
+        pass_fds=pass_fds,
     )
 
 
@@ -143,6 +145,33 @@ def test_runtime_bundle_round_trip_is_exact_and_immutable(
         receipt_path.read_bytes()
     ).hexdigest()
     loaded.validate(bundle)
+
+
+def test_bootstrap_rejects_inherited_descriptor(tmp_path: Path) -> None:
+    bundle = tmp_path / "bundle"
+    receipt = materialize_runtime_bundle(TRAIN, bundle, stage="world")
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_bytes(receipt.canonical_bytes())
+    receipt_path.chmod(0o444)
+    manifest_path = tmp_path / "manifest.json"
+    manifest_sha256 = _manifest(manifest_path, receipt=receipt)
+    inherited_path = tmp_path / "unexpected.txt"
+    inherited_path.write_text("unexpected\n", encoding="ascii")
+    descriptor = os.open(inherited_path, os.O_RDONLY)
+    try:
+        result = _bootstrap(
+            BOOTSTRAP,
+            manifest=manifest_path,
+            manifest_sha256=manifest_sha256,
+            receipt=receipt_path,
+            bundle=bundle,
+            pass_fds=(descriptor,),
+        )
+    finally:
+        os.close(descriptor)
+
+    assert result.returncode != 0
+    assert "bootstrap inherited descriptor differs" in result.stderr
 
 
 def test_runtime_bundles_physically_delete_other_stage_runners(

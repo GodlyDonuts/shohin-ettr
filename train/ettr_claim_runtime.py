@@ -59,8 +59,17 @@ TOOL_FILES = (
     "ettr_claim_runtime.py",
     "ettr_deployment_contract.py",
     "ettr_runtime_bundle.py",
+    "ettr_stage_supervisor.py",
     "landlock_stage_exec.py",
     "run_ettr_verified_stage.py",
+)
+SUPERVISOR_LOADER_CODE = (
+    "import runpy,sys;"
+    "root=sys.argv.pop(1);"
+    "tools=root+'/app/tools';"
+    "sys.path.insert(0,tools);"
+    "runpy.run_path("
+    "tools+'/ettr_stage_supervisor.py',run_name='__main__')"
 )
 _COMMIT = re.compile(r"^[0-9a-f]{40}$")
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
@@ -85,6 +94,34 @@ def _canonical_json_bytes(value: object) -> bytes:
         )
         + "\n"
     ).encode("ascii")
+
+
+def _valid_extract_exec_command(command: Sequence[str]) -> bool:
+    placeholder = "{ETTR_RUNTIME_ROOT}"
+    placeholder_count = sum(
+        argument.count(placeholder) for argument in command
+    )
+    direct_bwrap = (
+        bool(command)
+        and command[0] == "/usr/bin/bwrap"
+        and placeholder_count == 1
+    )
+    supervised_prefix = (
+        "/usr/bin/python3.11",
+        "-I",
+        "-S",
+        "-B",
+        "-c",
+        SUPERVISOR_LOADER_CODE,
+        placeholder,
+        "--runtime-root",
+        placeholder,
+    )
+    supervised = (
+        tuple(command[: len(supervised_prefix)]) == supervised_prefix
+        and placeholder_count == 2
+    )
+    return direct_bwrap or supervised
 
 
 def _source_bundle_rows(
@@ -1489,15 +1526,7 @@ def _main(argv: Sequence[str] | None = None) -> int:
             if command[:1] == ["--"]:
                 command = command[1:]
             placeholder = "{ETTR_RUNTIME_ROOT}"
-            if (
-                not command
-                or command[0] != "/usr/bin/bwrap"
-                or sum(
-                    argument.count(placeholder)
-                    for argument in command
-                )
-                != 1
-            ):
+            if not _valid_extract_exec_command(command):
                 raise ETTRClaimRuntimeError(
                     "verified runtime launch command differs"
                 )

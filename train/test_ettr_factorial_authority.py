@@ -20,6 +20,7 @@ from ettr_factorial_authority import (
 
 BOARD_SHA256 = "a" * 64
 MANIFEST_SHA256 = "b" * 64
+CLAIM_RUNTIME_RECEIPT_SHA256 = "c" * 64
 
 
 def _public_key_bytes(private_key: Ed25519PrivateKey) -> bytes:
@@ -39,10 +40,15 @@ def _write_root(path: Path, private_key: Ed25519PrivateKey) -> str:
 def _authority(
     root: Ed25519PrivateKey,
     signer: Ed25519PrivateKey,
+    launch_verifier: Ed25519PrivateKey | None = None,
 ):
+    if launch_verifier is None:
+        launch_verifier = Ed25519PrivateKey.generate()
     return make_root_signed_ettr_custody_authority(
         root_private_key=root,
         custody_public_key_hex=_public_key_bytes(signer).hex(),
+        launch_verifier_public_key_hex=_public_key_bytes(launch_verifier).hex(),
+        claim_runtime_verification_receipt_sha256=(CLAIM_RUNTIME_RECEIPT_SHA256),
         board_sha256=BOARD_SHA256,
         execution_manifest_sha256=MANIFEST_SHA256,
     )
@@ -150,19 +156,20 @@ def test_authority_rejects_noncanonical_json_and_extra_field(
             json.dumps(
                 {
                     "schema": authority.schema,
-                    "authorized_seal_schema": (
-                        authority.authorized_seal_schema
+                    "authorized_seal_schema": (authority.authorized_seal_schema),
+                    "root_public_key_sha256": (authority.root_public_key_sha256),
+                    "custody_public_key_hex": (authority.custody_public_key_hex),
+                    "launch_verifier_public_key_hex": (
+                        authority.launch_verifier_public_key_hex
                     ),
-                    "root_public_key_sha256": (
-                        authority.root_public_key_sha256
+                    "launch_verifier_public_key_fingerprint": (
+                        authority.launch_verifier_public_key_fingerprint
                     ),
-                    "custody_public_key_hex": (
-                        authority.custody_public_key_hex
+                    "claim_runtime_verification_receipt_sha256": (
+                        authority.claim_runtime_verification_receipt_sha256
                     ),
                     "board_sha256": authority.board_sha256,
-                    "execution_manifest_sha256": (
-                        authority.execution_manifest_sha256
-                    ),
+                    "execution_manifest_sha256": (authority.execution_manifest_sha256),
                     "root_signature_hex": authority.root_signature_hex,
                 },
                 indent=2,
@@ -170,8 +177,7 @@ def test_authority_rejects_noncanonical_json_and_extra_field(
         ),
         (
             "extra.json",
-            authority.canonical_bytes()[:-2]
-            + b',\"claimant_extra\":true}\\n',
+            authority.canonical_bytes()[:-2] + b',"claimant_extra":true}\\n',
         ),
     ):
         path = tmp_path / name
@@ -225,6 +231,63 @@ def test_authority_rejects_wrong_board_manifest_and_signature(
             expected_board_sha256="c" * 64,
             expected_execution_manifest_sha256=MANIFEST_SHA256,
         )
+
+
+def test_authority_root_binds_launch_verifier_and_runtime_receipt(
+    tmp_path: Path,
+) -> None:
+    root = Ed25519PrivateKey.generate()
+    signer = Ed25519PrivateKey.generate()
+    launch_verifier = Ed25519PrivateKey.generate()
+    root_path = tmp_path / "root.pub"
+    root_sha256 = _write_root(root_path, root)
+    authority = _authority(root, signer, launch_verifier)
+    trust = load_ettr_custody_root(
+        root_path,
+        pinned_public_key_sha256=root_sha256,
+    )
+    for name, forged in (
+        (
+            "verifier-key.json",
+            replace(
+                authority,
+                launch_verifier_public_key_hex=_public_key_bytes(
+                    Ed25519PrivateKey.generate()
+                ).hex(),
+            ),
+        ),
+        (
+            "verifier-fingerprint.json",
+            replace(
+                authority,
+                launch_verifier_public_key_fingerprint="d" * 64,
+            ),
+        ),
+        (
+            "runtime-receipt.json",
+            replace(
+                authority,
+                claim_runtime_verification_receipt_sha256="e" * 64,
+            ),
+        ),
+        (
+            "legacy-schema.json",
+            replace(
+                authority,
+                schema="ettr-factorial-custody-authority-record-v1",
+            ),
+        ),
+    ):
+        path = tmp_path / name
+        write_ettr_custody_authority_once(path, forged)
+        with pytest.raises(ETTRCustodyAuthorityError):
+            read_root_signed_ettr_custody_authority(
+                path,
+                root_trust=trust,
+                expected_record_sha256=forged.sha256(),
+                expected_board_sha256=BOARD_SHA256,
+                expected_execution_manifest_sha256=MANIFEST_SHA256,
+            )
 
 
 def test_claimant_self_rooted_authority_fails_pinned_offline_root(

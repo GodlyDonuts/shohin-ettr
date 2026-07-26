@@ -29,10 +29,12 @@ from ettr_factorial_authority import (
     load_ettr_custody_root,
     read_root_signed_ettr_custody_authority,
 )
+from ettr_claim_runtime import ETTRClaimRuntimeVerificationReceipt
 from ettr_factorial_custody import (
     ETTRFactorialExecutionManifest,
     ETTRStageExecutionReceipt,
 )
+from ettr_deployment_contract import ETTRRuntimeImageIdentity
 from ettr_factorial_signed_custody import ETTRSignedQualificationAdmission
 from ettr_factorial_tokenization import ETTRFactorialTokenizationReceipt
 from ettr_qualification import (
@@ -544,6 +546,11 @@ def materialize_signed_ettr_factorial_qualification(
     tokenizer_path: Path,
     expected_tokenization_receipt_sha256: str,
     expected_query_receipt_sha256: str,
+    claim_runtime_verification_receipt: ETTRClaimRuntimeVerificationReceipt,
+    runtime_identity: ETTRRuntimeImageIdentity,
+    expected_world_launch_receipt_sha256: str,
+    expected_command_launch_receipt_sha256: str,
+    expected_query_launch_receipt_sha256: str,
     expected_custody_seal_sha256: str,
     authority_record_path: Path,
     root_public_key_path: Path,
@@ -552,6 +559,8 @@ def materialize_signed_ettr_factorial_qualification(
 ) -> ETTRQualificationBatch:
     """Claim-bearing materialization gated by an external Ed25519 trust root."""
 
+    if type(signed_admission) is not ETTRSignedQualificationAdmission:
+        raise TheoryReactorError("signed admission type differs")
     tokenization_receipt.validate(
         board,
         tokenizer_path,
@@ -586,9 +595,7 @@ def materialize_signed_ettr_factorial_qualification(
         true_token_id=true_token_id,
         pad_token_id=pad_token_id,
         expected_model_sha256=expected_model_sha256,
-        expected_execution_manifest_sha256=(
-            expected_execution_manifest_sha256
-        ),
+        expected_execution_manifest_sha256=(expected_execution_manifest_sha256),
         expected_compiler_receipt_sha256=expected_compiler_receipt_sha256,
         expected_executor_receipt_sha256=expected_executor_receipt_sha256,
     )
@@ -616,9 +623,7 @@ def materialize_signed_ettr_factorial_qualification(
                 for value in batch.query_tokens[row_index, :start]
             )
         ):
-            raise TheoryReactorError(
-                "signed qualification query tokenization differs"
-            )
+            raise TheoryReactorError("signed qualification query tokenization differs")
     try:
         root_trust = load_ettr_custody_root(
             root_public_key_path,
@@ -629,20 +634,21 @@ def materialize_signed_ettr_factorial_qualification(
             root_trust=root_trust,
             expected_record_sha256=expected_authority_record_sha256,
             expected_board_sha256=board.receipt.payload_sha256,
-            expected_execution_manifest_sha256=(
-                expected_execution_manifest_sha256
-            ),
+            expected_execution_manifest_sha256=(expected_execution_manifest_sha256),
         )
     except ETTRCustodyAuthorityError as exc:
-        raise TheoryReactorError(
-            "signed authority admission differs"
-        ) from exc
+        raise TheoryReactorError("signed authority admission differs") from exc
     signed_admission.validate(
         execution_manifest=artifact.execution_manifest,
         compiler_receipt=artifact.compiler_receipt,
         executor_receipt=artifact.executor_receipt,
+        claim_runtime_verification_receipt=(claim_runtime_verification_receipt),
+        runtime_identity=runtime_identity,
         authority_record=authority_record,
         expected_query_receipt_sha256=expected_query_receipt_sha256,
+        expected_world_launch_receipt_sha256=(expected_world_launch_receipt_sha256),
+        expected_command_launch_receipt_sha256=(expected_command_launch_receipt_sha256),
+        expected_query_launch_receipt_sha256=(expected_query_launch_receipt_sha256),
         expected_seal_sha256=expected_custody_seal_sha256,
         expected_board_sha256=board.receipt.payload_sha256,
         expected_model_sha256=expected_model_sha256,

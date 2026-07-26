@@ -395,6 +395,113 @@ def test_extract_exec_retains_descriptor_through_launch_and_removes_tree(
     assert capsys.readouterr().out.strip() == inventory.sha256()
 
 
+def test_extract_exec_admits_only_exact_supervisor_prefix(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _, archive, inventory = _make_archive(tmp_path)
+    destination = tmp_path / "extracted"
+    observed: list[tuple[str, ...]] = []
+
+    def fake_run(
+        command: tuple[str, ...],
+        *,
+        check: bool,
+        env: dict[str, str],
+        pass_fds: tuple[int, ...],
+    ) -> subprocess.CompletedProcess[bytes]:
+        assert check is True
+        assert env == {"HOME": "/nonexistent", "PATH": "/usr/bin:/bin"}
+        assert command[:5] == (
+            "/usr/bin/python3.11",
+            "-I",
+            "-S",
+            "-B",
+            "-c",
+        )
+        descriptor_root = f"/proc/self/fd/{pass_fds[0]}/runtime"
+        assert command[5] == runtime.SUPERVISOR_LOADER_CODE
+        assert command[6] == descriptor_root
+        assert command[7:9] == ("--runtime-root", descriptor_root)
+        observed.append(command)
+        return subprocess.CompletedProcess(command, 0)
+
+    monkeypatch.setattr(runtime.subprocess, "run", fake_run)
+    assert runtime._main(
+        (
+            "extract-exec",
+            "--archive",
+            str(archive),
+            "--destination",
+            str(destination),
+            "--expected-archive-sha256",
+            hashlib.sha256(archive.read_bytes()).hexdigest(),
+            "--expected-inventory-sha256",
+            inventory.sha256(),
+            "--expected-source-bundle-sha256",
+            inventory.source_bundle_sha256(),
+            "--",
+            "/usr/bin/python3.11",
+            "-I",
+            "-S",
+            "-B",
+            "-c",
+            runtime.SUPERVISOR_LOADER_CODE,
+            "{ETTR_RUNTIME_ROOT}",
+            "--runtime-root",
+            "{ETTR_RUNTIME_ROOT}",
+        )
+    ) == 0
+    assert len(observed) == 1
+    assert not destination.exists()
+
+    for hostile_command in (
+        (
+            "/usr/bin/python3.11",
+            "-I",
+            "-S",
+            "-B",
+            "-c",
+            "import runpy; runpy.run_path('/tmp/attacker.py')",
+            "{ETTR_RUNTIME_ROOT}",
+            "--runtime-root",
+            "{ETTR_RUNTIME_ROOT}",
+        ),
+        (
+            "/usr/bin/python3.11",
+            "-I",
+            "-S",
+            "-B",
+            "-c",
+            runtime.SUPERVISOR_LOADER_CODE,
+            "{ETTR_RUNTIME_ROOT}",
+            "--runtime-root",
+            "/tmp/substituted",
+        ),
+    ):
+        with pytest.raises(
+            runtime.ETTRClaimRuntimeError,
+            match="launch command differs",
+        ):
+            runtime._main(
+                (
+                    "extract-exec",
+                    "--archive",
+                    str(archive),
+                    "--destination",
+                    str(tmp_path / "hostile-extracted"),
+                    "--expected-archive-sha256",
+                    hashlib.sha256(archive.read_bytes()).hexdigest(),
+                    "--expected-inventory-sha256",
+                    inventory.sha256(),
+                    "--expected-source-bundle-sha256",
+                    inventory.source_bundle_sha256(),
+                    "--",
+                    *hostile_command,
+                )
+            )
+
+
 def test_verified_extraction_rejects_path_swap(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

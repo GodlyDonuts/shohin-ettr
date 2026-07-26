@@ -81,6 +81,7 @@ git -C "$SOURCE_ROOT" diff --cached --quiet
   && [ ! -e "$OUT.runtime-bundle-command.json" ] \
   && [ ! -e "$OUT.runtime-bundle-query.json" ] \
   && [ ! -e "$OUT.stage-policies.json" ] \
+  && [ ! -e "$OUT.verification-receipt.json" ] \
   && [ ! -e "$OUT.source-bundle.sha256" ] || {
   echo "[ettr-runtime] refusing an existing output" >&2
   exit 5
@@ -104,6 +105,13 @@ mkdir -p \
 echo "[ettr-runtime] copying complete interpreter, stdlib, and dependency tree"
 cp -a "$ENV_ROOT/bin" "$ENV_ROOT/lib" "$STAGING/runtime/miniforge3/"
 RUNTIME_PY="$STAGING/runtime/miniforge3/bin/python"
+SOURCE_PY=$(/usr/bin/readlink -f "$ENV_ROOT/bin/python")
+[ -f "$SOURCE_PY" ] && [ ! -L "$SOURCE_PY" ] || {
+  echo "[ettr-runtime] source interpreter target differs" >&2
+  exit 4
+}
+rm -f -- "$RUNTIME_PY"
+cp --dereference --preserve=mode,timestamps "$SOURCE_PY" "$RUNTIME_PY"
 SITE_PACKAGES=("$STAGING/runtime/miniforge3/lib"/python*/site-packages)
 [ "${#SITE_PACKAGES[@]}" = 1 ] && [ -d "${SITE_PACKAGES[0]}" ] \
   && [ ! -L "${SITE_PACKAGES[0]}" ] || {
@@ -201,6 +209,7 @@ TOOL_FILES=(
   ettr_claim_runtime.py
   ettr_deployment_contract.py
   ettr_runtime_bundle.py
+  ettr_stage_supervisor.py
   landlock_stage_exec.py
   run_ettr_verified_stage.py
 )
@@ -393,6 +402,11 @@ echo "[ettr-runtime] building deterministic measured archive"
   --runtime-root "$STAGING/runtime" \
   --source-commit "$SOURCE_COMMIT" \
   --archive "$OUT"
+"$RUNTIME_PY" -I -S -B \
+  "$STAGING/runtime/app/tools/ettr_claim_runtime.py" verify-tree \
+  --archive "$OUT" \
+  --runtime-root "$STAGING/runtime" \
+  --receipt "$STAGING/ettr-runtime-verification-receipt.json"
 verify_reviewed_sources
 
 publish_once() {
@@ -466,6 +480,9 @@ done
 publish_once \
   "$STAGING/runtime/app/receipts/ettr-stage-policies.json" \
   "$OUT.stage-policies.json"
+publish_once \
+  "$STAGING/ettr-runtime-verification-receipt.json" \
+  "$OUT.verification-receipt.json"
 
 echo "[ettr-runtime] complete"
 /usr/bin/sha256sum \
@@ -475,7 +492,8 @@ echo "[ettr-runtime] complete"
   "$OUT.runtime-bundle-world.json" \
   "$OUT.runtime-bundle-command.json" \
   "$OUT.runtime-bundle-query.json" \
-  "$OUT.stage-policies.json"
+  "$OUT.stage-policies.json" \
+  "$OUT.verification-receipt.json"
 /bin/ls -lh \
   "$OUT" \
   "$OUT.inventory.json" \
@@ -483,4 +501,5 @@ echo "[ettr-runtime] complete"
   "$OUT.runtime-bundle-world.json" \
   "$OUT.runtime-bundle-command.json" \
   "$OUT.runtime-bundle-query.json" \
-  "$OUT.stage-policies.json"
+  "$OUT.stage-policies.json" \
+  "$OUT.verification-receipt.json"

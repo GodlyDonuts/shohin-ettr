@@ -18,9 +18,9 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
 )
 
 
-AUTHORITY_SCHEMA = "ettr-factorial-custody-authority-record-v1"
-AUTHORIZED_SEAL_SCHEMA = "ettr-factorial-custody-seal-v2"
-AUTHORITY_SIGNATURE_DOMAIN = b"shohin-ettr-custody-authority-v1\x00"
+AUTHORITY_SCHEMA = "ettr-factorial-custody-authority-record-v2"
+AUTHORIZED_SEAL_SCHEMA = "ettr-factorial-custody-seal-v4"
+AUTHORITY_SIGNATURE_DOMAIN = b"shohin-ettr-custody-authority-v2\x00"
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _HEX_32_BYTES = re.compile(r"^[0-9a-f]{64}$")
 _HEX_64_BYTES = re.compile(r"^[0-9a-f]{128}$")
@@ -75,9 +75,7 @@ def _read_immutable_single_link(path: Path, *, max_bytes: int) -> bytes:
             chunks.append(chunk)
             remaining -= len(chunk)
         if os.read(descriptor, 1):
-            raise ETTRCustodyAuthorityError(
-                f"authority input grew during read: {path}"
-            )
+            raise ETTRCustodyAuthorityError(f"authority input grew during read: {path}")
         after = os.fstat(descriptor)
         identity_before = (
             before.st_dev,
@@ -120,6 +118,9 @@ class ETTRCustodyAuthorityRecord:
     authorized_seal_schema: str
     root_public_key_sha256: str
     custody_public_key_hex: str
+    launch_verifier_public_key_hex: str
+    launch_verifier_public_key_fingerprint: str
+    claim_runtime_verification_receipt_sha256: str
     board_sha256: str
     execution_manifest_sha256: str
     root_signature_hex: str
@@ -152,9 +153,7 @@ def load_ettr_custody_root(
     try:
         Ed25519PublicKey.from_public_bytes(public_key_bytes)
     except ValueError as exc:
-        raise ETTRCustodyAuthorityError(
-            "custody root public key differs"
-        ) from exc
+        raise ETTRCustodyAuthorityError("custody root public key differs") from exc
     return ETTRCustodyRootTrust(
         public_key_bytes=public_key_bytes,
         public_key_sha256=actual_sha256,
@@ -165,6 +164,8 @@ def make_root_signed_ettr_custody_authority(
     *,
     root_private_key: Ed25519PrivateKey,
     custody_public_key_hex: str,
+    launch_verifier_public_key_hex: str,
+    claim_runtime_verification_receipt_sha256: str,
     board_sha256: str,
     execution_manifest_sha256: str,
 ) -> ETTRCustodyAuthorityRecord:
@@ -176,31 +177,43 @@ def make_root_signed_ettr_custody_authority(
     )
     if (
         _HEX_32_BYTES.fullmatch(custody_public_key_hex) is None
-        or bytes.fromhex(custody_public_key_hex) == root_public_key
+        or _HEX_32_BYTES.fullmatch(launch_verifier_public_key_hex) is None
+        or _SHA256.fullmatch(claim_runtime_verification_receipt_sha256) is None
         or _SHA256.fullmatch(board_sha256) is None
         or _SHA256.fullmatch(execution_manifest_sha256) is None
     ):
         raise ETTRCustodyAuthorityError("custody authority input differs")
+    custody_public_key = bytes.fromhex(custody_public_key_hex)
+    launch_verifier_public_key = bytes.fromhex(launch_verifier_public_key_hex)
+    if (
+        custody_public_key == root_public_key
+        or launch_verifier_public_key == root_public_key
+        or launch_verifier_public_key == custody_public_key
+    ):
+        raise ETTRCustodyAuthorityError("custody authority key roles overlap")
     try:
-        Ed25519PublicKey.from_public_bytes(
-            bytes.fromhex(custody_public_key_hex)
-        )
+        Ed25519PublicKey.from_public_bytes(custody_public_key)
+        Ed25519PublicKey.from_public_bytes(launch_verifier_public_key)
     except ValueError as exc:
-        raise ETTRCustodyAuthorityError(
-            "custody signer public key differs"
-        ) from exc
+        raise ETTRCustodyAuthorityError("custody authority public key differs") from exc
     unsigned = ETTRCustodyAuthorityRecord(
         schema=AUTHORITY_SCHEMA,
         authorized_seal_schema=AUTHORIZED_SEAL_SCHEMA,
         root_public_key_sha256=hashlib.sha256(root_public_key).hexdigest(),
         custody_public_key_hex=custody_public_key_hex,
+        launch_verifier_public_key_hex=launch_verifier_public_key_hex,
+        launch_verifier_public_key_fingerprint=hashlib.sha256(
+            launch_verifier_public_key
+        ).hexdigest(),
+        claim_runtime_verification_receipt_sha256=(
+            claim_runtime_verification_receipt_sha256
+        ),
         board_sha256=board_sha256,
         execution_manifest_sha256=execution_manifest_sha256,
         root_signature_hex="",
     )
     signature = root_private_key.sign(
-        AUTHORITY_SIGNATURE_DOMAIN
-        + _canonical_json_bytes(unsigned.unsigned_payload())
+        AUTHORITY_SIGNATURE_DOMAIN + _canonical_json_bytes(unsigned.unsigned_payload())
     ).hex()
     return replace(unsigned, root_signature_hex=signature)
 
@@ -225,9 +238,7 @@ def write_ettr_custody_authority_once(
         while offset < len(payload):
             written = os.write(descriptor, payload[offset:])
             if written <= 0:
-                raise ETTRCustodyAuthorityError(
-                    "custody authority write was short"
-                )
+                raise ETTRCustodyAuthorityError("custody authority write was short")
             offset += written
         os.fsync(descriptor)
     finally:
@@ -260,6 +271,9 @@ def read_root_signed_ettr_custody_authority(
         or record.authorized_seal_schema != AUTHORIZED_SEAL_SCHEMA
         or _SHA256.fullmatch(record.root_public_key_sha256) is None
         or _HEX_32_BYTES.fullmatch(record.custody_public_key_hex) is None
+        or _HEX_32_BYTES.fullmatch(record.launch_verifier_public_key_hex) is None
+        or _SHA256.fullmatch(record.launch_verifier_public_key_fingerprint) is None
+        or _SHA256.fullmatch(record.claim_runtime_verification_receipt_sha256) is None
         or _SHA256.fullmatch(record.board_sha256) is None
         or _SHA256.fullmatch(record.execution_manifest_sha256) is None
         or _HEX_64_BYTES.fullmatch(record.root_signature_hex) is None
@@ -267,13 +281,21 @@ def read_root_signed_ettr_custody_authority(
         or record.sha256() != expected_record_sha256
         or record.root_public_key_sha256 != root_trust.public_key_sha256
         or record.board_sha256 != expected_board_sha256
-        or record.execution_manifest_sha256
-        != expected_execution_manifest_sha256
-        or bytes.fromhex(record.custody_public_key_hex)
+        or record.execution_manifest_sha256 != expected_execution_manifest_sha256
+        or bytes.fromhex(record.custody_public_key_hex) == root_trust.public_key_bytes
+        or bytes.fromhex(record.launch_verifier_public_key_hex)
         == root_trust.public_key_bytes
+        or record.launch_verifier_public_key_hex == record.custody_public_key_hex
+        or hashlib.sha256(
+            bytes.fromhex(record.launch_verifier_public_key_hex)
+        ).hexdigest()
+        != record.launch_verifier_public_key_fingerprint
     ):
         raise ETTRCustodyAuthorityError("custody authority record differs")
     try:
+        Ed25519PublicKey.from_public_bytes(
+            bytes.fromhex(record.launch_verifier_public_key_hex)
+        )
         root_public_key = Ed25519PublicKey.from_public_bytes(
             root_trust.public_key_bytes
         )

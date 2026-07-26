@@ -52731,3 +52731,44 @@ admission are deployment custody controls only; they do not alter the
 
 Current decision:
 `ettr_architecture_complete_stage_specific_runtime_pass_external_supervisor_and_learning_pending`.
+
+## 2026-07-26 Verifier-Signed Launch Custody
+
+The trainable ETTR architecture remains frozen at **192,779,435 parameters**:
+125,081,664 protected Shohin parameters plus 67,697,771 new ETTR parameters,
+leaving 7,220,565 below the 200M cap. The new parameters remain untrained.
+No continuation pretraining was started or prepared.
+
+The external launch contract now has a distinct cryptographic origin.
+Verifier-owned launch receipt v3 is Ed25519-signed only after a successful
+stage exit and descriptor-relative output measurement. One random run ID and
+parent-receipt hashes form an exact WORLD -> COMMAND -> QUERY chain. Offline
+authority record v2 pins the launch-verifier key and independently measured
+claim-runtime receipt; custody seal v4 binds all three launch receipts into
+public admission. Exact-type checks and strict canonical launch parsing reject
+duck-typed validators, extra or missing fields, duplicate JSON keys, old
+schemas, mixed runs, broken parents, invalid signatures, verifier
+substitution, coordinated Python/runtime substitution, artifact
+reassociation, and output-directory replacement.
+
+The supervisor constructs a descriptor-bound Bubblewrap sandbox, blocks the
+child until its network namespace is measured, rejects duplicate or
+abbreviated singleton options, accepts only a descriptor-rooted runtime from
+the trusted extractor, hashes outputs through the retained directory
+descriptor, and receives the launch key only as a fully sealed memfd. The
+candidate receives neither the key nor any persistent descriptor above
+stderr. The runtime builder now replaces the Python entry-point symlink with a
+regular immutable executable and publishes a complete runtime-verification
+receipt.
+
+The merged inventory reached **355/355 passing** before the final bounded
+hardening; the post-hardening focused suite is **65 passed with one
+platform-expected macOS skip**. The in-repository trainable architecture is
+complete. External claim deployment is not yet complete: it requires a fresh
+exact-source archive and a real Linux/H100 three-stage supervisor run whose
+signed receipts pass public admission, plus a launch-verifier principal
+separate from the claimant account and an explicit host loader/NVIDIA driver
+claim boundary.
+
+Current decision:
+`ettr_trainable_architecture_complete_verifier_signed_launch_custody_implemented_real_supervisor_smoke_and_learning_pending`.

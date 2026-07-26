@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import errno
 import hashlib
 from importlib import abc, machinery
 import json
@@ -31,6 +32,40 @@ STAGE_RUNNERS = {
 
 class VerifiedStageError(ValueError):
     """The pre-import stage bundle differs from its preregistered identity."""
+
+
+def _reject_inherited_descriptors() -> None:
+    """Candidate code receives no persistent descriptor above stderr."""
+
+    descriptor_root = next(
+        (
+            Path(candidate)
+            for candidate in ("/proc/self/fd", "/dev/fd")
+            if Path(candidate).is_dir()
+        ),
+        None,
+    )
+    if descriptor_root is None:
+        raise VerifiedStageError("bootstrap descriptor inventory is unavailable")
+    try:
+        names = os.listdir(descriptor_root)
+    except OSError as exc:
+        raise VerifiedStageError(
+            "bootstrap descriptor inventory is unavailable"
+        ) from exc
+    for name in names:
+        if not name.isdigit() or int(name) <= 2:
+            continue
+        try:
+            os.fstat(int(name))
+        except FileNotFoundError:
+            # os.listdir may briefly expose its own closed directory descriptor.
+            continue
+        except OSError as exc:
+            if exc.errno == errno.EBADF:
+                continue
+            raise VerifiedStageError("bootstrap descriptor inventory differs") from exc
+        raise VerifiedStageError("bootstrap inherited descriptor differs")
 
 
 class _VerifiedSourceFinder(abc.MetaPathFinder, abc.Loader):
@@ -301,6 +336,7 @@ def main() -> None:
         and sys.flags.dont_write_bytecode
     ):
         raise VerifiedStageError("bootstrap requires python -I -S -B")
+    _reject_inherited_descriptors()
     parser = argparse.ArgumentParser()
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--manifest-sha256", required=True)

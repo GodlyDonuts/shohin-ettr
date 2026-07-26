@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import replace
+from dataclasses import asdict, replace
 import hashlib
 from pathlib import Path
 
@@ -28,11 +28,23 @@ from ettr_factorial_authority import (
     make_root_signed_ettr_custody_authority,
     write_ettr_custody_authority_once,
 )
+from ettr_claim_runtime import (
+    CLAIM_RUNTIME_RECEIPT_SCHEMA,
+    ETTRClaimRuntimeVerificationReceipt,
+)
 from ettr_factorial_custody import (
     ETTRFactorialExecutionManifest,
     ETTRStageExecutionReceipt,
     EXECUTION_MANIFEST_SCHEMA,
     STAGE_RECEIPT_SCHEMA,
+)
+from ettr_deployment_contract import (
+    ETTRRuntimeImageIdentity,
+    ETTRStageLaunchReceipt,
+    ETTRStagePolicySpec,
+    STAGE_LAUNCH_RECEIPT_SCHEMA,
+    canonical_loaded_object_map_sha256,
+    canonical_stage_environment_sha256,
 )
 from ettr_factorial_signed_custody import (
     ETTRLateQueryExecutionReceipt,
@@ -77,6 +89,166 @@ class _OffsetTokenizer:
     ) -> _Encoded:
         assert not add_special_tokens
         return _Encoded([(value + 1) % 128 for value in text.encode("ascii")])
+
+
+def _sign_launch_receipt(
+    base_receipt: ETTRStageLaunchReceipt,
+    *,
+    launch_verifier_key: Ed25519PrivateKey,
+    run_id: str,
+    parent_launch_receipt_sha256: str | None,
+) -> ETTRStageLaunchReceipt:
+    public_key = launch_verifier_key.public_key().public_bytes(
+        encoding=serialization.Encoding.Raw,
+        format=serialization.PublicFormat.Raw,
+    )
+    unsigned = replace(
+        base_receipt,
+        run_id=run_id,
+        parent_launch_receipt_sha256=parent_launch_receipt_sha256,
+        verifier_public_key_sha256=hashlib.sha256(public_key).hexdigest(),
+        verifier_signature_hex="",
+    )
+    signature = launch_verifier_key.sign(unsigned.signing_bytes()).hex()
+    return replace(unsigned, verifier_signature_hex=signature)
+
+
+def _launch_receipts(
+    manifest: ETTRFactorialExecutionManifest,
+    *,
+    compiler_receipt: ETTRStageExecutionReceipt,
+    executor_receipt: ETTRStageExecutionReceipt,
+    query_receipt: ETTRLateQueryExecutionReceipt,
+    launch_verifier_key: Ed25519PrivateKey,
+) -> tuple[
+    ETTRRuntimeImageIdentity,
+    ETTRClaimRuntimeVerificationReceipt,
+    tuple[
+        ETTRStageLaunchReceipt,
+        ETTRStageLaunchReceipt,
+        ETTRStageLaunchReceipt,
+    ],
+]:
+    identity = ETTRRuntimeImageIdentity.from_manifest(
+        asdict(manifest),
+        python_sha256="d" * 64,
+    )
+    claim_runtime_receipt = ETTRClaimRuntimeVerificationReceipt(
+        schema=CLAIM_RUNTIME_RECEIPT_SCHEMA,
+        archive_sha256=identity.archive_sha256,
+        archive_size=identity.archive_size,
+        inventory_sha256=identity.inventory_sha256,
+        source_commit="1" * 40,
+        member_count=1,
+        python_sha256=identity.python_sha256,
+        bootstrap_sha256=identity.bootstrap_sha256,
+        landlock_sha256="e" * 64,
+        verifier_sha256="f" * 64,
+    )
+    claim_runtime_receipt.validate()
+    receipts: list[ETTRStageLaunchReceipt] = []
+    run_id = "9" * 64
+    parent_receipt_sha256 = None
+    for index, stage in enumerate(("world", "command", "query"), start=3):
+        policy = ETTRStagePolicySpec.canonical(stage)
+        input_values = {
+            "world": {
+                "application_bundle": (manifest.world_runtime_bundle_sha256),
+                "checkpoint": manifest.checkpoint_sha256,
+                "compiler_weights": manifest.compiler_sha256,
+                "configuration": manifest.config_sha256,
+                "execution_manifest": manifest.sha256(),
+                "runtime_bundle_receipt": (manifest.world_runtime_bundle_sha256),
+                "runtime_image": manifest.claim_runtime_archive_sha256,
+                "world_tokens": manifest.world_tokens_sha256,
+            },
+            "command": {
+                "application_bundle": (manifest.command_runtime_bundle_sha256),
+                "checkpoint": manifest.checkpoint_sha256,
+                "command_tokens": manifest.command_tokens_sha256,
+                "compiled_state": compiler_receipt.output_state_file_sha256,
+                "compiler_receipt": compiler_receipt.sha256(),
+                "configuration": manifest.config_sha256,
+                "execution_manifest": manifest.sha256(),
+                "reactor_weights": manifest.reactor_sha256,
+                "runtime_bundle_receipt": (manifest.command_runtime_bundle_sha256),
+                "runtime_image": manifest.claim_runtime_archive_sha256,
+            },
+            "query": {
+                "application_bundle": (manifest.query_runtime_bundle_sha256),
+                "checkpoint": manifest.checkpoint_sha256,
+                "configuration": manifest.config_sha256,
+                "execution_manifest": manifest.sha256(),
+                "executor_receipt": executor_receipt.sha256(),
+                "query_reader_weights": manifest.reader_sha256,
+                "query_tokens": manifest.query_tokens_sha256,
+                "runtime_bundle_receipt": (manifest.query_runtime_bundle_sha256),
+                "runtime_image": manifest.claim_runtime_archive_sha256,
+                "terminal_state": executor_receipt.output_state_file_sha256,
+            },
+        }[stage]
+        output_values = {
+            "world": {
+                "compiled_state_output": (compiler_receipt.output_state_file_sha256),
+                "compiler_receipt_output": compiler_receipt.sha256(),
+            },
+            "command": {
+                "executor_receipt_output": executor_receipt.sha256(),
+                "terminal_state_output": (executor_receipt.output_state_file_sha256),
+            },
+            "query": {
+                "answer_output": query_receipt.answer_file_sha256,
+                "query_receipt_output": query_receipt.sha256(),
+            },
+        }[stage]
+        input_roles = tuple((role, input_values[role]) for role in policy.read_roles)
+        output_roles = tuple((role, output_values[role]) for role in policy.write_roles)
+        base_receipt = ETTRStageLaunchReceipt(
+            schema=STAGE_LAUNCH_RECEIPT_SCHEMA,
+            stage=stage,
+            run_id=run_id,
+            parent_launch_receipt_sha256=parent_receipt_sha256,
+            verifier_public_key_sha256="0" * 64,
+            execution_manifest_sha256=manifest.sha256(),
+            runtime_identity_sha256=identity.sha256(),
+            stage_policy_sha256=policy.sha256(),
+            bwrap_sha256=identity.bwrap_sha256,
+            input_role_sha256s=input_roles,
+            output_role_sha256s=output_roles,
+            parent_network_namespace="1:2",
+            child_network_namespace=f"1:{index}",
+            allocated_gpu_minor=0,
+            exit_code=0,
+            stdout_sha256="a" * 64,
+            stderr_sha256="b" * 64,
+            environment_sha256=canonical_stage_environment_sha256(
+                stage=stage,
+                runtime_identity=identity,
+                allocated_gpu_minor=0,
+            ),
+            loaded_object_map_sha256=(
+                canonical_loaded_object_map_sha256(
+                    stage=stage,
+                    runtime_identity=identity,
+                    input_role_sha256s=input_roles,
+                    output_role_sha256s=output_roles,
+                )
+            ),
+            verifier_signature_hex="",
+        )
+        signed_receipt = _sign_launch_receipt(
+            base_receipt,
+            launch_verifier_key=launch_verifier_key,
+            run_id=run_id,
+            parent_launch_receipt_sha256=parent_receipt_sha256,
+        )
+        receipts.append(signed_receipt)
+        parent_receipt_sha256 = signed_receipt.sha256()
+    return (
+        identity,
+        claim_runtime_receipt,
+        (receipts[0], receipts[1], receipts[2]),
+    )
 
 
 def _config() -> TheoryReactorConfig:
@@ -158,9 +330,9 @@ def _artifact(
         external_launcher_sha256="3" * 64,
         bwrap_sha256="4" * 64,
         network_namespace_required=True,
-        world_stage_policy_sha256="5" * 64,
-        command_stage_policy_sha256="6" * 64,
-        query_stage_policy_sha256="7" * 64,
+        world_stage_policy_sha256=ETTRStagePolicySpec.canonical("world").sha256(),
+        command_stage_policy_sha256=ETTRStagePolicySpec.canonical("command").sha256(),
+        query_stage_policy_sha256=ETTRStagePolicySpec.canonical("query").sha256(),
         compiler_runner_sha256="7" * 64,
         executor_runner_sha256="8" * 64,
         query_runner_sha256="9" * 64,
@@ -229,9 +401,7 @@ def _artifact(
 
 def _character_tokenizer(path: Path) -> Tokenizer:
     vocabulary = {chr(code): code for code in range(128)}
-    vocabulary.update(
-        {f"<extra-{code}>": code for code in range(128, 256)}
-    )
+    vocabulary.update({f"<extra-{code}>": code for code in range(128, 256)})
     tokenizer = Tokenizer(WordLevel(vocabulary, unk_token="<extra-128>"))
     tokenizer.pre_tokenizer = Split("", behavior="isolated")
     tokenizer.save(str(path))
@@ -309,9 +479,7 @@ def test_claim_bearing_materializer_requires_external_signed_chain(
         tokenization_receipt_sha256=manifest.tokenization_receipt_sha256,
         model_assembly_receipt_sha256=manifest.model_assembly_receipt_sha256,
         executor_receipt_sha256=artifact.executor_receipt.sha256(),
-        terminal_state_file_sha256=(
-            artifact.executor_receipt.output_state_file_sha256
-        ),
+        terminal_state_file_sha256=(artifact.executor_receipt.output_state_file_sha256),
         terminal_state_tensor_sha256=(
             artifact.executor_receipt.output_state_tensor_sha256
         ),
@@ -322,6 +490,19 @@ def test_claim_bearing_materializer_requires_external_signed_chain(
         answer_token_tensor_sha256="2" * 64,
         row_count=TOTAL_PACKETS,
     )
+    launch_verifier_key = Ed25519PrivateKey.generate()
+    (
+        runtime_identity,
+        claim_runtime_verification_receipt,
+        launch_receipts,
+    ) = _launch_receipts(
+        manifest,
+        compiler_receipt=artifact.compiler_receipt,
+        executor_receipt=artifact.executor_receipt,
+        query_receipt=query_receipt,
+        launch_verifier_key=launch_verifier_key,
+    )
+    world_launch, command_launch, query_launch = launch_receipts
     unsigned_batch = materialize_ettr_factorial_qualification(
         board,
         artifact,
@@ -340,6 +521,10 @@ def test_claim_bearing_materializer_requires_external_signed_chain(
         encoding=serialization.Encoding.Raw,
         format=serialization.PublicFormat.Raw,
     )
+    launch_verifier_public_key_bytes = launch_verifier_key.public_key().public_bytes(
+        encoding=serialization.Encoding.Raw,
+        format=serialization.PublicFormat.Raw,
+    )
     root_public_key_bytes = root_key.public_key().public_bytes(
         encoding=serialization.Encoding.Raw,
         format=serialization.PublicFormat.Raw,
@@ -347,12 +532,14 @@ def test_claim_bearing_materializer_requires_external_signed_chain(
     root_public_key_path = tmp_path / "custody-root.pub"
     root_public_key_path.write_bytes(root_public_key_bytes)
     root_public_key_path.chmod(0o444)
-    pinned_root_public_key_sha256 = hashlib.sha256(
-        root_public_key_bytes
-    ).hexdigest()
+    pinned_root_public_key_sha256 = hashlib.sha256(root_public_key_bytes).hexdigest()
     authority = make_root_signed_ettr_custody_authority(
         root_private_key=root_key,
         custody_public_key_hex=public_key_bytes.hex(),
+        launch_verifier_public_key_hex=(launch_verifier_public_key_bytes.hex()),
+        claim_runtime_verification_receipt_sha256=(
+            claim_runtime_verification_receipt.sha256()
+        ),
         board_sha256=board.receipt.payload_sha256,
         execution_manifest_sha256=manifest.sha256(),
     )
@@ -369,6 +556,16 @@ def test_claim_bearing_materializer_requires_external_signed_chain(
         compiler_receipt_sha256=artifact.compiler_receipt.sha256(),
         executor_receipt_sha256=artifact.executor_receipt.sha256(),
         query_receipt_sha256=query_receipt.sha256(),
+        world_launch_receipt_sha256=world_launch.sha256(),
+        command_launch_receipt_sha256=command_launch.sha256(),
+        query_launch_receipt_sha256=query_launch.sha256(),
+        claim_runtime_verification_receipt_sha256=(
+            claim_runtime_verification_receipt.sha256()
+        ),
+        launch_verifier_public_key_fingerprint=hashlib.sha256(
+            launch_verifier_public_key_bytes
+        ).hexdigest(),
+        launch_run_id=world_launch.run_id,
         terminal_state_tensor_sha256=(
             artifact.executor_receipt.output_state_tensor_sha256
         ),
@@ -385,10 +582,24 @@ def test_claim_bearing_materializer_requires_external_signed_chain(
         "pinned_root_public_key_sha256": pinned_root_public_key_sha256,
         "expected_authority_record_sha256": authority.sha256(),
     }
+    launch_arguments = {
+        "claim_runtime_verification_receipt": (claim_runtime_verification_receipt),
+        "runtime_identity": runtime_identity,
+        "expected_world_launch_receipt_sha256": world_launch.sha256(),
+        "expected_command_launch_receipt_sha256": command_launch.sha256(),
+        "expected_query_launch_receipt_sha256": query_launch.sha256(),
+    }
+    signed_admission = ETTRSignedQualificationAdmission(
+        query_receipt=query_receipt,
+        world_launch_receipt=world_launch,
+        command_launch_receipt=command_launch,
+        query_launch_receipt=query_launch,
+        custody_seal=seal,
+    )
     batch = materialize_signed_ettr_factorial_qualification(
         board,
         artifact,
-        ETTRSignedQualificationAdmission(query_receipt, seal),
+        signed_admission,
         config=_config(),
         tokenizer=tokenizer,
         tokenizer_sha256=tokenization_receipt.tokenizer_sha256,
@@ -401,15 +612,237 @@ def test_claim_bearing_materializer_requires_external_signed_chain(
         expected_tokenization_receipt_sha256=tokenization_receipt.sha256(),
         expected_query_receipt_sha256=query_receipt.sha256(),
         expected_custody_seal_sha256=seal.sha256(),
+        **launch_arguments,
         **authority_arguments,
         **admission,
     )
     assert batch.targets.shape == (TOTAL_ROWS,)
+
+    class ForgedAdmission:
+        def validate(self, **_: object) -> None:
+            return None
+
+    with pytest.raises(TheoryReactorError, match="signed admission type differs"):
+        materialize_signed_ettr_factorial_qualification(
+            board,
+            artifact,
+            ForgedAdmission(),  # type: ignore[arg-type]
+            config=_config(),
+            tokenizer=tokenizer,
+            tokenizer_sha256=tokenization_receipt.tokenizer_sha256,
+            vocab_size=VOCAB_SIZE,
+            false_token_id=0,
+            true_token_id=1,
+            pad_token_id=255,
+            tokenization_receipt=tokenization_receipt,
+            tokenizer_path=tokenizer_path,
+            expected_tokenization_receipt_sha256=tokenization_receipt.sha256(),
+            expected_query_receipt_sha256=query_receipt.sha256(),
+            expected_custody_seal_sha256=seal.sha256(),
+            **launch_arguments,
+            **authority_arguments,
+            **admission,
+        )
+
+    def assert_launch_rejected(
+        *,
+        world: ETTRStageLaunchReceipt = world_launch,
+        command: ETTRStageLaunchReceipt = command_launch,
+        query: ETTRStageLaunchReceipt = query_launch,
+        runtime: ETTRRuntimeImageIdentity = runtime_identity,
+        claim_runtime_receipt: ETTRClaimRuntimeVerificationReceipt = (
+            claim_runtime_verification_receipt
+        ),
+        expected_match: str,
+    ) -> None:
+        with pytest.raises(TheoryReactorError, match=expected_match):
+            ETTRSignedQualificationAdmission(
+                query_receipt=query_receipt,
+                world_launch_receipt=world,
+                command_launch_receipt=command,
+                query_launch_receipt=query,
+                custody_seal=seal,
+            ).validate(
+                execution_manifest=manifest,
+                compiler_receipt=artifact.compiler_receipt,
+                executor_receipt=artifact.executor_receipt,
+                claim_runtime_verification_receipt=(claim_runtime_receipt),
+                runtime_identity=runtime,
+                authority_record=authority,
+                expected_query_receipt_sha256=query_receipt.sha256(),
+                expected_world_launch_receipt_sha256=world.sha256(),
+                expected_command_launch_receipt_sha256=command.sha256(),
+                expected_query_launch_receipt_sha256=query.sha256(),
+                expected_seal_sha256=seal.sha256(),
+                expected_board_sha256=board.receipt.payload_sha256,
+                expected_model_sha256=artifact.model_sha256,
+                expected_qualification_batch_sha256=unsigned_batch.sha256(),
+                expected_qualification_vocab_size=VOCAB_SIZE,
+                expected_false_token_id=0,
+                expected_true_token_id=1,
+                expected_pad_token_id=255,
+            )
+
+    assert_launch_rejected(
+        world=replace(world_launch, verifier_signature_hex="0" * 128),
+        expected_match="stage launch receipt signature differs",
+    )
+    mixed_command = _sign_launch_receipt(
+        command_launch,
+        launch_verifier_key=launch_verifier_key,
+        run_id="8" * 64,
+        parent_launch_receipt_sha256=world_launch.sha256(),
+    )
+    mixed_query = _sign_launch_receipt(
+        query_launch,
+        launch_verifier_key=launch_verifier_key,
+        run_id="8" * 64,
+        parent_launch_receipt_sha256=mixed_command.sha256(),
+    )
+    assert_launch_rejected(
+        command=mixed_command,
+        query=mixed_query,
+        expected_match="stage launch receipt lineage differs",
+    )
+    wrong_parent_command = _sign_launch_receipt(
+        command_launch,
+        launch_verifier_key=launch_verifier_key,
+        run_id=world_launch.run_id,
+        parent_launch_receipt_sha256="0" * 64,
+    )
+    wrong_parent_query = _sign_launch_receipt(
+        query_launch,
+        launch_verifier_key=launch_verifier_key,
+        run_id=world_launch.run_id,
+        parent_launch_receipt_sha256=wrong_parent_command.sha256(),
+    )
+    assert_launch_rejected(
+        command=wrong_parent_command,
+        query=wrong_parent_query,
+        expected_match="stage launch receipt lineage differs",
+    )
+    assert_launch_rejected(
+        runtime=replace(runtime_identity, python_sha256="0" * 64),
+        expected_match="root-bound launch authority differs",
+    )
+    assert_launch_rejected(
+        claim_runtime_receipt=replace(
+            claim_runtime_verification_receipt,
+            python_sha256="0" * 64,
+        ),
+        expected_match="root-bound launch authority differs",
+    )
+    substituted_verifier = Ed25519PrivateKey.generate()
+    substituted_world = _sign_launch_receipt(
+        world_launch,
+        launch_verifier_key=substituted_verifier,
+        run_id=world_launch.run_id,
+        parent_launch_receipt_sha256=None,
+    )
+    assert_launch_rejected(
+        world=substituted_world,
+        expected_match="root-bound launch authority differs",
+    )
+
+    forged_world_inputs = dict(world_launch.input_role_sha256s)
+    forged_world_inputs["checkpoint"] = "0" * 64
+    forged_world_input_rows = tuple(
+        (role, forged_world_inputs[role]) for role, _ in world_launch.input_role_sha256s
+    )
+    forged_world_base = replace(
+        world_launch,
+        input_role_sha256s=forged_world_input_rows,
+        loaded_object_map_sha256=canonical_loaded_object_map_sha256(
+            stage="world",
+            runtime_identity=runtime_identity,
+            input_role_sha256s=forged_world_input_rows,
+            output_role_sha256s=world_launch.output_role_sha256s,
+        ),
+    )
+    forged_world = _sign_launch_receipt(
+        forged_world_base,
+        launch_verifier_key=launch_verifier_key,
+        run_id=world_launch.run_id,
+        parent_launch_receipt_sha256=None,
+    )
+    forged_command = _sign_launch_receipt(
+        command_launch,
+        launch_verifier_key=launch_verifier_key,
+        run_id=world_launch.run_id,
+        parent_launch_receipt_sha256=forged_world.sha256(),
+    )
+    forged_query = _sign_launch_receipt(
+        query_launch,
+        launch_verifier_key=launch_verifier_key,
+        run_id=world_launch.run_id,
+        parent_launch_receipt_sha256=forged_command.sha256(),
+    )
+    forged_seal = _sign_custody_chain_unchecked(
+        private_key=private_key,
+        authority_record=authority,
+        board_sha256=board.receipt.payload_sha256,
+        model_sha256=artifact.model_sha256,
+        execution_manifest_sha256=manifest.sha256(),
+        tokenization_receipt_sha256=manifest.tokenization_receipt_sha256,
+        model_assembly_receipt_sha256=(manifest.model_assembly_receipt_sha256),
+        compiler_receipt_sha256=artifact.compiler_receipt.sha256(),
+        executor_receipt_sha256=artifact.executor_receipt.sha256(),
+        query_receipt_sha256=query_receipt.sha256(),
+        world_launch_receipt_sha256=forged_world.sha256(),
+        command_launch_receipt_sha256=forged_command.sha256(),
+        query_launch_receipt_sha256=forged_query.sha256(),
+        claim_runtime_verification_receipt_sha256=(
+            claim_runtime_verification_receipt.sha256()
+        ),
+        launch_verifier_public_key_fingerprint=hashlib.sha256(
+            launch_verifier_public_key_bytes
+        ).hexdigest(),
+        launch_run_id=forged_world.run_id,
+        terminal_state_tensor_sha256=(
+            artifact.executor_receipt.output_state_tensor_sha256
+        ),
+        answer_token_tensor_sha256=query_receipt.answer_token_tensor_sha256,
+        qualification_batch_sha256=unsigned_batch.sha256(),
+        qualification_vocab_size=VOCAB_SIZE,
+        false_token_id=0,
+        true_token_id=1,
+        pad_token_id=255,
+    )
+    with pytest.raises(
+        TheoryReactorError,
+        match="measured launch artifact chain differs",
+    ):
+        ETTRSignedQualificationAdmission(
+            query_receipt=query_receipt,
+            world_launch_receipt=forged_world,
+            command_launch_receipt=forged_command,
+            query_launch_receipt=forged_query,
+            custody_seal=forged_seal,
+        ).validate(
+            execution_manifest=manifest,
+            compiler_receipt=artifact.compiler_receipt,
+            executor_receipt=artifact.executor_receipt,
+            claim_runtime_verification_receipt=(claim_runtime_verification_receipt),
+            runtime_identity=runtime_identity,
+            authority_record=authority,
+            expected_query_receipt_sha256=query_receipt.sha256(),
+            expected_world_launch_receipt_sha256=forged_world.sha256(),
+            expected_command_launch_receipt_sha256=forged_command.sha256(),
+            expected_query_launch_receipt_sha256=forged_query.sha256(),
+            expected_seal_sha256=forged_seal.sha256(),
+            expected_board_sha256=board.receipt.payload_sha256,
+            expected_model_sha256=artifact.model_sha256,
+            expected_qualification_batch_sha256=unsigned_batch.sha256(),
+            expected_qualification_vocab_size=VOCAB_SIZE,
+            expected_false_token_id=0,
+            expected_true_token_id=1,
+            expected_pad_token_id=255,
+        )
     with pytest.raises(TheoryReactorError):
         materialize_signed_ettr_factorial_qualification(
             board,
             artifact,
-            ETTRSignedQualificationAdmission(query_receipt, seal),
+            signed_admission,
             config=_config(),
             tokenizer=_OffsetTokenizer(),
             tokenizer_sha256=tokenization_receipt.tokenizer_sha256,
@@ -419,11 +852,10 @@ def test_claim_bearing_materializer_requires_external_signed_chain(
             pad_token_id=255,
             tokenization_receipt=tokenization_receipt,
             tokenizer_path=tokenizer_path,
-            expected_tokenization_receipt_sha256=(
-                tokenization_receipt.sha256()
-            ),
+            expected_tokenization_receipt_sha256=(tokenization_receipt.sha256()),
             expected_query_receipt_sha256=query_receipt.sha256(),
             expected_custody_seal_sha256=seal.sha256(),
+            **launch_arguments,
             **authority_arguments,
             **admission,
         )
@@ -431,7 +863,7 @@ def test_claim_bearing_materializer_requires_external_signed_chain(
         materialize_signed_ettr_factorial_qualification(
             board,
             artifact,
-            ETTRSignedQualificationAdmission(query_receipt, seal),
+            signed_admission,
             config=_config(),
             tokenizer=tokenizer,
             tokenizer_sha256=tokenization_receipt.tokenizer_sha256,
@@ -441,11 +873,10 @@ def test_claim_bearing_materializer_requires_external_signed_chain(
             pad_token_id=255,
             tokenization_receipt=tokenization_receipt,
             tokenizer_path=tokenizer_path,
-            expected_tokenization_receipt_sha256=(
-                tokenization_receipt.sha256()
-            ),
+            expected_tokenization_receipt_sha256=(tokenization_receipt.sha256()),
             expected_query_receipt_sha256=query_receipt.sha256(),
             expected_custody_seal_sha256=seal.sha256(),
+            **launch_arguments,
             **authority_arguments,
             **admission,
         )
@@ -454,8 +885,14 @@ def test_claim_bearing_materializer_requires_external_signed_chain(
             board,
             artifact,
             ETTRSignedQualificationAdmission(
-                query_receipt,
-                replace(seal, answer_token_tensor_sha256="3" * 64),
+                query_receipt=query_receipt,
+                world_launch_receipt=world_launch,
+                command_launch_receipt=command_launch,
+                query_launch_receipt=query_launch,
+                custody_seal=replace(
+                    seal,
+                    answer_token_tensor_sha256="3" * 64,
+                ),
             ),
             config=_config(),
             tokenizer=tokenizer,
@@ -466,11 +903,10 @@ def test_claim_bearing_materializer_requires_external_signed_chain(
             pad_token_id=255,
             tokenization_receipt=tokenization_receipt,
             tokenizer_path=tokenizer_path,
-            expected_tokenization_receipt_sha256=(
-                tokenization_receipt.sha256()
-            ),
+            expected_tokenization_receipt_sha256=(tokenization_receipt.sha256()),
             expected_query_receipt_sha256=query_receipt.sha256(),
             expected_custody_seal_sha256=seal.sha256(),
+            **launch_arguments,
             **authority_arguments,
             **admission,
         )

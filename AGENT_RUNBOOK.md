@@ -14612,3 +14612,53 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `ettr_architecture_complete_confined_h100_runtime_pass_external_supervisor_and_learning_pending`.
+
+- **2026-07-26 EDT** -- **Verifier-signed launch custody is implemented; the
+  trainable architecture remains complete and untrained.** No continuation
+  pretraining was started, queued, resumed, prepared, or modified. The
+  protected step-300k checkpoint and its lineage remain untouched.
+
+  `ETTRStageLaunchReceipt` schema v3 is now signed under a domain-separated
+  Ed25519 launch-verifier key. Every receipt binds one verifier-generated run
+  ID, its exact parent launch receipt, the execution manifest, stage policy,
+  runtime identity, descriptor-measured inputs and outputs, network
+  namespace, allocated GPU, process status, environment, and canonical mount
+  map. WORLD has no parent; COMMAND names WORLD; QUERY names COMMAND. The
+  candidate never receives the signing descriptor.
+
+  The root-signed authority record is schema v2 and pins the distinct launch
+  verifier public key plus the exact claim-runtime verification receipt.
+  Custody seal schema v4 binds all three authenticated launch receipts and
+  their run lineage. Public admission exact-type checks the admission,
+  late-query receipt, launch receipts, runtime receipt, and custody seal;
+  forged duck types, invalid signatures, key substitution, mixed runs, broken
+  parents, old schemas, Python/runtime substitution, artifact reassociation,
+  and output-path replacement fail closed. Candidate bootstrap now rejects
+  all persistent inherited descriptors on Linux and macOS.
+
+  The verifier supervisor uses descriptor-bound Bubblewrap inputs and
+  outputs, a status/block handshake with a deadline, descriptor-relative
+  output inventory and hashing, exact singleton CLI options with no
+  abbreviations, a descriptor-rooted runtime supplied by the trusted
+  extractor, and a fully sealed memfd signing-key descriptor. The runtime
+  builder now materializes `miniforge3/bin/python` as a regular immutable
+  file and publishes the independently measured runtime-verification receipt.
+  The merged complete inventory passed **355/355** before the final
+  duplicate-option, duck-type, lineage, sealed-key, and Python-publication
+  hardening; focused post-hardening tests pass **65 passed / 1 macOS-only
+  sealed-memfd skip** with clean Ruff, byte compilation, shell syntax, and
+  diff checks. Rerun the complete inventory before commit.
+
+  This closes the in-repository supervisor and admission design, not the
+  external deployment proof. A claim-bearing release remains **NO-GO** until
+  a fresh exact-source runtime is built and a real Linux/H100
+  `extract-exec -> supervisor -> Bubblewrap -> WORLD -> COMMAND -> QUERY`
+  chain produces three signed receipts and passes public admission. The
+  launch key must be owned by a separate verifier principal/service; a
+  same-account process is not an independent verifier. The host
+  loader/NVIDIA driver closure must also be pinned or explicitly included in
+  the claim boundary. These are non-neural controls and do not reopen the
+  192,779,435-parameter architecture.
+
+  Decision:
+  `ettr_trainable_architecture_complete_verifier_signed_launch_custody_implemented_real_supervisor_smoke_and_learning_pending`.

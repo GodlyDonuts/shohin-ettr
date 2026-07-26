@@ -1,8 +1,15 @@
 from __future__ import annotations
 
 from dataclasses import replace
+import hashlib
+import json
 
 import pytest
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.ed25519 import (
+    Ed25519PrivateKey,
+)
 
 from ettr_deployment_contract import (
     ETTRDeploymentContractError,
@@ -11,7 +18,18 @@ from ettr_deployment_contract import (
     ETTRStagePolicySpec,
     RUNTIME_IDENTITY_SCHEMA,
     STAGE_LAUNCH_RECEIPT_SCHEMA,
+    STAGE_LAUNCH_SIGNATURE_DOMAIN,
+    canonical_loaded_object_map_sha256,
+    canonical_stage_environment_sha256,
     canonical_stage_policy_sha256s,
+    validate_stage_launch_receipt_chain,
+)
+
+
+_PRIVATE_KEY = Ed25519PrivateKey.from_private_bytes(b"k" * 32)
+_PUBLIC_KEY = _PRIVATE_KEY.public_key().public_bytes(
+    encoding=serialization.Encoding.Raw,
+    format=serialization.PublicFormat.Raw,
 )
 
 
@@ -41,23 +59,50 @@ def _launch(
 ]:
     identity = _identity()
     policy = ETTRStagePolicySpec.canonical(stage)
-    receipt = ETTRStageLaunchReceipt(
+    input_roles = tuple(
+        (role, "3" * 64) for role in policy.read_roles
+    )
+    output_roles = tuple(
+        (role, "4" * 64) for role in policy.write_roles
+    )
+    unsigned = ETTRStageLaunchReceipt(
         schema=STAGE_LAUNCH_RECEIPT_SCHEMA,
         stage=stage,
+        run_id="9" * 64,
+        parent_launch_receipt_sha256=(
+            None if stage == "world" else "8" * 64
+        ),
+        verifier_public_key_sha256=hashlib.sha256(_PUBLIC_KEY).hexdigest(),
         execution_manifest_sha256="2" * 64,
         runtime_identity_sha256=identity.sha256(),
         stage_policy_sha256=policy.sha256(),
         bwrap_sha256=identity.bwrap_sha256,
-        input_role_sha256s=tuple(
-            (role, "3" * 64) for role in policy.read_roles
-        ),
-        output_role_sha256s=tuple(
-            (role, "4" * 64) for role in policy.write_roles
-        ),
+        input_role_sha256s=input_roles,
+        output_role_sha256s=output_roles,
         parent_network_namespace="1:2",
         child_network_namespace="1:3",
-        environment_sha256="5" * 64,
-        loaded_object_map_sha256="6" * 64,
+        allocated_gpu_minor=0,
+        exit_code=0,
+        stdout_sha256="5" * 64,
+        stderr_sha256="6" * 64,
+        environment_sha256=canonical_stage_environment_sha256(
+            stage=stage,
+            runtime_identity=identity,
+            allocated_gpu_minor=0,
+        ),
+        loaded_object_map_sha256=canonical_loaded_object_map_sha256(
+            stage=stage,
+            runtime_identity=identity,
+            input_role_sha256s=input_roles,
+            output_role_sha256s=output_roles,
+        ),
+        verifier_signature_hex="",
+    )
+    receipt = replace(
+        unsigned,
+        verifier_signature_hex=_PRIVATE_KEY.sign(
+            unsigned.signing_bytes()
+        ).hex(),
     )
     return receipt, identity, policy
 
@@ -73,6 +118,7 @@ def test_canonical_stage_policies_and_launch_receipts_validate(
         runtime_identity=identity,
         policy=policy,
         expected_execution_manifest_sha256="2" * 64,
+        expected_verifier_public_key=_PUBLIC_KEY,
     )
     assert canonical_stage_policy_sha256s()[stage] == policy.sha256()
 
@@ -178,3 +224,201 @@ def test_runtime_identity_rejects_unmeasured_or_nonisolated_runtime() -> None:
     ):
         with pytest.raises(ETTRDeploymentContractError):
             changed.validate()
+
+
+def test_measured_environment_object_map_and_exit_are_not_assertions() -> None:
+    receipt, identity, policy = _launch("world")
+    for changed in (
+        replace(receipt, environment_sha256="0" * 64),
+        replace(receipt, loaded_object_map_sha256="0" * 64),
+        replace(receipt, allocated_gpu_minor=1),
+        replace(receipt, exit_code=1),
+    ):
+        with pytest.raises(ETTRDeploymentContractError):
+            changed.validate(
+                runtime_identity=identity,
+                policy=policy,
+                expected_execution_manifest_sha256="2" * 64,
+            )
+
+
+def test_complete_launch_chain_rejects_missing_or_reassociated_stage() -> None:
+    world = _launch("world")[0]
+    command_unsigned = replace(
+        _launch("command")[0],
+        parent_launch_receipt_sha256=world.sha256(),
+        verifier_signature_hex="",
+    )
+    command = replace(
+        command_unsigned,
+        verifier_signature_hex=_PRIVATE_KEY.sign(
+            command_unsigned.signing_bytes()
+        ).hex(),
+    )
+    query_unsigned = replace(
+        _launch("query")[0],
+        parent_launch_receipt_sha256=command.sha256(),
+        verifier_signature_hex="",
+    )
+    query = replace(
+        query_unsigned,
+        verifier_signature_hex=_PRIVATE_KEY.sign(
+            query_unsigned.signing_bytes()
+        ).hex(),
+    )
+    receipts = {"world": world, "command": command, "query": query}
+    identity = _identity()
+    assert len(
+        validate_stage_launch_receipt_chain(
+            receipts=receipts,
+            runtime_identity=identity,
+            expected_execution_manifest_sha256="2" * 64,
+            expected_verifier_public_key=_PUBLIC_KEY,
+        )
+    ) == 3
+    with pytest.raises(
+        ETTRDeploymentContractError,
+        match="inventory differs",
+    ):
+        validate_stage_launch_receipt_chain(
+            receipts={
+                "world": receipts["world"],
+                "command": receipts["command"],
+            },
+            runtime_identity=identity,
+            expected_execution_manifest_sha256="2" * 64,
+            expected_verifier_public_key=_PUBLIC_KEY,
+        )
+    with pytest.raises(ETTRDeploymentContractError):
+        validate_stage_launch_receipt_chain(
+            receipts={
+                **receipts,
+                "query": replace(receipts["query"], stage="world"),
+            },
+            runtime_identity=identity,
+            expected_execution_manifest_sha256="2" * 64,
+            expected_verifier_public_key=_PUBLIC_KEY,
+        )
+    broken_query_unsigned = replace(
+        receipts["query"],
+        parent_launch_receipt_sha256="8" * 64,
+        verifier_signature_hex="",
+    )
+    broken_query = replace(
+        broken_query_unsigned,
+        verifier_signature_hex=_PRIVATE_KEY.sign(
+            broken_query_unsigned.signing_bytes()
+        ).hex(),
+    )
+    with pytest.raises(
+        ETTRDeploymentContractError,
+        match="lineage differs",
+    ):
+        validate_stage_launch_receipt_chain(
+            receipts={**receipts, "query": broken_query},
+            runtime_identity=identity,
+            expected_execution_manifest_sha256="2" * 64,
+            expected_verifier_public_key=_PUBLIC_KEY,
+        )
+
+
+def test_launch_receipt_signature_is_domain_separated_and_tamper_evident() -> None:
+    receipt, identity, policy = _launch("command")
+    with pytest.raises(InvalidSignature):
+        _PRIVATE_KEY.public_key().verify(
+            bytes.fromhex(receipt.verifier_signature_hex),
+            receipt.signing_bytes().removeprefix(
+                STAGE_LAUNCH_SIGNATURE_DOMAIN
+            ),
+        )
+    for changed in (
+        replace(receipt, stdout_sha256="0" * 64),
+        replace(receipt, run_id="7" * 64),
+        replace(receipt, parent_launch_receipt_sha256="6" * 64),
+        replace(receipt, verifier_signature_hex="0" * 128),
+    ):
+        with pytest.raises(ETTRDeploymentContractError):
+            changed.validate(
+                runtime_identity=identity,
+                policy=policy,
+                expected_execution_manifest_sha256="2" * 64,
+                expected_verifier_public_key=_PUBLIC_KEY,
+            )
+    wrong_public_key = (
+        Ed25519PrivateKey.from_private_bytes(b"x" * 32)
+        .public_key()
+        .public_bytes(
+            encoding=serialization.Encoding.Raw,
+            format=serialization.PublicFormat.Raw,
+        )
+    )
+    with pytest.raises(
+        ETTRDeploymentContractError,
+        match="public key identity differs",
+    ):
+        receipt.validate(
+            runtime_identity=identity,
+            policy=policy,
+            expected_execution_manifest_sha256="2" * 64,
+            expected_verifier_public_key=wrong_public_key,
+        )
+
+
+@pytest.mark.parametrize("stage", ["world", "command", "query"])
+def test_launch_receipt_parent_geometry_is_stage_specific(stage: str) -> None:
+    receipt, identity, policy = _launch(stage)
+    invalid_parent = "7" * 64 if stage == "world" else None
+    with pytest.raises(ETTRDeploymentContractError):
+        replace(
+            receipt,
+            parent_launch_receipt_sha256=invalid_parent,
+        ).validate(
+            runtime_identity=identity,
+            policy=policy,
+            expected_execution_manifest_sha256="2" * 64,
+            expected_verifier_public_key=_PUBLIC_KEY,
+        )
+
+
+def test_strict_launch_receipt_parser_authenticates_canonical_bytes() -> None:
+    receipt, identity, policy = _launch("query")
+    assert ETTRStageLaunchReceipt.from_canonical_bytes(
+        receipt.canonical_bytes(),
+        verifier_public_key=_PUBLIC_KEY,
+        runtime_identity=identity,
+        policy=policy,
+        expected_execution_manifest_sha256="2" * 64,
+    ) == receipt
+
+    pretty = json.dumps(
+        json.loads(receipt.canonical_bytes()),
+        indent=2,
+        sort_keys=True,
+    ).encode("ascii")
+    duplicate = receipt.canonical_bytes().replace(
+        b'{"allocated_gpu_minor":',
+        b'{"allocated_gpu_minor":0,"allocated_gpu_minor":',
+        1,
+    )
+    extra = {
+        **json.loads(receipt.canonical_bytes()),
+        "unexpected": True,
+    }
+    tampered = replace(
+        receipt,
+        verifier_signature_hex="0" * 128,
+    ).canonical_bytes()
+    for payload in (
+        pretty,
+        duplicate,
+        json.dumps(extra, sort_keys=True).encode("ascii"),
+        tampered,
+    ):
+        with pytest.raises(ETTRDeploymentContractError):
+            ETTRStageLaunchReceipt.from_canonical_bytes(
+                payload,
+                verifier_public_key=_PUBLIC_KEY,
+                runtime_identity=identity,
+                policy=policy,
+                expected_execution_manifest_sha256="2" * 64,
+            )
