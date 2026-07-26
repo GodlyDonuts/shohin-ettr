@@ -14,7 +14,7 @@
 > compatibility, and isolated reasoning evaluation may continue; none of those
 > activities implies permission to pretrain.
 >
-> **Last updated:** 2026-07-26 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-26 16:15 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -14744,3 +14744,52 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `ettr_architecture_complete_runtime_v3_built_real_h100_supervisor_smoke_pending_isolated_learning_unmeasured`.
+
+- **2026-07-26 16:15 EDT** -- **The production supervisor chain passes; the
+  corrected cross-runtime public-admission rerun is pending, and isolated
+  learning remains fail-closed on an underspecified v1 protocol.** No
+  continuation pretraining was started, prepared, queued, resumed, or
+  modified. The protected step-300k checkpoint and data lineage remain
+  untouched.
+
+  Job `707065` completed the exact signed
+  `WORLD -> COMMAND -> QUERY` supervisor chain on `evc40`, including one
+  verified runtime extraction, one sealed memfd launch key, three
+  parent-linked launch receipts, network isolation, and runtime removal. It
+  then failed correctly at public qualification admission because random
+  step-0 hard-forward weights collapsed the synthetic terminal state below
+  the required four distinct packets. Job `707178` replaced the COMMAND side
+  with an analytic label-free code but failed before launch because WORLD
+  uniqueness still depended on PyTorch-version-specific random
+  initialization.
+
+  Commits `c5aadbf` and `bacb42e` remove both stochastic dependencies. The
+  schema-v3 fixture analytically constructs six distinct WORLD codes and six
+  distinct COMMAND codes from raw token rows only, producing all twelve
+  factorial terminal packets. It reads no query, target, assessor,
+  checkpoint, optimizer, shard, or training artifact and performs no
+  optimizer update. The exact assessor environment reproduced the analytic
+  fixture on Stokes. The complete local ETTR-focused inventory passes
+  **307 passed / 2 platform-only skips in 53.06 seconds**; Ruff, byte
+  compilation, shell syntax, and diff checks are clean.
+
+  Exact-source smoke `707200` is pending normal-partition priority from
+  immutable preparer SHA-256
+  `788c56be881dc384f84fa790b46ab03271b045abcaf79e85e609b3b4b6fca0b1`
+  and runtime-v3 pins. A pass closes repository-controlled deployment
+  mechanics, but same-account launch is still not independent verifier
+  ownership.
+
+  Independent implementation audit
+  `R12_ETTR_ISOLATED_LEARNABILITY_IMPLEMENTATION_AUDIT.md` finds v1
+  **NO-GO for CPU materialization**: sixteen clauses leave split bytes,
+  composition depth, rectangle semantics, shared renderers, leakage
+  controls, target projection, confirmation custody, or ontology-to-ETTR
+  targets underdetermined or contradictory. The CPU-only
+  `pipeline/freeze_ettr_isolated_learnability.py` now reports those blockers
+  deterministically and exits before creating output rather than inventing
+  semantics. No learning job is authorized until a new machine-complete
+  protocol repairs them.
+
+  Decision:
+  `ettr_architecture_mechanics_complete_supervisor_chain_pass_public_admission_rerun_pending_v1_learning_protocol_rejected_v2_required`.
