@@ -322,13 +322,29 @@ packet-group exactness, packet-effect rows, and query-sensitivity rows.
 Reassociation with another same-shape batch and mutation of copied labels
 fail closed.
 
-The hostile harness suite passes 15/15. The expanded complete ETTR,
+The hostile harness suite passes 19/19. The expanded complete ETTR,
 checkpoint, optimizer, source-deletion, and cross-ontology inventory passes
-222/222 in 156.14 seconds with clean Ruff, byte compilation, and diff checks.
+226/226 in 164.84 seconds with clean Ruff, byte compilation, and diff checks.
 Physical source deletion remains independently enforced by the four-process
 custody suite. Packet-field sufficiency ablations are intentionally deferred
 to equal-budget training arms because an evaluation-time zeroing intervention
 would test a different claim.
+
+Independent hostile review found and closed three P1 bypasses before final
+handoff. Readout logits are cloned, model-bound, and tensor-receipt sealed;
+mutating or substituting them invalidates scoring. Every candidate input is
+cloned and hash-checked around its forward, while exact batch and model-state
+receipts must remain unchanged across all arms. Finally, every shuffled,
+wrong-WORLD, and wrong-COMMAND donor must change the factual target, and the
+scorer requires the correct donor counterfactual output rather than treating
+arbitrary prediction change as evidence.
+
+The final trust-root repair makes public evaluation atomic and withholds all
+logits. It requires preregistered model and semantic-manifest hashes, includes
+every named child module's class implementation in model identity, rejects
+child method overrides and hooks, and randomizes all seven arm calls with an
+execution-order receipt. Final independent re-review found no remaining
+P0/P1 through the supported public API.
 
 This closes the architecture and qualification-mechanics package. It does not
 show that the untrained ETTR additions reason. Learned promotion still

@@ -8,10 +8,13 @@ factor identities are consulted only after every readout is sealed.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, fields, replace
 import hashlib
+import inspect
 import json
+import marshal
 import re
+import secrets
 
 import torch
 
@@ -25,6 +28,7 @@ from endogenous_typed_theory_reactor import (
 
 
 ETTR_QUALIFICATION_SCHEMA = "shohin-ettr-causal-qualification-v1"
+ETTR_QUALIFICATION_MANIFEST_SCHEMA = "shohin-ettr-causal-qualification-manifest-v1"
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 
@@ -72,6 +76,63 @@ def _typed_state_receipt(state: TypedTheoryState) -> dict[str, object]:
     return payload
 
 
+def _clone_state(state: TypedTheoryState) -> TypedTheoryState:
+    values: dict[str, object] = {}
+    for item in fields(state):
+        value = getattr(state, item.name)
+        values[item.name] = value.clone() if torch.is_tensor(value) else value
+    return TypedTheoryState(**values)
+
+
+def _model_sha256(model: EndogenousTypedTheoryReactorGPT) -> str:
+    class_receipts: dict[type[torch.nn.Module], str] = {}
+    module_classes = {}
+    for name, module in model.named_modules():
+        cls = type(module)
+        if cls not in class_receipts:
+            try:
+                implementation = inspect.getsource(cls).encode("utf-8")
+            except (OSError, TypeError):
+                forward = getattr(cls, "forward", None)
+                code = getattr(forward, "__code__", None)
+                implementation = (
+                    marshal.dumps(code)
+                    if code is not None
+                    else (f"{cls.__module__}.{cls.__qualname__}").encode("utf-8")
+                )
+            class_receipts[cls] = hashlib.sha256(implementation).hexdigest()
+        module_classes[name] = {
+            "class": f"{cls.__module__}.{cls.__qualname__}",
+            "implementation_sha256": class_receipts[cls],
+        }
+    payload = {
+        "module_classes": module_classes,
+        "module_training": [
+            (name, module.training) for name, module in model.named_modules()
+        ],
+        "state": {
+            name: _tensor_receipt(value)
+            for name, value in sorted(model.state_dict().items())
+        },
+    }
+    return hashlib.sha256(_canonical_json_bytes(payload)).hexdigest()
+
+
+def _forward_input_sha256(
+    state: TypedTheoryState | None,
+    tokens: torch.Tensor,
+    mask: torch.Tensor | None,
+    read_index: torch.Tensor,
+) -> str:
+    payload = {
+        "mask": None if mask is None else _tensor_receipt(mask),
+        "read_index": _tensor_receipt(read_index),
+        "state": None if state is None else _typed_state_receipt(state),
+        "tokens": _tensor_receipt(tokens),
+    }
+    return hashlib.sha256(_canonical_json_bytes(payload)).hexdigest()
+
+
 def _index_state(
     state: TypedTheoryState,
     index: torch.Tensor,
@@ -114,9 +175,7 @@ def _validate_identifier_tuple(
         or len(values) != rows
         or any(_SHA256.fullmatch(value) is None for value in values)
     ):
-        raise TheoryReactorError(
-            f"qualification {name} identities differ"
-        )
+        raise TheoryReactorError(f"qualification {name} identities differ")
 
 
 def _prefix_bytes(
@@ -134,10 +193,63 @@ def _prefix_bytes(
 
 
 @dataclass(frozen=True, slots=True)
+class ETTRQualificationManifest:
+    """Externally frozen semantic-role admission for one qualification board."""
+
+    schema: str
+    dataset_sha256: str
+    row_ids: tuple[str, ...]
+    packet_ids: tuple[str, ...]
+    world_factor_ids: tuple[str, ...]
+    command_factor_ids: tuple[str, ...]
+    query_semantic_ids: tuple[str, ...]
+    query_paraphrase_ids: tuple[str, ...]
+    query_prefix_sha256s: tuple[str, ...]
+    target_token_ids: tuple[int, ...]
+
+    def validate(self, *, rows: int, vocab_size: int) -> None:
+        if (
+            self.schema != ETTR_QUALIFICATION_MANIFEST_SCHEMA
+            or _SHA256.fullmatch(self.dataset_sha256) is None
+            or not isinstance(self.target_token_ids, tuple)
+            or len(self.target_token_ids) != rows
+            or any(
+                not isinstance(value, int)
+                or isinstance(value, bool)
+                or not 0 <= value < vocab_size
+                for value in self.target_token_ids
+            )
+        ):
+            raise TheoryReactorError("qualification manifest header differs")
+        identifiers = (
+            ("row", self.row_ids),
+            ("packet", self.packet_ids),
+            ("world factor", self.world_factor_ids),
+            ("command factor", self.command_factor_ids),
+            ("query semantic", self.query_semantic_ids),
+            ("query paraphrase", self.query_paraphrase_ids),
+            ("query prefix", self.query_prefix_sha256s),
+        )
+        for name, values in identifiers:
+            _validate_identifier_tuple(values, rows=rows, name=name)
+        if len(set(self.row_ids)) != rows:
+            raise TheoryReactorError("qualification manifest row identities repeat")
+
+    def sha256(self) -> str:
+        payload = {
+            item.name: (list(value) if isinstance(value, tuple) else value)
+            for item in fields(self)
+            for value in (getattr(self, item.name),)
+        }
+        return hashlib.sha256(_canonical_json_bytes(payload)).hexdigest()
+
+
+@dataclass(frozen=True, slots=True)
 class ETTRQualificationBatch:
     """Immutable treatment rows plus assessor-only matched-control indices."""
 
     terminal_state: TypedTheoryState
+    manifest: ETTRQualificationManifest
     query_tokens: torch.Tensor
     query_attention_mask: torch.Tensor
     query_read_index: torch.Tensor
@@ -156,29 +268,22 @@ class ETTRQualificationBatch:
     def sha256(self) -> str:
         payload = {
             "command_factor_ids": list(self.command_factor_ids),
+            "manifest_sha256": self.manifest.sha256(),
             "packet_ids": list(self.packet_ids),
-            "query_attention_mask": _tensor_receipt(
-                self.query_attention_mask
-            ),
+            "query_attention_mask": _tensor_receipt(self.query_attention_mask),
             "query_paraphrase_ids": list(self.query_paraphrase_ids),
             "query_read_index": _tensor_receipt(self.query_read_index),
             "query_semantic_ids": list(self.query_semantic_ids),
             "query_tokens": _tensor_receipt(self.query_tokens),
             "query_twin_index": _tensor_receipt(self.query_twin_index),
-            "shuffled_state_index": _tensor_receipt(
-                self.shuffled_state_index
-            ),
-            "target_derangement_index": _tensor_receipt(
-                self.target_derangement_index
-            ),
+            "shuffled_state_index": _tensor_receipt(self.shuffled_state_index),
+            "target_derangement_index": _tensor_receipt(self.target_derangement_index),
             "targets": _tensor_receipt(self.targets),
             "terminal_state": _typed_state_receipt(self.terminal_state),
             "wrong_command_state_index": _tensor_receipt(
                 self.wrong_command_state_index
             ),
-            "wrong_world_state_index": _tensor_receipt(
-                self.wrong_world_state_index
-            ),
+            "wrong_world_state_index": _tensor_receipt(self.wrong_world_state_index),
             "world_factor_ids": list(self.world_factor_ids),
         }
         return hashlib.sha256(_canonical_json_bytes(payload)).hexdigest()
@@ -210,9 +315,8 @@ class ETTRQualificationBatch:
             or isinstance(vocab_size, bool)
             or vocab_size < 2
         ):
-            raise TheoryReactorError(
-                "qualification query or target geometry differs"
-            )
+            raise TheoryReactorError("qualification query or target geometry differs")
+        self.manifest.validate(rows=rows, vocab_size=vocab_size)
         devices = {
             tokens.device,
             mask.device,
@@ -221,29 +325,18 @@ class ETTRQualificationBatch:
             self.terminal_state.active.device,
         }
         if len(devices) != 1:
-            raise TheoryReactorError(
-                "qualification tensors must share one device"
-            )
+            raise TheoryReactorError("qualification tensors must share one device")
         if (
             not bool(((tokens >= 0) & (tokens < vocab_size)).all())
-            or not bool(
-                ((self.targets >= 0) & (self.targets < vocab_size)).all()
-            )
+            or not bool(((self.targets >= 0) & (self.targets < vocab_size)).all())
             or bool((mask[:, 1:].to(torch.int8) > mask[:, :-1]).any())
-            or not bool(
-                (
-                    (read >= 0)
-                    & (read < tokens.shape[1] - 1)
-                ).all()
-            )
+            or not bool(((read >= 0) & (read < tokens.shape[1] - 1)).all())
         ):
             raise TheoryReactorError(
                 "qualification query values leave their declared range"
             )
         row = torch.arange(rows, device=tokens.device)
-        if not bool(mask[row, read].all()) or not bool(
-            mask[row, read + 1].all()
-        ):
+        if not bool(mask[row, read].all()) or not bool(mask[row, read + 1].all()):
             raise TheoryReactorError(
                 "qualification read and target positions must be visible"
             )
@@ -262,13 +355,54 @@ class ETTRQualificationBatch:
         for name, values in identifiers:
             _validate_identifier_tuple(values, rows=rows, name=name)
         expected_packets = tuple(
-            typed_state_row_sha256(self.terminal_state, index)
-            for index in range(rows)
+            typed_state_row_sha256(self.terminal_state, index) for index in range(rows)
         )
         if self.packet_ids != expected_packets:
             raise TheoryReactorError(
                 "qualification packet identities do not bind packet bytes"
             )
+        expected_prefixes = tuple(
+            hashlib.sha256(_prefix_bytes(tokens, mask, read, row)).hexdigest()
+            for row in range(rows)
+        )
+        manifest_bindings = (
+            ("packet", self.packet_ids, self.manifest.packet_ids),
+            (
+                "world factor",
+                self.world_factor_ids,
+                self.manifest.world_factor_ids,
+            ),
+            (
+                "command factor",
+                self.command_factor_ids,
+                self.manifest.command_factor_ids,
+            ),
+            (
+                "query semantic",
+                self.query_semantic_ids,
+                self.manifest.query_semantic_ids,
+            ),
+            (
+                "query paraphrase",
+                self.query_paraphrase_ids,
+                self.manifest.query_paraphrase_ids,
+            ),
+            (
+                "query prefix",
+                expected_prefixes,
+                self.manifest.query_prefix_sha256s,
+            ),
+            (
+                "target",
+                tuple(int(value) for value in self.targets),
+                self.manifest.target_token_ids,
+            ),
+        )
+        for name, observed, admitted in manifest_bindings:
+            if observed != admitted:
+                raise TheoryReactorError(
+                    f"qualification {name} differs from frozen manifest"
+                )
 
         indices = (
             ("shuffled state", self.shuffled_state_index),
@@ -339,14 +473,8 @@ class ETTRQualificationBatch:
                 )
             semantic_targets: set[int] = set()
             for semantic_rows in semantics.values():
-                paraphrases = {
-                    self.query_paraphrase_ids[row]
-                    for row in semantic_rows
-                }
-                targets = {
-                    int(self.targets[row])
-                    for row in semantic_rows
-                }
+                paraphrases = {self.query_paraphrase_ids[row] for row in semantic_rows}
+                targets = {int(self.targets[row]) for row in semantic_rows}
                 prefixes = {
                     _prefix_bytes(
                         self.query_tokens,
@@ -392,8 +520,8 @@ class ETTRQualificationBatch:
             for row, donor in enumerate(index.detach().cpu().tolist()):
                 if (
                     self.packet_ids[row] == self.packet_ids[donor]
-                    or self.query_semantic_ids[row]
-                    != self.query_semantic_ids[donor]
+                    or int(self.targets[row]) == int(self.targets[donor])
+                    or self.query_semantic_ids[row] != self.query_semantic_ids[donor]
                     or self.query_paraphrase_ids[row]
                     != self.query_paraphrase_ids[donor]
                     or int(self.query_read_index[row])
@@ -412,45 +540,31 @@ class ETTRQualificationBatch:
                     )
                 ):
                     raise TheoryReactorError(
-                        f"qualification {name} does not isolate packet state"
+                        f"qualification {name} does not isolate a "
+                        "target-changing packet state"
                     )
-                world_same = (
-                    self.world_factor_ids[row]
-                    == self.world_factor_ids[donor]
-                )
+                world_same = self.world_factor_ids[row] == self.world_factor_ids[donor]
                 command_same = (
-                    self.command_factor_ids[row]
-                    == self.command_factor_ids[donor]
+                    self.command_factor_ids[row] == self.command_factor_ids[donor]
                 )
-                if factor == "world" and (
-                    world_same or not command_same
-                ):
+                if factor == "world" and (world_same or not command_same):
                     raise TheoryReactorError(
                         "qualification wrong WORLD state is not factorial"
                     )
-                if factor == "command" and (
-                    not world_same or command_same
-                ):
+                if factor == "command" and (not world_same or command_same):
                     raise TheoryReactorError(
                         "qualification wrong COMMAND state is not factorial"
                     )
 
     def _validate_query_twins(self) -> None:
-        for row, donor in enumerate(
-            self.query_twin_index.detach().cpu().tolist()
-        ):
+        for row, donor in enumerate(self.query_twin_index.detach().cpu().tolist()):
             if (
                 self.packet_ids[row] != self.packet_ids[donor]
-                or self.world_factor_ids[row]
-                != self.world_factor_ids[donor]
-                or self.command_factor_ids[row]
-                != self.command_factor_ids[donor]
-                or self.query_semantic_ids[row]
-                == self.query_semantic_ids[donor]
-                or self.query_paraphrase_ids[row]
-                != self.query_paraphrase_ids[donor]
-                or int(self.query_read_index[row])
-                != int(self.query_read_index[donor])
+                or self.world_factor_ids[row] != self.world_factor_ids[donor]
+                or self.command_factor_ids[row] != self.command_factor_ids[donor]
+                or self.query_semantic_ids[row] == self.query_semantic_ids[donor]
+                or self.query_paraphrase_ids[row] != self.query_paraphrase_ids[donor]
+                or int(self.query_read_index[row]) != int(self.query_read_index[donor])
                 or int(self.targets[row]) == int(self.targets[donor])
                 or _prefix_bytes(
                     self.query_tokens,
@@ -482,21 +596,38 @@ class ETTRQualificationReadouts:
     wrong_command_state: torch.Tensor
     query_twin: torch.Tensor
     targets: torch.Tensor
+    shuffled_state_targets: torch.Tensor
+    wrong_world_state_targets: torch.Tensor
+    wrong_command_state_targets: torch.Tensor
     query_twin_targets: torch.Tensor
     deranged_targets: torch.Tensor
     batch_sha256: str
+    model_sha256: str
+    execution_order_sha256: str
+    readout_sha256: str
+
+    def computed_sha256(self) -> str:
+        payload: dict[str, object] = {}
+        for item in fields(self):
+            if item.name == "readout_sha256":
+                continue
+            value = getattr(self, item.name)
+            payload[item.name] = (
+                _tensor_receipt(value) if torch.is_tensor(value) else value
+            )
+        return hashlib.sha256(_canonical_json_bytes(payload)).hexdigest()
 
     def validate(self, *, rows: int, vocab_size: int) -> None:
         for item in fields(self):
             value = getattr(self, item.name)
-            if item.name == "batch_sha256":
-                if (
-                    not isinstance(value, str)
-                    or _SHA256.fullmatch(value) is None
-                ):
-                    raise TheoryReactorError(
-                        "qualification batch SHA-256 differs"
-                    )
+            if item.name in {
+                "batch_sha256",
+                "model_sha256",
+                "execution_order_sha256",
+                "readout_sha256",
+            }:
+                if not isinstance(value, str) or _SHA256.fullmatch(value) is None:
+                    raise TheoryReactorError(f"qualification {item.name} differs")
                 continue
             expected = (
                 (rows,)
@@ -513,14 +644,11 @@ class ETTRQualificationReadouts:
                         or not bool(torch.isfinite(value).all())
                     )
                 )
-                or (
-                    len(expected) == 1
-                    and value.dtype != torch.long
-                )
+                or (len(expected) == 1 and value.dtype != torch.long)
             ):
-                raise TheoryReactorError(
-                    f"qualification {item.name} readout differs"
-                )
+                raise TheoryReactorError(f"qualification {item.name} readout differs")
+        if self.readout_sha256 != self.computed_sha256():
+            raise TheoryReactorError("qualification sealed readout SHA-256 changed")
 
 
 @dataclass(frozen=True, slots=True)
@@ -534,6 +662,9 @@ class ETTRQualificationScore:
     shuffled_state_exact: int
     wrong_world_state_exact: int
     wrong_command_state_exact: int
+    shuffled_state_counterfactual_exact: int
+    wrong_world_counterfactual_exact: int
+    wrong_command_counterfactual_exact: int
     wrong_query_exact: int
     target_deranged_exact: int
     query_twin_exact: int
@@ -554,70 +685,105 @@ class ETTRQualificationScore:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class ETTRQualificationResult:
+    """Atomic public result; candidate logits never leave the harness."""
+
+    score: ETTRQualificationScore
+    batch_sha256: str
+    manifest_sha256: str
+    model_sha256: str
+    execution_order_sha256: str
+    readout_sha256: str
+
+
+def _validate_model_implementation(
+    model: EndogenousTypedTheoryReactorGPT,
+) -> None:
+    if type(model) is not EndogenousTypedTheoryReactorGPT:
+        raise TheoryReactorError("qualification requires the frozen ETTR model class")
+    for name in (
+        "answer_query",
+        "_encode_to_stage",
+        "_decode_from_stage",
+    ):
+        bound = getattr(model, name)
+        expected = getattr(EndogenousTypedTheoryReactorGPT, name)
+        if getattr(bound, "__func__", None) is not expected:
+            raise TheoryReactorError(f"qualification model method {name} differs")
+    for module in model.modules():
+        if "forward" in module.__dict__:
+            raise TheoryReactorError(
+                "qualification child forward override is forbidden"
+            )
+        hook_sets = (
+            module._forward_hooks,
+            module._forward_pre_hooks,
+            module._backward_hooks,
+        )
+        if any(hooks for hooks in hook_sets):
+            raise TheoryReactorError("qualification model hooks are forbidden")
+
+
 class ETTRQualificationHarness:
     """Execute all source-deleted controls from one immutable batch."""
 
-    def __init__(self, model: EndogenousTypedTheoryReactorGPT):
+    def __init__(
+        self,
+        model: EndogenousTypedTheoryReactorGPT,
+        *,
+        expected_manifest_sha256: str,
+        expected_model_sha256: str,
+    ):
+        if (
+            _SHA256.fullmatch(expected_manifest_sha256) is None
+            or _SHA256.fullmatch(expected_model_sha256) is None
+        ):
+            raise TheoryReactorError("qualification expected SHA-256 differs")
         self.model = model
+        self.expected_manifest_sha256 = expected_manifest_sha256
+        self.expected_model_sha256 = expected_model_sha256
+
+    def evaluate(
+        self,
+        batch: ETTRQualificationBatch,
+    ) -> ETTRQualificationResult:
+        """Run and score atomically without exposing mutable candidate logits."""
+
+        readouts = self._collect_readouts(batch)
+        score = _score_ettr_qualification(batch, readouts)
+        return ETTRQualificationResult(
+            score=score,
+            batch_sha256=readouts.batch_sha256,
+            manifest_sha256=batch.manifest.sha256(),
+            model_sha256=readouts.model_sha256,
+            execution_order_sha256=readouts.execution_order_sha256,
+            readout_sha256=readouts.readout_sha256,
+        )
 
     @torch.no_grad()
-    def run(
+    def _collect_readouts(
         self,
         batch: ETTRQualificationBatch,
     ) -> ETTRQualificationReadouts:
-        if self.model.training:
-            raise TheoryReactorError(
-                "qualification requires eval mode"
-            )
+        _validate_model_implementation(self.model)
+        if any(module.training for module in self.model.modules()):
+            raise TheoryReactorError("qualification requires eval mode")
         vocab_size = self.model.base.cfg.vocab_size
         batch.validate(self.model.config, vocab_size=vocab_size)
+        if batch.manifest.sha256() != self.expected_manifest_sha256:
+            raise TheoryReactorError(
+                "qualification board is not the preregistered manifest"
+            )
+        batch_sha256 = batch.sha256()
+        model_sha256 = _model_sha256(self.model)
+        if model_sha256 != self.expected_model_sha256:
+            raise TheoryReactorError(
+                "qualification model is not the preregistered model"
+            )
         tokens, mask = _autonomous_prefix(
             batch.query_tokens,
             batch.query_attention_mask,
-            batch.query_read_index,
-        )
-        treatment = self._read(
-            batch.terminal_state,
-            tokens,
-            mask,
-            batch.query_read_index,
-        )
-        query_only = self._read(
-            _empty_state(batch.terminal_state),
-            tokens,
-            mask,
-            batch.query_read_index,
-        )
-        zero_reader = self._read_without_reader(
-            tokens,
-            mask,
-            batch.query_read_index,
-        )
-        shuffled_state = self._read(
-            _index_state(
-                batch.terminal_state,
-                batch.shuffled_state_index,
-            ),
-            tokens,
-            mask,
-            batch.query_read_index,
-        )
-        wrong_world_state = self._read(
-            _index_state(
-                batch.terminal_state,
-                batch.wrong_world_state_index,
-            ),
-            tokens,
-            mask,
-            batch.query_read_index,
-        )
-        wrong_command_state = self._read(
-            _index_state(
-                batch.terminal_state,
-                batch.wrong_command_state_index,
-            ),
-            tokens,
-            mask,
             batch.query_read_index,
         )
         twin = batch.query_twin_index
@@ -626,27 +792,114 @@ class ETTRQualificationHarness:
             batch.query_attention_mask.index_select(0, twin),
             batch.query_read_index.index_select(0, twin),
         )
-        query_twin = self._read(
-            batch.terminal_state,
-            twin_tokens,
-            twin_mask,
-            batch.query_read_index.index_select(0, twin),
-        )
-        result = ETTRQualificationReadouts(
-            treatment=treatment,
-            query_only=query_only,
-            zero_reader=zero_reader,
-            shuffled_state=shuffled_state,
-            wrong_world_state=wrong_world_state,
-            wrong_command_state=wrong_command_state,
-            query_twin=query_twin,
+        arm_calls = {
+            "treatment": lambda: self._read(
+                batch.terminal_state,
+                tokens,
+                mask,
+                batch.query_read_index,
+            ),
+            "query_only": lambda: self._read(
+                _empty_state(batch.terminal_state),
+                tokens,
+                mask,
+                batch.query_read_index,
+            ),
+            "zero_reader": lambda: self._read_without_reader(
+                tokens,
+                mask,
+                batch.query_read_index,
+            ),
+            "shuffled_state": lambda: self._read(
+                _index_state(
+                    batch.terminal_state,
+                    batch.shuffled_state_index,
+                ),
+                tokens,
+                mask,
+                batch.query_read_index,
+            ),
+            "wrong_world_state": lambda: self._read(
+                _index_state(
+                    batch.terminal_state,
+                    batch.wrong_world_state_index,
+                ),
+                tokens,
+                mask,
+                batch.query_read_index,
+            ),
+            "wrong_command_state": lambda: self._read(
+                _index_state(
+                    batch.terminal_state,
+                    batch.wrong_command_state_index,
+                ),
+                tokens,
+                mask,
+                batch.query_read_index,
+            ),
+            "query_twin": lambda: self._read(
+                batch.terminal_state,
+                twin_tokens,
+                twin_mask,
+                batch.query_read_index.index_select(0, twin),
+            ),
+        }
+        execution_order = list(arm_calls)
+        secrets.SystemRandom().shuffle(execution_order)
+        arm_outputs = {name: arm_calls[name]() for name in execution_order}
+        execution_order_sha256 = hashlib.sha256(
+            _canonical_json_bytes(execution_order)
+        ).hexdigest()
+        if batch.sha256() != batch_sha256:
+            raise TheoryReactorError(
+                "qualification batch changed during candidate forwards"
+            )
+        if _model_sha256(self.model) != model_sha256:
+            raise TheoryReactorError(
+                "qualification model changed during candidate forwards"
+            )
+        draft = ETTRQualificationReadouts(
+            treatment=arm_outputs["treatment"],
+            query_only=arm_outputs["query_only"],
+            zero_reader=arm_outputs["zero_reader"],
+            shuffled_state=arm_outputs["shuffled_state"],
+            wrong_world_state=arm_outputs["wrong_world_state"],
+            wrong_command_state=arm_outputs["wrong_command_state"],
+            query_twin=arm_outputs["query_twin"],
             targets=batch.targets.detach().clone(),
+            shuffled_state_targets=batch.targets.index_select(
+                0,
+                batch.shuffled_state_index,
+            )
+            .detach()
+            .clone(),
+            wrong_world_state_targets=batch.targets.index_select(
+                0,
+                batch.wrong_world_state_index,
+            )
+            .detach()
+            .clone(),
+            wrong_command_state_targets=batch.targets.index_select(
+                0,
+                batch.wrong_command_state_index,
+            )
+            .detach()
+            .clone(),
             query_twin_targets=batch.targets.index_select(0, twin).detach(),
             deranged_targets=batch.targets.index_select(
                 0,
                 batch.target_derangement_index,
-            ).detach(),
-            batch_sha256=batch.sha256(),
+            )
+            .detach()
+            .clone(),
+            batch_sha256=batch_sha256,
+            model_sha256=model_sha256,
+            execution_order_sha256=execution_order_sha256,
+            readout_sha256="0" * 64,
+        )
+        result = replace(
+            draft,
+            readout_sha256=draft.computed_sha256(),
         )
         result.validate(
             rows=batch.targets.shape[0],
@@ -661,13 +914,33 @@ class ETTRQualificationHarness:
         mask: torch.Tensor,
         read_index: torch.Tensor,
     ) -> torch.Tensor:
+        state = _clone_state(state)
+        tokens = tokens.clone()
+        mask = mask.clone()
+        read_index = read_index.clone()
+        input_sha256 = _forward_input_sha256(
+            state,
+            tokens,
+            mask,
+            read_index,
+        )
         logits, _ = self.model.answer_query(
             state,
             tokens,
             targets=None,
             attention_mask=mask,
         )
-        return _gather_read_logits(logits, read_index)
+        if (
+            _forward_input_sha256(
+                state,
+                tokens,
+                mask,
+                read_index,
+            )
+            != input_sha256
+        ):
+            raise TheoryReactorError("qualification candidate mutated forward inputs")
+        return _gather_read_logits(logits, read_index).detach().clone()
 
     def _read_without_reader(
         self,
@@ -675,11 +948,29 @@ class ETTRQualificationHarness:
         mask: torch.Tensor,
         read_index: torch.Tensor,
     ) -> torch.Tensor:
-        del mask
+        tokens = tokens.clone()
+        mask = mask.clone()
+        read_index = read_index.clone()
+        input_sha256 = _forward_input_sha256(
+            None,
+            tokens,
+            mask,
+            read_index,
+        )
         hidden = self.model._encode_to_stage(tokens, pos=0)
         hidden = self.model._decode_from_stage(hidden, pos=0)
         logits = self.model.base.head(self.model.base.norm(hidden))
-        return _gather_read_logits(logits, read_index)
+        if (
+            _forward_input_sha256(
+                None,
+                tokens,
+                mask,
+                read_index,
+            )
+            != input_sha256
+        ):
+            raise TheoryReactorError("qualification candidate mutated forward inputs")
+        return _gather_read_logits(logits, read_index).detach().clone()
 
 
 def _autonomous_prefix(
@@ -711,7 +1002,7 @@ def _gather_read_logits(
     ).squeeze(1)
 
 
-def score_ettr_qualification(
+def _score_ettr_qualification(
     batch: ETTRQualificationBatch,
     readouts: ETTRQualificationReadouts,
 ) -> ETTRQualificationScore:
@@ -721,11 +1012,30 @@ def score_ettr_qualification(
     vocab_size = readouts.treatment.shape[-1]
     readouts.validate(rows=rows, vocab_size=vocab_size)
     if readouts.batch_sha256 != batch.sha256():
-        raise TheoryReactorError(
-            "qualification readouts belong to another batch"
-        )
+        raise TheoryReactorError("qualification readouts belong to another batch")
     expected_targets = (
         ("targets", batch.targets),
+        (
+            "shuffled state targets",
+            batch.targets.index_select(
+                0,
+                batch.shuffled_state_index,
+            ),
+        ),
+        (
+            "wrong world state targets",
+            batch.targets.index_select(
+                0,
+                batch.wrong_world_state_index,
+            ),
+        ),
+        (
+            "wrong command state targets",
+            batch.targets.index_select(
+                0,
+                batch.wrong_command_state_index,
+            ),
+        ),
         (
             "query twin targets",
             batch.targets.index_select(0, batch.query_twin_index),
@@ -744,30 +1054,31 @@ def score_ettr_qualification(
             name.replace(" ", "_"),
         )
         if not torch.equal(observed, expected):
-            raise TheoryReactorError(
-                f"qualification {name} changed after forward"
-            )
+            raise TheoryReactorError(f"qualification {name} changed after forward")
 
     def exact(logits: torch.Tensor, targets: torch.Tensor) -> int:
         return int(logits.argmax(-1).eq(targets).sum().detach().cpu())
 
     treatment_prediction = readouts.treatment.argmax(-1)
+    shuffled_prediction = readouts.shuffled_state.argmax(-1)
+    wrong_world_prediction = readouts.wrong_world_state.argmax(-1)
+    wrong_command_prediction = readouts.wrong_command_state.argmax(-1)
+    query_twin_prediction = readouts.query_twin.argmax(-1)
+    treatment_correct = treatment_prediction.eq(readouts.targets)
     packet_effect = (
-        treatment_prediction.ne(readouts.shuffled_state.argmax(-1))
-        & treatment_prediction.ne(
-            readouts.wrong_world_state.argmax(-1)
-        )
-        & treatment_prediction.ne(
-            readouts.wrong_command_state.argmax(-1)
-        )
+        treatment_correct
+        & shuffled_prediction.eq(readouts.shuffled_state_targets)
+        & wrong_world_prediction.eq(readouts.wrong_world_state_targets)
+        & wrong_command_prediction.eq(readouts.wrong_command_state_targets)
     )
-    query_sensitivity = treatment_prediction.ne(
-        readouts.query_twin.argmax(-1)
+    query_sensitivity = (
+        treatment_correct
+        & query_twin_prediction.eq(readouts.query_twin_targets)
+        & treatment_prediction.ne(query_twin_prediction)
     )
     packet_groups: dict[str, list[int]] = {}
     for row, packet in enumerate(batch.packet_ids):
         packet_groups.setdefault(packet, []).append(row)
-    treatment_correct = treatment_prediction.eq(readouts.targets)
     groups_exact = sum(
         int(bool(treatment_correct[indices].all()))
         for indices in packet_groups.values()
@@ -800,6 +1111,18 @@ def score_ettr_qualification(
             readouts.wrong_command_state,
             readouts.targets,
         ),
+        shuffled_state_counterfactual_exact=exact(
+            readouts.shuffled_state,
+            readouts.shuffled_state_targets,
+        ),
+        wrong_world_counterfactual_exact=exact(
+            readouts.wrong_world_state,
+            readouts.wrong_world_state_targets,
+        ),
+        wrong_command_counterfactual_exact=exact(
+            readouts.wrong_command_state,
+            readouts.wrong_command_state_targets,
+        ),
         wrong_query_exact=exact(
             readouts.query_twin,
             readouts.targets,
@@ -813,21 +1136,19 @@ def score_ettr_qualification(
             readouts.query_twin_targets,
         ),
         packet_groups_all_exact=groups_exact,
-        causal_packet_effect_rows=int(
-            packet_effect.sum().detach().cpu()
-        ),
-        query_sensitivity_rows=int(
-            query_sensitivity.sum().detach().cpu()
-        ),
+        causal_packet_effect_rows=int(packet_effect.sum().detach().cpu()),
+        query_sensitivity_rows=int(query_sensitivity.sum().detach().cpu()),
     )
 
 
 __all__ = [
     "ETTRQualificationBatch",
     "ETTRQualificationHarness",
+    "ETTRQualificationManifest",
     "ETTRQualificationReadouts",
+    "ETTRQualificationResult",
     "ETTRQualificationScore",
+    "ETTR_QUALIFICATION_MANIFEST_SCHEMA",
     "ETTR_QUALIFICATION_SCHEMA",
-    "score_ettr_qualification",
     "typed_state_row_sha256",
 ]

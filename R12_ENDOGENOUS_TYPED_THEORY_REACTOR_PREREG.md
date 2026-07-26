@@ -452,5 +452,21 @@ Packet-sufficiency ablation remains an equal-budget training comparison: each
 declared state-field supervision family must be removed in a separate arm,
 not simulated by zeroing a trained packet at evaluation. Physical source
 deletion remains process-enforced by the four-process custody runner. The
-complete integrated architecture/custody inventory, including 15 hostile
-harness tests, passes 222/222 in 156.14 seconds.
+complete integrated architecture/custody inventory, including 19 hostile
+harness tests, passes 226/226 in 164.84 seconds.
+
+The sealed readout receipt binds every logit and assessor target to both the
+exact batch SHA-256 and an exact model-state SHA-256. Every candidate input is
+cloned and hash-checked around its forward; model and batch receipts must be
+identical before and after the complete arm sequence. State-control donors
+must change the factual target, and state-control readouts are scored against
+both the original negative-control label and the donor's correct
+counterfactual label. Arbitrary changed output is not a causal pass.
+
+The supported evaluator is atomic and never returns logits. A separately
+frozen semantic-role manifest and exact model receipt must match
+preregistered SHA-256 values. The model receipt includes every named child
+module's class implementation; subclasses, instance method overrides, and
+hooks are inadmissible. Arm execution uses a secret-random permutation and
+returns its receipt. Independent final review found no supported-public-API
+P0/P1.

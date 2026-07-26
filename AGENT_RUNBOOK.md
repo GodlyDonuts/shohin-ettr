@@ -43,13 +43,29 @@
 > reject fixed-point controls, mislabeled factors, soft packets, target
 > mutation, batch reassociation, visible answer suffixes, and candidate-side
 > oracle channels.
-> The expanded complete ETTR/cross-ontology inventory is **222/222** passing in
-> 156.14 seconds; the new harness-focused suite is **15/15**. Ruff, byte
+> The expanded complete ETTR/cross-ontology inventory is **226/226** passing in
+> 164.84 seconds; the new harness-focused suite is **19/19**. Ruff, byte
 > compilation, and diff checks pass. Packet-sufficiency ablations remain
 > future equal-budget training arms and cannot execute under the user hold;
 > physical deletion remains enforced by the four-process custody suite. This
 > completes architecture mechanics, not learned reasoning. No pretraining was
 > started, queued, resumed, prepared, or modified.
+>
+> An independent hostile review then found and closed three P1 harness
+> bypasses before handoff. Readouts now carry a model SHA-256 and a sealed
+> tensor receipt, candidate inputs are cloned and hash-checked around every
+> forward, and the complete model plus batch are hash-checked before/after all
+> arms. Wrong-WORLD, wrong-COMMAND, and shuffled-state donors must change the
+> factual label; the scorer requires the correct donor counterfactual answer
+> rather than rewarding arbitrary output change. In-place logit forgery,
+> resealed target forgery, candidate input mutation, candidate weight
+> mutation, and target-collision controls all fail closed.
+> The supported public API now scores atomically and exposes no logits. It
+> requires externally preregistered manifest and model hashes, binds every
+> named child module's class implementation, rejects child `forward`
+> overrides/hooks, and executes the seven arms in secret-random order with an
+> order receipt. Final independent re-review found no remaining P0/P1 through
+> that public API.
 >
 > **ETTR CONTINUATION CONTRACT FROZEN — 2026-07-26 EDT:** Commit
 > `ae2cf85480bedfaa96f3cf7ddfbaf64e5d067203` completes the missing

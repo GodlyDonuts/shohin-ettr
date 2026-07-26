@@ -17,9 +17,13 @@ from endogenous_typed_theory_reactor import (
 from ettr_qualification import (
     ETTRQualificationBatch,
     ETTRQualificationHarness,
+    ETTRQualificationManifest,
     ETTRQualificationReadouts,
+    ETTR_QUALIFICATION_MANIFEST_SCHEMA,
     ETTR_QUALIFICATION_SCHEMA,
-    score_ettr_qualification,
+    _model_sha256,
+    _prefix_bytes,
+    _score_ettr_qualification,
     typed_state_row_sha256,
 )
 from model import GPT, GPTConfig
@@ -104,21 +108,17 @@ def _index(
     values = []
     for packet in range(PACKETS):
         for variant in range(ROWS_PER_PACKET):
-            values.append(
-                packet_map(packet) * ROWS_PER_PACKET
-                + variant_map(variant)
-            )
+            values.append(packet_map(packet) * ROWS_PER_PACKET + variant_map(variant))
     return torch.tensor(values, dtype=torch.long)
 
 
 def _batch() -> ETTRQualificationBatch:
     state = _state()
     tokens = torch.zeros(BATCH, 5, dtype=torch.long)
+    mask = torch.ones_like(tokens, dtype=torch.bool)
+    read_index = torch.full((BATCH,), 2, dtype=torch.long)
     targets = torch.empty(BATCH, dtype=torch.long)
-    packet_ids = tuple(
-        typed_state_row_sha256(state, row)
-        for row in range(BATCH)
-    )
+    packet_ids = tuple(typed_state_row_sha256(state, row) for row in range(BATCH))
     world_ids = []
     command_ids = []
     semantic_ids = []
@@ -145,11 +145,27 @@ def _batch() -> ETTRQualificationBatch:
             command_ids.append(_digest(f"command-{command}"))
             semantic_ids.append(_digest(f"semantic-{semantic}"))
             paraphrase_ids.append(_digest(f"paraphrase-{paraphrase}"))
+    manifest = ETTRQualificationManifest(
+        schema=ETTR_QUALIFICATION_MANIFEST_SCHEMA,
+        dataset_sha256=_digest("independently-frozen-dataset"),
+        row_ids=tuple(_digest(f"row-{row}") for row in range(BATCH)),
+        packet_ids=packet_ids,
+        world_factor_ids=tuple(world_ids),
+        command_factor_ids=tuple(command_ids),
+        query_semantic_ids=tuple(semantic_ids),
+        query_paraphrase_ids=tuple(paraphrase_ids),
+        query_prefix_sha256s=tuple(
+            hashlib.sha256(_prefix_bytes(tokens, mask, read_index, row)).hexdigest()
+            for row in range(BATCH)
+        ),
+        target_token_ids=tuple(int(value) for value in targets),
+    )
     return ETTRQualificationBatch(
         terminal_state=state,
+        manifest=manifest,
         query_tokens=tokens,
-        query_attention_mask=torch.ones_like(tokens, dtype=torch.bool),
-        query_read_index=torch.full((BATCH,), 2, dtype=torch.long),
+        query_attention_mask=mask,
+        query_read_index=read_index,
         targets=targets,
         packet_ids=packet_ids,
         world_factor_ids=tuple(world_ids),
@@ -170,14 +186,60 @@ def _batch() -> ETTRQualificationBatch:
     )
 
 
+def _harness(
+    model: EndogenousTypedTheoryReactorGPT,
+    batch: ETTRQualificationBatch,
+) -> ETTRQualificationHarness:
+    return ETTRQualificationHarness(
+        model,
+        expected_manifest_sha256=batch.manifest.sha256(),
+        expected_model_sha256=_model_sha256(model),
+    )
+
+
+def _readouts(
+    model: EndogenousTypedTheoryReactorGPT,
+    batch: ETTRQualificationBatch,
+) -> ETTRQualificationReadouts:
+    return _harness(model, batch)._collect_readouts(batch)
+
+
+def _rebind_manifest(
+    batch: ETTRQualificationBatch,
+) -> ETTRQualificationBatch:
+    manifest = replace(
+        batch.manifest,
+        dataset_sha256=hashlib.sha256(
+            batch.query_tokens.numpy().tobytes() + batch.targets.numpy().tobytes()
+        ).hexdigest(),
+        packet_ids=batch.packet_ids,
+        world_factor_ids=batch.world_factor_ids,
+        command_factor_ids=batch.command_factor_ids,
+        query_semantic_ids=batch.query_semantic_ids,
+        query_paraphrase_ids=batch.query_paraphrase_ids,
+        query_prefix_sha256s=tuple(
+            hashlib.sha256(
+                _prefix_bytes(
+                    batch.query_tokens,
+                    batch.query_attention_mask,
+                    batch.query_read_index,
+                    row,
+                )
+            ).hexdigest()
+            for row in range(BATCH)
+        ),
+        target_token_ids=tuple(int(value) for value in batch.targets),
+    )
+    return replace(batch, manifest=manifest)
+
+
 def test_batch_freezes_factorial_state_and_query_twin_geometry() -> None:
     model = _model()
     batch = _batch()
     batch.validate(model.config, vocab_size=VOCAB)
     assert len(set(batch.packet_ids)) == PACKETS
     assert all(
-        batch.packet_ids[row]
-        == typed_state_row_sha256(batch.terminal_state, row)
+        batch.packet_ids[row] == typed_state_row_sha256(batch.terminal_state, row)
         for row in range(BATCH)
     )
     changed_state = replace(
@@ -185,10 +247,63 @@ def test_batch_freezes_factorial_state_and_query_twin_geometry() -> None:
         halted=batch.terminal_state.halted.clone(),
     )
     changed_state.halted[0] = 1
-    assert replace(
+    assert (
+        replace(
+            batch,
+            terminal_state=changed_state,
+        ).sha256()
+        != batch.sha256()
+    )
+
+
+def test_preregistered_manifest_rejects_semantic_axis_relabeling() -> None:
+    model = _model()
+    batch = _batch()
+    relabeled_world = tuple(
+        _digest(f"relabeled-world-{value}") for value in batch.world_factor_ids
+    )
+    relabeled_command = tuple(
+        _digest(f"relabeled-command-{value}") for value in batch.command_factor_ids
+    )
+    relabeled_manifest = replace(
+        batch.manifest,
+        world_factor_ids=relabeled_world,
+        command_factor_ids=relabeled_command,
+    )
+    relabeled = replace(
         batch,
-        terminal_state=changed_state,
-    ).sha256() != batch.sha256()
+        manifest=relabeled_manifest,
+        world_factor_ids=relabeled_world,
+        command_factor_ids=relabeled_command,
+    )
+    harness = ETTRQualificationHarness(
+        model,
+        expected_manifest_sha256=batch.manifest.sha256(),
+        expected_model_sha256=_model_sha256(model),
+    )
+    with pytest.raises(
+        TheoryReactorError,
+        match="preregistered manifest",
+    ):
+        harness.evaluate(relabeled)
+
+
+def test_preregistered_model_rejects_weight_substitution() -> None:
+    model = _model()
+    batch = _batch()
+    expected_model_sha256 = _model_sha256(model)
+    with torch.no_grad():
+        next(model.parameters()).add_(0.25)
+    harness = ETTRQualificationHarness(
+        model,
+        expected_manifest_sha256=batch.manifest.sha256(),
+        expected_model_sha256=expected_model_sha256,
+    )
+    with pytest.raises(
+        TheoryReactorError,
+        match="preregistered model",
+    ):
+        harness.evaluate(batch)
 
 
 @pytest.mark.parametrize(
@@ -245,7 +360,7 @@ def test_query_paraphrase_and_target_attacks_fail_closed() -> None:
     batch = _batch()
     duplicate = batch.query_tokens.clone()
     duplicate[1, :3] = duplicate[0, :3]
-    with pytest.raises(TheoryReactorError, match="paraphrase twin"):
+    with pytest.raises(TheoryReactorError, match="frozen manifest"):
         replace(batch, query_tokens=duplicate).validate(
             model.config,
             vocab_size=VOCAB,
@@ -258,6 +373,28 @@ def test_query_paraphrase_and_target_attacks_fail_closed() -> None:
             model.config,
             vocab_size=VOCAB,
         )
+
+    target_collision = batch.query_tokens.clone()
+    collision_targets = batch.targets.clone()
+    for packet in range(PACKETS):
+        command = packet % 2
+        for variant in range(ROWS_PER_PACKET):
+            semantic = variant // 2
+            row = packet * ROWS_PER_PACKET + variant
+            target = 8 + command * 2 + semantic
+            target_collision[row, 3] = target
+            collision_targets[row] = target
+    with pytest.raises(
+        TheoryReactorError,
+        match="target-changing packet state",
+    ):
+        _rebind_manifest(
+            replace(
+                batch,
+                query_tokens=target_collision,
+                targets=collision_targets,
+            )
+        ).validate(model.config, vocab_size=VOCAB)
 
 
 def test_soft_or_incomplete_packet_is_not_qualification_admissible() -> None:
@@ -275,23 +412,13 @@ def test_soft_or_incomplete_packet_is_not_qualification_admissible() -> None:
         )
 
 
-def test_harness_runs_every_control_without_passing_targets(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+def test_harness_runs_every_control_without_passing_targets() -> None:
     model = _model()
     batch = _batch()
-    observed_targets = []
-    original = model.answer_query
-
-    def wrapped(*args, **kwargs):
-        observed_targets.append(kwargs.get("targets"))
-        return original(*args, **kwargs)
-
-    monkeypatch.setattr(model, "answer_query", wrapped)
-    readouts = ETTRQualificationHarness(model).run(batch)
+    readouts = _readouts(model, batch)
     readouts.validate(rows=BATCH, vocab_size=VOCAB)
-    assert observed_targets
-    assert observed_targets == [None] * len(observed_targets)
+    source = inspect.getsource(ETTRQualificationHarness._read)
+    assert "targets=None" in source
     assert readouts.treatment.shape == (BATCH, VOCAB)
     assert torch.equal(
         readouts.query_twin_targets,
@@ -309,18 +436,20 @@ def test_harness_runs_every_control_without_passing_targets(
 def test_answer_and_suffix_tokens_are_physically_absent_from_readout() -> None:
     model = _model()
     batch = _batch()
-    exact = ETTRQualificationHarness(model).run(batch)
+    exact = _readouts(model, batch)
     poisoned_tokens = batch.query_tokens.clone()
     poisoned_targets = (batch.targets + 17) % VOCAB
     row = torch.arange(BATCH)
     poisoned_tokens[row, batch.query_read_index + 1] = poisoned_targets
     poisoned_tokens[:, -1] = (poisoned_tokens[:, -1] + 9) % VOCAB
-    poisoned = replace(
-        batch,
-        query_tokens=poisoned_tokens,
-        targets=poisoned_targets,
+    poisoned = _rebind_manifest(
+        replace(
+            batch,
+            query_tokens=poisoned_tokens,
+            targets=poisoned_targets,
+        )
     )
-    altered = ETTRQualificationHarness(model).run(poisoned)
+    altered = _readouts(model, poisoned)
     for name in (
         "treatment",
         "query_only",
@@ -336,8 +465,10 @@ def test_answer_and_suffix_tokens_are_physically_absent_from_readout() -> None:
 def test_score_is_post_forward_and_reports_all_controls() -> None:
     model = _model()
     batch = _batch()
-    readouts = ETTRQualificationHarness(model).run(batch)
-    score = score_ettr_qualification(batch, readouts)
+    result = _harness(model, batch).evaluate(batch)
+    score = result.score
+    assert not hasattr(result, "treatment")
+    assert result.manifest_sha256 == batch.manifest.sha256()
     assert score.schema == ETTR_QUALIFICATION_SCHEMA
     assert score.rows == BATCH
     assert score.packet_groups == PACKETS
@@ -350,59 +481,140 @@ def test_score_is_post_forward_and_reports_all_controls() -> None:
 
 def test_score_rejects_nonfinite_or_wrong_shape_readouts() -> None:
     batch = _batch()
-    good = ETTRQualificationHarness(_model()).run(batch)
+    good = _readouts(_model(), batch)
     nonfinite = good.treatment.clone()
     nonfinite[0, 0] = float("nan")
     with pytest.raises(TheoryReactorError, match="treatment"):
-        score_ettr_qualification(
+        _score_ettr_qualification(
             batch,
             replace(good, treatment=nonfinite),
         )
     with pytest.raises(TheoryReactorError, match="query_only"):
-        score_ettr_qualification(
+        _score_ettr_qualification(
             batch,
             replace(good, query_only=good.query_only[:-1]),
+        )
+    forged_logits = good.treatment.clone()
+    forged_logits.fill_(-100)
+    forged_logits[
+        torch.arange(BATCH),
+        batch.targets,
+    ] = 100
+    with pytest.raises(TheoryReactorError, match="sealed readout"):
+        _score_ettr_qualification(
+            batch,
+            replace(good, treatment=forged_logits),
         )
 
 
 def test_score_rejects_batch_reassociation_and_target_mutation() -> None:
     batch = _batch()
-    readouts = ETTRQualificationHarness(_model()).run(batch)
+    readouts = _readouts(_model(), batch)
     altered_tokens = batch.query_tokens.clone()
     altered_tokens[:, -1] = (altered_tokens[:, -1] + 1) % VOCAB
     with pytest.raises(TheoryReactorError, match="another batch"):
-        score_ettr_qualification(
+        _score_ettr_qualification(
             replace(batch, query_tokens=altered_tokens),
             readouts,
         )
 
     wrong_targets = readouts.targets.clone()
     wrong_targets[0] = (wrong_targets[0] + 1) % VOCAB
+    forged_targets = replace(
+        readouts,
+        targets=wrong_targets,
+        readout_sha256="0" * 64,
+    )
+    forged_targets = replace(
+        forged_targets,
+        readout_sha256=forged_targets.computed_sha256(),
+    )
     with pytest.raises(TheoryReactorError, match="targets changed"):
-        score_ettr_qualification(
+        _score_ettr_qualification(
             batch,
-            replace(readouts, targets=wrong_targets),
+            forged_targets,
         )
 
     wrong_twin_targets = readouts.query_twin_targets.clone()
     wrong_twin_targets[0] = (wrong_twin_targets[0] + 1) % VOCAB
+    forged_twin_targets = replace(
+        readouts,
+        query_twin_targets=wrong_twin_targets,
+        readout_sha256="0" * 64,
+    )
+    forged_twin_targets = replace(
+        forged_twin_targets,
+        readout_sha256=forged_twin_targets.computed_sha256(),
+    )
     with pytest.raises(
         TheoryReactorError,
         match="query twin targets changed",
     ):
-        score_ettr_qualification(
+        _score_ettr_qualification(
             batch,
-            replace(
-                readouts,
-                query_twin_targets=wrong_twin_targets,
-            ),
+            forged_twin_targets,
         )
+
+
+def test_candidate_method_or_hook_override_fails_closed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    model = _model()
+    original = model.answer_query
+
+    def mutate_input(state, tokens, *args, **kwargs):
+        tokens[0, 0] = (tokens[0, 0] + 1) % VOCAB
+        return original(state, tokens, *args, **kwargs)
+
+    monkeypatch.setattr(model, "answer_query", mutate_input)
+    with pytest.raises(TheoryReactorError, match="method answer_query"):
+        _readouts(model, _batch())
+
+    model = _model()
+    reader_forward = model.query_reader.forward
+    monkeypatch.setattr(
+        model.query_reader,
+        "forward",
+        lambda *args, **kwargs: reader_forward(*args, **kwargs),
+    )
+    with pytest.raises(TheoryReactorError, match="child forward override"):
+        _readouts(model, _batch())
+
+    model = _model()
+    handle = model.query_reader.register_forward_hook(
+        lambda _module, _inputs, output: output
+    )
+    with pytest.raises(TheoryReactorError, match="hooks are forbidden"):
+        _readouts(model, _batch())
+    handle.remove()
+
+
+def test_preregistered_model_binds_child_module_implementation() -> None:
+    model = _model()
+    batch = _batch()
+    expected_model_sha256 = _model_sha256(model)
+    original_reader_class = type(model.query_reader)
+
+    class ReplacementReader(original_reader_class):
+        pass
+
+    model.query_reader.__class__ = ReplacementReader
+    harness = ETTRQualificationHarness(
+        model,
+        expected_manifest_sha256=batch.manifest.sha256(),
+        expected_model_sha256=expected_model_sha256,
+    )
+    with pytest.raises(
+        TheoryReactorError,
+        match="preregistered model",
+    ):
+        harness.evaluate(batch)
 
 
 def test_train_mode_and_candidate_side_channels_fail_closed() -> None:
     model = _model().train()
     with pytest.raises(TheoryReactorError, match="eval mode"):
-        ETTRQualificationHarness(model).run(_batch())
+        _readouts(model, _batch())
 
     fields_seen = {item.name for item in fields(ETTRQualificationBatch)}
     assert not fields_seen & {
@@ -413,9 +625,7 @@ def test_train_mode_and_candidate_side_channels_fail_closed() -> None:
         "assessor",
         "source",
     }
-    source = inspect.getsource(
-        __import__("ettr_qualification")
-    )
+    source = inspect.getsource(__import__("ettr_qualification"))
     assert "cross_ontology_" not in source
     assert "execute_sequence" not in source
     assert "execute_closure" not in source
@@ -423,7 +633,7 @@ def test_train_mode_and_candidate_side_channels_fail_closed() -> None:
 
 
 def test_readout_validation_rejects_targets_with_wrong_dtype() -> None:
-    readouts = ETTRQualificationHarness(_model()).run(_batch())
+    readouts = _readouts(_model(), _batch())
     forged = ETTRQualificationReadouts(
         **{
             item.name: (

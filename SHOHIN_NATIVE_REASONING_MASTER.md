@@ -52493,10 +52493,25 @@ target-deranged controls while answering multiple independent paraphrased
 queries from one state. Answer suffixes are physically absent from candidate
 forward passes, and exact state/query/label/control bytes are receipt-bound.
 
-Verification is 15/15 for hostile harness tests and 222/222 for the expanded
+Verification is 19/19 for hostile harness tests and 226/226 for the expanded
 ETTR/cross-ontology inventory. Packet-sufficiency ablations remain separate
 equal-budget training arms; the existing four-process custody path enforces
 physical source deletion.
+
+The final hostile review closed three claim-breaking harness paths: mutable
+or cross-model readouts, candidate mutation across sequential arms, and
+wrong-state controls that rewarded nonsense instead of a correct
+counterfactual. Readouts now bind exact model, batch, logits, and labels;
+candidate inputs and model state are checked for mutation; and every
+state-control donor must have a different factual answer that the perturbed
+state must predict correctly.
+
+The final public API performs scoring atomically without releasing logits.
+Both the semantic-role manifest and complete model identity are externally
+preregistered; model identity includes child-module implementation hashes.
+Method overrides, hooks, and subclasses are rejected, and arm order is
+secret-randomized and receipted. Independent final review reports no
+remaining public-path P0/P1.
 
 This is the end of architecture construction, not the end of the reasoning
 program. The new parameters are not yet trained, so current Shohin does not
