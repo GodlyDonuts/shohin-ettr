@@ -14,6 +14,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from hashlib import sha256
 import json
+import math
 import re
 from typing import Sequence
 
@@ -154,9 +155,19 @@ class SparseSourceBatch:
 
 
 @dataclass(frozen=True, slots=True)
+class MicrocodeHeadOutput:
+    family_logits: torch.Tensor
+    multiplier_logits: torch.Tensor
+    offset_logits: torch.Tensor
+    shift_logits: torch.Tensor
+    mask_logits: torch.Tensor
+
+
+@dataclass(frozen=True, slots=True)
 class SparseCompilerOutput:
     direction_logits: torch.Tensor
     transition_logits: torch.Tensor
+    microcode: MicrocodeHeadOutput | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -891,6 +902,287 @@ class FactorizedSparseLatentLawCompiler(SparseLatentLawCompiler):
         )
 
 
+def _gray(value: int) -> int:
+    return value ^ (value >> 1)
+
+
+def _inverse_gray(value: int) -> int:
+    result = value
+    while value:
+        value >>= 1
+        result ^= value
+    return result
+
+
+def _rotate_left(value: int, shift: int, width: int) -> int:
+    mask = (1 << width) - 1
+    shift %= width
+    return ((value << shift) | (value >> (width - shift))) & mask
+
+
+def _microcode_bank(
+    cardinality: int,
+) -> tuple[torch.Tensor, ...]:
+    transitions: list[tuple[int, ...]] = []
+    families: list[int] = []
+    multipliers: list[int] = []
+    offsets: list[int] = []
+    shifts: list[int] = []
+    masks: list[int] = []
+    for family in (0, 2):
+        for multiplier in range(1, cardinality):
+            if math.gcd(multiplier, cardinality) != 1:
+                continue
+            for offset in range(cardinality):
+                if family == 0:
+                    transition = tuple(
+                        (multiplier * state + offset) % cardinality
+                        for state in range(cardinality)
+                    )
+                else:
+                    transition = tuple(
+                        _inverse_gray(
+                            (
+                                multiplier * _gray(state)
+                                + offset
+                            )
+                            % cardinality
+                        )
+                        for state in range(cardinality)
+                    )
+                transitions.append(transition)
+                families.append(family)
+                multipliers.append(multiplier)
+                offsets.append(offset)
+                shifts.append(0)
+                masks.append(0)
+    width = int(math.log2(cardinality))
+    for shift in range(width):
+        for mask in range(1, cardinality):
+            transitions.append(
+                tuple(
+                    _rotate_left(state ^ mask, shift, width)
+                    for state in range(cardinality)
+                )
+            )
+            families.append(1)
+            multipliers.append(0)
+            offsets.append(0)
+            shifts.append(shift)
+            masks.append(mask)
+    matrix = torch.zeros(
+        len(transitions),
+        cardinality,
+        cardinality,
+    )
+    for program, transition in enumerate(transitions):
+        matrix[
+            program,
+            torch.arange(cardinality),
+            torch.tensor(transition),
+        ] = 1.0
+    return (
+        matrix,
+        torch.tensor(families, dtype=torch.long),
+        torch.tensor(multipliers, dtype=torch.long),
+        torch.tensor(offsets, dtype=torch.long),
+        torch.tensor(shifts, dtype=torch.long),
+        torch.tensor(masks, dtype=torch.long),
+    )
+
+
+class MicrocodedSparseLatentLawCompiler(FactorizedSparseLatentLawCompiler):
+    """Infer neural microcode, then execute it inside a finite-domain ALU."""
+
+    def __init__(
+        self,
+        *,
+        width: int = 128,
+        layers: int = 2,
+        heads: int = 4,
+    ) -> None:
+        super().__init__(
+            width=width,
+            layers=layers,
+            heads=heads,
+            generators=8,
+            composition_depth=2,
+        )
+        del self.generator_logits
+        del self.selector
+        self.family_head = nn.Linear(width, 3)
+        self.multiplier_head = nn.Linear(width, MAX_CARDINALITY)
+        self.offset_head = nn.Linear(width, MAX_CARDINALITY)
+        self.shift_head = nn.Linear(width, 4)
+        self.mask_head = nn.Linear(width, MAX_CARDINALITY)
+        for cardinality in (8, 16):
+            bank = _microcode_bank(cardinality)
+            for name, value in zip(
+                (
+                    "transition",
+                    "family",
+                    "multiplier",
+                    "offset",
+                    "shift",
+                    "mask",
+                ),
+                bank,
+                strict=True,
+            ):
+                self.register_buffer(
+                    f"microcode_{name}_{cardinality}",
+                    value,
+                    persistent=True,
+                )
+
+    def forward(
+        self,
+        batch: SparseSourceBatch,
+        *,
+        direction_sign: float = 1.0,
+        observation_target_shift: int = 0,
+        observations_zeroed: bool = False,
+    ) -> SparseCompilerOutput:
+        if direction_sign not in {-1.0, 1.0}:
+            raise SparseLawCompilerError("direction sign differs")
+        if observation_target_shift not in {0, 1}:
+            raise SparseLawCompilerError(
+                "observation target shift differs"
+            )
+        rows, records, units = batch.unit_ids.shape
+        positions = torch.arange(units, device=batch.unit_ids.device)
+        hidden = (
+            self.embedding(
+                batch.unit_ids.reshape(rows * records, units)
+            )
+            + self.position(positions)[None]
+        )
+        hidden, _ = self.record_encoder(hidden)
+        number_hidden = self._gather(
+            hidden,
+            batch.number_positions.reshape(rows * records, 2),
+        )
+        direction_logits = self.direction_head(
+            number_hidden.reshape(rows * records, self.width * 2)
+        ).reshape(rows, records)
+        direction_logits = direction_sign * direction_logits
+        direction_probability = direction_logits.sigmoid()
+
+        number_values = batch.number_values
+        first = self.state_embedding(number_values[..., 0])
+        second = self.state_embedding(number_values[..., 1])
+        if observation_target_shift:
+            shifted_first = self.state_embedding(
+                (number_values[..., 0] + 1)
+                % batch.cardinalities[:, None]
+            )
+            shifted_second = self.state_embedding(
+                (number_values[..., 1] + 1)
+                % batch.cardinalities[:, None]
+            )
+        else:
+            shifted_first = first
+            shifted_second = second
+        forward_pair = self.pair_encoder(
+            torch.cat((first, shifted_second), dim=-1)
+        )
+        reverse_pair = self.pair_encoder(
+            torch.cat((second, shifted_first), dim=-1)
+        )
+        pair_tokens = (
+            direction_probability[..., None] * forward_pair
+            + (1.0 - direction_probability[..., None]) * reverse_pair
+        )
+        if observations_zeroed:
+            pair_tokens = torch.zeros_like(pair_tokens)
+        action_one_hot = torch.nn.functional.one_hot(
+            batch.record_action_indices,
+            num_classes=MAX_ACTIONS,
+        ).to(pair_tokens.dtype)
+        action_one_hot = (
+            action_one_hot * batch.record_valid[..., None]
+        )
+        action_sums = torch.einsum(
+            "bra,brw->baw",
+            action_one_hot,
+            pair_tokens,
+        )
+        action_counts = action_one_hot.sum(dim=1).clamp_min(1.0)
+        summaries = action_sums / action_counts[..., None]
+
+        family_log = self.family_head(summaries).log_softmax(dim=-1)
+        multiplier_log = self.multiplier_head(
+            summaries
+        ).log_softmax(dim=-1)
+        offset_log = self.offset_head(summaries).log_softmax(dim=-1)
+        shift_log = self.shift_head(summaries).log_softmax(dim=-1)
+        mask_log = self.mask_head(summaries).log_softmax(dim=-1)
+        transition_logits = torch.full(
+            (
+                rows,
+                MAX_ACTIONS,
+                MAX_CARDINALITY,
+                MAX_CARDINALITY,
+            ),
+            -1.0e4,
+            dtype=summaries.dtype,
+            device=summaries.device,
+        )
+        for row in range(rows):
+            cardinality = int(batch.cardinalities[row])
+            family = getattr(self, f"microcode_family_{cardinality}")
+            multiplier = getattr(
+                self,
+                f"microcode_multiplier_{cardinality}",
+            )
+            offset = getattr(self, f"microcode_offset_{cardinality}")
+            shift = getattr(self, f"microcode_shift_{cardinality}")
+            mask = getattr(self, f"microcode_mask_{cardinality}")
+            bank = getattr(
+                self,
+                f"microcode_transition_{cardinality}",
+            ).to(summaries.dtype)
+            score = family_log[row, :, family]
+            affine = family.ne(1)
+            bitwise = family.eq(1)
+            score = (
+                score
+                + affine[None]
+                * (
+                    multiplier_log[row, :, multiplier]
+                    + offset_log[row, :, offset]
+                )
+                + bitwise[None]
+                * (
+                    shift_log[row, :, shift]
+                    + mask_log[row, :, mask]
+                )
+            )
+            program_probability = score.softmax(dim=-1)
+            transition_probability = torch.einsum(
+                "ap,pst->ast",
+                program_probability,
+                bank,
+            )
+            transition_logits[
+                row,
+                :,
+                :cardinality,
+                :cardinality,
+            ] = transition_probability.clamp_min(1e-12).log()
+        return SparseCompilerOutput(
+            direction_logits=direction_logits,
+            transition_logits=transition_logits,
+            microcode=MicrocodeHeadOutput(
+                family_logits=self.family_head(summaries),
+                multiplier_logits=self.multiplier_head(summaries),
+                offset_logits=self.offset_head(summaries),
+                shift_logits=self.shift_head(summaries),
+                mask_logits=self.mask_head(summaries),
+            ),
+        )
+
+
 def seal_sparse_machine(
     batch: SparseSourceBatch,
     output: SparseCompilerOutput,
@@ -980,6 +1272,8 @@ __all__ = [
     "MAX_CARDINALITY",
     "MAX_RECORDS",
     "FactorizedSparseLatentLawCompiler",
+    "MicrocodeHeadOutput",
+    "MicrocodedSparseLatentLawCompiler",
     "SealedLearnedSparseMachine",
     "SparseCompilerOutput",
     "SparseLatentLawCompiler",

@@ -21,6 +21,7 @@ from sparse_latent_law_compiler import (  # noqa: E402
     MAX_CARDINALITY,
     MAX_RECORDS,
     FactorizedSparseLatentLawCompiler,
+    MicrocodedSparseLatentLawCompiler,
     SealedLearnedSparseMachine,
     SparseCompilerOutput,
     SparseLatentLawCompiler,
@@ -151,6 +152,50 @@ def test_model_forward_controls_and_parameter_receipt() -> None:
     assert (
         factorized_receipt.learned_compiler
         == factorized.parameter_count()
+    )
+
+    microcoded = MicrocodedSparseLatentLawCompiler(
+        width=64,
+        layers=1,
+        heads=4,
+    )
+    microcoded_output = microcoded(batch)
+    assert microcoded_output.transition_logits.shape == (
+        3,
+        MAX_ACTIONS,
+        MAX_CARDINALITY,
+        MAX_CARDINALITY,
+    )
+    assert microcoded_output.microcode is not None
+    assert microcoded_output.microcode.family_logits.shape == (
+        3,
+        MAX_ACTIONS,
+        3,
+    )
+    assert microcoded_output.microcode.multiplier_logits.shape == (
+        3,
+        MAX_ACTIONS,
+        MAX_CARDINALITY,
+    )
+    assert microcoded_output.microcode.offset_logits.shape == (
+        3,
+        MAX_ACTIONS,
+        MAX_CARDINALITY,
+    )
+    assert microcoded_output.microcode.shift_logits.shape == (
+        3,
+        MAX_ACTIONS,
+        4,
+    )
+    assert microcoded_output.microcode.mask_logits.shape == (
+        3,
+        MAX_ACTIONS,
+        MAX_CARDINALITY,
+    )
+    assert bool(torch.isfinite(microcoded_output.transition_logits).all())
+    assert (
+        microcoded.parameter_receipt().learned_compiler
+        == microcoded.parameter_count()
     )
 
 

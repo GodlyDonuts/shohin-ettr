@@ -12,6 +12,7 @@ from collections import Counter
 from dataclasses import asdict, replace
 from hashlib import sha256
 import json
+import math
 from pathlib import Path
 import random
 import sys
@@ -36,6 +37,7 @@ from sparse_latent_law_compiler import (  # noqa: E402
     MAX_ACTIONS,
     MAX_CARDINALITY,
     FactorizedSparseLatentLawCompiler,
+    MicrocodedSparseLatentLawCompiler,
     SparseLatentLawCompiler,
     SparseLawCompilerError,
     SparseSourceBatch,
@@ -86,15 +88,30 @@ def _auxiliary_training_rows(
 
 def _counterfactual_training_rows(
     rows: list[GeneratedEpisode],
-) -> list[GeneratedEpisode]:
+) -> tuple[list[GeneratedEpisode], list[bool]]:
     counterfactual: list[GeneratedEpisode] = []
+    directions: list[bool] = []
     for row in rows:
         machine = compile_source(row.candidate.source)
         templates = (
-            "from {source}, {target} is reached using {action}",
-            "using {action}, from {source} reaches {target}",
+            (
+                "from {source}, {target} is reached using {action}",
+                True,
+            ),
+            (
+                "using {action}, from {source} reaches {target}",
+                True,
+            ),
+            (
+                "using {action}, {target} is reached from {source}",
+                False,
+            ),
+            (
+                "{target}, using {action}, is reached from {source}",
+                False,
+            ),
         )
-        for template in templates:
+        for template, first_is_source in templates:
             records = [
                 template.format(
                     source=source,
@@ -118,7 +135,69 @@ def _counterfactual_training_rows(
                     ),
                 )
             )
-    return counterfactual
+            directions.append(first_is_source)
+    return counterfactual, directions
+
+
+def _gray(value: int) -> int:
+    return value ^ (value >> 1)
+
+
+def _inverse_gray(value: int) -> int:
+    result = value
+    while value:
+        value >>= 1
+        result ^= value
+    return result
+
+
+def _program_parameters(
+    *,
+    family: str,
+    transition: tuple[int, ...],
+) -> tuple[int, int, int, int, int]:
+    cardinality = len(transition)
+    if family in {"affine_modular", "gray_conjugate_affine"}:
+        family_index = 0 if family == "affine_modular" else 2
+        for multiplier in range(1, cardinality):
+            if math.gcd(multiplier, cardinality) != 1:
+                continue
+            for offset in range(cardinality):
+                candidate = (
+                    tuple(
+                        (multiplier * state + offset) % cardinality
+                        for state in range(cardinality)
+                    )
+                    if family_index == 0
+                    else tuple(
+                        _inverse_gray(
+                            (
+                                multiplier * _gray(state)
+                                + offset
+                            )
+                            % cardinality
+                        )
+                        for state in range(cardinality)
+                    )
+                )
+                if candidate == transition:
+                    return family_index, multiplier, offset, 0, 0
+    elif family == "bitwise_rotate_xor":
+        width = int(math.log2(cardinality))
+        mask_all = cardinality - 1
+        for shift in range(width):
+            for xor_mask in range(1, cardinality):
+                candidate = tuple(
+                    (
+                        ((state ^ xor_mask) << shift)
+                        | ((state ^ xor_mask) >> (width - shift))
+                    )
+                    & mask_all
+                    for state in range(cardinality)
+                )
+                if candidate == transition:
+                    return 1, 0, 0, shift, xor_mask
+    raise ValueError("preparation microcode is not identifiable")
 
 
 def _prepare(
@@ -126,7 +205,12 @@ def _prepare(
     *,
     device: torch.device,
     direction_overrides: list[bool] | None = None,
-) -> tuple[SparseSourceBatch, torch.Tensor, torch.Tensor]:
+) -> tuple[
+    SparseSourceBatch,
+    torch.Tensor,
+    torch.Tensor,
+    dict[str, torch.Tensor],
+]:
     if (
         direction_overrides is not None
         and len(direction_overrides) != len(rows)
@@ -149,6 +233,21 @@ def _prepare(
         dtype=torch.float32,
         device=device,
     )
+    program_target = {
+        name: torch.full(
+            (len(rows), MAX_ACTIONS),
+            -100,
+            dtype=torch.long,
+            device=device,
+        )
+        for name in (
+            "family",
+            "multiplier",
+            "offset",
+            "shift",
+            "mask",
+        )
+    }
     for row_index, (row, source) in enumerate(zip(rows, scanned, strict=True)):
         exact = compile_source(row.candidate.source)
         if tuple(key.decode("ascii") for key in source.action_keys) != (
@@ -165,6 +264,16 @@ def _prepare(
                 dtype=torch.long,
                 device=device,
             )
+            values = _program_parameters(
+                family=row.supervisor.family,
+                transition=transition,
+            )
+            for name, value in zip(
+                program_target,
+                values,
+                strict=True,
+            ):
+                program_target[name][row_index, action] = value
         count = len(source.records)
         first_is_source = (
             direction_overrides[row_index]
@@ -172,7 +281,12 @@ def _prepare(
             else row.supervisor.renderer in {0, 1, 2, 3}
         )
         direction_target[row_index, :count] = float(first_is_source)
-    return batch, transition_target, direction_target
+    return (
+        batch,
+        transition_target,
+        direction_target,
+        program_target,
+    )
 
 
 def _slice_batch(
@@ -203,11 +317,21 @@ def _train(
     batch: SparseSourceBatch,
     transition_target: torch.Tensor,
     direction_target: torch.Tensor,
+    program_target: dict[str, torch.Tensor],
     steps: int,
     batch_size: int,
     learning_rate: float,
     seed: int,
 ) -> tuple[float, float]:
+    def masked_cross_entropy(
+        logits: torch.Tensor,
+        target: torch.Tensor,
+        valid: torch.Tensor,
+    ) -> torch.Tensor:
+        if not bool(valid.any()):
+            return logits.sum() * 0.0
+        return F.cross_entropy(logits[valid], target[valid])
+
     optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=learning_rate,
@@ -261,6 +385,39 @@ def _train(
             + 0.25 * direction_loss
             + 0.10 * permutation_loss
         )
+        if output.microcode is not None:
+            family_target = program_target["family"][indices]
+            family_valid = family_target.ne(-100)
+            family_loss = masked_cross_entropy(
+                output.microcode.family_logits,
+                family_target,
+                family_valid,
+            )
+            affine_valid = family_valid & family_target.ne(1)
+            bitwise_valid = family_valid & family_target.eq(1)
+            parameter_loss = (
+                masked_cross_entropy(
+                    output.microcode.multiplier_logits,
+                    program_target["multiplier"][indices],
+                    affine_valid,
+                )
+                + masked_cross_entropy(
+                    output.microcode.offset_logits,
+                    program_target["offset"][indices],
+                    affine_valid,
+                )
+                + masked_cross_entropy(
+                    output.microcode.shift_logits,
+                    program_target["shift"][indices],
+                    bitwise_valid,
+                )
+                + masked_cross_entropy(
+                    output.microcode.mask_logits,
+                    program_target["mask"][indices],
+                    bitwise_valid,
+                )
+            )
+            loss = loss + 0.50 * family_loss + 0.25 * parameter_loss
         optimizer.zero_grad(set_to_none=True)
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
@@ -280,6 +437,7 @@ def _evaluate(
     batch: SparseSourceBatch,
     transition_target: torch.Tensor,
     direction_target: torch.Tensor,
+    program_target: dict[str, torch.Tensor],
     control: str,
 ) -> dict[str, object]:
     if control == "treatment":
@@ -307,6 +465,37 @@ def _evaluate(
         .sum()
     )
     state_total = int(state_valid.sum())
+    microcode_correct = 0
+    microcode_total = 0
+    if output.microcode is not None:
+        family_target = program_target["family"]
+        family_valid = family_target.ne(-100)
+        family_prediction = output.microcode.family_logits.argmax(-1)
+        multiplier_prediction = (
+            output.microcode.multiplier_logits.argmax(-1)
+        )
+        offset_prediction = output.microcode.offset_logits.argmax(-1)
+        shift_prediction = output.microcode.shift_logits.argmax(-1)
+        mask_prediction = output.microcode.mask_logits.argmax(-1)
+        affine = family_valid & family_target.ne(1)
+        bitwise = family_valid & family_target.eq(1)
+        program_correct = family_prediction.eq(family_target)
+        program_correct &= (
+            (~affine)
+            | (
+                multiplier_prediction.eq(program_target["multiplier"])
+                & offset_prediction.eq(program_target["offset"])
+            )
+        )
+        program_correct &= (
+            (~bitwise)
+            | (
+                shift_prediction.eq(program_target["shift"])
+                & mask_prediction.eq(program_target["mask"])
+            )
+        )
+        microcode_correct = int(program_correct[family_valid].sum())
+        microcode_total = int(family_valid.sum())
     exact = 0
     invalid = 0
     map_exact = 0
@@ -374,6 +563,13 @@ def _evaluate(
         },
         "invalid": invalid,
         "map_exact": map_exact,
+        "microcode_accuracy": (
+            microcode_correct / microcode_total
+            if microcode_total
+            else None
+        ),
+        "microcode_correct": microcode_correct,
+        "microcode_total": microcode_total,
         "source_deletion_passes": source_deletion_passes,
         "state_accuracy": state_exact / state_total,
         "state_correct": state_exact,
@@ -413,18 +609,30 @@ def run_experiment(
         *frozen_train,
         *_auxiliary_training_rows(seed=seed, count=auxiliary_rows),
     ]
-    counterfactual = _counterfactual_training_rows(frozen_train)
+    counterfactual, counterfactual_direction = (
+        _counterfactual_training_rows(frozen_train)
+    )
     training = [*original_training, *counterfactual]
     training_direction = [
         row.supervisor.renderer in {0, 1, 2, 3}
         for row in original_training
-    ] + [True] * len(counterfactual)
-    train_batch, train_transition, train_direction = _prepare(
+    ] + counterfactual_direction
+    (
+        train_batch,
+        train_transition,
+        train_direction,
+        train_program,
+    ) = _prepare(
         training,
         device=device,
         direction_overrides=training_direction,
     )
-    dev_batch, dev_transition, dev_direction = _prepare(
+    (
+        dev_batch,
+        dev_transition,
+        dev_direction,
+        dev_program,
+    ) = _prepare(
         development,
         device=device,
     )
@@ -440,6 +648,12 @@ def run_experiment(
             layers=layers,
             heads=heads,
         ).to(device)
+    elif architecture == "microcoded":
+        model = MicrocodedSparseLatentLawCompiler(
+            width=width,
+            layers=layers,
+            heads=heads,
+        ).to(device)
     else:
         raise ValueError("sparse architecture differs")
     losses = _train(
@@ -447,6 +661,7 @@ def run_experiment(
         batch=train_batch,
         transition_target=train_transition,
         direction_target=train_direction,
+        program_target=train_program,
         steps=steps,
         batch_size=batch_size,
         learning_rate=learning_rate,
@@ -480,6 +695,7 @@ def run_experiment(
             batch=dev_batch,
             transition_target=dev_transition,
             direction_target=dev_direction,
+            program_target=dev_program,
             control=control,
         )
         for control in (
@@ -535,6 +751,7 @@ def run_experiment(
             batch=train_batch,
             transition_target=train_transition,
             direction_target=train_direction,
+            program_target=train_program,
             control="treatment",
         ),
         "train_action_laws": len(train_action_laws),
@@ -566,8 +783,8 @@ def main() -> None:
     parser.add_argument("--auxiliary-rows", type=int, default=3_000)
     parser.add_argument(
         "--architecture",
-        choices=("attention", "factorized"),
-        default="factorized",
+        choices=("attention", "factorized", "microcoded"),
+        default="microcoded",
     )
     parser.add_argument("--device", default="cpu")
     parser.add_argument("--output", type=Path)
