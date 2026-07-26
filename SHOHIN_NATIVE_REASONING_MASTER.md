@@ -48,11 +48,14 @@ control.
   answers late queries from terminal state. Its independent
   `WORLD -> COMMAND -> QUERY` lifecycle, reset-safe composite objective,
   frozen-data contract, disjoint Muon/AdamW optimizer groups, and exact
-  checkpoint/resume path pass a 109-test focused suite and a 155-test complete
-  ETTR/cross-ontology inventory. A hostile audit found that relation-degree
+  checkpoint/resume path pass a 165-test complete ETTR/cross-ontology
+  inventory. The objective now directly supervises both the compiled initial
+  packet and the free-running terminal reactor packet; a gradient gate proves
+  that terminal loss reaches both reactor and compiler. A hostile audit found
+  that relation-degree
   summaries erased endpoint identity; the corrected reactor and query reader
   now use edge-aware typed neighbor messages and pass a degree-preserving
-  edge-swap falsifier. The complete system is 179,775,778 parameters. No ETTR
+  edge-swap falsifier. The complete system is 192,779,435 parameters. No ETTR
   fit, neural capability score, post-training, or pretraining action exists;
   the user hold remains active.
 - **Strict future ceiling:** fewer than 200,000,000 unique parameters for the
@@ -52267,14 +52270,15 @@ The immutable step-300k checkpoint loads strictly. Exact parameter receipt:
 | Remaining below 200M | 7,220,565 |
 
 The complete architecture, custody, profiler-contract, and cross-ontology
-inventory passes 163/163 tests. This is a technically coherent CPU-side
+inventory passes 165/165 tests. This is a technically coherent CPU-side
 architecture result, not evidence of learned general reasoning. A fresh
-current-source BF16 H100 eager/compiled resource profile remains the final
-systems gate before the architecture can be presented to the user for a
-separate pretraining decision.
+BF16 H100 eager/compiled parameter-resource profile remains the final systems
+gate before the architecture can be presented to the user for a separate
+pretraining decision.
 
-The immutable source is commit
-`29d294f53085a254e1bf056abd7c388a5fe7ca95`. Profile job `705188` failed
+The parameterized architecture source is commit
+`29d294f53085a254e1bf056abd7c388a5fe7ca95`; terminal-state objective
+hardening is commit `8cac6ce5a97597ab8a6cd47eda0aa4924590a762`. Profile job `705188` failed
 closed on `evc33` before checkpoint/model execution because the allocated node
 had no usable CUDA device. Replacement `705192` is the sole queued attempt,
 uses a fresh report path, excludes `evc33` and the established bad-node set,

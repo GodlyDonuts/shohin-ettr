@@ -108,8 +108,9 @@ The frozen architecture source adds:
 
 1. `CausalETTREpisodeRunner`, with independent batch rows and explicit
    `WORLD`, `COMMAND`, and `QUERY` reset boundaries;
-2. reset-safe token targets plus packet, transaction, equivariance,
-   commit/halt, sparsity, and anti-bypass losses;
+2. reset-safe token targets plus initial-packet, free-running terminal-packet,
+   transaction, initial/terminal equivariance, commit/halt, sparsity, and
+   anti-bypass losses;
 3. a canonical continuation batch and immutable manifest that reject live
    writers, family labels, malformed geometry, and snapshot drift;
 4. disjoint protected-base and architecture optimizer groups, with base
@@ -121,7 +122,7 @@ The frozen architecture source adds:
    launcher, or network access.
 
 The complete ETTR/cross-ontology architecture and custody inventory passes
-**163/163**.
+**165/165**.
 Reset-boundary tests include interior segment starts, exact native
 Muon/AdamW resume, and next-update equivalence after restore. A
 degree-preserving edge-swap falsifier holds every per-slot in/out relation
@@ -134,7 +135,13 @@ identity, rejects mutable or forged causal targets, binds batches to immutable
 manifest and dataset hashes, prevents scheduler steps past the frozen horizon,
 and uses pre-discretization policy probabilities for hard-forward
 supervision. Redundant per-segment LM losses are disabled in the composite
-train step.
+train step. Commit `8cac6ce5a97597ab8a6cd47eda0aa4924590a762` additionally
+binds `output.terminal_state` to offline terminal packet targets and proves
+that this loss backpropagates through the recurrent reactor into the compiler.
+The packet loss normalizes jointly over initial and terminal support, so the
+existing family weight does not silently double. This closes the prior
+independent-initial-packet/transaction supervision gap; paired packet/command
+interventions remain the next anti-bypass gate.
 
 ## Cross-Ontology Hybrid Receipt
 

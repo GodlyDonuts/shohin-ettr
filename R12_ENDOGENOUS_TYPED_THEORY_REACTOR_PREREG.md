@@ -112,7 +112,8 @@ previously missing continuation contract:
 - every row has independent `WORLD -> COMMAND -> QUERY` streams and explicit
   reset boundaries;
 - language-model targets cannot cross a segment boundary;
-- packet, transaction, equivariance, commit/halt, sparsity, and anti-bypass
+- initial-packet, free-running terminal-packet, transaction,
+  initial/terminal equivariance, commit/halt, sparsity, and anti-bypass
   supervision share one device-resident composite objective;
 - training snapshots and every batch are immutable/hash-bound, with opaque
   content-hash episode IDs and no live-writer or family-routing field;
@@ -123,7 +124,9 @@ previously missing continuation contract:
   optimizer/between-episode boundary that can be resumed exactly.
 
 The complete ETTR/cross-ontology architecture and custody inventory passes
-163/163. A degree-preserving edge-swap
+165/165. Terminal-packet supervision is connected through the recurrent
+reactor to the compiler, while joint normalization preserves the original
+packet-family weight scale. A degree-preserving edge-swap
 falsifier proves that the reactor and query reader distinguish graphs with
 identical per-slot relation counts but different endpoints. This establishes
 continuation-contract mechanics, not reasoning capability. A healthy-node

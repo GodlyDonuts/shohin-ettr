@@ -44,7 +44,7 @@
 > passing rather than relation-degree summaries. The focused architecture
 > suite is 109/109 and the complete ETTR/cross-ontology inventory is 155/155
 > passing at the prior checkpoint; the current hardened complete inventory is
-> **163/163**. Three cross-ontology hybrids produce 96/96 independent-oracle
+> **165/165**. Three cross-ontology hybrids produce 96/96 independent-oracle
 > agreement and 48/48 causal output changes; payload SHA-256 is
 > `d155f868494f9379b214028c8d7475cc2cde08192c9b3a5bbdea5a73b29f98e2`.
 > The current production packet uses 64 slots, 16 relation roles, 256
@@ -60,8 +60,14 @@
 > isolated output is empty and the protected hash remains exact. No
 > intelligence or continuation-readiness claim is authorized
 > until a healthy-node profile of the corrected source completes.
-> Current immutable architecture source is commit
-> `29d294f53085a254e1bf056abd7c388a5fe7ca95`: 163/163 complete tests pass.
+> The parameterized architecture source remains commit
+> `29d294f53085a254e1bf056abd7c388a5fe7ca95`. Training-contract hardening
+> commit `8cac6ce5a97597ab8a6cd47eda0aa4924590a762` adds direct supervision and
+> equivariance for the free-running terminal reactor state, includes both
+> initial and terminal state in structural anti-bypass regularization, and
+> proves by gradient test that terminal loss reaches both reactor and
+> compiler. The complete inventory is 165/165. This changes no parameters,
+> checkpoint bytes, or pretraining state.
 > H100 profile `705188` failed closed on `evc33` before checkpoint/model
 > execution because CUDA was unavailable despite Slurm allocation; add
 > `evc33` to the bad-node set. Exact-source replacement `705192` is the sole
