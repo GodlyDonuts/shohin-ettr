@@ -36,6 +36,20 @@
 > process-level source deletion. Pretraining remains held and no Newton jobs
 > are active.
 >
+> **Sparse latent-law final NO-GO (2026-07-25 EDT):** H100 job `704760`
+> completed the final supervised internal-microcode gate. Treatment reached
+> 22.1250% transition accuracy, 0/60 complete unseen maps, and 0/60 exact
+> queries; direction-negated weights reached 1/60. Direct attention remains
+> better at 46.5000% and 4/60, but it also produced no complete map.
+> Training/development action-map overlap is zero and observation controls
+> collapse, proving evidence use without transferable law identification.
+> Decision:
+> `supervised_microcode_fails_hash_disjoint_sparse_law_induction`.
+> Shohin does not demonstrate native general reasoning. Stop proxy-specific
+> architecture branching under the current usage budget. Protected pretraining
+> remains held and there are zero active Newton jobs. Full evidence:
+> `R12_SPARSE_LAW_MICROCODE_RESULT.md`.
+>
 > **Expedited reasoning closeout (2026-07-25 EDT):** open-ended architecture
 > search is closed under the current evidence and usage budget. Shohin does
 > not demonstrate native general reasoning. The retained learned baseline is
@@ -13566,3 +13580,30 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   fresh-process source deletion, and a sidecar compiler. Stop this solved
   lane. The only justified successor is sparse latent-law induction before
   any Shohin integration. Pretraining remains held; no Newton jobs are active.
+
+- **2026-07-25 20:28--20:39 EDT** -- **Sparse unseen-law induction remains
+  unsolved; final microcode route is closed.** Job `704760` completed 2,000
+  updates on `evc23` in 3 minutes 10 seconds. The 340,152-parameter controller
+  predicts family and operation parameters for an internal fixed-domain ALU.
+  It receives exact program labels during preparation but no labels, exact
+  parser, host callback, oracle, search, solver, or verifier at development
+  inference.
+
+  Treatment scored 531/2,400 = 22.1250% transition states, 0/60 complete
+  maps, and 0/60 exact queries. Same-weight direction negation scored 1/60;
+  shifted targets and zeroed observations each scored 0/60. Development
+  microcode identification was 1/204 = 0.4902%. Training loss fell from
+  5.742733 to 2.394297, source direction reached 100%, and training produced
+  456 complete maps, so this is failed transfer rather than a dead optimizer.
+  Training/development action-law overlap is zero.
+
+  The complete conceptual system is 125,421,816 parameters. Report SHA-256 is
+  `3f6f78d84c1ce46dc8975f609ef80a79a86ecc6e9d430446c40b309d6753a94e`;
+  model SHA-256 is
+  `a38ae69806e1dd394cb8b271fb541ed34a3f7bbbfcec290cf2b4b273ca7a6334`.
+  Decision:
+  `supervised_microcode_fails_hash_disjoint_sparse_law_induction`.
+  Direct attention, generic generators, and fixed-ontology microcode all fail
+  to complete one unseen sparse map. Stop architecture branching under the
+  current usage constraint. No Newton jobs are active; pretraining remains
+  held and the protected checkpoint remains unchanged.

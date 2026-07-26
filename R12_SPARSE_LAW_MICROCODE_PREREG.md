@@ -65,3 +65,14 @@ Continue only if the treatment:
 
 A pass authorizes a five-seed microcode qualification, not a general-reasoning
 claim.
+
+## Frozen Outcome
+
+Job `704760` completed the preregistered 2,000-update H100 canary. Treatment
+reached 22.1250% development transition accuracy, 0/60 complete maps, and
+0/60 exact queries. The direction-negated same-weight control reached 1/60
+exact queries. Training/development action-map overlap was zero.
+
+All continuation criteria fail. Decision:
+`supervised_microcode_fails_hash_disjoint_sparse_law_induction`.
+Full evidence: `R12_SPARSE_LAW_MICROCODE_RESULT.md`.

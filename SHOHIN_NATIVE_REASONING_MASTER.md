@@ -52050,3 +52050,25 @@ compiler is also a standalone sidecar rather than a Shohin-trunk capability.
 The next gate must randomize topology/cardinality/action count and neutralize
 frequency shortcuts before integration. Full decision:
 `R12_RENDERER_CURRICULUM_QUALIFICATION.md`.
+
+## 2026-07-25 Sparse-Law Final Gate
+
+The complete-table compiler does not extend to sparse latent-law induction.
+Three source-deleted candidates were tested on hash-disjoint unseen action
+maps. Direct attention reached 46.5000% transition accuracy and 4/60 exact
+queries; generic learned generators reached 15.7083% and 1/60; a supervised
+neural-microcode controller with a fixed internal ALU reached 22.1250% and
+0/60. None produced one complete unseen transition map.
+
+The microcode treatment is a particularly informative negative. It learned
+source direction perfectly, depended causally on the observed transitions,
+and received exact operation-family/parameter labels during preparation.
+Nevertheless it identified only 1/204 development programs. Adding execution
+machinery therefore does not solve the harder problem of inferring a new law
+from sparse evidence.
+
+Current conclusion: Shohin has a real bounded systematic compiler for fully
+specified anonymous machines, but no demonstrated native general reasoning.
+The protected 300k checkpoint remains unchanged, pretraining remains held,
+and open-ended proxy-specific architecture search is closed under the current
+usage budget. Full evidence: `R12_SPARSE_LAW_MICROCODE_RESULT.md`.

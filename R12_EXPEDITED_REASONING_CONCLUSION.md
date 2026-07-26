@@ -197,3 +197,27 @@ deletion is not attested, and the compiler is not integrated into Shohin.
 The next justified gate is sparse latent-law induction, not more optimization
 of this solved board. Full evidence:
 `R12_VARIABLE_TOPOLOGY_SEMANTIC_COMPILER_RESULT.md`.
+
+## Final Sparse-Law Boundary
+
+The sparse successor gate is now closed under three distinct formulations:
+
+| Candidate | Transition accuracy | Complete maps | Exact queries |
+|---|---:|---:|---:|
+| Direct set attention | 46.5000% | 0/60 | 4/60 |
+| Learned generator factorization | 15.7083% | 0/60 | 1/60 |
+| Supervised internal microcode | 22.1250% | 0/60 | 0/60 |
+
+The microcoded model contains a fixed internal ALU and receives exact
+preparation-time family/parameter labels, yet its learned controller reaches
+only 1/204 exact unseen programs. Observation-shift and observation-zero
+controls collapse, so it uses the demonstrations; it simply does not infer a
+transferable identification procedure. Internal execution machinery is
+therefore not the missing sufficient mechanism.
+
+This makes the expedited conclusion final for the current budget: Shohin has
+bounded systematic finite-machine compilation, but no demonstrated native
+general reasoning or sparse unseen-law induction. Do not launch another
+proxy-specific architecture branch. Preserve the protected checkpoint and
+the user pretraining hold. Full result:
+`R12_SPARSE_LAW_MICROCODE_RESULT.md`.
