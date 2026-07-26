@@ -479,14 +479,23 @@ ETTR-focused inventory passes **282/282 with two platform-only skips** after
 the final short-write hardening; Ruff, byte compilation, shell syntax, and
 diff checks are clean.
 
-Fresh exact-source runtime build `706725` completed independently on Newton.
-It produced the 5,866,106,880-byte immutable v2 archive with SHA-256
-`4cc48c3b462d643dd1d5bb453c75640376d80c70b706a7b5d68549924b2e9964`,
+Fresh exact-source runtime build `706725` first completed independently on
+Newton. Production smokes then found that both the trusted preparer and the
+production supervisor incorrectly applied the immutable-data rule to
+root-owned `0755` system executables. Both failed closed before candidate
+execution. The trust rule is now explicit: regular, single-link, root-owned,
+executable, not group/world writable, and exact hash.
+
+Replacement exact-source build `707002` completed from commit `eaeaca2` and
+produced the 5,879,674,880-byte immutable v3 archive with SHA-256
+`d7f817bd90298b183091685ea78e6eb00602ed2df1b1295de058074ec3d67ea2`,
 inventory SHA-256
-`e8a26cb7b0f15513540d92b2a80883108daaed8608491298e069bf63b1159222`,
+`14c78e190cfd5dfbe78ac3efd0e876d1984dde20f31e2d5322e356a4dee41055`,
 and source-bundle SHA-256
-`1733529e84bfdcf062fb28c1fa1a22c24ab3cab9d7cd794d9afc282eb05d093d`.
-The remaining deployment gate is one real H100
+`d83890222742ae87da6fd56b8a9e2b9bea9d37b4d530b21b99404fd1c83c99c2`.
+The assessor and candidate trust domains are separate: the pinned assessor
+interpreter owns signing/test dependencies, while candidate execution uses
+only the measured runtime. The remaining deployment gate is one real H100
 `extract -> supervisor -> Bubblewrap -> WORLD -> COMMAND -> QUERY` smoke.
 Same-account execution proves mechanics but cannot establish independent
 verifier ownership; that remains an explicit external claim boundary.

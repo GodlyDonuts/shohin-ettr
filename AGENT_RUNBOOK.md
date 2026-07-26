@@ -14704,3 +14704,43 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `ettr_trainable_architecture_complete_exact_runtime_and_supervisor_smoke_ready_real_h100_smoke_and_isolated_learning_pending`.
+
+- **2026-07-26 15:50 EDT** -- **Production smoke failures closed duplicated
+  system-executable trust bugs; exact runtime v3 is built and the corrected
+  H100 smoke is queued.** No continuation pretraining was started, prepared,
+  queued, resumed, or modified. Every smoke used a deterministic step-0
+  synthetic model and reported `training_assets_read=false`.
+
+  Jobs `706852` and `706876` failed before fixture creation because the
+  preparer rejected root-owned `0755` Bubblewrap and the assessor environment
+  lacked `cryptography`. Job `706928` confirmed the measured candidate
+  runtime intentionally does not contain assessor signing dependencies.
+  The wrapper now pins a distinct assessor interpreter with exact
+  `cryptography==46.0.3` and `safetensors==0.7.0`; candidate stages still use
+  only the measured claim runtime. Job `706964` produced the complete
+  deterministic fixture but rejected root-owned host Python under the same
+  duplicated policy. Job `706971` reached the production WORLD supervisor
+  and exposed its identical Bubblewrap rejection.
+
+  Commit `eaeaca2` repairs the production rule without weakening trust:
+  Bubblewrap must be regular, single-link, root-owned, executable, not
+  group/world writable, and exact-hash matched. Focused regression passes
+  45/45 with two platform-only skips; the complete ETTR-focused inventory
+  passes **284/284 with two platform-only skips in 50.99 seconds**.
+  Exact-source CPU build `707002`
+  completed on `evc21` in 10m53s from that commit. Runtime v3 is
+  5,879,674,880 bytes with archive SHA-256
+  `d7f817bd90298b183091685ea78e6eb00602ed2df1b1295de058074ec3d67ea2`,
+  inventory SHA-256
+  `14c78e190cfd5dfbe78ac3efd0e876d1984dde20f31e2d5322e356a4dee41055`,
+  and source-bundle SHA-256
+  `d83890222742ae87da6fd56b8a9e2b9bea9d37b4d530b21b99404fd1c83c99c2`.
+  Build imports pass Torch 2.6.0+cu124, CUDA 12.4, and safetensors 0.7.0.
+
+  Corrected one-H100 smoke `707065` is pending normal-partition resources.
+  It is the only active Shohin job. A pass closes repository-controlled
+  architecture deployment mechanics; it still does not establish learning,
+  independent verifier ownership, or native general reasoning.
+
+  Decision:
+  `ettr_architecture_complete_runtime_v3_built_real_h100_supervisor_smoke_pending_isolated_learning_unmeasured`.
