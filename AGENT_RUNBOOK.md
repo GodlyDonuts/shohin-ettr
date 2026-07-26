@@ -14793,3 +14793,40 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `ettr_architecture_mechanics_complete_supervisor_chain_pass_public_admission_rerun_pending_v1_learning_protocol_rejected_v2_required`.
+
+- **2026-07-26 16:20 EDT** -- **The deterministic production H100
+  supervisor smoke passes public admission; repository-controlled ETTR
+  execution mechanics are closed and learned capability remains unmeasured.**
+  No continuation pretraining was started, prepared, queued, resumed, or
+  modified. The protected step-300k checkpoint and its data lineage remain
+  untouched.
+
+  Job `707200` completed on `evc46` in 2m07s with exit code 0. The exact
+  schema-v3 synthetic fixture executed the signed, parent-linked
+  `WORLD -> COMMAND -> QUERY` chain across three network-isolated stages
+  using one verified runtime extraction and one sealed-memfd launch key.
+  The verified runtime was removed after execution. Public admission passed
+  over all 12 analytically distinct factorial terminal packets, with
+  `training_assets_read=false`, no optimizer update, and no flagship
+  checkpoint, optimizer, shard, target, query, or assessor input to WORLD or
+  COMMAND construction.
+
+  The final smoke report is mirrored at
+  `artifacts/r12/ettr_supervisor_smoke_707200/smoke-report.json` with SHA-256
+  `d3782b1403072d27bbdf7d2a746b061214a722bc69983ba5747d61263cf5bfe6`.
+  It binds run ID
+  `e438608e9d1169e5c4e31f64a74a4964fed4d7834d18984519878fcaed078a16`,
+  the three launch-receipt hashes, custody seal, qualification batch, model,
+  fixture, manifest, and public-admission result.
+
+  This establishes repository-controlled deployment mechanics, not
+  independent verifier ownership, learned reasoning, or generalization.
+  The trainable ETTR architecture remains frozen at 67,697,771 added
+  parameters and 192,779,435 total parameters. The v1 isolated-learnability
+  protocol remains rejected. The only authorized critical path is to freeze
+  a machine-complete v2 semantic generator, tensor materializer, matched
+  causal-control/statistical protocol, and confirmation-custody scheme
+  before any fitting.
+
+  Decision:
+  `ettr_architecture_mechanics_complete_public_admission_pass_learning_v1_rejected_v2_protocol_in_progress`.
