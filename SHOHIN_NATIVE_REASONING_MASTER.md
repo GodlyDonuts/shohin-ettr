@@ -2,16 +2,31 @@
 
 ## Current Status — Read First
 
-**Current frontier:** the learned global semantic-partition compiler is the
-first retained variable-topology, multi-family systematic-transfer result. It
-is causal bounded anonymous finite-machine compilation, not native general
-reasoning. The broader EFC/SSQAC architecture campaign is closed under the
-current evidence and usage budget; no new proxy-specific architecture branch,
-neural source freeze, or continuation pretraining is authorized.
+**Current frontier:** the episodic-generator constraint compiler is the first
+retained mechanism to construct a temporary law space from unfamiliar
+episode-local generators and infer sparse target actions exactly after source
+deletion. Hardened confirmation job `704792` reaches **11/11** exact
+development queries, including **2/2** episodes from a completely held-out
+random-permutation generator family. Necessary-witness deletion reaches
+**0/11** and rejects all 11 packets. A deranged-support control reaches 0/11
+correct but seals one wrong packet, so the strict fail-closed promotion gate
+is formally missed. This demonstrates bounded episodic finite-program
+induction, not native general reasoning. No continuation pretraining or new
+proxy-specific architecture branch is authorized.
 
 - **Protected base:** immutable step-300k Shohin checkpoint,
   125,081,664 parameters, SHA-256
   `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
+- **Episode-local induction result:** a 232,065-parameter compiler builds all
+  127 words through depth six from two complete support generators, intersects
+  sparse target records, and seals only unanimous maps. It reaches 11/11
+  treatment, 11/11 under record reordering, and 11/11 under consistent support
+  recoding. Shifted observations recover 0/11 complete maps; zeroed evidence,
+  deranged support semantics, and deleted target witnesses recover 0/11 exact.
+  Train/development target-law and raw-map overlaps are zero. Complete system
+  parameters are 125,313,729. Report SHA-256 is
+  `226a36d9156101617b769f698550eb51ebec57a8ffa01464bdd7a64d8805caad`.
+  This is the strongest current reasoning baseline.
 - **Strict future ceiling:** fewer than 200,000,000 unique parameters for the
   complete system.
 - **Renderer-curriculum breakthrough:** a 152,933-parameter standalone
@@ -52072,3 +52087,39 @@ specified anonymous machines, but no demonstrated native general reasoning.
 The protected 300k checkpoint remains unchanged, pretraining remains held,
 and open-ended proxy-specific architecture search is closed under the current
 usage budget. Full evidence: `R12_SPARSE_LAW_MICROCODE_RESULT.md`.
+
+## 2026-07-25 Episode-Local Program-Induction Result
+
+The sparse-law conclusion has materially improved. Constraint intersection
+first solved 60/60 unseen maps inside a fixed global law library. The
+episode-local successor removes that library: two unfamiliar complete
+generators define a temporary 127-program closure, and sparse target records
+identify the episode's two target actions.
+
+Hardened H100 confirmation `704792` reaches 11/11 exact development queries
+across unseen laws, deeper compositions, cardinality 16, renderers, joint
+shifts, and a completely held-out random-permutation family. Record-order and
+support-recoding invariances are also 11/11. Deleting one necessary target
+witness yields 0/11 exact and rejects all 11 packets; deranging support
+semantics yields 0/11 exact; zeroing observations yields 0/11 exact and
+rejects all packets. Training/development target-law and raw-map overlaps are
+zero.
+
+The compiler adds 232,065 learned parameters for 125,313,729 complete
+conceptual parameters. It trained for 1,000 updates on 375 rows and makes zero
+candidate-time oracle/search/verifier calls. Report SHA-256 is
+`226a36d9156101617b769f698550eb51ebec57a8ffa01464bdd7a64d8805caad`;
+independent audit SHA-256 is
+`596039c38bbaecdd646ef8bea78c7263ea61b43bba13b7d1b067e36d35ae2e02`.
+
+Decision:
+`bounded_program_induction_demonstrated_but_fail_closed_promotion_withheld`.
+
+This is the campaign's strongest evidence of reasoning-like systematic
+inference. It remains bounded because finite permutation-machine typing,
+complete support tables, depth-six closure, logical intersection, consensus
+sealing, and categorical execution are fixed architectural algorithms.
+Deranged supports also seal one wrong packet, formally missing the frozen
+zero-seal control. It is not evidence that the 125M transformer trunk has
+acquired general language reasoning. Full evidence:
+`R12_EPISODIC_GENERATOR_CONSTRAINT_RESULT.md`.

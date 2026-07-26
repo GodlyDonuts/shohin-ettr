@@ -13644,3 +13644,44 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   hypothesis library, semantically equivalent to exhaustive elimination.
   It is not open-ontology or general reasoning. The next board must construct
   its hypothesis space from unfamiliar episode-local generators.
+
+- **2026-07-25 21:00--21:25 EDT** -- **Episode-local sparse program induction
+  is demonstrated, but strict fail-closed promotion is withheld.**
+  Pre-hardening mechanics job `704786`
+  reached 11/11 exact development queries, including 2/2 held-out random-
+  permutation episodes, but accidentally sealed 4/11 packets after deleting
+  a necessary witness. Consensus sealing was added so a map is emitted only
+  when all surviving programs agree on every state transition. The focused
+  suite is 14 passed with clean Ruff and byte compilation.
+
+  Preregistered hardened confirmation `704792` completed on `evc29` in
+  5 minutes 38 seconds. Treatment, record-order reversal, and consistent
+  support recoding each reach 11/11 exact. Treatment is perfect in every
+  family and cell with zero train/development target-law or raw-map overlap.
+  Direction negation reaches 2/11; shifted observations recover 0/11 complete
+  maps; zeroed observations, deranged support semantics, and target-witness
+  deletion each recover 0/11 exact. Witness deletion rejects 11/11 packets,
+  zeroed observations rejects 11/11, and deranged supports rejects 10/11.
+  Every treatment packet deletes raw source and support keys.
+
+  The mechanism constructs 127 words through depth six from two unfamiliar
+  episode-local generators, intersects sparse records, and seals only
+  unanimous target maps. It adds 232,065 learned parameters for 125,313,729
+  complete conceptual parameters, trains for 1,000 updates on 375 rows, and
+  makes zero candidate-time oracle/search/verifier calls. Report SHA-256 is
+  `226a36d9156101617b769f698550eb51ebec57a8ffa01464bdd7a64d8805caad`;
+  model SHA-256 is
+  `37a28b0f9ab401d369e481f99c62393dee99125250dbd6ce1ba37c07e360512f`;
+  independent audit SHA-256 is
+  `596039c38bbaecdd646ef8bea78c7263ea61b43bba13b7d1b067e36d35ae2e02`.
+
+  The confirmation preregistration required deranged supports to seal zero
+  packets. They seal one wrong packet, so the formal promotion gate is missed
+  even though exactness is 0/11. Decision:
+  `bounded_program_induction_demonstrated_but_fail_closed_promotion_withheld`.
+  This is the strongest current reasoning baseline but not general language
+  reasoning: finite permutation typing, complete supports, bounded closure,
+  intersection, sealing, and execution remain fixed architectural algorithms.
+  Stop further proxy branching under the usage constraint. No Newton jobs
+  remain active; pretraining stays held; the protected local/Newton checkpoint
+  hashes remain identical.

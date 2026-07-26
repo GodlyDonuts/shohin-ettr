@@ -221,3 +221,41 @@ general reasoning or sparse unseen-law induction. Do not launch another
 proxy-specific architecture branch. Preserve the protected checkpoint and
 the user pretraining hold. Full result:
 `R12_SPARSE_LAW_MICROCODE_RESULT.md`.
+
+## Final Revision: Episode-Local Sparse-Law Induction
+
+The last sentence above is superseded in one important respect. Shohin's
+reasoning sidecar now demonstrates sparse unseen-law induction when the
+hypothesis space is constructed from unfamiliar generators supplied inside
+the episode.
+
+Hardened H100 job `704792` reaches 11/11 exact development queries and 11/11
+complete target maps, including 2/2 episodes from a completely held-out
+random-permutation generator family. Record-order reversal and consistent
+support recoding remain 11/11. Deleted necessary witnesses, zeroed
+observations, and deranged support semantics each recover 0/11 exact queries;
+witness deletion and zeroed observations reject every packet. There is zero
+training/development target-law or raw-map overlap.
+
+The 232,065-parameter compiler constructs 127 generator words through depth
+six, intersects sparse records, seals only unanimous maps, deletes source and
+support material, and executes the hidden query with zero candidate-time
+oracle/search/verifier calls. The complete conceptual system is 125,313,729
+parameters. Report SHA-256 is
+`226a36d9156101617b769f698550eb51ebec57a8ffa01464bdd7a64d8805caad`.
+
+Revised decision:
+
+`bounded_program_induction_demonstrated_but_fail_closed_promotion_withheld`
+
+The general-reasoning decision remains negative. The system still assumes a
+finite permutation ontology, complete support-generator tables, a bounded
+closure, and fixed intersection/sealing/execution algorithms. This is a real
+advance from fixed-library law selection to episode-constructed program
+induction, but one deranged-support episode seals a wrong packet despite the
+frozen zero-seal requirement. Promotion as a universally fail-closed
+mechanism is therefore withheld. It does not prove that Shohin's transformer
+trunk can invent new ontologies or reason generally in language. Stop
+architecture branching under the remaining usage budget, preserve this as
+the best reasoning baseline, keep pretraining held, and use
+`R12_EPISODIC_GENERATOR_CONSTRAINT_RESULT.md` as the final evidence record.
