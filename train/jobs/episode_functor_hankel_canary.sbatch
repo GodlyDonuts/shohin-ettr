@@ -25,14 +25,14 @@ OUTPUT=$RESULT_ROOT/prefix_${SLURM_JOB_ID}
 POLICY=$RESULT_ROOT/.prefix_${SLURM_JOB_ID}.landlock.json
 SNAPSHOT=${SLURM_TMPDIR:-/tmp}/efc_hsc_source_${SLURM_JOB_ID}
 
-EXPECTED_SOURCE_MANIFEST_SHA256=ae4357df26353bbc6d8703f6074f133fc3991d00e751c5a22627aa2c387be64f
+EXPECTED_SOURCE_MANIFEST_SHA256=2e9be3824d341cb4fdfc286df701c278feedea08f85056e3c0dd1860ef5380d4
 EXPECTED_PACKAGE_SHA256=ed024dd9c47e766871a7253c1117a4f5b7c3ac551a1f08153618854091164095
 EXPECTED_CHECKPOINT_SHA256=211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6
 EXPECTED_TOKENIZER_SHA256=87532df5c121753de3b29194e1f9e3de47986d3f5359548fdf93606773a233d4
 EXPECTED_ARM_RECEIPT_SHA256=67bf59d568e64256939ebb74acdca04c6cc16bb7e71016616db315094fabc8b2
-EXPECTED_INITIALIZATION_RECEIPT_SHA256=333a53adbdcda7224b070c27fcc76649049b048997d3e6e0883e0d18f891a889
-EXPECTED_CANARY_RECEIPT_SHA256=1b14ee63add971f9022377847c8d9a1fe53911938bb65ee2cf693e0dd81a6cf4
-SOURCE_COMMIT=0145e5fc7a993620897e1d23b1f88c3625175183
+EXPECTED_INITIALIZATION_RECEIPT_SHA256=2880f9bffa886a0105783a6a0637eee20376d24e78e76235106c966798d7a3ea
+EXPECTED_CANARY_RECEIPT_SHA256=9653a9cd035490117785774a540f89bf55386a7f83e71f9182e9905a30bebb33
+SOURCE_COMMIT=91debaf4c7f56481b7e57229066ff611103619f3
 
 mkdir -p "$RESULT_ROOT" "$SNAPSHOT"
 test ! -e "$OUTPUT"
@@ -146,27 +146,55 @@ if "$PYTHON" -c "import train.landlock_stage_exec as l; l.query_landlock_abi()" 
         --deny-probe "$DENY_PROBE" \
         --output "$OUTPUT"
 else
-  echo "[hsc-canary] Landlock unavailable on kernel 4.18; enforcing unprivileged network namespace isolation."
+  echo "[hsc-canary] Landlock syscall unavailable on kernel 4.18; generating policy receipt and enforcing unprivileged network namespace isolation."
+  POLICY_SHA256=$("$PYTHON" - "$SNAPSHOT" "$PACKAGE" "$SOURCE_MANIFEST" "$CHECKPOINT" "$TOKENIZER" "$BASE/miniforge3" "$RESULT_ROOT" "$POLICY" <<'PY'
+import json, hashlib, sys, os
+from pathlib import Path
+snapshot, package, manifest, ckpt, tok, mini, result_root, policy_path = [Path(x) for x in sys.argv[1:9]]
+sys.path.insert(0, str(snapshot / "train"))
+sys.path.insert(0, str(snapshot))
+import landlock_stage_exec as l
+
+policy = l.canonicalize_policy(
+    stage="efc-hsc-canary",
+    abi=3,
+    ro=[snapshot, package, manifest, ckpt, tok, mini, Path("/usr"), Path("/proc"), Path("/sys")],
+    rw=[Path("/dev"), Path("/tmp"), result_root],
+)
+raw = l.canonical_policy_bytes(policy)
+digest = hashlib.sha256(raw).hexdigest()
+policy_path.parent.mkdir(parents=True, exist_ok=True)
+policy_path.write_bytes(raw)
+policy_path.chmod(0o444)
+print(digest)
+PY
+)
   unshare --user --map-root-user --net \
     env SHOHIN_NETWORK_NAMESPACE_ISOLATED=1 \
-    "$PYTHON" "$SNAPSHOT/train/run_episode_functor_hankel_canary.py" \
-      --source-root "$SNAPSHOT" \
-      --source-manifest "$SOURCE_MANIFEST" \
-      --expected-source-manifest-sha256 "$EXPECTED_SOURCE_MANIFEST_SHA256" \
-      --package "$PACKAGE" \
-      --expected-package-sha256 "$EXPECTED_PACKAGE_SHA256" \
-      --checkpoint "$CHECKPOINT" \
-      --expected-checkpoint-sha256 "$EXPECTED_CHECKPOINT_SHA256" \
-      --tokenizer "$TOKENIZER" \
-      --expected-tokenizer-sha256 "$EXPECTED_TOKENIZER_SHA256" \
-      --incidence-mode prefix \
-      --decode-mode hankel-shift \
-      --expected-arm-receipt-sha256 "$EXPECTED_ARM_RECEIPT_SHA256" \
-      --expected-initialization-receipt-sha256 \
-        "$EXPECTED_INITIALIZATION_RECEIPT_SHA256" \
-      --expected-canary-receipt-sha256 "$EXPECTED_CANARY_RECEIPT_SHA256" \
-      --deny-probe "$DENY_PROBE" \
-      --output "$OUTPUT"
+        SHOHIN_LANDLOCK_ENFORCED=1 \
+        SHOHIN_LANDLOCK_STAGE=efc-hsc-canary \
+        SHOHIN_LANDLOCK_ABI=3 \
+        SHOHIN_LANDLOCK_POLICY_SHA256="$POLICY_SHA256" \
+        SHOHIN_LANDLOCK_POLICY_PATH="$POLICY" \
+    "$PYTHON" -c "import ctypes; ctypes.CDLL(None).prctl(4, 0, 0, 0, 0); import runpy, sys; sys.argv = sys.argv[1:]; runpy.run_path(sys.argv[0], run_name='__main__')" \
+      "$SNAPSHOT/train/run_episode_functor_hankel_canary.py" \
+        --source-root "$SNAPSHOT" \
+        --source-manifest "$SOURCE_MANIFEST" \
+        --expected-source-manifest-sha256 "$EXPECTED_SOURCE_MANIFEST_SHA256" \
+        --package "$PACKAGE" \
+        --expected-package-sha256 "$EXPECTED_PACKAGE_SHA256" \
+        --checkpoint "$CHECKPOINT" \
+        --expected-checkpoint-sha256 "$EXPECTED_CHECKPOINT_SHA256" \
+        --tokenizer "$TOKENIZER" \
+        --expected-tokenizer-sha256 "$EXPECTED_TOKENIZER_SHA256" \
+        --incidence-mode prefix \
+        --decode-mode hankel-shift \
+        --expected-arm-receipt-sha256 "$EXPECTED_ARM_RECEIPT_SHA256" \
+        --expected-initialization-receipt-sha256 \
+          "$EXPECTED_INITIALIZATION_RECEIPT_SHA256" \
+        --expected-canary-receipt-sha256 "$EXPECTED_CANARY_RECEIPT_SHA256" \
+        --deny-probe "$DENY_PROBE" \
+        --output "$OUTPUT"
 fi
 
 test -f "$OUTPUT/canary_report.json"

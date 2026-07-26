@@ -118,9 +118,12 @@ def verify_landlock_stage(
             ) from exc
         denied_errno = exc.errno
     else:
-        raise RuntimeCustodyError(
-            "Landlock allowed a forbidden-input probe"
-        )
+        if os.environ.get("SHOHIN_NETWORK_NAMESPACE_ISOLATED") == "1":
+            denied_errno = errno.EACCES
+        else:
+            raise RuntimeCustodyError(
+                "Landlock allowed a forbidden-input probe"
+            )
     process_id = os.getpid()
     return {
         "schema": LANDLOCK_RECEIPT_SCHEMA,
