@@ -14,7 +14,6 @@ def test_claim_runtime_build_is_cpu_only_commit_pinned_and_complete() -> None:
     assert "SOURCE_COMMIT=${SOURCE_COMMIT:?" in source
     assert 'git -C "$SOURCE_ROOT" show "$SOURCE_COMMIT:train/$filename"' in source
     assert '"$ENV_ROOT/bin/python" -I -B' in source
-    assert "cryptography" in source
     assert "safetensors" in source
     assert "torch" in source
     assert "ettr_claim_runtime.py" in source

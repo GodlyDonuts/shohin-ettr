@@ -45,13 +45,11 @@ git -C "$SOURCE_ROOT" diff --cached --quiet
 "$ENV_ROOT/bin/python" -I - <<'PY'
 import pathlib
 
-import cryptography
 import safetensors
 import torch
 
 prefix = pathlib.Path(__import__("sys").prefix).resolve()
 for name, module in (
-    ("cryptography", cryptography),
     ("safetensors", safetensors),
     ("torch", torch),
 ):
