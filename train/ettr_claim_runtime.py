@@ -291,7 +291,10 @@ class ETTRClaimRuntimeMember:
                 or self.sha256 is not None
                 or self.link_target is not None
             ):
-                raise ETTRClaimRuntimeError("runtime directory metadata differs")
+                raise ETTRClaimRuntimeError(
+                    "runtime directory metadata differs: "
+                    f"{self.path!r} mode={self.mode:o}"
+                )
         elif self.kind == "file":
             if (
                 self.mode not in {0o444, 0o555}

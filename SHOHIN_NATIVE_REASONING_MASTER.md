@@ -52666,12 +52666,16 @@ execution. An independent hostile rereview closed both final P1 findings:
 same-descriptor wheel consumption and extraction-to-execution substitution.
 The focused runtime/deployment/four-process regression set passes 54/54 with
 clean Ruff, byte compilation, shell syntax, and diff checks. The complete
-ETTR/cross-ontology inventory passes 315/315 in 171.65 seconds. Exact-source
+ETTR/cross-ontology inventory passes 315/315 in 174.94 seconds. Exact-source
 build `705463` passed staged CUDA imports but failed closed before archive
 publication because five normal dependency filenames contain printable spaces
 or punctuation. The corrected policy accepts printable ASCII path segments
 while continuing to reject slash, backslash, NUL, controls, absolute paths,
-`.` and `..`; the five observed names are regression-tested. The next
+`.` and `..`; the five observed names are regression-tested. Retry `705697`
+passed that gate and staged CUDA imports, then failed closed before publication
+because copied directories retained setgid bits. The corrected builder uses
+the pinned root-owned host Python to clear special bits without following
+links and independently verifies every resulting mode before inventory. The next
 exact-source build must use the corrected committed source and its output must
 be hash-verified before the confined H100 smoke. No packaging job can read
 checkpoints, shards, or optimizer state. A verifier-owned production

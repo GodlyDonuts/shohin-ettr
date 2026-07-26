@@ -282,10 +282,79 @@ done
   > "$STAGING/runtime/app/receipts/ettr-stage-policies.json"
 verify_reviewed_sources
 
-# Normalize the exact modes measured by the inventory.
-find "$STAGING/runtime" -type d -exec chmod 0555 {} +
-find "$STAGING/runtime" -type f -perm /111 -exec chmod 0555 {} +
-find "$STAGING/runtime" -type f ! -perm /111 -exec chmod 0444 {} +
+# Normalize and then prove the exact modes measured by the inventory. The
+# source environment contains setgid directories, so clearing special bits is
+# part of this trusted-host operation rather than an assumption about chmod(1).
+/usr/bin/env -i \
+  HOME=/nonexistent \
+  PATH=/usr/bin:/bin \
+  PYTHONNOUSERSITE=1 \
+  "$HOST_PYTHON" -I -S -B - "$STAGING/runtime" <<'PY'
+import os
+from pathlib import Path
+import stat
+import sys
+
+root = Path(os.path.abspath(sys.argv[1]))
+root_metadata = root.lstat()
+if not stat.S_ISDIR(root_metadata.st_mode) or stat.S_ISLNK(
+    root_metadata.st_mode
+):
+    raise SystemExit("[ettr-runtime] normalization root differs")
+for directory_text, directories, files in os.walk(
+    root,
+    topdown=True,
+    followlinks=False,
+):
+    directory = Path(directory_text)
+    metadata = directory.lstat()
+    if not stat.S_ISDIR(metadata.st_mode) or stat.S_ISLNK(metadata.st_mode):
+        raise SystemExit(
+            f"[ettr-runtime] normalization directory differs: {directory}"
+        )
+    os.chmod(directory, 0o555, follow_symlinks=False)
+    for name in (*directories, *files):
+        path = directory / name
+        metadata = path.lstat()
+        if stat.S_ISLNK(metadata.st_mode):
+            continue
+        if stat.S_ISDIR(metadata.st_mode):
+            mode = 0o555
+        elif stat.S_ISREG(metadata.st_mode):
+            mode = 0o555 if metadata.st_mode & 0o111 else 0o444
+        else:
+            raise SystemExit(
+                f"[ettr-runtime] normalization object differs: {path}"
+            )
+        os.chmod(path, mode, follow_symlinks=False)
+for directory_text, directories, files in os.walk(
+    root,
+    topdown=True,
+    followlinks=False,
+):
+    directory = Path(directory_text)
+    if stat.S_IMODE(directory.lstat().st_mode) != 0o555:
+        raise SystemExit(
+            f"[ettr-runtime] normalized directory mode differs: {directory}"
+        )
+    for name in (*directories, *files):
+        path = directory / name
+        metadata = path.lstat()
+        if stat.S_ISLNK(metadata.st_mode):
+            if stat.S_IMODE(metadata.st_mode) != 0o777:
+                raise SystemExit(
+                    f"[ettr-runtime] normalized link mode differs: {path}"
+                )
+            continue
+        expected = 0o555 if (
+            stat.S_ISDIR(metadata.st_mode)
+            or metadata.st_mode & 0o111
+        ) else 0o444
+        if stat.S_IMODE(metadata.st_mode) != expected:
+            raise SystemExit(
+                f"[ettr-runtime] normalized object mode differs: {path}"
+            )
+PY
 
 echo "[ettr-runtime] building deterministic measured archive"
 "$RUNTIME_PY" -I -S -B \
