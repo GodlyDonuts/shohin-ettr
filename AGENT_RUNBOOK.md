@@ -184,7 +184,7 @@
 > substitution. The focused runtime/deployment/four-process regression set is
 > **54/54** passing with clean Ruff, byte compilation, shell syntax, and diff
 > checks. The complete current ETTR/cross-ontology inventory is **315/315**
-> passing in 171.39 seconds. Exact-source build `705463` failed closed after
+> passing in 172.43 seconds. Exact-source build `705463` failed closed after
 > staged CUDA imports passed and before archive publication because five
 > ordinary dependency filenames contain printable spaces or punctuation. The
 > path policy now accepts printable ASCII segments while still rejecting
@@ -215,11 +215,14 @@
 > closure but failed closed before CUDA because pinned Bubblewrap does not
 > implement `--clearenv`. The sealed verifier already launches Bubblewrap with
 > the exact environment `{HOME, PATH}`, so the unsupported redundant flag is
-> removed and statically rejected. Corrected confined smoke `706072` is pending
-> H100 resources from exact wrapper commit
-> `40ae864aae5bdd583485d8512239f05913103de6`; scheduler configuration
-> admission passes. Monitor it to completion before promoting the confined
-> runtime gate.
+> removed and statically rejected. Corrected confined smoke `706072` passed
+> extraction, Python closure, and Bubblewrap network isolation, then failed
+> closed because renaming allocated physical `/dev/nvidia1` to
+> `/dev/nvidia0` made CUDA unavailable. The wrapper now preserves the exact
+> Slurm-assigned device pathname and sets `CUDA_VISIBLE_DEVICES` to that
+> physical minor, yielding one logical device to PyTorch. Monitor a fresh
+> exact-wrapper smoke to completion before promoting the confined runtime
+> gate.
 > Build the next exact-source runtime only from the committed hardened source,
 > verify every sidecar hash, and then submit the pinned in-Bubblewrap H100
 > smoke. These jobs cannot read checkpoints, shards, or optimizer state. Do

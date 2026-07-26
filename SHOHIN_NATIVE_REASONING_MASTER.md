@@ -52666,7 +52666,7 @@ execution. An independent hostile rereview closed both final P1 findings:
 same-descriptor wheel consumption and extraction-to-execution substitution.
 The focused runtime/deployment/four-process regression set passes 54/54 with
 clean Ruff, byte compilation, shell syntax, and diff checks. The complete
-ETTR/cross-ontology inventory passes 315/315 in 171.39 seconds. Exact-source
+ETTR/cross-ontology inventory passes 315/315 in 172.43 seconds. Exact-source
 build `705463` passed staged CUDA imports but failed closed before archive
 publication because five normal dependency filenames contain printable spaces
 or punctuation. The corrected policy accepts printable ASCII path segments
@@ -52702,10 +52702,12 @@ Confined smoke `706033` then passed extraction and root-owned Python-closure
 verification but failed closed before CUDA because pinned Bubblewrap does not
 implement `--clearenv`. The sealed verifier already gives Bubblewrap the exact
 environment `{HOME, PATH}`; the unsupported redundant flag is removed and now
-statically rejected. Corrected confined smoke `706072` is pending H100
-resources from exact wrapper commit
-`40ae864aae5bdd583485d8512239f05913103de6`; scheduler configuration
-admission passes.
+statically rejected. Corrected confined smoke `706072` passed extraction,
+Python-closure verification, and network isolation, then failed closed because
+renaming allocated physical `/dev/nvidia1` to `/dev/nvidia0` made CUDA
+unavailable. The wrapper now keeps the exact Slurm-assigned device pathname
+and sets `CUDA_VISIBLE_DEVICES` to that physical minor, which gives PyTorch one
+logical device.
 
 Current decision:
 `ettr_architecture_complete_stage_specific_runtime_pass_external_supervisor_and_learning_pending`.

@@ -86,7 +86,12 @@ def test_claim_runtime_smoke_requires_pins_h100_cuda_and_bwrap_netns() -> None:
     assert '"{ETTR_RUNTIME_ROOT}"' in source
     assert "--expected-archive-sha256" in source
     assert "--expected-source-bundle-sha256" in source
-    assert "--setenv CUDA_VISIBLE_DEVICES 0" in source
+    assert '--setenv CUDA_VISIBLE_DEVICES "$ALLOCATED_GPU_INDEX"' in source
+    assert (
+        '"/dev/nvidia$ALLOCATED_GPU_INDEX" \\\n'
+        '    "/dev/nvidia$ALLOCATED_GPU_INDEX"'
+    ) in source
+    assert "ETTR_ALLOCATED_GPU_INDEX" in source
     assert "torch.cuda.device_count() != 1" in source
     assert "socket.create_connection" in source
     assert "$CKPT" not in source

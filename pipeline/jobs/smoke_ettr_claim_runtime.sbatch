@@ -215,7 +215,8 @@ BWRAP_ARGS=(
   --setenv HOME /tmp \
   --setenv PATH /runtime/miniforge3/bin \
   --setenv PYTHONNOUSERSITE 1 \
-  --setenv CUDA_VISIBLE_DEVICES 0 \
+  --setenv CUDA_VISIBLE_DEVICES "$ALLOCATED_GPU_INDEX" \
+  --setenv ETTR_ALLOCATED_GPU_INDEX "$ALLOCATED_GPU_INDEX" \
   --setenv LD_LIBRARY_PATH \
     /runtime/miniforge3/lib:/usr/lib64:/lib64:/usr/lib:/lib \
 )
@@ -230,7 +231,9 @@ for device in /dev/nvidiactl /dev/nvidia-uvm /dev/nvidia-uvm-tools; do
   fi
 done
 BWRAP_ARGS+=(
-  --dev-bind "/dev/nvidia$ALLOCATED_GPU_INDEX" /dev/nvidia0
+  --dev-bind \
+    "/dev/nvidia$ALLOCATED_GPU_INDEX" \
+    "/dev/nvidia$ALLOCATED_GPU_INDEX"
 )
 
 SMOKE_CODE=$(/usr/bin/cat <<'PY'
@@ -245,7 +248,11 @@ import torch
 prefix = pathlib.Path("/runtime/miniforge3").resolve()
 if pathlib.Path(sys.prefix).resolve() != prefix:
     raise SystemExit("[ettr-runtime-smoke] interpreter prefix escaped")
-if os.environ.get("CUDA_VISIBLE_DEVICES") != "0":
+allocated_gpu = os.environ.get("ETTR_ALLOCATED_GPU_INDEX", "")
+if (
+    not allocated_gpu.isdigit()
+    or os.environ.get("CUDA_VISIBLE_DEVICES") != allocated_gpu
+):
     raise SystemExit("[ettr-runtime-smoke] allocated GPU visibility differs")
 try:
     socket.create_connection(("1.1.1.1", 53), timeout=0.2)
