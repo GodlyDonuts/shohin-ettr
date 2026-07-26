@@ -122,6 +122,24 @@ consistent but wrong altered episode seals. The treatment capability is
 therefore demonstrated, but promotion as a universally fail-closed mechanism
 is withheld.
 
+An independent exact identifiability audit explains this miss. Under the
+perturbed abstract support/observation interface, six episodes are ambiguous,
+four are contradictory, and the held-out random-permutation law episode is a
+coherent alternate world: each target has exactly one surviving program and
+neither is the original target map. Therefore a constraint compiler operating
+only on that abstract interface cannot reject all deranged episodes without
+also rejecting evidence-consistent worlds. Raw-source redundancy remains
+available and could detect the injected internal corruption, but that would
+measure a parser checksum rather than law induction. The frozen formal miss
+is preserved.
+
+The identifiability report is
+`artifacts/r12/episodic_generator_constraint/deranged_identifiability_seed20260726.json`;
+its receipt SHA-256 is
+`4e48a77c7f3ea9995a36094467585fd99ff2164abc4c89fa0761c3950eb5d8af`
+and file SHA-256 is
+`a58f64bec1f61eb8e9e611e45e525feac54a95b93b211dbb2c1d437800e30292`.
+
 ## Receipts
 
 - report:

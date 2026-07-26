@@ -13685,3 +13685,20 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   Stop further proxy branching under the usage constraint. No Newton jobs
   remain active; pretraining stays held; the protected local/Newton checkpoint
   hashes remain identical.
+
+- **2026-07-25 21:30 EDT** -- **Exact control audit classifies the single
+  deranged-support seal as a coherent alternate world.** A new independent
+  enumerator reproduces the same 127-word closure without neural logits. Of
+  11 deranged development episodes, six are ambiguous, four contradictory,
+  and one held-out random-permutation law episode uniquely identifies two
+  wrong target maps. Thus zero sealing is impossible for a compiler restricted
+  to the perturbed abstract support/observation interface. A raw-source
+  checksum could catch the injected internal mutation, but would test
+  corruption detection rather than induction. Preserve the formal gate miss;
+  do not retrofit that checksum as reasoning.
+
+  Focused verification is now 15 passed with clean Ruff and byte compilation.
+  Identifiability receipt SHA-256 is
+  `4e48a77c7f3ea9995a36094467585fd99ff2164abc4c89fa0761c3950eb5d8af`;
+  file SHA-256 is
+  `a58f64bec1f61eb8e9e611e45e525feac54a95b93b211dbb2c1d437800e30292`.
