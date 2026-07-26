@@ -18,6 +18,7 @@ unset CDPATH ENV BASH_ENV PYTHONHOME PYTHONPATH PYTHONSTARTUP \
 
 BASE=/lustre/fs1/home/sa305415/shohin
 SOURCE_ROOT=${SOURCE_ROOT:-$BASE}
+ASSESSOR_PYTHON=${ASSESSOR_PYTHON:-$BASE/miniforge3/bin/python3.13}
 HOST_PYTHON=/usr/bin/python3.11
 BWRAP=/usr/bin/bwrap
 PREPARER=${PREPARER:-$SOURCE_ROOT/pipeline/prepare_ettr_supervisor_smoke.py}
@@ -32,7 +33,7 @@ RUNTIME_RECEIPT_QUERY=${RUNTIME_RECEIPT_QUERY:-$RUNTIME_TAR.runtime-bundle-query
 EXPECTED_PREPARER_SHA256=${EXPECTED_PREPARER_SHA256:?pin the preparer SHA-256}
 EXPECTED_TRUSTED_EXTRACTOR_SHA256=${EXPECTED_TRUSTED_EXTRACTOR_SHA256:?pin the extractor SHA-256}
 EXPECTED_HOST_PYTHON_SHA256=${EXPECTED_HOST_PYTHON_SHA256:?pin the host Python SHA-256}
-EXPECTED_RUNTIME_PYTHON_SHA256=${EXPECTED_RUNTIME_PYTHON_SHA256:?pin the runtime Python SHA-256}
+EXPECTED_ASSESSOR_PYTHON_SHA256=${EXPECTED_ASSESSOR_PYTHON_SHA256:?pin the assessor Python SHA-256}
 EXPECTED_ARCHIVE_SHA256=${EXPECTED_ARCHIVE_SHA256:?pin the runtime archive SHA-256}
 EXPECTED_INVENTORY_SHA256=${EXPECTED_INVENTORY_SHA256:?pin the runtime inventory SHA-256}
 EXPECTED_SOURCE_BUNDLE_SHA256=${EXPECTED_SOURCE_BUNDLE_SHA256:?pin the runtime source bundle SHA-256}
@@ -43,7 +44,7 @@ for digest in \
   "$EXPECTED_PREPARER_SHA256" \
   "$EXPECTED_TRUSTED_EXTRACTOR_SHA256" \
   "$EXPECTED_HOST_PYTHON_SHA256" \
-  "$EXPECTED_RUNTIME_PYTHON_SHA256" \
+  "$EXPECTED_ASSESSOR_PYTHON_SHA256" \
   "$EXPECTED_ARCHIVE_SHA256" \
   "$EXPECTED_INVENTORY_SHA256" \
   "$EXPECTED_SOURCE_BUNDLE_SHA256" \
@@ -97,6 +98,15 @@ immutable_file "$RUNTIME_TAR" "$EXPECTED_ARCHIVE_SHA256" || {
   echo "[ettr-supervisor-smoke] host Python identity differs" >&2
   exit 3
 }
+[ -x "$ASSESSOR_PYTHON" ] && [ ! -L "$ASSESSOR_PYTHON" ] \
+  && [ "$(/usr/bin/stat -c %h "$ASSESSOR_PYTHON")" = 1 ] \
+  && [ "$(/usr/bin/sha256sum "$ASSESSOR_PYTHON" \
+    | /usr/bin/awk '{print $1}')" = "$EXPECTED_ASSESSOR_PYTHON_SHA256" ] \
+  && [ "$("$ASSESSOR_PYTHON" -I -B -c \
+    'import cryptography; print(cryptography.__version__)')" = 46.0.3 ] || {
+  echo "[ettr-supervisor-smoke] assessor Python identity differs" >&2
+  exit 3
+}
 [ -x "$BWRAP" ] && [ ! -L "$BWRAP" ] \
   && [ "$(/usr/bin/stat -c %u "$BWRAP")" = 0 ] \
   && [ "$(/usr/bin/stat -c %h "$BWRAP")" = 1 ] \
@@ -125,11 +135,9 @@ done
 OUT_PARENT=$BASE/artifacts/ettr-supervisor-smoke
 OUT=$OUT_PARENT/$SLURM_JOB_ID
 SCRATCH_PARENT=${SLURM_TMPDIR:-${TMPDIR:-/tmp}}
-PREP_EXTRACTED=$SCRATCH_PARENT/ettr_supervisor_prep_runtime_$SLURM_JOB_ID
 EXTRACTED=$SCRATCH_PARENT/ettr_supervisor_runtime_$SLURM_JOB_ID
 mkdir -p "$OUT_PARENT"
 [ ! -e "$OUT" ] \
-  && [ ! -e "$PREP_EXTRACTED" ] \
   && [ ! -e "$EXTRACTED" ] || {
   echo "[ettr-supervisor-smoke] output already exists" >&2
   exit 4
@@ -137,7 +145,7 @@ mkdir -p "$OUT_PARENT"
 
 cleanup_runtime() {
   local path
-  for path in "$PREP_EXTRACTED" "$EXTRACTED"; do
+  for path in "$EXTRACTED"; do
     if [ -d "$path" ] && [ ! -L "$path" ]; then
       /usr/bin/chmod -R u+w "$path" 2>/dev/null || true
       /usr/bin/rm -rf -- "$path"
@@ -146,26 +154,11 @@ cleanup_runtime() {
 }
 trap cleanup_runtime EXIT
 
-"$HOST_PYTHON" -I -S -B "$TRUSTED_EXTRACTOR" extract \
-  --archive "$RUNTIME_TAR" \
-  --destination "$PREP_EXTRACTED" \
-  --expected-archive-sha256 "$EXPECTED_ARCHIVE_SHA256" \
-  --expected-inventory-sha256 "$EXPECTED_INVENTORY_SHA256" \
-  --expected-source-bundle-sha256 "$EXPECTED_SOURCE_BUNDLE_SHA256"
-PREP_PYTHON=$PREP_EXTRACTED/runtime/miniforge3/bin/python
-[ -x "$PREP_PYTHON" ] && [ ! -L "$PREP_PYTHON" ] \
-  && [ "$(/usr/bin/stat -c %h "$PREP_PYTHON")" = 1 ] \
-  && [ "$(/usr/bin/sha256sum "$PREP_PYTHON" \
-    | /usr/bin/awk '{print $1}')" = "$EXPECTED_RUNTIME_PYTHON_SHA256" ] || {
-  echo "[ettr-supervisor-smoke] verified fixture Python differs" >&2
-  exit 3
-}
-
 /usr/bin/env -i \
   HOME=/nonexistent \
   PATH=/usr/bin:/bin \
   PYTHONNOUSERSITE=1 \
-  "$PREP_PYTHON" -I -B "$PREPARER" prepare \
+  "$ASSESSOR_PYTHON" -I -B "$PREPARER" prepare \
   --source-root "$SOURCE_ROOT" \
   --output-root "$OUT" \
   --runtime-archive "$RUNTIME_TAR" \
@@ -261,7 +254,7 @@ PY
   HOME=/nonexistent \
   PATH=/usr/bin:/bin \
   PYTHONNOUSERSITE=1 \
-  "$PREP_PYTHON" -I -B "$PREPARER" validate \
+  "$ASSESSOR_PYTHON" -I -B "$PREPARER" validate \
   --source-root "$SOURCE_ROOT" \
   --plan "$PLAN" \
   --expected-plan-sha256 "$PLAN_SHA256"

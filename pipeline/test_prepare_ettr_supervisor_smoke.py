@@ -308,9 +308,10 @@ def test_job_is_one_gpu_bounded_and_runs_all_three_phases() -> None:
     assert "#SBATCH --export=NONE" in job
     assert "#SBATCH -t 01:00:00" in job
     assert "#SBATCH --exclude=evc33,evc34,evc43,evc44" in job
-    assert "EXPECTED_RUNTIME_PYTHON_SHA256" in job
-    assert "PREP_EXTRACTED/runtime/miniforge3/bin/python" in job
-    assert '"$TRUSTED_EXTRACTOR" extract \\' in job
+    assert "EXPECTED_ASSESSOR_PYTHON_SHA256" in job
+    assert "ASSESSOR_PYTHON" in job
+    assert "cryptography.__version__" in job
+    assert "46.0.3" in job
     assert "ettr-claim-runtime-v2.tar" in job
     assert " prepare \\" in job
     assert "run-chain \\" in job
