@@ -38,8 +38,9 @@
 > `train/endogenous_typed_theory_reactor.py`. It adds an endogenous raw-token
 > compiler, source-deleted typed object/relation state, a shared recurrent
 > structural-transaction reactor, exact-forward straight-through discrete
-> choices, and a separate state-only query reader. The default addition is
-> 45,090,402 parameters; complete system size is 170,172,066 with 29,827,934
+> choices, a separate post-seal command channel, and a state-only query
+> reader. The default addition is 46,437,474 parameters; complete system size
+> is 171,519,138 with 28,480,862
 > remaining under 200M. The protected step-300k checkpoint hash matches and
 > loads strictly with zero missing/unexpected tensors. Five architecture tests
 > pass with gradients through compiler/reactor/query reader; Ruff and byte
@@ -55,6 +56,18 @@
 > infrastructure only. Typed rewriting, guarded resources, custody, training,
 > and causal qualification remain future work. Decision:
 > `horn_version_space_falsifier_passes_candidate_reasoning_unproven`.
+>
+> **ETTR THREE-ONTOLOGY + CUSTODY READY — 2026-07-25 EDT:** Horn closure,
+> typed term rewriting, and guarded resource processes now have distinct
+> exact boards and independently implemented oracles. They cover 95 theories,
+> 183,480 exact oracle comparisons, unseen rule combinations and programs,
+> repeated-variable/ordered-role semantics, nonconfluence, halt/deadlock, four
+> renderers, and 352 exact identifiability episodes. The architecture state
+> has an immutable non-pickle allowlisted wire. Fresh compiler, executor,
+> late-query, and model-free assessor processes reproduce direct execution;
+> the serial test physically deletes each prior stage before starting the
+> next. Decision:
+> `trainable_cross_ontology_architecture_ready_capability_unproven`.
 >
 > **Variable-topology qualification PASS (2026-07-25 EDT):** CPU array
 > `704729` completed all 15 five-seed/leave-one-family-out folds. The learned
@@ -13787,10 +13800,10 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   consumes only source-deleted state. The discrete path is bit-exact in its
   forward pass while retaining straight-through gradients.
 
-  Default additions are 17,120,265 compiler, 20,022,808 reactor, and
-  7,947,329 query-reader parameters, totaling 45,090,402. Together with the
-  125,081,664-parameter base, the architecture contains 170,172,066 parameters
-  and leaves 29,827,934 under 200M. The protected checkpoint hash remains
+  Default additions are 17,120,265 compiler, 21,369,880 reactor, and
+  7,947,329 query-reader parameters, totaling 46,437,474. Together with the
+  125,081,664-parameter base, the architecture contains 171,519,138 parameters
+  and leaves 28,480,862 under 200M. The protected checkpoint hash remains
   `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`;
   step 300,000 loads strictly with zero missing or unexpected keys. Five
   architecture tests pass end-to-end gradients, state allowlisting, exact
@@ -13804,5 +13817,34 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   Current conclusion: the requested novel, trainable architecture now exists
   and is checkpoint-compatible under the parameter ceiling. It has not been
   pretrained or post-trained and therefore makes no intelligence claim.
-  Finish the two remaining ontology boards and custody before qualification.
-  Do not start pretraining until the user explicitly lifts the hold.
+  The subsequent entry completes the two remaining boards and custody. Do not
+  start pretraining until the user explicitly lifts the hold.
+
+- **2026-07-25 23:10--23:55 EDT** -- **All three ETTR ontology mechanics and
+  serial process custody are implemented.** Typed rewriting contributes 15
+  distinct theories over 64 typed terms. Eight exact rule combinations are
+  held out while all six primitive rules remain in the fitting split. Two
+  normal-form engines agree on all 960 cases, including repeated-variable
+  equality, ordered child roles, and ten nonconfluent cases.
+
+  Guarded resources contributes 60 distinct operator assignments, 81 typed
+  markings, and 36 unseen length-two/three command programs. Independent
+  executors agree on all 174,960 cases: 13,362 halt normally and 161,598
+  deadlock. Together with Horn, the three boards provide 183,480 exact oracle
+  comparisons and 352 exact identifiability episodes.
+
+  Architecture audit found and fixed a missing post-seal command channel. The
+  reactor now cross-attends command residuals independently of world source
+  and late query. This raises the architecture addition to 46,437,474 and the
+  complete system to 171,519,138 parameters.
+
+  ETTR state now uses an immutable allowlisted safetensors wire. Fresh compiler,
+  executor, query, and model-free assessor processes pass independently and as
+  one serial chain. Each prior stage directory is physically deleted before
+  the next starts; expected answers are created only after candidate exit.
+
+  Decision:
+  `trainable_cross_ontology_architecture_ready_capability_unproven`.
+  Remaining work is the seven-variant/split-disjoint qualification package,
+  synthetic supervision contract, and causal training evidence. Pretraining
+  remains held.

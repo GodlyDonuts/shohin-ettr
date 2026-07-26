@@ -146,3 +146,30 @@ def test_base_can_be_frozen_without_freezing_architecture() -> None:
         parameter.requires_grad
         for parameter in model.reactor.parameters()
     )
+
+
+def test_post_seal_command_tokens_causally_enter_reactor() -> None:
+    model = _model().eval()
+    world = torch.randint(0, 64, (1, 8))
+    first_command = torch.randint(0, 64, (1, 6))
+    second_command = first_command.clone()
+    second_command[:, 2] = (second_command[:, 2] + 1) % 64
+    state = model.compile_world(world)
+    first_policy = model.reactor.policy(
+        state,
+        hard=False,
+        command_hidden=model._encode_to_stage(
+            first_command,
+            pos=0,
+        ),
+    )
+    second_policy = model.reactor.policy(
+        state,
+        hard=False,
+        command_hidden=model._encode_to_stage(
+            second_command,
+            pos=0,
+        ),
+    )
+    assert not torch.equal(first_policy.opcode, second_policy.opcode)
+    assert not torch.equal(first_policy.source, second_policy.source)

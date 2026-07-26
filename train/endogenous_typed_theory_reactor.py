@@ -378,6 +378,16 @@ class GenericTransactionReactor(nn.Module):
             width,
             bias=False,
         )
+        self.command_projection = nn.Linear(
+            config.d_model,
+            width,
+        )
+        self.command_norm = nn.LayerNorm(width)
+        self.command_attention = nn.MultiheadAttention(
+            width,
+            config.num_heads,
+            batch_first=True,
+        )
         layer = nn.TransformerEncoderLayer(
             d_model=width,
             nhead=config.num_heads,
@@ -410,10 +420,34 @@ class GenericTransactionReactor(nn.Module):
         state: TypedTheoryState,
         *,
         hard: bool,
+        command_hidden: torch.Tensor | None = None,
+        command_attention_mask: torch.Tensor | None = None,
     ) -> TransactionPolicy:
         validate_state(state, self.config)
         if state.step >= self.config.max_steps:
             raise TheoryReactorError("reactor step exceeds maximum")
+        command_padding: torch.Tensor | None = None
+        command: torch.Tensor | None = None
+        if command_hidden is not None:
+            if (
+                command_hidden.ndim != 3
+                or command_hidden.shape[0] != state.values.shape[0]
+                or command_hidden.shape[-1] != self.config.d_model
+            ):
+                raise TheoryReactorError(
+                    "command hidden geometry differs"
+                )
+            command_padding = _padding_mask(
+                command_attention_mask,
+                command_hidden.shape[0],
+                command_hidden.shape[1],
+                command_hidden.device,
+            )
+            command = self.command_projection(command_hidden)
+        elif command_attention_mask is not None:
+            raise TheoryReactorError(
+                "command mask requires command hidden"
+            )
         type_context = torch.einsum(
             "bst,tw->bsw",
             state.type_probabilities,
@@ -438,6 +472,15 @@ class GenericTransactionReactor(nn.Module):
             + self.step_embedding.weight[state.step].to(slots.dtype)
             + pooled
         )
+        if command is not None:
+            command_read, _ = self.command_attention(
+                control[:, None, :],
+                self.command_norm(command),
+                self.command_norm(command),
+                key_padding_mask=command_padding,
+                need_weights=False,
+            )
+            control = control + command_read[:, 0]
         encoded = self.core(torch.cat((control[:, None, :], slots), dim=1))
         control = self.output_norm(encoded[:, 0])
         encoded_slots = self.output_norm(encoded[:, 1:])
@@ -554,13 +597,20 @@ class GenericTransactionReactor(nn.Module):
         *,
         steps: int,
         hard: bool = False,
+        command_hidden: torch.Tensor | None = None,
+        command_attention_mask: torch.Tensor | None = None,
     ) -> tuple[TypedTheoryState, ReactorTrace]:
         if not 1 <= steps <= self.config.max_steps - state.step:
             raise TheoryReactorError("requested reactor steps differ")
         policies: list[TransactionPolicy] = []
         states: list[TypedTheoryState] = []
         for _ in range(steps):
-            policy = self.policy(state, hard=hard)
+            policy = self.policy(
+                state,
+                hard=hard,
+                command_hidden=command_hidden,
+                command_attention_mask=command_attention_mask,
+            )
             state = self.apply(state, policy)
             policies.append(policy)
             states.append(state)
@@ -712,8 +762,21 @@ class EndogenousTypedTheoryReactorGPT(nn.Module):
         *,
         steps: int,
         hard: bool = False,
+        command_idx: torch.Tensor | None = None,
+        command_attention_mask: torch.Tensor | None = None,
     ) -> tuple[TypedTheoryState, ReactorTrace]:
-        return self.reactor(state, steps=steps, hard=hard)
+        command_hidden = (
+            None
+            if command_idx is None
+            else self._encode_to_stage(command_idx, pos=0)
+        )
+        return self.reactor(
+            state,
+            steps=steps,
+            hard=hard,
+            command_hidden=command_hidden,
+            command_attention_mask=command_attention_mask,
+        )
 
     def answer_query(
         self,
@@ -746,8 +809,10 @@ class EndogenousTypedTheoryReactorGPT(nn.Module):
         query_idx: torch.Tensor,
         *,
         reactor_steps: int,
+        command_idx: torch.Tensor | None = None,
         targets: torch.Tensor | None = None,
         world_attention_mask: torch.Tensor | None = None,
+        command_attention_mask: torch.Tensor | None = None,
         query_attention_mask: torch.Tensor | None = None,
         hard: bool = False,
     ) -> tuple[
@@ -765,6 +830,8 @@ class EndogenousTypedTheoryReactorGPT(nn.Module):
             state,
             steps=reactor_steps,
             hard=hard,
+            command_idx=command_idx,
+            command_attention_mask=command_attention_mask,
         )
         logits, loss = self.answer_query(
             state,

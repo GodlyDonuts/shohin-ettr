@@ -75,16 +75,17 @@ architecture intended for later continued pretraining:
    Shohin residuals;
 2. the compiler emits only source-deleted slot values, type probabilities,
    relation tensors, activity, root, commit, and halt state;
-3. a shared recurrent reactor emits the eight structural transaction choices
-   and applies differentiable graph updates;
+3. a shared recurrent reactor cross-attends a separate post-seal command
+   stream, emits the eight structural transaction choices, and applies
+   differentiable graph updates;
 4. an exact-forward straight-through path supports discrete transactions
    without removing training gradients; and
 5. a separate query reader consumes only the typed state and query residuals.
 
-The default architecture adds 45,090,402 parameters: 17,120,265 in the
-compiler, 20,022,808 in the reactor, and 7,947,329 in the query reader. With
+The default architecture adds 46,437,474 parameters: 17,120,265 in the
+compiler, 21,369,880 in the reactor, and 7,947,329 in the query reader. With
 the immutable 125,081,664-parameter Shohin base, the complete system contains
-170,172,066 parameters and leaves 29,827,934 below the 200M ceiling.
+171,519,138 parameters and leaves 28,480,862 below the 200M ceiling.
 
 The actual protected checkpoint hash matches, step 300,000 loads strictly
 with zero missing or unexpected tensors, and the wrapper parameter receipt
@@ -110,6 +111,39 @@ oracle in `pipeline/audit_cross_ontology_horn_board.py`.
 - Reference packets use only the generic transaction schema.
 
 Full mechanics disposition: `R12_ETTR_G0_HORN_BOARD_RESULT.md`.
+
+The typed-rewrite board adds 15 behaviorally distinct two-rule theories, with
+eight exact rule combinations held out while every primitive rule remains
+seen. Two independent normal-form engines agree on all 960 theory/term pairs,
+including repeated-variable, ordered-child, and nonconfluent cases.
+
+The guarded-resource board adds 60 behaviorally distinct three-operator
+theories, 81 typed markings, and 36 unseen length-two/three programs. Two
+independent engines agree on all 174,960 held-out executions, including
+13,362 normal halts and 161,598 deadlocks.
+
+Across all three boards there are 183,480 exact independent-oracle
+comparisons and 352 exact identifiability episodes before the full seven-
+variant primary matrix is materialized.
+
+## Process Custody Implementation
+
+The architecture now has a non-pickle, allowlisted safetensors state wire and
+four detached process surfaces:
+
+1. `run_ettr_world_compiler.py` receives world tokens, compiler weights, and
+   the hash-bound Shohin checkpoint, then emits only immutable typed state.
+2. `run_ettr_state_executor.py` receives only typed state, reactor weights,
+   geometry, and a step budget.
+3. `run_ettr_late_query.py` receives only terminal state, late-query tokens,
+   query-reader weights, and the hash-bound Shohin checkpoint.
+4. `run_cross_ontology_assessor.py` is model-free and receives only immutable
+   candidate and independently generated expected outputs.
+
+The serial custody test destroys each previous stage directory before the next
+process starts and creates assessor expectations only after candidate exit.
+This establishes process mechanics, not hostile-kernel isolation or
+capability.
 
 ## Architecture
 
