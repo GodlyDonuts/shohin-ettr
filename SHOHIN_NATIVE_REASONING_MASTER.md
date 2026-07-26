@@ -52711,6 +52711,11 @@ logical device. Smoke `706121` showed that same-path binding alone is
 insufficient: extraction, Python closure, and network isolation passed, but
 CUDA remained unavailable. The measured host-driver closure now additionally
 binds read-only `/proc/driver/nvidia` plus the NVIDIA caps and modeset devices.
+Exact-wrapper retry `706166` still failed CUDA on `evc43`, but host-only control
+`706184` proved that node itself is bad: outside Bubblewrap, PyTorch saw one
+H100 by name and its first CUDA allocation failed with `device(s) busy or
+unavailable`. Fresh unchanged smoke `706196` excludes `evc43` and is pending
+resources.
 
 Current decision:
 `ettr_architecture_complete_stage_specific_runtime_pass_external_supervisor_and_learning_pending`.

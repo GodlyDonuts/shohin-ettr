@@ -225,7 +225,12 @@
 > closure, and network isolation passed, but CUDA remained unavailable. The
 > measured host-driver closure now additionally binds read-only
 > `/proc/driver/nvidia` plus the existing NVIDIA caps and modeset devices.
-> Monitor a fresh exact-wrapper smoke to completion before promoting the
+> Exact-wrapper retry `706166` still failed CUDA on `evc43`; host-only control
+> `706184` then proved the node is the cause: outside Bubblewrap, PyTorch saw
+> one H100 by name but its first CUDA allocation failed with
+> `device(s) busy or unavailable`. This is a bad-node infrastructure result,
+> not a confinement result. Fresh unchanged smoke `706196` excludes `evc43`
+> and is pending resources. Monitor it to completion before promoting the
 > confined runtime gate.
 > Build the next exact-source runtime only from the committed hardened source,
 > verify every sidecar hash, and then submit the pinned in-Bubblewrap H100
