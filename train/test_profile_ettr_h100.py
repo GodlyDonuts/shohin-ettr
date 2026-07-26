@@ -237,6 +237,24 @@ def test_parameter_sampling_fails_when_budget_cannot_cover_every_tensor() -> Non
         profile._sample_parameters(parameters, maximum=4)
 
 
+def test_reactor_core_gradient_component_excludes_command_projection() -> None:
+    model = profile._tiny_model(7)
+    components = profile._component_parameters(model)
+    command_ids = {
+        id(parameter) for parameter in components["command_projection"]
+    }
+    reactor_core_ids = {
+        id(parameter) for parameter in components["reactor_core"]
+    }
+    reactor_ids = {
+        id(parameter) for parameter in components["reactor"]
+    }
+    assert command_ids
+    assert reactor_core_ids
+    assert command_ids.isdisjoint(reactor_core_ids)
+    assert command_ids | reactor_core_ids == reactor_ids
+
+
 def test_output_custody_rejects_existing_aliases_and_symlinks(
     tmp_path: Path,
 ) -> None:
@@ -283,7 +301,7 @@ def test_dry_run_is_explicit_sealed_and_writes_no_model_state(
         "executed": False,
         "validation_only": True,
     }
-    assert report["schema"] == "shohin-ettr-h100-profile-v4"
+    assert report["schema"] == "shohin-ettr-h100-profile-v5"
     assert report["sync_points"] == list(profile.SYNC_POINTS)
     assert report["custody"]["pretraining_started"] is False
     assert report["custody"]["model_or_optimizer_state_written"] is False
@@ -338,7 +356,7 @@ def test_cpu_validation_runs_bf16_microstep_and_receipts(
         assert arm["gates"] == {
             "bf16_autocast_exercised": True,
             "gradient_receipt_pass": True,
-            "isolated_query_binding_gradient_receipt_pass": True,
+            "isolated_query_binding_eager_bf16_gradient_receipt_pass": True,
             "loss_finite": True,
             "parameter_cap_pass": True,
         }
@@ -382,10 +400,10 @@ def test_cpu_validation_runs_bf16_microstep_and_receipts(
         assert arm["gradients"]["base"]["gradient_tensors"] == 0
         isolated = arm["isolated_query_binding_gradients"]
         expected_positive = {
-            "world": ("compiler", "reactor", "query_reader"),
+            "world": ("compiler", "reactor_core", "query_reader"),
             "command": (
                 "command_projection",
-                "reactor",
+                "reactor_core",
                 "query_reader",
             ),
         }
@@ -397,7 +415,7 @@ def test_cpu_validation_runs_bf16_microstep_and_receipts(
                 assert treatment[component]["gradient_nonfinite_elements"] == 0
             assert detached["query_reader"]["gradient_nonzero_elements"] > 0
             assert detached["compiler"]["gradient_nonzero_elements"] == 0
-            assert detached["reactor"]["gradient_nonzero_elements"] == 0
+            assert detached["reactor_core"]["gradient_nonzero_elements"] == 0
             assert treatment["base"]["gradient_nonzero_elements"] == 0
             assert detached["base"]["gradient_nonzero_elements"] == 0
         assert (
@@ -405,6 +423,15 @@ def test_cpu_validation_runs_bf16_microstep_and_receipts(
                 "gradient_nonzero_elements"
             ]
             == 0
+        )
+        isolated_execution = arm["isolated_query_binding_execution"]
+        assert isolated_execution["autocast_dtype"] == "torch.bfloat16"
+        assert isolated_execution["compiled"] is False
+        assert isolated_execution["elapsed_ms"] > 0
+        assert isolated_execution["peak_allocated_bytes"] == 0
+        assert isolated_execution["peak_reserved_bytes"] == 0
+        assert isolated_execution["purpose"] == (
+            "causal_path_attribution_not_throughput"
         )
     persisted = json.loads((output / "report.json").read_text())
     assert persisted == report

@@ -1,12 +1,19 @@
 from __future__ import annotations
 
 from dataclasses import replace
+import pickle
 
 import pytest
 import torch
 
 from endogenous_typed_theory_reactor import TheoryReactorError
-from ettr_data_contract import ETTRContinuationBatch
+from ettr_data_contract import (
+    ETTR_CONTINUATION_SCHEMA,
+    ETTRContinuationBatch,
+    ETTRContinuationManifest,
+    ETTRPacketSufficiencyIndex,
+)
+from ettr_episode import ETTREpisodeSegment
 from ettr_objectives import ETTRObjectiveConfig
 from ettr_optimization import (
     ETTROptimizerBundle,
@@ -50,16 +57,6 @@ def _trainer(
         active_slot_budget=6,
         relation_edge_budget=96,
     )
-    trainer = ETTRTrainStep(
-        model,
-        optimizer,
-        objective,
-        manifest_sha256=MANIFEST_SHA256,
-        dataset_sha256=DATASET_SHA256,
-        step_config=ETTRTrainStepConfig(
-            gradient_accumulation_steps=accumulation,
-        ),
-    )
     batch = ETTRContinuationBatch(
         manifest_sha256=MANIFEST_SHA256,
         dataset_sha256=DATASET_SHA256,
@@ -71,6 +68,71 @@ def _trainer(
         initial_committed=torch.zeros(4, dtype=torch.bool),
         initial_halted=torch.zeros(4, dtype=torch.bool),
         equivariance=_alignment(),
+    )
+    validation_query = batch.episodes.query.tokens.clone()
+    validation_query[:, 0] = 9
+    validation = replace(
+        batch,
+        episodes=replace(
+            batch.episodes,
+            query=ETTREpisodeSegment.from_tokens(validation_query),
+        ),
+    )
+    packet_sufficiency = ETTRPacketSufficiencyIndex.from_splits(
+        (batch,),
+        (validation,),
+    )
+    receipt = packet_sufficiency.receipt
+    manifest = ETTRContinuationManifest(
+        schema=ETTR_CONTINUATION_SCHEMA,
+        protected_checkpoint_sha256="1" * 64,
+        tokenizer_sha256="2" * 64,
+        qualification_payload_sha256="3" * 64,
+        hybrid_payload_sha256="4" * 64,
+        train_rows=4,
+        validation_rows=4,
+        train_payload_sha256=packet_sufficiency.train_payload_sha256,
+        validation_payload_sha256=(
+            packet_sufficiency.validation_payload_sha256
+        ),
+        dataset_sha256=ETTRContinuationManifest.combined_dataset_sha256(
+            packet_sufficiency.train_payload_sha256,
+            packet_sufficiency.validation_payload_sha256,
+        ),
+        packet_sufficiency_train_batches=1,
+        packet_sufficiency_validation_batches=1,
+        packet_sufficiency_rows=receipt.rows,
+        packet_sufficiency_unique_contexts=receipt.unique_contexts,
+        packet_sufficiency_train_contexts=(
+            packet_sufficiency.train_contexts
+        ),
+        packet_sufficiency_validation_contexts=(
+            packet_sufficiency.validation_contexts
+        ),
+        packet_sufficiency_context_sha256=receipt.context_sha256,
+        packet_sufficiency_target_bound_sha256=(
+            receipt.target_bound_sha256
+        ),
+        source_deleted=True,
+        immutable_snapshot=True,
+        live_writer_input=False,
+        family_label_fields=(),
+    )
+    batch = replace(
+        batch,
+        manifest_sha256=manifest.sha256(),
+        dataset_sha256=manifest.dataset_sha256,
+    )
+    trainer = ETTRTrainStep(
+        model,
+        optimizer,
+        objective,
+        manifest=manifest,
+        packet_sufficiency=packet_sufficiency,
+        manifest_sha256=manifest.sha256(),
+        step_config=ETTRTrainStepConfig(
+            gradient_accumulation_steps=accumulation,
+        ),
     )
     return trainer, batch
 
@@ -171,7 +233,77 @@ def test_invalid_batch_fails_before_optimizer_mutation() -> None:
     assert trainer.optimizer.next_update == 0
 
 
+def test_update_rejects_cross_batch_terminal_packet_collision() -> None:
+    trainer, batch = _trainer(accumulation=2)
+    query = batch.episodes.query.tokens.clone()
+    query[0, 2] = 24
+    collision = replace(
+        batch,
+        episodes=replace(
+            batch.episodes,
+            query=ETTREpisodeSegment.from_tokens(query),
+        ),
+    )
+    batch.validate(trainer.model.config, trainer.objective_config)
+    collision.validate(trainer.model.config, trainer.objective_config)
+    with pytest.raises(
+        TheoryReactorError,
+        match="absent from the frozen train payload index",
+    ):
+        trainer.update((batch, collision))
+    assert trainer.optimizer.next_update == 0
+
+
+def test_immutable_index_rejects_collision_after_a_prior_update() -> None:
+    trainer, batch = _trainer(accumulation=1)
+    trainer.update((batch,))
+    query = batch.episodes.query.tokens.clone()
+    query[0, 2] = 24
+    collision = replace(
+        batch,
+        episodes=replace(
+            batch.episodes,
+            query=ETTREpisodeSegment.from_tokens(query),
+        ),
+    )
+    collision.validate(trainer.model.config, trainer.objective_config)
+    with pytest.raises(
+        TheoryReactorError,
+        match="absent from the frozen train payload index",
+    ):
+        trainer.update((collision,))
+    assert trainer.optimizer.next_update == 1
+    resumed, _ = _trainer(accumulation=1)
+    with pytest.raises(
+        TheoryReactorError,
+        match="absent from the frozen train payload index",
+    ):
+        resumed.update((collision,))
+    assert resumed.optimizer.next_update == 0
+
+
+def test_update_rejects_validation_only_contexts() -> None:
+    trainer, batch = _trainer(accumulation=1)
+    validation_tokens = batch.episodes.query.tokens.clone()
+    validation_tokens[:, 0] = 9
+    validation = replace(
+        batch,
+        episodes=replace(
+            batch.episodes,
+            query=ETTREpisodeSegment.from_tokens(validation_tokens),
+        ),
+    )
+    trainer.packet_sufficiency.verify_validation((validation,))
+    with pytest.raises(
+        TheoryReactorError,
+        match="absent from the frozen train payload index",
+    ):
+        trainer.update((validation,))
+    assert trainer.optimizer.next_update == 0
+
+
 def test_train_step_rejects_optimizer_from_equal_shape_model() -> None:
+    reference, _ = _trainer(accumulation=1)
     first = _runner().model
     second = _runner().model
     optimizer = ETTROptimizerBundle(
@@ -196,9 +328,18 @@ def test_train_step_rejects_optimizer_from_equal_shape_model() -> None:
             second,
             optimizer,
             objective,
-            manifest_sha256=MANIFEST_SHA256,
-            dataset_sha256=DATASET_SHA256,
+            manifest=reference.manifest,
+            packet_sufficiency=reference.packet_sufficiency,
+            manifest_sha256=reference.manifest_sha256,
         )
+
+
+def test_train_step_pickle_rebinds_optimizer_to_reconstructed_model() -> None:
+    trainer, batch = _trainer(accumulation=1)
+    restored = pickle.loads(pickle.dumps(trainer))
+    restored.optimizer.assert_bound_to(restored.model)
+    restored.packet_sufficiency.verify_train((batch,))
+    assert torch.isfinite(restored.forward_loss(batch).total)
 
 
 def test_train_step_rejects_batch_from_another_snapshot() -> None:
@@ -206,3 +347,70 @@ def test_train_step_rejects_batch_from_another_snapshot() -> None:
     wrong = replace(batch, dataset_sha256="c" * 64)
     with pytest.raises(TheoryReactorError, match="snapshot differs"):
         trainer.update((wrong,))
+
+
+def test_train_step_binds_manifest_hash_and_global_sufficiency_receipt() -> None:
+    trainer, _ = _trainer(accumulation=1)
+    with pytest.raises(TheoryReactorError, match="manifest hash"):
+        ETTRTrainStep(
+            trainer.model,
+            trainer.optimizer,
+            trainer.objective_config,
+            manifest=trainer.manifest,
+            packet_sufficiency=trainer.packet_sufficiency,
+            manifest_sha256="0" * 64,
+        )
+    wrong_manifest = replace(
+        trainer.manifest,
+        packet_sufficiency_target_bound_sha256="f" * 64,
+    )
+    with pytest.raises(TheoryReactorError, match="sufficiency receipt"):
+        ETTRTrainStep(
+            trainer.model,
+            trainer.optimizer,
+            trainer.objective_config,
+            manifest=wrong_manifest,
+            packet_sufficiency=trainer.packet_sufficiency,
+            manifest_sha256=wrong_manifest.sha256(),
+        )
+
+
+def test_optimizer_failure_poison_requires_checkpoint_restart(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    trainer, batch = _trainer(accumulation=1)
+    parameter = next(
+        parameter
+        for parameter in trainer.model.parameters()
+        if parameter.requires_grad
+    )
+
+    def partial_failure() -> None:
+        with torch.no_grad():
+            parameter.flatten()[0].add_(1)
+        raise RuntimeError("injected partial optimizer failure")
+
+    monkeypatch.setattr(trainer.optimizer, "step", partial_failure)
+    with pytest.raises(
+        TheoryReactorError,
+        match="restart from the last verified checkpoint",
+    ):
+        trainer.update((batch,))
+    assert trainer.optimizer.next_update == 0
+    assert all(
+        parameter.grad is None
+        for parameter in trainer.model.parameters()
+    )
+    with pytest.raises(TheoryReactorError, match="fail-stop"):
+        trainer.update((batch,))
+    with pytest.raises(TheoryReactorError, match="fail-stop"):
+        trainer.forward_loss(batch)
+    with pytest.raises(TheoryReactorError, match="fail-stop"):
+        ETTRTrainStep(
+            trainer.model,
+            trainer.optimizer,
+            trainer.objective_config,
+            manifest=trainer.manifest,
+            packet_sufficiency=trainer.packet_sufficiency,
+            manifest_sha256=trainer.manifest_sha256,
+        )

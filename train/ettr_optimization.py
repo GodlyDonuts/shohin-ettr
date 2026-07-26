@@ -121,11 +121,7 @@ class ETTROptimizerBundle:
         )
         if seen != expected_trainable:
             raise TheoryReactorError("optimizer trainable parameter set differs")
-        self._parameter_binding = tuple(
-            (name, id(parameter))
-            for name, parameter in model.named_parameters()
-            if parameter.requires_grad
-        )
+        self.failed_update = False
 
         muon_groups = [
             {
@@ -192,17 +188,43 @@ class ETTROptimizerBundle:
         self.adam.zero_grad(set_to_none=set_to_none)
 
     def assert_bound_to(self, model: EndogenousTypedTheoryReactorGPT) -> None:
-        binding = tuple(
-            (name, id(parameter))
-            for name, parameter in model.named_parameters()
+        model_parameters = tuple(
+            parameter
+            for parameter in model.parameters()
             if parameter.requires_grad
         )
-        if binding != self._parameter_binding:
+        optimizer_parameters = tuple(
+            parameter
+            for optimizer in (self.muon, self.adam)
+            if optimizer is not None
+            for group in optimizer.param_groups
+            for parameter in group["params"]
+        )
+        model_ids = {id(parameter) for parameter in model_parameters}
+        optimizer_ids = {
+            id(parameter) for parameter in optimizer_parameters
+        }
+        if (
+            len(model_ids) != len(model_parameters)
+            or len(optimizer_ids) != len(optimizer_parameters)
+            or model_ids != optimizer_ids
+        ):
             raise TheoryReactorError(
                 "ETTR optimizer is not bound to the supplied model parameters"
             )
 
+    def assert_healthy(self) -> None:
+        if self.failed_update:
+            raise TheoryReactorError(
+                "ETTR optimizer is fail-stop; restore the last verified "
+                "checkpoint"
+            )
+
+    def mark_failed_update(self) -> None:
+        self.failed_update = True
+
     def step(self) -> None:
+        self.assert_healthy()
         if self.next_update >= self.config.total_updates:
             raise TheoryReactorError(
                 "ETTR optimizer cannot step beyond the frozen horizon"
@@ -213,6 +235,7 @@ class ETTROptimizerBundle:
         self.next_update += 1
 
     def apply_schedule(self, update: int | None = None) -> float:
+        self.assert_healthy()
         if update is None:
             update = self.next_update
         if not 0 <= update <= self.config.total_updates:
@@ -228,6 +251,7 @@ class ETTROptimizerBundle:
         return scale
 
     def state_dict(self) -> dict[str, Any]:
+        self.assert_healthy()
         return {
             "schema": "shohin-ettr-optimizer-v1",
             "config": asdict(self.config),
@@ -238,6 +262,7 @@ class ETTROptimizerBundle:
         }
 
     def load_state_dict(self, payload: dict[str, Any]) -> None:
+        self.assert_healthy()
         if (
             not isinstance(payload, dict)
             or payload.get("schema") != "shohin-ettr-optimizer-v1"

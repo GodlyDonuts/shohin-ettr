@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import fields, replace
 import hashlib
+import pickle
 
 import pytest
 import torch
@@ -13,6 +14,8 @@ from ettr_data_contract import (
     ETTRCausalRectangle,
     ETTRContinuationBatch,
     ETTRContinuationManifest,
+    ETTRPacketSufficiencyIndex,
+    continuation_batch_payload_sha256,
     terminal_packet_sufficiency_receipt,
 )
 from ettr_episode import ETTREpisodeBatch, ETTREpisodeSegment
@@ -761,6 +764,34 @@ def test_terminal_packet_sufficiency_rejects_cross_batch_collision() -> None:
         terminal_packet_sufficiency_receipt((first, second))
 
 
+def test_terminal_packet_sufficiency_cannot_be_bypassed_by_support_masks() -> None:
+    first, _ = _continuation()
+    query = first.episodes.query.tokens.clone()
+    query[0, 2] = 24
+    slot_mask = first.terminal_packet_targets.slot_mask.clone()
+    relation_mask = first.terminal_packet_targets.relation_mask.clone()
+    slot_mask[0, 1] = False
+    relation_mask[0, :, 1, :] = False
+    relation_mask[0, :, :, 1] = False
+    second = replace(
+        first,
+        episodes=replace(
+            first.episodes,
+            query=ETTREpisodeSegment.from_tokens(query),
+        ),
+        terminal_packet_targets=replace(
+            first.terminal_packet_targets,
+            slot_mask=slot_mask,
+            relation_mask=relation_mask,
+        ),
+    )
+    with pytest.raises(
+        TheoryReactorError,
+        match="full deployed-state supervision",
+    ):
+        terminal_packet_sufficiency_receipt((first, second))
+
+
 def test_terminal_packet_sufficiency_receipt_is_masked_and_deterministic() -> None:
     continuation, _ = _continuation()
     receipt = terminal_packet_sufficiency_receipt((continuation,))
@@ -779,6 +810,63 @@ def test_terminal_packet_sufficiency_receipt_is_masked_and_deterministic() -> No
         ),
     )
     assert terminal_packet_sufficiency_receipt((masked,)) == receipt
+
+
+def test_packet_sufficiency_index_is_pickle_safe_and_receipt_authenticated() -> None:
+    train, _ = _continuation()
+    validation_tokens = train.episodes.query.tokens.clone()
+    validation_tokens[:, 0] = 9
+    validation = replace(
+        train,
+        episodes=replace(
+            train.episodes,
+            query=ETTREpisodeSegment.from_tokens(validation_tokens),
+        ),
+    )
+    index = ETTRPacketSufficiencyIndex.from_splits(
+        (train,),
+        (validation,),
+    )
+    restored = pickle.loads(pickle.dumps(index))
+    assert restored == index
+    restored.verify_train((train,))
+    restored.verify_validation((validation,))
+    object.__setattr__(
+        restored,
+        "_train_entries",
+        restored._validation_entries,
+    )
+    object.__setattr__(
+        restored,
+        "_train_batch_digests",
+        (
+            bytes.fromhex(
+                continuation_batch_payload_sha256(validation)
+            ),
+        ),
+    )
+    with pytest.raises(
+        TheoryReactorError,
+        match="absent from the frozen train payload index",
+    ):
+        restored.verify_train((validation,))
+    with pytest.raises(
+        TheoryReactorError,
+        match="index receipt differs",
+    ):
+        ETTRPacketSufficiencyIndex(
+            _train_entries=index._train_entries[:-1],
+            _validation_entries=index._validation_entries,
+            _train_batch_digests=index._train_batch_digests,
+            _validation_batch_digests=index._validation_batch_digests,
+            train_batches=index.train_batches,
+            validation_batches=index.validation_batches,
+            train_rows=index.train_rows,
+            validation_rows=index.validation_rows,
+            train_payload_sha256=index.train_payload_sha256,
+            validation_payload_sha256=index.validation_payload_sha256,
+            receipt=index.receipt,
+        )
 
 
 def test_causal_query_provenance_indices_are_exact() -> None:
@@ -850,12 +938,29 @@ def test_manifest_fails_closed_on_live_or_overlapping_data() -> None:
         validation_rows=20,
         train_payload_sha256="e" * 64,
         validation_payload_sha256="f" * 64,
+        dataset_sha256=ETTRContinuationManifest.combined_dataset_sha256(
+            "e" * 64,
+            "f" * 64,
+        ),
+        packet_sufficiency_train_batches=25,
+        packet_sufficiency_validation_batches=5,
+        packet_sufficiency_rows=120,
+        packet_sufficiency_unique_contexts=120,
+        packet_sufficiency_train_contexts=100,
+        packet_sufficiency_validation_contexts=20,
+        packet_sufficiency_context_sha256="1" * 64,
+        packet_sufficiency_target_bound_sha256="2" * 64,
         source_deleted=True,
         immutable_snapshot=True,
         live_writer_input=False,
         family_label_fields=(),
     )
     manifest.validate()
+    receipt = manifest.packet_sufficiency_receipt()
+    assert receipt.batches == 30
+    assert receipt.rows == 120
+    assert len(manifest.sha256()) == 64
+    assert manifest.sha256() == manifest.sha256()
     with pytest.raises(TheoryReactorError, match="custody"):
         replace(
             manifest,
@@ -865,4 +970,9 @@ def test_manifest_fails_closed_on_live_or_overlapping_data() -> None:
         replace(
             manifest,
             validation_payload_sha256=manifest.train_payload_sha256,
+        ).validate()
+    with pytest.raises(TheoryReactorError, match="custody"):
+        replace(
+            manifest,
+            packet_sufficiency_rows=119,
         ).validate()

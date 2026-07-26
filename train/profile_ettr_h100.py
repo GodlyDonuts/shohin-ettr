@@ -71,7 +71,7 @@ from ettr_optimization import (
 from model import GPT, GPTConfig
 
 
-SCHEMA = "shohin-ettr-h100-profile-v4"
+SCHEMA = "shohin-ettr-h100-profile-v5"
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PROTECTED_PATHS = (REPOSITORY_ROOT / "train" / "flagship_out",)
 SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
@@ -698,13 +698,22 @@ def require_h100(device: torch.device) -> dict[str, object]:
 def _component_parameters(
     model: EndogenousTypedTheoryReactorGPT,
 ) -> dict[str, list[torch.nn.Parameter]]:
+    command_projection = list(
+        model.reactor.command_projection.parameters()
+    )
+    command_projection_ids = {
+        id(parameter) for parameter in command_projection
+    }
     return {
         "base": list(model.base.parameters()),
-        "command_projection": list(
-            model.reactor.command_projection.parameters()
-        ),
+        "command_projection": command_projection,
         "compiler": list(model.compiler.parameters()),
         "reactor": list(model.reactor.parameters()),
+        "reactor_core": [
+            parameter
+            for parameter in model.reactor.parameters()
+            if id(parameter) not in command_projection_ids
+        ],
         "query_reader": list(model.query_reader.parameters()),
     }
 
@@ -891,73 +900,78 @@ def _isolated_query_binding_gradients(
         receipts[arm] = {}
         for mode in ("treatment", "detached_state"):
             model.zero_grad(set_to_none=True)
-            output = runner(
-                batch.episodes,
-                reactor_steps=reactor_steps,
-                hard=True,
-                validate_batch=False,
-                compute_losses=False,
-            )
-            (
-                world_packet,
-                world_command,
-                world_target,
-                command_packet,
-                command_command,
-                command_target,
-            ) = batch.causal_rectangles.intervention_indices()
-            interventions = runner.intervene(
-                batch.episodes,
-                output.initial_state,
-                reactor_steps=reactor_steps,
-                world_packet_index=world_packet,
-                world_command_index=world_command,
-                world_query_index=world_target,
-                command_packet_index=command_packet,
-                command_command_index=command_command,
-                command_query_index=command_target,
-                hard=True,
-            )
-            objective_batch = batch.objective_batch(output, interventions)
-            if mode == "detached_state":
-                if arm == "world":
-                    correct_state = _detach_state(
-                        interventions.world_terminal_state
+            with torch.autocast(
+                device_type=device.type,
+                dtype=torch.bfloat16,
+                enabled=device.type in {"cuda", "cpu"},
+            ):
+                output = runner(
+                    batch.episodes,
+                    reactor_steps=reactor_steps,
+                    hard=True,
+                    validate_batch=False,
+                    compute_losses=False,
+                )
+                (
+                    world_packet,
+                    world_command,
+                    world_target,
+                    command_packet,
+                    command_command,
+                    command_target,
+                ) = batch.causal_rectangles.intervention_indices()
+                interventions = runner.intervene(
+                    batch.episodes,
+                    output.initial_state,
+                    reactor_steps=reactor_steps,
+                    world_packet_index=world_packet,
+                    world_command_index=world_command,
+                    world_query_index=world_target,
+                    command_packet_index=command_packet,
+                    command_command_index=command_command,
+                    command_query_index=command_target,
+                    hard=True,
+                )
+                objective_batch = batch.objective_batch(output, interventions)
+                if mode == "detached_state":
+                    if arm == "world":
+                        correct_state = _detach_state(
+                            interventions.world_terminal_state
+                        )
+                        correct_index = world_target
+                        foil_index = world_command
+                    else:
+                        correct_state = _detach_state(
+                            interventions.command_terminal_state
+                        )
+                        correct_index = command_target
+                        foil_index = command_packet
+                    foil_state = _detach_state(
+                        _index_state(output.terminal_state, foil_index)
                     )
-                    correct_index = world_target
-                    foil_index = world_command
-                else:
-                    correct_state = _detach_state(
-                        interventions.command_terminal_state
+                    detached_pair = replace(
+                        getattr(objective_batch, f"{arm}_query_binding"),
+                        correct_logits=_gather_query_logits(
+                            model,
+                            correct_state,
+                            batch,
+                            correct_index,
+                        ),
+                        foil_logits=_gather_query_logits(
+                            model,
+                            foil_state,
+                            batch,
+                            foil_index,
+                        ),
                     )
-                    correct_index = command_target
-                    foil_index = command_packet
-                foil_state = _detach_state(
-                    _index_state(output.terminal_state, foil_index)
-                )
-                detached_pair = replace(
-                    getattr(objective_batch, f"{arm}_query_binding"),
-                    correct_logits=_gather_query_logits(
-                        model,
-                        correct_state,
-                        batch,
-                        correct_index,
-                    ),
-                    foil_logits=_gather_query_logits(
-                        model,
-                        foil_state,
-                        batch,
-                        foil_index,
-                    ),
-                )
-                objective_batch = replace(
-                    objective_batch,
-                    **{f"{arm}_query_binding": detached_pair},
-                )
-            loss = ETTRCompositeObjective(
-                objective_config,
-                weights=_query_binding_weights(arm),
-            )(objective_batch).total
+                    objective_batch = replace(
+                        objective_batch,
+                        **{f"{arm}_query_binding": detached_pair},
+                    )
+                loss = ETTRCompositeObjective(
+                    objective_config,
+                    weights=_query_binding_weights(arm),
+                )(objective_batch).total
             loss.backward()
             receipts[arm][mode] = {
                 name: (
@@ -1277,6 +1291,23 @@ def execute_profile_arm(
         if device.type == "cuda":
             ends[update].record()
 
+    if device.type == "cuda":
+        torch.cuda.synchronize(device)
+        update_ms = [
+            starts[index].elapsed_time(ends[index])
+            for index in range(settings.measured_updates)
+        ]
+        peak_allocated = int(torch.cuda.max_memory_allocated(device))
+        peak_reserved = int(torch.cuda.max_memory_reserved(device))
+        current_allocated = int(torch.cuda.memory_allocated(device))
+    else:
+        assert elapsed_started is not None
+        total_ms = (time.perf_counter_ns() - elapsed_started) / 1_000_000
+        update_ms = [total_ms]
+        peak_allocated = 0
+        peak_reserved = 0
+        current_allocated = 0
+
     gradient_devices = {
         name: _gradient_tensors(parameters, device=device)
         for name, parameters in components.items()
@@ -1294,6 +1325,12 @@ def execute_profile_arm(
         else torch.zeros((), device=device)
         for name in components
     }
+    if device.type == "cuda":
+        torch.cuda.synchronize(device)
+        torch.cuda.reset_peak_memory_stats(device)
+        isolated_started = None
+    else:
+        isolated_started = time.perf_counter_ns()
     isolated_gradient_devices = _isolated_query_binding_gradients(
         model,
         batches[0],
@@ -1301,23 +1338,18 @@ def execute_profile_arm(
         reactor_steps=settings.reactor_steps,
         device=device,
     )
-
     if device.type == "cuda":
         torch.cuda.synchronize(device)
-        update_ms = [
-            starts[index].elapsed_time(ends[index])
-            for index in range(settings.measured_updates)
-        ]
-        peak_allocated = int(torch.cuda.max_memory_allocated(device))
-        peak_reserved = int(torch.cuda.max_memory_reserved(device))
-        current_allocated = int(torch.cuda.memory_allocated(device))
+        isolated_peak_allocated = int(torch.cuda.max_memory_allocated(device))
+        isolated_peak_reserved = int(torch.cuda.max_memory_reserved(device))
+        isolated_elapsed_ms = None
     else:
-        assert elapsed_started is not None
-        total_ms = (time.perf_counter_ns() - elapsed_started) / 1_000_000
-        update_ms = [total_ms / settings.measured_updates]
-        peak_allocated = 0
-        peak_reserved = 0
-        current_allocated = 0
+        assert isolated_started is not None
+        isolated_peak_allocated = 0
+        isolated_peak_reserved = 0
+        isolated_elapsed_ms = (
+            time.perf_counter_ns() - isolated_started
+        ) / 1_000_000
 
     def host_number(tensor: torch.Tensor) -> float | int:
         value = tensor.detach().cpu().tolist()
@@ -1385,17 +1417,17 @@ def execute_profile_arm(
 
     isolated_query_binding_gate = (
         positive("world", "treatment", "compiler")
-        and positive("world", "treatment", "reactor")
+        and positive("world", "treatment", "reactor_core")
         and positive("world", "treatment", "query_reader")
         and positive("command", "treatment", "command_projection")
-        and positive("command", "treatment", "reactor")
+        and positive("command", "treatment", "reactor_core")
         and positive("command", "treatment", "query_reader")
         and positive("world", "detached_state", "query_reader")
         and positive("command", "detached_state", "query_reader")
         and exact_zero("world", "detached_state", "compiler")
-        and exact_zero("world", "detached_state", "reactor")
+        and exact_zero("world", "detached_state", "reactor_core")
         and exact_zero("command", "detached_state", "compiler")
-        and exact_zero("command", "detached_state", "reactor")
+        and exact_zero("command", "detached_state", "reactor_core")
         and exact_zero("command", "detached_state", "command_projection")
         and all(
             exact_zero(arm, mode, "base")
@@ -1501,7 +1533,7 @@ def execute_profile_arm(
         "gates": {
             "bf16_autocast_exercised": (logits_dtype == torch.bfloat16),
             "gradient_receipt_pass": gradient_gate,
-            "isolated_query_binding_gradient_receipt_pass": (
+            "isolated_query_binding_eager_bf16_gradient_receipt_pass": (
                 isolated_query_binding_gate
             ),
             "loss_finite": loss_finite,
@@ -1513,6 +1545,14 @@ def execute_profile_arm(
         "isolated_query_binding_gradients": (
             isolated_query_binding_gradients
         ),
+        "isolated_query_binding_execution": {
+            "autocast_dtype": "torch.bfloat16",
+            "compiled": False,
+            "elapsed_ms": isolated_elapsed_ms,
+            "peak_allocated_bytes": isolated_peak_allocated,
+            "peak_reserved_bytes": isolated_peak_reserved,
+            "purpose": "causal_path_attribution_not_throughput",
+        },
         "memory": {
             "current_allocated_bytes": current_allocated,
             "model_loaded_allocated_bytes": model_memory,

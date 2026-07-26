@@ -17,7 +17,11 @@ from endogenous_typed_theory_reactor import (
     EndogenousTypedTheoryReactorGPT,
     TheoryReactorError,
 )
-from ettr_data_contract import ETTRContinuationBatch
+from ettr_data_contract import (
+    ETTRContinuationBatch,
+    ETTRContinuationManifest,
+    ETTRPacketSufficiencyIndex,
+)
 from ettr_episode import CausalETTREpisodeRunner
 from ettr_objectives import (
     ETTRCompositeLoss,
@@ -79,8 +83,9 @@ class ETTRTrainStep(nn.Module):
         optimizer: ETTROptimizerBundle,
         objective_config: ETTRObjectiveConfig,
         *,
+        manifest: ETTRContinuationManifest,
+        packet_sufficiency: ETTRPacketSufficiencyIndex,
         manifest_sha256: str,
-        dataset_sha256: str,
         objective_weights: ETTRObjectiveWeights | None = None,
         step_config: ETTRTrainStepConfig | None = None,
     ):
@@ -90,18 +95,53 @@ class ETTRTrainStep(nn.Module):
         self.objective_config = objective_config
         self.step_config = ETTRTrainStepConfig() if step_config is None else step_config
         self.step_config.validate()
-        if len(manifest_sha256) != 64 or len(dataset_sha256) != 64:
+        if len(manifest_sha256) != 64:
             raise TheoryReactorError("ETTR trainer snapshot receipt differs")
         try:
             bytes.fromhex(manifest_sha256)
-            bytes.fromhex(dataset_sha256)
         except ValueError as error:
             raise TheoryReactorError(
                 "ETTR trainer snapshot receipt differs"
             ) from error
         self.manifest_sha256 = manifest_sha256
-        self.dataset_sha256 = dataset_sha256
+        if not isinstance(manifest, ETTRContinuationManifest):
+            raise TheoryReactorError("ETTR trainer manifest type differs")
+        if not isinstance(packet_sufficiency, ETTRPacketSufficiencyIndex):
+            raise TheoryReactorError(
+                "ETTR trainer packet sufficiency index type differs"
+            )
+        manifest.validate()
+        if manifest.sha256() != manifest_sha256:
+            raise TheoryReactorError("ETTR trainer manifest hash differs")
+        if packet_sufficiency.receipt != manifest.packet_sufficiency_receipt():
+            raise TheoryReactorError(
+                "ETTR trainer packet sufficiency receipt differs"
+            )
+        if (
+            packet_sufficiency.train_batches
+            != manifest.packet_sufficiency_train_batches
+            or packet_sufficiency.validation_batches
+            != manifest.packet_sufficiency_validation_batches
+            or packet_sufficiency.train_rows != manifest.train_rows
+            or packet_sufficiency.validation_rows != manifest.validation_rows
+            or packet_sufficiency.train_contexts
+            != manifest.packet_sufficiency_train_contexts
+            or packet_sufficiency.validation_contexts
+            != manifest.packet_sufficiency_validation_contexts
+            or packet_sufficiency.train_payload_sha256
+            != manifest.train_payload_sha256
+            or packet_sufficiency.validation_payload_sha256
+            != manifest.validation_payload_sha256
+        ):
+            raise TheoryReactorError(
+                "ETTR trainer packet sufficiency split differs"
+            )
+        self.manifest = manifest
+        self.dataset_sha256 = manifest.dataset_sha256
+        self.packet_sufficiency = packet_sufficiency
+        self._poisoned = False
         optimizer.assert_bound_to(model)
+        optimizer.assert_healthy()
         self.runner = CausalETTREpisodeRunner(model)
         self.objective = ETTRCompositeObjective(
             objective_config,
@@ -112,6 +152,12 @@ class ETTRTrainStep(nn.Module):
         self,
         batch: ETTRContinuationBatch,
     ) -> ETTRCompositeLoss:
+        if self._poisoned:
+            raise TheoryReactorError(
+                "ETTR train step is fail-stop; restart from the last "
+                "verified checkpoint"
+            )
+        self.optimizer.assert_healthy()
         if (
             batch.manifest_sha256 != self.manifest_sha256
             or batch.dataset_sha256 != self.dataset_sha256
@@ -157,6 +203,12 @@ class ETTRTrainStep(nn.Module):
         self,
         batches: Sequence[ETTRContinuationBatch],
     ) -> ETTRUpdateReceipt:
+        if self._poisoned:
+            raise TheoryReactorError(
+                "ETTR train step is fail-stop; restart from the last "
+                "verified checkpoint"
+            )
+        self.optimizer.assert_healthy()
         if len(batches) != self.step_config.gradient_accumulation_steps:
             raise TheoryReactorError("ETTR accumulation window differs")
         for batch in batches:
@@ -164,6 +216,7 @@ class ETTRTrainStep(nn.Module):
                 self.model.config,
                 self.objective_config,
             )
+        self.packet_sufficiency.verify_train(tuple(batches))
         self.optimizer.zero_grad(set_to_none=True)
         fields = {
             "total": [],
@@ -213,21 +266,30 @@ class ETTRTrainStep(nn.Module):
         except BaseException:
             self.optimizer.zero_grad(set_to_none=True)
             raise
-        trainable = tuple(
-            parameter
-            for parameter in self.model.parameters()
-            if parameter.requires_grad
-        )
-        gradient_norm = torch.nn.utils.clip_grad_norm_(
-            trainable,
-            self.step_config.gradient_clip,
-        )
-        torch._assert_async(
-            torch.isfinite(gradient_norm),
-            "ETTR gradient norm is nonfinite",
-        )
-        scale = self.optimizer.apply_schedule()
-        self.optimizer.step()
+        try:
+            trainable = tuple(
+                parameter
+                for parameter in self.model.parameters()
+                if parameter.requires_grad
+            )
+            gradient_norm = torch.nn.utils.clip_grad_norm_(
+                trainable,
+                self.step_config.gradient_clip,
+            )
+            torch._assert_async(
+                torch.isfinite(gradient_norm),
+                "ETTR gradient norm is nonfinite",
+            )
+            scale = self.optimizer.apply_schedule()
+            self.optimizer.step()
+        except BaseException as error:
+            self.optimizer.zero_grad(set_to_none=True)
+            self.optimizer.mark_failed_update()
+            self._poisoned = True
+            raise TheoryReactorError(
+                "ETTR optimizer update failed after backward; restart from "
+                "the last verified checkpoint"
+            ) from error
 
         def mean(name: str) -> torch.Tensor:
             return torch.stack(fields[name]).mean()

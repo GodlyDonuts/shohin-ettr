@@ -7,7 +7,7 @@ host callback, answer verifier, or continuous source payload is admitted.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, fields
+from dataclasses import asdict, dataclass, field, fields
 import hashlib
 import json
 import re
@@ -51,6 +51,45 @@ def _canonical_json_bytes(value: object) -> bytes:
     ).encode("ascii")
 
 
+def _canonical_payload(value: object) -> object:
+    if torch.is_tensor(value):
+        tensor = value.detach().cpu().contiguous()
+        digest = hashlib.sha256()
+        digest.update(
+            memoryview(tensor.reshape(-1).view(torch.uint8).numpy())
+        )
+        return {
+            "dtype": str(tensor.dtype),
+            "shape": list(tensor.shape),
+            "sha256": digest.hexdigest(),
+        }
+    if hasattr(value, "__dataclass_fields__"):
+        return {
+            field.name: _canonical_payload(getattr(value, field.name))
+            for field in fields(value)
+        }
+    if isinstance(value, tuple):
+        return [_canonical_payload(item) for item in value]
+    if value is None or isinstance(value, (str, int, bool)):
+        return value
+    raise TheoryReactorError(
+        "ETTR continuation payload contains an unsupported value"
+    )
+
+
+def continuation_batch_payload_sha256(
+    batch: ETTRContinuationBatch,
+) -> str:
+    if not isinstance(batch, ETTRContinuationBatch):
+        raise TheoryReactorError("ETTR continuation payload type differs")
+    payload = {
+        field.name: _canonical_payload(getattr(batch, field.name))
+        for field in fields(batch)
+        if field.name not in {"manifest_sha256", "dataset_sha256"}
+    }
+    return hashlib.sha256(_canonical_json_bytes(payload)).hexdigest()
+
+
 def _terminal_packet_query_context(
     batch: ETTRContinuationBatch,
     row: int,
@@ -65,9 +104,13 @@ def _terminal_packet_query_context(
     packet = batch.terminal_packet_targets
     read_index = int(batch.episodes.query_read_index.detach().cpu()[row])
     slot_mask = packet.slot_mask.detach().cpu()[row].bool()
-    active = packet.active.detach().cpu()[row].bool() & slot_mask
-    categorical_mask = active & slot_mask
     relation_mask = packet.relation_mask.detach().cpu()[row].bool()
+    if not bool(slot_mask.all()) or not bool(relation_mask.all()):
+        raise TheoryReactorError(
+            "ETTR packet sufficiency requires full deployed-state supervision"
+        )
+    active = packet.active.detach().cpu()[row].bool()
+    categorical_mask = active
     values = packet.value_code.detach().cpu()[row]
     types = packet.type_index.detach().cpu()[row]
     root = packet.root.detach().cpu()[row].bool()
@@ -79,13 +122,11 @@ def _terminal_packet_query_context(
     ].bool()
     context = {
         "packet": {
-            "active": (active & slot_mask).tolist(),
+            "active": active.tolist(),
             "committed": bool(packet.committed.detach().cpu()[row]),
             "halted": bool(packet.halted.detach().cpu()[row]),
-            "relation_mask": relation_mask.tolist(),
-            "relations": (relations & relation_mask).tolist(),
-            "root": (root & slot_mask).tolist(),
-            "slot_mask": slot_mask.tolist(),
+            "relations": relations.tolist(),
+            "root": root.tolist(),
             "type_index": torch.where(
                 categorical_mask,
                 types,
@@ -142,6 +183,380 @@ class ETTRPacketSufficiencyReceipt:
             )
 
 
+@dataclass(frozen=True, slots=True)
+class ETTRPacketSufficiencyIndex:
+    """Immutable global packet/query-to-target admission index."""
+
+    _train_entries: tuple[tuple[bytes, int], ...]
+    _validation_entries: tuple[tuple[bytes, int], ...]
+    _train_batch_digests: tuple[bytes, ...]
+    _validation_batch_digests: tuple[bytes, ...]
+    train_batches: int
+    validation_batches: int
+    train_rows: int
+    validation_rows: int
+    train_payload_sha256: str
+    validation_payload_sha256: str
+    receipt: ETTRPacketSufficiencyReceipt
+    _sealed_train_entries: frozenset[tuple[bytes, int]] = field(
+        init=False,
+        repr=False,
+    )
+    _sealed_validation_entries: frozenset[tuple[bytes, int]] = field(
+        init=False,
+        repr=False,
+    )
+    _sealed_train_batch_digests: frozenset[bytes] = field(
+        init=False,
+        repr=False,
+    )
+    _sealed_validation_batch_digests: frozenset[bytes] = field(
+        init=False,
+        repr=False,
+    )
+
+    def __post_init__(self) -> None:
+        train = self._validated_entries(self._train_entries, "train")
+        validation = self._validated_entries(
+            self._validation_entries,
+            "validation",
+        )
+        if set(train) & set(validation):
+            raise TheoryReactorError(
+                "ETTR packet sufficiency train/validation contexts overlap"
+            )
+        train_batch_digests = self._validated_digests(
+            self._train_batch_digests,
+            "train",
+        )
+        validation_batch_digests = self._validated_digests(
+            self._validation_batch_digests,
+            "validation",
+        )
+        if set(train_batch_digests) & set(validation_batch_digests):
+            raise TheoryReactorError(
+                "ETTR packet sufficiency train/validation batches overlap"
+            )
+        expected_train_payload = hashlib.sha256(
+            _canonical_json_bytes(
+                [digest.hex() for digest in train_batch_digests]
+            )
+        ).hexdigest()
+        expected_validation_payload = hashlib.sha256(
+            _canonical_json_bytes(
+                [digest.hex() for digest in validation_batch_digests]
+            )
+        ).hexdigest()
+        combined = {**train, **validation}
+        context_hashes = sorted(digest.hex() for digest in combined)
+        target_commitments = sorted(
+            hashlib.sha256(
+                _canonical_json_bytes(
+                    {
+                        "context_sha256": digest.hex(),
+                        "target": target,
+                    }
+                )
+            ).hexdigest()
+            for digest, target in combined.items()
+        )
+        expected = ETTRPacketSufficiencyReceipt(
+            schema=ETTR_PACKET_SUFFICIENCY_SCHEMA,
+            batches=self.train_batches + self.validation_batches,
+            rows=self.train_rows + self.validation_rows,
+            unique_contexts=len(combined),
+            context_sha256=hashlib.sha256(
+                _canonical_json_bytes(context_hashes)
+            ).hexdigest(),
+            target_bound_sha256=hashlib.sha256(
+                _canonical_json_bytes(target_commitments)
+            ).hexdigest(),
+        )
+        if (
+            self.train_batches < 1
+            or self.train_rows < 1
+            or self.validation_batches < 0
+            or self.validation_rows < 0
+            or bool(self.validation_batches) != bool(self.validation_rows)
+            or self.train_batches != len(train_batch_digests)
+            or self.validation_batches != len(validation_batch_digests)
+            or self.train_payload_sha256 != expected_train_payload
+            or self.validation_payload_sha256 != expected_validation_payload
+            or expected != self.receipt
+        ):
+            raise TheoryReactorError(
+                "ETTR packet sufficiency index receipt differs"
+            )
+        object.__setattr__(
+            self,
+            "_sealed_train_entries",
+            frozenset(train.items()),
+        )
+        object.__setattr__(
+            self,
+            "_sealed_validation_entries",
+            frozenset(validation.items()),
+        )
+        object.__setattr__(
+            self,
+            "_sealed_train_batch_digests",
+            frozenset(train_batch_digests),
+        )
+        object.__setattr__(
+            self,
+            "_sealed_validation_batch_digests",
+            frozenset(validation_batch_digests),
+        )
+
+    @staticmethod
+    def _validated_entries(
+        entries: tuple[tuple[bytes, int], ...],
+        split: str,
+    ) -> dict[bytes, int]:
+        if not isinstance(entries, tuple):
+            raise TheoryReactorError(
+                f"ETTR packet sufficiency {split} entries differ"
+            )
+        mapping: dict[bytes, int] = {}
+        for entry in entries:
+            if (
+                not isinstance(entry, tuple)
+                or len(entry) != 2
+                or not isinstance(entry[0], bytes)
+                or len(entry[0]) != hashlib.sha256().digest_size
+                or not isinstance(entry[1], int)
+                or isinstance(entry[1], bool)
+                or entry[1] < 0
+                or entry[0] in mapping
+            ):
+                raise TheoryReactorError(
+                    f"ETTR packet sufficiency {split} entries differ"
+                )
+            mapping[entry[0]] = entry[1]
+        if tuple(sorted(mapping.items())) != entries:
+            raise TheoryReactorError(
+                f"ETTR packet sufficiency {split} entries are not canonical"
+            )
+        return mapping
+
+    @staticmethod
+    def _validated_digests(
+        digests: tuple[bytes, ...],
+        split: str,
+    ) -> tuple[bytes, ...]:
+        if (
+            not isinstance(digests, tuple)
+            or any(
+                not isinstance(digest, bytes)
+                or len(digest) != hashlib.sha256().digest_size
+                for digest in digests
+            )
+            or tuple(sorted(set(digests))) != digests
+        ):
+            raise TheoryReactorError(
+                f"ETTR packet sufficiency {split} batch digests differ"
+            )
+        return digests
+
+    @classmethod
+    def from_batches(
+        cls,
+        batches: Sequence[ETTRContinuationBatch],
+    ) -> ETTRPacketSufficiencyIndex:
+        return cls.from_splits(batches, ())
+
+    @classmethod
+    def from_splits(
+        cls,
+        train_batches: Sequence[ETTRContinuationBatch],
+        validation_batches: Sequence[ETTRContinuationBatch],
+    ) -> ETTRPacketSufficiencyIndex:
+        frozen_train = tuple(train_batches)
+        frozen_validation = tuple(validation_batches)
+        frozen = frozen_train + frozen_validation
+        if (
+            not frozen_train
+            or any(
+                not isinstance(batch, ETTRContinuationBatch)
+                for batch in frozen
+            )
+        ):
+            raise TheoryReactorError(
+                "ETTR terminal-packet sufficiency sequence differs"
+            )
+        targets: dict[bytes, int] = {}
+        split_entries: dict[str, list[tuple[bytes, int]]] = {
+            "train": [],
+            "validation": [],
+        }
+        split_rows = {"train": 0, "validation": 0}
+        for split, batches_for_split in (
+            ("train", frozen_train),
+            ("validation", frozen_validation),
+        ):
+            for batch in batches_for_split:
+                batch_rows = batch.episodes.world.tokens.shape[0]
+                if batch_rows < 1:
+                    raise TheoryReactorError(
+                        "ETTR terminal-packet sufficiency batch is empty"
+                    )
+                for row in range(batch_rows):
+                    context, target = _terminal_packet_query_context(batch, row)
+                    context_bytes = _canonical_json_bytes(context)
+                    context_digest = hashlib.sha256(context_bytes).digest()
+                    prior = targets.setdefault(context_digest, target)
+                    if prior != target:
+                        raise TheoryReactorError(
+                            "ETTR terminal packet and query prefix map to "
+                            "multiple factual next-token targets"
+                        )
+                    split_entries[split].append((context_digest, target))
+                    split_rows[split] += 1
+        canonical_train = tuple(sorted(set(split_entries["train"])))
+        canonical_validation = tuple(
+            sorted(set(split_entries["validation"]))
+        )
+        train_batch_digests = tuple(
+            sorted(
+                bytes.fromhex(continuation_batch_payload_sha256(batch))
+                for batch in frozen_train
+            )
+        )
+        validation_batch_digests = tuple(
+            sorted(
+                bytes.fromhex(continuation_batch_payload_sha256(batch))
+                for batch in frozen_validation
+            )
+        )
+        if {digest for digest, _ in canonical_train} & {
+            digest for digest, _ in canonical_validation
+        }:
+            raise TheoryReactorError(
+                "ETTR packet sufficiency train/validation contexts overlap"
+            )
+        combined = dict(canonical_train + canonical_validation)
+        context_hashes = sorted(digest.hex() for digest in combined)
+        target_commitments = sorted(
+            hashlib.sha256(
+                _canonical_json_bytes(
+                    {
+                        "context_sha256": digest.hex(),
+                        "target": target,
+                    }
+                )
+            ).hexdigest()
+            for digest, target in combined.items()
+        )
+        receipt = ETTRPacketSufficiencyReceipt(
+            schema=ETTR_PACKET_SUFFICIENCY_SCHEMA,
+            batches=len(frozen),
+            rows=split_rows["train"] + split_rows["validation"],
+            unique_contexts=len(combined),
+            context_sha256=hashlib.sha256(
+                _canonical_json_bytes(context_hashes)
+            ).hexdigest(),
+            target_bound_sha256=hashlib.sha256(
+                _canonical_json_bytes(target_commitments)
+            ).hexdigest(),
+        )
+        return cls(
+            _train_entries=canonical_train,
+            _validation_entries=canonical_validation,
+            _train_batch_digests=train_batch_digests,
+            _validation_batch_digests=validation_batch_digests,
+            train_batches=len(frozen_train),
+            validation_batches=len(frozen_validation),
+            train_rows=split_rows["train"],
+            validation_rows=split_rows["validation"],
+            train_payload_sha256=hashlib.sha256(
+                _canonical_json_bytes(
+                    [digest.hex() for digest in train_batch_digests]
+                )
+            ).hexdigest(),
+            validation_payload_sha256=hashlib.sha256(
+                _canonical_json_bytes(
+                    [digest.hex() for digest in validation_batch_digests]
+                )
+            ).hexdigest(),
+            receipt=receipt,
+        )
+
+    def verify_train(
+        self,
+        batches: Sequence[ETTRContinuationBatch],
+    ) -> None:
+        self._verify(
+            batches,
+            self._sealed_train_entries,
+            "train",
+            self._sealed_train_batch_digests,
+        )
+
+    @property
+    def train_contexts(self) -> int:
+        return len(self._sealed_train_entries)
+
+    @property
+    def validation_contexts(self) -> int:
+        return len(self._sealed_validation_entries)
+
+    def verify_validation(
+        self,
+        batches: Sequence[ETTRContinuationBatch],
+    ) -> None:
+        self._verify(
+            batches,
+            self._sealed_validation_entries,
+            "validation",
+            self._sealed_validation_batch_digests,
+        )
+
+    @staticmethod
+    def _verify(
+        batches: Sequence[ETTRContinuationBatch],
+        entries: frozenset[tuple[bytes, int]],
+        split: str,
+        batch_digests: frozenset[bytes] | None = None,
+    ) -> None:
+        frozen = tuple(batches)
+        if not frozen or any(
+            not isinstance(batch, ETTRContinuationBatch) for batch in frozen
+        ):
+            raise TheoryReactorError(
+                "ETTR terminal-packet sufficiency sequence differs"
+            )
+        targets = dict(entries)
+        if batch_digests is None:
+            raise TheoryReactorError(
+                "ETTR packet sufficiency batch digest index is missing"
+            )
+        admitted_batches = set(batch_digests)
+        for batch in frozen:
+            payload_digest = bytes.fromhex(
+                continuation_batch_payload_sha256(batch)
+            )
+            if payload_digest not in admitted_batches:
+                raise TheoryReactorError(
+                    f"ETTR batch is absent from the frozen {split} "
+                    "payload index"
+                )
+            batch_rows = batch.episodes.world.tokens.shape[0]
+            if batch_rows < 1:
+                raise TheoryReactorError(
+                    "ETTR terminal-packet sufficiency batch is empty"
+                )
+            for row in range(batch_rows):
+                context, target = _terminal_packet_query_context(batch, row)
+                digest = hashlib.sha256(
+                    _canonical_json_bytes(context)
+                ).digest()
+                if targets.get(digest) != target:
+                    raise TheoryReactorError(
+                        f"ETTR batch is absent from the frozen {split} "
+                        "packet sufficiency index"
+                    )
+
+
 def terminal_packet_sufficiency_receipt(
     batches: Sequence[ETTRContinuationBatch],
 ) -> ETTRPacketSufficiencyReceipt:
@@ -152,57 +567,7 @@ def terminal_packet_sufficiency_receipt(
     frozen batch sequence while returning only hashes and support counts.
     """
 
-    frozen = tuple(batches)
-    if not frozen or any(
-        not isinstance(batch, ETTRContinuationBatch) for batch in frozen
-    ):
-        raise TheoryReactorError(
-            "ETTR terminal-packet sufficiency sequence differs"
-        )
-    seen: dict[bytes, int] = {}
-    ordered_contexts: list[str] = []
-    ordered_target_commitments: list[str] = []
-    rows = 0
-    for batch in frozen:
-        batch_rows = batch.episodes.world.tokens.shape[0]
-        if batch_rows < 1:
-            raise TheoryReactorError(
-                "ETTR terminal-packet sufficiency batch is empty"
-            )
-        for row in range(batch_rows):
-            context, target = _terminal_packet_query_context(batch, row)
-            context_bytes = _canonical_json_bytes(context)
-            context_sha256 = hashlib.sha256(context_bytes).hexdigest()
-            prior = seen.setdefault(context_bytes, target)
-            if prior != target:
-                raise TheoryReactorError(
-                    "ETTR terminal packet and query prefix map to "
-                    "multiple factual next-token targets"
-                )
-            ordered_contexts.append(context_sha256)
-            ordered_target_commitments.append(
-                hashlib.sha256(
-                    _canonical_json_bytes(
-                        {
-                            "context_sha256": context_sha256,
-                            "target": target,
-                        }
-                    )
-                ).hexdigest()
-            )
-            rows += 1
-    return ETTRPacketSufficiencyReceipt(
-        schema=ETTR_PACKET_SUFFICIENCY_SCHEMA,
-        batches=len(frozen),
-        rows=rows,
-        unique_contexts=len(seen),
-        context_sha256=hashlib.sha256(
-            _canonical_json_bytes(ordered_contexts)
-        ).hexdigest(),
-        target_bound_sha256=hashlib.sha256(
-            _canonical_json_bytes(ordered_target_commitments)
-        ).hexdigest(),
-    )
+    return ETTRPacketSufficiencyIndex.from_batches(batches).receipt
 
 
 def _packet_target_rows_differ(
@@ -919,10 +1284,42 @@ class ETTRContinuationManifest:
     validation_rows: int
     train_payload_sha256: str
     validation_payload_sha256: str
+    dataset_sha256: str
+    packet_sufficiency_train_batches: int
+    packet_sufficiency_validation_batches: int
+    packet_sufficiency_rows: int
+    packet_sufficiency_unique_contexts: int
+    packet_sufficiency_train_contexts: int
+    packet_sufficiency_validation_contexts: int
+    packet_sufficiency_context_sha256: str
+    packet_sufficiency_target_bound_sha256: str
     source_deleted: bool
     immutable_snapshot: bool
     live_writer_input: bool
     family_label_fields: tuple[str, ...]
+
+    @staticmethod
+    def combined_dataset_sha256(
+        train_payload_sha256: str,
+        validation_payload_sha256: str,
+    ) -> str:
+        if (
+            _SHA256.fullmatch(train_payload_sha256) is None
+            or _SHA256.fullmatch(validation_payload_sha256) is None
+        ):
+            raise TheoryReactorError(
+                "ETTR continuation payload hash differs"
+            )
+        return hashlib.sha256(
+            _canonical_json_bytes(
+                {
+                    "train_payload_sha256": train_payload_sha256,
+                    "validation_payload_sha256": (
+                        validation_payload_sha256
+                    ),
+                }
+            )
+        ).hexdigest()
 
     def validate(self) -> None:
         if self.schema != ETTR_CONTINUATION_SCHEMA:
@@ -934,19 +1331,62 @@ class ETTRContinuationManifest:
             "hybrid_payload_sha256",
             "train_payload_sha256",
             "validation_payload_sha256",
+            "dataset_sha256",
+            "packet_sufficiency_context_sha256",
+            "packet_sufficiency_target_bound_sha256",
         ):
             if not _SHA256.fullmatch(getattr(self, name)):
                 raise TheoryReactorError(f"ETTR continuation manifest {name} differs")
+        expected_dataset_sha256 = self.combined_dataset_sha256(
+            self.train_payload_sha256,
+            self.validation_payload_sha256,
+        )
         if (
             self.train_rows <= 0
             or self.validation_rows <= 0
+            or self.packet_sufficiency_train_batches <= 0
+            or self.packet_sufficiency_validation_batches <= 0
+            or self.packet_sufficiency_rows
+            != self.train_rows + self.validation_rows
+            or self.packet_sufficiency_unique_contexts <= 0
+            or self.packet_sufficiency_unique_contexts
+            > self.packet_sufficiency_rows
+            or self.packet_sufficiency_train_contexts <= 0
+            or self.packet_sufficiency_train_contexts > self.train_rows
+            or self.packet_sufficiency_validation_contexts <= 0
+            or self.packet_sufficiency_validation_contexts
+            > self.validation_rows
+            or self.packet_sufficiency_train_contexts
+            + self.packet_sufficiency_validation_contexts
+            != self.packet_sufficiency_unique_contexts
             or not self.source_deleted
             or not self.immutable_snapshot
             or self.live_writer_input
             or self.family_label_fields
             or self.train_payload_sha256 == self.validation_payload_sha256
+            or self.dataset_sha256 != expected_dataset_sha256
         ):
             raise TheoryReactorError("ETTR continuation data custody differs")
+
+    def packet_sufficiency_receipt(self) -> ETTRPacketSufficiencyReceipt:
+        self.validate()
+        return ETTRPacketSufficiencyReceipt(
+            schema=ETTR_PACKET_SUFFICIENCY_SCHEMA,
+            batches=(
+                self.packet_sufficiency_train_batches
+                + self.packet_sufficiency_validation_batches
+            ),
+            rows=self.packet_sufficiency_rows,
+            unique_contexts=self.packet_sufficiency_unique_contexts,
+            context_sha256=self.packet_sufficiency_context_sha256,
+            target_bound_sha256=self.packet_sufficiency_target_bound_sha256,
+        )
+
+    def sha256(self) -> str:
+        self.validate()
+        return hashlib.sha256(
+            _canonical_json_bytes(asdict(self))
+        ).hexdigest()
 
 
 __all__ = [
@@ -955,6 +1395,8 @@ __all__ = [
     "ETTRCausalRectangle",
     "ETTRContinuationBatch",
     "ETTRContinuationManifest",
+    "ETTRPacketSufficiencyIndex",
     "ETTRPacketSufficiencyReceipt",
+    "continuation_batch_payload_sha256",
     "terminal_packet_sufficiency_receipt",
 ]
