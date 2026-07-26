@@ -2,9 +2,9 @@
 
 **Protocol:** `R12-ETTR-IL-v2`
 **Document schema:** `r12-ettr-il-v2-custody-spec-v1`
-**Status:** machine-complete custody protocol; no data materialization, job,
-training, development opening, confirmation opening, or capability claim is
-authorized by this document
+**Status:** Phase-1 custody and source-deletion mechanics implemented; no
+production population, job, training, development opening, confirmation
+opening, or capability claim is authorized by this document
 **Repairs:** implementation-audit blockers 1, 6, 13, 15, and 16
 **Does not repair:** implementation-audit blockers 2-5, 7-12, or 14
 
@@ -19,10 +19,11 @@ commitments below.
 
 The semantic generators, typed command ASTs, rectangle expansion, query
 grammars, outcome projection, structural presentations, ETTR target
-materializer, update schedule, and binding-deranged control remain blocked.
-Consequently, a conforming v2 custody implementation must stop before dataset
-generation until those separately audited inputs are committed. Custody
-completeness is not scientific-materialization completeness.
+materializer, update schedule, and binding-deranged control now have Phase-1
+implementations. A conforming custody instance must still stop before fitting
+until their exact source inventory, literal production population, and
+population-level audits are committed in Phase 2. Custody completeness is not
+learned-capability evidence.
 
 The terms `MUST`, `MUST NOT`, `REQUIRED`, `SHALL`, and `SHALL NOT` are
 normative. Any unrecognized field, schema version, enum value, file, mount,
@@ -336,10 +337,13 @@ Required conformance vectors are:
 | `7b226b223a317d0a` | `[31736,87,1418,29,105,211]` |
 | `415f392d7a` | `[45,75,37,25,102]` |
 
-Each WORLD, COMMAND, and QUERY byte string is strict ASCII decoded one-to-one,
-encoded with `add_special_tokens=False`, and recorded as its exact unpadded
-token-ID array. Any package/runtime/vector mismatch fails before overlap
-audits.
+The four verbose renderer byte strings are strict ASCII decoded one-to-one and
+encoded with `add_special_tokens=False` for parser and leakage conformance.
+Model-visible WORLD, COMMAND, and QUERY use the separately frozen token-native
+structural transport in the semantic-generator specification. Its exact
+fixed-width token arrays, parsed logical prefix, deterministic cover suffix,
+and codebook identity are all recorded assessor-side. Any
+package/runtime/vector/codebook mismatch fails before overlap audits.
 
 ## 6. Candidate metadata and ontology isolation
 
@@ -1049,8 +1053,8 @@ Closure mapping:
 | 15 | Every fingerprint, normalization scope, tokenizer, exact graph canonicalization, classifier, folds, solver, seed, metric, threshold, and confidence rule is fixed. |
 | 16 | Previously ambiguous labels map to exact paths/hashes at a full commit/tree; future v2 sources require a complete signed inventory and clean detached commits. |
 
-This closure authorizes implementation of custody mechanics only. Until the
-other audit blockers listed in Section 1 are resolved and source-frozen, the
-only valid decision is:
+This closure records Phase-1 custody mechanics only. Until Phase 2 freezes and
+audits a literal population and the user authorizes fitting, the only valid
+decision is:
 
-`r12_ettr_il_v2_blocked_before_materialization_no_capability_claim`
+`r12_ettr_il_v2_phase1_custody_ready_phase2_not_authorized_no_capability_claim`

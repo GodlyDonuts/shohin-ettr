@@ -1,8 +1,8 @@
 # R12 ETTR Isolated Learnability Preregistration v2
 
 **Protocol:** `R12-ETTR-IL-v2`  
-**Status:** integrated machine-complete design; implementation and fitting
-remain unauthorized  
+**Status:** Phase-1 architecture implementation complete; Phase-2 population
+freeze and fitting remain unauthorized pending explicit user approval
 **Question:** can frozen step-300k Shohin plus a newly initialized ETTR learn
 one source-deleted mechanism that transfers across unseen laws, longer
 compositions, unseen renderers, combined shifts, and an entirely withheld
@@ -59,14 +59,14 @@ are normative only for their assigned surface:
 
 | Surface | Document | SHA-256 |
 |---|---|---|
-| semantic universe, AST, oracles, renderers, queries, quotas | `R12_ETTR_IL_V2_SEMANTIC_GENERATOR_SPEC.md` | `054be39f8c9e765ce4d8b1a977f65992706752b01b65a30b10c75a398a860ea2` |
-| ontology-to-ETTR packet/trace/tensor mapping | `R12_ETTR_IL_V2_MATERIALIZATION_SPEC.md` | `1e2631967a137c1ef6d10d098d348f79e39c156f015001b4485ea688abef295a` |
-| arms, schedule, budgets, metrics, statistics | `R12_ETTR_IL_V2_ARMS_AND_STATISTICS_SPEC.md` | `cf08013f5151940d0fd511d2be6a0d4cd5a51fcf74245f1afb5071c9824f4d48` |
-| split keys, leakage, authorities, encryption, opening | `R12_ETTR_IL_V2_CUSTODY_SPEC.md` | `d349b1801987a2651011392fa9d892be36cf22735169b0a4a080d19b46d6f5a3` |
+| semantic universe, AST, oracles, renderers, queries, quotas | `R12_ETTR_IL_V2_SEMANTIC_GENERATOR_SPEC.md` | `658d8ac9d8897ce63693976079327dd519a455735ee34c7fe442a10fe2f8abad` |
+| ontology-to-ETTR packet/trace/tensor mapping | `R12_ETTR_IL_V2_MATERIALIZATION_SPEC.md` | `3dd385c6e10b8c9c5de9019f30e004393c8b480aceb2712294f6e639ef9b5a96` |
+| arms, schedule, budgets, metrics, statistics | `R12_ETTR_IL_V2_ARMS_AND_STATISTICS_SPEC.md` | `a7bcc7bd446cf4df0e144bd7db562a538def631871c4f0824f9e81165c54939e` |
+| split keys, leakage, authorities, encryption, opening | `R12_ETTR_IL_V2_CUSTODY_SPEC.md` | `1d7668eef7f41d2190a7c410ce9a9df886b87df5877cd44298bcca3cc3e4180e` |
 
 The CPU integration receipt is
 `artifacts/r12/ettr_il_v2_spec_integration_audit.json`, with SHA-256
-`1e5be2f25d891d4136b3d800ad13f1c55b2dc1b5eee655584ad929dadbaf3930`.
+`cc98f616da365215d01611f16c6ae84f7c3e42cdddbe7a5baa543f1eccb524ef`.
 Its source is `pipeline/audit_ettr_il_v2_specs.py`. Any component-byte change
 invalidates this table and requires a new integrated protocol hash before
 implementation.
@@ -232,31 +232,36 @@ A valid scientific failure localizes to the frozen component precedence in
 the arms/statistics specification. A custody, leakage, source, budget, or
 equalization failure yields invalid evidence, not an architecture result.
 
-## 10. Implementation gate
+## 10. Phase-1 architecture gate
 
-The design is integrated, but fitting remains **NO-GO** until all of these
-exist and pass:
+Phase 1 is complete only when all of these exist and pass without any weight
+update:
 
 1. deterministic semantic generator and all four strict parsers;
 2. independent depth-1-through-6 oracles;
 3. exact ETTR materializer and independent generic-transaction replay;
-4. cardinality/feasibility report with every quota nonnegative;
-5. leakage, graph-isomorphism, tokenizer, and metadata audits;
+4. deterministic quota-aware population generator plus a fail-closed
+   cardinality certificate interface;
+5. leakage, graph-isomorphism, tokenizer, and metadata audit implementations;
 6. invariant-pair scheduler and deterministic derangement matcher;
 7. treatment and four equal-budget arm implementations;
 8. parameter and operator-level static-FLOP receipts;
 9. source-inventoried fit/evaluation runtime;
-10. encrypted development/confirmation publisher and consume-on-attempt
-    opening implementation; and
-11. a new integration audit binding all executable source and literal
-    dataset hashes.
+10. source-deleted autonomous evaluation rehearsal and frozen evaluator; and
+11. a new integration audit binding all executable architecture sources,
+    fixed transport artifacts, and the protected checkpoint identity.
 
-The next authorized work is CPU implementation and fail-closed feasibility
-materialization. No model fitting or H100 qualification may begin merely
-because this design document exists.
+The literal 20,736-rectangle population, complete population-level leakage
+measurements, encrypted confirmation payload, and 75 fitted endpoints are
+Phase-2 artifacts: they cannot exist before population generation and fitting.
+Phase 1 must nevertheless expose fail-closed builders and validators for each
+one. Phase-2 entry order is immutable: generate and certify population,
+materialize/freeze/reload it, run leakage and budget admission, validate one
+zero-update readiness batch for all arms, then and only then permit fitting.
+No fitting may begin merely because the architecture source is frozen.
 
 Current decision:
 
 ```text
-r12_ettr_il_v2_design_integrated_implementation_and_feasibility_pending
+r12_ettr_il_v2_phase1_architecture_complete_phase2_not_authorized
 ```

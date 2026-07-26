@@ -1,8 +1,8 @@
 # R12 ETTR IL v2 Arms and Statistics Specification
 
 **Protocol:** `R12-ETTR-IL-v2`  
-**Status:** design-only specification; no data materialization, model fit,
-development read, confirmation read, job, or training is authorized  
+**Status:** Phase-1 arm/evaluator contract implemented; no model fit,
+development read, confirmation read, job, or training is authorized
 **Scope:** equal-budget learning arms, repetition schedule, resource accounting,
 development selection, sealed confirmation, statistical testing, promotion,
 rejection, and failure localization
@@ -548,15 +548,40 @@ The confirmatory comparison family contains exactly:
 This is `4 x (1 + 72) = 292` one-sided superiority endpoints. No endpoint may be
 added after development.
 
-Use exactly `100,000` hierarchical paired bootstrap replicates. The bootstrap
-seed stream is counter-mode SHA-256 from:
+Use exactly `100,000` hierarchical paired bootstrap replicates. For replicate
+`b`, let:
+
+```text
+replicate_root = SHA256(
+  "R12-ETTR-IL-v2|bootstrap|" || split_plaintext_sha256 ||
+  "|" || decimal(b)
+)
+```
+
+For one ASCII draw domain `d`, the random-byte stream is the concatenation for
+counter `c=0,1,...` of:
 
 ```text
 SHA256(
-  "R12-ETTR-IL-v2|bootstrap|" || split_plaintext_sha256 ||
-  "|" || decimal(replicate_index)
+  replicate_root_bytes || 0x00 ||
+  u16be(len(ASCII(d))) || ASCII(d) || u64be(c)
 )
 ```
+
+Read that stream as consecutive unsigned big-endian 64-bit words. To draw
+uniformly from `[0,n)`, reject a word at or above
+`floor(2^64/n)*n`; otherwise return `word mod n`. Consumed or rejected words
+are never reused.
+
+The five seed indices use domain `model-seeds` and five draws from `[0,5)`.
+For cell `(fold,ontology,stratum)`, use domain:
+
+```text
+cell|<fold>|<ontology>|<stratum>
+```
+
+and draw exactly the cell's semantic-core count indices from `[0,count)`.
+This is the complete bootstrap RNG; language/runtime PRNG APIs are forbidden.
 
 Each replicate:
 
@@ -730,8 +755,9 @@ architecture promotion under this protocol.
 
 ## 13. No authorization
 
-This specification freezes design choices only. Training remains unauthorized
-until a separate v2 source and data manifest resolves the remaining generator,
-AST/renderer, command-depth, materialization, overlap, and leakage-audit
-requirements and binds literal artifact hashes. No code, job, dataset, score,
-or confirmation access is created by this document.
+The five arm mechanisms, deterministic schedule, no-update readiness validator,
+and locked result aggregator now exist as Phase-1 source. Training remains
+unauthorized until Phase 2 freezes a literal v2 dataset, completes population-
+level leakage and equal-budget admission, and the user explicitly releases the
+hold. No job, fitted weight, development score, or confirmation access is
+created by this document.

@@ -1,8 +1,8 @@
 # R12 ETTR Isolated Learnability v2 Semantic Generator Specification
 
 **Protocol:** `R12-ETTR-IL-v2-semantic-generator`  
-**Status:** machine-complete generator specification only; no materialization,
-training, job submission, scored opening, or capability claim is authorized  
+**Status:** Phase-1 executable architecture contract; no fitting, job
+submission, scored opening, or capability claim is authorized
 **Scope:** this document replaces only the underspecified semantic-generation
 clauses implicated by audit blockers 1-10 and 14. It does not repair the
 ontology-to-tensor materializer, control-arm derangement, confirmation custody,
@@ -195,6 +195,14 @@ x || first16hex(
 
 `cell_salt` is `world-0`, `world-1`, `command-0`, `command-1`, or `shared-query`.
 This collision-resolution rule is total.
+
+The numeric suffix is the opposite factorial-cell index, not the semantic
+factor index. At corner `(w,c)`, the WORLD source for semantic world `Ww` uses
+`cell_salt="world-<c>"`, and the COMMAND source for semantic command `Cc` uses
+`cell_salt="command-<w>"`. Consequently each fixed semantic WORLD and COMMAND
+has two byte-distinct, independently opaque-renamed surface variants. The
+assessor must parse and semantically canonicalize each pair to the same factor
+object; byte distinction alone is insufficient.
 
 ## 4. Assessor-side semantic schemas
 
@@ -483,8 +491,11 @@ Presentation transforms are deterministic:
   quotients the pair.
 - `relation_reification`: replace each direct n-ary application by a fresh
   relation node and one `h=12` incidence per ordered role.
-- `type_twin`: use the existing ontology-specific type-twin transformation and
-  its assessor alignment; it MUST have a separating terminal witness.
+- `type_twin`: split one actually referenced type symbol into two surface
+  symbols and emit an explicit `h=11` assessor quotient. This is a structural
+  typing presentation and MUST preserve the terminal observation after
+  quotienting. It is not required to manufacture a terminal-separating
+  witness; semantic separation belongs to `execution_semantics_twin`.
 - `execution_semantics_twin`: Horn uses derived-only closure, rewrite root-only
   reduction, and resource skip-blocked execution. It MUST have a separating
   terminal witness in the selected core.
@@ -559,9 +570,33 @@ SHA256(master_seed || "|query|0|" || CJ(query))
 ```
 
 Select slot 1 similarly among queries with a distinct AST and a denotation
-signature over the complete bounded ontology terminal universe that is neither
+signature over the frozen ontology terminal-witness universe that is neither
 equal to nor the Boolean complement of slot 0's signature. If none exists, the
 semantic core is inadmissible.
+
+The terminal-witness universe is exact and split-independent. For one
+ontology, enumerate every theory in frozen theory order, every initial state
+in the Section 12 domain, and every one-operation command in canonical
+operation order under the base execution policy (`persistent`, `contextual`,
+or `atomic_deadlock`). Execute with dependency admission disabled, require
+primary/replay byte-identical assessor results, and retain only `ANSWER`
+outcomes. Quotient duplicate terminal observations by the following CJ value:
+
+```text
+Horn:
+  {"facts":sorted_terminal_facts,"ontology":"horn"}
+Rewrite:
+  {"normal_forms":sorted_terminal_normal_forms,"ontology":"rewrite"}
+Resource:
+  {"cursor":cursor,"marking":terminal_marking,
+   "ontology":"resource","status":status}
+```
+
+Order the distinct retained observations by their CJ bytes. This ordered tuple
+is the sole universe passed to query-denotation selection. It is deliberately
+a fixed primitive witness domain rather than the selected fit or score rows;
+therefore query identity cannot depend on split contents, candidate ranking,
+presentation, renderer, or target labels.
 
 Paraphrase 0 renders `h=9(query-expression)`. Paraphrase 1 renders
 `h=10(query-expression, integer(1))`. Their evaluator meanings are respectively
@@ -712,7 +747,9 @@ quota. This is the only remainder rule.
 Initial state domains are exactly:
 
 - Horn: the 378 `challenge_initials()` values.
-- Rewrite: the 64 `challenge_terms()` values.
+- Rewrite: the 46 type-zero values from `challenge_terms()` accepted by the
+  frozen `RewriteWorld` root contract. The remaining 18 typed child terms are
+  part of the term library but are not legal WORLD roots.
 - Resource: the 81 `input_markings()` values.
 
 World ownership prevents cross-split semantic-world reuse. For canonical world
@@ -738,6 +775,18 @@ enumeration:
 At target depth, enumerate unordered pairs of the surviving commands in
 lexicographic `CJ` order. Combine them with the world pair, compute all bundle
 views and queries, and apply every admission rule.
+
+The implementation uses a deterministic constructive stopping certificate,
+not an unnecessarily exhaustive traversal after feasibility is already
+proved. Within one exact quota cell it scans owned WORLD pairs and COMMAND
+pairs in the order above, records every emitted and rejected ordinal, and may
+stop only after it has found the exact required quota plus the frozen surplus
+margin. A cell with insufficient candidates must exhaust its finite domain and
+fail. Re-running with the same sources and keys must produce byte-identical
+selected cores and accounting. This replaces the earlier requirement to spend
+CPU proving counts for the unused suffix of a domain that can contain billions
+of Horn executions; it does not permit sampling, reranking, rerolling, quota
+borrowing, or post-hoc replacement.
 
 The exact candidate tuple schema is:
 
@@ -854,7 +903,7 @@ The report passes only if every surplus is nonnegative, every selected core has
 two query semantics, and all selected IDs are unique. It also proves these
 static facts:
 
-- initial-state domain sizes are Horn 378, rewrite 64, resource 81;
+  - legal WORLD-root domain sizes are Horn 378, rewrite 46, resource 81;
 - operation-template counts at depth `d` are `27^d`, `2^d`, `3^d`;
 - resource depth-1 semantic-template disjointness across three splits is
   impossible because each rectangle needs two of only three templates;
@@ -863,10 +912,37 @@ static facts:
 - every transaction trace is at most 64 steps and packet union at most 64 slots.
 
 The generator MUST NOT assert in advance that dynamic candidate counts are
-sufficient. Only the exhaustive report over the bounded beam domain proves
-feasibility. If any cell is short, the scientifically valid result is
+sufficient. Only a validated constructive scan reaching quota plus the frozen
+surplus, or exhaustion of the bounded beam domain, decides feasibility. If any
+cell is short, the scientifically valid result is
 `semantic_generator_infeasible_at_<cell>`. Increasing beam width, changing a
 query, or reallocating a quota requires protocol v3.
+
+## 14.1 Model-visible token-native transport
+
+The four byte renderers remain assessor-visible conformance objects. The model
+transport is the source-frozen structural codebook implemented by
+`pipeline/ettr_il_v2_token_native_surface.py`:
+
+- one valid tokenizer token per structural codeword;
+- exact widths WORLD 192 and COMMAND 96;
+- fused encoding of a canonical `h=4` application and its ordered `h=12`
+  reification incidences, with exact inverse reconstruction;
+- no explicit END token or fixed filler token;
+- deterministic hash-derived valid cover codewords after the unique parsed
+  document;
+- exact document length retained only in the assessor sidecar and never
+  mounted for a candidate; and
+- QUERY framing that preserves the one-token Boolean answer boundary at exact
+  width 48.
+
+Parsing must reconstruct the complete presentation AST, enforce all node/depth
+bounds, verify the exact deterministic cover, and then perform the same
+presentation inversion and semantic comparison as the verbose renderer. The
+fixed-width attention mask is all true because every position is a real
+codeword. Leakage audits therefore operate over the complete codeword
+sequence, token histogram, parsed node count, and cover boundary; they may not
+mistake an all-true mask for proof of independence.
 
 ## 15. Canonical selected-row record
 

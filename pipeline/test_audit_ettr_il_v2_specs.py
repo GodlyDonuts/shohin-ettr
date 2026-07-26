@@ -9,6 +9,7 @@ from audit_ettr_il_v2_specs import (
     ARMS_SPEC,
     COMPONENT_SPECS,
     CUSTODY_SPEC,
+    MATERIALIZATION_SPEC,
     SEMANTIC_SPEC,
     SpecAuditError,
     audit_specs,
@@ -54,6 +55,25 @@ def test_eight_position_transaction_horizon_fails(tmp_path: Path) -> None:
         encoding="ascii",
     )
     with pytest.raises(SpecAuditError, match="retired eight-position horizon"):
+        audit_specs(root)
+
+
+def test_cell_local_factor_surface_mapping_is_required(tmp_path: Path) -> None:
+    root = _copy_specs(tmp_path)
+    path = root / MATERIALIZATION_SPEC
+    text = path.read_text(encoding="ascii")
+    path.write_text(
+        text.replace(
+            'COMMAND semantics `Cc` with `cell_salt="command-<w>"`',
+            "COMMAND semantics `Cc` with an unspecified salt",
+            1,
+        ),
+        encoding="ascii",
+    )
+    with pytest.raises(
+        SpecAuditError,
+        match="materialization cell-local COMMAND source",
+    ):
         audit_specs(root)
 
 

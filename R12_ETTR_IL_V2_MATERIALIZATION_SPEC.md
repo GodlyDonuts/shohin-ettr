@@ -1,8 +1,8 @@
 # R12 ETTR IL v2 CPU Materialization Specification
 
 **Protocol:** `R12-ETTR-IL-v2-materialization-v1`  
-**Status:** normative CPU mapping specification only; no dataset generation,
-training, evaluation, confirmation opening, or job is authorized  
+**Status:** Phase-1 CPU mapping implementation complete; no production
+population, fitting, confirmation opening, or job is authorized
 **Scope:** closes the design ambiguity in implementation-audit blocker 11 and
 reconciles a 16-row semantic rectangle with the existing four-row
 `ETTRCausalRectangle` contract. All other blockers in
@@ -11,8 +11,8 @@ separately repaired.
 
 ## 1. Normative implementation surface
 
-This document specifies a future CPU-only mapper from an already admitted v2
-semantic case into the existing, unmodified:
+This document specifies the implemented CPU-only mapper from an already
+admitted v2 semantic case into the existing, unmodified:
 
 - `ETTRContinuationBatch`;
 - `ETTRPacketTargets`;
@@ -84,8 +84,12 @@ One semantic case contains:
 4. exactly four independently replayed corner executions `(Wi,Cj)`;
 5. exactly two query semantics, `Q0` and `Q1`;
 6. exactly two meaning-preserving query encodings per semantic, `P0` and `P1`;
-7. one candidate-visible ASCII WORLD byte string per world;
-8. one candidate-visible ASCII COMMAND byte string per command;
+7. one candidate-visible ASCII WORLD byte string per `(world,command-cell)`,
+   where the two strings for a fixed semantic world are independently
+   opaque-renamed meaning-preserving renderings;
+8. one candidate-visible ASCII COMMAND byte string per
+   `(world-cell,command)`, where the two strings for a fixed semantic command
+   are independently opaque-renamed meaning-preserving renderings;
 9. one candidate-visible answer-free ASCII query-prefix byte string per
    `(query_semantic, paraphrase)`;
 10. assessor-only initial, per-operation, and terminal oracle structures for
@@ -418,6 +422,16 @@ Every group must also have:
 A semantic case that only satisfies the old existential two-query edge rule
 is rejected, not repaired.
 
+The cell-local source construction is normative. For corner `(w,c)`, render
+the WORLD semantics `Ww` with opaque-name `cell_salt="world-<c>"`, and render
+the COMMAND semantics `Cc` with `cell_salt="command-<w>"`. Thus the two WORLD
+sources at fixed `w` differ only by a meaning-preserving opaque renaming tied
+to the opposite COMMAND cell, and the two COMMAND sources at fixed `c` differ
+only by a meaning-preserving opaque renaming tied to the opposite WORLD cell.
+The assessor must independently parse and canonicalize both variants to the
+same factor semantics before materialization. A byte-distinct pair that fails
+that semantic identity check is inadmissible.
+
 ### 7.2 Expansion
 
 Let a batch contain `M` semantic rectangles. Its row count is `B=16M` and its
@@ -711,8 +725,10 @@ The future materializer must perform these checks in order:
    opcodes.
 7. Compare replayed and target initial/terminal packet fields bit for bit.
 8. Verify slot, type, relation, value, edge, and step capacities.
-9. Tokenize raw bytes with the hash-bound tokenizer and prove the
-   prefix/one-token answer boundary.
+9. Encode the source-frozen token-native structural transport with the
+   hash-bound tokenizer; prove exact WORLD/COMMAND widths, exact AST inverse,
+   deterministic cover validity, and the QUERY prefix/one-token answer
+   boundary.
 10. Expand every semantic rectangle according to Section 7.
 11. Independently check all four packet and answer edges for every causal
     rectangle.
@@ -835,10 +851,11 @@ not implementation choices:
     proves only interface-level non-consumption during fitting. Physical
     source deletion is claim-bearing only in the separately supervised
     autonomous evaluation path.
-14. **Unavailable depth semantics.** Current resource execution has no depth
-    four through six, and current Horn/rewrite public commands do not define
-    the preregistered dependent multi-operation semantics. The mapper cannot
-    invent them.
+14. **Depth ownership.** The mapper cannot invent depth semantics. The
+    executable v2 semantic module now owns dependent depth-one-through-six
+    execution and independent replay for all three ontologies; the mapper must
+    consume those admitted snapshots exactly and still fails closed if they
+    are absent or disagree.
 
 Any population quota requiring an inadmissible case is itself infeasible. The
 materializer must report the exact failed limit and stop before creating a
@@ -853,8 +870,9 @@ machine-complete mapping required by implementation-audit blocker 11 and
 resolves the rectangle mismatch by strengthening admission and expanding each
 semantic rectangle into four current causal rectangles.
 
-It does not supply the missing v2 semantic-case generator, depth-four-through-
-six oracles, shared AST/renderers, split preimages, quota allocation, leakage
-algorithms, confirmation custody, or training implementation. Until those
-separate blockers are closed and a CPU implementation passes Section 12,
-claim-bearing materialization remains **NO-GO**.
+The Phase-1 implementation now supplies the semantic executors, shared AST,
+four parsers, six presentations, token-native transport, quota-validation
+sidecar, native batch construction, and CPU replay contracts. This remains a
+mechanics freeze rather than a learned-capability result. Production fitting
+is still gated on a literal frozen population, complete leakage report, and
+the user explicitly opening Phase 2.

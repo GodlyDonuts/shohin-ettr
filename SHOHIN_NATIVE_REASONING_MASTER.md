@@ -52772,3 +52772,47 @@ claim boundary.
 
 Current decision:
 `ettr_trainable_architecture_complete_verifier_signed_launch_custody_implemented_real_supervisor_smoke_and_learning_pending`.
+
+## 2026-07-26 ETTR-IL-v2 Phase-1 Freeze
+
+The architecture-development phase is complete. `R12-ETTR-IL-v2` converts
+Shohin into a 192,779,435-parameter system: the protected 125,081,664-
+parameter step-300k base plus a 21,466,377-parameter endogenous theory
+compiler, a 29,757,217-parameter generic transaction reactor, and a
+16,474,177-parameter source-deleted query reader. The architecture remains
+7,220,565 parameters below the 200M ceiling.
+
+Unlike earlier reasoning tracks, the claim is defined by one end-to-end
+learnability experiment rather than transcript anecdotes. WORLD is compiled
+to a hard typed packet, a separately disclosed COMMAND changes that packet
+through 64 recurrent generic transactions, and a separately disclosed QUERY
+is answered from the sealed terminal packet. The protocol requires transfer
+across unseen laws, longer compositions, unseen renderers, combined shifts,
+and a completely withheld ontology, plus causal superiority to state-reset,
+binding-deranged, query-only, and parameter/FLOP-matched dense controls.
+
+Phase 1 now has executable semantics and independent replay oracles for typed
+Horn closure, typed rewriting, and guarded resource processes; six
+presentations; exact 192/96/48 token-native transport; native ETTR
+materialization; deterministic population, quota, schedule, leakage, and
+custody validators; physical source deletion; five real arm mechanisms;
+zero-update trainer/resume readiness; and a locked 75-run, 292-endpoint
+evaluator. A full synthetic evaluator rehearsal completed all 100,000
+bootstrap replicates without opening real scores.
+
+The final local inventory passes 350/350 tests. The immutable Phase-1 receipt
+is `artifacts/r12/ettr_il_v2_phase1_architecture_freeze.json`, SHA-256
+`74eed0408d0328105b4433eadcf818a3ceca07e19edd50ac53f2fb50cb2fbee8`.
+It binds 37 implementation/spec files, all 22 v2 tests, the exact tokenizer,
+the protected checkpoint identity, and three deterministic CPU evidence
+artifacts.
+
+No new weight was fitted and no continuation pretraining occurred. Phase 2
+must first generate and certify the literal 20,736-view production population,
+freeze and independently replay every materialized batch, complete all
+population-level leakage and budget gates, and run zero-update readiness for
+every arm. Fitting remains prohibited until the user explicitly authorizes
+Phase 2.
+
+Current decision:
+`r12_ettr_il_v2_phase1_architecture_frozen_phase2_requires_explicit_user_authorization`.

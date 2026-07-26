@@ -14,7 +14,7 @@
 > compatibility, and isolated reasoning evaluation may continue; none of those
 > activities implies permission to pretrain.
 >
-> **Last updated:** 2026-07-26 16:15 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-26 18:49 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -14872,3 +14872,95 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `r12_ettr_il_v2_design_integrated_scheduler_implemented_semantic_materialization_custody_implementation_in_progress`.
+
+- **2026-07-26 17:13 EDT** -- **The isolated-learnability v2 CPU
+  toolchain is executable through semantic candidate admission and native
+  ETTR batch materialization; the cross-module canary remains in progress and
+  fitting is still unauthorized.** No continuation pretraining was started,
+  prepared, queued, resumed, or modified. The protected step-300k checkpoint
+  and its lineage remain untouched. There are zero Newton jobs from this
+  milestone.
+
+  The implementation now includes strict surface ASTs and four canonical
+  codecs, independent Horn/rewrite/resource primary and replay semantics,
+  exact query/checkerboard admission, public split/candidate/leakage custody,
+  deterministic matched-control derangement, exact SHA-256 bootstrap streams,
+  the invariant-pair schedule, and CPU construction of native
+  `ETTRContinuationBatch` objects with 64-step transaction traces.
+
+  Hostile integration exposed a fifth material contradiction before data
+  freeze: the receiving causal-rectangle contract requires raw WORLD bytes to
+  differ across COMMAND cells at fixed WORLD semantics and raw COMMAND bytes
+  to differ across WORLD cells at fixed COMMAND semantics, while the first
+  v2 case schema supplied only one source per factor. The repaired contract
+  uses cell-local meaning-preserving variants: corner `(w,c)` renders WORLD
+  with `world-<c>` and COMMAND with `command-<w>`. Both variants must parse
+  and canonicalize to the same factor semantics; the native causal validator
+  was not weakened.
+
+  A second underspecification was closed by freezing query non-equivalence
+  against a split-independent terminal-witness universe: every theory, every
+  canonical initial state, and every primitive one-operation command under
+  the base policy, retaining only primary/replay-identical ANSWER outcomes
+  and quotienting exact terminal observations.
+
+  `pipeline/ettr_il_v2_candidate_search.py` finds genuine strict depth-1
+  two-query checkerboards in all three ontologies. The combined focused
+  implementation inventory is **162/162 passing in 68.97 seconds**, with
+  clean Ruff, byte compilation, and diff checks. The refreshed 12-check spec
+  receipt is
+  `artifacts/r12/ettr_il_v2_spec_integration_audit.json` with SHA-256
+  `3e291a7ca8d414098ffaf48fbd690ce3e258f443387e478cff63f7be8add4c6b`.
+
+  This proves deterministic feasibility of the semantic geometry and native
+  receiving contract, not learned capability. The next gate is one bounded
+  end-to-end builder that joins cell-local surfaces, ontology adapters,
+  leakage/control receipts, and source-deleted materialization before any
+  accelerator fitting.
+
+  Decision:
+  `r12_ettr_il_v2_cpu_semantics_and_materialization_feasible_three_family_checkerboards_found_end_to_end_canary_pending`.
+
+- **2026-07-26 18:49 EDT** -- **ETTR-IL-v2 Phase 1 is complete and frozen;
+  Phase 2 remains unauthorized.** No continuation pretraining, isolated fit,
+  optimizer update, checkpoint write, or Newton job was started, prepared, or
+  submitted. The protected step-300k checkpoint remains untouched at SHA-256
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
+
+  The architecture package now contains executable three-family semantics,
+  independent depth-1-through-6 oracles, six presentations, exact
+  192/96/48 token-native transport, native packet/trace materialization,
+  quota/cardinality/dataset admission, deterministic paired scheduling and
+  derangement, physical three-process source deletion, all five causal arms,
+  exact parameter/token/static-operation ledgers, zero-update trainer/resume
+  readiness, and the locked 75-run/292-endpoint evaluator. A hostile review
+  caught and repaired a real dense-control execution defect before freeze:
+  the state sketch serialized `committed` twice. The corrected 82,562-feature
+  sketch now executes a real production-geometry one-position forward and
+  validates all 15 trace tensors.
+
+  Final local verification is **350/350 passing**: 337 non-arm tests and 13
+  arm tests. Ruff, Python byte compilation, specification regeneration,
+  artifact identity checks, and `git diff --check` pass. The evaluator also
+  completed a separate full synthetic rehearsal of 100,000 bootstrap
+  replicates across all 292 endpoints and returned `OPEN_CONFIRMATION`;
+  this opened no real split and made no capability claim.
+
+  The read-only no-replace freeze receipt is
+  `artifacts/r12/ettr_il_v2_phase1_architecture_freeze.json`, SHA-256
+  `74eed0408d0328105b4433eadcf818a3ceca07e19edd50ac53f2fb50cb2fbee8`.
+  It binds 37 source/spec files, all 22 v2 test files, the exact tokenizer,
+  three deterministic evidence artifacts, 67,697,771 added parameters,
+  192,779,435 total parameters, and 7,220,565 parameters of headroom.
+  Detailed handoff is in `R12_ETTR_IL_V2_PHASE1_HANDOFF.md`.
+
+  Phase 2 must begin by generating and certifying the literal 20,736-view
+  production population, then freezing/reloading/replaying every batch,
+  completing population-level leakage and budget admission, and running one
+  zero-update readiness batch for every arm. Only an explicit user
+  authorization after those gates permits fitting. The new parameters remain
+  untrained, so this is a training-ready architecture result rather than
+  learned reasoning evidence.
+
+  Decision:
+  `r12_ettr_il_v2_phase1_architecture_frozen_phase2_requires_explicit_user_authorization`.

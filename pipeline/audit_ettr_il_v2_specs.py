@@ -269,6 +269,35 @@ def audit_specs(root: Path) -> AuditResult:
 
     _require(
         semantic,
+        'WORLD source for semantic world `Ww` uses\n'
+        '`cell_salt="world-<c>"`',
+        "semantic cell-local WORLD source",
+    )
+    _require(
+        semantic,
+        'COMMAND source for semantic command `Cc` uses\n'
+        '`cell_salt="command-<w>"`',
+        "semantic cell-local COMMAND source",
+    )
+    _require(
+        materialization,
+        'WORLD semantics `Ww` with opaque-name `cell_salt="world-<c>"`',
+        "materialization cell-local WORLD source",
+    )
+    _require(
+        materialization,
+        'COMMAND semantics `Cc` with `cell_salt="command-<w>"`',
+        "materialization cell-local COMMAND source",
+    )
+    _require(
+        materialization,
+        "independently parse and canonicalize both variants",
+        "cell-local semantic identity audit",
+    )
+    checks.append("cell_local_factor_surface_variants")
+
+    _require(
+        semantic,
         "schedule unit is one admitted invariant pair",
         "semantic pair schedule",
     )
