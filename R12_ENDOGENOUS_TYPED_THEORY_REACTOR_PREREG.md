@@ -315,3 +315,51 @@ A pass establishes bounded cross-ontology typed-theory induction. It does not
 establish unrestricted natural-language reasoning. Natural-language and public
 benchmark promotion remains governed by G4 in
 `R12_GENERAL_REASONING_GATE.md`.
+
+## Architecture-Phase Amendment: Factorial Interchange
+
+**Effective:** 2026-07-26 EDT. **Source:** commit `5771c64`.
+
+This amendment qualifies training mechanics only. It does not authorize
+continuation pretraining, post-training, capability attribution, or a native
+reasoning claim.
+
+Every causal training unit is an immutable 2x2 rectangle over two semantic
+WORLD factors and two semantic COMMAND factors. Equivalent factors must use
+different raw token renderings. WORLD-equivalent rows must share every initial
+packet target field and mask, while distinct WORLD factors must produce
+different initial packet targets. Terminal support geometry is identical
+within a rectangle, and changing either WORLD or COMMAND must change the
+terminal target at both settings of the orthogonal factor.
+
+Intervention predictions may not replay their factual target row. The WORLD
+arm composes a packet compiled from a distinct rendering of the required WORLD
+factor with a distinct COMMAND row carrying the required COMMAND semantics.
+The COMMAND arm performs the orthogonal interchange. For both arms:
+
+- packet source row, command source row, and target row are explicit;
+- source rows differ in raw bytes from the target row;
+- targets are gathered only from immutable factual rectangle rows;
+- terminal packet and complete transaction trace are supervised;
+- WORLD and COMMAND losses and receipts remain separate; and
+- hard-forward gradients must reach the compiler and command path in isolated
+  tests.
+
+The continuation boundary must independently replay each labeled generic
+transaction from the initial packet and reproduce the complete terminal
+packet. It must reject contradictory values, types, relations, roots,
+activity, edge capacity, commit/halt state, or disposition. Initial status is
+the compiler's open reset. A right-padded row is valid only if its final
+supervised step has committed or halted, because deployed recurrence executes
+the fixed step width and relies on terminal state to freeze later mutation.
+
+Decisive state checks run in evaluation mode with `hard=True` and must pass
+`validate_deployed_state` for initial, factual terminal, WORLD-intervention
+terminal, and COMMAND-intervention terminal packets.
+
+The systems profile is schema v3. One exact-source H100 run must execute
+factual episodes, both intervention arms, the full composite objective,
+backward, and Muon/AdamW update in matched eager and compiled arms. It may
+read only the hash-bound protected checkpoint and synthetic rectangles, may
+write only one isolated JSON receipt, and may never read shards or write model
+state.

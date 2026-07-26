@@ -122,7 +122,7 @@ The frozen architecture source adds:
    launcher, or network access.
 
 The complete ETTR/cross-ontology architecture and custody inventory passes
-**165/165**.
+**174/174**.
 Reset-boundary tests include interior segment starts, exact native
 Muon/AdamW resume, and next-update equivalence after restore. A
 degree-preserving edge-swap falsifier holds every per-slot in/out relation
@@ -140,8 +140,31 @@ binds `output.terminal_state` to offline terminal packet targets and proves
 that this loss backpropagates through the recurrent reactor into the compiler.
 The packet loss normalizes jointly over initial and terminal support, so the
 existing family weight does not silently double. This closes the prior
-independent-initial-packet/transaction supervision gap; paired packet/command
-interventions remain the next anti-bypass gate.
+independent-initial-packet/transaction supervision gap.
+
+Commit `5771c64` closes the paired packet/command anti-bypass gate with
+nontrivial factorial interchange. Each immutable 2x2 rectangle contains two
+semantic WORLD factors and two semantic COMMAND factors, but every equivalent
+factor is rendered through different raw token bytes. WORLD-equivalent rows
+must have identical complete initial packet targets, WORLD factors must differ
+in initial packet state, and all four row/column contrasts must change the
+terminal target. A WORLD intervention takes a packet compiled from a different
+rendering of the counterfactual WORLD factor while holding the COMMAND
+semantics fixed; the COMMAND arm performs the orthogonal operation. Every
+source row differs from its target row, and every terminal/transaction label
+is gathered from an immutable factual corner. The rejected token-identical
+version is not retained because deterministic zero-dropout execution reduced
+it to a factual permutation.
+
+The data boundary now replays every labeled generic transaction from the
+initial target packet and requires exact agreement with the terminal target,
+including value/type codes, relations, activity, root, edge capacity,
+commit/halt status, and terminal disposition. Initial status is bound to the
+compiler's open reset. Right-padded trajectories are legal only when their
+last valid step commits or halts, ensuring later fixed-width runtime steps are
+frozen. Factual and both intervention terminal states pass the deployed
+discrete-state validator under `eval()` and `hard=True`. WORLD and COMMAND
+losses, support receipts, and isolated gradient paths are separate.
 
 ## Cross-Ontology Hybrid Receipt
 
@@ -163,9 +186,13 @@ Payload SHA-256:
   `29d294f53085a254e1bf056abd7c388a5fe7ca95`.
 - Job `705188` failed closed on `evc33` before checkpoint/model execution
   because CUDA was unavailable despite allocation. The node is excluded.
-- Sole replacement job `705192` is pending with a fresh output directory.
-- Complete the isolated BF16 H100 eager-versus-compiled memory/throughput
-  profile from the exact corrected source commit.
+- Job `705192` predates the factorial objective and cannot qualify current
+  source even if it completes.
+- Submit one fresh isolated BF16 H100 eager-versus-compiled memory/throughput
+  profile from exact commit `5771c64` or a documentation-only descendant.
+- The schema-v3 profiler must execute factual episodes, both intervention
+  arms, the complete composite objective, backward, and Muon/AdamW update
+  from matched eager/compiled initial parameter hashes.
 - Record strict checkpoint load, nonzero architecture gradients, peak memory,
   measured throughput, compiled-arm status, and unchanged checkpoint hash.
 - If profiling finds an OOM or systems defect, revise only the architecture

@@ -74,6 +74,33 @@
 > pending profile, with a fresh output path and expanded exclusion set. It is
 > a synthetic resource gate only and cannot write model state or read shards.
 >
+> **ETTR FACTORIAL INTERCHANGE HARDENING — 2026-07-26 EDT:** Commit
+> `5771c64` replaces the rejected token-identical swap objective with
+> nontrivial 2x2 semantic-factor interchange. Equivalent WORLD and COMMAND
+> factors must arrive through distinct raw renderings; WORLD-equivalent rows
+> must have identical complete initial packet targets; each world or command
+> intervention uses a different raw source row and gathers its packet,
+> transaction, and terminal labels only from immutable factual rectangle
+> corners. The data boundary exactly replays every generic labeled transaction
+> into the terminal packet, binds initial status to the compiler's open reset,
+> and permits right padding only after the last supervised step commits or
+> halts, so fixed-width deployed execution cannot escape supervision. Initial,
+> factual-terminal, and both intervention-terminal states pass the hard
+> deployed-state validator under `eval()`/`hard=True`. WORLD and COMMAND
+> intervention losses, support receipts, and isolated gradient paths are
+> separate. The H100 profiler is schema v3 and now executes factual episodes,
+> both intervention arms, the complete composite objective, backward, and
+> Muon/AdamW update from identical eager/compiled initial parameters; default
+> profile batch size is four, one complete rectangle. Ruff, byte compilation,
+> shell syntax, focused tests, two hostile re-audits, and the complete ETTR/
+> cross-ontology inventory pass; the inventory is now **174/174**. Parameter
+> counts and protected checkpoint bytes are unchanged; the local checkpoint
+> still hashes to
+> `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
+> Job `705192` predates this exact objective and cannot qualify it. A fresh
+> exact-commit H100 profile is required; this authorizes no pretraining or
+> capability claim.
+>
 > **CURRENT REASONING CLAIM BOUNDARY — 2026-07-25 22:00 EDT:** Shohin still
 > has no demonstrated architecture-native general reasoning. Adversarial audit
 > rejects the apparent 11/11 episodic-generator result as a Shohin claim:
@@ -13951,3 +13978,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   work is the causal episodic autoregressive interface, composite objectives,
   ETTR-aware save/resume schema, hybrid compositions, and H100 throughput
   profile. The pretraining hold remains absolute.
+
+- **2026-07-26 EDT** -- **Factorial causal supervision is nontrivial and
+  fail-closed.** The first pairwise implementation was rejected before commit:
+  free counterfactual labels were not input-bound. Its first factorial repair
+  also failed hostile audit because token-identical factors plus zero dropout
+  reduced every swap to a factual permutation. The retained commit `5771c64`
+  instead uses distinct raw renderings for equivalent semantic factors and
+  representation interchange across all four immutable factual corners.
+  Initial packet targets must agree within each WORLD factor and differ across
+  WORLD factors; all four row/column effects must change terminal state.
+  Intervention sources are different raw rows from their targets, while every
+  label is gathered from a factual corner.
+
+  The continuation validator now replays the complete generic target
+  transaction trajectory into terminal packet state, including values, types,
+  roots, relations, activity, commit, halt, edge capacity, and OPEN/ANSWER/
+  ABSTAIN/REJECT disposition. Padded rows must terminally commit or halt at
+  their last valid step. Training defaults to hard transactions, has zero
+  transformer dropout in the interchange path, preserves both intervention
+  traces, and reports separate WORLD/COMMAND losses and support counts.
+  `eval()` plus `hard=True` factual and intervention packets pass the deployed
+  discrete-state validator.
+
+  The profiler was upgraded from token-LM-only schema v2 to full-composite
+  schema v3. It profiles factual execution, both intervention arms, all nine
+  composite losses, backward, and one Muon/AdamW step from matched eager/
+  compiled initial parameter hashes. CPU eager/compile validation passes.
+  The complete ETTR/cross-ontology inventory is 174/174 with clean Ruff,
+  byte compilation, shell syntax, and diff checks. Two successive hostile
+  re-audits report no remaining P0/P1 in this change. The checkpoint hash,
+  architecture parameter count, and pretraining state are unchanged.
+
+  Decision:
+  `factorial_interchange_contract_hardened_exact_h100_profile_pending_pretraining_held_capability_unproven`.

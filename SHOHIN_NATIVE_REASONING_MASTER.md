@@ -52283,3 +52283,64 @@ closed on `evc33` before checkpoint/model execution because the allocated node
 had no usable CUDA device. Replacement `705192` is the sole queued attempt,
 uses a fresh report path, excludes `evc33` and the established bad-node set,
 and cannot write model state or read training shards.
+
+## 2026-07-26 Factorial Interchange and Full-Objective Qualification
+
+The project remains in architecture construction. No continuation pretraining
+or post-training is authorized, and weak raw-checkpoint benchmark scores do
+not reject an untrained architecture.
+
+The first causal-supervision attempt was rejected before commit because it
+accepted free-standing counterfactual labels. A first 2x2 repair was also
+rejected: with token-identical factor duplicates, zero dropout, and a
+deterministic reactor, every swap was only a permutation of an already
+executed factual row.
+
+Commit `5771c64` retains the factorial structure but makes the intervention
+nontrivial. Equivalent WORLD and COMMAND factors are represented by distinct
+raw renderings. WORLD-equivalent rows must map to identical complete initial
+packet targets, while the two WORLD factors must differ in packet state. A
+WORLD intervention imports the required semantic WORLD through another raw
+rendering and composes it with a different row carrying the held-fixed COMMAND
+semantics. The COMMAND arm performs the orthogonal interchange. Every source
+row differs from its target row, and terminal packet plus transaction targets
+are gathered only from immutable factual rectangle corners.
+
+The continuation validator now acts as an independent generic transaction
+auditor. Starting from the labeled initial packet, it replays `ALLOC`, `WRITE`,
+`CLEAR`, `LINK`, `UNLINK`, `SET_ROOT`, `COMMIT`, `HALT`, and `REJECT` and
+requires exact agreement with terminal value/type codes, relations, activity,
+root, edge budget, and disposition. It rejects contradictory initial status,
+status recurrence, terminal state, and OPEN right-padding. A padded row must
+commit or halt at its final valid step so later fixed-width deployed steps are
+frozen.
+
+Training runs hard forward transactions by default, uses zero dropout in the
+interchange path, retains both intervention traces, field-balances packet
+losses, and reports separate WORLD and COMMAND losses and support receipts.
+Isolated tests prove WORLD loss reaches the compiler and COMMAND loss reaches
+the command projection. Initial, factual terminal, and both intervention
+terminal packets pass the production deployed-state validator under
+`eval()`/`hard=True`.
+
+The resource profiler is now schema v3. It no longer measures token LM alone:
+each eager or compiled update executes the factual episode, both intervention
+arms, all composite losses, backward, and Muon/AdamW update from a matched
+initial-parameter hash. It uses synthetic immutable rectangles, reads no
+shards, writes no model state, and defaults to the minimum complete batch of
+four.
+
+The complete ETTR and cross-ontology inventory is 174/174. Ruff, byte
+compilation, shell syntax, diff checks, and two rounds of hostile P0/P1 audit
+pass. Architecture parameters remain 67,697,771; the complete system remains
+192,779,435; the protected step-300k checkpoint remains byte-identical at
+SHA-256
+`211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
+
+Current decision:
+`factorial_interchange_contract_hardened_exact_h100_profile_pending_pretraining_held_capability_unproven`.
+
+The next architecture gates are an exact-source H100 profile of this complete
+objective, source-to-query causal binding, and the frozen qualification/
+control matrix. Later large-scale pretraining and post-training remain
+separate user decisions.
