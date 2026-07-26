@@ -1,6 +1,7 @@
 #!/bin/bash
 # Exact synthetic WORLD -> COMMAND -> QUERY ETTR supervisor smoke.
-# The fixture is untrained, deterministic, and isolated from training assets.
+# The fixture is deterministic, analytically initialized, and isolated from
+# training assets and assessor labels.
 #SBATCH -J shohin-ettr-supervisor-smoke
 #SBATCH -p normal
 #SBATCH --gres=gpu:nvidia_h100_pcie:1

@@ -27,12 +27,12 @@ import sys
 from typing import Mapping, Sequence
 
 
-FIXTURE_SCHEMA = "ettr-supervisor-synthetic-fixture-v1"
+FIXTURE_SCHEMA = "ettr-supervisor-synthetic-fixture-v2"
 PLAN_SCHEMA = "ettr-supervisor-smoke-plan-v1"
 CHAIN_SCHEMA = "ettr-supervisor-smoke-chain-v1"
 REPORT_SCHEMA = "ettr-supervisor-smoke-report-v1"
 CHECKPOINT_STEP = 0
-MODEL_SEED = 2026072601
+MODEL_SEED = 43
 STAGES = ("world", "command", "query")
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _HEX_32_BYTES = re.compile(r"^[0-9a-f]{64}$")
@@ -551,6 +551,153 @@ def _synthetic_model() -> object:
     ).eval()
 
 
+def _calibrate_synthetic_mechanics(
+    model: object,
+    tokenization: object,
+) -> None:
+    """Construct a label-free factorial packet fixture analytically.
+
+    The production qualification admission requires every WORLD x COMMAND
+    packet to remain distinct. Random hard-forward ETTR initialization can
+    collapse those packets before any learning has occurred, which makes it
+    unsuitable for a deployment-mechanics smoke. This initialization uses
+    only raw WORLD/COMMAND token rows: WORLD identity remains in compiler
+    state, while a uniform command read writes one distinct categorical code
+    per distinct command byte sequence. It reads no query, target, assessor,
+    checkpoint, or training artifact and performs no optimizer update.
+    """
+
+    import torch  # noqa: PLC0415
+    from ettr_factorial_qualification_board import (  # noqa: PLC0415
+        TOTAL_PACKETS,
+    )
+    from ettr_qualification import typed_state_row_sha256  # noqa: PLC0415
+
+    world_payload = tokenization.stage_payload("world")
+    command_payload = tokenization.stage_payload("command")
+    world_tokens = torch.tensor(
+        world_payload["token_ids"],
+        dtype=torch.long,
+    )
+    world_mask = torch.tensor(
+        world_payload["attention_mask"],
+        dtype=torch.bool,
+    )
+    command_tokens = torch.tensor(
+        command_payload["token_ids"],
+        dtype=torch.long,
+    )
+    command_mask = torch.tensor(
+        command_payload["attention_mask"],
+        dtype=torch.bool,
+    )
+    if (
+        world_tokens.shape[0] != TOTAL_PACKETS
+        or command_tokens.shape[0] != TOTAL_PACKETS
+    ):
+        raise ETTRSupervisorSmokeError(
+            "synthetic mechanics packet geometry differs"
+        )
+
+    reactor = model.reactor
+    width = model.config.state_width
+    with torch.no_grad():
+        # Seed 43 retains all six distinct WORLD factors when slot priors do
+        # not dominate the raw-token cross attention.
+        model.compiler.slot_queries.zero_()
+        model.compiler.active_head.weight.zero_()
+        model.compiler.active_head.bias.fill_(10.0)
+
+        # Remove state/step terms only in this synthetic fixture. The command
+        # read is then an auditable uniform mean over normalized raw-token
+        # residuals, and the recurrent core is an exact residual identity.
+        reactor.control_seed.zero_()
+        reactor.step_embedding.weight.zero_()
+        reactor.type_embedding.zero_()
+        reactor.value_embedding.zero_()
+        reactor.active_projection.weight.zero_()
+        reactor.root_projection.weight.zero_()
+        reactor.status_projection.weight.zero_()
+        reactor.relation_projection.weight.zero_()
+        reactor.command_projection.weight.copy_(torch.eye(width))
+        reactor.command_projection.bias.zero_()
+
+        attention = reactor.command_attention
+        attention.in_proj_weight.zero_()
+        attention.in_proj_bias.zero_()
+        attention.in_proj_weight[2 * width : 3 * width].copy_(
+            torch.eye(width)
+        )
+        attention.out_proj.weight.copy_(torch.eye(width))
+        attention.out_proj.bias.zero_()
+        for layer in reactor.core.layers:
+            for name, parameter in layer.named_parameters():
+                if "norm" not in name:
+                    parameter.zero_()
+
+        # Both bounded runtime steps write the same command code to slot zero.
+        # The remaining slots preserve WORLD identity.
+        reactor.opcode_head.weight.zero_()
+        reactor.opcode_head.bias.fill_(-10.0)
+        reactor.opcode_head.bias[1] = 10.0
+        reactor.source_query.weight.zero_()
+        reactor.target_query.weight.zero_()
+        reactor.slot_key.weight.zero_()
+
+        command_hidden = model._encode_to_stage(command_tokens, pos=0)
+        projected = reactor.command_projection(command_hidden)
+        normalized = reactor.command_norm(projected)
+        valid = command_mask.to(normalized.dtype).unsqueeze(-1)
+        prototypes = reactor.output_norm(
+            (normalized * valid).sum(1)
+            / valid.sum(1).clamp_min(1.0)
+        )
+        unique_commands: list[tuple[int, ...]] = []
+        for row in command_payload["token_ids"]:
+            key = tuple(int(value) for value in row)
+            if key not in unique_commands:
+                unique_commands.append(key)
+        if len(unique_commands) >= model.config.num_value_codes:
+            raise ETTRSupervisorSmokeError(
+                "synthetic command codebook exceeds packet capacity"
+            )
+        reactor.value_head.weight.zero_()
+        reactor.value_head.bias.fill_(-100.0)
+        for code, key in enumerate(unique_commands, start=1):
+            row = next(
+                index
+                for index, values in enumerate(command_payload["token_ids"])
+                if tuple(int(value) for value in values) == key
+            )
+            reactor.value_head.weight[code].copy_(prototypes[row])
+            reactor.value_head.bias[code] = 0.0
+
+        world_state = model.compile_world(
+            world_tokens,
+            attention_mask=world_mask,
+            hard=True,
+        )
+        terminal_state, trace = model.execute(
+            world_state,
+            steps=2,
+            hard=True,
+            command_idx=command_tokens,
+            command_attention_mask=command_mask,
+        )
+    packet_hashes = {
+        typed_state_row_sha256(terminal_state, row)
+        for row in range(TOTAL_PACKETS)
+    }
+    command_codes = trace.applied_value_code[:, 0].argmax(-1)
+    if (
+        len(packet_hashes) != TOTAL_PACKETS
+        or command_codes.unique().numel() != len(unique_commands)
+    ):
+        raise ETTRSupervisorSmokeError(
+            "synthetic mechanics packets are not factorially distinct"
+        )
+
+
 def _write_character_tokenizer(path: Path) -> None:
     from tokenizers import Tokenizer  # noqa: PLC0415
     from tokenizers.models import WordLevel  # noqa: PLC0415
@@ -635,6 +782,13 @@ def prepare_fixture(
     }
 
     _write_character_tokenizer(tokenizer_path)
+    tokenization = build_ettr_factorial_tokenization_receipt(
+        board,
+        tokenizer_path,
+        seq_len=model.base.cfg.seq_len,
+        pad_token_id=0,
+    )
+    _calibrate_synthetic_mechanics(model, tokenization)
     _write_json_once(config_path, asdict(model.config))
     checkpoint_payload = {
         "cfg": asdict(model.base.cfg),
@@ -652,12 +806,6 @@ def prepare_fixture(
     _save_component(reactor_path, model.reactor)
     _save_component(reader_path, model.query_reader)
 
-    tokenization = build_ettr_factorial_tokenization_receipt(
-        board,
-        tokenizer_path,
-        seq_len=model.base.cfg.seq_len,
-        pad_token_id=0,
-    )
     _write_once(tokenization_path, tokenization.canonical_bytes())
     _write_once(world_path, tokenization.stage_payload_bytes("world"))
     _write_once(command_path, tokenization.stage_payload_bytes("command"))
@@ -739,7 +887,7 @@ def prepare_fixture(
     plan = {
         "schema": PLAN_SCHEMA,
         "fixture_schema": FIXTURE_SCHEMA,
-        "checkpoint_kind": "deterministic-synthetic-untrained",
+        "checkpoint_kind": "deterministic-synthetic-analytic-smoke",
         "checkpoint_step": CHECKPOINT_STEP,
         "model_seed": MODEL_SEED,
         "runtime_archive_path": str(runtime.runtime_archive_path),
@@ -855,7 +1003,7 @@ def validate_plan(plan: Mapping[str, object]) -> None:
         or plan.get("schema") != PLAN_SCHEMA
         or plan.get("fixture_schema") != FIXTURE_SCHEMA
         or plan.get("checkpoint_kind")
-        != "deterministic-synthetic-untrained"
+        != "deterministic-synthetic-analytic-smoke"
         or plan.get("checkpoint_step") != CHECKPOINT_STEP
         or plan.get("model_seed") != MODEL_SEED
         or plan.get("training_assets_read") is not False

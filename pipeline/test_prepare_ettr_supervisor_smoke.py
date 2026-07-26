@@ -102,7 +102,7 @@ def _file_hashes(root: Path) -> dict[str, str]:
     }
 
 
-def test_fixture_is_deterministic_untrained_and_uses_production_contracts(
+def test_fixture_is_deterministic_analytic_and_uses_production_contracts(
     tmp_path: Path,
 ) -> None:
     runtime = _runtime(tmp_path)
@@ -127,7 +127,10 @@ def test_fixture_is_deterministic_untrained_and_uses_production_contracts(
     validate_plan(plan)
     assert plan["schema"] == PLAN_SCHEMA
     assert plan["model_seed"] == MODEL_SEED
-    assert plan["checkpoint_kind"] == "deterministic-synthetic-untrained"
+    assert (
+        plan["checkpoint_kind"]
+        == "deterministic-synthetic-analytic-smoke"
+    )
     assert plan["training_assets_read"] is False
     checkpoint = torch.load(
         left / "inputs/synthetic-base.pt",
