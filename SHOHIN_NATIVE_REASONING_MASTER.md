@@ -52717,5 +52717,17 @@ H100 by name and its first CUDA allocation failed with `device(s) busy or
 unavailable`. Fresh unchanged smoke `706196` excludes `evc43` and is pending
 resources.
 
+Smoke `706196` subsequently ran unchanged on healthy node `evc49` and
+completed cleanly in 71 seconds. Inside the pinned Bubblewrap confinement, the
+root-owned Python closure passed, the isolated network namespace passed, and
+the retained claim runtime imported Python 3.13.13, CUDA Torch 2.6.0+cu124,
+and safetensors 0.7.0. PyTorch observed exactly one NVIDIA H100 PCIe and
+completed the BF16 CUDA operation. The independently supplied archive,
+inventory, source-bundle, trusted-Python, Bubblewrap, and verifier identities
+all matched their pins. This closes the exact-source confined H100 runtime
+gate. The remaining verifier-owned supervisor and durable launch-receipt
+admission are deployment custody controls only; they do not alter the
+192,779,435-parameter trainable architecture.
+
 Current decision:
 `ettr_architecture_complete_stage_specific_runtime_pass_external_supervisor_and_learning_pending`.

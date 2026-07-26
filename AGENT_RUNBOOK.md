@@ -14577,3 +14577,38 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `ettr_architecture_complete_authority_validation_and_retained_source_import_pass_external_claim_deployment_pending_untrained_pretraining_held_capability_unproven`.
+
+- **2026-07-26 EDT** -- **The exact-source, source-deleted ETTR claim runtime
+  passed its confined H100 gate.** No pretraining was started, prepared,
+  queued, resumed, or modified. The protected step-300k checkpoint remains
+  byte-identical at
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
+
+  Exact-source CPU build `705949` produced the immutable 5,833,031,680-byte
+  claim-runtime archive with SHA-256
+  `1a1616aa620a32bb49291a53c3b774c3253d8c07678ff7aea7fe75d5825ec05c`,
+  inventory SHA-256
+  `e82e53aa0f8f83085aec72c2a499459f7dc01875b77c9b2d3a869c0d48bbb237`,
+  and source-bundle SHA-256
+  `5b642ee6196d17c5b8b4130b4b666322d5776c0ed6d58573839d16b8faac6bbe`.
+  All 27,092 measured members and published sidecars passed immutable,
+  single-link, descriptor-based admission.
+
+  Smokes `706033`, `706072`, and `706121` exposed and closed wrapper issues
+  without touching model state. Exact-wrapper smoke `706166` then failed on
+  `evc43`; host-only control `706184` proved the physical node was unhealthy
+  because even unconstrained PyTorch could name its H100 but could not perform
+  the first CUDA allocation. Fresh unchanged smoke `706196` excluded `evc43`,
+  ran on `evc49`, and completed cleanly in 71 seconds. Inside the pinned
+  Bubblewrap sandbox, root-owned Python-closure verification passed, network
+  isolation passed, Python 3.13.13 imported CUDA Torch 2.6.0+cu124 and
+  safetensors 0.7.0, exactly one NVIDIA H100 PCIe was visible, and BF16 CUDA
+  matrix multiplication succeeded.
+
+  The trainable architecture is therefore complete and its external runtime
+  image is hardware-qualified. The remaining verifier-owned process
+  supervisor and durable launch-receipt admission are non-neural deployment
+  controls. They add no parameters and do not reopen the architecture.
+
+  Decision:
+  `ettr_architecture_complete_confined_h100_runtime_pass_external_supervisor_and_learning_pending`.
