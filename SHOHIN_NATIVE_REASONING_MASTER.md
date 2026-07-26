@@ -52376,3 +52376,39 @@ immutable factual corners. No divergent answer prefix may enter the model.
 
 Current decision:
 `h100_resource_geometry_pass_update_receipt_and_query_binding_pending_pretraining_held_capability_unproven`.
+
+## 2026-07-26 Matched-Prefix Query Consumer Gate
+
+The terminal packet is no longer the end of the causal supervision path.
+Commits `f263616` and `19b74f2` force WORLD and COMMAND interventions to be
+consumed by the actual source-deleted late-query reader.
+
+Every factual row carries only a query read index. All four corners in one
+WORLD x COMMAND rectangle must use the same index and exact same token/mask
+prefix through it. The next-token label must change across all four WORLD and
+COMMAND edges. Intervention execution receives target row indices but no
+answers. Correct logits come from the intervened terminal state; foil logits
+come from the factual state with the changed factor held at its original
+value. Correct and foil labels are gathered afterward from immutable factual
+shifted-token targets.
+
+This makes the direct query-only transformer path insufficient: it sees the
+same prefix but is asked for contradictory factual next tokens. Separate
+WORLD/COMMAND losses use classification plus a directional
+difference-in-differences margin. The objective reports pair support and
+margin satisfaction independently. No free-standing counterfactual answer is
+admitted.
+
+This remains a bounded architecture result, not learned reasoning. It proves
+one-token categorical causal consumption mechanics. Multi-token autonomous
+answers, multiple independent late queries per sealed state, unseen-ontology
+generalization, and capability all remain later gates.
+
+The H100 receipt sampler is now stratified across every trainable tensor, so
+an unchanged first tensor cannot conceal updates elsewhere. The complete
+ETTR/cross-ontology inventory is **193/193** passing. Architecture parameters
+remain 67,697,771 and the complete system remains 192,779,435. No pretraining
+was started or prepared.
+
+Current decision:
+`matched_query_binding_implemented_exact_h100_reprofile_pending_controls_unfrozen_pretraining_held_capability_unproven`.

@@ -222,3 +222,36 @@ those gates can the architecture be called technically ready for the user's
 later pretraining decision. Capability still requires future pretraining,
 matched causal controls, unseen-ontology qualification, and post-training.
 Only the user may lift the continuation-pretraining hold.
+
+## Matched-Prefix Causal Query Binding
+
+Commits `f263616` and `19b74f2` close the missing consumer-side path without
+adding parameters. Each factual row declares one query read position, but no
+answer label field. Within every immutable 2x2 rectangle:
+
+- the read position is identical across all four corners;
+- query tokens and masks are exactly identical through that position;
+- each WORLD edge changes the factual next-token target; and
+- each COMMAND edge changes the factual next-token target.
+
+The intervention runner receives only target row indices. It reads each
+intervention terminal state with the target corner's query sequence and
+returns logits gathered at the pre-answer read position. Labels are gathered
+later, inside the data contract, from immutable factual shifted-token targets.
+The foil is the corresponding factual row with the intervened factor
+unchanged. Because correct and foil predictions receive the exact same prefix
+but require different factual labels, the frozen query-only LM path cannot
+satisfy the objective.
+
+WORLD and COMMAND query-binding losses are separate. Each combines
+correct/foil classification with a directional difference-in-differences
+margin, with explicit pair support and margin-satisfied receipts. The runner
+signature contains no target or answer tensor. This proves a categorical
+consumer-side causal mechanism only; multi-token autonomous reasoning remains
+unproven.
+
+The parameter update probe is also corrected. It now samples deterministic
+coordinates across every trainable tensor rather than spending the entire
+budget on the first tensor. The integrated ETTR/cross-ontology inventory is
+**193/193** passing. A fresh exact-source H100 profile and the frozen
+qualification/control matrix remain required.

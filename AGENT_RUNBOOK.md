@@ -14072,3 +14072,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `h100_resource_geometry_pass_update_receipt_and_query_binding_pending_pretraining_held_capability_unproven`.
+
+- **2026-07-26 04:30 EDT** -- **Matched-prefix causal query consumption is
+  implemented and the false update probe is repaired.** Commits `f263616` and
+  `19b74f2` extend each immutable WORLD x COMMAND rectangle with one
+  candidate-visible `query_read_index`, not an answer field. All four factual
+  corners must have the same valid read position and identical query tokens
+  and masks through that position. Every WORLD and COMMAND edge must have a
+  different factual next-token target at the read position.
+
+  Each intervention terminal state is now passed through the actual
+  source-deleted query reader using the target corner's query row. The runner
+  receives only row indices and never receives answer labels. Its gathered
+  read-position logits are paired with immutable factual targets inside the
+  data contract. The foil is the factual state with the intervened factor
+  unchanged under the exact same query prefix. Separate WORLD and COMMAND
+  losses combine correct/foil cross-entropy with a directional
+  difference-in-differences margin. Identical query-only logits cannot satisfy
+  the margin. Separate support and margin receipts are device-resident.
+
+  The current result proves only one-token categorical source-to-query causal
+  binding mechanics. It does not prove autonomous multi-token generation,
+  learned capability, or general reasoning. A later qualification matrix must
+  include query-only, zero-reader, shuffled/wrong-state, wrong-query,
+  target-deranged, and query-twin controls.
+
+  The H100 update sampler now assigns deterministic coordinates across every
+  trainable tensor instead of exhausting all 4,096 coordinates on the first
+  tensor. A regression proves that an unchanged first tensor cannot hide an
+  update in a later tensor. The complete ETTR/cross-ontology inventory is now
+  **193/193** passing in 160.33s; Ruff, byte compilation, shell syntax, and
+  diff checks are clean. Parameters and protected checkpoint bytes are
+  unchanged. A fresh exact-source schema-v3 H100 profile must include both new
+  query-binding losses and the corrected update receipt.
+
+  Decision:
+  `matched_query_binding_implemented_exact_h100_reprofile_pending_controls_unfrozen_pretraining_held_capability_unproven`.

@@ -9,8 +9,11 @@ structural/semantic variants, and the complete 2,688-execution primary matrix
 are implemented. No continuation pretraining, post-training, or capability
 claim exists.
 
-The user pretraining hold remains active. This protocol may train only isolated
-reasoning components or adapters against the immutable step-300k checkpoint.
+The user pretraining hold remains active. The present phase is architecture
+construction and qualification only. Synthetic resource profiling may execute
+forward, backward, and bounded optimizer mechanics against an immutable copy
+of the step-300k checkpoint, but it may not read pretraining shards, write
+model state, or constitute continuation pretraining.
 
 ## Objective
 
