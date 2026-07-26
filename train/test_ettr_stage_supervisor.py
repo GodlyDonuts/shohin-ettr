@@ -27,10 +27,12 @@ from ettr_stage_supervisor import (
     _main,
     _open_immutable_file,
     _open_immutable_file_at,
+    _open_root_owned_executable,
     _parse_role_paths,
     _runner_arguments,
     _sha256_descriptor,
     _sign_launch_receipt,
+    _validate_root_owned_executable,
 )
 
 
@@ -59,6 +61,26 @@ def _manifest() -> dict[str, object]:
         "model_assembly_receipt_sha256": "5" * 64,
         "tokenization_receipt_sha256": "6" * 64,
     }
+
+
+def test_root_owned_system_executable_is_hash_pinned() -> None:
+    executable = Path("/usr/bin/env")
+    metadata = executable.stat()
+    if (
+        metadata.st_uid != 0
+        or metadata.st_nlink != 1
+        or metadata.st_mode & 0o022
+    ):
+        pytest.skip("root-owned system executable is unavailable")
+    descriptor = _open_root_owned_executable(executable, "system executable")
+    try:
+        digest, _ = _sha256_descriptor(descriptor)
+    finally:
+        os.close(descriptor)
+    accepted = _validate_root_owned_executable(executable, digest)
+    os.close(accepted)
+    with pytest.raises(ETTRStageSupervisorError):
+        _validate_root_owned_executable(executable, "0" * 64)
 
 
 def test_role_parser_requires_exact_absolute_inventory(

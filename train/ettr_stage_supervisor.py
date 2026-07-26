@@ -121,6 +121,29 @@ def _open_immutable_file(path: Path, label: str) -> int:
     return descriptor
 
 
+def _open_root_owned_executable(path: Path, label: str) -> int:
+    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0)
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    try:
+        descriptor = os.open(path, flags)
+    except OSError as exc:
+        raise ETTRStageSupervisorError(f"{label} cannot be opened") from exc
+    metadata = os.fstat(descriptor)
+    if (
+        not stat.S_ISREG(metadata.st_mode)
+        or metadata.st_nlink != 1
+        or metadata.st_uid != 0
+        or metadata.st_mode & 0o022
+        or not metadata.st_mode & 0o111
+    ):
+        os.close(descriptor)
+        raise ETTRStageSupervisorError(
+            f"{label} is not a trusted root-owned executable"
+        )
+    return descriptor
+
+
 def _open_immutable_file_at(
     directory_descriptor: int,
     name: str,
@@ -493,14 +516,9 @@ def _sign_launch_receipt(
 
 
 def _validate_root_owned_executable(path: Path, expected_sha256: str) -> int:
-    descriptor = _open_immutable_file(path, "Bubblewrap")
-    metadata = os.fstat(descriptor)
+    descriptor = _open_root_owned_executable(path, "Bubblewrap")
     digest, _ = _sha256_descriptor(descriptor)
-    if (
-        metadata.st_uid != 0
-        or not metadata.st_mode & 0o111
-        or digest != expected_sha256
-    ):
+    if digest != expected_sha256:
         os.close(descriptor)
         raise ETTRStageSupervisorError("Bubblewrap identity differs")
     return descriptor
