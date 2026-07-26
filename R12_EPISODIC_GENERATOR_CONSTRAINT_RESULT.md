@@ -2,13 +2,13 @@
 
 ## Decision
 
-`bounded_program_induction_demonstrated_but_fail_closed_promotion_withheld`
+`reject_architecture_native_shohin_reasoning_retain_neurosymbolic_solver`
 
-Shohin's reasoning sidecar now demonstrates exact, source-deleted induction of
-sparse unseen action laws from unfamiliar generators supplied inside each
-episode. This is the first retained result that constructs its finite
-hypothesis space from the episode rather than selecting from a fixed global
-law library.
+The candidate reaches 11/11 development queries, but adversarial audit rejects
+promotion as Shohin reasoning. The actual learned system is a 232,065-
+parameter record-direction classifier feeding exact regex parsing, exhaustive
+127-word enumeration, host-side sealing, and a Python executor. The protected
+Shohin checkpoint is not loaded or called.
 
 The preregistered confirmation does not formally pass every promotion
 condition. Deranging one support generator produces zero correct answers and
@@ -16,12 +16,9 @@ zero correct maps, but one of 11 altered episodes still seals a wrong packet;
 the frozen confirmation required zero seals. Preserve this as a formal gate
 miss rather than weakening the criterion after seeing the result.
 
-This is a bounded program-induction result, not demonstrated general language
-reasoning. The ontology is still a finite permutation machine; each episode
-provides two complete support-generator tables; closure depth is at most six;
-constraint intersection, consensus sealing, and categorical execution are
-fixed algorithms; and the mechanism remains a sidecar rather than a learned
-capability inside the Shohin transformer trunk.
+The defensible classification is a bounded neuro-symbolic permutation solver
+with a learned syntax-orientation frontend. It is not architecture-native
+program induction and not a Shohin capability.
 
 ## Protected Base
 
@@ -32,7 +29,9 @@ capability inside the Shohin transformer trunk.
 - confirmation-time local/Newton hash match: yes
 - continuation pretraining: held by explicit user instruction
 
-The checkpoint was not modified or trained during this experiment.
+The checkpoint was not modified, trained, loaded, or executed during this
+experiment. Adding its parameter count to the conceptual ledger does not make
+it part of the candidate.
 
 ## Mechanism
 
@@ -41,17 +40,16 @@ Each episode contains four opaque actions:
 1. two complete support-generator transition tables; and
 2. two sparse target actions composed from those support generators.
 
-A 232,065-parameter byte reader learns record direction. Complete actions are
-identified as episode-local supports. The compiler constructs the 127
-syntactic words over two generators through depth six, keeps each sparse
-target record as a separate logical factor, and intersects the surviving
-programs. A map seals only when every surviving program agrees on every state
-transition. The deployed packet contains only the two inferred target maps;
-raw source bytes and support-generator keys are deleted before query
-execution.
+A 232,065-parameter byte reader learns record direction. Exact regex code
+extracts cardinality, action equality, numeric states, record boundaries, and
+query actions. Fixed code identifies complete supports by record count,
+constructs all 127 syntactic words through depth six, applies a finite-
+temperature match softmax, seals two target tables, and executes the query in
+Python.
 
-There is no global operation-law bank, family label, target program label,
-candidate-time oracle, search call, solver call, or verifier call.
+The report's zero search/solver counters do not describe the end-to-end
+system: 127-word enumeration is exhaustive bounded search and the sealer plus
+executor are symbolic host algorithms.
 
 ## Data and Audit
 
@@ -64,6 +62,8 @@ The confirmation board, seed `20260726`, contains 26 frozen episodes:
 - 52 unique target laws;
 - zero training/development target-law overlap;
 - zero raw target-map overlap;
+- 22 development target-word instances, of which 14 overlap training;
+- all four abstract length-two words present in both splits;
 - 89 sparse target records, all inclusion-minimal;
 - 99 hidden query transitions and zero target transitions visible at query
   time;
@@ -72,8 +72,10 @@ The confirmation board, seed `20260726`, contains 26 frozen episodes:
 - 16/16 eligible action-order reversals changing the answer; and
 - 52/52 support keys deleted from deployed packets.
 
-The independent audit receipt SHA-256 is
-`596039c38bbaecdd646ef8bea78c7263ea61b43bba13b7d1b067e36d35ae2e02`.
+The updated mechanics audit receipt SHA-256 is
+`b29101d13632f1406d51088909607e5a3aa0af043103e51fa8df62c3dd9a0e6d`.
+It is not implementation-independent because it imports the same generator,
+compiler, decoder, and executor family.
 
 Training used 375 rows:
 
@@ -112,9 +114,9 @@ Treatment is exact in every development cell and family:
 - unseen law: 1/1; and
 - joint shift: 1/1.
 
-Every treatment packet passes source and support deletion. Record reordering
-and consistent opaque support recoding are exactly invariant. Removing one
-necessary target witness forces all 11 packets to fail closed.
+Every serialized treatment packet excludes literal source and support bytes.
+This is not process-level deletion: source rows and parsed tensors remain live
+during query execution and the packet contains a source-derived digest.
 
 The deranged-support arm is causally decisive for accuracy but misses the
 strong fail-closed criterion: 10/11 packets reject, while one internally
@@ -153,9 +155,9 @@ and file SHA-256 is
 - focused tests: 14 passed
 - Ruff: clean
 - byte compilation: clean
-- learned compiler parameters: 232,065
-- complete conceptual parameters: 125,313,729
-- remaining headroom under 200M: 74,686,271
+- actual trained candidate parameters: 232,065
+- protected Shohin parameters participating in the runtime: 0
+- conceptual ledger sum only: 125,313,729
 
 ## Pre-Hardening Canary
 
@@ -167,25 +169,14 @@ test corrected the defect before the confirmation run.
 
 ## Scientific Conclusion
 
-The campaign no longer supports the statement that Shohin has no sparse
-unseen-law induction. It has exact bounded evidence for:
+The 11/11 score establishes that a learned renderer-direction classifier plus
+a bounded symbolic permutation solver works on this board. It does not
+establish that Shohin learned parsing, law induction, program construction,
+constraint conjunction, source-deleted execution, or reasoning.
 
-1. reading unfamiliar demonstrations;
-2. constructing a temporary program space from episode-local generators;
-3. intersecting independently necessary constraints;
-4. refusing to guess when evidence is insufficient;
-5. deleting the demonstrations; and
-6. executing hidden compositions from the sealed result.
-
-The result does not establish genuine general reasoning because the generic
-algorithms and finite ontology are supplied by the architecture. The learned
-component discovers direction semantics, while closure, logical conjunction,
-consensus, and execution are engineered inductive biases. The next scientific
-boundary is not another parameter sweep on this board. It is whether the same
-constraint-carrying architecture can learn new object types, relations,
-operators, and executors across genuinely different task families.
-
-Under the present usage constraint, stop here. Preserve this mechanism as the
-best reasoning baseline, preserve the formal fail-closed miss, keep
-continuation pretraining held, and do not claim that the 125M language model
-itself has acquired general reasoning.
+Do not retain this as Shohin's best reasoning baseline. Keep it as a
+neuro-symbolic mechanics control. The next admissible claim-bearing path must
+load Shohin, consume raw tokens, eliminate semantic host parsing/search/
+execution, enforce process-level deletion, hold out abstract programs, and
+cross genuinely different ontologies. Full hostile findings are in
+`R12_EPISODIC_GENERATOR_ADVERSARIAL_AUDIT.md`.

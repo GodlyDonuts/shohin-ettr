@@ -1,9 +1,8 @@
 # R12 General Reasoning Gate
 
-**Status:** UROM-3 rejected pre-neural; categorical-phase register machine in
-train-only optimization development; no reasoning claim
-**Active architecture:** Query-blind Equivariant Relation-Algebra Register
-Machine (`QERARM`)
+**Status:** episodic-generator solver rejected as architecture-native Shohin
+reasoning; cross-ontology successor frozen; no reasoning claim
+**Active architecture:** Endogenous Typed Theory Reactor (`ETTR`)
 **Retired negative control:** Uniform Relational Object Machine (`UROM-3`)
 **Protected base:** Shohin raw pretrain step 300,000
 **Base SHA-256:** `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`

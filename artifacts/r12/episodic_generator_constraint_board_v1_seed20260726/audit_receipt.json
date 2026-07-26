@@ -17,6 +17,8 @@
   "deployed_wire_roundtrips": 26,
   "development_per_cell": 1,
   "development_target_laws": 22,
+  "development_target_word_instances": 22,
+  "development_target_word_overlap_instances": 14,
   "exact_source_deleted": 26,
   "family_counts": {
     "bitwise": 8,
@@ -46,6 +48,8 @@
   "target_law_overlap": 0,
   "target_visible_fraction": 0.18541666666666667,
   "target_visible_records": 89,
+  "target_word_holdout_passes": false,
+  "target_word_overlap": 4,
   "topology_counts": {
     "16": 4,
     "8": 22
@@ -55,6 +59,7 @@
   "train_per_renderer": 1,
   "train_support_development_support_overlap": 0,
   "train_target_laws": 30,
+  "train_target_words": 4,
   "unique_episode_laws": 26,
   "unique_target_identifications": 52,
   "unique_target_laws": 52,

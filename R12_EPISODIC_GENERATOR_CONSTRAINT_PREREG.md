@@ -1,5 +1,10 @@
 # R12 Episodic-Generator Constraint Preregistration
 
+**Post-result disposition:** invalidated as an architecture-native Shohin
+reasoning gate. The experiment did not load Shohin, used exact host parsing,
+exhaustive word enumeration, host sealing/execution, and failed the frozen
+abstract target-program holdout. Retain this document as historical protocol.
+
 ## Question
 
 Can the sparse-law mechanism remove its fixed global operation library and

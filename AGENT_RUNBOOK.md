@@ -21,6 +21,18 @@
 > GSM8K pass@1 `2/100`, MATH-500 `2/100`, HumanEval `6/164`, and MBPP `0/100`. This confirms a
 > low-single-digit plateau rather than a broad 120k-to-300k capability gain.
 >
+> **CURRENT REASONING CLAIM BOUNDARY — 2026-07-25 22:00 EDT:** Shohin still
+> has no demonstrated architecture-native general reasoning. Adversarial audit
+> rejects the apparent 11/11 episodic-generator result as a Shohin claim:
+> Shohin was never loaded, the learned model is only a 232,065-parameter
+> record-direction reader, and exact regex parsing, 127-word enumeration,
+> sealing, and execution are host machinery. Fourteen of 22 development
+> target-word instances overlap training and deletion is serialization-level.
+> Retain it only as a bounded neuro-symbolic solver. The frozen successor is
+> `R12_ENDOGENOUS_TYPED_THEORY_REACTOR_PREREG.md`: one actual-Shohin raw-token
+> compiler and generic transaction reactor across Horn closure, typed term
+> rewriting, and guarded resource processes under four-process custody.
+>
 > **Variable-topology qualification PASS (2026-07-25 EDT):** CPU array
 > `704729` completed all 15 five-seed/leave-one-family-out folds. The learned
 > global semantic-partition compiler scores 360/360; the same weights score
@@ -13702,3 +13714,43 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `4e48a77c7f3ea9995a36094467585fd99ff2164abc4c89fa0761c3950eb5d8af`;
   file SHA-256 is
   `a58f64bec1f61eb8e9e611e45e525feac54a95b93b211dbb2c1d437800e30292`.
+
+- **2026-07-25 22:00 EDT** -- **Hostile audit rejects the episodic-generator
+  result as architecture-native Shohin reasoning.** The 11/11 score is real
+  for the complete neuro-symbolic system, but the runner never loads Shohin.
+  The stored model contains 24 tensors and 232,065 parameters, all belonging
+  to the record-direction reader. Exact regex code extracts semantic fields;
+  fixed code selects supports, enumerates 127 words, seals target tables, and
+  executes queries in Python. The report's zero-search field therefore does
+  not describe the end-to-end path.
+
+  The updated board audit also proves the frozen abstract target-program
+  holdout failed: all four length-two words occur in training and 14/22
+  development target-word instances overlap. Source deletion is only
+  serialization-level, the claimed intersection is a temperature-softmax
+  approximation, and several controls are weaker than preregistered.
+
+  Decision:
+  `reject_architecture_native_shohin_reasoning_retain_neurosymbolic_solver`.
+  Keep the mechanics and exact scores, but remove every Shohin/native-
+  reasoning attribution. Updated seed-20260726 board audit SHA-256 is
+  `b29101d13632f1406d51088909607e5a3aa0af043103e51fa8df62c3dd9a0e6d`.
+  The only admissible successor is a raw-token, actual-Shohin, four-process,
+  cross-ontology gate with no semantic host parser/search/executor.
+
+- **2026-07-25 22:15 EDT** -- **The cross-ontology successor contract and
+  domain-blind transaction substrate are frozen.** ETTR requires one actual-
+  Shohin raw-token compiler and one generic reactor across Horn closure, typed
+  term rewriting, and guarded resource processes under three leave-one-
+  ontology-out folds and four-process custody. The primary board contains
+  2,688 executions and distinguishes singleton, ambiguous, contradictory, and
+  coherent-alternate version spaces. Full preregistration:
+  `R12_ENDOGENOUS_TYPED_THEORY_REACTOR_PREREG.md`.
+
+  `pipeline/cross_ontology_schema.py` now implements only immutable typed
+  objects, relation schemas, edges, serialization, and the generic
+  transactions `ALLOC`, `WRITE`, `CLEAR`, `LINK`, `UNLINK`, `SET_ROOT`,
+  `COMMIT`, and `HALT`. It contains no family labels, semantic rules, host
+  scheduler, search, repair, or answer logic. Nine focused tests pass with
+  clean Ruff and byte compilation. This is G0 mechanics only, not a reasoning
+  result.

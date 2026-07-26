@@ -15,6 +15,11 @@ def test_episodic_generator_law_audit_passes() -> None:
     assert receipt["exact_source_deleted"] == 26
     assert receipt["unique_target_laws"] == 52
     assert receipt["target_law_overlap"] == 0
+    assert receipt["train_target_words"] == 4
+    assert receipt["development_target_word_instances"] == 22
+    assert receipt["development_target_word_overlap_instances"] == 14
+    assert receipt["target_word_overlap"] == 4
+    assert receipt["target_word_holdout_passes"] is False
     assert receipt["raw_target_map_overlap"] == 0
     assert receipt["hidden_query_rows"] == 26
     assert receipt["visible_query_steps"] == 0

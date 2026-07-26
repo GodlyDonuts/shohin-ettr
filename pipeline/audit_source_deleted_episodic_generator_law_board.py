@@ -194,6 +194,8 @@ def audit_board(
     development_support_contexts: set[str] = set()
     raw_train_target_maps: set[str] = set()
     raw_development_target_maps: set[str] = set()
+    train_target_words: set[tuple[int, ...]] = set()
+    development_target_words: list[tuple[int, ...]] = []
     family_counts: Counter[str] = Counter()
     cell_counts: Counter[str] = Counter()
     topology_counts: Counter[str] = Counter()
@@ -401,6 +403,9 @@ def audit_board(
         )
         if supervisor.split == "train":
             train_target_laws.update(row_target_laws)
+            train_target_words.update(
+                supervisor.target_composition_words
+            )
             train_support_contexts.add(support_context)
             raw_train_target_maps.update(
                 supervisor.target_map_sha256
@@ -408,6 +413,9 @@ def audit_board(
         else:
             development_target_laws.update(
                 row_target_laws
+            )
+            development_target_words.extend(
+                supervisor.target_composition_words
             )
             development_support_contexts.add(
                 support_context
@@ -575,6 +583,13 @@ def audit_board(
         "development_target_laws": len(
             development_target_laws
         ),
+        "development_target_word_instances": len(
+            development_target_words
+        ),
+        "development_target_word_overlap_instances": sum(
+            word in train_target_words
+            for word in development_target_words
+        ),
         "exact_source_deleted": exact,
         "family_counts": dict(sorted(family_counts.items())),
         "family_name_leaks": family_name_leaks,
@@ -610,6 +625,13 @@ def audit_board(
             train_target_laws
             & development_target_laws
         ),
+        "target_word_holdout_passes": not any(
+            word in train_target_words
+            for word in development_target_words
+        ),
+        "target_word_overlap": len(
+            train_target_words & set(development_target_words)
+        ),
         "target_visible_fraction": (
             target_visible_records / target_complete_records
         ),
@@ -625,6 +647,7 @@ def audit_board(
             & development_support_contexts
         ),
         "train_target_laws": len(train_target_laws),
+        "train_target_words": len(train_target_words),
         "unique_episode_laws": len(episode_laws),
         "unique_target_identifications": (
             unique_target_identifications

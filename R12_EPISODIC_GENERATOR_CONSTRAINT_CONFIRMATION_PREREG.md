@@ -1,5 +1,10 @@
 # R12 Episodic-Generator Constraint Confirmation Preregistration
 
+**Post-result disposition:** formal promotion rejected. In addition to the
+frozen zero-seal miss, adversarial audit established that Shohin was absent,
+the inference path was neuro-symbolic, and 14/22 development target-word
+instances overlapped training.
+
 ## Frozen finding
 
 Mechanics canary `704786`, seed `20260725`, was launched before fail-closed
