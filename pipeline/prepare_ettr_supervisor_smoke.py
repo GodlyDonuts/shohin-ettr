@@ -27,12 +27,12 @@ import sys
 from typing import Mapping, Sequence
 
 
-FIXTURE_SCHEMA = "ettr-supervisor-synthetic-fixture-v2"
+FIXTURE_SCHEMA = "ettr-supervisor-synthetic-fixture-v3"
 PLAN_SCHEMA = "ettr-supervisor-smoke-plan-v1"
 CHAIN_SCHEMA = "ettr-supervisor-smoke-chain-v1"
 REPORT_SCHEMA = "ettr-supervisor-smoke-report-v1"
 CHECKPOINT_STEP = 0
-MODEL_SEED = 43
+MODEL_SEED = 2026072601
 STAGES = ("world", "command", "query")
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _HEX_32_BYTES = re.compile(r"^[0-9a-f]{64}$")
@@ -599,14 +599,83 @@ def _calibrate_synthetic_mechanics(
             "synthetic mechanics packet geometry differs"
         )
 
+    compiler = model.compiler
     reactor = model.reactor
     width = model.config.state_width
     with torch.no_grad():
-        # Seed 43 retains all six distinct WORLD factors when slot priors do
-        # not dominate the raw-token cross attention.
-        model.compiler.slot_queries.zero_()
-        model.compiler.active_head.weight.zero_()
-        model.compiler.active_head.bias.fill_(10.0)
+        # Build the WORLD compiler as a uniform raw-residual reader. Every
+        # slot receives the same WORLD code; slot zero is later reserved for
+        # the COMMAND code while the other slots retain WORLD identity.
+        compiler.token_projection.weight.copy_(torch.eye(width))
+        compiler.token_projection.bias.zero_()
+        compiler.slot_queries.zero_()
+        for layer in compiler.layers:
+            layer.self_attention.in_proj_weight.zero_()
+            layer.self_attention.in_proj_bias.zero_()
+            layer.self_attention.out_proj.weight.zero_()
+            layer.self_attention.out_proj.bias.zero_()
+            layer.cross_attention.in_proj_weight.zero_()
+            layer.cross_attention.in_proj_bias.zero_()
+            layer.cross_attention.in_proj_weight[
+                2 * width : 3 * width
+            ].copy_(torch.eye(width))
+            layer.cross_attention.out_proj.weight.copy_(torch.eye(width))
+            layer.cross_attention.out_proj.bias.zero_()
+            for parameter in layer.ff.parameters():
+                parameter.zero_()
+        compiler.active_head.weight.zero_()
+        compiler.active_head.bias.fill_(10.0)
+        compiler.type_head.weight.zero_()
+        compiler.type_head.bias.zero_()
+        compiler.root_query.zero_()
+        compiler.relation_left.weight.zero_()
+        compiler.relation_right.weight.zero_()
+
+        world_hidden = model._encode_to_stage(world_tokens, pos=0)
+        projected_world = compiler.token_projection(world_hidden)
+        slots = compiler.slot_queries.unsqueeze(0).expand(
+            world_tokens.shape[0],
+            -1,
+            -1,
+        )
+        world_padding = ~world_mask
+        for layer in compiler.layers:
+            attended, _ = layer.self_attention(
+                layer.slot_norm(slots),
+                layer.slot_norm(slots),
+                layer.slot_norm(slots),
+                need_weights=False,
+            )
+            slots = slots + attended
+            attended, _ = layer.cross_attention(
+                layer.slot_norm(slots),
+                layer.token_norm(projected_world),
+                layer.token_norm(projected_world),
+                key_padding_mask=world_padding,
+                need_weights=False,
+            )
+            slots = slots + attended
+            slots = slots + layer.ff(layer.ff_norm(slots))
+        world_prototypes = compiler.value_norm(slots)[:, 0]
+        unique_worlds: list[tuple[int, ...]] = []
+        for row in world_payload["token_ids"]:
+            key = tuple(int(value) for value in row)
+            if key not in unique_worlds:
+                unique_worlds.append(key)
+        if len(unique_worlds) >= model.config.num_value_codes:
+            raise ETTRSupervisorSmokeError(
+                "synthetic WORLD codebook exceeds packet capacity"
+            )
+        compiler.value_head.weight.zero_()
+        compiler.value_head.bias.fill_(-100.0)
+        for code, key in enumerate(unique_worlds, start=1):
+            row = next(
+                index
+                for index, values in enumerate(world_payload["token_ids"])
+                if tuple(int(value) for value in values) == key
+            )
+            compiler.value_head.weight[code].copy_(world_prototypes[row])
+            compiler.value_head.bias[code] = 0.0
 
         # Remove state/step terms only in this synthetic fixture. The command
         # read is then an auditable uniform mean over normalized raw-token
@@ -691,6 +760,7 @@ def _calibrate_synthetic_mechanics(
     command_codes = trace.applied_value_code[:, 0].argmax(-1)
     if (
         len(packet_hashes) != TOTAL_PACKETS
+        or len(unique_worlds) * 2 != TOTAL_PACKETS
         or command_codes.unique().numel() != len(unique_commands)
     ):
         raise ETTRSupervisorSmokeError(
