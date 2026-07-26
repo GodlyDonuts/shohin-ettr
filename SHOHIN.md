@@ -217,19 +217,24 @@ loads with zero missing or unexpected tensors.
 ## Current status and honest claim boundary
 
 The architecture, causal episode contract, custody surfaces, and synthetic
-cross-ontology assessment infrastructure are implemented.  The design has
+cross-ontology assessment infrastructure are implemented. The design has
 passed architecture/custody checks including hard-state validation,
 first-batch nonzero gradients, query-prefix causality, commit freezing, and
-an endpoint-swap falsifier for the graph message path.  The three assessment
+an endpoint-swap falsifier for the graph message path. The three assessment
 families—typed Horn closure, typed term rewriting, and guarded resource
 processes—have independent exact oracles and a frozen leave-one-ontology-out
-qualification matrix.
+qualification matrix. Exact source
+`cf568182b75e865ddce2bb739fd42ff8d450c317` also passes **209/209** integrated
+tests and the schema-v5 H100 implementation gate. Compiled full-objective
+profiling reaches 8,771.94 encoded tok/s at 3.143 GB peak allocation, 1.7170x
+the eager throughput, while preserving the protected checkpoint byte-for-
+byte.
 
 **Shohin does not yet have a demonstrated reasoning capability claim.**  It
-has not yet completed the fresh full hardware qualification and, more
-importantly, has not been trained/evaluated to show source-deleted,
-cross-ontology generalization.  Continuation pretraining is explicitly on
-hold.  The next scientific question is whether this architecture can learn a
+has completed architecture and hardware qualification but has not been
+trained/evaluated to show source-deleted, cross-ontology generalization.
+Continuation pretraining is explicitly on hold. The next scientific question
+is whether this architecture can learn a
 single reusable compiler-and-executor mechanism that transfers to an unseen
 theory family without task-specific runtime machinery.
 

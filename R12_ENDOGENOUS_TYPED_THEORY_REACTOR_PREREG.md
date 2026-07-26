@@ -222,7 +222,7 @@ capability.
 One recurrent controller emits only:
 
 ```text
-ALLOC WRITE CLEAR LINK UNLINK SET_ROOT COMMIT HALT
+ALLOC WRITE CLEAR LINK UNLINK SET_ROOT COMMIT HALT REJECT
 ```
 
 A rule-blind committer may enforce bounds, pointer validity, type shape,
@@ -366,3 +366,91 @@ backward, and Muon/AdamW update in matched eager and compiled arms. It may
 read only the hash-bound protected checkpoint and synthetic rectangles, may
 write only one isolated JSON receipt, and may never read shards or write model
 state.
+
+## Architecture-Phase Amendment: Sealed Packet Sufficiency and Consumer Gate
+
+**Effective:** 2026-07-26 EDT. **Source:** commit `cf56818`.
+
+This amendment freezes the last pre-training architecture controls. It does
+not authorize continuation pretraining or claim learned capability.
+
+The continuation manifest must bind the complete train and validation
+populations independently: canonical context identities, canonical full-batch
+payload digests, row and context cardinalities, split payload hashes, combined
+dataset hash, and packet-sufficiency receipt. Admissions must use sealed
+independent copies that cannot be changed by mutating visible manifest or
+index fields. Validation contexts and payloads are never train-admissible.
+
+Every deployed terminal-packet field must receive nonzero factual or
+intervention supervision across the admitted training population. A support
+mask may describe objective support but may not waive deployed-state
+sufficiency. Optimizer ownership is checked against live parameter groups;
+any exception after the first optimizer mutation permanently poisons that
+optimizer, including after wrapper reconstruction or serialization.
+
+The late-query consumer gate uses an identical causal query prefix for all
+four corners of a WORLD x COMMAND rectangle. Every WORLD and COMMAND edge must
+change the factual next-token target. Intervention execution receives target
+row indices, never answer labels. Correct and foil logits are read through the
+actual source-deleted query reader from distinct terminal states under the
+same query prefix.
+
+Before any later reasoning promotion, the learned architecture must be
+evaluated against this frozen control matrix:
+
+| Control | Required construction | Failure diagnosed |
+|---|---|---|
+| Query-only | Canonical empty terminal packet with the original query | Frozen language path can answer without state |
+| Zero-reader | Remove the state-derived query residual | Reader contribution is unnecessary |
+| Shuffled-state | Permute terminal packets within matched query strata with no fixed points | Packet identity is not causally consumed |
+| Wrong-state factorial foils | Substitute each orthogonal WORLD/COMMAND corner under the identical prefix | Factorial interchange is not compositionally bound |
+| Wrong-query | Hold packet fixed and use a semantically different matched query | Packet stores only a single answer shortcut |
+| Target derangement | Derange immutable factual targets after all inputs are sealed | Objective or assessor leaks labels |
+| Query twins | At least two semantic questions and two paraphrases per sealed state | Reader cannot reuse one state for independent queries |
+| Packet sufficiency ablation | Remove one deployed state-field supervision family at a time | A declared packet field is decorative |
+| Physical source deletion | Compiler source artifacts are deleted before executor/query stages | Hidden source or residual channel remains |
+| Autonomous codebook readout | Generate the categorical answer token without teacher-forced divergent prefix | One-token binding does not survive deployment |
+
+All controls must share examples, update count, parameter budget, and
+initialization lineage where structurally possible. The treatment must show a
+positive causal packet effect and must beat query-only, zero-reader,
+shuffled-state, wrong-state, and deranged-target controls on each held-out
+ontology, not merely in aggregate. Query twins must both answer correctly from
+one sealed state, and physical source deletion must be bit-invariant.
+
+The exact hardware receipt is schema
+`shohin-ettr-h100-profile-v5`. Full-objective timing and memory are measured
+before separate eager-BF16 isolated gradient attribution. Compiler, reactor
+core, command projection, and query reader groups are disjoint. Encoded work
+is exactly `WORLD + 2*COMMAND + 3*QUERY`; no synthetic arm may be silently
+omitted from throughput accounting.
+
+## Executable Learned-Qualification Harness
+
+The assessor-side inference controls are implemented in
+`train/ettr_qualification.py` under schema
+`shohin-ettr-causal-qualification-v1`. This implementation does not authorize
+training and does not claim a learned result.
+
+An immutable qualification batch binds every deployed terminal-state tensor,
+query token and mask, autonomous read index, factual target, semantic-factor
+identity, paraphrase identity, and control permutation into one SHA-256.
+Packet identities separately hash every field of each deployed state row.
+Every state permutation is a no-fixed-point matched derangement. Wrong-WORLD
+and wrong-COMMAND controls change exactly one factorial identity; query twins
+hold state and paraphrase identity fixed while changing query semantics and
+factual answer.
+
+The harness zeros and masks every token after the read position before any
+forward, passes `targets=None`, seals all read-position logits, and only then
+scores factual and deranged labels. It executes treatment, query-only,
+zero-reader, shuffled-state, wrong-WORLD, wrong-COMMAND, and matched
+wrong-query/query-twin arms. The scorer rejects a different batch receipt or
+any post-forward mutation of factual, query-twin, or deranged targets.
+
+Packet-sufficiency ablation remains an equal-budget training comparison: each
+declared state-field supervision family must be removed in a separate arm,
+not simulated by zeroing a trained packet at evaluation. Physical source
+deletion remains process-enforced by the four-process custody runner. The
+complete integrated architecture/custody inventory, including 15 hostile
+harness tests, passes 222/222 in 156.14 seconds.
