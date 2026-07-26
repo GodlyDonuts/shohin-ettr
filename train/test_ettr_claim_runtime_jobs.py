@@ -12,8 +12,23 @@ def test_claim_runtime_build_is_cpu_only_commit_pinned_and_complete() -> None:
     source = BUILD.read_text(encoding="ascii")
     assert "#SBATCH --gres" not in source
     assert "SOURCE_COMMIT=${SOURCE_COMMIT:?" in source
+    assert "SAFETENSORS_WHEEL=${SAFETENSORS_WHEEL:?" in source
+    assert "EXPECTED_SAFETENSORS_WHEEL_SHA256=" in source
+    assert "#SBATCH --export=NONE" in source
+    assert "EXPECTED_HOST_PYTHON_SHA256=" in source
+    assert "zipfile.ZipFile" in source
+    assert "torch.version.cuda is None" in source
+    assert "export PATH=/usr/bin:/bin" in source
+    assert "unset CDPATH ENV BASH_ENV" in source
+    assert "WHEEL_FD_PATH=/proc/self/fd/9" in source
+    assert "/usr/bin/cmp -s" in source
+    assert "publish_once" in source
+    assert "$OUT.source-bundle.sha256" in source
     assert 'git -C "$SOURCE_ROOT" show "$SOURCE_COMMIT:train/$filename"' in source
-    assert '"$ENV_ROOT/bin/python" -I -B' in source
+    assert '"$ENV_ROOT/bin/python" -I - <<' not in source
+    assert 'RUNTIME_PY="$STAGING/runtime/miniforge3/bin/python"' in source
+    assert '"$RUNTIME_PY" -I -B' in source
+    assert '"$RUNTIME_PY" -I -S -B' in source
     assert "safetensors" in source
     assert "torch" in source
     assert "ettr_claim_runtime.py" in source
@@ -38,7 +53,19 @@ def test_claim_runtime_smoke_requires_pins_h100_cuda_and_bwrap_netns() -> None:
     assert "#SBATCH --gres=gpu:h100:1" in source
     assert "EXPECTED_SHA256=${EXPECTED_SHA256:?" in source
     assert "EXPECTED_INVENTORY_SHA256=${EXPECTED_INVENTORY_SHA256:?" in source
+    assert "EXPECTED_SOURCE_BUNDLE_SHA256=" in source
     assert "EXPECTED_BWRAP_SHA256=${EXPECTED_BWRAP_SHA256:?" in source
+    assert "#SBATCH --export=NONE" in source
+    assert "TRUSTED_PYTHON=/usr/bin/python3.11" in source
+    assert "EXPECTED_TRUSTED_PYTHON_SHA256=" in source
+    assert "TRUSTED_VERIFIER=${TRUSTED_VERIFIER:?" in source
+    assert "EXPECTED_TRUSTED_VERIFIER_SHA256=" in source
+    assert "export PATH=/usr/bin:/bin" in source
+    assert "unset CDPATH ENV BASH_ENV" in source
+    assert "os.memfd_create" in source
+    assert "fcntl.F_ADD_SEALS" in source
+    assert "root-owned Python closure pass" in source
+    assert "/usr/bin/env -i" in source
     assert 'BWRAP_SHA256" = "$EXPECTED_BWRAP_SHA256' in source
     assert "--unshare-net" in source
     assert "--unshare-pid" in source
@@ -50,7 +77,12 @@ def test_claim_runtime_smoke_requires_pins_h100_cuda_and_bwrap_netns() -> None:
     assert "/lib64" in source
     assert "--clearenv" in source
     assert "safetensors" in source
-    assert "verify-tree" in source
+    assert "run_trusted_verifier extract-exec" in source
+    assert '"{ETTR_RUNTIME_ROOT}"' in source
+    assert "--expected-archive-sha256" in source
+    assert "--expected-source-bundle-sha256" in source
+    assert "--setenv CUDA_VISIBLE_DEVICES 0" in source
+    assert "torch.cuda.device_count() != 1" in source
     assert "socket.create_connection" in source
     assert "$CKPT" not in source
     assert "SHARDS=" not in source

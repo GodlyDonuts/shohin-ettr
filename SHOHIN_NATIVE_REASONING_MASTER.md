@@ -52637,10 +52637,41 @@ Bubblewrap mounts and namespaces, measures the host loader/CUDA driver and
 devices, emits launch receipts, and binds those receipts plus an independently
 owned root/preregistration record into final admission. Those are deployment
 TCB controls; they add no trainable parameters and do not reopen ETTR design.
-Exact-source CPU packaging job `705416` is pending Newton priority from commit
-`fb012c244ba9006c561a823ad71169dbd4b08612`; it has no checkpoint, shard, or
-optimizer access. Its output must be hash-verified before the pinned confined
-H100 smoke.
+Initial CPU packaging job `705416` failed closed before staging because its
+preflight incorrectly required assessor-only `cryptography` in the candidate
+runtime. Commit `4202bd33d5ef05162b3c581e138b64c0965c5e48` removed that false
+dependency. Jobs `705417` and `705418` failed closed because their selected
+environments lacked safetensors. Job `705428` was canceled after proving that
+`hfenv` contains CPU-only Torch and cannot qualify an H100 runtime. CPU job
+`705429` completed cleanly and preserved the exact `safetensors==0.7.0` binary
+wheel. The hardened builder starts with no exported job environment, copies
+the CUDA-enabled environment into staging, and extracts the pinned wheel
+directly from one inherited immutable file descriptor, with no index or
+dependency resolution. It verifies that staged Torch and safetensors remain
+inside the copied prefix and that Torch has CUDA support. It also binds the
+exact committed candidate/tool source bundle and publishes the archive and
+sidecars through no-replace descriptor writes.
+
+The extraction boundary is also hardened. A verifier-owned Python and verifier
+open, hash, validate, and extract the archive through the same immutable,
+single-link file descriptor. Inventories with missing or non-directory parent
+hierarchies fail before any member write, partial outputs are removed
+descriptor-relatively, and the archive metadata is checked again after
+extraction. The H100 smoke requires separate pins for the archive, inventory,
+source bundle, Bubblewrap, trusted Python, and sealed trusted-verifier bytes;
+it no longer calls an untrusted system `tar`. It accepts only the physical GPU
+minor assigned by Slurm, retains the verified runtime descriptor through
+Bubblewrap bind setup, and removes the runtime through that descriptor after
+execution. An independent hostile rereview closed both final P1 findings:
+same-descriptor wheel consumption and extraction-to-execution substitution.
+The focused runtime/deployment/four-process regression set passes 53/53 with
+clean Ruff, byte compilation, shell syntax, and diff checks. The next
+complete ETTR/cross-ontology inventory passes 314/314 in 171.71 seconds. The
+next exact-source build must use this committed source and its output must be
+hash-verified before the confined H100 smoke. No packaging job can read
+checkpoints, shards, or optimizer state. A verifier-owned production supervisor
+and durable launch-receipt admission remain external deployment-TCB work and do
+not change the trainable architecture.
 
 Current decision:
 `ettr_architecture_complete_stage_specific_runtime_pass_external_supervisor_and_learning_pending`.

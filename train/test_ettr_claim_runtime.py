@@ -6,6 +6,7 @@ import io
 import json
 import os
 from pathlib import Path
+import subprocess
 import tarfile
 
 import pytest
@@ -52,7 +53,7 @@ def _runtime_tree(tmp_path: Path) -> Path:
         for name in source_names:
             _write_file(
                 candidate / stage / name,
-                f"# {stage}/{name}\n".encode("ascii"),
+                f"# {name}\n".encode("ascii"),
             )
     tools = root / runtime.TOOLS_RELATIVE_ROOT
     for name in runtime.TOOL_FILES:
@@ -123,6 +124,330 @@ def test_runtime_tree_rejects_deep_native_mutation(
     native.chmod(0o444)
     with pytest.raises(runtime.ETTRClaimRuntimeError, match="tree differs"):
         runtime.validate_runtime_tree(root, inventory)
+
+
+def test_source_bundle_digest_binds_candidate_and_tool_bytes(
+    tmp_path: Path,
+) -> None:
+    root = _runtime_tree(tmp_path)
+    initial = runtime.build_inventory(root, source_commit=SOURCE_COMMIT)
+    expected = runtime.reviewed_source_bundle_sha256(
+        lambda relative: f"# {Path(relative).name}\n".encode("ascii")
+    )
+    candidate = (
+        root
+        / runtime.CANDIDATE_SOURCE_RELATIVE_ROOT
+        / "world"
+        / runtime.STAGE_RUNNERS["world"]
+    )
+    candidate.chmod(0o644)
+    candidate.write_bytes(b"# attacker runner\n")
+    candidate.chmod(0o444)
+    changed = runtime.build_inventory(root, source_commit=SOURCE_COMMIT)
+
+    assert initial.source_bundle_sha256() == expected
+    assert initial.source_bundle_sha256() != changed.source_bundle_sha256()
+    assert initial.source_commit == changed.source_commit
+
+
+def test_runtime_tree_rejects_symlink_and_writable_roots(
+    tmp_path: Path,
+) -> None:
+    root = _runtime_tree(tmp_path / "source")
+    inventory = runtime.build_inventory(root, source_commit=SOURCE_COMMIT)
+    symlink = tmp_path / "runtime-link"
+    symlink.symlink_to(root, target_is_directory=True)
+    with pytest.raises(
+        runtime.ETTRClaimRuntimeError,
+        match="build root differs",
+    ):
+        runtime.validate_runtime_tree(symlink, inventory)
+
+    root.chmod(0o755)
+    with pytest.raises(
+        runtime.ETTRClaimRuntimeError,
+        match="build root differs",
+    ):
+        runtime.validate_runtime_tree(root, inventory)
+
+
+def test_runtime_inventory_rejects_missing_or_symlink_parents(
+    tmp_path: Path,
+) -> None:
+    root = _runtime_tree(tmp_path)
+    inventory = runtime.build_inventory(root, source_commit=SOURCE_COMMIT)
+    parent = "miniforge3/lib/python3.13/site-packages/torch"
+
+    without_parent = replace(
+        inventory,
+        members=tuple(
+            member for member in inventory.members if member.path != parent
+        ),
+    )
+    with pytest.raises(
+        runtime.ETTRClaimRuntimeError,
+        match="parent hierarchy differs",
+    ):
+        without_parent.validate()
+
+    symlink_parent = replace(
+        inventory,
+        members=tuple(
+            replace(
+                member,
+                kind="symlink",
+                mode=0o777,
+                size=0,
+                sha256=None,
+                link_target="../safetensors",
+            )
+            if member.path == parent
+            else member
+            for member in inventory.members
+        ),
+    )
+    with pytest.raises(
+        runtime.ETTRClaimRuntimeError,
+        match="parent hierarchy differs",
+    ):
+        symlink_parent.validate()
+
+
+def test_verified_extraction_is_exact_and_immutable(tmp_path: Path) -> None:
+    _, archive, inventory = _make_archive(tmp_path)
+    destination = tmp_path / "extracted"
+
+    extracted = runtime.extract_verified_archive(
+        archive,
+        destination,
+        expected_archive_sha256=hashlib.sha256(
+            archive.read_bytes()
+        ).hexdigest(),
+        expected_inventory_sha256=inventory.sha256(),
+        expected_source_bundle_sha256=inventory.source_bundle_sha256(),
+    )
+
+    assert extracted == inventory
+    assert (destination / runtime.INVENTORY_NAME).read_bytes() == (
+        inventory.canonical_bytes()
+    )
+    runtime.validate_runtime_tree(
+        destination / runtime.RUNTIME_PREFIX,
+        inventory,
+    )
+    assert destination.stat().st_mode & 0o222 == 0
+
+
+def test_verified_extraction_rejects_wrong_pins_without_output(
+    tmp_path: Path,
+) -> None:
+    _, archive, inventory = _make_archive(tmp_path)
+    cases = (
+        (
+            "archive",
+            "0" * 64,
+            inventory.sha256(),
+            inventory.source_bundle_sha256(),
+        ),
+        (
+            "inventory",
+            hashlib.sha256(archive.read_bytes()).hexdigest(),
+            "0" * 64,
+            inventory.source_bundle_sha256(),
+        ),
+        (
+            "source",
+            hashlib.sha256(archive.read_bytes()).hexdigest(),
+            inventory.sha256(),
+            "0" * 64,
+        ),
+    )
+    for label, archive_sha256, inventory_sha256, source_sha256 in cases:
+        destination = tmp_path / f"extracted-{label}"
+        with pytest.raises(runtime.ETTRClaimRuntimeError, match="digest differs"):
+            runtime.extract_verified_archive(
+                archive,
+                destination,
+                expected_archive_sha256=archive_sha256,
+                expected_inventory_sha256=inventory_sha256,
+                expected_source_bundle_sha256=source_sha256,
+            )
+        assert not destination.exists()
+
+
+def test_verified_extraction_cli_uses_exact_pins(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    _, archive, inventory = _make_archive(tmp_path)
+    destination = tmp_path / "extracted"
+
+    assert runtime._main(
+        (
+            "extract",
+            "--archive",
+            str(archive),
+            "--destination",
+            str(destination),
+            "--expected-archive-sha256",
+            hashlib.sha256(archive.read_bytes()).hexdigest(),
+            "--expected-inventory-sha256",
+            inventory.sha256(),
+            "--expected-source-bundle-sha256",
+            inventory.source_bundle_sha256(),
+        )
+    ) == 0
+
+    assert capsys.readouterr().out.strip() == inventory.sha256()
+    runtime.validate_runtime_tree(
+        destination / runtime.RUNTIME_PREFIX,
+        inventory,
+    )
+
+
+def test_extract_exec_retains_descriptor_through_launch_and_removes_tree(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    _, archive, inventory = _make_archive(tmp_path)
+    destination = tmp_path / "extracted"
+    observed: list[tuple[str, ...]] = []
+
+    def fake_run(
+        command: tuple[str, ...],
+        *,
+        check: bool,
+        env: dict[str, str],
+        pass_fds: tuple[int, ...],
+    ) -> subprocess.CompletedProcess[bytes]:
+        assert check is True
+        assert env == {"HOME": "/nonexistent", "PATH": "/usr/bin:/bin"}
+        assert command[0] == "/usr/bin/bwrap"
+        assert len(pass_fds) == 1
+        descriptor_root = f"/proc/self/fd/{pass_fds[0]}/runtime"
+        assert descriptor_root in command
+        assert runtime.stat.S_ISDIR(os.fstat(pass_fds[0]).st_mode)
+        observed.append(command)
+        return subprocess.CompletedProcess(command, 0)
+
+    monkeypatch.setattr(runtime.subprocess, "run", fake_run)
+    assert runtime._main(
+        (
+            "extract-exec",
+            "--archive",
+            str(archive),
+            "--destination",
+            str(destination),
+            "--expected-archive-sha256",
+            hashlib.sha256(archive.read_bytes()).hexdigest(),
+            "--expected-inventory-sha256",
+            inventory.sha256(),
+            "--expected-source-bundle-sha256",
+            inventory.source_bundle_sha256(),
+            "--",
+            "/usr/bin/bwrap",
+            "--ro-bind",
+            "{ETTR_RUNTIME_ROOT}",
+            "/runtime",
+            "--",
+            "true",
+        )
+    ) == 0
+
+    assert len(observed) == 1
+    assert not destination.exists()
+    assert capsys.readouterr().out.strip() == inventory.sha256()
+
+
+def test_verified_extraction_rejects_path_swap(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _, archive, inventory = _make_archive(tmp_path / "trusted")
+    hostile_root = _runtime_tree(tmp_path / "hostile")
+    hostile_file = hostile_root / "miniforge3/lib/python3.13/os.py"
+    hostile_file.chmod(0o644)
+    hostile_file.write_bytes(b"attacker-stdlib\n")
+    hostile_file.chmod(0o444)
+    hostile = tmp_path / "hostile.tar"
+    runtime.build_archive(
+        hostile_root,
+        hostile,
+        source_commit=SOURCE_COMMIT,
+    )
+    trusted_archive_sha256 = hashlib.sha256(archive.read_bytes()).hexdigest()
+    original_digest = runtime._descriptor_sha256
+    swapped = False
+
+    def swap_after_hash(descriptor: int) -> tuple[str, int]:
+        nonlocal swapped
+        result = original_digest(descriptor)
+        if not swapped:
+            swapped = True
+            archived = archive.with_suffix(".trusted")
+            os.replace(archive, archived)
+            os.replace(hostile, archive)
+        return result
+
+    monkeypatch.setattr(runtime, "_descriptor_sha256", swap_after_hash)
+    destination = tmp_path / "extracted"
+    try:
+        runtime.extract_verified_archive(
+            archive,
+            destination,
+            expected_archive_sha256=trusted_archive_sha256,
+            expected_inventory_sha256=inventory.sha256(),
+            expected_source_bundle_sha256=inventory.source_bundle_sha256(),
+        )
+    except runtime.ETTRClaimRuntimeError as exc:
+        assert "changed during extraction" in str(exc)
+        assert not destination.exists()
+    else:
+        assert (
+            destination
+            / runtime.RUNTIME_PREFIX
+            / "miniforge3/lib/python3.13/os.py"
+        ).read_bytes() == b"fixture-stdlib\n"
+
+
+def test_verified_extraction_does_not_follow_or_delete_swapped_destination(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _, archive, inventory = _make_archive(tmp_path)
+    destination = tmp_path / "extracted"
+    moved = tmp_path / "moved-extracted"
+    original_extract = runtime._extract_file_at
+    swapped = False
+
+    def swap_destination(*args: object, **kwargs: object) -> None:
+        nonlocal swapped
+        if not swapped:
+            swapped = True
+            destination.rename(moved)
+            destination.mkdir()
+            (destination / "sentinel").write_bytes(b"do-not-delete\n")
+        original_extract(*args, **kwargs)
+
+    monkeypatch.setattr(runtime, "_extract_file_at", swap_destination)
+    with pytest.raises(
+        runtime.ETTRClaimRuntimeError,
+        match="destination changed",
+    ):
+        runtime.extract_verified_archive(
+            archive,
+            destination,
+            expected_archive_sha256=hashlib.sha256(
+                archive.read_bytes()
+            ).hexdigest(),
+            expected_inventory_sha256=inventory.sha256(),
+            expected_source_bundle_sha256=(
+                inventory.source_bundle_sha256()
+            ),
+        )
+
+    assert (destination / "sentinel").read_bytes() == b"do-not-delete\n"
 
 
 @pytest.mark.parametrize(
@@ -231,6 +556,43 @@ def test_runtime_archive_rejects_duplicate_traversal_hardlink_and_device(
                 target.addfile(injected, io.BytesIO(payload))
             else:
                 target.addfile(injected)
+        hostile.chmod(0o444)
+        with pytest.raises(runtime.ETTRClaimRuntimeError):
+            runtime.validate_archive(
+                hostile,
+                expected_inventory=inventory,
+            )
+
+
+def test_runtime_archive_requires_exact_inventory_and_runtime_roots(
+    tmp_path: Path,
+) -> None:
+    _, archive, inventory = _make_archive(tmp_path)
+    cases = ("missing-runtime-root", "inventory-prefix")
+    for case in cases:
+        hostile = tmp_path / f"{case}.tar"
+        with (
+            tarfile.open(archive, "r:") as source,
+            tarfile.open(hostile, "w") as target,
+        ):
+            for member in source:
+                if case == "missing-runtime-root" and member.name == "runtime":
+                    continue
+                handle = source.extractfile(member) if member.isfile() else None
+                copied = tarfile.TarInfo(member.name)
+                copied.mode = member.mode
+                copied.type = member.type
+                copied.size = member.size
+                copied.linkname = member.linkname
+                if (
+                    case == "inventory-prefix"
+                    and member.name.startswith("runtime/")
+                ):
+                    copied.name = (
+                        f"{runtime.INVENTORY_NAME}/"
+                        f"{member.name.removeprefix('runtime/')}"
+                    )
+                target.addfile(copied, handle)
         hostile.chmod(0o444)
         with pytest.raises(runtime.ETTRClaimRuntimeError):
             runtime.validate_archive(
