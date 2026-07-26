@@ -188,11 +188,11 @@ def _data_stream() -> DataStreamState:
 def _episode() -> EpisodeLifecycleState:
     return EpisodeLifecycleState(
         episode_index=99,
-        phase="reactor",
-        episode_sha256="5" * 64,
-        token_offset=37,
-        reactor_step=2,
-        source_deleted=True,
+        phase="between_episodes",
+        episode_sha256=None,
+        token_offset=0,
+        reactor_step=0,
+        source_deleted=False,
         committed=False,
         halted=False,
     )
@@ -709,18 +709,22 @@ def test_optimizer_and_scheduler_corruption_fail_closed(
         ),
         (
             "episode_lifecycle_state",
-            {"phase": "source", "source_deleted": True},
-            "source-deletion boundary",
+            {
+                "phase": "reactor",
+                "episode_sha256": "5" * 64,
+                "source_deleted": True,
+            },
+            "between-episodes boundary",
         ),
         (
             "episode_lifecycle_state",
             {"reactor_step": 5},
-            "exceeds ETTR maximum",
+            "between-episode lifecycle state is inconsistent",
         ),
         (
             "episode_lifecycle_state",
-            {"episode_sha256": None},
-            "identity is missing",
+            {"episode_sha256": "5" * 64},
+            "between-episode lifecycle state is inconsistent",
         ),
     ],
 )

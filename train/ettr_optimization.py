@@ -121,6 +121,11 @@ class ETTROptimizerBundle:
         )
         if seen != expected_trainable:
             raise TheoryReactorError("optimizer trainable parameter set differs")
+        self._parameter_binding = tuple(
+            (name, id(parameter))
+            for name, parameter in model.named_parameters()
+            if parameter.requires_grad
+        )
 
         muon_groups = [
             {
@@ -186,7 +191,22 @@ class ETTROptimizerBundle:
             self.muon.zero_grad(set_to_none=set_to_none)
         self.adam.zero_grad(set_to_none=set_to_none)
 
+    def assert_bound_to(self, model: EndogenousTypedTheoryReactorGPT) -> None:
+        binding = tuple(
+            (name, id(parameter))
+            for name, parameter in model.named_parameters()
+            if parameter.requires_grad
+        )
+        if binding != self._parameter_binding:
+            raise TheoryReactorError(
+                "ETTR optimizer is not bound to the supplied model parameters"
+            )
+
     def step(self) -> None:
+        if self.next_update >= self.config.total_updates:
+            raise TheoryReactorError(
+                "ETTR optimizer cannot step beyond the frozen horizon"
+            )
         if self.muon is not None:
             self.muon.step()
         self.adam.step()

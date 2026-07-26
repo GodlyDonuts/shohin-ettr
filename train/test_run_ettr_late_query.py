@@ -41,6 +41,8 @@ def _model() -> EndogenousTypedTheoryReactorGPT:
             num_slots=6,
             num_types=3,
             num_relations=3,
+            num_value_codes=64,
+            max_edges=96,
             num_heads=4,
             compiler_layers=1,
             reactor_layers=1,

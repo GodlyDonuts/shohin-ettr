@@ -39,16 +39,26 @@
 > separate base/architecture Muon and AdamW groups with embedded WSD schedule,
 > an exact no-replace checkpoint/resume contract covering model, optimizer,
 > schedule, RNG, data cursor, and episode lifecycle, and a bounded composite
-> optimizer step. The integrated architecture/custody suite is 108/108
-> passing. Three cross-ontology hybrids produce 96/96 independent-oracle
+> optimizer step. A subsequent audit removed a P0 endpoint-identity
+> bottleneck: the reactor and query reader now use edge-aware typed message
+> passing rather than relation-degree summaries. The focused architecture
+> suite is 109/109 and the complete ETTR/cross-ontology inventory is 155/155
+> passing at the prior checkpoint; the current hardened complete inventory is
+> **163/163**. Three cross-ontology hybrids produce 96/96 independent-oracle
 > agreement and 48/48 causal output changes; payload SHA-256 is
 > `d155f868494f9379b214028c8d7475cc2cde08192c9b3a5bbdea5a73b29f98e2`.
-> The parameter receipt remains 46,321,890 added / 171,403,554 total.
+> The current production packet uses 64 slots, 16 relation roles, 256
+> categorical symbols, explicit `OPEN/ANSWER/ABSTAIN/REJECT` disposition, and
+> endpoint-aware message passing. The exact checkpoint-backed receipt is
+> **67,697,771 added / 192,779,435 total**, leaving **7,220,565** below 200M.
 > Isolated synthetic one-H100 profile job `705164` was canceled while still
 > pending after static audit found and fixed a reset/padding validator defect.
 > Earlier attempts `704975` and `704985` failed closed on bad CUDA nodes `evc34` and
 > `evc44`; neither attempt reached model execution or changed the protected
-> checkpoint. No intelligence or continuation-readiness claim is authorized
+> checkpoint. Corrected-source profile `705175` was canceled after it began
+> loading because the endpoint-identity audit changed the architecture; its
+> isolated output is empty and the protected hash remains exact. No
+> intelligence or continuation-readiness claim is authorized
 > until a healthy-node profile of the corrected source completes.
 >
 > **CURRENT REASONING CLAIM BOUNDARY — 2026-07-25 22:00 EDT:** Shohin still
@@ -67,10 +77,11 @@
 > trainable architecture now exists in
 > `train/endogenous_typed_theory_reactor.py`. It adds an endogenous raw-token
 > compiler, bounded categorical typed state, a capped sparse relation ledger,
+> an edge-aware typed relation-message bus that preserves neighbor identity,
 > a shared recurrent structural-transaction reactor, exact-forward straight-
 > through choices, a separate post-seal command channel, and a causally masked
-> state-only query reader. The default addition is 46,321,890 parameters;
-> complete system size is 171,403,554 with 28,596,446 remaining under 200M.
+> state-only query reader. The current addition is 67,697,771 parameters;
+> complete system size is 192,779,435 with 7,220,565 remaining under 200M.
 > The protected step-300k checkpoint hash matches and loads strictly with zero
 > missing/unexpected tensors. Deployed packets reject continuous hidden
 > payloads; first-batch architecture gradients are nonzero; query-prefix

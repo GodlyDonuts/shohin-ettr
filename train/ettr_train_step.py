@@ -71,6 +71,8 @@ class ETTRTrainStep(nn.Module):
         optimizer: ETTROptimizerBundle,
         objective_config: ETTRObjectiveConfig,
         *,
+        manifest_sha256: str,
+        dataset_sha256: str,
         objective_weights: ETTRObjectiveWeights | None = None,
         step_config: ETTRTrainStepConfig | None = None,
     ):
@@ -80,13 +82,18 @@ class ETTRTrainStep(nn.Module):
         self.objective_config = objective_config
         self.step_config = ETTRTrainStepConfig() if step_config is None else step_config
         self.step_config.validate()
-        if (
-            optimizer.receipt.complete_system_parameters
-            != model.parameter_receipt().complete_system_parameters
-        ):
+        if len(manifest_sha256) != 64 or len(dataset_sha256) != 64:
+            raise TheoryReactorError("ETTR trainer snapshot receipt differs")
+        try:
+            bytes.fromhex(manifest_sha256)
+            bytes.fromhex(dataset_sha256)
+        except ValueError as error:
             raise TheoryReactorError(
-                "ETTR optimizer is not bound to the supplied model"
-            )
+                "ETTR trainer snapshot receipt differs"
+            ) from error
+        self.manifest_sha256 = manifest_sha256
+        self.dataset_sha256 = dataset_sha256
+        optimizer.assert_bound_to(model)
         self.runner = CausalETTREpisodeRunner(model)
         self.objective = ETTRCompositeObjective(
             objective_config,
@@ -97,6 +104,11 @@ class ETTRTrainStep(nn.Module):
         self,
         batch: ETTRContinuationBatch,
     ) -> ETTRCompositeLoss:
+        if (
+            batch.manifest_sha256 != self.manifest_sha256
+            or batch.dataset_sha256 != self.dataset_sha256
+        ):
+            raise TheoryReactorError("ETTR batch snapshot differs from the trainer")
         batch.validate(
             self.model.config,
             self.objective_config,
@@ -107,6 +119,7 @@ class ETTRTrainStep(nn.Module):
             reactor_steps=steps,
             hard=self.step_config.hard_transactions,
             validate_batch=False,
+            compute_losses=False,
         )
         return self.objective(batch.objective_batch(output))
 

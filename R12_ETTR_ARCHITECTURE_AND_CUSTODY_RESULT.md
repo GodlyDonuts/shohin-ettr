@@ -21,29 +21,37 @@ The Endogenous Typed Theory Reactor has four causal stages:
 2. **Command-conditioned reactor:** after world sealing, a separate raw-token
    command stream enters a shared recurrent controller. The controller emits
    only `ALLOC`, `WRITE`, `CLEAR`, `LINK`, `UNLINK`, `SET_ROOT`, `COMMIT`, and
-   `HALT`.
-3. **Typed graph update:** each transaction changes only generic state. No
+   `HALT`, plus a distinct terminal `REJECT`.
+3. **Typed graph update:** an edge-aware typed message bus preserves the
+   identities and directions of relation endpoints before each transaction;
+   each transaction changes only generic state. No
    family opcode, arithmetic routine, rewrite matcher, resource scheduler,
    search, repair, or answer callback exists in the runtime.
 4. **Late-query reader:** after execution, a causally masked reader receives
    every declared terminal-state field and late-query residuals.
 
-Hard transactions are bit-exact in the forward pass and use straight-through
-gradients during training. Deployed state rejects continuous value channels,
-non-one-hot codes/types, non-binary control state, and relation ledgers above
-96 edges. `COMMIT` freezes subsequent structural writes.
+Hard transactions are bit-exact in the forward pass, while their
+pre-discretization probabilities remain available for corrective gradients.
+The two persistent status bits encode four always-visible dispositions:
+`OPEN`, `ANSWER`, `ABSTAIN`, and `REJECT`. Deployed state rejects continuous
+value channels, non-one-hot codes/types, non-binary control state, and
+relation ledgers above 256 edges. Any terminal disposition freezes subsequent
+structural writes. The production packet has 64 slots, 16 typed relation
+roles, and 256 categorical symbols. It represents ordered hyperedges and
+multi-byte values by reifying their role/value nodes rather than collapsing
+them into one scalar label.
 
 ## Parameter Receipt
 
 | Component | Parameters |
 |---|---:|
-| World compiler | 17,153,097 |
-| Command-conditioned reactor | 21,174,360 |
-| Late-query reader | 7,994,433 |
-| Added architecture | **46,321,890** |
+| World compiler | 21,466,377 |
+| Command-conditioned reactor | 29,757,217 |
+| Late-query reader | 16,474,177 |
+| Added architecture | **67,697,771** |
 | Protected Shohin | 125,081,664 |
-| Complete system | **171,403,554** |
-| Remaining below 200M | **28,596,446** |
+| Complete system | **192,779,435** |
+| Remaining below 200M | **7,220,565** |
 
 The protected step-300k checkpoint hash matches
 `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`
@@ -107,13 +115,26 @@ The frozen architecture source adds:
 4. disjoint protected-base and architecture optimizer groups, with base
    freezing and an embedded WSD update cursor;
 5. atomic no-replace checkpoints covering exact model/optimizer/schedule/RNG/
-   data/episode state and protected-checkpoint provenance; and
+   data state and protected-checkpoint provenance, admitted only at a complete
+   optimizer and between-episode boundary; and
 6. a bounded accumulation/update component that has no filesystem, shard,
    launcher, or network access.
 
-The focused integrated architecture and custody suite passes **108/108**.
+The complete ETTR/cross-ontology architecture and custody inventory passes
+**163/163**.
 Reset-boundary tests include interior segment starts, exact native
-Muon/AdamW resume, and next-update equivalence after restore.
+Muon/AdamW resume, and next-update equivalence after restore. A
+degree-preserving edge-swap falsifier holds every per-slot in/out relation
+count fixed while changing endpoints; both the reactor and query reader change
+their outputs. The previous degree-summary architecture was invariant to this
+necessary distinction and is superseded.
+
+The training boundary additionally proves exact optimizer/model parameter
+identity, rejects mutable or forged causal targets, binds batches to immutable
+manifest and dataset hashes, prevents scheduler steps past the frozen horizon,
+and uses pre-discretization policy probabilities for hard-forward
+supervision. Redundant per-segment LM losses are disabled in the composite
+train step.
 
 ## Cross-Ontology Hybrid Receipt
 

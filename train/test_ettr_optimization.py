@@ -36,6 +36,8 @@ def _model() -> EndogenousTypedTheoryReactorGPT:
             num_slots=6,
             num_types=3,
             num_relations=3,
+            num_value_codes=64,
+            max_edges=96,
             num_heads=4,
             compiler_layers=1,
             reactor_layers=1,
@@ -124,3 +126,19 @@ def test_optimizer_resume_rejects_contract_drift() -> None:
     )
     with pytest.raises(TheoryReactorError, match="contract"):
         second.load_state_dict(state)
+
+
+def test_optimizer_rejects_an_identically_shaped_different_model() -> None:
+    first = _model()
+    second = _model()
+    bundle = ETTROptimizerBundle(first, _config())
+    with pytest.raises(TheoryReactorError, match="not bound"):
+        bundle.assert_bound_to(second)
+
+
+def test_optimizer_cannot_step_beyond_frozen_horizon() -> None:
+    model = _model()
+    bundle = ETTROptimizerBundle(model, _config())
+    bundle.next_update = bundle.config.total_updates
+    with pytest.raises(TheoryReactorError, match="beyond"):
+        bundle.step()

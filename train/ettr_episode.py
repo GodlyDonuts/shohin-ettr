@@ -13,6 +13,7 @@ ontology, or construct labels.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
 
 import torch
 import torch.nn as nn
@@ -24,6 +25,9 @@ from endogenous_typed_theory_reactor import (
     TypedTheoryState,
 )
 from model import _supervised_lm_loss
+
+
+_SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,6 +54,17 @@ class ETTREpisodeSegment:
         if attention_mask is None:
             attention_mask = torch.ones_like(tokens, dtype=torch.bool)
         else:
+            if attention_mask.shape != tokens.shape:
+                raise TheoryReactorError("episode attention mask geometry differs")
+            if attention_mask.device != tokens.device:
+                raise TheoryReactorError(
+                    "episode tokens and attention mask must share one device"
+                )
+            if attention_mask.dtype != torch.bool:
+                _require_tensor(
+                    ((attention_mask == 0) | (attention_mask == 1)).all(),
+                    "episode attention mask must be binary",
+                )
             attention_mask = attention_mask.to(
                 device=tokens.device,
                 dtype=torch.bool,
@@ -98,8 +113,19 @@ class ETTREpisodeSegment:
             "padded episode targets must be ignored",
         )
         _require_tensor(
-            self.targets.ne(-1).any(),
-            "episode segment has no supervised token",
+            self.targets.ne(-1).any(dim=1).all(),
+            "an episode segment row has no supervised token",
+        )
+        expected_targets = torch.full_like(self.tokens, -1)
+        causal_pairs = mask[:, :-1] & mask[:, 1:]
+        expected_targets[:, :-1] = torch.where(
+            causal_pairs,
+            self.tokens[:, 1:],
+            torch.full_like(self.tokens[:, 1:], -1),
+        )
+        _require_tensor(
+            (self.targets == expected_targets).all(),
+            "episode targets must equal the causal token shift",
         )
         if (
             self.tokens.device != self.targets.device
@@ -132,7 +158,7 @@ class ETTREpisodeBatch:
             or self.query.tokens.shape[0] != batch
             or len(self.episode_ids) != batch
             or len(set(self.episode_ids)) != batch
-            or any(not value for value in self.episode_ids)
+            or any(_SHA256.fullmatch(value) is None for value in self.episode_ids)
         ):
             raise TheoryReactorError("episode batch identity or batch geometry differs")
         if (
@@ -177,7 +203,7 @@ class ETTREpisodeOutput:
     initial_state: TypedTheoryState
     terminal_state: TypedTheoryState
     trace: ReactorTrace
-    losses: ETTREpisodeLosses
+    losses: ETTREpisodeLosses | None
 
 
 class CausalETTREpisodeRunner(nn.Module):
@@ -194,6 +220,7 @@ class CausalETTREpisodeRunner(nn.Module):
         reactor_steps: int,
         hard: bool = False,
         validate_batch: bool = True,
+        compute_losses: bool = True,
     ) -> ETTREpisodeOutput:
         if validate_batch:
             batch.validate()
@@ -228,11 +255,15 @@ class CausalETTREpisodeRunner(nn.Module):
         )
         query_logits = self.model.base.head(self.model.base.norm(query_hidden))
 
-        losses = self._losses(
-            batch,
-            world_logits,
-            command_logits,
-            query_logits,
+        losses = (
+            self._losses(
+                batch,
+                world_logits,
+                command_logits,
+                query_logits,
+            )
+            if compute_losses
+            else None
         )
         return ETTREpisodeOutput(
             world_logits=world_logits,

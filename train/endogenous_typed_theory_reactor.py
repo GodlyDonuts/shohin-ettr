@@ -20,7 +20,8 @@ from model import GPT, _supervised_lm_loss
 
 
 SYSTEM_PARAMETER_CAP = 200_000_000
-TRANSACTION_COUNT = 8
+TRANSACTION_COUNT = 9
+DISPOSITION_COUNT = 4
 
 
 class TheoryReactorError(ValueError):
@@ -31,11 +32,13 @@ class TheoryReactorError(ValueError):
 class TheoryReactorConfig:
     d_model: int = 576
     state_width: int = 512
-    num_slots: int = 24
+    # Production geometry reserves room for 32 object nodes plus reified
+    # ordered hyperedge/value-byte nodes. Small synthetic tests override it.
+    num_slots: int = 64
     num_types: int = 8
-    num_relations: int = 8
-    num_value_codes: int = 64
-    max_edges: int = 96
+    num_relations: int = 16
+    num_value_codes: int = 256
+    max_edges: int = 256
     num_heads: int = 8
     compiler_layers: int = 3
     reactor_layers: int = 6
@@ -108,22 +111,38 @@ class TypedTheoryState:
 
 @dataclass(frozen=True, slots=True)
 class TransactionPolicy:
+    """Discrete transition choices plus their differentiable supervision path."""
+
     opcode: torch.Tensor
     source: torch.Tensor
     target: torch.Tensor
     relation: torch.Tensor
     type_index: torch.Tensor
     value_code: torch.Tensor
+    opcode_probabilities: torch.Tensor
+    source_probabilities: torch.Tensor
+    target_probabilities: torch.Tensor
+    relation_probabilities: torch.Tensor
+    type_probabilities: torch.Tensor
+    value_probabilities: torch.Tensor
 
 
 @dataclass(frozen=True, slots=True)
 class ReactorTrace:
+    """Differentiable policy probabilities and the choices applied to state."""
+
     opcode: torch.Tensor
     source: torch.Tensor
     target: torch.Tensor
     relation: torch.Tensor
     type_index: torch.Tensor
     value_code: torch.Tensor
+    applied_opcode: torch.Tensor
+    applied_source: torch.Tensor
+    applied_target: torch.Tensor
+    applied_relation: torch.Tensor
+    applied_type_index: torch.Tensor
+    applied_value_code: torch.Tensor
     active: torch.Tensor
     committed: torch.Tensor
     halted: torch.Tensor
@@ -151,6 +170,22 @@ def _hard_capped_binary(
     maximum: int,
 ) -> torch.Tensor:
     return _ExactCappedBinary.apply(probabilities, maximum)
+
+
+def _disposition_probabilities(state: TypedTheoryState) -> torch.Tensor:
+    """Return OPEN/ANSWER/ABSTAIN/REJECT without hiding terminal status."""
+
+    committed = state.committed
+    halted = state.halted
+    return torch.stack(
+        (
+            (1.0 - committed) * (1.0 - halted),
+            committed * (1.0 - halted),
+            (1.0 - committed) * halted,
+            committed * halted,
+        ),
+        dim=-1,
+    )
 
 
 class _ExactOneHot(torch.autograd.Function):
@@ -223,6 +258,27 @@ class _ExactCappedBinary(torch.autograd.Function):
     ) -> tuple[torch.Tensor, None]:
         del ctx
         return gradient, None
+
+
+def _edge_aware_relation_context(
+    relations: torch.Tensor,
+    slot_features: torch.Tensor,
+    projection: nn.Linear,
+) -> torch.Tensor:
+    """Preserve neighbor identity while reading the typed relation ledger."""
+
+    outgoing = torch.einsum(
+        "brst,btw->bsrw",
+        relations,
+        slot_features,
+    )
+    incoming = torch.einsum(
+        "brst,bsw->btrw",
+        relations,
+        slot_features,
+    )
+    messages = torch.cat((incoming, outgoing), dim=2).flatten(2)
+    return projection(messages)
 
 
 class _CompilerLayer(nn.Module):
@@ -421,9 +477,9 @@ class GenericTransactionReactor(nn.Module):
         self.value_embedding = nn.Parameter(torch.empty(config.num_value_codes, width))
         self.active_projection = nn.Linear(1, width, bias=False)
         self.root_projection = nn.Linear(1, width, bias=False)
-        self.status_projection = nn.Linear(2, width, bias=False)
+        self.status_projection = nn.Linear(DISPOSITION_COUNT, width, bias=False)
         self.relation_projection = nn.Linear(
-            2 * config.num_relations,
+            2 * config.num_relations * width,
             width,
             bias=False,
         )
@@ -536,17 +592,16 @@ class GenericTransactionReactor(nn.Module):
             state.value_probabilities,
             self.value_embedding,
         )
-        outgoing = state.relations.sum(-1).transpose(1, 2)
-        incoming = state.relations.sum(-2).transpose(1, 2)
-        relation_context = self.relation_projection(
-            torch.cat((incoming, outgoing), dim=-1)
-        )
         slots = (
             value_context
             + type_context
-            + relation_context
             + self.active_projection(state.active.unsqueeze(-1))
             + self.root_projection(state.root.unsqueeze(-1))
+        )
+        slots = slots + _edge_aware_relation_context(
+            state.relations,
+            slots,
+            self.relation_projection,
         )
         pooled = (slots * state.active.unsqueeze(-1)).sum(1) / state.active.sum(
             1, keepdim=True
@@ -556,10 +611,7 @@ class GenericTransactionReactor(nn.Module):
             + self.step_embedding.weight[state.step].to(slots.dtype)
             + pooled
             + self.status_projection(
-                torch.stack(
-                    (state.committed, state.halted),
-                    dim=-1,
-                )
+                _disposition_probabilities(state)
             )
         )
         if command is not None:
@@ -575,7 +627,7 @@ class GenericTransactionReactor(nn.Module):
         control = self.output_norm(encoded[:, 0])
         encoded_slots = self.output_norm(encoded[:, 1:])
         keys = self.slot_key(encoded_slots)
-        source = (
+        source_probabilities = (
             torch.einsum(
                 "bw,bsw->bs",
                 self.source_query(control),
@@ -584,7 +636,7 @@ class GenericTransactionReactor(nn.Module):
             .float()
             .softmax(-1)
         )
-        target = (
+        target_probabilities = (
             torch.einsum(
                 "bw,bsw->bs",
                 self.target_query(control),
@@ -593,24 +645,37 @@ class GenericTransactionReactor(nn.Module):
             .float()
             .softmax(-1)
         )
-        opcode = self.opcode_head(control).float().softmax(-1)
-        relation = self.relation_head(control).float().softmax(-1)
-        type_index = self.type_head(control).float().softmax(-1)
-        value_code = self.value_head(control).float().softmax(-1)
+        opcode_probabilities = self.opcode_head(control).float().softmax(-1)
+        relation_probabilities = self.relation_head(control).float().softmax(-1)
+        type_probabilities = self.type_head(control).float().softmax(-1)
+        value_probabilities = self.value_head(control).float().softmax(-1)
+        opcode = opcode_probabilities
+        source = source_probabilities
+        target = target_probabilities
+        relation = relation_probabilities
+        type_index = type_probabilities
+        value_code = value_probabilities
         if hard:
-            opcode = _hard_one_hot(opcode)
-            source = _hard_one_hot(source)
-            target = _hard_one_hot(target)
-            relation = _hard_one_hot(relation)
-            type_index = _hard_one_hot(type_index)
-            value_code = _hard_one_hot(value_code)
+            opcode = _hard_one_hot(opcode_probabilities)
+            source = _hard_one_hot(source_probabilities)
+            target = _hard_one_hot(target_probabilities)
+            relation = _hard_one_hot(relation_probabilities)
+            type_index = _hard_one_hot(type_probabilities)
+            value_code = _hard_one_hot(value_probabilities)
+        dtype = state.value_probabilities.dtype
         return TransactionPolicy(
-            opcode=opcode.to(state.value_probabilities.dtype),
-            source=source.to(state.value_probabilities.dtype),
-            target=target.to(state.value_probabilities.dtype),
-            relation=relation.to(state.value_probabilities.dtype),
-            type_index=type_index.to(state.value_probabilities.dtype),
-            value_code=value_code.to(state.value_probabilities.dtype),
+            opcode=opcode.to(dtype),
+            source=source.to(dtype),
+            target=target.to(dtype),
+            relation=relation.to(dtype),
+            type_index=type_index.to(dtype),
+            value_code=value_code.to(dtype),
+            opcode_probabilities=opcode_probabilities,
+            source_probabilities=source_probabilities,
+            target_probabilities=target_probabilities,
+            relation_probabilities=relation_probabilities,
+            type_probabilities=type_probabilities,
+            value_probabilities=value_probabilities,
         )
 
     def apply(
@@ -621,15 +686,8 @@ class GenericTransactionReactor(nn.Module):
         hard: bool = False,
         validate: bool = True,
     ) -> TypedTheoryState:
-        opcode = policy.opcode * (1.0 - state.halted[:, None])
-        structural_enabled = 1.0 - state.committed[:, None]
-        opcode = torch.cat(
-            (
-                opcode[:, :7] * structural_enabled,
-                opcode[:, 7:8],
-            ),
-            dim=-1,
-        )
+        open_state = _disposition_probabilities(state)[:, 0:1]
+        opcode = policy.opcode * open_state
         alloc = opcode[:, 0:1] * policy.source
         write = opcode[:, 1:2] * policy.source
         clear = opcode[:, 2:3] * policy.source
@@ -638,6 +696,7 @@ class GenericTransactionReactor(nn.Module):
         set_root = opcode[:, 5:6] * policy.source
         commit = opcode[:, 6]
         halt = opcode[:, 7]
+        reject = opcode[:, 8]
 
         allocated = alloc * (1.0 - state.active)
         cleared = clear * state.active
@@ -647,6 +706,7 @@ class GenericTransactionReactor(nn.Module):
             state.type_probabilities * (1.0 - type_write)
             + policy.type_index[:, None, :] * type_write
         )
+        type_probabilities = type_probabilities * (1.0 - cleared.unsqueeze(-1))
         value_write = ((write * state.active) + allocated).clamp(max=1.0).unsqueeze(-1)
         value_probabilities = (
             state.value_probabilities * (1.0 - value_write)
@@ -677,8 +737,8 @@ class GenericTransactionReactor(nn.Module):
         root = state.root * (1.0 - set_root.sum(-1, keepdim=True)) + set_root
         root = root * active
         root = root / root.sum(-1, keepdim=True).clamp_min(1e-6)
-        committed = state.committed + (1.0 - state.committed) * commit
-        halted = state.halted + (1.0 - state.halted) * halt
+        committed = state.committed + (1.0 - state.committed) * (commit + reject)
+        halted = state.halted + (1.0 - state.halted) * (halt + reject)
         result = TypedTheoryState(
             value_probabilities=value_probabilities,
             type_probabilities=type_probabilities,
@@ -730,18 +790,51 @@ class GenericTransactionReactor(nn.Module):
             states.append(state)
         validate_state(state, self.config)
         return state, ReactorTrace(
-            opcode=torch.stack([item.opcode for item in policies], dim=1),
-            source=torch.stack([item.source for item in policies], dim=1),
-            target=torch.stack([item.target for item in policies], dim=1),
+            opcode=torch.stack(
+                [item.opcode_probabilities for item in policies],
+                dim=1,
+            ),
+            source=torch.stack(
+                [item.source_probabilities for item in policies],
+                dim=1,
+            ),
+            target=torch.stack(
+                [item.target_probabilities for item in policies],
+                dim=1,
+            ),
             relation=torch.stack(
-                [item.relation for item in policies],
+                [item.relation_probabilities for item in policies],
                 dim=1,
             ),
             type_index=torch.stack(
-                [item.type_index for item in policies],
+                [item.type_probabilities for item in policies],
                 dim=1,
             ),
             value_code=torch.stack(
+                [item.value_probabilities for item in policies],
+                dim=1,
+            ),
+            applied_opcode=torch.stack(
+                [item.opcode for item in policies],
+                dim=1,
+            ),
+            applied_source=torch.stack(
+                [item.source for item in policies],
+                dim=1,
+            ),
+            applied_target=torch.stack(
+                [item.target for item in policies],
+                dim=1,
+            ),
+            applied_relation=torch.stack(
+                [item.relation for item in policies],
+                dim=1,
+            ),
+            applied_type_index=torch.stack(
+                [item.type_index for item in policies],
+                dim=1,
+            ),
+            applied_value_code=torch.stack(
                 [item.value_code for item in policies],
                 dim=1,
             ),
@@ -765,11 +858,11 @@ class SourceDeletedQueryReader(nn.Module):
         self.active_projection = nn.Linear(1, width, bias=False)
         self.root_projection = nn.Linear(1, width, bias=False)
         self.relation_projection = nn.Linear(
-            2 * config.num_relations,
+            2 * config.num_relations * width,
             width,
             bias=False,
         )
-        self.status_projection = nn.Linear(2, width, bias=False)
+        self.status_projection = nn.Linear(DISPOSITION_COUNT, width, bias=False)
         self.state_norm = nn.LayerNorm(width)
         self.cross_attention = nn.MultiheadAttention(
             width,
@@ -830,25 +923,25 @@ class SourceDeletedQueryReader(nn.Module):
             state.type_probabilities,
             self.type_embedding,
         )
-        outgoing = state.relations.sum(-1).transpose(1, 2)
-        incoming = state.relations.sum(-2).transpose(1, 2)
-        state_relations = self.relation_projection(
-            torch.cat((incoming, outgoing), dim=-1)
-        )
         status = self.status_projection(
-            torch.stack(
-                (state.committed, state.halted),
-                dim=-1,
-            )
+            _disposition_probabilities(state)
         )[:, None, :]
         state_values = (
             state_values
             + state_types
-            + state_relations
             + self.active_projection(state.active.unsqueeze(-1))
             + self.root_projection(state.root.unsqueeze(-1))
-            + status
-        ) * state.committed[:, None, None]
+        )
+        semantic_state = (
+            state_values
+            + _edge_aware_relation_context(
+                state.relations,
+                state_values,
+                self.relation_projection,
+            )
+        )
+        answer = _disposition_probabilities(state)[:, 1:2]
+        state_values = semantic_state * answer[:, :, None] + status
         read, _ = self.cross_attention(
             query,
             self.state_norm(state_values),

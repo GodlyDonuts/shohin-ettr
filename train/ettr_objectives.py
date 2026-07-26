@@ -86,8 +86,9 @@ def _probability(value: torch.Tensor, *, name: str) -> None:
 
 def _simplex(value: torch.Tensor, *, name: str) -> None:
     _probability(value, name=name)
+    tolerance = 5e-3 if value.dtype in (torch.bfloat16, torch.float16) else 1e-4
     _async_assert(
-        (value.sum(-1) - 1.0).abs().le(1e-4).all(),
+        (value.sum(-1).float() - 1.0).abs().le(tolerance).all(),
         f"{name} is not a categorical simplex",
     )
 
@@ -134,13 +135,13 @@ class ETTRObjectiveConfig:
     """Frozen class geometry and sparse packet budgets."""
 
     vocab_size: int
-    num_slots: int = 24
+    num_slots: int = 64
     num_types: int = 8
-    num_relations: int = 8
-    num_value_codes: int = 64
+    num_relations: int = 16
+    num_value_codes: int = 256
     transaction_count: int = TRANSACTION_COUNT
-    active_slot_budget: int = 6
-    relation_edge_budget: int = 96
+    active_slot_budget: int = 64
+    relation_edge_budget: int = 256
     ignore_index: int = -100
     probability_epsilon: float = 1e-6
     causal_lm_shift: int = 1
@@ -165,7 +166,9 @@ class ETTRObjectiveConfig:
                 "objective geometry must contain positive integers"
             )
         if self.transaction_count != TRANSACTION_COUNT:
-            raise ETTRObjectiveError("the frozen ETTR objective has eight opcodes")
+            raise ETTRObjectiveError(
+                "the frozen ETTR objective transaction count differs"
+            )
         if self.active_slot_budget > self.num_slots:
             raise ETTRObjectiveError("active-slot budget exceeds packet capacity")
         capacity = self.num_relations * self.num_slots * self.num_slots
@@ -1035,9 +1038,9 @@ def _categorical_nll(
     selected = probabilities.gather(
         -1,
         target.unsqueeze(-1),
-    ).squeeze(-1)
+    ).squeeze(-1).float()
     return _LossCount(
-        (-selected.clamp_min(epsilon).log() * mask).sum(),
+        (-(selected + epsilon).log() * mask).sum(),
         _count(mask),
     )
 
@@ -1049,10 +1052,11 @@ def _binary_nll(
     *,
     epsilon: float,
 ) -> _LossCount:
-    values = F.binary_cross_entropy(
-        probabilities.clamp(epsilon, 1.0 - epsilon),
-        target.to(probabilities.dtype),
-        reduction="none",
+    probabilities = probabilities.float()
+    target = target.float()
+    values = -(
+        target * (probabilities + epsilon).log()
+        + (1.0 - target) * (1.0 - probabilities + epsilon).log()
     )
     return _LossCount((values * mask).sum(), _count(mask))
 

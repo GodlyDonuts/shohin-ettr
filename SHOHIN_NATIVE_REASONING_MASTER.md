@@ -48,9 +48,13 @@ control.
   answers late queries from terminal state. Its independent
   `WORLD -> COMMAND -> QUERY` lifecycle, reset-safe composite objective,
   frozen-data contract, disjoint Muon/AdamW optimizer groups, and exact
-  checkpoint/resume path pass a 108-test integrated suite. The complete system
-  remains 171,403,554 parameters. No ETTR fit, neural capability score,
-  post-training, or pretraining action exists; the user hold remains active.
+  checkpoint/resume path pass a 109-test focused suite and a 155-test complete
+  ETTR/cross-ontology inventory. A hostile audit found that relation-degree
+  summaries erased endpoint identity; the corrected reactor and query reader
+  now use edge-aware typed neighbor messages and pass a degree-preserving
+  edge-swap falsifier. The complete system is 179,775,778 parameters. No ETTR
+  fit, neural capability score, post-training, or pretraining action exists;
+  the user hold remains active.
 - **Strict future ceiling:** fewer than 200,000,000 unique parameters for the
   complete system.
 - **Renderer-curriculum breakthrough:** a 152,933-parameter standalone
@@ -52220,3 +52224,51 @@ the user can safely authorize continuation pretraining, ETTR still needs a
 causal autoregressive episode interface, frozen composite objectives,
 ETTR-aware save/resume state, hybrid-composition receipts, and an H100
 throughput/memory gate.
+
+## 2026-07-26 ETTR Architecture Hardening and Canonical Capacity
+
+The phase boundary remains explicit: this work builds and qualifies the
+architecture. It does not start continuation pretraining or post-training.
+Low capability from the frozen step-300k base is therefore not an architecture
+failure criterion.
+
+A hostile audit found that the first reactor and query reader erased exact
+relation endpoints by reducing each graph to in/out degree counts. The current
+implementation replaces that bottleneck with relation-specific directed
+neighbor message passing. A degree-preserving edge-swap falsifier changes both
+reactor and reader outputs while holding every old degree statistic fixed.
+
+The production packet now has 64 slots, 16 relation roles, 256 categorical
+symbols, and at most 256 hard edges. Thirty-two object nodes plus reified
+ordered hyperedge/value-byte nodes can therefore represent the board schema
+without a single 64-class scalar bottleneck. Two persistent terminal bits
+encode four distinct always-visible dispositions: `OPEN`, `ANSWER`, `ABSTAIN`,
+and `REJECT`. A ninth transaction supplies explicit rejection; every terminal
+disposition freezes later mutation.
+
+Hard state transitions remain discrete, but transaction traces now retain
+pre-discretization probabilities so wrong choices receive corrective
+gradients. The training API is bound to exact optimizer/model parameter
+identities and immutable manifest/dataset hashes, revalidates mutable tensor
+targets at the update boundary, rejects scheduler overrun, removes redundant
+segment LM-loss work, and checkpoints only at an exactly resumable optimizer
+and between-episode boundary.
+
+The immutable step-300k checkpoint loads strictly. Exact parameter receipt:
+
+| Component | Parameters |
+|---|---:|
+| Protected Shohin | 125,081,664 |
+| Compiler | 21,466,377 |
+| Reactor | 29,757,217 |
+| Query reader | 16,474,177 |
+| Added architecture | 67,697,771 |
+| Complete system | 192,779,435 |
+| Remaining below 200M | 7,220,565 |
+
+The complete architecture, custody, profiler-contract, and cross-ontology
+inventory passes 163/163 tests. This is a technically coherent CPU-side
+architecture result, not evidence of learned general reasoning. A fresh
+current-source BF16 H100 eager/compiled resource profile remains the final
+systems gate before the architecture can be presented to the user for a
+separate pretraining decision.

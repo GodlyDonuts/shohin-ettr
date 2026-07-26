@@ -36,6 +36,8 @@ _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 class ETTRContinuationBatch:
     """One architecture batch plus its generic offline supervision."""
 
+    manifest_sha256: str
+    dataset_sha256: str
     episodes: ETTREpisodeBatch
     packet_targets: ETTRPacketTargets
     transaction_targets: ETTRTransactionTargets
@@ -48,7 +50,31 @@ class ETTRContinuationBatch:
         reactor_config: TheoryReactorConfig,
         objective_config: ETTRObjectiveConfig,
     ) -> None:
+        if (
+            _SHA256.fullmatch(self.manifest_sha256) is None
+            or _SHA256.fullmatch(self.dataset_sha256) is None
+        ):
+            raise TheoryReactorError("ETTR continuation snapshot receipt differs")
         self.episodes.validate()
+        ETTRPacketTargets(
+            **{
+                field.name: getattr(self.packet_targets, field.name)
+                for field in fields(self.packet_targets)
+            }
+        )
+        ETTRTransactionTargets(
+            **{
+                field.name: getattr(self.transaction_targets, field.name)
+                for field in fields(self.transaction_targets)
+            }
+        )
+        if self.equivariance is not None:
+            ETTRVariantAlignment(
+                **{
+                    field.name: getattr(self.equivariance, field.name)
+                    for field in fields(self.equivariance)
+                }
+            )
         batch = self.episodes.world.tokens.shape[0]
         steps = self.transaction_targets.opcode.shape[1]
         if (

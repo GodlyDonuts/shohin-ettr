@@ -7,7 +7,11 @@ import pytest
 import torch
 import torch.nn.functional as F
 
-from endogenous_typed_theory_reactor import ReactorTrace, TypedTheoryState
+from endogenous_typed_theory_reactor import (
+    TRANSACTION_COUNT,
+    ReactorTrace,
+    TypedTheoryState,
+)
 from ettr_objectives import (
     OBJECTIVE_SCHEMA,
     ETTRCompositeObjective,
@@ -119,7 +123,7 @@ def _transaction_predictions() -> ETTRTransactionPredictions:
     labels = _transaction_labels()
     active = _packet_labels().active.float()
     return ETTRTransactionPredictions(
-        opcode=_leaf(F.one_hot(labels.opcode, 8).float()),
+        opcode=_leaf(F.one_hot(labels.opcode, TRANSACTION_COUNT).float()),
         source=_leaf(F.one_hot(labels.source, SLOTS).float()),
         target=_leaf(F.one_hot(labels.target, SLOTS).float()),
         relation=_leaf(F.one_hot(labels.relation, RELATIONS).float()),
@@ -459,6 +463,12 @@ def test_native_trace_bridge_preserves_and_supervises_value_code() -> None:
         relation=prediction.relation,
         type_index=prediction.type_index,
         value_code=prediction.value_code,
+        applied_opcode=prediction.opcode,
+        applied_source=prediction.source,
+        applied_target=prediction.target,
+        applied_relation=prediction.relation,
+        applied_type_index=prediction.type_index,
+        applied_value_code=prediction.value_code,
         active=prediction.active,
         committed=prediction.committed,
         halted=prediction.halted,
@@ -687,7 +697,9 @@ def test_config_targets_shapes_ranges_and_finiteness_fail_closed() -> None:
     with pytest.raises(RuntimeError, match="frozen range"):
         replace(
             _transaction_labels(),
-            opcode=torch.tensor([[0, 3, 8], [0, 3, 7]]),
+            opcode=torch.tensor(
+                [[0, 3, TRANSACTION_COUNT], [0, 3, 7]]
+            ),
         )
     with pytest.raises(RuntimeError, match="not monotone"):
         replace(

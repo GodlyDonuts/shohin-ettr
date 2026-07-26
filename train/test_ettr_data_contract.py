@@ -96,6 +96,8 @@ def _continuation() -> tuple[
     )
     return (
         ETTRContinuationBatch(
+            manifest_sha256="a" * 64,
+            dataset_sha256="b" * 64,
             episodes=episodes,
             packet_targets=_packet(2),
             transaction_targets=_transactions(2),

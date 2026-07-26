@@ -342,7 +342,9 @@ def synthetic_batches(
         command = tokens(settings.command_tokens, 29, 23)
         query = tokens(settings.query_tokens, 37, 31)
         episode_ids = tuple(
-            f"synthetic-{settings.seed}-{microstep}-{row}"
+            hashlib.sha256(
+                f"synthetic-{settings.seed}-{microstep}-{row}".encode("ascii")
+            ).hexdigest()
             for row in range(settings.batch_size)
         )
         batch = ETTREpisodeBatch(

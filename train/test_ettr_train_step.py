@@ -21,6 +21,10 @@ from test_ettr_data_contract import (
 from test_ettr_episode import _batch, _runner
 
 
+MANIFEST_SHA256 = "a" * 64
+DATASET_SHA256 = "b" * 64
+
+
 def _trainer(
     *,
     accumulation: int,
@@ -47,11 +51,15 @@ def _trainer(
         model,
         optimizer,
         objective,
+        manifest_sha256=MANIFEST_SHA256,
+        dataset_sha256=DATASET_SHA256,
         step_config=ETTRTrainStepConfig(
             gradient_accumulation_steps=accumulation,
         ),
     )
     batch = ETTRContinuationBatch(
+        manifest_sha256=MANIFEST_SHA256,
+        dataset_sha256=DATASET_SHA256,
         episodes=_batch(2),
         packet_targets=_packet(2),
         transaction_targets=_transactions(2),
@@ -134,3 +142,40 @@ def test_invalid_batch_fails_before_optimizer_mutation() -> None:
     )
     assert after_lrs == before_lrs
     assert trainer.optimizer.next_update == 0
+
+
+def test_train_step_rejects_optimizer_from_equal_shape_model() -> None:
+    first = _runner().model
+    second = _runner().model
+    optimizer = ETTROptimizerBundle(
+        first,
+        ETTROptimizerConfig(
+            train_base=False,
+            warmup_updates=1,
+            total_updates=10,
+        ),
+    )
+    objective = ETTRObjectiveConfig(
+        vocab_size=64,
+        num_slots=6,
+        num_types=3,
+        num_relations=3,
+        num_value_codes=64,
+        active_slot_budget=6,
+        relation_edge_budget=96,
+    )
+    with pytest.raises(TheoryReactorError, match="not bound"):
+        ETTRTrainStep(
+            second,
+            optimizer,
+            objective,
+            manifest_sha256=MANIFEST_SHA256,
+            dataset_sha256=DATASET_SHA256,
+        )
+
+
+def test_train_step_rejects_batch_from_another_snapshot() -> None:
+    trainer, batch = _trainer(accumulation=1)
+    wrong = replace(batch, dataset_sha256="c" * 64)
+    with pytest.raises(TheoryReactorError, match="snapshot differs"):
+        trainer.update((wrong,))

@@ -5,6 +5,7 @@ from dataclasses import fields, replace
 import torch
 
 from endogenous_typed_theory_reactor import (
+    DISPOSITION_COUNT,
     EndogenousTypedTheoryReactorGPT,
     TheoryReactorConfig,
     TypedTheoryState,
@@ -35,6 +36,8 @@ def _model() -> EndogenousTypedTheoryReactorGPT:
             num_slots=6,
             num_types=3,
             num_relations=3,
+            num_value_codes=64,
+            max_edges=96,
             num_heads=4,
             compiler_layers=1,
             reactor_layers=1,
@@ -61,7 +64,7 @@ def test_staged_architecture_is_trainable_end_to_end() -> None:
     assert logits.shape == (2, 5, 64)
     assert loss is not None and torch.isfinite(loss)
     validate_state(state, model.config)
-    assert trace.opcode.shape == (2, 3, 8)
+    assert trace.opcode.shape == (2, 3, DISPOSITION_COUNT + 5)
     loss.backward()
     for gradient in (
         model.compiler.token_projection.weight.grad,
@@ -105,27 +108,27 @@ def test_hard_reactor_emits_exact_transaction_choices() -> None:
     )
     state, trace = model.execute(state, steps=4, hard=True)
     assert torch.equal(
-        trace.opcode.detach().sum(-1),
+        trace.applied_opcode.detach().sum(-1),
         torch.ones(2, 4),
     )
     assert torch.equal(
-        trace.source.detach().sum(-1),
+        trace.applied_source.detach().sum(-1),
         torch.ones(2, 4),
     )
     assert torch.equal(
-        trace.target.detach().sum(-1),
+        trace.applied_target.detach().sum(-1),
         torch.ones(2, 4),
     )
     assert torch.equal(
-        trace.relation.detach().sum(-1),
+        trace.applied_relation.detach().sum(-1),
         torch.ones(2, 4),
     )
     assert torch.equal(
-        trace.type_index.detach().sum(-1),
+        trace.applied_type_index.detach().sum(-1),
         torch.ones(2, 4),
     )
     assert torch.equal(
-        trace.value_code.detach().sum(-1),
+        trace.applied_value_code.detach().sum(-1),
         torch.ones(2, 4),
     )
     assert torch.equal(
@@ -261,6 +264,67 @@ def test_all_declared_state_fields_enter_the_learned_path() -> None:
         assert torch.count_nonzero(value.grad)
 
 
+def test_degree_preserving_edge_swaps_change_reactor_and_query_reads() -> None:
+    model = _model().eval()
+    config = model.config
+    active = torch.tensor(
+        [[True, True, True, True, False, False]],
+        dtype=torch.float32,
+    )
+    value_codes = torch.tensor([[0, 1, 2, 3, 0, 0]])
+    type_codes = torch.tensor([[0, 1, 2, 0, 0, 0]])
+    relations = torch.zeros(
+        1,
+        config.num_relations,
+        config.num_slots,
+        config.num_slots,
+    )
+    relations[:, 0, 0, 1] = 1
+    relations[:, 0, 2, 3] = 1
+    swapped_relations = torch.zeros_like(relations)
+    swapped_relations[:, 0, 0, 3] = 1
+    swapped_relations[:, 0, 2, 1] = 1
+    assert torch.equal(relations.sum(-1), swapped_relations.sum(-1))
+    assert torch.equal(relations.sum(-2), swapped_relations.sum(-2))
+
+    state = TypedTheoryState(
+        value_probabilities=(
+            torch.nn.functional.one_hot(
+                value_codes,
+                config.num_value_codes,
+            ).float()
+            * active.unsqueeze(-1)
+        ),
+        type_probabilities=(
+            torch.nn.functional.one_hot(
+                type_codes,
+                config.num_types,
+            ).float()
+            * active.unsqueeze(-1)
+        ),
+        relations=relations,
+        active=active,
+        root=torch.tensor([[1, 0, 0, 0, 0, 0]], dtype=torch.float32),
+        committed=torch.zeros(1),
+        halted=torch.zeros(1),
+        step=0,
+    )
+    swapped = replace(state, relations=swapped_relations)
+    with torch.no_grad():
+        policy = model.reactor.policy(state, hard=False)
+        swapped_policy = model.reactor.policy(swapped, hard=False)
+    assert not torch.equal(policy.source, swapped_policy.source)
+    assert not torch.equal(policy.target, swapped_policy.target)
+
+    query_hidden = torch.rand(1, 4, config.d_model)
+    committed = replace(state, committed=torch.ones(1))
+    swapped_committed = replace(swapped, committed=torch.ones(1))
+    with torch.no_grad():
+        read = model.query_reader(query_hidden, committed)
+        swapped_read = model.query_reader(query_hidden, swapped_committed)
+    assert not torch.equal(read, swapped_read)
+
+
 def test_hard_commit_freezes_structural_state() -> None:
     model = _model().eval()
     initial = model.compile_world(
@@ -288,3 +352,49 @@ def test_hard_commit_freezes_structural_state() -> None:
             getattr(terminal, name),
             getattr(committed, name),
         )
+
+
+def test_query_reader_distinguishes_all_four_dispositions() -> None:
+    model = _model().eval()
+    state = model.compile_world(
+        torch.randint(0, 64, (1, 8)),
+        hard=True,
+    )
+    query_hidden = torch.rand(1, 4, model.config.d_model)
+    dispositions = (
+        replace(state, committed=torch.zeros(1), halted=torch.zeros(1)),
+        replace(state, committed=torch.ones(1), halted=torch.zeros(1)),
+        replace(state, committed=torch.zeros(1), halted=torch.ones(1)),
+        replace(state, committed=torch.ones(1), halted=torch.ones(1)),
+    )
+    with torch.no_grad():
+        reads = tuple(
+            model.query_reader(query_hidden, disposition)
+            for disposition in dispositions
+        )
+    for left in range(len(reads)):
+        for right in range(left + 1, len(reads)):
+            assert not torch.equal(reads[left], reads[right])
+
+
+def test_hard_policy_keeps_soft_supervision_gradients() -> None:
+    model = _model()
+    state = model.compile_world(
+        torch.randint(0, 64, (1, 8)),
+        hard=True,
+    )
+    policy = model.reactor.policy(state, hard=True)
+    wrong_target = (policy.opcode.argmax(-1) + 1) % policy.opcode.shape[-1]
+    loss = -policy.opcode_probabilities.gather(
+        -1,
+        wrong_target[:, None],
+    ).log().mean()
+    loss.backward()
+    gradient = model.reactor.opcode_head.weight.grad
+    assert gradient is not None
+    assert torch.isfinite(gradient).all()
+    assert torch.count_nonzero(gradient)
+    assert torch.equal(
+        policy.opcode.sum(-1),
+        torch.ones_like(policy.opcode.sum(-1)),
+    )

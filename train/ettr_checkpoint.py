@@ -792,6 +792,7 @@ def _validate_episode_lifecycle(
     state: EpisodeLifecycleState,
     config: TheoryReactorConfig,
 ) -> None:
+    del config
     integer_values = (
         state.episode_index,
         state.token_offset,
@@ -801,33 +802,20 @@ def _validate_episode_lifecycle(
         raise ETTRCheckpointError("episode lifecycle counters are invalid")
     if state.phase not in _EPISODE_PHASES:
         raise ETTRCheckpointError("episode lifecycle phase is invalid")
-    if state.reactor_step > config.max_steps:
-        raise ETTRCheckpointError("episode reactor step exceeds ETTR maximum")
-    if state.phase == "between_episodes":
-        expected = (
-            state.episode_sha256 is None
-            and state.token_offset == 0
-            and state.reactor_step == 0
-            and not state.source_deleted
-            and not state.committed
-            and not state.halted
+    if state.phase != "between_episodes":
+        raise ETTRCheckpointError(
+            "exact resume currently permits only a between-episodes boundary"
         )
-        if not expected:
-            raise ETTRCheckpointError("between-episode lifecycle state is inconsistent")
-        return
-    if state.episode_sha256 is None:
-        raise ETTRCheckpointError("active episode identity is missing")
-    _require_hex_digest(state.episode_sha256, "episode")
-    must_be_deleted = state.phase in {
-        "source_deleted",
-        "reactor",
-        "query",
-        "complete",
-    }
-    if state.source_deleted != must_be_deleted:
-        raise ETTRCheckpointError("episode source-deletion boundary is inconsistent")
-    if state.phase in {"source", "source_deleted"} and state.reactor_step:
-        raise ETTRCheckpointError("episode reactor step precedes reactor phase")
+    expected = (
+        state.episode_sha256 is None
+        and state.token_offset == 0
+        and state.reactor_step == 0
+        and not state.source_deleted
+        and not state.committed
+        and not state.halted
+    )
+    if not expected:
+        raise ETTRCheckpointError("between-episode lifecycle state is inconsistent")
 
 
 def _optimizer_contract(

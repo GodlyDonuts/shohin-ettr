@@ -79,19 +79,23 @@ architecture intended for later continued pretraining:
 2. the compiler emits only bounded categorical value codes, type
    probabilities, a sparse relation ledger, activity, root, commit, and halt
    state; deployed packets reject continuous values and relation counts above
-   the frozen cap;
+   the frozen cap. Production geometry uses 64 slots, 16 relation roles, 256
+   categorical symbols, and reified ordered hyperedge/value-byte nodes;
 3. a shared recurrent reactor cross-attends a separate post-seal command
-   stream, emits the eight structural transaction choices, and applies
-   differentiable graph updates;
+   stream, reads exact directed endpoint identity through an edge-aware typed
+   relation-message bus, emits eight structural/terminal choices plus a
+   distinct `REJECT`, and applies differentiable graph updates;
 4. an exact-forward straight-through path supports discrete transactions
-   without removing training gradients; and
+   while exposing pre-discretization probabilities for corrective training
+   gradients; and
 5. a separate causally masked query reader consumes every declared typed-state
-   field and query residuals without seeing future query tokens.
+   field, including endpoint-aware incoming/outgoing neighbor messages, and
+   query residuals without seeing future query tokens.
 
-The default architecture adds 46,321,890 parameters: 17,153,097 in the
-compiler, 21,174,360 in the reactor, and 7,994,433 in the query reader. With
+The corrected architecture adds 67,697,771 parameters: 21,466,377 in the
+compiler, 29,757,217 in the reactor, and 16,474,177 in the query reader. With
 the immutable 125,081,664-parameter Shohin base, the complete system contains
-171,403,554 parameters and leaves 28,596,446 below the 200M ceiling.
+192,779,435 parameters and leaves 7,220,565 below the 200M ceiling.
 
 The actual protected checkpoint hash matches, step 300,000 loads strictly
 with zero missing or unexpected tensors, and the wrapper parameter receipt
@@ -110,17 +114,21 @@ previously missing continuation contract:
 - language-model targets cannot cross a segment boundary;
 - packet, transaction, equivariance, commit/halt, sparsity, and anti-bypass
   supervision share one device-resident composite objective;
-- training snapshots are immutable and hash-bound, with no live-writer or
-  family-routing field;
+- training snapshots and every batch are immutable/hash-bound, with opaque
+  content-hash episode IDs and no live-writer or family-routing field;
 - protected-base and added-architecture Muon/AdamW groups are disjoint, with
   an embedded WSD update cursor; and
 - atomic checkpoints bind model, optimizer, schedule, RNG, data cursor,
-  episode lifecycle, source manifest, and protected-base provenance.
+  source manifest, and protected-base provenance, and are admitted only at an
+  optimizer/between-episode boundary that can be resumed exactly.
 
-The integrated architecture/custody suite passes 108/108 tests. This
-establishes continuation-contract mechanics, not reasoning capability. A
-healthy-node BF16 H100 memory/throughput profile remains mandatory. Continued
-pretraining remains under the explicit user hold.
+The complete ETTR/cross-ontology architecture and custody inventory passes
+163/163. A degree-preserving edge-swap
+falsifier proves that the reactor and query reader distinguish graphs with
+identical per-slot relation counts but different endpoints. This establishes
+continuation-contract mechanics, not reasoning capability. A healthy-node
+BF16 H100 memory/throughput profile remains mandatory. Continued pretraining
+remains under the explicit user hold.
 
 ## G0 Horn Mechanics
 

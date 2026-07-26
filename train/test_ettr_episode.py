@@ -40,6 +40,8 @@ def _runner() -> CausalETTREpisodeRunner:
             num_slots=6,
             num_types=3,
             num_relations=3,
+            num_value_codes=64,
+            max_edges=96,
             num_heads=4,
             compiler_layers=1,
             reactor_layers=1,
@@ -59,7 +61,7 @@ def _segment(batch: int, tokens: int) -> ETTREpisodeSegment:
 
 def _batch(batch: int = 2) -> ETTREpisodeBatch:
     return ETTREpisodeBatch(
-        episode_ids=tuple(f"episode-{index}" for index in range(batch)),
+        episode_ids=tuple(f"{index + 1:064x}" for index in range(batch)),
         reset_mask=torch.ones(batch, dtype=torch.bool),
         world=_segment(batch, 8),
         command=_segment(batch, 6),
@@ -80,6 +82,25 @@ def test_segment_targets_never_cross_reset_or_padding() -> None:
     ]
 
 
+def test_segment_rejects_nonbinary_mask_before_boolean_conversion() -> None:
+    with pytest.raises(TheoryReactorError, match="binary"):
+        ETTREpisodeSegment.from_tokens(
+            torch.tensor([[4, 5, 6]]),
+            attention_mask=torch.tensor([[1, 2, 0]]),
+        )
+
+
+def test_segment_rejects_rows_without_support_and_forged_targets() -> None:
+    with pytest.raises(TheoryReactorError, match="row has no supervised"):
+        ETTREpisodeSegment.from_tokens(
+            torch.tensor([[4, 5, 6], [7, 0, 0]]),
+            attention_mask=torch.tensor([[1, 1, 1], [1, 0, 0]]),
+        )
+    valid = ETTREpisodeSegment.from_tokens(torch.tensor([[4, 5, 6]]))
+    with pytest.raises(TheoryReactorError, match="causal token shift"):
+        replace(valid, targets=torch.tensor([[6, 5, -1]])).validate()
+
+
 def test_episode_requires_explicit_unique_resets() -> None:
     batch = _batch()
     with pytest.raises(TheoryReactorError, match="explicitly reset"):
@@ -88,7 +109,7 @@ def test_episode_requires_explicit_unique_resets() -> None:
             reset_mask=torch.tensor([True, False]),
         ).validate()
     with pytest.raises(TheoryReactorError, match="identity"):
-        replace(batch, episode_ids=("same", "same")).validate()
+        replace(batch, episode_ids=("a" * 64, "a" * 64)).validate()
 
 
 def test_complete_episode_has_count_weighted_full_token_loss() -> None:
@@ -123,7 +144,7 @@ def test_command_language_model_context_is_reset_from_world() -> None:
     first = _batch(batch=1)
     second = replace(
         first,
-        episode_ids=("different-world",),
+        episode_ids=("f" * 64,),
         world=_segment(1, first.world.tokens.shape[1]),
     )
     with torch.no_grad():
