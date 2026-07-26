@@ -125,15 +125,14 @@ def test_hard_reactor_emits_exact_transaction_choices() -> None:
         torch.ones(2, 4),
     )
     assert torch.equal(
+        trace.value_code.detach().sum(-1),
+        torch.ones(2, 4),
+    )
+    assert torch.equal(
         state.value_probabilities.sum(-1),
         state.active,
     )
-    assert bool(
-        (
-            state.relations.sum(dim=(1, 2, 3))
-            <= model.config.max_edges
-        ).all()
-    )
+    assert bool((state.relations.sum(dim=(1, 2, 3)) <= model.config.max_edges).all())
     validate_state(state, model.config)
 
 
@@ -151,18 +150,9 @@ def test_parameter_receipt_counts_unique_complete_system() -> None:
 def test_base_can_be_frozen_without_freezing_architecture() -> None:
     model = _model()
     model.freeze_base()
-    assert not any(
-        parameter.requires_grad
-        for parameter in model.base.parameters()
-    )
-    assert all(
-        parameter.requires_grad
-        for parameter in model.compiler.parameters()
-    )
-    assert all(
-        parameter.requires_grad
-        for parameter in model.reactor.parameters()
-    )
+    assert not any(parameter.requires_grad for parameter in model.base.parameters())
+    assert all(parameter.requires_grad for parameter in model.compiler.parameters())
+    assert all(parameter.requires_grad for parameter in model.reactor.parameters())
 
 
 def test_post_seal_command_tokens_causally_enter_reactor() -> None:

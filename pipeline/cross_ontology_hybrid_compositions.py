@@ -75,15 +75,9 @@ _FORBIDDEN_CANDIDATE_TOKENS = (
 class HybridKind(StrEnum):
     """The three and only three preregistered hybrid couplings."""
 
-    ARITHMETIC_SELECTS_REWRITE_LOCATION = (
-        "arithmetic_index_selects_rewrite_location"
-    )
-    HORN_RELATION_SELECTS_RESOURCE_OPERATOR = (
-        "horn_relation_selects_resource_operator"
-    )
-    RESOURCE_STATE_CONTROLS_HORN_QUERY = (
-        "resource_state_controls_horn_query"
-    )
+    ARITHMETIC_SELECTS_REWRITE_LOCATION = "arithmetic_index_selects_rewrite_location"
+    HORN_RELATION_SELECTS_RESOURCE_OPERATOR = "horn_relation_selects_resource_operator"
+    RESOURCE_STATE_CONTROLS_HORN_QUERY = "resource_state_controls_horn_query"
 
 
 HYBRID_ORDER = tuple(HybridKind)
@@ -123,9 +117,7 @@ class ResourceHornSpec:
     query_if_false: GroundAtom
 
 
-HybridSpec: TypeAlias = (
-    ArithmeticRewriteSpec | HornResourceSpec | ResourceHornSpec
-)
+HybridSpec: TypeAlias = ArithmeticRewriteSpec | HornResourceSpec | ResourceHornSpec
 
 
 @dataclass(frozen=True, order=True, slots=True)
@@ -178,11 +170,7 @@ class HybridCase:
         return self.compiler_source
 
     def late_challenge_bytes(self, *, intervention: bool = False) -> bytes:
-        return (
-            self.intervention_challenge
-            if intervention
-            else self.challenge
-        )
+        return self.intervention_challenge if intervention else self.challenge
 
 
 @dataclass(frozen=True, slots=True)
@@ -362,11 +350,7 @@ def _candidate_challenge(
 ) -> bytes:
     if isinstance(spec, ArithmeticRewriteSpec):
         body = {
-            "a": (
-                spec.intervention_operands
-                if intervention
-                else spec.operands
-            ),
+            "a": (spec.intervention_operands if intervention else spec.operands),
             "b": _term_payload(spec.term),
         }
     elif isinstance(spec, HornResourceSpec):
@@ -392,9 +376,7 @@ def _candidate_challenge(
             "b": list(spec.resource_sequence),
             "c": [_atom_payload(atom) for atom in spec.horn_initial],
         }
-    return _canonical_bytes(
-        {"schema": _CHALLENGE_SCHEMA, "input": body}
-    )
+    return _canonical_bytes({"schema": _CHALLENGE_SCHEMA, "input": body})
 
 
 def _primary_pattern_match(
@@ -407,10 +389,9 @@ def _primary_pattern_match(
     if pattern.variable_index is not None:
         previous = bindings.setdefault(pattern.variable_index, term)
         return previous == term
-    if (
-        pattern.constructor_index != term.constructor_index
-        or len(pattern.children) != len(term.children)
-    ):
+    if pattern.constructor_index != term.constructor_index or len(
+        pattern.children
+    ) != len(term.children):
         return False
     return all(
         _primary_pattern_match(child_pattern, child, bindings)
@@ -432,10 +413,7 @@ def _primary_instantiate(
     return GroundTerm(
         pattern.type_index,
         pattern.constructor_index,
-        tuple(
-            _primary_instantiate(child, bindings)
-            for child in pattern.children
-        ),
+        tuple(_primary_instantiate(child, bindings) for child in pattern.children),
     )
 
 
@@ -445,9 +423,7 @@ def _primary_occurrences(
 ) -> tuple[tuple[tuple[int, ...], GroundTerm], ...]:
     result = [(path, term)]
     for child_index, child in enumerate(term.children):
-        result.extend(
-            _primary_occurrences(child, (*path, child_index))
-        )
+        result.extend(_primary_occurrences(child, (*path, child_index)))
     return tuple(result)
 
 
@@ -529,10 +505,9 @@ def _independent_pattern_match(
                 return None
             bindings[left.variable_index] = right
             continue
-        if (
-            left.constructor_index != right.constructor_index
-            or len(left.children) != len(right.children)
-        ):
+        if left.constructor_index != right.constructor_index or len(
+            left.children
+        ) != len(right.children):
             return None
         pending.extend(zip(left.children, right.children, strict=True))
     return bindings
@@ -546,8 +521,7 @@ def _independent_instantiate(
         return bindings[pattern.variable_index]
     assert pattern.constructor_index is not None
     children = tuple(
-        _independent_instantiate(child, bindings)
-        for child in pattern.children
+        _independent_instantiate(child, bindings) for child in pattern.children
     )
     return GroundTerm(
         pattern.type_index,
@@ -616,9 +590,8 @@ def _primary_horn_closure(
         premise = premises[offset]
         matches = []
         for fact in facts:
-            if (
-                fact.predicate != premise.predicate
-                or len(fact.arguments) != len(premise.variables)
+            if fact.predicate != premise.predicate or len(fact.arguments) != len(
+                premise.variables
             ):
                 continue
             updated = dict(bindings)
@@ -645,8 +618,7 @@ def _primary_horn_closure(
                     GroundAtom(
                         rule.conclusion.predicate,
                         tuple(
-                            bindings[variable]
-                            for variable in rule.conclusion.variables
+                            bindings[variable] for variable in rule.conclusion.variables
                         ),
                     )
                 )
@@ -691,10 +663,7 @@ def _independent_horn_closure(
                 premises = {
                     GroundAtom(
                         premise.predicate,
-                        tuple(
-                            assignment[variable]
-                            for variable in premise.variables
-                        ),
+                        tuple(assignment[variable] for variable in premise.variables),
                     )
                     for premise in rule.premises
                 }
@@ -718,14 +687,9 @@ def _primary_resource_execution(
     initial: Marking,
     sequence: tuple[int, ...],
 ) -> ProcessOutcome:
-    counts = {
-        place.index: initial.multiplicities[place.index]
-        for place in PLACE_SPECS
-    }
+    counts = {place.index: initial.multiplicities[place.index] for place in PLACE_SPECS}
     for cursor, symbol in enumerate(sequence):
-        operator_index = RESOURCE_THEORIES[
-            theory_index
-        ].operator_indices[symbol]
+        operator_index = RESOURCE_THEORIES[theory_index].operator_indices[symbol]
         operator = OPERATOR_LIBRARY[operator_index]
         required = {
             quantity.place: max(
@@ -757,10 +721,7 @@ def _primary_resource_execution(
             updated[quantity.place] -= quantity.multiplicity
         for quantity in operator.produces:
             updated[quantity.place] += quantity.multiplicity
-        if any(
-            updated[place.index] > place.capacity
-            for place in PLACE_SPECS
-        ):
+        if any(updated[place.index] > place.capacity for place in PLACE_SPECS):
             return ProcessOutcome(
                 Marking(tuple(counts[index] for index in range(4))),
                 cursor,
@@ -857,11 +818,7 @@ def execute_hybrid_case(
         )
         if len(events) != _REWRITE_LOCATION_COUNT:
             raise ValueError("frozen rewrite location count differs")
-        operands = (
-            spec.intervention_operands
-            if intervention
-            else spec.operands
-        )
+        operands = spec.intervention_operands if intervention else spec.operands
         selected = _primary_arithmetic_index(operands, len(events))
         event = events[selected]
         return ArithmeticRewriteResult(
@@ -871,18 +828,12 @@ def execute_hybrid_case(
             event.terminal,
         )
     if isinstance(spec, HornResourceSpec):
-        initial = (
-            spec.intervention_horn_initial
-            if intervention
-            else spec.horn_initial
-        )
+        initial = spec.intervention_horn_initial if intervention else spec.horn_initial
         selector_holds = spec.selector_atom in _primary_horn_closure(
             spec.horn_theory_index,
             initial,
         )
-        symbol = (
-            spec.true_symbol if selector_holds else spec.false_symbol
-        )
+        symbol = spec.true_symbol if selector_holds else spec.false_symbol
         return HornResourceResult(
             selector_holds,
             symbol,
@@ -893,9 +844,7 @@ def execute_hybrid_case(
             ),
         )
     initial = (
-        spec.intervention_resource_initial
-        if intervention
-        else spec.resource_initial
+        spec.intervention_resource_initial if intervention else spec.resource_initial
     )
     resource_outcome = _primary_resource_execution(
         spec.resource_theory_index,
@@ -906,9 +855,7 @@ def execute_hybrid_case(
         resource_outcome.marking.multiplicities[spec.control_place]
         > spec.control_threshold
     )
-    query = (
-        spec.query_if_true if control_holds else spec.query_if_false
-    )
+    query = spec.query_if_true if control_holds else spec.query_if_false
     closure = _primary_horn_closure(
         spec.horn_theory_index,
         spec.horn_initial,
@@ -936,11 +883,7 @@ def independent_hybrid_oracle(
         )
         if len(events) != _REWRITE_LOCATION_COUNT:
             raise ValueError("frozen rewrite location count differs")
-        operands = (
-            spec.intervention_operands
-            if intervention
-            else spec.operands
-        )
+        operands = spec.intervention_operands if intervention else spec.operands
         selected = _independent_arithmetic_index(
             operands,
             len(events),
@@ -953,18 +896,12 @@ def independent_hybrid_oracle(
             event.terminal,
         )
     if isinstance(spec, HornResourceSpec):
-        initial = (
-            spec.intervention_horn_initial
-            if intervention
-            else spec.horn_initial
-        )
+        initial = spec.intervention_horn_initial if intervention else spec.horn_initial
         selector_holds = spec.selector_atom in _independent_horn_closure(
             spec.horn_theory_index,
             initial,
         )
-        symbol = (
-            spec.true_symbol if selector_holds else spec.false_symbol
-        )
+        symbol = spec.true_symbol if selector_holds else spec.false_symbol
         return HornResourceResult(
             selector_holds,
             symbol,
@@ -975,9 +912,7 @@ def independent_hybrid_oracle(
             ),
         )
     initial = (
-        spec.intervention_resource_initial
-        if intervention
-        else spec.resource_initial
+        spec.intervention_resource_initial if intervention else spec.resource_initial
     )
     resource_outcome = _independent_resource_execution(
         spec.resource_theory_index,
@@ -988,9 +923,7 @@ def independent_hybrid_oracle(
         resource_outcome.marking.multiplicities[spec.control_place]
         > spec.control_threshold
     )
-    query = (
-        spec.query_if_true if control_holds else spec.query_if_false
-    )
+    query = spec.query_if_true if control_holds else spec.query_if_false
     closure = _independent_horn_closure(
         spec.horn_theory_index,
         spec.horn_initial,
@@ -1084,9 +1017,7 @@ _RESOURCE_HORN_ROWS = (
     (45, (2, 0, 0, 1), (1, 0, 0, 1), (0, 2), 0, 5),
 )
 
-_RESOURCE_HORN_DERIVED_P1_THEORIES = frozenset(
-    {0, 1, 2, 3, 4, 5, 6, 7, 9}
-)
+_RESOURCE_HORN_DERIVED_P1_THEORIES = frozenset({0, 1, 2, 3, 4, 5, 6, 7, 9})
 
 
 def _frozen_specs() -> tuple[tuple[HybridKind, HybridSpec], ...]:
@@ -1189,15 +1120,10 @@ def audit_hybrid_cases(
 ]:
     if len(cases) != TOTAL_CASES:
         raise ValueError("hybrid case count differs")
-    counts = {
-        kind: sum(case.kind == kind for case in cases)
-        for kind in HYBRID_ORDER
-    }
+    counts = {kind: sum(case.kind == kind for case in cases) for kind in HYBRID_ORDER}
     if counts != {kind: CASES_PER_HYBRID for kind in HYBRID_ORDER}:
         raise ValueError("hybrid balance differs")
-    if {
-        (case.kind, case.case_index) for case in cases
-    } != {
+    if {(case.kind, case.case_index) for case in cases} != {
         (kind, case_index)
         for kind in HYBRID_ORDER
         for case_index in range(CASES_PER_HYBRID)
@@ -1212,13 +1138,10 @@ def audit_hybrid_cases(
     for case in cases:
         source = case.compiler_source_bytes()
         challenge = case.late_challenge_bytes()
-        intervention_challenge = case.late_challenge_bytes(
-            intervention=True
-        )
+        intervention_challenge = case.late_challenge_bytes(intervention=True)
         candidate_bytes = source + challenge + intervention_challenge
         leak_count += sum(
-            token in candidate_bytes.lower()
-            for token in _FORBIDDEN_CANDIDATE_TOKENS
+            token in candidate_bytes.lower() for token in _FORBIDDEN_CANDIDATE_TOKENS
         )
         if challenge == intervention_challenge:
             raise ValueError("hybrid intervention is byte-invariant")
@@ -1235,26 +1158,20 @@ def audit_hybrid_cases(
         )
         agreement += expected == independent
         agreement += intervention_expected == independent_intervention
-        signal_changes += (
-            _coupling_signal(expected)
-            != _coupling_signal(intervention_expected)
+        signal_changes += _coupling_signal(expected) != _coupling_signal(
+            intervention_expected
         )
-        output_changes += (
-            _semantic_output(expected)
-            != _semantic_output(intervention_expected)
+        output_changes += _semantic_output(expected) != _semantic_output(
+            intervention_expected
         )
         material = {
             "kind": case.kind,
             "case_index": case.case_index,
             "source_sha256": _digest(source),
             "challenge_sha256": _digest(challenge),
-            "intervention_challenge_sha256": _digest(
-                intervention_challenge
-            ),
+            "intervention_challenge_sha256": _digest(intervention_challenge),
             "expected_sha256": _digest(expected),
-            "intervention_expected_sha256": _digest(
-                intervention_expected
-            ),
+            "intervention_expected_sha256": _digest(intervention_expected),
         }
         records.append(
             HybridCaseReceipt(
@@ -1262,13 +1179,9 @@ def audit_hybrid_cases(
                 case_index=case.case_index,
                 source_sha256=material["source_sha256"],
                 challenge_sha256=material["challenge_sha256"],
-                intervention_challenge_sha256=material[
-                    "intervention_challenge_sha256"
-                ],
+                intervention_challenge_sha256=material["intervention_challenge_sha256"],
                 expected_sha256=material["expected_sha256"],
-                intervention_expected_sha256=material[
-                    "intervention_expected_sha256"
-                ],
+                intervention_expected_sha256=material["intervention_expected_sha256"],
                 row_sha256=_digest(material),
             )
         )
@@ -1312,12 +1225,10 @@ def audit_hybrid_cases(
 
 
 @lru_cache(maxsize=1)
-def build_hybrid_qualification_receipt() -> (
-    tuple[
-        tuple[HybridCaseReceipt, ...],
-        HybridQualificationReceipt,
-    ]
-):
+def build_hybrid_qualification_receipt() -> tuple[
+    tuple[HybridCaseReceipt, ...],
+    HybridQualificationReceipt,
+]:
     return audit_hybrid_cases(build_hybrid_cases())
 
 

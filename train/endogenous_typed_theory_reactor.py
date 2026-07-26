@@ -62,34 +62,17 @@ class TheoryReactorConfig:
             self.max_steps,
         )
         if any(value <= 0 for value in positive):
-            raise TheoryReactorError(
-                "all reactor dimensions must be positive"
-            )
+            raise TheoryReactorError("all reactor dimensions must be positive")
         if self.state_width % self.num_heads:
-            raise TheoryReactorError(
-                "state width must divide evenly across heads"
-            )
-        if self.max_edges > (
-            self.num_relations * self.num_slots * self.num_slots
-        ):
-            raise TheoryReactorError(
-                "max_edges exceeds the relation ledger"
-            )
+            raise TheoryReactorError("state width must divide evenly across heads")
+        if self.max_edges > (self.num_relations * self.num_slots * self.num_slots):
+            raise TheoryReactorError("max_edges exceeds the relation ledger")
         if not 0 <= self.stage_after_block:
-            raise TheoryReactorError(
-                "stage_after_block must be nonnegative"
-            )
-        if (
-            n_layer is not None
-            and self.stage_after_block >= n_layer - 1
-        ):
-            raise TheoryReactorError(
-                "reactor stage must leave a decoder block"
-            )
+            raise TheoryReactorError("stage_after_block must be nonnegative")
+        if n_layer is not None and self.stage_after_block >= n_layer - 1:
+            raise TheoryReactorError("reactor stage must leave a decoder block")
         if self.parameter_cap > SYSTEM_PARAMETER_CAP:
-            raise TheoryReactorError(
-                "parameter cap exceeds the system maximum"
-            )
+            raise TheoryReactorError("parameter cap exceeds the system maximum")
 
 
 @dataclass(frozen=True, slots=True)
@@ -108,9 +91,7 @@ class TypedTheoryState:
     def detached_clone(self) -> "TypedTheoryState":
         return TypedTheoryState(
             *(
-                value.detach().clone()
-                if isinstance(value, torch.Tensor)
-                else value
+                value.detach().clone() if isinstance(value, torch.Tensor) else value
                 for value in (
                     self.value_probabilities,
                     self.type_probabilities,
@@ -142,6 +123,7 @@ class ReactorTrace:
     target: torch.Tensor
     relation: torch.Tensor
     type_index: torch.Tensor
+    value_code: torch.Tensor
     active: torch.Tensor
     committed: torch.Tensor
     halted: torch.Tensor
@@ -302,12 +284,9 @@ class EndogenousTheoryCompiler(nn.Module):
         self.config = config
         width = config.state_width
         self.token_projection = nn.Linear(config.d_model, width)
-        self.slot_queries = nn.Parameter(
-            torch.empty(config.num_slots, width)
-        )
+        self.slot_queries = nn.Parameter(torch.empty(config.num_slots, width))
         self.layers = nn.ModuleList(
-            _CompilerLayer(config)
-            for _ in range(config.compiler_layers)
+            _CompilerLayer(config) for _ in range(config.compiler_layers)
         )
         self.value_norm = nn.LayerNorm(width)
         self.value_head = nn.Linear(
@@ -340,13 +319,8 @@ class EndogenousTheoryCompiler(nn.Module):
         attention_mask: torch.Tensor | None = None,
         hard: bool = False,
     ) -> TypedTheoryState:
-        if (
-            token_hidden.ndim != 3
-            or token_hidden.shape[-1] != self.config.d_model
-        ):
-            raise TheoryReactorError(
-                "token_hidden must be [batch,tokens,d_model]"
-            )
+        if token_hidden.ndim != 3 or token_hidden.shape[-1] != self.config.d_model:
+            raise TheoryReactorError("token_hidden must be [batch,tokens,d_model]")
         batch, tokens, _ = token_hidden.shape
         padding_mask = _padding_mask(
             attention_mask,
@@ -390,26 +364,27 @@ class EndogenousTheoryCompiler(nn.Module):
             type_probabilities = _hard_one_hot(type_probabilities)
             active = _hard_binary(active)
             root = _hard_one_hot(
-                root_logits.float().masked_fill(
+                root_logits.float()
+                .masked_fill(
                     active.eq(0),
                     torch.finfo(torch.float32).min,
-                ).softmax(-1)
+                )
+                .softmax(-1)
             )
-        value_probabilities = (
-            value_probabilities * active.unsqueeze(-1)
-        )
-        type_probabilities = (
-            type_probabilities * active.unsqueeze(-1)
-        )
+        value_probabilities = value_probabilities * active.unsqueeze(-1)
+        type_probabilities = type_probabilities * active.unsqueeze(-1)
         root = root * active
         root = root / root.sum(-1, keepdim=True).clamp_min(1e-6)
         pair_active = active[:, None, :, None] * active[:, None, None, :]
         relations = relations * pair_active
         if hard:
-            relations = _hard_capped_binary(
-                relations,
-                self.config.max_edges,
-            ) * pair_active
+            relations = (
+                _hard_capped_binary(
+                    relations,
+                    self.config.max_edges,
+                )
+                * pair_active
+            )
         state = TypedTheoryState(
             value_probabilities=value_probabilities.to(slots.dtype),
             type_probabilities=type_probabilities.to(slots.dtype),
@@ -442,12 +417,8 @@ class GenericTransactionReactor(nn.Module):
         width = config.state_width
         self.control_seed = nn.Parameter(torch.empty(width))
         self.step_embedding = nn.Embedding(config.max_steps, width)
-        self.type_embedding = nn.Parameter(
-            torch.empty(config.num_types, width)
-        )
-        self.value_embedding = nn.Parameter(
-            torch.empty(config.num_value_codes, width)
-        )
+        self.type_embedding = nn.Parameter(torch.empty(config.num_types, width))
+        self.value_embedding = nn.Parameter(torch.empty(config.num_value_codes, width))
         self.active_projection = nn.Linear(1, width, bias=False)
         self.root_projection = nn.Linear(1, width, bias=False)
         self.status_projection = nn.Linear(2, width, bias=False)
@@ -501,22 +472,36 @@ class GenericTransactionReactor(nn.Module):
         hard: bool,
         command_hidden: torch.Tensor | None = None,
         command_attention_mask: torch.Tensor | None = None,
+        validate: bool = True,
     ) -> TransactionPolicy:
-        validate_state(state, self.config)
-        if state.step >= self.config.max_steps:
-            raise TheoryReactorError("reactor step exceeds maximum")
+        command, command_padding = self._prepare_command(
+            state,
+            command_hidden,
+            command_attention_mask,
+        )
+        return self._policy(
+            state,
+            hard=hard,
+            command=command,
+            command_padding=command_padding,
+            validate=validate,
+        )
+
+    def _prepare_command(
+        self,
+        state: TypedTheoryState,
+        command_hidden: torch.Tensor | None,
+        command_attention_mask: torch.Tensor | None,
+    ) -> tuple[torch.Tensor | None, torch.Tensor | None]:
         command_padding: torch.Tensor | None = None
         command: torch.Tensor | None = None
         if command_hidden is not None:
             if (
                 command_hidden.ndim != 3
-                or command_hidden.shape[0]
-                != state.value_probabilities.shape[0]
+                or command_hidden.shape[0] != state.value_probabilities.shape[0]
                 or command_hidden.shape[-1] != self.config.d_model
             ):
-                raise TheoryReactorError(
-                    "command hidden geometry differs"
-                )
+                raise TheoryReactorError("command hidden geometry differs")
             command_padding = _padding_mask(
                 command_attention_mask,
                 command_hidden.shape[0],
@@ -525,9 +510,22 @@ class GenericTransactionReactor(nn.Module):
             )
             command = self.command_projection(command_hidden)
         elif command_attention_mask is not None:
-            raise TheoryReactorError(
-                "command mask requires command hidden"
-            )
+            raise TheoryReactorError("command mask requires command hidden")
+        return command, command_padding
+
+    def _policy(
+        self,
+        state: TypedTheoryState,
+        *,
+        hard: bool,
+        command: torch.Tensor | None,
+        command_padding: torch.Tensor | None,
+        validate: bool,
+    ) -> TransactionPolicy:
+        if validate:
+            validate_state(state, self.config)
+        if state.step >= self.config.max_steps:
+            raise TheoryReactorError("reactor step exceeds maximum")
         type_context = torch.einsum(
             "bst,tw->bsw",
             state.type_probabilities,
@@ -550,9 +548,9 @@ class GenericTransactionReactor(nn.Module):
             + self.active_projection(state.active.unsqueeze(-1))
             + self.root_projection(state.root.unsqueeze(-1))
         )
-        pooled = (
-            slots * state.active.unsqueeze(-1)
-        ).sum(1) / state.active.sum(1, keepdim=True).clamp_min(1.0)
+        pooled = (slots * state.active.unsqueeze(-1)).sum(1) / state.active.sum(
+            1, keepdim=True
+        ).clamp_min(1.0)
         control = (
             self.control_seed.to(slots.dtype).unsqueeze(0)
             + self.step_embedding.weight[state.step].to(slots.dtype)
@@ -577,16 +575,24 @@ class GenericTransactionReactor(nn.Module):
         control = self.output_norm(encoded[:, 0])
         encoded_slots = self.output_norm(encoded[:, 1:])
         keys = self.slot_key(encoded_slots)
-        source = torch.einsum(
-            "bw,bsw->bs",
-            self.source_query(control),
-            keys,
-        ).float().softmax(-1)
-        target = torch.einsum(
-            "bw,bsw->bs",
-            self.target_query(control),
-            keys,
-        ).float().softmax(-1)
+        source = (
+            torch.einsum(
+                "bw,bsw->bs",
+                self.source_query(control),
+                keys,
+            )
+            .float()
+            .softmax(-1)
+        )
+        target = (
+            torch.einsum(
+                "bw,bsw->bs",
+                self.target_query(control),
+                keys,
+            )
+            .float()
+            .softmax(-1)
+        )
         opcode = self.opcode_head(control).float().softmax(-1)
         relation = self.relation_head(control).float().softmax(-1)
         type_index = self.type_head(control).float().softmax(-1)
@@ -613,6 +619,7 @@ class GenericTransactionReactor(nn.Module):
         policy: TransactionPolicy,
         *,
         hard: bool = False,
+        validate: bool = True,
     ) -> TypedTheoryState:
         opcode = policy.opcode * (1.0 - state.halted[:, None])
         structural_enabled = 1.0 - state.committed[:, None]
@@ -634,63 +641,43 @@ class GenericTransactionReactor(nn.Module):
 
         allocated = alloc * (1.0 - state.active)
         cleared = clear * state.active
-        active = (
-            state.active + allocated * (1.0 - state.active)
-        ) * (1.0 - cleared)
+        active = (state.active + allocated * (1.0 - state.active)) * (1.0 - cleared)
         type_write = allocated.unsqueeze(-1)
         type_probabilities = (
             state.type_probabilities * (1.0 - type_write)
             + policy.type_index[:, None, :] * type_write
         )
-        value_write = (
-            (write * state.active) + allocated
-        ).clamp(max=1.0).unsqueeze(-1)
+        value_write = ((write * state.active) + allocated).clamp(max=1.0).unsqueeze(-1)
         value_probabilities = (
             state.value_probabilities * (1.0 - value_write)
             + policy.value_code[:, None, :] * value_write
         )
-        value_probabilities = value_probabilities * (
-            1.0 - cleared.unsqueeze(-1)
-        )
+        value_probabilities = value_probabilities * (1.0 - cleared.unsqueeze(-1))
 
         pair = (
             policy.relation[:, :, None, None]
             * policy.source[:, None, :, None]
             * policy.target[:, None, None, :]
         )
-        relations = (
-            state.relations + link[:, None, None, None]
-            * pair * (1.0 - state.relations)
+        relations = state.relations + link[:, None, None, None] * pair * (
+            1.0 - state.relations
         )
-        relations = relations * (
-            1.0 - unlink[:, None, None, None] * pair
+        relations = relations * (1.0 - unlink[:, None, None, None] * pair)
+        clear_pair = (cleared[:, None, :, None] + cleared[:, None, None, :]).clamp(
+            max=1.0
         )
-        clear_pair = (
-            cleared[:, None, :, None]
-            + cleared[:, None, None, :]
-        ).clamp(max=1.0)
         relations = relations * (1.0 - clear_pair)
-        relations = relations * (
-            active[:, None, :, None] * active[:, None, None, :]
-        )
+        relations = relations * (active[:, None, :, None] * active[:, None, None, :])
         if hard:
             relations = _hard_capped_binary(
                 relations,
                 self.config.max_edges,
-            ) * (
-                active[:, None, :, None]
-                * active[:, None, None, :]
-            )
+            ) * (active[:, None, :, None] * active[:, None, None, :])
 
-        root = (
-            state.root * (1.0 - set_root.sum(-1, keepdim=True))
-            + set_root
-        )
+        root = state.root * (1.0 - set_root.sum(-1, keepdim=True)) + set_root
         root = root * active
         root = root / root.sum(-1, keepdim=True).clamp_min(1e-6)
-        committed = state.committed + (
-            1.0 - state.committed
-        ) * commit
+        committed = state.committed + (1.0 - state.committed) * commit
         halted = state.halted + (1.0 - state.halted) * halt
         result = TypedTheoryState(
             value_probabilities=value_probabilities,
@@ -702,7 +689,8 @@ class GenericTransactionReactor(nn.Module):
             halted=halted,
             step=state.step + 1,
         )
-        validate_state(result, self.config)
+        if validate:
+            validate_state(result, self.config)
         return result
 
     def forward(
@@ -716,18 +704,31 @@ class GenericTransactionReactor(nn.Module):
     ) -> tuple[TypedTheoryState, ReactorTrace]:
         if not 1 <= steps <= self.config.max_steps - state.step:
             raise TheoryReactorError("requested reactor steps differ")
+        validate_state(state, self.config)
+        command, command_padding = self._prepare_command(
+            state,
+            command_hidden,
+            command_attention_mask,
+        )
         policies: list[TransactionPolicy] = []
         states: list[TypedTheoryState] = []
         for _ in range(steps):
-            policy = self.policy(
+            policy = self._policy(
                 state,
                 hard=hard,
-                command_hidden=command_hidden,
-                command_attention_mask=command_attention_mask,
+                command=command,
+                command_padding=command_padding,
+                validate=False,
             )
-            state = self.apply(state, policy, hard=hard)
+            state = self.apply(
+                state,
+                policy,
+                hard=hard,
+                validate=False,
+            )
             policies.append(policy)
             states.append(state)
+        validate_state(state, self.config)
         return state, ReactorTrace(
             opcode=torch.stack([item.opcode for item in policies], dim=1),
             source=torch.stack([item.source for item in policies], dim=1),
@@ -738,6 +739,10 @@ class GenericTransactionReactor(nn.Module):
             ),
             type_index=torch.stack(
                 [item.type_index for item in policies],
+                dim=1,
+            ),
+            value_code=torch.stack(
+                [item.value_code for item in policies],
                 dim=1,
             ),
             active=torch.stack([item.active for item in states], dim=1),
@@ -755,12 +760,8 @@ class SourceDeletedQueryReader(nn.Module):
         config.validate()
         width = config.state_width
         self.query_projection = nn.Linear(config.d_model, width)
-        self.value_embedding = nn.Parameter(
-            torch.empty(config.num_value_codes, width)
-        )
-        self.type_embedding = nn.Parameter(
-            torch.empty(config.num_types, width)
-        )
+        self.value_embedding = nn.Parameter(torch.empty(config.num_value_codes, width))
+        self.type_embedding = nn.Parameter(torch.empty(config.num_types, width))
         self.active_projection = nn.Linear(1, width, bias=False)
         self.root_projection = nn.Linear(1, width, bias=False)
         self.relation_projection = nn.Linear(
@@ -810,9 +811,15 @@ class SourceDeletedQueryReader(nn.Module):
         query = self.query_projection(query_hidden)
         state_padding = state.active.lt(0.5)
         empty = state_padding.all(-1)
-        if bool(empty.any()):
-            state_padding = state_padding.clone()
-            state_padding[empty, 0] = False
+        first_slot = F.one_hot(
+            torch.zeros(
+                state_padding.shape[0],
+                dtype=torch.long,
+                device=state_padding.device,
+            ),
+            state_padding.shape[1],
+        ).bool()
+        state_padding = state_padding & ~(empty[:, None] & first_slot)
         state_values = torch.einsum(
             "bsc,cw->bsw",
             state.value_probabilities,
@@ -870,13 +877,9 @@ class EndogenousTypedTheoryReactorGPT(nn.Module):
         super().__init__()
         config.validate(n_layer=base.cfg.n_layer)
         if base.cfg.d_model != config.d_model:
-            raise TheoryReactorError(
-                "reactor d_model must match Shohin"
-            )
+            raise TheoryReactorError("reactor d_model must match Shohin")
         if base.cfg.n_loop != 1:
-            raise TheoryReactorError(
-                "reactor reference requires n_loop=1"
-            )
+            raise TheoryReactorError("reactor reference requires n_loop=1")
         self.base = base
         self.config = config
         self.compiler = EndogenousTheoryCompiler(config)
@@ -889,10 +892,7 @@ class EndogenousTypedTheoryReactorGPT(nn.Module):
 
     def parameter_receipt(self) -> ReactorParameterReceipt:
         base_ids = {id(parameter) for parameter in self.base.parameters()}
-        base_parameters = sum(
-            parameter.numel()
-            for parameter in self.base.parameters()
-        )
+        base_parameters = sum(parameter.numel() for parameter in self.base.parameters())
         architecture_parameters = sum(
             parameter.numel()
             for parameter in self.parameters()
@@ -900,9 +900,7 @@ class EndogenousTypedTheoryReactorGPT(nn.Module):
         )
         complete = base_parameters + architecture_parameters
         if complete > self.config.parameter_cap:
-            raise TheoryReactorError(
-                "complete system exceeds parameter cap"
-            )
+            raise TheoryReactorError("complete system exceeds parameter cap")
         return ReactorParameterReceipt(
             base_parameters=base_parameters,
             architecture_parameters=architecture_parameters,
@@ -935,9 +933,7 @@ class EndogenousTypedTheoryReactorGPT(nn.Module):
         command_attention_mask: torch.Tensor | None = None,
     ) -> tuple[TypedTheoryState, ReactorTrace]:
         command_hidden = (
-            None
-            if command_idx is None
-            else self._encode_to_stage(command_idx, pos=0)
+            None if command_idx is None else self._encode_to_stage(command_idx, pos=0)
         )
         return self.reactor(
             state,
@@ -1043,9 +1039,7 @@ class EndogenousTypedTheoryReactorGPT(nn.Module):
         pos: int,
     ) -> None:
         if idx.ndim != 2 or idx.dtype != torch.long:
-            raise TheoryReactorError(
-                "token ids must be a rank-two long tensor"
-            )
+            raise TheoryReactorError("token ids must be a rank-two long tensor")
         if pos < 0 or pos + idx.shape[1] > self.base.cfg.seq_len:
             raise TheoryReactorError(
                 "token positions exceed configured sequence length"
@@ -1093,16 +1087,15 @@ def validate_state(
             not isinstance(value, torch.Tensor)
             or value.shape != expected[field.name]
             or not value.is_floating_point()
-            or not bool(torch.isfinite(value).all())
         ):
-            raise TheoryReactorError(
-                f"state {field.name} differs"
-            )
+            raise TheoryReactorError(f"state {field.name} differs")
+        _require_tensor(
+            torch.isfinite(value).all(),
+            f"state {field.name} is nonfinite",
+        )
         devices.add(value.device)
     if len(devices) != 1:
-        raise TheoryReactorError(
-            "state tensors must share one device"
-        )
+        raise TheoryReactorError("state tensors must share one device")
 
 
 def validate_deployed_state(
@@ -1117,10 +1110,10 @@ def validate_deployed_state(
         name: str,
         value: torch.Tensor,
     ) -> None:
-        if not bool(((value == 0) | (value == 1)).all()):
-            raise TheoryReactorError(
-                f"deployed state {name} is not binary"
-            )
+        _require_tensor(
+            ((value == 0) | (value == 1)).all(),
+            f"deployed state {name} is not binary",
+        )
 
     require_binary("active", state.active)
     require_binary("committed", state.committed)
@@ -1135,43 +1128,38 @@ def validate_deployed_state(
         "value_probabilities",
         state.value_probabilities,
     )
-    if not torch.equal(
-        state.value_probabilities.sum(-1),
-        state.active,
-    ):
-        raise TheoryReactorError(
-            "deployed value codes are not active-slot one-hot"
-        )
-    if not torch.equal(
-        state.type_probabilities.sum(-1),
-        state.active,
-    ):
-        raise TheoryReactorError(
-            "deployed types are not active-slot one-hot"
-        )
-    if (
-        bool((state.root.sum(-1) > 1).any())
-        or bool((state.root > state.active).any())
-    ):
-        raise TheoryReactorError(
-            "deployed root is not an active-slot pointer"
-        )
-    pair_active = (
-        state.active[:, None, :, None]
-        * state.active[:, None, None, :]
+    _require_tensor(
+        state.value_probabilities.sum(-1).eq(state.active).all(),
+        "deployed value codes are not active-slot one-hot",
     )
-    if (
-        bool((state.relations > pair_active).any())
-        or bool(
-            (
-                state.relations.sum(dim=(1, 2, 3))
-                > config.max_edges
-            ).any()
-        )
-    ):
-        raise TheoryReactorError(
-            "deployed relation ledger exceeds its sparse bounds"
-        )
+    _require_tensor(
+        state.type_probabilities.sum(-1).eq(state.active).all(),
+        "deployed types are not active-slot one-hot",
+    )
+    _require_tensor(
+        (state.root.sum(-1) <= 1).all() & (state.root <= state.active).all(),
+        "deployed root is not an active-slot pointer",
+    )
+    pair_active = state.active[:, None, :, None] * state.active[:, None, None, :]
+    _require_tensor(
+        (state.relations <= pair_active).all()
+        & (state.relations.sum(dim=(1, 2, 3)) <= config.max_edges).all(),
+        "deployed relation ledger exceeds its sparse bounds",
+    )
+
+
+def _require_tensor(
+    condition: torch.Tensor,
+    message: str,
+) -> None:
+    """Assert a scalar tensor without synchronizing the CUDA hot loop."""
+
+    if condition.ndim:
+        raise TheoryReactorError("internal tensor assertion must be scalar")
+    if condition.device.type == "cuda" or torch.compiler.is_compiling():
+        torch._assert_async(condition, message)
+    elif not bool(condition):
+        raise TheoryReactorError(message)
 
 
 def _padding_mask(
@@ -1183,26 +1171,19 @@ def _padding_mask(
     if attention_mask is None:
         return None
     if attention_mask.shape != (batch, tokens):
-        raise TheoryReactorError(
-            "attention mask has the wrong shape"
-        )
+        raise TheoryReactorError("attention mask has the wrong shape")
     if attention_mask.dtype != torch.bool:
-        if not bool(
-            ((attention_mask == 0) | (attention_mask == 1)).all()
-        ):
-            raise TheoryReactorError(
-                "attention mask must be binary"
-            )
-        attention_mask = attention_mask.bool()
-    if bool(
-        (
-            attention_mask[:, 1:].to(torch.int8)
-            > attention_mask[:, :-1].to(torch.int8)
-        ).any()
-    ):
-        raise TheoryReactorError(
-            "attention mask must be right padded"
+        _require_tensor(
+            ((attention_mask == 0) | (attention_mask == 1)).all(),
+            "attention mask must be binary",
         )
+        attention_mask = attention_mask.bool()
+    _require_tensor(
+        ~(
+            attention_mask[:, 1:].to(torch.int8) > attention_mask[:, :-1].to(torch.int8)
+        ).any(),
+        "attention mask must be right padded",
+    )
     return ~attention_mask.to(device=device)
 
 

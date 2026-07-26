@@ -47,9 +47,7 @@ FORBIDDEN_CANDIDATE_TOKENS = (
 
 
 def _challenge_input(case, *, intervention: bool) -> dict:
-    return json.loads(
-        case.late_challenge_bytes(intervention=intervention)
-    )["input"]
+    return json.loads(case.late_challenge_bytes(intervention=intervention))["input"]
 
 
 def test_registry_and_receipt_freeze_exact_hybrid_geometry() -> None:
@@ -69,9 +67,7 @@ def test_registry_and_receipt_freeze_exact_hybrid_geometry() -> None:
     assert Counter(case.kind for case in cases) == {
         kind: CASES_PER_HYBRID for kind in HYBRID_ORDER
     }
-    assert {
-        (case.kind, case.case_index) for case in cases
-    } == {
+    assert {(case.kind, case.case_index) for case in cases} == {
         (kind, case_index)
         for kind in HYBRID_ORDER
         for case_index in range(CASES_PER_HYBRID)
@@ -114,8 +110,7 @@ def test_arithmetic_index_causally_selects_a_rewrite_location() -> None:
     cases = [
         case
         for case in build_hybrid_cases()
-        if case.kind
-        == HybridKind.ARITHMETIC_SELECTS_REWRITE_LOCATION
+        if case.kind == HybridKind.ARITHMETIC_SELECTS_REWRITE_LOCATION
     ]
     assert len(cases) == CASES_PER_HYBRID
     for case in cases:
@@ -150,8 +145,7 @@ def test_horn_relation_causally_selects_a_resource_operator() -> None:
     cases = [
         case
         for case in build_hybrid_cases()
-        if case.kind
-        == HybridKind.HORN_RELATION_SELECTS_RESOURCE_OPERATOR
+        if case.kind == HybridKind.HORN_RELATION_SELECTS_RESOURCE_OPERATOR
     ]
     assert len(cases) == CASES_PER_HYBRID
     for case in cases:
@@ -183,8 +177,7 @@ def test_resource_state_causally_controls_a_horn_query() -> None:
     cases = [
         case
         for case in build_hybrid_cases()
-        if case.kind
-        == HybridKind.RESOURCE_STATE_CONTROLS_HORN_QUERY
+        if case.kind == HybridKind.RESOURCE_STATE_CONTROLS_HORN_QUERY
     ]
     assert len(cases) == CASES_PER_HYBRID
     for case in cases:
@@ -227,10 +220,7 @@ def test_candidate_surfaces_exclude_assessor_and_family_labels() -> None:
         assert source.endswith(b"\n")
         assert factual.endswith(b"\n")
         assert intervention.endswith(b"\n")
-        assert all(
-            token not in candidate_bytes
-            for token in FORBIDDEN_CANDIDATE_TOKENS
-        )
+        assert all(token not in candidate_bytes for token in FORBIDDEN_CANDIDATE_TOKENS)
         assert case.kind.value.encode("ascii") not in candidate_bytes
         assert "kind" not in json.loads(source)
         assert "kind" not in json.loads(factual)
@@ -239,9 +229,7 @@ def test_candidate_surfaces_exclude_assessor_and_family_labels() -> None:
 
 def test_hashes_are_complete_unique_and_deterministic() -> None:
     first_cases = build_hybrid_cases()
-    first_records, first_receipt = (
-        build_hybrid_qualification_receipt()
-    )
+    first_records, first_receipt = build_hybrid_qualification_receipt()
     second_records, second_receipt = audit_hybrid_cases(first_cases)
     assert first_records == second_records
     assert first_receipt == second_receipt
@@ -257,16 +245,11 @@ def test_hashes_are_complete_unique_and_deterministic() -> None:
             record.row_sha256,
         )
         assert all(
-            len(value) == 64
-            and set(value) <= set("0123456789abcdef")
+            len(value) == 64 and set(value) <= set("0123456789abcdef")
             for value in hashes
         )
-        assert record.challenge_sha256 != (
-            record.intervention_challenge_sha256
-        )
-        assert record.expected_sha256 != (
-            record.intervention_expected_sha256
-        )
+        assert record.challenge_sha256 != (record.intervention_challenge_sha256)
+        assert record.expected_sha256 != (record.intervention_expected_sha256)
 
 
 def test_audit_fails_closed_on_intervention_or_label_tampering() -> None:
