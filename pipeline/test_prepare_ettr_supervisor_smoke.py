@@ -312,6 +312,8 @@ def test_job_is_one_gpu_bounded_and_runs_all_three_phases() -> None:
     assert "ASSESSOR_PYTHON" in job
     assert "cryptography.__version__" in job
     assert "46.0.3" in job
+    assert "safetensors.__version__" in job
+    assert "0.7.0" in job
     assert "ettr-claim-runtime-v2.tar" in job
     assert " prepare \\" in job
     assert "run-chain \\" in job

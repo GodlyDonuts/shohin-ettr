@@ -103,7 +103,8 @@ immutable_file "$RUNTIME_TAR" "$EXPECTED_ARCHIVE_SHA256" || {
   && [ "$(/usr/bin/sha256sum "$ASSESSOR_PYTHON" \
     | /usr/bin/awk '{print $1}')" = "$EXPECTED_ASSESSOR_PYTHON_SHA256" ] \
   && [ "$("$ASSESSOR_PYTHON" -I -B -c \
-    'import cryptography; print(cryptography.__version__)')" = 46.0.3 ] || {
+    'import cryptography, safetensors; print(cryptography.__version__ + "|" + safetensors.__version__)')" \
+    = "46.0.3|0.7.0" ] || {
   echo "[ettr-supervisor-smoke] assessor Python identity differs" >&2
   exit 3
 }
