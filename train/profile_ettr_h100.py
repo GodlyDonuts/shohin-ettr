@@ -28,7 +28,7 @@ assertions are asynchronous on CUDA and therefore do not add a host sync.
 from __future__ import annotations
 
 import argparse
-from dataclasses import asdict, dataclass, fields
+from dataclasses import asdict, dataclass, fields, replace
 import gc
 import hashlib
 import json
@@ -45,10 +45,12 @@ import torch
 from endogenous_typed_theory_reactor import (
     EndogenousTypedTheoryReactorGPT,
     TheoryReactorConfig,
+    TypedTheoryState,
 )
 from ettr_data_contract import (
     ETTRCausalRectangle,
     ETTRContinuationBatch,
+    terminal_packet_sufficiency_receipt,
 )
 from ettr_episode import (
     CausalETTREpisodeRunner,
@@ -58,6 +60,7 @@ from ettr_episode import (
 from ettr_objectives import (
     ETTRCompositeObjective,
     ETTRObjectiveConfig,
+    ETTRObjectiveWeights,
     ETTRPacketTargets,
     ETTRTransactionTargets,
 )
@@ -68,7 +71,7 @@ from ettr_optimization import (
 from model import GPT, GPTConfig
 
 
-SCHEMA = "shohin-ettr-h100-profile-v3"
+SCHEMA = "shohin-ettr-h100-profile-v4"
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PROTECTED_PATHS = (REPOSITORY_ROOT / "train" / "flagship_out",)
 SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
@@ -590,6 +593,7 @@ def synthetic_batches(
             }
         )
     digest = hashlib.sha256(canonical_json_bytes(digest_payload)).hexdigest()
+    terminal_packet_sufficiency_receipt(tuple(batches))
     return tuple(batches), digest
 
 
@@ -696,6 +700,9 @@ def _component_parameters(
 ) -> dict[str, list[torch.nn.Parameter]]:
     return {
         "base": list(model.base.parameters()),
+        "command_projection": list(
+            model.reactor.command_projection.parameters()
+        ),
         "compiler": list(model.compiler.parameters()),
         "reactor": list(model.reactor.parameters()),
         "query_reader": list(model.query_reader.parameters()),
@@ -793,6 +800,188 @@ def _gradient_tensors(
         nonzero.add_(torch.count_nonzero(gradient))
         nonfinite.add_(torch.count_nonzero(~torch.isfinite(gradient)))
     return square, nonzero, nonfinite
+
+
+def _index_state(
+    state: TypedTheoryState,
+    index: torch.Tensor,
+) -> TypedTheoryState:
+    return TypedTheoryState(
+        **{
+            field.name: (
+                getattr(state, field.name)
+                if field.name == "step"
+                else getattr(state, field.name).index_select(0, index)
+            )
+            for field in fields(state)
+        }
+    )
+
+
+def _detach_state(state: TypedTheoryState) -> TypedTheoryState:
+    return TypedTheoryState(
+        **{
+            field.name: (
+                getattr(state, field.name)
+                if field.name == "step"
+                else getattr(state, field.name).detach()
+            )
+            for field in fields(state)
+        }
+    )
+
+
+def _gather_query_logits(
+    model: EndogenousTypedTheoryReactorGPT,
+    state: TypedTheoryState,
+    batch: ETTRContinuationBatch,
+    row_index: torch.Tensor,
+) -> torch.Tensor:
+    logits, _ = model.answer_query(
+        state,
+        batch.episodes.query.tokens.index_select(0, row_index),
+        targets=None,
+        attention_mask=batch.episodes.query.attention_mask.index_select(
+            0,
+            row_index,
+        ),
+    )
+    read_index = batch.episodes.query_read_index.index_select(0, row_index)
+    return logits.gather(
+        1,
+        read_index[:, None, None].expand(-1, 1, logits.shape[-1]),
+    ).squeeze(1)
+
+
+def _query_binding_weights(arm: str) -> ETTRObjectiveWeights:
+    if arm not in {"world", "command"}:
+        raise ETTRProfileError("isolated query-binding arm differs")
+    return ETTRObjectiveWeights(
+        token_lm=0.0,
+        packet=0.0,
+        world_intervention=0.0,
+        command_intervention=0.0,
+        world_query_binding=1.0 if arm == "world" else 0.0,
+        command_query_binding=1.0 if arm == "command" else 0.0,
+        transaction=0.0,
+        equivariance=0.0,
+        commit_halt=0.0,
+        sparsity=0.0,
+        anti_bypass=0.0,
+    )
+
+
+def _isolated_query_binding_gradients(
+    model: EndogenousTypedTheoryReactorGPT,
+    batch: ETTRContinuationBatch,
+    objective_config: ETTRObjectiveConfig,
+    *,
+    reactor_steps: int,
+    device: torch.device,
+) -> dict[str, dict[str, dict[str, tuple[torch.Tensor, ...] | int]]]:
+    """Measure each causal query arm without support from other losses."""
+
+    runner = CausalETTREpisodeRunner(model)
+    components = _component_parameters(model)
+    receipts: dict[
+        str,
+        dict[str, dict[str, tuple[torch.Tensor, ...] | int]],
+    ] = {}
+    for arm in ("world", "command"):
+        receipts[arm] = {}
+        for mode in ("treatment", "detached_state"):
+            model.zero_grad(set_to_none=True)
+            output = runner(
+                batch.episodes,
+                reactor_steps=reactor_steps,
+                hard=True,
+                validate_batch=False,
+                compute_losses=False,
+            )
+            (
+                world_packet,
+                world_command,
+                world_target,
+                command_packet,
+                command_command,
+                command_target,
+            ) = batch.causal_rectangles.intervention_indices()
+            interventions = runner.intervene(
+                batch.episodes,
+                output.initial_state,
+                reactor_steps=reactor_steps,
+                world_packet_index=world_packet,
+                world_command_index=world_command,
+                world_query_index=world_target,
+                command_packet_index=command_packet,
+                command_command_index=command_command,
+                command_query_index=command_target,
+                hard=True,
+            )
+            objective_batch = batch.objective_batch(output, interventions)
+            if mode == "detached_state":
+                if arm == "world":
+                    correct_state = _detach_state(
+                        interventions.world_terminal_state
+                    )
+                    correct_index = world_target
+                    foil_index = world_command
+                else:
+                    correct_state = _detach_state(
+                        interventions.command_terminal_state
+                    )
+                    correct_index = command_target
+                    foil_index = command_packet
+                foil_state = _detach_state(
+                    _index_state(output.terminal_state, foil_index)
+                )
+                detached_pair = replace(
+                    getattr(objective_batch, f"{arm}_query_binding"),
+                    correct_logits=_gather_query_logits(
+                        model,
+                        correct_state,
+                        batch,
+                        correct_index,
+                    ),
+                    foil_logits=_gather_query_logits(
+                        model,
+                        foil_state,
+                        batch,
+                        foil_index,
+                    ),
+                )
+                objective_batch = replace(
+                    objective_batch,
+                    **{f"{arm}_query_binding": detached_pair},
+                )
+            loss = ETTRCompositeObjective(
+                objective_config,
+                weights=_query_binding_weights(arm),
+            )(objective_batch).total
+            loss.backward()
+            receipts[arm][mode] = {
+                name: (
+                    *_gradient_tensors(parameters, device=device),
+                    sum(parameter.grad is not None for parameter in parameters),
+                )
+                for name, parameters in components.items()
+            }
+    model.zero_grad(set_to_none=True)
+    return receipts
+
+
+def _encoded_tokens_per_update(settings: ProfileSettings) -> int:
+    """Count actual encoder calls in the factual plus intervention path."""
+
+    return (
+        settings.batch_size
+        * settings.microsteps
+        * (
+            settings.world_tokens
+            + 2 * settings.command_tokens
+            + 3 * settings.query_tokens
+        )
+    )
 
 
 def _optimizer_state_tensor_count(
@@ -1092,6 +1281,10 @@ def execute_profile_arm(
         name: _gradient_tensors(parameters, device=device)
         for name, parameters in components.items()
     }
+    gradient_present_tensors = {
+        name: sum(parameter.grad is not None for parameter in parameters)
+        for name, parameters in components.items()
+    }
     after_samples = {
         name: _sample_parameters(parameters) for name, parameters in components.items()
     }
@@ -1101,6 +1294,13 @@ def execute_profile_arm(
         else torch.zeros((), device=device)
         for name in components
     }
+    isolated_gradient_devices = _isolated_query_binding_gradients(
+        model,
+        batches[0],
+        objective_config,
+        reactor_steps=settings.reactor_steps,
+        device=device,
+    )
 
     if device.type == "cuda":
         torch.cuda.synchronize(device)
@@ -1128,7 +1328,7 @@ def execute_profile_arm(
     gradients = {}
     for name, parameters in components.items():
         square, nonzero, nonfinite = gradient_devices[name]
-        present_tensors = sum(parameter.grad is not None for parameter in parameters)
+        present_tensors = gradient_present_tensors[name]
         gradients[name] = {
             "gradient_l2": math.sqrt(float(host_number(square))),
             "gradient_nonfinite_elements": int(host_number(nonfinite)),
@@ -1140,6 +1340,69 @@ def execute_profile_arm(
                 parameter.numel() for parameter in parameters if parameter.requires_grad
             ),
         }
+    isolated_query_binding_gradients: dict[str, dict[str, object]] = {}
+    for arm, modes in isolated_gradient_devices.items():
+        mode_receipts: dict[str, object] = {}
+        for mode, component_values in modes.items():
+            component_receipts: dict[str, object] = {}
+            for name, raw in component_values.items():
+                square, nonzero, nonfinite, present_tensors = raw
+                component_receipts[name] = {
+                    "gradient_l2": math.sqrt(float(host_number(square))),
+                    "gradient_nonfinite_elements": int(
+                        host_number(nonfinite)
+                    ),
+                    "gradient_nonzero_elements": int(host_number(nonzero)),
+                    "gradient_tensors": present_tensors,
+                }
+            mode_receipts[mode] = component_receipts
+        isolated_query_binding_gradients[arm] = mode_receipts
+
+    def positive(
+        arm: str,
+        mode: str,
+        component: str,
+    ) -> bool:
+        value = isolated_query_binding_gradients[arm][mode][component]
+        assert isinstance(value, dict)
+        return (
+            int(value["gradient_tensors"]) > 0
+            and int(value["gradient_nonzero_elements"]) > 0
+            and int(value["gradient_nonfinite_elements"]) == 0
+        )
+
+    def exact_zero(
+        arm: str,
+        mode: str,
+        component: str,
+    ) -> bool:
+        value = isolated_query_binding_gradients[arm][mode][component]
+        assert isinstance(value, dict)
+        return (
+            int(value["gradient_nonzero_elements"]) == 0
+            and int(value["gradient_nonfinite_elements"]) == 0
+        )
+
+    isolated_query_binding_gate = (
+        positive("world", "treatment", "compiler")
+        and positive("world", "treatment", "reactor")
+        and positive("world", "treatment", "query_reader")
+        and positive("command", "treatment", "command_projection")
+        and positive("command", "treatment", "reactor")
+        and positive("command", "treatment", "query_reader")
+        and positive("world", "detached_state", "query_reader")
+        and positive("command", "detached_state", "query_reader")
+        and exact_zero("world", "detached_state", "compiler")
+        and exact_zero("world", "detached_state", "reactor")
+        and exact_zero("command", "detached_state", "compiler")
+        and exact_zero("command", "detached_state", "reactor")
+        and exact_zero("command", "detached_state", "command_projection")
+        and all(
+            exact_zero(arm, mode, "base")
+            for arm in ("world", "command")
+            for mode in ("treatment", "detached_state")
+        )
+    )
     expected_gradient_components = {
         "compiler",
         "query_reader",
@@ -1170,15 +1433,7 @@ def execute_profile_arm(
         )
     )
     total_elapsed_ms = sum(update_ms)
-    encoded_tokens_per_update = (
-        settings.batch_size
-        * settings.microsteps
-        * (
-            settings.world_tokens
-            + 2 * settings.command_tokens
-            + settings.query_tokens
-        )
-    )
+    encoded_tokens_per_update = _encoded_tokens_per_update(settings)
     supervised_tokens_per_update = (
         settings.batch_size
         * settings.microsteps
@@ -1246,12 +1501,18 @@ def execute_profile_arm(
         "gates": {
             "bf16_autocast_exercised": (logits_dtype == torch.bfloat16),
             "gradient_receipt_pass": gradient_gate,
+            "isolated_query_binding_gradient_receipt_pass": (
+                isolated_query_binding_gate
+            ),
             "loss_finite": loss_finite,
             "parameter_cap_pass": (
                 receipt.complete_system_parameters <= receipt.parameter_cap
             ),
         },
         "gradients": gradients,
+        "isolated_query_binding_gradients": (
+            isolated_query_binding_gradients
+        ),
         "memory": {
             "current_allocated_bytes": current_allocated,
             "model_loaded_allocated_bytes": model_memory,

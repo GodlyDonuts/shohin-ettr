@@ -846,6 +846,11 @@ class ETTRObjectiveReceipt:
             )
             _async_assert(value >= 0, f"receipt.{name} is negative")
         _same_device(counts, name="receipt counts")
+        _async_assert(
+            self.supervised_world_query_pairs.eq(self.batch_size)
+            & self.supervised_command_query_pairs.eq(self.batch_size),
+            "causal-query receipt support must equal factual batch size",
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -1170,8 +1175,10 @@ def _validate_batch(
     ):
         if not isinstance(pair, ETTRCausalQueryPair):
             raise ETTRObjectiveError(f"{name} pair type differs")
-        if pair.correct_logits.shape[1] != config.vocab_size:
-            raise ETTRObjectiveError(f"{name} vocabulary geometry differs")
+        if pair.correct_logits.shape != (rows, config.vocab_size):
+            raise ETTRObjectiveError(
+                f"{name} pair count or vocabulary geometry differs"
+            )
         query_pair_tensors += (
             pair.correct_logits,
             pair.foil_logits,

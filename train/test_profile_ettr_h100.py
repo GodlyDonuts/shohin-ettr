@@ -194,6 +194,19 @@ def test_profile_geometry_requires_complete_factorial_rectangles() -> None:
         ).validate()
 
 
+def test_encoded_token_accounting_matches_actual_encoder_calls() -> None:
+    settings = _settings("cpu-validation")
+    assert profile._encoded_tokens_per_update(settings) == (
+        settings.batch_size
+        * settings.microsteps
+        * (
+            settings.world_tokens
+            + 2 * settings.command_tokens
+            + 3 * settings.query_tokens
+        )
+    )
+
+
 def test_parameter_sampling_detects_a_later_tensor_update() -> None:
     first = torch.nn.Parameter(torch.arange(10_000, dtype=torch.float32))
     later = torch.nn.Parameter(torch.arange(8, dtype=torch.float32))
@@ -270,7 +283,7 @@ def test_dry_run_is_explicit_sealed_and_writes_no_model_state(
         "executed": False,
         "validation_only": True,
     }
-    assert report["schema"] == "shohin-ettr-h100-profile-v3"
+    assert report["schema"] == "shohin-ettr-h100-profile-v4"
     assert report["sync_points"] == list(profile.SYNC_POINTS)
     assert report["custody"]["pretraining_started"] is False
     assert report["custody"]["model_or_optimizer_state_written"] is False
@@ -325,6 +338,7 @@ def test_cpu_validation_runs_bf16_microstep_and_receipts(
         assert arm["gates"] == {
             "bf16_autocast_exercised": True,
             "gradient_receipt_pass": True,
+            "isolated_query_binding_gradient_receipt_pass": True,
             "loss_finite": True,
             "parameter_cap_pass": True,
         }
@@ -353,6 +367,7 @@ def test_cpu_validation_runs_bf16_microstep_and_receipts(
             "COMMAND",
             "QUERY",
         ]
+        assert arm["batch"]["encoded_tokens_per_update"] == 124
         assert set(arm["execution"]["objective_losses"]) == set(
             profile.OBJECTIVE_LOSS_NAMES
         )
@@ -365,6 +380,32 @@ def test_cpu_validation_runs_bf16_microstep_and_receipts(
             assert receipt["gradient_nonfinite_elements"] == 0
             assert receipt["sampled_parameter_abs_delta"] > 0
         assert arm["gradients"]["base"]["gradient_tensors"] == 0
+        isolated = arm["isolated_query_binding_gradients"]
+        expected_positive = {
+            "world": ("compiler", "reactor", "query_reader"),
+            "command": (
+                "command_projection",
+                "reactor",
+                "query_reader",
+            ),
+        }
+        for causal_arm, components in expected_positive.items():
+            treatment = isolated[causal_arm]["treatment"]
+            detached = isolated[causal_arm]["detached_state"]
+            for component in components:
+                assert treatment[component]["gradient_nonzero_elements"] > 0
+                assert treatment[component]["gradient_nonfinite_elements"] == 0
+            assert detached["query_reader"]["gradient_nonzero_elements"] > 0
+            assert detached["compiler"]["gradient_nonzero_elements"] == 0
+            assert detached["reactor"]["gradient_nonzero_elements"] == 0
+            assert treatment["base"]["gradient_nonzero_elements"] == 0
+            assert detached["base"]["gradient_nonzero_elements"] == 0
+        assert (
+            isolated["command"]["detached_state"]["command_projection"][
+                "gradient_nonzero_elements"
+            ]
+            == 0
+        )
     persisted = json.loads((output / "report.json").read_text())
     assert persisted == report
 

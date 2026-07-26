@@ -463,6 +463,14 @@ def test_receipt_counts_stay_device_resident_and_auditable() -> None:
             getattr(receipt, name),
             torch.tensor(expected),
         )
+    with pytest.raises(
+        RuntimeError,
+        match="receipt support must equal factual batch size",
+    ):
+        replace(
+            receipt,
+            supervised_world_query_pairs=torch.tensor(BATCH - 1),
+        )
 
 
 def test_hot_path_contains_no_explicit_host_sync_escape() -> None:
@@ -943,6 +951,28 @@ def test_query_binding_pair_type_is_required() -> None:
     batch = replace(_batch(), world_query_binding=None)
     with pytest.raises(ETTRObjectiveError, match="pair type"):
         ETTRCompositeObjective(_config())(batch)
+
+
+@pytest.mark.parametrize("indices", ([0], [0, 1, 0]))
+def test_query_binding_pair_count_must_equal_factual_batch(
+    indices: list[int],
+) -> None:
+    batch = _batch()
+    pair = batch.world_query_binding
+    index = torch.tensor(indices)
+    resized = ETTRCausalQueryPair(
+        correct_logits=pair.correct_logits.detach().index_select(0, index),
+        foil_logits=pair.foil_logits.detach().index_select(0, index),
+        correct_target=pair.correct_target.index_select(0, index),
+        foil_target=pair.foil_target.index_select(0, index),
+    )
+    with pytest.raises(
+        ETTRObjectiveError,
+        match="pair count",
+    ):
+        ETTRCompositeObjective(_config())(
+            replace(batch, world_query_binding=resized)
+        )
 
 
 def test_causal_query_pair_and_margin_validation_fail_closed() -> None:

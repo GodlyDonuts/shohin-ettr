@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import fields, replace
+import hashlib
 
 import pytest
 import torch
@@ -8,9 +9,11 @@ import torch
 from endogenous_typed_theory_reactor import TheoryReactorError
 from ettr_data_contract import (
     ETTR_CONTINUATION_SCHEMA,
+    ETTR_PACKET_SUFFICIENCY_SCHEMA,
     ETTRCausalRectangle,
     ETTRContinuationBatch,
     ETTRContinuationManifest,
+    terminal_packet_sufficiency_receipt,
 )
 from ettr_episode import ETTREpisodeBatch, ETTREpisodeSegment
 from ettr_objectives import (
@@ -221,6 +224,99 @@ def _continuation() -> tuple[
             equivariance=_alignment(),
         ),
         objective,
+    )
+
+
+def _cat_dataclass(left, right):
+    return type(left)(
+        **{
+            field.name: torch.cat(
+                (
+                    getattr(left, field.name),
+                    getattr(right, field.name),
+                ),
+                dim=0,
+            )
+            for field in fields(left)
+        }
+    )
+
+
+def _two_rectangle_continuation(
+    *,
+    mutate_second_answer: bool,
+) -> ETTRContinuationBatch:
+    first, _ = _continuation()
+    second_query_tokens = first.episodes.query.tokens.clone()
+    if mutate_second_answer:
+        second_query_tokens[0, 2] = 24
+    second = replace(
+        first,
+        manifest_sha256="c" * 64,
+        dataset_sha256="d" * 64,
+        episodes=replace(
+            first.episodes,
+            episode_ids=tuple(
+                hashlib.sha256(f"second-{row}".encode("ascii")).hexdigest()
+                for row in range(4)
+            ),
+            query=ETTREpisodeSegment.from_tokens(second_query_tokens),
+        ),
+    )
+    return ETTRContinuationBatch(
+        manifest_sha256="e" * 64,
+        dataset_sha256="f" * 64,
+        episodes=ETTREpisodeBatch(
+            episode_ids=first.episodes.episode_ids + second.episodes.episode_ids,
+            reset_mask=torch.cat(
+                (first.episodes.reset_mask, second.episodes.reset_mask)
+            ),
+            query_read_index=torch.cat(
+                (
+                    first.episodes.query_read_index,
+                    second.episodes.query_read_index,
+                )
+            ),
+            world=_cat_dataclass(
+                first.episodes.world,
+                second.episodes.world,
+            ),
+            command=_cat_dataclass(
+                first.episodes.command,
+                second.episodes.command,
+            ),
+            query=_cat_dataclass(
+                first.episodes.query,
+                second.episodes.query,
+            ),
+        ),
+        packet_targets=_cat_dataclass(
+            first.packet_targets,
+            second.packet_targets,
+        ),
+        terminal_packet_targets=_cat_dataclass(
+            first.terminal_packet_targets,
+            second.terminal_packet_targets,
+        ),
+        causal_rectangles=ETTRCausalRectangle(
+            rows=torch.tensor(
+                [
+                    [[0, 1], [2, 3]],
+                    [[4, 5], [6, 7]],
+                ]
+            )
+        ),
+        transaction_targets=_cat_dataclass(
+            first.transaction_targets,
+            second.transaction_targets,
+        ),
+        initial_committed=torch.cat(
+            (first.initial_committed, second.initial_committed)
+        ),
+        initial_halted=torch.cat(
+            (first.initial_halted, second.initial_halted)
+        ),
+        equivariance=None,
     )
 
 
@@ -609,6 +705,80 @@ def test_causal_rectangles_require_every_query_label_contrast(
                 query=ETTREpisodeSegment.from_tokens(tokens),
             ),
         ).validate(runner.model.config, objective_config)
+
+
+def test_terminal_packet_sufficiency_rejects_diagonal_collision() -> None:
+    continuation, objective_config = _continuation()
+    runner = _runner()
+    terminal_values = {
+        field.name: getattr(
+            continuation.terminal_packet_targets,
+            field.name,
+        ).clone()
+        for field in fields(continuation.terminal_packet_targets)
+    }
+    for value in terminal_values.values():
+        value[3] = value[0]
+    with pytest.raises(
+        TheoryReactorError,
+        match="multiple factual next-token targets",
+    ):
+        replace(
+            continuation,
+            terminal_packet_targets=ETTRPacketTargets(**terminal_values),
+        ).validate(runner.model.config, objective_config)
+
+
+def test_terminal_packet_sufficiency_rejects_cross_rectangle_collision() -> None:
+    continuation = _two_rectangle_continuation(mutate_second_answer=True)
+    _base, objective_config = _continuation()
+    runner = _runner()
+    with pytest.raises(
+        TheoryReactorError,
+        match="multiple factual next-token targets",
+    ):
+        continuation.validate(runner.model.config, objective_config)
+
+
+def test_terminal_packet_sufficiency_rejects_cross_batch_collision() -> None:
+    first, objective_config = _continuation()
+    query = first.episodes.query.tokens.clone()
+    query[0, 2] = 24
+    second = replace(
+        first,
+        episodes=replace(
+            first.episodes,
+            query=ETTREpisodeSegment.from_tokens(query),
+        ),
+    )
+    runner = _runner()
+    first.validate(runner.model.config, objective_config)
+    second.validate(runner.model.config, objective_config)
+    with pytest.raises(
+        TheoryReactorError,
+        match="multiple factual next-token targets",
+    ):
+        terminal_packet_sufficiency_receipt((first, second))
+
+
+def test_terminal_packet_sufficiency_receipt_is_masked_and_deterministic() -> None:
+    continuation, _ = _continuation()
+    receipt = terminal_packet_sufficiency_receipt((continuation,))
+    assert receipt.schema == ETTR_PACKET_SUFFICIENCY_SCHEMA
+    assert receipt.batches == 1
+    assert receipt.rows == 4
+    assert receipt.unique_contexts == 4
+    assert receipt == terminal_packet_sufficiency_receipt((continuation,))
+    values = continuation.terminal_packet_targets.value_code.clone()
+    values[:, 2:] = torch.arange(4)[:, None] + 17
+    masked = replace(
+        continuation,
+        terminal_packet_targets=replace(
+            continuation.terminal_packet_targets,
+            value_code=values,
+        ),
+    )
+    assert terminal_packet_sufficiency_receipt((masked,)) == receipt
 
 
 def test_causal_query_provenance_indices_are_exact() -> None:

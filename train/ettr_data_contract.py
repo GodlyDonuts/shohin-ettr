@@ -8,7 +8,10 @@ host callback, answer verifier, or continuous source payload is admitted.
 from __future__ import annotations
 
 from dataclasses import dataclass, fields
+import hashlib
+import json
 import re
+from typing import Sequence
 
 import torch
 
@@ -35,7 +38,171 @@ from ettr_objectives import (
 
 
 ETTR_CONTINUATION_SCHEMA = "shohin-ettr-continuation-data-v1"
+ETTR_PACKET_SUFFICIENCY_SCHEMA = "shohin-ettr-packet-sufficiency-v1"
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
+
+
+def _canonical_json_bytes(value: object) -> bytes:
+    return json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+    ).encode("ascii")
+
+
+def _terminal_packet_query_context(
+    batch: ETTRContinuationBatch,
+    row: int,
+) -> tuple[dict[str, object], int]:
+    """Build one assessor-only sufficient-statistic record.
+
+    Unsupported packet cells and masked query tokens are canonicalized to
+    zero. The returned target is used only for admission and is never included
+    as a candidate-visible field.
+    """
+
+    packet = batch.terminal_packet_targets
+    read_index = int(batch.episodes.query_read_index.detach().cpu()[row])
+    slot_mask = packet.slot_mask.detach().cpu()[row].bool()
+    active = packet.active.detach().cpu()[row].bool() & slot_mask
+    categorical_mask = active & slot_mask
+    relation_mask = packet.relation_mask.detach().cpu()[row].bool()
+    values = packet.value_code.detach().cpu()[row]
+    types = packet.type_index.detach().cpu()[row]
+    root = packet.root.detach().cpu()[row].bool()
+    relations = packet.relations.detach().cpu()[row].bool()
+    query_tokens = batch.episodes.query.tokens.detach().cpu()[row, : read_index + 1]
+    query_mask = batch.episodes.query.attention_mask.detach().cpu()[
+        row,
+        : read_index + 1,
+    ].bool()
+    context = {
+        "packet": {
+            "active": (active & slot_mask).tolist(),
+            "committed": bool(packet.committed.detach().cpu()[row]),
+            "halted": bool(packet.halted.detach().cpu()[row]),
+            "relation_mask": relation_mask.tolist(),
+            "relations": (relations & relation_mask).tolist(),
+            "root": (root & slot_mask).tolist(),
+            "slot_mask": slot_mask.tolist(),
+            "type_index": torch.where(
+                categorical_mask,
+                types,
+                torch.zeros_like(types),
+            ).tolist(),
+            "value_code": torch.where(
+                categorical_mask,
+                values,
+                torch.zeros_like(values),
+            ).tolist(),
+        },
+        "query": {
+            "mask": query_mask.tolist(),
+            "read_index": read_index,
+            "tokens": torch.where(
+                query_mask,
+                query_tokens,
+                torch.zeros_like(query_tokens),
+            ).tolist(),
+        },
+    }
+    target = int(
+        batch.episodes.query.targets.detach().cpu()[
+            row,
+            read_index,
+        ]
+    )
+    return context, target
+
+
+@dataclass(frozen=True, slots=True)
+class ETTRPacketSufficiencyReceipt:
+    """Target-bound admission receipt with no raw targets in its interface."""
+
+    schema: str
+    batches: int
+    rows: int
+    unique_contexts: int
+    context_sha256: str
+    target_bound_sha256: str
+
+    def __post_init__(self) -> None:
+        if (
+            self.schema != ETTR_PACKET_SUFFICIENCY_SCHEMA
+            or self.batches < 1
+            or self.rows < 1
+            or self.unique_contexts < 1
+            or self.unique_contexts > self.rows
+            or _SHA256.fullmatch(self.context_sha256) is None
+            or _SHA256.fullmatch(self.target_bound_sha256) is None
+        ):
+            raise TheoryReactorError(
+                "ETTR terminal-packet sufficiency receipt differs"
+            )
+
+
+def terminal_packet_sufficiency_receipt(
+    batches: Sequence[ETTRContinuationBatch],
+) -> ETTRPacketSufficiencyReceipt:
+    """Reject non-functional packet/query-to-target mappings.
+
+    This admission helper is intentionally outside the candidate forward path.
+    It detects diagonal, cross-rectangle, and cross-batch collisions over a
+    frozen batch sequence while returning only hashes and support counts.
+    """
+
+    frozen = tuple(batches)
+    if not frozen or any(
+        not isinstance(batch, ETTRContinuationBatch) for batch in frozen
+    ):
+        raise TheoryReactorError(
+            "ETTR terminal-packet sufficiency sequence differs"
+        )
+    seen: dict[bytes, int] = {}
+    ordered_contexts: list[str] = []
+    ordered_target_commitments: list[str] = []
+    rows = 0
+    for batch in frozen:
+        batch_rows = batch.episodes.world.tokens.shape[0]
+        if batch_rows < 1:
+            raise TheoryReactorError(
+                "ETTR terminal-packet sufficiency batch is empty"
+            )
+        for row in range(batch_rows):
+            context, target = _terminal_packet_query_context(batch, row)
+            context_bytes = _canonical_json_bytes(context)
+            context_sha256 = hashlib.sha256(context_bytes).hexdigest()
+            prior = seen.setdefault(context_bytes, target)
+            if prior != target:
+                raise TheoryReactorError(
+                    "ETTR terminal packet and query prefix map to "
+                    "multiple factual next-token targets"
+                )
+            ordered_contexts.append(context_sha256)
+            ordered_target_commitments.append(
+                hashlib.sha256(
+                    _canonical_json_bytes(
+                        {
+                            "context_sha256": context_sha256,
+                            "target": target,
+                        }
+                    )
+                ).hexdigest()
+            )
+            rows += 1
+    return ETTRPacketSufficiencyReceipt(
+        schema=ETTR_PACKET_SUFFICIENCY_SCHEMA,
+        batches=len(frozen),
+        rows=rows,
+        unique_contexts=len(seen),
+        context_sha256=hashlib.sha256(
+            _canonical_json_bytes(ordered_contexts)
+        ).hexdigest(),
+        target_bound_sha256=hashlib.sha256(
+            _canonical_json_bytes(ordered_target_commitments)
+        ).hexdigest(),
+    )
 
 
 def _packet_target_rows_differ(
@@ -514,6 +681,7 @@ class ETTRContinuationBatch:
             self.packet_targets,
             self.terminal_packet_targets,
         )
+        terminal_packet_sufficiency_receipt((self,))
         ETTRTransactionTargets(
             **{
                 field.name: getattr(self.transaction_targets, field.name)
@@ -783,7 +951,10 @@ class ETTRContinuationManifest:
 
 __all__ = [
     "ETTR_CONTINUATION_SCHEMA",
+    "ETTR_PACKET_SUFFICIENCY_SCHEMA",
     "ETTRCausalRectangle",
     "ETTRContinuationBatch",
     "ETTRContinuationManifest",
+    "ETTRPacketSufficiencyReceipt",
+    "terminal_packet_sufficiency_receipt",
 ]
