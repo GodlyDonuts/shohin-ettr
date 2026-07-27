@@ -332,6 +332,8 @@ def _validated_executions(
     worlds: tuple[ResourceWorld, ResourceWorld],
     commands: tuple[ResourceCommand, ResourceCommand],
     supplied: ResourceExecutions,
+    *,
+    require_dependent: bool,
 ) -> tuple[
     tuple[ResourceExecution, ResourceExecution],
     tuple[ResourceExecution, ResourceExecution],
@@ -344,8 +346,16 @@ def _validated_executions(
             if type(execution) is not ResourceExecution:
                 raise ResourceAdapterError("resource execution type differs")
             try:
-                primary = execute_resource(world, command)
-                replay = replay_resource(world, command)
+                primary = execute_resource(
+                    world,
+                    command,
+                    require_dependent=require_dependent,
+                )
+                replay = replay_resource(
+                    world,
+                    command,
+                    require_dependent=require_dependent,
+                )
             except (ValueError, SemanticAdmissionError) as exc:
                 raise ResourceAdapterError(
                     f"resource corner {world_index}{command_index} "
@@ -387,6 +397,7 @@ def adapt_resource_rectangle(
     cell_command_sources: CellBytes,
     query_prefixes: tuple[tuple[bytes, bytes], tuple[bytes, bytes]],
     require_query_checkerboard: bool = True,
+    require_dependent: bool = True,
 ) -> GenericSemanticRectangle:
     """Project one already-selected resource rectangle without rendering it.
 
@@ -395,8 +406,11 @@ def adapt_resource_rectangle(
     ``query_prefixes[query][paraphrase]``.
     """
 
-    if not isinstance(require_query_checkerboard, bool):
-        raise ResourceAdapterError("query checkerboard mode differs")
+    if not isinstance(require_query_checkerboard, bool) or not isinstance(
+        require_dependent,
+        bool,
+    ):
+        raise ResourceAdapterError("resource admission mode differs")
     rectangle_id = _identifier(
         semantic_rectangle_id,
         "semantic_rectangle_id",
@@ -459,6 +473,7 @@ def adapt_resource_rectangle(
         typed_world_pair,
         typed_command_pair,
         (supplied_executions[0], supplied_executions[1]),
+        require_dependent=require_dependent,
     )
     flat = (
         validated[0][0],

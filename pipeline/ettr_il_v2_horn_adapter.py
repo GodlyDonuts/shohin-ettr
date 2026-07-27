@@ -467,6 +467,7 @@ def _validate_execution(
     *,
     world_index: int,
     command_index: int,
+    require_dependent: bool,
 ) -> None:
     name = f"Horn corner {world_index}{command_index}"
     if (
@@ -476,8 +477,16 @@ def _validate_execution(
         or replay.command != command
     ):
         raise HornAdapterError(f"{name} world/command binding differs")
-    expected_primary = execute_horn(world, command)
-    expected_replay = replay_horn(world, command)
+    expected_primary = execute_horn(
+        world,
+        command,
+        require_dependent=require_dependent,
+    )
+    expected_replay = replay_horn(
+        world,
+        command,
+        require_dependent=require_dependent,
+    )
     full_state = tuple(world.initial)
     asserted = frozenset(world.initial)
     reference_snapshots: list[tuple[GroundAtom, ...]] = [world.initial]
@@ -561,6 +570,7 @@ def adapt_horn_semantic_rectangle(
     command_sources: SourceMatrix,
     query_prefixes: SourceMatrix,
     require_query_checkerboard: bool = True,
+    require_dependent: bool = True,
 ) -> GenericSemanticRectangle:
     """Project one exact Horn 2x2 semantic board into the generic v2 schema."""
 
@@ -595,8 +605,8 @@ def adapt_horn_semantic_rectangle(
     query_values = _require_exact_pair(queries, "queries")
     if (
         not isinstance(require_query_checkerboard, bool)
-        or
-        any(type(query) is not SemanticQuery for query in query_values)
+        or not isinstance(require_dependent, bool)
+        or any(type(query) is not SemanticQuery for query in query_values)
         or any(query.ontology is not Ontology.HORN for query in query_values)
         or query_values[0] == query_values[1]
     ):
@@ -646,6 +656,7 @@ def adapt_horn_semantic_rectangle(
                 replay,
                 world_index=world_index,
                 command_index=command_index,
+                require_dependent=require_dependent,
             )
             disposition, outcome, _, _ = _disposition(primary.disposition)
             answers = _answer_pair(typed_queries, primary, replay)

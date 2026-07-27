@@ -412,6 +412,7 @@ def _adapt(
             command_sources=commands,
             query_prefixes=queries,
             require_query_checkerboard=False,
+            require_dependent=False,
         )
     if rectangle.family == "resource":
         command_cells = tuple(
@@ -432,6 +433,7 @@ def _adapt(
             cell_command_sources=command_cells,  # type: ignore[arg-type]
             query_prefixes=queries,
             require_query_checkerboard=False,
+            require_dependent=False,
         )
     return adapt_local_rewrite_rectangle(
         rectangle,

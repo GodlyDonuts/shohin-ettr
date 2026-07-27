@@ -58,8 +58,23 @@ The legacy CPU materializer keeps strict checkerboards as its default. V3
 callers must explicitly set `require_query_checkerboard=False`; non-Boolean
 mode values fail closed. This prevents a broad v3 caller from accidentally
 changing v2 behavior or relying on an implicit global relaxation.
-The Horn and resource semantic adapters use the same explicit default-strict
-mode and independently recompute every broad-mode answer from each corner.
+The Horn and resource semantic adapters independently recompute every
+broad-mode answer from each corner.
+
+The adapters also keep dependent-composition admission strict by default.
+V3 explicitly requests `require_dependent=False` only while revalidating the
+four broad rectangle corners, matching the execution mode used to construct
+those corners. This does not weaken stage admission: dependent-composition
+and closed-loop factual candidates are still generated and reconstructed
+under their strict dependent-prefix contract.
+
+Transaction traces are effect-normalized. Every disclosed command atom is
+written to its own command slot, but a cursor write is emitted only for the
+first cursor value and subsequent cursor changes. Atomic-deadlock suffixes
+therefore retain the complete command while avoiding repeated writes of an
+already frozen cursor. The receiver still rejects every emitted microstep
+that has no generic state effect and still requires exact terminal-packet
+agreement after independent replay.
 
 ## 4. Query objective
 
@@ -107,7 +122,11 @@ The repair is accepted only if:
    zero contrast support, and full invariance support;
 4. mixed rectangles partition support exactly;
 5. packet-no-consequence rectangles still fail closed; and
-6. architecture-facing v3 materialization and its global audit bind this
+6. strict v2 dependency defaults and explicit v3 broad-corner mode are both
+   regression-tested;
+7. repeated deadlock cursor writes are absent while the full command remains
+   represented; and
+8. architecture-facing v3 materialization and its global audit bind this
    contract and exact source commit in their receipts.
 
 This contract authorizes no model fitting.

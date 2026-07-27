@@ -14,7 +14,7 @@
 > compatibility, and isolated reasoning evaluation may continue; none of those
 > activities implies permission to pretrain.
 >
-> **Last updated:** 2026-07-27 06:58 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-27 07:30 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -15302,3 +15302,50 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `r12_ettr_il_v3_receiver_backed_preselection_qualification_locally_admitted`.
+
+- **2026-07-27 07:30 EDT** -- **The first receiver-backed Stokes
+  qualification run isolated two compiler/adapter mismatches; both are
+  repaired locally without relaxing the receiver.** No model, checkpoint,
+  optimizer, GPU, or continuation-pretraining operation was performed.
+
+  Qualifier commit `a033092acc314e61c4017ce62f5cc499736642ea` was frozen and
+  verified on Stokes before jobs `752331` (main), `752380` (sealed
+  confirmation), and dependency-held selector `752381` were submitted. Seven
+  completed main reports admitted only 91 of 11,000 rows; all 10,909
+  rejections were `MaterializationError:no_generic_state_effect`. Four
+  confirmation reports admitted 577 of 658 rows; all 81 rejections were
+  `SemanticAdmissionError:prefix_independent`. These category-only receipts
+  established that selection would fail quota and that continuing the old
+  source would only spend CPU measuring already localized defects. The three
+  obsolete jobs were canceled before selection or publication.
+
+  The resource defect was a representation mismatch after atomic deadlock.
+  The disclosed command suffix correctly remained present, but every suffix
+  position encoded a write of the already frozen cursor. The strict receiver
+  correctly rejected each repeated write as a no-effect microstep. Trace
+  encoding now emits the first cursor value and every subsequent cursor
+  change, while omitting only writes whose value is already encoded. Every
+  disclosed command atom remains represented and every emitted microstep must
+  still change generic state; independent replay and exact terminal-packet
+  equality remain mandatory.
+
+  The Horn defect was an admission-mode mismatch. V3 broad rectangle
+  construction deliberately executes all counterfactual corners with
+  `require_dependent=False`, but the legacy adapters silently re-executed
+  those corners with their strict v2 default. Horn and resource adapters now
+  expose an explicit Boolean dependency mode that remains `True` by default;
+  only the v3 architecture-facing caller supplies `False`. Stage-level
+  dependent-composition and closed-loop factual-candidate admission remains
+  unchanged.
+
+  The repaired source admits 32/32 exact raw rows from previously rejected
+  Stokes resource cell 44 and 32/32 exact raw rows from Horn closed-loop cell
+  121. It also admits 8/8 fresh resource depth-2 query-counterfactual rows.
+  Focused adapter/materializer tests pass 72/72 and the complete ETTR v2/v3
+  inventory passes **460/460 in 237.26 seconds**. Ruff, byte compilation,
+  and diff checks pass. Commit and privately push the repair, freeze its exact
+  source on Stokes, then relaunch qualification into new content-addressed
+  roots. Never reuse the canceled `a033092` qualified roots.
+
+  Decision:
+  `r12_ettr_il_v3_receiver_mismatch_localized_trace_and_broad_adapter_repair_admitted_requalification_pending`.

@@ -846,6 +846,7 @@ def _build_trace(
             raise MaterializationError(f"{name} deadlock cursor differs")
         deadlock_cursor = candidate
     encoded: list[_EncodedStep] = []
+    encoded_cursor: int | None = None
     for index, (atom, operation) in enumerate(
         zip(command.command_atoms, corner.operation_traces, strict=True)
     ):
@@ -882,16 +883,21 @@ def _build_trace(
             _encode_mutation(mutation, static_ranks, name)
             for mutation in operation.mutations
         )
-        encoded.append(
-            _EncodedStep(
-                int(Opcode.WRITE),
-                _CURSOR_SLOT,
-                0,
-                0,
-                0,
-                _value_code(ValueRef.small_uint(operation.cursor), static_ranks),
+        if operation.cursor != encoded_cursor:
+            encoded.append(
+                _EncodedStep(
+                    int(Opcode.WRITE),
+                    _CURSOR_SLOT,
+                    0,
+                    0,
+                    0,
+                    _value_code(
+                        ValueRef.small_uint(operation.cursor),
+                        static_ranks,
+                    ),
+                )
             )
-        )
+            encoded_cursor = operation.cursor
     if corner.disposition is Disposition.ABSTAIN:
         if corner.outcome.kind is not ValueKind.ABSTAIN:
             raise MaterializationError(f"{name} abstention outcome differs")

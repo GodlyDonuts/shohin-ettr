@@ -214,6 +214,29 @@ def test_atomic_deadlock_keeps_disclosed_suffix_and_frozen_cursor() -> None:
     assert not deadlock.terminal_packet.halted
 
 
+def test_deadlock_suffix_omits_only_repeated_cursor_writes() -> None:
+    rectangle = adapt_resource_rectangle(
+        **_deadlock_suffix_inputs()  # type: ignore[arg-type]
+    )
+    batch = materialize_ettr_il_v2(
+        MaterializationRequest(
+            manifest_sha256="c" * 64,
+            dataset_sha256="d" * 64,
+            vocab_size=512,
+            rectangles=(rectangle,),
+        ),
+        _ByteTokenizer(),
+    )
+    valid = batch.transaction_targets.step_mask[1]
+    sources = batch.transaction_targets.source[1, valid].tolist()
+    assert sources.count(54) == 1
+    assert sources.count(48) == 1
+    assert sources.count(49) == 1
+    assert sources.count(50) == 1
+    assert sources[-2:] == [55, 0]
+    assert batch.transaction_targets.committed[1, valid][-1]
+
+
 def test_output_materializes_end_to_end_on_cpu() -> None:
     batch = materialize_ettr_il_v2(
         MaterializationRequest(
@@ -235,6 +258,56 @@ def test_output_materializes_end_to_end_on_cpu() -> None:
     assert batch.episodes.world.tokens.device.type == "cpu"
 
 
+def test_dependency_mode_is_explicit_and_strict_by_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    primary = adapter.execute_resource
+    replay = adapter.replay_resource
+    primary_modes: list[bool] = []
+    replay_modes: list[bool] = []
+
+    def checked_primary(
+        world: ResourceWorld,
+        command: ResourceCommand,
+        *,
+        require_dependent: bool = True,
+    ):
+        primary_modes.append(require_dependent)
+        return primary(
+            world,
+            command,
+            require_dependent=require_dependent,
+        )
+
+    def checked_replay(
+        world: ResourceWorld,
+        command: ResourceCommand,
+        *,
+        require_dependent: bool = True,
+    ):
+        replay_modes.append(require_dependent)
+        return replay(
+            world,
+            command,
+            require_dependent=require_dependent,
+        )
+
+    monkeypatch.setattr(adapter, "execute_resource", checked_primary)
+    monkeypatch.setattr(adapter, "replay_resource", checked_replay)
+    adapt_resource_rectangle(**_inputs())  # type: ignore[arg-type]
+    assert primary_modes == [True] * 4
+    assert replay_modes == [True] * 4
+
+    primary_modes.clear()
+    replay_modes.clear()
+    adapt_resource_rectangle(
+        **_inputs(),  # type: ignore[arg-type]
+        require_dependent=False,
+    )
+    assert primary_modes == [False] * 4
+    assert replay_modes == [False] * 4
+
+
 def test_primary_or_supplied_execution_mismatch_fails_closed(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -252,8 +325,17 @@ def test_primary_or_supplied_execution_mismatch_fails_closed(
     values = _inputs()
     original = adapter.replay_resource
 
-    def hostile_replay(world, command):
-        replay = original(world, command)
+    def hostile_replay(
+        world,
+        command,
+        *,
+        require_dependent: bool = True,
+    ):
+        replay = original(
+            world,
+            command,
+            require_dependent=require_dependent,
+        )
         return replace(replay, cursor=replay.cursor + 1)
 
     monkeypatch.setattr(adapter, "replay_resource", hostile_replay)

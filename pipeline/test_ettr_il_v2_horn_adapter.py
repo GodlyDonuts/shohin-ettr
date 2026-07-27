@@ -295,6 +295,56 @@ def test_rejects_divergence_from_canonical_execute_closure(
         adapt_horn_semantic_rectangle(**_board())  # type: ignore[arg-type]
 
 
+def test_dependency_mode_is_explicit_and_strict_by_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    primary = adapter.execute_horn
+    replay = adapter.replay_horn
+    primary_modes: list[bool] = []
+    replay_modes: list[bool] = []
+
+    def checked_primary(
+        world: HornWorld,
+        command: HornCommand,
+        *,
+        require_dependent: bool = True,
+    ):
+        primary_modes.append(require_dependent)
+        return primary(
+            world,
+            command,
+            require_dependent=require_dependent,
+        )
+
+    def checked_replay(
+        world: HornWorld,
+        command: HornCommand,
+        *,
+        require_dependent: bool = True,
+    ):
+        replay_modes.append(require_dependent)
+        return replay(
+            world,
+            command,
+            require_dependent=require_dependent,
+        )
+
+    monkeypatch.setattr(adapter, "execute_horn", checked_primary)
+    monkeypatch.setattr(adapter, "replay_horn", checked_replay)
+    adapt_horn_semantic_rectangle(**_board())  # type: ignore[arg-type]
+    assert primary_modes == [True] * 4
+    assert replay_modes == [True] * 4
+
+    primary_modes.clear()
+    replay_modes.clear()
+    adapt_horn_semantic_rectangle(
+        **_board(),  # type: ignore[arg-type]
+        require_dependent=False,
+    )
+    assert primary_modes == [False] * 4
+    assert replay_modes == [False] * 4
+
+
 def test_internal_replay_rejects_hostile_operation_mutation(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

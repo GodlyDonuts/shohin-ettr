@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 from tokenizers import Tokenizer
 
+import ettr_il_v3_materialize as materializer
 from ettr_il_v2_token_native_surface import DEFAULT_TOKENIZER_PATH
 from ettr_il_v3_horn_resource import (
     CurriculumStage,
@@ -85,3 +86,30 @@ def test_confirmation_requires_separate_sealed_key(tokenizer: Tokenizer) -> None
     changed = {**row, "cell": cell, "owner": "confirmation"}
     with pytest.raises(V3MaterializationError, match="sealed 32-byte key"):
         materialize_candidate(changed, tokenizer)
+
+
+@pytest.mark.parametrize(
+    ("family", "adapter_name"),
+    (
+        ("horn", "adapt_horn_semantic_rectangle"),
+        ("resource", "adapt_resource_rectangle"),
+    ),
+)
+def test_v3_explicitly_uses_broad_dependency_mode(
+    family: str,
+    adapter_name: str,
+    tokenizer: Tokenizer,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original = getattr(materializer, adapter_name)
+    modes: list[bool] = []
+
+    def checked_adapter(**kwargs: object):
+        mode = kwargs.get("require_dependent")
+        assert type(mode) is bool
+        modes.append(mode)
+        return original(**kwargs)
+
+    monkeypatch.setattr(materializer, adapter_name, checked_adapter)
+    materialize_candidate(_row(family), tokenizer)
+    assert modes == [False] * 4
