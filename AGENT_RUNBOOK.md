@@ -15398,3 +15398,40 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `r12_ettr_il_v3_repaired_qualifier_frozen_canary_full_admission_requalification_live`.
+
+- **2026-07-27 16:46 EDT** -- **Receiver-backed qualification is
+  semantically healthy; 12 long main cells crossed the original wall-time
+  bound and were relaunched without recomputing 312 durable cell reports.**
+  No model, checkpoint, optimizer, GPU, or continuation-pretraining operation
+  was performed.
+
+  Main job `752424` and sealed-confirmation job `752425` ran against the
+  immutable `65a82fa0baf70e9daf41fc3a252482a18c137cfc` source and freeze.
+  Confirmation completed all 108 reports with 23,475 input rows, 22,409
+  admitted rows, and 1,066 strict
+  `RectangleError:execution_mismatch` exclusions. Main completed 204 of 216
+  reports with 144,733 input rows, 135,078 admitted rows, and 9,655 exclusions
+  in the same category. Zero Python/runtime error logs occurred.
+
+  Every exclusion is confined to the single-depth local-rewrite
+  `atomic_transactions` groups. Each frozen split remains above quota after
+  filtering: train 3,132/2,667; development 400/334; train reserve 786/667;
+  development reserve 100/84; confirmation 400/333; and confirmation reserve
+  100/84. Horn, resource, and every non-atomic local-rewrite stage have zero
+  receiver rejections in completed reports. These irreproducible stored
+  rectangles must remain excluded; do not weaken the exact execution replay
+  gate.
+
+  After confirmation finished, the main throttle was increased from 48 to 64
+  so total CPU concurrency remained at the already admitted peak. Twelve
+  first-wave cells exhausted the wrapper's eight-hour limit before publishing
+  a report: `0,1,3,4,5,6,12,16,17,18,36,37`. Completed no-replace shards and
+  reports remain durable. The dependency-never-satisfied selector `752426`
+  was canceled. Recovery array `753136` reruns exactly the 12 missing indices
+  with a 24-hour command-line limit, the same immutable source, and the same
+  qualified main root; all 12 tasks started immediately. Replacement selector
+  `753137` is held `afterok:753136` and must verify the complete 216-main /
+  108-confirmation inventory before writing any selected payload.
+
+  Decision:
+  `r12_ettr_il_v3_qualification_semantically_viable_twelve_cell_walltime_recovery_live`.
