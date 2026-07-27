@@ -82,6 +82,7 @@ result. See [TARGETS.md](TARGETS.md).
 | [STRATEGY.md](STRATEGY.md) | two-track split; why reasoning-specialist; the pivot history — *context the master plan doesn't repeat* |
 | [COMPUTE.md](COMPUTE.md) | hardware reality (the 8×H100-access blocker) + FLOP budget — *context the master plan doesn't repeat* |
 | [PLAN.md](PLAN.md) · [DATA.md](DATA.md) · [TARGETS.md](TARGETS.md) | *(background, subsumed by the master plan)* the earlier grounded recipe / data / targets |
+| [docs/research/README.md](docs/research/README.md) | indexed archive of frontier proposals, mechanism research, and qualitative baselines |
 | [build-plan.html](build-plan.html) | visual one-page version (⚠ stale — regenerate against the master plan) |
 
 ## First moves (de-risk before the full spend)

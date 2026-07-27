@@ -1288,7 +1288,7 @@
 > model-logit-only constrained relation assignment; keep the parameter count, S7/S8 runtime,
 > no-class/shuffled controls, and all current thresholds fixed.
 > Two frontier architecture submissions are archived verbatim and reviewed in
-> `FRONTIER_S9_TO_GENERAL_REASONING_ANALYSIS.md`. Adopt their compiler-machine thesis, orbit
+> `docs/research/frontier/FRONTIER_S9_TO_GENERAL_REASONING_ANALYSIS.md`. Adopt their compiler-machine thesis, orbit
 > consistency, and structured assignment. Do **not** adopt byte-span replacement as the S9.1
 > diagnosis: an independent audit over all 2,048 development sources finds recoded gold spans at
 > widths 1/2/3 only and zero above the current width-four cap. The 18 failures are learned
@@ -3704,7 +3704,7 @@ Auth auto-refreshes. This unblocks our thesis (short-CoT distillation), previous
   packed 2,048-token sequences (SHA-256 `b2a688e1f7aa6c79dd65ed1944fa5dc00cd022acfc793896ecf4696c94d4089f`).
   It is hash-matched locally/Newton and staged only. Do not submit its SFT until a known-good CUDA node is
   available; opportunistic `evc26`, `evc43`, and `evc50` allocations all failed CUDA preflight before model
-  loading and wrote no misleading score. Full research contract: `VRWM_RESEARCH.md`.
+  loading and wrote no misleading score. Full research contract: `docs/research/concepts/VRWM_RESEARCH.md`.
 - **2026-07-12 ~18:13** — **Two-H100 training is re-authorized only at a natural handoff.** User explicitly
   permitted two GPUs for faster training. `685084` remains untouched on evc22 through 182,120 at 154.31k
   tok/s. A fresh BS32/ACC4 DDP validation attempt `686728` reached evc31 but both rank-1 attempts failed
@@ -7035,7 +7035,7 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `b9bd46937838c143355f7bedd3ea7395e3c9809c7f278f98ebf0737124bc229e`: initial 1/7, review 0/7,
   verified fact 1/7, state reuse 0/7, identical to raw 200k/260k. One sequential-state response visibly computes
   23 -> 69 -> 49, but raw 190k had already shown that trace before looping, so it is a fragile reappearing mode,
-  not monotonic progress. `RAW300K_INTERACTION_RESULT.md` freezes the boundary. Independent theorem review then
+  not monotonic progress. `docs/research/baselines/RAW300K_INTERACTION_RESULT.md` freezes the boundary. Independent theorem review then
   killed additive fork supervision: grouped mean losses have the same population risk/expected gradient as
   ordinary supervision, and bounded forks cannot identify off-horizon behavior. Preserve
   `R12_FORKED_STATE_TRANSPORT_PREREG.md` as a pre-implementation no-go. Replacement PCRT uses a non-additive
@@ -7076,7 +7076,7 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   selected greedy prompts on immutable raw 300k score 1/6 semantically and 0/6 under the requested output contract.
   The model answers 17+26 locally but copies `state=n:<integer>` instead of updating 23 by multiplication, returns
   100 for source-deleted 69-20, pattern-copies 7 -> 14 -> 21 instead of 7 -> 13 -> 39, and collapses into empty
-  fences or C++ on late-query/control prompts. `RAW300K_FREEFORM_INTERACTION_RESULT.md` freezes the qualitative
+  fences or C++ on late-query/control prompts. `docs/research/baselines/RAW300K_FREEFORM_INTERACTION_RESULT.md` freezes the qualitative
   boundary. Independent theory then proves that any finite challenge tree admits a finite source/prefix answer
   table; held-out labels and recoding cannot establish universal state without a complexity/uniformity bound.
   The weakest conditional criterion is generator-complete, separator-complete bisimulation, which is the residual
@@ -9836,10 +9836,10 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   green at `5 passed`.
 
 - **2026-07-18 20:44** -- **External frontier plans are preserved and reduced to a bounded research
-  direction.** `FRONTIER_AGENT_PLANS.md` stores the supplied Gemini/Grok/Meta/ChatGPT plans; the
+  direction.** `docs/research/frontier/FRONTIER_AGENT_PLANS.md` stores the supplied Gemini/Grok/Meta/ChatGPT plans; the
   original download SHA-256 is `3d82ece081a899750c64a5a63df50e7b0405b2621f7cfd98b3e84c8ab4d942fc`.
   Meta and ChatGPT are near-exact duplicates, leaving three distinct proposals. The Shohin-specific
-  review in `FRONTIER_AGENT_PLANS_ANALYSIS.md` accepts the shared compiler/executor/halt diagnosis but
+  review in `docs/research/frontier/FRONTIER_AGENT_PLANS_ANALYSIS.md` accepts the shared compiler/executor/halt diagnosis but
   rejects every full submitted stack as underidentified or boundary-confounded. The only admitted
   next direction is a formal preregistration for a pointer-grounded compiler, separately
   parameterized source-deleted recurrent executor, and independent state-consumer/halt policy.
@@ -10723,7 +10723,7 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
 - **2026-07-19 19:46--20:19** -- **Two frontier nominal-machine proposals are archived, audited,
   and reduced to the measured S9.1 repair.** Exact source SHA-256 values are `e39f9787...` and
-  `d4d2d622...`; review is `FRONTIER_S9_TO_GENERAL_REASONING_ANALYSIS.md`. Adopt the central thesis:
+  `d4d2d622...`; review is `docs/research/frontier/FRONTIER_S9_TO_GENERAL_REASONING_ANALYSIS.md`. Adopt the central thesis:
   language should compile into an anonymous model-owned machine rather than a longer prose trace.
   Adopt paired operation-renaming orbit supervision and syntax/type-only maximum-score relation
   assignment. Reject the proposed token-width diagnosis: an independent audit of all 2,048 frozen
@@ -15189,3 +15189,33 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `r12_ettr_il_v3_streaming_materialization_and_global_audit_implemented_candidate_production_final_cells_active`.
+
+- **2026-07-27 04:05 EDT** -- **Research documents were organized without
+  disturbing executable custody paths; ETTR v3 candidate production remains
+  healthy at 319/324 cells.** No model, checkpoint, optimizer, GPU, or
+  continuation-pretraining operation was performed.
+
+  External frontier proposals and their Shohin reviews now live under
+  `docs/research/frontier/`; broad mechanism notes live under
+  `docs/research/concepts/`; and raw 300k qualitative baselines live under
+  `docs/research/baselines/`. `docs/research/README.md` indexes the archive and
+  explains the boundary. All live references in the runbook, master reasoning
+  record, master plan, and training metrics were updated and checked.
+
+  R11/R12 preregistrations, protocols, theories, results, and no-go records
+  intentionally remain at repository root. Many are opened by exact
+  root-relative paths, hashed into frozen manifests, or named by immutable
+  receipts. Moving them piecemeal would break reproducibility; a later
+  migration must introduce one path registry and update code, tests, frozen
+  manifests, and receipts as a single custody operation.
+
+  On Stokes, production job `751777` has 319/324 immutable candidate reports.
+  The final five one-CPU cells remain running on `ec80`, and zero nonempty
+  stderr files are present. The existing dependency chain remains intact:
+  deterministic selection `752104`, task freeze `752105`, main materialization
+  `752106`, sealed confirmation materialization `752107`, independent audits
+  `752108`/`752109`, and cross-root separation audit `752110`. No downstream
+  stage has started early.
+
+  Decision:
+  `r12_ettr_il_v3_research_archive_organized_candidate_production_319_of_324`.

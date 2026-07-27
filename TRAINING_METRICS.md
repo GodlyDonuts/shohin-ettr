@@ -751,7 +751,7 @@ The raw checkpoint remains a durable pretraining base, not a promoted reasoner.
 Its stable empirical diagnosis is local/fragile operation competence without
 reliable natural-language compilation, correction, halting, serialization, or
 state reuse. Full transcript custody and interpretation are in
-`RAW300K_INTERACTION_RESULT.md`.
+`docs/research/baselines/RAW300K_INTERACTION_RESULT.md`.
 
 ## Update Protocol
 

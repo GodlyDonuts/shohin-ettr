@@ -2,7 +2,7 @@
 
 Gemini's proposal ([GEMINI_PLAN.md](GEMINI_PLAN.md)) has genuinely sophisticated architecture instincts wrapped
 around **one disqualifying decision.** This doc keeps the good ideas, fixes the flaw, and layers everything onto
-Shohin's proven, data-first base ([MASTER_PLAN.md](MASTER_PLAN.md)).
+Shohin's proven, data-first base ([MASTER_PLAN.md](../../../MASTER_PLAN.md)).
 
 ## The fatal flaw — and the fix
 

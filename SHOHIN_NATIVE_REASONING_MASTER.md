@@ -2450,8 +2450,8 @@ contracts, review itself, or halt.
 
 Primary evidence:
 
-- `RAW300K_INTERACTION_RESULT.md` (full text embedded in Appendix A)
-- `RAW300K_FREEFORM_INTERACTION_RESULT.md` (full text embedded in Appendix A)
+- `docs/research/baselines/RAW300K_INTERACTION_RESULT.md` (full text embedded in Appendix A)
+- `docs/research/baselines/RAW300K_FREEFORM_INTERACTION_RESULT.md` (full text embedded in Appendix A)
 - `R12_RESEARCHER_INTERVIEW_RESULT.md` (full text embedded in Appendix A)
 - `R12_RESEARCHER_ADAPTIVE_INTERACTION_RESULT.md` (full text embedded in Appendix A)
 
@@ -2579,7 +2579,7 @@ means only the explicitly named gate passed. It never implies broad reasoning.
 | Attempt | Result | Decision / lesson | Evidence |
 |---|---|---|---|
 | 60k divergence repair and domain-interleaved loader | Stable 60k completion | Training infrastructure fixed; not a reasoning result | the operational runbook summary |
-| 60k to 300k continuation | 300k complete, 157.286B nominal exposures | Durable raw anchor | `RAW300K_INTERACTION_RESULT.md` (full text embedded in Appendix A) |
+| 60k to 300k continuation | 300k complete, 157.286B nominal exposures | Durable raw anchor | `docs/research/baselines/RAW300K_INTERACTION_RESULT.md` (full text embedded in Appendix A) |
 | One-H100 BS16/ACC16 | About 148k tok/s, 99-100% utilization | Stable baseline | the operational runbook summary |
 | One-H100 BS32/ACC8 | About 154.5k tok/s, about 64 GB | Adopted at natural handoff; modest gain | the operational runbook summary |
 | One-H100 BS64/ACC4 | OOM at 78.93 GiB | Rejected | the operational runbook summary |
@@ -2588,7 +2588,7 @@ means only the explicitly named gate passed. It never implies broad reasoning.
 | Whole-update CUDA graphs | Clean canary gained only about 1.8% and removed guard/observability | Rejected for integration | the operational runbook summary |
 | Two-pass recurrence ablation (`n_loop=2`) | Loss 2.4899 versus 2.4890 control; 286k versus 472.7k tok/s | Stable but much slower, with no measured capability gain | the operational runbook summary |
 | Raw 80k/120k/168.75k/300k boards | Low-single-digit, non-monotonic changes | Scaling did not yield broad reasoning | the operational runbook summary, `TRAINING_METRICS.md` (full text embedded in Appendix A) |
-| Raw 200k/252.5k/260k/300k direct interviews | Fixed strict scores essentially flat | More raw tokens did not create reliable state reuse or self-correction | `RAW300K_INTERACTION_RESULT.md` (full text embedded in Appendix A) |
+| Raw 200k/252.5k/260k/300k direct interviews | Fixed strict scores essentially flat | More raw tokens did not create reliable state reuse or self-correction | `docs/research/baselines/RAW300K_INTERACTION_RESULT.md` (full text embedded in Appendix A) |
 | Raw 300k future-Jacobian repeat | Reproducible geometry, but **0% top-10 and 0% top-100** on 2,304 decisive targets | No usable vocabulary-aligned semantic workspace emerged | `R12_JACOBIAN_WORKSPACE_LONGITUDINAL_RESULT.md` (full text embedded in Appendix A) |
 
 The long-range plan is to validate a causal reasoning mechanism first, then
@@ -2652,7 +2652,7 @@ transfer. Lower loss and a longer rationale are not sufficient.
 |---|---|---|---|
 | Typed controller v1 | 42/256 = 16.4%; DONE 86.3%; atomic step 27.3% | Format and DONE learned; arithmetic/controller composition remained weak | `R12_TYPED_CONTROLLER_V1_RESULT.md` (full text embedded in Appendix A) |
 | Typed controller v2 | 0.8%; DONE 0%; atomic step 26.6% | Mixing native Compute SFT destroyed the typed mode | `R12_TYPED_CONTROLLER_V2_RESULT.md` (full text embedded in Appendix A) |
-| Host execution of LM-emitted steps | About 1.2% | LM step emission ignored cursor; host arithmetic cannot rescue wrong control | `REASONING_ATTACK_PLAN.md` |
+| Host execution of LM-emitted steps | About 1.2% | LM step emission ignored cursor; host arithmetic cannot rescue wrong control | `docs/research/concepts/REASONING_ATTACK_PLAN.md` |
 | SCEB typed closed loop | 65/256 = 25.4% | Discrete heads can control a host register bus; still external math | `R12_SCEB_RESULTS.md` (full text embedded in Appendix A) |
 | NL SCEB | 8/51 = 15.7%; op+DONE step about 62% | Some natural-language op signal, but no autonomous executor | Same |
 | RegisterAugmentedGPT / discrete controller heads | Implemented and used as controls | Useful architecture substrate, not a reasoning success by itself | `train/register_augmented_gpt.py`, `train/discrete_controller_heads.py` |
@@ -3921,9 +3921,9 @@ robustness repair, not permission to relax thresholds or rescore S9.
 ### 9.14 Frontier nominal-machine synthesis
 
 Two new frontier submissions are preserved verbatim as
-`FRONTIER_NOMINAL_GRAPH_REWRITE_MACHINE_PLAN.md` and
-`FRONTIER_S9_ARCHITECTURE_PROPOSAL.md`; the evidence review is
-`FRONTIER_S9_TO_GENERAL_REASONING_ANALYSIS.md`. Their central thesis is adopted:
+`docs/research/frontier/FRONTIER_NOMINAL_GRAPH_REWRITE_MACHINE_PLAN.md` and
+`docs/research/frontier/FRONTIER_S9_ARCHITECTURE_PROPOSAL.md`; the evidence review is
+`docs/research/frontier/FRONTIER_S9_TO_GENERAL_REASONING_ANALYSIS.md`. Their central thesis is adopted:
 Shohin should become a renaming-invariant language compiler for a small,
 model-owned reasoning computer, rather than learning longer textual rationales.
 Their immediate orbit-consistency and model-logit-only structured-assignment
@@ -4228,11 +4228,11 @@ override older embedded wording.
 ### New frontier records included in this update
 
 - `R12_EPISODE_FUNCTOR_COMPILER_CPU_FALSIFIER_RESULT.md` — controlling result reproduced as a self-contained Appendix synopsis before the verbatim source set
-- `FRONTIER_AGENT_PLANS.md` — embedded in Appendix A
-- `FRONTIER_AGENT_PLANS_ANALYSIS.md` — embedded in Appendix A
-- `FRONTIER_NOMINAL_GRAPH_REWRITE_MACHINE_PLAN.md` — embedded in Appendix A
-- `FRONTIER_S9_ARCHITECTURE_PROPOSAL.md` — embedded in Appendix A
-- `FRONTIER_S9_TO_GENERAL_REASONING_ANALYSIS.md` — embedded in Appendix A
+- `docs/research/frontier/FRONTIER_AGENT_PLANS.md` — embedded in Appendix A
+- `docs/research/frontier/FRONTIER_AGENT_PLANS_ANALYSIS.md` — embedded in Appendix A
+- `docs/research/frontier/FRONTIER_NOMINAL_GRAPH_REWRITE_MACHINE_PLAN.md` — embedded in Appendix A
+- `docs/research/frontier/FRONTIER_S9_ARCHITECTURE_PROPOSAL.md` — embedded in Appendix A
+- `docs/research/frontier/FRONTIER_S9_TO_GENERAL_REASONING_ANALYSIS.md` — embedded in Appendix A
 - `R12_CAUSAL_GRAMMAR_FIREWALL_PLAN.md` — embedded in Appendix A
 - `R12_CROSS_DOMAIN_FAULT_CHANNEL_REVIEW_RESULT.md` — embedded in Appendix A
 - `R12_CTAA_NEURAL_FALSIFIER_PREREG.md` — embedded in Appendix A
@@ -4490,9 +4490,9 @@ override older embedded wording.
 - `R12_VAMT_V3_BOUNDED_MACHINE_THEORY.md` — embedded in Appendix A
 - `R12_VOCABULARY_ALIGNED_MICROCODE_TRANSDUCER_THEORY.md` — embedded in Appendix A
 - `R12_WGRQ_CPU_PREREG.md` — embedded in Appendix A
-- `RAW300K_FREEFORM_INTERACTION_RESULT.md` — embedded in Appendix A
-- `RAW300K_INTERACTION_RESULT.md` — embedded in Appendix A
-- `REASONING_ATTACK_PLAN.md` — embedded in Appendix A
+- `docs/research/baselines/RAW300K_FREEFORM_INTERACTION_RESULT.md` — embedded in Appendix A
+- `docs/research/baselines/RAW300K_INTERACTION_RESULT.md` — embedded in Appendix A
+- `docs/research/concepts/REASONING_ATTACK_PLAN.md` — embedded in Appendix A
 - `REASONING_FRONTIER.md` — embedded in Appendix A
 - `TRAINING_METRICS.md` — embedded in Appendix A
 
@@ -4637,11 +4637,11 @@ override older embedded wording.
 ### New frontier records included in this update
 
 - `R12_EPISODE_FUNCTOR_COMPILER_CPU_FALSIFIER_RESULT.md` — controlling result reproduced as a self-contained Appendix synopsis before the verbatim source set
-- `FRONTIER_AGENT_PLANS.md` — embedded in Appendix A
-- `FRONTIER_AGENT_PLANS_ANALYSIS.md` — embedded in Appendix A
-- `FRONTIER_NOMINAL_GRAPH_REWRITE_MACHINE_PLAN.md` — embedded in Appendix A
-- `FRONTIER_S9_ARCHITECTURE_PROPOSAL.md` — embedded in Appendix A
-- `FRONTIER_S9_TO_GENERAL_REASONING_ANALYSIS.md` — embedded in Appendix A
+- `docs/research/frontier/FRONTIER_AGENT_PLANS.md` — embedded in Appendix A
+- `docs/research/frontier/FRONTIER_AGENT_PLANS_ANALYSIS.md` — embedded in Appendix A
+- `docs/research/frontier/FRONTIER_NOMINAL_GRAPH_REWRITE_MACHINE_PLAN.md` — embedded in Appendix A
+- `docs/research/frontier/FRONTIER_S9_ARCHITECTURE_PROPOSAL.md` — embedded in Appendix A
+- `docs/research/frontier/FRONTIER_S9_TO_GENERAL_REASONING_ANALYSIS.md` — embedded in Appendix A
 - `R12_CAUSAL_GRAMMAR_FIREWALL_PLAN.md` — embedded in Appendix A
 - `R12_CROSS_DOMAIN_FAULT_CHANNEL_REVIEW_RESULT.md` — embedded in Appendix A
 - `R12_CTAA_NEURAL_FALSIFIER_PREREG.md` — embedded in Appendix A
@@ -4813,8 +4813,8 @@ override older embedded wording.
 
 ### Retained source records
 
-- `FRONTIER_AGENT_PLANS.md` — embedded in Appendix A
-- `FRONTIER_AGENT_PLANS_ANALYSIS.md` — embedded in Appendix A
+- `docs/research/frontier/FRONTIER_AGENT_PLANS.md` — embedded in Appendix A
+- `docs/research/frontier/FRONTIER_AGENT_PLANS_ANALYSIS.md` — embedded in Appendix A
 - `R12_ACTIVE_VERIFIER_QUERY_NO_GO.md` — embedded in Appendix A
 - `R12_ACTIVE_WITNESS_ALLOCATION_NO_GO.md` — embedded in Appendix A
 - `R12_ADDRESSED_CATEGORICAL_WORKSPACE_PREREG.md` — embedded in Appendix A
@@ -4947,9 +4947,9 @@ override older embedded wording.
 - `R12_VAMT_V3_REVIEW_RESULT.md` — embedded in Appendix A
 - `R12_VOCABULARY_ALIGNED_MICROCODE_TRANSDUCER_THEORY.md` — embedded in Appendix A
 - `R12_WGRQ_CPU_PREREG.md` — embedded in Appendix A
-- `RAW300K_FREEFORM_INTERACTION_RESULT.md` — embedded in Appendix A
-- `RAW300K_INTERACTION_RESULT.md` — embedded in Appendix A
-- `REASONING_ATTACK_PLAN.md` — embedded in Appendix A
+- `docs/research/baselines/RAW300K_FREEFORM_INTERACTION_RESULT.md` — embedded in Appendix A
+- `docs/research/baselines/RAW300K_INTERACTION_RESULT.md` — embedded in Appendix A
+- `docs/research/concepts/REASONING_ATTACK_PLAN.md` — embedded in Appendix A
 - `REASONING_FRONTIER.md` — embedded in Appendix A
 - `TRAINING_METRICS.md` — embedded in Appendix A
 - `R12_S4_EVENT_RELATIVE_POINTER_PREREG.md` — embedded in Appendix A
@@ -5228,9 +5228,9 @@ claim.
 
 ---
 
-## Embedded source 1: `FRONTIER_AGENT_PLANS.md`
+## Embedded source 1: `docs/research/frontier/FRONTIER_AGENT_PLANS.md`
 
-Original source path: `FRONTIER_AGENT_PLANS.md`
+Original source path: `docs/research/frontier/FRONTIER_AGENT_PLANS.md`
 Original source size: 18,451 bytes
 
 <!-- BEGIN EMBEDDED SOURCE -->
@@ -5669,9 +5669,9 @@ establish open-domain grounding, alias resolution, natural-language object
 permanence, unbounded planning, or general reasoning.
 <!-- END EMBEDDED SOURCE -->
 ---
-## Embedded source 2: `FRONTIER_AGENT_PLANS_ANALYSIS.md`
+## Embedded source 2: `docs/research/frontier/FRONTIER_AGENT_PLANS_ANALYSIS.md`
 
-Original source path: `FRONTIER_AGENT_PLANS_ANALYSIS.md`
+Original source path: `docs/research/frontier/FRONTIER_AGENT_PLANS_ANALYSIS.md`
 Original source size: 12,828 bytes
 
 <!-- BEGIN EMBEDDED SOURCE -->
@@ -5681,7 +5681,7 @@ Original source size: 12,828 bytes
 closed canaries, the completed scale audit, and the locally prepared factorized
 witness-route preregistration. No new neural run is authorized by this review.
 
-**Reviewed source:** `FRONTIER_AGENT_PLANS.md`
+**Reviewed source:** `docs/research/frontier/FRONTIER_AGENT_PLANS.md`
 
 **Workspace SHA-256:**
 `8903788809f987372ba23d1cff77e8e86641a174e9cc8b02828c740ab2a63271`
@@ -33893,9 +33893,9 @@ end-to-end adversarial negative tests frozen before acquisition.
 
 ---
 
-## Embedded source 135: `RAW300K_FREEFORM_INTERACTION_RESULT.md`
+## Embedded source 135: `docs/research/baselines/RAW300K_FREEFORM_INTERACTION_RESULT.md`
 
-Original source path: `RAW300K_FREEFORM_INTERACTION_RESULT.md`
+Original source path: `docs/research/baselines/RAW300K_FREEFORM_INTERACTION_RESULT.md`
 Original source size: 2,776 bytes
 
 <!-- BEGIN EMBEDDED SOURCE -->
@@ -33953,9 +33953,9 @@ accuracy and must not be compared numerically with a frozen public board.
 
 ---
 
-## Embedded source 136: `RAW300K_INTERACTION_RESULT.md`
+## Embedded source 136: `docs/research/baselines/RAW300K_INTERACTION_RESULT.md`
 
-Original source path: `RAW300K_INTERACTION_RESULT.md`
+Original source path: `docs/research/baselines/RAW300K_INTERACTION_RESULT.md`
 Original source size: 4,984 bytes
 
 <!-- BEGIN EMBEDDED SOURCE -->
@@ -34079,9 +34079,9 @@ templates rather than controlled deliberation.
 
 ---
 
-## Embedded source 137: `REASONING_ATTACK_PLAN.md`
+## Embedded source 137: `docs/research/concepts/REASONING_ATTACK_PLAN.md`
 
-Original source path: `REASONING_ATTACK_PLAN.md`
+Original source path: `docs/research/concepts/REASONING_ATTACK_PLAN.md`
 Original source size: 1,973 bytes
 
 <!-- BEGIN EMBEDDED SOURCE -->
@@ -38524,7 +38524,7 @@ The raw checkpoint remains a durable pretraining base, not a promoted reasoner.
 Its stable empirical diagnosis is local/fragile operation competence without
 reliable natural-language compilation, correction, halting, serialization, or
 state reuse. Full transcript custody and interpretation are in
-`RAW300K_INTERACTION_RESULT.md`.
+`docs/research/baselines/RAW300K_INTERACTION_RESULT.md`.
 
 ## Update Protocol
 
@@ -42144,9 +42144,9 @@ similar-but-nonidentical distractors.
 
 ---
 
-## Embedded source 178: `FRONTIER_NOMINAL_GRAPH_REWRITE_MACHINE_PLAN.md`
+## Embedded source 178: `docs/research/frontier/FRONTIER_NOMINAL_GRAPH_REWRITE_MACHINE_PLAN.md`
 
-Original source path: `FRONTIER_NOMINAL_GRAPH_REWRITE_MACHINE_PLAN.md`
+Original source path: `docs/research/frontier/FRONTIER_NOMINAL_GRAPH_REWRITE_MACHINE_PLAN.md`
 Original source size: 37,041 bytes
 
 <!-- BEGIN EMBEDDED SOURCE -->
@@ -43065,9 +43065,9 @@ The immediate move is S9.1 with a tokenization-independent candidate lattice and
 
 ---
 
-## Embedded source 179: `FRONTIER_S9_ARCHITECTURE_PROPOSAL.md`
+## Embedded source 179: `docs/research/frontier/FRONTIER_S9_ARCHITECTURE_PROPOSAL.md`
 
-Original source path: `FRONTIER_S9_ARCHITECTURE_PROPOSAL.md`
+Original source path: `docs/research/frontier/FRONTIER_S9_ARCHITECTURE_PROPOSAL.md`
 Original source size: 8,838 bytes
 
 <!-- BEGIN EMBEDDED SOURCE -->
@@ -43179,9 +43179,9 @@ If you do this, Shohin stops being a small LLM that sometimes reasons. It become
 
 ---
 
-## Embedded source 180: `FRONTIER_S9_TO_GENERAL_REASONING_ANALYSIS.md`
+## Embedded source 180: `docs/research/frontier/FRONTIER_S9_TO_GENERAL_REASONING_ANALYSIS.md`
 
-Original source path: `FRONTIER_S9_TO_GENERAL_REASONING_ANALYSIS.md`
+Original source path: `docs/research/frontier/FRONTIER_S9_TO_GENERAL_REASONING_ANALYSIS.md`
 Original source size: 8,490 bytes
 
 <!-- BEGIN EMBEDDED SOURCE -->
@@ -43193,9 +43193,9 @@ architecture bundle until S9.1 confirmation
 
 **Reviewed sources:**
 
-- `FRONTIER_NOMINAL_GRAPH_REWRITE_MACHINE_PLAN.md`, exact attachment SHA-256
+- `docs/research/frontier/FRONTIER_NOMINAL_GRAPH_REWRITE_MACHINE_PLAN.md`, exact attachment SHA-256
   `e39f9787d620484a428e8cb4e7717a8537f94782133eeba9246082fdddd60e45`
-- `FRONTIER_S9_ARCHITECTURE_PROPOSAL.md`, exact attachment SHA-256
+- `docs/research/frontier/FRONTIER_S9_ARCHITECTURE_PROPOSAL.md`, exact attachment SHA-256
   `d4d2d622ce9a2ab10126bc98d8f7be1f40efe9a398fcb735454fe88c924b6378`
 
 The source files are preserved verbatim. Literature citations inside them are

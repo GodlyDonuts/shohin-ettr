@@ -126,7 +126,7 @@ Deep-thin, because depth carries reasoning at small scale (MobileLLM finding; Sm
 
 **Ablation-gated extras** (default OFF; each earns entry only by winning at 30M proxy scale by a clear margin,
 §9): value embeddings (speedrun trick), multi-token-prediction aux head, plus two verified from the Gemini-plan
-review ([GEMINI_PLAN_ADAPTED.md](GEMINI_PLAN_ADAPTED.md)):
+review ([docs/research/frontier/GEMINI_PLAN_ADAPTED.md](docs/research/frontier/GEMINI_PLAN_ADAPTED.md)):
 
 - **Weight-shared / recurrent depth — *the* reasoning bet (flagship).** Reasoning is depth-bound, so recurring
   a shared block buys effective depth (~30 logical from ~10 physical) without spending params. Two flavors:
