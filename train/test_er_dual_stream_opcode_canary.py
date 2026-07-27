@@ -1,8 +1,18 @@
 from __future__ import annotations
 
+from copy import deepcopy
+import re
+
+import pytest
 import torch
 
-from assess_er_dual_stream_opcode_canary import verify_path_evidence
+from assess_er_dual_stream_opcode_canary import (
+    DECISIVE_FIELDS,
+    independent_gates,
+    score_predictions,
+    verify_path_evidence,
+    verify_query_logit_evidence,
+)
 from build_er_dual_stream_fresh_board import (
     CONFIRMATION_SPLIT,
     DEVELOPMENT_SPLIT,
@@ -13,11 +23,14 @@ from er_relation_tensor_training import loss_batch, parse_row
 from pilot_er_dual_stream_opcode_canary import (
     compute_gates,
     evaluate_coherent_routes,
+    identity_deranged_row,
     query_only_alpha_row,
+    query_target_counterfactual_row,
     relocation_consistency,
     renderer_relocation_rows,
 )
 from pilot_er_dual_stream_train_canary import score_train_row
+from pilot_er_dual_stream_relation_adapter import EXPECTED_PARAMETERS
 from er_dual_stream_relation_adapter import DualStreamRelationCompiler
 
 
@@ -86,6 +99,35 @@ def test_query_only_recode_preserves_program_and_target_span() -> None:
     assert recoded.query_bytes != row.query_bytes
 
 
+def test_query_target_counterfactual_changes_only_target_and_answer() -> None:
+    splits, _ = build_board(
+        seed=104729,
+        families={TRAIN_SPLIT: 1, DEVELOPMENT_SPLIT: 1, CONFIRMATION_SPLIT: 1},
+    )
+    row = score_train_row(parse_row(splits[TRAIN_SPLIT][0], TRAIN_SPLIT))
+    changed = query_target_counterfactual_row(row, 1)
+    assert changed.program_bytes == row.program_bytes
+    assert changed.query_range == row.query_range
+    assert changed.query_position != row.query_position
+    assert changed.answer_role == changed.final_state[changed.query_position]
+    assert changed.query_bytes != row.query_bytes
+
+
+def test_identity_derangement_preserves_shape_and_unique_candidates() -> None:
+    splits, _ = build_board(
+        seed=104729,
+        families={TRAIN_SPLIT: 1, DEVELOPMENT_SPLIT: 1, CONFIRMATION_SPLIT: 1},
+    )
+    row = parse_row(splits[TRAIN_SPLIT][0], TRAIN_SPLIT)
+    changed = identity_deranged_row(row, "unit-identity")
+    assert len(changed.program_bytes) == len(row.program_bytes)
+    assert changed.line_ranges == row.line_ranges
+    tokens = re.findall(
+        rb"(?<!\S)z[0-9a-z]{5}(?!\S)", bytes(changed.program_bytes)
+    )
+    assert len(tokens) == len(set(tokens))
+
+
 def test_coherent_decoder_emits_complete_train_only_evidence() -> None:
     splits, _ = build_board(
         seed=104729,
@@ -129,6 +171,77 @@ def test_coherent_decoder_emits_complete_train_only_evidence() -> None:
     assert evidence["candidate_positions"].shape == (4, 4, 13)
     assert evidence["target_exclusion"].shape == (4, 4)
     assert evidence["pred_relations"].shape == (4, 4, 6)
+    query_check = verify_query_logit_evidence({"branch": evidence})
+    assert query_check["all_query_semantic_argmax_exact"] is True
+    assert query_check["all_query_pointer_argmax_exact"] is True
+    for row_index, row in enumerate(rows):
+        cardinality = row.cardinality
+        cardinality_index = cardinality - 3
+        slots = tuple(range(cardinality)) + tuple(range(6, 6 + cardinality))
+        for rule in range(row.rule_count):
+            width = 2 * cardinality + 1
+            recomputed_scores = []
+            for excluded in range(width):
+                score = evidence["candidate_opcode_logits"][
+                    row_index, rule, excluded
+                ]
+                for ordinal, slot in enumerate(slots):
+                    rank = ordinal + int(ordinal >= excluded)
+                    score = score + evidence["candidate_witness_logits"][
+                        row_index, rule, slot, rank
+                    ]
+                recomputed_scores.append(score)
+            assert torch.allclose(
+                evidence["path_scores"][
+                    row_index, rule, cardinality_index, :width
+                ],
+                torch.stack(recomputed_scores),
+            )
+            recomputed_marginal = torch.zeros((12, 13))
+            candidate_count = int(
+                evidence["candidate_positions"][row_index, rule].ge(0).sum()
+            )
+            for route_cardinality in range(3, 7):
+                route_index = route_cardinality - 3
+                route_slots = tuple(range(route_cardinality)) + tuple(
+                    range(6, 6 + route_cardinality)
+                )
+                cardinality_probability = evidence["cardinality_probability"][
+                    row_index, route_index
+                ]
+                if candidate_count == 2 * route_cardinality:
+                    for ordinal, slot in enumerate(route_slots):
+                        recomputed_marginal[slot, ordinal] += cardinality_probability
+                elif candidate_count == 2 * route_cardinality + 1:
+                    path_probability = evidence["path_probability"][
+                        row_index, rule, route_index, :candidate_count
+                    ]
+                    for excluded in range(candidate_count):
+                        for ordinal, slot in enumerate(route_slots):
+                            rank = ordinal + int(ordinal >= excluded)
+                            recomputed_marginal[slot, rank] += (
+                                cardinality_probability
+                                * path_probability[excluded]
+                            )
+            assert torch.allclose(
+                evidence["candidate_marginal_probability"][
+                    row_index, rule
+                ],
+                recomputed_marginal,
+            )
+    rebuilt = score_predictions(
+        rows,
+        evidence,
+        {
+            "candidate_positions": evidence["candidate_positions"],
+            "target_exclusion": evidence["target_exclusion"],
+        },
+    )
+    for field in DECISIVE_FIELDS:
+        assert rebuilt["overall"][field] == metrics["overall"][field]
+    model.train()
+    with pytest.raises(ValueError, match="evaluation mode"):
+        evaluate_coherent_routes(model, rows, opcode_weight=1.0, batch_size=4)
 
 
 def test_structured_route_objective_is_finite_and_reaches_both_queries() -> None:
@@ -174,59 +287,152 @@ def test_structured_route_objective_is_finite_and_reaches_both_queries() -> None
 
 def test_independent_assessor_verifies_coherent_candidate_partition() -> None:
     rows = 8_000
-    scores = torch.zeros((rows, 4, 4, 13), dtype=torch.float16)
-    probability = torch.zeros_like(scores)
     predicted_cardinality = torch.zeros(rows, dtype=torch.int16)
     target_cardinality = torch.zeros(rows, dtype=torch.int16)
     target_rule_count = torch.zeros(rows, dtype=torch.int16)
-    map_exclusion = torch.full((rows, 4), -1, dtype=torch.int16)
     target_exclusion = torch.full((rows, 4), -1, dtype=torch.int16)
     candidates = torch.full((rows, 4, 13), -1, dtype=torch.int32)
-    witness = torch.full((rows, 4, 12), -1, dtype=torch.int32)
-    opcode = torch.full((rows, 4), -1, dtype=torch.int32)
-
     predicted_cardinality[0] = target_cardinality[0] = 3
     target_rule_count[0] = 1
-    scores[0, 0, 0, 3] = 5
-    probability[0, 0, 0, :7] = scores[0, 0, 0, :7].softmax(-1)
-    map_exclusion[0, 0] = target_exclusion[0, 0] = 3
+    target_exclusion[0, 0] = 3
     candidates[0, 0, :7] = torch.arange(7)
-    witness[0, 0, [0, 1, 2, 6, 7, 8]] = torch.tensor(
-        [0, 1, 2, 4, 5, 6], dtype=torch.int32
-    )
-    opcode[0, 0] = 3
-    relocated = {
-        "path_scores": scores,
-        "path_probability": probability,
-        "pred_cardinality": predicted_cardinality,
-        "target_cardinality": target_cardinality,
-        "target_rule_count": target_rule_count,
-        "map_exclusion": map_exclusion,
-        "target_exclusion": target_exclusion,
-        "candidate_positions": candidates,
-        "pred_witness_pointer": witness,
-        "rule_opcode_pointer": opcode,
-    }
+
+    def branch(weight: float, selected: int) -> dict[str, torch.Tensor]:
+        witness_logits = torch.zeros((rows, 4, 12, 13), dtype=torch.float16)
+        opcode_logits = torch.zeros((rows, 4, 13), dtype=torch.float16)
+        opcode_logits[0, 0, selected] = 5
+        scores = torch.zeros((rows, 4, 4, 13), dtype=torch.float16)
+        scores[0, 0, 0, :7] = weight * opcode_logits[0, 0, :7]
+        probability = torch.zeros_like(scores)
+        probability[0, 0, 0, :7] = scores[0, 0, 0, :7].softmax(-1)
+        map_exclusion = torch.full((rows, 4), -1, dtype=torch.int16)
+        map_exclusion[0, 0] = selected
+        witness = torch.full((rows, 4, 12), -1, dtype=torch.int32)
+        expected = torch.cat(
+            (torch.arange(selected), torch.arange(selected + 1, 7))
+        ).to(torch.int32)
+        slots = [0, 1, 2, 6, 7, 8]
+        witness[0, 0, slots] = expected
+        opcode = torch.full((rows, 4), -1, dtype=torch.int32)
+        opcode[0, 0] = selected
+        marginal = torch.zeros_like(witness_logits)
+        for excluded in range(7):
+            for ordinal, slot in enumerate(slots):
+                rank = ordinal + int(ordinal >= excluded)
+                marginal[0, 0, slot, rank] += probability[0, 0, 0, excluded]
+        cardinality_probability = torch.zeros((rows, 4), dtype=torch.float16)
+        cardinality_probability[0, 0] = 1
+        return {
+            "path_scores": scores,
+            "path_probability": probability,
+            "candidate_witness_logits": witness_logits,
+            "candidate_opcode_logits": opcode_logits,
+            "candidate_marginal_probability": marginal,
+            "cardinality_probability": cardinality_probability,
+            "pred_cardinality": predicted_cardinality,
+            "target_cardinality": target_cardinality,
+            "target_rule_count": target_rule_count,
+            "map_exclusion": map_exclusion,
+            "target_exclusion": target_exclusion,
+            "candidate_positions": candidates,
+            "pred_witness_pointer": witness,
+            "pred_rule_opcode_pointer": opcode,
+            "rule_opcode_pointer": opcode,
+        }
+
+    def independent(branch: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
+        result = deepcopy(branch)
+        slots = [0, 1, 2, 6, 7, 8]
+        ranks = result["candidate_marginal_probability"][
+            0, 0, slots, :7
+        ].argmax(-1)
+        positions = candidates[0, 0, ranks]
+        witness = torch.full((rows, 4, 12), -1, dtype=torch.int32)
+        opcode = torch.full((rows, 4), -1, dtype=torch.int32)
+        if len(set(map(int, positions.tolist()))) == 6:
+            witness[0, 0, slots] = positions
+            opcode[0, 0] = next(
+                iter(set(range(7)) - set(map(int, positions.tolist())))
+            )
+        result["pred_witness_pointer"] = witness
+        result["pred_rule_opcode_pointer"] = opcode
+        return result
+
+    s0 = branch(0.0, 0)
+    s1 = branch(1.0, 3)
+    s0_independent = independent(s0)
+    s1_independent = independent(s1)
+    s1_rotated = branch(1.0, 4)
+    s1_rotated["candidate_opcode_logits"] = s1[
+        "candidate_opcode_logits"
+    ].roll(1, dims=-1)
     evidence = {
         "arms": {
             "unit": {
                 "modes": {
-                    "s0_qstruct": {"relocated": relocated},
-                    "s1_qstruct": {"relocated": relocated},
+                    "s0_qraw": {
+                        "relocated": {
+                            "coherent": s0,
+                            "independent": s0_independent,
+                        },
+                        "opcode_shuffled": None,
+                        "witness_shuffled": s0,
+                    },
+                    "s1_qraw": {
+                        "relocated": {
+                            "coherent": s1,
+                            "independent": s1_independent,
+                        },
+                        "opcode_shuffled": s1_rotated,
+                        "witness_shuffled": s1,
+                    },
+                    "s0_qstruct": {
+                        "relocated": {
+                            "coherent": s0,
+                            "independent": s0_independent,
+                        },
+                        "opcode_shuffled": None,
+                        "witness_shuffled": s0,
+                    },
+                    "s1_qstruct": {
+                        "relocated": {
+                            "coherent": s1,
+                            "independent": s1_independent,
+                        },
+                        "opcode_shuffled": s1_rotated,
+                        "witness_shuffled": s1,
+                    },
                 }
             }
         }
     }
     result = verify_path_evidence(evidence)
-    assert result["active_routes_checked"] == 2
+    assert result["active_routes_checked"] == 4
+    assert result["all_route_coverage_exact"] is True
     assert result["all_map_argmax_exact"] is True
-    assert result["all_coherent_complements_exact"] is True
-    assert result["all_conditional_probabilities_normalized"] is True
-    assert result["all_conditional_probabilities_match_softmax"] is True
-    assert result["row_exact_by_arm_mode"] == {
-        "unit:s0_qstruct": 8_000,
-        "unit:s1_qstruct": 8_000,
-    }
+    assert result["all_ordered_complements_exact"] is True
+    assert result["all_probabilities_normalized"] is True
+    assert result["all_probabilities_match_softmax"] is True
+    assert result["all_path_scores_recompute"] is True
+    assert result["all_marginal_probabilities_recompute"] is True
+    assert result["all_independent_decodes_recompute"] is True
+    assert result["all_opcode_rotations_recompute"] is True
+    assert result["all_witness_rotations_recompute"] is True
+    corrupted_marginal = deepcopy(evidence)
+    corrupted_marginal["arms"]["unit"]["modes"]["s1_qraw"]["relocated"][
+        "coherent"
+    ]["candidate_marginal_probability"][0, 0, 0, 0] += 0.5
+    assert (
+        verify_path_evidence(corrupted_marginal)[
+            "all_marginal_probabilities_recompute"
+        ]
+        is False
+    )
+    s1["pred_witness_pointer"][0, 0, 0], s1["pred_witness_pointer"][0, 0, 1] = (
+        s1["pred_witness_pointer"][0, 0, 1].clone(),
+        s1["pred_witness_pointer"][0, 0, 0].clone(),
+    )
+    assert verify_path_evidence(evidence)["all_ordered_complements_exact"] is False
 
 
 def _metric(rate: float) -> dict[str, object]:
@@ -237,59 +443,101 @@ def _metric(rate: float) -> dict[str, object]:
             "state",
             "answer",
             "joint",
+            "route_joint",
             "relation_rows",
             "witness_pointer",
+            "rule_opcode_pointer",
+            "event_opcode_pointer",
+            "query",
+            "query_pointer",
         )
     }
-    grouped = {"x": {"joint": fields["joint"]}}
-    return {"overall": fields, "by_cardinality": grouped, "by_renderer": grouped}
+    grouped = {
+        "x": {
+            name: fields[name]
+            for name in (
+                "route_joint",
+                "witness_pointer",
+                "rule_opcode_pointer",
+                "event_opcode_pointer",
+                "query",
+                "query_pointer",
+            )
+        }
+    }
+    return {
+        "overall": fields,
+        "by_cardinality": grouped,
+        "by_renderer": grouped,
+        "by_renderer_cardinality": grouped,
+    }
 
 
 def test_gate_requires_causal_advantage_over_legacy() -> None:
-    exact = {"complete": {"exact": 8_000, "rows": 8_000, "rate": 1.0}}
+    exact = {"exact": 8_000, "rows": 8_000, "rate": 1.0}
     fit = {"frozen_parent_unchanged": True, "updates": 2_500}
 
-    def mode(coherent: float, marginal: float, shuffled: float | None = None):
+    def mode(
+        coherent: float,
+        independent: float,
+        opcode_shuffled: float | None = None,
+        witness_shuffled: float = 0.7,
+    ):
         return {
             "canonical": {
                 "coherent": _metric(coherent),
-                "marginal": _metric(marginal),
+                "independent": _metric(independent),
             },
             "relocated": {
                 "coherent": _metric(coherent),
-                "marginal": _metric(marginal),
+                "independent": _metric(independent),
             },
             "relocation_consistency": {"exact": 2_000, "families": 2_000},
-            "alpha": exact,
-            "distractor": exact,
-            "source_free": _metric(0.0),
-            "opcode_shuffled": None if shuffled is None else _metric(shuffled),
+            "alpha": {"route": exact, "query": exact},
+            "distractor": {"route": exact, "query": exact},
+            "identity_deranged": _metric(0.0),
+            "opcode_shuffled": None
+            if opcode_shuffled is None
+            else _metric(opcode_shuffled),
+            "witness_shuffled": _metric(witness_shuffled),
         }
 
-    query = {"qstruct": {"recode_a": exact, "recode_b": exact}}
+    query = {
+        name: {
+            "recode_a": {"query": exact},
+            "recode_b": {"query": exact},
+            "target_a": _metric(1.0),
+            "target_b": _metric(1.0),
+        }
+        for name in ("qraw", "qstruct")
+    }
+
+    def modes(s0: float, s1: float, independent: float, shuffled: float | None):
+        return {
+            "s0_qraw": mode(s0, independent),
+            "s1_qraw": mode(s1, independent, shuffled),
+            "s0_qstruct": mode(s0, independent),
+            "s1_qstruct": mode(s1, independent, shuffled),
+        }
+
     arms = {
-        "zero_update": {"fit": {"frozen_parent_unchanged": True, "updates": 0}},
+        "zero_update": {
+            "modes": modes(0.7, 0.7, 0.7, 0.7),
+            "query_modes": query,
+            "fit": {"frozen_parent_unchanged": True, "updates": 0},
+        },
         "opcode_coupled": {
-            "modes": {
-                "s0_qstruct": mode(0.7, 0.7),
-                "s1_qstruct": mode(1.0, 1.0, 0.7),
-            },
+            "modes": modes(0.7, 1.0, 0.7, 0.7),
             "query_modes": query,
             "fit": fit,
         },
         "legacy_uncoupled": {
-            "modes": {
-                "s0_qstruct": mode(0.7, 0.7),
-                "s1_qstruct": mode(0.7, 0.7, 0.7),
-            },
+            "modes": modes(0.7, 0.7, 0.7, 0.7),
             "query_modes": query,
             "fit": fit,
         },
         "structured_route": {
-            "modes": {
-                "s0_qstruct": mode(0.7, 0.7),
-                "s1_qstruct": mode(1.0, 1.0, 0.7),
-            },
+            "modes": modes(0.7, 1.0, 0.7, 0.7),
             "query_modes": query,
             "fit": fit,
         },
@@ -302,14 +550,84 @@ def test_gate_requires_causal_advantage_over_legacy() -> None:
             ).EXPECTED_PARAMETERS
         },
         shared_initialization=True,
+        development_accesses=0,
+        confirmation_accesses=0,
     )
     assert all(gates.values())
+    assessed_gates, assessed_diagnosis = independent_gates(
+        arms, True, EXPECTED_PARAMETERS, 0, 0
+    )
+    assert assessed_gates == gates
+    assert assessed_diagnosis == diagnosis
     assert diagnosis["selected"] == {
         "arm": "opcode_coupled",
-        "mode": "s1_qstruct",
+        "mode": "s1_qraw",
         "mechanism": "learned_opcode_coupling",
     }
-    arms["opcode_coupled"]["modes"]["s1_qstruct"]["opcode_shuffled"] = _metric(0.9)
+    legacy_interaction = deepcopy(arms)
+    for query_mode in ("qraw", "qstruct"):
+        for view in ("canonical", "relocated"):
+            legacy_interaction["legacy_uncoupled"]["modes"][f"s1_{query_mode}"][
+                view
+            ]["coherent"] = _metric(1.0)
+            legacy_interaction["opcode_coupled"]["modes"][f"s1_{query_mode}"][
+                view
+            ]["coherent"] = _metric(0.7)
+    gates, diagnosis = compute_gates(
+        legacy_interaction,
+        parameters=EXPECTED_PARAMETERS,
+        shared_initialization=True,
+        development_accesses=0,
+        confirmation_accesses=0,
+    )
+    assert all(gates.values())
+    assessed_gates, assessed_diagnosis = independent_gates(
+        legacy_interaction, True, EXPECTED_PARAMETERS, 0, 0
+    )
+    assert assessed_gates == gates
+    assert assessed_diagnosis == diagnosis
+    assert diagnosis["selected"] == {
+        "arm": "legacy_uncoupled",
+        "mode": "s1_qraw",
+        "mechanism": "legacy_training_plus_acute_opcode",
+    }
+    trained_legacy = deepcopy(arms)
+    for mode_name in ("s0_qraw", "s1_qraw", "s0_qstruct", "s1_qstruct"):
+        for view in ("canonical", "relocated"):
+            trained_legacy["legacy_uncoupled"]["modes"][mode_name][view][
+                "coherent"
+            ] = _metric(1.0)
+            trained_legacy["opcode_coupled"]["modes"][mode_name][view][
+                "coherent"
+            ] = _metric(0.7)
+            trained_legacy["structured_route"]["modes"][mode_name][view][
+                "coherent"
+            ] = _metric(0.7)
+    gates, diagnosis = compute_gates(
+        trained_legacy,
+        parameters={
+            **__import__(
+                "pilot_er_dual_stream_relation_adapter"
+            ).EXPECTED_PARAMETERS
+        },
+        shared_initialization=True,
+        development_accesses=0,
+        confirmation_accesses=0,
+    )
+    assert all(gates.values())
+    assessed_gates, assessed_diagnosis = independent_gates(
+        trained_legacy, True, EXPECTED_PARAMETERS, 0, 0
+    )
+    assert assessed_gates == gates
+    assert assessed_diagnosis == diagnosis
+    assert diagnosis["selected"] == {
+        "arm": "legacy_uncoupled",
+        "mode": "s0_qraw",
+        "mechanism": "additional_marginal_training",
+    }
+    arms["opcode_coupled"]["modes"]["s1_qraw"]["opcode_shuffled"] = _metric(
+        0.9
+    )
     gates, _ = compute_gates(
         arms,
         parameters={
@@ -318,5 +636,7 @@ def test_gate_requires_causal_advantage_over_legacy() -> None:
             ).EXPECTED_PARAMETERS
         },
         shared_initialization=True,
+        development_accesses=0,
+        confirmation_accesses=0,
     )
     assert not gates["opcode_score_is_causal_when_selected"]

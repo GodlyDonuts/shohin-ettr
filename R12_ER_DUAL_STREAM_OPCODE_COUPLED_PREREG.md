@@ -12,7 +12,9 @@ explanations that the old evidence cannot separate:
 1. the learned exclusion-path posterior is correct but independent per-slot
    marginal argmax does not form one coherent path;
 2. the path posterior needs the excluded candidate to score as the opcode; or
-3. even opcode coupling leaves a diffuse posterior and requires a structured
+3. another equal-budget pass of the old marginal objective is sufficient;
+4. learned opcode coupling is required; or
+5. even opcode coupling leaves a diffuse posterior and requires a structured
    exclusion-path objective.
 
 The same rejection also showed that query-pointer offsets changed under
@@ -36,11 +38,13 @@ S_e = sum_j witness_logit[j, c_pi_e(j)]
       + lambda * opcode_logit[c_e].
 ```
 
-The existing marginal decoder returns slot marginals under `softmax(S)`. The
-new coherent decoder instead selects one `argmax_e S_e`, emits `c_e` as the
-opcode complement, emits every witness from that one path, and constructs the
-relation by exact six-byte identity. It never consults a target, outcome,
-executor result, retry, renderer label, or host repair.
+The independent decoder argmaxes every witness-slot marginal. It succeeds only
+when those `2N` hard pointers are unique and leave exactly one complementary
+candidate. The coherent decoder instead selects one `argmax_e S_e`. Both then
+use the same complement-as-opcode rule, exact six-byte relation construction,
+and event rebinding. Thus the decoder contrast changes path hardening only. It
+never consults a target, outcome, executor result, retry, renderer label, or
+host repair.
 
 The structured arm replaces, rather than augments, the old per-slot witness
 loss with
@@ -91,39 +95,55 @@ executed before scoring.
 Every checkpoint is evaluated under the crossed inference modes:
 
 - score coupling `S0` (`lambda=0`) and `S1` (`lambda=1`);
-- existing independent marginal decoder and coherent path-MAP decoder; and
+- independent slot-marginal hardening and coherent path-MAP hardening with
+  identical downstream decoding; and
 - raw query routing and structural-neutral query routing.
 
 Two independent query-only alpha recodings leave every program byte fixed.
-A deterministic within-record rotation of opcode logits is the causal negative
-control for any `S1` claim.
+Deterministic within-record rotations of opcode logits and witness logits are
+separate causal negative controls.
 
 ## 5. Frozen diagnosis and advancement
 
 The assessor must identify exactly one of the following before advancement:
 
-1. **Decoder artifact:** legacy `S0` coherent joint is at least 99%, legacy
-   `S0` marginal joint is at most 80%, and the gain is at least 20 points.
-2. **Acute opcode repair:** legacy `S1` coherent joint is at least 99%, legacy
-   `S0` coherent joint is at most 80%, and the gain is at least 20 points.
-3. **Learned opcode repair:** coupled `S1` coherent joint is at least 99%, both
+1. **Decoder artifact:** zero-update `S0` coherent route joint is at least 99%,
+   zero-update `S0` independent route joint is at most 80%, and the gain is at
+   least 20 points.
+2. **Acute opcode repair:** zero-update `S1` coherent route joint is at least
+   99%, zero-update `S0` coherent route joint is at most 80%, and the gain is
+   at least 20 points.
+3. **Additional marginal training:** legacy `S0` coherent route joint is at
+   least 99%, zero-update `S0` coherent route joint is at most 80%, and the
+   gain is at least 20 points.
+4. **Learned opcode repair:** coupled `S1` coherent route joint is at least 99%, both
    legacy `S1` and coupled `S0` are at most 80%, and the gain is at least 20
    points.
-4. **Structured-learning repair:** structured `S1` coherent joint is at least
+5. **Structured-learning repair:** structured `S1` coherent route joint is at least
    99%, opcode-coupled `S1` is at most 80%, and the gain is at least 20 points.
+
+All route diagnoses use raw query routing and a route-joint metric that excludes
+query/answer fields. Query grounding is diagnosed afterward. Raw query routing
+must already clear 99% semantic and pointer gates, or structural routing must
+clear them while beating raw routing by at least 20 points with raw at most
+80%. Query canonicalization therefore cannot rescue or label a route repair.
 
 For the selected mechanism, all of these conjunctive gates must also pass:
 
-- canonical and controlled-twin packet, relation, complete witness pointer,
-  state, answer, and joint are each at least 99%;
-- every cardinality and renderer cell has at least 99% joint;
+- canonical and controlled-twin relation, complete witness pointer, rule-opcode
+  pointer, event-opcode pointer, state, and route joint are each at least 99%;
+- every cardinality, renderer, and renderer-by-cardinality intersection has at
+  least 99% route joint and pointer exactness;
 - all semantic predictions are identical across all eight views for every one
   of 2,000 families;
 - program alpha, distractor rotation, and both query-only recodings are exact
   on all 8,000 controlled rows;
-- source-free joint is at most 10%;
+- query semantics and query pointer spans pass their separately selected mode;
+- source-free route joint is at most 10%;
 - rotating opcode logits drops an opcode-dependent selected mechanism by at
   least 20 points and to at most 80%;
+- rotating witness logits always drops the selected route by at least 20
+  points and to at most 80%;
 - all fitted arms execute exactly 2,500 updates from one initialization and
   preserve byte-identical excluded parent state;
 - the exact parameter certificate remains strictly below 200M; and
@@ -135,13 +155,29 @@ will not be relaxed after the run.
 
 ## 6. Immutable evidence
 
-For every controlled row and semantic rule, retain candidate source positions,
-all conditional path scores and probabilities for `N=3..6`, selected physical
-record, target and MAP exclusion rank, correct-path rank/probability, coherent
-pointers, coherent relation, hard packet fields, and query pointer. Retain all
-arm fit histories, initialization hashes, frozen-parent digests, source/data
-manifests, thresholds, and per-cell summaries. Floating path evidence may be
-stored as float16 after all metrics are computed in float32.
+For every decisive branch, retain raw per-row coherent and independent
+predictions. For every controlled row and semantic rule, also retain candidate
+source positions, all conditional path scores and probabilities for `N=3..6`,
+selected physical record, target and MAP exclusion rank, correct-path
+rank/probability, coherent pointers, relation, opcode pointers, and query
+pointer. Retain the model-owned cardinality posterior, candidate-local witness
+and opcode logits, and witness marginals so the assessor can independently
+recompute path scores, path-to-slot marginalization, and both hard decoders.
+Retain raw alpha, distractor, source-free, opcode-rotation,
+witness-rotation, and both query-recode predictions plus all fit histories,
+initialization hashes, frozen-parent digests, source/data manifests, thresholds,
+and crossed-cell summaries. Floating path evidence may be stored as float16
+after metrics are computed in float32.
+
+The independent assessor imports no experiment-producer code. It separately
+rebuilds the train/probe split and controlled rows from the immutable board and
+seed, recomputes every decisive metric from raw predictions, implements its own
+gate logic, checks the ordered MAP path and probabilities, derives witness
+marginals from path and cardinality probabilities, reconstructs both hard
+decoders, verifies each logit rotation, and hashes every checkpoint arm against
+its bound fit receipt. Any mismatch exits nonzero and forces
+`reject_assessment`; a producer authorization cannot survive a failed
+assessment.
 
 ## 7. Claim boundary
 

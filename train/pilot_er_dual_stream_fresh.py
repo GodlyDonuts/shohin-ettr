@@ -167,7 +167,7 @@ def consume_development_access(
 def _load_canary(path: Path) -> dict[str, object]:
     if sha256_file(path) != CANARY_CHECKPOINT_SHA256:
         raise RuntimeError("fresh dual-stream canary checkpoint hash differs")
-    value = torch.load(path, map_location="cpu", weights_only=False)
+    value = torch.load(path, map_location="cpu", weights_only=True)
     if not isinstance(value, dict):
         raise RuntimeError("fresh dual-stream canary checkpoint is not a mapping")
     if (

@@ -419,20 +419,23 @@ coherent path posterior. Slotwise argmax can therefore decode the posterior
 median exclusion, or even a tuple that belongs to no legal path, while the
 coherent MAP exclusion is different.
 
-The admitted train-only factorial now separates four explanations before any
+The admitted train-only factorial now separates five explanations before any
 new fresh board:
 
-1. zero-update coherent MAP versus marginal decode;
-2. inference-time complementary opcode scoring;
-3. opcode-coupled marginal training; and
-4. structured exclusion-path NLL.
+1. zero-update coherent MAP versus independent slot hardening;
+2. zero-update inference-time complementary opcode scoring;
+3. another equal-budget pass of legacy marginal training;
+4. opcode-coupled marginal training; and
+5. structured exclusion-path NLL.
 
 It also crosses raw versus neutral-structural query routing because the prior
 query semantics were invariant while the query pointer itself changed under
-neutral-name recoding. Controlled twins change only witness position and query
-position; declaration, event style, storage, and noise remain fixed. Every
-candidate must clear 99% absolute and per-cell gates, exact recoding
-invariance, source-free collapse, and a 20-point matched-control advantage.
+neutral-name recoding. Route diagnosis uses raw query routing and excludes
+query/answer fields; query semantics and source-span pointer are classified
+afterward. Controlled twins change only witness position and query position;
+declaration, event style, storage, and noise remain fixed. Every candidate must
+clear 99% absolute and renderer-by-cardinality gates, exact recoding
+invariance, source-free collapse, and matched witness/opcode rotation controls.
 
 This is a direct implementation of the plans' pointer-grounded,
 phase-separated compiler recommendation. It is not yet Stage B or C. The
@@ -441,10 +444,11 @@ not a learned state-dependent halt policy. A compiler pass can authorize only
 a new fresh compiler board; learned source-deleted execution, consumption, and
 halt remain separate unsatisfied gates.
 
-The protocol also freezes an independent artifact assessor. It does not merely
-trust normalized probabilities or the trainer's summary: it checks that each
-stored path distribution equals the softmax of its retained logits, that MAP
-witnesses plus the complementary opcode exactly partition the physical
-candidates, and that evidence-derived row-exact route counts equal the reported
-witness metric. This closes the most direct self-confirming-decoder loophole;
-it does not turn a train-only transfer probe into unseen-semantic evidence.
+The protocol also freezes an independent artifact assessor that imports no
+experiment-producer code. It separately rebuilds the train/probe split and
+controlled rows from immutable data and seed; recomputes decisive metrics and
+gates from retained per-row predictions; derives path scores, path-to-slot
+marginals, independent and coherent hardening, and witness/opcode rotations
+from raw tensors; verifies crossed query cells and checkpoint-arm fit receipts;
+and fails closed. This closes the direct self-confirming-decoder loopholes; it
+does not turn a train-only transfer probe into unseen-semantic evidence.

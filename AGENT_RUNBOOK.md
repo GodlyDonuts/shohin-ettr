@@ -6,7 +6,12 @@
 > (`MASTER_PLAN.md`, `DIVERGENCE_DIAGNOSIS.md`, `DATA.md`) are background/history; this file is the
 > operational plan of record.
 >
-> **Last updated:** 2026-07-20 23:58 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-21 03:58 EDT. Active ER dual-stream v1.5 development is paused for the
+> next session with no source freeze, seed, H100 job, or scored access. Read
+> `R12_ER_DUAL_STREAM_OPCODE_V1_5_HANDOFF.md` before touching the dirty
+> `codex/er-tt-ordinal-route` worktree. It records all modified files, immutable artifacts,
+> adversarial blockers, failed-static-check snapshot, and the exact restart order. The protected
+> 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -10677,3 +10682,55 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   the reported witness metric. The focused suite is 20/20 after adding its synthetic partition
   check; all lint, byte compilation, shell syntax, and diff checks pass. Development and
   confirmation remain unopened and the closed v1 board remains `1/0`.
+
+- **2026-07-21 02:18--03:05** -- **Exact source `7d1b936...` passes real-parent CPU wiring but is
+  superseded before any seed after adversarial protocol review.** Commit `7d1b936...` was pushed,
+  and CPU Slurm job `695028` reconstructed its clean capsule and every promoted parent on `evc21`.
+  It reports the exact `185,532,296 / 11,129,504 / 14,467,704` parameter certificate, finite real-row
+  structured loss `139.4321`, opcode/witness gradient norms `15.9072/25.4178`, zero missing,
+  nonfinite, or leaked gradients, and byte-identical excluded-parent digest `f4911091...` before and
+  after. This is a wiring qualification only. Two independent reviewers reject v1.4 as an
+  authorization protocol before any seed: its decoder diagnosis used a retrained arm rather than
+  zero-update; independent versus coherent decoding changed downstream logic; query pointer
+  correctness was ungated and query canonicalization was bundled; invariance used the old marginal
+  decoder; renderer/cardinality intersections were absent; and the assessor reused producer
+  summaries/gates without failing closed. V1.5 repairs those factors. Zero-update is now the
+  decoder/acute baseline; an explicit additional-training diagnosis prevents relabeling; independent
+  and coherent hardening share complement, relation, and event logic; route diagnosis excludes
+  query while query semantics/span grounding are separately classified; rule/event opcode pointers
+  and renderer-by-cardinality cells are gated; witness/opcode logit rotations are separate controls;
+  and raw predictions for every decisive branch are retained. The assessor rebuilds the immutable
+  train/probe split and controlled rows, rescoring raw tensors with independent metrics/gates,
+  verifies ordered path probabilities/complements, and exits nonzero with `reject_assessment` on
+  any mismatch. Related regression tests are 49/49. V1.5 is not source frozen or qualified; no H100
+  seed/job exists and development/confirmation remain unopened.
+
+- **2026-07-21 03:05--03:42** -- **V1.5 closes the remaining self-confirmation paths and remains
+  pre-freeze.** The artifact assessor now imports no experiment-producer code. It independently
+  reconstructs all 12,000 train families, the deterministic 10,000/2,000 family split, four
+  complementary renderer twins, scored outcomes, crossed cells, and gate logic. Retained raw
+  candidate witness/opcode logits, cardinality probabilities, path scores/probabilities, and hard
+  predictions allow it to recompute path scores, path-to-slot marginals, independent and coherent
+  decoders, and both witness/opcode rotations. Every checkpoint arm is hash-bound to matching
+  evidence/report fit receipts; source-manifest hashes, exact arm semantics, update counts, frozen
+  parent digests, query semantics/pointers, and zero scored reads are fail-closed checks. A synthetic
+  corruption test proves altered marginals and ordered complements are rejected. Twenty focused and
+  56 broader board/relation regressions pass with Ruff, Python byte compilation, Slurm shell syntax,
+  and diff checks. No commit, seed, H100 job, development read, or
+  confirmation read has occurred for v1.5.
+
+- **2026-07-21 03:42--03:58** -- **Development is deliberately paused pre-freeze with a complete
+  restart dossier.** Recent repairs bind the probe to the exact qualified v1.2 split, require eval
+  mode, remove target `rule_count` from prediction, add same-program query-target counterfactuals
+  and retained query logits, replace the degenerate source-free gate with a unique identity
+  derangement, and strengthen canonical/relocated path coverage. Focused tests are 22/22. The route
+  is not launch-ready: the assessor still does not reconstruct complete models and reproduce
+  evidence from saved arm weights; diagnosis predicates can overlap; the legacy arm supports only
+  an “additional multitask optimization” claim without a witness-loss ablation; downstream
+  intervention state/event reconstruction is incomplete; cardinality posteriors, semantic opcode
+  positions, and complete query branches are not yet fail-closed; and the monolithic 1.28M-row/~5.45GiB
+  evidence path can exceed the four-hour allocation due to repeated full-tensor conversions. Ruff
+  intentionally reports seven unused imports belonging to the unfinished reconstruction. Exact
+  files, artifacts, blockers, optimization constraints, tests, and restart order are frozen in
+  `R12_ER_DUAL_STREAM_OPCODE_V1_5_HANDOFF.md`. Do not commit, derive a seed, submit an H100 job, or
+  open any scored split until every handoff blocker is closed and a clean adversarial review passes.

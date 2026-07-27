@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=er-ds-route-v14
+#SBATCH --job-name=er-ds-route-v15
 #SBATCH --account=skattel
 #SBATCH --partition=normal
 #SBATCH --gres=gpu:nvidia_h100_pcie:1
@@ -62,6 +62,7 @@ export OMP_NUM_THREADS=4
   --checkpoint "$OUTDIR/compiler.pt" \
   --evidence "$OUTDIR/train_probe_evidence.pt" \
   --report "$OUTDIR/train_probe_report.json" \
+  --data-dir "$DATA" \
   --out "$OUTDIR/train_probe_assessment.json"
 
 sha256sum \

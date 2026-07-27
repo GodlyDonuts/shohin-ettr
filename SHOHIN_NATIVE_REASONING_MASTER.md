@@ -3457,7 +3457,7 @@ independent witness-marginal argmax need not equal one coherent exclusion-path
 MAP and can emit a tuple belonging to no legal route.
 
 The pre-seed repair is therefore a four-arm, train-only structured-route
-factorial:
+factorial with five distinguishable causal outcomes:
 
 | Arm | Opcode score in fit | Route objective |
 |---|---:|---|
@@ -3466,13 +3466,23 @@ factorial:
 | opcode coupled | 1 | per-slot witness marginal |
 | structured route | 1 | coherent exclusion-path NLL |
 
-Every checkpoint is crossed at inference with opcode score on/off, marginal
-versus coherent hardening, and raw versus neutral-structural query routing.
+Every checkpoint is crossed at inference with opcode score on/off, independent
+versus coherent hardening under identical downstream logic, and raw versus
+neutral-structural query routing. Zero-update, not retrained legacy, is the
+decoder/acute baseline; an explicit additional-training outcome prevents
+mislabeling. Route diagnosis excludes query, whose semantics and source-span
+pointer are separately classified afterward.
 The controlled probe changes only opcode-first/middle witness layout and
 query-prefix/suffix layout. Advancement requires at least 99% overall and in
-every renderer/cardinality cell, exact eight-view and recoding invariance,
-source-free joint at most 10%, and a uniquely identified 20-point causal
-advantage over the favorable control. Complete/trainable/headroom remains
+every renderer-by-cardinality intersection, exact route/opcode/query pointers,
+exact eight-view and recoding invariance, source-free route joint at most 10%,
+and matched witness/opcode rotation controls. A fail-closed assessor rebuilds
+rows and metrics from raw predictions rather than trusting producer summaries.
+It imports no experiment-producer code and independently reconstructs the
+family split, controlled renderings, path scores, path-derived witness
+marginals, both hard decoders, causal rotations, crossed query gates, and the
+checkpoint-arm fit receipts.
+Complete/trainable/headroom remains
 185,532,296 / 11,129,504 / 14,467,704 under the user-authorized strict-below-
 200M ceiling.
 
