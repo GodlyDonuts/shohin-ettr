@@ -184,6 +184,7 @@ def build_task_manifest(
     output: Path,
     *,
     materializer_source_commit: str,
+    materializer_freeze_sha256: str,
 ) -> dict[str, object]:
     """Freeze one selected root into an exact worker inventory."""
 
@@ -254,6 +255,10 @@ def build_task_manifest(
     if total_rows != selected.get("total_rows"):
         raise CorpusMaterializationError("selected total rows differ")
     manifest: dict[str, object] = {
+        "materializer_freeze_sha256": _hex(
+            materializer_freeze_sha256,
+            "materializer freeze SHA-256",
+        ),
         "materializer_source_commit": source_commit,
         "protocol": PROTOCOL,
         "protocol_freeze_sha256": _hex(
@@ -416,6 +421,7 @@ def materialize_task(
         "charged_positions": rows * ROWS_PER_CORE * CHARGED_POSITIONS_PER_ROW,
         "codebook_sha256": codec.codebook_sha256,
         "expanded_rows": rows * ROWS_PER_CORE,
+        "materializer_freeze_sha256": manifest["materializer_freeze_sha256"],
         "materializer_source_commit": manifest["materializer_source_commit"],
         "output_bytes": output_bytes,
         "output_path": task["output_path"],
@@ -549,6 +555,16 @@ def audit_materialization(
             or report.get("protocol") != PROTOCOL
             or report.get("task") != task
             or report.get("task_manifest_sha256") != task_manifest_sha
+            or report.get("materializer_freeze_sha256")
+            != manifest["materializer_freeze_sha256"]
+            or report.get("materializer_source_commit")
+            != manifest["materializer_source_commit"]
+            or report.get("protocol_freeze_sha256")
+            != manifest["protocol_freeze_sha256"]
+            or report.get("selected_manifest_sha256")
+            != manifest["selected_manifest_sha256"]
+            or report.get("selected_source_commit")
+            != manifest["selected_source_commit"]
             or report.get("tokenizer_sha256") != codec.tokenizer_sha256
             or report.get("codebook_sha256") != codec.codebook_sha256
         ):
@@ -606,6 +622,7 @@ def audit_materialization(
         "codebook_sha256": codec.codebook_sha256,
         "core_rows": total_rows,
         "expanded_rows": total_expanded,
+        "materializer_freeze_sha256": manifest["materializer_freeze_sha256"],
         "materializer_source_commit": manifest["materializer_source_commit"],
         "protocol": PROTOCOL,
         "protocol_freeze_sha256": manifest["protocol_freeze_sha256"],
@@ -688,6 +705,7 @@ def _parser() -> argparse.ArgumentParser:
     tasks.add_argument("--selected-root", type=Path, required=True)
     tasks.add_argument("--output", type=Path, required=True)
     tasks.add_argument("--materializer-source-commit", required=True)
+    tasks.add_argument("--materializer-freeze-sha256", required=True)
     worker = subparsers.add_parser("worker")
     worker.add_argument("--task-manifest", type=Path, required=True)
     worker.add_argument("--selected-root", type=Path, required=True)
@@ -717,6 +735,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             arguments.selected_root,
             arguments.output,
             materializer_source_commit=arguments.materializer_source_commit,
+            materializer_freeze_sha256=arguments.materializer_freeze_sha256,
         )
     elif arguments.command == "worker":
         result = materialize_task(

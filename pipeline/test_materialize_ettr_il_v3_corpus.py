@@ -76,6 +76,7 @@ def test_task_worker_global_audit_and_publication_inventory(tmp_path: Path) -> N
         selected,
         task_manifest,
         materializer_source_commit="d" * 40,
+        materializer_freeze_sha256="e" * 64,
     )
     assert tasks["task_count"] == 1
 

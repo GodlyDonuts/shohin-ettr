@@ -15134,8 +15134,9 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   split/family/stage shard per bounded CPU worker, and publishes no-replace
   deterministic gzip output plus a self-hashed worker receipt. Every worker
   binds the selector manifest, candidate source/freeze, materializer source
-  commit, immutable tokenizer and public codebook, exact input shard, output
-  shard, row count, expanded-row count, and charged-position count. Input is
+  commit and extracted-source freeze, immutable tokenizer and public codebook,
+  exact input shard, output shard, row count, expanded-row count, and
+  charged-position count. Input is
   streamed and each semantic core is reconstructed, independently replayed,
   rendered four ways, and admitted through the real CPU tensor materializer.
   Main workers reject any confirmation key; confirmation workers require a
