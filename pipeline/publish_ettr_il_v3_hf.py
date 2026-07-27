@@ -34,7 +34,7 @@ from typing import Any, BinaryIO, Iterator, Mapping, Protocol, Sequence
 DEFAULT_REPO_ID = "Godlydonuts/shohin-ettr-il-v3"
 MANIFEST_SCHEMA = "r12-ettr-il-v3-hf-publication-manifest-v1"
 RECEIPT_SCHEMA = "r12-ettr-il-v3-hf-publication-receipt-v1"
-DATASET_PROTOCOL = "R12-ETTR-IL-v3"
+DATASET_PROTOCOL = "R12-ETTR-IL-v3-initializer"
 TOKEN_ENVIRONMENT_VARIABLE = "HF_TOKEN"
 REPO_TYPE = "dataset"
 
@@ -48,7 +48,14 @@ _SAFE_SHARD_SUFFIXES = (
     ".jsonl.zst",
     ".parquet",
 )
-_SAFE_SPLITS = frozenset({"train", "development", "confirmation", "reserve"})
+_SAFE_SPLITS = frozenset(
+    {
+        "train",
+        "development",
+        "train_reserve",
+        "development_reserve",
+    }
+)
 _READ_CHUNK_BYTES = 8 * 1024 * 1024
 
 

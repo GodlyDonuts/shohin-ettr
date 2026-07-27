@@ -157,6 +157,31 @@ def test_dry_run_is_private_credential_free_and_content_addressed(
     assert stat.S_IMODE(receipt_path.stat().st_mode) == 0o444
 
 
+def test_main_repo_rejects_raw_confirmation_payload(tmp_path: Path) -> None:
+    root, manifest_path = _write_corpus(tmp_path)
+    confirmation_dir = root / "shards" / "confirmation"
+    confirmation_dir.mkdir()
+    confirmation = b'{"split":"confirmation","value":3}\n'
+    confirmation_path = confirmation_dir / "part-00000.jsonl"
+    confirmation_path.write_bytes(confirmation)
+    manifest = json.loads(manifest_path.read_text("ascii"))
+    manifest["shards"].append(
+        {
+            "path": "shards/confirmation/part-00000.jsonl",
+            "sha256": _sha256(confirmation),
+            "size_bytes": len(confirmation),
+            "split": "confirmation",
+        }
+    )
+    manifest_path.write_bytes(publisher._canonical_json_bytes(manifest))
+
+    with pytest.raises(
+        publisher.PublicationError,
+        match="invalid split path",
+    ):
+        publisher.build_publication_plan(root, manifest_path)
+
+
 def test_new_revision_uploads_then_existing_revision_skips_exact_matches(
     tmp_path: Path,
 ) -> None:
