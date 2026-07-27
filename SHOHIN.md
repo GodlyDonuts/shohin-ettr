@@ -1,4 +1,21 @@
-# Shohin: Endogenous Typed Theory Reactor
+# Shohin-ETTR: Compiled-State Reasoning
+
+> **ETTR** means **Endogenous Typed Theory Reactor**. It is Shohin's
+> implementation of **compiled-state reasoning**: compile language into a
+> finite typed state, transform that state with a learned generic machine, and
+> answer only from the terminal state.
+
+## Read this first: current status
+
+ETTR's trainable architecture, causal continuation contract, source-deleted
+runtime, cross-ontology qualification board, and one-H100 architecture profile
+are implemented. The architecture has passed its local mechanics, custody, and
+resource gates. It has **not** been trained to demonstrate learned transfer or
+general reasoning; continuation pretraining remains explicitly held.
+
+That distinction is deliberate: Shohin has implemented an architectural
+candidate for model-native reasoning, not yet proven that the candidate learns
+the intended capability.
 
 ## What Shohin is now
 
@@ -12,16 +29,16 @@ graph state.
 
 The central architectural move is to make the model's intermediate world
 state an actual, inspectable computational object rather than an implicit
-pattern distributed across token activations.  The model must learn the
-compiler and the controller itself.  There is no task-specific parser, rule
-engine, search procedure, arithmetic routine, rewrite matcher, resource
+pattern distributed across token activations. The model must learn the
+compiler, controller, and reader itself. There is no task-specific parser,
+rule engine, search procedure, arithmetic routine, rewrite matcher, resource
 scheduler, answer callback, or semantic host code in the candidate runtime.
 
 ```mermaid
 flowchart LR
-    W["Raw WORLD tokens"] --> B1["Early frozen Shohin blocks"]
-    C["Raw COMMAND tokens"] --> B2["Early frozen Shohin blocks"]
-    Q["Raw late-QUERY tokens"] --> B3["Early frozen Shohin blocks"]
+    W["Raw WORLD tokens"] --> B1["Early Shohin blocks"]
+    C["Raw COMMAND tokens"] --> B2["Early Shohin blocks"]
+    Q["Raw late-QUERY tokens"] --> B3["Early Shohin blocks"]
     B1 --> COMP["Endogenous compiler"]
     COMP --> S0["Discrete typed state"]
     B2 --> REACT["Shared recurrent reactor"]
@@ -36,7 +53,27 @@ flowchart LR
 The three streams are causally separated: the world is compiled before the
 command phase; the world source is not available after compilation; and the
 late query cannot access world tokens, compiler residuals, KV cache, parser
-state, or the execution trajectory.
+state, or the execution trajectory. The declared typed state is the only
+cross-stage object.
+
+## The architectural thesis
+
+An ordinary transformer can represent a world, an algorithm, and an answer in
+the same residual stream, with no requirement that they remain separate. It
+can answer from surface-text shortcuts, reuse source tokens at query time, or
+store answer-bearing information in opaque activations. ETTR imposes a
+different computation:
+
+```text
+raw language -> anonymous typed state -> learned state transitions -> late answer
+```
+
+The middle object is both **hard** and **sufficient**. It is hard because the
+deployed packet admits only finite categorical and binary fields. It is
+sufficient because the late reader receives no other world-derived
+information. If a trained model eventually succeeds under ETTR's causal
+controls, it must have learned to compile and use the state rather than merely
+continue the original text.
 
 ## The base language model
 
@@ -61,7 +98,7 @@ while adding a distinct stateful computation path.
 
 ### 1. Raw-token world compiler
 
-The compiler cross-attends 64 learned anonymous object slots to the frozen
+The compiler cross-attends 64 learned anonymous object slots to the protected
 Shohin residuals for the WORLD text.  It emits a bounded typed graph, not a
 continuous hidden-state cache:
 
@@ -80,6 +117,11 @@ non-one-hot codes/types, non-binary control values, and over-capacity relation
 ledgers.  This makes the handoff a finite state object with an auditable
 schema, not a lossy text summary.
 
+The compiler is **endogenous**: no external semantic parser constructs this
+packet. Slots are not preassigned to names, predicates, theories, or ontology
+families. The learned compiler must bind linguistic evidence to episode-local
+objects, roles, and values.
+
 ### 2. Generic transaction reactor
 
 After the world is sealed, a six-layer recurrent controller reads the typed
@@ -96,6 +138,13 @@ resource-transition primitive.  Every operation only allocates/edits graph
 cells, adds/removes typed directed edges, selects a root, or terminates.
 Consequently, any theory-specific behavior must be encoded in the learned
 compiler and recurrent controller, rather than delegated to a fixed executor.
+
+The reactor uses a shared six-layer transformer controller, a learned control
+seed, a learned step embedding, and cross-attention to the post-seal COMMAND
+representation. It predicts an opcode, source slot, target slot, relation,
+type, and value code at every recurrent step. The identical controller is
+intended to operate across all theory families; it is not routed to
+family-specific heads.
 
 At every step the reactor reconstructs slot features from categorical
 value/type embeddings, activity, root, and terminal status.  Its relation
@@ -116,6 +165,13 @@ explicit, always-visible dispositions:
 | `REJECT` | committed contradictory/invalid state |
 
 Once terminal, later structural updates are frozen.
+
+The reactor's graph access is deliberately stronger than relation-count
+summaries. For every slot and every relation role it forms distinct incoming
+and outgoing messages from the actual neighboring slot features. A
+degree-preserving edge swap therefore changes the available evidence and is
+detected by both the reactor and the late query reader. This prevents a graph
+with the right counts but wrong endpoints from looking identical to the model.
 
 ### 3. Exact discrete execution with usable gradients
 
@@ -142,6 +198,23 @@ decoder blocks produce language tokens.
 This creates an explicit bottleneck: a correct later answer has to be
 recoverable from the finite state object, not from an accidental source-text
 shortcut.
+
+### 5. Complete execution lifecycle
+
+Every ETTR example is a causal episode, not a single concatenated prompt:
+
+1. **WORLD:** early Shohin blocks encode raw world tokens; the compiler writes
+   an initial hard state.
+2. **COMMAND:** a separately encoded post-seal command conditions the reactor,
+   which applies up to 64 generic transactions.
+3. **COMMIT:** terminal state is hard-validated; terminal dispositions freeze
+   subsequent edits.
+4. **QUERY:** the reader receives terminal state and late query tokens only.
+5. **ASSESS:** an independent process evaluates candidate output after all
+   candidate stages have exited.
+
+This makes command a real intervention on a compiled world and makes the late
+query a real consumer of the result.
 
 ## Why this differs from a standard transformer
 
@@ -183,6 +256,27 @@ optimizer groups.  Checkpoints bind model, optimizer, schedule, RNG, data
 cursor, source manifest, and base-model provenance; they can be admitted only
 at a complete optimizer/between-episode boundary.
 
+### Causal anti-bypass objective
+
+Every primary training/evaluation unit is a semantic 2x2 rectangle: two WORLD
+factors crossed with two COMMAND factors. Equivalent factors use different raw
+renderings. The system supervises initial packets, free-running terminal
+packets, and each transaction, but also asks whether the final reader changes
+its answer in the *correct direction* when only WORLD or only COMMAND changes.
+
+The frozen qualification scorer contains seven arms:
+
+```text
+treatment        query-only        zero-reader        shuffled-state
+wrong-WORLD      wrong-COMMAND     query-twin / target-derangement
+```
+
+The answer suffix is physically absent before candidate forward execution;
+the candidate never receives a target tensor. Readouts bind exact packet,
+query, label, factor, and control-permutation bytes into a batch receipt. This
+is designed to distinguish actual state use from arbitrary output movement or
+a query-only language-model shortcut.
+
 ## Process-level state custody
 
 Shohin is designed around four detached stages:
@@ -199,6 +293,30 @@ stage's artifacts before the next stage begins.  These controls aim to make a
 future reasoning result attributable to the model's learned packet, rather
 than to a hidden host-side channel.
 
+### Claim-bearing qualification architecture
+
+The assessment infrastructure is part of ETTR's architecture contract. A
+model cannot credibly claim stateful reasoning if host processes can repair,
+read, or swap state behind the scenes. The direct frozen board covers typed
+Horn closure, typed term rewriting, and guarded resource processes. Each
+ontology supplies a genuine 2x2 WORLD-by-COMMAND rectangle, two late-query
+semantics, and two paraphrases: 12 terminal packets and 48 query rows.
+Independent exact oracles agree on all 12 programs; each WORLD and COMMAND
+edge changes the answer, and each terminal packet supports two different
+queries.
+
+Complete model identity binds the protected checkpoint, all ETTR weights,
+behavioral configuration, module source, every named parameter, and every
+named buffer—including non-persistent RoPE buffers. A verifier-held Ed25519
+signing path binds the execution chain. Candidate stages cannot access the
+signing key, qualification board, assessor output, or another stage's source
+package.
+
+For external deployment, the candidate runtime is measured as an immutable
+image and launched under a constrained stage supervisor. This adds no neural
+parameters and does not claim learned reasoning; it prevents a future score
+from being attributed to an unmeasured runtime or a host-side shortcut.
+
 ## Size and implementation receipt
 
 | Component | Parameters |
@@ -214,35 +332,79 @@ The protected step-300k base checkpoint is hash-verified as
 `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6` and
 loads with zero missing or unexpected tensors.
 
-## Current status and honest claim boundary
+## Completed architecture receipts
 
-The architecture, causal episode contract, custody surfaces, and synthetic
-cross-ontology assessment infrastructure are implemented. The design has
-passed architecture/custody checks including hard-state validation,
-first-batch nonzero gradients, query-prefix causality, commit freezing, and
-an endpoint-swap falsifier for the graph message path. The three assessment
-families—typed Horn closure, typed term rewriting, and guarded resource
-processes—have independent exact oracles and a frozen leave-one-ontology-out
-qualification matrix. Exact source
-`cf568182b75e865ddce2bb739fd42ff8d450c317` also passes **209/209** integrated
-tests and the schema-v5 H100 implementation gate. Compiled full-objective
-profiling reaches 8,771.94 encoded tok/s at 3.143 GB peak allocation, 1.7170x
-the eager throughput, while preserving the protected checkpoint byte-for-
-byte.
+### H100 systems profile
 
-**Shohin does not yet have a demonstrated reasoning capability claim.**  It
-has completed architecture and hardware qualification but has not been
-trained/evaluated to show source-deleted, cross-ontology generalization.
-Continuation pretraining is explicitly on hold. The next scientific question
-is whether this architecture can learn a
-single reusable compiler-and-executor mechanism that transfers to an unseen
-theory family without task-specific runtime machinery.
+The exact ETTR source completed a schema-v5 H100 BF16 profile. Both eager and
+compiled arms executed the full factorial objective, backward pass, and one
+architecture optimizer update from identical initial model and batch receipts.
+Every ETTR component had finite nonzero gradients and a nonzero sampled update.
+The frozen base had zero gradients and zero update. The protected checkpoint
+remained byte-identical, and no pretraining shards or model state were written.
+
+| Profile arm | Throughput | Peak allocated memory |
+|---|---:|---:|
+| Eager | 5,108.80 encoded tokens/s | 3,750,596,608 bytes |
+| Compiled | 8,771.94 encoded tokens/s | 3,143,077,888 bytes |
+
+Compiled ETTR is **1.7170x** eager throughput while using **83.80%** of eager
+peak allocation. This is a systems receipt, not a reasoning benchmark.
+
+### Local verification
+
+The architecture, causal episode contract, custody surfaces, synthetic
+cross-ontology assessment, hard-state validation, query-prefix causality,
+commit freezing, endpoint-swap falsification, and production supervisor
+admission are implemented and tested. The signed stage-supervisor smoke
+exercises isolated `WORLD -> COMMAND -> QUERY` execution without training the
+model or reading pretraining shards.
+
+## Isolated learnability architecture
+
+ETTR's next scientific layer is not another model redesign. It is a frozen
+five-seed, three-fold learnability system around the same 67,697,771 ETTR
+parameters and immutable 125,081,664-parameter Shohin base.
+
+The v3 materializer builds anonymous typed episodes for Horn closure, typed
+term rewriting, and guarded resources through one common packet and
+transaction language. It constructs exact 2x2 WORLD-by-COMMAND rectangles,
+separate renderers, held-out rules, longer compositions, structural variants,
+and completely withheld ontology folds. Corpus selection and materialization
+are deterministic, hash-bound, and separated from confirmation data.
+
+Equal-budget treatment and ablation arms preserve trainable parameter counts,
+optimizer updates, token schedules, and measured computation. They test
+whether gains come from persistent typed state, recurrence, state/query
+coupling, and causal binding rather than from the additional 67.7M parameters
+alone. The protected base remains read-only in this isolated gate.
+
+This materialization and custody machinery prepares a decisive experiment; it
+does not itself constitute a learned result.
+
+## Honest capability boundary
+
+ETTR is a completed trainable architecture and qualification design. It is not
+yet a demonstrated reasoning capability. Only user-authorized fitting followed
+by the frozen qualification matrix can test whether one learned
+compiler/reactor/reader transfers across unseen theories, rules, depths,
+renderers, compositions, and task families.
+
+Native general reasoning and post-training claims require further evidence
+beyond that gate. Continuation pretraining remains held.
 
 ## Source files
 
 - Architecture: `train/endogenous_typed_theory_reactor.py`
 - Causal episode runner: `train/ettr_episode.py`
 - Objectives and train step: `train/ettr_objectives.py`, `train/ettr_train_step.py`
-- Data/custody contract: `train/ettr_data_contract.py`
+- Data, optimizer, and checkpoint contracts: `train/ettr_data_contract.py`,
+  `train/ettr_optimization.py`, `train/ettr_checkpoint.py`
+- Factorial qualification and scorer: `pipeline/ettr_factorial_qualification_board.py`,
+  `train/ettr_factorial_qualification.py`, `train/ettr_qualification.py`
+- Model assembly and isolated supervisor: `train/ettr_model_assembly.py`,
+  `train/ettr_stage_supervisor.py`
+- Learnability materialization: `pipeline/ettr_il_v3_materialize.py`,
+  `pipeline/materialize_ettr_il_v3_corpus.py`
 - Architecture and custody receipt: `R12_ETTR_ARCHITECTURE_AND_CUSTODY_RESULT.md`
 - Full project ledger and current operational state: `SHOHIN_NATIVE_REASONING_MASTER.md`, `AGENT_RUNBOOK.md`
