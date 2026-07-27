@@ -15123,3 +15123,51 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `r12_ettr_il_v3_architecture_materializer_three_family_pass_candidate_production_active`.
+
+- **2026-07-27 01:59 EDT** -- **Streaming Stokes materialization and global
+  corpus-audit mechanics are implemented while replacement candidate
+  production remains healthy.** No model, checkpoint, optimizer, GPU, or
+  continuation-pretraining operation was performed.
+
+  `pipeline/materialize_ettr_il_v3_corpus.py` now freezes each selected main
+  or sealed-confirmation root into an exact task manifest, materializes one
+  split/family/stage shard per bounded CPU worker, and publishes no-replace
+  deterministic gzip output plus a self-hashed worker receipt. Every worker
+  binds the selector manifest, candidate source/freeze, materializer source
+  commit, immutable tokenizer and public codebook, exact input shard, output
+  shard, row count, expanded-row count, and charged-position count. Input is
+  streamed and each semantic core is reconstructed, independently replayed,
+  rendered four ways, and admitted through the real CPU tensor materializer.
+  Main workers reject any confirmation key; confirmation workers require a
+  physically separate single-link 32-byte key file with no group/other
+  permissions.
+
+  The global audit fully reloads every output row, validates canonical
+  `SemanticCoreRecord` structure, requires all four renderer views and all
+  four WORLD/COMMAND/QUERY sources, re-encodes exact 192/96/48 token
+  boundaries, requires byte-identical primary/replay oracle channels and
+  oracle/target agreement, rejects duplicate core or semantic identities
+  globally, verifies every worker/report/shard hash, and recomputes split,
+  expanded-row, and charged-position totals. The publication preparer accepts
+  only an admitted `main` audit and constructs the exact private Hugging Face
+  inventory; any confirmation split is rejected. Slurm wrappers request one
+  CPU and 4 GiB per materializer cell and one CPU and 8 GiB for the streaming
+  aggregate audit, with no GPU request.
+
+  A real local Horn candidate passed task-freeze, worker materialization,
+  global reload/audit, and publication-inventory construction. The focused
+  operational/materializer/selector tests pass 11/11; shell syntax, byte
+  compilation, Ruff, formatting, and diff checks are clean. At the latest
+  observation, replacement production `751777` had 280/324 immutable
+  report/shard pairs and the final 44 one-CPU cells were running with zero
+  observed nonempty stderr.
+
+  Next gates remain exact 324-cell completion, deterministic selection from
+  the `d168244` candidate freeze, a fresh commit-pinned materializer source
+  freeze, separate main and sealed-confirmation CPU arrays, complete global
+  audits, private main-repository publication, and fresh remote round-trip
+  verification. Raw confirmation payloads remain physically excluded from
+  the main repository.
+
+  Decision:
+  `r12_ettr_il_v3_streaming_materialization_and_global_audit_implemented_candidate_production_final_cells_active`.
