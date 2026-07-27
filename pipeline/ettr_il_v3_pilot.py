@@ -29,6 +29,7 @@ from ettr_il_v3_rewrite_episodes import (
     RewriteEpisode,
     generate_rewrite_episodes,
 )
+from freeze_ettr_il_v3_protocol import load_and_verify_freeze
 
 
 SCHEMA = "r12-ettr-il-v3-pilot-cell-v1"
@@ -280,6 +281,33 @@ def build_report(
     return report
 
 
+def build_verified_report(
+    cell: PilotCell,
+    *,
+    limit: int,
+    beam_width: int,
+    bucket_index: int,
+    bucket_count: int,
+    source_root: Path,
+    source_commit: str,
+    protocol_freeze: Path,
+) -> dict[str, object]:
+    freeze = load_and_verify_freeze(
+        source_root,
+        protocol_freeze,
+        source_commit=source_commit,
+    )
+    return build_report(
+        cell,
+        limit=limit,
+        beam_width=beam_width,
+        bucket_index=bucket_index,
+        bucket_count=bucket_count,
+        source_commit=source_commit,
+        protocol_freeze_sha256=str(freeze["freeze_sha256"]),
+    )
+
+
 def write_no_replace(path: Path, payload: bytes) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o444)
@@ -300,8 +328,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--beam-width", type=int, default=64)
     parser.add_argument("--bucket-index", type=int, default=0)
     parser.add_argument("--bucket-count", type=int, default=1)
+    parser.add_argument("--source-root", type=Path, required=True)
     parser.add_argument("--source-commit", required=True)
-    parser.add_argument("--protocol-freeze-sha256", required=True)
+    parser.add_argument("--protocol-freeze", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     return parser.parse_args(argv)
 
@@ -311,14 +340,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     cells = pilot_cells()
     if not 0 <= args.matrix_index < len(cells):
         raise PilotError("matrix index differs")
-    report = build_report(
+    report = build_verified_report(
         cells[args.matrix_index],
         limit=args.limit,
         beam_width=args.beam_width,
         bucket_index=args.bucket_index,
         bucket_count=args.bucket_count,
+        source_root=args.source_root,
         source_commit=args.source_commit,
-        protocol_freeze_sha256=args.protocol_freeze_sha256,
+        protocol_freeze=args.protocol_freeze,
     )
     write_no_replace(args.out, canonical_json_bytes(report))
     print(

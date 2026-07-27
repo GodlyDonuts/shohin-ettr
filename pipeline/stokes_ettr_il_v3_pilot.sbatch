@@ -17,7 +17,7 @@ umask 077
 : "${ETTR_V3_SOURCE_ROOT:?ETTR_V3_SOURCE_ROOT is required}"
 : "${ETTR_V3_OUTPUT_ROOT:?ETTR_V3_OUTPUT_ROOT is required}"
 : "${ETTR_V3_SOURCE_COMMIT:?ETTR_V3_SOURCE_COMMIT is required}"
-: "${ETTR_V3_PROTOCOL_FREEZE_SHA256:?ETTR_V3_PROTOCOL_FREEZE_SHA256 is required}"
+: "${ETTR_V3_PROTOCOL_FREEZE:?ETTR_V3_PROTOCOL_FREEZE is required}"
 
 PYTHON_BIN="${ETTR_V3_PYTHON_BIN:-/usr/bin/python3.12}"
 LIMIT="${ETTR_V3_PILOT_LIMIT:-24}"
@@ -35,6 +35,7 @@ exec "${PYTHON_BIN}" \
   --matrix-index "${TASK_ID}" \
   --limit "${LIMIT}" \
   --beam-width "${BEAM_WIDTH}" \
+  --source-root "${ETTR_V3_SOURCE_ROOT}" \
   --source-commit "${ETTR_V3_SOURCE_COMMIT}" \
-  --protocol-freeze-sha256 "${ETTR_V3_PROTOCOL_FREEZE_SHA256}" \
+  --protocol-freeze "${ETTR_V3_PROTOCOL_FREEZE}" \
   --out "${OUT}"

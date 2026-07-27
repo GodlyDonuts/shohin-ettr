@@ -3,7 +3,15 @@
 from __future__ import annotations
 
 from ettr_il_v3_horn_resource import CurriculumStage
-from ettr_il_v3_pilot import PilotCell, build_report, generate_cell, pilot_cells
+from ettr_il_v3_pilot import (
+    PilotCell,
+    build_report,
+    build_verified_report,
+    generate_cell,
+    pilot_cells,
+)
+from ettr_il_v3_protocol import canonical_json_bytes
+from freeze_ettr_il_v3_protocol import build_freeze
 
 
 COMMIT = "a" * 40
@@ -73,3 +81,27 @@ def test_report_is_self_bound_and_measures_resources() -> None:
     assert report["cpu_seconds"] >= 0
     assert report["wall_seconds"] >= 0
     assert len(report["report_sha256"]) == 64
+
+
+def test_verified_report_recomputes_freeze(tmp_path) -> None:
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "generator.py").write_text("x = 1\n", encoding="ascii")
+    freeze = build_freeze(
+        source,
+        ("generator.py",),
+        source_commit=COMMIT,
+    )
+    freeze_path = tmp_path / "freeze.json"
+    freeze_path.write_bytes(canonical_json_bytes(freeze))
+    report = build_verified_report(
+        PilotCell("local_rewrite", CurriculumStage.ATOMIC_TRANSITIONS, 1),
+        limit=1,
+        beam_width=8,
+        bucket_index=0,
+        bucket_count=1,
+        source_root=source,
+        source_commit=COMMIT,
+        protocol_freeze=freeze_path,
+    )
+    assert report["protocol_freeze_sha256"] == freeze["freeze_sha256"]

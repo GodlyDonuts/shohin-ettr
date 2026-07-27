@@ -96,6 +96,65 @@ def build_freeze(
     return receipt
 
 
+def load_and_verify_freeze(
+    root: Path,
+    receipt_path: Path,
+    *,
+    source_commit: str,
+) -> dict[str, object]:
+    """Reload one canonical receipt and recompute its complete source tree."""
+
+    if receipt_path.is_symlink():
+        raise FreezeError("freeze receipt is a symlink")
+    status = receipt_path.stat()
+    if not stat.S_ISREG(status.st_mode) or status.st_size > 16 * 1024 * 1024:
+        raise FreezeError("freeze receipt is not a bounded regular file")
+    payload = receipt_path.read_bytes()
+    try:
+        value = json.loads(payload)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise FreezeError("freeze receipt is not canonical JSON") from error
+    if not isinstance(value, dict) or canonical_json_bytes(value) != payload:
+        raise FreezeError("freeze receipt is not canonical JSON")
+    expected_keys = {
+        "freeze_sha256",
+        "protocol_receipt",
+        "schema",
+        "source_commit",
+        "source_count",
+        "source_inventory",
+        "source_inventory_sha256",
+    }
+    if set(value) != expected_keys or value.get("schema") != SCHEMA:
+        raise FreezeError("freeze receipt schema differs")
+    if value.get("source_commit") != source_commit:
+        raise FreezeError("freeze receipt source commit differs")
+    inventory = value.get("source_inventory")
+    if (
+        not isinstance(inventory, list)
+        or not inventory
+        or value.get("source_count") != len(inventory)
+    ):
+        raise FreezeError("freeze receipt source inventory differs")
+    sources: list[str] = []
+    for entry in inventory:
+        if (
+            not isinstance(entry, dict)
+            or set(entry) != {"bytes", "path", "sha256"}
+            or not isinstance(entry.get("path"), str)
+        ):
+            raise FreezeError("freeze receipt source entry differs")
+        sources.append(entry["path"])
+    rebuilt = build_freeze(
+        root,
+        sources,
+        source_commit=source_commit,
+    )
+    if rebuilt != value:
+        raise FreezeError("freeze receipt no longer matches source tree")
+    return rebuilt
+
+
 def write_no_replace(path: Path, payload: bytes) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL

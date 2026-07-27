@@ -11,6 +11,7 @@ from ettr_il_v3_protocol import canonical_json_bytes
 from freeze_ettr_il_v3_protocol import (
     FreezeError,
     build_freeze,
+    load_and_verify_freeze,
     write_no_replace,
 )
 
@@ -69,3 +70,24 @@ def test_write_no_replace_is_atomic(tmp_path: Path) -> None:
     with pytest.raises(FileExistsError):
         write_no_replace(out, b"second\n")
     assert out.read_bytes() == b"first\n"
+
+
+def test_load_and_verify_freeze_recomputes_every_source(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "a").write_text("x\n", encoding="ascii")
+    receipt = build_freeze(tmp_path, ("a",), source_commit=COMMIT)
+    path = tmp_path / "freeze.json"
+    path.write_bytes(canonical_json_bytes(receipt))
+    assert load_and_verify_freeze(
+        tmp_path,
+        path,
+        source_commit=COMMIT,
+    ) == receipt
+    (tmp_path / "a").write_text("changed\n", encoding="ascii")
+    with pytest.raises(FreezeError, match="source tree"):
+        load_and_verify_freeze(
+            tmp_path,
+            path,
+            source_commit=COMMIT,
+        )
