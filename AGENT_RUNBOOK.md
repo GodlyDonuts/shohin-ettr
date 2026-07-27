@@ -15362,3 +15362,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `r12_ettr_il_v3_receiver_mismatch_localized_trace_and_broad_adapter_repair_admitted_requalification_pending`.
+
+- **2026-07-27 08:43 EDT** -- **The repaired qualifier is independently
+  frozen on Stokes, a full rejected-class canary admits 1,250/1,250 rows, and
+  fresh main/confirmation qualification arrays are live.** No model,
+  checkpoint, optimizer, GPU, or continuation-pretraining operation was
+  performed.
+
+  Private commit `65a82fa0baf70e9daf41fc3a252482a18c137cfc` is installed
+  under the immutable Stokes source root
+  `sources/qualifier-65a82fa0baf70e9daf41fc3a252482a18c137cfc`.
+  Its source archive SHA-256 is
+  `54e5549a05b9950413ccc4bfeb43f42c55ac0b9be1ab6564f711399a2865c2ac`;
+  the canonical freeze-file SHA-256 is
+  `e33ccffca917874c4be46f54269723b04c124efc9fe8ab00947096bedbe16ade`;
+  and the receipt's self-hash is
+  `2528950bf48686735db7fc41ddc5996a484454a7c4aca36b09487ec390f72012`.
+  Independent reload found exactly 814 measured regular files and zero
+  unmeasured executable objects before the source was sealed read-only.
+
+  Main-role canary job `752416` reran exact resource cell 44, the failure
+  class that had previously rejected nearly every row. It completed cleanly
+  in 54:11 with **1,250 input, 1,250 admitted, zero rejected, an empty
+  rejection histogram, and zero stderr bytes**. Its self-hashed report is
+  `a358c818f9f176e4b262ff89af31c5fb4a00bbd4729d81eafff10fe1db5fdbda`.
+
+  Fresh CPU-only qualification jobs now run against new content-addressed
+  roots: main array `752424` covers indices `0-107,162-269` at concurrency 48;
+  sealed-confirmation array `752425` covers `108-161,270-323` at concurrency
+  16; dependency-held selector `752426` can start only after both arrays
+  complete successfully. The launch reached all 64 intended CPU workers with
+  zero nonempty error logs. Never reuse the canceled `a033092` qualification
+  roots, and do not publish or materialize before the new selector receipt
+  passes.
+
+  Decision:
+  `r12_ettr_il_v3_repaired_qualifier_frozen_canary_full_admission_requalification_live`.
