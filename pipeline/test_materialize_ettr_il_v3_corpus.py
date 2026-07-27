@@ -7,11 +7,17 @@ from pathlib import Path
 from tokenizers import Tokenizer
 
 from ettr_il_v2_token_native_surface import DEFAULT_TOKENIZER_PATH
-from ettr_il_v3_horn_resource import CurriculumStage, generate_horn_episodes
-from ettr_il_v3_production import ProductionCell, _candidate_row
+from ettr_il_v3_horn_resource import CurriculumStage
+from ettr_il_v3_production import (
+    ProductionCell,
+    _candidate_row,
+    generate_production_cell,
+)
 from ettr_il_v3_protocol import PROTOCOL, canonical_json_bytes
 from materialize_ettr_il_v3_corpus import (
     AUDIT_SCHEMA,
+    SEPARATION_SCHEMA,
+    audit_main_confirmation_separation,
     build_task_manifest,
     audit_materialization,
     materialize_task,
@@ -21,13 +27,19 @@ from freeze_ettr_il_v3_protocol import build_freeze
 from select_ettr_il_v3 import MANIFEST_SCHEMA as SELECTED_MANIFEST_SCHEMA
 
 
-def _selected_root(tmp_path: Path) -> Path:
-    root = tmp_path / "selected"
+def _selected_root(
+    tmp_path: Path,
+    *,
+    name: str = "selected",
+    role: str = "main",
+    split: str = "train",
+) -> Path:
+    root = tmp_path / name
     root.mkdir()
     stage = CurriculumStage.ATOMIC_TRANSITIONS
     cell = ProductionCell(
         index=0,
-        split="train",
+        split=split,
         family="horn",
         stage=stage.value,
         depth=1,
@@ -37,17 +49,17 @@ def _selected_root(tmp_path: Path) -> Path:
     )
     row = _candidate_row(
         cell,
-        generate_horn_episodes(stage=stage, theory_index=0, limit=1)[0],
+        generate_production_cell(cell, beam_width=8)[0],
         ordinal=0,
     )
     payload = gzip.compress(canonical_json_bytes(row), compresslevel=6, mtime=0)
-    name = f"train-horn-{stage.value}.jsonl.gz"
-    (root / name).write_bytes(payload)
+    shard_name = f"{split}-horn-{stage.value}.jsonl.gz"
+    (root / shard_name).write_bytes(payload)
     manifest: dict[str, object] = {
         "candidate_root_sha256": "c" * 64,
         "protocol": PROTOCOL,
         "protocol_freeze_sha256": "b" * 64,
-        "role": "main",
+        "role": role,
         "schema": SELECTED_MANIFEST_SCHEMA,
         "selector_freeze_sha256": "e" * 64,
         "selector_source_commit": "f" * 40,
@@ -55,10 +67,10 @@ def _selected_root(tmp_path: Path) -> Path:
             {
                 "bytes": len(payload),
                 "family": "horn",
-                "path": name,
+                "path": shard_name,
                 "rows": 1,
                 "sha256": hashlib.sha256(payload).hexdigest(),
-                "split": "train",
+                "split": split,
                 "stage": stage.value,
             }
         ],
@@ -137,6 +149,58 @@ def test_task_worker_global_audit_and_publication_inventory(tmp_path: Path) -> N
     )
     assert publication["dataset_protocol"] == PROTOCOL
     assert publication["shards"][0]["split"] == "train"
+
+    confirmation_selected = _selected_root(
+        tmp_path,
+        name="confirmation-selected",
+        role="sealed_confirmation",
+        split="confirmation",
+    )
+    confirmation_tasks = tmp_path / "confirmation-tasks.json"
+    build_task_manifest(
+        confirmation_selected,
+        confirmation_tasks,
+        materializer_source_commit="d" * 40,
+        materializer_freeze_sha256=str(freeze_value["freeze_sha256"]),
+    )
+    key = tmp_path / "confirmation.key"
+    key.write_bytes(b"k" * 32)
+    key.chmod(0o400)
+    confirmation_shards = tmp_path / "confirmation-shards"
+    confirmation_reports = tmp_path / "confirmation-reports"
+    materialize_task(
+        confirmation_tasks,
+        confirmation_selected,
+        confirmation_shards,
+        confirmation_reports,
+        DEFAULT_TOKENIZER_PATH,
+        source_root,
+        freeze_path,
+        task_index=0,
+        confirmation_key_file=key,
+    )
+    confirmation_audit_path = tmp_path / "confirmation-audit.json"
+    audit_materialization(
+        confirmation_tasks,
+        confirmation_shards,
+        confirmation_reports,
+        DEFAULT_TOKENIZER_PATH,
+        source_root,
+        freeze_path,
+        confirmation_audit_path,
+    )
+    separation_path = tmp_path / "separation.json"
+    separation = audit_main_confirmation_separation(
+        audit_path,
+        confirmation_audit_path,
+        shards,
+        confirmation_shards,
+        separation_path,
+    )
+    assert separation["schema"] == SEPARATION_SCHEMA
+    assert separation["main_core_rows"] == 1
+    assert separation["confirmation_core_rows"] == 1
+    assert set(separation["overlap_counts"].values()) == {0}
 
 
 def test_tokenizer_fixture_is_loadable() -> None:

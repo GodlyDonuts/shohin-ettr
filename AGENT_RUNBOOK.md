@@ -15164,6 +15164,14 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   CPU and 4 GiB per materializer cell and one CPU and 8 GiB for the streaming
   aggregate audit, with no GPU request.
 
+  A final cross-root separation audit rescans both physical datasets only
+  after their independent audits pass. It requires common candidate,
+  selector, materializer, tokenizer, and codebook custody and rejects any
+  shared core ID, semantic hash, graph-isomorphism hash, or complete
+  source-view hash between main and confirmation. Its report contains only
+  hashes and counts; no confirmation payload enters the main publication
+  root.
+
   A real local Horn candidate passed task-freeze, worker materialization,
   global reload/audit, and publication-inventory construction. The focused
   operational/materializer/selector tests pass 11/11; shell syntax, byte

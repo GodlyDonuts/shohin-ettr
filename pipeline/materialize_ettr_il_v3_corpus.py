@@ -46,6 +46,7 @@ from select_ettr_il_v3 import (
 TASK_SCHEMA = "r12-ettr-il-v3-materialization-tasks-v1"
 WORKER_SCHEMA = "r12-ettr-il-v3-materialization-worker-v1"
 AUDIT_SCHEMA = "r12-ettr-il-v3-materialization-audit-v1"
+SEPARATION_SCHEMA = "r12-ettr-il-v3-main-confirmation-separation-v1"
 PUBLICATION_SCHEMA = "r12-ettr-il-v3-hf-publication-manifest-v1"
 MAX_METADATA_BYTES = 16 * 1024 * 1024
 MAX_ROW_BYTES = 32 * 1024 * 1024
@@ -748,6 +749,144 @@ def prepare_publication(
     return manifest
 
 
+def _audit_identity(path: Path, role: str) -> tuple[dict[str, object], str]:
+    audit = _canonical_file(path, f"{role} materialization audit")
+    if (
+        audit.get("schema") != AUDIT_SCHEMA
+        or audit.get("status") != "pass"
+        or audit.get("role") != role
+    ):
+        raise CorpusMaterializationError(f"{role} audit contract differs")
+    digest = _verify_self_hash(
+        audit,
+        field="audit_sha256",
+        label=f"{role} materialization audit",
+    )
+    return audit, digest
+
+
+def _separation_identities(
+    audit: Mapping[str, object],
+    output_root: Path,
+) -> tuple[set[str], set[str], set[str], set[str], int]:
+    shards = audit.get("shards")
+    if not isinstance(shards, list) or not shards:
+        raise CorpusMaterializationError("separation shard inventory differs")
+    core_ids: set[str] = set()
+    semantic_hashes: set[str] = set()
+    graph_hashes: set[str] = set()
+    source_hashes: set[str] = set()
+    rows = 0
+    for descriptor in shards:
+        if not isinstance(descriptor, dict):
+            raise CorpusMaterializationError("separation shard descriptor differs")
+        path = output_root / _relative(
+            descriptor.get("path"),
+            "separation shard path",
+        )
+        digest, size = _sha256_file(path)
+        if digest != descriptor.get("sha256") or size != descriptor.get("bytes"):
+            raise CorpusMaterializationError("separation shard identity differs")
+        for _payload, record in _iter_records(path):
+            identities = (
+                (core_ids, record.identity.core_id, "core ID"),
+                (
+                    semantic_hashes,
+                    record.assessor_only.audit.semantic_hash,
+                    "semantic hash",
+                ),
+                (
+                    graph_hashes,
+                    record.assessor_only.audit.graph_iso_hash,
+                    "graph-isomorphism hash",
+                ),
+                (
+                    source_hashes,
+                    hashlib.sha256(
+                        canonical_json_bytes(record.source_visible.to_value())
+                    ).hexdigest(),
+                    "source-view hash",
+                ),
+            )
+            for seen, identity, label in identities:
+                if identity in seen:
+                    raise CorpusMaterializationError(
+                        f"{label} repeats within separation root"
+                    )
+                seen.add(identity)
+            rows += 1
+    if rows != audit.get("core_rows"):
+        raise CorpusMaterializationError("separation row count differs")
+    return core_ids, semantic_hashes, graph_hashes, source_hashes, rows
+
+
+def audit_main_confirmation_separation(
+    main_audit_path: Path,
+    confirmation_audit_path: Path,
+    main_output_root: Path,
+    confirmation_output_root: Path,
+    report_path: Path,
+) -> dict[str, object]:
+    """Prove physical and semantic separation of main and confirmation roots."""
+
+    if main_output_root.resolve() == confirmation_output_root.resolve():
+        raise CorpusMaterializationError("main and confirmation roots coincide")
+    main, main_sha = _audit_identity(main_audit_path, "main")
+    confirmation, confirmation_sha = _audit_identity(
+        confirmation_audit_path,
+        "sealed_confirmation",
+    )
+    common_fields = (
+        "codebook_sha256",
+        "materializer_freeze_sha256",
+        "materializer_source_commit",
+        "protocol",
+        "protocol_freeze_sha256",
+        "selector_freeze_sha256",
+        "selector_source_commit",
+        "tokenizer_sha256",
+    )
+    if any(main.get(field) != confirmation.get(field) for field in common_fields):
+        raise CorpusMaterializationError("main/confirmation custody differs")
+    main_sets = _separation_identities(main, main_output_root)
+    confirmation_sets = _separation_identities(
+        confirmation,
+        confirmation_output_root,
+    )
+    labels = (
+        "core IDs",
+        "semantic hashes",
+        "graph-isomorphism hashes",
+        "source-view hashes",
+    )
+    overlap_counts: dict[str, int] = {}
+    for label, main_values, confirmation_values in zip(
+        labels,
+        main_sets[:4],
+        confirmation_sets[:4],
+        strict=True,
+    ):
+        overlap = main_values & confirmation_values
+        overlap_counts[label] = len(overlap)
+        if overlap:
+            raise CorpusMaterializationError(f"main/confirmation {label} overlap")
+    report: dict[str, object] = {
+        "confirmation_audit_sha256": confirmation_sha,
+        "confirmation_core_rows": confirmation_sets[4],
+        "main_audit_sha256": main_sha,
+        "main_core_rows": main_sets[4],
+        "overlap_counts": overlap_counts,
+        "protocol": PROTOCOL,
+        "schema": SEPARATION_SCHEMA,
+        "status": "pass",
+    }
+    report["separation_sha256"] = hashlib.sha256(
+        canonical_json_bytes(report)
+    ).hexdigest()
+    _write_no_replace(report_path, canonical_json_bytes(report))
+    return report
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -779,6 +918,16 @@ def _parser() -> argparse.ArgumentParser:
     prepare.add_argument("--dataset-root", type=Path, required=True)
     prepare.add_argument("--dataset-card", type=Path, required=True)
     prepare.add_argument("--publication-manifest", type=Path, required=True)
+    separation = subparsers.add_parser("separation-audit")
+    separation.add_argument("--main-audit", type=Path, required=True)
+    separation.add_argument("--confirmation-audit", type=Path, required=True)
+    separation.add_argument("--main-output-root", type=Path, required=True)
+    separation.add_argument(
+        "--confirmation-output-root",
+        type=Path,
+        required=True,
+    )
+    separation.add_argument("--report", type=Path, required=True)
     return parser
 
 
@@ -813,12 +962,20 @@ def main(argv: Sequence[str] | None = None) -> int:
             arguments.materializer_freeze,
             arguments.audit_report,
         )
-    else:
+    elif arguments.command == "prepare-publication":
         result = prepare_publication(
             arguments.audit_report,
             arguments.dataset_root,
             arguments.dataset_card,
             arguments.publication_manifest,
+        )
+    else:
+        result = audit_main_confirmation_separation(
+            arguments.main_audit,
+            arguments.confirmation_audit,
+            arguments.main_output_root,
+            arguments.confirmation_output_root,
+            arguments.report,
         )
     print(
         json.dumps(
