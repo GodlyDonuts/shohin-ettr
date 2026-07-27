@@ -15343,9 +15343,22 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   121. It also admits 8/8 fresh resource depth-2 query-counterfactual rows.
   Focused adapter/materializer tests pass 72/72 and the complete ETTR v2/v3
   inventory passes **460/460 in 237.26 seconds**. Ruff, byte compilation,
-  and diff checks pass. Commit and privately push the repair, freeze its exact
-  source on Stokes, then relaunch qualification into new content-addressed
-  roots. Never reuse the canceled `a033092` qualified roots.
+  and diff checks pass. The repair is privately pushed as commit
+  `9c8128368ad3e3ad00b73aeba386dbe6cb32836a`.
+
+  Freeze preparation then found a separate custody gap before relaunch: the
+  old extracted source root contained the complete repository, but its freeze
+  measured only 809 `pipeline/` files even though CPU tensor materialization
+  imports five `train/` modules. The qualifier now requires its complete
+  physical `pipeline/` tree plus the exact runtime closure
+  `endogenous_typed_theory_reactor.py`, `ettr_data_contract.py`,
+  `ettr_episode.py`, `ettr_objectives.py`, and `model.py` under `train/`.
+  The physical executable tree and freeze inventory must be identical;
+  missing, extra, linked, or unmeasured executable objects fail before any
+  candidate is read. The expanded focused custody/materializer path passes
+  78/78. Commit and privately push this closure repair, freeze its exact source
+  on Stokes, then relaunch qualification into new content-addressed roots.
+  Never reuse the canceled `a033092` qualified roots.
 
   Decision:
   `r12_ettr_il_v3_receiver_mismatch_localized_trace_and_broad_adapter_repair_admitted_requalification_pending`.

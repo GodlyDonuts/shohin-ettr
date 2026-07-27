@@ -111,6 +111,12 @@ margin_satisfied <= contrast_pairs
 These equalities are checked on device. The objective schema is
 `shohin-ettr-composite-objective-v3`.
 
+Qualification source custody measures the complete physical `pipeline/`
+tree and the exact five-file `train/` runtime closure imported by CPU tensor
+materialization. The measured inventory must equal the physical executable
+tree. Extra, missing, linked, or unmeasured executable objects are rejected
+before candidate rows are read.
+
 ## 6. Acceptance
 
 The repair is accepted only if:

@@ -3,6 +3,7 @@ from __future__ import annotations
 import gzip
 import hashlib
 from pathlib import Path
+import shutil
 
 import pytest
 
@@ -85,19 +86,60 @@ def _raw_root(tmp_path: Path, cell: ProductionCell) -> tuple[Path, list[bytes]]:
 
 
 def _custody(tmp_path: Path) -> tuple[Path, Path, str]:
-    source_root = Path(__file__).parent.parent
+    repository = Path(__file__).parent.parent
+    source_root = tmp_path / "source"
+    required = (
+        *sorted(qualifier._REQUIRED_PIPELINE_SOURCES),
+        *sorted(qualifier._REQUIRED_TRAIN_SOURCES),
+    )
+    for relative in required:
+        destination = source_root / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(repository / relative, destination)
     commit = "c" * 40
     freeze = build_freeze(
         source_root,
-        (
-            "pipeline/ettr_il_v3_protocol.py",
-            "pipeline/qualify_ettr_il_v3_candidates.py",
-        ),
+        required,
         source_commit=commit,
     )
     freeze_path = tmp_path / "freeze.json"
     freeze_path.write_bytes(canonical_json_bytes(freeze))
     return source_root, freeze_path, commit
+
+
+def test_qualification_rejects_unmeasured_or_incomplete_runtime_source(
+    tmp_path: Path,
+) -> None:
+    source_root, freeze_path, _commit = _custody(tmp_path)
+    freeze = qualifier.load_and_verify_freeze(
+        source_root,
+        freeze_path,
+        source_commit="c" * 40,
+    )
+    (source_root / "pipeline" / "unmeasured.py").write_text(
+        "raise RuntimeError\n",
+        encoding="ascii",
+    )
+    with pytest.raises(
+        qualifier.QualificationError,
+        match="source tree and freeze inventory differ",
+    ):
+        qualifier._measured_runtime_sources(source_root, freeze)
+
+    (source_root / "pipeline" / "unmeasured.py").unlink()
+    incomplete = dict(freeze)
+    inventory = [
+        entry
+        for entry in freeze["source_inventory"]
+        if entry["path"] != "train/model.py"
+    ]
+    incomplete["source_inventory"] = inventory
+    (source_root / "train" / "model.py").unlink()
+    with pytest.raises(
+        qualifier.QualificationError,
+        match="train closure differs",
+    ):
+        qualifier._measured_runtime_sources(source_root, incomplete)
 
 
 def test_receiver_qualification_preserves_only_admitted_original_rows(

@@ -52,6 +52,22 @@ CONFIRMATION_ROLE = "sealed_confirmation"
 MAX_KEY_BYTES = 32
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
+_REQUIRED_PIPELINE_SOURCES = frozenset(
+    {
+        "pipeline/ettr_il_v2_materialize.py",
+        "pipeline/ettr_il_v3_materialize.py",
+        "pipeline/qualify_ettr_il_v3_candidates.py",
+    }
+)
+_REQUIRED_TRAIN_SOURCES = frozenset(
+    {
+        "train/endogenous_typed_theory_reactor.py",
+        "train/ettr_data_contract.py",
+        "train/ettr_episode.py",
+        "train/ettr_objectives.py",
+        "train/model.py",
+    }
+)
 _ADMISSION_ERRORS = (
     HornAdapterError,
     LocalAdapterError,
@@ -68,6 +84,61 @@ _ADMISSION_ERRORS = (
 
 class QualificationError(ValueError):
     """Candidate qualification custody or output contract failed."""
+
+
+def _measured_runtime_sources(
+    source_root: Path,
+    freeze: dict[str, object],
+) -> frozenset[str]:
+    inventory = freeze.get("source_inventory")
+    if not isinstance(inventory, list):
+        raise QualificationError("qualifier source inventory differs")
+    measured: set[str] = set()
+    for entry in inventory:
+        if (
+            not isinstance(entry, dict)
+            or set(entry) != {"bytes", "path", "sha256"}
+            or not isinstance(entry.get("path"), str)
+        ):
+            raise QualificationError("qualifier source entry differs")
+        measured.add(entry["path"])
+    if len(measured) != len(inventory):
+        raise QualificationError("qualifier source inventory repeats a path")
+
+    actual: set[str] = set()
+    for top_level in ("pipeline", "train"):
+        root = source_root / top_level
+        if root.is_symlink() or not root.is_dir():
+            raise QualificationError(
+                f"qualifier {top_level} source tree differs"
+            )
+        for path in root.rglob("*"):
+            status = path.lstat()
+            if stat.S_ISDIR(status.st_mode):
+                continue
+            if (
+                path.is_symlink()
+                or not stat.S_ISREG(status.st_mode)
+                or status.st_nlink != 1
+            ):
+                raise QualificationError(
+                    "qualifier executable source tree contains "
+                    "an unmeasured object"
+                )
+            actual.add(path.relative_to(source_root).as_posix())
+
+    if actual != measured:
+        raise QualificationError(
+            "qualifier executable source tree and freeze inventory differ"
+        )
+    if not _REQUIRED_PIPELINE_SOURCES <= measured:
+        raise QualificationError("qualifier pipeline closure is incomplete")
+    train_sources = frozenset(
+        path for path in measured if path.startswith("train/")
+    )
+    if train_sources != _REQUIRED_TRAIN_SOURCES:
+        raise QualificationError("qualifier train closure differs")
+    return frozenset(measured)
 
 
 def role_for_cell(cell: ProductionCell) -> str:
@@ -194,6 +265,7 @@ def qualify_cell(
         qualifier_freeze,
         source_commit=source_commit,
     )
+    _measured_runtime_sources(qualifier_source_root, freeze)
     qualifier_freeze_sha256 = _hex(
         freeze.get("freeze_sha256"),
         "qualifier freeze SHA-256",
