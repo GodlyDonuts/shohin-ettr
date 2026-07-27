@@ -14,7 +14,7 @@
 > compatibility, and isolated reasoning evaluation may continue; none of those
 > activities implies permission to pretrain.
 >
-> **Last updated:** 2026-07-27 01:21 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-27 01:51 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -15079,4 +15079,47 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `runs/production-d16824483eef3e7f6de400c8354a48b4dd236ece`.
 
   Decision:
-  `r12_ettr_il_v3_first_production_rejected_capacity_truncation_removed_broad_contract_repaired_replacement_freeze_pending`.
+  `r12_ettr_il_v3_first_production_rejected_capacity_truncation_removed_broad_contract_repaired_replacement_production_active`.
+
+- **2026-07-27 01:51 EDT** -- **The ETTR-IL-v3 architecture-facing
+  materialization boundary passes all three families; replacement candidate
+  production remains healthy in progress.** No model, checkpoint, optimizer,
+  GPU, or continuation-pretraining operation was performed.
+
+  Canonical production rows now reconstruct into exact typed Horn, resource,
+  and bounded-local-rewrite episodes. Reconstruction reruns primary and replay
+  semantics and requires the rebuilt assessor value, episode SHA-256, split,
+  stage, depth, and owner binding to match the stored row. A deterministic
+  broad rectangle builder preserves the selected episode as `W0,C0`, chooses
+  same-theory/same-policy WORLD and same-depth COMMAND neighbors, independently
+  executes all four corners, and requires terminal-state consequences on both
+  WORLD edges. Answer flips remain optional under the explicit v3
+  contrast/invariance contract.
+
+  A new local-rewrite adapter projects the two opaque reversible laws, six
+  runtime registers, command atoms, exact WRITE traces, terminal packets, and
+  structural-query answers into the generic ETTR geometry. The complete v3
+  materializer emits four renderer-controlled token-native views per core,
+  exactly 64 rows at fixed 192/96/48 WORLD/COMMAND/QUERY widths, two explicit
+  cross-view invariant pairs, primary/replay oracle channels, exact packet and
+  trace targets, answer matrices, coverage, and content hashes. Confirmation
+  materialization fails closed unless supplied a physically separate 32-byte
+  custody key.
+
+  Real CPU `ETTRContinuationBatch` materialization passes for Horn, resource,
+  and local rewrite using the immutable Shohin tokenizer. The focused new
+  reconstruction/rectangle/adapter/materialization suite is 18/18. The wider
+  v3/selection/publication inventory is 117/117, and the inherited
+  receiver/objective/surface regression is 188/188. Ruff, byte compilation,
+  and diff checks are clean. At the latest operational observation,
+  replacement production `751777` had 175/324 no-replace report/shard pairs,
+  64 active one-CPU tasks, and zero nonempty stderr files.
+
+  The next gates are complete 324-cell inventory/hash verification,
+  deterministic selection, frozen Stokes materialization workers, global
+  leakage/replay audits, private Hugging Face publication, and fresh
+  round-trip hash verification. Raw confirmation payloads remain prohibited
+  from the main dataset repository.
+
+  Decision:
+  `r12_ettr_il_v3_architecture_materializer_three_family_pass_candidate_production_active`.
