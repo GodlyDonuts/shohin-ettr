@@ -14,7 +14,7 @@
 > compatibility, and isolated reasoning evaluation may continue; none of those
 > activities implies permission to pretrain.
 >
-> **Last updated:** 2026-07-26 18:49 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-27 00:52 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -14964,3 +14964,56 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `r12_ettr_il_v2_phase1_architecture_frozen_phase2_requires_explicit_user_authorization`.
+
+- **2026-07-27 00:52 EDT** -- **ETTR-IL-v3 initializer protocol and
+  complete CPU pilot pass; production candidate generation is implemented
+  but not yet submitted from its final source freeze.** No continuation
+  pretraining, isolated fitting, model load, checkpoint access, optimizer
+  update, or GPU job was started. The protected step-300k checkpoint remains
+  untouched.
+
+  V2 production generation was rejected before launch because strict
+  checkerboard requirements made multiple rewrite cells empty and left the
+  candidate-surplus contract undefined. V3 freezes broad exact component and
+  joint supervision, while retaining strict checkerboards only for designated
+  causal/evaluation cells. The selected populations are 40,000 train, 5,000
+  development, 5,000 sealed confirmation, and 12,500 total frozen reserves.
+  Every selected core expands to four views and 64 rows, giving exactly
+  1,351,680,000 charged train positions. The candidate rule is
+  `3 * (quota + max(16, ceil(quota / 4)))`.
+
+  The executable protocol now jointly satisfies stage and family marginals
+  through one deterministic transportation matrix; this repaired a real
+  pre-generation inconsistency where independent row rounding disagreed with
+  the split-level family totals. Three exact semantic families are
+  implemented: Horn closure, bounded typed local rewriting, and guarded
+  resource processes. Each has independent primary/replay execution,
+  depth-1-through-6 curriculum admission, deterministic HPC buckets, capacity
+  checks, coverage metadata, and WORLD/COMMAND/QUERY counterfactuals.
+
+  Commit-pinned CPU pilot array `751392` ran on Stokes with 54/54 tasks
+  `COMPLETED`, zero nonempty stderr files, one CPU and 4 GiB per task, and no
+  GPU request. It covered every family/stage and every required depth with 24
+  admitted episodes per cell. Aggregate SHA-256 is
+  `15eb3d5aba277e6d326601d20e6b400af0eedc55fc7c905f67af6866edd98a74`.
+  Conservative projection is 234,462 admitted candidates, 17.02 CPU-hours
+  before split-owner filtering, under 23.5 MB compressed semantic payload,
+  minimum observed 0.553 cores/CPU-second, maximum 164.125 compressed
+  bytes/core, and maximum 25,908 KiB RSS. Stokes Hugging Face authentication
+  was verified for `Godlydonuts`; publication remains private and raw
+  confirmation payloads are rejected from the main repository.
+
+  `pipeline/ettr_il_v3_production.py` and its Slurm wrapper define 324
+  deterministic split/family/stage/depth cells. Split ownership is fixed from
+  canonical semantic worlds before rendering or label inspection. Reserve
+  tasks consume disjoint deterministic segments after their primary split.
+  Every task must recompute the complete source-freeze receipt before writing
+  content-addressable no-replace gzip JSONL and a self-hashed report. The next
+  gate is a fresh commit/freeze/source snapshot, complete regression, and
+  Slurm test-only admission before candidate submission. Selection,
+  architecture-facing materialization, leakage/shortcut audits, private Hugging
+  Face upload, and fresh round-trip hash verification remain required after
+  candidate generation.
+
+  Decision:
+  `r12_ettr_il_v3_protocol_and_cpu_pilot_pass_production_submission_pending_final_freeze`.
