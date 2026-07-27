@@ -1,8 +1,11 @@
 import copy
+import errno
 import hashlib
 import json
 import stat
 import subprocess
+import sys
+import sysconfig
 import tempfile
 import unittest
 from pathlib import Path
@@ -12,9 +15,15 @@ import numpy as np
 import torch
 
 from pipeline import adjudicate_acw_hidden_basis as adjudicator
+from pipeline import build_acw_development_manifest as manifest_builder
 
 _REAL_VALIDATE_FROZEN_DEVELOPMENT_BASELINE = (
     adjudicator._validate_frozen_development_baseline
+)
+TEST_CONFIRMATION_COMMITMENTS = (
+    "1" * 64,
+    "2" * 64,
+    "3" * 64,
 )
 
 FINAL_STATE_EXACTNESS = {
@@ -32,6 +41,15 @@ FINAL_STATE_EXACTNESS = {
 
 def _digest(label: str) -> str:
     return hashlib.sha256(label.encode("ascii")).hexdigest()
+
+
+def _origin_guard_source(path: Path) -> str:
+    source = path.read_text()
+    begin = "# BEGIN ACW_PYTHON_ORIGIN_GUARD\n"
+    end = "# END ACW_PYTHON_ORIGIN_GUARD"
+    if source.count(begin) != 1 or source.count(end) != 1:
+        raise AssertionError(f"origin guard markers differ in {path}")
+    return source.split(begin, 1)[1].split(end, 1)[0]
 
 
 def _encoded(payload: dict) -> bytes:
@@ -92,7 +110,7 @@ def _identity(split: str, index: int) -> dict:
     return {
         "kind": "confirmation",
         "index": index,
-        "commitment": adjudicator.CONFIRMATION_COMMITMENTS[index],
+        "commitment": TEST_CONFIRMATION_COMMITMENTS[index],
     }
 
 
@@ -105,11 +123,19 @@ def _dataset_manifest(split: str, index: int) -> dict:
             "shape": [1],
             "sha256": _digest(f"array:{relative}"),
         }
+    if split == "development":
+        from pipeline.generate_acw_hidden_basis import development_seed_material
+
+        seed_fingerprint = hashlib.sha256(
+            development_seed_material(adjudicator.DEVELOPMENT_SEEDS[index])
+        ).hexdigest()
+    else:
+        seed_fingerprint = _digest(f"seed:{split}:{index}")
     return adjudicator.with_payload_hash(
         {
             "protocol": adjudicator.GENERATOR_PROTOCOL,
             "seed_identity": _identity(split, index),
-            "seed_fingerprint": _digest(f"seed:{split}:{index}"),
+            "seed_fingerprint": seed_fingerprint,
             "field_size": 17,
             "dimension": 3,
             "source_dim": 96,
@@ -328,6 +354,30 @@ def _native_training_evidence(arm: str, split: str, index: int) -> dict:
         ),
         "curriculum_sha256": _digest(f"curriculum:{schedule_family}:{split}:{index}"),
         "query_schedule_sha256": _digest(f"query-schedule:{schedule_family}:v2"),
+        "canonical_runtime_sha256": (adjudicator.CANONICAL_DEVELOPMENT_RUNTIME_SHA256),
+        "development_plan_sha256": adjudicator.DEVELOPMENT_PLAN_RAW_SHA256,
+        "execution_receipt": {
+            "schema": "r12_acw_development_execution_receipt_v1",
+            "protocol": "R12-ACW-DEVELOPMENT-EXECUTION-v1",
+            "scientific_commit": "d" * 40,
+            "canonical_runtime_sha256": (
+                adjudicator.CANONICAL_DEVELOPMENT_RUNTIME_SHA256
+            ),
+            "development_plan_sha256": adjudicator.DEVELOPMENT_PLAN_RAW_SHA256,
+            "environment_sha256": _digest("test-environment"),
+            "batch_script_sha256": _digest("test-batch-script"),
+            "slurm": {
+                "job_id": "740999",
+                "job_name": "shohin-acw-development",
+                "node_list": "ec51",
+                "cpus_per_task": "4",
+            },
+            "process_membership": {
+                "cpu_list": "0-3",
+                "memory_list": "0",
+                "task_cgroup": "/slurm/uid_1/job_740999/step_0/task_0",
+            },
+        },
         "updates": adjudicator.OPTIMIZER_UPDATES,
         "labels": adjudicator.FINAL_SCALAR_LABELS,
         "resource_ledger": _native_resource_ledger(arm),
@@ -630,6 +680,7 @@ def _trusted_bundle_summary(
     _dataset_manifest: dict,
     dataset_summary: dict,
     _label: str,
+    **_kwargs,
 ) -> dict:
     return {
         "payload_sha256": manifest["trusted_payload_sha256"],
@@ -719,35 +770,223 @@ def _trusted_independent_replay(
     }
 
 
+def _trusted_independent_trainer_replay(*_args, **_kwargs) -> dict:
+    return {
+        "semantic_fingerprint_sha256": _digest("trusted-trainer-replay"),
+        "replay_checkpoint_sha256": _digest("trusted-replay-checkpoint"),
+        "semantic_match": True,
+        "canonical_runtime_sha256": (adjudicator.CANONICAL_DEVELOPMENT_RUNTIME_SHA256),
+    }
+
+
+def _trusted_private_dataset(
+    _destination: Path,
+    *,
+    identity_key: tuple[str, int],
+    submitted_root: Path,
+    label: str,
+):
+    del label
+    manifest = json.loads((submitted_root / "manifest.json").read_bytes())
+    observed_identity, summary = adjudicator._validate_dataset_manifest(
+        manifest, "trusted.private_dataset"
+    )
+    if observed_identity != identity_key:
+        raise AssertionError("trusted private dataset identity differs")
+    return (
+        manifest,
+        summary,
+        {
+            "files": len(manifest["arrays"]) + 1,
+            "directories": 1,
+            "tree_sha256": _digest(f"private-dataset:{identity_key}"),
+            "byte_identical": True,
+        },
+    )
+
+
+def _trusted_private_bundle(
+    _destination: Path,
+    *,
+    private_dataset_root: Path,
+    private_dataset_manifest: dict,
+    private_dataset_summary: dict,
+    submitted_root: Path,
+    schedule_kind: str,
+    label: str,
+):
+    del private_dataset_root, label
+    manifest = json.loads((submitted_root / "manifest.json").read_bytes())
+    summary = _trusted_bundle_summary(
+        submitted_root,
+        manifest,
+        private_dataset_manifest,
+        private_dataset_summary,
+        "trusted.private_bundle",
+    )
+    return (
+        manifest,
+        summary,
+        {
+            "files": len(adjudicator.BUNDLE_ARRAYS) + 6,
+            "directories": 1,
+            "tree_sha256": _digest(
+                f"private-bundle:{private_dataset_summary['seed_identity']}:{schedule_kind}"
+            ),
+            "byte_identical": True,
+        },
+    )
+
+
+def _trusted_execution_receipt(value, *, label: str) -> dict:
+    del label
+    return copy.deepcopy(value)
+
+
+def _trusted_attempt_receipt(*_args, **_kwargs) -> dict:
+    return {
+        "path": "trusted-attempt-receipt.json",
+        "sha256": _digest("trusted-attempt-receipt-file"),
+        "payload_sha256": _digest("trusted-attempt-receipt-payload"),
+        "attempt_id": "trusted-attempt",
+    }
+
+
+def _trusted_attempt_claim(*_args, **_kwargs) -> dict:
+    return {
+        "path": "trusted-attempt-claim.json",
+        "sha256": _digest("trusted-attempt-claim-file"),
+        "payload_sha256": _digest("trusted-attempt-claim-payload"),
+    }
+
+
+def _trusted_stage_receipts(*_args, **_kwargs) -> dict:
+    return {"test_only": True}
+
+
+def _trusted_private_refit(*_args, **_kwargs) -> dict:
+    return {
+        "path": "trusted-private-refit.json",
+        "sha256": _digest("trusted-private-refit-file"),
+        "payload_sha256": _digest("trusted-private-refit-payload"),
+    }
+
+
+def _g_attempt_run(run: dict, *, arm: str, index: int) -> dict:
+    value = copy.deepcopy(run)
+    value["attempt_id"] = f"{arm}__{adjudicator.DEVELOPMENT_SEEDS[index]}"
+    value["attempt_receipt"] = {"test_only": True}
+    return value
+
+
+def _development_attempt_runs(fixture: "SyntheticEvidence") -> list[dict]:
+    return [
+        _g_attempt_run(fixture.runs[(arm, "development", index)], arm=arm, index=index)
+        for arm in (adjudicator.DIRECT_STATE_ARM, *adjudicator.SCORED_ARMS)
+        for index in range(3)
+    ]
+
+
+def _trusted_development_plan(*_args, **_kwargs) -> dict:
+    return {
+        "path": "trusted-development-plan.json",
+        "sha256": adjudicator.DEVELOPMENT_PLAN_RAW_SHA256,
+        "payload_sha256": _digest("trusted-development-plan-payload"),
+    }
+
+
+def _trusted_attempt_start(*_args, **_kwargs) -> dict:
+    return {
+        "path": "trusted-attempt-start.json",
+        "sha256": _digest("trusted-attempt-start-file"),
+        "payload_sha256": _digest("trusted-attempt-start-payload"),
+        "scientific_commit": "d" * 40,
+        "slurm": {
+            "job_id": "740999",
+            "job_name": "shohin-acw-development",
+            "node_list": "ec51",
+            "cpus_per_task": "4",
+        },
+    }
+
+
+def _trusted_phase2_authorization(*_args, **_kwargs) -> dict:
+    return {
+        "path": "trusted-phase2-authorization.json",
+        "sha256": _digest("trusted-phase2-authorization-file"),
+        "payload_sha256": _digest("trusted-phase2-authorization-payload"),
+        "direct_state_reverified": True,
+    }
+
+
+def _test_confirmation_authorization() -> dict:
+    return {
+        "protocol": adjudicator.CONFIRMATION_AUTHORIZATION_PROTOCOL,
+        "authorized": True,
+        "status": "test_only_legacy_confirmation_authorized",
+        "full_manifest_schema": adjudicator.MANIFEST_SCHEMA,
+        "full_manifest_protocol": adjudicator.MANIFEST_PROTOCOL,
+        "scored_arms": list(adjudicator.SCORED_ARMS),
+        "confirmation_indices": [0, 1, 2],
+        "confirmation_commitments": list(TEST_CONFIRMATION_COMMITMENTS),
+        "direct_state_confirmation_authorized": False,
+        "immutable_baseline_required_before_confirmation": True,
+        "full_manifest_must_bind_baseline": True,
+        "future_beacon_required": False,
+    }
+
+
+def _test_registered_identity(identity, label: str) -> tuple[str, int]:
+    if identity["kind"] == "pilot":
+        raise adjudicator.EvidenceError(
+            "pilot_seed_forbidden", f"{label} is the non-scored pilot"
+        )
+    if identity["kind"] == "development":
+        try:
+            index = adjudicator.DEVELOPMENT_SEEDS.index(identity["seed"])
+        except ValueError as error:
+            raise adjudicator.EvidenceError(
+                "unregistered_seed_identity", f"{label} seed is not registered"
+            ) from error
+        return "development", index
+    if identity["kind"] == "confirmation":
+        index = identity["index"]
+        if identity["commitment"] != TEST_CONFIRMATION_COMMITMENTS[index]:
+            raise adjudicator.EvidenceError(
+                "confirmation_commitment_mismatch", "test commitment differs"
+            )
+        return "confirmation", index
+    raise adjudicator.EvidenceError("unregistered_seed_identity", "test identity")
+
+
+def _test_expected_optimizer_seed(identity: dict) -> int:
+    if identity["kind"] == "development":
+        return identity["seed"]
+    material = b"R12-ACW-OPT-v1\x00" + identity["commitment"].encode("ascii")
+    return int.from_bytes(hashlib.sha256(material).digest()[:8], "big") % 2**63
+
+
 def _trusted_frozen_baseline(path: Path) -> dict:
     full_manifest = json.loads(Path(path).read_text())
-    development_manifest = adjudicator.with_payload_hash(
-        {
-            "schema": adjudicator.DEVELOPMENT_MANIFEST_SCHEMA,
-            "protocol": adjudicator.DEVELOPMENT_MANIFEST_PROTOCOL,
-            "reports": [
-                report
-                for report in full_manifest["reports"]
-                if "_development_" in report["evaluation_report"]["path"]
-            ],
-        }
-    )
+    record = {
+        "path": "trusted-development-baseline.json",
+        "sha256": _digest("trusted-development-baseline-file"),
+        "payload_sha256": _digest("trusted-development-baseline-payload"),
+    }
     runs, verification = adjudicator.verify_evidence(
-        development_manifest, Path(path).parent, scope="development"
+        full_manifest,
+        Path(path).parent,
+        expected_development_baseline_record=record,
     )
     selection = adjudicator._development_baseline(runs)
     return {
         **selection,
         "selection": selection,
-        "record": {
-            "path": "trusted-development-baseline.json",
-            "sha256": _digest("trusted-development-baseline-file"),
-            "payload_sha256": _digest("trusted-development-baseline-payload"),
-        },
+        "record": record,
         "development_manifest": {
             "path": "trusted-development-manifest.json",
             "sha256": _digest("trusted-development-manifest-file"),
-            "payload_sha256": development_manifest["payload_sha256"],
+            "payload_sha256": _digest("trusted-development-manifest-payload"),
         },
         "development_verification": verification,
         "development_run_bindings": adjudicator._development_run_bindings(runs),
@@ -786,6 +1025,81 @@ class ACWHiddenBasisAdjudicatorTests(unittest.TestCase):
             ),
             mock.patch.object(
                 adjudicator,
+                "_independent_trainer_replay",
+                _trusted_independent_trainer_replay,
+            ),
+            mock.patch.object(
+                adjudicator,
+                "_regenerate_private_development_dataset",
+                _trusted_private_dataset,
+            ),
+            mock.patch.object(
+                adjudicator,
+                "_regenerate_private_trainer_bundle",
+                _trusted_private_bundle,
+            ),
+            mock.patch.object(
+                adjudicator,
+                "_validate_development_plan_reference",
+                _trusted_development_plan,
+            ),
+            mock.patch.object(
+                adjudicator,
+                "_validate_attempt_start_reference",
+                _trusted_attempt_start,
+            ),
+            mock.patch.object(
+                adjudicator,
+                "_validate_development_execution_receipt",
+                _trusted_execution_receipt,
+            ),
+            mock.patch.object(
+                adjudicator,
+                "_validate_attempt_receipt_reference",
+                _trusted_attempt_receipt,
+            ),
+            mock.patch.object(
+                adjudicator,
+                "_validate_attempt_claim_reference",
+                _trusted_attempt_claim,
+            ),
+            mock.patch.object(
+                adjudicator,
+                "_validate_stage_receipts",
+                _trusted_stage_receipts,
+            ),
+            mock.patch.object(
+                adjudicator,
+                "_validate_private_refit_verification_reference",
+                _trusted_private_refit,
+            ),
+            mock.patch.object(
+                adjudicator,
+                "_validate_phase2_authorization",
+                _trusted_phase2_authorization,
+            ),
+            mock.patch.object(
+                adjudicator,
+                "_confirmation_authorization",
+                _test_confirmation_authorization,
+            ),
+            mock.patch.object(
+                adjudicator,
+                "CONFIRMATION_COMMITMENTS",
+                TEST_CONFIRMATION_COMMITMENTS,
+            ),
+            mock.patch.object(
+                adjudicator,
+                "_registered_identity",
+                _test_registered_identity,
+            ),
+            mock.patch.object(
+                adjudicator,
+                "_expected_optimizer_seed",
+                _test_expected_optimizer_seed,
+            ),
+            mock.patch.object(
+                adjudicator,
                 "_validate_frozen_development_baseline",
                 _trusted_frozen_baseline,
             ),
@@ -796,6 +1110,33 @@ class ACWHiddenBasisAdjudicatorTests(unittest.TestCase):
 
     def _fixture(self, temporary: str) -> SyntheticEvidence:
         return SyntheticEvidence(Path(temporary))
+
+    def _direct_manifest(self, fixture: SyntheticEvidence) -> Path:
+        manifest = adjudicator.with_payload_hash(
+            {
+                "schema": adjudicator.DIRECT_STATE_MANIFEST_SCHEMA,
+                "protocol": adjudicator.DIRECT_STATE_MANIFEST_PROTOCOL,
+                "development_plan": {"test_only": True},
+                "attempt_claim": {"test_only": True},
+                "attempt_start": {"test_only": True},
+                "stage_receipts": {"test_only": True},
+                "private_refit_verification": {"test_only": True},
+                "reports": [
+                    _g_attempt_run(
+                        fixture.runs[
+                            (adjudicator.DIRECT_STATE_ARM, "development", index)
+                        ],
+                        arm=adjudicator.DIRECT_STATE_ARM,
+                        index=index,
+                    )
+                    for index in range(3)
+                ],
+            }
+        )
+        path = fixture.root / "direct_state_manifest.json"
+        path.write_bytes(_encoded(manifest))
+        path.chmod(0o444)
+        return path
 
     def _assert_payload_hash(self, decision: dict) -> None:
         recorded = decision["payload_sha256"]
@@ -885,6 +1226,79 @@ class ACWHiddenBasisAdjudicatorTests(unittest.TestCase):
         self.assertFalse(baseline["can_override_promotion_gates"])
         self._assert_payload_hash(decision)
 
+    def test_direct_state_qualification_is_a_hard_phase2_gate(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self._fixture(temporary)
+            manifest_path = self._direct_manifest(fixture)
+            decision_path = fixture.root / "direct_state_decision.json"
+            authorization_path = fixture.root / "phase2_authorization.json"
+            decision, authorization = adjudicator.qualify_direct_state(
+                manifest_path, decision_path, authorization_path
+            )
+            self.assertTrue(decision["passed"])
+            self.assertIsNotNone(authorization)
+            self.assertTrue(authorization["authorized"])
+            self.assertFalse(authorization["confirmation_authorized"])
+            self.assertEqual(stat.S_IMODE(decision_path.stat().st_mode), 0o444)
+            self.assertEqual(stat.S_IMODE(authorization_path.stat().st_mode), 0o444)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self._fixture(temporary)
+
+            def fail_positive_control(report: dict) -> None:
+                _set_accuracy(report["public_depths"]["8"], scalar=0.0, state=0.0)
+
+            fixture.mutate_report(
+                (adjudicator.DIRECT_STATE_ARM, "development", 0),
+                fail_positive_control,
+            )
+            manifest_path = self._direct_manifest(fixture)
+            decision_path = fixture.root / "direct_state_decision.json"
+            authorization_path = fixture.root / "phase2_authorization.json"
+            decision, authorization = adjudicator.qualify_direct_state(
+                manifest_path, decision_path, authorization_path
+            )
+            self.assertFalse(decision["passed"])
+            self.assertIsNone(authorization)
+            self.assertFalse(authorization_path.exists())
+
+    def test_direct_and_development_manifests_must_be_immutable(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self._fixture(temporary)
+            manifest_path = self._direct_manifest(fixture)
+            manifest_path.chmod(0o644)
+            with self.assertRaises(adjudicator.EvidenceError) as raised:
+                adjudicator.qualify_direct_state(
+                    manifest_path,
+                    fixture.root / "decision.json",
+                    fixture.root / "authorization.json",
+                )
+            self.assertEqual(raised.exception.code, "direct_state_manifest_mutable")
+
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self._fixture(temporary)
+            development = adjudicator.with_payload_hash(
+                {
+                    "schema": adjudicator.DEVELOPMENT_MANIFEST_SCHEMA,
+                    "protocol": adjudicator.DEVELOPMENT_MANIFEST_PROTOCOL,
+                    "development_plan": {"test_only": True},
+                    "attempt_start": {"test_only": True},
+                    "phase2_authorization": {"test_only": True},
+                    "reports": [
+                        fixture.runs[key]
+                        for key in sorted(fixture.runs)
+                        if key[1] == "development"
+                    ],
+                }
+            )
+            path = fixture.root / "development_manifest.json"
+            path.write_bytes(_encoded(development))
+            with self.assertRaises(adjudicator.EvidenceError) as raised:
+                adjudicator.freeze_development_baseline(
+                    path, fixture.root / "baseline.pt"
+                )
+            self.assertEqual(raised.exception.code, "development_manifest_mutable")
+
     def test_best_valid_development_checkpoint_is_retained_on_no_go(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             fixture = self._fixture(temporary)
@@ -961,20 +1375,24 @@ class ACWHiddenBasisAdjudicatorTests(unittest.TestCase):
     def test_development_only_freeze_preserves_checkpoint_immutably(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             fixture = self._fixture(temporary)
-            development_reports = [
-                fixture.runs[key]
-                for key in sorted(fixture.runs)
-                if key[1] == "development"
-            ]
+            development_reports = _development_attempt_runs(fixture)
             development_manifest = adjudicator.with_payload_hash(
                 {
                     "schema": adjudicator.DEVELOPMENT_MANIFEST_SCHEMA,
                     "protocol": adjudicator.DEVELOPMENT_MANIFEST_PROTOCOL,
+                    "development_plan": {"test_only": True},
+                    "attempt_claim": {"test_only": True},
+                    "attempt_start": {"test_only": True},
+                    "stage_receipts": {"test_only": True},
+                    "phase2_authorization": {"test_only": True},
+                    "direct_refit_verification": {"test_only": True},
+                    "private_refit_verification": {"test_only": True},
                     "reports": development_reports,
                 }
             )
             manifest_path = Path(temporary) / "development_manifest.json"
             manifest_path.write_bytes(_encoded(development_manifest))
+            manifest_path.chmod(0o444)
             checkpoint_path = Path(temporary) / "retained" / "checkpoint.pt"
             baseline_path = Path(temporary) / "retained" / "baseline.json"
 
@@ -1009,20 +1427,24 @@ class ACWHiddenBasisAdjudicatorTests(unittest.TestCase):
     def test_self_attested_empty_development_manifest_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             fixture = self._fixture(temporary)
-            development_reports = [
-                fixture.runs[key]
-                for key in sorted(fixture.runs)
-                if key[1] == "development"
-            ]
+            development_reports = _development_attempt_runs(fixture)
             development_manifest = adjudicator.with_payload_hash(
                 {
                     "schema": adjudicator.DEVELOPMENT_MANIFEST_SCHEMA,
                     "protocol": adjudicator.DEVELOPMENT_MANIFEST_PROTOCOL,
+                    "development_plan": {"test_only": True},
+                    "attempt_claim": {"test_only": True},
+                    "attempt_start": {"test_only": True},
+                    "stage_receipts": {"test_only": True},
+                    "phase2_authorization": {"test_only": True},
+                    "direct_refit_verification": {"test_only": True},
+                    "private_refit_verification": {"test_only": True},
                     "reports": development_reports,
                 }
             )
             manifest_path = Path(temporary) / "development_manifest.json"
             manifest_path.write_bytes(_encoded(development_manifest))
+            manifest_path.chmod(0o444)
             checkpoint_path = Path(temporary) / "retained" / "checkpoint.pt"
             baseline = adjudicator.freeze_development_baseline(
                 manifest_path, checkpoint_path
@@ -1032,11 +1454,19 @@ class ACWHiddenBasisAdjudicatorTests(unittest.TestCase):
                 {
                     "schema": adjudicator.DEVELOPMENT_MANIFEST_SCHEMA,
                     "protocol": adjudicator.DEVELOPMENT_MANIFEST_PROTOCOL,
+                    "development_plan": {"test_only": True},
+                    "attempt_claim": {"test_only": True},
+                    "attempt_start": {"test_only": True},
+                    "stage_receipts": {"test_only": True},
+                    "phase2_authorization": {"test_only": True},
+                    "direct_refit_verification": {"test_only": True},
+                    "private_refit_verification": {"test_only": True},
                     "reports": [],
                 }
             )
             empty_path = Path(temporary) / "empty_development_manifest.json"
             empty_path.write_bytes(_encoded(empty_manifest))
+            empty_path.chmod(0o444)
             forged = copy.deepcopy(baseline)
             forged["development_manifest"] = {
                 "path": str(empty_path.resolve()),
@@ -1689,8 +2119,727 @@ class ACWHiddenBasisAdjudicatorTests(unittest.TestCase):
                 adjudicator.write_immutable_json(other, stale)
             self.assertFalse(other.exists())
 
+    def test_all_decision_and_authorization_writers_propagate_fsync_failures(
+        self,
+    ) -> None:
+        decision = adjudicator._evidence_rejection(
+            Path("unopened-manifest.json"),
+            None,
+            adjudicator.EvidenceError("test_rejection", "test only"),
+        )
+        writers = {
+            "decision": lambda path: adjudicator.write_immutable_json(path, decision),
+            "authorization": lambda path: adjudicator._write_immutable_binary(
+                path, b"authorization\n"
+            ),
+        }
+        for name, writer in writers.items():
+            with self.subTest(writer=name, failure="file-fsync"):
+                with tempfile.TemporaryDirectory() as temporary:
+                    destination = Path(temporary) / name / "record.json"
+                    with (
+                        mock.patch.object(
+                            adjudicator.publication.os,
+                            "fsync",
+                            side_effect=OSError(errno.EIO, "injected file fsync"),
+                        ),
+                        self.assertRaises(OSError) as raised,
+                    ):
+                        writer(destination)
+                    self.assertEqual(raised.exception.errno, errno.EIO)
+                    self.assertFalse(destination.exists())
+
+            with self.subTest(writer=name, failure="directory-fsync"):
+                with tempfile.TemporaryDirectory() as temporary:
+                    destination = Path(temporary) / name / "record.json"
+                    with (
+                        mock.patch.object(
+                            adjudicator.publication,
+                            "fsync_directory",
+                            side_effect=OSError(
+                                errno.EPERM, "injected parent-directory fsync"
+                            ),
+                        ),
+                        self.assertRaises(OSError) as raised,
+                    ):
+                        writer(destination)
+                    self.assertEqual(raised.exception.errno, errno.EPERM)
+                    self.assertTrue(destination.is_file())
+                    self.assertEqual(stat.S_IMODE(destination.stat().st_mode), 0o444)
+
 
 class ACWAdjudicatorArtifactSecurityTests(unittest.TestCase):
+    def _write_private_file(self, path: Path, raw: bytes) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(raw)
+        path.chmod(0o444)
+
+    def _freeze_private_tree(self, root: Path) -> None:
+        for path in sorted(
+            (item for item in root.rglob("*") if item.is_dir()),
+            key=lambda item: len(item.parts),
+            reverse=True,
+        ):
+            path.chmod(0o555)
+        root.chmod(0o555)
+
+    def _thaw_private_fixture(self, root: Path) -> None:
+        for path in root.rglob("*"):
+            if path.is_dir() and not path.is_symlink():
+                path.chmod(0o755)
+            elif path.exists() and not path.is_symlink():
+                path.chmod(0o644)
+
+    def _write_private_checkpoint(
+        self,
+        path: Path,
+        *,
+        attempt_id: str,
+        role: str,
+        seed: int,
+        model_value: float,
+    ) -> None:
+        checkpoint = {
+            "protocol": adjudicator.TRAINING_PROTOCOL,
+            "arm": adjudicator.DIRECT_STATE_ARM,
+            "seed": seed,
+            "dataset_manifest_payload_sha256": _digest(f"dataset-{seed}"),
+            "source_manifest_payload_sha256": _digest(f"source-{seed}"),
+            "curriculum_sha256": _digest(f"curriculum-{seed}"),
+            "query_schedule_sha256": _digest(f"schedule-{seed}"),
+            "query_schedule_kind": "cgb_schedule.jsonl",
+            "pilot_report_payload_sha256": _digest("pilot"),
+            "parameters": 1,
+            "training_report": {
+                "updates": 1,
+                "execution_receipt": {
+                    "role": role,
+                    "attempt_id": attempt_id,
+                    "verification_replay": role == "phase1_verifier",
+                },
+            },
+            "label_efficiency_models": None,
+            "scientific_identity": {"test_only": True},
+            "model": {"weight": torch.tensor([model_value])},
+        }
+        path.parent.mkdir(parents=True, exist_ok=True)
+        torch.save(checkpoint, path)
+        path.chmod(0o444)
+
+    def _build_forged_private_refit_fixture(
+        self, root: Path, *, differing_family: str
+    ) -> tuple[Path, dict[str, str], dict[str, str], str]:
+        main = (root / "acw_development_g2").resolve()
+        verifier_root = (root / "acw_development_g2_direct_verifier").resolve()
+        main.mkdir()
+        verifier_root.mkdir()
+        attempts = []
+        comparisons = []
+        fake_digest = "a" * 64
+        for index, seed in enumerate(adjudicator.DEVELOPMENT_SEEDS):
+            attempt_id = f"{adjudicator.DIRECT_STATE_ARM}__{seed}"
+            sides = {}
+            for side_name, side_root, role in (
+                ("producer", main, "phase1_producer"),
+                ("verifier", verifier_root, "phase1_verifier"),
+            ):
+                task = side_root / "runs" / f"{index:02d}_direct_state_acw"
+                dataset = side_root / "inputs" / "datasets" / f"development_{index}"
+                bundle = side_root / "inputs" / "bundles" / f"development_{index}_cgb"
+                self._write_private_file(task / "attempt.json", b"{}\n")
+                model_value = (
+                    2.0
+                    if differing_family == "checkpoint"
+                    and index == 0
+                    and side_name == "verifier"
+                    else 1.0
+                )
+                self._write_private_checkpoint(
+                    task / "checkpoint.pt",
+                    attempt_id=attempt_id,
+                    role=role,
+                    seed=seed,
+                    model_value=model_value,
+                )
+                metric = (
+                    2
+                    if differing_family == "evaluation"
+                    and index == 0
+                    and side_name == "verifier"
+                    else 1
+                )
+                evaluation = (
+                    adjudicator.canonical_json_bytes(
+                        {
+                            "checkpoint_sha256": _digest(f"{side_name}-{seed}"),
+                            "metric": metric,
+                            "training_evidence": {"execution_receipt": {"role": role}},
+                        }
+                    )
+                    + b"\n"
+                )
+                self._write_private_file(task / "evaluation.json", evaluation)
+                self._write_private_file(task / "replay.json", evaluation)
+
+                dataset_bytes = (
+                    b"different-dataset"
+                    if differing_family == "dataset"
+                    and index == 0
+                    and side_name == "verifier"
+                    else b"same-dataset"
+                )
+                dataset_manifest = {"arrays": {"array.bin": {"test_only": True}}}
+                self._write_private_file(
+                    dataset / "manifest.json",
+                    adjudicator.canonical_json_bytes(dataset_manifest) + b"\n",
+                )
+                self._write_private_file(dataset / "array.bin", dataset_bytes)
+
+                curriculum_bytes = (
+                    b"different-curriculum\n"
+                    if differing_family == "bundle"
+                    and index == 0
+                    and side_name == "verifier"
+                    else b"same-curriculum\n"
+                )
+                bundle_manifest = {
+                    "arrays": {},
+                    "files": {"curriculum.jsonl": {"test_only": True}},
+                    "pilot_artifacts": {},
+                }
+                self._write_private_file(
+                    bundle / "manifest.json",
+                    adjudicator.canonical_json_bytes(bundle_manifest) + b"\n",
+                )
+                self._write_private_file(bundle / "curriculum.jsonl", curriculum_bytes)
+                for tree in (task, dataset, bundle):
+                    self._freeze_private_tree(tree)
+                sides[side_name] = {
+                    "job_role": role,
+                    "paths": {
+                        "bundle": str(bundle),
+                        "checkpoint": str(task / "checkpoint.pt"),
+                        "curriculum": str(bundle / "curriculum.jsonl"),
+                        "dataset": str(dataset),
+                        "evaluation": str(task / "evaluation.json"),
+                        "replay": str(task / "replay.json"),
+                        "task_root": str(task),
+                    },
+                }
+            attempts.append(
+                {
+                    "attempt_id": attempt_id,
+                    "logical_arm": adjudicator.DIRECT_STATE_ARM,
+                    **sides,
+                }
+            )
+            comparisons.append(
+                {
+                    "attempt_id": attempt_id,
+                    "model_tensor_sha256": fake_digest,
+                    "stable_checkpoint_payload_sha256": fake_digest,
+                    "producer_checkpoint_sha256": fake_digest,
+                    "verifier_checkpoint_sha256": fake_digest,
+                    "producer_evaluation": {
+                        "raw_sha256": fake_digest,
+                        "normalized_payload_sha256": fake_digest,
+                    },
+                    "verifier_evaluation": {
+                        "raw_sha256": fake_digest,
+                        "normalized_payload_sha256": fake_digest,
+                    },
+                    "producer_stage": "phase1_producer",
+                    "verifier_stage": "phase1_verifier",
+                }
+            )
+        plan = adjudicator.with_payload_hash(
+            {
+                "private_roots": {"phase1_verifier": str(verifier_root)},
+                "attempt_table": attempts,
+            }
+        )
+        plan_path = main / "development_plan.json"
+        self._write_private_file(plan_path, _encoded(plan))
+        plan_digest = adjudicator.sha256_file(plan_path)
+        plan_reference = {"path": "development_plan.json", "sha256": plan_digest}
+        report = adjudicator.with_payload_hash(
+            {
+                "schema": "r12_acw_development_private_refit_verification_v1",
+                "protocol": ("R12-ACW-DEVELOPMENT-PRIVATE-REFIT-VERIFICATION-v1"),
+                "scope": "direct",
+                "development_plan": plan_reference,
+                "attempt_count": 3,
+                "comparisons": comparisons,
+                "datasets_regenerated_privately": True,
+                "curricula_regenerated_privately": True,
+                "models_refit_from_private_copies": True,
+                "model_tensors_byte_identical": True,
+                "normalized_evaluations_identical": True,
+                "confirmation_authorized": False,
+            }
+        )
+        report_path = main / "direct_refit_verification.json"
+        self._write_private_file(report_path, _encoded(report))
+        report_reference = {
+            "path": "direct_refit_verification.json",
+            "sha256": adjudicator.sha256_file(report_path),
+        }
+        return main, plan_reference, report_reference, plan_digest
+
+    def test_forged_immutable_refit_report_cannot_attest_different_private_files(
+        self,
+    ) -> None:
+        expected_codes = {
+            "report_only": "private_refit_verification_mismatch",
+            "checkpoint": "private_refit_checkpoint_mismatch",
+            "evaluation": "private_refit_evaluation_mismatch",
+            "dataset": "private_refit_tree_mismatch",
+            "bundle": "private_refit_tree_mismatch",
+        }
+
+        def trusted_receipt(value, *, label):
+            del label
+            return dict(value)
+
+        for differing_family, expected_code in expected_codes.items():
+            with self.subTest(differing_family=differing_family):
+                with tempfile.TemporaryDirectory() as temporary:
+                    fixture_root = Path(temporary)
+                    try:
+                        main, plan_reference, report_reference, plan_digest = (
+                            self._build_forged_private_refit_fixture(
+                                fixture_root, differing_family=differing_family
+                            )
+                        )
+                        with (
+                            mock.patch.object(
+                                adjudicator,
+                                "DEVELOPMENT_PLAN_RAW_SHA256",
+                                plan_digest,
+                            ),
+                            mock.patch.object(
+                                manifest_builder, "validate_plan", return_value=None
+                            ),
+                            mock.patch.object(
+                                adjudicator,
+                                "_validate_development_execution_receipt",
+                                side_effect=trusted_receipt,
+                            ),
+                        ):
+                            expected_plan = (
+                                adjudicator._validate_development_plan_reference(
+                                    plan_reference, main
+                                )
+                            )
+                            with self.assertRaises(adjudicator.EvidenceError) as raised:
+                                adjudicator._validate_private_refit_verification_reference(
+                                    report_reference,
+                                    main,
+                                    scope="direct",
+                                    expected_plan=expected_plan,
+                                )
+                        self.assertEqual(raised.exception.code, expected_code)
+                    finally:
+                        self._thaw_private_fixture(fixture_root)
+
+    def test_private_refit_descriptor_walk_rejects_symlinked_root_ancestor(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            real_side = root / "real-side"
+            tree = real_side / "tree"
+            self._write_private_file(tree / "manifest.json", b"{}\n")
+            self._freeze_private_tree(tree)
+            alias = root / "alias-side"
+            alias.symlink_to(real_side, target_is_directory=True)
+            with self.assertRaises(adjudicator.EvidenceError) as raised:
+                adjudicator._private_refit_tree_snapshot(
+                    alias,
+                    alias / "tree",
+                    capture={"manifest.json"},
+                    label="symlinked-private-root",
+                )
+            self.assertEqual(raised.exception.code, "private_refit_artifact_unreadable")
+            tree.chmod(0o755)
+            (tree / "manifest.json").chmod(0o644)
+
+    def test_adjudicator_lineage_accepts_exact_seven_development_additions(
+        self,
+    ) -> None:
+        expected_additions = {
+            "R12_ACW_DEVELOPMENT_PLAN_V1.json",
+            "pipeline/acw_immutable_publication.py",
+            "pipeline/build_acw_development_manifest.py",
+            "pipeline/jobs/run_acw_development_stokes.sbatch",
+            "pipeline/jobs/run_acw_terminal_monitor_stokes.sbatch",
+            "pipeline/test_build_acw_development_manifest.py",
+            "pipeline/test_acw_g_custody.py",
+        }
+        self.assertEqual(
+            set(adjudicator.PILOT_DEVELOPMENT_ADDITIONS), expected_additions
+        )
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "adjudicator_lineage"
+            remote = Path(temporary) / "adjudicator_lineage_remote.git"
+            root.mkdir()
+
+            def git(cwd: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
+                return subprocess.run(
+                    ["/usr/bin/git", "--no-replace-objects", *arguments],
+                    cwd=cwd,
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                )
+
+            git(root, "init", "-b", adjudicator.DEVELOPMENT_REVIEWED_BRANCH)
+            git(root, "config", "user.email", "acw-test@example.invalid")
+            git(root, "config", "user.name", "ACW Test")
+            for relative in (
+                "scientific.txt",
+                "activation_a.txt",
+                "activation_b.txt",
+                "custody_a.txt",
+                "custody_b.txt",
+                "development_a.txt",
+                "development_b.txt",
+            ):
+                (root / relative).write_text(f"disabled {relative}\n")
+            git(root, "add", ".")
+            git(root, "commit", "-m", "S")
+            scientific_commit = git(root, "rev-parse", "HEAD").stdout.strip()
+
+            (root / "registry.json").write_text("anchored\n")
+            git(root, "add", "registry.json")
+            git(root, "commit", "-m", "A")
+            anchor_commit = git(root, "rev-parse", "HEAD").stdout.strip()
+
+            for relative in ("activation_a.txt", "activation_b.txt"):
+                (root / relative).write_text(f"enabled {relative}\n")
+            git(root, "add", "activation_a.txt", "activation_b.txt")
+            git(root, "commit", "-m", "E")
+            execution_commit = git(root, "rev-parse", "HEAD").stdout.strip()
+
+            for relative in ("custody_a.txt", "custody_b.txt"):
+                (root / relative).write_text(f"enabled {relative}\n")
+            git(root, "add", "custody_a.txt", "custody_b.txt")
+            git(root, "commit", "-m", "F")
+            custody_commit = git(root, "rev-parse", "HEAD").stdout.strip()
+
+            for relative in ("development_a.txt", "development_b.txt"):
+                (root / relative).write_text(f"enabled {relative}\n")
+            for relative in sorted(expected_additions):
+                path = root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(f"added {relative}\n")
+            git(
+                root,
+                "add",
+                "development_a.txt",
+                "development_b.txt",
+                *sorted(expected_additions),
+            )
+            git(root, "commit", "-m", "G")
+            development_commit = git(root, "rev-parse", "HEAD").stdout.strip()
+
+            git(Path(temporary), "init", "--bare", str(remote))
+            git(root, "remote", "add", "origin", str(remote))
+            git(
+                root,
+                "push",
+                "-u",
+                "origin",
+                adjudicator.DEVELOPMENT_REVIEWED_BRANCH,
+            )
+
+            patches = (
+                mock.patch.object(
+                    adjudicator, "PILOT_SCIENTIFIC_COMMIT", scientific_commit
+                ),
+                mock.patch.object(adjudicator, "PILOT_ANCHOR_COMMIT", anchor_commit),
+                mock.patch.object(
+                    adjudicator, "PILOT_EXECUTION_COMMIT", execution_commit
+                ),
+                mock.patch.object(adjudicator, "PILOT_CUSTODY_COMMIT", custody_commit),
+                mock.patch.object(adjudicator, "PILOT_REGISTRY_PATH", "registry.json"),
+                mock.patch.object(
+                    adjudicator,
+                    "PILOT_ACTIVATION_ALLOWLIST",
+                    ("activation_a.txt", "activation_b.txt"),
+                ),
+                mock.patch.object(
+                    adjudicator,
+                    "PILOT_CUSTODY_ALLOWLIST",
+                    ("custody_a.txt", "custody_b.txt"),
+                ),
+                mock.patch.object(
+                    adjudicator,
+                    "PILOT_DEVELOPMENT_ALLOWLIST",
+                    (
+                        "development_a.txt",
+                        "development_b.txt",
+                        *sorted(expected_additions),
+                    ),
+                ),
+                mock.patch.object(
+                    adjudicator, "PILOT_SCIENTIFIC_PATHS", ("scientific.txt",)
+                ),
+                mock.patch.object(
+                    adjudicator, "PILOT_CANONICAL_REMOTE_URL", str(remote)
+                ),
+            )
+            with (
+                patches[0],
+                patches[1],
+                patches[2],
+                patches[3],
+                patches[4],
+                patches[5],
+                patches[6],
+                patches[7],
+                patches[8],
+                patches[9],
+            ):
+                self.assertEqual(
+                    adjudicator._adjudicator_activation_commit(root),
+                    development_commit,
+                )
+
+                git(root, "checkout", "-B", "missing-monitor", custody_commit)
+                for relative in ("development_a.txt", "development_b.txt"):
+                    (root / relative).write_text(f"missing-monitor {relative}\n")
+                incomplete = expected_additions - {
+                    "pipeline/jobs/run_acw_terminal_monitor_stokes.sbatch"
+                }
+                for relative in sorted(incomplete):
+                    path = root / relative
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text(f"added {relative}\n")
+                git(
+                    root,
+                    "add",
+                    "development_a.txt",
+                    "development_b.txt",
+                    *sorted(incomplete),
+                )
+                git(root, "commit", "-m", "G missing monitor")
+                with self.assertRaises(adjudicator.EvidenceError) as caught:
+                    adjudicator._adjudicator_activation_commit(root)
+                self.assertEqual(caught.exception.code, "pilot_anchor_invalid")
+                self.assertIn("exact allowlist", str(caught.exception))
+
+    def test_stokes_wrappers_fail_closed_on_mutable_stdlib_collisions(self) -> None:
+        repository = Path(__file__).resolve().parents[1]
+        wrappers = (
+            repository / "pipeline/jobs/run_acw_development_stokes.sbatch",
+            repository / "pipeline/jobs/run_acw_terminal_monitor_stokes.sbatch",
+        )
+        guards = [_origin_guard_source(path) for path in wrappers]
+        self.assertEqual(guards[0], guards[1])
+        for path in wrappers:
+            source = path.read_text()
+            run_python = source.split("run_python() {", 1)[1].split("\n}", 1)[0]
+            self.assertLess(
+                run_python.index("validate_python_origins"),
+                run_python.index("/usr/bin/env -i"),
+            )
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            base = root / "checkout"
+            site = root / "site-packages"
+            (base / "pipeline").mkdir(parents=True)
+            site.mkdir()
+            stdlib = Path(sysconfig.get_path("stdlib")).resolve(strict=True)
+            dynlib = Path(sysconfig.get_config_var("DESTSHARED")).resolve(strict=True)
+            executable = Path(sys.executable).resolve(strict=True)
+            pyzip = root / "absent-python.zip"
+            command = [
+                str(executable),
+                "-I",
+                "-S",
+                "-c",
+                guards[0],
+                str(base),
+                str(stdlib),
+                str(dynlib),
+                str(site),
+                str(pyzip),
+                str(executable),
+            ]
+            subprocess.run(command, check=True, capture_output=True, text=True)
+
+            (base / "secrets").mkdir()
+            rejected = subprocess.run(
+                command, check=False, capture_output=True, text=True
+            )
+            self.assertNotEqual(rejected.returncode, 0)
+            self.assertIn("mutable stdlib collision", rejected.stderr)
+            self.assertIn("/secrets", rejected.stderr)
+
+    def test_registered_seed_fingerprint_is_derived_not_syntax_checked(self) -> None:
+        manifest = _dataset_manifest("development", 0)
+        manifest["seed_fingerprint"] = "0" * 64
+        manifest = adjudicator.with_payload_hash(
+            {key: value for key, value in manifest.items() if key != "payload_sha256"}
+        )
+        with self.assertRaises(adjudicator.EvidenceError) as caught:
+            adjudicator._validate_dataset_manifest(manifest, "forged-dataset")
+        self.assertEqual(caught.exception.code, "dataset_seed_fingerprint_mismatch")
+
+    def test_private_tree_comparison_rejects_relabelled_curriculum(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            submitted = root / "submitted"
+            private = root / "private"
+            submitted.mkdir()
+            private.mkdir()
+            canonical = _encoded(
+                {"history_id": 0, "query_id": 2, "answer": 7, "round": 1}
+            )
+            (submitted / "curriculum.jsonl").write_bytes(canonical)
+            (private / "curriculum.jsonl").write_bytes(canonical)
+            result = adjudicator._require_byte_identical_tree(
+                submitted, private, "private-bundle"
+            )
+            self.assertTrue(result["byte_identical"])
+            (submitted / "curriculum.jsonl").write_bytes(
+                _encoded({"history_id": 0, "query_id": 2, "answer": 8, "round": 1})
+            )
+            with self.assertRaises(adjudicator.EvidenceError) as caught:
+                adjudicator._require_byte_identical_tree(
+                    submitted, private, "private-bundle"
+                )
+            self.assertEqual(caught.exception.code, "private_replay_byte_mismatch")
+
+    def test_private_tree_comparison_rejects_hidden_extra_artifact(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            submitted = root / "submitted"
+            private = root / "private"
+            submitted.mkdir()
+            private.mkdir()
+            (submitted / "manifest.json").write_bytes(b"{}\n")
+            (private / "manifest.json").write_bytes(b"{}\n")
+            (submitted / "discarded-candidate.pt").write_bytes(b"selected-away")
+            with self.assertRaises(adjudicator.EvidenceError) as caught:
+                adjudicator._require_byte_identical_tree(
+                    submitted, private, "private-dataset"
+                )
+            self.assertEqual(caught.exception.code, "private_replay_tree_mismatch")
+
+    def test_execution_receipt_binds_the_held_job_environment_and_cgroup(self) -> None:
+        from pipeline.freeze_acw_curriculum import (
+            CANONICAL_PILOT_STATIC_ENV,
+            CANONICAL_PILOT_UID,
+        )
+
+        job_id = "740999"
+        role = "phase1_producer"
+        attempt_id = (
+            f"{adjudicator.DIRECT_STATE_ARM}__{adjudicator.DEVELOPMENT_SEEDS[0]}"
+        )
+        job_name = "shohin-acw-phase1-producer"
+        slurm = {
+            "job_id": job_id,
+            "job_name": job_name,
+            "node_list": "ec51",
+            "cpus_per_task": "4",
+        }
+        environment = dict(CANONICAL_PILOT_STATIC_ENV)
+        environment.update(
+            {
+                "SLURM_CPUS_PER_TASK": "4",
+                "SLURM_JOB_ID": job_id,
+                "SLURM_JOB_NAME": job_name,
+                "SLURM_JOB_NODELIST": "ec51",
+                "SLURM_NODELIST": "ec51",
+                "SLURM_SUBMIT_DIR": "/lustre/fs1/home/sa305415/shohin_acw",
+            }
+        )
+        batch_hash = _digest("committed-development-batch")
+        receipt = {
+            "schema": "r12_acw_development_execution_receipt_v1",
+            "protocol": "R12-ACW-DEVELOPMENT-EXECUTION-v1",
+            "scientific_commit": "d" * 40,
+            "canonical_runtime_sha256": (
+                adjudicator.CANONICAL_DEVELOPMENT_RUNTIME_SHA256
+            ),
+            "development_plan_sha256": adjudicator.DEVELOPMENT_PLAN_RAW_SHA256,
+            "environment_sha256": hashlib.sha256(
+                adjudicator.canonical_json_bytes(environment)
+            ).hexdigest(),
+            "batch_script_sha256": batch_hash,
+            "slurm": slurm,
+            "process_membership": {
+                "cpu_list": "4-7",
+                "memory_list": "0",
+                "task_cgroup": (
+                    f"/slurm/uid_{CANONICAL_PILOT_UID}/job_{job_id}/step_batch/task_0"
+                ),
+            },
+            "role": role,
+            "attempt_id": attempt_id,
+            "verification_replay": False,
+        }
+        plan = {
+            "custody_stages": [
+                {
+                    "role": role,
+                    "held_slurm_job_id": job_id,
+                    "job_name": job_name,
+                    "expected_node": "ec51",
+                    "script": {
+                        "path": "pipeline/jobs/run_acw_development_stokes.sbatch"
+                    },
+                }
+            ],
+            "attempt_table": [
+                {
+                    "attempt_id": attempt_id,
+                    "producer": {"job_role": role},
+                    "verifier": {"job_role": "phase1_verifier"},
+                }
+            ],
+        }
+        with (
+            mock.patch.object(
+                adjudicator,
+                "_read_regular_file",
+                return_value=(
+                    json.dumps(plan).encode("ascii"),
+                    adjudicator.DEVELOPMENT_PLAN_RAW_SHA256,
+                ),
+            ),
+            mock.patch.object(adjudicator, "sha256_file", return_value=batch_hash),
+        ):
+            validated = adjudicator._validate_development_execution_receipt(
+                receipt, label="receipt"
+            )
+            self.assertEqual(validated["slurm"], slurm)
+            forged = copy.deepcopy(receipt)
+            forged["slurm"]["job_id"] = "741000"
+            with self.assertRaises(adjudicator.EvidenceError) as raised:
+                adjudicator._validate_development_execution_receipt(
+                    forged, label="forged receipt"
+                )
+        self.assertEqual(raised.exception.code, "training_runtime_mismatch")
+
+    def test_production_confirmation_is_disabled_before_artifacts_are_opened(
+        self,
+    ) -> None:
+        authorization = adjudicator._confirmation_authorization()
+        self.assertFalse(authorization["authorized"])
+        self.assertTrue(authorization["future_beacon_required"])
+        self.assertEqual(authorization["confirmation_commitments"], [])
+        with mock.patch.object(adjudicator, "_read_regular_file") as read_regular:
+            decision = adjudicator.adjudicate_manifest("not-opened.json")
+        read_regular.assert_not_called()
+        self.assertFalse(decision["go"])
+        self.assertIn("confirmation_not_authorized", decision["reasons"])
+
     def test_activation_constants_match_independent_trainer(self) -> None:
         from pipeline import acw_hidden_basis_training as trainer
 
@@ -1705,29 +2854,56 @@ class ACWAdjudicatorArtifactSecurityTests(unittest.TestCase):
             "PILOT_ANCHORED_FILES",
             "PILOT_CANONICAL_REMOTE_URL",
             "PILOT_OFFLINE_BUNDLE_TEMPLATE",
+            "DEVELOPMENT_REVIEWED_BRANCH",
+            "DEVELOPMENT_LOCAL_BRANCH_REF",
+            "DEVELOPMENT_REMOTE_TRACKING_REF",
+            "DEVELOPMENT_REMOTE_HEAD_REF",
             "PILOT_ACTIVATION_ALLOWLIST",
             "PILOT_CUSTODY_ALLOWLIST",
+            "PILOT_DEVELOPMENT_ALLOWLIST",
+            "PILOT_DEVELOPMENT_ADDITIONS",
             "PILOT_CANONICAL_PATHS",
             "PILOT_REGISTRY_CLAIM",
             "PILOT_INDEPENDENT_VERIFICATION_CLAIM",
         ):
             self.assertEqual(getattr(adjudicator, name), getattr(trainer, name))
         self.assertEqual(
-            adjudicator.PILOT_SCIENTIFIC_PATHS,
-            trainer.ACW_SCIENTIFIC_PATHS,
+            adjudicator.PILOT_SCIENTIFIC_PATHS, trainer.PILOT_SCIENTIFIC_PATHS
         )
+        self.assertEqual(adjudicator.ACW_SCIENTIFIC_PATHS, trainer.ACW_SCIENTIFIC_PATHS)
 
     def test_one_byte_synthetic_arrays_cannot_yield_go(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
-            fixture = SyntheticEvidence(Path(temporary))
-            with mock.patch.object(
-                adjudicator,
-                "_validate_frozen_development_baseline",
-                return_value={"record": fixture.manifest["development_baseline"]},
+            with (
+                mock.patch.object(
+                    adjudicator,
+                    "_registered_identity",
+                    _test_registered_identity,
+                ),
+                mock.patch.object(
+                    adjudicator,
+                    "_expected_optimizer_seed",
+                    _test_expected_optimizer_seed,
+                ),
             ):
-                decision = adjudicator.adjudicate_manifest(
-                    fixture.manifest_path, fixture.manifest_path
-                )
+                fixture = SyntheticEvidence(Path(temporary))
+                with (
+                    mock.patch.object(
+                        adjudicator,
+                        "_validate_frozen_development_baseline",
+                        return_value={
+                            "record": fixture.manifest["development_baseline"]
+                        },
+                    ),
+                    mock.patch.object(
+                        adjudicator,
+                        "_confirmation_authorization",
+                        _test_confirmation_authorization,
+                    ),
+                ):
+                    decision = adjudicator.adjudicate_manifest(
+                        fixture.manifest_path, fixture.manifest_path
+                    )
 
         self.assertFalse(decision["go"])
         self.assertEqual(decision["decision"], "NO_GO")
@@ -1753,6 +2929,11 @@ class ACWAdjudicatorArtifactSecurityTests(unittest.TestCase):
             tempfile.TemporaryDirectory() as temporary,
             mock.patch.object(
                 adjudicator.subprocess, "run", side_effect=fake_evaluator
+            ),
+            mock.patch.object(
+                adjudicator,
+                "_canonical_development_subprocess_environment",
+                return_value={},
             ),
         ):
             with self.assertRaises(adjudicator.EvidenceError) as raised:
@@ -1810,17 +2991,27 @@ class ACWAdjudicatorArtifactSecurityTests(unittest.TestCase):
                 "labels": evidence["labels"],
                 "resource_ledger": evidence["resource_ledger"],
                 "resource_measurements": evidence["resource_measurements"],
+                "canonical_runtime_sha256": evidence["canonical_runtime_sha256"],
+                "development_plan_sha256": evidence["development_plan_sha256"],
+                "execution_receipt": evidence["execution_receipt"],
             },
             "label_efficiency_models": [copy.deepcopy(state) for _ in range(13)],
             "scientific_identity": {
-                "scientific_commit": "a" * 40,
+                "scientific_commit": "d" * 40,
                 "scientific_path_sha256": {
                     "pipeline/evaluate_acw_hidden_basis.py": "b" * 64
                 },
             },
             "model": state,
         }
-        with tempfile.TemporaryDirectory() as temporary:
+        with (
+            tempfile.TemporaryDirectory() as temporary,
+            mock.patch.object(
+                adjudicator,
+                "_validate_development_execution_receipt",
+                _trusted_execution_receipt,
+            ),
+        ):
             path = Path(temporary) / "checkpoint.pt"
             torch.save(checkpoint, path)
             digest = adjudicator.sha256_file(path)
@@ -2139,6 +3330,58 @@ class ACWAdjudicatorArtifactSecurityTests(unittest.TestCase):
                     "bundle",
                 )
         self.assertEqual(raised.exception.code, "array_artifact_mismatch")
+
+    def test_closed_world_summary_rejects_omitted_and_extra_files(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve(strict=True)
+            for name, raw in (("a.bin", b"a"), ("b.bin", b"b"), ("c.bin", b"c")):
+                path = root / name
+                path.write_bytes(raw)
+                path.chmod(0o444)
+
+            def summary(names: tuple[str, ...]) -> dict:
+                records = []
+                digest = hashlib.sha256()
+                for name in names:
+                    path = root / name
+                    record = {
+                        "path": name,
+                        "bytes": path.stat().st_size,
+                        "mode": "0444",
+                        "sha256": adjudicator.sha256_file(path),
+                    }
+                    records.append(record)
+                    digest.update(adjudicator.canonical_json_bytes(record) + b"\n")
+                return {
+                    "stage": "phase1",
+                    "root": str(root),
+                    "file_count": len(records),
+                    "directory_count": 1,
+                    "files": records,
+                    "tree_sha256": digest.hexdigest(),
+                    "exact_file_set": True,
+                    "exact_directory_set": True,
+                    "symlinks": 0,
+                    "special_files": 0,
+                }
+
+            for label, names in (
+                ("omitted", ("a.bin",)),
+                ("extra", ("a.bin", "b.bin", "c.bin")),
+            ):
+                with (
+                    self.subTest(label=label),
+                    self.assertRaises(adjudicator.EvidenceError) as raised,
+                ):
+                    adjudicator._validate_closed_world_summary(
+                        summary(names),
+                        expected_root=root,
+                        expected_stage="phase1",
+                        expected_paths=["a.bin", "b.bin"],
+                        expected_directory_count=1,
+                        label=f"{label} summary",
+                    )
+                self.assertEqual(raised.exception.code, "stage_receipt_mismatch")
 
 
 if __name__ == "__main__":

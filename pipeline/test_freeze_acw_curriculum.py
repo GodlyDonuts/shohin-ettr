@@ -1,3 +1,4 @@
+import errno
 import hashlib
 import json
 import os
@@ -14,6 +15,7 @@ from unittest.mock import patch
 
 import numpy as np
 
+from pipeline import acw_immutable_publication as publication
 import pipeline.freeze_acw_curriculum as freezer
 from pipeline.acw_hidden_basis_training import (
     file_sha256,
@@ -263,6 +265,89 @@ class FreezeCurriculumTests(unittest.TestCase):
             self.assertEqual(
                 int(curriculum.answers[index]), int(answers[history_id, query_id])
             )
+
+    def test_trainer_bundle_directory_publication_fails_closed(self):
+        data = load_public_training_data(self.root, reject_oracle=False)
+        initial = [
+            {"history_id": history_id, "query_id": int(query_id), "round": 0}
+            for history_id in range(data.histories)
+            for query_id in data.initial_queries[history_id]
+        ]
+        schedule = build_uniform_schedule(initial, data.histories, refinement_rounds=2)
+        schedule_path = Path(self.temporary.name) / "publication_schedule.jsonl"
+        schedule_path.write_bytes(
+            b"".join(freezer.canonical_json_bytes(row) + b"\n" for row in schedule)
+        )
+
+        with self.subTest("interruption"):
+            destination = Path(self.temporary.name) / "interrupted-bundle"
+            with (
+                patch.object(
+                    publication,
+                    "rename_no_replace",
+                    side_effect=OSError(errno.EINTR, "injected interruption"),
+                ),
+                self.assertRaises(OSError) as raised,
+            ):
+                build_trainer_bundle(
+                    self.root, schedule_path, destination, canonical=False
+                )
+            self.assertEqual(raised.exception.errno, errno.EINTR)
+            self.assertFalse(destination.exists())
+            self.assertEqual(
+                list(destination.parent.glob(f".{destination.name}.stage-*")), []
+            )
+
+        with self.subTest("collision"):
+            destination = Path(self.temporary.name) / "collided-bundle"
+            original_rename = publication.rename_no_replace
+
+            def collide(source: Path, final: Path) -> None:
+                final.mkdir()
+                (final / "sentinel").write_bytes(b"competing bundle")
+                original_rename(source, final)
+
+            with (
+                patch.object(publication, "rename_no_replace", side_effect=collide),
+                self.assertRaises(FileExistsError),
+            ):
+                build_trainer_bundle(
+                    self.root, schedule_path, destination, canonical=False
+                )
+            self.assertEqual(
+                (destination / "sentinel").read_bytes(), b"competing bundle"
+            )
+
+        with self.subTest("post-publication-directory-fsync"):
+            destination = Path(self.temporary.name) / "unfsynced-bundle"
+            original_rename = publication.rename_no_replace
+            original_fsync_directory = publication.fsync_directory
+            published = False
+
+            def publish(source: Path, final: Path) -> None:
+                nonlocal published
+                original_rename(source, final)
+                published = True
+
+            def fail_after_publish(path: Path) -> None:
+                if published and path == destination.parent:
+                    raise OSError(errno.EIO, "injected directory fsync")
+                original_fsync_directory(path)
+
+            with (
+                patch.object(publication, "rename_no_replace", side_effect=publish),
+                patch.object(
+                    publication,
+                    "fsync_directory",
+                    side_effect=fail_after_publish,
+                ),
+                self.assertRaises(OSError) as raised,
+            ):
+                build_trainer_bundle(
+                    self.root, schedule_path, destination, canonical=False
+                )
+            self.assertEqual(raised.exception.errno, errno.EIO)
+            self.assertTrue((destination / "manifest.json").is_file())
 
     def test_registered_pilot_dataset_passes_full_deterministic_replay(self):
         record = self._verify_small_registered_dataset(

@@ -12,6 +12,7 @@ import argparse
 import hashlib
 import itertools
 import json
+import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -21,9 +22,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from pipeline.acw_immutable_publication import publish_bytes_no_replace
 from pipeline.acw_hidden_basis_training import (
     ACW_SCIENTIFIC_PATHS,
     PublicTrainingData,
+    TRAINING_PROTOCOL,
     canonical_json_bytes,
     file_sha256,
     model_for_arm,
@@ -117,7 +120,7 @@ def load_oracle_split(root: Path, prefix: str) -> OracleSplit:
 
 def load_checkpoint(path: Path) -> tuple[nn.Module, str, dict]:
     checkpoint = torch.load(path, map_location="cpu", weights_only=True)
-    if checkpoint.get("protocol") != "R12-ACW-TRAINER-v2":
+    if checkpoint.get("protocol") != TRAINING_PROTOCOL:
         raise ValueError("wrong ACW checkpoint protocol")
     checkpoint_arm = checkpoint.get("arm")
     model_arm = "acw" if checkpoint_arm == "direct_state_acw" else checkpoint_arm
@@ -801,6 +804,15 @@ def evaluate_checkpoint(
             "resource_measurements": checkpoint.get("training_report", {}).get(
                 "resource_measurements"
             ),
+            "canonical_runtime_sha256": checkpoint.get("training_report", {}).get(
+                "canonical_runtime_sha256"
+            ),
+            "development_plan_sha256": checkpoint.get("training_report", {}).get(
+                "development_plan_sha256"
+            ),
+            "execution_receipt": checkpoint.get("training_report", {}).get(
+                "execution_receipt"
+            ),
         },
         "scientific_identity": checkpoint.get("scientific_identity"),
         "public_depths": depth_reports,
@@ -859,14 +871,13 @@ def write_report(report: dict, path: Path) -> None:
     recorded = payload.pop("payload_sha256", None)
     if hashlib.sha256(canonical_json_bytes(payload)).hexdigest() != recorded:
         raise ValueError("evaluation report payload hash is stale")
-    path = path.resolve()
-    if path.exists():
+    path = path.expanduser().absolute()
+    if os.path.lexists(path):
         raise FileExistsError(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(path.name + ".tmp")
-    temporary.write_bytes(canonical_json_bytes(report) + b"\n")
-    temporary.replace(path)
-    path.chmod(0o444)
+    encoded = canonical_json_bytes(report) + b"\n"
+    published = publish_bytes_no_replace(path, encoded, mode=0o444)
+    if published["sha256"] != hashlib.sha256(encoded).hexdigest():
+        raise OSError("evaluation report final descriptor readback differs")
 
 
 def main() -> None:

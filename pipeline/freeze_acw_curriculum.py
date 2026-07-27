@@ -17,6 +17,7 @@ if sys.flags.no_site and sys.flags.safe_path:
 import argparse
 import hashlib
 import importlib.util
+import io
 import json
 import os
 import platform
@@ -36,6 +37,11 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+from pipeline.acw_immutable_publication import (
+    create_staging_directory,
+    publish_tree_no_replace,
+    write_file_exclusive,
+)
 from pipeline.acw_hidden_basis_training import (
     ACW_SCIENTIFIC_PATHS,
     CONFIRMATION_COMMITMENTS,
@@ -3776,14 +3782,14 @@ def _validate_scored_seed_identity(seed_identity: dict) -> None:
 
 
 def _write_array(path: Path, array: np.ndarray) -> dict:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("wb") as handle:
-        np.save(handle, array, allow_pickle=False)
+    buffer = io.BytesIO()
+    np.save(buffer, array, allow_pickle=False)
+    record = write_file_exclusive(path, buffer.getvalue())
     return {
-        "bytes": path.stat().st_size,
+        "bytes": record["bytes"],
         "dtype": str(array.dtype),
         "shape": list(array.shape),
-        "sha256": file_sha256(path),
+        "sha256": record["sha256"],
     }
 
 
@@ -3801,8 +3807,8 @@ def build_trainer_bundle(
 ) -> dict:
     dataset_root = dataset_root.resolve()
     schedule_path = schedule_path.resolve()
-    out = out.resolve()
-    if out.exists():
+    out = out.expanduser().absolute()
+    if os.path.lexists(out):
         raise FileExistsError(out)
     anchor = None
     if canonical:
@@ -3863,10 +3869,7 @@ def build_trainer_bundle(
         else max(row["round"] for row in schedule),
         canonical=canonical,
     )
-    partial = out.with_name(out.name + ".partial")
-    if partial.exists() or partial.is_symlink():
-        raise FileExistsError(partial)
-    partial.mkdir(parents=True)
+    partial = create_staging_directory(out)
     arrays = {}
     try:
         round_zero = [row for row in schedule if row["round"] == 0]
@@ -3890,10 +3893,9 @@ def build_trainer_bundle(
                 arrays[relative] = _write_array(destination, initial_answers)
             else:
                 source = dataset_root / relative
-                destination.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(source, destination)
+                copied = write_file_exclusive(destination, source.read_bytes())
                 source_record = source_manifest["arrays"][relative]
-                if file_sha256(destination) != source_record["sha256"]:
+                if copied["sha256"] != source_record["sha256"]:
                     raise RuntimeError(f"bundle copy hash mismatch: {relative}")
                 arrays[relative] = dict(source_record)
 
@@ -3907,8 +3909,9 @@ def build_trainer_bundle(
             for row in schedule
         ]
         curriculum_path = partial / "curriculum.jsonl"
-        curriculum_path.write_bytes(
-            b"".join(canonical_json_bytes(row) + b"\n" for row in curriculum_rows)
+        curriculum_record = write_file_exclusive(
+            curriculum_path,
+            b"".join(canonical_json_bytes(row) + b"\n" for row in curriculum_rows),
         )
         if curriculum_query_schedule_sha256(curriculum_path) != file_sha256(
             schedule_path
@@ -3918,9 +3921,9 @@ def build_trainer_bundle(
             )
         files = {
             "curriculum.jsonl": {
-                "bytes": curriculum_path.stat().st_size,
+                "bytes": curriculum_record["bytes"],
                 "rows": len(curriculum_rows),
-                "sha256": file_sha256(curriculum_path),
+                "sha256": curriculum_record["sha256"],
             }
         }
         pilot_artifacts = None
@@ -3940,11 +3943,10 @@ def build_trainer_bundle(
             }
             for relative, source in pilot_sources.items():
                 destination = partial / relative
-                destination.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(source, destination)
+                copied = write_file_exclusive(destination, source.read_bytes())
                 pilot_artifacts[relative] = {
-                    "bytes": destination.stat().st_size,
-                    "sha256": file_sha256(destination),
+                    "bytes": copied["bytes"],
+                    "sha256": copied["sha256"],
                 }
                 source_relative = anchor["bundle_sources"][relative]
                 if (
@@ -3987,7 +3989,10 @@ def build_trainer_bundle(
         manifest["payload_sha256"] = hashlib.sha256(
             canonical_json_bytes(manifest)
         ).hexdigest()
-        (partial / "manifest.json").write_bytes(canonical_json_bytes(manifest) + b"\n")
+        write_file_exclusive(
+            partial / "manifest.json",
+            canonical_json_bytes(manifest) + b"\n",
+        )
         if any(
             "oracle" in str(path.relative_to(partial)).lower()
             for path in partial.rglob("*")
@@ -3996,14 +4001,27 @@ def build_trainer_bundle(
         for path in partial.rglob("*"):
             if path.is_file():
                 path.chmod(0o444)
-        partial.replace(out)
-        for path in sorted(out.rglob("*"), reverse=True):
-            if path.is_dir():
-                path.chmod(0o555)
-        out.chmod(0o555)
+        for path in sorted(
+            (item for item in partial.rglob("*") if item.is_dir()),
+            key=lambda item: len(item.parts),
+            reverse=True,
+        ):
+            path.chmod(0o555)
+        partial.chmod(0o555)
+        publish_tree_no_replace(partial, out)
         return manifest
-    except BaseException:
-        shutil.rmtree(partial, ignore_errors=True)
+    except BaseException as error:
+        if os.path.lexists(partial):
+            for path in sorted(
+                (item for item in partial.rglob("*") if item.is_dir()),
+                key=lambda item: len(item.parts),
+            ):
+                path.chmod(0o700)
+            partial.chmod(0o700)
+            try:
+                shutil.rmtree(partial)
+            except OSError as cleanup_error:
+                raise cleanup_error from error
         raise
 
 

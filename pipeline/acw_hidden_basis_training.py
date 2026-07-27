@@ -10,8 +10,10 @@ from __future__ import annotations
 import argparse
 import copy
 import hashlib
+import io
 import json
 import os
+import platform
 import random
 import resource
 import subprocess
@@ -24,6 +26,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+from pipeline import acw_immutable_publication as publication
 from pipeline.addressed_categorical_workspace import (
     AddressedContinuousTrackSModel,
     AnswerMotorControl,
@@ -65,7 +68,7 @@ PUBLIC_ARRAYS = (
     "public/train/initial_queries.npy",
     "public/train/initial_answers.npy",
 )
-TRAINING_PROTOCOL = "R12-ACW-TRAINER-v2"
+TRAINING_PROTOCOL = "R12-ACW-TRAINER-v3"
 GENERATOR_PROTOCOL = "R12-ACW-HIDDEN-BASIS-v3"
 BUNDLE_PROTOCOL = "R12-ACW-TRAINER-BUNDLE-v4"
 PILOT_PROTOCOL = "R12-ACW-CGBR-PILOT-v6"
@@ -114,6 +117,7 @@ PILOT_INDEPENDENT_VERIFICATION_PROTOCOL = "R12-ACW-PILOT-INDEPENDENT-VERIFICATIO
 PILOT_SCIENTIFIC_COMMIT = "5f5e3cd0d69da67335ad1f1f485c6e3d8f00ff8e"
 PILOT_ANCHOR_COMMIT = "02c9d4ae57093b6c60d90580503e2a01c7c81619"
 PILOT_EXECUTION_COMMIT = "38ebad21cf9c4ef98b172394891c2a35ef671b12"
+PILOT_CUSTODY_COMMIT = "7433062211c4ad0371a975019c37625f7d811b27"
 PILOT_REGISTRY_RAW_SHA256 = (
     "66597cf5381fdc11d4ecd73a93d9bbd2fa68417a77b09c1330ecfeb73652451c"
 )
@@ -121,6 +125,10 @@ PILOT_REGISTRY_PATH = "R12_ACW_PILOT_ARTIFACT_REGISTRY_V2.json"
 PILOT_ANCHORED_FILES = 81
 PILOT_CANONICAL_REMOTE_URL = "https://github.com/GodlyDonuts/shohin.git"
 PILOT_OFFLINE_BUNDLE_TEMPLATE = "/home/sa305415/shohin_acw_{commit8}.bundle"
+DEVELOPMENT_REVIEWED_BRANCH = "codex/acw-g2"
+DEVELOPMENT_LOCAL_BRANCH_REF = "refs/heads/codex/acw-g2"
+DEVELOPMENT_REMOTE_TRACKING_REF = "refs/remotes/origin/codex/acw-g2"
+DEVELOPMENT_REMOTE_HEAD_REF = "refs/heads/codex/acw-g2"
 PILOT_ACTIVATION_ALLOWLIST = (
     "AGENT_RUNBOOK.md",
     "pipeline/acw_hidden_basis_training.py",
@@ -136,6 +144,35 @@ PILOT_CUSTODY_ALLOWLIST = (
     "pipeline/adjudicate_acw_hidden_basis.py",
     "pipeline/test_acw_hidden_basis_training.py",
     "pipeline/test_adjudicate_acw_hidden_basis.py",
+)
+PILOT_DEVELOPMENT_ALLOWLIST = (
+    "AGENT_RUNBOOK.md",
+    "R12_ACW_DEVELOPMENT_PLAN_V1.json",
+    "pipeline/acw_immutable_publication.py",
+    "pipeline/acw_hidden_basis_training.py",
+    "pipeline/adjudicate_acw_hidden_basis.py",
+    "pipeline/build_acw_development_manifest.py",
+    "pipeline/evaluate_acw_hidden_basis.py",
+    "pipeline/freeze_acw_curriculum.py",
+    "pipeline/generate_acw_hidden_basis.py",
+    "pipeline/jobs/run_acw_development_stokes.sbatch",
+    "pipeline/jobs/run_acw_terminal_monitor_stokes.sbatch",
+    "pipeline/test_acw_hidden_basis_training.py",
+    "pipeline/test_adjudicate_acw_hidden_basis.py",
+    "pipeline/test_build_acw_development_manifest.py",
+    "pipeline/test_acw_g_custody.py",
+    "pipeline/test_evaluate_acw_hidden_basis.py",
+    "pipeline/test_freeze_acw_curriculum.py",
+    "pipeline/test_generate_acw_hidden_basis.py",
+)
+PILOT_DEVELOPMENT_ADDITIONS = (
+    "R12_ACW_DEVELOPMENT_PLAN_V1.json",
+    "pipeline/acw_immutable_publication.py",
+    "pipeline/build_acw_development_manifest.py",
+    "pipeline/jobs/run_acw_development_stokes.sbatch",
+    "pipeline/jobs/run_acw_terminal_monitor_stokes.sbatch",
+    "pipeline/test_build_acw_development_manifest.py",
+    "pipeline/test_acw_g_custody.py",
 )
 PILOT_CANONICAL_PATHS = {
     "dataset": "artifacts/r12/acw_pilot_domain_v3_runtime_v2",
@@ -155,12 +192,8 @@ PILOT_INDEPENDENT_VERIFICATION_CLAIM = (
 STATE_AUXILIARY_WEIGHT = 4.0
 PILOT_SEED = 2026071600
 DEVELOPMENT_SEEDS = (2026071601, 2026071602, 2026071603)
-CONFIRMATION_COMMITMENTS = (
-    "35102b3974877e8547b9b9c74156c63b71d467820f752301be21721b0f58e9a1",
-    "737a6d6a76c3cdbfd07d84c83cfec5491cf13afeb8e077421af789cb652baa7f",
-    "0e60eb70f2193ea57710db1f2cf9d6f93cf9b8e310b1b2cf5f4ea2694851854d",
-)
-ACW_SCIENTIFIC_PATHS = (
+CONFIRMATION_COMMITMENTS: tuple[str, ...] = ()
+PILOT_SCIENTIFIC_PATHS = (
     "R12_ADDRESSED_CATEGORICAL_WORKSPACE_PREREG.md",
     "R12_GOAL_CONDITIONED_VERSION_SPACE_CONTROLLER_PREREG.md",
     "pipeline/addressed_categorical_workspace.py",
@@ -183,6 +216,21 @@ ACW_SCIENTIFIC_PATHS = (
     "pipeline/jobs/run_acw_pilot_stokes.sbatch",
     "pipeline/jobs/verify_acw_pilot_stokes.sbatch",
 )
+DEVELOPMENT_PLAN_PATH = "R12_ACW_DEVELOPMENT_PLAN_V1.json"
+DEVELOPMENT_PLAN_RAW_SHA256 = (
+    "70eafa2de29f62ef6840764207440c8dde90f917cd7917f2613eaadd5081a430"
+)
+CANONICAL_DEVELOPMENT_RUNTIME_SHA256 = (
+    "0e91de0e3dbca24ea4f04b9b03398a91486b93b31eff5a3ba4574dd43eaa677f"
+)
+DEVELOPMENT_EXECUTION_PATHS = (
+    DEVELOPMENT_PLAN_PATH,
+    "pipeline/acw_immutable_publication.py",
+    "pipeline/build_acw_development_manifest.py",
+    "pipeline/jobs/run_acw_development_stokes.sbatch",
+    "pipeline/jobs/run_acw_terminal_monitor_stokes.sbatch",
+)
+ACW_SCIENTIFIC_PATHS = (*PILOT_SCIENTIFIC_PATHS, *DEVELOPMENT_EXECUTION_PATHS)
 
 
 def canonical_json_bytes(value: object) -> bytes:
@@ -200,6 +248,242 @@ def file_sha256(path: Path) -> str:
         while block := handle.read(1 << 20):
             digest.update(block)
     return digest.hexdigest()
+
+
+def _development_execution_receipt(
+    *,
+    scientific_commit: str,
+    runtime_sha256: str,
+    canonical_environment: dict[str, str],
+    batch_script_sha256: str,
+    held_job_id: str,
+    job_name: str,
+    node_list: str,
+    cpus_per_task: str,
+    membership: dict,
+    role: str,
+    attempt_id: str,
+    verification_replay: bool,
+) -> dict:
+    if verification_replay is not (role in {"phase1_verifier", "phase2_verifier"}):
+        raise ValueError("execution receipt replay mode differs from its custody role")
+    return {
+        "schema": "r12_acw_development_execution_receipt_v1",
+        "protocol": "R12-ACW-DEVELOPMENT-EXECUTION-v1",
+        "scientific_commit": scientific_commit,
+        "canonical_runtime_sha256": runtime_sha256,
+        "development_plan_sha256": DEVELOPMENT_PLAN_RAW_SHA256,
+        "environment_sha256": hashlib.sha256(
+            canonical_json_bytes(canonical_environment)
+        ).hexdigest(),
+        "batch_script_sha256": batch_script_sha256,
+        "slurm": {
+            "job_id": held_job_id,
+            "job_name": job_name,
+            "node_list": node_list,
+            "cpus_per_task": cpus_per_task,
+        },
+        "process_membership": membership,
+        "role": role,
+        "attempt_id": attempt_id,
+        "verification_replay": verification_replay,
+    }
+
+
+def require_canonical_development_runtime(
+    *,
+    attempt_id: str,
+    arm: str,
+    seed: int,
+    bundle: Path,
+    curriculum: Path,
+    out: Path,
+    oracle_dataset: Path | None,
+    verification_replay: bool,
+) -> dict:
+    """Require the exact pinned Stokes numerical runtime for scored fitting."""
+
+    from pipeline.freeze_acw_curriculum import (
+        CANONICAL_PILOT_RUNTIME,
+        CANONICAL_PILOT_STATIC_ENV,
+        CANONICAL_PILOT_UID,
+        _validate_canonical_pilot_batch_script,
+        _validate_canonical_pilot_process_membership,
+        pilot_runtime_identity,
+    )
+
+    dynamic_keys = {
+        "SLURM_CPUS_PER_TASK",
+        "SLURM_JOB_ID",
+        "SLURM_JOB_NAME",
+        "SLURM_JOB_NODELIST",
+        "SLURM_NODELIST",
+        "SLURM_SUBMIT_DIR",
+    }
+    expected_keys = set(CANONICAL_PILOT_STATIC_ENV) | dynamic_keys
+    if set(os.environ) != expected_keys:
+        raise RuntimeError("canonical development environment allowlist mismatch")
+    observed_static = {
+        key: os.environ.get(key) for key in sorted(CANONICAL_PILOT_STATIC_ENV)
+    }
+    if observed_static != CANONICAL_PILOT_STATIC_ENV:
+        raise RuntimeError("canonical development static environment mismatch")
+    if (
+        os.environ.get("SLURM_CPUS_PER_TASK") != "4"
+        or not str(os.environ.get("SLURM_JOB_ID", "")).isdigit()
+        or not os.environ.get("SLURM_JOB_NODELIST")
+        or os.environ.get("SLURM_JOB_NODELIST") != os.environ.get("SLURM_NODELIST")
+        or os.environ.get("SLURM_SUBMIT_DIR") != "/lustre/fs1/home/sa305415/shohin_acw"
+    ):
+        raise RuntimeError("canonical development Slurm identity mismatch")
+    torch.set_num_threads(1)
+    torch.use_deterministic_algorithms(True)
+    observed = pilot_runtime_identity()
+    if observed != CANONICAL_PILOT_RUNTIME:
+        raise RuntimeError("canonical development numerical runtime mismatch")
+    runtime_sha256 = hashlib.sha256(canonical_json_bytes(observed)).hexdigest()
+    if runtime_sha256 != CANONICAL_DEVELOPMENT_RUNTIME_SHA256:
+        raise RuntimeError("canonical development runtime hash mismatch")
+    repository = Path(__file__).resolve().parents[1]
+    plan = repository / DEVELOPMENT_PLAN_PATH
+    if (
+        not plan.is_file()
+        or plan.is_symlink()
+        or file_sha256(plan) != DEVELOPMENT_PLAN_RAW_SHA256
+    ):
+        raise RuntimeError("canonical development plan bytes mismatch")
+    plan_record, _ = _load_canonical_hash_bound_json(plan, "development plan")
+    stages = plan_record.get("custody_stages")
+    if not isinstance(stages, list):
+        raise RuntimeError("development plan has no custody-stage registry")
+    stage_matches = [
+        stage
+        for stage in stages
+        if isinstance(stage, dict)
+        and str(stage.get("held_slurm_job_id")) == os.environ["SLURM_JOB_ID"]
+    ]
+    if len(stage_matches) != 1:
+        raise RuntimeError("development plan does not bind this held Slurm job")
+    stage = stage_matches[0]
+    role = stage.get("role")
+    if (
+        stage.get("job_name") != os.environ.get("SLURM_JOB_NAME")
+        or stage.get("expected_node") != os.environ.get("SLURM_JOB_NODELIST")
+        or role
+        not in {
+            "phase1_producer",
+            "phase1_verifier",
+            "phase2_producer",
+            "phase2_verifier",
+        }
+    ):
+        raise RuntimeError("development stage identity differs from the plan")
+    attempts = plan_record.get("attempt_table")
+    if not isinstance(attempts, list):
+        raise RuntimeError("development plan has no attempt table")
+    attempt_matches = [
+        record
+        for record in attempts
+        if isinstance(record, dict) and record.get("attempt_id") == attempt_id
+    ]
+    if len(attempt_matches) != 1:
+        raise RuntimeError("attempt ID is not uniquely precommitted")
+    attempt = attempt_matches[0]
+    sides = [
+        side
+        for side in (attempt.get("producer"), attempt.get("verifier"))
+        if isinstance(side, dict) and side.get("job_role") == role
+    ]
+    if len(sides) != 1:
+        raise RuntimeError("attempt is not assigned to this custody stage")
+    side = sides[0]
+    paths = side.get("paths")
+    if not isinstance(paths, dict):
+        raise RuntimeError("attempt path registry is missing")
+    expected_oracle = (
+        paths.get("dataset")
+        if attempt.get("logical_arm") == "direct_state_acw"
+        else None
+    )
+    observed_paths = {
+        "bundle": str(bundle.expanduser().absolute()),
+        "curriculum": str(curriculum.expanduser().absolute()),
+        "checkpoint": str(out.expanduser().absolute()),
+    }
+    path_mismatch = any(
+        paths.get(key) != value for key, value in observed_paths.items()
+    )
+    oracle_mismatch = (
+        str(oracle_dataset.expanduser().absolute())
+        if oracle_dataset is not None
+        else None
+    ) != expected_oracle
+    expected_verification_replay = role in {"phase1_verifier", "phase2_verifier"}
+    if verification_replay is not expected_verification_replay:
+        raise RuntimeError(
+            "verification replay mode must exactly match the custody-stage role"
+        )
+    if (
+        attempt.get("trainer_arm") != arm
+        or attempt.get("seed") != seed
+        or (not verification_replay and (path_mismatch or oracle_mismatch))
+        or (
+            verification_replay
+            and (oracle_dataset is None) != (expected_oracle is None)
+        )
+    ):
+        raise RuntimeError("live trainer argv differs from the precommitted attempt")
+    held_job_id = os.environ["SLURM_JOB_ID"]
+    if platform.system() != "Linux" or os.getuid() != CANONICAL_PILOT_UID:
+        raise RuntimeError("canonical development execution requires the Stokes user")
+    membership = _validate_canonical_pilot_process_membership(
+        Path("/proc/self/cgroup").read_text(errors="strict"),
+        Path("/proc/self/status").read_text(errors="strict"),
+        job_id=held_job_id,
+        user_id=CANONICAL_PILOT_UID,
+    )
+    expected_cgroup = (
+        f"/slurm/uid_{CANONICAL_PILOT_UID}/job_{held_job_id}/step_batch/task_0"
+    )
+    if membership.get("task_cgroup") != expected_cgroup:
+        raise RuntimeError(
+            "canonical development fitting requires a top-level batch cgroup"
+        )
+    script = stage.get("script")
+    if not isinstance(script, dict):
+        raise RuntimeError("development stage script binding is missing")
+    job_relative = str(script.get("path"))
+    job_path = repository / job_relative
+    spool_path = Path(f"/var/spool/slurmd/job{held_job_id}/slurm_script")
+    if (
+        job_path.is_symlink()
+        or not job_path.is_file()
+        or spool_path.is_symlink()
+        or not spool_path.is_file()
+    ):
+        raise RuntimeError("canonical development batch script is not literal")
+    scientific_commit = _git_text(repository, "rev-parse", "HEAD").stdout.strip()
+    committed_job = _git_blob(repository, scientific_commit, job_relative)
+    if job_path.read_bytes() != committed_job:
+        raise RuntimeError("development batch worktree differs from G")
+    batch_script_sha256 = _validate_canonical_pilot_batch_script(
+        spool_path.read_bytes(), committed_job
+    )
+    canonical_environment = {key: str(os.environ[key]) for key in sorted(expected_keys)}
+    return _development_execution_receipt(
+        scientific_commit=scientific_commit,
+        runtime_sha256=runtime_sha256,
+        canonical_environment=canonical_environment,
+        batch_script_sha256=batch_script_sha256,
+        held_job_id=held_job_id,
+        job_name=os.environ["SLURM_JOB_NAME"],
+        node_list=os.environ["SLURM_JOB_NODELIST"],
+        cpus_per_task=os.environ["SLURM_CPUS_PER_TASK"],
+        membership=membership,
+        role=role,
+        attempt_id=attempt_id,
+        verification_replay=verification_replay,
+    )
 
 
 def _sha256(value: object, label: str) -> str:
@@ -268,6 +552,63 @@ def _git_blob(root: Path, revision: str, relative: str) -> bytes:
     ).stdout
 
 
+def _require_reviewed_branch_publication(root: Path, commit: str) -> None:
+    branch = _git_text(
+        root,
+        "symbolic-ref",
+        "-q",
+        "HEAD",
+        check=False,
+    )
+    if branch.returncode != 0 or branch.stdout.strip() != DEVELOPMENT_LOCAL_BRANCH_REF:
+        raise RuntimeError(
+            "development custody requires the fixed reviewed codex/acw-g2 branch"
+        )
+    tracking_commit = _git_text(
+        root,
+        "rev-parse",
+        "--verify",
+        DEVELOPMENT_REMOTE_TRACKING_REF,
+    ).stdout.strip()
+    if tracking_commit != commit:
+        raise RuntimeError(
+            "development custody HEAD differs from origin/codex/acw-g2 tracking ref"
+        )
+
+    remote_url = _git_text(root, "remote", "get-url", "origin").stdout.strip()
+    expected_bundle = PILOT_OFFLINE_BUNDLE_TEMPLATE.format(commit8=commit[:8])
+    if remote_url == PILOT_CANONICAL_REMOTE_URL:
+        remote = _git_text(
+            root,
+            "ls-remote",
+            "--exit-code",
+            "origin",
+            DEVELOPMENT_REMOTE_HEAD_REF,
+        ).stdout.split()
+    elif remote_url == expected_bundle:
+        bundle = Path(remote_url)
+        if not bundle.is_file() or bundle.is_symlink():
+            raise RuntimeError(
+                "development custody offline bundle is not a regular file"
+            )
+        _git_text(root, "bundle", "verify", remote_url)
+        remote = _git_text(
+            root,
+            "bundle",
+            "list-heads",
+            remote_url,
+            DEVELOPMENT_REMOTE_HEAD_REF,
+        ).stdout.split()
+    else:
+        raise RuntimeError(
+            "development custody origin is not an approved publication route"
+        )
+    if remote != [commit, DEVELOPMENT_REMOTE_HEAD_REF]:
+        raise RuntimeError(
+            "development custody HEAD must equal the dedicated reviewed remote ref"
+        )
+
+
 def _commit_parents(root: Path, commit: str) -> list[str]:
     return _git_text(root, "show", "-s", "--format=%P", commit).stdout.split()
 
@@ -320,13 +661,27 @@ def _require_activation_lineage(root: Path) -> str:
         ("M", relative) for relative in sorted(PILOT_ACTIVATION_ALLOWLIST)
     ]:
         raise RuntimeError("pilot activation E differs from its exact allowlist")
-    if activation_commit != PILOT_EXECUTION_COMMIT:
-        if _commit_parents(root, activation_commit) != [PILOT_EXECUTION_COMMIT]:
-            raise RuntimeError("pilot custody F must have E as its sole parent")
-        if _diff_name_status(root, PILOT_EXECUTION_COMMIT, activation_commit) != [
-            ("M", relative) for relative in sorted(PILOT_CUSTODY_ALLOWLIST)
-        ]:
-            raise RuntimeError("pilot custody F differs from its exact allowlist")
+    if _commit_parents(root, PILOT_CUSTODY_COMMIT) != [PILOT_EXECUTION_COMMIT]:
+        raise RuntimeError("pilot custody F must have E as its sole parent")
+    if _diff_name_status(root, PILOT_EXECUTION_COMMIT, PILOT_CUSTODY_COMMIT) != [
+        ("M", relative) for relative in sorted(PILOT_CUSTODY_ALLOWLIST)
+    ]:
+        raise RuntimeError("pilot custody F differs from its exact allowlist")
+    if activation_commit == PILOT_EXECUTION_COMMIT:
+        raise RuntimeError("pilot activation requires custody successor F or G")
+    if activation_commit != PILOT_CUSTODY_COMMIT:
+        if _commit_parents(root, activation_commit) != [PILOT_CUSTODY_COMMIT]:
+            raise RuntimeError("development custody G must have F as its sole parent")
+        additions = set(PILOT_DEVELOPMENT_ADDITIONS)
+        expected_development_diff = [
+            ("A" if relative in additions else "M", relative)
+            for relative in sorted(PILOT_DEVELOPMENT_ALLOWLIST)
+        ]
+        if (
+            _diff_name_status(root, PILOT_CUSTODY_COMMIT, activation_commit)
+            != expected_development_diff
+        ):
+            raise RuntimeError("development custody G differs from its exact allowlist")
     absent = _git_text(
         root,
         "cat-file",
@@ -348,41 +703,13 @@ def _require_activation_lineage(root: Path) -> str:
     if os.path.lexists(namespace_init) or committed_namespace_init.returncode == 0:
         raise RuntimeError("pilot activation requires an unshadowed pipeline namespace")
 
-    remote_url = _git_text(root, "remote", "get-url", "origin").stdout.strip()
-    expected_bundle = PILOT_OFFLINE_BUNDLE_TEMPLATE.format(
-        commit8=activation_commit[:8]
-    )
-    if remote_url == PILOT_CANONICAL_REMOTE_URL:
-        remote = _git_text(
-            root,
-            "ls-remote",
-            "--exit-code",
-            "origin",
-            "refs/heads/main",
-        ).stdout.split()
-    elif remote_url == expected_bundle:
-        bundle = Path(remote_url)
-        if not bundle.is_file() or bundle.is_symlink():
-            raise RuntimeError("pilot activation offline bundle is not a regular file")
-        _git_text(root, "bundle", "verify", remote_url)
-        remote = _git_text(
-            root,
-            "bundle",
-            "list-heads",
-            remote_url,
-            "refs/heads/main",
-        ).stdout.split()
-    else:
-        raise RuntimeError(
-            "pilot activation origin is not an approved publication route"
-        )
-    if not remote or remote[0] != activation_commit:
-        raise RuntimeError("pilot activation HEAD must equal pushed origin/main")
+    _require_reviewed_branch_publication(root, activation_commit)
 
     protected_paths = sorted(
         set(ACW_SCIENTIFIC_PATHS)
         | set(PILOT_ACTIVATION_ALLOWLIST)
         | set(PILOT_CUSTODY_ALLOWLIST)
+        | set(PILOT_DEVELOPMENT_ALLOWLIST)
         | {PILOT_REGISTRY_PATH}
     )
     status = _git_text(
@@ -494,10 +821,10 @@ def load_committed_pilot_anchor(*, verify_all_artifacts: bool = False) -> dict:
         raise ValueError("pilot artifact registry activation binding differs")
     path_hashes = identity.get("scientific_path_sha256")
     if not isinstance(path_hashes, dict) or set(path_hashes) != set(
-        ACW_SCIENTIFIC_PATHS
+        PILOT_SCIENTIFIC_PATHS
     ):
         raise ValueError("pilot registry scientific path set differs")
-    for relative in ACW_SCIENTIFIC_PATHS:
+    for relative in PILOT_SCIENTIFIC_PATHS:
         expected = hashlib.sha256(
             _git_blob(root, PILOT_SCIENTIFIC_COMMIT, relative)
         ).hexdigest()
@@ -1026,21 +1353,7 @@ def scientific_identity(*, require_clean: bool) -> dict:
             )
         hashes[relative] = working_hash
     if require_clean:
-        remote = subprocess.run(
-            [
-                *git,
-                "ls-remote",
-                "--exit-code",
-                "origin",
-                "refs/heads/main",
-            ],
-            cwd=root,
-            check=True,
-            capture_output=True,
-            text=True,
-        ).stdout.split()
-        if not remote or remote[0] != commit:
-            raise RuntimeError("ACW scientific HEAD must equal pushed origin/main")
+        _require_reviewed_branch_publication(root, commit)
     return {"scientific_commit": commit, "scientific_path_sha256": hashes}
 
 
@@ -1182,23 +1495,10 @@ def expected_optimizer_seed(seed_identity: dict) -> int:
             )
         return seed
     if kind == "confirmation":
-        if set(seed_identity) != {"kind", "index", "commitment"}:
-            raise ValueError(
-                "confirmation optimizer seed identity has the wrong schema"
-            )
-        index = int(seed_identity["index"])
-        if not 0 <= index < len(CONFIRMATION_COMMITMENTS):
-            raise ValueError(
-                "confirmation optimizer index is outside the frozen registry"
-            )
-        if seed_identity["commitment"] != CONFIRMATION_COMMITMENTS[index]:
-            raise ValueError(
-                "confirmation optimizer commitment is outside the frozen registry"
-            )
-        material = b"R12-ACW-OPT-v1\x00" + str(seed_identity["commitment"]).encode(
-            "ascii"
+        raise ValueError(
+            "confirmation optimizer derivation is disabled pending a future "
+            "commit-bound beacon schema"
         )
-        return int.from_bytes(hashlib.sha256(material).digest()[:8], "big") % 2**63
     raise ValueError("unknown optimizer seed identity")
 
 
@@ -2042,48 +2342,41 @@ def write_checkpoint(
         "scientific_identity": scientific_identity_record,
         "model": model.state_dict(),
     }
-    temporary = path.with_name(path.name + ".tmp")
-    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
-    flags |= getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
-    descriptor: int | None = None
-    created_temporary = False
-    try:
-        descriptor = os.open(temporary, flags, 0o600)
-        created_temporary = True
-        with os.fdopen(descriptor, "wb") as handle:
-            descriptor = None
-            torch.save(payload, handle)
-            handle.flush()
-            os.fsync(handle.fileno())
-        temporary.chmod(0o444)
-        os.link(temporary, path, follow_symlinks=False)
-        temporary.unlink()
-        directory = os.open(path.parent, os.O_RDONLY)
-        try:
-            os.fsync(directory)
-        finally:
-            os.close(directory)
-        record = {"bytes": path.stat().st_size, "sha256": file_sha256(path)}
-        if path.stat().st_mode & 0o777 != 0o444:
-            raise RuntimeError("published ACW checkpoint is not immutable")
-        return record
-    except BaseException:
-        if descriptor is not None:
-            os.close(descriptor)
-        if created_temporary:
-            temporary.unlink(missing_ok=True)
-        raise
+    buffer = io.BytesIO()
+    torch.save(payload, buffer)
+    record = publication.publish_bytes_no_replace(
+        path,
+        buffer.getvalue(),
+        mode=0o444,
+    )
+    return {"bytes": record["bytes"], "sha256": record["sha256"]}
 
 
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bundle", type=Path, required=True)
     parser.add_argument("--curriculum", type=Path, required=True)
     parser.add_argument("--arm", choices=(*ARM_IDS, "direct_state_acw"), required=True)
     parser.add_argument("--oracle-dataset", type=Path)
     parser.add_argument("--seed", type=int, required=True)
+    parser.add_argument("--attempt-id", required=True)
+    parser.add_argument("--verification-replay", action="store_true")
     parser.add_argument("--out", type=Path, required=True)
-    args = parser.parse_args()
+    return parser
+
+
+def main() -> None:
+    args = build_parser().parse_args()
+    execution_receipt = require_canonical_development_runtime(
+        attempt_id=args.attempt_id,
+        arm=args.arm,
+        seed=args.seed,
+        bundle=args.bundle,
+        curriculum=args.curriculum,
+        out=args.out,
+        oracle_dataset=args.oracle_dataset,
+        verification_replay=args.verification_replay,
+    )
     data = load_public_training_data(args.bundle, reject_oracle=True)
     if args.seed != expected_optimizer_seed(data.seed_identity):
         raise ValueError(
@@ -2120,6 +2413,11 @@ def main() -> None:
             seed=args.seed,
             canonical=True,
         )
+    training_report["canonical_runtime_sha256"] = execution_receipt[
+        "canonical_runtime_sha256"
+    ]
+    training_report["development_plan_sha256"] = DEVELOPMENT_PLAN_RAW_SHA256
+    training_report["execution_receipt"] = execution_receipt
     final_identity = scientific_identity(require_clean=True)
     if (
         data.activation_scientific_identity is None

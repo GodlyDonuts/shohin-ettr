@@ -6,25 +6,35 @@
 > (`MASTER_PLAN.md`, `DIVERGENCE_DIAGNOSIS.md`, `DATA.md`) are background/history; this file is the
 > operational plan of record.
 >
-> **Last updated:** 2026-07-16 20:55 EDT (The protected 300k flagship remains immutable and
-> hash-matched. Track S now has a verified **non-scored execution baseline**, not a reasoning result:
-> scientific commit `S=5f5e3cd0d69da67335ad1f1f485c6e3d8f00ff8e` produced v6 job `740241`
-> on `ec51`; independent job `740247` on `ec52` recomputed and verified all 81 anchored files. The
-> registry-only commit `A=02c9d4ae57093b6c60d90580503e2a01c7c81619` is pushed and installed.
-> Activation `E=38ebad21cf9c4ef98b172394891c2a35ef671b12` is pushed, installed on Stokes, and passed
-> the full 81-file anchor smoke. A late adversarial review correctly rejected E's scored-baseline
-> validator because it opened full confirmation evidence before independently replaying the frozen
-> development record and did not require the baseline JSON itself to be immutable. Custody successor
-> `F` is therefore required as the sole child of E and may modify only the five frozen custody files.
-> F independently replays all development artifacts before any confirmation read, requires mode-0444
-> canonical baseline bytes, and requires the full manifest to bind that exact baseline and its frozen
-> confirmation authorization. The warning-strict eight-module gate is 125/125. The pilot used 4,096
-> histories, 57,344 labels, 3,400 optimizer updates, and 43,853 candidate evaluations; it does not
-> contain a capability score. Baseline retention is now independent of promotion: the pilot remains
-> the execution baseline, and the strongest complete verified deployable development checkpoint is
-> copied read-only before confirmation evidence opens and remains the scored baseline even on NO_GO.
-> No baseline may bypass causal, held-out, preservation, or
-> confirmation gates.) Keep the "LIVE STATE" section current every milestone; do not let it rot.
+> **Last updated:** 2026-07-18 09:25 EDT (The protected 300k flagship remains immutable and
+> hash-matched. Track S has a verified **non-scored execution baseline**, not a reasoning result.
+> The protected lineage is `S=5f5e3cd0d69da67335ad1f1f485c6e3d8f00ff8e ->
+> A=02c9d4ae57093b6c60d90580503e2a01c7c81619 ->
+> E=38ebad21cf9c4ef98b172394891c2a35ef671b12 ->
+> F=7433062211c4ad0371a975019c37625f7d811b27`. The eventual exact G2 commit must retain F as its
+> sole parent and be reviewed on dedicated branch `codex/acw-g2`, bound exactly to
+> `refs/remotes/origin/codex/acw-g2` or to the verified dedicated head in the approved offline
+> bundle; it may not use a caller-selected branch or rewritten history. The G2 repair candidate is
+> still uncommitted. G1
+> `99eaa4cdb76fd6fe8b7b298a457dec24c629fbc7` failed closed before fitting because its exact
+> add/modify ledger misclassified one newly added monitor wrapper. Its partial artifact namespace
+> is preserved and its dependency chain is canceled. The exact four-finding review repair is local.
+> The frozen plan has raw SHA-256
+> `70eafa2de29f62ef6840764207440c8dde90f917cd7917f2613eaadd5081a430` and payload SHA-256
+> `af9ffe97c15534971c6ee584af42d432e1ff7ab5c29fe380cd1e74065cd2d926`, with
+> `ready_for_g_commit=false` and `COMMIT/INSTALL/RELEASE NO-GO` pending a new independent review.
+> Its historical bindings remain `741070 -> 741071 -> 741072 -> 741073 -> 741074`; the earlier
+> `741065 -> 741066 -> 741067 -> 741068 -> 741069` chain also remains held. All ten jobs must never
+> be released, and this repair must not cancel, requeue, resubmit, or otherwise modify them. Neither
+> already-submitted chain can execute the repaired bytes; any future reviewed release requires a fresh
+> held allocation and plan refreeze under separate authorization. Current local main/monitor wrapper
+> SHA-256 values are `fdda647ebe712f2225f17a37a472a7cd75491e91733eb566311d341f7517b106`
+> and `309f781a4fec2a5fd07a1a9cbadf40f318a78e87eb1d8d0f8b82786aadd581b2`.
+> The complete warning-strict repair suite passes 172/172 tests in 25.008 seconds. Ruff check,
+> Ruff format check, Python compilation, shell syntax, diff checks, and non-ready plan validation
+> pass; the required ready gate rejects execution. No Stokes install or job action was performed,
+> and no score, scored artifact, or capability result was read or produced.)
+> Keep the "LIVE STATE" section current every milestone; do not let it rot.
 
 ---
 
@@ -105,7 +115,11 @@ Do not wait for permission to fix obvious data/training gaps.
 | **R10 ACAW/VSPT control** | **DORMANT PRE-SCORE CONTROL; SECOND CUSTODY AUDIT NO-GO; no reasoning or context-scaling success claim.** Commit `a8af84b` implements exact noncommutative version-space composition, sound exact-rational affine ambiguity hulls, query-set annihilator certificates, fail-closed overflow, monotone leaf-local replay, fixed-size all-support commitments, and range-bound retrieval references. Operator/query parity, exhaustive ambiguity, alternate-derivation, overflow reconstruction, and 4,096-event mechanics pass. Canonical accounting separates active-hot, factorized-provenance, external-source, retrieval-reference, and integer-growth bytes. The finite-board replacement passes its local mechanics tests, but independent adversarial review found its evidence custody still forgeable: consumers trusted self-attesting booleans without replaying the build binding; clean committed code identity was enforced only by the optional job; caller-selectable seeds/R5 inputs allowed board shopping; score JSON could be altered and rehashed; several hash-then-reopen paths were TOCTOU-vulnerable; batch/device/determinism identity was incomplete; and source could change between initial and final admission identities. These are claim-blocking even if numerical scores are honest. No R10 probability tensor has been read. Preserve the completed hardening work as a control; do not resume its score chain unless R12 later requires it as a matched comparator. |
 | **R11 internal workspace control** | **DORMANT CONTROL; broad draft and v1/v2 were NO-GO; v3 remains an unimplemented preregistration, not a capability result.** The six-slot, 96-wide architecture remains technically feasible as an isolated wrapper with 1,607,334 trainable parameters. V1 failed on an incomplete generator/target contract, leakage and cache risks, ambiguous ledgers, and overclaiming. V2 SHA-256 `11ca769036b2bc85eebd47a950e51b2bc87158668e47ba3cc5e38e4fdae68408` closed many of those gaps but still failed final review: affine-answer/token/frequency rejection conditioned accepted sources on supposedly late-bound queries; the exact API omitted the cached decode session it later required; sham/control primary evaluation semantics were ambiguous; and a seed commitment could not prove confirmation secrecy. V3 closes those contract defects on paper, but its tied recurrence, source-derived slots, and query readers are established machinery rather than an R12 invention. Preserve it as a favorable matched control; no code, board, fit, score, or H100 job is authorized. |
 | **R12 mathematical invention frontier** | **SEVEN BOUNDED NO-GOS; RAW VOCABULARY J-WORKSPACE AND MCBS CLOSED AT 300K.** Cursor-action v1 `689932/689936` failed source/cursor binding; final-token readout `689952` fit train but reached only 43.13%/41.67% development. Token-tape `689976` rejects only the frozen pre-final single-query/linear-decoder family. Additive forks and PCRT are theorem-rejected before code. The paired raw-300k future-Jacobian repeat is reproducible but has **0% top-10 and 0% top-100** on all 2,304 decisive targets, so no J-lens swap is authorized. MCBS is also theorem-rejected as a mechanism: for affine consumers it recovers only the observable quotient of the fitted consumers, and a finite answer-specific motor bundle passes projection/complement tests without reusable state. `R12_MINIMAX_CAUSAL_BROADCAST_SUBSPACE_NO_GO.md` freezes the theorem and counterexample. Any successor must be frozen before held-out consumers, held-out updates, and output recoding are revealed. `R12_CERTIFIED_LANGUAGE_BRIDGE_BOUNDARY.md` still blocks synthetic-to-language transfer without a future-reflecting certificate map. |
+| **CDRL sample-allocation track** | **CLOSED NEGATIVE ON NEURAL BOARD `R12-CDRL-NEURAL-v1`.** CPU mechanics remain valid. Newton job **`691750`** completed on **evc22** in 3m25s (exit 0). Decision SHA-256 `ad94ac15ca17eaa2c5381aa0a3f94fc60a49dbbf2a528552a1212b3ecf1cabdb` records `advance=false`: median depth-OOD margins core−full **-0.776**, core−hard **-0.778**, core−rand **-0.021** vs required +0.05. Core exact OOD ≈0.04 while full/hard reach ≈0.70–0.92. Pure Nerode-core allocation fails when eval restores distractors. See `R12_CDRL_NEURAL_OPTIMIZATION_RESULT.md`. No Shohin/ACW path touched. Conjecture C closed; do not retune. |
+| **Typed controller internalization** | **CORRECTED RESCORE ACTIVE; NO VALID CAPABILITY SCORE YET.** Frozen training has about 54k rows from `best_step200000.pt`. The first completed evaluation `691778` taught the controller grammar and `done=1` behavior (reported done rate 86%), but its apparent final-answer score is invalid because the evaluator stopped at the first arrow and could truncate a multi-digit intermediate. Newton `691782` is rerunning the same isolated SFT checkpoint with fixed decoding and last-arrow fallback. Do not cite its first answer score or promote the checkpoint. Apply the locked ≥35% final, ≥+10pp raw delta, ≥30% SSC rerender, ≥70% atomic, and ≥80% done gates only to the completed hash-bound rescore. Prereg: `R12_TYPED_CONTROLLER_INTERNALIZATION_PREREG.md`. |
+| **Post-DRS workspace probe** | **POSITIVE DIAGNOSTIC.** Job **`691756`** completed on **evc33**. Late-layer digit residual swaps yield **10/10** positive directions with ~**+31** Δlogodds at layers 17–29 (raw baseline was ~0). Carry emerges at L29 (+2.96, 10/10). DRS induced an actionable workspace; compounding remains the failure mode. See `R12_DRS_WORKSPACE_PROBE_POST_RESULT.md`. |
 | **Track S ACW pilot and baseline custody** | **V6 EXECUTION BASELINE VERIFIED; SCORED REASONING BASELINE NOT YET RUN.** Scientific commit `S=5f5e3cd0d69da67335ad1f1f485c6e3d8f00ff8e` completed producer `740241` on `ec51`; independent verifier `740247` completed on `ec52`. The verifier records different job/node, fresh recomputation, 81 anchored files, receipt payload SHA-256 `f72a40fe2dd84701bfa3f0ea92e3c2b463304861a063507ffb30c7909a6cfca0`, and registry payload SHA-256 `47f233a11db876f6ff26c1b4589a59d31c57bf4b2326b9ac5ffba00b81276cc5`. Registry raw SHA-256 is `66597cf5381fdc11d4ecd73a93d9bbd2fa68417a77b09c1330ecfeb73652451c`; registry-only `A=02c9d4ae57093b6c60d90580503e2a01c7c81619` and execution activation `E=38ebad21cf9c4ef98b172394891c2a35ef671b12` are pushed and installed. E passed the Stokes full-anchor smoke over all 81 files. The pilot has 4,096 histories, 57,344 labels, 12 refinement rounds, 3,400 updates, batch 256, 43,853 candidate evaluations, final losses 2.806958 -> 2.828255, and model tensor SHA-256 `1acc80d4362849d951fb45db34fb5c40c2cbf44a3cce4b7b2fa308b1923a1b94`. These are execution facts only. Custody successor F closes a late review NO-GO without altering the pilot bytes: it replays exactly 24 scored development checkpoints plus three direct-state diagnostics before full confirmation evidence is opened, rejects writable or self-attested baseline JSON, requires the full manifest to bind the exact frozen baseline and authorization, copies the strongest deployable checkpoint mode 0444, excludes the source-retained upper bound from selection, ranks by median depth-64 state exactness then scalar accuracy, and retains the baseline on later NO_GO without overriding promotion gates. No scored development matrix exists yet, so there is not yet a capability-ranked reasoning checkpoint to name. |
+| **Track G scored-development custody** | **G1 FAILED CLOSED; THE BOUNDED G2 FOUR-FINDING REPAIR IS LOCAL AND WARNING-STRICT GREEN, BUT COMMIT/INSTALL/RELEASE REMAIN NO-GO PENDING A NEW INDEPENDENT REVIEW; NO SCORE.** G1 `99eaa4c` produced only partial inputs before its exact source ledger rejected an added monitor wrapper that had been classified as modified. Its `acw_development_g1` roots remain failed evidence and are never resumed. The repaired G2 plan raw SHA-256 is `70eafa2de29f62ef6840764207440c8dde90f917cd7917f2613eaadd5081a430`; it is explicitly not ready. Both held chains, `741065`--`741069` and `741070`--`741074`, must never be released or modified. The exact source topology is seven additions and eleven modifications. Verifier commands explicitly require `--verification-replay`, and both verifier receipts are exercised through adjudication. The eventual exact G2 commit must be a sole child of F on dedicated branch/ref `codex/acw-g2`, with exact remote-tracking or verified offline-bundle binding and no caller-selected branch or history rewrite. Shared immutable publication now gives adjudicator records, evaluation JSON, generated datasets, curriculum bundles, and checkpoints unique no-replace staging, file and directory fsync, atomic no-replace publication, descriptor readback, and fatal unexpected I/O. A fresh held allocation and refreeze are required after review before any future release path can exist. |
 | **Post-commit interface falsifier** | **V1 STATIC ALGEBRA PASS; V2 POST-COMMIT NO-GO; V3 COMMIT-BOUND PROTOCOL PASS; NO LEARNED-REASONING CLAIM.** Immutable v1 report SHA-256 is **`b7309987cb644bdf31273a07193df56226e35d3653257e239632d7bd837415b4`**. The exact rejected `a9c1f53` v2 artifact remains mode-0444 at SHA-256 **`4f63123028fe33717981d026ca4accc854943400a502e56698ff040145a2ab0d`**. Scientific commit **`36906818f17aa4f03b9f5622dbcb65110ae95abf`** passes all **35/35** frozen gates with two byte-identical **337-role** cores, **27/27** default-deny sandbox probes, exhaustive public state/motor **83,521/83,521**, decisive state **83,521/83,521** versus motor **4,913/83,521**, and depth-nine collapse to **4,913/83,521**. The independent implementation reconstructed all evidence, required Git verification, and alone published the mode-0444 artifact and receipt. Artifact SHA-256 is **`6f3846d6a58bca7d61e753fe1297c9f7090c29ef44f7585716a206dca3bba685`**; receipt SHA-256 is **`55de668bdf4f98b04ad0ce7d20b4e4b06baa53332f2e66b004076fe2b61d63f2`**. This authorizes only a separately preregistered learned packet-lane falsifier. No neural fit, language bridge, autonomous controller, or reasoning result exists. |
 | **Learned architecture frontier** | **TRACK S REMAINS PRE-RESULT; REPLACEMENT PILOT `740053` IS A SAME-RUNTIME PROCESS PASS BUT CROSS-RUNTIME CUSTODY NO-GO.** Revision 3 freezes a 26,008-parameter CPU treatment with a three-symbol `F_17` packet, exact one-register writes, source deletion, matched controls, 57,344 labels, and thirteen checkpoints. Commit `b517cf3` completed Stokes job `740053`: both held-live fits, parent recomputation, freeze, reopen, and separate verification completed, and every transferred byte matches between Stokes and Mac. The report records 4,096 histories, 3,400 updates, 44,730 charged candidate evaluations, and model tensor SHA-256 `badacca5fde00e93efb32734101ac257801a370dda9064b8f344343e061fefba`. These numbers have no capability standing. Fresh Mac deterministic replay found exactly eight differing float32 arrays, all by at most one ULP (`5.960464477539063e-08`), while the other 59 arrays and both random projection matrices are byte-identical. The cause is BLAS-dependent summation in event/source one-hot matrix multiplication. Generator protocol v3 uses explicit ordered row addition; Stokes/Mac golden event and complete 4,913-state source-table hashes now match. The v2 artifact is read-only diagnostic evidence and may not be anchored. Production bundle/trainer/adjudicator paths remain hard-blocked. After a valid v3 pilot, the anchor lane must use separately pushed `S -> A -> E` commits: scientific pilot, registry-only anchor, then activation; equality of pilot and training identities is invalid. Static confirmation remains disabled pending a future Beacon protocol. Track C remains the later autonomous-control falsifier. Track D is upgraded conceptually toward a certified learned-cut workspace with DAG-versus-tree proof reuse; it is not implemented or authorized. |
 | **Raw 200k / 252.5k / 260k interaction** | **No broad gain, but a source-free renderer-indexed executor is causally confirmed.** The sealed development board remains direct/worked 4/20 and 8/20; its fixed format matrix is `Problem/Work` 44/55 atomic and 10/20 externally scheduled model-carried chains, with crossed-state causality 6/6. Exact patched confirmation `689542` completed all 256 cases / 704 transitions: direct **16/256**, whole `Problem/Work` **9/256**, source-scheduled **115/256**, atomic **534/704**, scheduler-only 101 versus direct-only 2, exact McNemar p **1.05648e-27**. The locked sequential gate failed at **38/64** versus required 45/64; no internalization fit advanced. Whole decoding nevertheless reached the correct answer in **45/256**, lost 36 correct trajectories to continuation/parser behavior, looped/replayed in **214/256**, and all **1,920/1,920** calls hit their cap with zero EOS stops. The external scheduler owns operation selection, state carry, parse, calls, and truncation; this is not autonomous reasoning. Fixed-candidate updater likelihood is independently replayed negative: correct residual state/tail wins **0/6**, while natural prompts prefer arithmetic continuation and packet prompts prefer unchanged copying. Remainder remains a true executor gap at atomic 4/64 and scheduled-local 7/64. See `R12_SOURCE_SCHEDULED_REASONING_CONFIRMATION_RESULT.md`, `R12_SOURCE_SCHEDULED_FAILURE_TAXONOMY.md`, and `R12_UPDATER_CANDIDATE_LIKELIHOOD_RESULT.md`. |
@@ -5687,9 +5701,133 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   references. The full development subset must still equal the independently replayed frozen subset.
   Regressions prove validation order, writable-baseline rejection, empty self-attestation rejection,
   exact full-manifest binding, and the strict `S -> A -> E -> F` lineage. The warning-strict
-  eight-module gate passes **125/125** tests in 40.976 seconds; Ruff and formatting are clean. F is
-  A fresh defect-finding re-review reran 81 targeted warning-strict tests, exercised mode/path/hash/
+  eight-module gate passes **125/125** tests in 40.976 seconds; Ruff and formatting are clean. A
+  fresh defect-finding re-review reran 81 targeted warning-strict tests, exercised mode/path/hash/
   payload/self-attestation substitutions, and returned GO with no remaining P0/P1 custody defect. F
   is pushed and installed as the sole child of E before any scored development artifact. The verified
   pilot remains the execution baseline; the first future complete development matrix will always
   preserve its best eligible checkpoint even if every promotion gate returns NO_GO.
+
+- **2026-07-16 23:47--2026-07-17 01:12** — **The independent CDRL allocation hypothesis closes
+  negative while the post-DRS probe changes the workspace diagnosis.** Grok's isolated Newton CDRL
+  board `691750` completed `0:0` on evc22 in 3:25. Its immutable decision SHA-256
+  `ad94ac15ca17eaa2c5381aa0a3f94fc60a49dbbf2a528552a1212b3ecf1cabdb` records `advance=false`:
+  depth-OOD core-minus-full/hard medians are -0.776/-0.778 and core exactness is about 0.04 versus
+  about 0.70--0.92 for full/hard histories. Do not retune pure Nerode-core allocation. Separately,
+  post-DRS residual-swap job `691756` completed on evc33 and found 10/10 positive digit directions
+  with about +31 delta-logodds at layers 17--29, plus a weaker carry channel at layer 29. This is a
+  causal diagnostic that DRS induced a digit-bearing late residual; it does not show autonomous
+  multi-step update, consumption, or reasoning. Typed-controller evaluation `691778` is parser-invalid
+  for final accuracy because it could stop at the first arrow mid-integer. Corrected rescore `691782`
+  runs independently on evc23; no corrected score is recorded yet.
+
+- **2026-07-17 00:10--01:39** — **Track G scored-development custody is frozen and allocated held,
+  still pre-result.** G adds a committed plan, exact four-stage producer/verifier orchestration, a
+  fifth terminal-accounting monitor, independent semantic replay, exact closed-world consumer
+  handoffs, retry-safe atomic publication, and a post-monitor anchor-ready envelope. Initial
+  adversarial review found two real P1 classes: J5 could not account for itself, and consumer
+  inventories disagreed about predecessor completion/accounting receipts; direct final-path writes
+  also needed SIGKILL-safe publication. The repaired contract gives the monitor its own held Slurm
+  job, includes terminal predecessor receipts only at successor handoff, and publishes via validated
+  same-directory temporary bytes plus no-replace hard link. End-to-end regressions cover each issue.
+  The final eight-module warning-strict gate is **143/143**; plan validation, Ruff, formatting,
+  compilation, shell syntax, and diff checks pass. Two independent re-reviews return GO.
+
+  The canonical plan raw SHA-256 is
+  `39f91a28f4ac0a593ecabd19942e598a4474d777baccb7367d0bbfd73128335d` (payload SHA-256
+  `73bd8a33869ac8d91e155c8ede742cc10ca40ffced4e0ff3073e46d533614cde`). Held jobs are
+  `740338 -> 740339 -> 740340 -> 740341 -> 740342`, pinned ec51/ec52/ec51/ec52/ec51 with 4 CPUs and
+  96 GiB each. `scontrol write batch_script` proves all four scientific jobs have main script
+  SHA-256 `e75fb8c93c41d8fb6d0aae9e526d099bb130db6f0bfd6050034973dd06c3f087`; monitor `740342` has
+  SHA-256 `b67bf5f1deb04015394d80f40138ae57125b8a843ef2612c481bcad256b44987`.
+  Do not release any job until the exact G commit is pushed, installed cleanly on Stokes, and the
+  complete suite/plan are revalidated there. These are custody facts only; no score or reasoning
+  result exists.
+
+- **2026-07-18 04:47--05:24** -- **G1 failed closed before any fit; G2 replaces it with fresh roots,
+  identities, and corrected lineage accounting.** VPN and key-only Stokes access are restored. G1
+  phase-one producer `740338` failed while building input bundles because the immutable F-to-G
+  source ledger expected `pipeline/jobs/run_acw_terminal_monitor_stokes.sbatch` to be modified even
+  though G correctly added it. No arm fit, scored checkpoint, development baseline, or performance
+  report was produced. Dependency-dead `740339`--`740342` were canceled. The partial
+  `artifacts/r12/acw_development_g1` namespace remains untouched as failed-attempt evidence.
+
+  The narrow classifier repair now treats all six new development files as additions and all six
+  inherited scientific files as modifications. Hostile tests reject wrong parent, extra/missing
+  paths, renames, substitutions, and wrong status. Fresh G2 roots are
+  `artifacts/r12/acw_development_g2`, `acw_development_g2_direct_verifier`, and
+  `acw_development_g2_final_verifier`. Its structured canonical plan has raw SHA-256
+  `0f3ac3f243096ec839ff34d1fe92086d4e15817cf7d4529022e593c8eacd53e3` and payload SHA-256
+  `1604b3abfb87fa84b7b46e8343e017ac62f21fe7cebe7623d74ec926b91fec5d`.
+  Fresh precommit-held jobs are `741065 -> 741066 -> 741067 -> 741068 -> 741069`, pinned
+  `ec51/ec52/ec51/ec52/ec51`; all request four CPUs, 96 GiB, `Requeue=0`, and exact `afterok`
+  dependencies. Candidate main and monitor script SHA-256 values are
+  `0ee986d36872115649e9a88c0d62cb6c1924ffa68b050cf8e62aca353863fab2` and
+  `b08507def6e1748fc98599902bd425e04ee608819ddf559a2db43b98f81075d5`.
+  All five jobs remain `JobHeldUser`. Do not release them until full local and Stokes validation,
+  hostile exact-byte review, a GitHub-backed sole-child-of-F G2 commit, an approved commit-bound offline bundle,
+  and clean installation complete.
+  No score or capability result exists.
+
+- **2026-07-18 07:09--08:02** -- **Fresh hostile review returned NO-GO on two P1 custody
+  defects; both are repaired locally, with the candidate still NO-GO pending rereview.** The
+  private-refit report validator had checked digest syntax, internal string equality, and asserted
+  booleans without reopening the producer/verifier private artifacts. It now reloads the exact
+  committed plan, derives every producer and verifier path from its validated attempt table, opens
+  each task/dataset/bundle beneath its plan root by directory file descriptor with `O_NOFOLLOW`,
+  including an absolute root walk that rejects symlinked ancestors,
+  and requires exact immutable registered trees. It independently recomputes checkpoint tensor/stable
+  payload hashes, held-job execution receipts, evaluation normalization, replay equality, dataset
+  equality, and bundle/curriculum equality. The submitted report comparisons must exactly equal the
+  independently recomputed records. Canonical mode-0444 forged reports with valid-looking hashes and
+  all positive booleans now fail when the checkpoint, evaluation, dataset, or bundle differs; a
+  report-only digest forgery also fails.
+
+  Atomic publication no longer catches directory-fsync errors. `EIO`, `EPERM`, and every other
+  directory open/fsync error propagate, and fault injection proves publication cannot return success
+  after a post-link directory-fsync failure. The focused builder/adjudicator gate passes **56/56**
+  warning-strict tests; the complete eight-module gate passes **145/145** warning-strict tests in
+  21.672 seconds. Ruff, formatting, compilation, shell syntax, staged diff checks, and final plan
+  validation must remain green after exact restaging.
+
+  Deterministic plan regeneration preserves the same held IDs `741070 -> 741071 -> 741072 ->
+  741073 -> 741074` and is byte-identical: plan raw SHA-256
+  `205c9d2d2fb595a93f07ee20d5791628c35fd7081e02d28e18d283654082d928`, payload SHA-256
+  `71884a6745713bc77b60e008fe12f842095b196b1533ead5f301e2a66c894a2c`. Wrapper bytes remain
+  unchanged at main SHA-256 `c100eb57f37dcbdcf2fe871c5e6c7c09ea6049d0b6c7d029eaa17bff8946b2cf`
+  and monitor SHA-256 `6a4874fdaa127989dbb36cc1b57a2f26fed308b26c0eba2661374607453db49e`.
+  Repaired source SHA-256 values are adjudicator
+  `02ecf949454db056fcc4df1e62838168bdf6425c4dd180f040d9fb829da04d7a`, builder
+  `5a38a9b0d297cfd3ae6ded4d9df59584ae09609fbf2e4c77f23d1e5ed2d26e6f`, adjudicator tests
+  `452410e40c6dfbf3e8111715b3b054c38ca41a710a2da2a53adc40383dea8e07`, and builder tests
+  `a0e313fa35b09a9460aac718f21b4ed457c75a205fa1d80e6c1f6ea358606e72`. No job was released,
+  canceled, requeued, submitted, or otherwise modified; no artifact or execution was produced.
+
+- **2026-07-18 08:02--09:21** -- **The bounded G2 four-finding custody repair is complete in the
+  isolated worktree and remains COMMIT/INSTALL/RELEASE NO-GO pending a new independent review.**
+  Every verifier role now carries an explicit `--verification-replay`; cross-contract tests construct
+  both verifier receipts and require the adjudicator to accept them. The impossible origin/main
+  identity condition is replaced by a dedicated `codex/acw-g2` contract: the eventual exact commit
+  must have F as its sole parent, equal `refs/remotes/origin/codex/acw-g2` or the verified dedicated
+  head in an exact commit-named offline bundle, and reject caller-selected branches, replacement
+  refs, grafts, and history rewrite.
+
+  A shared immutable publisher now owns every scientific evidence path consumed by this release:
+  adjudicator decisions and authorizations, evaluation JSON, generated dataset arrays/directories,
+  trainer curriculum bundles/directories, checkpoints, plans, manifests, and custody records. It uses
+  unique exclusive staging, file fsync, bottom-up directory fsync, native atomic no-replace rename,
+  parent-directory fsync, and final descriptor readback. Unexpected file or directory I/O failures are
+  fatal. Focused tests inject interruption, destination collisions, file-fsync failures, and
+  parent-directory-fsync failures; they also prove a competing destination is preserved.
+
+  The exact G2 source ledger is seven additions and eleven modifications. The frozen plan raw SHA-256
+  is `70eafa2de29f62ef6840764207440c8dde90f917cd7917f2613eaadd5081a430`; payload SHA-256 is
+  `af9ffe97c15534971c6ee584af42d432e1ff7ab5c29fe380cd1e74065cd2d926`.
+  It records `ready_for_g_commit=false`, denies commit/install/release authorization, and requires
+  independent review. All ten existing jobs `741065`--`741074` remain held and must never be
+  released. Neither held chain can execute these repaired bytes; any eventual reviewed release needs
+  a fresh held allocation and exact plan refreeze. The complete warning-strict suite passes 172/172
+  tests in 25.008 seconds. Ruff check, Ruff format check, Python compilation, both wrapper shell
+  syntax checks, and diff checks pass. Plan validation reports `ready=0` across 27 attempts, while
+  `--require-ready` fails with the frozen COMMIT/INSTALL/RELEASE NO-GO disposition. No commit, push,
+  Stokes install, job operation, score read, or scored-artifact read occurred.

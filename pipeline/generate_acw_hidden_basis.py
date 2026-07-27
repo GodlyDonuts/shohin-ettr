@@ -10,7 +10,9 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import io
 import json
+import os
 import secrets
 import shutil
 from dataclasses import dataclass
@@ -18,6 +20,12 @@ from pathlib import Path
 from typing import Iterable
 
 import numpy as np
+
+from pipeline.acw_immutable_publication import (
+    create_staging_directory,
+    publish_tree_no_replace,
+    write_file_exclusive,
+)
 
 
 FIELD_SIZE = 17
@@ -474,14 +482,14 @@ def initial_train_labels(
 
 def _write_array(root: Path, relative: str, array: np.ndarray, manifest: dict) -> None:
     path = root / relative
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("wb") as handle:
-        np.save(handle, array, allow_pickle=False)
+    buffer = io.BytesIO()
+    np.save(buffer, array, allow_pickle=False)
+    record = write_file_exclusive(path, buffer.getvalue())
     manifest[relative] = {
-        "bytes": path.stat().st_size,
+        "bytes": record["bytes"],
         "dtype": str(array.dtype),
         "shape": list(array.shape),
-        "sha256": file_sha256(path),
+        "sha256": record["sha256"],
     }
 
 
@@ -527,13 +535,10 @@ def generate_dataset(
     evaluation_depths: tuple[int, ...] = EVALUATION_DEPTHS,
 ) -> dict:
     validate_seed_identity(seed_material, seed_identity)
-    out = out.resolve()
-    if out.exists():
+    out = out.expanduser().absolute()
+    if os.path.lexists(out):
         raise FileExistsError(f"output already exists: {out}")
-    partial = out.with_name(out.name + ".partial")
-    if partial.exists():
-        shutil.rmtree(partial)
-    partial.mkdir(parents=True)
+    partial = create_staging_directory(out)
     domain = build_domain(seed_material)
     arrays: dict[str, dict] = {}
     try:
@@ -690,11 +695,18 @@ def generate_dataset(
         }
         manifest["payload_sha256"] = sha256_bytes(canonical_json_bytes(manifest))
         manifest_path = partial / "manifest.json"
-        manifest_path.write_bytes(canonical_json_bytes(manifest) + b"\n")
-        partial.replace(out)
+        write_file_exclusive(
+            manifest_path,
+            canonical_json_bytes(manifest) + b"\n",
+        )
+        publish_tree_no_replace(partial, out)
         return manifest
-    except BaseException:
-        shutil.rmtree(partial, ignore_errors=True)
+    except BaseException as error:
+        if os.path.lexists(partial):
+            try:
+                shutil.rmtree(partial)
+            except OSError as cleanup_error:
+                raise cleanup_error from error
         raise
 
 

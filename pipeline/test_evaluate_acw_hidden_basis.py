@@ -1,13 +1,16 @@
+import errno
 import hashlib
 import json
 import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import numpy as np
 import torch
 
+from pipeline import acw_immutable_publication as publication
 from pipeline.acw_hidden_basis_training import (
     canonical_json_bytes,
     file_sha256,
@@ -23,6 +26,7 @@ from pipeline.evaluate_acw_hidden_basis import (
     evaluate_checkpoint,
     load_oracle_split,
     predict_public_queries,
+    write_report,
 )
 from pipeline.generate_acw_hidden_basis import (
     development_seed_material,
@@ -101,6 +105,60 @@ class ACWEvaluatorTests(unittest.TestCase):
             canonical_json_bytes(first),
             canonical_json_bytes(second),
         )
+
+    def test_report_publication_is_interruption_and_collision_safe(self):
+        report = {"protocol": "test-evaluation-publication"}
+        report["payload_sha256"] = hashlib.sha256(
+            canonical_json_bytes(report)
+        ).hexdigest()
+
+        with self.subTest("interruption"):
+            destination = Path(self.temporary.name) / "interrupted-evaluation.json"
+            with (
+                mock.patch.object(
+                    publication,
+                    "rename_no_replace",
+                    side_effect=OSError(errno.EINTR, "injected interruption"),
+                ),
+                self.assertRaises(OSError) as raised,
+            ):
+                write_report(report, destination)
+            self.assertEqual(raised.exception.errno, errno.EINTR)
+            self.assertFalse(destination.exists())
+            self.assertEqual(
+                list(destination.parent.glob(f".{destination.name}.stage-*")), []
+            )
+
+        with self.subTest("collision"):
+            destination = Path(self.temporary.name) / "collided-evaluation.json"
+            original_rename = publication.rename_no_replace
+
+            def collide(source: Path, final: Path) -> None:
+                final.write_bytes(b"competing-evaluation\n")
+                original_rename(source, final)
+
+            with (
+                mock.patch.object(
+                    publication, "rename_no_replace", side_effect=collide
+                ),
+                self.assertRaises(FileExistsError),
+            ):
+                write_report(report, destination)
+            self.assertEqual(destination.read_bytes(), b"competing-evaluation\n")
+
+        with self.subTest("file-fsync"):
+            destination = Path(self.temporary.name) / "unfsynced-evaluation.json"
+            with (
+                mock.patch.object(
+                    publication.os,
+                    "fsync",
+                    side_effect=OSError(errno.EIO, "injected evaluation fsync"),
+                ),
+                self.assertRaises(OSError) as raised,
+            ):
+                write_report(report, destination)
+            self.assertEqual(raised.exception.errno, errno.EIO)
+            self.assertFalse(destination.exists())
 
     def test_compiled_sparse_realization_is_exact(self):
         report = compiled_sparse_report(self.root, (8,))

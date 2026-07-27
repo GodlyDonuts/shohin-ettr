@@ -1,11 +1,14 @@
+import errno
 import hashlib
 import itertools
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import numpy as np
 
+from pipeline import acw_immutable_publication as publication
 from pipeline.generate_acw_hidden_basis import (
     CONFIRMATION_COMMITMENTS,
     CONFIRMATION_PROTOCOL_STATUS,
@@ -171,6 +174,83 @@ class HiddenBasisGeneratorTests(unittest.TestCase):
             self.assertEqual(
                 first_manifest["event_address_counts"], {"0": 16, "1": 16, "2": 16}
             )
+
+    def test_dataset_directory_publication_fails_closed(self):
+        kwargs = {
+            "seed_identity": {"kind": "development", "seed": 2026071601},
+            "train_count": 8,
+            "adaptation_count": 4,
+            "evaluation_count": 4,
+            "evaluation_depths": (8,),
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+
+            with self.subTest("interruption"):
+                destination = root / "interrupted-dataset"
+                with (
+                    mock.patch.object(
+                        publication,
+                        "rename_no_replace",
+                        side_effect=OSError(errno.EINTR, "injected interruption"),
+                    ),
+                    self.assertRaises(OSError) as raised,
+                ):
+                    generate_dataset(destination, self.seed, **kwargs)
+                self.assertEqual(raised.exception.errno, errno.EINTR)
+                self.assertFalse(destination.exists())
+                self.assertEqual(list(root.glob(f".{destination.name}.stage-*")), [])
+
+            with self.subTest("collision"):
+                destination = root / "collided-dataset"
+                original_rename = publication.rename_no_replace
+
+                def collide(source: Path, final: Path) -> None:
+                    final.mkdir()
+                    (final / "sentinel").write_bytes(b"competing dataset")
+                    original_rename(source, final)
+
+                with (
+                    mock.patch.object(
+                        publication, "rename_no_replace", side_effect=collide
+                    ),
+                    self.assertRaises(FileExistsError),
+                ):
+                    generate_dataset(destination, self.seed, **kwargs)
+                self.assertEqual(
+                    (destination / "sentinel").read_bytes(), b"competing dataset"
+                )
+
+            with self.subTest("post-publication-directory-fsync"):
+                destination = root / "unfsynced-dataset"
+                original_rename = publication.rename_no_replace
+                original_fsync_directory = publication.fsync_directory
+                published = False
+
+                def publish(source: Path, final: Path) -> None:
+                    nonlocal published
+                    original_rename(source, final)
+                    published = True
+
+                def fail_after_publish(path: Path) -> None:
+                    if published and path == destination.parent:
+                        raise OSError(errno.EIO, "injected directory fsync")
+                    original_fsync_directory(path)
+
+                with (
+                    mock.patch.object(
+                        publication, "rename_no_replace", side_effect=publish
+                    ),
+                    mock.patch.object(
+                        publication,
+                        "fsync_directory",
+                        side_effect=fail_after_publish,
+                    ),
+                    self.assertRaises(OSError) as raised,
+                ):
+                    generate_dataset(destination, self.seed, **kwargs)
+                self.assertEqual(raised.exception.errno, errno.EIO)
+                self.assertTrue((destination / "manifest.json").is_file())
 
     def test_confirmation_commitment_contract(self):
         seed = bytes(range(32))
