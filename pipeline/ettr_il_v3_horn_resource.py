@@ -831,30 +831,55 @@ def _generate_stage(
         bucket_count=bucket_count,
     )
     records: dict[str, EpisodeRecord] = {}
+
+    def admit(world: SemanticWorld, command: SemanticCommand) -> bool:
+        try:
+            episode = build_episode(
+                stage=stage,
+                world=world,
+                command=command,
+            )
+        except V3EpisodeError:
+            return False
+        records.setdefault(episode.episode_id, episode)
+        return limit is not None and len(records) >= limit
+
+    require_dependent = stage in {
+        CurriculumStage.DEPENDENT_COMPOSITION,
+        CurriculumStage.CLOSED_LOOP,
+    }
+    if stage is CurriculumStage.COMPILER_GROUNDING:
+        command_cache: dict[SemanticWorld, tuple[SemanticCommand, ...]] = {}
+        for command_index in range(beam_width):
+            progressed = False
+            for world in ordered_worlds:
+                commands = command_cache.get(world)
+                if commands is None:
+                    commands = admitted_commands(
+                        world,
+                        depth=depth,
+                        beam_width=beam_width,
+                        require_dependent=False,
+                    )
+                    command_cache[world] = commands
+                if command_index >= len(commands):
+                    continue
+                progressed = True
+                if admit(world, commands[command_index]):
+                    return tuple(records.values())
+            if not progressed:
+                break
+        return tuple(records.values())
+
     for world in ordered_worlds:
         commands = admitted_commands(
             world,
             depth=depth,
             beam_width=beam_width,
-            require_dependent=stage
-            in {
-                CurriculumStage.DEPENDENT_COMPOSITION,
-                CurriculumStage.CLOSED_LOOP,
-            },
+            require_dependent=require_dependent,
         )
-        if stage is CurriculumStage.COMPILER_GROUNDING:
-            commands = commands[:1]
         for command in commands:
-            try:
-                episode = build_episode(
-                    stage=stage,
-                    world=world,
-                    command=command,
-                )
-            except V3EpisodeError:
-                continue
-            records.setdefault(episode.episode_id, episode)
-            if limit is not None and len(records) >= limit:
+            if admit(world, command):
                 return tuple(records.values())
     return tuple(records.values())
 

@@ -22,7 +22,7 @@ from endogenous_typed_theory_reactor import (
 )
 
 
-OBJECTIVE_SCHEMA = "shohin-ettr-composite-objective-v2"
+OBJECTIVE_SCHEMA = "shohin-ettr-composite-objective-v3"
 
 
 class ETTRObjectiveError(ValueError):
@@ -652,7 +652,11 @@ class ETTRVariantAlignment:
 
 @dataclass(frozen=True, slots=True)
 class ETTRCausalQueryPair:
-    """Matched query logits with distinct immutable factual targets."""
+    """Matched query logits with immutable factual targets.
+
+    Interventions may preserve the answer while changing the terminal packet.
+    Such pairs supervise answer invariance instead of a causal label margin.
+    """
 
     correct_logits: torch.Tensor
     foil_logits: torch.Tensor
@@ -699,10 +703,6 @@ class ETTRCausalQueryPair:
                 & (foil_target < vocab)
             ).all(),
             "causal-query target leaves vocabulary range",
-        )
-        _async_assert(
-            correct_target.ne(foil_target).all(),
-            "causal-query targets must be distinct",
         )
 
 
@@ -751,6 +751,10 @@ class ETTRObjectiveReceipt:
     supervised_command_intervention_transaction_decisions: torch.Tensor
     supervised_world_query_pairs: torch.Tensor
     supervised_command_query_pairs: torch.Tensor
+    world_query_contrast_pairs: torch.Tensor
+    command_query_contrast_pairs: torch.Tensor
+    world_query_invariance_pairs: torch.Tensor
+    command_query_invariance_pairs: torch.Tensor
     world_query_margin_satisfied: torch.Tensor
     command_query_margin_satisfied: torch.Tensor
     supervised_transaction_steps: torch.Tensor
@@ -795,6 +799,10 @@ class ETTRObjectiveReceipt:
                 "supervised_command_intervention_transaction_decisions",
                 "supervised_world_query_pairs",
                 "supervised_command_query_pairs",
+                "world_query_contrast_pairs",
+                "command_query_contrast_pairs",
+                "world_query_invariance_pairs",
+                "command_query_invariance_pairs",
                 "world_query_margin_satisfied",
                 "command_query_margin_satisfied",
                 "supervised_transaction_steps",
@@ -822,6 +830,10 @@ class ETTRObjectiveReceipt:
                 "supervised_command_intervention_transaction_decisions",
                 "supervised_world_query_pairs",
                 "supervised_command_query_pairs",
+                "world_query_contrast_pairs",
+                "command_query_contrast_pairs",
+                "world_query_invariance_pairs",
+                "command_query_invariance_pairs",
                 "world_query_margin_satisfied",
                 "command_query_margin_satisfied",
                 "supervised_transaction_steps",
@@ -850,6 +862,24 @@ class ETTRObjectiveReceipt:
             self.supervised_world_query_pairs.eq(self.batch_size)
             & self.supervised_command_query_pairs.eq(self.batch_size),
             "causal-query receipt support must equal factual batch size",
+        )
+        _async_assert(
+            self.world_query_contrast_pairs
+            .add(self.world_query_invariance_pairs)
+            .eq(self.supervised_world_query_pairs)
+            & self.command_query_contrast_pairs
+            .add(self.command_query_invariance_pairs)
+            .eq(self.supervised_command_query_pairs),
+            "causal-query contrast and invariance support must partition pairs",
+        )
+        _async_assert(
+            self.world_query_margin_satisfied.le(
+                self.world_query_contrast_pairs
+            )
+            & self.command_query_margin_satisfied.le(
+                self.command_query_contrast_pairs
+            ),
+            "causal-query satisfied margins exceed contrast support",
         )
 
 
@@ -1492,7 +1522,13 @@ def _causal_query_binding_loss(
     pair: ETTRCausalQueryPair,
     *,
     margin: float,
-) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+) -> tuple[
+    torch.Tensor,
+    torch.Tensor,
+    torch.Tensor,
+    torch.Tensor,
+    torch.Tensor,
+]:
     classification = 0.5 * (
         F.cross_entropy(pair.correct_logits, pair.correct_target)
         + F.cross_entropy(pair.foil_logits, pair.foil_target)
@@ -1519,10 +1555,46 @@ def _causal_query_binding_loss(
         - foil_for_correct
         + foil_for_foil
     )
-    contrast = F.softplus(margin - difference_in_differences).mean()
-    support = torch.ones_like(pair.correct_target, dtype=torch.int64).sum()
-    margin_satisfied = _count(difference_in_differences.ge(margin))
-    return classification + contrast, support, margin_satisfied
+    effect_mask = pair.correct_target.ne(pair.foil_target)
+    contrast = F.softplus(margin - difference_in_differences)
+
+    correct_log_probabilities = F.log_softmax(pair.correct_logits, dim=-1)
+    foil_log_probabilities = F.log_softmax(pair.foil_logits, dim=-1)
+    correct_probabilities = correct_log_probabilities.exp()
+    foil_probabilities = foil_log_probabilities.exp()
+    mean_probabilities = 0.5 * (
+        correct_probabilities + foil_probabilities
+    )
+    mean_log_probabilities = mean_probabilities.clamp_min(
+        torch.finfo(mean_probabilities.dtype).tiny
+    ).log()
+    invariance = 0.5 * (
+        (
+            correct_probabilities
+            * (correct_log_probabilities - mean_log_probabilities)
+        ).sum(dim=-1)
+        + (
+            foil_probabilities
+            * (foil_log_probabilities - mean_log_probabilities)
+        ).sum(dim=-1)
+    )
+    structural = torch.where(effect_mask, contrast, invariance).mean()
+    classification_support = torch.ones_like(
+        pair.correct_target,
+        dtype=torch.int64,
+    ).sum()
+    contrast_support = _count(effect_mask)
+    invariance_support = _count(~effect_mask)
+    margin_satisfied = _count(
+        effect_mask & difference_in_differences.ge(margin)
+    )
+    return (
+        classification + structural,
+        classification_support,
+        contrast_support,
+        invariance_support,
+        margin_satisfied,
+    )
 
 
 def _commit_halt_loss(
@@ -1926,6 +1998,8 @@ class ETTRCompositeObjective(nn.Module):
         (
             world_query_binding,
             supervised_world_query_pairs,
+            world_query_contrast_pairs,
+            world_query_invariance_pairs,
             world_query_margin_satisfied,
         ) = _causal_query_binding_loss(
             batch.world_query_binding,
@@ -1934,6 +2008,8 @@ class ETTRCompositeObjective(nn.Module):
         (
             command_query_binding,
             supervised_command_query_pairs,
+            command_query_contrast_pairs,
+            command_query_invariance_pairs,
             command_query_margin_satisfied,
         ) = _causal_query_binding_loss(
             batch.command_query_binding,
@@ -2012,6 +2088,10 @@ class ETTRCompositeObjective(nn.Module):
             ),
             supervised_world_query_pairs=supervised_world_query_pairs,
             supervised_command_query_pairs=supervised_command_query_pairs,
+            world_query_contrast_pairs=world_query_contrast_pairs,
+            command_query_contrast_pairs=command_query_contrast_pairs,
+            world_query_invariance_pairs=world_query_invariance_pairs,
+            command_query_invariance_pairs=command_query_invariance_pairs,
             world_query_margin_satisfied=world_query_margin_satisfied,
             command_query_margin_satisfied=command_query_margin_satisfied,
             supervised_transaction_steps=_count(batch.transaction_targets.step_mask),

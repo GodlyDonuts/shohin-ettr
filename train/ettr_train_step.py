@@ -70,6 +70,10 @@ class ETTRUpdateReceipt:
     supervised_token_count: torch.Tensor
     supervised_world_query_pairs: torch.Tensor
     supervised_command_query_pairs: torch.Tensor
+    world_query_contrast_pairs: torch.Tensor
+    command_query_contrast_pairs: torch.Tensor
+    world_query_invariance_pairs: torch.Tensor
+    command_query_invariance_pairs: torch.Tensor
     world_query_margin_satisfied: torch.Tensor
     command_query_margin_satisfied: torch.Tensor
 
@@ -235,6 +239,10 @@ class ETTRTrainStep(nn.Module):
         token_counts: list[torch.Tensor] = []
         world_query_pairs: list[torch.Tensor] = []
         command_query_pairs: list[torch.Tensor] = []
+        world_query_contrast: list[torch.Tensor] = []
+        command_query_contrast: list[torch.Tensor] = []
+        world_query_invariance: list[torch.Tensor] = []
+        command_query_invariance: list[torch.Tensor] = []
         world_query_margin: list[torch.Tensor] = []
         command_query_margin: list[torch.Tensor] = []
         try:
@@ -256,6 +264,18 @@ class ETTRTrainStep(nn.Module):
                 )
                 command_query_pairs.append(
                     loss.receipt.supervised_command_query_pairs.detach()
+                )
+                world_query_contrast.append(
+                    loss.receipt.world_query_contrast_pairs.detach()
+                )
+                command_query_contrast.append(
+                    loss.receipt.command_query_contrast_pairs.detach()
+                )
+                world_query_invariance.append(
+                    loss.receipt.world_query_invariance_pairs.detach()
+                )
+                command_query_invariance.append(
+                    loss.receipt.command_query_invariance_pairs.detach()
                 )
                 world_query_margin.append(
                     loss.receipt.world_query_margin_satisfied.detach()
@@ -313,6 +333,18 @@ class ETTRTrainStep(nn.Module):
             supervised_token_count=torch.stack(token_counts).sum(),
             supervised_world_query_pairs=torch.stack(world_query_pairs).sum(),
             supervised_command_query_pairs=torch.stack(command_query_pairs).sum(),
+            world_query_contrast_pairs=torch.stack(
+                world_query_contrast
+            ).sum(),
+            command_query_contrast_pairs=torch.stack(
+                command_query_contrast
+            ).sum(),
+            world_query_invariance_pairs=torch.stack(
+                world_query_invariance
+            ).sum(),
+            command_query_invariance_pairs=torch.stack(
+                command_query_invariance
+            ).sum(),
             world_query_margin_satisfied=torch.stack(world_query_margin).sum(),
             command_query_margin_satisfied=torch.stack(command_query_margin).sum(),
         )

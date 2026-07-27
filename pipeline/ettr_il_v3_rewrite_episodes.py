@@ -647,47 +647,73 @@ def generate_rewrite_episodes(
         raise RewriteEpisodeError(f"{stage.value} requires depth 2..6")
 
     records: dict[str, RewriteEpisode] = {}
-    for world in _ordered_worlds(
+    ordered_worlds = _ordered_worlds(
         theory_index,
         bucket_index=bucket_index,
         bucket_count=bucket_count,
-    ):
+    )
+
+    def admit(world: RewriteWorld, command: RewriteCommand) -> bool:
+        try:
+            episode = build_rewrite_episode(
+                stage=stage,
+                world=world,
+                command=command,
+            )
+            if (
+                stage is CurriculumStage.QUERY_COUNTERFACTUAL_GROUNDING
+                and all(
+                    minimal_query_counterfactual(
+                        episode,
+                        query_index=query_index,
+                    )
+                    is None
+                    for query_index in range(2)
+                )
+            ):
+                return False
+            if (
+                stage is CurriculumStage.CLOSED_LOOP
+                and counterfactual_bundle(episode) is None
+            ):
+                return False
+        except RewriteEpisodeError:
+            return False
+        records.setdefault(episode.episode_id, episode)
+        return limit is not None and len(records) >= limit
+
+    if stage is CurriculumStage.COMPILER_GROUNDING:
+        command_cache: dict[RewriteWorld, tuple[RewriteCommand, ...]] = {}
+        for command_index in range(beam_width):
+            progressed = False
+            for world in ordered_worlds:
+                commands = command_cache.get(world)
+                if commands is None:
+                    commands = _candidate_commands(
+                        world,
+                        stage=stage,
+                        depth=depth,
+                        beam_width=beam_width,
+                    )
+                    command_cache[world] = commands
+                if command_index >= len(commands):
+                    continue
+                progressed = True
+                if admit(world, commands[command_index]):
+                    return tuple(records.values())
+            if not progressed:
+                break
+        return tuple(records.values())
+
+    for world in ordered_worlds:
         commands = _candidate_commands(
             world,
             stage=stage,
             depth=depth,
             beam_width=beam_width,
         )
-        if stage is CurriculumStage.COMPILER_GROUNDING:
-            commands = commands[:1]
         for command in commands:
-            try:
-                episode = build_rewrite_episode(
-                    stage=stage,
-                    world=world,
-                    command=command,
-                )
-                if (
-                    stage is CurriculumStage.QUERY_COUNTERFACTUAL_GROUNDING
-                    and all(
-                        minimal_query_counterfactual(
-                            episode,
-                            query_index=query_index,
-                        )
-                        is None
-                        for query_index in range(2)
-                    )
-                ):
-                    continue
-                if (
-                    stage is CurriculumStage.CLOSED_LOOP
-                    and counterfactual_bundle(episode) is None
-                ):
-                    continue
-            except RewriteEpisodeError:
-                continue
-            records.setdefault(episode.episode_id, episode)
-            if limit is not None and len(records) >= limit:
+            if admit(world, command):
                 return tuple(records.values())
     return tuple(records.values())
 

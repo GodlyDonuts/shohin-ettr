@@ -14,7 +14,7 @@
 > compatibility, and isolated reasoning evaluation may continue; none of those
 > activities implies permission to pretrain.
 >
-> **Last updated:** 2026-07-27 00:52 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-27 01:21 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -15017,3 +15017,47 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `r12_ettr_il_v3_protocol_and_cpu_pilot_pass_production_submission_pending_final_freeze`.
+
+- **2026-07-27 01:21 EDT** -- **First ETTR-IL-v3 production run rejected
+  safely; broad-data receiving contract repaired; replacement source is under
+  regression.** No model, checkpoint, optimizer, GPU, or continuation
+  pretraining operation was performed.
+
+  Commit-pinned Stokes production array `751449` published 177 no-replace
+  report-shard pairs before cell 198 failed closed. The failing cell was
+  train-reserve/resource/compiler-grounding/depth-1 and requested 2,502 owned
+  candidates after a 9,999-candidate primary offset. The generator had
+  artificially truncated compiler grounding to one command per world, so the
+  finite 15-theory by 256-world resource domain could not supply the requested
+  primary plus reserve owner segment. The array was canceled after diagnosis;
+  its root
+  `runs/production-9e0d512294821814ba2242b2bb8601e9d29a69fd`
+  is preserved as superseded evidence and must never be mixed with a
+  replacement source freeze.
+
+  The generator repair removes only that one-command truncation. Compiler
+  enumeration remains deterministic and round-robins command rank across
+  worlds, preserving maximal distinct-world coverage before any world is
+  reused. A regression proves a resource compiler reserve segment can advance
+  past the primary offset with unique episode IDs.
+
+  A separate receiving-contract audit found that the v2 objective required
+  answer-label contrast on every WORLD and COMMAND edge. That would silently
+  discard the broad v3 component curriculum and recreate the rejected
+  checkerboard population. The explicit
+  `R12-ETTR-IL-v3-materialization-v1` repair keeps packet consequences
+  mandatory on every edge, retains answer cross-entropy on every pair,
+  applies difference-in-differences margin only to answer-changing pairs, and
+  applies bounded Jensen-Shannon invariance to answer-preserving pairs.
+  Objective/update receipts now partition classification support into
+  contrast and invariance counts and enforce the partition on device. The
+  neural architecture and 192,779,435 parameter total are unchanged.
+
+  Focused objective/data/train-step tests pass 61/61. The complete ETTR
+  regression passes 276 tests with one intentional skip, and the complete v3
+  corpus regression passes 104/104. Ruff, byte compilation, and diff checks
+  are clean. A fresh commit, source freeze, full-capacity Stokes canary, and
+  replacement production submission are next.
+
+  Decision:
+  `r12_ettr_il_v3_first_production_rejected_capacity_truncation_removed_broad_contract_repaired_replacement_freeze_pending`.

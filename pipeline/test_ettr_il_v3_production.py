@@ -102,3 +102,19 @@ def test_small_rewrite_cell_is_deterministic_and_writable(
     rows = gzip.decompress(shard.read_bytes()).splitlines()
     assert len(rows) == 2
     assert all(json.loads(row)["owner"] == "train" for row in rows)
+
+
+def test_compiler_grounding_can_advance_into_a_reserve_segment() -> None:
+    cell = ProductionCell(
+        index=0,
+        split="train_reserve",
+        family="resource",
+        stage="compiler_grounding",
+        depth=1,
+        selected_quota=4,
+        candidate_target=12,
+        owner_skip=8,
+    )
+    episodes = generate_production_cell(cell, beam_width=16)
+    assert len(episodes) == cell.candidate_target
+    assert len({episode.episode_id for episode in episodes}) == len(episodes)

@@ -168,6 +168,10 @@ def test_update_runs_complete_native_objective_and_advances_cursor() -> None:
     for name in (
         "supervised_world_query_pairs",
         "supervised_command_query_pairs",
+        "world_query_contrast_pairs",
+        "command_query_contrast_pairs",
+        "world_query_invariance_pairs",
+        "command_query_invariance_pairs",
         "world_query_margin_satisfied",
         "command_query_margin_satisfied",
     ):

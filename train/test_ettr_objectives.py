@@ -373,6 +373,10 @@ def test_receipt_counts_stay_device_resident_and_auditable() -> None:
         "supervised_command_intervention_transaction_decisions",
         "supervised_world_query_pairs",
         "supervised_command_query_pairs",
+        "world_query_contrast_pairs",
+        "command_query_contrast_pairs",
+        "world_query_invariance_pairs",
+        "command_query_invariance_pairs",
         "world_query_margin_satisfied",
         "command_query_margin_satisfied",
         "supervised_transaction_steps",
@@ -433,6 +437,22 @@ def test_receipt_counts_stay_device_resident_and_auditable() -> None:
     torch.testing.assert_close(
         receipt.supervised_command_query_pairs,
         torch.tensor(BATCH),
+    )
+    torch.testing.assert_close(
+        receipt.world_query_contrast_pairs,
+        torch.tensor(BATCH),
+    )
+    torch.testing.assert_close(
+        receipt.command_query_contrast_pairs,
+        torch.tensor(BATCH),
+    )
+    torch.testing.assert_close(
+        receipt.world_query_invariance_pairs,
+        torch.tensor(0),
+    )
+    torch.testing.assert_close(
+        receipt.command_query_invariance_pairs,
+        torch.tensor(0),
     )
     torch.testing.assert_close(
         receipt.world_query_margin_satisfied,
@@ -865,6 +885,70 @@ def test_identical_query_logits_cannot_satisfy_binding_margin() -> None:
     )
 
 
+def test_equal_target_query_pairs_use_invariance_without_margin() -> None:
+    batch = _batch()
+    pair = batch.world_query_binding
+    assert pair is not None
+    equal_targets = pair.correct_target.clone()
+    shared = torch.zeros_like(pair.correct_logits)
+    shared.scatter_(1, equal_targets[:, None], 6.0)
+    invariant_pair = ETTRCausalQueryPair(
+        correct_logits=_leaf(shared),
+        foil_logits=_leaf(shared.clone()),
+        correct_target=equal_targets,
+        foil_target=equal_targets.clone(),
+    )
+    output = ETTRCompositeObjective(
+        _config(),
+        weights=_binding_weights(world=1.0, command=0.0),
+    )(replace(batch, world_query_binding=invariant_pair))
+    assert torch.isfinite(output.world_query_binding)
+    torch.testing.assert_close(
+        output.receipt.supervised_world_query_pairs,
+        torch.tensor(BATCH),
+    )
+    torch.testing.assert_close(
+        output.receipt.world_query_contrast_pairs,
+        torch.tensor(0),
+    )
+    torch.testing.assert_close(
+        output.receipt.world_query_invariance_pairs,
+        torch.tensor(BATCH),
+    )
+    torch.testing.assert_close(
+        output.receipt.world_query_margin_satisfied,
+        torch.tensor(0),
+    )
+    output.total.backward()
+    assert invariant_pair.correct_logits.grad is not None
+    assert invariant_pair.foil_logits.grad is not None
+
+
+def test_mixed_query_pairs_partition_contrast_and_invariance_support() -> None:
+    batch = _batch()
+    pair = batch.world_query_binding
+    assert pair is not None
+    foil_target = pair.foil_target.clone()
+    foil_target[0] = pair.correct_target[0]
+    mixed = replace(pair, foil_target=foil_target)
+    output = ETTRCompositeObjective(
+        _config(),
+        weights=_binding_weights(world=1.0, command=0.0),
+    )(replace(batch, world_query_binding=mixed))
+    torch.testing.assert_close(
+        output.receipt.world_query_contrast_pairs,
+        torch.tensor(BATCH - 1),
+    )
+    torch.testing.assert_close(
+        output.receipt.world_query_invariance_pairs,
+        torch.tensor(1),
+    )
+    assert (
+        output.receipt.world_query_margin_satisfied
+        <= output.receipt.world_query_contrast_pairs
+    )
+
+
 def test_swapping_query_treatment_and_foil_reverses_did_and_raises_loss() -> None:
     batch = _batch()
     pair = batch.world_query_binding
@@ -983,8 +1067,7 @@ def test_causal_query_pair_and_margin_validation_fail_closed() -> None:
         replace(pair, correct_target=pair.correct_target.float())
     with pytest.raises(RuntimeError, match="vocabulary range"):
         replace(pair, correct_target=torch.full((BATCH,), VOCAB))
-    with pytest.raises(RuntimeError, match="must be distinct"):
-        replace(pair, foil_target=pair.correct_target.clone())
+    replace(pair, foil_target=pair.correct_target.clone())
     bad_logits = pair.correct_logits.detach().clone()
     bad_logits[0, 0] = float("nan")
     with pytest.raises(RuntimeError, match="non-finite"):

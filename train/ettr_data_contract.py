@@ -768,23 +768,6 @@ class ETTRCausalRectangle:
                 ).all(),
                 "ETTR causal rectangle query prefixes differ",
             )
-        labels = tuple(
-            episodes.query.targets.index_select(0, index)
-            .gather(1, read_indices[:, :1])
-            .squeeze(1)
-            for index in (r00, r01, r10, r11)
-        )
-        for left, right, name in (
-            (labels[0], labels[2], "WORLD/C0"),
-            (labels[1], labels[3], "WORLD/C1"),
-            (labels[0], labels[1], "COMMAND/W0"),
-            (labels[2], labels[3], "COMMAND/W1"),
-        ):
-            torch._assert_async(
-                left.ne(right).all(),
-                f"ETTR causal rectangle {name} query labels are identical",
-            )
-
     def intervention_indices(
         self,
     ) -> tuple[torch.Tensor, ...]:

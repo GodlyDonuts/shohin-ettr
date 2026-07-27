@@ -692,7 +692,7 @@ def test_causal_rectangles_require_matched_query_prefix_and_read_index() -> None
     ("left", "right"),
     ((0, 2), (1, 3), (0, 1), (2, 3)),
 )
-def test_causal_rectangles_require_every_query_label_contrast(
+def test_causal_rectangles_allow_answer_invariant_packet_effects(
     left: int,
     right: int,
 ) -> None:
@@ -700,14 +700,14 @@ def test_causal_rectangles_require_every_query_label_contrast(
     runner = _runner()
     tokens = continuation.episodes.query.tokens.clone()
     tokens[right, 2] = tokens[left, 2]
-    with pytest.raises(RuntimeError, match="query labels are identical"):
-        replace(
-            continuation,
-            episodes=replace(
-                continuation.episodes,
-                query=ETTREpisodeSegment.from_tokens(tokens),
-            ),
-        ).validate(runner.model.config, objective_config)
+    broad = replace(
+        continuation,
+        episodes=replace(
+            continuation.episodes,
+            query=ETTREpisodeSegment.from_tokens(tokens),
+        ),
+    )
+    broad.validate(runner.model.config, objective_config)
 
 
 def test_terminal_packet_sufficiency_rejects_diagonal_collision() -> None:
