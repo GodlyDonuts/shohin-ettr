@@ -15062,5 +15062,21 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   are clean. A fresh commit, source freeze, full-capacity Stokes canary, and
   replacement production submission are next.
 
+  Replacement generator commit
+  `d16824483eef3e7f6de400c8354a48b4dd236ece` was archived and independently
+  SHA-256 matched on Stokes. Its 17-file production freeze has internal
+  freeze SHA-256
+  `c76d347b5cc4d955f3187e3ebafbddceba7efd55348d9045d12297bacfbb7cbd`;
+  the canonical receipt file SHA-256 is
+  `5b8b44d5085d3775a19b4a669cdc334cf267a68239b0ba44ae358c032754eefb`.
+  Full-capacity resource compiler reserve canary `751775` passed with exactly
+  2,502 rows, zero stderr, report SHA-256
+  `6de1a7f43cf7fd658447434b9ae3859a79d39b8f6d2a8c3d06532c091cfeac7f`,
+  and shard SHA-256
+  `8ccb1b1f45b7af0a670d06957c9eac4484979fdd8098917e760a987b80b2b935`.
+  Fresh production array `751777` is active with 324 CPU-only cells and a
+  64-task concurrency cap. Its isolated no-replace root is
+  `runs/production-d16824483eef3e7f6de400c8354a48b4dd236ece`.
+
   Decision:
   `r12_ettr_il_v3_first_production_rejected_capacity_truncation_removed_broad_contract_repaired_replacement_freeze_pending`.
