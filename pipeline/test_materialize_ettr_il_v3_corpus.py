@@ -7,7 +7,10 @@ from pathlib import Path
 import ettr_il_v2_token_native_surface
 from tokenizers import Tokenizer
 
-from ettr_il_v2_token_native_surface import DEFAULT_TOKENIZER_PATH
+from ettr_il_v2_token_native_surface import (
+    DEFAULT_TOKENIZER_PATH,
+    TokenNativeSurfaceCodec,
+)
 from ettr_il_v3_horn_resource import CurriculumStage
 from ettr_il_v3_production import (
     ProductionCell,
@@ -58,8 +61,16 @@ def _selected_root(
     (root / shard_name).write_bytes(payload)
     manifest: dict[str, object] = {
         "candidate_root_sha256": "c" * 64,
+        "codebook_sha256": TokenNativeSurfaceCodec(
+            DEFAULT_TOKENIZER_PATH
+        ).codebook_sha256,
         "protocol": PROTOCOL,
         "protocol_freeze_sha256": "b" * 64,
+        "qualification_admitted_rows": 2,
+        "qualification_freeze_sha256": "9" * 64,
+        "qualification_input_rows": 3,
+        "qualification_rejected_rows": 1,
+        "qualification_source_commit": "8" * 40,
         "role": role,
         "schema": SELECTED_MANIFEST_SCHEMA,
         "selector_freeze_sha256": "e" * 64,
@@ -76,6 +87,9 @@ def _selected_root(
             }
         ],
         "source_commit": "a" * 40,
+        "tokenizer_sha256": TokenNativeSurfaceCodec(
+            DEFAULT_TOKENIZER_PATH
+        ).tokenizer_sha256,
         "total_rows": 1,
     }
     manifest["manifest_sha256"] = hashlib.sha256(

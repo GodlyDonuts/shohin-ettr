@@ -14,7 +14,7 @@
 > compatibility, and isolated reasoning evaluation may continue; none of those
 > activities implies permission to pretrain.
 >
-> **Last updated:** 2026-07-27 01:51 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-27 06:58 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -15253,3 +15253,52 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `r12_ettr_il_v3_candidates_complete_materializer_tokenizer_path_repair_admitted`.
+
+- **2026-07-27 06:58 EDT** -- **A second materialization launch exposed a
+  real upstream semantic-admission gap; receiver-backed candidate
+  qualification is implemented and locally admitted.** No model, checkpoint,
+  optimizer, GPU, or continuation-pretraining operation was performed.
+
+  The repaired commit `0206fec248f2dd410072f3f2d133d24a06d5c84e`
+  was independently frozen on Stokes with 806 pipeline files and passed an
+  isolated tokenizer/codebook preflight. Fresh main/confirmation
+  materialization arrays then reached the real receiver and failed on a
+  bounded subset of selected Horn/resource composition and query cells.
+  Representative receiver failures were `prefix independent` semantic
+  operations and generic operation traces with `no generic state effect`.
+  Partial no-replace outputs are preserved as failed-attempt evidence; all
+  corresponding arrays and dependent audits were canceled before any corpus
+  publication.
+
+  The strict causal receiver is unchanged. A new CPU-only qualification stage
+  runs all 324 frozen raw candidate cells through the exact architecture-facing
+  materializer before selection. It preserves original candidate bytes and
+  ordinals only for admitted rows, emits content-addressed no-replace shards
+  and self-hashed reports, records bounded category-only rejection
+  histograms, and binds the raw generator report/shard, generator
+  commit/freeze, qualifier commit/freeze, immutable tokenizer, and codebook.
+  Main and sealed-confirmation cells use physically distinct roots; main
+  qualification rejects a confirmation key, while confirmation qualification
+  requires a separate mode-0400 32-byte key.
+
+  Deterministic selection now consumes only these two qualified roots,
+  verifies their exact role-specific inventories and common custody, preserves
+  global semantic dedup, and fails closed if receiver admission leaves any
+  family/stage/split quota short. Qualification custody and tokenizer identity
+  propagate through selected manifests, materializer task manifests, worker
+  reports, global audits, and the final main/confirmation separation audit.
+  No receiver condition is bypassed or relaxed.
+
+  The focused receiver/selection/materialization path passes 11/11 tests,
+  including a real unmocked generated Horn candidate. The complete ETTR
+  v2/v3 generation, selection, materialization, publication, and freeze
+  inventory passes **441/441 in 123.92 seconds**. Ruff, byte compilation,
+  shell syntax, formatting, and diff checks are clean. Commit and freeze this
+  qualifier source, then submit separate main indices
+  `0-107,162-269` and sealed-confirmation indices `108-161,270-323`.
+  Selection and all downstream materialization/publication must use new
+  content-addressed roots; never mix the prior selected or partial
+  materialized outputs.
+
+  Decision:
+  `r12_ettr_il_v3_receiver_backed_preselection_qualification_locally_admitted`.

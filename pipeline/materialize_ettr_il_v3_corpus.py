@@ -266,11 +266,42 @@ def build_task_manifest(
         "protocol_freeze_sha256": _hex(
             selected.get("protocol_freeze_sha256"), "protocol freeze"
         ),
+        "qualification_admitted_rows": _integer(
+            selected.get("qualification_admitted_rows"),
+            "qualification admitted rows",
+            1,
+        ),
+        "qualification_freeze_sha256": _hex(
+            selected.get("qualification_freeze_sha256"),
+            "qualification freeze SHA-256",
+        ),
+        "qualification_input_rows": _integer(
+            selected.get("qualification_input_rows"),
+            "qualification input rows",
+            1,
+        ),
+        "qualification_rejected_rows": _integer(
+            selected.get("qualification_rejected_rows"),
+            "qualification rejected rows",
+        ),
+        "qualification_source_commit": _hex(
+            selected.get("qualification_source_commit"),
+            "qualification source commit",
+            length=40,
+        ),
         "role": role,
         "schema": TASK_SCHEMA,
+        "selected_codebook_sha256": _hex(
+            selected.get("codebook_sha256"),
+            "selected codebook SHA-256",
+        ),
         "selected_manifest_sha256": selected_sha,
         "selected_source_commit": _hex(
             selected.get("source_commit"), "selected source commit", length=40
+        ),
+        "selected_tokenizer_sha256": _hex(
+            selected.get("tokenizer_sha256"),
+            "selected tokenizer SHA-256",
         ),
         "selector_freeze_sha256": _hex(
             selected.get("selector_freeze_sha256"),
@@ -387,6 +418,13 @@ def materialize_task(
         raise CorpusMaterializationError("selected input identity differs")
     key = _confirmation_key(confirmation_key_file, manifest["role"])
     codec = TokenNativeSurfaceCodec(tokenizer_path)
+    if (
+        codec.tokenizer_sha256 != manifest["selected_tokenizer_sha256"]
+        or codec.codebook_sha256 != manifest["selected_codebook_sha256"]
+    ):
+        raise CorpusMaterializationError(
+            "selected and materializer tokenizer custody differs"
+        )
     output_path = output_root / _relative(task["output_path"], "output path")
     report_path = reports_root / _relative(task["report_path"], "report path")
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -463,6 +501,11 @@ def materialize_task(
         "output_sha256": output_sha,
         "protocol": PROTOCOL,
         "protocol_freeze_sha256": manifest["protocol_freeze_sha256"],
+        "qualification_admitted_rows": manifest["qualification_admitted_rows"],
+        "qualification_freeze_sha256": manifest["qualification_freeze_sha256"],
+        "qualification_input_rows": manifest["qualification_input_rows"],
+        "qualification_rejected_rows": manifest["qualification_rejected_rows"],
+        "qualification_source_commit": manifest["qualification_source_commit"],
         "row_count": rows,
         "schema": WORKER_SCHEMA,
         "selected_manifest_sha256": manifest["selected_manifest_sha256"],
@@ -605,6 +648,16 @@ def audit_materialization(
             != manifest["materializer_source_commit"]
             or report.get("protocol_freeze_sha256")
             != manifest["protocol_freeze_sha256"]
+            or report.get("qualification_freeze_sha256")
+            != manifest["qualification_freeze_sha256"]
+            or report.get("qualification_admitted_rows")
+            != manifest["qualification_admitted_rows"]
+            or report.get("qualification_input_rows")
+            != manifest["qualification_input_rows"]
+            or report.get("qualification_rejected_rows")
+            != manifest["qualification_rejected_rows"]
+            or report.get("qualification_source_commit")
+            != manifest["qualification_source_commit"]
             or report.get("selected_manifest_sha256")
             != manifest["selected_manifest_sha256"]
             or report.get("selected_source_commit")
@@ -674,6 +727,11 @@ def audit_materialization(
         "materializer_source_commit": manifest["materializer_source_commit"],
         "protocol": PROTOCOL,
         "protocol_freeze_sha256": manifest["protocol_freeze_sha256"],
+        "qualification_admitted_rows": manifest["qualification_admitted_rows"],
+        "qualification_freeze_sha256": manifest["qualification_freeze_sha256"],
+        "qualification_input_rows": manifest["qualification_input_rows"],
+        "qualification_rejected_rows": manifest["qualification_rejected_rows"],
+        "qualification_source_commit": manifest["qualification_source_commit"],
         "role": manifest["role"],
         "schema": AUDIT_SCHEMA,
         "selected_manifest_sha256": manifest["selected_manifest_sha256"],
@@ -841,6 +899,11 @@ def audit_main_confirmation_separation(
         "materializer_source_commit",
         "protocol",
         "protocol_freeze_sha256",
+        "qualification_admitted_rows",
+        "qualification_freeze_sha256",
+        "qualification_input_rows",
+        "qualification_rejected_rows",
+        "qualification_source_commit",
         "selector_freeze_sha256",
         "selector_source_commit",
         "tokenizer_sha256",

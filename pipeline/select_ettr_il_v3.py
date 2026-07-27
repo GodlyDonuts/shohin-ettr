@@ -34,8 +34,9 @@ from ettr_il_v3_protocol import (
 )
 
 
-SCHEMA = "r12-ettr-il-v3-selection-v1"
-MANIFEST_SCHEMA = "r12-ettr-il-v3-selected-manifest-v1"
+SCHEMA = "r12-ettr-il-v3-selection-v2"
+MANIFEST_SCHEMA = "r12-ettr-il-v3-selected-manifest-v2"
+QUALIFIED_SCHEMA = "r12-ettr-il-v3-qualified-candidate-cell-v1"
 MAIN_SPLITS = (
     "train",
     "development",
@@ -203,7 +204,7 @@ def _parse_candidate(
     payload: bytes,
     *,
     cell: ProductionCell,
-    expected_ordinal: int,
+    expected_ordinal: int | None,
 ) -> Candidate:
     if len(payload) > MAX_ROW_BYTES:
         raise SelectionError("candidate row exceeds bounded size")
@@ -232,7 +233,7 @@ def _parse_candidate(
         or row["schema"] != ROW_SCHEMA
         or row["protocol"] != PROTOCOL
         or row["cell"] != cell.to_value()
-        or row["ordinal"] != expected_ordinal
+        or (expected_ordinal is not None and row["ordinal"] != expected_ordinal)
         or row["owner"] != base_owner_split(cell.split)
     ):
         raise SelectionError("candidate row identity differs")
@@ -281,7 +282,7 @@ def _parse_candidate(
     )
 
 
-def _load_cell_candidates(
+def load_production_candidates(
     root: Path,
     cell: ProductionCell,
     report: Mapping[str, object],
@@ -317,6 +318,179 @@ def _load_cell_candidates(
         )
         for ordinal, row in enumerate(rows)
     )
+
+
+verify_production_report = _verify_report
+
+
+def _verify_qualified_report(
+    root: Path,
+    cell: ProductionCell,
+    *,
+    role: str,
+    custody: Mapping[str, str] | None,
+) -> tuple[dict[str, object], dict[str, str]]:
+    report = _load_canonical_file(
+        root / "reports" / f"cell-{cell.index}.json",
+        maximum_bytes=MAX_REPORT_BYTES,
+    )
+    expected_keys = {
+        "admitted_ordinals_sha256",
+        "admitted_row_count",
+        "candidate_source_commit",
+        "cell",
+        "codebook_sha256",
+        "input_report_sha256",
+        "input_row_count",
+        "input_shard_sha256",
+        "protocol",
+        "protocol_freeze_sha256",
+        "qualified_compressed_bytes",
+        "qualified_shard_name",
+        "qualified_shard_sha256",
+        "qualified_uncompressed_bytes",
+        "qualifier_freeze_sha256",
+        "qualifier_source_commit",
+        "rejected_row_count",
+        "rejection_histogram",
+        "report_sha256",
+        "role",
+        "schema",
+        "status",
+        "tokenizer_sha256",
+    }
+    if (
+        set(report) != expected_keys
+        or report["schema"] != QUALIFIED_SCHEMA
+        or report["protocol"] != PROTOCOL
+        or report["status"] != "pass"
+        or report["role"] != role
+        or report["cell"] != cell.to_value()
+        or report["input_row_count"] != cell.candidate_target
+        or report["qualified_shard_name"] != f"cell-{cell.index}.jsonl.gz"
+        or type(report["admitted_row_count"]) is not int
+        or type(report["rejected_row_count"]) is not int
+        or report["admitted_row_count"] < 0
+        or report["rejected_row_count"] < 0
+        or report["admitted_row_count"] + report["rejected_row_count"]
+        != cell.candidate_target
+    ):
+        raise SelectionError(f"qualified report differs for cell {cell.index}")
+    histogram = report["rejection_histogram"]
+    if (
+        not isinstance(histogram, list)
+        or any(
+            not isinstance(item, list)
+            or len(item) != 2
+            or not isinstance(item[0], str)
+            or len(item[0]) > 128
+            or any(ord(character) < 32 or ord(character) > 126 for character in item[0])
+            or type(item[1]) is not int
+            or item[1] < 1
+            for item in histogram
+        )
+        or [item[0] for item in histogram] != sorted({item[0] for item in histogram})
+        or sum(int(item[1]) for item in histogram) != report["rejected_row_count"]
+    ):
+        raise SelectionError("qualified rejection histogram differs")
+    report_sha256 = _hex_digest(report["report_sha256"], "report SHA-256")
+    unhashed = dict(report)
+    del unhashed["report_sha256"]
+    if hashlib.sha256(canonical_json_bytes(unhashed)).hexdigest() != report_sha256:
+        raise SelectionError(
+            f"qualified report self-hash differs for cell {cell.index}"
+        )
+    for field in (
+        "admitted_ordinals_sha256",
+        "input_report_sha256",
+        "input_shard_sha256",
+        "qualified_shard_sha256",
+    ):
+        _hex_digest(report[field], field.replace("_", " "))
+    for field in (
+        "qualified_compressed_bytes",
+        "qualified_uncompressed_bytes",
+    ):
+        if type(report[field]) is not int or report[field] < 0:
+            raise SelectionError(f"{field.replace('_', ' ')} differs")
+    observed = {
+        "candidate_source_commit": _hex_digest(
+            report["candidate_source_commit"],
+            "candidate source commit",
+            length=40,
+        ),
+        "codebook_sha256": _hex_digest(
+            report["codebook_sha256"],
+            "codebook SHA-256",
+        ),
+        "protocol_freeze_sha256": _hex_digest(
+            report["protocol_freeze_sha256"],
+            "protocol freeze",
+        ),
+        "qualifier_freeze_sha256": _hex_digest(
+            report["qualifier_freeze_sha256"],
+            "qualifier freeze",
+        ),
+        "qualifier_source_commit": _hex_digest(
+            report["qualifier_source_commit"],
+            "qualifier source commit",
+            length=40,
+        ),
+        "tokenizer_sha256": _hex_digest(
+            report["tokenizer_sha256"],
+            "tokenizer SHA-256",
+        ),
+    }
+    if custody is not None and observed != dict(custody):
+        raise SelectionError("qualified candidate custody is inconsistent")
+    return report, observed
+
+
+def _load_qualified_candidates(
+    root: Path,
+    cell: ProductionCell,
+    report: Mapping[str, object],
+) -> tuple[Candidate, ...]:
+    shard_path = root / "shards" / f"cell-{cell.index}.jsonl.gz"
+    if shard_path.is_symlink():
+        raise SelectionError("qualified candidate shard is a symlink")
+    status = shard_path.stat()
+    if not stat.S_ISREG(status.st_mode) or status.st_nlink != 1:
+        raise SelectionError("qualified candidate shard is unsafe")
+    compressed = shard_path.read_bytes()
+    if (
+        len(compressed) != report["qualified_compressed_bytes"]
+        or hashlib.sha256(compressed).hexdigest() != report["qualified_shard_sha256"]
+    ):
+        raise SelectionError(
+            f"qualified candidate shard hash differs for cell {cell.index}"
+        )
+    try:
+        uncompressed = gzip.decompress(compressed)
+    except (gzip.BadGzipFile, EOFError, OSError) as error:
+        raise SelectionError(
+            "qualified candidate shard cannot be decompressed"
+        ) from error
+    if len(uncompressed) != report["qualified_uncompressed_bytes"]:
+        raise SelectionError("qualified candidate uncompressed size differs")
+    rows = uncompressed.splitlines(keepends=True)
+    if len(rows) != report["admitted_row_count"]:
+        raise SelectionError("qualified candidate shard row count differs")
+    candidates = tuple(
+        _parse_candidate(row, cell=cell, expected_ordinal=None) for row in rows
+    )
+    ordinals = [candidate.row["ordinal"] for candidate in candidates]
+    if (
+        any(
+            type(ordinal) is not int or not 0 <= ordinal < cell.candidate_target
+            for ordinal in ordinals
+        )
+        or len(set(ordinals)) != len(ordinals)
+        or hashlib.sha256(canonical_json_bytes(ordinals)).hexdigest()
+        != report["admitted_ordinals_sha256"]
+    ):
+        raise SelectionError("qualified candidate ordinals differ")
+    return candidates
 
 
 def select_pool(
@@ -401,8 +575,21 @@ def _write_selected_shard(
     }
 
 
+def _qualified_inventory(
+    root: Path,
+    cells: Sequence[ProductionCell],
+) -> None:
+    expected_reports = {f"cell-{cell.index}.json" for cell in cells}
+    expected_shards = {f"cell-{cell.index}.jsonl.gz" for cell in cells}
+    observed_reports = {path.name for path in (root / "reports").iterdir()}
+    observed_shards = {path.name for path in (root / "shards").iterdir()}
+    if observed_reports != expected_reports or observed_shards != expected_shards:
+        raise SelectionError("qualified candidate inventory differs")
+
+
 def audit_and_select(
-    candidate_root: Path,
+    main_candidate_root: Path,
+    confirmation_candidate_root: Path,
     *,
     main_output: Path,
     confirmation_output: Path,
@@ -425,33 +612,51 @@ def audit_and_select(
         length=40,
     )
     cells = production_cells()
-    expected_reports = {f"cell-{cell.index}.json" for cell in cells}
-    expected_shards = {f"cell-{cell.index}.jsonl.gz" for cell in cells}
-    observed_reports = {path.name for path in (candidate_root / "reports").iterdir()}
-    observed_shards = {path.name for path in (candidate_root / "shards").iterdir()}
-    if observed_reports != expected_reports or observed_shards != expected_shards:
-        raise SelectionError("candidate production inventory differs")
+    main_cells = tuple(cell for cell in cells if cell.split in MAIN_SPLITS)
+    confirmation_cells = tuple(
+        cell for cell in cells if cell.split in CONFIRMATION_SPLITS
+    )
+    if main_candidate_root.resolve() == confirmation_candidate_root.resolve():
+        raise SelectionError("qualified main and confirmation roots coincide")
+    _qualified_inventory(main_candidate_root, main_cells)
+    _qualified_inventory(confirmation_candidate_root, confirmation_cells)
     if main_output.exists() or confirmation_output.exists():
         raise SelectionError("selected output root already exists")
 
     reports: dict[int, dict[str, object]] = {}
-    source_commit: str | None = None
-    protocol_freeze: str | None = None
+    roots: dict[int, Path] = {}
+    custody: dict[str, str] | None = None
     candidate_root_hasher = hashlib.sha256()
     for cell in cells:
-        report, source_commit, protocol_freeze = _verify_report(
-            candidate_root,
+        role = "main" if cell.split in MAIN_SPLITS else "sealed_confirmation"
+        root = main_candidate_root if role == "main" else confirmation_candidate_root
+        report, custody = _verify_qualified_report(
+            root,
             cell,
-            source_commit=source_commit,
-            protocol_freeze=protocol_freeze,
+            role=role,
+            custody=custody,
         )
         reports[cell.index] = report
+        roots[cell.index] = root
         candidate_root_hasher.update(
-            str(cell.index).encode("ascii")
+            role.encode("ascii")
+            + b"\0"
+            + str(cell.index).encode("ascii")
             + b"\0"
             + report["report_sha256"].encode("ascii")
             + b"\n"
         )
+    if custody is None:
+        raise SelectionError("qualified candidate custody is empty")
+    qualification_input_rows = sum(
+        int(report["input_row_count"]) for report in reports.values()
+    )
+    qualification_admitted_rows = sum(
+        int(report["admitted_row_count"]) for report in reports.values()
+    )
+    qualification_rejected_rows = sum(
+        int(report["rejected_row_count"]) for report in reports.values()
+    )
 
     selected_factor_sets: dict[str, set[str]] = {
         owner: set() for owner in ("train", "development", "confirmation")
@@ -485,8 +690,8 @@ def audit_and_select(
                 )
                 candidates: list[Candidate] = []
                 for cell in group_cells:
-                    loaded = _load_cell_candidates(
-                        candidate_root,
+                    loaded = _load_qualified_candidates(
+                        roots[cell.index],
                         cell,
                         reports[cell.index],
                     )
@@ -523,6 +728,9 @@ def audit_and_select(
         selected_rows != expected_rows
         or dict(selected_by_split) != dict(SPLIT_CORES)
         or len(selected_episode_ids) != expected_rows
+        or candidate_rows != qualification_admitted_rows
+        or qualification_admitted_rows + qualification_rejected_rows
+        != qualification_input_rows
     ):
         raise SelectionError("selected split cardinality differs")
 
@@ -563,14 +771,21 @@ def audit_and_select(
     for root, role, descriptors in manifests:
         manifest: dict[str, object] = {
             "candidate_root_sha256": candidate_root_hasher.hexdigest(),
+            "codebook_sha256": custody["codebook_sha256"],
             "protocol": PROTOCOL,
-            "protocol_freeze_sha256": protocol_freeze,
+            "protocol_freeze_sha256": custody["protocol_freeze_sha256"],
+            "qualification_admitted_rows": qualification_admitted_rows,
+            "qualification_freeze_sha256": custody["qualifier_freeze_sha256"],
+            "qualification_input_rows": qualification_input_rows,
+            "qualification_rejected_rows": qualification_rejected_rows,
+            "qualification_source_commit": custody["qualifier_source_commit"],
             "role": role,
             "schema": MANIFEST_SCHEMA,
             "selector_freeze_sha256": selector_freeze_sha256,
             "selector_source_commit": selector_source_commit,
             "shards": descriptors,
-            "source_commit": source_commit,
+            "source_commit": custody["candidate_source_commit"],
+            "tokenizer_sha256": custody["tokenizer_sha256"],
             "total_rows": sum(int(item["rows"]) for item in descriptors),
         }
         manifest["manifest_sha256"] = hashlib.sha256(
@@ -583,15 +798,22 @@ def audit_and_select(
         "candidate_rows": candidate_rows,
         "candidate_root_sha256": candidate_root_hasher.hexdigest(),
         "confirmation_manifest_sha256": manifest_hashes["sealed_confirmation"],
+        "codebook_sha256": custody["codebook_sha256"],
         "main_manifest_sha256": manifest_hashes["main"],
         "protocol": PROTOCOL,
-        "protocol_freeze_sha256": protocol_freeze,
+        "protocol_freeze_sha256": custody["protocol_freeze_sha256"],
+        "qualification_admitted_rows": qualification_admitted_rows,
+        "qualification_freeze_sha256": custody["qualifier_freeze_sha256"],
+        "qualification_input_rows": qualification_input_rows,
+        "qualification_rejected_rows": qualification_rejected_rows,
+        "qualification_source_commit": custody["qualifier_source_commit"],
         "schema": SCHEMA,
         "selector_freeze_sha256": selector_freeze_sha256,
         "selector_source_commit": selector_source_commit,
         "selected_rows": selected_rows,
-        "source_commit": source_commit,
+        "source_commit": custody["candidate_source_commit"],
         "status": "pass",
+        "tokenizer_sha256": custody["tokenizer_sha256"],
         "unique_candidate_episode_ids": len(all_episode_ids),
         "unique_selected_episode_ids": len(selected_episode_ids),
     }
@@ -603,7 +825,8 @@ def audit_and_select(
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--candidates", type=Path, required=True)
+    parser.add_argument("--main-candidates", type=Path, required=True)
+    parser.add_argument("--confirmation-candidates", type=Path, required=True)
     parser.add_argument("--main-output", type=Path, required=True)
     parser.add_argument("--confirmation-output", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
@@ -616,7 +839,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     report = audit_and_select(
-        args.candidates,
+        args.main_candidates,
+        args.confirmation_candidates,
         main_output=args.main_output,
         confirmation_output=args.confirmation_output,
         selector_source_root=args.selector_source_root,

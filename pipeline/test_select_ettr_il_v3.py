@@ -16,6 +16,9 @@ from ettr_il_v3_production import (
 from ettr_il_v3_protocol import PROTOCOL, canonical_json_bytes
 from select_ettr_il_v3 import (
     Candidate,
+    CONFIRMATION_SPLITS,
+    MAIN_SPLITS,
+    QUALIFIED_SCHEMA,
     SelectionError,
     audit_and_select,
     select_pool,
@@ -158,6 +161,61 @@ def _write_test_candidates(
         )
 
 
+def _write_test_qualified(
+    raw_root: Path,
+    main_root: Path,
+    confirmation_root: Path,
+    cells: tuple[ProductionCell, ...],
+) -> None:
+    for root in (main_root, confirmation_root):
+        (root / "reports").mkdir(parents=True)
+        (root / "shards").mkdir()
+    for cell in cells:
+        role = "main" if cell.split in MAIN_SPLITS else "sealed_confirmation"
+        assert cell.split in MAIN_SPLITS + CONFIRMATION_SPLITS
+        root = main_root if role == "main" else confirmation_root
+        raw_report = selector._load_canonical_file(
+            raw_root / "reports" / f"cell-{cell.index}.json",
+            maximum_bytes=selector.MAX_REPORT_BYTES,
+        )
+        compressed = (raw_root / "shards" / f"cell-{cell.index}.jsonl.gz").read_bytes()
+        rows = gzip.decompress(compressed).splitlines(keepends=True)
+        ordinals = list(range(len(rows)))
+        (root / "shards" / f"cell-{cell.index}.jsonl.gz").write_bytes(compressed)
+        report: dict[str, object] = {
+            "admitted_ordinals_sha256": hashlib.sha256(
+                canonical_json_bytes(ordinals)
+            ).hexdigest(),
+            "admitted_row_count": len(rows),
+            "candidate_source_commit": "a" * 40,
+            "cell": cell.to_value(),
+            "codebook_sha256": "d" * 64,
+            "input_report_sha256": raw_report["report_sha256"],
+            "input_row_count": len(rows),
+            "input_shard_sha256": raw_report["shard_sha256"],
+            "protocol": PROTOCOL,
+            "protocol_freeze_sha256": "b" * 64,
+            "qualified_compressed_bytes": len(compressed),
+            "qualified_shard_name": f"cell-{cell.index}.jsonl.gz",
+            "qualified_shard_sha256": hashlib.sha256(compressed).hexdigest(),
+            "qualified_uncompressed_bytes": sum(len(row) for row in rows),
+            "qualifier_freeze_sha256": "e" * 64,
+            "qualifier_source_commit": "c" * 40,
+            "rejected_row_count": 0,
+            "rejection_histogram": [],
+            "role": role,
+            "schema": QUALIFIED_SCHEMA,
+            "status": "pass",
+            "tokenizer_sha256": "f" * 64,
+        }
+        report["report_sha256"] = hashlib.sha256(
+            canonical_json_bytes(report)
+        ).hexdigest()
+        (root / "reports" / f"cell-{cell.index}.json").write_bytes(
+            canonical_json_bytes(report)
+        )
+
+
 def _patch_tiny_protocol(
     monkeypatch: pytest.MonkeyPatch,
 ) -> tuple[ProductionCell, ...]:
@@ -230,17 +288,29 @@ def test_audit_selects_exact_splits_and_separates_confirmation(
     cells = _patch_tiny_protocol(monkeypatch)
     candidates = tmp_path / "candidates"
     _write_test_candidates(candidates, cells)
+    qualified_main = tmp_path / "qualified-main"
+    qualified_confirmation = tmp_path / "qualified-confirmation"
+    _write_test_qualified(
+        candidates,
+        qualified_main,
+        qualified_confirmation,
+        cells,
+    )
     main = tmp_path / "main"
     confirmation = tmp_path / "sealed"
 
     report = audit_and_select(
-        candidates,
+        qualified_main,
+        qualified_confirmation,
         main_output=main,
         confirmation_output=confirmation,
         **_selector_custody(tmp_path),
     )
 
     assert report["candidate_rows"] == 12
+    assert report["qualification_input_rows"] == 12
+    assert report["qualification_admitted_rows"] == 12
+    assert report["qualification_rejected_rows"] == 0
     assert report["selected_rows"] == 6
     assert len(tuple(main.glob("*.jsonl.gz"))) == 4
     assert len(tuple(confirmation.glob("*.jsonl.gz"))) == 2
@@ -255,17 +325,78 @@ def test_audit_writes_nothing_before_all_candidates_pass(
     cells = _patch_tiny_protocol(monkeypatch)
     candidates = tmp_path / "candidates"
     _write_test_candidates(candidates, cells)
-    (candidates / "shards" / "cell-5.jsonl.gz").write_bytes(b"corrupt")
+    qualified_main = tmp_path / "qualified-main"
+    qualified_confirmation = tmp_path / "qualified-confirmation"
+    _write_test_qualified(
+        candidates,
+        qualified_main,
+        qualified_confirmation,
+        cells,
+    )
+    (qualified_confirmation / "shards" / "cell-5.jsonl.gz").write_bytes(b"corrupt")
     main = tmp_path / "main"
     confirmation = tmp_path / "sealed"
 
     with pytest.raises(SelectionError, match="hash differs"):
         audit_and_select(
-            candidates,
+            qualified_main,
+            qualified_confirmation,
             main_output=main,
             confirmation_output=confirmation,
             **_selector_custody(tmp_path),
         )
 
+    assert not main.exists()
+    assert not confirmation.exists()
+
+
+def test_selection_fails_closed_when_receiver_admission_exhausts_quota(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    cells = _patch_tiny_protocol(monkeypatch)
+    candidates = tmp_path / "candidates"
+    _write_test_candidates(candidates, cells)
+    qualified_main = tmp_path / "qualified-main"
+    qualified_confirmation = tmp_path / "qualified-confirmation"
+    _write_test_qualified(
+        candidates,
+        qualified_main,
+        qualified_confirmation,
+        cells,
+    )
+    cell = cells[0]
+    empty = gzip.compress(b"", compresslevel=6, mtime=0)
+    (qualified_main / "shards" / f"cell-{cell.index}.jsonl.gz").write_bytes(empty)
+    report_path = qualified_main / "reports" / f"cell-{cell.index}.json"
+    report = selector._load_canonical_file(
+        report_path,
+        maximum_bytes=selector.MAX_REPORT_BYTES,
+    )
+    report["admitted_ordinals_sha256"] = hashlib.sha256(
+        canonical_json_bytes([])
+    ).hexdigest()
+    report["admitted_row_count"] = 0
+    report["qualified_compressed_bytes"] = len(empty)
+    report["qualified_shard_sha256"] = hashlib.sha256(empty).hexdigest()
+    report["qualified_uncompressed_bytes"] = 0
+    report["rejected_row_count"] = cell.candidate_target
+    report["rejection_histogram"] = [
+        ["MaterializationError:no_generic_state_effect", cell.candidate_target]
+    ]
+    report.pop("report_sha256")
+    report["report_sha256"] = hashlib.sha256(canonical_json_bytes(report)).hexdigest()
+    report_path.write_bytes(canonical_json_bytes(report))
+
+    main = tmp_path / "main"
+    confirmation = tmp_path / "sealed"
+    with pytest.raises(SelectionError, match="quota"):
+        audit_and_select(
+            qualified_main,
+            qualified_confirmation,
+            main_output=main,
+            confirmation_output=confirmation,
+            **_selector_custody(tmp_path),
+        )
     assert not main.exists()
     assert not confirmation.exists()

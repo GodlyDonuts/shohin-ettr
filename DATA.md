@@ -4,6 +4,52 @@
 > Kept as background; the master plan adds the Reasoning-Gym procedural corpus, concrete token counts, and the
 > verifier.
 
+## Current ETTR architecture initializer (2026-07-27)
+
+The active data build is `R12-ETTR-IL-v3-initializer`, a mechanism-specific
+initializer for the completed ETTR architecture. It is not ordinary language
+pretraining and is not claimed to be a complete general-reasoning corpus.
+
+The frozen selected target is **62,500 semantic cores**:
+
+| split | semantic cores |
+|---|---:|
+| train | 40,000 |
+| development | 5,000 |
+| sealed confirmation | 5,000 |
+| train reserve | 10,000 |
+| development reserve | 1,250 |
+| sealed confirmation reserve | 1,250 |
+
+Each core is independently reconstructed and replayed as an exact 2x2
+WORLD-by-COMMAND causal rectangle, rendered in four token-native views, and
+expanded to 64 fixed-geometry training rows. The train split therefore
+contains **2.56 million expanded rows** and **1,351,680,000 charged token
+positions**. Horn, guarded-resource, and bounded local-rewrite ontologies are
+balanced across compiler grounding, atomic transitions, query
+counterfactuals, dependent composition, and closed-loop invariance curricula.
+
+Quality is enforced as a sequence of fail-closed gates:
+
+1. deterministic generation from a commit-pinned source freeze;
+2. split ownership from the semantic WORLD before rendering or labels;
+3. exact primary/replay oracle agreement;
+4. receiver-backed qualification through the real architecture materializer;
+5. deterministic coverage-weighted selection with global semantic dedup;
+6. four-view token-width and tensor-geometry admission;
+7. global leakage, replay, uniqueness, and main/confirmation separation audits;
+8. private Hugging Face publication followed by a fresh remote hash round trip.
+
+Raw generation is complete at **324/324 candidate cells**. The first direct
+selection attempt exposed an important quality gap: some generator-valid
+Horn/resource rows were prefix-independent or contained a generic operation
+with no state effect. The receiver correctly rejected them. The pipeline now
+qualifies every overproduced raw candidate with that exact receiver before
+selection; admission is never weakened and insufficient post-qualification
+quota fails closed. Main and sealed-confirmation qualification use physically
+separate roots, and only the main materialized corpus may enter the private
+Hugging Face dataset repository.
+
 ## Pretrain mix — reasoning-tilted (~100–200B tok, WSD)
 
 A 130M model has no tokens to waste on trivia. The pretrain buys a **language floor + a reasoning substrate**,

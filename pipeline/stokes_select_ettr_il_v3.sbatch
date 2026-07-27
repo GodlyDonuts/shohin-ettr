@@ -14,7 +14,8 @@ set -euo pipefail
 umask 077
 
 : "${ETTR_V3_SOURCE_ROOT:?ETTR_V3_SOURCE_ROOT is required}"
-: "${ETTR_V3_CANDIDATE_ROOT:?ETTR_V3_CANDIDATE_ROOT is required}"
+: "${ETTR_V3_MAIN_CANDIDATE_ROOT:?ETTR_V3_MAIN_CANDIDATE_ROOT is required}"
+: "${ETTR_V3_CONFIRMATION_CANDIDATE_ROOT:?ETTR_V3_CONFIRMATION_CANDIDATE_ROOT is required}"
 : "${ETTR_V3_MAIN_ROOT:?ETTR_V3_MAIN_ROOT is required}"
 : "${ETTR_V3_CONFIRMATION_ROOT:?ETTR_V3_CONFIRMATION_ROOT is required}"
 : "${ETTR_V3_SELECTION_REPORT:?ETTR_V3_SELECTION_REPORT is required}"
@@ -34,7 +35,8 @@ mkdir -p \
 export PYTHONPATH="${ETTR_V3_SOURCE_ROOT}/pipeline"
 exec "${PYTHON_BIN}" \
   "${ETTR_V3_SOURCE_ROOT}/pipeline/select_ettr_il_v3.py" \
-  --candidates "${ETTR_V3_CANDIDATE_ROOT}" \
+  --main-candidates "${ETTR_V3_MAIN_CANDIDATE_ROOT}" \
+  --confirmation-candidates "${ETTR_V3_CONFIRMATION_CANDIDATE_ROOT}" \
   --main-output "${ETTR_V3_MAIN_ROOT}" \
   --confirmation-output "${ETTR_V3_CONFIRMATION_ROOT}" \
   --report "${ETTR_V3_SELECTION_REPORT}" \
