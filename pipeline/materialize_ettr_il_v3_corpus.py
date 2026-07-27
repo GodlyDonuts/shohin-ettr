@@ -35,6 +35,7 @@ from ettr_il_v3_protocol import (
     canonical_json_bytes,
 )
 from ettr_il_v3_shards import SemanticCoreRecord
+from freeze_ettr_il_v3_protocol import load_and_verify_freeze
 from select_ettr_il_v3 import (
     CONFIRMATION_SPLITS,
     MAIN_SPLITS,
@@ -328,12 +329,32 @@ def _task_at(manifest: Mapping[str, object], index: int) -> dict[str, object]:
     return task
 
 
+def _verify_materializer_freeze(
+    manifest: Mapping[str, object],
+    source_root: Path,
+    freeze_path: Path,
+) -> None:
+    freeze = load_and_verify_freeze(
+        source_root,
+        freeze_path,
+        source_commit=_hex(
+            manifest["materializer_source_commit"],
+            "materializer source commit",
+            length=40,
+        ),
+    )
+    if freeze.get("freeze_sha256") != manifest["materializer_freeze_sha256"]:
+        raise CorpusMaterializationError("mounted materializer freeze differs")
+
+
 def materialize_task(
     task_manifest: Path,
     selected_root: Path,
     output_root: Path,
     reports_root: Path,
     tokenizer_path: Path,
+    materializer_source_root: Path,
+    materializer_freeze: Path,
     *,
     task_index: int,
     confirmation_key_file: Path | None = None,
@@ -341,6 +362,11 @@ def materialize_task(
     """Materialize one exact selected shard using bounded streaming I/O."""
 
     manifest, task_manifest_sha = _load_tasks(task_manifest)
+    _verify_materializer_freeze(
+        manifest,
+        materializer_source_root,
+        materializer_freeze,
+    )
     task = _task_at(manifest, task_index)
     selected_path = selected_root / _relative(task["input_path"], "input path")
     observed_input_sha, observed_input_bytes = _sha256_file(selected_path)
@@ -517,11 +543,18 @@ def audit_materialization(
     output_root: Path,
     reports_root: Path,
     tokenizer_path: Path,
+    materializer_source_root: Path,
+    materializer_freeze: Path,
     audit_report: Path,
 ) -> dict[str, object]:
     """Fully reload every worker output and emit one global custody receipt."""
 
     manifest, task_manifest_sha = _load_tasks(task_manifest)
+    _verify_materializer_freeze(
+        manifest,
+        materializer_source_root,
+        materializer_freeze,
+    )
     tokenizer = Tokenizer.from_file(str(tokenizer_path))
     codec = TokenNativeSurfaceCodec(tokenizer)
     tasks = manifest["tasks"]
@@ -712,6 +745,8 @@ def _parser() -> argparse.ArgumentParser:
     worker.add_argument("--output-root", type=Path, required=True)
     worker.add_argument("--reports-root", type=Path, required=True)
     worker.add_argument("--tokenizer", type=Path, required=True)
+    worker.add_argument("--materializer-source-root", type=Path, required=True)
+    worker.add_argument("--materializer-freeze", type=Path, required=True)
     worker.add_argument("--task-index", type=int, required=True)
     worker.add_argument("--confirmation-key-file", type=Path)
     audit = subparsers.add_parser("audit")
@@ -719,6 +754,8 @@ def _parser() -> argparse.ArgumentParser:
     audit.add_argument("--output-root", type=Path, required=True)
     audit.add_argument("--reports-root", type=Path, required=True)
     audit.add_argument("--tokenizer", type=Path, required=True)
+    audit.add_argument("--materializer-source-root", type=Path, required=True)
+    audit.add_argument("--materializer-freeze", type=Path, required=True)
     audit.add_argument("--audit-report", type=Path, required=True)
     prepare = subparsers.add_parser("prepare-publication")
     prepare.add_argument("--audit-report", type=Path, required=True)
@@ -744,6 +781,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             arguments.output_root,
             arguments.reports_root,
             arguments.tokenizer,
+            arguments.materializer_source_root,
+            arguments.materializer_freeze,
             task_index=arguments.task_index,
             confirmation_key_file=arguments.confirmation_key_file,
         )
@@ -753,6 +792,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             arguments.output_root,
             arguments.reports_root,
             arguments.tokenizer,
+            arguments.materializer_source_root,
+            arguments.materializer_freeze,
             arguments.audit_report,
         )
     else:

@@ -17,6 +17,7 @@ from materialize_ettr_il_v3_corpus import (
     materialize_task,
     prepare_publication,
 )
+from freeze_ettr_il_v3_protocol import build_freeze
 from select_ettr_il_v3 import MANIFEST_SCHEMA as SELECTED_MANIFEST_SCHEMA
 
 
@@ -72,13 +73,25 @@ def _selected_root(tmp_path: Path) -> Path:
 def test_task_worker_global_audit_and_publication_inventory(tmp_path: Path) -> None:
     selected = _selected_root(tmp_path)
     task_manifest = tmp_path / "tasks.json"
+    source_root = Path(__file__).parent.parent
+    freeze_value = build_freeze(
+        source_root,
+        (
+            "pipeline/ettr_il_v3_protocol.py",
+            "pipeline/materialize_ettr_il_v3_corpus.py",
+        ),
+        source_commit="d" * 40,
+    )
     tasks = build_task_manifest(
         selected,
         task_manifest,
         materializer_source_commit="d" * 40,
-        materializer_freeze_sha256="e" * 64,
+        materializer_freeze_sha256=str(freeze_value["freeze_sha256"]),
     )
     assert tasks["task_count"] == 1
+
+    freeze_path = tmp_path / "freeze.json"
+    freeze_path.write_bytes(canonical_json_bytes(freeze_value))
 
     dataset = tmp_path / "dataset"
     shards = dataset / "shards"
@@ -89,6 +102,8 @@ def test_task_worker_global_audit_and_publication_inventory(tmp_path: Path) -> N
         shards,
         reports,
         DEFAULT_TOKENIZER_PATH,
+        source_root,
+        freeze_path,
         task_index=0,
     )
     assert worker["row_count"] == 1
@@ -100,6 +115,8 @@ def test_task_worker_global_audit_and_publication_inventory(tmp_path: Path) -> N
         shards,
         reports,
         DEFAULT_TOKENIZER_PATH,
+        source_root,
+        freeze_path,
         audit_path,
     )
     assert audit["schema"] == AUDIT_SCHEMA

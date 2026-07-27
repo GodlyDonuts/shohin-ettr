@@ -19,6 +19,7 @@ umask 077
 : "${ETTR_V3_OUTPUT_ROOT:?ETTR_V3_OUTPUT_ROOT is required}"
 : "${ETTR_V3_REPORTS_ROOT:?ETTR_V3_REPORTS_ROOT is required}"
 : "${ETTR_V3_TOKENIZER:?ETTR_V3_TOKENIZER is required}"
+: "${ETTR_V3_MATERIALIZER_FREEZE:?ETTR_V3_MATERIALIZER_FREEZE is required}"
 : "${SLURM_ARRAY_TASK_ID:?SLURM_ARRAY_TASK_ID is required}"
 
 PYTHON_BIN="${ETTR_V3_PYTHON_BIN:?ETTR_V3_PYTHON_BIN is required}"
@@ -33,6 +34,8 @@ arguments=(
   --output-root "${ETTR_V3_OUTPUT_ROOT}"
   --reports-root "${ETTR_V3_REPORTS_ROOT}"
   --tokenizer "${ETTR_V3_TOKENIZER}"
+  --materializer-source-root "${ETTR_V3_SOURCE_ROOT}"
+  --materializer-freeze "${ETTR_V3_MATERIALIZER_FREEZE}"
   --task-index "${SLURM_ARRAY_TASK_ID}"
 )
 if [[ -n "${ETTR_V3_CONFIRMATION_KEY_FILE:-}" ]]; then
