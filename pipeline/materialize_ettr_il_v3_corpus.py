@@ -386,8 +386,7 @@ def materialize_task(
     ):
         raise CorpusMaterializationError("selected input identity differs")
     key = _confirmation_key(confirmation_key_file, manifest["role"])
-    tokenizer = Tokenizer.from_file(str(tokenizer_path))
-    codec = TokenNativeSurfaceCodec(tokenizer)
+    codec = TokenNativeSurfaceCodec(tokenizer_path)
     output_path = output_root / _relative(task["output_path"], "output path")
     report_path = reports_root / _relative(task["report_path"], "report path")
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -418,7 +417,7 @@ def materialize_task(
                         candidate = _strict_load(payload, "selected candidate row")
                         record = materialize_candidate(
                             candidate,
-                            tokenizer,
+                            codec,
                             confirmation_key=key,
                         )
                         if (
@@ -568,7 +567,7 @@ def audit_materialization(
         materializer_freeze,
     )
     tokenizer = Tokenizer.from_file(str(tokenizer_path))
-    codec = TokenNativeSurfaceCodec(tokenizer)
+    codec = TokenNativeSurfaceCodec(tokenizer_path)
     tasks = manifest["tasks"]
     assert isinstance(tasks, list)
     expected_reports = {

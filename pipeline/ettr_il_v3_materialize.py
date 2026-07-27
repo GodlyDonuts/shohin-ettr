@@ -711,7 +711,11 @@ def materialize_candidate(
                 "public materialization cannot receive a confirmation key"
             )
         split_key = derive_public_split_key(0, owner_split)
-    codec = TokenNativeSurfaceCodec(tokenizer)  # type: ignore[arg-type]
+    codec = (
+        tokenizer
+        if isinstance(tokenizer, TokenNativeSurfaceCodec)
+        else TokenNativeSurfaceCodec(tokenizer)  # type: ignore[arg-type]
+    )
     generic_rectangles: list[GenericSemanticRectangle] = []
     views: list[SourceView] = []
     for renderer in RENDERERS:
@@ -763,10 +767,7 @@ def materialize_candidate(
             "tokenizer_sha256": codec.tokenizer_sha256,
         }
     )
-    try:
-        vocab_size = tokenizer.get_vocab_size()  # type: ignore[union-attr]
-    except AttributeError as exc:
-        raise V3MaterializationError("tokenizer lacks get_vocab_size") from exc
+    vocab_size = codec.tokenizer.get_vocab_size()
     batch = materialize_ettr_il_v2(
         MaterializationRequest(
             manifest_sha256=manifest_sha256,
@@ -779,7 +780,7 @@ def materialize_candidate(
             ),
             require_query_checkerboard=False,
         ),
-        tokenizer,
+        codec.tokenizer,
     )
     if (
         batch.episodes.world.tokens.shape[0] != ROWS_PER_CORE

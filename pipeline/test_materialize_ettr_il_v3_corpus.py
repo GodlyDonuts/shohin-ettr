@@ -4,6 +4,7 @@ import gzip
 import hashlib
 from pathlib import Path
 
+import ettr_il_v2_token_native_surface
 from tokenizers import Tokenizer
 
 from ettr_il_v2_token_native_surface import DEFAULT_TOKENIZER_PATH
@@ -84,7 +85,17 @@ def _selected_root(
     return root
 
 
-def test_task_worker_global_audit_and_publication_inventory(tmp_path: Path) -> None:
+def test_task_worker_global_audit_and_publication_inventory(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    tokenizer_path = tmp_path / "tokenizer.json"
+    tokenizer_path.write_bytes(DEFAULT_TOKENIZER_PATH.read_bytes())
+    monkeypatch.setattr(
+        ettr_il_v2_token_native_surface,
+        "DEFAULT_TOKENIZER_PATH",
+        tmp_path / "developer-default-does-not-exist.json",
+    )
     selected = _selected_root(tmp_path)
     task_manifest = tmp_path / "tasks.json"
     source_root = Path(__file__).parent.parent
@@ -115,7 +126,7 @@ def test_task_worker_global_audit_and_publication_inventory(tmp_path: Path) -> N
         selected,
         shards,
         reports,
-        DEFAULT_TOKENIZER_PATH,
+        tokenizer_path,
         source_root,
         freeze_path,
         task_index=0,
@@ -128,7 +139,7 @@ def test_task_worker_global_audit_and_publication_inventory(tmp_path: Path) -> N
         task_manifest,
         shards,
         reports,
-        DEFAULT_TOKENIZER_PATH,
+        tokenizer_path,
         source_root,
         freeze_path,
         audit_path,
@@ -173,7 +184,7 @@ def test_task_worker_global_audit_and_publication_inventory(tmp_path: Path) -> N
         confirmation_selected,
         confirmation_shards,
         confirmation_reports,
-        DEFAULT_TOKENIZER_PATH,
+        tokenizer_path,
         source_root,
         freeze_path,
         task_index=0,
@@ -184,7 +195,7 @@ def test_task_worker_global_audit_and_publication_inventory(tmp_path: Path) -> N
         confirmation_tasks,
         confirmation_shards,
         confirmation_reports,
-        DEFAULT_TOKENIZER_PATH,
+        tokenizer_path,
         source_root,
         freeze_path,
         confirmation_audit_path,

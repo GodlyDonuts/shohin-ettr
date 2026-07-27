@@ -15219,3 +15219,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `r12_ettr_il_v3_research_archive_organized_candidate_production_319_of_324`.
+
+- **2026-07-27 06:44 EDT** -- **All 324 ETTR v3 candidate cells completed
+  cleanly; the first materialization launch failed closed on a tokenizer-path
+  preflight gap, and the bounded repair is locally admitted.** No model,
+  checkpoint, optimizer, GPU, or continuation-pretraining operation was
+  performed.
+
+  Production `751777` completed all 324 immutable candidate reports with zero
+  nonempty stderr files. Deterministic selector `752104` and task-manifest
+  builder `752105` completed successfully. All 60 main and 30 sealed
+  confirmation materializer cells then failed before opening any output shard.
+  Every stderr file was byte-identical: `TokenNativeSurfaceCodec` received an
+  in-memory tokenizer object, attempted to reopen the developer-machine
+  `DEFAULT_TOKENIZER_PATH`, and rejected the absent Stokes path. Both output
+  roots contain zero files, so no partial corpus bytes require reconciliation.
+
+  The repair constructs the codec from the explicitly supplied immutable
+  tokenizer path and passes that already verified codec through
+  `materialize_candidate`. Candidate materialization now reuses one codebook
+  per worker rather than reconstructing it per semantic row. The regression
+  copies the exact tokenizer to a temporary path, makes the developer default
+  intentionally nonexistent, and executes worker, aggregate audit,
+  publication inventory, sealed confirmation, and cross-root separation.
+  Focused materialization tests pass 6/6; the complete ETTR v2/v3 selection,
+  materialization, and publication regression passes 432/432. Ruff, byte
+  compilation, and diff checks are clean.
+
+  The failed arrays and their dependency-never-satisfied audits are retired.
+  Preserve the successful selected roots. Commit and freeze the repaired
+  source, rebuild task manifests against the new materializer freeze, then
+  submit fresh main/confirmation arrays and independent audit/separation jobs.
+
+  Decision:
+  `r12_ettr_il_v3_candidates_complete_materializer_tokenizer_path_repair_admitted`.
