@@ -336,6 +336,11 @@ def test_non_checkerboard_queries_and_bad_ids_fail_closed() -> None:
     )
     with pytest.raises(ResourceAdapterError, match="strict checkerboards"):
         adapt_resource_rectangle(**values)  # type: ignore[arg-type]
+    broad = adapt_resource_rectangle(
+        **values,  # type: ignore[arg-type]
+        require_query_checkerboard=False,
+    )
+    assert len(broad.corners) == 2
 
     values = _inputs()
     values["semantic_rectangle_id"] = "not-a-digest"

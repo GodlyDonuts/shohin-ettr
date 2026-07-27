@@ -377,3 +377,9 @@ def test_rejects_non_checkerboard_answer_semantics() -> None:
 
     with pytest.raises(HornAdapterError, match="not a strict checkerboard"):
         adapt_horn_semantic_rectangle(**board)  # type: ignore[arg-type]
+
+    broad = adapt_horn_semantic_rectangle(
+        **board,  # type: ignore[arg-type]
+        require_query_checkerboard=False,
+    )
+    assert len(broad.corners) == 2

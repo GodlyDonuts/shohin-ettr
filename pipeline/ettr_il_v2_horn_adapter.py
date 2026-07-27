@@ -560,6 +560,7 @@ def adapt_horn_semantic_rectangle(
     world_sources: SourceMatrix,
     command_sources: SourceMatrix,
     query_prefixes: SourceMatrix,
+    require_query_checkerboard: bool = True,
 ) -> GenericSemanticRectangle:
     """Project one exact Horn 2x2 semantic board into the generic v2 schema."""
 
@@ -593,6 +594,8 @@ def adapt_horn_semantic_rectangle(
 
     query_values = _require_exact_pair(queries, "queries")
     if (
+        not isinstance(require_query_checkerboard, bool)
+        or
         any(type(query) is not SemanticQuery for query in query_values)
         or any(query.ontology is not Ontology.HORN for query in query_values)
         or query_values[0] == query_values[1]
@@ -670,11 +673,12 @@ def adapt_horn_semantic_rectangle(
                     )
                 label_columns[query_index].append(answer)
 
-    for query_index, labels in enumerate(label_columns):
-        if tuple(labels) not in CHECKERBOARD_PATTERNS:
-            raise HornAdapterError(
-                f"Horn query {query_index} labels are not a strict checkerboard"
-            )
+    if require_query_checkerboard:
+        for query_index, labels in enumerate(label_columns):
+            if tuple(labels) not in CHECKERBOARD_PATTERNS:
+                raise HornAdapterError(
+                    f"Horn query {query_index} labels are not a strict checkerboard"
+                )
 
     rectangle = GenericSemanticRectangle(
         semantic_rectangle_id=rectangle_id,

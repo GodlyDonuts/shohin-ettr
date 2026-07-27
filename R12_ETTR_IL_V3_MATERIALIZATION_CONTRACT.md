@@ -58,6 +58,8 @@ The legacy CPU materializer keeps strict checkerboards as its default. V3
 callers must explicitly set `require_query_checkerboard=False`; non-Boolean
 mode values fail closed. This prevents a broad v3 caller from accidentally
 changing v2 behavior or relying on an implicit global relaxation.
+The Horn and resource semantic adapters use the same explicit default-strict
+mode and independently recompute every broad-mode answer from each corner.
 
 ## 4. Query objective
 

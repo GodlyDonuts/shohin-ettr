@@ -44,6 +44,7 @@ from ettr_il_v2_semantics import (
     StepOutcome,
     TerminalDisposition,
     checkerboard_labels,
+    evaluate_query,
     execute_resource,
     replay_resource,
 )
@@ -385,6 +386,7 @@ def adapt_resource_rectangle(
     cell_world_sources: CellBytes,
     cell_command_sources: CellBytes,
     query_prefixes: tuple[tuple[bytes, bytes], tuple[bytes, bytes]],
+    require_query_checkerboard: bool = True,
 ) -> GenericSemanticRectangle:
     """Project one already-selected resource rectangle without rendering it.
 
@@ -393,6 +395,8 @@ def adapt_resource_rectangle(
     ``query_prefixes[query][paraphrase]``.
     """
 
+    if not isinstance(require_query_checkerboard, bool):
+        raise ResourceAdapterError("query checkerboard mode differs")
     rectangle_id = _identifier(
         semantic_rectangle_id,
         "semantic_rectangle_id",
@@ -462,16 +466,27 @@ def adapt_resource_rectangle(
         validated[1][0],
         validated[1][1],
     )
-    try:
-        semantic_rectangle = SemanticRectangle(flat)
-        label_rows = tuple(
-            checkerboard_labels(query, semantic_rectangle)
-            for query in typed_queries
-        )
-    except (ValueError, SemanticAdmissionError) as exc:
-        raise ResourceAdapterError(
-            "resource query labels do not form strict checkerboards"
-        ) from exc
+    if require_query_checkerboard:
+        try:
+            semantic_rectangle = SemanticRectangle(flat)
+            label_rows = tuple(
+                checkerboard_labels(query, semantic_rectangle)
+                for query in typed_queries
+            )
+        except (ValueError, SemanticAdmissionError) as exc:
+            raise ResourceAdapterError(
+                "resource query labels do not form strict checkerboards"
+            ) from exc
+    else:
+        try:
+            label_rows = tuple(
+                tuple(evaluate_query(query, execution) for execution in flat)
+                for query in typed_queries
+            )
+        except (ValueError, SemanticAdmissionError) as exc:
+            raise ResourceAdapterError(
+                "resource query labels are not answerable"
+            ) from exc
 
     generic_worlds = tuple(
         GenericWorld(
