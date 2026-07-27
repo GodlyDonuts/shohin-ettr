@@ -7,6 +7,7 @@ import hashlib
 from pathlib import Path
 
 import select_ettr_il_v3 as selector
+from freeze_ettr_il_v3_protocol import build_freeze
 from ettr_il_v3_production import (
     ROW_SCHEMA,
     ProductionCell,
@@ -67,9 +68,7 @@ def test_selection_is_exact_deterministic_and_coverage_weighted() -> None:
     )
     assert candidates[2] in first
     assert len(first) == 2
-    assert first_forbidden == {
-        item.semantic_factor_sha256 for item in first
-    }
+    assert first_forbidden == {item.semantic_factor_sha256 for item in first}
 
 
 def test_selection_rejects_duplicate_or_forbidden_semantic_factors() -> None:
@@ -120,9 +119,7 @@ def _write_test_candidates(
                     "owner": owner,
                 },
             }
-            episode_id = hashlib.sha256(
-                canonical_json_bytes(episode)
-            ).hexdigest()
+            episode_id = hashlib.sha256(canonical_json_bytes(episode)).hexdigest()
             rows.append(
                 canonical_json_bytes(
                     {
@@ -206,6 +203,26 @@ def _patch_tiny_protocol(
     return cells
 
 
+def _selector_custody(tmp_path: Path) -> dict[str, object]:
+    source_root = Path(__file__).parent.parent
+    source_commit = "f" * 40
+    freeze = build_freeze(
+        source_root,
+        (
+            "pipeline/ettr_il_v3_protocol.py",
+            "pipeline/select_ettr_il_v3.py",
+        ),
+        source_commit=source_commit,
+    )
+    freeze_path = tmp_path / "selector-freeze.json"
+    freeze_path.write_bytes(canonical_json_bytes(freeze))
+    return {
+        "selector_freeze": freeze_path,
+        "selector_source_commit": source_commit,
+        "selector_source_root": source_root,
+    }
+
+
 def test_audit_selects_exact_splits_and_separates_confirmation(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -220,6 +237,7 @@ def test_audit_selects_exact_splits_and_separates_confirmation(
         candidates,
         main_output=main,
         confirmation_output=confirmation,
+        **_selector_custody(tmp_path),
     )
 
     assert report["candidate_rows"] == 12
@@ -246,6 +264,7 @@ def test_audit_writes_nothing_before_all_candidates_pass(
             candidates,
             main_output=main,
             confirmation_output=confirmation,
+            **_selector_custody(tmp_path),
         )
 
     assert not main.exists()

@@ -14,6 +14,7 @@ from pathlib import Path
 import stat
 from typing import Iterable, Mapping, Sequence
 
+from freeze_ettr_il_v3_protocol import load_and_verify_freeze
 from ettr_il_v3_production import (
     ROW_SCHEMA,
     SCHEMA as PRODUCTION_SCHEMA,
@@ -334,8 +335,7 @@ def select_pool(
 
     def score(candidate: Candidate) -> int:
         return sum(
-            1_000_000_000 // frequencies[token]
-            for token in candidate.coverage_tokens
+            1_000_000_000 // frequencies[token] for token in candidate.coverage_tokens
         )
 
     ranked = sorted(
@@ -367,8 +367,7 @@ def select_pool(
             break
     if len(selected) != quota:
         raise SelectionError(
-            f"unique semantic-factor selection exhausted at "
-            f"{len(selected)} of {quota}"
+            f"unique semantic-factor selection exhausted at {len(selected)} of {quota}"
         )
     forbidden_semantic_factors.update(local_factors)
     return tuple(selected)
@@ -407,16 +406,29 @@ def audit_and_select(
     *,
     main_output: Path,
     confirmation_output: Path,
+    selector_source_root: Path,
+    selector_source_commit: str,
+    selector_freeze: Path,
 ) -> dict[str, object]:
+    selector_receipt = load_and_verify_freeze(
+        selector_source_root,
+        selector_freeze,
+        source_commit=selector_source_commit,
+    )
+    selector_freeze_sha256 = _hex_digest(
+        selector_receipt.get("freeze_sha256"),
+        "selector freeze",
+    )
+    selector_source_commit = _hex_digest(
+        selector_source_commit,
+        "selector source commit",
+        length=40,
+    )
     cells = production_cells()
     expected_reports = {f"cell-{cell.index}.json" for cell in cells}
     expected_shards = {f"cell-{cell.index}.jsonl.gz" for cell in cells}
-    observed_reports = {
-        path.name for path in (candidate_root / "reports").iterdir()
-    }
-    observed_shards = {
-        path.name for path in (candidate_root / "shards").iterdir()
-    }
+    observed_reports = {path.name for path in (candidate_root / "reports").iterdir()}
+    observed_shards = {path.name for path in (candidate_root / "shards").iterdir()}
     if observed_reports != expected_reports or observed_shards != expected_shards:
         raise SelectionError("candidate production inventory differs")
     if main_output.exists() or confirmation_output.exists():
@@ -446,9 +458,7 @@ def audit_and_select(
     }
     all_episode_ids: set[str] = set()
     selected_episode_ids: set[str] = set()
-    selected_groups: list[
-        tuple[str, str, str, tuple[Candidate, ...]]
-    ] = []
+    selected_groups: list[tuple[str, str, str, tuple[Candidate, ...]]] = []
     selected_by_split: Counter[str] = Counter()
     main_descriptors: list[dict[str, object]] = []
     confirmation_descriptors: list[dict[str, object]] = []
@@ -482,7 +492,9 @@ def audit_and_select(
                     )
                     for candidate in loaded:
                         if candidate.episode_id in all_episode_ids:
-                            raise SelectionError("candidate episode ID repeats globally")
+                            raise SelectionError(
+                                "candidate episode ID repeats globally"
+                            )
                         all_episode_ids.add(candidate.episode_id)
                     candidates.extend(loaded)
                 candidate_rows += len(candidates)
@@ -518,9 +530,7 @@ def audit_and_select(
     main_output.mkdir(parents=True)
     confirmation_output.mkdir(parents=True)
     for split, family, stage, selected in selected_groups:
-        output_root = (
-            main_output if split in MAIN_SPLITS else confirmation_output
-        )
+        output_root = main_output if split in MAIN_SPLITS else confirmation_output
         filename = f"{split}-{family}-{stage}.jsonl.gz"
         descriptor = _write_selected_shard(
             output_root / filename,
@@ -533,11 +543,9 @@ def audit_and_select(
                 "stage": stage,
             }
         )
-        (
-            main_descriptors
-            if split in MAIN_SPLITS
-            else confirmation_descriptors
-        ).append(descriptor)
+        (main_descriptors if split in MAIN_SPLITS else confirmation_descriptors).append(
+            descriptor
+        )
 
     manifests = (
         (
@@ -559,6 +567,8 @@ def audit_and_select(
             "protocol_freeze_sha256": protocol_freeze,
             "role": role,
             "schema": MANIFEST_SCHEMA,
+            "selector_freeze_sha256": selector_freeze_sha256,
+            "selector_source_commit": selector_source_commit,
             "shards": descriptors,
             "source_commit": source_commit,
             "total_rows": sum(int(item["rows"]) for item in descriptors),
@@ -577,6 +587,8 @@ def audit_and_select(
         "protocol": PROTOCOL,
         "protocol_freeze_sha256": protocol_freeze,
         "schema": SCHEMA,
+        "selector_freeze_sha256": selector_freeze_sha256,
+        "selector_source_commit": selector_source_commit,
         "selected_rows": selected_rows,
         "source_commit": source_commit,
         "status": "pass",
@@ -595,6 +607,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--main-output", type=Path, required=True)
     parser.add_argument("--confirmation-output", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
+    parser.add_argument("--selector-source-root", type=Path, required=True)
+    parser.add_argument("--selector-source-commit", required=True)
+    parser.add_argument("--selector-freeze", type=Path, required=True)
     return parser.parse_args(argv)
 
 
@@ -604,6 +619,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.candidates,
         main_output=args.main_output,
         confirmation_output=args.confirmation_output,
+        selector_source_root=args.selector_source_root,
+        selector_source_commit=args.selector_source_commit,
+        selector_freeze=args.selector_freeze,
     )
     _write_no_replace(args.report, canonical_json_bytes(report))
     print(

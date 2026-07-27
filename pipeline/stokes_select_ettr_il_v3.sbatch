@@ -18,6 +18,8 @@ umask 077
 : "${ETTR_V3_MAIN_ROOT:?ETTR_V3_MAIN_ROOT is required}"
 : "${ETTR_V3_CONFIRMATION_ROOT:?ETTR_V3_CONFIRMATION_ROOT is required}"
 : "${ETTR_V3_SELECTION_REPORT:?ETTR_V3_SELECTION_REPORT is required}"
+: "${ETTR_V3_SOURCE_COMMIT:?ETTR_V3_SOURCE_COMMIT is required}"
+: "${ETTR_V3_SELECTOR_FREEZE:?ETTR_V3_SELECTOR_FREEZE is required}"
 
 PYTHON_BIN="${ETTR_V3_PYTHON_BIN:-/usr/bin/python3.12}"
 test -x "${PYTHON_BIN}"
@@ -35,4 +37,7 @@ exec "${PYTHON_BIN}" \
   --candidates "${ETTR_V3_CANDIDATE_ROOT}" \
   --main-output "${ETTR_V3_MAIN_ROOT}" \
   --confirmation-output "${ETTR_V3_CONFIRMATION_ROOT}" \
-  --report "${ETTR_V3_SELECTION_REPORT}"
+  --report "${ETTR_V3_SELECTION_REPORT}" \
+  --selector-source-root "${ETTR_V3_SOURCE_ROOT}" \
+  --selector-source-commit "${ETTR_V3_SOURCE_COMMIT}" \
+  --selector-freeze "${ETTR_V3_SELECTOR_FREEZE}"

@@ -15143,6 +15143,15 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   physically separate single-link 32-byte key file with no group/other
   permissions.
 
+  Final membership selection is now under the same custody boundary. The
+  selector requires an immutable source root, exact source commit, and
+  independently replayed source-freeze receipt before reading candidates.
+  Both selected manifests and the selection receipt bind that selector
+  commit/freeze in addition to the older candidate-generator commit/freeze;
+  every materializer worker and the final audit carry those bindings forward.
+  This closes the prior gap where generation was source-frozen but the
+  deterministic membership algorithm was identified only indirectly.
+
   The global audit fully reloads every output row, validates canonical
   `SemanticCoreRecord` structure, requires all four renderer views and all
   four WORLD/COMMAND/QUERY sources, re-encodes exact 192/96/48 token

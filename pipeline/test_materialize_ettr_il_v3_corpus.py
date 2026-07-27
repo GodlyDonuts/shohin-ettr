@@ -49,6 +49,8 @@ def _selected_root(tmp_path: Path) -> Path:
         "protocol_freeze_sha256": "b" * 64,
         "role": "main",
         "schema": SELECTED_MANIFEST_SCHEMA,
+        "selector_freeze_sha256": "e" * 64,
+        "selector_source_commit": "f" * 40,
         "shards": [
             {
                 "bytes": len(payload),

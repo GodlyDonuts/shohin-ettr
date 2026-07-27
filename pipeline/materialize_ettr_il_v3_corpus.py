@@ -271,6 +271,15 @@ def build_task_manifest(
         "selected_source_commit": _hex(
             selected.get("source_commit"), "selected source commit", length=40
         ),
+        "selector_freeze_sha256": _hex(
+            selected.get("selector_freeze_sha256"),
+            "selector freeze SHA-256",
+        ),
+        "selector_source_commit": _hex(
+            selected.get("selector_source_commit"),
+            "selector source commit",
+            length=40,
+        ),
         "task_count": len(tasks),
         "tasks": tasks,
         "total_rows": total_rows,
@@ -458,6 +467,8 @@ def materialize_task(
         "schema": WORKER_SCHEMA,
         "selected_manifest_sha256": manifest["selected_manifest_sha256"],
         "selected_source_commit": manifest["selected_source_commit"],
+        "selector_freeze_sha256": manifest["selector_freeze_sha256"],
+        "selector_source_commit": manifest["selector_source_commit"],
         "status": "pass",
         "task": task,
         "task_manifest_sha256": task_manifest_sha,
@@ -598,6 +609,10 @@ def audit_materialization(
             != manifest["selected_manifest_sha256"]
             or report.get("selected_source_commit")
             != manifest["selected_source_commit"]
+            or report.get("selector_freeze_sha256")
+            != manifest["selector_freeze_sha256"]
+            or report.get("selector_source_commit")
+            != manifest["selector_source_commit"]
             or report.get("tokenizer_sha256") != codec.tokenizer_sha256
             or report.get("codebook_sha256") != codec.codebook_sha256
         ):
@@ -662,6 +677,8 @@ def audit_materialization(
         "role": manifest["role"],
         "schema": AUDIT_SCHEMA,
         "selected_manifest_sha256": manifest["selected_manifest_sha256"],
+        "selector_freeze_sha256": manifest["selector_freeze_sha256"],
+        "selector_source_commit": manifest["selector_source_commit"],
         "shards": descriptors,
         "split_counts": split_counts,
         "status": "pass",
