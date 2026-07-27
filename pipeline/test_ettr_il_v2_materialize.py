@@ -427,6 +427,37 @@ def test_invalid_query_edge_contrast_fails_closed() -> None:
         materialize_ettr_il_v2(_request(rectangle), TOKENIZER)
 
 
+def test_v3_broad_mode_accepts_answer_invariant_packet_effects() -> None:
+    rectangle = _rectangle("broad-answer-edge")
+    left_answers = rectangle.corners[0][0].answers
+    broad_corner = replace(rectangle.corners[0][1], answers=left_answers)
+    rectangle = replace(
+        rectangle,
+        corners=(
+            (rectangle.corners[0][0], broad_corner),
+            rectangle.corners[1],
+        ),
+    )
+    request = replace(
+        _request(rectangle),
+        require_query_checkerboard=False,
+    )
+    batch = materialize_ettr_il_v2(request, TOKENIZER)
+    assert batch.causal_rectangles.rows.shape == (4, 2, 2)
+    assert batch.terminal_packet_targets.value_code.shape[0] == 16
+
+
+def test_query_checkerboard_mode_must_be_boolean() -> None:
+    with pytest.raises(MaterializationError, match="request differs"):
+        materialize_ettr_il_v2(
+            replace(
+                _request(_rectangle("bad-checkerboard-mode")),
+                require_query_checkerboard=1,
+            ),
+            TOKENIZER,
+        )
+
+
 def test_invalid_terminal_edge_contrast_fails_closed() -> None:
     rectangle = _rectangle("packet-edge")
     command = replace(

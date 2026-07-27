@@ -258,6 +258,7 @@ class MaterializationRequest:
     vocab_size: int
     rectangles: tuple[GenericSemanticRectangle, ...]
     invariant_pairs: tuple[GenericInvariantPair, ...] = ()
+    require_query_checkerboard: bool = True
 
 
 @runtime_checkable
@@ -988,6 +989,8 @@ def _prepare_rectangle(
     rectangle_index: int,
     tokenizer: TokenizerProtocol,
     vocab_size: int,
+    *,
+    require_query_checkerboard: bool,
 ) -> list[_PreparedRow]:
     _validate_rectangle_shape(rectangle, rectangle_index)
     name = f"rectangle {rectangle_index}"
@@ -1131,16 +1134,17 @@ def _prepare_rectangle(
                 [query_by_corner[w][c][2] for c in range(2)]
                 for w in range(2)
             ]
-            for left, right, edge_name in (
-                (labels[0][0], labels[1][0], "WORLD/C0"),
-                (labels[0][1], labels[1][1], "WORLD/C1"),
-                (labels[0][0], labels[0][1], "COMMAND/W0"),
-                (labels[1][0], labels[1][1], "COMMAND/W1"),
-            ):
-                if left == right:
-                    raise MaterializationError(
-                        f"{name} {edge_name} has no query-label contrast"
-                    )
+            if require_query_checkerboard:
+                for left, right, edge_name in (
+                    (labels[0][0], labels[1][0], "WORLD/C0"),
+                    (labels[0][1], labels[1][1], "WORLD/C1"),
+                    (labels[0][0], labels[0][1], "COMMAND/W0"),
+                    (labels[1][0], labels[1][1], "COMMAND/W1"),
+                ):
+                    if left == right:
+                        raise MaterializationError(
+                            f"{name} {edge_name} has no query-label contrast"
+                        )
             for world_index in range(2):
                 for command_index in range(2):
                     query_segment, read_index, answer_token = (
@@ -1367,6 +1371,7 @@ def materialize_ettr_il_v2(
         or not _plain_int(request.vocab_size)
         or request.vocab_size <= 1
         or not request.rectangles
+        or not isinstance(request.require_query_checkerboard, bool)
         or not isinstance(tokenizer, TokenizerProtocol)
     ):
         raise MaterializationError("materialization request differs")
@@ -1384,6 +1389,7 @@ def materialize_ettr_il_v2(
                 index,
                 tokenizer,
                 request.vocab_size,
+                require_query_checkerboard=request.require_query_checkerboard,
             )
         )
     if len({row.episode_id for row in rows}) != len(rows):

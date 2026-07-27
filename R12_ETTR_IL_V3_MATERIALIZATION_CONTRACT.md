@@ -54,6 +54,11 @@ Strict answer-label checkerboards remain mandatory for separately designated
 qualification/evaluation boards. They are not a universal initializer-data
 shape and cannot be inferred from the generic rectangle type.
 
+The legacy CPU materializer keeps strict checkerboards as its default. V3
+callers must explicitly set `require_query_checkerboard=False`; non-Boolean
+mode values fail closed. This prevents a broad v3 caller from accidentally
+changing v2 behavior or relying on an implicit global relaxation.
+
 ## 4. Query objective
 
 For every matched intervention pair:

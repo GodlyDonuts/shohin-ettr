@@ -15051,7 +15051,10 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   applies bounded Jensen-Shannon invariance to answer-preserving pairs.
   Objective/update receipts now partition classification support into
   contrast and invariance counts and enforce the partition on device. The
-  neural architecture and 192,779,435 parameter total are unchanged.
+  legacy CPU materializer remains checkerboard-strict by default; v3 must
+  explicitly request its Boolean broad mode, and malformed mode values fail
+  closed. The neural architecture and 192,779,435 parameter total are
+  unchanged.
 
   Focused objective/data/train-step tests pass 61/61. The complete ETTR
   regression passes 276 tests with one intentional skip, and the complete v3
