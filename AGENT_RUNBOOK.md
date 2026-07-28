@@ -15570,3 +15570,51 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `ettr_phase2_four_gpu_pilot_queued_scans_complete_future_data_not_wholesale_admitted_exact_record_inverse_passes`.
+
+- **2026-07-28 19:25 EDT** -- **Phase 2 now has a quality-first source
+  standard, a fail-closed candidate registry, and three current-source shadow
+  probes running on Stokes.**
+
+  `docs/research/PHASE2_DATA_SELECTION_STANDARD.md` makes broad usefulness,
+  correctness, provenance, privacy, and ETTR causal retention explicit
+  selection objectives. It rejects source scale, recency, upstream classifier
+  scores, and public benchmark gains as sufficient admission evidence. The
+  proposed equal-token mixture corrects the historical math/code skew with
+  selected educational web prose, English educational PDFs, licensed
+  reference/science/books, and license-resolved educational code. ETTR remains
+  a separate architecture-native update stream.
+
+  `pipeline/pretrain_sources.json` is now schema v2 and explicitly
+  `candidate_registry_not_training_admission`. The validator
+  `pipeline/validate_pretrain_sources.py` requires a 100% candidate mixture,
+  pinned-source/legal/provenance/dedup/decontamination/privacy/semantic/utility
+  gates, rejection of unknown-license code, and a hash-bound admission
+  receipt. Five focused tests pass. FinePDFs-Edu English is added as a P0
+  candidate, while wholesale DCLM and OpenMath remain quarantined.
+
+  CPU-only jobs `753857`, `753858`, and `753859` completed 1,000-row
+  read-only schema, provenance, license, and evaluation-overlap probes for
+  FineWeb-Edu, English FinePDFs-Edu, and Common Pile/Comma. All sampled
+  contamination counts are zero. FineWeb-Edu and FinePDFs-Edu expose rich
+  provenance and quality metadata. Consolidated Comma exposes only `text` and
+  is rejected as a training source; use its component datasets directly.
+  Report SHA-256 values are
+  `be75214999fbc31e7359c2610ea55896aa9363d65f8f986b073b9045bee9dc3c`,
+  `245d831d2ed7a3f5e0175f9cb8fde5908edf5ab598e51345a589e8f4fa1918ab`,
+  and
+  `c19f5c9b616d4d6d57da41323a14d1d90edfb5154c5289c858e853b4dbf5c3cd`.
+  Follow-up component probes `753862` (peS2o) and `753863` (Stack-Edu
+  Python metadata) completed cleanly with zero sampled evaluation overlap.
+  peS2o preserves IDs, source/version/dates, and metadata. Stack-Edu preserves
+  blob/repository/path, detected license, encoding, language, and quality
+  fields; selected code still requires Software Heritage retrieval and a
+  strict license allowlist. Their report SHA-256 values are
+  `3c495890205d2089274ece3fef2054efe98267c7b7f410b8d8dd2d19f7672977`
+  and
+  `9c8da85ae6c70fef40ad0c34b6c7c85b76d83eb28d68e96d04a03f1c55313d4f`.
+  None writes training shards or consumes H100. Successful intake authorizes
+  only deterministic 10,000-row profiling and human adjudication, never bulk
+  admission.
+
+  Decision:
+  `phase2_quality_per_token_standard_active_current_sources_shadow_probed_no_new_data_admitted`.

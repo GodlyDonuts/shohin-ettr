@@ -1,6 +1,12 @@
 # Shohin pretraining data admission plan
 
-Research snapshot: **2026-07-21**. Planning artifact only: this file does not change the active data build or training mix. The machine-readable companion is [`pipeline/pretrain_sources.json`](pipeline/pretrain_sources.json).
+Research snapshot: **2026-07-21**. This is a historical source survey. The
+active admission policy is
+[`docs/research/PHASE2_DATA_SELECTION_STANDARD.md`](docs/research/PHASE2_DATA_SELECTION_STANDARD.md),
+and the machine-readable candidate registry is
+[`pipeline/pretrain_sources.json`](pipeline/pretrain_sources.json). No source
+or percentage in this historical survey authorizes acquisition, mixing, or
+training.
 
 ## Executive decision
 
@@ -14,11 +20,17 @@ High-quality pretraining data is necessary, but it is not sufficient by itself t
 
 We should **not** build a giant undifferentiated pile. At this model size, weak or repetitive tokens displace useful tokens. The default admission plan below uses selected subsets, caps synthetic data, preserves source provenance, and globally deduplicates overlapping web/math/code families.
 
-**Research-use policy:** licensing does not affect the quality ranking or block local, non-commercial training. Public and gated sources are both eligible. Redistribution is a separate operation, so gated rows stay in their original repository rather than being copied into `Godlydonuts/shohin`.
+**Current legal boundary:** source quality and legal usability are independent
+gates, and both must pass. Unknown-license code is rejected. Gated sources
+require review of data-use and trained-model redistribution terms, and gated
+rows are never mirrored into the private Shohin research repository or its
+Hugging Face dataset.
 
-## Recommended stable-pretraining mix
+## Historical pretraining-mix hypothesis
 
-This is the quality-first target for the next full pretraining tranche. Percentages are token-presentation shares, not raw download sizes.
+This 45/25/20/10 table is retained for provenance and is superseded by the
+Phase 2 quality-first challenger mixture. Percentages are historical
+token-presentation hypotheses, not current launch weights.
 
 | Domain | Share | Sources |
 |---|---:|---|

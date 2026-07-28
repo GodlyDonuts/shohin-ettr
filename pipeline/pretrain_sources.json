@@ -1,9 +1,41 @@
 {
-  "schema_version": 1,
-  "research_date": "2026-07-21",
-  "status": "planning_only",
-  "owner_repo": "Godlydonuts/shohin",
-  "default_mix_pct": {
+  "schema_version": 2,
+  "research_date": "2026-07-28",
+  "status": "candidate_registry_not_training_admission",
+  "owner_repo": "GodlyDonuts/shohin-ettr",
+  "decision_semantics": {
+    "source_decision_fields_are": "research priorities only",
+    "source_decision_fields_are_not": "permission to tokenize, mirror, mix, or train",
+    "training_admission_requires": [
+      "pinned upstream revision",
+      "source-specific redistribution and model-output license review",
+      "immutable raw and selected manifests",
+      "document-level semantic selection receipt",
+      "cross-source exact and near-duplicate removal receipt",
+      "evaluation decontamination receipt",
+      "PII, secret, malware, and unsafe-code scan receipt",
+      "tokenized shard integrity scan and human review receipt",
+      "equal-token model utility ablation"
+    ]
+  },
+  "phase2_quality_first_mix_candidate_pct": {
+    "fineweb_edu_selected": 30,
+    "finepdfs_edu_english_selected": 15,
+    "licensed_reference_science_books": 12,
+    "stack_edu_license_resolved": 15,
+    "verified_high_quality_math": 12,
+    "essential_web_selected": 8,
+    "dclm_high_quality_residual": 5,
+    "first_party_verified_procedural": 3
+  },
+  "phase2_mix_policy": {
+    "status": "equal-token ablation proposal, not a frozen production mixture",
+    "selection_objective": "held-out language modeling plus real-user utility and ETTR causal retention",
+    "current_corpus_correction": "add broad educational prose, long-form science/reference, and license-resolved code before adding more unverified math",
+    "ettr_sampling": "separate update stream; never concatenate ETTR rows into ordinary text shards",
+    "legacy_source_target_mix_pct": "research prior only; phase2_quality_first_mix_candidate_pct is the current proposal"
+  },
+  "legacy_research_prior_mix_pct": {
     "educational_general_web": 45,
     "math": 25,
     "code": 20,
@@ -16,9 +48,14 @@
     "within_source_exact_and_near_dedup": true,
     "cross_source_dedup": true,
     "evaluation_decontamination_before_tokenization": true,
+    "cross_corpus_decontamination_after_selection": true,
     "pii_and_secret_scan": true,
+    "malware_and_unsafe_code_scan": true,
     "human_sample_audit": true,
-    "fail_on_unknown_code_license": false
+    "factual_and_extraction_spot_checks": true,
+    "equal_token_model_utility_ablation": true,
+    "fail_on_unknown_code_license": true,
+    "admission_receipt_required": true
   },
   "storage_policy": {
     "default": "registry_manifests_and_audits_only",
@@ -39,7 +76,7 @@
     ],
     "code": [
       "first_party_verified_code",
-      "stackv2_edu_filtered_selected",
+      "stack_edu_license_resolved",
       "nemotron_cc_code_q3",
       "nemotron_code_v2_synthetic_selected",
       "starcoder_ancillary_if_approved"
@@ -69,6 +106,37 @@
         "score_3": "ablation_only"
       },
       "risks": ["Common Crawl overlap", "classifier bias", "dominant-domain concentration"]
+    },
+    {
+      "id": "finepdfs_edu_english_selected",
+      "dataset": "HuggingFaceFW/finepdfs-edu",
+      "url": "https://huggingface.co/datasets/HuggingFaceFW/finepdfs-edu",
+      "domain": "long_form_science_reference",
+      "priority": "P0",
+      "decision": "candidate_core_requires_receipt",
+      "target_mix_pct": 0,
+      "phase2_candidate_mix_pct": 15,
+      "known_scale": "350B+ educational tokens across 69 languages; English slice to be measured with Shohin tokenizer",
+      "license_summary": "ODC-By-1.0 plus upstream Common Crawl terms",
+      "mirror_policy": "review_before_mirror",
+      "selection": {
+        "configs": ["eng_Latn"],
+        "language_switch_filter": true,
+        "formula_and_layout_audit": true,
+        "document_and_publisher_caps": true,
+        "cross_source_residual_after": [
+          "fineweb_edu_score_4_5",
+          "common_pile_arxiv_selected",
+          "common_pile_pes2o_selected"
+        ]
+      },
+      "risks": [
+        "PDF extraction artifacts",
+        "language switching",
+        "classifier bias toward document openings or endings",
+        "publisher and domain concentration",
+        "overlap with scientific and textbook corpora"
+      ]
     },
     {
       "id": "essential_web_selected",
@@ -233,23 +301,30 @@
       "risks": ["older corpus", "heavy overlap with newer math mixtures"]
     },
     {
-      "id": "stackv2_edu_filtered_selected",
-      "dataset": "common-pile/stackv2_edu_filtered",
-      "url": "https://huggingface.co/datasets/common-pile/stackv2_edu_filtered",
+      "id": "stack_edu_license_resolved",
+      "dataset": "HuggingFaceTB/stack-edu",
+      "url": "https://huggingface.co/datasets/HuggingFaceTB/stack-edu",
       "domain": "code",
       "priority": "P0",
-      "decision": "admit_core_selected",
+      "decision": "candidate_core_requires_receipt",
       "target_mix_pct": 10,
-      "known_scale": "approximately 67.8B tokens in the Comma training mix",
-      "license_summary": "per-file source licenses retained for provenance; non-blocking for local research",
+      "known_scale": "approximately 125B educational code tokens across the full release",
+      "license_summary": "per-file source licenses must be resolved from Stack-Edu metadata and The Stack v2/Software Heritage records",
       "mirror_policy": "only_allowlisted_records_after_redistribution_review",
       "selection": {
         "languages": ["Python", "C", "C++", "JavaScript", "TypeScript", "Rust", "Java", "Go", "Shell"],
-        "accepted_license_allowlist_required": false,
+        "accepted_license_allowlist_required": true,
+        "retrieve_content_from_software_heritage": true,
         "educational_quality_filter": true,
         "exclude": ["vendor trees", "minified code", "generated code", "secrets", "unparseable files"]
       },
-      "risks": ["heterogeneous licenses", "repository leakage", "credentials and PII"]
+      "risks": [
+        "Hugging Face rows contain identifiers and metadata rather than code content",
+        "heterogeneous per-file licenses",
+        "repository leakage",
+        "credentials and PII",
+        "Software Heritage retrieval cost"
+      ]
     },
     {
       "id": "first_party_verified_code",
@@ -487,6 +562,26 @@
         "possible_future_ablation": "small fact-seeking slice only"
       },
       "risks": ["factual-recall and multiple-choice density", "moral-scenario mismatch", "synthetic style", "component terms"]
+    },
+    {
+      "id": "common_pile_comma_consolidated",
+      "dataset": "common-pile/comma_v0.1_training_dataset",
+      "url": "https://huggingface.co/datasets/common-pile/comma_v0.1_training_dataset",
+      "domain": "mixed_text",
+      "priority": "reject",
+      "decision": "reject_as_training_source",
+      "target_mix_pct": 0,
+      "known_scale": "463.6B source tokens in the published main-stage inventory",
+      "license_summary": "public-domain and openly licensed components, but per-row provenance is absent from the consolidated text stream",
+      "mirror_policy": "do_not_acquire_use_component_datasets_directly",
+      "selection": {
+        "replacement": "direct component datasets with source-specific provenance"
+      },
+      "risks": [
+        "streamed schema exposes only text",
+        "per-document source and license cannot be retained",
+        "component-specific caps and removal requests cannot be reproduced"
+      ]
     }
   ]
 }

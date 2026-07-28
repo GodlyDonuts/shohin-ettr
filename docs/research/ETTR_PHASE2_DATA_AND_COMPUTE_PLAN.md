@@ -62,6 +62,16 @@ pilot and is not a 25B replacement. The quality-first target remains at least
 100--120B admitted unique general tokens, with cross-source near-dedup and
 equal-token source ablations before a long run.
 
+The active admission policy is
+`docs/research/PHASE2_DATA_SELECTION_STANDARD.md`, and the machine-readable
+candidate registry is `pipeline/pretrain_sources.json`. The next corpus
+expansion prioritizes selected FineWeb-Edu, English FinePDFs-Edu,
+license-resolved Common Pile components, and Stack-Edu. Raw FineWeb, raw
+FinePDFs, wholesale DCLM, wholesale OpenMath, and synthetic FinePhrase are not
+core-stream substitutes. The proposed source mixture is an ablation schedule,
+not a permission to train; each selected payload still requires the complete
+hash-bound admission receipt.
+
 ### ETTR-native data
 
 The frozen target is 62,500 semantic cores. Each core expands into 64
@@ -146,6 +156,9 @@ one inefficient 20-way model replica.
 - Newton historical-stream scans: `719561`--`719564`
 - Stokes ETTR long-cell recovery and downstream chain:
   `753823`--`753830`
+- Stokes read-only Phase 2 source probes: FineWeb-Edu `753857`,
+  FinePDFs-Edu English `753858`, Common Pile/Comma `753859`, peS2o
+  `753862`, and Stack-Edu Python metadata `753863`
 
 The exact inverse ETTR record materializer is implemented as
 `rematerialize_record`. It reconstructs all 64 rows from one frozen
