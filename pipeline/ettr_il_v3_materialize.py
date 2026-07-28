@@ -22,12 +22,22 @@ from typing import Mapping
 from ettr_il_v2_custody import derive_public_split_key, prf
 from ettr_il_v2_horn_adapter import adapt_horn_semantic_rectangle
 from ettr_il_v2_materialize import (
+    Disposition,
+    GenericCell,
     GenericCorner,
+    GenericCommand,
+    GenericEdge,
     GenericInvariantPair,
+    GenericMutation,
     GenericOperationTrace,
     GenericPacket,
+    GenericQuery,
     GenericSemanticRectangle,
+    GenericWorld,
     MaterializationRequest,
+    Opcode,
+    ValueKind,
+    ValueRef,
     materialize_ettr_il_v2,
 )
 from ettr_il_v2_resource_adapter import adapt_resource_rectangle
@@ -579,6 +589,467 @@ def _targets(rectangle: GenericSemanticRectangle) -> TargetRecord:
     )
 
 
+def _exact_mapping(
+    value: object,
+    fields: set[str],
+    name: str,
+) -> Mapping[str, object]:
+    if not isinstance(value, Mapping) or set(value) != fields:
+        raise V3MaterializationError(f"{name} fields differ")
+    if any(type(key) is not str for key in value):
+        raise V3MaterializationError(f"{name} keys differ")
+    return value  # type: ignore[return-value]
+
+
+def _plain_int(value: object, name: str) -> int:
+    if type(value) is not int:
+        raise V3MaterializationError(f"{name} must be an integer")
+    return value
+
+
+def _value_ref_from_value(value: object, name: str) -> ValueRef:
+    item = _exact_mapping(value, {"index", "kind"}, name)
+    kind_value = item["kind"]
+    if type(kind_value) is not str:
+        raise V3MaterializationError(f"{name}.kind differs")
+    try:
+        kind = ValueKind(kind_value)
+    except ValueError as exc:
+        raise V3MaterializationError(f"{name}.kind differs") from exc
+    index_value = item["index"]
+    index = (
+        None
+        if index_value is None
+        else _plain_int(index_value, f"{name}.index")
+    )
+    try:
+        return ValueRef(kind, index)
+    except (TypeError, ValueError) as exc:
+        raise V3MaterializationError(f"{name} differs") from exc
+
+
+def _packet_from_value(value: object, name: str) -> GenericPacket:
+    item = _exact_mapping(
+        value,
+        {"cells", "committed", "edges", "halted", "root"},
+        name,
+    )
+    if type(item["cells"]) not in {list, tuple}:
+        raise V3MaterializationError(f"{name}.cells differs")
+    cells: list[GenericCell] = []
+    for index, raw_cell in enumerate(item["cells"]):  # type: ignore[union-attr]
+        cell = _exact_mapping(
+            raw_cell,
+            {"slot", "type_index", "value"},
+            f"{name}.cells[{index}]",
+        )
+        cells.append(
+            GenericCell(
+                slot=_plain_int(
+                    cell["slot"],
+                    f"{name}.cells[{index}].slot",
+                ),
+                type_index=_plain_int(
+                    cell["type_index"],
+                    f"{name}.cells[{index}].type_index",
+                ),
+                value=_value_ref_from_value(
+                    cell["value"],
+                    f"{name}.cells[{index}].value",
+                ),
+            )
+        )
+    if type(item["edges"]) not in {list, tuple}:
+        raise V3MaterializationError(f"{name}.edges differs")
+    edges: list[GenericEdge] = []
+    for index, raw_edge in enumerate(item["edges"]):  # type: ignore[union-attr]
+        edge = _exact_mapping(
+            raw_edge,
+            {"relation", "source", "target"},
+            f"{name}.edges[{index}]",
+        )
+        edges.append(
+            GenericEdge(
+                relation=_plain_int(
+                    edge["relation"],
+                    f"{name}.edges[{index}].relation",
+                ),
+                source=_plain_int(
+                    edge["source"],
+                    f"{name}.edges[{index}].source",
+                ),
+                target=_plain_int(
+                    edge["target"],
+                    f"{name}.edges[{index}].target",
+                ),
+            )
+        )
+    root_value = item["root"]
+    root = (
+        None
+        if root_value is None
+        else _plain_int(root_value, f"{name}.root")
+    )
+    committed = item["committed"]
+    halted = item["halted"]
+    if type(committed) is not bool or type(halted) is not bool:
+        raise V3MaterializationError(f"{name} disposition differs")
+    return GenericPacket(
+        cells=tuple(cells),
+        edges=tuple(edges),
+        root=root,
+        committed=committed,
+        halted=halted,
+    )
+
+
+def _operation_trace_from_value(
+    value: object,
+    name: str,
+) -> GenericOperationTrace:
+    item = _exact_mapping(value, {"cursor", "mutations"}, name)
+    if type(item["mutations"]) not in {list, tuple}:
+        raise V3MaterializationError(f"{name}.mutations differs")
+    mutations: list[GenericMutation] = []
+    for index, raw_mutation in enumerate(
+        item["mutations"],  # type: ignore[union-attr]
+    ):
+        mutation = _exact_mapping(
+            raw_mutation,
+            {
+                "opcode",
+                "relation",
+                "source",
+                "target",
+                "type_index",
+                "value",
+            },
+            f"{name}.mutations[{index}]",
+        )
+        opcode_value = _plain_int(
+            mutation["opcode"],
+            f"{name}.mutations[{index}].opcode",
+        )
+        try:
+            opcode = Opcode(opcode_value)
+        except ValueError as exc:
+            raise V3MaterializationError(
+                f"{name}.mutations[{index}].opcode differs"
+            ) from exc
+        mutations.append(
+            GenericMutation(
+                opcode=opcode,
+                source=_plain_int(
+                    mutation["source"],
+                    f"{name}.mutations[{index}].source",
+                ),
+                target=_plain_int(
+                    mutation["target"],
+                    f"{name}.mutations[{index}].target",
+                ),
+                relation=_plain_int(
+                    mutation["relation"],
+                    f"{name}.mutations[{index}].relation",
+                ),
+                type_index=_plain_int(
+                    mutation["type_index"],
+                    f"{name}.mutations[{index}].type_index",
+                ),
+                value=_value_ref_from_value(
+                    mutation["value"],
+                    f"{name}.mutations[{index}].value",
+                ),
+            )
+        )
+    return GenericOperationTrace(
+        mutations=tuple(mutations),
+        cursor=_plain_int(item["cursor"], f"{name}.cursor"),
+    )
+
+
+def _command_atoms(packet: GenericPacket, name: str) -> tuple[int, ...]:
+    cells = {cell.slot: cell for cell in packet.cells}
+    atoms: list[int] = []
+    found_empty = False
+    for slot in range(48, 54):
+        try:
+            value = cells[slot].value
+        except KeyError as exc:
+            raise V3MaterializationError(
+                f"{name} lacks command control slot {slot}"
+            ) from exc
+        if value.kind is ValueKind.EMPTY:
+            found_empty = True
+            continue
+        if (
+            found_empty
+            or value.kind is not ValueKind.COMMAND_ATOM
+            or value.index is None
+        ):
+            raise V3MaterializationError(f"{name} command controls differ")
+        atoms.append(value.index)
+    if not atoms:
+        raise V3MaterializationError(f"{name} has no command atoms")
+    return tuple(atoms)
+
+
+def _corner_from_targets(
+    terminal: GenericPacket,
+    raw_trace: object,
+    raw_answers: object,
+    name: str,
+) -> GenericCorner:
+    if type(raw_trace) not in {list, tuple}:
+        raise V3MaterializationError(f"{name}.transaction_trace differs")
+    traces = tuple(
+        _operation_trace_from_value(
+            value,
+            f"{name}.transaction_trace[{index}]",
+        )
+        for index, value in enumerate(raw_trace)
+    )
+    if type(raw_answers) not in {list, tuple} or len(raw_answers) != 2:
+        raise V3MaterializationError(f"{name}.answers differs")
+    answers = tuple(raw_answers)
+    if any(value is not None and type(value) is not bool for value in answers):
+        raise V3MaterializationError(f"{name}.answers differs")
+    disposition_by_status = {
+        (True, False): Disposition.ANSWER,
+        (False, True): Disposition.ABSTAIN,
+        (True, True): Disposition.REJECT,
+    }
+    try:
+        disposition = disposition_by_status[
+            (terminal.committed, terminal.halted)
+        ]
+    except KeyError as exc:
+        raise V3MaterializationError(
+            f"{name}.terminal disposition differs"
+        ) from exc
+    outcome_cells = [cell for cell in terminal.cells if cell.slot == 55]
+    if len(outcome_cells) != 1:
+        raise V3MaterializationError(f"{name}.terminal outcome differs")
+    return GenericCorner(
+        operation_traces=traces,
+        terminal_packet=terminal,
+        disposition=disposition,
+        outcome=outcome_cells[0].value,
+        answers=answers,  # type: ignore[arg-type]
+    )
+
+
+def rematerialize_record(
+    record: SemanticCoreRecord,
+    tokenizer: object,
+) -> object:
+    """Rebuild one stored v3 core and verify its exact tensor receipt.
+
+    This is the production inverse of :func:`materialize_candidate`. It uses
+    only the record's source-visible strings and assessor-held generic targets;
+    it never reparses an ontology or reruns a semantic oracle.
+    """
+
+    if not isinstance(record, SemanticCoreRecord):
+        raise V3MaterializationError("semantic-core record type differs")
+    record.validate()
+    codec = (
+        tokenizer
+        if isinstance(tokenizer, TokenNativeSurfaceCodec)
+        else TokenNativeSurfaceCodec(tokenizer)  # type: ignore[arg-type]
+    )
+    views = record.source_visible.views
+    expected_renderers = tuple(int(renderer) for renderer in RENDERERS)
+    if tuple(view.renderer for view in views) != expected_renderers:
+        raise V3MaterializationError("semantic-core renderer order differs")
+
+    targets = record.assessor_only.targets
+    if (
+        len(targets.initial_packets) != 2
+        or len(targets.terminal_packets) != 4
+        or len(targets.transaction_traces) != 4
+        or len(targets.answer_matrix) != 4
+    ):
+        raise V3MaterializationError("semantic-core target geometry differs")
+    initial_packets = tuple(
+        _packet_from_value(value, f"initial packet {index}")
+        for index, value in enumerate(targets.initial_packets)
+    )
+    terminal_packets = tuple(
+        _packet_from_value(value, f"terminal packet {index}")
+        for index, value in enumerate(targets.terminal_packets)
+    )
+    corners = tuple(
+        _corner_from_targets(
+            terminal_packets[index],
+            targets.transaction_traces[index],
+            targets.answer_matrix[index],
+            f"corner {index}",
+        )
+        for index in range(4)
+    )
+    command_atoms = (
+        _command_atoms(terminal_packets[0], "corner 0"),
+        _command_atoms(terminal_packets[1], "corner 1"),
+    )
+    if (
+        _command_atoms(terminal_packets[2], "corner 2") != command_atoms[0]
+        or _command_atoms(terminal_packets[3], "corner 3") != command_atoms[1]
+    ):
+        raise V3MaterializationError(
+            "command controls vary across the WORLD nuisance axis"
+        )
+
+    factors = record.assessor_only.semantic_factors
+    theory = factors.theory
+    if not isinstance(theory, Mapping) or type(theory.get("family")) is not str:
+        raise V3MaterializationError("semantic-core family factor differs")
+    base_rectangle_id = canonical_sha256(
+        {
+            "commands": list(factors.commands),
+            "episode_id": record.identity.core_id,
+            "family": theory["family"],
+            "protocol": PROTOCOL,
+            "worlds": list(factors.worlds),
+        }
+    )
+    rectangles: list[GenericSemanticRectangle] = []
+    token_hashes: list[str] = []
+    for view in views:
+        if (
+            len(view.world_sources) != 4
+            or len(view.command_sources) != 4
+            or len(view.query_sources) != 4
+        ):
+            raise V3MaterializationError("semantic-core source geometry differs")
+        rectangle_id = canonical_sha256(
+            {
+                "base_semantic_rectangle_id": base_rectangle_id,
+                "renderer": view.renderer,
+                "schema": MATERIALIZATION_SCHEMA,
+            }
+        )
+        expected_view_id = hashlib.sha256(
+            canonical_json_bytes(
+                {
+                    "renderer": view.renderer,
+                    "semantic_rectangle_id": rectangle_id,
+                    "sources": [
+                        *view.world_sources,
+                        *view.command_sources,
+                        *view.query_sources,
+                    ],
+                }
+            )
+        ).hexdigest()
+        if view.view_id != expected_view_id:
+            raise V3MaterializationError("semantic-core view receipt differs")
+        sources = (
+            *view.world_sources,
+            *view.command_sources,
+            *view.query_sources,
+        )
+        try:
+            encoded_sources = tuple(source.encode("ascii") for source in sources)
+        except UnicodeEncodeError as exc:
+            raise V3MaterializationError(
+                "semantic-core source is not strict ASCII"
+            ) from exc
+        token_hashes.extend(
+            hashlib.sha256(source).hexdigest() for source in encoded_sources
+        )
+        rectangles.append(
+            GenericSemanticRectangle(
+                semantic_rectangle_id=rectangle_id,
+                presentation_id=f"{PRESENTATION}-renderer-{view.renderer}",
+                worlds=(
+                    GenericWorld(
+                        sources=(
+                            encoded_sources[0],
+                            encoded_sources[1],
+                        ),
+                        initial_packet=initial_packets[0],
+                    ),
+                    GenericWorld(
+                        sources=(
+                            encoded_sources[2],
+                            encoded_sources[3],
+                        ),
+                        initial_packet=initial_packets[1],
+                    ),
+                ),
+                commands=(
+                    GenericCommand(
+                        sources=(
+                            encoded_sources[4],
+                            encoded_sources[5],
+                        ),
+                        command_atoms=command_atoms[0],
+                    ),
+                    GenericCommand(
+                        sources=(
+                            encoded_sources[6],
+                            encoded_sources[7],
+                        ),
+                        command_atoms=command_atoms[1],
+                    ),
+                ),
+                queries=(
+                    GenericQuery(
+                        prefixes=(
+                            encoded_sources[8],
+                            encoded_sources[9],
+                        )
+                    ),
+                    GenericQuery(
+                        prefixes=(
+                            encoded_sources[10],
+                            encoded_sources[11],
+                        )
+                    ),
+                ),
+                corners=((corners[0], corners[1]), (corners[2], corners[3])),
+            )
+        )
+    if tuple(token_hashes) != record.assessor_only.audit.token_hashes:
+        raise V3MaterializationError("semantic-core token receipts differ")
+
+    source_value = [view.to_value() for view in views]
+    dataset_sha256 = canonical_sha256(
+        {
+            "episode_id": record.identity.core_id,
+            "schema": MATERIALIZATION_SCHEMA,
+            "source_visible": source_value,
+        }
+    )
+    manifest_sha256 = canonical_sha256(
+        {
+            "codebook_sha256": codec.codebook_sha256,
+            "dataset_sha256": dataset_sha256,
+            "protocol": PROTOCOL,
+            "tokenizer_sha256": codec.tokenizer_sha256,
+        }
+    )
+    batch = materialize_ettr_il_v2(
+        MaterializationRequest(
+            manifest_sha256=manifest_sha256,
+            dataset_sha256=dataset_sha256,
+            vocab_size=codec.tokenizer.get_vocab_size(),
+            rectangles=tuple(rectangles),
+            invariant_pairs=(
+                GenericInvariantPair(0, 1),
+                GenericInvariantPair(2, 3),
+            ),
+            require_query_checkerboard=False,
+        ),
+        codec.tokenizer,
+    )
+    if _batch_sha256(batch) != record.assessor_only.audit.materialization_hash:
+        raise V3MaterializationError(
+            "semantic-core materialization receipt differs"
+        )
+    return batch
+
+
 def _oracle_channel(
     executions: object,
     generic: GenericSemanticRectangle,
@@ -862,4 +1333,5 @@ __all__ = [
     "RENDERERS",
     "V3MaterializationError",
     "materialize_candidate",
+    "rematerialize_record",
 ]

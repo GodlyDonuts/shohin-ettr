@@ -6,15 +6,16 @@
 > (`MASTER_PLAN.md`, `DIVERGENCE_DIAGNOSIS.md`, `DATA.md`) are background/history; this file is the
 > operational plan of record.
 >
-> **USER PRETRAINING HOLD — 2026-07-23:** Do not start, queue, resume,
-> prepare, or modify continuation pretraining. Do not alter the protected
-> step-300k checkpoint or its live-data lineage. Only the user may lift this
-> hold explicitly, and the user intends to do so only after reasoning is
-> established. Architecture mechanics, causal controls, read-only checkpoint
-> compatibility, and isolated reasoning evaluation may continue; none of those
-> activities implies permission to pretrain.
+> **USER PRETRAINING HOLD LIFTED FOR PHASE 2 — 2026-07-28:** The user
+> explicitly authorized reserving approximately 10--20 Newton H100s and
+> beginning the new ETTR training phase. This does not authorize an
+> unverified-data launch or mutation of the protected step-300k trust root.
+> General-pretraining inputs require hash-bound shard admission; ETTR inputs
+> require successful selection, materialization, independent aggregate
+> audits, and zero-overlap main/confirmation separation. New training outputs
+> must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-27 07:30 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-28 18:35 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -26,9 +27,9 @@
 > order is: (1) establish one novel trainable architecture, (2) continue
 > pretraining only after the user explicitly authorizes it, and (3) perform
 > post-training afterward. Present raw-checkpoint benchmark weakness is not an
-> architecture rejection criterion. The USER PRETRAINING HOLD remains
-> absolute: do not start, queue, resume, prepare, or modify continuation
-> pretraining.
+> architecture rejection criterion. The required explicit Phase 2
+> authorization was supplied on 2026-07-28; the newer hold-lift and data gates
+> above now govern.
 >
 > **ETTR ARCHITECTURE COMPLETE; LOCAL QUALIFICATION CUSTODY MECHANICALLY
 > COMPLETE; EXTERNAL CLAIM DEPLOYMENT PENDING —
@@ -15505,3 +15506,67 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `r12_ettr_il_v3_three_long_cells_admitted_nine_cell_48h_recovery_live`.
+
+- **2026-07-28 18:00 EDT** -- **The user explicitly opened ETTR Phase 2;
+  10- and 20-H100 Newton allocations are reserved while both data streams
+  remain fail-closed behind their measured admission gates.**
+
+  Newton jobs `719497` and `719496` request 10 H100s for 12 hours and 20
+  H100s for 72 hours respectively, using two H100 PCIe devices, four CPUs,
+  and 32 GiB per node. Current scheduler estimates place the backfill window
+  on July 29 and the main window on July 30. The reservations first validate
+  physical H100 and InfiniBand inventory, then remain available for explicit
+  Slurm steps. A same-switch B6 test-only request started materially later,
+  so the live requests retain earlier unconstrained priority and require a
+  measured NCCL/DDP topology canary.
+
+  The two-stream contract is explicit. Historical general data contributes
+  57,826,022,271 manifest tokens. Future DCLM and OpenMath candidates add
+  30,000,001,936 tokens but remain excluded until reviewed approval.
+  Full Newton scans are jobs `719553`/`719554`; historical-stream scans are
+  `719561`--`719564`. ETTR contributes a planned 2,112,000,000 charged
+  architecture-native positions, but no partial output may train before
+  Stokes separation job `753830` passes.
+
+  `train/jobs/run_reserved_multinode_ddp_canary.sh` now supplies a bounded
+  clean-commit, fresh-output, InfiniBand-gated torchrun step for the
+  reservations. It uses only the historical four-shard stream and makes no
+  capability claim. The 20-way shape is promoted only after measured scaling;
+  otherwise the same allocation is partitioned into smaller independent
+  training and ablation lanes.
+
+  Decision:
+  `ettr_phase2_authorized_capacity_reserved_two_stream_admission_and_scaling_gates_active`.
+
+- **2026-07-28 18:35 EDT** -- **A four-H100 pilot lane is additionally
+  queued, every general-corpus structural scan is complete, and the exact
+  frozen-record-to-tensor ETTR inverse now passes hostile tests.**
+
+  Newton job `719591` requests four stranded H100s on four nodes for four
+  hours, one GPU and four CPUs per node. It complements rather than replaces
+  jobs `719497`/`719496`: use it for four independent single-GPU pilots, not
+  inefficient four-way DDP. Test-only scheduling showed the accrued 10-H100
+  request still has the earliest forecast (`2026-07-29T10:26:44`), so it was
+  not reduced.
+
+  Jobs `719553`, `719554`, and `719561`--`719564` all completed successfully.
+  Corrected historical inventory is **62,426,256,278** tokens: FineMath-4
+  6,600,235,115; OpenWebMath 14,063,689,153; Python code 16,762,327,600; and
+  FineMath-3 25,000,004,410. DCLM and OpenMath would raise the available total
+  to **92,426,258,214** tokens. All scanned shards have zero byte-fallback
+  fraction. Deterministic decoded review found DCLM to contain coherent prose
+  mixed with forum/SEO-quality material and OpenMath to contain useful worked
+  problems mixed with at least one visibly unreliable generated derivation.
+  Neither future corpus is approved wholesale; DCLM needs quality
+  stratification and OpenMath needs answer verification.
+
+  `pipeline.ettr_il_v3_materialize.rematerialize_record` now reconstructs the
+  exact 64-row `ETTRContinuationBatch` from a stored `SemanticCoreRecord`
+  without rerunning an ontology oracle. It verifies renderer order, view
+  receipts, token hashes, inferred command controls, and the frozen tensor
+  materialization hash. Horn, resource, and local-rewrite round trips plus
+  source/target tamper failures pass **10/10**; Ruff, byte compilation, and
+  diff checks pass.
+
+  Decision:
+  `ettr_phase2_four_gpu_pilot_queued_scans_complete_future_data_not_wholesale_admitted_exact_record_inverse_passes`.
