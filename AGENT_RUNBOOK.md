@@ -15471,3 +15471,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `r12_ettr_il_v3_recovery_cpu_live_fail_closed_materialization_chain_scheduled`.
+
+- **2026-07-28 16:58 EDT** -- **Three long qualifier cells completed with
+  exact admission before the 24-hour boundary; the remaining nine are live
+  under a corrected 48-hour recovery and a rebuilt fail-closed downstream
+  chain.** No model, checkpoint, optimizer, GPU, or
+  continuation-pretraining operation was performed.
+
+  Recovery job `753136` completed cells `18`, `36`, and `37` in 19:42:39,
+  22:19:48, and 22:19:42 respectively. Their canonical self-hashes pass.
+  Cell 18 admitted 10,002/10,002 rows, cell 36 admitted 9,999/9,999, and cell
+  37 admitted 10,002/10,002; all three have empty rejection histograms. Main
+  qualification therefore advanced from 204/216 to 207/216 durable reports.
+  The other nine cells reached the 24-hour Slurm wall limit without publishing
+  a partial shard or report. Existing 207 main and 108 sealed-confirmation
+  report/shard pairs remain untouched.
+
+  Stokes denied an in-place user time-limit extension, but accepted a 48-hour
+  replacement allocation. The first timeout wrapper attempt failed before
+  opening candidates because it tried to execute a non-executable frozen
+  batch wrapper; the second failed preflight because it used obsolete
+  environment names. Both failures lasted at most three seconds, wrote no
+  qualified payload, and their dependency chains were canceled. Corrected
+  recovery array `753823` now runs exactly missing indices
+  `0,1,3,4,5,6,12,16,17` with the immutable current wrapper contract and a
+  48-hour limit. Five-minute liveness verification showed CPU time advancing
+  on all nine workers, stable memory below 560 MiB, and zero nonempty stderr.
+
+  The active downstream chain is selector `753824`, task manifests `753825`,
+  main/confirmation materialization arrays `753826`/`753827`, independent
+  audits `753828`/`753829`, and separation audit `753830`. Every stage remains
+  dependency-held behind successful completion of the preceding custody gate.
+
+  Decision:
+  `r12_ettr_il_v3_three_long_cells_admitted_nine_cell_48h_recovery_live`.
