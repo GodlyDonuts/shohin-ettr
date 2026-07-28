@@ -15435,3 +15435,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `r12_ettr_il_v3_qualification_semantically_viable_twelve_cell_walltime_recovery_live`.
+
+- **2026-07-28 02:50 EDT** -- **The long-cell recovery is demonstrably
+  computing, and the complete fail-closed selector/materialization chain is
+  dependency-scheduled against fresh content-addressed roots.** No model,
+  checkpoint, optimizer, GPU, or continuation-pretraining operation was
+  performed.
+
+  Recovery array `753136` remains live on all 12 missing main indices after
+  ten hours. Five-minute and thirty-minute liveness checks showed every
+  worker's CPU time advancing almost one-for-one with wall time, stable peak
+  memory below 700 MiB, and zero nonempty recovery stderr files. The durable
+  inventory remains 204/216 main reports plus all 108 sealed-confirmation
+  reports; no completed report or shard has been recomputed or replaced.
+  Replacement selector `753137` remains held until every recovery task exits
+  successfully.
+
+  All selected, task-manifest, materialized, worker-report, audit, and
+  separation paths for qualifier commit
+  `65a82fa0baf70e9daf41fc3a252482a18c137cfc` were independently confirmed
+  absent before scheduling. Task-manifest job `753321` is held after selector
+  `753137`; main materialization array `753322` covers the exact 60 main
+  tasks, while sealed-confirmation array `753323` covers the exact 30
+  confirmation tasks with its separate sealed key. Independent aggregate
+  audits `753324` and `753325` follow their respective arrays, and separation
+  audit `753326` can run only after both aggregate audits succeed. Every stage
+  uses the immutable 814-object source closure and freeze hash
+  `2528950bf48686735db7fc41ddc5996a484454a7c4aca36b09487ec390f72012`.
+
+  The frozen selected target is 62,500 semantic cores. Each core expands into
+  64 architecture-native rows with 528 charged positions, giving
+  2,112,000,000 charged training positions before any later corpus expansion.
+  Publication remains prohibited until selection, both materializations,
+  both aggregate audits, and the zero-overlap separation proof all pass.
+
+  Decision:
+  `r12_ettr_il_v3_recovery_cpu_live_fail_closed_materialization_chain_scheduled`.
