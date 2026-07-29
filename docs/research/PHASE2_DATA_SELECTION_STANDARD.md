@@ -68,6 +68,56 @@ scores. Stack-Edu intentionally contains metadata rather than code content;
 selected blobs must be retrieved from Software Heritage only after license
 resolution, then parsed, scanned, deduplicated, and repository-split.
 
+The newly released Stack v3 is a stronger code challenger than a blind
+Stack-Edu expansion because it carries inline file content, repository commit
+identity, cross-language near-deduplication, PII redaction, and file-level
+license metadata from an August 2025 GitHub snapshot. It is still not a
+wholesale source: its scale includes a large low-star, toy-project, and
+no-license tail. Shohin will retain only explicitly permissive files, apply
+repository-quality and execution gates, and compare the resulting residual
+against Stack-Edu and the historical Python corpus.
+
+A pinned 1,000-file Stack v3 intake rejected the random feed as training data:
+970 files had `no_license`, only 30 were classified permissive, 57 were exact
+duplicates, and the manually reviewed permissive tail still contained
+zero-star toy or placeholder repositories and trivial files. The sample had
+no exact or bounded 13-gram evaluation overlap. Stack v3 is therefore a useful
+raw reservoir, not a corpus. Its only reopenable path is a repository-level
+residual with explicit permissive licenses, maturity or trusted-project
+evidence, commit/content deduplication, parsing or compilation, tests and
+documentation preference, secret scanning, and repository-level holdouts.
+
+Deterministic 10,000-row profiles sharpened the source policies:
+
+- FineWeb-Edu had zero sampled exact duplicates or evaluation overlaps, but
+  8,655/10,000 rows were only `int_score=3`. Manual review found that bucket
+  mixed useful explanations with content farms, promotional pages, weak
+  medical/financial advice, and dated low-value articles. Score 4+ is the
+  core candidate; score 3 is residual-ablation only.
+- English FinePDFs-Edu had zero sampled exact duplicates or evaluation
+  overlaps and a useful long-form tail, but review exposed answer-key spam,
+  newsletters, catalogs, low-confidence pages, and extraction artifacts
+  alongside excellent lectures, manuals, and essays. Selection must use page
+  language confidence, repetition, length, extraction, publisher, and
+  document-type gates rather than the dataset label alone.
+- Direct peS2o had zero sampled exact duplicates or evaluation overlaps and
+  consistently substantive open-access scientific papers with strong
+  provenance. It remains capped because journal prose is narrow, variable in
+  explanatory quality, and occasionally extraction-damaged.
+- Stack-Edu Python is metadata-only; 8,207/10,000 sampled records were
+  `no_license`. Its nominal 125B-token scale therefore cannot be treated as
+  usable scale. Content quality is unmeasured until strict allowlisted blobs
+  are retrieved and scanned.
+- FinePhrase corrected 1,000-row probes covered FAQ, math, table, and tutorial
+  generated outputs. Sampled evaluation overlap was zero, but manual review
+  found invented quantities and arithmetic, source-unrelated tutorials,
+  malformed or fabricated tables, unsupported medical advice, and outputs as
+  short as a few characters. Polished structure is not semantic quality.
+  FinePhrase is rejected wholesale. FAQ/tutorial records may be reconsidered
+  only as a paired source-faithful residual; math requires solver verification
+  and tables require cell-level source support. All configurations remain at
+  zero mixture weight until equal-token utility ablations pass.
+
 ## Current Source Slate
 
 ### P0 candidates
@@ -77,7 +127,10 @@ resolution, then parsed, scanned, deduplicated, and repository-split.
 | FineWeb-Edu | broad explanatory web core | English, pinned revision, source/domain caps, score retained as metadata, quality-stratified ablation |
 | FinePDFs-Edu | textbooks, manuals, reports, long-form explanations | English, language-switch filter, formula/layout audit, document and publisher caps |
 | Common Pile components | licensed books, science, reference, Stack Exchange, Wikipedia, government material | component-specific licenses and provenance, boilerplate removal, component caps |
+| PleIAs Common Corpus components | open books, culture, government, science, and reference challenger | document-level license/provenance, OCR/date/source caps, component-specific residual |
 | Stack-Edu | educational code and software knowledge | retrieve by SWHID, resolve per-file license, remove generated/vendor/minified code and secrets |
+| Stack v3 | current repository-context code challenger | permissive files only, repository and commit provenance, parse/compile, secret rescan, cross-version residual |
+| Dolma 3 Dolmino components | proven high-quality web, PDF, STEM, and code challengers | inspect ingredients separately; never inherit the synthetic-heavy convenience mix wholesale |
 | Nemotron-CC-Math 4plus | high-quality math candidate | legal review first, upstream-only access, residual dedup, math correctness sample |
 | Existing FineMath/OpenWebMath | retained math substrate | cross-source residual only; never double-count nested FineMath subsets |
 | First-party verified procedural data | exact state, algorithm, correction, and execution examples | generator/version receipt, solver or execution verification, family holdouts |
@@ -90,7 +143,7 @@ resolution, then parsed, scanned, deduplicated, and repository-split.
 | raw FinePDFs | held | lightly filtered extraction pool; use the educational subset |
 | DCLM wholesale | held | manual samples show mixed utility; retain only a scored residual |
 | OpenMath wholesale | held | synthetic derivations require final-answer and trace-consistency verification |
-| FinePhrase | rejected from core | synthetic paraphrases can contain hallucinations and truncation |
+| FinePhrase | rejected wholesale; verifier-backed residual only | sampled generations contain hallucination, source drift, malformed structures, near-empty outputs, and generator-style concentration |
 | consolidated Common Pile/Comma text mix | rejected | streamed rows omit per-document provenance; use the component datasets directly |
 | unlicensed/unknown-license code | rejected | unusable for a model intended for distribution and downstream use |
 | benchmark-derived training examples | rejected | benchmark memorization is not general capability |
@@ -101,10 +154,10 @@ This is an equal-token ablation proposal, not a production mixture:
 
 | Slice | Percent |
 |---|---:|
-| FineWeb-Edu selected | 30 |
+| FineWeb-Edu score 4+ selected | 30 |
 | FinePDFs-Edu English selected | 15 |
 | licensed reference/science/books | 12 |
-| Stack-Edu license-resolved | 15 |
+| license-resolved educational code (Stack-Edu/Stack v3 winner) | 15 |
 | verified high-quality math | 12 |
 | Essential-Web selected | 8 |
 | DCLM high-quality cross-source residual | 5 |
@@ -147,6 +200,9 @@ stage.
   and real-user usefulness separately.
 - Do not treat an upstream classifier score as ground truth. Measure each score
   bucket with Shohin's tokenizer and downstream ablations.
+- For transformed or synthetic records, review the source and generated output
+  together. Generated prose that cannot be shown faithful to its source is
+  rejected even when fluent.
 
 ### 4. Verifiability
 
@@ -157,6 +213,9 @@ stage.
 - Factual/reference: spot-check claims and dates against stable references;
   reject content farms and unsupported pseudo-expertise.
 - Procedural: require exact simulator, solver, or execution receipts.
+- Synthetic transformations: require a source-output receipt, successful
+  generation termination, nontrivial bounded length, and task-specific
+  verification. A format classifier is not a correctness verifier.
 
 ### 5. Deduplication and contamination
 
@@ -217,6 +276,18 @@ Every admitted payload requires a no-replace receipt binding:
 - tokenizer and tokenized-shard hashes;
 - matched-token ablation results;
 - final approved token count and mixture ceiling.
+
+`pipeline/tokenize_shards.py` now emits the candidate-side
+`shohin-tokenized-shards-v2` receipt. It binds the exact upstream revision,
+selection-code hash, tokenizer hash and vocabulary identity, decontamination
+index and live evaluation-file hashes, every filter setting and rejection
+count, and every compressed shard's path, byte count, token count, and
+SHA-256. The manifest has its own canonical payload hash.
+`pipeline.verify_tokenized_shards` independently reopens every compressed
+shard, verifies its digest, decompresses it to recover the exact uint16 token
+count, rejects unbound files, and can revalidate all external inputs. Passing
+this verifier proves payload identity, not source quality or production
+admission; the other gates above remain mandatory.
 
 ## Fresh-Source Challenger Lane
 

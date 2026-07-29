@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-28 18:35 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-28 21:56 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -15571,7 +15571,7 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   Decision:
   `ettr_phase2_four_gpu_pilot_queued_scans_complete_future_data_not_wholesale_admitted_exact_record_inverse_passes`.
 
-- **2026-07-28 19:25 EDT** -- **Phase 2 now has a quality-first source
+- **2026-07-28 18:25 EDT** -- **Phase 2 now has a quality-first source
   standard, a fail-closed candidate registry, and three current-source shadow
   probes running on Stokes.**
 
@@ -15618,3 +15618,191 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `phase2_quality_per_token_standard_active_current_sources_shadow_probed_no_new_data_admitted`.
+
+- **2026-07-28 18:46 EDT** -- **Four deterministic 10,000-row source
+  profiles are durable, source-specific quality policies are narrowed, and
+  the newest code/synthetic challengers are under read-only Stokes intake.**
+  No training shard, tokenizer output, model, checkpoint, optimizer, or GPU
+  writer was touched.
+
+  Pinned profiles cover FineWeb-Edu revision
+  `87f09149ef4734204d70ed1d046ddc9ca3f2b8f9`, English FinePDFs-Edu
+  `9cfabe2127faca99b3d5c4dc6d1fcb397399ebde`, direct peS2o
+  `2caeba1585aaafa3c965410d80af85b09ed11cd9`, and Stack-Edu Python
+  `eeec5caac5cc3758a18f1d3ba4416837a9ba814c`. Each scan covers 10,000
+  deterministically shuffled rows. All three text sources have zero sampled
+  exact duplicate rows, zero exact evaluation-prompt hits, and zero bounded
+  head/tail 13-gram hits; Stack-Edu is metadata-only. Aggregate profile
+  SHA-256 values are respectively
+  `35c829b8d32718d74ee469c30b9577d380644851576564e6ffe907617bf409d6`,
+  `310c3ba3772e460a24a4520965c243646fa1cb5fa0d5f96aa2518445f8343fbe`,
+  `6dc010c0550d05bab43f7c16ceecd94a7481707e43ad684e7934a438199203b9`,
+  and
+  `0add31d32b8913e2829d7471168e2de07fce0ae28a55db63a3ae741cbb97d1cf`.
+  Private 100-row review packets remain outside Git.
+
+  FineWeb-Edu's sample contains 8,655 `int_score=3` and 1,337
+  `int_score=4` rows. Manual inspection confirms score 3 mixes real
+  explanatory content with content farms, promotional material, weak advice,
+  and dated low-value pages; score 4+ is now the core candidate and score 3 is
+  residual-ablation only. FinePDFs-Edu mixes excellent lectures/manuals with
+  answer-key spam, newsletters, catalogs, low-confidence pages, and PDF
+  extraction artifacts, so it requires page-language, repetition, length,
+  publisher, extractor, and document-type gates. peS2o is provenance-rich and
+  consistently substantive but remains capped for scientific-domain breadth
+  and extraction risk. Stack-Edu Python labels 8,207/10,000 sampled records
+  `no_license`; no code content or advertised token total is usable until
+  strict allowlisted retrieval and scanning pass.
+
+  The profiler now supports repository-nested files, deterministic per-repo
+  file caps, numeric quality quantiles, and PDF/code review metadata. A
+  separate adjudication validator binds the private review packet and complete
+  labels while emitting no text; model-assisted labels remain explicitly
+  ineligible for training admission, and only a complete 100-row human packet
+  can satisfy that semantic gate. The focused data suite is **22/22** passing
+  with clean Ruff, byte compilation, shell syntax, registry validation, and
+  diff checks.
+
+  Hugging Face Stack v3 is added at zero production weight as a current code
+  challenger: inline repository content, August 2025 commits, language-
+  agnostic near-deduplication, PII redaction, and per-file licenses are useful,
+  but Shohin will accept only explicitly permissive, parsed/executed,
+  secret-rescanned, repository-held-out residuals. Stokes job `753874` is its
+  1,000-file intake. FinePhrase's FAQ/math/table/tutorial formats are also
+  zero-weight late-pretraining challengers after new controlled evidence for
+  structured synthetic data; jobs `753875`--`753878` profile 1,000 rows per
+  format. Jobs `753875`--`753878` completed cleanly but exposed that
+  FinePhrase's top-level `text` is the organic source document rather than the
+  synthetic candidate. Treat every v1 output as a non-claiming source-column
+  validation. Corrected v2 jobs must profile nested
+  `rollout_results[0].text`; no FinePhrase quality or contamination decision
+  may use v1.
+
+  Decision:
+  `phase2_10k_profiles_source_specific_gates_current_challengers_live_no_new_data_admitted`.
+
+- **2026-07-28 21:40 EDT** -- **Fresh Stack v3 and FinePhrase intake reject
+  both wholesale feeds; paired synthetic review is enforced, and the live
+  four-H100 allocation is used only for a bounded transport canary.**
+
+  Stack v3 job `753874` completed a pinned 1,000-file nested intake at revision
+  `f2a2cb0b5d5aa286ba328c69d1a77ec4b7af540b`. It found 970
+  `no_license` files, only 30 permissive files, 57 exact duplicate rows, and
+  zero sampled exact or bounded 13-gram evaluation overlaps. Manual review
+  found useful code mixed with zero-star toy projects, placeholders, trivial
+  manifests, and duplicated repository content. Aggregate profile SHA-256 is
+  `1705c76ed54125536d1b2aba29da2aaa7108d447b7bd2525f37e05b988f7e2ff`;
+  the private review-packet SHA-256 is
+  `c49fb2412f46f79be02a0bd24220fc1f2d9730309ca7af55c39192d061c3a39b`,
+  and its text remains outside Git. The random Stack v3 feed is rejected.
+  Only an explicitly permissive, mature/trusted, repository-
+  deduplicated, parsed/compiled, test/documentation-bearing, secret-rescanned
+  residual may enter an ablation.
+
+  Corrected paired FinePhrase v3 jobs `754149`--`754152` each profiled 1,000
+  generated `rollout_results[0].text` rows together with their organic source
+  at revision
+  `78cf4a5ed0099214979c094c963e699c19163838`. FAQ, math, and tutorial had
+  zero exact duplicates; table had one. All four had zero sampled exact or
+  bounded 13-gram evaluation overlaps. Successful generation termination was
+  high but not sufficient: `stop`/`length` counts were `990/10`, `995/5`,
+  `996/4`, and `991/9`, while minimum output lengths were only 13, 4, 3, and
+  3 characters. Paired review exposed invented arithmetic and quantities,
+  source-unrelated tutorials, malformed or fabricated tables, unsupported
+  medical guidance, a false biology explanation, and near-empty generations.
+  Aggregate profile SHA-256 values for FAQ, math, table, and tutorial are
+  respectively
+  `352df1e4e7cbc39c94936935c0d53167d3dbdc51fd41665392bba00760219030`,
+  `1db8bfafd31721f7856b96ffee06970767bb59e8b15f315f746e52561cae12bc`,
+  `0dad4fa2424b3f046b68fa88a26303c3d2d12e9abf137ce5a6c5acbc9b723f13`,
+  and
+  `2c2b250b9bde0be2491677dbd3f2d369920f72a4ba61829d6988399595896eaf`.
+  The corresponding private review-packet SHA-256 values are
+  `d7920bacd4519452adfa9334bb83adf6a94d2271369deb45b0bf94b774d374fe`,
+  `793ac3ba5f57f2df4b333683110c3dece1a9cf0f0fe4843bc53554156c0bf63a`,
+  `e57e2bb6fa3ae8518839b803da91aacce833cdb20176ef84ffc9ffd32f3d20ee`,
+  and
+  `13a62cfd1a300aec70c4c3663998f786a29f58f2a2f70d90efc68c9a28e7a250`;
+  packet text remains private. FinePhrase is rejected wholesale and remains
+  at zero weight. FAQ/tutorial are reopenable only as source-faithful
+  residuals, math only with solver receipts, and tables only with cell-level
+  source support.
+
+  `pipeline/profile_general_source.py` now emits private, hash-bound paired
+  source/output review packets for nested synthetic records and aggregate
+  finish-state counts without placing source text in Git reports. The focused
+  profile, adjudication, registry, tokenization, and independent shard-
+  verification suite passes **32/32** locally; registry validation binds 30
+  candidates and an exact 100% proposed mixture. Tokenized candidates reject
+  symlinked or multiply linked inputs and shards, verify stable file identity
+  across hashing and decompression, and publish manifests with no-replace
+  semantics. No result can admit training data without complete human review.
+
+  Stokes ETTR recovery array `753823` remains live in nine long CPU cells
+  around 4h43m, with its downstream selection/materialization/audit chain
+  dependency-held. Score-4+ FineWeb-Edu candidate builder `754154` is live on
+  `ec79` but is backing off from anonymous Hugging Face HTTP 429 responses;
+  do not respawn parallel downloaders or treat a partial directory as data.
+  Dolma 3 component, PleIAs Common Corpus, and Essential-Web probes remain
+  zero-weight. Jobs `754163`--`754168` form a strict serial chain after
+  `754154`, with a bounded 15-minute inter-source delay, so failed provider
+  requests cannot fan out.
+
+  Newton four-H100 allocation `719591` started on
+  `evc28,evc30,evc40,evc45`; every node exposes one H100 PCIe and `mlx5_0`
+  InfiniBand. The initial four-rank DDP transport canary failed closed before
+  NCCL because `evc40` could not initialize CUDA. Independent one-process
+  allocation probes succeeded on `evc28`, `evc30`, and `evc45` and reproduced
+  the CUDA failure on `evc40`. The failed output remains isolated at
+  `shohin-phase2-canaries/ddp4-719591-2cdc14b`. A three-rank retry now runs
+  only on the healthy nodes from clean detached source commit
+  `2cdc14bf63a31b7e6dc9513c14674bddea1e926e`, historical admitted manifests,
+  and fresh output `shohin-phase2-canaries/ddp3-719591-2cdc14b-r1`. It starts
+  from initialization and is not a capability checkpoint or production
+  writer. Jobs `719497` and `719496` remain priority-pending for 10 and 20
+  H100s. No unverified data is training.
+
+  Decision:
+  `paired_synthetic_negative_closed_fresh_core_rate_limited_ettr_gated_ddp4_transport_canary_live`.
+
+- **2026-07-28 21:56 EDT** -- **The production-shaped three-H100 transport
+  canary completed cleanly at about 436.9k steady tokens/s; this qualifies
+  the healthy-node shape but does not admit any new data or start Phase 2
+  training.**
+
+  The first healthy-node canary used `NG=3`, `BS=16`, `ACC=1`, sequence
+  length 2,048, and completed 300 initialization-only steps in 231 seconds.
+  Loss and gradient norm stayed finite, the final cumulative rate including
+  compilation was 125,779 tokens/s, and the post-compilation interval rate
+  was about 298k tokens/s. Its rank-zero log SHA-256 is
+  `31dda69ffb9f7a6de7e992c1020baf7df95b0c64f4fc96791141c0e5ce60171c`
+  and final checkpoint SHA-256 is
+  `cdbea0314101d01ee6c8811dec88cf5f79bab803e76b541a5b5909ec84662f1c`.
+
+  A second canary used the intended production-shaped update:
+  `NG=3`, `BS=32`, `ACC=4`, sequence length 2,048, exactly 524,288 charged
+  positions per optimizer update, and `--lr-total-steps 300000`. It completed
+  120 initialization-only steps in 318 seconds with finite loss and gradient
+  norm, no skip, OOM, NCCL error, or DDP hang. The stable step-50-to-step-110
+  interval was **436,907 tokens/s** across the three healthy H100s; the
+  cumulative rate at step 110 was 289,954 tokens/s because it includes about
+  104 seconds of compilation. Each H100 used approximately 59,273 MiB of
+  81,559 MiB and sustained 86--100% sampled utilization. The rank-zero log
+  SHA-256 is
+  `83bca48064b742f34062c871c029adc50124d7412b8b8458129d931e4ac292c5`
+  and final checkpoint SHA-256 is
+  `2abedbeae1c5ac3de0e659ea3cb20d2e9780f2b52276ca5656b284a271029df0`.
+
+  Both runs used clean detached source commit
+  `2cdc14bf63a31b7e6dc9513c14674bddea1e926e`, historical admitted
+  manifests, and isolated output under
+  `/lustre/fs1/home/sa305415/shohin-phase2-canaries/`. They begin from
+  initialization, are hardware/transport evidence only, and must never be
+  promoted as capability checkpoints. `evc40` remains excluded after its
+  independently reproduced CUDA initialization failure. ETTR job `753823`
+  remains live in nine Stokes cells and FineWeb-Edu candidate job `754154`
+  remains rate-limited by anonymous-provider HTTP 429; no partial output is
+  admissible.
+
+  Decision:
+  `three_h100_bs32_acc4_transport_shape_qualified_436907_steady_tps_data_gates_still_closed`.

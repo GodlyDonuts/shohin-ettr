@@ -15,11 +15,37 @@ vocab 32768 fits uint16. Shards: shard_NNNNN.u16.zst.
         --decontam-grams evals/evalgrams.pkl --out-dir shards/finemath4 \\
         --shard-tokens 100000000 --max-tokens 4000000000
 """
-import argparse, glob, os, json, re, pickle
+import argparse
+import glob
+import hashlib
+import json
+import os
+import pickle
+import re
+import stat
+from collections import Counter
+from pathlib import Path
+from urllib.parse import urlparse
+
 import numpy as np
 import zstandard as zstd
-from tokenizers import Tokenizer
 from datasets import load_dataset
+from huggingface_hub import HfApi
+from tokenizers import Tokenizer
+
+
+BOILERPLATE_MARKERS = (
+    "accept cookies",
+    "cookie policy",
+    "privacy policy",
+    "terms of service",
+    "all rights reserved",
+    "sign in",
+    "log in",
+    "subscribe to our newsletter",
+    "javascript is disabled",
+    "enable javascript",
+)
 
 
 def _grams(text, n):
@@ -67,12 +93,92 @@ def field_value(row, field):
     return value
 
 
+def exact_text_hash(text):
+    return hashlib.sha256(text.encode("utf-8", errors="replace")).digest()
+
+
+def sha256_file(path):
+    digest = hashlib.sha256()
+    with open(path, "rb") as source:
+        for block in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def file_receipt(path):
+    candidate = Path(path)
+    before_link = candidate.lstat()
+    if candidate.is_symlink() or not stat.S_ISREG(before_link.st_mode):
+        raise RuntimeError(f"input is not a regular non-symlink file: {candidate}")
+    resolved = candidate.resolve()
+    before = resolved.stat()
+    if before.st_nlink != 1:
+        raise RuntimeError(f"input is not a single-link file: {resolved}")
+    digest = sha256_file(resolved)
+    after = resolved.stat()
+    identity = lambda value: (
+        value.st_dev,
+        value.st_ino,
+        value.st_size,
+        value.st_mtime_ns,
+        value.st_ctime_ns,
+        value.st_nlink,
+    )
+    if identity(before) != identity(after):
+        raise RuntimeError(f"input changed while being measured: {resolved}")
+    return {
+        "path": str(resolved),
+        "bytes": before.st_size,
+        "sha256": digest,
+    }
+
+
+def verify_file_receipt(receipt):
+    current = file_receipt(receipt["path"])
+    if current != receipt:
+        raise RuntimeError(f"input file changed during tokenization: {receipt['path']}")
+
+
+def canonical_payload_sha256(payload):
+    material = json.dumps(
+        payload,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+    ).encode("ascii")
+    return hashlib.sha256(material).hexdigest()
+
+
+def max_line_repeat_fraction(text):
+    lines = [" ".join(line.split()).lower() for line in text.splitlines() if line.strip()]
+    if not lines:
+        return 1.0
+    counts = Counter(lines)
+    return max(counts.values()) / len(lines)
+
+
+def boilerplate_marker_count(text):
+    lowered = text.lower()
+    return sum(marker in lowered for marker in BOILERPLATE_MARKERS)
+
+
+def domain_value(row, field):
+    raw = field_value(row, field)
+    if not raw:
+        return "<missing>"
+    value = str(raw)
+    if "://" in value:
+        return (urlparse(value).hostname or "<missing>").lower()
+    return value.lower()
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--tokenizer", required=True)
     ap.add_argument("--dataset", required=True)
     ap.add_argument("--config", default=None)
     ap.add_argument("--split", default="train")
+    ap.add_argument("--revision", default=None)
     ap.add_argument("--text-col", default="text")
     ap.add_argument("--text-cols", nargs="+", default=None,
                     help="concat multiple fields (joined by a blank line) instead of --text-col; "
@@ -86,20 +192,60 @@ def main():
     ap.add_argument("--eval-glob", nargs="*", default=[],
                     help="live eval JSONL globs whose prompt n-grams augment --decontam-grams")
     ap.add_argument("--min-chars", type=int, default=200)
+    ap.add_argument("--max-chars", type=int, default=0, help="0 = unlimited")
+    ap.add_argument("--exact-dedup", action="store_true")
+    ap.add_argument(
+        "--max-line-repeat-fraction",
+        type=float,
+        default=1.0,
+        help="reject documents whose most repeated normalized line exceeds this fraction",
+    )
+    ap.add_argument(
+        "--max-boilerplate-markers",
+        type=int,
+        default=-1,
+        help="-1 = unlimited",
+    )
+    ap.add_argument("--domain-field", default=None)
+    ap.add_argument(
+        "--max-tokens-per-domain",
+        type=int,
+        default=0,
+        help="0 = unlimited; applied after tokenization",
+    )
     ap.add_argument("--lang", default=None)
     ap.add_argument("--lang-field", default="language")
+    ap.add_argument(
+        "--require-lang-field",
+        action="store_true",
+        help="when --lang is set, reject rather than accept rows with missing language metadata",
+    )
     ap.add_argument("--min-number-field", default=None,
                     help="optional numeric quality field (supports dotted paths); drop a row when missing or below --min-number")
     ap.add_argument("--min-number", type=float, default=None,
                     help="minimum accepted value for --min-number-field")
     a = ap.parse_args()
 
-    os.makedirs(a.out_dir, exist_ok=True)
+    if os.path.lexists(a.out_dir):
+        if os.path.islink(a.out_dir) or not os.path.isdir(a.out_dir) or os.listdir(a.out_dir):
+            raise FileExistsError(f"refusing nonempty or non-directory output: {a.out_dir}")
+    else:
+        os.makedirs(a.out_dir)
     tok = Tokenizer.from_file(a.tokenizer)
     assert tok.get_vocab_size() <= 65535, "vocab exceeds uint16"
     eos_id = tok.token_to_id(a.eos)
     if (a.min_number_field is None) != (a.min_number is None):
         raise ValueError("--min-number-field and --min-number must be provided together")
+    if a.max_chars and a.max_chars < a.min_chars:
+        raise ValueError("--max-chars must be zero or at least --min-chars")
+    if not 0 < a.max_line_repeat_fraction <= 1:
+        raise ValueError("--max-line-repeat-fraction must be in (0, 1]")
+    if (a.domain_field is None) != (a.max_tokens_per_domain == 0):
+        raise ValueError(
+            "--domain-field and positive --max-tokens-per-domain must be provided together"
+        )
+    if a.require_lang_field and not a.lang:
+        raise ValueError("--require-lang-field requires --lang")
 
     S = gram_n = None
     pickle_gram_count = direct_gram_count = 0
@@ -114,14 +260,31 @@ def main():
         S = set(S or ())
         S.update(direct)
 
-    kw = dict(split=a.split, streaming=True)
+    selection_code_receipt = file_receipt(__file__)
+    tokenizer_receipt = file_receipt(a.tokenizer)
+    pickle_receipt = file_receipt(a.decontam_grams) if a.decontam_grams else None
+    eval_files = []
+    seen_eval_paths = set()
+    for pattern in a.eval_glob:
+        for path in sorted(glob.glob(pattern)):
+            absolute = str(Path(path).resolve())
+            if absolute not in seen_eval_paths:
+                eval_files.append(file_receipt(absolute))
+                seen_eval_paths.add(absolute)
+
+    resolved_revision = a.revision or HfApi().dataset_info(a.dataset).sha
+    kw = dict(split=a.split, streaming=True, revision=resolved_revision)
     if a.config:
         kw["name"] = a.config
     ds = load_dataset(a.dataset, **kw)
 
     cctx = zstd.ZstdCompressor(level=3)
     buf, shard, tok_total = [], 0, 0
-    seen = kept = n_short = n_lang = n_quality = n_contam = 0
+    shard_files = []
+    seen_hashes = set()
+    domain_tokens = Counter()
+    seen = kept = n_short = n_long = n_lang = n_lang_missing = n_quality = n_contam = 0
+    n_duplicate = n_repetition = n_boilerplate = n_domain_cap = 0
 
     def flush():
         nonlocal buf, shard
@@ -129,8 +292,17 @@ def main():
             return
         arr = np.asarray(buf, dtype=np.uint16)
         p = os.path.join(a.out_dir, f"shard_{shard:05d}.u16.zst")
+        compressed = cctx.compress(arr.tobytes())
         with open(p, "wb") as f:
-            f.write(cctx.compress(arr.tobytes()))
+            f.write(compressed)
+        shard_files.append(
+            {
+                "path": os.path.basename(p),
+                "bytes": len(compressed),
+                "tokens": int(len(arr)),
+                "sha256": hashlib.sha256(compressed).hexdigest(),
+            }
+        )
         print(f"[shard] {p} {len(arr):,} tok {os.path.getsize(p)/1e6:.1f}MB", flush=True)
         shard += 1
         buf = []
@@ -145,8 +317,23 @@ def main():
         if len(txt) < a.min_chars:
             n_short += 1
             continue
+        if a.max_chars and len(txt) > a.max_chars:
+            n_long += 1
+            continue
+        if max_line_repeat_fraction(txt) > a.max_line_repeat_fraction:
+            n_repetition += 1
+            continue
+        if (
+            a.max_boilerplate_markers >= 0
+            and boilerplate_marker_count(txt) > a.max_boilerplate_markers
+        ):
+            n_boilerplate += 1
+            continue
         if a.lang:
             lv = field_value(ex, a.lang_field)
+            if lv is None and a.require_lang_field:
+                n_lang_missing += 1
+                continue
             if lv is not None and str(lv).lower() != a.lang.lower():
                 n_lang += 1
                 continue
@@ -159,14 +346,31 @@ def main():
             if score < a.min_number:
                 n_quality += 1
                 continue
+        digest = exact_text_hash(txt) if a.exact_dedup else None
+        if digest is not None:
+            if digest in seen_hashes:
+                n_duplicate += 1
+                continue
         if S is not None and any(g in S for g in _grams(txt, gram_n)):
             n_contam += 1
             continue
         ids = tok.encode(txt).ids
+        document_tokens = len(ids) + (1 if eos_id is not None else 0)
+        domain = domain_value(ex, a.domain_field) if a.domain_field else None
+        if (
+            domain is not None
+            and domain_tokens[domain] + document_tokens > a.max_tokens_per_domain
+        ):
+            n_domain_cap += 1
+            continue
+        if digest is not None:
+            seen_hashes.add(digest)
         buf.extend(ids)
         if eos_id is not None:
             buf.append(eos_id)
-        tok_total += len(ids) + (1 if eos_id is not None else 0)
+        tok_total += document_tokens
+        if domain is not None:
+            domain_tokens[domain] += document_tokens
         kept += 1
         if len(buf) >= a.shard_tokens:
             flush()
@@ -174,13 +378,78 @@ def main():
             break
     flush()
 
-    manifest = dict(dataset=a.dataset, config=a.config, tokens=tok_total, shards=shard,
-                    seen=seen, kept=kept, dropped_short=n_short,
-                    dropped_lang=n_lang, dropped_quality=n_quality, dropped_contam=n_contam,
-                    decontam_gram_n=gram_n, decontam_pickle_grams=pickle_gram_count,
-                    decontam_direct_eval_grams=direct_gram_count, eval_glob=a.eval_glob)
-    with open(os.path.join(a.out_dir, "manifest.json"), "w") as f:
-        json.dump(manifest, f, indent=2)
+    if sum(record["tokens"] for record in shard_files) != tok_total:
+        raise RuntimeError("shard token ledger does not match retained token total")
+    verify_file_receipt(selection_code_receipt)
+    verify_file_receipt(tokenizer_receipt)
+    if pickle_receipt is not None:
+        verify_file_receipt(pickle_receipt)
+    for receipt in eval_files:
+        verify_file_receipt(receipt)
+    manifest = {
+        "schema": "shohin-tokenized-shards-v2",
+        "dataset": a.dataset,
+        "config": a.config,
+        "split": a.split,
+        "requested_revision": a.revision,
+        "resolved_revision": resolved_revision,
+        "selection_code_sha256": selection_code_receipt["sha256"],
+        "tokenizer": {
+            **tokenizer_receipt,
+            "vocab_size": tok.get_vocab_size(),
+            "eos_token": a.eos,
+            "eos_id": eos_id,
+        },
+        "tokens": tok_total,
+        "shards": shard,
+        "shard_files": shard_files,
+        "seen": seen,
+        "kept": kept,
+        "dropped_short": n_short,
+        "dropped_long": n_long,
+        "dropped_lang": n_lang,
+        "dropped_language_missing": n_lang_missing,
+        "dropped_quality": n_quality,
+        "dropped_duplicate": n_duplicate,
+        "dropped_repetition": n_repetition,
+        "dropped_boilerplate": n_boilerplate,
+        "dropped_domain_cap": n_domain_cap,
+        "dropped_contam": n_contam,
+        "decontamination": {
+            "gram_n": gram_n,
+            "pickle_grams": pickle_gram_count,
+            "pickle_path": pickle_receipt["path"] if pickle_receipt else None,
+            "pickle_bytes": pickle_receipt["bytes"] if pickle_receipt else None,
+            "pickle_sha256": pickle_receipt["sha256"] if pickle_receipt else None,
+            "direct_eval_grams": direct_gram_count,
+            "eval_globs": a.eval_glob,
+            "eval_files": eval_files,
+        },
+        "filters": {
+            "text_col": a.text_col,
+            "text_cols": a.text_cols,
+            "min_chars": a.min_chars,
+            "max_chars": a.max_chars,
+            "language": a.lang,
+            "language_field": a.lang_field,
+            "require_language_field": a.require_lang_field,
+            "minimum_number_field": a.min_number_field,
+            "minimum_number": a.min_number,
+            "exact_dedup": a.exact_dedup,
+            "max_line_repeat_fraction": a.max_line_repeat_fraction,
+            "max_boilerplate_markers": a.max_boilerplate_markers,
+            "domain_field": a.domain_field,
+            "max_tokens_per_domain": a.max_tokens_per_domain,
+            "retained_domains": len(domain_tokens),
+        },
+    }
+    manifest["payload_sha256"] = canonical_payload_sha256(manifest)
+    manifest_path = os.path.join(a.out_dir, "manifest.json")
+    with open(manifest_path, "x") as f:
+        json.dump(manifest, f, indent=2, sort_keys=True)
+        f.write("\n")
+        f.flush()
+        os.fsync(f.fileno())
     print("[done]", json.dumps(manifest))
 
 

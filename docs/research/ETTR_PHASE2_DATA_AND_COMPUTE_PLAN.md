@@ -66,10 +66,14 @@ The active admission policy is
 `docs/research/PHASE2_DATA_SELECTION_STANDARD.md`, and the machine-readable
 candidate registry is `pipeline/pretrain_sources.json`. The next corpus
 expansion prioritizes selected FineWeb-Edu, English FinePDFs-Edu,
-license-resolved Common Pile components, and Stack-Edu. Raw FineWeb, raw
+license-resolved Common Pile components, and a measured Stack-Edu versus
+Stack-v3 code challenger. Raw FineWeb, raw
 FinePDFs, wholesale DCLM, wholesale OpenMath, and synthetic FinePhrase are not
-core-stream substitutes. The proposed source mixture is an ablation schedule,
-not a permission to train; each selected payload still requires the complete
+core-stream substitutes. FinePhrase's structured FAQ, math, table, and tutorial
+formats are a zero-weight late-pretraining challenger after the April 2026
+controlled study, with hallucination, truncation, source-duplication, and
+template-diversity gates. The proposed source mixture is an ablation schedule,
+not permission to train; each selected payload still requires the complete
 hash-bound admission receipt.
 
 ### ETTR-native data
@@ -123,7 +127,7 @@ must be reported separately.
 |---|---|---|---|
 | `719497` | 5 nodes, 10 H100 PCIe, 12h | 2026-07-29 | backfill profiling and scaling |
 | `719496` | 10 nodes, 20 H100 PCIe, 72h | 2026-07-30 | gated Phase 2 training |
-| `719591` | 4 nodes, 4 H100 PCIe, 4h | scheduler pending | four independent pilot lanes |
+| `719591` | 4 nodes, 4 H100 PCIe, active backfill allocation | started 2026-07-28 21:32 EDT | three healthy-node canaries complete; `evc40` failed CUDA allocation |
 
 Both jobs request two H100s, four CPUs, and 32 GiB per node. Newton advertises
 HDR InfiniBand. A same-switch-only constraint delayed both test-only start
@@ -159,6 +163,20 @@ one inefficient 20-way model replica.
 - Stokes read-only Phase 2 source probes: FineWeb-Edu `753857`,
   FinePDFs-Edu English `753858`, Common Pile/Comma `753859`, peS2o
   `753862`, and Stack-Edu Python metadata `753863`
+- Stokes current-source challenger probes: Stack v3 `753874` and FinePhrase
+  FAQ/math/table/tutorial `753875`--`753878`
+- Stokes score-4+ FineWeb-Edu candidate builder: `754154`
+- Serial fresh-source challenger profiles after `754154`: Dolma 3 components
+  `754163`--`754166`, PleIAs Common Corpus `754167`, and Essential-Web
+  `754168`
+- Newton four-H100 allocation `719591`: `evc40` independently reproduces a
+  CUDA initialization failure. Clean three-rank DDP transport canaries on
+  `evc28`, `evc30`, and `evc45` completed at approximately 298k tokens/s for
+  `BS=16,ACC=1` and 436,907 steady tokens/s for the production-shaped
+  `BS=32,ACC=4` update. The latter uses 524,288 charged positions per update,
+  approximately 59,273 MiB per H100, and had no skip, OOM, NCCL error, or DDP
+  hang. These are initialization-only hardware measurements, not production
+  or capability checkpoints.
 
 The exact inverse ETTR record materializer is implemented as
 `rematerialize_record`. It reconstructs all 64 rows from one frozen

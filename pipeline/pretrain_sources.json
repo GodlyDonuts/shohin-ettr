@@ -327,6 +327,60 @@
       ]
     },
     {
+      "id": "stack_v3_permissive_quality_challenger",
+      "dataset": "HuggingFaceCode/stack-v3-train",
+      "url": "https://huggingface.co/datasets/HuggingFaceCode/stack-v3-train",
+      "domain": "code",
+      "priority": "P0",
+      "decision": "challenger_requires_full_receipt",
+      "target_mix_pct": 0,
+      "known_scale": "approximately 4.9T tokens in 173M repository rows; August 2025 GitHub snapshot",
+      "license_summary": "ODC-By-1.0 dataset release; retain only files explicitly classified permissive and preserve per-file detected licenses, repository commit, and opt-out support",
+      "mirror_policy": "only_allowlisted_records_after_redistribution_review",
+      "selection": {
+        "license_type": ["permissive"],
+        "accepted_license_allowlist_required": true,
+        "languages": ["Python", "C", "C++", "JavaScript", "TypeScript", "Rust", "Java", "Go", "Shell"],
+        "require": [
+          "repository commit provenance",
+          "repository maturity or an explicit trusted-project allowlist",
+          "repository-level content and commit deduplication before file selection",
+          "parse or compile success",
+          "tests and explanatory documentation for the highest-priority slice",
+          "secret and malware rescan",
+          "repository-level evaluation holdouts",
+          "cross-version residual against Stack-Edu and historical Python"
+        ],
+        "exclude": [
+          "no_license",
+          "vendor files",
+          "generated code",
+          "minified code",
+          "tutorial-copy farms",
+          "toy portfolio repositories",
+          "single-commit and placeholder repositories",
+          "trivial manifests and configuration-only files without educational context",
+          "secrets",
+          "unparseable files"
+        ],
+        "intake_evidence": {
+          "sample_rows": 1000,
+          "permissive_rows": 30,
+          "no_license_rows": 970,
+          "exact_duplicate_rows": 57,
+          "eval_exact_or_13gram_hits": 0,
+          "decision": "reject_random_feed_build_only_a_selected_residual"
+        }
+      },
+      "risks": [
+        "very large low-star and toy-project tail",
+        "upstream PII redaction and quality filters are imperfect",
+        "repository and benchmark leakage",
+        "overlap with historical Python and Stack-Edu",
+        "opt-out and takedown obligations"
+      ]
+    },
+    {
       "id": "first_party_verified_code",
       "dataset": "Godlydonuts/shohin",
       "url": "https://huggingface.co/datasets/Godlydonuts/shohin",
@@ -417,8 +471,8 @@
     },
     {
       "id": "common_pile_pes2o_selected",
-      "dataset": "common-pile/comma_v0.1_training_dataset",
-      "url": "https://huggingface.co/datasets/common-pile/comma_v0.1_training_dataset",
+      "dataset": "common-pile/peS2o",
+      "url": "https://huggingface.co/datasets/common-pile/peS2o",
       "domain": "science_procedural",
       "priority": "P1",
       "decision": "admit_selected_capped",
@@ -432,6 +486,144 @@
         "cap": true
       },
       "risks": ["overlap with arXiv", "citation boilerplate", "formula extraction"]
+    },
+    {
+      "id": "finephrase_structured_challenger",
+      "dataset": "HuggingFaceFW/finephrase",
+      "url": "https://huggingface.co/datasets/HuggingFaceFW/finephrase",
+      "domain": "synthetic_structured_pretraining",
+      "priority": "P1",
+      "decision": "reject_wholesale_reopen_only_verified_residual",
+      "target_mix_pct": 0,
+      "known_scale": "approximately 486B synthetic tokens across FAQ, math, table, and tutorial formats",
+      "license_summary": "ODC-By-1.0 release derived from FineWeb-Edu; preserve source and generated-record provenance",
+      "mirror_policy": "review_before_mirror",
+      "selection": {
+        "consider_configs": ["faq", "tutorial"],
+        "reject_by_default": ["math", "table"],
+        "phase": "small late-pretraining ablation only",
+        "require": [
+          "paired source and generated-output human review",
+          "source-faithfulness verification",
+          "finish_reason stop and nontrivial bounded length",
+          "template and semantic near-deduplication",
+          "solver verification for every reopened math record",
+          "cell-level source support for every reopened table record",
+          "equal-token comparison against the organic source"
+        ],
+        "max_initial_mix_pct": 0,
+        "max_post_verification_mix_pct": 1,
+        "intake_evidence": {
+          "sample_rows_per_config": 1000,
+          "eval_exact_or_13gram_hits": 0,
+          "aggregate_profile_sha256": {
+            "faq": "352df1e4e7cbc39c94936935c0d53167d3dbdc51fd41665392bba00760219030",
+            "math": "1db8bfafd31721f7856b96ffee06970767bb59e8b15f315f746e52561cae12bc",
+            "table": "0dad4fa2424b3f046b68fa88a26303c3d2d12e9abf137ce5a6c5acbc9b723f13",
+            "tutorial": "2c2b250b9bde0be2491677dbd3f2d369920f72a4ba61829d6988399595896eaf"
+          },
+          "private_paired_review_sha256": {
+            "faq": "d7920bacd4519452adfa9334bb83adf6a94d2271369deb45b0bf94b774d374fe",
+            "math": "793ac3ba5f57f2df4b333683110c3dece1a9cf0f0fe4843bc53554156c0bf63a",
+            "table": "e57e2bb6fa3ae8518839b803da91aacce833cdb20176ef84ffc9ffd32f3d20ee",
+            "tutorial": "13a62cfd1a300aec70c4c3663998f786a29f58f2a2f70d90efc68c9a28e7a250"
+          },
+          "finish_reason_counts": {
+            "faq": {"stop": 990, "length": 10},
+            "math": {"stop": 995, "length": 5},
+            "table": {"stop": 996, "length": 4},
+            "tutorial": {"stop": 991, "length": 9}
+          },
+          "observed_failures": [
+            "invented arithmetic and unsupported quantities",
+            "tutorials unrelated to the source",
+            "malformed or fabricated tables",
+            "unsupported medical guidance",
+            "near-empty generations"
+          ],
+          "decision": "zero_weight_until_paired_faithfulness_and_task_verifiers_pass"
+        }
+      },
+      "risks": [
+        "synthetic hallucinations",
+        "format and generator-style monoculture",
+        "truncation at generation limits",
+        "duplication of the FineWeb-Edu source",
+        "weak transfer from structured imitation to open-ended use"
+      ]
+    },
+    {
+      "id": "dolma3_dolmino_component_challenger",
+      "dataset": "allenai/dolma3_dolmino_mix-100B-1025",
+      "url": "https://huggingface.co/datasets/allenai/dolma3_dolmino_mix-100B-1025",
+      "domain": "high_quality_midtraining_components",
+      "priority": "P0",
+      "decision": "component_challenger_requires_separate_receipts",
+      "target_mix_pct": 0,
+      "known_scale": "approximately 100B tokens in the published October 2025 Dolmino mix",
+      "license_summary": "ODC-By-1.0; retain ingredient identity and review underlying component terms",
+      "mirror_policy": "component_specific_review_before_mirror",
+      "selection": {
+        "consider_configs": [
+          "common_crawl_hq",
+          "stem_heavy_crawl",
+          "olmocr_science_pdfs",
+          "stack_edu_fim"
+        ],
+        "exclude_default_convenience_mix": true,
+        "require": [
+          "component identity and pinned revision",
+          "component-level semantic review",
+          "cross-corpus residual against Shohin sources",
+          "evaluation decontamination",
+          "equal-token utility ablation"
+        ]
+      },
+      "risks": [
+        "the complete mix is synthetic-heavy",
+        "ingredient-specific licenses and provenance",
+        "overlap with Stack-Edu, web, PDF, and math incumbents",
+        "public-evaluation and reasoning-trace contamination"
+      ]
+    },
+    {
+      "id": "pleias_common_corpus_component_challenger",
+      "dataset": "PleIAs/common_corpus",
+      "url": "https://huggingface.co/datasets/PleIAs/common_corpus",
+      "domain": "open_reference_culture_government_science",
+      "priority": "P0",
+      "decision": "component_challenger_requires_full_receipt",
+      "target_mix_pct": 0,
+      "known_scale": "approximately 2.27T tokens across open culture, government, source, web, and semantic collections",
+      "license_summary": "public-domain or permissively licensed with document-level provenance; verify each selected license",
+      "mirror_policy": "only_redistribution_cleared_selected_components",
+      "selection": {
+        "prefer": [
+          "modern reference and explanatory works",
+          "high-quality public-domain books",
+          "government technical reports",
+          "science and encyclopedic material"
+        ],
+        "require": [
+          "document-level license and provenance",
+          "OCR quality and date metadata",
+          "source and historical-period caps",
+          "cross-source deduplication",
+          "semantic and factual spot checks"
+        ],
+        "exclude": [
+          "unrepaired OCR",
+          "boilerplate-heavy legal filings",
+          "low-value historical repetition",
+          "license-ambiguous records"
+        ]
+      },
+      "risks": [
+        "historical language and OCR artifacts",
+        "legal and financial boilerplate concentration",
+        "multilingual imbalance",
+        "overlap with Wikipedia, Stack Exchange, books, and science sources"
+      ]
     },
     {
       "id": "starcoder_ancillary_if_approved",
