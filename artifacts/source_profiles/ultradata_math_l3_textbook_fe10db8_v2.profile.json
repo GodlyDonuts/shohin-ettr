@@ -1,0 +1,349 @@
+{
+  "admission_status": "profile_only_not_training_data",
+  "categorical_values": {},
+  "config": "UltraData-Math-L3-Textbook-Exercise-Synthetic",
+  "dataset": "openbmb/UltraData-Math",
+  "dataset_card_sha256": "651768fc42238d1a32daf9c1affdf895e59e17d781d5bd0b28b0715d1a2c8371",
+  "discovered_configs": [
+    "UltraData-Math-L3-Conversation-Synthetic",
+    "UltraData-Math-L3-Multi-Style-Synthetic",
+    "UltraData-Math-L3-QA-Synthetic",
+    "UltraData-Math-L3-Textbook-Exercise-Synthetic",
+    "UltraData-Math-L2-preview",
+    "UltraData-Math-L1"
+  ],
+  "discovered_splits": [
+    "train"
+  ],
+  "domains": {},
+  "exact_duplicate_text_rows": 0,
+  "field_presence": {
+    "content": 10000,
+    "uid": 10000
+  },
+  "input_mode": "huggingface_stream",
+  "languages": {
+    "<missing>": 10000
+  },
+  "license_values": {},
+  "local_source_receipts": [],
+  "max_files_per_record": null,
+  "metadata_only_rows": 0,
+  "metrics": {
+    "alpha_fraction": {
+      "max": 0.8244503664223851,
+      "min": 0.14995270840256653,
+      "p10": 0.5153565851119208,
+      "p50": 0.6119891008174387,
+      "p90": 0.6944444444444444,
+      "p99": 0.7482582443102648
+    },
+    "boilerplate_markers": {
+      "max": 1.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 0.0
+    },
+    "chars": {
+      "max": 90396.0,
+      "min": 711.0,
+      "p10": 1631.0,
+      "p50": 2560.0,
+      "p90": 4249.0,
+      "p99": 6813.0
+    },
+    "control_fraction": {
+      "max": 0.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 0.0
+    },
+    "digit_fraction": {
+      "max": 0.3702037373143485,
+      "min": 0.0,
+      "p10": 0.01627804663440387,
+      "p50": 0.037258418011556084,
+      "p90": 0.06969825754356142,
+      "p99": 0.11616766467065869
+    },
+    "han_alpha_fraction": {
+      "max": 0.09921110760492269,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 0.0
+    },
+    "html_tags": {
+      "max": 36.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 0.0
+    },
+    "latin_alpha_fraction": {
+      "max": 1.0,
+      "min": 0.9007888923950773,
+      "p10": 1.0,
+      "p50": 1.0,
+      "p90": 1.0,
+      "p99": 1.0
+    },
+    "lines": {
+      "max": 2380.0,
+      "min": 7.0,
+      "p10": 29.0,
+      "p50": 52.0,
+      "p90": 99.0,
+      "p99": 181.0
+    },
+    "max_line_repeat_fraction": {
+      "max": 0.9839797639123102,
+      "min": 0.009345794392523364,
+      "p10": 0.045454545454545456,
+      "p50": 0.1875,
+      "p90": 0.4,
+      "p99": 0.47619047619047616
+    },
+    "nonempty_lines": {
+      "max": 2372.0,
+      "min": 4.0,
+      "p10": 21.0,
+      "p50": 40.0,
+      "p90": 78.0,
+      "p99": 142.0
+    },
+    "replacement_fraction": {
+      "max": 0.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 0.0
+    },
+    "unique_line_fraction": {
+      "max": 1.0,
+      "min": 0.008010118043844857,
+      "p10": 0.55,
+      "p50": 0.7,
+      "p90": 1.0,
+      "p99": 1.0
+    },
+    "urls": {
+      "max": 0.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 0.0
+    },
+    "words": {
+      "max": 14527.0,
+      "min": 136.0,
+      "p10": 278.0,
+      "p50": 438.0,
+      "p90": 731.0,
+      "p99": 1188.0
+    }
+  },
+  "nested_files_field": null,
+  "nested_review_context_field": null,
+  "nested_text_field": null,
+  "quality_metric_quantiles": {},
+  "quality_scores": {},
+  "requested_revision": "fe10db8efd35597fd7fcff8ff576b5ec4ea5ff87",
+  "resolved_revision": "fe10db8efd35597fd7fcff8ff576b5ec4ea5ff87",
+  "review_packet_contains_context_text": false,
+  "review_packet_contains_text": true,
+  "review_rows": 100,
+  "review_selection": "lowest SHA-256 priorities over stable source identities",
+  "sample_eval_overlap": {
+    "eval_13gram_count": 810428,
+    "eval_13gram_rows_bounded_head_tail": 14,
+    "eval_files": [
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/append_ledger_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/categorical_microcode_manual_v1.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/certified_latent_ledger_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/certified_latent_ledger_v2_compact_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_bisimulation_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_residual_algebra_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_residual_algebra_v1_two_edit_r1.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_residual_algebra_v1_values_answer_supported.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_basis_v3_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_factor_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_recurrent_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_recurrent_v2_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_core_factor.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_magnitude_factor.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_two_edit_factor.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/gsm8k.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/gsm8k_platinum.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/humaneval.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/humaneval_full.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_operator_eval_slices_v2_64.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_operator_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_state_algebra_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_state_algebra_v1_r2_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/math500.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/mbpp.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/mbpp_full.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/native_residual_relay_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v2_contract_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v2_contract_heldout_r2.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v3_state_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/referential_argument_graph_v5_fresh.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_factor_delta.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_factor_language.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_factor_values.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_bridge_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_capsule_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_composition_transfer_v1.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/source_memory_packet_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/token_native_ledger_v1_heldout.jsonl"
+    ],
+    "eval_prompt_count": 58033,
+    "exact_prompt_rows": 0,
+    "hashed_overlap_receipts": [
+      {
+        "document_sha256": "8dd89b961f711bd51189774b0ed24e070558a11123e5024cab37e7ddfe2c4cd1",
+        "exact_normalized_prompt_sha256": null,
+        "matched_13gram_sha256": [
+          "1bc288acb0797bd588c48749cf8b484e7b93305d17090f20cee2f54588ee960d",
+          "8070adb596fe13c3dd88554cb561ebd6a285e8671a9db7297c2f6c7b14687b38"
+        ],
+        "stable_identity_sha256": "876fe168d94676c44baad36884255e449442919906e856acba4ce476c360ef28"
+      },
+      {
+        "document_sha256": "3083c8257fc5ac56c0425686208c5b8bcd57c648ce00543e64a6fbefc1ba76b2",
+        "exact_normalized_prompt_sha256": null,
+        "matched_13gram_sha256": [
+          "1bc288acb0797bd588c48749cf8b484e7b93305d17090f20cee2f54588ee960d",
+          "8070adb596fe13c3dd88554cb561ebd6a285e8671a9db7297c2f6c7b14687b38"
+        ],
+        "stable_identity_sha256": "1c007d52b25ca9b3aa5a2c63e56e47ebddb68256299c30186aede7f92bf921e3"
+      },
+      {
+        "document_sha256": "82000ce607de998d0870787d5eb96fa960943fcd9f9a3c220d095edab57bddff",
+        "exact_normalized_prompt_sha256": null,
+        "matched_13gram_sha256": [
+          "e54caddf107321ba449df7189802dbd067d0493f798342c5817510e1941a629c",
+          "e98c6f80d529f7d06c18e1ef740745f744de02932a218180417b063515196d4d",
+          "3cad29f6fb5e2cc3c2c5f5b96562b17584fb63a0ff1e71869fe613bf544d82e0",
+          "f986ce500ae692a3b1566d991c7eb8508c09ff128ee3d788731f93e9fd172b1d"
+        ],
+        "stable_identity_sha256": "19d8b434d18ae5fad56f14530e82633c04eb587c39673bb1ebd9a8bad39c4f16"
+      },
+      {
+        "document_sha256": "731982405a2e3edd97b941129ad1b297fe0f979d46956d10c720bbad88f399ed",
+        "exact_normalized_prompt_sha256": null,
+        "matched_13gram_sha256": [
+          "a84cc5af7d912f5e85dd08b988785a6884476ca6ecfca78c05fab86ef23ca1d0"
+        ],
+        "stable_identity_sha256": "9b731af64c9d4ed1a54817f1d4558be12ccf3fecc63c610acae3b3257b15acf2"
+      },
+      {
+        "document_sha256": "a09a92cc2d3c2e9887786f366ef2369b35a016f3da801d781e7e78b9ef483cb2",
+        "exact_normalized_prompt_sha256": null,
+        "matched_13gram_sha256": [
+          "1bc288acb0797bd588c48749cf8b484e7b93305d17090f20cee2f54588ee960d",
+          "8070adb596fe13c3dd88554cb561ebd6a285e8671a9db7297c2f6c7b14687b38"
+        ],
+        "stable_identity_sha256": "a985a7c2a36571c7d6bc11254caecf0d3f919edb5e026e8fdf689ccd90e4c38b"
+      },
+      {
+        "document_sha256": "c9edc19102d5f99d15c91e571346fc2aa989ef37b4f578effe2cd52ba23c1554",
+        "exact_normalized_prompt_sha256": null,
+        "matched_13gram_sha256": [
+          "1bc288acb0797bd588c48749cf8b484e7b93305d17090f20cee2f54588ee960d",
+          "8070adb596fe13c3dd88554cb561ebd6a285e8671a9db7297c2f6c7b14687b38"
+        ],
+        "stable_identity_sha256": "2a01abe2fa8b28205d0ce4fda5adde05f14c8ca8426c9eaa10b9bbfe0e689c78"
+      },
+      {
+        "document_sha256": "5c964b5641f1d64997155b865ee515b9750a95f8ebb26304228b05481ea06960",
+        "exact_normalized_prompt_sha256": null,
+        "matched_13gram_sha256": [
+          "110cf56a46e4ce11b2a83d36e805b218615c6c0ef1aff2e3825b1b0ee8b810f2"
+        ],
+        "stable_identity_sha256": "13006f393a9c09129175146c687024e1fd0009dc7b00944255a5855011f55496"
+      },
+      {
+        "document_sha256": "09a8f7ee443d6e9b095f56b1de4ca95c3395184e0d0d4a6b2603b0435d820dcd",
+        "exact_normalized_prompt_sha256": null,
+        "matched_13gram_sha256": [
+          "267d93d502a0645767ef688b7a4e1f95c1da9312697ff2fb02fb14a45e2b9d5a",
+          "a84cc5af7d912f5e85dd08b988785a6884476ca6ecfca78c05fab86ef23ca1d0"
+        ],
+        "stable_identity_sha256": "1ea35c2840266936a00def7c44b827b0280d528470371f57c7c5a7477b900cf7"
+      },
+      {
+        "document_sha256": "bf3021ddca9a6f58f61d09bd2876a92d53f42a5d3aaf61f4e1ecdd6a2ffae8c1",
+        "exact_normalized_prompt_sha256": null,
+        "matched_13gram_sha256": [
+          "110cf56a46e4ce11b2a83d36e805b218615c6c0ef1aff2e3825b1b0ee8b810f2"
+        ],
+        "stable_identity_sha256": "48a111f66eda6b644a4e4f9021efde31224ae5dd1b7d21f090b459db9f47e562"
+      },
+      {
+        "document_sha256": "6fb81fed2fab98419fc66f1db4ce04b905a456fba9cbb54e532bcba42162fe74",
+        "exact_normalized_prompt_sha256": null,
+        "matched_13gram_sha256": [
+          "110cf56a46e4ce11b2a83d36e805b218615c6c0ef1aff2e3825b1b0ee8b810f2"
+        ],
+        "stable_identity_sha256": "2a8568db9f739f77bb0682950aa07754f4716c4880996f78ae0f0bc28f6b19c3"
+      },
+      {
+        "document_sha256": "0038bb19f85b086615b755e965a582e1ddcccd1d21415af8756d96e41b52590a",
+        "exact_normalized_prompt_sha256": null,
+        "matched_13gram_sha256": [
+          "110cf56a46e4ce11b2a83d36e805b218615c6c0ef1aff2e3825b1b0ee8b810f2"
+        ],
+        "stable_identity_sha256": "a5cae8e97db912f242b2065bbe88f035b5a95f9cc0b6047cd6e74f744606cc5f"
+      },
+      {
+        "document_sha256": "d9da9a9fb3ad7221fed8613339fd15b45142a56f7c4f4c3b341aa0e04e170895",
+        "exact_normalized_prompt_sha256": null,
+        "matched_13gram_sha256": [
+          "110cf56a46e4ce11b2a83d36e805b218615c6c0ef1aff2e3825b1b0ee8b810f2"
+        ],
+        "stable_identity_sha256": "ca35d5cf9c6f935261b90ee8755b4db2fb26c07995f205945409c08549f53df0"
+      },
+      {
+        "document_sha256": "9615ae126c9080c44550289216e953fca2c20335fd9bf1e809fe55de5a0726fb",
+        "exact_normalized_prompt_sha256": null,
+        "matched_13gram_sha256": [
+          "1bc288acb0797bd588c48749cf8b484e7b93305d17090f20cee2f54588ee960d",
+          "8070adb596fe13c3dd88554cb561ebd6a285e8671a9db7297c2f6c7b14687b38"
+        ],
+        "stable_identity_sha256": "13a35762e3ec88d361cbd2df2c531268efe528b7874f17ab7890842d282bb7be"
+      },
+      {
+        "document_sha256": "abbd1c0ab88851bc16570a26041f02eb68b77a40a5cef2691a6c11b0c91aa0e8",
+        "exact_normalized_prompt_sha256": null,
+        "matched_13gram_sha256": [
+          "267d93d502a0645767ef688b7a4e1f95c1da9312697ff2fb02fb14a45e2b9d5a",
+          "a84cc5af7d912f5e85dd08b988785a6884476ca6ecfca78c05fab86ef23ca1d0"
+        ],
+        "stable_identity_sha256": "872eebb7551f976818040fc0829df7b11a73963e99739a11fae7f3fa6a08451d"
+      }
+    ],
+    "overlap_receipts_truncated": false
+  },
+  "scanned_rows": 10000,
+  "schema": "shohin-general-source-profile-v1",
+  "shuffle_buffer": 10000,
+  "shuffle_seed": 20260729,
+  "split": "train",
+  "text_field": "content",
+  "text_rows": 10000,
+  "unique_text_hashes": 10000
+}

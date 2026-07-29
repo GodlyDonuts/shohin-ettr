@@ -22,7 +22,9 @@ from pipeline.tokenize_shards import (
     field_value,
     max_line_repeat_fraction,
     local_input_format,
+    parse_required_minimums,
     parse_required_values,
+    required_minimums_match,
     required_values_match,
     resolve_local_inputs,
     stable_document_identity,
@@ -156,6 +158,68 @@ def test_required_values_are_exact_conjunctive_and_case_insensitive():
 def test_required_values_reject_ambiguous_contracts(specifications):
     with pytest.raises(ValueError, match="required-value"):
         parse_required_values(specifications)
+
+
+def test_required_minimums_are_numeric_dotted_and_conjunctive():
+    predicates = parse_required_minimums(
+        [
+            "quality_signals.fasttext.english=0.9",
+            "eai_taxonomy.reasoning_depth.primary.code=3",
+            "eai_taxonomy.education_level.primary.code=2",
+        ]
+    )
+    assert required_minimums_match(
+        {
+            "quality_signals": {"fasttext": {"english": 0.95}},
+            "eai_taxonomy": {
+                "reasoning_depth": {"primary": {"code": 4}},
+                "education_level": {"primary": {"code": "2"}},
+            },
+        },
+        predicates,
+    )
+    assert not required_minimums_match(
+        {
+            "quality_signals": {"fasttext": {"english": 0.89}},
+            "eai_taxonomy": {
+                "reasoning_depth": {"primary": {"code": 4}},
+                "education_level": {"primary": {"code": 3}},
+            },
+        },
+        predicates,
+    )
+    assert not required_minimums_match(
+        {
+            "quality_signals": {"fasttext": {"english": 0.95}},
+            "eai_taxonomy": {
+                "reasoning_depth": {"primary": {"code": 4}},
+            },
+        },
+        predicates,
+    )
+
+
+@pytest.mark.parametrize(
+    "specifications",
+    [
+        ["missing-delimiter"],
+        ["=1"],
+        ["field="],
+        ["field=not-a-number"],
+        ["field=nan"],
+        ["field=inf"],
+        ["field=1", "field=2"],
+    ],
+)
+def test_required_minimums_reject_ambiguous_contracts(specifications):
+    with pytest.raises(ValueError, match="required-min-number"):
+        parse_required_minimums(specifications)
+
+
+def test_required_minimums_reject_nonfinite_row_values():
+    predicates = {"score": 0.5}
+    assert not required_minimums_match({"score": "nan"}, predicates)
+    assert not required_minimums_match({"score": "inf"}, predicates)
 
 
 def test_domain_value_handles_urls_and_direct_fields():

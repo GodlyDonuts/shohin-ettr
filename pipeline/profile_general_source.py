@@ -13,6 +13,7 @@ import hashlib
 import heapq
 import io
 import json
+import math
 import os
 import random
 import re
@@ -352,6 +353,32 @@ def _counter_value(value: Any) -> str:
     return json.dumps(_bounded_value(value), sort_keys=True, ensure_ascii=True)
 
 
+def field_value(row: Mapping[str, Any], field: str) -> Any:
+    """Read a top-level or dotted nested source field without raising."""
+    if field in row:
+        return row[field]
+    value: Any = row
+    for part in field.split("."):
+        if not isinstance(value, Mapping):
+            return None
+        value = value.get(part)
+    return value
+
+
+def validate_profile_fields(fields: Iterable[str], *, option: str) -> tuple[str, ...]:
+    """Validate and freeze caller-requested aggregate profile fields."""
+    result: list[str] = []
+    seen: set[str] = set()
+    for field in fields:
+        if not field or field.startswith(".") or field.endswith(".") or ".." in field:
+            raise ProfileError(f"{option} requires nonempty dotted field names")
+        if field in seen:
+            raise ProfileError(f"{option} field is duplicated: {field}")
+        seen.add(field)
+        result.append(field)
+    return tuple(result)
+
+
 def profile_rows(
     rows: Iterable[Mapping[str, Any]],
     *,
@@ -363,6 +390,8 @@ def profile_rows(
     max_review_chars: int,
     eval_index: Mapping[str, Any],
     review_context_field: str | None = None,
+    profile_fields: Iterable[str] = (),
+    profile_numeric_fields: Iterable[str] = (),
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     if scan_rows <= 0 or review_rows <= 0 or max_review_chars <= 0:
         raise ProfileError("row and excerpt limits must be positive")
@@ -374,6 +403,9 @@ def profile_rows(
     quality_metric_values: dict[str, list[float]] = defaultdict(list)
     license_values: Counter[str] = Counter()
     categorical_values: dict[str, Counter[str]] = defaultdict(Counter)
+    requested_field_values: dict[str, Counter[str]] = defaultdict(Counter)
+    requested_numeric_values: dict[str, list[float]] = defaultdict(list)
+    requested_numeric_invalid: Counter[str] = Counter()
     field_presence: Counter[str] = Counter()
     text_hashes: set[str] = set()
     exact_duplicates = 0
@@ -385,6 +417,14 @@ def profile_rows(
     scanned = 0
     # Negative priority makes heap[0] the largest retained hash.
     review_heap: list[tuple[int, int, dict[str, Any]]] = []
+    profile_fields = validate_profile_fields(
+        profile_fields,
+        option="--profile-field",
+    )
+    profile_numeric_fields = validate_profile_fields(
+        profile_numeric_fields,
+        option="--profile-numeric-field",
+    )
 
     for row_index, row in enumerate(rows):
         if row_index >= scan_rows:
@@ -399,6 +439,21 @@ def profile_rows(
         for field in CATEGORICAL_PROFILE_FIELDS:
             if field in row:
                 categorical_values[field][_counter_value(row[field])] += 1
+        for field in profile_fields:
+            requested_field_values[field][
+                _counter_value(field_value(row, field))
+            ] += 1
+        for field in profile_numeric_fields:
+            raw_value = field_value(row, field)
+            try:
+                numeric_value = float(raw_value)
+            except (TypeError, ValueError):
+                requested_numeric_invalid[field] += 1
+            else:
+                if math.isfinite(numeric_value):
+                    requested_numeric_values[field].append(numeric_value)
+                else:
+                    requested_numeric_invalid[field] += 1
         for field in ("int_score", "score", "quality_label", "fw_edu_scores"):
             if field in row:
                 quality_scores[f"{field}:{_counter_value(row[field])}"] += 1
@@ -471,6 +526,10 @@ def profile_rows(
             "stable_identity_sha256": identity_hash,
             "document_sha256": text_hash if text else None,
             "metadata": review_metadata(row),
+            "profiled_fields": {
+                field: _bounded_value(field_value(row, field))
+                for field in (*profile_fields, *profile_numeric_fields)
+            },
             "metrics": metrics,
             "review_text": excerpt,
             "review_text_truncated": truncated,
@@ -514,6 +573,18 @@ def profile_rows(
         "categorical_values": {
             field: dict(values.most_common(100))
             for field, values in sorted(categorical_values.items())
+        },
+        "profiled_field_values": {
+            field: dict(requested_field_values[field].most_common(100))
+            for field in profile_fields
+        },
+        "profiled_numeric_quantiles": {
+            field: quantiles(requested_numeric_values[field])
+            for field in profile_numeric_fields
+        },
+        "profiled_numeric_invalid": {
+            field: requested_numeric_invalid[field]
+            for field in profile_numeric_fields
         },
         "metrics": {key: quantiles(metric_values[key]) for key in NUMERIC_METRICS},
         "sample_eval_overlap": {
@@ -664,6 +735,8 @@ def main() -> None:
     parser.add_argument("--nested-files-field")
     parser.add_argument("--nested-text-field", default="content")
     parser.add_argument("--nested-review-context-field")
+    parser.add_argument("--profile-field", action="append", default=[])
+    parser.add_argument("--profile-numeric-field", action="append", default=[])
     parser.add_argument("--max-files-per-record", type=int, default=8)
     parser.add_argument("--scan-rows", type=int, default=10_000)
     parser.add_argument("--review-rows", type=int, default=100)
@@ -799,6 +872,8 @@ def main() -> None:
         review_context_field=(
             "_review_context_text" if args.nested_review_context_field else None
         ),
+        profile_fields=args.profile_field,
+        profile_numeric_fields=args.profile_numeric_field,
     )
     report.update(
         {

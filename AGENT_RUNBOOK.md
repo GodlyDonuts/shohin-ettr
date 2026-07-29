@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 06:06 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 06:24 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -16977,3 +16977,60 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `ultradata_profiles_pinned_l2_requires_label_script_rerun_and_hard_decontamination`.
+
+- **2026-07-29 06:24 EDT** -- **Corrected UltraData-Math profiles are
+  complete, and nested quality controls now support a fail-closed
+  Essential-Web challenger rather than a blind feed.**
+
+  All three corrected 10,000-row profiles completed from immutable source
+  commit `cf370cdd3562f0e96a2b95a5327c6bd5bce30a02`. L2 contained 10,000
+  text rows, **five exact duplicate rows**, zero exact evaluation-prompt
+  matches, and six rows with bounded 13-gram overlap. Its upstream quality
+  labels were 6,910 at level 4 and 3,090 at level 5. L3 QA had zero exact
+  duplicates, zero exact evaluation matches, and one bounded 13-gram overlap.
+  L3 textbook had zero exact duplicates, zero exact evaluation matches, and
+  fourteen bounded 13-gram overlaps; its repetition tail is materially
+  heavier than L2. The text-free reports are preserved under
+  `artifacts/source_profiles/`; the 100-row review packets remain private and
+  outside Git. These results permit only small exact/near-deduplicated,
+  hard-decontaminated utility challengers. They do not justify bulk synthetic
+  math admission.
+
+  `pipeline/tokenize_shards.py` now supports repeatable
+  `--required-min-number FIELD=NUMBER` predicates over dotted source
+  metadata. Every predicate is conjunctive, finite, manifest-bound, and
+  fail-closed on absent or nonnumeric values. The legacy single-field
+  interface remains supported and cannot silently duplicate a new predicate.
+  `pipeline/profile_general_source.py` now accepts caller-declared nested
+  categorical and numeric profile fields, reports aggregate value
+  distributions/quantiles and invalid counts, and keeps all review text in
+  the separate private packet. The profile/tokenizer/verifier focused set
+  passes **52/52** with clean Ruff, byte compilation, shell syntax, and diff
+  checks.
+
+  Current Essential-Web resolves to pinned revision
+  `ce4eccc7e9604667b6d7f32cb6274b8b41f3113d`, is ungated ODC-By, and exposes
+  nested fastText scores plus taxonomy labels for reasoning depth,
+  correctness, extraction artifacts, missing content, education, Bloom
+  category, and document type. Its first upstream row is a personal blog
+  labeled no-reasoning, proving the default stream is inadmissible. The
+  challenger must require English probability at least 0.90, reasoning-depth
+  code at least 3, technical-correctness code exactly 4, extraction-artifact
+  and missing-content codes exactly 0, an explicit educational/reference/
+  technical document-type allowlist, and per-domain caps before exact/near
+  deduplication, evaluation decontamination, private review, and equal-token
+  utility testing. Correctness is an exact-code gate because code 6 means
+  not-applicable; treating the code as a monotonic score would admit the wrong
+  documents.
+
+  Concurrent candidate generation remains quarantined. FineWeb-Edu r2 has
+  sixteen approximately 100M-token shards and peS2o r2 has forty-six.
+  FinePDFs has hash-verified all sixteen pinned physical source files and is
+  still in source verification/startup without a token shard. ETTR remains
+  214/216 main plus 108/108 confirmation, with the two long cells actively
+  computing. Newton request `719497` remains pending for ten H100s with a
+  15:03 EDT estimate and the release-blind canary watcher armed. No candidate
+  optimizer is active.
+
+  Decision:
+  `ultradata_challengers_bounded_essential_nested_profile_required_no_candidate_optimizer`.

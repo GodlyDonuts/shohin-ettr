@@ -52,10 +52,10 @@ def _run(source: Path, output: Path, *, batch_size: int, max_tokens: int = 0) ->
         "--exact-dedup",
         "--max-line-repeat-fraction",
         "0.80",
-        "--min-number-field",
-        "int_score",
-        "--min-number",
-        "4",
+        "--required-min-number",
+        "int_score=4",
+        "--required-min-number",
+        "metadata.reasoning_depth.primary.code=3",
         "--domain-field",
         "url",
         "--max-tokens-per-domain",
@@ -90,18 +90,30 @@ def _artifact_bytes(path: Path) -> dict[str, bytes]:
 def _write_rows(path: Path) -> None:
     repeated = ("same repeat line\n" * 6) + "one distinct line"
     rows = [
-        {"text": "tiny", "int_score": 5, "url": "https://short.example"},
+        {
+            "text": "tiny",
+            "int_score": 5,
+            "metadata": {"reasoning_depth": {"primary": {"code": 4}}},
+            "url": "https://short.example",
+        },
         {
             "text": FIRST_TEXT,
             "int_score": 5,
+            "metadata": {"reasoning_depth": {"primary": {"code": 4}}},
             "url": "https://one.example/path",
         },
         {
             "text": FIRST_TEXT,
             "int_score": 5,
+            "metadata": {"reasoning_depth": {"primary": {"code": 4}}},
             "url": "https://two.example/path",
         },
-        {"text": repeated, "int_score": 5, "url": "https://repeat.example"},
+        {
+            "text": repeated,
+            "int_score": 5,
+            "metadata": {"reasoning_depth": {"primary": {"code": 4}}},
+            "url": "https://repeat.example",
+        },
         {
             "text": (
                 "A low score record must never enter the corpus.\n"
@@ -109,16 +121,19 @@ def _write_rows(path: Path) -> None:
                 "A third distinct line prevents a repetition rejection."
             ),
             "int_score": 3,
+            "metadata": {"reasoning_depth": {"primary": {"code": 4}}},
             "url": "https://low.example",
         },
         {
             "text": SECOND_TEXT,
             "int_score": 5,
+            "metadata": {"reasoning_depth": {"primary": {"code": 2}}},
             "url": "https://one.example/second",
         },
         {
             "text": THIRD_TEXT,
             "int_score": 5,
+            "metadata": {"reasoning_depth": {"primary": {"code": 5}}},
             "url": "https://three.example/path",
         },
     ]
@@ -136,12 +151,16 @@ def test_batched_tokenization_matches_single_record_artifacts(tmp_path):
 
     assert _artifact_bytes(sequential) == _artifact_bytes(batched)
     manifest = json.loads((sequential / "manifest.json").read_text())
-    assert manifest["kept"] == 3
+    assert manifest["kept"] == 2
     assert manifest["tokens"] > 0
     assert manifest["dropped_short"] == 1
     assert manifest["dropped_duplicate"] == 1
     assert manifest["dropped_repetition"] == 1
-    assert manifest["dropped_quality"] == 1
+    assert manifest["dropped_quality"] == 2
+    assert manifest["filters"]["required_minimum_numbers"] == {
+        "int_score": 4.0,
+        "metadata.reasoning_depth.primary.code": 3.0,
+    }
 
 
 def test_batched_tokenization_preserves_early_max_token_stop(tmp_path):

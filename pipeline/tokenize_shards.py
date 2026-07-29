@@ -19,6 +19,7 @@ import argparse
 import glob
 import hashlib
 import json
+import math
 import os
 import pickle
 import re
@@ -135,6 +136,49 @@ def required_values_match(row, required_values):
         str(field_value(row, field)).casefold() == expected.casefold()
         for field, expected in required_values.items()
     )
+
+
+def parse_required_minimums(specifications):
+    """Parse repeatable ``FIELD=NUMBER`` lower-bound predicates."""
+    result = {}
+    for specification in specifications or ():
+        if not isinstance(specification, str) or "=" not in specification:
+            raise ValueError(
+                "--required-min-number entries must use FIELD=NUMBER"
+            )
+        field, raw_minimum = specification.split("=", 1)
+        if not field or not raw_minimum:
+            raise ValueError(
+                "--required-min-number entries must use nonempty FIELD=NUMBER"
+            )
+        if field in result:
+            raise ValueError(
+                f"--required-min-number field is duplicated: {field}"
+            )
+        try:
+            minimum = float(raw_minimum)
+        except ValueError as exc:
+            raise ValueError(
+                "--required-min-number minimum is not numeric"
+            ) from exc
+        if not math.isfinite(minimum):
+            raise ValueError(
+                "--required-min-number minimum must be finite"
+            )
+        result[field] = minimum
+    return result
+
+
+def required_minimums_match(row, required_minimums):
+    """Return true only when every numeric metadata lower bound passes."""
+    for field, minimum in required_minimums.items():
+        try:
+            value = float(field_value(row, field))
+        except (TypeError, ValueError):
+            return False
+        if not math.isfinite(value) or value < minimum:
+            return False
+    return True
 
 
 def exact_text_hash(text):
@@ -408,6 +452,16 @@ def main():
             "and every predicate must match"
         ),
     )
+    ap.add_argument(
+        "--required-min-number",
+        action="append",
+        default=[],
+        metavar="FIELD=NUMBER",
+        help=(
+            "repeatable numeric metadata lower bound; dotted fields are "
+            "supported and every predicate must pass"
+        ),
+    )
     ap.add_argument("--domain-field", default=None)
     ap.add_argument(
         "--max-tokens-per-domain",
@@ -466,6 +520,13 @@ def main():
         else None
     )
     required_values = parse_required_values(a.required_value)
+    required_minimums = parse_required_minimums(a.required_min_number)
+    if a.min_number_field is not None:
+        if a.min_number_field in required_minimums:
+            raise ValueError(
+                "--min-number-field duplicates --required-min-number"
+            )
+        required_minimums[a.min_number_field] = a.min_number
 
     S = gram_n = None
     pickle_gram_count = direct_gram_count = 0
@@ -723,14 +784,8 @@ def main():
                 reason = "language_missing"
             elif language is not None and str(language).lower() != a.lang.lower():
                 reason = "language"
-        if reason is None and a.min_number_field is not None:
-            try:
-                score = float(field_value(ex, a.min_number_field))
-            except (TypeError, ValueError):
-                reason = "quality"
-            else:
-                if score < a.min_number:
-                    reason = "quality"
+        if reason is None and not required_minimums_match(ex, required_minimums):
+            reason = "quality"
         if reason is not None:
             pending.append({"kind": "reject", "reason": reason})
         else:
@@ -836,6 +891,7 @@ def main():
             "require_language_field": a.require_lang_field,
             "minimum_number_field": a.min_number_field,
             "minimum_number": a.min_number,
+            "required_minimum_numbers": dict(sorted(required_minimums.items())),
             "exact_dedup": a.exact_dedup,
             "max_line_repeat_fraction": a.max_line_repeat_fraction,
             "max_boilerplate_markers": a.max_boilerplate_markers,

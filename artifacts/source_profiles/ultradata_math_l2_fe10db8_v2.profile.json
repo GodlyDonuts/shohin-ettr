@@ -1,0 +1,303 @@
+{
+  "admission_status": "profile_only_not_training_data",
+  "categorical_values": {},
+  "config": "UltraData-Math-L2-preview",
+  "dataset": "openbmb/UltraData-Math",
+  "dataset_card_sha256": "651768fc42238d1a32daf9c1affdf895e59e17d781d5bd0b28b0715d1a2c8371",
+  "discovered_configs": [
+    "UltraData-Math-L3-Conversation-Synthetic",
+    "UltraData-Math-L3-Multi-Style-Synthetic",
+    "UltraData-Math-L3-QA-Synthetic",
+    "UltraData-Math-L3-Textbook-Exercise-Synthetic",
+    "UltraData-Math-L2-preview",
+    "UltraData-Math-L1"
+  ],
+  "discovered_splits": [
+    "train"
+  ],
+  "domains": {},
+  "exact_duplicate_text_rows": 5,
+  "field_presence": {
+    "content": 10000,
+    "quality_label": 10000
+  },
+  "input_mode": "huggingface_stream",
+  "languages": {
+    "<missing>": 10000
+  },
+  "license_values": {},
+  "local_source_receipts": [],
+  "max_files_per_record": null,
+  "metadata_only_rows": 0,
+  "metrics": {
+    "alpha_fraction": {
+      "max": 0.8436813186813187,
+      "min": 0.04064616988014591,
+      "p10": 0.5167315175097277,
+      "p50": 0.6585623678646935,
+      "p90": 0.7650240384615384,
+      "p99": 0.7990072682148556
+    },
+    "boilerplate_markers": {
+      "max": 4.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 1.0
+    },
+    "chars": {
+      "max": 49937.0,
+      "min": 166.0,
+      "p10": 925.0,
+      "p50": 4115.0,
+      "p90": 22946.0,
+      "p99": 44411.0
+    },
+    "control_fraction": {
+      "max": 0.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 0.0
+    },
+    "digit_fraction": {
+      "max": 0.4517978113600834,
+      "min": 0.0,
+      "p10": 0.007911229836638242,
+      "p50": 0.031998429524931295,
+      "p90": 0.08828250401284109,
+      "p99": 0.1519224757736793
+    },
+    "han_alpha_fraction": {
+      "max": 0.13273542600896862,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 0.0
+    },
+    "html_tags": {
+      "max": 646.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 14.0
+    },
+    "latin_alpha_fraction": {
+      "max": 1.0,
+      "min": 0.7975708502024291,
+      "p10": 0.9990238372642252,
+      "p50": 1.0,
+      "p90": 1.0,
+      "p99": 1.0
+    },
+    "lines": {
+      "max": 3300.0,
+      "min": 3.0,
+      "p10": 26.0,
+      "p50": 92.0,
+      "p90": 334.0,
+      "p99": 818.0
+    },
+    "max_line_repeat_fraction": {
+      "max": 0.5,
+      "min": 0.00211864406779661,
+      "p10": 0.011904761904761904,
+      "p50": 0.043478260869565216,
+      "p90": 0.1111111111111111,
+      "p99": 0.25
+    },
+    "nonempty_lines": {
+      "max": 1843.0,
+      "min": 2.0,
+      "p10": 16.0,
+      "p50": 57.0,
+      "p90": 228.0,
+      "p99": 525.0
+    },
+    "replacement_fraction": {
+      "max": 0.00879935535858179,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 0.0
+    },
+    "unique_line_fraction": {
+      "max": 1.0,
+      "min": 0.23166023166023167,
+      "p10": 0.7272727272727273,
+      "p50": 0.9745762711864406,
+      "p90": 1.0,
+      "p99": 1.0
+    },
+    "urls": {
+      "max": 147.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 1.0,
+      "p99": 6.0
+    },
+    "words": {
+      "max": 9764.0,
+      "min": 27.0,
+      "p10": 173.0,
+      "p50": 720.0,
+      "p90": 3782.0,
+      "p99": 7473.0
+    }
+  },
+  "nested_files_field": null,
+  "nested_review_context_field": null,
+  "nested_text_field": null,
+  "quality_metric_quantiles": {
+    "quality_label": {
+      "max": 5.0,
+      "min": 4.0,
+      "p10": 4.0,
+      "p50": 4.0,
+      "p90": 5.0,
+      "p99": 5.0
+    }
+  },
+  "quality_scores": {
+    "quality_label:4": 6910,
+    "quality_label:5": 3090
+  },
+  "requested_revision": "fe10db8efd35597fd7fcff8ff576b5ec4ea5ff87",
+  "resolved_revision": "fe10db8efd35597fd7fcff8ff576b5ec4ea5ff87",
+  "review_packet_contains_context_text": false,
+  "review_packet_contains_text": true,
+  "review_rows": 100,
+  "review_selection": "lowest SHA-256 priorities over stable source identities",
+  "sample_eval_overlap": {
+    "eval_13gram_count": 810428,
+    "eval_13gram_rows_bounded_head_tail": 6,
+    "eval_files": [
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/append_ledger_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/categorical_microcode_manual_v1.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/certified_latent_ledger_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/certified_latent_ledger_v2_compact_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_bisimulation_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_residual_algebra_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_residual_algebra_v1_two_edit_r1.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_residual_algebra_v1_values_answer_supported.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_basis_v3_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_factor_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_recurrent_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_recurrent_v2_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_core_factor.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_magnitude_factor.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_two_edit_factor.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/gsm8k.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/gsm8k_platinum.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/humaneval.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/humaneval_full.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_operator_eval_slices_v2_64.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_operator_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_state_algebra_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_state_algebra_v1_r2_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/math500.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/mbpp.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/mbpp_full.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/native_residual_relay_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v2_contract_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v2_contract_heldout_r2.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v3_state_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/referential_argument_graph_v5_fresh.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_factor_delta.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_factor_language.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_factor_values.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_bridge_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_capsule_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_composition_transfer_v1.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/source_memory_packet_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/token_native_ledger_v1_heldout.jsonl"
+    ],
+    "eval_prompt_count": 58033,
+    "exact_prompt_rows": 0,
+    "hashed_overlap_receipts": [
+      {
+        "document_sha256": "dbb6cbe8d424102d2d0d2ab7314224899f64d6c733f088d50200e62dffa1892c",
+        "exact_normalized_prompt_sha256": null,
+        "matched_13gram_sha256": [
+          "c27683cf814713ec267371caba6ae08f87f7a50ad96fa02f3f8f20e332cff0c0",
+          "93b6ab331c99a1f350540ec10a4d9548baaabea53d2b95f686791cbec8e20a21",
+          "3130ba45f6ffd463e997e04ac63e9ebf5f2e740c935f55b4f8796f1ae50be240",
+          "03476fe4b3a74706f3c11d75d2c127ad22eb40dcbae2af8f4a34ff2161116529",
+          "079853b3e9fcd2fa10841a26f3b037a5e44a401c724d8660a62b4465ba6863f1"
+        ],
+        "stable_identity_sha256": "796ad391028d18280b1518b528ecb1d8d65450da2af5e92c0b04dd6bf88e38fe"
+      },
+      {
+        "document_sha256": "1ecacfc901bf79578097eea385313cb119360a22d0f65d8c1dcdf5ced6b286f7",
+        "exact_normalized_prompt_sha256": null,
+        "matched_13gram_sha256": [
+          "558b5556a52b281fbe4e0a56c9d611ad6b6f9d44b9c356bf3a2c6b91b3de6dc7",
+          "a396abe96691c7710ec6c3cc261c0a9ff318072eb5612856f6956bedfc9d1a1b",
+          "cd5db73692656bf249f734b77025c2955f88a7a29cb35deff1c0af76422ac824",
+          "b6e73a912f0da317f4f96d0776a684c1c71c47e9b440cb550ac14f66e6ce584d"
+        ],
+        "stable_identity_sha256": "df6cb78083eab4344519424bdb2e5e349866b7db499dce5444a4dec88adeff40"
+      },
+      {
+        "document_sha256": "2d481a7d320cf35ed447f5a8e58e73c9df2364e095c47ea045523a98602bb414",
+        "exact_normalized_prompt_sha256": null,
+        "matched_13gram_sha256": [
+          "558b5556a52b281fbe4e0a56c9d611ad6b6f9d44b9c356bf3a2c6b91b3de6dc7",
+          "a396abe96691c7710ec6c3cc261c0a9ff318072eb5612856f6956bedfc9d1a1b",
+          "cd5db73692656bf249f734b77025c2955f88a7a29cb35deff1c0af76422ac824",
+          "b6e73a912f0da317f4f96d0776a684c1c71c47e9b440cb550ac14f66e6ce584d"
+        ],
+        "stable_identity_sha256": "3f610709294dce45614ca430c070276a75b8542330ff538f1fccf29095ef2845"
+      },
+      {
+        "document_sha256": "fe8a33c3581e66448d82056a103939af2ecdefbc2289a117fd25ad240406f7f8",
+        "exact_normalized_prompt_sha256": null,
+        "matched_13gram_sha256": [
+          "558b5556a52b281fbe4e0a56c9d611ad6b6f9d44b9c356bf3a2c6b91b3de6dc7",
+          "a396abe96691c7710ec6c3cc261c0a9ff318072eb5612856f6956bedfc9d1a1b",
+          "cd5db73692656bf249f734b77025c2955f88a7a29cb35deff1c0af76422ac824",
+          "b6e73a912f0da317f4f96d0776a684c1c71c47e9b440cb550ac14f66e6ce584d"
+        ],
+        "stable_identity_sha256": "3227f00cbf79857ec2257691a777dade59e7eafed8ed50f2db41645da21cde9a"
+      },
+      {
+        "document_sha256": "936320ec03922e85e2875ff74b50215ca47abc07959eec887a594ab9c40e6d58",
+        "exact_normalized_prompt_sha256": null,
+        "matched_13gram_sha256": [
+          "354dbe837687616495a45339c2773582e11aca91281ddc52c55f35e0571094c7"
+        ],
+        "stable_identity_sha256": "50b6180594848ea6b4eb8d1b2e64cd0799f7483c1fcdaf65f59401b41e6d9f9d"
+      },
+      {
+        "document_sha256": "11b2124cd614e08cee0425e0c3422923516997d5ec7ef6197005a914451ee3c1",
+        "exact_normalized_prompt_sha256": null,
+        "matched_13gram_sha256": [
+          "558b5556a52b281fbe4e0a56c9d611ad6b6f9d44b9c356bf3a2c6b91b3de6dc7",
+          "a396abe96691c7710ec6c3cc261c0a9ff318072eb5612856f6956bedfc9d1a1b",
+          "cd5db73692656bf249f734b77025c2955f88a7a29cb35deff1c0af76422ac824",
+          "b6e73a912f0da317f4f96d0776a684c1c71c47e9b440cb550ac14f66e6ce584d"
+        ],
+        "stable_identity_sha256": "848fd1c665c4c67939a7d7397c7e42b79c1d312abda1099fe76d8e4c837b9be7"
+      }
+    ],
+    "overlap_receipts_truncated": false
+  },
+  "scanned_rows": 10000,
+  "schema": "shohin-general-source-profile-v1",
+  "shuffle_buffer": 10000,
+  "shuffle_seed": 20260729,
+  "split": "train",
+  "text_field": "content",
+  "text_rows": 10000,
+  "unique_text_hashes": 9995
+}

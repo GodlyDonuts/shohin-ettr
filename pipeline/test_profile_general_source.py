@@ -9,10 +9,12 @@ from pipeline.profile_general_source import (
     ProfileError,
     buffered_shuffle,
     flatten_nested_files,
+    field_value,
     iter_local_jsonl,
     profile_rows,
     review_excerpt,
     text_metrics,
+    validate_profile_fields,
     verify_local_profile_file,
 )
 
@@ -269,6 +271,82 @@ def test_profile_preserves_quality_label_for_source_adjudication():
         "max": 4.0,
     }
     assert {review["metadata"]["quality_label"] for review in reviews} == {2, 4}
+
+
+def test_profile_reports_requested_nested_fields_and_numeric_quantiles():
+    rows = [
+        {
+            "id": "a",
+            "text": "alpha beta gamma",
+            "quality_signals": {"fasttext": {"english": 0.91}},
+            "eai_taxonomy": {
+                "reasoning_depth": {"primary": {"code": "3"}},
+            },
+        },
+        {
+            "id": "b",
+            "text": "delta epsilon zeta",
+            "quality_signals": {"fasttext": {"english": "0.99"}},
+            "eai_taxonomy": {
+                "reasoning_depth": {"primary": {"code": "4"}},
+            },
+        },
+        {
+            "id": "c",
+            "text": "eta theta iota",
+            "quality_signals": {"fasttext": {"english": "not-numeric"}},
+            "eai_taxonomy": {},
+        },
+    ]
+    report, reviews = profile_rows(
+        rows,
+        dataset="test/essential",
+        config="default",
+        text_field="text",
+        scan_rows=3,
+        review_rows=1,
+        max_review_chars=100,
+        eval_index=empty_eval_index(),
+        profile_fields=("eai_taxonomy.reasoning_depth.primary.code",),
+        profile_numeric_fields=("quality_signals.fasttext.english",),
+    )
+    assert report["profiled_field_values"] == {
+        "eai_taxonomy.reasoning_depth.primary.code": {
+            "3": 1,
+            "4": 1,
+            "<missing>": 1,
+        }
+    }
+    assert report["profiled_numeric_quantiles"][
+        "quality_signals.fasttext.english"
+    ] == {
+        "min": 0.91,
+        "p10": 0.91,
+        "p50": 0.91,
+        "p90": 0.99,
+        "p99": 0.99,
+        "max": 0.99,
+    }
+    assert report["profiled_numeric_invalid"] == {
+        "quality_signals.fasttext.english": 1,
+    }
+    assert set(reviews[0]["profiled_fields"]) == {
+        "eai_taxonomy.reasoning_depth.primary.code",
+        "quality_signals.fasttext.english",
+    }
+
+
+def test_requested_profile_fields_validate_and_read_dotted_paths():
+    row = {"nested": {"value": 4}}
+    assert field_value(row, "nested.value") == 4
+    assert field_value(row, "nested.missing") is None
+    assert validate_profile_fields(
+        ["nested.value"],
+        option="--profile-field",
+    ) == ("nested.value",)
+    for fields in ([""], [".field"], ["field."], ["a..b"], ["field", "field"]):
+        with pytest.raises(ProfileError, match="profile-field"):
+            validate_profile_fields(fields, option="--profile-field")
 
 
 def test_profile_rejects_nonpositive_limits():

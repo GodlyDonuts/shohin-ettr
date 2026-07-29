@@ -170,6 +170,7 @@ utility gates remains mandatory.
 | Nemotron-CC-Math 4plus | high-quality math candidate | legal review first, upstream-only access, residual dedup, math correctness sample |
 | Existing FineMath/OpenWebMath | retained math substrate | cross-source residual only; never double-count nested FineMath subsets |
 | First-party verified procedural data | exact state, algorithm, correction, and execution examples | generator/version receipt, solver or execution verification, family holdouts |
+| UltraData-Math | small contemporary math challenger | quality-label stratification where available, exact/near deduplication, hard eval decontamination, trace review, equal-token utility gate |
 
 ### Held or rejected by default
 
@@ -179,6 +180,7 @@ utility gates remains mandatory.
 | raw FinePDFs | held | lightly filtered extraction pool; use the educational subset |
 | DCLM wholesale | held | manual samples show mixed utility; retain only a scored residual |
 | OpenMath wholesale | held | synthetic derivations require final-answer and trace-consistency verification |
+| UltraData-Math wholesale | held | L2 sampled duplicates and L3 synthetic/repetition/eval-overlap tails require bounded challenger arms rather than bulk admission |
 | FinePhrase | rejected wholesale; verifier-backed residual only | sampled generations contain hallucination, source drift, malformed structures, near-empty outputs, and generator-style concentration |
 | consolidated Common Pile/Comma text mix | rejected | streamed rows omit per-document provenance; use the component datasets directly |
 | unlicensed/unknown-license code | rejected | unusable for a model intended for distribution and downstream use |
