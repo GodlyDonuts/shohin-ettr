@@ -303,8 +303,9 @@ def main():
         nargs="+",
         default=None,
         help=(
-            "physical local JSON/JSON.GZ source files; bypasses remote dataset "
-            "resolution and requires an explicit --revision"
+            "homogeneous physical local JSON/JSON.GZ or Parquet source files; "
+            "bypasses remote dataset resolution and requires an explicit "
+            "--revision"
         ),
     )
     ap.add_argument("--text-col", default="text")

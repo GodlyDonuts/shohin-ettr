@@ -49,6 +49,12 @@ def test_valid_manifest_returns_ordered_records():
             "unsafe",
         ),
         (
+            lambda value: value["files"][0].update(
+                path="data/ambiguous\tpath.json.gz"
+            ),
+            "unsafe",
+        ),
+        (
             lambda value: value["files"][1].update(path="other/first.json.gz"),
             "duplicated",
         ),

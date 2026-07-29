@@ -17,6 +17,7 @@ import re
 
 SCHEMA = "shohin-pinned-hf-file-selection-v1"
 SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
+SAFE_PATH_PATTERN = re.compile(r"^[A-Za-z0-9._/-]+$")
 
 
 class PinnedManifestError(ValueError):
@@ -57,6 +58,7 @@ def validate_manifest(
             or not parsed.parts
             or any(part in {"", ".", ".."} for part in parsed.parts)
             or str(parsed) != path
+            or SAFE_PATH_PATTERN.fullmatch(path) is None
         ):
             raise PinnedManifestError("manifest file path is unsafe")
         if not isinstance(size, int) or isinstance(size, bool) or size <= 0:
