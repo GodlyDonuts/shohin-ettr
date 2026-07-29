@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import sys
 import tempfile
 from typing import Any, Iterable, Mapping
 
@@ -20,13 +21,19 @@ import numpy as np
 from tokenizers import Tokenizer
 import zstandard as zstd
 
-from pipeline.build_general_source_review_packet import iter_document_ledger
-from pipeline.tokenize_shards import (
+_ROOT = Path(__file__).resolve().parents[1]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from pipeline.build_general_source_review_packet import (  # noqa: E402
+    iter_document_ledger,
+)
+from pipeline.tokenize_shards import (  # noqa: E402
     DOCUMENT_LEDGER_NAME,
     canonical_payload_sha256,
     sha256_file,
 )
-from pipeline.verify_tokenized_shards import verify_manifest
+from pipeline.verify_tokenized_shards import verify_manifest  # noqa: E402
 
 
 REPORT_SCHEMA = "shohin-v3-sensitive-content-audit-v1"
