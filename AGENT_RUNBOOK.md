@@ -16595,7 +16595,9 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `artifacts/shards/pes2o_selected_core_10b_r2` with the verified batch-256
   code path and its own final verifier. It remains candidate-only; semantic
   review, residualization, a full audit, and matched-token utility ablation
-  remain mandatory before training admission.
+  remain mandatory before training admission. Review job `754485` is
+  dependency-bound `afterok:754484` to the exact r2 final directory and fresh
+  private packet/receipt paths; it cannot inspect the unsealed partial.
 
   Decision:
   `pes2o_exact_batch_speedup_pass_r2_candidate_replaces_unsealed_slow_partial`.
