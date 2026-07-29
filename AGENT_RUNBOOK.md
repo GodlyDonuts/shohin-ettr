@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 06:24 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 06:30 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17022,6 +17022,17 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   utility testing. Correctness is an exact-code gate because code 6 means
   not-applicable; treating the code as a monotonic score would admit the wrong
   documents.
+
+  Private commit `556a65f4ce79f1ef11d1e2df79ef71243cba5549` binds the nested
+  selector, profiler, tests, reports, and this policy. Its two-file immutable
+  Stokes profiler root is
+  `/lustre/fs1/home/sa305415/shohin/scratchpad/shohin_source_profile_556a65f`
+  with `SHA256SUMS` SHA-256
+  `98cbab24b0724202aa2173eff3aab0366fbf17f5b36540aff838068663d2f781`.
+  Profile-only job `754513` is RUNNING on `ec49` over 10,000 pinned
+  Essential-Web rows with the exact nested taxonomy and fastText fields
+  above. Its aggregate report may enter private Git; its 100-row text review
+  must remain outside Git and can never become training data.
 
   Concurrent candidate generation remains quarantined. FineWeb-Edu r2 has
   sixteen approximately 100M-token shards and peS2o r2 has forty-six.
