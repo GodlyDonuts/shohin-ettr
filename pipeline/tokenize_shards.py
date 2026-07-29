@@ -315,6 +315,15 @@ def main():
                          "Decontam/min-chars run on the concatenated text.")
     ap.add_argument("--out-dir", required=True)
     ap.add_argument("--shard-tokens", type=int, default=100_000_000)
+    ap.add_argument(
+        "--tokenizer-batch-size",
+        type=int,
+        default=1,
+        help=(
+            "encode this many already-filtered records together while preserving "
+            "the source-order selection and ledger contract"
+        ),
+    )
     ap.add_argument("--max-tokens", type=int, default=0, help="0 = unlimited")
     ap.add_argument("--eos", default="<|endoftext|>")
     ap.add_argument("--decontam-grams", default=None)
@@ -392,6 +401,8 @@ def main():
         raise ValueError("--min-number-field and --min-number must be provided together")
     if a.max_chars and a.max_chars < a.min_chars:
         raise ValueError("--max-chars must be zero or at least --min-chars")
+    if a.tokenizer_batch_size < 1:
+        raise ValueError("--tokenizer-batch-size must be positive")
     if not 0 < a.max_line_repeat_fraction <= 1:
         raise ValueError("--max-line-repeat-fraction must be in (0, 1]")
     if (a.domain_field is None) != (a.max_tokens_per_domain == 0):
@@ -496,118 +507,217 @@ def main():
         shard += 1
         buf = []
 
+    def commit_batch(pending):
+        """Commit one source-ordered batch after a batched tokenizer call.
+
+        The admission decisions that depend on token count (domain caps), as
+        well as exact deduplication, remain ordered here. This preserves the
+        same accepted rows, counters, token order, and early max-token stop as
+        one-record encoding while allowing tokenizers' Rust backend to encode
+        independent candidate texts concurrently.
+        """
+
+        nonlocal seen, kept, n_short, n_long, n_lang, n_lang_missing
+        nonlocal n_quality, n_contam, n_duplicate, n_repetition
+        nonlocal n_boilerplate, n_domain_cap, n_extraction_quality
+        nonlocal n_allowed_value, tok_total
+
+        # Exact deduplication precedes decontamination in the established
+        # selection contract. Contaminated candidates therefore stay in the
+        # ordered commit pass, but do not consume tokenizer work.
+        candidates = [
+            entry
+            for entry in pending
+            if entry["kind"] == "candidate" and not entry["contaminated"]
+        ]
+        texts = [entry["text"] for entry in candidates]
+        if not texts:
+            encodings = []
+        elif a.tokenizer_batch_size == 1:
+            encodings = [tok.encode(text) for text in texts]
+        else:
+            encodings = tok.encode_batch(texts)
+        if len(encodings) != len(candidates):
+            raise RuntimeError("tokenizer batch size differs from candidate count")
+        encoded = iter(encodings)
+
+        for entry in pending:
+            seen += 1
+            if entry["kind"] == "reject":
+                reason = entry["reason"]
+                if reason == "short":
+                    n_short += 1
+                elif reason == "long":
+                    n_long += 1
+                elif reason == "repetition":
+                    n_repetition += 1
+                elif reason == "boilerplate":
+                    n_boilerplate += 1
+                elif reason == "extraction_quality":
+                    n_extraction_quality += 1
+                elif reason == "allowed_value":
+                    n_allowed_value += 1
+                elif reason == "language_missing":
+                    n_lang_missing += 1
+                elif reason == "language":
+                    n_lang += 1
+                elif reason == "quality":
+                    n_quality += 1
+                elif reason == "contamination":
+                    n_contam += 1
+                else:
+                    raise RuntimeError(f"unknown tokenizer rejection: {reason}")
+                continue
+
+            digest = entry["digest"]
+            if entry["contaminated"]:
+                # The exact-dedup check is kept before decontamination to
+                # preserve the established counter contract. In ordinary
+                # data equal text has equal contamination status, so this
+                # branch consumes no tokenizer encoding.
+                if digest is not None and digest in seen_hashes:
+                    n_duplicate += 1
+                else:
+                    n_contam += 1
+                continue
+            # Consume one precomputed encoding for every non-contaminated
+            # candidate, including exact duplicates that are later rejected.
+            # This keeps the iterator aligned with source order.
+            encoding = next(encoded)
+            if digest is not None and digest in seen_hashes:
+                n_duplicate += 1
+                continue
+            document_token_values = [
+                *encoding.ids,
+                *([eos_id] if eos_id is not None else []),
+            ]
+            document_tokens = len(document_token_values)
+            token_sha256 = hashlib.sha256(
+                np.asarray(document_token_values, dtype=np.uint16).tobytes()
+            ).hexdigest()
+            domain = entry["domain"]
+            if (
+                domain is not None
+                and domain_tokens[domain] + document_tokens > a.max_tokens_per_domain
+            ):
+                n_domain_cap += 1
+                continue
+            if digest is not None:
+                seen_hashes.add(digest)
+            token_start = len(buf)
+            buf.extend(document_token_values)
+            document_ledger.write(
+                {
+                    "schema": DOCUMENT_LEDGER_SCHEMA,
+                    "source_row_index": entry["source_row_index"],
+                    "stable_identity_sha256": stable_document_identity(
+                        entry["row"],
+                        entry["document_sha256"],
+                    ),
+                    "document_sha256": entry["document_sha256"],
+                    "domain": domain,
+                    "allowed_value": (
+                        str(field_value(entry["row"], a.allowed_values_field))
+                        if a.allowed_values_field
+                        else None
+                    ),
+                    "chars": len(entry["text"]),
+                    "tokens": document_tokens,
+                    "shard": f"shard_{shard:05d}.u16.zst",
+                    "token_start": token_start,
+                    "token_end": token_start + document_tokens,
+                    "token_sha256": token_sha256,
+                }
+            )
+            tok_total += document_tokens
+            if domain is not None:
+                domain_tokens[domain] += document_tokens
+            kept += 1
+            if len(buf) >= a.shard_tokens:
+                flush()
+            if a.max_tokens and tok_total >= a.max_tokens:
+                return True
+        return False
+
+    pending = []
+    source_row_index = 0
+    stopped = False
     for ex in ds:
-        seen += 1
+        row_index = source_row_index
+        source_row_index += 1
         if a.text_cols:
             parts = [str(ex.get(c) or "") for c in a.text_cols]
             txt = "\n\n".join(p for p in parts if p)
         else:
             txt = ex.get(a.text_col) or ""
+        reason = None
         if len(txt) < a.min_chars:
-            n_short += 1
-            continue
-        if a.max_chars and len(txt) > a.max_chars:
-            n_long += 1
-            continue
-        if max_line_repeat_fraction(txt) > a.max_line_repeat_fraction:
-            n_repetition += 1
-            continue
-        if (
+            reason = "short"
+        elif a.max_chars and len(txt) > a.max_chars:
+            reason = "long"
+        elif max_line_repeat_fraction(txt) > a.max_line_repeat_fraction:
+            reason = "repetition"
+        elif (
             a.max_boilerplate_markers >= 0
             and boilerplate_marker_count(txt) > a.max_boilerplate_markers
         ):
-            n_boilerplate += 1
-            continue
-        quality = extraction_quality(txt)
-        if (
-            quality["alpha_fraction"] < a.min_alpha_fraction
-            or quality["control_fraction"] > a.max_control_fraction
-            or quality["replacement_fraction"] > a.max_replacement_fraction
-        ):
-            n_extraction_quality += 1
-            continue
-        if allowed_values is not None:
-            selected_value = field_value(ex, a.allowed_values_field)
-            if str(selected_value) not in allowed_values:
-                n_allowed_value += 1
-                continue
-        if a.lang:
-            lv = field_value(ex, a.lang_field)
-            if lv is None and a.require_lang_field:
-                n_lang_missing += 1
-                continue
-            if lv is not None and str(lv).lower() != a.lang.lower():
-                n_lang += 1
-                continue
-        if a.min_number_field is not None:
+            reason = "boilerplate"
+        else:
+            quality = extraction_quality(txt)
+            if (
+                quality["alpha_fraction"] < a.min_alpha_fraction
+                or quality["control_fraction"] > a.max_control_fraction
+                or quality["replacement_fraction"] > a.max_replacement_fraction
+            ):
+                reason = "extraction_quality"
+        if reason is None and allowed_values is not None:
+            if str(field_value(ex, a.allowed_values_field)) not in allowed_values:
+                reason = "allowed_value"
+        if reason is None and a.lang:
+            language = field_value(ex, a.lang_field)
+            if language is None and a.require_lang_field:
+                reason = "language_missing"
+            elif language is not None and str(language).lower() != a.lang.lower():
+                reason = "language"
+        if reason is None and a.min_number_field is not None:
             try:
                 score = float(field_value(ex, a.min_number_field))
             except (TypeError, ValueError):
-                n_quality += 1
-                continue
-            if score < a.min_number:
-                n_quality += 1
-                continue
-        document_sha256 = exact_text_hash(txt).hex()
-        digest = bytes.fromhex(document_sha256) if a.exact_dedup else None
-        if digest is not None:
-            if digest in seen_hashes:
-                n_duplicate += 1
-                continue
-        if S is not None and any(g in S for g in _grams(txt, gram_n)):
-            n_contam += 1
-            continue
-        ids = tok.encode(txt).ids
-        document_token_values = [
-            *ids,
-            *([eos_id] if eos_id is not None else []),
-        ]
-        document_tokens = len(document_token_values)
-        token_sha256 = hashlib.sha256(
-            np.asarray(document_token_values, dtype=np.uint16).tobytes()
-        ).hexdigest()
-        domain = domain_value(ex, a.domain_field) if a.domain_field else None
-        if (
-            domain is not None
-            and domain_tokens[domain] + document_tokens > a.max_tokens_per_domain
-        ):
-            n_domain_cap += 1
-            continue
-        if digest is not None:
-            seen_hashes.add(digest)
-        token_start = len(buf)
-        buf.extend(document_token_values)
-        document_ledger.write(
-            {
-                "schema": DOCUMENT_LEDGER_SCHEMA,
-                "source_row_index": seen - 1,
-                "stable_identity_sha256": stable_document_identity(
-                    ex,
-                    document_sha256,
-                ),
-                "document_sha256": document_sha256,
-                "domain": domain,
-                "allowed_value": (
-                    str(field_value(ex, a.allowed_values_field))
-                    if a.allowed_values_field
-                    else None
-                ),
-                "chars": len(txt),
-                "tokens": document_tokens,
-                "shard": f"shard_{shard:05d}.u16.zst",
-                "token_start": token_start,
-                "token_end": token_start + document_tokens,
-                "token_sha256": token_sha256,
-            }
-        )
-        tok_total += document_tokens
-        if domain is not None:
-            domain_tokens[domain] += document_tokens
-        kept += 1
-        if len(buf) >= a.shard_tokens:
-            flush()
-        if a.max_tokens and tok_total >= a.max_tokens:
-            break
+                reason = "quality"
+            else:
+                if score < a.min_number:
+                    reason = "quality"
+        if reason is not None:
+            pending.append({"kind": "reject", "reason": reason})
+        else:
+            document_sha256 = exact_text_hash(txt).hex()
+            pending.append(
+                {
+                    "kind": "candidate",
+                    "row": ex,
+                    "text": txt,
+                    "source_row_index": row_index,
+                    "document_sha256": document_sha256,
+                    "digest": (
+                        bytes.fromhex(document_sha256) if a.exact_dedup else None
+                    ),
+                    "contaminated": (
+                        S is not None and any(g in S for g in _grams(txt, gram_n))
+                    ),
+                    "domain": (
+                        domain_value(ex, a.domain_field)
+                        if a.domain_field
+                        else None
+                    ),
+                }
+            )
+        if len(pending) >= a.tokenizer_batch_size:
+            stopped = commit_batch(pending)
+            pending = []
+            if stopped:
+                break
+    if not stopped and pending:
+        commit_batch(pending)
     flush()
     document_ledger_receipt = document_ledger.close()
 
@@ -641,6 +751,7 @@ def main():
             "vocab_size": tok.get_vocab_size(),
             "eos_token": a.eos,
             "eos_id": eos_id,
+            "batch_size": a.tokenizer_batch_size,
         },
         "tokens": tok_total,
         "shards": shard,
