@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 16:33 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 17:18 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17845,3 +17845,32 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `pes2o_zero_secret_rescan_pass_three_fast_horn_cells_complete_no_optimizer`.
+
+- **2026-07-29 17:18 EDT** -- **All accelerated Horn recovery cells and the
+  fresh immutable 60-cell assembly passed; the complete main aggregate audit
+  is running.**
+
+  Final recovery job `755533` completed cleanly in 1h49m35s with exit code
+  `0:0`, 28h36m39s total CPU, and peak resident memory 5,594,420 KiB. Task 2
+  binds the exact 16-worker adapter and expands 4,000 train Horn
+  dependent-composition cores into 256,000 rows / 135,168,000 charged
+  positions. Its compressed output is 66,805,684 bytes at SHA-256
+  `ff10bfccceb4708ce33a5c0fd4d1621e9e802e81a8ba3e4a6f8890a4504c9300`;
+  report SHA-256 is
+  `e2aa508b838a9ac95b5da2eca27ef0f33e179671afcbb9ae8a69686b98b2a6ef`.
+  All four declared recovery inputs therefore completed `0:0`.
+
+  Dependency job `755548` then assembled a fresh read-only materialization in
+  20 seconds. Its receipt file SHA-256 is
+  `bfd32983f192fb3a41e77e64967fee0bb4407853e73e04379811fc088db26c2b`;
+  internal assembly SHA-256 is
+  `fc99ade446fd18b917141787917d46f05513439c63d12c2d96e85c31c85441f9`.
+  It contains exactly 60 output files and 60 worker reports, declares only
+  indices `2`, `3`, `4`, and `32` as recovery inputs, binds every output and
+  report hash, and has no writable output file. The unchanged full main audit
+  job `755550` is now independently streaming the complete 62,500-core /
+  4,000,000-row corpus. Separation `755552` and release `755554` remain
+  dependency-held. No optimizer is active.
+
+  Decision:
+  `all_fast_horn_cells_and_fresh_assembly_pass_full_main_audit_running_no_optimizer`.
