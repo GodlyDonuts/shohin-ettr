@@ -16489,3 +16489,26 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `fineweb_r2_review_dependency_bound_to_exact_completed_candidate`.
+
+- **2026-07-29 03:27 EDT** -- **Newton distributed-scale readiness is
+  measured on healthy nodes; `evc40` is excluded from future multi-H100 work
+  pending cluster repair.**
+
+  Private commit `a01b7a8` adds a bounded `nccl_scale_canary.py` that loads no
+  model, optimizer, or corpus. It first verifies rank arithmetic, then times a
+  fixed bf16 all-reduce under Slurm. The existing four-H100 allocation
+  `719591` exposed a node-level fault: `nvidia-smi` sees H100s on all four
+  nodes, but PyTorch 2.6.0+cu124 CUDA initialization fails on `evc40` while
+  `evc28`, `evc30`, and `evc45` pass. A three-node canary excluding `evc40`
+  completed successfully: 20 all-reduces of a 64 MiB bf16 payload averaged
+  **6.196 ms**, or **10.83 GB/s** algorithmic payload bandwidth, with correct
+  rank-sum validation.
+
+  Pending 10-H100 reservation `719497` and 20-H100 reservation `719496` now
+  explicitly exclude `evc40`. This is a topology/readiness measurement only,
+  not a training claim and not a use of provisional data. Future scale pilots
+  must retain the exclusion until a direct PyTorch CUDA probe passes on that
+  node.
+
+  Decision:
+  `three_h100_nccl_scale_path_valid_evc40_quarantined_pending_multigpu_pilots`.
