@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 15:38 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 16:09 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17780,3 +17780,34 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `ettr_parallel_schedule_recovery_live_fresh_full_audit_still_required_no_optimizer`.
+
+- **2026-07-29 16:09 EDT** -- **The first accelerated Horn recovery cell is
+  byte-identical to its independently completed serial counterpart, and the
+  ETTR Hugging Face destination is verified private.**
+
+  Recovery job `755539` completed cleanly in 30m12s with exit code `0:0`,
+  7h36m31s total CPU, and peak resident memory 5,457,280 KiB. Its immutable
+  task-32 report binds adapter commit `085f7a8bcc5a76d89ca968747238386a23415ec8`,
+  adapter source SHA-256
+  `aa8239aacd46e0b8a557d657643d0b1f9735e3467b4739945095432dcc1e41c5`,
+  and 16 workers. It expands 1,000 train-reserve Horn
+  dependent-composition cores into 64,000 rows / 33,792,000 charged
+  positions. The accelerated and original serial receipts match exactly on
+  compressed output SHA-256
+  `379f69b9b9b0d1e9d371c43b9acfc22fba80ae8b5fe128dfb4ac10b5e269da1e`,
+  compressed bytes `16,678,716`, uncompressed bytes `168,340,017`, row
+  expansion, charged positions, and source-core count. This validates one
+  real large-cell recovery result, not only a fixture.
+
+  The private Hugging Face dataset repository
+  `Godlydonuts/shohin-ettr-il-v3` now exists and was queried back as
+  `private=true`, `repo_type=dataset`. It intentionally contains no ETTR
+  payload yet. Publication remains blocked until the fresh assembly, complete
+  62,500-core main audit, zero-overlap separation audit, immutable release,
+  and remote hash round trip all pass. Recovery jobs `755533`, `755535`, and
+  `755537` remain productively running; assembly `755548` and downstream jobs
+  `755550`, `755552`, and `755554` remain dependency-held. No optimizer is
+  active.
+
+  Decision:
+  `first_fast_horn_cell_serial_exact_private_hf_boundary_ready_no_optimizer`.
