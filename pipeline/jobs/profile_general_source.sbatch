@@ -12,6 +12,7 @@ set -euo pipefail
 
 BASE=/lustre/fs1/home/sa305415/shohin
 PY=$BASE/miniforge3/bin/python
+CODE_ROOT=${CODE_ROOT:-$BASE}
 DATASET=${DATASET:?set DATASET}
 CONFIG=${CONFIG:-}
 SPLIT=${SPLIT:-train}
@@ -50,6 +51,10 @@ export NUMEXPR_NUM_THREADS=1
 export TOKENIZERS_PARALLELISM=false
 
 cd "$BASE"
+[[ "$CODE_ROOT" == /* && -d "$CODE_ROOT" && ! -L "$CODE_ROOT" ]] || {
+  echo "CODE_ROOT must be an absolute physical directory" >&2
+  exit 2
+}
 if [ "$START_DELAY_SECONDS" -gt 0 ]; then
   echo "[profile] delaying ${START_DELAY_SECONDS}s to avoid upstream request bursts"
   sleep "$START_DELAY_SECONDS"
@@ -101,4 +106,4 @@ elif [ -n "$LOCAL_SOURCE_SHA256" ] || [ -n "$LOCAL_DATASET_CARD" ] || \
   echo "incomplete local profile mode" >&2
   exit 2
 fi
-"$PY" pipeline/profile_general_source.py "${ARGS[@]}"
+"$PY" "$CODE_ROOT/pipeline/profile_general_source.py" "${ARGS[@]}"
