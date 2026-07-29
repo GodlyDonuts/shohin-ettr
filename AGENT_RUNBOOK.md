@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 18:20 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 18:34 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17984,3 +17984,38 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `full_ettr_audit_and_zero_overlap_separation_pass_release_reconstruction_running_no_optimizer`.
+
+- **2026-07-29 18:34 EDT** -- **The first release builder failed closed on
+  a tokenizer-type boundary; producer and consumer are repaired together and
+  a fresh exact-source retry is running.**
+
+  Job `755554` exited `1:0` after 1m47s before publishing `release.json`.
+  The audited materialization and separation receipts were untouched. The
+  failure occurred because the release builder passed an already loaded
+  `Tokenizer` to `rematerialize_record`; that API interpreted any object other
+  than `TokenNativeSurfaceCodec` as a tokenizer path, and the codec's object
+  compatibility branch then tried to reopen a repository-relative default
+  tokenizer absent from the clean cluster checkout. The same latent misuse
+  existed in the future streaming loader.
+
+  Private commit `81e3184555938a41d6fa2c71146e727d2fa4cc8f` constructs one
+  codec from the explicitly supplied, audit-hash-matched tokenizer and passes
+  that verified codec to every release and streaming rematerialization. A
+  regression changes the global default tokenizer path to a nonexistent file
+  and proves both release construction and subsequent streamed iteration
+  still succeed. The focused release suite passes **6/6** in 36.39 seconds;
+  Ruff, byte compilation, and diff checks pass.
+
+  A complete-history Git bundle was transferred and SHA-256 verified on
+  Stokes, then cloned into fresh read-only exact-source checkout
+  `/lustre/fs1/home/sa305415/shohin/scratchpad/ettr_release_source_81e3184_full_clean/source`.
+  Its HEAD is the exact private commit, its tree is clean, and all three
+  changed-file SHA-256 values match the local commit. The failed partial
+  output is preserved at
+  `/lustre/fs1/home/sa305415/ettr-il-v3/failures/training-d84a5a0-job755554`;
+  it was not reused or deleted. Retry `755586` is running on `ec77` into the
+  fresh canonical release path. Newton transfer and all optimizers remain
+  fail-closed on a passing `release.json`.
+
+  Decision:
+  `release_tokenizer_boundary_failed_closed_codec_bound_producer_consumer_retry_running_no_optimizer`.
