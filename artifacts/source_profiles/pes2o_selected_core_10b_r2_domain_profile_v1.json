@@ -1,0 +1,685 @@
+{
+  "cap_projections": [
+    {
+      "domain_token_cap": 1000000000,
+      "domains_over_cap": 0,
+      "projected_retention_fraction": 0.954443879629482,
+      "projected_tokens_after_cap_and_missing_domain_rejection": 9544439431
+    },
+    {
+      "domain_token_cap": 500000000,
+      "domains_over_cap": 5,
+      "projected_retention_fraction": 0.8075531909977128,
+      "projected_tokens_after_cap_and_missing_domain_rejection": 8075532447
+    },
+    {
+      "domain_token_cap": 250000000,
+      "domains_over_cap": 7,
+      "projected_retention_fraction": 0.6532843444565911,
+      "projected_tokens_after_cap_and_missing_domain_rejection": 6532843879
+    },
+    {
+      "domain_token_cap": 100000000,
+      "domains_over_cap": 13,
+      "projected_retention_fraction": 0.5139037324254018,
+      "projected_tokens_after_cap_and_missing_domain_rejection": 5139037666
+    },
+    {
+      "domain_token_cap": 50000000,
+      "domains_over_cap": 20,
+      "projected_retention_fraction": 0.43504567726946247,
+      "projected_tokens_after_cap_and_missing_domain_rejection": 4350457062
+    },
+    {
+      "domain_token_cap": 25000000,
+      "domains_over_cap": 32,
+      "projected_retention_fraction": 0.37607665039090277,
+      "projected_tokens_after_cap_and_missing_domain_rejection": 3760766754
+    },
+    {
+      "domain_token_cap": 10000000,
+      "domains_over_cap": 68,
+      "projected_retention_fraction": 0.3060432751481222,
+      "projected_tokens_after_cap_and_missing_domain_rejection": 3060432955
+    },
+    {
+      "domain_token_cap": 5000000,
+      "domains_over_cap": 137,
+      "projected_retention_fraction": 0.25816298263216164,
+      "projected_tokens_after_cap_and_missing_domain_rejection": 2581629998
+    }
+  ],
+  "concentration": {
+    "top_100_token_fraction": 0.7879566422008832,
+    "top_10_token_fraction": 0.5685129643938879,
+    "top_1_token_fraction": 0.09999999025000064,
+    "top_25_token_fraction": 0.6803712386553127,
+    "top_500_token_fraction": 0.8976049875092683,
+    "top_50_token_fraction": 0.7384918237902938,
+    "top_5_token_fraction": 0.3968906720067703
+  },
+  "contains_document_text": false,
+  "document_ledger_sha256": "a8f359de96e6ce5f9f7b09aaac04b159c9913431f1551d07b01698c98b79b1b7",
+  "documents": 1481538,
+  "domains": 10526,
+  "missing_domain_documents": 66692,
+  "missing_domain_tokens": 455561234,
+  "payload_sha256": "b98568a95b817636f0212277bb66d4aadbca26ce31fa57cc720603a5010faee1",
+  "schema": "shohin-tokenized-domain-profile-v1",
+  "source_manifest_payload_sha256": "16ed0001f414b8825f9ac8c4faa4334af16a931bf11f0150c57e366044a5b532",
+  "source_path": "/lustre/fs1/home/sa305415/shohin/artifacts/shards/pes2o_selected_core_10b_r2",
+  "source_selection_code_sha256": "c7bb632ce769a795bb615cebcb264372e7b36996146cafc7ceb42bddd2a8d1ea",
+  "tokens": 10000000665,
+  "top_domains": [
+    {
+      "documents": 112984,
+      "domain": "www.mdpi.com",
+      "token_fraction": 0.09999999025000064,
+      "tokens": 999999969
+    },
+    {
+      "documents": 148997,
+      "domain": "doi.org",
+      "token_fraction": 0.0999999893500007,
+      "tokens": 999999960
+    },
+    {
+      "documents": 89028,
+      "domain": "www.frontiersin.org",
+      "token_fraction": 0.07467389433418603,
+      "tokens": 746738993
+    },
+    {
+      "documents": 81119,
+      "domain": "link.springer.com",
+      "token_fraction": 0.0680338840757467,
+      "tokens": 680338886
+    },
+    {
+      "documents": 72038,
+      "domain": "journals.plos.org",
+      "token_fraction": 0.05418291399683622,
+      "tokens": 541829176
+    },
+    {
+      "documents": 65482,
+      "domain": "www.nature.com",
+      "token_fraction": 0.04635892141713172,
+      "tokens": 463589245
+    },
+    {
+      "documents": 66692,
+      "domain": "<missing>",
+      "token_fraction": 0.045556120370518,
+      "tokens": 455561234
+    },
+    {
+      "documents": 62719,
+      "domain": "downloads.hindawi.com",
+      "token_fraction": 0.03290993011148965,
+      "tokens": 329099323
+    },
+    {
+      "documents": 34572,
+      "domain": "onlinelibrary.wiley.com",
+      "token_fraction": 0.024551424267330285,
+      "tokens": 245514259
+    },
+    {
+      "documents": 23774,
+      "domain": "www.jbc.org",
+      "token_fraction": 0.0222458962206479,
+      "tokens": 222458977
+    },
+    {
+      "documents": 16922,
+      "domain": "www.tandfonline.com",
+      "token_fraction": 0.012702630055275102,
+      "tokens": 127026309
+    },
+    {
+      "documents": 24422,
+      "domain": "www.scielo.br",
+      "token_fraction": 0.012195634088990333,
+      "tokens": 121956349
+    },
+    {
+      "documents": 14730,
+      "domain": "academic.oup.com",
+      "token_fraction": 0.011543410132363227,
+      "tokens": 115434109
+    },
+    {
+      "documents": 20052,
+      "domain": "www.researchsquare.com",
+      "token_fraction": 0.011141620259082254,
+      "tokens": 111416210
+    },
+    {
+      "documents": 19949,
+      "domain": "www.scirp.org",
+      "token_fraction": 0.009163428790631985,
+      "tokens": 91634294
+    },
+    {
+      "documents": 9446,
+      "domain": "www.intechopen.com",
+      "token_fraction": 0.007387332408742395,
+      "tokens": 73873329
+    },
+    {
+      "documents": 13229,
+      "domain": "iopscience.iop.org",
+      "token_fraction": 0.007005625834125882,
+      "tokens": 70056263
+    },
+    {
+      "documents": 7840,
+      "domain": "ieeexplore.ieee.org",
+      "token_fraction": 0.006805407547440398,
+      "tokens": 68054080
+    },
+    {
+      "documents": 7885,
+      "domain": "journals.sagepub.com",
+      "token_fraction": 0.006378596475823334,
+      "tokens": 63785969
+    },
+    {
+      "documents": 7249,
+      "domain": "link.aps.org",
+      "token_fraction": 0.006159011490425736,
+      "tokens": 61590119
+    },
+    {
+      "documents": 7223,
+      "domain": "www.cambridge.org",
+      "token_fraction": 0.005958654603749469,
+      "tokens": 59586550
+    },
+    {
+      "documents": 6433,
+      "domain": "pubs.rsc.org",
+      "token_fraction": 0.004554960797095107,
+      "tokens": 45549611
+    },
+    {
+      "documents": 6336,
+      "domain": "europepmc.org",
+      "token_fraction": 0.004010732833286267,
+      "tokens": 40107331
+    },
+    {
+      "documents": 10244,
+      "domain": "www.e3s-conferences.org",
+      "token_fraction": 0.0034350570715687046,
+      "tokens": 34350573
+    },
+    {
+      "documents": 5158,
+      "domain": "www.oncotarget.com",
+      "token_fraction": 0.0034161718728245704,
+      "tokens": 34161721
+    },
+    {
+      "documents": 5778,
+      "domain": "ccsenet.org",
+      "token_fraction": 0.003313279879666888,
+      "tokens": 33132801
+    },
+    {
+      "documents": 5346,
+      "domain": "bmcpublichealth.biomedcentral.com",
+      "token_fraction": 0.0032881148813403605,
+      "tokens": 32881151
+    },
+    {
+      "documents": 3483,
+      "domain": "www.cell.com",
+      "token_fraction": 0.0031378456913332617,
+      "tokens": 31378459
+    },
+    {
+      "documents": 3349,
+      "domain": "bmcgenomics.biomedcentral.com",
+      "token_fraction": 0.002906132406742195,
+      "tokens": 29061326
+    },
+    {
+      "documents": 3966,
+      "domain": "www.biorxiv.org",
+      "token_fraction": 0.0028654778094457257,
+      "tokens": 28654780
+    },
+    {
+      "documents": 7692,
+      "domain": "assets.cureus.com",
+      "token_fraction": 0.0027466479173479134,
+      "tokens": 27466481
+    },
+    {
+      "documents": 5034,
+      "domain": "academicjournals.org",
+      "token_fraction": 0.002671662522334442,
+      "tokens": 26716627
+    },
+    {
+      "documents": 2354,
+      "domain": "acp.copernicus.org",
+      "token_fraction": 0.002622944525574189,
+      "tokens": 26229447
+    },
+    {
+      "documents": 3320,
+      "domain": "figshare.com",
+      "token_fraction": 0.002404352740110543,
+      "tokens": 24043529
+    },
+    {
+      "documents": 7399,
+      "domain": "www.cureus.com",
+      "token_fraction": 0.0023513941436322894,
+      "tokens": 23513943
+    },
+    {
+      "documents": 3831,
+      "domain": "zenodo.org",
+      "token_fraction": 0.0022898919477221855,
+      "tokens": 22898921
+    },
+    {
+      "documents": 3908,
+      "domain": "www.ccsenet.org",
+      "token_fraction": 0.0022818916482542054,
+      "tokens": 22818918
+    },
+    {
+      "documents": 3903,
+      "domain": "bmccancer.biomedcentral.com",
+      "token_fraction": 0.0022719059489182546,
+      "tokens": 22719061
+    },
+    {
+      "documents": 3246,
+      "domain": "www.ncbi.nlm.nih.gov",
+      "token_fraction": 0.002185738854648366,
+      "tokens": 21857390
+    },
+    {
+      "documents": 3010,
+      "domain": "pubs.acs.org",
+      "token_fraction": 0.0021575503565229013,
+      "tokens": 21575505
+    },
+    {
+      "documents": 3770,
+      "domain": "www.aclweb.org",
+      "token_fraction": 0.0020024062668399832,
+      "tokens": 20024064
+    },
+    {
+      "documents": 4187,
+      "domain": "article.sciencepublishinggroup.com",
+      "token_fraction": 0.0019883291677761103,
+      "tokens": 19883293
+    },
+    {
+      "documents": 6780,
+      "domain": "www.matec-conferences.org",
+      "token_fraction": 0.001986143667921446,
+      "tokens": 19861438
+    },
+    {
+      "documents": 2847,
+      "domain": "www.degruyter.com",
+      "token_fraction": 0.0019427309708083904,
+      "tokens": 19427311
+    },
+    {
+      "documents": 2510,
+      "domain": "royalsocietypublishing.org",
+      "token_fraction": 0.0018686005757380618,
+      "tokens": 18686007
+    },
+    {
+      "documents": 2906,
+      "domain": "bmchealthservres.biomedcentral.com",
+      "token_fraction": 0.0018628848761181557,
+      "tokens": 18628850
+    },
+    {
+      "documents": 2156,
+      "domain": "res.mdpi.com",
+      "token_fraction": 0.0018534501767455633,
+      "tokens": 18534503
+    },
+    {
+      "documents": 2646,
+      "domain": "bmcbioinformatics.biomedcentral.com",
+      "token_fraction": 0.0018360174779048378,
+      "tokens": 18360176
+    },
+    {
+      "documents": 1913,
+      "domain": "www.emerald.com",
+      "token_fraction": 0.001674427788650552,
+      "tokens": 16744279
+    },
+    {
+      "documents": 3745,
+      "domain": "www.omicsonline.org",
+      "token_fraction": 0.0016107628928842676,
+      "tokens": 16107630
+    },
+    {
+      "documents": 3449,
+      "domain": "www.ajol.info",
+      "token_fraction": 0.0015386200976817636,
+      "tokens": 15386202
+    },
+    {
+      "documents": 2173,
+      "domain": "aclanthology.org",
+      "token_fraction": 0.0014609585028462595,
+      "tokens": 14609586
+    },
+    {
+      "documents": 4411,
+      "domain": "www.epj-conferences.org",
+      "token_fraction": 0.0014290690049669113,
+      "tokens": 14290691
+    },
+    {
+      "documents": 2264,
+      "domain": "escholarship.org",
+      "token_fraction": 0.0013340975112825155,
+      "tokens": 13340976
+    },
+    {
+      "documents": 2641,
+      "domain": "bmcinfectdis.biomedcentral.com",
+      "token_fraction": 0.0013193752122615484,
+      "tokens": 13193753
+    },
+    {
+      "documents": 2076,
+      "domain": "f1000research.com",
+      "token_fraction": 0.0012962343138004182,
+      "tokens": 12962344
+    },
+    {
+      "documents": 2837,
+      "domain": "thescipub.com",
+      "token_fraction": 0.0012961403138066691,
+      "tokens": 12961404
+    },
+    {
+      "documents": 2196,
+      "domain": "www.preprints.org",
+      "token_fraction": 0.0012730345153432047,
+      "tokens": 12730346
+    },
+    {
+      "documents": 1945,
+      "domain": "trialsjournal.biomedcentral.com",
+      "token_fraction": 0.001258116616335245,
+      "tokens": 12581167
+    },
+    {
+      "documents": 1366,
+      "domain": "bmcplantbiol.biomedcentral.com",
+      "token_fraction": 0.0012336694179609837,
+      "tokens": 12336695
+    },
+    {
+      "documents": 2308,
+      "domain": "www.hrpub.org",
+      "token_fraction": 0.0012044693199027901,
+      "tokens": 12044694
+    },
+    {
+      "documents": 1122,
+      "domain": "dl.acm.org",
+      "token_fraction": 0.0011549123231983304,
+      "tokens": 11549124
+    },
+    {
+      "documents": 2201,
+      "domain": "thesai.org",
+      "token_fraction": 0.001147467623693403,
+      "tokens": 11474677
+    },
+    {
+      "documents": 1856,
+      "domain": "malariajournal.biomedcentral.com",
+      "token_fraction": 0.0011418078240697798,
+      "tokens": 11418079
+    },
+    {
+      "documents": 1074,
+      "domain": "bg.copernicus.org",
+      "token_fraction": 0.00113232962470008,
+      "tokens": 11323297
+    },
+    {
+      "documents": 1770,
+      "domain": "parasitesandvectors.biomedcentral.com",
+      "token_fraction": 0.0011293014249014553,
+      "tokens": 11293015
+    },
+    {
+      "documents": 2007,
+      "domain": "bmcmusculoskeletdisord.biomedcentral.com",
+      "token_fraction": 0.0010414725307420767,
+      "tokens": 10414726
+    },
+    {
+      "documents": 875,
+      "domain": "www.atmos-chem-phys.net",
+      "token_fraction": 0.0010384825309409118,
+      "tokens": 10384826
+    },
+    {
+      "documents": 794,
+      "domain": "www.aanda.org",
+      "token_fraction": 0.0010353378311500343,
+      "tokens": 10353379
+    },
+    {
+      "documents": 2524,
+      "domain": "journals.iucr.org",
+      "token_fraction": 0.0009952628338150216,
+      "tokens": 9952629
+    },
+    {
+      "documents": 997,
+      "domain": "hess.copernicus.org",
+      "token_fraction": 0.0009927773339803072,
+      "tokens": 9927774
+    },
+    {
+      "documents": 886,
+      "domain": "amt.copernicus.org",
+      "token_fraction": 0.0009732198352808809,
+      "tokens": 9732199
+    },
+    {
+      "documents": 1278,
+      "domain": "bmcmicrobiol.biomedcentral.com",
+      "token_fraction": 0.0009308785380965772,
+      "tokens": 9308786
+    },
+    {
+      "documents": 1370,
+      "domain": "translational-medicine.biomedcentral.com",
+      "token_fraction": 0.0009270851383488383,
+      "tokens": 9270852
+    },
+    {
+      "documents": 1455,
+      "domain": "bmcpsychiatry.biomedcentral.com",
+      "token_fraction": 0.0009162806390673375,
+      "tokens": 9162807
+    },
+    {
+      "documents": 1476,
+      "domain": "aip.scitation.org",
+      "token_fraction": 0.0009112626394010344,
+      "tokens": 9112627
+    },
+    {
+      "documents": 1636,
+      "domain": "hrmars.com",
+      "token_fraction": 0.0008983733402581728,
+      "tokens": 8983734
+    },
+    {
+      "documents": 2366,
+      "domain": "bmcresnotes.biomedcentral.com",
+      "token_fraction": 0.0008945758405107066,
+      "tokens": 8945759
+    },
+    {
+      "documents": 923,
+      "domain": "genomebiology.biomedcentral.com",
+      "token_fraction": 0.0008919633406844379,
+      "tokens": 8919634
+    },
+    {
+      "documents": 1787,
+      "domain": "www.jstage.jst.go.jp",
+      "token_fraction": 0.0008809646414158513,
+      "tokens": 8809647
+    },
+    {
+      "documents": 2316,
+      "domain": "www.shs-conferences.org",
+      "token_fraction": 0.0008713884420526686,
+      "tokens": 8713885
+    },
+    {
+      "documents": 1570,
+      "domain": "zookeys.pensoft.net",
+      "token_fraction": 0.0008667556423607497,
+      "tokens": 8667557
+    },
+    {
+      "documents": 935,
+      "domain": "jneuroinflammation.biomedcentral.com",
+      "token_fraction": 0.0008479299436126588,
+      "tokens": 8479300
+    },
+    {
+      "documents": 1106,
+      "domain": "nottingham-repository.worktribe.com",
+      "token_fraction": 0.0008457328437587658,
+      "tokens": 8457329
+    },
+    {
+      "documents": 1858,
+      "domain": "www.int-arch-photogramm-remote-sens-spatial-inf-sci.net",
+      "token_fraction": 0.0008290933448652926,
+      "tokens": 8290934
+    },
+    {
+      "documents": 1423,
+      "domain": "bmcpregnancychildbirth.biomedcentral.com",
+      "token_fraction": 0.0008283780449128601,
+      "tokens": 8283781
+    },
+    {
+      "documents": 996,
+      "domain": "stemcellres.biomedcentral.com",
+      "token_fraction": 0.0008231312452617722,
+      "tokens": 8231313
+    },
+    {
+      "documents": 1671,
+      "domain": "ccforum.biomedcentral.com",
+      "token_fraction": 0.0008187411455537138,
+      "tokens": 8187412
+    },
+    {
+      "documents": 708,
+      "domain": "www.eneuro.org",
+      "token_fraction": 0.0008159684457380984,
+      "tokens": 8159685
+    },
+    {
+      "documents": 1603,
+      "domain": "scindeks-clanci.ceon.rs",
+      "token_fraction": 0.0008148842458101977,
+      "tokens": 8148843
+    },
+    {
+      "documents": 1649,
+      "domain": "www.doiserbia.nb.rs",
+      "token_fraction": 0.0007810232480619541,
+      "tokens": 7810233
+    },
+    {
+      "documents": 1080,
+      "domain": "www.spiedigitallibrary.org",
+      "token_fraction": 0.0007792596481792334,
+      "tokens": 7792597
+    },
+    {
+      "documents": 1392,
+      "domain": "bmcmededuc.biomedcentral.com",
+      "token_fraction": 0.000768135848918966,
+      "tokens": 7681359
+    },
+    {
+      "documents": 1211,
+      "domain": "arthritis-research.biomedcentral.com",
+      "token_fraction": 0.0007646021491539571,
+      "tokens": 7646022
+    },
+    {
+      "documents": 1278,
+      "domain": "iiste.org",
+      "token_fraction": 0.0007487174502102896,
+      "tokens": 7487175
+    },
+    {
+      "documents": 837,
+      "domain": "bmcevolbiol.biomedcentral.com",
+      "token_fraction": 0.000727758751604043,
+      "tokens": 7277588
+    },
+    {
+      "documents": 1097,
+      "domain": "www.aimsciences.org",
+      "token_fraction": 0.0007189315521910518,
+      "tokens": 7189316
+    },
+    {
+      "documents": 1515,
+      "domain": "nanoscalereslett.springeropen.com",
+      "token_fraction": 0.0007156465524095042,
+      "tokens": 7156466
+    },
+    {
+      "documents": 1599,
+      "domain": "www.spandidos-publications.com",
+      "token_fraction": 0.00071120075270515,
+      "tokens": 7112008
+    },
+    {
+      "documents": 1484,
+      "domain": "www.ajnr.org",
+      "token_fraction": 0.0007099984527851029,
+      "tokens": 7099985
+    }
+  ],
+  "verification": {
+    "all_shards_hash_and_token_verified": true,
+    "document_ledger_verified": true,
+    "document_rows": 1481538,
+    "external_inputs_verified": true,
+    "manifest_payload_sha256": "16ed0001f414b8825f9ac8c4faa4334af16a931bf11f0150c57e366044a5b532",
+    "schema": "shohin-tokenized-shard-verification-v1",
+    "shards": 100,
+    "tokens": 10000000665
+  }
+}

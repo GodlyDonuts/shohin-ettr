@@ -1,0 +1,24 @@
+{
+  "contains_document_text": false,
+  "decision": "universal_50m_cap_missing_domain_rejection_no_subjective_venue_blocklist",
+  "default_domain_token_cap": 50000000,
+  "domain_token_cap_overrides": {},
+  "evidence": [
+    {
+      "bytes": 1429,
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/source_reviews/pes2o_selected_core_10b_r2_1000.receipt.json",
+      "sha256": "6f2e867d5c146efe7a9fed99ab57bb969faae3d67c983278e45a49f530639e34"
+    },
+    {
+      "bytes": 18267,
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/source_profiles/pes2o_selected_core_10b_r2_domain_profile_v1.json",
+      "sha256": "18bf0ac38cef4b564742fb9a685abccaf9653cc7e59d6ba1db6c91af96f60080"
+    }
+  ],
+  "payload_sha256": "7ec18c71eacd6b3790a25f6c870c3661aefc1b0b302c4b7a9ec717ff2b662810",
+  "reject_missing_domain": true,
+  "schema": "shohin-domain-balance-policy-v1",
+  "selection_priority": "stable_identity_sha256_ascending",
+  "source_manifest_payload_sha256": "16ed0001f414b8825f9ac8c4faa4334af16a931bf11f0150c57e366044a5b532",
+  "source_selection_code_sha256": "c7bb632ce769a795bb615cebcb264372e7b36996146cafc7ceb42bddd2a8d1ea"
+}

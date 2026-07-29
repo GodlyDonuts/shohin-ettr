@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 09:51 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 10:18 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17321,3 +17321,59 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `pes2o_10b_byte_verified_review_running_candidate_only_no_optimizer`.
+
+- **2026-07-29 10:18 EDT** -- **ETTR cleared all 216 main qualifiers and
+  entered parallel materialization; peS2o domain concentration is now
+  independently profiled and governed by a frozen 50M-token cap policy.**
+
+  Recovery cell `753823_6` completed cleanly in 17h14m, bringing the ETTR
+  main qualification board to **216/216**, alongside **108/108**
+  confirmation cells. Selector job `753824` and tokenization contract job
+  `753825` then completed cleanly. Materialization arrays `753826` and
+  `753827` launched all 60 main and 30 confirmation shards across Stokes; the
+  first 24 cells completed with zero failures while the remaining 66 were
+  active. Aggregate audits `753828/753829`, zero-overlap separation `753830`,
+  and immutable release `754460` remain dependency-held. The release stays
+  optimizer-ineligible until every downstream gate passes.
+
+  Domain-profile job `754649` completed cleanly in 4m54s from read-only
+  runtime `scratchpad/shohin_domain_profile_2f5f259`. It independently
+  reverified the entire published peS2o candidate and its external inputs,
+  then profiled **1,481,538 documents**, **10,000,000,665 tokens**, and
+  **10,526 domains** without publishing document text. Profile file SHA-256
+  is
+  `18bf0ac38cef4b564742fb9a685abccaf9653cc7e59d6ba1db6c91af96f60080`;
+  canonical payload SHA-256 is
+  `b98568a95b817636f0212277bb66d4aadbca26ce31fa57cc720603a5010faee1`.
+  The top five domains supply **39.6891%** of tokens, the top ten **56.8513%**,
+  and missing-domain rows supply **455,561,234 tokens (4.5556%)**. The raw
+  10B-token candidate is therefore a verified reservoir, not an admissible
+  science mix. A duplicate read-only retry `754650` was detected and canceled
+  36 seconds after launch before output publication; `754649` remained the
+  sole writer.
+
+  The frozen policy
+  `artifacts/source_policies/pes2o_selected_core_10b_r2_domain_balance_50m_v1.json`
+  binds the exact source manifest, historical selection code, 1,000-row
+  retained-document review receipt, and full domain profile. It applies one
+  universal **50,000,000-token per-domain cap**, rejects missing domains,
+  chooses documents by stable-identity SHA-256 order, and uses no subjective
+  venue overrides. The measured projection is **4,350,457,062 tokens
+  (43.5046%)** across the diversified residual. A fail-closed Stokes
+  materialization lane now hash-checks every runtime and policy input,
+  rebuilds token shards and provenance ledger, and performs complete
+  independent verification; its focused profile/materializer/job suite
+  passes **8/8**, with clean Ruff, shell syntax, byte compilation, and diff
+  checks. The balanced output will remain quarantined pending retained-text
+  review, cross-source exact and near residualization, holdouts, safety
+  scans, and equal-token utility.
+
+  Concurrent general candidates remain quarantined: FineWeb-Edu r2 has 35
+  approximately 100M-token shards, FinePDF has 15, and strict Essential-Web
+  is still scanning without weakening its sparse gate. Newton reservations
+  `719497` (10 H100, estimated 15:03 EDT) and `719496` (20 H100, estimated
+  August 1) remain pending. The watcher may launch only the release-blind ETTR
+  distributed canary; no candidate optimizer is active.
+
+  Decision:
+  `ettr_materializing_pes2o_domain_policy_frozen_all_training_still_gated`.
