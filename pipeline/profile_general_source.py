@@ -11,16 +11,21 @@ from __future__ import annotations
 import argparse
 import hashlib
 import heapq
+import io
 import json
 import os
+import random
 import re
 from collections import Counter, defaultdict
 from pathlib import Path
+import stat
 from typing import Any, Iterable, Mapping
 from urllib.parse import urlparse
 
 
 WORD_RE = re.compile(r"\w+", flags=re.UNICODE)
+SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+REVISION_RE = re.compile(r"^[0-9a-f]{40}$")
 HTML_RE = re.compile(r"</?[a-zA-Z][^>]{0,200}>")
 URL_RE = re.compile(r"https?://\S+")
 CONTROL_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
@@ -91,6 +96,7 @@ REVIEW_METADATA_FIELDS = (
     "file_timestamp",
     "finish_reason",
     "usage",
+    "metadata",
 )
 CATEGORICAL_PROFILE_FIELDS = (
     "finish_reason",
@@ -517,6 +523,100 @@ def _write_jsonl_no_replace(path: Path, rows: Iterable[Mapping[str, Any]]) -> No
     temporary.replace(path)
 
 
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for chunk in iter(lambda: source.read(8 * 1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def verify_local_profile_file(
+    path: Path,
+    *,
+    expected_sha256: str,
+) -> dict[str, Any]:
+    if not path.is_absolute():
+        raise ProfileError("local profile inputs must use absolute paths")
+    if SHA256_RE.fullmatch(expected_sha256) is None:
+        raise ProfileError("local profile input SHA-256 differs")
+    metadata = path.lstat()
+    if (
+        stat.S_ISLNK(metadata.st_mode)
+        or not stat.S_ISREG(metadata.st_mode)
+        or metadata.st_nlink != 1
+        or metadata.st_mode & 0o222
+    ):
+        raise ProfileError(
+            "local profile inputs must be physical, read-only, single-link files"
+        )
+    observed_sha256 = sha256_file(path)
+    if observed_sha256 != expected_sha256:
+        raise ProfileError("local profile input hash differs")
+    return {
+        "bytes": metadata.st_size,
+        "name": path.name,
+        "sha256": observed_sha256,
+    }
+
+
+def iter_local_jsonl(paths: Iterable[Path]) -> Iterable[Mapping[str, Any]]:
+    for path in paths:
+        flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0)
+        flags |= getattr(os, "O_NOFOLLOW", 0)
+        descriptor = os.open(path, flags)
+        raw = os.fdopen(descriptor, "rb")
+        try:
+            if path.name.endswith(".zst"):
+                import zstandard
+
+                binary = zstandard.ZstdDecompressor().stream_reader(raw)
+            elif path.name.endswith(".jsonl"):
+                binary = raw
+            else:
+                raise ProfileError(
+                    "local profile input must end in .jsonl or .jsonl.zst"
+                )
+            with io.TextIOWrapper(binary, encoding="utf-8", errors="strict") as text:
+                for line_number, line in enumerate(text, start=1):
+                    try:
+                        row = json.loads(line)
+                    except json.JSONDecodeError as exc:
+                        raise ProfileError(
+                            f"malformed local JSON row at {path.name}:{line_number}"
+                        ) from exc
+                    if not isinstance(row, Mapping):
+                        raise ProfileError(
+                            f"local JSON row is not an object at "
+                            f"{path.name}:{line_number}"
+                        )
+                    yield row
+        finally:
+            if not raw.closed:
+                raw.close()
+
+
+def buffered_shuffle(
+    rows: Iterable[Mapping[str, Any]],
+    *,
+    seed: int,
+    buffer_size: int,
+) -> Iterable[Mapping[str, Any]]:
+    if buffer_size <= 0:
+        raise ProfileError("--shuffle-buffer must be positive")
+    rng = random.Random(seed)
+    buffer: list[Mapping[str, Any]] = []
+    for row in rows:
+        if len(buffer) < buffer_size:
+            buffer.append(row)
+            continue
+        index = rng.randrange(buffer_size)
+        yield buffer[index]
+        buffer[index] = row
+    rng.shuffle(buffer)
+    yield from buffer
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", required=True)
@@ -536,47 +636,110 @@ def main() -> None:
     parser.add_argument("--evals-dir", required=True)
     parser.add_argument("--out", required=True)
     parser.add_argument("--review-out", required=True)
+    parser.add_argument("--local-jsonl", type=Path, action="append")
+    parser.add_argument("--local-source-sha256", action="append")
+    parser.add_argument("--local-dataset-card", type=Path)
+    parser.add_argument("--local-dataset-card-sha256")
     args = parser.parse_args()
 
-    from datasets import (
-        get_dataset_config_names,
-        get_dataset_split_names,
-        load_dataset,
-    )
-    from huggingface_hub import HfApi, hf_hub_download
-
-    resolved_revision = args.revision or HfApi().dataset_info(args.dataset).sha
-    configs = get_dataset_config_names(args.dataset, revision=resolved_revision)
-    config = args.config
-    if config is None and len(configs) == 1:
-        config = configs[0]
-    if config is None or config not in configs:
-        raise ProfileError(
-            f"select one valid config for {args.dataset}: {', '.join(configs)}"
+    local_mode = args.local_jsonl is not None
+    local_receipts: list[dict[str, Any]] = []
+    if local_mode:
+        if (
+            not args.local_jsonl
+            or not args.local_source_sha256
+            or len(args.local_jsonl) != len(args.local_source_sha256)
+            or args.local_dataset_card is None
+            or args.local_dataset_card_sha256 is None
+            or args.revision is None
+            or REVISION_RE.fullmatch(args.revision) is None
+            or not args.config
+        ):
+            raise ProfileError(
+                "local mode requires matched files/hashes, a pinned physical "
+                "dataset card, an exact revision, and an explicit config"
+            )
+        resolved_revision = args.revision
+        config = args.config
+        configs = [config]
+        splits = [args.split]
+        card_receipt = verify_local_profile_file(
+            args.local_dataset_card,
+            expected_sha256=args.local_dataset_card_sha256,
         )
-    splits = get_dataset_split_names(args.dataset, config, revision=resolved_revision)
-    if args.split not in splits:
-        raise ProfileError(f"split {args.split!r} not in {splits}")
+        card_sha256 = card_receipt["sha256"]
+        local_receipts = [
+            verify_local_profile_file(
+                path,
+                expected_sha256=expected_sha256,
+            )
+            for path, expected_sha256 in zip(
+                args.local_jsonl,
+                args.local_source_sha256,
+                strict=True,
+            )
+        ]
+        stream = buffered_shuffle(
+            iter_local_jsonl(args.local_jsonl),
+            seed=args.shuffle_seed,
+            buffer_size=args.shuffle_buffer,
+        )
+    else:
+        if (
+            args.local_source_sha256
+            or args.local_dataset_card is not None
+            or args.local_dataset_card_sha256 is not None
+        ):
+            raise ProfileError("local profile arguments are incomplete")
+        from datasets import (
+            get_dataset_config_names,
+            get_dataset_split_names,
+            load_dataset,
+        )
+        from huggingface_hub import HfApi, hf_hub_download
 
-    card_path = Path(
-        hf_hub_download(
-            repo_id=args.dataset,
-            filename="README.md",
-            repo_type="dataset",
+        resolved_revision = args.revision or HfApi().dataset_info(args.dataset).sha
+        configs = get_dataset_config_names(
+            args.dataset,
             revision=resolved_revision,
         )
-    )
-    card_sha256 = hashlib.sha256(card_path.read_bytes()).hexdigest()
-    stream = load_dataset(
-        args.dataset,
-        name=config,
-        split=args.split,
-        streaming=True,
-        revision=resolved_revision,
-    )
-    if args.shuffle_buffer <= 0:
-        raise ProfileError("--shuffle-buffer must be positive")
-    stream = stream.shuffle(seed=args.shuffle_seed, buffer_size=args.shuffle_buffer)
+        config = args.config
+        if config is None and len(configs) == 1:
+            config = configs[0]
+        if config is None or config not in configs:
+            raise ProfileError(
+                f"select one valid config for {args.dataset}: {', '.join(configs)}"
+            )
+        splits = get_dataset_split_names(
+            args.dataset,
+            config,
+            revision=resolved_revision,
+        )
+        if args.split not in splits:
+            raise ProfileError(f"split {args.split!r} not in {splits}")
+
+        card_path = Path(
+            hf_hub_download(
+                repo_id=args.dataset,
+                filename="README.md",
+                repo_type="dataset",
+                revision=resolved_revision,
+            )
+        )
+        card_sha256 = hashlib.sha256(card_path.read_bytes()).hexdigest()
+        stream = load_dataset(
+            args.dataset,
+            name=config,
+            split=args.split,
+            streaming=True,
+            revision=resolved_revision,
+        )
+        if args.shuffle_buffer <= 0:
+            raise ProfileError("--shuffle-buffer must be positive")
+        stream = stream.shuffle(
+            seed=args.shuffle_seed,
+            buffer_size=args.shuffle_buffer,
+        )
     if args.nested_files_field:
         stream = flatten_nested_files(
             stream,
@@ -620,8 +783,34 @@ def main() -> None:
             "max_files_per_record": (
                 args.max_files_per_record if args.nested_files_field else None
             ),
+            "input_mode": (
+                "hash_bound_local_jsonl" if local_mode else "huggingface_stream"
+            ),
+            "local_source_receipts": local_receipts,
         }
     )
+    if local_mode:
+        assert args.local_jsonl is not None
+        assert args.local_source_sha256 is not None
+        assert args.local_dataset_card is not None
+        assert args.local_dataset_card_sha256 is not None
+        post_card = verify_local_profile_file(
+            args.local_dataset_card,
+            expected_sha256=args.local_dataset_card_sha256,
+        )
+        post_sources = [
+            verify_local_profile_file(
+                path,
+                expected_sha256=expected_sha256,
+            )
+            for path, expected_sha256 in zip(
+                args.local_jsonl,
+                args.local_source_sha256,
+                strict=True,
+            )
+        ]
+        if post_card != card_receipt or post_sources != local_receipts:
+            raise ProfileError("local profile inputs changed during review")
     _write_json_no_replace(Path(args.out), report)
     _write_jsonl_no_replace(Path(args.review_out), reviews)
     print(

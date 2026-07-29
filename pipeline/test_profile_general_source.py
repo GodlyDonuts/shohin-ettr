@@ -1,11 +1,19 @@
+import hashlib
+import json
+from pathlib import Path
 import random
+
+import pytest
 
 from pipeline.profile_general_source import (
     ProfileError,
+    buffered_shuffle,
     flatten_nested_files,
+    iter_local_jsonl,
     profile_rows,
     review_excerpt,
     text_metrics,
+    verify_local_profile_file,
 )
 
 
@@ -242,3 +250,76 @@ def test_profile_rejects_nonpositive_limits():
         assert "must be positive" in str(exc)
     else:
         raise AssertionError("expected ProfileError")
+
+
+def test_local_profile_input_is_hash_bound_read_only_and_deterministic(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "source.jsonl"
+    source.write_text(
+        "".join(
+            json.dumps({"id": index, "text": f"document {index}"}) + "\n"
+            for index in range(20)
+        )
+    )
+    source.chmod(0o444)
+    expected = hashlib.sha256(source.read_bytes()).hexdigest()
+    receipt = verify_local_profile_file(
+        source,
+        expected_sha256=expected,
+    )
+    assert receipt == {
+        "bytes": source.stat().st_size,
+        "name": "source.jsonl",
+        "sha256": expected,
+    }
+    first = list(
+        buffered_shuffle(
+            iter_local_jsonl((source,)),
+            seed=17,
+            buffer_size=5,
+        )
+    )
+    second = list(
+        buffered_shuffle(
+            iter_local_jsonl((source,)),
+            seed=17,
+            buffer_size=5,
+        )
+    )
+    assert first == second
+    assert sorted(row["id"] for row in first) == list(range(20))
+    assert [row["id"] for row in first] != list(range(20))
+
+
+def test_local_profile_input_rejects_mutable_linked_and_wrong_hash(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "source.jsonl"
+    source.write_text('{"text":"document"}\n')
+    expected = hashlib.sha256(source.read_bytes()).hexdigest()
+    with pytest.raises(ProfileError, match="read-only"):
+        verify_local_profile_file(
+            source,
+            expected_sha256=expected,
+        )
+    source.chmod(0o444)
+    with pytest.raises(ProfileError, match="hash"):
+        verify_local_profile_file(
+            source,
+            expected_sha256="0" * 64,
+        )
+    link = tmp_path / "link.jsonl"
+    link.symlink_to(source)
+    with pytest.raises(ProfileError, match="physical"):
+        verify_local_profile_file(
+            link,
+            expected_sha256=expected,
+        )
+    hardlink = tmp_path / "hardlink.jsonl"
+    hardlink.hardlink_to(source)
+    with pytest.raises(ProfileError, match="single-link"):
+        verify_local_profile_file(
+            source,
+            expected_sha256=expected,
+        )
