@@ -16433,3 +16433,43 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `h100_ettr_execution_pass_general_corpus_still_unadmitted_fineweb_recovery_fresh_namespace`.
+
+- **2026-07-29 03:02 EDT** -- **FineWeb-Edu tokenizer batching passed an
+  isolated exact-artifact speed gate and the non-final slow build was replaced
+  with a fresh, source-bound accelerated build.**
+
+  Private commits `b31dd27` and `49a5584` add a deterministic
+  `--tokenizer-batch-size` path to `pipeline/tokenize_shards.py`, preserve
+  source-order exact deduplication, all rejection counters, domain caps,
+  document-ledger rows, shard boundaries, token order, early max-token stop,
+  and manifest provenance, and add a dedicated isolated FineWeb batch canary.
+  The focused tokenizer/quality/verifier suite passes **23/23** with Ruff,
+  byte compilation, and shell syntax checks. Batch size defaults to `1`; the
+  new path is opt-in and the batch size is bound into the manifest.
+
+  Stokes canary `754466` completed successfully on `ec77` against one
+  already hash-verified physical FineWeb-Edu Parquet input with the exact
+  production source revision and all production filters/decontamination.
+  Both arms retained **2,002,700** tokens across **1,518** documents. Batch
+  `1` completed in **44 s** (45,516 tok/s); batch `256` completed in **28 s**
+  (71,525 tok/s), a **1.571x** wall-clock speedup. Every token shard and
+  document ledger was byte-identical; normalized manifests also matched.
+  Independent shard verification passed for both arms, including external
+  input receipts. The immutable canary report is at
+  `/lustre/fs1/home/sa305415/shohin/artifacts/shards/fineweb_edu_tokenizer_batch_canary_754466/report.json`.
+
+  The previous recovery build `754464` was canceled only after confirming it
+  had no final candidate directory. Its unsealed
+  `fineweb_edu_score4_core_10b_r1.partial` is retained untouched for audit and
+  is not usable data. Fresh job `754467` now builds only
+  `fineweb_edu_score4_core_10b_r2` from the same 140-file pinned physical
+  source manifest, source revision, exact deduplication, evaluator
+  decontamination, quality filters, and 5M-token domain cap, using batch 256
+  and eight Rayon threads from isolated code root
+  `shohin_ettr_fineweb_r2_49a5584`. It remains a candidate: semantic review,
+  cross-source residualization, a full audit, and matched-token utility
+  ablation remain mandatory before any training admission. No partial ETTR,
+  FineWeb, or peS2o data is admitted and no production optimizer is active.
+
+  Decision:
+  `fineweb_exact_batch_speedup_pass_r2_candidate_build_live_general_admission_still_fail_closed`.
