@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 10:34 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 10:46 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17420,3 +17420,45 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `fresh_4_10_20h100_capacity_pending_balanced_review_held_no_optimizer`.
+
+- **2026-07-29 10:46 EDT** -- **The 4.350B-token domain-balanced peS2o
+  candidate passed two full physical verifications and an exact retained-text
+  review; it is substantially diversified but remains utility-gated.**
+
+  Stokes job `754651` completed cleanly in 13m47s. It retained **718,589
+  documents and 4,350,450,266 tokens** across 44 shards, dropped 762,949
+  documents / 5,649,550,399 tokens under the frozen policy, and rejected all
+  missing-domain rows. Every shard hash and token count, all 718,589
+  provenance-ledger rows, and every external source input were independently
+  verified twice. Manifest payload SHA-256 is
+  `297f65bf680e10f1cad1a009a42b885d7697f3b45f8622fd3e1b8e0d611b9d0a`.
+  Exactly **10,525 domains** remain. Concentration fell from 39.6891% to
+  **5.7465%** in the top five and from 56.8513% to **11.4930%** in the top
+  ten; no domain exceeds 49,999,988 tokens.
+
+  Exact transformed-candidate review job `754652` completed cleanly in
+  9m50s. Its 1,000 rows cover 546 domains and every one of the 44 shards;
+  license counts are 949 CCBY, 47 CCBYSA, and four public-domain rows.
+  Private packet SHA-256 is
+  `0e550d6b014a652f729be60f9c87ee857724a414fc1fae2ba2c2ef1c1c5f9789`;
+  it remains mode-600 outside Git. Text-free receipt SHA-256 is
+  `434ab9b6ca55310d909ede39e6e7326ffaa9d8eb4480a9af121c8396cfaba451`.
+  Aggregate inspection found median 23,545 characters / 3,731 words,
+  median alphabetic fraction 0.7967, five rows with any replacement
+  character, 40 with a publisher/footer marker, ten with an HTML tag, and
+  broad figure/table references typical of papers. Direct deterministic
+  inspection of 24 retained excerpts found coherent substantive scholarly
+  prose across biology, medicine, CS, physics, economics, energy,
+  engineering, architecture, and social science, with no broad corruption.
+  It also confirmed variable venue/paper quality and equation/caption
+  fragmentation. This supports a licensed science/reference challenger, not
+  wholesale core admission.
+
+  Required remaining gates are exact and near cross-source residualization,
+  immutable document/domain holdouts, safety/privacy scans, cross-holdout
+  NLL, and an equal-token transfer/retention ablation. ETTR materialization
+  has 62/90 cells complete and 28 active with zero failures. No candidate
+  optimizer is active.
+
+  Decision:
+  `pes2o_balanced_physical_and_semantic_review_pass_utility_gated_no_optimizer`.

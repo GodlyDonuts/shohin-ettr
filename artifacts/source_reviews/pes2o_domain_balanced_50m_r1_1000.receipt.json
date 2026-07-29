@@ -1,0 +1,36 @@
+{
+  "config": null,
+  "contains_document_text": false,
+  "dataset": "common-pile/peS2o",
+  "document_ledger_sha256": "284f5b0c450d962b919a90958ac0a5ab0769b7566428bdbefd853f6ff7b4c92a",
+  "length_bucket_counts": {
+    "tokens_00000_02048": 67,
+    "tokens_02049_08192": 705,
+    "tokens_08193_32768": 227,
+    "tokens_32769_plus": 1
+  },
+  "license_counts": {
+    "CCBY": 949,
+    "CCBYSA": 47,
+    "pd": 4
+  },
+  "manifest_payload_sha256": "297f65bf680e10f1cad1a009a42b885d7697f3b45f8622fd3e1b8e0d611b9d0a",
+  "manifest_recomputed_payload_sha256": "297f65bf680e10f1cad1a009a42b885d7697f3b45f8622fd3e1b8e0d611b9d0a",
+  "private_packet_basename": "pes2o_domain_balanced_50m_r1_1000.jsonl",
+  "private_packet_bytes": 13591846,
+  "private_packet_sha256": "0e550d6b014a652f729be60f9c87ee857724a414fc1fae2ba2c2ef1c1c5f9789",
+  "review_rows": 1000,
+  "schema": "shohin-selected-source-review-receipt-v1",
+  "selection_rule": "lowest stable-identity hash priorities per license/length stratum, then domain-capped deterministic fill",
+  "unique_domains": 546,
+  "verification": {
+    "all_shards_hash_and_token_verified": true,
+    "document_ledger_verified": true,
+    "document_rows": 718589,
+    "external_inputs_verified": true,
+    "manifest_payload_sha256": "297f65bf680e10f1cad1a009a42b885d7697f3b45f8622fd3e1b8e0d611b9d0a",
+    "schema": "shohin-tokenized-shard-verification-v1",
+    "shards": 44,
+    "tokens": 4350450266
+  }
+}
