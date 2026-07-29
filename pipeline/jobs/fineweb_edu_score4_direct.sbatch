@@ -19,7 +19,7 @@ TOKENIZE=$CODE_ROOT/pipeline/tokenize_shards.py
 VERIFY_SHARDS=$CODE_ROOT/pipeline/verify_tokenized_shards.py
 VERIFY_MANIFEST=$CODE_ROOT/pipeline/verify_pinned_hf_manifest.py
 MANIFEST=$CODE_ROOT/pipeline/source_manifests/fineweb_edu_sample100bt_87f0914.json
-TOKENIZE_SHA256=639a4934bae79e6301b4319ab96e26180fc7fe6bd85644789695d958e96cf48d
+TOKENIZE_SHA256=c7bb632ce769a795bb615cebcb264372e7b36996146cafc7ceb42bddd2a8d1ea
 VERIFY_SHARDS_SHA256=efb9f1646d74e64c6243151fad716791c1817ead9a783b0f9ed99bdd56c54af6
 VERIFY_MANIFEST_SHA256=5fee0bf17558a1e349c5fe492f9d8235431408b913f4cc5df91b817925c95287
 MANIFEST_SHA256=759963e1db699dd27e0f1402d8f5622b22673a85ff6688999bf2e3afa5335fea
@@ -32,6 +32,7 @@ HF_CURL_CONFIG=${HF_CURL_CONFIG:-$BASE/scratchpad/.hf_curl_auth.conf}
 DOWNLOAD_CONCURRENCY=${DOWNLOAD_CONCURRENCY:-8}
 MAX_TOKENS=${MAX_TOKENS:-10000000000}
 DOMAIN_TOKEN_CAP=${DOMAIN_TOKEN_CAP:-5000000}
+TOKENIZER_BATCH_SIZE=${TOKENIZER_BATCH_SIZE:-1}
 
 [[ -d "$CODE_ROOT" && ! -L "$CODE_ROOT" ]] || {
   echo "[fineweb-s4] isolated code root is unavailable" >&2
@@ -44,6 +45,10 @@ printf '%s  %s\n' \
   "$MANIFEST_SHA256" "$MANIFEST" | sha256sum -c -
 [[ "$DOWNLOAD_CONCURRENCY" =~ ^[1-9][0-9]*$ ]] || {
   echo "[fineweb-s4] download concurrency differs" >&2
+  exit 3
+}
+[[ "$TOKENIZER_BATCH_SIZE" =~ ^[1-9][0-9]*$ ]] || {
+  echo "[fineweb-s4] tokenizer batch size differs" >&2
   exit 3
 }
 [[ ! -L "$HF_CURL_CONFIG" && -f "$HF_CURL_CONFIG" ]] || {
@@ -143,6 +148,8 @@ fi
 export PYTHONNOUSERSITE=1
 export PYTHONDONTWRITEBYTECODE=1
 export OMP_NUM_THREADS=8
+export RAYON_NUM_THREADS=${RAYON_NUM_THREADS:-8}
+export TOKENIZERS_PARALLELISM=true
 "$PY" -u "$TOKENIZE" \
   --tokenizer "$BASE/artifacts/shohin-tok-32k.json" \
   --dataset "$DATASET" \
@@ -169,7 +176,8 @@ export OMP_NUM_THREADS=8
   --max-tokens-per-domain "$DOMAIN_TOKEN_CAP" \
   --out-dir "$TMP" \
   --shard-tokens 100000000 \
-  --max-tokens "$MAX_TOKENS"
+  --max-tokens "$MAX_TOKENS" \
+  --tokenizer-batch-size "$TOKENIZER_BATCH_SIZE"
 
 test -s "$TMP/manifest.json"
 PYTHONPATH="$CODE_ROOT" "$PY" -m pipeline.verify_tokenized_shards \
