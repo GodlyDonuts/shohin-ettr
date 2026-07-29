@@ -17364,9 +17364,14 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   rebuilds token shards and provenance ledger, and performs complete
   independent verification; its focused profile/materializer/job suite
   passes **8/8**, with clean Ruff, shell syntax, byte compilation, and diff
-  checks. The balanced output will remain quarantined pending retained-text
-  review, cross-source exact and near residualization, holdouts, safety
-  scans, and equal-token utility.
+  checks. Stokes job `754651` is running from read-only runtime
+  `scratchpad/shohin_domain_balance_b07c5a9` toward fresh candidate path
+  `artifacts/shards/pes2o_domain_balanced_50m_r1`; its exact runtime
+  `SHA256SUMS` SHA-256 is
+  `6eac453d591465690ed8a0b0e18c25a4b4a86485ee25503f8cfc034cbc9a9972`.
+  The balanced output will remain quarantined pending retained-text review,
+  cross-source exact and near residualization, holdouts, safety scans, and
+  equal-token utility.
 
   Concurrent general candidates remain quarantined: FineWeb-Edu r2 has 35
   approximately 100M-token shards, FinePDF has 15, and strict Essential-Web
