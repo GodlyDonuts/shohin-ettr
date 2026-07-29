@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-28 23:25 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-28 23:40 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -15945,3 +15945,52 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `direct_components_semantically_narrowed_b32_ettr_oom_b16_profile_live_no_training_admission`.
+
+- **2026-07-28 23:40 EDT** -- **Direct 10,000-row source profiles now have
+  complete model-preliminary semantic receipts; peS2o is the strongest
+  candidate, while FineWeb-Edu and FinePDFs-Edu require aggressive
+  selection. B32 ETTR also OOMs with the base frozen.**
+
+  The Stokes-generated aggregate profiles were copied into the private
+  worktree and match their remote SHA-256 values exactly:
+  FineWeb-Edu
+  `35c829b8d32718d74ee469c30b9577d380644851576564e6ffe907617bf409d6`,
+  FinePDFs-Edu
+  `310c3ba3772e460a24a4520965c243646fa1cb5fa0d5f96aa2518445f8343fbe`,
+  and peS2o
+  `6dc010c0550d05bab43f7c16ceecd94a7481707e43ad684e7934a438199203b9`.
+  Each profile scanned 10,000 text rows with zero exact duplicate rows, zero
+  exact evaluation-prompt hits, and zero bounded head/tail 13-gram overlap
+  rows.
+
+  Complete 100-document preliminary review retained **16 core / 31 residual /
+  53 reject** for FineWeb-Edu, **27 / 51 / 22** for English FinePDFs-Edu, and
+  **63 / 28 / 9** for peS2o. The corresponding text-free receipt SHA-256
+  values are, respectively,
+  `74d50414cd13b9b9ef8527db8e30aaabc0c02b07aa60e3bde03d627debd8e6e3`,
+  `c7c7a5438d0142c6051360d969bc9b12072219fa7ff5a5d1f90257e8218817f7`,
+  and
+  `98264e0b5dac10a4905d24af5ee678ae2c03e86306fc3caa2148946a02519596`.
+  All use `model_preliminary`, contain no document text, and declare
+  `training_admission_eligible=false`. FineWeb's educational score admitted
+  content farms, promotion, weak medical or financial advice, and dated
+  news. FinePDFs admitted answer-key spam, newsletters, forms, menus, and
+  dubious health material alongside strong lectures, government reports, and
+  manuals. peS2o was predominantly substantive open scholarly work, with
+  nine corrupt, weak, commercial, or causally overclaimed records rejected.
+  The registry now names FineWeb and peS2o as candidates requiring receipts,
+  not admissions. Human adjudication and selection receipts remain mandatory.
+
+  The exact B32, reactor-depth-64 architecture-only ETTR H100 profile failed
+  with a genuine OOM at approximately 79.16 GiB used while requesting another
+  18 MiB. This closes B32 for both full-system joint continuation and
+  frozen-base bootstrap under the current implementation. Full-system B16 on
+  `evc28` and full-system B8 on `evc45` remain active in isolated output
+  directories; neither has produced a training update yet. The Stokes ETTR
+  recovery array has completed cells 3 and 12 cleanly; seven long cells
+  remain running and the downstream immutable release chain remains
+  dependency-held. No production training data is admitted and no production
+  weight update has run.
+
+  Decision:
+  `direct_general_sources_preliminarily_ranked_pes2o_leads_b32_ettr_closed_b16_b8_live`.

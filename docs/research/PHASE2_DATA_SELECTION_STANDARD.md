@@ -93,17 +93,25 @@ Deterministic 10,000-row profiles sharpened the source policies:
   8,655/10,000 rows were only `int_score=3`. Manual review found that bucket
   mixed useful explanations with content farms, promotional pages, weak
   medical/financial advice, and dated low-value articles. Score 4+ is the
-  core candidate; score 3 is residual-ablation only.
+  core candidate; score 3 is residual-ablation only. The complete
+  100-document model-preliminary pass retained only 16 core and 31 residual
+  records and rejected 53. Its text-free receipt remains explicitly
+  ineligible for training pending human review.
 - English FinePDFs-Edu had zero sampled exact duplicates or evaluation
   overlaps and a useful long-form tail, but review exposed answer-key spam,
   newsletters, catalogs, low-confidence pages, and extraction artifacts
   alongside excellent lectures, manuals, and essays. Selection must use page
   language confidence, repetition, length, extraction, publisher, and
-  document-type gates rather than the dataset label alone.
+  document-type gates rather than the dataset label alone. The complete
+  model-preliminary pass retained 27 core and 51 residual records and rejected
+  22; the corresponding receipt is not a human admission.
 - Direct peS2o had zero sampled exact duplicates or evaluation overlaps and
   consistently substantive open-access scientific papers with strong
-  provenance. It remains capped because journal prose is narrow, variable in
-  explanatory quality, and occasionally extraction-damaged.
+  provenance. The complete preliminary pass retained 63 core and 28 residual
+  records and rejected nine. It is the strongest of these three direct
+  candidates, but remains capped because journal prose is narrow, variable in
+  explanatory quality, and occasionally extraction-damaged. Its receipt also
+  remains ineligible for training pending human review.
 - Stack-Edu Python is metadata-only; 8,207/10,000 sampled records were
   `no_license`. Its nominal 125B-token scale therefore cannot be treated as
   usable scale. Content quality is unmeasured until strict allowlisted blobs

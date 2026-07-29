@@ -1,0 +1,1940 @@
+{
+  "admission_status": "preliminary_not_training_admission",
+  "authority_counts": {
+    "model_preliminary": 100
+  },
+  "config": "default",
+  "contains_document_text": false,
+  "dataset": "HuggingFaceFW/fineweb-edu",
+  "decision_counts": {
+    "accept_core": 16,
+    "accept_residual": 31,
+    "reject": 53
+  },
+  "labels_sha256": "309dabe8c97c3ee23d727205490e9ebfeb8f85ee87a0c3c6a954f5fa11a2f0d8",
+  "mean_scores": {
+    "clarity": 2.94,
+    "completeness": 2.63,
+    "correctness": 2.63,
+    "educational_value": 2.1,
+    "originality": 2.1,
+    "real_user_utility": 2.1
+  },
+  "reason_counts": {
+    "authoritative_or_primary_source": 16,
+    "clear_extraction": 16,
+    "commercial_or_content_farm": 53,
+    "low_semantic_density": 53,
+    "requires_source_specific_filtering": 31,
+    "requires_stricter_domain_filter": 53,
+    "specialized_or_low_breadth": 31,
+    "substantive_domain_content": 16,
+    "substantive_residual_content": 31
+  },
+  "required_rows": 100,
+  "review_packet_sha256": "bf4a7f79611ed14e65e8166a7e51f3b099a51bbf59c317769d1b32708249598c",
+  "rows": [
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "f31d375fa09fa3a597fcc31877d091ec2eb0964132a0c38bf48fa1075574b5f9",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "03d49767122d53b88a0b652d7da6d3dfe92a513cc4b6efd86d00edeb7aab2412"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "ddba205da90d1bae3a76ed897384a828636bd57447eeab946836b3673e65340b",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "042d0c1560ed7a73e44a1c852fd88011d4b656dc547d1af08d5fe14a56e7ae30"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "0987b62fdbaee43016005745bd43b3f621121d7ee41eb9559b8056ff5dcff015",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "06a3c03b5efa2f4ca0d4b5ffdfdfd280e5dd625d8a6a87eaefb7410d8a055d70"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "fe1ab0dd3bcd31d1fb9083cc3fe07f213217f9d096f8eb2da6b1dfeb9de974a1",
+      "reason_codes": [
+        "authoritative_or_primary_source",
+        "clear_extraction",
+        "substantive_domain_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "1523fbcbc1cc975ab5302e8ceadd60518c94bc50f1755bbcc28c120887d6fb29"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "23ab24fef217791da281a43b87f4d4ed429490c4863a1e4dbcee7b4782f6c4bc",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "15769e45f8d24ebe15844d50840de0df6bd37a0d7b84f512abd95f0934d01413"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "079fee65ddc5f20122a3402d49d8bf78a9a932ce9901e69a3b88f96dddc28bdc",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "1bf8651097d8741055929e8c9cf7159a66faace137ea5f815b43241e6c989de5"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "d67dce3d7de36b2938016c7e13a034c74204b40e39909d1bcdd07e6fdf6d4303",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "1d4906d74b34a7f1d4fed86f54ea486d50b613221c5dba57fa2eef93da04438c"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "328669c7bfb5f3b2556d7fa6f27ac774172709b83bb909d997b8de5ab5bb8b5c",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "1e8a5096a6431e7d3f9b42571023efd7226732c9251fac45ee9a1abeb7d1c928"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "b3b71406b4da81f290d405c0e0ea2e0cb08fd3a9e3bbf5713ece50aa57ffde5f",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "1fe939d3631655ed88031e952f49676e43da708d13157089805f5390c1f43fbd"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "b294f6e12d782348b2efa09838acd6ce67fba7698746a75dc89d163d68d1883c",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "2056691297876af68e750e9092c1fa2355b325da8fb04eaf24f7f11845ada528"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "e5f7a984ab5fd8faed51504f5f8e771f95ea3bf74cff788467d436f1acb4b71d",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "2866dd2b467c75719eeaec36a1040de02a85d070be3f3b9b2baf4334aebe7386"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "e483c65eba417f555cde765dd9d80b67e9f4626f8058f6a106ceaf8e178e6ce8",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "28f80536f05a61eba69120c4135e85041c69ebbd7c9fd2728c8472f01b54cc7a"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "8c1e0ccd12f74611daca8bf8419ab715ad11ea9d1755e9fcfbde5197e5a06cf5",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "2a791909efc1b73678c77380156c9d65ca61e193737599b684a5264650c7efc4"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "b56d2627da28704e97b1f39291ce7022769b1f77895f5b976a3f5d1d5f35a667",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "2c7c33f6f011265409aefd276872caa7288911a086d4b854a1721401e7094378"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "9eeb04e09d03d306c4f7186a3f403fd10df58b23efde791a7271adacc795d25c",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "2f983317600379da375d688ad8e97d4da9e334eda1f22bf8b1df94690a460316"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "6ec4179e8626e3d7cc239a5459357367adfa9e7b9165477914717691f5b2892d",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "2faf1530abdb3fcc70fdaa66a4ac31d302f856e2f0c87080b850b787a2075c6b"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "2bc0c9c0b45dcbd16bf0ff3c5a359382699f958a302a8568ac02ef0a7a6e0d12",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "32615c746e42a130229e07a62122b4d1170f47405093890430c8386a6f4d5c30"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "22cfd7ded4a6c2bec538c6bab6145fcc5dc63694e3ee8982e43d77575fcdd810",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "3598d6e9309d8afa88eb68961647389569a3cc0d0d0a8d720bfc2ea9a8bcfb9b"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "cfd94e8d3f930336cb4a67d5074915ed6a611f1bd3e5019de5268236dac19a43",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "382505e05a9cafd9af70341b1a0ef1e51cf9863294f27175d03a6f83ec598108"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "1c2788225ceabcc73fb754e26f035d6814ee068ac3313edc4960ac2197016205",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "38340e462dbbddc4d8d3d9ce8d67158f9c30874e22c17d04d2289df352ddc86b"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "17230ccbf88bc6018340ff031121d920f53101c7821b20a9816eba14ee9f9cfa",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "39b12513be43e67fd44412a9bba14e746fbc43778c827089bd721c636d5ded5a"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "150f1ebc5089648129635cc92bb630c0ece887cb4a5a2a7d63ec9209b237c8c6",
+      "reason_codes": [
+        "authoritative_or_primary_source",
+        "clear_extraction",
+        "substantive_domain_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "3a2d586908ba7649769155d3fc829cc9fede3c2a229370a586691e3db981df2e"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "68516a43cdcaec1185060a15d0d1627a9fb941d8260998e67e0c5ec1614a3076",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "3a36ea9c2648827907d3c08d75e5979e3e1cb884c9f65dddac082c81c635a0a9"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "237a6e374b16119a5510d61d0aec7d8fcc9e0f838bc455667377ef3f150b0671",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "3f6f229c176e293fc78c3623c9ef1083be805df3de3b7f519c731c95000615a9"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "21be76d6af9ddee27ee2594009c47e087f3621435e3931b4d7c1c728afb152b0",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "3fcf8876523cb2ac8137ddd5f62bf170fe733a7987ce079d39afe6bc665ed665"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "c820bed3dd6c5c9fb49978923a63adfdfa2fc5092b83d0e4f7a5817cf8e49837",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "42f7a721b10074c513904ca1e7df9bf907098f20bea79372c527d476dd80d3d2"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "812c67fa6b345b6f1759a419543efc47fd46d1feea8395090d8b7255afc45b7e",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "478b229c024a665fe710c08bc4ed95ead5b3b6ce7a95f7ad76a0f046a91a5dc7"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "6092f36fc0fd0460efab7d2bb06ed44b5ebfbf51b132ac6837e8c7d49a80ea2b",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "4ce1d4bf9f94e90e2b24453850c720f40e35c15b0cbd9c20724acbb11b624fca"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "bc87520efc95ca826c4a1f2e344aa26bc1d9e0f56caffb239b1bb0df1e8724dd",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "4de76bbc41be373825cf285f1014702520e46c3b3c161ea733cb1619d941db47"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "f5fe52a23c8b62aa06d5c119753956009665cb301f011d7d6ed780dafc4d32cd",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "4e9b89584572ad534c6c1862b55f0b784921d77b8a9bb0f259f0830b7593b6c2"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "655e587a2755e6e6b6a1cb62601e405102a5534f8a7f4bb84e5335dfa7e3069e",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "530d0fb131453529c70ed3670686160bf7091761a51f5ce08774fb55b5697544"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "e989430ad39c8cead5630f11af05c0b2fde0b93a1ee0332c13304866e9d8fa5b",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "566275d7e8273d9adbaa788e4de89b1c8ad10d80b3e1033f43bdd1b9cde4ce0e"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "b4512d8756ac002c34b2f4b93652c358806498c28528ae64091e2a99f266bcf5",
+      "reason_codes": [
+        "authoritative_or_primary_source",
+        "clear_extraction",
+        "substantive_domain_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "567310f35b023ea1be5418b6c8f9715dfecd2c52b93a698ef3e2f86697f39113"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "4c5b0a16ec57eb5c833f3c9699b4a51b3d8eda02734bfd600389cbfa2cdf11fe",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "587507cf7c293a8c1cf95436a9f2896bb9fa6deac0ef35adc6dc6241beff8cf5"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "c8ffb6321f450a25b6d9d38d7bcd317ede3269335f2337f2f58088739b0a3bfd",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "5d0a923026cb10e37e6bda98593a84fc80efd78500f1e3de8bf39128ad30a611"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "6426b7b8d4a6673e452770bd67639b30e1fd8d67aa5decc20ec92f3cf12918e7",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "61cddd0ce113cb0d97d7474eef80916425d9a226b14a918150b962487654d348"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "f1c68185384ee6e6b63d71c0e344eb7dbcd469068139284b4de566f7b533d1a0",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "62064bd59786b94e0535c455d1c4df1d345b7f2194fefcb34d9a1a78b8aedfd9"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "67ebc66aa77d3d390c9b30435942fa77b06e452c5e770d64159b371913b6ba51",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "62242a93dabe546530ad5dd4f80ebb56ffbe91488212df44913ab1dbf1d81b75"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "61e4748bcdca4418071d6ebcfef3399a46c5e78572311d16ed6e07f7477db1f8",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "64d6cb8f6e3874de8bc6f88ae630882c35a161850d906d3685274f6f94ae9056"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "20522005808398aef5471dd1b569128b21363859ba3c3c697a71b6fad0e0e882",
+      "reason_codes": [
+        "authoritative_or_primary_source",
+        "clear_extraction",
+        "substantive_domain_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "681c311bd1ea04f4dd2014b8dc21251d648ac2ae5297628a3d72c662721b5930"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "c0eeed62f57d89d88124e75759f4f357ab183b2fb99b00a6c0b1b42c9f1845d9",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "69f590792fb87fd42afd89146121e499c4794de63a1358195ff4b4f610a1c861"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "b95ea080fd488742a04706f4fa87f6d04c43323c8e457dbacb495fe21db3900b",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "6db6d39f0f28607e2aa28b999f562ab540833546130051071f822739314138a2"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "15556c987803c4947db76a1ff3d18b09ab2c136bdc8453e9622912712fd75826",
+      "reason_codes": [
+        "authoritative_or_primary_source",
+        "clear_extraction",
+        "substantive_domain_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "6f14a089fbf314e8776ecc75c234825958f2416ef721cae3f6cb1dc08afcf63f"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "3bfa1e63867602123e9f331ba4364f5e267d685fe0ba6853adcd4f64e27d3c98",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "6f90ded644b05c5f31c2dd43bb733c3809054f72510b6fe2f30afb650a6b3e73"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "2d55adb07c7b90546ff4b1b882a40145369364b027d9cfb1c63de0305ae2eb87",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "70b45302cbd333839307b8b73f5f3f2b38d4384457699f9a188a0473f6b3475e"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "1ba0a2ada2f40913fef3c3bb2d82e146f2e0d8c57451eb50e8d751e7332fbbab",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "74f8463e4ab3c7311ae0dd33e9463c64d1379cc1bf65e22d87e23902bbdd4a79"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "657d972de6e766060f4f5656529695905dd2da5ab91e182f6d75c09facd95e70",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "763a2e3964fbad12a9943c2948edebebe852a675ae6b349837da2665af5219fa"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "04fedce263e87e4499691955ac339a591efcacae0cd83800722d26be0e468ff2",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "7a2ba5a82fa05ec0ae867cc682db912985989150b5b039ab7c883318e5e3ee95"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "667b315baf7f7fffe9cbeb3fa802daa31074f3721e16511691d082723a09b2cb",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "7b83bba0ac5b39cafab3557f686005f03c6483de4ad3c71b3c892ad99927f0f0"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "1effceb365611087e0b7ff3175603bbf13fd800eb1fff39fbbc3cf9636650e62",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "7f649944024853ec24a9fb3586b4d8160549e420c5bb02c9a56a5ec5c96809ee"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "15900af65ef3e4a6fdf5f445ac27f293ce7f98ca7886088abfa6014545f25ac6",
+      "reason_codes": [
+        "authoritative_or_primary_source",
+        "clear_extraction",
+        "substantive_domain_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "82e9f24967d2718e0e6de0d7ad95e74af8a27bea05ce8091856b6a04fd2d0178"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "ef9a7dfc78d1c63cef049f3131baca09736697a7d4ced0984b0a4252fb1209ba",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "84ea41711388a0a877324de3d604f83488ca9826b649458636a7652f54e77a35"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "28126ac334056be14ab13a60030ebb5cd244cea40589fd10389c460bbc90e37f",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "885fdcd1b1118bbf00d786b7fe10b6a5117860c4dc80b2a7c6f03f2e75e8cd7e"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "b26aa6887ac093b41dce5d3096ce72f61a2be057374f580ef11de05dddfb1f55",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "88b2714555ef1ce3870485aba8f0b8a8ebcc83af96c9ff4bcb1c37c83df8bec7"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "bc65166447c9ce75f78056bff8a79f97405439861fa772f62b497316996a0c2f",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "89c61dcc72f3a2970e9c2976a1d5f8659ddb09d5661d89f671d9df2d634bf82a"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "b587f01d477830922deb38e6d163738c2a090cd588180f6f7e73d64f0de9ba13",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "8a846f2338ba5e4a60cd181e292fbe31354a70506993efa86f2163fab292ae9c"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "dbc6b692c80b359114d74509b8c0519ea0f63c3e399f57d2568c56613d9c3ef2",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "8b2b457040d86cb8aa564c552ddc40d63de4d0d3d4499d4f997aae6a87240680"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "d89101a58b466aeac355e5bad089725c20c69d879378148928af7dc51bff19cf",
+      "reason_codes": [
+        "authoritative_or_primary_source",
+        "clear_extraction",
+        "substantive_domain_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "8b363021edbc2add234cca9cab7f128cc84d29841c5fce49bd0abee0f98e8732"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "88009ba8859e04ec030e5866964e248dbff3eb3c46a1006444c4f70a67bbc76c",
+      "reason_codes": [
+        "authoritative_or_primary_source",
+        "clear_extraction",
+        "substantive_domain_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "91d52384565cc3b513d0baf1b8b9acff0a97fd768ec198444c9e2f544da6d661"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "257e089ec26f016f2c42a9d3fb2969b06c2a40dccf284d9618874301d08d0f05",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "93c19f718816cf2964902d9c5fa79eb92b3dc7fbe65135167e7b37ded5b1996e"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "280b3f48439b3564d6884a6e741cf06c08a336c136a23b7fd6563ce963e8f21b",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "9ab72b483b290156693338e6e20fd848f1d3fec6e60f5fc8a6f19e502b748271"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "d009ddd2b52a56e0f5623ca4fa8fe4b595f5a05d09a65fc9aef2f15d58c026a4",
+      "reason_codes": [
+        "authoritative_or_primary_source",
+        "clear_extraction",
+        "substantive_domain_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "9b87e458a68019b1b60221279fcdfef32e5f7c57ab06b2eec3e6fd6cdde897e2"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "a52197e0b7badb074026e1d13f187eb74aeed8eec1531be871bad5309197cad4",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "9d42cc18bca07d6b3fab089460276f96c0d518692d00a27584a4d9774f583aef"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "05bf2de060b1317845d642f794965d9e1da6e0dc03f3f1fefb3a0b17eb1e30b0",
+      "reason_codes": [
+        "authoritative_or_primary_source",
+        "clear_extraction",
+        "substantive_domain_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "9fbb7fc47cda43eda3abe593cc3caf5ab1fa7fc57ef6fb42485ee7e1a8c8cd62"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "a0915dc7db13aba71b7a20d189f3c06a5cd2cddd85f200c50cdcb777f4b9efbf",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "a3cf0bdd0e8b563075d886bfb5dbd65ba6d33966eedae83f24892fb00dcd7979"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "1df8516948de83284d5f32a4b80d583ee5f0593b70f9bf8e8fe91dd9012672d6",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "acb4afa02524df9da777c9721dc813605f212ace4af046174c1917efe19104ec"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "869acc7d9681a9f034436c95c8994357ca6c790493ccf5ef17c36d1eea20623e",
+      "reason_codes": [
+        "authoritative_or_primary_source",
+        "clear_extraction",
+        "substantive_domain_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "afa4b2476981b2a8e0f7d0f720b7b126cd5e02f99c45085e111c5da79703d16b"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "d87e24c945b888816ba54da775fc3392540654d25e8b41ad3b46acef72148513",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "b0ca2828fa477715c1ce814bfd7b1ac63f2adda926c24d234df322ac5daf6114"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "e2631df36b9243d8b82628d457c5548740b10c9577d995914e506d4a53c1b491",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "b4799278c37f64a0350fa1b1ea8b51b0fdafbf93d9baadd753e913f28c88db40"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "9c99bba24cd8ac4151e830dbf0b5972a2d5cb82792caadc3440bfb07acbad3dc",
+      "reason_codes": [
+        "authoritative_or_primary_source",
+        "clear_extraction",
+        "substantive_domain_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "b8cca4c3c679be686fc409cc90502a7d52f6dede52a29cf5cb4de0aeaf5310b2"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "5953cc7ffcfc43a3e0679ffcdb02a78b1c5f3721dccdd202b07b567f70f87b19",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "b9a3157c941165435885bbdd1693325236a12c5a9806840c2de51f42692b0dbb"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "4c387cab977529dbc503199006cec9ebc9732b787f87b1d5d10e22d06c65ceab",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "ba1edd057cf0f2d555d45e83ba8e447d67233e5990b64e595f4a3d4e0acb90af"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "46c59917a8c28bb3f0f6ae526d279ed1bbd77472d2bbbe65ef0c8371ad4b8556",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "bb9a2edb911c21e94622267c9e0802c23e1af1d2fbd38fc709e61bb390561b85"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "8ee5467504c7166f0f24fa0a246288f5ea4e1894dcb65c5b083a1a3e51de635d",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "be06bee673d113401482c495f9e95cf547a62281a7645340585d64c1ffc4eb3c"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "f493f21dce8676d41326ce2222820c9166160e093857d486a7c899613d17b90f",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "bff82e386276936a301d43c5b4159d94fc37f474c6e8619e0395253e0f3f65c6"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "a9b224514f8e1cf4f8f4f12c1078c5ef1cfa63cd72cea1e8d8db0ad50834713b",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "c250600badc80935c6b14aae59f70779e91e0e2c082d747190805e54845bb1be"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "ea1d582d3de8f6012c7ae5a8ce79a9b636ed4af52a1fb42d49f69674aef229e3",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "c25dfce7d7a5c759740a7372e1ee46ac54a21e98603eb8a127092f84cd5fc2b4"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "b639537dbf1bf46745a3216ee329a7d207a651cb15f54ad8b414c3581e476dba",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "c63507c6484914b494933afeb0369623a781ad0e4b3e34fab794632c61e945bb"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "e76bd9bc1f1d0a405d7d8156a6b78df6113bb189b79190025f194901983c876e",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "c6580be216740b53fb5d4f7cc1dc35bb14014e805509184085c77918228de4df"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "43dfe32f93610ddcdace73a28b7248ec9e8a09812624b41b3d91fdcfb15a4cf5",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "c84296164d7354af8c9c396c7364e79fa0d0edaeb5b9aa115b15b0d2f6aad66a"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "a37451f88348465e98c31086e735a23bd791689b49309762ac1f74cd6708b35d",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "c89f0158da1ff29e9425d0e210f85e2fdfdecbe7d7fb6efc3c6e7218c8d228ab"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "92ad1c7fc01e9c97924d969a7b410828210578ff14e30b2576da11f7fe2f3c47",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "d0732b22895a816aa6d9fedfc2dcf26aece7d3697161ef32b8851f35dbee9e5e"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "6477818e0a9f1683066c14ea929deca7e3d60a019500c01b6be81b219ef44732",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "d0852cd7cf8de63643aafcf62f1df047e22b08f510d1d00fb8a765847440abaf"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "fef880c72945fd2846545de536de0dbb29f7a8bb6147c7e7d281142258315d46",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "d244f721ecaa6a06e804b140d62ee24693fb5440491b863d27d851debed2bfc7"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "cc5457c1ac25c883dc1f89b90dbca695835ee4afac9ae63010a7bcb72273cc46",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "d58a86fa1b6f626240d19911f03c25a3fd1464dfff4af159a06dfe0be447b685"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "5f5815a88a1432ba0dc511d67c5dd6b1750045a74218b135b6e3e210815161b7",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "dcf42664c8ee2c388eba6ffe155e91246f450d79c210cf2c93e6afec3998ce6a"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "1e2f333cbd75bcea6874feb33aa9796c1dd658fb59a2303b704bcafe1850c7cb",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "e1ea6058c488279ec44dd6766b43cfb08052d1c10552697830b23783e0cc9137"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "44885db7d097cae3e82168c1522baa3aa99b9d0a570911c87540d1fefd69c320",
+      "reason_codes": [
+        "authoritative_or_primary_source",
+        "clear_extraction",
+        "substantive_domain_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "e5e3e8ec918526ddf2301efb664d39423e68cc1a02b1056c8c2912f5d2f34e8b"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "5fa1016128afaedca625c8d068cc7814c157c40f3718f710832444a8bb2d354d",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "e936b3bba673ecb7294b846a8c4255d25789037ce84cbf2842d7234bb5abdead"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "5e222e264aca17fb003c14c88ae988b64f5866abc74b1b8eb781c8c274a2a08b",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "e9d90adce8a9b4ff557046cc60a9eb9bae0959db2b7529f337741722988ee35c"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "77adde06cd3cd6e25c36a84680596eaea843fc49c2181469ea5be43b67ef2565",
+      "reason_codes": [
+        "authoritative_or_primary_source",
+        "clear_extraction",
+        "substantive_domain_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "ea393750eaca16b68e74b96b7549ad2d1b125fbe05c38a6c377962e49d1519d7"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "9a5a3c786125da0fcc8c873db4bcd40f548f82d97b3ff802bf6e8167f2add3d0",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "ee034be43959d790b1822849bf3bf583ae35eda31a6761eb3eeac5af5ccce9dc"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "ddc0d75fa01e0248eea429837c7cc4351e69adac3cc81726beab2a4e0c0538b2",
+      "reason_codes": [
+        "authoritative_or_primary_source",
+        "clear_extraction",
+        "substantive_domain_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "eff5421ad33696e8093941cbc74387b33c34f14a4a10bfae920ac7d0064555b5"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "9426d13a6f8334831f82419240dd4b8b526abb3770c21193122c875b1d990d99",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "f21831fa3f6d608f0b2cc262b8d8731e538f1ec3f1db561f1b2c37d41cb27945"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "a33adb7bdd2c75385582e4c345d0f39e201ecd615535274191188bb1fff9db9f",
+      "reason_codes": [
+        "authoritative_or_primary_source",
+        "clear_extraction",
+        "substantive_domain_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "f3cc06e4ee69fc0d68364fd7171641f529ee2bab744bcbd0873cdcf2c3fff114"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "15f34239c24f238defff0cde3aa5517217f75970057fe4c77768c72e841c8211",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "f62cd7b8bfc1d65d53cd011e86a11a3015d66241dc8034487db62b193fd9bee3"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "0a1281244e5e34259741e0642f94787373e1bbad160d0b2150b6d9e0bf3757d4",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "f7f07e8addf0fff877bd9f6cc2e59ab76438e6cb943bd93edcf511ea32f13244"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "8de1515904c5c4886cc8a8daecda33a598e23a1c8c2f8c5f008f9074fcc858a1",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "f9734670a2f9643007bc0ef7b7425d1740bc9ced2ca7eac83e138e141efc3b0f"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "e114cacfb03a0d887c41440082d6a019b87d5f1ed7bb7157a98ceea6d71d3b70",
+      "reason_codes": [
+        "requires_source_specific_filtering",
+        "specialized_or_low_breadth",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "f995e5b401660610919b26d6df61369f1ab6405008c0ed8b7289077732131fda"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "2b022f6cbf5d8e20a8bb05e8e2d836f4a71f656f6aed934624a2c5ebb7230717",
+      "reason_codes": [
+        "commercial_or_content_farm",
+        "low_semantic_density",
+        "requires_stricter_domain_filter"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 2,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "fb36827a95ec67b00b532549cefd9c5efcea1df56693f2ffb1e472cb1e1fa5a1"
+    }
+  ],
+  "schema": "shohin-general-source-adjudication-v1",
+  "training_admission_eligible": false
+}

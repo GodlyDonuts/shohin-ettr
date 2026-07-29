@@ -1,0 +1,201 @@
+{
+  "admission_status": "profile_only_not_training_data",
+  "config": "default",
+  "dataset": "common-pile/peS2o",
+  "dataset_card_sha256": "fe9ecbdb0583d28ed4589832ac406cf3b35ed7e2b729b939a6c92aa22ac81fe4",
+  "discovered_configs": [
+    "default"
+  ],
+  "discovered_splits": [
+    "train"
+  ],
+  "domains": {},
+  "exact_duplicate_text_rows": 0,
+  "field_presence": {
+    "added": 10000,
+    "created": 10000,
+    "id": 10000,
+    "metadata": 10000,
+    "source": 10000,
+    "text": 10000,
+    "version": 10000
+  },
+  "languages": {
+    "<missing>": 10000
+  },
+  "license_values": {},
+  "metadata_only_rows": 0,
+  "metrics": {
+    "alpha_fraction": {
+      "max": 0.8443037301122759,
+      "min": 0.6375517316488782,
+      "p10": 0.772297021623827,
+      "p50": 0.7957182423834119,
+      "p90": 0.8158903626669017,
+      "p99": 0.8296971848292057
+    },
+    "boilerplate_markers": {
+      "max": 2.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 1.0
+    },
+    "chars": {
+      "max": 217981.0,
+      "min": 2723.0,
+      "p10": 12454.0,
+      "p50": 27474.0,
+      "p90": 51541.0,
+      "p99": 86204.0
+    },
+    "control_fraction": {
+      "max": 0.009316770186335404,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 0.0
+    },
+    "digit_fraction": {
+      "max": 0.06700793742091338,
+      "min": 0.0002700877785280216,
+      "p10": 0.00828804347826087,
+      "p50": 0.017659545639311686,
+      "p90": 0.029497609141153822,
+      "p99": 0.04291707002258793
+    },
+    "html_tags": {
+      "max": 38.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 0.0
+    },
+    "lines": {
+      "max": 1194.0,
+      "min": 9.0,
+      "p10": 29.0,
+      "p50": 59.0,
+      "p90": 110.0,
+      "p99": 201.0
+    },
+    "max_line_repeat_fraction": {
+      "max": 0.2916666666666667,
+      "min": 0.0033821871476888386,
+      "p10": 0.014925373134328358,
+      "p50": 0.027777777777777776,
+      "p90": 0.058823529411764705,
+      "p99": 0.1111111111111111
+    },
+    "nonempty_lines": {
+      "max": 887.0,
+      "min": 7.0,
+      "p10": 21.0,
+      "p50": 44.0,
+      "p90": 84.0,
+      "p99": 156.0
+    },
+    "replacement_fraction": {
+      "max": 0.004115042268640694,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 0.00014569189078935866
+    },
+    "unique_line_fraction": {
+      "max": 1.0,
+      "min": 0.4397163120567376,
+      "p10": 0.9259259259259259,
+      "p50": 1.0,
+      "p90": 1.0,
+      "p99": 1.0
+    },
+    "urls": {
+      "max": 36.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 1.0,
+      "p99": 7.0
+    },
+    "words": {
+      "max": 34813.0,
+      "min": 442.0,
+      "p10": 1981.0,
+      "p50": 4373.0,
+      "p90": 8223.0,
+      "p99": 13687.0
+    }
+  },
+  "quality_scores": {},
+  "requested_revision": null,
+  "resolved_revision": "2caeba1585aaafa3c965410d80af85b09ed11cd9",
+  "review_packet_contains_text": true,
+  "review_rows": 100,
+  "review_selection": "lowest SHA-256 priorities over stable source identities",
+  "sample_eval_overlap": {
+    "eval_13gram_count": 810428,
+    "eval_13gram_rows_bounded_head_tail": 0,
+    "eval_files": [
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/append_ledger_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/categorical_microcode_manual_v1.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/certified_latent_ledger_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/certified_latent_ledger_v2_compact_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_bisimulation_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_residual_algebra_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_residual_algebra_v1_two_edit_r1.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_residual_algebra_v1_values_answer_supported.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_basis_v3_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_factor_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_recurrent_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_recurrent_v2_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_core_factor.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_magnitude_factor.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_two_edit_factor.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/gsm8k.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/gsm8k_platinum.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/humaneval.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/humaneval_full.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_operator_eval_slices_v2_64.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_operator_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_state_algebra_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_state_algebra_v1_r2_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/math500.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/mbpp.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/mbpp_full.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/native_residual_relay_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v2_contract_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v2_contract_heldout_r2.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v3_state_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/referential_argument_graph_v5_fresh.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_factor_delta.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_factor_language.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_factor_values.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_bridge_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_capsule_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_composition_transfer_v1.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/source_memory_packet_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/token_native_ledger_v1_heldout.jsonl"
+    ],
+    "eval_prompt_count": 58033,
+    "exact_prompt_rows": 0,
+    "hashed_overlap_receipts": [],
+    "overlap_receipts_truncated": false
+  },
+  "scanned_rows": 10000,
+  "schema": "shohin-general-source-profile-v1",
+  "shuffle_buffer": 10000,
+  "shuffle_seed": 20260728,
+  "split": "train",
+  "text_field": "text",
+  "text_rows": 10000,
+  "unique_text_hashes": 10000
+}
