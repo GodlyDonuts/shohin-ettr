@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 17:18 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 17:36 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17874,3 +17874,38 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `all_fast_horn_cells_and_fresh_assembly_pass_full_main_audit_running_no_optimizer`.
+
+- **2026-07-29 17:36 EDT** -- **The private ETTR publication and first-rung
+  software paths were revalidated while the full main audit continued.**
+
+  The exact 60-cell assembly remains unchanged and full audit job `755550`
+  remains the sole active ETTR reader; separation `755552`, release `755554`,
+  Newton transfer, and every optimizer remain fail-closed behind it. Focused
+  local suites passed **46/46** for private Hugging Face publication plus
+  exact/near cross-source residualization and immutable holdouts, and
+  **103/103** for release construction, distributed continuation,
+  optimizer/checkpoint custody, packet sufficiency, paired development
+  evaluation, and reservation launchers.
+
+  A separate publication-only Stokes runtime was transferred from private
+  commit `b1c617db4ca14bd7c834620bb65b0f3d1e8d71c3` to
+  `/lustre/fs1/home/sa305415/shohin/scratchpad/shohin_ettr_publish_b1c617d_lite`.
+  Its complete `SHA256SUMS` file is itself SHA-256
+  `4f7d788d236f6d46219161c9b7c38e0f1cd2fc51c9541993b3c716f2b46a4ea7`;
+  every file is read-only, the runtime inventory replays exactly, and both
+  the publication-preparation and private-Hub publisher CLIs import
+  successfully under Stokes Python. It contains no credential. Use it only
+  after main audit, separation, and immutable release pass. Publication must
+  remain private, content-addressed, remote-hash-verified, and revision-bound.
+
+  Newton still reports no ETTR rung lock or active optimizer. Scheduler
+  estimates remain July 30 00:40 EDT for four H100s (`722178`), July 30
+  01:05 EDT for ten H100s (`722179`), and August 1 04:45 EDT for twenty
+  H100s (`719496`). The canonical 100-update gate retains the frozen
+  2,000-update warmup. If that bounded gate fails, distinguish mechanism
+  failure from low effective early learning rate with an isolated matched
+  diagnostic; do not reinterpret a failed gate or advance the continuation
+  ladder blindly.
+
+  Decision:
+  `private_publication_runtime_ready_focused_paths_revalidated_full_audit_still_running_no_optimizer`.
