@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 14:20 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 15:38 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17732,3 +17732,51 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `pes2o_sensitive_residual_physically_verified_zero_rescan_running_not_admitted`.
+
+- **2026-07-29 15:38 EDT** -- **Four isolated parallel Horn
+  materializations now protect the ETTR release schedule without mutating the
+  frozen corpus contract or any live serial output.**
+
+  Main materialization reached 56/60 complete, but serial array tasks `2`,
+  `3`, `4`, and `32` remained active after more than five hours under an
+  eight-hour wall limit. They are the four expensive Horn cells:
+  4,000 train dependent-composition cores; 2,000 train
+  query-counterfactual-grounding cores; 2,000 train
+  closed-loop-invariance cores; and 1,000 train-reserve
+  dependent-composition cores. Their partial output has no report and remains
+  inadmissible.
+
+  Private commits `6b8ea38`, `085f7a8`, `d170f25`, and `8ae4eca` add a
+  bounded parallel adapter and deterministic recovery assembler. The adapter
+  calls the exact frozen `materialize_candidate`, preserves input order and
+  deterministic gzip bytes, binds its exact source commit/SHA-256/worker
+  geometry into each report, and is restricted to public main cells in fresh
+  roots. Its output is byte-identical to serial output in the functional
+  test, and the unchanged global auditor fully reloads and accepts it. The
+  assembler copies immutable single-link worker outputs through no-follow
+  descriptors into an entirely fresh read-only tree, verifies every task,
+  report self-hash, adapter identity, output hash, and byte count, and emits
+  a separate self-hashed assembly receipt. Wrong adapter identity fails
+  closed. The focused serial/parallel/assembly/global-audit suite passes
+  **7/7** with clean Ruff, byte compilation, shell syntax, and diff checks.
+
+  Exact read-only Stokes adapter runtime
+  `scratchpad/shohin_ettr_fast_085f7a8` runs recovery jobs `755533`,
+  `755535`, `755537`, and `755539`, each with 16 CPUs and separate roots.
+  All four started immediately and showed productive multi-core CPU time.
+  Original serial workers remain untouched. Exact read-only assembly runtime
+  `scratchpad/shohin_ettr_assembly_8ae4eca` is dependency-held as job
+  `755548`; it can consume recovery tasks only if all four complete. Fresh
+  full main audit `755550`, zero-overlap separation `755552`, and immutable
+  release `755554` follow serially. Obsolete downstream jobs
+  `753828`, `753830`, and `754460` were canceled before they could race for
+  the same release namespace; no source writer or completed confirmation
+  artifact was canceled.
+
+  The release remains absent and no optimizer is active. Independent peS2o
+  residual rescan `755292` also remains productively running. Newton
+  reservations still have release-blind canary watchers and cannot consume a
+  partial ETTR tree.
+
+  Decision:
+  `ettr_parallel_schedule_recovery_live_fresh_full_audit_still_required_no_optimizer`.
