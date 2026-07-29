@@ -16841,3 +16841,40 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `bounded_reserved_ettr_launcher_ready_wait_for_immutable_release`.
+
+- **2026-07-29 05:30 EDT** -- **A release-blind distributed ETTR canary now
+  guards the first multi-node optimizer launch.**
+
+  `train/canary_ettr_distributed_h100.py` constructs the complete production
+  ETTR model from the exact protected 300k checkpoint on every Torch
+  distributed rank. Each rank receives a deterministic distinct synthetic
+  B16 causal batch. The global in-memory packet-sufficiency index and manifest
+  are identical, the 125M base is frozen, and the 67.70M architecture
+  parameters take two real compiled updates through the production
+  `ETTRDistributedGradientAverager`. The canary all-reduces gradients in the
+  same fixed bounded buckets as the trainer and rejects any post-update model
+  hash difference across ranks, nonfinite receipt, unchanged parameters, or
+  protected-checkpoint mutation.
+
+  `train/jobs/run_reserved_ettr_distributed_canary.sh` runs that canary over a
+  concrete healthy-node subset of an existing H100 reservation. It verifies
+  the immutable source archive and checkpoint before launch and exposes no
+  ETTR release or training-shard path. The canary, reservation wrapper,
+  production profile, train-step, and distributed focused set passes
+  **45/45** with clean Ruff, byte compilation, shell syntax, and diff checks.
+  Execute this canary first when allocation `719497` starts; only a passing
+  report permits the release-visible 100-update rung.
+
+  Test-only scheduling showed no useful smaller backfill: four-H100 shapes
+  estimated after 2026-07-30 06:55 EDT, two H100s after 02:18 EDT, and one
+  H100 after 21:16 EDT, all later than `719497`'s current 15:03 EDT estimate.
+  No redundant reservation was submitted.
+
+  A direct cross-cluster transfer probe also established that Stokes and
+  Newton suppress public-key authentication for cluster-origin connections.
+  Both temporary dedicated keys and both authorization entries were removed
+  after the failed probes. Eventual release transfer must use resumable
+  authenticated transport and independent hashes; no credential was retained.
+
+  Decision:
+  `distributed_ettr_canary_ready_smaller_backfill_rejected_no_release_optimizer`.

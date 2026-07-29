@@ -184,6 +184,15 @@ resume state. It launches one `torchrun` worker per selected H100 through the
 existing reservation, then uses one H100 to evaluate the final checkpoint
 against raw initialization before publishing a result hash inventory.
 
+Before the first release-visible optimizer,
+`train/jobs/run_reserved_ettr_distributed_canary.sh` must run
+`train/canary_ettr_distributed_h100.py` on the intended multi-node geometry.
+The canary sees no release or training shard. It executes two B16
+architecture-only updates from deterministic rank-distinct synthetic batches,
+uses the production fixed-bucket gradient averager, and requires exact
+post-update parameter equality across every rank while preserving the
+protected checkpoint byte-for-byte.
+
 ## Newton Capacity
 
 | job | request | expected window at submission | purpose |
@@ -207,6 +216,8 @@ one inefficient 20-way model replica.
 - exact private source commit installed in a clean shared Newton checkout;
 - all requested GPUs pass real BF16 allocation and InfiniBand device checks;
 - multi-node rendezvous and NCCL complete without rank loss or hang;
+- the synthetic ETTR distributed canary produces identical post-update
+  parameter hashes across every intended rank;
 - general shard manifests, scans, approvals, and source weights are frozen;
 - ETTR selection, both materializations, both aggregate audits, and separation
   audit pass;
