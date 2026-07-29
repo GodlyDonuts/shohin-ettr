@@ -159,9 +159,9 @@ def test_training_release_reconstructs_and_binds_complete_stream(tmp_path):
     )
     assert result["schema"] == RELEASE_SCHEMA
     assert result["status"] == "pass"
-    assert result["stream_index"]["rows"] == 4
-    assert result["training_batches_per_core"] == 2
-    assert result["training_rows_per_batch"] == 32
+    assert result["stream_index"]["rows"] == 8
+    assert result["training_batches_per_core"] == 4
+    assert result["training_rows_per_batch"] == 16
     assert result["training_split_core_counts"] == {
         "development": 1,
         "train": 1,
@@ -178,8 +178,8 @@ def test_training_release_reconstructs_and_binds_complete_stream(tmp_path):
     ).encode("ascii")
     assert manifest.sha256() == result["continuation_manifest_sha256"]
     with ETTRDiskPacketSufficiencyIndex(output / "packet-index") as index:
-        assert index.train_batches == 2
-        assert index.validation_batches == 2
+        assert index.train_batches == 4
+        assert index.validation_batches == 4
         assert index.receipt.rows == 128
         assert (
             index.receipt.context_sha256
@@ -210,9 +210,9 @@ def test_training_release_reconstructs_and_binds_complete_stream(tmp_path):
                 seed=7,
             )
         )
-        assert len(train_batches) == len(validation_batches) == 2
+        assert len(train_batches) == len(validation_batches) == 4
         assert all(
-            batch.episodes.world.tokens.shape[0] == 32
+            batch.episodes.world.tokens.shape[0] == 16
             for batch in train_batches + validation_batches
         )
         index.verify_train(train_batches)
@@ -228,7 +228,7 @@ def test_training_release_reconstructs_and_binds_complete_stream(tmp_path):
                 start_position=1,
             )
         )
-        assert len(positioned) == 1
+        assert len(positioned) == 3
         assert positioned[0][0] == 1
         with pytest.raises(
             ValueError,
@@ -241,7 +241,7 @@ def test_training_release_reconstructs_and_binds_complete_stream(tmp_path):
                     world_size=1,
                     epoch=0,
                     seed=7,
-                    start_position=3,
+                    start_position=5,
                 )
             )
     _make_writable(output)

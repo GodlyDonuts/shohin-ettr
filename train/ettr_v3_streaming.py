@@ -33,6 +33,7 @@ from build_ettr_il_v3_training_release import (  # noqa: E402
     STREAM_RECORD_SCHEMA,
     TRAINING_BATCHES_PER_CORE,
     TRAINING_ROWS_PER_BATCH,
+    _training_batch_row_indices,
 )
 from ettr_il_v3_materialize import rematerialize_record  # noqa: E402
 from ettr_il_v3_protocol import canonical_json_bytes  # noqa: E402
@@ -623,6 +624,7 @@ class ETTRV3StreamingRelease:
                         "ETTR v3 streamed semantic core differs"
                     )
                 core_batch = None
+                core_batch_indices = None
                 for batch_index in range(TRAINING_BATCHES_PER_CORE):
                     key = (
                         str(path_value),
@@ -647,14 +649,13 @@ class ETTRV3StreamingRelease:
                                 record,
                                 self.tokenizer,
                             )
-                        start = batch_index * TRAINING_ROWS_PER_BATCH
+                            core_batch_indices = _training_batch_row_indices(
+                                core_batch
+                            )
+                        assert core_batch_indices is not None
                         batch = select_continuation_rows(
                             core_batch,
-                            torch.arange(
-                                start,
-                                start + TRAINING_ROWS_PER_BATCH,
-                                dtype=torch.long,
-                            ),
+                            core_batch_indices[batch_index],
                         )
                         if (
                             continuation_batch_payload_sha256(batch)

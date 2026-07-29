@@ -64,7 +64,7 @@ from materialize_ettr_il_v3_corpus import (  # noqa: E402
 
 RELEASE_SCHEMA = "r12-ettr-il-v3-training-release-v1"
 STREAM_RECORD_SCHEMA = "r12-ettr-il-v3-training-stream-record-v1"
-TRAINING_ROWS_PER_BATCH = 32
+TRAINING_ROWS_PER_BATCH = 16
 TRAINING_BATCHES_PER_CORE = ROWS_PER_CORE // TRAINING_ROWS_PER_BATCH
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _TRAINING_SPLITS = ("train", "development")
@@ -311,6 +311,98 @@ class _StreamWriter:
         self._path.unlink(missing_ok=True)
 
 
+def _training_batch_row_indices(
+    core_batch: ETTRContinuationBatch,
+) -> tuple[torch.Tensor, ...]:
+    """Pack complete causal rectangles without splitting equivariance pairs."""
+
+    rectangles = core_batch.causal_rectangles.rows
+    if (
+        rectangles.ndim != 3
+        or rectangles.shape[1:] != (2, 2)
+        or rectangles.numel() != ROWS_PER_CORE
+        or core_batch.equivariance is None
+    ):
+        raise ETTRV3ReleaseError("training rectangle geometry differs")
+    rectangle_count = rectangles.shape[0]
+    row_to_rectangle = [-1] * ROWS_PER_CORE
+    for rectangle_index, row in enumerate(rectangles.reshape(rectangle_count, 4)):
+        for value in row.tolist():
+            if (
+                not isinstance(value, int)
+                or not 0 <= value < ROWS_PER_CORE
+                or row_to_rectangle[value] != -1
+            ):
+                raise ETTRV3ReleaseError("training rectangle row ledger differs")
+            row_to_rectangle[value] = rectangle_index
+    if any(value < 0 for value in row_to_rectangle):
+        raise ETTRV3ReleaseError("training rectangle coverage differs")
+
+    parent = list(range(rectangle_count))
+
+    def root(value: int) -> int:
+        while parent[value] != value:
+            parent[value] = parent[parent[value]]
+            value = parent[value]
+        return value
+
+    def union(left: int, right: int) -> None:
+        left_root = root(left)
+        right_root = root(right)
+        if left_root != right_root:
+            parent[max(left_root, right_root)] = min(left_root, right_root)
+
+    for left, right in zip(
+        core_batch.equivariance.left_index.tolist(),
+        core_batch.equivariance.right_index.tolist(),
+        strict=True,
+    ):
+        union(row_to_rectangle[left], row_to_rectangle[right])
+
+    components: dict[int, list[int]] = {}
+    for rectangle_index in range(rectangle_count):
+        components.setdefault(root(rectangle_index), []).append(rectangle_index)
+    ordered_components = sorted(
+        components.values(),
+        key=lambda value: (-len(value), value[0]),
+    )
+    rectangles_per_batch = TRAINING_ROWS_PER_BATCH // 4
+    bins: list[list[int]] = [[] for _ in range(TRAINING_BATCHES_PER_CORE)]
+    for component in ordered_components:
+        destination = next(
+            (
+                value
+                for value in bins
+                if len(value) + len(component) <= rectangles_per_batch
+            ),
+            None,
+        )
+        if destination is None:
+            raise ETTRV3ReleaseError(
+                "equivariance components cannot fit training batches"
+            )
+        destination.extend(component)
+    if any(len(value) != rectangles_per_batch for value in bins):
+        raise ETTRV3ReleaseError("training rectangle batch fill differs")
+
+    batches = []
+    flattened = rectangles.reshape(rectangle_count, 4)
+    for rectangle_indices in bins:
+        selected = sorted(
+            row
+            for rectangle_index in rectangle_indices
+            for row in flattened[rectangle_index].tolist()
+        )
+        if len(selected) != TRAINING_ROWS_PER_BATCH:
+            raise ETTRV3ReleaseError("training row batch size differs")
+        batches.append(torch.tensor(selected, dtype=torch.long))
+    if sorted(value for batch in batches for value in batch.tolist()) != list(
+        range(ROWS_PER_CORE)
+    ):
+        raise ETTRV3ReleaseError("training batch partition coverage differs")
+    return tuple(batches)
+
+
 def _batch_stream(
     *,
     split: str,
@@ -344,13 +436,9 @@ def _batch_stream(
                 raise ETTRV3ReleaseError(
                     "training stream tensor geometry differs"
                 )
-            for batch_index in range(TRAINING_BATCHES_PER_CORE):
-                start = batch_index * TRAINING_ROWS_PER_BATCH
-                indices = torch.arange(
-                    start,
-                    start + TRAINING_ROWS_PER_BATCH,
-                    dtype=torch.long,
-                )
+            for batch_index, indices in enumerate(
+                _training_batch_row_indices(core_batch)
+            ):
                 batch = select_continuation_rows(core_batch, indices)
                 batch.validate(
                     TheoryReactorConfig(),

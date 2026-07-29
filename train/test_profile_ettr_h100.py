@@ -340,6 +340,7 @@ def test_cpu_validation_runs_bf16_microstep_and_receipts(
     assert report["comparison"]["matched_batch_sha256"] is True
     assert report["comparison"]["matched_parameter_receipt"] is True
     assert report["gates"] == {
+        "arm_semantic_gates_pass": True,
         "compiled_arm_completed": True,
         "eager_arm_completed": True,
         "matched_batch_sha256": True,
@@ -450,6 +451,38 @@ def test_cpu_validation_runs_bf16_microstep_and_receipts(
         )
     persisted = json.loads((output / "report.json").read_text())
     assert persisted == report
+
+
+def test_cpu_validation_all_scope_accepts_shared_base_query_gradients(
+    tmp_path: Path,
+) -> None:
+    settings = profile.ProfileSettings(
+        **{
+            **profile.asdict(_settings("cpu-validation")),
+            "train_scope": "all",
+        }
+    )
+    report = profile.run(
+        settings=settings,
+        output_dir=tmp_path / "cpu-all",
+        protected_paths=(),
+    )
+    assert report["gates"]["arm_semantic_gates_pass"] is True
+    for execution_arm in ("eager", "compiled"):
+        arm = report["arms"][execution_arm]
+        assert (
+            arm["gates"][
+                "isolated_query_binding_eager_bf16_gradient_receipt_pass"
+            ]
+            is True
+        )
+        for causal_arm in ("world", "command"):
+            for mode in ("treatment", "detached_state"):
+                base = arm["isolated_query_binding_gradients"][causal_arm][mode][
+                    "base"
+                ]
+                assert base["gradient_nonzero_elements"] > 0
+                assert base["gradient_nonfinite_elements"] == 0
 
 
 def test_checkpoint_loader_is_read_only_hash_and_step_bound(
@@ -564,6 +597,7 @@ def test_compile_failure_is_reported_without_disguised_fallback(
         "available": False,
         "compiled_attempted": True,
     }
+    assert result["gates"]["arm_semantic_gates_pass"] is False
     assert result["gates"]["compiled_arm_completed"] is False
 
 

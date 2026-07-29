@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-28 23:58 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 00:10 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -16099,3 +16099,45 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `pes2o_authenticated_direct_transport_live_b16_compiled_arm_still_building`.
+
+- **2026-07-29 00:10 EDT** -- **B16 is the measured full-system ETTR runtime
+  shape; release partitioning now preserves both causal rectangles and
+  equivariance, while one corrected formal rerun remains required.**
+
+  Exact-source full-system B16 completed eager and Inductor arms from the
+  protected step-300k checkpoint. Report SHA-256 is
+  `b84e414ca95d044e79631c7190c45a4a3a5336a0bdd6e25aeb1da1708843f59c`.
+  Both arms matched initial parameter, batch, and complete parameter receipts;
+  the checkpoint remained byte-identical at protected SHA-256
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
+  All 192,779,435 parameters were trainable. Eager peak
+  allocation/reservation was 54,419,950,080 / 55,599,693,824 bytes at
+  1,695.59 encoded tok/s. Compiled peak was 42,973,744,128 /
+  44,386,222,080 bytes at 2,605.62 encoded tok/s, a measured 1.537x speedup
+  and 0.790x peak allocation relative to eager.
+
+  The report exposed a profiler-contract false negative rather than a model
+  path failure. Isolated detached-state tests correctly had exactly zero
+  compiler, reactor-core, and command-projection gradients, while treatment
+  had nonzero finite gradients through compiler, reactor, query reader, and
+  command projection. The old gate nevertheless required the shared base
+  transformer to have zero gradient even under `train_scope=all`; query
+  encoding legitimately makes that gradient positive. The fixed gate
+  requires positive finite base gradients for full-system scope and exact
+  zero only when the base is frozen. Top-level profile admission now also
+  requires every inner semantic gate to pass. Tiny-model architecture-only
+  and full-system regressions both pass. A fresh exact B16 run from the
+  corrected source is still required for the formal receipt.
+
+  The immutable release shape is changed from two B32 batches to four B16
+  batches per 64-row core. Naive contiguous quarters failed closed because
+  they separated all equivariance pairs. The release builder now constructs
+  the causal-rectangle graph, unions rectangles connected by equivariance,
+  deterministically bin-packs whole components into four 16-row batches, and
+  proves exact 64-row coverage. The streaming loader reconstructs the same
+  partition and verifies each frozen batch digest. Release, packet-index,
+  streaming, scope-gate, and profile tests pass **21/21** with clean Ruff,
+  byte compilation, and diff checks.
+
+  Decision:
+  `b16_memory_throughput_shape_measured_equivariance_safe_release_fixed_formal_rerun_required`.

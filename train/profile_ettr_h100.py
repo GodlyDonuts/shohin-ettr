@@ -1439,6 +1439,15 @@ def execute_profile_arm(
             and int(value["gradient_nonfinite_elements"]) == 0
         )
 
+    base_path_gate = all(
+        (
+            positive(arm, mode, "base")
+            if settings.train_scope == "all"
+            else exact_zero(arm, mode, "base")
+        )
+        for arm in ("world", "command")
+        for mode in ("treatment", "detached_state")
+    )
     isolated_query_binding_gate = (
         positive("world", "treatment", "compiler")
         and positive("world", "treatment", "reactor_core")
@@ -1453,11 +1462,7 @@ def execute_profile_arm(
         and exact_zero("command", "detached_state", "compiler")
         and exact_zero("command", "detached_state", "reactor_core")
         and exact_zero("command", "detached_state", "command_projection")
-        and all(
-            exact_zero(arm, mode, "base")
-            for arm in ("world", "command")
-            for mode in ("treatment", "detached_state")
-        )
+        and base_path_gate
     )
     expected_gradient_components = {
         "compiler",
@@ -1685,6 +1690,10 @@ def execute_profile_arms(
     eager = arms["eager"]
     compiled = arms["compiled"]
     available = eager["status"] == "completed" and compiled["status"] == "completed"
+    arm_semantic_gates_pass = available and all(
+        all(bool(value) for value in arms[arm]["gates"].values())
+        for arm in ("eager", "compiled")
+    )
     comparison: dict[str, object] = {
         "available": available,
         "compiled_attempted": True,
@@ -1726,6 +1735,7 @@ def execute_profile_arms(
         "arms": arms,
         "comparison": comparison,
         "gates": {
+            "arm_semantic_gates_pass": arm_semantic_gates_pass,
             "compiled_arm_completed": (compiled["status"] == "completed"),
             "eager_arm_completed": eager["status"] == "completed",
             "matched_batch_sha256": matched_batch,

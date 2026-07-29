@@ -103,10 +103,10 @@ confirmation aggregate audits pass, the release builder must:
 
 1. Reopen and hash every train/development source shard.
 2. Fully rematerialize every semantic core with the pinned tokenizer.
-3. Divide each 64-row core into two 32-row batches only on complete causal
+3. Divide each 64-row core into four 16-row batches only on complete causal
    rectangle boundaries, with all row references remapped and revalidated.
 4. Build the target-bound packet/query sufficiency index from those exact
-   32-row payloads.
+   16-row payloads.
 5. Publish no-replace continuation, stream, shard, tokenizer, audit,
    separation, and packet-index receipts under one release SHA-256.
 6. Keep train/development reserves and sealed confirmation data outside the
