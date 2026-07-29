@@ -342,6 +342,19 @@ packet SHA-256, ledger, manifest, strata, and verifier result. A model-authored
 label remains preliminary; production semantic admission still requires the
 declared human authority.
 
+`pipeline/audit_cross_source_exact_dedup.py` consumes two or more independently
+verified, internally exact-deduplicated v3 corpora in an explicit retention
+priority order. A disk-backed index identifies every repeated document
+SHA-256, retains the first declared source, and publishes a compressed,
+text-free removal ledger plus a hash-bound accounting report. It requires one
+tokenizer identity across all inputs and can revalidate every physical source,
+tokenizer, decontamination, and evaluation input. Publication reserves the
+destination and writes the report last through no-replace links, so an
+interrupted or raced run cannot masquerade as a complete receipt. This audit
+does not measure near-duplicates and does not rewrite token shards; both
+near-duplicate admission and application of the exact removal ledger remain
+separate required gates.
+
 ## Fresh-Source Challenger Lane
 
 Before each major pretraining tranche, refresh the registry against newly
