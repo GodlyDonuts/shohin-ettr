@@ -38,13 +38,16 @@ DATASET_SHA256 = "b" * 64
 def _trainer(
     *,
     accumulation: int,
+    compile_backend: str | None = None,
+    compile_mode: str | None = None,
+    warmup_updates: int = 1,
 ) -> tuple[ETTRTrainStep, ETTRContinuationBatch]:
     model = _runner().model
     optimizer = ETTROptimizerBundle(
         model,
         ETTROptimizerConfig(
             train_base=False,
-            warmup_updates=1,
+            warmup_updates=warmup_updates,
             total_updates=10,
         ),
     )
@@ -132,9 +135,96 @@ def _trainer(
         manifest_sha256=manifest.sha256(),
         step_config=ETTRTrainStepConfig(
             gradient_accumulation_steps=accumulation,
+            compile_backend=compile_backend,
+            compile_mode=compile_mode,
         ),
     )
     return trainer, batch
+
+
+def test_compile_configuration_rejects_mode_without_backend() -> None:
+    with pytest.raises(TheoryReactorError, match="configuration"):
+        ETTRTrainStepConfig(compile_mode="default").validate()
+
+
+@pytest.mark.filterwarnings(
+    "ignore:.*should not be instantiated.*:DeprecationWarning"
+)
+@pytest.mark.filterwarnings(
+    "ignore:The .grad attribute of a Tensor that is not a leaf Tensor.*:"
+    "UserWarning"
+)
+def test_compiled_subject_matches_eager_update_on_cpu() -> None:
+    eager, eager_batch = _trainer(
+        accumulation=1,
+        warmup_updates=0,
+    )
+    compiled, compiled_batch = _trainer(
+        accumulation=1,
+        compile_backend="eager",
+        warmup_updates=0,
+    )
+    compiled.model.load_state_dict(eager.model.state_dict())
+    eager_receipt = eager.update((eager_batch,))
+    compiled_receipt = compiled.update((compiled_batch,))
+    for name in (
+        "total_loss",
+        "token_lm_loss",
+        "packet_loss",
+        "world_intervention_loss",
+        "command_intervention_loss",
+        "world_query_binding_loss",
+        "command_query_binding_loss",
+        "transaction_loss",
+        "equivariance_loss",
+        "commit_halt_loss",
+        "sparsity_loss",
+        "anti_bypass_loss",
+        "gradient_norm",
+    ):
+        torch.testing.assert_close(
+            getattr(compiled_receipt, name),
+            getattr(eager_receipt, name),
+            rtol=1e-5,
+            atol=1e-6,
+        )
+    for name in (
+        "supervised_token_count",
+        "supervised_world_query_pairs",
+        "supervised_command_query_pairs",
+        "world_query_contrast_pairs",
+        "command_query_contrast_pairs",
+        "world_query_invariance_pairs",
+        "command_query_invariance_pairs",
+        "world_query_margin_satisfied",
+        "command_query_margin_satisfied",
+    ):
+        assert torch.equal(
+            getattr(compiled_receipt, name),
+            getattr(eager_receipt, name),
+        )
+    for name, value in eager.model.state_dict().items():
+        torch.testing.assert_close(
+            compiled.model.state_dict()[name],
+            value,
+            rtol=1e-5,
+            atol=1e-6,
+        )
+
+
+def test_training_subject_does_not_duplicate_model_registration() -> None:
+    trainer, _ = _trainer(
+        accumulation=1,
+        compile_backend="eager",
+        warmup_updates=0,
+    )
+    assert set(trainer._modules) == {"model"}
+    assert len(tuple(trainer.named_parameters())) == len(
+        tuple(trainer.model.named_parameters())
+    )
+    assert set(trainer.state_dict()) == {
+        f"model.{name}" for name in trainer.model.state_dict()
+    }
 
 
 def test_update_runs_complete_native_objective_and_advances_cursor() -> None:

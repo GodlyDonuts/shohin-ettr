@@ -22,7 +22,10 @@ from ettr_il_v2_token_native_surface import (
 from ettr_il_v3_materialize import materialize_candidate
 from ettr_il_v3_protocol import PROTOCOL, canonical_json_bytes
 from ettr_packet_index import ETTRDiskPacketSufficiencyIndex
-from ettr_v3_streaming import ETTRV3StreamingRelease
+from ettr_v3_streaming import (
+    ETTRV3StreamingError,
+    ETTRV3StreamingRelease,
+)
 from materialize_ettr_il_v3_corpus import AUDIT_SCHEMA, SEPARATION_SCHEMA
 from test_ettr_il_v3_materialize import _row
 
@@ -143,6 +146,26 @@ def _make_writable(root: Path) -> None:
     root.chmod(0o700)
 
 
+def _rewrite_release(
+    output: Path,
+    mutate,
+) -> str:
+    _make_writable(output)
+    path = output / "release.json"
+    release = json.loads(path.read_bytes())
+    mutate(release)
+    unsigned = dict(release)
+    unsigned.pop("release_payload_sha256", None)
+    release["release_payload_sha256"] = hashlib.sha256(
+        canonical_json_bytes(unsigned)
+    ).hexdigest()
+    payload = canonical_json_bytes(release)
+    path.write_bytes(payload)
+    path.chmod(0o400)
+    output.chmod(0o500)
+    return hashlib.sha256(payload).hexdigest()
+
+
 def test_training_release_reconstructs_and_binds_complete_stream(tmp_path):
     tokenizer, data_root, audit, separation = _write_inputs(tmp_path)
     output = tmp_path / "release"
@@ -258,6 +281,58 @@ def test_training_release_reconstructs_and_binds_complete_stream(tmp_path):
                     start_position=5,
                 )
             )
+    _make_writable(output)
+
+
+@pytest.mark.parametrize(
+    ("mutate", "message"),
+    (
+        (
+            lambda release: release.__setitem__(
+                "source_commit",
+                "not-a-commit",
+            ),
+            "release source commit",
+        ),
+        (
+            lambda release: release["release_builder"].__setitem__(
+                "path",
+                "pipeline/other_builder.py",
+            ),
+            "release builder receipt",
+        ),
+    ),
+)
+def test_streaming_release_rejects_self_rehashed_provenance_tampering(
+    tmp_path,
+    mutate,
+    message,
+):
+    tokenizer, data_root, audit, separation = _write_inputs(tmp_path)
+    output = tmp_path / "release"
+    build_training_release(
+        main_audit_path=audit,
+        separation_path=separation,
+        data_root=data_root,
+        tokenizer_path=tokenizer,
+        protected_checkpoint_sha256="4" * 64,
+        source_commit=SOURCE_COMMIT,
+        output=output,
+        expected_split_counts={
+            "development": 1,
+            "development_reserve": 0,
+            "train": 1,
+            "train_reserve": 0,
+        },
+    )
+    release_sha256 = _rewrite_release(output, mutate)
+    with pytest.raises(ETTRV3StreamingError, match=message):
+        ETTRV3StreamingRelease(
+            output,
+            expected_release_sha256=release_sha256,
+            data_root=data_root,
+            tokenizer_path=tokenizer,
+        )
     _make_writable(output)
 
 

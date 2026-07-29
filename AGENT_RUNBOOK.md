@@ -16348,3 +16348,45 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `ettr_release_dependency_held_source_bound_compile_parity_required_before_optimizer_launch`.
+
+- **2026-07-29 01:42 EDT** -- **The production ETTR optimizer path now
+  contains the formally qualified compiled composite subject, with
+  provenance and exact-resume fail-closed gates; an isolated H100 canary
+  remains required before launch.**
+
+  The production `ETTRTrainStep` now compiles the same factual episode, two
+  causal intervention arms, and complete twelve-term composite objective
+  measured by formal B16 profile `719591.44`. Immutable snapshot validation,
+  tensor-shape validation, global packet-sufficiency admission, gradient
+  synchronization, clipping, learning-rate schedule, optimizer ownership,
+  checkpointing, and metric receipts remain outside the compiled graph.
+  CUDA execution marks every accumulation microstep as a new graph step.
+  The compiled subject is deliberately not registered as a second model
+  owner: the trainer exposes one model parameter/state namespace, while the
+  optimizer's parameter identities remain exactly equal to the trainable
+  model identities.
+
+  `train/train_ettr_v3.py` accepts an explicit Inductor compile mode and binds
+  backend/mode, release source commit, and release artifact identity into the
+  immutable run contract. Backend and mode are also embedded in checkpoint
+  stream state, so eager continuation or a different compile mode cannot
+  claim exact resume. The streaming loader independently requires a full
+  40-hex release source commit and the exact release-builder descriptor;
+  self-rehashed source-commit and builder-path substitutions fail closed.
+  CPU eager versus Dynamo-eager parity matches all twelve losses, gradient
+  norm, nine supervision receipts, and every post-update model tensor. The
+  focused release, streaming, train-step, packet-index, distributed,
+  checkpoint, optimization, data-contract, profile, and resume suite passes
+  **109/109 in 66.03 seconds**. Ruff, byte compilation, and diff checks pass.
+
+  Live data custody is unchanged. ETTR recovery cells 4, 5, and 6 remain
+  active around 8h47m; all selector, materialization, audit, separation, and
+  release jobs remain dependency-held. peS2o v3 has three complete
+  approximately 100M-token shards. FineWeb-Edu score-4+ has completed 110 of
+  140 pinned Parquet inputs. Neither general source is admitted. Newton
+  allocation `719591` remains active; 10-H100 request `719497` is estimated
+  for 08:34 EDT and 20-H100 request `719496` for 2026-07-30 05:18 EDT. No
+  production optimizer is active.
+
+  Decision:
+  `production_compile_exact_resume_mechanics_pass_h100_canary_required_before_release_launch`.

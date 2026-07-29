@@ -44,6 +44,7 @@ from materialize_ettr_il_v3_corpus import (  # noqa: E402
 
 
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
+_HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _SPLITS = ("train", "development")
 
 
@@ -68,6 +69,12 @@ def _hex(value: object, label: str) -> str:
 
 def _integer(value: object, label: str, minimum: int = 0) -> int:
     if not isinstance(value, int) or isinstance(value, bool) or value < minimum:
+        raise ETTRV3StreamingError(f"{label} differs")
+    return value
+
+
+def _commit(value: object, label: str) -> str:
+    if not isinstance(value, str) or _HEX40.fullmatch(value) is None:
         raise ETTRV3StreamingError(f"{label} differs")
     return value
 
@@ -157,6 +164,19 @@ def _load_release(path: Path, expected_sha256: str) -> dict[str, object]:
         or value.get("status") != "pass"
     ):
         raise ETTRV3StreamingError("ETTR v3 release contract differs")
+    _commit(value.get("source_commit"), "ETTR v3 release source commit")
+    builder = value.get("release_builder")
+    if (
+        not isinstance(builder, dict)
+        or set(builder) != {"bytes", "path", "sha256"}
+        or builder.get("path")
+        != "pipeline/build_ettr_il_v3_training_release.py"
+    ):
+        raise ETTRV3StreamingError(
+            "ETTR v3 release builder receipt differs"
+        )
+    _integer(builder.get("bytes"), "ETTR v3 release builder bytes", 1)
+    _hex(builder.get("sha256"), "ETTR v3 release builder SHA-256")
     claimed = value.get("release_payload_sha256")
     unsigned = dict(value)
     unsigned.pop("release_payload_sha256", None)

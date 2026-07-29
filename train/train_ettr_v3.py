@@ -170,6 +170,8 @@ def _data_state(
     world_size: int,
     accumulation: int,
     optimizer_step: int,
+    compile_backend: str | None,
+    compile_mode: str | None,
 ) -> DataStreamState:
     return DataStreamState(
         manifest_sha256=stream.manifest.sha256(),
@@ -182,6 +184,8 @@ def _data_state(
         token_offset=0,
         sampler_state={
             "accumulation": accumulation,
+            "compile_backend": compile_backend,
+            "compile_mode": compile_mode,
             "consumed_stream_batches": optimizer_step
             * world_size
             * accumulation,
@@ -201,9 +205,13 @@ def _validate_resume_cursor(
     world_size: int,
     accumulation: int,
     optimizer_step: int,
+    compile_backend: str | None,
+    compile_mode: str | None,
 ) -> ETTRDistributedCursor:
     expected_sampler = {
         "accumulation": accumulation,
+        "compile_backend": compile_backend,
+        "compile_mode": compile_mode,
         "consumed_stream_batches": optimizer_step
         * world_size
         * accumulation,
@@ -276,6 +284,8 @@ def _checkpoint(
     data_seed: int,
     world_size: int,
     accumulation: int,
+    compile_backend: str | None,
+    compile_mode: str | None,
     rank: int,
 ) -> None:
     if rank != 0:
@@ -318,6 +328,8 @@ def _checkpoint(
             world_size=world_size,
             accumulation=accumulation,
             optimizer_step=update,
+            compile_backend=compile_backend,
+            compile_mode=compile_mode,
         ),
         episode_lifecycle=lifecycle,
     )
@@ -351,6 +363,15 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--data-seed", type=int, default=2026072802)
     parser.add_argument("--total-updates", type=int, default=300_000)
     parser.add_argument("--warmup-updates", type=int, default=2_000)
+    parser.add_argument(
+        "--compile-mode",
+        choices=(
+            "default",
+            "reduce-overhead",
+            "max-autotune",
+            "max-autotune-no-cudagraphs",
+        ),
+    )
     parser.add_argument("--freeze-base", action="store_true")
     parser.add_argument("--resume-checkpoint", type=Path)
     parser.add_argument("--resume-sha256")
@@ -451,6 +472,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             manifest_sha256=stream.manifest.sha256(),
             step_config=ETTRTrainStepConfig(
                 gradient_accumulation_steps=args.accumulation,
+                compile_backend=(
+                    None if args.compile_mode is None else "inductor"
+                ),
+                compile_mode=args.compile_mode,
             ),
             gradient_synchronizer=averager,
         )
@@ -482,6 +507,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 world_size=world_size,
                 accumulation=args.accumulation,
                 optimizer_step=optimizer.next_update,
+                compile_backend=(
+                    None if args.compile_mode is None else "inductor"
+                ),
+                compile_mode=args.compile_mode,
             )
         cursor.validate(
             core_batches=len(stream.records["train"]),
@@ -506,10 +535,17 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "architecture_seed": args.architecture_seed,
                 "data_seed": args.data_seed,
                 "freeze_base": args.freeze_base,
+                "compile_backend": (
+                    None if args.compile_mode is None else "inductor"
+                ),
+                "compile_mode": args.compile_mode,
                 "model_config": asdict(model.config),
                 "optimizer_config": asdict(optimizer.config),
                 "parameter_receipt": asdict(model.parameter_receipt()),
                 "release_file_sha256": args.release_sha256,
+                "release_source_commit": stream.release[
+                    "source_commit"
+                ],
                 "resume_checkpoint_sha256": args.resume_sha256,
                 "schema": RUN_SCHEMA,
                 "source_commit": args.source_commit,
@@ -625,6 +661,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                             data_seed=args.data_seed,
                             world_size=world_size,
                             accumulation=args.accumulation,
+                            compile_backend=(
+                                None
+                                if args.compile_mode is None
+                                else "inductor"
+                            ),
+                            compile_mode=args.compile_mode,
                             rank=rank,
                         )
                         _barrier(world_size)

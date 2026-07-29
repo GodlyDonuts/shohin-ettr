@@ -32,12 +32,48 @@ from ettr_objectives import (
 from ettr_optimization import ETTROptimizerBundle
 
 
+_LOSS_FIELDS = (
+    "total",
+    "token_lm",
+    "packet",
+    "world_intervention",
+    "command_intervention",
+    "world_query_binding",
+    "command_query_binding",
+    "transaction",
+    "equivariance",
+    "commit_halt",
+    "sparsity",
+    "anti_bypass",
+)
+_RECEIPT_FIELDS = (
+    "lm_target_tokens",
+    "supervised_world_query_pairs",
+    "supervised_command_query_pairs",
+    "world_query_contrast_pairs",
+    "command_query_contrast_pairs",
+    "world_query_invariance_pairs",
+    "command_query_invariance_pairs",
+    "world_query_margin_satisfied",
+    "command_query_margin_satisfied",
+)
+_COMPILE_BACKENDS = {"eager", "inductor"}
+_COMPILE_MODES = {
+    "default",
+    "reduce-overhead",
+    "max-autotune",
+    "max-autotune-no-cudagraphs",
+}
+
+
 @dataclass(frozen=True, slots=True)
 class ETTRTrainStepConfig:
     gradient_accumulation_steps: int = 1
     gradient_clip: float = 1.0
     hard_transactions: bool = True
     autocast_dtype: torch.dtype = torch.bfloat16
+    compile_backend: str | None = None
+    compile_mode: str | None = None
 
     def validate(self) -> None:
         if (
@@ -46,6 +82,18 @@ class ETTRTrainStepConfig:
             or not 0 < self.gradient_clip <= 100
             or not isinstance(self.hard_transactions, bool)
             or self.autocast_dtype not in (torch.bfloat16, torch.float16)
+            or (
+                self.compile_backend is not None
+                and self.compile_backend not in _COMPILE_BACKENDS
+            )
+            or (
+                self.compile_backend is None
+                and self.compile_mode is not None
+            )
+            or (
+                self.compile_mode is not None
+                and self.compile_mode not in _COMPILE_MODES
+            )
         ):
             raise TheoryReactorError("ETTR train-step configuration differs")
 
@@ -76,6 +124,71 @@ class ETTRUpdateReceipt:
     command_query_invariance_pairs: torch.Tensor
     world_query_margin_satisfied: torch.Tensor
     command_query_margin_satisfied: torch.Tensor
+
+
+class ETTRCompositeTrainingSubject(nn.Module):
+    """Compile-safe factual, intervention, and objective tensor path."""
+
+    def __init__(
+        self,
+        model: EndogenousTypedTheoryReactorGPT,
+        objective_config: ETTRObjectiveConfig,
+        objective_weights: ETTRObjectiveWeights | None,
+        *,
+        hard_transactions: bool,
+    ) -> None:
+        super().__init__()
+        self.runner = CausalETTREpisodeRunner(model)
+        self.objective = ETTRCompositeObjective(
+            objective_config,
+            weights=objective_weights,
+        )
+        self.hard_transactions = hard_transactions
+
+    def objective_loss(
+        self,
+        batch: ETTRContinuationBatch,
+    ) -> ETTRCompositeLoss:
+        steps = batch.transaction_targets.opcode.shape[1]
+        output = self.runner(
+            batch.episodes,
+            reactor_steps=steps,
+            hard=self.hard_transactions,
+            validate_batch=False,
+            compute_losses=False,
+        )
+        (
+            world_packet,
+            world_command,
+            world_target,
+            command_packet,
+            command_command,
+            command_target,
+        ) = batch.causal_rectangles.intervention_indices()
+        interventions = self.runner.intervene(
+            batch.episodes,
+            output.initial_state,
+            reactor_steps=steps,
+            world_packet_index=world_packet,
+            world_command_index=world_command,
+            world_query_index=world_target,
+            command_packet_index=command_packet,
+            command_command_index=command_command,
+            command_query_index=command_target,
+            hard=self.hard_transactions,
+        )
+        return self.objective(
+            batch.objective_batch(output, interventions)
+        )
+
+    def forward(
+        self,
+        batch: ETTRContinuationBatch,
+    ) -> tuple[torch.Tensor, ...]:
+        loss = self.objective_loss(batch)
+        return tuple(getattr(loss, name) for name in _LOSS_FIELDS) + tuple(
+            getattr(loss.receipt, name) for name in _RECEIPT_FIELDS
+        )
 
 
 class ETTRTrainStep(nn.Module):
@@ -156,11 +269,26 @@ class ETTRTrainStep(nn.Module):
         self._poisoned = False
         optimizer.assert_bound_to(model)
         optimizer.assert_healthy()
-        self.runner = CausalETTREpisodeRunner(model)
-        self.objective = ETTRCompositeObjective(
+        subject = ETTRCompositeTrainingSubject(
+            model,
             objective_config,
-            weights=objective_weights,
+            objective_weights,
+            hard_transactions=self.step_config.hard_transactions,
         )
+        object.__setattr__(self, "eager_subject", subject)
+        if self.step_config.compile_backend is None:
+            training_subject = subject
+        else:
+            compile_options: dict[str, str] = {
+                "backend": self.step_config.compile_backend,
+            }
+            if self.step_config.compile_mode is not None:
+                compile_options["mode"] = self.step_config.compile_mode
+            training_subject = torch.compile(
+                subject,
+                **compile_options,
+            )
+        object.__setattr__(self, "training_subject", training_subject)
 
     def forward_loss(
         self,
@@ -181,36 +309,29 @@ class ETTRTrainStep(nn.Module):
             self.model.config,
             self.objective_config,
         )
-        steps = batch.transaction_targets.opcode.shape[1]
-        output = self.runner(
-            batch.episodes,
-            reactor_steps=steps,
-            hard=self.step_config.hard_transactions,
-            validate_batch=False,
-            compute_losses=False,
-        )
-        (
-            world_packet,
-            world_command,
-            world_target,
-            command_packet,
-            command_command,
-            command_target,
-        ) = batch.causal_rectangles.intervention_indices()
-        interventions = self.runner.intervene(
-            batch.episodes,
-            output.initial_state,
-            reactor_steps=steps,
-            world_packet_index=world_packet,
-            world_command_index=world_command,
-            world_query_index=world_target,
-            command_packet_index=command_packet,
-            command_command_index=command_command,
-            command_query_index=command_target,
-            hard=self.step_config.hard_transactions,
-        )
-        return self.objective(
-            batch.objective_batch(output, interventions)
+        return self.eager_subject.objective_loss(batch)
+
+    def _training_forward(
+        self,
+        batch: ETTRContinuationBatch,
+    ) -> tuple[
+        tuple[torch.Tensor, ...],
+        tuple[torch.Tensor, ...],
+    ]:
+        if (
+            self.step_config.compile_backend is not None
+            and batch.episodes.world.tokens.device.type == "cuda"
+        ):
+            torch.compiler.cudagraph_mark_step_begin()
+        values = self.training_subject(batch)
+        expected = len(_LOSS_FIELDS) + len(_RECEIPT_FIELDS)
+        if not isinstance(values, tuple) or len(values) != expected:
+            raise TheoryReactorError(
+                "ETTR compiled objective output differs"
+            )
+        return (
+            values[: len(_LOSS_FIELDS)],
+            values[len(_LOSS_FIELDS) :],
         )
 
     def update(
@@ -226,6 +347,13 @@ class ETTRTrainStep(nn.Module):
         if len(batches) != self.step_config.gradient_accumulation_steps:
             raise TheoryReactorError("ETTR accumulation window differs")
         for batch in batches:
+            if (
+                batch.manifest_sha256 != self.manifest_sha256
+                or batch.dataset_sha256 != self.dataset_sha256
+            ):
+                raise TheoryReactorError(
+                    "ETTR batch snapshot differs from the trainer"
+                )
             batch.validate(
                 self.model.config,
                 self.objective_config,
@@ -263,35 +391,61 @@ class ETTRTrainStep(nn.Module):
                     dtype=self.step_config.autocast_dtype,
                     enabled=device_type in {"cuda", "cpu"},
                 ):
-                    loss = self.forward_loss(batch)
-                    scaled = loss.total / self.step_config.gradient_accumulation_steps
+                    losses, counts = self._training_forward(batch)
+                    scaled = (
+                        losses[0]
+                        / self.step_config.gradient_accumulation_steps
+                    )
                 scaled.backward()
-                for name in fields:
-                    fields[name].append(getattr(loss, name).detach())
-                token_counts.append(loss.receipt.lm_target_tokens.detach())
+                for name, value in zip(
+                    _LOSS_FIELDS,
+                    losses,
+                    strict=True,
+                ):
+                    fields[name].append(value.detach())
+                count_values = dict(
+                    zip(_RECEIPT_FIELDS, counts, strict=True)
+                )
+                token_counts.append(
+                    count_values["lm_target_tokens"].detach()
+                )
                 world_query_pairs.append(
-                    loss.receipt.supervised_world_query_pairs.detach()
+                    count_values[
+                        "supervised_world_query_pairs"
+                    ].detach()
                 )
                 command_query_pairs.append(
-                    loss.receipt.supervised_command_query_pairs.detach()
+                    count_values[
+                        "supervised_command_query_pairs"
+                    ].detach()
                 )
                 world_query_contrast.append(
-                    loss.receipt.world_query_contrast_pairs.detach()
+                    count_values["world_query_contrast_pairs"].detach()
                 )
                 command_query_contrast.append(
-                    loss.receipt.command_query_contrast_pairs.detach()
+                    count_values[
+                        "command_query_contrast_pairs"
+                    ].detach()
                 )
                 world_query_invariance.append(
-                    loss.receipt.world_query_invariance_pairs.detach()
+                    count_values[
+                        "world_query_invariance_pairs"
+                    ].detach()
                 )
                 command_query_invariance.append(
-                    loss.receipt.command_query_invariance_pairs.detach()
+                    count_values[
+                        "command_query_invariance_pairs"
+                    ].detach()
                 )
                 world_query_margin.append(
-                    loss.receipt.world_query_margin_satisfied.detach()
+                    count_values[
+                        "world_query_margin_satisfied"
+                    ].detach()
                 )
                 command_query_margin.append(
-                    loss.receipt.command_query_margin_satisfied.detach()
+                    count_values[
+                        "command_query_margin_satisfied"
+                    ].detach()
                 )
         except BaseException:
             self.optimizer.zero_grad(set_to_none=True)
@@ -363,6 +517,7 @@ class ETTRTrainStep(nn.Module):
 
 
 __all__ = [
+    "ETTRCompositeTrainingSubject",
     "ETTRTrainStep",
     "ETTRTrainStepConfig",
     "ETTRUpdateReceipt",
