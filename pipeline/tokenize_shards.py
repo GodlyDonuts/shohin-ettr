@@ -108,6 +108,35 @@ def field_value(row, field):
     return value
 
 
+def parse_required_values(specifications):
+    """Parse repeatable ``FIELD=VALUE`` predicates for source metadata."""
+    result = {}
+    for specification in specifications or ():
+        if not isinstance(specification, str) or "=" not in specification:
+            raise ValueError(
+                "--required-value entries must use FIELD=VALUE"
+            )
+        field, expected = specification.split("=", 1)
+        if not field or not expected:
+            raise ValueError(
+                "--required-value entries must use nonempty FIELD=VALUE"
+            )
+        if field in result:
+            raise ValueError(
+                f"--required-value field is duplicated: {field}"
+            )
+        result[field] = expected
+    return result
+
+
+def required_values_match(row, required_values):
+    """Return true only when every exact metadata predicate is present."""
+    return all(
+        str(field_value(row, field)).casefold() == expected.casefold()
+        for field, expected in required_values.items()
+    )
+
+
 def exact_text_hash(text):
     return hashlib.sha256(text.encode("utf-8", errors="replace")).digest()
 
@@ -369,6 +398,16 @@ def main():
         default=None,
         help="exact allowed values for --allowed-values-field",
     )
+    ap.add_argument(
+        "--required-value",
+        action="append",
+        default=[],
+        metavar="FIELD=VALUE",
+        help=(
+            "repeatable exact metadata predicate; dotted fields are supported "
+            "and every predicate must match"
+        ),
+    )
     ap.add_argument("--domain-field", default=None)
     ap.add_argument(
         "--max-tokens-per-domain",
@@ -426,6 +465,7 @@ def main():
         if a.allowed_values is not None
         else None
     )
+    required_values = parse_required_values(a.required_value)
 
     S = gram_n = None
     pickle_gram_count = direct_gram_count = 0
@@ -484,7 +524,7 @@ def main():
     domain_tokens = Counter()
     seen = kept = n_short = n_long = n_lang = n_lang_missing = n_quality = n_contam = 0
     n_duplicate = n_repetition = n_boilerplate = n_domain_cap = 0
-    n_extraction_quality = n_allowed_value = 0
+    n_extraction_quality = n_allowed_value = n_required_value = 0
 
     def flush():
         nonlocal buf, shard
@@ -520,7 +560,7 @@ def main():
         nonlocal seen, kept, n_short, n_long, n_lang, n_lang_missing
         nonlocal n_quality, n_contam, n_duplicate, n_repetition
         nonlocal n_boilerplate, n_domain_cap, n_extraction_quality
-        nonlocal n_allowed_value, tok_total
+        nonlocal n_allowed_value, n_required_value, tok_total
 
         # Exact deduplication precedes decontamination in the established
         # selection contract. Contaminated candidates therefore stay in the
@@ -557,6 +597,8 @@ def main():
                     n_extraction_quality += 1
                 elif reason == "allowed_value":
                     n_allowed_value += 1
+                elif reason == "required_value":
+                    n_required_value += 1
                 elif reason == "language_missing":
                     n_lang_missing += 1
                 elif reason == "language":
@@ -673,6 +715,8 @@ def main():
         if reason is None and allowed_values is not None:
             if str(field_value(ex, a.allowed_values_field)) not in allowed_values:
                 reason = "allowed_value"
+        if reason is None and not required_values_match(ex, required_values):
+            reason = "required_value"
         if reason is None and a.lang:
             language = field_value(ex, a.lang_field)
             if language is None and a.require_lang_field:
@@ -769,6 +813,7 @@ def main():
         "dropped_boilerplate": n_boilerplate,
         "dropped_extraction_quality": n_extraction_quality,
         "dropped_allowed_value": n_allowed_value,
+        "dropped_required_value": n_required_value,
         "dropped_domain_cap": n_domain_cap,
         "dropped_contam": n_contam,
         "decontamination": {
@@ -801,6 +846,7 @@ def main():
             "allowed_values": (
                 sorted(allowed_values) if allowed_values is not None else None
             ),
+            "required_values": dict(sorted(required_values.items())),
             "domain_field": a.domain_field,
             "max_tokens_per_domain": a.max_tokens_per_domain,
             "retained_domains": len(domain_tokens),

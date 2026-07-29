@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 01:23 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 05:48 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -16878,3 +16878,49 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `distributed_ettr_canary_ready_smaller_backfill_rejected_no_release_optimizer`.
+
+- **2026-07-29 05:48 EDT** -- **A pinned language-stable FinePDFs-Edu
+  candidate path is ready; the 10-H100 allocation is armed for its
+  release-blind distributed gate.**
+
+  `pipeline/tokenize_shards.py` now accepts repeatable exact dotted metadata
+  predicates through `--required-value FIELD=VALUE`. Predicates are
+  conjunctive, case-insensitive, recorded in the v3 manifest, and have their
+  own rejection counter. Missing fields, ambiguous forms, and duplicate
+  predicate keys fail closed. This closes the source-selection gap for
+  datasets where one language label or one scalar score is insufficient.
+
+  The new pinned FinePDFs-Edu manifest selects 16 files uniformly across the
+  complete sorted 100-file English tree at immutable upstream commit
+  `9cfabe2127faca99b3d5c4dc6d1fcb397399ebde`. It binds **47,624,239,097
+  bytes** and every physical LFS SHA-256. The candidate builder requires
+  whole-document English, page-average English, page language confidence at
+  least `0.90`, `is_truncated=false`, extraction and repetition limits,
+  exact deduplication, full eval decontamination, and a 100M-token
+  publisher/domain cap before producing at most 10B tokens. The result will
+  remain `.partial`/candidate-only until semantic review, exact and near
+  cross-source residualization, immutable holdouts, full audit, and
+  matched-token utility gates.
+
+  The relevant source, manifest, review, and verifier suite passes **46/46**;
+  Ruff, byte compilation, shell syntax, manifest validation, and diff checks
+  pass. This is an additional high-quality candidate path, not an admitted
+  corpus.
+
+  Live measurements at 05:34 EDT: FineWeb-Edu r2 had thirteen complete
+  approximately 100M-token files in its `.partial` namespace; peS2o r2 had
+  thirty-one. ETTR qualification remained **214/216 main plus 108/108
+  confirmation**, with cells `753823_5` and `_6` actively computing at
+  12h44m. Newton allocation `719497` remained pending resources with an
+  estimated 15:03 EDT start.
+
+  A local fail-closed watcher now monitors only allocation `719497`. When it
+  enters RUNNING, it expands the exact five-node allocation, rejects the
+  quarantined `evc40` or any geometry drift, and launches the immutable
+  release-blind distributed ETTR canary over all 10 H100s. It does **not**
+  expose or train on the ETTR corpus automatically. Release-visible training
+  still requires the immutable Stokes release, verified transfer to Newton,
+  and an explicit passing canary report.
+
+  Decision:
+  `finepdfs_language_stable_candidate_ready_10h100_canary_armed_no_candidate_optimizer`.

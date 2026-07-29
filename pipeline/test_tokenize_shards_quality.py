@@ -22,6 +22,8 @@ from pipeline.tokenize_shards import (
     field_value,
     max_line_repeat_fraction,
     local_input_format,
+    parse_required_values,
+    required_values_match,
     resolve_local_inputs,
     stable_document_identity,
     verify_file_receipt,
@@ -107,6 +109,53 @@ def test_field_value_reads_nested_license_metadata():
     row = {"metadata": {"oa_license": "CCBY"}}
     assert field_value(row, "metadata.oa_license") == "CCBY"
     assert field_value(row, "metadata.missing") is None
+
+
+def test_required_values_are_exact_conjunctive_and_case_insensitive():
+    predicates = parse_required_values(
+        [
+            "full_doc_lid=eng_Latn",
+            "is_truncated=false",
+            "extractor=rolmOCR",
+        ]
+    )
+    assert required_values_match(
+        {
+            "full_doc_lid": "eng_latn",
+            "is_truncated": False,
+            "extractor": "ROLmOCR",
+        },
+        predicates,
+    )
+    assert not required_values_match(
+        {
+            "full_doc_lid": "eng_Latn",
+            "is_truncated": True,
+            "extractor": "rolmOCR",
+        },
+        predicates,
+    )
+    assert not required_values_match(
+        {
+            "full_doc_lid": "eng_Latn",
+            "is_truncated": False,
+        },
+        predicates,
+    )
+
+
+@pytest.mark.parametrize(
+    "specifications",
+    [
+        ["missing-delimiter"],
+        ["=value"],
+        ["field="],
+        ["field=one", "field=two"],
+    ],
+)
+def test_required_values_reject_ambiguous_contracts(specifications):
+    with pytest.raises(ValueError, match="required-value"):
+        parse_required_values(specifications)
 
 
 def test_domain_value_handles_urls_and_direct_fields():

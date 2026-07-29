@@ -1,0 +1,95 @@
+{
+  "schema": "shohin-pinned-hf-file-selection-v1",
+  "dataset": "HuggingFaceFW/finepdfs-edu",
+  "revision": "9cfabe2127faca99b3d5c4dc6d1fcb397399ebde",
+  "upstream_file_count_considered": 100,
+  "upstream_bytes_considered": 298670229506,
+  "selection": {
+    "method": "uniform_round_over_sorted_complete_tree",
+    "selected_count": 16,
+    "index_formula": "round(i*99/15), i=0..15"
+  },
+  "files": [
+    {
+      "path": "data/eng_Latn/train/000_00000.parquet",
+      "size": 3081370704,
+      "sha256": "39d9dd3532e51f7828f762d8b7bd31cc1b3fe8063ae3a3a260169b1fe4ac2dc8"
+    },
+    {
+      "path": "data/eng_Latn/train/000_00007.parquet",
+      "size": 3130831545,
+      "sha256": "5f5bf8ecc9e09c0a859a486d260191f722e628332231e18694f29004ec443244"
+    },
+    {
+      "path": "data/eng_Latn/train/000_00013.parquet",
+      "size": 2979653296,
+      "sha256": "81b3c7d1c59bfe369d484927843685e1ac2cec9a81df033cbd8b7d272fc054a8"
+    },
+    {
+      "path": "data/eng_Latn/train/000_00020.parquet",
+      "size": 3106032795,
+      "sha256": "7f555e775dbb7eb808c8de85bd2a1e878ae7f250208a54e1aa9fff088a7dea66"
+    },
+    {
+      "path": "data/eng_Latn/train/000_00026.parquet",
+      "size": 2998653847,
+      "sha256": "06adc8025b9012ccebde81225407b8adc934d65d8f953c461df8fd068bd29b7c"
+    },
+    {
+      "path": "data/eng_Latn/train/000_00033.parquet",
+      "size": 2918362916,
+      "sha256": "002f929024546b13c5a17a7a3109ae9cebb2d64ec3b525feac94f1f286901d68"
+    },
+    {
+      "path": "data/eng_Latn/train/000_00040.parquet",
+      "size": 2989719484,
+      "sha256": "76cbf2fe2b36d5cceeb6812ccd6355b355374b1b1cb12c6f9bf701f3ce762648"
+    },
+    {
+      "path": "data/eng_Latn/train/000_00046.parquet",
+      "size": 3009617720,
+      "sha256": "02574c4dd2545e91591d4477af11a023053c38dce5d6a58e573e87ca3348c13d"
+    },
+    {
+      "path": "data/eng_Latn/train/000_00053.parquet",
+      "size": 3050699850,
+      "sha256": "1f00d4e3550b7822bf1ad01a5d1db718251ae05dd283409adedd544cec4d3d0b"
+    },
+    {
+      "path": "data/eng_Latn/train/000_00059.parquet",
+      "size": 3036847497,
+      "sha256": "93055ae3d77aa8bdb92bf370db449cc7fb415e4b77b2a6b1008e4ed322fcc8ae"
+    },
+    {
+      "path": "data/eng_Latn/train/000_00066.parquet",
+      "size": 2989502078,
+      "sha256": "8a03b024ec1d97d01a7286dd000eea0b100d1daedd22694db4373c2eec1268e3"
+    },
+    {
+      "path": "data/eng_Latn/train/000_00073.parquet",
+      "size": 2972652633,
+      "sha256": "f4d028e7cba8bf360dbcc7776f3de8ea75ae744e0086549245edfcd578e8ee9f"
+    },
+    {
+      "path": "data/eng_Latn/train/000_00079.parquet",
+      "size": 2952955523,
+      "sha256": "d69a154f298daf958397bae8e1a24694fcb6b6706f19d06662ba81d01b825a0c"
+    },
+    {
+      "path": "data/eng_Latn/train/000_00086.parquet",
+      "size": 2774025426,
+      "sha256": "77a8a292338ad0bb8d09a605114964ffc067ec450ae87219c9a8604c02f33494"
+    },
+    {
+      "path": "data/eng_Latn/train/000_00092.parquet",
+      "size": 2773391420,
+      "sha256": "7a6db7e2659a19a940a2acd9da9832c6df59920778975fca834b0504f15f23ee"
+    },
+    {
+      "path": "data/eng_Latn/train/000_00099.parquet",
+      "size": 2859922363,
+      "sha256": "62d47ac68b1c27e59eed2364903f9edad650be5b7fa648b7e5f8b8b29425bd26"
+    }
+  ],
+  "selected_bytes": 47624239097
+}
