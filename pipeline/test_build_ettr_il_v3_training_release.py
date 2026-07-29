@@ -147,6 +147,14 @@ def _make_writable(root: Path) -> None:
     root.chmod(0o700)
 
 
+def _release_inventory(root: Path) -> dict[str, bytes]:
+    return {
+        path.relative_to(root).as_posix(): path.read_bytes()
+        for path in sorted(root.rglob("*"))
+        if path.is_file()
+    }
+
+
 def _rewrite_release(
     output: Path,
     mutate,
@@ -328,6 +336,29 @@ def test_release_and_streaming_do_not_depend_on_default_tokenizer_path(
             )
         )
     ) == 4
+
+
+def test_parallel_release_is_byte_identical_to_serial_release(tmp_path):
+    tokenizer, data_root, audit, separation = _write_inputs(tmp_path)
+    serial = tmp_path / "serial"
+    parallel = tmp_path / "parallel"
+    common = {
+        "main_audit_path": audit,
+        "separation_path": separation,
+        "data_root": data_root,
+        "tokenizer_path": tokenizer,
+        "protected_checkpoint_sha256": "4" * 64,
+        "source_commit": SOURCE_COMMIT,
+        "expected_split_counts": {
+            "development": 1,
+            "development_reserve": 0,
+            "train": 1,
+            "train_reserve": 0,
+        },
+    }
+    build_training_release(output=serial, workers=1, **common)
+    build_training_release(output=parallel, workers=2, **common)
+    assert _release_inventory(serial) == _release_inventory(parallel)
 
 
 @pytest.mark.parametrize(

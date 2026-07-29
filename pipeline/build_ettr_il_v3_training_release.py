@@ -11,6 +11,8 @@ splits remain outside the training stream.
 from __future__ import annotations
 
 import argparse
+from collections import deque
+from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import asdict
 import hashlib
 import json
@@ -416,6 +418,8 @@ def _batch_stream(
     data_root: Path,
     codec: TokenNativeSurfaceCodec,
     writer: _StreamWriter,
+    executor: ThreadPoolExecutor | None,
+    workers: int,
 ) -> Iterator[ETTRContinuationBatch]:
     ordinal = 0
     for descriptor in descriptors:
@@ -425,15 +429,15 @@ def _batch_stream(
         )
         path = data_root / path_value
         observed_rows = 0
-        for row_index, (payload, record) in enumerate(_iter_records(path)):
-            if (
-                record.identity.split != split
-                or record.canonical_bytes() != payload
-            ):
-                raise ETTRV3ReleaseError(
-                    "training stream record split or canonical form differs"
-                )
-            core_batch = rematerialize_record(record, codec)
+        records = enumerate(_iter_records(path))
+        rematerialized = _bounded_rematerializations(
+            records,
+            split=split,
+            codec=codec,
+            executor=executor,
+            workers=workers,
+        )
+        for row_index, record, core_batch in rematerialized:
             if (
                 not isinstance(core_batch, ETTRContinuationBatch)
                 or core_batch.episodes.world.tokens.shape[0] != ROWS_PER_CORE
@@ -475,6 +479,66 @@ def _batch_stream(
             )
 
 
+def _rematerialize_training_record(
+    item: tuple[int, tuple[bytes, object]],
+    *,
+    split: str,
+    codec: TokenNativeSurfaceCodec,
+) -> tuple[int, object, object]:
+    row_index, (payload, record) = item
+    if (
+        not hasattr(record, "identity")
+        or record.identity.split != split
+        or record.canonical_bytes() != payload
+    ):
+        raise ETTRV3ReleaseError(
+            "training stream record split or canonical form differs"
+        )
+    return row_index, record, rematerialize_record(record, codec)
+
+
+def _bounded_rematerializations(
+    records: Iterator[tuple[int, tuple[bytes, object]]],
+    *,
+    split: str,
+    codec: TokenNativeSurfaceCodec,
+    executor: ThreadPoolExecutor | None,
+    workers: int,
+) -> Iterator[tuple[int, object, object]]:
+    if executor is None:
+        for item in records:
+            yield _rematerialize_training_record(
+                item,
+                split=split,
+                codec=codec,
+            )
+        return
+
+    pending: deque[Future[tuple[int, object, object]]] = deque()
+
+    def submit_next() -> bool:
+        try:
+            item = next(records)
+        except StopIteration:
+            return False
+        pending.append(
+            executor.submit(
+                _rematerialize_training_record,
+                item,
+                split=split,
+                codec=codec,
+            )
+        )
+        return True
+
+    for _ in range(workers * 2):
+        if not submit_next():
+            break
+    while pending:
+        yield pending.popleft().result()
+        submit_next()
+
+
 def build_training_release(
     *,
     main_audit_path: Path,
@@ -485,6 +549,7 @@ def build_training_release(
     source_commit: str,
     output: Path,
     expected_split_counts: Mapping[str, int] | None = None,
+    workers: int = 1,
 ) -> dict[str, object]:
     """Fully revalidate and publish one immutable v3 training release."""
 
@@ -493,6 +558,8 @@ def build_training_release(
         "protected checkpoint SHA-256",
     )
     source_commit = _commit(source_commit, "release source commit")
+    if isinstance(workers, bool) or not isinstance(workers, int) or workers < 1:
+        raise ETTRV3ReleaseError("release worker count differs")
     release_builder_sha256, release_builder_bytes = _stable_file_sha256(
         Path(__file__).resolve(),
         "training-release builder",
@@ -534,7 +601,18 @@ def build_training_release(
 
     descriptors = _training_shards(audit, data_root)
     stream_writer = _StreamWriter(output / "stream-index.jsonl")
+    executor = (
+        ThreadPoolExecutor(
+            max_workers=workers,
+            thread_name_prefix="ettr-release",
+        )
+        if workers > 1
+        else None
+    )
+    prior_torch_threads = torch.get_num_threads()
     try:
+        if executor is not None:
+            torch.set_num_threads(1)
         packet_manifest = build_disk_packet_index(
             output / "packet-index",
             train_batches=_batch_stream(
@@ -543,6 +621,8 @@ def build_training_release(
                 data_root=data_root,
                 codec=codec,
                 writer=stream_writer,
+                executor=executor,
+                workers=workers,
             ),
             validation_batches=_batch_stream(
                 split="development",
@@ -550,12 +630,18 @@ def build_training_release(
                 data_root=data_root,
                 codec=codec,
                 writer=stream_writer,
+                executor=executor,
+                workers=workers,
             ),
         )
         stream_receipt = stream_writer.close()
     except BaseException:
         stream_writer.abort()
         raise
+    finally:
+        if executor is not None:
+            executor.shutdown(wait=True, cancel_futures=True)
+            torch.set_num_threads(prior_torch_threads)
 
     packet_receipt = packet_manifest["receipt"]
     if not isinstance(packet_receipt, dict):
@@ -730,6 +816,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--protected-checkpoint-sha256", required=True)
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--workers", type=int, default=1)
     return parser.parse_args(argv)
 
 
@@ -743,6 +830,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         protected_checkpoint_sha256=arguments.protected_checkpoint_sha256,
         source_commit=arguments.source_commit,
         output=arguments.output,
+        workers=arguments.workers,
     )
     print(
         json.dumps(
