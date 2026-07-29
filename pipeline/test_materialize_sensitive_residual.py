@@ -114,6 +114,7 @@ def test_source_selection_substitution_fails_closed(tmp_path: Path) -> None:
 
 def test_sensitive_residual_job_is_hash_bound_and_cpu_only() -> None:
     assert "SHA256SUMS" in JOB
+    assert 'export PYTHONPATH="$SOURCE_ROOT"' in JOB
     assert "--source-selection-code" in JOB
     assert "--audit-dir" in JOB
     assert "--selection-code" in JOB

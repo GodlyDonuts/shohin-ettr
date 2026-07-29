@@ -56,6 +56,7 @@ if [[ -n "$(sha256sum -c SHA256SUMS 2>&1 | grep -v ': OK$')" ]]; then
   echo "[sensitive-residual] source runtime differs" >&2
   exit 2
 fi
+export PYTHONPATH="$SOURCE_ROOT"
 "$PY" -u "$SELECTION_CODE" \
   --source-dir "$SOURCE" \
   --source-selection-code "$SOURCE_SELECTION" \
