@@ -17,7 +17,7 @@ from typing import Sequence
 _ROOT = Path(__file__).resolve().parents[1]
 for _path in (_ROOT / "train", _ROOT / "pipeline"):
     if str(_path) not in sys.path:
-        sys.path.insert(0, str(_path))
+        sys.path.append(str(_path))
 
 from ettr_il_v3_protocol import canonical_json_bytes  # noqa: E402
 from ettr_packet_index import (  # noqa: E402
