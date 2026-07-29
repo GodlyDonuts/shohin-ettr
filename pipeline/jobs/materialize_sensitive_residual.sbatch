@@ -64,8 +64,10 @@ export PYTHONPATH="$SOURCE_ROOT"
   --selection-code "$SELECTION_CODE" \
   --output-dir "$OUT" \
   --shard-tokens "$SHARD_TOKENS"
-[[ -s "$OUT/manifest.json" && -s "$OUT/document_ledger.jsonl.zst" ]] || {
+[[ -s "$OUT/manifest.json" && -s "$OUT/documents.jsonl.zst" ]] || {
   echo "[sensitive-residual] final corpus differs" >&2
   exit 2
 }
+find "$OUT" -type f -exec chmod 0444 {} +
+find "$OUT" -type d -exec chmod 0555 {} +
 printf '[sensitive-residual] complete output=%s\n' "$OUT"

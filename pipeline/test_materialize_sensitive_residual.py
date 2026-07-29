@@ -119,5 +119,8 @@ def test_sensitive_residual_job_is_hash_bound_and_cpu_only() -> None:
     assert "--audit-dir" in JOB
     assert "--selection-code" in JOB
     assert "--output-dir" in JOB
+    assert '"$OUT/documents.jsonl.zst"' in JOB
+    assert 'find "$OUT" -type f -exec chmod 0444 {} +' in JOB
+    assert 'find "$OUT" -type d -exec chmod 0555 {} +' in JOB
     assert "--gres" not in JOB
     assert "CUDA" not in JOB
