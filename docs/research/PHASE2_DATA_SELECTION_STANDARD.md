@@ -125,6 +125,15 @@ Deterministic 10,000-row profiles sharpened the source policies:
   only as a paired source-faithful residual; math requires solver verification
   and tables require cell-level source support. All configurations remain at
   zero mixture weight until equal-token utility ablations pass.
+- Essential-Web had zero sampled exact duplicates or evaluation overlap in a
+  pinned 10,000-row profile, but its genuinely reasoning-dense tail was rare:
+  545 rows were reasoning-depth code 3, 66 code 4, none code 5, and 13 were
+  indeterminate code 6. Technical correctness had 1,547 highly-correct rows
+  and 7,823 not-applicable/indeterminate rows. A private 100-row packet had no
+  row pass the complete English, reasoning, correctness, extraction,
+  completeness, and document-type conjunction. The source remains valuable
+  at 24T-token scale, but only as a hard-filtered physical challenger; label
+  scarcity must not be solved by admitting code-6 or low-reasoning records.
 
 Direct, revision-pinned Dolma 3 component probes further show why ingredients
 must be adjudicated separately:

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path, PurePosixPath
 import re
@@ -42,6 +43,7 @@ def build_manifest(
     suffix: str,
     entries: Iterable[object],
     expected_count: int | None = None,
+    sample_count: int | None = None,
 ) -> dict[str, object]:
     if not dataset or "/" not in dataset:
         raise PinnedManifestError("dataset identity differs")
@@ -52,6 +54,8 @@ def build_manifest(
         raise PinnedManifestError("source suffix differs")
     if expected_count is not None and expected_count <= 0:
         raise PinnedManifestError("expected file count differs")
+    if sample_count is not None and sample_count <= 0:
+        raise PinnedManifestError("sample file count differs")
 
     selected: list[dict[str, object]] = []
     upstream_count = 0
@@ -99,8 +103,27 @@ def build_manifest(
     selected.sort(key=lambda record: str(record["path"]))
     if not selected:
         raise PinnedManifestError("selection is empty")
-    if expected_count is not None and len(selected) != expected_count:
+    candidate_count = len(selected)
+    if expected_count is not None and candidate_count != expected_count:
         raise PinnedManifestError("selected file count differs")
+    if sample_count is not None:
+        if sample_count > candidate_count:
+            raise PinnedManifestError("sample file count exceeds candidates")
+        selected = sorted(
+            sorted(
+                selected,
+                key=lambda record: hashlib.sha256(
+                    (
+                        dataset
+                        + "\x1f"
+                        + revision
+                        + "\x1f"
+                        + str(record["path"])
+                    ).encode("utf-8")
+                ).digest(),
+            )[:sample_count],
+            key=lambda record: str(record["path"]),
+        )
     if len({record["path"] for record in selected}) != len(selected):
         raise PinnedManifestError("selected file path is duplicated")
     if len(
@@ -115,10 +138,20 @@ def build_manifest(
         "upstream_file_count_considered": upstream_count,
         "upstream_bytes_considered": upstream_bytes,
         "selection": {
-            "method": "complete_prefix_sorted_tree",
+            "method": (
+                "sha256_priority_subset"
+                if sample_count is not None
+                else "complete_prefix_sorted_tree"
+            ),
             "prefix": prefix,
             "suffix": suffix,
+            "candidate_count": candidate_count,
             "selected_count": len(selected),
+            "priority_material": (
+                "sha256(dataset\\x1frevision\\x1fpath)"
+                if sample_count is not None
+                else None
+            ),
         },
         "files": selected,
         "selected_bytes": sum(int(record["size"]) for record in selected),
@@ -138,6 +171,7 @@ def main() -> None:
     parser.add_argument("--prefix", required=True)
     parser.add_argument("--suffix", default=".parquet")
     parser.add_argument("--expected-count", type=int)
+    parser.add_argument("--sample-count", type=int)
     parser.add_argument("--out", type=Path, required=True)
     arguments = parser.parse_args()
 
@@ -156,6 +190,7 @@ def main() -> None:
         suffix=arguments.suffix,
         entries=entries,
         expected_count=arguments.expected_count,
+        sample_count=arguments.sample_count,
     )
     material = json.dumps(payload, indent=2, sort_keys=True) + "\n"
     arguments.out.parent.mkdir(parents=True, exist_ok=True)

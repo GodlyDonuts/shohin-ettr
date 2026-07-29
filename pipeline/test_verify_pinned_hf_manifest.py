@@ -39,6 +39,19 @@ def test_valid_manifest_returns_ordered_records():
     ]
 
 
+def test_partitioned_hugging_face_path_is_safe():
+    payload = valid_payload()
+    payload["files"][0]["path"] = (
+        "data/crawl=CC-MAIN-2024-38/train-00000-of-01000.parquet"
+    )
+    records = validate_manifest(
+        payload,
+        expected_dataset="owner/dataset",
+        expected_revision="a" * 40,
+    )
+    assert records[0]["path"].startswith("data/crawl=CC-MAIN-2024-38/")
+
+
 @pytest.mark.parametrize(
     ("mutation", "message"),
     [

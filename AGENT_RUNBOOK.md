@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 06:46 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 07:04 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17057,3 +17057,60 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `ultradata_challengers_bounded_essential_nested_profile_required_no_candidate_optimizer`.
+
+- **2026-07-29 07:04 EDT** -- **Essential-Web is structurally clean but its
+  truly reasoning-dense slice is scarce; the first physical challenger keeps
+  the hard gate instead of lowering quality to fill a quota.**
+
+  Profile-only job `754513` completed cleanly in 26m26s from immutable source
+  commit `556a65f4ce79f1ef11d1e2df79ef71243cba5549`. Across 10,000
+  shuffled rows at pinned revision
+  `ce4eccc7e9604667b6d7f32cb6274b8b41f3113d`, it found 10,000 unique
+  documents, zero exact duplicates, zero exact evaluation-prompt matches, and
+  zero bounded 13-gram evaluation overlaps. The aggregate report SHA-256 is
+  `852dc5abe8a46be981f11a8ba6daac63c4e4c11acca3849357112007a3ae7217`.
+  The private 100-row review packet SHA-256 is
+  `d65a3954ccf6a03ac4fd3f7df99778a181c58c0dfc3f853bf26187f30743ac86`
+  and remains outside Git.
+
+  The upstream labels confirm scarcity. Reasoning-depth counts were 6,237
+  code 1, 3,139 code 2, 545 code 3, 66 code 4, zero code 5, and 13
+  indeterminate code 6. Technical correctness contained 1,547 code-4 rows,
+  zero code-5 rows, and 7,823 not-applicable/indeterminate code-6 rows.
+  Clean-extraction code 0 covered 4,518 rows and complete-content code 0
+  covered 6,079. The private review packet had 49/100 English-0.90 rows,
+  7/100 reasoning-code 3--5 rows, and 14/100 correctness-code 4--5 rows, but
+  no row passed the complete conjunction including cleanliness, completeness,
+  and the document-type allowlist. This is a scarcity measurement, not a
+  reason to weaken the labels.
+
+  A deterministic physical-source manifest now selects 256 SHA-256-priority
+  Parquet files from all 3,291 files in the recent
+  `CC-MAIN-2024-38` partition. It binds **65,816,981,282 bytes** from an
+  848,315,310,506-byte pinned pool and every selected LFS SHA-256; manifest
+  SHA-256 is
+  `60af668d8e764759d393ea0992657066fe61ffb554978f02b677d39619254025`.
+  The generic manifest builder now supports deterministic bounded subsets,
+  and the verifier explicitly accepts Hugging Face `key=value` partition
+  directories while retaining traversal and printable-path rejection.
+
+  `pipeline/jobs/essential_web_reasoning_core.sbatch` downloads and re-hashes
+  exactly those physical files, applies English >=0.90, reasoning in
+  `{3,4,5}`, correctness in `{4,5}`, clean extraction, complete content,
+  educational/reference/technical document types, exact deduplication, full
+  eval decontamination, extraction limits, and a 5M-token source-domain cap.
+  Its output is capped at 1B tokens but is expected to stop below that if the
+  strict slice is scarce. The complete source-profile/selector/manifest/job
+  focused set passes **77/77** with clean Ruff, byte compilation, shell
+  syntax, and diff checks. The result remains a candidate until private
+  exact-document review, exact and near cross-source residualization,
+  immutable holdouts, full audits, and equal-token utility tests pass.
+
+  Concurrent quarantined generation remains healthy: FineWeb-Edu r2 has
+  approximately 1.9B tokens, peS2o r2 approximately 5.6B, and FinePDFs has
+  emitted its first approximately 100M-token shard. ETTR remains 214/216 main
+  plus 108/108 confirmation, with the two long cells active. No candidate
+  optimizer is running.
+
+  Decision:
+  `essential_reasoning_core_scarce_hard_gate_retained_physical_challenger_ready_no_optimizer`.
