@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 00:20 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 00:28 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -16185,3 +16185,30 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `general_candidate_v3_document_token_ledger_required_corrected_b16_live`.
+
+- **2026-07-29 00:28 EDT** -- **The peS2o v3 candidate now has an immutable,
+  dependency-gated exact-document review lane.**
+
+  Private branch commit `a503cde0d774abc53cf3beeb4ac78188fa8c0dd6`
+  adds `pipeline/jobs/build_general_source_review_packet.sbatch`. Shell
+  syntax, Ruff, byte compilation, diff checks, and the focused review and
+  tokenized-corpus tests pass **10/10**. The deployed wrapper SHA-256 is
+  `77996b945f25244c5ea315cd72f106df972732b6ab8ec86efbde26076b6af417`;
+  the deployed packet builder remains
+  `33e03a61f38cd8aeb2e1b42e57220bdee9a581ac5f7f5df25779ac115680b3ae`.
+
+  Stokes job `754200` is dependency-held `afterok:754199`. Only after the
+  completed v3 corpus independently verifies will it sample 1,000 exact
+  retained documents across license and token-length strata with domain caps,
+  write their text to a mode-0600 private packet outside publishable
+  artifacts, and publish a text-free receipt. This is a review instrument,
+  not a semantic label or training-admission record. Human semantic review,
+  privacy/legal review, cross-source deduplication, and matched-token utility
+  evidence remain required.
+
+  Stokes ETTR recovery cells 0, 1, 3, 12, and 16 are complete; cells 4, 5, 6,
+  and 17 remain active. Newton formal corrected B16 profile `719591.44`
+  remains live in compiled execution after the eager arm completed.
+
+  Decision:
+  `pes2o_v3_exact_review_lane_dependency_held_no_candidate_admission`.
