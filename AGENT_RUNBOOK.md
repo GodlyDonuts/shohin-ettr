@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 06:32 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 06:46 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17038,10 +17038,18 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   above. Its aggregate report may enter private Git; its 100-row text review
   must remain outside Git and can never become training data.
 
+  The candidate registry is corrected at the same boundary: Essential-Web is
+  now `candidate_core_requires_receipt` at the current provisional 8% mix,
+  and both UltraData source entries are zero-weight
+  `candidate_challenger_requires_receipt` arms. The registry binds their exact
+  revisions, measured profile evidence, and selection contracts instead of
+  carrying the older aspirational `admit_core` labels. Registry validation
+  remains **5/5** and the phase-2 candidate mix still sums to exactly 100%.
+
   Concurrent candidate generation remains quarantined. FineWeb-Edu r2 has
   sixteen approximately 100M-token shards and peS2o r2 has forty-six.
-  FinePDFs has hash-verified all sixteen pinned physical source files and is
-  still in source verification/startup without a token shard. ETTR remains
+  FinePDFs has hash-verified all sixteen pinned physical source files and has
+  emitted its first approximately 100M-token shard. ETTR remains
   214/216 main plus 108/108 confirmation, with the two long cells actively
   computing. Newton request `719497` remains pending for ten H100s with a
   15:03 EDT estimate and the release-blind canary watcher armed. No candidate

@@ -144,18 +144,41 @@
       "url": "https://huggingface.co/datasets/EssentialAI/essential-web-v1.0",
       "domain": "educational_general_web",
       "priority": "P0",
-      "decision": "admit_core_selected",
-      "target_mix_pct": 10,
+      "decision": "candidate_core_requires_receipt",
+      "target_mix_pct": 8,
       "known_scale": "approximately 24T tokens in the full pool",
       "license_summary": "ODC-By-1.0 plus upstream Common Crawl terms",
       "mirror_policy": "review_before_mirror",
+      "pinned_revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
       "selection": {
         "language": ["en"],
-        "prefer": [
-          "high technical correctness",
-          "conceptual or procedural cognitive type",
-          "nontrivial reasoning depth",
-          "appropriate educational level"
+        "numeric_predicates": {
+          "quality_signals.fasttext.english": {
+            "minimum": 0.9
+          }
+        },
+        "categorical_allowlists": {
+          "eai_taxonomy.reasoning_depth.primary.code": ["3", "4", "5"],
+          "eai_taxonomy.technical_correctness.primary.code": ["4", "5"],
+          "eai_taxonomy.extraction_artifacts.primary.code": ["0"],
+          "eai_taxonomy.missing_content.primary.code": ["0"],
+          "eai_taxonomy.document_type_v2.primary.code": [
+            "3",
+            "8",
+            "9",
+            "10",
+            "18",
+            "20",
+            "21",
+            "23"
+          ]
+        },
+        "document_controls": [
+          "exact and near deduplication",
+          "evaluation decontamination",
+          "per-domain token cap",
+          "private taxonomy-stratified semantic review",
+          "equal-token utility ablation"
         ],
         "taxonomy_views": [
           "EssentialAI/eai-taxonomy-math-w-fm",
@@ -215,16 +238,36 @@
       "url": "https://huggingface.co/datasets/openbmb/UltraData-Math",
       "domain": "math",
       "priority": "P0",
-      "decision": "admit_core",
-      "target_mix_pct": 7,
+      "decision": "candidate_challenger_requires_receipt",
+      "target_mix_pct": 0,
       "known_scale": "L2-preview approximately 33.7B tokens",
       "license_summary": "Apache-2.0 dataset release; retain upstream provenance review",
       "mirror_policy": "review_before_mirror",
+      "pinned_revision": "fe10db8efd35597fd7fcff8ff576b5ec4ea5ff87",
       "selection": {
         "configs": ["UltraData-Math-L2-preview"],
-        "language": ["en"]
+        "preferred_quality_label": [5],
+        "language": ["en"],
+        "requirements": [
+          "exact and near deduplication",
+          "hard evaluation decontamination",
+          "private semantic review",
+          "equal-token utility ablation"
+        ]
       },
-      "risks": ["overlap with other math corpora", "mixed English and Chinese"]
+      "sample_profile": {
+        "rows": 10000,
+        "exact_duplicate_rows": 5,
+        "exact_eval_prompt_rows": 0,
+        "bounded_eval_13gram_rows": 6,
+        "quality_label_4_rows": 6910,
+        "quality_label_5_rows": 3090
+      },
+      "risks": [
+        "overlap with other math corpora",
+        "mixed English and Chinese",
+        "quality label is not an admission oracle"
+      ]
     },
     {
       "id": "ultradata_math_l3_selected",
@@ -232,18 +275,40 @@
       "url": "https://huggingface.co/datasets/openbmb/UltraData-Math",
       "domain": "math",
       "priority": "P0",
-      "decision": "admit_core_selected",
-      "target_mix_pct": 7,
+      "decision": "candidate_challenger_requires_receipt",
+      "target_mix_pct": 0,
       "known_scale": "L3 family approximately 88B tokens",
       "license_summary": "Apache-2.0 dataset release; retain upstream provenance review",
       "mirror_policy": "review_before_mirror",
+      "pinned_revision": "fe10db8efd35597fd7fcff8ff576b5ec4ea5ff87",
       "selection": {
         "configs": [
           "UltraData-Math-L3-QA-Synthetic",
           "UltraData-Math-L3-Textbook-Exercise-Synthetic"
         ],
         "language": ["en"],
-        "optional_small_slice": "UltraData-Math-L3-Multi-Style-Synthetic"
+        "optional_small_slice": "UltraData-Math-L3-Multi-Style-Synthetic",
+        "requirements": [
+          "small challenger arms only",
+          "exact and near deduplication",
+          "hard evaluation decontamination",
+          "trace consistency review",
+          "equal-token utility ablation"
+        ]
+      },
+      "sample_profile": {
+        "qa": {
+          "rows": 10000,
+          "exact_duplicate_rows": 0,
+          "exact_eval_prompt_rows": 0,
+          "bounded_eval_13gram_rows": 1
+        },
+        "textbook_exercise": {
+          "rows": 10000,
+          "exact_duplicate_rows": 0,
+          "exact_eval_prompt_rows": 0,
+          "bounded_eval_13gram_rows": 14
+        }
       },
       "risks": [
         "synthetic template repetition",
