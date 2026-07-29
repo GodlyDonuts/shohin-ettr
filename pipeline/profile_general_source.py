@@ -704,6 +704,33 @@ def iter_local_jsonl(paths: Iterable[Path]) -> Iterable[Mapping[str, Any]]:
                 raw.close()
 
 
+def iter_local_parquet(
+    paths: Iterable[Path],
+    *,
+    dataset_loader=None,
+) -> Iterable[Mapping[str, Any]]:
+    """Replay hash-bound physical Parquet files in deterministic path order."""
+    resolved = tuple(sorted(Path(path).resolve() for path in paths))
+    if not resolved or any(path.suffix.lower() != ".parquet" for path in resolved):
+        raise ProfileError("local Parquet inputs must end in .parquet")
+    if dataset_loader is None:
+        from datasets import load_dataset
+
+        dataset_loader = load_dataset
+    stream = dataset_loader(
+        "parquet",
+        data_files=[str(path) for path in resolved],
+        split="train",
+        streaming=True,
+    )
+    for row_number, row in enumerate(stream, 1):
+        if not isinstance(row, Mapping):
+            raise ProfileError(
+                f"local Parquet row {row_number} is not an object"
+            )
+        yield row
+
+
 def buffered_shuffle(
     rows: Iterable[Mapping[str, Any]],
     *,
@@ -747,18 +774,27 @@ def main() -> None:
     parser.add_argument("--out", required=True)
     parser.add_argument("--review-out", required=True)
     parser.add_argument("--local-jsonl", type=Path, action="append")
+    parser.add_argument("--local-parquet", type=Path, action="append")
     parser.add_argument("--local-source-sha256", action="append")
     parser.add_argument("--local-dataset-card", type=Path)
     parser.add_argument("--local-dataset-card-sha256")
     args = parser.parse_args()
 
-    local_mode = args.local_jsonl is not None
+    if args.local_jsonl is not None and args.local_parquet is not None:
+        raise ProfileError("select only one local profile input format")
+    local_paths = args.local_jsonl or args.local_parquet
+    local_mode = local_paths is not None
+    local_input_mode = (
+        "hash_bound_local_jsonl"
+        if args.local_jsonl is not None
+        else "hash_bound_local_parquet"
+    )
     local_receipts: list[dict[str, Any]] = []
     if local_mode:
         if (
-            not args.local_jsonl
+            not local_paths
             or not args.local_source_sha256
-            or len(args.local_jsonl) != len(args.local_source_sha256)
+            or len(local_paths) != len(args.local_source_sha256)
             or args.local_dataset_card is None
             or args.local_dataset_card_sha256 is None
             or args.revision is None
@@ -784,13 +820,18 @@ def main() -> None:
                 expected_sha256=expected_sha256,
             )
             for path, expected_sha256 in zip(
-                args.local_jsonl,
+                local_paths,
                 args.local_source_sha256,
                 strict=True,
             )
         ]
+        local_rows = (
+            iter_local_jsonl(local_paths)
+            if args.local_jsonl is not None
+            else iter_local_parquet(local_paths)
+        )
         stream = buffered_shuffle(
-            iter_local_jsonl(args.local_jsonl),
+            local_rows,
             seed=args.shuffle_seed,
             buffer_size=args.shuffle_buffer,
         )
@@ -896,13 +937,13 @@ def main() -> None:
                 args.max_files_per_record if args.nested_files_field else None
             ),
             "input_mode": (
-                "hash_bound_local_jsonl" if local_mode else "huggingface_stream"
+                local_input_mode if local_mode else "huggingface_stream"
             ),
             "local_source_receipts": local_receipts,
         }
     )
     if local_mode:
-        assert args.local_jsonl is not None
+        assert local_paths is not None
         assert args.local_source_sha256 is not None
         assert args.local_dataset_card is not None
         assert args.local_dataset_card_sha256 is not None
@@ -916,7 +957,7 @@ def main() -> None:
                 expected_sha256=expected_sha256,
             )
             for path, expected_sha256 in zip(
-                args.local_jsonl,
+                local_paths,
                 args.local_source_sha256,
                 strict=True,
             )

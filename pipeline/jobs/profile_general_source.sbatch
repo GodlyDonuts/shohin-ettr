@@ -32,6 +32,7 @@ SLUG=${SLUG:?set a stable SLUG}
 REVISION=${REVISION:-}
 START_DELAY_SECONDS=${START_DELAY_SECONDS:-0}
 LOCAL_JSONL=${LOCAL_JSONL:-}
+LOCAL_PARQUET=${LOCAL_PARQUET:-}
 LOCAL_SOURCE_SHA256=${LOCAL_SOURCE_SHA256:-}
 LOCAL_DATASET_CARD=${LOCAL_DATASET_CARD:-}
 LOCAL_DATASET_CARD_SHA256=${LOCAL_DATASET_CARD_SHA256:-}
@@ -102,15 +103,23 @@ if [ -n "$PROFILE_NUMERIC_FIELDS" ]; then
     ARGS+=(--profile-numeric-field "$FIELD")
   done
 fi
-if [ -n "$LOCAL_JSONL" ]; then
+if [ -n "$LOCAL_JSONL" ] && [ -n "$LOCAL_PARQUET" ]; then
+  echo "select only one local profile input format" >&2
+  exit 2
+fi
+if [ -n "$LOCAL_JSONL" ] || [ -n "$LOCAL_PARQUET" ]; then
   if [ -z "$LOCAL_SOURCE_SHA256" ] || [ -z "$LOCAL_DATASET_CARD" ] || \
      [ -z "$LOCAL_DATASET_CARD_SHA256" ] || [ -z "$REVISION" ] || \
      [ -z "$CONFIG" ]; then
     echo "local profile mode requires file/card hashes, revision, and config" >&2
     exit 2
   fi
+  if [ -n "$LOCAL_JSONL" ]; then
+    ARGS+=(--local-jsonl "$LOCAL_JSONL")
+  else
+    ARGS+=(--local-parquet "$LOCAL_PARQUET")
+  fi
   ARGS+=(
-    --local-jsonl "$LOCAL_JSONL"
     --local-source-sha256 "$LOCAL_SOURCE_SHA256"
     --local-dataset-card "$LOCAL_DATASET_CARD"
     --local-dataset-card-sha256 "$LOCAL_DATASET_CARD_SHA256"

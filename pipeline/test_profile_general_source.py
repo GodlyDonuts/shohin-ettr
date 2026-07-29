@@ -11,6 +11,7 @@ from pipeline.profile_general_source import (
     flatten_nested_files,
     field_value,
     iter_local_jsonl,
+    iter_local_parquet,
     profile_rows,
     review_excerpt,
     text_metrics,
@@ -438,3 +439,31 @@ def test_local_profile_input_rejects_mutable_linked_and_wrong_hash(
             source,
             expected_sha256=expected,
         )
+
+
+def test_local_parquet_replay_is_sorted_streaming_and_deterministic(
+    tmp_path: Path,
+) -> None:
+    second = tmp_path / "b.parquet"
+    first = tmp_path / "a.parquet"
+    first.write_bytes(b"first")
+    second.write_bytes(b"second")
+    calls = []
+
+    def loader(name, **kwargs):
+        calls.append((name, kwargs))
+        return iter(({"id": "a"}, {"id": "b"}))
+
+    assert list(
+        iter_local_parquet([second, first], dataset_loader=loader)
+    ) == [{"id": "a"}, {"id": "b"}]
+    assert calls == [
+        (
+            "parquet",
+            {
+                "data_files": [str(first.resolve()), str(second.resolve())],
+                "split": "train",
+                "streaming": True,
+            },
+        )
+    ]
