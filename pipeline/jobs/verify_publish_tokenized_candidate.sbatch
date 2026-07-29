@@ -19,6 +19,7 @@ SELECTION_CODE=${SELECTION_CODE:-$CODE_ROOT/pipeline/tokenize_shards.py}
 VERIFY_SHARDS=${VERIFY_SHARDS:-$CODE_ROOT/pipeline/verify_tokenized_shards.py}
 SELECTION_CODE_SHA256=${SELECTION_CODE_SHA256:?set exact selection-code SHA-256}
 VERIFY_SHARDS_SHA256=${VERIFY_SHARDS_SHA256:?set exact verifier SHA-256}
+PREWARM_READS=${PREWARM_READS:-0}
 
 for path in "$CODE_ROOT" "$SHARD_DIR" "$OUT" "$SELECTION_CODE" "$VERIFY_SHARDS"; do
   [[ "$path" == /* ]] || {
@@ -46,6 +47,10 @@ done
   echo "[verify-publish] candidate manifest is unavailable" >&2
   exit 3
 }
+[[ "$PREWARM_READS" == 0 || "$PREWARM_READS" == 1 ]] || {
+  echo "[verify-publish] PREWARM_READS must be 0 or 1" >&2
+  exit 2
+}
 printf '%s  %s\n' \
   "$SELECTION_CODE_SHA256" "$SELECTION_CODE" \
   "$VERIFY_SHARDS_SHA256" "$VERIFY_SHARDS" | sha256sum -c -
@@ -53,6 +58,35 @@ printf '%s  %s\n' \
 export PYTHONNOUSERSITE=1
 export PYTHONDONTWRITEBYTECODE=1
 export OMP_NUM_THREADS=8
+if [[ "$PREWARM_READS" == 1 ]]; then
+  # Lustre can settle cache/metadata on a file's first complete read after a
+  # writer exits. Warm every regular file, then run the unchanged verifier.
+  # This pass grants no trust: the verifier below re-hashes, decompresses, and
+  # reconciles every admitted byte after the warmup is complete.
+  "$PY" - "$SHARD_DIR" <<'PY'
+import os
+import stat
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+for path in sorted(root.iterdir(), key=lambda value: value.name):
+    metadata = path.lstat()
+    if (
+        path.is_symlink()
+        or not stat.S_ISREG(metadata.st_mode)
+        or metadata.st_nlink != 1
+    ):
+        raise SystemExit(f"[verify-publish] prewarm rejected non-regular file: {path}")
+    descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    try:
+        while os.read(descriptor, 8 * 1024 * 1024):
+            pass
+    finally:
+        os.close(descriptor)
+PY
+  sleep 5
+fi
 cd "$CODE_ROOT"
 PYTHONPATH="$CODE_ROOT" "$PY" -m pipeline.verify_tokenized_shards \
   --shard-dir "$SHARD_DIR" \
