@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 11:13 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 11:25 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17503,3 +17503,38 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `ettr_direct_transport_ready_legacy_exact_dedup_not_overclaimed_no_optimizer`.
+
+- **2026-07-29 11:25 EDT** -- **A conservative optimizer-visible
+  secret/privacy audit is now running against the balanced peS2o challenger.**
+
+  `pipeline/audit_v3_sensitive_content.py` independently verifies one final
+  v3 corpus, its exact source-selection code, tokenizer, document ledger,
+  shards, evaluator-decontamination inputs, and external source files. It
+  then decodes every hash-verified uint16 document span through the exact
+  training tokenizer and writes only a text-free findings ledger and
+  aggregate report. High-confidence private keys, provider token formats,
+  JWTs, and entropy-gated credential assignments are automatic-exclusion
+  categories. Email, IPv4, SSN-shaped strings, and Luhn-valid payment-card
+  candidates are reported for source-specific review rather than being
+  deleted by a broad regex. Malware and unsafe-code admission is explicitly
+  not claimed by this prose scanner and remains a separate code-source gate.
+
+  The audit output is no-replace and immutable, binds its complete source
+  verification, and contains no matched text. The focused sensitive-audit,
+  v3-verifier, and domain-materializer suite passes **16/16** with clean
+  Ruff, byte compilation, direct-script invocation, shell syntax, and diff
+  checks. Exact read-only Stokes runtime
+  `scratchpad/shohin_sensitive_audit_c0ed217` has `SHA256SUMS` SHA-256
+  `c0e8ea5001fe6b295c909ee50faeaf8b7fa1deed0dc6b05b7b1206d52b4f89bf`.
+  CPU job `755073` is pending priority and will scan all **718,589**
+  documents / **4,350,450,266 tokens** in
+  `pes2o_domain_balanced_50m_r1`. A pass is an audit result, not source
+  admission; any automatic exclusions must still be materialized and the
+  complete residual reverified before training.
+
+  Release watcher session `62077` and first-rung watcher session `68857`
+  remain live. Neither can expose partial data or launch more than the
+  canary-gated 100-update ETTR rung.
+
+  Decision:
+  `optimizer_visible_sensitive_audit_running_pes2o_still_quarantined`.
