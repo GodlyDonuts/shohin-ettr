@@ -17591,3 +17591,42 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `sensitive_residual_path_verified_execute_only_if_audit_requires_it`.
+
+- **2026-07-29 12:58 EDT** -- **The ETTR bootstrap now has a fail-closed
+  continuation ladder, while materialization and general-data gates continue
+  without exposing partial data.**
+
+  Main/confirmation ETTR materialization is **78/90 complete** with twelve
+  remaining array cells running and no observed failed cell. The aggregate
+  audits, separation audit, immutable release, direct Stokes-to-Newton
+  transfer, and first optimizer rung remain correctly dependency-gated.
+  Release watcher session `62077`, distributed-canary watchers `12369` and
+  `75732`, and first-rung watcher `68857` remain live. The latest Newton
+  forecasts are July 30 00:40 EDT for four H100s (`722178`), July 30 01:05
+  EDT for ten H100s (`722179`), and August 1 04:45 EDT for twenty H100s
+  (`719496`). These are scheduler estimates, not allocations.
+
+  A second fail-closed watcher, session `57024`, now waits for the immutable
+  100-update paired evaluation. It accepts only
+  `gates.strict_learning_signal=true`, verifies that the originating
+  allocation is still running, reconstructs its exact node/world geometry,
+  obtains the checkpoint hash from the no-replace sidecar, and invokes the
+  same immutable `524f3e5045ba58041c60705e2ec48af475d7018c` reservation
+  launcher. A passing 100-update rung may resume exactly to update 500; a
+  passing 500-update rung may resume exactly to update 2,000. Either failed
+  causal gate, ended allocation, changed world shape, or changed artifact
+  identity stops the ladder. The trunk remains frozen throughout these
+  architecture-bootstrap rungs.
+
+  Quarantined general-data generation also remains productive. FineWeb-Edu
+  score-4+ has 39 approximately 100M-token partial shards, English
+  FinePDFs-Edu has 25, and strict Essential-Web remains in pinned physical
+  preprocessing. Balanced peS2o sensitive-audit job `755073` is productively
+  reading its exact corpus and has not yet published a report. No sensitive
+  residual will be materialized unless that report records a positive
+  automatic-exclusion count. FinePhrase remains rejected wholesale from prior
+  paired source/output review; newer source branding does not override the
+  measured source-faithfulness failures.
+
+  Decision:
+  `ettr_fail_closed_ladder_armed_general_candidates_quarantined_no_optimizer`.
