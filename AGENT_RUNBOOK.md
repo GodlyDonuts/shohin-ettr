@@ -16660,3 +16660,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `cross_source_exact_removal_now_enforceable_legacy_nonledger_corpora_not_residual_by_assertion`.
+
+- **2026-07-29 near-duplicate gate implementation** -- **The general-data
+  admission path now enforces exact-confirmed near-duplicate removal and can
+  chain corpora with different selection-code identities.**
+
+  `pipeline/audit_cross_source_near_dedup.py` verifies each v3 corpus and its
+  own selection code, scans exact document token spans, uses sixteen
+  deterministic bottom hashes of five-token shingles only to localize
+  candidates, and then requires exact unique-shingle Jaccard or containment
+  confirmation before writing a removal. The default thresholds are Jaccard
+  `0.80`, containment `0.90`, and minimum token-length ratio `0.50`. It fails
+  if an exact document hash survived the preceding exact-residual gate.
+  Within-batch and cross-batch duplicates share the same first-source/source-
+  order retention policy. The text-free removal ledger and report are
+  canonical and no-replace.
+
+  `pipeline/materialize_cross_source_near_residual.py` applies the named
+  corpus's exact-confirmed removals, binds the source-specific selection code,
+  near-audit algorithm/report/ledger, and parent manifest, and re-packs and
+  independently verifies a fresh v3 residual before atomic publication.
+  Tampered ledgers and selection-code substitution fail without an output.
+  A deterministic 5,000-pair mutation simulation found **0 candidate misses**
+  among 4,975 pairs satisfying the exact configured removal thresholds; this
+  is a localization diagnostic, not a corpus result. The combined
+  exact/near/residual/shard regression currently passes **21/21**, with clean
+  Ruff, byte compilation, and diff checks.
+
+  Live data remains unadmitted: accelerated FineWeb had seven approximately
+  100M-token partial shards and peS2o had nine at the last check. ETTR remains
+  214/216 main plus 108/108 sealed confirmation, with cells `5` and `6`
+  computing.
+
+  Decision:
+  `exact_then_near_residual_chain_mechanically_enforced_live_candidates_still_unadmitted`.

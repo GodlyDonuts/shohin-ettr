@@ -37,10 +37,12 @@ class CrossSourceDedupError(ValueError):
 class CorpusSpec:
     name: str
     path: Path
+    selection_code: Path | None = None
 
 
 def _parse_corpus(value: str) -> CorpusSpec:
     name, separator, raw_path = value.partition("=")
+    raw_path, code_separator, raw_selection_code = raw_path.partition("::")
     if (
         separator != "="
         or not name
@@ -56,7 +58,24 @@ def _parse_corpus(value: str) -> CorpusSpec:
     path = Path(raw_path)
     if not path.is_absolute():
         raise argparse.ArgumentTypeError("corpus path must be absolute")
-    return CorpusSpec(name=name, path=path)
+    selection_code = (
+        Path(raw_selection_code) if code_separator == "::" else None
+    )
+    if (
+        selection_code is not None
+        and (
+            not raw_selection_code
+            or not selection_code.is_absolute()
+        )
+    ):
+        raise argparse.ArgumentTypeError(
+            "corpus selection-code path must be absolute"
+        )
+    return CorpusSpec(
+        name=name,
+        path=path,
+        selection_code=selection_code,
+    )
 
 
 def _load_manifest(path: Path) -> dict[str, Any]:
@@ -77,9 +96,10 @@ def _write_json_line(stream: io.TextIOBase, value: dict[str, Any]) -> None:
 def _corpus_record(
     spec: CorpusSpec,
     *,
-    selection_code: Path,
+    default_selection_code: Path,
     require_external_inputs: bool,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
+    selection_code = spec.selection_code or default_selection_code
     verification = verify_manifest(
         spec.path,
         selection_code=selection_code,
@@ -119,7 +139,7 @@ def audit_exact_duplicates(
     for spec in corpora:
         manifest, verification = _corpus_record(
             spec,
-            selection_code=selection_code,
+            default_selection_code=selection_code,
             require_external_inputs=require_external_inputs,
         )
         current_tokenizer = str(manifest["tokenizer"]["sha256"])
@@ -247,6 +267,15 @@ def audit_exact_duplicates(
                                 "name": spec.name,
                                 "priority": priority,
                                 "path": str(spec.path.resolve()),
+                                "selection_code_path": str(
+                                    (
+                                        spec.selection_code
+                                        or selection_code
+                                    ).resolve()
+                                ),
+                                "selection_code_sha256": manifest[
+                                    "selection_code_sha256"
+                                ],
                                 "manifest_payload_sha256": manifest[
                                     "payload_sha256"
                                 ],

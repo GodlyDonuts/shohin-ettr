@@ -365,11 +365,31 @@ independently reverified before its staging directory is atomically
 published. A dedup report alone therefore cannot authorize training: only the
 materialized and verified residual may proceed to later gates.
 
-Near-duplicate admission remains separate and mandatory. Legacy historical
-shards without v3 document ledgers cannot be represented as cross-source
-residuals by assertion. They must be rebuilt from pinned source records into
-v3 form or excluded from a claim-bearing Phase 2 mixture; structural scans of
-legacy token files are not a substitute for document provenance.
+`pipeline/audit_cross_source_near_dedup.py` supplies the subsequent
+near-duplicate gate. It reads only verified v3 token spans under one tokenizer
+identity. Deterministic bottom hashes of five-token shingles localize possible
+matches, but cannot remove a document. Every candidate is reopened from its
+hash-verified shard and compared using exact unique-shingle Jaccard and
+containment; the declared thresholds and source-priority order are bound in
+the report. Exact document-hash duplication causes the near gate to fail,
+rather than disguising a skipped exact-residual step. The output is a
+text-free, no-replace removal ledger plus canonical accounting report.
+Per-corpus selection-code identities are supported so an original corpus and
+an already materialized residual can be verified in one chain.
+
+`pipeline/materialize_cross_source_near_residual.py` applies only that
+exact-confirmed near-removal ledger. It requires the source corpus's own
+selection code, binds the near-audit algorithm and receipts, re-packs retained
+token spans into a new v3 corpus, and verifies every output and external input
+before publication. The output of this second residualization, not the
+near-dedup report or pre-residual candidate, is eligible for later semantic
+and utility gates.
+
+Legacy historical shards without v3 document ledgers cannot be represented as
+cross-source residuals by assertion. They must be rebuilt from pinned source
+records into v3 form or excluded from a claim-bearing Phase 2 mixture;
+structural scans of legacy token files are not a substitute for document
+provenance.
 
 ## Fresh-Source Challenger Lane
 
