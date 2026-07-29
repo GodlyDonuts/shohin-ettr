@@ -277,6 +277,27 @@ Run equal-token, equal-update ablations from the same initialization. A source
 must improve the aggregate utility battery without materially harming clean
 held-out general language modeling or ETTR causal controls.
 
+The admission order is fixed:
+
+1. verify the source-specific v3 candidate and human semantic decision;
+2. materialize the cross-source exact residual;
+3. audit and materialize the exact-confirmed near residual;
+4. freeze an immutable train/document-validation/domain-validation partition;
+5. run structural, contamination, privacy, and license audits on every
+   partition;
+6. train each source arm from the same checkpoint for the same target tokens,
+   updates, batch geometry, optimizer schedule, and random seeds;
+7. score every arm on the same cross-source document and whole-domain holdout
+   matrix;
+8. admit only an arm whose aggregate gain clears the preregistered regression
+   limits.
+
+Validation records are never used by an optimizer, source selector, semantic
+reviewer, or mixture tuner. The document holdout measures representative
+within-source generalization. The whole-domain holdout assigns all records
+from a deterministically selected domain to validation and measures transfer
+to unseen publishers/sites rather than local document memorization.
+
 The battery includes:
 
 - held-out NLL by source and domain, including prose not represented by public
@@ -384,6 +405,36 @@ token spans into a new v3 corpus, and verifies every output and external input
 before publication. The output of this second residualization, not the
 near-dedup report or pre-residual candidate, is eligible for later semantic
 and utility gates.
+
+`pipeline/materialize_v3_holdout_split.py` is the next mandatory gate. It
+classifies each parent-ledger row with namespace- and seed-bound SHA-256
+thresholds, assigning a whole domain before considering a document holdout so
+one domain cannot leak between train and domain validation. Missing domains
+are never treated as one giant domain; they proceed to the independent
+document-hash decision. It reopens every exact parent token span and writes
+fresh train, representative document-validation, and whole-domain-validation
+v3 corpora under a single atomic no-replace root. Each child independently
+verifies its shards, ledger, tokenizer, source files, and evaluation inputs.
+The root receipt binds the parent, policy, child manifests, document counts,
+and token counts.
+
+`pipeline/verify_v3_holdout_split.py` independently merges the three child
+ledgers in original source-row order, recomputes every assignment, compares
+all non-location provenance fields with the parent, and re-verifies every
+physical artifact. A creation receipt alone is not sufficient. The default
+production policy reserves approximately one percent by document and one
+percent by whole domain; source-specific deviations require a frozen written
+justification before splitting.
+
+`train/eval_corpus_nll.py` provides the first matched utility metric. It
+requires the exact checkpoint SHA-256 and a fully verified v3 holdout,
+constructs the model from the checkpoint's complete configuration, and
+measures pure next-token cross-entropy with training z-loss excluded.
+Midpoint-stratified, non-overlapping windows span the entire token stream up
+to the declared fixed token budget. The no-replace report binds the checkpoint,
+corpus manifest, selection code, sampling geometry, evaluated tokens, NLL,
+perplexity, and runtime. Self-source NLL alone cannot promote a candidate:
+every ablation arm must be scored on all frozen source holdouts.
 
 Legacy historical shards without v3 document ledgers cannot be represented as
 cross-source residuals by assertion. They must be rebuilt from pinned source

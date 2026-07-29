@@ -16694,3 +16694,41 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `exact_then_near_residual_chain_mechanically_enforced_live_candidates_still_unadmitted`.
+
+- **2026-07-29 05:05 EDT** -- **Immutable holdouts and fixed-token source
+  utility measurement close the next two general-data admission gaps.**
+
+  `pipeline/materialize_v3_holdout_split.py` now consumes only a fully
+  verified, internally exact-deduplicated v3 residual and its exact
+  source-selection code. Namespace- and seed-bound SHA-256 decisions assign
+  whole domains first, then representative documents, and leave the remainder
+  for training. Missing domains cannot collapse into one artificial held-out
+  domain. The tool reopens each parent token span and atomically publishes
+  three fresh no-replace v3 corpora: `train`, `document_validation`, and
+  `domain_validation`. Each child independently re-verifies every shard,
+  ledger row, tokenizer, source input, and evaluator-decontamination input.
+
+  `pipeline/verify_v3_holdout_split.py` does not trust the creation receipt. It
+  re-verifies the parent and all children, merges child ledgers by original
+  source-row order, recomputes every split assignment, and requires an exact
+  one-to-one partition with matching provenance and token accounting.
+  Manifest substitution and source-selection substitution fail closed.
+
+  `train/eval_corpus_nll.py` adds a hash-bound utility primitive for the
+  upcoming equal-token ablations. It safely loads an exact checkpoint,
+  reconstructs its full GPT configuration, verifies the holdout and all
+  external inputs, evaluates pure next-token cross-entropy with training
+  z-loss excluded, and selects deterministic midpoint-stratified windows over
+  the whole corpus rather than an early-file prefix. Its no-replace report
+  binds checkpoint, corpus, selection code, token budget, NLL/perplexity, and
+  runtime. The focused exact/near/residual/holdout/NLL suite passes **29/29**
+  with clean Ruff, byte compilation, and diff checks.
+
+  This is measurement infrastructure, not a candidate-source win. FineWeb and
+  peS2o remain running quarantined candidates; no optimizer may use either
+  until semantic adjudication, both cross-source residual gates, immutable
+  holdouts, full audits, and a same-initialization cross-holdout utility matrix
+  all pass.
+
+  Decision:
+  `immutable_cross_domain_holdouts_and_fixed_token_nll_ready_no_source_promoted`.
