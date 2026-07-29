@@ -209,6 +209,7 @@ def evaluate_corpus_nll(
     )
     total_nll = 0.0
     evaluated_tokens = 0
+    window_mean_nll: list[float] = []
     batches = 0
     started = time.monotonic()
     with torch.inference_mode():
@@ -223,6 +224,7 @@ def evaluate_corpus_nll(
                 device=device,
                 total_nll=total_nll,
                 evaluated_tokens=evaluated_tokens,
+                window_mean_nll=window_mean_nll,
             )
             pending = []
             batches += 1
@@ -233,11 +235,13 @@ def evaluate_corpus_nll(
                 device=device,
                 total_nll=total_nll,
                 evaluated_tokens=evaluated_tokens,
+                window_mean_nll=window_mean_nll,
             )
             batches += 1
     expected_tokens = selected_windows * config.seq_len
     if (
         evaluated_tokens != expected_tokens
+        or len(window_mean_nll) != selected_windows
         or not math.isfinite(total_nll)
         or total_nll <= 0
     ):
@@ -247,7 +251,14 @@ def evaluate_corpus_nll(
     report = {
         "schema": REPORT_SCHEMA,
         "checkpoint": checkpoint_receipt,
-        "checkpoint_step": payload.get("step"),
+        "checkpoint_metadata": {
+            "step": payload.get("step"),
+            "data_seed": payload.get("data_seed"),
+            "data_stream_generation": payload.get(
+                "data_stream_generation"
+            ),
+            "data_contract": payload.get("data_contract"),
+        },
         "corpus": {
             "path": str(corpus_dir.resolve()),
             "manifest_payload_sha256": manifest["payload_sha256"],
@@ -273,6 +284,7 @@ def evaluate_corpus_nll(
             "total_nll": total_nll,
             "mean_nll": mean_nll,
             "perplexity": math.exp(min(mean_nll, 80.0)),
+            "window_mean_nll": window_mean_nll,
         },
         "runtime": {
             "device": str(device),
@@ -304,6 +316,7 @@ def _score_batch(
     device: str,
     total_nll: float,
     evaluated_tokens: int,
+    window_mean_nll: list[float],
 ) -> tuple[float, int]:
     batch = torch.from_numpy(np.stack(windows).astype(np.int64)).to(device)
     inputs = batch[:, :-1]
@@ -315,13 +328,17 @@ def _score_batch(
     )
     with autocast_context:
         logits, _loss = model(inputs)
-    batch_nll = F.cross_entropy(
+    token_nll = F.cross_entropy(
         logits.float().reshape(-1, logits.shape[-1]),
         targets.reshape(-1),
-        reduction="sum",
+        reduction="none",
+    ).view(targets.shape)
+    sequence_nll = token_nll.sum(dim=1)
+    window_mean_nll.extend(
+        float(value) / targets.shape[1] for value in sequence_nll
     )
     return (
-        total_nll + float(batch_nll),
+        total_nll + float(sequence_nll.sum()),
         evaluated_tokens + targets.numel(),
     )
 

@@ -9,6 +9,7 @@ Runs on 2xH100 today; drops onto 8xH100 (evc102) unchanged the moment `highgpu` 
 import argparse
 import json
 import os
+from pathlib import Path
 import time
 from collections.abc import Mapping
 from dataclasses import fields
@@ -20,6 +21,10 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from model import GPT, GPTConfig
 from muon import Muon, split_params
 from data import ShardLoader, stream_seed
+from data_contract import (
+    checkpoint_binding,
+    resolve_training_data_contract,
+)
 
 CONFIGS = {
     # smoke: tiny, trains in seconds
@@ -78,9 +83,15 @@ def wsd_lr(step, total, warmup, decay_frac=0.2, final=0.1):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--size", default="tiny", choices=list(CONFIGS))
-    ap.add_argument("--shard-dirs", nargs="+", required=True)
+    ap.add_argument("--shard-dirs", nargs="+", default=None)
     ap.add_argument("--domain-weights", nargs="+", type=float, default=None,
                     help="optional source weights matching --shard-dirs; default is equal domains")
+    ap.add_argument("--data-contract", default="",
+                    help="immutable Phase 2 training-data contract; supplies exact shard paths/weights")
+    ap.add_argument("--data-contract-sha256", default="",
+                    help="required physical SHA-256 for --data-contract")
+    ap.add_argument("--allow-data-contract-transition", action="store_true",
+                    help="explicitly permit a resume checkpoint to change its recorded data contract")
     ap.add_argument("--steps", type=int, default=100)
     ap.add_argument("--batch-size", type=int, default=16)     # per-rank micro-batch (sequences)
     ap.add_argument("--grad-accum", type=int, default=1)
@@ -113,6 +124,42 @@ def main():
                     help="latent recursion: re-run the block stack N times (weight-shared depth). "
                          "1 = off. Ablation-gated reasoning bet.")
     a = ap.parse_args()
+
+    data_resolution = None
+    data_binding = None
+    if a.data_contract:
+        if not a.data_contract_sha256:
+            ap.error("--data-contract requires --data-contract-sha256")
+        data_resolution = resolve_training_data_contract(
+            Path(a.data_contract),
+            expected_sha256=a.data_contract_sha256,
+            deep_verify=False,
+        )
+        resolved_dirs = data_resolution["shard_dirs"]
+        resolved_weights = data_resolution["domain_weights"]
+        if a.shard_dirs is not None and a.shard_dirs != resolved_dirs:
+            ap.error("--shard-dirs differ from immutable --data-contract")
+        if (
+            a.domain_weights is not None
+            and len(a.domain_weights) == len(resolved_weights)
+            and any(
+                abs(left - right) > 1e-12
+                for left, right in zip(a.domain_weights, resolved_weights)
+            )
+        ):
+            ap.error("--domain-weights differ from immutable --data-contract")
+        if (
+            a.domain_weights is not None
+            and len(a.domain_weights) != len(resolved_weights)
+        ):
+            ap.error("--domain-weights differ from immutable --data-contract")
+        a.shard_dirs = resolved_dirs
+        a.domain_weights = resolved_weights
+        data_binding = checkpoint_binding(data_resolution)
+    elif a.data_contract_sha256:
+        ap.error("--data-contract-sha256 requires --data-contract")
+    if not a.shard_dirs:
+        ap.error("--shard-dirs or --data-contract is required")
 
     ddp = "RANK" in os.environ
     if ddp:
@@ -155,6 +202,20 @@ def main():
     if a.resume and _cks:
         ck = torch.load(_cks[-1], map_location=device)
         validate_resume_config(cfg, ck.get("cfg"))
+        checkpoint_data_binding = ck.get("data_contract")
+        if checkpoint_data_binding is not None and data_binding is None:
+            raise ValueError(
+                "resume checkpoint has a data contract but this run does not"
+            )
+        if (
+            checkpoint_data_binding is not None
+            and checkpoint_data_binding != data_binding
+            and not a.allow_data_contract_transition
+        ):
+            raise ValueError(
+                "resume data contract differs; use "
+                "--allow-data-contract-transition for an intentional stage change"
+            )
         raw.load_state_dict(ck["model"])
         if not a.fresh_opt:
             if "opt_muon" in ck and opt_muon is not None:
@@ -265,7 +326,8 @@ def main():
             _sd = dict(model=raw.state_dict(), opt_adam=opt_adam.state_dict(),
                        cfg=cfg.__dict__, step=step, data_seed=a.data_seed,
                        data_stream_generation=data_stream_generation,
-                       data_stream_seed=data_stream_seed)
+                       data_stream_seed=data_stream_seed,
+                       data_contract=data_binding)
             if opt_muon is not None:
                 _sd["opt_muon"] = opt_muon.state_dict()
             torch.save(_sd, os.path.join(a.out, f"ckpt_{step:07d}.pt"))
@@ -278,7 +340,8 @@ def main():
     if master:
         torch.save(dict(model=raw.state_dict(), cfg=cfg.__dict__, step=a.steps,
                         data_seed=a.data_seed, data_stream_generation=data_stream_generation,
-                        data_stream_seed=data_stream_seed),
+                        data_stream_seed=data_stream_seed,
+                        data_contract=data_binding),
                    os.path.join(a.out, "ckpt_final.pt"))
         print(f"[done] {a.steps} steps in {time.time()-t0:.0f}s", flush=True)
     if ddp:

@@ -149,5 +149,7 @@ class ShardLoader:
 
     def next_batch(self, device):
         x, y = self.q.get()
-        return (x.pin_memory().to(device, non_blocking=True),
-                y.pin_memory().to(device, non_blocking=True))
+        if str(device).startswith("cuda"):
+            return (x.pin_memory().to(device, non_blocking=True),
+                    y.pin_memory().to(device, non_blocking=True))
+        return x.to(device), y.to(device)

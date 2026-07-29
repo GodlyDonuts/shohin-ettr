@@ -16732,3 +16732,40 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `immutable_cross_domain_holdouts_and_fixed_token_nll_ready_no_source_promoted`.
+
+- **2026-07-29 05:28 EDT** -- **The general optimizer can no longer be pointed
+  at candidate or validation shards outside a signed data contract.**
+
+  `train/build_training_data_contract.py` deep-verifies every corpus before
+  atomically publishing a no-replace contract. Each entry must be an absolute
+  final `train` child from the immutable holdout gate, never a `.partial` or
+  validation directory; it binds the exact manifest, selection code, positive
+  mixture weight, and one shared tokenizer identity.
+  `train/verify_training_data_contract.py` provides a separate deep preflight.
+
+  `train/train.py` now accepts the contract plus its physical SHA-256 and
+  derives all shard paths and normalized domain weights from it. Conflicting
+  command-line paths or weights fail. Every periodic/final checkpoint records
+  the exact contract and corpus-manifest binding. Resuming a checkpoint while
+  dropping or silently changing its recorded contract fails; a deliberate
+  curriculum transition must use the explicit transition flag. Legacy jobs
+  without a contract retain their prior invocation path, so this change does
+  not mutate already staged scale pilots.
+
+  Fixed-corpus NLL reports now include per-window means over identical
+  midpoint-stratified windows. `train/assess_paired_corpus_nll.py` calculates
+  candidate-minus-baseline paired deltas, standard error, 95% interval, tail
+  quantiles, and window win fraction. A strict source gain requires the upper
+  95% interval below zero; promotion still requires the complete cross-source
+  holdout matrix and non-NLL capability gates. The expanded focused suite
+  passes **39/39** with clean lint, byte compilation, and diff checks.
+
+  An end-to-end tiny-model smoke then resolved a generated signed contract,
+  drew only its declared training child, completed one actual optimizer
+  update, and emitted `ckpt_final.pt` with the exact contract SHA-256 in its
+  checkpoint binding. This smoke exposed and fixed an existing CPU-only
+  loader defect: pinned-memory transfer is now used only for CUDA devices, as
+  originally intended. The GPU data path is unchanged.
+
+  Decision:
+  `signed_train_only_contract_enforced_paired_uncertainty_ready_live_candidates_unadmitted`.

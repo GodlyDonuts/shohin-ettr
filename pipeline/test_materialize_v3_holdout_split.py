@@ -94,6 +94,7 @@ def _build_source(tmp_path: Path) -> tuple[Path, Path, list[dict]]:
     manifest_path = source / "manifest.json"
     manifest = json.loads(manifest_path.read_text())
     manifest["filters"] = {"exact_dedup": True}
+    manifest["tokenizer"]["vocab_size"] = 32_768
     manifest["tokens"] = len(raw) // 2
     manifest["kept"] = len(rows)
     manifest["shard_files"] = [

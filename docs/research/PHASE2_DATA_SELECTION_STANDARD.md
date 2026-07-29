@@ -436,6 +436,27 @@ corpus manifest, selection code, sampling geometry, evaluated tokens, NLL,
 perplexity, and runtime. Self-source NLL alone cannot promote a candidate:
 every ablation arm must be scored on all frozen source holdouts.
 
+`train/build_training_data_contract.py` and
+`train/verify_training_data_contract.py` control the optimizer boundary.
+Every general-training corpus in a contract must be an absolute, final,
+non-partial `train` child from the holdout gate, with an exact manifest,
+selection-code hash, positive weight, and common tokenizer identity. Contract
+construction deep-verifies all physical inputs before no-replace publication.
+`train/train.py --data-contract ... --data-contract-sha256 ...` derives its
+shard directories and normalized weights from that signed object; conflicting
+CLI paths or weights fail. Checkpoints record the contract and source-manifest
+identities. A resume cannot silently drop or change a recorded contract; an
+intentional curriculum-stage change requires the explicit
+`--allow-data-contract-transition` flag.
+
+NLL reports retain one mean NLL per deterministic window.
+`train/assess_paired_corpus_nll.py` uses those same-window pairs to report the
+candidate-minus-baseline mean, standard error, normal 95% interval, tail
+quantiles, and window win fraction. A candidate has a statistically resolved
+strict gain only when the upper 95% bound is below zero. Final source
+promotion requires this paired evidence over the complete cross-holdout
+matrix, not merely its own source holdout.
+
 Legacy historical shards without v3 document ledgers cannot be represented as
 cross-source residuals by assertion. They must be rebuilt from pinned source
 records into v3 form or excluded from a claim-bearing Phase 2 mixture;
