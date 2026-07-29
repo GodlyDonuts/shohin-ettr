@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 07:49 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 09:51 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17258,3 +17258,66 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `formal_logic_physical_challenger_verified_zero_weight_pending_transfer_utility`.
+
+- **2026-07-29 09:51 EDT** -- **The peS2o 10B candidate passed complete
+  byte-level verification after a fail-closed Lustre stabilization recovery;
+  exact retained-document review is now running, and the corpus is still not
+  training-admitted.**
+
+  Accelerated build `754484` completed tokenization but failed closed during
+  its final verifier. It had already written a v3 manifest, 100 contiguous
+  shards, and a text-free document ledger under
+  `artifacts/shards/pes2o_selected_core_10b_r2.partial`. The failure was not a
+  digest, token-count, ledger, or source-input mismatch. The verifier observed
+  a Lustre identity change while reading shard 93. A first unchanged recovery
+  verifier `754556` then stopped on shard 94 for the same reason. Direct
+  quiescence measurement around shard 94 established a stable device, inode,
+  size, mtime, ctime, and link count; its compressed SHA-256 and decompressed
+  token count exactly matched the manifest. Only access time had advanced.
+
+  Private commits `b3b89e3` and `ef0250f` add a narrowly scoped recovery lane.
+  It cannot tokenize, download, admit, or overwrite data. It requires the
+  partial path to equal `OUT.partial`, checks the original isolated tokenizer
+  and verifier hashes, optionally performs a read-only regular-file warmup
+  for Lustre cache/metadata settling, and then runs the unchanged complete
+  verifier before the final same-filesystem rename. The recovery/verifier
+  focused suite passes **10/10** with clean Ruff, shell syntax, and diff
+  checks.
+
+  Recovery job `754557` completed cleanly in 3m38s from the original
+  `2b0d30c` candidate runtime. Its independent receipt verifies all 100 shard
+  hashes and decompressed token counts, **1,481,538** document-ledger rows,
+  every pinned physical source, the exact tokenizer, the decontamination
+  pickle, and every bound evaluation file. The candidate contains exactly
+  **10,000,000,665 tokens**. Manifest payload SHA-256 is
+  `16ed0001f414b8825f9ac8c4faa4334af16a931bf11f0150c57e366044a5b532`.
+  Only after that receipt did the job publish
+  `artifacts/shards/pes2o_selected_core_10b_r2`.
+
+  The dead dependency review `754485` was canceled. Private commit `34c7619`
+  adds a source-agnostic pinned review lane whose builder, profiler,
+  candidate-selection code, and shard verifier are all exact-hash checked.
+  Review runtime `scratchpad/shohin_pes2o_review_34c7619` combines the
+  candidate's exact historical selection code with the current review and
+  verifier sources; every file is read-only and hash-matched. Job `754558`
+  now builds a 1,000-row exact retained-document packet below the private
+  scratch tree and emits only a text-free receipt to publishable artifacts.
+  Review-focused tests pass **13/13**.
+
+  Concurrent custody remains bounded: ETTR has **215/216** main qualification
+  cells and **108/108** confirmation cells, with only recovery cell
+  `753823_6` still running; all downstream ETTR selection, materialization,
+  independent audit, separation, and immutable-release jobs remain held.
+  FineWeb-Edu r2 has 33 approximately 100M-token partial shards, FinePDF has
+  12, and strict Essential-Web continues scanning with no shard yet. Newton
+  request `719497` remains pending resources for ten H100s with a 15:03 EDT
+  estimate; request `719496` remains pending its account GRES-minute limit.
+  No candidate optimizer is active.
+
+  peS2o is a verified candidate, not admitted data. Semantic review, exact and
+  near cross-source residualization, immutable document/domain holdouts,
+  aggregate audits, and equal-token transfer/retention utility remain
+  mandatory.
+
+  Decision:
+  `pes2o_10b_byte_verified_review_running_candidate_only_no_optimizer`.
