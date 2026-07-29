@@ -16601,3 +16601,36 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `pes2o_exact_batch_speedup_pass_r2_candidate_replaces_unsealed_slow_partial`.
+
+- **2026-07-29 live custody recheck** -- **ETTR qualification is two cells
+  from a complete inventory; the active workers are demonstrably computing,
+  while general-data candidates continue to grow under quarantine.**
+
+  Stokes ETTR recovery array `753823` has completed seven of its nine recovery
+  cells with exit `0:0`; only cells `5` and `6` remain running. The durable
+  inventory is now **214/216 main reports plus 108/108 sealed-confirmation
+  reports**. Newly completed cell `4` passed and admitted **3,000/3,000**
+  dependent-composition Horn candidates with zero rejections. The two
+  remaining workers each accumulated approximately **11.4 CPU-hours** with
+  stable memory below 600 MiB and no stderr, establishing live computation
+  rather than allocation-only liveness. Selector `753824` and the complete
+  materialization/audit/release chain through `754460` remain correctly held
+  behind successful completion; no partial ETTR payload is usable.
+
+  Accelerated FineWeb-Edu job `754467` has written five unsealed
+  approximately 100M-token shards, and accelerated peS2o job `754484` has
+  written two. Both remain `.partial` candidate namespaces and are excluded
+  from training until their final verifiers, exact-document reviews,
+  cross-source residualization, full audits, and matched-token utility gates
+  pass. Newton requests `719497`/`719496` remain pending priority; the
+  10-H100 request retains an estimated start of
+  `2026-07-29T10:26:44`.
+
+  ETTR evidence is therefore split precisely: the 192,779,435-parameter
+  architecture, causal objectives, full-parameter gradients, exact resume,
+  and isolated H100 parameter update are demonstrated; learned capability
+  improvement is not yet demonstrated because no admitted ETTR release or
+  production optimizer exists.
+
+  Decision:
+  `ettr_mechanics_and_trainability_positive_corpus_qualification_214_of_216_capability_learning_unmeasured`.
