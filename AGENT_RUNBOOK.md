@@ -16390,3 +16390,46 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `production_compile_exact_resume_mechanics_pass_h100_canary_required_before_release_launch`.
+
+- **2026-07-29 02:37 EDT** -- **The isolated full-parameter ETTR H100
+  production-step canary passed; general-data custody remains fail-closed and
+  FineWeb recovery is now in a fresh immutable namespace.**
+
+  Newton canary result
+  `/lustre/fs1/home/sa305415/shohin_ettr_prod_canary_4476d24/results/run_002/report.json`
+  is SHA-256
+  `1f00a2fb62438a01ce2742017ba549d0f470723b076eeeb6fffb70621e451e79`.
+  It executed two real full-parameter B16 `ETTRTrainStep` updates under
+  Inductor/default from immutable 300k checkpoint
+  `ckpt_0300000.pt`. The protected checkpoint was byte-identical before and
+  after (SHA-256
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`),
+  all twelve loss receipts and the gradient norm were finite, and the model
+  parameter digest changed. The receipt binds source commit
+  `4476d24b2fee18174a4bc935ab7bd747440b1eac`, canary source SHA-256
+  `56d7765853bb5e8c23be6bbbbc300543560c1a8738f498b4d4eec872ebf83237`,
+  production-step SHA-256
+  `f1591150877d7006c46bf8555155acc7d14707efad7e9847000be785a0925d41`,
+  deterministic train/validation batch hashes, and manifest hash. After the
+  one-time 620.08-second compile/update, the measured update took 1.0933
+  seconds (11,239 encoded tokens/sec for this 12,288-token synthetic
+  ETTR-shaped canary), with 13.67 GB peak reserved H100 memory. This proves
+  execution and provenance mechanics only; it is not a corpus-quality or
+  production-throughput claim, and no production optimizer was launched.
+
+  FineWeb-Edu score-4+ build `754455` failed closed before tokenization when
+  two HTTP transfers closed early. The builder retained 138 individually
+  hash-verified physical Parquet files and two resumable partials, then exited
+  rather than accepting an incomplete 140-file manifest. The first resume
+  `754462` also failed closed because a pre-existing legacy
+  `fineweb_edu_score4_core_10b.partial` output namespace was present. It was
+  not modified or deleted. Replacement build `754464` resumes the same two
+  source partials against the same pinned input manifest but writes only to
+  fresh namespace `fineweb_edu_score4_core_10b_r1`; exact-document review
+  `754465` is held strictly after successful completion. No FineWeb artifact,
+  including the 138 verified sources, is training-admitted. peS2o `754199`
+  and ETTR recovery cells `753823_[4,5,6]` remain live; their downstream
+  admission/release chains are still dependency-held.
+
+  Decision:
+  `h100_ettr_execution_pass_general_corpus_still_unadmitted_fineweb_recovery_fresh_namespace`.
