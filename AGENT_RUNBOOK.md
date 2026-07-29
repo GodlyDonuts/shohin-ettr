@@ -16473,3 +16473,19 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `fineweb_exact_batch_speedup_pass_r2_candidate_build_live_general_admission_still_fail_closed`.
+
+- **2026-07-29 03:16 EDT** -- **The FineWeb review dependency was rebound to
+  the accelerated `r2` build after the prior non-final build was retired.**
+
+  The review job inherited from canceled build `754464` correctly surfaced as
+  `DependencyNeverSatisfied`; it was canceled rather than allowed to target a
+  stale path. Replacement job `754468` is now strictly
+  `afterok:754467`, receives only final candidate directory
+  `fineweb_edu_score4_core_10b_r2`, binds the r2 tokenizer-selection source,
+  and writes to fresh private exact-document packet
+  `private/source_reviews/fineweb_edu_score4_r2_10k.review.jsonl` plus a
+  text-free receipt. It cannot run before the r2 shard verifier succeeds.
+  This repairs scheduling provenance only and does not admit the source.
+
+  Decision:
+  `fineweb_r2_review_dependency_bound_to_exact_completed_candidate`.
