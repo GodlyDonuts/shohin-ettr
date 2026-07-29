@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 01:04 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 01:23 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -16291,3 +16291,60 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `fineweb_physical_source_pinned_direct_score4_build_live_candidates_remain_unadmitted`.
+
+- **2026-07-29 01:23 EDT** -- **The audited ETTR corpus now has a
+  dependency-held, source-bound path to an immutable optimizer release; no
+  production optimizer is active.**
+
+  Private commit `d84a5a032520a7d1e3cd20b479623366a5e1117f`
+  upgrades the release schema to v2. Every release now binds the exact
+  40-hex source commit and the byte count and SHA-256 of
+  `pipeline/build_ettr_il_v3_training_release.py`, in addition to the
+  independent main audit, main/confirmation separation receipt, tokenizer,
+  complete immutable source-shard inventory, B16 stream index, disk packet
+  index, continuation manifest, and protected checkpoint SHA-256. Malformed
+  source commits fail closed. The broader release, packet-index,
+  distributed, optimizer, checkpoint, data-contract, and train-step suite
+  passes **82/82**; Ruff, byte compilation, shell syntax, and diff checks
+  pass.
+
+  A sparse clean checkout of the private commit was transferred to Stokes
+  and independently verified. The first archive extraction failed closed
+  before submission because macOS metadata sidecars polluted the Git object
+  directory; it is isolated and non-releasable. A fresh metadata-free archive
+  SHA-256
+  `5f7473aad978ac6593490dea5d7a15d8c8df0f8c9bfb1adea7a0928feeef3702`
+  extracted cleanly, reproduced source HEAD `d84a5a0`, an empty Git status,
+  wrapper SHA-256
+  `b9352319a79d40166f6774c1cc92685bd7785fb4cb70a9da49458a7960d235a6`,
+  and builder SHA-256
+  `9bc5163022a787e3455d0d4108f35505bb6dac30a7ab3ca8502959e9b81fd248`.
+
+  Stokes job `754460` is `PENDING (Dependency)` on `afterok:753830`. It
+  cannot execute before selection, task-manifest construction, all main and
+  sealed-confirmation materialization cells, both aggregate audits, and the
+  zero-overlap separation audit complete successfully. It writes only to
+  fresh release namespace
+  `/lustre/fs1/home/sa305415/ettr-il-v3/releases/training-d84a5a0`.
+  The recovery array has now completed cells 0, 1, 3, 12, 16, and 17; cells
+  4, 5, and 6 remain active around 8.5 hours.
+
+  General-data intake also continues. peS2o v3 job `754199` has emitted two
+  approximately 100M-token shards while its exact-document review remains
+  dependency-held. FineWeb-Edu score-4+ job `754455` has completed and
+  hash-verified 60 of 140 pinned Parquet inputs, with ten resumable partials
+  active; its review remains dependency-held. Neither source is admitted.
+  Passwordless Stokes-to-Newton transport is unavailable, so the eventual
+  data release will use an authenticated direct server-to-server transfer,
+  not a Mac relay.
+
+  One launch-critical implementation gap remains: formal B16 qualification
+  measured a 1.643x compiled-arm speedup, but
+  `train/train_ettr_v3.py` still executes the eager composite path. Do not
+  spend production ETTR updates until the trainer runs the same compiled
+  factual/intervention/objective subject under the existing stream,
+  packet-sufficiency, exact-resume, optimizer, and checkpoint receipts and a
+  bounded H100 canary confirms parity.
+
+  Decision:
+  `ettr_release_dependency_held_source_bound_compile_parity_required_before_optimizer_launch`.
