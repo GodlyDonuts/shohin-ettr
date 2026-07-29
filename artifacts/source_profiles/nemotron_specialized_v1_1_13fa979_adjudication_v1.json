@@ -21,15 +21,35 @@
         "exact_eval_prompt_rows": 0,
         "bounded_eval_13gram_rows": 0
       },
+      "physical_challenger": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/shards/nemotron_formal_logic_13fa979_challenger_128m",
+        "manifest_path": "artifacts/source_profiles/nemotron_formal_logic_13fa979_challenger_128m.manifest.json",
+        "manifest_file_sha256": "73c327ab2c50be8bd61996e4d5474f9cbef791a8fb517b905470f23208b6fea8",
+        "manifest_payload_sha256": "4a9433922f3f1ae5f40d7c2d446e671cc97185d34138004406da809d6d0d66e5",
+        "tokens": 97941363,
+        "documents": 315691,
+        "shards": 2,
+        "source_rows": 490648,
+        "dropped_short": 125241,
+        "dropped_long": 511,
+        "dropped_exact_duplicate": 899,
+        "dropped_extraction_quality": 48306,
+        "dropped_eval_contamination": 0,
+        "training_admitted": false
+      },
       "private_review": {
-        "rows": 100,
-        "sha256": "86f74ca266525613a73ddc7d9b3a5b13289bdb53567fad0c8028557fa30d151f",
+        "profile_rows": 100,
+        "profile_packet_sha256": "86f74ca266525613a73ddc7d9b3a5b13289bdb53567fad0c8028557fa30d151f",
+        "selected_rows": 1000,
+        "selected_packet_sha256": "1a7b8ef128e027b074f57023f90855df2637e0df3ebbfa9bfa77378a2bca0962",
+        "selected_receipt_path": "artifacts/source_reviews/nemotron_formal_logic_13fa979_challenger_1000.receipt.json",
+        "selected_receipt_sha256": "eb96ec92c2b0d0547805ed08eaa1485dab253098fdd6c6f67a11f32f2b8a8c45",
         "text_committed": false
       },
       "decision": "bounded_late_pretraining_challenger",
       "rationale": [
         "clean structural profile with no sampled evaluation overlap",
-        "manual spot checks found coherent formal-logic supervision",
+        "manual spot checks of the exact selected packet found coherent formal-logic supervision and broad answer balance",
         "multiple-choice and repeated translation templates may reward format memorization",
         "requires source-independent transfer holdouts and equal-token broad-retention ablation"
       ],

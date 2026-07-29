@@ -1,0 +1,366 @@
+{
+  "config": "Nemotron-Pretraining-Formal-Logic",
+  "dataset": "nvidia/Nemotron-Pretraining-Specialized-v1.1",
+  "decontamination": {
+    "direct_eval_grams": 810428,
+    "eval_files": [
+      {
+        "bytes": 1632066,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/append_ledger_v1_heldout.jsonl",
+        "sha256": "3117ec5072134a9bade424499be9ee3a3e504e4f26deec445c3b5b1baeccaca0"
+      },
+      {
+        "bytes": 8944,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/categorical_microcode_manual_v1.jsonl",
+        "sha256": "56be38734feeb60cfb000318502e41f3576aa6673bf0d5a904fc8d225f6536b2"
+      },
+      {
+        "bytes": 15520044,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/certified_latent_ledger_v1_heldout.jsonl",
+        "sha256": "1bef01c34bf034aaf00a8f976b4463cc28af87ca460c8187873543a7e05ad6a9"
+      },
+      {
+        "bytes": 10137932,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/certified_latent_ledger_v2_compact_heldout.jsonl",
+        "sha256": "dfcf852c0ca57b6bb58f4f7c1a775221e33e97aa261d79478cc3bf36e82e5fc7"
+      },
+      {
+        "bytes": 9424545,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_bisimulation_v1_heldout.jsonl",
+        "sha256": "163e60398f239ab4058129ef135350d3d5509ea1dc309417d9f85dabbdf59256"
+      },
+      {
+        "bytes": 2888890,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_residual_algebra_v1_heldout.jsonl",
+        "sha256": "f66536b85cfe2fafa71690a0e3a5a2adc8fb5db0dd5b912ad69f8362c927b248"
+      },
+      {
+        "bytes": 795801,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_residual_algebra_v1_two_edit_r1.jsonl",
+        "sha256": "7254bd0a857aa27cfb32a323620a7cd6adb46a062c3200a4076d3affae82b560"
+      },
+      {
+        "bytes": 739753,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_residual_algebra_v1_values_answer_supported.jsonl",
+        "sha256": "cfe048abee712cf0b87014d0be7eb2d8d4c11e9a82b18630061769f05ed12244"
+      },
+      {
+        "bytes": 1132108,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_basis_v3_heldout.jsonl",
+        "sha256": "f2fcfcae41b55aa82dd360036bd8c9c00ed6e4ca442debec1c85ed282e50dfe1"
+      },
+      {
+        "bytes": 847108,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_factor_v1_heldout.jsonl",
+        "sha256": "a699ac58ad8184f4dc23dcfa317cd6e7b8f7d4ef453dcbf1ae21201901e0948a"
+      },
+      {
+        "bytes": 1771954,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_recurrent_v1_heldout.jsonl",
+        "sha256": "b831e43d87a7594464d3721212cbcb049bdfe7e5b7657680e0147b1020c3a72f"
+      },
+      {
+        "bytes": 1771962,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_recurrent_v2_heldout.jsonl",
+        "sha256": "89ce11b36ff2f56e83cda72a1f07b1a90f4a3dc3803c69db2779a27219712646"
+      },
+      {
+        "bytes": 3890764,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_core_factor.jsonl",
+        "sha256": "888d18e29740edf4ff1a184ed023debad1715b2610e2e3ec34d871ded4f6abf5"
+      },
+      {
+        "bytes": 4029801,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_heldout.jsonl",
+        "sha256": "832da1a5264dbd0ec9ccf5b8515276794d545531da5f3dbdacdf4c239452ef97"
+      },
+      {
+        "bytes": 3957025,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_magnitude_factor.jsonl",
+        "sha256": "3e530f4e8210aa7faf737c5d8a4605d0e899ab38a3d051f1291317ce3c41b452"
+      },
+      {
+        "bytes": 4545675,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_two_edit_factor.jsonl",
+        "sha256": "561d2136a4767c9a280946e0a2228e8dae5daa0f1e2255bc514a3bce9220ed15"
+      },
+      {
+        "bytes": 748933,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/gsm8k.jsonl",
+        "sha256": "752adc99f23132275139f1f7be57126b08735a55daf0c56859ee6df70abafbac"
+      },
+      {
+        "bytes": 680585,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/gsm8k_platinum.jsonl",
+        "sha256": "1cddc40ef614d23590591cc257586c81503f3ec6d953909ddc9a38f97ff5a4aa"
+      },
+      {
+        "bytes": 214438,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/humaneval_full.jsonl",
+        "sha256": "9a5b81ac8a9aa1ac8f4457ad1aadade38d64cb479f37aad6e752b0179fd1d3e3"
+      },
+      {
+        "bytes": 113701,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/humaneval.jsonl",
+        "sha256": "8775da00f3551f6a714899a34b6a1ee2a12728ee27db2685ebc8a7e3bc793e6c"
+      },
+      {
+        "bytes": 987053,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_operator_eval_slices_v2_64.jsonl",
+        "sha256": "b9106b3233c62592dba5f244d5fdec5474d56c813b6d39dc0fe8ee77a441039c"
+      },
+      {
+        "bytes": 2503527,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_operator_v1_heldout.jsonl",
+        "sha256": "5306b12e9cad77564317b3adfb8ff029ec58104f7a27c13cb7b1e125a7e4855f"
+      },
+      {
+        "bytes": 3308568,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_state_algebra_v1_heldout.jsonl",
+        "sha256": "83d14d65f319decebe3195ffc7b20269161a299212142f3bd555875b8dcd7f3a"
+      },
+      {
+        "bytes": 3405912,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_state_algebra_v1_r2_heldout.jsonl",
+        "sha256": "6a9619ebc73f1778dbb13d69d903de1790ce0292f231c437f35e282a934581da"
+      },
+      {
+        "bytes": 394177,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/math500.jsonl",
+        "sha256": "390f95aa011b879f4cfb1153b7eb634bb1a12ab423cf65706a113bb0ea9d7a12"
+      },
+      {
+        "bytes": 279073,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/mbpp_full.jsonl",
+        "sha256": "730cb8e37059e9f4a278db35ba47e86e744b0fec517d4d0a9b43b13fa4d8ba44"
+      },
+      {
+        "bytes": 153625,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/mbpp.jsonl",
+        "sha256": "ca186eb8925b1158f18f043d68514c428020d09d14959b3b0a67721ac19676d1"
+      },
+      {
+        "bytes": 1416475,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/native_residual_relay_v1_heldout.jsonl",
+        "sha256": "1d8b633713fff41b331e7c2728e9c0aa3ae307a7b99622c526d99d6dc84120f2"
+      },
+      {
+        "bytes": 1303648,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v1_heldout.jsonl",
+        "sha256": "c8f2c063de0367e687d3699637678e1cced997569b4a9aaaa43d9bb2070b061b"
+      },
+      {
+        "bytes": 4208131,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v2_contract_heldout.jsonl",
+        "sha256": "c4ab5e873857d8b43ff3041fadeb8ec311fdfecaf34a346cd01a2dbf7a8b6188"
+      },
+      {
+        "bytes": 4176631,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v2_contract_heldout_r2.jsonl",
+        "sha256": "103912e455d3e05514ae3153fcb0abedc09d9748804513542a8561d1c6e57bd3"
+      },
+      {
+        "bytes": 11247622,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v3_state_heldout.jsonl",
+        "sha256": "962eebfb32d0a4a90c51fe77d876ecee4eb76e38dabca2bb3b927ff2cad7218f"
+      },
+      {
+        "bytes": 981512,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/referential_argument_graph_v5_fresh.jsonl",
+        "sha256": "d85f16ff374b0c650cf3603826cc5f3b377842818db62bada3b84e71308b9473"
+      },
+      {
+        "bytes": 2982737,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v1_heldout.jsonl",
+        "sha256": "b7beb27a2f30f3255f7400791fb1fce8bb5c5d52aeb1c683cb85e7bffa115514"
+      },
+      {
+        "bytes": 3333957,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_factor_delta.jsonl",
+        "sha256": "898b591d43a710a3e8a1ee1415a03782fdfd999b72dff7505ee38a808b8f1c11"
+      },
+      {
+        "bytes": 3429477,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_factor_language.jsonl",
+        "sha256": "482f303465aef45bb3f046ebdb3a1e5f7bc8d24f4ab5bae8973e8dcf9c7f5a3a"
+      },
+      {
+        "bytes": 3358781,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_factor_values.jsonl",
+        "sha256": "b94119eeb0108cd488e4b407f8c6c89cc32dbd9332ed8c5f66abcc3be1f5f967"
+      },
+      {
+        "bytes": 3379229,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_heldout.jsonl",
+        "sha256": "6f7dfdfeffc12ddf1ffcb21c12579009d7c00330cbcef54361ab6c4479972a0c"
+      },
+      {
+        "bytes": 2033630,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_bridge_v1_heldout.jsonl",
+        "sha256": "8c0ceff37524fbf14d5e500d78c3a8d77d5ad52209636e2e5c4e31364aec2a22"
+      },
+      {
+        "bytes": 10977450,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_capsule_v1_heldout.jsonl",
+        "sha256": "c0b86e60c8d0d1503264ef1f6b10001ba4d6480ea669733dc67312f620fcb1fc"
+      },
+      {
+        "bytes": 211988,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_composition_transfer_v1.jsonl",
+        "sha256": "2c80f7eb7b644fefd8bf4699c63c2e174f504d607da94f4c1352f0e4aae65ed8"
+      },
+      {
+        "bytes": 1713239,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/source_memory_packet_v1_heldout.jsonl",
+        "sha256": "6a10a6b27be8dc6b0a36954296d9f33abd099d87bbdff46c251a1357f1c894c3"
+      },
+      {
+        "bytes": 827265,
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/token_native_ledger_v1_heldout.jsonl",
+        "sha256": "9ee78b94ca4798c1cf6e742b561c208b273e33eccb059a2873de1d946fbd0316"
+      }
+    ],
+    "eval_globs": [
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/append_ledger_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/categorical_microcode_manual_v1.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/certified_latent_ledger_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/certified_latent_ledger_v2_compact_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_bisimulation_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_residual_algebra_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_residual_algebra_v1_two_edit_r1.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_residual_algebra_v1_values_answer_supported.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_basis_v3_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_factor_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_recurrent_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_recurrent_v2_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_core_factor.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_magnitude_factor.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_two_edit_factor.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/gsm8k.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/gsm8k_platinum.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/humaneval_full.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/humaneval.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_operator_eval_slices_v2_64.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_operator_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_state_algebra_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_state_algebra_v1_r2_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/math500.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/mbpp_full.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/mbpp.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/native_residual_relay_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v2_contract_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v2_contract_heldout_r2.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v3_state_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/referential_argument_graph_v5_fresh.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_factor_delta.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_factor_language.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_factor_values.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_bridge_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_capsule_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_composition_transfer_v1.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/source_memory_packet_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/token_native_ledger_v1_heldout.jsonl"
+    ],
+    "gram_n": 13,
+    "pickle_bytes": 16773423,
+    "pickle_grams": 277026,
+    "pickle_path": "/lustre/fs1/home/sa305415/shohin/artifacts/evals/evalgrams.pkl",
+    "pickle_sha256": "e0d0a8cf1fa0313be9d1250d7eec0f38df0812b3bf4e8a084c53de97e3d65522"
+  },
+  "document_ledger": {
+    "bytes": 41148131,
+    "contains_document_text": false,
+    "path": "documents.jsonl.zst",
+    "rows": 315691,
+    "schema": "shohin-tokenized-document-v1",
+    "sha256": "3b98c97d7d35f3b222617dbf7ccd4448ad2193f27571475d9fd183167d9a7c60",
+    "tokens": 97941363
+  },
+  "dropped_allowed_value": 0,
+  "dropped_boilerplate": 0,
+  "dropped_contam": 0,
+  "dropped_domain_cap": 0,
+  "dropped_duplicate": 899,
+  "dropped_extraction_quality": 48306,
+  "dropped_lang": 0,
+  "dropped_language_missing": 0,
+  "dropped_long": 511,
+  "dropped_quality": 0,
+  "dropped_repetition": 0,
+  "dropped_required_allowed_value": 0,
+  "dropped_required_value": 0,
+  "dropped_short": 125241,
+  "filters": {
+    "allowed_values": null,
+    "allowed_values_field": null,
+    "domain_field": null,
+    "exact_dedup": true,
+    "language": null,
+    "language_field": "language",
+    "max_boilerplate_markers": 1,
+    "max_chars": 10000,
+    "max_control_fraction": 0.001,
+    "max_line_repeat_fraction": 0.18,
+    "max_replacement_fraction": 0.0005,
+    "max_tokens_per_domain": 0,
+    "min_alpha_fraction": 0.65,
+    "min_chars": 300,
+    "minimum_number": null,
+    "minimum_number_field": null,
+    "require_language_field": false,
+    "required_allowed_values": {},
+    "required_minimum_numbers": {},
+    "required_values": {
+      "license": "cc-by-4.0",
+      "metadata.category": "Nemotron-Pretraining-Formal-Logic"
+    },
+    "retained_domains": 0,
+    "text_col": "text",
+    "text_cols": null
+  },
+  "kept": 315691,
+  "local_input_format": "parquet",
+  "payload_sha256": "4a9433922f3f1ae5f40d7c2d446e671cc97185d34138004406da809d6d0d66e5",
+  "requested_revision": "13fa979be2e7f7e62913eee0ec5e97c8fd6e24af",
+  "resolved_revision": "13fa979be2e7f7e62913eee0ec5e97c8fd6e24af",
+  "schema": "shohin-tokenized-shards-v3",
+  "seen": 490648,
+  "selection_code_sha256": "b623994d9c0eedaab9a40ff89ead5c2cde63574b6042d9d9e69c33b6ed1a1aea",
+  "shard_files": [
+    {
+      "bytes": 11243049,
+      "path": "shard_00000.u16.zst",
+      "sha256": "0dae7af33c95cf28d0eb4ee0cb7bca0d44759c31df4790281aa94928dd5eb668",
+      "tokens": 50000287
+    },
+    {
+      "bytes": 26277544,
+      "path": "shard_00001.u16.zst",
+      "sha256": "42537f2d4204635b4a41ba05c8b05af180407f121afef3ce2be74a61881eeb87",
+      "tokens": 47941076
+    }
+  ],
+  "shards": 2,
+  "source_files": [
+    {
+      "bytes": 73074239,
+      "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/nemotron_specialized_v1_1_13fa979_profile_sources/formal_logic.parquet",
+      "sha256": "b8b641309dec27e836db6a2003d3045c6ed060c8d6a23e3a93100e1c8a3a450b"
+    }
+  ],
+  "split": "train",
+  "tokenizer": {
+    "batch_size": 256,
+    "bytes": 2309567,
+    "eos_id": 0,
+    "eos_token": "<|endoftext|>",
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/shohin-tok-32k.json",
+    "sha256": "87532df5c121753de3b29194e1f9e3de47986d3f5359548fdf93606773a233d4",
+    "vocab_size": 32768
+  },
+  "tokens": 97941363
+}

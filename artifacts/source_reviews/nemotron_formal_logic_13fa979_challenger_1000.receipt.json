@@ -1,0 +1,32 @@
+{
+  "config": "Nemotron-Pretraining-Formal-Logic",
+  "contains_document_text": false,
+  "dataset": "nvidia/Nemotron-Pretraining-Specialized-v1.1",
+  "document_ledger_sha256": "3b98c97d7d35f3b222617dbf7ccd4448ad2193f27571475d9fd183167d9a7c60",
+  "length_bucket_counts": {
+    "tokens_00000_02048": 999,
+    "tokens_02049_08192": 1
+  },
+  "license_counts": {
+    "None": 1000
+  },
+  "manifest_payload_sha256": "4a9433922f3f1ae5f40d7c2d446e671cc97185d34138004406da809d6d0d66e5",
+  "manifest_recomputed_payload_sha256": "4a9433922f3f1ae5f40d7c2d446e671cc97185d34138004406da809d6d0d66e5",
+  "private_packet_basename": "nemotron_formal_logic_13fa979_challenger_1000.jsonl",
+  "private_packet_bytes": 2651752,
+  "private_packet_sha256": "1a7b8ef128e027b074f57023f90855df2637e0df3ebbfa9bfa77378a2bca0962",
+  "review_rows": 1000,
+  "schema": "shohin-selected-source-review-receipt-v1",
+  "selection_rule": "lowest stable-identity hash priorities per license/length stratum, then domain-capped deterministic fill",
+  "unique_domains": 1,
+  "verification": {
+    "all_shards_hash_and_token_verified": true,
+    "document_ledger_verified": true,
+    "document_rows": 315691,
+    "external_inputs_verified": true,
+    "manifest_payload_sha256": "4a9433922f3f1ae5f40d7c2d446e671cc97185d34138004406da809d6d0d66e5",
+    "schema": "shohin-tokenized-shard-verification-v1",
+    "shards": 2,
+    "tokens": 97941363
+  }
+}

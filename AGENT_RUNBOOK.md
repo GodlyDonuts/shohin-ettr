@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 07:36 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 07:49 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17216,3 +17216,45 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `formal_logic_bounded_challenger_algorithmic_bulk_rejected_no_candidate_optimizer`.
+
+- **2026-07-29 07:49 EDT** -- **Formal Logic now exists as a fully verified
+  physical challenger, still at zero optimizer weight.**
+
+  Private commit `976cdc6` added a fail-closed candidate builder and three
+  static gates. The source/tokenizer/verifier focused suite passes **45/45**
+  with clean Ruff and shell syntax. Stokes runtime
+  `scratchpad/shohin_formal_logic_runtime_976cdc6` contains only the exact
+  tokenizer, shard verifier, and builder; all are read-only and hash-matched.
+  Job `754531` completed cleanly in four minutes after revalidating the pinned
+  dataset card and Formal Logic Parquet source.
+
+  From 490,648 source rows, the hard gate retained **315,691 documents and
+  97,941,363 tokens** in two shards. It dropped 125,241 short rows, 511 long
+  rows, 899 exact duplicates, and 48,306 extraction-quality failures; no row
+  was dropped for evaluation contamination. The immutable v3 manifest file
+  SHA-256 is
+  `73c327ab2c50be8bd61996e4d5474f9cbef791a8fb517b905470f23208b6fea8`;
+  canonical payload SHA-256 is
+  `4a9433922f3f1ae5f40d7c2d446e671cc97185d34138004406da809d6d0d66e5`.
+  Independent verification reopened both shards, all 315,691 ledger rows,
+  the exact tokenizer, source file, evaluation files, and selection code.
+
+  Exact retained-document review job `754534` then completed from the
+  immutable review runtime. Its 1,000-row private packet SHA-256 is
+  `1a7b8ef128e027b074f57023f90855df2637e0df3ebbfa9bfa77378a2bca0962`;
+  its text-free receipt SHA-256 is
+  `eb96ec92c2b0d0547805ed08eaa1485dab253098fdd6c6f67a11f32f2b8a8c45`.
+  The packet has no truncated row, balanced A/B/C/D answer counts, and
+  deterministic coverage across token-length strata. Manual spot checks
+  found coherent symbolization, predicate/propositional translation, and
+  validity tasks, while confirming a narrow synthetic multiple-choice style
+  and verbose generated explanations. This justifies a utility challenger,
+  not core admission.
+
+  Next required gates are exact and near cross-source residualization,
+  immutable train/document/domain holdouts, cross-holdout NLL, and an
+  equal-token transfer/retention ablation. Until those pass, the corpus
+  remains zero weight and cannot enter a training data contract.
+
+  Decision:
+  `formal_logic_physical_challenger_verified_zero_weight_pending_transfer_utility`.

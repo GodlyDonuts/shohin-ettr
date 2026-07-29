@@ -141,14 +141,18 @@ Deterministic 10,000-row profiles sharpened the source policies:
   evaluation-prompt matches. Formal Logic had zero bounded evaluation 13-gram
   overlaps and a clean text profile; private spot checks found coherent but
   repetitive multiple-choice logic supervision. It may proceed only as a
-  maximum-one-percent transfer challenger. Algorithmic had one bounded
-  13-gram overlap, a heavier HTML/repetition tail, and private spot checks
-  exposed inconsistent sample arithmetic and overstated complexity claims.
-  Bulk Algorithmic is rejected; only a syntax-checked, execution-verified,
-  sample-consistent residual may be reconsidered. Exclude its MMLU-derived
-  Multiple Choice component and keep Code Concepts separate because its
-  taxonomy was informed by HumanEval prompts. Both retained paths require
-  source-independent transfer holdouts and broad-retention ablations.
+  maximum-one-percent transfer challenger. Its exact physical build retained
+  315,691 documents and 97,941,363 tokens after dropping short, extraction-
+  weak, and duplicate records; all shards, source files, evaluation inputs,
+  and the text-free document ledger independently verify. A deterministic
+  1,000-document retained review remains private and hash-bound. Algorithmic
+  had one bounded 13-gram overlap, a heavier HTML/repetition tail, and private
+  spot checks exposed inconsistent sample arithmetic and overstated
+  complexity claims. Bulk Algorithmic is rejected; only a syntax-checked,
+  execution-verified, sample-consistent residual may be reconsidered. Exclude
+  its MMLU-derived Multiple Choice component and keep Code Concepts separate
+  because its taxonomy was informed by HumanEval prompts. Both retained paths
+  require source-independent transfer holdouts and broad-retention ablations.
 
 Direct, revision-pinned Dolma 3 component probes further show why ingredients
 must be adjudicated separately:
