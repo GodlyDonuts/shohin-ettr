@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-28 23:52 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-28 23:58 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -16064,3 +16064,38 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `pes2o_anonymous_loader_closed_direct_30file_hash_bound_transport_ready`.
+
+- **2026-07-28 23:58 EDT** -- **Authenticated direct peS2o transport is
+  running and verifying at line rate; no secret entered code, logs, or Git.**
+
+  First direct job `754194` failed closed at time zero because Stokes curl
+  7.61.1 does not implement `--retry-all-errors`; compatibility commit
+  `69bf4eb` replaced it with the locally supported retry flags. Job `754196`
+  then proved that unauthenticated direct file URLs are also HTTP-429 limited
+  on UCF egress and failed before writing a source byte.
+
+  A mode-0600 curl configuration containing only the Hugging Face transport
+  header was installed outside Git and outside every data/output manifest.
+  The repository `.env` and all unrelated credentials were not transferred.
+  A pinned-file HEAD request authenticated successfully through the LFS
+  redirect. Exact job wrapper SHA-256
+  `d22335e8d0237a8a0fd8a594db5c7d393f4c300f7484bf33158856aeee4f01c4`
+  was then deployed and Stokes job `754197` started on `ec49`.
+
+  The first two selected files, including a 645,521,635-byte shard, have
+  already passed their published SHA-256 checks. Observed large-file transfer
+  throughput was approximately 63 MB/s. Every remaining file is downloaded
+  resumably to `.part`, size- and hash-checked before atomic rename, and
+  rechecked before tokenizer consumption. The source credential never appears
+  in process arguments or job output.
+
+  On Newton, full-system B16 has passed into the compiled-arm Inductor phase:
+  the main profiler and all four workers remain CPU-active after one hour,
+  while the H100 holds approximately 41.5 GiB. This implies the eager arm
+  survived, but it is not a compiled-fit receipt. B8 and B4 remain active.
+  Future profile source now emits explicit construct/execute/completed arm
+  markers; the current exact-source profiles predate that observability-only
+  change.
+
+  Decision:
+  `pes2o_authenticated_direct_transport_live_b16_compiled_arm_still_building`.
