@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 16:09 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 16:33 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17811,3 +17811,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `first_fast_horn_cell_serial_exact_private_hf_boundary_ready_no_optimizer`.
+
+- **2026-07-29 16:33 EDT** -- **The peS2o secret-removal residual passed its
+  full zero-exclusion rescan, and three of four accelerated Horn recovery
+  cells are complete.**
+
+  Sensitive rescan job `755292` completed cleanly in 2h09m29s with exit code
+  `0:0`. It reopened all **718,586 documents / 4,350,429,033 tokens** in the
+  physically verified residual and reported **zero automatic-exclusion
+  documents / zero automatic-exclusion tokens**. The immutable report file
+  SHA-256 is
+  `49eae3d0d965f2dc2dee34492100d10c71ea3736f4ddd23e45bdd70e4d844250`;
+  canonical payload SHA-256 is
+  `35e4df6f9028d0f27436863697ad84b2c0eec2ca2f4d8f7d52915d0104ac2202`.
+  Report-only contact/identifier categories remain under their frozen policy
+  and were not silently converted into broad deletions. The challenger may
+  now advance to cross-source exact/near residualization, immutable
+  document/domain holdouts, and equal-token utility gates; it still has zero
+  optimizer weight.
+
+  Accelerated main recovery job `755535` (task 3, Horn
+  query-counterfactual-grounding) completed in 48m28s, and `755537` (task 4,
+  Horn closed-loop-invariance) completed in 52m18s. Both exited `0:0`, bind
+  the exact 16-worker adapter, and publish `status=pass` reports. Each expands
+  2,000 cores into 128,000 rows / 67,584,000 charged positions. Task 3 output
+  SHA-256 is
+  `b4b037dd4299e2d2d60a769f5e844851bbcbebf3e806ad2273d88440c3ac012c`;
+  task 4 output SHA-256 is
+  `2f2528c21f742d210a067c5166e64e6f5af785a8b7ef0ecb4bef0c543685d236`.
+  Largest recovery task 2 remains productively running; fresh assembly
+  `755548` and audit/release jobs remain dependency-held. No optimizer is
+  active.
+
+  Decision:
+  `pes2o_zero_secret_rescan_pass_three_fast_horn_cells_complete_no_optimizer`.
