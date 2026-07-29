@@ -56,6 +56,10 @@ def _run(source: Path, output: Path, *, batch_size: int, max_tokens: int = 0) ->
         "int_score=4",
         "--required-min-number",
         "metadata.reasoning_depth.primary.code=3",
+        "--required-allowed-value",
+        "metadata.document_type.primary.code=3",
+        "--required-allowed-value",
+        "metadata.document_type.primary.code=8",
         "--domain-field",
         "url",
         "--max-tokens-per-domain",
@@ -93,25 +97,37 @@ def _write_rows(path: Path) -> None:
         {
             "text": "tiny",
             "int_score": 5,
-            "metadata": {"reasoning_depth": {"primary": {"code": 4}}},
+            "metadata": {
+                "reasoning_depth": {"primary": {"code": 4}},
+                "document_type": {"primary": {"code": 3}},
+            },
             "url": "https://short.example",
         },
         {
             "text": FIRST_TEXT,
             "int_score": 5,
-            "metadata": {"reasoning_depth": {"primary": {"code": 4}}},
+            "metadata": {
+                "reasoning_depth": {"primary": {"code": 4}},
+                "document_type": {"primary": {"code": 3}},
+            },
             "url": "https://one.example/path",
         },
         {
             "text": FIRST_TEXT,
             "int_score": 5,
-            "metadata": {"reasoning_depth": {"primary": {"code": 4}}},
+            "metadata": {
+                "reasoning_depth": {"primary": {"code": 4}},
+                "document_type": {"primary": {"code": 8}},
+            },
             "url": "https://two.example/path",
         },
         {
             "text": repeated,
             "int_score": 5,
-            "metadata": {"reasoning_depth": {"primary": {"code": 4}}},
+            "metadata": {
+                "reasoning_depth": {"primary": {"code": 4}},
+                "document_type": {"primary": {"code": 3}},
+            },
             "url": "https://repeat.example",
         },
         {
@@ -121,19 +137,28 @@ def _write_rows(path: Path) -> None:
                 "A third distinct line prevents a repetition rejection."
             ),
             "int_score": 3,
-            "metadata": {"reasoning_depth": {"primary": {"code": 4}}},
+            "metadata": {
+                "reasoning_depth": {"primary": {"code": 4}},
+                "document_type": {"primary": {"code": 8}},
+            },
             "url": "https://low.example",
         },
         {
             "text": SECOND_TEXT,
             "int_score": 5,
-            "metadata": {"reasoning_depth": {"primary": {"code": 2}}},
+            "metadata": {
+                "reasoning_depth": {"primary": {"code": 2}},
+                "document_type": {"primary": {"code": 3}},
+            },
             "url": "https://one.example/second",
         },
         {
             "text": THIRD_TEXT,
             "int_score": 5,
-            "metadata": {"reasoning_depth": {"primary": {"code": 5}}},
+            "metadata": {
+                "reasoning_depth": {"primary": {"code": 5}},
+                "document_type": {"primary": {"code": 8}},
+            },
             "url": "https://three.example/path",
         },
     ]
@@ -160,6 +185,9 @@ def test_batched_tokenization_matches_single_record_artifacts(tmp_path):
     assert manifest["filters"]["required_minimum_numbers"] == {
         "int_score": 4.0,
         "metadata.reasoning_depth.primary.code": 3.0,
+    }
+    assert manifest["filters"]["required_allowed_values"] == {
+        "metadata.document_type.primary.code": ["3", "8"],
     }
 
 

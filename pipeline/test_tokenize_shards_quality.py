@@ -22,8 +22,10 @@ from pipeline.tokenize_shards import (
     field_value,
     max_line_repeat_fraction,
     local_input_format,
+    parse_required_allowed_values,
     parse_required_minimums,
     parse_required_values,
+    required_allowed_values_match,
     required_minimums_match,
     required_values_match,
     resolve_local_inputs,
@@ -158,6 +160,59 @@ def test_required_values_are_exact_conjunctive_and_case_insensitive():
 def test_required_values_reject_ambiguous_contracts(specifications):
     with pytest.raises(ValueError, match="required-value"):
         parse_required_values(specifications)
+
+
+def test_required_allowed_values_are_grouped_or_then_conjunctive():
+    predicates = parse_required_allowed_values(
+        [
+            "eai_taxonomy.reasoning_depth.primary.code=3",
+            "eai_taxonomy.reasoning_depth.primary.code=4",
+            "eai_taxonomy.reasoning_depth.primary.code=5",
+            "eai_taxonomy.technical_correctness.primary.code=4",
+            "eai_taxonomy.technical_correctness.primary.code=5",
+        ]
+    )
+    assert required_allowed_values_match(
+        {
+            "eai_taxonomy": {
+                "reasoning_depth": {"primary": {"code": "4"}},
+                "technical_correctness": {"primary": {"code": 5}},
+            },
+        },
+        predicates,
+    )
+    assert not required_allowed_values_match(
+        {
+            "eai_taxonomy": {
+                "reasoning_depth": {"primary": {"code": "6"}},
+                "technical_correctness": {"primary": {"code": "5"}},
+            },
+        },
+        predicates,
+    )
+    assert not required_allowed_values_match(
+        {
+            "eai_taxonomy": {
+                "reasoning_depth": {"primary": {"code": "4"}},
+                "technical_correctness": {"primary": {"code": "6"}},
+            },
+        },
+        predicates,
+    )
+
+
+@pytest.mark.parametrize(
+    "specifications",
+    [
+        ["missing-delimiter"],
+        ["=1"],
+        ["field="],
+        ["field=one", "field=ONE"],
+    ],
+)
+def test_required_allowed_values_reject_ambiguous_contracts(specifications):
+    with pytest.raises(ValueError, match="required-allowed-value"):
+        parse_required_allowed_values(specifications)
 
 
 def test_required_minimums_are_numeric_dotted_and_conjunctive():

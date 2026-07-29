@@ -138,6 +138,41 @@ def required_values_match(row, required_values):
     )
 
 
+def parse_required_allowed_values(specifications):
+    """Parse repeatable ``FIELD=VALUE`` grouped allowlist predicates."""
+    result = {}
+    for specification in specifications or ():
+        if not isinstance(specification, str) or "=" not in specification:
+            raise ValueError(
+                "--required-allowed-value entries must use FIELD=VALUE"
+            )
+        field, expected = specification.split("=", 1)
+        if not field or not expected:
+            raise ValueError(
+                "--required-allowed-value entries must use nonempty FIELD=VALUE"
+            )
+        normalized = expected.casefold()
+        values = result.setdefault(field, {})
+        if normalized in values:
+            raise ValueError(
+                "--required-allowed-value predicate is duplicated: "
+                f"{field}={expected}"
+            )
+        values[normalized] = expected
+    return {
+        field: frozenset(values)
+        for field, values in result.items()
+    }
+
+
+def required_allowed_values_match(row, required_allowed_values):
+    """Require each grouped field to match at least one allowed value."""
+    return all(
+        str(field_value(row, field)).casefold() in allowed
+        for field, allowed in required_allowed_values.items()
+    )
+
+
 def parse_required_minimums(specifications):
     """Parse repeatable ``FIELD=NUMBER`` lower-bound predicates."""
     result = {}
@@ -462,6 +497,16 @@ def main():
             "supported and every predicate must pass"
         ),
     )
+    ap.add_argument(
+        "--required-allowed-value",
+        action="append",
+        default=[],
+        metavar="FIELD=VALUE",
+        help=(
+            "repeatable grouped metadata allowlist; values for one dotted "
+            "field are ORed and distinct fields are ANDed"
+        ),
+    )
     ap.add_argument("--domain-field", default=None)
     ap.add_argument(
         "--max-tokens-per-domain",
@@ -520,6 +565,9 @@ def main():
         else None
     )
     required_values = parse_required_values(a.required_value)
+    required_allowed_values = parse_required_allowed_values(
+        a.required_allowed_value
+    )
     required_minimums = parse_required_minimums(a.required_min_number)
     if a.min_number_field is not None:
         if a.min_number_field in required_minimums:
@@ -586,6 +634,7 @@ def main():
     seen = kept = n_short = n_long = n_lang = n_lang_missing = n_quality = n_contam = 0
     n_duplicate = n_repetition = n_boilerplate = n_domain_cap = 0
     n_extraction_quality = n_allowed_value = n_required_value = 0
+    n_required_allowed_value = 0
 
     def flush():
         nonlocal buf, shard
@@ -621,7 +670,8 @@ def main():
         nonlocal seen, kept, n_short, n_long, n_lang, n_lang_missing
         nonlocal n_quality, n_contam, n_duplicate, n_repetition
         nonlocal n_boilerplate, n_domain_cap, n_extraction_quality
-        nonlocal n_allowed_value, n_required_value, tok_total
+        nonlocal n_allowed_value, n_required_value, n_required_allowed_value
+        nonlocal tok_total
 
         # Exact deduplication precedes decontamination in the established
         # selection contract. Contaminated candidates therefore stay in the
@@ -660,6 +710,8 @@ def main():
                     n_allowed_value += 1
                 elif reason == "required_value":
                     n_required_value += 1
+                elif reason == "required_allowed_value":
+                    n_required_allowed_value += 1
                 elif reason == "language_missing":
                     n_lang_missing += 1
                 elif reason == "language":
@@ -778,6 +830,11 @@ def main():
                 reason = "allowed_value"
         if reason is None and not required_values_match(ex, required_values):
             reason = "required_value"
+        if reason is None and not required_allowed_values_match(
+            ex,
+            required_allowed_values,
+        ):
+            reason = "required_allowed_value"
         if reason is None and a.lang:
             language = field_value(ex, a.lang_field)
             if language is None and a.require_lang_field:
@@ -869,6 +926,7 @@ def main():
         "dropped_extraction_quality": n_extraction_quality,
         "dropped_allowed_value": n_allowed_value,
         "dropped_required_value": n_required_value,
+        "dropped_required_allowed_value": n_required_allowed_value,
         "dropped_domain_cap": n_domain_cap,
         "dropped_contam": n_contam,
         "decontamination": {
@@ -903,6 +961,10 @@ def main():
                 sorted(allowed_values) if allowed_values is not None else None
             ),
             "required_values": dict(sorted(required_values.items())),
+            "required_allowed_values": {
+                field: sorted(values)
+                for field, values in sorted(required_allowed_values.items())
+            },
             "domain_field": a.domain_field,
             "max_tokens_per_domain": a.max_tokens_per_domain,
             "retained_domains": len(domain_tokens),

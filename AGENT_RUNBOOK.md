@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 06:30 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 06:32 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -16999,13 +16999,17 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `pipeline/tokenize_shards.py` now supports repeatable
   `--required-min-number FIELD=NUMBER` predicates over dotted source
   metadata. Every predicate is conjunctive, finite, manifest-bound, and
-  fail-closed on absent or nonnumeric values. The legacy single-field
-  interface remains supported and cannot silently duplicate a new predicate.
+  fail-closed on absent or nonnumeric values. Repeatable grouped
+  `--required-allowed-value FIELD=VALUE` predicates provide OR semantics
+  within one categorical field and AND semantics across fields, with
+  case-folded matching, duplicate-predicate rejection, their own drop
+  counter, and a manifest-bound normalized allowlist. The legacy single-field
+  interfaces remain supported.
   `pipeline/profile_general_source.py` now accepts caller-declared nested
   categorical and numeric profile fields, reports aggregate value
   distributions/quantiles and invalid counts, and keeps all review text in
   the separate private packet. The profile/tokenizer/verifier focused set
-  passes **52/52** with clean Ruff, byte compilation, shell syntax, and diff
+  passes **57/57** with clean Ruff, byte compilation, shell syntax, and diff
   checks.
 
   Current Essential-Web resolves to pinned revision
@@ -17015,13 +17019,13 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   category, and document type. Its first upstream row is a personal blog
   labeled no-reasoning, proving the default stream is inadmissible. The
   challenger must require English probability at least 0.90, reasoning-depth
-  code at least 3, technical-correctness code exactly 4, extraction-artifact
+  code in `{3,4,5}`, technical-correctness code in `{4,5}`, extraction-artifact
   and missing-content codes exactly 0, an explicit educational/reference/
   technical document-type allowlist, and per-domain caps before exact/near
   deduplication, evaluation decontamination, private review, and equal-token
-  utility testing. Correctness is an exact-code gate because code 6 means
-  not-applicable; treating the code as a monotonic score would admit the wrong
-  documents.
+  utility testing. Both reasoning and correctness are categorical allowlists:
+  code 6 means indeterminate/not-applicable in those dimensions, so treating
+  either code as a monotonic lower bound would admit the wrong documents.
 
   Private commit `556a65f4ce79f1ef11d1e2df79ef71243cba5549` binds the nested
   selector, profiler, tests, reports, and this policy. Its two-file immutable
