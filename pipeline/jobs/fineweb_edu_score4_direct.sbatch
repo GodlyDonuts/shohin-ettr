@@ -10,6 +10,7 @@
 # This is not training admission: semantic review, cross-source residualization,
 # a full audit, and a matched-token utility ablation remain mandatory.
 set -euo pipefail
+export PATH=/usr/bin:/bin
 
 BASE=/lustre/fs1/home/sa305415/shohin
 PY=$BASE/miniforge3/bin/python
