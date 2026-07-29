@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 11:25 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 11:34 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17538,3 +17538,29 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `optimizer_visible_sensitive_audit_running_pes2o_still_quarantined`.
+
+- **2026-07-29 11:34 EDT** -- **Sensitive-audit Slurm output is compact
+  without weakening the immutable on-disk receipt.**
+
+  The scanner previously printed its complete source-verification tree after
+  a successful run even though the same complete report was already sealed
+  in `report.json`. Its CLI now emits only schema, status, payload identity,
+  corpus counts/identity, findings receipt, and aggregate summary. The full
+  verification remains in the immutable report and the scanning policy is
+  unchanged. A subprocess regression proves the successful CLI output
+  excludes `verification` and `source_files` and remains under 2,000 bytes.
+  The focused sensitive-audit, v3-verifier, and domain-materializer suite
+  passes **18/18** with clean Ruff, byte compilation, shell syntax, and diff
+  checks.
+
+  Existing Stokes job `755073` continues from the earlier read-only runtime
+  and is not restarted for a logging-only change. At 11:33 EDT it was
+  `RUNNING` on `ec77`; no report existed yet. ETTR materialization had 22
+  active tasks with no observed failures and the immutable release remained
+  absent. Newton reservations `722179`, `722178`, and `719496` remain pending
+  with then-current forecasts of July 30 01:05 EDT, July 30 05:18 EDT, and
+  August 1 04:45 EDT. The first-rung lock was absent and no candidate
+  optimizer was active.
+
+  Decision:
+  `compact_audit_log_verified_running_scan_unchanged_no_optimizer`.

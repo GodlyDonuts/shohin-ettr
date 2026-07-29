@@ -2,6 +2,8 @@ import hashlib
 import io
 import json
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 from tokenizers import Tokenizer
@@ -213,6 +215,33 @@ def test_bad_audit_arguments_fail_closed(tmp_path: Path) -> None:
             selection_code=source_selection,
             output_dir=output,
         )
+
+
+def test_cli_emits_compact_receipt_not_full_verification(tmp_path: Path) -> None:
+    corpus, source_selection = _corpus(tmp_path)
+    output = tmp_path / "audit"
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(SELECTION_CODE),
+            "--corpus-dir",
+            str(corpus),
+            "--selection-code",
+            str(source_selection),
+            "--output-dir",
+            str(output),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    receipt = json.loads(result.stdout)
+    assert receipt["status"] == "pass"
+    assert receipt["corpus"]["documents"] == 3
+    assert receipt["summary"]["automatic_exclusion_documents"] == 2
+    assert "verification" not in result.stdout
+    assert "source_files" not in result.stdout
+    assert len(result.stdout) < 2_000
 
 
 def test_sensitive_audit_job_is_hash_bound_and_cpu_only() -> None:

@@ -422,7 +422,25 @@ def main(argv: Iterable[str] | None = None) -> None:
         selection_code=arguments.selection_code,
         output_dir=arguments.output_dir,
     )
-    print(json.dumps(report, sort_keys=True))
+    print(
+        json.dumps(
+            {
+                "schema": report["schema"],
+                "status": report["status"],
+                "payload_sha256": report["payload_sha256"],
+                "corpus": {
+                    "documents": report["corpus"]["documents"],
+                    "manifest_payload_sha256": report["corpus"][
+                        "manifest_payload_sha256"
+                    ],
+                    "tokens": report["corpus"]["tokens"],
+                },
+                "findings": report["findings"],
+                "summary": report["summary"],
+            },
+            sort_keys=True,
+        )
+    )
 
 
 if __name__ == "__main__":
