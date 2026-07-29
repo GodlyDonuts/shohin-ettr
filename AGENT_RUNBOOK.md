@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 10:46 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 11:13 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17462,3 +17462,44 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `pes2o_balanced_physical_and_semantic_review_pass_utility_gated_no_optimizer`.
+
+- **2026-07-29 11:13 EDT** -- **The ETTR release now has a resumable,
+  independently verified Stokes-to-Newton transport lane; no partial release
+  can become optimizer-visible.**
+
+  `pipeline/transfer_ettr_il_v3_to_newton.sh` runs on Stokes and transports
+  the complete immutable release directory, the complete main materialized
+  data tree, and the exact tokenizer directly to a fresh Newton partial
+  namespace. It never accepts a password as a command-line argument and
+  writes no credential to disk. The source side checks regular-file,
+  single-link, immutability, stable-identity, release-canonicalization, and
+  SHA-256 contracts. The Newton side recomputes the complete file inventory,
+  rejects missing or extra files and links, reopens the transferred release
+  through `ETTRV3StreamingRelease.verify_source_shards()`, emits a
+  hash-bound receipt, and only then atomically renames the partial tree to its
+  final path. Interrupted `rsync --append-verify` copies remain resumable.
+  Script SHA-256 is
+  `173aca7306e84cb74a47c5cf11e6adee9493859d6ab48cc5742964a514b26002`.
+  Shell syntax and diff checks pass; the focused release/trainer/evaluator
+  suite passes **15/15**.
+
+  ETTR materialization was **65/90 complete with 25 active and zero
+  failures** at 11:07 EDT. The main/confirmation audits, separation report,
+  and immutable release remain dependency-held. Newton reservations
+  `722179` (10 H100), `722178` (4 H100), and `719496` (20 H100) remain
+  pending with forecasts of 15:03 EDT, July 30 01:05 EDT, and August 1 04:45
+  EDT respectively. The first two continue to have release-blind distributed
+  canary watchers; no optimizer is active.
+
+  A compatibility check also confirmed that the historical FineMath,
+  OpenWebMath, and Python shard trees predate the v3 provenance ledger. They
+  cannot be represented as exact document-level keepers in the current
+  cross-source removal ledger without reconstructing document boundaries
+  from their original immutable sources. Therefore the balanced peS2o
+  candidate is not being mislabeled as historically residualized. Exact and
+  near residualization will run against the new v3 candidates after their
+  physical and semantic gates, while any legacy comparison must use an
+  explicitly reconstructed v3 corpus or a separately named diagnostic.
+
+  Decision:
+  `ettr_direct_transport_ready_legacy_exact_dedup_not_overclaimed_no_optimizer`.
