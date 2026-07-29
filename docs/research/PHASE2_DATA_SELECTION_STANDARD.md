@@ -314,16 +314,23 @@ Every admitted payload requires a no-replace receipt binding:
 - final approved token count and mixture ceiling.
 
 `pipeline/tokenize_shards.py` now emits the candidate-side
-`shohin-tokenized-shards-v2` receipt. It binds the exact upstream revision,
+`shohin-tokenized-shards-v3` receipt. It binds the exact upstream revision,
 selection-code hash, tokenizer hash and vocabulary identity, decontamination
 index and live evaluation-file hashes, every filter setting and rejection
 count, and every compressed shard's path, byte count, token count, and
-SHA-256. The manifest has its own canonical payload hash.
+SHA-256. A compressed text-free document ledger additionally binds every
+retained source-row identity and document SHA-256 to its exact shard/token
+range and exact uint16 token-span SHA-256. This is required for post-packing
+provenance, removal, and cross-source exact deduplication. The manifest has
+its own canonical payload hash.
 `pipeline.verify_tokenized_shards` independently reopens every compressed
 shard, verifies its digest, decompresses it to recover the exact uint16 token
-count, rejects unbound files, and can revalidate all external inputs. Passing
-this verifier proves payload identity, not source quality or production
-admission; the other gates above remain mandatory.
+count, recomputes every document token-span hash, rejects unbound files, and
+revalidates all physical source, tokenizer, decontamination, and evaluation
+inputs when admission requires them. Legacy v2 diagnostics remain readable,
+but a new Phase 2 admission requires v3. Passing this verifier proves payload
+identity, not source quality or production admission; the other gates above
+remain mandatory.
 
 ## Fresh-Source Challenger Lane
 

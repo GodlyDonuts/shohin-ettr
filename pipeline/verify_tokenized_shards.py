@@ -13,7 +13,11 @@ from typing import Any
 
 import zstandard as zstd
 
-from pipeline.tokenize_shards import canonical_payload_sha256
+from pipeline.tokenize_shards import (
+    DOCUMENT_LEDGER_NAME,
+    DOCUMENT_LEDGER_SCHEMA,
+    canonical_payload_sha256,
+)
 
 
 SHARD_NAME = re.compile(r"shard_[0-9]{5}\.u16\.zst")
@@ -88,6 +92,17 @@ def _decompressed_uint16_tokens(path: Path) -> int:
     return raw_bytes // 2
 
 
+def _decompressed_bytes(path: Path) -> bytes:
+    try:
+        with path.open("rb") as source:
+            with zstd.ZstdDecompressor().stream_reader(source) as reader:
+                return reader.read()
+    except (OSError, zstd.ZstdError) as exc:
+        raise ShardVerificationError(
+            f"compressed shard cannot be decoded: {path}"
+        ) from exc
+
+
 def _verify_external_file(record: dict[str, Any], label: str) -> None:
     path_value = record.get("path")
     if not isinstance(path_value, str) or not path_value:
@@ -106,6 +121,175 @@ def _verify_external_file(record: dict[str, Any], label: str) -> None:
         raise ShardVerificationError(f"{label} SHA-256 differs: {path}")
 
 
+def _verify_document_ledger(
+    shard_dir: Path,
+    record: dict[str, Any],
+    shard_records: list[dict[str, Any]],
+    *,
+    kept: object,
+) -> dict[str, int]:
+    if (
+        record.get("path") != DOCUMENT_LEDGER_NAME
+        or record.get("schema") != DOCUMENT_LEDGER_SCHEMA
+        or record.get("contains_document_text") is not False
+    ):
+        raise ShardVerificationError("document ledger receipt differs")
+    path = shard_dir / DOCUMENT_LEDGER_NAME
+    _digest, _tokens, _bytes = _stable_sha256_and_tokens(
+        path,
+        "document ledger",
+        count_tokens=False,
+        expected_sha256=record.get("sha256"),
+        expected_bytes=record.get("bytes"),
+    )
+    shard_tokens = {
+        str(shard["path"]): int(shard["tokens"]) for shard in shard_records
+    }
+    offsets = {name: 0 for name in shard_tokens}
+    rows = 0
+    tokens = 0
+    last_source_row = -1
+    last_shard_index = -1
+    current_shard: str | None = None
+    current_shard_bytes = b""
+    try:
+        with path.open("rb") as source:
+            with zstd.ZstdDecompressor().stream_reader(source) as reader:
+                pending = b""
+                while True:
+                    block = reader.read(8 * 1024 * 1024)
+                    if not block:
+                        break
+                    pending += block
+                    lines = pending.split(b"\n")
+                    pending = lines.pop()
+                    for line in lines:
+                        if not line:
+                            raise ShardVerificationError(
+                                "document ledger contains an empty row"
+                            )
+                        try:
+                            value = json.loads(line)
+                        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                            raise ShardVerificationError(
+                                "document ledger row is malformed"
+                            ) from exc
+                        if not isinstance(value, dict):
+                            raise ShardVerificationError(
+                                "document ledger row is not an object"
+                            )
+                        required = {
+                            "allowed_value",
+                            "chars",
+                            "document_sha256",
+                            "domain",
+                            "schema",
+                            "shard",
+                            "source_row_index",
+                            "stable_identity_sha256",
+                            "token_end",
+                            "token_sha256",
+                            "token_start",
+                            "tokens",
+                        }
+                        if set(value) != required:
+                            raise ShardVerificationError(
+                                "document ledger row fields differ"
+                            )
+                        source_row = value["source_row_index"]
+                        shard_name = value["shard"]
+                        if (
+                            not isinstance(shard_name, str)
+                            or shard_name not in shard_tokens
+                            or SHARD_NAME.fullmatch(shard_name) is None
+                        ):
+                            raise ShardVerificationError(
+                                "document ledger shard is not admitted"
+                            )
+                        try:
+                            shard_index = int(
+                                shard_name
+                                .removeprefix("shard_")
+                                .removesuffix(".u16.zst")
+                            )
+                        except ValueError as exc:
+                            raise ShardVerificationError(
+                                "document ledger shard is malformed"
+                            ) from exc
+                        if shard_name != current_shard:
+                            current_shard_bytes = _decompressed_bytes(
+                                shard_dir / str(shard_name)
+                            )
+                            current_shard = str(shard_name)
+                        token_start = value["token_start"]
+                        token_end = value["token_end"]
+                        token_slice_sha256 = (
+                            hashlib.sha256(
+                                current_shard_bytes[
+                                    token_start * 2 : token_end * 2
+                                ]
+                            ).hexdigest()
+                            if (
+                                isinstance(token_start, int)
+                                and isinstance(token_end, int)
+                                and 0 <= token_start <= token_end
+                            )
+                            else None
+                        )
+                        if (
+                            value["schema"] != DOCUMENT_LEDGER_SCHEMA
+                            or not isinstance(source_row, int)
+                            or source_row <= last_source_row
+                            or shard_index < last_shard_index
+                            or not isinstance(value["chars"], int)
+                            or value["chars"] <= 0
+                            or not isinstance(value["tokens"], int)
+                            or value["tokens"] <= 0
+                            or value["token_start"] != offsets[shard_name]
+                            or value["token_end"]
+                            != value["token_start"] + value["tokens"]
+                            or value["token_end"] > shard_tokens[shard_name]
+                            or not isinstance(value["token_sha256"], str)
+                            or not HEX64.fullmatch(value["token_sha256"])
+                            or token_slice_sha256 != value["token_sha256"]
+                            or not isinstance(
+                                value["stable_identity_sha256"], str
+                            )
+                            or not HEX64.fullmatch(
+                                value["stable_identity_sha256"]
+                            )
+                            or not isinstance(value["document_sha256"], str)
+                            or not HEX64.fullmatch(value["document_sha256"])
+                        ):
+                            raise ShardVerificationError(
+                            "document ledger row contract differs"
+                            )
+                        offsets[shard_name] = value["token_end"]
+                        last_source_row = source_row
+                        last_shard_index = shard_index
+                        rows += 1
+                        tokens += value["tokens"]
+                if pending:
+                    raise ShardVerificationError(
+                        "document ledger lacks a terminal newline"
+                    )
+    except (OSError, zstd.ZstdError) as exc:
+        raise ShardVerificationError(
+            "document ledger cannot be decompressed"
+        ) from exc
+    if (
+        offsets != shard_tokens
+        or rows != record.get("rows")
+        or rows != kept
+        or tokens != record.get("tokens")
+        or tokens != sum(shard_tokens.values())
+    ):
+        raise ShardVerificationError(
+            "document ledger does not reconcile with token shards"
+        )
+    return {"rows": rows, "tokens": tokens}
+
+
 def verify_manifest(
     shard_dir: Path,
     *,
@@ -118,8 +302,12 @@ def verify_manifest(
         manifest = json.loads(manifest_path.read_text())
     except (json.JSONDecodeError, OSError) as exc:
         raise ShardVerificationError("manifest is unreadable") from exc
-    if manifest.get("schema") != "shohin-tokenized-shards-v2":
-        raise ShardVerificationError("manifest schema is not v2")
+    schema = manifest.get("schema")
+    if schema not in {
+        "shohin-tokenized-shards-v2",
+        "shohin-tokenized-shards-v3",
+    }:
+        raise ShardVerificationError("manifest schema is unsupported")
 
     claimed_payload = manifest.get("payload_sha256")
     if not isinstance(claimed_payload, str) or not HEX64.fullmatch(claimed_payload):
@@ -180,7 +368,39 @@ def verify_manifest(
     if token_total != manifest.get("tokens"):
         raise ShardVerificationError("manifest token total differs from shard ledger")
 
+    document_ledger_verified = False
+    document_rows = 0
+    if schema == "shohin-tokenized-shards-v3":
+        ledger = manifest.get("document_ledger")
+        if not isinstance(ledger, dict):
+            raise ShardVerificationError("v3 manifest has no document ledger")
+        ledger_totals = _verify_document_ledger(
+            shard_dir,
+            ledger,
+            records,
+            kept=manifest.get("kept"),
+        )
+        document_ledger_verified = True
+        document_rows = ledger_totals["rows"]
+        actual_bound_names = sorted(
+            path.name
+            for path in shard_dir.iterdir()
+            if path.name != "manifest.json"
+        )
+        expected_bound_names = sorted([*expected_names, DOCUMENT_LEDGER_NAME])
+        if actual_bound_names != expected_bound_names:
+            raise ShardVerificationError(
+                "v3 shard directory contains unbound files"
+            )
+
     if require_external_inputs:
+        source_files = manifest.get("source_files")
+        if not isinstance(source_files, list):
+            raise ShardVerificationError("source-file ledger is absent")
+        for index, record in enumerate(source_files):
+            if not isinstance(record, dict):
+                raise ShardVerificationError("source-file record is malformed")
+            _verify_external_file(record, f"source file {index}")
         tokenizer = manifest.get("tokenizer")
         if not isinstance(tokenizer, dict):
             raise ShardVerificationError("tokenizer receipt is absent")
@@ -212,6 +432,8 @@ def verify_manifest(
         "shards": len(records),
         "tokens": token_total,
         "all_shards_hash_and_token_verified": True,
+        "document_ledger_verified": document_ledger_verified,
+        "document_rows": document_rows,
         "external_inputs_verified": require_external_inputs,
     }
 

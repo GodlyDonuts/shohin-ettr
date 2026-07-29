@@ -1,17 +1,23 @@
+import hashlib
 import json
 from pathlib import Path
 
 import pytest
 import zstandard as zstd
 
-from pipeline.tokenize_shards import canonical_payload_sha256, sha256_file
+from pipeline.tokenize_shards import (
+    DOCUMENT_LEDGER_NAME,
+    DOCUMENT_LEDGER_SCHEMA,
+    canonical_payload_sha256,
+    sha256_file,
+)
 from pipeline.verify_tokenized_shards import (
     ShardVerificationError,
     verify_manifest,
 )
 
 
-def build_corpus(root: Path) -> tuple[Path, Path]:
+def build_corpus(root: Path, *, schema: str = "v2") -> tuple[Path, Path]:
     shard_dir = root / "corpus"
     shard_dir.mkdir()
     selection_code = root / "selection.py"
@@ -28,8 +34,9 @@ def build_corpus(root: Path) -> tuple[Path, Path]:
     shard = shard_dir / "shard_00000.u16.zst"
     shard.write_bytes(compressed)
     manifest = {
-        "schema": "shohin-tokenized-shards-v2",
+        "schema": f"shohin-tokenized-shards-{schema}",
         "selection_code_sha256": sha256_file(selection_code),
+        "source_files": [],
         "tokenizer": {
             "path": str(tokenizer),
             "bytes": tokenizer.stat().st_size,
@@ -58,6 +65,41 @@ def build_corpus(root: Path) -> tuple[Path, Path]:
             ],
         },
     }
+    if schema == "v3":
+        rows = [
+            {
+                "allowed_value": "CCBY",
+                "chars": 100,
+                "document_sha256": "a" * 64,
+                "domain": "example.org",
+                "schema": DOCUMENT_LEDGER_SCHEMA,
+                "shard": shard.name,
+                "source_row_index": 7,
+                "stable_identity_sha256": "b" * 64,
+                "token_end": 3,
+                "token_sha256": hashlib.sha256(raw).hexdigest(),
+                "token_start": 0,
+                "tokens": 3,
+            }
+        ]
+        ledger_payload = "".join(
+            json.dumps(row, sort_keys=True, separators=(",", ":")) + "\n"
+            for row in rows
+        ).encode("ascii")
+        ledger_path = shard_dir / DOCUMENT_LEDGER_NAME
+        ledger_path.write_bytes(
+            zstd.ZstdCompressor(level=3).compress(ledger_payload)
+        )
+        manifest["kept"] = 1
+        manifest["document_ledger"] = {
+            "path": DOCUMENT_LEDGER_NAME,
+            "bytes": ledger_path.stat().st_size,
+            "sha256": sha256_file(ledger_path),
+            "rows": 1,
+            "tokens": 3,
+            "contains_document_text": False,
+            "schema": DOCUMENT_LEDGER_SCHEMA,
+        }
     manifest["payload_sha256"] = canonical_payload_sha256(manifest)
     (shard_dir / "manifest.json").write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n"
@@ -76,6 +118,47 @@ def test_complete_bound_corpus_verifies(tmp_path):
     assert receipt["shards"] == 1
     assert receipt["all_shards_hash_and_token_verified"]
     assert receipt["external_inputs_verified"]
+    assert not receipt["document_ledger_verified"]
+
+
+def test_v3_document_ledger_reconciles_exact_token_ranges(tmp_path):
+    shard_dir, selection_code = build_corpus(tmp_path, schema="v3")
+    receipt = verify_manifest(shard_dir, selection_code=selection_code)
+    assert receipt["document_ledger_verified"]
+    assert receipt["document_rows"] == 1
+
+
+def test_v3_document_ledger_substitution_fails(tmp_path):
+    shard_dir, selection_code = build_corpus(tmp_path, schema="v3")
+    ledger = shard_dir / DOCUMENT_LEDGER_NAME
+    ledger.write_bytes(b"substituted")
+    with pytest.raises(ShardVerificationError, match="byte count|SHA-256"):
+        verify_manifest(shard_dir, selection_code=selection_code)
+
+
+def test_external_source_substitution_fails(tmp_path):
+    shard_dir, selection_code = build_corpus(tmp_path)
+    source = tmp_path / "source.json.gz"
+    source.write_bytes(b"pinned source")
+    manifest_path = shard_dir / "manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["source_files"] = [
+        {
+            "path": str(source),
+            "bytes": source.stat().st_size,
+            "sha256": sha256_file(source),
+        }
+    ]
+    manifest.pop("payload_sha256")
+    manifest["payload_sha256"] = canonical_payload_sha256(manifest)
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    source.write_bytes(b"substituted")
+    with pytest.raises(ShardVerificationError, match="source file 0"):
+        verify_manifest(
+            shard_dir,
+            selection_code=selection_code,
+            require_external_inputs=True,
+        )
 
 
 def test_shard_substitution_fails(tmp_path):

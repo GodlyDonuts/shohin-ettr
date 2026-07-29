@@ -46,6 +46,21 @@ BOILERPLATE_MARKERS = (
     "javascript is disabled",
     "enable javascript",
 )
+DOCUMENT_LEDGER_NAME = "documents.jsonl.zst"
+DOCUMENT_LEDGER_SCHEMA = "shohin-tokenized-document-v1"
+IDENTITY_FIELDS = (
+    "id",
+    "blob_id",
+    "content_id",
+    "url",
+    "repo_path",
+    "repo_name",
+    "commit_id",
+    "path",
+    "file_path",
+    "source",
+    "version",
+)
 
 
 def _grams(text, n):
@@ -95,6 +110,16 @@ def field_value(row, field):
 
 def exact_text_hash(text):
     return hashlib.sha256(text.encode("utf-8", errors="replace")).digest()
+
+
+def stable_document_identity(row, document_sha256):
+    values = [
+        f"{field}={row[field]}"
+        for field in IDENTITY_FIELDS
+        if row.get(field) not in (None, "")
+    ]
+    material = "\x1f".join(values) if values else document_sha256
+    return hashlib.sha256(material.encode("utf-8", errors="replace")).hexdigest()
 
 
 def sha256_file(path):
@@ -159,6 +184,57 @@ def canonical_payload_sha256(payload):
         ensure_ascii=True,
     ).encode("ascii")
     return hashlib.sha256(material).hexdigest()
+
+
+class DocumentLedgerWriter:
+    """Write a compressed, text-free document-to-token provenance ledger."""
+
+    def __init__(self, path):
+        self.path = Path(path)
+        self.rows = 0
+        self.tokens = 0
+        self._raw = self.path.open("xb")
+        self._stream = zstd.ZstdCompressor(level=3).stream_writer(
+            self._raw,
+            closefd=False,
+        )
+        self._closed = False
+
+    def write(self, record):
+        if self._closed:
+            raise RuntimeError("document ledger is already closed")
+        payload = (
+            json.dumps(
+                record,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=True,
+            )
+            + "\n"
+        ).encode("ascii")
+        self._stream.write(payload)
+        self.rows += 1
+        self.tokens += int(record["tokens"])
+
+    def close(self):
+        if self._closed:
+            raise RuntimeError("document ledger is already closed")
+        self._stream.flush(zstd.FLUSH_FRAME)
+        self._stream.close()
+        self._raw.flush()
+        os.fsync(self._raw.fileno())
+        self._raw.close()
+        self._closed = True
+        receipt = file_receipt(self.path)
+        return {
+            "path": self.path.name,
+            "bytes": receipt["bytes"],
+            "sha256": receipt["sha256"],
+            "rows": self.rows,
+            "tokens": self.tokens,
+            "contains_document_text": False,
+            "schema": DOCUMENT_LEDGER_SCHEMA,
+        }
 
 
 def max_line_repeat_fraction(text):
@@ -368,6 +444,9 @@ def main():
         ds = load_dataset(a.dataset, **kw)
 
     cctx = zstd.ZstdCompressor(level=3)
+    document_ledger = DocumentLedgerWriter(
+        Path(a.out_dir) / DOCUMENT_LEDGER_NAME
+    )
     buf, shard, tok_total = [], 0, 0
     shard_files = []
     seen_hashes = set()
@@ -449,7 +528,8 @@ def main():
             if score < a.min_number:
                 n_quality += 1
                 continue
-        digest = exact_text_hash(txt) if a.exact_dedup else None
+        document_sha256 = exact_text_hash(txt).hex()
+        digest = bytes.fromhex(document_sha256) if a.exact_dedup else None
         if digest is not None:
             if digest in seen_hashes:
                 n_duplicate += 1
@@ -458,7 +538,14 @@ def main():
             n_contam += 1
             continue
         ids = tok.encode(txt).ids
-        document_tokens = len(ids) + (1 if eos_id is not None else 0)
+        document_token_values = [
+            *ids,
+            *([eos_id] if eos_id is not None else []),
+        ]
+        document_tokens = len(document_token_values)
+        token_sha256 = hashlib.sha256(
+            np.asarray(document_token_values, dtype=np.uint16).tobytes()
+        ).hexdigest()
         domain = domain_value(ex, a.domain_field) if a.domain_field else None
         if (
             domain is not None
@@ -468,9 +555,31 @@ def main():
             continue
         if digest is not None:
             seen_hashes.add(digest)
-        buf.extend(ids)
-        if eos_id is not None:
-            buf.append(eos_id)
+        token_start = len(buf)
+        buf.extend(document_token_values)
+        document_ledger.write(
+            {
+                "schema": DOCUMENT_LEDGER_SCHEMA,
+                "source_row_index": seen - 1,
+                "stable_identity_sha256": stable_document_identity(
+                    ex,
+                    document_sha256,
+                ),
+                "document_sha256": document_sha256,
+                "domain": domain,
+                "allowed_value": (
+                    str(field_value(ex, a.allowed_values_field))
+                    if a.allowed_values_field
+                    else None
+                ),
+                "chars": len(txt),
+                "tokens": document_tokens,
+                "shard": f"shard_{shard:05d}.u16.zst",
+                "token_start": token_start,
+                "token_end": token_start + document_tokens,
+                "token_sha256": token_sha256,
+            }
+        )
         tok_total += document_tokens
         if domain is not None:
             domain_tokens[domain] += document_tokens
@@ -480,9 +589,15 @@ def main():
         if a.max_tokens and tok_total >= a.max_tokens:
             break
     flush()
+    document_ledger_receipt = document_ledger.close()
 
     if sum(record["tokens"] for record in shard_files) != tok_total:
         raise RuntimeError("shard token ledger does not match retained token total")
+    if (
+        document_ledger_receipt["rows"] != kept
+        or document_ledger_receipt["tokens"] != tok_total
+    ):
+        raise RuntimeError("document ledger does not reconcile with retained corpus")
     verify_file_receipt(selection_code_receipt)
     verify_file_receipt(tokenizer_receipt)
     if pickle_receipt is not None:
@@ -492,7 +607,7 @@ def main():
     for receipt in input_file_receipts:
         verify_file_receipt(receipt)
     manifest = {
-        "schema": "shohin-tokenized-shards-v2",
+        "schema": "shohin-tokenized-shards-v3",
         "dataset": a.dataset,
         "config": a.config,
         "split": a.split,
@@ -509,6 +624,7 @@ def main():
         "tokens": tok_total,
         "shards": shard,
         "shard_files": shard_files,
+        "document_ledger": document_ledger_receipt,
         "seen": seen,
         "kept": kept,
         "dropped_short": n_short,

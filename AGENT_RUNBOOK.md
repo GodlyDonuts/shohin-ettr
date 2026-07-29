@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 00:10 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 00:20 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -16141,3 +16141,38 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `b16_memory_throughput_shape_measured_equivariance_safe_release_fixed_formal_rerun_required`.
+
+- **2026-07-29 00:20 EDT** -- **Future general-data candidates now preserve
+  exact post-packing document provenance; corrected B16 is live.**
+
+  Review of the peS2o candidate path found that schema-v2 token shards bound
+  source files and aggregate filters but did not retain a per-document
+  token-range ledger. Such a candidate cannot support exact cross-source
+  deduplication, sampled-document removal, or post-packing provenance and is
+  therefore diagnostic only.
+
+  `pipeline/tokenize_shards.py` now emits schema v3 with a compressed,
+  text-free document ledger. Every retained document binds its stable source
+  identity SHA-256, document SHA-256, source row, license selector, domain,
+  exact shard and token interval, and SHA-256 of the exact uint16 token span.
+  `pipeline.verify_tokenized_shards` independently reopens every raw source,
+  tokenizer, evaluation, and decontamination input; hashes and decompresses
+  every shard; recomputes every document token-span hash; proves contiguous
+  full-shard coverage; and rejects unbound files. Legacy v2 diagnostics remain
+  readable, but no new Phase 2 corpus can be admitted without v3. Focused
+  tests pass **19/19**, Ruff, byte compilation, and diff checks pass, and an
+  end-to-end two-document tokenize/verify cycle passed every external-input,
+  shard, ledger, and token-span gate.
+
+  The exact corrected source commit `1ee361d6e6180bf7f074edfb315fff20045c2823`
+  is clean on Newton. Formal full-system B16 profile step `719591.44` is live
+  on healthy `evc28`; eager completed and compiled execution is active. The
+  protected checkpoint was rehashed before launch and remains pinned at
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
+  Stokes ETTR recovery cells 0, 1, 3, and 12 are complete; cells 4, 5, 6, 16,
+  and 17 remain active. All 30 peS2o source files are fully downloaded and
+  hash-verified. Its schema-v2 attempt remains ineligible and will be replaced
+  from the local verified cache by schema v3.
+
+  Decision:
+  `general_candidate_v3_document_token_ledger_required_corrected_b16_live`.
