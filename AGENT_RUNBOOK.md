@@ -16512,3 +16512,63 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `three_h100_nccl_scale_path_valid_evc40_quarantined_pending_multigpu_pilots`.
+
+- **2026-07-29 04:06 EDT** -- **A source-bound three-H100 full-stack scale
+  pilot passed on healthy Newton nodes without consuming candidate corpus data.**
+
+  Private commits `b51f66d` and `758d94d` add a bounded multi-node pilot
+  wrapper. It requires an exact hash-verified source archive, a fresh output
+  namespace, an active named H100 reservation, explicit reservation-member
+  nodes, live CUDA plus InfiniBand probes, and only the historical admitted
+  `finemath4`, `openwebmath`, `code_python`, and `finemath3` shards. It cannot
+  resume, write to a flagship directory, or read FineWeb/peS2o candidate
+  data.
+
+  The code projection from private commit `758d94dc364b92c792dff082468f90f751913d93`
+  was transferred to Newton and verified file-for-file before launch. Pilot
+  `scale_pilot_719591_758d94d` used one H100 on each of `evc28`, `evc30`, and
+  `evc45`, with `world=3`, per-rank batch 16, accumulation 8, sequence length
+  2048, and an unchanged 300k-update LR horizon. It completed **80** DDP
+  updates in **222 s**. The initial loss/gradient were finite (10.5044 / 2.93)
+  and final logged metrics at step 70 were loss **7.8299**, gnorm **1.969**,
+  and aggregate **273,629 tok/s**. The immutable isolated outputs verify as
+  `log_r0.jsonl` SHA-256
+  `552a9f328c14e39c4d59f3fda6d3b61b512d530a2bbd0e6b07f748293a7e3ce4`
+  and `ckpt_final.pt` SHA-256
+  `a3fcc08f019e4119643a53859a7ddbb853fe25fae4279bb96bb7c22ddbc83a13`.
+
+  This proves the three-node H100 model/optimizer/loader/compile/NCCL path,
+  not a capability gain: the pilot began from initialization, used 80 updates,
+  and its checkpoint is an isolated systems artifact. `evc40` remains excluded
+  after its direct PyTorch CUDA initialization failure. Future 10/20-H100
+  pilots must retain this source/data isolation and node exclusion.
+
+  Decision:
+  `three_h100_full_stack_ddp_pass_candidate_corpora_remain_unadmitted`.
+
+- **2026-07-29 04:14 EDT** -- **Measured microbatch selection on the same
+  three-H100 full-stack path promotes `BS=32, ACC=4`.**
+
+  A second independent 80-update pilot used the same hash-verified source,
+  three healthy nodes, historical admitted shards, 300k-update LR horizon,
+  seed, model, and exactly **786,432 tokens/update** as the first pilot. It
+  changed only the per-rank microbatch/accumulation geometry from `16/8` to
+  `32/4`. All GPUs sampled at **100%** utilization, 59.3 GiB memory, and
+  299--305W. The job completed in **173 s** rather than 222 s, a **28.3%**
+  end-to-end speedup including compilation. Final logged step-70 metrics were
+  loss **7.8298**, gnorm **1.968**, and **356,411 tok/s**, versus 273,629
+  tok/s for `16/8`. Hash verification passed for isolated artifacts:
+  `log_r0.jsonl` SHA-256
+  `0537dcc4b1a21f20cc0125d9bc3eb10ca0599ab2bb6d08dd5553b10a054181ce`
+  and `ckpt_final.pt` SHA-256
+  `ba223ee2e7dfb4215913d70cecfccf01bc8a60b90e954b36b25e6cd5297b4164`.
+
+  The unused VRAM is not a utilization failure: compute utilization was
+  saturated, while the known `BS=64` one-H100 geometry OOMs. `BS=32/ACC=4`
+  is therefore the validated preferred per-rank geometry for subsequent
+  bounded scale pilots. It does not by itself set a production global token
+  budget or learning-rate scaling rule for 10/20 H100 training; those remain
+  an explicit data-contract and matched-token pilot decision.
+
+  Decision:
+  `three_h100_bs32_acc4_throughput_pass_preserve_token_budget_ablation_gate`.
