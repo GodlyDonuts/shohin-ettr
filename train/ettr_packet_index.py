@@ -10,6 +10,7 @@ files while preserving the exact receipt semantics of
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 import hashlib
 import json
 import mmap
@@ -44,6 +45,21 @@ _FILES = {
 
 class ETTRPacketIndexError(ValueError):
     """A disk-backed packet-sufficiency index violates its receipt."""
+
+
+@dataclass(frozen=True)
+class ETTRCompactPacketBatch:
+    """Cryptographic packet-index projection of one continuation batch."""
+
+    payload_digest: bytes
+    rows: tuple[tuple[bytes, int], ...]
+
+    def validate(self) -> None:
+        if len(self.payload_digest) != 32 or not self.rows:
+            raise ETTRPacketIndexError("compact packet batch geometry differs")
+        for context, target in self.rows:
+            if len(context) != 32 or not 0 <= target <= 0xFFFF:
+                raise ETTRPacketIndexError("compact packet row differs")
 
 
 def _canonical_json_bytes(value: object) -> bytes:
@@ -144,27 +160,62 @@ def _target_commitment(context: bytes, target: int) -> bytes:
     ).digest()
 
 
-def _batch_rows(
+def compact_packet_batch(
+    batch: ETTRContinuationBatch,
+) -> ETTRCompactPacketBatch:
+    """Project a batch to the exact commitments consumed by the index."""
+
+    if not isinstance(batch, ETTRContinuationBatch):
+        raise ETTRPacketIndexError("ETTR packet-index batch type differs")
+    rows = int(batch.episodes.world.tokens.shape[0])
+    if rows < 1:
+        raise ETTRPacketIndexError("ETTR packet-index batch is empty")
+    compact_rows = []
+    for row in range(rows):
+        context_value, target = terminal_packet_query_context(batch, row)
+        if not 0 <= target <= 0xFFFF:
+            raise ETTRPacketIndexError(
+                "ETTR packet-index target exceeds uint16"
+            )
+        compact_rows.append(
+            (
+                hashlib.sha256(
+                    _canonical_json_bytes(context_value)
+                ).digest(),
+                target,
+            )
+        )
+    compact = ETTRCompactPacketBatch(
+        payload_digest=bytes.fromhex(
+            continuation_batch_payload_sha256(batch)
+        ),
+        rows=tuple(compact_rows),
+    )
+    compact.validate()
+    return compact
+
+
+def _compact_batches(
     batches: Iterable[ETTRContinuationBatch],
-    *,
-    split: int,
-) -> Iterator[tuple[bytes, ETTRContinuationBatch]]:
+) -> Iterator[ETTRCompactPacketBatch]:
     for batch in batches:
-        if not isinstance(batch, ETTRContinuationBatch):
-            raise ETTRPacketIndexError("ETTR packet-index batch type differs")
-        yield bytes.fromhex(continuation_batch_payload_sha256(batch)), batch
+        yield compact_packet_batch(batch)
 
 
 def _insert_split(
     connection: sqlite3.Connection,
-    batches: Iterable[ETTRContinuationBatch],
+    batches: Iterable[ETTRCompactPacketBatch],
     *,
     split: int,
 ) -> tuple[int, int]:
     batch_table = "train_batches" if split == 0 else "validation_batches"
     batch_count = 0
     row_count = 0
-    for payload_digest, batch in _batch_rows(batches, split=split):
+    for batch in batches:
+        if not isinstance(batch, ETTRCompactPacketBatch):
+            raise ETTRPacketIndexError("compact packet batch type differs")
+        batch.validate()
+        payload_digest = batch.payload_digest
         try:
             connection.execute(
                 f"INSERT INTO {batch_table}(digest) VALUES (?)",
@@ -187,18 +238,7 @@ def _insert_split(
                 "ETTR packet index train/validation batches overlap"
             )
         batch_count += 1
-        rows = int(batch.episodes.world.tokens.shape[0])
-        if rows < 1:
-            raise ETTRPacketIndexError("ETTR packet-index batch is empty")
-        for row in range(rows):
-            context_value, target = terminal_packet_query_context(batch, row)
-            if not 0 <= target <= 0xFFFF:
-                raise ETTRPacketIndexError(
-                    "ETTR packet-index target exceeds uint16"
-                )
-            context = hashlib.sha256(
-                _canonical_json_bytes(context_value)
-            ).digest()
+        for context, target in batch.rows:
             cursor = connection.execute(
                 """
                 INSERT OR IGNORE INTO contexts(
@@ -234,13 +274,13 @@ def _query_bytes(
         yield value
 
 
-def build_disk_packet_index(
+def _build_disk_packet_index_from_compact(
     output: Path,
     *,
-    train_batches: Iterable[ETTRContinuationBatch],
-    validation_batches: Iterable[ETTRContinuationBatch],
+    train_batches: Iterable[ETTRCompactPacketBatch],
+    validation_batches: Iterable[ETTRCompactPacketBatch],
 ) -> dict[str, object]:
-    """Build one immutable no-replace index from single-pass batch streams."""
+    """Build one immutable no-replace index from compact batch streams."""
 
     output = output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -397,6 +437,36 @@ def build_disk_packet_index(
         path.chmod(0o400)
     output.chmod(0o500)
     return manifest
+
+
+def build_disk_packet_index(
+    output: Path,
+    *,
+    train_batches: Iterable[ETTRContinuationBatch],
+    validation_batches: Iterable[ETTRContinuationBatch],
+) -> dict[str, object]:
+    """Build one immutable no-replace index from single-pass batch streams."""
+
+    return _build_disk_packet_index_from_compact(
+        output,
+        train_batches=_compact_batches(train_batches),
+        validation_batches=_compact_batches(validation_batches),
+    )
+
+
+def build_disk_packet_index_from_compact(
+    output: Path,
+    *,
+    train_batches: Iterable[ETTRCompactPacketBatch],
+    validation_batches: Iterable[ETTRCompactPacketBatch],
+) -> dict[str, object]:
+    """Build the same index from independently computed commitments."""
+
+    return _build_disk_packet_index_from_compact(
+        output,
+        train_batches=train_batches,
+        validation_batches=validation_batches,
+    )
 
 
 def _strict_manifest(path: Path) -> Mapping[str, object]:

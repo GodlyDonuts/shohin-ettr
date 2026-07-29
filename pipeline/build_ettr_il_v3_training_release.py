@@ -12,10 +12,11 @@ from __future__ import annotations
 
 import argparse
 from collections import deque
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import Future, ProcessPoolExecutor
 from dataclasses import asdict
 import hashlib
 import json
+import multiprocessing
 import os
 from pathlib import Path
 import re
@@ -36,7 +37,6 @@ from ettr_data_contract import (  # noqa: E402
     ETTR_CONTINUATION_SCHEMA,
     ETTRContinuationBatch,
     ETTRContinuationManifest,
-    continuation_batch_payload_sha256,
     select_continuation_rows,
 )
 from endogenous_typed_theory_reactor import TheoryReactorConfig  # noqa: E402
@@ -51,7 +51,11 @@ from ettr_il_v3_protocol import (  # noqa: E402
     SPLIT_CORES,
     canonical_json_bytes,
 )
-from ettr_packet_index import build_disk_packet_index  # noqa: E402
+from ettr_packet_index import (  # noqa: E402
+    ETTRCompactPacketBatch,
+    build_disk_packet_index_from_compact,
+    compact_packet_batch,
+)
 from materialize_ettr_il_v3_corpus import (  # noqa: E402
     AUDIT_SCHEMA,
     SEPARATION_SCHEMA,
@@ -76,6 +80,7 @@ _MAIN_SPLITS = (
     "train_reserve",
     "development_reserve",
 )
+_WORKER_CODEC: TokenNativeSurfaceCodec | None = None
 
 
 class ETTRV3ReleaseError(ValueError):
@@ -418,9 +423,9 @@ def _batch_stream(
     data_root: Path,
     codec: TokenNativeSurfaceCodec,
     writer: _StreamWriter,
-    executor: ThreadPoolExecutor | None,
+    executor: ProcessPoolExecutor | None,
     workers: int,
-) -> Iterator[ETTRContinuationBatch]:
+) -> Iterator[ETTRCompactPacketBatch]:
     ordinal = 0
     for descriptor in descriptors:
         path_value = _relative(
@@ -437,32 +442,18 @@ def _batch_stream(
             executor=executor,
             workers=workers,
         )
-        for row_index, record, core_batch in rematerialized:
-            if (
-                not isinstance(core_batch, ETTRContinuationBatch)
-                or core_batch.episodes.world.tokens.shape[0] != ROWS_PER_CORE
-                or ROWS_PER_CORE % TRAINING_ROWS_PER_BATCH
-            ):
+        for row_index, core_id, core_sha256, batches in rematerialized:
+            if len(batches) != TRAINING_BATCHES_PER_CORE:
                 raise ETTRV3ReleaseError(
-                    "training stream tensor geometry differs"
+                    "compact training batch geometry differs"
                 )
-            for batch_index, indices in enumerate(
-                _training_batch_row_indices(core_batch)
-            ):
-                batch = select_continuation_rows(core_batch, indices)
-                batch.validate(
-                    TheoryReactorConfig(),
-                    ETTRObjectiveConfig(
-                        vocab_size=codec.tokenizer.get_vocab_size(),
-                    ),
-                )
-                batch_sha256 = continuation_batch_payload_sha256(batch)
+            for batch_index, batch in enumerate(batches):
                 writer.write(
                     {
                         "batch_index": batch_index,
-                        "batch_payload_sha256": batch_sha256,
-                        "core_id": record.identity.core_id,
-                        "core_sha256": record.core_sha256(),
+                        "batch_payload_sha256": batch.payload_digest.hex(),
+                        "core_id": core_id,
+                        "core_sha256": core_sha256,
                         "ordinal": ordinal,
                         "row_index": row_index,
                         "schema": STREAM_RECORD_SCHEMA,
@@ -484,7 +475,7 @@ def _rematerialize_training_record(
     *,
     split: str,
     codec: TokenNativeSurfaceCodec,
-) -> tuple[int, object, object]:
+) -> tuple[int, str, str, tuple[ETTRCompactPacketBatch, ...]]:
     row_index, (payload, record) = item
     if (
         not hasattr(record, "identity")
@@ -494,7 +485,48 @@ def _rematerialize_training_record(
         raise ETTRV3ReleaseError(
             "training stream record split or canonical form differs"
         )
-    return row_index, record, rematerialize_record(record, codec)
+    core_batch = rematerialize_record(record, codec)
+    if (
+        not isinstance(core_batch, ETTRContinuationBatch)
+        or core_batch.episodes.world.tokens.shape[0] != ROWS_PER_CORE
+        or ROWS_PER_CORE % TRAINING_ROWS_PER_BATCH
+    ):
+        raise ETTRV3ReleaseError("training stream tensor geometry differs")
+    batches = []
+    for indices in _training_batch_row_indices(core_batch):
+        batch = select_continuation_rows(core_batch, indices)
+        batch.validate(
+            TheoryReactorConfig(),
+            ETTRObjectiveConfig(
+                vocab_size=codec.tokenizer.get_vocab_size(),
+            ),
+        )
+        batches.append(compact_packet_batch(batch))
+    return (
+        row_index,
+        record.identity.core_id,
+        record.core_sha256(),
+        tuple(batches),
+    )
+
+
+def _initialize_release_worker(tokenizer_path: str) -> None:
+    global _WORKER_CODEC
+    torch.set_num_threads(1)
+    _WORKER_CODEC = TokenNativeSurfaceCodec(Path(tokenizer_path))
+
+
+def _process_rematerialize_training_record(
+    item: tuple[int, tuple[bytes, object]],
+    split: str,
+) -> tuple[int, str, str, tuple[ETTRCompactPacketBatch, ...]]:
+    if _WORKER_CODEC is None:
+        raise ETTRV3ReleaseError("release worker codec is unavailable")
+    return _rematerialize_training_record(
+        item,
+        split=split,
+        codec=_WORKER_CODEC,
+    )
 
 
 def _bounded_rematerializations(
@@ -502,9 +534,9 @@ def _bounded_rematerializations(
     *,
     split: str,
     codec: TokenNativeSurfaceCodec,
-    executor: ThreadPoolExecutor | None,
+    executor: ProcessPoolExecutor | None,
     workers: int,
-) -> Iterator[tuple[int, object, object]]:
+) -> Iterator[tuple[int, str, str, tuple[ETTRCompactPacketBatch, ...]]]:
     if executor is None:
         for item in records:
             yield _rematerialize_training_record(
@@ -514,7 +546,9 @@ def _bounded_rematerializations(
             )
         return
 
-    pending: deque[Future[tuple[int, object, object]]] = deque()
+    pending: deque[
+        Future[tuple[int, str, str, tuple[ETTRCompactPacketBatch, ...]]]
+    ] = deque()
 
     def submit_next() -> bool:
         try:
@@ -523,10 +557,9 @@ def _bounded_rematerializations(
             return False
         pending.append(
             executor.submit(
-                _rematerialize_training_record,
+                _process_rematerialize_training_record,
                 item,
-                split=split,
-                codec=codec,
+                split,
             )
         )
         return True
@@ -602,18 +635,17 @@ def build_training_release(
     descriptors = _training_shards(audit, data_root)
     stream_writer = _StreamWriter(output / "stream-index.jsonl")
     executor = (
-        ThreadPoolExecutor(
+        ProcessPoolExecutor(
             max_workers=workers,
-            thread_name_prefix="ettr-release",
+            mp_context=multiprocessing.get_context("spawn"),
+            initializer=_initialize_release_worker,
+            initargs=(str(tokenizer_path),),
         )
         if workers > 1
         else None
     )
-    prior_torch_threads = torch.get_num_threads()
     try:
-        if executor is not None:
-            torch.set_num_threads(1)
-        packet_manifest = build_disk_packet_index(
+        packet_manifest = build_disk_packet_index_from_compact(
             output / "packet-index",
             train_batches=_batch_stream(
                 split="train",
@@ -641,7 +673,6 @@ def build_training_release(
     finally:
         if executor is not None:
             executor.shutdown(wait=True, cancel_futures=True)
-            torch.set_num_threads(prior_torch_threads)
 
     packet_receipt = packet_manifest["receipt"]
     if not isinstance(packet_receipt, dict):

@@ -14,6 +14,8 @@ from ettr_packet_index import (
     ETTRDiskPacketSufficiencyIndex,
     ETTRPacketIndexError,
     build_disk_packet_index,
+    build_disk_packet_index_from_compact,
+    compact_packet_batch,
 )
 from test_ettr_train_step import _trainer
 
@@ -71,6 +73,30 @@ def test_disk_index_matches_in_memory_receipt_and_verifies_splits(tmp_path):
         with pytest.raises(TheoryReactorError, match="frozen validation"):
             index.verify_validation((train,))
     _make_writable(root)
+
+
+def test_compact_builder_is_byte_identical_to_tensor_builder(tmp_path):
+    train, validation = _batches()
+    tensor_root = tmp_path / "tensor-index"
+    compact_root = tmp_path / "compact-index"
+    tensor_manifest = build_disk_packet_index(
+        tensor_root,
+        train_batches=(train,),
+        validation_batches=(validation,),
+    )
+    compact_manifest = build_disk_packet_index_from_compact(
+        compact_root,
+        train_batches=(compact_packet_batch(train),),
+        validation_batches=(compact_packet_batch(validation),),
+    )
+    assert compact_manifest == tensor_manifest
+    assert {
+        path.name: path.read_bytes() for path in tensor_root.iterdir()
+    } == {
+        path.name: path.read_bytes() for path in compact_root.iterdir()
+    }
+    _make_writable(tensor_root)
+    _make_writable(compact_root)
 
 
 def test_context_target_mutation_fails_disk_verification(tmp_path):
