@@ -18,6 +18,7 @@ TMP=${OUT}.partial
 RAW=${RAW:-$BASE/scratchpad/pes2o_uniform30_v1}
 MANIFEST=$BASE/artifacts/source_manifests/pes2o_uniform30_v1.json
 MANIFEST_SHA256=8d3923e0b65d0102d10647796e610747b18167419cd9fe13be12d482f2c13192
+HF_CURL_CONFIG=${HF_CURL_CONFIG:-$BASE/scratchpad/.hf_curl_auth.conf}
 MAX_TOKENS=${MAX_TOKENS:-10000000000}
 REVISION=${REVISION:-2caeba1585aaafa3c965410d80af85b09ed11cd9}
 PUBLISHER_TOKEN_CAP=${PUBLISHER_TOKEN_CAP:-1000000000}
@@ -29,6 +30,14 @@ PUBLISHER_TOKEN_CAP=${PUBLISHER_TOKEN_CAP:-1000000000}
   exit 4
 }
 printf '%s  %s\n' "$MANIFEST_SHA256" "$MANIFEST" | sha256sum -c -
+[[ ! -L "$HF_CURL_CONFIG" && -f "$HF_CURL_CONFIG" ]] || {
+  echo "[pes2o-core] Hugging Face curl config is unavailable" >&2
+  exit 5
+}
+[[ "$(stat -c %a "$HF_CURL_CONFIG")" == 600 ]] || {
+  echo "[pes2o-core] Hugging Face curl config mode differs" >&2
+  exit 5
+}
 
 cd "$BASE"
 mkdir -p "$RAW"
@@ -44,6 +53,7 @@ while IFS=$'\t' read -r relative_path expected_bytes expected_sha256; do
   else
     url="https://huggingface.co/datasets/common-pile/peS2o/resolve/$REVISION/$relative_path?download=true"
     curl \
+      --config "$HF_CURL_CONFIG" \
       --fail \
       --location \
       --retry 8 \
