@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 11:38 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 14:20 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17668,3 +17668,67 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `pes2o_three_secret_rows_physical_removal_and_zero_rescan_required`.
+
+- **2026-07-29 14:05 EDT** -- **The sealed ETTR confirmation stream passed
+  its complete independent aggregate audit.**
+
+  Confirmation materialization and aggregate audit job `753829` completed
+  cleanly. The immutable audit has schema
+  `r12-ettr-il-v3-materialization-audit-v1`, `status=pass`, 6,250 unique
+  confirmation cores, 400,000 expanded rows, and 211,200,000 charged
+  positions. It reconciles 5,000 confirmation and 1,250 confirmation-reserve
+  cores across all 30 immutable shards, with 6,250 unique semantic hashes.
+  Audit file SHA-256 is
+  `6387ace4bcc549197fc41f12ebdbd9b2cf4b28a8c912e788511c8084d781e81d`;
+  its internal audit SHA-256 is
+  `ef4addeddfc1eaddfd797448cf7f1d44536f8a78cf1f2768b47048ea9ec31807`.
+
+  This pass grants no optimizer access by itself. Four main materialization
+  cells remained active at 14:13 EDT with no observed failures. Main audit
+  `753828`, zero-overlap separation `753830`, immutable release `754460`,
+  direct transfer, distributed H100 canary, and the bounded causal rung
+  ladder remain correctly blocked on the main chain.
+
+  Decision:
+  `ettr_confirmation_aggregate_pass_main_and_separation_still_required`.
+
+- **2026-07-29 14:20 EDT** -- **The exact 4.350B-token peS2o
+  secret-removal residual passed a fresh independent physical verification;
+  its full second sensitive scan is running.**
+
+  The second residual attempt `755280` failed closed after Lustre changed a
+  just-fsynced file's metadata identity during an immediate independent
+  reopen; it published nothing. Commit `adb3c20` binds each shard receipt to
+  the exact compressed bytes written in-process while preserving the later
+  independent physical verifier. Third attempt `755286` then materialized and
+  internally verified the complete residual but its wrapper exited after
+  publication because it checked the obsolete ledger name
+  `document_ledger.jsonl.zst` instead of the canonical
+  `documents.jsonl.zst`. Commit `4ace270` corrects that postcondition and
+  read-only publication for future runs. The already published residual was
+  retained rather than wastefully rebuilt.
+
+  The hardened generic verifier in private commit
+  `20284dc1ef4633f16062361272b9547c4f645e55` verifies all corpus bytes,
+  seals the corpus read-only, repeats the complete verification, requires
+  byte-identical receipts, and only then publishes a no-replace receipt.
+  Focused sensitive-audit, residual, v3-verifier, and recovery tests pass
+  **22/22**, with clean Ruff, byte compilation, shell syntax, and diff
+  checks. Exact Stokes runtime
+  `scratchpad/shohin_v3_verifier_20284dc` has `SHA256SUMS` SHA-256
+  `92d7b4752600834771fa56d9da99067d98b654069731a9a7461a4d36c4fcd5a6`.
+
+  Independent job `755291` completed in 4m57s. It verified all 44 shards,
+  718,586 document-ledger rows, 4,350,429,033 tokens, the tokenizer,
+  evaluator-decontamination inputs, external source files, and exact
+  selection code. Manifest payload SHA-256 is
+  `26e741ba214361db67350bd3bd74ff20722fe877a16ba25b8d886c88eae97477`.
+  Immutable receipt SHA-256 is
+  `fba89eed64f81c6188c6c046313946ddd6a7f3bb4ad7d2cf4d71d36e15a23e57`;
+  no corpus file or directory has owner/group/world write permission.
+  Dependent full rescan `755292` is running and must report zero
+  automatic-exclusion documents before this challenger can proceed to
+  cross-source residualization and equal-token utility gates.
+
+  Decision:
+  `pes2o_sensitive_residual_physically_verified_zero_rescan_running_not_admitted`.
