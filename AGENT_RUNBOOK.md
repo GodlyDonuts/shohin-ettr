@@ -16634,3 +16634,29 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `ettr_mechanics_and_trainability_positive_corpus_qualification_214_of_216_capability_learning_unmeasured`.
+
+- **2026-07-29 data-admission hardening** -- **Cross-source exact-duplicate
+  findings can now be enforced as a fresh verifiable residual corpus rather
+  than remaining an advisory report.**
+
+  `pipeline/materialize_cross_source_exact_residual.py` consumes one verified
+  v3 candidate and an externally verified
+  `audit_cross_source_exact_dedup.py` result. It validates the canonical report
+  and compressed removal ledger, binds the named corpus and parent manifest,
+  reopens every retained document's exact token span, drops only
+  identity/hash/token-matched removals, repacks the retained spans into fresh
+  shards, writes a new provenance ledger, and independently re-verifies the
+  complete output and all external inputs before atomic no-replace
+  publication. Tampered removals and corpus-name substitution fail before an
+  output exists. The focused residual/dedup/shard suite passes **14/14** with
+  clean Ruff, byte compilation, and diff checks.
+
+  This also makes the historical limitation explicit: legacy FineMath,
+  OpenWebMath, and Python shards lack v3 document ledgers, so they cannot be
+  declared cross-source residuals. A claim-bearing Phase 2 mixture must
+  rebuild them from pinned records into v3 form or exclude them. FineWeb and
+  peS2o remain unsealed candidates; this materializer is staged for their
+  post-verifier cross-source gate and does not admit either source.
+
+  Decision:
+  `cross_source_exact_removal_now_enforceable_legacy_nonledger_corpora_not_residual_by_assertion`.

@@ -351,9 +351,25 @@ tokenizer identity across all inputs and can revalidate every physical source,
 tokenizer, decontamination, and evaluation input. Publication reserves the
 destination and writes the report last through no-replace links, so an
 interrupted or raced run cannot masquerade as a complete receipt. This audit
-does not measure near-duplicates and does not rewrite token shards; both
-near-duplicate admission and application of the exact removal ledger remain
-separate required gates.
+does not measure near-duplicates.
+
+`pipeline/materialize_cross_source_exact_residual.py` applies that exact
+removal ledger to one named corpus. It first revalidates the complete source
+corpus and every external input, binds the canonical dedup report and
+compressed removal ledger, reopens each retained document's hash-bound token
+span, and repacks only the retained spans into a new no-replace v3 corpus. The
+new document ledger preserves source identities while recording new shard
+offsets; the output manifest binds the parent manifest, declared retention
+priority, removal receipt, and residualizer source. The complete output is
+independently reverified before its staging directory is atomically
+published. A dedup report alone therefore cannot authorize training: only the
+materialized and verified residual may proceed to later gates.
+
+Near-duplicate admission remains separate and mandatory. Legacy historical
+shards without v3 document ledgers cannot be represented as cross-source
+residuals by assertion. They must be rebuilt from pinned source records into
+v3 form or excluded from a claim-bearing Phase 2 mixture; structural scans of
+legacy token files are not a substitute for document provenance.
 
 ## Fresh-Source Challenger Lane
 
