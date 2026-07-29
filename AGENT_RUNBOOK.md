@@ -16811,3 +16811,33 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `paired_ettr_development_gate_ready_no_learned_capability_claim_yet`.
+
+- **2026-07-29 05:32 EDT** -- **The 10/20-H100 reservations now have a
+  bounded ETTR launcher that cannot skip the development gate.**
+
+  `train/jobs/run_reserved_ettr_v3_pilot.sh` verifies the running Shohin
+  reservation, concrete healthy-node subset, immutable source archive and
+  source commit, exact ETTR release hash, protected checkpoint, update range,
+  compile mode, and optional exact-resume state. It launches one Torch
+  distributed worker per selected H100 over the reservation's multi-node
+  allocation and retains the existing trainer's release, cursor, optimizer,
+  checkpoint, and source contracts. The initial intended arm freezes the
+  125M base and trains the 67.70M ETTR architecture parameters.
+
+  After the bounded rung ends, the launcher derives the final checkpoint hash
+  only from its no-replace sidecar and runs `eval_ettr_v3.py` on one selected
+  H100 against the exact raw initialization and development stream. It then
+  writes a final SHA-256 inventory. The launcher supports exact same-geometry
+  continuation from 100 to 500 to 2,000 updates but cannot reinterpret an
+  initial run as a continuation or resume without a pinned checkpoint hash.
+  Shell syntax, Ruff, diff checks, and the launcher/evaluator/trainer/
+  distributed/packet-index focused set pass **18/18**.
+
+  An apparent B32/B16 contradiction in historical notes was re-audited before
+  launch. Current release builder constant
+  `TRAINING_ROWS_PER_BATCH=16` creates four B16 batches per 64-row semantic
+  core; this matches the formally qualified H100 shape. The obsolete two-B32
+  shape remains correctly rejected.
+
+  Decision:
+  `bounded_reserved_ettr_launcher_ready_wait_for_immutable_release`.

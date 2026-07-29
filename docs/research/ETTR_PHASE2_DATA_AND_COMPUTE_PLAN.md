@@ -177,6 +177,13 @@ and 2,000 optimizer updates. Stop or revise the objective when the fixed
 development gate fails; do not spend the 10- or 20-H100 allocation on a
 blind 300,000-update continuation.
 
+`train/jobs/run_reserved_ettr_v3_pilot.sh` is the reservation launcher for
+this ladder. It verifies the immutable source archive, exact release, concrete
+healthy node list, protected checkpoint, update range, and optional exact
+resume state. It launches one `torchrun` worker per selected H100 through the
+existing reservation, then uses one H100 to evaluate the final checkpoint
+against raw initialization before publishing a result hash inventory.
+
 ## Newton Capacity
 
 | job | request | expected window at submission | purpose |
@@ -209,6 +216,8 @@ one inefficient 20-way model replica.
 - output directory is fresh, isolated, no-replace, and never aliases the
   protected checkpoint or historical flagship output;
 - evaluation and rollback checkpoints are scheduled before the long run.
+- the reservation launcher completes its paired development evaluation before
+  another update rung is authorized.
 
 ## Active Jobs
 
