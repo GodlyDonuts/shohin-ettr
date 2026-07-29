@@ -467,8 +467,8 @@ class ETTRV3StreamingRelease:
         ):
             raise ETTRV3StreamingError("ETTR v3 tokenizer identity differs")
         self.tokenizer = Tokenizer.from_file(str(tokenizer_path))
-        codec = TokenNativeSurfaceCodec(tokenizer_path)
-        if codec.tokenizer_sha256 != tokenizer_sha256:
+        self.codec = TokenNativeSurfaceCodec(tokenizer_path)
+        if self.codec.tokenizer_sha256 != tokenizer_sha256:
             raise ETTRV3StreamingError(
                 "ETTR v3 tokenizer codec identity differs"
             )
@@ -667,7 +667,7 @@ class ETTRV3StreamingRelease:
                         if core_batch is None:
                             core_batch = rematerialize_record(
                                 record,
-                                self.tokenizer,
+                                self.codec,
                             )
                             core_batch_indices = _training_batch_row_indices(
                                 core_batch

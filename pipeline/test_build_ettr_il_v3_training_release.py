@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 from tokenizers import Tokenizer
 
+import ettr_il_v2_token_native_surface as token_surface
 from build_ettr_il_v3_training_release import (
     ETTRV3ReleaseError,
     RELEASE_SCHEMA,
@@ -282,6 +283,51 @@ def test_training_release_reconstructs_and_binds_complete_stream(tmp_path):
                 )
             )
     _make_writable(output)
+
+
+def test_release_and_streaming_do_not_depend_on_default_tokenizer_path(
+    tmp_path,
+    monkeypatch,
+):
+    tokenizer, data_root, audit, separation = _write_inputs(tmp_path)
+    monkeypatch.setattr(
+        token_surface,
+        "DEFAULT_TOKENIZER_PATH",
+        tmp_path / "missing-default-tokenizer.json",
+    )
+    output = tmp_path / "release"
+    result = build_training_release(
+        main_audit_path=audit,
+        separation_path=separation,
+        data_root=data_root,
+        tokenizer_path=tokenizer,
+        protected_checkpoint_sha256="4" * 64,
+        source_commit=SOURCE_COMMIT,
+        output=output,
+        expected_split_counts={
+            "development": 1,
+            "development_reserve": 0,
+            "train": 1,
+            "train_reserve": 0,
+        },
+    )
+    stream = ETTRV3StreamingRelease(
+        output,
+        expected_release_sha256=result["release_file_sha256"],
+        data_root=data_root,
+        tokenizer_path=tokenizer,
+    )
+    assert len(
+        tuple(
+            stream.iter_batches(
+                "train",
+                rank=0,
+                world_size=1,
+                epoch=0,
+                seed=7,
+            )
+        )
+    ) == 4
 
 
 @pytest.mark.parametrize(

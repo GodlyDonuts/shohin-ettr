@@ -22,7 +22,6 @@ import sys
 from typing import Iterator, Mapping, Sequence
 
 import torch
-from tokenizers import Tokenizer
 
 
 _ROOT = Path(__file__).resolve().parents[1]
@@ -415,7 +414,7 @@ def _batch_stream(
     split: str,
     descriptors: Sequence[Mapping[str, object]],
     data_root: Path,
-    tokenizer: Tokenizer,
+    codec: TokenNativeSurfaceCodec,
     writer: _StreamWriter,
 ) -> Iterator[ETTRContinuationBatch]:
     ordinal = 0
@@ -434,7 +433,7 @@ def _batch_stream(
                 raise ETTRV3ReleaseError(
                     "training stream record split or canonical form differs"
                 )
-            core_batch = rematerialize_record(record, tokenizer)
+            core_batch = rematerialize_record(record, codec)
             if (
                 not isinstance(core_batch, ETTRContinuationBatch)
                 or core_batch.episodes.world.tokens.shape[0] != ROWS_PER_CORE
@@ -450,7 +449,7 @@ def _batch_stream(
                 batch.validate(
                     TheoryReactorConfig(),
                     ETTRObjectiveConfig(
-                        vocab_size=tokenizer.get_vocab_size(),
+                        vocab_size=codec.tokenizer.get_vocab_size(),
                     ),
                 )
                 batch_sha256 = continuation_batch_payload_sha256(batch)
@@ -526,7 +525,6 @@ def build_training_release(
     codec = TokenNativeSurfaceCodec(tokenizer_path)
     if codec.tokenizer_sha256 != audit.get("tokenizer_sha256"):
         raise ETTRV3ReleaseError("training tokenizer identity differs")
-    tokenizer = Tokenizer.from_file(str(tokenizer_path))
     tokenizer_digest, tokenizer_bytes = _stable_file_sha256(
         tokenizer_path,
         "training tokenizer",
@@ -543,14 +541,14 @@ def build_training_release(
                 split="train",
                 descriptors=descriptors["train"],
                 data_root=data_root,
-                tokenizer=tokenizer,
+                codec=codec,
                 writer=stream_writer,
             ),
             validation_batches=_batch_stream(
                 split="development",
                 descriptors=descriptors["development"],
                 data_root=data_root,
-                tokenizer=tokenizer,
+                codec=codec,
                 writer=stream_writer,
             ),
         )
