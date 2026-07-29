@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 10:18 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 10:34 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17382,3 +17382,41 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `ettr_materializing_pes2o_domain_policy_frozen_all_training_still_gated`.
+
+- **2026-07-29 10:34 EDT** -- **The expired ten-H100 deadline was replaced
+  without touching data or model state; balanced peS2o materialization and
+  exact retained review now form a fail-closed dependency chain.**
+
+  Newton reservation `719497` reached Slurm state `DEADLINE` at 10:27 EDT
+  before resources opened. It never ran and performed no GPU step. The
+  original key-based watcher briefly mistook the missing queue row for a
+  connection problem, but accounting confirmed the scheduler outcome.
+  Test-only requests then measured four H100s around July 30 01:27 EDT, six
+  around 01:28, and eight/ten around 05:29. Fresh no-deadline reservations
+  `722178` (**4 H100, two nodes**) and `722179` (**10 H100, five nodes**) are
+  priority-pending with `evc40` excluded, minimal four CPUs and 32 GiB per
+  node, and twelve-hour limits. Existing request `719496` remains pending for
+  **20 H100** with an August 1 estimate. Password-authenticated,
+  transient-error-tolerant local watchers monitor both fresh requests and
+  may launch only the release-blind distributed ETTR canary with unique
+  outputs. They cannot expose a release or start training.
+
+  peS2o domain-balanced materialization job `754651` is active and has
+  emitted all 44 expected approximately 100M-token staging shards while its
+  full verification continues. The exact transformed-candidate review
+  launcher now accepts an explicit hash-pinned selection-code path and
+  verifies a complete isolated runtime `SHA256SUMS`, closing helper-module
+  substitution. Its focused review/materializer set passes **8/8**. Review
+  job `754652` is held `afterok:754651`, targets the balanced corpus rather
+  than the concentrated reservoir, writes its 1,000 document texts only
+  below mode-700 private scratch, and emits only a text-free receipt to
+  publishable artifacts. Runtime
+  `scratchpad/shohin_balanced_review_3a0a1f9` is read-only; its inventory
+  SHA-256 is
+  `ffd39db7547bf1f3db3619cd587c310d724772933732605dbd4f55863201db55`.
+
+  ETTR main/confirmation materialization continues with zero failed cells.
+  No candidate optimizer is active.
+
+  Decision:
+  `fresh_4_10_20h100_capacity_pending_balanced_review_held_no_optimizer`.
