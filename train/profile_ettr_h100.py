@@ -781,16 +781,40 @@ def _sample_parameters(
     samples = []
     for parameter, take in zip(trainable, allocations, strict=True):
         flat = parameter.detach().flatten()
-        coordinates = torch.linspace(
-            0,
-            flat.numel() - 1,
-            steps=take,
+        coordinates = _evenly_spaced_indices(
+            flat.numel(),
+            take,
             device=flat.device,
-        ).long()
+        )
         samples.append(flat.index_select(0, coordinates).float().clone())
     if not samples:
         return torch.empty(0)
     return torch.cat(samples)
+
+
+def _evenly_spaced_indices(
+    length: int,
+    count: int,
+    *,
+    device: torch.device,
+) -> torch.Tensor:
+    if (
+        not isinstance(length, int)
+        or isinstance(length, bool)
+        or length < 1
+        or not isinstance(count, int)
+        or isinstance(count, bool)
+        or count < 1
+        or count > length
+    ):
+        raise ETTRProfileError("parameter sample geometry differs")
+    if count == 1:
+        return torch.zeros(1, dtype=torch.long, device=device)
+    numerators = torch.arange(count, dtype=torch.long, device=device)
+    return numerators.mul(length - 1).div(
+        count - 1,
+        rounding_mode="floor",
+    )
 
 
 def _gradient_tensors(

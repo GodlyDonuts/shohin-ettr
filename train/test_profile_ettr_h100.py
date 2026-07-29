@@ -237,6 +237,21 @@ def test_parameter_sampling_fails_when_budget_cannot_cover_every_tensor() -> Non
         profile._sample_parameters(parameters, maximum=4)
 
 
+def test_parameter_sampling_indices_are_exact_above_float32_boundary() -> None:
+    length = 2**24 + 1
+    indices = profile._evenly_spaced_indices(
+        length,
+        4096,
+        device=torch.device("cpu"),
+    )
+    assert indices.dtype == torch.long
+    assert indices[0] == 0
+    assert indices[-1] == length - 1
+    assert bool(torch.all(indices[1:] > indices[:-1]))
+    assert int(indices.min()) >= 0
+    assert int(indices.max()) < length
+
+
 def test_reactor_core_gradient_component_excludes_command_projection() -> None:
     model = profile._tiny_model(7)
     components = profile._component_parameters(model)
