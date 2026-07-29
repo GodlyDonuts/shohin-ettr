@@ -62,11 +62,12 @@ from materialize_ettr_il_v3_corpus import (  # noqa: E402
 )
 
 
-RELEASE_SCHEMA = "r12-ettr-il-v3-training-release-v1"
+RELEASE_SCHEMA = "r12-ettr-il-v3-training-release-v2"
 STREAM_RECORD_SCHEMA = "r12-ettr-il-v3-training-stream-record-v1"
 TRAINING_ROWS_PER_BATCH = 16
 TRAINING_BATCHES_PER_CORE = ROWS_PER_CORE // TRAINING_ROWS_PER_BATCH
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
+_HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _TRAINING_SPLITS = ("train", "development")
 _MAIN_SPLITS = (
     "train",
@@ -82,6 +83,12 @@ class ETTRV3ReleaseError(ValueError):
 
 def _hex(value: object, label: str) -> str:
     if not isinstance(value, str) or _HEX64.fullmatch(value) is None:
+        raise ETTRV3ReleaseError(f"{label} differs")
+    return value
+
+
+def _commit(value: object, label: str) -> str:
+    if not isinstance(value, str) or _HEX40.fullmatch(value) is None:
         raise ETTRV3ReleaseError(f"{label} differs")
     return value
 
@@ -476,6 +483,7 @@ def build_training_release(
     data_root: Path,
     tokenizer_path: Path,
     protected_checkpoint_sha256: str,
+    source_commit: str,
     output: Path,
     expected_split_counts: Mapping[str, int] | None = None,
 ) -> dict[str, object]:
@@ -484,6 +492,11 @@ def build_training_release(
     protected_checkpoint_sha256 = _hex(
         protected_checkpoint_sha256,
         "protected checkpoint SHA-256",
+    )
+    source_commit = _commit(source_commit, "release source commit")
+    release_builder_sha256, release_builder_bytes = _stable_file_sha256(
+        Path(__file__).resolve(),
+        "training-release builder",
     )
     expected = (
         {split: SPLIT_CORES[split] for split in _MAIN_SPLITS}
@@ -667,8 +680,14 @@ def build_training_release(
             "sha256": packet_manifest_sha256,
         },
         "protected_checkpoint_sha256": protected_checkpoint_sha256,
+        "release_builder": {
+            "bytes": release_builder_bytes,
+            "path": "pipeline/build_ettr_il_v3_training_release.py",
+            "sha256": release_builder_sha256,
+        },
         "schema": RELEASE_SCHEMA,
         "separation_sha256": separation_sha256,
+        "source_commit": source_commit,
         "status": "pass",
         "stream_index": stream_receipt,
         "tokenizer": {
@@ -711,6 +730,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--data-root", type=Path, required=True)
     parser.add_argument("--tokenizer", type=Path, required=True)
     parser.add_argument("--protected-checkpoint-sha256", required=True)
+    parser.add_argument("--source-commit", required=True)
     parser.add_argument("--output", type=Path, required=True)
     return parser.parse_args(argv)
 
@@ -723,6 +743,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         data_root=arguments.data_root,
         tokenizer_path=arguments.tokenizer,
         protected_checkpoint_sha256=arguments.protected_checkpoint_sha256,
+        source_commit=arguments.source_commit,
         output=arguments.output,
     )
     print(

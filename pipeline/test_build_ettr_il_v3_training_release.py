@@ -27,6 +27,9 @@ from materialize_ettr_il_v3_corpus import AUDIT_SCHEMA, SEPARATION_SCHEMA
 from test_ettr_il_v3_materialize import _row
 
 
+SOURCE_COMMIT = "5" * 40
+
+
 def _write_record_shard(
     data_root: Path,
     *,
@@ -149,6 +152,7 @@ def test_training_release_reconstructs_and_binds_complete_stream(tmp_path):
         data_root=data_root,
         tokenizer_path=tokenizer,
         protected_checkpoint_sha256="4" * 64,
+        source_commit=SOURCE_COMMIT,
         output=output,
         expected_split_counts={
             "development": 1,
@@ -159,6 +163,16 @@ def test_training_release_reconstructs_and_binds_complete_stream(tmp_path):
     )
     assert result["schema"] == RELEASE_SCHEMA
     assert result["status"] == "pass"
+    assert result["source_commit"] == SOURCE_COMMIT
+    assert result["release_builder"] == {
+        "bytes": Path(
+            build_training_release.__code__.co_filename
+        ).stat().st_size,
+        "path": "pipeline/build_ettr_il_v3_training_release.py",
+        "sha256": hashlib.sha256(
+            Path(build_training_release.__code__.co_filename).read_bytes()
+        ).hexdigest(),
+    }
     assert result["stream_index"]["rows"] == 8
     assert result["training_batches_per_core"] == 4
     assert result["training_rows_per_batch"] == 16
@@ -261,6 +275,30 @@ def test_training_release_rejects_writable_materialized_shard(tmp_path):
             data_root=data_root,
             tokenizer_path=tokenizer,
             protected_checkpoint_sha256="4" * 64,
+            source_commit=SOURCE_COMMIT,
+            output=tmp_path / "release",
+            expected_split_counts={
+                "development": 1,
+                "development_reserve": 0,
+                "train": 1,
+                "train_reserve": 0,
+            },
+        )
+
+
+def test_training_release_rejects_malformed_source_commit(tmp_path):
+    tokenizer, data_root, audit, separation = _write_inputs(tmp_path)
+    with pytest.raises(
+        ETTRV3ReleaseError,
+        match="release source commit differs",
+    ):
+        build_training_release(
+            main_audit_path=audit,
+            separation_path=separation,
+            data_root=data_root,
+            tokenizer_path=tokenizer,
+            protected_checkpoint_sha256="4" * 64,
+            source_commit="not-a-commit",
             output=tmp_path / "release",
             expected_split_counts={
                 "development": 1,
