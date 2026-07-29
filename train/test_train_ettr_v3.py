@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import os
+from pathlib import Path
+import subprocess
+import sys
 from types import SimpleNamespace
 
 import pytest
@@ -25,6 +29,27 @@ def _stream():
         manifest=_Manifest(),
         records={"train": tuple(range(16))},
     )
+
+
+def test_cluster_entrypoint_imports_without_external_pythonpath(
+    tmp_path: Path,
+) -> None:
+    environment = os.environ.copy()
+    environment.pop("PYTHONPATH", None)
+    environment["PYTHONNOUSERSITE"] = "1"
+    process = subprocess.run(
+        [
+            sys.executable,
+            str(Path(__file__).with_name("train_ettr_v3.py")),
+            "--help",
+        ],
+        cwd=tmp_path,
+        env=environment,
+        capture_output=True,
+        check=False,
+        text=True,
+    )
+    assert process.returncode == 0, process.stderr
 
 
 def test_compiled_resume_cursor_round_trip() -> None:

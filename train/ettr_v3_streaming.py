@@ -20,7 +20,6 @@ from ettr_data_contract import (
     continuation_batch_payload_sha256,
     select_continuation_rows,
 )
-from ettr_il_v2_token_native_surface import TokenNativeSurfaceCodec
 
 
 _ROOT = Path(__file__).resolve().parents[1]
@@ -28,6 +27,9 @@ _PIPELINE = _ROOT / "pipeline"
 if str(_PIPELINE) not in sys.path:
     sys.path.insert(0, str(_PIPELINE))
 
+from ettr_il_v2_token_native_surface import (  # noqa: E402
+    TokenNativeSurfaceCodec,
+)
 from build_ettr_il_v3_training_release import (  # noqa: E402
     RELEASE_SCHEMA,
     STREAM_RECORD_SCHEMA,
