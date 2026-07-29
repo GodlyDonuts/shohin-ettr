@@ -18139,3 +18139,48 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `audited_main_ettr_private_hf_release_published_and_verified_confirmation_excluded_no_optimizer`.
+
+- **2026-07-29 19:24 EDT** -- **The ETTR trainer is now self-contained at
+  cluster launch, and every Newton watcher is rebound to a source-complete
+  immutable runtime.**
+
+  A final launch preflight found two fail-closed defects in provisional
+  runtime `shohin_ettr_runtime_68bf17f_r1`. Its 928-file inventory omitted
+  pipeline modules required by the streaming trainer, and
+  `train/ettr_v3_streaming.py` imported the verified codec before inserting
+  the runtime's pipeline directory into `sys.path`. Therefore a launch from a
+  scheduler working directory outside the repository could fail before
+  training began. No release transfer, optimizer, first-rung lock, or
+  checkpoint mutation had occurred when this was found.
+
+  Private commit
+  `1afc3b45e99b9312fa12db65f84bb6b772c14f6a` corrects the import order and
+  adds a subprocess regression that launches the trainer from an unrelated
+  working directory with `PYTHONPATH` removed. The focused suite passes
+  **30/30** in 91.23 seconds; Ruff, byte compilation, diff checks, and a
+  direct `--help` launch from `/tmp` all pass.
+
+  Final no-replace Newton runtime
+  `/lustre/fs1/home/sa305415/shohin/scratchpad/shohin_ettr_runtime_1afc3b4_full_r1`
+  contains 1,683 Python and shell source files from `train` and `pipeline`.
+  Its complete `SHA256SUMS` is itself SHA-256
+  `e30f831838a32829b5ee0797150f14b2e51c907e5db1513045ee97513301dca6`;
+  the transferred archive is SHA-256
+  `be391d6dda7b0a3be496a05b63d414c8c53fedf4e7c3b64c3f6bd85078528d18`;
+  and its streaming entrypoint is SHA-256
+  `a4b7d97ce4dfc9b728985b7c02f8a9e3831c76e550b360f7c3ac5062067b3f23`.
+  Newton replayed the complete inventory, passed the real entrypoint launch
+  from `/tmp` with `PYTHONPATH` unset, and sealed the source read-only only
+  after verification.
+
+  The transfer verifier, four-/ten-/twenty-H100 distributed canary
+  supervisor, canonical 100-update paired gate, and strict
+  100-to-500-to-2,000 ladder all now bind commit `1afc3b4` and this final
+  runtime. Provisional watchers were terminated before rebinding. Release
+  builder `755591` remains the sole writer and had emitted 36,676 of 180,000
+  ordered optimizer batches at 19:23 EDT without error. Reservations
+  `722178`, `722179`, and `719496` remain pending; no optimizer or rung lock
+  is active.
+
+  Decision:
+  `source_complete_self_contained_newton_runtime_verified_all_launch_watchers_rebound_no_optimizer`.
