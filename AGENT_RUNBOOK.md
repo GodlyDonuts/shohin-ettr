@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 17:53 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 18:20 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17947,3 +17947,40 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `exact_residual_source_program_pinned_corrected_runtime_admitted_full_ettr_audit_unchanged_no_optimizer`.
+
+- **2026-07-29 18:20 EDT** -- **The complete ETTR main audit and sealed
+  confirmation-separation audit passed; immutable training-release
+  reconstruction is running.**
+
+  Full aggregate audit job `755550` completed cleanly in 36m57s with exit
+  code `0:0`. Its receipt file SHA-256 is
+  `83d010ef70b17dd30ce17df055ea4c9e0716e30498d8563b2350f73990a5730b`;
+  the canonical audit SHA-256 is
+  `02ef40eea09029b9a74a317440a7e3b48e8f700e9333b951126b1bef99dfedcd`.
+  It independently reopened **56,250 unique main cores**, expanded them into
+  **3,600,000 rows / 1,900,800,000 charged positions**, and found 56,250
+  unique semantic hashes. Exact split counts are train 40,000, development
+  5,000, train-reserve 10,000, and development-reserve 1,250. Qualification
+  admitted 223,741 of 234,462 candidates and rejected 10,721.
+
+  Separation job `755552` then completed cleanly in 26m29s with exit code
+  `0:0`. Its receipt file SHA-256 is
+  `2319ee93a297592b990bd9b69873ba5723d7f615d904fb955b8b109b76fedc52`;
+  canonical separation SHA-256 is
+  `2f9b208e555e136c35487459904f21b71a01e41f7acb22db1987aaffac544181`.
+  Across 56,250 main cores and 6,250 sealed-confirmation cores it reports
+  **zero core-ID overlap, zero graph-isomorphism-hash overlap, zero
+  semantic-hash overlap, and zero source-view-hash overlap**. The combined
+  main plus sealed-confirmation corpus is therefore 62,500 independent cores,
+  4,000,000 rows, and 2,112,000,000 charged positions.
+
+  Dependency job `755554` started on `ec52` with eight CPUs. It is fully
+  reopening the admitted main shards, rematerializing each continuation
+  batch, and building a fresh immutable optimizer-visible release at
+  `/lustre/fs1/home/sa305415/ettr-il-v3/releases/training-d84a5a0`.
+  Release transfer, private Hugging Face publication, and every optimizer
+  remain fail-closed until its self-hashed `release.json` passes and an exact
+  Newton copy is verified.
+
+  Decision:
+  `full_ettr_audit_and_zero_overlap_separation_pass_release_reconstruction_running_no_optimizer`.
