@@ -26,7 +26,7 @@ TASK_MANIFEST=${TASK_MANIFEST:?set the immutable main task manifest}
 PRIMARY_OUTPUT_ROOT=${PRIMARY_OUTPUT_ROOT:?set the original output root}
 PRIMARY_REPORTS_ROOT=${PRIMARY_REPORTS_ROOT:?set the original reports root}
 RECOVERY_BASE=${RECOVERY_BASE:?set the completed recovery root}
-RECOVERY_INDICES=${RECOVERY_INDICES:?set comma-separated recovery indices}
+RECOVERY_INDICES=${RECOVERY_INDICES:?set colon-separated recovery indices}
 OUTPUT_ROOT=${OUTPUT_ROOT:?set a fresh assembled output root}
 REPORTS_ROOT=${REPORTS_ROOT:?set a fresh assembled reports root}
 RECEIPT=${RECEIPT:?set a fresh assembly receipt}
@@ -72,7 +72,7 @@ if [[ ! "$EXECUTION_SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ \
   || ! "$ASSEMBLY_SHA256" =~ ^[0-9a-f]{64}$ \
   || ! "$ADAPTER_SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ \
   || ! "$ADAPTER_SHA256" =~ ^[0-9a-f]{64}$ \
-  || ! "$RECOVERY_INDICES" =~ ^[0-9]+(,[0-9]+)*$ ]]; then
+  || ! "$RECOVERY_INDICES" =~ ^[0-9]+(:[0-9]+)*$ ]]; then
   echo "[ettr-assembly] scalar contract differs" >&2
   exit 2
 fi
@@ -80,7 +80,7 @@ fi
 printf '%s  %s\n' "$ASSEMBLY_SHA256" "$ASSEMBLER" | sha256sum -c -
 
 arguments=()
-IFS=',' read -r -a recovery_indices <<<"$RECOVERY_INDICES"
+IFS=':' read -r -a recovery_indices <<<"$RECOVERY_INDICES"
 for index in "${recovery_indices[@]}"; do
   task_root="$RECOVERY_BASE/task-$(printf '%05d' "$index")"
   [[ -d "$task_root/output" && -d "$task_root/reports" ]] || {
