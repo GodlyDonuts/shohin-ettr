@@ -16928,5 +16928,14 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   still requires the immutable Stokes release, verified transfer to Newton,
   and an explicit passing canary report.
 
+  The earlier direct-transfer finding is now narrowed correctly: unattended
+  public-key authentication is suppressed, but interactive password
+  authentication from Stokes to Newton works. A runbook-sized probe sustained
+  approximately **109 MB/s**, matched SHA-256 on Newton, and was deleted
+  immediately. No credential or key was retained. Transfer the final ETTR
+  release directly between clusters with interactive authenticated,
+  resumable transport and independent source/destination inventories instead
+  of relaying its payload through the Mac.
+
   Decision:
   `finepdfs_language_stable_candidate_ready_10h100_canary_armed_no_candidate_optimizer`.
