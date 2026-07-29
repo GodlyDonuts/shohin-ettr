@@ -18106,3 +18106,36 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `repaired_streaming_runtime_and_recovery_data_path_bound_end_to_end_no_optimizer`.
+
+- **2026-07-29 19:10 EDT** -- **The complete audited ETTR main corpus is
+  privately published and remotely hash-verified; sealed confirmation data
+  remain excluded.**
+
+  Stokes job `755594` completed cleanly in 20 seconds. It copied only the
+  60 immutable shard files declared by passing main audit
+  `materialization-main-recovery-d170f25.json`, prepared the dataset card and
+  publication manifest with the exact publication runtime, and passed the
+  publisher dry run. The frozen local publication contains 62 files and
+  978,535,330 bytes. Its manifest is SHA-256
+  `728a1d4b24d51582e8ca5d3eb075f72cc8dc7900f797b24c641e8405c8b54263`.
+  Neither the sealed-confirmation root nor any assessor-only confirmation
+  payload is present.
+
+  The secure publisher then created private dataset revision
+  `release/35333c3-728a1d4b24d5` in
+  `Godlydonuts/shohin-ettr-il-v3`. The Hugging Face token was supplied only
+  through the transient SSH process environment, never a command argument or
+  file. All **62/62** content-addressed objects report
+  `uploaded_and_verified`; the final immutable publication receipt reports
+  `published_and_verified` and is SHA-256
+  `ff4c52582223c5c78d70a0ca5041e3f31623e1ac222baa8f5cc5227929e97ebb`.
+  The publication remains private.
+
+  Release-rematerialization job `755591` continued independently and had
+  emitted 20,936 of 180,000 ordered optimizer batches at 19m25s without an
+  error. Private publication does not relax the Newton transfer or training
+  gates: the optimizer still waits for the separately completed, self-hashed
+  training release and exact cross-cluster verification.
+
+  Decision:
+  `audited_main_ettr_private_hf_release_published_and_verified_confirmation_excluded_no_optimizer`.
