@@ -22,6 +22,8 @@ BUILDER_SHA256=${BUILDER_SHA256:?set exact review-builder SHA-256}
 PROFILE_SHA256=${PROFILE_SHA256:?set exact source-profiler SHA-256}
 SELECTION_CODE_SHA256=${SELECTION_CODE_SHA256:?set exact selection-code SHA-256}
 VERIFY_SHARDS_SHA256=${VERIFY_SHARDS_SHA256:?set exact shard-verifier SHA-256}
+RUNTIME_SHA256SUMS=${RUNTIME_SHA256SUMS:?set exact runtime SHA256SUMS path}
+RUNTIME_SHA256SUMS_SHA256=${RUNTIME_SHA256SUMS_SHA256:?set exact runtime SHA256SUMS SHA-256}
 SHARD_DIR=${SHARD_DIR:?set SHARD_DIR to the completed v3 candidate}
 PRIVATE_OUT=${PRIVATE_OUT:?set PRIVATE_OUT below a private scratch tree}
 RECEIPT_OUT=${RECEIPT_OUT:?set RECEIPT_OUT to a fresh text-free receipt}
@@ -36,11 +38,17 @@ MAX_REVIEW_CHARS=${MAX_REVIEW_CHARS:-12000}
   echo "[pinned-review] selection code path must be absolute" >&2
   exit 2
 }
+[[ "$RUNTIME_SHA256SUMS" == /* ]] || {
+  echo "[pinned-review] runtime receipt path must be absolute" >&2
+  exit 2
+}
 printf '%s  %s\n' \
   "$BUILDER_SHA256" "$BUILDER" \
   "$PROFILE_SHA256" "$PROFILE" \
   "$SELECTION_CODE_SHA256" "$SELECTION_CODE" \
-  "$VERIFY_SHARDS_SHA256" "$VERIFY_SHARDS" | sha256sum -c -
+  "$VERIFY_SHARDS_SHA256" "$VERIFY_SHARDS" \
+  "$RUNTIME_SHA256SUMS_SHA256" "$RUNTIME_SHA256SUMS" | sha256sum -c -
+(cd "$CODE_ROOT" && sha256sum -c "$RUNTIME_SHA256SUMS")
 [[ -d "$SHARD_DIR" && ! -L "$SHARD_DIR" ]] || {
   echo "[pinned-review] candidate directory is unavailable" >&2
   exit 3
