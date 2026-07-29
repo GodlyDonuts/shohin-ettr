@@ -4,6 +4,9 @@
 import json
 import io
 
+from datasets import load_dataset
+import pyarrow as pa
+import pyarrow.parquet as pq
 import pytest
 import zstandard as zstd
 
@@ -18,6 +21,7 @@ from pipeline.tokenize_shards import (
     extraction_quality,
     field_value,
     max_line_repeat_fraction,
+    local_input_format,
     resolve_local_inputs,
     stable_document_identity,
     verify_file_receipt,
@@ -157,3 +161,40 @@ def test_local_inputs_require_revision_and_are_sorted(tmp_path):
 
     with pytest.raises(ValueError, match="duplicate paths"):
         resolve_local_inputs([first, first], "pinned-revision")
+
+
+def test_local_input_format_supports_pinned_json_and_parquet():
+    assert local_input_format(["a.json.gz", "b.jsonl"]) == "json"
+    assert local_input_format(["a.parquet", "b.parquet"]) == "parquet"
+    assert local_input_format(None) is None
+    with pytest.raises(ValueError, match="homogeneous"):
+        local_input_format(["a.parquet", "b.json.gz"])
+    with pytest.raises(ValueError, match="unsupported"):
+        local_input_format(["a.csv"])
+
+
+def test_pinned_local_parquet_streams_through_detected_loader(tmp_path):
+    source = tmp_path / "part-00000.parquet"
+    pq.write_table(
+        pa.table(
+            {
+                "text": ["first retained document", "second retained document"],
+                "int_score": [4, 5],
+            }
+        ),
+        source,
+    )
+    paths, receipts = resolve_local_inputs([source], "pinned-revision")
+    rows = list(
+        load_dataset(
+            local_input_format(paths),
+            data_files=paths,
+            split="train",
+            streaming=True,
+        )
+    )
+    assert rows == [
+        {"text": "first retained document", "int_score": 4},
+        {"text": "second retained document", "int_score": 5},
+    ]
+    assert receipts == [file_receipt(source)]

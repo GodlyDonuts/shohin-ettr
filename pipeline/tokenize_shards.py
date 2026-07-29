@@ -176,6 +176,23 @@ def resolve_local_inputs(paths, revision):
     return resolved, [file_receipt(path) for path in resolved]
 
 
+def local_input_format(paths):
+    if paths is None:
+        return None
+    formats = set()
+    for path in paths:
+        name = Path(path).name.lower()
+        if name.endswith((".json", ".jsonl", ".json.gz", ".jsonl.gz")):
+            formats.add("json")
+        elif name.endswith(".parquet"):
+            formats.add("parquet")
+        else:
+            raise ValueError(f"unsupported local input format: {path}")
+    if len(formats) != 1:
+        raise ValueError("--input-files must use one homogeneous file format")
+    return formats.pop()
+
+
 def canonical_payload_sha256(payload):
     material = json.dumps(
         payload,
@@ -427,11 +444,13 @@ def main():
         a.input_files,
         a.revision,
     )
+    input_format = local_input_format(input_files)
     if a.input_files is not None:
         assert input_files is not None
+        assert input_format is not None
         resolved_revision = a.revision
         ds = load_dataset(
-            "json",
+            input_format,
             data_files=input_files,
             split=a.split,
             streaming=True,
@@ -613,6 +632,7 @@ def main():
         "split": a.split,
         "requested_revision": a.revision,
         "resolved_revision": resolved_revision,
+        "local_input_format": input_format,
         "source_files": input_file_receipts,
         "selection_code_sha256": selection_code_receipt["sha256"],
         "tokenizer": {
