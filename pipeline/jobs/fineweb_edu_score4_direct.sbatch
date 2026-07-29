@@ -13,7 +13,7 @@ set -euo pipefail
 
 BASE=/lustre/fs1/home/sa305415/shohin
 PY=$BASE/miniforge3/bin/python
-CODE_ROOT=${CODE_ROOT:-$BASE/scratchpad/fineweb_edu_score4_code_v1}
+CODE_ROOT=${CODE_ROOT:-$BASE/scratchpad/fineweb_edu_score4_code_e87be57}
 TOKENIZE=$CODE_ROOT/pipeline/tokenize_shards.py
 VERIFY_SHARDS=$CODE_ROOT/pipeline/verify_tokenized_shards.py
 VERIFY_MANIFEST=$CODE_ROOT/pipeline/verify_pinned_hf_manifest.py
