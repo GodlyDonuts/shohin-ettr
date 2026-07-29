@@ -116,14 +116,15 @@ def file_receipt(path):
         raise RuntimeError(f"input is not a single-link file: {resolved}")
     digest = sha256_file(resolved)
     after = resolved.stat()
-    identity = lambda value: (
-        value.st_dev,
-        value.st_ino,
-        value.st_size,
-        value.st_mtime_ns,
-        value.st_ctime_ns,
-        value.st_nlink,
-    )
+    def identity(value):
+        return (
+            value.st_dev,
+            value.st_ino,
+            value.st_size,
+            value.st_mtime_ns,
+            value.st_ctime_ns,
+            value.st_nlink,
+        )
     if identity(before) != identity(after):
         raise RuntimeError(f"input changed while being measured: {resolved}")
     return {
@@ -160,6 +161,20 @@ def max_line_repeat_fraction(text):
 def boilerplate_marker_count(text):
     lowered = text.lower()
     return sum(marker in lowered for marker in BOILERPLATE_MARKERS)
+
+
+def extraction_quality(text):
+    denominator = max(len(text), 1)
+    return {
+        "alpha_fraction": sum(character.isalpha() for character in text)
+        / denominator,
+        "control_fraction": sum(
+            ord(character) < 32 and character not in "\n\r\t"
+            for character in text
+        )
+        / denominator,
+        "replacement_fraction": text.count("\ufffd") / denominator,
+    }
 
 
 def domain_value(row, field):
@@ -206,6 +221,31 @@ def main():
         default=-1,
         help="-1 = unlimited",
     )
+    ap.add_argument(
+        "--min-alpha-fraction",
+        type=float,
+        default=0.0,
+        help="reject extraction with a lower alphabetic-character fraction",
+    )
+    ap.add_argument(
+        "--max-control-fraction",
+        type=float,
+        default=1.0,
+        help="reject extraction with a higher non-whitespace control fraction",
+    )
+    ap.add_argument(
+        "--max-replacement-fraction",
+        type=float,
+        default=1.0,
+        help="reject extraction with a higher Unicode replacement-character fraction",
+    )
+    ap.add_argument("--allowed-values-field", default=None)
+    ap.add_argument(
+        "--allowed-values",
+        nargs="+",
+        default=None,
+        help="exact allowed values for --allowed-values-field",
+    )
     ap.add_argument("--domain-field", default=None)
     ap.add_argument(
         "--max-tokens-per-domain",
@@ -246,6 +286,21 @@ def main():
         )
     if a.require_lang_field and not a.lang:
         raise ValueError("--require-lang-field requires --lang")
+    if (a.allowed_values_field is None) != (a.allowed_values is None):
+        raise ValueError(
+            "--allowed-values-field and --allowed-values must be provided together"
+        )
+    if not 0 <= a.min_alpha_fraction <= 1:
+        raise ValueError("--min-alpha-fraction must be in [0, 1]")
+    if not 0 <= a.max_control_fraction <= 1:
+        raise ValueError("--max-control-fraction must be in [0, 1]")
+    if not 0 <= a.max_replacement_fraction <= 1:
+        raise ValueError("--max-replacement-fraction must be in [0, 1]")
+    allowed_values = (
+        set(str(value) for value in a.allowed_values)
+        if a.allowed_values is not None
+        else None
+    )
 
     S = gram_n = None
     pickle_gram_count = direct_gram_count = 0
@@ -285,6 +340,7 @@ def main():
     domain_tokens = Counter()
     seen = kept = n_short = n_long = n_lang = n_lang_missing = n_quality = n_contam = 0
     n_duplicate = n_repetition = n_boilerplate = n_domain_cap = 0
+    n_extraction_quality = n_allowed_value = 0
 
     def flush():
         nonlocal buf, shard
@@ -329,6 +385,19 @@ def main():
         ):
             n_boilerplate += 1
             continue
+        quality = extraction_quality(txt)
+        if (
+            quality["alpha_fraction"] < a.min_alpha_fraction
+            or quality["control_fraction"] > a.max_control_fraction
+            or quality["replacement_fraction"] > a.max_replacement_fraction
+        ):
+            n_extraction_quality += 1
+            continue
+        if allowed_values is not None:
+            selected_value = field_value(ex, a.allowed_values_field)
+            if str(selected_value) not in allowed_values:
+                n_allowed_value += 1
+                continue
         if a.lang:
             lv = field_value(ex, a.lang_field)
             if lv is None and a.require_lang_field:
@@ -413,6 +482,8 @@ def main():
         "dropped_duplicate": n_duplicate,
         "dropped_repetition": n_repetition,
         "dropped_boilerplate": n_boilerplate,
+        "dropped_extraction_quality": n_extraction_quality,
+        "dropped_allowed_value": n_allowed_value,
         "dropped_domain_cap": n_domain_cap,
         "dropped_contam": n_contam,
         "decontamination": {
@@ -438,6 +509,13 @@ def main():
             "exact_dedup": a.exact_dedup,
             "max_line_repeat_fraction": a.max_line_repeat_fraction,
             "max_boilerplate_markers": a.max_boilerplate_markers,
+            "min_alpha_fraction": a.min_alpha_fraction,
+            "max_control_fraction": a.max_control_fraction,
+            "max_replacement_fraction": a.max_replacement_fraction,
+            "allowed_values_field": a.allowed_values_field,
+            "allowed_values": (
+                sorted(allowed_values) if allowed_values is not None else None
+            ),
             "domain_field": a.domain_field,
             "max_tokens_per_domain": a.max_tokens_per_domain,
             "retained_domains": len(domain_tokens),

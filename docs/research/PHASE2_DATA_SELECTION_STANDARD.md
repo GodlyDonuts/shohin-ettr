@@ -159,6 +159,7 @@ utility gates remains mandatory.
 
 | Candidate | Intended role | Required selection |
 |---|---|---|
+| peS2o | open scholarly science and technical prose | pinned revision, explicit OA-license allowlist, extraction/repetition filters, source caps, human semantic review |
 | FineWeb-Edu | broad explanatory web core | English, pinned revision, source/domain caps, score retained as metadata, quality-stratified ablation |
 | FinePDFs-Edu | textbooks, manuals, reports, long-form explanations | English, language-switch filter, formula/layout audit, document and publisher caps |
 | Common Pile components | licensed books, science, reference, Stack Exchange, Wikipedia, government material | component-specific licenses and provenance, boilerplate removal, component caps |

@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-28 23:40 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-28 23:47 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -15994,3 +15994,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `direct_general_sources_preliminarily_ranked_pes2o_leads_b32_ettr_closed_b16_b8_live`.
+
+- **2026-07-28 23:47 EDT** -- **The first strict peS2o candidate build is
+  running on Stokes; this is corpus construction, not training admission.**
+
+  The tokenizer now supports auditable extraction-quality bounds and exact
+  allowlists over nested source fields. Focused tests cover non-whitespace
+  control detection, Unicode replacement damage, alphabetic-content
+  measurement, and the actual peS2o row path `metadata.oa_license`. The job
+  script originally inherited the review packet's extra `metadata` wrapper;
+  this was corrected before submission so the live source row paths are
+  `metadata.oa_license` and `metadata.oa_url`.
+
+  Local and Stokes SHA-256 values match exactly for
+  `pipeline/tokenize_shards.py`
+  (`3540ae9872e00a6a5f8f4cc2fcded581972880c370c577d68df3046de89dd0b5`)
+  and `pipeline/jobs/pes2o_selected_core.sbatch`
+  (`6335e62648b34f32582e0c364b27fc75c9a55667ff24ca3595e939adae9a3719`).
+  Stokes job `754193` is RUNNING on `ec49` from pinned peS2o revision
+  `2caeba1585aaafa3c965410d80af85b09ed11cd9`, with a 10B-token ceiling.
+  Selection permits only `CCBY`, `CCBYSA`, or public-domain records; requires
+  4,000--120,000 characters, at least 70% alphabetic content, at most 0.1%
+  non-whitespace controls and 0.05% replacement characters; rejects exact
+  duplicates, line repetition above 12%, boilerplate, and current evaluation
+  overlap; and caps any one OA URL source at 1B tokens. Output is written to a
+  partial directory, independently verified, and only then atomically
+  promoted.
+
+  Human semantic review, cross-source residualization, full-shard audit,
+  legal review, and a matched-token utility ablation remain mandatory. No
+  output from `754193` is training-admitted while the job is running.
+  Newton ETTR profiles at B16, B8, and B4 remain active and have not yet
+  produced a qualifying update or error receipt. Stokes recovery cells 3 and
+  12 are complete; seven long cells remain active.
+
+  Decision:
+  `pes2o_strict_candidate_build_running_no_training_admission_ettr_batch_gate_pending`.

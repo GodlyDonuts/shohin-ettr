@@ -8,6 +8,8 @@ from pipeline.tokenize_shards import (
     file_receipt,
     domain_value,
     exact_text_hash,
+    extraction_quality,
+    field_value,
     max_line_repeat_fraction,
     verify_file_receipt,
 )
@@ -26,6 +28,23 @@ def test_line_repetition_uses_normalized_nonempty_lines():
 def test_boilerplate_markers_are_bounded():
     assert boilerplate_marker_count("Accept cookies. Privacy policy.") == 2
     assert boilerplate_marker_count("A useful educational explanation.") == 0
+
+
+def test_extraction_quality_counts_only_nonwhitespace_controls():
+    clean = extraction_quality("Alpha beta\nGamma")
+    assert clean["control_fraction"] == 0
+    assert clean["replacement_fraction"] == 0
+    assert clean["alpha_fraction"] > 0.8
+
+    damaged = extraction_quality("Alpha\ufffd\u0000")
+    assert damaged["replacement_fraction"] == 1 / 7
+    assert damaged["control_fraction"] == 1 / 7
+
+
+def test_field_value_reads_nested_license_metadata():
+    row = {"metadata": {"oa_license": "CCBY"}}
+    assert field_value(row, "metadata.oa_license") == "CCBY"
+    assert field_value(row, "metadata.missing") is None
 
 
 def test_domain_value_handles_urls_and_direct_fields():
