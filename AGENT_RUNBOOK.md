@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 00:28 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 00:34 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -16212,3 +16212,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `pes2o_v3_exact_review_lane_dependency_held_no_candidate_admission`.
+
+- **2026-07-29 00:34 EDT** -- **Corrected full-system B16 is formally
+  qualified, and the first scalable cross-source exact-duplicate gate is
+  private and deployed.**
+
+  Newton step `719591.44` completed cleanly in 17m59s from exact clean source
+  `1ee361d6e6180bf7f074edfb315fff20045c2823`. Report SHA-256 is
+  `aa9574089fee3582d32f71144716c01a4d87bce2602eb21ec9ec32be6be37381`.
+  Both eager and compiled arms passed finite-loss, BF16-autocast,
+  complete-gradient, isolated-query-binding, and 200M parameter-cap gates;
+  their batch, initial-parameter, and complete parameter receipts matched.
+  Eager throughput was 1,744.28 encoded tok/s at 54,419,950,080 peak allocated
+  bytes. Compiled throughput was 2,866.34 encoded tok/s at 42,973,744,128
+  bytes, a **1.643x** speedup and **0.790x** peak allocation. The complete
+  protected step-300k checkpoint remained read-only and byte-identical at
+  SHA-256
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
+  The post-report broken-pipe cleanup message occurred after both arms, report
+  publication, report hashing, and Slurm exit `0`; it did not alter the
+  custody result. Obsolete old-source B8/B4 steps `719591.36` and
+  `719591.39` were canceled after this stronger formal receipt passed.
+
+  Private commit `0d75cfa2727f5f8e7fc8def2addc31688db08c82` adds
+  `pipeline/audit_cross_source_exact_dedup.py`. It independently verifies
+  internally exact-deduplicated v3 corpora, requires one tokenizer identity,
+  uses a disk-backed exact-hash index, deterministically retains the
+  first-priority corpus, and publishes a text-free removal ledger and report
+  through reserved, no-replace output paths. Related source-selection tests
+  pass **29/29** with clean Ruff, byte compilation, and diff checks. Deployed
+  Stokes source SHA-256 is
+  `0d7f146e60a613130b7b2b7f3807d680e9fe7d0cefa10a72595efcc487391b4b`.
+  This closes exact cross-source accounting only; near-duplicate detection and
+  removal-ledger application remain explicit separate gates.
+
+  Decision:
+  `corrected_b16_formally_qualified_exact_cross_source_dedup_gate_deployed_data_release_now_critical_path`.
