@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 11:34 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 11:38 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17564,3 +17564,30 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `compact_audit_log_verified_running_scan_unchanged_no_optimizer`.
+
+- **2026-07-29 11:38 EDT** -- **Audit-confirmed sensitive rows now have a
+  deterministic physical-removal path before optimizer admission.**
+
+  `pipeline/materialize_sensitive_residual.py` consumes one complete
+  hash-bound v3 corpus and its immutable sensitive-content audit. It
+  revalidates the source corpus, exact source selection code, audit payload,
+  text-free findings ledger, and complete automatic-removal accounting. Only
+  findings carrying the audit's high-confidence automatic categories are
+  removed; contact and identifier findings with an empty automatic-category
+  list remain report-only. The materializer checks every dropped identity,
+  document hash, and token count against the source ledger, checks every
+  retained token span against its SHA-256, reconstructs contiguous shards and
+  the document ledger, embeds the complete source/audit lineage, and fully
+  reverifies the fresh v3 result before an atomic publish.
+
+  The CPU-only Slurm wrapper requires an immutable `SHA256SUMS` runtime and
+  fresh output. Tampered findings, substituted source selection code, and
+  report/source rebinding all fail before publication. The focused
+  sensitive-audit, residual, exact-residual, and v3-verifier suite passes
+  **22/22** with clean Ruff, byte compilation, shell syntax, and diff checks.
+  This is a prepared remediation path, not permission to run it when the
+  audit has no automatic exclusions. Existing audit job `755073` remained
+  healthy and `RUNNING` at 11:37 EDT; its output was still absent.
+
+  Decision:
+  `sensitive_residual_path_verified_execute_only_if_audit_requires_it`.
