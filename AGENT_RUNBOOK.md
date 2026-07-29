@@ -16904,8 +16904,14 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   The relevant source, manifest, review, and verifier suite passes **46/46**;
   Ruff, byte compilation, shell syntax, manifest validation, and diff checks
-  pass. This is an additional high-quality candidate path, not an admitted
-  corpus.
+  pass. Private commit
+  `c8acb46a9a7a7f6fe91ce6f2b5441e542de09078` was pushed and staged on
+  Stokes as a read-only 3,235-file source root. Its complete inventory
+  SHA-256 is
+  `0a9e64c68fb5762afce073788cc72da200c5b6eb8db677334c992606944ae186`.
+  Candidate job `754502` is now submitted from that root; private exact-
+  document review packet job `754503` is held `afterok:754502`. This is an
+  additional high-quality candidate path, not an admitted corpus.
 
   Live measurements at 05:34 EDT: FineWeb-Edu r2 had thirteen complete
   approximately 100M-token files in its `.partial` namespace; peS2o r2 had
