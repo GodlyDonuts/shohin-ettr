@@ -11,6 +11,7 @@ from pipeline.audit_cross_source_exact_dedup import (
     audit_exact_duplicates,
 )
 from pipeline.materialize_cross_source_exact_residual import (
+    _write_shard,
     ExactResidualError,
     materialize_exact_residual,
 )
@@ -27,6 +28,18 @@ from pipeline.verify_tokenized_shards import verify_manifest
 SELECTION_CODE = Path(__file__).with_name(
     "materialize_cross_source_exact_residual.py"
 )
+
+
+def test_new_shard_receipt_is_bound_to_written_bytes(tmp_path: Path) -> None:
+    receipt = _write_shard(
+        tmp_path,
+        index=7,
+        payload=bytearray(b"\x01\x00\x02\x00"),
+    )
+    path = tmp_path / receipt["path"]
+    assert receipt["bytes"] == path.stat().st_size
+    assert receipt["sha256"] == sha256_file(path)
+    assert receipt["tokens"] == 2
 
 
 def _make_two_document_corpus(corpus: Path) -> None:

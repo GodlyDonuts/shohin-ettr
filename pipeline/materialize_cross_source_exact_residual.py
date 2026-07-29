@@ -25,7 +25,6 @@ from pipeline.tokenize_shards import (
     DOCUMENT_LEDGER_NAME,
     DocumentLedgerWriter,
     canonical_payload_sha256,
-    file_receipt,
     sha256_file,
 )
 from pipeline.verify_tokenized_shards import verify_manifest
@@ -198,15 +197,16 @@ def _write_shard(
     path = output_dir / f"shard_{index:05d}.u16.zst"
     compressed = zstd.ZstdCompressor(level=3).compress(bytes(payload))
     with path.open("xb") as destination:
-        destination.write(compressed)
+        written = destination.write(compressed)
+        if written != len(compressed):
+            raise ExactResidualError("residual shard write differs")
         destination.flush()
         os.fsync(destination.fileno())
-    receipt = file_receipt(path)
     return {
         "path": path.name,
-        "bytes": receipt["bytes"],
+        "bytes": len(compressed),
         "tokens": len(payload) // 2,
-        "sha256": receipt["sha256"],
+        "sha256": hashlib.sha256(compressed).hexdigest(),
     }
 
 
