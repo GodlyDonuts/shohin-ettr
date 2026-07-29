@@ -11,6 +11,7 @@ from pipeline.tokenize_shards import (
     extraction_quality,
     field_value,
     max_line_repeat_fraction,
+    resolve_local_inputs,
     verify_file_receipt,
 )
 
@@ -81,3 +82,21 @@ def test_file_receipt_rejects_symlink_and_hardlink(tmp_path):
     hardlink.hardlink_to(source)
     with pytest.raises(RuntimeError, match="single-link"):
         file_receipt(source)
+
+
+def test_local_inputs_require_revision_and_are_sorted(tmp_path):
+    second = tmp_path / "second.json.gz"
+    first = tmp_path / "first.json.gz"
+    second.write_bytes(b"second")
+    first.write_bytes(b"first")
+
+    with pytest.raises(ValueError, match="explicit --revision"):
+        resolve_local_inputs([second], None)
+
+    paths, receipts = resolve_local_inputs([second, first], "pinned-revision")
+    assert paths == [str(first.resolve()), str(second.resolve())]
+    assert [receipt["path"] for receipt in receipts] == paths
+    assert all(len(receipt["sha256"]) == 64 for receipt in receipts)
+
+    with pytest.raises(ValueError, match="duplicate paths"):
+        resolve_local_inputs([first, first], "pinned-revision")

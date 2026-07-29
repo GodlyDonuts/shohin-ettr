@@ -140,6 +140,17 @@ def verify_file_receipt(receipt):
         raise RuntimeError(f"input file changed during tokenization: {receipt['path']}")
 
 
+def resolve_local_inputs(paths, revision):
+    if paths is None:
+        return None, []
+    if not revision:
+        raise ValueError("--input-files requires an explicit --revision")
+    resolved = sorted(str(Path(path).resolve()) for path in paths)
+    if len(resolved) != len(set(resolved)):
+        raise ValueError("--input-files contains duplicate paths")
+    return resolved, [file_receipt(path) for path in resolved]
+
+
 def canonical_payload_sha256(payload):
     material = json.dumps(
         payload,
@@ -194,6 +205,15 @@ def main():
     ap.add_argument("--config", default=None)
     ap.add_argument("--split", default="train")
     ap.add_argument("--revision", default=None)
+    ap.add_argument(
+        "--input-files",
+        nargs="+",
+        default=None,
+        help=(
+            "physical local JSON/JSON.GZ source files; bypasses remote dataset "
+            "resolution and requires an explicit --revision"
+        ),
+    )
     ap.add_argument("--text-col", default="text")
     ap.add_argument("--text-cols", nargs="+", default=None,
                     help="concat multiple fields (joined by a blank line) instead of --text-col; "
@@ -327,11 +347,25 @@ def main():
                 eval_files.append(file_receipt(absolute))
                 seen_eval_paths.add(absolute)
 
-    resolved_revision = a.revision or HfApi().dataset_info(a.dataset).sha
-    kw = dict(split=a.split, streaming=True, revision=resolved_revision)
-    if a.config:
-        kw["name"] = a.config
-    ds = load_dataset(a.dataset, **kw)
+    input_files, input_file_receipts = resolve_local_inputs(
+        a.input_files,
+        a.revision,
+    )
+    if a.input_files is not None:
+        assert input_files is not None
+        resolved_revision = a.revision
+        ds = load_dataset(
+            "json",
+            data_files=input_files,
+            split=a.split,
+            streaming=True,
+        )
+    else:
+        resolved_revision = a.revision or HfApi().dataset_info(a.dataset).sha
+        kw = dict(split=a.split, streaming=True, revision=resolved_revision)
+        if a.config:
+            kw["name"] = a.config
+        ds = load_dataset(a.dataset, **kw)
 
     cctx = zstd.ZstdCompressor(level=3)
     buf, shard, tok_total = [], 0, 0
@@ -455,6 +489,8 @@ def main():
         verify_file_receipt(pickle_receipt)
     for receipt in eval_files:
         verify_file_receipt(receipt)
+    for receipt in input_file_receipts:
+        verify_file_receipt(receipt)
     manifest = {
         "schema": "shohin-tokenized-shards-v2",
         "dataset": a.dataset,
@@ -462,6 +498,7 @@ def main():
         "split": a.split,
         "requested_revision": a.revision,
         "resolved_revision": resolved_revision,
+        "source_files": input_file_receipts,
         "selection_code_sha256": selection_code_receipt["sha256"],
         "tokenizer": {
             **tokenizer_receipt,

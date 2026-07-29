@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-28 23:47 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-28 23:52 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -16030,3 +16030,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `pes2o_strict_candidate_build_running_no_training_admission_ettr_batch_gate_pending`.
+
+- **2026-07-28 23:52 EDT** -- **Anonymous peS2o metadata resolution was
+  canceled after one rate limit; direct pinned-file transport is ready.**
+
+  Stokes job `754193` reached no source row and produced no token shard. It
+  encountered HTTP 429 while resolving the pinned dataset script, entered its
+  first 121-second backoff, and was canceled after 3m14s rather than consuming
+  a three-day allocation in retries. Its empty partial output is not data.
+
+  The complete revision-pinned peS2o source tree contains 102 gzip JSON files
+  and 59,465,319,664 compressed bytes. A deterministic uniform selection over
+  the complete sorted tree binds 30 files spanning shard 0000 through 0101,
+  17,437,023,736 compressed bytes total. Manifest
+  `artifacts/source_manifests/pes2o_uniform30_v1.json` binds every relative
+  path, published LFS SHA-256, size, source repository, revision, complete
+  source-tree ledger, and selection rule; its SHA-256 is
+  `8d3923e0b65d0102d10647796e610747b18167419cd9fe13be12d482f2c13192`.
+
+  The tokenizer can now consume physical local JSON/JSON.GZ files only after
+  measuring each one, and it remeasures every file after tokenization before
+  publishing the manifest. The offline pinned-manifest validator rejects
+  source/revision drift, traversal, duplicate paths/basenames, malformed
+  hashes, and byte/count ledger drift. The revised Stokes job downloads each
+  file directly from the exact revision with resumable transport, verifies
+  published bytes and SHA-256 before promotion, then feeds exactly those 30
+  files into the strict selector. Seventeen focused source/manifest tests,
+  byte compilation, Ruff, shell syntax, and diff checks pass.
+
+  This is a transport correction, not a quality waiver. The resulting 10B
+  candidate remains subject to the complete admission and matched-token
+  utility gates.
+
+  Decision:
+  `pes2o_anonymous_loader_closed_direct_30file_hash_bound_transport_ready`.

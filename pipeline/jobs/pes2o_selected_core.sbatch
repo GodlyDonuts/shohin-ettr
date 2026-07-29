@@ -15,6 +15,9 @@ BASE=/lustre/fs1/home/sa305415/shohin
 PY=$BASE/miniforge3/bin/python
 OUT=${OUT:-$BASE/artifacts/shards/pes2o_selected_core_10b}
 TMP=${OUT}.partial
+RAW=${RAW:-$BASE/scratchpad/pes2o_uniform30_v1}
+MANIFEST=$BASE/artifacts/source_manifests/pes2o_uniform30_v1.json
+MANIFEST_SHA256=8d3923e0b65d0102d10647796e610747b18167419cd9fe13be12d482f2c13192
 MAX_TOKENS=${MAX_TOKENS:-10000000000}
 REVISION=${REVISION:-2caeba1585aaafa3c965410d80af85b09ed11cd9}
 PUBLISHER_TOKEN_CAP=${PUBLISHER_TOKEN_CAP:-1000000000}
@@ -25,12 +28,62 @@ PUBLISHER_TOKEN_CAP=${PUBLISHER_TOKEN_CAP:-1000000000}
   echo "[pes2o-core] tokenizer missing" >&2
   exit 4
 }
+printf '%s  %s\n' "$MANIFEST_SHA256" "$MANIFEST" | sha256sum -c -
 
 cd "$BASE"
+mkdir -p "$RAW"
+while IFS=$'\t' read -r relative_path expected_bytes expected_sha256; do
+  name=${relative_path##*/}
+  final=$RAW/$name
+  partial=$final.part
+  if [[ -e "$final" ]]; then
+    [[ ! -L "$final" && -f "$final" ]] || {
+      echo "[pes2o-core] final source is not a physical file: $final" >&2
+      exit 5
+    }
+  else
+    url="https://huggingface.co/datasets/common-pile/peS2o/resolve/$REVISION/$relative_path?download=true"
+    curl \
+      --fail \
+      --location \
+      --retry 8 \
+      --retry-all-errors \
+      --retry-delay 10 \
+      --continue-at - \
+      --output "$partial" \
+      "$url"
+    [[ "$(stat -c %s "$partial")" == "$expected_bytes" ]] || {
+      echo "[pes2o-core] partial source byte size differs: $partial" >&2
+      exit 6
+    }
+    printf '%s  %s\n' "$expected_sha256" "$partial" | sha256sum -c -
+    mv "$partial" "$final"
+    chmod 0444 "$final"
+  fi
+  [[ "$(stat -c %s "$final")" == "$expected_bytes" ]] || {
+    echo "[pes2o-core] source byte size differs: $final" >&2
+    exit 8
+  }
+  printf '%s  %s\n' "$expected_sha256" "$final" | sha256sum -c -
+done < <(
+  "$PY" pipeline/verify_pinned_hf_manifest.py \
+    --manifest "$MANIFEST" \
+    --dataset common-pile/peS2o \
+    --revision "$REVISION" \
+    --emit-tsv
+)
+
+input_files=("$RAW"/*.json.gz)
+[[ "${#input_files[@]}" == 30 ]] || {
+  echo "[pes2o-core] downloaded source count differs" >&2
+  exit 7
+}
+
 "$PY" pipeline/tokenize_shards.py \
   --tokenizer "$BASE/artifacts/shohin-tok-32k.json" \
   --dataset common-pile/peS2o \
   --revision "$REVISION" \
+  --input-files "${input_files[@]}" \
   --text-col text \
   --allowed-values-field metadata.oa_license \
   --allowed-values CCBY CCBYSA pd \

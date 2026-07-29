@@ -1632,8 +1632,20 @@ def execute_profile_arms(
     arms: dict[str, dict[str, object]] = {}
     for execution_arm in ("eager", "compiled"):
         model: EndogenousTypedTheoryReactorGPT | None = None
+        print(
+            "[ettr-profile] "
+            f"arm={execution_arm} phase=construct "
+            f"batch_size={settings.batch_size} "
+            f"reactor_steps={settings.reactor_steps} "
+            f"train_scope={settings.train_scope}",
+            flush=True,
+        )
         try:
             model = model_factory()
+            print(
+                f"[ettr-profile] arm={execution_arm} phase=execute",
+                flush=True,
+            )
             result = execute_profile_arm(
                 model,
                 settings,
@@ -1645,6 +1657,10 @@ def execute_profile_arms(
                 "status": "completed",
                 **result,
             }
+            print(
+                f"[ettr-profile] arm={execution_arm} phase=completed",
+                flush=True,
+            )
         except Exception as exc:
             if execution_arm == "eager":
                 raise
@@ -1653,6 +1669,12 @@ def execute_profile_arms(
                 "error_type": type(exc).__name__,
                 "error": str(exc)[:1000],
             }
+            print(
+                "[ettr-profile] "
+                f"arm={execution_arm} phase=unavailable "
+                f"error_type={type(exc).__name__}",
+                flush=True,
+            )
         finally:
             del model
             gc.collect()
