@@ -27,6 +27,14 @@ def test_text_metrics_detect_repetition_and_boilerplate():
     assert metrics["max_line_repeat_fraction"] == 2 / 3
     assert metrics["unique_line_fraction"] == 2 / 3
     assert metrics["control_fraction"] == 0
+    assert metrics["latin_alpha_fraction"] == 1
+    assert metrics["han_alpha_fraction"] == 0
+
+
+def test_text_metrics_reports_latin_and_han_script_fractions():
+    metrics = text_metrics("abc \u6570\u5b66")
+    assert metrics["latin_alpha_fraction"] == 3 / 5
+    assert metrics["han_alpha_fraction"] == 2 / 5
 
 
 def test_review_excerpt_preserves_both_document_ends():
@@ -232,6 +240,35 @@ def test_profile_reports_numeric_quality_quantiles():
     )
     assert report["quality_metric_quantiles"]["score"]["min"] == 1.5
     assert report["quality_metric_quantiles"]["score"]["max"] == 3.5
+
+
+def test_profile_preserves_quality_label_for_source_adjudication():
+    report, reviews = profile_rows(
+        [
+            {"id": "a", "content": "alpha beta gamma", "quality_label": 2},
+            {"id": "b", "content": "delta epsilon zeta", "quality_label": 4},
+        ],
+        dataset="test/math",
+        config="l2",
+        text_field="content",
+        scan_rows=2,
+        review_rows=2,
+        max_review_chars=100,
+        eval_index=empty_eval_index(),
+    )
+    assert report["quality_scores"] == {
+        "quality_label:2": 1,
+        "quality_label:4": 1,
+    }
+    assert report["quality_metric_quantiles"]["quality_label"] == {
+        "min": 2.0,
+        "p10": 2.0,
+        "p50": 2.0,
+        "p90": 4.0,
+        "p99": 4.0,
+        "max": 4.0,
+    }
+    assert {review["metadata"]["quality_label"] for review in reviews} == {2, 4}
 
 
 def test_profile_rejects_nonpositive_limits():

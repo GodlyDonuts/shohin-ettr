@@ -63,6 +63,7 @@ REVIEW_METADATA_FIELDS = (
     "language_score",
     "score",
     "int_score",
+    "quality_label",
     "token_count",
     "extractor",
     "is_truncated",
@@ -113,6 +114,8 @@ NUMERIC_METRICS = (
     "unique_line_fraction",
     "max_line_repeat_fraction",
     "alpha_fraction",
+    "latin_alpha_fraction",
+    "han_alpha_fraction",
     "digit_fraction",
     "control_fraction",
     "replacement_fraction",
@@ -120,6 +123,28 @@ NUMERIC_METRICS = (
     "urls",
     "boilerplate_markers",
 )
+
+
+def _is_latin(character: str) -> bool:
+    codepoint = ord(character)
+    return (
+        0x0041 <= codepoint <= 0x024F
+        or 0x1E00 <= codepoint <= 0x1EFF
+        or 0x2C60 <= codepoint <= 0x2C7F
+        or 0xA720 <= codepoint <= 0xA7FF
+        or 0xAB30 <= codepoint <= 0xAB6F
+    )
+
+
+def _is_han(character: str) -> bool:
+    codepoint = ord(character)
+    return (
+        0x3400 <= codepoint <= 0x4DBF
+        or 0x4E00 <= codepoint <= 0x9FFF
+        or 0xF900 <= codepoint <= 0xFAFF
+        or 0x20000 <= codepoint <= 0x2EBEF
+        or 0x30000 <= codepoint <= 0x323AF
+    )
 
 
 class ProfileError(ValueError):
@@ -190,6 +215,16 @@ def text_metrics(text: str) -> dict[str, float | int]:
     nonempty = len(normalized_lines)
     lower = text.lower()
     denominator = max(chars, 1)
+    alphabetic_count = 0
+    latin_count = 0
+    han_count = 0
+    for character in text:
+        if not character.isalpha():
+            continue
+        alphabetic_count += 1
+        latin_count += int(_is_latin(character))
+        han_count += int(_is_han(character))
+    alphabetic_denominator = max(alphabetic_count, 1)
     return {
         "chars": chars,
         "words": len(words),
@@ -197,7 +232,9 @@ def text_metrics(text: str) -> dict[str, float | int]:
         "nonempty_lines": nonempty,
         "unique_line_fraction": len(line_counts) / max(nonempty, 1),
         "max_line_repeat_fraction": max(line_counts.values(), default=0) / max(nonempty, 1),
-        "alpha_fraction": sum(character.isalpha() for character in text) / denominator,
+        "alpha_fraction": alphabetic_count / denominator,
+        "latin_alpha_fraction": latin_count / alphabetic_denominator,
+        "han_alpha_fraction": han_count / alphabetic_denominator,
         "digit_fraction": sum(character.isdigit() for character in text) / denominator,
         "control_fraction": len(CONTROL_RE.findall(text)) / denominator,
         "replacement_fraction": text.count("\ufffd") / denominator,
@@ -362,7 +399,7 @@ def profile_rows(
         for field in CATEGORICAL_PROFILE_FIELDS:
             if field in row:
                 categorical_values[field][_counter_value(row[field])] += 1
-        for field in ("int_score", "score", "fw_edu_scores"):
+        for field in ("int_score", "score", "quality_label", "fw_edu_scores"):
             if field in row:
                 quality_scores[f"{field}:{_counter_value(row[field])}"] += 1
                 value = row[field]

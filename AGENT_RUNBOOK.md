@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 05:48 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 06:06 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -16939,3 +16939,41 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finepdfs_language_stable_candidate_ready_10h100_canary_armed_no_candidate_optimizer`.
+
+- **2026-07-29 06:06 EDT** -- **UltraData-Math intake is pinned and running;
+  its first L2 profile exposed source-specific observability and
+  decontamination requirements rather than earning automatic admission.**
+
+  The complete current `openbmb/UltraData-Math` dataset tree resolves to
+  immutable revision
+  `fe10db8efd35597fd7fcff8ff576b5ec4ea5ff87`. Dataset-server schema
+  inspection confirms that L2-preview provides `content` plus integer
+  `quality_label`, while L3 QA-Synthetic and Textbook-Exercise-Synthetic
+  provide `uid` plus `content`. Three 10,000-row profile-only Stokes jobs
+  `754504`--`754506` were submitted from immutable profiler source commit
+  `9d2115ce8cd4493e42e0006e186e7162f98c5e92`. They expose no training
+  shard and keep their bounded review text private.
+
+  L2 job `754504` completed its structural pass with 10,000/10,000 text
+  rows, zero exact duplicate documents, zero exact evaluation-prompt rows,
+  and six rows with bounded head/tail evaluation 13-gram overlap. The generic
+  profiler did not preserve upstream `quality_label` values and had no
+  direct Latin/Han script evidence, so this first report is diagnostic only
+  and cannot support source selection. The profiler now records
+  `quality_label` both in aggregate distributions and private review
+  metadata, and reports Latin/Han fractions among alphabetic characters.
+  The profile/review/adjudication/registry focused set passes **27/27** with
+  clean Ruff, byte compilation, and diff checks. Rerun all three arms from
+  this corrected immutable source before adjudication.
+
+  Concurrent custody remains healthy. ETTR cells `753823_5` and `_6` are
+  each near 100% CPU after 13 hours with empty logs and 214/216 main reports;
+  do not restart them. FineWeb-Edu r2 has fourteen complete approximately
+  100M-token candidate shards, peS2o r2 has thirty-seven, and FinePDFs has
+  downloaded and hash-verified most of its pinned 47.6GB source selection.
+  Every one remains quarantined and prohibited from optimizer use. Newton
+  request `719497` remains pending resources for 10 H100s with the
+  release-blind canary watcher armed.
+
+  Decision:
+  `ultradata_profiles_pinned_l2_requires_label_script_rerun_and_hard_decontamination`.
