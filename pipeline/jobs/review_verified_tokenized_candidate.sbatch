@@ -16,7 +16,7 @@ PY=${PYTHON:-$BASE/miniforge3/bin/python}
 CODE_ROOT=${CODE_ROOT:?set CODE_ROOT to an isolated pinned review root}
 BUILDER=$CODE_ROOT/pipeline/build_general_source_review_packet.py
 PROFILE=$CODE_ROOT/pipeline/profile_general_source.py
-SELECTION_CODE=$CODE_ROOT/pipeline/tokenize_shards.py
+SELECTION_CODE=${SELECTION_CODE:-$CODE_ROOT/pipeline/tokenize_shards.py}
 VERIFY_SHARDS=$CODE_ROOT/pipeline/verify_tokenized_shards.py
 BUILDER_SHA256=${BUILDER_SHA256:?set exact review-builder SHA-256}
 PROFILE_SHA256=${PROFILE_SHA256:?set exact source-profiler SHA-256}
@@ -30,6 +30,10 @@ MAX_REVIEW_CHARS=${MAX_REVIEW_CHARS:-12000}
 
 [[ -d "$CODE_ROOT" && ! -L "$CODE_ROOT" ]] || {
   echo "[pinned-review] isolated code root is unavailable" >&2
+  exit 2
+}
+[[ "$SELECTION_CODE" == /* ]] || {
+  echo "[pinned-review] selection code path must be absolute" >&2
   exit 2
 }
 printf '%s  %s\n' \
