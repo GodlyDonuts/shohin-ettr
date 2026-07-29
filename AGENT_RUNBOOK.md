@@ -17114,3 +17114,56 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `essential_reasoning_core_scarce_hard_gate_retained_physical_challenger_ready_no_optimizer`.
+
+- **2026-07-29 07:04 EDT** -- **The pinned Essential-Web reasoning
+  challenger is now an active quarantined Stokes build; no candidate has
+  optimizer access.**
+
+  Commit `e8d59eb302dc479595776aa0dc99454ee0fd9d12` was pushed only to
+  private `GodlyDonuts/shohin-ettr`. The focused source-profile, selector,
+  manifest, builder, and verifier suite passed **77/77**, with clean Ruff,
+  byte compilation, shell syntax, and diff checks. The exact candidate
+  runtime was copied to read-only Stokes root
+  `/lustre/fs1/home/sa305415/shohin/scratchpad/shohin_essential_runtime_e8d59eb`.
+  Local and remote hashes match for the tokenizer pipeline
+  (`b623994d9c0eedaab9a40ff89ead5c2cde63574b6042d9d9e69c33b6ed1a1aea`),
+  shard verifier
+  (`efb9f1646d74e64c6243151fad716791c1817ead9a783b0f9ed99bdd56c54af6`),
+  manifest verifier
+  (`e52cbd52372f4319cd4b61e14f7d61c21efa94c5711aa4d0198883bad3da5f7a`),
+  candidate job
+  (`991c212746d7b6747876c4e74c372b8570f82c6fd1673bd6c3137243691e3d6c`),
+  and physical manifest
+  (`60af668d8e764759d393ea0992657066fe61ffb554978f02b677d39619254025`).
+
+  Stokes job `754517` started on `ec49` and first reverified all code and
+  manifest hashes before downloading data. It downloads and re-hashes exactly
+  the 256 pinned files, then emits only the strict hard-filtered candidate to
+  `artifacts/shards/essential_web_reasoning_core_1b`; the `.partial` path
+  remains quarantined until completion. The first observed downloads passed
+  their published LFS hashes. A private exact-document review, cross-source
+  residualization, full corpus audit, immutable holdout, and equal-token
+  utility test remain mandatory before any admission decision.
+
+  Pre-review inspection found that the generic private review builder replayed
+  JSON inputs only even though the new physical source manifests use Parquet.
+  `pipeline/build_general_source_review_packet.py` now replays homogeneous
+  Parquet through the same sorted file order, `datasets` loader, split, and
+  streaming mode as the tokenizer. A focused regression test binds that call
+  contract. A source-specific review job additionally hashes every imported
+  local module, writes document text only below the private scratch tree, and
+  emits only a text-free receipt elsewhere. The expanded focused suite passes
+  **82/82**; this fix will be staged in a new immutable review runtime and
+  dependency-held behind `754517`.
+
+  Concurrent sealed-shard ledgers at launch were 20 approximately
+  100M-token FineWeb-Edu shards, 59 peS2o shards, and two FinePDF shards.
+  These correspond to approximately 2.0B, 5.9B, and 0.2B tokens,
+  respectively, but remain quarantined candidates. ETTR is still 214/216
+  main cells plus 108/108 confirmation cells with final main cells 5 and 6
+  active. Newton reservations `719497` (10 H100) and `719496` (20 H100)
+  remain pending; the 10-H100 watcher is alive and may launch only the
+  release-blind ETTR canary.
+
+  Decision:
+  `essential_physical_candidate_building_strict_gate_preserved_all_candidates_quarantined`.

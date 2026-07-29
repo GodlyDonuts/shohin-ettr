@@ -3,6 +3,7 @@ import hashlib
 import json
 
 from pipeline.build_general_source_review_packet import (
+    iter_source_rows,
     materialize_review_rows,
     select_review_rows,
 )
@@ -87,3 +88,29 @@ def test_materialized_review_rechecks_exact_source_identity(tmp_path):
     } == {
         row["stable_identity_sha256"] for row in selected
     }
+
+
+def test_source_replay_uses_tokenizer_order_for_parquet(tmp_path):
+    second = tmp_path / "b.parquet"
+    first = tmp_path / "a.parquet"
+    first.write_bytes(b"first")
+    second.write_bytes(b"second")
+    calls = []
+
+    def loader(name, **kwargs):
+        calls.append((name, kwargs))
+        return iter(({"id": "a"}, {"id": "b"}))
+
+    assert list(
+        iter_source_rows([second, first], dataset_loader=loader)
+    ) == [{"id": "a"}, {"id": "b"}]
+    assert calls == [
+        (
+            "parquet",
+            {
+                "data_files": [str(first.resolve()), str(second.resolve())],
+                "split": "train",
+                "streaming": True,
+            },
+        )
+    ]

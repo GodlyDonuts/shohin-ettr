@@ -17,6 +17,7 @@ import sys
 from typing import Any, Iterable, Mapping
 
 import zstandard as zstd
+from datasets import load_dataset
 
 _ROOT = Path(__file__).resolve().parents[1]
 if str(_ROOT) not in sys.path:
@@ -32,6 +33,7 @@ from pipeline.tokenize_shards import (  # noqa: E402
     DOCUMENT_LEDGER_SCHEMA,
     canonical_payload_sha256,
     exact_text_hash,
+    local_input_format,
     sha256_file,
     stable_document_identity,
 )
@@ -185,6 +187,31 @@ def _iter_json_rows(paths: Iterable[Path]) -> Iterable[dict[str, Any]]:
                 yield row
 
 
+def iter_source_rows(
+    paths: Iterable[Path],
+    *,
+    dataset_loader=load_dataset,
+) -> Iterable[dict[str, Any]]:
+    """Replay physical source rows with the tokenizer's format and ordering."""
+    resolved = tuple(sorted(Path(path).resolve() for path in paths))
+    source_format = local_input_format([str(path) for path in resolved])
+    if source_format == "json":
+        yield from _iter_json_rows(resolved)
+        return
+    dataset = dataset_loader(
+        "parquet",
+        data_files=[str(path) for path in resolved],
+        split="train",
+        streaming=True,
+    )
+    for row_number, row in enumerate(dataset, 1):
+        if not isinstance(row, Mapping):
+            raise ReviewPacketError(
+                f"Parquet source row {row_number} is not an object"
+            )
+        yield dict(row)
+
+
 def _row_text(row: Mapping[str, Any], filters: Mapping[str, Any]) -> str:
     text_columns = filters.get("text_cols")
     if text_columns:
@@ -320,7 +347,7 @@ def main() -> None:
     if not isinstance(filters, dict):
         raise ReviewPacketError("selection filters are absent")
     rows = materialize_review_rows(
-        _iter_json_rows(source_paths),
+        iter_source_rows(source_paths),
         selected,
         dataset=str(manifest.get("dataset")),
         config=str(manifest.get("config")),
