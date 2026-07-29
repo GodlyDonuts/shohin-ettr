@@ -1,0 +1,247 @@
+{
+  "admission_status": "profile_only_not_training_data",
+  "categorical_values": {},
+  "config": "Nemotron-Pretraining-Unconditional-Algorithmic",
+  "dataset": "nvidia/Nemotron-Pretraining-Specialized-v1.1",
+  "dataset_card_sha256": "93594fcc5d7e0a85bb8cbc6561b13d9d4c5c9cf4d21e7f81388829e86542e1bf",
+  "discovered_configs": [
+    "Nemotron-Pretraining-Unconditional-Algorithmic"
+  ],
+  "discovered_splits": [
+    "train"
+  ],
+  "domains": {},
+  "exact_duplicate_text_rows": 0,
+  "field_presence": {
+    "license": 10000,
+    "metadata": 10000,
+    "text": 10000,
+    "uuid": 10000
+  },
+  "input_mode": "hash_bound_local_parquet",
+  "languages": {
+    "<missing>": 10000
+  },
+  "license_values": {
+    "cc-by-4.0": 10000
+  },
+  "local_source_receipts": [
+    {
+      "bytes": 208343534,
+      "name": "unconditional_algorithmic.parquet",
+      "sha256": "706bab9781f6541cb9f40b8af61242e45c6e3dabc0d2f9b3171f08571da37ccb"
+    }
+  ],
+  "max_files_per_record": null,
+  "metadata_only_rows": 0,
+  "metrics": {
+    "alpha_fraction": {
+      "max": 0.7186570335741607,
+      "min": 0.3748684487476321,
+      "p10": 0.5147236094368866,
+      "p50": 0.5777377820850063,
+      "p90": 0.6317351598173516,
+      "p99": 0.6658999424956872
+    },
+    "boilerplate_markers": {
+      "max": 1.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 0.0
+    },
+    "chars": {
+      "max": 30102.0,
+      "min": 980.0,
+      "p10": 2184.0,
+      "p50": 4710.0,
+      "p90": 8761.0,
+      "p99": 13517.0
+    },
+    "control_fraction": {
+      "max": 0.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 0.0
+    },
+    "digit_fraction": {
+      "max": 0.11226701343736455,
+      "min": 0.002957329953527672,
+      "p10": 0.012452438602559669,
+      "p50": 0.021637816245006658,
+      "p90": 0.032091690544412604,
+      "p99": 0.04461942257217848
+    },
+    "han_alpha_fraction": {
+      "max": 0.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 0.0
+    },
+    "html_tags": {
+      "max": 30.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 3.0,
+      "p99": 11.0
+    },
+    "latin_alpha_fraction": {
+      "max": 1.0,
+      "min": 0.9786030872688369,
+      "p10": 0.999402390438247,
+      "p50": 1.0,
+      "p90": 1.0,
+      "p99": 1.0
+    },
+    "lines": {
+      "max": 654.0,
+      "min": 15.0,
+      "p10": 83.0,
+      "p50": 150.0,
+      "p90": 266.0,
+      "p99": 381.0
+    },
+    "max_line_repeat_fraction": {
+      "max": 0.2898550724637681,
+      "min": 0.009259259259259259,
+      "p10": 0.03501945525291829,
+      "p50": 0.072,
+      "p90": 0.12931034482758622,
+      "p99": 0.1782178217821782
+    },
+    "nonempty_lines": {
+      "max": 532.0,
+      "min": 11.0,
+      "p10": 60.0,
+      "p50": 115.0,
+      "p90": 212.0,
+      "p99": 303.0
+    },
+    "replacement_fraction": {
+      "max": 0.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 0.0
+    },
+    "unique_line_fraction": {
+      "max": 1.0,
+      "min": 0.5990338164251208,
+      "p10": 0.8266666666666667,
+      "p50": 0.8888888888888888,
+      "p90": 0.9389312977099237,
+      "p99": 0.9701492537313433
+    },
+    "urls": {
+      "max": 1.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 0.0
+    },
+    "words": {
+      "max": 4537.0,
+      "min": 150.0,
+      "p10": 342.0,
+      "p50": 747.0,
+      "p90": 1371.0,
+      "p99": 2080.0
+    }
+  },
+  "nested_files_field": null,
+  "nested_review_context_field": null,
+  "nested_text_field": null,
+  "profiled_field_values": {
+    "license": {
+      "cc-by-4.0": 10000
+    }
+  },
+  "profiled_numeric_invalid": {},
+  "profiled_numeric_quantiles": {},
+  "quality_metric_quantiles": {},
+  "quality_scores": {},
+  "requested_revision": "13fa979be2e7f7e62913eee0ec5e97c8fd6e24af",
+  "resolved_revision": "13fa979be2e7f7e62913eee0ec5e97c8fd6e24af",
+  "review_packet_contains_context_text": false,
+  "review_packet_contains_text": true,
+  "review_rows": 100,
+  "review_selection": "lowest SHA-256 priorities over stable source identities",
+  "sample_eval_overlap": {
+    "eval_13gram_count": 810428,
+    "eval_13gram_rows_bounded_head_tail": 1,
+    "eval_files": [
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/append_ledger_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/categorical_microcode_manual_v1.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/certified_latent_ledger_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/certified_latent_ledger_v2_compact_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_bisimulation_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_residual_algebra_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_residual_algebra_v1_two_edit_r1.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_residual_algebra_v1_values_answer_supported.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_basis_v3_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_factor_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_recurrent_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_recurrent_v2_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_core_factor.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_magnitude_factor.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_two_edit_factor.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/gsm8k.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/gsm8k_platinum.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/humaneval.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/humaneval_full.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_operator_eval_slices_v2_64.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_operator_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_state_algebra_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_state_algebra_v1_r2_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/math500.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/mbpp.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/mbpp_full.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/native_residual_relay_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v2_contract_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v2_contract_heldout_r2.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v3_state_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/referential_argument_graph_v5_fresh.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_factor_delta.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_factor_language.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_factor_values.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_bridge_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_capsule_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_composition_transfer_v1.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/source_memory_packet_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/token_native_ledger_v1_heldout.jsonl"
+    ],
+    "eval_prompt_count": 58033,
+    "exact_prompt_rows": 0,
+    "hashed_overlap_receipts": [
+      {
+        "document_sha256": "f40374a6133d4da4a850195a291d55c4b9ec7faa3e32c59fdd5bc62284f1c8c2",
+        "exact_normalized_prompt_sha256": null,
+        "matched_13gram_sha256": [
+          "dd73ead994e900d9048ea736b3ec5fadb11ed8ff14a449469a3dba9b5dfc9b48"
+        ],
+        "stable_identity_sha256": "34f450e9595130acad7917879a29983f26730dad91dde06997b531479fa8d536"
+      }
+    ],
+    "overlap_receipts_truncated": false
+  },
+  "scanned_rows": 10000,
+  "schema": "shohin-general-source-profile-v1",
+  "shuffle_buffer": 10000,
+  "shuffle_seed": 20260728,
+  "split": "train",
+  "text_field": "text",
+  "text_rows": 10000,
+  "unique_text_hashes": 10000
+}

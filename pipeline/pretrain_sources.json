@@ -782,7 +782,7 @@
       "url": "https://huggingface.co/datasets/nvidia/Nemotron-Pretraining-Specialized-v1.1",
       "domain": "synthetic_logic_and_algorithmic_code",
       "priority": "P1",
-      "decision": "component_challenger_requires_full_receipt",
+      "decision": "component_split_formal_logic_challenger_algorithmic_reject_bulk",
       "target_mix_pct": 0,
       "known_scale": "Formal Logic 128.0M tokens; Unconditional Algorithmic 195.4M; Code Concepts 7.2945B; pinned candidate revision 13fa979be2e7f7e62913eee0ec5e97c8fd6e24af",
       "license_summary": "CC-BY-4.0 dataset release; generated-model and component terms remain receipt-bound",
@@ -808,7 +808,21 @@
           "template and generator-style diversity audit",
           "paired generalization holdouts not derived from source taxonomies",
           "equal-token utility and broad-retention ablation"
-        ]
+        ],
+        "component_decisions": {
+          "Nemotron-Pretraining-Formal-Logic": {
+            "decision": "bounded_late_pretraining_challenger",
+            "max_initial_mix_pct": 1,
+            "profile_sha256": "0a0acc7e23c94c3e34c3f14540353d7691b07b04687c79e22be433dff3163ebe",
+            "private_review_sha256": "86f74ca266525613a73ddc7d9b3a5b13289bdb53567fad0c8028557fa30d151f"
+          },
+          "Nemotron-Pretraining-Unconditional-Algorithmic": {
+            "decision": "reject_bulk_require_verified_residual",
+            "max_initial_mix_pct": 0,
+            "profile_sha256": "0dd619eb8bcdf6e43fcdba1d0ca40909cf250db103d5a12e0e18f48e3b4e0981",
+            "private_review_sha256": "0106c97942ba56ac1a0102a2c9eb1cb3026f729150c4f119d419f5cb7d66b5af"
+          }
+        }
       },
       "risks": [
         "synthetic generator-style monoculture",

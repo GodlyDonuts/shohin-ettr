@@ -1,0 +1,84 @@
+{
+  "schema": "shohin-source-adjudication-v1",
+  "created_at": "2026-07-29T07:36:00-04:00",
+  "dataset": "nvidia/Nemotron-Pretraining-Specialized-v1.1",
+  "resolved_revision": "13fa979be2e7f7e62913eee0ec5e97c8fd6e24af",
+  "dataset_card_sha256": "93594fcc5d7e0a85bb8cbc6561b13d9d4c5c9cf4d21e7f81388829e86542e1bf",
+  "admission_status": "component_split_zero_weight_challenger",
+  "components": {
+    "Nemotron-Pretraining-Formal-Logic": {
+      "source_file": {
+        "name": "formal_logic.parquet",
+        "bytes": 73074239,
+        "sha256": "b8b641309dec27e836db6a2003d3045c6ed060c8d6a23e3a93100e1c8a3a450b"
+      },
+      "profile": {
+        "path": "artifacts/source_profiles/nemotron_specialized_v1_1_formal_logic_13fa979_profile_v1.profile.json",
+        "sha256": "0a0acc7e23c94c3e34c3f14540353d7691b07b04687c79e22be433dff3163ebe",
+        "scanned_rows": 10000,
+        "unique_rows": 10000,
+        "exact_duplicate_rows": 0,
+        "exact_eval_prompt_rows": 0,
+        "bounded_eval_13gram_rows": 0
+      },
+      "private_review": {
+        "rows": 100,
+        "sha256": "86f74ca266525613a73ddc7d9b3a5b13289bdb53567fad0c8028557fa30d151f",
+        "text_committed": false
+      },
+      "decision": "bounded_late_pretraining_challenger",
+      "rationale": [
+        "clean structural profile with no sampled evaluation overlap",
+        "manual spot checks found coherent formal-logic supervision",
+        "multiple-choice and repeated translation templates may reward format memorization",
+        "requires source-independent transfer holdouts and equal-token broad-retention ablation"
+      ],
+      "target_mix_pct": 0,
+      "max_initial_challenger_mix_pct": 1
+    },
+    "Nemotron-Pretraining-Unconditional-Algorithmic": {
+      "source_file": {
+        "name": "unconditional_algorithmic.parquet",
+        "bytes": 208343534,
+        "sha256": "706bab9781f6541cb9f40b8af61242e45c6e3dabc0d2f9b3171f08571da37ccb"
+      },
+      "profile": {
+        "path": "artifacts/source_profiles/nemotron_specialized_v1_1_unconditional_algorithmic_13fa979_profile_v1.profile.json",
+        "sha256": "0dd619eb8bcdf6e43fcdba1d0ca40909cf250db103d5a12e0e18f48e3b4e0981",
+        "scanned_rows": 10000,
+        "unique_rows": 10000,
+        "exact_duplicate_rows": 0,
+        "exact_eval_prompt_rows": 0,
+        "bounded_eval_13gram_rows": 1
+      },
+      "private_review": {
+        "rows": 100,
+        "sha256": "0106c97942ba56ac1a0102a2c9eb1cb3026f729150c4f119d419f5cb7d66b5af",
+        "text_committed": false
+      },
+      "decision": "reject_bulk_require_verified_residual",
+      "rationale": [
+        "sampled rows contain useful full algorithm explanations and code",
+        "manual spot checks found inconsistent sample arithmetic and overstated complexity claims",
+        "the source has a heavier HTML and repeated-line tail than Formal Logic",
+        "one sampled row has bounded evaluation 13-gram overlap",
+        "only syntax-checked, execution-verified, sample-consistent, decontaminated residuals may be reconsidered"
+      ],
+      "target_mix_pct": 0,
+      "max_initial_challenger_mix_pct": 0
+    }
+  },
+  "excluded_components": {
+    "Nemotron-Pretraining-Multiple-Choice": "MMLU-derived benchmark adjacency",
+    "Nemotron-Pretraining-Economics": "not required for the reasoning challenger",
+    "Nemotron-Pretraining-Code-Concepts": "held separate because its taxonomy was informed by HumanEval prompts"
+  },
+  "promotion_requirements": [
+    "exact and near cross-source residualization",
+    "full evaluation decontamination",
+    "immutable source-independent holdouts",
+    "matched-token and matched-update utility ablation",
+    "broad-retention non-regression",
+    "no candidate optimizer access before immutable release receipts"
+  ]
+}

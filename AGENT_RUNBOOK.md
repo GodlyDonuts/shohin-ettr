@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 07:07 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 07:36 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17170,3 +17170,49 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `essential_physical_candidate_building_strict_gate_preserved_all_candidates_quarantined`.
+
+- **2026-07-29 07:36 EDT** -- **Pinned NVIDIA specialized profiles split a
+  clean Formal Logic challenger from an inadmissible bulk Algorithmic feed.**
+
+  Authenticated fetch job `754528` completed from exact revision
+  `13fa979be2e7f7e62913eee0ec5e97c8fd6e24af`. The local Stokes source root
+  revalidates the dataset card and both component files against its immutable
+  `SHA256SUMS`: Formal Logic is 73,074,239 bytes at SHA-256
+  `b8b641309dec27e836db6a2003d3045c6ed060c8d6a23e3a93100e1c8a3a450b`;
+  Unconditional Algorithmic is 208,343,534 bytes at SHA-256
+  `706bab9781f6541cb9f40b8af61242e45c6e3dabc0d2f9b3171f08571da37ccb`.
+  Profile jobs `754529` and `754530` completed cleanly from the read-only
+  `4d4d06d` runtime.
+
+  Both 10,000-row profiles had 10,000 unique text rows, zero exact duplicates,
+  and zero exact evaluation-prompt matches. Formal Logic had zero bounded
+  evaluation 13-gram overlap rows; its aggregate report SHA-256 is
+  `0a0acc7e23c94c3e34c3f14540353d7691b07b04687c79e22be433dff3163ebe`
+  and private 100-row review SHA-256 is
+  `86f74ca266525613a73ddc7d9b3a5b13289bdb53567fad0c8028557fa30d151f`.
+  Manual spot checks found coherent formal-logic supervision but substantial
+  multiple-choice/template repetition. It remains zero weight and may enter
+  only a maximum-one-percent, source-independent transfer challenger.
+
+  Unconditional Algorithmic had one bounded evaluation 13-gram overlap row,
+  a heavier HTML/repeated-line tail, aggregate report SHA-256
+  `0dd619eb8bcdf6e43fcdba1d0ca40909cf250db103d5a12e0e18f48e3b4e0981`,
+  and private review SHA-256
+  `0106c97942ba56ac1a0102a2c9eb1cb3026f729150c4f119d419f5cb7d66b5af`.
+  Manual spot checks found useful full solutions but also inconsistent sample
+  arithmetic and overstated complexity claims. Bulk admission is rejected.
+  Only a syntax-checked, execution-verified, sample-consistent,
+  decontaminated residual may be reconsidered. No private review text entered
+  Git.
+
+  Concurrent custody remains live: ETTR is 214/216 main plus 108/108
+  confirmation with cells `753823_5` and `_6` active around 14h44m;
+  FineWeb-Edu r2 has 23 sealed approximately 100M-token shards, peS2o r2 has
+  69, FinePDFs has four, and Essential-Web job `754517` is scanning its
+  strict sparse slice after hash-validating all pinned inputs. Every general
+  corpus remains `.partial` and optimizer-ineligible. Newton request `719497`
+  remains pending resources for ten H100s with a 15:03 EDT estimate; its
+  watcher may launch only the release-blind distributed ETTR canary.
+
+  Decision:
+  `formal_logic_bounded_challenger_algorithmic_bulk_rejected_no_candidate_optimizer`.
