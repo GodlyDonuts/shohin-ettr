@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 18:34 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 18:55 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -18019,3 +18019,41 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `release_tokenizer_boundary_failed_closed_codec_bound_producer_consumer_retry_running_no_optimizer`.
+
+- **2026-07-29 18:55 EDT** -- **Process-isolated compact release
+  rematerialization is approximately ten times faster than serial and is the
+  sole active release builder.**
+
+  Corrected serial retry `755586` was scientifically valid but advanced at
+  only about two 16-row optimizer batches per second, projecting beyond the
+  first H100 reservation. A bounded 32-thread canary `755588` used only about
+  three effective CPUs because the workload remained Python/GIL-bound; it was
+  canceled after 3m05s and its partial output was preserved. This rejects
+  thread parallelism by direct measurement.
+
+  Private commits `d9d77af` and
+  `35333c363f2a7455249508e8a05e64c552d8c910` replace that arm with 32
+  isolated worker processes. Each process independently rematerializes and
+  validates a core, then returns only the exact 32-byte batch digest and
+  `(32-byte context digest, uint16 target)` rows consumed by the packet
+  sufficiency index, rather than returning approximately 20 MB of tensors per
+  core. The parent preserves descriptor/core/batch order and constructs the
+  same immutable global index. A direct tensor-builder versus compact-builder
+  test produces byte-identical manifests and files; a one-worker versus
+  two-process complete-release test produces byte-identical release
+  inventories. The focused release plus packet-index suites pass **12/12** in
+  52.32 seconds, with clean Ruff, byte compilation, shell syntax, and diff
+  checks.
+
+  Exact-source process job `755591` runs on `ec84` with 32 CPUs and 192 GiB.
+  At 3m24s it had written 3,240 ordered stream records, sustained about 19
+  batches/second after startup, used roughly 28 effective CPUs, and peaked
+  near 12.1 GiB RSS without an error. This projects roughly 2.5--3 hours for
+  the complete 180,000-batch release. Redundant serial job `755586` was
+  canceled after 20m36s and its partial tree preserved at
+  `/lustre/fs1/home/sa305415/ettr-il-v3/failures/training-d84a5a0-serial-job755586`.
+  No optimizer is active. Promote the process output to the canonical release
+  path only after its complete release receipt and every internal hash pass.
+
+  Decision:
+  `threads_rejected_process_compact_release_accepted_by_exactness_and_throughput_single_writer_no_optimizer`.
