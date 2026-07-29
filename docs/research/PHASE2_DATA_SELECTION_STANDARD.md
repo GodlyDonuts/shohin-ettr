@@ -134,6 +134,13 @@ Deterministic 10,000-row profiles sharpened the source policies:
   completeness, and document-type conjunction. The source remains valuable
   at 24T-token scale, but only as a hard-filtered physical challenger; label
   scarcity must not be solved by admitting code-6 or low-reasoning records.
+- Nemotron-Pretraining-Specialized-v1.1 is a late-pretraining challenger at
+  zero weight. Profile its 128M-token Formal Logic and 195.4M-token
+  Unconditional Algorithmic components separately. Exclude its MMLU-derived
+  Multiple Choice component; keep Code Concepts separate because its taxonomy
+  was informed by HumanEval prompts. Any retained algorithmic code requires
+  syntax and execution verification, and both components require
+  source-independent transfer holdouts plus broad-retention ablations.
 
 Direct, revision-pinned Dolma 3 component probes further show why ingredients
 must be adjudicated separately:

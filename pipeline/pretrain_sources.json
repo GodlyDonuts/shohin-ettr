@@ -777,6 +777,49 @@
       "risks": ["long synthetic reasoning style", "component provenance", "template repetition"]
     },
     {
+      "id": "nemotron_specialized_v1_1_reasoning_challenger",
+      "dataset": "nvidia/Nemotron-Pretraining-Specialized-v1.1",
+      "url": "https://huggingface.co/datasets/nvidia/Nemotron-Pretraining-Specialized-v1.1",
+      "domain": "synthetic_logic_and_algorithmic_code",
+      "priority": "P1",
+      "decision": "component_challenger_requires_full_receipt",
+      "target_mix_pct": 0,
+      "known_scale": "Formal Logic 128.0M tokens; Unconditional Algorithmic 195.4M; Code Concepts 7.2945B; pinned candidate revision 13fa979be2e7f7e62913eee0ec5e97c8fd6e24af",
+      "license_summary": "CC-BY-4.0 dataset release; generated-model and component terms remain receipt-bound",
+      "mirror_policy": "component_specific_review_before_mirror",
+      "selection": {
+        "profile_first": [
+          "Nemotron-Pretraining-Formal-Logic",
+          "Nemotron-Pretraining-Unconditional-Algorithmic"
+        ],
+        "hold_separate": [
+          "Nemotron-Pretraining-Code-Concepts"
+        ],
+        "exclude": [
+          "Nemotron-Pretraining-Multiple-Choice",
+          "Nemotron-Pretraining-Economics"
+        ],
+        "phase": "late_pretraining_only",
+        "require": [
+          "exact pinned physical file hashes",
+          "component-specific exact and near deduplication",
+          "full evaluation decontamination",
+          "syntax and execution checks for algorithmic code",
+          "template and generator-style diversity audit",
+          "paired generalization holdouts not derived from source taxonomies",
+          "equal-token utility and broad-retention ablation"
+        ]
+      },
+      "risks": [
+        "synthetic generator-style monoculture",
+        "multiple-choice and public-benchmark adjacency",
+        "formal-logic template memorization",
+        "code samples are not documented as execution-verified",
+        "Code Concepts taxonomy was informed by HumanEval prompts",
+        "positive reported source-benchmark gains may not transfer to real-user utility"
+      ]
+    },
+    {
       "id": "redpajama_1t",
       "dataset": "togethercomputer/RedPajama-Data-1T",
       "url": "https://huggingface.co/datasets/togethercomputer/RedPajama-Data-1T",
