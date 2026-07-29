@@ -47,7 +47,7 @@ while IFS=$'\t' read -r relative_path expected_bytes expected_sha256; do
       --fail \
       --location \
       --retry 8 \
-      --retry-all-errors \
+      --retry-connrefused \
       --retry-delay 10 \
       --continue-at - \
       --output "$partial" \
