@@ -17630,3 +17630,41 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `ettr_fail_closed_ladder_armed_general_candidates_quarantined_no_optimizer`.
+
+- **2026-07-29 13:44 EDT** -- **The balanced peS2o sensitive audit passed
+  structurally but required three exact removals; physical residualization and
+  a complete second scan are now running.**
+
+  Stokes job `755073` completed against all **718,589 documents /
+  4,350,450,266 tokens**. Its immutable report is `status=pass`, payload
+  SHA-256
+  `a5c604406dd105653d4056fb9f279124c18c921851afb38c4fa5f05cf5e1a50d`,
+  with a text-free 48,461-row findings ledger SHA-256
+  `9ced56bb9244c64df6d994d69b10f59c9466da4fa1c0e9220b6aa292ddba958e`.
+  The automatic-exclusion surface is only **three documents / 21,233
+  tokens**, covering one AWS-access-key finding and three
+  credential-assignment findings across those documents. Email, IPv4,
+  payment-card-shaped, and SSN-shaped counts remain report-only under the
+  frozen policy; they were not silently converted into broad regex deletion.
+
+  Initial residual job `755277` failed closed after five seconds before
+  creating an output because the isolated Slurm runtime did not export its
+  parent as `PYTHONPATH`; dependent rescan `755278` canceled automatically.
+  The job wrapper now exports the already hash-verified `SOURCE_ROOT`, and a
+  regression assertion binds that import contract. The complete focused
+  sensitive-audit, sensitive-residual, exact-residual, and v3-verifier suite
+  passes **22/22**, with clean byte compilation, shell syntax, and diff
+  checks. The fix is private commit `3377037`.
+
+  Read-only Stokes runtime
+  `scratchpad/shohin_sensitive_residual_3377037` has `SHA256SUMS` SHA-256
+  `faa68b2ab86d7f7150d12c7b270ae36e381ba1e94aada322974e90f6f154e951`.
+  Corrected CPU job `755280` is running and must remove exactly the
+  audit-bound three documents, repack the remaining token spans, rebuild the
+  document ledger, and independently reverify every v3 artifact. Dependent
+  job `755281` then scans the entire fresh residual and must report zero
+  automatic-exclusion documents. Neither the original balanced candidate nor
+  the residual is training-admitted while this chain is incomplete.
+
+  Decision:
+  `pes2o_three_secret_rows_physical_removal_and_zero_rescan_required`.
