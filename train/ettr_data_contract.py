@@ -11,7 +11,7 @@ from dataclasses import asdict, dataclass, field, fields
 import hashlib
 import json
 import re
-from typing import Sequence
+from typing import Protocol, Sequence, runtime_checkable
 
 import torch
 
@@ -90,7 +90,129 @@ def continuation_batch_payload_sha256(
     return hashlib.sha256(_canonical_json_bytes(payload)).hexdigest()
 
 
-def _terminal_packet_query_context(
+def select_continuation_rows(
+    batch: ETTRContinuationBatch,
+    indices: torch.Tensor,
+) -> ETTRContinuationBatch:
+    """Select complete causal rectangles and remap every row reference."""
+
+    if not isinstance(batch, ETTRContinuationBatch):
+        raise TheoryReactorError("ETTR continuation selection type differs")
+    rows = batch.episodes.world.tokens.shape[0]
+    if (
+        not torch.is_tensor(indices)
+        or indices.ndim != 1
+        or indices.dtype != torch.long
+        or indices.device != batch.episodes.world.tokens.device
+        or indices.numel() < 4
+        or indices.unique().numel() != indices.numel()
+        or bool((indices < 0).any())
+        or bool((indices >= rows).any())
+    ):
+        raise TheoryReactorError("ETTR continuation row selection differs")
+    inverse = torch.full(
+        (rows,),
+        -1,
+        dtype=torch.long,
+        device=indices.device,
+    )
+    inverse[indices] = torch.arange(indices.numel(), device=indices.device)
+
+    def tensor_dataclass(value: object) -> object:
+        return type(value)(
+            **{
+                field.name: getattr(value, field.name).index_select(0, indices)
+                for field in fields(value)
+            }
+        )
+
+    def segment(value: ETTREpisodeSegment) -> ETTREpisodeSegment:
+        return ETTREpisodeSegment(
+            tokens=value.tokens.index_select(0, indices),
+            targets=value.targets.index_select(0, indices),
+            attention_mask=value.attention_mask.index_select(0, indices),
+        )
+
+    rectangle_rows = batch.causal_rectangles.rows
+    rectangle_mask = inverse.index_select(
+        0,
+        rectangle_rows.flatten(),
+    ).reshape_as(rectangle_rows).ge(0).all(dim=(1, 2))
+    selected_rectangles = rectangle_rows[rectangle_mask]
+    if (
+        selected_rectangles.numel() != indices.numel()
+        or selected_rectangles.shape[0] * 4 != indices.numel()
+    ):
+        raise TheoryReactorError(
+            "ETTR continuation selection splits a causal rectangle"
+        )
+    causal = ETTRCausalRectangle(
+        rows=inverse.index_select(
+            0,
+            selected_rectangles.flatten(),
+        ).reshape_as(selected_rectangles)
+    )
+
+    alignment = None
+    if batch.equivariance is not None:
+        value = batch.equivariance
+        pair_mask = (
+            inverse.index_select(0, value.left_index).ge(0)
+            & inverse.index_select(0, value.right_index).ge(0)
+        )
+        if not bool(pair_mask.any()):
+            raise TheoryReactorError(
+                "ETTR continuation selection loses equivariance support"
+            )
+        alignment = ETTRVariantAlignment(
+            left_index=inverse.index_select(
+                0,
+                value.left_index[pair_mask],
+            ),
+            right_index=inverse.index_select(
+                0,
+                value.right_index[pair_mask],
+            ),
+            **{
+                field.name: getattr(value, field.name)[pair_mask]
+                for field in fields(value)
+                if field.name not in {"left_index", "right_index"}
+            },
+        )
+
+    selected = ETTRContinuationBatch(
+        manifest_sha256=batch.manifest_sha256,
+        dataset_sha256=batch.dataset_sha256,
+        episodes=ETTREpisodeBatch(
+            episode_ids=tuple(
+                batch.episodes.episode_ids[int(index)]
+                for index in indices.tolist()
+            ),
+            reset_mask=batch.episodes.reset_mask.index_select(0, indices),
+            query_read_index=batch.episodes.query_read_index.index_select(
+                0,
+                indices,
+            ),
+            world=segment(batch.episodes.world),
+            command=segment(batch.episodes.command),
+            query=segment(batch.episodes.query),
+        ),
+        packet_targets=tensor_dataclass(batch.packet_targets),
+        terminal_packet_targets=tensor_dataclass(
+            batch.terminal_packet_targets
+        ),
+        causal_rectangles=causal,
+        transaction_targets=tensor_dataclass(
+            batch.transaction_targets
+        ),
+        initial_committed=batch.initial_committed.index_select(0, indices),
+        initial_halted=batch.initial_halted.index_select(0, indices),
+        equivariance=alignment,
+    )
+    return selected
+
+
+def terminal_packet_query_context(
     batch: ETTRContinuationBatch,
     row: int,
 ) -> tuple[dict[str, object], int]:
@@ -181,6 +303,35 @@ class ETTRPacketSufficiencyReceipt:
             raise TheoryReactorError(
                 "ETTR terminal-packet sufficiency receipt differs"
             )
+
+
+@runtime_checkable
+class ETTRPacketSufficiencyVerifier(Protocol):
+    """Runtime contract shared by in-memory and disk-backed indexes."""
+
+    receipt: ETTRPacketSufficiencyReceipt
+    train_batches: int
+    validation_batches: int
+    train_rows: int
+    validation_rows: int
+    train_payload_sha256: str
+    validation_payload_sha256: str
+
+    @property
+    def train_contexts(self) -> int: ...
+
+    @property
+    def validation_contexts(self) -> int: ...
+
+    def verify_train(
+        self,
+        batches: Sequence[ETTRContinuationBatch],
+    ) -> None: ...
+
+    def verify_validation(
+        self,
+        batches: Sequence[ETTRContinuationBatch],
+    ) -> None: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -401,7 +552,7 @@ class ETTRPacketSufficiencyIndex:
                         "ETTR terminal-packet sufficiency batch is empty"
                     )
                 for row in range(batch_rows):
-                    context, target = _terminal_packet_query_context(batch, row)
+                    context, target = terminal_packet_query_context(batch, row)
                     context_bytes = _canonical_json_bytes(context)
                     context_digest = hashlib.sha256(context_bytes).digest()
                     prior = targets.setdefault(context_digest, target)
@@ -546,7 +697,7 @@ class ETTRPacketSufficiencyIndex:
                     "ETTR terminal-packet sufficiency batch is empty"
                 )
             for row in range(batch_rows):
-                context, target = _terminal_packet_query_context(batch, row)
+                context, target = terminal_packet_query_context(batch, row)
                 digest = hashlib.sha256(
                     _canonical_json_bytes(context)
                 ).digest()
@@ -1380,6 +1531,9 @@ __all__ = [
     "ETTRContinuationManifest",
     "ETTRPacketSufficiencyIndex",
     "ETTRPacketSufficiencyReceipt",
+    "ETTRPacketSufficiencyVerifier",
     "continuation_batch_payload_sha256",
+    "select_continuation_rows",
+    "terminal_packet_query_context",
     "terminal_packet_sufficiency_receipt",
 ]

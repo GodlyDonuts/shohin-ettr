@@ -198,10 +198,10 @@ def runtime_source_manifest() -> dict[str, str]:
     return dict(_IMPORTED_SOURCE_MANIFEST)
 
 
-def load_protected_base_provenance(
+def _load_protected_base(
     checkpoint_path: Path,
-) -> BaseProvenance:
-    """Validate and receipt only the immutable production step-300k base."""
+) -> tuple[GPT, BaseProvenance]:
+    """Validate and load the immutable production step-300k base once."""
 
     checkpoint_path = checkpoint_path.resolve()
     if not checkpoint_path.is_file():
@@ -251,7 +251,7 @@ def load_protected_base_provenance(
         )
     if base.num_params() != PROTECTED_BASE_PARAMETERS:
         raise ETTRCheckpointError("protected base parameter count differs")
-    return BaseProvenance(
+    provenance = BaseProvenance(
         checkpoint_path=str(checkpoint_path),
         checkpoint_bytes=checkpoint_path.stat().st_size,
         checkpoint_sha256=digest,
@@ -266,6 +266,24 @@ def load_protected_base_provenance(
         state_key_count=PROTECTED_STATE_KEY_COUNT,
         base_parameters=PROTECTED_BASE_PARAMETERS,
     )
+    return base, provenance
+
+
+def load_protected_base_provenance(
+    checkpoint_path: Path,
+) -> BaseProvenance:
+    """Validate and receipt only the immutable production step-300k base."""
+
+    _, provenance = _load_protected_base(checkpoint_path)
+    return provenance
+
+
+def load_protected_base_model(
+    checkpoint_path: Path,
+) -> tuple[GPT, BaseProvenance]:
+    """Return the strict protected model and its cryptographic provenance."""
+
+    return _load_protected_base(checkpoint_path)
 
 
 def save_ettr_checkpoint(
@@ -1514,6 +1532,7 @@ __all__ = [
     "EpisodeLifecycleState",
     "TrainingProgress",
     "load_ettr_checkpoint",
+    "load_protected_base_model",
     "load_protected_base_provenance",
     "runtime_source_manifest",
     "save_ettr_checkpoint",

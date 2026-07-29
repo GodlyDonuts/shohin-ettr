@@ -8,7 +8,7 @@ or network access.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Sequence
+from typing import Callable, Sequence
 
 import torch
 import torch.nn as nn
@@ -20,7 +20,7 @@ from endogenous_typed_theory_reactor import (
 from ettr_data_contract import (
     ETTRContinuationBatch,
     ETTRContinuationManifest,
-    ETTRPacketSufficiencyIndex,
+    ETTRPacketSufficiencyVerifier,
 )
 from ettr_episode import CausalETTREpisodeRunner
 from ettr_objectives import (
@@ -88,10 +88,13 @@ class ETTRTrainStep(nn.Module):
         objective_config: ETTRObjectiveConfig,
         *,
         manifest: ETTRContinuationManifest,
-        packet_sufficiency: ETTRPacketSufficiencyIndex,
+        packet_sufficiency: ETTRPacketSufficiencyVerifier,
         manifest_sha256: str,
         objective_weights: ETTRObjectiveWeights | None = None,
         step_config: ETTRTrainStepConfig | None = None,
+        gradient_synchronizer: (
+            Callable[[Sequence[nn.Parameter]], None] | None
+        ) = None,
     ):
         super().__init__()
         self.model = model
@@ -110,7 +113,7 @@ class ETTRTrainStep(nn.Module):
         self.manifest_sha256 = manifest_sha256
         if not isinstance(manifest, ETTRContinuationManifest):
             raise TheoryReactorError("ETTR trainer manifest type differs")
-        if not isinstance(packet_sufficiency, ETTRPacketSufficiencyIndex):
+        if not isinstance(packet_sufficiency, ETTRPacketSufficiencyVerifier):
             raise TheoryReactorError(
                 "ETTR trainer packet sufficiency index type differs"
             )
@@ -143,6 +146,13 @@ class ETTRTrainStep(nn.Module):
         self.manifest = manifest
         self.dataset_sha256 = manifest.dataset_sha256
         self.packet_sufficiency = packet_sufficiency
+        if gradient_synchronizer is not None and not callable(
+            gradient_synchronizer
+        ):
+            raise TheoryReactorError(
+                "ETTR gradient synchronizer is not callable"
+            )
+        self.gradient_synchronizer = gradient_synchronizer
         self._poisoned = False
         optimizer.assert_bound_to(model)
         optimizer.assert_healthy()
@@ -292,6 +302,8 @@ class ETTRTrainStep(nn.Module):
                 for parameter in self.model.parameters()
                 if parameter.requires_grad
             )
+            if self.gradient_synchronizer is not None:
+                self.gradient_synchronizer(trainable)
             gradient_norm = torch.nn.utils.clip_grad_norm_(
                 trainable,
                 self.step_config.gradient_clip,

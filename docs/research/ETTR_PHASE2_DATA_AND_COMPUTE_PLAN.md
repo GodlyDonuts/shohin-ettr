@@ -96,6 +96,36 @@ under 48-hour recovery job `753823`. Selector `753824`, task manifest
 
 No partial or pre-audit ETTR payload may be consumed by training.
 
+### Immutable training release
+
+The optimizer does not read materializer output directly. After the main and
+confirmation aggregate audits pass, the release builder must:
+
+1. Reopen and hash every train/development source shard.
+2. Fully rematerialize every semantic core with the pinned tokenizer.
+3. Divide each 64-row core into two 32-row batches only on complete causal
+   rectangle boundaries, with all row references remapped and revalidated.
+4. Build the target-bound packet/query sufficiency index from those exact
+   32-row payloads.
+5. Publish no-replace continuation, stream, shard, tokenizer, audit,
+   separation, and packet-index receipts under one release SHA-256.
+6. Keep train/development reserves and sealed confirmation data outside the
+   optimizer-visible release.
+
+The continuation manifest's legacy `qualification_payload_sha256` field binds
+the main audit's qualification-freeze receipt. Its legacy
+`hybrid_payload_sha256` field binds the independent main/confirmation
+separation-report digest. These mappings are compatibility names, not
+permission to substitute another payload.
+
+The distributed loader accepts the externally pinned release-file SHA-256,
+rehashes every source shard before launch, rematerializes only receipt-listed
+batches, and permits restart only at a global optimizer-update boundary.
+Each rank receives a disjoint global position, while gradients are averaged
+before clipping and optimizer update. Checkpoints bind the protected base,
+complete ETTR model, optimizer, schedule, RNG, epoch/global-position cursor,
+world size, accumulation, release hash, and between-episode lifecycle.
+
 ## Training Sequence
 
 1. **Resource and transport qualification.** Use the 10-H100 backfill

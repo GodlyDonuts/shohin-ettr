@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-28 21:56 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-28 22:28 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -15806,3 +15806,66 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `three_h100_bs32_acc4_transport_shape_qualified_436907_steady_tps_data_gates_still_closed`.
+
+- **2026-07-28 22:28 EDT** -- **The audited ETTR corpus now has a
+  hash-bound release-to-optimizer bridge and bounded distributed launcher;
+  production data is still not released, so no ETTR weight update has run.**
+
+  `pipeline/build_ettr_il_v3_training_release.py` accepts only the complete
+  passing main materialization audit plus zero-overlap main/confirmation
+  separation report. It reopens every admitted train/development semantic
+  core, reconstructs its exact tensors, and publishes a no-replace release
+  containing the continuation manifest, source-shard ledger, location stream,
+  and immutable disk-backed packet-sufficiency index. Compatibility field
+  `qualification_payload_sha256` binds the main audit's externally frozen
+  qualification receipt; `hybrid_payload_sha256` binds the independent
+  main/confirmation separation report. Train/development reserves and sealed
+  confirmation remain outside the optimizer-visible release.
+
+  A release correction prevents an unqualified memory jump: every 64-row
+  semantic core is deterministically divided into **two 32-row microbatches**.
+  Each division preserves complete four-row causal rectangles, remaps every
+  row-indexed objective and equivariance reference, validates the full
+  production objective geometry, and receives its own payload SHA-256. The
+  corpus still contains the exact same 64 rows and 33,792 charged positions
+  per core; only the runtime microbatch boundary changes. The packet index is
+  constructed from these actual training microbatches rather than a different
+  in-memory representation.
+
+  `train/ettr_packet_index.py` uses fixed-width immutable mmap files so every
+  rank can verify full target-bound packet/query sufficiency without loading
+  millions of Python hash entries. `train/ettr_v3_streaming.py` pins the
+  release, tokenizer, packet-index manifest, source shards, stream index, and
+  per-batch rematerialization hashes. It assigns equal-cardinality global
+  positions across ranks and supports only update-aligned restart positions.
+  `train/train_ettr_v3.py` strictly loads the protected 300k trust root,
+  constructs the frozen 192,779,435-parameter ETTR system, averages dense
+  gradients in bounded fixed-order collectives, deterministically seeds every
+  rank/update, and writes no-replace exact-resume checkpoints binding model,
+  optimizer, schedule, RNG, data cursor, and episode lifecycle. It requires
+  explicit release SHA-256, source commit, bounded update count, and a fresh
+  output directory. Both release construction and runtime iteration reject
+  writable, linked, or symlinked materialized shards.
+
+  The focused release, streaming, packet-index, train-step, distributed
+  cursor/gradient, checkpoint, and immutable-shard set passes **75/75 in
+  18.50 seconds**.
+  Ruff, byte compilation, and diff checks pass. This is launch mechanics, not
+  learned reasoning: the production release cannot be built until Stokes jobs
+  `753823`--`753830` finish and all audits pass, and the new launcher has
+  performed zero weight updates.
+
+  Live custody: recovery array `753823` remains nine-way RUNNING around
+  5h34m with 207 durable main reports and zero nonempty stderr files.
+  FineWeb-Edu score-4+ builder `754154` was canceled after one hour, no
+  artifact, and repeated anonymous HTTP 429 backoffs; allowing its three-day
+  allocation to sleep would block all serialized challengers. It must be
+  retried only with authenticated or pre-mirrored transport. The
+  Dolma/PleIAs/Essential-Web probe chain `754163`--`754168` remains
+  dependency-ordered and can now advance. Newton allocation `719591` remains
+  RUNNING; 10-H100 request `719497` now estimates
+  `2026-07-29T04:59:00`, while 20-H100 request `719496` estimates
+  `2026-07-30T14:52:43`. No unverified data is training.
+
+  Decision:
+  `ettr_release_optimizer_bridge_passes_32row_runtime_shape_no_production_release_or_weight_update`.

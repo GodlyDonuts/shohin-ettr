@@ -200,6 +200,39 @@ def test_update_runs_complete_native_objective_and_advances_cursor() -> None:
     )
 
 
+def test_gradient_synchronizer_runs_after_backward_before_step() -> None:
+    trainer, batch = _trainer(accumulation=1)
+    calls: list[tuple[int, int]] = []
+
+    def synchronize(parameters: object) -> None:
+        values = tuple(parameters)
+        calls.append(
+            (
+                len(values),
+                sum(value.grad is not None for value in values),
+            )
+        )
+
+    trainer.gradient_synchronizer = synchronize
+    trainer.update((batch,))
+    assert len(calls) == 1
+    assert calls[0][0] > 0
+    assert calls[0][1] > 0
+
+
+def test_gradient_synchronizer_failure_poisoning_is_fail_stop() -> None:
+    trainer, batch = _trainer(accumulation=1)
+
+    def fail(_parameters: object) -> None:
+        raise RuntimeError("collective failed")
+
+    trainer.gradient_synchronizer = fail
+    with pytest.raises(TheoryReactorError, match="optimizer update failed"):
+        trainer.update((batch,))
+    with pytest.raises(TheoryReactorError, match="fail-stop"):
+        trainer.update((batch,))
+
+
 def test_wrong_accumulation_window_fails_before_mutation() -> None:
     trainer, batch = _trainer(accumulation=2)
     before = {
