@@ -9,8 +9,8 @@ JOB = (
 
 
 def test_scale_pilot_requires_clean_exact_code_and_fresh_output() -> None:
-    assert "git rev-parse HEAD" in JOB
-    assert "git status --porcelain --untracked-files=all" in JOB
+    assert '"$(tr -d \'\\r\\n\' < SOURCE_COMMIT)" != "$SOURCE_COMMIT"' in JOB
+    assert "sha256sum -c SHA256SUMS" in JOB
     assert '[[ -e "$OUTDIR" || -L "$OUTDIR" ]]' in JOB
     assert "--out \"$OUTDIR\"" in JOB
     assert "flagship_out" not in JOB

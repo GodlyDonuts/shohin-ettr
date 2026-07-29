@@ -6,8 +6,8 @@
 set -euo pipefail
 
 ALLOCATION_JOB_ID=${ALLOCATION_JOB_ID:?set the running reservation job ID}
-CODE_ROOT=${CODE_ROOT:?set the immutable shared source checkout}
-SOURCE_COMMIT=${SOURCE_COMMIT:?set the exact source commit}
+CODE_ROOT=${CODE_ROOT:?set the immutable shared source archive root}
+SOURCE_COMMIT=${SOURCE_COMMIT:?set the exact private source commit}
 OUTDIR=${OUTDIR:?set a fresh isolated pilot output directory}
 NODELIST=${NODELIST:?set the healthy reserved nodes, comma separated}
 NODES=${NODES:?set the exact healthy reserved node count}
@@ -65,12 +65,12 @@ if [[ "$(wc -l < /tmp/shohin_selected_nodes.$$)" != "$NODES" ]] \
 fi
 
 cd "$CODE_ROOT"
-if [[ "$(git rev-parse HEAD)" != "$SOURCE_COMMIT" ]]; then
-  echo "source checkout commit differs" >&2
+if [[ ! -r SOURCE_COMMIT || "$(tr -d '\r\n' < SOURCE_COMMIT)" != "$SOURCE_COMMIT" ]]; then
+  echo "source archive commit differs" >&2
   exit 2
 fi
-if [[ -n "$(git status --porcelain --untracked-files=all)" ]]; then
-  echo "source checkout is not clean" >&2
+if [[ ! -r SHA256SUMS || -n "$(sha256sum -c SHA256SUMS 2>&1 | grep -v ': OK$')" ]]; then
+  echo "source archive digest differs" >&2
   exit 2
 fi
 for shard in finemath4 openwebmath code_python finemath3; do
