@@ -18057,3 +18057,52 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `threads_rejected_process_compact_release_accepted_by_exactness_and_throughput_single_writer_no_optimizer`.
+
+- **2026-07-29 19:06 EDT** -- **Newton's complete ETTR launch chain is
+  rebound to the repaired streaming consumer before any reservation starts.**
+
+  A preflight audit found that the existing transfer, distributed-canary,
+  first-rung, and continuation watchers still named immutable runtime
+  `shohin_ettr_runtime_524f3e50`. That runtime's
+  `train/ettr_v3_streaming.py` is SHA-256
+  `773b6b6fcc248c8a56270fad11b4361abdf65616a2de251cfc65543ff0051033`;
+  it predates the verified-codec consumer fix and therefore could not safely
+  perform Newton's post-transfer streamed verification. No release had been
+  transferred, the reservations were still pending, the first-rung lock was
+  absent, and no optimizer had started.
+
+  Fresh no-replace Newton runtime
+  `/lustre/fs1/home/sa305415/shohin/scratchpad/shohin_ettr_runtime_68bf17f_r1`
+  now binds private commit
+  `68bf17f5a43e9ea755f99ad2e1278f8938f9020d`. It contains the same 928-file
+  training inventory as the prior runtime; complete `SHA256SUMS` is itself
+  SHA-256
+  `daa034a4a5e13c616a3af55ca0b021211413aa2517727d22ff4cf4cf9c83af8b`,
+  every entry replayed successfully on Newton, every source file is
+  read-only, and the repaired streamer is SHA-256
+  `af431d63bcf86b24beec5b8fc70f3aa860b195acd26f70f2abe557349c295586`.
+  An initial macOS archive attempt failed closed during extraction because
+  extended metadata and extraction-time directory modes differed; it was
+  never referenced by a watcher. The admitted `r1` archive contains no
+  AppleDouble entries and was sealed only after Newton replayed all hashes.
+
+  Process inspection of active release job `755591` independently confirmed
+  that its exact optimizer-visible source data are
+  `/lustre/fs1/home/sa305415/ettr-il-v3/materialized/main-recovery-d170f25`,
+  not the stale pre-recovery path carried by the old transfer watcher. The new
+  chain therefore waits for a verified Stokes promotion at
+  `releases/training-35333c3`, transfers that release plus the exact recovery
+  data to Newton artifact `training-35333c3`, and verifies it with the repaired
+  runtime before exposing it to training. Both four- and ten-H100 distributed
+  canaries, the canonical 100-update paired gate, and the strict
+  100-to-500-to-2,000 ladder now bind commit `68bf17f`; all prior local
+  watchers were stopped before rebinding.
+
+  At 19:04 EDT release job `755591` had emitted 15,364 of 180,000 ordered
+  batch records in 14m21s without error. Newton estimates are approximately
+  01:05 EDT July 30 for both the four-H100 and ten-H100 reservations; the
+  twenty-H100 estimate moved to 14:04 EDT July 30. All remain pending, and the
+  first-rung lock remains absent.
+
+  Decision:
+  `repaired_streaming_runtime_and_recovery_data_path_bound_end_to_end_no_optimizer`.
