@@ -20,6 +20,8 @@ CODE_ROOT=${CODE_ROOT:?set an immutable complete v3 residual runtime}
 RUNTIME_SHA256SUMS=${RUNTIME_SHA256SUMS:?set the runtime SHA256SUMS path}
 RUNTIME_SHA256SUMS_SHA256=${RUNTIME_SHA256SUMS_SHA256:?set its SHA-256}
 SOURCE_DIR=${SOURCE_DIR:?set a final verified v3 source}
+SOURCE_SELECTION_CODE=${SOURCE_SELECTION_CODE:?set its exact selection code}
+SOURCE_SELECTION_CODE_SHA256=${SOURCE_SELECTION_CODE_SHA256:?set its SHA-256}
 DEDUP_DIR=${DEDUP_DIR:?set the immutable exact-audit directory}
 CORPUS_NAME=${CORPUS_NAME:?set the exact corpus name used by the audit}
 OUTPUT_DIR=${OUTPUT_DIR:?set a fresh residual output directory}
@@ -27,7 +29,8 @@ SHARD_TOKENS=${SHARD_TOKENS:-100000000}
 MATERIALIZER=$CODE_ROOT/pipeline/materialize_cross_source_exact_residual.py
 
 for path in \
-  "$CODE_ROOT" "$RUNTIME_SHA256SUMS" "$SOURCE_DIR" "$DEDUP_DIR" "$OUTPUT_DIR"; do
+  "$CODE_ROOT" "$RUNTIME_SHA256SUMS" "$SOURCE_DIR" \
+  "$SOURCE_SELECTION_CODE" "$DEDUP_DIR" "$OUTPUT_DIR"; do
   [[ "$path" == /* ]] || {
     echo "[v3-exact-residual] paths must be absolute: $path" >&2
     exit 2
@@ -40,6 +43,7 @@ done
   && -d "$CODE_ROOT" && ! -L "$CODE_ROOT" \
   && -f "$RUNTIME_SHA256SUMS" && ! -L "$RUNTIME_SHA256SUMS" \
   && -d "$SOURCE_DIR" && ! -L "$SOURCE_DIR" \
+  && -f "$SOURCE_SELECTION_CODE" && ! -L "$SOURCE_SELECTION_CODE" \
   && -d "$DEDUP_DIR" && ! -L "$DEDUP_DIR" \
   && -f "$MATERIALIZER" && ! -L "$MATERIALIZER" \
   && -x "$PY" && ! -e "$OUTPUT_DIR" && ! -L "$OUTPUT_DIR" ]] || {
@@ -47,7 +51,8 @@ done
   exit 2
 }
 printf '%s  %s\n' \
-  "$RUNTIME_SHA256SUMS_SHA256" "$RUNTIME_SHA256SUMS" | sha256sum -c -
+  "$RUNTIME_SHA256SUMS_SHA256" "$RUNTIME_SHA256SUMS" \
+  "$SOURCE_SELECTION_CODE_SHA256" "$SOURCE_SELECTION_CODE" | sha256sum -c -
 (cd "$CODE_ROOT" && sha256sum -c "$RUNTIME_SHA256SUMS")
 
 mkdir -p "$(dirname "$OUTPUT_DIR")"
@@ -57,6 +62,7 @@ cd "$CODE_ROOT"
   --source-dir "$SOURCE_DIR" \
   --dedup-dir "$DEDUP_DIR" \
   --corpus-name "$CORPUS_NAME" \
+  --source-selection-code "$SOURCE_SELECTION_CODE" \
   --selection-code "$MATERIALIZER" \
   --output-dir "$OUTPUT_DIR" \
   --shard-tokens "$SHARD_TOKENS"

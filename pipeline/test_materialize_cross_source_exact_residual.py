@@ -140,12 +140,13 @@ def _prepare(tmp_path: Path) -> tuple[Path, Path, Path]:
 
 
 def test_exact_removal_is_applied_and_residual_reverifies(tmp_path):
-    source, dedup, _selection = _prepare(tmp_path)
+    source, dedup, source_selection = _prepare(tmp_path)
     output = tmp_path / "residual"
     result = materialize_exact_residual(
         source_dir=source,
         dedup_dir=dedup,
         corpus_name="challenger",
+        source_selection_code=source_selection,
         selection_code=SELECTION_CODE,
         output_dir=output,
         shard_tokens=1,
@@ -171,7 +172,7 @@ def test_exact_removal_is_applied_and_residual_reverifies(tmp_path):
 
 
 def test_tampered_removal_artifact_fails_without_output(tmp_path):
-    source, dedup, _selection = _prepare(tmp_path)
+    source, dedup, source_selection = _prepare(tmp_path)
     removal_path = dedup / "exact_duplicate_removals.jsonl.zst"
     removal_path.write_bytes(b"tampered")
     output = tmp_path / "residual"
@@ -180,6 +181,7 @@ def test_tampered_removal_artifact_fails_without_output(tmp_path):
             source_dir=source,
             dedup_dir=dedup,
             corpus_name="challenger",
+            source_selection_code=source_selection,
             selection_code=SELECTION_CODE,
             output_dir=output,
         )
@@ -187,12 +189,28 @@ def test_tampered_removal_artifact_fails_without_output(tmp_path):
 
 
 def test_wrong_corpus_binding_fails_closed(tmp_path):
-    source, dedup, _selection = _prepare(tmp_path)
+    source, dedup, source_selection = _prepare(tmp_path)
     with pytest.raises(ExactResidualError, match="corpus name"):
         materialize_exact_residual(
             source_dir=source,
             dedup_dir=dedup,
             corpus_name="missing",
+            source_selection_code=source_selection,
+            selection_code=SELECTION_CODE,
+            output_dir=tmp_path / "residual",
+        )
+
+
+def test_wrong_source_selection_code_fails_closed(tmp_path):
+    source, dedup, _source_selection = _prepare(tmp_path)
+    wrong = tmp_path / "wrong.py"
+    wrong.write_text("print('wrong')\n")
+    with pytest.raises(Exception, match="selection code"):
+        materialize_exact_residual(
+            source_dir=source,
+            dedup_dir=dedup,
+            corpus_name="challenger",
+            source_selection_code=wrong,
             selection_code=SELECTION_CODE,
             output_dir=tmp_path / "residual",
         )

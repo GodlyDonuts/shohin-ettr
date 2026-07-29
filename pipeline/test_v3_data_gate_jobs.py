@@ -47,8 +47,9 @@ def test_residual_jobs_bind_audit_and_publish_fresh_outputs() -> None:
     near = _script("materialize_cross_source_near_residual.sbatch")
     assert "--dedup-dir" in exact
     assert "--near-dir" in near
-    assert "--source-selection-code" in near
-    assert "SOURCE_SELECTION_CODE_SHA256" in near
+    for script in (exact, near):
+        assert "--source-selection-code" in script
+        assert "SOURCE_SELECTION_CODE_SHA256" in script
     for script in (exact, near):
         assert "RUNTIME_SHA256SUMS_SHA256" in script
         assert '".partial"' in script

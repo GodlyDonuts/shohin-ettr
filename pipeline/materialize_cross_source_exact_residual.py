@@ -215,6 +215,7 @@ def materialize_exact_residual(
     source_dir: Path,
     dedup_dir: Path,
     corpus_name: str,
+    source_selection_code: Path,
     selection_code: Path,
     output_dir: Path,
     shard_tokens: int = 100_000_000,
@@ -226,6 +227,8 @@ def materialize_exact_residual(
             for character in corpus_name
         )
         or shard_tokens < 1
+        or not source_selection_code.is_file()
+        or source_selection_code.is_symlink()
         or not selection_code.is_file()
         or selection_code.is_symlink()
     ):
@@ -234,6 +237,7 @@ def materialize_exact_residual(
         raise FileExistsError(f"refusing existing output: {output_dir}")
     source_verification = verify_manifest(
         source_dir,
+        selection_code=source_selection_code,
         require_external_inputs=True,
     )
     source_manifest = _load_json(source_dir / "manifest.json", "source manifest")
@@ -379,6 +383,9 @@ def materialize_exact_residual(
                     "source_manifest_payload_sha256": source_manifest[
                         "payload_sha256"
                     ],
+                    "source_selection_code_sha256": source_manifest[
+                        "selection_code_sha256"
+                    ],
                     "source_verification": source_verification,
                     "dedup_report_path": str((dedup_dir / "report.json").resolve()),
                     "dedup_report_sha256": sha256_file(dedup_dir / "report.json"),
@@ -432,6 +439,7 @@ def main(argv: Iterable[str] | None = None) -> None:
     parser.add_argument("--source-dir", type=Path, required=True)
     parser.add_argument("--dedup-dir", type=Path, required=True)
     parser.add_argument("--corpus-name", required=True)
+    parser.add_argument("--source-selection-code", type=Path, required=True)
     parser.add_argument("--selection-code", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--shard-tokens", type=int, default=100_000_000)
@@ -440,6 +448,7 @@ def main(argv: Iterable[str] | None = None) -> None:
         source_dir=arguments.source_dir,
         dedup_dir=arguments.dedup_dir,
         corpus_name=arguments.corpus_name,
+        source_selection_code=arguments.source_selection_code,
         selection_code=arguments.selection_code,
         output_dir=arguments.output_dir,
         shard_tokens=arguments.shard_tokens,

@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 17:36 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 17:49 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17909,3 +17909,28 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `private_publication_runtime_ready_focused_paths_revalidated_full_audit_still_running_no_optimizer`.
+
+- **2026-07-29 17:49 EDT** -- **Exact-residual admission now re-pins the
+  source selection program before copying any source token span.**
+
+  A review of the final general-corpus launch chain found that near-residual
+  materialization supplied the exact source selection code to
+  `verify_manifest`, while exact-residual materialization supplied no source
+  selection code. The source manifest and all corpus bytes were still
+  verified, but that asymmetry left the selection-program identity
+  unreplayed at the first residual stage. Private commit work now makes
+  `--source-selection-code` mandatory for exact residualization, verifies
+  that file against the source manifest before creating the staging
+  directory, records its SHA-256 in the residual provenance, and requires the
+  Slurm launcher to independently hash-check the pinned file. A negative test
+  proves that a wrong source program fails before output creation.
+
+  The exact/near/residual/holdout/release/publication regression set passes
+  **50/50** with one macOS-only GNU-launcher integration test skipped; focused
+  tests pass **11/11**, Ruff, byte compilation, shell syntax, and diff checks
+  pass. Full ETTR aggregate audit `755550` remains the sole active reader of
+  the fresh 60-cell assembly; separation `755552`, release `755554`, Newton
+  transfer, private publication, and every optimizer remain dependency-held.
+
+  Decision:
+  `exact_residual_source_program_pinned_full_ettr_audit_unchanged_no_optimizer`.
