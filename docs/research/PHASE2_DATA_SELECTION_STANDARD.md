@@ -332,6 +332,16 @@ but a new Phase 2 admission requires v3. Passing this verifier proves payload
 identity, not source quality or production admission; the other gates above
 remain mandatory.
 
+`pipeline/build_general_source_review_packet.py` consumes only a fully
+verified v3 corpus. It deterministically samples exact retained documents
+across license and token-length strata with a publisher/domain cap, reopens
+the hash-bound raw files, and refuses any source-row identity or document-hash
+drift. The private packet contains bounded text for adjudication and is
+mode-0600; its public-safe receipt contains no document text and binds the
+packet SHA-256, ledger, manifest, strata, and verifier result. A model-authored
+label remains preliminary; production semantic admission still requires the
+declared human authority.
+
 ## Fresh-Source Challenger Lane
 
 Before each major pretraining tranche, refresh the registry against newly

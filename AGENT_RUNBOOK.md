@@ -16164,6 +16164,15 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   end-to-end two-document tokenize/verify cycle passed every external-input,
   shard, ledger, and token-span gate.
 
+  `pipeline/build_general_source_review_packet.py` then closes the exact
+  selected-document review path. It verifies the complete v3 corpus,
+  deterministically samples retained rows across license and token-length
+  strata with a publisher/domain cap, reopens the bound raw files, rechecks
+  source identity and document hashes, and writes a mode-0600 private packet
+  plus a text-free receipt. Its focused tests and an end-to-end two-document
+  materialization pass. This enables exact human review but does not relabel a
+  model review as human.
+
   The exact corrected source commit `1ee361d6e6180bf7f074edfb315fff20045c2823`
   is clean on Newton. Formal full-system B16 profile step `719591.44` is live
   on healthy `evc28`; eager completed and compiled execution is active. The
