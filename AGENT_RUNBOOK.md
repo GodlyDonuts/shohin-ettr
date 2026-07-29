@@ -16572,3 +16572,30 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `three_h100_bs32_acc4_throughput_pass_preserve_token_budget_ablation_gate`.
+
+- **2026-07-29 04:42 EDT** -- **peS2o exact batching gate passed and the
+  unsealed slow candidate was replaced by a fresh accelerated `r2` build.**
+
+  Private commit `2b0d30c` adds the peS2o batch canary and makes the direct
+  builder require an isolated hash-bound tokenizer/verifier source root. The
+  canary ran both batch sizes on one pinned physical source input under the
+  full production license, quality, exact-deduplication, evaluator
+  decontamination, and publisher-cap contract. Both output arms retained
+  **2,003,943** tokens from **282** documents, passed independent external
+  input/shard/ledger verification, and had byte-identical shards and ledger
+  artifacts. Batch 1 took **95 s** (21,094 tok/s); batch 256 took **13 s**
+  (154,149 tok/s), a **7.308x** wall-clock speedup. The immutable report is
+  `/lustre/fs1/home/sa305415/shohin/artifacts/shards/pes2o_tokenizer_batch_canary_754483/report.json`.
+
+  The old job `754199` had produced 11 shards only in its `.partial` directory
+  and no final candidate. It and its dependent audit `754200` were canceled
+  rather than allowing a partial or stale review to become authoritative. The
+  partial is retained untouched for audit but is not usable data. Fresh job
+  `754484` now builds only
+  `artifacts/shards/pes2o_selected_core_10b_r2` with the verified batch-256
+  code path and its own final verifier. It remains candidate-only; semantic
+  review, residualization, a full audit, and matched-token utility ablation
+  remain mandatory before training admission.
+
+  Decision:
+  `pes2o_exact_batch_speedup_pass_r2_candidate_replaces_unsealed_slow_partial`.
