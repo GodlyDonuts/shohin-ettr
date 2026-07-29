@@ -23,6 +23,8 @@ def test_scale_pilot_selects_only_healthy_reserved_nodes() -> None:
     assert "comm -23" in JOB
     assert "torch.cuda.is_available()" in JOB
     assert "/sys/class/infiniband" in JOB
+    assert "GPUS_PER_NODE=${GPUS_PER_NODE:-1}" in JOB
+    assert '--gpus-per-node="$GPUS_PER_NODE"' in JOB
 
 
 def test_scale_pilot_uses_multinode_ddp_and_historical_admitted_shards() -> None:
@@ -31,6 +33,6 @@ def test_scale_pilot_uses_multinode_ddp_and_historical_admitted_shards() -> None
     assert "dclm_baseline_25b" not in JOB
     assert "fineweb_edu_score4_core_10b_r2" not in JOB
     assert "--nnodes=\"$NODES\"" in JOB
-    assert "--nproc_per_node=1" in JOB
+    assert '--nproc_per_node="$GPUS_PER_NODE"' in JOB
     assert "--steps \"$STEPS\"" in JOB
     assert "--compile" in JOB

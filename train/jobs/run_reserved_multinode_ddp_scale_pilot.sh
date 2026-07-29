@@ -11,6 +11,7 @@ SOURCE_COMMIT=${SOURCE_COMMIT:?set the exact private source commit}
 OUTDIR=${OUTDIR:?set a fresh isolated pilot output directory}
 NODELIST=${NODELIST:?set the healthy reserved nodes, comma separated}
 NODES=${NODES:?set the exact healthy reserved node count}
+GPUS_PER_NODE=${GPUS_PER_NODE:-1}
 STEPS=${STEPS:-80}
 BATCH_SIZE=${BATCH_SIZE:-16}
 GRAD_ACCUM=${GRAD_ACCUM:-8}
@@ -19,7 +20,7 @@ WARMUP=${WARMUP:-2000}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 SHARD_ROOT=${SHARD_ROOT:-/lustre/fs1/home/sa305415/shohin/artifacts/shards}
 
-case "$ALLOCATION_JOB_ID:$NODES:$STEPS:$BATCH_SIZE:$GRAD_ACCUM:$LR_TOTAL_STEPS:$WARMUP" in
+case "$ALLOCATION_JOB_ID:$NODES:$GPUS_PER_NODE:$STEPS:$BATCH_SIZE:$GRAD_ACCUM:$LR_TOTAL_STEPS:$WARMUP" in
   *[!0-9:]* | *::* | :* | *:) echo "integer launch settings differ" >&2; exit 2 ;;
 esac
 if [[ ! "$SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ ]]; then
@@ -82,17 +83,18 @@ done
 
 master_addr=$(tr ',' '\n' <<< "$NODELIST" | head -n 1)
 master_port=$((20000 + ALLOCATION_JOB_ID % 20000))
+world_size=$((NODES * GPUS_PER_NODE))
 mkdir -m 700 "$OUTDIR"
 
-export CODE_ROOT OUTDIR NODES NODELIST STEPS BATCH_SIZE GRAD_ACCUM
+export CODE_ROOT OUTDIR NODES NODELIST GPUS_PER_NODE STEPS BATCH_SIZE GRAD_ACCUM
 export LR_TOTAL_STEPS WARMUP PYTHON_ROOT SHARD_ROOT master_addr master_port
 export OMP_NUM_THREADS=4
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 printf \
-  'scale_pilot job=%s nodes=%s nodelist=%s bs=%s accum=%s commit=%s\n' \
-  "$ALLOCATION_JOB_ID" "$NODES" "$NODELIST" "$BATCH_SIZE" "$GRAD_ACCUM" \
-  "$SOURCE_COMMIT"
+  'scale_pilot job=%s nodes=%s gpus_per_node=%s world=%s nodelist=%s bs=%s accum=%s commit=%s\n' \
+  "$ALLOCATION_JOB_ID" "$NODES" "$GPUS_PER_NODE" "$world_size" "$NODELIST" \
+  "$BATCH_SIZE" "$GRAD_ACCUM" "$SOURCE_COMMIT"
 
 srun \
   --jobid="$ALLOCATION_JOB_ID" \
@@ -102,16 +104,16 @@ srun \
   --ntasks="$NODES" \
   --ntasks-per-node=1 \
   --cpus-per-task=4 \
-  --gpus-per-node=1 \
+  --gpus-per-node="$GPUS_PER_NODE" \
   --kill-on-bad-exit=1 \
   bash -lc '
     set -euo pipefail
-    test "$(nvidia-smi -L | wc -l)" -ge 1
+    test "$(nvidia-smi -L | wc -l)" -ge "$GPUS_PER_NODE"
     test -n "$(ls -A /sys/class/infiniband 2>/dev/null)"
     "$PYTHON_ROOT/bin/python" -c "import torch; assert torch.cuda.is_available()"
     "$PYTHON_ROOT/bin/torchrun" \
       --nnodes="$NODES" \
-      --nproc_per_node=1 \
+      --nproc_per_node="$GPUS_PER_NODE" \
       --node_rank="$SLURM_NODEID" \
       --rdzv_backend=c10d \
       --rdzv_endpoint="$master_addr:$master_port" \
