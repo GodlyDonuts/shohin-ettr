@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 07:04 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 07:07 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17153,8 +17153,11 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   contract. A source-specific review job additionally hashes every imported
   local module, writes document text only below the private scratch tree, and
   emits only a text-free receipt elsewhere. The expanded focused suite passes
-  **82/82**; this fix will be staged in a new immutable review runtime and
-  dependency-held behind `754517`.
+  **82/82**. Commit `39d5ab0f8dbb6c29e376c90bdbd215357b524dcc`
+  is pushed privately and staged at read-only Stokes root
+  `scratchpad/shohin_essential_review_39d5ab0`; all five runtime file hashes
+  match local. Review job `754518` is dependency-held `afterok:754517` with
+  invalid-dependency killing enabled.
 
   Concurrent sealed-shard ledgers at launch were 20 approximately
   100M-token FineWeb-Edu shards, 59 peS2o shards, and two FinePDF shards.
