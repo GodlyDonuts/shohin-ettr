@@ -1,0 +1,1970 @@
+{
+  "admission_status": "preliminary_not_training_admission",
+  "authority_counts": {
+    "model_preliminary": 100
+  },
+  "config": "olmocr_science_pdfs_direct_shard",
+  "contains_document_text": false,
+  "dataset": "allenai/dolma3_dolmino_mix-100B-1025",
+  "decision_counts": {
+    "accept_core": 26,
+    "accept_residual": 57,
+    "reject": 17
+  },
+  "labels_sha256": "5b7c293832614ec32409b13476c8dffc5ace073794e7a5870455be1a4e0c2593",
+  "mean_scores": {
+    "clarity": 3.66,
+    "completeness": 2.92,
+    "correctness": 3.09,
+    "educational_value": 2.92,
+    "originality": 2.92,
+    "real_user_utility": 2.92
+  },
+  "reason_counts": {
+    "clear_extraction": 26,
+    "empty_document": 10,
+    "exact_duplicate_cluster": 10,
+    "primary_or_scholarly_research": 26,
+    "questionable_publication_or_venue": 7,
+    "removed_tombstone": 10,
+    "requires_license_verification": 57,
+    "requires_source_specific_filtering": 57,
+    "requires_stricter_source_filter": 7,
+    "substantive_domain_content": 26,
+    "substantive_residual_content": 57,
+    "verifiable_citations": 26,
+    "weak_technical_exposition": 7
+  },
+  "required_rows": 100,
+  "review_packet_sha256": "03c2b5c60de38edbca8566da1e4ff19d59041b198738691da1e5f39dddeeeb8a",
+  "rows": [
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "1e896e6a2813b0f0dd930b339f4476514edbd33a3bfa6dd702c0656126bbdee9",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "01c2cb555ccda53b8380fdb329b51ebc269662b273c94e96bb54a21803170811"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "72de23cdc1c25383895e6c88c5528b062db8e72faec7be190577ebeb049a7d9b",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "023337df31936cb2cb2e35315360f86cd03047e1e8e5d93ef4fca3a4dddefbfb"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "1c83122b4239532d320c27b8f588d454221e4fbaa96b42d402637e2f50688e5b",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "0577ffccab1bd6882bb46e7a756a69544787759855735ad93a4008d322fd4967"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "30edca591d882fbe32bb7e92143488800daf542a2832fa4915d9602567d89cc9",
+      "reason_codes": [
+        "empty_document",
+        "exact_duplicate_cluster",
+        "removed_tombstone"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "07c75586820321f52861124daa89349f031ca2896557b48760e982dca0cd09c5"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "f1c1fa1b9b9a5b5ff83651326e242345bb1d268e8478d3a7ff467312a64e4982",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "0841abe49289c40d709bb37dacbac980fa879d8a49b473ee7ac325d3add95b0f"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "b91b1053b3313358757eef4f2205b4cfd5debd985189813e82ceaddc33c3a508",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "086016c5684d431e2faa045e62c59b0925099fac66f1b4fbd7f71fcb213d3a29"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "acdfbc6146bdf0b8a200433112d31591b1f8e1cc1f976f6e732a4b07e2441996",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "09ccea6888504659504f69d88c7c18b3857959694452402e5b7aa08c8938abff"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "cf207dd434ac4d7ed54b02b060eadb1abfda4d4f06fe0fafa30031dbf4c6f5c2",
+      "reason_codes": [
+        "questionable_publication_or_venue",
+        "requires_stricter_source_filter",
+        "weak_technical_exposition"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "0b97244e34ace8097db33944a7985326333b7a2a6213a7de50f36a404d5f8aac"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "a0298b9c31a5374ec86e1081f2f9d80bb2a4499c7d9ac3a15a92845a682955a3",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "0e124d66b48f692a2128257f4f807e7c3b1b18df15d61f9f7719f17b1e9ded64"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "6be9b5490b0817916848dfeed0bf2b19ec5af05081dd358949a2e4abe3902ae0",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "0e885012c259b66ec468fd5441178776263f1a7dec08e8015bb904294d307bed"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "71a99a7cc3bca6923dae12352fdfdd9edba10f007f35f91b55bf2594f599af38",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "10598995574a814438eeab7ddfc20afea9eeda8c3a326b05fc1009f3df62eee4"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "30edca591d882fbe32bb7e92143488800daf542a2832fa4915d9602567d89cc9",
+      "reason_codes": [
+        "empty_document",
+        "exact_duplicate_cluster",
+        "removed_tombstone"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "15755c500254595778354499b7ad7a12ca56495d0fd20c0aaea860aba6b608ff"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "794d91299ec7a0b68ba95efe679dbe1119ab0aa33f3df9b37b23636535b8b8a4",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "160e20a3c7fef097c35d9fb121448a287773ea1a363282053088010c4122b3b6"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "4a2499ec84bfc68e527b8da1e24386de10559f57ef2c0e3e1738380ce69e9437",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "178f5e8e0f24e84bbc425942a77d9fa881a5411590b811244d3c84eb08333ee4"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "84c29080864143d053c7a6b964d73fc4cd7ba37285c19d1800cffa3c3e890b81",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "17ca3fcb3953e9ac171c5f62eba1742827b5c657c7c8cd3c148b9d0a72100a2d"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "ac00e2e30891d0c7235fd436e8260ba7d5828e2b800ba522dced02489b832dad",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "1cd351f98d5596869e52f516c7fbb36867a779815a9da8ef9f4ec6c7e15f9de7"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "7c1a34dacdea33dad2a8ee11824f8a2c98ac5607931621c2382537a7e5b7e42d",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "1fa3118f54ebe6b38c705a04778608ccc8294b3ca1406fb86a42af7ce87fe074"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "8b9b2b489aac4619b04770df86e44620a67d15cd17cfc2d18e296cf119a005c9",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "223f025a4107d1d373c691ce107935121393882f43fe2c1323778a58865f0883"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "195aeca9fe3dfe2fc854d3b5b60b59774b81b08e5873582ecf3a889ed4cf43f7",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "24540bd1aed219497d2e11c4c5ce62dc44e88d951501eedd4722ada291a604b8"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "759155a6260f9ee3fc3becc361334a854ceef687517d69af06980daa1382f747",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "25217317ca257fba3fb83ac35df04a26ef7b02ed557c71bbca5055858e5c26cb"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "6978bc1cde1b130f9130ccd02cd610b969e6803c11fbbb0fa7e99078ade4dab1",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "29415770179c09857740ab359d4a1a03659eccb0285cbcaa0146fd3512b18153"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "5cad8feedebf59b76a1d4e0e623437919daaaf467b4ef93692e80c355bbf5468",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "2f576efecc0f3341b348276b1db90903340629487ef48437f4ae731f6f4e8bdd"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "ec8eeae748272c78c035a19282efe70310a3d10e3be43a8b7fab7740e60e453e",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "3228c50e9d1b840963c606ea4ec0ea35dec2739461f5d1f09cab8ebcfa508930"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "78adfcdc4149e49eec2a57a23a5d929bad4e5161a66098c66277dc427978c694",
+      "reason_codes": [
+        "questionable_publication_or_venue",
+        "requires_stricter_source_filter",
+        "weak_technical_exposition"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "323ef55a92748bfc21036861bb531f9be445ba4653eca69497fafe8f34efb85c"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "7a4bafe138981e904d9efa69236e41dd54a0beab55ad00cedc71f5ad82ccd6a6",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "388342fa66b85d14c831e39247c86d9488887f4f9d295ec2a2d65316e3a69a05"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "8dbbb82eed587446dd822dcaffa66c51ae707e31c053c68a591c2dd954e6e70e",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "404899fbe05b6c4a8a6746999bbcbd5cdd941a7ec75737ad3066668efeb0a197"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "1bb90304ff7f468e97c4405738761f1649b83613b41ac510231c637d82d7f0ab",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "434c4dad7664c0bdb9ef2ca5693f7fab9327f9c2bf0aff985b72457aaefc2365"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "ed52a44635db6581843e479e41c2acf4f6f34fe82a302944b920a7660cc6305d",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "43ed2e7eea40e10833db3dcdeb736115dd2cac8848ca83f4b869a575a8c1f42a"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "62916d11933d37c2ba864c13e2f147ccde573b5f57671c1f192459722c630446",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "4a1f6e9b0a15b64386d31bfe99a5a839b3d9b7e8153f7a412a7144463fa6164c"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "8be595c14c1c73bab3048b4a55c2b539a0c6ab54b067f3d74376be572c6d58e2",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "4c2300f742a642462f5ae6715bc82347c2698e25f0981e3b68595d03b1fed093"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "69ea60461b3fbfa9ea12b5b0b4c378dd1a2b1f4d1712ecc26ceaa9851ebdc631",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "4c4b8f54fe9ff4ca3b97c635c95491948a994dd173a3ca9ea3f2120fb4dd998e"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "579e2bd4d595d1b1377d02a2849a2f722c8ef364810ce29abc6a272d65a41fe5",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "4e1af5c2f5ff0bf50b122387d4d1cd16dff3b4d514a5427126799b678a857a77"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "d11774fc7f0f420cd82098a7332912296d8f06b7c664f6b4e326d26fe7df9282",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "52c17b15f04385a450a17e9288c9a8a19e2d8fde5d6bb5849faf770895bea4ac"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "fac3029d80f34ad5867639c5883e8e69b4181e367586c1c6821792c021e504e2",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "593463903a426bf038bc1d1ee661aafa1c383336dd5a9da6241e2412d5f8a9e1"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "09ace07297944c887c8dc3db500aeb76e881c0f3da485388ddf1fad16a8f4d37",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "5999dafa9e5cccd86b0dbe07808bbf2d7735415cd2bda871e5b54802f1eb228e"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "e3bb4930e329c2c1d4ef7e86848843cc592de6b4ba7da14b3c6ac8164689ac63",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "61ada9e12ade50054e80c936ee197cdc912b599d7f7bd1317c2a6bca7ec4d4f6"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "4a3d3d84ff55a51c5266b8e77b8bf453a7afb544f568a4f97f7ed2c5d00e2910",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "63dc8fe2de28949fdac303b68c97ee438b63eb6ae991764cba0b9ade9a9297d4"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "8d797f863e3b9f3ad604ba52fbc368ca25b1982737a4b809b7686a45c280dcca",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "66a1bcfb8628f01fa4211814548892b63748cca302e7f68c053514f19c6a0fdb"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "30edca591d882fbe32bb7e92143488800daf542a2832fa4915d9602567d89cc9",
+      "reason_codes": [
+        "empty_document",
+        "exact_duplicate_cluster",
+        "removed_tombstone"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "6892b1b13c92f78db057feeda0f5330b307082b329e0ca3e5a927eebb79d5473"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "c7f403514251d2d80510e9040271bb1b4292c3afcd815e1038baa04e17b8e392",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "6908898920fb0fbc317ab22e625c1a4757c7f717491e0ba5dd7cfac4caa5a00d"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "8af6c20e7c309696f1ebe1953dbf061c69fe7186d7fa3dce534c7fd14d4654f3",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "6a2348964533530d8c6dc431a0588b0153d104ff2fef18e1d2b2b4e057fd5cec"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "d473fa07912ef1efb05c2dd7206e4a28397e1e79bf1012bbcffa37a5f23c9391",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "6ebde3707ba970c85049e5b34a81eb39cdfa70f3c443b9ab3fa5dc8eea44f3b8"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "c00032e91f559660def6829c46ebab3b687290cd033781a44f0f1de860908170",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "705558d13ea15abf889ea5f953b1ff396fe4f751a3973ce74e5d4e454d3adb0d"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "3980ec69e7566f498b45ec22013b0e18ecd2b40cd191ce308f9a9441b93898b5",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "707e05b8de8949637472a2c3f767d741b22f091b1dab7eb840e21316f09a2c1a"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "593135697ab347720e5cd409a6ed745fc129f7cb425e67b99463dc4b2d3f4904",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "70a119ab71fdabca61eca6f0e2233637aa44449436eceae753fb12f16ab829e4"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "30edca591d882fbe32bb7e92143488800daf542a2832fa4915d9602567d89cc9",
+      "reason_codes": [
+        "empty_document",
+        "exact_duplicate_cluster",
+        "removed_tombstone"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "74f63a31a76e78c9cf46046b29618ba061bd131e93f143c5e0b68c312bedfb8e"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "730946ed4d71d68fad1d786b76e6bd482dc1bb47819feaa33e9d8b1754ed3739",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "75f43365d07eed65545af7edca900ab33a05265f800316c9ec97813795492fb1"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "b4558c0d4b5895ba198784df2a2393f2c72046ae2227910ce7e2a2e94b208332",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "781b80d36696abfe41d20f5bcac3df62a212516c3db86e1ccce8f12ea643275d"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "d9a8202fcbeeddbe06f59f239ab0781039c9238ef7c72e91520a4304e8c55a54",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "7b6760665129d2b89d0b999e57e064abcde064b6d229dbaaa1b2de356598caf0"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "30edca591d882fbe32bb7e92143488800daf542a2832fa4915d9602567d89cc9",
+      "reason_codes": [
+        "empty_document",
+        "exact_duplicate_cluster",
+        "removed_tombstone"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "812ae0bf229adb7674504eb0c6c56d99cafdb05e0408deab371066335b343434"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "9be8cfb912a86e2c89a2f36d9be29f29a255cb29e5f3a81252eed9279bed6e05",
+      "reason_codes": [
+        "questionable_publication_or_venue",
+        "requires_stricter_source_filter",
+        "weak_technical_exposition"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "836a102341544cbda1d8932dbb1103030288de597a33984951acd759ed371355"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "32e56f53d0751a90a696d98a2cce7e207ace00ffe1e513ddfdf91b0a91fe364e",
+      "reason_codes": [
+        "questionable_publication_or_venue",
+        "requires_stricter_source_filter",
+        "weak_technical_exposition"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "85feea744a63251b121a4126a03248a1ba3100f53cc795dde5abfe25e0d110ab"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "2727e82ccbea14ae415f5a5af4b4d94ab542a8c9753fe93ec14566ace6a3ef90",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "8d7e2525d50954fe7fac60253250c0077c3dd634a50823bf2bc67b648c7aa835"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "d7b71664259a8d44af3b60234295c289903cb0f3eb3dc1d431db34d58c2c0680",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "8fadc9a0b4d2efd11823cbf0fbb73c8026eb5e4d707995807ca6e2d633f1ec4c"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "b959b0bc7bf1ffa53aab81affe7730c09828a079cab12200cbe143a90b8bcc2e",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "920b74366685336bd291e497c943c8945b16932a0a72e3f1647f95f0e4a42e5c"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "047b3c161d322edb65e7029e4e72696fe7e6d742e4e71622204dd35bebb8f805",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "977bf45b39470e9c21affa36e6a3b3305de1056b77352528dc7d5a3f4e21d02c"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "f0bb37a8eabdec55fbb68000a841c170d69eb40a2527ec39859a6167d7dedbf6",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "9d8f027f9d3bdfa6a6027a0990534be675c756348cfb34ab845486b9455def9c"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "e82a2d769b19d0f843969f83885b0f71dffc7c05180410408a903c60858a2f20",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "9fc7b26ae56a9ccfbccdaeb065117bc1a47653a2eb43d284fa28370a022b8376"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "797fc83d8ff5b2ac766e3567211ae1e277225e4b699dae000f7e6aba85eaf45a",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "a099cc7465c23e9aaa05bb9a266dbdcfd147c357c5c96710783230a8efc88948"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "f9a09f00a45ecdd4c7f9547ce6485274c70798054ae5a1c961d06fe8161f0647",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "a581333fc6c8d1bcf8171f0aba03d4dbf0f1ce2b5eb5901cb25d150af25fa420"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "ca57bb48e240c3766609d5159701ac38e149a19494942308ed39aa76a9bff9aa",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "a58d5b5ba929981f8fe2047d13b9f578ea506fbf0c6266c3c402218f0fdc060b"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "a423651e9a68ee247161cbaa9e7cd0bc30251e17b1f56990b1d294e47063235a",
+      "reason_codes": [
+        "questionable_publication_or_venue",
+        "requires_stricter_source_filter",
+        "weak_technical_exposition"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "a6fc5e908032d79371fc7bbb23de815e098892e7bb5e4c0afdc76aa7e8e404d7"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "c2003d1a1bc283669d880cf2c8a9ad49501a806c9294177f5c57e1cbdedf9c4f",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "a83da5e7b7e0b8b893368c61c97506697ffae809a581976d0ed9bbe286246043"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "b7da29268f871c45807e4abd415bbd7f330c861f2bf9fa14f815d270b2e79fb6",
+      "reason_codes": [
+        "questionable_publication_or_venue",
+        "requires_stricter_source_filter",
+        "weak_technical_exposition"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "a9e01f92b58366766208b1234e176ba3464e9035eec052e05716138cc6951e7d"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "cacc2eddbf266e9592b5bd3cdad527b02baaf549254a7a36c5611b9f61e2d7bf",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "ab7dd1db1355f94f13eb7fd248a2a6226720ea9114cd1ac22d98d3473111ebf9"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "27faf5bb5cbb21db17e1e840eb2fa06dfe91a740187c53a5fba4eb2873696334",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "ac23782b0f78e71ffdc0d4f6a9d01b335ad6324df9061985cd24b66e0cfd9895"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "e4b99d63404ff8c748bfb084e5104d733eb958296eda4ff2af65ea5d73406852",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "ae12b9dc574217630f10837021d9442437a046b09806b36591be6cc55a25fdf6"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "27bbb1d2886a0306fb2386b344007717ab23b638249ea0609f08e23c3015de27",
+      "reason_codes": [
+        "questionable_publication_or_venue",
+        "requires_stricter_source_filter",
+        "weak_technical_exposition"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "ae3930e4d4b3edc8bbd49ef61766ca7b003956fa90af621abba9d4eb0196ffcf"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "820e7810813ebb45dcdd11f77669059d6547b00a1e49ddad00a289007bbfd62c",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "b261cd758aa2fdc5e221f1593a1fbd9e9d1b835e9b0e75a53f5c97b1ea7e866e"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "30edca591d882fbe32bb7e92143488800daf542a2832fa4915d9602567d89cc9",
+      "reason_codes": [
+        "empty_document",
+        "exact_duplicate_cluster",
+        "removed_tombstone"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "b4bd6da5d0456dabb9a7ffa53080cc552d12d4b29c21df53e1d7cb43318485cd"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "30edca591d882fbe32bb7e92143488800daf542a2832fa4915d9602567d89cc9",
+      "reason_codes": [
+        "empty_document",
+        "exact_duplicate_cluster",
+        "removed_tombstone"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "b4f12b72454d69410b39783ba094af5e1be7cdb2390c70aeb9cd62827eb8c612"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "1b71788a6fa5fe35ff456674ae4ddf07484c5d022022392bad52be104381b8c8",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "b8aeaa90f912e73bd2abd121b91ce345fbfcfbbecd4562a9f26880211df9350a"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "5e42b1942268bd138ad6454cf8b364a703fb8ae60d83297e95f8326957b9a438",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "b8dee8fb11ea4c083f789a31083970b9169de12cade698d2d12ffaff16daff69"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "af62e27c758af3cb9a29490fad27498cd78eb5ef5c1b83136537c2f030ced42d",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "b933bd8dea45ce86e48db3cf7d3a70e864d4525eb09c2cfb70c99f3713e995c2"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "777708295f15ae599575ff50cdc5d6abcb725d171e9caea8ee8d718e4e4245eb",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "bb428c347b74d1eb7de706819f21c073488e2fca015ea5c6b658bbc62ed19113"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "0d11c72453484976f8cd2254e814d50eb10f00653d6dd43428d0de9ba205f721",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "bc156184a5d73185173f717f95998590296fcaa0d416e305dbe813bed0ef523e"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "b6f947fdea68e5e95391957da43d19ac77ec011354519dfd7e916f3f724bd6f8",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "beeeb428265fbdb6a40d5a89b3ea1ef4d0b740a2bb726494eb9d33b6e84d4a96"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "f4f0f70523c29cf95b8357a02f182a1631de261a3e19a24cdb66c99f1056719f",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "c265e20ad474c210381979b427a26d33a0c53e776b76506d82dc0b17f8519dbe"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "3ec610bb414b87b9f37d2c24f82c8b25c1d583b6393892ccf5602c39bb03bc43",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "c2feabd6808e93b7b85963a11583d79e63bf2ef2161157b12f7342ac62da2835"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "ad2017516bb9221fd46b87b148626b4a2a4117573613048125826daf4b0a7039",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "c88db9d2821641048d80204c97f9ff7579f9a931be83c3ecf0494255c4073674"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "a6dbe6c35a9c9ce80dc44e9564c6afc48324ab795688d3ab568e26459452a218",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "ceb0cfa65aa5cb7e27ff1a7b0edf986bdb745ec5869a24898f3a44c255d25a73"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "b0b4396b4c7352d8010adc62250283b4e0363a64bd3fe9d7e8b560518516b785",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "d03763766da4485f1adc557fb915b461e7d603ad55a78dff9493c08ca3989f95"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "a8364a2adbbdadcf323a891ca7d1befc7c83a27b09b703f65e6887051e5be4d3",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "d10ef257e43e1855c0e0c34edf033f58b8c34c5297c0ddfe8d56c62c56cc53a1"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "f28f74f30b8c3858ceb6b6ca36693ec255a945fcacd61ee8e3760a6e88fb7a5d",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "d3d13f5d196bd47de5cdd01c9d8e73c25a94e1e0b3f470a6f9886dfb634bc729"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "4a93a18473d7dc08be8b74101624385f5bc65c04748eb667cbb0091d256c074b",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "d58ad4cba6a7a1270984707c6832c0f2e04c10be4641305b2579b93a9acfdbc0"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "3d8e27a9e57234b8b850278e767f3f883687f247dc4c8a230d3b52cbaf5541ae",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "db05b8970a68674e72a3387b2de9a0ae022c5558531f07896e0af0d257ee3b59"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "9fa47be9e3cb1def49c76d86bfd4e11448408e8335edfcdbcfd7dc2ff6d5a3f3",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "dde92bb8f9579505b042896a55ca0a9ec4b718220ae6db779752662fec7bf8dd"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "80e159b4b5ebd1cc0c14fb3f02a3fe0ceec9b71a57334d2975b0eb94cb62ddb0",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "e5f6100332823dc75f59bb2522017e4f4f961f97080fdc1bc232dcbcf411883a"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "470b4c4a11fd968ebb729eba0cc866f55149f0bbe928e82f2442c20299b814de",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "e6acf7b5587bd319caa2bf2ecd3abcca79fdda877fddf6043d694c5b11f24c67"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "d82b1562531990b9726b1b6d40de90e71b3f052fec919953b40a39a343087f17",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "eb1d7ff2d257efd709639dd8213eaa808ba4b224e7fcecc0ca6d8ba3f536610a"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "1c730d50f3eae816b65db6f9743ad526014bf856fbd07f5c16fe54698202756a",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "ec2536ec52d5fb6bde744d54484929e402df5714be7992202e7cb2c2cb2dd3e2"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "30edca591d882fbe32bb7e92143488800daf542a2832fa4915d9602567d89cc9",
+      "reason_codes": [
+        "empty_document",
+        "exact_duplicate_cluster",
+        "removed_tombstone"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "ecadac6cfdb47ff1f678a7e0731c8658522d1ccf4383043a24d36fc63d805c41"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "cb69566465151e44c1255b6d0bb18efc0269b9b8e3d2b46c0a34cf9353b3f25e",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "f0614a0e155e7cac57cef1e6b4aaf0253e8a6dc7063958dc235c5de55a7ee2fd"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "492c864e9f671b6dc71fb38aa566c9ef55adc6652b9d63a33ff06c48fd4f9e95",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "f1b8307704176d2147ca9a509732d4156abe9038853c33eba4019a5915477ac4"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "b3badb2e328e303b44941db832fbe34ece433e758a3b817a2d34b99c1fa8116e",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "f2ede09d565a5c85458a2744156d34d0476a7cb1a9c9adab8e6e3aaff0859da9"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "7fd3a6b19705d904a127318d56404028825c5555981233724fa0abf9f330cfe0",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "f6ab58975f0b26116a4eb65479e4492e6a757d79b7e4e12d2be3b20749e868af"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "30edca591d882fbe32bb7e92143488800daf542a2832fa4915d9602567d89cc9",
+      "reason_codes": [
+        "empty_document",
+        "exact_duplicate_cluster",
+        "removed_tombstone"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "f70c6c1d608974d83f3ba80573af4ffa9b75526c882d958a11cef9aab6d189cc"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "2427f18439a18c2699085950821c69e8625dd5283f88d05c31b5ebac77a24d55",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "f830ff8e10a4e1de4c1181520397cf8b25522227f5ef91f58363b5cd38ddfe9e"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "748bc799cfda9484c9ce696f10d923daa4387546e0b7191ed237a88a24ff4f3a",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "fb2bccd5294db61340b70a1dde32c3e875f7f8511d831d3ab5a4aa3d43c74e1c"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "30edca591d882fbe32bb7e92143488800daf542a2832fa4915d9602567d89cc9",
+      "reason_codes": [
+        "empty_document",
+        "exact_duplicate_cluster",
+        "removed_tombstone"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "fb70f0ff2b2b5cb5b721389d9d9c841f8966e68852bba533592b1b93da185498"
+    }
+  ],
+  "schema": "shohin-general-source-adjudication-v1",
+  "training_admission_eligible": false
+}

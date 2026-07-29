@@ -1,0 +1,1942 @@
+{
+  "admission_status": "preliminary_not_training_admission",
+  "authority_counts": {
+    "model_preliminary": 100
+  },
+  "config": "stack_edu_fim_python_vigintile19_direct_shard",
+  "contains_document_text": false,
+  "dataset": "allenai/dolma3_dolmino_mix-100B-1025",
+  "decision_counts": {
+    "accept_core": 1,
+    "accept_residual": 7,
+    "reject": 92
+  },
+  "labels_sha256": "68567a3f14f8e06c9836f090713e3efead50b6318a5ce7e0ee8d467d484ee2a0",
+  "mean_scores": {
+    "clarity": 2.16,
+    "completeness": 1.17,
+    "correctness": 2.09,
+    "educational_value": 1.17,
+    "originality": 1.17,
+    "real_user_utility": 1.17
+  },
+  "reason_counts": {
+    "clear_extraction": 1,
+    "no_detected_license": 92,
+    "not_redistribution_eligible": 92,
+    "primary_or_scholarly_research": 1,
+    "random_repository_feed_rejected": 92,
+    "requires_license_verification": 7,
+    "requires_source_specific_filtering": 7,
+    "substantive_domain_content": 1,
+    "substantive_residual_content": 7,
+    "verifiable_citations": 1
+  },
+  "required_rows": 100,
+  "review_packet_sha256": "eaf532af1e6a5e67ac79ce3a7ea617e20ff2a800c05496e6320543350a13f55c",
+  "rows": [
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "d8dd881761f029377797cc543051e99e101f5be1108f65f88681431b02d9b2df",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "0127b02b7aed294fe036520af4fb9398d83410ee92257baa707c7e91f07d7f85"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "2305f08de7289d72263d0676f14f1c9673d8843330388bb39cf018e0bfe59e95",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "08ab06ee106a296e5490d4f2cb0d619d63b861b8fd268b892f5a748e0d166694"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "c9ba0d56ba72d680d5a54a919dbaa1ac68cb2de626fca7211f00667491e14b51",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "0a47f0a528971f1e0cc69743e8cd78c6072ee3b06aea9805e01c6c324f963fab"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "d54367e647e846343e476c0655d4f568e4646db98316322fc9607d93d287bc00",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "0a70988bdef606186a8dca6f16a21775aeb9f254fc0a3a62c4194042351da759"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "0b392883c61abfd352c425bc35c0c271b62fe92680c29db463fb980b4ad9ed6d",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "0ab155268d9c81fa6bab26af2463aee120c9c9770c37ab76088d4627a287b088"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "7fbac39cbadb7b994b63495c29ca155635e91c896fb3d6ed40a951475f5eb491",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "0e5a9db85b5c52bb119a121e5b5b73c18367353f701fe0faa1d055f803f0c808"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "a16eb3ec47e3af0b6878c89a3d01222d80ef454f8777f647580bc550397bff9f",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "133fe007ccd9b9c46330794d4e0ddc4ee5f5ee0e40820bc655eaff9464cdba68"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "1886a0d22289b5dc19652b3f50887770abf8d82e9cc343479032319cc5dc9c3a",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "14a73c4b8850b69d47d6c533ebe9d3fe439e67ef1e93f3981c42c64a6bac06d2"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "fb890c564363a0e3f68bdfa0bd48cde3560d073681c6237d7dc932dea364c2da",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "14cb7d6ecf03d505dc283c9629e8a335f896747c44b6c23f9dffa87c032ed0e6"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "500840cae8f6b56bb0c274d788db66f820a420a6469a02f2079b953e5ebcc470",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "1604d61d8aea4cbd423e4c30a1fd57c7bcc909507158b4957034b9dde7b7c864"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "35e937ab144c9acf0dcffa1c028866e1940158254cba68d2df481b8adc81ac20",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "17fb9ec8834fc78afefc6208c22afaae9914dfb5a0acca379b8dc30ddeade1cc"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "8e24d0ba9eae886d555bfaf97238d8a6e389c0d52d19fc3c45faa235c9536a7e",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "1ff7905ccaed313581aa31a8021d55f33390a4a6414fdba7503c96650c04a395"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "770119cb20efed2a5932a6c96fcee1c493a6f6105462fe8e468e7c68c7277197",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "207acceb823b838164263c53bd2eb85b9f74bda2c9d462cec1184a42365a7ecc"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "ba0ea9cc7dde4b5ba983b33c370cc76d2dddce646646e2a90be9fccba8fb523c",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "2222ae3a90840cc436d1d9bfa73479b562981515646d9e0cd31eb7432e1bd0c6"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "046498377c5e7fc60302d53c39b58506b85bf9086fac76ea96bef5b2d38746ab",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "287b980b12fa02cff37236d25f2979ff575e0eb00d5860dc4db7747570fe6e70"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "6dc2136bc1b2e6f368b2db94237bc2a173c26a4aef22a9c82b9ad2c68d788bc6",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "29075e4b3a769b32381f1d0b09d15aa5ebaf97d85faae36406fedbac4c27ff39"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "7ca5a0b363f4ff0e860074df33f649d59d2a3290655f5f8ee794afa42c082899",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "2b62075cf7cd4fb9685a0747d7dad531de3a2179ce4b74b01f9c403d04db7ca9"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "f2d038142dfb1ebb3b685289892ff1d465c74f8447767df9660af7c510a92ec1",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "2b78de74bc1aea1bf08cc876758f45c05370a247e76e90af1004845c1fa69954"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "b648d5bad5bdb35ca9acd56c40b3637291ab4e0915dab2b5e1a7e359c43b2651",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "2be7d30b5500b3dc06e06ddd34251fb21ec519c488c580d3a76cdee689265779"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "41c5460b78c7f635d8e92ac64085ae48f80875991a1941a4730aabe2ecd55f72",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "309f1caeb1281d216d6622d34ee07a6893d5697b985b6b7fb0cdda02c65c767f"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "008949dfae685a5712629dba38ccf6b09cc27f3d9addf017c6bbfff7dbb5fb79",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "33bbe78b813cca6634e3d93be8baa24d4050ce2245442b603d2249f328c7dcee"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "68f303368c6e4ebd9b30943fc059689fa9a4df19c956784c6a98af3aa8b5f105",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "33bf92a7f0cc797e8b46bfacac2cf6d3b4471eebc99ac95baa5e8d1c3fca319f"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "ff9b4d6e96d8ec4d2bd1db821aa491e7c3be33bc75336d2c5a7b76e9e7c4eb73",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "36abafd46bce3ea3c18e7cb6c41119c084cbab9b9c38b9e97c96dc6d0f234c73"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "be7b912946f17093c92c6242407f3b23f7df3a4886e6a77898acee11ca36e049",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "3e7a5e216d198e35ee8bbffb8caf128322b1149c7b6a4291e6a98cbc993ae413"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "8d7964ac9820dd9450cbfa73e5c08ddce3ea6b8866a83f4bb1be7762524ede5b",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "3ef5f87541fafa353e74093105aac6e1371328902098b3b3009e05f70f1c8a41"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "0029e0fa6b6d9353eb12f5211c81f7980922e299262aab321a22e108262f15fa",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "40a06cba723c110611865438fe2757b122784faa8430c221947393ec78f20818"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "1806fc2a497544e5eefbf06ff0627f07aab8b3ea83c095310b8d92258aef9b96",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "427d7e678506cdbf2353db6a76f295956742bbff805d07e9f29fae679edc0376"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "f37d63e3a911b71b5ca58c84ac9ae1a705288cf2b73ebdef3bf4d75e7a38e97f",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "447848fba712df256674f07f8b9402daa1d4e4fcc18acf5ac571ba8a8b135bd1"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "2655b0cd12dd6da347ceb89c80f19e85f53b48f8710c70351c02c0ba458d7b21",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "47d7cfd7c0ea72d8df0af37781a6f7814dbf6f68b2072bd7cc5c87371e294034"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "c6452fc4116fc1a2caf01a80201a0e6182b9d4b11cc8e32be226c68efcf443e8",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "4aac0ca98059d1e66e2bfea2440f3f43bf58ed465d10273c8ea148b676ad689e"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "21d77999fcef306dd1bff9ed1680496819723a8a9c7701914d54c3e8a77df2b1",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "4c754de0d5d950e278d012726ece2c87f4788fc016b3fb8e0c7d14bab8d4c7a5"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "dae1f1eda97263d21171d2e2d1d721d90560690f33ff0aeed02d7ae26404ae90",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "4cbb15d4200903869c6bfb671bb12985885c03cfb15777443b6d2e7a4511a0b8"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "f44320df2955735ee9ae13563f38b96caf2343a73e26b304888958e4add2ea4e",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "50c47921c3a733a726e61a8c1fb60fa484fe41fdeae478fd47ee571e2857f449"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "dae2fafa0ef95058e2e402cf59d2fa8bd8488543f764b984acfc6ff52ee5755d",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "5489f6bf94631ccbfb579332edee9dff368f2d81158c3c11e473f1b3a495503e"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "e5450420e1b087e14517850911b46d6eef6311724702be9de3de0f17bc64faa6",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "548c788db58679929eed6a8f1f0d2d6e0c3bd73ac32547f1f759ab9dd5f3fc38"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "b8ad9941af1d3514c066da3e332f09fc471bfc03e0df2b4b095206e8d6e1b734",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "55d5d0c6c3fc0292ba73b234be06261ab38f77f2b28022103b2eed2ed0328f75"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "15c74b146772ca6185fd26e3fc48d5000d3d5536f4dcf55c34a35a423f9759a8",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "575befdf0aa113c079ecafd911520d7666f5b010dc79231455f7316c930260e3"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "ad47d8facc46a0b01074c4dab9ec20c4b5729b1faaa22382751d7f9a628b37da",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "58b43050ea4d9d70afd0fafdf17c3090e39b48d5d0863624ca2f2dca5fff8785"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "425537985db6de2bf21eeffda4a50713daf5ae9c3bb4805b32f0caa776b8a5dd",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "58b86fb661933a8a7d87f4a09bc133d15cd02a012b140f8fd86c86b197614b24"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "4fbec6fd7f5ce29a4008c1f340e3d13f6afd449748bfe7fc3aaf2832bc783260",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "5939352b5288133e5182dd4045dff6bc5513e04e7d5c088476b8b96687bed561"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "77a4760e5ca2f024b952d7ea8ff4a861c78368bd529331ddd9b10e55c686055b",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "5d2b5b76710eaaabfc176771364ee61a7dd02d74ac1c160b73daa779095fb144"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "180f39b99c964bb648cb9bdd678dde797c5430e87c497b4f6ae4fd3994e1c475",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "5d81f49bbc514200b85bb63dc11ddf96185085f6261488992236ec0221366c21"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "ee1daa36ed64a4ed102f5511dc76e9132bd1ffe93a31dd459039581625be5fca",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "5fbc6c3b2cd80cb37e7508dcc86807a62a616a5a2ca90173f02a6e646524978b"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "6bbbef890cf9f1d9b69825d6c80c9617ca8e0d5971a145f16c58b8897ce5c85f",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "63e7450e2a71c1754aa9d4e9e64e3e811db7af9363244cd6951d1ecf8dd02968"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "a55652424c62e5cc82ec3df8a16806d371b8a9c86515f266b16fe080ab74a67b",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "66aff74776ced7b4ec73629396d0307c3f4839de683d607eab15f77bead574ac"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "89d53da09b4eb125e3f660d2cd824b3bb03086ee11643cc972bf29bc71eeb48c",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "6911c4f0b96ad69a8fae3a69133b5e6dbd76ea7cd8746389bb02f912d7b86440"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "7f3ecada059fd30474e7e60bceb9f4e9608fb4fbf3159d561e000f5bd3c9af94",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "6fd9053a3d79daffc78d1592176dc62f4bcf519ca4b1e8caabfd41d4a6691e90"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "e52947311562f1fa5bc349a2137b7d6de92c17e47061f8693f5155b9038eb4a8",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "723ac9bd519728cd3af9fdccc83335e50167a6ceae3561b6051c25529341c2d3"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "c80a6da372ee67abe466bc6597ab84e2d21eb50525fc74d7c7237e68613bd9a4",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "727de99022e0ab7cb6cd87618438107568a2c3ad4a52c9ba979ff64f8147f2af"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "acc4c8cbffdc3d494b6990f7f66d9fc96b9708d2270f091b54d2ee1ea282c52b",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "79f79a976c12ba557dbba6894d9fd52ae299c2b135a7f877f2840d2115f42c82"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "1dae8603b8ff209066da75657ed7374d271cc2d75898c1c427b8d643c2ac437e",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "7a12d2f1c98602eb43898cb12f4dbd5b2377f0002fc6185617426571cee11117"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "28f5fa0ec74a99d1a8be1a4766927c32a936abcd7b2e28bce76943571aa804cb",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "7ae2362cadef7f13e116a23175beb473cf07739db0140184f76eb3df295b7b77"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "d489cb92ceb0364e263b623687fbca3d6571e8b4185c7ea045eee05387b82830",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "7baa3f79884a9cf1856d2ea52467157afda68e031001e61857fad44c1bb85b5b"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "4d320124f9c24a8577cc06b65a57f9c058853d0198e0d63d5b47e8c4ea34a2fc",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "7d472c87af86e4b58dfe96fb461eec81ba0dc48861cec73420e92cd9ac469a02"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "1c3a0f5f954faa2bfa591c0d0914e2d2b8952c87f46368961ff970e424e90326",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "7d91d9098306f5e055f6601151eb0cb36099b81d853c89771040fab01832a4ea"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "b179cdc0c8ed33b55e35240b2214f208b11c08ef19e29faadc7ea69e2325fb40",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "7e8e915f07137c967af0a55253edf4d54cebc16e812ee9a55073a3734ccb24d9"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "a1603ef59204c365ea2eb5c1bf61f81e17f30d3204314ddd1cb508c27b62a76a",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "801f6cc94717d896b3ab5808f6383888af03055ae28183923aed9b36c1dbd5be"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "54cd75975a7d0ab74fb6f02b98c64f14fadc898cc473ddee762b95f88142605c",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "8053befcfd3914eec0865679677a3245180e569164ff344c0cbf17ecca7af8db"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "1b802e971c72d1ec694aa8af34e782270710418743bf968afffebbbf4f06bd01",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "8625dbed56d823b702089afc6fa11cd939998d7247ad6568b620cf390db37524"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "74117a0a4dc1c3ff35697868b990a3bc744b1b2342956c5c5e1656a86cc7962f",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "9557c37cbc0e60db3d88810e4618bcdbba114e9093fa18898ff43d9edf692c2a"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "7074e4c93879e9328360a25a3415819ac4e0a1799e824d05b1450d052cbde656",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "9574fa6a9b87512ff5c7c5eff080c31a55c270da2923be57dbeda0ed41d52dfa"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "5ebda8d142ad705742a5b1b079555323d7f78e5ee747a2fb17f72d782614abcb",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "9d46178495e202123a014536a206b8e9a7d567f997480061cf3997a44c860818"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "4b204812e0600d13d018a9b789e578cf6918e062b63758ac887d5034a56d34ce",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "a8070c04246ecd6e026ab520bbbb4ecd4229a80e028f39fd400ccf3b8681a84b"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "481fe456e85168f4c4b0f634b0325ac8706c3349c8803c3f2c41051a391cc087",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "a9e2816425ac4b0c9393a29ac6eb2e67e7a8290ed6c002eb60ac12cfbfe63afd"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "3ab2444b45fd7d93e58c7e5ec9956d48fc682481602255fabd10c981a85c1ff7",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "af9dea25c9fb540fde16f2c8ed0c61ad570230c87eea885440571f69a6056ad2"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "300b91276fe9484dc300d0700d89a79a7ade17054ffd24f12987fbcd6447f6ad",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "b2bf92fd760fa837e4317ce04244d8bdaff79907968971090025357f42756266"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "3c4f5488044d0d6cbaa5d36dd879fd0b3463e5929cc77d1ac08e7af715a09617",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "b5c9147f03290bb92d0f45fcbe09e5dabdd4701198952888c6a5c90c677e4f4d"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "e1b6f1395cbf8d4bf14d17d1e51b691073785a574497ab7177d1c4a2a22ba567",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "b698a21da31262cd173c23eec8b9c354b8d504c87ca4150f44f4b8ccf6bc3678"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "6a3bae00e772e421c99380aafb316e46fe10c47993dd2a7d351fb073ab41c38d",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "b7b110b68f568efe2b69b1f46e08198a5b807004a64609f2722e64561abfa72d"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "2b12108d7f3b655eece283ceb00c020dc7ca9bf60ac3287bd8b22aebd23fe42e",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "b86b6ad6a4697b8de284e8185aeafaeb5dcf35fc235648df53cac57e0644db2f"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "61928e0ed2e0333ba0cd5631b3cb2a57c7e1d37da080558b9cdbd6838cb0c2fc",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "bd54c5f597f6425aded7bdb98569c5210cb1f16c6a682843da487f238b41aa94"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "ab674505b2a54bcb7f34bb505bf8ff6f895c27c87cc3eb45fc4d518463346c9e",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "bdccfdd1c82af655fe9216f553f0ec9e211b6ac9249e667baeffe1901d9d167b"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_residual",
+      "document_sha256": "1f54b56abdab834be673f528a82312356286665e781495af3c1a75c4449ed36b",
+      "reason_codes": [
+        "requires_license_verification",
+        "requires_source_specific_filtering",
+        "substantive_residual_content"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 3,
+        "correctness": 3,
+        "educational_value": 3,
+        "originality": 3,
+        "real_user_utility": 3
+      },
+      "stable_identity_sha256": "be9c4fafe9209b736475a380081e1b271e3eee880d1995b5d2c9cc6ffe43cf98"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "accept_core",
+      "document_sha256": "796d0dc3b62761a2ded034b806de768d45e81fffe7837de7978362273117645e",
+      "reason_codes": [
+        "clear_extraction",
+        "primary_or_scholarly_research",
+        "substantive_domain_content",
+        "verifiable_citations"
+      ],
+      "scores": {
+        "clarity": 4,
+        "completeness": 4,
+        "correctness": 4,
+        "educational_value": 4,
+        "originality": 4,
+        "real_user_utility": 4
+      },
+      "stable_identity_sha256": "beeef9d7cf34f346febb9c3ea8b4428bb26b63bbac62b86c529114f5d93914c0"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "135527510931257e6e7fc3aa666543a79e22a39e4f534137fc752a4b61057bb2",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "bf607fb5e79a8ba86124962f4555a6b54c5652a88cbda24113311d0663a21fd9"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "3c7b5048a47996e247c139eb24ef5b16ba133929a37d81891726eea5f7cd34af",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "c0c002be4bf46cb9edd22a94c5409c936214c893b08fae3b7917cab5f25b3c43"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "f09602e6faa062672fdb87724c7f88f6a9f5280eac35a10dda644b4671720cac",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "c4776e1422b48c3092f8f1c4bd4c04f5efbbe136048fa9560a9f241a43e16629"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "7e86116845d5048cc67967417a015a4911c34a016e328409df8f7f4da9e1abab",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "c48c0491c080541c7852f2700765890ee936ec44670b1aef18fbde38e40f07b5"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "e80ca0bbc3cd125ee44afbc4525e07236664dd18274acf1a81321adf36ebe673",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "c5ea621274f15d469678f36fb6edc9bf1e3e23ac5f31c0b09bc28f9fdad35b4c"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "ac4621b7ef546141ddc1c1b1862fceeaa94fe4860867e01899b3715a210d94c5",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "c799b49dfa675983bf0b14893f1aee2c7ff949ab581dd76b7de0fc3b5683aea8"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "85199f361068563bc6f7c4c8aa98a9abfcd75c3c1c86159fce38ea1614b5427d",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "cb4cfe49ae644ba6619f4d5ff2959b30e6696c4047ca4841f98eab2d0899973d"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "a4ab4a47a866ef5697ba173edeb67a256bf426055071cec8c64705697a6ee036",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "d5f6407dbc0e3a67286484bb4d1bbabdd208a7e1c3074d939dfc2e252f6326ca"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "3eb6e3efd7c09d009c858696eb5e2c85f58168e7eb9dc1dfee61ca6dabdc13dc",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "d6bdf68f5edbac4e80c399965138cab592023019f7c312d00ecb699bee9c1921"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "8183ae4c841f0e0193783ab94c12ef74900f34e2da88ab44e6d323d76486485b",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "d701775e69a6a3d90eddc451e8bc02a4aa891d68ab76adb378aecc3049102b06"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "77e8963ef2ce04ed9e97e5178a3b8d1c336cc615a5247f5f85cf889c91305975",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "dc1ac92209f5ffdf8fc8280f45f6547719ed927299397eb11f36822c59daf325"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "086e969a7126e3ab9c792dfe4ad639989081273f48fa1a37ee766699e18a62ad",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "dcda5e207d1ef697bdfa85ae438c8196a38d4da12ee1ef4f3a379f254d13a256"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "73c0ca96eb57b9b904f257a9ff4c73a181c5d91771a1d9abd057c05a7695ee00",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "df46c78d7f684f83d518dc2aba87e451a8e6c63742a58b6f59c758a2bb6b4a85"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "2da4ed8b6c16d6bda312ae202a1aea7143b2725dc86b97c3ebad93b6ff992d0d",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "e056e7559fc81719e3bf6784b2dd5d48f9aa02bd77843620b301e6cdb154385e"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "f590d3ce1cecbb59016a122e9f1141d6fa69eb0e4ce19bbb81ba073c623f67a7",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "e3bce376de5bef055a6c070d478c6185be55e86a96e028655cc87d05925f32e7"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "407f80fbf5381bd0d210fb200200f7da132aeb0d3d6fa5c4890bbace1defcfea",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "e87e7349060db76244cb9820c38dfe7eb6876633bd411ad3a7be00aaa4715325"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "78af1e47432d4947a4eb0f4b599b8d8ae92afd171627d7d423174987ddcf01ae",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "ec09ae7de5cd716598e0d58be93e174196808917291341a75e223cfd5c1a6d43"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "795661c1be6c1b89cf6e62ec2c8cbbaf796d2bcce27ed44a3139ed54192daa8c",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "ec1f4c864a4852454e6d48fcc0105b6e79ca149d1f6a69ce2cc4b47443029e5b"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "d8f9e0b0756dfea137f70bacaa951503ce961dd5e5517e62434f40618ca9bf6d",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "ee6709989a5e6e3aa30dc3e0e25e23796a61df04581c79edfd671195c6655f65"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "4c3c416a707e0cbffdfd68a7d20c5914e7677d4ca433e6138be89dc9f1ece971",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "f31fbd752f5a0588099c69ad5d650ac55920081521b27f0993f7a6592bccc6a1"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "140a66245b968e561d194f020fe6e7e8f0580c1ff40c1e12b05ecaccdc33a4e7",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "f34d2034cd8a18318d47717137cbc3614f6caa4002cdcde762191adff09a2ef3"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "44e7333678f254cd891171b51fcb925f04e18c29e002ba9599a70f5da0d3870f",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "f3bc6b2d812950aecfbd1f43fb0c76888d9e514fe7cecf7c23a88232fcc7701b"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "304ccba6dfd66b29e9c901d63276011a25a42d9b7322315bc0be4250bc965c10",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "f6c11ae976b0a83b38e9db3cc307df4766da5ae1aa70cfd956da40e354a0d7db"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "96e688515965fc4e53b468a03ef0fe92a470721e241018b93cea3c6a365b33a6",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "f726809858f002db96e1b12ba437812ab83f00c50ce7e7cddf341540a9a4699f"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "5e6f2100527b7455f4a32c5e7875726e79e3a9c3628a84140b3b686c5a14b224",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "f9d3e49499c59e45b4ea73319fe6a2bc8a97357e55c690820d3d136770f637f7"
+    },
+    {
+      "adjudication_authority": "model_preliminary",
+      "decision": "reject",
+      "document_sha256": "7ea628cb9d0e322dcfc28a821745ebe7196bee76f775493a7eb40f2a4d918684",
+      "reason_codes": [
+        "no_detected_license",
+        "not_redistribution_eligible",
+        "random_repository_feed_rejected"
+      ],
+      "scores": {
+        "clarity": 2,
+        "completeness": 1,
+        "correctness": 2,
+        "educational_value": 1,
+        "originality": 1,
+        "real_user_utility": 1
+      },
+      "stable_identity_sha256": "fb55b11d69527c9dc1fc12c1be44e1f375ba0f80cc334094176eceee70558e07"
+    }
+  ],
+  "schema": "shohin-general-source-adjudication-v1",
+  "training_admission_eligible": false
+}

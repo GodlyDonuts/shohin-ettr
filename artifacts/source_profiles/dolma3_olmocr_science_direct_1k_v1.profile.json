@@ -1,0 +1,215 @@
+{
+  "admission_status": "profile_only_not_training_data",
+  "categorical_values": {},
+  "config": "olmocr_science_pdfs_direct_shard",
+  "dataset": "allenai/dolma3_dolmino_mix-100B-1025",
+  "dataset_card_sha256": "140a245b86919a292efac76e801445caf2d3c0d1dba89c27b21e41fe55e6332a",
+  "discovered_configs": [
+    "olmocr_science_pdfs_direct_shard"
+  ],
+  "discovered_splits": [
+    "train"
+  ],
+  "domains": {},
+  "exact_duplicate_text_rows": 34,
+  "field_presence": {
+    "added": 306,
+    "created": 306,
+    "id": 306,
+    "metadata": 306,
+    "source": 306,
+    "text": 306
+  },
+  "input_mode": "hash_bound_local_jsonl",
+  "languages": {
+    "<missing>": 306
+  },
+  "license_values": {},
+  "local_source_receipts": [
+    {
+      "bytes": 2461470,
+      "name": "olmocr_science_pdfs_shard1200.jsonl.zst",
+      "sha256": "3395e82f07cb74abd9797b19e13000851d07eb3e51c720bc0fca77aa39cdd33d"
+    }
+  ],
+  "max_files_per_record": null,
+  "metadata_only_rows": 0,
+  "metrics": {
+    "alpha_fraction": {
+      "max": 0.8314923907707413,
+      "min": 0.5084611316763618,
+      "p10": 0.685040488705782,
+      "p50": 0.767246550689862,
+      "p90": 0.799475965581937,
+      "p99": 0.8193894389438944
+    },
+    "boilerplate_markers": {
+      "max": 2.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 1.0
+    },
+    "chars": {
+      "max": 41124.0,
+      "min": 9.0,
+      "p10": 9.0,
+      "p50": 24956.0,
+      "p90": 32592.0,
+      "p99": 39451.0
+    },
+    "control_fraction": {
+      "max": 0.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 0.0
+    },
+    "digit_fraction": {
+      "max": 0.08738340697103583,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.016596006812334675,
+      "p90": 0.03485324947589098,
+      "p99": 0.05455222491156209
+    },
+    "html_tags": {
+      "max": 816.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 46.0,
+      "p90": 333.0,
+      "p99": 548.0
+    },
+    "lines": {
+      "max": 1100.0,
+      "min": 1.0,
+      "p10": 1.0,
+      "p50": 217.0,
+      "p90": 408.0,
+      "p99": 765.0
+    },
+    "max_line_repeat_fraction": {
+      "max": 1.0,
+      "min": 0.004629629629629629,
+      "p10": 0.016666666666666666,
+      "p50": 0.06722689075630252,
+      "p90": 1.0,
+      "p99": 1.0
+    },
+    "nonempty_lines": {
+      "max": 943.0,
+      "min": 1.0,
+      "p10": 1.0,
+      "p50": 139.0,
+      "p90": 315.0,
+      "p99": 633.0
+    },
+    "replacement_fraction": {
+      "max": 0.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p99": 0.0
+    },
+    "unique_line_fraction": {
+      "max": 1.0,
+      "min": 0.4180327868852459,
+      "p10": 0.6066176470588235,
+      "p50": 0.8469387755102041,
+      "p90": 1.0,
+      "p99": 1.0
+    },
+    "urls": {
+      "max": 23.0,
+      "min": 0.0,
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 2.0,
+      "p99": 7.0
+    },
+    "words": {
+      "max": 6411.0,
+      "min": 1.0,
+      "p10": 1.0,
+      "p50": 4098.0,
+      "p90": 5360.0,
+      "p99": 5945.0
+    }
+  },
+  "nested_files_field": null,
+  "nested_review_context_field": null,
+  "nested_text_field": null,
+  "quality_metric_quantiles": {},
+  "quality_scores": {},
+  "requested_revision": "f23942ae8a8114af6e992efe8188ce8c531acd16",
+  "resolved_revision": "f23942ae8a8114af6e992efe8188ce8c531acd16",
+  "review_packet_contains_context_text": false,
+  "review_packet_contains_text": true,
+  "review_rows": 100,
+  "review_selection": "lowest SHA-256 priorities over stable source identities",
+  "sample_eval_overlap": {
+    "eval_13gram_count": 810428,
+    "eval_13gram_rows_bounded_head_tail": 0,
+    "eval_files": [
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/append_ledger_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/categorical_microcode_manual_v1.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/certified_latent_ledger_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/certified_latent_ledger_v2_compact_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_bisimulation_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_residual_algebra_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_residual_algebra_v1_two_edit_r1.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/counterfactual_residual_algebra_v1_values_answer_supported.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_basis_v3_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_factor_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_recurrent_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/digitwise_recurrent_v2_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_core_factor.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_magnitude_factor.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/finite_query_residual_basis_v1_two_edit_factor.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/gsm8k.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/gsm8k_platinum.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/humaneval.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/humaneval_full.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_operator_eval_slices_v2_64.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_operator_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_state_algebra_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/latent_state_algebra_v1_r2_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/math500.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/mbpp.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/mbpp_full.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/native_residual_relay_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v2_contract_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v2_contract_heldout_r2.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/primitives_v3_state_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/referential_argument_graph_v5_fresh.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_factor_delta.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_factor_language.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_factor_values.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_basis_transport_v2_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_bridge_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_capsule_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/semantic_composition_transfer_v1.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/source_memory_packet_v1_heldout.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/evals/token_native_ledger_v1_heldout.jsonl"
+    ],
+    "eval_prompt_count": 58033,
+    "exact_prompt_rows": 0,
+    "hashed_overlap_receipts": [],
+    "overlap_receipts_truncated": false
+  },
+  "scanned_rows": 306,
+  "schema": "shohin-general-source-profile-v1",
+  "shuffle_buffer": 1000,
+  "shuffle_seed": 2026072811,
+  "split": "train",
+  "text_field": "text",
+  "text_rows": 306,
+  "unique_text_hashes": 272
+}

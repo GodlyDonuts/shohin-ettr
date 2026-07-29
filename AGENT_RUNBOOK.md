@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-28 22:28 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-28 23:25 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -15869,3 +15869,79 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `ettr_release_optimizer_bridge_passes_32row_runtime_shape_no_production_release_or_weight_update`.
+
+- **2026-07-28 23:25 EDT** -- **Direct component transport bypassed the
+  anonymous-provider rate limit, and preliminary semantic review rejects
+  classifier labels and random code licensing as training admissions. The
+  exact B32 ETTR shape is a measured H100 OOM; B16 qualification is active.**
+
+  Direct revision-pinned downloads replaced the failed Hugging Face library
+  transport without weakening source identity. The pinned Dolma 3
+  `cc_hq_science` shard is 6,616,448 bytes at SHA-256
+  `3ecc395fe70de85f28fac643a5193996cb813ffb639335b977475e2a8a7b6d73`
+  from dataset revision
+  `f23942ae8a8114af6e992efe8188ce8c531acd16`. Its 1,000-row structural
+  profile had zero exact duplicates, exact evaluation-prompt hits, or bounded
+  13-gram hits. Complete preliminary review of 100 actual documents retained
+  23 core and 30 residual and rejected 47. The text-free receipt is
+  `artifacts/source_adjudications/dolma3_cc_hq_science_direct_1k_v1.preliminary.json`
+  at SHA-256
+  `6de21133d4a376cb17b4f0f670b9abef0651eaf5af925b724064dfcb6f58559e`.
+
+  The direct `olmocr_science_pdfs` shard is 2,461,470 bytes at published
+  LFS SHA-256
+  `3395e82f07cb74abd9797b19e13000851d07eb3e51c720bc0fca77aa39cdd33d`.
+  It contains only 306 rows and 34 exact duplicates, with zero sampled exact
+  or bounded 13-gram evaluation overlap. Complete preliminary review retained
+  26 core and 57 residual and rejected 17, including ten removed tombstones
+  and seven weak or questionable publications. Its aggregate profile SHA-256
+  is
+  `416aca1b6528c360e36e81b211a3df1944bc5c8396b9588229570f91c55090b0`;
+  its text-free preliminary receipt SHA-256 is
+  `8a2658146d0edc43ef15ce25b44c20825f54d1d212768075481b544e20fb7a40`.
+
+  The direct `stack_edu` FIM Python shard is 37,200,709 bytes at published
+  LFS SHA-256
+  `87bf04ad82fdac3b21ca6033d12861b89cdcba908d6ac47a89d52bc613b0e679`.
+  Its 1,000-row profile had zero exact duplicates, zero exact
+  evaluation-prompt hits, and one bounded 13-gram hit. Of 100 reviewed files,
+  92 had no detected license and only eight were permissive. Preliminary
+  adjudication retained one core and seven residual and rejected 92. Its
+  aggregate profile SHA-256 is
+  `f88dad673923ef4c106fadfbba359a902b1a12ae66b2586c5dc79cb5a804fd39`;
+  its text-free preliminary receipt SHA-256 is
+  `c803f95b1694340662592fc1f63f88d00387e37dac158370b70f4a7e9a87627a`.
+
+  All three semantic receipts bind private review packets and complete label
+  files, contain no document text, declare
+  `training_admission_eligible=false`, and use only
+  `model_preliminary` authority. They are evidence for source rejection and
+  filter design, never substitutes for the required human admission gate.
+  `cc_hq_science` and random Stack-Edu remain rejected wholesale; OLMoCR is
+  reopenable only as a deduplicated, provenance-filtered scholarly residual;
+  Stack-Edu is reopenable only as an explicitly permissive, repository-held-
+  out, parsed/compiled/test-bearing residual.
+
+  Exact full-system ETTR H100 profiling at WORLD/COMMAND/QUERY widths
+  192/96/48, reactor depth 64, B32, and all 192,779,435 trainable parameters
+  failed with a genuine allocation OOM around 79.15 GiB used while requesting
+  another 64 MiB in reactor relation context. Source commit
+  `31658783985d8c64ba0f472afe147f8cfc5fc5c5` and protected-checkpoint
+  SHA-256
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`
+  were exact. B16 with the same architecture and training scope is active on
+  healthy `evc28`; it has progressed through model construction to GPU
+  allocation and remains CPU-active with no error. Do not build the immutable
+  release with 32-row runtime batches unless a later activation-checkpointed
+  profile qualifies that exact shape. If B16 passes, change the release to
+  four complete 16-row rectangle-preserving microbatches before construction.
+
+  Stokes recovery `753823` remains nine-way RUNNING around 6h31m with active
+  CPU on every worker and empty stderr. Its complete downstream chain remains
+  dependency-held. Newton allocation `719591` remains RUNNING on
+  `evc28,evc30,evc40,evc45`, with only the first, second, and fourth nodes
+  CUDA-healthy; requests `719497` and `719496` remain priority-pending.
+  No production writer or unverified-data optimizer update is active.
+
+  Decision:
+  `direct_components_semantically_narrowed_b32_ettr_oom_b16_profile_live_no_training_admission`.

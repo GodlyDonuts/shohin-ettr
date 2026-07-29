@@ -118,6 +118,33 @@ Deterministic 10,000-row profiles sharpened the source policies:
   and tables require cell-level source support. All configurations remain at
   zero mixture weight until equal-token utility ablations pass.
 
+Direct, revision-pinned Dolma 3 component probes further show why ingredients
+must be adjudicated separately:
+
+- The `cc_hq_science` shard had no sampled duplicate or evaluation overlap,
+  but a complete 100-document preliminary semantic pass retained only 23 as
+  core and 30 as residual while rejecting 47. Rejections included content
+  farms, promotion, opinion, obsolete or refuted articles, pseudoscience,
+  extraction corruption, and non-science pages. The web-science classifier is
+  therefore not a training admission.
+- The `olmocr_science_pdfs` shard contained 306 rows, including 34 exact
+  duplicates. Its 100-document preliminary pass retained 26 as core and 57 as
+  residual while rejecting 17, including ten removed tombstones and seven
+  weak or questionable publications. This is a promising filtered
+  scholarly-PDF residual, not a wholesale core.
+- The `stack_edu` FIM Python shard had no exact duplicates and one bounded
+  13-gram evaluation overlap among 1,000 rows. In the 100-file review packet,
+  92 records had no detected license; only eight were permissive. The
+  preliminary pass retained one core and seven residual records and rejected
+  the other 92. Random FIM code cannot enter a distributable model merely
+  because an upstream educational score is high.
+
+These three semantic passes are explicitly `model_preliminary`, contain no
+document text in Git, and are ineligible for training admission. Their value
+is policy falsification and filter design. A complete human packet plus all
+structural, legal, privacy, decontamination, tokenization, and equal-token
+utility gates remains mandatory.
+
 ## Current Source Slate
 
 ### P0 candidates
