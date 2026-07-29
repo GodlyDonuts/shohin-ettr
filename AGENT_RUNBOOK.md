@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 17:49 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 17:53 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -17932,5 +17932,18 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   the fresh 60-cell assembly; separation `755552`, release `755554`, Newton
   transfer, private publication, and every optimizer remain dependency-held.
 
+  The first Stokes runtime copy at
+  `scratchpad/shohin_v3_gates_923d02d` is explicitly **inadmissible**:
+  its files matched but its manually written full `SOURCE_COMMIT` did not
+  equal the repository commit. It was never used by a job and must remain
+  unused. Fresh no-replace runtime
+  `scratchpad/shohin_v3_gates_923d02d_r1` binds the actual private commit
+  `923d02d99170e4bf0cbed43cd5d02e46e1793d00`; its complete
+  `SHA256SUMS` file is itself SHA-256
+  `a8618135f074186f6843442041d3aa017daf9481a0f92fff6a4093ffdf35bcd3`.
+  The full inventory replays, all changed-file hashes match the local commit,
+  shell syntax passes, and the exact-residual CLI imports under bounded
+  one-thread BLAS settings.
+
   Decision:
-  `exact_residual_source_program_pinned_full_ettr_audit_unchanged_no_optimizer`.
+  `exact_residual_source_program_pinned_corrected_runtime_admitted_full_ettr_audit_unchanged_no_optimizer`.
