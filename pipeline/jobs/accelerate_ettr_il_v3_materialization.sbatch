@@ -3,13 +3,17 @@
 # The original selected shard and frozen materializer remain the only semantics.
 #SBATCH -J ettr-v3-mat-fast
 #SBATCH -p normal
+#SBATCH --account=skattel
+#SBATCH --qos=normal
 #SBATCH -c 16
 #SBATCH --mem=64G
 #SBATCH -t 16:00:00
 #SBATCH -o /lustre/fs1/home/sa305415/ettr-il-v3/logs/materialize-fast-%j.out
 #SBATCH --open-mode=append
+#SBATCH --no-requeue
 
 set -euo pipefail
+umask 077
 export PATH=/usr/bin:/bin
 export PYTHONNOUSERSITE=1
 export PYTHONDONTWRITEBYTECODE=1
