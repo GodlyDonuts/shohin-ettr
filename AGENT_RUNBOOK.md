@@ -16769,3 +16769,45 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `signed_train_only_contract_enforced_paired_uncertainty_ready_live_candidates_unadmitted`.
+
+- **2026-07-29 05:20 EDT** -- **ETTR now has a hash-bound paired
+  development evaluator, closing the gap between optimizer mechanics and
+  evidence of architecture learning.**
+
+  `train/eval_ettr_v3.py` always reconstructs the deterministic raw ETTR
+  architecture from the immutable protected 300k base. A trained arm is
+  accepted only with the exact checkpoint SHA-256 and a canonical externally
+  hash-pinned `run-contract.json`. The evaluator verifies the release,
+  tokenizer, every source shard, disk packet-sufficiency index, architecture
+  seed/configuration, complete parameter receipt, optimizer configuration,
+  exact-resume checkpoint, distributed stream cursor, world size,
+  accumulation, compile mode, data seed, and protected base before scoring.
+  It evaluates raw and trained arms on the exact same deterministic
+  development batches under BF16 H100 inference and never reads the training
+  split for scoring.
+
+  The no-replace report binds every development batch payload and records all
+  twelve objective losses, full causal supervision counts, WORLD and COMMAND
+  query-binding margin rates, parameter hashes, paired checkpoint-minus-raw
+  deltas, standard errors, and 95% confidence intervals. Its strict learning
+  signal requires changed parameters, an upper paired total-loss confidence
+  bound below zero, and increased WORLD and COMMAND query-binding margin
+  satisfaction. This intentionally rejects "loss went down in the training
+  log" or "weights changed" as sufficient evidence.
+
+  The evaluator, production checkpoint loader, stream trainer, and packet
+  index focused set passes **42/42** with clean Ruff, byte compilation, and
+  diff checks. The intended ETTR budget ladder is 100, 500, then 2,000
+  optimizer updates, with evaluation at each rung; do not launch a blind
+  300k ETTR run.
+
+  Live custody remains unchanged: ETTR qualification is 214/216 main plus
+  108/108 sealed confirmation reports, with cells `753823_5` and `_6`
+  actively computing around 12.25 hours. FineWeb-Edu r2 has emitted ten
+  approximately 100M-token unsealed shards and peS2o r2 nineteen; both remain
+  `.partial` and prohibited from optimizer use. Newton requests `719497` and
+  `719496` remain pending for 10 and 20 H100s. No ETTR learning optimizer or
+  candidate-data optimizer is active.
+
+  Decision:
+  `paired_ettr_development_gate_ready_no_learned_capability_claim_yet`.

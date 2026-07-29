@@ -151,6 +151,32 @@ ETTR-only architecture bootstrap, then compare 95/5 and 85/15 general/ETTR
 charged-position ratios. Repetition, unique positions, and per-source epochs
 must be reported separately.
 
+### ETTR Learning Gate
+
+`train/eval_ettr_v3.py` is the mandatory development evaluator for every
+ETTR-native pilot. It reconstructs the raw architecture with the exact
+architecture seed and, for a trained arm, validates the immutable run
+contract, optimizer configuration, complete parameter receipt, exact-resume
+checkpoint, distributed cursor, release, tokenizer, packet-sufficiency index,
+and protected base. It then evaluates raw and trained models on the same
+deterministic development microbatches.
+
+The report includes all twelve objective losses, complete supervision counts,
+WORLD and COMMAND query-binding margin rates, per-batch identities, paired
+checkpoint-minus-raw deltas, 95% confidence intervals, and parameter
+receipts. The strict bootstrap learning signal requires:
+
+- the checkpoint parameter receipt differs from raw initialization;
+- the upper 95% confidence bound for paired total-loss change is below zero;
+- WORLD query-binding margin satisfaction increases; and
+- COMMAND query-binding margin satisfaction increases.
+
+Training loss alone, transport throughput, or a changed parameter hash is not
+an ETTR capability result. Run the initial ladder at approximately 100, 500,
+and 2,000 optimizer updates. Stop or revise the objective when the fixed
+development gate fails; do not spend the 10- or 20-H100 allocation on a
+blind 300,000-update continuation.
+
 ## Newton Capacity
 
 | job | request | expected window at submission | purpose |
@@ -179,6 +205,7 @@ one inefficient 20-way model replica.
   audit pass;
 - production record-to-`ETTRContinuationBatch` loader re-hashes every batch;
 - exact-resume checkpoint save/load passes after a real optimizer update;
+- raw and checkpoint arms pass the paired immutable-development evaluator;
 - output directory is fresh, isolated, no-replace, and never aliases the
   protected checkpoint or historical flagship output;
 - evaluation and rollback checkpoints are scheduled before the long run.
