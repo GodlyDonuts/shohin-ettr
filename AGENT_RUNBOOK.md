@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 00:34 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-29 01:04 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -16248,3 +16248,46 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `corrected_b16_formally_qualified_exact_cross_source_dedup_gate_deployed_data_release_now_critical_path`.
+
+- **2026-07-29 01:04 EDT** -- **Pinned physical-Parquet intake is qualified,
+  and the complete FineWeb-Edu score-4+ source build is live without touching
+  the running peS2o code path.**
+
+  Private commits `0cf17f7`, `e87be57`, `6d5bb4d`, and `50636a3` add and
+  harden homogeneous physical-Parquet ingestion, a deterministic Hugging Face
+  LFS manifest builder, a complete pinned source inventory, and an isolated
+  resumable Stokes build. A real two-row Parquet file streams through the
+  detected local loader in regression tests. The related tokenization,
+  manifest, shard-verification, review, and cross-source-dedup suites pass
+  **40/40** with clean Ruff, byte compilation, shell syntax, and diff checks.
+
+  The complete `HuggingFaceFW/fineweb-edu` `sample/100BT` prefix is pinned at
+  revision `87f09149ef4734204d70ed1d046ddc9ca3f2b8f9`: 140 Parquet files,
+  286,394,522,604 source bytes, and an LFS SHA-256 for every file. The
+  deterministic manifest rebuilt byte-identically and has SHA-256
+  `759963e1db699dd27e0f1402d8f5622b22673a85ff6688999bf2e3afa5335fea`.
+  Stokes has approximately 424 GiB charged against a 1 TiB user quota, so the
+  full physical source plus the 10B-token selected artifact fit without
+  deleting protected data.
+
+  Stokes job `754455` is RUNNING on `ec78`. It uses an immutable isolated code
+  root, eight resumable downloads, exact source byte/hash verification, score
+  `int_score >= 4`, required English metadata, exact deduplication, live and
+  serialized evaluation decontamination, bounded extraction/repetition/
+  boilerplate filters, and a 5M-token domain cap. It writes only to the fresh
+  `fineweb_edu_score4_direct_10b` namespace. The empty partial left by canceled
+  legacy job `754154` remains untouched. Private exact-document review job
+  `754456` is dependency-held after the build and cannot admit data by itself.
+
+  In parallel, peS2o v3 job `754199` is RUNNING on `ec49` and has emitted its
+  first approximately 100M-token shard after re-verifying all 30 physical
+  inputs; review job `754200` remains dependency-held. ETTR recovery cells 4,
+  5, 6, and 17 remain live, with selector/materialization/audit/separation
+  jobs `753824`--`753830` still correctly held. Newton allocation `719591`
+  remains live; the 10-H100 request `719497` is estimated for 08:34 EDT and
+  the 20-H100 request `719496` for 2026-07-30 01:05 EDT. No partial ETTR,
+  FineWeb, or peS2o artifact is training-admitted, and no production optimizer
+  is active.
+
+  Decision:
+  `fineweb_physical_source_pinned_direct_score4_build_live_candidates_remain_unadmitted`.
