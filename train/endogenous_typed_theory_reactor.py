@@ -22,6 +22,7 @@ from model import GPT, _supervised_lm_loss
 SYSTEM_PARAMETER_CAP = 200_000_000
 TRANSACTION_COUNT = 9
 DISPOSITION_COUNT = 4
+HARD_SURROGATE_GRADIENT_CAP = 1.0
 
 
 class TheoryReactorError(ValueError):
@@ -172,6 +173,17 @@ def _hard_capped_binary(
     return _ExactCappedBinary.apply(probabilities, maximum)
 
 
+def _bounded_hard_adjoint(value: torch.Tensor) -> torch.Tensor:
+    return _BoundedHardAdjoint.apply(value)
+
+
+def _bounded_surrogate_gradient(gradient: torch.Tensor) -> torch.Tensor:
+    return gradient.clamp(
+        min=-HARD_SURROGATE_GRADIENT_CAP,
+        max=HARD_SURROGATE_GRADIENT_CAP,
+    )
+
+
 def _disposition_probabilities(state: TypedTheoryState) -> torch.Tensor:
     """Return OPEN/ANSWER/ABSTAIN/REJECT without hiding terminal status."""
 
@@ -206,7 +218,7 @@ class _ExactOneHot(torch.autograd.Function):
         gradient: torch.Tensor,
     ) -> tuple[torch.Tensor]:
         del ctx
-        return (gradient,)
+        return (_bounded_surrogate_gradient(gradient),)
 
 
 class _ExactBinary(torch.autograd.Function):
@@ -224,7 +236,7 @@ class _ExactBinary(torch.autograd.Function):
         gradient: torch.Tensor,
     ) -> tuple[torch.Tensor]:
         del ctx
-        return (gradient,)
+        return (_bounded_surrogate_gradient(gradient),)
 
 
 class _ExactCappedBinary(torch.autograd.Function):
@@ -257,7 +269,27 @@ class _ExactCappedBinary(torch.autograd.Function):
         gradient: torch.Tensor,
     ) -> tuple[torch.Tensor, None]:
         del ctx
-        return gradient, None
+        return _bounded_surrogate_gradient(gradient), None
+
+
+class _BoundedHardAdjoint(torch.autograd.Function):
+    """Exact identity forward with a bounded recurrent-state adjoint."""
+
+    @staticmethod
+    def forward(
+        ctx: object,
+        value: torch.Tensor,
+    ) -> torch.Tensor:
+        del ctx
+        return value
+
+    @staticmethod
+    def backward(
+        ctx: object,
+        gradient: torch.Tensor,
+    ) -> tuple[torch.Tensor]:
+        del ctx
+        return (_bounded_surrogate_gradient(gradient),)
 
 
 def _edge_aware_relation_context(
@@ -740,6 +772,27 @@ class GenericTransactionReactor(nn.Module):
         root = root / root.sum(-1, keepdim=True).clamp_min(1e-6)
         committed = state.committed + (1.0 - state.committed) * (commit + reject)
         halted = state.halted + (1.0 - state.halted) * (halt + reject)
+        if hard:
+            (
+                value_probabilities,
+                type_probabilities,
+                relations,
+                active,
+                root,
+                committed,
+                halted,
+            ) = tuple(
+                _bounded_hard_adjoint(value)
+                for value in (
+                    value_probabilities,
+                    type_probabilities,
+                    relations,
+                    active,
+                    root,
+                    committed,
+                    halted,
+                )
+            )
         result = TypedTheoryState(
             value_probabilities=value_probabilities,
             type_probabilities=type_probabilities,

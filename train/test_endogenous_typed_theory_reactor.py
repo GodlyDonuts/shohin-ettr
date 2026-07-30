@@ -6,9 +6,11 @@ import torch
 
 from endogenous_typed_theory_reactor import (
     DISPOSITION_COUNT,
+    HARD_SURROGATE_GRADIENT_CAP,
     EndogenousTypedTheoryReactorGPT,
     TheoryReactorConfig,
     TypedTheoryState,
+    _bounded_hard_adjoint,
     validate_state,
 )
 from model import GPT, GPTConfig
@@ -98,6 +100,22 @@ def test_source_deleted_state_has_only_allowlisted_tensors() -> None:
         if isinstance(value, torch.Tensor):
             assert value.grad_fn is None
             assert not value.requires_grad
+
+
+def test_hard_state_adjoint_is_exact_forward_and_bounded_backward() -> None:
+    value = torch.tensor([-3.0, 2.0], requires_grad=True)
+    observed = _bounded_hard_adjoint(value)
+    assert torch.equal(observed, value)
+    observed.backward(torch.tensor([1e9, -1e9]))
+    torch.testing.assert_close(
+        value.grad,
+        torch.tensor(
+            [
+                HARD_SURROGATE_GRADIENT_CAP,
+                -HARD_SURROGATE_GRADIENT_CAP,
+            ]
+        ),
+    )
 
 
 def test_hard_reactor_emits_exact_transaction_choices() -> None:
