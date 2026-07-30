@@ -27,6 +27,7 @@ DATA_SEED=${DATA_SEED:-2026072802}
 TOTAL_UPDATES=${TOTAL_UPDATES:-300000}
 WARMUP_UPDATES=${WARMUP_UPDATES:-2000}
 FREEZE_BASE=${FREEZE_BASE:-1}
+HARD_TRANSACTIONS=${HARD_TRANSACTIONS:-1}
 COMPILE_MODE=${COMPILE_MODE:-default}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 RESUME_CHECKPOINT=${RESUME_CHECKPOINT:-}
@@ -36,6 +37,7 @@ integer_contract="$ALLOCATION_JOB_ID:$NODES:$GPUS_PER_NODE:$START_UPDATE"
 integer_contract+=":$TARGET_UPDATE:$ACCUMULATION:$CHECKPOINT_EVERY:$LOG_EVERY"
 integer_contract+=":$MAX_EVAL_BATCHES:$ARCHITECTURE_SEED:$DATA_SEED"
 integer_contract+=":$TOTAL_UPDATES:$WARMUP_UPDATES:$FREEZE_BASE"
+integer_contract+=":$HARD_TRANSACTIONS"
 case "$integer_contract" in
   *[!0-9:]* | *::* | :* | *:)
     echo "integer launch settings differ" >&2
@@ -56,7 +58,12 @@ if [[ "$FREEZE_BASE" != 0 && "$FREEZE_BASE" != 1 ]]; then
   echo "freeze-base flag differs" >&2
   exit 2
 fi
-if [[ "$COMPILE_MODE" != default \
+if [[ "$HARD_TRANSACTIONS" != 0 && "$HARD_TRANSACTIONS" != 1 ]]; then
+  echo "transaction mode differs" >&2
+  exit 2
+fi
+if [[ "$COMPILE_MODE" != eager \
+  && "$COMPILE_MODE" != default \
   && "$COMPILE_MODE" != reduce-overhead \
   && "$COMPILE_MODE" != max-autotune \
   && "$COMPILE_MODE" != max-autotune-no-cudagraphs ]]; then
@@ -153,7 +160,8 @@ export ALLOCATION_JOB_ID CODE_ROOT SOURCE_COMMIT RELEASE_ROOT RELEASE_SHA256
 export DATA_ROOT TOKENIZER PROTECTED_CHECKPOINT OUTDIR NODES NODELIST
 export GPUS_PER_NODE START_UPDATE TARGET_UPDATE UPDATES ACCUMULATION
 export CHECKPOINT_EVERY LOG_EVERY MAX_EVAL_BATCHES ARCHITECTURE_SEED DATA_SEED
-export TOTAL_UPDATES WARMUP_UPDATES FREEZE_BASE COMPILE_MODE PYTHON_ROOT
+export TOTAL_UPDATES WARMUP_UPDATES FREEZE_BASE HARD_TRANSACTIONS
+export COMPILE_MODE PYTHON_ROOT
 export RESUME_CHECKPOINT RESUME_SHA256 master_addr master_port world_size
 export OMP_NUM_THREADS=2
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
@@ -180,8 +188,16 @@ srun \
     test -n "$(ls -A /sys/class/infiniband 2>/dev/null)"
     freeze_args=()
     resume_args=()
+    compile_args=()
+    transaction_args=()
     if [[ "$FREEZE_BASE" == 1 ]]; then
       freeze_args+=(--freeze-base)
+    fi
+    if [[ "$COMPILE_MODE" != eager ]]; then
+      compile_args+=(--compile-mode "$COMPILE_MODE")
+    fi
+    if [[ "$HARD_TRANSACTIONS" == 0 ]]; then
+      transaction_args+=(--soft-transactions)
     fi
     if [[ "$START_UPDATE" != 0 ]]; then
       resume_args+=(
@@ -212,7 +228,8 @@ srun \
       --data-seed "$DATA_SEED" \
       --total-updates "$TOTAL_UPDATES" \
       --warmup-updates "$WARMUP_UPDATES" \
-      --compile-mode "$COMPILE_MODE" \
+      "${compile_args[@]}" \
+      "${transaction_args[@]}" \
       "${freeze_args[@]}" \
       "${resume_args[@]}"
   '

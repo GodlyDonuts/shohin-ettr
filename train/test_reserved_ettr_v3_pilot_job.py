@@ -26,11 +26,20 @@ def test_reserved_ettr_pilot_binds_release_and_exact_resume() -> None:
         "--resume-checkpoint",
         "--resume-sha256",
         "--checkpoint-every",
-        "--compile-mode",
     ):
         assert argument in SCRIPT
     assert "SOURCE_COMMIT" in SCRIPT
     assert "SHA256SUMS" in SCRIPT
+
+
+def test_reserved_ettr_pilot_supports_stable_soft_eager_training() -> None:
+    assert "HARD_TRANSACTIONS=${HARD_TRANSACTIONS:-1}" in SCRIPT
+    assert '"$COMPILE_MODE" != eager' in SCRIPT
+    assert "compile_args=()" in SCRIPT
+    assert "transaction_args=()" in SCRIPT
+    assert "transaction_args+=(--soft-transactions)" in SCRIPT
+    assert '"${compile_args[@]}"' in SCRIPT
+    assert '"${transaction_args[@]}"' in SCRIPT
 
 
 def test_reserved_ettr_pilot_runs_paired_development_gate() -> None:
