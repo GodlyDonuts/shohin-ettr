@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-30 17:31 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-30 18:01 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -19798,3 +19798,58 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `u2000_pilot_only_u5000_local_learning_real_but_autonomous_causality_fails_scale_stable_components_to_u20000_then_gate_progressive_coupling`.
+
+- **2026-07-30 17:31--18:01 EDT** -- **All four 20,000-position reader
+  lineages completed; longer component training strengthens causal routing in
+  selected seed/rate pairs but still produces no complementary-answer
+  flips.**
+
+  Each lineage loaded its exact 5,000-update reader and trained 15,000 new
+  batches / 240,000 rows / 80,640,000 observed token positions, reaching
+  immutable data position 20,000. Seed 1 at `1e-4` retained WORLD
+  margin-`0.1` rate `12.5%`, increased mean difference-in-differences from
+  `0.01985` to `0.03585`, and increased p95 from `0.12891` to `0.25781`.
+  Its report and final-component SHA-256 values are
+  `e3a5b624e702d1b794904bd9d5a25a41343b2e712c172c100bb1eee185fa4b41`
+  and
+  `ec1bc2b1f697af888aa7d4fb2aff9a866c850ad4ef6b6e98cdc9f17bd3a60096`.
+  Seed 1 at `3e-4` regressed WORLD margin-`0.1` from `12.5%` to `1.5625%`;
+  its report and component hashes are
+  `26e327bd9e9cad4a875f0a635ef30de806feba96d92abafdd5074d02ae24d936`
+  and
+  `44e2666a32ab5ae52b99d001088b506c627770682b554c157ca410fd904e2171`.
+
+  Seed 2 at `3e-4` produced the strongest new routing result: WORLD
+  margin-`0.1` rose from `0%` to `18.75%`, mean difference-in-differences
+  from `0.00630` to `0.02807`, and p95 from `0.04297` to `0.31348`.
+  COMMAND margin-`0.1` reached `1.25%`, although its mean
+  difference-in-differences was negative at `-0.03623`. Its report and
+  component hashes are
+  `f345c58d27bf1ad3e9567711ba2b5e757df301be535794b9a5da2910d0faa8fe`
+  and
+  `c0ce7fda283136793433cbbf7332f31c3106125afbabbd1416ce3d2811316d44`.
+  Seed 2 at `1e-4` did not cross margin `0.1`; its report and component
+  hashes are
+  `aefde08a2385e9f9f5698648813a72649fd1594b7a9359e929801b7c1be14541`
+  and
+  `33880f05340e370d6aa826bf25065200dade6fd331279e4051115d4606a505be`.
+
+  All four arms still have correct/foil top-1 `50%/50%`, joint top-1 `0%`,
+  and paired-order `0%`; none is native reasoning evidence. Duration is
+  therefore useful but insufficient, and learning-rate choice is
+  seed-sensitive. The strongest same-seed reader candidates are seed 1
+  `1e-4` and seed 2 `3e-4`.
+
+  Reservations `723561`/`723562` now rerun the strict 32-batch autonomous
+  assembly evaluator with those two readers and their same-seed 5,000-update
+  compiler/reactor components. Outputs are
+  `train/ettr_component_assembly_seed1_reader20k_lr1e4_3da6f44.json`
+  and
+  `train/ettr_component_assembly_seed2_reader20k_lr3e4_3da6f44.json`.
+  Completed reader allocations `723563`/`723564` were released. If the
+  reassemblies still fail causal margins, the next mechanism is progressive
+  teacher-forcing removal/interface coupling, not another unchanged reader
+  extension.
+
+  Decision:
+  `reader_u20000_confirms_duration_matters_but_no_answer_flip_reassemble_best_per_seed_then_progressively_couple_if_strict_gate_fails`.
