@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-30 17:10 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-30 17:31 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -19723,3 +19723,78 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `u2000_decisively_underbudgeted_but_reactor_loss_was_gradient_dead_fix_objective_scale_components_to_u20000_then_stitch_only_on_hard_gates`.
+
+- **2026-07-30 16:40--17:31 EDT** -- **The first autonomous component
+  assemblies cut held-out composite loss by 44--50%, but do not yet pass
+  causal reasoning gates; 2,000 updates are formally classified as a pilot
+  budget and 20,000 staged updates as the first component-maturity gate.**
+
+  Commit `3da6f44a545d66ef5ba1990d817fc8d29ab46b04` adds
+  `train/eval_ettr_component_assembly.py` and its hostile regression suite.
+  The evaluator loads exact hash-bound compiler, reactor, and query-reader
+  safetensors into an ordinary source-deleted model, scores raw and assembled
+  arms on identical held-out development batches, and requires both a paired
+  total-loss improvement and causal WORLD/COMMAND query-margin gains. The
+  expanded focused suite is **143/143** passing with clean Ruff, byte
+  compilation, and diff checks. Immutable Newton runtime
+  `scratchpad/shohin_ettr_runtime_3da6f44_full_r1` contains 3,322 measured
+  files; `SHA256SUMS` SHA-256 is
+  `11f9b455ee6515870932255a2d97bcc57bfca821dc375dc54b1802e3c2262601`.
+
+  Both 5,000-update same-seed component assemblies completed over 32 held-out
+  batches. Seed 1 reduced mean total loss from `38.5870` to `21.6861`; the
+  paired delta was `-16.9009` with 95% confidence interval
+  `[-17.7514, -16.0505]` and a `100%` win rate. It increased the COMMAND
+  query-margin rate from `0%` to `5%`, but WORLD remained `0%`, so the strict
+  gate failed. Seed 2 reduced mean total loss from `42.6626` to `21.2819`;
+  the paired delta was `-21.3806` with 95% confidence interval
+  `[-22.4707, -20.2906]` and a `100%` win rate. Both causal margin rates
+  remained `0%`, so its strict gate also failed. Report SHA-256 values are
+  respectively
+  `86e56e440c2c3812410fbef9873e2cea869dae8763fa882e38480dac6d15df3f`
+  and
+  `31e295217aec139571a62a74a1f2a6e77d685d8628b278077453fa7c1b8397b6`.
+  These results prove that the separately trained components materially
+  improve the autonomous composite objective, but they do not establish
+  native reasoning or reliable causal composition.
+
+  The exact 15,000-update reader continuations have reached approximately
+  12,900--13,100 new updates per arm, or 17,900--18,100 total data
+  positions. The compiler continuations are at approximately
+  5,800--5,850 new updates. Corrected low-rate reactor continuations from
+  their clean 1,000-update artifacts are at approximately 1,650 new updates
+  and remain finite. Corrected production-path low-rate continuations from
+  the strongest old-objective 5,000-update weights are active on reservations
+  `723565`/`723566` and have reached approximately 250--350 new updates.
+  They use the corrected logit-space objective and immutable position 5,000,
+  but retain only weights/data lineage because the component artifacts do not
+  contain optimizer moments.
+
+  In contrast, corrected fresh `3e-4` reactor controls on `723567`/`723568`
+  became unstable near update 2,950: aggregate loss reached approximately
+  `815/660`, source loss approximately `2,443/1,974`, and pre-clip gradient
+  norm approximately `41,984/1,768`. Gradient clipping prevented corruption
+  outside their isolated outputs, but these controls are not production
+  candidates. Their traces were preserved at SHA-256
+  `10f875918f37b966fb213a90f0f7ffaa5f7fa0dd302df7361a48e54142af47c8`
+  and
+  `ea42fa843308564e0f3e0350abd02d89a9d5e49dd1aacee25b8153c4dfaead4c`,
+  then reservations `723567`/`723568` were canceled near update 2,950 to
+  release both H100s. Completed evaluator reservations `723581`/`723582`
+  were also released after both immutable reports were hash-verified. Do not
+  interpret longer duration at `3e-4` as useful scale; the stable corrected
+  `1e-4` paths are the reactor candidates.
+
+  The budget conclusion is now explicit. Two thousand joint updates exposed
+  gross plumbing and optimization defects but sampled only 2,000 of 160,000
+  immutable train batches while attempting to fit 67.7M new parameters.
+  Five thousand staged updates established local learnability and the first
+  causal reader signal. Twenty thousand staged updates are the first
+  credible same-seed component-maturity gate. After their held-out reports,
+  select only seed-replicated hard-gate winners and rerun this autonomous
+  assembly evaluator. If causal margins still fail, use progressive
+  teacher-forcing removal and explicit interface coupling; do not launch a
+  blind long joint continuation.
+
+  Decision:
+  `u2000_pilot_only_u5000_local_learning_real_but_autonomous_causality_fails_scale_stable_components_to_u20000_then_gate_progressive_coupling`.
