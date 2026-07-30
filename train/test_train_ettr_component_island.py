@@ -11,8 +11,10 @@ from train_ettr_component_island import (
     _masked_categorical_nll,
     compiler_packet_loss,
     _validate_args,
+    load_component_warm_start,
     select_trainable_component,
 )
+from safetensors.torch import save_file
 
 
 class _ComponentModel(nn.Module):
@@ -119,6 +121,47 @@ def test_reader_injection_geometries_are_accepted(
         },
     )()
     _validate_args(arguments)
+
+
+def test_component_warm_start_is_hash_bound(tmp_path) -> None:
+    model = _ComponentModel()
+    path = (tmp_path / "reader.safetensors").resolve()
+    expected = {
+        name: tensor.detach().clone()
+        for name, tensor in model.query_reader.state_dict().items()
+    }
+    save_file(expected, path)
+    import hashlib
+
+    sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
+    with torch.no_grad():
+        for parameter in model.query_reader.parameters():
+            parameter.zero_()
+    observed = load_component_warm_start(
+        model,
+        "reader",
+        path,
+        expected_sha256=sha256,
+    )
+    assert observed == sha256
+    for name, tensor in model.query_reader.state_dict().items():
+        assert torch.equal(tensor, expected[name])
+
+
+def test_component_warm_start_rejects_wrong_hash(tmp_path) -> None:
+    model = _ComponentModel()
+    path = (tmp_path / "reader.safetensors").resolve()
+    save_file(model.query_reader.state_dict(), path)
+    with pytest.raises(
+        ETTRComponentIslandError,
+        match="hash differs",
+    ):
+        load_component_warm_start(
+            model,
+            "reader",
+            path,
+            expected_sha256="0" * 64,
+        )
 
 
 def test_masked_categorical_nll_uses_only_supported_rows() -> None:

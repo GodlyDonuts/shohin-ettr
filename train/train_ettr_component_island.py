@@ -18,7 +18,7 @@ from pathlib import Path
 import re
 from typing import Mapping, Sequence
 
-from safetensors.torch import save_file
+from safetensors.torch import load_file, save_file
 import torch
 import torch.nn.functional as F
 
@@ -159,6 +159,57 @@ def select_trainable_component(
         ),
         "trainable_tensors": len(selected_ids),
     }
+
+
+def _component_module(
+    model: EndogenousTypedTheoryReactorGPT,
+    component: str,
+) -> torch.nn.Module:
+    try:
+        return {
+            "compiler": model.compiler,
+            "reactor": model.reactor,
+            "reader": model.query_reader,
+        }[component]
+    except KeyError as exc:
+        raise ETTRComponentIslandError(
+            "unknown ETTR component island"
+        ) from exc
+
+
+def load_component_warm_start(
+    model: EndogenousTypedTheoryReactorGPT,
+    component: str,
+    path: Path,
+    *,
+    expected_sha256: str,
+) -> str:
+    """Load one hash-bound component artifact without touching other weights."""
+
+    if (
+        not path.is_absolute()
+        or not path.is_file()
+        or path.is_symlink()
+        or _HEX64.fullmatch(expected_sha256) is None
+    ):
+        raise ETTRComponentIslandError(
+            "component warm-start custody differs"
+        )
+    observed = _sha256_file(path)
+    if observed != expected_sha256:
+        raise ETTRComponentIslandError(
+            "component warm-start hash differs"
+        )
+    module = _component_module(model, component)
+    device = next(module.parameters()).device
+    state = load_file(str(path), device=str(device))
+    try:
+        module.load_state_dict(state, strict=True)
+    except RuntimeError as exc:
+        raise ETTRComponentIslandError(
+            "component warm-start tensors differ"
+        ) from exc
+    return observed
 
 
 def _masked_categorical_nll(
@@ -590,11 +641,7 @@ def _component_state(
     model: EndogenousTypedTheoryReactorGPT,
     component: str,
 ) -> dict[str, torch.Tensor]:
-    module = {
-        "compiler": model.compiler,
-        "reactor": model.reactor,
-        "reader": model.query_reader,
-    }[component]
+    module = _component_module(model, component)
     return {
         name: tensor.detach().cpu().contiguous()
         for name, tensor in module.state_dict().items()
@@ -613,11 +660,14 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--checkpoint-sha256", required=True)
     parser.add_argument("--run-contract", type=Path, required=True)
     parser.add_argument("--run-contract-sha256", required=True)
+    parser.add_argument("--initial-component", type=Path)
+    parser.add_argument("--initial-component-sha256")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--architecture-seed", type=int, required=True)
     parser.add_argument("--data-seed", type=int, required=True)
     parser.add_argument("--updates", type=int, default=500)
+    parser.add_argument("--start-position", type=int, default=0)
     parser.add_argument("--learning-rate", type=float, default=3e-4)
     parser.add_argument("--weight-decay", type=float, default=0.0)
     parser.add_argument("--gradient-clip", type=float, default=1.0)
@@ -632,6 +682,12 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def _validate_args(args: argparse.Namespace) -> None:
+    initial_component = getattr(args, "initial_component", None)
+    initial_component_sha256 = getattr(
+        args,
+        "initial_component_sha256",
+        None,
+    )
     if (
         _HEX64.fullmatch(args.release_sha256) is None
         or _HEX64.fullmatch(args.checkpoint_sha256) is None
@@ -640,6 +696,7 @@ def _validate_args(args: argparse.Namespace) -> None:
         or not 0 <= args.architecture_seed < 2**63
         or not 0 <= args.data_seed < 2**63
         or args.updates < 1
+        or getattr(args, "start_position", 0) < 0
         or args.eval_batches < 2
         or args.log_every < 1
         or not math.isfinite(args.learning_rate)
@@ -649,6 +706,11 @@ def _validate_args(args: argparse.Namespace) -> None:
         or not math.isfinite(args.gradient_clip)
         or args.gradient_clip <= 0.0
         or (args.component != "reader" and args.reader_injection != "stage")
+        or ((initial_component is None) != (initial_component_sha256 is None))
+        or (
+            initial_component_sha256 is not None
+            and _HEX64.fullmatch(initial_component_sha256) is None
+        )
     ):
         raise ETTRComponentIslandError("component trainer arguments differ")
 
@@ -709,6 +771,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     del resume_optimizer
 
     ownership = select_trainable_component(model, args.component)
+    warm_start_sha256 = None
+    if args.initial_component is not None:
+        warm_start_sha256 = load_component_warm_start(
+            model,
+            args.component,
+            args.initial_component,
+            expected_sha256=args.initial_component_sha256,
+        )
     trainable = tuple(
         parameter for parameter in model.parameters() if parameter.requires_grad
     )
@@ -743,6 +813,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "data_seed": args.data_seed,
             "eval_batches": args.eval_batches,
             "gradient_clip": args.gradient_clip,
+            "initial_component_sha256": warm_start_sha256,
             "learning_rate": args.learning_rate,
             "oracle_at_autonomous_inference": False,
             "oracle_training_boundary": {
@@ -757,6 +828,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "run_contract_sha256": args.run_contract_sha256,
             "schema": RUN_SCHEMA,
             "source_commit": args.source_commit,
+            "start_position": args.start_position,
             "updates": args.updates,
             "weight_decay": args.weight_decay,
         }
@@ -768,7 +840,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         model.train()
         epoch = 0
-        position = 0
+        position = args.start_position
         iterator = stream.iter_positioned_batches(
             "train",
             rank=0,
@@ -873,6 +945,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "final_component_sha256": final_component_sha256,
             "final_parameter_sha256": _parameter_sha256(model),
             "initial_component_sha256": initial_component_sha256,
+            "loaded_component_sha256": warm_start_sha256,
             "initial_parameter_sha256": initial_parameter_sha256,
             "last_loss": last_loss,
             "observed_rows": observed_rows,
@@ -885,6 +958,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "reader_injection": args.reader_injection,
             "schema": REPORT_SCHEMA,
             "source_commit": args.source_commit,
+            "start_position": args.start_position,
             "source_verification": source_verification,
             "updates": args.updates,
         }
