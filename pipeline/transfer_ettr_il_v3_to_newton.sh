@@ -231,7 +231,8 @@ rsync \
     && sha256sum -c SHA256SUMS >/dev/null"
 
 "${remote_ssh[@]}" "$DEST_HOST" \
-  "$DEST_PYTHON - '$partial_root' '$DEST_ROOT' '$DEST_CODE_ROOT'" <<'PY'
+  "env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+    '$DEST_PYTHON' - '$partial_root' '$DEST_ROOT' '$DEST_CODE_ROOT'" <<'PY'
 import hashlib
 import json
 import os
