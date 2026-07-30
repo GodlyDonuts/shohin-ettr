@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-30 12:59 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-30 14:08 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -19511,3 +19511,91 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `ettr_data_sufficient_for_component_scale_u500_compiler_reactor_positive_reader_zero_run_two_seed_u5000_before_autonomous_extension`.
+
+- **2026-07-30 12:59--14:08 EDT** -- **Five thousand staged updates confirm
+  that 2,000 joint updates were underbudgeted, while matched reader-routing
+  probes reject output relocation as a sufficient fix.**
+
+  Both 5,000-update compiler islands completed after seeing 80,000 rows /
+  26,880,000 observed WORLD+COMMAND+QUERY token positions. Seed 1 improved
+  held-out active/type/value accuracy from
+  `55.08%/16.96%/27.83%` to `98.23%/94.84%/67.85%`; seed 2 improved value
+  from `71.86%` to `84.10%` while retaining approximately `99.63%` active
+  and `96.18%` type accuracy. Complete packet exactness remains zero because
+  the current statistic requires every one of the 65,536 sparse relation
+  cells to be correct and is not a balanced edge metric. Report SHA-256
+  values are
+  `550a9ec5c38194a92593e7395f2564363ede749ec2cb7f628a67b92a7d52dfe4`
+  and
+  `f6dd86b6b9b4920aac6d5a5be99404c1a5eef17982d4c1706693ae9baa5d5b58`.
+
+  Both 5,000-update stage-reader islands also completed on 80,000 rows /
+  26,880,000 observed token positions. Seed 1 produced the first material
+  exact-terminal causal signal: WORLD mean difference-in-differences rose
+  to `0.01985`, the 95th percentile to `0.12891`, and `12.5%` of WORLD
+  contrasts crossed margin `0.1`; the depth-17--32 stratum reached `40%`.
+  Seed 2 remained weaker with WORLD mean `0.00630` and no margin-0.1 pair.
+  Neither seed flipped complementary answers: correct/foil top-1 stayed
+  `50%/50%`, joint and paired-order stayed zero, and COMMAND margin-0.1
+  stayed zero. Report SHA-256 values are
+  `32e3f4533c85c7943136866d4f9d11e649c560b6832b14362efcf4d8cd1bf59d`
+  and
+  `9f5e6594bb0a7bf64e1a8a55272238d693ff999f02b16297c33e720156bbe5c7`.
+  The exact final reader component SHA-256 values are respectively
+  `4b7c2d184f2b8d11327fb2a044f3605facea4175d67b6cd5de8b516ec79a5c5b`
+  and
+  `811d4735a53d74bf311ed0e19c7042dc22a84e91e0ac721c7aa631a2654fd2cb`.
+  The two 5,000-update reactor islands remain active; do not interpret their
+  noisy per-batch source losses before held-out assessment.
+
+  The reader output was then localized under two matched two-seed,
+  1,000-update probes. Moving its residual after the ten frozen decoder
+  blocks (`late`) produced only quantized logit motion: no pair reached
+  margin `0.1` and joint/paired-order remained zero. Report SHA-256 values
+  are
+  `b8c71ccbb9368910d65fba8affa6ee2c06b7957eef6cb3ca8221cdd1018aba06`
+  and
+  `24f9651a267711cafe68edd80a63df2154c90c0ba893e66beb7344bb060adae8`.
+  Direct post-normalization injection then exposed an amplitude failure:
+  losses reached tens to hundreds under large clipped gradients. Fixed
+  `1/sqrt(d_model)` calibration restored finite ordinary loss but did not
+  improve held-out joint/order or margin-0.1 after 1,000 updates. Unscaled
+  report SHA-256 values are
+  `a9b5b557100ee91cd39896b266faa4364d058c73aa17a48ea6d8516fba2e714b`
+  and
+  `94029d213dbae7c0e8a0db67d623d5359a4b566709127cccba05e63756e5fd37`;
+  calibrated values are
+  `9d390018e1fadab66a57c8388332c31b8b02a16aa99623c328b67264a1d82592`
+  and
+  `f5068788244ae279637fbf2fbde5e30f07f5a8bf70443fd74d7c5fac8b4ea9c4`.
+  A read-only 64-batch audit confirmed the query alphabet is exactly tokenizer
+  tokens `"0"` and `"1"` with counts `672/352`; the frozen vocabulary head
+  is therefore an unnecessarily broad interface, but a binary motor is not
+  authorized until duration is separated from routing.
+
+  Commits
+  `309cb02383e71b73d2f05283a3e1d2c138f1ce62`,
+  `0b3c8bbc458d8b3d7c4125be5fcf36cc6788d9a8`, and
+  `66eafea5acd2a8804c2f2537e2eb07008505aa7d` bind the late/post-norm
+  geometries, calibrated arm, and exact component warm-start/data-cursor
+  continuation. Their immutable runtime `SHA256SUMS` SHA-256 values are
+  `21f48397dbba5f6e324ee591337daa45e159931f0e4c3c2c85f4d9d50da88d0e`,
+  `50e1a9ac33836f603c3e7af5c74ad6a2d4103148100e391a923b7e9dc11aff29`,
+  and
+  `8ce3f88c815575c0ca650b1de40315e18ec7333e838b8d301d21395212599543`.
+  The evaluator/objective/probe/component suite is **63/63** passing with
+  clean Ruff, byte compilation, and diff checks.
+
+  Exact continuations now use reservations `723336` and `723337`, load the
+  two hash-bound 5,000-update reader artifacts, advance the immutable train
+  cursor to position 5,000, and train 15,000 new batches for 20,000 total
+  stage-reader updates. The first attempted `r1` launch carried an incorrect
+  source-commit string and was canceled within seconds before training;
+  immutable `r2` outputs are the only admissible continuations. These runs
+  will see 240,000 new rows and bring each reader lineage to 320,000 rows,
+  still only one eighth of the 160,000-batch release. Do not stitch or claim
+  autonomous reasoning until held-out correct/foil joint accuracy,
+  paired-order, both WORLD and COMMAND margins, and seed replication pass.
+
+  Decision:
+  `u2000_too_low_u5000_compiler_positive_world_reader_emerging_routing_relocation_insufficient_continue_stage_reader_to_u20000_exactly`.
