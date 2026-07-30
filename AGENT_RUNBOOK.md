@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-30 05:18 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-30 09:39 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -19053,3 +19053,204 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `separation_pass_release_builder_48cpu_acceleration_running_verifier_and_optimizer_still_blocked`.
+
+- **2026-07-30 08:24 EDT** -- **The admitted packet-v2 release reached
+  Newton, exact production diagnostics rejected naive hard straight-through
+  training, and five replicated soft-training gates localized the remaining
+  failure to soft-to-hard state transfer.**
+
+  Accelerated builder `756321` and independent verifier `756322` completed.
+  Newton's immutable transfer is
+  `artifacts/ettr_il_v3/training-e5f3705-packet-v2`; release-file SHA-256 is
+  `8c6d7d80603e29e92f14027929ae4ef7e848094a44a154ef37b2bcbf726d4462`
+  and release source commit is
+  `e5f3705d3058125b979ac38269bd7f1df2cf8f1b`. The protected checkpoint
+  remained
+  `train/flagship_out/ckpt_0300000.pt` at SHA-256
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
+
+  Compiled hard-transaction lanes spent roughly 40--50 minutes in production
+  compilation without an update. Explicit eager control commit
+  `e6601536a8ea81131562c3a1a4e59008baa59b4c` removed that latency, then two
+  exact hard first updates failed with a nonfinite gradient norm and CUDA
+  device assertion. Exact first-batch diagnostic commit
+  `077f57b` established that the same release/checkpoint/batch in soft mode
+  completes in 3.602 seconds with total loss `28.50699`, finite pre-clip
+  gradient norm `48.75`, and all **67,697,771 / 67,697,771** trainable
+  architecture-gradient elements finite. This rejects data corruption,
+  checkpoint corruption, and optimizer construction as causes.
+
+  Stable soft mode was bound into exact resume and run contracts by commits
+  `07e7f63d8befca66db59abd50a18f904a30064fb` and
+  `25d84f0a497c3c09bd6a005188522302dffda22e`. Four independent world-two
+  seeds and one world-twelve same-seed arm each trained 100 updates and were
+  evaluated through the unchanged literal-hard development path. All five
+  stopped automatically at `strict_learning_signal=false`. World twelve and
+  world-two seeds 3--5 significantly improved paired total loss by `-4.863`,
+  `-5.055`, `-6.653`, and `-4.740`; seed 2 regressed by `+7.346`. Every raw
+  and trained arm nevertheless remained at WORLD margin rate `0.0` and
+  COMMAND margin rate `0.0`. Report SHA-256 values are, respectively,
+  `9c4bfc3749fd043ec2d1380c6d4fd1dcde6ca7ddd9eb73b10b57f1c8abf42c09`,
+  `3b10523c5c73c2a65fce760e27e79d390b14b2c12c05ed08b244ed5bd72bf058`,
+  `51371bdbb06022afa261c13da4ef620d644ceb5aefec94b9ef2679da5b4ef1b6`,
+  `8d1ba145e46cd8c9bd7ee56438b3f81371ddafc19432abab8ef6709305152a31`,
+  and
+  `20e017d6d6aef8fba1d8f5965ceff0bc526abfda9026f0628932497a4fb32e62`.
+  Soft training therefore learns easier packet/status objectives but has not
+  crossed the hard causal-query boundary. No arm was allowed to spend 500 or
+  2,000 updates.
+
+  All obsolete hard and soft child steps were canceled without canceling
+  their parent H100 reservations. The failed `722178.20` reserved-primary
+  child was also removed. The two-H100 parent `722178` and one-H100 parents
+  `723330`--`723349` remain reserved.
+
+  Decision:
+  `release_verified_hard_ste_nonfinite_soft_finite_but_five_of_five_hard_margin_gates_fail_stop_all_soft_ladders`.
+
+- **2026-07-30 08:43 EDT** -- **A bounded-adjoint hard-forward mechanism is
+  production-finite, and all twenty independent H100 reservations are now
+  running a replicated five-point learning-direction sweep.**
+
+  Commit `02e8c7744176d5b8b244f7601797a63b9573da82` introduced an
+  exact-forward probability log whose local NLL derivative can be capped and
+  bound the cap into run contracts, checkpoint sampler state, and resume
+  validation. NLL caps `1, 4, 16, 64` alone all still failed the exact first
+  production update, proving the 64-step recurrent hard-state adjoint was
+  independently unstable. Commit
+  `132d983440da6428738a69512e54361ac0786497` therefore bounds each
+  straight-through discrete-choice adjoint and every recurrent hard-state
+  boundary to `[-1,1]` while leaving the literal hard forward trajectory and
+  all development scoring unchanged. Focused tests are **94/94** passing
+  with clean Ruff, byte compilation, Bash syntax, and diff checks.
+
+  Immutable Newton runtime
+  `scratchpad/shohin_ettr_runtime_132d983_full_r1` contains 3,315 measured
+  files; its `SHA256SUMS` file SHA-256 is
+  `da27882f1fb61e4297f18949dcf116b34b1e9d67757c84c669da61d7d1a92645`.
+  Exact first-batch hard-forward diagnostics now pass for uncapped NLL and
+  caps `1, 4, 16, 64`. All losses are identical at `37.725956`, all
+  67,697,771 architecture-gradient elements are finite, and pre-global-clip
+  norms are `3,648`, `7,168`, `8,448`, `11,072`, and `13,696`. Thus the
+  recurrent adjoint boundary, not an arbitrary NLL cap, is the essential
+  stabilization.
+
+  Ten matched world-two ladders now use all parents `723330`--`723349`:
+  caps `{uncapped,1,4,16,64}` are each run under architecture/data seeds
+  `2026072801/2026072802` and independently replicated under
+  `2026072811/2026072812`. Each arm uses two H100s, eager hard transactions,
+  the frozen base, exact packet-v2 release, token schedule
+  `300000/2000`, and the unchanged 100-update strict hard-state gate.
+  Five watchers run from each login host to remain below Newton's 100-thread
+  per-host limit. Early logs show all ten arms finite through updates 10--20;
+  no arm may continue to update 500 unless its own literal-hard causal margin
+  gate passes.
+
+  Decision:
+  `bounded_hard_adjoint_passes_exact_production_gradient_gate_twenty_h100_replicated_cap_sweep_running`.
+
+- **2026-07-30 09:03 EDT** -- **Bounded hard-forward training is stable but
+  the original 2,000-update warmup was too slow for the 100-update gate; all
+  available H100s now run the measured 500-update schedule/cap experiment.**
+
+  All ten matched world-two bounded-adjoint arms completed their exact
+  100-update paired hard-state evaluations and stopped before update 500.
+  Every arm changed parameters and remained finite, but all ten had raw and
+  trained WORLD/COMMAND margin rates of `0.0`, so the unchanged strict gate
+  rejected all ten. Under seed 1, paired checkpoint-minus-raw total-loss
+  changes for NLL caps `1, 4, 16, 64, uncapped` were respectively
+  `-2.5950`, `-2.4744`, `-3.2760`, `-1.3353`, and `+0.5878`. Under seed 2,
+  the corresponding changes were `+4.3567`, `+2.5214`, `+3.5791`,
+  `+2.9092`, and `-1.9849`. Every query-binding loss moved only by
+  approximately `0.001`--`0.010`; the direction reversal across seeds
+  rejects cap selection alone as a reliable learning solution.
+
+  A same-seed cap-4 schedule control changed only warmup from `2,000` to
+  `333` updates. At update 100 it improved paired total loss by **`-8.1751`**
+  with 95% CI **`[-8.5699, -7.7803]`** and win fraction `1.0`; total loss
+  moved `38.4505 -> 30.2754`. WORLD query loss moved
+  `3.8256 -> 3.6528` and COMMAND query loss moved `3.9077 -> 3.7341`.
+  Margins remained `0.0`, so this is a strong learning-direction result, not
+  yet a reasoning claim. Its evaluation report SHA-256 is
+  `553a11d7ba48429db0a510a6ae2d6da18e35232de42ceb4258e8f34543b5c10f`.
+
+  The control also exposed a reserved-launcher defect: a two-GPU checkpoint
+  recorded two local CUDA RNG states, while evaluation exposed only one GPU.
+  Commit `deea68c5b12bb2773e4bd35a518b2218c4f3fdc8` makes reserved evaluation
+  preserve `GPUS_PER_NODE`; **12/12** focused launcher tests, Bash syntax,
+  Ruff, and diff checks pass. The unchanged checkpoint evaluated cleanly
+  after exposing both GPUs. Immutable Newton runtime
+  `scratchpad/shohin_ettr_runtime_deea68c_full_r1` contains 3,314 measured
+  source files; its `SHA256SUMS` file SHA-256 is
+  `46fae31bda94aef374620335620d8356161a3ec9a74e956c1be1afe3e73011ac`.
+
+  The measured cap-4/warmup-333 arm now continues exactly from update 100 to
+  500 on two H100s in allocation `722178`. Ten fresh direct-to-500
+  world-two arms use all one-H100 parents `723330`--`723349`: both seeds
+  cross caps `{uncapped,1,4,16,64}` at warmup `333`. The other two H100s in
+  `722178` were assigned a same-seed cap-4/warmup-100 direct-to-500 schedule
+  control, but `evc33` rejected the task before Python on both bounded launch
+  attempts; no model update or artifact was produced, and retries stopped.
+  All runs keep the frozen base, exact hard forward transactions, bounded
+  recurrent adjoints, the same 300,000-update optimizer horizon, and the
+  unchanged literal hard-state evaluation. No result may be called learned
+  reasoning unless WORLD and COMMAND causal margins increase.
+
+  Decision:
+  `hard_training_stable_warmup333_strong_loss_direction_but_zero_margins_run_measured_u500_replication_on_all_22_productive_h100s`.
+
+- **2026-07-30 09:39 EDT** -- **All ten update-500 replicas significantly
+  learned the hard-forward objective; causal-query loss is now near the
+  strict boundary, and exact continuations to update 2,000 use all 22
+  productive H100s.**
+
+  Every direct update-500 arm passed finite-metric and parameter-change
+  checks and significantly improved paired total loss with the faster
+  warmup. For caps `1, 4, 16, 64, uncapped`, seed-1 deltas were
+  `-9.6981`, `-9.7435`, `-8.2287`, `-2.7343`, and `-5.7666`; seed-2
+  deltas were `-6.4300`, `-12.7507`, `-10.4083`, `-14.3101`, and
+  `-18.1693`. Nine arms had win fraction `1.0`; seed-1 cap 64 had
+  `0.765625`, and seed-1 uncapped had `0.96875`. The corresponding trained
+  WORLD/COMMAND query losses lie in `0.9818--1.0802` and
+  `1.0231--1.1212`, compared with raw seed-specific losses near
+  `3.8--4.0`. Nevertheless, all raw and trained strict WORLD/COMMAND
+  margin rates remain exactly `0.0`; this is a strong near-boundary
+  learning result, not yet causal reasoning.
+
+  Update-500 report SHA-256 values for seed 1 caps
+  `{1,4,16,64,uncapped}` are
+  `{987647a88077e0bd8df9343ef3f5185d540703fe51eef68a58c3a41c0bce407d,
+  0ac7db5b8cd5c20740b7c10075f116315c4c15bb59940394114f1d510637a357,
+  59e69efaeff384f4b7b84e66259575babdf86cc8815a358d78563384439374ca,
+  7082a54117abd901fe6cf60509e289b4cdc5f978ecdf2081dd2d3d8b0bed9c56,
+  abf58156ec0cbf422eb48eacfa48973759d1d97e2a82815163f0777f4d12a2c3}`.
+  Seed-2 values in the same cap order are
+  `{2e14d19a20fe6a480c38714bbad073124c618082bae01b3f7223549195fc7d8f,
+  c98a06e715bc307ff407b53fd881bd58adaaa68be62634beba4dc6b7f0f0bd40,
+  c723e8f193e50e5449394f8b8dbce5406a1428b08c7f6a8f0b6f4b487d135e04,
+  a32d15caeb0cb2ef272acafe401038d118a7146db57d6c3509e8ef9c5762f226,
+  5d893411e1310f8ee12268f14ec6c83d908e60425a889a45ef2aff1758184729}`.
+
+  The exact reserved cap-4 continuation independently reached update 500
+  with paired delta `-4.1949`, 95% CI `[-4.7672,-3.6226]`, win fraction
+  `0.9375`, WORLD query loss `3.8256 -> 1.0335`, and COMMAND query loss
+  `3.9077 -> 1.1155`; report SHA-256 is
+  `5b345d8670444be4e37bdc7508ce604c06d10b8918bf99ead71c5a8eae7a2bf6`.
+
+  All ten direct checkpoints now continue exactly from update 500 to 2,000
+  on parents `723330`--`723349`; the reserved cap-4 checkpoint continues on
+  two H100s in `722178`. Caps, seeds, release, checkpoint trust root,
+  frozen-base setting, hard forward, adjoint bound, warmup, and optimizer
+  horizon remain unchanged. In parallel, commit
+  `f6444067dfff7fccbd2d7e8f9e5c78f758f77b88` adds an exact-resume
+  `query_binding_weight` contract for a next-stage controlled sweep.
+  **111/111** focused tests plus Ruff, byte compilation, Bash syntax, and
+  diff checks pass. Immutable runtime
+  `scratchpad/shohin_ettr_runtime_f644406_full_r1` has `SHA256SUMS`
+  SHA-256
+  `d67fe35732c4b7d08fc24fececf7a41b8e1b67c661187244b10bbd29c348646b`.
+  It is ready but must not replace the duration experiment before the
+  unchanged update-2,000 hard-state gate reports.
+
+  Decision:
+  `u500_ten_of_ten_significant_loss_learning_query_objectives_near_margin_but_zero_strict_rate_continue_exactly_to_u2000`.
