@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-30 16:40 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-30 16:57 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -19664,11 +19664,31 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Corrected fresh-from-update-2,000 reactor replications run on reservations
   `723567` and `723568` for 5,000 updates at `3e-4`; shorter two-seed
-  `1e-4` controls run on `723579` and `723580`. They do not inherit any
+  `1e-4` controls ran on `723579` and `723580`. They do not inherit any
   zero-gradient-trained reactor component. By update 100, seed 2 target loss
   fell from `2.7682` to `1.8257` at `3e-4` and from `3.0841` to `1.5395`
-  at `1e-4`, immediately rejecting the former flat-loss behavior. Held-out
-  hard accuracy, not training loss, remains the decision gate.
+  at `1e-4`, immediately rejecting the former flat-loss behavior.
+
+  Both corrected `1e-4` controls then completed 1,000 updates and passed the
+  first held-out replication gate. Seed 1 teacher-forced joint accuracy rose
+  from `0.92%` to `13.39%`, source from `9.55%` to `40.52%`, and target from
+  `9.24%` to `24.46%`. Seed 2 joint rose from `5.82%` to `16.65%`, opcode
+  from `5.82%` to `72.80%`, source from `0.40%` to `38.47%`, relation from
+  `16.54%` to `29.14%`, and value from `9.92%` to `30.71%`; target remained
+  nonzero at `21.62%` rather than collapsing to zero. Report SHA-256 values
+  are
+  `6bd9b70d662d24ef64114d6152667576096c72aa7a6354adaced05490c26a88e`
+  and
+  `40f3467b85de9096ffa5c9f099ded31aa126188db0acb9b099bd6ecf50d61550`.
+  The corresponding final component SHA-256 values are
+  `c01a8da5c399079b6d53959bcd2c2d7ab70104d18d760e878c31cd7c618533e1`
+  and
+  `47b604dc89462931514662482a63b3b0012b4ea9ff1b7ddd3b5256637174aa26`.
+  Hash-bound continuations on the same reservations now advance the data
+  cursor to position 1,000 and train 4,000 new batches for 5,000 total
+  corrected low-rate updates. These continuations again use fresh AdamW
+  state because the component-island artifact does not contain moments.
+  Held-out hard accuracy, not training loss, remains the decision gate.
 
   Reader continuations were migrated to fresh 12-hour reservations:
   `723561`/`723562` run two seeds at `3e-4`, and `723563`/`723564` run the
