@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-29 18:55 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-30 02:00 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -18621,3 +18621,82 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finepdf_blinded_semantic_gate_ready_core_stronger_not_pristine_human_labels_required_ettr_v2_audits_live_no_optimizer`.
+
+- **2026-07-30 02:00 EDT** -- **A healthy two-H100 ETTR production-step
+  canary passed from the protected checkpoint; one reserved node is
+  quarantined, and optimizer admission still waits for the complete v2 data
+  audit.**
+
+  A self-audit of the first blinded FinePDF comparison found that its
+  cross-arm gate rejected shared stable identities but did not independently
+  reject shared exact document bytes. Private commit `00ca28a` adds the
+  exact-document SHA-256 overlap rejection and a hostile test. The two
+  1,000-document source packets have zero stable-identity overlap and zero
+  exact-document overlap. New sealed one-file runtime
+  `scratchpad/shohin_blinded_review_runtime_00ca28a_r1` has inventory SHA-256
+  `90dd52766a26471a9012e4aea3c9ca1508d6e55059e0b5aa04e7ebaa32479be7`
+  and archive SHA-256
+  `f440c553b7d201b3f37823b9c413104c6b69f6b7ad368771ad2969c555e22a6c`.
+  Its v2 private packet contains the same independently sampled 200 matched
+  documents and has SHA-256
+  `ccf5eeddd5b2c5e19ecd34ccb3f839e6104d276a3a40d85071bdfde0c0ef8d36`;
+  the separate key remains
+  `93cd0822ed16abdfc66f3172c3a87c7999a5764790087b12c6b38ce180d33ff2`
+  and the strengthened text-free receipt is
+  `5d3e47a96aa084bc6395c59524780c88f07712e55c691d6d9c4e221958187fe0`.
+  Human labels are still absent, so neither FinePDF arm is admitted.
+
+  FineWeb-Edu builder `754467` remains the sole active writer. Its obsolete
+  dependency review used a mutable shared wrapper and was canceled before
+  start. Replacement job `756090` is dependency-held behind the builder and
+  binds immutable review runtime `shohin_source_review_runtime_3d56be2_r1`,
+  exact tokenizer runtime `shohin_ettr_fineweb_r2_49a5584`, and tokenizer
+  SHA-256
+  `c7bb632ce769a795bb615cebcb264372e7b36996146cafc7ceb42bddd2a8d1ea`.
+  It targets fresh no-replace review and receipt paths. FineWeb remains
+  quarantined.
+
+  Four-H100 reservation `722178` started at 01:33:59 EDT on `evc24,evc33`.
+  The first world-size-four canary step failed before torchrun because
+  `evc33` could not return basic NVIDIA health data; a bounded follow-up
+  showed both `evc24` H100s enumerate and allocate normally while `evc33`
+  hung in `nvidia-smi`. The reservation remains alive, `evc33` is prohibited
+  for this run, and no training output or optimizer state was created.
+
+  The unchanged source- and checkpoint-bound canary then ran on both healthy
+  `evc24` H100s and passed at world size two. Both ranks began from parameter
+  SHA-256
+  `cb086c7681695a4913cb2f9ebfa9641bda2762f6c279ba8e116108dcdf5eb82b`
+  and ended after two synchronized architecture-only updates at identical
+  SHA-256
+  `ac1675dfaea5b1dd41ce2096bb9980bf432620f4e7c8b48716399c200b796c26`.
+  The model has **192,779,435 total parameters** and **67,697,771 unique
+  trainable ETTR parameters** with the 125M base frozen. Peak per-rank
+  allocation/reservation was 5,714,390,016 / 6,608,125,952 bytes. The first
+  compiled update took 578.75 seconds and the second 0.321 seconds. All
+  receipts were finite, rank-local batches differed as intended, and the
+  protected checkpoint remained byte-identical at SHA-256
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
+  Independently validated report SHA-256 is
+  `2549e28240b14863a2235cf233bd6c2fc74f8c24310ae93e3a6f4db9ee63a0d5`.
+
+  The Python canary sealed its output directory before the shell wrapper
+  attempted to add `SHA256SUMS`, so the core step completed but the wrapper
+  returned nonzero during post-processing. The exact report was independently
+  validated, its checksum sidecar was written no-replace, and report,
+  sidecar, and directory were resealed at modes 0400/0400/0500. The source
+  fix writes both artifacts before sealing and makes the wrapper verify rather
+  than mutate them; focused tests pass **6/6**, Ruff, byte compilation, shell
+  syntax, and diff checks pass.
+
+  ETTR v2 is still not a learned-capability result. Main independent audit
+  `756063` and the last three confirmation Horn cells remain CPU-active with
+  no failed outputs; confirmation audit `756064`, separation `756065`, and
+  exact packet-context audit `756066` remain dependency-held. Release,
+  direct transfer, optimizer, and first-rung lock are absent. The first
+  100-update gate is rebound to prefer any fully healthy ten-H100 canary and
+  otherwise use the proven `evc24` world-size-two subset, followed only on a
+  strict positive learning signal by 500 and 2,000 updates.
+
+  Decision:
+  `world2_h100_production_step_pass_evc33_quarantined_v2_data_audit_still_blocks_optimizer`.

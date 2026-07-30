@@ -23,6 +23,8 @@ def test_distributed_canary_is_source_and_checkpoint_bound() -> None:
     assert "--checkpoint-sha256" in SCRIPT
     assert "--expected-step 300000" in SCRIPT
     assert "canary_ettr_distributed_h100.py" in SCRIPT
+    assert "sha256sum -c SHA256SUMS" in SCRIPT
+    assert 'sha256sum "$OUTDIR/report.json" >' not in SCRIPT
 
 
 def test_distributed_canary_cannot_read_release_or_training_shards() -> None:

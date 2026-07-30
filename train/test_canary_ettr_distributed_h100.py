@@ -43,3 +43,5 @@ def test_distributed_canary_source_contains_rank_identity_gate() -> None:
     assert "final_parameter_sha256" in source
     assert "dist.ReduceOp.MAX" in source
     assert "checkpoint_after != checkpoint_sha256" in source
+    assert 'output / "SHA256SUMS",' in source
+    assert '(output / "SHA256SUMS").chmod(0o400)' in source

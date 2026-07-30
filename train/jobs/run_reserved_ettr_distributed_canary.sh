@@ -141,6 +141,12 @@ srun \
   '
 
 test -s "$OUTDIR/report.json"
-sha256sum "$OUTDIR/report.json" > "$OUTDIR/SHA256SUMS"
-chmod 400 "$OUTDIR/report.json" "$OUTDIR/SHA256SUMS"
+test -s "$OUTDIR/SHA256SUMS"
+(
+  cd "$OUTDIR"
+  sha256sum -c SHA256SUMS
+)
+test "$(stat -c %a "$OUTDIR")" = 500
+test "$(stat -c %a "$OUTDIR/report.json")" = 400
+test "$(stat -c %a "$OUTDIR/SHA256SUMS")" = 400
 printf 'ettr_distributed_canary_complete output=%s\n' "$OUTDIR"

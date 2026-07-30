@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import asdict, replace
 from datetime import timedelta
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -304,7 +305,15 @@ def run(
             "validation_batch_sha256": validation_hash,
             "world_size": world_size,
         }
-        _write_no_replace(output / "report.json", _canonical_bytes(report))
+        report_bytes = _canonical_bytes(report)
+        _write_no_replace(output / "report.json", report_bytes)
+        report_sha256 = hashlib.sha256(report_bytes).hexdigest()
+        _write_no_replace(
+            output / "SHA256SUMS",
+            f"{report_sha256}  report.json\n".encode("ascii"),
+        )
+        (output / "report.json").chmod(0o400)
+        (output / "SHA256SUMS").chmod(0o400)
         output.chmod(0o500)
         return report
     finally:
