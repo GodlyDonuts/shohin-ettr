@@ -22,6 +22,7 @@ from tokenizers import Tokenizer
 from ettr_checkpoint import load_ettr_checkpoint
 from ettr_data_contract import ETTRContinuationBatch
 from ettr_episode import CausalETTREpisodeRunner, ETTREpisodeSegment
+from endogenous_typed_theory_reactor import TypedTheoryState
 from ettr_objectives import ETTRCausalQueryPair, ETTRObjectiveConfig
 from ettr_optimization import ETTROptimizerBundle
 from ettr_packet_index import ETTRDiskPacketSufficiencyIndex
@@ -40,7 +41,7 @@ from eval_ettr_v3 import (
 )
 
 
-REPORT_SCHEMA = "shohin-ettr-il-v3-causal-query-probe-v1"
+REPORT_SCHEMA = "shohin-ettr-il-v3-causal-query-probe-v2"
 _MARGIN_THRESHOLDS = (0.0, 0.1, 0.25, 0.5, 1.0)
 
 
@@ -81,7 +82,10 @@ def _validate_args(args: argparse.Namespace) -> None:
 def _objective_pairs(
     model: torch.nn.Module,
     batch: ETTRContinuationBatch,
-) -> Mapping[str, ETTRCausalQueryPair]:
+) -> tuple[
+    Mapping[str, ETTRCausalQueryPair],
+    Mapping[str, list[dict[str, object]]],
+]:
     runner = CausalETTREpisodeRunner(model)
     steps = batch.transaction_targets.opcode.shape[1]
     output = runner(
@@ -112,10 +116,95 @@ def _objective_pairs(
         hard=True,
     )
     objective = batch.objective_batch(output, interventions)
-    return {
-        "command": objective.command_query_binding,
-        "world": objective.world_query_binding,
+    return (
+        {
+            "command": objective.command_query_binding,
+            "world": objective.world_query_binding,
+        },
+        {
+            "command": _state_pair_rows(
+                interventions.command_terminal_state,
+                output.terminal_state,
+                command_packet,
+            ),
+            "world": _state_pair_rows(
+                interventions.world_terminal_state,
+                output.terminal_state,
+                world_command,
+            ),
+        },
+    )
+
+
+def _state_pair_rows(
+    correct: TypedTheoryState,
+    foil_population: TypedTheoryState,
+    foil_index: torch.Tensor,
+) -> list[dict[str, object]]:
+    fields = (
+        "value_probabilities",
+        "type_probabilities",
+        "relations",
+        "active",
+        "root",
+        "committed",
+        "halted",
+    )
+    correct_values = {
+        name: getattr(correct, name).detach().float().cpu()
+        for name in fields
     }
+    foil_values = {
+        name: (
+            getattr(foil_population, name)
+            .index_select(0, foil_index)
+            .detach()
+            .float()
+            .cpu()
+        )
+        for name in fields
+    }
+    rows = []
+    for index in range(foil_index.shape[0]):
+        field_l1 = {
+            name: float(
+                (
+                    correct_values[name][index]
+                    - foil_values[name][index]
+                )
+                .abs()
+                .sum()
+            )
+            for name in fields
+        }
+        correct_committed = float(correct_values["committed"][index])
+        correct_halted = float(correct_values["halted"][index])
+        foil_committed = float(foil_values["committed"][index])
+        foil_halted = float(foil_values["halted"][index])
+        rows.append(
+            {
+                "correct_answer_disposition": (
+                    correct_committed >= 0.5 and correct_halted < 0.5
+                ),
+                "correct_committed": correct_committed,
+                "correct_halted": correct_halted,
+                "exact_state_equal": all(
+                    value == 0.0 for value in field_l1.values()
+                ),
+                "field_l1": field_l1,
+                "foil_answer_disposition": (
+                    foil_committed >= 0.5 and foil_halted < 0.5
+                ),
+                "foil_committed": foil_committed,
+                "foil_halted": foil_halted,
+                "structural_state_equal": all(
+                    field_l1[name] == 0.0
+                    for name in fields
+                    if name not in {"committed", "halted"}
+                ),
+            }
+        )
+    return rows
 
 
 def _pair_rows(pair: ETTRCausalQueryPair) -> list[dict[str, object]]:
@@ -254,6 +343,34 @@ def _summary(rows: Sequence[Mapping[str, object]]) -> dict[str, object]:
         },
         "invariance_count": len(rows) - len(contrast),
         "strict_margin": 1.0,
+    }
+
+
+def _state_summary(
+    rows: Sequence[Mapping[str, object]],
+) -> dict[str, object]:
+    if not rows:
+        raise ETTRV3EvaluationError("causal-query state population differs")
+    fields = tuple(rows[0]["field_l1"])
+    return {
+        "correct_answer_disposition_rate": _rate(
+            [bool(row["correct_answer_disposition"]) for row in rows]
+        ),
+        "count": len(rows),
+        "exact_state_equal_rate": _rate(
+            [bool(row["exact_state_equal"]) for row in rows]
+        ),
+        "field_l1_means": {
+            name: sum(float(row["field_l1"][name]) for row in rows)
+            / len(rows)
+            for name in fields
+        },
+        "foil_answer_disposition_rate": _rate(
+            [bool(row["foil_answer_disposition"]) for row in rows]
+        ),
+        "structural_state_equal_rate": _rate(
+            [bool(row["structural_state_equal"]) for row in rows]
+        ),
     }
 
 
@@ -507,8 +624,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                 device_type="cuda",
                 dtype=torch.bfloat16,
             ):
-                raw_pairs = _objective_pairs(raw_model, batch)
-                checkpoint_pairs = _objective_pairs(checkpoint_model, batch)
+                raw_pairs, raw_states = _objective_pairs(raw_model, batch)
+                checkpoint_pairs, checkpoint_states = _objective_pairs(
+                    checkpoint_model,
+                    batch,
+                )
             for kind in ("command", "world"):
                 metadata = _batch_metadata(tokenizer, cpu_batch, kind)
                 raw_values = _pair_rows(raw_pairs[kind])
@@ -517,22 +637,34 @@ def main(argv: Sequence[str] | None = None) -> int:
                     len(metadata)
                     == len(raw_values)
                     == len(checkpoint_values)
+                    == len(raw_states[kind])
+                    == len(checkpoint_states[kind])
                 ):
                     raise ETTRV3EvaluationError(
                         "causal-query probe row population differs"
                     )
-                for values, raw, checkpoint in zip(
+                for values, raw, checkpoint, raw_state, checkpoint_state in zip(
                     metadata,
                     raw_values,
                     checkpoint_values,
+                    raw_states[kind],
+                    checkpoint_states[kind],
                     strict=True,
                 ):
                     values["development_position"] = position
                     values["raw"] = raw
                     values["checkpoint"] = checkpoint
+                    values["raw_state"] = raw_state
+                    values["checkpoint_state"] = checkpoint_state
                     rows[kind].append(values)
             batches += 1
-            del batch, raw_pairs, checkpoint_pairs
+            del (
+                batch,
+                raw_pairs,
+                raw_states,
+                checkpoint_pairs,
+                checkpoint_states,
+            )
     finally:
         packet_index.close()
     if batches != args.max_batches:
@@ -554,10 +686,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         "architecture_seed": args.architecture_seed,
         "arms": {
             arm: {
-                kind: _summary(
-                    [row[arm] | {"depth_bucket": row["depth_bucket"]}
-                     for row in values]
-                )
+                kind: {
+                    "query": _summary(
+                        [
+                            row[arm]
+                            | {"depth_bucket": row["depth_bucket"]}
+                            for row in values
+                        ]
+                    ),
+                    "state": _state_summary(
+                        [row[f"{arm}_state"] for row in values]
+                    ),
+                }
                 for kind, values in rows.items()
             }
             for arm in ("raw", "checkpoint")

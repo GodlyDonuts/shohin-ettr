@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import torch
 
+from endogenous_typed_theory_reactor import TypedTheoryState
 from ettr_objectives import ETTRCausalQueryPair
 from probe_ettr_causal_queries import (
     _depth_bucket,
     _pair_rows,
     _quantile,
+    _state_pair_rows,
+    _state_summary,
     _summary,
 )
 
@@ -73,3 +76,36 @@ def test_quantile_and_depth_buckets_are_deterministic() -> None:
         "9-16",
         "33-64",
     ]
+
+
+def test_state_pair_rows_separate_structure_from_disposition() -> None:
+    def state(active: torch.Tensor, committed: torch.Tensor) -> TypedTheoryState:
+        batch, slots = active.shape
+        return TypedTheoryState(
+            value_probabilities=torch.zeros(batch, slots, 2),
+            type_probabilities=torch.zeros(batch, slots, 2),
+            relations=torch.zeros(batch, 1, slots, slots),
+            active=active,
+            root=torch.zeros(batch, slots),
+            committed=committed,
+            halted=torch.zeros(batch),
+            step=1,
+        )
+
+    correct = state(
+        torch.tensor([[1.0, 0.0], [1.0, 1.0]]),
+        torch.tensor([1.0, 1.0]),
+    )
+    foil = state(
+        torch.tensor([[1.0, 0.0], [1.0, 0.0]]),
+        torch.tensor([0.0, 1.0]),
+    )
+    rows = _state_pair_rows(correct, foil, torch.tensor([0, 1]))
+    assert rows[0]["structural_state_equal"] is True
+    assert rows[0]["exact_state_equal"] is False
+    assert rows[0]["correct_answer_disposition"] is True
+    assert rows[0]["foil_answer_disposition"] is False
+    assert rows[1]["structural_state_equal"] is False
+    summary = _state_summary(rows)
+    assert summary["structural_state_equal_rate"] == 0.5
+    assert summary["exact_state_equal_rate"] == 0.0
