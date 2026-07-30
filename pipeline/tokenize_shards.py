@@ -34,6 +34,16 @@ from datasets import load_dataset
 from huggingface_hub import HfApi
 from tokenizers import Tokenizer
 
+if __package__:
+    from .finepdf_core_policy import (
+        POLICY_SCHEMA as FINEPDF_POLICY_SCHEMA,
+        classify_finepdf_candidate,
+    )
+else:
+    from finepdf_core_policy import (
+        POLICY_SCHEMA as FINEPDF_POLICY_SCHEMA,
+        classify_finepdf_candidate,
+    )
 
 BOILERPLATE_MARKERS = (
     "accept cookies",
@@ -62,6 +72,8 @@ IDENTITY_FIELDS = (
     "source",
     "version",
 )
+DOCUMENT_POLICY_FINEPDF_CORE_V1 = "finepdf_core_v1"
+DOCUMENT_POLICY_TIERS = frozenset({"core", "residual", "reject"})
 
 
 def _grams(text, n):
@@ -525,6 +537,25 @@ def main():
                     help="optional numeric quality field (supports dotted paths); drop a row when missing or below --min-number")
     ap.add_argument("--min-number", type=float, default=None,
                     help="minimum accepted value for --min-number-field")
+    ap.add_argument(
+        "--document-policy",
+        choices=(DOCUMENT_POLICY_FINEPDF_CORE_V1,),
+        default=None,
+        help=(
+            "source-specific document policy; disabled unless explicitly "
+            "selected"
+        ),
+    )
+    ap.add_argument(
+        "--document-policy-allowed-tier",
+        action="append",
+        choices=sorted(DOCUMENT_POLICY_TIERS),
+        default=[],
+        help=(
+            "repeatable retained tier for --document-policy; no implicit "
+            "tier is accepted"
+        ),
+    )
     a = ap.parse_args()
 
     if os.path.lexists(a.out_dir):
@@ -553,6 +584,22 @@ def main():
         raise ValueError(
             "--allowed-values-field and --allowed-values must be provided together"
         )
+    if a.document_policy is None and a.document_policy_allowed_tier:
+        raise ValueError(
+            "--document-policy-allowed-tier requires --document-policy"
+        )
+    if a.document_policy is not None and not a.document_policy_allowed_tier:
+        raise ValueError(
+            "--document-policy requires at least one "
+            "--document-policy-allowed-tier"
+        )
+    if a.document_policy == DOCUMENT_POLICY_FINEPDF_CORE_V1 and (
+        a.dataset != "HuggingFaceFW/finepdfs-edu" or a.config != "eng_Latn"
+    ):
+        raise ValueError(
+            "finepdf_core_v1 is restricted to "
+            "HuggingFaceFW/finepdfs-edu/eng_Latn"
+        )
     if not 0 <= a.min_alpha_fraction <= 1:
         raise ValueError("--min-alpha-fraction must be in [0, 1]")
     if not 0 <= a.max_control_fraction <= 1:
@@ -569,6 +616,12 @@ def main():
         a.required_allowed_value
     )
     required_minimums = parse_required_minimums(a.required_min_number)
+    document_policy_allowed_tiers = frozenset(a.document_policy_allowed_tier)
+    document_policy_receipt = (
+        file_receipt(Path(__file__).with_name("finepdf_core_policy.py"))
+        if a.document_policy == DOCUMENT_POLICY_FINEPDF_CORE_V1
+        else None
+    )
     if a.min_number_field is not None:
         if a.min_number_field in required_minimums:
             raise ValueError(
@@ -635,6 +688,11 @@ def main():
     n_duplicate = n_repetition = n_boilerplate = n_domain_cap = 0
     n_extraction_quality = n_allowed_value = n_required_value = 0
     n_required_allowed_value = 0
+    n_document_policy = 0
+    document_policy_seen_tiers = Counter()
+    document_policy_retained_tiers = Counter()
+    document_policy_dropped_tiers = Counter()
+    document_policy_reason_counts = Counter()
 
     def flush():
         nonlocal buf, shard
@@ -671,6 +729,7 @@ def main():
         nonlocal n_quality, n_contam, n_duplicate, n_repetition
         nonlocal n_boilerplate, n_domain_cap, n_extraction_quality
         nonlocal n_allowed_value, n_required_value, n_required_allowed_value
+        nonlocal n_document_policy
         nonlocal tok_total
 
         # Exact deduplication precedes decontamination in the established
@@ -694,6 +753,12 @@ def main():
 
         for entry in pending:
             seen += 1
+            policy_decision = entry.get("document_policy")
+            if policy_decision is not None:
+                document_policy_seen_tiers[policy_decision["tier"]] += 1
+                document_policy_reason_counts.update(
+                    policy_decision["reason_codes"]
+                )
             if entry["kind"] == "reject":
                 reason = entry["reason"]
                 if reason == "short":
@@ -712,6 +777,11 @@ def main():
                     n_required_value += 1
                 elif reason == "required_allowed_value":
                     n_required_allowed_value += 1
+                elif reason == "document_policy":
+                    n_document_policy += 1
+                    document_policy_dropped_tiers[
+                        policy_decision["tier"]
+                    ] += 1
                 elif reason == "language_missing":
                     n_lang_missing += 1
                 elif reason == "language":
@@ -776,6 +846,11 @@ def main():
                         if a.allowed_values_field
                         else None
                     ),
+                    "document_policy_tier": (
+                        policy_decision["tier"]
+                        if policy_decision is not None
+                        else None
+                    ),
                     "chars": len(entry["text"]),
                     "tokens": document_tokens,
                     "shard": f"shard_{shard:05d}.u16.zst",
@@ -788,6 +863,8 @@ def main():
             if domain is not None:
                 domain_tokens[domain] += document_tokens
             kept += 1
+            if policy_decision is not None:
+                document_policy_retained_tiers[policy_decision["tier"]] += 1
             if len(buf) >= a.shard_tokens:
                 flush()
             if a.max_tokens and tok_total >= a.max_tokens:
@@ -828,6 +905,19 @@ def main():
         if reason is None and allowed_values is not None:
             if str(field_value(ex, a.allowed_values_field)) not in allowed_values:
                 reason = "allowed_value"
+        policy_decision = None
+        if reason is None and a.document_policy == DOCUMENT_POLICY_FINEPDF_CORE_V1:
+            policy_decision = classify_finepdf_candidate(
+                text=txt,
+                metadata=ex,
+                domain=(
+                    domain_value(ex, a.domain_field)
+                    if a.domain_field
+                    else None
+                ),
+            ).to_dict()
+            if policy_decision["tier"] not in document_policy_allowed_tiers:
+                reason = "document_policy"
         if reason is None and not required_values_match(ex, required_values):
             reason = "required_value"
         if reason is None and not required_allowed_values_match(
@@ -844,7 +934,13 @@ def main():
         if reason is None and not required_minimums_match(ex, required_minimums):
             reason = "quality"
         if reason is not None:
-            pending.append({"kind": "reject", "reason": reason})
+            pending.append(
+                {
+                    "kind": "reject",
+                    "reason": reason,
+                    "document_policy": policy_decision,
+                }
+            )
         else:
             document_sha256 = exact_text_hash(txt).hex()
             pending.append(
@@ -865,6 +961,7 @@ def main():
                         if a.domain_field
                         else None
                     ),
+                    "document_policy": policy_decision,
                 }
             )
         if len(pending) >= a.tokenizer_batch_size:
@@ -892,6 +989,8 @@ def main():
         verify_file_receipt(receipt)
     for receipt in input_file_receipts:
         verify_file_receipt(receipt)
+    if document_policy_receipt is not None:
+        verify_file_receipt(document_policy_receipt)
     manifest = {
         "schema": "shohin-tokenized-shards-v3",
         "dataset": a.dataset,
@@ -927,6 +1026,7 @@ def main():
         "dropped_allowed_value": n_allowed_value,
         "dropped_required_value": n_required_value,
         "dropped_required_allowed_value": n_required_allowed_value,
+        "dropped_document_policy": n_document_policy,
         "dropped_domain_cap": n_domain_cap,
         "dropped_contam": n_contam,
         "decontamination": {
@@ -968,6 +1068,26 @@ def main():
             "domain_field": a.domain_field,
             "max_tokens_per_domain": a.max_tokens_per_domain,
             "retained_domains": len(domain_tokens),
+            "document_policy": (
+                {
+                    "name": a.document_policy,
+                    "schema": FINEPDF_POLICY_SCHEMA,
+                    "allowed_tiers": sorted(document_policy_allowed_tiers),
+                    "source": document_policy_receipt,
+                    "seen_tiers": dict(sorted(document_policy_seen_tiers.items())),
+                    "retained_tiers": dict(
+                        sorted(document_policy_retained_tiers.items())
+                    ),
+                    "dropped_tiers": dict(
+                        sorted(document_policy_dropped_tiers.items())
+                    ),
+                    "reason_counts": dict(
+                        sorted(document_policy_reason_counts.items())
+                    ),
+                }
+                if a.document_policy is not None
+                else None
+            ),
         },
     }
     manifest["payload_sha256"] = canonical_payload_sha256(manifest)

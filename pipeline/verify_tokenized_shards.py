@@ -425,6 +425,25 @@ def verify_manifest(
             if not isinstance(record, dict):
                 raise ShardVerificationError("evaluation-file record is malformed")
             _verify_external_file(record, f"evaluation file {index}")
+        filters = manifest.get("filters")
+        if filters is not None and not isinstance(filters, dict):
+            raise ShardVerificationError("filter contract is malformed")
+        document_policy = (
+            filters.get("document_policy")
+            if isinstance(filters, dict)
+            else None
+        )
+        if document_policy is not None:
+            if not isinstance(document_policy, dict):
+                raise ShardVerificationError(
+                    "document-policy contract is malformed"
+                )
+            source = document_policy.get("source")
+            if not isinstance(source, dict):
+                raise ShardVerificationError(
+                    "document-policy source receipt is absent"
+                )
+            _verify_external_file(source, "document-policy source")
 
     return {
         "schema": "shohin-tokenized-shard-verification-v1",

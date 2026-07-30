@@ -31,7 +31,14 @@ THIRD_TEXT = (
 )
 
 
-def _run(source: Path, output: Path, *, batch_size: int, max_tokens: int = 0) -> None:
+def _run(
+    source: Path,
+    output: Path,
+    *,
+    batch_size: int,
+    max_tokens: int = 0,
+    finepdf_core_only: bool = False,
+) -> None:
     command = [
         sys.executable,
         str(SCRIPT),
@@ -69,6 +76,18 @@ def _run(source: Path, output: Path, *, batch_size: int, max_tokens: int = 0) ->
     ]
     if max_tokens:
         command.extend(("--max-tokens", str(max_tokens)))
+    if finepdf_core_only:
+        command.extend(
+            (
+                "--config",
+                "eng_Latn",
+                "--document-policy",
+                "finepdf_core_v1",
+                "--document-policy-allowed-tier",
+                "core",
+            )
+        )
+        command[command.index("local-test")] = "HuggingFaceFW/finepdfs-edu"
     environment = dict(os.environ)
     environment["TOKENIZERS_PARALLELISM"] = "true"
     subprocess.run(command, check=True, cwd=ROOT, env=environment)
@@ -203,3 +222,83 @@ def test_batched_tokenization_preserves_early_max_token_stop(tmp_path):
     _run(source, batched, batch_size=8, max_tokens=first_tokens)
 
     assert _artifact_bytes(sequential) == _artifact_bytes(batched)
+
+
+def test_finepdf_policy_is_batched_deterministic_and_manifest_bound(tmp_path):
+    source = tmp_path / "finepdf.jsonl"
+    rows = [
+        {
+            "text": "\n".join(
+                (
+                    "A rigorous technical discussion of computation and systems.",
+                    "The method identifies assumptions and derives a conclusion.",
+                    "A concrete example checks the result against the premises.",
+                )
+                * 20
+            ),
+            "fw_edu_scores": [2.8, 2.7],
+            "url": "https://repository.example.edu/core",
+            "int_score": 5,
+            "metadata": {
+                "reasoning_depth": {"primary": {"code": 4}},
+                "document_type": {"primary": {"code": 3}},
+            },
+        },
+        {
+            "text": "\n".join(
+                (
+                    "A coherent specialized discussion introduces a local subject.",
+                    "Its evidence is useful but lacks a formal research structure.",
+                    "The concluding paragraph summarizes the narrow application.",
+                )
+                * 20
+            ),
+            "fw_edu_scores": [1.8],
+            "url": "https://example.org/residual",
+            "int_score": 5,
+            "metadata": {
+                "reasoning_depth": {"primary": {"code": 4}},
+                "document_type": {"primary": {"code": 3}},
+            },
+        },
+        {
+            "text": "\n".join(
+                (
+                    "Weekly newsletter issue 14. Parent reminders.",
+                    "The school calendar lists dates for the community.",
+                    "Contact the office for the next monthly notice.",
+                )
+                * 20
+            ),
+            "fw_edu_scores": [3.5],
+            "url": "https://school.example.edu/newsletter",
+            "int_score": 5,
+            "metadata": {
+                "reasoning_depth": {"primary": {"code": 4}},
+                "document_type": {"primary": {"code": 3}},
+            },
+        },
+    ]
+    source.write_text("".join(json.dumps(row) + "\n" for row in rows))
+    sequential = tmp_path / "finepdf-sequential"
+    batched = tmp_path / "finepdf-batched"
+
+    _run(source, sequential, batch_size=1, finepdf_core_only=True)
+    _run(source, batched, batch_size=8, finepdf_core_only=True)
+
+    assert _artifact_bytes(sequential) == _artifact_bytes(batched)
+    manifest = json.loads((sequential / "manifest.json").read_text())
+    assert manifest["kept"] == 1
+    assert manifest["dropped_document_policy"] == 2
+    assert manifest["filters"]["document_policy"]["allowed_tiers"] == ["core"]
+    assert manifest["filters"]["document_policy"]["seen_tiers"] == {
+        "core": 1,
+        "reject": 1,
+        "residual": 1,
+    }
+    assert manifest["filters"]["document_policy"]["retained_tiers"] == {
+        "core": 1
+    }
+    assert len(
+        manifest["filters"]["document_policy"]["source"]["sha256"]
+    ) == 64

@@ -64,6 +64,7 @@ def build_corpus(root: Path, *, schema: str = "v2") -> tuple[Path, Path]:
                 }
             ],
         },
+        "filters": {"document_policy": None},
     }
     if schema == "v3":
         rows = [
@@ -154,6 +155,32 @@ def test_external_source_substitution_fails(tmp_path):
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
     source.write_bytes(b"substituted")
     with pytest.raises(ShardVerificationError, match="source file 0"):
+        verify_manifest(
+            shard_dir,
+            selection_code=selection_code,
+            require_external_inputs=True,
+        )
+
+
+def test_document_policy_source_substitution_fails(tmp_path):
+    shard_dir, selection_code = build_corpus(tmp_path)
+    policy = tmp_path / "policy.py"
+    policy.write_text("POLICY = 'pinned'\n")
+    manifest_path = shard_dir / "manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["filters"]["document_policy"] = {
+        "name": "test-policy",
+        "source": {
+            "path": str(policy),
+            "bytes": policy.stat().st_size,
+            "sha256": sha256_file(policy),
+        },
+    }
+    manifest.pop("payload_sha256")
+    manifest["payload_sha256"] = canonical_payload_sha256(manifest)
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    policy.write_text("POLICY = 'substituted'\n")
+    with pytest.raises(ShardVerificationError, match="document-policy source"):
         verify_manifest(
             shard_dir,
             selection_code=selection_code,

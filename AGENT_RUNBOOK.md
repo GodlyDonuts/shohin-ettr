@@ -18377,3 +18377,47 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finepdf_wholesale_rejected_conservative_core_policy_audited_not_admitted_ettr_v2_confirmation_live_no_optimizer`.
+
+- **2026-07-29 23:08 EDT** -- **The repaired ETTR runtime and FinePDF
+  selector are now source-bound; neither change relaxes the optimizer or
+  training-admission gates.**
+
+  Newton now has an immutable, no-replace runtime reconstructed directly from
+  private source commit
+  `e5f3705d3058125b979ac38269bd7f1df2cf8f1b` at
+  `scratchpad/shohin_ettr_runtime_e5f3705_full_r1`. It contains the exact
+  commit's `train/` and `pipeline/` trees, 2,222 files, a full-inventory
+  SHA-256 of
+  `3929afb1999cc48556824f2a456d20ca1c1f5d3c65bd2f5ea128659e290e8b95`,
+  and an archive SHA-256 of
+  `2bda37a540ca14a6ef9da68fd2f8831ca0467288efc8298253bbaa0f3b941386`.
+  The first out-of-tree launch was resource-limited by OpenBLAS thread
+  creation; with all CPU math thread pools explicitly fixed to one, the full
+  inventory and out-of-tree launch passed before the runtime was sealed.
+  Distributed canary, first-rung, and strict 100-to-500-to-2,000 update
+  watchers were rebound to this exact runtime and the `packet-v2` release
+  identity. Stale v1 watcher process groups were terminated without touching
+  any reservation or output.
+
+  The generic v3 tokenizer now exposes an opt-in
+  `finepdf_core_v1` document-policy contract. It is restricted to the pinned
+  English FinePDF source, requires explicit retained tiers, records
+  policy-source bytes and SHA-256 plus per-tier and reason counters, writes the
+  retained tier into the text-free document ledger, and re-verifies the policy
+  source before publishing the manifest. The independent shard verifier also
+  re-hashes this external policy source. Policy substitution therefore fails
+  closed, and the one-record and batched tokenizer paths remain
+  artifact-identical. Focused policy/tokenizer/verifier tests pass **23/23**;
+  surrounding shard, holdout, and exact/near-residualization tests pass
+  **48/48**; Ruff and byte compilation pass. This integration does not admit
+  FinePDF: deterministic retained/rejected human review, physical
+  materialization, cross-source residualization, holdouts, and an equal-token
+  utility ablation are still required.
+
+  ETTR v2 confirmation had completed **25/30** sealed task reports at 23:08
+  EDT. The remaining five cells were still running with no failed task state;
+  assembly and both independent audits remain dependency-held. No release,
+  transfer, optimizer, or first-rung lock exists.
+
+  Decision:
+  `exact_e5_runtime_and_document_policy_source_bound_confirmation_25_of_30_no_gate_relaxation`.
