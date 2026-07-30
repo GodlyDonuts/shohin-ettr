@@ -19001,6 +19001,17 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   focused federated launcher/ladder suite passes **15/15** with clean shell
   syntax, Ruff, and diff checks.
 
+  The exact private source is commit
+  `c9ede0368f565157c7acd7e0dc2fe4e77e2e3588`. Sealed Newton watcher runtime
+  `scratchpad/shohin_ettr_ladder_c9ede03_r1` has archive SHA-256
+  `ea446a7b8af409b04ec8e4787f92646facbd9a3fdcb9bb8703f1eae5a36c978b`
+  and `SHA256SUMS` file SHA-256
+  `679a0d3d8581b16ef5f67a695626d094a4f512125993684774bc7ac621113f92`.
+  The world-twelve watcher is live on `evuser1` as PID `3455760`.
+  World-two seed watchers are live on `evuser2` as PIDs `459101` and
+  `459103`. All report only `federated_ladder_waiting`; the final Newton
+  transfer root remains absent.
+
   Stokes separation job `756317` remains the sole live release gate; builder
   `756318`, independent verifier `756319`, direct transfer, and every
   optimizer remain blocked. No canary has been represented as learned
