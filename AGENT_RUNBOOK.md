@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-30 12:22 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-30 12:34 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -19386,3 +19386,60 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `u2000_not_final_budget_but_joint_scaling_unidentified_run_oracle_component_islands_then_authorize_targeted_5k_10k_curriculum`.
+
+- **2026-07-30 12:34 EDT** -- **Oracle-separated component diagnostics prove
+  that 2,000 joint updates are not a sufficient architecture-training budget,
+  while also rejecting an unchanged blind extension.**
+
+  Commit `aeb4affed4288d5627b7a35bcc977516a865e73d` makes the
+  oracle-interface probe require two distinct named model arms and binds depth
+  metadata before report assembly. Its focused evaluator/objective/probe
+  inventory is **47/47** passing with clean Ruff, byte compilation, and diff
+  checks. Immutable Newton runtime
+  `scratchpad/shohin_ettr_runtime_aeb4aff_full_r1` contains 2,207 measured
+  source files; manifest SHA-256 is
+  `878d7b42c032f259719a38113d0574105efce49d362e529a782f8acafa6781fb`
+  and deterministic archive SHA-256 is
+  `8694c3478ab36fdf0d2eb6b483bd9667e804b1c0a8ba3bcaa62a2d2ed22a9d90`.
+  Two earlier reports from commit `43005ad` contain only the raw arm due a
+  fail-closed assessor mapping defect and are explicitly superseded.
+
+  On 16 hash-verified development batches, seed-1 cap-4 at update 2,000
+  showed no compiler improvement over raw: active `59.38%`, type `29.81%`,
+  value `30.77%`, and complete packet `0%` in both arms. With the exact
+  initial packet and every prior transition teacher-forced, its reactor
+  opcode accuracy rose from `3.59%` to `92.59%`, but source accuracy was only
+  `8.88%`, value accuracy `19.13%`, and complete transaction accuracy
+  `0.58%`. With the exact terminal packet supplied, the trained reader still
+  had WORLD/COMMAND correct and foil top-1 rates of `50%/50%`, joint top-1
+  `0%`, paired ordering `0%`, no margin at `0.1`, and WORLD
+  difference-in-differences exactly zero. Report SHA-256 is
+  `5e636c9aae452e418f7c81c5cb9f60e06d3f2dbe184bbf2f0be7753e7c11ac88`.
+
+  Seed-2 uncapped at update 2,000 learned a substantial but incomplete WORLD
+  compiler: active `99.61%`, root `100%`, type `92.74%`, and value `73.49%`,
+  compared with raw `51.56%`, `98.44%`, `16.94%`, and `25.81%`.
+  Complete packets remained `0%`, in part because sparse relation-cell
+  accuracy is class-imbalanced and not an adequate exactness statistic.
+  Teacher-forced reactor accuracy remained poor: opcode and complete
+  transaction were both `9.30%`, source `0.64%`, target `13.75%`, relation
+  `10%`, and value `15.09%`. The exact-terminal reader again produced
+  `50%/50%` complementary top-1, joint top-1 `0%`, paired ordering `0%`, and
+  no margin at `0.1`; WORLD difference-in-differences remained only
+  `[-0.0293, 0.0137]`. Report SHA-256 is
+  `bd6585dc5c50f65d1cc7d4c326e228de498511fde25335ddfe819f0a6b4059a4`.
+
+  The correct conclusion is two-part. First, approximately 33.8M ETTR tokens
+  over 2,000 updates are too few to mature 67.7M randomly initialized
+  architecture parameters. Second, more unchanged joint updates are not the
+  best next experiment: one seed learns WORLD compilation while the other
+  does not; neither learns complete local COMMAND transactions or causal
+  QUERY consumption even after upstream errors are removed. The next
+  authorized mechanism is a stop-gradient component curriculum: compiler
+  packet fitting, teacher-forced one-step reactor fitting, and exact-state
+  reader fitting, each with held-out hard gates; then progressively remove
+  teacher forcing and run a 5k--10k autonomous continuation. Oracle labels
+  are training-only and forbidden at inference.
+
+  Decision:
+  `u2000_too_short_but_local_modules_fail_under_oracle_interfaces_stage_components_before_longer_joint_continuation`.
