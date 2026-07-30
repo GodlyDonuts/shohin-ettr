@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-30 18:01 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-30 18:36 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -19853,3 +19853,70 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reader_u20000_confirms_duration_matters_but_no_answer_flip_reassemble_best_per_seed_then_progressively_couple_if_strict_gate_fails`.
+
+- **2026-07-30 18:01--18:36 EDT** -- **Two thousand updates are now
+  classified as a pilot budget, the best 20,000-reader reassemblies still
+  fail end-to-end causal gates, and a matched disposition-motor probe is
+  actively testing whether the learned state is blocked at the frozen
+  vocabulary interface.**
+
+  The strict 32-batch autonomous reassemblies with the strongest 20,000-
+  position readers completed. Seed 1 retained its same-seed 5,000-update
+  compiler/reactor and substituted the `1e-4` 20,000 reader. Mean total loss
+  was `22.7057` versus raw `38.5870`; COMMAND margin-`0.1` rose from `0%` to
+  `8.75%`, but WORLD stayed `0%`, so the strict gate failed. Its report
+  SHA-256 is
+  `a00027c590618a64492bf13de56d363b24a411e50dc047ed9170cbdc4a4c98ed`.
+  Seed 2 substituted its `3e-4` 20,000 reader. Mean total loss was `21.5994`
+  versus raw `42.6626`, but WORLD and COMMAND margin-`0.1` both remained
+  `0%`; its report SHA-256 is
+  `b5b7eab3c75a409ab1072157ebbbcdb7dbb39f7ae15d349a8abd624832a7197f`.
+  Longer reader fitting therefore changes causal routing, but it does not
+  independently solve autonomous composition.
+
+  Commit `821351bd15dfe59fe4adba3dcebd54bdaddcf0f9` added a source-deleted
+  disposition motor: a generic 576-to-128-to-2 readout receives only the
+  query-reader residual, while a byte-identical query-only control receives
+  the frozen query hidden state. Both train only on exact terminal states and
+  are evaluated on exact and fully autonomous states; the autonomous arm
+  receives no oracle. Commit
+  `0cc7e0549efd5a609118a939093947629c6143f5` made the control
+  initialization exactly matched. The first two-seed launch failed before
+  writing any artifact because BF16 reader features reached an FP32
+  LayerNorm. Commit `c53fa8d5aa9225ee939af5d702b32d0841b3633e` made the
+  motor dtype boundary explicit and added a regression. The next launch
+  reached evaluation and failed closed before training because the shared
+  causal summarizer correctly required a transaction-depth stratum that the
+  new motor rows had omitted. Commit
+  `b2fc0baa715330f244b963658af2457bc65084c1` binds exact target-row
+  depths and tests the geometry. Its focused inventory is **34/34** and the
+  expanded relevant ETTR inventory is **238/238**, with clean Ruff, byte
+  compilation, and diff checks.
+
+  Immutable runtime
+  `scratchpad/shohin_ettr_runtime_b2fc0ba_full_r1` contains 3,325 measured
+  files; `SHA256SUMS` SHA-256 is
+  `0ec05afa6fd54f33b472848f3a3aac897487c78eb019b90612f3d7af1881e877`.
+  Two matched 1,000-update motor probes are running as step `723325.3` on
+  the reserved two-H100 node. Both passed initialization and reached update
+  250 with finite losses and gradients. Outputs are isolated at
+  `train/ettr_disposition_motor_seed1_reader20k_u1000_b2fc0ba_r1` and the
+  corresponding seed-2 directory. Promote no motor unless treatment beats
+  its matched query-only control on exact causal/factual gates and retains
+  above-chance factual plus positive WORLD causality under fully autonomous
+  state.
+
+  Compiler 20,000-position continuations are near positions
+  `17,800--17,900`. Corrected fresh low-rate reactor controls completed their
+  5,000-position gate. Corrected production-path reactor continuations are
+  near positions `8,600--8,700` and remain finite. The budget policy is now
+  explicit: 2,000 joint updates sampled only `1.25%` of the 160,000-batch
+  release and exposed approximately 33.8M token positions to 67.7M newly
+  initialized parameters, so they are diagnostic only. Five thousand is a
+  local-learnability gate; 20,000 is the first component-maturity gate.
+  Longer scale is authorized only for held-out winners and must progressively
+  remove teacher forcing and couple interfaces. Do not blindly extend the
+  unchanged joint objective.
+
+  Decision:
+  `u2000_pilot_only_u20000_reader_reassembly_still_not_compositional_probe_output_transport_then_progressively_couple_verified_component_winners`.
