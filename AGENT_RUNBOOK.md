@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-30 09:39 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-30 12:22 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -19324,3 +19324,65 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `duration_and_scalar_query_credit_insufficient_measure_depth_stratified_causal_geometry_before_more_updates`.
+
+- **2026-07-30 12:22 EDT** -- **Direct interaction with the retained ETTR
+  state localizes the zero-margin failure: most trained arms emit a constant
+  state, while one update-2,000 seed has begun WORLD compilation but still
+  lacks command-conditioned transition and state consumption.**
+
+  Read-only causal-query probes against the seed-1 weight-8 and seed-2
+  weight-32 update-500 checkpoints found exact zero
+  difference-in-differences for every WORLD and COMMAND contrast. Correct and
+  foil top-1 rates were each `0.5`, joint top-1 and paired ordering were
+  `0.0`, and retained decoded examples showed a constant answer token across
+  matched state interventions. The report SHA-256 values are
+  `8f621660606134b0dac144ac33b61198eb66719f84cd5dd9ce2762e22916dfc4`
+  and
+  `c220966e53e5c1dfe5e5da4ad7a39bb1ca4a0c7f8e154b333127e1a1f4639218`.
+
+  State-bridge revision v2 then compared the complete correct and foil
+  terminal states rather than only their logits. Both update-500 arms had
+  exact and structural state-equality rates of `1.0`, zero L1 distance in
+  every state field, and answer disposition `1.0`. Their report SHA-256
+  values are
+  `9079032b2a92c8ec4d104eb2076fd3d86a86aa553537c627c74acc6067e80385`
+  and
+  `478d1f6d6cc4849baa12a3b426b687924e874a76ca311047c86856361b921e12`.
+  Seed-1 cap-4 at update 2,000 remained completely collapsed; its report
+  SHA-256 is
+  `c4641da7c51651951ff50c5c2ef5f20e83435e605d30d570996426ba2396ffa4`.
+
+  Seed-2 uncapped at update 2,000 provides the first narrow positive
+  mechanism signal. Under WORLD interventions, exact state equality fell to
+  `0.4961`, structural equality to `0.5078`, and mean value-probability L1
+  distance reached `1.28125`; type/status distances were small but nonzero.
+  Its packet loss moved `6.714 -> 0.959` and transaction loss
+  `3.894 -> 1.616`. However, WORLD logit difference-in-differences remained
+  only `[-0.0547, 0.0371]`, no pair crossed margin `0.1`, and COMMAND
+  structural state equality remained `1.0` apart from a small status change.
+  The report SHA-256 is
+  `238f4e4b70cdce9280deba6851c8d31c49ff1f4c63ca538e256ec745f55e9c11`.
+  This is early compiler learning, not reasoning.
+
+  The duration result therefore does not prove that 2,000 updates is a final
+  budget. It proves that blindly extending the unchanged joint objective is
+  poorly identified: one seed is beginning to compile WORLD while the
+  COMMAND reactor and QUERY consumer remain causally ineffective. Commit
+  `99eda964c56e9666122196f57a215e658a2e7476` and immutable runtime
+  `scratchpad/shohin_ettr_runtime_99eda96_full_r1` bind the state diagnostic;
+  runtime manifest SHA-256 is
+  `bc5dcbdc8a40993487b1be884eb9da3b35f2755891756c748760698dd4ce885f`
+  and archive SHA-256 is
+  `88796d2b969472ec6a60899abd2af8ad555aefd0a85728359f493ba96daba38b`.
+
+  New assessor-only `train/probe_ettr_oracle_interfaces.py` now measures
+  three stop-gradient component islands on the same development split:
+  literal hard WORLD packet accuracy, teacher-forced next-transaction
+  accuracy with every prior state supplied exactly, and matched causal QUERY
+  margins from exact terminal packets. It does not modify or save a
+  checkpoint and explicitly records that no oracle is present at autonomous
+  inference. The evaluator/objective/direct-probe/oracle-probe suite is
+  **46/46** passing with clean Ruff, byte compilation, and diff checks.
+
+  Decision:
+  `u2000_not_final_budget_but_joint_scaling_unidentified_run_oracle_component_islands_then_authorize_targeted_5k_10k_curriculum`.
