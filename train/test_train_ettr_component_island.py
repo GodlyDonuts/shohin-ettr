@@ -57,7 +57,10 @@ def test_component_selection_rejects_unknown_island() -> None:
         select_trainable_component(_ComponentModel(), "joint")
 
 
-def test_late_reader_injection_is_reader_only() -> None:
+@pytest.mark.parametrize("reader_injection", ("late", "postnorm"))
+def test_nonstage_reader_injection_is_reader_only(
+    reader_injection: str,
+) -> None:
     arguments = type(
         "Args",
         (),
@@ -75,7 +78,7 @@ def test_late_reader_injection_is_reader_only() -> None:
             "weight_decay": 0.0,
             "gradient_clip": 1.0,
             "component": "compiler",
-            "reader_injection": "late",
+            "reader_injection": reader_injection,
         },
     )()
     with pytest.raises(
@@ -83,6 +86,33 @@ def test_late_reader_injection_is_reader_only() -> None:
         match="arguments differ",
     ):
         _validate_args(arguments)
+
+
+@pytest.mark.parametrize("reader_injection", ("stage", "late", "postnorm"))
+def test_reader_injection_geometries_are_accepted(
+    reader_injection: str,
+) -> None:
+    arguments = type(
+        "Args",
+        (),
+        {
+            "release_sha256": "a" * 64,
+            "checkpoint_sha256": "b" * 64,
+            "run_contract_sha256": "c" * 64,
+            "source_commit": "d" * 40,
+            "architecture_seed": 1,
+            "data_seed": 2,
+            "updates": 1,
+            "eval_batches": 2,
+            "log_every": 1,
+            "learning_rate": 3e-4,
+            "weight_decay": 0.0,
+            "gradient_clip": 1.0,
+            "component": "reader",
+            "reader_injection": reader_injection,
+        },
+    )()
+    _validate_args(arguments)
 
 
 def test_masked_categorical_nll_uses_only_supported_rows() -> None:
