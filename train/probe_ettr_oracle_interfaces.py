@@ -375,6 +375,17 @@ def _count_summary(
     }
 
 
+def _evaluation_models(
+    raw: EndogenousTypedTheoryReactorGPT,
+    checkpoint: EndogenousTypedTheoryReactorGPT,
+) -> dict[str, EndogenousTypedTheoryReactorGPT]:
+    if raw is checkpoint:
+        raise ETTRV3EvaluationError(
+            "ETTR oracle-interface arms alias one model"
+        )
+    return {"raw": raw, "checkpoint": checkpoint}
+
+
 def _arm_batch(
     model: EndogenousTypedTheoryReactorGPT,
     batch: ETTRContinuationBatch,
@@ -459,14 +470,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         release_source_commit=stream.release["source_commit"],
         architecture_seed=args.architecture_seed,
     )
-    models = {}
     raw_model, raw_provenance = _build_model(
         args.protected_checkpoint,
         architecture_seed=args.architecture_seed,
         model_config=model_config,
         device=device,
     )
-    models["raw"] = raw_model
     checkpoint_model, checkpoint_provenance = _build_model(
         args.protected_checkpoint,
         architecture_seed=args.architecture_seed,
@@ -500,6 +509,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         raise ETTRV3EvaluationError(
             "ETTR oracle-interface provenance differs"
         )
+    models = _evaluation_models(raw_model, checkpoint_model)
     for model in models.values():
         model.eval()
 

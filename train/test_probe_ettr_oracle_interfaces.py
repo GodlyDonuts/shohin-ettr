@@ -6,6 +6,7 @@ from endogenous_typed_theory_reactor import TheoryReactorConfig
 from ettr_objectives import ETTRPacketTargets, ETTRTransactionTargets
 from probe_ettr_oracle_interfaces import (
     _count_summary,
+    _evaluation_models,
     packet_targets_to_state,
     policy_masks,
     target_policy,
@@ -103,3 +104,12 @@ def test_count_summary_handles_zero_support() -> None:
         "a": {"accuracy": 0.5, "correct": 1, "total": 2},
         "b": {"accuracy": None, "correct": 0, "total": 0},
     }
+
+
+def test_evaluation_models_requires_two_distinct_named_arms() -> None:
+    raw = torch.nn.Linear(2, 2)
+    checkpoint = torch.nn.Linear(2, 2)
+    arms = _evaluation_models(raw, checkpoint)
+    assert list(arms) == ["raw", "checkpoint"]
+    assert arms["raw"] is raw
+    assert arms["checkpoint"] is checkpoint
