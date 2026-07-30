@@ -18308,3 +18308,72 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `v1_packet_leakage_quantified_v2_token_transport_repair_frozen_production_rebuild_and_exact_reaudit_live_no_optimizer`.
+
+- **2026-07-29 22:51 EDT** -- **The 10,000-document FinePDF review rejected
+  wholesale admission and produced a conservative, auditable core policy;
+  ETTR v2 remains optimizer-locked during confirmation materialization.**
+
+  FinePDFs-Edu candidate `finepdfs_edu_eng_core_10b` completed at
+  **6,085,701,378 tokens / 61 shards / 2,022,608 retained documents** from 16
+  revision-pinned English Parquet files. The v3 manifest is
+  `ebddbb1de0d365415b82b4343259c2688da020c52d1a0e25e32bfcbfd0561394`;
+  its text-free document ledger is
+  `351eea19b94931b15a6937b71bf2c3a533c91e04c11c184b398311d766f1ff0a`.
+  Exact candidate verification passed. The original review job failed only
+  because its stale runtime treated physical Parquet as JSON; no candidate
+  decision was inferred from that launch failure. A no-replace hybrid runtime
+  instead bound the repaired builder, exact candidate tokenizer, profile,
+  verifier, and scheduler. Review job `756067` then completed cleanly in
+  16m27s and materialized a mode-0600 private packet with **10,000 unique
+  retained documents**, SHA-256
+  `31236dd8e796afc3aac54a22c386476495ef396d94a808547fd1e6f807e248cc`.
+  Its text-free receipt is
+  `87ba7f142741da4610a9f07d85c754cb0165e61494f8dc2f6fe6947842d2c62a`.
+
+  Aggregate and direct review found strong theses, technical reports,
+  curricula, worked instructional material, and scholarly prose, but also
+  answer-key/download aggregations, newsletters, menus, school letters,
+  catalogs, forms, and other low-density institutional documents. The sample
+  spans 8,898 domains; its median document is 945 words, with p90 4,975 and
+  p99 14,921 words. Upstream `fw_edu_scores` alone do not separate these
+  classes. For example, a minimum score of 3.0 retains only about 10.0% of
+  sampled tokens yet still leaves a 3.67% risk-keyword rate and removes some
+  useful technical material.
+
+  New `finepdf_core_policy.py` therefore records explicit source evidence and
+  produces `core`, `residual`, or `reject`, rather than using an upstream
+  scalar as ground truth. An initial analysis policy hard-rejected low scores
+  and short excerpts; deterministic manual inspection falsified it with clear
+  false negatives, including substantive technical and historical research.
+  That first text-free report is preserved as negative evidence. The corrected
+  policy hard-rejects only explicit download-aggregation spam, missing score
+  custody, and declared low-density document classes. Low-score and short
+  documents remain recoverable in `residual`.
+
+  The corrected 10,000-document text-free audit assigns **2,237 documents /
+  6,077,838 sampled full-document tokens** to `core`, **7,650 / 23,448,056**
+  to `residual`, and only **113 / 315,616** to `reject`. Thus the proposed
+  core is about **20.4% of sampled tokens**, projecting to approximately
+  1.24B candidate tokens before exact materialization. Its policy source is
+  SHA-256
+  `b42206894002adf0be1a17a1da9a97e33865b579b8b7f155704dc2993a5ffcab`;
+  the corrected report payload is
+  `64c0326ab84271408fc75470d7254a18371c9c254300eb702b98e155671f2e17`.
+  Focused policy/auditor tests pass **11/11**; Ruff and byte compilation pass.
+  This is still `analysis_only_not_training_admission`: a fresh deterministic
+  retained/rejected human slice, physical v3 materialization, cross-source
+  exact/near residualization, holdouts, safety/license audits, and equal-token
+  utility ablation remain mandatory.
+
+  ETTR v2 main materialization cells and all five retries completed without an
+  observed error. At 22:51 EDT sealed confirmation had emitted 17/30 task
+  reports; 13 cells remained live. Dependency jobs `756062`--`756066` still
+  wait to assemble, independently audit main and confirmation, prove their
+  separation, and run the same exact packet-context audit that rejected v1.
+  No v2 release, transfer, optimizer, or first-rung lock exists. Newton
+  reservations remain pending: ten H100s estimate 05:18 EDT July 30, four
+  H100s 17:19 EDT July 30, and twenty H100s August 1 under the association
+  GRES-minute limit.
+
+  Decision:
+  `finepdf_wholesale_rejected_conservative_core_policy_audited_not_admitted_ettr_v2_confirmation_live_no_optimizer`.
