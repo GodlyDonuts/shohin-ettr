@@ -14,6 +14,7 @@ they never enter the autonomous arm.
 from __future__ import annotations
 
 import argparse
+from copy import deepcopy
 from dataclasses import asdict
 import hashlib
 import json
@@ -604,9 +605,10 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     torch.manual_seed(args.motor_seed)
     torch.cuda.manual_seed(args.motor_seed)
+    template = DispositionMotor(model.config.d_model, args.hidden).to(device)
     motors = {
-        name: DispositionMotor(model.config.d_model, args.hidden).to(device)
-        for name in ("query_only", "treatment")
+        "query_only": deepcopy(template),
+        "treatment": template,
     }
     motor_parameters = {
         name: sum(parameter.numel() for parameter in motor.parameters())
