@@ -24,6 +24,8 @@ import torch.nn.functional as F
 
 from endogenous_typed_theory_reactor import (
     EndogenousTypedTheoryReactorGPT,
+    GenericTransactionReactor,
+    TransactionPolicy,
     TypedTheoryState,
 )
 from ettr_checkpoint import load_ettr_checkpoint
@@ -233,6 +235,90 @@ def _masked_categorical_cross_entropy(
     return F.cross_entropy(logits[mask].float(), targets[mask])
 
 
+def _reactor_policy_logits(
+    reactor: GenericTransactionReactor,
+    state: TypedTheoryState,
+    *,
+    command_hidden: torch.Tensor,
+    command_attention_mask: torch.Tensor,
+) -> tuple[TransactionPolicy, Mapping[str, torch.Tensor]]:
+    captured: dict[str, torch.Tensor] = {}
+
+    def capture(name: str):
+        def hook(
+            _module: torch.nn.Module,
+            _inputs: tuple[torch.Tensor, ...],
+            output: torch.Tensor,
+        ) -> None:
+            if name in captured:
+                raise ETTRComponentIslandError(
+                    f"reactor emitted {name} more than once"
+                )
+            captured[name] = output
+
+        return hook
+
+    modules = {
+        "opcode": reactor.opcode_head,
+        "source_query": reactor.source_query,
+        "target_query": reactor.target_query,
+        "slot_key": reactor.slot_key,
+        "relation": reactor.relation_head,
+        "type_index": reactor.type_head,
+        "value_code": reactor.value_head,
+    }
+    handles = [
+        module.register_forward_hook(capture(name))
+        for name, module in modules.items()
+    ]
+    try:
+        policy = reactor.policy(
+            state,
+            hard=False,
+            command_hidden=command_hidden,
+            command_attention_mask=command_attention_mask,
+            validate=False,
+        )
+    finally:
+        for handle in handles:
+            handle.remove()
+    if set(captured) != set(modules):
+        raise ETTRComponentIslandError(
+            "reactor policy logit capture is incomplete"
+        )
+    keys = captured["slot_key"]
+    logits = {
+        "opcode": captured["opcode"].float(),
+        "source": torch.einsum(
+            "bw,bsw->bs",
+            captured["source_query"],
+            keys,
+        ).float(),
+        "target": torch.einsum(
+            "bw,bsw->bs",
+            captured["target_query"],
+            keys,
+        ).float(),
+        "relation": captured["relation"].float(),
+        "type_index": captured["type_index"].float(),
+        "value_code": captured["value_code"].float(),
+    }
+    probabilities = {
+        "opcode": policy.opcode_probabilities,
+        "source": policy.source_probabilities,
+        "target": policy.target_probabilities,
+        "relation": policy.relation_probabilities,
+        "type_index": policy.type_probabilities,
+        "value_code": policy.value_probabilities,
+    }
+    for name, field_logits in logits.items():
+        if field_logits.shape != probabilities[name].shape:
+            raise ETTRComponentIslandError(
+                f"reactor {name} logit geometry differs"
+            )
+    return policy, logits
+
+
 def _balanced_binary_nll(
     probabilities: torch.Tensor,
     targets: torch.Tensor,
@@ -377,29 +463,15 @@ def _reactor_loss(
         name: [] for name in _POLICY_FIELDS
     }
     for step in range(targets.opcode.shape[1]):
-        prediction = model.reactor.policy(
+        _prediction, logits = _reactor_policy_logits(
+            model.reactor,
             state,
-            hard=False,
             command_hidden=command_hidden.detach(),
             command_attention_mask=batch.episodes.command.attention_mask,
-            validate=False,
         )
-        logits = {
-            "opcode": prediction.opcode_logits,
-            "source": prediction.source_logits,
-            "target": prediction.target_logits,
-            "relation": prediction.relation_logits,
-            "type_index": prediction.type_logits,
-            "value_code": prediction.value_logits,
-        }
         for name in _POLICY_FIELDS:
-            field_logits = logits[name]
-            if field_logits is None:
-                raise ETTRComponentIslandError(
-                    f"reactor policy omitted {name} logits"
-                )
             loss = _masked_categorical_cross_entropy(
-                field_logits,
+                logits[name],
                 getattr(targets, name)[:, step],
                 masks[name][:, step],
             )

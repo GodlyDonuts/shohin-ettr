@@ -1514,26 +1514,28 @@ class DenseStateReactor(nn.Module):
         control = self.output_norm(control)
         encoded_slots = self.output_norm(slots)
         keys = self.slot_key(encoded_slots)
-        source_logits = torch.einsum(
-            "bw,bsw->bs",
-            self.source_query(control),
-            keys,
-        ).float()
-        source_probabilities = source_logits.softmax(-1)
-        target_logits = torch.einsum(
-            "bw,bsw->bs",
-            self.target_query(control),
-            keys,
-        ).float()
-        target_probabilities = target_logits.softmax(-1)
-        opcode_logits = self.opcode_head(control).float()
-        relation_logits = self.relation_head(control).float()
-        type_logits = self.type_head(control).float()
-        value_logits = self.value_head(control).float()
-        opcode_probabilities = opcode_logits.softmax(-1)
-        relation_probabilities = relation_logits.softmax(-1)
-        type_probabilities = type_logits.softmax(-1)
-        value_probabilities = value_logits.softmax(-1)
+        source_probabilities = (
+            torch.einsum(
+                "bw,bsw->bs",
+                self.source_query(control),
+                keys,
+            )
+            .float()
+            .softmax(-1)
+        )
+        target_probabilities = (
+            torch.einsum(
+                "bw,bsw->bs",
+                self.target_query(control),
+                keys,
+            )
+            .float()
+            .softmax(-1)
+        )
+        opcode_probabilities = self.opcode_head(control).float().softmax(-1)
+        relation_probabilities = self.relation_head(control).float().softmax(-1)
+        type_probabilities = self.type_head(control).float().softmax(-1)
+        value_probabilities = self.value_head(control).float().softmax(-1)
         values = (
             opcode_probabilities,
             source_probabilities,
@@ -1557,12 +1559,6 @@ class DenseStateReactor(nn.Module):
             relation_probabilities=values[3],
             type_probabilities=values[4],
             value_probabilities=values[5],
-            opcode_logits=opcode_logits,
-            source_logits=source_logits,
-            target_logits=target_logits,
-            relation_logits=relation_logits,
-            type_logits=type_logits,
-            value_logits=value_logits,
         )
 
     def apply(
