@@ -21,9 +21,13 @@ import materialize_ettr_il_v3_corpus as original
 
 
 ADAPTER_SCHEMA = "r12-ettr-il-v3-parallel-materializer-adapter-v1"
+CONFIRMATION_ADAPTER_SCHEMA = (
+    "r12-ettr-il-v3-parallel-confirmation-materializer-adapter-v1"
+)
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _WORKER_CODEC: TokenNativeSurfaceCodec | None = None
+_WORKER_CONFIRMATION_KEY: bytes | None = None
 
 
 class ParallelMaterializationError(ValueError):
@@ -64,9 +68,17 @@ def _stable_sha256(path: Path, label: str) -> str:
     return digest.hexdigest()
 
 
-def _initialize_worker(tokenizer_path: str) -> None:
-    global _WORKER_CODEC
+def _initialize_worker(
+    tokenizer_path: str,
+    role: str,
+    confirmation_key_file: str | None,
+) -> None:
+    global _WORKER_CODEC, _WORKER_CONFIRMATION_KEY
     _WORKER_CODEC = TokenNativeSurfaceCodec(Path(tokenizer_path))
+    key_path = (
+        None if confirmation_key_file is None else Path(confirmation_key_file)
+    )
+    _WORKER_CONFIRMATION_KEY = original._confirmation_key(key_path, role)
 
 
 def _materialize_one(
@@ -78,7 +90,11 @@ def _materialize_one(
     if len(payload) > original.MAX_ROW_BYTES:
         raise ParallelMaterializationError("selected candidate row exceeds size bound")
     candidate = original._strict_load(payload, "selected candidate row")
-    record = materialize_candidate(candidate, _WORKER_CODEC, confirmation_key=None)
+    record = materialize_candidate(
+        candidate,
+        _WORKER_CODEC,
+        confirmation_key=_WORKER_CONFIRMATION_KEY,
+    )
     return (
         index,
         record.canonical_bytes(),
@@ -103,17 +119,24 @@ def _report(
     execution_code_sha256: str,
     workers: int,
 ) -> dict[str, object]:
+    execution_adapter: dict[str, object] = {
+        "schema": ADAPTER_SCHEMA,
+        "source_commit": execution_source_commit,
+        "source_sha256": execution_code_sha256,
+        "workers": workers,
+    }
+    if manifest["role"] == "sealed_confirmation":
+        execution_adapter = {
+            **execution_adapter,
+            "role": manifest["role"],
+            "schema": CONFIRMATION_ADAPTER_SCHEMA,
+        }
     report: dict[str, object] = {
         "charged_positions": (
             rows * original.ROWS_PER_CORE * original.CHARGED_POSITIONS_PER_ROW
         ),
         "codebook_sha256": codec.codebook_sha256,
-        "execution_adapter": {
-            "schema": ADAPTER_SCHEMA,
-            "source_commit": execution_source_commit,
-            "source_sha256": execution_code_sha256,
-            "workers": workers,
-        },
+        "execution_adapter": execution_adapter,
         "expanded_rows": rows * original.ROWS_PER_CORE,
         "materializer_freeze_sha256": manifest["materializer_freeze_sha256"],
         "materializer_source_commit": manifest["materializer_source_commit"],
@@ -159,8 +182,9 @@ def materialize_task_parallel(
     execution_source_commit: str,
     execution_code_sha256: str,
     execution_code: Path | None = None,
+    confirmation_key_file: Path | None = None,
 ) -> dict[str, object]:
-    """Materialize one main cell in parallel using the frozen implementation."""
+    """Materialize one exact cell in parallel using the frozen implementation."""
 
     if (
         workers < 1
@@ -179,10 +203,10 @@ def materialize_task_parallel(
         materializer_source_root,
         materializer_freeze,
     )
-    if manifest.get("role") != "main":
-        raise ParallelMaterializationError(
-            "parallel adapter is restricted to public main cells"
-        )
+    role = manifest.get("role")
+    if role not in {"main", "sealed_confirmation"}:
+        raise ParallelMaterializationError("parallel materialization role differs")
+    original._confirmation_key(confirmation_key_file, role)
     task = original._task_at(manifest, task_index)
     selected_path = selected_root / original._relative(
         task["input_path"],
@@ -233,7 +257,15 @@ def materialize_task_parallel(
                 max_workers=workers,
                 mp_context=context,
                 initializer=_initialize_worker,
-                initargs=(str(tokenizer_path),),
+                initargs=(
+                    str(tokenizer_path),
+                    role,
+                    (
+                        None
+                        if confirmation_key_file is None
+                        else str(confirmation_key_file)
+                    ),
+                ),
             ) as executor,
         ):
             descriptor = -1
@@ -323,6 +355,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--workers", type=int, required=True)
     parser.add_argument("--execution-source-commit", required=True)
     parser.add_argument("--execution-code-sha256", required=True)
+    parser.add_argument("--confirmation-key-file", type=Path)
     return parser
 
 
@@ -340,6 +373,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         workers=arguments.workers,
         execution_source_commit=arguments.execution_source_commit,
         execution_code_sha256=arguments.execution_code_sha256,
+        confirmation_key_file=arguments.confirmation_key_file,
     )
     print(
         json.dumps(

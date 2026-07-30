@@ -1,5 +1,5 @@
 #!/bin/bash
-# Parallelize one exact frozen main materialization cell into an isolated root.
+# Parallelize one exact frozen materialization cell into an isolated root.
 # The original selected shard and frozen materializer remain the only semantics.
 #SBATCH -J ettr-v3-mat-fast
 #SBATCH -p normal
@@ -32,11 +32,12 @@ OUTPUT_ROOT=${OUTPUT_ROOT:?set a fresh isolated output root}
 REPORTS_ROOT=${REPORTS_ROOT:?set a fresh isolated reports root}
 TOKENIZER=${TOKENIZER:?set the exact immutable tokenizer}
 MATERIALIZER_FREEZE=${MATERIALIZER_FREEZE:?set the exact materializer freeze}
-TASK_INDEX=${TASK_INDEX:?set one main task index}
+TASK_INDEX=${TASK_INDEX:?set one task index}
 EXECUTION_SOURCE_COMMIT=${EXECUTION_SOURCE_COMMIT:?set the adapter source commit}
 ADAPTER_CODE=$ADAPTER_ROOT/accelerate_ettr_il_v3_materialization.py
 ADAPTER_SHA256=${ADAPTER_SHA256:?set the exact adapter code SHA-256}
 WORKERS=${WORKERS:-${SLURM_CPUS_PER_TASK:-16}}
+CONFIRMATION_KEY_FILE=${CONFIRMATION_KEY_FILE:-}
 
 for path in \
   "$ADAPTER_ROOT" \
@@ -75,6 +76,16 @@ if [[ ! "$TASK_INDEX" =~ ^[0-9]+$ \
   echo "[ettr-fast] scalar contract differs" >&2
   exit 2
 fi
+confirmation_arguments=()
+if [[ -n "$CONFIRMATION_KEY_FILE" ]]; then
+  if [[ "$CONFIRMATION_KEY_FILE" != /* \
+    || ! -f "$CONFIRMATION_KEY_FILE" \
+    || -L "$CONFIRMATION_KEY_FILE" ]]; then
+    echo "[ettr-fast] confirmation key custody differs" >&2
+    exit 2
+  fi
+  confirmation_arguments+=(--confirmation-key-file "$CONFIRMATION_KEY_FILE")
+fi
 (cd "$ADAPTER_ROOT" && sha256sum -c SHA256SUMS >/dev/null)
 printf '%s  %s\n' "$ADAPTER_SHA256" "$ADAPTER_CODE" | sha256sum -c -
 mkdir -m 700 "$OUTPUT_ROOT" "$REPORTS_ROOT"
@@ -90,4 +101,5 @@ export PYTHONPATH="$SOURCE_ROOT/pipeline"
   --task-index "$TASK_INDEX" \
   --workers "$WORKERS" \
   --execution-source-commit "$EXECUTION_SOURCE_COMMIT" \
-  --execution-code-sha256 "$ADAPTER_SHA256"
+  --execution-code-sha256 "$ADAPTER_SHA256" \
+  "${confirmation_arguments[@]}"
