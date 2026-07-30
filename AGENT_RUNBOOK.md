@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-30 16:57 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-30 17:10 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -19629,6 +19629,18 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `40c0d24a74c793252b98b95809e0bed58e023532c5f3cdadd425c27c4527a80a`.
   These are weight/data-cursor continuations with fresh AdamW state because
   the 5,000-update pilots did not persist optimizer moments.
+
+  A matched fresh-from-update-2,000 `1e-4` rate control also completed
+  5,000 updates under the original clamped objective. Seed 1 reached
+  `22.74%` joint, `85.88%` opcode, `48.81%` source, `29.89%` target,
+  `47.28%` relation, and `33.61%` value accuracy. Seed 2 reached
+  `12.43%` joint, `76.59%` opcode, `33.38%` source, `33.27%` target,
+  `44.92%` relation, and `32.68%` value. Report SHA-256 values are
+  `6201aeb374972802c6c24c83768abfbac4c092fa612078783e12edcef67beea3`
+  and
+  `aa17d500e7522d6b4c15f2e5f1b7dc0bb8e9e1cf7e9fcc416f2b64ced77ff1e6`.
+  These runs avoided the dead zone by chance/rate, so they remain useful
+  optimization controls but do not rehabilitate the unsafe clamped loss.
 
   Across both seeds and both continuation rates, target accuracy collapsed
   to exactly zero. The training trace localized the cause:
