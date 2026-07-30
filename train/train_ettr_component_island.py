@@ -44,7 +44,7 @@ from eval_ettr_v3 import (
     _validate_checkpoint_cursor,
     _validate_run_contract,
 )
-from probe_ettr_causal_queries import _summary
+from probe_ettr_causal_queries import _depth_bucket, _pair_rows, _summary
 from probe_ettr_oracle_interfaces import (
     _arm_batch,
     _count_summary,
@@ -363,29 +363,39 @@ def _reactor_loss(
     }
 
 
-def _reader_loss(
+def _reader_logits(
     model: EndogenousTypedTheoryReactorGPT,
     batch: ETTRContinuationBatch,
-) -> tuple[torch.Tensor, dict[str, float]]:
-    state = packet_targets_to_state(
-        batch.terminal_packet_targets,
-        model.config,
-        step=batch.transaction_targets.opcode.shape[1],
-        dtype=next(model.query_reader.parameters()).dtype,
-    )
+    state: TypedTheoryState,
+    *,
+    injection: str,
+) -> torch.Tensor:
+    if injection not in {"stage", "late"}:
+        raise ETTRComponentIslandError("reader injection geometry differs")
     with torch.no_grad():
         query_hidden = model._encode_to_stage(
             batch.episodes.query.tokens,
             pos=0,
         )
-    hidden = query_hidden.detach() + model.query_reader(
+    read = model.query_reader(
         query_hidden.detach(),
         state,
         attention_mask=batch.episodes.query.attention_mask,
     )
-    hidden = model._decode_from_stage(hidden, pos=0)
+    if injection == "stage":
+        hidden = model._decode_from_stage(
+            query_hidden.detach() + read,
+            pos=0,
+        )
+    else:
+        with torch.no_grad():
+            decoded = model._decode_from_stage(
+                query_hidden.detach(),
+                pos=0,
+            )
+        hidden = decoded.detach() + read
     logits = model.base.head(model.base.norm(hidden))
-    read_logits = logits.gather(
+    return logits.gather(
         1,
         batch.episodes.query_read_index[:, None, None].expand(
             -1,
@@ -393,6 +403,26 @@ def _reader_loss(
             logits.shape[-1],
         ),
     ).squeeze(1)
+
+
+def _reader_loss(
+    model: EndogenousTypedTheoryReactorGPT,
+    batch: ETTRContinuationBatch,
+    *,
+    injection: str,
+) -> tuple[torch.Tensor, dict[str, float]]:
+    state = packet_targets_to_state(
+        batch.terminal_packet_targets,
+        model.config,
+        step=batch.transaction_targets.opcode.shape[1],
+        dtype=next(model.query_reader.parameters()).dtype,
+    )
+    read_logits = _reader_logits(
+        model,
+        batch,
+        state,
+        injection=injection,
+    )
     targets = batch.episodes.query.targets.gather(
         1,
         batch.episodes.query_read_index[:, None],
@@ -415,13 +445,19 @@ def component_loss(
     model: EndogenousTypedTheoryReactorGPT,
     batch: ETTRContinuationBatch,
     component: str,
+    *,
+    reader_injection: str = "stage",
 ) -> tuple[torch.Tensor, dict[str, float]]:
     if component == "compiler":
         return _compiler_loss(model, batch)
     if component == "reactor":
         return _reactor_loss(model, batch)
     if component == "reader":
-        return _reader_loss(model, batch)
+        return _reader_loss(
+            model,
+            batch,
+            injection=reader_injection,
+        )
     raise ETTRComponentIslandError("unknown ETTR component island")
 
 
@@ -433,6 +469,7 @@ def _evaluate_interfaces(
     device: torch.device,
     data_seed: int,
     max_batches: int,
+    reader_injection: str,
 ) -> dict[str, object]:
     model.eval()
     counts: dict[str, dict[str, list[int]]] = {
@@ -461,6 +498,53 @@ def _evaluate_interfaces(
             dtype=torch.bfloat16,
         ):
             compiler, reactor, reader = _arm_batch(model, batch)
+            if reader_injection == "late":
+                terminal = packet_targets_to_state(
+                    batch.terminal_packet_targets,
+                    model.config,
+                    step=batch.transaction_targets.opcode.shape[1],
+                    dtype=next(model.query_reader.parameters()).dtype,
+                )
+                logits = _reader_logits(
+                    model,
+                    batch,
+                    terminal,
+                    injection=reader_injection,
+                )
+                pairs = _reader_pairs_from_logits(logits, batch)
+                (
+                    _world_packet,
+                    _world_command,
+                    world_target,
+                    _command_packet,
+                    _command_command,
+                    command_target,
+                ) = batch.causal_rectangles.intervention_indices()
+                depths = batch.transaction_targets.step_mask.sum(-1)
+                reader = {
+                    kind: [
+                        row
+                        | {
+                            "depth": int(depth.detach().cpu()),
+                            "depth_bucket": _depth_bucket(
+                                int(depth.detach().cpu())
+                            ),
+                        }
+                        for row, depth in zip(
+                            _pair_rows(pair),
+                            depths.index_select(
+                                0,
+                                (
+                                    world_target
+                                    if kind == "world"
+                                    else command_target
+                                ),
+                            ),
+                            strict=True,
+                        )
+                    ]
+                    for kind, pair in pairs.items()
+                }
         _merge_counts(counts["compiler"], compiler)
         _merge_counts(counts["teacher_forced_reactor"], reactor)
         for kind, rows in reader.items():
@@ -519,6 +603,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--gradient-clip", type=float, default=1.0)
     parser.add_argument("--eval-batches", type=int, default=16)
     parser.add_argument("--log-every", type=int, default=10)
+    parser.add_argument(
+        "--reader-injection",
+        choices=("stage", "late"),
+        default="stage",
+    )
     return parser.parse_args(argv)
 
 
@@ -539,6 +628,7 @@ def _validate_args(args: argparse.Namespace) -> None:
         or args.weight_decay < 0.0
         or not math.isfinite(args.gradient_clip)
         or args.gradient_clip <= 0.0
+        or (args.component != "reader" and args.reader_injection != "stage")
     ):
         raise ETTRComponentIslandError("component trainer arguments differ")
 
@@ -623,6 +713,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             device=device,
             data_seed=args.data_seed,
             max_batches=args.eval_batches,
+            reader_injection=args.reader_injection,
         )
 
         run_receipt = {
@@ -641,6 +732,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             }[args.component],
             "ownership": ownership,
             "protected_checkpoint_sha256": protected.checkpoint_sha256,
+            "reader_injection": args.reader_injection,
             "release_file_sha256": args.release_sha256,
             "run_contract_sha256": args.run_contract_sha256,
             "schema": RUN_SCHEMA,
@@ -690,7 +782,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
             optimizer.zero_grad(set_to_none=True)
             with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-                loss, parts = component_loss(model, batch, args.component)
+                loss, parts = component_loss(
+                    model,
+                    batch,
+                    args.component,
+                    reader_injection=args.reader_injection,
+                )
             if not bool(torch.isfinite(loss)):
                 raise ETTRComponentIslandError(
                     "component training loss is non-finite"
@@ -736,6 +833,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             device=device,
             data_seed=args.data_seed,
             max_batches=args.eval_batches,
+            reader_injection=args.reader_injection,
         )
         final_component = _component_state(model, args.component)
         final_component_path = args.output / "component-final.safetensors"
@@ -764,6 +862,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "protected_checkpoint_sha256": protected.checkpoint_sha256,
             "release_file_sha256": args.release_sha256,
             "release_manifest_sha256": stream.manifest.sha256(),
+            "reader_injection": args.reader_injection,
             "schema": REPORT_SCHEMA,
             "source_commit": args.source_commit,
             "source_verification": source_verification,

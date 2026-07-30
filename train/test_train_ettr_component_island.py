@@ -10,6 +10,7 @@ from train_ettr_component_island import (
     _balanced_binary_nll,
     _masked_categorical_nll,
     compiler_packet_loss,
+    _validate_args,
     select_trainable_component,
 )
 
@@ -54,6 +55,34 @@ def test_component_selection_freezes_every_other_parameter(
 def test_component_selection_rejects_unknown_island() -> None:
     with pytest.raises(ETTRComponentIslandError, match="unknown"):
         select_trainable_component(_ComponentModel(), "joint")
+
+
+def test_late_reader_injection_is_reader_only() -> None:
+    arguments = type(
+        "Args",
+        (),
+        {
+            "release_sha256": "a" * 64,
+            "checkpoint_sha256": "b" * 64,
+            "run_contract_sha256": "c" * 64,
+            "source_commit": "d" * 40,
+            "architecture_seed": 1,
+            "data_seed": 2,
+            "updates": 1,
+            "eval_batches": 2,
+            "log_every": 1,
+            "learning_rate": 3e-4,
+            "weight_decay": 0.0,
+            "gradient_clip": 1.0,
+            "component": "compiler",
+            "reader_injection": "late",
+        },
+    )()
+    with pytest.raises(
+        ETTRComponentIslandError,
+        match="arguments differ",
+    ):
+        _validate_args(arguments)
 
 
 def test_masked_categorical_nll_uses_only_supported_rows() -> None:
