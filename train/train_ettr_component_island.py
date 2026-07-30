@@ -241,6 +241,7 @@ def _reactor_policy_logits(
     *,
     command_hidden: torch.Tensor,
     command_attention_mask: torch.Tensor,
+    hard: bool = False,
 ) -> tuple[TransactionPolicy, Mapping[str, torch.Tensor]]:
     captured: dict[str, torch.Tensor] = {}
 
@@ -274,7 +275,7 @@ def _reactor_policy_logits(
     try:
         policy = reactor.policy(
             state,
-            hard=False,
+            hard=hard,
             command_hidden=command_hidden,
             command_attention_mask=command_attention_mask,
             validate=False,

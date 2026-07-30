@@ -275,6 +275,70 @@ def test_reactor_policy_logit_capture_matches_frozen_policy() -> None:
     assert torch.count_nonzero(reactor.target_query.weight.grad)
 
 
+def test_reactor_policy_logit_capture_can_apply_hard_policy() -> None:
+    config = TheoryReactorConfig(
+        d_model=8,
+        state_width=8,
+        num_slots=3,
+        num_types=2,
+        num_relations=2,
+        num_value_codes=4,
+        max_edges=18,
+        num_heads=2,
+        compiler_layers=1,
+        reactor_layers=1,
+        query_layers=1,
+        ff_multiplier=2,
+        max_steps=2,
+        stage_after_block=0,
+        parameter_cap=1_000_000,
+    )
+    reactor = GenericTransactionReactor(config)
+    active = torch.ones(2, config.num_slots)
+    root = torch.zeros_like(active)
+    root[:, 0] = 1.0
+    values = torch.zeros(2, config.num_slots, config.num_value_codes)
+    values[..., 0] = 1.0
+    types = torch.zeros(2, config.num_slots, config.num_types)
+    types[..., 0] = 1.0
+    state = TypedTheoryState(
+        value_probabilities=values,
+        type_probabilities=types,
+        relations=torch.zeros(
+            2,
+            config.num_relations,
+            config.num_slots,
+            config.num_slots,
+        ),
+        active=active,
+        root=root,
+        committed=torch.zeros(2),
+        halted=torch.zeros(2),
+        step=0,
+    )
+    policy, logits = _reactor_policy_logits(
+        reactor,
+        state,
+        command_hidden=torch.randn(2, 4, config.d_model),
+        command_attention_mask=torch.ones(2, 4, dtype=torch.bool),
+        hard=True,
+    )
+    for name in (
+        "opcode",
+        "source",
+        "target",
+        "relation",
+        "type_index",
+        "value_code",
+    ):
+        applied = getattr(policy, name)
+        assert torch.equal(applied.sum(-1), torch.ones(2))
+        assert torch.equal(
+            applied.argmax(-1),
+            logits[name].argmax(-1),
+        )
+
+
 def test_balanced_binary_nll_does_not_let_negatives_swamp_positives() -> None:
     probabilities = torch.tensor([0.9, 0.9, 0.9, 0.9])
     targets = torch.tensor([True, False, False, False])
