@@ -18242,3 +18242,69 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `stronger_packet_context_negative_caught_before_optimizer_exact_component_audit_running_no_gate_weakening`.
+
+- **2026-07-29 22:09 EDT** -- **The exact v1 packet audit quantified the
+  leakage, and a tokenizer-surviving v2 corpus rebuild is live behind the
+  same non-negotiable optimizer gate.**
+
+  Stokes job `755962` completed the independent all-main-split packet scan in
+  23m20s. Across 56,250 cores and 3,600,000 optimizer-visible packet/query
+  rows, it found 3,545,744 unique contexts, 54,256 duplicate-context rows,
+  5,552 contexts shared across owner sides, 433 cross-owner connected
+  components, and 16 contexts with conflicting targets. The report status is
+  therefore `fail`; its self-hash is
+  `fd06b000dd08e45ece9bddfe34ee329c9104a5c7ad0bbf6cb97aaa83355a5988`
+  and its cross-owner context-set hash is
+  `8799c013917e4e19290ceacdca3bc083edde0b270e2cceb81bacb69f9191c989`.
+  This proves that source-view and semantic separation alone were
+  insufficient because the token-native codec canonicalized the split/core
+  symbol names. The published v1 corpus remains private evidence and is
+  prohibited from training.
+
+  Private commit
+  `e5f3705d3058125b979ac38269bd7f1df2cf8f1b` repairs the representation
+  without changing semantic labels. Every episode receives a
+  target-independent 60-bit custody nonce, represented as six base-1024
+  numeric arguments inside existing no-op query wrappers. The nonce is
+  derived only from episode identity, owner split, and materialization
+  schema; it survives tokenization, cannot encode the target, and is applied
+  to Horn, resource, and local-rewrite source paths. The focused
+  materializer, packet extractor, release, and packet-index suite passes
+  **30/30 in 91.07 seconds**, including direct train/development token-context
+  disjointness for all three families.
+
+  The exact v2 source is sealed at
+  `scratchpad/ettr_materializer_source_e5f3705_packet_v2_r1`. Its 904-file
+  freeze self-hash is
+  `e0e6c150ac95550df7eeb214cb8f22bb74120dbb81b15a91e5b6e5d0b3034999`.
+  The main task manifest contains 60 tasks / 56,250 already qualified cores
+  and is self-hashed as
+  `d427a0b33d39277f5d9d4f4891aa6a3c171968267b7fc078f99f5cb4f00eb2e5`;
+  the physically separate confirmation manifest contains 30 tasks / 6,250
+  cores and is self-hashed as
+  `b5f2f0372e9c67a3057e1680f62d8ac8df0957ae4dcdc3f98a29453a688a2d18`.
+  No v1 file is overwritten.
+
+  Production task-49 canary `755966` completed cleanly in 2m34s with 62/62
+  canonical v2 records. Its output SHA-256 is
+  `26c37cebaedfc5f68301acbef92cf6bd17f2e5fe08710862fad5ecadd81d19f3`
+  and its worker-report self-hash is
+  `936e995303a873d9cd1367f49063abfc0668bf16538d2323372f32f61608405e`.
+  Main jobs `755968`--`756026` then launched with 16 process workers per cell.
+  Five allocations were canceled by Slurm at one second before useful work;
+  their touched directories were preserved and only their task indices were
+  retried as `756057`--`756061` on the known-good node. Sealed-confirmation
+  array `756027` runs separately with 30 one-CPU cells and zero observed
+  nonempty error logs.
+
+  Fresh dependency chain `756062`--`756066` performs deterministic main
+  assembly, independent main and confirmation audits, main/confirmation
+  separation, and finally the same exact packet-context audit used to reject
+  v1. A release, cross-cluster transfer, optimizer, and rung lock remain
+  absent until every receipt passes. FinePDF ingestion `754502` completed and
+  review `754503` is running; FineWeb `754467` and Essential `754517` also
+  continue independently. Newton reservations `722178`, `722179`, and
+  `719496` remain pending and cannot bypass the data gate.
+
+  Decision:
+  `v1_packet_leakage_quantified_v2_token_transport_repair_frozen_production_rebuild_and_exact_reaudit_live_no_optimizer`.
