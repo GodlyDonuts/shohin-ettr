@@ -127,6 +127,7 @@ def _verify_document_ledger(
     shard_records: list[dict[str, Any]],
     *,
     kept: object,
+    document_policy: dict[str, Any] | None,
 ) -> dict[str, int]:
     if (
         record.get("path") != DOCUMENT_LEDGER_NAME
@@ -148,6 +149,38 @@ def _verify_document_ledger(
     offsets = {name: 0 for name in shard_tokens}
     rows = 0
     tokens = 0
+    policy_tier_counts: dict[str, int] = {}
+    expected_policy_tiers: set[str] | None = None
+    expected_policy_counts: dict[str, int] | None = None
+    if document_policy is not None:
+        allowed_tiers = document_policy.get("allowed_tiers")
+        retained_tiers = document_policy.get("retained_tiers")
+        if (
+            not isinstance(allowed_tiers, list)
+            or not allowed_tiers
+            or any(
+                not isinstance(tier, str) or not tier
+                for tier in allowed_tiers
+            )
+            or len(allowed_tiers) != len(set(allowed_tiers))
+            or not isinstance(retained_tiers, dict)
+            or any(
+                not isinstance(tier, str)
+                or not tier
+                or type(count) is not int
+                or count < 0
+                for tier, count in retained_tiers.items()
+            )
+        ):
+            raise ShardVerificationError(
+                "document-policy ledger contract differs"
+            )
+        expected_policy_tiers = set(allowed_tiers)
+        if not set(retained_tiers).issubset(expected_policy_tiers):
+            raise ShardVerificationError(
+                "document-policy retained tiers are not allowed"
+            )
+        expected_policy_counts = dict(retained_tiers)
     last_source_row = -1
     last_shard_index = -1
     current_shard: str | None = None
@@ -192,9 +225,35 @@ def _verify_document_ledger(
                             "token_start",
                             "tokens",
                         }
-                        if set(value) != required:
+                        policy_bound_fields = required | {
+                            "document_policy_tier"
+                        }
+                        value_fields = frozenset(value)
+                        if value_fields not in {
+                            frozenset(required),
+                            frozenset(policy_bound_fields),
+                        }:
                             raise ShardVerificationError(
                                 "document ledger row fields differ"
+                            )
+                        has_policy_tier = "document_policy_tier" in value
+                        policy_tier = value.get("document_policy_tier")
+                        if expected_policy_tiers is None:
+                            if has_policy_tier and policy_tier is not None:
+                                raise ShardVerificationError(
+                                    "unbound document-policy tier is present"
+                                )
+                        elif (
+                            not has_policy_tier
+                            or not isinstance(policy_tier, str)
+                            or policy_tier not in expected_policy_tiers
+                        ):
+                            raise ShardVerificationError(
+                                "document-policy tier differs"
+                            )
+                        if isinstance(policy_tier, str):
+                            policy_tier_counts[policy_tier] = (
+                                policy_tier_counts.get(policy_tier, 0) + 1
                             )
                         source_row = value["source_row_index"]
                         shard_name = value["shard"]
@@ -262,7 +321,7 @@ def _verify_document_ledger(
                             or not HEX64.fullmatch(value["document_sha256"])
                         ):
                             raise ShardVerificationError(
-                            "document ledger row contract differs"
+                                "document ledger row contract differs"
                             )
                         offsets[shard_name] = value["token_end"]
                         last_source_row = source_row
@@ -283,6 +342,10 @@ def _verify_document_ledger(
         or rows != kept
         or tokens != record.get("tokens")
         or tokens != sum(shard_tokens.values())
+        or (
+            expected_policy_counts is not None
+            and policy_tier_counts != expected_policy_counts
+        )
     ):
         raise ShardVerificationError(
             "document ledger does not reconcile with token shards"
@@ -308,6 +371,18 @@ def verify_manifest(
         "shohin-tokenized-shards-v3",
     }:
         raise ShardVerificationError("manifest schema is unsupported")
+    filters = manifest.get("filters")
+    if filters is not None and not isinstance(filters, dict):
+        raise ShardVerificationError("filter contract is malformed")
+    document_policy = (
+        filters.get("document_policy")
+        if isinstance(filters, dict)
+        else None
+    )
+    if document_policy is not None and not isinstance(document_policy, dict):
+        raise ShardVerificationError(
+            "document-policy contract is malformed"
+        )
 
     claimed_payload = manifest.get("payload_sha256")
     if not isinstance(claimed_payload, str) or not HEX64.fullmatch(claimed_payload):
@@ -379,6 +454,7 @@ def verify_manifest(
             ledger,
             records,
             kept=manifest.get("kept"),
+            document_policy=document_policy,
         )
         document_ledger_verified = True
         document_rows = ledger_totals["rows"]
@@ -425,19 +501,7 @@ def verify_manifest(
             if not isinstance(record, dict):
                 raise ShardVerificationError("evaluation-file record is malformed")
             _verify_external_file(record, f"evaluation file {index}")
-        filters = manifest.get("filters")
-        if filters is not None and not isinstance(filters, dict):
-            raise ShardVerificationError("filter contract is malformed")
-        document_policy = (
-            filters.get("document_policy")
-            if isinstance(filters, dict)
-            else None
-        )
         if document_policy is not None:
-            if not isinstance(document_policy, dict):
-                raise ShardVerificationError(
-                    "document-policy contract is malformed"
-                )
             source = document_policy.get("source")
             if not isinstance(source, dict):
                 raise ShardVerificationError(

@@ -10,6 +10,8 @@ from pathlib import Path
 
 from tokenizers import Tokenizer
 
+from pipeline.verify_tokenized_shards import verify_manifest
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "pipeline" / "tokenize_shards.py"
@@ -302,3 +304,10 @@ def test_finepdf_policy_is_batched_deterministic_and_manifest_bound(tmp_path):
     assert len(
         manifest["filters"]["document_policy"]["source"]["sha256"]
     ) == 64
+    verification = verify_manifest(
+        sequential,
+        selection_code=SCRIPT,
+        require_external_inputs=True,
+    )
+    assert verification["document_ledger_verified"]
+    assert verification["external_inputs_verified"]

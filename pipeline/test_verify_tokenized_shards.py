@@ -108,6 +108,43 @@ def build_corpus(root: Path, *, schema: str = "v2") -> tuple[Path, Path]:
     return shard_dir, selection_code
 
 
+def rewrite_document_ledger(
+    shard_dir: Path,
+    *,
+    document_policy_tier: str | None,
+    include_tier_field: bool,
+) -> None:
+    ledger_path = shard_dir / DOCUMENT_LEDGER_NAME
+    rows = [
+        json.loads(line)
+        for line in zstd.ZstdDecompressor()
+        .decompress(ledger_path.read_bytes())
+        .decode("ascii")
+        .splitlines()
+    ]
+    for row in rows:
+        if include_tier_field:
+            row["document_policy_tier"] = document_policy_tier
+        else:
+            row.pop("document_policy_tier", None)
+    ledger_payload = "".join(
+        json.dumps(row, sort_keys=True, separators=(",", ":")) + "\n"
+        for row in rows
+    ).encode("ascii")
+    ledger_path.write_bytes(
+        zstd.ZstdCompressor(level=3).compress(ledger_payload)
+    )
+    manifest_path = shard_dir / "manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["document_ledger"]["bytes"] = ledger_path.stat().st_size
+    manifest["document_ledger"]["sha256"] = sha256_file(ledger_path)
+    manifest.pop("payload_sha256")
+    manifest["payload_sha256"] = canonical_payload_sha256(manifest)
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n"
+    )
+
+
 def test_complete_bound_corpus_verifies(tmp_path):
     shard_dir, selection_code = build_corpus(tmp_path)
     receipt = verify_manifest(
@@ -127,6 +164,87 @@ def test_v3_document_ledger_reconciles_exact_token_ranges(tmp_path):
     receipt = verify_manifest(shard_dir, selection_code=selection_code)
     assert receipt["document_ledger_verified"]
     assert receipt["document_rows"] == 1
+
+
+def test_v3_generic_document_policy_tier_none_verifies(tmp_path):
+    shard_dir, selection_code = build_corpus(tmp_path, schema="v3")
+    rewrite_document_ledger(
+        shard_dir,
+        document_policy_tier=None,
+        include_tier_field=True,
+    )
+    receipt = verify_manifest(shard_dir, selection_code=selection_code)
+    assert receipt["document_ledger_verified"]
+
+
+def test_v3_bound_document_policy_tier_and_count_verify(tmp_path):
+    shard_dir, selection_code = build_corpus(tmp_path, schema="v3")
+    manifest_path = shard_dir / "manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["filters"]["document_policy"] = {
+        "name": "finepdf_core_v1",
+        "allowed_tiers": ["core"],
+        "retained_tiers": {"core": 1},
+    }
+    manifest.pop("payload_sha256")
+    manifest["payload_sha256"] = canonical_payload_sha256(manifest)
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n"
+    )
+    rewrite_document_ledger(
+        shard_dir,
+        document_policy_tier="core",
+        include_tier_field=True,
+    )
+    receipt = verify_manifest(shard_dir, selection_code=selection_code)
+    assert receipt["document_ledger_verified"]
+
+
+def test_v3_bound_document_policy_requires_tier_field(tmp_path):
+    shard_dir, selection_code = build_corpus(tmp_path, schema="v3")
+    manifest_path = shard_dir / "manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["filters"]["document_policy"] = {
+        "name": "finepdf_core_v1",
+        "allowed_tiers": ["core"],
+        "retained_tiers": {"core": 1},
+    }
+    manifest.pop("payload_sha256")
+    manifest["payload_sha256"] = canonical_payload_sha256(manifest)
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n"
+    )
+    with pytest.raises(
+        ShardVerificationError,
+        match="document-policy tier differs",
+    ):
+        verify_manifest(shard_dir, selection_code=selection_code)
+
+
+def test_v3_bound_document_policy_reconciles_retained_counts(tmp_path):
+    shard_dir, selection_code = build_corpus(tmp_path, schema="v3")
+    manifest_path = shard_dir / "manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["filters"]["document_policy"] = {
+        "name": "finepdf_core_v1",
+        "allowed_tiers": ["core"],
+        "retained_tiers": {"core": 2},
+    }
+    manifest.pop("payload_sha256")
+    manifest["payload_sha256"] = canonical_payload_sha256(manifest)
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n"
+    )
+    rewrite_document_ledger(
+        shard_dir,
+        document_policy_tier="core",
+        include_tier_field=True,
+    )
+    with pytest.raises(
+        ShardVerificationError,
+        match="does not reconcile",
+    ):
+        verify_manifest(shard_dir, selection_code=selection_code)
 
 
 def test_v3_document_ledger_substitution_fails(tmp_path):
