@@ -9,9 +9,11 @@ from train_ettr_disposition_motor import (
     DispositionMotor,
     ETTRDispositionMotorError,
     _gates,
+    _pair_rows_with_depth,
     _query_classes,
     _validate_args,
 )
+from ettr_objectives import ETTRCausalQueryPair
 
 
 def _arguments(tmp_path):
@@ -102,6 +104,25 @@ def test_query_codebook_rejects_any_third_token() -> None:
         ),
         torch.tensor([0, 1, 0]),
     )
+
+
+def test_causal_rows_bind_transaction_depth() -> None:
+    pair = ETTRCausalQueryPair(
+        correct_logits=torch.tensor([[3.0, 1.0], [1.0, 3.0]]),
+        foil_logits=torch.tensor([[1.0, 3.0], [3.0, 1.0]]),
+        correct_target=torch.tensor([0, 1]),
+        foil_target=torch.tensor([1, 0]),
+    )
+    rows = _pair_rows_with_depth(pair, torch.tensor([1, 5]))
+    assert [(row["depth"], row["depth_bucket"]) for row in rows] == [
+        (1, "1"),
+        (5, "5-8"),
+    ]
+    with pytest.raises(
+        ETTRDispositionMotorError,
+        match="depth geometry differs",
+    ):
+        _pair_rows_with_depth(pair, torch.tensor([[1, 5]]))
 
 
 def test_arguments_bind_hashes_paths_codebook_and_bounded_rates(

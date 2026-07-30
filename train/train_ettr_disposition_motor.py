@@ -49,7 +49,7 @@ from eval_ettr_v3 import (
     _read_hash_bound_json,
     _validate_run_contract,
 )
-from probe_ettr_causal_queries import _pair_rows, _summary
+from probe_ettr_causal_queries import _depth_bucket, _pair_rows, _summary
 from probe_ettr_oracle_interfaces import packet_targets_to_state
 
 
@@ -251,6 +251,25 @@ def _causal_pairs(
     }
 
 
+def _pair_rows_with_depth(
+    pair: ETTRCausalQueryPair,
+    depths: torch.Tensor,
+) -> list[dict[str, object]]:
+    values = _pair_rows(pair)
+    if depths.ndim != 1 or len(values) != depths.numel():
+        raise ETTRDispositionMotorError(
+            "disposition motor depth geometry differs"
+        )
+    return [
+        row
+        | {
+            "depth": int(depth.detach().cpu()),
+            "depth_bucket": _depth_bucket(int(depth.detach().cpu())),
+        }
+        for row, depth in zip(values, depths, strict=True)
+    ]
+
+
 def _motor_loss(
     logits: torch.Tensor,
     classes: torch.Tensor,
@@ -331,6 +350,19 @@ def _evaluate(
             "exact_terminal": exact,
             "autonomous": _autonomous_terminal(model, batch),
         }
+        (
+            _world_packet,
+            _world_command,
+            world_target,
+            _command_packet,
+            _command_command,
+            command_target,
+        ) = batch.causal_rectangles.intervention_indices()
+        depths = batch.transaction_targets.step_mask.sum(-1)
+        pair_depths = {
+            "world": depths.index_select(0, world_target),
+            "command": depths.index_select(0, command_target),
+        }
         for state_name, state in states.items():
             query_features, reader_features = _query_features(
                 model,
@@ -354,7 +386,7 @@ def _evaluate(
                     batch,
                 ).items():
                     rows[motor_name][state_name][kind].extend(
-                        _pair_rows(pair)
+                        _pair_rows_with_depth(pair, pair_depths[kind])
                     )
         observed += 1
     if observed != max_batches or min(class_counts) < 1:
