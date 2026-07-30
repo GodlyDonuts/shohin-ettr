@@ -99,7 +99,7 @@ from ettr_il_v3_shards import (
 )
 
 
-MATERIALIZATION_SCHEMA = "r12-ettr-il-v3-architecture-materialization-v1"
+MATERIALIZATION_SCHEMA = "r12-ettr-il-v3-architecture-materialization-v2"
 PRESENTATION = "base"
 RENDERERS = tuple(SurfaceRenderer)
 
@@ -196,8 +196,12 @@ def _query_transport_prefix(
     ast: SurfaceNode,
     codec: TokenNativeSurfaceCodec,
     renderer: SurfaceRenderer,
+    nuisance: tuple[int, ...],
 ) -> bytes:
-    document = codec.serialize(ast, renderer)
+    surfaced = ast
+    for digit in reversed(nuisance):
+        surfaced = call(15, integer(digit), surfaced)
+    document = codec.serialize(surfaced, renderer)
     framing = b"\nR="
     tail_counts = {
         len(
@@ -235,6 +239,27 @@ def _query_transport_prefix(
     return prefix
 
 
+def _query_transport_nuisance(
+    *,
+    key: bytes,
+    owner_split: str,
+    episode_id: str,
+) -> tuple[int, ...]:
+    digest = prf(
+        key,
+        "query-choice",
+        canonical_json_bytes(
+            {
+                "episode_id": episode_id,
+                "owner_split": owner_split,
+                "schema": MATERIALIZATION_SCHEMA,
+            }
+        ),
+    )
+    value = int.from_bytes(digest[:8], "big") & ((1 << 60) - 1)
+    return tuple((value >> (10 * index)) & 1023 for index in range(6))
+
+
 def _legacy_sources(
     rectangle: SemanticRectangleBundle,
     *,
@@ -247,6 +272,11 @@ def _legacy_sources(
     tuple[tuple[bytes, bytes], tuple[bytes, bytes]],
     tuple[tuple[bytes, bytes], tuple[bytes, bytes]],
 ]:
+    query_nuisance = _query_transport_nuisance(
+        key=key,
+        owner_split=owner_split,
+        episode_id=rectangle.episode_id,
+    )
     context = SurfaceAdapterContext(
         fold=0,
         split=owner_split,
@@ -284,7 +314,12 @@ def _legacy_sources(
     )
     queries = tuple(
         tuple(
-            _query_transport_prefix(prefix.document.ast, codec, renderer)
+            _query_transport_prefix(
+                prefix.document.ast,
+                codec,
+                renderer,
+                query_nuisance,
+            )
             for prefix in variants
         )
         for variants in surface.query_prefixes
@@ -336,7 +371,10 @@ def _local_command_ast(
     return call(15, integer(nuisance), semantic)
 
 
-def _local_query_ast(query: StructuralQuery, paraphrase: int) -> SurfaceNode:
+def _local_query_ast(
+    query: StructuralQuery,
+    paraphrase: int,
+) -> SurfaceNode:
     operation = tuple(RewriteQueryOp).index(query.op)
     semantic = call(
         4,
@@ -355,11 +393,18 @@ def _local_sources(
     *,
     codec: TokenNativeSurfaceCodec,
     renderer: SurfaceRenderer,
+    key: bytes,
+    owner_split: str,
 ) -> tuple[
     tuple[tuple[bytes, bytes], tuple[bytes, bytes]],
     tuple[tuple[bytes, bytes], tuple[bytes, bytes]],
     tuple[tuple[bytes, bytes], tuple[bytes, bytes]],
 ]:
+    query_nuisance = _query_transport_nuisance(
+        key=key,
+        owner_split=owner_split,
+        episode_id=rectangle.episode_id,
+    )
     worlds = tuple(
         tuple(
             codec.pack(
@@ -392,6 +437,7 @@ def _local_sources(
                 _local_query_ast(query, paraphrase),
                 codec,
                 renderer,
+                query_nuisance,
             )
             for paraphrase in range(2)
         )
@@ -1205,7 +1251,13 @@ def materialize_candidate(
             ),
         )
         sources = (
-            _local_sources(view_rectangle, codec=codec, renderer=renderer)
+            _local_sources(
+                view_rectangle,
+                codec=codec,
+                renderer=renderer,
+                key=split_key,
+                owner_split=owner_split,
+            )
             if candidate.family == "local_rewrite"
             else _legacy_sources(
                 view_rectangle,

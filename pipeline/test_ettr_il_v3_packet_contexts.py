@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from pathlib import Path
 import sys
 
@@ -39,3 +40,27 @@ def test_fast_packet_contexts_match_full_tensor_projection(
     fast = compact_packet_context_rows(record, tokenizer)
     assert len(fast) == 64
     assert fast == full.rows
+
+
+@pytest.mark.parametrize("family", ("horn", "resource", "local_rewrite"))
+def test_packet_contexts_are_owner_split_disjoint(
+    family: str,
+    tokenizer: Tokenizer,
+) -> None:
+    train_row = _row(family)
+    development_row = deepcopy(train_row)
+    development_row["cell"]["split"] = "development"
+    development_row["owner"] = "development"
+    train = materialize_candidate(train_row, tokenizer)
+    development = materialize_candidate(development_row, tokenizer)
+    train_contexts = {
+        digest for digest, _target in compact_packet_context_rows(train, tokenizer)
+    }
+    development_contexts = {
+        digest
+        for digest, _target in compact_packet_context_rows(
+            development,
+            tokenizer,
+        )
+    }
+    assert train_contexts.isdisjoint(development_contexts)
