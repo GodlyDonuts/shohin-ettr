@@ -18733,10 +18733,22 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   The automatic federation gate observed `723330,723331` and immediately
   launched an exact world-size-two distributed canary across
-  `evc23,evc42`. Both ranks formed their NCCL process group and entered
-  compilation. An older single-H100 canary step sharing `723330` was removed
-  without canceling the reservation, preventing GPU contention. No optimizer
-  or learned-capability output has been admitted from this mechanical canary.
+  `evc23,evc42`. It passed. Both ranks used H100 PCIe devices, started from
+  identical parameter SHA-256
+  `cb086c7681695a4913cb2f9ebfa9641bda2762f6c279ba8e116108dcdf5eb82b`,
+  consumed different rank-local batches, and ended at identical parameter
+  SHA-256
+  `2688082d28e7e50ee97cb3567051ac9d75c2b38ce7cee62a1fe404a9f063fd9a`.
+  The first compiled update took 424.91 seconds and the steady update took
+  0.349 seconds, only about 9% slower than the same-node `evc24` steady
+  update. The protected checkpoint remained byte-identical. The sealed report
+  SHA-256 is
+  `280f7c3fc51358fbfd721c812c3df8f5d7496331fff409ae18a1f23a0137ba8d`.
+  An older single-H100 canary step sharing `723330` was removed without
+  canceling the reservation, preventing GPU contention. The two pool H100s
+  were then assigned isolated single-node canaries while the audited release
+  remains absent. No optimizer or learned-capability output has been admitted
+  from these mechanical canaries.
 
   ETTR v2 main independent audit `756063` completed cleanly in 2h20m with
   `{"command":"audit","status":"pass"}`. The final three confirmation Horn
@@ -18749,4 +18761,4 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   wait is required.
 
   Decision:
-  `all_available_healthy_h100s_requested_active_pool_federating_main_audit_passed_confirmation_still_blocks_optimizer`.
+  `all_available_healthy_h100s_requested_cross_job_world2_passed_main_audit_passed_confirmation_still_blocks_optimizer`.

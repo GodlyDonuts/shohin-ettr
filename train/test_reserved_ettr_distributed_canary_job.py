@@ -31,3 +31,9 @@ def test_distributed_canary_cannot_read_release_or_training_shards() -> None:
     assert "RELEASE_ROOT" not in SCRIPT
     assert "DATA_ROOT" not in SCRIPT
     assert "SHARD_ROOT" not in SCRIPT
+
+
+def test_distributed_canary_full_parameter_mode_is_opt_in() -> None:
+    assert "TRAIN_BASE=${TRAIN_BASE:-0}" in SCRIPT
+    assert '[[ "$TRAIN_BASE" != 0 && "$TRAIN_BASE" != 1 ]]' in SCRIPT
+    assert 'train_args+=(--train-base)' in SCRIPT

@@ -86,7 +86,12 @@ def _all_gather(value: object, world_size: int) -> list[object]:
     return values
 
 
-def _settings(seed: int, compile_mode: str) -> ProfileSettings:
+def _settings(
+    seed: int,
+    compile_mode: str,
+    *,
+    train_base: bool = False,
+) -> ProfileSettings:
     value = ProfileSettings(
         mode="h100",
         batch_size=16,
@@ -99,7 +104,7 @@ def _settings(seed: int, compile_mode: str) -> ProfileSettings:
         reactor_steps=4,
         learning_rate=1e-4,
         seed=seed,
-        train_scope="architecture",
+        train_scope="all" if train_base else "architecture",
         compile_mode=compile_mode,
     )
     value.validate()
@@ -115,6 +120,7 @@ def run(
     source_commit: str,
     expected_world_size: int,
     compile_mode: str,
+    train_base: bool = False,
 ) -> dict[str, object] | None:
     if (
         _HEX64.fullmatch(checkpoint_sha256) is None
@@ -135,7 +141,11 @@ def run(
         )
         model = _model_from_checkpoint(payload, seed=2026072901)
         objective_config = _objective_config(model)
-        settings = _settings(2026072902, compile_mode)
+        settings = _settings(
+            2026072902,
+            compile_mode,
+            train_base=train_base,
+        )
         train_batches = []
         train_hashes = []
         for index in range(world_size):
@@ -180,7 +190,7 @@ def run(
         optimizer = ETTROptimizerBundle(
             model,
             ETTROptimizerConfig(
-                train_base=False,
+                train_base=train_base,
                 warmup_updates=2_000,
                 total_updates=300_000,
             ),
@@ -338,6 +348,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         ),
         default="default",
     )
+    parser.add_argument(
+        "--train-base",
+        action="store_true",
+        help="qualify synchronized updates across the complete 192.8M system",
+    )
     return parser.parse_args(argv)
 
 
@@ -351,6 +366,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         source_commit=arguments.source_commit,
         expected_world_size=arguments.expected_world_size,
         compile_mode=arguments.compile_mode,
+        train_base=arguments.train_base,
     )
     if report is not None:
         print(json.dumps(report, sort_keys=True), flush=True)

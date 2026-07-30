@@ -12,6 +12,7 @@ PROTECTED_CHECKPOINT=${PROTECTED_CHECKPOINT:?set the protected 300k checkpoint}
 PROTECTED_CHECKPOINT_SHA256=${PROTECTED_CHECKPOINT_SHA256:?set its SHA-256}
 OUTDIR=${OUTDIR:?set a fresh isolated canary output directory}
 COMPILE_MODE=${COMPILE_MODE:-default}
+TRAIN_BASE=${TRAIN_BASE:-0}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
 if [[ ! "$SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ ]] \
@@ -23,6 +24,10 @@ if [[ "$COMPILE_MODE" != default \
   && "$COMPILE_MODE" != reduce-overhead \
   && "$COMPILE_MODE" != max-autotune ]]; then
   echo "federated canary compile mode differs" >&2
+  exit 2
+fi
+if [[ "$TRAIN_BASE" != 0 && "$TRAIN_BASE" != 1 ]]; then
+  echo "federated canary train-base flag differs" >&2
   exit 2
 fi
 for path in "$CODE_ROOT" "$PROTECTED_CHECKPOINT" "$OUTDIR" "$PYTHON_ROOT"; do
@@ -94,7 +99,7 @@ rdzv_id="shohin-federated-${job_ids[0]}-ettr-canary"
 logdir="$OUTDIR.launcher"
 mkdir -m 700 "$logdir"
 export CODE_ROOT SOURCE_COMMIT PROTECTED_CHECKPOINT
-export PROTECTED_CHECKPOINT_SHA256 OUTDIR COMPILE_MODE PYTHON_ROOT
+export PROTECTED_CHECKPOINT_SHA256 OUTDIR COMPILE_MODE TRAIN_BASE PYTHON_ROOT
 export master_addr master_port rdzv_id world_size
 export OMP_NUM_THREADS=2
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
@@ -133,6 +138,10 @@ for rank in "${!job_ids[@]}"; do
         set -euo pipefail
         test "$(nvidia-smi -L | wc -l)" -eq 1
         test -n "$(ls -A /sys/class/infiniband 2>/dev/null)"
+        train_args=()
+        if [[ "$TRAIN_BASE" == 1 ]]; then
+          train_args+=(--train-base)
+        fi
         "$PYTHON_ROOT/bin/torchrun" \
           --nnodes="$world_size" \
           --nproc_per_node=1 \
@@ -147,7 +156,8 @@ for rank in "${!job_ids[@]}"; do
           --expected-step 300000 \
           --source-commit "$SOURCE_COMMIT" \
           --expected-world-size "$world_size" \
-          --compile-mode "$COMPILE_MODE"
+          --compile-mode "$COMPILE_MODE" \
+          "${train_args[@]}"
       '
   ) > "$logdir/rank-$(printf '%03d' "$rank").log" 2>&1 &
   pids+=("$!")

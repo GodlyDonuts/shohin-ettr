@@ -14,6 +14,7 @@ NODELIST=${NODELIST:?set the healthy reserved nodes, comma separated}
 NODES=${NODES:?set the exact selected node count}
 GPUS_PER_NODE=${GPUS_PER_NODE:-2}
 COMPILE_MODE=${COMPILE_MODE:-default}
+TRAIN_BASE=${TRAIN_BASE:-0}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
 case "$ALLOCATION_JOB_ID:$NODES:$GPUS_PER_NODE" in
@@ -31,6 +32,10 @@ if [[ "$COMPILE_MODE" != default \
   && "$COMPILE_MODE" != reduce-overhead \
   && "$COMPILE_MODE" != max-autotune ]]; then
   echo "canary compile mode differs" >&2
+  exit 2
+fi
+if [[ "$TRAIN_BASE" != 0 && "$TRAIN_BASE" != 1 ]]; then
+  echo "canary train-base flag differs" >&2
   exit 2
 fi
 if [[ "$NODELIST" == *" "* || "$NODELIST" == *"["* || "$NODELIST" == *"]"* ]]; then
@@ -100,7 +105,7 @@ master_port=$((30000 + ALLOCATION_JOB_ID % 20000))
 world_size=$((NODES * GPUS_PER_NODE))
 export CODE_ROOT SOURCE_COMMIT PROTECTED_CHECKPOINT
 export PROTECTED_CHECKPOINT_SHA256 OUTDIR NODES GPUS_PER_NODE
-export COMPILE_MODE PYTHON_ROOT master_addr master_port world_size
+export COMPILE_MODE TRAIN_BASE PYTHON_ROOT master_addr master_port world_size
 export OMP_NUM_THREADS=2
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export NCCL_IB_DISABLE=0
@@ -123,6 +128,10 @@ srun \
     set -euo pipefail
     test "$(nvidia-smi -L | wc -l)" -ge "$GPUS_PER_NODE"
     test -n "$(ls -A /sys/class/infiniband 2>/dev/null)"
+    train_args=()
+    if [[ "$TRAIN_BASE" == 1 ]]; then
+      train_args+=(--train-base)
+    fi
     "$PYTHON_ROOT/bin/torchrun" \
       --nnodes="$NODES" \
       --nproc_per_node="$GPUS_PER_NODE" \
@@ -137,7 +146,8 @@ srun \
       --expected-step 300000 \
       --source-commit "$SOURCE_COMMIT" \
       --expected-world-size "$world_size" \
-      --compile-mode "$COMPILE_MODE"
+      --compile-mode "$COMPILE_MODE" \
+      "${train_args[@]}"
   '
 
 test -s "$OUTDIR/report.json"

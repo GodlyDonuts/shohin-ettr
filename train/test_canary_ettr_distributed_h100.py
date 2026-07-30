@@ -19,6 +19,15 @@ def test_distributed_canary_uses_validated_b16_architecture_shape() -> None:
     assert settings.reactor_steps == 4
 
 
+def test_distributed_canary_all_parameter_mode_is_explicit() -> None:
+    settings = _settings(
+        2026072902,
+        "default",
+        train_base=True,
+    )
+    assert settings.train_scope == "all"
+
+
 def test_distributed_canary_rejects_missing_torchrun_environment(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -45,3 +54,4 @@ def test_distributed_canary_source_contains_rank_identity_gate() -> None:
     assert "checkpoint_after != checkpoint_sha256" in source
     assert 'output / "SHA256SUMS",' in source
     assert '(output / "SHA256SUMS").chmod(0o400)' in source
+    assert "train_base=train_base" in source
