@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-30 14:08 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-30 16:40 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -19599,3 +19599,95 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `u2000_too_low_u5000_compiler_positive_world_reader_emerging_routing_relocation_insufficient_continue_stage_reader_to_u20000_exactly`.
+
+- **2026-07-30 14:08--16:40 EDT** -- **The reactor's apparent target-head
+  ceiling was partly a zero-gradient objective defect; corrected two-seed
+  training is active, and compiler/reader budgets are extended to 20,000
+  staged updates.**
+
+  Both original 5,000-update reactor islands completed. Seed 1 improved
+  teacher-forced joint/opcode/source/value accuracy from
+  `0.92%/80.93%/9.55%/18.88%` to
+  `19.93%/90.53%/28.12%/28.25%`; seed 2 moved from
+  `5.82%/5.82%/0.40%/9.92%` to
+  `4.50%/70.12%/26.50%/16.78%`. Their report SHA-256 values are
+  `db4d2057c5adb8a0936dd4fb196a7e2b6cfcceda87afa0038b4150e931582a42`
+  and
+  `e3026f3c15564632c4284bd1f8bab5554db0ba0634e59337d256c176f115937d`.
+  The first seed-2 attempt expired at 4,400 updates and is inadmissible; the
+  cited result is the complete `r2` rerun.
+
+  Two seed-1 continuations then loaded the exact 5,000-update reactor at
+  SHA-256
+  `725240311fd02999d057d87f4f2220953fd3fc72998e289ca013ef2348225aa5`,
+  advanced the data cursor to position 5,000, and trained 5,000 new batches.
+  Rate `3e-4` retained `19.68%` joint accuracy; rate `1e-4` reached
+  `25.37%` joint, `92.24%` opcode, `27.85%` source, `51.63%` relation, and
+  `38.75%` value accuracy. Reports are respectively
+  `03db6b651c2eee6997724ab9b8916d8395cd6c2bdf83fc446c67e14cbed63b43`
+  and
+  `40c0d24a74c793252b98b95809e0bed58e023532c5f3cdadd425c27c4527a80a`.
+  These are weight/data-cursor continuations with fresh AdamW state because
+  the 5,000-update pilots did not persist optimizer moments.
+
+  Across both seeds and both continuation rates, target accuracy collapsed
+  to exactly zero. The training trace localized the cause:
+  `_masked_categorical_nll()` clamped selected probabilities at `1e-7`, so
+  target loss repeatedly pinned at
+  `16.118095 = -log(1e-7)` and supplied exactly zero gradient below that
+  boundary. This invalidates the target-ceiling interpretation and makes the
+  old reactor artifacts unsuitable as warm starts for corrected training.
+
+  Commit `7412a0fb618493b8e93d54b5a843c40088cf2084` first exposed raw
+  logits through the architecture policy. Its two launches on
+  `723567`/`723568` failed closed before creating outputs because changing
+  the protected model implementation correctly tripped checkpoint runtime
+  identity. Runtime
+  `scratchpad/shohin_ettr_runtime_7412a0f_full_r1` is therefore
+  superseded for checkpoint-derived training; its `SHA256SUMS` SHA-256 is
+  `93cb86b033095ae96e46b7bd35d1c788b05d1dfdc7085afdfe52cd3f00ff8ddc`.
+
+  Corrected commit
+  `7d7695bb66e3c650ec0d6d4aeac470e5653cd458` restores the protected
+  architecture source byte-for-byte and captures the six pre-softmax tensors
+  through temporary training-island hooks. Cross-entropy is computed on
+  those logits; probabilities remain the sole execution/evaluation API.
+  A regression starts the correct class at logit `-100` and proves a finite,
+  nonzero recovery gradient. Another regression proves that captured logits
+  reproduce every frozen policy probability and backpropagate through the
+  target query. The focused evaluator/objective/probe/component inventory is
+  **123/123** passing with clean Ruff, byte compilation, and diff checks.
+  Immutable runtime
+  `scratchpad/shohin_ettr_runtime_7d7695b_full_r1` contains 3,320 measured
+  files and has `SHA256SUMS` SHA-256
+  `02b0f104fe318e643e73f8a8b2be6b91370be6cd9defe191246ba00a26b581e7`.
+
+  Corrected fresh-from-update-2,000 reactor replications run on reservations
+  `723567` and `723568` for 5,000 updates at `3e-4`; shorter two-seed
+  `1e-4` controls run on `723579` and `723580`. They do not inherit any
+  zero-gradient-trained reactor component. By update 100, seed 2 target loss
+  fell from `2.7682` to `1.8257` at `3e-4` and from `3.0841` to `1.5395`
+  at `1e-4`, immediately rejecting the former flat-loss behavior. Held-out
+  hard accuracy, not training loss, remains the decision gate.
+
+  Reader continuations were migrated to fresh 12-hour reservations:
+  `723561`/`723562` run two seeds at `3e-4`, and `723563`/`723564` run the
+  matched `1e-4` controls. Each loads its exact 5,000-update reader, starts
+  at immutable data position 5,000, and trains 15,000 new batches for 20,000
+  total updates. The latest observed progress is approximately 8,200--8,300
+  new updates. Compiler continuations on `723569`/`723570` likewise load
+  exact 5,000-update artifacts at SHA-256
+  `9c55cebed759cbbd871ad7bf35b731ac27b6ec4fb3c778ec555fd50175882d95`
+  and
+  `6ed249c427fe8374d390dcc400d14cfe019d9139781c58910d8d9b222a00d057`,
+  advance to data position 5,000, and train 15,000 new batches at `3e-4`.
+
+  The current evidence therefore answers the budget question: 2,000 joint
+  updates were far too low for 67.7M newly initialized ETTR parameters, and
+  even 5,000 updates are only an early component-learning regime. It does
+  not authorize blind joint scaling. Promote only after seed-replicated
+  compiler, teacher-forced reactor, and causal reader hard gates pass, then
+  stitch the exact component artifacts and measure autonomous execution.
+
+  Decision:
+  `u2000_decisively_underbudgeted_but_reactor_loss_was_gradient_dead_fix_objective_scale_components_to_u20000_then_stitch_only_on_hard_gates`.
