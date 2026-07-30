@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-30 02:00 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-30 02:22 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -18700,3 +18700,53 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `world2_h100_production_step_pass_evc33_quarantined_v2_data_audit_still_blocks_optimizer`.
+
+- **2026-07-30 02:22 EDT** -- **Every currently obtainable healthy H100 is
+  being used, and independent one-GPU reservations now federate into a single
+  DDP world instead of waiting for one large contiguous allocation.**
+
+  The failed `evc33` node did not trigger a cluster rollback. It alone remains
+  quarantined. The two healthy H100s in reservation `722178` on `evc24`
+  continue exact compile-mode qualification. Twenty separate twelve-hour,
+  one-H100 reservations `723330` through `723349` were submitted with four
+  CPUs and 32 GiB each, excluding `evc33`, `evc40`, and `evc43`. Jobs
+  `723330` and `723331` started on `evc23` and `evc42`; the remaining
+  requests stay independent in Slurm so each can backfill whenever one H100
+  becomes available. The existing two-, ten-, and twenty-H100 requests
+  `723325`, `722179`, and `719496` remain queued in parallel. At this instant
+  Newton reports every non-down, non-drained H100 as allocated, so there is no
+  known idle healthy H100 left unrequested.
+
+  Private commits `dcbab7e` and `c54618f` add and harden cross-allocation
+  launchers. They validate every reservation independently, start exactly one
+  rank and one visible H100 per job through shared c10d rendezvous, retain
+  InfiniBand, bind source/checkpoint/release/resume identities, preserve
+  rank-local logs, and kill only bounded job steps on failure. Duplicate host
+  names are valid because Slurm may isolate two one-H100 allocations on the
+  two GPUs of one node. Focused tests pass **8/8** with clean Ruff, shell
+  syntax, and diff checks. Immutable runtime
+  `scratchpad/shohin_federated_launcher_c54618f_r2` binds commit
+  `c54618ff4bf4ad5d620688bd2d0c781db7ca109f`, archive SHA-256
+  `042bc9ccd3b7a00915563a29defc5696a4cb8bd83142df386215b4b79f511f07`,
+  and runtime-sidecar SHA-256
+  `c17845734d06e8f7a07174e2543dd2beec8eb41c8db79cb85d8c53efc1f508a0`.
+
+  The automatic federation gate observed `723330,723331` and immediately
+  launched an exact world-size-two distributed canary across
+  `evc23,evc42`. Both ranks formed their NCCL process group and entered
+  compilation. An older single-H100 canary step sharing `723330` was removed
+  without canceling the reservation, preventing GPU contention. No optimizer
+  or learned-capability output has been admitted from this mechanical canary.
+
+  ETTR v2 main independent audit `756063` completed cleanly in 2h20m with
+  `{"command":"audit","status":"pass"}`. The final three confirmation Horn
+  cells `756027_2`, `756027_3`, and `756027_4` remain CPU-active on Stokes
+  with no reported error; confirmation audit `756064`, separation `756065`,
+  and packet-context audit `756066` remain dependency-held. The optimizer and
+  first-rung lock therefore remain absent. Once the sealed v2 release clears,
+  the first strict 100-update rung starts on the largest already-qualified
+  healthy world that wins the atomic single-writer lock; no large-allocation
+  wait is required.
+
+  Decision:
+  `all_available_healthy_h100s_requested_active_pool_federating_main_audit_passed_confirmation_still_blocks_optimizer`.
