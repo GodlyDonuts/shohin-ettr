@@ -28,6 +28,7 @@ TOTAL_UPDATES=${TOTAL_UPDATES:-300000}
 WARMUP_UPDATES=${WARMUP_UPDATES:-2000}
 FREEZE_BASE=${FREEZE_BASE:-1}
 HARD_TRANSACTIONS=${HARD_TRANSACTIONS:-1}
+NLL_GRADIENT_CAP=${NLL_GRADIENT_CAP:-}
 COMPILE_MODE=${COMPILE_MODE:-default}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 RESUME_CHECKPOINT=${RESUME_CHECKPOINT:-}
@@ -60,6 +61,12 @@ if [[ "$FREEZE_BASE" != 0 && "$FREEZE_BASE" != 1 ]]; then
 fi
 if [[ "$HARD_TRANSACTIONS" != 0 && "$HARD_TRANSACTIONS" != 1 ]]; then
   echo "transaction mode differs" >&2
+  exit 2
+fi
+if [[ -n "$NLL_GRADIENT_CAP" \
+  && ( ! "$NLL_GRADIENT_CAP" =~ ^[0-9]+([.][0-9]+)?$ \
+    || "$HARD_TRANSACTIONS" != 1 ) ]]; then
+  echo "NLL gradient cap differs" >&2
   exit 2
 fi
 if [[ "$COMPILE_MODE" != eager \
@@ -161,6 +168,7 @@ export DATA_ROOT TOKENIZER PROTECTED_CHECKPOINT OUTDIR NODES NODELIST
 export GPUS_PER_NODE START_UPDATE TARGET_UPDATE UPDATES ACCUMULATION
 export CHECKPOINT_EVERY LOG_EVERY MAX_EVAL_BATCHES ARCHITECTURE_SEED DATA_SEED
 export TOTAL_UPDATES WARMUP_UPDATES FREEZE_BASE HARD_TRANSACTIONS
+export NLL_GRADIENT_CAP
 export COMPILE_MODE PYTHON_ROOT
 export RESUME_CHECKPOINT RESUME_SHA256 master_addr master_port world_size
 export OMP_NUM_THREADS=2
@@ -198,6 +206,9 @@ srun \
     fi
     if [[ "$HARD_TRANSACTIONS" == 0 ]]; then
       transaction_args+=(--soft-transactions)
+    fi
+    if [[ -n "$NLL_GRADIENT_CAP" ]]; then
+      transaction_args+=(--nll-gradient-cap "$NLL_GRADIENT_CAP")
     fi
     if [[ "$START_UPDATE" != 0 ]]; then
       resume_args+=(

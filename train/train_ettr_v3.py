@@ -8,6 +8,7 @@ from dataclasses import asdict
 from datetime import timedelta
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import random
@@ -173,7 +174,22 @@ def _data_state(
     compile_backend: str | None,
     compile_mode: str | None,
     hard_transactions: bool,
+    nll_gradient_cap: float | None = None,
 ) -> DataStreamState:
+    sampler_state = {
+        "accumulation": accumulation,
+        "compile_backend": compile_backend,
+        "compile_mode": compile_mode,
+        "hard_transactions": hard_transactions,
+        "consumed_stream_batches": optimizer_step
+        * world_size
+        * accumulation,
+        "release_file_sha256": release_sha256,
+        "schema": CURSOR_SCHEMA,
+        "world_size": world_size,
+    }
+    if nll_gradient_cap is not None:
+        sampler_state["nll_gradient_cap"] = nll_gradient_cap
     return DataStreamState(
         manifest_sha256=stream.manifest.sha256(),
         dataset_sha256=stream.manifest.dataset_sha256,
@@ -183,18 +199,7 @@ def _data_state(
         shard_index=0,
         sample_index=cursor.position,
         token_offset=0,
-        sampler_state={
-            "accumulation": accumulation,
-            "compile_backend": compile_backend,
-            "compile_mode": compile_mode,
-            "hard_transactions": hard_transactions,
-            "consumed_stream_batches": optimizer_step
-            * world_size
-            * accumulation,
-            "release_file_sha256": release_sha256,
-            "schema": CURSOR_SCHEMA,
-            "world_size": world_size,
-        },
+        sampler_state=sampler_state,
     )
 
 
@@ -210,6 +215,7 @@ def _validate_resume_cursor(
     compile_backend: str | None,
     compile_mode: str | None,
     hard_transactions: bool,
+    nll_gradient_cap: float | None = None,
 ) -> ETTRDistributedCursor:
     expected_sampler = {
         "accumulation": accumulation,
@@ -223,6 +229,8 @@ def _validate_resume_cursor(
         "schema": CURSOR_SCHEMA,
         "world_size": world_size,
     }
+    if nll_gradient_cap is not None:
+        expected_sampler["nll_gradient_cap"] = nll_gradient_cap
     if (
         state.manifest_sha256 != stream.manifest.sha256()
         or state.dataset_sha256 != stream.manifest.dataset_sha256
@@ -291,6 +299,7 @@ def _checkpoint(
     compile_backend: str | None,
     compile_mode: str | None,
     hard_transactions: bool,
+    nll_gradient_cap: float | None,
     rank: int,
 ) -> None:
     if rank != 0:
@@ -336,6 +345,7 @@ def _checkpoint(
             compile_backend=compile_backend,
             compile_mode=compile_mode,
             hard_transactions=hard_transactions,
+            nll_gradient_cap=nll_gradient_cap,
         ),
         episode_lifecycle=lifecycle,
     )
@@ -380,6 +390,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--freeze-base", action="store_true")
     parser.add_argument("--soft-transactions", action="store_true")
+    parser.add_argument("--nll-gradient-cap", type=float)
     parser.add_argument("--resume-checkpoint", type=Path)
     parser.add_argument("--resume-sha256")
     return parser.parse_args(argv)
@@ -396,6 +407,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         or args.log_every < 1
         or args.total_updates < 1
         or args.warmup_updates < 0
+        or (
+            args.nll_gradient_cap is not None
+            and (
+                not math.isfinite(args.nll_gradient_cap)
+                or args.nll_gradient_cap <= 0.0
+                or args.soft_transactions
+            )
+        )
         or (args.resume_checkpoint is None) != (args.resume_sha256 is None)
         or (
             args.resume_sha256 is not None
@@ -473,7 +492,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         step = ETTRTrainStep(
             model,
             optimizer,
-            ETTRObjectiveConfig(vocab_size=model.base.cfg.vocab_size),
+            ETTRObjectiveConfig(
+                vocab_size=model.base.cfg.vocab_size,
+                nll_gradient_cap=args.nll_gradient_cap,
+            ),
             manifest=stream.manifest,
             packet_sufficiency=packet_index,
             manifest_sha256=stream.manifest.sha256(),
@@ -520,6 +542,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ),
                 compile_mode=args.compile_mode,
                 hard_transactions=not args.soft_transactions,
+                nll_gradient_cap=args.nll_gradient_cap,
             )
         cursor.validate(
             core_batches=len(stream.records["train"]),
@@ -545,6 +568,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "data_seed": args.data_seed,
                 "freeze_base": args.freeze_base,
                 "hard_transactions": not args.soft_transactions,
+                "nll_gradient_cap": args.nll_gradient_cap,
                 "compile_backend": (
                     None if args.compile_mode is None else "inductor"
                 ),
@@ -678,6 +702,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                             ),
                             compile_mode=args.compile_mode,
                             hard_transactions=not args.soft_transactions,
+                            nll_gradient_cap=args.nll_gradient_cap,
                             rank=rank,
                         )
                         _barrier(world_size)

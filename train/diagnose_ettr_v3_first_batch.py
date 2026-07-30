@@ -7,6 +7,7 @@ import argparse
 from dataclasses import asdict
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -80,6 +81,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         choices=("hard", "soft"),
         required=True,
     )
+    parser.add_argument("--nll-gradient-cap", type=float)
     return parser.parse_args(argv)
 
 
@@ -122,6 +124,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         or args.output.exists()
         or args.output.is_symlink()
         or not torch.cuda.is_available()
+        or (
+            args.nll_gradient_cap is not None
+            and (
+                not math.isfinite(args.nll_gradient_cap)
+                or args.nll_gradient_cap <= 0.0
+                or args.transaction_mode != "hard"
+            )
+        )
     ):
         raise ETTRV3DiagnosticError("ETTR v3 diagnostic arguments differ")
 
@@ -161,7 +171,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     step = ETTRTrainStep(
         model,
         optimizer,
-        ETTRObjectiveConfig(vocab_size=model.base.cfg.vocab_size),
+        ETTRObjectiveConfig(
+            vocab_size=model.base.cfg.vocab_size,
+            nll_gradient_cap=args.nll_gradient_cap,
+        ),
         manifest=stream.manifest,
         packet_sufficiency=ETTRDiskPacketSufficiencyIndex(
             stream.packet_index_root
@@ -220,6 +233,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             ),
         },
         "metrics": metrics,
+        "nll_gradient_cap": args.nll_gradient_cap,
         "optimizer_config": asdict(optimizer.config),
         "position": position,
         "protected_checkpoint_sha256": protected.checkpoint_sha256,

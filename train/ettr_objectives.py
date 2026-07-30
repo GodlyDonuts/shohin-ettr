@@ -148,6 +148,7 @@ class ETTRObjectiveConfig:
     relation_edge_budget: int = 256
     ignore_index: int = -100
     probability_epsilon: float = 1e-6
+    nll_gradient_cap: float | None = None
     query_binding_margin: float = 1.0
     causal_lm_shift: int = 1
     require_equivariance_pairs: bool = True
@@ -189,6 +190,14 @@ class ETTRObjectiveConfig:
             or not 0.0 < self.probability_epsilon < 0.5
         ):
             raise ETTRObjectiveError("probability epsilon must be between zero and 0.5")
+        if self.nll_gradient_cap is not None and (
+            not isinstance(self.nll_gradient_cap, float)
+            or not math.isfinite(self.nll_gradient_cap)
+            or not 0.0 < self.nll_gradient_cap <= 1_000_000.0
+        ):
+            raise ETTRObjectiveError(
+                "NLL gradient cap must be a positive finite float"
+            )
         if (
             not isinstance(self.query_binding_margin, float)
             or not math.isfinite(self.query_binding_margin)
@@ -1298,19 +1307,71 @@ def _count(mask: torch.Tensor) -> torch.Tensor:
     return mask.sum(dtype=torch.int64)
 
 
+class _ExactLogBoundedBackward(torch.autograd.Function):
+    """Keep exact log values while bounding only their local derivative."""
+
+    @staticmethod
+    def forward(
+        ctx: object,
+        probabilities: torch.Tensor,
+        epsilon: float,
+        gradient_cap: float,
+    ) -> torch.Tensor:
+        ctx.save_for_backward(probabilities)
+        ctx.epsilon = epsilon
+        ctx.gradient_cap = gradient_cap
+        return (probabilities + epsilon).log()
+
+    @staticmethod
+    def backward(
+        ctx: object,
+        gradient: torch.Tensor,
+    ) -> tuple[torch.Tensor, None, None]:
+        (probabilities,) = ctx.saved_tensors
+        slope = (
+            (probabilities + ctx.epsilon)
+            .reciprocal()
+            .clamp(max=ctx.gradient_cap)
+        )
+        return gradient * slope, None, None
+
+
+def _probability_log(
+    probabilities: torch.Tensor,
+    *,
+    epsilon: float,
+    gradient_cap: float | None,
+) -> torch.Tensor:
+    if gradient_cap is None:
+        return (probabilities + epsilon).log()
+    return _ExactLogBoundedBackward.apply(
+        probabilities,
+        epsilon,
+        gradient_cap,
+    )
+
+
 def _categorical_nll(
     probabilities: torch.Tensor,
     target: torch.Tensor,
     mask: torch.Tensor,
     *,
     epsilon: float,
+    gradient_cap: float | None,
 ) -> _LossCount:
     selected = probabilities.gather(
         -1,
         target.unsqueeze(-1),
     ).squeeze(-1).float()
     return _LossCount(
-        (-(selected + epsilon).log() * mask).sum(),
+        (
+            -_probability_log(
+                selected,
+                epsilon=epsilon,
+                gradient_cap=gradient_cap,
+            )
+            * mask
+        ).sum(),
         _count(mask),
     )
 
@@ -1321,12 +1382,23 @@ def _binary_nll(
     mask: torch.Tensor,
     *,
     epsilon: float,
+    gradient_cap: float | None,
 ) -> _LossCount:
     probabilities = probabilities.float()
     target = target.float()
     values = -(
-        target * (probabilities + epsilon).log()
-        + (1.0 - target) * (1.0 - probabilities + epsilon).log()
+        target
+        * _probability_log(
+            probabilities,
+            epsilon=epsilon,
+            gradient_cap=gradient_cap,
+        )
+        + (1.0 - target)
+        * _probability_log(
+            1.0 - probabilities,
+            epsilon=epsilon,
+            gradient_cap=gradient_cap,
+        )
     )
     return _LossCount((values * mask).sum(), _count(mask))
 
@@ -1390,42 +1462,49 @@ def _packet_state_loss(
             target.value_code,
             categorical_mask,
             epsilon=config.probability_epsilon,
+            gradient_cap=config.nll_gradient_cap,
         ),
         _categorical_nll(
             prediction.type_probabilities,
             target.type_index,
             categorical_mask,
             epsilon=config.probability_epsilon,
+            gradient_cap=config.nll_gradient_cap,
         ),
         _binary_nll(
             prediction.relations,
             target.relations,
             target.relation_mask,
             epsilon=config.probability_epsilon,
+            gradient_cap=config.nll_gradient_cap,
         ),
         _binary_nll(
             prediction.active,
             target.active,
             target.slot_mask,
             epsilon=config.probability_epsilon,
+            gradient_cap=config.nll_gradient_cap,
         ),
         _binary_nll(
             prediction.root,
             target.root,
             target.slot_mask,
             epsilon=config.probability_epsilon,
+            gradient_cap=config.nll_gradient_cap,
         ),
         _binary_nll(
             prediction.committed,
             target.committed,
             torch.ones_like(target.committed),
             epsilon=config.probability_epsilon,
+            gradient_cap=config.nll_gradient_cap,
         ),
         _binary_nll(
             prediction.halted,
             target.halted,
             torch.ones_like(target.halted),
             epsilon=config.probability_epsilon,
+            gradient_cap=config.nll_gradient_cap,
         ),
     )
     return (
@@ -1465,6 +1544,7 @@ def _transaction_prediction_loss(
             getattr(targets, name),
             mask,
             epsilon=config.probability_epsilon,
+            gradient_cap=config.nll_gradient_cap,
         )
         for name, mask in zip(
             names,
@@ -1500,12 +1580,14 @@ def _intervention_arm_loss(
                 transaction_targets.committed,
                 transaction_targets.step_mask,
                 epsilon=config.probability_epsilon,
+                gradient_cap=config.nll_gradient_cap,
             ),
             _binary_nll(
                 transactions.halted,
                 transaction_targets.halted,
                 transaction_targets.step_mask,
                 epsilon=config.probability_epsilon,
+                gradient_cap=config.nll_gradient_cap,
             ),
         ),
         transactions.committed,
@@ -1611,12 +1693,14 @@ def _commit_halt_loss(
                 target.committed,
                 target.step_mask,
                 epsilon=config.probability_epsilon,
+                gradient_cap=config.nll_gradient_cap,
             ),
             _binary_nll(
                 prediction.halted,
                 target.halted,
                 target.step_mask,
                 epsilon=config.probability_epsilon,
+                gradient_cap=config.nll_gradient_cap,
             ),
         ),
         prediction.committed,

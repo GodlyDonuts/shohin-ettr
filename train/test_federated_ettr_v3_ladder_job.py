@@ -48,3 +48,5 @@ def test_ladder_forwards_explicit_compile_strategy() -> None:
 def test_ladder_forwards_explicit_transaction_strategy() -> None:
     assert "HARD_TRANSACTIONS=${HARD_TRANSACTIONS:-1}" in SCRIPT
     assert 'HARD_TRANSACTIONS="$HARD_TRANSACTIONS"' in SCRIPT
+    assert "NLL_GRADIENT_CAP=${NLL_GRADIENT_CAP:-}" in SCRIPT
+    assert 'NLL_GRADIENT_CAP="$NLL_GRADIENT_CAP"' in SCRIPT

@@ -57,3 +57,9 @@ def test_federated_pilot_supports_soft_transaction_training() -> None:
     assert "transaction_args=()" in SCRIPT
     assert "transaction_args+=(--soft-transactions)" in SCRIPT
     assert '"${transaction_args[@]}"' in SCRIPT
+
+
+def test_federated_pilot_supports_bounded_hard_gradients() -> None:
+    assert "NLL_GRADIENT_CAP=${NLL_GRADIENT_CAP:-}" in SCRIPT
+    assert "federated NLL gradient cap differs" in SCRIPT
+    assert 'transaction_args+=(--nll-gradient-cap "$NLL_GRADIENT_CAP")' in SCRIPT

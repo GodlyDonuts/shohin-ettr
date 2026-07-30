@@ -86,6 +86,7 @@ _RUN_KEYS = {
     "data_seed",
     "freeze_base",
     "hard_transactions",
+    "nll_gradient_cap",
     "model_config",
     "optimizer_config",
     "parameter_receipt",
@@ -98,6 +99,7 @@ _RUN_KEYS = {
     "target_optimizer_step",
     "world_size",
 }
+_LEGACY_RUN_KEYS = _RUN_KEYS - {"nll_gradient_cap"}
 
 
 class ETTRV3EvaluationError(RuntimeError):
@@ -238,8 +240,12 @@ def _validate_run_contract(
     release_source_commit: str,
     architecture_seed: int,
 ) -> tuple[TheoryReactorConfig, ETTROptimizerConfig]:
-    if set(value) != _RUN_KEYS or value.get("schema") != RUN_SCHEMA:
+    if (
+        set(value) not in (_RUN_KEYS, _LEGACY_RUN_KEYS)
+        or value.get("schema") != RUN_SCHEMA
+    ):
         raise ETTRV3EvaluationError("ETTR run contract schema differs")
+    nll_gradient_cap = value.get("nll_gradient_cap")
     if (
         value.get("release_file_sha256") != release_sha256
         or value.get("release_source_commit") != release_source_commit
@@ -248,6 +254,15 @@ def _validate_run_contract(
         or _HEX40.fullmatch(str(value.get("release_source_commit"))) is None
         or type(value.get("freeze_base")) is not bool
         or type(value.get("hard_transactions")) is not bool
+        or (
+            nll_gradient_cap is not None
+            and (
+                not isinstance(nll_gradient_cap, float)
+                or not math.isfinite(nll_gradient_cap)
+                or nll_gradient_cap <= 0.0
+                or value.get("hard_transactions") is not True
+            )
+        )
         or type(value.get("accumulation")) is not int
         or value["accumulation"] < 1
         or type(value.get("data_seed")) is not int
@@ -325,6 +340,10 @@ def _validate_checkpoint_cursor(
         "schema": "shohin-ettr-il-v3-distributed-cursor-v1",
         "world_size": run_contract["world_size"],
     }
+    if run_contract.get("nll_gradient_cap") is not None:
+        expected_sampler["nll_gradient_cap"] = run_contract[
+            "nll_gradient_cap"
+        ]
     if (
         progress.global_step != protected_step + progress.optimizer_step
         or progress.gradient_accumulation_steps

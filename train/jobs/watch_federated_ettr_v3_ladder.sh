@@ -18,6 +18,7 @@ TOTAL_UPDATES=${TOTAL_UPDATES:?set the token-normalized total updates}
 WARMUP_UPDATES=${WARMUP_UPDATES:?set the token-normalized warmup updates}
 POLL_SECONDS=${POLL_SECONDS:-60}
 HARD_TRANSACTIONS=${HARD_TRANSACTIONS:-1}
+NLL_GRADIENT_CAP=${NLL_GRADIENT_CAP:-}
 COMPILE_MODE=${COMPILE_MODE:-default}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
@@ -41,6 +42,12 @@ if [[ ! "$SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ \
 fi
 if [[ "$HARD_TRANSACTIONS" != 0 && "$HARD_TRANSACTIONS" != 1 ]]; then
   echo "federated ladder transaction mode differs" >&2
+  exit 2
+fi
+if [[ -n "$NLL_GRADIENT_CAP" \
+  && ( ! "$NLL_GRADIENT_CAP" =~ ^[0-9]+([.][0-9]+)?$ \
+    || "$HARD_TRANSACTIONS" != 1 ) ]]; then
+  echo "federated ladder NLL gradient cap differs" >&2
   exit 2
 fi
 if [[ "$COMPILE_MODE" != eager \
@@ -219,6 +226,7 @@ PY
     WARMUP_UPDATES="$WARMUP_UPDATES" \
     FREEZE_BASE=1 \
     HARD_TRANSACTIONS="$HARD_TRANSACTIONS" \
+    NLL_GRADIENT_CAP="$NLL_GRADIENT_CAP" \
     COMPILE_MODE="$COMPILE_MODE" \
     LAUNCH_STAGGER_SECONDS=1 \
     PYTHON_ROOT="$PYTHON_ROOT" \

@@ -16,6 +16,8 @@ def test_diagnostic_uses_the_exact_release_and_protected_checkpoint() -> None:
 def test_diagnostic_compares_hard_and_soft_transaction_paths() -> None:
     assert 'choices=("hard", "soft")' in SOURCE
     assert 'hard_transactions=args.transaction_mode == "hard"' in SOURCE
+    assert "--nll-gradient-cap" in SOURCE
+    assert "nll_gradient_cap=args.nll_gradient_cap" in SOURCE
     assert '"nonfinite_elements"' in SOURCE
     assert '"finite_gradient_norm"' in SOURCE
 

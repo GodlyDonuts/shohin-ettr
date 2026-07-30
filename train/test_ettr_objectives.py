@@ -25,6 +25,8 @@ from ettr_objectives import (
     ETTRTransactionPredictions,
     ETTRTransactionTargets,
     ETTRVariantAlignment,
+    _binary_nll,
+    _categorical_nll,
 )
 
 
@@ -350,6 +352,46 @@ def test_composite_breakdown_is_finite_weighted_and_differentiable() -> None:
     assert batch.packet_prediction.value_probabilities.grad is not None
     assert batch.transactions.opcode.grad is not None
     assert torch.isfinite(output.total)
+
+
+def test_bounded_nll_keeps_exact_value_and_caps_only_local_gradient() -> None:
+    categorical = torch.tensor([[0.0, 1.0]], requires_grad=True)
+    categorical_loss = _categorical_nll(
+        categorical,
+        torch.tensor([0]),
+        torch.tensor([True]),
+        epsilon=1e-6,
+        gradient_cap=32.0,
+    ).mean
+    torch.testing.assert_close(
+        categorical_loss.detach(),
+        -torch.log(torch.tensor(1e-6)),
+    )
+    categorical_loss.backward()
+    torch.testing.assert_close(
+        categorical.grad,
+        torch.tensor([[-32.0, 0.0]]),
+    )
+
+    binary = torch.tensor([0.0, 1.0], requires_grad=True)
+    binary_loss = _binary_nll(
+        binary,
+        torch.tensor([1.0, 0.0]),
+        torch.tensor([True, True]),
+        epsilon=1e-6,
+        gradient_cap=32.0,
+    ).mean
+    binary_loss.backward()
+    torch.testing.assert_close(
+        binary.grad,
+        torch.tensor([-16.0, 16.0]),
+    )
+
+
+@pytest.mark.parametrize("cap", (0.0, -1.0, float("inf"), float("nan")))
+def test_objective_rejects_invalid_nll_gradient_cap(cap: float) -> None:
+    with pytest.raises(ETTRObjectiveError, match="gradient cap"):
+        ETTRObjectiveConfig(vocab_size=VOCAB, nll_gradient_cap=cap)
 
 
 def test_receipt_counts_stay_device_resident_and_auditable() -> None:
