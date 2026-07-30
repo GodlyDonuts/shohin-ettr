@@ -18421,3 +18421,50 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `exact_e5_runtime_and_document_policy_source_bound_confirmation_25_of_30_no_gate_relaxation`.
+
+- **2026-07-29 23:33 EDT** -- **Equal-token FinePDF policy arms are running
+  from a corrected immutable runtime; ETTR v2 remains optimizer-locked at
+  26/30 confirmation cells.**
+
+  Private commit `e587807` adds a source-bound Stokes job for two matched
+  100,000,000-token FinePDF policy arms. The first staged runtime
+  `scratchpad/shohin_finepdf_policy_runtime_e587807_r1` failed its inventory
+  gate because its `SHA256SUMS` recorded temporary absolute `.partial` paths.
+  It is preserved as failed evidence and is prohibited from use. Corrected
+  no-replace runtime
+  `scratchpad/shohin_finepdf_policy_runtime_e587807_r2` contains 907 files,
+  passes its complete relative inventory before and after publication, and
+  passes an out-of-tree tokenizer entrypoint launch with CPU math thread pools
+  limited to one. Its inventory file is SHA-256
+  `17592bc6088124b4aaa913f339befa824cd217868e3c95250c6bb22d36e21579`;
+  tokenizer, verifier, policy, and scheduler sources are respectively
+  `7839dad8e6946ffc05f5e5ba4528e8aebe39fe18f2bf3014abbd62f2b18c37e0`,
+  `7556faddcee2a81778cceea4e1e2ae6145b8201b21dc4d94140c4afbcc56756f`,
+  `b42206894002adf0be1a17a1da9a97e33865b579b8b7f155704dc2993a5ffcab`,
+  and
+  `0531ad20ebb9f31f1ea5e37d4e8dde940029a2972e4786eef0739ccfd3711f4c`.
+
+  Stokes jobs `756070` (`core`) and `756071` (`residual`) are running on
+  separate CPU nodes from the same verified 6.086B-token parent, revision,
+  tokenizer, source ledger, evaluation ledgers, and exact policy source. Each
+  arm is capped at exactly 100M tokens and publishes to a fresh path only
+  after full v3 verification and sealing. At 23:33 both jobs had independently
+  read approximately 121.1GB while revalidating parent custody and had no
+  nonempty error output. These are quarantined selection-policy ablations,
+  not admitted optimizer data. They still require physical result
+  verification, independent human adjudication, cross-source exact and near
+  residualization, immutable holdouts, and identical-start utility tests.
+
+  ETTR v2 confirmation now has **26/30** sealed reports. The four remaining
+  Horn/resource cells are actively consuming CPU with zero-byte error logs;
+  their delayed final-write behavior matches the materializer design.
+  Assembly and audits `756062`--`756066` remain dependency-held. The release,
+  release verifier, direct Stokes-to-Newton transfer, exact distributed
+  canary, and strict 100-to-500-to-2,000 update ladder remain armed but cannot
+  advance before an independently passing packet-context audit. Newton
+  reservations remain pending: ten H100s estimate 05:18 EDT July 30, four
+  H100s 17:19 EDT July 30, and twenty H100s August 1. No optimizer or first
+  rung lock exists.
+
+  Decision:
+  `finepdf_equal_token_policy_arms_running_quarantined_ettr_confirmation_26_of_30_no_optimizer`.
