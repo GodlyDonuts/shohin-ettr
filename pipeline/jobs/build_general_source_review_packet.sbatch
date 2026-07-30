@@ -10,21 +10,30 @@
 # corpus has completed. This job does not admit data or label rows.
 set -euo pipefail
 
-BASE=/lustre/fs1/home/sa305415/shohin
+BASE=${BASE:-/lustre/fs1/home/sa305415/shohin}
+CODE_ROOT=${CODE_ROOT:-$BASE}
 PY=${PYTHON:-$BASE/miniforge3/bin/python}
 SHARD_DIR=${SHARD_DIR:?set SHARD_DIR to the completed v3 candidate}
-SELECTION_CODE=${SELECTION_CODE:-$BASE/pipeline/tokenize_shards.py}
+SELECTION_CODE=${SELECTION_CODE:-$CODE_ROOT/pipeline/tokenize_shards.py}
 PRIVATE_OUT=${PRIVATE_OUT:?set PRIVATE_OUT outside publishable artifacts}
 RECEIPT_OUT=${RECEIPT_OUT:?set RECEIPT_OUT to a fresh text-free receipt}
 ROWS=${ROWS:-1000}
 MAX_REVIEW_CHARS=${MAX_REVIEW_CHARS:-12000}
+BUILDER=$CODE_ROOT/pipeline/build_general_source_review_packet.py
 
-for path in "$SHARD_DIR" "$SELECTION_CODE" "$PRIVATE_OUT" "$RECEIPT_OUT"; do
+for path in \
+  "$BASE" "$CODE_ROOT" "$SHARD_DIR" "$SELECTION_CODE" \
+  "$PRIVATE_OUT" "$RECEIPT_OUT"; do
   [[ "$path" == /* ]] || {
     echo "[source-review] paths must be absolute: $path" >&2
     exit 2
   }
 done
+[[ -d "$CODE_ROOT" && ! -L "$CODE_ROOT" \
+  && -f "$BUILDER" && ! -L "$BUILDER" ]] || {
+  echo "[source-review] immutable code root is unavailable" >&2
+  exit 3
+}
 [[ -d "$SHARD_DIR" && ! -L "$SHARD_DIR" ]] || {
   echo "[source-review] candidate directory is unavailable" >&2
   exit 3
@@ -48,12 +57,13 @@ done
 
 mkdir -p "$(dirname "$PRIVATE_OUT")" "$(dirname "$RECEIPT_OUT")"
 chmod 0700 "$(dirname "$PRIVATE_OUT")"
-cd "$BASE"
+cd "$CODE_ROOT"
+export PYTHONPATH="$CODE_ROOT"
 export PYTHONNOUSERSITE=1
 export PYTHONDONTWRITEBYTECODE=1
 export OMP_NUM_THREADS=8
 
-"$PY" -u pipeline/build_general_source_review_packet.py \
+"$PY" -u "$BUILDER" \
   --shard-dir "$SHARD_DIR" \
   --selection-code "$SELECTION_CODE" \
   --rows "$ROWS" \

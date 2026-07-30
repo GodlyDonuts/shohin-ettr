@@ -1,6 +1,7 @@
 import gzip
 import hashlib
 import json
+from pathlib import Path
 
 from pipeline.build_general_source_review_packet import (
     iter_source_rows,
@@ -114,3 +115,16 @@ def test_source_replay_uses_tokenizer_order_for_parquet(tmp_path):
             },
         )
     ]
+
+
+def test_review_job_binds_an_explicit_code_root():
+    job = (
+        Path(__file__).resolve().parent
+        / "jobs"
+        / "build_general_source_review_packet.sbatch"
+    ).read_text()
+    assert "CODE_ROOT=${CODE_ROOT:-$BASE}" in job
+    assert "BUILDER=$CODE_ROOT/pipeline/build_general_source_review_packet.py" in job
+    assert 'cd "$CODE_ROOT"' in job
+    assert 'export PYTHONPATH="$CODE_ROOT"' in job
+    assert '"$PY" -u "$BUILDER"' in job
