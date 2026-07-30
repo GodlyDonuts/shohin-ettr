@@ -13,6 +13,7 @@ PROTECTED_CHECKPOINT_SHA256=${PROTECTED_CHECKPOINT_SHA256:?set its SHA-256}
 OUTDIR=${OUTDIR:?set a fresh isolated canary output directory}
 COMPILE_MODE=${COMPILE_MODE:-default}
 TRAIN_BASE=${TRAIN_BASE:-0}
+LAUNCH_STAGGER_SECONDS=${LAUNCH_STAGGER_SECONDS:-1}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
 if [[ ! "$SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ ]] \
@@ -28,6 +29,11 @@ if [[ "$COMPILE_MODE" != default \
 fi
 if [[ "$TRAIN_BASE" != 0 && "$TRAIN_BASE" != 1 ]]; then
   echo "federated canary train-base flag differs" >&2
+  exit 2
+fi
+if [[ ! "$LAUNCH_STAGGER_SECONDS" =~ ^[0-9]+$ ]] \
+  || (( LAUNCH_STAGGER_SECONDS > 10 )); then
+  echo "federated canary launch stagger differs" >&2
   exit 2
 fi
 for path in "$CODE_ROOT" "$PROTECTED_CHECKPOINT" "$OUTDIR" "$PYTHON_ROOT"; do
@@ -161,6 +167,9 @@ for rank in "${!job_ids[@]}"; do
       '
   ) > "$logdir/rank-$(printf '%03d' "$rank").log" 2>&1 &
   pids+=("$!")
+  if (( rank + 1 < world_size && LAUNCH_STAGGER_SECONDS > 0 )); then
+    sleep "$LAUNCH_STAGGER_SECONDS"
+  fi
 done
 
 result=0

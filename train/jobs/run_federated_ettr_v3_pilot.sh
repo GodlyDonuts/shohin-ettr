@@ -26,6 +26,7 @@ TOTAL_UPDATES=${TOTAL_UPDATES:-300000}
 WARMUP_UPDATES=${WARMUP_UPDATES:-2000}
 FREEZE_BASE=${FREEZE_BASE:-1}
 COMPILE_MODE=${COMPILE_MODE:-default}
+LAUNCH_STAGGER_SECONDS=${LAUNCH_STAGGER_SECONDS:-1}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 RESUME_CHECKPOINT=${RESUME_CHECKPOINT:-}
 RESUME_SHA256=${RESUME_SHA256:-}
@@ -52,6 +53,11 @@ if [[ ! "$SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ ]] \
 fi
 if [[ "$FREEZE_BASE" != 0 && "$FREEZE_BASE" != 1 ]]; then
   echo "federated freeze-base flag differs" >&2
+  exit 2
+fi
+if [[ ! "$LAUNCH_STAGGER_SECONDS" =~ ^[0-9]+$ ]] \
+  || (( LAUNCH_STAGGER_SECONDS > 10 )); then
+  echo "federated launch stagger differs" >&2
   exit 2
 fi
 if [[ "$COMPILE_MODE" != default \
@@ -231,6 +237,9 @@ for rank in "${!job_ids[@]}"; do
       '
   ) > "$OUTDIR/launcher/rank-$(printf '%03d' "$rank").log" 2>&1 &
   pids+=("$!")
+  if (( rank + 1 < world_size && LAUNCH_STAGGER_SECONDS > 0 )); then
+    sleep "$LAUNCH_STAGGER_SECONDS"
+  fi
 done
 
 result=0

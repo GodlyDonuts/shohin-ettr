@@ -37,3 +37,9 @@ def test_federated_pilot_failure_keeps_reservations_alive() -> None:
 def test_federated_pilot_allows_two_jobs_on_one_dual_h100_host() -> None:
     assert "seen_jobs" in SCRIPT
     assert "seen_nodes" not in SCRIPT
+
+
+def test_federated_pilot_staggers_large_world_launches() -> None:
+    assert "LAUNCH_STAGGER_SECONDS=${LAUNCH_STAGGER_SECONDS:-1}" in SCRIPT
+    assert "LAUNCH_STAGGER_SECONDS > 10" in SCRIPT
+    assert 'sleep "$LAUNCH_STAGGER_SECONDS"' in SCRIPT

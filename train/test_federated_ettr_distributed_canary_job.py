@@ -43,3 +43,9 @@ def test_federated_canary_full_parameter_mode_is_opt_in() -> None:
     assert "TRAIN_BASE=${TRAIN_BASE:-0}" in SCRIPT
     assert '[[ "$TRAIN_BASE" != 0 && "$TRAIN_BASE" != 1 ]]' in SCRIPT
     assert 'train_args+=(--train-base)' in SCRIPT
+
+
+def test_federated_canary_staggers_large_world_launches() -> None:
+    assert "LAUNCH_STAGGER_SECONDS=${LAUNCH_STAGGER_SECONDS:-1}" in SCRIPT
+    assert "LAUNCH_STAGGER_SECONDS > 10" in SCRIPT
+    assert 'sleep "$LAUNCH_STAGGER_SECONDS"' in SCRIPT
