@@ -18184,3 +18184,61 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `source_complete_self_contained_newton_runtime_verified_all_launch_watchers_rebound_no_optimizer`.
+
+- **2026-07-29 21:36 EDT** -- **The optimizer release caught a stronger
+  train/development leakage class; exact packet-context componentization is
+  running before any training promotion.**
+
+  Independent release verifier commits `7d67090` and `08b7aa4` added a
+  no-replace verifier that rehashes the release receipt, exact builder source,
+  protected checkpoint binding, every source shard, packet index, continuation
+  manifest, and sampled streamed train/development batches. A staging
+  preflight found that its fallback path setup could precede a caller's
+  explicitly bound exact-source `PYTHONPATH`; `08b7aa4` changed fallback paths
+  to append-only precedence. The corrected focused tests pass **2/2**, after
+  the initial combined verifier suite passed **14/14**; Ruff, byte compilation,
+  and diff checks pass. The immutable staged verifier is
+  `/lustre/fs1/home/sa305415/shohin/scratchpad/verify_ettr_release_08b7aa4.py`,
+  SHA-256
+  `782aaaba008868521682c4c009d1988de863f380e0438ba06192e33695823141`.
+
+  Process release job `755591` completed the train-side rematerialization and
+  then failed closed after 2h24m48s when the validation insertion raised
+  `ETTR packet-index train/validation contexts overlap`. This is stricter than
+  the already passing core-ID, graph-isomorphism, semantic, and source-view
+  separation report: at least one distinct train/development core exposes the
+  same deployed sufficient statistic, defined as the exact terminal packet
+  plus query-prefix tokens. No `release.json`, canonical release, transfer,
+  optimizer, or first-rung lock was created. Its only partial file, a 16,384
+  byte SQLite build database, is preserved at
+  `/lustre/fs1/home/sa305415/ettr-il-v3/failures/training-35333c3-process-job755591-packet-context-overlap`.
+  The overlap check will not be weakened.
+
+  Private commits `fbf12df` and
+  `11874a24673e54d03a5177ebb7f869b3e4623b2a` add a CPU-only exact extractor
+  and a deterministic all-main-split equivalence audit. The extractor
+  byte-matches the production tensor/index projection for all 64 rows of horn,
+  resource, and local-rewrite fixtures. It pre-hashes each dense terminal
+  packet prefix once and clones the SHA state per query, measuring about 31
+  cores/second on one local CPU after warmup. The combined release,
+  packet-index, extractor, and audit suite passes **17/17** in 59.05 seconds;
+  the audit's 1-worker and 2-worker receipts are content-identical. Exact
+  Stokes source commit `11874a2` binds extractor SHA-256
+  `ff5e9d285ae389a767ec2a8473b7b025e87bdcef56d22740f1f53d2d468408df`,
+  auditor SHA-256
+  `8e0499efc2361b5d78a365ab5cec6ea15666dac63f862a072ca447f533b0e7ef`,
+  and scheduler SHA-256
+  `41afe5a7b8bf1930e32e5f5b36ab1c308234526d375743df8a0dc3794d8849bf`.
+
+  Stokes job `755962` is running with 32 CPU processes across all 56,250 main
+  and reserve cores. It will report exact cross-owner context counts, target
+  conflicts, and connected components of cores sharing a deployed context.
+  The repair must then keep each full equivalence component on one owner side
+  or regenerate split-conditioned query surfaces and pass this same audit.
+  GPU reservations and release-blind distributed canaries remain live, but
+  transfer and optimizer watchers remain fail-closed until a repaired corpus
+  receives a passing packet-context receipt and a freshly reconstructed
+  release.
+
+  Decision:
+  `stronger_packet_context_negative_caught_before_optimizer_exact_component_audit_running_no_gate_weakening`.
