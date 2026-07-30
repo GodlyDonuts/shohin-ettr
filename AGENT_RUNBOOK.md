@@ -19254,3 +19254,73 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `u500_ten_of_ten_significant_loss_learning_query_objectives_near_margin_but_zero_strict_rate_continue_exactly_to_u2000`.
+
+- **2026-07-30 11:58 EDT** -- **Duration and query-weight scaling are now
+  closed as sufficient explanations: 21 measured hard-forward arms learn
+  ordinary losses, but none crosses a causal query margin.**
+
+  Exact continuations of all ten cap/seed arms from update 500 to update
+  2,000 completed under the unchanged hard-forward, bounded-adjoint,
+  warmup-333 contract. Every arm significantly improved paired total loss,
+  yet all ten trained WORLD and COMMAND margin rates remained exactly `0.0`.
+  Seed-1 cap `{16,1,4,64,uncapped}` report SHA-256 values are
+  `{20cf74530d2174eb7eeafa1b96746eedf037c1633c63c940efa463fb265363c3,
+  ed850844de7022fd8805a0b89509939dd5f0806e86b6f072b18613fd693186c9,
+  79fd0712320e4cd91ec9ab6edcd519808d5bd7c6db207f21926f9c90f6a37ade,
+  a94284468a41c350f7e52994e0a64a28a2761c4cd57d5312c58ac445ca2b2a77,
+  35e927ddabe4437771f88710ea420fa6e5c52f3921383a6557dcc6b0cd41bfa9}`.
+  Seed-2 values in the same order are
+  `{530724b1e2197aae72203eb5ea4243daaf0e5eb8456f25cd9ae66428773428fd,
+  4c84d69a5827937ba6f95ac9a0d16870c2b330f6ac773930b78d4bb61f42df1c,
+  f6313c02f2614d4890942847747e57c810cff24c31bea321222e816acb9ddb4a,
+  658fbcda704c00d47e4669114a0a04fba3ba83ea92d71af8511d40d1f68012c1,
+  d201916fe53d728c3f57469952be87501a098ee0a248393355e708f0f80e2619}`.
+  Trained WORLD/COMMAND query losses plateaued near `0.969--0.992` /
+  `1.015--1.065`. The independent reserved cap-4 continuation agrees:
+  paired total delta `-5.6723`, 95% CI `[-6.3217,-5.0228]`, win fraction
+  `1.0`, trained WORLD/COMMAND query loss `0.9880/1.0703`, both margins
+  `0.0`; report SHA-256
+  `ea373ef9709338302611ebacf561fec26469cf6599c19153b9c1d12f333a431f`.
+
+  A separate exact query-credit experiment then crossed weights
+  `{2,4,8,16,32}` under two seeds at update 500, using cap 4 and all twenty
+  one-H100 reservations. All ten arms were finite and significantly improved
+  paired total loss, but every trained WORLD and COMMAND margin rate again
+  remained `0.0`. Seed-1 total-loss deltas by weight were
+  `{-2.4172,-9.3255,-9.4523,-1.7190,-7.8074}`; seed-2 deltas were
+  `{-13.5965,-12.6637,-12.4478,-13.3528,-14.1692}`. Trained query losses
+  remained approximately `1.0--1.21`; increasing query credit by 16x did not
+  alter the strict causal result. Report SHA-256 values by weights
+  `{2,4,8,16,32}` are seed 1
+  `{47e299ea9a369770a5d93f22202b04c90a967c3d000d00d9b5cb3c8d328650bf,
+  9f3d15ab003812f8c8b5ca1d3a1677afc01bd3155ef5ddf16e32664848226c91,
+  7dd1000b328690670e29b4d5d9ca9149d5e4df84dfcd846d4246305ded959eab,
+  29c49f766d94040911bae70af59fdd97ed92c4026763124d48565181a3928cc9,
+  f2cd3668eaff2d65aa06d444b9e961c63e371eff677984032fff57b00ab2b49e}`
+  and seed 2
+  `{112fa5a270f6b360aefc16891009c28df17bc8a659ce883aaeb9b3d233124222,
+  8f05c6ad33ba8d31131ef8a0f8de32b4f056c687b497e905a72bdc64bbf43723,
+  95d737b2e5be7e732ea58c0613579b9ef77e8cf8e09ae15abb4ec0f5f9bd948f,
+  f65c048a5a98cd9ef896f31cd14e3a4bea03e11963e2577b86c18e268ad32184,
+  8efbd44ca9d2014ef666c9cea38705bfd1a51ecc466ed1923f751a8ef48beee3}`.
+
+  Two thousand updates represent only about 33.8M observed ETTR tokens for
+  67,697,771 trainable architecture parameters, so they are not a final
+  training budget. They are nevertheless a valid duration-direction test:
+  query loss has already plateaued and zero margins persist across caps,
+  seeds, replication paths, duration, and a 16x query-weight range. Blind
+  extension is therefore not authorized before measuring the actual
+  difference-in-differences distribution by transaction depth.
+
+  New read-only `train/probe_ettr_causal_queries.py` reconstructs raw and
+  trained arms under the same immutable release/checkpoint contracts. It
+  reports exact causal-margin quantiles and thresholds, correct/foil top-1,
+  paired target ordering, and one-step through 64-step strata, while retaining
+  a bounded set of decoded WORLD/COMMAND/QUERY surfaces and predicted tokens
+  for direct qualitative inspection. Its focused tests are **3/3**, the
+  evaluator/objective/probe set is **42/42**, and Ruff, byte compilation, and
+  diff checks pass. Run this against the best two seed-diverse checkpoints
+  before choosing a 5k/10k continuation or changing the causal mechanism.
+
+  Decision:
+  `duration_and_scalar_query_credit_insufficient_measure_depth_stratified_causal_geometry_before_more_updates`.
