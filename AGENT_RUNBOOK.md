@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-30 02:22 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-30 04:00 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -18857,7 +18857,7 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   Report-file SHA-256 is
   `d629289a05361211b18690bba0adc2ee8fd690e3c2a1a4d6d9723d19070757d7`.
   This accepts world six for a separate scale arm; it does not erase that its
-  accumulation-one update contains 192 ETTR rows versus 64 rows at world two.
+  accumulation-one update contains 96 ETTR rows versus 32 rows at world two.
 
   A tenth healthy H100, job `723337` on `evc50`, started while the scale test
   ran. Jobs `723336,723337` then passed a fresh world-two canary at 422.417s
@@ -18892,3 +18892,58 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `world6_passes_at_2_79x_world2_data_rate_ten_h100_control_scale_seed_layout_armed_final_separation_still_blocks_optimizer`.
+
+- **2026-07-30 04:00 EDT** -- **World size eight passes at 3.43x the
+  world-two data rate; all eighteen healthy allocated H100s now have
+  isolated, token-schedule-correct learning roles behind the unchanged
+  verified-release gate.**
+
+  Independent reservations `723338`--`723345` joined H100 PCIe nodes
+  `evc48,evc22,evc27,evc36,evc28,evc38,evc23,evc29` into an exact
+  world-size-eight NCCL canary. All eight ranks consumed different rank-local
+  batches, began from identical parameter SHA-256, and ended at identical
+  parameter SHA-256
+  `ac4593fc3213e6011b88485145a28a8a18de012e3d8b5726863b28e5785a3fbb`.
+  The protected step-300k checkpoint remained byte-identical at
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
+  Maximum-rank update timings were 465.756 seconds cold and **0.359518
+  seconds steady**. This is approximately **22.25 rank-batches/second**:
+  **3.43x** the measured world-two rate and **1.23x** the world-six rate.
+  The independently validated report-file SHA-256 is
+  `b637f4f36444745e0eca33333f4f65bda4de0be00391ffd3d91ff3f819e5fd5b`.
+
+  A bookkeeping audit corrected the absolute release cardinality without
+  changing any measured scaling ratio. Packet-v2 freezes 16 rows per
+  rank-local batch, so accumulation-one global batches are 32 rows at world
+  two, 96 at world six, and 128 at world eight. The earlier 03:27 entry's
+  64/192 wording was corrected in place. Scale schedules are now normalized
+  by optimizer-visible data instead of raw update count: world two retains
+  total/warmup `300000/2000`, world six uses `100000/667`, and world eight
+  uses `75000/500`. At equal fractions of the schedule, each arm has consumed
+  approximately equal rows. This prevents larger worlds from remaining
+  artificially deep in warmup after processing 3--4x more examples.
+
+  Newton currently exposes eighteen healthy H100s to this program: the two
+  healthy `evc24` devices in reservation `722178`, plus one-H100 reservations
+  `723330`--`723345`. The optimizer layout uses every one without sharing an
+  output: `evc24` is the exact world-two control;
+  `723330`--`723335` are the token-normalized world-six same-seed scale arm;
+  `723336,723337` are an independent world-two architecture/data seed; and
+  `723338`--`723345` are the token-normalized world-eight same-seed scale arm.
+  Each runs 0--100 updates and its own development evaluation, and may
+  continue to 500 and 2,000 only if its own
+  `strict_learning_signal=true`. This preserves direct controls while using
+  more GPUs to obtain capability evidence sooner; world size sixteen is not
+  assumed superior without a separate measured gate.
+
+  Stokes main/confirmation separation job `756317` remains CPU-active with
+  average CPU time tracking wall time and increasing read volume. Release
+  builder `756318`, independent verifier `756319`, direct Newton transfer,
+  and every optimizer remain dependency-blocked as designed. FineWeb-Edu
+  candidate construction has emitted approximately 7.6B of its 10B-token
+  target, while Essential-Web has emitted its first approximately 200M of
+  1B tokens. Both general corpora remain quarantined pending their complete
+  Phase-2 admission gates.
+
+  Decision:
+  `world8_passes_3_43x_world2_all_18_h100s_assigned_token_normalized_scales_final_separation_still_blocks_optimizer`.
