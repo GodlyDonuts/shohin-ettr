@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-30 12:34 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-30 12:59 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -19443,3 +19443,71 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `u2000_too_short_but_local_modules_fail_under_oracle_interfaces_stage_components_before_longer_joint_continuation`.
+
+- **2026-07-30 12:34--12:59 EDT** -- **The admitted ETTR corpus is large
+  enough for staged training, and the first stop-gradient component pilots
+  show real compiler/reactor learning but no reader causality after 500
+  updates.**
+
+  The immutable packet-v2 optimizer release contains 40,000 train cores /
+  **2,560,000 train rows** in 160,000 exact 16-row causal batches plus 5,000
+  development cores / **320,000 development rows** in 20,000 disjoint
+  batches. Its packet-sufficiency index binds 2,560,000 train contexts and
+  320,000 validation contexts. Release-file SHA-256 is
+  `8c6d7d80603e29e92f14027929ae4ef7e848094a44a154ef37b2bcbf726d4462`;
+  continuation dataset SHA-256 is
+  `839574cccf8683e9be1291cffe91c18d6672185b71ec39eeaf6abc87660f8fcb`.
+  The broader historical stream remains 62,426,256,278 admitted tokens.
+  Newer peS2o/FinePDF/FineWeb/DCLM/OpenMath candidates remain quarantined
+  behind semantic, license, contamination, privacy, and equal-token utility
+  gates. Do not confuse token-stream integrity with top-tier semantic
+  admission.
+
+  Commit `b7df632865d8f0d84a27ca10d4e69039028aab9e` adds
+  `train/train_ettr_component_island.py`. It exposes exactly three mutually
+  exclusive training islands: balanced direct WORLD packet fitting,
+  teacher-forced one-step COMMAND transaction fitting, and exact-terminal
+  QUERY fitting. The 125M base and both unselected architecture modules are
+  frozen. Oracle labels are training-only and remain absent from autonomous
+  inference. The evaluator/objective/probe/component suite is **54/54**
+  passing with clean Ruff, byte compilation, and diff checks. Immutable
+  Newton runtime
+  `scratchpad/shohin_ettr_runtime_b7df632_full_r2` contains 3,321 measured
+  files; `SHA256SUMS` SHA-256 is
+  `23af53bcafb29d28603985cf8f21538fabaf80660531d6d1ebc22fe417d8550a`.
+  Runtime `..._r1` has an incorrect `SOURCE_COMMIT` marker, was never used
+  for training, and is superseded.
+
+  A one-update compiler smoke passed checkpoint restoration, release/source
+  verification, exact parameter ownership, optimization, immutable
+  safetensors output, and held-out assessment. Three matched 500-update arms
+  then trained from seed-2 uncapped update 2,000, each seeing 8,000 rows /
+  2,688,000 observed WORLD+COMMAND+QUERY token positions:
+
+  | Island | Selected parameters | Held-out result |
+  |---|---:|---|
+  | compiler | 21,466,377 | value `73.49% -> 78.23%`; type `92.74% -> 92.99%`; active `99.61% -> 99.22%`; exact packet remains `0%` |
+  | reactor | 29,758,569 | opcode `9.30% -> 69.04%`; source `0.64% -> 25.16%`; target `13.75% -> 23.13%`; relation `10.00% -> 31.25%`; value `15.09% -> 30.60%`; exact transaction `9.30% -> 10.03%` |
+  | reader | 16,475,625 | WORLD/COMMAND correct and foil top-1 remain `50%/50%`; joint/order remain `0%`; no difference-in-differences reaches `0.1` |
+
+  Report SHA-256 values for compiler, reactor, and reader are respectively
+  `8096e25ca98f39d8d1bba329a7b39c80732b6e91b2e55bf5d208441047715a6d`,
+  `f4898ff1427ba8128fd1e40db0156999d3a17b728420dd2e4c66055c45d0c9b1`,
+  and
+  `a58d4114a55fe4b68ab2b3d5eb12c69b03b7663be6e2a0c1ebe958157dba2a29`.
+  The compiler/reactor deltas validate staged credit assignment, but 500
+  updates are not sufficient local gates and the reader remains the
+  strongest architectural bottleneck.
+
+  Six 5,000-update replications are now running from the two exact update-2,000
+  seed lineages: seed 2 compiler/reactor/reader use reservations
+  `723330`/`723331`/`723332`; seed 1 uses
+  `723333`/`723334`/`723335`. Every arm uses 32 held-out development batches,
+  an isolated output, the same `3e-4` AdamW rate, and the exact admitted
+  release. Do not authorize autonomous 5k--10k continuation unless these
+  local gates demonstrate material hard-interface gains. If the reader
+  remains constant under exact terminal packets, test a late-output
+  state-injection geometry rather than scaling the unchanged reader.
+
+  Decision:
+  `ettr_data_sufficient_for_component_scale_u500_compiler_reactor_positive_reader_zero_run_two_seed_u5000_before_autonomous_extension`.
