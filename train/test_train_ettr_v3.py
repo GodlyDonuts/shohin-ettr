@@ -65,6 +65,7 @@ def test_compiled_resume_cursor_round_trip() -> None:
         optimizer_step=2,
         compile_backend="inductor",
         compile_mode="default",
+        hard_transactions=True,
     )
     assert (
         _validate_resume_cursor(
@@ -77,6 +78,7 @@ def test_compiled_resume_cursor_round_trip() -> None:
             optimizer_step=2,
             compile_backend="inductor",
             compile_mode="default",
+            hard_transactions=True,
         )
         == cursor
     )
@@ -104,6 +106,7 @@ def test_resume_rejects_execution_mode_change(
         optimizer_step=2,
         compile_backend="inductor",
         compile_mode="default",
+        hard_transactions=True,
     )
     with pytest.raises(
         ETTRV3TrainerError,
@@ -119,4 +122,37 @@ def test_resume_rejects_execution_mode_change(
             optimizer_step=2,
             compile_backend=compile_backend,
             compile_mode=compile_mode,
+            hard_transactions=True,
+        )
+
+
+def test_resume_rejects_transaction_mode_change() -> None:
+    stream = _stream()
+    state = _data_state(
+        stream=stream,
+        release_sha256="c" * 64,
+        cursor=ETTRDistributedCursor(epoch=0, position=8),
+        data_seed=7,
+        world_size=2,
+        accumulation=2,
+        optimizer_step=2,
+        compile_backend=None,
+        compile_mode=None,
+        hard_transactions=False,
+    )
+    with pytest.raises(
+        ETTRV3TrainerError,
+        match="resume data stream differs",
+    ):
+        _validate_resume_cursor(
+            state,
+            stream=stream,
+            release_sha256="c" * 64,
+            data_seed=7,
+            world_size=2,
+            accumulation=2,
+            optimizer_step=2,
+            compile_backend=None,
+            compile_mode=None,
+            hard_transactions=True,
         )

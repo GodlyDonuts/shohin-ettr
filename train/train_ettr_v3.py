@@ -172,6 +172,7 @@ def _data_state(
     optimizer_step: int,
     compile_backend: str | None,
     compile_mode: str | None,
+    hard_transactions: bool,
 ) -> DataStreamState:
     return DataStreamState(
         manifest_sha256=stream.manifest.sha256(),
@@ -186,6 +187,7 @@ def _data_state(
             "accumulation": accumulation,
             "compile_backend": compile_backend,
             "compile_mode": compile_mode,
+            "hard_transactions": hard_transactions,
             "consumed_stream_batches": optimizer_step
             * world_size
             * accumulation,
@@ -207,11 +209,13 @@ def _validate_resume_cursor(
     optimizer_step: int,
     compile_backend: str | None,
     compile_mode: str | None,
+    hard_transactions: bool,
 ) -> ETTRDistributedCursor:
     expected_sampler = {
         "accumulation": accumulation,
         "compile_backend": compile_backend,
         "compile_mode": compile_mode,
+        "hard_transactions": hard_transactions,
         "consumed_stream_batches": optimizer_step
         * world_size
         * accumulation,
@@ -286,6 +290,7 @@ def _checkpoint(
     accumulation: int,
     compile_backend: str | None,
     compile_mode: str | None,
+    hard_transactions: bool,
     rank: int,
 ) -> None:
     if rank != 0:
@@ -330,6 +335,7 @@ def _checkpoint(
             optimizer_step=update,
             compile_backend=compile_backend,
             compile_mode=compile_mode,
+            hard_transactions=hard_transactions,
         ),
         episode_lifecycle=lifecycle,
     )
@@ -373,6 +379,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         ),
     )
     parser.add_argument("--freeze-base", action="store_true")
+    parser.add_argument("--soft-transactions", action="store_true")
     parser.add_argument("--resume-checkpoint", type=Path)
     parser.add_argument("--resume-sha256")
     return parser.parse_args(argv)
@@ -472,6 +479,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             manifest_sha256=stream.manifest.sha256(),
             step_config=ETTRTrainStepConfig(
                 gradient_accumulation_steps=args.accumulation,
+                hard_transactions=not args.soft_transactions,
                 compile_backend=(
                     None if args.compile_mode is None else "inductor"
                 ),
@@ -511,6 +519,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     None if args.compile_mode is None else "inductor"
                 ),
                 compile_mode=args.compile_mode,
+                hard_transactions=not args.soft_transactions,
             )
         cursor.validate(
             core_batches=len(stream.records["train"]),
@@ -535,6 +544,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "architecture_seed": args.architecture_seed,
                 "data_seed": args.data_seed,
                 "freeze_base": args.freeze_base,
+                "hard_transactions": not args.soft_transactions,
                 "compile_backend": (
                     None if args.compile_mode is None else "inductor"
                 ),
@@ -667,6 +677,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                                 else "inductor"
                             ),
                             compile_mode=args.compile_mode,
+                            hard_transactions=not args.soft_transactions,
                             rank=rank,
                         )
                         _barrier(world_size)

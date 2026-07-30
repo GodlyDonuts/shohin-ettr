@@ -95,6 +95,7 @@ def test_checkpoint_cursor_reconciles_exact_training_contract() -> None:
         "compile_backend": "inductor",
         "compile_mode": "default",
         "data_seed": 17,
+        "hard_transactions": False,
         "world_size": 4,
     }
     data_stream = SimpleNamespace(
@@ -105,6 +106,7 @@ def test_checkpoint_cursor_reconciles_exact_training_contract() -> None:
             "accumulation": 2,
             "compile_backend": "inductor",
             "compile_mode": "default",
+            "hard_transactions": False,
             "consumed_stream_batches": 96,
             "release_file_sha256": "c" * 64,
             "schema": "shohin-ettr-il-v3-distributed-cursor-v1",

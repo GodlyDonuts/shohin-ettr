@@ -13,6 +13,7 @@ def test_ladder_waits_for_verified_direct_transfer() -> None:
     assert 'receipt.get("release_file_sha256") != release_sha256' in SCRIPT
     assert 'receipt.get("source_commit") != source_commit' in SCRIPT
     assert 'release_sha256=$(verify_transfer' in SCRIPT
+    assert '"$RELEASE_SOURCE_COMMIT" <<\'PY\'' in SCRIPT
 
 
 def test_ladder_is_bounded_by_causal_development_gates() -> None:
@@ -42,3 +43,8 @@ def test_ladder_forwards_explicit_compile_strategy() -> None:
     assert "COMPILE_MODE=${COMPILE_MODE:-default}" in SCRIPT
     assert '"$COMPILE_MODE" != eager' in SCRIPT
     assert 'COMPILE_MODE="$COMPILE_MODE"' in SCRIPT
+
+
+def test_ladder_forwards_explicit_transaction_strategy() -> None:
+    assert "HARD_TRANSACTIONS=${HARD_TRANSACTIONS:-1}" in SCRIPT
+    assert 'HARD_TRANSACTIONS="$HARD_TRANSACTIONS"' in SCRIPT

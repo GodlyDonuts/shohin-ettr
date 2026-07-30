@@ -8,6 +8,7 @@ ALLOCATION_JOB_IDS=${ALLOCATION_JOB_IDS:?set comma-separated running job IDs}
 LAUNCHER_ROOT=${LAUNCHER_ROOT:?set the immutable federated launcher root}
 CODE_ROOT=${CODE_ROOT:?set the immutable full ETTR source root}
 SOURCE_COMMIT=${SOURCE_COMMIT:?set the exact ETTR source commit}
+RELEASE_SOURCE_COMMIT=${RELEASE_SOURCE_COMMIT:?set the release source commit}
 TRANSFER_ROOT=${TRANSFER_ROOT:?set the final verified Newton transfer root}
 PROTECTED_CHECKPOINT=${PROTECTED_CHECKPOINT:?set the protected checkpoint}
 OUTPUT_PREFIX=${OUTPUT_PREFIX:?set a fresh absolute output prefix}
@@ -16,11 +17,12 @@ DATA_SEED=${DATA_SEED:?set the data seed}
 TOTAL_UPDATES=${TOTAL_UPDATES:?set the token-normalized total updates}
 WARMUP_UPDATES=${WARMUP_UPDATES:?set the token-normalized warmup updates}
 POLL_SECONDS=${POLL_SECONDS:-60}
+HARD_TRANSACTIONS=${HARD_TRANSACTIONS:-1}
 COMPILE_MODE=${COMPILE_MODE:-default}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
 integer_contract="$ARCHITECTURE_SEED:$DATA_SEED:$TOTAL_UPDATES"
-integer_contract+=":$WARMUP_UPDATES:$POLL_SECONDS"
+integer_contract+=":$WARMUP_UPDATES:$POLL_SECONDS:$HARD_TRANSACTIONS"
 case "$integer_contract" in
   *[!0-9:]* | *::* | :* | *:)
     echo "federated ladder integer settings differ" >&2
@@ -32,8 +34,13 @@ if (( TOTAL_UPDATES < 2000 || WARMUP_UPDATES >= TOTAL_UPDATES \
   echo "federated ladder schedule differs" >&2
   exit 2
 fi
-if [[ ! "$SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ ]]; then
+if [[ ! "$SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ \
+  || ! "$RELEASE_SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ ]]; then
   echo "federated ladder source identity differs" >&2
+  exit 2
+fi
+if [[ "$HARD_TRANSACTIONS" != 0 && "$HARD_TRANSACTIONS" != 1 ]]; then
+  echo "federated ladder transaction mode differs" >&2
   exit 2
 fi
 if [[ "$COMPILE_MODE" != eager \
@@ -85,7 +92,7 @@ verify_transfer() {
   "$PYTHON_ROOT/bin/python" - \
     "$transfer_receipt" \
     "$release_root/release.json" \
-    "$SOURCE_COMMIT" <<'PY'
+    "$RELEASE_SOURCE_COMMIT" <<'PY'
 import hashlib
 import json
 from pathlib import Path
@@ -211,6 +218,7 @@ PY
     TOTAL_UPDATES="$TOTAL_UPDATES" \
     WARMUP_UPDATES="$WARMUP_UPDATES" \
     FREEZE_BASE=1 \
+    HARD_TRANSACTIONS="$HARD_TRANSACTIONS" \
     COMPILE_MODE="$COMPILE_MODE" \
     LAUNCH_STAGGER_SECONDS=1 \
     PYTHON_ROOT="$PYTHON_ROOT" \

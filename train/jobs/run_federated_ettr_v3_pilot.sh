@@ -25,6 +25,7 @@ DATA_SEED=${DATA_SEED:-2026072802}
 TOTAL_UPDATES=${TOTAL_UPDATES:-300000}
 WARMUP_UPDATES=${WARMUP_UPDATES:-2000}
 FREEZE_BASE=${FREEZE_BASE:-1}
+HARD_TRANSACTIONS=${HARD_TRANSACTIONS:-1}
 COMPILE_MODE=${COMPILE_MODE:-default}
 LAUNCH_STAGGER_SECONDS=${LAUNCH_STAGGER_SECONDS:-1}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
@@ -34,7 +35,7 @@ RESUME_SHA256=${RESUME_SHA256:-}
 integer_contract="$START_UPDATE:$TARGET_UPDATE:$ACCUMULATION"
 integer_contract+=":$CHECKPOINT_EVERY:$LOG_EVERY:$MAX_EVAL_BATCHES"
 integer_contract+=":$ARCHITECTURE_SEED:$DATA_SEED:$TOTAL_UPDATES"
-integer_contract+=":$WARMUP_UPDATES:$FREEZE_BASE"
+integer_contract+=":$WARMUP_UPDATES:$FREEZE_BASE:$HARD_TRANSACTIONS"
 case "$integer_contract" in
   *[!0-9:]* | *::* | :* | *:)
     echo "integer federated launch settings differ" >&2
@@ -53,6 +54,10 @@ if [[ ! "$SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ ]] \
 fi
 if [[ "$FREEZE_BASE" != 0 && "$FREEZE_BASE" != 1 ]]; then
   echo "federated freeze-base flag differs" >&2
+  exit 2
+fi
+if [[ "$HARD_TRANSACTIONS" != 0 && "$HARD_TRANSACTIONS" != 1 ]]; then
+  echo "federated transaction mode differs" >&2
   exit 2
 fi
 if [[ ! "$LAUNCH_STAGGER_SECONDS" =~ ^[0-9]+$ ]] \
@@ -159,7 +164,7 @@ export CODE_ROOT SOURCE_COMMIT RELEASE_ROOT RELEASE_SHA256 DATA_ROOT TOKENIZER
 export PROTECTED_CHECKPOINT OUTDIR START_UPDATE TARGET_UPDATE UPDATES
 export ACCUMULATION CHECKPOINT_EVERY LOG_EVERY MAX_EVAL_BATCHES
 export ARCHITECTURE_SEED DATA_SEED TOTAL_UPDATES WARMUP_UPDATES FREEZE_BASE
-export COMPILE_MODE PYTHON_ROOT RESUME_CHECKPOINT RESUME_SHA256
+export HARD_TRANSACTIONS COMPILE_MODE PYTHON_ROOT RESUME_CHECKPOINT RESUME_SHA256
 export master_addr master_port rdzv_id world_size
 export OMP_NUM_THREADS=2
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
@@ -201,11 +206,15 @@ for rank in "${!job_ids[@]}"; do
         freeze_args=()
         resume_args=()
         compile_args=()
+        transaction_args=()
         if [[ "$FREEZE_BASE" == 1 ]]; then
           freeze_args+=(--freeze-base)
         fi
         if [[ "$COMPILE_MODE" != eager ]]; then
           compile_args+=(--compile-mode "$COMPILE_MODE")
+        fi
+        if [[ "$HARD_TRANSACTIONS" == 0 ]]; then
+          transaction_args+=(--soft-transactions)
         fi
         if [[ "$START_UPDATE" != 0 ]]; then
           resume_args+=(
@@ -237,6 +246,7 @@ for rank in "${!job_ids[@]}"; do
           --total-updates "$TOTAL_UPDATES" \
           --warmup-updates "$WARMUP_UPDATES" \
           "${compile_args[@]}" \
+          "${transaction_args[@]}" \
           "${freeze_args[@]}" \
           "${resume_args[@]}"
       '

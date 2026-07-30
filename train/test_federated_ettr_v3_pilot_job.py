@@ -50,3 +50,10 @@ def test_federated_pilot_supports_explicit_eager_execution() -> None:
     assert "compile_args=()" in SCRIPT
     assert 'compile_args+=(--compile-mode "$COMPILE_MODE")' in SCRIPT
     assert '"${compile_args[@]}"' in SCRIPT
+
+
+def test_federated_pilot_supports_soft_transaction_training() -> None:
+    assert "HARD_TRANSACTIONS=${HARD_TRANSACTIONS:-1}" in SCRIPT
+    assert "transaction_args=()" in SCRIPT
+    assert "transaction_args+=(--soft-transactions)" in SCRIPT
+    assert '"${transaction_args[@]}"' in SCRIPT

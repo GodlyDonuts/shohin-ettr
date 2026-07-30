@@ -85,6 +85,7 @@ _RUN_KEYS = {
     "compile_mode",
     "data_seed",
     "freeze_base",
+    "hard_transactions",
     "model_config",
     "optimizer_config",
     "parameter_receipt",
@@ -246,6 +247,7 @@ def _validate_run_contract(
         or _HEX40.fullmatch(str(value.get("source_commit"))) is None
         or _HEX40.fullmatch(str(value.get("release_source_commit"))) is None
         or type(value.get("freeze_base")) is not bool
+        or type(value.get("hard_transactions")) is not bool
         or type(value.get("accumulation")) is not int
         or value["accumulation"] < 1
         or type(value.get("data_seed")) is not int
@@ -313,6 +315,7 @@ def _validate_checkpoint_cursor(
         "accumulation": run_contract["accumulation"],
         "compile_backend": run_contract["compile_backend"],
         "compile_mode": run_contract["compile_mode"],
+        "hard_transactions": run_contract["hard_transactions"],
         "consumed_stream_batches": (
             progress.optimizer_step
             * run_contract["world_size"]
