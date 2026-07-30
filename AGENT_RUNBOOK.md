@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-30 04:00 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-30 04:38 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -18947,3 +18947,64 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `world8_passes_3_43x_world2_all_18_h100s_assigned_token_normalized_scales_final_separation_still_blocks_optimizer`.
+
+- **2026-07-30 04:38 EDT** -- **World size twelve is the largest reliable
+  federated world under Newton's login-node limit and delivers 4.98x the
+  measured world-two ETTR data rate; all eighteen healthy H100s retain
+  simultaneous learning roles through split login control planes.**
+
+  Independent reservations `723330`--`723341` joined nodes
+  `evc23,evc42,evc47,evc35,evc37,evc45,evc46,evc50,evc48,evc22,evc27,evc36`
+  into one exact world-size-twelve canary. All twelve ranks consumed distinct
+  rank-local batches, began from identical parameter SHA-256
+  `cb086c7681695a4913cb2f9ebfa9641bda2762f6c279ba8e116108dcdf5eb82b`,
+  and ended at identical parameter SHA-256
+  `0d75fbd871c7e580ae6f013490027ae3e0528e1c3a2979c2284ab9a99db2f16c`.
+  The protected step-300k checkpoint remained unchanged at SHA-256
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
+  Maximum-rank timings were 174.271 seconds cold and **0.370949 seconds
+  steady**. This is **32.35 rank-batches/second**, approximately **4.98x**
+  the measured world-two rate and **1.45x** the world-eight rate. The sealed,
+  independently rechecked report-file SHA-256 is
+  `eed66b8d314d40ea61d3e2334622f919c11ac59449987c62b3b2d27880fe4ec5`.
+  Its accumulation-one update contains 192 frozen packet-v2 rows.
+
+  World size sixteen was attempted only as a release-blind mechanical
+  canary. It never reached CUDA or model execution because Newton limits each
+  login host to 100 user threads: one federated `srun` client per independent
+  reservation drove `evuser2` to the limit before all sixteen I/O handlers
+  could start. No model/data output was admitted and the protected checkpoint
+  was never opened for writing. Staggering rank launches did not remove this
+  fixed control-plane cost. Failed canary controllers were removed, login
+  usage returned to 11--12 threads, and all sixteen parent reservations
+  remained running. World twelve peaks at approximately 96 login threads and
+  is therefore the accepted ceiling for this launcher. Larger worlds require
+  a reservation-local agent or another control-plane design, not another
+  blind retry.
+
+  The optimizer layout is now: the two healthy `evc24` H100s run the exact
+  world-two control; `723330`--`723341` run the same-seed world-twelve scale
+  lane with token-normalized total/warmup schedule `50000/333`;
+  `723342,723343` run one independent world-two seed; and
+  `723344,723345` run a second independent world-two seed. This uses all
+  eighteen healthy H100s. World twelve launches from `evuser2`; the three
+  world-two lanes launch from `evuser1`, whose independent 100-thread quota
+  prevents the control plane from serializing otherwise independent GPU
+  work.
+
+  `train/jobs/watch_federated_ettr_v3_ladder.sh` now validates the complete
+  direct-transfer receipt and release-file identity, requires every fixed
+  allocation to remain live, creates only fresh isolated outputs, and runs
+  `0--100`, `100--500`, and `500--2000` serially per lane. Each continuation
+  requires the preceding development report's exact
+  `strict_learning_signal=true` and a hash-matched resume checkpoint. The
+  focused federated launcher/ladder suite passes **15/15** with clean shell
+  syntax, Ruff, and diff checks.
+
+  Stokes separation job `756317` remains the sole live release gate; builder
+  `756318`, independent verifier `756319`, direct transfer, and every
+  optimizer remain blocked. No canary has been represented as learned
+  reasoning.
+
+  Decision:
+  `world12_passes_4_98x_world2_split_login_control_uses_all_18_h100s_release_still_blocks_optimizer`.
