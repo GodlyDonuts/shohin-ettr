@@ -273,7 +273,7 @@ srun \
   --nodelist="$master_addr" \
   --ntasks=1 \
   --cpus-per-task=4 \
-  --gpus-per-node=1 \
+  --gpus-per-node="$GPUS_PER_NODE" \
   --kill-on-bad-exit=1 \
   "$PYTHON_ROOT/bin/python" \
     "$CODE_ROOT/train/eval_ettr_v3.py" \

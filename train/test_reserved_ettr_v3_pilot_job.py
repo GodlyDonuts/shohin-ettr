@@ -46,6 +46,8 @@ def test_reserved_ettr_pilot_supports_stable_soft_eager_training() -> None:
 
 def test_reserved_ettr_pilot_runs_paired_development_gate() -> None:
     assert "eval_ettr_v3.py" in SCRIPT
+    assert SCRIPT.count('--gpus-per-node="$GPUS_PER_NODE"') == 2
+    assert "--gpus-per-node=1" not in SCRIPT
     assert "--checkpoint-sha256" in SCRIPT
     assert "--run-contract-sha256" in SCRIPT
     assert "--max-batches" in SCRIPT
