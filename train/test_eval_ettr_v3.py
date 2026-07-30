@@ -134,3 +134,62 @@ def test_checkpoint_cursor_reconciles_exact_training_contract() -> None:
             release_sha256="c" * 64,
             protected_step=300_000,
         )
+
+
+def test_checkpoint_cursor_binds_nondefault_query_weight() -> None:
+    progress = SimpleNamespace(
+        global_step=300_012,
+        optimizer_step=12,
+        gradient_accumulation_steps=2,
+    )
+    manifest = SimpleNamespace(
+        dataset_sha256="b" * 64,
+        sha256=lambda: "a" * 64,
+    )
+    stream = SimpleNamespace(manifest=manifest)
+    contract = {
+        "accumulation": 2,
+        "compile_backend": None,
+        "compile_mode": None,
+        "data_seed": 17,
+        "hard_transactions": True,
+        "query_binding_weight": 8.0,
+        "world_size": 4,
+    }
+    data_stream = SimpleNamespace(
+        manifest_sha256="a" * 64,
+        dataset_sha256="b" * 64,
+        seed=17,
+        sampler_state={
+            "accumulation": 2,
+            "compile_backend": None,
+            "compile_mode": None,
+            "hard_transactions": True,
+            "consumed_stream_batches": 96,
+            "query_binding_weight": 8.0,
+            "release_file_sha256": "c" * 64,
+            "schema": "shohin-ettr-il-v3-distributed-cursor-v1",
+            "world_size": 4,
+        },
+    )
+    _validate_checkpoint_cursor(
+        progress,
+        data_stream,
+        run_contract=contract,
+        stream=stream,
+        release_sha256="c" * 64,
+        protected_step=300_000,
+    )
+    data_stream.sampler_state["query_binding_weight"] = 4.0
+    with pytest.raises(
+        ETTRV3EvaluationError,
+        match="checkpoint cursor differs",
+    ):
+        _validate_checkpoint_cursor(
+            progress,
+            data_stream,
+            run_contract=contract,
+            stream=stream,
+            release_sha256="c" * 64,
+            protected_step=300_000,
+        )

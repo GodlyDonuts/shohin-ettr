@@ -37,7 +37,7 @@ from ettr_distributed import (
     ETTRDistributedCursor,
     ETTRDistributedGradientAverager,
 )
-from ettr_objectives import ETTRObjectiveConfig
+from ettr_objectives import ETTRObjectiveConfig, ETTRObjectiveWeights
 from ettr_optimization import ETTROptimizerBundle, ETTROptimizerConfig
 from ettr_packet_index import ETTRDiskPacketSufficiencyIndex
 from ettr_train_step import ETTRTrainStep, ETTRTrainStepConfig
@@ -175,6 +175,7 @@ def _data_state(
     compile_mode: str | None,
     hard_transactions: bool,
     nll_gradient_cap: float | None = None,
+    query_binding_weight: float = 1.0,
 ) -> DataStreamState:
     sampler_state = {
         "accumulation": accumulation,
@@ -190,6 +191,8 @@ def _data_state(
     }
     if nll_gradient_cap is not None:
         sampler_state["nll_gradient_cap"] = nll_gradient_cap
+    if query_binding_weight != 1.0:
+        sampler_state["query_binding_weight"] = query_binding_weight
     return DataStreamState(
         manifest_sha256=stream.manifest.sha256(),
         dataset_sha256=stream.manifest.dataset_sha256,
@@ -216,6 +219,7 @@ def _validate_resume_cursor(
     compile_mode: str | None,
     hard_transactions: bool,
     nll_gradient_cap: float | None = None,
+    query_binding_weight: float = 1.0,
 ) -> ETTRDistributedCursor:
     expected_sampler = {
         "accumulation": accumulation,
@@ -231,6 +235,8 @@ def _validate_resume_cursor(
     }
     if nll_gradient_cap is not None:
         expected_sampler["nll_gradient_cap"] = nll_gradient_cap
+    if query_binding_weight != 1.0:
+        expected_sampler["query_binding_weight"] = query_binding_weight
     if (
         state.manifest_sha256 != stream.manifest.sha256()
         or state.dataset_sha256 != stream.manifest.dataset_sha256
@@ -300,6 +306,7 @@ def _checkpoint(
     compile_mode: str | None,
     hard_transactions: bool,
     nll_gradient_cap: float | None,
+    query_binding_weight: float,
     rank: int,
 ) -> None:
     if rank != 0:
@@ -346,6 +353,7 @@ def _checkpoint(
             compile_mode=compile_mode,
             hard_transactions=hard_transactions,
             nll_gradient_cap=nll_gradient_cap,
+            query_binding_weight=query_binding_weight,
         ),
         episode_lifecycle=lifecycle,
     )
@@ -391,6 +399,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--freeze-base", action="store_true")
     parser.add_argument("--soft-transactions", action="store_true")
     parser.add_argument("--nll-gradient-cap", type=float)
+    parser.add_argument("--query-binding-weight", type=float, default=1.0)
     parser.add_argument("--resume-checkpoint", type=Path)
     parser.add_argument("--resume-sha256")
     return parser.parse_args(argv)
@@ -415,6 +424,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 or args.soft_transactions
             )
         )
+        or not math.isfinite(args.query_binding_weight)
+        or not 0.0 < args.query_binding_weight <= 1_000.0
         or (args.resume_checkpoint is None) != (args.resume_sha256 is None)
         or (
             args.resume_sha256 is not None
@@ -499,6 +510,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             manifest=stream.manifest,
             packet_sufficiency=packet_index,
             manifest_sha256=stream.manifest.sha256(),
+            objective_weights=ETTRObjectiveWeights(
+                world_query_binding=args.query_binding_weight,
+                command_query_binding=args.query_binding_weight,
+            ),
             step_config=ETTRTrainStepConfig(
                 gradient_accumulation_steps=args.accumulation,
                 hard_transactions=not args.soft_transactions,
@@ -543,6 +558,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 compile_mode=args.compile_mode,
                 hard_transactions=not args.soft_transactions,
                 nll_gradient_cap=args.nll_gradient_cap,
+                query_binding_weight=args.query_binding_weight,
             )
         cursor.validate(
             core_batches=len(stream.records["train"]),
@@ -569,6 +585,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "freeze_base": args.freeze_base,
                 "hard_transactions": not args.soft_transactions,
                 "nll_gradient_cap": args.nll_gradient_cap,
+                "query_binding_weight": args.query_binding_weight,
                 "compile_backend": (
                     None if args.compile_mode is None else "inductor"
                 ),
@@ -703,6 +720,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                             compile_mode=args.compile_mode,
                             hard_transactions=not args.soft_transactions,
                             nll_gradient_cap=args.nll_gradient_cap,
+                            query_binding_weight=args.query_binding_weight,
                             rank=rank,
                         )
                         _barrier(world_size)

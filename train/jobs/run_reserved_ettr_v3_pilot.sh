@@ -29,6 +29,7 @@ WARMUP_UPDATES=${WARMUP_UPDATES:-2000}
 FREEZE_BASE=${FREEZE_BASE:-1}
 HARD_TRANSACTIONS=${HARD_TRANSACTIONS:-1}
 NLL_GRADIENT_CAP=${NLL_GRADIENT_CAP:-}
+QUERY_BINDING_WEIGHT=${QUERY_BINDING_WEIGHT:-1}
 COMPILE_MODE=${COMPILE_MODE:-default}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 RESUME_CHECKPOINT=${RESUME_CHECKPOINT:-}
@@ -67,6 +68,11 @@ if [[ -n "$NLL_GRADIENT_CAP" \
   && ( ! "$NLL_GRADIENT_CAP" =~ ^[0-9]+([.][0-9]+)?$ \
     || "$HARD_TRANSACTIONS" != 1 ) ]]; then
   echo "NLL gradient cap differs" >&2
+  exit 2
+fi
+if [[ ! "$QUERY_BINDING_WEIGHT" =~ ^[0-9]+([.][0-9]+)?$ ]] \
+  || [[ "$QUERY_BINDING_WEIGHT" == 0 || "$QUERY_BINDING_WEIGHT" == 0.0 ]]; then
+  echo "query-binding weight differs" >&2
   exit 2
 fi
 if [[ "$COMPILE_MODE" != eager \
@@ -169,6 +175,7 @@ export GPUS_PER_NODE START_UPDATE TARGET_UPDATE UPDATES ACCUMULATION
 export CHECKPOINT_EVERY LOG_EVERY MAX_EVAL_BATCHES ARCHITECTURE_SEED DATA_SEED
 export TOTAL_UPDATES WARMUP_UPDATES FREEZE_BASE HARD_TRANSACTIONS
 export NLL_GRADIENT_CAP
+export QUERY_BINDING_WEIGHT
 export COMPILE_MODE PYTHON_ROOT
 export RESUME_CHECKPOINT RESUME_SHA256 master_addr master_port world_size
 export OMP_NUM_THREADS=2
@@ -239,6 +246,7 @@ srun \
       --data-seed "$DATA_SEED" \
       --total-updates "$TOTAL_UPDATES" \
       --warmup-updates "$WARMUP_UPDATES" \
+      --query-binding-weight "$QUERY_BINDING_WEIGHT" \
       "${compile_args[@]}" \
       "${transaction_args[@]}" \
       "${freeze_args[@]}" \

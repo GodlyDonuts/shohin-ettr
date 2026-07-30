@@ -63,3 +63,5 @@ def test_federated_pilot_supports_bounded_hard_gradients() -> None:
     assert "NLL_GRADIENT_CAP=${NLL_GRADIENT_CAP:-}" in SCRIPT
     assert "federated NLL gradient cap differs" in SCRIPT
     assert 'transaction_args+=(--nll-gradient-cap "$NLL_GRADIENT_CAP")' in SCRIPT
+    assert "QUERY_BINDING_WEIGHT=${QUERY_BINDING_WEIGHT:-1}" in SCRIPT
+    assert '--query-binding-weight "$QUERY_BINDING_WEIGHT"' in SCRIPT

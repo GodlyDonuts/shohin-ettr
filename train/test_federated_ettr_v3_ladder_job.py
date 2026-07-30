@@ -50,3 +50,5 @@ def test_ladder_forwards_explicit_transaction_strategy() -> None:
     assert 'HARD_TRANSACTIONS="$HARD_TRANSACTIONS"' in SCRIPT
     assert "NLL_GRADIENT_CAP=${NLL_GRADIENT_CAP:-}" in SCRIPT
     assert 'NLL_GRADIENT_CAP="$NLL_GRADIENT_CAP"' in SCRIPT
+    assert "QUERY_BINDING_WEIGHT=${QUERY_BINDING_WEIGHT:-1}" in SCRIPT
+    assert 'QUERY_BINDING_WEIGHT="$QUERY_BINDING_WEIGHT"' in SCRIPT

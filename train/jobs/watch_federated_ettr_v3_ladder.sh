@@ -19,6 +19,7 @@ WARMUP_UPDATES=${WARMUP_UPDATES:?set the token-normalized warmup updates}
 POLL_SECONDS=${POLL_SECONDS:-60}
 HARD_TRANSACTIONS=${HARD_TRANSACTIONS:-1}
 NLL_GRADIENT_CAP=${NLL_GRADIENT_CAP:-}
+QUERY_BINDING_WEIGHT=${QUERY_BINDING_WEIGHT:-1}
 COMPILE_MODE=${COMPILE_MODE:-default}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
@@ -48,6 +49,11 @@ if [[ -n "$NLL_GRADIENT_CAP" \
   && ( ! "$NLL_GRADIENT_CAP" =~ ^[0-9]+([.][0-9]+)?$ \
     || "$HARD_TRANSACTIONS" != 1 ) ]]; then
   echo "federated ladder NLL gradient cap differs" >&2
+  exit 2
+fi
+if [[ ! "$QUERY_BINDING_WEIGHT" =~ ^[0-9]+([.][0-9]+)?$ ]] \
+  || [[ "$QUERY_BINDING_WEIGHT" == 0 || "$QUERY_BINDING_WEIGHT" == 0.0 ]]; then
+  echo "federated ladder query-binding weight differs" >&2
   exit 2
 fi
 if [[ "$COMPILE_MODE" != eager \
@@ -227,6 +233,7 @@ PY
     FREEZE_BASE=1 \
     HARD_TRANSACTIONS="$HARD_TRANSACTIONS" \
     NLL_GRADIENT_CAP="$NLL_GRADIENT_CAP" \
+    QUERY_BINDING_WEIGHT="$QUERY_BINDING_WEIGHT" \
     COMPILE_MODE="$COMPILE_MODE" \
     LAUNCH_STAGGER_SECONDS=1 \
     PYTHON_ROOT="$PYTHON_ROOT" \

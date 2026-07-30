@@ -90,6 +90,7 @@ _RUN_KEYS = {
     "model_config",
     "optimizer_config",
     "parameter_receipt",
+    "query_binding_weight",
     "release_file_sha256",
     "release_source_commit",
     "resume_checkpoint_sha256",
@@ -99,7 +100,8 @@ _RUN_KEYS = {
     "target_optimizer_step",
     "world_size",
 }
-_LEGACY_RUN_KEYS = _RUN_KEYS - {"nll_gradient_cap"}
+_PRE_QUERY_WEIGHT_RUN_KEYS = _RUN_KEYS - {"query_binding_weight"}
+_LEGACY_RUN_KEYS = _PRE_QUERY_WEIGHT_RUN_KEYS - {"nll_gradient_cap"}
 
 
 class ETTRV3EvaluationError(RuntimeError):
@@ -241,11 +243,16 @@ def _validate_run_contract(
     architecture_seed: int,
 ) -> tuple[TheoryReactorConfig, ETTROptimizerConfig]:
     if (
-        set(value) not in (_RUN_KEYS, _LEGACY_RUN_KEYS)
+        set(value) not in (
+            _RUN_KEYS,
+            _PRE_QUERY_WEIGHT_RUN_KEYS,
+            _LEGACY_RUN_KEYS,
+        )
         or value.get("schema") != RUN_SCHEMA
     ):
         raise ETTRV3EvaluationError("ETTR run contract schema differs")
     nll_gradient_cap = value.get("nll_gradient_cap")
+    query_binding_weight = value.get("query_binding_weight", 1.0)
     if (
         value.get("release_file_sha256") != release_sha256
         or value.get("release_source_commit") != release_source_commit
@@ -263,6 +270,9 @@ def _validate_run_contract(
                 or value.get("hard_transactions") is not True
             )
         )
+        or not isinstance(query_binding_weight, float)
+        or not math.isfinite(query_binding_weight)
+        or not 0.0 < query_binding_weight <= 1_000.0
         or type(value.get("accumulation")) is not int
         or value["accumulation"] < 1
         or type(value.get("data_seed")) is not int
@@ -343,6 +353,10 @@ def _validate_checkpoint_cursor(
     if run_contract.get("nll_gradient_cap") is not None:
         expected_sampler["nll_gradient_cap"] = run_contract[
             "nll_gradient_cap"
+        ]
+    if run_contract.get("query_binding_weight", 1.0) != 1.0:
+        expected_sampler["query_binding_weight"] = run_contract[
+            "query_binding_weight"
         ]
     if (
         progress.global_step != protected_step + progress.optimizer_step

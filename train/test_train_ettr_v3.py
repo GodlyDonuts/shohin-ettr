@@ -190,3 +190,37 @@ def test_resume_rejects_bounded_gradient_cap_change() -> None:
             hard_transactions=True,
             nll_gradient_cap=16.0,
         )
+
+
+def test_resume_rejects_query_binding_weight_change() -> None:
+    stream = _stream()
+    state = _data_state(
+        stream=stream,
+        release_sha256="c" * 64,
+        cursor=ETTRDistributedCursor(epoch=0, position=8),
+        data_seed=7,
+        world_size=2,
+        accumulation=2,
+        optimizer_step=2,
+        compile_backend=None,
+        compile_mode=None,
+        hard_transactions=True,
+        query_binding_weight=8.0,
+    )
+    with pytest.raises(
+        ETTRV3TrainerError,
+        match="resume data stream differs",
+    ):
+        _validate_resume_cursor(
+            state,
+            stream=stream,
+            release_sha256="c" * 64,
+            data_seed=7,
+            world_size=2,
+            accumulation=2,
+            optimizer_step=2,
+            compile_backend=None,
+            compile_mode=None,
+            hard_transactions=True,
+            query_binding_weight=4.0,
+        )

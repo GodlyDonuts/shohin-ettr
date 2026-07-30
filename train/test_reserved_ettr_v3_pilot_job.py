@@ -42,6 +42,8 @@ def test_reserved_ettr_pilot_supports_stable_soft_eager_training() -> None:
     assert '"${transaction_args[@]}"' in SCRIPT
     assert "NLL_GRADIENT_CAP=${NLL_GRADIENT_CAP:-}" in SCRIPT
     assert 'transaction_args+=(--nll-gradient-cap "$NLL_GRADIENT_CAP")' in SCRIPT
+    assert "QUERY_BINDING_WEIGHT=${QUERY_BINDING_WEIGHT:-1}" in SCRIPT
+    assert '--query-binding-weight "$QUERY_BINDING_WEIGHT"' in SCRIPT
 
 
 def test_reserved_ettr_pilot_runs_paired_development_gate() -> None:
