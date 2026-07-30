@@ -18762,3 +18762,78 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `all_available_healthy_h100s_requested_cross_job_world2_passed_main_audit_passed_confirmation_still_blocks_optimizer`.
+
+- **2026-07-30 03:10 EDT** -- **ETTR is now the sole optimizer-admission
+  priority: the final serial confirmation bottleneck was replaced by an
+  independently tested 48-core recovery, nine healthy H100s are allocated,
+  and three exact world-size-two learning lanes are armed behind the unchanged
+  audit gate.**
+
+  Private commit `3106202` extends the process-parallel materialization
+  adapter to sealed confirmation without changing the existing main adapter
+  receipt. The sealed key is loaded through the frozen serial custody
+  validator inside each spawned worker, is absent from every report, and is
+  mandatory for confirmation while prohibited for main. A new confirmation
+  fixture proves that serial and parallel compressed shards are byte
+  identical and that the unchanged full auditor accepts the result. Private
+  commit `b614b30` generalizes the no-replace recovery assembler by role while
+  retaining exact v1 main compatibility. Its confirmation fixture assembles a
+  fresh immutable tree and passes the unchanged global audit. The combined
+  accelerator/materializer/assembler suite passes **9/9** with clean Ruff,
+  byte compilation, shell syntax, and diff checks.
+
+  Exact Stokes accelerator runtime
+  `scratchpad/shohin_ettr_confirm_fast_3106202_r1` binds commit
+  `31062025fe78001b7c152b1ee1ea6bdec370f906`, adapter SHA-256
+  `28eb43e2fc20d915cb6beaaa45fba5d359cd0cda7e9bb4a2f915d0ffb31a4ff3`,
+  and archive SHA-256
+  `60bfb4f525aa296ac2107140b8fb8101f11bc710c4447c83f5b46ee5019fe64a`.
+  Recovery jobs `756309`, `756310`, and `756311` used fresh isolated roots
+  and 16 CPUs each while the original serial writers remained untouched.
+  All passed: task 2 materialized 500 cores in 13m33s at output SHA-256
+  `391cf8a5dc1701bfd25479072a217258520914262f43a694bd0d66f266bbe903`;
+  task 3 materialized 250 cores in 5m15s at
+  `f55cf66525e729b7a188dc1fa83dff37eff3970b20d4bb027de51dd2184936fb`;
+  task 4 materialized 250 cores in 5m31s at
+  `580a61211e6c80213a83fae45b401424948479d8c769a7aabab1261b1fbad346`.
+  The first submissions `756306`--`756308` failed harmlessly before opening
+  an output because their fresh task parents were absent; no shard or report
+  was produced.
+
+  Exact assembly runtime
+  `scratchpad/shohin_ettr_confirm_assembly_b614b30_r1` binds commit
+  `b614b30041e06a2b35236205a77670d8d44a0c15`, assembler SHA-256
+  `d413206f621a3c8a5f9292f847b70b144495c3b6489b333dc97f00bab208ba30`,
+  and archive SHA-256
+  `5fbfe42488028c0e1cf6b6a610599c8b1adfc2efbfdb69f22a9430bbf894ffb1`.
+  Job `756313` assembled a fresh 30-task confirmation tree in eight seconds
+  from 27 completed serial receipts plus recovery indices `[2,3,4]`.
+  Assembly self-hash is
+  `b8ded921135322a639375030cb0d9ef035889b5ed50e73d57523ce3c76945cae`;
+  receipt-file SHA-256 is
+  `4e79db4eb529ed54d173970816792172d0358940fc233c204805c51da4cedb74`.
+  It contains 61 files, zero writable files, and no replaced or deleted
+  canonical artifact. Replacement confirmation audit `756315` is reading
+  the complete fresh tree; separation `756317` is dependency-held behind it.
+  Exact main packet-context audit `756314` was safely moved ahead because it
+  reads only the already-passed main corpus and now runs in parallel on 32
+  CPUs. Optimizer admission remains blocked until all three reports pass.
+
+  Newton now has nine healthy H100s: two on `evc24`, plus independent
+  reservations `723330`--`723336` on `evc23`, `evc42`, `evc47`, `evc35`,
+  `evc37`, `evc45`, and `evc46`. `evc33` alone remains quarantined.
+  World-size-three canary on `723332,723333,723334` passed with identical
+  rank parameters and protected-checkpoint custody, but its steady update was
+  1.613s, so world size three is rejected for production efficiency.
+  World-size-two canary on `723335,723336` passed at 0.308s steady update,
+  faster than the earlier independent pair. Production therefore preserves
+  `world_size * accumulation = 2` instead of inflating the global batch:
+  `evc24` runs the atomic primary 0--100 rung, `723330,723331` run an exact
+  replica, `723332,723333` run independent architecture/data seeds, `723334`
+  runs the raw paired baseline, and `723335,723336` continue the independent
+  seed through 500 and 2,000 only after each strict learning gate passes.
+  All lanes wait for the same verified transfer receipt and write isolated
+  outputs.
+
+  Decision:
+  `confirmation_parallel_recovery_and_fresh_assembly_pass_nine_h100s_ready_three_world2_ettr_lanes_armed_audits_still_block_optimizer`.
