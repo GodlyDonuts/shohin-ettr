@@ -18468,3 +18468,82 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finepdf_equal_token_policy_arms_running_quarantined_ettr_confirmation_26_of_30_no_optimizer`.
+
+- **2026-07-30 00:38 EDT** -- **Both matched FinePDF policy arms are now
+  physically verified and sealed, but remain quarantined; ETTR v2 has entered
+  independent audit with no optimizer admission.**
+
+  The first FinePDF arm attempt exposed a verifier-contract bug rather than a
+  data fault. Residual job `756071` wrote a valid 100M-token v3 payload, then
+  failed because the old verifier rejected the newly source-bound
+  `document_policy_tier` ledger field as an unknown key. Core job `756070` was
+  canceled before repeating the same inevitable terminal failure. Both
+  partials remain preserved as evidence. Private commit `bed4596` repairs the
+  independent verifier without weakening it: legacy ledgers may omit the
+  field, policy-bound ledgers must contain a declared allowed tier, generic
+  ledgers may contain only null, and exact per-tier ledger counts must
+  reconcile with the manifest. Focused tests pass **27/27**, the wider
+  tokenizer/verifier/residualization/holdout suite passes **79/79**, and Ruff,
+  byte compilation, and the source diff check pass.
+
+  Two staging errors were caught before reuse. Runtime r1 contained macOS
+  `._*` metadata and runtime r2 generated out-of-tree bytecode after its
+  inventory was frozen. Both are preserved and prohibited. Exact no-replace
+  runtime
+  `scratchpad/shohin_finepdf_policy_runtime_bed4596_r3` contains **907**
+  inventory-bound files, has no AppleDouble or bytecode artifacts, passes a
+  bytecode-disabled out-of-tree launch, and is sealed. Its inventory SHA-256
+  is
+  `c48d594b845b961e3417c0db5c3f3132011df4e6da10d182936395aeb5d92427`;
+  its clean archive SHA-256 is
+  `6231c834691e51b0fd152b48246417009a65dcb239a2bc1538e7930e77492c16`.
+  Verifier, tokenizer, policy, and scheduler source SHA-256 values are
+  respectively
+  `2c804417a538fc736690e0c9c6fd29a4fc5a9da80055959dae57db0d2ef7b990`,
+  `7839dad8e6946ffc05f5e5ba4528e8aebe39fe18f2bf3014abbd62f2b18c37e0`,
+  `b42206894002adf0be1a17a1da9a97e33865b579b8b7f155704dc2993a5ffcab`,
+  and
+  `0531ad20ebb9f31f1ea5e37d4e8dde940029a2972e4786eef0739ccfd3711f4c`.
+
+  Retry jobs `756074` and `756075` completed cleanly and published mode-0555
+  directories only after full external verification. The `core` arm contains
+  **100,004,847 tokens / 31,702 documents**, payload SHA-256
+  `c6b837d9239a8006afa9c01bcd79eea942c4d1bae7a6ac528e7e932df0604020`,
+  shard SHA-256
+  `39124c25477d8ae66bf0a5d0baf2a09a5d53ffc0c8d1523c97f2e4e800a89e75`,
+  ledger SHA-256
+  `83fab82e58d634131acfb0e622ec943f9c81eb5549f4b5b5ca84d627919e54ad`,
+  and manifest-file SHA-256
+  `bfc6aab90383eb774f6846051b59aa9269a4404cc34bc820a9095ccabd63b056`.
+  The `residual` arm contains **100,000,971 tokens / 29,641 documents**,
+  payload SHA-256
+  `039f3b383c3cb6efeb265e2e8bf1b71bc692814a1d9ca13fcb98ad775614bc49`,
+  shard SHA-256
+  `56bda585cb29ac4beabf30080b3d881fd415bb4bcba4907b47408d7e5ecaf9c3`,
+  ledger SHA-256
+  `333a539f7eaa6249fbd3dc708a6bb50abd0383241bbc53254cdaa7f4e2927102`,
+  and manifest-file SHA-256
+  `7ea9e77f154cea7b99874979ef2f75bb1e07ebda303ce61ce4d52f54a3dcbdf1`.
+  Their 3,876-token difference is only 0.0039%; any training comparison must
+  still cap both at the exact same target tokens and updates.
+
+  Deterministic 1,000-document private review-packet jobs `756081` (`core`)
+  and `756083` (`residual`) are submitted from the sealed runtime. These
+  packets prepare the required 100-document human adjudication slice and a
+  larger stratified quality comparison. Model-authored labels remain
+  preliminary by schema and cannot admit either arm. Cross-source exact and
+  near residualization, immutable document/domain holdouts, privacy and
+  license audits, and identical-start utility tests remain mandatory.
+
+  ETTR v2 main assembly `756062` passed. Independent main audit `756063` is
+  actively reading the assembled corpus; 27/30 sealed confirmation reports
+  exist, while the final three Horn cells remain CPU-active with zero-byte
+  error logs. Confirmation audit, main/confirmation separation, and the exact
+  packet-context audit remain dependency-held. The release, direct
+  Stokes-to-Newton transfer, optimizer, and first-rung lock are absent. The
+  exact distributed canary and strict paired 100-to-500-to-2,000 update ladder
+  remain armed behind those gates. Ten-, four-, and twenty-H100 reservations
+  remain pending.
+
+  Decision:
+  `finepdf_policy_arms_verified_sealed_quarantined_review_packets_queued_ettr_v2_independent_audit_live_no_optimizer`.
