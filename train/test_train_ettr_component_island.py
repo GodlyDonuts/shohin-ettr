@@ -57,7 +57,10 @@ def test_component_selection_rejects_unknown_island() -> None:
         select_trainable_component(_ComponentModel(), "joint")
 
 
-@pytest.mark.parametrize("reader_injection", ("late", "postnorm"))
+@pytest.mark.parametrize(
+    "reader_injection",
+    ("late", "postnorm", "postnorm-scaled"),
+)
 def test_nonstage_reader_injection_is_reader_only(
     reader_injection: str,
 ) -> None:
@@ -88,7 +91,10 @@ def test_nonstage_reader_injection_is_reader_only(
         _validate_args(arguments)
 
 
-@pytest.mark.parametrize("reader_injection", ("stage", "late", "postnorm"))
+@pytest.mark.parametrize(
+    "reader_injection",
+    ("stage", "late", "postnorm", "postnorm-scaled"),
+)
 def test_reader_injection_geometries_are_accepted(
     reader_injection: str,
 ) -> None:

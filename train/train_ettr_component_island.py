@@ -370,7 +370,12 @@ def _reader_logits(
     *,
     injection: str,
 ) -> torch.Tensor:
-    if injection not in {"stage", "late", "postnorm"}:
+    if injection not in {
+        "stage",
+        "late",
+        "postnorm",
+        "postnorm-scaled",
+    }:
         raise ETTRComponentIslandError("reader injection geometry differs")
     with torch.no_grad():
         query_hidden = model._encode_to_stage(
@@ -403,7 +408,12 @@ def _reader_logits(
                 pos=0,
             )
             normalized = model.base.norm(decoded)
-        hidden = normalized.detach() + read
+        scale = (
+            read.shape[-1] ** -0.5
+            if injection == "postnorm-scaled"
+            else 1.0
+        )
+        hidden = normalized.detach() + scale * read
     logits = model.base.head(hidden)
     return logits.gather(
         1,
@@ -615,7 +625,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--log-every", type=int, default=10)
     parser.add_argument(
         "--reader-injection",
-        choices=("stage", "late", "postnorm"),
+        choices=("stage", "late", "postnorm", "postnorm-scaled"),
         default="stage",
     )
     return parser.parse_args(argv)
