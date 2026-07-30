@@ -43,3 +43,10 @@ def test_federated_pilot_staggers_large_world_launches() -> None:
     assert "LAUNCH_STAGGER_SECONDS=${LAUNCH_STAGGER_SECONDS:-1}" in SCRIPT
     assert "LAUNCH_STAGGER_SECONDS > 10" in SCRIPT
     assert 'sleep "$LAUNCH_STAGGER_SECONDS"' in SCRIPT
+
+
+def test_federated_pilot_supports_explicit_eager_execution() -> None:
+    assert '"$COMPILE_MODE" != eager' in SCRIPT
+    assert "compile_args=()" in SCRIPT
+    assert 'compile_args+=(--compile-mode "$COMPILE_MODE")' in SCRIPT
+    assert '"${compile_args[@]}"' in SCRIPT

@@ -60,7 +60,8 @@ if [[ ! "$LAUNCH_STAGGER_SECONDS" =~ ^[0-9]+$ ]] \
   echo "federated launch stagger differs" >&2
   exit 2
 fi
-if [[ "$COMPILE_MODE" != default \
+if [[ "$COMPILE_MODE" != eager \
+  && "$COMPILE_MODE" != default \
   && "$COMPILE_MODE" != reduce-overhead \
   && "$COMPILE_MODE" != max-autotune \
   && "$COMPILE_MODE" != max-autotune-no-cudagraphs ]]; then
@@ -199,8 +200,12 @@ for rank in "${!job_ids[@]}"; do
         test -n "$(ls -A /sys/class/infiniband 2>/dev/null)"
         freeze_args=()
         resume_args=()
+        compile_args=()
         if [[ "$FREEZE_BASE" == 1 ]]; then
           freeze_args+=(--freeze-base)
+        fi
+        if [[ "$COMPILE_MODE" != eager ]]; then
+          compile_args+=(--compile-mode "$COMPILE_MODE")
         fi
         if [[ "$START_UPDATE" != 0 ]]; then
           resume_args+=(
@@ -231,7 +236,7 @@ for rank in "${!job_ids[@]}"; do
           --data-seed "$DATA_SEED" \
           --total-updates "$TOTAL_UPDATES" \
           --warmup-updates "$WARMUP_UPDATES" \
-          --compile-mode "$COMPILE_MODE" \
+          "${compile_args[@]}" \
           "${freeze_args[@]}" \
           "${resume_args[@]}"
       '

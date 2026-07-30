@@ -16,6 +16,7 @@ DATA_SEED=${DATA_SEED:?set the data seed}
 TOTAL_UPDATES=${TOTAL_UPDATES:?set the token-normalized total updates}
 WARMUP_UPDATES=${WARMUP_UPDATES:?set the token-normalized warmup updates}
 POLL_SECONDS=${POLL_SECONDS:-60}
+COMPILE_MODE=${COMPILE_MODE:-default}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
 integer_contract="$ARCHITECTURE_SEED:$DATA_SEED:$TOTAL_UPDATES"
@@ -33,6 +34,14 @@ if (( TOTAL_UPDATES < 2000 || WARMUP_UPDATES >= TOTAL_UPDATES \
 fi
 if [[ ! "$SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ ]]; then
   echo "federated ladder source identity differs" >&2
+  exit 2
+fi
+if [[ "$COMPILE_MODE" != eager \
+  && "$COMPILE_MODE" != default \
+  && "$COMPILE_MODE" != reduce-overhead \
+  && "$COMPILE_MODE" != max-autotune \
+  && "$COMPILE_MODE" != max-autotune-no-cudagraphs ]]; then
+  echo "federated ladder compile mode differs" >&2
   exit 2
 fi
 for path in \
@@ -202,7 +211,7 @@ PY
     TOTAL_UPDATES="$TOTAL_UPDATES" \
     WARMUP_UPDATES="$WARMUP_UPDATES" \
     FREEZE_BASE=1 \
-    COMPILE_MODE=default \
+    COMPILE_MODE="$COMPILE_MODE" \
     LAUNCH_STAGGER_SECONDS=1 \
     PYTHON_ROOT="$PYTHON_ROOT" \
     "${resume_env[@]}" \

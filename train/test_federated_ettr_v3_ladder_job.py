@@ -36,3 +36,9 @@ def test_ladder_normalizes_schedule_without_training_the_base() -> None:
     assert 'WARMUP_UPDATES="$WARMUP_UPDATES"' in SCRIPT
     assert "FREEZE_BASE=1" in SCRIPT
     assert "ACCUMULATION=1" in SCRIPT
+
+
+def test_ladder_forwards_explicit_compile_strategy() -> None:
+    assert "COMPILE_MODE=${COMPILE_MODE:-default}" in SCRIPT
+    assert '"$COMPILE_MODE" != eager' in SCRIPT
+    assert 'COMPILE_MODE="$COMPILE_MODE"' in SCRIPT
