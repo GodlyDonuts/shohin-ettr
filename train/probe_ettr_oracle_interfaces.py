@@ -54,7 +54,7 @@ from eval_ettr_v3 import (
     _validate_run_contract,
     _write_no_replace,
 )
-from probe_ettr_causal_queries import _pair_rows, _summary
+from probe_ettr_causal_queries import _depth_bucket, _pair_rows, _summary
 
 
 REPORT_SCHEMA = "shohin-ettr-il-v3-oracle-interface-probe-v1"
@@ -393,11 +393,37 @@ def _arm_batch(
         hard=True,
     )
     reader_pairs = _oracle_reader_pairs(model, batch)
+    (
+        _world_packet,
+        _world_command,
+        world_target,
+        _command_packet,
+        _command_command,
+        command_target,
+    ) = batch.causal_rectangles.intervention_indices()
+    depths = batch.transaction_targets.step_mask.sum(-1)
+    reader_depths = {
+        "world": depths.index_select(0, world_target),
+        "command": depths.index_select(0, command_target),
+    }
     return (
         _packet_batch_counts(compiler_state, batch.packet_targets),
         _teacher_forced_policy_counts(model, batch),
         {
-            kind: _pair_rows(pair)
+            kind: [
+                row
+                | {
+                    "depth": int(depth.detach().cpu()),
+                    "depth_bucket": _depth_bucket(
+                        int(depth.detach().cpu())
+                    ),
+                }
+                for row, depth in zip(
+                    _pair_rows(pair),
+                    reader_depths[kind],
+                    strict=True,
+                )
+            ]
             for kind, pair in reader_pairs.items()
         },
     )
