@@ -11,23 +11,32 @@ from pipeline.build_blinded_source_comparison import (
 )
 
 
-def _write_arm(root: Path, arm: str, *, overlap: str | None = None):
+def _write_arm(
+    root: Path,
+    arm: str,
+    *,
+    identity_overlap: str | None = None,
+    document_overlap: str | None = None,
+):
     packet = root / f"{arm}.jsonl"
     rows = []
     for index in range(150):
         identity = hashlib.sha256(f"{arm}-{index}".encode()).hexdigest()
-        if overlap is not None and index == 0:
-            identity = overlap
+        if identity_overlap is not None and index == 0:
+            identity = identity_overlap
         tokens = (1_000, 4_000, 12_000, 40_000)[index % 4]
+        document_sha256 = hashlib.sha256(
+            f"document-{arm}-{index}".encode()
+        ).hexdigest()
+        if document_overlap is not None and index == 0:
+            document_sha256 = document_overlap
         rows.append(
             {
                 "schema": "shohin-private-selected-source-review-v1",
                 "dataset": "test/source",
                 "config": "default",
                 "stable_identity_sha256": identity,
-                "document_sha256": hashlib.sha256(
-                    f"document-{arm}-{index}".encode()
-                ).hexdigest(),
+                "document_sha256": document_sha256,
                 "metadata": {"score_that_must_not_leak": index},
                 "selection": {
                     "tokens": tokens,
@@ -86,14 +95,36 @@ def test_comparison_rejects_cross_arm_identity_overlap(tmp_path):
     first_packet, first_receipt, _rows = _write_arm(
         tmp_path,
         "first",
-        overlap=overlap,
+        identity_overlap=overlap,
     )
     second_packet, second_receipt, _rows = _write_arm(
         tmp_path,
         "second",
-        overlap=overlap,
+        identity_overlap=overlap,
     )
     with pytest.raises(BlindedComparisonError, match="share document"):
+        build_comparison(
+            {
+                "first": (first_packet, first_receipt),
+                "second": (second_packet, second_receipt),
+            },
+            rows_per_arm=100,
+        )
+
+
+def test_comparison_rejects_cross_arm_document_overlap(tmp_path):
+    overlap = hashlib.sha256(b"same-document").hexdigest()
+    first_packet, first_receipt, _rows = _write_arm(
+        tmp_path,
+        "first",
+        document_overlap=overlap,
+    )
+    second_packet, second_receipt, _rows = _write_arm(
+        tmp_path,
+        "second",
+        document_overlap=overlap,
+    )
+    with pytest.raises(BlindedComparisonError, match="exact document"):
         build_comparison(
             {
                 "first": (first_packet, first_receipt),

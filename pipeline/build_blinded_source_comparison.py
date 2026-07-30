@@ -71,6 +71,7 @@ def _load_packet(
                     f"{packet_path}:{line_number}: malformed JSON"
                 ) from exc
             identity = row.get("stable_identity_sha256")
+            document_sha256 = row.get("document_sha256")
             selection = row.get("selection")
             text = row.get("review_text")
             if (
@@ -79,6 +80,8 @@ def _load_packet(
                 or not isinstance(identity, str)
                 or len(identity) != 64
                 or identity in identities
+                or not isinstance(document_sha256, str)
+                or len(document_sha256) != 64
                 or not isinstance(selection, dict)
                 or not isinstance(selection.get("tokens"), int)
                 or selection["tokens"] < 1
@@ -161,12 +164,17 @@ def build_comparison(
     receipt_paths: dict[str, Path] = {}
     dataset_config: set[tuple[Any, Any]] = set()
     all_identities: set[str] = set()
+    all_documents: set[str] = set()
     for arm, (packet_path, receipt_path) in sorted(arms.items()):
         rows, receipt = _load_packet(packet_path, receipt_path)
         identities = {str(row["stable_identity_sha256"]) for row in rows}
+        documents = {str(row["document_sha256"]) for row in rows}
         if all_identities & identities:
             raise BlindedComparisonError("source arms share document identities")
+        if all_documents & documents:
+            raise BlindedComparisonError("source arms share exact document content")
         all_identities.update(identities)
+        all_documents.update(documents)
         rows_by_arm[arm] = rows
         receipts[arm] = receipt
         packet_paths[arm] = packet_path
