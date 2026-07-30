@@ -82,6 +82,7 @@ class DispositionMotor(nn.Module):
             raise ETTRDispositionMotorError(
                 "disposition motor features differ"
             )
+        features = features.to(dtype=self.norm.weight.dtype)
         return self.up(F.gelu(self.down(self.norm(features))))
 
 

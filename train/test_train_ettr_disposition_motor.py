@@ -63,6 +63,7 @@ def _arguments(tmp_path):
 def test_disposition_motor_is_small_and_emits_two_logits() -> None:
     motor = DispositionMotor(16, 8)
     assert motor(torch.randn(5, 16)).shape == (5, 2)
+    assert motor(torch.randn(5, 16, dtype=torch.bfloat16)).dtype == torch.float32
     assert sum(parameter.numel() for parameter in motor.parameters()) == 186
     with pytest.raises(
         ETTRDispositionMotorError,
