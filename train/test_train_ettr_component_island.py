@@ -8,6 +8,7 @@ from ettr_objectives import ETTRPacketTargets
 from train_ettr_component_island import (
     ETTRComponentIslandError,
     _balanced_binary_nll,
+    _masked_categorical_cross_entropy,
     _masked_categorical_nll,
     compiler_packet_loss,
     _validate_args,
@@ -174,6 +175,25 @@ def test_masked_categorical_nll_uses_only_supported_rows() -> None:
     )
     assert loss is not None
     assert loss.item() == pytest.approx(-torch.log(torch.tensor(0.8)).item())
+
+
+def test_masked_categorical_cross_entropy_recovers_improbable_class() -> None:
+    logits = torch.tensor(
+        [[-100.0, 0.0], [0.0, -100.0]],
+        requires_grad=True,
+    )
+    loss = _masked_categorical_cross_entropy(
+        logits,
+        torch.tensor([0, 1]),
+        torch.tensor([True, False]),
+    )
+    assert loss is not None
+    loss.backward()
+    assert loss.item() == pytest.approx(100.0)
+    assert logits.grad is not None
+    assert logits.grad[0, 0].item() == pytest.approx(-1.0)
+    assert logits.grad[0, 1].item() == pytest.approx(1.0)
+    assert torch.equal(logits.grad[1], torch.zeros(2))
 
 
 def test_balanced_binary_nll_does_not_let_negatives_swamp_positives() -> None:

@@ -223,6 +223,16 @@ def _masked_categorical_nll(
     return -selected[mask].float().clamp_min(1e-7).log().mean()
 
 
+def _masked_categorical_cross_entropy(
+    logits: torch.Tensor,
+    targets: torch.Tensor,
+    mask: torch.Tensor,
+) -> torch.Tensor | None:
+    if not bool(mask.any()):
+        return None
+    return F.cross_entropy(logits[mask].float(), targets[mask])
+
+
 def _balanced_binary_nll(
     probabilities: torch.Tensor,
     targets: torch.Tensor,
@@ -374,17 +384,22 @@ def _reactor_loss(
             command_attention_mask=batch.episodes.command.attention_mask,
             validate=False,
         )
-        probabilities = {
-            "opcode": prediction.opcode_probabilities,
-            "source": prediction.source_probabilities,
-            "target": prediction.target_probabilities,
-            "relation": prediction.relation_probabilities,
-            "type_index": prediction.type_probabilities,
-            "value_code": prediction.value_probabilities,
+        logits = {
+            "opcode": prediction.opcode_logits,
+            "source": prediction.source_logits,
+            "target": prediction.target_logits,
+            "relation": prediction.relation_logits,
+            "type_index": prediction.type_logits,
+            "value_code": prediction.value_logits,
         }
         for name in _POLICY_FIELDS:
-            loss = _masked_categorical_nll(
-                probabilities[name],
+            field_logits = logits[name]
+            if field_logits is None:
+                raise ETTRComponentIslandError(
+                    f"reactor policy omitted {name} logits"
+                )
+            loss = _masked_categorical_cross_entropy(
+                field_logits,
                 getattr(targets, name)[:, step],
                 masks[name][:, step],
             )
