@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-30 04:38 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-30 05:18 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -19019,3 +19019,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `world12_passes_4_98x_world2_split_login_control_uses_all_18_h100s_release_still_blocks_optimizer`.
+
+- **2026-07-30 05:18 EDT** -- **Main/confirmation separation passed, and
+  the release builder was accelerated from an estimated 35--40 hours to an
+  observed 2--3 hour path without changing release bytes or admission
+  contracts.**
+
+  Separation job `756317` completed cleanly in 1h30m55s. It checked 56,250
+  main cores against 6,250 sealed-confirmation cores and found zero overlap
+  in all four frozen identity spaces: core IDs, semantic hashes,
+  graph-isomorphism hashes, and source-view hashes. Separation self-hash is
+  `d001c3ddf1bbca002ce87732cb8186b26ae8391143b0352f7c69f67f25025988`;
+  report-file SHA-256 is
+  `d717bdbbc29775eca28eafa8cd03e83143bd5b206afa68b3e697a12ee890f535`.
+
+  Original release builder `756318` was healthy but materially undersized.
+  Eight workers produced only 1,988 of 180,000 deterministic stream-index
+  rows in roughly 23 minutes, implying a 35--40 hour completion time and
+  wasting the current H100 window. It was canceled before `release.json`
+  existed; dependent verifier `756319` was canceled while still pending.
+  The incomplete release tree was preserved, not deleted, as
+  `training-e5f3705-packet-v2.slow8-canceled-20260730T0515`.
+
+  A 64-CPU request failed before job creation because no Stokes normal node
+  offers that geometry. Replacement builder `756321` therefore uses the
+  actual 48-CPU ceiling with 48 workers and 192 GiB on `ec93`; verifier
+  `756322` is dependency-held behind it and writes the exact receipt path
+  already watched by the transfer process. After three minutes the new
+  builder had emitted 3,720 rows, accumulated 2h01m CPU time, and used
+  18.5 GiB: approximately **14x** the observed old production rate. The
+  source, audits, tokenizer, data root, output path, builder code, and
+  protected-checkpoint identity are unchanged.
+
+  Decision:
+  `separation_pass_release_builder_48cpu_acceleration_running_verifier_and_optimizer_still_blocked`.
