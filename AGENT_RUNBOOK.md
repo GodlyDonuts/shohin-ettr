@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-30 18:36 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-30 19:16 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -19920,3 +19920,87 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `u2000_pilot_only_u20000_reader_reassembly_still_not_compositional_probe_output_transport_then_progressively_couple_verified_component_winners`.
+
+- **2026-07-30 18:36--19:16 EDT** -- **The matched disposition motor is
+  rejected as a sufficient output fix; progressive interface coupling is
+  implemented, regression-tested, H100-smoked, and running as a bounded
+  two-seed pilot.**
+
+  Both 1,000-update disposition-motor probes completed. Seed 1's treatment
+  and query-only control both ended at `68.75%` exact and autonomous factual
+  accuracy. The treatment produced `7.5%` autonomous COMMAND margin-`0.1`
+  but zero WORLD margin; none of its exact-state treatment-over-control gates
+  passed. Its report SHA-256 is
+  `4bf0096df17954c13299ef7f4829b0b3a6e115bfbb6dafb599020b85feb041ef`;
+  treatment and query-only motor SHA-256 values are
+  `f3d367711976ccd1d8d152dc94e9b998ee3b3b12c3321618dd05f3773134ca59`
+  and
+  `b5ff6f58cbf8d8fb5dd9aa74188c161c5a967b93b857c9696a6dce75ab7ff780`.
+  Seed 2's treatment and query-only control both ended at `62.5%` factual
+  accuracy. Its treatment reached exact WORLD margin-`0.1` `18.75%` and
+  autonomous WORLD/COMMAND margin-`0.1` `8.33%/2.5%`, but the exact WORLD
+  mean difference-in-differences was negative, factual did not beat the
+  control, exact COMMAND did not beat the control, and the strict gate
+  failed. Its report SHA-256 is
+  `8227ef1f8d406d376deb1e3b691bc3f1147f7921e2ff1ad270d3b647b5a02d30`;
+  treatment and query-only motor SHA-256 values are
+  `956fdbba3e4984afec263411621961fdb8328bb886c3de09782e9b4b28e914ac`
+  and
+  `094a36b48d228e5817e43be8de47614a167deb9c44101472def21fb0188d8b5e`.
+  The frozen vocabulary interface is therefore not the sole bottleneck.
+  Do not scale this detached motor.
+
+  Commit `68c8780998a3c415b8a74f1dc511124035ff7f28` adds
+  `train/train_ettr_progressive_coupling.py`. It freezes the protected 125M
+  base, hash-loads exact compiler/reactor/reader components, keeps all three
+  local supervised objectives, and linearly replaces exact packet states
+  with hard self-generated states. State-source selection is atomic across a
+  complete causal-factorial batch, deterministic from a separate coupling
+  seed, and reaches a terminal fully autonomous plateau. At coupling
+  probability one, no packet or transaction oracle enters the state forward;
+  labels remain loss targets only. The existing source-deleted autonomous
+  component-assembly evaluator remains the promotion gate.
+  The focused suite passes **26/26** and the expanded ETTR inventory passes
+  **436/436 with one skip**, with clean targeted Ruff, byte compilation, and
+  diff checks. Repository-wide Ruff still reports unrelated historical debt
+  and is not a changed-file result.
+
+  Immutable runtime
+  `scratchpad/shohin_ettr_runtime_68c8780_full_r1` contains 3,327 measured
+  files; `SHA256SUMS` SHA-256 is
+  `68dcaad7760c2dbb920f68925770db29bb8731c9a9bad88f4594e4e992e4330d`.
+  A real one-update H100 smoke at 100% autonomous state completed from the
+  exact seed-1 components. It made all `65/65` state-source decisions
+  autonomously, retained finite total loss `5.45225`, and wrote all three
+  final components. The large finite pre-clip gradient norm `8832` and
+  source loss `90.45` confirm that autonomous-state exposure is the hard
+  regime; clipping protected the update. Report SHA-256 is
+  `dd1e0283e71529c648b34105ed66fa1440e03edab8dc66cc9c4e29cb4fef8284`.
+  Smoke `r1` failed before model load on a wrong architecture seed and `r2`
+  failed before training because two development batches contained no
+  required causal contrast; both are partial and inadmissible.
+
+  The two 20,000-position compiler continuations also completed, but did not
+  replicate a duration benefit. Seed 1 value accuracy moved from `67.85%`
+  to `66.41%` while active rose from `98.23%` to `99.02%`; seed 2 value
+  moved from `84.10%` to `84.86%`. Their report/component SHA-256 pairs are
+  `af882ab54fe67ac91ba55423b52ddde952d25130adb5185defe1991e6223fd10` /
+  `dee245fa9db0e148e09d46566814ca3e882628862f6d60c6bdcc7b3bc4892ff5`
+  and
+  `7f7b98ce0df4f39675c283bce662ba73a56dbbc5770fbeac94432f1c3cb2aa5f` /
+  `656d28d301f1784dda2a593c7213e695c9535fc97173448baf3d72671f8bfa12`.
+  They are retained but not substituted into the matched coupling pilot.
+
+  Slurm step `723325.7` now runs two 1,000-update progressive-coupling seeds
+  on the reserved two-H100 node with only two CPUs per GPU. Both start at
+  immutable data position 20,000, use 100 exact-state warmup updates, ramp
+  for 700 updates, and finish with 200 fully autonomous updates. Outputs are
+  `train/ettr_progressive_seed1_from_c5k_r5k_q20k_u1000_68c8780_r1`
+  and the corresponding seed-2 directory. Promote only if both remain finite
+  and their separately rerun 32-batch autonomous assembly reports improve
+  WORLD and COMMAND causal margins plus paired total loss. The corrected
+  production reactor continuations remain active near data positions
+  `10,850--10,950`; do not substitute incomplete weights.
+
+  Decision:
+  `detached_motor_rejected_output_not_sole_bottleneck_progressive_self_state_coupling_is_next_bounded_two_seed_gate`.
