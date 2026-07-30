@@ -1,5 +1,5 @@
 #!/bin/bash
-# Assemble a fresh immutable main tree from primary and hash-bound recovery
+# Assemble a fresh immutable materialization tree from primary and hash-bound recovery
 # worker outputs. This job is CPU-only and never mutates either source tree.
 #SBATCH -J ettr-v3-assemble
 #SBATCH -p normal
@@ -22,7 +22,7 @@ BASE=${BASE:-/lustre/fs1/home/sa305415/shohin}
 PY=${PY:-$BASE/miniforge3/bin/python}
 RUNTIME_ROOT=${RUNTIME_ROOT:?set the exact immutable assembly runtime}
 SOURCE_ROOT=${SOURCE_ROOT:?set the exact frozen materializer source root}
-TASK_MANIFEST=${TASK_MANIFEST:?set the immutable main task manifest}
+TASK_MANIFEST=${TASK_MANIFEST:?set the immutable task manifest}
 PRIMARY_OUTPUT_ROOT=${PRIMARY_OUTPUT_ROOT:?set the original output root}
 PRIMARY_REPORTS_ROOT=${PRIMARY_REPORTS_ROOT:?set the original reports root}
 RECOVERY_BASE=${RECOVERY_BASE:?set the completed recovery root}
@@ -34,6 +34,7 @@ EXECUTION_SOURCE_COMMIT=${EXECUTION_SOURCE_COMMIT:?set the assembly source commi
 ASSEMBLY_SHA256=${ASSEMBLY_SHA256:?set the assembly source SHA-256}
 ADAPTER_SOURCE_COMMIT=${ADAPTER_SOURCE_COMMIT:?set the adapter source commit}
 ADAPTER_SHA256=${ADAPTER_SHA256:?set the adapter source SHA-256}
+RECOVERY_LAYOUT=${RECOVERY_LAYOUT:-zero-padded-output}
 ASSEMBLER=$RUNTIME_ROOT/assemble_ettr_il_v3_materialization_recovery.py
 
 for path in \
@@ -72,7 +73,8 @@ if [[ ! "$EXECUTION_SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ \
   || ! "$ASSEMBLY_SHA256" =~ ^[0-9a-f]{64}$ \
   || ! "$ADAPTER_SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ \
   || ! "$ADAPTER_SHA256" =~ ^[0-9a-f]{64}$ \
-  || ! "$RECOVERY_INDICES" =~ ^[0-9]+(:[0-9]+)*$ ]]; then
+  || ! "$RECOVERY_INDICES" =~ ^[0-9]+(:[0-9]+)*$ \
+  || ! "$RECOVERY_LAYOUT" =~ ^(zero-padded-output|plain-corpus)$ ]]; then
   echo "[ettr-assembly] scalar contract differs" >&2
   exit 2
 fi
@@ -82,12 +84,19 @@ printf '%s  %s\n' "$ASSEMBLY_SHA256" "$ASSEMBLER" | sha256sum -c -
 arguments=()
 IFS=':' read -r -a recovery_indices <<<"$RECOVERY_INDICES"
 for index in "${recovery_indices[@]}"; do
-  task_root="$RECOVERY_BASE/task-$(printf '%05d' "$index")"
-  [[ -d "$task_root/output" && -d "$task_root/reports" ]] || {
+  if [[ "$RECOVERY_LAYOUT" == "zero-padded-output" ]]; then
+    task_root="$RECOVERY_BASE/task-$(printf '%05d' "$index")"
+    task_output="$task_root/output"
+  else
+    task_root="$RECOVERY_BASE/task-$index"
+    task_output="$task_root/corpus"
+  fi
+  task_reports="$task_root/reports"
+  [[ -d "$task_output" && -d "$task_reports" ]] || {
     echo "[ettr-assembly] recovery task is incomplete: $index" >&2
     exit 3
   }
-  arguments+=(--recovery "$index|$task_root/output|$task_root/reports")
+  arguments+=(--recovery "$index|$task_output|$task_reports")
 done
 
 export PYTHONPATH="$RUNTIME_ROOT:$SOURCE_ROOT/pipeline"

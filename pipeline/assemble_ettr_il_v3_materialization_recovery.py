@@ -15,7 +15,10 @@ from typing import Mapping, Sequence
 
 import materialize_ettr_il_v3_corpus as original
 
-from accelerate_ettr_il_v3_materialization import ADAPTER_SCHEMA
+from accelerate_ettr_il_v3_materialization import (
+    ADAPTER_SCHEMA,
+    CONFIRMATION_ADAPTER_SCHEMA,
+)
 
 
 ASSEMBLY_SCHEMA = "r12-ettr-il-v3-materialization-recovery-assembly-v1"
@@ -240,8 +243,9 @@ def assemble_recovery(
         raise RecoveryAssemblyError("assembly destination already exists")
 
     manifest, task_manifest_sha256 = original._load_tasks(task_manifest)
+    role = manifest.get("role")
     tasks = manifest.get("tasks")
-    if manifest.get("role") != "main" or not isinstance(tasks, list):
+    if role not in {"main", "sealed_confirmation"} or not isinstance(tasks, list):
         raise RecoveryAssemblyError("assembly task manifest differs")
     if any(index < 0 or index >= len(tasks) for index in recoveries):
         raise RecoveryAssemblyError("recovery task index differs")
@@ -282,14 +286,21 @@ def assemble_recovery(
                 task_manifest_sha256=task_manifest_sha256,
             )
             if index in recoveries:
-                if report.get("execution_adapter") != {
-                    "schema": ADAPTER_SCHEMA,
+                expected_adapter: dict[str, object] = {
+                    "schema": (
+                        ADAPTER_SCHEMA
+                        if role == "main"
+                        else CONFIRMATION_ADAPTER_SCHEMA
+                    ),
                     "source_commit": expected_adapter_source_commit,
                     "source_sha256": expected_adapter_sha256,
                     "workers": report.get("execution_adapter", {}).get("workers")
                     if isinstance(report.get("execution_adapter"), dict)
                     else None,
-                }:
+                }
+                if role == "sealed_confirmation":
+                    expected_adapter["role"] = role
+                if report.get("execution_adapter") != expected_adapter:
                     raise RecoveryAssemblyError(
                         "recovery execution adapter differs"
                     )
@@ -334,12 +345,17 @@ def assemble_recovery(
                 "sha256": execution_code_sha256,
             },
             "expected_adapter": {
-                "schema": ADAPTER_SCHEMA,
+                "schema": (
+                    ADAPTER_SCHEMA
+                    if role == "main"
+                    else CONFIRMATION_ADAPTER_SCHEMA
+                ),
                 "source_commit": expected_adapter_source_commit,
                 "source_sha256": expected_adapter_sha256,
             },
             "protocol": original.PROTOCOL,
             "replacement_indices": replacements,
+            "role": role,
             "schema": ASSEMBLY_SCHEMA,
             "shards": descriptors,
             "status": "pass",

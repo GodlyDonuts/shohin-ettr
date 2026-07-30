@@ -33,7 +33,12 @@ JOB = (
 )
 
 
-def _fixture(tmp_path: Path, monkeypatch):
+def _fixture(
+    tmp_path: Path,
+    monkeypatch,
+    *,
+    role: str = "main",
+):
     tokenizer = tmp_path / "tokenizer.json"
     tokenizer.write_bytes(DEFAULT_TOKENIZER_PATH.read_bytes())
     monkeypatch.setattr(
@@ -41,7 +46,11 @@ def _fixture(tmp_path: Path, monkeypatch):
         "DEFAULT_TOKENIZER_PATH",
         tmp_path / "developer-default-does-not-exist.json",
     )
-    selected = _selected_root(tmp_path)
+    selected = _selected_root(
+        tmp_path,
+        role=role,
+        split="train" if role == "main" else "confirmation",
+    )
     source_root = Path(__file__).parent.parent
     freeze_value = build_freeze(
         source_root,
@@ -63,6 +72,11 @@ def _fixture(tmp_path: Path, monkeypatch):
     recovery_output = tmp_path / "recovery-output"
     recovery_reports = tmp_path / "recovery-reports"
     adapter_sha256 = hashlib.sha256(ADAPTER.read_bytes()).hexdigest()
+    confirmation_key = None
+    if role == "sealed_confirmation":
+        confirmation_key = tmp_path / "confirmation.key"
+        confirmation_key.write_bytes(b"k" * 32)
+        confirmation_key.chmod(0o400)
     materialize_task_parallel(
         tasks,
         selected,
@@ -76,6 +90,7 @@ def _fixture(tmp_path: Path, monkeypatch):
         execution_source_commit="e" * 40,
         execution_code_sha256=adapter_sha256,
         execution_code=ADAPTER,
+        confirmation_key_file=confirmation_key,
     )
     return (
         tokenizer,
@@ -121,6 +136,7 @@ def test_recovery_assembly_is_read_only_and_passes_global_audit(
     )
     assert receipt["schema"] == ASSEMBLY_SCHEMA
     assert receipt["replacement_indices"] == [0]
+    assert receipt["role"] == "main"
     for path in (*output.rglob("*"), *reports.rglob("*"), receipt_path):
         assert not path.is_symlink()
         if path.is_file():
@@ -136,6 +152,54 @@ def test_recovery_assembly_is_read_only_and_passes_global_audit(
         tmp_path / "audit.json",
     )
     assert audit["status"] == "pass"
+    assert audit["core_rows"] == 1
+
+
+def test_confirmation_recovery_assembly_passes_global_audit(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    (
+        tokenizer,
+        source_root,
+        freeze,
+        tasks,
+        recovery_output,
+        recovery_reports,
+        adapter_sha256,
+    ) = _fixture(tmp_path, monkeypatch, role="sealed_confirmation")
+    assembly_sha256 = hashlib.sha256(ASSEMBLER.read_bytes()).hexdigest()
+    output = tmp_path / "assembled-output"
+    reports = tmp_path / "assembled-reports"
+    receipt_path = tmp_path / "assembly.json"
+    receipt = assemble_recovery(
+        tasks,
+        tmp_path / "unused-primary-output",
+        tmp_path / "unused-primary-reports",
+        output,
+        reports,
+        receipt_path,
+        {0: (recovery_output, recovery_reports)},
+        execution_source_commit="f" * 40,
+        execution_code_sha256=assembly_sha256,
+        expected_adapter_source_commit="e" * 40,
+        expected_adapter_sha256=adapter_sha256,
+        execution_code=ASSEMBLER,
+    )
+    assert receipt["schema"] == ASSEMBLY_SCHEMA
+    assert receipt["role"] == "sealed_confirmation"
+    assert receipt["replacement_indices"] == [0]
+    audit = audit_materialization(
+        tasks,
+        output,
+        reports,
+        tokenizer,
+        source_root,
+        freeze,
+        tmp_path / "audit.json",
+    )
+    assert audit["status"] == "pass"
+    assert audit["role"] == "sealed_confirmation"
     assert audit["core_rows"] == 1
 
 
@@ -179,6 +243,7 @@ def test_recovery_assembly_job_is_hash_bound_cpu_only_and_fresh() -> None:
     assert "SHA256SUMS" in text
     assert "--execution-code-sha256" in text
     assert "--expected-adapter-sha256" in text
+    assert "RECOVERY_LAYOUT" in text
     assert '|| -e "$OUTPUT_ROOT" || -L "$OUTPUT_ROOT"' in text
     assert '|| -e "$REPORTS_ROOT" || -L "$REPORTS_ROOT"' in text
     assert '|| -e "$RECEIPT" || -L "$RECEIPT"' in text
