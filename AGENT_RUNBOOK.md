@@ -18547,3 +18547,77 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finepdf_policy_arms_verified_sealed_quarantined_review_packets_queued_ettr_v2_independent_audit_live_no_optimizer`.
+
+- **2026-07-30 00:59 EDT** -- **FinePDF now has a reviewer-blind matched
+  semantic gate; policy replay shows strong but imperfect separation, so both
+  arms remain outside training.**
+
+  Initial review jobs `756081/756083` failed safely in nine seconds before
+  writing packets. Although launched from the sealed r3 job file, that wrapper
+  changed into the mutable shared checkout and imported its older verifier.
+  Private commit `3d56be2` adds an explicit immutable `CODE_ROOT`, absolute
+  builder path, and `PYTHONPATH` binding plus a regression test. Focused tests
+  pass **19/19**; shell syntax, Ruff, and byte compilation pass. New no-replace
+  review runtime
+  `scratchpad/shohin_source_review_runtime_3d56be2_r1` contains **906** files,
+  passes its full inventory and a thread-bounded out-of-tree import, and is
+  sealed. Its inventory SHA-256 is
+  `5582ab85d52e056b6a8d3a1b822555913f59187c01a9bf850121ffba6325271f`
+  and archive SHA-256 is
+  `b381dbdfa29660d637ce4ac5ec25488c48a071d128e16d07925a99c4a7835088`.
+
+  Corrected jobs `756086/756088` completed in 3m01s and 2m38s. Each first
+  reverified the exact v3 corpus and all external inputs, then reopened the
+  pinned Parquet rows and wrote a mode-0600 private 1,000-document packet plus
+  a text-free receipt. Core covers **1,000 rows / 963 domains**, packet
+  SHA-256
+  `3ac95095261fd68fa1ee07fe5f1900d50b5e9dfd230d18d31e3dc1a7a97a237f`,
+  receipt SHA-256
+  `332e4ae3020006e36573da5f9fef8f9d5972d4c60e55624b6042ea23bafaf5af`.
+  Residual covers **1,000 rows / 973 domains**, packet SHA-256
+  `4556063a8caa7b09c06360c2e11fb0c0d44ca78e7655b8ec74c9a40a4fd0d497`,
+  receipt SHA-256
+  `b653e83605741d1da9974670126eff62dadde58bf394ea3b67317bece3cfdd61`.
+
+  Exact policy replay over the larger packets finds the core arm is
+  **952 core / 47 residual / 1 reject**, while the residual arm is
+  **1,000/1,000 residual**. Core replay-report SHA-256 is
+  `b853b770d238cd94b1e1366d53763ffa64a48019a641af2b36880ac2fba95645`;
+  residual report SHA-256 is
+  `f9865552ce9e3f0e39f8c39400b0f0cd1cff85967c64325db340d649ab840c1c`.
+  Direct preliminary reading agrees that core is substantially denser, but
+  also confirms occasional answer-key/download aggregation and low-density
+  newsletter material. The 48 replay exceptions are priority review cases;
+  no broader regex is authorized from a handful of examples because it could
+  remove useful technical prose.
+
+  Private commit `07cc9b8` adds a deterministic reviewer-blind comparison
+  builder. It verifies every source packet receipt, refuses cross-arm identity
+  overlap, removes arm, policy, URL, and classifier metadata from the reviewer
+  view, matches token-length strata exactly, separates the decoding key, and
+  writes no-replace private artifacts plus a text-free receipt. The surrounding
+  review, adjudication, tokenizer, verifier, residualization, and holdout suite
+  passes **77/77**; Ruff and byte compilation pass. One-file sealed runtime
+  `scratchpad/shohin_blinded_review_runtime_07cc9b8_r1` has inventory SHA-256
+  `eac046470008f4e62e4d3bf273b1172e7fbe7cbe5f4fe9bdf09ff10435a0fbd2`
+  and archive SHA-256
+  `f90cd847032e29cc6a29ad82836d5c1e144e9fdc8c77f7ee23f3c78164d0e809`.
+  The resulting mode-0600 blind packet contains **200 rows: 100 per arm**,
+  identically allocated as 63 <=2,048-token, 28 <=8,192-token, 8
+  <=32,768-token, and 1 longer document per arm. Packet SHA-256 is
+  `ccf5eeddd5b2c5e19ecd34ccb3f839e6104d276a3a40d85071bdfde0c0ef8d36`;
+  separate private-key SHA-256 is
+  `93cd0822ed16abdfc66f3172c3a87c7999a5764790087b12c6b38ce180d33ff2`;
+  text-free receipt SHA-256 is
+  `2d14be987b7fd85a7e07e8f729bd52e656da80131265dd5c64718d266760e8ae`.
+  Only a complete human label set may satisfy the semantic gate.
+
+  ETTR v2 remains compute-bound, not stalled. At 00:55 EDT main audit `756063`
+  had 1h12m wall time with matching CPU time and increasing verified reads.
+  The three final Horn confirmation cells had 2h49m wall time with matching
+  CPU time, 27/30 reports remained sealed, and no error output appeared.
+  Downstream confirmation audit, separation, packet-context audit, release,
+  transfer, and optimizer remain blocked as designed.
+
+  Decision:
+  `finepdf_blinded_semantic_gate_ready_core_stronger_not_pristine_human_labels_required_ettr_v2_audits_live_no_optimizer`.
