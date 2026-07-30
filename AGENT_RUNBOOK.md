@@ -18837,3 +18837,58 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `confirmation_parallel_recovery_and_fresh_assembly_pass_nine_h100s_ready_three_world2_ettr_lanes_armed_audits_still_block_optimizer`.
+
+- **2026-07-30 03:27 EDT** -- **Six independent H100 reservations form a
+  mechanically valid high-throughput ETTR world, while an exact world-two
+  control and independent world-two seed preserve learning interpretability.**
+
+  Federated canary jobs `723330`--`723335` joined H100 PCIe nodes
+  `evc23,evc42,evc47,evc35,evc37,evc45` into one world-size-six NCCL run.
+  The report passed with six distinct rank-local batches, identical initial
+  parameter SHA-256 on every rank, identical final parameter SHA-256
+  `311196dd6ad240d4958c83c95e02cb2f66836d252348706b346610d4eedaac74`
+  on every rank, and the protected step-300k checkpoint unchanged at
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
+  Its maximum-rank compiled-update timings were 151.033s cold and **0.330942s
+  steady**. Compared with the prior world-two `723335,723336` result at
+  0.308239s steady, world six is only 7.4% slower per optimizer update while
+  consuming three times as many rank-local batches: approximately **18.13
+  rank-batches/s versus 6.49**, a measured **2.79x data-throughput gain**.
+  Report-file SHA-256 is
+  `d629289a05361211b18690bba0adc2ee8fd690e3c2a1a4d6d9723d19070757d7`.
+  This accepts world six for a separate scale arm; it does not erase that its
+  accumulation-one update contains 192 ETTR rows versus 64 rows at world two.
+
+  A tenth healthy H100, job `723337` on `evc50`, started while the scale test
+  ran. Jobs `723336,723337` then passed a fresh world-two canary at 422.417s
+  cold and 0.341223s steady with identical final parameters and unchanged
+  protected checkpoint. Its report-file SHA-256 is
+  `a532c56c3c59e3abee2063df26b203a709af1a38c5e5612381e83ee87f4fdaa9`.
+  The optimizer layout is now fail-closed behind the verified release:
+  same-node `evc24` runs the exact world-two architecture/data-seed control;
+  `723330`--`723335` run the same-seed world-six scale arm; and
+  `723336,723337` run an independent world-two architecture/data seed.
+  Every arm stops after 100 updates unless its own paired development
+  evaluation reports `strict_learning_signal=true`; only passing arms can
+  continue to 500 and 2,000 updates. This uses all ten healthy allocated
+  H100s without conflating larger global batch with proven reasoning.
+
+  On Stokes, accelerated confirmation audit `756315` passed the unchanged
+  full auditor with role `sealed_confirmation`; its receipt-file SHA-256 is
+  `807429390eaf5c198b7dbcba3ab3b504cec914b139f903f3432d0efbec7d10d5`.
+  The obsolete original serial writers `756027_2`--`756027_4` were canceled
+  only after this passing replacement audit. Packet-context audit `756314`
+  independently scanned 56,250 main cores / 3,600,000 rows and passed with
+  zero cross-owner components, zero cross-owner contexts, and zero target
+  conflicts. Its canonical report SHA-256 is
+  `62f0cebd73a26d2fd17b1222978a017a72549b8a7c29af9e36f349d32466e756`;
+  report-file SHA-256 is
+  `bdb893103ecd5cf2a118cd6cccd5c01cf5ed44caee5bc32a9bd57370e8ea0a97`.
+  Main/confirmation separation `756317` is the sole remaining data audit.
+  Immutable release builder `756318` is dependency-held after it, and
+  independent release verifier `756319` is dependency-held after the builder.
+  Newton transfer and every optimizer still require the exact passing
+  verification receipt.
+
+  Decision:
+  `world6_passes_at_2_79x_world2_data_rate_ten_h100_control_scale_seed_layout_armed_final_separation_still_blocks_optimizer`.
