@@ -25,6 +25,11 @@ def test_federated_canary_fails_one_step_without_canceling_reservations() -> Non
     assert "scancel" not in SCRIPT
 
 
+def test_federated_canary_allows_two_allocations_on_one_dual_h100_host() -> None:
+    assert "seen_jobs" in SCRIPT
+    assert "seen_nodes" not in SCRIPT
+
+
 def test_federated_canary_is_release_blind_and_hash_bound() -> None:
     assert "SOURCE_COMMIT" in SCRIPT
     assert "SHA256SUMS" in SCRIPT

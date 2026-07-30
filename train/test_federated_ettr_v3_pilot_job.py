@@ -32,3 +32,8 @@ def test_federated_pilot_failure_keeps_reservations_alive() -> None:
     assert "kill \"$pid\"" in SCRIPT
     assert "reservations remain alive" in SCRIPT
     assert "scancel" not in SCRIPT
+
+
+def test_federated_pilot_allows_two_jobs_on_one_dual_h100_host() -> None:
+    assert "seen_jobs" in SCRIPT
+    assert "seen_nodes" not in SCRIPT

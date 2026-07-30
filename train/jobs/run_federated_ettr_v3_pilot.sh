@@ -102,7 +102,6 @@ if (( world_size < 2 || world_size > 20 )); then
   exit 2
 fi
 declare -A seen_jobs=()
-declare -A seen_nodes=()
 nodes=()
 for job in "${job_ids[@]}"; do
   if [[ ! "$job" =~ ^[0-9]+$ || -n "${seen_jobs[$job]:-}" ]]; then
@@ -118,12 +117,10 @@ for job in "${job_ids[@]}"; do
     || "$name" != shohin-1h100-* \
     || "$node_count" != 1 \
     || -z "$node" \
-    || "$node" == *"["* \
-    || -n "${seen_nodes[$node]:-}" ]]; then
+    || "$node" == *"["* ]]; then
     echo "federated ETTR reservation geometry differs: $job" >&2
     exit 2
   fi
-  seen_nodes[$node]=1
   nodes+=("$node")
 done
 
