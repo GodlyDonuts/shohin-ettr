@@ -52944,3 +52944,30 @@ instruction control uses the hash-frozen 1,213,830-row V9 broad corpus with a
 retaining or improving source-deleted WORLD and COMMAND causality relative to
 its exact native parent. Training loss, formatting, or a one-seed result cannot
 promote it.
+
+## 2026-07-31 Contract Repair And Owner-Clipped Replication
+
+The first owner-clipped pair failed before update zero because its newly
+recorded train-step dataclass contained a `torch.dtype` that the canonical
+JSON serializer could not encode. This was a systems failure, not a model
+result. It was useful because it also exposed that the original native run
+contract did not explicitly carry the ETTR objective geometry/weights or the
+ordinary-language step configuration.
+
+Commit `fd78cbd65dd72cbd0b13b194b72020f475f3451e` makes all of those
+settings first-class hash-bound artifact fields and serializes dtypes
+canonically. The corrected immutable runtime is
+`shohin_ettr_joint_runtime_fd78cbd_r2`, with `SHA256SUMS` SHA-256
+`4e389d08a1ed4a544beaa5ec24b9805ebd853cbbfc79e15815ff4bf3e33093f4`.
+The owner-clipped replicas are `723980/723983`; their causal evaluators and
+public boards are `723981--723985`. The corrected parent-bound three-stream
+jobs are `723986/723989`, followed by causal and public jobs
+`723987/723988` and `723990/723991`.
+
+The corrected seed-1 owner run passed update zero and immediately measured
+base/architecture ETTR preclip norms of `239/2,240`. This directly supports
+the owner-clipping control: the two parameter owners inhabit sharply
+different gradient scales, so a single global norm cap can allocate nearly
+all effective update magnitude to the ETTR machinery. This is not a
+capability result; it is the optimizer-level causal hypothesis now under
+matched two-seed test.

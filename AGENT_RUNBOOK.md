@@ -20804,3 +20804,57 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finish_native_two_seed_causal_measurement_then_test_one_optimizer_raw_instruction_ettr_coadaptation_for_joint_reasoning_and_public_capability`.
+
+- **2026-07-31 05:50--06:05 EDT** -- **A pre-update artifact-contract
+  failure was caught, repaired, and replaced without touching any live native
+  writer.**
+
+  The four original native warm writers `723946--723949` remain healthy.
+  At the 05:51 audit, warm `95/5` seeds 1/2 had reached updates
+  `1,967/1,934` and warm `85/15` seeds 1/2 had reached `884/857`.
+  The `85/15` pair shows real optimization movement but no causal result yet:
+  its first-to-last 100-update mean ETTR total loss moved
+  `35.5083 -> 26.4406` and `33.7599 -> 24.0554`, while mean language loss
+  moved only `1.4562 -> 1.6425` and `1.5280 -> 1.5475`.
+  Warm `95/5` seed 1 remains unstable, with ETTR preclip norm now observed as
+  high as `51,968`; seed 2 is less extreme. No arm is promoted before its
+  source-deleted evaluator.
+
+  Owner-clipped jobs `723964/723967` reached an H100 and failed closed before
+  update zero. Their run-contract serializer attempted to encode
+  `torch.bfloat16` directly after the prior owner-telemetry patch. Both
+  produced only incomplete output directories and no model artifact. This
+  exposed a second reproducibility omission: the old run contract did not
+  explicitly bind the objective configuration, objective weights, or
+  ordinary-language step configuration.
+
+  Private commit
+  `fd78cbd65dd72cbd0b13b194b72020f475f3451e` repairs both issues.
+  Every dataclass configuration is now serialized through an exact JSON-safe
+  dtype receipt; the contract explicitly binds the language step, ETTR step,
+  complete objective geometry, gradient cap, and every objective weight.
+  Focused verification is **114/114** passing with clean Ruff, byte
+  compilation, Bash syntax, and diff checks. Immutable replacement runtime
+  `scratchpad/shohin_ettr_joint_runtime_fd78cbd_r2` contains 3,354 measured
+  files and has `SHA256SUMS` SHA-256
+  `4e389d08a1ed4a544beaa5ec24b9805ebd853cbbfc79e15815ff4bf3e33093f4`.
+  The attempted `fd78cbd_r1` directory is invalid because Newton's old tar
+  lacks `--zstd`; it contains no extracted source and must never be used.
+  The source archive SHA-256 is
+  `aedf234a049c2123e77801c6c60c2438e677ac52e61936264972f63228db8f8b`.
+
+  Corrected matched owner-clipped jobs are `723980/723983`, with causal
+  evaluators `723981/723984` and public boards `723982/723985`. Seed 1
+  `723980` is live on `evc48` and passed update zero; seed 2 is pending
+  resources. Its first logged ETTR update reports separate preclip base and
+  architecture norms `239/2,240`, confirming that owner-wise clipping is a
+  material optimizer intervention rather than telemetry-only.
+
+  The old pending three-stream chain `723970--723975` was canceled before
+  execution and replaced under the corrected runtime. New parent-bound
+  three-stream jobs are `723986/723989`, causal evaluators
+  `723987/723990`, and public boards `723988/723991`. They remain
+  `afterok` the exact running warm-`85/15` parents `723948/723949`.
+
+  Decision:
+  `preserve_the_live_native_writers_replace_only_preupdate_failures_and_require_self_contained_objective_contracts_for_every_successor_artifact`.
