@@ -150,6 +150,11 @@ class ETTRObjectiveConfig:
     probability_epsilon: float = 1e-6
     nll_gradient_cap: float | None = None
     query_binding_margin: float = 1.0
+    query_binding_reduction: str = "mixed-mean"
+    query_binding_classification_weight: float = 1.0
+    query_binding_effect_weight: float = 1.0
+    query_binding_invariance_weight: float = 1.0
+    query_binding_risk_temperature: float = 1.0
     causal_lm_shift: int = 1
     require_equivariance_pairs: bool = True
 
@@ -205,6 +210,46 @@ class ETTRObjectiveConfig:
         ):
             raise ETTRObjectiveError(
                 "query-binding margin must be a positive finite float"
+            )
+        if self.query_binding_reduction not in (
+            "mixed-mean",
+            "balanced-logmeanexp",
+        ):
+            raise ETTRObjectiveError(
+                "query-binding reduction differs"
+            )
+        for name in (
+            "query_binding_classification_weight",
+            "query_binding_effect_weight",
+            "query_binding_invariance_weight",
+        ):
+            value = getattr(self, name)
+            if (
+                not isinstance(value, float)
+                or not math.isfinite(value)
+                or value < 0.0
+            ):
+                raise ETTRObjectiveError(
+                    "query-binding weights must be finite nonnegative floats"
+                )
+        if not any(
+            getattr(self, name) > 0.0
+            for name in (
+                "query_binding_classification_weight",
+                "query_binding_effect_weight",
+                "query_binding_invariance_weight",
+            )
+        ):
+            raise ETTRObjectiveError(
+                "at least one query-binding weight must be positive"
+            )
+        if (
+            not isinstance(self.query_binding_risk_temperature, float)
+            or not math.isfinite(self.query_binding_risk_temperature)
+            or self.query_binding_risk_temperature <= 0.0
+        ):
+            raise ETTRObjectiveError(
+                "query-binding risk temperature must be positive"
             )
         if self.causal_lm_shift != 1:
             raise ETTRObjectiveError(
@@ -1604,6 +1649,11 @@ def _causal_query_binding_loss(
     pair: ETTRCausalQueryPair,
     *,
     margin: float,
+    reduction: str = "mixed-mean",
+    classification_weight: float = 1.0,
+    effect_weight: float = 1.0,
+    invariance_weight: float = 1.0,
+    risk_temperature: float = 1.0,
 ) -> tuple[
     torch.Tensor,
     torch.Tensor,
@@ -1660,7 +1710,40 @@ def _causal_query_binding_loss(
             * (foil_log_probabilities - mean_log_probabilities)
         ).sum(dim=-1)
     )
-    structural = torch.where(effect_mask, contrast, invariance).mean()
+    if reduction == "mixed-mean":
+        structural = torch.where(
+            effect_mask,
+            effect_weight * contrast,
+            invariance_weight * invariance,
+        ).mean()
+        query_binding = classification_weight * classification + structural
+    elif reduction == "balanced-logmeanexp":
+        effect_count = effect_mask.sum()
+        invariance_count = (~effect_mask).sum()
+        _async_assert(
+            effect_count.gt(0) & invariance_count.gt(0),
+            "balanced query-binding requires effect and invariance support",
+        )
+        finite_floor = torch.finfo(contrast.dtype).min
+        effect_values = torch.where(
+            effect_mask,
+            contrast / risk_temperature,
+            torch.full_like(contrast, finite_floor),
+        )
+        effect_risk = risk_temperature * (
+            torch.logsumexp(effect_values, dim=0)
+            - effect_count.to(contrast.dtype).log()
+        )
+        invariance_mean = (
+            invariance * (~effect_mask).to(invariance.dtype)
+        ).sum() / invariance_count.to(invariance.dtype)
+        query_binding = (
+            classification_weight * classification
+            + effect_weight * effect_risk
+            + invariance_weight * invariance_mean
+        )
+    else:
+        raise ETTRObjectiveError("query-binding reduction differs")
     classification_support = torch.ones_like(
         pair.correct_target,
         dtype=torch.int64,
@@ -1671,7 +1754,7 @@ def _causal_query_binding_loss(
         effect_mask & difference_in_differences.ge(margin)
     )
     return (
-        classification + structural,
+        query_binding,
         classification_support,
         contrast_support,
         invariance_support,
@@ -2088,6 +2171,17 @@ class ETTRCompositeObjective(nn.Module):
         ) = _causal_query_binding_loss(
             batch.world_query_binding,
             margin=self.config.query_binding_margin,
+            reduction=self.config.query_binding_reduction,
+            classification_weight=(
+                self.config.query_binding_classification_weight
+            ),
+            effect_weight=self.config.query_binding_effect_weight,
+            invariance_weight=(
+                self.config.query_binding_invariance_weight
+            ),
+            risk_temperature=(
+                self.config.query_binding_risk_temperature
+            ),
         )
         (
             command_query_binding,
@@ -2098,6 +2192,17 @@ class ETTRCompositeObjective(nn.Module):
         ) = _causal_query_binding_loss(
             batch.command_query_binding,
             margin=self.config.query_binding_margin,
+            reduction=self.config.query_binding_reduction,
+            classification_weight=(
+                self.config.query_binding_classification_weight
+            ),
+            effect_weight=self.config.query_binding_effect_weight,
+            invariance_weight=(
+                self.config.query_binding_invariance_weight
+            ),
+            risk_temperature=(
+                self.config.query_binding_risk_temperature
+            ),
         )
         transaction, transaction_decisions = _transaction_loss(
             batch,

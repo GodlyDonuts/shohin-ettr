@@ -26,6 +26,7 @@ from ettr_objectives import (
     ETTRTransactionTargets,
     ETTRVariantAlignment,
     _binary_nll,
+    _causal_query_binding_loss,
     _categorical_nll,
 )
 
@@ -1116,6 +1117,53 @@ def test_causal_query_pair_and_margin_validation_fail_closed() -> None:
         replace(pair, correct_logits=bad_logits)
     with pytest.raises(ETTRObjectiveError, match="query-binding margin"):
         replace(_config(), query_binding_margin=0.0)
+    with pytest.raises(ETTRObjectiveError, match="reduction differs"):
+        replace(_config(), query_binding_reduction="unknown")
+    with pytest.raises(ETTRObjectiveError, match="weights"):
+        replace(_config(), query_binding_effect_weight=-1.0)
+    with pytest.raises(ETTRObjectiveError, match="risk temperature"):
+        replace(_config(), query_binding_risk_temperature=0.0)
+
+
+def test_balanced_query_binding_emphasizes_hard_effect_pairs() -> None:
+    pair = ETTRCausalQueryPair(
+        correct_logits=torch.tensor(
+            [
+                [4.0, 0.0, -2.0],
+                [0.1, 0.0, -2.0],
+                [2.0, 0.0, -2.0],
+                [2.0, 0.0, -2.0],
+            ]
+        ),
+        foil_logits=torch.tensor(
+            [
+                [0.0, 4.0, -2.0],
+                [0.0, 0.1, -2.0],
+                [2.0, 0.0, -2.0],
+                [2.0, 0.0, -2.0],
+            ]
+        ),
+        correct_target=torch.tensor([0, 0, 0, 0]),
+        foil_target=torch.tensor([1, 1, 0, 0]),
+    )
+    mixed = _causal_query_binding_loss(
+        pair,
+        margin=1.0,
+    )[0]
+    balanced = _causal_query_binding_loss(
+        pair,
+        margin=1.0,
+        reduction="balanced-logmeanexp",
+        classification_weight=0.0,
+        effect_weight=1.0,
+        invariance_weight=0.0,
+        risk_temperature=0.1,
+    )[0]
+    easy_effect = torch.nn.functional.softplus(torch.tensor(1.0 - 8.0))
+    hard_effect = torch.nn.functional.softplus(torch.tensor(1.0 - 0.2))
+    assert balanced > 0.9 * hard_effect
+    assert balanced > easy_effect
+    assert torch.isfinite(mixed)
 
 
 def test_commit_halt_loss_checks_prefix_recurrence_and_labels() -> None:

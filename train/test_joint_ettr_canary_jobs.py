@@ -66,6 +66,11 @@ def test_tri_stream_canary_is_parent_bound_and_code_retaining() -> None:
     assert "train_ettr_joint_instruction_canary.py" in TRI
     assert "--instruction-sample-weight code=0.20" in TRI
     assert "--gradient-clip-mode owner" in TRI
+    assert '--query-binding-reduction "$QUERY_BINDING_REDUCTION"' in TRI
+    assert (
+        '--query-binding-risk-temperature '
+        '"$QUERY_BINDING_RISK_TEMPERATURE"' in TRI
+    )
     assert "parent_model=" in TRI
 
 

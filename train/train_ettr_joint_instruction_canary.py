@@ -154,6 +154,31 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--nll-gradient-cap", type=float, default=4.0)
     parser.add_argument("--query-binding-weight", type=float, default=1.0)
     parser.add_argument(
+        "--query-binding-reduction",
+        choices=("mixed-mean", "balanced-logmeanexp"),
+        default="mixed-mean",
+    )
+    parser.add_argument(
+        "--query-binding-classification-weight",
+        type=float,
+        default=1.0,
+    )
+    parser.add_argument(
+        "--query-binding-effect-weight",
+        type=float,
+        default=1.0,
+    )
+    parser.add_argument(
+        "--query-binding-invariance-weight",
+        type=float,
+        default=1.0,
+    )
+    parser.add_argument(
+        "--query-binding-risk-temperature",
+        type=float,
+        default=1.0,
+    )
+    parser.add_argument(
         "--gradient-clip-mode",
         choices=("global", "owner", "component"),
         default="owner",
@@ -198,6 +223,25 @@ def _validate_args(args: argparse.Namespace) -> None:
         )
         < 1
         or not 0 <= args.data_seed < 2**63
+        or not 0.0 < args.query_binding_weight <= 1_000.0
+        or any(
+            not math.isfinite(value) or value < 0.0
+            for value in (
+                args.query_binding_classification_weight,
+                args.query_binding_effect_weight,
+                args.query_binding_invariance_weight,
+            )
+        )
+        or not any(
+            value > 0.0
+            for value in (
+                args.query_binding_classification_weight,
+                args.query_binding_effect_weight,
+                args.query_binding_invariance_weight,
+            )
+        )
+        or not math.isfinite(args.query_binding_risk_temperature)
+        or args.query_binding_risk_temperature <= 0.0
         or args.log_every < 1
     ):
         raise ETTRTriCanaryError("tri-stream canary arguments differ")
@@ -361,6 +405,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     objective_config = ETTRObjectiveConfig(
         vocab_size=model.base.cfg.vocab_size,
         nll_gradient_cap=args.nll_gradient_cap,
+        query_binding_reduction=args.query_binding_reduction,
+        query_binding_classification_weight=(
+            args.query_binding_classification_weight
+        ),
+        query_binding_effect_weight=args.query_binding_effect_weight,
+        query_binding_invariance_weight=(
+            args.query_binding_invariance_weight
+        ),
+        query_binding_risk_temperature=(
+            args.query_binding_risk_temperature
+        ),
     )
     objective_weights = ETTRObjectiveWeights(
         world_query_binding=args.query_binding_weight,

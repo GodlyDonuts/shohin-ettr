@@ -42,6 +42,11 @@ def _args(tmp_path: Path) -> argparse.Namespace:
         architecture_lr_adam=0.0006,
         nll_gradient_cap=4.0,
         query_binding_weight=1.0,
+        query_binding_reduction="mixed-mean",
+        query_binding_classification_weight=1.0,
+        query_binding_effect_weight=1.0,
+        query_binding_invariance_weight=1.0,
+        query_binding_risk_temperature=1.0,
         gradient_clip_mode="owner",
         log_every=1,
     )
@@ -61,5 +66,18 @@ def test_tri_canary_arguments_validate_and_reject_duplicate_groups(
     args = _args(tmp_path)
     _validate_args(args)
     args.instruction_sample_weight = [("math", 0.5), ("math", 0.5)]
+    with pytest.raises(ETTRTriCanaryError, match="arguments differ"):
+        _validate_args(args)
+
+
+def test_tri_canary_rejects_invalid_query_binding_risk(
+    tmp_path: Path,
+) -> None:
+    args = _args(tmp_path)
+    args.query_binding_risk_temperature = 0.0
+    with pytest.raises(ETTRTriCanaryError, match="arguments differ"):
+        _validate_args(args)
+    args = _args(tmp_path)
+    args.query_binding_effect_weight = -1.0
     with pytest.raises(ETTRTriCanaryError, match="arguments differ"):
         _validate_args(args)
