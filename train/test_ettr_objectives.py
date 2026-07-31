@@ -28,6 +28,7 @@ from ettr_objectives import (
     _binary_nll,
     _causal_query_binding_loss,
     _categorical_nll,
+    _class_balanced_categorical_mean,
 )
 
 
@@ -259,7 +260,6 @@ def test_public_target_records_expose_every_collator_shape() -> None:
         SLOTS,
         SLOTS,
     )
-
     transaction = batch.transaction_targets
     for name in (
         "opcode",
@@ -290,6 +290,49 @@ def test_public_target_records_expose_every_collator_shape() -> None:
         SLOTS,
     )
     assert alignment.step_mask.shape == (1, STEPS)
+
+
+def test_class_balanced_categorical_mean_prevents_majority_collapse() -> None:
+    probabilities = torch.tensor(
+        [
+            [0.9, 0.1],
+            [0.9, 0.1],
+            [0.9, 0.1],
+            [0.9, 0.1],
+        ],
+        requires_grad=True,
+    )
+    targets = torch.tensor([0, 0, 0, 1])
+    mask = torch.ones(4, dtype=torch.bool)
+    decision_mean = _categorical_nll(
+        probabilities,
+        targets,
+        mask,
+        epsilon=1e-6,
+        gradient_cap=None,
+    ).mean
+    balanced_mean, present = _class_balanced_categorical_mean(
+        probabilities,
+        targets,
+        mask,
+        epsilon=1e-6,
+        gradient_cap=None,
+    )
+    assert int(present) == 2
+    assert balanced_mean > decision_mean
+    balanced_mean.backward()
+    assert probabilities.grad is not None
+    assert torch.isfinite(probabilities.grad).all()
+
+
+def test_transaction_reduction_is_a_closed_choice() -> None:
+    assert (
+        replace(_config(), transaction_reduction="head-class-balanced")
+        .transaction_reduction
+        == "head-class-balanced"
+    )
+    with pytest.raises(ETTRObjectiveError, match="transaction reduction"):
+        replace(_config(), transaction_reduction="unweighted")
 
 
 def test_token_mask_allows_only_reset_authorized_segment_restarts() -> None:

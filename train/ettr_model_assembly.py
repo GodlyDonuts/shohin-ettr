@@ -121,7 +121,8 @@ def _read_canonical_config(
         "execution_trace_read_scale",
         "open_state_read_floor",
     }
-    integer_keys = expected_keys - float_keys
+    boolean_keys = {"valid_pointer_masks"}
+    integer_keys = expected_keys - float_keys - boolean_keys
     if (
         set(value) != expected_keys
         or any(
@@ -129,6 +130,7 @@ def _read_canonical_config(
             for name in integer_keys
         )
         or any(not isinstance(value[name], float) for name in float_keys)
+        or any(not isinstance(value[name], bool) for name in boolean_keys)
     ):
         raise ETTRModelAssemblyError(
             "TheoryReactor configuration fields differ"

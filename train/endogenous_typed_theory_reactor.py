@@ -49,6 +49,7 @@ class TheoryReactorConfig:
     stage_after_block: int = 19
     open_state_read_floor: float = 0.0
     execution_trace_read_scale: float = 0.0
+    valid_pointer_masks: bool = False
     parameter_cap: int = SYSTEM_PARAMETER_CAP
 
     def validate(self, *, n_layer: int | None = None) -> None:
@@ -95,6 +96,8 @@ class TheoryReactorConfig:
             raise TheoryReactorError(
                 "execution-trace read scale must be between zero and four"
             )
+        if not isinstance(self.valid_pointer_masks, bool):
+            raise TheoryReactorError("valid-pointer mask flag must be boolean")
 
 
 @dataclass(frozen=True, slots=True)
@@ -565,6 +568,7 @@ class GenericTransactionReactor(nn.Module):
         self.relation_head = nn.Linear(width, config.num_relations)
         self.type_head = nn.Linear(width, config.num_types)
         self.value_head = nn.Linear(width, config.num_value_codes)
+        self.valid_pointer_masks = config.valid_pointer_masks
         self.reset_parameters()
 
     def reset_parameters(self) -> None:
@@ -678,25 +682,33 @@ class GenericTransactionReactor(nn.Module):
         control = self.output_norm(encoded[:, 0])
         encoded_slots = self.output_norm(encoded[:, 1:])
         keys = self.slot_key(encoded_slots)
-        source_probabilities = (
-            torch.einsum(
-                "bw,bsw->bs",
-                self.source_query(control),
-                keys,
-            )
-            .float()
-            .softmax(-1)
-        )
-        target_probabilities = (
-            torch.einsum(
-                "bw,bsw->bs",
-                self.target_query(control),
-                keys,
-            )
-            .float()
-            .softmax(-1)
-        )
         opcode_probabilities = self.opcode_head(control).float().softmax(-1)
+        source_logits = torch.einsum(
+            "bw,bsw->bs",
+            self.source_query(control),
+            keys,
+        ).float()
+        target_logits = torch.einsum(
+            "bw,bsw->bs",
+            self.target_query(control),
+            keys,
+        ).float()
+        if self.valid_pointer_masks:
+            active = state.active.float().clamp(0.0, 1.0)
+            allocate = opcode_probabilities[:, 0:1]
+            active_source = opcode_probabilities[:, 1:6].sum(-1, keepdim=True)
+            source_ignored = opcode_probabilities[:, 6:].sum(-1, keepdim=True)
+            source_validity = (
+                allocate * (1.0 - active)
+                + active_source * active
+                + source_ignored
+            )
+            relational = opcode_probabilities[:, 3:5].sum(-1, keepdim=True)
+            target_validity = relational * active + (1.0 - relational)
+            source_logits = source_logits + source_validity.clamp_min(1e-4).log()
+            target_logits = target_logits + target_validity.clamp_min(1e-4).log()
+        source_probabilities = source_logits.softmax(-1)
+        target_probabilities = target_logits.softmax(-1)
         relation_probabilities = self.relation_head(control).float().softmax(-1)
         type_probabilities = self.type_head(control).float().softmax(-1)
         value_probabilities = self.value_head(control).float().softmax(-1)
@@ -1155,6 +1167,17 @@ class EndogenousTypedTheoryReactorGPT(nn.Module):
         self.config = updated
         self.query_reader.config = updated
         self.query_reader.execution_trace_read_scale = value
+
+    def set_valid_pointer_masks(self, value: bool) -> None:
+        """Constrain transaction pointers to state-valid source/target slots."""
+
+        updated = replace(self.config, valid_pointer_masks=value)
+        updated.validate(n_layer=self.base.cfg.n_layer)
+        self.config = updated
+        self.compiler.config = updated
+        self.reactor.config = updated
+        self.reactor.valid_pointer_masks = value
+        self.query_reader.config = updated
 
     def freeze_base(self) -> None:
         for parameter in self.base.parameters():

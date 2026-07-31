@@ -202,6 +202,12 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default=0.0,
     )
     parser.add_argument(
+        "--transaction-reduction",
+        choices=("decision-mean", "head-class-balanced"),
+        default="decision-mean",
+    )
+    parser.add_argument("--valid-pointer-masks", action="store_true")
+    parser.add_argument(
         "--gradient-clip-mode",
         choices=("global", "owner", "component"),
         default="owner",
@@ -384,6 +390,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     model.set_execution_trace_read_scale(
         args.execution_trace_read_scale
     )
+    model.set_valid_pointer_masks(args.valid_pointer_masks)
     if (
         model.base.cfg.vocab_size != tokenizer.get_vocab_size()
         or general["tokenizer_sha256"]
@@ -455,6 +462,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         query_binding_risk_temperature=(
             args.query_binding_risk_temperature
         ),
+        transaction_reduction=args.transaction_reduction,
     )
     objective_weights = ETTRObjectiveWeights(
         packet=args.packet_weight,

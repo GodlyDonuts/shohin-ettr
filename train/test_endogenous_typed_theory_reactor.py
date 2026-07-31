@@ -205,6 +205,50 @@ def test_post_seal_command_tokens_causally_enter_reactor() -> None:
     assert not torch.equal(first_policy.source, second_policy.source)
 
 
+def test_state_valid_pointer_masks_exclude_impossible_slots() -> None:
+    model = _model().eval()
+    config = model.config
+    active = torch.tensor([[1, 1, 0, 0, 0, 0]], dtype=torch.float32)
+    values = torch.zeros(1, config.num_slots, config.num_value_codes)
+    types = torch.zeros(1, config.num_slots, config.num_types)
+    values[:, :2, 0] = 1
+    types[:, :2, 0] = 1
+    state = TypedTheoryState(
+        value_probabilities=values,
+        type_probabilities=types,
+        relations=torch.zeros(
+            1,
+            config.num_relations,
+            config.num_slots,
+            config.num_slots,
+        ),
+        active=active,
+        root=torch.tensor([[1, 0, 0, 0, 0, 0]], dtype=torch.float32),
+        committed=torch.zeros(1),
+        halted=torch.zeros(1),
+        step=0,
+    )
+    model.set_valid_pointer_masks(True)
+    with torch.no_grad():
+        model.reactor.opcode_head.weight.zero_()
+        model.reactor.opcode_head.bias.fill_(-100)
+        model.reactor.opcode_head.bias[1] = 100
+        write = model.reactor.policy(state, hard=True)
+        model.reactor.opcode_head.bias.fill_(-100)
+        model.reactor.opcode_head.bias[3] = 100
+        link = model.reactor.policy(state, hard=True)
+    assert model.config.valid_pointer_masks
+    assert model.reactor.valid_pointer_masks
+    assert int(write.source.argmax(-1)) < 2
+    assert int(link.source.argmax(-1)) < 2
+    assert int(link.target.argmax(-1)) < 2
+    with pytest.raises(
+        TheoryReactorError,
+        match="valid-pointer mask flag",
+    ):
+        model.set_valid_pointer_masks(1)  # type: ignore[arg-type]
+
+
 def test_query_path_is_causal_under_future_token_extension() -> None:
     model = _model().eval()
     state = model.compile_world(

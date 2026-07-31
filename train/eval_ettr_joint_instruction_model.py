@@ -174,6 +174,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if name not in {
             "execution_trace_read_scale",
             "open_state_read_floor",
+            "valid_pointer_masks",
         }
     }
     candidate_static_config = {
@@ -182,6 +183,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if name not in {
             "execution_trace_read_scale",
             "open_state_read_floor",
+            "valid_pointer_masks",
         }
     }
     if (
@@ -236,6 +238,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 0.0,
             )
         )
+    )
+    candidate_model.set_valid_pointer_masks(
+        bool(candidate_ettr_config.get("valid_pointer_masks", False))
     )
     if (
         provenance != parent_provenance

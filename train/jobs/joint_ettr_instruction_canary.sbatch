@@ -48,6 +48,8 @@ GRADIENT_CLIP_MODE=${GRADIENT_CLIP_MODE:-owner}
 OPEN_STATE_READ_FLOOR=${OPEN_STATE_READ_FLOOR:-0}
 SOFT_TRANSACTION_ETTR_UPDATES=${SOFT_TRANSACTION_ETTR_UPDATES:-0}
 EXECUTION_TRACE_READ_SCALE=${EXECUTION_TRACE_READ_SCALE:-0}
+TRANSACTION_REDUCTION=${TRANSACTION_REDUCTION:-decision-mean}
+VALID_POINTER_MASKS=${VALID_POINTER_MASKS:-0}
 
 for path in \
   "$CODE_ROOT" "$RELEASE_ROOT" "$ETTR_DATA_ROOT" "$TOKENIZER" \
@@ -68,7 +70,10 @@ if [[ ! "$SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ \
   || ! "$GENERAL_POSITION_WEIGHT" =~ ^[1-9][0-9]*$ \
   || ! "$INSTRUCTION_POSITION_WEIGHT" =~ ^[1-9][0-9]*$ \
   || ! "$ETTR_POSITION_WEIGHT" =~ ^[1-9][0-9]*$ \
-  || ! "$SOFT_TRANSACTION_ETTR_UPDATES" =~ ^[0-9]+$ ]]; then
+  || ! "$SOFT_TRANSACTION_ETTR_UPDATES" =~ ^[0-9]+$ \
+  || ! "$VALID_POINTER_MASKS" =~ ^[01]$ \
+  || ( "$TRANSACTION_REDUCTION" != decision-mean \
+    && "$TRANSACTION_REDUCTION" != head-class-balanced ) ]]; then
   echo "tri-stream launch identity differs" >&2
   exit 2
 fi
@@ -186,8 +191,12 @@ args=(
   --open-state-read-floor "$OPEN_STATE_READ_FLOOR"
   --soft-transaction-ettr-updates "$SOFT_TRANSACTION_ETTR_UPDATES"
   --execution-trace-read-scale "$EXECUTION_TRACE_READ_SCALE"
+  --transaction-reduction "$TRANSACTION_REDUCTION"
   --gradient-clip-mode "$GRADIENT_CLIP_MODE"
 )
+if [[ "$VALID_POINTER_MASKS" == 1 ]]; then
+  args+=(--valid-pointer-masks)
+fi
 for name in finemath4 openwebmath code_python finemath3; do
   args+=(--legacy-general-shard-dir "$GENERAL_SHARD_ROOT/$name")
   args+=(--legacy-general-weight 1)

@@ -155,6 +155,7 @@ class ETTRObjectiveConfig:
     query_binding_effect_weight: float = 1.0
     query_binding_invariance_weight: float = 1.0
     query_binding_risk_temperature: float = 1.0
+    transaction_reduction: str = "decision-mean"
     causal_lm_shift: int = 1
     require_equivariance_pairs: bool = True
 
@@ -251,6 +252,11 @@ class ETTRObjectiveConfig:
             raise ETTRObjectiveError(
                 "query-binding risk temperature must be positive"
             )
+        if self.transaction_reduction not in (
+            "decision-mean",
+            "head-class-balanced",
+        ):
+            raise ETTRObjectiveError("transaction reduction differs")
         if self.causal_lm_shift != 1:
             raise ETTRObjectiveError(
                 "token supervision must use one-token causal shift"
@@ -1421,6 +1427,42 @@ def _categorical_nll(
     )
 
 
+def _class_balanced_categorical_mean(
+    probabilities: torch.Tensor,
+    target: torch.Tensor,
+    mask: torch.Tensor,
+    *,
+    epsilon: float,
+    gradient_cap: float | None,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    selected = probabilities.gather(
+        -1,
+        target.unsqueeze(-1),
+    ).squeeze(-1).float()
+    losses = -_probability_log(
+        selected,
+        epsilon=epsilon,
+        gradient_cap=gradient_cap,
+    )
+    class_count = probabilities.shape[-1]
+    masked_losses = losses * mask
+    numerators = torch.zeros(
+        class_count,
+        dtype=losses.dtype,
+        device=losses.device,
+    ).scatter_add_(0, target.flatten(), masked_losses.flatten())
+    counts = torch.zeros(
+        class_count,
+        dtype=losses.dtype,
+        device=losses.device,
+    ).scatter_add_(0, target.flatten(), mask.flatten().to(losses.dtype))
+    present = counts.gt(0).to(losses.dtype)
+    mean = (
+        (numerators / counts.clamp_min(1.0)) * present
+    ).sum() / present.sum().clamp_min(1.0)
+    return mean, present.sum()
+
+
 def _binary_nll(
     probabilities: torch.Tensor,
     target: torch.Tensor,
@@ -1583,6 +1625,7 @@ def _transaction_prediction_loss(
         "type_index",
         "value_code",
     )
+    masks = _operand_masks(targets)
     losses = tuple(
         _categorical_nll(
             getattr(prediction, name),
@@ -1591,14 +1634,27 @@ def _transaction_prediction_loss(
             epsilon=config.probability_epsilon,
             gradient_cap=config.nll_gradient_cap,
         )
-        for name, mask in zip(
-            names,
-            _operand_masks(targets),
-            strict=True,
-        )
+        for name, mask in zip(names, masks, strict=True)
     )
     combined = _combine(losses, prediction.opcode)
-    return combined.mean, combined.count
+    if config.transaction_reduction == "decision-mean":
+        return combined.mean, combined.count
+    head_means_and_support = tuple(
+        _class_balanced_categorical_mean(
+            getattr(prediction, name),
+            getattr(targets, name),
+            mask,
+            epsilon=config.probability_epsilon,
+            gradient_cap=config.nll_gradient_cap,
+        )
+        for name, mask in zip(names, masks, strict=True)
+    )
+    head_means = torch.stack(tuple(item[0] for item in head_means_and_support))
+    head_support = torch.stack(tuple(item[1] for item in head_means_and_support))
+    transaction = (
+        head_means * head_support.gt(0).to(head_means.dtype)
+    ).sum() / head_support.gt(0).sum().clamp_min(1).to(head_means.dtype)
+    return transaction, combined.count
 
 
 def _intervention_arm_loss(
