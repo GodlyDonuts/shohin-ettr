@@ -23,6 +23,11 @@ REACTOR_SHA256=${REACTOR_SHA256:?set reactor hash}
 READER=${READER:?set reader component}
 READER_SHA256=${READER_SHA256:?set reader hash}
 OUTPUT=${OUTPUT:?set fresh composition output}
+QUERY_READOUT_GEOMETRY=${QUERY_READOUT_GEOMETRY:-stage}
+READER_CONTRACT=${READER_CONTRACT:-}
+READER_CONTRACT_SHA256=${READER_CONTRACT_SHA256:-}
+READER_REPORT=${READER_REPORT:-}
+READER_REPORT_SHA256=${READER_REPORT_SHA256:-}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
 for path in "$CODE_ROOT" "$PARENT_RUN_DIR" "$COMPILER" "$REACTOR" \
@@ -59,6 +64,27 @@ parent_contract_sha=$(sha256sum \
 parent_model_sha=$(sha256sum \
   "$PARENT_RUN_DIR/joint-model-final.pt" | awk '{print $1}')
 
+reader_geometry_args=(
+  --query-readout-geometry "$QUERY_READOUT_GEOMETRY"
+)
+if [[ "$QUERY_READOUT_GEOMETRY" != stage ]]; then
+  [[ "$READER_CONTRACT" == /* && "$READER_REPORT" == /* \
+    && "$READER_CONTRACT_SHA256" =~ ^[0-9a-f]{64}$ \
+    && "$READER_REPORT_SHA256" =~ ^[0-9a-f]{64}$ ]] || {
+      echo "non-stage reader receipts differ" >&2
+      exit 2
+    }
+  reader_geometry_args+=(
+    --reader-contract "$READER_CONTRACT"
+    --reader-contract-sha256 "$READER_CONTRACT_SHA256"
+    --reader-report "$READER_REPORT"
+    --reader-report-sha256 "$READER_REPORT_SHA256"
+  )
+elif [[ -n "$READER_CONTRACT$READER_CONTRACT_SHA256$READER_REPORT$READER_REPORT_SHA256" ]]; then
+  echo "stage reader must not carry geometry receipts" >&2
+  exit 2
+fi
+
 "$PYTHON_ROOT/bin/python" \
   "$CODE_ROOT/train/compose_ettr_joint_components.py" \
   --parent-joint-model "$PARENT_RUN_DIR/joint-model-final.pt" \
@@ -72,7 +98,8 @@ parent_model_sha=$(sha256sum \
   --reader "$READER" \
   --reader-sha256 "$READER_SHA256" \
   --output "$OUTPUT" \
-  --source-commit "$SOURCE_COMMIT"
+  --source-commit "$SOURCE_COMMIT" \
+  "${reader_geometry_args[@]}"
 
 (
   cd "$OUTPUT"

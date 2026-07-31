@@ -51,6 +51,14 @@ RUN_SCHEMA = "shohin-ettr-tri-stream-canary-v1"
 COMPOSITION_KIND = "hash-bound-component-transplant"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
+_READOUT_GEOMETRIES = {
+    "stage",
+    "late",
+    "postnorm",
+    "postnorm-scaled",
+}
+_ISLAND_CONTRACT_SCHEMA = "shohin-ettr-joint-component-island-contract-v1"
+_ISLAND_REPORT_SCHEMA = "shohin-ettr-joint-component-island-report-v1"
 
 
 class ETTRTriEvaluationError(RuntimeError):
@@ -123,11 +131,22 @@ def _validate_run_lineage(
         return None
     if not isinstance(composition, Mapping):
         raise ETTRTriEvaluationError("component composition lineage differs")
+    geometry = composition.get("query_readout_geometry", "stage")
+    if geometry not in _READOUT_GEOMETRIES:
+        raise ETTRTriEvaluationError("component readout geometry differs")
     parent_static = dict(parent_contract)
     candidate_static = dict(run_contract)
     parent_static.pop("source_commit", None)
     candidate_static.pop("source_commit", None)
     candidate_static.pop("component_composition", None)
+    parent_geometry = parent_static.pop(
+        "query_readout_geometry",
+        "stage",
+    )
+    candidate_geometry = candidate_static.pop(
+        "query_readout_geometry",
+        "stage",
+    )
     components = composition.get("components")
     if (
         parent_contract.get("schema") != RUN_SCHEMA
@@ -140,6 +159,8 @@ def _validate_run_lineage(
         != parent_joint_model_sha256
         or composition.get("source_commit")
         != run_contract.get("source_commit")
+        or parent_geometry != "stage"
+        or candidate_geometry != geometry
         or not isinstance(components, Mapping)
         or set(components) != {"compiler", "reactor", "reader"}
     ):
@@ -156,6 +177,60 @@ def _validate_run_lineage(
             raise ETTRTriEvaluationError(
                 "component composition receipt differs"
             )
+    reader_training = composition.get("reader_training")
+    if geometry == "stage":
+        if reader_training is not None:
+            raise ETTRTriEvaluationError(
+                "stage readout carries a training receipt"
+            )
+    else:
+        if (
+            not isinstance(reader_training, Mapping)
+            or set(reader_training) != {"contract", "report"}
+        ):
+            raise ETTRTriEvaluationError(
+                "reader training receipt differs"
+            )
+        receipts = {}
+        for name in ("contract", "report"):
+            receipt = reader_training[name]
+            if (
+                not isinstance(receipt, Mapping)
+                or set(receipt) != {"path", "sha256"}
+                or not isinstance(receipt["path"], str)
+                or not Path(receipt["path"]).is_absolute()
+                or not isinstance(receipt["sha256"], str)
+                or _HEX64.fullmatch(receipt["sha256"]) is None
+            ):
+                raise ETTRTriEvaluationError(
+                    "reader training receipt differs"
+                )
+            receipts[name] = _read_hash_bound_json(
+                Path(receipt["path"]),
+                expected_sha256=receipt["sha256"],
+                label=f"reader island {name}",
+            )
+        if (
+            receipts["contract"].get("schema")
+            != _ISLAND_CONTRACT_SCHEMA
+            or receipts["contract"].get("component") != "reader"
+            or receipts["contract"].get("reader_injection") != geometry
+            or receipts["contract"].get("parent_joint_model_sha256")
+            != parent_joint_model_sha256
+            or receipts["report"].get("schema")
+            != _ISLAND_REPORT_SCHEMA
+            or receipts["report"].get("component") != "reader"
+            or receipts["report"].get("reader_injection") != geometry
+            or receipts["report"].get("contract_sha256")
+            != reader_training["contract"]["sha256"]
+            or receipts["report"].get("final_component_sha256")
+            != components["reader"]["sha256"]
+            or receipts["report"].get("parent_joint_model_sha256")
+            != parent_joint_model_sha256
+        ):
+            raise ETTRTriEvaluationError(
+                "reader training lineage differs"
+            )
     return composition
 
 
@@ -171,6 +246,19 @@ def _validate_model_lineage(
 ) -> tuple[dict[str, object], dict[str, object]]:
     parent_ettr_config = dict(parent_payload["ettr_config"])
     candidate_ettr_config = dict(candidate_payload["ettr_config"])
+    parent_geometry = parent_payload.get(
+        "query_readout_geometry",
+        "stage",
+    )
+    candidate_geometry = candidate_payload.get(
+        "query_readout_geometry",
+        "stage",
+    )
+    expected_geometry = (
+        "stage"
+        if composition is None
+        else composition.get("query_readout_geometry", "stage")
+    )
     parent_static_config = {
         name: value
         for name, value in parent_ettr_config.items()
@@ -202,6 +290,8 @@ def _validate_model_lineage(
         != parent_payload.get("base_config")
         or candidate_static_config != parent_static_config
         or candidate_ettr_config != run_contract.get("model_config")
+        or parent_geometry != "stage"
+        or candidate_geometry != expected_geometry
     ):
         raise ETTRTriEvaluationError("tri-stream model lineage differs")
     if composition is not None:
@@ -399,6 +489,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     candidate_model.set_valid_pointer_masks(
         bool(candidate_ettr_config.get("valid_pointer_masks", False))
+    )
+    candidate_model.set_query_readout_geometry(
+        str(
+            candidate_payload.get(
+                "query_readout_geometry",
+                "stage",
+            )
+        )
     )
     if (
         provenance != parent_provenance

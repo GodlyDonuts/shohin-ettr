@@ -338,11 +338,14 @@ def _load_parent(
         "schema",
         "source_commit",
     }
+    optional = {"query_readout_geometry"}
     if (
         not isinstance(payload, Mapping)
-        or set(payload) != required
+        or not required <= set(payload) <= required | optional
         or payload.get("schema") != MODEL_SCHEMA
         or not isinstance(payload.get("model"), Mapping)
+        or payload.get("query_readout_geometry", "stage")
+        not in {"stage", "late", "postnorm", "postnorm-scaled"}
     ):
         raise ETTRTriCanaryError("parent joint-model contract differs")
     model = EndogenousTypedTheoryReactorGPT(
@@ -357,6 +360,9 @@ def _load_parent(
         ) from exc
     if incompatibility.missing_keys or incompatibility.unexpected_keys:
         raise ETTRTriCanaryError("parent joint-model strict load differs")
+    model.set_query_readout_geometry(
+        str(payload.get("query_readout_geometry", "stage"))
+    )
     return model, payload
 
 

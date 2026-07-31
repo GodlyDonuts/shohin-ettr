@@ -99,12 +99,15 @@ def _load_joint_payload(
         "schema",
         "source_commit",
     }
+    optional_keys = {"query_readout_geometry"}
     if (
         not isinstance(value, Mapping)
-        or set(value) != expected_keys
+        or not expected_keys <= set(value) <= expected_keys | optional_keys
         or value.get("schema") != MODEL_SCHEMA
         or value.get("run_contract_sha256") is None
         or not isinstance(value.get("model"), Mapping)
+        or value.get("query_readout_geometry", "stage")
+        not in {"stage", "late", "postnorm", "postnorm-scaled"}
     ):
         raise ETTRJointEvaluationError(
             "joint-model checkpoint contract differs"

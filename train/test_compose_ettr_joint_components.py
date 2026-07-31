@@ -54,6 +54,40 @@ def test_composed_contract_preserves_parent_and_binds_receipt() -> None:
     assert "component_composition" not in parent
 
 
+def test_nonstage_readout_is_bound_into_receipt_and_model_config() -> None:
+    parent = {
+        "schema": RUN_SCHEMA,
+        "source_commit": "0" * 40,
+        "model_config": {"num_slots": 64},
+    }
+    receipt = _composition_receipt(
+        parent_joint_model=Path("/parent/model.pt"),
+        parent_joint_model_sha256="1" * 64,
+        parent_run_contract=Path("/parent/run-contract.json"),
+        parent_run_contract_sha256="2" * 64,
+        components={
+            "compiler": {"path": "/c", "sha256": "3" * 64},
+            "reactor": {"path": "/r", "sha256": "4" * 64},
+            "reader": {"path": "/q", "sha256": "5" * 64},
+        },
+        source_commit="6" * 40,
+        query_readout_geometry="postnorm-scaled",
+        reader_training={
+            "contract": {"path": "/reader/contract", "sha256": "7" * 64},
+            "report": {"path": "/reader/report", "sha256": "8" * 64},
+        },
+    )
+    composed = _composed_run_contract(
+        parent,
+        composition=receipt,
+        source_commit="6" * 40,
+    )
+    assert receipt["query_readout_geometry"] == "postnorm-scaled"
+    assert composed["model_config"] == {"num_slots": 64}
+    assert composed["query_readout_geometry"] == "postnorm-scaled"
+    assert parent["model_config"] == {"num_slots": 64}
+
+
 def test_recursive_composition_is_rejected() -> None:
     parent = {
         "schema": RUN_SCHEMA,

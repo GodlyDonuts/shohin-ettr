@@ -36,6 +36,14 @@ COMPOSITION_KIND = "hash-bound-component-transplant"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _COMPONENTS = ("compiler", "reactor", "reader")
+_READOUT_GEOMETRIES = (
+    "stage",
+    "late",
+    "postnorm",
+    "postnorm-scaled",
+)
+_ISLAND_CONTRACT_SCHEMA = "shohin-ettr-joint-component-island-contract-v1"
+_ISLAND_REPORT_SCHEMA = "shohin-ettr-joint-component-island-report-v1"
 
 
 class ETTRJointCompositionError(RuntimeError):
@@ -122,8 +130,10 @@ def _composition_receipt(
     parent_run_contract_sha256: str,
     components: Mapping[str, Mapping[str, str]],
     source_commit: str,
+    query_readout_geometry: str = "stage",
+    reader_training: Mapping[str, object] | None = None,
 ) -> dict[str, object]:
-    return {
+    receipt: dict[str, object] = {
         "components": {
             name: dict(components[name]) for name in _COMPONENTS
         },
@@ -135,6 +145,14 @@ def _composition_receipt(
         "parent_run_contract_sha256": parent_run_contract_sha256,
         "source_commit": source_commit,
     }
+    if query_readout_geometry != "stage":
+        if reader_training is None:
+            raise ETTRJointCompositionError(
+                "non-stage readout lacks a reader training receipt"
+            )
+        receipt["query_readout_geometry"] = query_readout_geometry
+        receipt["reader_training"] = deepcopy(dict(reader_training))
+    return receipt
 
 
 def _composed_run_contract(
@@ -154,6 +172,9 @@ def _composed_run_contract(
         )
     contract["component_composition"] = deepcopy(dict(composition))
     contract["source_commit"] = source_commit
+    geometry = composition.get("query_readout_geometry", "stage")
+    if geometry != "stage":
+        contract["query_readout_geometry"] = geometry
     return contract
 
 
@@ -187,6 +208,15 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         )
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--source-commit", required=True)
+    parser.add_argument(
+        "--query-readout-geometry",
+        choices=_READOUT_GEOMETRIES,
+        default="stage",
+    )
+    parser.add_argument("--reader-contract", type=Path)
+    parser.add_argument("--reader-contract-sha256")
+    parser.add_argument("--reader-report", type=Path)
+    parser.add_argument("--reader-report-sha256")
     return parser.parse_args(argv)
 
 
@@ -206,6 +236,12 @@ def _validate_args(args: argparse.Namespace) -> None:
         args.reactor_sha256,
         args.reader_sha256,
     )
+    reader_receipts = (
+        args.reader_contract,
+        args.reader_contract_sha256,
+        args.reader_report,
+        args.reader_report_sha256,
+    )
     if (
         any(not path.is_absolute() for path in paths)
         or any(_HEX64.fullmatch(value) is None for value in hashes)
@@ -213,10 +249,71 @@ def _validate_args(args: argparse.Namespace) -> None:
         or args.output.exists()
         or args.output.is_symlink()
         or not args.output.parent.is_dir()
+        or (
+            args.query_readout_geometry == "stage"
+            and any(value is not None for value in reader_receipts)
+        )
+        or (
+            args.query_readout_geometry != "stage"
+            and (
+                any(value is None for value in reader_receipts)
+                or not args.reader_contract.is_absolute()
+                or not args.reader_report.is_absolute()
+                or _HEX64.fullmatch(args.reader_contract_sha256) is None
+                or _HEX64.fullmatch(args.reader_report_sha256) is None
+            )
+        )
     ):
         raise ETTRJointCompositionError(
             "joint component composition arguments differ"
         )
+
+
+def _reader_training_receipt(
+    args: argparse.Namespace,
+) -> Mapping[str, object] | None:
+    if args.query_readout_geometry == "stage":
+        return None
+    contract = _read_hash_bound_json(
+        args.reader_contract,
+        expected_sha256=args.reader_contract_sha256,
+        label="reader island contract",
+    )
+    report = _read_hash_bound_json(
+        args.reader_report,
+        expected_sha256=args.reader_report_sha256,
+        label="reader island report",
+    )
+    if (
+        contract.get("schema") != _ISLAND_CONTRACT_SCHEMA
+        or contract.get("component") != "reader"
+        or contract.get("reader_injection")
+        != args.query_readout_geometry
+        or contract.get("parent_joint_model_sha256")
+        != args.parent_joint_model_sha256
+        or report.get("schema") != _ISLAND_REPORT_SCHEMA
+        or report.get("component") != "reader"
+        or report.get("reader_injection")
+        != args.query_readout_geometry
+        or report.get("contract_sha256")
+        != args.reader_contract_sha256
+        or report.get("final_component_sha256") != args.reader_sha256
+        or report.get("parent_joint_model_sha256")
+        != args.parent_joint_model_sha256
+    ):
+        raise ETTRJointCompositionError(
+            "reader training lineage differs"
+        )
+    return {
+        "contract": {
+            "path": str(args.reader_contract),
+            "sha256": args.reader_contract_sha256,
+        },
+        "report": {
+            "path": str(args.reader_report),
+            "sha256": args.reader_report_sha256,
+        },
+    }
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -240,6 +337,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "parent joint-model lineage differs"
         )
 
+    reader_training = _reader_training_receipt(args)
     component_paths = {
         name: getattr(args, name) for name in _COMPONENTS
     }
@@ -255,6 +353,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             component_paths[name],
             expected_sha256=component_hashes[name],
         )
+    model.set_query_readout_geometry(args.query_readout_geometry)
     changed_tensors = {
         name: sum(
             not torch.equal(parent_components[name][key], value)
@@ -281,6 +380,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         parent_run_contract_sha256=args.parent_run_contract_sha256,
         components=components,
         source_commit=args.source_commit,
+        query_readout_geometry=args.query_readout_geometry,
+        reader_training=reader_training,
     )
     run_contract = _composed_run_contract(
         parent_contract,
@@ -289,7 +390,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     run_contract_bytes = _canonical_bytes(run_contract)
     run_contract_sha256 = hashlib.sha256(run_contract_bytes).hexdigest()
-    model_payload = {
+    model_payload: dict[str, object] = {
         "base_config": parent_payload["base_config"],
         "ettr_config": parent_payload["ettr_config"],
         "initialization": composition,
@@ -303,6 +404,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         "schema": MODEL_SCHEMA,
         "source_commit": args.source_commit,
     }
+    if args.query_readout_geometry != "stage":
+        model_payload["query_readout_geometry"] = (
+            args.query_readout_geometry
+        )
 
     try:
         args.output.mkdir(mode=0o700)

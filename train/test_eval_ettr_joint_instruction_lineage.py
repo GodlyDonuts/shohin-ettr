@@ -1,4 +1,7 @@
 from copy import deepcopy
+import hashlib
+import json
+from pathlib import Path
 
 import pytest
 import torch
@@ -135,3 +138,76 @@ def test_composition_rejects_mutated_parent_contract() -> None:
             parent_run_contract_sha256="7" * 64,
             parent_joint_model_sha256="6" * 64,
         )
+
+
+def _write_json(path: Path, payload: object) -> str:
+    data = (
+        json.dumps(
+            payload,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("ascii")
+        + b"\n"
+    )
+    path.write_bytes(data)
+    return hashlib.sha256(data).hexdigest()
+
+
+def test_nonstage_reader_geometry_requires_and_admits_training_lineage(
+    tmp_path: Path,
+) -> None:
+    reader_contract = {
+        "component": "reader",
+        "parent_joint_model_sha256": "6" * 64,
+        "reader_injection": "postnorm-scaled",
+        "schema": "shohin-ettr-joint-component-island-contract-v1",
+    }
+    contract_path = tmp_path / "island-contract.json"
+    contract_sha = _write_json(contract_path, reader_contract)
+    reader_report = {
+        "component": "reader",
+        "contract_sha256": contract_sha,
+        "final_component_sha256": "5" * 64,
+        "parent_joint_model_sha256": "6" * 64,
+        "reader_injection": "postnorm-scaled",
+        "schema": "shohin-ettr-joint-component-island-report-v1",
+    }
+    report_path = tmp_path / "report.json"
+    report_sha = _write_json(report_path, reader_report)
+
+    composition = _composition()
+    composition["query_readout_geometry"] = "postnorm-scaled"
+    composition["reader_training"] = {
+        "contract": {
+            "path": str(contract_path),
+            "sha256": contract_sha,
+        },
+        "report": {
+            "path": str(report_path),
+            "sha256": report_sha,
+        },
+    }
+    parent_contract = _parent_contract()
+    run_contract = deepcopy(parent_contract)
+    run_contract["source_commit"] = "8" * 40
+    run_contract["query_readout_geometry"] = "postnorm-scaled"
+    run_contract["component_composition"] = composition
+    observed = _validate_run_lineage(
+        parent_contract,
+        run_contract,
+        release_sha256="2" * 64,
+        parent_run_contract_sha256="7" * 64,
+        parent_joint_model_sha256="6" * 64,
+    )
+    parent, candidate = _payloads()
+    candidate["initialization"] = composition
+    candidate["query_readout_geometry"] = "postnorm-scaled"
+    _validate_model_lineage(
+        parent,
+        candidate,
+        parent_run_contract_sha256="7" * 64,
+        run_contract_sha256="9" * 64,
+        parent_contract=parent_contract,
+        run_contract=run_contract,
+        composition=observed,
+    )

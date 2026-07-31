@@ -1154,6 +1154,7 @@ class EndogenousTypedTheoryReactorGPT(nn.Module):
         self.compiler = EndogenousTheoryCompiler(config)
         self.reactor = GenericTransactionReactor(config)
         self.query_reader = SourceDeletedQueryReader(config)
+        self.query_readout_geometry = "stage"
 
     def set_open_state_read_floor(self, value: float) -> None:
         """Change only the query reader's config-bound open-state floor."""
@@ -1183,6 +1184,18 @@ class EndogenousTypedTheoryReactorGPT(nn.Module):
         self.reactor.config = updated
         self.reactor.valid_pointer_masks = value
         self.query_reader.config = updated
+
+    def set_query_readout_geometry(self, value: str) -> None:
+        """Select the hash-bound point where the state read enters readout."""
+
+        if value not in {
+            "stage",
+            "late",
+            "postnorm",
+            "postnorm-scaled",
+        }:
+            raise TheoryReactorError("query-readout geometry differs")
+        self.query_readout_geometry = value
 
     def freeze_base(self) -> None:
         for parameter in self.base.parameters():
@@ -1250,15 +1263,34 @@ class EndogenousTypedTheoryReactorGPT(nn.Module):
         trace: ReactorTrace | None = None,
         attention_mask: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor | None]:
-        hidden = self._encode_to_stage(query_idx, pos=0)
-        hidden = hidden + self.query_reader(
-            hidden,
+        stage_hidden = self._encode_to_stage(query_idx, pos=0)
+        read = self.query_reader(
+            stage_hidden,
             state,
             trace=trace,
             attention_mask=attention_mask,
         )
-        hidden = self._decode_from_stage(hidden, pos=0)
-        logits = self.base.head(self.base.norm(hidden))
+        geometry = self.query_readout_geometry
+        if geometry == "stage":
+            hidden = self._decode_from_stage(
+                stage_hidden + read,
+                pos=0,
+            )
+            hidden = self.base.norm(hidden)
+        elif geometry == "late":
+            hidden = self._decode_from_stage(stage_hidden, pos=0)
+            hidden = self.base.norm(hidden + read)
+        else:
+            hidden = self.base.norm(
+                self._decode_from_stage(stage_hidden, pos=0)
+            )
+            scale = (
+                read.shape[-1] ** -0.5
+                if geometry == "postnorm-scaled"
+                else 1.0
+            )
+            hidden = hidden + scale * read
+        logits = self.base.head(hidden)
         loss = None
         if targets is not None:
             loss = _supervised_lm_loss(

@@ -519,6 +519,27 @@ def test_execution_trace_bus_exposes_only_model_generated_trajectory() -> None:
         model.set_execution_trace_read_scale(4.1)
 
 
+def test_query_readout_geometry_is_explicit_and_changes_logits() -> None:
+    model = _model().eval()
+    query = torch.randint(0, 64, (2, 6))
+    state = model.compile_world(
+        torch.randint(0, 64, (2, 8)),
+        hard=True,
+    )
+    with torch.no_grad():
+        stage_logits, _ = model.answer_query(state, query)
+    model.set_query_readout_geometry("postnorm-scaled")
+    with torch.no_grad():
+        postnorm_logits, _ = model.answer_query(state, query)
+    assert model.query_readout_geometry == "postnorm-scaled"
+    assert not torch.equal(stage_logits, postnorm_logits)
+    with pytest.raises(
+        TheoryReactorError,
+        match="query-readout geometry",
+    ):
+        model.set_query_readout_geometry("unsealed")
+
+
 def test_hard_policy_keeps_soft_supervision_gradients() -> None:
     model = _model()
     state = model.compile_world(
