@@ -20078,3 +20078,64 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `u2000_underbudgeted_noncausal_pilot_counterfactual_coupling_stable_model_update_fast_run_replicated_u5000_tournament_and_promote_only_on_source_deleted_causal_margins`.
+
+- **2026-07-30 21:36 EDT--2026-07-31 00:10 EDT** -- **Federated ETTR
+  training now has a proven direct-dispatch control plane and a completed
+  sustained five-H100 run; neither the 20-update distributed canary nor its
+  source-deleted evaluation is being mistaken for reasoning evidence.**
+
+  Commits `47c4fb25d363e9491c6217fd7260918dbfce4a54`,
+  `2ac2c59`, and `807d7b8` added grouped federated training, a strict
+  source-deleted promotion wrapper, and hash-bound direct rank dispatch.
+  Direct dispatch avoids Newton's login-node `ulimit -u 100` failure mode:
+  each one-H100 reservation opens and verifies one immutable command through
+  a pinned file descriptor, then runs the rank as its own Slurm batch
+  payload without a login-side `srun` client.
+
+  The first direct-dispatch four-H100 canary completed all 20 updates.
+  All four job receipts (`723820`--`723823`) recorded `exit_code=0`; the
+  trainer observed 1,280 rows and 430,080 token positions, wrote only from
+  rank zero, and closed with final parameter SHA-256
+  `a94558dac96fc6e956297be8ffc76c2ff9cdbaf0ae1e34a487cfc3b2ffd84f8b`.
+  Report SHA-256 is
+  `f49b22f8d6698c50e3187f4b927105ce2295670c8d196a0935e1d38dfbd09611`.
+  Its separately run 32-batch source-deleted evaluation significantly
+  improved paired total loss by `-16.7662` with a 95% interval
+  `[-18.0940, -15.4385]`, all metrics were finite, and parameters changed.
+  WORLD and COMMAND query-margin rates did not increase, so the strict
+  learning signal correctly remained false. Evaluation report SHA-256 is
+  `f021eda6f5f1feecddf8895b9e8d11f0484243355aa3e43496209ebf6b29df82`.
+
+  The sustained five-H100 canary then completed 500 updates under the same
+  seed-1 coupling objective. It observed 40,000 rows and 13,440,000 token
+  positions, ended at finite loss `0.701352`, and changed the initial
+  parameter identity
+  `1c760b873522031e590a8543fcae5c4e22856927189597d9e5be557463ba2a3e`
+  to
+  `439946e51347dff47f8f830aaf3c8e554f4dd489d01450be42c0a4173e665a1c`.
+  The synchronized training step ran for `36:38`; report SHA-256 is
+  `bda7a4e25cc9e45cdd822d052c0c5d2d8a9f5294f5b16429a5cc1bf50c0370d0`.
+  Its source-deleted evaluation is active and remains the only admissible
+  capability judgment for that state.
+
+  A matched four-H100/500-update direct-dispatch run is active in
+  `train/ettr_direct_dispatch_canary_world4_u500_807d7b8_r1`. It is a
+  throughput/control comparison, not an alternate promotion path. The
+  replicated eight-arm 5,000-update tournament remains active. The
+  anchor-eight seed-2 replicate initially failed to start because `evc40`
+  exposed no physical GPU despite a scheduler GRES assignment. That
+  allocation was canceled, the replicate was moved to a verified H100 on
+  `evc24`, and commit `c12413c` added `evc40` to future dispatch exclusions.
+  All pending direct reservations were updated with the same exclusion and
+  replacement job `723843` was submitted from the hash-verified corrected
+  script.
+
+  Completed five-H100 sleep-only reservations were released so pending
+  direct-dispatch workers can replace them. Do not promote the 500-update
+  canaries by loss. Evaluate every completed tournament seed under source
+  deletion, require replicated WORLD and COMMAND margin-rate increases plus
+  a paired total-loss 95% upper bound below zero, and only then dispatch the
+  largest verified winner run across fresh healthy workers.
+
+  Decision:
+  `direct_dispatch_and_world5_sustained_training_pass_systems_gate_but_native_reasoning_still_requires_replicated_source_deleted_causal_promotion`.
