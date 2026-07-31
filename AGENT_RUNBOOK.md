@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-31 17:09 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-31 18:02 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -21546,3 +21546,74 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_more_reader_only_scale_prioritize_autonomous_reactor_composition_and_keep_7_of_496_as_the_strict_floor_until_a_source_deleted_gate_beats_it`.
+
+- **2026-07-31 17:09--18:02 EDT** -- **A byte-equivalent SmolLM2
+  cross-backbone control is live; the newest Shohin actuator does not beat
+  the locked native floor.**
+
+  The user clarified that the sub-200M parameter limit applies to the final
+  Shohin model, not to causal experiments. Cross-backbone controls may exceed
+  200M when their purpose is to isolate a mechanism, but model size, data,
+  tokenizer, evaluator, and compute must remain explicit so a larger control
+  cannot be misreported as a Shohin result.
+
+  Private commit
+  `7881d8e31944a2f641b3136d01e1e6db9fe63e66` adds a strict
+  `HuggingFaceTB/SmolLM2-135M-Instruct` control at immutable upstream revision
+  `83212e1e2b3cfd6958f3707877bb878945dea8ee`. The official model file
+  SHA-256 is
+  `5af571cbf074e6d21a03528d2330792e532ca608f24ac70a143f6b369968ab8c`;
+  tokenizer SHA-256 is
+  `9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c`;
+  config SHA-256 is
+  `8eb740e8bbe4cff95ea7b4588d17a2432deb16e8075bc5828ff7ba9be94d982a`.
+  All 272 official source tensors map into the in-repository GPT
+  implementation, and a multi-token float32 equivalence probe matches
+  official logits exactly: maximum and mean absolute difference `0.0` and
+  argmax agreement `100%`. The imported base has `134,515,008` parameters.
+
+  ETTR data are not retokenized semantically or altered. A fail-closed
+  transcode maps each of the `2,398` original packet codewords to the same
+  logical index in SmolLM2's `4,119`-entry codebook and maps the five query
+  framing tokens. It preserves exact WORLD/COMMAND/QUERY widths
+  `192/96/48`, query read position, supervision masks, packet/state/
+  transaction/rectangle labels, and verifies the original packet indices
+  before mapping. Token-map SHA-256 is
+  `e893481f5a156baba9321a8a69135edc2736e41750c3cb95cd33c011be09c4d9`.
+
+  The isolated SmolLM2 parent is
+  `train/ettr_smollm2_control_parent_a2026072801_7881d8e`. Its joint-model
+  SHA-256 is
+  `8196f810a31e0abe7f3bf0eae0a37b103195f109b7a8e962c7b74b5710c98a02`;
+  run-contract SHA-256 is
+  `7ad97ccb482676f22d4b6b34852ea69ce5e1e220f69b52864d570687613e8408`.
+  It retains the unchanged `67,697,771`-parameter ETTR geometry, for
+  `202,212,779` total control parameters. This is an experimental diagnostic,
+  not a deployable Shohin candidate. Exact runtime
+  `scratchpad/shohin_ettr_smollm2_runtime_7881d8e_r2` contains `3,368`
+  measured entries and has manifest SHA-256
+  `23d1fc9b52c265dc0429a883ac36192ec83bcf3aa0d506fb7c59508780bfbd80`.
+
+  Matched 5,000-update component jobs use data seed `2026072804`: compiler
+  `724764`, reactor `724765`, and reader `724766`. Compiler and reactor are
+  running on `evc35/evc25`; the reader remains pending priority. The compiler
+  passed all immutable parent/tokenizer/runtime receipts and reached update
+  `510`, reducing loss from `1.385` at update 10 to roughly `0.05--0.15`;
+  value-code binding remains the dominant residual. Redundant 1,000-update
+  pilots `724768--724770` were canceled once the full matched jobs started.
+  Promote nothing until the three components are independently evaluated,
+  composed without base mutation, and tested under the unchanged
+  source-deleted WORLD and COMMAND evaluator. Both strict gates, not
+  best-of-K or teacher-forced scores, determine whether the stronger backbone
+  changes ETTR viability.
+
+  On the Shohin-native line, balanced warm continuations `724709/724710`
+  completed. Rate `3e-5` is stronger at `14.898%` held-out teacher-forced
+  joint transaction accuracy versus `13.827%` at `1e-5`, but it essentially
+  ties the prior balanced-reactor floor. Composition evaluation `724713`
+  with the selected historical balanced reactor produces strict WORLD
+  joint/paired-order `5/496 = 1.0081%` and COMMAND `0/656`, below the locked
+  `7/496 = 1.4113%` WORLD floor. It is rejected for promotion.
+
+  Decision:
+  `use_larger_backbones_only_as_causal_controls_require_world_and_command_strict_improvement_then_compress_or_resize_any_verified_mechanism_into_sub_200m_shohin`.
