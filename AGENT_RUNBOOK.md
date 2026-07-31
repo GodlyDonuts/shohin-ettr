@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-30 21:36 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-31 01:15 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -20139,3 +20139,97 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `direct_dispatch_and_world5_sustained_training_pass_systems_gate_but_native_reasoning_still_requires_replicated_source_deleted_causal_promotion`.
+
+- **2026-07-31 00:10--01:15 EDT** -- **The sustained distributed controls
+  and first four completed tournament configurations all fail native causal
+  promotion; repeated COMMAND-only movement localizes a rare WORLD-effect
+  credit imbalance, and a preregistered factor-balanced repair is now
+  running on two otherwise idle H100s.**
+
+  The five-H100/500-update run's source-deleted evaluation reduced paired
+  total loss by `-17.3472` with 95% interval
+  `[-18.3402, -16.3543]`, but WORLD and COMMAND margin-rate increases were
+  both zero. Evaluation report SHA-256 is
+  `a39a0f68e64dab8f3779c5678246b64a176603a0694f33be65551e79d1ae5801`.
+  The matched direct-dispatch four-H100/500-update run likewise reduced
+  paired total loss by `-17.2458` with interval
+  `[-18.3005, -16.1910]` while both causal margins remained zero. Its
+  evaluation report SHA-256 is
+  `5b29bad853af4b819f8bfbb4730de7ab79bf18a48d18ac6cabad3e16d161fb97`.
+  Four and five H100s both required approximately 36.5 minutes for 500
+  synchronized updates; the fifth H100 increased rows and token positions
+  per wall-clock interval rather than lowering update latency. Distributed
+  scale is qualified as a data-throughput multiplier only after an objective
+  passes the causal gate.
+
+  The two-seed 2,000-update autonomous-plateau arm is rejected. Seed 1 and
+  seed 2 reduced paired total loss by `-18.0955` and `-23.0165`, but both
+  WORLD and COMMAND margin rates stayed zero. Evaluation SHA-256 values are
+  `81446e4c91c1e414ccc2f638808082df282b4416fdc024b6e4da0f1daa802337`
+  and
+  `1ae7b5e48aae612bf2ecfb54ff0e751e9d860b8ced11a69b9d49841273ea6aa1`.
+  The combined delta-4/anchor-8/horizon-8 arm is also rejected as a
+  replicated winner. Seed 1 reduced total loss by `-18.8119` and produced
+  the first small COMMAND margin rate, `0.625%`, but WORLD remained zero;
+  seed 2 reduced total loss by `-23.6517` with both margins zero. Evaluation
+  SHA-256 values are
+  `cc5eefdb3db855379507ed01270acf58ace1a666cc6af86722d5bac3dc40ff31`
+  and
+  `5263428d6ebbdcefd2b8168e0363111343fb32d816b3918e06f5be423301d4e6`.
+
+  The paired lower-rate arm then supplied the clearest localization. Seed 1
+  reduced total loss by `-17.9213`, interval
+  `[-18.7647, -17.0779]`, and raised COMMAND causality to `3.75%`; WORLD
+  remained exactly zero. Seed 2 reduced total loss by `-23.6229`, interval
+  `[-24.4791, -22.7666]`, with both margins zero. Evaluation SHA-256 values
+  are
+  `c792d790ca06f40ea59ea2d663df1697a33ada735e99394099d00ad715c568b6`
+  and
+  `8b83cb3aaa4f8a6c58e633088bca757058c5c669c647a5e779b6d3715966e7a0`.
+  High-rate seed 1 also failed with both margins zero despite total-loss
+  delta `-15.2799`; its evaluation SHA-256 is
+  `53bfb2dca4fef76213bb49c8140490bac5cbf08b5f27e5dd196f5cc94c1557ec`.
+  Seed 2 also failed with both margins zero despite total-loss delta
+  `-22.7376`, interval `[-23.3637, -22.1115]`; its evaluation SHA-256 is
+  `85362167363a7ae14601c5585b5c23dfcca6920ef90257cedd6374057ac1a012`.
+  The paired high-rate arm is therefore rejected.
+
+  The immutable factorial data are semantically balanced across WORLD and
+  COMMAND rectangles, but the reader objective was not balanced by
+  answer-changing support. In the strict 32-batch evaluator, WORLD has only
+  128 answer-changing pairs out of 512 supervised WORLD pairs, while COMMAND
+  has 160 answer-changing pairs; per training batch the observed geometry is
+  more severe, commonly approximately two WORLD answer changes against
+  fourteen valid WORLD invariances. Population-mean structural loss
+  therefore lets invariant WORLD pairs dominate the scarce causal
+  gradients. This explains why ordinary total loss falls reliably while
+  WORLD differences remain identically zero and selected arms move COMMAND
+  first.
+
+  Commit `096f703eebf28ab414be873c885bf4e9f651552e` adds an isolated
+  `factor` reader-causal balance mode. It leaves factual classification
+  unchanged, computes causal contrast and answer-invariance means on their
+  own supports, and gives those two semantic factors equal structural
+  weight. The default remains byte-compatible population weighting, and the
+  strict source-deleted evaluator is unchanged. The focused objective,
+  progressive, distributed-wrapper, dispatcher, and evaluator suite is
+  **60/60** passing with clean Ruff, byte compilation, and diff checks.
+  Immutable runtime
+  `scratchpad/shohin_ettr_runtime_096f703_full_r1` contains 3,335 measured
+  files; `SHA256SUMS` SHA-256 is
+  `9ecee0f74f7e44cd2eb79836f0aeb41f672efbca6b402a9debaed1f6d8912d8d`.
+  Launcher SHA-256 is
+  `0a5aeb3c24d12b4ce213d0d281e1b32d7d7b7409ce285dfb3f369b7c12bb9b6c`.
+
+  Both factor-balanced 5,000-update seeds now run as Slurm step `722179.11`
+  on the two physically idle H100s of `evc23`. Their outputs are isolated at
+  `train/ettr_counterfactual_coupling_factorbal_seed1_u5000_096f703_r1`
+  and the corresponding seed-2 directory. The original baseline, delta-4,
+  anchor-8, horizon-8, high-rate seed-2, auto-4,000, and delta-8 arms remain
+  active. Promote nothing unless two independent seeds improve both WORLD
+  and COMMAND margin rates, paired total-loss upper 95% is below zero, all
+  metrics are finite, and the source-deleted evaluator observes changed
+  parameters.
+
+  Decision:
+  `distributed_scale_is_ready_but_objective_is_not_factor_balance_rare_world_causal_credit_then_promote_only_on_replicated_source_deleted_world_and_command_margins`.
