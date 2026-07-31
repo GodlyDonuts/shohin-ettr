@@ -15,17 +15,23 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-31 14:20 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-31 15:59 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
 > GSM8K pass@1 `2/100`, MATH-500 `2/100`, HumanEval `6/164`, and MBPP `0/100`. This confirms a
 > low-single-digit plateau rather than a broad 120k-to-300k capability gain.
-> Exact packet audit now proves the current joint objective collapses the
-> WORLD compiler to an empty packet: positive active, relation, and root
-> accuracy are zero. Six co-adapted component curricula are live to repair
-> compiler, reactor, and reader interfaces independently before an autonomous
-> composition gate. No current artifact is promoted as native reasoning.
+> The component campaign has crossed two intermediate gates without yet
+> crossing native reasoning. Compiler seed 2 restores a materially factual
+> WORLD packet; composing it with separately fit reactor/reader components
+> yields 100% positive-active/root, 56.0% positive-relation, 96.1% type,
+> 76.7% value-code, and 3.32% complete factual transactions on 2,048
+> development episodes. Strict causal answer accuracy remains zero. An
+> isolated post-normalization reader is the first held-out reader to produce
+> nonzero WORLD and COMMAND causal margins, proving useful terminal-state
+> information was being erased by the old decoder path. A sealed production
+> readout geometry and matched normalized controls are now live. No current
+> artifact is promoted as native reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -21324,3 +21330,104 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `treat_nonempty_intervention_sensitive_state_as_a_real_intermediate_gate_but_require_exact_interface_composition_and_nonzero_query_causality_for_reasoning`.
+
+- **2026-07-31 14:20--15:41 EDT** -- **The full co-adapted component
+  composition improves exact state and actuation, while the old stage
+  reader remains the final zero-causality boundary.**
+
+  Compiler jobs `724404/724405` completed cleanly. Seed 2 is the selected
+  component:
+  `train/ettr_joint_component_i94e01_compiler_s2_u5000_78c8e3d/component-final.safetensors`,
+  SHA-256
+  `0a7bbcaa1220c3bc145f054d7323e9ccf022f8e986673d920f0264c770cd88dc`.
+  Its direct held-out interface scores are positive active `98.83%`,
+  positive root `100%`, type `98.95%`, value-code `75.22%`, and aggregate
+  relation `99.80%`; complete packets remain zero because sparse positive
+  relation errors compound across the packet.
+
+  The two original reactor islands `724406/724407` also completed. Seed 2 is
+  stronger: teacher-forced joint transaction accuracy is `11.1735%`,
+  opcode `78.8265%`, source `37.8275%`, target `34.6774%`, relation
+  `34.4086%`, and value-code `27.9452%`. Its component SHA-256 is
+  `07d2f93d71e8e475871f1c89b51834dd9b2eb42b72cbffc958869a3547181856`;
+  report SHA-256 is
+  `867155058bf10957d6f8e9aca1bd2426144ef9c6289dad5e35d43799b32a23bb`.
+  Class-balanced reactor jobs `724467/724468` remain running as the matched
+  rare-action control.
+
+  Historical stage reader rates `724408/724409` completed with zero strict
+  oracle-terminal joint accuracy and zero margin at `0.1`; their final
+  component SHA-256 values are
+  `67a92d81c5d8b46d7a3f017d2503dd69a242de8445b631bb84f1f848ef4a11a3`
+  and
+  `18305461867b6a3b3eb481c79fee1acde7437d3739d7fb61c0103e4be7a0c3e1`.
+
+  Hash-bound composition job `724487` joined compiler seed 2, the historical
+  reactor, and stage reader rate 3. Evaluation `724491` completed over 128
+  batches / 2,048 episodes:
+  `artifacts/evals/ettr_joint_composed_i94_c2_r549_reader3_e341136_trace.json`,
+  SHA-256
+  `cd7665c51a2320ac7ceb34cdc3ad3e3183ae2932f9d3ad53c93ff57309b07e3a`.
+  Initial positive active/root are both `100%`, positive relation `55.96%`,
+  type `96.15%`, and value-code `76.70%`. Complete factual transactions rise
+  to `3.3215%`; source/target top-1 are `15.15%/21.84%`. WORLD query
+  difference-in-differences has mean `+0.000898` and maximum `+0.214844`;
+  COMMAND mean is `-0.000155`, maximum `+0.044556`. Strict joint top-1 and
+  paired-order remain zero. The all-new component composition
+  `724526 -> 724527` substitutes reactor seed 2 and is live.
+
+  Decision:
+  `retain_the_component_factorization_but_do_not_scale_it_until_the_reader_geometry_and_rare_action_controller_cross_strict_causal_gates`.
+
+- **2026-07-31 15:20--15:59 EDT** -- **Post-training unlocks some latent
+  ordinary competence, and post-normalization state readout is the first
+  held-out ETTR reader to break the zero-causal-margin barrier.**
+
+  One-epoch V9 SFT job `724456` completed from protected 300k on
+  `1,213,569` admitted examples, `194,898,167` input tokens and
+  `109,386,131` supervised answer tokens. Its checkpoint is
+  `train/sft_v9_broad_vrwm_300k_r1/sft_ep1.pt`, SHA-256
+  `94bb6155fb135f50ffe6c8b507b78a56d358964c03beaeabc0bea30a4cc8c72c`.
+  The 48-case x four-prompt capability matrix `724459` completed at
+  `artifacts/eval_history/capability_matrix_v9_300k_r1.json`. Raw 300k
+  scores QA/direct/CoT/one-shot `4/48`, `4/48`, `0/48`, `5/48`; V9 scores
+  `10/48`, `5/48`, `10/48`, `4/48`. V9's QA gain is concentrated in
+  arithmetic and state update, both `5/8`; base conversion, sort-unique, and
+  string insertion remain zero. Direct interview `724458` is correspondingly
+  brittle: raw contains the expected signal on 6/12 fresh prompts and V9 on
+  4/12. Public board `724457` has completed GSM8K maj@8 `18/200 = 9.0%`
+  and pass@1 `19/200 = 9.5%`; remaining tasks are still running. V9 is an
+  ordinary-language/capability control, not an ETTR claim.
+
+  Post-normalization reader jobs `724482/724483` completed with unstable
+  per-batch optimization but a new held-out causal effect. Rate 3
+  (`postnorm`, learning rate `3e-4`) has component SHA-256
+  `27eebf17342839d6c314848926dfd249f09f5e630f81fa4d1b2c56d82475da04`
+  and report SHA-256
+  `7f781eaac70fcee58270a40a6d432fece22df69cc9fd5df36d6ee62544a949f2`.
+  Under exact terminal packets with answer suffixes absent, WORLD/COMMAND
+  margin-at-0.1 rates rise from zero to `17.5%/18.18%`, mean
+  difference-in-differences to `+0.06094/+0.04966`, and maximum to `1.0`.
+  Strict joint top-1 and paired-order remain zero. Rate 1 is asymmetric:
+  WORLD remains zero while COMMAND reaches `4.17%` margin-at-0.1 with a
+  maximum `16.0`. This proves a real state-to-logit channel while rejecting
+  the unstable weights as a final solution.
+
+  Private commit
+  `25383c2ae623448a28d035558637fb1a8f05fdfd` makes readout geometry an
+  explicit hash-bound production behavior without changing old checkpoint
+  configuration bytes. Old artifacts default to `stage`. Non-stage
+  compositions require the exact reader island contract/report, component
+  hash, parent hash, and matching geometry; the evaluator reopens and
+  independently verifies those receipts. Focused verification passes
+  **55/55** with clean Ruff, byte compilation, Bash syntax, and diff checks.
+  Immutable runtime
+  `scratchpad/shohin_ettr_joint_runtime_25383c2_r1` has 3,363 measured files
+  and `SHA256SUMS` SHA-256
+  `e3eb62b517f8d16941f3d7edfd2854d9aa5eaa0422b0201079c5fdb266c7437a`.
+  Production postnorm composition/evaluation are `724565 -> 724566`.
+  Normalized postnorm controls `724498/724499` remain live and have
+  materially smaller recent gradient norms than unscaled postnorm.
+
+  Decision:
+  `treat_postnorm_as_a_verified_architectural_channel_not_a_reasoning_win_and_require_normalized_training_plus_autonomous_source_deleted_composition_before_promotion`.
