@@ -36,6 +36,8 @@ CREDIT_HORIZON=${CREDIT_HORIZON:-4}
 COMPILER_LEARNING_RATE=${COMPILER_LEARNING_RATE:-3e-5}
 REACTOR_LEARNING_RATE=${REACTOR_LEARNING_RATE:-5e-5}
 READER_LEARNING_RATE=${READER_LEARNING_RATE:-3e-5}
+READER_CAUSAL_BALANCE_MODE=${READER_CAUSAL_BALANCE_MODE:-population}
+FREEZE_READER=${FREEZE_READER:-0}
 WEIGHT_DECAY=${WEIGHT_DECAY:-0}
 GRADIENT_CLIP=${GRADIENT_CLIP:-1}
 EVAL_BATCHES=${EVAL_BATCHES:-16}
@@ -61,6 +63,12 @@ if (( UPDATES < 1 \
 fi
 if [[ ! "$SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ ]]; then
   echo "source commit differs" >&2
+  exit 2
+fi
+if [[ "$READER_CAUSAL_BALANCE_MODE" != population \
+  && "$READER_CAUSAL_BALANCE_MODE" != factor ]] \
+  || [[ "$FREEZE_READER" != 0 && "$FREEZE_READER" != 1 ]]; then
+  echo "reader coupling control differs" >&2
   exit 2
 fi
 for value in \
@@ -173,6 +181,7 @@ export OUTDIR ARCHITECTURE_SEED DATA_SEED COUPLING_SEED
 export UPDATES START_POSITION WARMUP_UPDATES RAMP_UPDATES
 export COUNTERFACTUAL_DELTA_WEIGHT EXACT_ANCHOR_STEPS CREDIT_HORIZON
 export COMPILER_LEARNING_RATE REACTOR_LEARNING_RATE READER_LEARNING_RATE
+export READER_CAUSAL_BALANCE_MODE FREEZE_READER
 export WEIGHT_DECAY GRADIENT_CLIP EVAL_BATCHES LOG_EVERY PYTHON_ROOT
 export OMP_NUM_THREADS="$CPUS_PER_GPU"
 export OPENBLAS_NUM_THREADS=1
@@ -228,6 +237,12 @@ for index in "${!jobs[@]}"; do
           wait 2>/dev/null || true
         }
         trap stop_local INT TERM
+        reader_args=(
+          --reader-causal-balance-mode "$READER_CAUSAL_BALANCE_MODE"
+        )
+        if [[ "$FREEZE_READER" == 1 ]]; then
+          reader_args+=(--freeze-reader)
+        fi
         for ((local_rank = 0; local_rank < GROUP_GPUS; local_rank++)); do
           rank=$((RANK_OFFSET + local_rank))
           (
@@ -253,6 +268,7 @@ for index in "${!jobs[@]}"; do
               --compiler-learning-rate "$COMPILER_LEARNING_RATE" \
               --reactor-learning-rate "$REACTOR_LEARNING_RATE" \
               --reader-learning-rate "$READER_LEARNING_RATE" \
+              "${reader_args[@]}" \
               --output "$OUTDIR" \
               --source-commit "$SOURCE_COMMIT" \
               --architecture-seed "$ARCHITECTURE_SEED" \

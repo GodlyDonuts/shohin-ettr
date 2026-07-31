@@ -32,8 +32,12 @@ def test_federated_coupling_binds_all_training_inputs() -> None:
         "COUNTERFACTUAL_DELTA_WEIGHT",
         "EXACT_ANCHOR_STEPS",
         "CREDIT_HORIZON",
+        "READER_CAUSAL_BALANCE_MODE",
+        "FREEZE_READER",
     )
     for name in required:
         assert f"${{{name}" in SCRIPT or f'"${name}"' in SCRIPT
     assert "sha256sum -c SHA256SUMS" in SCRIPT
     assert "refusing existing coupling output or launcher root" in SCRIPT
+    assert '--reader-causal-balance-mode "$READER_CAUSAL_BALANCE_MODE"' in SCRIPT
+    assert "reader_args+=(--freeze-reader)" in SCRIPT
