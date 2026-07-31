@@ -20734,3 +20734,73 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `make_native_coadaptation_the_main_hypothesis_keep_frozen_and_ettr_only_arms_as_controls_and_promote_only_a_two_seed_causal_win_without_language_regression`.
+
+- **2026-07-31 05:00--05:50 EDT** -- **Native co-adaptation remains
+  numerically healthy, owner-wise clipping is queued as a matched causal
+  intervention, and a dependency-bound three-stream post-training stage is
+  now frozen to test ETTR and ordinary benchmark gains in one model.**
+
+  Four warm native joint writers remain live on physically verified H100s.
+  At the 05:45 audit, warm `95/5` seeds 1/2 had reached updates
+  `1,832/1,801`; warm `85/15` seeds 1/2 had reached `818/791`. Their observed
+  charged-position fractions match their registered targets within
+  `0.0003`. All losses and gradients are finite. The last-100 general losses
+  are `1.6711/1.5916` for `95/5` and `1.6584/1.6085` for `85/15`.
+  Last-100 ETTR composite losses are `35.4115/29.1954` and
+  `26.4777/24.0393`, respectively. ETTR preclip gradients are heavy-tailed:
+  seed-1 `95/5` median/max are `3,040/22,656`, seed-2 `95/5`
+  `484/7,712`, seed-1 `85/15` `49.5/10,368`, and seed-2 `85/15`
+  `16.125/72`, while sampled general gradients remain around `0.4`.
+  Training loss is not a causal result.
+
+  Private commit `4f10b6599028c0359bcf0ea3ddd78b2f7971eed7` adds exact
+  base-owner and architecture-owner preclip telemetry plus an owner-wise
+  clipping mode. It preserves the old global mode as the default. Focused
+  tests pass. Matched warm-`85/15` owner-clipped jobs `723964/723967` use
+  the same seeds, data, objective, update count, and clip budget as
+  `723948/723949`; only gradient-owner clipping differs. Their causal
+  evaluators are `723965/723968` and public boards are `723966/723969`.
+  Immutable runtime
+  `scratchpad/shohin_ettr_joint_runtime_4f10b65_r1` contains 3,346 measured
+  files and binds `SHA256SUMS` SHA-256
+  `04702117372a4a84569bffdb8d5180518a3212854bd84b1dccc7b4c5a7365a43`.
+
+  Private commit `89fc0add5f0750346ade680ae2164fa3a31b0b79` adds a
+  three-stream position scheduler and deterministic completion-masked
+  instruction stream. The complete 192.8M-parameter base plus ETTR system
+  stays under one optimizer. The registered stage targets `15%` historical
+  raw-language positions, `70%` audited completion-supervised positions,
+  and `15%` ETTR positions. Its broad instruction control is the previously
+  audited V9 JSONL at SHA-256
+  `8f5845d19d3a3852ed4c7c930b23a27032aaf47e868ef082b7f6f85697b364f4`,
+  but sampling raises code to `20%`, retains math/procedural/teacher at
+  `40/30/5%`, and gives the obsolete VRWM group zero weight. The frozen
+  reports still show 1,213,830 valid rows, zero malformed rows, zero
+  duplicate normalized questions, and zero exact/13-gram public-evaluation
+  overlap. This is an audited historical instruction control, not a claim
+  that its old narrow failures disappeared.
+
+  Seed-matched three-stream jobs `723970/723973` are `afterok` the exact
+  warm-`85/15` parents `723948/723949`. Each runs 6,000 fresh-optimizer
+  updates with owner-wise clipping and writes an isolated complete model.
+  Source-deleted parent/raw/candidate evaluators are `723971/723974`; locked
+  GSM8K, MATH-500, HumanEval, and MBPP boards are `723972/723975`. Focused
+  scheduler, stream, optimizer, trainer, evaluator, and job tests pass
+  **48/48**, with clean Ruff, byte compilation, Bash syntax, and diff checks.
+  Immutable runtime
+  `scratchpad/shohin_ettr_joint_runtime_89fc0ad_r2` contains 3,353 measured
+  files and binds `SHA256SUMS` SHA-256
+  `fb187d9ab3a28b03d54c01642450d463db1507589cc904479b29cd078668a579`.
+  An earlier `r1` transfer is invalid and must never be used: its archive was
+  truncated before `train/` and failed the closed-world hash gate.
+
+  Random-init diagnostic jobs `723950/723951` are held, not canceled, so
+  owner-clipped native replication and dependency-bound post-training get
+  the next released H100s. Their roughly 97M general positions were never
+  sufficient for a language-model-from-scratch claim. ETTR-only controls
+  `723962/723963` remain queued. Promotion still requires replicated causal
+  gains and public non-regression; the three-stream stage additionally
+  requires improvement over its exact parent, not merely over raw 300k.
+
+  Decision:
+  `finish_native_two_seed_causal_measurement_then_test_one_optimizer_raw_instruction_ettr_coadaptation_for_joint_reasoning_and_public_capability`.

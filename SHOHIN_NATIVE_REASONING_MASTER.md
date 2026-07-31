@@ -52924,3 +52924,23 @@ same controls.
 
 Current decision:
 `native_joint_training_is_the_main_hypothesis_results_pending_no_reasoning_claim`.
+# 2026-07-31 Native Co-Adaptation And Three-Stream Gate
+
+The frozen-base ETTR studies localized the main blocker to representation and
+interface co-adaptation: one seed contains sparse intervention-sensitive
+geometry while the other changes terminal state without letting the late query
+consume it. The current experiment therefore trains the 125.1M language base
+and 67.7M ETTR architecture together under one optimizer. Warm 95/5 and 85/15
+position-matched two-seed arms are live, with source-deleted causal evaluation
+and public GSM8K/MATH-500/HumanEval/MBPP boards dependency-bound. ETTR gradients
+are heavy-tailed, so a matched owner-wise clipping arm independently clips base
+and architecture owners while preserving every other registered variable.
+
+The next bounded stage is not detached SFT. It keeps the complete 192.8M system
+under one optimizer and schedules raw language, completion-masked audited
+instruction data, and ETTR by actual supervised positions at 15/70/15. The
+instruction control uses the hash-frozen 1,213,830-row V9 broad corpus with a
+20% code share and no VRWM replay. It must improve public behavior while
+retaining or improving source-deleted WORLD and COMMAND causality relative to
+its exact native parent. Training loss, formatting, or a one-seed result cannot
+promote it.
