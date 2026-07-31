@@ -20269,3 +20269,51 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `first_strict_seed1_causal_pass_is_real_but_unreplicated_preserve_mechanism_reduce_seed_variance_with_factor_balance_and_semantic_reader_anchor`.
+
+- **2026-07-31 01:43--01:53 EDT** -- **Every physically healthy reserved
+  H100 is assigned; a matched reader-localization factorial is now running,
+  and the four-H100 factor-balanced early gate is stable through increasing
+  autonomous exposure.**
+
+  Anchor-eight seed 1 completed and failed strict promotion. It reduced
+  paired total loss by `-17.69751` with interval
+  `[-18.49055, -16.90447]` and raised COMMAND query margin from `0` to
+  `4.375%`, but WORLD remained exactly zero. Its evaluation report SHA-256
+  is
+  `c9f41dbc43c6633142ea0c5d4570cfc3a44dc5c41d5705ff1e30f9862f93f68a`.
+  This is consistent with the prior rare-WORLD-credit diagnosis and is not a
+  winner.
+
+  Two idle H100s on `evc46` and `evc47` now run a factor-balanced
+  cross-reader swap: seed 1 receives seed 2's initial reader, while seed 2
+  receives seed 1's. Both are trainable and finite through update `200`.
+  The exact launcher SHA-256 is
+  `dc09edb68c4906e7485a9b7ff5208d1a6ef07f6b1c99f2aa5eeefc0548b3ceac`.
+  The two idle H100s on `evc41` run the complementary frozen-reader swap
+  pair; both are finite through update `100`. Its exact task wrapper
+  SHA-256 is
+  `3f99b64c7a7b10afe12abea22751120d2f5605f92976e1dd124fe7125a8cdbf9`.
+  Together with the own-reader factor-balanced and own-reader frozen arms,
+  this forms a controlled `own/swap x trainable/frozen` localization of
+  semantic-reader initialization versus upstream compiler/reactor
+  adaptation. Outputs are isolated under the `crossreader29b` and
+  `crossreaderanchor29b` tags.
+
+  The strict evaluator wrapper now accepts only an explicitly selected
+  immutable runtime/source-commit pair and verifies the complete runtime
+  manifest before scoring. Its SHA-256 is
+  `760440aef2d38b66d87d3ca711dd3d3dbd3f613d2df029c6cb84a5b66194bdb0`;
+  the scoring implementation and thresholds are unchanged.
+
+  The corrected four-H100 factor-balanced seed-1 gate reached update `350`
+  of `1,000`, world size `4`, coupling probability `0.3562`, finite loss
+  `1.23996`, and finite pre-clip gradient norm `34`. The own-reader
+  factor-balanced seeds are finite after entering their autonomous ramp;
+  own-reader frozen seeds are finite through update `750`. All physically
+  healthy allocated H100s are now assigned useful training or evaluation.
+  `evc33`, `evc40`, and the absent second device on `evc44` remain excluded
+  because physical inspection failed; nominal Slurm GRES is not counted as
+  usable compute.
+
+  Decision:
+  `use_all_verified_h100s_but_keep_experiments_identifiable_reader_factorial_and_world4_gate_decide_the_first_replicable_scale_recipe`.
