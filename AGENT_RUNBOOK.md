@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-31 13:25 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-31 14:20 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -21283,3 +21283,44 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `learn_each_required_interface_on_the_coadapted_base_compose_only_hash_bound_components_then_spend_long_run_compute_only_after_nonempty_packet_and_autonomous_causal_gates_pass`.
+
+- **2026-07-31 13:25--14:20 EDT** -- **The first component composition
+  restores structured WORLD packets and intervention-sensitive state, but
+  does not yet restore causal query readout.**
+
+  Evaluation retry `724426` completed cleanly against the zero-update
+  composition
+  `train/ettr_joint_composed_i94e01s1_causal549_fb8725b`. The report is
+  `artifacts/evals/ettr_joint_composed_i94e01s1_causal549_f8282c4_trace.json`,
+  with SHA-256
+  `ec378fb825318594887d60935c8fb4cdf2d4eb4e8a1803dc465c4d9ef7a42b06`.
+  The composed model improves paired total loss by `-9.4029`, 95% CI
+  `[-9.6234,-9.1824]`, packet loss by `-3.5856`, and transaction loss by
+  `-2.4662` relative to its exact `5/94/1` parent. WORLD-intervention hard
+  terminal states differ on every held-out pair; COMMAND-intervention hard
+  terminal states differ on `57.2266%` of pairs. This is the first
+  co-adapted-base result that clearly rejects the old constant-state fixed
+  point.
+
+  Initial packet geometry is materially nonempty: positive active accuracy
+  is `97.7618%`, positive root `92.3828%`, positive relation `42.8450%`,
+  type top-1 `86.5838%`, and value-code top-1 `58.8154%`. Exact complete
+  packets remain `0%` because residual relation/value errors compound across
+  the whole packet. The autonomous reactor still predicts WRITE for every
+  supervised transaction; source/target top-1 are only `7.0282%/14.3072%`
+  and complete factual transactions are `1.0824%`. Most importantly, WORLD
+  and COMMAND query difference-in-differences remain exactly zero, with zero
+  joint top-1 and zero paired-order success. Token LM loss regresses by
+  `+0.5016`.
+
+  This is an intermediate mechanism win, not native reasoning. It proves
+  that the ETTR component interfaces can transfer into the co-adapted base
+  and create factual state, while localizing the remaining failure to exact
+  packet symbol binding, reactor action selection, and terminal-state query
+  consumption. Jobs `724404--724409` continue the matched 5,000-update
+  compiler/reactor/reader island curricula. Rank them only by held-out
+  interface metrics, compose the best hash-bound modules, and require
+  source-deleted causal query effects before any long training promotion.
+
+  Decision:
+  `treat_nonempty_intervention_sensitive_state_as_a_real_intermediate_gate_but_require_exact_interface_composition_and_nonzero_query_causality_for_reasoning`.

@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from endogenous_typed_theory_reactor import (
     GenericTransactionReactor,
@@ -14,6 +15,7 @@ from train_ettr_component_island import (
     ETTRComponentIslandError,
     _balanced_binary_nll,
     _masked_categorical_cross_entropy,
+    _masked_class_balanced_cross_entropy,
     _masked_categorical_nll,
     _reactor_policy_logits,
     compiler_packet_loss,
@@ -200,6 +202,28 @@ def test_masked_categorical_cross_entropy_recovers_improbable_class() -> None:
     assert logits.grad[0, 0].item() == pytest.approx(-1.0)
     assert logits.grad[0, 1].item() == pytest.approx(1.0)
     assert torch.equal(logits.grad[1], torch.zeros(2))
+
+
+def test_masked_class_balanced_cross_entropy_equalizes_target_classes() -> None:
+    logits = torch.tensor(
+        [
+            [4.0, 0.0],
+            [4.0, 0.0],
+            [4.0, 0.0],
+            [4.0, 0.0],
+        ],
+        requires_grad=True,
+    )
+    targets = torch.tensor([0, 0, 0, 1])
+    mask = torch.ones(4, dtype=torch.bool)
+    loss = _masked_class_balanced_cross_entropy(logits, targets, mask)
+    assert loss is not None
+    row_losses = F.cross_entropy(logits, targets, reduction="none")
+    expected = 0.5 * (row_losses[:3].mean() + row_losses[3])
+    assert loss.item() == pytest.approx(expected.item())
+    loss.backward()
+    assert logits.grad is not None
+    assert torch.isfinite(logits.grad).all()
 
 
 def test_reactor_policy_logit_capture_matches_frozen_policy() -> None:

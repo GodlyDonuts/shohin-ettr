@@ -30,6 +30,7 @@ START_POSITION=${START_POSITION:-0}
 LEARNING_RATE=${LEARNING_RATE:-1e-4}
 GRADIENT_CLIP=${GRADIENT_CLIP:-1.0}
 EVAL_BATCHES=${EVAL_BATCHES:-32}
+REACTOR_REDUCTION=${REACTOR_REDUCTION:-decision-mean}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
 cd "$CODE_ROOT"
@@ -73,4 +74,5 @@ parent_model_sha=$(sha256sum \
   --start-position "$START_POSITION" \
   --learning-rate "$LEARNING_RATE" \
   --gradient-clip "$GRADIENT_CLIP" \
-  --eval-batches "$EVAL_BATCHES"
+  --eval-batches "$EVAL_BATCHES" \
+  --reactor-reduction "$REACTOR_REDUCTION"

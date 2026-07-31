@@ -60,6 +60,7 @@ from probe_ettr_oracle_interfaces import (
 RUN_SCHEMA = "shohin-ettr-component-island-run-v1"
 REPORT_SCHEMA = "shohin-ettr-component-island-report-v1"
 _COMPONENTS = ("compiler", "reactor", "reader")
+_REACTOR_REDUCTIONS = ("decision-mean", "head-class-balanced")
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _POLICY_FIELDS = (
@@ -233,6 +234,39 @@ def _masked_categorical_cross_entropy(
     if not bool(mask.any()):
         return None
     return F.cross_entropy(logits[mask].float(), targets[mask])
+
+
+def _masked_class_balanced_cross_entropy(
+    logits: torch.Tensor,
+    targets: torch.Tensor,
+    mask: torch.Tensor,
+) -> torch.Tensor | None:
+    """Average supported target classes equally within one actuator head."""
+
+    if not bool(mask.any()):
+        return None
+    losses = F.cross_entropy(
+        logits.float(),
+        targets,
+        reduction="none",
+    )
+    class_count = logits.shape[-1]
+    numerators = torch.zeros(
+        class_count,
+        dtype=losses.dtype,
+        device=losses.device,
+    ).scatter_add_(
+        0,
+        targets.flatten(),
+        (losses * mask).flatten(),
+    )
+    counts = torch.zeros_like(numerators).scatter_add_(
+        0,
+        targets.flatten(),
+        mask.flatten().to(losses.dtype),
+    )
+    present = counts.gt(0)
+    return (numerators[present] / counts[present]).mean()
 
 
 def _reactor_policy_logits(
@@ -446,7 +480,16 @@ def _compiler_loss(
 def _reactor_loss(
     model: EndogenousTypedTheoryReactorGPT,
     batch: ETTRContinuationBatch,
+    *,
+    reduction: str,
 ) -> tuple[torch.Tensor, dict[str, float]]:
+    if reduction not in _REACTOR_REDUCTIONS:
+        raise ETTRComponentIslandError("reactor reduction differs")
+    loss_function = (
+        _masked_class_balanced_cross_entropy
+        if reduction == "head-class-balanced"
+        else _masked_categorical_cross_entropy
+    )
     targets = batch.transaction_targets
     masks = policy_masks(targets)
     state = packet_targets_to_state(
@@ -471,7 +514,7 @@ def _reactor_loss(
             command_attention_mask=batch.episodes.command.attention_mask,
         )
         for name in _POLICY_FIELDS:
-            loss = _masked_categorical_cross_entropy(
+            loss = loss_function(
                 logits[name],
                 getattr(targets, name)[:, step],
                 masks[name][:, step],
@@ -606,11 +649,16 @@ def component_loss(
     component: str,
     *,
     reader_injection: str = "stage",
+    reactor_reduction: str = "decision-mean",
 ) -> tuple[torch.Tensor, dict[str, float]]:
     if component == "compiler":
         return _compiler_loss(model, batch)
     if component == "reactor":
-        return _reactor_loss(model, batch)
+        return _reactor_loss(
+            model,
+            batch,
+            reduction=reactor_reduction,
+        )
     if component == "reader":
         return _reader_loss(
             model,
@@ -762,6 +810,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--eval-batches", type=int, default=16)
     parser.add_argument("--log-every", type=int, default=10)
     parser.add_argument(
+        "--reactor-reduction",
+        choices=_REACTOR_REDUCTIONS,
+        default="decision-mean",
+    )
+    parser.add_argument(
         "--reader-injection",
         choices=("stage", "late", "postnorm", "postnorm-scaled"),
         default="stage",
@@ -794,6 +847,15 @@ def _validate_args(args: argparse.Namespace) -> None:
         or not math.isfinite(args.gradient_clip)
         or args.gradient_clip <= 0.0
         or (args.component != "reader" and args.reader_injection != "stage")
+        or (
+            args.component != "reactor"
+            and getattr(
+                args,
+                "reactor_reduction",
+                "decision-mean",
+            )
+            != "decision-mean"
+        )
         or ((initial_component is None) != (initial_component_sha256 is None))
         or (
             initial_component_sha256 is not None
@@ -912,6 +974,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "ownership": ownership,
             "protected_checkpoint_sha256": protected.checkpoint_sha256,
             "reader_injection": args.reader_injection,
+            "reactor_reduction": args.reactor_reduction,
             "release_file_sha256": args.release_sha256,
             "run_contract_sha256": args.run_contract_sha256,
             "schema": RUN_SCHEMA,
@@ -967,6 +1030,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     batch,
                     args.component,
                     reader_injection=args.reader_injection,
+                    reactor_reduction=args.reactor_reduction,
                 )
             if not bool(torch.isfinite(loss)):
                 raise ETTRComponentIslandError(
@@ -1044,6 +1108,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "release_file_sha256": args.release_sha256,
             "release_manifest_sha256": stream.manifest.sha256(),
             "reader_injection": args.reader_injection,
+            "reactor_reduction": args.reactor_reduction,
             "schema": REPORT_SCHEMA,
             "source_commit": args.source_commit,
             "start_position": args.start_position,

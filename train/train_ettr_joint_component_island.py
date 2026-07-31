@@ -24,6 +24,7 @@ from ettr_packet_index import ETTRDiskPacketSufficiencyIndex
 from ettr_v3_streaming import ETTRV3StreamingRelease, move_continuation_batch
 from eval_ettr_v3 import _parameter_sha256, _read_hash_bound_json
 from train_ettr_component_island import (
+    _REACTOR_REDUCTIONS,
     _canonical_bytes,
     _component_state,
     _evaluate_interfaces,
@@ -71,6 +72,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--gradient-clip", type=float, default=1.0)
     parser.add_argument("--eval-batches", type=int, default=32)
     parser.add_argument("--log-every", type=int, default=10)
+    parser.add_argument(
+        "--reactor-reduction",
+        choices=_REACTOR_REDUCTIONS,
+        default="decision-mean",
+    )
     return parser.parse_args(argv)
 
 
@@ -103,6 +109,15 @@ def _validate_args(args: argparse.Namespace) -> None:
         or args.weight_decay < 0.0
         or not math.isfinite(args.gradient_clip)
         or args.gradient_clip <= 0.0
+        or (
+            args.component != "reactor"
+            and getattr(
+                args,
+                "reactor_reduction",
+                "decision-mean",
+            )
+            != "decision-mean"
+        )
         or args.output.exists()
         or args.output.is_symlink()
         or not args.output.parent.is_dir()
@@ -234,6 +249,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 args.parent_run_contract_sha256
             ),
             "release_file_sha256": args.release_sha256,
+            "reactor_reduction": args.reactor_reduction,
             "schema": CONTRACT_SCHEMA,
             "source_commit": args.source_commit,
             "start_position": args.start_position,
@@ -294,6 +310,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     model,
                     batch,
                     args.component,
+                    reactor_reduction=args.reactor_reduction,
                 )
             if not bool(torch.isfinite(loss)):
                 raise ETTRJointComponentIslandError(
@@ -398,6 +415,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             ),
             "release_file_sha256": args.release_sha256,
             "release_manifest_sha256": stream.manifest.sha256(),
+            "reactor_reduction": args.reactor_reduction,
             "schema": REPORT_SCHEMA,
             "source_commit": args.source_commit,
             "source_verification": source_verification,
