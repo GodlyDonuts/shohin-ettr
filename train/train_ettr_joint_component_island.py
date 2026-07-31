@@ -21,6 +21,10 @@ import torch
 
 from ettr_objectives import ETTRObjectiveConfig
 from ettr_packet_index import ETTRDiskPacketSufficiencyIndex
+from ettr_token_transcode import (
+    TokenNativeETTRTranscoder,
+    receipt_value as transcode_receipt_value,
+)
 from ettr_v3_streaming import ETTRV3StreamingRelease, move_continuation_batch
 from eval_ettr_v3 import _parameter_sha256, _read_hash_bound_json
 from train_ettr_component_island import (
@@ -59,6 +63,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--release-sha256", required=True)
     parser.add_argument("--data-root", type=Path, required=True)
     parser.add_argument("--tokenizer", type=Path, required=True)
+    parser.add_argument("--target-tokenizer", type=Path)
     parser.add_argument("--parent-joint-model", type=Path, required=True)
     parser.add_argument("--parent-joint-model-sha256", required=True)
     parser.add_argument("--parent-run-contract", type=Path, required=True)
@@ -147,6 +152,13 @@ def _validate_args(args: argparse.Namespace) -> None:
                 or _HEX64.fullmatch(args.initial_component_sha256) is None
             )
         )
+        or (
+            getattr(args, "target_tokenizer", None) is not None
+            and (
+                not args.target_tokenizer.is_absolute()
+                or not args.target_tokenizer.is_file()
+            )
+        )
         or args.output.exists()
         or args.output.is_symlink()
         or not args.output.parent.is_dir()
@@ -218,6 +230,24 @@ def main(argv: Sequence[str] | None = None) -> int:
         tokenizer_path=args.tokenizer,
     )
     source_verification = stream.verify_source_shards()
+    transcoder = (
+        None
+        if args.target_tokenizer is None
+        else TokenNativeETTRTranscoder(
+            args.tokenizer,
+            args.target_tokenizer,
+        )
+    )
+    if (
+        transcoder is None
+        and model.base.cfg.vocab_size != stream.tokenizer.get_vocab_size()
+    ) or (
+        transcoder is not None
+        and model.base.cfg.vocab_size != transcoder.target_vocab_size
+    ):
+        raise ETTRJointComponentIslandError(
+            "joint component tokenizer vocabulary differs"
+        )
     model.to(device=device, dtype=torch.bfloat16)
     parent_parameter_sha256 = _parameter_sha256(model)
     ownership = select_trainable_component(model, args.component)
@@ -263,6 +293,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             max_batches=args.eval_batches,
             reader_injection=args.reader_injection,
             reader_state_source=args.reader_state_source,
+            batch_transform=(
+                None
+                if transcoder is None
+                else transcoder.transcode_batch
+            ),
         )
         contract = {
             "component": args.component,
@@ -301,6 +336,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             "updates": args.updates,
             "weight_decay": args.weight_decay,
         }
+        if transcoder is not None:
+            contract["token_transcode"] = transcode_receipt_value(
+                transcoder.receipt
+            )
         contract_sha256 = _write_no_replace(
             args.output / "island-contract.json",
             _canonical_bytes(contract),
@@ -339,6 +378,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
                 last_position, cpu_batch = next(iterator)
             packet_index.verify_train((cpu_batch,))
+            if transcoder is not None:
+                cpu_batch = transcoder.transcode_batch(cpu_batch)
             batch = move_continuation_batch(cpu_batch, device)
             batch.validate(
                 model.config,
@@ -411,6 +452,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             max_batches=args.eval_batches,
             reader_injection=args.reader_injection,
             reader_state_source=args.reader_state_source,
+            batch_transform=(
+                None
+                if transcoder is None
+                else transcoder.transcode_batch
+            ),
         )
         final_component = _component_state(model, args.component)
         final_path = args.output / "component-final.safetensors"

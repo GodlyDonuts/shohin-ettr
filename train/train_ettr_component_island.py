@@ -16,7 +16,7 @@ import math
 import os
 from pathlib import Path
 import re
-from typing import Mapping, Sequence
+from typing import Callable, Mapping, Sequence
 
 from safetensors.torch import load_file, save_file
 import torch
@@ -719,6 +719,9 @@ def _evaluate_interfaces(
     max_batches: int,
     reader_injection: str,
     reader_state_source: str = "oracle",
+    batch_transform: (
+        Callable[[ETTRContinuationBatch], ETTRContinuationBatch] | None
+    ) = None,
 ) -> dict[str, object]:
     model.eval()
     counts: dict[str, dict[str, list[int]]] = {
@@ -741,6 +744,8 @@ def _evaluate_interfaces(
         if observed >= max_batches:
             break
         packet_index.verify_validation((cpu_batch,))
+        if batch_transform is not None:
+            cpu_batch = batch_transform(cpu_batch)
         batch = move_continuation_batch(cpu_batch, device)
         with torch.inference_mode(), torch.autocast(
             device_type="cuda",

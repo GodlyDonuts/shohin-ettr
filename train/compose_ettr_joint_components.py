@@ -404,6 +404,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         "schema": MODEL_SCHEMA,
         "source_commit": args.source_commit,
     }
+    for optional_name in ("base_import", "base_rms_norm_eps"):
+        if optional_name in parent_payload:
+            model_payload[optional_name] = parent_payload[optional_name]
     if args.query_readout_geometry != "stage":
         model_payload["query_readout_geometry"] = (
             args.query_readout_geometry

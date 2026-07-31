@@ -21,6 +21,7 @@ RELEASE_ROOT=${RELEASE_ROOT:?set ETTR release root}
 RELEASE_SHA256=${RELEASE_SHA256:?set ETTR release hash}
 ETTR_DATA_ROOT=${ETTR_DATA_ROOT:?set ETTR data root}
 TOKENIZER=${TOKENIZER:?set tokenizer path}
+TARGET_TOKENIZER=${TARGET_TOKENIZER:-}
 PARENT_RUN_DIR=${PARENT_RUN_DIR:?set parent tri-stream run}
 OUTPUT=${OUTPUT:?set fresh component output}
 COMPONENT=${COMPONENT:?set compiler, reactor, or reader}
@@ -75,6 +76,15 @@ if [[ -n "$INITIAL_COMPONENT$INITIAL_COMPONENT_SHA256" ]]; then
   )
 fi
 
+target_tokenizer_args=()
+if [[ -n "$TARGET_TOKENIZER" ]]; then
+  [[ "$TARGET_TOKENIZER" == /* && -f "$TARGET_TOKENIZER" ]] || {
+    echo "target tokenizer differs" >&2
+    exit 2
+  }
+  target_tokenizer_args=(--target-tokenizer "$TARGET_TOKENIZER")
+fi
+
 "$PYTHON_ROOT/bin/python" \
   "$CODE_ROOT/train/train_ettr_joint_component_island.py" \
   --component "$COMPONENT" \
@@ -82,6 +92,7 @@ fi
   --release-sha256 "$RELEASE_SHA256" \
   --data-root "$ETTR_DATA_ROOT" \
   --tokenizer "$TOKENIZER" \
+  "${target_tokenizer_args[@]}" \
   --parent-joint-model "$PARENT_RUN_DIR/joint-model-final.pt" \
   --parent-joint-model-sha256 "$parent_model_sha" \
   --parent-run-contract "$PARENT_RUN_DIR/run-contract.json" \

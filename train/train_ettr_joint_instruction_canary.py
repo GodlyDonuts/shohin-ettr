@@ -338,7 +338,11 @@ def _load_parent(
         "schema",
         "source_commit",
     }
-    optional = {"query_readout_geometry"}
+    optional = {
+        "base_import",
+        "base_rms_norm_eps",
+        "query_readout_geometry",
+    }
     if (
         not isinstance(payload, Mapping)
         or not required <= set(payload) <= required | optional
@@ -352,6 +356,14 @@ def _load_parent(
         GPT(GPTConfig(**payload["base_config"])),
         TheoryReactorConfig(**payload["ettr_config"]),
     )
+    base_rms_norm_eps = payload.get("base_rms_norm_eps")
+    if base_rms_norm_eps is not None:
+        try:
+            model.base.set_rms_norm_eps(base_rms_norm_eps)
+        except (RuntimeError, TypeError, ValueError) as exc:
+            raise ETTRTriCanaryError(
+                "parent base RMSNorm epsilon differs"
+            ) from exc
     try:
         incompatibility = model.load_state_dict(payload["model"], strict=True)
     except (RuntimeError, TypeError) as exc:

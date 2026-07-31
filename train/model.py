@@ -5,6 +5,7 @@ squared-ReLU, value embeddings, weight-shared/looped depth) are ablation-gated a
 on this later — see MASTER_PLAN.md §3.
 """
 from dataclasses import dataclass
+import math
 
 import torch
 import torch.nn as nn
@@ -183,6 +184,26 @@ class GPT(nn.Module):
     def _init(self, m):
         if isinstance(m, (nn.Linear, nn.Embedding)):
             nn.init.normal_(m.weight, mean=0.0, std=0.02)
+
+    def set_rms_norm_eps(self, eps):
+        """Set a hash-bound external-backbone norm epsilon explicitly."""
+
+        if (
+            isinstance(eps, bool)
+            or not isinstance(eps, (float, int))
+            or not math.isfinite(float(eps))
+            or float(eps) <= 0.0
+        ):
+            raise ValueError("RMSNorm epsilon must be finite and positive")
+        selected = float(eps)
+        count = 0
+        for module in self.modules():
+            if isinstance(module, RMSNorm):
+                module.eps = selected
+                count += 1
+        norms_per_block = 4 if self.cfg.qk_norm else 2
+        if count != norms_per_block * self.cfg.n_layer + 1:
+            raise RuntimeError("RMSNorm module inventory differs")
 
     def forward(
         self, idx, targets=None, cache=None, pos=0, return_cache=False,
