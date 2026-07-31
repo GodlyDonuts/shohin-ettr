@@ -24,6 +24,7 @@ from ettr_optimization import ETTROptimizerBundle
 
 
 JointStreamName = Literal["general", "ettr"]
+TriStreamName = Literal["general", "instruction", "ettr"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -240,6 +241,230 @@ class ETTRJointPositionScheduler:
 
 
 @dataclass(frozen=True, slots=True)
+class ETTRTriScheduleConfig:
+    """Exact three-stream target mix in charged supervised positions."""
+
+    general_position_weight: int
+    instruction_position_weight: int
+    ettr_position_weight: int
+
+    def validate(self) -> None:
+        values = (
+            self.general_position_weight,
+            self.instruction_position_weight,
+            self.ettr_position_weight,
+        )
+        if any(
+            not isinstance(value, int)
+            or isinstance(value, bool)
+            or value <= 0
+            for value in values
+        ):
+            raise TheoryReactorError(
+                "tri-stream position weights must be positive integers"
+            )
+
+    @property
+    def fractions(self) -> tuple[Fraction, Fraction, Fraction]:
+        self.validate()
+        total = (
+            self.general_position_weight
+            + self.instruction_position_weight
+            + self.ettr_position_weight
+        )
+        return (
+            Fraction(self.general_position_weight, total),
+            Fraction(self.instruction_position_weight, total),
+            Fraction(self.ettr_position_weight, total),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class ETTRTriScheduleReceipt:
+    general_positions: int
+    instruction_positions: int
+    ettr_positions: int
+    general_updates: int
+    instruction_updates: int
+    ettr_updates: int
+
+    @property
+    def total_positions(self) -> int:
+        return (
+            self.general_positions
+            + self.instruction_positions
+            + self.ettr_positions
+        )
+
+
+class ETTRTriPositionScheduler:
+    """Choose among language, instruction, and ETTR by target-share error."""
+
+    _STREAMS: tuple[TriStreamName, ...] = (
+        "general",
+        "instruction",
+        "ettr",
+    )
+
+    def __init__(
+        self,
+        config: ETTRTriScheduleConfig,
+        *,
+        receipt: ETTRTriScheduleReceipt | None = None,
+    ) -> None:
+        config.validate()
+        self.config = config
+        self._receipt = (
+            ETTRTriScheduleReceipt(0, 0, 0, 0, 0, 0)
+            if receipt is None
+            else receipt
+        )
+        self._validate_receipt(self._receipt)
+        self._pending: tuple[TriStreamName, int] | None = None
+
+    @property
+    def receipt(self) -> ETTRTriScheduleReceipt:
+        return self._receipt
+
+    def select(
+        self,
+        *,
+        general_positions: int,
+        instruction_positions: int,
+        ettr_positions: int,
+    ) -> TriStreamName:
+        if self._pending is not None:
+            raise TheoryReactorError(
+                "tri-stream choice must be recorded before selecting again"
+            )
+        charges = {
+            "general": general_positions,
+            "instruction": instruction_positions,
+            "ettr": ettr_positions,
+        }
+        for value in charges.values():
+            self._validate_charge(value)
+        errors = {
+            stream: self._candidate_error(stream, charges[stream])
+            for stream in self._STREAMS
+        }
+        minimum = min(errors.values())
+        tied = [
+            stream for stream in self._STREAMS if errors[stream] == minimum
+        ]
+        if len(tied) == 1:
+            selected = tied[0]
+        else:
+            deficits = self._current_deficits()
+            selected = max(
+                tied,
+                key=lambda stream: (
+                    deficits[stream],
+                    -self._STREAMS.index(stream),
+                ),
+            )
+        self._pending = (selected, charges[selected])
+        return selected
+
+    def record(
+        self,
+        *,
+        stream: TriStreamName,
+        positions: int,
+    ) -> ETTRTriScheduleReceipt:
+        self._validate_charge(positions)
+        if self._pending != (stream, positions):
+            raise TheoryReactorError(
+                "tri-stream charge differs from the selected update"
+            )
+        values = asdict(self._receipt)
+        values[f"{stream}_positions"] += positions
+        values[f"{stream}_updates"] += 1
+        receipt = ETTRTriScheduleReceipt(**values)
+        self._validate_receipt(receipt)
+        self._receipt = receipt
+        self._pending = None
+        return receipt
+
+    def state_dict(self) -> dict[str, object]:
+        if self._pending is not None:
+            raise TheoryReactorError(
+                "tri-stream state cannot be saved during an update"
+            )
+        return {
+            "schema": "shohin-ettr-tri-position-scheduler-v1",
+            "config": asdict(self.config),
+            "receipt": asdict(self._receipt),
+        }
+
+    def _candidate_error(
+        self,
+        stream: TriStreamName,
+        positions: int,
+    ) -> Fraction:
+        current = {
+            name: getattr(self._receipt, f"{name}_positions")
+            for name in self._STREAMS
+        }
+        current[stream] += positions
+        total = sum(current.values())
+        targets = dict(zip(self._STREAMS, self.config.fractions, strict=True))
+        return sum(
+            (
+                abs(Fraction(current[name], total) - targets[name])
+                for name in self._STREAMS
+            ),
+            start=Fraction(0, 1),
+        )
+
+    def _current_deficits(self) -> dict[TriStreamName, Fraction]:
+        total = self._receipt.total_positions
+        targets = dict(zip(self._STREAMS, self.config.fractions, strict=True))
+        if total == 0:
+            return targets
+        return {
+            name: targets[name]
+            - Fraction(
+                getattr(self._receipt, f"{name}_positions"),
+                total,
+            )
+            for name in self._STREAMS
+        }
+
+    @staticmethod
+    def _validate_charge(value: int) -> None:
+        if (
+            not isinstance(value, int)
+            or isinstance(value, bool)
+            or value <= 0
+        ):
+            raise TheoryReactorError(
+                "tri-stream charged positions must be a positive integer"
+            )
+
+    @classmethod
+    def _validate_receipt(
+        cls,
+        receipt: ETTRTriScheduleReceipt,
+    ) -> None:
+        if not isinstance(receipt, ETTRTriScheduleReceipt):
+            raise TheoryReactorError("tri-stream receipt type differs")
+        for stream in cls._STREAMS:
+            positions = getattr(receipt, f"{stream}_positions")
+            updates = getattr(receipt, f"{stream}_updates")
+            if (
+                not isinstance(positions, int)
+                or isinstance(positions, bool)
+                or positions < 0
+                or not isinstance(updates, int)
+                or isinstance(updates, bool)
+                or updates < 0
+                or (positions == 0) != (updates == 0)
+            ):
+                raise TheoryReactorError("tri-stream receipt differs")
+
+
+@dataclass(frozen=True, slots=True)
 class GeneralLanguageStepConfig:
     gradient_accumulation_steps: int = 1
     gradient_clip: float = 1.0
@@ -400,8 +625,12 @@ __all__ = [
     "ETTRJointPositionScheduler",
     "ETTRJointScheduleConfig",
     "ETTRJointScheduleReceipt",
+    "ETTRTriPositionScheduler",
+    "ETTRTriScheduleConfig",
+    "ETTRTriScheduleReceipt",
     "GeneralLanguageStepConfig",
     "GeneralLanguageUpdateReceipt",
     "GeneralLanguageUpdateStep",
     "JointStreamName",
+    "TriStreamName",
 ]

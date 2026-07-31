@@ -7,6 +7,8 @@ from endogenous_typed_theory_reactor import TheoryReactorError
 from ettr_joint_stream import (
     ETTRJointPositionScheduler,
     ETTRJointScheduleConfig,
+    ETTRTriPositionScheduler,
+    ETTRTriScheduleConfig,
     GeneralLanguageStepConfig,
     GeneralLanguageUpdateStep,
 )
@@ -95,6 +97,63 @@ def test_position_scheduler_rejects_invalid_weights(
 ) -> None:
     with pytest.raises(TheoryReactorError, match="weights"):
         ETTRJointPositionScheduler(config)
+
+
+def test_tri_scheduler_tracks_variable_instruction_charge() -> None:
+    scheduler = ETTRTriPositionScheduler(
+        ETTRTriScheduleConfig(3, 4, 3)
+    )
+    instruction_charges = (10, 14, 8, 17, 11)
+    for index in range(2_000):
+        instruction = instruction_charges[index % len(instruction_charges)]
+        stream = scheduler.select(
+            general_positions=32,
+            instruction_positions=instruction,
+            ettr_positions=9,
+        )
+        scheduler.record(
+            stream=stream,
+            positions={
+                "general": 32,
+                "instruction": instruction,
+                "ettr": 9,
+            }[stream],
+        )
+    receipt = scheduler.receipt
+    observed = (
+        receipt.general_positions / receipt.total_positions,
+        receipt.instruction_positions / receipt.total_positions,
+        receipt.ettr_positions / receipt.total_positions,
+    )
+    assert observed == pytest.approx((0.3, 0.4, 0.3), abs=0.003)
+    assert min(
+        receipt.general_updates,
+        receipt.instruction_updates,
+        receipt.ettr_updates,
+    ) > 0
+    assert (
+        scheduler.state_dict()["schema"]
+        == "shohin-ettr-tri-position-scheduler-v1"
+    )
+
+
+def test_tri_scheduler_requires_record_before_next_selection() -> None:
+    scheduler = ETTRTriPositionScheduler(
+        ETTRTriScheduleConfig(7, 2, 1)
+    )
+    selected = scheduler.select(
+        general_positions=32,
+        instruction_positions=12,
+        ettr_positions=9,
+    )
+    with pytest.raises(TheoryReactorError, match="must be recorded"):
+        scheduler.select(
+            general_positions=32,
+            instruction_positions=12,
+            ettr_positions=9,
+        )
+    with pytest.raises(TheoryReactorError, match="charge differs"):
+        scheduler.record(stream=selected, positions=1)
 
 
 def test_general_update_changes_only_base_then_ettr_uses_same_optimizer() -> None:

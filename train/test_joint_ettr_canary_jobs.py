@@ -13,6 +13,15 @@ EVAL = (
 BOARD = (
     ROOT / "train" / "jobs" / "eval_joint_base_board.sbatch"
 ).read_text()
+TRI = (
+    ROOT / "train" / "jobs" / "joint_ettr_instruction_canary.sbatch"
+).read_text()
+TRI_EVAL = (
+    ROOT
+    / "train"
+    / "jobs"
+    / "eval_joint_ettr_instruction_canary.sbatch"
+).read_text()
 
 
 def test_joint_canary_requests_one_h100_and_verifies_runtime() -> None:
@@ -40,3 +49,22 @@ def test_joint_board_runs_the_locked_public_benchmarks() -> None:
     assert "--task humaneval" in BOARD
     assert "--task mbpp" in BOARD
     assert "len(rows) != 5" in BOARD
+
+
+def test_tri_stream_canary_is_parent_bound_and_code_retaining() -> None:
+    assert "--gres=gpu:nvidia_h100_pcie:1" in TRI
+    assert "--cpus-per-task=4" in TRI
+    assert "--mem=96G" in TRI
+    assert "sha256sum -c SHA256SUMS" in TRI
+    assert "train_ettr_joint_instruction_canary.py" in TRI
+    assert "--instruction-sample-weight code=0.20" in TRI
+    assert "--gradient-clip-mode owner" in TRI
+    assert "parent_model=" in TRI
+
+
+def test_tri_stream_evaluator_compares_parent_and_raw() -> None:
+    assert "--gres=gpu:nvidia_h100_pcie:1" in TRI_EVAL
+    assert "sha256sum -c SHA256SUMS" in TRI_EVAL
+    assert "eval_ettr_joint_instruction_model.py" in TRI_EVAL
+    assert "--parent-run-contract-sha256" in TRI_EVAL
+    assert "--parent-joint-model-sha256" in TRI_EVAL
