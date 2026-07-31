@@ -1023,7 +1023,7 @@ class SourceDeletedQueryReader(nn.Module):
             + self.open_state_read_floor * disposition[:, 0:1]
         )
         state_values = semantic_state * readable[:, :, None] + status
-        memory_values = state_values
+        memory_values = self.state_norm(state_values)
         memory_padding = state_padding
         if self.execution_trace_read_scale > 0.0:
             if (
@@ -1084,8 +1084,9 @@ class SourceDeletedQueryReader(nn.Module):
             )
             memory_values = torch.cat(
                 (
-                    state_values,
-                    self.execution_trace_read_scale * trace_values,
+                    memory_values,
+                    self.execution_trace_read_scale
+                    * self.state_norm(trace_values),
                 ),
                 dim=1,
             )
@@ -1102,8 +1103,8 @@ class SourceDeletedQueryReader(nn.Module):
             )
         read, _ = self.cross_attention(
             query,
-            self.state_norm(memory_values),
-            self.state_norm(memory_values),
+            memory_values,
+            memory_values,
             key_padding_mask=memory_padding,
             need_weights=False,
         )
