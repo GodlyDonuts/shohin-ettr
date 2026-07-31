@@ -192,6 +192,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default=0.0,
     )
     parser.add_argument(
+        "--soft-transaction-ettr-updates",
+        type=int,
+        default=0,
+    )
+    parser.add_argument(
         "--gradient-clip-mode",
         choices=("global", "owner", "component"),
         default="owner",
@@ -265,6 +270,7 @@ def _validate_args(args: argparse.Namespace) -> None:
             )
         )
         or not 0.0 <= args.open_state_read_floor <= 1.0
+        or not 0 <= args.soft_transaction_ettr_updates <= args.updates
         or args.log_every < 1
     ):
         raise ETTRTriCanaryError("tri-stream canary arguments differ")
@@ -450,11 +456,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         transaction=args.transaction_weight,
         commit_halt=args.commit_halt_weight,
     )
-    ettr_step_config = ETTRTrainStepConfig(
+    hard_ettr_step_config = ETTRTrainStepConfig(
         gradient_clip_mode=args.gradient_clip_mode,
         hard_transactions=True,
     )
-    ettr_step = ETTRTrainStep(
+    hard_ettr_step = ETTRTrainStep(
         model,
         optimizer,
         objective_config,
@@ -462,7 +468,25 @@ def main(argv: Sequence[str] | None = None) -> int:
         packet_sufficiency=packet_index,
         manifest_sha256=stream.manifest.sha256(),
         objective_weights=objective_weights,
-        step_config=ettr_step_config,
+        step_config=hard_ettr_step_config,
+    )
+    soft_ettr_step_config = ETTRTrainStepConfig(
+        gradient_clip_mode=args.gradient_clip_mode,
+        hard_transactions=False,
+    )
+    soft_ettr_step = (
+        ETTRTrainStep(
+            model,
+            optimizer,
+            objective_config,
+            manifest=stream.manifest,
+            packet_sufficiency=packet_index,
+            manifest_sha256=stream.manifest.sha256(),
+            objective_weights=objective_weights,
+            step_config=soft_ettr_step_config,
+        )
+        if args.soft_transaction_ettr_updates
+        else None
     )
     schedule = ETTRTriPositionScheduler(
         ETTRTriScheduleConfig(
@@ -493,7 +517,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         "ettr_manifest_sha256": stream.manifest.sha256(),
         "ettr_positions_per_update": ettr_positions,
         "ettr_release_sha256": args.release_sha256,
-        "ettr_step_config": _dataclass_contract(ettr_step_config),
+        "ettr_step_config": _dataclass_contract(hard_ettr_step_config),
+        "soft_transaction_ettr_updates": (
+            args.soft_transaction_ettr_updates
+        ),
+        "soft_transaction_step_config": (
+            _dataclass_contract(soft_ettr_step_config)
+            if soft_ettr_step is not None
+            else None
+        ),
         "general_corpora": general["corpora"],
         "general_inventory_sha256": general["inventory_sha256"],
         "general_legacy_scientific_control": True,
@@ -614,7 +646,21 @@ def main(argv: Sequence[str] | None = None) -> int:
                     raise ETTRTriCanaryError(
                         "ETTR stream position differs"
                     )
-                receipt = ettr_step.update((batch,))
+                use_soft_transactions = (
+                    soft_ettr_step is not None
+                    and schedule.receipt.ettr_updates
+                    < args.soft_transaction_ettr_updates
+                )
+                active_ettr_step = (
+                    soft_ettr_step
+                    if use_soft_transactions
+                    else hard_ettr_step
+                )
+                if active_ettr_step is None:
+                    raise ETTRTriCanaryError(
+                        "soft ETTR step is unexpectedly absent"
+                    )
+                receipt = active_ettr_step.update((batch,))
                 cursor = cursor.advance(
                     core_batches=len(stream.records["train"]),
                     world_size=1,
@@ -624,7 +670,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 final_losses["ettr"] = float(
                     receipt.total_loss.detach().float().cpu()
                 )
-                metrics = _ettr_metric_payload(receipt)
+                metrics = {
+                    **_ettr_metric_payload(receipt),
+                    "hard_transactions": not use_soft_transactions,
+                }
             position_receipt = schedule.record(
                 stream=selected,
                 positions=charged,

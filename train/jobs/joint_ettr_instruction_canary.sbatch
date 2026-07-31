@@ -46,6 +46,7 @@ TRANSACTION_WEIGHT=${TRANSACTION_WEIGHT:-1}
 COMMIT_HALT_WEIGHT=${COMMIT_HALT_WEIGHT:-0.5}
 GRADIENT_CLIP_MODE=${GRADIENT_CLIP_MODE:-owner}
 OPEN_STATE_READ_FLOOR=${OPEN_STATE_READ_FLOOR:-0}
+SOFT_TRANSACTION_ETTR_UPDATES=${SOFT_TRANSACTION_ETTR_UPDATES:-0}
 
 for path in \
   "$CODE_ROOT" "$RELEASE_ROOT" "$ETTR_DATA_ROOT" "$TOKENIZER" \
@@ -65,7 +66,8 @@ if [[ ! "$SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ \
   || ! "$UPDATES" =~ ^[1-9][0-9]*$ \
   || ! "$GENERAL_POSITION_WEIGHT" =~ ^[1-9][0-9]*$ \
   || ! "$INSTRUCTION_POSITION_WEIGHT" =~ ^[1-9][0-9]*$ \
-  || ! "$ETTR_POSITION_WEIGHT" =~ ^[1-9][0-9]*$ ]]; then
+  || ! "$ETTR_POSITION_WEIGHT" =~ ^[1-9][0-9]*$ \
+  || ! "$SOFT_TRANSACTION_ETTR_UPDATES" =~ ^[0-9]+$ ]]; then
   echo "tri-stream launch identity differs" >&2
   exit 2
 fi
@@ -181,6 +183,7 @@ args=(
   --transaction-weight "$TRANSACTION_WEIGHT"
   --commit-halt-weight "$COMMIT_HALT_WEIGHT"
   --open-state-read-floor "$OPEN_STATE_READ_FLOOR"
+  --soft-transaction-ettr-updates "$SOFT_TRANSACTION_ETTR_UPDATES"
   --gradient-clip-mode "$GRADIENT_CLIP_MODE"
 )
 for name in finemath4 openwebmath code_python finemath3; do
