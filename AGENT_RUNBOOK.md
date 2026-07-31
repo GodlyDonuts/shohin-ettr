@@ -20233,3 +20233,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `distributed_scale_is_ready_but_objective_is_not_factor_balance_rare_world_causal_credit_then_promote_only_on_replicated_source_deleted_world_and_command_margins`.
+
+- **2026-07-31 01:30--01:43 EDT** -- **The 5,000-update baseline produced
+  the first complete strict causal pass in seed 1, but seed 2 did not
+  replicate it; treat this as causal emergence plus seed sensitivity, not a
+  promotable winner.**
+
+  The source-deleted seed-1 evaluation changed all three learned components,
+  kept every metric finite, and reduced paired total loss by `-18.44397`
+  with 95% interval `[-19.31371, -17.57423]`. Its WORLD query-margin rate
+  increased from `0` to `0.78125%` (`1/128` answer-changing WORLD pairs),
+  while COMMAND increased from `0` to `8.125%` (`13/160`
+  answer-changing COMMAND pairs). Every preregistered strict gate therefore
+  passed. Evaluation report SHA-256 is
+  `c1813fcea4e582b18d0efdeaa14871c900fa444bb36521f4974d2a44f77f5828`.
+
+  The exact seed-2 replicate reduced paired total loss even more,
+  `-22.97191` with interval `[-23.53761, -22.40621]`, changed parameters,
+  and remained finite, but both WORLD and COMMAND query-margin rates stayed
+  exactly zero. Its strict learning signal is false and report SHA-256 is
+  `94df67d6771e90dd549d20f967e884c3083b4898c82899e38d3f4a41c1edacf3`.
+  This falsifies any replicated-baseline promotion claim while proving that
+  the existing architecture/objective can cross the causal gate in at least
+  one seed. The immediate problem is now variance and rare-factor credit,
+  not absence of all causal learning.
+
+  Factor-balanced seeds are finite through update `200`; factor-balanced
+  frozen-reader seeds are finite through update `150`. The anchor-eight
+  seed-1 trainer completed and its source-deleted evaluation is active.
+  Delta-4, horizon-8, autonomous-4,000, delta-8, and anchor-eight seed 2
+  remain finite. A corrected four-H100 factor-balanced 1,000-update early
+  gate is alive after exact warm-start validation and one-time replay; its
+  failed wrong-reader-hash predecessor remains preserved separately and
+  inadmissible.
+
+  Decision:
+  `first_strict_seed1_causal_pass_is_real_but_unreplicated_preserve_mechanism_reduce_seed_variance_with_factor_balance_and_semantic_reader_anchor`.
