@@ -5,11 +5,14 @@ import torch
 from endogenous_typed_theory_reactor import ReactorTrace, TypedTheoryState
 from ettr_objectives import (
     ETTRCausalQueryPair,
+    ETTRPacketTargets,
     ETTRTransactionPredictions,
     ETTRTransactionTargets,
 )
 from probe_ettr_causal_queries import (
     _depth_bucket,
+    _packet_geometry_row,
+    _packet_geometry_summary,
     _pair_rows,
     _quantile,
     _state_pair_rows,
@@ -155,6 +158,52 @@ def test_trace_pair_rows_separate_policy_from_applied_state() -> None:
     summary = _trace_summary(rows)
     assert summary["policy_trace_equal_rate"] == 0.5
     assert summary["applied_trace_equal_rate"] == 1.0
+
+
+def test_packet_geometry_exposes_sparse_positive_failures() -> None:
+    active = torch.tensor([[True, True], [True, False]])
+    targets = ETTRPacketTargets(
+        value_code=torch.tensor([[1, 0], [0, 0]]),
+        type_index=torch.tensor([[0, 1], [1, 0]]),
+        relations=torch.tensor(
+            [
+                [[[False, True], [False, False]]],
+                [[[False, False], [False, False]]],
+            ]
+        ),
+        active=active,
+        root=torch.tensor([[True, False], [True, False]]),
+        committed=torch.tensor([False, False]),
+        halted=torch.tensor([False, False]),
+        slot_mask=torch.ones(2, 2, dtype=torch.bool),
+        relation_mask=torch.ones(2, 1, 2, 2, dtype=torch.bool),
+    )
+    predicted_values = torch.tensor([[1, 1], [0, 0]])
+    prediction = TypedTheoryState(
+        value_probabilities=(
+            torch.nn.functional.one_hot(predicted_values, 2).float()
+            * active.unsqueeze(-1)
+        ),
+        type_probabilities=(
+            torch.nn.functional.one_hot(targets.type_index, 2).float()
+            * active.unsqueeze(-1)
+        ),
+        relations=torch.zeros(2, 1, 2, 2),
+        active=active.float(),
+        root=targets.root.float(),
+        committed=targets.committed.float(),
+        halted=targets.halted.float(),
+        step=0,
+    )
+    summary = _packet_geometry_summary(
+        [_packet_geometry_row(prediction, targets)]
+    )
+    assert summary["complete_packet_accuracy"] == 0.5
+    assert summary["fields"]["value_code"]["top1_accuracy"] == 2 / 3
+    assert summary["fields"]["relations"]["positive_accuracy"] == 0.0
+    assert summary["fields"]["relations"]["positive_support"] == 1
+    assert summary["fields"]["relations"]["negative_accuracy"] == 1.0
+    assert summary["fields"]["relations"]["negative_support"] == 7
 
 
 def test_transaction_geometry_localizes_premature_terminal_opcode() -> None:

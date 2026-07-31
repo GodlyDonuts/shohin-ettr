@@ -37,6 +37,7 @@ from eval_ettr_v3 import (
 )
 from probe_ettr_causal_queries import (
     _objective_geometry,
+    _packet_geometry_summary,
     _pair_rows,
     _state_summary,
     _summary,
@@ -331,6 +332,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         }
         for name in subjects
     }
+    packet_rows: dict[
+        str,
+        dict[str, list[dict[str, object]]],
+    ] = {
+        name: {
+            "initial": [],
+            "factual_terminal": [],
+            "world_intervention_terminal": [],
+            "command_intervention_terminal": [],
+        }
+        for name in subjects
+    }
     batch_reports = []
     packet_index = ETTRDiskPacketSufficiencyIndex(
         stream.packet_index_root
@@ -365,6 +378,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                         state_pairs,
                         trace_pairs,
                         transaction_geometry,
+                        packet_geometry,
                     ) = _objective_geometry(
                         models[name],
                         batch,
@@ -382,6 +396,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                     )
                 for kind, row in transaction_geometry.items():
                     transaction_rows[name][kind].append(row)
+                for kind, row in packet_geometry.items():
+                    packet_rows[name][kind].append(row)
             batch_reports.append(
                 {
                     "batch_payload_sha256": batch_sha256,
@@ -420,6 +436,17 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "factual",
                     "world_intervention",
                     "command_intervention",
+                )
+            },
+            "packet_geometry": {
+                kind: _packet_geometry_summary(
+                    packet_rows[name][kind]
+                )
+                for kind in (
+                    "initial",
+                    "factual_terminal",
+                    "world_intervention_terminal",
+                    "command_intervention_terminal",
                 )
             },
             "parameter_sha256": _parameter_sha256(models[name]),

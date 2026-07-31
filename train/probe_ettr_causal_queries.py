@@ -26,6 +26,7 @@ from endogenous_typed_theory_reactor import ReactorTrace, TypedTheoryState
 from ettr_objectives import (
     ETTRCausalQueryPair,
     ETTRObjectiveConfig,
+    ETTRPacketTargets,
     ETTRTransactionPredictions,
     ETTRTransactionTargets,
     _operand_masks,
@@ -104,7 +105,7 @@ def _objective_pairs_and_traces(
     Mapping[str, list[dict[str, object]]],
     Mapping[str, list[dict[str, object]]],
 ]:
-    pairs, states, traces, _ = _objective_geometry(model, batch)
+    pairs, states, traces, _, _ = _objective_geometry(model, batch)
     return pairs, states, traces
 
 
@@ -115,6 +116,7 @@ def _objective_geometry(
     Mapping[str, ETTRCausalQueryPair],
     Mapping[str, list[dict[str, object]]],
     Mapping[str, list[dict[str, object]]],
+    Mapping[str, dict[str, object]],
     Mapping[str, dict[str, object]],
 ]:
     runner = CausalETTREpisodeRunner(model)
@@ -190,7 +192,186 @@ def _objective_geometry(
                 objective.command_intervention_transaction_targets,
             ),
         },
+        {
+            "initial": _packet_geometry_row(
+                objective.packet_prediction,
+                objective.packet_targets,
+            ),
+            "factual_terminal": _packet_geometry_row(
+                objective.terminal_packet_prediction,
+                objective.terminal_packet_targets,
+            ),
+            "world_intervention_terminal": _packet_geometry_row(
+                objective.world_intervention_prediction,
+                objective.world_intervention_targets,
+            ),
+            "command_intervention_terminal": _packet_geometry_row(
+                objective.command_intervention_prediction,
+                objective.command_intervention_targets,
+            ),
+        },
     )
+
+
+def _packet_geometry_row(
+    prediction: TypedTheoryState,
+    targets: ETTRPacketTargets,
+) -> dict[str, object]:
+    categorical_mask = targets.slot_mask & targets.active
+    field_masks = {
+        "active": targets.slot_mask,
+        "root": targets.slot_mask,
+        "value_code": categorical_mask,
+        "type_index": categorical_mask,
+        "relations": targets.relation_mask,
+        "committed": torch.ones_like(targets.committed),
+        "halted": torch.ones_like(targets.halted),
+    }
+    probabilities = {
+        "active": prediction.active.detach().float(),
+        "root": prediction.root.detach().float(),
+        "value_code": prediction.value_probabilities.detach().float(),
+        "type_index": prediction.type_probabilities.detach().float(),
+        "relations": prediction.relations.detach().float(),
+        "committed": prediction.committed.detach().float(),
+        "halted": prediction.halted.detach().float(),
+    }
+    exact = torch.ones(
+        targets.active.shape[0],
+        dtype=torch.bool,
+        device=targets.active.device,
+    )
+    fields: dict[str, dict[str, float | int | None]] = {}
+    for name in ("value_code", "type_index"):
+        mask = field_masks[name]
+        labels = getattr(targets, name)
+        values = probabilities[name]
+        correct = values.argmax(-1).eq(labels)
+        target_probability = values.gather(
+            -1,
+            labels.unsqueeze(-1),
+        ).squeeze(-1)
+        exact &= (correct | ~mask).reshape(correct.shape[0], -1).all(-1)
+        fields[name] = {
+            "correct": int((correct & mask).sum().cpu()),
+            "negative_correct": None,
+            "negative_support": None,
+            "positive_correct": None,
+            "positive_support": None,
+            "support": int(mask.sum().cpu()),
+            "target_probability_sum": float(
+                target_probability.masked_select(mask).sum().cpu()
+            ),
+        }
+    for name in (
+        "active",
+        "root",
+        "relations",
+        "committed",
+        "halted",
+    ):
+        mask = field_masks[name]
+        labels = getattr(targets, name)
+        values = probabilities[name]
+        choices = values.ge(0.5)
+        correct = choices.eq(labels)
+        positive = mask & labels
+        negative = mask & ~labels
+        target_probability = torch.where(labels, values, 1.0 - values)
+        exact &= (correct | ~mask).reshape(correct.shape[0], -1).all(-1)
+        fields[name] = {
+            "correct": int((correct & mask).sum().cpu()),
+            "negative_correct": int((correct & negative).sum().cpu()),
+            "negative_support": int(negative.sum().cpu()),
+            "positive_correct": int((correct & positive).sum().cpu()),
+            "positive_support": int(positive.sum().cpu()),
+            "support": int(mask.sum().cpu()),
+            "target_probability_sum": float(
+                target_probability.masked_select(mask).sum().cpu()
+            ),
+        }
+    return {
+        "complete_correct": int(exact.sum().cpu()),
+        "complete_support": exact.numel(),
+        "fields": fields,
+    }
+
+
+def _packet_geometry_summary(
+    rows: Sequence[Mapping[str, object]],
+) -> dict[str, object]:
+    if not rows:
+        raise ETTRV3EvaluationError(
+            "packet geometry population differs"
+        )
+    field_summary = {}
+    for name in rows[0]["fields"]:
+        support = sum(int(row["fields"][name]["support"]) for row in rows)
+        correct = sum(int(row["fields"][name]["correct"]) for row in rows)
+        probability_sum = sum(
+            float(row["fields"][name]["target_probability_sum"])
+            for row in rows
+        )
+        positive_values = [
+            row["fields"][name]["positive_support"]
+            for row in rows
+        ]
+        negative_values = [
+            row["fields"][name]["negative_support"]
+            for row in rows
+        ]
+        positive_support = (
+            None
+            if positive_values[0] is None
+            else sum(int(value) for value in positive_values)
+        )
+        negative_support = (
+            None
+            if negative_values[0] is None
+            else sum(int(value) for value in negative_values)
+        )
+        positive_correct = (
+            None
+            if positive_support is None
+            else sum(
+                int(row["fields"][name]["positive_correct"])
+                for row in rows
+            )
+        )
+        negative_correct = (
+            None
+            if negative_support is None
+            else sum(
+                int(row["fields"][name]["negative_correct"])
+                for row in rows
+            )
+        )
+        field_summary[name] = {
+            "mean_target_probability": (
+                probability_sum / support if support else None
+            ),
+            "negative_accuracy": (
+                None
+                if negative_support in {None, 0}
+                else negative_correct / negative_support
+            ),
+            "negative_support": negative_support,
+            "positive_accuracy": (
+                None
+                if positive_support in {None, 0}
+                else positive_correct / positive_support
+            ),
+            "positive_support": positive_support,
+            "support": support,
+            "top1_accuracy": correct / support if support else None,
+        }
+    complete_correct = sum(int(row["complete_correct"]) for row in rows)
+    complete_support = sum(int(row["complete_support"]) for row in rows)
+    return {
+        "complete_packet_accuracy": complete_correct / complete_support,
+        "complete_packet_support": complete_support,
+        "fields": field_summary,
+    }
 
 
 def _transaction_geometry_row(
