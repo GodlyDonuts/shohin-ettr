@@ -11,6 +11,7 @@ from train_ettr_progressive_coupling import (
     ETTRProgressiveCouplingError,
     _validate_args,
     deterministic_autonomous_choice,
+    factorial_delta_matching_loss,
     progressive_coupling_probability,
     select_state_source,
     select_trainable_architecture,
@@ -84,6 +85,7 @@ def _arguments(tmp_path) -> SimpleNamespace:
         start_position=20_000,
         warmup_updates=100,
         ramp_updates=700,
+        counterfactual_delta_weight=2.0,
         weight_decay=0.0,
         gradient_clip=1.0,
         eval_batches=4,
@@ -103,6 +105,69 @@ def test_progressive_schedule_has_exact_ramp_and_autonomous_plateau() -> None:
     assert values[0] == values[1] == values[2] == 0.0
     assert values[3] == pytest.approx(349 / 699)
     assert values[4] == values[5] == 1.0
+
+
+def test_factorial_delta_matching_rewards_effects_and_invariance() -> None:
+    rows = torch.arange(8).reshape(2, 2, 2)
+    target = torch.tensor(
+        [
+            [0.0, 0.0],
+            [0.0, 0.0],
+            [1.0, 0.0],
+            [1.0, 0.0],
+            [0.0, 1.0],
+            [0.0, 1.0],
+            [1.0, 1.0],
+            [1.0, 1.0],
+        ]
+    )
+    exact = target.clone().requires_grad_(True)
+    exact_loss = factorial_delta_matching_loss(exact, target, rows)
+    assert exact_loss is not None
+    assert float(exact_loss.detach()) == pytest.approx(0.0)
+
+    collapsed = torch.zeros_like(target, requires_grad=True)
+    collapsed_loss = factorial_delta_matching_loss(
+        collapsed,
+        target,
+        rows,
+    )
+    assert collapsed_loss is not None
+    assert float(collapsed_loss.detach()) > 0.0
+    collapsed_loss.backward()
+    assert collapsed.grad is not None
+    assert float(collapsed.grad.abs().sum()) > 0.0
+
+    noninvariant = target.clone()
+    noninvariant[1, 1] = 1.0
+    assert float(
+        factorial_delta_matching_loss(noninvariant, target, rows)
+    ) > 0.0
+
+
+def test_factorial_delta_matching_respects_row_support() -> None:
+    rows = torch.arange(4).reshape(1, 2, 2)
+    prediction = torch.zeros(4, 2)
+    target = torch.zeros_like(prediction)
+    assert (
+        factorial_delta_matching_loss(
+            prediction,
+            target,
+            rows,
+            row_mask=torch.zeros(4, dtype=torch.bool),
+        )
+        is None
+    )
+    with pytest.raises(
+        ETTRProgressiveCouplingError,
+        match="delta geometry differs",
+    ):
+        factorial_delta_matching_loss(
+            prediction,
+            target,
+            rows,
+            row_mask=torch.ones(4),
+        )
 
 
 def test_progressive_schedule_rejects_invalid_inputs() -> None:

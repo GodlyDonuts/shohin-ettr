@@ -64,8 +64,8 @@ from train_ettr_component_island import (
 )
 
 
-RUN_SCHEMA = "shohin-ettr-progressive-coupling-run-v1"
-REPORT_SCHEMA = "shohin-ettr-progressive-coupling-report-v1"
+RUN_SCHEMA = "shohin-ettr-progressive-coupling-run-v2"
+REPORT_SCHEMA = "shohin-ettr-progressive-coupling-report-v2"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _COMPONENTS = ("compiler", "reactor", "reader")
@@ -192,6 +192,110 @@ def select_state_source(
     return autonomous if use_autonomous else exact
 
 
+def factorial_delta_matching_loss(
+    prediction: torch.Tensor,
+    target: torch.Tensor,
+    rectangle_rows: torch.Tensor,
+    *,
+    row_mask: torch.Tensor | None = None,
+) -> torch.Tensor | None:
+    """Match finite WORLD/COMMAND differences at one discrete interface."""
+
+    if (
+        prediction.shape != target.shape
+        or prediction.ndim < 1
+        or rectangle_rows.ndim != 3
+        or rectangle_rows.shape[1:] != (2, 2)
+        or rectangle_rows.dtype != torch.long
+        or rectangle_rows.device != prediction.device
+        or target.device != prediction.device
+        or prediction.shape[0] != rectangle_rows.numel()
+        or (
+            row_mask is not None
+            and (
+                row_mask.shape != (prediction.shape[0],)
+                or row_mask.dtype != torch.bool
+                or row_mask.device != prediction.device
+            )
+        )
+    ):
+        raise ETTRProgressiveCouplingError(
+            "factorial delta geometry differs"
+        )
+    r00 = rectangle_rows[:, 0, 0]
+    r01 = rectangle_rows[:, 0, 1]
+    r10 = rectangle_rows[:, 1, 0]
+    r11 = rectangle_rows[:, 1, 1]
+    left = torch.cat((r00, r01, r00, r10))
+    right = torch.cat((r10, r11, r01, r11))
+    pair_mask = torch.ones_like(left, dtype=torch.bool)
+    if row_mask is not None:
+        pair_mask = row_mask.index_select(0, left) & row_mask.index_select(
+            0,
+            right,
+        )
+    if not bool(pair_mask.any()):
+        return None
+
+    predicted_delta = (
+        prediction.index_select(0, left)
+        - prediction.index_select(0, right)
+    ).reshape(left.numel(), -1)
+    target_delta = (
+        target.index_select(0, left)
+        - target.index_select(0, right)
+    ).reshape(left.numel(), -1)
+    valid = pair_mask[:, None].expand_as(predicted_delta)
+    changed = target_delta.ne(0) & valid
+    unchanged = ~target_delta.ne(0) & valid
+    squared_error = (predicted_delta.float() - target_delta.float()).square()
+
+    changed_count = changed.sum()
+    unchanged_count = unchanged.sum()
+    changed_mean = (
+        (squared_error * changed).sum()
+        / changed_count.clamp_min(1).to(squared_error.dtype)
+    )
+    unchanged_mean = (
+        (squared_error * unchanged).sum()
+        / unchanged_count.clamp_min(1).to(squared_error.dtype)
+    )
+    supported_parts = (
+        changed_count.gt(0).to(squared_error.dtype)
+        + unchanged_count.gt(0).to(squared_error.dtype)
+    )
+    return (changed_mean + unchanged_mean) / supported_parts
+
+
+def _state_factorial_delta_loss(
+    prediction: TypedTheoryState,
+    target: TypedTheoryState,
+    rectangle_rows: torch.Tensor,
+) -> torch.Tensor:
+    losses = tuple(
+        factorial_delta_matching_loss(
+            getattr(prediction, name),
+            getattr(target, name),
+            rectangle_rows,
+        )
+        for name in (
+            "value_probabilities",
+            "type_probabilities",
+            "relations",
+            "active",
+            "root",
+            "committed",
+            "halted",
+        )
+    )
+    supported = tuple(loss for loss in losses if loss is not None)
+    if not supported:
+        raise ETTRProgressiveCouplingError(
+            "state factorial delta has no support"
+        )
+    return torch.stack(supported).mean()
+
+
 def select_trainable_architecture(
     model: EndogenousTypedTheoryReactorGPT,
 ) -> dict[str, object]:
@@ -272,6 +376,7 @@ def progressive_coupling_loss(
     *,
     coupling_probability: float,
     coupling_seed: int,
+    counterfactual_delta_weight: float,
     update: int,
 ) -> tuple[torch.Tensor, dict[str, object]]:
     """Train local interfaces while progressively consuming predicted state."""
@@ -294,35 +399,46 @@ def progressive_coupling_loss(
         soft_initial,
         batch.packet_targets,
     )
+    exact_state = packet_targets_to_state(
+        batch.packet_targets,
+        model.config,
+        step=0,
+        dtype=soft_initial.value_probabilities.dtype,
+    )
+    compiler_delta_loss = _state_factorial_delta_loss(
+        soft_initial,
+        exact_state,
+        batch.causal_rectangles.rows,
+    )
     autonomous_state = model.compiler(
         world_hidden.detach(),
         attention_mask=batch.episodes.world.attention_mask,
         hard=True,
     )
-    exact_state = packet_targets_to_state(
-        batch.packet_targets,
-        model.config,
-        step=0,
-        dtype=next(model.reactor.parameters()).dtype,
-    )
     autonomous_decisions = 0
     decisions = 1
-    use_autonomous = deterministic_autonomous_choice(
+    state_is_autonomous = deterministic_autonomous_choice(
         coupling_probability,
         coupling_seed=coupling_seed,
         update=update,
         stage=-1,
     )
-    autonomous_decisions += int(use_autonomous)
+    autonomous_decisions += int(state_is_autonomous)
     state = select_state_source(
         exact_state,
         autonomous_state,
-        use_autonomous=use_autonomous,
+        use_autonomous=state_is_autonomous,
     )
 
     targets = batch.transaction_targets
     masks = policy_masks(targets)
-    field_losses: dict[str, list[torch.Tensor]] = {
+    coupled_field_losses: dict[str, list[torch.Tensor]] = {
+        name: [] for name in _POLICY_FIELDS
+    }
+    exact_field_losses: dict[str, list[torch.Tensor]] = {
+        name: [] for name in _POLICY_FIELDS
+    }
+    reactor_delta_losses: dict[str, list[torch.Tensor]] = {
         name: [] for name in _POLICY_FIELDS
     }
     for step in range(targets.opcode.shape[1]):
@@ -333,14 +449,45 @@ def progressive_coupling_loss(
             command_attention_mask=batch.episodes.command.attention_mask,
             hard=True,
         )
+        if state_is_autonomous:
+            _exact_policy, exact_logits = _reactor_policy_logits(
+                model.reactor,
+                exact_state,
+                command_hidden=command_hidden.detach(),
+                command_attention_mask=batch.episodes.command.attention_mask,
+                hard=True,
+            )
+        else:
+            exact_logits = logits
+        exact_target_policy = target_policy(
+            targets,
+            model.config,
+            step,
+            dtype=exact_state.active.dtype,
+        )
         for name in _POLICY_FIELDS:
-            loss = _masked_categorical_cross_entropy(
+            coupled_loss = _masked_categorical_cross_entropy(
                 logits[name],
                 getattr(targets, name)[:, step],
                 masks[name][:, step],
             )
-            if loss is not None:
-                field_losses[name].append(loss)
+            if coupled_loss is not None:
+                coupled_field_losses[name].append(coupled_loss)
+            exact_loss = _masked_categorical_cross_entropy(
+                exact_logits[name],
+                getattr(targets, name)[:, step],
+                masks[name][:, step],
+            )
+            if exact_loss is not None:
+                exact_field_losses[name].append(exact_loss)
+            delta_loss = factorial_delta_matching_loss(
+                exact_logits[name].float().softmax(-1),
+                getattr(exact_target_policy, name).float(),
+                batch.causal_rectangles.rows,
+                row_mask=masks[name][:, step],
+            )
+            if delta_loss is not None:
+                reactor_delta_losses[name].append(delta_loss)
         autonomous_state = model.reactor.apply(
             state,
             policy,
@@ -350,39 +497,56 @@ def progressive_coupling_loss(
         with torch.no_grad():
             exact_state = model.reactor.apply(
                 exact_state,
-                target_policy(
-                    targets,
-                    model.config,
-                    step,
-                    dtype=exact_state.active.dtype,
-                ),
+                exact_target_policy,
                 hard=True,
                 validate=False,
             ).detached_clone()
-        use_autonomous = deterministic_autonomous_choice(
+        state_is_autonomous = deterministic_autonomous_choice(
             coupling_probability,
             coupling_seed=coupling_seed,
             update=update,
             stage=step,
         )
-        autonomous_decisions += int(use_autonomous)
+        autonomous_decisions += int(state_is_autonomous)
         decisions += 1
         state = select_state_source(
             exact_state,
             autonomous_state,
-            use_autonomous=use_autonomous,
+            use_autonomous=state_is_autonomous,
         )
 
-    reactor_means = {
+    coupled_reactor_means = {
         name: torch.stack(values).mean()
-        for name, values in field_losses.items()
+        for name, values in coupled_field_losses.items()
         if values
     }
-    if not reactor_means:
+    exact_reactor_means = {
+        name: torch.stack(values).mean()
+        for name, values in exact_field_losses.items()
+        if values
+    }
+    reactor_delta_means = {
+        name: torch.stack(values).mean()
+        for name, values in reactor_delta_losses.items()
+        if values
+    }
+    if (
+        not coupled_reactor_means
+        or not exact_reactor_means
+        or not reactor_delta_means
+    ):
         raise ETTRProgressiveCouplingError(
             "progressive coupling reactor loss has no support"
         )
-    reactor_loss = torch.stack(tuple(reactor_means.values())).mean()
+    coupled_reactor_loss = torch.stack(
+        tuple(coupled_reactor_means.values())
+    ).mean()
+    exact_reactor_loss = torch.stack(
+        tuple(exact_reactor_means.values())
+    ).mean()
+    reactor_delta_loss = torch.stack(
+        tuple(reactor_delta_means.values())
+    ).mean()
 
     exact_terminal = packet_targets_to_state(
         batch.terminal_packet_targets,
@@ -400,13 +564,26 @@ def progressive_coupling_loss(
         batch,
         state,
     )
-    high_level = {
+    base_losses = {
         "compiler": compiler_loss,
-        "reactor": reactor_loss,
+        "coupled_reactor": coupled_reactor_loss,
+        "exact_reactor": exact_reactor_loss,
         "exact_reader": exact_reader_loss,
         "coupled_reader": coupled_reader_loss,
     }
-    total = torch.stack(tuple(high_level.values())).mean()
+    delta_losses = {
+        "compiler_delta": compiler_delta_loss,
+        "reactor_delta": reactor_delta_loss,
+    }
+    total = (
+        torch.stack(tuple(base_losses.values())).sum()
+        + counterfactual_delta_weight
+        * torch.stack(tuple(delta_losses.values())).sum()
+    ) / (
+        len(base_losses)
+        + counterfactual_delta_weight * len(delta_losses)
+    )
+    high_level = {**base_losses, **delta_losses}
     return total, {
         "autonomous_decisions": autonomous_decisions,
         "coupling_probability": coupling_probability,
@@ -416,9 +593,17 @@ def progressive_coupling_loss(
             for name, value in high_level.items()
         },
         "compiler": compiler_parts,
-        "reactor": {
+        "coupled_reactor": {
             name: float(value.detach().cpu())
-            for name, value in reactor_means.items()
+            for name, value in coupled_reactor_means.items()
+        },
+        "exact_reactor": {
+            name: float(value.detach().cpu())
+            for name, value in exact_reactor_means.items()
+        },
+        "reactor_delta": {
+            name: float(value.detach().cpu())
+            for name, value in reactor_delta_means.items()
         },
         "exact_reader": exact_reader_parts,
         "coupled_reader": coupled_reader_parts,
@@ -460,6 +645,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--start-position", type=int, default=20_000)
     parser.add_argument("--warmup-updates", type=int, default=100)
     parser.add_argument("--ramp-updates", type=int, default=700)
+    parser.add_argument(
+        "--counterfactual-delta-weight",
+        type=float,
+        default=1.0,
+    )
     parser.add_argument("--weight-decay", type=float, default=0.0)
     parser.add_argument("--gradient-clip", type=float, default=1.0)
     parser.add_argument("--eval-batches", type=int, default=32)
@@ -505,6 +695,8 @@ def _validate_args(args: argparse.Namespace) -> None:
         or args.warmup_updates < 0
         or args.ramp_updates < 1
         or args.warmup_updates + args.ramp_updates > args.updates
+        or not math.isfinite(args.counterfactual_delta_weight)
+        or args.counterfactual_delta_weight <= 0.0
         or any(
             not math.isfinite(rate) or not 0.0 < rate < 1.0
             for rate in rates
@@ -666,8 +858,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             "high_level_loss_weights": {
                 "compiler": 1.0,
                 "coupled_reader": 1.0,
+                "coupled_reactor": 1.0,
                 "exact_reader": 1.0,
-                "reactor": 1.0,
+                "exact_reactor": 1.0,
+                "compiler_delta": args.counterfactual_delta_weight,
+                "reactor_delta": args.counterfactual_delta_weight,
             },
             "loaded_component_sha256": loaded_component_sha256,
             "oracle_at_autonomous_inference": False,
@@ -748,6 +943,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                     batch,
                     coupling_probability=probability,
                     coupling_seed=args.coupling_seed,
+                    counterfactual_delta_weight=(
+                        args.counterfactual_delta_weight
+                    ),
                     update=update,
                 )
             if not bool(torch.isfinite(loss)):
