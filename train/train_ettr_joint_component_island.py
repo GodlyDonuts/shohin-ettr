@@ -31,6 +31,7 @@ from train_ettr_component_island import (
     _sha256_file,
     _write_no_replace,
     component_loss,
+    load_component_warm_start,
     select_trainable_component,
 )
 from train_ettr_joint_instruction_canary import (
@@ -72,6 +73,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--gradient-clip", type=float, default=1.0)
     parser.add_argument("--eval-batches", type=int, default=32)
     parser.add_argument("--log-every", type=int, default=10)
+    parser.add_argument("--initial-component", type=Path)
+    parser.add_argument("--initial-component-sha256")
     parser.add_argument(
         "--reader-injection",
         choices=("stage", "late", "postnorm", "postnorm-scaled"),
@@ -123,6 +126,17 @@ def _validate_args(args: argparse.Namespace) -> None:
                 "decision-mean",
             )
             != "decision-mean"
+        )
+        or (
+            (args.initial_component is None)
+            != (args.initial_component_sha256 is None)
+        )
+        or (
+            args.initial_component is not None
+            and (
+                not args.initial_component.is_absolute()
+                or _HEX64.fullmatch(args.initial_component_sha256) is None
+            )
         )
         or args.output.exists()
         or args.output.is_symlink()
@@ -196,7 +210,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     source_verification = stream.verify_source_shards()
     model.to(device=device, dtype=torch.bfloat16)
+    parent_parameter_sha256 = _parameter_sha256(model)
     ownership = select_trainable_component(model, args.component)
+    warm_start_sha256 = None
+    if args.initial_component is not None:
+        warm_start_sha256 = load_component_warm_start(
+            model,
+            args.component,
+            args.initial_component,
+            expected_sha256=args.initial_component_sha256,
+        )
     trainable = tuple(
         parameter for parameter in model.parameters() if parameter.requires_grad
     )
@@ -211,7 +234,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     try:
         args.output.mkdir(mode=0o700)
-        parent_parameter_sha256 = _parameter_sha256(model)
         frozen_parameter_sha256 = {
             "base": _parameter_sha256(model.base),
             "compiler": _parameter_sha256(model.compiler),
@@ -237,6 +259,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "data_seed": args.data_seed,
             "eval_batches": args.eval_batches,
             "gradient_clip": args.gradient_clip,
+            "initial_component_sha256": warm_start_sha256,
             "learning_rate": args.learning_rate,
             "oracle_at_autonomous_inference": False,
             "oracle_training_boundary": {
@@ -409,6 +432,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "final_module_sha256": final_module_sha256,
             "final_parameter_sha256": final_parameter_sha256,
             "initial_component_sha256": initial_component_sha256,
+            "warm_start_component_sha256": warm_start_sha256,
             "last_loss": last_loss,
             "observed_rows": observed_rows,
             "observed_token_positions": observed_token_positions,

@@ -32,6 +32,8 @@ GRADIENT_CLIP=${GRADIENT_CLIP:-1.0}
 EVAL_BATCHES=${EVAL_BATCHES:-32}
 REACTOR_REDUCTION=${REACTOR_REDUCTION:-decision-mean}
 READER_INJECTION=${READER_INJECTION:-stage}
+INITIAL_COMPONENT=${INITIAL_COMPONENT:-}
+INITIAL_COMPONENT_SHA256=${INITIAL_COMPONENT_SHA256:-}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
 cd "$CODE_ROOT"
@@ -57,6 +59,21 @@ parent_contract_sha=$(sha256sum \
 parent_model_sha=$(sha256sum \
   "$PARENT_RUN_DIR/joint-model-final.pt" | awk '{print $1}')
 
+initial_component_args=()
+if [[ -n "$INITIAL_COMPONENT$INITIAL_COMPONENT_SHA256" ]]; then
+  [[ "$INITIAL_COMPONENT" == /* \
+    && "$INITIAL_COMPONENT_SHA256" =~ ^[0-9a-f]{64}$ ]] || {
+      echo "component warm start receipt differs" >&2
+      exit 2
+    }
+  printf '%s  %s\n' "$INITIAL_COMPONENT_SHA256" "$INITIAL_COMPONENT" \
+    | sha256sum -c -
+  initial_component_args=(
+    --initial-component "$INITIAL_COMPONENT"
+    --initial-component-sha256 "$INITIAL_COMPONENT_SHA256"
+  )
+fi
+
 "$PYTHON_ROOT/bin/python" \
   "$CODE_ROOT/train/train_ettr_joint_component_island.py" \
   --component "$COMPONENT" \
@@ -77,4 +94,5 @@ parent_model_sha=$(sha256sum \
   --gradient-clip "$GRADIENT_CLIP" \
   --eval-batches "$EVAL_BATCHES" \
   --reader-injection "$READER_INJECTION" \
-  --reactor-reduction "$REACTOR_REDUCTION"
+  --reactor-reduction "$REACTOR_REDUCTION" \
+  "${initial_component_args[@]}"
