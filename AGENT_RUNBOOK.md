@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-31 05:00 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-31 11:45 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -20982,3 +20982,132 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_marginal_loss_as_reasoning_attack_the_constant_state_fixed_point_with_intervention_balanced_tail_risk_and_require_nonzero_hard_state_causality`.
+
+- **2026-07-31 08:20--10:20 EDT** -- **Open-state visibility and soft
+  execution are closed as standalone repairs; continuous probes show that
+  changing latent state is insufficient when the discrete actuator remains
+  collapsed.**
+
+  Four 500-update open-state reader arms completed from the exact warm-95
+  seed-1 parent. Floors `0.1/0.25/0.5/1.0` exposed progressively more
+  intervention-dependent hard state, but none produced a query
+  difference-in-differences margin above `0.1`, joint top-1, or paired-order
+  success. Floor `0.5` report SHA-256 is
+  `58012c8bd7d96e81d373ef4e659f2a998c9e74b93a2f471ae79cb3fdeecb03aa`;
+  floor `1.0` is
+  `5f85c1bbbd87a9c45ef58444075445292ec311b2dc3a2a760185d1ee886920bf`.
+  Their paired total-loss deltas versus parent are positive, about
+  `+3.64/+4.26`. Reader visibility is therefore not the missing mechanism.
+
+  A matched soft-to-hard arm used soft transactions for its first 150 ETTR
+  updates, then hard autonomous transactions through update 500. It completed
+  cleanly and wrote report
+  `artifacts/evals/ettr_joint_tri_soft150_openread_f025_s1_u500_42c3456_trace.json`,
+  SHA-256
+  `a5809c98d00dbb451c1bd91b1a0e7e7c6af60c7fe3bab08e618900b5ba1660a8`.
+  WORLD/COMMAND DID maxima are only `0.0449/0.0332`, no margin reaches
+  `0.1`, joint top-1 remains zero, and paired total loss regresses by
+  `+5.148` with 95% CI `[4.779,5.517]`. Soft-to-hard execution alone is
+  rejected.
+
+  A state-anchor arm with position weights `15/45/40`, packet/intervention/
+  transaction/commit weights `2/4/2/1`, balanced causal-query risk, and
+  component clipping improved paired total loss by `-1.748` with 95% CI
+  `[-1.923,-1.573]` while still producing zero query margins. Its original
+  report SHA-256 is
+  `41e75111184a0a974c1782aa1c619d7b7bd84609071a7b31e58771bf0a3b2264`;
+  continuous trace report SHA-256 is
+  `12821148929f3d5c4ef2f22bd5d02c76fbe1679d8829b0338981a0e345615228`.
+  COMMAND changes entered soft value/type trajectories, but applied
+  opcode/source and terminal state remained invariant.
+
+  Private commit
+  `a630392b49c8afeee2e5d4f96dc8d7bb23f59efc` added per-head factual,
+  wrong-WORLD, and wrong-COMMAND actuator audits. The focused suite passed
+  55 tests. Immutable runtime
+  `scratchpad/shohin_ettr_joint_runtime_a630392_r1` binds
+  `SHA256SUMS` SHA-256
+  `1b1087d7f988dacfe5760dcdde2f6d541828bfc5fbfde66090ff18bba181ace4`.
+
+  Capability pilots `724212/724215` run 2,000 updates at position weights
+  `10/65/25` from the exact warm-95 seed-1 parent, with floor `0/0.25`.
+  Their causal evaluators are `724213/724216` and locked N=200 public boards
+  are `724214/724217`. High-instruction arm `724262` runs 3,000 updates at
+  `5/85/10`; causal/public jobs are `724263/724264`. Near-instruction control
+  `724276` runs 2,000 updates at `5/94/1`; causal/public jobs are
+  `724277/724278`. Job `724265` and its dependents were canceled before
+  execution because the tri-stream contract correctly rejects a zero stream
+  weight; no output was created.
+
+  Decision:
+  `do_not_promote_state_visibility_or_soft_execution_without_a_discrete_actuator_win_and_measure_instruction_heavy_public_capability_in_parallel`.
+
+- **2026-07-31 10:20--11:45 EDT** -- **The first exact actuator audit
+  localizes the fixed point to majority-opcode collapse and untrained
+  pointers; trace-bus readout is a closed negative, and a controller repair
+  factorial is live.**
+
+  State-anchor actuator job `724253` completed cleanly. Its report is
+  `artifacts/evals/ettr_joint_tri_stateanchor_smoke_s1_u500_a630392_actuator.json`.
+  The parent and candidate both have **0% complete-transaction accuracy**.
+  The candidate predicts WRITE for all 26,976 supervised steps, which scores
+  `72.716%` opcode top-1 solely because WRITE is the majority target.
+  Source and target pointers remain at essentially uniform `1/64`
+  probability and **0% top-1**; relation top-1 is `20.78%`, value-code top-1
+  `18.80%`, commit `92.41%`, and halt `100%`. Premature terminal rate is
+  zero. Terminal timing is not the bottleneck; the controller never learns
+  program selection or operand routing.
+
+  Four native execution-trace reader arms completed at scales
+  `0.1/0.5/1.0`, plus scale `1.0` with open-state floor `0.25`. Rich reports
+  have SHA-256 values
+  `866dd343ad0ed7743f49435935fb79fa560a716a7f97095ffa4bd2da28d135a0`,
+  `95dff48339b664cc36595674d5a86243724f620ff703137a0d55cb4c81b8ebae`,
+  `39a8945388c3968079c729f3d5cdf79915b7a45c807694af9587160029cb863e`,
+  and
+  `cc69f87738c30c35049ff22822f534e66859fca7df984d8d360e5ecaab211a64`.
+  Scales `0.5/1.0` improve paired total loss by `-2.235/-2.943`, but every
+  arm remains at zero joint query top-1, zero paired-order success, zero
+  complete transactions, 72.716% majority-opcode accuracy, and 0%
+  source/target top-1. Reading a broken action trace more strongly is
+  rejected.
+
+  Private commit
+  `0a6e4e8ebf5cf2a5a1aa18acb3a164debcfd6e78` adds state-valid pointer
+  domains and a `head-class-balanced` transaction reduction. WRITE/CLEAR/
+  LINK/UNLINK/SET_ROOT source pointers are restricted toward active slots;
+  ALLOC is restricted toward inactive slots; relational targets are
+  restricted toward active slots. Transaction loss now can average each
+  supported actuator head and each target class independently, preventing
+  the majority WRITE class and high-support fields from drowning LINK,
+  COMMIT, target, and relation learning. The autonomous evaluator receives
+  no targets. Focused verification passes **76/76** with clean Ruff, byte
+  compilation, Bash syntax, and diff checks. Immutable runtime
+  `scratchpad/shohin_ettr_joint_runtime_0a6e4e8_r1` has 3,356 measured files
+  and `SHA256SUMS` SHA-256
+  `4761b30d9b7eba2e18680389cec9e6dd51209b895c3dc7ccde43ef1d0532ce75`.
+
+  Combined hard/soft arms are `724283/724287`, with actuator evaluators
+  `724284/724288`. Mask-only and balance-only arms are `724296/724298`,
+  evaluators `724297/724299`. All use the exact state-anchor data, weights,
+  parent, seed, and 500-update budget; only the preregistered controller
+  intervention differs.
+
+  Commit `e818e8d5704fefba1b63359efe7a634894fbe12a` tightens hard execution:
+  pointer validity is derived from the applied hard opcode rather than a
+  soft opcode mixture. Runtime
+  `scratchpad/shohin_ettr_joint_runtime_e818e8d_r2` binds
+  `SHA256SUMS` SHA-256
+  `d695cf2bc7a87af9a2369cc49c86ef942bb48b06e53ffb151a6fad1f5e4730bb`;
+  exact-mask combined arm/evaluator are `724302/724303`. An earlier sealed
+  directory with a mistyped SOURCE_COMMIT was never submitted and is retained
+  only as
+  `shohin_ettr_joint_runtime_e818e8d_rejected_wrong_source_commit`.
+
+  Direct transcript job `724301` waits for both high-instruction arms and
+  will compare frozen 300k, `5/85/10`, and `5/94/1` on seven fresh
+  hand-authored tasks under direct, review, verified-fact, compact-state, and
+  state-reuse prompts. It is diagnostic, not a benchmark replacement.
+
+  Decision:
+  `repair_and_measure_discrete_program_selection_and_operand_routing_before_any_further_reader_or_trace_bus_promotion`.
