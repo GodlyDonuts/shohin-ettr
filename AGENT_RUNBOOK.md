@@ -20916,3 +20916,69 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_more_frozen_addon_training_as_the_main_path_finish_native_causal_measurement_then_spend_component_budget_only_on_confirmed_interface_starvation`.
+
+- **2026-07-31 06:45--08:20 EDT** -- **Warm `95/5` is a replicated
+  shortcut-learning negative; exact continuous probes localize the failure to
+  a constant terminal-state fixed point, and an intervention-balanced
+  continuation is queued.**
+
+  Native warm `95/5` jobs `723946/723947` completed cleanly at exactly 5,000
+  updates. Their charged ETTR fraction is `0.05002145`, their complete model
+  SHA-256 values are
+  `eca0dcfe09840489ef3e27a82c7e5a1e1e95e8e71e99ff79777db310eeb43f4c`
+  and
+  `9b1eaa7d03d7717fae4b506afb3faa24331a35c662050e4a0505e64c0da2695e`,
+  and every run sidecar verifies. Both paired 128-batch evaluations show a
+  large, finite loss improvement with a negative upper-95% paired bound:
+  seed 1 total loss `38.399 -> 27.133`; seed 2
+  `42.965 -> 24.608`. Nevertheless, both have zero WORLD and COMMAND pairs
+  satisfying the strict causal margin. They are not reasoning wins.
+
+  New exact joint-model probes `724054/724055` completed cleanly from private
+  commit `a13caf3ec7e7e48c0c0ccc930d944e8f3c9882e1`. Their report SHA-256
+  values are
+  `26642aae1c44f23ad199f226d7a962ec67ef710a5c00329de80f29f756115f8d`
+  and
+  `46f068d7e39ed97b6a628294c3b52c0ac4352d03fa24a24aa3fbf0bba65aea82`.
+  Across 656 answer-changing COMMAND pairs and 496 answer-changing WORLD
+  pairs per seed, raw and trained difference-in-differences values are
+  identically `0.0` at every measured quantile and extremum. More
+  importantly, the trained hard terminal states are exactly equal across
+  every factual/counterfactual intervention in both components and both
+  seeds. The model reduced token/query classification losses by selecting a
+  constant reactor state; it did not learn state update or late-query
+  consumption.
+
+  The correctly launched 500-update full-model ETTR-only controls
+  `724019/724020` also completed cleanly with negative paired total-loss
+  bounds but zero WORLD/COMMAND margin gain. This shows the fixed point
+  appears rapidly and is not caused by insufficient warm-`95/5` ETTR update
+  count. The development population contains only 496/2,048 WORLD and
+  656/2,048 COMMAND answer-changing pairs; the old objective mixed them with
+  2,944 invariance pairs while full-vocabulary classification could improve
+  without using state.
+
+  Private commit `47008dcfe431e5921b4ba2a218c47e75feecaf0f` adds an
+  optional `balanced-logmeanexp` causal-query objective. It separately
+  normalizes effect and invariance support, applies a smooth worst-pair risk
+  to the answer-changing effects, and exposes independently hash-bound
+  classification/effect/invariance weights and risk temperature. Defaults
+  preserve the old objective exactly. Focused validation is 44/44 plus
+  34/34 passing, with clean Ruff, byte compilation, Bash syntax, and diff
+  checks. Immutable runtime
+  `scratchpad/shohin_ettr_joint_runtime_47008dc_r1` has 3,356 measured files
+  and `SHA256SUMS` SHA-256
+  `4d9d42ffb4696343873c2ce8272e0bcfcc7e5eb5db2bf741d1a505c8a58caa8d`.
+
+  Matched causal-risk three-stream jobs `724058/724061` are dependency-bound
+  to the exact warm-`85/15` parents. They use position weights `15/55/30`,
+  query-family weight `2`, classification/effect/invariance weights
+  `0.25/1.0/0.25`, and risk temperature `0.25`; causal evaluators are
+  `724059/724062` and public boards `724060/724063`. A 500-update executable
+  smoke is `724067`, followed by causal evaluator `724068`. The old
+  `15/70/15` three-stream pair remains a matched control. Do not promote
+  either path without nonzero replicated causal effects and public-board
+  retention.
+
+  Decision:
+  `reject_marginal_loss_as_reasoning_attack_the_constant_state_fixed_point_with_intervention_balanced_tail_risk_and_require_nonzero_hard_state_causality`.

@@ -1720,23 +1720,23 @@ def _causal_query_binding_loss(
     elif reduction == "balanced-logmeanexp":
         effect_count = effect_mask.sum()
         invariance_count = (~effect_mask).sum()
-        _async_assert(
-            effect_count.gt(0) & invariance_count.gt(0),
-            "balanced query-binding requires effect and invariance support",
-        )
         finite_floor = torch.finfo(contrast.dtype).min
         effect_values = torch.where(
             effect_mask,
             contrast / risk_temperature,
             torch.full_like(contrast, finite_floor),
         )
-        effect_risk = risk_temperature * (
-            torch.logsumexp(effect_values, dim=0)
-            - effect_count.to(contrast.dtype).log()
+        effect_risk = torch.where(
+            effect_count.gt(0),
+            risk_temperature * (
+                torch.logsumexp(effect_values, dim=0)
+                - effect_count.clamp_min(1).to(contrast.dtype).log()
+            ),
+            torch.zeros_like(classification),
         )
         invariance_mean = (
             invariance * (~effect_mask).to(invariance.dtype)
-        ).sum() / invariance_count.to(invariance.dtype)
+        ).sum() / invariance_count.clamp_min(1).to(invariance.dtype)
         query_binding = (
             classification_weight * classification
             + effect_weight * effect_risk

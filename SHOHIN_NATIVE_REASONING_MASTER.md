@@ -52996,3 +52996,41 @@ different gradient scales, so a single global norm cap can allocate nearly
 all effective update magnitude to the ETTR machinery. This is not a
 capability result; it is the optimizer-level causal hypothesis now under
 matched two-seed test.
+
+## 2026-07-31 Constant-State Fixed Point and Causal-Risk Intervention
+
+The first native warm `95/5` pair completed, and it falsifies the simple
+co-training hypothesis. Both seeds reduced held-out composite loss sharply,
+including query-classification loss, while producing zero strict WORLD or
+COMMAND causal margins. Exact continuous probes then made the failure
+unambiguous: every answer-changing query DID is exactly zero, and every
+trained hard terminal state is identical to its factual counterfactual. This
+is not an almost-working margin. It is a constant-state reactor fixed point.
+
+The objective geometry explains how the shortcut is rewarded. Each
+development population contains 2,048 pairs per component, but only 496 WORLD
+and 656 COMMAND pairs change the answer. The old loss averages those effects
+with 2,944 invariance pairs and adds full-vocabulary classification. A model
+can therefore lower the dominant terms from query text while ignoring the
+intervention. The two correctly launched 500-update ETTR-only controls
+reproduce the same loss-down/margin-zero behavior, so more updates under the
+same objective are rejected.
+
+Commit `47008dcfe431e5921b4ba2a218c47e75feecaf0f` introduces an optional
+intervention-balanced objective. It computes effect and invariance risk
+separately and applies a temperature-controlled log-mean-exp risk to the
+hardest answer-changing pairs. Classification, effect, invariance, and
+top-level query-family weights are independently bound in the run contract;
+the legacy mode remains byte-for-byte the default path.
+
+The registered two-seed treatment continues each exact warm-`85/15` parent
+under raw/instruction/ETTR position weights `15/55/30`. It uses query-family
+weight `2`, classification/effect/invariance weights `0.25/1.0/0.25`, and
+risk temperature `0.25`. Jobs `724058/724061` are followed by causal
+evaluators `724059/724062` and public boards `724060/724063`. The original
+`15/70/15` three-stream stage remains the control. Promotion now requires a
+hard-state causal effect; lower classification loss alone is explicitly
+inadmissible.
+
+Current decision:
+`constant_state_fixed_point_confirmed_intervention_balanced_tail_risk_under_test`.

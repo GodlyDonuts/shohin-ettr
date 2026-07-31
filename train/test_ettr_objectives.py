@@ -1166,6 +1166,29 @@ def test_balanced_query_binding_emphasizes_hard_effect_pairs() -> None:
     assert torch.isfinite(mixed)
 
 
+@pytest.mark.parametrize("all_effect", (False, True))
+def test_balanced_query_binding_accepts_single_support_class(
+    all_effect: bool,
+) -> None:
+    pair = ETTRCausalQueryPair(
+        correct_logits=torch.tensor([[1.0, 0.0], [0.0, 1.0]]),
+        foil_logits=torch.tensor([[0.0, 1.0], [1.0, 0.0]]),
+        correct_target=torch.tensor([0, 1]),
+        foil_target=(
+            torch.tensor([1, 0])
+            if all_effect
+            else torch.tensor([0, 1])
+        ),
+    )
+    loss = _causal_query_binding_loss(
+        pair,
+        margin=1.0,
+        reduction="balanced-logmeanexp",
+        risk_temperature=0.25,
+    )[0]
+    assert torch.isfinite(loss)
+
+
 def test_commit_halt_loss_checks_prefix_recurrence_and_labels() -> None:
     batch = _batch()
     objective = ETTRCompositeObjective(_config())
