@@ -20317,3 +20317,42 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `use_all_verified_h100s_but_keep_experiments_identifiable_reader_factorial_and_world4_gate_decide_the_first_replicable_scale_recipe`.
+
+- **2026-07-31 01:53--02:09 EDT** -- **Large-run promotion now fails
+  closed on replication and preserves the winning reader controls; an exact
+  immutable scale runtime is ready before any winner is declared.**
+
+  Commit `b981eb42fb126120bb7dde5f7a9a0c460e738d26` hardens
+  `train/jobs/run_promoted_ettr_coupling.sh`. A single strict seed is no
+  longer sufficient for distributed promotion. The wrapper requires a
+  second hash-bound training directory and source-deleted evaluation from
+  the opposite registered architecture/data seed, verifies both final
+  component sets against their evaluation reports and physical files,
+  requires both strict learning signals, and rejects mismatched source,
+  update/cursor, learning-rate, loss-weight, gradient, weight-decay, or
+  coupling recipes. It also derives
+  `reader_causal_balance_mode` and
+  `reader_is_frozen_semantic_anchor` from the admitted winning contract and
+  passes them into the generic federated launcher. Thus the unreplicated
+  baseline seed-1 pass cannot launch a large run, and a factor-balanced
+  winner cannot silently revert to population weighting at scale.
+
+  Focused promotion/federated tests pass **6/6** with clean Bash syntax,
+  changed-Python Ruff, byte compilation, and diff checks. Immutable Newton
+  runtime
+  `scratchpad/shohin_ettr_runtime_b981eb4_full_r1` contains 3,335 measured
+  files, binds exact source
+  `b981eb42fb126120bb7dde5f7a9a0c460e738d26`, and has `SHA256SUMS`
+  SHA-256
+  `862645bbfd6780503b617dcf6202978ec81c8d48f872b2ce063316eda0991d87`.
+
+  The four-H100 factor-balanced early gate is finite through update `750`,
+  world size `4`, coupling probability `0.9285`, and pre-clip gradient norm
+  `95.5`; its fully autonomous plateau begins at update `800`. All four
+  reader-localization cells remain finite. Delta-4 and horizon-8 paired
+  follow-up evaluators are armed to begin only after both corresponding
+  final reports exist, using separate H100s and the unchanged source-deleted
+  scorer.
+
+  Decision:
+  `prepare_exact_scale_runtime_now_but_require_two_matched_strict_seeds_and_preserve_winner_reader_controls_before_any_large_launch`.
