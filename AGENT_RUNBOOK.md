@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-31 03:25 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-31 03:50 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -20496,3 +20496,67 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `seed1_causal_emergence_is_confirmed_not_promotable_use_fourteen_identifiable_h100_lanes_to_find_the_first_two_seed_strict_recipe`.
+
+- **2026-07-31 03:25--03:50 EDT** -- **Delta-eight seed 1 fails the causal
+  gate, `evc44` is excluded after four pre-artifact CUDA failures, all
+  sixteen intended training lanes are represented, and a continuous-margin
+  probe is queued to distinguish sub-threshold seed-2 learning from
+  representational collapse.**
+
+  The matched autonomous-ramp trainers `723830/723831` and delta-eight
+  trainers `723832/723833` completed cleanly. Their report SHA-256 values
+  are, respectively,
+  `d3df6af484a7326d0596870ee60b0cc312924c3aa0194d66a7f338351db3fbd8`,
+  `7c0092027dcb8904983ba8cf652bcbd45b8132bef75ead059c690b93316e0eee`,
+  `4ee3f227f4afa92d3ee88828e8d44da8191a8bd32498c336d8f2d51f775d6547`,
+  and
+  `85c14e9ca3fc4146a3da6d25b037a8217ac4e648bb10e1f70e8d91277006129b`.
+  Delta-eight seed 1's source-deleted evaluator reduced total loss by
+  `-18.214470`, interval `[-19.181643, -17.247297]`, but WORLD and COMMAND
+  margin rates both remained zero. Strict learning signal is false and
+  report SHA-256 is
+  `267095dee0a633416e5919f3d2e748479cab9f9dc4887402d7296b5816446078`.
+  The pair remains undecided until seed 2 is scored.
+
+  Jobs `723892`, `723893`, `723895`, `723899`, `723900`, and `723901`
+  received scheduler H100 assignments on `evc44`, but PyTorch reported CUDA
+  unavailable. The five training attempts failed before update zero and the
+  evaluator failed before output creation. None is admissible evidence.
+  `evc44` is now excluded alongside the prior bad/down nodes. New
+  reservation wrapper
+  `reserve_ettr_h100_dispatch_physical_r1.sbatch` performs an actual
+  one-device PyTorch CUDA allocation and synchronization before publishing
+  its ready token; SHA-256 is
+  `75e9ef41f8d1813135cdfd8f63cb143e748242c9f144b92d14ddaaf63c9255ce`.
+  The matching evaluation wrapper also excludes `evc44`; SHA-256 is
+  `b34abbb1004b9f3af2542f3cabef3d8b3cb54170aec40d473ff7269f0a41f8f6`.
+
+  Factor-balanced horizon-eight plus eight-anchor replacements
+  `723904/723905` are running on physically verified `evc24/evc49`; command
+  SHA-256 values are
+  `d9d6667efebfe2a920f679a4e7ed115af5539214be421d9210e8e6bb1b9387e6`
+  and
+  `77be142bbce69b18e3617592def54808c4bb70bdb44aea9a037b808a4f2fe056`.
+  Factor-balanced horizon-eight lower-rate seed 1 remains healthy as
+  `723894`. Replacement jobs `723922--723924` are queued for lower-rate
+  seed 2 and the two factor-balanced horizon-eight early-autonomy seeds.
+  Each replacement will first run one already-completed source-deleted
+  delta-eight or autonomous-ramp evaluation, then start its isolated
+  training writer. The combined evaluator/trainer dispatcher SHA-256 is
+  `85160a62155e9dd0b5ee40de36cc256dac78745422235c1b9ce5617ed81b8b7b`.
+  Finalized interaction launcher SHA-256 is
+  `977d04486a455c339a73f0a608eb00b19a8f8ea36f12f2d1d7cbd826065fb7a7`.
+
+  The strict score records only counts above a fixed `1.0`
+  difference-in-differences margin. New read-only
+  `probe_ettr_component_causal_queries.py` records complete DID
+  distributions at thresholds `0`, `0.1`, `0.25`, `0.5`, and `1.0`,
+  depth-conditioned quantiles, paired top-1 rates, and terminal-state
+  divergence without changing the promotion scorer. Source SHA-256 is
+  `84a6fbde38da13a52c735cfeedf423a300cd8f21294716f50412969bd68e0083`.
+  Baseline seed-1/seed-2 probe jobs `723925/723926` are queued. The focused
+  existing evaluator/probe suites pass **12/12**, with clean Ruff, byte
+  compilation, and diff checks.
+
+  Decision:
+  `delta8_seed1_is_not_causal_measure_continuous_margin_geometry_and_complete_all_two_seed_factor_horizon_interactions_before_promotion`.
