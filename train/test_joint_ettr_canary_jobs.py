@@ -68,6 +68,7 @@ def test_tri_stream_canary_is_parent_bound_and_code_retaining() -> None:
     assert '--gradient-clip-mode "$GRADIENT_CLIP_MODE"' in TRI
     assert '--intervention-weight "$INTERVENTION_WEIGHT"' in TRI
     assert '--transaction-weight "$TRANSACTION_WEIGHT"' in TRI
+    assert '--open-state-read-floor "$OPEN_STATE_READ_FLOOR"' in TRI
     assert '--query-binding-reduction "$QUERY_BINDING_REDUCTION"' in TRI
     assert (
         '--query-binding-risk-temperature '

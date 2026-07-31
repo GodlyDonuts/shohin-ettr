@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import fields, replace
 
+import pytest
 import torch
 
 from endogenous_typed_theory_reactor import (
@@ -9,6 +10,7 @@ from endogenous_typed_theory_reactor import (
     HARD_SURROGATE_GRADIENT_CAP,
     EndogenousTypedTheoryReactorGPT,
     TheoryReactorConfig,
+    TheoryReactorError,
     TypedTheoryState,
     _bounded_hard_adjoint,
     validate_state,
@@ -393,6 +395,33 @@ def test_query_reader_distinguishes_all_four_dispositions() -> None:
     for left in range(len(reads)):
         for right in range(left + 1, len(reads)):
             assert not torch.equal(reads[left], reads[right])
+
+
+def test_open_state_read_floor_exposes_semantics_before_commit() -> None:
+    model = _model().eval()
+    state = model.compile_world(
+        torch.randint(0, 64, (2, 8)),
+        hard=True,
+    )
+    state = replace(
+        state,
+        committed=torch.zeros(2),
+        halted=torch.zeros(2),
+    )
+    query_hidden = torch.rand(1, 4, model.config.d_model).expand(2, -1, -1)
+    with torch.no_grad():
+        closed = model.query_reader(query_hidden, state)
+    model.set_open_state_read_floor(0.25)
+    with torch.no_grad():
+        open_read = model.query_reader(query_hidden, state)
+    assert model.config.open_state_read_floor == 0.25
+    assert model.query_reader.open_state_read_floor == 0.25
+    assert not torch.equal(open_read, closed)
+    with pytest.raises(
+        TheoryReactorError,
+        match="open-state read floor",
+    ):
+        model.set_open_state_read_floor(1.1)
 
 
 def test_hard_policy_keeps_soft_supervision_gradients() -> None:

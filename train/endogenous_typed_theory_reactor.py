@@ -9,7 +9,7 @@ host callback appears in this runtime.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, fields, replace
 import math
 
 import torch
@@ -47,6 +47,7 @@ class TheoryReactorConfig:
     ff_multiplier: int = 4
     max_steps: int = 64
     stage_after_block: int = 19
+    open_state_read_floor: float = 0.0
     parameter_cap: int = SYSTEM_PARAMETER_CAP
 
     def validate(self, *, n_layer: int | None = None) -> None:
@@ -77,6 +78,14 @@ class TheoryReactorConfig:
             raise TheoryReactorError("reactor stage must leave a decoder block")
         if self.parameter_cap > SYSTEM_PARAMETER_CAP:
             raise TheoryReactorError("parameter cap exceeds the system maximum")
+        if (
+            not isinstance(self.open_state_read_floor, float)
+            or not math.isfinite(self.open_state_read_floor)
+            or not 0.0 <= self.open_state_read_floor <= 1.0
+        ):
+            raise TheoryReactorError(
+                "open-state read floor must be in the unit interval"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -939,6 +948,7 @@ class SourceDeletedQueryReader(nn.Module):
         )
         self.output_projection = nn.Linear(width, config.d_model)
         self.gate = nn.Parameter(torch.tensor(0.1))
+        self.open_state_read_floor = config.open_state_read_floor
         nn.init.normal_(self.value_embedding, std=0.02)
         nn.init.normal_(self.type_embedding, std=0.02)
 
@@ -995,8 +1005,12 @@ class SourceDeletedQueryReader(nn.Module):
                 self.relation_projection,
             )
         )
-        answer = _disposition_probabilities(state)[:, 1:2]
-        state_values = semantic_state * answer[:, :, None] + status
+        disposition = _disposition_probabilities(state)
+        readable = (
+            disposition[:, 1:2]
+            + self.open_state_read_floor * disposition[:, 0:1]
+        )
+        state_values = semantic_state * readable[:, :, None] + status
         read, _ = self.cross_attention(
             query,
             self.state_norm(state_values),
@@ -1033,6 +1047,14 @@ class EndogenousTypedTheoryReactorGPT(nn.Module):
         self.compiler = EndogenousTheoryCompiler(config)
         self.reactor = GenericTransactionReactor(config)
         self.query_reader = SourceDeletedQueryReader(config)
+
+    def set_open_state_read_floor(self, value: float) -> None:
+        """Change only the query reader's config-bound open-state floor."""
+
+        updated = replace(self.config, open_state_read_floor=value)
+        updated.validate(n_layer=self.base.cfg.n_layer)
+        self.config = updated
+        self.query_reader.open_state_read_floor = value
 
     def freeze_base(self) -> None:
         for parameter in self.base.parameters():

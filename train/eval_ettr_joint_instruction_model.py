@@ -164,6 +164,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.joint_model,
         expected_sha256=args.joint_model_sha256,
     )
+    parent_ettr_config = dict(parent_payload["ettr_config"])
+    candidate_ettr_config = dict(candidate_payload["ettr_config"])
+    parent_static_config = {
+        name: value
+        for name, value in parent_ettr_config.items()
+        if name != "open_state_read_floor"
+    }
+    candidate_static_config = {
+        name: value
+        for name, value in candidate_ettr_config.items()
+        if name != "open_state_read_floor"
+    }
     if (
         parent_payload.get("schema") != MODEL_SCHEMA
         or parent_payload["run_contract_sha256"]
@@ -172,10 +184,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         != args.run_contract_sha256
         or candidate_payload["base_config"]
         != parent_payload["base_config"]
-        or candidate_payload["ettr_config"]
-        != parent_payload["ettr_config"]
-        or candidate_payload["ettr_config"]
-        != run_contract["model_config"]
+        or candidate_static_config != parent_static_config
+        or candidate_ettr_config != run_contract["model_config"]
     ):
         raise ETTRTriEvaluationError(
             "tri-stream model lineage differs"
@@ -202,6 +212,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.protected_checkpoint,
         run_contract=parent_contract,
         device=device,
+    )
+    candidate_model.set_open_state_read_floor(
+        float(
+            candidate_ettr_config.get(
+                "open_state_read_floor",
+                0.0,
+            )
+        )
     )
     if (
         provenance != parent_provenance

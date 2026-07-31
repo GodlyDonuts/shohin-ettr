@@ -187,6 +187,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--transaction-weight", type=float, default=1.0)
     parser.add_argument("--commit-halt-weight", type=float, default=0.5)
     parser.add_argument(
+        "--open-state-read-floor",
+        type=float,
+        default=0.0,
+    )
+    parser.add_argument(
         "--gradient-clip-mode",
         choices=("global", "owner", "component"),
         default="owner",
@@ -259,6 +264,7 @@ def _validate_args(args: argparse.Namespace) -> None:
                 args.commit_halt_weight,
             )
         )
+        or not 0.0 <= args.open_state_read_floor <= 1.0
         or args.log_every < 1
     ):
         raise ETTRTriCanaryError("tri-stream canary arguments differ")
@@ -362,6 +368,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.parent_joint_model,
         expected_sha256=args.parent_joint_model_sha256,
     )
+    model.set_open_state_read_floor(args.open_state_read_floor)
     if (
         model.base.cfg.vocab_size != tokenizer.get_vocab_size()
         or general["tokenizer_sha256"]

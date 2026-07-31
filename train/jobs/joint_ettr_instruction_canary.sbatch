@@ -45,6 +45,7 @@ INTERVENTION_WEIGHT=${INTERVENTION_WEIGHT:-1}
 TRANSACTION_WEIGHT=${TRANSACTION_WEIGHT:-1}
 COMMIT_HALT_WEIGHT=${COMMIT_HALT_WEIGHT:-0.5}
 GRADIENT_CLIP_MODE=${GRADIENT_CLIP_MODE:-owner}
+OPEN_STATE_READ_FLOOR=${OPEN_STATE_READ_FLOOR:-0}
 
 for path in \
   "$CODE_ROOT" "$RELEASE_ROOT" "$ETTR_DATA_ROOT" "$TOKENIZER" \
@@ -179,6 +180,7 @@ args=(
   --intervention-weight "$INTERVENTION_WEIGHT"
   --transaction-weight "$TRANSACTION_WEIGHT"
   --commit-halt-weight "$COMMIT_HALT_WEIGHT"
+  --open-state-read-floor "$OPEN_STATE_READ_FLOOR"
   --gradient-clip-mode "$GRADIENT_CLIP_MODE"
 )
 for name in finemath4 openwebmath code_python finemath3; do
