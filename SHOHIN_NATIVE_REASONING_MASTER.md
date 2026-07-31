@@ -3,7 +3,7 @@
 ## Current Status — Read First
 
 **Current frontier, superseding older status text below (2026-07-31
-05:00 EDT):** Shohin still has no replicated two-seed demonstration of
+06:45 EDT):** Shohin still has no replicated two-seed demonstration of
 architecture-native general reasoning. ETTR training has, however, produced a
 real sparse causal foothold under source deletion: frozen-base seed 1 changes
 strict COMMAND query margins on 8.125% of 160 intervention pairs and WORLD
@@ -12,9 +12,26 @@ largely fails to make the late reader consume it. That asymmetry localizes the
 current problem to representation/interface co-adaptation rather than ordinary
 loss optimization. The main experiment has therefore changed from attaching
 ETTR to a permanently frozen transformer to native joint language/ETTR
-training of the complete 192,779,435-parameter model. Six matched 5,000-update
-one-H100 arms and their paired causal/public evaluators are queued. No result
-from those arms is claimed yet.
+training of the complete 192,779,435-parameter model. Four warm 5,000-update
+writers and two matched owner-clipped replicas are live; their source-deleted
+causal evaluators, locked public boards, and direct adaptive transcript audits
+are dependency-bound. At the latest audit, warm 95/5 seeds were around update
+3,550, warm 85/15 seeds around 1,640, and owner-clipped warm 85/15 seeds around
+860/680. Warm 85/15 ETTR losses have fallen materially in both seeds while
+ordinary-language losses remain finite, but no training-loss result is being
+called reasoning.
+
+The completed 5,000-update frozen-base horizon-eight controls are a strong
+negative for more add-on training alone. Own-reader, frozen-reader, lower-rate,
+and swapped-reader arms show zero replicated COMMAND margin above 0.25. A
+swapped-reader seed preserves a WORLD joint-top-1 effect of 46.875%, proving
+that some terminal-state geometry survives, but it does not compose with
+COMMAND. This narrows the next intervention to gradient/interface allocation.
+Private commit `479472d9a8c806fef088b0c05693ee83a1375690`
+adds independent base/compiler/reactor/query-reader gradient budgets and
+pre-clip telemetry. Matched same-seed jobs `724016/724017` are held and consume
+no GPU; they will be released only if the live causal gates confirm component
+starvation.
 
 The older adversarial conclusions remain binding: the apparent 11/11
 episodic-generator result was not a Shohin claim because exact host code parsed,
@@ -39,6 +56,14 @@ neuro-symbolic control.
   `723952--723957`, and warm-arm GSM8K/MATH/code boards `723958--723961`.
   Promotion requires a two-seed WORLD+COMMAND causal win without a material
   public-board regression.
+- **Joint post-training gate:** corrected three-stream jobs
+  `723986/723989` are dependency-bound to the exact warm-85/15 parents. They
+  retain 15% raw-language, add 70% audited completion-masked instruction
+  positions, and retain 15% ETTR positions under one optimizer. Their paired
+  parent/raw/candidate causal evaluations are `723987/723990`, public boards
+  are `723988/723991`, and direct adaptive interviews are `723992/723993`.
+  This is the current route to simultaneous native and ordinary benchmark
+  improvement; it is not promoted before exact-parent comparison.
 - **Rejected episodic-generator claim:** the 232,065-parameter learned
   direction reader plus symbolic solver reaches 11/11, but Shohin contributes
   zero runtime parameters. Source deletion is serialization-level only,

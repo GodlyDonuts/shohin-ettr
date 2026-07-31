@@ -20858,3 +20858,61 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `preserve_the_live_native_writers_replace_only_preupdate_failures_and_require_self_contained_objective_contracts_for_every_successor_artifact`.
+
+- **2026-07-31 06:05--06:45 EDT** -- **Frozen-base horizon-eight training is
+  now a closed negative for COMMAND composition; native co-adaptation remains
+  live, and a component-budget intervention is staged but held.**
+
+  Frozen-base jobs `723879--723884` and lower-rate seed-1 job `723894`
+  completed cleanly at 5,000 updates. Their final source-deleted reports do
+  not produce a replicated COMMAND effect: every own-reader, frozen-reader,
+  swapped-reader, and lower-rate report has zero COMMAND difference-in-
+  differences rate above `0.25`, with maxima only `0.0254--0.0586`.
+  Seed-1 WORLD effects are also zero. Seed-2 own-reader retains only
+  `6.25%` WORLD margins above `0.25`; its swapped-reader arm retains a real
+  WORLD signal (`50%` above `0.25`, `9.375%` above `1.0`, and `46.875%`
+  joint top-1 after training), but still has no COMMAND effect. The state is
+  therefore not uniformly dead, yet the complete state/update/query
+  composition remains absent. Training the 67.7M add-on against a frozen
+  language representation is rejected as the main path.
+
+  At the latest audit the native warm `95/5` seeds were around updates
+  `3,571/3,530`; warm `85/15` seeds `1,652/1,632`; and corrected owner-
+  clipped warm `85/15` seeds `857/682`. All writers remain finite. The
+  original warm-85 pair still shows large first-to-current ETTR-loss
+  reduction. Owner-clipped seed 1 has moved its last-100 ETTR composite loss
+  to `23.41`; seed 2 remains higher at `30.52`. These are optimization
+  observations, not causal promotion.
+
+  The initial ETTR-only control jobs `723962/723963` and replacement attempts
+  `723994/723995`, `724009/724010`, and `724014/724015` all failed closed
+  before update zero while serially exposing three launch-only defects:
+  nonportable `cut` quoting, a read-only non-executable launcher, Bash process
+  substitution under Slurm `/bin/sh`, and finally the reservation-name
+  contract. Private commit
+  `ef9489444853a052b379c86e402543b8d793ffa7` adds one fail-closed adapter that
+  snapshots and hash-verifies the immutable command bytes, validates the
+  expected final launcher, and invokes it explicitly through Bash. Correctly
+  named replacements `724019/724020` are pending. No failed attempt created
+  a model.
+
+  Private commit
+  `479472d9a8c806fef088b0c05693ee83a1375690` adds an optional
+  `component` clipping mode with independent budgets and pre-clip telemetry
+  for the base, compiler, reactor, and query reader. Focused tests pass
+  **40/40** with clean Ruff, byte compilation, Bash syntax, and diff checks.
+  Immutable Newton runtime
+  `scratchpad/shohin_ettr_joint_runtime_479472d_r2` contains 3,354 measured
+  files and has `SHA256SUMS` SHA-256
+  `a61b1d4a5d4e58fad9aab15476b31d739c9962a8116396d1a8a11ffcdea13fed`.
+  Matched same-seed jobs `724016/724017` are user-held and consume no GPU.
+  Release them only if live source-deleted results support component
+  starvation; do not launch them from training loss alone.
+
+  Three-stream jobs `723986/723989`, their causal evaluators
+  `723987/723990`, public boards `723988/723991`, and direct adaptive
+  transcript audits `723992/723993` remain dependency-bound to the exact
+  warm-85 parents.
+
+  Decision:
+  `reject_more_frozen_addon_training_as_the_main_path_finish_native_causal_measurement_then_spend_component_budget_only_on_confirmed_interface_starvation`.
