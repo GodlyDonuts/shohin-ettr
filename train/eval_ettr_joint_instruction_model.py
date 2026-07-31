@@ -15,6 +15,10 @@ import torch
 from ettr_data_contract import continuation_batch_payload_sha256
 from ettr_objectives import ETTRObjectiveConfig
 from ettr_packet_index import ETTRDiskPacketSufficiencyIndex
+from ettr_token_transcode import (
+    TokenNativeETTRTranscoder,
+    receipt_value as transcode_receipt_value,
+)
 from ettr_train_step import ETTRCompositeTrainingSubject
 from ettr_v3_streaming import (
     ETTRV3StreamingRelease,
@@ -44,6 +48,7 @@ from probe_ettr_causal_queries import (
     _trace_summary,
     _transaction_geometry_summary,
 )
+from workspace_checkpoint import file_sha256
 
 
 REPORT_SCHEMA = "shohin-ettr-tri-paired-development-evaluation-v3"
@@ -71,7 +76,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--release-sha256", required=True)
     parser.add_argument("--data-root", type=Path, required=True)
     parser.add_argument("--tokenizer", type=Path, required=True)
+    parser.add_argument("--target-tokenizer", type=Path)
     parser.add_argument("--protected-checkpoint", type=Path, required=True)
+    parser.add_argument("--external-base-root", type=Path)
     parser.add_argument("--parent-run-contract", type=Path, required=True)
     parser.add_argument("--parent-run-contract-sha256", required=True)
     parser.add_argument("--parent-joint-model", type=Path, required=True)
@@ -288,6 +295,10 @@ def _validate_model_lineage(
         != run_contract_sha256
         or candidate_payload.get("base_config")
         != parent_payload.get("base_config")
+        or candidate_payload.get("base_import")
+        != parent_payload.get("base_import")
+        or candidate_payload.get("base_rms_norm_eps")
+        != parent_payload.get("base_rms_norm_eps")
         or candidate_static_config != parent_static_config
         or candidate_ettr_config != run_contract.get("model_config")
         or parent_geometry != "stage"
@@ -298,12 +309,24 @@ def _validate_model_lineage(
         parent_state = parent_payload.get("model")
         candidate_state = candidate_payload.get("model")
         parent_initialization = parent_payload.get("initialization")
+        direct_external_parent = (
+            isinstance(parent_initialization, Mapping)
+            and parent_initialization.get("initialization")
+            == "external-smollm2-135m-control"
+            and parent_initialization
+            == parent_contract.get("initialization")
+            and parent_payload.get("base_import")
+            == parent_initialization.get("base_import")
+        )
+        inherited_parent = (
+            isinstance(parent_initialization, Mapping)
+            and parent_initialization.get("initialization")
+            == "parent-joint-model"
+            and parent_initialization.get("parent_joint_model_sha256")
+            == parent_contract.get("parent_joint_model_sha256")
+        )
         if (
-            not isinstance(parent_initialization, Mapping)
-            or parent_initialization.get("initialization")
-            != "parent-joint-model"
-            or parent_initialization.get("parent_joint_model_sha256")
-            != parent_contract.get("parent_joint_model_sha256")
+            not (direct_external_parent or inherited_parent)
             or candidate_payload.get("initialization") != composition
             or candidate_payload.get("optimizer_step")
             != parent_payload.get("optimizer_step")
@@ -346,6 +369,13 @@ def _load_initialization_contract(
 ) -> Mapping[str, object]:
     if composition is None:
         return parent_contract
+    initialization = parent_contract.get("initialization")
+    if (
+        isinstance(initialization, Mapping)
+        and initialization.get("initialization")
+        == "external-smollm2-135m-control"
+    ):
+        return parent_contract
     parent_joint_model = parent_contract.get("parent_joint_model")
     expected_sha256 = parent_contract.get("parent_run_contract_sha256")
     if (
@@ -372,7 +402,7 @@ def _load_initialization_contract(
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
-    paths = (
+    paths = [
         args.release_root,
         args.data_root,
         args.tokenizer,
@@ -382,6 +412,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.run_contract,
         args.joint_model,
         args.output,
+    ]
+    paths.extend(
+        path
+        for path in (
+            args.target_tokenizer,
+            args.external_base_root,
+        )
+        if path is not None
     )
     hashes = (
         args.release_sha256,
@@ -456,20 +494,76 @@ def main(argv: Sequence[str] | None = None) -> int:
         tokenizer_path=args.tokenizer,
     )
     source_verification = stream.verify_source_shards()
+    transcoder = (
+        None
+        if args.target_tokenizer is None
+        else TokenNativeETTRTranscoder(
+            args.tokenizer,
+            args.target_tokenizer,
+        )
+    )
+    transcode_receipt = (
+        None
+        if transcoder is None
+        else transcode_receipt_value(transcoder.receipt)
+    )
+    external_initialization = initialization_contract.get(
+        "initialization"
+    )
+    external_mode = (
+        isinstance(external_initialization, Mapping)
+        and external_initialization.get("initialization")
+        == "external-smollm2-135m-control"
+    )
+    if external_mode:
+        if (
+            args.external_base_root is None
+            or transcoder is None
+            or transcode_receipt is None
+            or initialization_contract.get("token_transcode")
+            != transcode_receipt
+            or external_initialization.get("token_transcode")
+            != transcode_receipt
+            or parent_contract.get("token_transcode")
+            != transcode_receipt
+            or run_contract.get("token_transcode")
+            != transcode_receipt
+        ):
+            raise ETTRTriEvaluationError(
+                "external token transcode lineage differs"
+            )
+    elif (
+        args.external_base_root is not None
+        or transcoder is not None
+    ):
+        raise ETTRTriEvaluationError(
+            "external evaluation arguments differ"
+        )
+    external_tokenizer_sha256 = (
+        None
+        if transcoder is None
+        else transcoder.receipt.target_tokenizer_sha256
+    )
     raw_model, provenance = _build_initial_model(
         args.protected_checkpoint,
         run_contract=initialization_contract,
         device=device,
+        external_base_root=args.external_base_root,
+        external_tokenizer_sha256=external_tokenizer_sha256,
     )
     parent_model, parent_provenance = _build_initial_model(
         args.protected_checkpoint,
         run_contract=initialization_contract,
         device=device,
+        external_base_root=args.external_base_root,
+        external_tokenizer_sha256=external_tokenizer_sha256,
     )
     candidate_model, candidate_provenance = _build_initial_model(
         args.protected_checkpoint,
         run_contract=initialization_contract,
         device=device,
+        external_base_root=args.external_base_root,
+        external_tokenizer_sha256=external_tokenizer_sha256,
     )
     candidate_model.set_open_state_read_floor(
         float(
@@ -498,15 +592,47 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         )
     )
+    protected_checkpoint_sha256 = file_sha256(
+        args.protected_checkpoint
+    )
+    protected_provenance_sha256 = getattr(
+        provenance,
+        "checkpoint_sha256",
+        None,
+    )
+    parameter_receipt = asdict(raw_model.parameter_receipt())
+    parent_parameter_receipt = parent_contract.get(
+        "parameter_receipt"
+    )
+    run_parameter_receipt = run_contract.get("parameter_receipt")
     if (
         provenance != parent_provenance
         or provenance != candidate_provenance
-        or provenance.checkpoint_sha256
+        or protected_checkpoint_sha256
         != stream.manifest.protected_checkpoint_sha256
-        or parent_contract.get("parameter_receipt")
-        != asdict(raw_model.parameter_receipt())
-        or run_contract.get("parameter_receipt")
-        != asdict(raw_model.parameter_receipt())
+        or (
+            protected_provenance_sha256 is not None
+            and protected_provenance_sha256
+            != protected_checkpoint_sha256
+        )
+        or (
+            external_mode
+            and parent_parameter_receipt
+            not in (None, parameter_receipt)
+        )
+        or (
+            external_mode
+            and run_parameter_receipt
+            not in (None, parameter_receipt)
+        )
+        or (
+            not external_mode
+            and parent_parameter_receipt != parameter_receipt
+        )
+        or (
+            not external_mode
+            and run_parameter_receipt != parameter_receipt
+        )
     ):
         raise ETTRTriEvaluationError(
             "tri-stream protected model receipt differs"
@@ -517,6 +643,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         candidate_payload,
         label="candidate model",
     )
+    if (
+        external_mode
+        and _parameter_sha256(raw_model)
+        != _parameter_sha256(parent_model)
+    ):
+        raise ETTRTriEvaluationError(
+            "external raw parent initialization differs"
+        )
     raw_model.eval()
     parent_model.eval()
     candidate_model.eval()
@@ -615,6 +749,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             if len(losses["candidate"]) >= args.max_batches:
                 break
             packet_index.verify_validation((cpu_batch,))
+            source_batch_sha256 = continuation_batch_payload_sha256(
+                cpu_batch
+            )
+            if transcoder is not None:
+                cpu_batch = transcoder.transcode_batch(cpu_batch)
             batch_sha256 = continuation_batch_payload_sha256(cpu_batch)
             batch = move_continuation_batch(cpu_batch, device)
             batch.validate(raw_model.config, objective_config)
@@ -653,13 +792,16 @@ def main(argv: Sequence[str] | None = None) -> int:
                     transaction_rows[name][kind].append(row)
                 for kind, row in packet_geometry.items():
                     packet_rows[name][kind].append(row)
-            batch_reports.append(
-                {
-                    "batch_payload_sha256": batch_sha256,
-                    "losses": observed,
-                    "position": position,
-                }
-            )
+            batch_report = {
+                "batch_payload_sha256": batch_sha256,
+                "losses": observed,
+                "position": position,
+            }
+            if transcoder is not None:
+                batch_report["source_batch_payload_sha256"] = (
+                    source_batch_sha256
+                )
+            batch_reports.append(batch_report)
             del batch
     finally:
         packet_index.close()
@@ -759,7 +901,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "joint_model_sha256": args.joint_model_sha256,
         "optimizer_step": candidate_payload["optimizer_step"],
         "parent_joint_model_sha256": args.parent_joint_model_sha256,
-        "protected_checkpoint_sha256": provenance.checkpoint_sha256,
+        "protected_checkpoint_sha256": protected_checkpoint_sha256,
         "release_file_sha256": args.release_sha256,
         "run_contract_sha256": args.run_contract_sha256,
         "schema": REPORT_SCHEMA,
@@ -767,6 +909,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         "source_verification": source_verification,
         "training_source_commit": run_contract["source_commit"],
     }
+    if external_mode:
+        report["base_import"] = asdict(provenance)
+        report["token_transcode"] = transcode_receipt
     digest = _write_no_replace(
         args.output,
         _canonical_bytes(report),

@@ -21,7 +21,9 @@ RELEASE_ROOT=${RELEASE_ROOT:?set ETTR release root}
 RELEASE_SHA256=${RELEASE_SHA256:?set ETTR release hash}
 ETTR_DATA_ROOT=${ETTR_DATA_ROOT:?set ETTR source root}
 TOKENIZER=${TOKENIZER:?set tokenizer path}
+TARGET_TOKENIZER=${TARGET_TOKENIZER:-}
 PROTECTED_CHECKPOINT=${PROTECTED_CHECKPOINT:?set protected checkpoint}
+BASE_SOURCE_ROOT=${BASE_SOURCE_ROOT:-}
 PARENT_RUN_DIR=${PARENT_RUN_DIR:?set completed parent run}
 RUN_DIR=${RUN_DIR:?set completed tri-stream run}
 OUTPUT=${OUTPUT:?set fresh evaluation output}
@@ -57,21 +59,35 @@ run_contract_sha=$(sha256sum \
 joint_model_sha=$(sha256sum \
   "$RUN_DIR/joint-model-final.pt" | awk '{print $1}')
 
+eval_args=(
+  --release-root "$RELEASE_ROOT"
+  --release-sha256 "$RELEASE_SHA256"
+  --data-root "$ETTR_DATA_ROOT"
+  --tokenizer "$TOKENIZER"
+  --protected-checkpoint "$PROTECTED_CHECKPOINT"
+  --parent-run-contract "$PARENT_RUN_DIR/run-contract.json"
+  --parent-run-contract-sha256 "$parent_contract_sha"
+  --parent-joint-model "$PARENT_RUN_DIR/joint-model-final.pt"
+  --parent-joint-model-sha256 "$parent_model_sha"
+  --run-contract "$RUN_DIR/run-contract.json"
+  --run-contract-sha256 "$run_contract_sha"
+  --joint-model "$RUN_DIR/joint-model-final.pt"
+  --joint-model-sha256 "$joint_model_sha"
+  --output "$OUTPUT"
+  --source-commit "$SOURCE_COMMIT"
+  --max-batches "$MAX_BATCHES"
+)
+if [[ -n "$TARGET_TOKENIZER" || -n "$BASE_SOURCE_ROOT" ]]; then
+  [[ -n "$TARGET_TOKENIZER" && -n "$BASE_SOURCE_ROOT" ]] || {
+    echo "external evaluation arguments differ" >&2
+    exit 2
+  }
+  eval_args+=(
+    --target-tokenizer "$TARGET_TOKENIZER"
+    --external-base-root "$BASE_SOURCE_ROOT"
+  )
+fi
+
 "$PYTHON_ROOT/bin/python" \
   "$CODE_ROOT/train/eval_ettr_joint_instruction_model.py" \
-  --release-root "$RELEASE_ROOT" \
-  --release-sha256 "$RELEASE_SHA256" \
-  --data-root "$ETTR_DATA_ROOT" \
-  --tokenizer "$TOKENIZER" \
-  --protected-checkpoint "$PROTECTED_CHECKPOINT" \
-  --parent-run-contract "$PARENT_RUN_DIR/run-contract.json" \
-  --parent-run-contract-sha256 "$parent_contract_sha" \
-  --parent-joint-model "$PARENT_RUN_DIR/joint-model-final.pt" \
-  --parent-joint-model-sha256 "$parent_model_sha" \
-  --run-contract "$RUN_DIR/run-contract.json" \
-  --run-contract-sha256 "$run_contract_sha" \
-  --joint-model "$RUN_DIR/joint-model-final.pt" \
-  --joint-model-sha256 "$joint_model_sha" \
-  --output "$OUTPUT" \
-  --source-commit "$SOURCE_COMMIT" \
-  --max-batches "$MAX_BATCHES"
+  "${eval_args[@]}"

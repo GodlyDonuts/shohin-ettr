@@ -35,6 +35,7 @@ from eval_ettr_v3 import (
     _write_no_replace,
 )
 from model import GPT, GPTConfig
+from smollm2_backbone import import_smollm2_135m
 from workspace_checkpoint import file_sha256
 
 
@@ -99,7 +100,11 @@ def _load_joint_payload(
         "schema",
         "source_commit",
     }
-    optional_keys = {"query_readout_geometry"}
+    optional_keys = {
+        "base_import",
+        "base_rms_norm_eps",
+        "query_readout_geometry",
+    }
     if (
         not isinstance(value, Mapping)
         or not expected_keys <= set(value) <= expected_keys | optional_keys
@@ -120,16 +125,29 @@ def _build_initial_model(
     *,
     run_contract: Mapping[str, object],
     device: torch.device,
+    external_base_root: Path | None = None,
+    external_tokenizer_sha256: str | None = None,
 ) -> tuple[EndogenousTypedTheoryReactorGPT, object]:
-    protected, provenance = load_protected_base_model(
-        protected_checkpoint
-    )
     initialization = run_contract.get("initialization")
     if not isinstance(initialization, Mapping):
         raise ETTRJointEvaluationError(
             "joint initialization receipt differs"
         )
     mode = initialization.get("initialization")
+    if mode in {
+        "protected-step-300k-weights",
+        "deterministic-random-weights",
+    }:
+        if (
+            external_base_root is not None
+            or external_tokenizer_sha256 is not None
+        ):
+            raise ETTRJointEvaluationError(
+                "external base arguments differ"
+            )
+        protected, provenance = load_protected_base_model(
+            protected_checkpoint
+        )
     if mode == "protected-step-300k-weights":
         base = protected
     elif mode == "deterministic-random-weights":
@@ -145,6 +163,33 @@ def _build_initial_model(
         with torch.random.fork_rng(devices=[]):
             torch.manual_seed(base_seed)
             base = GPT(GPTConfig(**provenance.base_config))
+    elif mode == "external-smollm2-135m-control":
+        expected_import = initialization.get("base_import")
+        if (
+            external_base_root is None
+            or external_tokenizer_sha256 is None
+            or not isinstance(expected_import, Mapping)
+        ):
+            raise ETTRJointEvaluationError(
+                "external base receipt differs"
+            )
+        try:
+            base, provenance = import_smollm2_135m(
+                external_base_root,
+                tokenizer_sha256=external_tokenizer_sha256,
+                expected_model_sha256=str(
+                    expected_import.get("source_model_sha256")
+                ),
+                dtype=torch.bfloat16,
+            )
+        except (RuntimeError, TypeError, ValueError) as exc:
+            raise ETTRJointEvaluationError(
+                "external base import differs"
+            ) from exc
+        if asdict(provenance) != dict(expected_import):
+            raise ETTRJointEvaluationError(
+                "external base receipt differs"
+            )
     else:
         raise ETTRJointEvaluationError(
             "joint initialization mode differs"
