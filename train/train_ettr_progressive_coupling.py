@@ -487,6 +487,8 @@ def _state_factorial_delta_loss(
 
 def select_trainable_architecture(
     model: EndogenousTypedTheoryReactorGPT,
+    *,
+    freeze_reader: bool = False,
 ) -> dict[str, object]:
     """Freeze the base and train exactly the three ETTR architecture modules."""
 
@@ -499,12 +501,20 @@ def select_trainable_architecture(
     }
     selected_ids: set[int] = set()
     component_parameters: dict[str, int] = {}
+    trainable_component_parameters: dict[str, int] = {}
     for name, module in modules.items():
         for parameter in module.parameters():
-            parameter.requires_grad_(True)
-            selected_ids.add(id(parameter))
+            trainable = not (name == "reader" and freeze_reader)
+            parameter.requires_grad_(trainable)
+            if trainable:
+                selected_ids.add(id(parameter))
         component_parameters[name] = sum(
             parameter.numel() for parameter in module.parameters()
+        )
+        trainable_component_parameters[name] = sum(
+            parameter.numel()
+            for parameter in module.parameters()
+            if parameter.requires_grad
         )
     trainable_ids = {
         id(parameter)
@@ -518,7 +528,13 @@ def select_trainable_architecture(
     return {
         "component_parameters": component_parameters,
         "frozen_base": True,
-        "trainable_parameters": sum(component_parameters.values()),
+        "frozen_reader_anchor": freeze_reader,
+        "trainable_component_parameters": (
+            trainable_component_parameters
+        ),
+        "trainable_parameters": sum(
+            trainable_component_parameters.values()
+        ),
         "trainable_tensors": len(trainable_ids),
     }
 
@@ -1005,6 +1021,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         choices=_READER_CAUSAL_BALANCE_MODES,
         default="population",
     )
+    parser.add_argument("--freeze-reader", action="store_true")
     parser.add_argument("--profile-phase-timing", action="store_true")
     parser.add_argument("--weight-decay", type=float, default=0.0)
     parser.add_argument("--gradient-clip", type=float, default=1.0)
@@ -1202,7 +1219,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         del resume_optimizer
 
-        ownership = select_trainable_architecture(model)
+        ownership = select_trainable_architecture(
+            model,
+            freeze_reader=args.freeze_reader,
+        )
         loaded_component_sha256 = {}
         for component in _COMPONENTS:
             loaded_component_sha256[component] = load_component_warm_start(
@@ -1214,21 +1234,25 @@ def main(argv: Sequence[str] | None = None) -> int:
                     f"initial_{component}_sha256",
                 ),
             )
-        optimizer = torch.optim.AdamW(
-            [
-                {
-                    "params": tuple(model.compiler.parameters()),
-                    "lr": args.compiler_learning_rate,
-                },
-                {
-                    "params": tuple(model.reactor.parameters()),
-                    "lr": args.reactor_learning_rate,
-                },
+        optimizer_groups = [
+            {
+                "params": tuple(model.compiler.parameters()),
+                "lr": args.compiler_learning_rate,
+            },
+            {
+                "params": tuple(model.reactor.parameters()),
+                "lr": args.reactor_learning_rate,
+            },
+        ]
+        if not args.freeze_reader:
+            optimizer_groups.append(
                 {
                     "params": tuple(model.query_reader.parameters()),
                     "lr": args.reader_learning_rate,
-                },
-            ],
+                }
+            )
+        optimizer = torch.optim.AdamW(
+            optimizer_groups,
             betas=(0.9, 0.95),
             weight_decay=args.weight_decay,
         )
@@ -1286,6 +1310,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                         "profile_phase_timing": args.profile_phase_timing,
                         "reader_causal_balance_mode": (
                             args.reader_causal_balance_mode
+                        ),
+                        "reader_is_frozen_semantic_anchor": (
+                            args.freeze_reader
                         ),
                         "ramp_updates": args.ramp_updates,
                         "seed": args.coupling_seed,

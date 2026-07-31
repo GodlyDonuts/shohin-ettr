@@ -97,6 +97,7 @@ def _arguments(tmp_path) -> SimpleNamespace:
         exact_anchor_steps=4,
         credit_horizon=4,
         reader_causal_balance_mode="population",
+        freeze_reader=False,
         profile_phase_timing=False,
         weight_decay=0.0,
         gradient_clip=1.0,
@@ -450,7 +451,55 @@ def test_progressive_ownership_freezes_only_base() -> None:
     }
     assert observed == expected
     assert receipt["frozen_base"] is True
+    assert receipt["frozen_reader_anchor"] is False
     assert receipt["trainable_parameters"] == 16 + 25 + 36
+
+
+def test_progressive_ownership_can_freeze_reader_as_semantic_anchor() -> None:
+    model = _CouplingModel()
+    receipt = select_trainable_architecture(
+        model,
+        freeze_reader=True,
+    )
+    assert all(
+        not parameter.requires_grad
+        for parameter in model.query_reader.parameters()
+    )
+    expected = {
+        id(parameter)
+        for module in (model.compiler, model.reactor)
+        for parameter in module.parameters()
+    }
+    observed = {
+        id(parameter)
+        for parameter in model.parameters()
+        if parameter.requires_grad
+    }
+    assert observed == expected
+    assert receipt["frozen_reader_anchor"] is True
+    assert receipt["trainable_parameters"] == 16 + 25
+    assert receipt["trainable_component_parameters"]["reader"] == 0
+
+
+def test_frozen_reader_anchor_still_routes_gradient_to_upstream_state() -> None:
+    model = _CouplingModel()
+    select_trainable_architecture(model, freeze_reader=True)
+    value = model.compiler(torch.ones(2, 3))
+    value = model.reactor(value)
+    loss = model.query_reader(value).square().mean()
+    loss.backward()
+    assert all(
+        parameter.grad is not None
+        for parameter in model.compiler.parameters()
+    )
+    assert all(
+        parameter.grad is not None
+        for parameter in model.reactor.parameters()
+    )
+    assert all(
+        parameter.grad is None
+        for parameter in model.query_reader.parameters()
+    )
 
 
 def test_progressive_arguments_bind_schedule_hashes_and_absolute_paths(
