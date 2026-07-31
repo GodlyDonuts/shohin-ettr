@@ -40,6 +40,7 @@ def _trainer(
     accumulation: int,
     compile_backend: str | None = None,
     compile_mode: str | None = None,
+    gradient_clip_mode: str = "global",
     warmup_updates: int = 1,
     train_base: bool = False,
 ) -> tuple[ETTRTrainStep, ETTRContinuationBatch]:
@@ -136,6 +137,7 @@ def _trainer(
         manifest_sha256=manifest.sha256(),
         step_config=ETTRTrainStepConfig(
             gradient_accumulation_steps=accumulation,
+            gradient_clip_mode=gradient_clip_mode,
             compile_backend=compile_backend,
             compile_mode=compile_mode,
         ),
@@ -146,6 +148,25 @@ def _trainer(
 def test_compile_configuration_rejects_mode_without_backend() -> None:
     with pytest.raises(TheoryReactorError, match="configuration"):
         ETTRTrainStepConfig(compile_mode="default").validate()
+    with pytest.raises(TheoryReactorError, match="configuration"):
+        ETTRTrainStepConfig(gradient_clip_mode="combined").validate()
+
+
+def test_owner_gradient_clipping_reports_both_parameter_owners() -> None:
+    trainer, batch = _trainer(
+        accumulation=1,
+        gradient_clip_mode="owner",
+        train_base=True,
+        warmup_updates=0,
+    )
+    receipt = trainer.update((batch,))
+    assert receipt.base_gradient_norm > 0
+    assert receipt.architecture_gradient_norm > 0
+    torch.testing.assert_close(
+        receipt.gradient_norm.square(),
+        receipt.base_gradient_norm.float().square()
+        + receipt.architecture_gradient_norm.float().square(),
+    )
 
 
 @pytest.mark.filterwarnings(
@@ -182,6 +203,8 @@ def test_compiled_subject_matches_eager_update_on_cpu() -> None:
         "sparsity_loss",
         "anti_bypass_loss",
         "gradient_norm",
+        "base_gradient_norm",
+        "architecture_gradient_norm",
     ):
         torch.testing.assert_close(
             getattr(compiled_receipt, name),
@@ -252,6 +275,8 @@ def test_update_runs_complete_native_objective_and_advances_cursor() -> None:
         "sparsity_loss",
         "anti_bypass_loss",
         "gradient_norm",
+        "base_gradient_norm",
+        "architecture_gradient_norm",
     ):
         value = getattr(receipt, name)
         assert value.shape == ()

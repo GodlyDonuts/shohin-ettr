@@ -36,6 +36,7 @@ WARMUP_UPDATES=${WARMUP_UPDATES:-333}
 TOTAL_UPDATES=${TOTAL_UPDATES:-300000}
 QUERY_BINDING_WEIGHT=${QUERY_BINDING_WEIGHT:-1}
 NLL_GRADIENT_CAP=${NLL_GRADIENT_CAP:-4}
+GRADIENT_CLIP_MODE=${GRADIENT_CLIP_MODE:-global}
 
 for path in \
   "$CODE_ROOT" \
@@ -128,6 +129,7 @@ args=(
   --warmup-updates "$WARMUP_UPDATES"
   --nll-gradient-cap "$NLL_GRADIENT_CAP"
   --query-binding-weight "$QUERY_BINDING_WEIGHT"
+  --gradient-clip-mode "$GRADIENT_CLIP_MODE"
 )
 for name in finemath4 openwebmath code_python finemath3; do
   args+=(--legacy-general-shard-dir "$GENERAL_SHARD_ROOT/$name")

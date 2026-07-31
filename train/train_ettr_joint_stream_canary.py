@@ -186,6 +186,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--log-every", type=int, default=1)
     parser.add_argument("--nll-gradient-cap", type=float)
     parser.add_argument("--query-binding-weight", type=float, default=1.0)
+    parser.add_argument(
+        "--gradient-clip-mode",
+        choices=("global", "owner"),
+        default="global",
+    )
     parser.add_argument("--deep-verify-general", action="store_true")
     return parser.parse_args(argv)
 
@@ -406,6 +411,8 @@ def _ettr_metric_payload(receipt: object) -> dict[str, float]:
         "sparsity_loss",
         "anti_bypass_loss",
         "gradient_norm",
+        "base_gradient_norm",
+        "architecture_gradient_norm",
     )
     return {
         name: float(getattr(receipt, name).detach().float().cpu())
@@ -512,6 +519,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         ),
         step_config=ETTRTrainStepConfig(
             gradient_accumulation_steps=1,
+            gradient_clip_mode=args.gradient_clip_mode,
             hard_transactions=True,
         ),
     )
@@ -558,6 +566,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "initialization": initialization,
         "model_config": asdict(model.config),
         "optimizer_config": asdict(optimizer.config),
+        "ettr_step_config": asdict(ettr_step.step_config),
         "parameter_receipt": asdict(model.parameter_receipt()),
         "schedule_config": asdict(schedule.config),
         "schema": RUN_SCHEMA,

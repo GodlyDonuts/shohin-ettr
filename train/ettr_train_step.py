@@ -64,12 +64,14 @@ _COMPILE_MODES = {
     "max-autotune",
     "max-autotune-no-cudagraphs",
 }
+_GRADIENT_CLIP_MODES = {"global", "owner"}
 
 
 @dataclass(frozen=True, slots=True)
 class ETTRTrainStepConfig:
     gradient_accumulation_steps: int = 1
     gradient_clip: float = 1.0
+    gradient_clip_mode: str = "global"
     hard_transactions: bool = True
     autocast_dtype: torch.dtype = torch.bfloat16
     compile_backend: str | None = None
@@ -80,6 +82,7 @@ class ETTRTrainStepConfig:
             not isinstance(self.gradient_accumulation_steps, int)
             or self.gradient_accumulation_steps <= 0
             or not 0 < self.gradient_clip <= 100
+            or self.gradient_clip_mode not in _GRADIENT_CLIP_MODES
             or not isinstance(self.hard_transactions, bool)
             or self.autocast_dtype not in (torch.bfloat16, torch.float16)
             or (
@@ -115,6 +118,8 @@ class ETTRUpdateReceipt:
     sparsity_loss: torch.Tensor
     anti_bypass_loss: torch.Tensor
     gradient_norm: torch.Tensor
+    base_gradient_norm: torch.Tensor
+    architecture_gradient_norm: torch.Tensor
     supervised_token_count: torch.Tensor
     supervised_world_query_pairs: torch.Tensor
     supervised_command_query_pairs: torch.Tensor
@@ -458,12 +463,53 @@ class ETTRTrainStep(nn.Module):
             )
             if self.gradient_synchronizer is not None:
                 self.gradient_synchronizer(trainable)
-            gradient_norm = torch.nn.utils.clip_grad_norm_(
-                trainable,
-                self.step_config.gradient_clip,
+            base_parameter_ids = {
+                id(parameter) for parameter in self.model.base.parameters()
+            }
+            base_trainable = tuple(
+                parameter
+                for parameter in trainable
+                if id(parameter) in base_parameter_ids
             )
+            architecture_trainable = tuple(
+                parameter
+                for parameter in trainable
+                if id(parameter) not in base_parameter_ids
+            )
+            if self.step_config.gradient_clip_mode == "owner":
+                base_gradient_norm = self._clip_gradient_owner(
+                    base_trainable
+                )
+                architecture_gradient_norm = self._clip_gradient_owner(
+                    architecture_trainable
+                )
+                gradient_norm = torch.linalg.vector_norm(
+                    torch.stack(
+                        (
+                            base_gradient_norm.float(),
+                            architecture_gradient_norm.float(),
+                        )
+                    )
+                )
+            else:
+                base_gradient_norm = self._gradient_norm(base_trainable)
+                architecture_gradient_norm = self._gradient_norm(
+                    architecture_trainable
+                )
+                gradient_norm = torch.nn.utils.clip_grad_norm_(
+                    trainable,
+                    self.step_config.gradient_clip,
+                )
             torch._assert_async(
-                torch.isfinite(gradient_norm),
+                torch.stack(
+                    (
+                        gradient_norm.float(),
+                        base_gradient_norm.float(),
+                        architecture_gradient_norm.float(),
+                    )
+                )
+                .isfinite()
+                .all(),
                 "ETTR gradient norm is nonfinite",
             )
             scale = self.optimizer.apply_schedule()
@@ -496,6 +542,10 @@ class ETTRTrainStep(nn.Module):
             sparsity_loss=mean("sparsity"),
             anti_bypass_loss=mean("anti_bypass"),
             gradient_norm=gradient_norm.detach(),
+            base_gradient_norm=base_gradient_norm.detach(),
+            architecture_gradient_norm=(
+                architecture_gradient_norm.detach()
+            ),
             supervised_token_count=torch.stack(token_counts).sum(),
             supervised_world_query_pairs=torch.stack(world_query_pairs).sum(),
             supervised_command_query_pairs=torch.stack(command_query_pairs).sum(),
@@ -513,6 +563,45 @@ class ETTRTrainStep(nn.Module):
             ).sum(),
             world_query_margin_satisfied=torch.stack(world_query_margin).sum(),
             command_query_margin_satisfied=torch.stack(command_query_margin).sum(),
+        )
+
+    def _clip_gradient_owner(
+        self,
+        parameters: tuple[nn.Parameter, ...],
+    ) -> torch.Tensor:
+        if not parameters:
+            return torch.zeros(
+                (),
+                device=next(self.model.parameters()).device,
+            )
+        return torch.nn.utils.clip_grad_norm_(
+            parameters,
+            self.step_config.gradient_clip,
+        )
+
+    def _gradient_norm(
+        self,
+        parameters: tuple[nn.Parameter, ...],
+    ) -> torch.Tensor:
+        gradients = tuple(
+            parameter.grad.detach().float()
+            for parameter in parameters
+            if parameter.grad is not None
+        )
+        if not gradients:
+            if not parameters:
+                return torch.zeros(
+                    (),
+                    device=next(self.model.parameters()).device,
+                )
+            return torch.zeros((), device=parameters[0].device)
+        return torch.linalg.vector_norm(
+            torch.stack(
+                tuple(
+                    torch.linalg.vector_norm(gradient)
+                    for gradient in gradients
+                )
+            )
         )
 
 
