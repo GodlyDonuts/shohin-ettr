@@ -197,6 +197,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default=0,
     )
     parser.add_argument(
+        "--execution-trace-read-scale",
+        type=float,
+        default=0.0,
+    )
+    parser.add_argument(
         "--gradient-clip-mode",
         choices=("global", "owner", "component"),
         default="owner",
@@ -271,6 +276,7 @@ def _validate_args(args: argparse.Namespace) -> None:
         )
         or not 0.0 <= args.open_state_read_floor <= 1.0
         or not 0 <= args.soft_transaction_ettr_updates <= args.updates
+        or not 0.0 <= args.execution_trace_read_scale <= 4.0
         or args.log_every < 1
     ):
         raise ETTRTriCanaryError("tri-stream canary arguments differ")
@@ -375,6 +381,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         expected_sha256=args.parent_joint_model_sha256,
     )
     model.set_open_state_read_floor(args.open_state_read_floor)
+    model.set_execution_trace_read_scale(
+        args.execution_trace_read_scale
+    )
     if (
         model.base.cfg.vocab_size != tokenizer.get_vocab_size()
         or general["tokenizer_sha256"]

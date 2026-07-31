@@ -170,12 +170,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     parent_static_config = {
         name: value
         for name, value in parent_ettr_config.items()
-        if name != "open_state_read_floor"
+        if name not in {
+            "execution_trace_read_scale",
+            "open_state_read_floor",
+        }
     }
     candidate_static_config = {
         name: value
         for name, value in candidate_ettr_config.items()
-        if name != "open_state_read_floor"
+        if name not in {
+            "execution_trace_read_scale",
+            "open_state_read_floor",
+        }
     }
     if (
         parent_payload.get("schema") != MODEL_SCHEMA
@@ -218,6 +224,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         float(
             candidate_ettr_config.get(
                 "open_state_read_floor",
+                0.0,
+            )
+        )
+    )
+    candidate_model.set_execution_trace_read_scale(
+        float(
+            candidate_ettr_config.get(
+                "execution_trace_read_scale",
                 0.0,
             )
         )

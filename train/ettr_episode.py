@@ -287,6 +287,7 @@ class CausalETTREpisodeRunner(nn.Module):
         query_hidden = query_hidden + self.model.query_reader(
             query_hidden,
             terminal_state,
+            trace=trace,
             attention_mask=batch.query.attention_mask,
         )
         query_hidden = self.model._decode_from_stage(
@@ -401,6 +402,7 @@ class CausalETTREpisodeRunner(nn.Module):
             terminal,
             batch.query.tokens.index_select(0, combined_query_index),
             targets=None,
+            trace=trace,
             attention_mask=batch.query.attention_mask.index_select(
                 0,
                 combined_query_index,

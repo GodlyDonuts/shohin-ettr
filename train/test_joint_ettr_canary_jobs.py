@@ -73,6 +73,10 @@ def test_tri_stream_canary_is_parent_bound_and_code_retaining() -> None:
         '--soft-transaction-ettr-updates '
         '"$SOFT_TRANSACTION_ETTR_UPDATES"' in TRI
     )
+    assert (
+        '--execution-trace-read-scale "$EXECUTION_TRACE_READ_SCALE"'
+        in TRI
+    )
     assert '--query-binding-reduction "$QUERY_BINDING_REDUCTION"' in TRI
     assert (
         '--query-binding-risk-temperature '

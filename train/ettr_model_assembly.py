@@ -117,14 +117,18 @@ def _read_canonical_config(
             "TheoryReactor configuration is not canonical"
         )
     expected_keys = {item.name for item in fields(TheoryReactorConfig)}
-    integer_keys = expected_keys - {"open_state_read_floor"}
+    float_keys = {
+        "execution_trace_read_scale",
+        "open_state_read_floor",
+    }
+    integer_keys = expected_keys - float_keys
     if (
         set(value) != expected_keys
         or any(
             not isinstance(value[name], int) or isinstance(value[name], bool)
             for name in integer_keys
         )
-        or not isinstance(value["open_state_read_floor"], float)
+        or any(not isinstance(value[name], float) for name in float_keys)
     ):
         raise ETTRModelAssemblyError(
             "TheoryReactor configuration fields differ"

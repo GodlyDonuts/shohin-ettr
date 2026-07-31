@@ -48,6 +48,7 @@ class TheoryReactorConfig:
     max_steps: int = 64
     stage_after_block: int = 19
     open_state_read_floor: float = 0.0
+    execution_trace_read_scale: float = 0.0
     parameter_cap: int = SYSTEM_PARAMETER_CAP
 
     def validate(self, *, n_layer: int | None = None) -> None:
@@ -85,6 +86,14 @@ class TheoryReactorConfig:
         ):
             raise TheoryReactorError(
                 "open-state read floor must be in the unit interval"
+            )
+        if (
+            not isinstance(self.execution_trace_read_scale, float)
+            or not math.isfinite(self.execution_trace_read_scale)
+            or not 0.0 <= self.execution_trace_read_scale <= 4.0
+        ):
+            raise TheoryReactorError(
+                "execution-trace read scale must be between zero and four"
             )
 
 
@@ -914,6 +923,7 @@ class SourceDeletedQueryReader(nn.Module):
     def __init__(self, config: TheoryReactorConfig):
         super().__init__()
         config.validate()
+        self.config = config
         width = config.state_width
         self.query_projection = nn.Linear(config.d_model, width)
         self.value_embedding = nn.Parameter(torch.empty(config.num_value_codes, width))
@@ -949,6 +959,7 @@ class SourceDeletedQueryReader(nn.Module):
         self.output_projection = nn.Linear(width, config.d_model)
         self.gate = nn.Parameter(torch.tensor(0.1))
         self.open_state_read_floor = config.open_state_read_floor
+        self.execution_trace_read_scale = config.execution_trace_read_scale
         nn.init.normal_(self.value_embedding, std=0.02)
         nn.init.normal_(self.type_embedding, std=0.02)
 
@@ -957,6 +968,7 @@ class SourceDeletedQueryReader(nn.Module):
         query_hidden: torch.Tensor,
         state: TypedTheoryState,
         *,
+        trace: ReactorTrace | None = None,
         attention_mask: torch.Tensor | None = None,
     ) -> torch.Tensor:
         batch, tokens, _ = query_hidden.shape
@@ -1011,11 +1023,88 @@ class SourceDeletedQueryReader(nn.Module):
             + self.open_state_read_floor * disposition[:, 0:1]
         )
         state_values = semantic_state * readable[:, :, None] + status
+        memory_values = state_values
+        memory_padding = state_padding
+        if self.execution_trace_read_scale > 0.0:
+            if (
+                not isinstance(trace, ReactorTrace)
+                or trace.value_code.ndim != 3
+                or trace.value_code.shape[0] != batch
+                or trace.value_code.shape[2] != self.config.num_value_codes
+                or trace.type_index.shape
+                != (
+                    batch,
+                    trace.value_code.shape[1],
+                    self.config.num_types,
+                )
+                or trace.source.shape
+                != (
+                    batch,
+                    trace.value_code.shape[1],
+                    self.config.num_slots,
+                )
+                or trace.target.shape != trace.source.shape
+                or trace.committed.shape != trace.value_code.shape[:2]
+                or trace.halted.shape != trace.value_code.shape[:2]
+            ):
+                raise TheoryReactorError(
+                    "execution trace geometry differs"
+                )
+            trace_values = torch.einsum(
+                "bkc,cw->bkw",
+                trace.value_code,
+                self.value_embedding,
+            )
+            trace_values = trace_values + torch.einsum(
+                "bkt,tw->bkw",
+                trace.type_index,
+                self.type_embedding,
+            )
+            trace_values = trace_values + torch.einsum(
+                "bks,bsw->bkw",
+                trace.source,
+                semantic_state,
+            )
+            trace_values = trace_values + torch.einsum(
+                "bks,bsw->bkw",
+                trace.target,
+                semantic_state,
+            )
+            trace_disposition = torch.stack(
+                (
+                    (1.0 - trace.committed) * (1.0 - trace.halted),
+                    trace.committed * (1.0 - trace.halted),
+                    (1.0 - trace.committed) * trace.halted,
+                    trace.committed * trace.halted,
+                ),
+                dim=-1,
+            )
+            trace_values = trace_values + self.status_projection(
+                trace_disposition
+            )
+            memory_values = torch.cat(
+                (
+                    state_values,
+                    self.execution_trace_read_scale * trace_values,
+                ),
+                dim=1,
+            )
+            memory_padding = torch.cat(
+                (
+                    state_padding,
+                    torch.zeros(
+                        trace_values.shape[:2],
+                        dtype=torch.bool,
+                        device=trace_values.device,
+                    ),
+                ),
+                dim=1,
+            )
         read, _ = self.cross_attention(
             query,
-            self.state_norm(state_values),
-            self.state_norm(state_values),
-            key_padding_mask=state_padding,
+            self.state_norm(memory_values),
+            self.state_norm(memory_values),
+            key_padding_mask=memory_padding,
             need_weights=False,
         )
         causal_mask = torch.ones(
@@ -1054,7 +1143,17 @@ class EndogenousTypedTheoryReactorGPT(nn.Module):
         updated = replace(self.config, open_state_read_floor=value)
         updated.validate(n_layer=self.base.cfg.n_layer)
         self.config = updated
+        self.query_reader.config = updated
         self.query_reader.open_state_read_floor = value
+
+    def set_execution_trace_read_scale(self, value: float) -> None:
+        """Change only the query reader's config-bound trace scale."""
+
+        updated = replace(self.config, execution_trace_read_scale=value)
+        updated.validate(n_layer=self.base.cfg.n_layer)
+        self.config = updated
+        self.query_reader.config = updated
+        self.query_reader.execution_trace_read_scale = value
 
     def freeze_base(self) -> None:
         for parameter in self.base.parameters():
@@ -1119,12 +1218,14 @@ class EndogenousTypedTheoryReactorGPT(nn.Module):
         query_idx: torch.Tensor,
         *,
         targets: torch.Tensor | None = None,
+        trace: ReactorTrace | None = None,
         attention_mask: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor | None]:
         hidden = self._encode_to_stage(query_idx, pos=0)
         hidden = hidden + self.query_reader(
             hidden,
             state,
+            trace=trace,
             attention_mask=attention_mask,
         )
         hidden = self._decode_from_stage(hidden, pos=0)
@@ -1172,6 +1273,7 @@ class EndogenousTypedTheoryReactorGPT(nn.Module):
             state,
             query_idx,
             targets=targets,
+            trace=trace,
             attention_mask=query_attention_mask,
         )
         return logits, loss, state, trace

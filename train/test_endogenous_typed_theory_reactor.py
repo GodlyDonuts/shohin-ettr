@@ -424,6 +424,57 @@ def test_open_state_read_floor_exposes_semantics_before_commit() -> None:
         model.set_open_state_read_floor(1.1)
 
 
+def test_execution_trace_bus_exposes_only_model_generated_trajectory() -> None:
+    model = _model().eval()
+    state = model.compile_world(
+        torch.randint(0, 64, (2, 8)),
+        hard=True,
+    )
+    terminal, trace = model.execute(
+        state,
+        steps=3,
+        hard=True,
+        command_idx=torch.randint(0, 64, (2, 6)),
+    )
+    query_hidden = torch.rand(2, 4, model.config.d_model)
+    with torch.no_grad():
+        disabled = model.query_reader(
+            query_hidden,
+            terminal,
+            trace=trace,
+        )
+        state_only = model.query_reader(query_hidden, terminal)
+    torch.testing.assert_close(disabled, state_only, rtol=0.0, atol=0.0)
+
+    model.set_execution_trace_read_scale(1.0)
+    with torch.no_grad():
+        enabled = model.query_reader(
+            query_hidden,
+            terminal,
+            trace=trace,
+        )
+        changed = model.query_reader(
+            query_hidden,
+            terminal,
+            trace=replace(
+                trace,
+                value_code=trace.value_code.roll(1, dims=-1),
+            ),
+        )
+    assert not torch.equal(enabled, disabled)
+    assert not torch.equal(changed, enabled)
+    with pytest.raises(
+        TheoryReactorError,
+        match="execution trace geometry",
+    ):
+        model.query_reader(query_hidden, terminal)
+    with pytest.raises(
+        TheoryReactorError,
+        match="execution-trace read scale",
+    ):
+        model.set_execution_trace_read_scale(4.1)
+
+
 def test_hard_policy_keeps_soft_supervision_gradients() -> None:
     model = _model()
     state = model.compile_world(
