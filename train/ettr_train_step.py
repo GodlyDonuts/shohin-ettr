@@ -64,7 +64,7 @@ _COMPILE_MODES = {
     "max-autotune",
     "max-autotune-no-cudagraphs",
 }
-_GRADIENT_CLIP_MODES = {"global", "owner"}
+_GRADIENT_CLIP_MODES = {"global", "owner", "component"}
 
 
 @dataclass(frozen=True, slots=True)
@@ -120,6 +120,9 @@ class ETTRUpdateReceipt:
     gradient_norm: torch.Tensor
     base_gradient_norm: torch.Tensor
     architecture_gradient_norm: torch.Tensor
+    compiler_gradient_norm: torch.Tensor
+    reactor_gradient_norm: torch.Tensor
+    query_reader_gradient_norm: torch.Tensor
     supervised_token_count: torch.Tensor
     supervised_world_query_pairs: torch.Tensor
     supervised_command_query_pairs: torch.Tensor
@@ -476,7 +479,81 @@ class ETTRTrainStep(nn.Module):
                 for parameter in trainable
                 if id(parameter) not in base_parameter_ids
             )
-            if self.step_config.gradient_clip_mode == "owner":
+            component_trainable = tuple(
+                tuple(
+                    parameter
+                    for parameter in component.parameters()
+                    if parameter.requires_grad
+                )
+                for component in (
+                    self.model.compiler,
+                    self.model.reactor,
+                    self.model.query_reader,
+                )
+            )
+            component_parameter_ids = tuple(
+                {id(parameter) for parameter in parameters}
+                for parameters in component_trainable
+            )
+            if (
+                any(
+                    left & right
+                    for index, left in enumerate(component_parameter_ids)
+                    for right in component_parameter_ids[index + 1 :]
+                )
+                or set().union(*component_parameter_ids)
+                != {id(parameter) for parameter in architecture_trainable}
+            ):
+                raise TheoryReactorError(
+                    "ETTR architecture gradient ownership differs"
+                )
+            (
+                compiler_trainable,
+                reactor_trainable,
+                query_reader_trainable,
+            ) = component_trainable
+            if self.step_config.gradient_clip_mode == "component":
+                base_gradient_norm = self._clip_gradient_owner(
+                    base_trainable
+                )
+                compiler_gradient_norm = self._clip_gradient_owner(
+                    compiler_trainable
+                )
+                reactor_gradient_norm = self._clip_gradient_owner(
+                    reactor_trainable
+                )
+                query_reader_gradient_norm = self._clip_gradient_owner(
+                    query_reader_trainable
+                )
+                architecture_gradient_norm = torch.linalg.vector_norm(
+                    torch.stack(
+                        (
+                            compiler_gradient_norm.float(),
+                            reactor_gradient_norm.float(),
+                            query_reader_gradient_norm.float(),
+                        )
+                    )
+                )
+                gradient_norm = torch.linalg.vector_norm(
+                    torch.stack(
+                        (
+                            base_gradient_norm.float(),
+                            compiler_gradient_norm.float(),
+                            reactor_gradient_norm.float(),
+                            query_reader_gradient_norm.float(),
+                        )
+                    )
+                )
+            elif self.step_config.gradient_clip_mode == "owner":
+                compiler_gradient_norm = self._gradient_norm(
+                    compiler_trainable
+                )
+                reactor_gradient_norm = self._gradient_norm(
+                    reactor_trainable
+                )
+                query_reader_gradient_norm = self._gradient_norm(
+                    query_reader_trainable
+                )
                 base_gradient_norm = self._clip_gradient_owner(
                     base_trainable
                 )
@@ -496,6 +573,15 @@ class ETTRTrainStep(nn.Module):
                 architecture_gradient_norm = self._gradient_norm(
                     architecture_trainable
                 )
+                compiler_gradient_norm = self._gradient_norm(
+                    compiler_trainable
+                )
+                reactor_gradient_norm = self._gradient_norm(
+                    reactor_trainable
+                )
+                query_reader_gradient_norm = self._gradient_norm(
+                    query_reader_trainable
+                )
                 gradient_norm = torch.nn.utils.clip_grad_norm_(
                     trainable,
                     self.step_config.gradient_clip,
@@ -506,6 +592,9 @@ class ETTRTrainStep(nn.Module):
                         gradient_norm.float(),
                         base_gradient_norm.float(),
                         architecture_gradient_norm.float(),
+                        compiler_gradient_norm.float(),
+                        reactor_gradient_norm.float(),
+                        query_reader_gradient_norm.float(),
                     )
                 )
                 .isfinite()
@@ -546,6 +635,9 @@ class ETTRTrainStep(nn.Module):
             architecture_gradient_norm=(
                 architecture_gradient_norm.detach()
             ),
+            compiler_gradient_norm=compiler_gradient_norm.detach(),
+            reactor_gradient_norm=reactor_gradient_norm.detach(),
+            query_reader_gradient_norm=query_reader_gradient_norm.detach(),
             supervised_token_count=torch.stack(token_counts).sum(),
             supervised_world_query_pairs=torch.stack(world_query_pairs).sum(),
             supervised_command_query_pairs=torch.stack(command_query_pairs).sum(),

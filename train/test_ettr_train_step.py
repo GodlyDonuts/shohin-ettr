@@ -169,6 +169,31 @@ def test_owner_gradient_clipping_reports_both_parameter_owners() -> None:
     )
 
 
+def test_component_gradient_clipping_reports_every_parameter_owner() -> None:
+    trainer, batch = _trainer(
+        accumulation=1,
+        gradient_clip_mode="component",
+        train_base=True,
+        warmup_updates=0,
+    )
+    receipt = trainer.update((batch,))
+    assert receipt.base_gradient_norm > 0
+    assert receipt.compiler_gradient_norm > 0
+    assert receipt.reactor_gradient_norm > 0
+    assert receipt.query_reader_gradient_norm > 0
+    torch.testing.assert_close(
+        receipt.architecture_gradient_norm.square(),
+        receipt.compiler_gradient_norm.float().square()
+        + receipt.reactor_gradient_norm.float().square()
+        + receipt.query_reader_gradient_norm.float().square(),
+    )
+    torch.testing.assert_close(
+        receipt.gradient_norm.square(),
+        receipt.base_gradient_norm.float().square()
+        + receipt.architecture_gradient_norm.float().square(),
+    )
+
+
 @pytest.mark.filterwarnings(
     "ignore:.*should not be instantiated.*:DeprecationWarning"
 )
@@ -205,6 +230,9 @@ def test_compiled_subject_matches_eager_update_on_cpu() -> None:
         "gradient_norm",
         "base_gradient_norm",
         "architecture_gradient_norm",
+        "compiler_gradient_norm",
+        "reactor_gradient_norm",
+        "query_reader_gradient_norm",
     ):
         torch.testing.assert_close(
             getattr(compiled_receipt, name),
@@ -277,6 +305,9 @@ def test_update_runs_complete_native_objective_and_advances_cursor() -> None:
         "gradient_norm",
         "base_gradient_norm",
         "architecture_gradient_norm",
+        "compiler_gradient_norm",
+        "reactor_gradient_norm",
+        "query_reader_gradient_norm",
     ):
         value = getattr(receipt, name)
         assert value.shape == ()

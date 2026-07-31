@@ -198,7 +198,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--query-binding-weight", type=float, default=1.0)
     parser.add_argument(
         "--gradient-clip-mode",
-        choices=("global", "owner"),
+        choices=("global", "owner", "component"),
         default="global",
     )
     parser.add_argument("--deep-verify-general", action="store_true")
@@ -423,6 +423,9 @@ def _ettr_metric_payload(receipt: object) -> dict[str, float]:
         "gradient_norm",
         "base_gradient_norm",
         "architecture_gradient_norm",
+        "compiler_gradient_norm",
+        "reactor_gradient_norm",
+        "query_reader_gradient_norm",
     )
     return {
         name: float(getattr(receipt, name).detach().float().cpu())

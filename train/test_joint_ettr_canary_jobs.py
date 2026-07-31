@@ -30,6 +30,7 @@ def test_joint_canary_requests_one_h100_and_verifies_runtime() -> None:
     assert "sha256sum -c SHA256SUMS" in TRAIN
     assert "train_ettr_joint_stream_canary.py" in TRAIN
     assert "--legacy-general-shard-dir" in TRAIN
+    assert '"$GRADIENT_CLIP_MODE" != component' in TRAIN
     assert "torch.cuda.synchronize()" in TRAIN
 
 

@@ -155,7 +155,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--query-binding-weight", type=float, default=1.0)
     parser.add_argument(
         "--gradient-clip-mode",
-        choices=("global", "owner"),
+        choices=("global", "owner", "component"),
         default="owner",
     )
     parser.add_argument("--log-every", type=int, default=1)
