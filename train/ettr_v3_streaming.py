@@ -645,6 +645,7 @@ class ETTRV3StreamingRelease:
                     raise ETTRV3StreamingError(
                         "ETTR v3 streamed semantic core differs"
                     )
+                core_sha256 = hashlib.sha256(payload).hexdigest()
                 core_batch = None
                 core_batch_indices = None
                 for batch_index in range(TRAINING_BATCHES_PER_CORE):
@@ -657,7 +658,7 @@ class ETTRV3StreamingRelease:
                     if (
                         stream is None
                         or record.identity.core_id != stream["core_id"]
-                        or record.core_sha256() != stream["core_sha256"]
+                        or core_sha256 != stream["core_sha256"]
                     ):
                         raise ETTRV3StreamingError(
                             "ETTR v3 stream core identity differs"

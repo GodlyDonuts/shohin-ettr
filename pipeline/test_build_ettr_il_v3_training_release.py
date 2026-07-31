@@ -22,6 +22,7 @@ from ettr_il_v2_token_native_surface import (
 )
 from ettr_il_v3_materialize import materialize_candidate
 from ettr_il_v3_protocol import PROTOCOL, canonical_json_bytes
+from ettr_il_v3_shards import SemanticCoreRecord
 from ettr_packet_index import ETTRDiskPacketSufficiencyIndex
 from ettr_v3_streaming import (
     ETTRV3StreamingError,
@@ -336,6 +337,55 @@ def test_release_and_streaming_do_not_depend_on_default_tokenizer_path(
             )
         )
     ) == 4
+
+
+def test_stream_canonicalizes_each_semantic_core_once(
+    tmp_path,
+    monkeypatch,
+):
+    tokenizer, data_root, audit, separation = _write_inputs(tmp_path)
+    output = tmp_path / "release"
+    result = build_training_release(
+        main_audit_path=audit,
+        separation_path=separation,
+        data_root=data_root,
+        tokenizer_path=tokenizer,
+        protected_checkpoint_sha256="4" * 64,
+        source_commit=SOURCE_COMMIT,
+        output=output,
+        expected_split_counts={
+            "development": 1,
+            "development_reserve": 0,
+            "train": 1,
+            "train_reserve": 0,
+        },
+    )
+    stream = ETTRV3StreamingRelease(
+        output,
+        expected_release_sha256=result["release_file_sha256"],
+        data_root=data_root,
+        tokenizer_path=tokenizer,
+    )
+    original = SemanticCoreRecord.canonical_bytes
+    calls = 0
+
+    def counted(record):
+        nonlocal calls
+        calls += 1
+        return original(record)
+
+    monkeypatch.setattr(SemanticCoreRecord, "canonical_bytes", counted)
+    batches = tuple(
+        stream.iter_batches(
+            "train",
+            rank=0,
+            world_size=1,
+            epoch=0,
+            seed=7,
+        )
+    )
+    assert len(batches) == 4
+    assert calls == 1
 
 
 def test_parallel_release_is_byte_identical_to_serial_release(tmp_path):
