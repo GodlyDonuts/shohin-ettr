@@ -22,6 +22,12 @@ TRI_EVAL = (
     / "jobs"
     / "eval_joint_ettr_instruction_canary.sbatch"
 ).read_text()
+CAUSAL_PROBE = (
+    ROOT
+    / "train"
+    / "jobs"
+    / "probe_joint_ettr_causal_queries.sbatch"
+).read_text()
 
 
 def test_joint_canary_requests_one_h100_and_verifies_runtime() -> None:
@@ -69,3 +75,12 @@ def test_tri_stream_evaluator_compares_parent_and_raw() -> None:
     assert "eval_ettr_joint_instruction_model.py" in TRI_EVAL
     assert "--parent-run-contract-sha256" in TRI_EVAL
     assert "--parent-joint-model-sha256" in TRI_EVAL
+
+
+def test_joint_causal_probe_is_hash_bound_and_read_only() -> None:
+    assert "--gres=gpu:nvidia_h100_pcie:1" in CAUSAL_PROBE
+    assert "sha256sum -c SHA256SUMS" in CAUSAL_PROBE
+    assert "probe_joint_ettr_causal_queries.py" in CAUSAL_PROBE
+    assert "--joint-model-sha256" in CAUSAL_PROBE
+    assert "--run-contract-sha256" in CAUSAL_PROBE
+    assert "train_ettr" not in CAUSAL_PROBE

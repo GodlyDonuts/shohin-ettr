@@ -12,6 +12,7 @@ from probe_ettr_causal_queries import (
     _state_summary,
     _summary,
 )
+from probe_joint_ettr_causal_queries import _causal_shift
 
 
 def test_pair_rows_measure_exact_difference_in_differences() -> None:
@@ -109,3 +110,36 @@ def test_state_pair_rows_separate_structure_from_disposition() -> None:
     summary = _state_summary(rows)
     assert summary["structural_state_equal_rate"] == 0.5
     assert summary["exact_state_equal_rate"] == 0.0
+
+
+def test_joint_causal_shift_preserves_signed_metric_deltas() -> None:
+    def arm(mean: float, margin: float) -> dict[str, object]:
+        query = {
+            "difference_in_differences": {
+                name: mean
+                for name in (
+                    "maximum",
+                    "mean",
+                    "minimum",
+                    "p05",
+                    "p25",
+                    "p50",
+                    "p75",
+                    "p95",
+                )
+            },
+            "joint_top1_rate": margin,
+            "margin_rates": {"0": margin, "1": margin},
+            "paired_order_joint_rate": margin,
+        }
+        return {
+            "command": {"query": query},
+            "world": {"query": query},
+        }
+
+    shift = _causal_shift(arm(0.25, 0.125), arm(0.75, 0.5))
+    assert (
+        shift["command"]["difference_in_differences_delta"]["p50"]
+        == 0.5
+    )
+    assert shift["world"]["margin_rate_delta"]["1"] == 0.375
