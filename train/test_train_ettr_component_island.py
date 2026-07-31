@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 import torch
 import torch.nn as nn
@@ -18,6 +20,7 @@ from train_ettr_component_island import (
     _masked_class_balanced_cross_entropy,
     _masked_categorical_nll,
     _reactor_policy_logits,
+    _reader_state,
     compiler_packet_loss,
     _validate_args,
     load_component_warm_start,
@@ -33,6 +36,35 @@ class _ComponentModel(nn.Module):
         self.compiler = nn.Linear(3, 3)
         self.reactor = nn.Linear(3, 3)
         self.query_reader = nn.Linear(3, 3)
+
+
+class _AutonomousReaderContext:
+    def __init__(self, state: TypedTheoryState) -> None:
+        self.state = state
+        self.compile_call = None
+        self.execute_call = None
+
+    def compile_world(self, tokens, *, attention_mask, hard):
+        self.compile_call = (tokens, attention_mask, hard)
+        return self.state
+
+    def execute(
+        self,
+        state,
+        *,
+        steps,
+        hard,
+        command_idx,
+        command_attention_mask,
+    ):
+        self.execute_call = (
+            state,
+            steps,
+            hard,
+            command_idx,
+            command_attention_mask,
+        )
+        return state, "trace"
 
 
 @pytest.mark.parametrize(
@@ -171,6 +203,66 @@ def test_component_warm_start_rejects_wrong_hash(tmp_path) -> None:
             path,
             expected_sha256="0" * 64,
         )
+
+
+def test_autonomous_reader_state_uses_hard_deployment_path() -> None:
+    state = TypedTheoryState(
+        value_probabilities=torch.ones(2, 3, 4, requires_grad=True),
+        type_probabilities=torch.ones(2, 3, 2, requires_grad=True),
+        relations=torch.ones(2, 2, 3, 3, requires_grad=True),
+        active=torch.ones(2, 3, requires_grad=True),
+        root=torch.ones(2, 3, requires_grad=True),
+        committed=torch.zeros(2, requires_grad=True),
+        halted=torch.zeros(2, requires_grad=True),
+        step=0,
+    )
+    model = _AutonomousReaderContext(state)
+    world_tokens = torch.tensor([[1, 2], [3, 4]])
+    world_mask = torch.ones_like(world_tokens, dtype=torch.bool)
+    command_tokens = torch.tensor([[5, 6], [7, 8]])
+    command_mask = torch.ones_like(command_tokens, dtype=torch.bool)
+    batch = SimpleNamespace(
+        episodes=SimpleNamespace(
+            world=SimpleNamespace(
+                tokens=world_tokens,
+                attention_mask=world_mask,
+            ),
+            command=SimpleNamespace(
+                tokens=command_tokens,
+                attention_mask=command_mask,
+            ),
+        ),
+        transaction_targets=SimpleNamespace(
+            opcode=torch.zeros(2, 5, dtype=torch.long),
+        ),
+    )
+    observed, trace = _reader_state(
+        model,
+        batch,
+        source="autonomous",
+    )
+    assert model.compile_call is not None
+    assert model.compile_call[0] is world_tokens
+    assert model.compile_call[1] is world_mask
+    assert model.compile_call[2] is True
+    assert model.execute_call is not None
+    assert model.execute_call[0] is state
+    assert model.execute_call[1] == 5
+    assert model.execute_call[2] is True
+    assert model.execute_call[3] is command_tokens
+    assert model.execute_call[4] is command_mask
+    assert trace == "trace"
+    assert observed.step == state.step
+    for tensor in (
+        observed.value_probabilities,
+        observed.type_probabilities,
+        observed.relations,
+        observed.active,
+        observed.root,
+        observed.committed,
+        observed.halted,
+    ):
+        assert tensor.requires_grad is False
 
 
 def test_masked_categorical_nll_uses_only_supported_rows() -> None:

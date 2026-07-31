@@ -81,6 +81,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default="stage",
     )
     parser.add_argument(
+        "--reader-state-source",
+        choices=("oracle", "autonomous"),
+        default="oracle",
+    )
+    parser.add_argument(
         "--reactor-reduction",
         choices=_REACTOR_REDUCTIONS,
         default="decision-mean",
@@ -118,6 +123,10 @@ def _validate_args(args: argparse.Namespace) -> None:
         or not math.isfinite(args.gradient_clip)
         or args.gradient_clip <= 0.0
         or (args.component != "reader" and args.reader_injection != "stage")
+        or (
+            args.component != "reader"
+            and args.reader_state_source != "oracle"
+        )
         or (
             args.component != "reactor"
             and getattr(
@@ -253,6 +262,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             data_seed=args.data_seed,
             max_batches=args.eval_batches,
             reader_injection=args.reader_injection,
+            reader_state_source=args.reader_state_source,
         )
         contract = {
             "component": args.component,
@@ -267,7 +277,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "reactor": (
                     "initial_packet_and_prior_transactions_teacher_forced"
                 ),
-                "reader": "exact_terminal_packet",
+                "reader": (
+                    "exact_terminal_packet"
+                    if args.reader_state_source == "oracle"
+                    else "autonomous_hard_terminal_packet"
+                ),
             }[args.component],
             "parent_joint_model": str(args.parent_joint_model),
             "parent_joint_model_sha256": (
@@ -279,6 +293,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             ),
             "release_file_sha256": args.release_sha256,
             "reader_injection": args.reader_injection,
+            "reader_state_source": args.reader_state_source,
             "reactor_reduction": args.reactor_reduction,
             "schema": CONTRACT_SCHEMA,
             "source_commit": args.source_commit,
@@ -341,6 +356,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     batch,
                     args.component,
                     reader_injection=args.reader_injection,
+                    reader_state_source=args.reader_state_source,
                     reactor_reduction=args.reactor_reduction,
                 )
             if not bool(torch.isfinite(loss)):
@@ -394,6 +410,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             data_seed=args.data_seed,
             max_batches=args.eval_batches,
             reader_injection=args.reader_injection,
+            reader_state_source=args.reader_state_source,
         )
         final_component = _component_state(model, args.component)
         final_path = args.output / "component-final.safetensors"
@@ -448,6 +465,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "release_file_sha256": args.release_sha256,
             "release_manifest_sha256": stream.manifest.sha256(),
             "reader_injection": args.reader_injection,
+            "reader_state_source": args.reader_state_source,
             "reactor_reduction": args.reactor_reduction,
             "schema": REPORT_SCHEMA,
             "source_commit": args.source_commit,

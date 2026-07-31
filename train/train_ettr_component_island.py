@@ -25,6 +25,7 @@ import torch.nn.functional as F
 from endogenous_typed_theory_reactor import (
     EndogenousTypedTheoryReactorGPT,
     GenericTransactionReactor,
+    ReactorTrace,
     TransactionPolicy,
     TypedTheoryState,
 )
@@ -61,6 +62,7 @@ RUN_SCHEMA = "shohin-ettr-component-island-run-v1"
 REPORT_SCHEMA = "shohin-ettr-component-island-report-v1"
 _COMPONENTS = ("compiler", "reactor", "reader")
 _REACTOR_REDUCTIONS = ("decision-mean", "head-class-balanced")
+_READER_STATE_SOURCES = ("oracle", "autonomous")
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _POLICY_FIELDS = (
@@ -551,6 +553,7 @@ def _reader_logits(
     state: TypedTheoryState,
     *,
     injection: str,
+    trace: ReactorTrace | None = None,
 ) -> torch.Tensor:
     if injection not in {
         "stage",
@@ -567,6 +570,7 @@ def _reader_logits(
     read = model.query_reader(
         query_hidden.detach(),
         state,
+        trace=trace,
         attention_mask=batch.episodes.query.attention_mask,
     )
     if injection == "stage":
@@ -607,23 +611,58 @@ def _reader_logits(
     ).squeeze(1)
 
 
+def _reader_state(
+    model: EndogenousTypedTheoryReactorGPT,
+    batch: ETTRContinuationBatch,
+    *,
+    source: str,
+) -> tuple[TypedTheoryState, ReactorTrace | None]:
+    if source == "oracle":
+        return (
+            packet_targets_to_state(
+                batch.terminal_packet_targets,
+                model.config,
+                step=batch.transaction_targets.opcode.shape[1],
+                dtype=next(model.query_reader.parameters()).dtype,
+            ),
+            None,
+        )
+    if source != "autonomous":
+        raise ETTRComponentIslandError("reader state source differs")
+    with torch.no_grad():
+        state = model.compile_world(
+            batch.episodes.world.tokens,
+            attention_mask=batch.episodes.world.attention_mask,
+            hard=True,
+        )
+        state, trace = model.execute(
+            state,
+            steps=batch.transaction_targets.opcode.shape[1],
+            hard=True,
+            command_idx=batch.episodes.command.tokens,
+            command_attention_mask=batch.episodes.command.attention_mask,
+        )
+    return state.detached_clone(), trace
+
+
 def _reader_loss(
     model: EndogenousTypedTheoryReactorGPT,
     batch: ETTRContinuationBatch,
     *,
     injection: str,
+    state_source: str,
 ) -> tuple[torch.Tensor, dict[str, float]]:
-    state = packet_targets_to_state(
-        batch.terminal_packet_targets,
-        model.config,
-        step=batch.transaction_targets.opcode.shape[1],
-        dtype=next(model.query_reader.parameters()).dtype,
+    state, trace = _reader_state(
+        model,
+        batch,
+        source=state_source,
     )
     read_logits = _reader_logits(
         model,
         batch,
         state,
         injection=injection,
+        trace=trace,
     )
     targets = batch.episodes.query.targets.gather(
         1,
@@ -649,6 +688,7 @@ def component_loss(
     component: str,
     *,
     reader_injection: str = "stage",
+    reader_state_source: str = "oracle",
     reactor_reduction: str = "decision-mean",
 ) -> tuple[torch.Tensor, dict[str, float]]:
     if component == "compiler":
@@ -664,6 +704,7 @@ def component_loss(
             model,
             batch,
             injection=reader_injection,
+            state_source=reader_state_source,
         )
     raise ETTRComponentIslandError("unknown ETTR component island")
 
@@ -677,6 +718,7 @@ def _evaluate_interfaces(
     data_seed: int,
     max_batches: int,
     reader_injection: str,
+    reader_state_source: str = "oracle",
 ) -> dict[str, object]:
     model.eval()
     counts: dict[str, dict[str, list[int]]] = {
@@ -705,18 +747,21 @@ def _evaluate_interfaces(
             dtype=torch.bfloat16,
         ):
             compiler, reactor, reader = _arm_batch(model, batch)
-            if reader_injection != "stage":
-                terminal = packet_targets_to_state(
-                    batch.terminal_packet_targets,
-                    model.config,
-                    step=batch.transaction_targets.opcode.shape[1],
-                    dtype=next(model.query_reader.parameters()).dtype,
+            if (
+                reader_injection != "stage"
+                or reader_state_source != "oracle"
+            ):
+                terminal, trace = _reader_state(
+                    model,
+                    batch,
+                    source=reader_state_source,
                 )
                 logits = _reader_logits(
                     model,
                     batch,
                     terminal,
                     injection=reader_injection,
+                    trace=trace,
                 )
                 pairs = _reader_pairs_from_logits(logits, batch)
                 (

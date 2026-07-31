@@ -32,6 +32,7 @@ GRADIENT_CLIP=${GRADIENT_CLIP:-1.0}
 EVAL_BATCHES=${EVAL_BATCHES:-32}
 REACTOR_REDUCTION=${REACTOR_REDUCTION:-decision-mean}
 READER_INJECTION=${READER_INJECTION:-stage}
+READER_STATE_SOURCE=${READER_STATE_SOURCE:-oracle}
 INITIAL_COMPONENT=${INITIAL_COMPONENT:-}
 INITIAL_COMPONENT_SHA256=${INITIAL_COMPONENT_SHA256:-}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
@@ -94,5 +95,6 @@ fi
   --gradient-clip "$GRADIENT_CLIP" \
   --eval-batches "$EVAL_BATCHES" \
   --reader-injection "$READER_INJECTION" \
+  --reader-state-source "$READER_STATE_SOURCE" \
   --reactor-reduction "$REACTOR_REDUCTION" \
   "${initial_component_args[@]}"

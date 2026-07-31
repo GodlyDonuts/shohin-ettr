@@ -47,6 +47,7 @@ def _valid_args(tmp_path: Path) -> Namespace:
         parent_run_contract_sha256="3" * 64,
         reactor_reduction="decision-mean",
         reader_injection="stage",
+        reader_state_source="oracle",
         release_root=tmp_path / "release",
         release_sha256="1" * 64,
         source_commit="4" * 40,
@@ -88,6 +89,20 @@ def test_joint_component_warm_start_accepts_exact_receipt(
     args = _valid_args(tmp_path)
     args.initial_component = tmp_path / "component-final.safetensors"
     args.initial_component_sha256 = "5" * 64
+    _validate_args(args)
+
+
+def test_joint_component_autonomous_reader_source_is_reader_only(
+    tmp_path: Path,
+) -> None:
+    args = _valid_args(tmp_path)
+    args.reader_state_source = "autonomous"
+    with pytest.raises(
+        ETTRJointComponentIslandError,
+        match="arguments differ",
+    ):
+        _validate_args(args)
+    args.component = "reader"
     _validate_args(args)
 
 
