@@ -90,6 +90,7 @@ def _arguments(tmp_path) -> SimpleNamespace:
         counterfactual_delta_weight=2.0,
         exact_anchor_steps=4,
         credit_horizon=4,
+        profile_phase_timing=False,
         weight_decay=0.0,
         gradient_clip=1.0,
         eval_batches=4,

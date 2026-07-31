@@ -18,6 +18,7 @@ import math
 import os
 from pathlib import Path
 import re
+import time
 from typing import Mapping, Sequence
 
 from safetensors.torch import save_file
@@ -503,10 +504,26 @@ def progressive_coupling_loss(
     counterfactual_delta_weight: float,
     credit_horizon: int,
     exact_anchor_steps: int,
+    profile_phase_timing: bool,
     update: int,
 ) -> tuple[torch.Tensor, dict[str, object]]:
     """Train local interfaces while progressively consuming predicted state."""
 
+    phase_seconds: dict[str, float] = {}
+    phase_started = time.perf_counter()
+
+    def finish_phase(name: str) -> None:
+        nonlocal phase_started
+        if not profile_phase_timing:
+            return
+        torch.cuda.synchronize()
+        now = time.perf_counter()
+        phase_seconds[name] = now - phase_started
+        phase_started = now
+
+    if profile_phase_timing:
+        torch.cuda.synchronize()
+        phase_started = time.perf_counter()
     with torch.no_grad():
         world_hidden = model._encode_to_stage(
             batch.episodes.world.tokens,
@@ -516,6 +533,7 @@ def progressive_coupling_loss(
             batch.episodes.command.tokens,
             pos=0,
         )
+    finish_phase("base_encoding")
     soft_initial = model.compiler(
         world_hidden.detach(),
         attention_mask=batch.episodes.world.attention_mask,
@@ -536,6 +554,7 @@ def progressive_coupling_loss(
         exact_state,
         batch.causal_rectangles.rows,
     )
+    finish_phase("compiler_and_delta")
     autonomous_state = model.compiler(
         world_hidden.detach(),
         attention_mask=batch.episodes.world.attention_mask,
@@ -678,6 +697,7 @@ def progressive_coupling_loss(
             use_autonomous=state_is_autonomous,
         )
         credit_truncations += int(truncated)
+    finish_phase("recurrent_reactor_and_anchors")
 
     coupled_reactor_means, coupled_reactor_supports = (
         _supported_field_means(coupled_field_losses)
@@ -717,6 +737,7 @@ def progressive_coupling_loss(
         batch,
         state,
     )
+    finish_phase("readers")
     base_losses = {
         "compiler": compiler_loss,
         "coupled_reactor": coupled_reactor_loss,
@@ -744,6 +765,7 @@ def progressive_coupling_loss(
         "credit_truncations": credit_truncations,
         "decision_count": decisions,
         "exact_anchor_steps": sorted(exact_anchor_indices),
+        "phase_seconds": phase_seconds,
         "high_level": {
             name: float(value.detach().cpu())
             for name, value in high_level.items()
@@ -808,6 +830,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--exact-anchor-steps", type=int, default=4)
     parser.add_argument("--credit-horizon", type=int, default=4)
+    parser.add_argument("--profile-phase-timing", action="store_true")
     parser.add_argument("--weight-decay", type=float, default=0.0)
     parser.add_argument("--gradient-clip", type=float, default=1.0)
     parser.add_argument("--eval-batches", type=int, default=32)
@@ -1010,6 +1033,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "batch_factorial_source_is_atomic": True,
                 "credit_horizon": args.credit_horizon,
                 "exact_anchor_steps_per_update": args.exact_anchor_steps,
+                "profile_phase_timing": args.profile_phase_timing,
                 "ramp_updates": args.ramp_updates,
                 "seed": args.coupling_seed,
                 "warmup_updates": args.warmup_updates,
@@ -1110,19 +1134,32 @@ def main(argv: Sequence[str] | None = None) -> int:
                     ),
                     credit_horizon=args.credit_horizon,
                     exact_anchor_steps=args.exact_anchor_steps,
+                    profile_phase_timing=args.profile_phase_timing,
                     update=update,
                 )
             if not bool(torch.isfinite(loss)):
                 raise ETTRProgressiveCouplingError(
                     "progressive coupling loss is non-finite"
                 )
+            backward_started = time.perf_counter()
             loss.backward()
+            if args.profile_phase_timing:
+                torch.cuda.synchronize()
+                parts["phase_seconds"]["backward"] = (
+                    time.perf_counter() - backward_started
+                )
             gradient_norm = torch.nn.utils.clip_grad_norm_(
                 trainable,
                 args.gradient_clip,
                 error_if_nonfinite=True,
             )
+            optimizer_started = time.perf_counter()
             optimizer.step()
+            if args.profile_phase_timing:
+                torch.cuda.synchronize()
+                parts["phase_seconds"]["optimizer"] = (
+                    time.perf_counter() - optimizer_started
+                )
             observed_rows += batch.episodes.world.tokens.shape[0]
             observed_token_positions += int(
                 batch.episodes.world.attention_mask.sum().detach().cpu()
