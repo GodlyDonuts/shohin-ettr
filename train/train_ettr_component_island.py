@@ -705,7 +705,7 @@ def _evaluate_interfaces(
             dtype=torch.bfloat16,
         ):
             compiler, reactor, reader = _arm_batch(model, batch)
-            if reader_injection == "late":
+            if reader_injection != "stage":
                 terminal = packet_targets_to_state(
                     batch.terminal_packet_targets,
                     model.config,

@@ -31,6 +31,7 @@ LEARNING_RATE=${LEARNING_RATE:-1e-4}
 GRADIENT_CLIP=${GRADIENT_CLIP:-1.0}
 EVAL_BATCHES=${EVAL_BATCHES:-32}
 REACTOR_REDUCTION=${REACTOR_REDUCTION:-decision-mean}
+READER_INJECTION=${READER_INJECTION:-stage}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
 cd "$CODE_ROOT"
@@ -75,4 +76,5 @@ parent_model_sha=$(sha256sum \
   --learning-rate "$LEARNING_RATE" \
   --gradient-clip "$GRADIENT_CLIP" \
   --eval-batches "$EVAL_BATCHES" \
+  --reader-injection "$READER_INJECTION" \
   --reactor-reduction "$REACTOR_REDUCTION"
