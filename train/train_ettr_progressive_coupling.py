@@ -53,7 +53,6 @@ from probe_ettr_oracle_interfaces import (
 from train_ettr_component_island import (
     _component_state,
     _evaluate_interfaces,
-    _masked_categorical_cross_entropy,
     _reactor_policy_logits,
     _reader_logits,
     _reader_pairs_from_logits,
@@ -198,7 +197,7 @@ def factorial_delta_matching_loss(
     rectangle_rows: torch.Tensor,
     *,
     row_mask: torch.Tensor | None = None,
-) -> torch.Tensor | None:
+) -> tuple[torch.Tensor, torch.Tensor]:
     """Match finite WORLD/COMMAND differences at one discrete interface."""
 
     if (
@@ -234,9 +233,6 @@ def factorial_delta_matching_loss(
             0,
             right,
         )
-    if not bool(pair_mask.any()):
-        return None
-
     predicted_delta = (
         prediction.index_select(0, left)
         - prediction.index_select(0, right)
@@ -264,7 +260,65 @@ def factorial_delta_matching_loss(
         changed_count.gt(0).to(squared_error.dtype)
         + unchanged_count.gt(0).to(squared_error.dtype)
     )
-    return (changed_mean + unchanged_mean) / supported_parts
+    loss = (changed_mean + unchanged_mean) / supported_parts.clamp_min(1)
+    return loss, pair_mask.any().to(squared_error.dtype)
+
+
+def _masked_categorical_cross_entropy_device(
+    logits: torch.Tensor,
+    targets: torch.Tensor,
+    mask: torch.Tensor,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    if (
+        logits.ndim != 2
+        or targets.shape != (logits.shape[0],)
+        or mask.shape != targets.shape
+        or targets.dtype != torch.long
+        or mask.dtype != torch.bool
+        or targets.device != logits.device
+        or mask.device != logits.device
+    ):
+        raise ETTRProgressiveCouplingError(
+            "masked categorical geometry differs"
+        )
+    losses = F.cross_entropy(
+        logits.float(),
+        targets,
+        reduction="none",
+    )
+    support = mask.sum()
+    loss = (
+        (losses * mask).sum()
+        / support.clamp_min(1).to(losses.dtype)
+    )
+    return loss, support.gt(0).to(losses.dtype)
+
+
+def _supported_field_means(
+    values: Mapping[str, Sequence[tuple[torch.Tensor, torch.Tensor]]],
+) -> tuple[dict[str, torch.Tensor], dict[str, torch.Tensor]]:
+    means = {}
+    supports = {}
+    for name, observations in values.items():
+        losses = torch.stack(tuple(value[0] for value in observations))
+        indicators = torch.stack(tuple(value[1] for value in observations))
+        support = indicators.sum()
+        means[name] = (
+            (losses * indicators).sum() / support.clamp_min(1)
+        )
+        supports[name] = support.gt(0).to(losses.dtype)
+    return means, supports
+
+
+def _supported_mean(
+    values: Mapping[str, torch.Tensor],
+    supports: Mapping[str, torch.Tensor],
+) -> torch.Tensor:
+    losses = torch.stack(tuple(values.values()))
+    indicators = torch.stack(
+        tuple(supports[name] for name in values)
+    )
+    return (losses * indicators).sum() / indicators.sum().clamp_min(1)
 
 
 def _state_factorial_delta_loss(
@@ -288,12 +342,11 @@ def _state_factorial_delta_loss(
             "halted",
         )
     )
-    supported = tuple(loss for loss in losses if loss is not None)
-    if not supported:
-        raise ETTRProgressiveCouplingError(
-            "state factorial delta has no support"
-        )
-    return torch.stack(supported).mean()
+    values = torch.stack(tuple(loss for loss, _support in losses))
+    supports = torch.stack(
+        tuple(support for _loss, support in losses)
+    )
+    return (values * supports).sum() / supports.sum().clamp_min(1)
 
 
 def select_trainable_architecture(
@@ -432,13 +485,22 @@ def progressive_coupling_loss(
 
     targets = batch.transaction_targets
     masks = policy_masks(targets)
-    coupled_field_losses: dict[str, list[torch.Tensor]] = {
+    coupled_field_losses: dict[
+        str,
+        list[tuple[torch.Tensor, torch.Tensor]],
+    ] = {
         name: [] for name in _POLICY_FIELDS
     }
-    exact_field_losses: dict[str, list[torch.Tensor]] = {
+    exact_field_losses: dict[
+        str,
+        list[tuple[torch.Tensor, torch.Tensor]],
+    ] = {
         name: [] for name in _POLICY_FIELDS
     }
-    reactor_delta_losses: dict[str, list[torch.Tensor]] = {
+    reactor_delta_losses: dict[
+        str,
+        list[tuple[torch.Tensor, torch.Tensor]],
+    ] = {
         name: [] for name in _POLICY_FIELDS
     }
     for step in range(targets.opcode.shape[1]):
@@ -466,28 +528,25 @@ def progressive_coupling_loss(
             dtype=exact_state.active.dtype,
         )
         for name in _POLICY_FIELDS:
-            coupled_loss = _masked_categorical_cross_entropy(
+            coupled_loss = _masked_categorical_cross_entropy_device(
                 logits[name],
                 getattr(targets, name)[:, step],
                 masks[name][:, step],
             )
-            if coupled_loss is not None:
-                coupled_field_losses[name].append(coupled_loss)
-            exact_loss = _masked_categorical_cross_entropy(
+            coupled_field_losses[name].append(coupled_loss)
+            exact_loss = _masked_categorical_cross_entropy_device(
                 exact_logits[name],
                 getattr(targets, name)[:, step],
                 masks[name][:, step],
             )
-            if exact_loss is not None:
-                exact_field_losses[name].append(exact_loss)
+            exact_field_losses[name].append(exact_loss)
             delta_loss = factorial_delta_matching_loss(
                 exact_logits[name].float().softmax(-1),
                 getattr(exact_target_policy, name).float(),
                 batch.causal_rectangles.rows,
                 row_mask=masks[name][:, step],
             )
-            if delta_loss is not None:
-                reactor_delta_losses[name].append(delta_loss)
+            reactor_delta_losses[name].append(delta_loss)
         autonomous_state = model.reactor.apply(
             state,
             policy,
@@ -515,38 +574,27 @@ def progressive_coupling_loss(
             use_autonomous=state_is_autonomous,
         )
 
-    coupled_reactor_means = {
-        name: torch.stack(values).mean()
-        for name, values in coupled_field_losses.items()
-        if values
-    }
-    exact_reactor_means = {
-        name: torch.stack(values).mean()
-        for name, values in exact_field_losses.items()
-        if values
-    }
-    reactor_delta_means = {
-        name: torch.stack(values).mean()
-        for name, values in reactor_delta_losses.items()
-        if values
-    }
-    if (
-        not coupled_reactor_means
-        or not exact_reactor_means
-        or not reactor_delta_means
-    ):
-        raise ETTRProgressiveCouplingError(
-            "progressive coupling reactor loss has no support"
-        )
-    coupled_reactor_loss = torch.stack(
-        tuple(coupled_reactor_means.values())
-    ).mean()
-    exact_reactor_loss = torch.stack(
-        tuple(exact_reactor_means.values())
-    ).mean()
-    reactor_delta_loss = torch.stack(
-        tuple(reactor_delta_means.values())
-    ).mean()
+    coupled_reactor_means, coupled_reactor_supports = (
+        _supported_field_means(coupled_field_losses)
+    )
+    exact_reactor_means, exact_reactor_supports = (
+        _supported_field_means(exact_field_losses)
+    )
+    reactor_delta_means, reactor_delta_supports = (
+        _supported_field_means(reactor_delta_losses)
+    )
+    coupled_reactor_loss = _supported_mean(
+        coupled_reactor_means,
+        coupled_reactor_supports,
+    )
+    exact_reactor_loss = _supported_mean(
+        exact_reactor_means,
+        exact_reactor_supports,
+    )
+    reactor_delta_loss = _supported_mean(
+        reactor_delta_means,
+        reactor_delta_supports,
+    )
 
     exact_terminal = packet_targets_to_state(
         batch.terminal_packet_targets,

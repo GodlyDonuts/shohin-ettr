@@ -122,17 +122,21 @@ def test_factorial_delta_matching_rewards_effects_and_invariance() -> None:
         ]
     )
     exact = target.clone().requires_grad_(True)
-    exact_loss = factorial_delta_matching_loss(exact, target, rows)
-    assert exact_loss is not None
+    exact_loss, exact_support = factorial_delta_matching_loss(
+        exact,
+        target,
+        rows,
+    )
+    assert float(exact_support) == 1.0
     assert float(exact_loss.detach()) == pytest.approx(0.0)
 
     collapsed = torch.zeros_like(target, requires_grad=True)
-    collapsed_loss = factorial_delta_matching_loss(
+    collapsed_loss, collapsed_support = factorial_delta_matching_loss(
         collapsed,
         target,
         rows,
     )
-    assert collapsed_loss is not None
+    assert float(collapsed_support) == 1.0
     assert float(collapsed_loss.detach()) > 0.0
     collapsed_loss.backward()
     assert collapsed.grad is not None
@@ -140,24 +144,26 @@ def test_factorial_delta_matching_rewards_effects_and_invariance() -> None:
 
     noninvariant = target.clone()
     noninvariant[1, 1] = 1.0
-    assert float(
-        factorial_delta_matching_loss(noninvariant, target, rows)
-    ) > 0.0
+    noninvariant_loss, _support = factorial_delta_matching_loss(
+        noninvariant,
+        target,
+        rows,
+    )
+    assert float(noninvariant_loss) > 0.0
 
 
 def test_factorial_delta_matching_respects_row_support() -> None:
     rows = torch.arange(4).reshape(1, 2, 2)
     prediction = torch.zeros(4, 2)
     target = torch.zeros_like(prediction)
-    assert (
-        factorial_delta_matching_loss(
-            prediction,
-            target,
-            rows,
-            row_mask=torch.zeros(4, dtype=torch.bool),
-        )
-        is None
+    loss, support = factorial_delta_matching_loss(
+        prediction,
+        target,
+        rows,
+        row_mask=torch.zeros(4, dtype=torch.bool),
     )
+    assert float(loss) == 0.0
+    assert float(support) == 0.0
     with pytest.raises(
         ETTRProgressiveCouplingError,
         match="delta geometry differs",
