@@ -16,6 +16,7 @@ from train_ettr_progressive_coupling import (
     progressive_coupling_probability,
     select_state_source,
     select_trainable_architecture,
+    truncate_state_credit,
 )
 
 
@@ -88,6 +89,7 @@ def _arguments(tmp_path) -> SimpleNamespace:
         ramp_updates=700,
         counterfactual_delta_weight=2.0,
         exact_anchor_steps=4,
+        credit_horizon=4,
         weight_decay=0.0,
         gradient_clip=1.0,
         eval_batches=4,
@@ -219,13 +221,13 @@ def test_coupling_choice_is_deterministic_and_has_hard_endpoints() -> None:
 
 def test_exact_anchor_steps_are_deterministic_spread_and_rotating() -> None:
     first = deterministic_exact_anchor_steps(
-        64,
+        tuple(range(64)),
         4,
         coupling_seed=7,
         update=9,
     )
     assert first == deterministic_exact_anchor_steps(
-        64,
+        tuple(range(64)),
         4,
         coupling_seed=7,
         update=9,
@@ -240,7 +242,7 @@ def test_exact_anchor_steps_are_deterministic_spread_and_rotating() -> None:
         step
         for update in range(1, 257)
         for step in deterministic_exact_anchor_steps(
-            64,
+            tuple(range(64)),
             4,
             coupling_seed=7,
             update=update,
@@ -255,11 +257,62 @@ def test_exact_anchor_steps_reject_invalid_contract() -> None:
         match="anchor schedule differs",
     ):
         deterministic_exact_anchor_steps(
-            64,
+            tuple(range(64)),
             65,
             coupling_seed=7,
             update=1,
         )
+
+
+def test_exact_anchor_steps_use_only_supported_stages() -> None:
+    eligible = (0, 1, 4, 9, 12, 18, 31)
+    selected = deterministic_exact_anchor_steps(
+        eligible,
+        4,
+        coupling_seed=13,
+        update=5,
+    )
+    assert len(selected) == 4
+    assert set(selected) <= set(eligible)
+
+
+def test_credit_horizon_detaches_without_changing_state() -> None:
+    values = torch.ones(2, 2, 2, requires_grad=True)
+    state = _state(values, step=4)
+    retained, truncated = truncate_state_credit(
+        state,
+        completed_steps=3,
+        total_steps=8,
+        credit_horizon=4,
+        use_autonomous=True,
+    )
+    assert retained is state
+    assert not truncated
+
+    detached, truncated = truncate_state_credit(
+        state,
+        completed_steps=4,
+        total_steps=8,
+        credit_horizon=4,
+        use_autonomous=True,
+    )
+    assert truncated
+    assert detached is not state
+    assert torch.equal(
+        detached.value_probabilities,
+        state.value_probabilities,
+    )
+    assert not detached.value_probabilities.requires_grad
+
+    final, truncated = truncate_state_credit(
+        state,
+        completed_steps=8,
+        total_steps=8,
+        credit_horizon=4,
+        use_autonomous=True,
+    )
+    assert final is state
+    assert not truncated
 
 
 def test_state_source_selects_complete_batch_and_preserves_gradient() -> None:

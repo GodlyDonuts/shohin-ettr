@@ -138,7 +138,7 @@ def deterministic_autonomous_choice(
 
 
 def deterministic_exact_anchor_steps(
-    step_count: int,
+    eligible_steps: Sequence[int],
     anchor_count: int,
     *,
     coupling_seed: int,
@@ -147,8 +147,10 @@ def deterministic_exact_anchor_steps(
     """Select evenly spaced exact-state anchors with a rotating offset."""
 
     if (
-        step_count < 1
-        or not 1 <= anchor_count <= step_count
+        not eligible_steps
+        or tuple(eligible_steps) != tuple(sorted(set(eligible_steps)))
+        or any(step < 0 for step in eligible_steps)
+        or not 1 <= anchor_count <= len(eligible_steps)
         or not 0 <= coupling_seed < 2**63
         or update < 1
     ):
@@ -159,15 +161,50 @@ def deterministic_exact_anchor_steps(
     offset = int.from_bytes(
         hashlib.sha256(payload).digest()[:8],
         "big",
-    ) % step_count
+    ) % len(eligible_steps)
     return tuple(
         sorted(
             {
-                (offset + (index * step_count) // anchor_count)
-                % step_count
+                eligible_steps[
+                    (
+                        offset
+                        + (index * len(eligible_steps)) // anchor_count
+                    )
+                    % len(eligible_steps)
+                ]
                 for index in range(anchor_count)
             }
         )
+    )
+
+
+def truncate_state_credit(
+    state: TypedTheoryState,
+    *,
+    completed_steps: int,
+    total_steps: int,
+    credit_horizon: int,
+    use_autonomous: bool,
+) -> tuple[TypedTheoryState, bool]:
+    """Detach recurrent credit at fixed boundaries without changing state."""
+
+    if (
+        completed_steps < 1
+        or total_steps < completed_steps
+        or not 1 <= credit_horizon <= total_steps
+        or not isinstance(use_autonomous, bool)
+    ):
+        raise ETTRProgressiveCouplingError(
+            "recurrent credit horizon differs"
+        )
+    should_truncate = (
+        use_autonomous
+        and completed_steps < total_steps
+        and completed_steps % credit_horizon == 0
+    )
+    return (
+        state.detached_clone() if should_truncate else state,
+        should_truncate,
     )
 
 
@@ -464,6 +501,7 @@ def progressive_coupling_loss(
     coupling_probability: float,
     coupling_seed: int,
     counterfactual_delta_weight: float,
+    credit_horizon: int,
     exact_anchor_steps: int,
     update: int,
 ) -> tuple[torch.Tensor, dict[str, object]]:
@@ -538,14 +576,25 @@ def progressive_coupling_loss(
     ] = {
         name: [] for name in _POLICY_FIELDS
     }
+    supported_steps = (
+        torch.stack(tuple(masks.values()))
+        .any(dim=0)
+        .any(dim=0)
+        .nonzero(as_tuple=False)
+        .flatten()
+        .detach()
+        .cpu()
+        .tolist()
+    )
     exact_anchor_indices = set(
         deterministic_exact_anchor_steps(
-            targets.opcode.shape[1],
-            exact_anchor_steps,
+            supported_steps,
+            min(exact_anchor_steps, len(supported_steps)),
             coupling_seed=coupling_seed,
             update=update,
         )
     )
+    credit_truncations = 0
     for step in range(targets.opcode.shape[1]):
         policy, logits = _reactor_policy_logits(
             model.reactor,
@@ -621,6 +670,14 @@ def progressive_coupling_loss(
             autonomous_state,
             use_autonomous=state_is_autonomous,
         )
+        state, truncated = truncate_state_credit(
+            state,
+            completed_steps=step + 1,
+            total_steps=targets.opcode.shape[1],
+            credit_horizon=credit_horizon,
+            use_autonomous=state_is_autonomous,
+        )
+        credit_truncations += int(truncated)
 
     coupled_reactor_means, coupled_reactor_supports = (
         _supported_field_means(coupled_field_losses)
@@ -683,6 +740,8 @@ def progressive_coupling_loss(
     return total, {
         "autonomous_decisions": autonomous_decisions,
         "coupling_probability": coupling_probability,
+        "credit_horizon": credit_horizon,
+        "credit_truncations": credit_truncations,
         "decision_count": decisions,
         "exact_anchor_steps": sorted(exact_anchor_indices),
         "high_level": {
@@ -748,6 +807,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default=1.0,
     )
     parser.add_argument("--exact-anchor-steps", type=int, default=4)
+    parser.add_argument("--credit-horizon", type=int, default=4)
     parser.add_argument("--weight-decay", type=float, default=0.0)
     parser.add_argument("--gradient-clip", type=float, default=1.0)
     parser.add_argument("--eval-batches", type=int, default=32)
@@ -796,6 +856,7 @@ def _validate_args(args: argparse.Namespace) -> None:
         or not math.isfinite(args.counterfactual_delta_weight)
         or args.counterfactual_delta_weight <= 0.0
         or not 1 <= args.exact_anchor_steps <= 64
+        or not 1 <= args.credit_horizon <= 64
         or any(
             not math.isfinite(rate) or not 0.0 < rate < 1.0
             for rate in rates
@@ -947,6 +1008,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             },
             "coupling": {
                 "batch_factorial_source_is_atomic": True,
+                "credit_horizon": args.credit_horizon,
                 "exact_anchor_steps_per_update": args.exact_anchor_steps,
                 "ramp_updates": args.ramp_updates,
                 "seed": args.coupling_seed,
@@ -1046,6 +1108,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     counterfactual_delta_weight=(
                         args.counterfactual_delta_weight
                     ),
+                    credit_horizon=args.credit_horizon,
                     exact_anchor_steps=args.exact_anchor_steps,
                     update=update,
                 )
