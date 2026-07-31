@@ -83,6 +83,7 @@ _POLICY_FIELDS = (
     "type_index",
     "value_code",
 )
+_READER_CAUSAL_BALANCE_MODES = ("population", "factor")
 
 
 class ETTRProgressiveCouplingError(RuntimeError):
@@ -526,6 +527,8 @@ def _reader_state_loss(
     model: EndogenousTypedTheoryReactorGPT,
     batch: ETTRContinuationBatch,
     state: TypedTheoryState,
+    *,
+    causal_balance_mode: str,
 ) -> tuple[torch.Tensor, dict[str, float]]:
     read_logits = _reader_logits(
         model,
@@ -542,11 +545,16 @@ def _reader_state_loss(
         read_logits,
         batch,
     )
-    world = _causal_query_binding_loss(pairs["world"], margin=1.0)[0]
-    command = _causal_query_binding_loss(
+    world = reader_causal_binding_loss(
+        pairs["world"],
+        margin=1.0,
+        balance_mode=causal_balance_mode,
+    )
+    command = reader_causal_binding_loss(
         pairs["command"],
         margin=1.0,
-    )[0]
+        balance_mode=causal_balance_mode,
+    )
     losses = {
         "factual": factual,
         "world_binding": world,
@@ -556,6 +564,101 @@ def _reader_state_loss(
         name: float(value.detach().cpu())
         for name, value in losses.items()
     }
+
+
+def reader_causal_binding_loss(
+    pair: ETTRCausalQueryPair,
+    *,
+    margin: float,
+    balance_mode: str,
+) -> torch.Tensor:
+    """Optionally balance answer-changing and invariant causal pairs.
+
+    The immutable factorial release intentionally contains both kinds of
+    intervention. Population averaging preserves their natural frequency,
+    while factor balancing prevents a rare answer-changing factor from being
+    overwhelmed by many valid invariance pairs.
+    """
+
+    if balance_mode == "population":
+        return _causal_query_binding_loss(pair, margin=margin)[0]
+    if balance_mode != "factor":
+        raise ETTRProgressiveCouplingError(
+            "reader causal balance mode differs"
+        )
+
+    classification = 0.5 * (
+        F.cross_entropy(pair.correct_logits, pair.correct_target)
+        + F.cross_entropy(pair.foil_logits, pair.foil_target)
+    )
+    correct_for_correct = pair.correct_logits.gather(
+        1,
+        pair.correct_target[:, None],
+    ).squeeze(1)
+    correct_for_foil = pair.correct_logits.gather(
+        1,
+        pair.foil_target[:, None],
+    ).squeeze(1)
+    foil_for_correct = pair.foil_logits.gather(
+        1,
+        pair.correct_target[:, None],
+    ).squeeze(1)
+    foil_for_foil = pair.foil_logits.gather(
+        1,
+        pair.foil_target[:, None],
+    ).squeeze(1)
+    difference_in_differences = (
+        correct_for_correct
+        - correct_for_foil
+        - foil_for_correct
+        + foil_for_foil
+    )
+    effect_mask = pair.correct_target.ne(pair.foil_target)
+    invariant_mask = ~effect_mask
+    contrast = F.softplus(margin - difference_in_differences)
+
+    correct_log_probabilities = F.log_softmax(
+        pair.correct_logits,
+        dim=-1,
+    )
+    foil_log_probabilities = F.log_softmax(pair.foil_logits, dim=-1)
+    correct_probabilities = correct_log_probabilities.exp()
+    foil_probabilities = foil_log_probabilities.exp()
+    mean_probabilities = 0.5 * (
+        correct_probabilities + foil_probabilities
+    )
+    mean_log_probabilities = mean_probabilities.clamp_min(
+        torch.finfo(mean_probabilities.dtype).tiny
+    ).log()
+    invariance = 0.5 * (
+        (
+            correct_probabilities
+            * (correct_log_probabilities - mean_log_probabilities)
+        ).sum(dim=-1)
+        + (
+            foil_probabilities
+            * (foil_log_probabilities - mean_log_probabilities)
+        ).sum(dim=-1)
+    )
+
+    effect_support = effect_mask.sum()
+    invariant_support = invariant_mask.sum()
+    effect_mean = (
+        contrast * effect_mask.to(contrast.dtype)
+    ).sum() / effect_support.clamp_min(1)
+    invariant_mean = (
+        invariance * invariant_mask.to(invariance.dtype)
+    ).sum() / invariant_support.clamp_min(1)
+    supported = torch.stack(
+        (
+            effect_support.gt(0),
+            invariant_support.gt(0),
+        )
+    ).to(classification.dtype)
+    structural = (
+        torch.stack((effect_mean, invariant_mean)) * supported
+    ).sum() / supported.sum().clamp_min(1)
+    return classification + structural
 
 
 def progressive_coupling_loss(
@@ -568,6 +671,7 @@ def progressive_coupling_loss(
     credit_horizon: int,
     exact_anchor_steps: int,
     profile_phase_timing: bool,
+    reader_causal_balance_mode: str,
     update: int,
 ) -> tuple[torch.Tensor, dict[str, object]]:
     """Train local interfaces while progressively consuming predicted state."""
@@ -794,11 +898,13 @@ def progressive_coupling_loss(
         model,
         batch,
         exact_terminal,
+        causal_balance_mode=reader_causal_balance_mode,
     )
     coupled_reader_loss, coupled_reader_parts = _reader_state_loss(
         model,
         batch,
         state,
+        causal_balance_mode=reader_causal_balance_mode,
     )
     finish_phase("readers")
     base_losses = {
@@ -829,6 +935,7 @@ def progressive_coupling_loss(
         "decision_count": decisions,
         "exact_anchor_steps": sorted(exact_anchor_indices),
         "phase_seconds": phase_seconds,
+        "reader_causal_balance_mode": reader_causal_balance_mode,
         "high_level": {
             name: float(value.detach().cpu())
             for name, value in high_level.items()
@@ -893,6 +1000,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--exact-anchor-steps", type=int, default=4)
     parser.add_argument("--credit-horizon", type=int, default=4)
+    parser.add_argument(
+        "--reader-causal-balance-mode",
+        choices=_READER_CAUSAL_BALANCE_MODES,
+        default="population",
+    )
     parser.add_argument("--profile-phase-timing", action="store_true")
     parser.add_argument("--weight-decay", type=float, default=0.0)
     parser.add_argument("--gradient-clip", type=float, default=1.0)
@@ -943,6 +1055,8 @@ def _validate_args(args: argparse.Namespace) -> None:
         or args.counterfactual_delta_weight <= 0.0
         or not 1 <= args.exact_anchor_steps <= 64
         or not 1 <= args.credit_horizon <= 64
+        or args.reader_causal_balance_mode
+        not in _READER_CAUSAL_BALANCE_MODES
         or any(
             not math.isfinite(rate) or not 0.0 < rate < 1.0
             for rate in rates
@@ -1170,6 +1284,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                             args.exact_anchor_steps
                         ),
                         "profile_phase_timing": args.profile_phase_timing,
+                        "reader_causal_balance_mode": (
+                            args.reader_causal_balance_mode
+                        ),
                         "ramp_updates": args.ramp_updates,
                         "seed": args.coupling_seed,
                         "warmup_updates": args.warmup_updates,
@@ -1301,6 +1418,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                         credit_horizon=args.credit_horizon,
                         exact_anchor_steps=args.exact_anchor_steps,
                         profile_phase_timing=args.profile_phase_timing,
+                        reader_causal_balance_mode=(
+                            args.reader_causal_balance_mode
+                        ),
                         update=update,
                     )
                 finite = torch.tensor(

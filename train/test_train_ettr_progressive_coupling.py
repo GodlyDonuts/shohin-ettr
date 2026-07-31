@@ -7,6 +7,7 @@ import torch
 from torch import nn
 
 from endogenous_typed_theory_reactor import TypedTheoryState
+from ettr_objectives import ETTRCausalQueryPair
 import train_ettr_progressive_coupling as progressive
 from train_ettr_progressive_coupling import (
     ETTRProgressiveCouplingError,
@@ -18,6 +19,7 @@ from train_ettr_progressive_coupling import (
     deterministic_exact_anchor_steps,
     factorial_delta_matching_loss,
     progressive_coupling_probability,
+    reader_causal_binding_loss,
     select_state_source,
     select_trainable_architecture,
     truncate_state_credit,
@@ -94,6 +96,7 @@ def _arguments(tmp_path) -> SimpleNamespace:
         counterfactual_delta_weight=2.0,
         exact_anchor_steps=4,
         credit_horizon=4,
+        reader_causal_balance_mode="population",
         profile_phase_timing=False,
         weight_decay=0.0,
         gradient_clip=1.0,
@@ -182,6 +185,59 @@ def test_factorial_delta_matching_respects_row_support() -> None:
             target,
             rows,
             row_mask=torch.ones(4),
+        )
+
+
+def test_reader_factor_balance_preserves_rare_causal_contrast() -> None:
+    correct_logits = torch.zeros(8, 2, requires_grad=True)
+    foil_logits = torch.zeros(8, 2, requires_grad=True)
+    correct_target = torch.zeros(8, dtype=torch.long)
+    foil_target = correct_target.clone()
+    foil_target[0] = 1
+    pair = ETTRCausalQueryPair(
+        correct_logits=correct_logits,
+        foil_logits=foil_logits,
+        correct_target=correct_target,
+        foil_target=foil_target,
+    )
+    population = reader_causal_binding_loss(
+        pair,
+        margin=1.0,
+        balance_mode="population",
+    )
+    factor = reader_causal_binding_loss(
+        pair,
+        margin=1.0,
+        balance_mode="factor",
+    )
+    assert float(factor.detach()) > float(population.detach())
+
+    population.backward(retain_graph=True)
+    population_effect_gradient = float(
+        correct_logits.grad[0].abs().sum()
+    )
+    correct_logits.grad.zero_()
+    foil_logits.grad.zero_()
+    factor.backward()
+    factor_effect_gradient = float(correct_logits.grad[0].abs().sum())
+    assert factor_effect_gradient > population_effect_gradient
+
+
+def test_reader_factor_balance_rejects_unknown_mode() -> None:
+    pair = ETTRCausalQueryPair(
+        correct_logits=torch.zeros(1, 2),
+        foil_logits=torch.zeros(1, 2),
+        correct_target=torch.zeros(1, dtype=torch.long),
+        foil_target=torch.ones(1, dtype=torch.long),
+    )
+    with pytest.raises(
+        ETTRProgressiveCouplingError,
+        match="causal balance mode differs",
+    ):
+        reader_causal_binding_loss(
+            pair,
+            margin=1.0,
+            balance_mode="unknown",
         )
 
 
@@ -402,6 +458,13 @@ def test_progressive_arguments_bind_schedule_hashes_and_absolute_paths(
 ) -> None:
     arguments = _arguments(tmp_path)
     _validate_args(arguments)
+    arguments.reader_causal_balance_mode = "unknown"
+    with pytest.raises(
+        ETTRProgressiveCouplingError,
+        match="arguments differ",
+    ):
+        _validate_args(arguments)
+    arguments.reader_causal_balance_mode = "population"
     arguments.ramp_updates = 901
     with pytest.raises(
         ETTRProgressiveCouplingError,
