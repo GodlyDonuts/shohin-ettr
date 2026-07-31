@@ -4,8 +4,12 @@ from pathlib import Path
 
 import pytest
 
+from ettr_joint_stream import GeneralLanguageStepConfig
+from ettr_train_step import ETTRTrainStepConfig
 from train_ettr_joint_stream_canary import (
     ETTRJointCanaryError,
+    _canonical_bytes,
+    _dataclass_contract,
     _legacy_general_resolution,
 )
 
@@ -69,3 +73,16 @@ def test_legacy_general_resolution_rejects_empty_directory(
             (1.0,),
             tokenizer_sha256="c" * 64,
         )
+
+
+def test_dataclass_contract_serializes_torch_dtype_exactly() -> None:
+    general = _dataclass_contract(GeneralLanguageStepConfig())
+    ettr = _dataclass_contract(
+        ETTRTrainStepConfig(gradient_clip_mode="owner")
+    )
+    assert general["autocast_dtype"] == "torch.bfloat16"
+    assert ettr["autocast_dtype"] == "torch.bfloat16"
+    assert ettr["gradient_clip_mode"] == "owner"
+    assert b"torch.bfloat16" in _canonical_bytes(
+        {"general": general, "ettr": ettr}
+    )

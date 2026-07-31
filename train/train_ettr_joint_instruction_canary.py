@@ -48,6 +48,7 @@ from model import GPT, GPTConfig
 from sft import DEFAULT_Q_FIELDS, DEFAULT_R_FIELDS, build_packed
 from train_ettr_joint_stream_canary import (
     _canonical_bytes,
+    _dataclass_contract,
     _ettr_metric_payload,
     _legacy_general_resolution,
     _seed_update,
@@ -348,32 +349,36 @@ def main(argv: Sequence[str] | None = None) -> int:
             total_updates=args.total_updates,
         ),
     )
+    general_step_config = GeneralLanguageStepConfig()
     language_step = GeneralLanguageUpdateStep(
         model,
         optimizer,
-        step_config=GeneralLanguageStepConfig(),
+        step_config=general_step_config,
     )
     packet_index = ETTRDiskPacketSufficiencyIndex(
         stream.packet_index_root
     )
+    objective_config = ETTRObjectiveConfig(
+        vocab_size=model.base.cfg.vocab_size,
+        nll_gradient_cap=args.nll_gradient_cap,
+    )
+    objective_weights = ETTRObjectiveWeights(
+        world_query_binding=args.query_binding_weight,
+        command_query_binding=args.query_binding_weight,
+    )
+    ettr_step_config = ETTRTrainStepConfig(
+        gradient_clip_mode=args.gradient_clip_mode,
+        hard_transactions=True,
+    )
     ettr_step = ETTRTrainStep(
         model,
         optimizer,
-        ETTRObjectiveConfig(
-            vocab_size=model.base.cfg.vocab_size,
-            nll_gradient_cap=args.nll_gradient_cap,
-        ),
+        objective_config,
         manifest=stream.manifest,
         packet_sufficiency=packet_index,
         manifest_sha256=stream.manifest.sha256(),
-        objective_weights=ETTRObjectiveWeights(
-            world_query_binding=args.query_binding_weight,
-            command_query_binding=args.query_binding_weight,
-        ),
-        step_config=ETTRTrainStepConfig(
-            gradient_clip_mode=args.gradient_clip_mode,
-            hard_transactions=True,
-        ),
+        objective_weights=objective_weights,
+        step_config=ettr_step_config,
     )
     schedule = ETTRTriPositionScheduler(
         ETTRTriScheduleConfig(
@@ -404,11 +409,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         "ettr_manifest_sha256": stream.manifest.sha256(),
         "ettr_positions_per_update": ettr_positions,
         "ettr_release_sha256": args.release_sha256,
-        "ettr_step_config": asdict(ettr_step.step_config),
+        "ettr_step_config": _dataclass_contract(ettr_step_config),
         "general_corpora": general["corpora"],
         "general_inventory_sha256": general["inventory_sha256"],
         "general_legacy_scientific_control": True,
         "general_positions_per_update": general_positions,
+        "general_step_config": _dataclass_contract(
+            general_step_config
+        ),
         "instruction_data": str(args.instruction_data),
         "instruction_data_sha256": args.instruction_data_sha256,
         "instruction_file_identity": instruction_identity,
@@ -417,6 +425,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             sorted(instruction_weights.items())
         ),
         "model_config": asdict(model.config),
+        "objective_config": asdict(objective_config),
+        "objective_weights": asdict(objective_weights),
         "optimizer_config": asdict(optimizer.config),
         "parameter_receipt": asdict(model.parameter_receipt()),
         "parent_joint_model": str(args.parent_joint_model),

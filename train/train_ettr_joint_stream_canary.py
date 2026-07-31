@@ -81,6 +81,16 @@ def _canonical_bytes(value: object) -> bytes:
     )
 
 
+def _dataclass_contract(value: object) -> dict[str, object]:
+    """Return a JSON-safe, exact receipt for a frozen dataclass config."""
+
+    payload = asdict(value)
+    return {
+        key: str(item) if isinstance(item, torch.dtype) else item
+        for key, item in payload.items()
+    }
+
+
 def _write_no_replace(path: Path, payload: bytes, mode: int = 0o400) -> str:
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
     flags |= getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
@@ -493,35 +503,39 @@ def main(argv: Sequence[str] | None = None) -> int:
             total_updates=args.total_updates,
         ),
     )
+    general_step_config = GeneralLanguageStepConfig(
+        gradient_accumulation_steps=1,
+    )
     language_step = GeneralLanguageUpdateStep(
         model,
         optimizer,
-        step_config=GeneralLanguageStepConfig(
-            gradient_accumulation_steps=1,
-        ),
+        step_config=general_step_config,
     )
     packet_index = ETTRDiskPacketSufficiencyIndex(
         stream.packet_index_root
     )
+    objective_config = ETTRObjectiveConfig(
+        vocab_size=model.base.cfg.vocab_size,
+        nll_gradient_cap=args.nll_gradient_cap,
+    )
+    objective_weights = ETTRObjectiveWeights(
+        world_query_binding=args.query_binding_weight,
+        command_query_binding=args.query_binding_weight,
+    )
+    ettr_step_config = ETTRTrainStepConfig(
+        gradient_accumulation_steps=1,
+        gradient_clip_mode=args.gradient_clip_mode,
+        hard_transactions=True,
+    )
     ettr_step = ETTRTrainStep(
         model,
         optimizer,
-        ETTRObjectiveConfig(
-            vocab_size=model.base.cfg.vocab_size,
-            nll_gradient_cap=args.nll_gradient_cap,
-        ),
+        objective_config,
         manifest=stream.manifest,
         packet_sufficiency=packet_index,
         manifest_sha256=stream.manifest.sha256(),
-        objective_weights=ETTRObjectiveWeights(
-            world_query_binding=args.query_binding_weight,
-            command_query_binding=args.query_binding_weight,
-        ),
-        step_config=ETTRTrainStepConfig(
-            gradient_accumulation_steps=1,
-            gradient_clip_mode=args.gradient_clip_mode,
-            hard_transactions=True,
-        ),
+        objective_weights=objective_weights,
+        step_config=ettr_step_config,
     )
     schedule = ETTRJointPositionScheduler(
         ETTRJointScheduleConfig(
@@ -563,10 +577,15 @@ def main(argv: Sequence[str] | None = None) -> int:
             False,
         ),
         "general_positions_per_update": general_positions,
+        "general_step_config": _dataclass_contract(
+            general_step_config
+        ),
         "initialization": initialization,
         "model_config": asdict(model.config),
+        "objective_config": asdict(objective_config),
+        "objective_weights": asdict(objective_weights),
         "optimizer_config": asdict(optimizer.config),
-        "ettr_step_config": asdict(ettr_step.step_config),
+        "ettr_step_config": _dataclass_contract(ettr_step_config),
         "parameter_receipt": asdict(model.parameter_receipt()),
         "schedule_config": asdict(schedule.config),
         "schema": RUN_SCHEMA,
