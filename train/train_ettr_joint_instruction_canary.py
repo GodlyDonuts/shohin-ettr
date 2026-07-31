@@ -178,6 +178,14 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         type=float,
         default=1.0,
     )
+    parser.add_argument("--packet-weight", type=float, default=1.0)
+    parser.add_argument(
+        "--intervention-weight",
+        type=float,
+        default=1.0,
+    )
+    parser.add_argument("--transaction-weight", type=float, default=1.0)
+    parser.add_argument("--commit-halt-weight", type=float, default=0.5)
     parser.add_argument(
         "--gradient-clip-mode",
         choices=("global", "owner", "component"),
@@ -242,6 +250,15 @@ def _validate_args(args: argparse.Namespace) -> None:
         )
         or not math.isfinite(args.query_binding_risk_temperature)
         or args.query_binding_risk_temperature <= 0.0
+        or any(
+            not math.isfinite(value) or value < 0.0
+            for value in (
+                args.packet_weight,
+                args.intervention_weight,
+                args.transaction_weight,
+                args.commit_halt_weight,
+            )
+        )
         or args.log_every < 1
     ):
         raise ETTRTriCanaryError("tri-stream canary arguments differ")
@@ -418,8 +435,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         ),
     )
     objective_weights = ETTRObjectiveWeights(
+        packet=args.packet_weight,
+        world_intervention=args.intervention_weight,
+        command_intervention=args.intervention_weight,
         world_query_binding=args.query_binding_weight,
         command_query_binding=args.query_binding_weight,
+        transaction=args.transaction_weight,
+        commit_halt=args.commit_halt_weight,
     )
     ettr_step_config = ETTRTrainStepConfig(
         gradient_clip_mode=args.gradient_clip_mode,

@@ -65,7 +65,9 @@ def test_tri_stream_canary_is_parent_bound_and_code_retaining() -> None:
     assert "sha256sum -c SHA256SUMS" in TRI
     assert "train_ettr_joint_instruction_canary.py" in TRI
     assert "--instruction-sample-weight code=0.20" in TRI
-    assert "--gradient-clip-mode owner" in TRI
+    assert '--gradient-clip-mode "$GRADIENT_CLIP_MODE"' in TRI
+    assert '--intervention-weight "$INTERVENTION_WEIGHT"' in TRI
+    assert '--transaction-weight "$TRANSACTION_WEIGHT"' in TRI
     assert '--query-binding-reduction "$QUERY_BINDING_REDUCTION"' in TRI
     assert (
         '--query-binding-risk-temperature '

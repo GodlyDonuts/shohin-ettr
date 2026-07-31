@@ -47,6 +47,10 @@ def _args(tmp_path: Path) -> argparse.Namespace:
         query_binding_effect_weight=1.0,
         query_binding_invariance_weight=1.0,
         query_binding_risk_temperature=1.0,
+        packet_weight=1.0,
+        intervention_weight=1.0,
+        transaction_weight=1.0,
+        commit_halt_weight=0.5,
         gradient_clip_mode="owner",
         log_every=1,
     )
@@ -79,5 +83,9 @@ def test_tri_canary_rejects_invalid_query_binding_risk(
         _validate_args(args)
     args = _args(tmp_path)
     args.query_binding_effect_weight = -1.0
+    with pytest.raises(ETTRTriCanaryError, match="arguments differ"):
+        _validate_args(args)
+    args = _args(tmp_path)
+    args.intervention_weight = -1.0
     with pytest.raises(ETTRTriCanaryError, match="arguments differ"):
         _validate_args(args)
