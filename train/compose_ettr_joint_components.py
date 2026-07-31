@@ -157,6 +157,18 @@ def _composed_run_contract(
     return contract
 
 
+def _component_snapshots(
+    model: torch.nn.Module,
+) -> dict[str, dict[str, torch.Tensor]]:
+    return {
+        name: {
+            key: value.clone()
+            for key, value in _component_state(model, name).items()
+        }
+        for name in _COMPONENTS
+    }
+
+
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--parent-joint-model", type=Path, required=True)
@@ -235,9 +247,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         name: getattr(args, f"{name}_sha256") for name in _COMPONENTS
     }
     parent_parameter_sha256 = _parameter_sha256(model)
-    parent_components = {
-        name: _component_state(model, name) for name in _COMPONENTS
-    }
+    parent_components = _component_snapshots(model)
     for name in _COMPONENTS:
         load_component_warm_start(
             model,

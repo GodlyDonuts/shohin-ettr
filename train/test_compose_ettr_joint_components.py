@@ -5,9 +5,12 @@ import pytest
 from compose_ettr_joint_components import (
     COMPOSITION_KIND,
     ETTRJointCompositionError,
+    _component_snapshots,
     _composed_run_contract,
     _composition_receipt,
 )
+import compose_ettr_joint_components as composition_module
+import torch
 from train_ettr_joint_instruction_canary import RUN_SCHEMA
 
 
@@ -65,3 +68,18 @@ def test_recursive_composition_is_rejected() -> None:
             composition=_receipt(),
             source_commit="6" * 40,
         )
+
+
+def test_component_snapshots_do_not_alias_live_cpu_storage(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    live = torch.tensor([1.0])
+    monkeypatch.setattr(
+        composition_module,
+        "_component_state",
+        lambda _model, _name: {"weight": live},
+    )
+    snapshots = _component_snapshots(torch.nn.Identity())
+    live.add_(1.0)
+    for component in ("compiler", "reactor", "reader"):
+        assert snapshots[component]["weight"].item() == 1.0
