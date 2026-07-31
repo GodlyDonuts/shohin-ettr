@@ -35,9 +35,15 @@ from eval_ettr_v3 import (
     _read_hash_bound_json,
     _write_no_replace,
 )
+from probe_ettr_causal_queries import (
+    _objective_pairs,
+    _pair_rows,
+    _state_summary,
+    _summary,
+)
 
 
-REPORT_SCHEMA = "shohin-ettr-tri-paired-development-evaluation-v1"
+REPORT_SCHEMA = "shohin-ettr-tri-paired-development-evaluation-v2"
 RUN_SCHEMA = "shohin-ettr-tri-stream-canary-v1"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
@@ -254,6 +260,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     counts: dict[str, list[dict[str, int]]] = {
         name: [] for name in subjects
     }
+    causal_rows: dict[
+        str,
+        dict[str, list[dict[str, object]]],
+    ] = {
+        name: {"command": [], "world": []}
+        for name in subjects
+    }
+    causal_states: dict[
+        str,
+        dict[str, list[dict[str, object]]],
+    ] = {
+        name: {"command": [], "world": []}
+        for name in subjects
+    }
     batch_reports = []
     packet_index = ETTRDiskPacketSufficiencyIndex(
         stream.packet_index_root
@@ -279,6 +299,22 @@ def main(argv: Sequence[str] | None = None) -> int:
                 losses[name].append(arm_loss)
                 counts[name].append(arm_count)
                 observed[name] = arm_loss
+                with torch.inference_mode(), torch.autocast(
+                    device_type="cuda",
+                    dtype=torch.bfloat16,
+                ):
+                    pairs, state_pairs = _objective_pairs(
+                        models[name],
+                        batch,
+                    )
+                for kind in ("command", "world"):
+                    causal_rows[name][kind].extend(
+                        row | {"depth_bucket": "all"}
+                        for row in _pair_rows(pairs[kind])
+                    )
+                    causal_states[name][kind].extend(
+                        state_pairs[kind]
+                    )
             batch_reports.append(
                 {
                     "batch_payload_sha256": batch_sha256,
@@ -297,6 +333,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     summaries = {
         name: {
             **_arm_summary(losses[name], counts[name]),
+            "causal_geometry": {
+                kind: {
+                    "query": _summary(causal_rows[name][kind]),
+                    "state": _state_summary(
+                        causal_states[name][kind]
+                    ),
+                }
+                for kind in ("command", "world")
+            },
             "parameter_sha256": _parameter_sha256(models[name]),
         }
         for name in subjects
