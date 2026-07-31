@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-31 04:00 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-31 05:00 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -20648,3 +20648,89 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `treat_seed2_as_an_intervention_ignoring_shortcut_not_a_low_loss_success_finish_the_matched_factorial_then_if_needed_raise_direct_causal_contrast_weight_without_mixing_unverified_general_data`.
+
+- **2026-07-31 04:15--05:00 EDT** -- **The frozen-base experiment has
+  localized the blocker to representation/interface co-adaptation, and the
+  first preregistered native joint language/ETTR study is now fully
+  implemented, privately committed, and queued with paired causal and public
+  benchmark gates.**
+
+  Continuous source-deleted probe jobs `723925/723926` completed cleanly on
+  the baseline frozen-base seed pair. Seed 1 contains genuine but sparse
+  intervention-sensitive geometry. Across 160 COMMAND pairs its
+  difference-in-differences rate above the strict `1.0` threshold is
+  `8.125%`, with maximum `2.259765625`; across 128 WORLD pairs the strict
+  rate is `0.78125%`, with maximum `1.0194182395935059`. Both interventions
+  also change terminal state. Seed 2 changes terminal state, but the late
+  query largely fails to consume it: COMMAND maximum DID is only
+  `0.0546875` and WORLD maximum `0.1875`, with zero margins above `0.25` in
+  either component. Probe report SHA-256 values are
+  `1a04559959cae660fc829bea3f57fabcef9a6e57eebbe62f0e86c475aa457aac`
+  and
+  `116820a5b4887da65cfed12241e857a3063be76caae162e528ff7253c5b26e85`.
+  This supports a co-adaptation hypothesis: a frozen language representation
+  is not a neutral carrier for a randomly initialized 67.7M-parameter typed
+  state machine, and low marginal loss does not imply state consumption.
+
+  Private commit `22ed5e17df7de7f27d9da53dd75394532a37451f`
+  adds the first native joint-stream path. `ETTRJointPositionScheduler`
+  deterministically targets actual supervised positions rather than update
+  counts, so the registered `95/5` and `85/15` mixes remain exact despite a
+  `32,768`-position general update and an `8,448`-position ETTR update.
+  `GeneralLanguageUpdateStep` shares the exact Muon/Adam optimizer and WSD
+  cursor with `ETTRTrainStep`: general updates move the 125.1M shared
+  transformer while leaving the 67.7M ETTR-only tensors untouched; ETTR
+  updates then move both under the same optimizer. Warm-start and deterministic
+  random-init modes are explicit and cannot be confused in an artifact.
+  The bounded canary is intentionally non-resumable scientific evidence;
+  production continuation still requires an exact general-stream cursor.
+
+  The trainer hash-binds the admitted ETTR release and either an admitted v3
+  general-data contract or an explicitly labeled legacy scientific control.
+  Because new Phase 2 general data has not finished residualization and
+  holdout admission, this first canary uses only the historical 62.426B-token
+  Shohin shard stream already seen by the protected base. It binds every
+  shard's physical identity before and after training and may test language
+  preservation, but it is not promoted as newly admitted data. Full-model and
+  base-only checkpoints are no-replace artifacts. A new evaluator compares
+  each full joint model to its exact warm or random initialization on the same
+  source-deleted development batches. A separate board runs GSM8K maj@4 and
+  pass@1, MATH-500, HumanEval, and MBPP over the base projection.
+
+  Focused scheduler/update/canary/job tests pass **30/30**; changed-source
+  Ruff, byte compilation, Bash syntax, and diff checks pass. Immutable Newton
+  training runtime
+  `scratchpad/shohin_ettr_joint_runtime_22ed5e1_r1` binds the commit above,
+  contains 1,965 measured files, and has `SHA256SUMS` SHA-256
+  `9a7ee8ca9192d4c78018504fcb5891193cc3bdc6432273ecd1affac306a58206`.
+  Evaluation runtime
+  `scratchpad/shohin_ettr_joint_runtime_9ea7981_r1` adds the locked public
+  board from private commit
+  `9ea79810adc5bfba9832574e6cd989c19491b66b`; its 1,966-file
+  `SHA256SUMS` hash is
+  `2f3265ff3dc0d4f33b3d76d500826afc88395a8a181b7dee8afe436b8a44a42f`.
+
+  Six one-H100 5,000-update training arms are queued:
+  `723946/723947` are warm `95/5` seeds 1/2,
+  `723948/723949` warm `85/15` seeds 1/2, and
+  `723950/723951` random-init `85/15` seeds 1/2. Their paired 128-batch
+  causal evaluators are dependency-bound as `723952--723957`. Public boards
+  for the four warm arms are dependency-bound as `723958--723961`.
+  Initial full-model ETTR-only dispatch jobs `723936/723937` failed before
+  update zero because the reservation wrapper rejected their already-staged
+  command files; no model artifact was created. Their exact command hashes
+  were reverified and resubmitted as direct one-H100 jobs `723962/723963`.
+  The existing frozen factorial/localization jobs remain controls and were
+  not interrupted.
+
+  Promotion is preregistered: no arm wins on training loss alone. A candidate
+  must replicate across both seeds, improve paired WORLD and COMMAND
+  source-deleted margins with a negative upper-95% total-loss delta, retain
+  finite metrics, and avoid a material public-board regression. Warm `95/5`
+  versus `85/15` measures the capability/retention frontier. Random-init
+  `85/15` is an architecture-learning diagnostic at only
+  `97,255,424` general positions, not a claim that a language model can be trained
+  from scratch in 5,000 updates.
+
+  Decision:
+  `make_native_coadaptation_the_main_hypothesis_keep_frozen_and_ettr_only_arms_as_controls_and_promote_only_a_two_seed_causal_win_without_language_regression`.

@@ -2,22 +2,43 @@
 
 ## Current Status — Read First
 
-**Current frontier:** Shohin still has no demonstrated architecture-native
-general reasoning or episodic sparse unseen-law induction beyond a fixed global
-program bank. Adversarial audit rejects the apparent 11/11 episodic-generator
-result as a Shohin claim: the checkpoint was never loaded, exact regex code
-parsed the problem, fixed code enumerated 127 words, and host code sealed and
-executed the answer. Fourteen of 22 development target-word instances overlap
-training. Retain that system only as a bounded neuro-symbolic permutation-solver
-control.
+**Current frontier, superseding older status text below (2026-07-31
+05:00 EDT):** Shohin still has no replicated two-seed demonstration of
+architecture-native general reasoning. ETTR training has, however, produced a
+real sparse causal foothold under source deletion: frozen-base seed 1 changes
+strict COMMAND query margins on 8.125% of 160 intervention pairs and WORLD
+margins on 0.78125% of 128 pairs, while seed 2 changes terminal state but
+largely fails to make the late reader consume it. That asymmetry localizes the
+current problem to representation/interface co-adaptation rather than ordinary
+loss optimization. The main experiment has therefore changed from attaching
+ETTR to a permanently frozen transformer to native joint language/ETTR
+training of the complete 192,779,435-parameter model. Six matched 5,000-update
+one-H100 arms and their paired causal/public evaluators are queued. No result
+from those arms is claimed yet.
+
+The older adversarial conclusions remain binding: the apparent 11/11
+episodic-generator result was not a Shohin claim because exact host code parsed,
+enumerated, sealed, and executed the answer. It remains only a bounded
+neuro-symbolic control.
 
 - **Protected base:** immutable step-300k Shohin checkpoint,
   125,081,664 parameters, SHA-256
   `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
-- **Current phase order:** architecture construction now; substantially more
-  pretraining only after explicit user authorization; post-training after
-  pretraining. Current raw-checkpoint intelligence is not the acceptance
-  target for this phase. The pretraining hold is absolute.
+- **Current phase order:** Phase 2 training is explicitly authorized.
+  Candidate data remains fail-closed: ETTR uses the admitted immutable release,
+  while new general corpora cannot enter an optimizer until residualization,
+  holdout, and utility gates pass. The historical 62.426B-token stream may be
+  used only as an explicitly labeled language-preservation control.
+- **Native co-adaptation experiment:** private commit
+  `22ed5e17df7de7f27d9da53dd75394532a37451f` adds one shared optimizer and
+  deterministic charged-position scheduling across ordinary next-token and
+  ETTR causal updates. General updates move only the 125.1M shared transformer;
+  ETTR updates move the shared transformer and 67.7M reasoning modules.
+  Warm 95/5, warm 85/15, and random-init 85/15 are each replicated over two
+  seeds. Training jobs are `723946--723951`, paired 128-batch causal evaluators
+  `723952--723957`, and warm-arm GSM8K/MATH/code boards `723958--723961`.
+  Promotion requires a two-seed WORLD+COMMAND causal win without a material
+  public-board regression.
 - **Rejected episodic-generator claim:** the 232,065-parameter learned
   direction reader plus symbolic solver reaches 11/11, but Shohin contributes
   zero runtime parameters. Source deletion is serialization-level only,
@@ -52816,3 +52837,90 @@ Phase 2.
 
 Current decision:
 `r12_ettr_il_v2_phase1_architecture_frozen_phase2_requires_explicit_user_authorization`.
+
+## 2026-07-31 ETTR Learning Diagnosis and Native Co-Training Pivot
+
+Phase 2 authorization supersedes the old hold in the embedded Phase-1 freeze
+text above. The protected 300K base remains immutable; all trained artifacts
+are isolated descendants.
+
+### What the frozen-base campaign established
+
+ETTR can optimize its composite objective, but objective reduction alone is
+not sufficient. The first 5,000-update seed repeatedly develops sparse,
+source-deleted intervention sensitivity while the opposite registered seed
+usually learns an intervention-insensitive answer marginal.
+
+The decisive continuous probe compares the correct packet/command state to a
+factual counterfactual and records full difference-in-differences geometry
+rather than only a thresholded pass:
+
+| Arm | WORLD max DID | WORLD DID > 1 | COMMAND max DID | COMMAND DID > 1 |
+|---|---:|---:|---:|---:|
+| frozen seed 1 | 1.0194 | 0.78125% | 2.2598 | 8.125% |
+| frozen seed 2 | 0.1875 | 0% | 0.0547 | 0% |
+
+Seed 2 still changes terminal state under both interventions. Its failure is
+therefore specifically late-query consumption, not a complete absence of
+state dynamics. Seed 2 also reached lower marginal query losses than seed 1
+in earlier paired reports, ruling out the explanation that it simply
+optimized less. The evidence favors a representation/interface co-adaptation
+problem: a frozen language representation does not reliably expose the
+episode variables needed by a separately initialized symbolic state machine.
+
+### New native hypothesis
+
+The complete 192,779,435-parameter model now trains as one system. Ordinary
+next-token updates and ETTR causal updates share the same disjoint
+Muon/AdamW bundle and WSD step cursor:
+
+- general-language updates change the 125,081,664-parameter transformer and
+  apply no fabricated gradients to ETTR-only tensors;
+- ETTR updates train the transformer plus the 67,697,771-parameter compiler,
+  reactor, and query reader;
+- scheduling targets charged supervised positions, not update counts;
+- 95/5 and 85/15 are exact integer position ratios;
+- warm-start and deterministic random initialization are cryptographically
+  distinct artifact modes.
+
+The 5,000-update schedules are exact:
+
+| Mix | General updates | ETTR updates | General positions | ETTR positions |
+|---|---:|---:|---:|---:|
+| 95/5 | 4,152 | 848 | 136,052,736 | 7,163,904 |
+| 85/15 | 2,968 | 2,032 | 97,255,424 | 17,166,336 |
+
+The historical 62.426B-token pretraining stream is used only as a
+language-preservation control because new Phase 2 corpora are still passing
+cross-source residualization and holdout gates. The canary binds every
+historical shard's physical identity before and after execution. It does not
+reclassify those legacy shards as newly admitted production data.
+
+### Registered experiment
+
+- warm 95/5 seeds 1/2: jobs `723946/723947`;
+- warm 85/15 seeds 1/2: jobs `723948/723949`;
+- random-init 85/15 seeds 1/2: jobs `723950/723951`;
+- paired 128-batch source-deleted causal evaluations: `723952--723957`;
+- normal GSM8K, MATH-500, HumanEval, and MBPP boards for warm arms:
+  `723958--723961`;
+- full-model ETTR-only warm controls: `723962/723963`;
+- frozen-base factorial/localization arms remain active controls.
+
+The random-init arms test whether the architecture can begin learning as a
+native system; 97.3M general positions are nowhere near enough to judge the
+eventual quality of a from-scratch language model.
+
+### Locked decision rule
+
+Training loss cannot promote an arm. Promotion requires both registered seeds
+to show changed finite parameters, a paired total-loss upper 95% confidence
+bound below zero, increased WORLD and COMMAND source-deleted margins, and no
+material normal-board regression. A replicated native win would justify an
+exact-resume large run. A one-seed win remains a diagnostic. If neither joint
+mix replicates, the next intervention is not blind scale; it is a direct
+reader-consumption objective or representation bridge, measured against the
+same controls.
+
+Current decision:
+`native_joint_training_is_the_main_hypothesis_results_pending_no_reasoning_claim`.
