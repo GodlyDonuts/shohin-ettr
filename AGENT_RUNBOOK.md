@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-31 15:59 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-31 16:22 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -25,13 +25,19 @@
 > crossing native reasoning. Compiler seed 2 restores a materially factual
 > WORLD packet; composing it with separately fit reactor/reader components
 > yields 100% positive-active/root, 56.0% positive-relation, 96.1% type,
-> 76.7% value-code, and 3.32% complete factual transactions on 2,048
-> development episodes. Strict causal answer accuracy remains zero. An
+> 76.7% value-code, and 6.38% complete factual transactions on 2,048
+> development episodes. Its stage-reader arm produces the first
+> source-deleted strict WORLD causal answers, `7/496 = 1.41%`; COMMAND
+> remains zero. An
 > isolated post-normalization reader is the first held-out reader to produce
 > nonzero WORLD and COMMAND causal margins, proving useful terminal-state
 > information was being erased by the old decoder path. A sealed production
-> readout geometry and matched normalized controls are now live. No current
-> artifact is promoted as native reasoning.
+> readout geometry and matched normalized controls are now live. Direct
+> production postnorm composition amplifies the intervention signal but
+> collapses its semantic orientation to an exact 50/50 split with zero
+> strict pairs. Two bounded autonomous-terminal reader arms are queued to
+> repair that train/deploy state-distribution mismatch. No current artifact
+> is promoted as native reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -21431,3 +21437,57 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `treat_postnorm_as_a_verified_architectural_channel_not_a_reasoning_win_and_require_normalized_training_plus_autonomous_source_deleted_composition_before_promotion`.
+
+- **2026-07-31 15:59--16:22 EDT** -- **The all-new component stack crosses
+  the first strict source-deleted WORLD gate; direct postnorm readout then
+  reveals a semantic-orientation collapse, and autonomous-terminal reader
+  training is deployed to target it.**
+
+  All-new composition/evaluation jobs `724526 -> 724527` joined compiler
+  seed 2, reactor seed 2, and the stage reader at rate 3. The report is
+  `artifacts/evals/ettr_joint_composed_i94_c2_r2_reader3_e341136_trace.json`,
+  SHA-256
+  `6efcb57e584bed9cb6d39421a8e13b9b6a32a94f0eb65d406fd3e1194375c6cc`.
+  Initial positive active/root remain `100%`, relation is `55.9578%`, type
+  `96.1453%`, and value-code `76.6950%`. Complete factual transactions rise
+  to `6.3760%`; the policy emits WRITE/LINK/COMMIT
+  `8,628/12,608/5,740` times rather than collapsing to one opcode.
+  Critically, the physically source-deleted WORLD board records strict joint
+  top-1 and paired-order accuracy `7/496 = 1.4113%`. COMMAND remains
+  `0/656`. Candidate total loss improves over the exact parent by
+  `-11.0833`, 95% CI `[-11.7858,-10.3808]`. This is a genuine native
+  mechanism foothold but far below a useful reasoning claim.
+
+  Production postnorm composition/evaluation `724565 -> 724566` completed
+  from the same compiler/reactor and the unscaled postnorm reader. Report
+  `artifacts/evals/ettr_joint_composed_i94_c2_r2_readerpn3_25383c2_trace.json`
+  has SHA-256
+  `a5860f625e31add2251e9e3479009f938c4fe6e34324ee5f7f189e0fd1d16ecc`.
+  Its state and transaction geometry match the all-new stack, including
+  `6.3760%` complete factual transactions, but its query channel is
+  pathologically over-amplified. WORLD and COMMAND difference-in-differences
+  range to approximately `+/-69.15` and `+/-72.10` log-odds while both
+  correct and foil top-1 rates are exactly `50%`; strict joint and
+  paired-order rates are both zero. The postnorm reader therefore detects
+  intervention differences but does not preserve their semantic direction
+  on autonomous noisy packets.
+
+  Private commit `c7b672a` adds hash-bound continuation of a selected
+  component so useful island weights can receive additional updates without
+  random reinitialization. Private commit `9947374` adds the matched
+  deployment-distribution curriculum: with
+  `reader_state_source=autonomous`, the frozen compiler and reactor run in
+  hard inference mode, their actual terminal state/trace is detached, and
+  only the query reader is optimized. Terminal packet targets never enter
+  that state path. The focused suite passes **45/45** with clean Ruff, byte
+  compilation, Bash syntax, and diff checks. Immutable runtime
+  `scratchpad/shohin_ettr_joint_runtime_9947374_r1` contains 3,364 measured
+  files and has `SHA256SUMS` SHA-256
+  `42dac7ab06f5072e4157e45c8642ca7b4a6c1695a70723402d148d86100e4c9d`.
+  Jobs `724686/724687` are bounded 2,000-update autonomous postnorm reader
+  arms at learning rates `1e-5/3e-5`, trained against the exact
+  `724565` composed model. Promote only if held-out strict semantic
+  orientation exceeds the `7/496` WORLD floor without sacrificing COMMAND.
+
+  Decision:
+  `retain_stage_reader_7_of_496_as_the_locked_native_floor_and_train_the_reader_on_the_exact_autonomous_terminal_distribution_before_changing_the_state_architecture`.
