@@ -7,7 +7,7 @@
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=24G
 #SBATCH --gres=gpu:nvidia_h100_pcie:1
-#SBATCH --exclude=evc26,evc31,evc32,evc33,evc43
+#SBATCH --exclude=evc26,evc31,evc32,evc33,evc40,evc43
 #SBATCH --output=/lustre/fs1/home/sa305415/shohin/logs/reserve-ettr-dispatch-%j.out
 #SBATCH --error=/lustre/fs1/home/sa305415/shohin/logs/reserve-ettr-dispatch-%j.err
 
