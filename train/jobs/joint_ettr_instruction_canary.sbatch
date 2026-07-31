@@ -49,6 +49,7 @@ OPEN_STATE_READ_FLOOR=${OPEN_STATE_READ_FLOOR:-0}
 SOFT_TRANSACTION_ETTR_UPDATES=${SOFT_TRANSACTION_ETTR_UPDATES:-0}
 EXECUTION_TRACE_READ_SCALE=${EXECUTION_TRACE_READ_SCALE:-0}
 TRANSACTION_REDUCTION=${TRANSACTION_REDUCTION:-decision-mean}
+TEACHER_FORCED_TRANSACTION_WEIGHT=${TEACHER_FORCED_TRANSACTION_WEIGHT:-0}
 VALID_POINTER_MASKS=${VALID_POINTER_MASKS:-0}
 
 for path in \
@@ -72,6 +73,8 @@ if [[ ! "$SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ \
   || ! "$ETTR_POSITION_WEIGHT" =~ ^[1-9][0-9]*$ \
   || ! "$SOFT_TRANSACTION_ETTR_UPDATES" =~ ^[0-9]+$ \
   || ! "$VALID_POINTER_MASKS" =~ ^[01]$ \
+  || ! "$TEACHER_FORCED_TRANSACTION_WEIGHT" \
+    =~ ^([0-9]+([.][0-9]*)?|[.][0-9]+)$ \
   || ( "$TRANSACTION_REDUCTION" != decision-mean \
     && "$TRANSACTION_REDUCTION" != head-class-balanced ) ]]; then
   echo "tri-stream launch identity differs" >&2
@@ -192,6 +195,8 @@ args=(
   --soft-transaction-ettr-updates "$SOFT_TRANSACTION_ETTR_UPDATES"
   --execution-trace-read-scale "$EXECUTION_TRACE_READ_SCALE"
   --transaction-reduction "$TRANSACTION_REDUCTION"
+  --teacher-forced-transaction-weight \
+    "$TEACHER_FORCED_TRANSACTION_WEIGHT"
   --gradient-clip-mode "$GRADIENT_CLIP_MODE"
 )
 if [[ "$VALID_POINTER_MASKS" == 1 ]]; then

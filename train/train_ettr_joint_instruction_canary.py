@@ -206,6 +206,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         choices=("decision-mean", "head-class-balanced"),
         default="decision-mean",
     )
+    parser.add_argument(
+        "--teacher-forced-transaction-weight",
+        type=float,
+        default=0.0,
+    )
     parser.add_argument("--valid-pointer-masks", action="store_true")
     parser.add_argument(
         "--gradient-clip-mode",
@@ -283,6 +288,12 @@ def _validate_args(args: argparse.Namespace) -> None:
         or not 0.0 <= args.open_state_read_floor <= 1.0
         or not 0 <= args.soft_transaction_ettr_updates <= args.updates
         or not 0.0 <= args.execution_trace_read_scale <= 4.0
+        or not math.isfinite(
+            args.teacher_forced_transaction_weight
+        )
+        or not 0.0
+        <= args.teacher_forced_transaction_weight
+        <= 1_000.0
         or args.log_every < 1
     ):
         raise ETTRTriCanaryError("tri-stream canary arguments differ")
@@ -476,6 +487,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     hard_ettr_step_config = ETTRTrainStepConfig(
         gradient_clip_mode=args.gradient_clip_mode,
         hard_transactions=True,
+        teacher_forced_transaction_weight=(
+            args.teacher_forced_transaction_weight
+        ),
     )
     hard_ettr_step = ETTRTrainStep(
         model,
@@ -490,6 +504,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     soft_ettr_step_config = ETTRTrainStepConfig(
         gradient_clip_mode=args.gradient_clip_mode,
         hard_transactions=False,
+        teacher_forced_transaction_weight=(
+            args.teacher_forced_transaction_weight
+        ),
     )
     soft_ettr_step = (
         ETTRTrainStep(

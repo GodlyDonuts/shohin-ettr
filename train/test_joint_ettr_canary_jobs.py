@@ -82,6 +82,10 @@ def test_tri_stream_canary_is_parent_bound_and_code_retaining() -> None:
         '--query-binding-risk-temperature '
         '"$QUERY_BINDING_RISK_TEMPERATURE"' in TRI
     )
+    assert (
+        '--teacher-forced-transaction-weight \\\n'
+        '    "$TEACHER_FORCED_TRANSACTION_WEIGHT"' in TRI
+    )
     assert "parent_model=" in TRI
 
 

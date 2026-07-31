@@ -43,6 +43,7 @@ def _trainer(
     gradient_clip_mode: str = "global",
     warmup_updates: int = 1,
     train_base: bool = False,
+    teacher_forced_transaction_weight: float = 0.0,
 ) -> tuple[ETTRTrainStep, ETTRContinuationBatch]:
     model = _runner().model
     optimizer = ETTROptimizerBundle(
@@ -140,6 +141,9 @@ def _trainer(
             gradient_clip_mode=gradient_clip_mode,
             compile_backend=compile_backend,
             compile_mode=compile_mode,
+            teacher_forced_transaction_weight=(
+                teacher_forced_transaction_weight
+            ),
         ),
     )
     return trainer, batch
@@ -150,6 +154,43 @@ def test_compile_configuration_rejects_mode_without_backend() -> None:
         ETTRTrainStepConfig(compile_mode="default").validate()
     with pytest.raises(TheoryReactorError, match="configuration"):
         ETTRTrainStepConfig(gradient_clip_mode="combined").validate()
+    with pytest.raises(TheoryReactorError, match="configuration"):
+        ETTRTrainStepConfig(
+            teacher_forced_transaction_weight=-1.0,
+        ).validate()
+
+
+def test_teacher_forced_transaction_auxiliary_is_train_only_and_weighted() -> None:
+    baseline, baseline_batch = _trainer(
+        accumulation=1,
+        warmup_updates=0,
+    )
+    imitation, imitation_batch = _trainer(
+        accumulation=1,
+        warmup_updates=0,
+        teacher_forced_transaction_weight=2.0,
+    )
+    imitation.model.load_state_dict(baseline.model.state_dict())
+    baseline_loss = baseline.forward_loss(baseline_batch)
+    imitation_loss = imitation.forward_loss(imitation_batch)
+    assert imitation_loss.total > baseline_loss.total
+    assert imitation_loss.transaction > baseline_loss.transaction
+    for name in (
+        "token_lm",
+        "packet",
+        "world_intervention",
+        "command_intervention",
+        "world_query_binding",
+        "command_query_binding",
+        "equivariance",
+        "commit_halt",
+        "sparsity",
+        "anti_bypass",
+    ):
+        torch.testing.assert_close(
+            getattr(imitation_loss, name),
+            getattr(baseline_loss, name),
+        )
 
 
 def test_owner_gradient_clipping_reports_both_parameter_owners() -> None:

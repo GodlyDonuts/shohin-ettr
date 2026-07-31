@@ -7,15 +7,20 @@ or network access.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+import math
 from typing import Callable, Sequence
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from endogenous_typed_theory_reactor import (
     EndogenousTypedTheoryReactorGPT,
+    TRANSACTION_COUNT,
     TheoryReactorError,
+    TransactionPolicy,
+    TypedTheoryState,
 )
 from ettr_data_contract import (
     ETTRContinuationBatch,
@@ -28,6 +33,10 @@ from ettr_objectives import (
     ETTRCompositeObjective,
     ETTRObjectiveConfig,
     ETTRObjectiveWeights,
+    ETTRPacketTargets,
+    ETTRTransactionPredictions,
+    ETTRTransactionTargets,
+    _transaction_prediction_loss,
 )
 from ettr_optimization import ETTROptimizerBundle
 
@@ -76,6 +85,7 @@ class ETTRTrainStepConfig:
     autocast_dtype: torch.dtype = torch.bfloat16
     compile_backend: str | None = None
     compile_mode: str | None = None
+    teacher_forced_transaction_weight: float = 0.0
 
     def validate(self) -> None:
         if (
@@ -97,6 +107,16 @@ class ETTRTrainStepConfig:
                 self.compile_mode is not None
                 and self.compile_mode not in _COMPILE_MODES
             )
+            or not isinstance(
+                self.teacher_forced_transaction_weight,
+                float,
+            )
+            or not math.isfinite(
+                self.teacher_forced_transaction_weight
+            )
+            or not 0.0
+            <= self.teacher_forced_transaction_weight
+            <= 1_000.0
         ):
             raise TheoryReactorError("ETTR train-step configuration differs")
 
@@ -134,6 +154,159 @@ class ETTRUpdateReceipt:
     command_query_margin_satisfied: torch.Tensor
 
 
+def _packet_targets_to_state(
+    targets: ETTRPacketTargets,
+    model: EndogenousTypedTheoryReactorGPT,
+) -> TypedTheoryState:
+    """Materialize the exact initial state for training-only imitation."""
+
+    dtype = next(model.reactor.parameters()).dtype
+    active = targets.active.to(dtype)
+    return TypedTheoryState(
+        value_probabilities=(
+            F.one_hot(
+                targets.value_code,
+                model.config.num_value_codes,
+            ).to(dtype)
+            * active.unsqueeze(-1)
+        ),
+        type_probabilities=(
+            F.one_hot(
+                targets.type_index,
+                model.config.num_types,
+            ).to(dtype)
+            * active.unsqueeze(-1)
+        ),
+        relations=targets.relations.to(dtype),
+        active=active,
+        root=targets.root.to(dtype),
+        committed=targets.committed.to(dtype),
+        halted=targets.halted.to(dtype),
+        step=0,
+    )
+
+
+def _target_policy(
+    targets: ETTRTransactionTargets,
+    model: EndogenousTypedTheoryReactorGPT,
+    step: int,
+    *,
+    dtype: torch.dtype,
+) -> TransactionPolicy:
+    """Return the offline transaction used only to advance imitation state."""
+
+    values = {
+        "opcode": F.one_hot(
+            targets.opcode[:, step],
+            TRANSACTION_COUNT,
+        ).to(dtype),
+        "source": F.one_hot(
+            targets.source[:, step],
+            model.config.num_slots,
+        ).to(dtype),
+        "target": F.one_hot(
+            targets.target[:, step],
+            model.config.num_slots,
+        ).to(dtype),
+        "relation": F.one_hot(
+            targets.relation[:, step],
+            model.config.num_relations,
+        ).to(dtype),
+        "type_index": F.one_hot(
+            targets.type_index[:, step],
+            model.config.num_types,
+        ).to(dtype),
+        "value_code": F.one_hot(
+            targets.value_code[:, step],
+            model.config.num_value_codes,
+        ).to(dtype),
+    }
+    return TransactionPolicy(
+        **values,
+        opcode_probabilities=values["opcode"],
+        source_probabilities=values["source"],
+        target_probabilities=values["target"],
+        relation_probabilities=values["relation"],
+        type_probabilities=values["type_index"],
+        value_probabilities=values["value_code"],
+    )
+
+
+def _teacher_forced_transaction_predictions(
+    model: EndogenousTypedTheoryReactorGPT,
+    batch: ETTRContinuationBatch,
+) -> ETTRTransactionPredictions:
+    """Predict each action from exact prior state without changing inference."""
+
+    targets = batch.transaction_targets
+    state = _packet_targets_to_state(batch.packet_targets, model)
+    command_hidden = model._encode_to_stage(
+        batch.episodes.command.tokens,
+        pos=0,
+    )
+    policies: list[TransactionPolicy] = []
+    states: list[TypedTheoryState] = []
+    for step in range(targets.opcode.shape[1]):
+        policies.append(
+            model.reactor.policy(
+                state,
+                hard=False,
+                command_hidden=command_hidden,
+                command_attention_mask=(
+                    batch.episodes.command.attention_mask
+                ),
+                validate=False,
+            )
+        )
+        state = model.reactor.apply(
+            state,
+            _target_policy(
+                targets,
+                model,
+                step,
+                dtype=state.active.dtype,
+            ),
+            hard=True,
+            validate=False,
+        )
+        states.append(state)
+    return ETTRTransactionPredictions(
+        opcode=torch.stack(
+            [policy.opcode_probabilities for policy in policies],
+            dim=1,
+        ),
+        source=torch.stack(
+            [policy.source_probabilities for policy in policies],
+            dim=1,
+        ),
+        target=torch.stack(
+            [policy.target_probabilities for policy in policies],
+            dim=1,
+        ),
+        relation=torch.stack(
+            [policy.relation_probabilities for policy in policies],
+            dim=1,
+        ),
+        type_index=torch.stack(
+            [policy.type_probabilities for policy in policies],
+            dim=1,
+        ),
+        value_code=torch.stack(
+            [policy.value_probabilities for policy in policies],
+            dim=1,
+        ),
+        active=torch.stack([state.active for state in states], dim=1),
+        committed=torch.stack(
+            [state.committed for state in states],
+            dim=1,
+        ),
+        halted=torch.stack(
+            [state.halted for state in states],
+            dim=1,
+        ),
+    )
+
+
 class ETTRCompositeTrainingSubject(nn.Module):
     """Compile-safe factual, intervention, and objective tensor path."""
 
@@ -144,6 +317,7 @@ class ETTRCompositeTrainingSubject(nn.Module):
         objective_weights: ETTRObjectiveWeights | None,
         *,
         hard_transactions: bool,
+        teacher_forced_transaction_weight: float = 0.0,
     ) -> None:
         super().__init__()
         self.runner = CausalETTREpisodeRunner(model)
@@ -152,6 +326,9 @@ class ETTRCompositeTrainingSubject(nn.Module):
             weights=objective_weights,
         )
         self.hard_transactions = hard_transactions
+        self.teacher_forced_transaction_weight = (
+            teacher_forced_transaction_weight
+        )
 
     def objective_loss(
         self,
@@ -185,8 +362,32 @@ class ETTRCompositeTrainingSubject(nn.Module):
             command_query_index=command_target,
             hard=self.hard_transactions,
         )
-        return self.objective(
+        loss = self.objective(
             batch.objective_batch(output, interventions)
+        )
+        if self.teacher_forced_transaction_weight == 0.0:
+            return loss
+        teacher_predictions = _teacher_forced_transaction_predictions(
+            self.runner.model,
+            batch,
+        )
+        teacher_transaction, _ = _transaction_prediction_loss(
+            teacher_predictions,
+            batch.transaction_targets,
+            self.objective.config,
+        )
+        weighted_teacher = (
+            self.teacher_forced_transaction_weight
+            * teacher_transaction
+        )
+        return replace(
+            loss,
+            total=(
+                loss.total
+                + self.objective.weights.transaction
+                * weighted_teacher
+            ),
+            transaction=loss.transaction + weighted_teacher,
         )
 
     def forward(
@@ -282,6 +483,9 @@ class ETTRTrainStep(nn.Module):
             objective_config,
             objective_weights,
             hard_transactions=self.step_config.hard_transactions,
+            teacher_forced_transaction_weight=(
+                self.step_config.teacher_forced_transaction_weight
+            ),
         )
         object.__setattr__(self, "eager_subject", subject)
         if self.step_config.compile_backend is None:
