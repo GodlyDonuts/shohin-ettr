@@ -137,6 +137,40 @@ def deterministic_autonomous_choice(
     return draw < probability
 
 
+def deterministic_exact_anchor_steps(
+    step_count: int,
+    anchor_count: int,
+    *,
+    coupling_seed: int,
+    update: int,
+) -> tuple[int, ...]:
+    """Select evenly spaced exact-state anchors with a rotating offset."""
+
+    if (
+        step_count < 1
+        or not 1 <= anchor_count <= step_count
+        or not 0 <= coupling_seed < 2**63
+        or update < 1
+    ):
+        raise ETTRProgressiveCouplingError(
+            "exact reactor anchor schedule differs"
+        )
+    payload = f"{coupling_seed}:{update}:exact-anchors".encode("ascii")
+    offset = int.from_bytes(
+        hashlib.sha256(payload).digest()[:8],
+        "big",
+    ) % step_count
+    return tuple(
+        sorted(
+            {
+                (offset + (index * step_count) // anchor_count)
+                % step_count
+                for index in range(anchor_count)
+            }
+        )
+    )
+
+
 def select_state_source(
     exact: TypedTheoryState,
     autonomous: TypedTheoryState,
@@ -430,6 +464,7 @@ def progressive_coupling_loss(
     coupling_probability: float,
     coupling_seed: int,
     counterfactual_delta_weight: float,
+    exact_anchor_steps: int,
     update: int,
 ) -> tuple[torch.Tensor, dict[str, object]]:
     """Train local interfaces while progressively consuming predicted state."""
@@ -503,6 +538,14 @@ def progressive_coupling_loss(
     ] = {
         name: [] for name in _POLICY_FIELDS
     }
+    exact_anchor_indices = set(
+        deterministic_exact_anchor_steps(
+            targets.opcode.shape[1],
+            exact_anchor_steps,
+            coupling_seed=coupling_seed,
+            update=update,
+        )
+    )
     for step in range(targets.opcode.shape[1]):
         policy, logits = _reactor_policy_logits(
             model.reactor,
@@ -511,22 +554,26 @@ def progressive_coupling_loss(
             command_attention_mask=batch.episodes.command.attention_mask,
             hard=True,
         )
-        if state_is_autonomous:
-            _exact_policy, exact_logits = _reactor_policy_logits(
-                model.reactor,
-                exact_state,
-                command_hidden=command_hidden.detach(),
-                command_attention_mask=batch.episodes.command.attention_mask,
-                hard=True,
-            )
-        else:
-            exact_logits = logits
         exact_target_policy = target_policy(
             targets,
             model.config,
             step,
             dtype=exact_state.active.dtype,
         )
+        exact_logits = None
+        if step in exact_anchor_indices:
+            if state_is_autonomous:
+                _exact_policy, exact_logits = _reactor_policy_logits(
+                    model.reactor,
+                    exact_state,
+                    command_hidden=command_hidden.detach(),
+                    command_attention_mask=(
+                        batch.episodes.command.attention_mask
+                    ),
+                    hard=True,
+                )
+            else:
+                exact_logits = logits
         for name in _POLICY_FIELDS:
             coupled_loss = _masked_categorical_cross_entropy_device(
                 logits[name],
@@ -534,19 +581,20 @@ def progressive_coupling_loss(
                 masks[name][:, step],
             )
             coupled_field_losses[name].append(coupled_loss)
-            exact_loss = _masked_categorical_cross_entropy_device(
-                exact_logits[name],
-                getattr(targets, name)[:, step],
-                masks[name][:, step],
-            )
-            exact_field_losses[name].append(exact_loss)
-            delta_loss = factorial_delta_matching_loss(
-                exact_logits[name].float().softmax(-1),
-                getattr(exact_target_policy, name).float(),
-                batch.causal_rectangles.rows,
-                row_mask=masks[name][:, step],
-            )
-            reactor_delta_losses[name].append(delta_loss)
+            if exact_logits is not None:
+                exact_loss = _masked_categorical_cross_entropy_device(
+                    exact_logits[name],
+                    getattr(targets, name)[:, step],
+                    masks[name][:, step],
+                )
+                exact_field_losses[name].append(exact_loss)
+                delta_loss = factorial_delta_matching_loss(
+                    exact_logits[name].float().softmax(-1),
+                    getattr(exact_target_policy, name).float(),
+                    batch.causal_rectangles.rows,
+                    row_mask=masks[name][:, step],
+                )
+                reactor_delta_losses[name].append(delta_loss)
         autonomous_state = model.reactor.apply(
             state,
             policy,
@@ -636,6 +684,7 @@ def progressive_coupling_loss(
         "autonomous_decisions": autonomous_decisions,
         "coupling_probability": coupling_probability,
         "decision_count": decisions,
+        "exact_anchor_steps": sorted(exact_anchor_indices),
         "high_level": {
             name: float(value.detach().cpu())
             for name, value in high_level.items()
@@ -698,6 +747,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         type=float,
         default=1.0,
     )
+    parser.add_argument("--exact-anchor-steps", type=int, default=4)
     parser.add_argument("--weight-decay", type=float, default=0.0)
     parser.add_argument("--gradient-clip", type=float, default=1.0)
     parser.add_argument("--eval-batches", type=int, default=32)
@@ -745,6 +795,7 @@ def _validate_args(args: argparse.Namespace) -> None:
         or args.warmup_updates + args.ramp_updates > args.updates
         or not math.isfinite(args.counterfactual_delta_weight)
         or args.counterfactual_delta_weight <= 0.0
+        or not 1 <= args.exact_anchor_steps <= 64
         or any(
             not math.isfinite(rate) or not 0.0 < rate < 1.0
             for rate in rates
@@ -896,6 +947,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             },
             "coupling": {
                 "batch_factorial_source_is_atomic": True,
+                "exact_anchor_steps_per_update": args.exact_anchor_steps,
                 "ramp_updates": args.ramp_updates,
                 "seed": args.coupling_seed,
                 "warmup_updates": args.warmup_updates,
@@ -994,6 +1046,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     counterfactual_delta_weight=(
                         args.counterfactual_delta_weight
                     ),
+                    exact_anchor_steps=args.exact_anchor_steps,
                     update=update,
                 )
             if not bool(torch.isfinite(loss)):

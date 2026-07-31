@@ -11,6 +11,7 @@ from train_ettr_progressive_coupling import (
     ETTRProgressiveCouplingError,
     _validate_args,
     deterministic_autonomous_choice,
+    deterministic_exact_anchor_steps,
     factorial_delta_matching_loss,
     progressive_coupling_probability,
     select_state_source,
@@ -86,6 +87,7 @@ def _arguments(tmp_path) -> SimpleNamespace:
         warmup_updates=100,
         ramp_updates=700,
         counterfactual_delta_weight=2.0,
+        exact_anchor_steps=4,
         weight_decay=0.0,
         gradient_clip=1.0,
         eval_batches=4,
@@ -213,6 +215,51 @@ def test_coupling_choice_is_deterministic_and_has_hard_endpoints() -> None:
         update=9,
         stage=2,
     )
+
+
+def test_exact_anchor_steps_are_deterministic_spread_and_rotating() -> None:
+    first = deterministic_exact_anchor_steps(
+        64,
+        4,
+        coupling_seed=7,
+        update=9,
+    )
+    assert first == deterministic_exact_anchor_steps(
+        64,
+        4,
+        coupling_seed=7,
+        update=9,
+    )
+    assert len(first) == 4
+    cyclic_gaps = [
+        (first[(index + 1) % len(first)] - first[index]) % 64
+        for index in range(len(first))
+    ]
+    assert cyclic_gaps == [16, 16, 16, 16]
+    covered = {
+        step
+        for update in range(1, 257)
+        for step in deterministic_exact_anchor_steps(
+            64,
+            4,
+            coupling_seed=7,
+            update=update,
+        )
+    }
+    assert covered == set(range(64))
+
+
+def test_exact_anchor_steps_reject_invalid_contract() -> None:
+    with pytest.raises(
+        ETTRProgressiveCouplingError,
+        match="anchor schedule differs",
+    ):
+        deterministic_exact_anchor_steps(
+            64,
+            65,
+            coupling_seed=7,
+            update=1,
+        )
 
 
 def test_state_source_selects_complete_batch_and_preserves_gradient() -> None:
