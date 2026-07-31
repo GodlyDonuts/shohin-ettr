@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-31 03:50 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-31 04:00 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -20560,3 +20560,49 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `delta8_seed1_is_not_causal_measure_continuous_margin_geometry_and_complete_all_two_seed_factor_horizon_interactions_before_promotion`.
+
+- **2026-07-31 03:50--04:00 EDT** -- **Nine verified H100 writers remain
+  healthy, and a completed 8.7635B-token FineWeb-Edu payload has entered
+  fail-closed recovery instead of being discarded or prematurely admitted.**
+
+  Newton jobs `723879--723884`, `723894`, and `723904/723905` remain
+  `RUNNING` on physically verified H100s. Direct node inspection confirms
+  the intended factor-balanced horizon-eight processes, isolated output
+  directories, registered seeds, and reader-control assignments. Latest
+  durable progress spans update `450` for the newly started anchor-eight
+  pair through updates `1,300--1,500` for the longer own/frozen/swap
+  factorial. Every sampled latest loss and gradient norm is finite. Jobs
+  `723922--723926` remain queued for the missing evaluators, replacement
+  interactions, and continuous-margin probes; no new source-deleted report
+  has appeared.
+
+  The general-data audit found that FineWeb-Edu score-4+ builder `754467`
+  completed its tokenizer output and v3 manifest before failing closed in the
+  unchanged verifier on a transient Lustre metadata-identity change for shard
+  85. The quarantined payload contains **8,763,527,685 tokens / 7,759,205
+  documents / 88 shards**, with manifest payload SHA-256
+  `ca9a7a1d341c6bf8cc4c8f9cf4717af5961ac04116979a95c6b5a9df6bb54e33`.
+  Its filters retained only English score-4+ rows, exact-deduplicated and
+  evaluation-decontaminated them, applied extraction/repetition/boilerplate
+  gates, and capped each domain at 5M tokens. It is not admitted data.
+
+  Existing fail-closed recovery job `757374` now prewarms the completed
+  regular files, then runs the original isolated verifier against all shard,
+  ledger, tokenizer, source, and evaluation inputs before any atomic rename.
+  It binds tokenizer SHA-256
+  `c7bb632ce769a795bb615cebcb264372e7b36996146cafc7ceb42bddd2a8d1ea`
+  and verifier SHA-256
+  `efb9f1646d74e64c6243151fad716791c1817ead9a783b0f9ed99bdd56c54af6`.
+  Exact-document review job `757375` is held `afterok:757374` and will sample
+  10,000 retained documents into a private packet plus text-free receipt.
+  Obsolete never-satisfiable review job `756090` was canceled.
+
+  `docs/research/PHASE2_DATA_READINESS_20260731.md` records the current
+  evidence and blockers for the 62.426B-token historical stream, audited ETTR
+  release, peS2o, FineWeb, FinePDF, Essential-Web, Formal Logic, DCLM, and
+  OpenMath. New sources remain zero-weight until exact/near residualization,
+  immutable holdouts, complete partition audits, and equal-token utility
+  evidence pass.
+
+  Decision:
+  `keep_every_verified_h100_on_identifiable_ettr_replication_recover_completed_fineweb_bytes_without_weakening_general_data_admission`.
