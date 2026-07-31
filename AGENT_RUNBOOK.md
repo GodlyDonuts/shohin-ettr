@@ -15,12 +15,17 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-31 11:57 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-31 13:25 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
 > GSM8K pass@1 `2/100`, MATH-500 `2/100`, HumanEval `6/164`, and MBPP `0/100`. This confirms a
 > low-single-digit plateau rather than a broad 120k-to-300k capability gain.
+> Exact packet audit now proves the current joint objective collapses the
+> WORLD compiler to an empty packet: positive active, relation, and root
+> accuracy are zero. Six co-adapted component curricula are live to repair
+> compiler, reactor, and reader interfaces independently before an autonomous
+> composition gate. No current artifact is promoted as native reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -21147,3 +21152,134 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `use_exact_prior_state_only_as_a_training_curriculum_and_require_all_claims_to_survive_oracle_free_closed_loop_evaluation`.
+
+- **2026-07-31 11:57--13:25 EDT** -- **Exact packet geometry identifies an
+  empty-WORLD compiler as the upstream fixed point; controller masks,
+  class-balanced actuator loss, and transaction imitation are closed as
+  standalone repairs.**
+
+  Private commit
+  `f529fdb936532de79cc298211446a33198ed8c3e` adds held-out initial and
+  terminal packet geometry to the existing source-deleted evaluator. Packet
+  audit `724353` completed across 2,048 development episodes; report
+  `artifacts/evals/ettr_joint_tri_balonly_s1_u500_f529fdb_packet_audit.json`
+  has SHA-256
+  `b86c8b6a2a89f0e39946afb2569ed8c14a6084962f5bc0900e4f5ce94b7bbead`.
+  The parent and balance-only candidate both have zero complete packets,
+  zero positive active accuracy across 61,120 positive slots, zero positive
+  initial-relation accuracy across 42,432 positive cells, and zero positive
+  root accuracy across 2,048 episodes. Their apparently high aggregate
+  active/relation/root accuracies come entirely from predicting inactive,
+  absent, and non-root classes. The candidate changes no audited compiler
+  field relative to its parent. This is a direct upstream failure, not a
+  reader-only diagnosis.
+
+  The complete controller factorial is negative. Mask-only `724297`,
+  balance-only `724299`, exact-mask combined `724303`, and soft-first-150
+  `724288` all have zero complete transactions and no strict causal effect.
+  The hard arms predict WRITE on every supervised step; source and target
+  remain zero. The soft arm briefly changes hard behavior but regresses
+  paired loss and still produces no query margin.
+
+  Training-only teacher-forced transaction curricula also fail autonomous
+  evaluation. Jobs `724307/724309` and no-mask counterparts completed at
+  doses 1/4; actuator jobs `724308/724310/724331/724333` and packet audits
+  `724354--724357` all completed. Every arm has zero complete transactions,
+  predicts WRITE on all 26,976 held-out steps, and has zero source/target
+  top-1. Dose 1 leaves positive packet active/root/relation at zero. Dose 4
+  without masks wakes only part of the compiler: initial positive active
+  `37.8796%`, root `65.625%`, relation `7.2210%`, and value-code
+  `35.9424%`; it still has zero complete packets, zero causal margins, and
+  worse total loss. Exact-prior-state imitation cannot repair a nonexistent
+  initial packet through the ordinary mixed objective.
+
+  Decision:
+  `treat_packet_construction_as_the_first_required_gate_and_reject_more_downstream_controller_tuning_over_an_empty_WORLD_state`.
+
+- **2026-07-31 12:00--13:25 EDT** -- **Instruction-heavy post-training
+  improves token loss but not ETTR causality or broad capability enough to
+  promote; direct interviews confirm imitation without reliable answer
+  control.**
+
+  Capability arms `724212/724215/724262/724276` completed at 2,000,
+  2,000, 3,000, and 2,000 updates for mixes `10/65/25` with reader floors
+  `0/0.25`, `5/85/10`, and `5/94/1`. Source-deleted evaluations for the two
+  floor arms remain causally negative. Floor zero improves paired total loss
+  by `-1.1321` with 95% CI `[-1.2012,-1.0630]` and changes some WORLD state,
+  but WORLD and COMMAND query margins remain exactly zero. Floor `0.25`
+  regresses total loss by `+4.6966`; its query margins are also zero.
+  The `5/94/1` public N=200 board is GSM8K maj@4 `6/200`, GSM8K pass@1
+  `6/200`, MATH-500 `7/200`, HumanEval `6/164`, and MBPP `0/200`. This is no
+  clear broad improvement over the protected 300k floor.
+
+  Direct interview `724301` compared protected 300k, `5/85/10`, and
+  `5/94/1` on seven fresh tasks under direct, review, verified-fact,
+  compact-state, and state-reuse prompts. All three score only one exact
+  direct answer and no compact-state or state-reuse answers. The
+  instruction-heavy models sometimes emit a correct arithmetic chain before
+  continuing into unrelated text, but they do not reliably terminate or
+  obey answer format. Report
+  `artifacts/evals/manual_capability_i85_i94_r1.json` is diagnostic, not a
+  replacement for locked boards. The `5/85/10` causal/public jobs
+  `724263/724264` and remaining floor/public boards are still running.
+
+  Decision:
+  `keep_instruction_post_training_as_a_language_control_not_a_native_reasoning_claim_and_require_interface_causality_before_more_scale`.
+
+- **2026-07-31 12:15--13:25 EDT** -- **A hash-bound component composition
+  path and co-adapted component curriculum are deployed; all six component
+  jobs are live.**
+
+  Private commits `ac55889`, `3ba93f2`, and `fb8725b` add strict
+  compiler/reactor/reader composition, partial-transplant admission, and
+  non-aliasing CPU snapshots. A zero-update composition of the strongest
+  historical seed-1 progressive components into the exact `5/94/1` parent
+  completed as job `724395` under
+  `train/ettr_joint_composed_i94e01s1_causal549_fb8725b`. Its complete model
+  SHA-256 is
+  `af0eef0bcc51f1d6660bd68ab2f1721f445e83393249a34a37838bf609d963a6`;
+  its run-contract SHA-256 is
+  `7be9853b587aea9247d7d9eb90a2e177a93d7d74b5b1fea03180b29d4afc383a`.
+  The base is byte-identical to the parent and all three ETTR components
+  changed. Initial evaluations `724397/724413` failed closed without a
+  report because the evaluator only admitted optimizer children, then did
+  not resolve a tri-stream parent's hash-bound ancestor. Private commits
+  `dfe4d28fa8984fef9cfca92b66dd57d014a01777` and
+  `f8282c4b33f122ba4172f3e0e02fad032e1ea8e3` add explicit zero-update
+  composition lineage, require byte-equal base weights and unchanged
+  optimizer step/schedule, and reconstruct the raw control from the exact
+  ancestor contract. Retry `724426` is queued.
+
+  Private commit
+  `78c8e3d18facfaabc7c692a528163625e9151ed0` adds a joint-base component
+  curriculum. It trains exactly one component against its exact interface
+  labels while freezing the co-adapted base and the other two components.
+  Compiler binary heads use positive/negative class balancing; the reactor
+  receives exact initial state and target prior transactions only during
+  training; the reader receives exact terminal packets. Autonomous
+  evaluation receives no oracle state. Immutable runtime
+  `scratchpad/shohin_ettr_joint_runtime_78c8e3d_r1` has 3,361 measured files
+  and manifest SHA-256
+  `306dc80eef6e31c6ca9cac22121dbce1fd6021177d1368e6399e22ff56e6566c`.
+
+  Six 5,000-update jobs are live from the exact `5/94/1` parent:
+  compiler seeds `724404/724405`, reactor seeds `724406/724407`, and reader
+  rates `724408/724409`. Around updates `1,320--1,530`, compiler balanced
+  loss is roughly `0.06--0.08`; active, relation, root, and type terms are
+  near zero while value-code remains the dominant residual. This is
+  supervised interface progress, not autonomous reasoning. Rank final
+  components on held-out positive packet fields, teacher-forced transaction
+  fields, and oracle-terminal causal reader margins; then compose and run the
+  source-deleted autonomous gate.
+
+  Redundant unchanged-objective jobs were stopped at low progress after the
+  packet result: balanced-query `724116/724119`, state-anchor
+  `724152/724155`, duplicate tri-stream seed 2 `723989`, and tri-stream seed
+  1 `723986`, with their dependents. These runs had no distinct mechanism
+  capable of producing a nonempty initial packet. Owner-clipped native jobs
+  `723980/723983` completed 5,000 updates and both source-deleted evaluations
+  are negative despite lower total loss; they produce zero WORLD/COMMAND
+  query margins. Their public boards remain in progress.
+
+  Decision:
+  `learn_each_required_interface_on_the_coadapted_base_compose_only_hash_bound_components_then_spend_long_run_compute_only_after_nonempty_packet_and_autonomous_causal_gates_pass`.
