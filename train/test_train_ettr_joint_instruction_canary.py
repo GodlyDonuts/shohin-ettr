@@ -54,6 +54,7 @@ def _args(tmp_path: Path) -> argparse.Namespace:
         open_state_read_floor=0.0,
         soft_transaction_ettr_updates=0,
         execution_trace_read_scale=0.0,
+        teacher_forced_transaction_weight=0.0,
         gradient_clip_mode="owner",
         log_every=1,
     )
