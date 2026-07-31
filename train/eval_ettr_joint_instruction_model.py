@@ -48,6 +48,7 @@ from probe_ettr_causal_queries import (
 
 REPORT_SCHEMA = "shohin-ettr-tri-paired-development-evaluation-v3"
 RUN_SCHEMA = "shohin-ettr-tri-stream-canary-v1"
+COMPOSITION_KIND = "hash-bound-component-transplant"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 
@@ -94,6 +95,151 @@ def _load_model_state(
         ) from exc
     if incompatibility.missing_keys or incompatibility.unexpected_keys:
         raise ETTRTriEvaluationError(f"{label} strict load differs")
+
+
+def _validate_run_lineage(
+    parent_contract: Mapping[str, object],
+    run_contract: Mapping[str, object],
+    *,
+    release_sha256: str,
+    parent_run_contract_sha256: str,
+    parent_joint_model_sha256: str,
+) -> Mapping[str, object] | None:
+    if (
+        run_contract.get("schema") != RUN_SCHEMA
+        or run_contract.get("ettr_release_sha256") != release_sha256
+    ):
+        raise ETTRTriEvaluationError("tri-stream run lineage differs")
+    composition = run_contract.get("component_composition")
+    if composition is None:
+        if (
+            parent_contract.get("schema") != PARENT_RUN_SCHEMA
+            or run_contract.get("parent_run_contract_sha256")
+            != parent_run_contract_sha256
+            or run_contract.get("parent_joint_model_sha256")
+            != parent_joint_model_sha256
+        ):
+            raise ETTRTriEvaluationError("tri-stream run lineage differs")
+        return None
+    if not isinstance(composition, Mapping):
+        raise ETTRTriEvaluationError("component composition lineage differs")
+    parent_static = dict(parent_contract)
+    candidate_static = dict(run_contract)
+    parent_static.pop("source_commit", None)
+    candidate_static.pop("source_commit", None)
+    candidate_static.pop("component_composition", None)
+    components = composition.get("components")
+    if (
+        parent_contract.get("schema") != RUN_SCHEMA
+        or parent_static != candidate_static
+        or composition.get("kind") != COMPOSITION_KIND
+        or composition.get("optimizer_updates") != 0
+        or composition.get("parent_run_contract_sha256")
+        != parent_run_contract_sha256
+        or composition.get("parent_joint_model_sha256")
+        != parent_joint_model_sha256
+        or composition.get("source_commit")
+        != run_contract.get("source_commit")
+        or not isinstance(components, Mapping)
+        or set(components) != {"compiler", "reactor", "reader"}
+    ):
+        raise ETTRTriEvaluationError("component composition lineage differs")
+    for receipt in components.values():
+        if (
+            not isinstance(receipt, Mapping)
+            or set(receipt) != {"path", "sha256"}
+            or not isinstance(receipt["path"], str)
+            or not Path(receipt["path"]).is_absolute()
+            or not isinstance(receipt["sha256"], str)
+            or _HEX64.fullmatch(receipt["sha256"]) is None
+        ):
+            raise ETTRTriEvaluationError(
+                "component composition receipt differs"
+            )
+    return composition
+
+
+def _validate_model_lineage(
+    parent_payload: Mapping[str, object],
+    candidate_payload: Mapping[str, object],
+    *,
+    parent_run_contract_sha256: str,
+    run_contract_sha256: str,
+    run_contract: Mapping[str, object],
+    composition: Mapping[str, object] | None,
+) -> tuple[dict[str, object], dict[str, object]]:
+    parent_ettr_config = dict(parent_payload["ettr_config"])
+    candidate_ettr_config = dict(candidate_payload["ettr_config"])
+    parent_static_config = {
+        name: value
+        for name, value in parent_ettr_config.items()
+        if name
+        not in {
+            "execution_trace_read_scale",
+            "open_state_read_floor",
+            "valid_pointer_masks",
+        }
+    }
+    candidate_static_config = {
+        name: value
+        for name, value in candidate_ettr_config.items()
+        if name
+        not in {
+            "execution_trace_read_scale",
+            "open_state_read_floor",
+            "valid_pointer_masks",
+        }
+    }
+    if (
+        parent_payload.get("schema") != MODEL_SCHEMA
+        or candidate_payload.get("schema") != MODEL_SCHEMA
+        or parent_payload.get("run_contract_sha256")
+        != parent_run_contract_sha256
+        or candidate_payload.get("run_contract_sha256")
+        != run_contract_sha256
+        or candidate_payload.get("base_config")
+        != parent_payload.get("base_config")
+        or candidate_static_config != parent_static_config
+        or candidate_ettr_config != run_contract.get("model_config")
+    ):
+        raise ETTRTriEvaluationError("tri-stream model lineage differs")
+    if composition is not None:
+        parent_state = parent_payload.get("model")
+        candidate_state = candidate_payload.get("model")
+        if (
+            candidate_payload.get("initialization") != composition
+            or candidate_payload.get("optimizer_step")
+            != parent_payload.get("optimizer_step")
+            or candidate_payload.get("schedule")
+            != parent_payload.get("schedule")
+            or not isinstance(parent_state, Mapping)
+            or not isinstance(candidate_state, Mapping)
+        ):
+            raise ETTRTriEvaluationError(
+                "component composition model lineage differs"
+            )
+        parent_base = {
+            name: value
+            for name, value in parent_state.items()
+            if name.startswith("base.")
+        }
+        candidate_base = {
+            name: value
+            for name, value in candidate_state.items()
+            if name.startswith("base.")
+        }
+        if (
+            not parent_base
+            or set(parent_base) != set(candidate_base)
+            or any(
+                not torch.equal(parent_base[name], candidate_base[name])
+                for name in parent_base
+            )
+        ):
+            raise ETTRTriEvaluationError(
+                "component composition changed base weights"
+            )
+    return parent_ettr_config, candidate_ettr_config
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -146,19 +292,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         expected_sha256=args.run_contract_sha256,
         label="tri run contract",
     )
-    if (
-        parent_contract.get("schema") != PARENT_RUN_SCHEMA
-        or run_contract.get("schema") != RUN_SCHEMA
-        or run_contract.get("ettr_release_sha256")
-        != args.release_sha256
-        or run_contract.get("parent_run_contract_sha256")
-        != args.parent_run_contract_sha256
-        or run_contract.get("parent_joint_model_sha256")
-        != args.parent_joint_model_sha256
-    ):
-        raise ETTRTriEvaluationError(
-            "tri-stream run lineage differs"
-        )
+    composition = _validate_run_lineage(
+        parent_contract,
+        run_contract,
+        release_sha256=args.release_sha256,
+        parent_run_contract_sha256=args.parent_run_contract_sha256,
+        parent_joint_model_sha256=args.parent_joint_model_sha256,
+    )
     parent_payload = _load_joint_payload(
         args.parent_joint_model,
         expected_sha256=args.parent_joint_model_sha256,
@@ -167,40 +307,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.joint_model,
         expected_sha256=args.joint_model_sha256,
     )
-    parent_ettr_config = dict(parent_payload["ettr_config"])
-    candidate_ettr_config = dict(candidate_payload["ettr_config"])
-    parent_static_config = {
-        name: value
-        for name, value in parent_ettr_config.items()
-        if name not in {
-            "execution_trace_read_scale",
-            "open_state_read_floor",
-            "valid_pointer_masks",
-        }
-    }
-    candidate_static_config = {
-        name: value
-        for name, value in candidate_ettr_config.items()
-        if name not in {
-            "execution_trace_read_scale",
-            "open_state_read_floor",
-            "valid_pointer_masks",
-        }
-    }
-    if (
-        parent_payload.get("schema") != MODEL_SCHEMA
-        or parent_payload["run_contract_sha256"]
-        != args.parent_run_contract_sha256
-        or candidate_payload["run_contract_sha256"]
-        != args.run_contract_sha256
-        or candidate_payload["base_config"]
-        != parent_payload["base_config"]
-        or candidate_static_config != parent_static_config
-        or candidate_ettr_config != run_contract["model_config"]
-    ):
-        raise ETTRTriEvaluationError(
-            "tri-stream model lineage differs"
-        )
+    parent_ettr_config, candidate_ettr_config = _validate_model_lineage(
+        parent_payload,
+        candidate_payload,
+        parent_run_contract_sha256=args.parent_run_contract_sha256,
+        run_contract_sha256=args.run_contract_sha256,
+        run_contract=run_contract,
+        composition=composition,
+    )
 
     stream = ETTRV3StreamingRelease(
         args.release_root,
