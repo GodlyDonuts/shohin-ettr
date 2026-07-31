@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import torch
 
-from endogenous_typed_theory_reactor import TypedTheoryState
+from endogenous_typed_theory_reactor import ReactorTrace, TypedTheoryState
 from ettr_objectives import ETTRCausalQueryPair
 from probe_ettr_causal_queries import (
     _depth_bucket,
@@ -11,6 +11,8 @@ from probe_ettr_causal_queries import (
     _state_pair_rows,
     _state_summary,
     _summary,
+    _trace_pair_rows,
+    _trace_summary,
 )
 from probe_joint_ettr_causal_queries import _causal_shift
 
@@ -110,6 +112,43 @@ def test_state_pair_rows_separate_structure_from_disposition() -> None:
     summary = _state_summary(rows)
     assert summary["structural_state_equal_rate"] == 0.5
     assert summary["exact_state_equal_rate"] == 0.0
+
+
+def test_trace_pair_rows_separate_policy_from_applied_state() -> None:
+    def trace(policy_delta: float, applied_delta: float) -> ReactorTrace:
+        policy = torch.zeros(2, 1, 2)
+        policy[1, 0, 0] = policy_delta
+        applied = torch.zeros(2, 1, 2)
+        applied[1, 0, 0] = applied_delta
+        status = torch.zeros(2, 1)
+        return ReactorTrace(
+            opcode=policy,
+            source=policy.clone(),
+            target=policy.clone(),
+            relation=policy.clone(),
+            type_index=policy.clone(),
+            value_code=policy.clone(),
+            applied_opcode=applied,
+            applied_source=applied.clone(),
+            applied_target=applied.clone(),
+            applied_relation=applied.clone(),
+            applied_type_index=applied.clone(),
+            applied_value_code=applied.clone(),
+            active=applied.clone(),
+            committed=status,
+            halted=status.clone(),
+        )
+
+    correct = trace(1.0, 0.0)
+    foil = trace(0.0, 0.0)
+    rows = _trace_pair_rows(correct, foil, torch.tensor([0, 1]))
+    assert rows[0]["policy_trace_equal"] is True
+    assert rows[0]["applied_trace_equal"] is True
+    assert rows[1]["policy_trace_equal"] is False
+    assert rows[1]["applied_trace_equal"] is True
+    summary = _trace_summary(rows)
+    assert summary["policy_trace_equal_rate"] == 0.5
+    assert summary["applied_trace_equal_rate"] == 1.0
 
 
 def test_joint_causal_shift_preserves_signed_metric_deltas() -> None:

@@ -36,10 +36,11 @@ from eval_ettr_v3 import (
     _write_no_replace,
 )
 from probe_ettr_causal_queries import (
-    _objective_pairs,
+    _objective_pairs_and_traces,
     _pair_rows,
     _state_summary,
     _summary,
+    _trace_summary,
 )
 
 
@@ -292,6 +293,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         name: {"command": [], "world": []}
         for name in subjects
     }
+    causal_traces: dict[
+        str,
+        dict[str, list[dict[str, object]]],
+    ] = {
+        name: {"command": [], "world": []}
+        for name in subjects
+    }
     batch_reports = []
     packet_index = ETTRDiskPacketSufficiencyIndex(
         stream.packet_index_root
@@ -321,9 +329,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                     device_type="cuda",
                     dtype=torch.bfloat16,
                 ):
-                    pairs, state_pairs = _objective_pairs(
-                        models[name],
-                        batch,
+                    pairs, state_pairs, trace_pairs = (
+                        _objective_pairs_and_traces(
+                            models[name],
+                            batch,
+                        )
                     )
                 for kind in ("command", "world"):
                     causal_rows[name][kind].extend(
@@ -332,6 +342,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                     )
                     causal_states[name][kind].extend(
                         state_pairs[kind]
+                    )
+                    causal_traces[name][kind].extend(
+                        trace_pairs[kind]
                     )
             batch_reports.append(
                 {
@@ -356,6 +369,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "query": _summary(causal_rows[name][kind]),
                     "state": _state_summary(
                         causal_states[name][kind]
+                    ),
+                    "trace": _trace_summary(
+                        causal_traces[name][kind]
                     ),
                 }
                 for kind in ("command", "world")

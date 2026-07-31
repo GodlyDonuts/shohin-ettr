@@ -22,7 +22,7 @@ from tokenizers import Tokenizer
 from ettr_checkpoint import load_ettr_checkpoint
 from ettr_data_contract import ETTRContinuationBatch
 from ettr_episode import CausalETTREpisodeRunner, ETTREpisodeSegment
-from endogenous_typed_theory_reactor import TypedTheoryState
+from endogenous_typed_theory_reactor import ReactorTrace, TypedTheoryState
 from ettr_objectives import ETTRCausalQueryPair, ETTRObjectiveConfig
 from ettr_optimization import ETTROptimizerBundle
 from ettr_packet_index import ETTRDiskPacketSufficiencyIndex
@@ -86,6 +86,18 @@ def _objective_pairs(
     Mapping[str, ETTRCausalQueryPair],
     Mapping[str, list[dict[str, object]]],
 ]:
+    pairs, states, _ = _objective_pairs_and_traces(model, batch)
+    return pairs, states
+
+
+def _objective_pairs_and_traces(
+    model: torch.nn.Module,
+    batch: ETTRContinuationBatch,
+) -> tuple[
+    Mapping[str, ETTRCausalQueryPair],
+    Mapping[str, list[dict[str, object]]],
+    Mapping[str, list[dict[str, object]]],
+]:
     runner = CausalETTREpisodeRunner(model)
     steps = batch.transaction_targets.opcode.shape[1]
     output = runner(
@@ -130,6 +142,18 @@ def _objective_pairs(
             "world": _state_pair_rows(
                 interventions.world_terminal_state,
                 output.terminal_state,
+                world_command,
+            ),
+        },
+        {
+            "command": _trace_pair_rows(
+                interventions.command_trace,
+                output.trace,
+                command_packet,
+            ),
+            "world": _trace_pair_rows(
+                interventions.world_trace,
+                output.trace,
                 world_command,
             ),
         },
@@ -201,6 +225,72 @@ def _state_pair_rows(
                     field_l1[name] == 0.0
                     for name in fields
                     if name not in {"committed", "halted"}
+                ),
+            }
+        )
+    return rows
+
+
+def _trace_pair_rows(
+    correct: ReactorTrace,
+    foil_population: ReactorTrace,
+    foil_index: torch.Tensor,
+) -> list[dict[str, object]]:
+    probability_fields = (
+        "opcode",
+        "source",
+        "target",
+        "relation",
+        "type_index",
+        "value_code",
+    )
+    applied_fields = (
+        "applied_opcode",
+        "applied_source",
+        "applied_target",
+        "applied_relation",
+        "applied_type_index",
+        "applied_value_code",
+        "active",
+        "committed",
+        "halted",
+    )
+    fields = probability_fields + applied_fields
+    correct_values = {
+        name: getattr(correct, name).detach().float().cpu()
+        for name in fields
+    }
+    foil_values = {
+        name: (
+            getattr(foil_population, name)
+            .index_select(0, foil_index)
+            .detach()
+            .float()
+            .cpu()
+        )
+        for name in fields
+    }
+    rows = []
+    for index in range(foil_index.shape[0]):
+        field_l1 = {
+            name: float(
+                (
+                    correct_values[name][index]
+                    - foil_values[name][index]
+                )
+                .abs()
+                .sum()
+            )
+            for name in fields
+        }
+        rows.append(
+            {
+                "applied_trace_equal": all(
+                    field_l1[name] == 0.0 for name in applied_fields
+                ),
+                "field_l1": field_l1,
+                "policy_trace_equal": all(
+                    field_l1[name] == 0.0 for name in probability_fields
                 ),
             }
         )
@@ -370,6 +460,28 @@ def _state_summary(
         ),
         "structural_state_equal_rate": _rate(
             [bool(row["structural_state_equal"]) for row in rows]
+        ),
+    }
+
+
+def _trace_summary(
+    rows: Sequence[Mapping[str, object]],
+) -> dict[str, object]:
+    if not rows:
+        raise ETTRV3EvaluationError("causal-query trace population differs")
+    fields = tuple(rows[0]["field_l1"])
+    return {
+        "applied_trace_equal_rate": _rate(
+            [bool(row["applied_trace_equal"]) for row in rows]
+        ),
+        "count": len(rows),
+        "field_l1_means": {
+            name: sum(float(row["field_l1"][name]) for row in rows)
+            / len(rows)
+            for name in fields
+        },
+        "policy_trace_equal_rate": _rate(
+            [bool(row["policy_trace_equal"]) for row in rows]
         ),
     }
 
