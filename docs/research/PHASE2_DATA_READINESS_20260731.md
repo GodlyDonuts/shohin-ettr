@@ -26,7 +26,8 @@ privacy, deduplication, holdout, and equal-token utility gates.
   score-4+ selection**. Tokenization completed, but the original job failed
   closed on a transient Lustre identity change during final verification.
   Recovery verifier `757374` is active; exact-document review `757375` is
-  dependency-held.
+  dependency-held. Exact cross-source audit `757376` is then dependency-held
+  behind the review with an immutable five-corpus retention-priority spec.
 - No new candidate is silently mixed into training. Current ETTR experiments
   use only the frozen audited release.
 
@@ -37,7 +38,7 @@ privacy, deduplication, holdout, and equal-token utility gates.
 | Historical FineMath/OpenWebMath/Python | 62,426,256,278 tokens | manifest scans, evaluation decontamination, stable token streams | legacy streams lack v3 document ledgers; FineMath nesting and cross-source uniqueness cannot be claimed without reconstruction | admitted historical stream |
 | ETTR packet-v2 train | 40,000 cores; 2,560,000 rows; 1,351,680,000 charged positions | complete qualification, materialization, independent audits, main/confirmation separation, exact packet-context audit, immutable release | learning recipe must replicate causal WORLD and COMMAND effects across both seeds | admitted ETTR stream |
 | peS2o balanced sensitive residual | 4,350,429,033 tokens; 718,586 documents | pinned OA licenses, domain balancing, two physical verifications, 1,000-document exact review, three credential-bearing rows removed, complete zero-exclusion rescan | exact/near cross-source residualization, train/document/domain split, full partition audits, cross-holdout and equal-token utility | quarantined candidate |
-| FineWeb-Edu score 4+ | 8,763,527,685 tokens; 7,759,205 documents | pinned 140-file source, strict score/language/length/repetition/boilerplate/extraction filters, exact deduplication, domain cap, evaluation decontamination, complete v3 manifest | recovery verification and publication, exact retained review, semantic/human gate, exact/near residualization, holdouts, privacy, utility | quarantined partial; jobs `757374 -> 757375` |
+| FineWeb-Edu score 4+ | 8,763,527,685 tokens; 7,759,205 documents | pinned 140-file source, strict score/language/length/repetition/boilerplate/extraction filters, exact deduplication, domain cap, evaluation decontamination, complete v3 manifest | recovery verification and publication, exact retained review, semantic/human gate, exact/near residualization, holdouts, privacy, utility | quarantined partial; jobs `757374 -> 757375 -> 757376` |
 | FinePDFs-Edu English parent | 6,085,701,378 tokens; 2,022,608 documents | pinned physical source, complete v3 verification, 10,000-document exact review | wholesale source rejected; use selected policy arms only | rejected wholesale |
 | FinePDF core policy arm | 100,004,847 tokens; 31,702 documents | sealed v3 corpus, exact 1,000-document review, reviewer-blind matched packet | complete human labels, exact/near residualization, holdouts, privacy/license audit, identical-start utility | quarantined challenger |
 | FinePDF residual policy arm | 100,000,971 tokens; 29,641 documents | sealed v3 corpus, exact 1,000-document review, reviewer-blind matched packet | same as core arm; core currently appears denser but has not cleared the human gate | quarantined control |
@@ -87,3 +88,8 @@ This is not compute hesitation. It is avoiding an expensive scale-up of a
 non-replicating mechanism while all available verified H100s run identifiable
 experiments and the CPU data lane advances independently.
 
+The exact residualization priority is frozen as: peS2o sensitive residual,
+Essential-Web reasoning core, FinePDF core, Formal Logic, then FineWeb-Edu.
+This order preserves higher-confidence and rarer technical sources when exact
+documents collide. The tracked specification SHA-256 is
+`5fffc5e25afd40a4146e5c318af3597ab10466761be2a2a9ffe1344ae376364e`.

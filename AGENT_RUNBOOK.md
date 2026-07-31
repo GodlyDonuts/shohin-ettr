@@ -20606,3 +20606,45 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `keep_every_verified_h100_on_identifiable_ettr_replication_recover_completed_fineweb_bytes_without_weakening_general_data_admission`.
+
+- **2026-07-31 04:00--04:15 EDT** -- **The ETTR failure is localized to a
+  seed-sensitive causal shortcut rather than ordinary optimization failure,
+  while the exact five-source data residualization chain is frozen and
+  dependency-bound.**
+
+  Newton still has nine physically verified H100 writers running:
+  `723879--723884`, `723894`, and `723904/723905`. At the latest audit the
+  own-reader factor-balanced horizon-eight pair had reached update `1,750`;
+  the frozen-reader pair update `1,800`; the swapped-reader pair updates
+  `1,700/1,600`; the lower-rate seed-1 arm update `1,150`; and the
+  eight-anchor pair updates `800/750`. Every latest metric is finite.
+  Jobs `723922--723926` remain queued; no completed writer or new
+  source-deleted report is being claimed.
+
+  Baseline and horizon-eight source-deleted reports were compared at the
+  component level. Seed 2 has *lower* WORLD and COMMAND query losses than
+  seed 1 while retaining zero strict difference-in-differences margins.
+  Baseline seed-1 WORLD/COMMAND losses were `1.4517/1.5186`, with positive
+  rates `0.78125%/8.125%`; baseline seed 2 had lower
+  `0.8907/1.0542` losses but zero rates. Horizon-eight seed 1 had
+  `1.4529/1.5374` losses with rates `1.5625%/0.625%`; seed 2 again had
+  lower `0.8857/1.0485` losses with zero rates. This rules out the simple
+  story that seed 2 merely failed to optimize. The leading diagnosis is that
+  classification learned the answer marginal or a symmetric shortcut while
+  ignoring the state intervention. Continuous probe jobs `723925/723926`
+  remain the registered test of whether seed 2 has sub-threshold causal
+  geometry or complete intervention collapse.
+
+  Stokes recovery verifier `757374` is running against the complete
+  **8,763,527,685-token / 7,759,205-document** FineWeb-Edu payload.
+  Exact-document review `757375` remains `afterok:757374`. Exact
+  cross-source audit `757376` is now `afterok:757375`, using the frozen
+  retention order peS2o sensitive residual, Essential-Web reasoning core,
+  FinePDF core, Formal Logic, then FineWeb-Edu. The tracked corpus-spec
+  SHA-256 is
+  `5fffc5e25afd40a4146e5c318af3597ab10466761be2a2a9ffe1344ae376364e`.
+  No source is admitted by these jobs alone; near-duplicate, holdout,
+  privacy/license, and equal-token utility gates remain mandatory.
+
+  Decision:
+  `treat_seed2_as_an_intervention_ignoring_shortcut_not_a_low_loss_success_finish_the_matched_factorial_then_if_needed_raise_direct_causal_contrast_weight_without_mixing_unverified_general_data`.

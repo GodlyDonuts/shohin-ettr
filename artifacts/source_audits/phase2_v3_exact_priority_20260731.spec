@@ -1,0 +1,5 @@
+pes2o=/lustre/fs1/home/sa305415/shohin/artifacts/shards/pes2o_domain_balanced_50m_r1_sensitive_residual_v1::/lustre/fs1/home/sa305415/shohin/scratchpad/shohin_finepdf_policy_runtime_bed4596_r3/pipeline/materialize_sensitive_residual.py
+essential_web=/lustre/fs1/home/sa305415/shohin/artifacts/shards/essential_web_reasoning_core_1b::/lustre/fs1/home/sa305415/shohin/scratchpad/shohin_essential_runtime_e8d59eb/pipeline/tokenize_shards.py
+finepdf_core=/lustre/fs1/home/sa305415/shohin/artifacts/shards/finepdfs_edu_eng_policy_core_100m_bed4596::/lustre/fs1/home/sa305415/shohin/scratchpad/shohin_finepdf_policy_runtime_bed4596_r3/pipeline/tokenize_shards.py
+formal_logic=/lustre/fs1/home/sa305415/shohin/artifacts/shards/nemotron_formal_logic_13fa979_challenger_128m::/lustre/fs1/home/sa305415/shohin/scratchpad/shohin_essential_runtime_e8d59eb/pipeline/tokenize_shards.py
+fineweb=/lustre/fs1/home/sa305415/shohin/artifacts/shards/fineweb_edu_score4_core_10b_r2::/lustre/fs1/home/sa305415/shohin/scratchpad/shohin_ettr_fineweb_r2_49a5584/pipeline/tokenize_shards.py
