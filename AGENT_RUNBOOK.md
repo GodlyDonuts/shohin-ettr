@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-30 19:16 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-30 21:36 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -20004,3 +20004,77 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `detached_motor_rejected_output_not_sole_bottleneck_progressive_self_state_coupling_is_next_bounded_two_seed_gate`.
+
+- **2026-07-30 19:16--21:36 EDT** -- **The first progressive pilot proved
+  ordinary assembly loss is learnable but not causally compositional;
+  counterfactual interface coupling is now stable, fast on-device, and
+  running as an eight-configuration replicated H100 tournament.**
+
+  Both original 1,000-update progressive assemblies substantially reduced
+  held-out total loss but failed the strict causal gate: neither seed
+  established both positive WORLD and COMMAND margins. That result rejects
+  blind scaling of scheduled exact/self-state replacement. Commits
+  `634dc7610ada69d718fdf07a44ebf77fb9748252`,
+  `88336a587a6d27295425071053448050562e6e97`,
+  `92f8f0a7394addfaaac21ac6dffad8c070324bd0`,
+  `b31587535648c47b5c8616ea4c83c6bb878fd148`, and
+  `549c7bd40d012ac8801dd01030c311e82e2a1413` therefore add matched
+  counterfactual state finite differences, device-resident delta losses,
+  sparse rotating exact anchors, support-aware anchor placement, four-step
+  truncated recurrent causal credit, and phase timing.
+
+  Real H100 smokes from the exact two component seeds are finite and
+  source-deleted. With four support-aware anchors and a four-transition
+  credit horizon, seed 1's pre-clip gradient norm fell from approximately
+  `9,152` under unsupported anchors to `89.5`; seed 2's norm was `29.5`.
+  Both seeds now receive nonzero reactor-delta supervision. Their one-update
+  reports are respectively SHA-256
+  `6ac9bac81ed80f64b640b03a2e9f2a12f32beec2dfe76baab0602ed92a0650c7`
+  and
+  `26a44b148af3e5df85067900bf371d57ee71638d7776a5b756cf42f5951c25d9`.
+  Exact-runtime phase profiles then showed only `1.8651` and `1.8812`
+  seconds of model work per update, with about one second in backward and
+  less than one second in reactor/anchor execution. Profile-report SHA-256
+  values are
+  `352210ae4583312fddee7c95d60908b5239c364544e724ad763ccd94e3627635`
+  and
+  `ada7c3ce553ff10cc4d6f8d2c826f8753247218319d13345f4be20df1b19c2f2`.
+
+  A separate CPU timing probe localized the apparent eight-minute update
+  cost. Release initialization took `2.8760s`, packet-index initialization
+  `0.5870s`, and replay from the epoch start to immutable position 20,000
+  took `413.5926s` once. After that audit, the next materialized batch took
+  only `0.03946s` and packet-sufficiency verification `0.03636s`. This is
+  one-time resume custody, not per-update I/O. Preserve the checks; amortize
+  them over credible runs.
+
+  The 2-H100 reservation `723325` now runs the paired baseline: each seed
+  receives 5,000 updates starting at immutable position 20,000, with 500
+  exact-state warmup updates, a 3,500-update ramp, and a final 1,000-update
+  fully autonomous plateau. Learning rates are compiler `3e-5`, reactor
+  `5e-5`, reader `3e-5`; counterfactual weight is `2`; anchors and credit
+  horizon are both `4`. The 10-H100 allocation `722179` was converted into
+  paired lower-rate, higher-rate, delta-weight-4, eight-anchor, and
+  eight-step-credit arms. Hardware inspection found `evc33` unusable
+  (`nvidia-smi` hangs) and only one visible H100 on nominally two-GPU
+  `evc44`; the healthy `evc23`, `evc42`, and `evc45` pairs run the lower-rate,
+  delta-weight-4, and horizon-8 arms. The one healthy `evc44` H100 runs
+  high-rate seed 1 pending a second healthy GPU for its replicate.
+
+  Four completed component reservations were safely repurposed without
+  interrupting active work. Jobs `723561`/`723562` run the paired combined
+  delta-4/anchor-8/horizon-8 arm, while `723569`/`723570` run a paired arm
+  with a 2,000-update fully autonomous plateau. Jobs `723565`/`723566`
+  continue their useful corrected reactor work. Thus 15 physically usable
+  H100s are doing useful work at this instant: 13 causal-coupling tournament
+  trainers and two reactors. Three nominal devices are not currently usable:
+  both on `evc33` and the missing second device on `evc44`.
+
+  Do not promote by training loss. When each paired arm finishes, run the
+  exact 32-batch source-deleted assembly evaluator and rank first by
+  replicated WORLD plus COMMAND causal margins, then paired total-loss
+  improvement and stability. Fill high-rate seed 2 and the paired anchor-8
+  arm on the first healthy GPUs released by the reactor continuations.
+
+  Decision:
+  `u2000_underbudgeted_noncausal_pilot_counterfactual_coupling_stable_model_update_fast_run_replicated_u5000_tournament_and_promote_only_on_source_deleted_causal_margins`.
