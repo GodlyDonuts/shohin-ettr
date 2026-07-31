@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-31 16:22 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-31 17:09 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -21491,3 +21491,58 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `retain_stage_reader_7_of_496_as_the_locked_native_floor_and_train_the_reader_on_the_exact_autonomous_terminal_distribution_before_changing_the_state_architecture`.
+
+- **2026-07-31 16:22--17:09 EDT** -- **Oracle-reader scale and
+  autonomous-reader calibration both close negative; balanced reactor seed 1
+  becomes the strongest direct actuator and advances to the autonomous
+  source-deleted gate.**
+
+  Normalized oracle-reader jobs `724589/724590` completed at learning rates
+  `1e-3/2e-3`. Neither produces a held-out WORLD or COMMAND margin above
+  `0.1`; strict joint and paired-order accuracy remain zero. Report SHA-256
+  values are
+  `6118d6cf4146eaa89265b403b6c08faf80f3577556bebf07f5e6437910ee9c53`
+  and
+  `ac79d446492d603244e313d19fd9649d73180bcfcde3b804f1462be58e997290`.
+  The first arm repeatedly encounters very large clipped gradients; the
+  second saturates to near-zero training loss without a held-out effect.
+  Additional oracle-terminal reader scale is therefore rejected.
+
+  Autonomous-terminal reader jobs `724686/724687` also completed at
+  `1e-5/3e-5`. The stronger rate-3 report is
+  `train/ettr_joint_component_i94e01_reader_autopostnorm_lr03_u2000_9947374/report.json`,
+  SHA-256
+  `241f96e0c82dd586b4b7573f6a789f4f11471d9a17919811c7e62f8fcacb55e4`;
+  component SHA-256 is
+  `438225e1762e39d068ec28ac3af941d1814e4ff3c8a649c66f176ac6fd499043`.
+  On held-out hard autonomous terminal states it reaches WORLD/COMMAND
+  margin-at-0.1 `7.5%/11.36%` with maxima `1.0`, but correct and foil top-1
+  remain exactly `50%` and strict joint/paired-order remain zero. The lower
+  rate reaches only `4.17%/5.56%` at margin 0.1. Training on the deployment
+  distribution improves sensitivity but cannot recover semantics from
+  insufficient terminal state. The stage-reader `7/496` WORLD result remains
+  the locked native floor.
+
+  Class-balanced reactor jobs `724467/724468` completed with divergent seed
+  behavior. Seed 1 is the direct interface winner: joint transaction
+  `14.905%`, opcode `77.910%`, source `33.997%`, target `21.154%`, relation
+  `21.795%`, and value-code `35.129%`. Its component SHA-256 is
+  `da93628ea17eedb1bd7859a80a22d3cfe47e528ec39d2cce5290a462c8cb1fa3`;
+  report SHA-256 is
+  `3e8af502664abddc9873a50080de91301da7d879b7f5e6c8d641872b8bf051d4`.
+  Seed 2 is weaker at `8.418%` joint. Composition job `724712` sealed compiler
+  seed 2, balanced reactor seed 1, and the locked stage reader; source-deleted
+  evaluation `724713` is pending normal-partition priority. Separately,
+  jobs `724709/724710` warm-start the prior `11.1735%` reactor and apply a
+  lower-rate balanced continuation on fresh positions. This tests whether
+  rare-target gains can be added without erasing the prior policy.
+
+  V9 public board `724457` completed: GSM8K maj@8 `18/200 = 9.0%`,
+  GSM8K pass@1 `19/200 = 9.5%`, MATH-500 `6/200 = 3.0%`, HumanEval
+  `4/164 = 2.44%`, and MBPP `0/200`. This is a real arithmetic-language gain
+  over raw 300k but not broad competence. `preemptable` is authorized but its
+  test-only estimate is later than normal; `short` and `highgpu` still reject
+  the account/partition combination. Do not claim unavailable capacity.
+
+  Decision:
+  `reject_more_reader_only_scale_prioritize_autonomous_reactor_composition_and_keep_7_of_496_as_the_strict_floor_until_a_source_deleted_gate_beats_it`.
