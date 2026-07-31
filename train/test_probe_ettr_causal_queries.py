@@ -3,7 +3,11 @@ from __future__ import annotations
 import torch
 
 from endogenous_typed_theory_reactor import ReactorTrace, TypedTheoryState
-from ettr_objectives import ETTRCausalQueryPair
+from ettr_objectives import (
+    ETTRCausalQueryPair,
+    ETTRTransactionPredictions,
+    ETTRTransactionTargets,
+)
 from probe_ettr_causal_queries import (
     _depth_bucket,
     _pair_rows,
@@ -13,6 +17,8 @@ from probe_ettr_causal_queries import (
     _summary,
     _trace_pair_rows,
     _trace_summary,
+    _transaction_geometry_row,
+    _transaction_geometry_summary,
 )
 from probe_joint_ettr_causal_queries import _causal_shift
 
@@ -149,6 +155,49 @@ def test_trace_pair_rows_separate_policy_from_applied_state() -> None:
     summary = _trace_summary(rows)
     assert summary["policy_trace_equal_rate"] == 0.5
     assert summary["applied_trace_equal_rate"] == 1.0
+
+
+def test_transaction_geometry_localizes_premature_terminal_opcode() -> None:
+    def categorical(
+        labels: torch.Tensor,
+        classes: int,
+    ) -> torch.Tensor:
+        return torch.nn.functional.one_hot(
+            labels,
+            num_classes=classes,
+        ).float()
+
+    targets = ETTRTransactionTargets(
+        opcode=torch.tensor([[1, 6], [1, 6]]),
+        source=torch.tensor([[0, 0], [1, 0]]),
+        target=torch.zeros(2, 2, dtype=torch.long),
+        relation=torch.zeros(2, 2, dtype=torch.long),
+        type_index=torch.zeros(2, 2, dtype=torch.long),
+        value_code=torch.tensor([[2, 0], [3, 0]]),
+        committed=torch.tensor([[False, True], [False, True]]),
+        halted=torch.zeros(2, 2, dtype=torch.bool),
+        step_mask=torch.ones(2, 2, dtype=torch.bool),
+    )
+    predicted_opcode = torch.tensor([[6, 6], [1, 6]])
+    prediction = ETTRTransactionPredictions(
+        opcode=categorical(predicted_opcode, 9),
+        source=categorical(targets.source, 2),
+        target=categorical(targets.target, 2),
+        relation=categorical(targets.relation, 2),
+        type_index=categorical(targets.type_index, 2),
+        value_code=categorical(targets.value_code, 4),
+        active=torch.ones(2, 2, 2),
+        committed=targets.committed.float(),
+        halted=targets.halted.float(),
+    )
+    row = _transaction_geometry_row(prediction, targets)
+    summary = _transaction_geometry_summary([row, row])
+    assert summary["fields"]["opcode"]["top1_accuracy"] == 0.75
+    assert summary["fields"]["source"]["top1_accuracy"] == 1.0
+    assert summary["complete_transaction_accuracy"] == 0.75
+    assert summary["premature_terminal_rate"] == 0.5
+    assert summary["predicted_opcode_counts"] == [0, 2, 0, 0, 0, 0, 6, 0, 0]
+    assert summary["target_opcode_counts"] == [0, 4, 0, 0, 0, 0, 4, 0, 0]
 
 
 def test_joint_causal_shift_preserves_signed_metric_deltas() -> None:

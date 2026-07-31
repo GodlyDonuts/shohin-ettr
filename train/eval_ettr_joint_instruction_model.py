@@ -36,15 +36,16 @@ from eval_ettr_v3 import (
     _write_no_replace,
 )
 from probe_ettr_causal_queries import (
-    _objective_pairs_and_traces,
+    _objective_geometry,
     _pair_rows,
     _state_summary,
     _summary,
     _trace_summary,
+    _transaction_geometry_summary,
 )
 
 
-REPORT_SCHEMA = "shohin-ettr-tri-paired-development-evaluation-v2"
+REPORT_SCHEMA = "shohin-ettr-tri-paired-development-evaluation-v3"
 RUN_SCHEMA = "shohin-ettr-tri-stream-canary-v1"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
@@ -314,6 +315,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         name: {"command": [], "world": []}
         for name in subjects
     }
+    transaction_rows: dict[
+        str,
+        dict[str, list[dict[str, object]]],
+    ] = {
+        name: {
+            "factual": [],
+            "world_intervention": [],
+            "command_intervention": [],
+        }
+        for name in subjects
+    }
     batch_reports = []
     packet_index = ETTRDiskPacketSufficiencyIndex(
         stream.packet_index_root
@@ -343,11 +355,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                     device_type="cuda",
                     dtype=torch.bfloat16,
                 ):
-                    pairs, state_pairs, trace_pairs = (
-                        _objective_pairs_and_traces(
-                            models[name],
-                            batch,
-                        )
+                    (
+                        pairs,
+                        state_pairs,
+                        trace_pairs,
+                        transaction_geometry,
+                    ) = _objective_geometry(
+                        models[name],
+                        batch,
                     )
                 for kind in ("command", "world"):
                     causal_rows[name][kind].extend(
@@ -360,6 +375,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                     causal_traces[name][kind].extend(
                         trace_pairs[kind]
                     )
+                for kind, row in transaction_geometry.items():
+                    transaction_rows[name][kind].append(row)
             batch_reports.append(
                 {
                     "batch_payload_sha256": batch_sha256,
@@ -389,6 +406,16 @@ def main(argv: Sequence[str] | None = None) -> int:
                     ),
                 }
                 for kind in ("command", "world")
+            },
+            "transaction_geometry": {
+                kind: _transaction_geometry_summary(
+                    transaction_rows[name][kind]
+                )
+                for kind in (
+                    "factual",
+                    "world_intervention",
+                    "command_intervention",
+                )
             },
             "parameter_sha256": _parameter_sha256(models[name]),
         }

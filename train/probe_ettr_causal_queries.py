@@ -23,7 +23,13 @@ from ettr_checkpoint import load_ettr_checkpoint
 from ettr_data_contract import ETTRContinuationBatch
 from ettr_episode import CausalETTREpisodeRunner, ETTREpisodeSegment
 from endogenous_typed_theory_reactor import ReactorTrace, TypedTheoryState
-from ettr_objectives import ETTRCausalQueryPair, ETTRObjectiveConfig
+from ettr_objectives import (
+    ETTRCausalQueryPair,
+    ETTRObjectiveConfig,
+    ETTRTransactionPredictions,
+    ETTRTransactionTargets,
+    _operand_masks,
+)
 from ettr_optimization import ETTROptimizerBundle
 from ettr_packet_index import ETTRDiskPacketSufficiencyIndex
 from ettr_v3_streaming import ETTRV3StreamingRelease, move_continuation_batch
@@ -98,6 +104,19 @@ def _objective_pairs_and_traces(
     Mapping[str, list[dict[str, object]]],
     Mapping[str, list[dict[str, object]]],
 ]:
+    pairs, states, traces, _ = _objective_geometry(model, batch)
+    return pairs, states, traces
+
+
+def _objective_geometry(
+    model: torch.nn.Module,
+    batch: ETTRContinuationBatch,
+) -> tuple[
+    Mapping[str, ETTRCausalQueryPair],
+    Mapping[str, list[dict[str, object]]],
+    Mapping[str, list[dict[str, object]]],
+    Mapping[str, dict[str, object]],
+]:
     runner = CausalETTREpisodeRunner(model)
     steps = batch.transaction_targets.opcode.shape[1]
     output = runner(
@@ -157,7 +176,143 @@ def _objective_pairs_and_traces(
                 world_command,
             ),
         },
+        {
+            "factual": _transaction_geometry_row(
+                objective.transactions,
+                objective.transaction_targets,
+            ),
+            "world_intervention": _transaction_geometry_row(
+                objective.world_intervention_transactions,
+                objective.world_intervention_transaction_targets,
+            ),
+            "command_intervention": _transaction_geometry_row(
+                objective.command_intervention_transactions,
+                objective.command_intervention_transaction_targets,
+            ),
+        },
     )
+
+
+def _transaction_geometry_row(
+    prediction: ETTRTransactionPredictions,
+    targets: ETTRTransactionTargets,
+) -> dict[str, object]:
+    names = (
+        "opcode",
+        "source",
+        "target",
+        "relation",
+        "type_index",
+        "value_code",
+    )
+    masks = _operand_masks(targets)
+    exact = targets.step_mask.clone()
+    fields: dict[str, dict[str, float | int]] = {}
+    for name, mask in zip(names, masks, strict=True):
+        probabilities = getattr(prediction, name).detach().float()
+        labels = getattr(targets, name)
+        choices = probabilities.argmax(-1)
+        correct = choices.eq(labels)
+        exact &= ~mask | correct
+        fields[name] = {
+            "correct": int((correct & mask).sum().cpu()),
+            "support": int(mask.sum().cpu()),
+            "target_probability_sum": float(
+                probabilities.gather(-1, labels.unsqueeze(-1))
+                .squeeze(-1)
+                .masked_select(mask)
+                .sum()
+                .cpu()
+            ),
+        }
+    for name in ("committed", "halted"):
+        mask = targets.step_mask
+        probabilities = getattr(prediction, name).detach().float()
+        labels = getattr(targets, name)
+        choices = probabilities.ge(0.5)
+        correct = choices.eq(labels)
+        exact &= correct
+        fields[name] = {
+            "correct": int((correct & mask).sum().cpu()),
+            "support": int(mask.sum().cpu()),
+            "target_probability_sum": float(
+                torch.where(labels, probabilities, 1.0 - probabilities)
+                .masked_select(mask)
+                .sum()
+                .cpu()
+            ),
+        }
+    opcode_choices = prediction.opcode.detach().float().argmax(-1)
+    valid = targets.step_mask
+    nonterminal_target = valid & targets.opcode.lt(6)
+    return {
+        "complete_correct": int((exact & valid).sum().cpu()),
+        "complete_support": int(valid.sum().cpu()),
+        "fields": fields,
+        "predicted_opcode_counts": [
+            int(((opcode_choices == index) & valid).sum().cpu())
+            for index in range(prediction.opcode.shape[-1])
+        ],
+        "premature_terminal": int(
+            (opcode_choices.ge(6) & nonterminal_target).sum().cpu()
+        ),
+        "premature_terminal_support": int(nonterminal_target.sum().cpu()),
+        "target_opcode_counts": [
+            int(((targets.opcode == index) & valid).sum().cpu())
+            for index in range(prediction.opcode.shape[-1])
+        ],
+    }
+
+
+def _transaction_geometry_summary(
+    rows: Sequence[Mapping[str, object]],
+) -> dict[str, object]:
+    if not rows:
+        raise ETTRV3EvaluationError(
+            "transaction geometry population differs"
+        )
+    field_names = tuple(rows[0]["fields"])
+    field_summary = {}
+    for name in field_names:
+        correct = sum(int(row["fields"][name]["correct"]) for row in rows)
+        support = sum(int(row["fields"][name]["support"]) for row in rows)
+        probability_sum = sum(
+            float(row["fields"][name]["target_probability_sum"])
+            for row in rows
+        )
+        field_summary[name] = {
+            "mean_target_probability": (
+                probability_sum / support if support else None
+            ),
+            "support": support,
+            "top1_accuracy": correct / support if support else None,
+        }
+    complete_correct = sum(int(row["complete_correct"]) for row in rows)
+    complete_support = sum(int(row["complete_support"]) for row in rows)
+    premature = sum(int(row["premature_terminal"]) for row in rows)
+    premature_support = sum(
+        int(row["premature_terminal_support"]) for row in rows
+    )
+    opcode_count = len(rows[0]["predicted_opcode_counts"])
+    return {
+        "complete_transaction_accuracy": complete_correct / complete_support,
+        "complete_transaction_support": complete_support,
+        "fields": field_summary,
+        "predicted_opcode_counts": [
+            sum(int(row["predicted_opcode_counts"][index]) for row in rows)
+            for index in range(opcode_count)
+        ],
+        "premature_terminal_rate": (
+            premature / premature_support
+            if premature_support
+            else None
+        ),
+        "premature_terminal_support": premature_support,
+        "target_opcode_counts": [
+            sum(int(row["target_opcode_counts"][index]) for row in rows)
+            for index in range(opcode_count)
+        ],
+    }
 
 
 def _state_pair_rows(
