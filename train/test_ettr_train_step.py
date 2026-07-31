@@ -41,12 +41,13 @@ def _trainer(
     compile_backend: str | None = None,
     compile_mode: str | None = None,
     warmup_updates: int = 1,
+    train_base: bool = False,
 ) -> tuple[ETTRTrainStep, ETTRContinuationBatch]:
     model = _runner().model
     optimizer = ETTROptimizerBundle(
         model,
         ETTROptimizerConfig(
-            train_base=False,
+            train_base=train_base,
             warmup_updates=warmup_updates,
             total_updates=10,
         ),
