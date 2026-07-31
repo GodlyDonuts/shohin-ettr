@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-31 11:45 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-31 11:57 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -21111,3 +21111,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `repair_and_measure_discrete_program_selection_and_operand_routing_before_any_further_reader_or_trace_bus_promotion`.
+
+- **2026-07-31 11:45--11:57 EDT** -- **A training-only transaction-imitation
+  auxiliary is sealed as the next compounding-error test; two matched doses
+  are queued without changing autonomous inference.**
+
+  Historical component-island evidence already established that the reactor
+  can learn local next transactions when the exact initial packet and every
+  prior transaction are supplied during training. The current free-running
+  controller factorial determines whether valid pointer masks and balanced
+  loss are sufficient without that curriculum. To avoid losing another
+  scheduling window if they are not, private commit
+  `0bba8465a29da7186bb0dcd6108e2bb61a038f32` adds an optional
+  `teacher_forced_transaction_weight` to the ordinary joint ETTR update.
+  The auxiliary predicts every transaction from the exact supervised prior
+  state, advances only its private imitation state with the target
+  transaction, and adds its class-balanced transaction loss to the existing
+  autonomous objective. It does not change model parameters, inference
+  methods, the autonomous rollout, or any evaluator; its default is zero.
+
+  The focused train-step/objective/reactor/job suite passes **80/80** with
+  clean Ruff, byte compilation, Bash syntax, and diff checks. Immutable
+  Newton runtime
+  `scratchpad/shohin_ettr_joint_runtime_0bba846_r1` contains 3,356 measured
+  files and has `SHA256SUMS` SHA-256
+  `3e04915b40d6e511ef6620dc13255549cf75bcad3237b3a94eecce87662f7e78`.
+  Matched 500-update doses `1` and `4` are jobs `724307/724309`;
+  autonomous actuator evaluators are `724308/724310`. Both use the exact
+  state-anchor parent, seed, data, position mix, hard execution, exact
+  applied-opcode pointer masks, head/class-balanced transaction loss, and
+  causal-query objective used by `724302`; only the training-only auxiliary
+  dose differs. Promote neither by training loss. Require source/target and
+  complete-transaction gains under autonomous evaluation, followed by
+  nonzero source-deleted WORLD and COMMAND effects.
+
+  Decision:
+  `use_exact_prior_state_only_as_a_training_curriculum_and_require_all_claims_to_survive_oracle_free_closed_loop_evaluation`.
