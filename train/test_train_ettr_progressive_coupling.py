@@ -7,8 +7,12 @@ import torch
 from torch import nn
 
 from endogenous_typed_theory_reactor import TypedTheoryState
+import train_ettr_progressive_coupling as progressive
 from train_ettr_progressive_coupling import (
     ETTRProgressiveCouplingError,
+    _distributed_environment,
+    _distributed_mean,
+    _distributed_parameter_sha256,
     _validate_args,
     deterministic_autonomous_choice,
     deterministic_exact_anchor_steps,
@@ -404,3 +408,66 @@ def test_progressive_arguments_bind_schedule_hashes_and_absolute_paths(
         match="arguments differ",
     ):
         _validate_args(arguments)
+
+
+def test_distributed_environment_binds_rank_and_local_device(
+    monkeypatch,
+) -> None:
+    values = {"RANK": "3", "WORLD_SIZE": "4", "LOCAL_RANK": "1"}
+    for name, value in values.items():
+        monkeypatch.setenv(name, value)
+    calls = []
+    monkeypatch.setattr(progressive.torch.cuda, "is_available", lambda: True)
+    monkeypatch.setattr(
+        progressive.torch.cuda,
+        "set_device",
+        lambda value: calls.append(("device", value)),
+    )
+    monkeypatch.setattr(
+        progressive.dist,
+        "init_process_group",
+        lambda **kwargs: calls.append(("init", kwargs)),
+    )
+    monkeypatch.setattr(progressive.dist, "get_rank", lambda: 3)
+    monkeypatch.setattr(progressive.dist, "get_world_size", lambda: 4)
+    assert _distributed_environment() == (3, 4, 1)
+    assert calls[0] == ("device", 1)
+    assert calls[1][0] == "init"
+    assert calls[1][1]["backend"] == "nccl"
+
+
+def test_distributed_mean_uses_sum_then_world_average(monkeypatch) -> None:
+    def reduce_sum(value: torch.Tensor, world_size: int) -> None:
+        assert world_size == 4
+        value.add_(torch.tensor(14.0))
+
+    monkeypatch.setattr(progressive, "_all_reduce_sum", reduce_sum)
+    assert _distributed_mean(
+        torch.tensor(2.0),
+        device=torch.device("cpu"),
+        world_size=4,
+    ) == pytest.approx(4.0)
+
+
+def test_distributed_parameter_identity_rejects_rank_drift(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        progressive,
+        "_parameter_sha256",
+        lambda _model: "a" * 64,
+    )
+
+    def gather(values, _digest) -> None:
+        values[:] = ["a" * 64, "b" * 64]
+
+    monkeypatch.setattr(progressive.dist, "all_gather_object", gather)
+    with pytest.raises(
+        ETTRProgressiveCouplingError,
+        match="parameter identity differs",
+    ):
+        _distributed_parameter_sha256(
+            _CouplingModel(),
+            rank=0,
+            world_size=2,
+        )

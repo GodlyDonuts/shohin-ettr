@@ -12,6 +12,7 @@ assembly evaluator.
 from __future__ import annotations
 
 import argparse
+from datetime import timedelta
 import hashlib
 import json
 import math
@@ -23,6 +24,7 @@ from typing import Mapping, Sequence
 
 from safetensors.torch import save_file
 import torch
+import torch.distributed as dist
 import torch.nn.functional as F
 
 from endogenous_typed_theory_reactor import (
@@ -31,6 +33,10 @@ from endogenous_typed_theory_reactor import (
 )
 from ettr_checkpoint import load_ettr_checkpoint
 from ettr_data_contract import ETTRContinuationBatch
+from ettr_distributed import (
+    ETTRDistributedCursor,
+    ETTRDistributedGradientAverager,
+)
 from ettr_objectives import (
     ETTRCausalQueryPair,
     ETTRObjectiveConfig,
@@ -64,8 +70,8 @@ from train_ettr_component_island import (
 )
 
 
-RUN_SCHEMA = "shohin-ettr-progressive-coupling-run-v2"
-REPORT_SCHEMA = "shohin-ettr-progressive-coupling-report-v2"
+RUN_SCHEMA = "shohin-ettr-progressive-coupling-run-v3"
+REPORT_SCHEMA = "shohin-ettr-progressive-coupling-report-v3"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _COMPONENTS = ("compiler", "reactor", "reader")
@@ -81,6 +87,63 @@ _POLICY_FIELDS = (
 
 class ETTRProgressiveCouplingError(RuntimeError):
     """A progressive-coupling custody or training contract failed."""
+
+
+def _distributed_environment() -> tuple[int, int, int]:
+    values = tuple(
+        int(os.environ.get(name, default))
+        for name, default in (
+            ("RANK", "0"),
+            ("WORLD_SIZE", "1"),
+            ("LOCAL_RANK", "0"),
+        )
+    )
+    rank, world_size, local_rank = values
+    if world_size < 1 or not 0 <= rank < world_size or local_rank < 0:
+        raise ETTRProgressiveCouplingError(
+            "distributed environment differs"
+        )
+    if not torch.cuda.is_available():
+        raise ETTRProgressiveCouplingError(
+            "progressive coupling requires CUDA"
+        )
+    torch.cuda.set_device(local_rank)
+    if world_size > 1:
+        dist.init_process_group(
+            backend="nccl",
+            timeout=timedelta(minutes=15),
+        )
+        if dist.get_rank() != rank or dist.get_world_size() != world_size:
+            raise ETTRProgressiveCouplingError(
+                "distributed process group differs"
+            )
+    return rank, world_size, local_rank
+
+
+def _barrier(world_size: int) -> None:
+    if world_size > 1:
+        dist.barrier()
+
+
+def _all_reduce_sum(value: torch.Tensor, world_size: int) -> None:
+    if world_size > 1:
+        dist.all_reduce(value, op=dist.ReduceOp.SUM)
+
+
+def _broadcast_rank_zero_error(
+    error: str | None,
+    *,
+    rank: int,
+    world_size: int,
+) -> None:
+    if world_size == 1:
+        if error is not None:
+            raise ETTRProgressiveCouplingError(error)
+        return
+    values = [error if rank == 0 else None]
+    dist.broadcast_object_list(values, src=0)
+    if values[0] is not None:
+        raise ETTRProgressiveCouplingError(str(values[0]))
 
 
 def progressive_coupling_probability(
@@ -911,350 +974,520 @@ def _save_components(
     return hashes
 
 
+def _distributed_parameter_sha256(
+    model: EndogenousTypedTheoryReactorGPT,
+    *,
+    rank: int,
+    world_size: int,
+) -> str:
+    digest = _parameter_sha256(model)
+    if world_size == 1:
+        return digest
+    gathered: list[str | None] = [None] * world_size
+    dist.all_gather_object(gathered, digest)
+    if any(value != digest for value in gathered):
+        raise ETTRProgressiveCouplingError(
+            "distributed parameter identity differs"
+        )
+    return digest
+
+
+def _distributed_mean(
+    value: torch.Tensor,
+    *,
+    device: torch.device,
+    world_size: int,
+) -> float:
+    reduced = value.detach().float().to(device).reshape(())
+    _all_reduce_sum(reduced, world_size)
+    reduced.div_(world_size)
+    return float(reduced.cpu())
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     _validate_args(args)
-    if not torch.cuda.is_available():
-        raise ETTRProgressiveCouplingError(
-            "progressive coupling requires CUDA"
-        )
-    device = torch.device("cuda", 0)
-    if "H100" not in torch.cuda.get_device_name(device).upper():
-        raise ETTRProgressiveCouplingError(
-            "progressive coupling requires H100"
-        )
-    if args.output.exists() or args.output.is_symlink():
-        raise ETTRProgressiveCouplingError(
-            "refusing an existing progressive coupling output"
-        )
-    args.output.mkdir(mode=0o700, parents=True)
-
-    stream = ETTRV3StreamingRelease(
-        args.release_root,
-        expected_release_sha256=args.release_sha256,
-        data_root=args.data_root,
-        tokenizer_path=args.tokenizer,
-    )
-    source_verification = stream.verify_source_shards()
-    run_contract = _read_hash_bound_json(
-        args.run_contract,
-        expected_sha256=args.run_contract_sha256,
-        label="ETTR run contract",
-    )
-    model_config, optimizer_config = _validate_run_contract(
-        run_contract,
-        release_sha256=args.release_sha256,
-        release_source_commit=stream.release["source_commit"],
-        architecture_seed=args.architecture_seed,
-    )
-    model, protected = _build_model(
-        args.protected_checkpoint,
-        architecture_seed=args.architecture_seed,
-        model_config=model_config,
-        device=device,
-    )
-    resume_optimizer = ETTROptimizerBundle(model, optimizer_config)
-    resumed = load_ettr_checkpoint(
-        args.checkpoint,
-        expected_sha256=args.checkpoint_sha256,
-        model=model,
-        protected_base=protected,
-        optimizer=resume_optimizer,
-        scheduler=None,
-    )
-    _validate_checkpoint_cursor(
-        resumed.progress,
-        resumed.data_stream,
-        run_contract=run_contract,
-        stream=stream,
-        release_sha256=args.release_sha256,
-        protected_step=protected.step,
-    )
-    del resume_optimizer
-
-    ownership = select_trainable_architecture(model)
-    loaded_component_sha256 = {}
-    for component in _COMPONENTS:
-        loaded_component_sha256[component] = load_component_warm_start(
-            model,
-            component,
-            getattr(args, f"initial_{component}"),
-            expected_sha256=getattr(
-                args,
-                f"initial_{component}_sha256",
-            ),
-        )
-    optimizer = torch.optim.AdamW(
-        [
-            {
-                "params": tuple(model.compiler.parameters()),
-                "lr": args.compiler_learning_rate,
-            },
-            {
-                "params": tuple(model.reactor.parameters()),
-                "lr": args.reactor_learning_rate,
-            },
-            {
-                "params": tuple(model.query_reader.parameters()),
-                "lr": args.reader_learning_rate,
-            },
-        ],
-        betas=(0.9, 0.95),
-        weight_decay=args.weight_decay,
-    )
-    trainable = tuple(
-        parameter for parameter in model.parameters() if parameter.requires_grad
-    )
-    packet_index = ETTRDiskPacketSufficiencyIndex(stream.packet_index_root)
+    rank, world_size, local_rank = _distributed_environment()
+    device = torch.device("cuda", local_rank)
     try:
-        initial_parameter_sha256 = _parameter_sha256(model)
-        initial_component_sha256 = _save_components(
-            model,
-            args.output,
-            suffix="initial",
-        )
-        before = _evaluate_interfaces(
-            model,
-            stream=stream,
-            packet_index=packet_index,
-            device=device,
-            data_seed=args.data_seed,
-            max_batches=args.eval_batches,
-            reader_injection="stage",
-        )
-        contract = {
-            "architecture_seed": args.architecture_seed,
-            "checkpoint_sha256": args.checkpoint_sha256,
-            "component_learning_rates": {
-                name: getattr(args, f"{name}_learning_rate")
-                for name in _COMPONENTS
-            },
-            "coupling": {
-                "batch_factorial_source_is_atomic": True,
-                "credit_horizon": args.credit_horizon,
-                "exact_anchor_steps_per_update": args.exact_anchor_steps,
-                "profile_phase_timing": args.profile_phase_timing,
-                "ramp_updates": args.ramp_updates,
-                "seed": args.coupling_seed,
-                "warmup_updates": args.warmup_updates,
-            },
-            "data_seed": args.data_seed,
-            "eval_batches": args.eval_batches,
-            "gradient_clip": args.gradient_clip,
-            "high_level_loss_weights": {
-                "compiler": 1.0,
-                "coupled_reader": 1.0,
-                "coupled_reactor": 1.0,
-                "exact_reader": 1.0,
-                "exact_reactor": 1.0,
-                "compiler_delta": args.counterfactual_delta_weight,
-                "reactor_delta": args.counterfactual_delta_weight,
-            },
-            "loaded_component_sha256": loaded_component_sha256,
-            "oracle_at_autonomous_inference": False,
-            "oracle_training_boundary": {
-                "compiler": "direct_initial_packet_target",
-                "reactor": "target_transaction_loss_and_scheduled_exact_state",
-                "reader": "exact_terminal_auxiliary_and_scheduled_terminal_state",
-            },
-            "ownership": ownership,
-            "protected_checkpoint_sha256": protected.checkpoint_sha256,
-            "release_file_sha256": args.release_sha256,
-            "run_contract_sha256": args.run_contract_sha256,
-            "schema": RUN_SCHEMA,
-            "source_commit": args.source_commit,
-            "start_position": args.start_position,
-            "updates": args.updates,
-            "weight_decay": args.weight_decay,
-        }
-        _write_no_replace(
-            args.output / "coupling-contract.json",
-            (
-                json.dumps(
-                    contract,
-                    sort_keys=True,
-                    separators=(",", ":"),
-                    ensure_ascii=True,
-                    allow_nan=False,
-                ).encode("ascii")
-                + b"\n"
-            ),
-        )
-        _write_no_replace(args.output / "train.jsonl", b"", mode=0o600)
-
-        model.train()
-        model.base.eval()
-        epoch = 0
-        position = args.start_position
-        iterator = stream.iter_positioned_batches(
-            "train",
-            rank=0,
-            world_size=1,
-            epoch=epoch,
-            seed=args.data_seed,
-            start_position=position,
-        )
-        observed_rows = 0
-        observed_token_positions = 0
-        last_loss = None
-        for update in range(1, args.updates + 1):
+        if "H100" not in torch.cuda.get_device_name(device).upper():
+            raise ETTRProgressiveCouplingError(
+                "progressive coupling requires H100"
+            )
+        output_error = None
+        if rank == 0:
             try:
-                position, cpu_batch = next(iterator)
-            except StopIteration:
-                epoch += 1
-                position = 0
-                iterator = stream.iter_positioned_batches(
-                    "train",
-                    rank=0,
-                    world_size=1,
-                    epoch=epoch,
-                    seed=args.data_seed,
-                )
-                position, cpu_batch = next(iterator)
-            packet_index.verify_train((cpu_batch,))
-            batch = move_continuation_batch(cpu_batch, device)
-            batch.validate(
-                model.config,
-                ETTRObjectiveConfig(vocab_size=model.base.cfg.vocab_size),
-            )
-            probability = progressive_coupling_probability(
-                update,
-                warmup_updates=args.warmup_updates,
-                ramp_updates=args.ramp_updates,
-            )
-            optimizer.zero_grad(set_to_none=True)
-            with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-                loss, parts = progressive_coupling_loss(
-                    model,
-                    batch,
-                    coupling_probability=probability,
-                    coupling_seed=args.coupling_seed,
-                    counterfactual_delta_weight=(
-                        args.counterfactual_delta_weight
-                    ),
-                    credit_horizon=args.credit_horizon,
-                    exact_anchor_steps=args.exact_anchor_steps,
-                    profile_phase_timing=args.profile_phase_timing,
-                    update=update,
-                )
-            if not bool(torch.isfinite(loss)):
-                raise ETTRProgressiveCouplingError(
-                    "progressive coupling loss is non-finite"
-                )
-            backward_started = time.perf_counter()
-            loss.backward()
-            if args.profile_phase_timing:
-                torch.cuda.synchronize()
-                parts["phase_seconds"]["backward"] = (
-                    time.perf_counter() - backward_started
-                )
-            gradient_norm = torch.nn.utils.clip_grad_norm_(
-                trainable,
-                args.gradient_clip,
-                error_if_nonfinite=True,
-            )
-            optimizer_started = time.perf_counter()
-            optimizer.step()
-            if args.profile_phase_timing:
-                torch.cuda.synchronize()
-                parts["phase_seconds"]["optimizer"] = (
-                    time.perf_counter() - optimizer_started
-                )
-            observed_rows += batch.episodes.world.tokens.shape[0]
-            observed_token_positions += int(
-                batch.episodes.world.attention_mask.sum().detach().cpu()
-                + batch.episodes.command.attention_mask.sum().detach().cpu()
-                + batch.episodes.query.attention_mask.sum().detach().cpu()
-            )
-            last_loss = float(loss.detach().cpu())
-            if update % args.log_every == 0 or update == args.updates:
-                with (args.output / "train.jsonl").open(
-                    "ab",
-                    buffering=0,
-                ) as log:
-                    log.write(
-                        (
-                            json.dumps(
-                                {
-                                    "epoch": epoch,
-                                    "gradient_norm_pre_clip": float(
-                                        gradient_norm.detach().float().cpu()
-                                    ),
-                                    "loss": last_loss,
-                                    "loss_parts": parts,
-                                    "position": position,
-                                    "schema": "shohin-ettr-progressive-coupling-metric-v1",
-                                    "update": update,
-                                },
-                                sort_keys=True,
-                                separators=(",", ":"),
-                                ensure_ascii=True,
-                                allow_nan=False,
-                            ).encode("ascii")
-                            + b"\n"
-                        )
+                if args.output.exists() or args.output.is_symlink():
+                    raise ETTRProgressiveCouplingError(
+                        "refusing an existing progressive coupling output"
                     )
-        os.chmod(args.output / "train.jsonl", 0o400)
+                args.output.mkdir(mode=0o700, parents=True)
+            except BaseException as exc:
+                output_error = f"{type(exc).__name__}: {exc}"
+        _broadcast_rank_zero_error(
+            output_error,
+            rank=rank,
+            world_size=world_size,
+        )
+        _barrier(world_size)
 
-        after = _evaluate_interfaces(
-            model,
-            stream=stream,
-            packet_index=packet_index,
+        stream = ETTRV3StreamingRelease(
+            args.release_root,
+            expected_release_sha256=args.release_sha256,
+            data_root=args.data_root,
+            tokenizer_path=args.tokenizer,
+        )
+        source_verification = None
+        source_error = None
+        if rank == 0:
+            try:
+                source_verification = stream.verify_source_shards()
+            except BaseException as exc:
+                source_error = (
+                    f"rank-zero source verification failed: "
+                    f"{type(exc).__name__}: {exc}"
+                )
+        _broadcast_rank_zero_error(
+            source_error,
+            rank=rank,
+            world_size=world_size,
+        )
+        run_contract = _read_hash_bound_json(
+            args.run_contract,
+            expected_sha256=args.run_contract_sha256,
+            label="ETTR run contract",
+        )
+        model_config, optimizer_config = _validate_run_contract(
+            run_contract,
+            release_sha256=args.release_sha256,
+            release_source_commit=stream.release["source_commit"],
+            architecture_seed=args.architecture_seed,
+        )
+        model, protected = _build_model(
+            args.protected_checkpoint,
+            architecture_seed=args.architecture_seed,
+            model_config=model_config,
             device=device,
-            data_seed=args.data_seed,
-            max_batches=args.eval_batches,
-            reader_injection="stage",
         )
-        final_component_sha256 = _save_components(
-            model,
-            args.output,
-            suffix="final",
+        resume_optimizer = ETTROptimizerBundle(model, optimizer_config)
+        resumed = load_ettr_checkpoint(
+            args.checkpoint,
+            expected_sha256=args.checkpoint_sha256,
+            model=model,
+            protected_base=protected,
+            optimizer=resume_optimizer,
+            scheduler=None,
         )
-        report = {
-            "architecture_seed": args.architecture_seed,
-            "checkpoint_sha256": args.checkpoint_sha256,
-            "coupling": contract["coupling"],
-            "data_seed": args.data_seed,
-            "device": {
-                "bf16": torch.cuda.is_bf16_supported(),
-                "name": torch.cuda.get_device_name(device),
-            },
-            "evaluation": {"after": after, "before": before},
-            "final_component_sha256": final_component_sha256,
-            "final_parameter_sha256": _parameter_sha256(model),
-            "initial_component_sha256": initial_component_sha256,
-            "initial_parameter_sha256": initial_parameter_sha256,
-            "last_loss": last_loss,
-            "loaded_component_sha256": loaded_component_sha256,
-            "observed_rows": observed_rows,
-            "observed_token_positions": observed_token_positions,
-            "oracle_at_autonomous_inference": False,
-            "ownership": ownership,
-            "protected_checkpoint_sha256": protected.checkpoint_sha256,
-            "release_file_sha256": args.release_sha256,
-            "release_manifest_sha256": stream.manifest.sha256(),
-            "schema": REPORT_SCHEMA,
-            "source_commit": args.source_commit,
-            "source_verification": source_verification,
-            "start_position": args.start_position,
-            "updates": args.updates,
-        }
-        _write_no_replace(
-            args.output / "report.json",
-            (
-                json.dumps(
-                    report,
-                    sort_keys=True,
-                    separators=(",", ":"),
-                    ensure_ascii=True,
-                    allow_nan=False,
-                ).encode("ascii")
-                + b"\n"
-            ),
+        _validate_checkpoint_cursor(
+            resumed.progress,
+            resumed.data_stream,
+            run_contract=run_contract,
+            stream=stream,
+            release_sha256=args.release_sha256,
+            protected_step=protected.step,
         )
+        del resume_optimizer
+
+        ownership = select_trainable_architecture(model)
+        loaded_component_sha256 = {}
+        for component in _COMPONENTS:
+            loaded_component_sha256[component] = load_component_warm_start(
+                model,
+                component,
+                getattr(args, f"initial_{component}"),
+                expected_sha256=getattr(
+                    args,
+                    f"initial_{component}_sha256",
+                ),
+            )
+        optimizer = torch.optim.AdamW(
+            [
+                {
+                    "params": tuple(model.compiler.parameters()),
+                    "lr": args.compiler_learning_rate,
+                },
+                {
+                    "params": tuple(model.reactor.parameters()),
+                    "lr": args.reactor_learning_rate,
+                },
+                {
+                    "params": tuple(model.query_reader.parameters()),
+                    "lr": args.reader_learning_rate,
+                },
+            ],
+            betas=(0.9, 0.95),
+            weight_decay=args.weight_decay,
+        )
+        trainable = tuple(
+            parameter
+            for parameter in model.parameters()
+            if parameter.requires_grad
+        )
+        averager = ETTRDistributedGradientAverager(
+            world_size=world_size,
+            all_reduce_sum=lambda value: _all_reduce_sum(
+                value,
+                world_size,
+            )
+        )
+        packet_index = ETTRDiskPacketSufficiencyIndex(
+            stream.packet_index_root
+        )
+        try:
+            initial_parameter_sha256 = _distributed_parameter_sha256(
+                model,
+                rank=rank,
+                world_size=world_size,
+            )
+            initial_component_sha256 = None
+            before = None
+            if rank == 0:
+                initial_component_sha256 = _save_components(
+                    model,
+                    args.output,
+                    suffix="initial",
+                )
+                before = _evaluate_interfaces(
+                    model,
+                    stream=stream,
+                    packet_index=packet_index,
+                    device=device,
+                    data_seed=args.data_seed,
+                    max_batches=args.eval_batches,
+                    reader_injection="stage",
+                )
+                contract = {
+                    "architecture_seed": args.architecture_seed,
+                    "checkpoint_sha256": args.checkpoint_sha256,
+                    "component_learning_rates": {
+                        name: getattr(args, f"{name}_learning_rate")
+                        for name in _COMPONENTS
+                    },
+                    "coupling": {
+                        "batch_factorial_source_is_atomic": True,
+                        "credit_horizon": args.credit_horizon,
+                        "exact_anchor_steps_per_update": (
+                            args.exact_anchor_steps
+                        ),
+                        "profile_phase_timing": args.profile_phase_timing,
+                        "ramp_updates": args.ramp_updates,
+                        "seed": args.coupling_seed,
+                        "warmup_updates": args.warmup_updates,
+                    },
+                    "data_seed": args.data_seed,
+                    "distributed": {
+                        "gradient_reduction": "dense_mean",
+                        "rank_zero_only_writer": True,
+                        "world_size": world_size,
+                    },
+                    "eval_batches": args.eval_batches,
+                    "gradient_clip": args.gradient_clip,
+                    "high_level_loss_weights": {
+                        "compiler": 1.0,
+                        "coupled_reader": 1.0,
+                        "coupled_reactor": 1.0,
+                        "exact_reader": 1.0,
+                        "exact_reactor": 1.0,
+                        "compiler_delta": (
+                            args.counterfactual_delta_weight
+                        ),
+                        "reactor_delta": (
+                            args.counterfactual_delta_weight
+                        ),
+                    },
+                    "loaded_component_sha256": loaded_component_sha256,
+                    "oracle_at_autonomous_inference": False,
+                    "oracle_training_boundary": {
+                        "compiler": "direct_initial_packet_target",
+                        "reactor": (
+                            "target_transaction_loss_and_scheduled_exact_state"
+                        ),
+                        "reader": (
+                            "exact_terminal_auxiliary_and_scheduled_terminal_state"
+                        ),
+                    },
+                    "ownership": ownership,
+                    "protected_checkpoint_sha256": (
+                        protected.checkpoint_sha256
+                    ),
+                    "release_file_sha256": args.release_sha256,
+                    "run_contract_sha256": args.run_contract_sha256,
+                    "schema": RUN_SCHEMA,
+                    "source_commit": args.source_commit,
+                    "start_position": args.start_position,
+                    "updates": args.updates,
+                    "weight_decay": args.weight_decay,
+                }
+                _write_no_replace(
+                    args.output / "coupling-contract.json",
+                    (
+                        json.dumps(
+                            contract,
+                            sort_keys=True,
+                            separators=(",", ":"),
+                            ensure_ascii=True,
+                            allow_nan=False,
+                        ).encode("ascii")
+                        + b"\n"
+                    ),
+                )
+                _write_no_replace(
+                    args.output / "train.jsonl",
+                    b"",
+                    mode=0o600,
+                )
+            _barrier(world_size)
+
+            model.train()
+            model.base.eval()
+            cursor = ETTRDistributedCursor(
+                epoch=0,
+                position=args.start_position,
+            )
+            cursor.validate(
+                core_batches=len(stream.records["train"]),
+                world_size=world_size,
+                accumulation=1,
+            )
+            iterator = stream.iter_positioned_batches(
+                "train",
+                rank=rank,
+                world_size=world_size,
+                epoch=cursor.epoch,
+                seed=args.data_seed,
+                start_position=cursor.position,
+            )
+            observed_rows = 0
+            observed_token_positions = 0
+            last_loss = None
+            for update in range(1, args.updates + 1):
+                active_epoch = cursor.epoch
+                try:
+                    local_position, cpu_batch = next(iterator)
+                except StopIteration as exc:
+                    raise ETTRProgressiveCouplingError(
+                        "distributed stream ended before cursor boundary"
+                    ) from exc
+                if local_position != cursor.position + rank:
+                    raise ETTRProgressiveCouplingError(
+                        "distributed stream position differs"
+                    )
+                packet_index.verify_train((cpu_batch,))
+                batch = move_continuation_batch(cpu_batch, device)
+                batch.validate(
+                    model.config,
+                    ETTRObjectiveConfig(
+                        vocab_size=model.base.cfg.vocab_size
+                    ),
+                )
+                probability = progressive_coupling_probability(
+                    update,
+                    warmup_updates=args.warmup_updates,
+                    ramp_updates=args.ramp_updates,
+                )
+                optimizer.zero_grad(set_to_none=True)
+                with torch.autocast(
+                    device_type="cuda",
+                    dtype=torch.bfloat16,
+                ):
+                    loss, parts = progressive_coupling_loss(
+                        model,
+                        batch,
+                        coupling_probability=probability,
+                        coupling_seed=args.coupling_seed,
+                        counterfactual_delta_weight=(
+                            args.counterfactual_delta_weight
+                        ),
+                        credit_horizon=args.credit_horizon,
+                        exact_anchor_steps=args.exact_anchor_steps,
+                        profile_phase_timing=args.profile_phase_timing,
+                        update=update,
+                    )
+                finite = torch.tensor(
+                    int(bool(torch.isfinite(loss))),
+                    dtype=torch.int32,
+                    device=device,
+                )
+                _all_reduce_sum(finite, world_size)
+                if int(finite) != world_size:
+                    raise ETTRProgressiveCouplingError(
+                        "progressive coupling loss is non-finite"
+                    )
+                backward_started = time.perf_counter()
+                loss.backward()
+                if args.profile_phase_timing:
+                    torch.cuda.synchronize()
+                    parts["phase_seconds"]["backward"] = (
+                        time.perf_counter() - backward_started
+                    )
+                averager(trainable)
+                gradient_norm = torch.nn.utils.clip_grad_norm_(
+                    trainable,
+                    args.gradient_clip,
+                    error_if_nonfinite=True,
+                )
+                optimizer_started = time.perf_counter()
+                optimizer.step()
+                if args.profile_phase_timing:
+                    torch.cuda.synchronize()
+                    parts["phase_seconds"]["optimizer"] = (
+                        time.perf_counter() - optimizer_started
+                    )
+                observed_rows += batch.episodes.world.tokens.shape[0]
+                observed_token_positions += int(
+                    batch.episodes.world.attention_mask.sum().detach().cpu()
+                    + batch.episodes.command.attention_mask.sum().detach().cpu()
+                    + batch.episodes.query.attention_mask.sum().detach().cpu()
+                )
+                cursor = cursor.advance(
+                    core_batches=len(stream.records["train"]),
+                    world_size=world_size,
+                    accumulation=1,
+                )
+                if cursor.epoch != active_epoch:
+                    iterator = stream.iter_positioned_batches(
+                        "train",
+                        rank=rank,
+                        world_size=world_size,
+                        epoch=cursor.epoch,
+                        seed=args.data_seed,
+                        start_position=cursor.position,
+                    )
+                if (
+                    update % args.log_every == 0
+                    or update == args.updates
+                ):
+                    last_loss = _distributed_mean(
+                        loss,
+                        device=device,
+                        world_size=world_size,
+                    )
+                    if rank == 0:
+                        with (args.output / "train.jsonl").open(
+                            "ab",
+                            buffering=0,
+                        ) as log:
+                            log.write(
+                                (
+                                    json.dumps(
+                                        {
+                                            "epoch": cursor.epoch,
+                                            "gradient_norm_pre_clip": float(
+                                                gradient_norm.detach()
+                                                .float()
+                                                .cpu()
+                                            ),
+                                            "loss": last_loss,
+                                            "loss_parts_rank_zero": parts,
+                                            "next_position": (
+                                                cursor.position
+                                            ),
+                                            "schema": (
+                                                "shohin-ettr-progressive-"
+                                                "coupling-metric-v2"
+                                            ),
+                                            "update": update,
+                                            "world_size": world_size,
+                                        },
+                                        sort_keys=True,
+                                        separators=(",", ":"),
+                                        ensure_ascii=True,
+                                        allow_nan=False,
+                                    ).encode("ascii")
+                                    + b"\n"
+                                )
+                            )
+            if rank == 0:
+                os.chmod(args.output / "train.jsonl", 0o400)
+            totals = torch.tensor(
+                [observed_rows, observed_token_positions],
+                dtype=torch.int64,
+                device=device,
+            )
+            _all_reduce_sum(totals, world_size)
+            final_parameter_sha256 = _distributed_parameter_sha256(
+                model,
+                rank=rank,
+                world_size=world_size,
+            )
+            _barrier(world_size)
+
+            if rank == 0:
+                after = _evaluate_interfaces(
+                    model,
+                    stream=stream,
+                    packet_index=packet_index,
+                    device=device,
+                    data_seed=args.data_seed,
+                    max_batches=args.eval_batches,
+                    reader_injection="stage",
+                )
+                final_component_sha256 = _save_components(
+                    model,
+                    args.output,
+                    suffix="final",
+                )
+                report = {
+                    "architecture_seed": args.architecture_seed,
+                    "checkpoint_sha256": args.checkpoint_sha256,
+                    "coupling": contract["coupling"],
+                    "data_seed": args.data_seed,
+                    "device": {
+                        "bf16": torch.cuda.is_bf16_supported(),
+                        "name": torch.cuda.get_device_name(device),
+                        "world_size": world_size,
+                    },
+                    "evaluation": {"after": after, "before": before},
+                    "final_component_sha256": final_component_sha256,
+                    "final_parameter_sha256": (
+                        final_parameter_sha256
+                    ),
+                    "initial_component_sha256": (
+                        initial_component_sha256
+                    ),
+                    "initial_parameter_sha256": (
+                        initial_parameter_sha256
+                    ),
+                    "last_loss": last_loss,
+                    "loaded_component_sha256": (
+                        loaded_component_sha256
+                    ),
+                    "observed_rows": int(totals[0].cpu()),
+                    "observed_token_positions": int(totals[1].cpu()),
+                    "oracle_at_autonomous_inference": False,
+                    "ownership": ownership,
+                    "protected_checkpoint_sha256": (
+                        protected.checkpoint_sha256
+                    ),
+                    "release_file_sha256": args.release_sha256,
+                    "release_manifest_sha256": stream.manifest.sha256(),
+                    "schema": REPORT_SCHEMA,
+                    "source_commit": args.source_commit,
+                    "source_verification": source_verification,
+                    "start_position": args.start_position,
+                    "updates": args.updates,
+                    "world_size": world_size,
+                }
+                _write_no_replace(
+                    args.output / "report.json",
+                    (
+                        json.dumps(
+                            report,
+                            sort_keys=True,
+                            separators=(",", ":"),
+                            ensure_ascii=True,
+                            allow_nan=False,
+                        ).encode("ascii")
+                        + b"\n"
+                    ),
+                )
+            _barrier(world_size)
+        finally:
+            packet_index.close()
+        return 0
     finally:
-        packet_index.close()
-    return 0
+        if world_size > 1 and dist.is_initialized():
+            dist.destroy_process_group()
 
 
 if __name__ == "__main__":
