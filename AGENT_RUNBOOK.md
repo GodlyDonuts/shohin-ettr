@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-31 03:05 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-31 03:25 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -20427,3 +20427,72 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `causal_emergence_is_real_in_seed1_but_not_replicated_combine_factor_balance_with_horizon8_and_localize_seed_variance_before_large_scale`.
+
+- **2026-07-31 03:05--03:25 EDT** -- **The seed-1 causal signal survives a
+  four-times-larger confirmation board, anchor density alone still does not
+  rescue seed 2, and fourteen H100 lanes now isolate factor balance,
+  recurrent horizon, reader initialization, anchor density, and learning
+  rate before any large-run promotion.**
+
+  The unchanged strict scorer was rerun for 128 batches against both
+  independent seed-1 passes. Baseline seed 1 again passed every gate:
+  paired total loss changed by `-19.054452` with 95% interval
+  `[-19.456324, -18.652580]`, WORLD query-margin rate increased from zero
+  to `4/480 = 0.8333%`, and COMMAND increased from zero to
+  `25/640 = 3.90625%`. Report SHA-256 is
+  `593f2465d3693a58765f77a619e38507b96d24afe41c8d185940600c6ec1e397`.
+  Horizon-eight seed 1 also remained a strict pass: total loss changed by
+  `-18.873102`, interval `[-19.297529, -18.448676]`, WORLD moved to
+  `2/480 = 0.4167%`, and COMMAND moved to
+  `20/640 = 3.125%`. Report SHA-256 is
+  `c343b688e41c675785941b6c2bb672c2d115e82c1f94fcfdac346b79a186c008`.
+  The effect is therefore not a 32-batch evaluator accident, but it remains
+  seed-sensitive and rare.
+
+  Anchor-eight seed 2 completed and again failed to replicate. It reduced
+  paired total loss by `-23.805746` with interval
+  `[-24.761213, -22.850279]`, but WORLD and COMMAND margin rates both
+  remained zero. Report SHA-256 is
+  `8bfe0a60f326ce3dfc69a37566474162842e73fe8215ab1aee2a2b78d8162d32`.
+  Anchor density by itself is therefore rejected as a seed-variance repair.
+
+  Fresh direct-dispatch jobs `723879--723884` are all running with finite
+  metrics. They cross factor-balanced horizon-eight training with
+  own/trainable, own/frozen, and opposite-seed/trainable reader
+  initialization in both registered seeds. The exact command SHA-256
+  values, in job order, are
+  `833d3a58de5e6351b1d264968bb0c2077f95a582e7e4fd2aef2c22f9738236a4`,
+  `fea3ab65fc9bb892d6356263cc67ed8bdf3007727ff5d0dd426af0f5ddbdc61a`,
+  `2df27dafc015f16fd92947328ae37ed8bd490baebe085b9421e33bd4b47360e2`,
+  `79335abd01d634006c49242ae347a12ac02afe395f5fd546776b81955e3269c9`,
+  `fd31477e4f3778eb5928e05fec42e9b63ce6f54aeb71ed276645ffcfc9b8737c`,
+  and
+  `1013effba85993f2773ac67ec3cad9711b6142fd89dec6b3c4e6ef8c2404b064`.
+  Launcher and dispatcher SHA-256 values are
+  `4f57d85b7ccd8a2d485944437322cbfdc8890e23e4e6f070055fc892e8e08b95`
+  and
+  `08b640a36e6d189435d62fc0c13231c87d66eb6d917a38d83432be0a11234b48`.
+
+  Jobs `723892--723895` reserve four additional one-H100 lanes for the next
+  two matched interactions: factor-balanced horizon eight with eight exact
+  anchors, and factor-balanced horizon eight at the lower
+  `2e-5/3e-5/2e-5` compiler/reactor/reader learning rates. Their new
+  launcher and dispatcher SHA-256 values are
+  `6979fe610435c09a9e45e26a00fa6735e6c07cdd7fffc31998f9e85aadf93054`
+  and
+  `c84b8bfdaca5329f06ea102dbe10a40ce8347503dcdd3bc79b1585bdc1570689`.
+  Jobs `723830--723833` continue the matched autonomous-ramp and delta-eight
+  arms near completion. Separate source-deleted evaluator jobs
+  `723896--723899` are dependency-bound to those writers. Evaluator wrapper
+  SHA-256 is
+  `3cc9598d94ab970a84c693762bd79c118ba792b983350c21e0152bf0b7115fd1`;
+  the selectable 32-batch scorer wrapper remains
+  `73d0e9829521a66d151076dd94ecb99c0fc1ebf9744c11be29eb192858b5185e`.
+
+  No one-seed arm can launch the prepared distributed scale runtime. The
+  first matched pair in which both registered seeds pass finite changed-
+  parameter, paired-loss, WORLD-margin, and COMMAND-margin gates will be
+  promoted immediately across the largest healthy worker set.
+
+  Decision:
+  `seed1_causal_emergence_is_confirmed_not_promotable_use_fourteen_identifiable_h100_lanes_to_find_the_first_two_seed_strict_recipe`.
