@@ -165,6 +165,7 @@ def _validate_model_lineage(
     *,
     parent_run_contract_sha256: str,
     run_contract_sha256: str,
+    parent_contract: Mapping[str, object],
     run_contract: Mapping[str, object],
     composition: Mapping[str, object] | None,
 ) -> tuple[dict[str, object], dict[str, object]]:
@@ -206,8 +207,14 @@ def _validate_model_lineage(
     if composition is not None:
         parent_state = parent_payload.get("model")
         candidate_state = candidate_payload.get("model")
+        parent_initialization = parent_payload.get("initialization")
         if (
-            candidate_payload.get("initialization") != composition
+            not isinstance(parent_initialization, Mapping)
+            or parent_initialization.get("initialization")
+            != "parent-joint-model"
+            or parent_initialization.get("parent_joint_model_sha256")
+            != parent_contract.get("parent_joint_model_sha256")
+            or candidate_payload.get("initialization") != composition
             or candidate_payload.get("optimizer_step")
             != parent_payload.get("optimizer_step")
             or candidate_payload.get("schedule")
@@ -240,6 +247,37 @@ def _validate_model_lineage(
                 "component composition changed base weights"
             )
     return parent_ettr_config, candidate_ettr_config
+
+
+def _load_initialization_contract(
+    parent_contract: Mapping[str, object],
+    *,
+    composition: Mapping[str, object] | None,
+) -> Mapping[str, object]:
+    if composition is None:
+        return parent_contract
+    parent_joint_model = parent_contract.get("parent_joint_model")
+    expected_sha256 = parent_contract.get("parent_run_contract_sha256")
+    if (
+        not isinstance(parent_joint_model, str)
+        or not Path(parent_joint_model).is_absolute()
+        or not isinstance(expected_sha256, str)
+        or _HEX64.fullmatch(expected_sha256) is None
+    ):
+        raise ETTRTriEvaluationError(
+            "composition ancestor lineage differs"
+        )
+    ancestor_path = Path(parent_joint_model).with_name("run-contract.json")
+    ancestor = _read_hash_bound_json(
+        ancestor_path,
+        expected_sha256=expected_sha256,
+        label="composition ancestor run contract",
+    )
+    if ancestor.get("schema") != PARENT_RUN_SCHEMA:
+        raise ETTRTriEvaluationError(
+            "composition ancestor lineage differs"
+        )
+    return ancestor
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -312,7 +350,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         candidate_payload,
         parent_run_contract_sha256=args.parent_run_contract_sha256,
         run_contract_sha256=args.run_contract_sha256,
+        parent_contract=parent_contract,
         run_contract=run_contract,
+        composition=composition,
+    )
+    initialization_contract = _load_initialization_contract(
+        parent_contract,
         composition=composition,
     )
 
@@ -325,17 +368,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     source_verification = stream.verify_source_shards()
     raw_model, provenance = _build_initial_model(
         args.protected_checkpoint,
-        run_contract=parent_contract,
+        run_contract=initialization_contract,
         device=device,
     )
     parent_model, parent_provenance = _build_initial_model(
         args.protected_checkpoint,
-        run_contract=parent_contract,
+        run_contract=initialization_contract,
         device=device,
     )
     candidate_model, candidate_provenance = _build_initial_model(
         args.protected_checkpoint,
-        run_contract=parent_contract,
+        run_contract=initialization_contract,
         device=device,
     )
     candidate_model.set_open_state_read_floor(

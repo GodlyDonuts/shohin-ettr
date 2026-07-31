@@ -20,6 +20,9 @@ def _parent_contract() -> dict[str, object]:
         "ettr_release_sha256": "2" * 64,
         "model_config": {"num_slots": 64},
         "parameter_receipt": {"complete_system_parameters": 192_779_435},
+        "parent_joint_model": "/grandparent/joint-model-final.pt",
+        "parent_joint_model_sha256": "a" * 64,
+        "parent_run_contract_sha256": "b" * 64,
     }
 
 
@@ -57,6 +60,10 @@ def _payloads() -> tuple[dict[str, object], dict[str, object]]:
     parent = {
         "base_config": {"layers": 30},
         "ettr_config": {"num_slots": 64},
+        "initialization": {
+            "initialization": "parent-joint-model",
+            "parent_joint_model_sha256": "a" * 64,
+        },
         "model": {
             "base.weight": torch.tensor([1.0]),
             "compiler.weight": torch.tensor([2.0]),
@@ -89,6 +96,7 @@ def test_zero_update_composition_is_valid_initialization_child() -> None:
         candidate,
         parent_run_contract_sha256="7" * 64,
         run_contract_sha256="9" * 64,
+        parent_contract=parent_contract,
         run_contract=run_contract,
         composition=composition,
     )
@@ -107,6 +115,7 @@ def test_composition_rejects_changed_base_weights() -> None:
             candidate,
             parent_run_contract_sha256="7" * 64,
             run_contract_sha256="9" * 64,
+            parent_contract=_parent_contract(),
             run_contract=run_contract,
             composition=_composition(),
         )
