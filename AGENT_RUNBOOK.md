@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-31 01:15 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-07-31 03:05 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -20356,3 +20356,74 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `prepare_exact_scale_runtime_now_but_require_two_matched_strict_seeds_and_preserve_winner_reader_controls_before_any_large_launch`.
+
+- **2026-07-31 02:09--03:05 EDT** -- **A second independent one-seed
+  causal pass localizes recurrent credit horizon as useful, but no recipe
+  replicates yet; the next six-H100 wave tests factor balance x horizon 8
+  with reader controls instead of scaling a false winner.**
+
+  The four-H100 factor-balanced 1,000-update early gate completed cleanly
+  and its unchanged 32-batch source-deleted evaluator reduced paired total
+  loss by `-16.82417`, 95% interval
+  `[-18.25067, -15.39768]`. COMMAND query-margin rate increased from `0`
+  to `2.5%` (`4/160` answer-changing pairs), but WORLD remained exactly
+  `0/128`; strict learning signal is false. Evaluation SHA-256 is
+  `18af2e65519733b9902f9e445c0f067af4c22259db08fe78dd990f895fcbf8d1`.
+  This is an early COMMAND-learning signal, not a promotable result.
+
+  The delta-weight-4 pair then completed and failed replication. Seed 1
+  reduced total loss by `-18.84088`, interval
+  `[-19.87973, -17.80204]`, and moved COMMAND to `1.25%`, while WORLD
+  stayed zero. Seed 2 reduced total loss by `-23.83049`, interval
+  `[-24.75352, -22.90745]`, with both margins zero. Evaluation SHA-256
+  values are
+  `e420782cd400259d94795ae6fd285f357e1bcc3ae2894f30d1435d30f3abb515`
+  and
+  `cd01424a015b5f0e8021d9878c750ea0d36ce36e00720bdc485d716973fab7fd`.
+
+  Horizon 8 produced the second complete one-seed strict pass. Seed 1
+  reduced total loss by `-18.16020`, interval
+  `[-19.07652, -17.24389]`, moved WORLD from `0` to `1.5625%`
+  (`2/128`) and COMMAND from `0` to `0.625%` (`1/160`), and passed every
+  strict gate. Seed 2 reduced total loss by `-23.48375`, interval
+  `[-24.34359, -22.62391]`, but both margins remained zero, so the pair
+  is not promotable. Evaluation SHA-256 values are
+  `ed5b4208fe4b3478339b36906b4c216441a1d438809c1562f982d1565e9a2411`
+  and
+  `212f4e861a2b02d4034ece71c6d5fd6492472a204613816e15ef42d75ef5d09e`.
+  Together with the baseline seed-1 pass, this proves causal emergence is
+  repeatable across two recipes in seed 1, while seed sensitivity remains
+  the promotion blocker.
+
+  Two scheduler-only evaluator preflights failed closed without creating
+  outputs or touching model artifacts. Runtime-selectable evaluator r1
+  checked its relative `SHA256SUMS` paths from the caller directory;
+  corrected r2 changes to the immutable runtime root first and has SHA-256
+  `e0ab661134ec05ec92135cee78eaa2418ee22796a97a29171c32c4191f02a52d`.
+  The first distributed retry then attempted an ordinary `srun` inside a
+  direct-dispatch reservation and waited while the H100 was idle. The exact
+  unchanged command was moved into job `723843`'s hash-bound control slot
+  with command SHA-256
+  `de6c3eb3ff6b9f2cee728b88536c65948d82047ec6ece6651650b0bcfef438ce`;
+  it completed with exit code zero. The first paired delta/horizon evaluator
+  request asked for eight CPUs on a four-CPU node and was rejected before
+  CUDA; corrected two-CPU-per-GPU retries produced the admitted reports
+  above.
+
+  Several healthy 5,000-update localization arms started too late inside
+  expiring 12-hour reservations and cannot produce final artifacts before
+  wall time. Their partial logs are diagnostic only and must never be
+  evaluated or promoted. Fresh one-H100 direct-dispatch jobs
+  `723879--723884` are queued to replace them. The preregistered next
+  interaction is factor-balanced reader causality with horizon-8 recurrent
+  credit in both seeds, crossed with own/trainable, own/frozen, and
+  swapped/trainable reader initialization. Launcher SHA-256 is
+  `4f57d85b7ccd8a2d485944437322cbfdc8890e23e4e6f070055fc892e8e08b95`;
+  dispatcher SHA-256 is
+  `08b640a36e6d189435d62fc0c13231c87d66eb6d917a38d83432be0a11234b48`.
+  Every lane uses the same 5,000 updates, cursor, learning rates, delta
+  weight, anchor count, clipping, immutable data, and source-deleted
+  evaluator. Promote only if both registered opposite seeds pass.
+
+  Decision:
+  `causal_emergence_is_real_in_seed1_but_not_replicated_combine_factor_balance_with_horizon8_and_localize_seed_variance_before_large_scale`.
