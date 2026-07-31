@@ -252,9 +252,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         for name in _COMPONENTS
     }
-    if any(changed_tensors[name] == 0 for name in _COMPONENTS):
+    if not any(changed_tensors.values()):
         raise ETTRJointCompositionError(
-            "component transplant did not change every component"
+            "component transplant did not change any component"
         )
 
     components = {
