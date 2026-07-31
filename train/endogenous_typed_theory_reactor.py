@@ -683,6 +683,11 @@ class GenericTransactionReactor(nn.Module):
         encoded_slots = self.output_norm(encoded[:, 1:])
         keys = self.slot_key(encoded_slots)
         opcode_probabilities = self.opcode_head(control).float().softmax(-1)
+        pointer_opcode = (
+            _hard_one_hot(opcode_probabilities)
+            if hard
+            else opcode_probabilities
+        )
         source_logits = torch.einsum(
             "bw,bsw->bs",
             self.source_query(control),
@@ -695,15 +700,15 @@ class GenericTransactionReactor(nn.Module):
         ).float()
         if self.valid_pointer_masks:
             active = state.active.float().clamp(0.0, 1.0)
-            allocate = opcode_probabilities[:, 0:1]
-            active_source = opcode_probabilities[:, 1:6].sum(-1, keepdim=True)
-            source_ignored = opcode_probabilities[:, 6:].sum(-1, keepdim=True)
+            allocate = pointer_opcode[:, 0:1]
+            active_source = pointer_opcode[:, 1:6].sum(-1, keepdim=True)
+            source_ignored = pointer_opcode[:, 6:].sum(-1, keepdim=True)
             source_validity = (
                 allocate * (1.0 - active)
                 + active_source * active
                 + source_ignored
             )
-            relational = opcode_probabilities[:, 3:5].sum(-1, keepdim=True)
+            relational = pointer_opcode[:, 3:5].sum(-1, keepdim=True)
             target_validity = relational * active + (1.0 - relational)
             source_logits = source_logits + source_validity.clamp_min(1e-4).log()
             target_logits = target_logits + target_validity.clamp_min(1e-4).log()
@@ -719,7 +724,7 @@ class GenericTransactionReactor(nn.Module):
         type_index = type_probabilities
         value_code = value_probabilities
         if hard:
-            opcode = _hard_one_hot(opcode_probabilities)
+            opcode = pointer_opcode
             source = _hard_one_hot(source_probabilities)
             target = _hard_one_hot(target_probabilities)
             relation = _hard_one_hot(relation_probabilities)
