@@ -7,6 +7,9 @@ import subprocess
 
 
 SCRIPT = Path(__file__).parent / "jobs" / "submit_algebraic_state_factorial.sh"
+RECOVERY_SCRIPT = (
+    Path(__file__).parent / "jobs" / "submit_algebraic_state_basis_recovery.sh"
+)
 SOFT_COMMIT = "1" * 40
 BASIS_COMMIT = "2" * 40
 RELEASE_SHA = "3" * 64
@@ -78,6 +81,7 @@ def _environment(tmp_path: Path, *, fail_at: int | None = None) -> dict[str, str
         "PYTHON_ROOT": str(input_root / "python"),
         "RELEASE_ROOT": str(input_root / "release"),
         "RELEASE_SHA256": RELEASE_SHA,
+        "RUNTIME_TAG": "bb65958",
         "SOFT_CODE_ROOT": str(soft),
         "SOFT_RUNTIME_SHA256": soft_sha,
         "SOFT_SOURCE_COMMIT": SOFT_COMMIT,
@@ -127,3 +131,44 @@ def test_dispatcher_cancels_partial_matrix_on_submission_failure(
         encoding="ascii"
     ).splitlines()
     assert canceled == ["720001", "720002", "720003"]
+
+
+def test_basis_recovery_submits_canary_and_four_held_arms(
+    tmp_path: Path,
+) -> None:
+    environment = _environment(tmp_path)
+    result = subprocess.run(
+        ("bash", str(RECOVERY_SCRIPT)),
+        env=environment,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    receipt = Path(environment["SUBMISSION_RECEIPT"])
+    assert receipt.read_text(encoding="ascii") == result.stdout
+    rows = receipt.read_text(encoding="ascii").splitlines()
+    assert len(rows) == 10
+    assert rows[5].split("\t")[:2] == ["basis1r2-canary", "720001"]
+    calls = Path(environment["FAKE_CALLS"]).read_text(encoding="ascii").splitlines()
+    assert len(calls) == 5
+    assert sum("--dependency=afterok:720001" in call for call in calls) == 4
+    assert not Path(environment["FAKE_CANCELS"]).exists()
+
+
+def test_basis_recovery_cancels_partial_matrix_on_submission_failure(
+    tmp_path: Path,
+) -> None:
+    environment = _environment(tmp_path, fail_at=3)
+    result = subprocess.run(
+        ("bash", str(RECOVERY_SCRIPT)),
+        env=environment,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    assert not Path(environment["SUBMISSION_RECEIPT"]).exists()
+    canceled = Path(environment["FAKE_CANCELS"]).read_text(
+        encoding="ascii"
+    ).splitlines()
+    assert canceled == ["720001", "720002"]
