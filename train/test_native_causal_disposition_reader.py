@@ -315,6 +315,30 @@ def test_direct_reader_output_bypasses_the_stuck_scalar_gate() -> None:
     assert torch.count_nonzero(direct_read) > 0
 
 
+def test_state_bottleneck_removes_the_direct_query_residual() -> None:
+    torch.manual_seed(29)
+    legacy = SourceDeletedQueryReader(_config()).eval()
+    torch.manual_seed(29)
+    bottleneck = SourceDeletedQueryReader(
+        replace(_config(), reader_state_bottleneck=True)
+    ).eval()
+    bottleneck.load_state_dict(legacy.state_dict(), strict=True)
+    with torch.no_grad():
+        for module in (legacy.cross_attention, bottleneck.cross_attention):
+            for parameter in module.parameters():
+                parameter.zero_()
+    first_query = torch.randn((2, 5, 16))
+    second_query = first_query + 1.0
+    state = _state(committed=1.0, halted=0.0)
+    with torch.inference_mode():
+        legacy_first = legacy(first_query, state)
+        legacy_second = legacy(second_query, state)
+        bottleneck_first = bottleneck(first_query, state)
+        bottleneck_second = bottleneck(second_query, state)
+    assert not torch.allclose(legacy_first, legacy_second)
+    torch.testing.assert_close(bottleneck_first, bottleneck_second)
+
+
 @pytest.mark.parametrize(
     ("committed", "halted", "expected_class"),
     ((0.0, 1.0, 2), (1.0, 1.0, 3)),

@@ -89,6 +89,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--reader-slot-addresses", action="store_true")
     parser.add_argument("--reader-initial-state", action="store_true")
     parser.add_argument("--reader-direct-output", action="store_true")
+    parser.add_argument("--reader-state-bottleneck", action="store_true")
     parser.add_argument("--state-only-motor", action="store_true")
     parser.add_argument(
         "--reader-parameter-dtype",
@@ -410,6 +411,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         reader_slot_addresses=args.reader_slot_addresses,
         reader_initial_state=args.reader_initial_state,
         reader_direct_output=args.reader_direct_output,
+        reader_state_bottleneck=args.reader_state_bottleneck,
     )
     reader = NativeCausalDispositionReader(
         reader_config,
@@ -497,6 +499,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "reader_initial_state": args.reader_initial_state,
             "reader_direct_output": args.reader_direct_output,
             "reader_parameter_dtype": args.reader_parameter_dtype,
+            "reader_state_bottleneck": args.reader_state_bottleneck,
             "state_only_motor": args.state_only_motor,
             "trainable_parameters": trainable_parameter_count,
             "truth_motor_hidden": args.truth_motor_hidden,
@@ -630,6 +633,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "reader_initial_state": args.reader_initial_state,
             "reader_direct_output": args.reader_direct_output,
             "reader_parameter_dtype": args.reader_parameter_dtype,
+            "reader_state_bottleneck": args.reader_state_bottleneck,
             "state_only_motor": args.state_only_motor,
             "trainable_parameters": trainable_parameter_count,
             "truth_motor_hidden": args.truth_motor_hidden,

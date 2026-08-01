@@ -39,6 +39,7 @@ TRAIN_READER=${TRAIN_READER:-0}
 READER_SLOT_ADDRESSES=${READER_SLOT_ADDRESSES:-0}
 READER_INITIAL_STATE=${READER_INITIAL_STATE:-0}
 READER_DIRECT_OUTPUT=${READER_DIRECT_OUTPUT:-0}
+READER_STATE_BOTTLENECK=${READER_STATE_BOTTLENECK:-0}
 STATE_ONLY_MOTOR=${STATE_ONLY_MOTOR:-0}
 READER_PARAMETER_DTYPE=${READER_PARAMETER_DTYPE:-bfloat16}
 MOTOR_QUERY_GEOMETRY=${MOTOR_QUERY_GEOMETRY:-stage}
@@ -80,6 +81,16 @@ case "$READER_DIRECT_OUTPUT" in
   1) direct_output_args+=(--reader-direct-output) ;;
   *)
     echo "READER_DIRECT_OUTPUT must be 0 or 1" >&2
+    exit 2
+    ;;
+esac
+
+state_bottleneck_args=()
+case "$READER_STATE_BOTTLENECK" in
+  0) ;;
+  1) state_bottleneck_args+=(--reader-state-bottleneck) ;;
+  *)
+    echo "READER_STATE_BOTTLENECK must be 0 or 1" >&2
     exit 2
     ;;
 esac
@@ -164,6 +175,7 @@ parent_model_sha=$(sha256sum \
   "${address_args[@]}" \
   "${initial_state_args[@]}" \
   "${direct_output_args[@]}" \
+  "${state_bottleneck_args[@]}" \
   "${state_only_args[@]}" \
   "${reader_args[@]}"
 

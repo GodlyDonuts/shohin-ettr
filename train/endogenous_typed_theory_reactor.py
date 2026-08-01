@@ -53,6 +53,7 @@ class TheoryReactorConfig:
     reader_slot_addresses: bool = False
     reader_initial_state: bool = False
     reader_direct_output: bool = False
+    reader_state_bottleneck: bool = False
     parameter_cap: int = SYSTEM_PARAMETER_CAP
 
     def validate(self, *, n_layer: int | None = None) -> None:
@@ -109,6 +110,8 @@ class TheoryReactorConfig:
             raise TheoryReactorError("reader initial state requires slot addresses")
         if not isinstance(self.reader_direct_output, bool):
             raise TheoryReactorError("reader direct-output flag must be boolean")
+        if not isinstance(self.reader_state_bottleneck, bool):
+            raise TheoryReactorError("reader state-bottleneck flag must be boolean")
 
 
 @dataclass(frozen=True, slots=True)
@@ -1179,8 +1182,9 @@ class SourceDeletedQueryReader(nn.Module):
             dtype=torch.bool,
             device=query.device,
         ).triu(diagonal=1)
+        core_input = read if self.config.reader_state_bottleneck else query + read
         query = self.query_core(
-            query + read,
+            core_input,
             mask=causal_mask,
             src_key_padding_mask=query_padding,
         )
