@@ -85,7 +85,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--gradient-clip", type=float, default=1.0)
     parser.add_argument("--eval-batches", type=int, default=32)
     parser.add_argument("--log-every", type=int, default=20)
-    parser.add_argument("--width", type=int, default=256)
+    parser.add_argument("--width", type=int, default=224)
     parser.add_argument("--query-layers", type=int, default=3)
     parser.add_argument("--state-layers", type=int, default=2)
     parser.add_argument("--num-heads", type=int, default=8)

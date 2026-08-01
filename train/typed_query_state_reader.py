@@ -52,7 +52,7 @@ class TypedQueryStateReader(nn.Module):
         source_vocab_size: int,
         target_vocab_size: int,
         answer_token_ids: tuple[int, int, int, int],
-        width: int = 256,
+        width: int = 224,
         query_layers: int = 3,
         state_layers: int = 2,
         num_heads: int = 8,
