@@ -85,6 +85,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         choices=("joint-global", "causal-owner-alternating"),
         default="joint-global",
     )
+    parser.add_argument(
+        "--semantic-program-source",
+        choices=("predicted", "oracle"),
+        default="predicted",
+    )
     parser.add_argument("--eval-batches", type=int, default=16)
     parser.add_argument("--log-every", type=int, default=10)
     parser.add_argument(
@@ -210,7 +215,15 @@ def _factor_truth_loss(
     }
 
 
-def _semantic_loss(model, reader, batch, specs, *, factor: str | None = None):
+def _semantic_loss(
+    model,
+    reader,
+    batch,
+    specs,
+    *,
+    factor: str | None = None,
+    oracle_program: bool = False,
+):
     compiler_context = torch.no_grad() if factor == "command" else nullcontext()
     with compiler_context:
         initial_state = model.compile_world(
@@ -231,7 +244,7 @@ def _semantic_loss(model, reader, batch, specs, *, factor: str | None = None):
         specs,
         initial_state,
         terminal_state,
-        oracle_program=False,
+        oracle_program=oracle_program,
     )
     if factor is None:
         return _truth_loss(output.vocab_logits, batch)
@@ -266,7 +279,13 @@ def _joint_update(
 ) -> dict[str, object]:
     optimizer.zero_grad(set_to_none=True)
     with _precision_context(is_h100):
-        semantic, semantic_parts = _semantic_loss(model, reader, batch, specs)
+        semantic, semantic_parts = _semantic_loss(
+            model,
+            reader,
+            batch,
+            specs,
+            oracle_program=args.semantic_program_source == "oracle",
+        )
     _require_finite(semantic, "answer")
     semantic_value = float(semantic.detach().cpu())
     semantic_part_values = {
@@ -339,6 +358,7 @@ def _causal_owner_update(
             batch,
             specs,
             factor="world",
+            oracle_program=args.semantic_program_source == "oracle",
         )
     _require_finite(world_semantic, "WORLD answer")
     world_value = float(world_semantic.detach().cpu())
@@ -370,6 +390,7 @@ def _causal_owner_update(
             batch,
             specs,
             factor="command",
+            oracle_program=args.semantic_program_source == "oracle",
         )
     _require_finite(command_semantic, "COMMAND answer")
     command_value = float(command_semantic.detach().cpu())
@@ -533,6 +554,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "required_device_class": args.required_device_class,
             "runtime_precision": str(next(model.parameters()).dtype),
             "schema": CONTRACT_SCHEMA,
+            "semantic_program_source": args.semantic_program_source,
             "source_commit": args.source_commit,
             "start_position": args.start_position,
             "trainable_components": ["compiler", "reactor"],
