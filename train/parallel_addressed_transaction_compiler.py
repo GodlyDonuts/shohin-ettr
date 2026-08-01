@@ -250,16 +250,14 @@ class ParallelScheduledReactor(nn.Module):
     def __init__(
         self,
         compiler: ParallelAddressedTransactionCompiler,
-        executor: GenericTransactionReactor,
+        config: TheoryReactorConfig,
     ) -> None:
         super().__init__()
-        if compiler.config != executor.config:
+        config.validate()
+        if compiler.config != config:
             raise TheoryReactorError("parallel reactor config differs")
-        self.config = compiler.config
+        self.config = config
         self.compiler = compiler
-        self.executor = executor
-        for parameter in self.executor.parameters():
-            parameter.requires_grad_(False)
 
     def apply(
         self,
@@ -269,7 +267,10 @@ class ParallelScheduledReactor(nn.Module):
         hard: bool = False,
         validate: bool = True,
     ) -> TypedTheoryState:
-        return self.executor.apply(
+        # GenericTransactionReactor.apply is the audited exact algebra.  It
+        # depends only on ``config`` and carries no learned policy weights.
+        return GenericTransactionReactor.apply(
+            self,
             state,
             policy,
             hard=hard,
@@ -296,7 +297,7 @@ class ParallelScheduledReactor(nn.Module):
         )
         states: list[TypedTheoryState] = []
         for step in range(steps):
-            state = self.executor.apply(
+            state = self.apply(
                 state,
                 schedule.policy(step),
                 hard=hard,

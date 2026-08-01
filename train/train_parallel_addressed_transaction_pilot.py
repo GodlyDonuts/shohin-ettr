@@ -42,8 +42,8 @@ from train_ettr_component_island import (
 )
 
 
-CONTRACT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-contract-v1"
-REPORT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-report-v1"
+CONTRACT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-contract-v2"
+REPORT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-report-v2"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _FIELDS = (
@@ -376,7 +376,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     schedule_parameters = sum(
         parameter.numel() for parameter in schedule_compiler.parameters()
     )
-    complete_parameters = replacement_parameters + schedule_parameters
+    removed_reactor_parameters = sum(
+        parameter.numel() for parameter in executor.parameters()
+    )
+    complete_parameters = (
+        replacement_parameters
+        - removed_reactor_parameters
+        + schedule_parameters
+    )
     if complete_parameters > 200_000_000:
         raise ParallelTransactionPilotError(
             "parallel transaction system exceeds parameter cap"
@@ -406,8 +413,23 @@ def main(argv: Sequence[str] | None = None) -> int:
             data_seed=args.data_seed,
             max_batches=args.eval_batches,
         )
-        parallel_reactor = ParallelScheduledReactor(schedule_compiler, executor)
+        parallel_reactor = ParallelScheduledReactor(
+            schedule_compiler,
+            model.config,
+        )
         model.reactor = parallel_reactor
+        deployed_parameters = (
+            sum(parameter.numel() for parameter in model.parameters())
+            - sum(
+                parameter.numel()
+                for parameter in model.query_reader.parameters()
+            )
+            + reader_parameters
+        )
+        if deployed_parameters != complete_parameters:
+            raise ParallelTransactionPilotError(
+                "parallel transaction deployed parameter count differs"
+            )
         before_end_to_end = _evaluate(
             reader,
             model,
@@ -421,6 +443,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             "architecture": {
                 "layers": args.layers,
                 "num_heads": args.num_heads,
+                "parameterless_exact_algebra": True,
+                "removed_recurrent_policy_parameters": (
+                    removed_reactor_parameters
+                ),
                 "seed": args.architecture_seed,
                 "sticky_schedule": True,
                 "width": args.width,
