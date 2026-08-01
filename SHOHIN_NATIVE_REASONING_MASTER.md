@@ -53336,3 +53336,33 @@ separate inductive-bias improvement from simple data coverage.
 
 Current decision:
 `require_multiple_architecture_initializations_to_cross_world_and_command_and_choose_between_grounded_pointers_and_full_coverage_from_that_hard_evidence`.
+
+## 2026-08-01 Closed-Loop Semantic Prefix Credit
+
+The first three completed 5,000-update grounded-pointer replications do not
+sustain the canary's strict WORLD movement. Seed 31 at `3e-4` reaches 14.12%
+exact schedules, 70.70% factual top-1, 0% strict WORLD, and 4.55% strict
+COMMAND. Its lower-rate arm reaches a better 18.28% exact schedule rate but
+0% on both strict gates. Fresh seed 32 at `3e-4` also remains zero on both
+strict gates. The result is important because it separates instruction
+imitation from reasoning: a schedule can match more labeled fields and still
+construct the wrong causally relevant state.
+
+The next objective trains the schedule against the exact state trajectory it
+actually induces. The parallel compiler still emits one complete schedule and
+the same parameter-free transaction algebra still executes it. During
+training, every predicted soft prefix is compared with the corresponding
+label-executed prefix using class-balanced bounded Brier losses over active,
+root, relation, type, value, committed, and halted state. The prediction is
+never replaced by an oracle prefix, so errors remain closed-loop and later
+prefixes receive credit for recovering from earlier mistakes. Query text and
+answers remain absent; the source-deleted hard autonomous evaluator is
+unchanged.
+
+This is a targeted response to the measured composition defect, not an
+unbounded end-answer objective. Its first gate is a seed-matched 500-update
+canary at weight 0.25. It must remain finite, preserve the exact initialization
+receipt, and improve hard terminal or causal behavior before replication.
+
+Current decision:
+`train_the_compiler_on_exact_semantic_prefix_consequences_not_only_independent_instruction_labels_then_require_multiseed_world_and_command_transfer`.

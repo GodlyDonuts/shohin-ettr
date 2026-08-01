@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-01 18:43 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-01 19:47 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -95,8 +95,12 @@
 > replaces fixed 64-class source/target heads with state-grounded pointers and
 > an exact predicted-prefix validity replay. Its 500-update canary raises exact
 > schedules from the matched 10.76% to 12.59% and WORLD margin-1 from zero to
-> 7.14%; strict pairs remain zero. Four 5,000-update grounded replications and
-> four 15,000-update full-coverage controls are live. No current artifact is
+> 7.14%; strict pairs remain zero. Three completed 5,000-update grounded arms
+> fail to sustain strict WORLD, including one arm with 18.28% exact schedules,
+> proving that better local schedule imitation is insufficient. Four
+> 15,000-update full-coverage controls remain live. Contract v4 now adds an
+> optional bounded semantic-prefix objective through the exact schedule
+> executor; its seed-matched canary is the next gate. No current artifact is
 > promoted as stable native reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
@@ -22767,3 +22771,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `treat_seed31_as_a_transferable_but_basin_sensitive_native_baseline_use_full_data_coverage_and_prefix_grounded_pointers_to_test_initialization_stability_then_cross_only_completed_bounded_world_state`.
+
+- **2026-08-01 18:43--19:47 EDT** -- **Grounded pointers improve local
+  schedule imitation but do not sustain the canary's strict WORLD movement;
+  a bounded closed-loop semantic-prefix objective is implemented for the
+  exact schedule executor.**
+
+  Three of four grounded 5,000-update arms have completed. Seed 31 at
+  learning rate `3e-4` reaches exact schedules `14.12%`, factual top-1
+  `70.70%`, WORLD strict `0%` with margin-1 `1.79%`, and COMMAND strict
+  `4.55%`. The matched `1e-4` arm improves exact schedules to `18.28%` but
+  returns both strict gates to zero. Fresh seed 32 at `3e-4` reaches exact
+  schedules `13.39%`, factual `67.19%`, and strict WORLD/COMMAND both zero.
+  Job `725299`, fresh seed 32 at `1e-4`, remains live. These completed arms
+  reject the interpretation that the 500-update grounded canary's WORLD
+  margin necessarily compounds with training. They also strengthen the
+  finding that local instruction accuracy is not a sufficient proxy for
+  semantic composition.
+
+  The next bounded intervention follows that evidence directly. Contract v4
+  adds an optional semantic-prefix objective to the parallel schedule
+  compiler. During training only, the schedule's own soft predictions are
+  replayed through the existing exact transaction algebra and compared after
+  every operation with the state prefix produced by the labeled transaction.
+  Sparse binary fields use class-balanced Brier loss and categorical fields
+  use bounded categorical Brier loss. No QUERY bytes, answer label, oracle
+  state, or oracle program enters inference or evaluation. The default weight
+  is zero, preserving all existing lineages. Twenty-one focused and related
+  tests pass with clean Ruff, byte compilation, Bash syntax, and diff checks.
+  The preregistered canary uses seed 31/data 11, `3e-4`, 500 updates, and
+  semantic-prefix weight `0.25`; it must match the old initialization and
+  remain numerically bounded before any 5,000-update replication is allowed.
+
+  Decision:
+  `reject_local_schedule_imitation_as_a_sufficient_objective_and_test_bounded_exact_prefix_state_credit_without_changing_the_hard_autonomous_gate`.

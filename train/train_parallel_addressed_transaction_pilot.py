@@ -34,6 +34,7 @@ from probe_ettr_oracle_interfaces import (
     _packet_batch_counts,
     packet_targets_to_state,
     policy_masks,
+    target_policy,
 )
 from train_ettr_component_island import (
     _canonical_bytes,
@@ -42,8 +43,8 @@ from train_ettr_component_island import (
 )
 
 
-CONTRACT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-contract-v3"
-REPORT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-report-v3"
+CONTRACT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-contract-v4"
+REPORT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-report-v4"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _FIELDS = (
@@ -83,6 +84,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--start-position", type=int, default=13_200)
     parser.add_argument("--learning-rate", type=float, default=3e-4)
     parser.add_argument("--gradient-clip", type=float, default=1.0)
+    parser.add_argument("--semantic-prefix-weight", type=float, default=0.0)
     parser.add_argument("--eval-batches", type=int, default=16)
     parser.add_argument("--log-every", type=int, default=10)
     parser.add_argument("--width", type=int, default=384)
@@ -132,6 +134,8 @@ def _validate_args(args: argparse.Namespace) -> None:
         or not 0.0 < args.learning_rate < 1.0
         or not math.isfinite(args.gradient_clip)
         or args.gradient_clip <= 0.0
+        or not math.isfinite(args.semantic_prefix_weight)
+        or args.semantic_prefix_weight < 0.0
         or args.output.exists()
         or args.output.is_symlink()
         or not args.output.parent.is_dir()
@@ -188,6 +192,159 @@ def _schedule_loss(schedule, targets) -> tuple[torch.Tensor, dict[str, float]]:
         )
     return torch.stack(tuple(losses.values())).mean(), {
         name: float(value.detach().cpu()) for name, value in losses.items()
+    }
+
+
+def _balanced_binary_brier(
+    predicted: torch.Tensor,
+    target: torch.Tensor,
+    mask: torch.Tensor,
+) -> torch.Tensor:
+    """Score sparse binary state coordinates without majority-zero collapse."""
+
+    if (
+        predicted.shape != target.shape
+        or mask.shape != target.shape
+        or mask.dtype != torch.bool
+    ):
+        raise ParallelTransactionPilotError(
+            "parallel transaction binary state geometry differs"
+        )
+    predicted = predicted.float()
+    target = target.float()
+    if not bool(
+        ((predicted >= 0.0) & (predicted <= 1.0)).all()
+        and ((target == 0.0) | (target == 1.0)).all()
+    ):
+        raise ParallelTransactionPilotError(
+            "parallel transaction binary state probabilities differ"
+        )
+    losses = (predicted - target).square()
+    positive = mask & target.bool()
+    negative = mask & ~target.bool()
+    class_means = []
+    if bool(positive.any()):
+        class_means.append(losses[positive].mean())
+    if bool(negative.any()):
+        class_means.append(losses[negative].mean())
+    if not class_means:
+        raise ParallelTransactionPilotError(
+            "parallel transaction binary state mask is empty"
+        )
+    return torch.stack(class_means).mean()
+
+
+def _categorical_brier(
+    predicted: torch.Tensor,
+    target: torch.Tensor,
+    mask: torch.Tensor,
+) -> torch.Tensor:
+    if (
+        predicted.shape != target.shape
+        or predicted.ndim != 3
+        or mask.shape != predicted.shape[:2]
+        or mask.dtype != torch.bool
+        or not bool(mask.any())
+    ):
+        raise ParallelTransactionPilotError(
+            "parallel transaction categorical state geometry differs"
+        )
+    return (predicted.float() - target.float()).square().sum(-1)[mask].mean()
+
+
+def _state_brier(
+    predicted,
+    target,
+    *,
+    slot_mask: torch.Tensor,
+    relation_mask: torch.Tensor,
+) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
+    categorical_mask = slot_mask & target.active.bool()
+    parts = {
+        "active": _balanced_binary_brier(
+            predicted.active,
+            target.active,
+            slot_mask,
+        ),
+        "committed": _balanced_binary_brier(
+            predicted.committed,
+            target.committed,
+            torch.ones_like(target.committed, dtype=torch.bool),
+        ),
+        "halted": _balanced_binary_brier(
+            predicted.halted,
+            target.halted,
+            torch.ones_like(target.halted, dtype=torch.bool),
+        ),
+        "relations": _balanced_binary_brier(
+            predicted.relations,
+            target.relations,
+            relation_mask,
+        ),
+        "root": _balanced_binary_brier(
+            predicted.root,
+            target.root,
+            slot_mask,
+        ),
+        "type_index": _categorical_brier(
+            predicted.type_probabilities,
+            target.type_probabilities,
+            categorical_mask,
+        ),
+        "value_code": _categorical_brier(
+            predicted.value_probabilities,
+            target.value_probabilities,
+            categorical_mask,
+        ),
+    }
+    return torch.stack(tuple(parts.values())).mean(), parts
+
+
+def _semantic_prefix_loss(
+    schedule,
+    executor,
+    initial,
+    transaction_targets,
+    packet_targets,
+) -> tuple[torch.Tensor, dict[str, float]]:
+    """Align the schedule with every exact state prefix it creates."""
+
+    predicted = initial
+    oracle = initial
+    losses = []
+    totals: dict[str, torch.Tensor] = {}
+    steps = transaction_targets.opcode.shape[1]
+    for step in range(steps):
+        predicted = executor.apply(
+            predicted,
+            schedule.policy(step),
+            hard=False,
+            validate=False,
+        )
+        with torch.no_grad():
+            oracle = executor.apply(
+                oracle,
+                target_policy(
+                    transaction_targets,
+                    executor.config,
+                    step,
+                    dtype=initial.active.dtype,
+                ),
+                hard=True,
+                validate=False,
+            )
+        loss, parts = _state_brier(
+            predicted,
+            oracle,
+            slot_mask=packet_targets.slot_mask,
+            relation_mask=packet_targets.relation_mask,
+        )
+        losses.append(loss)
+        for name, value in parts.items():
+            totals[name] = totals.get(name, value * 0.0) + value
+    return torch.stack(losses).mean(), {
+        name: float((value / steps).detach().cpu())
+        for name, value in sorted(totals.items())
     }
 
 
@@ -473,6 +630,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "required_device_class": args.required_device_class,
             "schedule_parameters": schedule_parameters,
             "schema": CONTRACT_SCHEMA,
+            "semantic_prefix_weight": args.semantic_prefix_weight,
             "source_commit": args.source_commit,
             "start_position": args.start_position,
             "updates": args.updates,
@@ -492,6 +650,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         schedule_compiler.train()
         last_loss = None
+        last_schedule_loss = None
+        last_semantic_prefix_loss = None
         last_position = args.start_position
         for update in range(1, args.updates + 1):
             try:
@@ -525,15 +685,36 @@ def main(argv: Sequence[str] | None = None) -> int:
                     steps=batch.transaction_targets.opcode.shape[1],
                     hard=False,
                 )
-                loss, parts = _schedule_loss(
+                schedule_loss, parts = _schedule_loss(
                     schedule,
                     batch.transaction_targets,
+                )
+                if args.semantic_prefix_weight > 0.0:
+                    semantic_prefix_loss, semantic_prefix_parts = (
+                        _semantic_prefix_loss(
+                            schedule,
+                            executor,
+                            initial,
+                            batch.transaction_targets,
+                            batch.terminal_packet_targets,
+                        )
+                    )
+                else:
+                    semantic_prefix_loss = schedule_loss * 0.0
+                    semantic_prefix_parts = {}
+                loss = (
+                    schedule_loss
+                    + args.semantic_prefix_weight * semantic_prefix_loss
                 )
             if not bool(torch.isfinite(loss)):
                 raise ParallelTransactionPilotError(
                     "parallel transaction loss is nonfinite"
                 )
             last_loss = float(loss.detach().cpu())
+            last_schedule_loss = float(schedule_loss.detach().cpu())
+            last_semantic_prefix_loss = float(
+                semantic_prefix_loss.detach().cpu()
+            )
             loss.backward()
             gradient_norm = torch.nn.utils.clip_grad_norm_(
                 schedule_compiler.parameters(),
@@ -550,6 +731,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "parts": parts,
                     "position": last_position,
                     "schema": "shohin-ettr-parallel-addressed-transaction-metric-v1",
+                    "semantic_prefix_loss": last_semantic_prefix_loss,
+                    "semantic_prefix_parts": semantic_prefix_parts,
+                    "schedule_loss": last_schedule_loss,
                     "update": update,
                 }
                 with (args.output / "train.jsonl").open("ab", buffering=0) as log:
@@ -590,6 +774,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             "initial_schedule_sha256": initial_sha256,
             "last_loss": last_loss,
             "last_position": last_position,
+            "last_schedule_loss": last_schedule_loss,
+            "last_semantic_prefix_loss": last_semantic_prefix_loss,
             "protected_checkpoint_sha256": provenance.checkpoint_sha256,
             "runtime_precision": str(next(schedule_compiler.parameters()).dtype),
             "schema": REPORT_SCHEMA,

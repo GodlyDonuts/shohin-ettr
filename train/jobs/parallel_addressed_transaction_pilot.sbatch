@@ -31,6 +31,7 @@ UPDATES=${UPDATES:-500}
 START_POSITION=${START_POSITION:-13200}
 LEARNING_RATE=${LEARNING_RATE:-3e-4}
 GRADIENT_CLIP=${GRADIENT_CLIP:-1.0}
+SEMANTIC_PREFIX_WEIGHT=${SEMANTIC_PREFIX_WEIGHT:-0.0}
 EVAL_BATCHES=${EVAL_BATCHES:-32}
 WIDTH=${WIDTH:-384}
 LAYERS=${LAYERS:-3}
@@ -117,6 +118,7 @@ compiler_sha=$(sha256sum \
   --start-position "$START_POSITION" \
   --learning-rate "$LEARNING_RATE" \
   --gradient-clip "$GRADIENT_CLIP" \
+  --semantic-prefix-weight "$SEMANTIC_PREFIX_WEIGHT" \
   --eval-batches "$EVAL_BATCHES" \
   --width "$WIDTH" \
   --layers "$LAYERS" \
