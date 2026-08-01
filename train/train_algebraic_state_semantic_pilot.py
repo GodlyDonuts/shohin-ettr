@@ -22,6 +22,7 @@ from typing import Sequence
 
 from safetensors.torch import save_file
 import torch
+import torch.nn.functional as F
 
 from eval_algebraic_query_joint_state import (
     _evaluate,
@@ -29,7 +30,7 @@ from eval_algebraic_query_joint_state import (
     _reader_forward,
     _strict_load_joint_model,
 )
-from ettr_objectives import ETTRObjectiveConfig
+from ettr_objectives import ETTRObjectiveConfig, _causal_query_binding_loss
 from ettr_packet_index import ETTRDiskPacketSufficiencyIndex
 from ettr_query_supervision import iter_batches_with_query_specs
 from ettr_v3_streaming import ETTRV3StreamingRelease, move_continuation_batch
@@ -37,6 +38,7 @@ from eval_ettr_v3 import _parameter_sha256
 from train_ettr_component_island import (
     _canonical_bytes,
     _component_state,
+    _reader_pairs_from_logits,
     _sha256_file,
     _write_no_replace,
     component_loss,
@@ -78,6 +80,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--gradient-clip", type=float, default=1.0)
     parser.add_argument("--compiler-aux-weight", type=float, default=0.25)
     parser.add_argument("--reactor-aux-weight", type=float, default=0.25)
+    parser.add_argument(
+        "--optimization-mode",
+        choices=("joint-global", "causal-owner-alternating"),
+        default="joint-global",
+    )
     parser.add_argument("--eval-batches", type=int, default=16)
     parser.add_argument("--log-every", type=int, default=10)
     parser.add_argument(
@@ -156,12 +163,61 @@ def _set_training_ownership(model, reader) -> tuple[list[torch.Tensor], int]:
     return trainable, sum(parameter.numel() for parameter in trainable)
 
 
-def _semantic_loss(model, reader, batch, specs):
-    initial_state = model.compile_world(
-        batch.episodes.world.tokens,
-        attention_mask=batch.episodes.world.attention_mask,
-        hard=True,
-    )
+def _owner_parameters(model, owner: str) -> list[torch.Tensor]:
+    if owner not in {"compiler", "reactor"}:
+        raise AlgebraicStateSemanticError(
+            "algebraic state-semantic owner differs"
+        )
+    module = getattr(model, owner)
+    return list(module.parameters())
+
+
+def _set_active_owner(model, owner: str | None) -> None:
+    for name in ("compiler", "reactor"):
+        active = owner is None or name == owner
+        for parameter in getattr(model, name).parameters():
+            parameter.requires_grad_(active)
+
+
+def _factor_truth_loss(
+    logits: torch.Tensor,
+    target_batch,
+    *,
+    factor: str,
+) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
+    if factor not in {"world", "command"}:
+        raise AlgebraicStateSemanticError(
+            "algebraic state-semantic factor differs"
+        )
+    targets = target_batch.episodes.query.targets.gather(
+        1,
+        target_batch.episodes.query_read_index[:, None],
+    ).squeeze(1)
+    factual = F.cross_entropy(logits.float(), targets)
+    pairs = _reader_pairs_from_logits(logits, target_batch)
+    binding = _causal_query_binding_loss(
+        pairs[factor],
+        margin=1.0,
+        reduction="balanced-logmeanexp",
+        classification_weight=0.25,
+        effect_weight=1.0,
+        invariance_weight=0.25,
+        risk_temperature=0.25,
+    )[0]
+    return 0.125 * factual + 0.5 * binding, {
+        f"{factor}_binding": binding,
+        "factual": factual,
+    }
+
+
+def _semantic_loss(model, reader, batch, specs, *, factor: str | None = None):
+    compiler_context = torch.no_grad() if factor == "command" else nullcontext()
+    with compiler_context:
+        initial_state = model.compile_world(
+            batch.episodes.world.tokens,
+            attention_mask=batch.episodes.world.attention_mask,
+            hard=True,
+        )
     terminal_state, _trace = model.execute(
         initial_state,
         steps=batch.transaction_targets.opcode.shape[1],
@@ -177,7 +233,189 @@ def _semantic_loss(model, reader, batch, specs):
         terminal_state,
         oracle_program=False,
     )
-    return _truth_loss(output.vocab_logits, batch)
+    if factor is None:
+        return _truth_loss(output.vocab_logits, batch)
+    return _factor_truth_loss(output.vocab_logits, batch, factor=factor)
+
+
+def _precision_context(is_h100: bool):
+    return (
+        torch.autocast(device_type="cuda", dtype=torch.bfloat16)
+        if is_h100
+        else nullcontext()
+    )
+
+
+def _require_finite(loss: torch.Tensor, label: str) -> None:
+    if not bool(torch.isfinite(loss)):
+        raise AlgebraicStateSemanticError(
+            f"algebraic state-semantic {label} loss is nonfinite"
+        )
+
+
+def _joint_update(
+    model,
+    reader,
+    batch,
+    specs,
+    *,
+    optimizer,
+    trainable,
+    args,
+    is_h100: bool,
+) -> dict[str, object]:
+    optimizer.zero_grad(set_to_none=True)
+    with _precision_context(is_h100):
+        semantic, semantic_parts = _semantic_loss(model, reader, batch, specs)
+    _require_finite(semantic, "answer")
+    semantic_value = float(semantic.detach().cpu())
+    semantic_part_values = {
+        name: float(value.detach().cpu())
+        for name, value in semantic_parts.items()
+    }
+    semantic.backward()
+    del semantic, semantic_parts
+
+    with _precision_context(is_h100):
+        compiler_aux, compiler_parts = component_loss(model, batch, "compiler")
+    _require_finite(compiler_aux, "compiler")
+    compiler_value = float(compiler_aux.detach().cpu())
+    (args.compiler_aux_weight * compiler_aux).backward()
+    del compiler_aux
+
+    with _precision_context(is_h100):
+        reactor_aux, reactor_parts = component_loss(
+            model,
+            batch,
+            "reactor",
+            reactor_reduction=args.reactor_reduction,
+        )
+    _require_finite(reactor_aux, "reactor")
+    reactor_value = float(reactor_aux.detach().cpu())
+    (args.reactor_aux_weight * reactor_aux).backward()
+    del reactor_aux
+
+    gradient_norm = torch.nn.utils.clip_grad_norm_(
+        trainable,
+        args.gradient_clip,
+        error_if_nonfinite=True,
+    )
+    optimizer.step()
+    return {
+        "compiler_aux": compiler_value,
+        "compiler_parts": compiler_parts,
+        "gradient_norm_pre_clip": float(
+            gradient_norm.detach().float().cpu()
+        ),
+        "loss": (
+            semantic_value
+            + args.compiler_aux_weight * compiler_value
+            + args.reactor_aux_weight * reactor_value
+        ),
+        "reactor_aux": reactor_value,
+        "reactor_parts": reactor_parts,
+        "semantic": semantic_value,
+        "semantic_parts": semantic_part_values,
+    }
+
+
+def _causal_owner_update(
+    model,
+    reader,
+    batch,
+    specs,
+    *,
+    optimizers,
+    owner_parameters,
+    args,
+    is_h100: bool,
+) -> dict[str, object]:
+    _set_active_owner(model, "compiler")
+    optimizers["compiler"].zero_grad(set_to_none=True)
+    with _precision_context(is_h100):
+        world_semantic, world_parts = _semantic_loss(
+            model,
+            reader,
+            batch,
+            specs,
+            factor="world",
+        )
+    _require_finite(world_semantic, "WORLD answer")
+    world_value = float(world_semantic.detach().cpu())
+    world_part_values = {
+        f"world_owner_{name}": float(value.detach().cpu())
+        for name, value in world_parts.items()
+    }
+    world_semantic.backward()
+    del world_semantic, world_parts
+    with _precision_context(is_h100):
+        compiler_aux, compiler_parts = component_loss(model, batch, "compiler")
+    _require_finite(compiler_aux, "compiler")
+    compiler_value = float(compiler_aux.detach().cpu())
+    (args.compiler_aux_weight * compiler_aux).backward()
+    del compiler_aux
+    compiler_norm = torch.nn.utils.clip_grad_norm_(
+        owner_parameters["compiler"],
+        args.gradient_clip,
+        error_if_nonfinite=True,
+    )
+    optimizers["compiler"].step()
+
+    _set_active_owner(model, "reactor")
+    optimizers["reactor"].zero_grad(set_to_none=True)
+    with _precision_context(is_h100):
+        command_semantic, command_parts = _semantic_loss(
+            model,
+            reader,
+            batch,
+            specs,
+            factor="command",
+        )
+    _require_finite(command_semantic, "COMMAND answer")
+    command_value = float(command_semantic.detach().cpu())
+    command_part_values = {
+        f"command_owner_{name}": float(value.detach().cpu())
+        for name, value in command_parts.items()
+    }
+    command_semantic.backward()
+    del command_semantic, command_parts
+    with _precision_context(is_h100):
+        reactor_aux, reactor_parts = component_loss(
+            model,
+            batch,
+            "reactor",
+            reactor_reduction=args.reactor_reduction,
+        )
+    _require_finite(reactor_aux, "reactor")
+    reactor_value = float(reactor_aux.detach().cpu())
+    (args.reactor_aux_weight * reactor_aux).backward()
+    del reactor_aux
+    reactor_norm = torch.nn.utils.clip_grad_norm_(
+        owner_parameters["reactor"],
+        args.gradient_clip,
+        error_if_nonfinite=True,
+    )
+    optimizers["reactor"].step()
+    _set_active_owner(model, None)
+
+    semantic_value = world_value + command_value
+    return {
+        "compiler_aux": compiler_value,
+        "compiler_parts": compiler_parts,
+        "gradient_norm_pre_clip": {
+            "compiler": float(compiler_norm.detach().float().cpu()),
+            "reactor": float(reactor_norm.detach().float().cpu()),
+        },
+        "loss": (
+            semantic_value
+            + args.compiler_aux_weight * compiler_value
+            + args.reactor_aux_weight * reactor_value
+        ),
+        "reactor_aux": reactor_value,
+        "reactor_parts": reactor_parts,
+        "semantic": semantic_value,
+        "semantic_parts": world_part_values | command_part_values,
+    }
 
 
 def _save_component(model, component: str, path: Path) -> str:
@@ -227,13 +465,31 @@ def main(argv: Sequence[str] | None = None) -> int:
         device=device,
     )
     trainable, trainable_parameters = _set_training_ownership(model, reader)
-    optimizer = torch.optim.AdamW(
-        trainable,
-        lr=args.learning_rate,
-        betas=(0.9, 0.95),
-        weight_decay=0.01,
-        fused=True,
-    )
+    owner_parameters = {
+        owner: _owner_parameters(model, owner)
+        for owner in ("compiler", "reactor")
+    }
+    optimizer = None
+    optimizers = None
+    if args.optimization_mode == "joint-global":
+        optimizer = torch.optim.AdamW(
+            trainable,
+            lr=args.learning_rate,
+            betas=(0.9, 0.95),
+            weight_decay=0.01,
+            fused=True,
+        )
+    else:
+        optimizers = {
+            owner: torch.optim.AdamW(
+                parameters,
+                lr=args.learning_rate,
+                betas=(0.9, 0.95),
+                weight_decay=0.01,
+                fused=True,
+            )
+            for owner, parameters in owner_parameters.items()
+        }
     packet_index = ETTRDiskPacketSufficiencyIndex(stream.packet_index_root)
     objective_config = ETTRObjectiveConfig(vocab_size=model.base.cfg.vocab_size)
     try:
@@ -268,6 +524,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "joint_model_sha256": args.joint_model_sha256,
             "joint_run_contract_sha256": args.joint_run_contract_sha256,
             "learning_rate": args.learning_rate,
+            "optimization_mode": args.optimization_mode,
             "reader_parameters": reader_parameters,
             "reactor_aux_weight": args.reactor_aux_weight,
             "reactor_reduction": args.reactor_reduction,
@@ -312,93 +569,35 @@ def main(argv: Sequence[str] | None = None) -> int:
             batch = move_continuation_batch(cpu_batch, device)
             specs = cpu_specs.to(device)
             batch.validate(model.config, objective_config)
-            optimizer.zero_grad(set_to_none=True)
-
-            with (
-                torch.autocast(device_type="cuda", dtype=torch.bfloat16)
-                if is_h100
-                else nullcontext()
-            ):
-                semantic, semantic_parts = _semantic_loss(
+            if args.optimization_mode == "joint-global":
+                assert optimizer is not None
+                metric = _joint_update(
                     model,
                     reader,
                     batch,
                     specs,
+                    optimizer=optimizer,
+                    trainable=trainable,
+                    args=args,
+                    is_h100=is_h100,
                 )
-            if not bool(torch.isfinite(semantic)):
-                raise AlgebraicStateSemanticError(
-                    "algebraic state-semantic answer loss is nonfinite"
-                )
-            semantic_value = float(semantic.detach().cpu())
-            semantic_part_values = {
-                name: float(value.detach().cpu())
-                for name, value in semantic_parts.items()
-            }
-            semantic.backward()
-            del semantic, semantic_parts
-
-            with (
-                torch.autocast(device_type="cuda", dtype=torch.bfloat16)
-                if is_h100
-                else nullcontext()
-            ):
-                compiler_aux, compiler_parts = component_loss(
+            else:
+                assert optimizers is not None
+                metric = _causal_owner_update(
                     model,
+                    reader,
                     batch,
-                    "compiler",
+                    specs,
+                    optimizers=optimizers,
+                    owner_parameters=owner_parameters,
+                    args=args,
+                    is_h100=is_h100,
                 )
-            if not bool(torch.isfinite(compiler_aux)):
-                raise AlgebraicStateSemanticError(
-                    "algebraic state-semantic compiler loss is nonfinite"
-                )
-            compiler_value = float(compiler_aux.detach().cpu())
-            (args.compiler_aux_weight * compiler_aux).backward()
-            del compiler_aux
-
-            with (
-                torch.autocast(device_type="cuda", dtype=torch.bfloat16)
-                if is_h100
-                else nullcontext()
-            ):
-                reactor_aux, reactor_parts = component_loss(
-                    model,
-                    batch,
-                    "reactor",
-                    reactor_reduction=args.reactor_reduction,
-                )
-            if not bool(torch.isfinite(reactor_aux)):
-                raise AlgebraicStateSemanticError(
-                    "algebraic state-semantic reactor loss is nonfinite"
-                )
-            reactor_value = float(reactor_aux.detach().cpu())
-            (args.reactor_aux_weight * reactor_aux).backward()
-            del reactor_aux
-
-            gradient_norm = torch.nn.utils.clip_grad_norm_(
-                trainable,
-                args.gradient_clip,
-                error_if_nonfinite=True,
-            )
-            optimizer.step()
-            last_loss = (
-                semantic_value
-                + args.compiler_aux_weight * compiler_value
-                + args.reactor_aux_weight * reactor_value
-            )
+            last_loss = float(metric["loss"])
             if update % args.log_every == 0 or update == args.updates:
-                metric = {
-                    "compiler_aux": compiler_value,
-                    "compiler_parts": compiler_parts,
-                    "gradient_norm_pre_clip": float(
-                        gradient_norm.detach().float().cpu()
-                    ),
-                    "loss": last_loss,
+                metric |= {
                     "position": last_position,
-                    "reactor_aux": reactor_value,
-                    "reactor_parts": reactor_parts,
                     "schema": "shohin-ettr-algebraic-state-semantic-metric-v1",
-                    "semantic": semantic_value,
-                    "semantic_parts": semantic_part_values,
                     "update": update,
                 }
                 with (args.output / "train.jsonl").open("ab", buffering=0) as log:

@@ -32,6 +32,7 @@ LEARNING_RATE=${LEARNING_RATE:-3e-5}
 GRADIENT_CLIP=${GRADIENT_CLIP:-1.0}
 COMPILER_AUX_WEIGHT=${COMPILER_AUX_WEIGHT:-0.25}
 REACTOR_AUX_WEIGHT=${REACTOR_AUX_WEIGHT:-0.25}
+OPTIMIZATION_MODE=${OPTIMIZATION_MODE:-joint-global}
 EVAL_BATCHES=${EVAL_BATCHES:-16}
 REACTOR_REDUCTION=${REACTOR_REDUCTION:-head-class-balanced}
 REQUIRED_DEVICE_CLASS=${REQUIRED_DEVICE_CLASS:-h100}
@@ -101,6 +102,7 @@ compiler_sha=$(sha256sum \
   --gradient-clip "$GRADIENT_CLIP" \
   --compiler-aux-weight "$COMPILER_AUX_WEIGHT" \
   --reactor-aux-weight "$REACTOR_AUX_WEIGHT" \
+  --optimization-mode "$OPTIMIZATION_MODE" \
   --eval-batches "$EVAL_BATCHES" \
   --reactor-reduction "$REACTOR_REDUCTION" \
   --required-device-class "$REQUIRED_DEVICE_CLASS"
