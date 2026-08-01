@@ -152,3 +152,35 @@ def test_algebraic_reader_hides_post_boundary_query_tokens() -> None:
         first = reader(left, mask, torch.tensor([3]), initial, terminal)
         second = reader(right, mask, torch.tensor([3]), initial, terminal)
     torch.testing.assert_close(first.vocab_logits, second.vocab_logits)
+
+
+def test_algebraic_truth_supplies_state_gradients() -> None:
+    torch.manual_seed(7)
+    config = _config()
+    reader = AlgebraicQueryStateReader(
+        config,
+        source_vocab_size=32,
+        target_vocab_size=41,
+        answer_token_ids=(3, 5, 7, 11),
+        width=64,
+        query_layers=1,
+        num_heads=4,
+        max_query_tokens=6,
+    ).eval()
+    for parameter in reader.parameters():
+        parameter.requires_grad_(False)
+    initial = _state(config)
+    terminal = _state(config)
+    terminal.value_probabilities.requires_grad_(True)
+    output = reader(
+        torch.tensor([[2, 3, 4, 5]]),
+        torch.ones(1, 4, dtype=torch.bool),
+        torch.tensor([3]),
+        initial,
+        terminal,
+        teacher_program=_spec("slot_is", (0, 1)),
+    )
+    (-output.class_logits[0, 1]).backward()
+    gradient = terminal.value_probabilities.grad
+    assert gradient is not None
+    assert float(gradient[0, 32, 34].abs()) > 0.0
