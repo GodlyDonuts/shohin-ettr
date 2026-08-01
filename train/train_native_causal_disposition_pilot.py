@@ -2,10 +2,10 @@
 """Fit the native ETTR disposition motor on oracle terminal states.
 
 This is an interface diagnostic, not an autonomous reasoning claim. The
-backbone, compiler, reactor, and warm-started generic reader remain frozen;
-only the dedicated truth motor and its normalization are optimized. A later
-source-deleted composition is admissible only if both held-out causal factors
-improve here.
+backbone, compiler, and reactor remain frozen. The experiment can isolate a
+dedicated linear or nonlinear truth motor, or jointly adapt the warm-started
+query/state reader. A later source-deleted composition is admissible only if
+both held-out causal factors improve here.
 """
 
 from __future__ import annotations
@@ -82,6 +82,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--gradient-clip", type=float, default=1.0)
     parser.add_argument("--eval-batches", type=int, default=32)
     parser.add_argument("--log-every", type=int, default=10)
+    parser.add_argument("--truth-motor-hidden", type=int, default=0)
+    parser.add_argument("--train-reader", action="store_true")
     return parser.parse_args(argv)
 
 
@@ -111,6 +113,7 @@ def _validate_args(args: argparse.Namespace) -> None:
         or args.start_position < 0
         or args.eval_batches < 2
         or args.log_every < 1
+        or not 0 <= args.truth_motor_hidden <= 16_384
         or not math.isfinite(args.learning_rate)
         or not 0.0 < args.learning_rate < 1.0
         or not math.isfinite(args.gradient_clip)
@@ -358,14 +361,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         model.config,
         vocab_size=model.base.cfg.vocab_size,
         answer_token_ids=answer_token_ids,
+        truth_motor_hidden=args.truth_motor_hidden,
     )
     reader.load_reader_state(model.query_reader)
-    reader.reader.requires_grad_(False)
+    reader.reader.requires_grad_(args.train_reader)
     reader.to(device=device, dtype=torch.bfloat16)
     trainable = tuple(
         parameter for parameter in reader.parameters() if parameter.requires_grad
     )
-    if sum(parameter.numel() for parameter in trainable) != 2_306:
+    trainable_parameter_count = sum(
+        parameter.numel() for parameter in trainable
+    )
+    if trainable_parameter_count < 2_306:
         raise NativeDispositionPilotError(
             "truth-motor trainable parameter count differs"
         )
@@ -421,7 +428,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             "source_commit": args.source_commit,
             "start_position": args.start_position,
             "token_transcode": transcode_receipt_value(transcoder.receipt),
-            "trainable_parameters": 2_306,
+            "train_reader": args.train_reader,
+            "trainable_parameters": trainable_parameter_count,
+            "truth_motor_hidden": args.truth_motor_hidden,
             "updates": args.updates,
         }
         contract_sha256 = _write_no_replace(
@@ -523,7 +532,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             "schema": REPORT_SCHEMA,
             "source_commit": args.source_commit,
             "source_verification": source_verification,
-            "trainable_parameters": 2_306,
+            "train_reader": args.train_reader,
+            "trainable_parameters": trainable_parameter_count,
+            "truth_motor_hidden": args.truth_motor_hidden,
             "updates": args.updates,
         }
         _write_no_replace(

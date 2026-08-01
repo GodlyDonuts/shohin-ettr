@@ -32,7 +32,19 @@ START_POSITION=${START_POSITION:-10000}
 LEARNING_RATE=${LEARNING_RATE:-3e-4}
 GRADIENT_CLIP=${GRADIENT_CLIP:-1.0}
 EVAL_BATCHES=${EVAL_BATCHES:-32}
+TRUTH_MOTOR_HIDDEN=${TRUTH_MOTOR_HIDDEN:-0}
+TRAIN_READER=${TRAIN_READER:-0}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
+
+reader_args=()
+case "$TRAIN_READER" in
+  0) ;;
+  1) reader_args+=(--train-reader) ;;
+  *)
+    echo "TRAIN_READER must be 0 or 1" >&2
+    exit 2
+    ;;
+esac
 
 for path in "$CODE_ROOT" "$RELEASE_ROOT" "$ETTR_DATA_ROOT" \
   "$TOKENIZER" "$TARGET_TOKENIZER" "$PARENT_RUN_DIR" \
@@ -87,7 +99,9 @@ parent_model_sha=$(sha256sum \
   --start-position "$START_POSITION" \
   --learning-rate "$LEARNING_RATE" \
   --gradient-clip "$GRADIENT_CLIP" \
-  --eval-batches "$EVAL_BATCHES"
+  --eval-batches "$EVAL_BATCHES" \
+  --truth-motor-hidden "$TRUTH_MOTOR_HIDDEN" \
+  "${reader_args[@]}"
 
 (
   cd "$OUTPUT"

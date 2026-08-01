@@ -70,8 +70,34 @@ def test_disposition_reader_exposes_only_bound_answer_tokens() -> None:
         logits[:, -1].float(),
         torch.tensor((4, 7)),
     ).backward()
-    assert reader.truth_motor.weight.grad is not None
-    assert torch.isfinite(reader.truth_motor.weight.grad).all()
+    motor_gradients = tuple(
+        parameter.grad for parameter in reader.truth_motor.parameters()
+    )
+    assert all(gradient is not None for gradient in motor_gradients)
+    assert all(
+        torch.isfinite(gradient).all()
+        for gradient in motor_gradients
+        if gradient is not None
+    )
+
+
+def test_nonlinear_truth_motor_preserves_causal_interface() -> None:
+    reader = NativeCausalDispositionReader(
+        _config(),
+        vocab_size=32,
+        answer_token_ids=(4, 7, 11, 19),
+        truth_motor_hidden=64,
+    )
+    assert reader.truth_motor_hidden == 64
+    assert sum(
+        parameter.numel() for parameter in reader.truth_motor.parameters()
+    ) == 16 * 64 + 64 + 64 * 2 + 2
+    logits = reader(
+        torch.randn((2, 5, 16)),
+        _state(committed=1.0, halted=0.0),
+        attention_mask=torch.ones((2, 5), dtype=torch.bool),
+    )
+    assert logits.shape == (2, 5, 32)
 
 
 @pytest.mark.parametrize(

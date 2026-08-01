@@ -65,6 +65,7 @@ class NativeCausalDispositionReader(nn.Module):
         *,
         vocab_size: int,
         answer_token_ids: tuple[int, int, int, int],
+        truth_motor_hidden: int = 0,
     ) -> None:
         super().__init__()
         config.validate()
@@ -78,13 +79,23 @@ class NativeCausalDispositionReader(nn.Module):
                 for value in answer_token_ids
             )
             or len(set(answer_token_ids)) != 4
+            or not isinstance(truth_motor_hidden, int)
+            or truth_motor_hidden < 0
         ):
             raise TheoryReactorError("causal answer-token codebook differs")
         self.config = config
         self.vocab_size = vocab_size
         self.reader = SourceDeletedQueryReader(config)
         self.readout_norm = nn.LayerNorm(config.d_model)
-        self.truth_motor = nn.Linear(config.d_model, 2)
+        self.truth_motor_hidden = truth_motor_hidden
+        if truth_motor_hidden == 0:
+            self.truth_motor = nn.Linear(config.d_model, 2)
+        else:
+            self.truth_motor = nn.Sequential(
+                nn.Linear(config.d_model, truth_motor_hidden),
+                nn.GELU(),
+                nn.Linear(truth_motor_hidden, 2),
+            )
         self.register_buffer(
             "answer_token_ids",
             torch.tensor(answer_token_ids, dtype=torch.long),
