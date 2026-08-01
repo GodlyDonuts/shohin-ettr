@@ -2,36 +2,36 @@
 
 ## Current Status — Read First
 
-**Current frontier, superseding older status text below (2026-07-31
-06:45 EDT):** Shohin still has no replicated two-seed demonstration of
-architecture-native general reasoning. ETTR training has, however, produced a
-real sparse causal foothold under source deletion: frozen-base seed 1 changes
-strict COMMAND query margins on 8.125% of 160 intervention pairs and WORLD
-margins on 0.78125% of 128 pairs, while seed 2 changes terminal state but
-largely fails to make the late reader consume it. That asymmetry localizes the
-current problem to representation/interface co-adaptation rather than ordinary
-loss optimization. The main experiment has therefore changed from attaching
-ETTR to a permanently frozen transformer to native joint language/ETTR
-training of the complete 192,779,435-parameter model. Four warm 5,000-update
-writers and two matched owner-clipped replicas are live; their source-deleted
-causal evaluators, locked public boards, and direct adaptive transcript audits
-are dependency-bound. At the latest audit, warm 95/5 seeds were around update
-3,550, warm 85/15 seeds around 1,640, and owner-clipped warm 85/15 seeds around
-860/680. Warm 85/15 ETTR losses have fallen materially in both seeds while
-ordinary-language losses remain finite, but no training-loss result is being
-called reasoning.
+**Current frontier, superseding older status text below (2026-08-01
+17:05 EDT):** Shohin still has no replicated two-population demonstration of
+architecture-native general reasoning. The campaign has nevertheless moved
+from an undifferentiated failure to a measured interface decomposition. A
+fixed typed algebra is exact on the real held-out corpus, and a learned query
+compiler crosses both WORLD and COMMAND when supplied exact state. Crossing
+that stack with architecture-produced state gave the first fully autonomous
+nonzero result, but it was population-unstable. Hard-state, causal-owner,
+soft-state, semantic-basis, and bounded Brier objectives then localized the
+remaining failure to coherent autonomous state construction rather than query
+interpretation or answer execution.
 
-The completed 5,000-update frozen-base horizon-eight controls are a strong
-negative for more add-on training alone. Own-reader, frozen-reader, lower-rate,
-and swapped-reader arms show zero replicated COMMAND margin above 0.25. A
-swapped-reader seed preserves a WORLD joint-top-1 effect of 46.875%, proving
-that some terminal-state geometry survives, but it does not compose with
-COMMAND. This narrows the next intervention to gradient/interface allocation.
-Private commit `479472d9a8c806fef088b0c05693ee83a1375690`
-adds independent base/compiler/reactor/query-reader gradient budgets and
-pre-clip telemetry. Matched same-seed jobs `724016/724017` are held and consume
-no GPU; they will be released only if the live causal gates confirm component
-starvation.
+The newest architecture removes recurrent teacher-forcing exposure. A
+6,462,753-parameter `ParallelAddressedTransactionCompiler` reads the initial
+typed packet and COMMAND once, emits a complete sticky categorical transaction
+schedule in parallel, and replays it through the exact state algebra. The
+complete replacement system is 192,158,864 parameters. After only 500 updates,
+held-out exact hard schedules improve from `0%` to `10.76%`, opcode accuracy to
+`65.53%`, and fully autonomous factual top-1 from `0%` to `67.19%`, with finite
+gradients and no runtime failure. Strict source-deleted WORLD and COMMAND pairs
+remain zero, so this is a real compiler/interface gain rather than native
+reasoning. Four sealed 5,000-update / 80,000-row jobs (`725247--725250`) now
+cross two architecture/data populations with learning rates `3e-4/1e-4`.
+
+In parallel, the matched 80,000-row state-objective campaign remains live.
+Class-balanced Brier supervision removes the million-scale gradient pathology
+seen in log-basis arms, but its 20-update H100 and FP32 V100 canaries do not
+cross hard causal gates. These runs are controls, not promoted mechanisms. The
+protected step-300k checkpoint remains immutable and no raw-pretraining writer
+is active.
 
 The older adversarial conclusions remain binding: the apparent 11/11
 episodic-generator result was not a Shohin claim because exact host code parsed,
@@ -53233,3 +53233,36 @@ unstable gradients. The runtime is hash-bound by SHA256SUMS
 `478101f7a4d8aa9fc2398af952b94f81bf142ddb13d15a9793450f9ef3713e22`;
 bounded soft-state gates await Newton DNS recovery. Native reasoning is not yet
 established.
+
+## 2026-08-01 Parallel Addressed Schedule Compiler
+
+The recurrent COMMAND reactor was trained on oracle previous states and soft
+recurrent mixtures but deployed on its own hard prior decisions. This created
+an avoidable exposure boundary: one early wrong transaction changed the state
+seen by every later step, while training optimized a different trajectory.
+The parallel addressed compiler removes that mismatch. It consumes the
+initial fixed-address packet and COMMAND hidden states once, predicts every
+step and argument of the complete transaction schedule together, makes one
+sticky hard choice per field at inference, and delegates all state mutation to
+the already-audited exact transaction algebra. It receives no QUERY bytes or
+answer labels.
+
+The first H100 gate (`725244`) used architecture seed `2026080131`, data seed
+`2026080111`, learning rate `3e-4`, and 500 updates. On 512 held-out episodes,
+hard schedule joint accuracy moved `0/6,544 -> 704/6,544`; field rates reached
+65.53% opcode, 32.43% source, 23.53% target, 55.88% relation, and 21.43% value
+code. Fully autonomous factual top-1 reached 67.19%. Complete terminal packets
+and strict fully autonomous WORLD/COMMAND pairs remain zero. The result proves
+that a nonrecurrent fixed-address compiler can learn coherent transaction
+structure far more cleanly than the existing recurrent path, but it does not
+yet prove causal reasoning.
+
+The claim-bearing next gate is a four-arm, equal-geometry 80,000-row factorial:
+two architecture/data populations crossed with `3e-4` and `1e-4`. The
+unchanged source-deleted evaluator decides the result. A successful arm must
+produce reproducible, nonzero fully autonomous WORLD and COMMAND strict pairs;
+loss, field accuracy, factual accuracy, or oracle-state performance alone
+cannot promote it.
+
+Current decision:
+`test_whether_parallel_sticky_schedule_compilation_converts_local_transaction_learning_into_reproducible_autonomous_causal_state`.

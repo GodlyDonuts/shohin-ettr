@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-01 14:49 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-01 17:05 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -22527,3 +22527,82 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `compare_soft_answer_log_basis_answer_and_bounded_basis_only_state_quotient_at_equal_80k_row_budgets_then_require_reproducible_hard_world_and_command_pairs`.
+
+- **2026-08-01 16:08--17:05 EDT** -- **The bounded quotient objective fixes
+  the observed numerical pathology but does not cross a hard capability gate;
+  a new parallel addressed schedule compiler produces the strongest clean
+  transaction-learning movement in this campaign and has entered a sealed
+  80,000-row two-population gate.**
+
+  H100 quotient canary `725230` completed cleanly. At updates 10/20, WORLD
+  Brier basis loss moved `0.28811 -> 0.02249`, COMMAND Brier basis loss moved
+  `0.21856 -> 0.13437`, and compiler/reactor pre-clip norms moved
+  `0.934/17.375 -> 0.105/1.641`. Independent V100 control `725235` reproduced
+  the numerical behavior: WORLD `0.28656 -> 0.02406`, COMMAND
+  `0.13188 -> 0.11744`, and final pre-clip norms `0.189/1.608`. H100 report
+  SHA-256 is
+  `1b77bbcae6f84fecaf655233e6a033b1c8786fd42edd9d3dc7925d02ff04cb6a`;
+  V100 report SHA-256 is
+  `a366be050714f6786ff94af80b71279411cf5c7a2ab32caf11f7d7326210dc80`.
+  Neither canary crosses hard WORLD or COMMAND. Fully autonomous H100 factual
+  top-1 remains `47.85%`, while COMMAND DID moves `+0.239 -> -0.071`; V100
+  factual moves `49.02% -> 46.88%`. The four quotient full arms
+  `725231--725234` therefore continue only as the matched 80,000-row test, not
+  as a promoted architecture.
+
+  The full log-basis runs confirm the reason to retain the quotient control.
+  Observed pre-clip reactor maxima are approximately `35.7M`, `7.34M`,
+  `60.3M`, and `4.33M` across jobs `725221--725224`, versus early quotient
+  maxima below `1.2K`. Job `725223`, the worst pathological replicate, was
+  intentionally canceled at update 780 to release one H100 for the new
+  architecture canary; no artifact from it is promoted. The four soft arms,
+  three remaining log-basis arms, and four quotient arms remain isolated.
+
+  The recurrent reactor's structural mismatch is now explicit: it is trained
+  on oracle previous states and soft recurrent mixtures but deployed on its
+  own hard prior choices. Commits `b45c046/78ed30d` add a 6,462,753-parameter
+  `ParallelAddressedTransactionCompiler` that reads the initial packet and
+  COMMAND once, emits the complete sticky categorical transaction schedule in
+  parallel, and replays it through the existing exact state algebra. The
+  complete replacement system is 192,158,864 parameters, below the 200M cap.
+  The protected Shohin base, existing executor, and reader remain frozen.
+  Sixteen focused and regression tests pass with clean Ruff, byte compilation,
+  Bash syntax, and diff checks. Architecture seed is now an explicit sealed
+  contract field.
+
+  The exact `78ed30d083b1901895cdb6683a280f939cb3cff1` runtime contains 3,397
+  files. Archive SHA-256 is
+  `9fa432bf60f9695904564df1a4cdcb980ebcd9f9d20b7e27a8683c287ce26c65`
+  and SHA256SUMS SHA-256 is
+  `6d7e90df4c9757b248360fd839fc7e42f9ad903f99229cb3c29af91981bdc9c8`.
+  Admission job `725243` checked every file and atomically admitted
+  `scratchpad/shohin_ettr_parallel_runtime_78ed30d_r1`. Earlier admission
+  attempts `725237/725242` failed closed or were intentionally superseded;
+  neither became launchable lineage.
+
+  H100 canary `725244` completed 500 updates without OOM, NCCL error, or
+  nonfinite gradient. Loss moved from `3.1325` at update 10 to `2.1036` on the
+  final mixed-operation batch; pre-clip gradients stayed bounded, with final
+  norm `1.570`. On 512 held-out episodes, exact hard schedule accuracy moved
+  `0/6,544 -> 704/6,544 = 10.76%`; opcode moved `8.31% -> 65.53%`, source
+  `4.64% -> 32.43%`, target `0% -> 23.53%`, relation `11.76% -> 55.88%`, and
+  value code `0% -> 21.43%`. Terminal committed accuracy moved `0% -> 100%`,
+  but complete terminal-packet accuracy remains zero. Under the unchanged hard
+  end-to-end evaluator, fully autonomous factual top-1 moved `0% -> 67.19%`.
+  Strict source-deleted WORLD and COMMAND pairs remain zero and margin-1 rates
+  remain zero; oracle-program/autonomous-state COMMAND reaches only `4.55%`
+  strict pairs. This is a real compiler/interface gain, not native reasoning.
+  Report SHA-256 is
+  `baf37696901a53efb720a3fd8cdf12a960f8f7cd1c0d9d70b4cc221bbd0aa783`.
+
+  A test-only scheduler gate passed before scale-up. Immutable receipt
+  `scratchpad/ettr-parallel-command-factorial-78ed30d.tsv` has SHA-256
+  `202a4699c761b5e6244e7aba18ce4c03d7a8333e0bbde8e0e9ad48c5ae2e4366`
+  and records jobs `725247--725250`: two architecture/data populations crossed
+  with learning rates `3e-4/1e-4`, each at 5,000 updates / 80,000 rows. All
+  outputs are fresh and isolated. Promotion requires reproducible gains in the
+  unchanged hard fully autonomous WORLD and COMMAND strict-pair gates; schedule
+  accuracy or factual top-1 alone is insufficient.
+
+  Decision:
+  `run_the_parallel_addressed_schedule_compiler_to_80k_rows_across_two_populations_and_two_learning_rates_then_promote_only_on_reproducible_fully_autonomous_world_and_command_pairs`.
