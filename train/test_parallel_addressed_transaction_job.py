@@ -15,6 +15,8 @@ def test_parallel_transaction_job_is_hash_bound_and_isolated() -> None:
         "--compiler-contract-sha256",
         "--joint-run-contract-sha256",
         "--required-device-class",
+        "--grounded-pointers",
+        "--valid-pointer-masks",
         "OUTPUT=${OUTPUT:?set fresh pilot output}",
     ):
         assert expected in text

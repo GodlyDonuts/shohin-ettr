@@ -35,8 +35,24 @@ EVAL_BATCHES=${EVAL_BATCHES:-32}
 WIDTH=${WIDTH:-384}
 LAYERS=${LAYERS:-3}
 NUM_HEADS=${NUM_HEADS:-8}
+GROUNDED_POINTERS=${GROUNDED_POINTERS:-0}
+VALID_POINTER_MASKS=${VALID_POINTER_MASKS:-0}
 REQUIRED_DEVICE_CLASS=${REQUIRED_DEVICE_CLASS:-h100}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
+
+POINTER_ARGS=()
+if [[ "$GROUNDED_POINTERS" == 1 ]]; then
+  POINTER_ARGS+=(--grounded-pointers)
+elif [[ "$GROUNDED_POINTERS" != 0 ]]; then
+  echo "grounded-pointer flag differs" >&2
+  exit 2
+fi
+if [[ "$VALID_POINTER_MASKS" == 1 ]]; then
+  POINTER_ARGS+=(--valid-pointer-masks)
+elif [[ "$VALID_POINTER_MASKS" != 0 ]]; then
+  echo "valid-pointer-mask flag differs" >&2
+  exit 2
+fi
 
 for path in "$CODE_ROOT" "$RELEASE_ROOT" "$ETTR_DATA_ROOT" \
   "$TOKENIZER" "$PROTECTED_CHECKPOINT" "$JOINT_RUN_DIR" \
@@ -105,6 +121,7 @@ compiler_sha=$(sha256sum \
   --width "$WIDTH" \
   --layers "$LAYERS" \
   --num-heads "$NUM_HEADS" \
+  "${POINTER_ARGS[@]}" \
   --required-device-class "$REQUIRED_DEVICE_CLASS"
 
 (

@@ -42,8 +42,8 @@ from train_ettr_component_island import (
 )
 
 
-CONTRACT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-contract-v2"
-REPORT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-report-v2"
+CONTRACT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-contract-v3"
+REPORT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-report-v3"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _FIELDS = (
@@ -88,6 +88,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--width", type=int, default=384)
     parser.add_argument("--layers", type=int, default=3)
     parser.add_argument("--num-heads", type=int, default=8)
+    parser.add_argument("--grounded-pointers", action="store_true")
+    parser.add_argument("--valid-pointer-masks", action="store_true")
     parser.add_argument(
         "--required-device-class",
         choices=("h100", "cuda"),
@@ -125,6 +127,7 @@ def _validate_args(args: argparse.Namespace) -> None:
         or args.start_position < 0
         or args.eval_batches < 2
         or args.log_every < 1
+        or (args.valid_pointer_masks and not args.grounded_pointers)
         or not math.isfinite(args.learning_rate)
         or not 0.0 < args.learning_rate < 1.0
         or not math.isfinite(args.gradient_clip)
@@ -372,6 +375,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         width=args.width,
         layers=args.layers,
         num_heads=args.num_heads,
+        grounded_pointers=args.grounded_pointers,
+        valid_pointer_masks=args.valid_pointer_masks,
     ).to(device=device, dtype=next(model.parameters()).dtype)
     schedule_parameters = sum(
         parameter.numel() for parameter in schedule_compiler.parameters()
@@ -442,6 +447,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         contract = {
             "architecture": {
                 "layers": args.layers,
+                "grounded_pointers": args.grounded_pointers,
                 "num_heads": args.num_heads,
                 "parameterless_exact_algebra": True,
                 "removed_recurrent_policy_parameters": (
@@ -449,6 +455,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ),
                 "seed": args.architecture_seed,
                 "sticky_schedule": True,
+                "valid_pointer_masks": args.valid_pointer_masks,
                 "width": args.width,
             },
             "compiler_contract_sha256": args.compiler_contract_sha256,

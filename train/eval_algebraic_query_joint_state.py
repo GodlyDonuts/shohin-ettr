@@ -95,6 +95,9 @@ _SCHEDULE_SCHEMAS = {
     "shohin-ettr-parallel-addressed-transaction-contract-v2": (
         "shohin-ettr-parallel-addressed-transaction-report-v2"
     ),
+    "shohin-ettr-parallel-addressed-transaction-contract-v3": (
+        "shohin-ettr-parallel-addressed-transaction-report-v3"
+    ),
 }
 _ARMS = (
     "autonomous_program_autonomous_state",
@@ -422,10 +425,20 @@ def _load_parallel_schedule(
         width = int(architecture["width"])
         layers = int(architecture["layers"])
         num_heads = int(architecture["num_heads"])
+        grounded_pointers = architecture.get("grounded_pointers", False)
+        valid_pointer_masks = architecture.get("valid_pointer_masks", False)
     except (KeyError, TypeError, ValueError) as exc:
         raise AlgebraicJointStateEvaluationError(
             "parallel schedule architecture differs"
         ) from exc
+    if (
+        not isinstance(grounded_pointers, bool)
+        or not isinstance(valid_pointer_masks, bool)
+        or (valid_pointer_masks and not grounded_pointers)
+    ):
+        raise AlgebraicJointStateEvaluationError(
+            "parallel schedule architecture differs"
+        )
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     schedule = ParallelAddressedTransactionCompiler(
@@ -433,6 +446,8 @@ def _load_parallel_schedule(
         width=width,
         layers=layers,
         num_heads=num_heads,
+        grounded_pointers=grounded_pointers,
+        valid_pointer_masks=valid_pointer_masks,
     ).to(
         device=next(model.parameters()).device,
         dtype=next(model.parameters()).dtype,

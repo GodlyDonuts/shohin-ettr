@@ -80,6 +80,8 @@ class ParallelAddressedTransactionCompiler(nn.Module):
         width: int = 384,
         layers: int = 3,
         num_heads: int = 8,
+        grounded_pointers: bool = False,
+        valid_pointer_masks: bool = False,
     ) -> None:
         super().__init__()
         config.validate()
@@ -91,12 +93,17 @@ class ParallelAddressedTransactionCompiler(nn.Module):
             or not 1 <= layers <= 8
             or not isinstance(num_heads, int)
             or num_heads < 1
+            or not isinstance(grounded_pointers, bool)
+            or not isinstance(valid_pointer_masks, bool)
+            or (valid_pointer_masks and not grounded_pointers)
         ):
             raise TheoryReactorError("addressed schedule geometry differs")
         self.config = config
         self.width = width
         self.layers = layers
         self.num_heads = num_heads
+        self.grounded_pointers = grounded_pointers
+        self.valid_pointer_masks = valid_pointer_masks
 
         self.command_projection = nn.Linear(config.d_model, width)
         self.command_norm = nn.LayerNorm(width)
@@ -135,8 +142,13 @@ class ParallelAddressedTransactionCompiler(nn.Module):
         )
         self.output_norm = nn.LayerNorm(width)
         self.opcode_head = nn.Linear(width, TRANSACTION_COUNT)
-        self.source_head = nn.Linear(width, config.num_slots)
-        self.target_head = nn.Linear(width, config.num_slots)
+        if grounded_pointers:
+            self.source_query = nn.Linear(width, width, bias=False)
+            self.target_query = nn.Linear(width, width, bias=False)
+            self.slot_key = nn.Linear(width, width, bias=False)
+        else:
+            self.source_head = nn.Linear(width, config.num_slots)
+            self.target_head = nn.Linear(width, config.num_slots)
         self.relation_head = nn.Linear(width, config.num_relations)
         self.type_head = nn.Linear(width, config.num_types)
         self.value_head = nn.Linear(width, config.num_value_codes)
@@ -176,6 +188,49 @@ class ParallelAddressedTransactionCompiler(nn.Module):
             + self.slot_embedding.unsqueeze(0)
         )
         return self.state_norm(memory)
+
+    @staticmethod
+    def _active_prefix(
+        initial_active: torch.Tensor,
+        opcode: torch.Tensor,
+        source: torch.Tensor,
+    ) -> torch.Tensor:
+        """Replay only slot occupancy to derive per-step pointer validity."""
+
+        active = initial_active.float().clamp(0.0, 1.0)
+        values = []
+        for step in range(opcode.shape[1]):
+            values.append(active)
+            allocation = opcode[:, step, 0:1] * source[:, step]
+            clear = opcode[:, step, 2:3] * source[:, step]
+            allocated = allocation * (1.0 - active)
+            cleared = clear * active
+            active = (active + allocated * (1.0 - active)) * (
+                1.0 - cleared
+            )
+        return torch.stack(values, dim=1)
+
+    @staticmethod
+    def _mask_pointer_logits(
+        source_logits: torch.Tensor,
+        target_logits: torch.Tensor,
+        opcode: torch.Tensor,
+        active_prefix: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        allocate = opcode[..., 0:1]
+        active_source = opcode[..., 1:6].sum(-1, keepdim=True)
+        source_ignored = opcode[..., 6:].sum(-1, keepdim=True)
+        source_validity = (
+            allocate * (1.0 - active_prefix)
+            + active_source * active_prefix
+            + source_ignored
+        )
+        relational = opcode[..., 3:5].sum(-1, keepdim=True)
+        target_validity = relational * active_prefix + (1.0 - relational)
+        return (
+            source_logits + source_validity.clamp_min(1e-4).log(),
+            target_logits + target_validity.clamp_min(1e-4).log(),
+        )
 
     def forward(
         self,
@@ -221,10 +276,56 @@ class ParallelAddressedTransactionCompiler(nn.Module):
             need_weights=False,
         )
         hidden = self.output_norm(self.schedule_core(queries + read))
+        opcode = self.opcode_head(hidden).float().softmax(-1)
+        if self.grounded_pointers:
+            keys = self.slot_key(state_memory)
+            source_logits = torch.einsum(
+                "btw,bsw->bts",
+                self.source_query(hidden),
+                keys,
+            ).float()
+            target_logits = torch.einsum(
+                "btw,bsw->bts",
+                self.target_query(hidden),
+                keys,
+            ).float()
+            if self.valid_pointer_masks:
+                pointer_opcode = _hard_one_hot(opcode) if hard else opcode
+                source = source_logits.softmax(-1)
+                prefix_source = _hard_one_hot(source) if hard else source
+                active_prefix = self._active_prefix(
+                    state.active,
+                    pointer_opcode,
+                    prefix_source,
+                )
+                masked_source, _ = self._mask_pointer_logits(
+                    source_logits,
+                    target_logits,
+                    pointer_opcode,
+                    active_prefix,
+                )
+                source = masked_source.softmax(-1)
+                prefix_source = _hard_one_hot(source) if hard else source
+                active_prefix = self._active_prefix(
+                    state.active,
+                    pointer_opcode,
+                    prefix_source,
+                )
+                source_logits, target_logits = self._mask_pointer_logits(
+                    source_logits,
+                    target_logits,
+                    pointer_opcode,
+                    active_prefix,
+                )
+            source = source_logits.softmax(-1)
+            target = target_logits.softmax(-1)
+        else:
+            source = self.source_head(hidden).float().softmax(-1)
+            target = self.target_head(hidden).float().softmax(-1)
         probabilities = {
-            "opcode": self.opcode_head(hidden).float().softmax(-1),
-            "source": self.source_head(hidden).float().softmax(-1),
-            "target": self.target_head(hidden).float().softmax(-1),
+            "opcode": opcode,
+            "source": source,
+            "target": target,
             "relation": self.relation_head(hidden).float().softmax(-1),
             "type_index": self.type_head(hidden).float().softmax(-1),
             "value_code": self.value_head(hidden).float().softmax(-1),

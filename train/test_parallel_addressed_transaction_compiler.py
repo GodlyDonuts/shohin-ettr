@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import torch
+import pytest
 
 from endogenous_typed_theory_reactor import (
     GenericTransactionReactor,
     TheoryReactorConfig,
+    TheoryReactorError,
     TypedTheoryState,
 )
 from parallel_addressed_transaction_compiler import (
@@ -148,6 +150,112 @@ def test_parameterless_reactor_reuses_the_exact_transaction_algebra() -> None:
     ):
         assert torch.equal(getattr(observed, field), getattr(expected, field))
     assert observed.step == expected.step
+
+
+def test_pointer_masks_require_grounded_slot_scores() -> None:
+    with pytest.raises(
+        TheoryReactorError,
+        match="addressed schedule geometry differs",
+    ):
+        ParallelAddressedTransactionCompiler(
+            _config(),
+            width=64,
+            layers=1,
+            num_heads=2,
+            valid_pointer_masks=True,
+        )
+
+
+def test_grounded_pointer_masks_follow_transaction_validity() -> None:
+    config = _config()
+    compiler = ParallelAddressedTransactionCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        grounded_pointers=True,
+        valid_pointer_masks=True,
+    )
+    with torch.no_grad():
+        compiler.source_query.weight.zero_()
+        compiler.target_query.weight.zero_()
+        compiler.opcode_head.weight.zero_()
+        compiler.opcode_head.bias.fill_(-20.0)
+        compiler.opcode_head.bias[1] = 20.0
+    kwargs = {
+        "command_hidden": torch.randn(2, 5, config.d_model),
+        "command_attention_mask": torch.ones(2, 5, dtype=torch.bool),
+        "steps": 3,
+        "hard": True,
+    }
+    write = compiler(_state(config), **kwargs)
+    assert bool((write.source[..., 2:].sum(-1) < 1e-3).all())
+
+    with torch.no_grad():
+        compiler.opcode_head.bias.fill_(-20.0)
+        compiler.opcode_head.bias[0] = 20.0
+    allocate = compiler(_state(config), **kwargs)
+    assert bool((allocate.source[..., :2].sum(-1) < 1e-3).all())
+
+    with torch.no_grad():
+        compiler.opcode_head.bias.fill_(-20.0)
+        compiler.opcode_head.bias[3] = 20.0
+    link = compiler(_state(config), **kwargs)
+    assert bool((link.target[..., 2:].sum(-1) < 1e-3).all())
+
+
+def test_grounded_pointer_masks_track_allocations_across_the_schedule() -> None:
+    config = _config()
+    compiler = ParallelAddressedTransactionCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        grounded_pointers=True,
+        valid_pointer_masks=True,
+    )
+    with torch.no_grad():
+        compiler.source_query.weight.zero_()
+        compiler.opcode_head.weight.zero_()
+        compiler.opcode_head.bias.fill_(-20.0)
+        compiler.opcode_head.bias[0] = 20.0
+    schedule = compiler(
+        _state(config),
+        command_hidden=torch.randn(2, 5, config.d_model),
+        command_attention_mask=torch.ones(2, 5, dtype=torch.bool),
+        steps=2,
+        hard=True,
+    )
+    selected = schedule.applied_source.argmax(-1)
+    assert torch.equal(selected[:, 0], torch.full((2,), 2))
+    assert torch.equal(selected[:, 1], torch.full((2,), 3))
+
+
+def test_grounded_pointer_parameters_replace_fixed_slot_classifiers() -> None:
+    compiler = ParallelAddressedTransactionCompiler(
+        _config(),
+        width=64,
+        layers=1,
+        num_heads=2,
+        grounded_pointers=True,
+    )
+    names = set(compiler.state_dict())
+    assert "source_query.weight" in names
+    assert "target_query.weight" in names
+    assert "slot_key.weight" in names
+    assert "source_head.weight" not in names
+    assert "target_head.weight" not in names
+
+
+def test_grounded_production_geometry_stays_inside_system_cap() -> None:
+    compiler = ParallelAddressedTransactionCompiler(
+        TheoryReactorConfig(),
+        grounded_pointers=True,
+        valid_pointer_masks=True,
+    )
+    parameters = sum(parameter.numel() for parameter in compiler.parameters())
+    assert parameters == 6_855_841
+    assert 185_696_111 - 29_757_217 + parameters == 162_794_735
 
 
 def test_production_geometry_stays_inside_remaining_parameter_budget() -> None:
