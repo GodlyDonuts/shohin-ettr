@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-01 09:57 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-01 10:25 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -59,11 +59,19 @@
 > and COMMAND `9.62%`, while a fresh seed-5 population returns both strict
 > gates to zero. This is a real end-to-end native foothold, not a stable
 > reasoning result. The exact executor and query compiler are retained; the
-> remaining bottleneck is the autonomous architecture-produced state. Jobs
-> `725033/725034` now train only Shohin's compiler/reactor through the exact
-> algebraic answer loss, preserving the protected model, successful query
-> compiler, and all evaluator gates. No current artifact is promoted as
-> native reasoning.
+> remaining bottleneck is the autonomous architecture-produced state. The
+> first 20-update state-semantic direction gate moves fully autonomous
+> COMMAND strict paired accuracy from zero to 25% on its bounded slice. The
+> 300-update H100 gate retains a smaller COMMAND gain but degrades WORLD and
+> factual accuracy; five logged global-gradient spikes exceed 100 and reach
+> 13,312. Crossed-arm inspection proves the state was also being trained
+> through wrong predicted WORLD programs. Commit `20d6394` therefore assigns
+> separate optimizers and gradient clips to WORLD compiler and COMMAND reactor
+> and trains state against oracle typed programs while keeping autonomous
+> programs mandatory at evaluation. Jobs `725045--725048` are the registered
+> short/medium and precision gates; `725036/725037` test the prior 300-update
+> artifact on fresh populations. No current artifact is promoted as native
+> reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -22182,3 +22190,63 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `retain_exact_algebra_and_query_compiler_train_the_autonomous_state_interface_then_require_cross_seed_world_and_command_reproduction_before_promotion`.
+
+- **2026-08-01 09:57--10:25 EDT** -- **State-semantic gradients cross the
+  hard autonomous path and improve COMMAND, but the first joint optimizer
+  exhibits owner interference and learns through wrong query programs. The
+  successor separates causal owners and uses typed-program supervision only
+  during training.**
+
+  V100 direction gate `725034` completed 20 updates in `6:38`, with all
+  artifact hashes verified. On its 128-row held-out slice, fully autonomous
+  factual top-1 rises `39.06% -> 78.12%`; COMMAND strict joint/paired rises
+  `0/32 -> 8/32 = 25%`, margin-1 rises `12.5% -> 50%`, and DID moves
+  `-0.0515 -> +0.5953`. WORLD remains zero. Report SHA-256 is
+  `99b9f7aab706a5633dd42b51265c3cc2965723cdcc1007b36b93e96cafc4952c`;
+  final compiler/reactor SHA-256 values are
+  `7ed4705c5b12256b14a0655cd66035be2b8297804e4091c4aa55195ac9fe29a7` /
+  `737cd3cdc1e42733956c014060b1d98260e0d7c1e9a590c8349d396b58baf5d2`.
+
+  H100 gate `725033` completed 300 updates in `17:09`, with all hashes
+  verified. On its 256-row held-out slice, fully autonomous COMMAND strict
+  joint rises `12/96 = 12.5% -> 14/96 = 14.58%`, paired order rises
+  `12.5% -> 18.75%`, and DID remains positive (`+0.3821 -> +0.3241`). WORLD
+  strict falls `4/64 = 6.25% -> 0/64`, DID falls `+0.1917 -> -0.3860`, and
+  factual top-1 falls `51.17% -> 44.14%`. Oracle-program/autonomous-state
+  COMMAND rises `8.33% -> 16.67%`; oracle-program/autonomous-state WORLD
+  remains zero. Report SHA-256 is
+  `9355100f22fe4b2c06aecdbe5e2b25c349419cda8bbb52ac37dc3108cabaa700`;
+  final compiler/reactor SHA-256 values are
+  `a519660fbdc402fd8db16d5d531bf346b18181e418c37c86888b278cc9a11d97` /
+  `128064a3f3d941e0fe6c92a250cb8692eecea712460281e1515cb42c53881eef`.
+
+  Training forensics reject blind continuation. Across 30 logged points,
+  median pre-clip gradient norm is `8.5`, maximum is `13,312`, and five
+  points exceed 100. The spikes occur in sparse operator families and a
+  single global clip scales both 51.2M-parameter owners. More importantly,
+  the frozen query compiler scores zero strict WORLD even with oracle state
+  on this evaluation slice. Predicted-program state training therefore asks
+  the state to compensate for an incorrect query program, which can lower
+  loss while reversing state semantics.
+
+  Commit `cf875bc` adds a strict component-transplant evaluator. It binds and
+  verifies the complete state-training `SHA256SUMS`, contract, report,
+  initial tensors, final tensors, protected model, joint model, query
+  compiler, and release before testing a trained compiler/reactor on a new
+  population. Fresh-seed H100 jobs `725036/725037` are queued for the
+  300-update artifact.
+
+  Commits `7e50a6d` and `20d6394` implement causal-owner training. WORLD
+  semantic and compiler-auxiliary losses update only the WORLD compiler while
+  retaining differentiable passage through a frozen reactor. COMMAND loss
+  receives a detached initial state and updates only the reactor. Each owner
+  has an independent AdamW optimizer and gradient clip. State training uses
+  the oracle typed query program to remove compiler-label noise; evaluation
+  remains fully autonomous and never receives that oracle. Jobs
+  `725045/725046/725047` compare 20 updates, 100 updates, and a lower-LR
+  100-update arm on H100; V100 direction gate `725048` provides the earliest
+  result. Obsolete predicted-program owner jobs were canceled before H100
+  execution.
+
+  Decision:
+  `reject_joint_global_state_credit_and_predicted_program_compensation_then_train_each_causal_owner_against_the_correct_typed_program_and_demand_fresh_seed_autonomy`.

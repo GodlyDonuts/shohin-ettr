@@ -53173,3 +53173,33 @@ hard straight-through state path; a 300-update H100 gate and independent
 
 Current decision:
 `first_end_to_end_native_positive_observed_but_unstable_state_construction_is_the_active_bottleneck_and_must_reproduce_across_fresh_populations_before_scaling`.
+
+## 2026-08-01 Causal-Owner Credit Assignment
+
+Direct state-semantic training proves that the hard autonomous state path is
+trainable: a 20-update direction gate moves strict COMMAND from zero to 25%
+on its bounded held-out slice. A longer 300-update joint run does not improve
+monotonically. It retains a smaller COMMAND gain but reduces WORLD strict
+accuracy from 6.25% to zero and factual accuracy from 51.17% to 44.14%.
+Training logs show five pre-clip gradient spikes above 100, with a maximum of
+13,312, under one global clip shared by the WORLD compiler and COMMAND
+reactor.
+
+The crossed interface board exposes a deeper error than optimizer scale. On
+the same evaluation population, the frozen query compiler obtains zero
+strict WORLD even with oracle state. Training autonomous state through that
+wrong predicted program rewards the state for compensating for a query error.
+That can lower answer loss while reversing the intended state semantics.
+
+The successor curriculum assigns credit according to the architecture's
+causal graph. WORLD loss updates only the WORLD compiler while gradients pass
+through a frozen reactor. COMMAND loss receives a detached initial state and
+updates only the reactor. Each owner has an independent optimizer and
+gradient clip. During state training, the exact typed query program is
+supplied as a supervised label so state is trained against the intended
+operator; all held-out gates continue to use the model's autonomous predicted
+program. This is modular teacher forcing during training, not an oracle at
+inference.
+
+Current decision:
+`state_is_trainable_but_joint_credit_is_wrong_use_causal_owner_optimizers_and_typed_program_supervision_then_gate_only_fully_autonomous_fresh_populations`.
