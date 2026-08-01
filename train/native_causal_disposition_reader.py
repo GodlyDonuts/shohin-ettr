@@ -42,13 +42,8 @@ def answer_token_ids_from_tokenizer(
             f"\nR={code}",
             add_special_tokens=False,
         ).ids
-        if (
-            len(boundary) != len(prefix) + 1
-            or boundary[: len(prefix)] != prefix
-        ):
-            raise TheoryReactorError(
-                "causal answer boundary is not one token"
-            )
+        if len(boundary) != len(prefix) + 1 or boundary[: len(prefix)] != prefix:
+            raise TheoryReactorError("causal answer boundary is not one token")
         result.append(boundary[-1])
     answer_token_ids = tuple(result)
     if len(set(answer_token_ids)) != 4:
@@ -111,18 +106,21 @@ class NativeCausalDispositionReader(nn.Module):
         if not isinstance(reader, SourceDeletedQueryReader):
             raise TheoryReactorError("causal reader warm start differs")
         source = reader.state_dict()
+        allowed_missing = []
+        if self.reader.slot_embedding is not None and reader.slot_embedding is None:
+            allowed_missing.append("slot_embedding")
         if (
-            self.reader.slot_embedding is not None
-            and reader.slot_embedding is None
+            self.reader.state_phase_embedding is not None
+            and reader.state_phase_embedding is None
         ):
+            allowed_missing.append("state_phase_embedding")
+        if allowed_missing:
             missing, unexpected = self.reader.load_state_dict(
                 source,
                 strict=False,
             )
-            if missing != ["slot_embedding"] or unexpected:
-                raise TheoryReactorError(
-                    "causal reader address upgrade differs"
-                )
+            if sorted(missing) != sorted(allowed_missing) or unexpected:
+                raise TheoryReactorError("causal reader state-memory upgrade differs")
             return
         self.reader.load_state_dict(source, strict=True)
 
@@ -131,6 +129,7 @@ class NativeCausalDispositionReader(nn.Module):
         query_hidden: torch.Tensor,
         state: TypedTheoryState,
         *,
+        initial_state: TypedTheoryState | None = None,
         motor_hidden: torch.Tensor | None = None,
         trace=None,
         attention_mask: torch.Tensor | None = None,
@@ -150,6 +149,7 @@ class NativeCausalDispositionReader(nn.Module):
         read = self.reader(
             query_hidden,
             state,
+            initial_state=initial_state,
             trace=trace,
             attention_mask=attention_mask,
         )
@@ -181,6 +181,7 @@ class NativeCausalDispositionReader(nn.Module):
         query_hidden: torch.Tensor,
         state: TypedTheoryState,
         *,
+        initial_state: TypedTheoryState | None = None,
         motor_hidden: torch.Tensor | None = None,
         trace=None,
         attention_mask: torch.Tensor | None = None,
@@ -190,6 +191,7 @@ class NativeCausalDispositionReader(nn.Module):
         class_logits = self.class_logits(
             query_hidden,
             state,
+            initial_state=initial_state,
             motor_hidden=motor_hidden,
             trace=trace,
             attention_mask=attention_mask,

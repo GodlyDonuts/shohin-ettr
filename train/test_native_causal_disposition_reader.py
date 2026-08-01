@@ -118,9 +118,10 @@ def test_nonlinear_truth_motor_preserves_causal_interface() -> None:
         truth_motor_hidden=64,
     )
     assert reader.truth_motor_hidden == 64
-    assert sum(
-        parameter.numel() for parameter in reader.truth_motor.parameters()
-    ) == 16 * 64 + 64 + 64 * 2 + 2
+    assert (
+        sum(parameter.numel() for parameter in reader.truth_motor.parameters())
+        == 16 * 64 + 64 + 64 * 2 + 2
+    )
     logits = reader(
         torch.randn((2, 5, 16)),
         _state(committed=1.0, halted=0.0),
@@ -178,6 +179,54 @@ def test_native_reader_upgrades_an_unaddressed_warm_start() -> None:
     torch.testing.assert_close(
         target.reader.slot_embedding,
         initial_addresses,
+    )
+
+
+def test_temporal_reader_requires_and_uses_initial_state() -> None:
+    torch.manual_seed(11)
+    config = replace(
+        _config(),
+        reader_slot_addresses=True,
+        reader_initial_state=True,
+    )
+    reader = SourceDeletedQueryReader(config).eval()
+    query = torch.randn((2, 5, 16))
+    terminal = _state(committed=1.0, halted=0.0)
+    unchanged = _state(committed=0.0, halted=0.0)
+    changed = unchanged.detached_clone()
+    changed.value_probabilities[0, 0] = torch.tensor((0, 1, 0, 0, 0))
+    with pytest.raises(TheoryReactorError, match="initial state is required"):
+        reader(query, terminal)
+    with torch.inference_mode():
+        unchanged_read = reader(query, terminal, initial_state=unchanged)
+        changed_read = reader(query, terminal, initial_state=changed)
+    assert not torch.allclose(unchanged_read, changed_read)
+
+
+def test_temporal_reader_requires_slot_addresses() -> None:
+    with pytest.raises(TheoryReactorError, match="requires slot addresses"):
+        SourceDeletedQueryReader(replace(_config(), reader_initial_state=True))
+
+
+def test_native_reader_upgrades_to_two_snapshot_state_memory() -> None:
+    source = SourceDeletedQueryReader(_config())
+    config = replace(
+        _config(),
+        reader_slot_addresses=True,
+        reader_initial_state=True,
+    )
+    target = NativeCausalDispositionReader(
+        config,
+        vocab_size=32,
+        answer_token_ids=(4, 7, 11, 19),
+    )
+    initial_addresses = target.reader.slot_embedding.detach().clone()
+    initial_phases = target.reader.state_phase_embedding.detach().clone()
+    target.load_reader_state(source)
+    torch.testing.assert_close(target.reader.slot_embedding, initial_addresses)
+    torch.testing.assert_close(
+        target.reader.state_phase_embedding,
+        initial_phases,
     )
 
 

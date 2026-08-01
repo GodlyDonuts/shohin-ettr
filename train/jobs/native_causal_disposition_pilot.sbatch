@@ -37,6 +37,7 @@ EVAL_BATCHES=${EVAL_BATCHES:-32}
 TRUTH_MOTOR_HIDDEN=${TRUTH_MOTOR_HIDDEN:-0}
 TRAIN_READER=${TRAIN_READER:-0}
 READER_SLOT_ADDRESSES=${READER_SLOT_ADDRESSES:-0}
+READER_INITIAL_STATE=${READER_INITIAL_STATE:-0}
 MOTOR_QUERY_GEOMETRY=${MOTOR_QUERY_GEOMETRY:-stage}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
@@ -56,6 +57,16 @@ case "$READER_SLOT_ADDRESSES" in
   1) address_args+=(--reader-slot-addresses) ;;
   *)
     echo "READER_SLOT_ADDRESSES must be 0 or 1" >&2
+    exit 2
+    ;;
+esac
+
+initial_state_args=()
+case "$READER_INITIAL_STATE" in
+  0) ;;
+  1) initial_state_args+=(--reader-initial-state) ;;
+  *)
+    echo "READER_INITIAL_STATE must be 0 or 1" >&2
     exit 2
     ;;
 esac
@@ -119,6 +130,7 @@ parent_model_sha=$(sha256sum \
   --truth-motor-hidden "$TRUTH_MOTOR_HIDDEN" \
   --motor-query-geometry "$MOTOR_QUERY_GEOMETRY" \
   "${address_args[@]}" \
+  "${initial_state_args[@]}" \
   "${reader_args[@]}"
 
 (

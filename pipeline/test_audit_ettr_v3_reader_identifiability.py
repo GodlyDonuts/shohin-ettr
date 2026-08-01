@@ -32,7 +32,7 @@ def test_audit_quantifies_address_sensitive_query_support(tmp_path: Path) -> Non
     _write(
         tmp_path / "local_rewrite-test.jsonl.gz",
         [
-            _row("slot_is", "type_count_ge"),
+            _row("slot_is", "slot_changed"),
             _row("adjacent_is", "pattern_exists"),
         ],
     )
@@ -42,9 +42,11 @@ def test_audit_quantifies_address_sensitive_query_support(tmp_path: Path) -> Non
     )
     report = audit(tmp_path)
     assert report["query_count"] == 6
-    assert report["address_sensitive_query_count"] == 4
-    assert report["address_sensitive_query_rate"] == pytest.approx(2 / 3)
-    assert report["reader_without_addresses_representable_count"] == 2
+    assert report["address_sensitive_query_count"] == 5
+    assert report["address_sensitive_query_rate"] == pytest.approx(5 / 6)
+    assert report["reader_without_addresses_representable_count"] == 1
+    assert report["initial_state_sensitive_query_count"] == 1
+    assert report["addressed_terminal_reader_representable_count"] == 5
     assert report["shard_count"] == 2
 
 

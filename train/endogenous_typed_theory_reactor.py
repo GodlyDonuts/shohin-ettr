@@ -51,6 +51,7 @@ class TheoryReactorConfig:
     execution_trace_read_scale: float = 0.0
     valid_pointer_masks: bool = False
     reader_slot_addresses: bool = False
+    reader_initial_state: bool = False
     parameter_cap: int = SYSTEM_PARAMETER_CAP
 
     def validate(self, *, n_layer: int | None = None) -> None:
@@ -100,9 +101,11 @@ class TheoryReactorConfig:
         if not isinstance(self.valid_pointer_masks, bool):
             raise TheoryReactorError("valid-pointer mask flag must be boolean")
         if not isinstance(self.reader_slot_addresses, bool):
-            raise TheoryReactorError(
-                "reader slot-address flag must be boolean"
-            )
+            raise TheoryReactorError("reader slot-address flag must be boolean")
+        if not isinstance(self.reader_initial_state, bool):
+            raise TheoryReactorError("reader initial-state flag must be boolean")
+        if self.reader_initial_state and not self.reader_slot_addresses:
+            raise TheoryReactorError("reader initial state requires slot addresses")
 
 
 @dataclass(frozen=True, slots=True)
@@ -670,9 +673,7 @@ class GenericTransactionReactor(nn.Module):
             self.control_seed.to(slots.dtype).unsqueeze(0)
             + self.step_embedding.weight[state.step].to(slots.dtype)
             + pooled
-            + self.status_projection(
-                _disposition_probabilities(state)
-            )
+            + self.status_projection(_disposition_probabilities(state))
         )
         if command is not None:
             command_read, _ = self.command_attention(
@@ -689,9 +690,7 @@ class GenericTransactionReactor(nn.Module):
         keys = self.slot_key(encoded_slots)
         opcode_probabilities = self.opcode_head(control).float().softmax(-1)
         pointer_opcode = (
-            _hard_one_hot(opcode_probabilities)
-            if hard
-            else opcode_probabilities
+            _hard_one_hot(opcode_probabilities) if hard else opcode_probabilities
         )
         source_logits = torch.einsum(
             "bw,bsw->bs",
@@ -709,9 +708,7 @@ class GenericTransactionReactor(nn.Module):
             active_source = pointer_opcode[:, 1:6].sum(-1, keepdim=True)
             source_ignored = pointer_opcode[:, 6:].sum(-1, keepdim=True)
             source_validity = (
-                allocate * (1.0 - active)
-                + active_source * active
-                + source_ignored
+                allocate * (1.0 - active) + active_source * active + source_ignored
             )
             relational = pointer_opcode[:, 3:5].sum(-1, keepdim=True)
             target_validity = relational * active + (1.0 - relational)
@@ -951,11 +948,13 @@ class SourceDeletedQueryReader(nn.Module):
         self.value_embedding = nn.Parameter(torch.empty(config.num_value_codes, width))
         self.type_embedding = nn.Parameter(torch.empty(config.num_types, width))
         if config.reader_slot_addresses:
-            self.slot_embedding = nn.Parameter(
-                torch.empty(config.num_slots, width)
-            )
+            self.slot_embedding = nn.Parameter(torch.empty(config.num_slots, width))
         else:
             self.register_parameter("slot_embedding", None)
+        if config.reader_initial_state:
+            self.state_phase_embedding = nn.Parameter(torch.empty(2, width))
+        else:
+            self.register_parameter("state_phase_embedding", None)
         self.active_projection = nn.Linear(1, width, bias=False)
         self.root_projection = nn.Linear(1, width, bias=False)
         self.relation_projection = nn.Linear(
@@ -992,23 +991,15 @@ class SourceDeletedQueryReader(nn.Module):
         nn.init.normal_(self.type_embedding, std=0.02)
         if self.slot_embedding is not None:
             nn.init.normal_(self.slot_embedding, std=0.02)
+        if self.state_phase_embedding is not None:
+            nn.init.normal_(self.state_phase_embedding, std=0.02)
 
-    def forward(
+    def _state_memory(
         self,
-        query_hidden: torch.Tensor,
         state: TypedTheoryState,
         *,
-        trace: ReactorTrace | None = None,
-        attention_mask: torch.Tensor | None = None,
-    ) -> torch.Tensor:
-        batch, tokens, _ = query_hidden.shape
-        query_padding = _padding_mask(
-            attention_mask,
-            batch,
-            tokens,
-            query_hidden.device,
-        )
-        query = self.query_projection(query_hidden)
+        phase_index: int | None,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         state_padding = state.active.lt(0.5)
         empty = state_padding.all(-1)
         first_slot = F.one_hot(
@@ -1030,9 +1021,7 @@ class SourceDeletedQueryReader(nn.Module):
             state.type_probabilities,
             self.type_embedding,
         )
-        status = self.status_projection(
-            _disposition_probabilities(state)
-        )[:, None, :]
+        status = self.status_projection(_disposition_probabilities(state))[:, None, :]
         state_values = (
             state_values
             + state_types
@@ -1041,22 +1030,61 @@ class SourceDeletedQueryReader(nn.Module):
         )
         if self.slot_embedding is not None:
             state_values = state_values + self.slot_embedding.unsqueeze(0)
-        semantic_state = (
-            state_values
-            + _edge_aware_relation_context(
-                state.relations,
-                state_values,
-                self.relation_projection,
+        if phase_index is not None:
+            if self.state_phase_embedding is None or phase_index not in (0, 1):
+                raise TheoryReactorError("reader state phase differs")
+            state_values = state_values + self.state_phase_embedding[phase_index].view(
+                1, 1, -1
             )
+        semantic_state = state_values + _edge_aware_relation_context(
+            state.relations,
+            state_values,
+            self.relation_projection,
         )
         disposition = _disposition_probabilities(state)
         readable = (
-            disposition[:, 1:2]
-            + self.open_state_read_floor * disposition[:, 0:1]
+            torch.ones_like(disposition[:, 0:1])
+            if phase_index == 0
+            else (
+                disposition[:, 1:2] + self.open_state_read_floor * disposition[:, 0:1]
+            )
         )
         state_values = semantic_state * readable[:, :, None] + status
-        memory_values = self.state_norm(state_values)
-        memory_padding = state_padding
+        return self.state_norm(state_values), state_padding, semantic_state
+
+    def forward(
+        self,
+        query_hidden: torch.Tensor,
+        state: TypedTheoryState,
+        *,
+        initial_state: TypedTheoryState | None = None,
+        trace: ReactorTrace | None = None,
+        attention_mask: torch.Tensor | None = None,
+    ) -> torch.Tensor:
+        batch, tokens, _ = query_hidden.shape
+        query_padding = _padding_mask(
+            attention_mask,
+            batch,
+            tokens,
+            query_hidden.device,
+        )
+        query = self.query_projection(query_hidden)
+        phase_index = 1 if self.state_phase_embedding is not None else None
+        memory_values, memory_padding, semantic_state = self._state_memory(
+            state,
+            phase_index=phase_index,
+        )
+        if self.state_phase_embedding is not None:
+            if initial_state is None:
+                raise TheoryReactorError("reader initial state is required")
+            initial_values, initial_padding, _ = self._state_memory(
+                initial_state,
+                phase_index=0,
+            )
+            memory_values = torch.cat((initial_values, memory_values), dim=1)
+            memory_padding = torch.cat((initial_padding, memory_padding), dim=1)
+        elif initial_state is not None:
+            raise TheoryReactorError("reader initial state is disabled")
         if self.execution_trace_read_scale > 0.0:
             if (
                 not isinstance(trace, ReactorTrace)
@@ -1079,9 +1107,7 @@ class SourceDeletedQueryReader(nn.Module):
                 or trace.committed.shape != trace.value_code.shape[:2]
                 or trace.halted.shape != trace.value_code.shape[:2]
             ):
-                raise TheoryReactorError(
-                    "execution trace geometry differs"
-                )
+                raise TheoryReactorError("execution trace geometry differs")
             trace_values = torch.einsum(
                 "bkc,cw->bkw",
                 trace.value_code,
@@ -1111,20 +1137,17 @@ class SourceDeletedQueryReader(nn.Module):
                 ),
                 dim=-1,
             )
-            trace_values = trace_values + self.status_projection(
-                trace_disposition
-            )
+            trace_values = trace_values + self.status_projection(trace_disposition)
             memory_values = torch.cat(
                 (
                     memory_values,
-                    self.execution_trace_read_scale
-                    * self.state_norm(trace_values),
+                    self.execution_trace_read_scale * self.state_norm(trace_values),
                 ),
                 dim=1,
             )
             memory_padding = torch.cat(
                 (
-                    state_padding,
+                    memory_padding,
                     torch.zeros(
                         trace_values.shape[:2],
                         dtype=torch.bool,
@@ -1302,14 +1325,8 @@ class EndogenousTypedTheoryReactorGPT(nn.Module):
             hidden = self._decode_from_stage(stage_hidden, pos=0)
             hidden = self.base.norm(hidden + read)
         else:
-            hidden = self.base.norm(
-                self._decode_from_stage(stage_hidden, pos=0)
-            )
-            scale = (
-                read.shape[-1] ** -0.5
-                if geometry == "postnorm-scaled"
-                else 1.0
-            )
+            hidden = self.base.norm(self._decode_from_stage(stage_hidden, pos=0))
+            scale = read.shape[-1] ** -0.5 if geometry == "postnorm-scaled" else 1.0
             hidden = hidden + scale * read
         logits = self.base.head(hidden)
         loss = None

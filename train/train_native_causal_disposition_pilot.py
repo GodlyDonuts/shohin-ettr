@@ -87,6 +87,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--truth-motor-hidden", type=int, default=0)
     parser.add_argument("--train-reader", action="store_true")
     parser.add_argument("--reader-slot-addresses", action="store_true")
+    parser.add_argument("--reader-initial-state", action="store_true")
     parser.add_argument("--gradient-accumulation", type=int, default=1)
     parser.add_argument(
         "--motor-query-geometry",
@@ -130,13 +131,15 @@ def _validate_args(args: argparse.Namespace) -> None:
         or not math.isfinite(args.gradient_clip)
         or args.gradient_clip <= 0.0
         or (args.reader_slot_addresses and not args.train_reader)
+        or (
+            args.reader_initial_state
+            and (not args.train_reader or not args.reader_slot_addresses)
+        )
         or args.output.exists()
         or args.output.is_symlink()
         or not args.output.parent.is_dir()
     ):
-        raise NativeDispositionPilotError(
-            "native disposition pilot arguments differ"
-        )
+        raise NativeDispositionPilotError("native disposition pilot arguments differ")
 
 
 def _gather_read_logits(
@@ -151,13 +154,8 @@ def _gather_read_logits(
 
 def _annotate_pair_rows(pair, depths: torch.Tensor) -> list[dict[str, object]]:
     pair_rows = _pair_rows(pair)
-    if (
-        depths.ndim != 1
-        or depths.numel() != len(pair_rows)
-    ):
-        raise NativeDispositionPilotError(
-            "native disposition depth support differs"
-        )
+    if depths.ndim != 1 or depths.numel() != len(pair_rows):
+        raise NativeDispositionPilotError("native disposition depth support differs")
     return [
         row
         | {
@@ -187,18 +185,25 @@ def _forward_logits(
                 model._decode_from_stage(stage_hidden, pos=0)
             )
         else:
-            raise NativeDispositionPilotError(
-                "motor query geometry differs"
-            )
+            raise NativeDispositionPilotError("motor query geometry differs")
         state = packet_targets_to_state(
             batch.terminal_packet_targets,
             model.config,
             step=batch.transaction_targets.opcode.shape[1],
             dtype=stage_hidden.dtype,
         )
+        initial_state = None
+        if reader.config.reader_initial_state:
+            initial_state = packet_targets_to_state(
+                batch.packet_targets,
+                model.config,
+                step=0,
+                dtype=stage_hidden.dtype,
+            )
     return reader(
         stage_hidden,
         state,
+        initial_state=initial_state,
         motor_hidden=motor_hidden,
         attention_mask=batch.episodes.query.attention_mask,
     )
@@ -251,10 +256,7 @@ def _loss(
         "world_binding": world,
     }
     loss = 0.25 * factual + 0.5 * (world + command)
-    return loss, {
-        name: float(value.detach().cpu())
-        for name, value in parts.items()
-    }
+    return loss, {name: float(value.detach().cpu()) for name, value in parts.items()}
 
 
 def _evaluate(
@@ -291,9 +293,12 @@ def _evaluate(
             transcoder.transcode_batch(cpu_batch),
             device,
         )
-        with torch.inference_mode(), torch.autocast(
-            device_type="cuda",
-            dtype=torch.bfloat16,
+        with (
+            torch.inference_mode(),
+            torch.autocast(
+                device_type="cuda",
+                dtype=torch.bfloat16,
+            ),
         ):
             logits = _forward_logits(
                 model,
@@ -322,9 +327,7 @@ def _evaluate(
             ) = batch.causal_rectangles.intervention_indices()
             depths = batch.transaction_targets.step_mask.sum(-1)
             for factor, pair in pairs.items():
-                target_index = (
-                    world_target if factor == "world" else command_target
-                )
+                target_index = world_target if factor == "world" else command_target
                 rows[factor].extend(
                     _annotate_pair_rows(
                         pair,
@@ -390,9 +393,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     if model.base.cfg.vocab_size != transcoder.target_vocab_size:
         raise NativeDispositionPilotError("target vocabulary differs")
-    answer_token_ids = answer_token_ids_from_tokenizer(
-        args.target_tokenizer
-    )
+    answer_token_ids = answer_token_ids_from_tokenizer(args.target_tokenizer)
     model.requires_grad_(False)
     model.to(device=device, dtype=torch.bfloat16).eval()
     torch.manual_seed(args.model_seed)
@@ -400,6 +401,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     reader_config = replace(
         model.config,
         reader_slot_addresses=args.reader_slot_addresses,
+        reader_initial_state=args.reader_initial_state,
     )
     reader = NativeCausalDispositionReader(
         reader_config,
@@ -413,9 +415,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     trainable = tuple(
         parameter for parameter in reader.parameters() if parameter.requires_grad
     )
-    trainable_parameter_count = sum(
-        parameter.numel() for parameter in trainable
-    )
+    trainable_parameter_count = sum(parameter.numel() for parameter in trainable)
     if trainable_parameter_count < 2_306:
         raise NativeDispositionPilotError(
             "truth-motor trainable parameter count differs"
@@ -478,6 +478,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "token_transcode": transcode_receipt_value(transcoder.receipt),
             "train_reader": args.train_reader,
             "reader_slot_addresses": args.reader_slot_addresses,
+            "reader_initial_state": args.reader_initial_state,
             "trainable_parameters": trainable_parameter_count,
             "truth_motor_hidden": args.truth_motor_hidden,
             "updates": args.updates,
@@ -521,9 +522,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
                 batch.validate(
                     model.config,
-                    ETTRObjectiveConfig(
-                        vocab_size=model.base.cfg.vocab_size
-                    ),
+                    ETTRObjectiveConfig(vocab_size=model.base.cfg.vocab_size),
                 )
                 with torch.autocast(
                     device_type="cuda",
@@ -536,9 +535,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                         motor_query_geometry=args.motor_query_geometry,
                     )
                 if not bool(torch.isfinite(loss)):
-                    raise NativeDispositionPilotError(
-                        "pilot loss is nonfinite"
-                    )
+                    raise NativeDispositionPilotError("pilot loss is nonfinite")
                 (loss / args.gradient_accumulation).backward()
                 accumulated_loss += float(loss.detach().cpu())
                 for name, value in parts.items():
@@ -565,9 +562,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                                 "loss": last_loss,
                                 "loss_parts": parts,
                                 "position": last_position,
-                                "schema": (
-                                    "shohin-ettr-native-disposition-metric-v1"
-                                ),
+                                "schema": ("shohin-ettr-native-disposition-metric-v1"),
                                 "update": update,
                             }
                         )
@@ -613,6 +608,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "gradient_accumulation": args.gradient_accumulation,
             "train_reader": args.train_reader,
             "reader_slot_addresses": args.reader_slot_addresses,
+            "reader_initial_state": args.reader_initial_state,
             "trainable_parameters": trainable_parameter_count,
             "truth_motor_hidden": args.truth_motor_hidden,
             "updates": args.updates,
@@ -631,8 +627,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         _write_no_replace(
             args.output / "SHA256SUMS",
             "".join(
-                f"{_sha256_file(args.output / name)}  {name}\n"
-                for name in files
+                f"{_sha256_file(args.output / name)}  {name}\n" for name in files
             ).encode("ascii"),
         )
     except BaseException:

@@ -4,9 +4,10 @@
 The original source-deleted reader is permutation-invariant over state slots:
 it embeds slot contents and relations but never supplies an address feature.
 Several admitted query operators name absolute packet slots or ordered register
-positions. Those targets are outside that reader's hypothesis class even when
-the terminal packet is exact. This audit measures the affected query support
-without loading model weights or exposing assessor targets to training.
+positions. One also compares the initial and terminal values of a slot. Those
+targets are outside a terminal-only unaddressed reader's hypothesis class even
+when the terminal packet is exact. This audit measures the affected query
+support without loading model weights or exposing assessor targets to training.
 """
 
 from __future__ import annotations
@@ -48,6 +49,10 @@ UNADDRESSED_REPRESENTABLE_OPERATORS = frozenset(
     }
 )
 
+# This predicate compares the terminal register against the episode's initial
+# register. Addresses alone cannot make it identifiable from terminal state.
+INITIAL_STATE_SENSITIVE_OPERATORS = frozenset({"slot_changed"})
+
 
 class ReaderIdentifiabilityAuditError(ValueError):
     """The corpus does not satisfy the bounded audit contract."""
@@ -76,19 +81,14 @@ def _query_operators(row: object) -> tuple[str, ...]:
             "shard row lacks assessor query factors"
         ) from exc
     if type(queries) is not list or len(queries) != 2:
-        raise ReaderIdentifiabilityAuditError(
-            "shard row query pair differs"
-        )
+        raise ReaderIdentifiabilityAuditError("shard row query pair differs")
     result = []
     for query in queries:
         if type(query) is not dict or type(query.get("op")) is not str:
-            raise ReaderIdentifiabilityAuditError(
-                "shard query operation differs"
-            )
+            raise ReaderIdentifiabilityAuditError("shard query operation differs")
         operation = query["op"]
         if operation not in (
-            ADDRESS_SENSITIVE_OPERATORS
-            | UNADDRESSED_REPRESENTABLE_OPERATORS
+            ADDRESS_SENSITIVE_OPERATORS | UNADDRESSED_REPRESENTABLE_OPERATORS
         ):
             raise ReaderIdentifiabilityAuditError(
                 f"unclassified query operation: {operation}"
@@ -99,9 +99,7 @@ def _query_operators(row: object) -> tuple[str, ...]:
 
 def _shards(root: Path) -> tuple[Path, ...]:
     if not root.is_dir() or root.is_symlink():
-        raise ReaderIdentifiabilityAuditError(
-            "data root must be a physical directory"
-        )
+        raise ReaderIdentifiabilityAuditError("data root must be a physical directory")
     paths = tuple(sorted(root.rglob("*.jsonl.gz")))
     if not paths:
         raise ReaderIdentifiabilityAuditError("data root has no gzip shards")
@@ -116,9 +114,7 @@ def audit(
     """Return deterministic operator support and hypothesis-class coverage."""
 
     if max_records_per_shard is not None and max_records_per_shard < 1:
-        raise ReaderIdentifiabilityAuditError(
-            "max records per shard must be positive"
-        )
+        raise ReaderIdentifiabilityAuditError("max records per shard must be positive")
     total = Counter()
     by_family: dict[str, Counter[str]] = {}
     shard_rows: dict[str, int] = {}
@@ -133,7 +129,10 @@ def audit(
         try:
             with gzip.open(path, "rt", encoding="ascii", newline="") as handle:
                 for line in handle:
-                    if max_records_per_shard is not None and rows >= max_records_per_shard:
+                    if (
+                        max_records_per_shard is not None
+                        and rows >= max_records_per_shard
+                    ):
                         break
                     row = json.loads(line)
                     operations = _query_operators(row)
@@ -147,28 +146,32 @@ def audit(
                 f"cannot audit shard {relative}"
             ) from exc
         if rows == 0:
-            raise ReaderIdentifiabilityAuditError(
-                f"audited shard is empty: {relative}"
-            )
+            raise ReaderIdentifiabilityAuditError(f"audited shard is empty: {relative}")
         shard_rows[relative] = rows
     query_count = sum(total.values())
     affected = sum(total[op] for op in ADDRESS_SENSITIVE_OPERATORS)
-    represented = sum(
-        total[op] for op in UNADDRESSED_REPRESENTABLE_OPERATORS
-    )
+    represented = sum(total[op] for op in UNADDRESSED_REPRESENTABLE_OPERATORS)
+    initial_state_sensitive = sum(total[op] for op in INITIAL_STATE_SENSITIVE_OPERATORS)
+    addressed_terminal_represented = query_count - initial_state_sensitive
     if query_count != affected + represented:
-        raise ReaderIdentifiabilityAuditError(
-            "query classification support differs"
-        )
+        raise ReaderIdentifiabilityAuditError("query classification support differs")
     return {
         "address_sensitive_query_count": affected,
         "address_sensitive_query_rate": affected / query_count,
+        "addressed_terminal_reader_representable_count": (
+            addressed_terminal_represented
+        ),
+        "addressed_terminal_reader_representable_rate": (
+            addressed_terminal_represented / query_count
+        ),
         "audit_sha256": digest.hexdigest(),
         "by_family": {
             family: dict(sorted(counts.items()))
             for family, counts in sorted(by_family.items())
         },
         "max_records_per_shard": max_records_per_shard,
+        "initial_state_sensitive_query_count": initial_state_sensitive,
+        "initial_state_sensitive_query_rate": (initial_state_sensitive / query_count),
         "operator_counts": dict(sorted(total.items())),
         "query_count": query_count,
         "reader_without_addresses_representable_count": represented,
@@ -208,6 +211,7 @@ if __name__ == "__main__":
 
 __all__ = [
     "ADDRESS_SENSITIVE_OPERATORS",
+    "INITIAL_STATE_SENSITIVE_OPERATORS",
     "ReaderIdentifiabilityAuditError",
     "UNADDRESSED_REPRESENTABLE_OPERATORS",
     "audit",
