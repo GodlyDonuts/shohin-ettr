@@ -12,6 +12,7 @@ from eval_ettr_joint_instruction_model import (
     MODEL_SCHEMA,
     RUN_SCHEMA,
     _load_initialization_contract,
+    _resolve_evaluation_seed,
     _validate_external_parent_base,
     _validate_model_lineage,
     _validate_run_lineage,
@@ -41,6 +42,17 @@ def test_external_parent_base_validation_ignores_only_ettr_state() -> None:
         match="external parent base weights differ",
     ):
         _validate_external_parent_base(model, payload)
+
+
+def test_evaluation_seed_is_explicit_when_contract_has_none() -> None:
+    assert _resolve_evaluation_seed({}, 2026072804) == 2026072804
+    assert _resolve_evaluation_seed({"data_seed": 19}, None) == 19
+    for value in (None, True, -1, 2**63):
+        with pytest.raises(
+            ETTRTriEvaluationError,
+            match="evaluation seed differs",
+        ):
+            _resolve_evaluation_seed({}, value)
 
 
 def _parent_contract() -> dict[str, object]:

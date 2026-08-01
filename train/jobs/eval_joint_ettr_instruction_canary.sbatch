@@ -29,6 +29,7 @@ RUN_DIR=${RUN_DIR:?set completed tri-stream run}
 OUTPUT=${OUTPUT:?set fresh evaluation output}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 MAX_BATCHES=${MAX_BATCHES:-128}
+EVALUATION_SEED=${EVALUATION_SEED:-}
 
 cd "$CODE_ROOT"
 [[ "$(tr -d '\r\n' < SOURCE_COMMIT)" == "$SOURCE_COMMIT" ]] \
@@ -77,6 +78,9 @@ eval_args=(
   --source-commit "$SOURCE_COMMIT"
   --max-batches "$MAX_BATCHES"
 )
+if [[ -n "$EVALUATION_SEED" ]]; then
+  eval_args+=(--evaluation-seed "$EVALUATION_SEED")
+fi
 if [[ -n "$TARGET_TOKENIZER" || -n "$BASE_SOURCE_ROOT" ]]; then
   [[ -n "$TARGET_TOKENIZER" && -n "$BASE_SOURCE_ROOT" ]] || {
     echo "external evaluation arguments differ" >&2

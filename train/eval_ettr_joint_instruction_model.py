@@ -90,6 +90,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--max-batches", type=int, default=128)
+    parser.add_argument("--evaluation-seed", type=int)
     return parser.parse_args(argv)
 
 
@@ -138,6 +139,24 @@ def _validate_external_parent_base(
         raise ETTRTriEvaluationError(
             "external parent base weights differ"
         )
+
+
+def _resolve_evaluation_seed(
+    run_contract: Mapping[str, object],
+    explicit_seed: int | None,
+) -> int:
+    seed = (
+        run_contract.get("data_seed")
+        if explicit_seed is None
+        else explicit_seed
+    )
+    if (
+        not isinstance(seed, int)
+        or isinstance(seed, bool)
+        or not 0 <= seed < 2**63
+    ):
+        raise ETTRTriEvaluationError("evaluation seed differs")
+    return seed
 
 
 def _validate_run_lineage(
@@ -771,6 +790,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         for name in subjects
     }
     batch_reports = []
+    evaluation_seed = _resolve_evaluation_seed(
+        run_contract,
+        args.evaluation_seed,
+    )
     packet_index = ETTRDiskPacketSufficiencyIndex(
         stream.packet_index_root
     )
@@ -780,7 +803,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             rank=0,
             world_size=1,
             epoch=0,
-            seed=run_contract["data_seed"],
+            seed=evaluation_seed,
         )
         for position, cpu_batch in iterator:
             if len(losses["candidate"]) >= args.max_batches:
@@ -934,6 +957,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "candidate_minus_parent": parent_delta,
         "candidate_minus_raw": raw_delta,
         "device": torch.cuda.get_device_name(device),
+        "evaluation_seed": evaluation_seed,
         "gates": gates,
         "joint_model_sha256": args.joint_model_sha256,
         "optimizer_step": candidate_payload["optimizer_step"],
