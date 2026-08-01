@@ -262,7 +262,7 @@ def _loss(
     )
     compiler, compiler_parts = _compiler_loss(autonomous, specs)
     teacher_loss = torch.zeros_like(autonomous_loss)
-    if teacher_weight > 0.0:
+    if teacher_weight > 0.0 and isinstance(reader, TypedQueryStateReader):
         teacher_output = _forward(reader, source_batch, specs, teacher=True)
         teacher_loss = _truth_loss(teacher_output.vocab_logits, target_batch)[0]
     loss = autonomous_loss + 0.5 * compiler + teacher_weight * teacher_loss
@@ -521,6 +521,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             "source_commit": args.source_commit,
             "start_position": args.start_position,
             "teacher_decay_updates": args.teacher_decay_updates,
+            "teacher_training_path": (
+                "learned_executor_only"
+                if args.executor_mode == "learned"
+                else "evaluation_only_exact_executor"
+            ),
             "token_transcode": transcode_receipt_value(transcoder.receipt),
             "updates": args.updates,
         }
