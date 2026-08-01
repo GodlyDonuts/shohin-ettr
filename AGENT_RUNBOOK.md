@@ -21782,3 +21782,50 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_generic_reader_scaling_train_the_native_truth_motor_first_then_unfreeze_state_query_attention_only_if_both_oracle_world_and_command_orientation_improve`.
+
+- **2026-08-01 04:07--05:05 EDT** -- **The frozen-reader native truth motor
+  closes negative; nonlinear-motor and causal-reader capacity are now split
+  into independent sealed arms.**
+
+  Two fail-closed preflights exposed implementation defects before any update
+  or model artifact survived. Job `724923` found the wrong oracle-state helper
+  import; job `724924` found that causal rows lacked the shared evaluator's
+  required `depth_bucket`. Private commits `dfef0c2` and `45b5246` fix those
+  defects and add direct regression coverage. Job `724925` then reached update
+  `620`, but its measured rate made the original 2,000-update plan certain to
+  exceed the scheduler's fixed 30-minute window. It was canceled cleanly and
+  replaced rather than allowed to time out without a final report.
+
+  Replacement job `724927` completed 1,000 updates plus the unchanged 32-batch
+  before/after held-out evaluation in `13:58` on `evc35`. Output directory is
+  `train/ettr_smollm2_native_truth_motor_u1000_45b5246_r3`. All output hashes
+  verify. Report SHA-256 is
+  `7892f169fcd83bb5c5f6858eca302a052c859e4449bc72843f01387842f0ee92`;
+  final native-reader SHA-256 is
+  `e4253b11a2268d8d0b220f5187558cf5e6544f430ce5a8e36cef394d5c0a8741`.
+  The run trained exactly `2,306` parameters while freezing the imported
+  SmolLM2 base, compiler, reactor, and warm generic reader.
+
+  The result rejects the linear-motor-only hypothesis. Factual top-1 falls
+  from `64.0625%` to `49.6094%`. WORLD and COMMAND correct/foil top-1 remain
+  exactly `50%/50%`; joint top-1, paired-order, margin-at-`0.1`, and strict
+  margin-at-`1.0` are all zero after training. The tiny difference-in-
+  differences remain centered near zero and do not show semantic orientation.
+  No autonomous composition is admissible from this artifact.
+
+  Private commit `5a6e935` makes the native interface configurable along two
+  orthogonal axes: nonlinear truth-motor width and whether the learned
+  state/query reader is trainable. The relevant suite passes `113/113` with
+  clean Ruff, byte compilation, Bash syntax, and diff checks. Immutable
+  runtime `scratchpad/shohin_ettr_native_disposition_runtime_5a6e935_r1`
+  has `2,647` measured files and SHA256SUMS SHA-256
+  `48157e8af013b9d337da51525250abce3c42d9ac2ece0ba10de4a4f7779644ab`.
+  Job `724930` is the frozen-reader nonlinear arm with a 2,048-wide truth
+  motor, 1,000 updates, and learning rate `3e-4`. Job `724931` is the
+  trainable-reader linear-motor arm with 500 updates and learning rate `1e-4`.
+  Both use the same fresh source position `11,000`, exact parent/data lineage,
+  and unchanged 32-batch held-out gate. They are pending because all visible
+  schedulable H100s currently have both GPUs allocated.
+
+  Decision:
+  `reject_frozen_linear_truth_readout_and_require_both_world_and_command_orientation_from_either_nonlinear_decoding_or_direct_query_state_binding_before_any_autonomous_claim`.
