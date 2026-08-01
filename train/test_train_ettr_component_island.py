@@ -164,6 +164,31 @@ def test_reader_injection_geometries_are_accepted(
     _validate_args(arguments)
 
 
+def test_balanced_reader_reduction_is_reader_only() -> None:
+    values = {
+        "release_sha256": "a" * 64,
+        "checkpoint_sha256": "b" * 64,
+        "run_contract_sha256": "c" * 64,
+        "source_commit": "d" * 40,
+        "architecture_seed": 1,
+        "data_seed": 2,
+        "updates": 1,
+        "eval_batches": 2,
+        "log_every": 1,
+        "learning_rate": 3e-4,
+        "weight_decay": 0.0,
+        "gradient_clip": 1.0,
+        "reader_injection": "stage",
+        "reader_reduction": "balanced-logmeanexp",
+    }
+    _validate_args(SimpleNamespace(**values, component="reader"))
+    with pytest.raises(
+        ETTRComponentIslandError,
+        match="arguments differ",
+    ):
+        _validate_args(SimpleNamespace(**values, component="compiler"))
+
+
 def test_component_warm_start_is_hash_bound(tmp_path) -> None:
     model = _ComponentModel()
     path = (tmp_path / "reader.safetensors").resolve()

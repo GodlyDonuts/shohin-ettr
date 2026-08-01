@@ -62,6 +62,7 @@ RUN_SCHEMA = "shohin-ettr-component-island-run-v1"
 REPORT_SCHEMA = "shohin-ettr-component-island-report-v1"
 _COMPONENTS = ("compiler", "reactor", "reader")
 _REACTOR_REDUCTIONS = ("decision-mean", "head-class-balanced")
+_READER_REDUCTIONS = ("mixed-mean", "balanced-logmeanexp")
 _READER_STATE_SOURCES = ("oracle", "autonomous")
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
@@ -651,6 +652,7 @@ def _reader_loss(
     *,
     injection: str,
     state_source: str,
+    reduction: str = "mixed-mean",
 ) -> tuple[torch.Tensor, dict[str, float]]:
     state, trace = _reader_state(
         model,
@@ -670,8 +672,16 @@ def _reader_loss(
     ).squeeze(1)
     factual = F.cross_entropy(read_logits.float(), targets)
     pairs = _reader_pairs_from_logits(read_logits, batch)
-    world = _causal_query_binding_loss(pairs["world"], margin=1.0)[0]
-    command = _causal_query_binding_loss(pairs["command"], margin=1.0)[0]
+    world = _causal_query_binding_loss(
+        pairs["world"],
+        margin=1.0,
+        reduction=reduction,
+    )[0]
+    command = _causal_query_binding_loss(
+        pairs["command"],
+        margin=1.0,
+        reduction=reduction,
+    )[0]
     losses = {
         "factual": factual,
         "world_binding": world,
@@ -689,6 +699,7 @@ def component_loss(
     *,
     reader_injection: str = "stage",
     reader_state_source: str = "oracle",
+    reader_reduction: str = "mixed-mean",
     reactor_reduction: str = "decision-mean",
 ) -> tuple[torch.Tensor, dict[str, float]]:
     if component == "compiler":
@@ -705,6 +716,7 @@ def component_loss(
             batch,
             injection=reader_injection,
             state_source=reader_state_source,
+            reduction=reader_reduction,
         )
     raise ETTRComponentIslandError("unknown ETTR component island")
 
@@ -865,6 +877,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default="decision-mean",
     )
     parser.add_argument(
+        "--reader-reduction",
+        choices=_READER_REDUCTIONS,
+        default="mixed-mean",
+    )
+    parser.add_argument(
         "--reader-injection",
         choices=("stage", "late", "postnorm", "postnorm-scaled"),
         default="stage",
@@ -897,6 +914,11 @@ def _validate_args(args: argparse.Namespace) -> None:
         or not math.isfinite(args.gradient_clip)
         or args.gradient_clip <= 0.0
         or (args.component != "reader" and args.reader_injection != "stage")
+        or (
+            args.component != "reader"
+            and getattr(args, "reader_reduction", "mixed-mean")
+            != "mixed-mean"
+        )
         or (
             args.component != "reactor"
             and getattr(
@@ -1024,6 +1046,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "ownership": ownership,
             "protected_checkpoint_sha256": protected.checkpoint_sha256,
             "reader_injection": args.reader_injection,
+            "reader_reduction": args.reader_reduction,
             "reactor_reduction": args.reactor_reduction,
             "release_file_sha256": args.release_sha256,
             "run_contract_sha256": args.run_contract_sha256,
@@ -1080,6 +1103,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     batch,
                     args.component,
                     reader_injection=args.reader_injection,
+                    reader_reduction=args.reader_reduction,
                     reactor_reduction=args.reactor_reduction,
                 )
             if not bool(torch.isfinite(loss)):
@@ -1158,6 +1182,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "release_file_sha256": args.release_sha256,
             "release_manifest_sha256": stream.manifest.sha256(),
             "reader_injection": args.reader_injection,
+            "reader_reduction": args.reader_reduction,
             "reactor_reduction": args.reactor_reduction,
             "schema": REPORT_SCHEMA,
             "source_commit": args.source_commit,

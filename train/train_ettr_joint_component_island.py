@@ -28,6 +28,7 @@ from ettr_token_transcode import (
 from ettr_v3_streaming import ETTRV3StreamingRelease, move_continuation_batch
 from eval_ettr_v3 import _parameter_sha256, _read_hash_bound_json
 from train_ettr_component_island import (
+    _READER_REDUCTIONS,
     _REACTOR_REDUCTIONS,
     _canonical_bytes,
     _component_state,
@@ -91,6 +92,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default="oracle",
     )
     parser.add_argument(
+        "--reader-reduction",
+        choices=_READER_REDUCTIONS,
+        default="mixed-mean",
+    )
+    parser.add_argument(
         "--reactor-reduction",
         choices=_REACTOR_REDUCTIONS,
         default="decision-mean",
@@ -128,6 +134,11 @@ def _validate_args(args: argparse.Namespace) -> None:
         or not math.isfinite(args.gradient_clip)
         or args.gradient_clip <= 0.0
         or (args.component != "reader" and args.reader_injection != "stage")
+        or (
+            args.component != "reader"
+            and getattr(args, "reader_reduction", "mixed-mean")
+            != "mixed-mean"
+        )
         or (
             args.component != "reader"
             and args.reader_state_source != "oracle"
@@ -328,6 +339,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             ),
             "release_file_sha256": args.release_sha256,
             "reader_injection": args.reader_injection,
+            "reader_reduction": args.reader_reduction,
             "reader_state_source": args.reader_state_source,
             "reactor_reduction": args.reactor_reduction,
             "schema": CONTRACT_SCHEMA,
@@ -397,6 +409,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     batch,
                     args.component,
                     reader_injection=args.reader_injection,
+                    reader_reduction=args.reader_reduction,
                     reader_state_source=args.reader_state_source,
                     reactor_reduction=args.reactor_reduction,
                 )
@@ -511,6 +524,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "release_file_sha256": args.release_sha256,
             "release_manifest_sha256": stream.manifest.sha256(),
             "reader_injection": args.reader_injection,
+            "reader_reduction": args.reader_reduction,
             "reader_state_source": args.reader_state_source,
             "reactor_reduction": args.reactor_reduction,
             "schema": REPORT_SCHEMA,
