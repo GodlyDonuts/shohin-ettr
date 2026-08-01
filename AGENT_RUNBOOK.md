@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-01 14:17 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-01 14:37 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -75,7 +75,13 @@
 > `89b41c6` therefore add exact factor-isolated training and a soft semantic-state
 > learning path while retaining the unchanged hard autonomous evaluator. The
 > `89b41c6` runtime archive is transferred but awaits Newton DNS recovery for its
-> remote hash/extraction gate. No current artifact is promoted as native
+> remote hash/extraction gate. Commit `3e0aecc` adds a zero-default,
+> query-sufficient semantic-basis objective over only the initial/terminal
+> state coordinates consumed by the exact algebra. Its focused suite is
+> `11/11`, and its immutable local runtime is hash-verified. It is a matched
+> fallback, not a replacement for the preregistered soft-only arm. Cisco Secure
+> Client currently reports `Disconnected`, so no new Newton job has been
+> submitted. No current artifact is promoted as native
 > reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
@@ -22324,3 +22330,44 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_more_hard_state_scaling_train_the_complete_query_relevant_semantic_basis_softly_then_require_unchanged_hard_world_and_command_generalization`.
+
+- **2026-08-01 14:17--14:37 EDT** -- **The next state intervention is now
+  preregistered and packaged; cluster execution is waiting only on the local
+  UCF VPN session.**
+
+  The active private branch remained clean at `24023a1`. Commit `38c4db9`
+  adds a zero-default semantic-basis loss that supervises only coordinates
+  consumed by the exact query algebra. Follow-up commit `3e0aecc` removes the
+  canonical resource-zero code from that basis because no admitted operator
+  consumes it; equivalent all-thresholds-false states must not be penalized
+  for using a different unused code. The basis consists of 24 initial
+  register-symbol probabilities plus 284 terminal disposition, Horn-relation,
+  register-symbol, positive resource-place/cursor, and halt coordinates.
+  Occupied and unoccupied coordinates receive equal loss mass. Positive basis
+  weight is accepted only with causal-owner alternation, oracle factor bridges,
+  and soft training states. The evaluator remains hard, autonomous,
+  source-deleted, and oracle-free.
+
+  Focused algebra/state/evaluator tests pass `11/11`; Ruff, byte compilation,
+  Bash syntax, and diff checks are clean. The immutable runtime for `3e0aecc`
+  contains 3,389 files, has SHA256SUMS SHA-256
+  `62d13e976e84c50b03a09d86cc489cbeacc27cf689ab1a801f0c253b34f93b5c`,
+  and archive SHA-256
+  `3582b818b40d3a5c5b5757f5b26b7115dd360d07cc85fd1c89d2ade526d32000`.
+
+  The frozen launch order is: (A) admit runtime `89b41c6`, then run soft-only
+  H100 20-update and matched 100-update `3e-5`/`1e-5` arms plus a 20-update
+  FP32 V100 direction control; (B) inspect unchanged hard held-out WORLD and
+  COMMAND gates; (C) only if soft-only fails to establish coherent WORLD
+  direction, run an equal-seed/equal-budget `3e0aecc` arm with semantic-basis
+  weight `1.0`; (D) scale to at least 1,000 updates only when hard held-out
+  WORLD direction is positive and independently reproducible. Training loss,
+  soft-state accuracy, or oracle-factor accuracy cannot authorize promotion.
+
+  Direct DNS and Stokes-jump attempts fail before authentication. Cisco Secure
+  Client itself reports `Disconnected`, and its GUI owns the connection
+  capability, so the CLI cannot establish the tunnel. No Newton output or
+  protected lineage was modified.
+
+  Decision:
+  `run_soft_state_owner_controls_first_then_test_query_sufficient_basis_at_equal_budget_and_scale_only_reproducible_hard_world_generalization`.
