@@ -27,6 +27,7 @@ INITIAL_READER=${INITIAL_READER:?set exact warm reader}
 INITIAL_READER_SHA256=${INITIAL_READER_SHA256:?set warm reader hash}
 OUTPUT=${OUTPUT:?set fresh pilot output}
 DATA_SEED=${DATA_SEED:?set data seed}
+MODEL_SEED=${MODEL_SEED:?set model seed}
 UPDATES=${UPDATES:-2000}
 START_POSITION=${START_POSITION:-10000}
 LEARNING_RATE=${LEARNING_RATE:-3e-4}
@@ -97,6 +98,7 @@ parent_model_sha=$(sha256sum \
   --output "$OUTPUT" \
   --source-commit "$SOURCE_COMMIT" \
   --data-seed "$DATA_SEED" \
+  --model-seed "$MODEL_SEED" \
   --updates "$UPDATES" \
   --start-position "$START_POSITION" \
   --learning-rate "$LEARNING_RATE" \

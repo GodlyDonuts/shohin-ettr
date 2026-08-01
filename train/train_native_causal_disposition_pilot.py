@@ -76,6 +76,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--data-seed", type=int, required=True)
+    parser.add_argument("--model-seed", type=int, required=True)
     parser.add_argument("--updates", type=int, default=2_000)
     parser.add_argument("--start-position", type=int, default=10_000)
     parser.add_argument("--learning-rate", type=float, default=3e-4)
@@ -115,6 +116,7 @@ def _validate_args(args: argparse.Namespace) -> None:
         or any(_HEX64.fullmatch(value) is None for value in hashes)
         or _HEX40.fullmatch(args.source_commit) is None
         or not 0 <= args.data_seed < 2**63
+        or not 0 <= args.model_seed < 2**63
         or args.updates < 1
         or args.start_position < 0
         or args.eval_batches < 2
@@ -390,6 +392,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     model.requires_grad_(False)
     model.to(device=device, dtype=torch.bfloat16).eval()
+    torch.manual_seed(args.model_seed)
+    torch.cuda.manual_seed_all(args.model_seed)
     reader = NativeCausalDispositionReader(
         model.config,
         vocab_size=model.base.cfg.vocab_size,
@@ -454,6 +458,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "gradient_accumulation": args.gradient_accumulation,
             "initial_reader_sha256": warm_sha256,
             "learning_rate": args.learning_rate,
+            "model_seed": args.model_seed,
             "motor_query_geometry": args.motor_query_geometry,
             "oracle_at_autonomous_inference": False,
             "oracle_training_boundary": "exact_terminal_packet",
@@ -589,6 +594,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "final_native_reader_sha256": final_sha256,
             "initial_native_reader_sha256": initial_sha256,
             "last_loss": last_loss,
+            "model_seed": args.model_seed,
             "motor_query_geometry": args.motor_query_geometry,
             "native_reader_parameter_sha256": _parameter_sha256(reader),
             "parent_joint_model_sha256": args.parent_joint_model_sha256,
