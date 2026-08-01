@@ -96,6 +96,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         choices=("autonomous", "oracle-factors"),
         default="autonomous",
     )
+    parser.add_argument(
+        "--semantic-state-mode",
+        choices=("hard-st", "soft"),
+        default="hard-st",
+    )
     parser.add_argument("--eval-batches", type=int, default=16)
     parser.add_argument("--log-every", type=int, default=10)
     parser.add_argument(
@@ -150,6 +155,10 @@ def _validate_args(args: argparse.Namespace) -> None:
         or args.compiler_aux_weight + args.reactor_aux_weight <= 0.0
         or (
             args.owner_state_bridge == "oracle-factors"
+            and args.optimization_mode != "causal-owner-alternating"
+        )
+        or (
+            args.semantic_state_mode == "soft"
             and args.optimization_mode != "causal-owner-alternating"
         )
         or args.output.exists()
@@ -234,12 +243,14 @@ def _semantic_loss(
     factor: str | None = None,
     oracle_program: bool = False,
     owner_state_bridge: str = "autonomous",
+    semantic_state_mode: str = "hard-st",
 ):
     initial_state, terminal_state = _semantic_states(
         model,
         batch,
         factor=factor,
         owner_state_bridge=owner_state_bridge,
+        semantic_state_mode=semantic_state_mode,
     )
     output = _reader_forward(
         reader,
@@ -260,11 +271,17 @@ def _semantic_states(
     *,
     factor: str | None,
     owner_state_bridge: str,
+    semantic_state_mode: str,
 ):
     if owner_state_bridge not in {"autonomous", "oracle-factors"}:
         raise AlgebraicStateSemanticError(
             "algebraic state-semantic owner state bridge differs"
         )
+    if semantic_state_mode not in {"hard-st", "soft"}:
+        raise AlgebraicStateSemanticError(
+            "algebraic state-semantic state mode differs"
+        )
+    hard_state = semantic_state_mode == "hard-st"
     use_oracle_initial = (
         owner_state_bridge == "oracle-factors" and factor == "command"
     )
@@ -283,7 +300,7 @@ def _semantic_states(
             initial_state = model.compile_world(
                 batch.episodes.world.tokens,
                 attention_mask=batch.episodes.world.attention_mask,
-                hard=True,
+                hard=hard_state,
             )
 
     use_oracle_actions = (
@@ -300,14 +317,14 @@ def _semantic_states(
                     step,
                     dtype=terminal_state.active.dtype,
                 ),
-                hard=True,
+                hard=hard_state,
                 validate=False,
             )
     else:
         terminal_state, _trace = model.execute(
             initial_state,
             steps=batch.transaction_targets.opcode.shape[1],
-            hard=True,
+            hard=hard_state,
             command_idx=batch.episodes.command.tokens,
             command_attention_mask=batch.episodes.command.attention_mask,
         )
@@ -423,6 +440,7 @@ def _causal_owner_update(
             factor="world",
             oracle_program=args.semantic_program_source == "oracle",
             owner_state_bridge=args.owner_state_bridge,
+            semantic_state_mode=args.semantic_state_mode,
         )
     _require_finite(world_semantic, "WORLD answer")
     world_value = float(world_semantic.detach().cpu())
@@ -456,6 +474,7 @@ def _causal_owner_update(
             factor="command",
             oracle_program=args.semantic_program_source == "oracle",
             owner_state_bridge=args.owner_state_bridge,
+            semantic_state_mode=args.semantic_state_mode,
         )
     _require_finite(command_semantic, "COMMAND answer")
     command_value = float(command_semantic.detach().cpu())
@@ -621,6 +640,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "runtime_precision": str(next(model.parameters()).dtype),
             "schema": CONTRACT_SCHEMA,
             "semantic_program_source": args.semantic_program_source,
+            "semantic_state_mode": args.semantic_state_mode,
             "source_commit": args.source_commit,
             "start_position": args.start_position,
             "trainable_components": ["compiler", "reactor"],
