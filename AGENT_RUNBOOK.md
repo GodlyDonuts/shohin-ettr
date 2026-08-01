@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-01 17:05 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-01 18:05 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -71,20 +71,25 @@
 > COMMAND gain but no WORLD gain; the lower-rate and FP32 arms do not reproduce
 > it. Exact factor bridges prove the reactor can execute COMMAND from an oracle
 > initial packet, while the learned WORLD compiler remains saturated and fails
-> every held-out WORLD gate after 20 and 100 updates. Commits `a569c32` and
-> `89b41c6` therefore add exact factor-isolated training and a soft semantic-state
-> learning path while retaining the unchanged hard autonomous evaluator. The
-> `89b41c6` runtime archive is transferred but awaits Newton DNS recovery for its
-> remote hash/extraction gate. Commit `3e0aecc` adds a zero-default,
-> query-sufficient semantic-basis objective over only the initial/terminal
-> state coordinates consumed by the exact algebra. Its focused suite is
-> `11/11`, and its immutable local runtime is hash-verified. It is a matched
-> fallback, not a replacement for the preregistered soft-only arm. Cisco Secure
-> Client currently reports `Disconnected`, so no new Newton job has been
-> submitted. Commit `284095e` adds a fake-Slurm-tested, fail-closed dispatcher
-> for the two canaries and eight dependency-held full arms. No current
-> artifact is promoted as native
-> reasoning.
+> every held-out WORLD gate after 20 and 100 updates. The soft/log-basis state
+> arms later expose pre-clip gradients from millions through hundreds of
+> billions; the bounded Brier quotient objective removes that numerical
+> pathology but has not yet crossed a hard gate. The replacement parallel
+> addressed schedule compiler removes recurrent teacher-forcing exposure and
+> is stable. Its first completed 80,000-row arm reaches 17.11% exact schedules,
+> 70.90% autonomous factual top-1, WORLD 7.14% strict pairs, and COMMAND 6.82%
+> strict pairs. The matched lower-rate arm retains COMMAND 4.55% but WORLD
+> returns to zero; both fresh-population arms have zero WORLD, with COMMAND
+> zero and 5.36%. This is the strongest simultaneous autonomous movement so
+> far, but it is population-unstable and is not promoted as native reasoning.
+> Commit `62082b4` removes 29,757,217 dead recurrent-reactor parameters from
+> the wrapper: the narrow system is actually 162,401,647 parameters, and a
+> legal 199,013,615-parameter wide arm is running. Commit `293545f` adds an
+> exact, hash-bound cross-composition evaluator for independently trained
+> WORLD state and parallel COMMAND schedules. Full cross-composition job
+> `725276` is pending; the four-update smoke `725271` failed closed because
+> that undersized slice contained no causal contrasts. No current artifact is
+> promoted as stable native reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -22606,3 +22611,71 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_the_parallel_addressed_schedule_compiler_to_80k_rows_across_two_populations_and_two_learning_rates_then_promote_only_on_reproducible_fully_autonomous_world_and_command_pairs`.
+
+- **2026-08-01 17:05--18:05 EDT** -- **The parallel scheduler produces the
+  strongest simultaneous native result so far, but the two-population gate
+  catches a real generalization failure; independent factor composition is
+  now the decisive successor.**
+
+  Parameter inspection found that the original wrapper counted and carried
+  all 29,757,217 parameters of `GenericTransactionReactor` even though the new
+  schedule path used only its parameter-free exact `apply` algebra. Commit
+  `62082b4c25c912b5f3f30db99d4030cc6c289927` replaces that dead module with a
+  parameterless `ParallelScheduledReactor`, proves exact forward equivalence,
+  and corrects the complete-system receipt. The narrow width-384/layer-3
+  system is 162,401,647 parameters. This creates enough real budget for a
+  width-896/layer-4/14-head schedule compiler: 43,074,721 trainable schedule
+  parameters and 199,013,615 complete parameters. Its 500-update canary
+  `725261` completed stably, but did not beat the narrow canary: exact schedule
+  `6.60%` versus `10.76%`, factual top-1 `70.31%` versus `67.19%`, and zero
+  strict WORLD/COMMAND. Capacity by itself is therefore not the repair. One
+  sealed 5,000-update wide continuation, job `725266`, is running; no wider
+  matrix is authorized without a hard-gate win.
+
+  All four narrow 5,000-update jobs `725247--725250` completed cleanly. Arm
+  `725247` (architecture 31, data 11, LR `3e-4`) is the first architecture arm
+  to move both unchanged fully autonomous gates on the complete 512-row board:
+  factual top-1 `0 -> 70.90%`, WORLD strict pairs `0 -> 8/112 = 7.14%`,
+  COMMAND strict pairs `0 -> 12/176 = 6.82%`, WORLD margin-1 `17.86%`, and
+  COMMAND margin-1 `6.82%`. Its exact schedule reaches
+  `1,120/6,544 = 17.11%`; report SHA-256 is
+  `9f942ba8575f03ecbf8a7706b3fcd23d216556be54a7162e6e25e929fc0b5848`
+  and run-receipt SHA-256 is
+  `c7af29e675f176a2e26183fb282f362da5dd582c94be392695f20882768a64b9`.
+  This is a real autonomous result: no oracle program, state, answer, or
+  best-of-K selection enters that arm.
+
+  The replication matrix prevents promotion. Same-population LR `1e-4` arm
+  `725248` reaches factual `70.31%`, WORLD strict `0%`, WORLD margin-1 `3.57%`,
+  and COMMAND strict `4.55%`. Fresh-population LR `3e-4` arm `725249` reaches
+  factual `67.19%` but WORLD/COMMAND strict both remain zero. Fresh-population
+  LR `1e-4` arm `725250` reaches factual `66.02%`, WORLD strict zero, and
+  COMMAND strict `5.36%`. Report SHA-256 values are respectively
+  `10f57b42c7f4b2ca93d40708fd2f0949b2101ad6d1ec1d121d08721adb780e71`,
+  `45b0f924e3bf7ca05fc384846510f5d1cb1c25305c83dab22b8070dc44a35cfd`,
+  and `73bc55655101c8aa47a3156ba1ce3cd178b6c973e3582ade67a626eef71414cb`.
+  The first arm is retained as the best reasoning baseline, but WORLD is not
+  distribution-stable.
+
+  Commit `293545f8fd9facc650180c5153ba4a74904ae00a` adds an exact
+  cross-composition evaluator. It independently validates complete
+  `SHA256SUMS`, source lineage, initial tensors, final tensors, architecture,
+  and parameter receipts for a trained state compiler/reactor and a trained
+  parallel schedule, then replaces only the intended modules before running
+  the unchanged source-deleted four-arm evaluator. Focused and related tests
+  pass `23/23`; Ruff, byte compilation, Bash syntax, and diff checks are
+  clean. Runtime
+  `scratchpad/shohin_ettr_cross_runtime_293545f_r1` contains exactly 3,397
+  manifested files and has SHA256SUMS SHA-256
+  `70a08fe2a8d3abe51b9cbc7a6d5ead5fb80db1d945174bb0f6fb019e281803fe`.
+  An initial copied-stage manifest included 72 runtime-generated cache files
+  and was rejected before launch; they were removed against the prior exact
+  inventory and the fresh receipt was regenerated and verified. Four-batch
+  smoke `725271` then failed closed at evaluation because the deliberately
+  tiny slice contained no causal contrasts. Full 32-batch cross job `725276`
+  is pending and combines the bounded-Brier state canary with completed arm
+  `725247`. The full four-arm Brier state matrix remains live; completed
+  state artifacts will be crossed with matching schedule populations.
+
+  Decision:
+  `retain_725247_as_the_best_unpromoted_native_baseline_cross_independently_learned_world_state_with_parallel_command_schedules_and_require_fresh_population_world_plus_command_replication`.

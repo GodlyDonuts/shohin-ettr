@@ -53266,3 +53266,39 @@ cannot promote it.
 
 Current decision:
 `test_whether_parallel_sticky_schedule_compilation_converts_local_transaction_learning_into_reproducible_autonomous_causal_state`.
+
+## 2026-08-01 First Parallel-Schedule Native Signal and Its Replication Boundary
+
+The four-arm 80,000-row parallel-schedule matrix has completed. Its strongest
+arm is the best fully autonomous architecture result to date. With no oracle
+program, state, answer, or candidate selection, held-out factual top-1 reaches
+70.90%, WORLD strict causal pairs reach 7.14%, and COMMAND strict causal pairs
+reach 6.82%. The hard transaction schedule is 17.11% exact. This is materially
+stronger than the earlier 2.78%/5.77% algebraic foothold and proves that
+removing recurrent teacher-forcing exposure can convert local transaction
+learning into simultaneous end-to-end causal behavior.
+
+It is not yet a reasoning claim. The same-population lower-rate arm retains
+4.55% COMMAND but loses strict WORLD. A fresh architecture/data population
+gives zero WORLD in both rates; COMMAND is zero at the higher rate and 5.36%
+at the lower rate. The observed mechanism therefore has a real population
+generalization defect rather than merely too few parameters.
+
+An architecture audit also recovered 29.76M dead parameters: the parallel
+wrapper had retained a learned recurrent reactor whose only used operation was
+its parameter-free exact algebra. Removing it makes the narrow system 162.40M
+parameters and permits a legal 199.01M wide schedule compiler. A 500-update
+wide canary is stable but does not improve strict causality, rejecting capacity
+alone as the immediate solution.
+
+The active test is now factor recombination. A hash-bound evaluator composes
+the bounded-Brier WORLD-state learner with the trained parallel COMMAND
+schedule while preserving the exact typed executor, frozen query compiler,
+and unchanged source-deleted hard gate. If that cross restores WORLD while
+retaining COMMAND across fresh populations, it identifies modular state and
+schedule learning as a viable native architecture. If it does not, the next
+intervention must train their shared addressing convention explicitly rather
+than adding capacity or extending the lucky arm.
+
+Current decision:
+`keep_the_first_simultaneous_native_arm_as_baseline_but_promote_only_if_cross_factor_composition_restores_fresh_population_world_and_command`.
