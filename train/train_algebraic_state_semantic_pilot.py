@@ -266,14 +266,21 @@ def _balanced_probability_loss(
         )
     positive = target.bool()
     negative = ~positive
-    if not bool(positive.any()) or not bool(negative.any()):
+    epsilon = torch.finfo(predicted.dtype).eps
+    class_losses = []
+    if bool(positive.any()):
+        class_losses.append(
+            -predicted[positive].clamp_min(epsilon).log().mean()
+        )
+    if bool(negative.any()):
+        class_losses.append(
+            -(1.0 - predicted[negative]).clamp_min(epsilon).log().mean()
+        )
+    if not class_losses:
         raise AlgebraicStateSemanticError(
             "algebraic state-semantic basis classes are empty"
         )
-    epsilon = torch.finfo(predicted.dtype).eps
-    positive_loss = -predicted[positive].clamp_min(epsilon).log().mean()
-    negative_loss = -(1.0 - predicted[negative]).clamp_min(epsilon).log().mean()
-    return 0.5 * (positive_loss + negative_loss)
+    return torch.stack(class_losses).mean()
 
 
 def _oracle_semantic_states(model, batch, *, dtype: torch.dtype):

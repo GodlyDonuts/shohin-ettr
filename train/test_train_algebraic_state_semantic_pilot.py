@@ -190,3 +190,20 @@ def test_balanced_probability_loss_weights_sparse_classes_equally() -> None:
     target = torch.tensor([[1.0, 0.0, 0.0, 0.0]])
     loss = _balanced_probability_loss(predicted, target)
     torch.testing.assert_close(loss, -torch.log(torch.tensor(0.8)))
+
+
+def test_balanced_probability_loss_accepts_single_class_batches() -> None:
+    predicted = torch.tensor([[0.8, 0.7, 0.6]])
+    all_occupied = _balanced_probability_loss(
+        predicted,
+        torch.ones_like(predicted),
+    )
+    all_unoccupied = _balanced_probability_loss(
+        predicted,
+        torch.zeros_like(predicted),
+    )
+    torch.testing.assert_close(all_occupied, -predicted.log().mean())
+    torch.testing.assert_close(
+        all_unoccupied,
+        -(1.0 - predicted).log().mean(),
+    )
