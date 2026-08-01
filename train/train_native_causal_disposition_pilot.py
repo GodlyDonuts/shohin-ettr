@@ -47,6 +47,7 @@ from train_ettr_component_island import (
 from train_ettr_joint_component_island import _validate_parent_lineage
 from train_ettr_joint_instruction_canary import _load_parent
 from probe_ettr_oracle_interfaces import packet_targets_to_state
+from probe_ettr_causal_queries import _depth_bucket
 
 
 CONTRACT_SCHEMA = "shohin-ettr-native-disposition-pilot-contract-v1"
@@ -131,6 +132,25 @@ def _gather_read_logits(
         1,
         read_index[:, None, None].expand(-1, 1, logits.shape[-1]),
     ).squeeze(1)
+
+
+def _annotate_pair_rows(pair, depths: torch.Tensor) -> list[dict[str, object]]:
+    pair_rows = _pair_rows(pair)
+    if (
+        depths.ndim != 1
+        or depths.numel() != len(pair_rows)
+    ):
+        raise NativeDispositionPilotError(
+            "native disposition depth support differs"
+        )
+    return [
+        row
+        | {
+            "depth": int(depth.detach().cpu()),
+            "depth_bucket": _depth_bucket(int(depth.detach().cpu())),
+        }
+        for row, depth in zip(pair_rows, depths, strict=True)
+    ]
 
 
 def _forward_logits(
@@ -251,8 +271,25 @@ def _evaluate(
             factual_correct += int(read_logits.argmax(-1).eq(targets).sum())
             factual_count += targets.numel()
             pairs = _reader_pairs_from_logits(read_logits, batch)
+            (
+                _world_packet,
+                _world_command,
+                world_target,
+                _command_packet,
+                _command_command,
+                command_target,
+            ) = batch.causal_rectangles.intervention_indices()
+            depths = batch.transaction_targets.step_mask.sum(-1)
             for factor, pair in pairs.items():
-                rows[factor].extend(_pair_rows(pair))
+                target_index = (
+                    world_target if factor == "world" else command_target
+                )
+                rows[factor].extend(
+                    _annotate_pair_rows(
+                        pair,
+                        depths.index_select(0, target_index),
+                    )
+                )
     if factual_count != max_batches * 16:
         raise NativeDispositionPilotError(
             "native disposition evaluation support differs"
