@@ -16,6 +16,7 @@ packet target enters the fully autonomous forward.
 from __future__ import annotations
 
 import argparse
+from contextlib import nullcontext
 from dataclasses import asdict
 import json
 from pathlib import Path
@@ -187,6 +188,8 @@ def _strict_load_joint_model(args, *, device: torch.device):
         raise AlgebraicJointStateEvaluationError(
             "joint model strict load differs"
         )
+    if not torch.cuda.is_bf16_supported():
+        model.to(dtype=torch.float32)
     model.eval()
     return model, payload, provenance, run_contract
 
@@ -339,10 +342,12 @@ def _evaluate(
             model.config,
             dtype=torch.float32,
         )
-        with torch.inference_mode(), torch.autocast(
-            device_type="cuda",
-            dtype=torch.bfloat16,
-        ):
+        autocast = (
+            torch.autocast(device_type="cuda", dtype=torch.bfloat16)
+            if torch.cuda.is_bf16_supported()
+            else nullcontext()
+        )
+        with torch.inference_mode(), autocast:
             autonomous_initial = model.compile_world(
                 batch.episodes.world.tokens,
                 attention_mask=batch.episodes.world.attention_mask,
@@ -509,6 +514,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "release_file_sha256": args.release_sha256,
         "replacement_system_parameters": replacement_system_parameters,
         "required_device_class": args.required_device_class,
+        "runtime_precision": str(next(model.parameters()).dtype),
         "schema": CONTRACT_SCHEMA,
         "source_commit": args.source_commit,
     }
@@ -538,6 +544,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "joint_training_source_commit": joint_contract["source_commit"],
             "reader_parameters": reader_parameters,
             "replacement_system_parameters": replacement_system_parameters,
+            "runtime_precision": str(next(model.parameters()).dtype),
             "schema": REPORT_SCHEMA,
             "source_verification": source_verification,
             "status": "pass",
