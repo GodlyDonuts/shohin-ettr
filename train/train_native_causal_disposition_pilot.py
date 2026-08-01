@@ -11,6 +11,7 @@ both held-out causal factors improve here.
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 import json
 import math
 import os
@@ -85,6 +86,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--log-every", type=int, default=10)
     parser.add_argument("--truth-motor-hidden", type=int, default=0)
     parser.add_argument("--train-reader", action="store_true")
+    parser.add_argument("--reader-slot-addresses", action="store_true")
     parser.add_argument("--gradient-accumulation", type=int, default=1)
     parser.add_argument(
         "--motor-query-geometry",
@@ -127,6 +129,7 @@ def _validate_args(args: argparse.Namespace) -> None:
         or not 0.0 < args.learning_rate < 1.0
         or not math.isfinite(args.gradient_clip)
         or args.gradient_clip <= 0.0
+        or (args.reader_slot_addresses and not args.train_reader)
         or args.output.exists()
         or args.output.is_symlink()
         or not args.output.parent.is_dir()
@@ -394,8 +397,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     model.to(device=device, dtype=torch.bfloat16).eval()
     torch.manual_seed(args.model_seed)
     torch.cuda.manual_seed_all(args.model_seed)
-    reader = NativeCausalDispositionReader(
+    reader_config = replace(
         model.config,
+        reader_slot_addresses=args.reader_slot_addresses,
+    )
+    reader = NativeCausalDispositionReader(
+        reader_config,
         vocab_size=model.base.cfg.vocab_size,
         answer_token_ids=answer_token_ids,
         truth_motor_hidden=args.truth_motor_hidden,
@@ -470,6 +477,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "start_position": args.start_position,
             "token_transcode": transcode_receipt_value(transcoder.receipt),
             "train_reader": args.train_reader,
+            "reader_slot_addresses": args.reader_slot_addresses,
             "trainable_parameters": trainable_parameter_count,
             "truth_motor_hidden": args.truth_motor_hidden,
             "updates": args.updates,
@@ -604,6 +612,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "source_verification": source_verification,
             "gradient_accumulation": args.gradient_accumulation,
             "train_reader": args.train_reader,
+            "reader_slot_addresses": args.reader_slot_addresses,
             "trainable_parameters": trainable_parameter_count,
             "truth_motor_hidden": args.truth_motor_hidden,
             "updates": args.updates,

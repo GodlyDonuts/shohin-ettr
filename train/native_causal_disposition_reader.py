@@ -110,7 +110,21 @@ class NativeCausalDispositionReader(nn.Module):
 
         if not isinstance(reader, SourceDeletedQueryReader):
             raise TheoryReactorError("causal reader warm start differs")
-        self.reader.load_state_dict(reader.state_dict(), strict=True)
+        source = reader.state_dict()
+        if (
+            self.reader.slot_embedding is not None
+            and reader.slot_embedding is None
+        ):
+            missing, unexpected = self.reader.load_state_dict(
+                source,
+                strict=False,
+            )
+            if missing != ["slot_embedding"] or unexpected:
+                raise TheoryReactorError(
+                    "causal reader address upgrade differs"
+                )
+            return
+        self.reader.load_state_dict(source, strict=True)
 
     def class_logits(
         self,

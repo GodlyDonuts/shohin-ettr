@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 import torch
 
 from endogenous_typed_theory_reactor import (
+    SourceDeletedQueryReader,
     TheoryReactorConfig,
     TheoryReactorError,
     TypedTheoryState,
@@ -27,6 +30,32 @@ def _config() -> TheoryReactorConfig:
         ff_multiplier=2,
         max_steps=2,
         stage_after_block=0,
+    )
+
+
+def _permuted_state(
+    state: TypedTheoryState,
+    permutation: torch.Tensor,
+) -> TypedTheoryState:
+    relations = state.relations.index_select(2, permutation).index_select(
+        3,
+        permutation,
+    )
+    return TypedTheoryState(
+        value_probabilities=state.value_probabilities.index_select(
+            1,
+            permutation,
+        ),
+        type_probabilities=state.type_probabilities.index_select(
+            1,
+            permutation,
+        ),
+        relations=relations,
+        active=state.active.index_select(1, permutation),
+        root=state.root.index_select(1, permutation),
+        committed=state.committed,
+        halted=state.halted,
+        step=state.step,
     )
 
 
@@ -98,6 +127,58 @@ def test_nonlinear_truth_motor_preserves_causal_interface() -> None:
         attention_mask=torch.ones((2, 5), dtype=torch.bool),
     )
     assert logits.shape == (2, 5, 32)
+
+
+def test_unaddressed_reader_is_invariant_to_consistent_slot_permutation() -> None:
+    torch.manual_seed(7)
+    reader = SourceDeletedQueryReader(_config()).eval()
+    query = torch.randn((2, 5, 16))
+    state = _state(committed=1.0, halted=0.0)
+    state.value_probabilities[0, 0] = torch.tensor((0, 1, 0, 0, 0))
+    state.value_probabilities[0, 1] = torch.tensor((0, 0, 1, 0, 0))
+    permutation = torch.tensor((1, 0, 2))
+    with torch.inference_mode():
+        original = reader(query, state)
+        permuted = reader(query, _permuted_state(state, permutation))
+    torch.testing.assert_close(original, permuted, atol=1e-6, rtol=1e-6)
+
+
+def test_addressed_reader_breaks_the_slot_permutation_symmetry() -> None:
+    torch.manual_seed(7)
+    config = replace(
+        _config(),
+        reader_slot_addresses=True,
+    )
+    reader = SourceDeletedQueryReader(config).eval()
+    query = torch.randn((2, 5, 16))
+    state = _state(committed=1.0, halted=0.0)
+    state.value_probabilities[0, 0] = torch.tensor((0, 1, 0, 0, 0))
+    state.value_probabilities[0, 1] = torch.tensor((0, 0, 1, 0, 0))
+    permutation = torch.tensor((1, 0, 2))
+    with torch.inference_mode():
+        original = reader(query, state)
+        permuted = reader(query, _permuted_state(state, permutation))
+    assert not torch.allclose(original, permuted)
+
+
+def test_native_reader_upgrades_an_unaddressed_warm_start() -> None:
+    source = SourceDeletedQueryReader(_config())
+    config = replace(
+        _config(),
+        reader_slot_addresses=True,
+    )
+    target = NativeCausalDispositionReader(
+        config,
+        vocab_size=32,
+        answer_token_ids=(4, 7, 11, 19),
+    )
+    initial_addresses = target.reader.slot_embedding.detach().clone()
+    target.load_reader_state(source)
+    assert target.reader.slot_embedding is not None
+    torch.testing.assert_close(
+        target.reader.slot_embedding,
+        initial_addresses,
+    )
 
 
 def test_motor_hidden_geometry_is_explicit() -> None:

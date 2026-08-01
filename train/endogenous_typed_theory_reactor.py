@@ -50,6 +50,7 @@ class TheoryReactorConfig:
     open_state_read_floor: float = 0.0
     execution_trace_read_scale: float = 0.0
     valid_pointer_masks: bool = False
+    reader_slot_addresses: bool = False
     parameter_cap: int = SYSTEM_PARAMETER_CAP
 
     def validate(self, *, n_layer: int | None = None) -> None:
@@ -98,6 +99,10 @@ class TheoryReactorConfig:
             )
         if not isinstance(self.valid_pointer_masks, bool):
             raise TheoryReactorError("valid-pointer mask flag must be boolean")
+        if not isinstance(self.reader_slot_addresses, bool):
+            raise TheoryReactorError(
+                "reader slot-address flag must be boolean"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -945,6 +950,12 @@ class SourceDeletedQueryReader(nn.Module):
         self.query_projection = nn.Linear(config.d_model, width)
         self.value_embedding = nn.Parameter(torch.empty(config.num_value_codes, width))
         self.type_embedding = nn.Parameter(torch.empty(config.num_types, width))
+        if config.reader_slot_addresses:
+            self.slot_embedding = nn.Parameter(
+                torch.empty(config.num_slots, width)
+            )
+        else:
+            self.register_parameter("slot_embedding", None)
         self.active_projection = nn.Linear(1, width, bias=False)
         self.root_projection = nn.Linear(1, width, bias=False)
         self.relation_projection = nn.Linear(
@@ -979,6 +990,8 @@ class SourceDeletedQueryReader(nn.Module):
         self.execution_trace_read_scale = config.execution_trace_read_scale
         nn.init.normal_(self.value_embedding, std=0.02)
         nn.init.normal_(self.type_embedding, std=0.02)
+        if self.slot_embedding is not None:
+            nn.init.normal_(self.slot_embedding, std=0.02)
 
     def forward(
         self,
@@ -1026,6 +1039,8 @@ class SourceDeletedQueryReader(nn.Module):
             + self.active_projection(state.active.unsqueeze(-1))
             + self.root_projection(state.root.unsqueeze(-1))
         )
+        if self.slot_embedding is not None:
+            state_values = state_values + self.slot_embedding.unsqueeze(0)
         semantic_state = (
             state_values
             + _edge_aware_relation_context(
