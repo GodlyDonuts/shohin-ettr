@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-01 02:45 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-01 04:07 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -35,9 +35,14 @@
 > readout geometry and matched normalized controls are now live. Direct
 > production postnorm composition amplifies the intervention signal but
 > collapses its semantic orientation to an exact 50/50 split with zero
-> strict pairs. Two bounded autonomous-terminal reader arms are queued to
-> repair that train/deploy state-distribution mismatch. No current artifact
-> is promoted as native reasoning.
+> strict pairs. The matched SmolLM2-135M control now rejects backbone
+> pretraining as a sufficient repair: its exact 2T-token pretrained base
+> lowers paired objective loss and learns nonzero factual transactions, but
+> the unchanged source-deleted gate remains WORLD `0/512` and COMMAND
+> `0/640`. The final intervention-balanced reader continuation also leaves
+> strict WORLD and COMMAND at zero, closing the generic full-vocabulary
+> reader formulation. A new disposition-gated native truth motor is now the
+> isolated successor. No current artifact is promoted as native reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -21687,3 +21692,93 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finish_the_135m_strict_gate_before_scaling_the_control_and_reject_the_backbone_only_hypothesis_if_world_and_command_do_not_both_improve`.
+
+- **2026-08-01 02:45--03:19 EDT** -- **The same-scale 2T-token backbone does
+  not rescue ETTR composition; the backbone-only hypothesis is rejected, and
+  one balanced-reader repair remains bounded and live.**
+
+  Full source-deleted evaluator `724898` completed cleanly in `12:52` on
+  `evc22`. Its report is
+  `artifacts/evals/ettr_smollm2_composed_c2_r2_reader2_e21a312_seed2026072804_r2_trace.json`,
+  SHA-256
+  `90d8c8f6daac26d0d5f34eb9c6caf59a1a9993b03950328130eeba74bfdbc157`.
+  The candidate lowers mean total loss from `37.0485` to `26.8448`, passes
+  the paired-loss upper-95% gate, and raises factual complete-transaction
+  accuracy from zero to `0.7117%`. Factual complete-packet accuracy remains
+  zero. These auxiliary gains do not compose into causal answers.
+
+  Under the unchanged strict source-deleted query gate, WORLD is `0/512` and
+  COMMAND is `0/640`. Candidate correct and foil top-1 are exactly `50%` for
+  both interventions. WORLD margin-at-`0.1` is `12/512 = 2.3438%`; COMMAND is
+  `7/640 = 1.0938%`; neither has any pair at the required margin `1.0` or any
+  joint/paired-order success. Raw and exact-parent strict margins are also
+  zero. The report gates record
+  `strict_parent_improvement=false`,
+  `world_query_margin_rate_increased_from_parent=false`, and
+  `command_query_margin_rate_increased_from_parent=false`.
+
+  This is a strong causal control: replacing Shohin's undertrained 125M base
+  with an exactly imported, same-scale SmolLM2-135M base pretrained on about
+  2T tokens improves optimization and local representation but does not
+  repair semantic orientation or autonomous component composition. It
+  rejects "Shohin is merely too weak" as a sufficient explanation, while
+  leaving open larger-capacity threshold effects and different interfaces.
+
+  Private commits `121c923` and `bbaf9f3` add a hash-bound optional
+  `balanced-logmeanexp` reader reduction and expose it in the component
+  launcher without changing the production default. Focused and combined
+  tests pass `53/53` with clean Ruff, byte compilation, Bash syntax, and diff
+  checks. Immutable runtime
+  `scratchpad/shohin_ettr_smollm2_runtime_bbaf9f3_r1` contains `3,368`
+  measured files and has manifest SHA-256
+  `ce1c0d252d37043f6d69481e3bf45d2a46562bc1baa4ade5b9ed5d67ffd668c3`.
+  Warm reader continuation `724901` starts at source position `5,000` from
+  the exact reader component, freezes the base/compiler/reactor, and runs
+  5,000 additional oracle-state updates at learning rate `1e-4`. It is the
+  last bounded repair to the current reader formulation. Compose and spend a
+  strict H100 evaluation only if its held-out oracle WORLD and COMMAND
+  orientation improve; otherwise reject this objective rather than extend
+  it by training duration.
+
+  Decision:
+  `reject_backbone_pretraining_as_a_sufficient_ettr_repair_finish_one_balanced_reader_gate_then_move_to_a_direct_causally_oriented_interface_if_both_strict_factors_remain_zero`.
+
+- **2026-08-01 03:19--04:07 EDT** -- **Balanced generic readout closes
+  negative at the strict gate; a native disposition-gated causal answer head
+  replaces the LM-decoder interface.**
+
+  Balanced reader continuation `724901` completed all 5,000 updates plus 32
+  held-out batches in `1:03:25` on `evc22`. It consumed 80,000 training rows
+  and 26,880,000 visible token positions from source positions
+  `5,000--9,999`. Final component SHA-256 is
+  `ef469aa81dba5ffaac00c288221a2db8c200cc6531df5f6efd4a19de7697dbba`;
+  report SHA-256 is
+  `bce5346dcf6f2e684bcdbb17a41eb1094f1c0bd15e88c4c0b96253ff62c09a90`;
+  contract SHA-256 is
+  `bf1772c6ba61ca628ad59711ff7554b7e62a7d4d437bc75b4a4f28e3f8a051ca`.
+  All output-manifest hashes verify.
+
+  Under exact oracle terminal state, WORLD correct/foil top-1 remains exactly
+  `50%/50%`; joint top-1, paired-order, and strict margin-1 are all zero.
+  WORLD margin-at-0.1 remains `6/80 = 7.5%`. COMMAND correct/foil top-1 moves
+  to `52.27%/52.27%`, and joint top-1 reaches `10/176 = 5.68%`; margin-at-0.1
+  rises from `10/176 = 5.68%` to `14/176 = 7.95%`. However, COMMAND
+  paired-order and strict margin-1 remain zero. This is a small sensitivity
+  gain, not semantic causal orientation. Because an oracle-state upper bound
+  still fails both strict factors, no autonomous composition/evaluation is
+  warranted.
+
+  `train/native_causal_disposition_reader.py` now implements a structurally
+  different source-deleted answer interface. Learned query/state attention
+  feeds a dedicated binary truth motor; explicit terminal disposition gates
+  ANSWER versus ABSTAIN/REJECT; four immutable tokenizer-bound answer IDs are
+  scattered into the vocabulary and every other token is masked. Normalized
+  truth log-probabilities prevent an unbounded motor logit from overriding a
+  terminal abstain/reject declaration. The first isolated pilot freezes the
+  full pretrained base, compiler, reactor, and warm reader and trains only
+  `2,306` parameters (truth motor plus normalization). This directly tests
+  decoder/vocabulary erasure before any larger reader retraining. Local
+  invariants pass `4/4` with clean Ruff, byte compilation, and diff checks.
+
+  Decision:
+  `close_generic_reader_scaling_train_the_native_truth_motor_first_then_unfreeze_state_query_attention_only_if_both_oracle_world_and_command_orientation_improve`.
