@@ -35,6 +35,7 @@ from ettr_packet_index import ETTRDiskPacketSufficiencyIndex
 from ettr_query_supervision import iter_batches_with_query_specs
 from ettr_v3_streaming import ETTRV3StreamingRelease, move_continuation_batch
 from eval_ettr_v3 import _parameter_sha256
+from probe_ettr_oracle_interfaces import packet_targets_to_state, target_policy
 from train_ettr_component_island import (
     _canonical_bytes,
     _component_state,
@@ -90,6 +91,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         choices=("predicted", "oracle"),
         default="predicted",
     )
+    parser.add_argument(
+        "--owner-state-bridge",
+        choices=("autonomous", "oracle-factors"),
+        default="autonomous",
+    )
     parser.add_argument("--eval-batches", type=int, default=16)
     parser.add_argument("--log-every", type=int, default=10)
     parser.add_argument(
@@ -142,6 +148,10 @@ def _validate_args(args: argparse.Namespace) -> None:
         or args.compiler_aux_weight < 0.0
         or args.reactor_aux_weight < 0.0
         or args.compiler_aux_weight + args.reactor_aux_weight <= 0.0
+        or (
+            args.owner_state_bridge == "oracle-factors"
+            and args.optimization_mode != "causal-owner-alternating"
+        )
         or args.output.exists()
         or args.output.is_symlink()
         or not args.output.parent.is_dir()
@@ -223,20 +233,13 @@ def _semantic_loss(
     *,
     factor: str | None = None,
     oracle_program: bool = False,
+    owner_state_bridge: str = "autonomous",
 ):
-    compiler_context = torch.no_grad() if factor == "command" else nullcontext()
-    with compiler_context:
-        initial_state = model.compile_world(
-            batch.episodes.world.tokens,
-            attention_mask=batch.episodes.world.attention_mask,
-            hard=True,
-        )
-    terminal_state, _trace = model.execute(
-        initial_state,
-        steps=batch.transaction_targets.opcode.shape[1],
-        hard=True,
-        command_idx=batch.episodes.command.tokens,
-        command_attention_mask=batch.episodes.command.attention_mask,
+    initial_state, terminal_state = _semantic_states(
+        model,
+        batch,
+        factor=factor,
+        owner_state_bridge=owner_state_bridge,
     )
     output = _reader_forward(
         reader,
@@ -249,6 +252,66 @@ def _semantic_loss(
     if factor is None:
         return _truth_loss(output.vocab_logits, batch)
     return _factor_truth_loss(output.vocab_logits, batch, factor=factor)
+
+
+def _semantic_states(
+    model,
+    batch,
+    *,
+    factor: str | None,
+    owner_state_bridge: str,
+):
+    if owner_state_bridge not in {"autonomous", "oracle-factors"}:
+        raise AlgebraicStateSemanticError(
+            "algebraic state-semantic owner state bridge differs"
+        )
+    use_oracle_initial = (
+        owner_state_bridge == "oracle-factors" and factor == "command"
+    )
+    if use_oracle_initial:
+        initial_state = packet_targets_to_state(
+            batch.packet_targets,
+            model.config,
+            step=0,
+            dtype=next(model.reactor.parameters()).dtype,
+        )
+    else:
+        compiler_context = (
+            torch.no_grad() if factor == "command" else nullcontext()
+        )
+        with compiler_context:
+            initial_state = model.compile_world(
+                batch.episodes.world.tokens,
+                attention_mask=batch.episodes.world.attention_mask,
+                hard=True,
+            )
+
+    use_oracle_actions = (
+        owner_state_bridge == "oracle-factors" and factor == "world"
+    )
+    if use_oracle_actions:
+        terminal_state = initial_state
+        for step in range(batch.transaction_targets.opcode.shape[1]):
+            terminal_state = model.reactor.apply(
+                terminal_state,
+                target_policy(
+                    batch.transaction_targets,
+                    model.config,
+                    step,
+                    dtype=terminal_state.active.dtype,
+                ),
+                hard=True,
+                validate=False,
+            )
+    else:
+        terminal_state, _trace = model.execute(
+            initial_state,
+            steps=batch.transaction_targets.opcode.shape[1],
+            hard=True,
+            command_idx=batch.episodes.command.tokens,
+            command_attention_mask=batch.episodes.command.attention_mask,
+        )
+    return initial_state, terminal_state
 
 
 def _precision_context(is_h100: bool):
@@ -359,6 +422,7 @@ def _causal_owner_update(
             specs,
             factor="world",
             oracle_program=args.semantic_program_source == "oracle",
+            owner_state_bridge=args.owner_state_bridge,
         )
     _require_finite(world_semantic, "WORLD answer")
     world_value = float(world_semantic.detach().cpu())
@@ -391,6 +455,7 @@ def _causal_owner_update(
             specs,
             factor="command",
             oracle_program=args.semantic_program_source == "oracle",
+            owner_state_bridge=args.owner_state_bridge,
         )
     _require_finite(command_semantic, "COMMAND answer")
     command_value = float(command_semantic.detach().cpu())
@@ -546,6 +611,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "joint_run_contract_sha256": args.joint_run_contract_sha256,
             "learning_rate": args.learning_rate,
             "optimization_mode": args.optimization_mode,
+            "owner_state_bridge": args.owner_state_bridge,
             "reader_parameters": reader_parameters,
             "reactor_aux_weight": args.reactor_aux_weight,
             "reactor_reduction": args.reactor_reduction,

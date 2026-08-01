@@ -34,6 +34,7 @@ COMPILER_AUX_WEIGHT=${COMPILER_AUX_WEIGHT:-0.25}
 REACTOR_AUX_WEIGHT=${REACTOR_AUX_WEIGHT:-0.25}
 OPTIMIZATION_MODE=${OPTIMIZATION_MODE:-joint-global}
 SEMANTIC_PROGRAM_SOURCE=${SEMANTIC_PROGRAM_SOURCE:-predicted}
+OWNER_STATE_BRIDGE=${OWNER_STATE_BRIDGE:-autonomous}
 EVAL_BATCHES=${EVAL_BATCHES:-16}
 REACTOR_REDUCTION=${REACTOR_REDUCTION:-head-class-balanced}
 REQUIRED_DEVICE_CLASS=${REQUIRED_DEVICE_CLASS:-h100}
@@ -105,6 +106,7 @@ compiler_sha=$(sha256sum \
   --reactor-aux-weight "$REACTOR_AUX_WEIGHT" \
   --optimization-mode "$OPTIMIZATION_MODE" \
   --semantic-program-source "$SEMANTIC_PROGRAM_SOURCE" \
+  --owner-state-bridge "$OWNER_STATE_BRIDGE" \
   --eval-batches "$EVAL_BATCHES" \
   --reactor-reduction "$REACTOR_REDUCTION" \
   --required-device-class "$REQUIRED_DEVICE_CLASS"
