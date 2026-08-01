@@ -36,9 +36,14 @@ from ettr_query_supervision import iter_batches_with_query_specs
 from ettr_v3_streaming import ETTRV3StreamingRelease, move_continuation_batch
 from eval_ettr_joint_model import (
     MODEL_SCHEMA,
-    RUN_SCHEMA,
     _build_initial_model,
     _load_joint_payload,
+)
+from eval_ettr_joint_instruction_model import (
+    RUN_SCHEMA,
+    _load_initialization_contract,
+    _validate_model_lineage,
+    _validate_run_lineage,
 )
 from eval_ettr_v3 import _parameter_sha256, _read_hash_bound_json
 from native_causal_disposition_reader import answer_token_ids_from_tokenizer
@@ -140,13 +145,48 @@ def _strict_load_joint_model(args, *, device: torch.device):
         expected_sha256=args.joint_run_contract_sha256,
         label="joint run contract",
     )
+    composition_hint = run_contract.get("component_composition")
     if (
         run_contract.get("schema") != RUN_SCHEMA
         or run_contract.get("ettr_release_sha256") != args.release_sha256
+        or not isinstance(composition_hint, Mapping)
     ):
         raise AlgebraicJointStateEvaluationError(
             "joint run contract differs"
         )
+    try:
+        parent_contract_path = Path(composition_hint["parent_run_contract"])
+        parent_contract_sha256 = str(
+            composition_hint["parent_run_contract_sha256"]
+        )
+        parent_model_path = Path(composition_hint["parent_joint_model"])
+        parent_model_sha256 = str(
+            composition_hint["parent_joint_model_sha256"]
+        )
+    except (KeyError, TypeError, ValueError) as exc:
+        raise AlgebraicJointStateEvaluationError(
+            "joint composition parent receipt differs"
+        ) from exc
+    parent_contract = _read_hash_bound_json(
+        parent_contract_path,
+        expected_sha256=parent_contract_sha256,
+        label="composition parent run contract",
+    )
+    composition = _validate_run_lineage(
+        parent_contract,
+        run_contract,
+        release_sha256=args.release_sha256,
+        parent_run_contract_sha256=parent_contract_sha256,
+        parent_joint_model_sha256=parent_model_sha256,
+    )
+    if composition is None:
+        raise AlgebraicJointStateEvaluationError(
+            "joint composition receipt is missing"
+        )
+    parent_payload = _load_joint_payload(
+        parent_model_path,
+        expected_sha256=parent_model_sha256,
+    )
     payload = _load_joint_payload(
         args.joint_model,
         expected_sha256=args.joint_model_sha256,
@@ -161,19 +201,45 @@ def _strict_load_joint_model(args, *, device: torch.device):
         raise AlgebraicJointStateEvaluationError(
             "joint model lineage differs"
         )
+    _parent_config, candidate_config = _validate_model_lineage(
+        parent_payload,
+        payload,
+        parent_run_contract_sha256=parent_contract_sha256,
+        run_contract_sha256=args.joint_run_contract_sha256,
+        parent_contract=parent_contract,
+        run_contract=run_contract,
+        composition=composition,
+    )
+    initialization_contract = _load_initialization_contract(
+        parent_contract,
+        composition=composition,
+    )
     model, provenance = _build_initial_model(
         args.protected_checkpoint,
-        run_contract=run_contract,
+        run_contract=initialization_contract,
         device=device,
+    )
+    model.set_open_state_read_floor(
+        float(candidate_config.get("open_state_read_floor", 0.0))
+    )
+    model.set_execution_trace_read_scale(
+        float(candidate_config.get("execution_trace_read_scale", 0.0))
+    )
+    model.set_valid_pointer_masks(
+        bool(candidate_config.get("valid_pointer_masks", False))
+    )
+    model.set_query_readout_geometry(
+        str(payload.get("query_readout_geometry", "stage"))
     )
     protected_provenance = load_protected_base_model(
         args.protected_checkpoint
     )[1]
+    parameter_receipt = asdict(model.parameter_receipt())
     if (
         provenance.checkpoint_sha256 != protected_provenance.checkpoint_sha256
         or payload.get("base_config") != protected_provenance.base_config
-        or run_contract.get("parameter_receipt")
-        != asdict(model.parameter_receipt())
+        or parent_contract.get("parameter_receipt") != parameter_receipt
+        or run_contract.get("parameter_receipt") != parameter_receipt
     ):
         raise AlgebraicJointStateEvaluationError(
             "joint protected-model receipt differs"
