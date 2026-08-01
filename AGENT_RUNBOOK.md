@@ -22388,3 +22388,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `canary_both_soft_objectives_then_run_the_matched_80k_row_two_seed_state_learning_factorial_and_require_reproducible_hard_world_generalization`.
+
+- **2026-08-01 15:22--15:30 EDT** -- **Newton access recovered; both
+  preregistered runtimes are immutably admitted and the claim-bearing state
+  factorial is in Slurm.**
+
+  The UCF VPN returned and direct Newton SSH succeeded. The prior journal's
+  statement that the soft archive had already transferred was stale: neither
+  runtime archive was present when access recovered. The resumable transfers
+  then completed without replacing any research output. Remote archive
+  SHA-256 and tar-integrity checks passed for soft-only `89b41c6`
+  (`2d702befcd038a109cdeba9d53ee94816b39455f98a7ceb3267d866a7dee45e1`)
+  and semantic-basis `3e0aecc`
+  (`3582b818b40d3a5c5b5757f5b26b7115dd360d07cc85fd1c89d2ade526d32000`).
+  CPU Slurm admission jobs `725198/725199` extracted to fresh partial roots,
+  checked all 3,389 files against each runtime's `SHA256SUMS`, checked exact
+  source commits and manifest hashes, and atomically renamed the roots. Both
+  jobs completed with exit code zero.
+
+  The protected checkpoint was rechecked before launch and remains exactly
+  SHA-256
+  `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`.
+  The release, data, tokenizer, composed reader, algebraic compiler, and Python
+  runtime paths also passed preflight. No flagship writer is active. The
+  immutable submission receipt is
+  `scratchpad/ettr-state-factorial-20260801T1530.tsv`: soft and basis canaries
+  are jobs `725201/725202`; objective-matched full arms are `725203--725210`.
+  Each objective has two learning rates (`3e-5/1e-5`) and two data seeds
+  (`2026080111/2026080112`) at 5,000 updates / 80,000 rows. All eight full arms
+  are held behind `afterok` on their matching canary. At 15:30 EDT the
+  canaries are pending normal-partition H100 resources, with scheduler start
+  estimates near 16:48 and 17:19 EDT. `short`, `ucfit`, and `highgpu` test-only
+  requests still reject the account/partition combination, so no unsupported
+  migration was attempted.
+
+  Decision:
+  `let_both_numerical_canaries_gate_the_eight_h100_factorial_then_decide_only_from_unchanged_hard_heldout_world_and_command_pairs`.
