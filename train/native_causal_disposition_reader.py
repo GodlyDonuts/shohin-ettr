@@ -61,6 +61,7 @@ class NativeCausalDispositionReader(nn.Module):
         vocab_size: int,
         answer_token_ids: tuple[int, int, int, int],
         truth_motor_hidden: int = 0,
+        state_only_motor: bool = False,
     ) -> None:
         super().__init__()
         config.validate()
@@ -76,6 +77,7 @@ class NativeCausalDispositionReader(nn.Module):
             or len(set(answer_token_ids)) != 4
             or not isinstance(truth_motor_hidden, int)
             or truth_motor_hidden < 0
+            or not isinstance(state_only_motor, bool)
         ):
             raise TheoryReactorError("causal answer-token codebook differs")
         self.config = config
@@ -83,6 +85,7 @@ class NativeCausalDispositionReader(nn.Module):
         self.reader = SourceDeletedQueryReader(config)
         self.readout_norm = nn.LayerNorm(config.d_model)
         self.truth_motor_hidden = truth_motor_hidden
+        self.state_only_motor = state_only_motor
         if truth_motor_hidden == 0:
             self.truth_motor = nn.Linear(config.d_model, 2)
         else:
@@ -153,8 +156,9 @@ class NativeCausalDispositionReader(nn.Module):
             trace=trace,
             attention_mask=attention_mask,
         )
+        motor_input = read if self.state_only_motor else motor_hidden + read
         truth = F.log_softmax(
-            self.truth_motor(self.readout_norm(motor_hidden + read)),
+            self.truth_motor(self.readout_norm(motor_input)),
             dim=-1,
         )
         disposition = _disposition_probabilities(state).to(truth.dtype)

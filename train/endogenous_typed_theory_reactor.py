@@ -52,6 +52,7 @@ class TheoryReactorConfig:
     valid_pointer_masks: bool = False
     reader_slot_addresses: bool = False
     reader_initial_state: bool = False
+    reader_direct_output: bool = False
     parameter_cap: int = SYSTEM_PARAMETER_CAP
 
     def validate(self, *, n_layer: int | None = None) -> None:
@@ -106,6 +107,8 @@ class TheoryReactorConfig:
             raise TheoryReactorError("reader initial-state flag must be boolean")
         if self.reader_initial_state and not self.reader_slot_addresses:
             raise TheoryReactorError("reader initial state requires slot addresses")
+        if not isinstance(self.reader_direct_output, bool):
+            raise TheoryReactorError("reader direct-output flag must be boolean")
 
 
 @dataclass(frozen=True, slots=True)
@@ -1181,7 +1184,12 @@ class SourceDeletedQueryReader(nn.Module):
             mask=causal_mask,
             src_key_padding_mask=query_padding,
         )
-        return torch.tanh(self.gate) * self.output_projection(query)
+        output = self.output_projection(query)
+        return (
+            output
+            if self.config.reader_direct_output
+            else torch.tanh(self.gate) * output
+        )
 
 
 class EndogenousTypedTheoryReactorGPT(nn.Module):

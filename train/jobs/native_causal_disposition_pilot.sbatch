@@ -38,6 +38,9 @@ TRUTH_MOTOR_HIDDEN=${TRUTH_MOTOR_HIDDEN:-0}
 TRAIN_READER=${TRAIN_READER:-0}
 READER_SLOT_ADDRESSES=${READER_SLOT_ADDRESSES:-0}
 READER_INITIAL_STATE=${READER_INITIAL_STATE:-0}
+READER_DIRECT_OUTPUT=${READER_DIRECT_OUTPUT:-0}
+STATE_ONLY_MOTOR=${STATE_ONLY_MOTOR:-0}
+READER_PARAMETER_DTYPE=${READER_PARAMETER_DTYPE:-bfloat16}
 MOTOR_QUERY_GEOMETRY=${MOTOR_QUERY_GEOMETRY:-stage}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
@@ -67,6 +70,34 @@ case "$READER_INITIAL_STATE" in
   1) initial_state_args+=(--reader-initial-state) ;;
   *)
     echo "READER_INITIAL_STATE must be 0 or 1" >&2
+    exit 2
+    ;;
+esac
+
+direct_output_args=()
+case "$READER_DIRECT_OUTPUT" in
+  0) ;;
+  1) direct_output_args+=(--reader-direct-output) ;;
+  *)
+    echo "READER_DIRECT_OUTPUT must be 0 or 1" >&2
+    exit 2
+    ;;
+esac
+
+state_only_args=()
+case "$STATE_ONLY_MOTOR" in
+  0) ;;
+  1) state_only_args+=(--state-only-motor) ;;
+  *)
+    echo "STATE_ONLY_MOTOR must be 0 or 1" >&2
+    exit 2
+    ;;
+esac
+
+case "$READER_PARAMETER_DTYPE" in
+  bfloat16|float32) ;;
+  *)
+    echo "READER_PARAMETER_DTYPE must be bfloat16 or float32" >&2
     exit 2
     ;;
 esac
@@ -128,9 +159,12 @@ parent_model_sha=$(sha256sum \
   --gradient-accumulation "$GRADIENT_ACCUMULATION" \
   --eval-batches "$EVAL_BATCHES" \
   --truth-motor-hidden "$TRUTH_MOTOR_HIDDEN" \
+  --reader-parameter-dtype "$READER_PARAMETER_DTYPE" \
   --motor-query-geometry "$MOTOR_QUERY_GEOMETRY" \
   "${address_args[@]}" \
   "${initial_state_args[@]}" \
+  "${direct_output_args[@]}" \
+  "${state_only_args[@]}" \
   "${reader_args[@]}"
 
 (

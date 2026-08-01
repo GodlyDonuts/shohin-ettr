@@ -280,6 +280,41 @@ def test_motor_hidden_geometry_is_explicit() -> None:
         )
 
 
+def test_state_only_motor_cannot_use_the_pretrained_query_bypass() -> None:
+    reader = NativeCausalDispositionReader(
+        _config(),
+        vocab_size=32,
+        answer_token_ids=(4, 7, 11, 19),
+        state_only_motor=True,
+    ).eval()
+    query = torch.randn((2, 5, 16))
+    state = _state(committed=1.0, halted=0.0)
+    with torch.inference_mode():
+        first = reader.class_logits(query, state, motor_hidden=query)
+        second = reader.class_logits(query, state, motor_hidden=query + 100.0)
+    torch.testing.assert_close(first, second)
+
+
+def test_direct_reader_output_bypasses_the_stuck_scalar_gate() -> None:
+    torch.manual_seed(23)
+    legacy = SourceDeletedQueryReader(_config()).eval()
+    torch.manual_seed(23)
+    direct = SourceDeletedQueryReader(
+        replace(_config(), reader_direct_output=True)
+    ).eval()
+    direct.load_state_dict(legacy.state_dict(), strict=True)
+    with torch.no_grad():
+        legacy.gate.zero_()
+        direct.gate.zero_()
+    query = torch.randn((2, 5, 16))
+    state = _state(committed=1.0, halted=0.0)
+    with torch.inference_mode():
+        legacy_read = legacy(query, state)
+        direct_read = direct(query, state)
+    assert torch.count_nonzero(legacy_read) == 0
+    assert torch.count_nonzero(direct_read) > 0
+
+
 @pytest.mark.parametrize(
     ("committed", "halted", "expected_class"),
     ((0.0, 1.0, 2), (1.0, 1.0, 3)),

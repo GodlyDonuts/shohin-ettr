@@ -88,6 +88,13 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--train-reader", action="store_true")
     parser.add_argument("--reader-slot-addresses", action="store_true")
     parser.add_argument("--reader-initial-state", action="store_true")
+    parser.add_argument("--reader-direct-output", action="store_true")
+    parser.add_argument("--state-only-motor", action="store_true")
+    parser.add_argument(
+        "--reader-parameter-dtype",
+        choices=("bfloat16", "float32"),
+        default="bfloat16",
+    )
     parser.add_argument("--gradient-accumulation", type=int, default=1)
     parser.add_argument(
         "--motor-query-geometry",
@@ -402,16 +409,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         model.config,
         reader_slot_addresses=args.reader_slot_addresses,
         reader_initial_state=args.reader_initial_state,
+        reader_direct_output=args.reader_direct_output,
     )
     reader = NativeCausalDispositionReader(
         reader_config,
         vocab_size=model.base.cfg.vocab_size,
         answer_token_ids=answer_token_ids,
         truth_motor_hidden=args.truth_motor_hidden,
+        state_only_motor=args.state_only_motor,
     )
     reader.load_reader_state(model.query_reader)
     reader.reader.requires_grad_(args.train_reader)
-    reader.to(device=device, dtype=torch.bfloat16)
+    reader_parameter_dtype = (
+        torch.float32 if args.reader_parameter_dtype == "float32" else torch.bfloat16
+    )
+    reader.to(device=device, dtype=reader_parameter_dtype)
     trainable = tuple(
         parameter for parameter in reader.parameters() if parameter.requires_grad
     )
@@ -468,7 +480,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             "model_seed": args.model_seed,
             "motor_query_geometry": args.motor_query_geometry,
             "oracle_at_autonomous_inference": False,
-            "oracle_training_boundary": "exact_terminal_packet",
+            "oracle_training_boundary": (
+                "exact_initial_and_terminal_packet"
+                if args.reader_initial_state
+                else "exact_terminal_packet"
+            ),
             "parent_joint_model_sha256": args.parent_joint_model_sha256,
             "parent_run_contract_sha256": args.parent_run_contract_sha256,
             "release_file_sha256": args.release_sha256,
@@ -479,6 +495,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             "train_reader": args.train_reader,
             "reader_slot_addresses": args.reader_slot_addresses,
             "reader_initial_state": args.reader_initial_state,
+            "reader_direct_output": args.reader_direct_output,
+            "reader_parameter_dtype": args.reader_parameter_dtype,
+            "state_only_motor": args.state_only_motor,
             "trainable_parameters": trainable_parameter_count,
             "truth_motor_hidden": args.truth_motor_hidden,
             "updates": args.updates,
@@ -609,6 +628,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             "train_reader": args.train_reader,
             "reader_slot_addresses": args.reader_slot_addresses,
             "reader_initial_state": args.reader_initial_state,
+            "reader_direct_output": args.reader_direct_output,
+            "reader_parameter_dtype": args.reader_parameter_dtype,
+            "state_only_motor": args.state_only_motor,
             "trainable_parameters": trainable_parameter_count,
             "truth_motor_hidden": args.truth_motor_hidden,
             "updates": args.updates,
