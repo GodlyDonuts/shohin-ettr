@@ -29,7 +29,6 @@ from ettr_token_transcode import (
     TokenNativeETTRTranscoder,
     receipt_value as transcode_receipt_value,
 )
-from ettr_train_step import packet_targets_to_state
 from ettr_v3_streaming import ETTRV3StreamingRelease, move_continuation_batch
 from eval_ettr_v3 import _parameter_sha256, _read_hash_bound_json
 from native_causal_disposition_reader import (
@@ -47,6 +46,7 @@ from train_ettr_component_island import (
 )
 from train_ettr_joint_component_island import _validate_parent_lineage
 from train_ettr_joint_instruction_canary import _load_parent
+from probe_ettr_oracle_interfaces import packet_targets_to_state
 
 
 CONTRACT_SCHEMA = "shohin-ettr-native-disposition-pilot-contract-v1"
