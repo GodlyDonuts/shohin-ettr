@@ -35,6 +35,7 @@ GRADIENT_ACCUMULATION=${GRADIENT_ACCUMULATION:-1}
 EVAL_BATCHES=${EVAL_BATCHES:-32}
 TRUTH_MOTOR_HIDDEN=${TRUTH_MOTOR_HIDDEN:-0}
 TRAIN_READER=${TRAIN_READER:-0}
+MOTOR_QUERY_GEOMETRY=${MOTOR_QUERY_GEOMETRY:-stage}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
 reader_args=()
@@ -103,6 +104,7 @@ parent_model_sha=$(sha256sum \
   --gradient-accumulation "$GRADIENT_ACCUMULATION" \
   --eval-batches "$EVAL_BATCHES" \
   --truth-motor-hidden "$TRUTH_MOTOR_HIDDEN" \
+  --motor-query-geometry "$MOTOR_QUERY_GEOMETRY" \
   "${reader_args[@]}"
 
 (

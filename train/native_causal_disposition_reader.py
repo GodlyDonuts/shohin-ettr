@@ -117,6 +117,7 @@ class NativeCausalDispositionReader(nn.Module):
         query_hidden: torch.Tensor,
         state: TypedTheoryState,
         *,
+        motor_hidden: torch.Tensor | None = None,
         trace=None,
         attention_mask: torch.Tensor | None = None,
     ) -> torch.Tensor:
@@ -128,6 +129,10 @@ class NativeCausalDispositionReader(nn.Module):
             or query_hidden.shape[-1] != self.config.d_model
         ):
             raise TheoryReactorError("causal query-hidden geometry differs")
+        if motor_hidden is None:
+            motor_hidden = query_hidden
+        if motor_hidden.shape != query_hidden.shape:
+            raise TheoryReactorError("causal motor-hidden geometry differs")
         read = self.reader(
             query_hidden,
             state,
@@ -135,7 +140,7 @@ class NativeCausalDispositionReader(nn.Module):
             attention_mask=attention_mask,
         )
         truth = F.log_softmax(
-            self.truth_motor(self.readout_norm(query_hidden + read)),
+            self.truth_motor(self.readout_norm(motor_hidden + read)),
             dim=-1,
         )
         disposition = _disposition_probabilities(state).to(truth.dtype)
@@ -162,6 +167,7 @@ class NativeCausalDispositionReader(nn.Module):
         query_hidden: torch.Tensor,
         state: TypedTheoryState,
         *,
+        motor_hidden: torch.Tensor | None = None,
         trace=None,
         attention_mask: torch.Tensor | None = None,
     ) -> torch.Tensor:
@@ -170,6 +176,7 @@ class NativeCausalDispositionReader(nn.Module):
         class_logits = self.class_logits(
             query_hidden,
             state,
+            motor_hidden=motor_hidden,
             trace=trace,
             attention_mask=attention_mask,
         )

@@ -100,6 +100,29 @@ def test_nonlinear_truth_motor_preserves_causal_interface() -> None:
     assert logits.shape == (2, 5, 32)
 
 
+def test_motor_hidden_geometry_is_explicit() -> None:
+    reader = NativeCausalDispositionReader(
+        _config(),
+        vocab_size=32,
+        answer_token_ids=(4, 7, 11, 19),
+    )
+    query = torch.randn((2, 5, 16))
+    state = _state(committed=1.0, halted=0.0)
+    stage_logits = reader.class_logits(query, state)
+    late_logits = reader.class_logits(
+        query,
+        state,
+        motor_hidden=query + 1.0,
+    )
+    assert not torch.equal(stage_logits, late_logits)
+    with pytest.raises(TheoryReactorError, match="motor-hidden"):
+        reader.class_logits(
+            query,
+            state,
+            motor_hidden=torch.randn((2, 4, 16)),
+        )
+
+
 @pytest.mark.parametrize(
     ("committed", "halted", "expected_class"),
     ((0.0, 1.0, 2), (1.0, 1.0, 3)),

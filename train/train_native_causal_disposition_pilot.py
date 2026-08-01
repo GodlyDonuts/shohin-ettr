@@ -85,6 +85,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--truth-motor-hidden", type=int, default=0)
     parser.add_argument("--train-reader", action="store_true")
     parser.add_argument("--gradient-accumulation", type=int, default=1)
+    parser.add_argument(
+        "--motor-query-geometry",
+        choices=("stage", "late"),
+        default="stage",
+    )
     return parser.parse_args(argv)
 
 
@@ -162,21 +167,34 @@ def _forward_logits(
     model,
     reader: NativeCausalDispositionReader,
     batch,
+    *,
+    motor_query_geometry: str,
 ) -> torch.Tensor:
     with torch.no_grad():
-        query_hidden = model._encode_to_stage(
+        stage_hidden = model._encode_to_stage(
             batch.episodes.query.tokens,
             pos=0,
         )
+        if motor_query_geometry == "stage":
+            motor_hidden = stage_hidden
+        elif motor_query_geometry == "late":
+            motor_hidden = model.base.norm(
+                model._decode_from_stage(stage_hidden, pos=0)
+            )
+        else:
+            raise NativeDispositionPilotError(
+                "motor query geometry differs"
+            )
         state = packet_targets_to_state(
             batch.terminal_packet_targets,
             model.config,
             step=batch.transaction_targets.opcode.shape[1],
-            dtype=query_hidden.dtype,
+            dtype=stage_hidden.dtype,
         )
     return reader(
-        query_hidden,
+        stage_hidden,
         state,
+        motor_hidden=motor_hidden,
         attention_mask=batch.episodes.query.attention_mask,
     )
 
@@ -185,8 +203,15 @@ def _loss(
     model,
     reader: NativeCausalDispositionReader,
     batch,
+    *,
+    motor_query_geometry: str,
 ) -> tuple[torch.Tensor, dict[str, float]]:
-    logits = _forward_logits(model, reader, batch)
+    logits = _forward_logits(
+        model,
+        reader,
+        batch,
+        motor_query_geometry=motor_query_geometry,
+    )
     read_logits = _gather_read_logits(
         logits,
         batch.episodes.query_read_index,
@@ -237,6 +262,7 @@ def _evaluate(
     device: torch.device,
     data_seed: int,
     max_batches: int,
+    motor_query_geometry: str,
 ) -> dict[str, object]:
     reader.eval()
     rows: dict[str, list[dict[str, object]]] = {
@@ -264,7 +290,12 @@ def _evaluate(
             device_type="cuda",
             dtype=torch.bfloat16,
         ):
-            logits = _forward_logits(model, reader, batch)
+            logits = _forward_logits(
+                model,
+                reader,
+                batch,
+                motor_query_geometry=motor_query_geometry,
+            )
             read_logits = _gather_read_logits(
                 logits,
                 batch.episodes.query_read_index,
@@ -406,6 +437,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             device=device,
             data_seed=args.data_seed,
             max_batches=args.eval_batches,
+            motor_query_geometry=args.motor_query_geometry,
         )
         contract: dict[str, object] = {
             "answer_token_ids": list(answer_token_ids),
@@ -422,6 +454,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "gradient_accumulation": args.gradient_accumulation,
             "initial_reader_sha256": warm_sha256,
             "learning_rate": args.learning_rate,
+            "motor_query_geometry": args.motor_query_geometry,
             "oracle_at_autonomous_inference": False,
             "oracle_training_boundary": "exact_terminal_packet",
             "parent_joint_model_sha256": args.parent_joint_model_sha256,
@@ -483,7 +516,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                     device_type="cuda",
                     dtype=torch.bfloat16,
                 ):
-                    loss, parts = _loss(model, reader, batch)
+                    loss, parts = _loss(
+                        model,
+                        reader,
+                        batch,
+                        motor_query_geometry=args.motor_query_geometry,
+                    )
                 if not bool(torch.isfinite(loss)):
                     raise NativeDispositionPilotError(
                         "pilot loss is nonfinite"
@@ -531,6 +569,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             device=device,
             data_seed=args.data_seed,
             max_batches=args.eval_batches,
+            motor_query_geometry=args.motor_query_geometry,
         )
         final_path = args.output / "native-reader-final.safetensors"
         save_file(
@@ -550,6 +589,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "final_native_reader_sha256": final_sha256,
             "initial_native_reader_sha256": initial_sha256,
             "last_loss": last_loss,
+            "motor_query_geometry": args.motor_query_geometry,
             "native_reader_parameter_sha256": _parameter_sha256(reader),
             "parent_joint_model_sha256": args.parent_joint_model_sha256,
             "release_file_sha256": args.release_sha256,
