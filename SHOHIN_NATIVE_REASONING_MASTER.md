@@ -53203,3 +53203,33 @@ inference.
 
 Current decision:
 `state_is_trainable_but_joint_credit_is_wrong_use_causal_owner_optimizers_and_typed_program_supervision_then_gate_only_fully_autonomous_fresh_populations`.
+## 2026-08-01: Causal owner isolation and the hard-state learning failure
+
+The algebraic ETTR lane now has a sharper causal decomposition. The exact
+typed executor is perfect under oracle program/state, the learned query
+compiler can cross WORLD and COMMAND when state is exact, and the COMMAND
+reactor can drive its training loss to approximately zero when initialized
+from an exact packet. The unresolved mechanism is the WORLD-to-addressed-state
+compiler. Fresh populations, separate owner optimizers, FP32 replication, and
+exact partner bridges all leave held-out WORLD causal accuracy at zero.
+
+The strongest hard-state control (`725052`, 100 H100 updates at `3e-5`) gives
+only a narrow COMMAND result: oracle-program/autonomous-state strict/paired
+accuracy improves `4.55% -> 9.09%` with DID `0 -> +1.883`; WORLD remains zero.
+The matched `1e-5` control and FP32/short controls do not reproduce a broad
+gain. Exact-factor bridge jobs `725080--725083` prove that COMMAND execution is
+already locally available from a correct initial state, but hard WORLD
+semantic losses are saturated and occasional training-batch solutions do not
+generalize. All bridge held-out WORLD gates remain zero after 20 and 100
+updates. This rejects blind scaling of the hard straight-through objective.
+
+Commit `89b41c6` introduces the next bounded mechanism: semantic state stays
+soft during training through the fixed exact algebra and exact causal-owner
+bridges, while inference and every claim-bearing evaluation remain hard,
+autonomous, source-deleted, and oracle-free. This follows the measured fact
+that prior direct packet curricula learned only through soft states, whereas
+the hard semantic route clamps truth to extreme log probabilities and yields
+unstable gradients. The runtime is hash-bound by SHA256SUMS
+`478101f7a4d8aa9fc2398af952b94f81bf142ddb13d15a9793450f9ef3713e22`;
+bounded soft-state gates await Newton DNS recovery. Native reasoning is not yet
+established.

@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-01 10:25 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-01 14:17 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -65,12 +65,17 @@
 > 300-update H100 gate retains a smaller COMMAND gain but degrades WORLD and
 > factual accuracy; five logged global-gradient spikes exceed 100 and reach
 > 13,312. Crossed-arm inspection proves the state was also being trained
-> through wrong predicted WORLD programs. Commit `20d6394` therefore assigns
-> separate optimizers and gradient clips to WORLD compiler and COMMAND reactor
-> and trains state against oracle typed programs while keeping autonomous
-> programs mandatory at evaluation. Jobs `725045--725048` are the registered
-> short/medium and precision gates; `725036/725037` test the prior 300-update
-> artifact on fresh populations. No current artifact is promoted as native
+> through wrong predicted WORLD programs. Fresh-population jobs `725036/725037`
+> confirm that artifact has zero WORLD causal margin and only unstable COMMAND
+> effects. Causal-owner/oracle-program controls show one narrow 100-update
+> COMMAND gain but no WORLD gain; the lower-rate and FP32 arms do not reproduce
+> it. Exact factor bridges prove the reactor can execute COMMAND from an oracle
+> initial packet, while the learned WORLD compiler remains saturated and fails
+> every held-out WORLD gate after 20 and 100 updates. Commits `a569c32` and
+> `89b41c6` therefore add exact factor-isolated training and a soft semantic-state
+> learning path while retaining the unchanged hard autonomous evaluator. The
+> `89b41c6` runtime archive is transferred but awaits Newton DNS recovery for its
+> remote hash/extraction gate. No current artifact is promoted as native
 > reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
@@ -22250,3 +22255,72 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_joint_global_state_credit_and_predicted_program_compensation_then_train_each_causal_owner_against_the_correct_typed_program_and_demand_fresh_seed_autonomy`.
+
+- **2026-08-01 10:25--14:17 EDT** -- **Fresh populations reject the apparent
+  300-update WORLD signal; causal ownership gives a narrow COMMAND improvement,
+  and exact factor bridges localize the remaining defect to hard WORLD
+  compilation rather than command execution.**
+
+  Fresh-seed evaluations `725036/725037` transplanted the 300-update state
+  artifact into two new 512-row populations. Fully autonomous WORLD remains
+  exactly zero in both. COMMAND margin-1 is `12.5%/10.0%`, but paired-order is
+  only `8.33%/10.0%` and mean DID is `-0.0146/-0.0125`; with oracle query
+  programs, learned-state WORLD remains zero and COMMAND DID remains
+  approximately zero. Predicted-program plus oracle-state remains strong,
+  retaining WORLD strict rates `66.67%/44.44%` and COMMAND
+  `66.67%/60.0%`. This independently confirms that the query compiler/algebra
+  can consume correct state while the architecture state does not generalize.
+
+  Runtime build `725044` failed before training because an archive extraction
+  was incomplete; no GPU arm ran. A fresh extraction `725049` passed all 3,388
+  file hashes and exact commit `20d6394`. Registered causal-owner controls then
+  completed as H100 20-update `725051`, H100 100-update `725052`, H100
+  lower-rate 100-update `725053`, and FP32 V100 20-update `725055`. The strongest
+  control is `725052`: oracle-program/autonomous-state COMMAND strict/paired
+  rises `4.55% -> 9.09%`, DID `0.0 -> +1.883`, and fully autonomous factual
+  top-1 `60.55% -> 68.36%`. WORLD remains zero. The `1e-5` arm regresses
+  COMMAND DID to `-1.255` and the 20-update H100/FP32 arms do not establish a
+  strict pair. Report SHA-256 values for H100 u20, H100 u100 `3e-5`, H100 u100
+  `1e-5`, and V100 u20 are respectively
+  `70d53396edff27ee0cde3a427bd3837429ef81c5f7c5c60ec1bf2518277239f7`,
+  `4b180cb3c2e15e3edc0bfc38971a5c2d0be0addc0612d4e6f01880808bdab64a`,
+  `8ef9fb54f89dce3ecbd3250325d26bc156a05abd728c63942105064ecbb040fa`,
+  and `0e7274f70b9c1831987aeb0c10041f61a582958890dcb9ff9654361fd62d4941`.
+
+  Commit `a569c32` adds an exact causal-owner state bridge. During WORLD
+  training, the learned initial packet is propagated through exact labeled
+  transactions; during COMMAND training, the learned reactor starts from the
+  exact labeled initial packet. Those labels are training-only. The held-out
+  evaluator remains hard, autonomous, source-deleted, and oracle-free. Jobs
+  `725080--725083` compare H100/V100 20 updates and H100 100 updates at
+  `3e-5/1e-5`. The bridge cleanly localizes the mechanism: with an oracle
+  initial packet, COMMAND training loss is approximately `1e-6`, proving the
+  reactor can execute the command semantics. WORLD begins saturated at factual
+  loss `13.8155` and binding loss `3.4539`, with compiler gradient norms near
+  `37--52`. Despite occasional near-zero training-batch WORLD losses, every
+  held-out WORLD gate remains zero after 20 and 100 updates. COMMAND and factual
+  behavior are unstable; the strongest bridge factual movement is
+  `60.55% -> 66.02%`, but causal COMMAND regresses. Report SHA-256 values for
+  H100 u20, V100 u20, H100 u100 `3e-5`, and H100 u100 `1e-5` are respectively
+  `c918ffe323e75897d0b3bf44aac2080dee0c2697a7d09c2d45045769db9cd4cc`,
+  `7f7272e60bcc823a4fedc90edbac347b32c4529710adc2c28a996af1ff9cac8e`,
+  `2fc1bd1b1ca32b1eac7a99df6177f74e59c6acbfb4dedb14b2061b2d3d3fa71a`,
+  and `efd366dd3b162c3f2513cf5c4c804a961ee13fb29f2912dd84c9de1e180ac7ef`.
+
+  The hard semantic path is now rejected as the primary learning objective.
+  Direct component training historically learned with soft packet states over
+  80,000 rows, whereas the semantic path clamps truth probabilities to
+  `1e-6/1-1e-6`, causing saturated losses and discontinuous hard-state changes.
+  Commit `89b41c6` adds a training-only `soft` semantic-state mode through the
+  exact operator algebra and factor bridge. Hard autonomous evaluation is
+  unchanged. Six focused tests pass with clean Ruff, byte compilation, Bash
+  syntax, and diff checks. Local runtime has 3,388 measured files,
+  SHA256SUMS SHA-256
+  `478101f7a4d8aa9fc2398af952b94f81bf142ddb13d15a9793450f9ef3713e22`,
+  and archive SHA-256
+  `2d702befcd038a109cdeba9d53ee94816b39455f98a7ceb3267d866a7dee45e1`.
+  The archive is transferred to Newton; remote verification and bounded soft
+  gates are pending DNS recovery.
+
+  Decision:
+  `reject_more_hard_state_scaling_train_the_complete_query_relevant_semantic_basis_softly_then_require_unchanged_hard_world_and_command_generalization`.
