@@ -31,6 +31,7 @@ UPDATES=${UPDATES:-2000}
 START_POSITION=${START_POSITION:-10000}
 LEARNING_RATE=${LEARNING_RATE:-3e-4}
 GRADIENT_CLIP=${GRADIENT_CLIP:-1.0}
+GRADIENT_ACCUMULATION=${GRADIENT_ACCUMULATION:-1}
 EVAL_BATCHES=${EVAL_BATCHES:-32}
 TRUTH_MOTOR_HIDDEN=${TRUTH_MOTOR_HIDDEN:-0}
 TRAIN_READER=${TRAIN_READER:-0}
@@ -99,6 +100,7 @@ parent_model_sha=$(sha256sum \
   --start-position "$START_POSITION" \
   --learning-rate "$LEARNING_RATE" \
   --gradient-clip "$GRADIENT_CLIP" \
+  --gradient-accumulation "$GRADIENT_ACCUMULATION" \
   --eval-batches "$EVAL_BATCHES" \
   --truth-motor-hidden "$TRUTH_MOTOR_HIDDEN" \
   "${reader_args[@]}"

@@ -84,6 +84,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--log-every", type=int, default=10)
     parser.add_argument("--truth-motor-hidden", type=int, default=0)
     parser.add_argument("--train-reader", action="store_true")
+    parser.add_argument("--gradient-accumulation", type=int, default=1)
     return parser.parse_args(argv)
 
 
@@ -113,6 +114,7 @@ def _validate_args(args: argparse.Namespace) -> None:
         or args.start_position < 0
         or args.eval_batches < 2
         or args.log_every < 1
+        or not 1 <= args.gradient_accumulation <= 64
         or not 0 <= args.truth_motor_hidden <= 16_384
         or not math.isfinite(args.learning_rate)
         or not 0.0 < args.learning_rate < 1.0
@@ -417,6 +419,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "data_seed": args.data_seed,
             "eval_batches": args.eval_batches,
             "gradient_clip": args.gradient_clip,
+            "gradient_accumulation": args.gradient_accumulation,
             "initial_reader_sha256": warm_sha256,
             "learning_rate": args.learning_rate,
             "oracle_at_autonomous_inference": False,
@@ -451,34 +454,55 @@ def main(argv: Sequence[str] | None = None) -> int:
         last_loss = None
         last_position = args.start_position
         for update in range(1, args.updates + 1):
-            try:
-                last_position, cpu_batch = next(iterator)
-            except StopIteration as exc:
-                raise NativeDispositionPilotError(
-                    "pilot exhausted the admitted train stream"
-                ) from exc
-            packet_index.verify_train((cpu_batch,))
-            batch = move_continuation_batch(
-                transcoder.transcode_batch(cpu_batch),
-                device,
-            )
-            batch.validate(
-                model.config,
-                ETTRObjectiveConfig(vocab_size=model.base.cfg.vocab_size),
-            )
             optimizer.zero_grad(set_to_none=True)
-            with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-                loss, parts = _loss(model, reader, batch)
-            if not bool(torch.isfinite(loss)):
-                raise NativeDispositionPilotError("pilot loss is nonfinite")
-            loss.backward()
+            accumulated_loss = 0.0
+            accumulated_parts = {
+                "command_binding": 0.0,
+                "factual": 0.0,
+                "world_binding": 0.0,
+            }
+            for _microstep in range(args.gradient_accumulation):
+                try:
+                    last_position, cpu_batch = next(iterator)
+                except StopIteration as exc:
+                    raise NativeDispositionPilotError(
+                        "pilot exhausted the admitted train stream"
+                    ) from exc
+                packet_index.verify_train((cpu_batch,))
+                batch = move_continuation_batch(
+                    transcoder.transcode_batch(cpu_batch),
+                    device,
+                )
+                batch.validate(
+                    model.config,
+                    ETTRObjectiveConfig(
+                        vocab_size=model.base.cfg.vocab_size
+                    ),
+                )
+                with torch.autocast(
+                    device_type="cuda",
+                    dtype=torch.bfloat16,
+                ):
+                    loss, parts = _loss(model, reader, batch)
+                if not bool(torch.isfinite(loss)):
+                    raise NativeDispositionPilotError(
+                        "pilot loss is nonfinite"
+                    )
+                (loss / args.gradient_accumulation).backward()
+                accumulated_loss += float(loss.detach().cpu())
+                for name, value in parts.items():
+                    accumulated_parts[name] += value
             gradient_norm = torch.nn.utils.clip_grad_norm_(
                 trainable,
                 args.gradient_clip,
                 error_if_nonfinite=True,
             )
             optimizer.step()
-            last_loss = float(loss.detach().cpu())
+            last_loss = accumulated_loss / args.gradient_accumulation
+            parts = {
+                name: value / args.gradient_accumulation
+                for name, value in accumulated_parts.items()
+            }
             if update % args.log_every == 0 or update == args.updates:
                 with (args.output / "train.jsonl").open("ab", buffering=0) as log:
                     log.write(
@@ -532,6 +556,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "schema": REPORT_SCHEMA,
             "source_commit": args.source_commit,
             "source_verification": source_verification,
+            "gradient_accumulation": args.gradient_accumulation,
             "train_reader": args.train_reader,
             "trainable_parameters": trainable_parameter_count,
             "truth_motor_hidden": args.truth_motor_hidden,
