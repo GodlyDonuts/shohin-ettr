@@ -30,6 +30,8 @@ def _args(tmp_path: Path, **overrides: object) -> Namespace:
         "compiler_contract_sha256": "4" * 64,
         "state_run_dir": None,
         "state_run_sha256s_sha256": None,
+        "schedule_run_dir": None,
+        "schedule_run_sha256s_sha256": None,
         "output": tmp_path / "output",
         "source_commit": "5" * 40,
         "data_seed": 7,
@@ -55,6 +57,28 @@ def test_state_run_arguments_accept_absolute_bound_receipt(
             tmp_path,
             state_run_dir=tmp_path,
             state_run_sha256s_sha256="6" * 64,
+        )
+    )
+
+
+def test_schedule_run_arguments_must_be_supplied_together(
+    tmp_path: Path,
+) -> None:
+    with pytest.raises(
+        AlgebraicJointStateEvaluationError,
+        match="arguments differ",
+    ):
+        _validate_args(_args(tmp_path, schedule_run_dir=tmp_path))
+
+
+def test_schedule_run_arguments_accept_absolute_bound_receipt(
+    tmp_path: Path,
+) -> None:
+    _validate_args(
+        _args(
+            tmp_path,
+            schedule_run_dir=tmp_path,
+            schedule_run_sha256s_sha256="7" * 64,
         )
     )
 

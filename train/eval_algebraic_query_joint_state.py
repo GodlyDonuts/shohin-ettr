@@ -47,6 +47,10 @@ from eval_ettr_joint_instruction_model import (
 )
 from eval_ettr_v3 import _parameter_sha256, _read_hash_bound_json
 from native_causal_disposition_reader import answer_token_ids_from_tokenizer
+from parallel_addressed_transaction_compiler import (
+    ParallelAddressedTransactionCompiler,
+    ParallelScheduledReactor,
+)
 from train_ettr_component_island import (
     _canonical_bytes,
     _reader_pairs_from_logits,
@@ -62,8 +66,8 @@ from train_typed_query_state_reader_pilot import (
 )
 
 
-CONTRACT_SCHEMA = "shohin-ettr-algebraic-joint-state-eval-contract-v1"
-REPORT_SCHEMA = "shohin-ettr-algebraic-joint-state-eval-report-v1"
+CONTRACT_SCHEMA = "shohin-ettr-algebraic-joint-state-eval-contract-v2"
+REPORT_SCHEMA = "shohin-ettr-algebraic-joint-state-eval-report-v2"
 STATE_CONTRACT_SCHEMA = "shohin-ettr-algebraic-state-semantic-contract-v1"
 STATE_REPORT_SCHEMA = "shohin-ettr-algebraic-state-semantic-report-v1"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
@@ -77,6 +81,21 @@ _STATE_RUN_FILES = (
     "report.json",
     "train.jsonl",
 )
+_SCHEDULE_RUN_FILES = (
+    "pilot-contract.json",
+    "report.json",
+    "schedule-final.safetensors",
+    "schedule-initial.safetensors",
+    "train.jsonl",
+)
+_SCHEDULE_SCHEMAS = {
+    "shohin-ettr-parallel-addressed-transaction-contract-v1": (
+        "shohin-ettr-parallel-addressed-transaction-report-v1"
+    ),
+    "shohin-ettr-parallel-addressed-transaction-contract-v2": (
+        "shohin-ettr-parallel-addressed-transaction-report-v2"
+    ),
+}
 _ARMS = (
     "autonomous_program_autonomous_state",
     "oracle_program_autonomous_state",
@@ -106,6 +125,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--compiler-contract-sha256", required=True)
     parser.add_argument("--state-run-dir", type=Path)
     parser.add_argument("--state-run-sha256s-sha256")
+    parser.add_argument("--schedule-run-dir", type=Path)
+    parser.add_argument("--schedule-run-sha256s-sha256")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--data-seed", type=int, required=True)
@@ -138,6 +159,7 @@ def _validate_args(args: argparse.Namespace) -> None:
         args.compiler_contract_sha256,
     )
     state_run_supplied = args.state_run_dir is not None
+    schedule_run_supplied = args.schedule_run_dir is not None
     if (
         any(not path.is_absolute() for path in paths)
         or any(_HEX64.fullmatch(value) is None for value in hashes)
@@ -147,11 +169,21 @@ def _validate_args(args: argparse.Namespace) -> None:
         or state_run_supplied != (
             args.state_run_sha256s_sha256 is not None
         )
+        or schedule_run_supplied != (
+            args.schedule_run_sha256s_sha256 is not None
+        )
         or (
             state_run_supplied
             and (
                 not args.state_run_dir.is_absolute()
                 or _HEX64.fullmatch(args.state_run_sha256s_sha256) is None
+            )
+        )
+        or (
+            schedule_run_supplied
+            and (
+                not args.schedule_run_dir.is_absolute()
+                or _HEX64.fullmatch(args.schedule_run_sha256s_sha256) is None
             )
         )
         or args.output.exists()
@@ -306,6 +338,173 @@ def _load_state_semantic_components(
         "source_commit": contract["source_commit"],
         "updates_completed": report["updates_completed"],
     }
+
+
+def _load_parallel_schedule(
+    args,
+    *,
+    model,
+    provenance,
+    replacement_system_parameters: int,
+) -> tuple[dict[str, object] | None, int]:
+    if args.schedule_run_dir is None:
+        return None, replacement_system_parameters
+    sums_path = args.schedule_run_dir / "SHA256SUMS"
+    if _sha256_file(sums_path) != args.schedule_run_sha256s_sha256:
+        raise AlgebraicJointStateEvaluationError(
+            "parallel schedule run receipt differs"
+        )
+    expected: dict[str, str] = {}
+    try:
+        lines = sums_path.read_text(encoding="ascii").splitlines()
+    except (OSError, UnicodeError) as exc:
+        raise AlgebraicJointStateEvaluationError(
+            "parallel schedule run receipt is unreadable"
+        ) from exc
+    for line in lines:
+        fields = line.split("  ")
+        if (
+            len(fields) != 2
+            or _HEX64.fullmatch(fields[0]) is None
+            or fields[1] not in _SCHEDULE_RUN_FILES
+            or fields[1] in expected
+        ):
+            raise AlgebraicJointStateEvaluationError(
+                "parallel schedule run receipt differs"
+            )
+        expected[fields[1]] = fields[0]
+    if tuple(sorted(expected)) != tuple(sorted(_SCHEDULE_RUN_FILES)):
+        raise AlgebraicJointStateEvaluationError(
+            "parallel schedule run receipt differs"
+        )
+    for name, digest in expected.items():
+        if _sha256_file(args.schedule_run_dir / name) != digest:
+            raise AlgebraicJointStateEvaluationError(
+                "parallel schedule run file differs"
+            )
+    contract = _read_hash_bound_json(
+        args.schedule_run_dir / "pilot-contract.json",
+        expected_sha256=expected["pilot-contract.json"],
+        label="parallel schedule contract",
+    )
+    report = _read_hash_bound_json(
+        args.schedule_run_dir / "report.json",
+        expected_sha256=expected["report.json"],
+        label="parallel schedule report",
+    )
+    architecture = contract.get("architecture")
+    expected_report_schema = _SCHEDULE_SCHEMAS.get(contract.get("schema"))
+    if (
+        expected_report_schema is None
+        or report.get("schema") != expected_report_schema
+        or report.get("status") != "pass"
+        or not isinstance(architecture, Mapping)
+        or report.get("contract_sha256") != expected["pilot-contract.json"]
+        or contract.get("release_file_sha256") != args.release_sha256
+        or contract.get("joint_model_sha256") != args.joint_model_sha256
+        or contract.get("joint_run_contract_sha256")
+        != args.joint_run_contract_sha256
+        or contract.get("compiler_sha256") != args.compiler_sha256
+        or contract.get("compiler_contract_sha256")
+        != args.compiler_contract_sha256
+        or report.get("protected_checkpoint_sha256")
+        != provenance.checkpoint_sha256
+        or report.get("initial_schedule_sha256")
+        != expected["schedule-initial.safetensors"]
+        or report.get("final_schedule_sha256")
+        != expected["schedule-final.safetensors"]
+    ):
+        raise AlgebraicJointStateEvaluationError(
+            "parallel schedule lineage differs"
+        )
+    try:
+        seed = int(architecture["seed"])
+        width = int(architecture["width"])
+        layers = int(architecture["layers"])
+        num_heads = int(architecture["num_heads"])
+    except (KeyError, TypeError, ValueError) as exc:
+        raise AlgebraicJointStateEvaluationError(
+            "parallel schedule architecture differs"
+        ) from exc
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    schedule = ParallelAddressedTransactionCompiler(
+        model.config,
+        width=width,
+        layers=layers,
+        num_heads=num_heads,
+    ).to(
+        device=next(model.parameters()).device,
+        dtype=next(model.parameters()).dtype,
+    )
+    _require_module_state(
+        schedule,
+        _load_state_file(
+            args.schedule_run_dir / "schedule-initial.safetensors"
+        ),
+    )
+    try:
+        incompatibility = schedule.load_state_dict(
+            _load_state_file(
+                args.schedule_run_dir / "schedule-final.safetensors"
+            ),
+            strict=True,
+        )
+    except RuntimeError as exc:
+        raise AlgebraicJointStateEvaluationError(
+            "parallel schedule final component differs"
+        ) from exc
+    if incompatibility.missing_keys or incompatibility.unexpected_keys:
+        raise AlgebraicJointStateEvaluationError(
+            "parallel schedule final component differs"
+        )
+    schedule_parameters = sum(
+        parameter.numel() for parameter in schedule.parameters()
+    )
+    removed_reactor_parameters = sum(
+        parameter.numel() for parameter in model.reactor.parameters()
+    )
+    complete_parameters = (
+        replacement_system_parameters
+        - removed_reactor_parameters
+        + schedule_parameters
+    )
+    legacy_reported_parameters = (
+        replacement_system_parameters + schedule_parameters
+    )
+    reported_parameters = contract.get("complete_system_parameters")
+    if (
+        contract.get("schedule_parameters") != schedule_parameters
+        or complete_parameters > SYSTEM_PARAMETER_CAP
+        or (
+            contract.get("schema")
+            == "shohin-ettr-parallel-addressed-transaction-contract-v2"
+            and reported_parameters != complete_parameters
+        )
+        or (
+            contract.get("schema")
+            == "shohin-ettr-parallel-addressed-transaction-contract-v1"
+            and reported_parameters != legacy_reported_parameters
+        )
+    ):
+        raise AlgebraicJointStateEvaluationError(
+            "parallel schedule parameter receipt differs"
+        )
+    model.reactor = ParallelScheduledReactor(schedule, model.config)
+    schedule.eval()
+    return (
+        {
+            "complete_system_parameters": complete_parameters,
+            "contract_sha256": expected["pilot-contract.json"],
+            "legacy_reported_parameters": reported_parameters,
+            "report_sha256": expected["report.json"],
+            "run_sha256s_sha256": args.schedule_run_sha256s_sha256,
+            "schedule_parameters": schedule_parameters,
+            "source_commit": contract["source_commit"],
+            "updates_completed": report["updates_completed"],
+        },
+        complete_parameters,
+    )
 
 
 def _strict_load_joint_model(args, *, device: torch.device):
@@ -740,6 +939,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         model=model,
         provenance=provenance,
     )
+    schedule_receipt, replacement_system_parameters = (
+        _load_parallel_schedule(
+            args,
+            model=model,
+            provenance=provenance,
+            replacement_system_parameters=replacement_system_parameters,
+        )
+    )
     contract = {
         "compiler_contract_sha256": args.compiler_contract_sha256,
         "compiler_sha256": args.compiler_sha256,
@@ -755,6 +962,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "replacement_system_parameters": replacement_system_parameters,
         "required_device_class": args.required_device_class,
         "runtime_precision": str(next(model.parameters()).dtype),
+        "schedule_receipt": schedule_receipt,
         "schema": CONTRACT_SCHEMA,
         "source_commit": args.source_commit,
         "state_semantic_receipt": state_semantic_receipt,
@@ -786,6 +994,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "reader_parameters": reader_parameters,
             "replacement_system_parameters": replacement_system_parameters,
             "runtime_precision": str(next(model.parameters()).dtype),
+            "schedule_receipt": schedule_receipt,
             "schema": REPORT_SCHEMA,
             "source_verification": source_verification,
             "state_semantic_receipt": state_semantic_receipt,

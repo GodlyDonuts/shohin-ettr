@@ -42,6 +42,20 @@ if [[ -n "${STATE_RUN_DIR:-}" || -n "${STATE_RUN_SHA256SUMS_SHA256:-}" ]]; then
     --state-run-sha256s-sha256 "$STATE_RUN_SHA256SUMS_SHA256"
   )
 fi
+SCHEDULE_ARGS=()
+if [[ -n "${SCHEDULE_RUN_DIR:-}" \
+  || -n "${SCHEDULE_RUN_SHA256SUMS_SHA256:-}" ]]; then
+  SCHEDULE_RUN_DIR=${SCHEDULE_RUN_DIR:?set completed parallel schedule run}
+  SCHEDULE_RUN_SHA256SUMS_SHA256=${SCHEDULE_RUN_SHA256SUMS_SHA256:?set schedule run receipt hash}
+  [[ "$SCHEDULE_RUN_DIR" == /* ]] || {
+    echo "parallel schedule run path must be absolute" >&2
+    exit 2
+  }
+  SCHEDULE_ARGS=(
+    --schedule-run-dir "$SCHEDULE_RUN_DIR"
+    --schedule-run-sha256s-sha256 "$SCHEDULE_RUN_SHA256SUMS_SHA256"
+  )
+fi
 
 for path in "$CODE_ROOT" "$RELEASE_ROOT" "$ETTR_DATA_ROOT" \
   "$TOKENIZER" "$PROTECTED_CHECKPOINT" "$JOINT_RUN_DIR" \
@@ -99,6 +113,7 @@ compiler_sha=$(sha256sum \
   --compiler-contract "$COMPILER_RUN_DIR/pilot-contract.json" \
   --compiler-contract-sha256 "$compiler_contract_sha" \
   "${STATE_ARGS[@]}" \
+  "${SCHEDULE_ARGS[@]}" \
   --output "$OUTPUT" \
   --source-commit "$SOURCE_COMMIT" \
   --data-seed "$DATA_SEED" \
