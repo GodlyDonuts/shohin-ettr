@@ -24,6 +24,7 @@ from safetensors.torch import save_file
 import torch
 import torch.nn.functional as F
 
+from algebraic_query_state_reader import AlgebraicQueryStateReader
 from endogenous_typed_theory_reactor import SYSTEM_PARAMETER_CAP
 from ettr_objectives import _causal_query_binding_loss
 from ettr_packet_index import ETTRDiskPacketSufficiencyIndex
@@ -64,6 +65,9 @@ class TypedQueryPilotError(RuntimeError):
     """The typed query/state pilot violated its sealed contract."""
 
 
+QueryStateReader = TypedQueryStateReader | AlgebraicQueryStateReader
+
+
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--release-root", type=Path, required=True)
@@ -90,6 +94,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--state-layers", type=int, default=2)
     parser.add_argument("--num-heads", type=int, default=8)
     parser.add_argument("--teacher-decay-updates", type=int, default=2_000)
+    parser.add_argument(
+        "--executor-mode",
+        choices=("learned", "algebraic"),
+        default="learned",
+    )
     return parser.parse_args(argv)
 
 
@@ -165,7 +174,7 @@ def _states(batch, config, *, dtype: torch.dtype):
 
 
 def _forward(
-    reader: TypedQueryStateReader,
+    reader: QueryStateReader,
     source_batch,
     specs: ETTRQuerySpecBatch,
     *,
@@ -239,7 +248,7 @@ def _compiler_loss(
 
 
 def _loss(
-    reader: TypedQueryStateReader,
+    reader: QueryStateReader,
     source_batch,
     target_batch,
     specs: ETTRQuerySpecBatch,
@@ -289,7 +298,7 @@ def _compiler_counts(
 
 
 def _evaluate(
-    reader: TypedQueryStateReader,
+    reader: QueryStateReader,
     *,
     stream: ETTRV3StreamingRelease,
     packet_index: ETTRDiskPacketSufficiencyIndex,
@@ -423,16 +432,27 @@ def main(argv: Sequence[str] | None = None) -> int:
     answer_token_ids = answer_token_ids_from_tokenizer(args.target_tokenizer)
     torch.manual_seed(args.model_seed)
     torch.cuda.manual_seed_all(args.model_seed)
-    reader = TypedQueryStateReader(
-        parent.config,
-        source_vocab_size=stream.tokenizer.get_vocab_size(),
-        target_vocab_size=parent.base.cfg.vocab_size,
-        answer_token_ids=answer_token_ids,
-        width=args.width,
-        query_layers=args.query_layers,
-        state_layers=args.state_layers,
-        num_heads=args.num_heads,
-    )
+    if args.executor_mode == "learned":
+        reader = TypedQueryStateReader(
+            parent.config,
+            source_vocab_size=stream.tokenizer.get_vocab_size(),
+            target_vocab_size=parent.base.cfg.vocab_size,
+            answer_token_ids=answer_token_ids,
+            width=args.width,
+            query_layers=args.query_layers,
+            state_layers=args.state_layers,
+            num_heads=args.num_heads,
+        )
+    else:
+        reader = AlgebraicQueryStateReader(
+            parent.config,
+            source_vocab_size=stream.tokenizer.get_vocab_size(),
+            target_vocab_size=parent.base.cfg.vocab_size,
+            answer_token_ids=answer_token_ids,
+            width=args.width,
+            query_layers=args.query_layers,
+            num_heads=args.num_heads,
+        )
     parent_parameters = sum(parameter.numel() for parameter in parent.parameters())
     old_reader_parameters = sum(
         parameter.numel() for parameter in parent.query_reader.parameters()
@@ -477,6 +497,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         contract = {
             "answer_token_ids": list(answer_token_ids),
             "architecture": {
+                "executor_mode": args.executor_mode,
                 "num_heads": args.num_heads,
                 "query_layers": args.query_layers,
                 "state_layers": args.state_layers,
@@ -493,6 +514,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "parent_run_contract_sha256": args.parent_run_contract_sha256,
             "query_operations": list(QUERY_OPERATIONS),
             "reader_parameters": reader_parameters,
+            "executor_mode": args.executor_mode,
             "release_file_sha256": args.release_sha256,
             "replacement_system_parameters": replacement_system_parameters,
             "schema": CONTRACT_SCHEMA,
