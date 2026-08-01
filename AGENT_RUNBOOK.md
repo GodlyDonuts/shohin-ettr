@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-07-31 18:02 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-01 02:45 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -21617,3 +21617,73 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `use_larger_backbones_only_as_causal_controls_require_world_and_command_strict_improvement_then_compress_or_resize_any_verified_mechanism_into_sub_200m_shohin`.
+
+- **2026-07-31 18:02--2026-08-01 02:45 EDT** -- **The matched
+  SmolLM2-135M component campaign is sealed; its strict end-to-end gate is
+  pending after three evaluator assumptions failed closed and were repaired
+  without weakening model or data custody.**
+
+  Compiler job `724764` completed all 5,000 updates. Component SHA-256 is
+  `a13260f31af336e12c747a33f6c598dec033e8067185f0e8d4f7e2d6571bceee`;
+  report SHA-256 is
+  `0530dcf40b94c7c096219bf775ae68a7652cdc632fb8de47576c829a2e3d7a5c`.
+  On 32 held-out batches it reaches active `98.6694%`, root `100%`, type
+  `98.5896%`, and value-code `77.8761%`, but complete packet exactness
+  remains zero. This is only a modest value-binding increase over the best
+  Shohin compiler and is not a qualitative backbone effect.
+
+  Reactor job `724765` completed all 5,000 updates in `1:50:46` on `evc25`.
+  Component SHA-256 is
+  `2d7be62ba7d26aef77e132cd5c252cac419a2f30c31b279a27b2d22a0b432a28`;
+  report SHA-256 is
+  `5e501284c0e1afc6adfc2107d12138c22e59799448e17c479d755fc5ba6b000a`.
+  Held-out teacher-forced joint transaction accuracy is `7.8571%`, with
+  opcode/source/target/relation/value-code
+  `76.2245%/21.7249%/34.1398%/37.6344%/29.1781%`. This is materially learned
+  but weaker than Shohin's best direct actuator.
+
+  Reader job `724766` completed all 5,000 updates. Component SHA-256 is
+  `7b41d976d6d7a3b8077a5bc7fa147f664fb0321795cb72d59c6d74e5304123bb`;
+  report SHA-256 is
+  `5f4f781ea20319974edb7b4c959afc68e648cf2dc5fe025351580fcdaf057601`.
+  Under exact oracle terminal states, WORLD and COMMAND strict joint and
+  paired-order accuracy remain zero. Margin-at-0.1 is `7.5%/5.6818%`, while
+  correct and foil top-1 are both `50%`. The stronger pretrained backbone
+  therefore does not by itself repair semantic reader orientation.
+
+  Hash-bound composition job `724890` completed in `3:54` and joined those
+  exact three components without changing the external parent. The composed
+  model SHA-256 is
+  `a8f5f121c669b2abcf57e9bc053c3e63c1215c4e4e203cb45c1bb5e4a6ba47f2`;
+  run-contract SHA-256 is
+  `dfe15f2ad534626aca0fc032046d16d3aa09c73bcc9fac9ffcff52d8c2b3e677`.
+
+  Private commit `8071de7` preserves Shohin's parameter cap by default while
+  permitting only an explicitly identified external diagnostic to record a
+  negative cap headroom. Evaluator `724891` had failed closed at that old
+  assumption. Retry `724893` then exposed a second strict mismatch between
+  a regenerated random ETTR parent and the saved parent. CPU tensor audit
+  `724895` proved all official SmolLM2 base tensors exact; only four
+  untrained ETTR tensors differed, over `327,680` elements total and by at
+  most `6.1035e-5`, due cross-platform random-normal rounding. Private commit
+  `6255ce0` now verifies every fresh `base.*` tensor against the immutable
+  parent and then uses that exact saved parent as the raw ETTR arm. It does
+  not permit a base mutation.
+
+  Retry `724896` passed both preceding gates and exposed that a zero-update
+  component composition has no top-level `data_seed`. The three independent
+  component contracts all bind the same seed, `2026072804`. Private commit
+  `e21a312` makes evaluation seed an explicit validated and report-bound
+  argument, with backward-compatible contract fallback. The focused external
+  evaluator/component suite is **31/31** passing with clean Ruff, byte
+  compilation, Bash syntax, and diff checks. Immutable runtime
+  `scratchpad/shohin_ettr_smollm2_runtime_e21a312_r1` contains 3,368 measured
+  files and has manifest SHA-256
+  `8716ad690f9dc24a2c9de236884aae50adf80b04b3dd34ee149cdc2f65afe8ca`.
+  Full 128-batch strict evaluation `724898` is pending for the first
+  available 20-minute H100 window, currently estimated at `03:50 EDT`.
+  It is the unchanged deterministic WORLD/COMMAND decision gate; none of the
+  failed preflights produced or replaced a result artifact.
+
+  Decision:
+  `finish_the_135m_strict_gate_before_scaling_the_control_and_reject_the_backbone_only_hypothesis_if_world_and_command_do_not_both_improve`.
