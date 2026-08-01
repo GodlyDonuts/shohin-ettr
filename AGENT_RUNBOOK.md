@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-01 06:49 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-01 08:53 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -41,8 +41,16 @@
 > the unchanged source-deleted gate remains WORLD `0/512` and COMMAND
 > `0/640`. The final intervention-balanced reader continuation also leaves
 > strict WORLD and COMMAND at zero, closing the generic full-vocabulary
-> reader formulation. A new disposition-gated native truth motor is now the
-> isolated successor. No current artifact is promoted as native reasoning.
+> reader formulation. Forced FP32 state-only consumption and a true
+> initial-plus-terminal state bottleneck also leave every strict causal gate
+> at zero. The first separated neural query compiler plus learned addressed
+> state executor improves held-out factual top-1 to 51.6%, but fails strict
+> WORLD/COMMAND and localizes two independent defects: only 9.4% exact query
+> programs and zero oracle-program causal pairs. A fixed differentiable
+> algebraic executor is now queued behind that diagnosis; its oracle-program
+> arm is an execution-ceiling diagnostic, while only autonomous predicted-
+> program results can count. No current artifact is promoted as native
+> reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -22025,3 +22033,66 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_address_only_generic_residual_injection_then_test_fp32_direct_state_only_consumption_with_and_without_temporal_memory`.
+
+- **2026-08-01 06:49--08:53 EDT** -- **Forced consumption and a true state
+  bottleneck both close negative; separating query compilation from execution
+  exposes both failures, and the successor replaces learned truth pooling with
+  a differentiable operator algebra.**
+
+  Forced FP32 direct state-only jobs `724948/724949` and state-bottleneck jobs
+  `724956/724957` all completed without runtime failure. None produced a
+  nonzero WORLD or COMMAND joint-top-1, paired-order, margin-0.1, or margin-1
+  rate. Terminal bottleneck `724956` report/final SHA-256 are
+  `51e6eee8b8c3b4ba71bf3af2f128375dbaa8b2d217a78e58553c80dff8a28957` /
+  `3003ba5a0694c760aff8a0fff70a9924b2a6a6e18627573f84d1c41c823f547c`;
+  temporal bottleneck `724957` report/final SHA-256 are
+  `9b4b40c58fc15ad59a7dbeee8c0eec16415f731477549fcf2cc637fcd55a9cce` /
+  `48b3974f4f393674b7239ae6c2ef2feeff3c0cef63ae547c94c67826978fb6ea`.
+  Both move factual top-1 `37.5% -> 62.5%` but remain exact `50/50` on causal
+  correct/foil orientation. This closes generic attention/pooling reader
+  tuning under the current formulation.
+
+  Commit `8b84b10ab92082863c4dd89128956a8cba4f9cd2` introduced a source-token
+  query compiler and an addressed initial-plus-terminal state executor under
+  the 200M replacement-system cap. The valid 1,500-update learned-executor
+  gate is job `724964`, output
+  `train/ettr_smollm2_typed_query_state_w224_u1500_8b84b10_l1`. It completed
+  in `19:57`; report SHA-256 is
+  `82b38c2904bbf0fb8a3d2d76f32cd748f4e6adc827b19e26d19c9e47c89eff71`
+  and final reader SHA-256 is
+  `54a94b60d236b3db78cf6dec7fcd0a8a00bc685723a88f4647646118b683e0a0`.
+  The reader has `13,421,514` parameters and replaces the old readout in a
+  `199,160,116`-parameter system. Held-out compiler operation accuracy rises
+  `6.25% -> 65.625%`, argument accuracy `4.745% -> 14.352%`, and exact-program
+  accuracy `0% -> 9.375%`. Autonomous factual top-1 rises
+  `35.94% -> 51.56%`, but both autonomous and oracle-program WORLD/COMMAND
+  retain zero joint, paired, and positive-margin success. The oracle-program
+  failure proves that the learned pooling executor is independently
+  insufficient; the weak exact-program rate proves the compiler is also not
+  yet solved.
+
+  Commit `727fd04de87c0a56afc1bdb044997a3eda166bda` replaces the learned truth
+  network with an exact differentiable Boolean operator bank over addressed
+  typed state. It directly implements Horn membership/count, resource
+  place/cursor/halt, slot equality/change, typed counts, adjacency, and
+  pattern existence. The compiler sees only candidate-visible QUERY tokens;
+  the executor receives only its operation/argument distributions plus typed
+  state, with no continuous query-residual shortcut. Unit tests cover every
+  operator family and source-deletion boundary. Commit `68599da` removes a
+  duplicate gradient-free oracle forward from algebraic training, and commit
+  `562942f` permits an explicitly recorded non-H100 CUDA oracle audit while
+  keeping H100 the default requirement. Immutable runtime
+  `scratchpad/shohin_ettr_algebraic_query_runtime_562942f_r4` has 3,382
+  measured files and SHA256SUMS SHA-256
+  `c1da0a599107b52da8b98c83d98f31b52fcd3ce30191bff969f17f793774e724`.
+
+  Current queue: H100 algebraic compiler gates `724967` (1,200 updates) and
+  `724968` (600-update backfill) plus V100 real-corpus oracle audit `724969`.
+  Only autonomous predicted-program WORLD and COMMAND gates can be promoted;
+  oracle-program performance is a non-promotable execution ceiling. If the
+  ceiling is exact and autonomy remains weak, stop changing the executor and
+  build a balanced high-throughput compiler curriculum. If the ceiling is not
+  exact, repair the operator/state codebook before any further fitting.
+
+  Decision:
+  `generic_reader_family_rejected_separate_query_compilation_from_exact_typed_execution_and_gate_each_interface_independently`.

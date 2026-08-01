@@ -53096,3 +53096,45 @@ lineages are unchanged.
 
 Current decision:
 `representability_is_repaired_force_the_answer_motor_through_state_before_any_more_capacity_scaling`.
+
+## 2026-08-01 Typed Compiler and Algebraic Executor Pivot
+
+Forced state consumption did not repair causality. FP32 state-only terminal
+and temporal readers, followed by a strict state bottleneck with no query-
+residual answer path, all improved factual classification while leaving every
+WORLD and COMMAND joint, paired, and positive-margin gate at zero. This closes
+the generic reader family rather than merely one width or optimizer setting.
+
+The first explicit decomposition trained a source-token query compiler and a
+learned addressed initial-plus-terminal executor as separate measured parts.
+Job `724964` used 1,500 updates and a 13,421,514-parameter reader inside a
+199,160,116-parameter replacement system. It improved held-out factual top-1
+from 35.94% to 51.56%, operation compilation from 6.25% to 65.625%, and exact
+program compilation from 0% to 9.375%. It nevertheless produced zero strict
+causal pairs even when supplied the oracle query program. The result proves
+two independent bottlenecks: the compiler is incomplete, and a generic
+learned truth-pooling network does not reliably execute even a correct typed
+program.
+
+The successor architecture removes that ambiguity. A neural compiler sees
+only the source QUERY prefix and emits distributions over 11 operations and
+three bounded integer arguments. A fixed differentiable operator lattice
+then executes those distributions over addressed initial and terminal typed
+state. The lattice implements the actual finite ETTR algebra: Horn
+membership/count, guarded-resource place/cursor/halt, and local-rewrite
+indexed equality, typed cardinality, adjacency, pattern existence, and
+temporal change. It has no learned truth MLP and no free continuous query
+residual. Exact hard forward values retain bounded surrogate gradients where
+thresholding is required, so the same module can later train architecture-
+produced soft state rather than only score oracle state.
+
+This is not yet a native-reasoning result. Oracle state is still supplied in
+the current interface pilot, and the oracle-program arm is an execution
+ceiling only. Promotion requires the autonomous compiler arm to pass both
+WORLD and COMMAND strict gates, followed by replacement of oracle state with
+the architecture-produced compiler/reactor state under the unchanged
+source-deleted evaluator. The immediate jobs are `724967/724968` for H100
+compiler fitting and `724969` for a real-corpus V100 oracle-ceiling audit.
+
+Current decision:
+`use_a_neural_program_compiler_plus_exact_differentiable_typed_algebra_then_restore_autonomous_state_one_interface_at_a_time`.
