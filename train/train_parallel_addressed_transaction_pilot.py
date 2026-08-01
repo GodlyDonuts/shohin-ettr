@@ -77,6 +77,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--compiler-contract-sha256", required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--source-commit", required=True)
+    parser.add_argument("--architecture-seed", type=int, required=True)
     parser.add_argument("--data-seed", type=int, required=True)
     parser.add_argument("--updates", type=int, default=500)
     parser.add_argument("--start-position", type=int, default=13_200)
@@ -118,6 +119,7 @@ def _validate_args(args: argparse.Namespace) -> None:
         any(not path.is_absolute() for path in paths)
         or any(_HEX64.fullmatch(value) is None for value in hashes)
         or _HEX40.fullmatch(args.source_commit) is None
+        or not 0 <= args.architecture_seed < 2**63
         or not 0 <= args.data_seed < 2**63
         or args.updates < 1
         or args.start_position < 0
@@ -363,6 +365,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     for parameter in model.parameters():
         parameter.requires_grad_(False)
     executor = model.reactor
+    torch.manual_seed(args.architecture_seed)
+    torch.cuda.manual_seed_all(args.architecture_seed)
     schedule_compiler = ParallelAddressedTransactionCompiler(
         model.config,
         width=args.width,
@@ -417,6 +421,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "architecture": {
                 "layers": args.layers,
                 "num_heads": args.num_heads,
+                "seed": args.architecture_seed,
                 "sticky_schedule": True,
                 "width": args.width,
             },

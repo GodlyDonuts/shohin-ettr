@@ -11,6 +11,7 @@ def test_parallel_transaction_job_is_hash_bound_and_isolated() -> None:
         "sha256sum -c SHA256SUMS",
         "train_parallel_addressed_transaction_pilot.py",
         "--source-commit",
+        "--architecture-seed",
         "--compiler-contract-sha256",
         "--joint-run-contract-sha256",
         "--required-device-class",

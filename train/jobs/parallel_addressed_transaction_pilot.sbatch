@@ -25,6 +25,7 @@ PROTECTED_CHECKPOINT=${PROTECTED_CHECKPOINT:?set protected checkpoint}
 JOINT_RUN_DIR=${JOINT_RUN_DIR:?set composed Shohin run}
 COMPILER_RUN_DIR=${COMPILER_RUN_DIR:?set completed algebraic compiler run}
 OUTPUT=${OUTPUT:?set fresh pilot output}
+ARCHITECTURE_SEED=${ARCHITECTURE_SEED:?set architecture seed}
 DATA_SEED=${DATA_SEED:?set data seed}
 UPDATES=${UPDATES:-500}
 START_POSITION=${START_POSITION:-13200}
@@ -94,6 +95,7 @@ compiler_sha=$(sha256sum \
   --compiler-contract-sha256 "$compiler_contract_sha" \
   --output "$OUTPUT" \
   --source-commit "$SOURCE_COMMIT" \
+  --architecture-seed "$ARCHITECTURE_SEED" \
   --data-seed "$DATA_SEED" \
   --updates "$UPDATES" \
   --start-position "$START_POSITION" \
