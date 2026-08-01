@@ -53138,3 +53138,38 @@ compiler fitting and `724969` for a real-corpus V100 oracle-ceiling audit.
 
 Current decision:
 `use_a_neural_program_compiler_plus_exact_differentiable_typed_algebra_then_restore_autonomous_state_one_interface_at_a_time`.
+
+## 2026-08-01 First Native Algebraic Foothold and the Remaining State Defect
+
+The typed-algebra pivot produced the first clean interface result. On 512
+held-out real-corpus rows, the fixed operator bank is exact with oracle query
+program and oracle state: factual, WORLD, and COMMAND gates all reach 100%.
+The learned source-query compiler then raises exact program accuracy from 0%
+to 18.75%. When crossed with oracle state, its autonomous programs reach
+31.94% strict WORLD and 46.15% strict COMMAND paired accuracy. Query
+interpretation and finite execution are therefore no longer speculative
+missing pieces; both work measurably under sealed interfaces.
+
+Crossing the same trained query compiler with Shohin's own autonomous
+compiler/reactor state produces the first simultaneous nonzero native result
+on the complete held-out gate: WORLD `4/144 = 2.78%` and COMMAND
+`12/208 = 5.77%`, with positive intervention DIDs. A matched seed-4
+replication retains WORLD `2.78%` and COMMAND `9.62%`. A fresh seed-5
+population, however, returns both strict gates to zero. The result is a real
+foothold because no oracle value, oracle program, or target enters the fully
+autonomous arm. It is not a promoted reasoning capability because it is not
+distribution-stable.
+
+The crossed-arm diagnosis is decisive. Oracle program plus autonomous state
+is nearly dead, while oracle program plus oracle state is exact. The next
+architecture intervention therefore does not add another decoder or change
+the exact operator algebra. It trains Shohin's 51.2M-parameter
+compiler/reactor directly through fully autonomous algebraic answer loss,
+while freezing the protected base and the successful query compiler. A
+packet objective and class-balanced transaction objective retain local state
+semantics. The first memory-bounded canary proves that gradients reach the
+hard straight-through state path; a 300-update H100 gate and independent
+20-update V100 direction gate are running.
+
+Current decision:
+`first_end_to_end_native_positive_observed_but_unstable_state_construction_is_the_active_bottleneck_and_must_reproduce_across_fresh_populations_before_scaling`.

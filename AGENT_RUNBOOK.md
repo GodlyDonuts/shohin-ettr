@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-01 08:53 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-01 09:57 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -46,11 +46,24 @@
 > at zero. The first separated neural query compiler plus learned addressed
 > state executor improves held-out factual top-1 to 51.6%, but fails strict
 > WORLD/COMMAND and localizes two independent defects: only 9.4% exact query
-> programs and zero oracle-program causal pairs. A fixed differentiable
-> algebraic executor is now queued behind that diagnosis; its oracle-program
-> arm is an execution-ceiling diagnostic, while only autonomous predicted-
-> program results can count. No current artifact is promoted as native
-> reasoning.
+> programs and zero oracle-program causal pairs. The fixed differentiable
+> algebraic executor has now crossed its isolated interface gate. Real-corpus
+> oracle audit `724969` is exact on all 512 held-out rows and reaches 100%
+> factual, WORLD, and COMMAND causal gates. Compiler job `724967` improves
+> exact query programs from 0% to 18.75%; with predicted programs and oracle
+> state it reaches WORLD `46/144 = 31.94%` and COMMAND `96/208 = 46.15%`
+> strict paired gates. Composing that compiler with Shohin's autonomous
+> compiler/reactor yields the first simultaneous nonzero fully autonomous
+> result on a complete held-out gate: WORLD `4/144 = 2.78%` and COMMAND
+> `12/208 = 5.77%`. A matched seed-4 V100 replication retains WORLD `2.78%`
+> and COMMAND `9.62%`, while a fresh seed-5 population returns both strict
+> gates to zero. This is a real end-to-end native foothold, not a stable
+> reasoning result. The exact executor and query compiler are retained; the
+> remaining bottleneck is the autonomous architecture-produced state. Jobs
+> `725033/725034` now train only Shohin's compiler/reactor through the exact
+> algebraic answer loss, preserving the protected model, successful query
+> compiler, and all evaluator gates. No current artifact is promoted as
+> native reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -22096,3 +22109,76 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `generic_reader_family_rejected_separate_query_compilation_from_exact_typed_execution_and_gate_each_interface_independently`.
+
+- **2026-08-01 08:53--09:57 EDT** -- **The exact algebra closes the
+  execution gate, the neural query compiler crosses both isolated causal
+  gates, and Shohin produces its first simultaneous fully autonomous WORLD
+  and COMMAND positives. Fresh-population instability localizes the next
+  intervention to architecture-produced state.**
+
+  V100 oracle audit `724969` evaluated 512 held-out real-corpus rows. Exact
+  oracle program plus oracle initial/terminal state reaches 100% factual
+  accuracy and 100% WORLD and COMMAND correct, foil, joint, paired, and
+  margin-1 gates, with mean intervention DID `+27.6178`. The operator lattice
+  therefore implements the admitted finite ETTR algebra exactly. Report
+  SHA-256 is
+  `c1293774a268e7e3f1b082c3f7bddaa06b5dd09265d95cc702162af4efec1153`;
+  reader SHA-256 is
+  `d4f33b23313e39b30791576513756ddf6fb4e94e1d8c10b030185f7c8a189981`.
+
+  H100 compiler job `724967` completed 1,200 updates in `17:13`. Output is
+  `train/ettr_smollm2_algebraic_query_state_w224_u1200_68599da_n1`; all
+  sidecar hashes verify. Report SHA-256 is
+  `2024cb231169fa08b31ac40aaeb9c2371c707c3a1c9a29f0704c2963bb7e5e17`;
+  final reader SHA-256 is
+  `644b05ad4380226ac7f029e1d59b8e0643139ad4bdcf8ddef343075035bc79e3`;
+  contract SHA-256 is
+  `af2a481aa854afa15f8b6eaf2ce9e951188f53e2778dd495249a7d8405b0250b`.
+  Operation accuracy rises `3.906% -> 63.281%`, argument accuracy
+  `14.815% -> 29.167%`, and exact programs `0% -> 18.75%`. With predicted
+  source-query programs and oracle state, factual accuracy is `74.805%`;
+  WORLD strict joint/paired is `46/144 = 31.944%` with DID `+3.1013`, and
+  COMMAND is `96/208 = 46.154%` with DID `+4.1976`. Oracle program/state
+  remains exact. This is a query-interface result, not autonomous reasoning.
+
+  Commit `3365d01` adds a four-arm joint-state evaluator: predicted versus
+  oracle query program crossed with autonomous versus oracle state. It loads
+  the complete composed Shohin compiler/reactor lineage and refuses receipt
+  mismatches. H100 gate `724977` evaluated the full held-out population. In
+  the fully autonomous arm, factual accuracy is `50.195%`; WORLD strict
+  joint/paired is `4/144 = 2.7778%`, margin-1 is `2.7778%`, and DID is
+  `+0.08520`; COMMAND strict joint/paired is `12/208 = 5.7692%`, margin-1 is
+  `13.4615%`, and DID is `+0.19009`. Oracle program plus autonomous state is
+  nearly dead, whereas oracle program/state remains 100%, localizing the
+  dominant failure to state construction rather than algebraic execution.
+  The 185,696,111-parameter replacement system remains below the 200M cap.
+  Report SHA-256 is
+  `c5b80a5b85232fa847af610c07677757f18f622bbeb0bb4ef2461af51a6eba06`;
+  contract SHA-256 is
+  `73ead45d8dd861beaecedced1d2b4325f081c27d25e31115a1bad932d7e066ec`.
+
+  Replication distinguishes a foothold from a stable capability. Full
+  seed-4 V100 job `724978` retains WORLD `2.7778%`, COMMAND `9.6154%`, and
+  factual `53.125%` (report SHA-256
+  `f67e0c8902145ebd14bd4247a2e4530e5c4faf812d7c4f3d1897710784c20552`).
+  Fresh seed-5 job `724979` returns strict WORLD and COMMAND to zero with
+  factual `48.828%` and negative causal orientation (report SHA-256
+  `02ef4570842d036950cf5b59d702aa44612e1a4fc18f9afc4f91fcc3025ef16b`).
+  No promotion is allowed from the favorable seed alone.
+
+  Commits `115c69b` and `938610c` introduce a bounded state-semantic trainer.
+  It freezes the protected base and successful query compiler and trains only
+  Shohin's compiler/reactor (`51,223,594` parameters) through the fully
+  autonomous fixed-algebra answer loss, plus packet and class-balanced
+  transaction auxiliaries. Losses backpropagate sequentially to bound peak
+  memory. Five-update canary `724988` completed and verified all hashes,
+  proving gradient connectivity and 32GB V100 fit; it is not a capability
+  result. Report SHA-256 is
+  `8c1a5145521756496cc792db091f0caf947dfe779e9468b1d37dc49ced4e9a1c`.
+  At `09:53 EDT`, full H100 job `725033` (300 updates) and independent V100
+  direction gate `725034` (20 updates) both started. They use fresh output
+  roots and never mutate the protected checkpoint or successful query
+  compiler.
+
+  Decision:
+  `retain_exact_algebra_and_query_compiler_train_the_autonomous_state_interface_then_require_cross_seed_world_and_command_reproduction_before_promotion`.
