@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-01 14:37 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-01 14:49 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -81,7 +81,9 @@
 > `11/11`, and its immutable local runtime is hash-verified. It is a matched
 > fallback, not a replacement for the preregistered soft-only arm. Cisco Secure
 > Client currently reports `Disconnected`, so no new Newton job has been
-> submitted. No current artifact is promoted as native
+> submitted. Commit `284095e` adds a fake-Slurm-tested, fail-closed dispatcher
+> for the two canaries and eight dependency-held full arms. No current
+> artifact is promoted as native
 > reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
@@ -22375,6 +22377,14 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   Client itself reports `Disconnected`, and its GUI owns the connection
   capability, so the CLI cannot establish the tunnel. No Newton output or
   protected lineage was modified.
+
+  Commits `d67ce1c/284095e` add an executable factorial dispatcher. A fake
+  Slurm test proves that the admitted path submits exactly two canaries and
+  eight full arms, attaches four objective-matched jobs to each canary, and
+  writes a 10-job immutable receipt. A forced failure on the fourth scheduler
+  submission cancels all three prior jobs and leaves no receipt. The test is
+  `2/2` passing with clean Bash syntax, Ruff, and diff checks. This eliminates
+  partial-matrix and manual-export drift when Newton returns.
 
   Decision:
   `canary_both_soft_objectives_then_run_the_matched_80k_row_two_seed_state_learning_factorial_and_require_reproducible_hard_world_generalization`.
