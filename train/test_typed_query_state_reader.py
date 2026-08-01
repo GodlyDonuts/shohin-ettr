@@ -4,6 +4,7 @@ import torch
 
 from endogenous_typed_theory_reactor import TheoryReactorConfig, TypedTheoryState
 from ettr_query_supervision import ETTRQuerySpecBatch, _query_specs
+from train_typed_query_state_reader_pilot import _compiler_loss
 from typed_query_state_reader import TypedQueryStateReader
 
 
@@ -153,3 +154,20 @@ def test_teacher_program_changes_only_program_selection_path() -> None:
         teacher.operation_logits,
     )
     assert not torch.equal(autonomous.class_logits, teacher.class_logits)
+
+
+def test_compiler_loss_accepts_an_all_zero_arity_batch() -> None:
+    output = SimpleNamespace(
+        operation_logits=torch.randn(2, 11, requires_grad=True),
+        argument_logits=torch.randn(2, 3, 28, requires_grad=True),
+        argument_present_logits=torch.randn(2, 3, 2, requires_grad=True),
+    )
+    specs = ETTRQuerySpecBatch(
+        operation=torch.tensor([4, 4]),
+        arguments=torch.zeros(2, 3, dtype=torch.long),
+        argument_mask=torch.zeros(2, 3, dtype=torch.bool),
+    )
+    loss, parts = _compiler_loss(output, specs)
+    assert float(parts["argument"].detach()) == 0.0
+    loss.backward()
+    assert output.argument_logits.grad is not None

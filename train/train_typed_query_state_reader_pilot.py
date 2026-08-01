@@ -223,11 +223,13 @@ def _compiler_loss(
         output.argument_present_logits.float().flatten(0, 1),
         specs.argument_mask.long().flatten(),
     )
-    if not bool(specs.argument_mask.any()):
-        raise TypedQueryPilotError("typed query compiler has no argument support")
-    arguments = F.cross_entropy(
-        output.argument_logits.float()[specs.argument_mask],
-        specs.arguments[specs.argument_mask],
+    arguments = (
+        F.cross_entropy(
+            output.argument_logits.float()[specs.argument_mask],
+            specs.arguments[specs.argument_mask],
+        )
+        if bool(specs.argument_mask.any())
+        else output.argument_logits.float().sum() * 0.0
     )
     return operation + 0.5 * (present + arguments), {
         "argument": arguments,
