@@ -207,3 +207,13 @@ def test_balanced_probability_loss_accepts_single_class_batches() -> None:
         all_unoccupied,
         -(1.0 - predicted).log().mean(),
     )
+
+
+def test_balanced_brier_loss_is_class_balanced_and_bounded() -> None:
+    predicted = torch.tensor([[0.8, 0.2, 0.2, 0.2]], requires_grad=True)
+    target = torch.tensor([[1.0, 0.0, 0.0, 0.0]])
+    loss = _balanced_probability_loss(predicted, target, scoring="brier")
+    torch.testing.assert_close(loss, torch.tensor(0.04))
+    loss.backward()
+    assert predicted.grad is not None
+    assert float(predicted.grad.abs().max()) <= 2.0

@@ -6,6 +6,9 @@ BASIS_CODE_ROOT=${BASIS_CODE_ROOT:?set admitted basis runtime}
 BASIS_SOURCE_COMMIT=${BASIS_SOURCE_COMMIT:?set exact basis commit}
 BASIS_RUNTIME_SHA256=${BASIS_RUNTIME_SHA256:?set basis runtime receipt}
 RUNTIME_TAG=${RUNTIME_TAG:?set immutable runtime tag}
+OBJECTIVE_TAG=${OBJECTIVE_TAG:-basis1r2}
+SEMANTIC_ANSWER_WEIGHT=${SEMANTIC_ANSWER_WEIGHT:-1.0}
+SEMANTIC_BASIS_SCORING=${SEMANTIC_BASIS_SCORING:-log}
 RELEASE_ROOT=${RELEASE_ROOT:?set ETTR release root}
 RELEASE_SHA256=${RELEASE_SHA256:?set ETTR release hash}
 ETTR_DATA_ROOT=${ETTR_DATA_ROOT:?set ETTR data root}
@@ -32,6 +35,7 @@ done
   && "$BASIS_RUNTIME_SHA256" =~ ^[0-9a-f]{64}$ \
   && "$RELEASE_SHA256" =~ ^[0-9a-f]{64}$ \
   && "$RUNTIME_TAG" =~ ^[0-9a-z]+$ \
+  && "$OBJECTIVE_TAG" =~ ^[0-9a-z]+$ \
   && "$START_POSITION" =~ ^[0-9]+$ \
   && "$EVAL_BATCHES" =~ ^[0-9]+$ \
   && "$EVAL_BATCHES" -ge 2 \
@@ -41,6 +45,13 @@ done
   echo "basis-recovery launch contract differs" >&2
   exit 2
 }
+case "$OBJECTIVE_TAG:$SEMANTIC_ANSWER_WEIGHT:$SEMANTIC_BASIS_SCORING" in
+  basis1r2:1.0:log|qbrier:0.0:brier) ;;
+  *)
+    echo "basis-recovery objective contract differs" >&2
+    exit 2
+    ;;
+esac
 [[ -f "$BASIS_CODE_ROOT/SOURCE_COMMIT" \
   && -f "$BASIS_CODE_ROOT/SHA256SUMS" \
   && "$(tr -d '\r\n' < "$BASIS_CODE_ROOT/SOURCE_COMMIT")" \
@@ -79,7 +90,9 @@ exports_for() {
     ",SEMANTIC_PROGRAM_SOURCE=oracle" \
     ",OWNER_STATE_BRIDGE=oracle-factors" \
     ",SEMANTIC_STATE_MODE=soft" \
+    ",SEMANTIC_ANSWER_WEIGHT=$SEMANTIC_ANSWER_WEIGHT" \
     ",SEMANTIC_BASIS_WEIGHT=1.0" \
+    ",SEMANTIC_BASIS_SCORING=$SEMANTIC_BASIS_SCORING" \
     ",EVAL_BATCHES=$EVAL_BATCHES" \
     ",REACTOR_REDUCTION=head-class-balanced" \
     ",REQUIRED_DEVICE_CLASS=h100" \
@@ -130,15 +143,15 @@ submit_arm() {
   LAST_SUBMISSION=$(printf '%s\t%s\t%s' "$label" "$job" "$output")
 }
 
-canary_output="$OUTPUT_ROOT/ettr_state_basis1_u20_${RUNTIME_TAG}_canary"
-submit_arm "basis1r2-canary" "$canary_output" 20 3e-5 2026080110
+canary_output="$OUTPUT_ROOT/ettr_state_${OBJECTIVE_TAG}_u20_${RUNTIME_TAG}_canary"
+submit_arm "${OBJECTIVE_TAG}-canary" "$canary_output" 20 3e-5 2026080110
 canary_id=$LAST_JOB_ID
 receipt_lines=("$LAST_SUBMISSION")
 for learning_rate in 3e-5 1e-5; do
   lr_label=${learning_rate/e-/em}
   for data_seed in 2026080111 2026080112; do
-    label="basis1r2-${lr_label}-s${data_seed}"
-    output="$OUTPUT_ROOT/ettr_state_basis1r2_u5000_${lr_label}_s${data_seed}"
+    label="${OBJECTIVE_TAG}-${lr_label}-s${data_seed}"
+    output="$OUTPUT_ROOT/ettr_state_${OBJECTIVE_TAG}_u5000_${lr_label}_s${data_seed}"
     submit_arm "$label" "$output" 5000 "$learning_rate" "$data_seed" \
       "$canary_id"
     receipt_lines+=("$LAST_SUBMISSION")
@@ -150,6 +163,9 @@ set -o noclobber
 {
   printf 'schema\tshohin-ettr-algebraic-state-basis-recovery-v1\n'
   printf 'runtime_tag\t%s\n' "$RUNTIME_TAG"
+  printf 'objective_tag\t%s\n' "$OBJECTIVE_TAG"
+  printf 'semantic_answer_weight\t%s\n' "$SEMANTIC_ANSWER_WEIGHT"
+  printf 'semantic_basis_scoring\t%s\n' "$SEMANTIC_BASIS_SCORING"
   printf 'start_position\t%s\n' "$START_POSITION"
   printf 'eval_batches\t%s\n' "$EVAL_BATCHES"
   printf 'label\tjob_id\toutput\n'

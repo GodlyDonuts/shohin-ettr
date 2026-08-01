@@ -147,8 +147,8 @@ def test_basis_recovery_submits_canary_and_four_held_arms(
     receipt = Path(environment["SUBMISSION_RECEIPT"])
     assert receipt.read_text(encoding="ascii") == result.stdout
     rows = receipt.read_text(encoding="ascii").splitlines()
-    assert len(rows) == 10
-    assert rows[5].split("\t")[:2] == ["basis1r2-canary", "720001"]
+    assert len(rows) == 13
+    assert rows[8].split("\t")[:2] == ["basis1r2-canary", "720001"]
     calls = Path(environment["FAKE_CALLS"]).read_text(encoding="ascii").splitlines()
     assert len(calls) == 5
     assert sum("--dependency=afterok:720001" in call for call in calls) == 4
@@ -172,3 +172,28 @@ def test_basis_recovery_cancels_partial_matrix_on_submission_failure(
         encoding="ascii"
     ).splitlines()
     assert canceled == ["720001", "720002"]
+
+
+def test_basis_recovery_admits_bounded_quotient_objective(
+    tmp_path: Path,
+) -> None:
+    environment = _environment(tmp_path) | {
+        "OBJECTIVE_TAG": "qbrier",
+        "SEMANTIC_ANSWER_WEIGHT": "0.0",
+        "SEMANTIC_BASIS_SCORING": "brier",
+    }
+    result = subprocess.run(
+        ("bash", str(RECOVERY_SCRIPT)),
+        env=environment,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    rows = result.stdout.splitlines()
+    assert rows[2] == "objective_tag\tqbrier"
+    assert rows[3] == "semantic_answer_weight\t0.0"
+    assert rows[4] == "semantic_basis_scoring\tbrier"
+    assert rows[8].split("\t")[:2] == ["qbrier-canary", "720001"]
+    calls = Path(environment["FAKE_CALLS"]).read_text(encoding="ascii").splitlines()
+    assert all("SEMANTIC_ANSWER_WEIGHT=0.0" in call for call in calls)
+    assert all("SEMANTIC_BASIS_SCORING=brier" in call for call in calls)
