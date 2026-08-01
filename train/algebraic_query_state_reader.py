@@ -193,12 +193,12 @@ class AlgebraicQueryStateReader(nn.Module):
         resource_places = terminal_values[
             :,
             _RUNTIME_SLOT_BASE : _RUNTIME_SLOT_BASE + _RESOURCE_PLACE_COUNT,
-            _SMALL_UINT_BASE : _SMALL_UINT_BASE + 16,
+            _SMALL_UINT_BASE + 1 : _SMALL_UINT_BASE + 16,
         ].flatten(1)
         resource_cursor = terminal_values[
             :,
             _CURSOR_SLOT,
-            _SMALL_UINT_BASE : _SMALL_UINT_BASE + 16,
+            _SMALL_UINT_BASE + 1 : _SMALL_UINT_BASE + 16,
         ]
         resource_halt = terminal_values[
             :,

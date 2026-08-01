@@ -208,7 +208,7 @@ def test_semantic_basis_contains_only_query_consumed_coordinates() -> None:
 
     initial_basis, terminal_basis = reader.semantic_basis(initial, terminal)
     assert initial_basis.shape == (1, 24)
-    assert terminal_basis.shape == (1, 289)
+    assert terminal_basis.shape == (1, 284)
     assert initial_basis[0, 1] == 1.0
     assert terminal_basis.sum() > 0.0
 
