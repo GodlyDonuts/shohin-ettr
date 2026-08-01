@@ -313,63 +313,92 @@ def main(argv: Sequence[str] | None = None) -> int:
             specs = cpu_specs.to(device)
             batch.validate(model.config, objective_config)
             optimizer.zero_grad(set_to_none=True)
-            autocast = (
+
+            with (
                 torch.autocast(device_type="cuda", dtype=torch.bfloat16)
                 if is_h100
                 else nullcontext()
-            )
-            with autocast:
+            ):
                 semantic, semantic_parts = _semantic_loss(
                     model,
                     reader,
                     batch,
                     specs,
                 )
+            if not bool(torch.isfinite(semantic)):
+                raise AlgebraicStateSemanticError(
+                    "algebraic state-semantic answer loss is nonfinite"
+                )
+            semantic_value = float(semantic.detach().cpu())
+            semantic_part_values = {
+                name: float(value.detach().cpu())
+                for name, value in semantic_parts.items()
+            }
+            semantic.backward()
+            del semantic, semantic_parts
+
+            with (
+                torch.autocast(device_type="cuda", dtype=torch.bfloat16)
+                if is_h100
+                else nullcontext()
+            ):
                 compiler_aux, compiler_parts = component_loss(
                     model,
                     batch,
                     "compiler",
                 )
+            if not bool(torch.isfinite(compiler_aux)):
+                raise AlgebraicStateSemanticError(
+                    "algebraic state-semantic compiler loss is nonfinite"
+                )
+            compiler_value = float(compiler_aux.detach().cpu())
+            (args.compiler_aux_weight * compiler_aux).backward()
+            del compiler_aux
+
+            with (
+                torch.autocast(device_type="cuda", dtype=torch.bfloat16)
+                if is_h100
+                else nullcontext()
+            ):
                 reactor_aux, reactor_parts = component_loss(
                     model,
                     batch,
                     "reactor",
                     reactor_reduction=args.reactor_reduction,
                 )
-                loss = (
-                    semantic
-                    + args.compiler_aux_weight * compiler_aux
-                    + args.reactor_aux_weight * reactor_aux
-                )
-            if not bool(torch.isfinite(loss)):
+            if not bool(torch.isfinite(reactor_aux)):
                 raise AlgebraicStateSemanticError(
-                    "algebraic state-semantic loss is nonfinite"
+                    "algebraic state-semantic reactor loss is nonfinite"
                 )
-            loss.backward()
+            reactor_value = float(reactor_aux.detach().cpu())
+            (args.reactor_aux_weight * reactor_aux).backward()
+            del reactor_aux
+
             gradient_norm = torch.nn.utils.clip_grad_norm_(
                 trainable,
                 args.gradient_clip,
                 error_if_nonfinite=True,
             )
             optimizer.step()
-            last_loss = float(loss.detach().cpu())
+            last_loss = (
+                semantic_value
+                + args.compiler_aux_weight * compiler_value
+                + args.reactor_aux_weight * reactor_value
+            )
             if update % args.log_every == 0 or update == args.updates:
                 metric = {
-                    "compiler_aux": float(compiler_aux.detach().cpu()),
+                    "compiler_aux": compiler_value,
                     "compiler_parts": compiler_parts,
                     "gradient_norm_pre_clip": float(
                         gradient_norm.detach().float().cpu()
                     ),
                     "loss": last_loss,
                     "position": last_position,
-                    "reactor_aux": float(reactor_aux.detach().cpu()),
+                    "reactor_aux": reactor_value,
                     "reactor_parts": reactor_parts,
                     "schema": "shohin-ettr-algebraic-state-semantic-metric-v1",
-                    "semantic": float(semantic.detach().cpu()),
-                    "semantic_parts": {
-                        name: float(value.detach().cpu())
-                        for name, value in semantic_parts.items()
-                    },
+                    "semantic": semantic_value,
+                    "semantic_parts": semantic_part_values,
                     "update": update,
                 }
                 with (args.output / "train.jsonl").open("ab", buffering=0) as log:
