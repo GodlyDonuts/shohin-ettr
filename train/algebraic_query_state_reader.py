@@ -137,6 +137,87 @@ class AlgebraicQueryStateReader(nn.Module):
         )
         nn.init.normal_(self.query_position_embedding, std=0.02)
 
+    def semantic_basis(
+        self,
+        initial_state: TypedTheoryState,
+        terminal_state: TypedTheoryState,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Return exactly the state coordinates consumed by the query algebra.
+
+        The first tensor contains initial-state coordinates used only by
+        ``slot_changed``.  The second contains every terminal-state coordinate
+        used by an operator or by the answer disposition.  Keeping these
+        factors separate lets COMMAND training omit the oracle-supplied initial
+        state while WORLD training supervises both sides of a state delta.
+        """
+
+        batch = terminal_state.value_probabilities.shape[0]
+        initial_values = initial_state.value_probabilities.float()
+        terminal_values = terminal_state.value_probabilities.float()
+        terminal_relations = terminal_state.relations.float()
+        if (
+            initial_values.shape
+            != (
+                batch,
+                self.config.num_slots,
+                self.config.num_value_codes,
+            )
+            or terminal_values.shape != initial_values.shape
+            or terminal_relations.shape
+            != (
+                batch,
+                self.config.num_relations,
+                self.config.num_slots,
+                self.config.num_slots,
+            )
+        ):
+            raise TheoryReactorError("algebraic semantic-basis geometry differs")
+
+        initial_registers = initial_values[
+            :,
+            _RUNTIME_SLOT_BASE : _RUNTIME_SLOT_BASE + _REGISTER_COUNT,
+            _LOCAL_ID_BASE : _LOCAL_ID_BASE + _SYMBOL_COUNT,
+        ].flatten(1)
+        disposition = _disposition_probabilities(terminal_state).float()
+        horn_relations = terminal_relations[
+            :,
+            _HORN_RELATION_BASE : _HORN_RELATION_BASE + _HORN_PREDICATE_COUNT,
+            _RUNTIME_SLOT_BASE : _RUNTIME_SLOT_BASE + _HORN_OBJECT_COUNT,
+            _RUNTIME_SLOT_BASE : _RUNTIME_SLOT_BASE + _HORN_OBJECT_COUNT,
+        ].flatten(1)
+        terminal_registers = terminal_values[
+            :,
+            _RUNTIME_SLOT_BASE : _RUNTIME_SLOT_BASE + _REGISTER_COUNT,
+            _LOCAL_ID_BASE : _LOCAL_ID_BASE + _SYMBOL_COUNT,
+        ].flatten(1)
+        resource_places = terminal_values[
+            :,
+            _RUNTIME_SLOT_BASE : _RUNTIME_SLOT_BASE + _RESOURCE_PLACE_COUNT,
+            _SMALL_UINT_BASE : _SMALL_UINT_BASE + 16,
+        ].flatten(1)
+        resource_cursor = terminal_values[
+            :,
+            _CURSOR_SLOT,
+            _SMALL_UINT_BASE : _SMALL_UINT_BASE + 16,
+        ]
+        resource_halt = terminal_values[
+            :,
+            _OUTCOME_SLOT,
+            _PROCESS_HALT_CODE,
+        ].unsqueeze(-1)
+        terminal_basis = torch.cat(
+            (
+                disposition,
+                horn_relations,
+                terminal_registers,
+                resource_places,
+                resource_cursor,
+                resource_halt,
+            ),
+            dim=-1,
+        )
+        return initial_registers, terminal_basis
+
     def _encode_query(
         self,
         tokens: torch.Tensor,

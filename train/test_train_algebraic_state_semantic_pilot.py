@@ -3,6 +3,7 @@ from __future__ import annotations
 import torch
 
 from train_algebraic_state_semantic_pilot import (
+    _balanced_probability_loss,
     _semantic_states,
     _set_active_owner,
     _set_training_ownership,
@@ -182,3 +183,10 @@ def test_soft_semantic_bridge_preserves_dense_owner_states(monkeypatch) -> None:
         semantic_state_mode="soft",
     )
     assert command_model.hard_executes == [False]
+
+
+def test_balanced_probability_loss_weights_sparse_classes_equally() -> None:
+    predicted = torch.tensor([[0.8, 0.2, 0.2, 0.2]])
+    target = torch.tensor([[1.0, 0.0, 0.0, 0.0]])
+    loss = _balanced_probability_loss(predicted, target)
+    torch.testing.assert_close(loss, -torch.log(torch.tensor(0.8)))

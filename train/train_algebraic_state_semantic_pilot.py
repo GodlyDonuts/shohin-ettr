@@ -101,6 +101,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         choices=("hard-st", "soft"),
         default="hard-st",
     )
+    parser.add_argument("--semantic-basis-weight", type=float, default=0.0)
     parser.add_argument("--eval-batches", type=int, default=16)
     parser.add_argument("--log-every", type=int, default=10)
     parser.add_argument(
@@ -152,6 +153,8 @@ def _validate_args(args: argparse.Namespace) -> None:
         or not math.isfinite(args.reactor_aux_weight)
         or args.compiler_aux_weight < 0.0
         or args.reactor_aux_weight < 0.0
+        or not math.isfinite(args.semantic_basis_weight)
+        or args.semantic_basis_weight < 0.0
         or args.compiler_aux_weight + args.reactor_aux_weight <= 0.0
         or (
             args.owner_state_bridge == "oracle-factors"
@@ -160,6 +163,14 @@ def _validate_args(args: argparse.Namespace) -> None:
         or (
             args.semantic_state_mode == "soft"
             and args.optimization_mode != "causal-owner-alternating"
+        )
+        or (
+            args.semantic_basis_weight > 0.0
+            and (
+                args.optimization_mode != "causal-owner-alternating"
+                or args.owner_state_bridge != "oracle-factors"
+                or args.semantic_state_mode != "soft"
+            )
         )
         or args.output.exists()
         or args.output.is_symlink()
@@ -234,6 +245,100 @@ def _factor_truth_loss(
     }
 
 
+def _balanced_probability_loss(
+    predicted: torch.Tensor,
+    target: torch.Tensor,
+) -> torch.Tensor:
+    """Balance occupied and unoccupied semantic coordinates exactly."""
+
+    if predicted.shape != target.shape or predicted.ndim != 2:
+        raise AlgebraicStateSemanticError(
+            "algebraic state-semantic basis geometry differs"
+        )
+    predicted = predicted.float()
+    target = target.float()
+    if not bool(
+        ((predicted >= 0.0) & (predicted <= 1.0)).all()
+        and ((target == 0.0) | (target == 1.0)).all()
+    ):
+        raise AlgebraicStateSemanticError(
+            "algebraic state-semantic basis probabilities differ"
+        )
+    positive = target.bool()
+    negative = ~positive
+    if not bool(positive.any()) or not bool(negative.any()):
+        raise AlgebraicStateSemanticError(
+            "algebraic state-semantic basis classes are empty"
+        )
+    epsilon = torch.finfo(predicted.dtype).eps
+    positive_loss = -predicted[positive].clamp_min(epsilon).log().mean()
+    negative_loss = -(1.0 - predicted[negative]).clamp_min(epsilon).log().mean()
+    return 0.5 * (positive_loss + negative_loss)
+
+
+def _oracle_semantic_states(model, batch, *, dtype: torch.dtype):
+    with torch.no_grad():
+        initial_state = packet_targets_to_state(
+            batch.packet_targets,
+            model.config,
+            step=0,
+            dtype=dtype,
+        )
+        terminal_state = initial_state
+        for step in range(batch.transaction_targets.opcode.shape[1]):
+            terminal_state = model.reactor.apply(
+                terminal_state,
+                target_policy(
+                    batch.transaction_targets,
+                    model.config,
+                    step,
+                    dtype=dtype,
+                ),
+                hard=True,
+                validate=False,
+            )
+    return initial_state, terminal_state
+
+
+def _semantic_basis_loss(
+    model,
+    reader,
+    batch,
+    initial_state,
+    terminal_state,
+    *,
+    factor: str,
+) -> torch.Tensor:
+    oracle_initial, oracle_terminal = _oracle_semantic_states(
+        model,
+        batch,
+        dtype=terminal_state.active.dtype,
+    )
+    predicted_initial, predicted_terminal = reader.semantic_basis(
+        initial_state,
+        terminal_state,
+    )
+    target_initial, target_terminal = reader.semantic_basis(
+        oracle_initial,
+        oracle_terminal,
+    )
+    terminal_loss = _balanced_probability_loss(
+        predicted_terminal,
+        target_terminal,
+    )
+    if factor == "command":
+        return terminal_loss
+    if factor != "world":
+        raise AlgebraicStateSemanticError(
+            "algebraic state-semantic basis factor differs"
+        )
+    initial_loss = _balanced_probability_loss(
+        predicted_initial,
+        target_initial,
+    )
+    return 0.5 * (initial_loss + terminal_loss)
+
+
 def _semantic_loss(
     model,
     reader,
@@ -244,6 +349,7 @@ def _semantic_loss(
     oracle_program: bool = False,
     owner_state_bridge: str = "autonomous",
     semantic_state_mode: str = "hard-st",
+    semantic_basis_weight: float = 0.0,
 ):
     initial_state, terminal_state = _semantic_states(
         model,
@@ -262,7 +368,23 @@ def _semantic_loss(
     )
     if factor is None:
         return _truth_loss(output.vocab_logits, batch)
-    return _factor_truth_loss(output.vocab_logits, batch, factor=factor)
+    loss, parts = _factor_truth_loss(
+        output.vocab_logits,
+        batch,
+        factor=factor,
+    )
+    if semantic_basis_weight > 0.0:
+        basis = _semantic_basis_loss(
+            model,
+            reader,
+            batch,
+            initial_state,
+            terminal_state,
+            factor=factor,
+        )
+        loss = loss + semantic_basis_weight * basis
+        parts["semantic_basis"] = basis
+    return loss, parts
 
 
 def _semantic_states(
@@ -441,6 +563,7 @@ def _causal_owner_update(
             oracle_program=args.semantic_program_source == "oracle",
             owner_state_bridge=args.owner_state_bridge,
             semantic_state_mode=args.semantic_state_mode,
+            semantic_basis_weight=args.semantic_basis_weight,
         )
     _require_finite(world_semantic, "WORLD answer")
     world_value = float(world_semantic.detach().cpu())
@@ -475,6 +598,7 @@ def _causal_owner_update(
             oracle_program=args.semantic_program_source == "oracle",
             owner_state_bridge=args.owner_state_bridge,
             semantic_state_mode=args.semantic_state_mode,
+            semantic_basis_weight=args.semantic_basis_weight,
         )
     _require_finite(command_semantic, "COMMAND answer")
     command_value = float(command_semantic.detach().cpu())
@@ -640,6 +764,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "runtime_precision": str(next(model.parameters()).dtype),
             "schema": CONTRACT_SCHEMA,
             "semantic_program_source": args.semantic_program_source,
+            "semantic_basis_weight": args.semantic_basis_weight,
             "semantic_state_mode": args.semantic_state_mode,
             "source_commit": args.source_commit,
             "start_position": args.start_position,

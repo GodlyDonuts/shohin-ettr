@@ -184,3 +184,34 @@ def test_algebraic_truth_supplies_state_gradients() -> None:
     gradient = terminal.value_probabilities.grad
     assert gradient is not None
     assert float(gradient[0, 32, 34].abs()) > 0.0
+
+
+def test_semantic_basis_contains_only_query_consumed_coordinates() -> None:
+    config = _config()
+    reader = AlgebraicQueryStateReader(
+        config,
+        source_vocab_size=32,
+        target_vocab_size=41,
+        answer_token_ids=(3, 5, 7, 11),
+        width=64,
+        query_layers=1,
+        num_heads=4,
+        max_query_tokens=6,
+    ).eval()
+    initial = _state(config)
+    terminal = _state(config)
+    _write_value(initial, 32, 34)
+    _write_value(terminal, 32, 35)
+    _write_value(terminal, 54, 69)
+    _write_value(terminal, 55, 148)
+    terminal.relations[:, 11, 32, 35] = 1.0
+
+    initial_basis, terminal_basis = reader.semantic_basis(initial, terminal)
+    assert initial_basis.shape == (1, 24)
+    assert terminal_basis.shape == (1, 289)
+    assert initial_basis[0, 1] == 1.0
+    assert terminal_basis.sum() > 0.0
+
+    terminal.value_probabilities[:, 0, 200] = 1.0
+    unchanged = reader.semantic_basis(initial, terminal)[1]
+    torch.testing.assert_close(terminal_basis, unchanged)
