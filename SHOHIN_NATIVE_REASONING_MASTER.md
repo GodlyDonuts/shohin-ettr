@@ -53034,3 +53034,35 @@ inadmissible.
 
 Current decision:
 `constant_state_fixed_point_confirmed_intervention_balanced_tail_risk_under_test`.
+
+## 2026-08-01 Reader Identifiability Breakthrough
+
+The native-reader campaign has now ruled out four superficial explanations
+under matched source-deleted causal gates. A linear truth motor, a 2,048-wide
+nonlinear motor, full reader retraining, gradient accumulation, and a
+fixed-seed late-residual motor all improve or preserve factual prediction while
+leaving strict WORLD and COMMAND causal orientation at zero. This pattern is
+not explained by insufficient decoder capacity or an undertrained Shohin
+backbone: the exact 2T-token SmolLM2-135M control exhibits the same failure.
+
+The first structural explanation is now proven. The source-deleted reader was
+permutation invariant over state slots because it had no slot-address
+embedding, while the task language contains absolute-address and order-
+sensitive predicates. Therefore distinct states requiring opposite answers
+could be observationally identical to the reader. A full audit of all 60
+frozen shards finds `51,841 / 112,500 = 46.0809%` query instances in this
+unrepresentable class. This converts the prior zero-gate campaign from a vague
+optimization failure into a concrete missing-variable diagnosis.
+
+Commit `45d04124c0643814715cbd459e8759391728d32c` introduces an optional
+learned absolute slot-address embedding while preserving legacy checkpoints
+and defaults. Tests establish exact invariance in the old reader and symmetry
+breaking in the repaired reader. The first bounded repaired pilot is job
+`724944`: full reader plus linear truth motor, 500 optimizer updates, four
+causal batches per update, and unchanged held-out source-deleted WORLD and
+COMMAND gates. This is still a falsification experiment, not a reasoning
+claim. It is promoted only if both causal factors acquire correct orientation,
+paired ordering, and positive margins.
+
+Current decision:
+`repair_missing_state_coordinates_then_demand_joint_world_and_command_causality_before_scaling`.

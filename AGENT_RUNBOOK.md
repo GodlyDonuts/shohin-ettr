@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-01 04:07 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-01 06:13 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -21889,9 +21889,82 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   Late-geometry preflight `724934` failed closed on `evc43` with the same
   node-local CUDA visibility defect as `evc33`; canceled unseeded attempt
   `724935` was intentionally stopped after `2:44` when the seed omission was
-  identified. Fixed-seed job `724938` uses model seed `2026080101`, 500
+  identified. Fixed-seed job `724939` uses model seed `2026080101`, 250
   updates, frozen warm reader, linear motor, the exact same source position
-  `11,000`, and unchanged 32-batch gate. It is pending the next healthy H100.
+  `11,000`, and unchanged 32-batch gate.
 
   Decision:
   `close_stage_residual_capacity_and_optimization_scaling_then_test_whether_full_backbone_query_interpretation_is_the_missing_causal_interface`.
+
+- **2026-08-01 05:31--06:13 EDT** -- **The late-residual motor closes
+  negative, and a full-corpus identifiability audit finds the first structural
+  explanation for the repeated causal failures: the reader was not given slot
+  addresses. The repaired reader is now under a strict H100 gate.**
+
+  Fixed-seed late-residual job `724939` completed cleanly in `5:25` on
+  `evc47`. Output is
+  `train/ettr_smollm2_native_truth_late_seed2026080101_u250_57e2713_d3`;
+  report SHA-256 is
+  `357c9f7917ce835eaaab6c8bbd9583014a56cc73caed3651119e196462ff8b43`;
+  final native-reader SHA-256 is
+  `4803ad18d5fd6261557f666a4533999d6b03693f25ba6b415a2c5971cc653520`.
+  Factual top-1 remains `64.0625%`, WORLD and COMMAND remain exactly
+  `50%/50%`, every joint/paired/positive-margin gate remains zero, and mean
+  difference-in-differences moves negative for WORLD
+  (`-0.001147 -> -0.002437`) and COMMAND
+  (`-0.000877 -> -0.001794`). Late pretrained query interpretation is not a
+  sufficient repair.
+
+  Code inspection then exposed a missing-variable defect in the hypothesis
+  class. `SourceDeletedQueryReader` embedded state value, type, active/root,
+  relation, and status, but never embedded the absolute state-slot address.
+  Cross-attention over those state vectors is therefore exactly invariant to
+  any consistent permutation of exchangeable slots. The ETTR query language
+  nevertheless asks address- and order-sensitive questions including
+  `slot_is`, `slot_changed`, `adjacent_is`, `pattern_exists`,
+  `same_type_slots_equal`, and `resource_place_ge`. Swapping two otherwise
+  exchangeable runtime slots can change the required answer while leaving the
+  old reader output mathematically unchanged. Those targets were outside the
+  old reader's representable function class; capacity, optimizer, backbone,
+  and residual-location sweeps could not fix that omission.
+
+  Full CPU audit job `724943` scanned all 60 frozen shards and all `112,500`
+  query instances. It finds `51,841 / 112,500 = 46.0809%` address-sensitive
+  instances that the old reader cannot represent and `60,659 = 53.9191%`
+  potentially representable instances. Exact operator counts are
+  `adjacent_is=9,380`, `horn_count_ge=17,954`, `horn_has=19,546`,
+  `pattern_exists=5,790`, `resource_cursor_ge=12,509`,
+  `resource_halt=5,096`, `resource_place_ge=19,893`,
+  `same_type_slots_equal=5,896`, `slot_changed=5,137`, `slot_is=5,745`, and
+  `type_count_ge=5,554`. Report is
+  `scratchpad/reader-identifiability-full-45d0412.json`, file SHA-256
+  `79fc392ff9c00a614e98244ef718c18fd795a815b155020bd92be2933f27cf35`,
+  with internal audit digest
+  `e339c7426088f4db9cdde34fc31da84ce3ac3d95260ef23d497f9e599d5b2d24`.
+
+  Private commit `45d04124c0643814715cbd459e8759391728d32c` adds an optional learned
+  absolute slot-address embedding to `SourceDeletedQueryReader`, a strict
+  compatibility upgrade path for old reader checkpoints, a bound
+  `--reader-slot-addresses` training flag, and the corpus audit. The legacy
+  default remains unchanged. Tests prove exact old-reader permutation
+  invariance, symmetry breaking under the addressed reader, and compatible
+  old-checkpoint loading. Focused tests pass `14/14`; the broader ETTR suite
+  passes `55/55`; Ruff, byte compilation, Bash syntax, and diff checks are
+  clean. Immutable runtime
+  `scratchpad/shohin_ettr_native_disposition_runtime_45d0412_r1` contains
+  `2,649` measured files and has SHA256SUMS SHA-256
+  `d83d3b0bf952e039d862c850eefb314166e4afe7b8db0643a1ae4b01f05b1851`.
+
+  Addressed-reader job `724944` started on `evc41` at `06:12 EDT`. It trains
+  the full reader plus linear truth motor for 500 optimizer updates with four
+  causal batches per update, learning rate `5e-5`, model/data seed
+  `2026080103`, late motor geometry, and the unchanged 32-batch held-out
+  source-deleted evaluator. Parent, release, and warm-reader hashes verified
+  before model loading. Output is isolated at
+  `train/ettr_smollm2_native_reader_addressed_acc4_u500_45d0412_e1`.
+  Promotion requires simultaneous nonzero WORLD and COMMAND joint/paired
+  orientation and positive margins. Loss or factual top-1 alone remains
+  inadmissible.
+
+  Decision:
+  `reader_address_identifiability_defect_confirmed_run_the_minimal_repaired_causal_gate_before_any_further_capacity_or_architecture_scaling`.
