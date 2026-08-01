@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-01 06:13 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-01 06:49 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -21968,3 +21968,60 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reader_address_identifiability_defect_confirmed_run_the_minimal_repaired_causal_gate_before_any_further_capacity_or_architecture_scaling`.
+
+- **2026-08-01 06:13--06:49 EDT** -- **Slot addresses restore theoretical
+  identifiability but do not force state consumption. A second temporal
+  omission and a BF16 residual-bypass failure are now isolated, repaired, and
+  assigned matched H100 arms.**
+
+  Address-only job `724944` completed cleanly in `26:15` on `evc41`. Output
+  `train/ettr_smollm2_native_reader_addressed_acc4_u500_45d0412_e1` verifies
+  all hashes. Report SHA-256 is
+  `a117d5aa76bd0dcb408894c5e14d3e810875070cecfa1c33f0f0c527f62e8108`;
+  final reader SHA-256 is
+  `5f5b793ac7abb22108cddedb5d5cdc6d81caf560acfde74e3e8d429a9d05d55f`.
+  Factual top-1 rises `37.5% -> 62.5%`, but WORLD and COMMAND remain exactly
+  `50%/50%`; joint top-1, paired-order, and every positive-margin gate remain
+  zero. Mean DID moves negative for WORLD
+  (`+0.000017 -> -0.000275`) and COMMAND
+  (`-0.000365 -> -0.000732`). Addresses are necessary but not sufficient.
+
+  A second semantics audit proves that `slot_changed` compares initial and
+  terminal register values, but the reader was given only terminal state.
+  This affects `5,137 / 112,500 = 4.5662%` of all admitted queries. With slot
+  addresses, a terminal-only reader is theoretically sufficient for
+  `107,363 / 112,500 = 95.4338%`; an addressed initial-plus-terminal reader is
+  sufficient for all currently admitted query operators. Updated full audit
+  is `scratchpad/reader-identifiability-full-f174a58.json`, file SHA-256
+  `b56edbc683b4df087116be35fda524af68dea4efaa6f0ea574718fe0adb2ec60`.
+  Its corpus digest remains
+  `e339c7426088f4db9cdde34fc31da84ce3ac3d95260ef23d497f9e599d5b2d24`.
+
+  Commits `b9b1061` and `f174a58` add optional addressed two-snapshot reader
+  memory with learned initial/terminal phase embeddings. The initial snapshot
+  is explicitly readable even before commit, and upgrade-only phase
+  initialization uses an isolated RNG so every common parameter is exactly
+  matched to the address-only arm. The expanded suite passes `122/122`.
+  Immutable runtime
+  `scratchpad/shohin_ettr_native_disposition_runtime_f174a58_r1` has `3,375`
+  measured files and SHA256SUMS SHA-256
+  `3a6e9ac928012194fa23ccebedd60886b8d3605c8449e391ebb6ebacd34cd1e2`.
+  Temporal matched arm `724947` is running on `evc41`.
+
+  Parameter-delta forensics on `724944` found that the scalar state-injection
+  gate remained bit-for-bit fixed at BF16 value `0.10400390625` after 500
+  updates. The architecture then added a roughly 0.1-scaled learned state read
+  to an unscaled pretrained query residual, leaving a direct query-prior
+  bypass. Commit `3f9add1` adds independently bound controls for FP32 trainable
+  reader parameters, unattenuated reader output, and a state-only truth motor
+  that cannot consume the pretrained residual directly. The suite passes
+  `125/125`. Clean immutable runtime
+  `scratchpad/shohin_ettr_native_disposition_runtime_3f9add1_r3` has `3,375`
+  measured files and SHA256SUMS SHA-256
+  `df2959f23c6c5f3b9909139c2fef3c34c8d6de071cbb26b6a7c690759ab4feaa`.
+  Matched forced-consumption terminal and temporal arms are jobs `724948` and
+  `724949`; both are pending the next H100. They retain the exact parent,
+  release, seed, 500-update/four-microbatch budget, and held-out evaluator.
+
+  Decision:
+  `reject_address_only_generic_residual_injection_then_test_fp32_direct_state_only_consumption_with_and_without_temporal_memory`.

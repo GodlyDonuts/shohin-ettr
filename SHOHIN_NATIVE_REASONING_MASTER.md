@@ -53066,3 +53066,33 @@ paired ordering, and positive margins.
 
 Current decision:
 `repair_missing_state_coordinates_then_demand_joint_world_and_command_causality_before_scaling`.
+
+## 2026-08-01 From Identifiability To Forced State Consumption
+
+The address-only arm falsified the idea that adding coordinates alone would
+make the generic residual reader causal. It improved held-out factual top-1
+from `37.5%` to `62.5%`, but WORLD and COMMAND remained exact `50/50` with
+zero joint, paired, or positive-margin success. This separates two questions:
+the target must be representable, and the architecture must be forced to use
+the variables that represent it.
+
+The representability audit is now complete for the current query language.
+Addresses repair 46.08% of the corpus, while `slot_changed` exposes a distinct
+4.57% temporal requirement because it compares initial and terminal values.
+The reader now has an optional two-snapshot addressed memory with learned
+initial/terminal phase identity. It uses only architecture-produced state at
+autonomous inference; assessor packets remain a training diagnostic boundary.
+
+Parameter forensics then found a concrete consumption failure. The old native
+reader trained all parameters in BF16 at learning rate `5e-5`; its scalar
+state-injection gate stayed exactly `0.10400390625`. The state read therefore
+remained attenuated while the pretrained query residual entered the truth
+motor at full strength. The next architecture gate keeps trainable reader
+parameters in FP32, removes that attenuation, and makes the truth motor consume
+the reader output alone. Matched terminal and temporal arms (`724948/724949`)
+test whether this forced causal channel yields simultaneous WORLD and COMMAND
+orientation. These changes remain flags; legacy behavior and all protected
+lineages are unchanged.
+
+Current decision:
+`representability_is_repaired_force_the_answer_motor_through_state_before_any_more_capacity_scaling`.
