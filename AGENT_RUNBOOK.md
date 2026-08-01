@@ -22475,3 +22475,55 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `continue_all_four_soft_80k_arms_and_require_the_corrected_basis_canary_before_releasing_its_four_80k_arms`.
+
+- **2026-08-01 15:52--16:08 EDT** -- **The corrected log-basis gate is
+  operational on H100 and all eight original claim arms are training; a third,
+  bounded state-quotient objective is now admitted to test the observed
+  gradient pathology rather than merely clipping it.**
+
+  Corrected H100 canary `725220` completed. At updates 10/20, WORLD semantic
+  basis loss moved `0.7986 -> 0.0712` and COMMAND basis loss moved
+  `0.7444 -> 0.4935`; final compiler/reactor pre-clip norms were
+  `1.914/2.641`. The unchanged hard gate remains negative at 320 rows: WORLD
+  strict/paired is zero, COMMAND strict pairing is zero, and fully autonomous
+  factual top-1 moves `47.85% -> 46.88%`. Report SHA-256 is
+  `cc589ed95edaf13248fcd87170ce13c5d35adf69f53f0883479778fa61d20f3a`.
+  Independent FP32 V100 control `725226` also crossed 20 updates and completed;
+  report SHA-256 is
+  `e58534f417f5822468ed33169858cd11a3f719be2eaab7276f86b83eac4d1aae`.
+  It likewise gives no hard WORLD/COMMAND promotion. The recovery dependency
+  released correctly and all four log-basis 80,000-row arms
+  `725221--725224` are running alongside all four soft arms `725203--725206`.
+
+  The growing soft-control logs expose a second optimization defect that the
+  20-update canary could not reveal. Some COMMAND batches reach factual loss
+  near `13.84` and reactor pre-clip norms in the millions (observed maxima above
+  `5.8M/6.0M` in the two `3e-5` seeds and above `2.4M` in one `1e-5` seed).
+  The sealed `1.0` clip prevents unbounded updates, but these sparse answer
+  gradients can still dominate direction. The state basis is query-sufficient
+  by construction, so end-answer supervision is redundant in an owner-isolated
+  state-equivalence curriculum.
+
+  Commit `2d8c91d` adds a preregistered bounded quotient arm. It sets
+  end-answer weight to zero, keeps direct supervision over exactly the
+  query-consumed initial/terminal semantic coordinates, and uses a
+  class-balanced Brier proper-scoring loss. Its probability gradient is
+  bounded, unlike log loss at near-zero target probability. Component
+  auxiliaries, causal ownership, oracle factor bridges, source position,
+  seeds, row budget, and hard evaluator stay matched. Fifteen focused tests
+  pass, including the bounded-gradient and failure-atomic dispatcher gates;
+  Ruff, byte compilation, Bash syntax, and diff checks are clean.
+
+  The quotient runtime has exact source
+  `2d8c91da28ee28cc07dd822fc74bdb6f8d2af021`, SHA256SUMS SHA-256
+  `fdedbe6a468a8a47bfbfa87ddb3dede3f9366e15c1e026eed54f93c18a8609fd`,
+  archive SHA-256
+  `924aef7ae11cf3d6e62f2c95d57e844908003dbbbfbc384cab8c8a83989efb1b`,
+  and 3,392 admitted files. CPU job `725229` performed the atomic admission.
+  Receipt `scratchpad/ettr-state-qbrier-20260801T1605.tsv` records H100 canary
+  `725230` and four held arms `725231--725234`. Independent FP32 V100 numerical
+  control `725235` is running; it cannot release or promote the H100 matrix.
+  No result is promoted as native reasoning.
+
+  Decision:
+  `compare_soft_answer_log_basis_answer_and_bounded_basis_only_state_quotient_at_equal_80k_row_budgets_then_require_reproducible_hard_world_and_command_pairs`.
