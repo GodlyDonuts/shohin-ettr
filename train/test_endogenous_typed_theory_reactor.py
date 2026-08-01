@@ -170,6 +170,19 @@ def test_parameter_receipt_counts_unique_complete_system() -> None:
     assert receipt.complete_system_parameters < receipt.parameter_cap
 
 
+def test_parameter_receipt_can_record_an_explicit_over_cap_control() -> None:
+    model = _model()
+    model.config = replace(model.config, parameter_cap=1)
+    with pytest.raises(TheoryReactorError, match="exceeds parameter cap"):
+        model.parameter_receipt()
+    receipt = model.parameter_receipt(enforce_cap=False)
+    assert receipt.parameter_cap == 1
+    assert receipt.remaining_under_cap < 0
+    assert receipt.complete_system_parameters == (
+        receipt.base_parameters + receipt.architecture_parameters
+    )
+
+
 def test_base_can_be_frozen_without_freezing_architecture() -> None:
     model = _model()
     model.freeze_base()

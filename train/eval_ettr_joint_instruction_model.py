@@ -600,7 +600,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         "checkpoint_sha256",
         None,
     )
-    parameter_receipt = asdict(raw_model.parameter_receipt())
+    parameter_receipt = asdict(
+        raw_model.parameter_receipt(enforce_cap=not external_mode)
+    )
     parent_parameter_receipt = parent_contract.get(
         "parameter_receipt"
     )

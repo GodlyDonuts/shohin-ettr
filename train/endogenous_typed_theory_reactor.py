@@ -1201,7 +1201,13 @@ class EndogenousTypedTheoryReactorGPT(nn.Module):
         for parameter in self.base.parameters():
             parameter.requires_grad_(False)
 
-    def parameter_receipt(self) -> ReactorParameterReceipt:
+    def parameter_receipt(
+        self,
+        *,
+        enforce_cap: bool = True,
+    ) -> ReactorParameterReceipt:
+        if not isinstance(enforce_cap, bool):
+            raise TheoryReactorError("parameter cap enforcement flag differs")
         base_ids = {id(parameter) for parameter in self.base.parameters()}
         base_parameters = sum(parameter.numel() for parameter in self.base.parameters())
         architecture_parameters = sum(
@@ -1210,7 +1216,7 @@ class EndogenousTypedTheoryReactorGPT(nn.Module):
             if id(parameter) not in base_ids
         )
         complete = base_parameters + architecture_parameters
-        if complete > self.config.parameter_cap:
+        if enforce_cap and complete > self.config.parameter_cap:
             raise TheoryReactorError("complete system exceeds parameter cap")
         return ReactorParameterReceipt(
             base_parameters=base_parameters,
