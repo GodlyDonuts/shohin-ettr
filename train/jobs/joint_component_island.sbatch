@@ -32,6 +32,7 @@ LEARNING_RATE=${LEARNING_RATE:-1e-4}
 GRADIENT_CLIP=${GRADIENT_CLIP:-1.0}
 EVAL_BATCHES=${EVAL_BATCHES:-32}
 REACTOR_REDUCTION=${REACTOR_REDUCTION:-decision-mean}
+READER_REDUCTION=${READER_REDUCTION:-mixed-mean}
 READER_INJECTION=${READER_INJECTION:-stage}
 READER_STATE_SOURCE=${READER_STATE_SOURCE:-oracle}
 INITIAL_COMPONENT=${INITIAL_COMPONENT:-}
@@ -106,6 +107,7 @@ fi
   --gradient-clip "$GRADIENT_CLIP" \
   --eval-batches "$EVAL_BATCHES" \
   --reader-injection "$READER_INJECTION" \
+  --reader-reduction "$READER_REDUCTION" \
   --reader-state-source "$READER_STATE_SOURCE" \
   --reactor-reduction "$REACTOR_REDUCTION" \
   "${initial_component_args[@]}"
