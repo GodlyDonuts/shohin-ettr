@@ -22357,12 +22357,19 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   The frozen launch order is: (A) admit runtime `89b41c6`, then run soft-only
   H100 20-update and matched 100-update `3e-5`/`1e-5` arms plus a 20-update
-  FP32 V100 direction control; (B) inspect unchanged hard held-out WORLD and
-  COMMAND gates; (C) only if soft-only fails to establish coherent WORLD
-  direction, run an equal-seed/equal-budget `3e0aecc` arm with semantic-basis
-  weight `1.0`; (D) scale to at least 1,000 updates only when hard held-out
-  WORLD direction is positive and independently reproducible. Training loss,
-  soft-state accuracy, or oracle-factor accuracy cannot authorize promotion.
+  FP32 V100 numerical control; (B) admit runtime `3e0aecc` and run a matched
+  20-update basis-weight-`1.0` numerical control; (C) after both canaries pass,
+  launch the full two-seed factorial over objective `{soft-only,
+  soft+basis-1.0}` and learning rate `{3e-5,1e-5}` for 5,000 updates and
+  80,000 rows per arm. Seeds `2026080111/2026080112`, source position 13,200,
+  32 held-out evaluation batches, component auxiliaries, gradient clip, and
+  hard evaluator are matched. This eight-H100 matrix is the claim-bearing
+  state-learning gate. A 20/100-update movement is only a numerical/directional
+  observation: at 16 rows per update those runs see 320/1,600 examples, while
+  the successful component curriculum used 5,000 updates and 80,000 rows.
+  Training loss, soft-state accuracy, or oracle-factor accuracy cannot
+  authorize promotion; the decision uses independently reproducible hard
+  held-out WORLD and COMMAND direction and strict causal pairs.
 
   Direct DNS and Stokes-jump attempts fail before authentication. Cisco Secure
   Client itself reports `Disconnected`, and its GUI owns the connection
@@ -22370,4 +22377,4 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   protected lineage was modified.
 
   Decision:
-  `run_soft_state_owner_controls_first_then_test_query_sufficient_basis_at_equal_budget_and_scale_only_reproducible_hard_world_generalization`.
+  `canary_both_soft_objectives_then_run_the_matched_80k_row_two_seed_state_learning_factorial_and_require_reproducible_hard_world_generalization`.
