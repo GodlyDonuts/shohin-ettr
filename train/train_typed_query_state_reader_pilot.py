@@ -99,6 +99,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         choices=("learned", "algebraic"),
         default="learned",
     )
+    parser.add_argument(
+        "--required-device-class",
+        choices=("h100", "cuda"),
+        default="h100",
+    )
     return parser.parse_args(argv)
 
 
@@ -401,7 +406,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         raise TypedQueryPilotError("typed query pilot requires CUDA")
     torch.cuda.set_device(0)
     device = torch.device("cuda", 0)
-    if "H100" not in torch.cuda.get_device_name(device).upper():
+    if (
+        args.required_device_class == "h100"
+        and "H100" not in torch.cuda.get_device_name(device).upper()
+    ):
         raise TypedQueryPilotError("typed query pilot requires an H100")
 
     parent_contract = _read_hash_bound_json(
@@ -515,6 +523,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "query_operations": list(QUERY_OPERATIONS),
             "reader_parameters": reader_parameters,
             "executor_mode": args.executor_mode,
+            "required_device_class": args.required_device_class,
             "release_file_sha256": args.release_sha256,
             "replacement_system_parameters": replacement_system_parameters,
             "schema": CONTRACT_SCHEMA,

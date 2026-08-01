@@ -37,6 +37,7 @@ STATE_LAYERS=${STATE_LAYERS:-2}
 NUM_HEADS=${NUM_HEADS:-8}
 TEACHER_DECAY_UPDATES=${TEACHER_DECAY_UPDATES:-2000}
 EXECUTOR_MODE=${EXECUTOR_MODE:-learned}
+REQUIRED_DEVICE_CLASS=${REQUIRED_DEVICE_CLASS:-h100}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
 for path in "$CODE_ROOT" "$RELEASE_ROOT" "$ETTR_DATA_ROOT" \
@@ -95,7 +96,8 @@ parent_model_sha=$(sha256sum \
   --state-layers "$STATE_LAYERS" \
   --num-heads "$NUM_HEADS" \
   --teacher-decay-updates "$TEACHER_DECAY_UPDATES" \
-  --executor-mode "$EXECUTOR_MODE"
+  --executor-mode "$EXECUTOR_MODE" \
+  --required-device-class "$REQUIRED_DEVICE_CLASS"
 
 (
   cd "$OUTPUT"
