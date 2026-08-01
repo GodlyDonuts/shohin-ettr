@@ -992,7 +992,14 @@ class SourceDeletedQueryReader(nn.Module):
         if self.slot_embedding is not None:
             nn.init.normal_(self.slot_embedding, std=0.02)
         if self.state_phase_embedding is not None:
-            nn.init.normal_(self.state_phase_embedding, std=0.02)
+            # Keep upgrade-only initialization from perturbing the global RNG,
+            # so matched addressed/temporal arms share every common parameter.
+            phase_generator = torch.Generator().manual_seed(0x45545452)
+            nn.init.normal_(
+                self.state_phase_embedding,
+                std=0.02,
+                generator=phase_generator,
+            )
 
     def _state_memory(
         self,

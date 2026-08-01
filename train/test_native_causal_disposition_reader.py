@@ -230,6 +230,33 @@ def test_native_reader_upgrades_to_two_snapshot_state_memory() -> None:
     )
 
 
+def test_temporal_upgrade_preserves_every_common_initial_parameter() -> None:
+    addressed_config = replace(_config(), reader_slot_addresses=True)
+    temporal_config = replace(
+        addressed_config,
+        reader_initial_state=True,
+    )
+    torch.manual_seed(19)
+    addressed = NativeCausalDispositionReader(
+        addressed_config,
+        vocab_size=32,
+        answer_token_ids=(4, 7, 11, 19),
+    )
+    torch.manual_seed(19)
+    temporal = NativeCausalDispositionReader(
+        temporal_config,
+        vocab_size=32,
+        answer_token_ids=(4, 7, 11, 19),
+    )
+    addressed_state = addressed.state_dict()
+    temporal_state = temporal.state_dict()
+    assert set(temporal_state) - set(addressed_state) == {
+        "reader.state_phase_embedding"
+    }
+    for name, value in addressed_state.items():
+        torch.testing.assert_close(value, temporal_state[name])
+
+
 def test_motor_hidden_geometry_is_explicit() -> None:
     reader = NativeCausalDispositionReader(
         _config(),
