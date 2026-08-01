@@ -112,6 +112,34 @@ def _load_model_state(
         raise ETTRTriEvaluationError(f"{label} strict load differs")
 
 
+def _validate_external_parent_base(
+    model: torch.nn.Module,
+    payload: Mapping[str, object],
+) -> None:
+    expected = payload.get("model")
+    if not isinstance(expected, Mapping):
+        raise ETTRTriEvaluationError("external parent model differs")
+    observed = model.state_dict()
+    base_names = {
+        name for name in observed if name.startswith("base.")
+    }
+    if (
+        not base_names
+        or not base_names.issubset(expected)
+        or any(
+            not isinstance(expected[name], torch.Tensor)
+            or not torch.equal(
+                observed[name].detach().cpu(),
+                expected[name].detach().cpu(),
+            )
+            for name in base_names
+        )
+    ):
+        raise ETTRTriEvaluationError(
+            "external parent base weights differ"
+        )
+
+
 def _validate_run_lineage(
     parent_contract: Mapping[str, object],
     run_contract: Mapping[str, object],
@@ -638,6 +666,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     ):
         raise ETTRTriEvaluationError(
             "tri-stream protected model receipt differs"
+        )
+    if external_mode:
+        _validate_external_parent_base(raw_model, parent_payload)
+        _load_model_state(
+            raw_model,
+            parent_payload,
+            label="external raw parent",
         )
     _load_model_state(parent_model, parent_payload, label="parent model")
     _load_model_state(

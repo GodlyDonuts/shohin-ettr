@@ -12,9 +12,35 @@ from eval_ettr_joint_instruction_model import (
     MODEL_SCHEMA,
     RUN_SCHEMA,
     _load_initialization_contract,
+    _validate_external_parent_base,
     _validate_model_lineage,
     _validate_run_lineage,
 )
+
+
+class _ExternalControl(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.base = torch.nn.Linear(2, 2, bias=False)
+        self.compiler = torch.nn.Linear(2, 2, bias=False)
+
+
+def test_external_parent_base_validation_ignores_only_ettr_state() -> None:
+    model = _ExternalControl()
+    payload = {
+        "model": {
+            name: tensor.detach().clone()
+            for name, tensor in model.state_dict().items()
+        }
+    }
+    payload["model"]["compiler.weight"].add_(1.0)
+    _validate_external_parent_base(model, payload)
+    payload["model"]["base.weight"].add_(1.0)
+    with pytest.raises(
+        ETTRTriEvaluationError,
+        match="external parent base weights differ",
+    ):
+        _validate_external_parent_base(model, payload)
 
 
 def _parent_contract() -> dict[str, object]:
