@@ -64,8 +64,19 @@ from train_typed_query_state_reader_pilot import (
 
 CONTRACT_SCHEMA = "shohin-ettr-algebraic-joint-state-eval-contract-v1"
 REPORT_SCHEMA = "shohin-ettr-algebraic-joint-state-eval-report-v1"
+STATE_CONTRACT_SCHEMA = "shohin-ettr-algebraic-state-semantic-contract-v1"
+STATE_REPORT_SCHEMA = "shohin-ettr-algebraic-state-semantic-report-v1"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
+_STATE_RUN_FILES = (
+    "compiler-final.safetensors",
+    "compiler-initial.safetensors",
+    "pilot-contract.json",
+    "reactor-final.safetensors",
+    "reactor-initial.safetensors",
+    "report.json",
+    "train.jsonl",
+)
 _ARMS = (
     "autonomous_program_autonomous_state",
     "oracle_program_autonomous_state",
@@ -93,6 +104,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--compiler-sha256", required=True)
     parser.add_argument("--compiler-contract", type=Path, required=True)
     parser.add_argument("--compiler-contract-sha256", required=True)
+    parser.add_argument("--state-run-dir", type=Path)
+    parser.add_argument("--state-run-sha256s-sha256")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--data-seed", type=int, required=True)
@@ -124,12 +137,23 @@ def _validate_args(args: argparse.Namespace) -> None:
         args.compiler_sha256,
         args.compiler_contract_sha256,
     )
+    state_run_supplied = args.state_run_dir is not None
     if (
         any(not path.is_absolute() for path in paths)
         or any(_HEX64.fullmatch(value) is None for value in hashes)
         or _HEX40.fullmatch(args.source_commit) is None
         or not 0 <= args.data_seed < 2**63
         or args.max_batches < 2
+        or state_run_supplied != (
+            args.state_run_sha256s_sha256 is not None
+        )
+        or (
+            state_run_supplied
+            and (
+                not args.state_run_dir.is_absolute()
+                or _HEX64.fullmatch(args.state_run_sha256s_sha256) is None
+            )
+        )
         or args.output.exists()
         or args.output.is_symlink()
         or not args.output.parent.is_dir()
@@ -137,6 +161,151 @@ def _validate_args(args: argparse.Namespace) -> None:
         raise AlgebraicJointStateEvaluationError(
             "algebraic joint-state evaluation arguments differ"
         )
+
+
+def _load_state_file(path: Path) -> dict[str, torch.Tensor]:
+    try:
+        return dict(load_file(str(path), device="cpu"))
+    except Exception as exc:
+        raise AlgebraicJointStateEvaluationError(
+            "state-semantic component is unreadable"
+        ) from exc
+
+
+def _require_module_state(module, state: Mapping[str, torch.Tensor]) -> None:
+    current = module.state_dict()
+    if current.keys() != state.keys() or any(
+        not torch.equal(current[name].detach().cpu(), state[name])
+        for name in current
+    ):
+        raise AlgebraicJointStateEvaluationError(
+            "state-semantic initial component differs"
+        )
+
+
+def _load_state_semantic_components(
+    args,
+    *,
+    model,
+    provenance,
+) -> dict[str, object] | None:
+    if args.state_run_dir is None:
+        return None
+    sums_path = args.state_run_dir / "SHA256SUMS"
+    if _sha256_file(sums_path) != args.state_run_sha256s_sha256:
+        raise AlgebraicJointStateEvaluationError(
+            "state-semantic run receipt differs"
+        )
+    expected: dict[str, str] = {}
+    try:
+        lines = sums_path.read_text(encoding="ascii").splitlines()
+    except (OSError, UnicodeError) as exc:
+        raise AlgebraicJointStateEvaluationError(
+            "state-semantic run receipt is unreadable"
+        ) from exc
+    for line in lines:
+        fields = line.split("  ")
+        if (
+            len(fields) != 2
+            or _HEX64.fullmatch(fields[0]) is None
+            or fields[1] not in _STATE_RUN_FILES
+            or fields[1] in expected
+        ):
+            raise AlgebraicJointStateEvaluationError(
+                "state-semantic run receipt differs"
+            )
+        expected[fields[1]] = fields[0]
+    if tuple(sorted(expected)) != tuple(sorted(_STATE_RUN_FILES)):
+        raise AlgebraicJointStateEvaluationError(
+            "state-semantic run receipt differs"
+        )
+    for name, digest in expected.items():
+        if _sha256_file(args.state_run_dir / name) != digest:
+            raise AlgebraicJointStateEvaluationError(
+                "state-semantic run file differs"
+            )
+    contract = _read_hash_bound_json(
+        args.state_run_dir / "pilot-contract.json",
+        expected_sha256=expected["pilot-contract.json"],
+        label="state-semantic contract",
+    )
+    report = _read_hash_bound_json(
+        args.state_run_dir / "report.json",
+        expected_sha256=expected["report.json"],
+        label="state-semantic report",
+    )
+    before_sha256 = _parameter_sha256(model)
+    if (
+        contract.get("schema") != STATE_CONTRACT_SCHEMA
+        or report.get("schema") != STATE_REPORT_SCHEMA
+        or report.get("status") != "pass"
+        or report.get("contract_sha256")
+        != expected["pilot-contract.json"]
+        or contract.get("release_file_sha256") != args.release_sha256
+        or contract.get("joint_model_sha256") != args.joint_model_sha256
+        or contract.get("joint_run_contract_sha256")
+        != args.joint_run_contract_sha256
+        or contract.get("compiler_sha256") != args.compiler_sha256
+        or contract.get("compiler_contract_sha256")
+        != args.compiler_contract_sha256
+        or report.get("protected_checkpoint_sha256")
+        != provenance.checkpoint_sha256
+        or report.get("before_parameter_sha256") != before_sha256
+        or report.get("initial_compiler_sha256")
+        != expected["compiler-initial.safetensors"]
+        or report.get("initial_reactor_sha256")
+        != expected["reactor-initial.safetensors"]
+        or report.get("final_compiler_sha256")
+        != expected["compiler-final.safetensors"]
+        or report.get("final_reactor_sha256")
+        != expected["reactor-final.safetensors"]
+    ):
+        raise AlgebraicJointStateEvaluationError(
+            "state-semantic lineage differs"
+        )
+    _require_module_state(
+        model.compiler,
+        _load_state_file(args.state_run_dir / "compiler-initial.safetensors"),
+    )
+    _require_module_state(
+        model.reactor,
+        _load_state_file(args.state_run_dir / "reactor-initial.safetensors"),
+    )
+    try:
+        compiler_result = model.compiler.load_state_dict(
+            _load_state_file(
+                args.state_run_dir / "compiler-final.safetensors"
+            ),
+            strict=True,
+        )
+        reactor_result = model.reactor.load_state_dict(
+            _load_state_file(
+                args.state_run_dir / "reactor-final.safetensors"
+            ),
+            strict=True,
+        )
+    except RuntimeError as exc:
+        raise AlgebraicJointStateEvaluationError(
+            "state-semantic final component differs"
+        ) from exc
+    if (
+        compiler_result.missing_keys
+        or compiler_result.unexpected_keys
+        or reactor_result.missing_keys
+        or reactor_result.unexpected_keys
+        or _parameter_sha256(model) != report.get("after_parameter_sha256")
+    ):
+        raise AlgebraicJointStateEvaluationError(
+            "state-semantic final component differs"
+        )
+    model.eval()
+    return {
+        "contract_sha256": expected["pilot-contract.json"],
+        "report_sha256": expected["report.json"],
+        "run_sha256s_sha256": args.state_run_sha256s_sha256,
+        "source_commit": contract["source_commit"],
+        "updates_completed": report["updates_completed"],
+    }
 
 
 def _strict_load_joint_model(args, *, device: torch.device):
@@ -566,6 +735,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         stream=stream,
         device=device,
     )
+    state_semantic_receipt = _load_state_semantic_components(
+        args,
+        model=model,
+        provenance=provenance,
+    )
     contract = {
         "compiler_contract_sha256": args.compiler_contract_sha256,
         "compiler_sha256": args.compiler_sha256,
@@ -583,6 +757,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "runtime_precision": str(next(model.parameters()).dtype),
         "schema": CONTRACT_SCHEMA,
         "source_commit": args.source_commit,
+        "state_semantic_receipt": state_semantic_receipt,
     }
     packet_index = ETTRDiskPacketSufficiencyIndex(stream.packet_index_root)
     try:
@@ -613,6 +788,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "runtime_precision": str(next(model.parameters()).dtype),
             "schema": REPORT_SCHEMA,
             "source_verification": source_verification,
+            "state_semantic_receipt": state_semantic_receipt,
             "status": "pass",
         }
         _write_no_replace(

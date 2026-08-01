@@ -29,6 +29,19 @@ DATA_SEED=${DATA_SEED:?set development data seed}
 MAX_BATCHES=${MAX_BATCHES:-32}
 REQUIRED_DEVICE_CLASS=${REQUIRED_DEVICE_CLASS:-h100}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
+STATE_ARGS=()
+if [[ -n "${STATE_RUN_DIR:-}" || -n "${STATE_RUN_SHA256SUMS_SHA256:-}" ]]; then
+  STATE_RUN_DIR=${STATE_RUN_DIR:?set completed state-semantic run}
+  STATE_RUN_SHA256SUMS_SHA256=${STATE_RUN_SHA256SUMS_SHA256:?set state run receipt hash}
+  [[ "$STATE_RUN_DIR" == /* ]] || {
+    echo "state-semantic run path must be absolute" >&2
+    exit 2
+  }
+  STATE_ARGS=(
+    --state-run-dir "$STATE_RUN_DIR"
+    --state-run-sha256s-sha256 "$STATE_RUN_SHA256SUMS_SHA256"
+  )
+fi
 
 for path in "$CODE_ROOT" "$RELEASE_ROOT" "$ETTR_DATA_ROOT" \
   "$TOKENIZER" "$PROTECTED_CHECKPOINT" "$JOINT_RUN_DIR" \
@@ -85,6 +98,7 @@ compiler_sha=$(sha256sum \
   --compiler-sha256 "$compiler_sha" \
   --compiler-contract "$COMPILER_RUN_DIR/pilot-contract.json" \
   --compiler-contract-sha256 "$compiler_contract_sha" \
+  "${STATE_ARGS[@]}" \
   --output "$OUTPUT" \
   --source-commit "$SOURCE_COMMIT" \
   --data-seed "$DATA_SEED" \
