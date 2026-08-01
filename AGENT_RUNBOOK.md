@@ -22424,3 +22424,54 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `let_both_numerical_canaries_gate_the_eight_h100_factorial_then_decide_only_from_unchanged_hard_heldout_world_and_command_pairs`.
+
+- **2026-08-01 15:30--15:52 EDT** -- **Soft semantic state is trainable and
+  has entered the 80,000-row gate; the first basis canary exposed a bounded
+  single-class loss bug, which is fixed, repackaged, and requeued without
+  contaminating any successful lineage.**
+
+  Soft canary `725201` completed on H100 after 20 updates. Unlike the rejected
+  hard-state objective, WORLD factual loss was not pinned at `13.8155`: it was
+  `1.7257` at update 10 and `0.8346` at update 20. Compiler/reactor pre-clip
+  gradient norms moved from `5.75/42.75` to `1.695/1.430`. Under the unchanged
+  hard evaluator, autonomous-program/autonomous-state factual top-1 moved
+  `47.85% -> 49.61%`; WORLD remains zero. Oracle-program/autonomous-state
+  COMMAND obtained a first `2.5%` strict paired rate and DID `+0.690` from a
+  zero baseline, while fully autonomous COMMAND strict pairing remains zero.
+  Report SHA-256 is
+  `ceb87d8228541a3a1144ed785387b153bc833a9cd439867b0b4a7ac4845968d8`.
+  This is numerical/directional authorization only. Its four full soft arms
+  `725203--725206` released automatically and are all running. Early logs are
+  finite; reactor gradients can spike above `200` before the sealed `1.0`
+  clip, so gradient distributions remain a monitored stability variable.
+
+  Basis canary `725202` failed before its first optimizer update because the
+  initial-register semantic slice in that legitimate batch contained only
+  unoccupied coordinates. `_balanced_probability_loss` incorrectly required
+  both classes in every individual tensor. The four impossible dependents
+  `725207--725210` were canceled without running. Commit `bb65958` averages
+  positive and negative class losses equally when both occur, and averages the
+  sole observed class when a batch is all-zero or all-one. Two explicit
+  single-class regressions plus the focused architecture/dispatcher suite pass
+  `13/13`; Ruff, byte compilation, Bash syntax, and diff checks are clean.
+
+  The corrected runtime has exact source
+  `bb659588323797255417de7ba81b85a8fbf804c1` and SHA256SUMS SHA-256
+  `e52383ef0d4a2d623f9f129f40024bdb34009e55b3ef39d76bcfe82e6648855f`.
+  An initial `r1` tar was correctly rejected by admission job `725216` because
+  macOS added 3,569 unmanifested AppleDouble metadata files; every manifested
+  content hash still passed, but strict inventory did not. A fresh xattr-free
+  `r2` archive has SHA-256
+  `4fd56a31b9e6fd2984d6115014bc50ae8fe552334b9535bb07602d41ba8cf8d5`
+  and was atomically admitted after all 3,391 files passed under job `725219`.
+
+  Commit `9b9a93c` adds a failure-atomic basis-recovery dispatcher. Fake-Slurm
+  tests prove one canary plus four matched dependents and complete rollback on
+  partial submission failure. Recovery receipt
+  `scratchpad/ettr-state-basis-recovery-20260801T1552.tsv` records corrected
+  canary `725220` and full arms `725221--725224`. At 15:52 EDT the canary is
+  pending resources behind the four live soft arms; no soft run was destroyed
+  to accelerate it. No result is promoted as native reasoning.
+
+  Decision:
+  `continue_all_four_soft_80k_arms_and_require_the_corrected_basis_canary_before_releasing_its_four_80k_arms`.
