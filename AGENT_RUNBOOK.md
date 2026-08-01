@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-01 18:05 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-01 18:43 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -84,11 +84,19 @@
 > far, but it is population-unstable and is not promoted as native reasoning.
 > Commit `62082b4` removes 29,757,217 dead recurrent-reactor parameters from
 > the wrapper: the narrow system is actually 162,401,647 parameters, and a
-> legal 199,013,615-parameter wide arm is running. Commit `293545f` adds an
+> legal 199,013,615-parameter wide arm. Its completed 5,000-update gate has
+> zero strict WORLD/COMMAND, closing width alone. Commit `293545f` adds an
 > exact, hash-bound cross-composition evaluator for independently trained
-> WORLD state and parallel COMMAND schedules. Full cross-composition job
-> `725276` is pending; the four-update smoke `725271` failed closed because
-> that undersized slice contained no causal contrasts. No current artifact is
+> WORLD state and parallel COMMAND schedules. The 20-update Brier cross is
+> exactly neutral because that canary did not alter hard state. Crossed
+> evaluation proves architecture seed, not evaluation subset, is the dominant
+> instability: seed 31 crosses both gates on a second distinct population,
+> while seed 32 remains zero on every tested population. Commit `58f504d`
+> replaces fixed 64-class source/target heads with state-grounded pointers and
+> an exact predicted-prefix validity replay. Its 500-update canary raises exact
+> schedules from the matched 10.76% to 12.59% and WORLD margin-1 from zero to
+> 7.14%; strict pairs remain zero. Four 5,000-update grounded replications and
+> four 15,000-update full-coverage controls are live. No current artifact is
 > promoted as stable native reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
@@ -22679,3 +22687,83 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `retain_725247_as_the_best_unpromoted_native_baseline_cross_independently_learned_world_state_with_parallel_command_schedules_and_require_fresh_population_world_plus_command_replication`.
+
+- **2026-08-01 18:05--18:43 EDT** -- **Crossed evaluation localizes the
+  remaining failure to the scheduler's optimization basin, width is rejected,
+  and a state-grounded prefix-valid pointer compiler is now in replication.**
+
+  Full cross-component job `725276` completed and validated the v2 evaluator
+  path. Combining the 20-update bounded-Brier state canary with schedule arm
+  `725247` reproduces the schedule-only report exactly: factual `70.90%`,
+  WORLD strict `7.14%`, and COMMAND strict `6.82%`. This is a useful null:
+  the 20-update state canary changed soft losses but not the deployed hard
+  packet. Report SHA-256 is
+  `e24da78d5bcd42b0f1c037f0d7b241b9cbcb13e0ac2ebea449efe71e75184527`.
+  The completed 5,000-update Brier artifacts remain the meaningful factor
+  cross once their four-arm matrix finishes.
+
+  Jobs `725284--725289` evaluate the high-rate architecture-seed-31 and
+  architecture-seed-32 schedules on crossed development orderings. Seed 31
+  reaches WORLD/COMMAND strict `0%/3.57%` on ordering 12, the original
+  `7.14%/6.82%` on ordering 11, and `6.25%/9.38%` on a distinct ordering 14.
+  Ordering 13 is metric-identical to ordering 11 and is not counted as an
+  independent population. Seed 32 remains WORLD/COMMAND zero on orderings 11,
+  13, and 14. This disproves the earlier interpretation that one lucky
+  development subset alone caused the signal. Seed 31 transfers to a second
+  distinct population; the dominant defect is architecture-initialization
+  sensitivity.
+
+  The initial 5,000-update jobs had another avoidable curriculum constraint:
+  a newly initialized schedule compiler inherited historical stream position
+  13,200 and therefore trained only on positions 13,200--18,199. The immutable
+  release exposes 160,000 training records, so this was not an exhaustion
+  requirement. Receipt
+  `scratchpad/ettr-parallel-fullcoverage-62082b4.tsv`, SHA-256
+  `3e4a579abf69440e15d2b4283be5f580e71e647ab6bc6805f071b8ac0ced51d6`,
+  records jobs `725280--725283`: the same two architectures and rates at
+  15,000 updates from position zero. All four are running in isolated output
+  directories. Independent held-out orderings remain mandatory after their
+  in-run evaluations.
+
+  The 199,013,615-parameter width-896/layer-4 arm `725266` completed 5,000
+  updates. It reaches exact schedules `14.12%`, source `44.30%`, factual
+  `70.31%`, WORLD margin-1 `3.57%`, and strict WORLD/COMMAND both zero. It is
+  worse than narrow seed 31 on exact schedules and causality despite using
+  36.6M more trainable schedule parameters. Report SHA-256 is
+  `f5f79d4ed2d5ec4543af3b52348fa2381e7b54be680ff55fb2a73c1909ed1a4f`.
+  Width alone is closed.
+
+  Code inspection found that the recurrent controller had content-addressed
+  source/target pointer queries, while the parallel compiler regressed to two
+  independent 64-class heads. Commit
+  `58f504d1cff84f8587b22326286ae07fde24a6c2` adds a 6,855,841-parameter
+  grounded compiler. Source and target queries score keys derived from the
+  actual packet slots. A parameter-free prefix replay then derives each
+  step's active-slot set from the schedule's own earlier ALLOC/CLEAR choices
+  and masks transaction-invalid pointers without consulting oracle state.
+  The complete system is 162,794,735 parameters. Twenty-eight focused and
+  related tests pass with clean Ruff, byte compilation, Bash syntax, and diff
+  checks. Runtime
+  `scratchpad/shohin_ettr_grounded_runtime_58f504d_r1` contains exactly 3,409
+  manifested files and has SHA256SUMS SHA-256
+  `4532cbc0b59fa7170c0524b2a1bfc39d4ee6e2b4708a6758ba0e21f0b77b669a`.
+
+  Matched canary `725291` completes 500 updates cleanly. Against baseline
+  `725244`, exact schedules improve `10.76% -> 12.59%`, source accuracy
+  `32.43% -> 36.34%`, and WORLD margin-1 `0% -> 7.14%`; opcode, target, and
+  value learn more slowly, factual remains `67.19%`, and strict WORLD/COMMAND
+  remain zero. Report SHA-256 is
+  `4a722bdef919aaabac685054d396dda6b797107dc4f8c4b9d69ad0926d887f74`.
+  Receipt `scratchpad/ettr-parallel-grounded-factorial-58f504d.tsv`, SHA-256
+  `b64417cd3c8810e2bdce4b29dcb32ce605be45ab78103f8342ed5f3d255795ca`,
+  records matched 5,000-update jobs `725296--725299`; three are running and
+  one is pending resources.
+
+  The remaining log-basis and soft-log state arms were deliberately closed
+  as non-promotable. Their observed pre-clip reactor maxima range from 13.4M
+  through 8.79B, with one earlier arm reaching 777B. The sealed clip keeps
+  parameters finite but cannot make those directions scientifically useful.
+  All four numerically bounded Brier state arms remain live.
+
+  Decision:
+  `treat_seed31_as_a_transferable_but_basin_sensitive_native_baseline_use_full_data_coverage_and_prefix_grounded_pointers_to_test_initialization_stability_then_cross_only_completed_bounded_world_state`.

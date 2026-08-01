@@ -53302,3 +53302,37 @@ than adding capacity or extending the lucky arm.
 
 Current decision:
 `keep_the_first_simultaneous_native_arm_as_baseline_but_promote_only_if_cross_factor_composition_restores_fresh_population_world_and_command`.
+
+## 2026-08-01 Optimization-Basin Localization and Grounded Prefix Pointers
+
+Crossed evaluation separates evaluation-population effects from architecture
+initialization. The successful seed-31 schedule crosses both causal gates on a
+second distinct held-out ordering (WORLD 6.25%, COMMAND 9.38%), while seed 32
+remains at zero on every tested ordering, including the ordering where seed 31
+scores 7.14%/6.82%. The native signal is therefore transferable across some
+unseen episodes but trapped in a fragile optimization basin.
+
+Two negative controls narrow the repair. A 199.01M wide schedule compiler
+reaches 70.31% factual accuracy but zero strict causality, so capacity alone is
+not sufficient. A bounded-Brier state canary composed with the successful
+schedule is exactly neutral at 20 updates, proving that soft-state loss
+movement cannot be mistaken for a changed hard packet.
+
+The new grounded parallel compiler removes an arbitrary categorical boundary.
+Rather than classifying source and target as unrelated 64-way labels, each
+transaction query scores keys computed from the actual typed packet slots. A
+deterministic differentiable prefix replay follows the schedule's own earlier
+ALLOC and CLEAR choices to construct per-step valid source/target masks. This
+is still one neural COMMAND compilation followed by exact algebra; it is not a
+recurrent decoder and receives no query or answer.
+
+At 500 updates the grounded arm improves exact schedules from 10.76% to 12.59%,
+source pointers from 32.43% to 36.34%, and WORLD margin-1 from zero to 7.14%,
+but strict pairs remain zero. A four-arm 5,000-update replication now tests
+whether grounding removes seed sensitivity. In parallel, four 15,000-update
+controls train the original narrow compiler from stream position zero instead
+of incorrectly skipping the first 13,200 positions. These two experiments
+separate inductive-bias improvement from simple data coverage.
+
+Current decision:
+`require_multiple_architecture_initializations_to_cross_world_and_command_and_choose_between_grounded_pointers_and_full_coverage_from_that_hard_evidence`.
