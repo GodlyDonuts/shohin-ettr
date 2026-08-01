@@ -21829,3 +21829,69 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_frozen_linear_truth_readout_and_require_both_world_and_command_orientation_from_either_nonlinear_decoding_or_direct_query_state_binding_before_any_autonomous_claim`.
+
+- **2026-08-01 05:05--05:31 EDT** -- **Three causal capacity and
+  optimization alternatives close negative; late-query geometry is the next
+  isolated interface gate.**
+
+  Job `724930`, the first nonlinear-motor launch, failed closed on `evc33`
+  because Slurm assigned a nominal H100 but CUDA was not visible. Retry
+  `724933` completed cleanly in `14:13` on `evc49`. It trained a
+  2,048-wide nonlinear truth motor with `1,186,946` trainable parameters for
+  1,000 updates. Output is
+  `train/ettr_smollm2_native_truth_mlp2048_u1000_5a6e935_a1`; report SHA-256
+  is `ccf2ff2a57432afa7d2ddb8d76f037b3d0cb1e2e06961c1a157775c873210852`;
+  final native-reader SHA-256 is
+  `9a8e84de889be4fe6c34e11ad39d6798407f39a8a2a3be5de335551a16e24210`.
+  Factual top-1 rises from `35.9375%` to `64.0625%`, but both WORLD and
+  COMMAND remain exactly `50%/50%` correct/foil with zero joint top-1,
+  paired-order, margin-at-`0.1`, and strict margin-at-`1.0`.
+
+  Joint reader job `724931` completed cleanly in `8:25` on `evc47`. It
+  trained the full state/query reader plus linear motor: `16,476,483`
+  parameters for 500 updates at learning rate `1e-4`. Output is
+  `train/ettr_smollm2_native_reader_joint_u500_5a6e935_b1`; report SHA-256 is
+  `4376c3a24352213cfec9c6f6fd21863603129a369199b9fb3b9fa17f1f012040`;
+  final native-reader SHA-256 is
+  `6c1c12ca5c38d340dc1882feec8000fabe42b3847e33c1a41061656b7d9ec26b`.
+  Factual top-1 rises from `39.0625%` to `65.2344%`, but both causal factors
+  again remain exactly `50%/50%` with zero joint, paired-order, and positive
+  margins. Mean intervention difference-in-differences becomes negative for
+  both WORLD (`-0.00527`) and COMMAND (`-0.000666`). More state/query-reader
+  capacity at the midpoint residual does not establish causal orientation.
+
+  Matched-compute optimization control `724932` completed cleanly in `14:16`
+  on `evc26`. It averaged four complete causal batches for each of 250
+  optimizer updates, preserving 1,000 total source batches. Output is
+  `train/ettr_smollm2_native_truth_linear_acc4_u250_446411d_c1`; report
+  SHA-256 is
+  `be271a8fd6513044341f13a8ce2b54a5711516c24a0397b9398bd4bb569264fa`;
+  final native-reader SHA-256 is
+  `fa647aa0507047ff6c38ac619d9f8ca37911cd0aeb18a5c387e3cb04ecf33065`.
+  Factual top-1 rises from `34.375%` to `64.0625%`, but all causal orientation
+  gates remain zero and mean difference-in-differences is negative. Gradient
+  conflict alone is not the sufficient explanation.
+
+  Comparing the three contracts exposed an audit defect: new motor
+  initialization had not been explicitly seeded, so their within-run gates
+  are valid but raw pre-training factual baselines are not matched across
+  arms. Private commit `57e2713` now requires and records `model_seed` and
+  seeds CPU/CUDA immediately before native-reader construction. The same
+  lineage also adds an explicit `late` motor geometry: the warm typed-state
+  reader still consumes the midpoint residual, while the causal motor consumes
+  the fully decoded and normalized query residual after all remaining
+  pretrained transformer blocks. The relevant suite passes `114/114` with
+  clean Ruff, compilation, Bash syntax, and diff checks. Immutable runtime
+  `scratchpad/shohin_ettr_native_disposition_runtime_57e2713_r1` has
+  SHA256SUMS SHA-256
+  `002d8fc6f3eb8f29a825660ce05521a06f80bf1bbaa27ecd01cd9566cacb47f1`.
+
+  Late-geometry preflight `724934` failed closed on `evc43` with the same
+  node-local CUDA visibility defect as `evc33`; canceled unseeded attempt
+  `724935` was intentionally stopped after `2:44` when the seed omission was
+  identified. Fixed-seed job `724938` uses model seed `2026080101`, 500
+  updates, frozen warm reader, linear motor, the exact same source position
+  `11,000`, and unchanged 32-batch gate. It is pending the next healthy H100.
+
+  Decision:
+  `close_stage_residual_capacity_and_optimization_scaling_then_test_whether_full_backbone_query_interpretation_is_the_missing_causal_interface`.
