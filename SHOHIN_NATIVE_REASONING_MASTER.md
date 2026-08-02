@@ -53840,3 +53840,17 @@ identifiable from public operation/state context across train/development.
 The preregistered broad gate is 90% all-instance transfer; a 70--90% middle
 band allows only isolated family acquisition, while lower or majority-level
 transfer rejects v18 as the primary repair before GPU scaling.
+
+The exact full-corpus result lands in that middle band. Resolved public
+operations transfer the NONE/WRITE/LINK family at 74.8248% on all 60,512
+development operations, versus a 41.8562% majority baseline; no permitted
+feature mode reaches 90%. Rich context overfits sparse command signatures and
+has less than 68% development coverage. Broad joint v18 is therefore closed,
+while a bounded family-first island remains justified. Report file/payload
+SHA-256 values are
+`2e2688532d0518452a739fd236b5cf964526c0c7f3b26284dfa4424de4bced17` and
+`1baae064f7b1b29c960430cc1755973f4d1faec70f0f3a59b3979aa7b115d0fa`.
+The original queued v18 smoke was canceled before allocation after a custody
+review found that operation-boundary indexing dropped the new family tensor;
+the field is now preserved and regression-tested. This was a launch-path bug,
+not model evidence.

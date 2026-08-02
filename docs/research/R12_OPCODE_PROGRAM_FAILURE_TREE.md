@@ -747,3 +747,26 @@ links or writable files/directories, passes checksum replay, and has
 SHA256SUMS SHA-256
 `ceadb65fac36951566bd9518ba18842f90e3b8157be559563a1827fb7e35c87a`.
 Job `760955` runs the full audit on 48 Stokes CPU cores.
+
+Job `760955` completed cleanly in 22m16s over every 494,480 training and
+60,512 development operation. The best full-coverage train-to-development
+mode is the literal resolved public operation at `45,278/60,512 = 74.8248%`.
+The abstract operation reaches `73.7110%`, and WORLD topology plus abstract
+operation reaches `73.6912%` at 99.98% coverage. Richer WORLD/operator plus
+prefix or full-COMMAND signatures do not transfer: their all-instance rates
+are 44.05% and 37.99% because only 67.98% and 58.16% of development instances
+are seen in training. The development majority baseline is 41.8562%. The
+report file and payload SHA-256 values are
+`2e2688532d0518452a739fd236b5cf964526c0c7f3b26284dfa4424de4bced17` and
+`1baae064f7b1b29c960430cc1755973f4d1faec70f0f3a59b3979aa7b115d0fa`.
+
+This crosses the preregistered 70% lower bound but misses 90%. Broad joint
+v18 release is rejected. If v15 reports family failure, the only authorized
+v18 successor is a bounded family-first island that freezes payload rails and
+must itself cross 90% held-out family exactness before joint rail release.
+
+Pre-allocation inspection also found that `index_atomic_edits` preserved every
+typed-effect field except `effect_family`. The queued v18 smoke would therefore
+have failed in the loss path without testing the mechanism. Smoke `728738` was
+canceled while pending; v15 `728691` was left intact. The indexing helper now
+preserves `effect_family` and has a direct regression test.

@@ -24788,3 +24788,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `preserve_v15_priority_while_sealing_the_mutually_exclusive_v18_successor_and_route_exactly_one_next_mechanism_from_family_count_operand_and_causal_metrics`.
+
+- **2026-08-02 13:22--13:50 EDT** -- **The public family is learnable only
+  as an island; a pre-GPU custody check catches a dropped supervision field.**
+
+  Exact Stokes audit `760955` completed in 22m16s on 48 CPU cores. It replayed
+  every 494,480 training and 60,512 development operation and passed its
+  source/input contract. Development contains 25,328 LINK, 19,122 NONE, and
+  16,062 WRITE operations; the majority baseline is 41.8562%.
+
+  The best full-coverage public feature is the resolved operation:
+  `45,278/60,512 = 74.8248%` train-to-development family accuracy. Abstract
+  operation reaches 73.7110%; WORLD topology plus abstract operation reaches
+  73.6912% at 99.98% coverage. WORLD/operator plus operation-prefix and
+  full-COMMAND/rank features reach only 44.05% and 37.99% over all instances
+  because development coverage falls to 67.98% and 58.16%. The report file
+  SHA-256 is
+  `2e2688532d0518452a739fd236b5cf964526c0c7f3b26284dfa4424de4bced17`;
+  payload SHA-256 is
+  `1baae064f7b1b29c960430cc1755973f4d1faec70f0f3a59b3979aa7b115d0fa`.
+
+  This exactly enters the preregistered 70--90% middle band. It rejects a
+  broad joint v18 fit and authorizes only a bounded family-first island if
+  v15 independently reports family failure. That island must freeze payload
+  acquisition and cross 90% held-out family exactness before any joint rail
+  release.
+
+  Source review found that `index_atomic_edits` omitted v18's
+  `effect_family` tensor. The pending two-update smoke would have failed before
+  testing the architecture. Smoke `728738` was canceled without allocation;
+  v15 scientific fit `728691` retained its priority. The helper now preserves
+  `effect_family`, a regression test selects and verifies it, and 56 focused
+  tests plus Ruff and byte compilation pass. This is a corrected launch-path
+  defect, not scientific evidence.
+
+  Decision:
+  `reject_broad_v18_preserve_v15_and_prequalify_only_a_family_first_island_from_the_corrected_boundary_path`.

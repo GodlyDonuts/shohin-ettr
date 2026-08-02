@@ -8,9 +8,11 @@ from endogenous_typed_theory_reactor import (
 )
 from ettr_objectives import ETTRTransactionTargets
 from operation_state_supervision import (
+    index_atomic_edits,
     operation_boundary_indices,
     oracle_operation_boundary_states,
 )
+from parallel_terminal_state_compiler import AtomicTypedEdits
 
 
 def _targets() -> ETTRTransactionTargets:
@@ -115,3 +117,19 @@ def test_oracle_operation_states_replay_cumulative_writes() -> None:
     assert second_values[0, 49].item() == 4
     assert second_values[0, 54].item() == 2
     assert result.last_state.value_probabilities.argmax(-1)[0, 49].item() == 4
+
+
+def test_index_atomic_edits_preserves_operation_family() -> None:
+    batch = 3
+    edits = AtomicTypedEdits(
+        node_action=torch.zeros(batch, 2, 5),
+        value_code=torch.zeros(batch, 2, 7),
+        type_index=torch.zeros(batch, 2, 3),
+        relation_action=torch.zeros(batch, 2, 2, 2, 3),
+        root_action=torch.zeros(batch, 4),
+        disposition_action=torch.zeros(batch, 4),
+        effect_family=F.one_hot(torch.tensor([0, 1, 2]), 3).float(),
+    )
+    selected = index_atomic_edits(edits, torch.tensor([2, 0]))
+    assert selected.effect_family is not None
+    assert selected.effect_family.argmax(-1).tolist() == [2, 0]
