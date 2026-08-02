@@ -54059,3 +54059,42 @@ interface before testing scale.
 
 Current decision:
 `do_not_retry_the_closed_family_head_fix_the_information_and_optimization_interfaces_then_measure_the_smallest_backbone_that_can_own_the_full_trajectory`.
+
+### 2026-08-02: unified trajectory becomes an executable, matched mechanism
+
+The replacement is no longer an undefined architecture sketch. The new
+`UnifiedETTRTrajectory` owns the complete source-deleted path with one shared
+31,329,056-parameter mechanism: a common state encoder and recurrent cell
+process WORLD and COMMAND, a fixed typed algebra mutates state, adaptive STOP
+freezes each example independently, and QUERY is structurally unavailable
+until COMMAND termination. No historical compiler, reactor, or reader
+checkpoint is loaded. The exact source SHA-256 is
+`b0fef198fe35ade9fcf04f86d70119d6fa9b04feb4ff2d680252523b45040c7f` and
+the architecture receipt SHA-256 is
+`552236f44b4b30d9f384fc3ffe185663c6231eac96e5b4fbf4e996b26a0c53cf`.
+
+A favorable dense recurrent control is also executable. It has independent
+WORLD and COMMAND cells, unconstrained dense state, learned packet heads, and
+the same late-query boundary. Its width-424 core plus live capacity MLP is
+exactly 31,329,056 parameters, a 0.0% mismatch. This prevents any later ETTR
+claim from relying on a weak or under-parameterized baseline. GPU-measured
+training FLOPs are still required before a comparison can launch.
+
+The optimizer defect now has an enforced implementation rather than a prose
+warning. Rectangle-atomic replay forms four 16-row microbatches per update,
+requires every component stratum within the accumulated 64-row window,
+forbids within-update rectangle repetition, globally normalizes the loss, and
+shares the exact schedule with the dense control. The tensor-sufficiency probe
+accepts only projected source residuals, public role-span masks, and exact
+typed-state tensors; every input is byte-hashed, and renderer/binding/state
+controls fail closed.
+
+Thirty-seven focused tests pass. These prove ownership, shapes, exact state
+mechanics, source deletion, termination, differentiability, parameter
+matching, replay custody, and receipt drift detection. They do not prove the
+95% component or 90% autonomous reasoning gates. Real-corpus tensor
+extraction, interface measurement, H100 mechanics/FLOP receipts, and the
+frozen-backbone matrix remain the next evidence.
+
+Current decision:
+`freeze_the_implemented_unified_and_dense_mechanisms_then_measure_real_tensor_sufficiency_and_stratified_replay_before_any_backbone_scale_claim`.

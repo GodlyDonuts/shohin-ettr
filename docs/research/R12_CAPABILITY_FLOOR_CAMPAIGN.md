@@ -1,7 +1,7 @@
 # R12 Frozen-Backbone Capability-Floor Campaign
 
-Status: local family route closed; unified interface preflight in progress and
-not launchable. Date: 2026-08-02.
+Status: local family route closed; unified mechanism implemented and frozen;
+real-tensor/interface/FLOP preflight still blocks launch. Date: 2026-08-02.
 
 ## Purpose
 
@@ -40,14 +40,22 @@ semantic-byte-equivalent and independently receipted. A learned projection may
 map each frozen hidden width into the common ETTR width; its parameters and
 FLOPs count toward both treatment and matched dense control.
 
-The mechanism hash is intentionally unset because the local route ended at a
-v20 failure. Separate compiler/reactor/reader fitting is retired and replaced
-by one differentiable model-owned trajectory:
+Separate compiler/reactor/reader fitting is retired and replaced by one
+differentiable model-owned trajectory:
 
 `WORLD -> typed state -> COMMAND recurrence -> terminal state -> late QUERY`
 
-That successor uses a tied recurrent state core, adaptive STOP, and late-query
-readout. It is frozen as one mechanism before any cross-backbone fit.
+That successor now exists in `train/capability_floor_trajectory.py`. WORLD and
+COMMAND use the same `TiedTrajectoryCell` and `UnifiedStateEncoder`; neither
+transition accepts QUERY. Per-example STOP is monotone, freezes every later
+state update, and is forced at the phase limit. A fixed typed algebra applies
+ALLOCATE/WRITE/CLEAR/LINK/UNLINK/SET_ROOT actions. QUERY enters only after
+COMMAND termination through `LateQueryReader`. The default mechanism has
+31,329,056 trainable architecture parameters. Source SHA-256 is
+`b0fef198fe35ade9fcf04f86d70119d6fa9b04feb4ff2d680252523b45040c7f`;
+architecture SHA-256 is
+`552236f44b4b30d9f384fc3ffe185663c6231eac96e5b4fbf4e996b26a0c53cf`.
+This freezes a testable mechanism; it does not establish capability.
 
 ## Component Gates
 
@@ -82,6 +90,13 @@ and evaluator. Trainable parameters must match within 1%; measured training
 FLOPs must match within 5%. The dense control is allowed untied capacity and
 full recurrent state; it is not deliberately starved. If it equals or beats
 ETTR, ETTR has not earned inclusion.
+
+The implemented control in `train/capability_floor_dense_control.py` has
+independent WORLD and COMMAND cells, a full dense recurrent state, learned
+terminal-packet heads, and the same late QUERY boundary. Its exact matcher
+selects hidden width 424 plus a live 880-wide capacity MLP and 243 live tail
+parameters, giving exactly 31,329,056 trainable parameters and zero relative
+parameter mismatch. Training FLOPs still require a measured H100 receipt.
 
 ## Decisions
 
@@ -125,9 +140,10 @@ validated structurally. MobileLLM-R1 is manually gated; the current credential
 has not accepted its license, so its exact config and weights cannot yet be
 receipted. This is a launch blocker, not permission to guess its geometry or
 drop the 360M arm. The generated interface receipt remains non-launchable
-until that access, all four tokenizer intersections, the unified mechanism
-hash, a symbolic-to-neural interface-equivalence receipt, a component-specific
-stratified replay receipt, and dense-control parameter/FLOP receipts exist.
+until that access, all four tokenizer intersections, a real-corpus mechanics
+smoke, a symbolic-to-neural interface-equivalence receipt, a component-specific
+stratified replay receipt, and a measured dense-control FLOP receipt exist.
+The mechanism hash and exact dense parameter receipt are no longer blockers.
 
 Machine-readable interface contract:
 `artifacts/r12/ettr_capability_floor_interface_v1.json`.
@@ -158,6 +174,14 @@ NONE/WRITE/LINK for execution, WORLD/COMMAND for reading, WORLD factor plus
 effect family for compilation, and both intervention factors for composition.
 ETTR and dense controls receive the exact same windows and charged positions.
 
+`train/capability_floor_replay.py` implements that scheduler. It treats each
+four-row causal rectangle as indivisible, selects four rectangles per 16-row
+semantic microbatch, accumulates exactly four microbatches before an optimizer
+step, forbids a rectangle from repeating inside an update, proves all required
+strata are present, records charged positions, and emits a hashable schedule
+shared byte-for-byte by ETTR and dense control. Real release rows have not yet
+been materialized into the final replay receipt.
+
 ## First interface deliverable
 
 The earlier 94.0756% operation-family oracle is a symbolic upper bound, not a
@@ -180,3 +204,29 @@ If the tensor probe fails while the symbolic reference passes, the interface
 is redesigned before scale is tested. This is the first capability-floor
 deliverable and prevents all four backbones from being spent on a representation
 that discarded the required variable.
+
+`train/capability_floor_sufficiency.py` implements the exact-tensor side of
+this gate. The probe can consume only projected source token features, public
+renderer span masks, and exact typed-state tensors admitted to the model. It
+includes explicit source/state multiplicative binding and binds dtype, shape,
+and exact bytes for every tensor in its receipt. Promotion requires at least
+95% symbolic, tensor, renderer-orbit, and orbit-agreement scores while
+binding-deranged and state-value-permuted controls remain within two points of
+empirical chance. The code is ready; real four-backbone feature extraction and
+measurement remain outstanding.
+
+## Implemented Preflight Evidence
+
+- Unified mechanism receipt:
+  `artifacts/r12/ettr_unified_trajectory_mechanism_v1.json`, SHA-256
+  `73996ac5ede6ce209cf6209e5cbec7629e03b50e6d1e204150b7444eec27301e`.
+- Favorable dense descriptor:
+  `artifacts/r12/ettr_favorable_dense_control_v1.json`, SHA-256
+  `7d39abf73ba6025e1b4d6a8a503e5c220f5c74e873101630e10f2bfe42fb3c57`.
+- Updated campaign preregistration SHA-256:
+  `e7800d87fd8e9e089f4f650966064492735494c994089f85ac3b1bcb04cdb3d1`.
+- Updated interface receipt SHA-256:
+  `b200e7565008c030c05ef0eeeb592c086b2158b3c399881c2412b57d228aa752`.
+- Thirty-seven focused campaign, trajectory, sufficiency, replay, and dense
+  tests pass. These are mechanics and custody tests, not the 95%/90%
+  capability gates.

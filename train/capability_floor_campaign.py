@@ -7,6 +7,11 @@ import argparse
 from pathlib import Path
 from typing import Mapping, Sequence
 
+from capability_floor_trajectory import (
+    MECHANISM_SCHEMA,
+    mechanism_architecture_sha256,
+    mechanism_source_sha256,
+)
 from train_ettr_component_island import _canonical_bytes, _write_no_replace
 
 
@@ -104,9 +109,11 @@ def build_preregistration() -> dict[str, object]:
         ],
         "launch_authorized": False,
         "mechanism_admission": {
+            "architecture_hash": mechanism_architecture_sha256(),
             "closed_current_family_endpoint": "v20-failed-stop-no-v21",
-            "architecture_hash": None,
-            "status": "waiting-for-unified-model-owned-trajectory",
+            "mechanism_schema": MECHANISM_SCHEMA,
+            "source_sha256": mechanism_source_sha256(),
+            "status": "unified-source-frozen-preflight-blocked",
             "successor": "tied-world-state-command-terminal-query-trajectory",
         },
         "optimizer_budget": {
@@ -163,7 +170,11 @@ def validate_preregistration(payload: Mapping[str, object]) -> None:
         or not isinstance(optimizer, Mapping)
         or optimizer.get("seeds") != [31, 32]
         or not isinstance(mechanism, Mapping)
-        or mechanism.get("architecture_hash") is not None
+        or not isinstance(mechanism.get("architecture_hash"), str)
+        or len(str(mechanism["architecture_hash"])) != 64
+        or mechanism.get("architecture_hash") != mechanism_architecture_sha256()
+        or mechanism.get("source_sha256") != mechanism_source_sha256()
+        or mechanism.get("mechanism_schema") != MECHANISM_SCHEMA
     ):
         raise CapabilityFloorContractError("capability-floor gates differ")
 

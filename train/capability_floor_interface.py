@@ -4,14 +4,22 @@
 from __future__ import annotations
 
 import argparse
+from functools import lru_cache
 from pathlib import Path
 from typing import Mapping, Sequence
 
+from capability_floor_dense_control import build_dense_control_descriptor
 from capability_floor_campaign import (
     ETTR_RELEASE_SHA256,
     PROTECTED_SHOHIN_SHA256,
     build_preregistration,
     validate_preregistration,
+)
+from capability_floor_trajectory import (
+    UnifiedETTRTrajectory,
+    UnifiedTrajectoryConfig,
+    build_mechanism_receipt,
+    mechanism_architecture_sha256,
 )
 from train_ettr_component_island import _canonical_bytes, _write_no_replace
 
@@ -27,6 +35,19 @@ SMOLLM3_CONFIG_SHA256 = (
 
 class CapabilityFloorInterfaceError(RuntimeError):
     """The cross-backbone interface is incomplete or has drifted."""
+
+
+@lru_cache(maxsize=1)
+def _implemented_mechanism_contract() -> dict[str, object]:
+    config = UnifiedTrajectoryConfig()
+    treatment_parameters = UnifiedETTRTrajectory(config).architecture_parameters()
+    dense = build_dense_control_descriptor(treatment_parameters, config)
+    return {
+        "architecture_parameters": treatment_parameters,
+        "dense_control": dense,
+        "mechanism_architecture_sha256": mechanism_architecture_sha256(),
+        "mechanism_receipt": build_mechanism_receipt(),
+    }
 
 
 def _backbone_contracts() -> list[dict[str, object]]:
@@ -81,6 +102,7 @@ def _backbone_contracts() -> list[dict[str, object]]:
 def build_interface_contract() -> dict[str, object]:
     preregistration = build_preregistration()
     validate_preregistration(preregistration)
+    mechanism = _implemented_mechanism_contract()
     return {
         "adapter": {
             "backbone_mode": "eval-frozen-no-gradient",
@@ -152,13 +174,14 @@ def build_interface_contract() -> dict[str, object]:
         },
         "launch_authorized": False,
         "launch_blockers": [
-            "unified-model-owned-trajectory-mechanism-hash-unset",
+            "unified-mechanics-real-corpus-smoke-not-receipted",
             "mobilellm-r1-manual-license-not-accepted",
             "four-tokenizer-semantic-intersection-not-receipted",
             "symbolic-to-neural-interface-equivalence-not-receipted",
             "component-stratified-replay-schedule-not-receipted",
-            "dense-control-parameter-and-flop-receipts-not-built",
+            "dense-control-training-flop-receipt-not-built",
         ],
+        "mechanism": mechanism,
         "optimizer": {
             "accumulation_normalization": "global-over-replay-window",
             "betas": [0.9, 0.95],
@@ -218,6 +241,7 @@ def validate_interface_contract(payload: Mapping[str, object]) -> None:
         payload.get("interface_sufficiency"), "interface sufficiency"
     )
     boundary = _require_mapping(payload.get("ownership_boundary"), "ownership")
+    mechanism = _require_mapping(payload.get("mechanism"), "mechanism")
     if (
         adapter.get("common_ettr_width") != 512
         or adapter.get("backbone_mode") != "eval-frozen-no-gradient"
@@ -235,14 +259,17 @@ def validate_interface_contract(payload: Mapping[str, object]) -> None:
         or sufficiency.get("strict_threshold") != 0.95
         or sufficiency.get("assessor_features_available_at_inference") is not False
         or boundary.get("query_available_during_world_or_command") is not False
+        or mechanism.get("mechanism_architecture_sha256")
+        != mechanism_architecture_sha256()
     ):
         raise CapabilityFloorInterfaceError("capability-floor protocol differs")
     blockers = payload.get("launch_blockers")
     if (
         not isinstance(blockers, list)
-        or "unified-model-owned-trajectory-mechanism-hash-unset" not in blockers
+        or "unified-mechanics-real-corpus-smoke-not-receipted" not in blockers
         or "mobilellm-r1-manual-license-not-accepted" not in blockers
         or "component-stratified-replay-schedule-not-receipted" not in blockers
+        or "dense-control-training-flop-receipt-not-built" not in blockers
     ):
         raise CapabilityFloorInterfaceError("capability-floor blockers differ")
     if dict(payload) != build_interface_contract():

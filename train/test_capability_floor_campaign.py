@@ -1,4 +1,6 @@
 from copy import deepcopy
+import json
+from pathlib import Path
 
 import pytest
 
@@ -7,6 +9,7 @@ from capability_floor_campaign import (
     build_preregistration,
     validate_preregistration,
 )
+from capability_floor_trajectory import mechanism_architecture_sha256
 
 
 def test_capability_floor_is_frozen_and_not_launchable() -> None:
@@ -19,7 +22,12 @@ def test_capability_floor_is_frozen_and_not_launchable() -> None:
         "0.8b",
         "3b",
     ]
-    assert payload["mechanism_admission"]["architecture_hash"] is None
+    assert payload["mechanism_admission"]["architecture_hash"] == (
+        mechanism_architecture_sha256()
+    )
+    assert payload["mechanism_admission"]["status"] == (
+        "unified-source-frozen-preflight-blocked"
+    )
     assert payload["mechanism_admission"]["closed_current_family_endpoint"] == (
         "v20-failed-stop-no-v21"
     )
@@ -38,3 +46,11 @@ def test_capability_floor_rejects_weakened_component_gate() -> None:
     payload["component_gates"]["oracle_program_executor_exact"] = 0.90
     with pytest.raises(CapabilityFloorContractError, match="gates differ"):
         validate_preregistration(payload)
+
+
+def test_checked_in_preregistration_matches_builder() -> None:
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "artifacts/r12/ettr_capability_floor_preregistration_v1.json"
+    )
+    assert json.loads(path.read_text(encoding="ascii")) == build_preregistration()

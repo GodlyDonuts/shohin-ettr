@@ -52,6 +52,14 @@ def test_interface_is_exact_and_launch_blocked() -> None:
     )
     assert payload["input_envelope"]["chat_template"] == "forbidden"
     assert payload["data"]["token_truncation"].startswith("forbidden")
+    assert payload["mechanism"]["architecture_parameters"] == 31_329_056
+    assert payload["mechanism"]["dense_control"]["parameters"] == 31_329_056
+    assert payload["mechanism"]["dense_control"][
+        "parameter_match_relative_error"
+    ] == 0.0
+    assert "unified-model-owned-trajectory-mechanism-hash-unset" not in payload[
+        "launch_blockers"
+    ]
 
 
 @pytest.mark.parametrize(

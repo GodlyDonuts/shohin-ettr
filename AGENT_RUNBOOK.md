@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 17:52 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 18:21 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -25341,3 +25341,55 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_the_local_family_line_build_one_model_owned_trajectory_and_prove_its_tensor_interface_and_replay_schedule_before_spending_the_four_backbone_matrix`.
+
+- **2026-08-02 17:53--18:21 EDT** -- **The unified capability-floor
+  mechanism, exact parameter-matched dense control, and replay/tensor
+  preflights are now executable; capability remains unproven.**
+
+  New `train/capability_floor_trajectory.py` replaces separate fitted
+  compiler/reactor/reader composition with one 31,329,056-parameter mechanism.
+  `UnifiedStateEncoder` and `TiedTrajectoryCell` are shared across every WORLD
+  and COMMAND step. A fixed typed algebra applies
+  ALLOCATE/WRITE/CLEAR/LINK/UNLINK/SET_ROOT, per-example STOP is monotone and
+  forced at each phase limit, stopped state is frozen, and QUERY cannot enter
+  until COMMAND has terminated. No old component checkpoint is loaded. Source
+  SHA-256 is
+  `b0fef198fe35ade9fcf04f86d70119d6fa9b04feb4ff2d680252523b45040c7f`;
+  architecture SHA-256 is
+  `552236f44b4b30d9f384fc3ffe185663c6231eac96e5b4fbf4e996b26a0c53cf`.
+
+  New `train/capability_floor_dense_control.py` is a favorable control, not a
+  weakened ETTR clone. It uses independent WORLD and COMMAND recurrent cells,
+  full dense state, learned terminal-packet heads, and late QUERY. The matcher
+  selects hidden width 424, a live 880-wide capacity MLP, and 243 additional
+  live interaction parameters for exactly 31,329,056 parameters, relative
+  mismatch zero. A measured H100 training-FLOP receipt remains mandatory.
+
+  New `train/capability_floor_replay.py` makes causal rectangles indivisible,
+  emits four 16-row microbatches per update, requires all component strata in
+  each 64-row optimizer window, forbids repeated rectangles inside an update,
+  records charged positions, and binds one schedule for ETTR and dense. New
+  `train/capability_floor_sufficiency.py` exposes only projected token tensors,
+  public role masks, and exact typed-state tensors, hashes dtype/shape/bytes,
+  and rejects symbolic/tensor/orbit mismatch or binding/state control leakage.
+
+  Artifact SHA-256 values: unified mechanism receipt
+  `73996ac5ede6ce209cf6209e5cbec7629e03b50e6d1e204150b7444eec27301e`;
+  dense descriptor
+  `7d39abf73ba6025e1b4d6a8a503e5c220f5c74e873101630e10f2bfe42fb3c57`;
+  updated preregistration
+  `e7800d87fd8e9e089f4f650966064492735494c994089f85ac3b1bcb04cdb3d1`;
+  updated interface
+  `b200e7565008c030c05ef0eeeb592c086b2158b3c399881c2412b57d228aa752`.
+  Thirty-seven focused tests pass. These are mechanics/custody evidence, not
+  the 95% component or 90% composition gates.
+
+  Newton has no active campaign job. Six preserved historical jobs remain
+  held/dependency-pending (`723950/723951/723956/723957/724016/724017`) and
+  were not modified. Current launch blockers are a real-corpus unified smoke,
+  the four-tokenizer intersection, exact symbolic-to-tensor sufficiency,
+  component replay receipts, MobileLLM gated admission, and measured dense
+  FLOPs.
+
+  Decision:
+  `do_not_spend_the_backbone_matrix_until_real_model_tensors_preserve_the_required_variable_then_run_ettr_and_the_exact_parameter_matched_dense_control_on_identical_replay_windows`.
