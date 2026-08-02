@@ -53641,3 +53641,18 @@ alone does not count.
 
 Current decision:
 `bind_local_identity_before_compiling_one_coherent_schedule_and_measure_only_unchanged_autonomous_causal_gates`.
+
+The direct terminal occurrence diagnostic has now completed and is negative.
+Job `725555` reaches 71.72% oracle-initial value accuracy, 55.49% autonomous
+value accuracy, 57.81% factual top-1, and zero exact packets. Fully autonomous
+WORLD and COMMAND strict, margin-1, and intervention DID remain exactly zero.
+This rejects equality-aware fieldwise editing, not occurrence binding itself:
+the direct compiler can still combine incompatible edit hypotheses.
+
+The surviving test is therefore narrower and stronger: bind local identity,
+compile one complete sticky schedule, then apply it through exact algebra.
+Immutable commit-`60ecda3` runtime `r3` is verified. Matched jobs `725559`
+(H100) and `725560` (V100) are queued. The old 200M cap is now a user-relaxed
+comparison point rather than a hard ceiling, but expansion is conditional on
+measured evidence that the narrow causal path is capacity-limited; width alone
+has already failed and will not be repeated without that evidence.

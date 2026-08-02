@@ -70,3 +70,13 @@ already exact transaction algebra preserves operation identity across steps.
 
 Decision:
 `bind_equal_syntax_occurrences_before_semantic_editing_then_move_to_sticky_schedules_if_direct_terminal_transport_remains_invariant`.
+# Result
+
+V100 diagnostic `725555` completed 1,000 updates. Oracle-initial value accuracy
+is 71.724891%, autonomous value accuracy is 55.485809%, factual top-1 is
+57.8125%, and exact terminal packets are `0/512`. Fully autonomous WORLD and
+COMMAND strict, margin-1, and intervention DID are all exactly zero. The
+result is a clean diagnostic negative; the pending H100 duplicate was canceled
+before allocation. Direct fieldwise occurrence editing is closed, while the
+same target-free equality memory proceeds in the preregistered sticky schedule
+plus exact-executor path.

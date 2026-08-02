@@ -15,7 +15,13 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-02 01:00 EDT. The protected 300k flagship remains immutable and
+> **ARCHITECTURE PARAMETER CEILING RELAXED — 2026-08-02:** The user now
+> authorizes exceeding 200M parameters when required for reasoning. Treat 200M
+> as a comparison point, not a hard rejection boundary. Added capacity still
+> requires a preregistered causal purpose and unchanged source-deleted gates;
+> parameter growth or lower training loss alone is not progress.
+>
+> **Last updated:** 2026-08-02 01:14 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -157,8 +163,9 @@
 > equal opaque identifier occurrences before atomic edit compilation. It still
 > admits no sidecar names, QUERY, answers, targets, oracle programs, or host
 > semantic execution. No current artifact is promoted as stable native
-> reasoning. The matched direct occurrence arm is running as V100 diagnostic
-> `725555` and queued as H100 claim job `725553`. In parallel, the same
+> reasoning. The matched direct occurrence V100 diagnostic `725555` completed
+> with exact packets and both causal gates still zero; redundant pending H100
+> job `725553` was canceled. The same
 > occurrence quotient is now integrated into the stronger sticky schedule plus
 > exact-executor architecture. That complete system is 166,863,343 parameters,
 > receives no QUERY/answer/target/oracle program at inference, and passes its
@@ -23338,3 +23345,35 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finish_the_direct_diagnostic_while_sealing_the_occurrence_linked_sticky_schedule_then_gate_both_strict_causal_axes_against_725460`.
+
+- **2026-08-02 01:00--01:14 EDT** -- **Direct occurrence binding is closed;
+  the exact-executor treatment is sealed and queued.**
+
+  V100 diagnostic `725555` completed all 1,000 updates in 12:27. Report
+  SHA-256 is
+  `6e3a3fc81ebca6dde6335e7ce0b66c8ec9eb429b2bb75f044a9a0ac2a3647be2`;
+  run-receipt SHA-256 is
+  `e7a6d88244a870d84c54cd7e5243d7ebe50d525b2b151d03e905bbb2a7b9398a`.
+  Oracle-initial terminal value accuracy is 71.724891%, only +0.218 points
+  over the syntax-only H100 arm and still below the untouched 74.344978%
+  interface. Autonomous value is 55.485809%, factual top-1 is 57.8125%, exact
+  packets are `0/512`, and fully autonomous WORLD/COMMAND strict, margin-1,
+  and DID remain exactly zero. Identifier equality alone does not rescue a
+  fieldwise direct editor. Pending duplicate H100 job `725553` was canceled
+  before allocation and the lane is closed.
+
+  Private commit `60ecda3` is pushed. The first remote extraction was
+  quarantined before submission because its manually written full source
+  marker differed from the actual commit suffix. Correct immutable runtime
+  `scratchpad/shohin_ettr_occurrence_schedule_runtime_60ecda3_r3` contains
+  3,575 measured files at exact commit
+  `60ecda3a1f71da0c62c10c9ffd569cbd4c8993ba`; SHA256SUMS SHA-256 is
+  `7b6d3046d6c356cbab333f1333b3d4840e89b467399c26f6ed1c59a375b57320`.
+  Test-only admission passed. Matched occurrence-linked sticky-schedule jobs
+  `725559` (H100 claim) and `725560` (V100 diagnostic) are pending priority.
+  Both use seed 31/data 11, oracle initial state, position zero, 1,000 updates,
+  LR `3e-4`, clip 1, width 384/layers 3/heads 8, and the unchanged 32-batch
+  source-deleted evaluator.
+
+  Decision:
+  `close_direct_occurrence_editing_and_require_the_bound_identity_to_survive_one_coherent_sticky_program_plus_exact_execution`.
