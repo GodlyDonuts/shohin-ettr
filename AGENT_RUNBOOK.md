@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 09:13 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 09:48 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -201,9 +201,11 @@
 > unordered bounded typed-effect set compiler with state-grounded operands,
 > permutation-invariant training, and the same fixed state algebra. Its
 > two-update V100 smoke is mechanically clean and the exact corpus audit proves
-> that 16 slots cover the measured maximum of 10 effects. The preregistered
-> 1,000-update gate is released as Newton job `726981`; it has not yet produced
-> a reasoning result.
+> that 16 slots cover the measured maximum of 10 effects. The first long job
+> `726981` exposed only an empty trailing operation-rank handling bug and
+> produced zero model evidence. Replacement job `726984` is the active exact
+> 1,000-update gate from corrected immutable source; it has not yet produced a
+> reasoning result.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -24298,3 +24300,50 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `release_the_measured_capacity_sufficient_effect_set_fit_and_route_its_result_by_exact_effect_kind_relation_and_causal_gates`.
+
+- **2026-08-02 09:18--09:48 EDT** -- **The first long job finds a technical
+  padding defect; the corrected fit is healthy and its result route is now
+  executable rather than discretionary.**
+
+  Released job `726981` allocated `evc1` but failed after 1m45s when a later
+  operation rank was empty for the entire batch. Empty trailing ranks are
+  legal padding, but `operation_boundary_objective` raised instead of skipping
+  them. The run wrote no final weights, report, or SHA256SUMS and therefore
+  contains zero architecture evidence. Empty ranks now `continue`, with a
+  regression that exercises the exact geometry.
+
+  Commit `16455f3` also adds a held-out hard-effect diagnostic that measures
+  exact unordered kinds and complete effects, entity/relation/root/disposition
+  subsets, per-kind precision/recall, dense edit fields, per-operation typed
+  state, and terminal state. Authoritative corrected runtime
+  `scratchpad/shohin_ettr_effect_diagnostic_runtime_16455f3_r3` was constructed
+  by overlaying the nine source changes onto the previously validated full
+  runtime. It contains 3,649 measured files, zero writable files, passes full
+  `sha256sum -c`, and has SHA256SUMS SHA-256
+  `69e753b9dfc9e4de5d37b9f8ce9ea2da8729ac2101325b2a2d93589d0ab82f92`.
+  Two incomplete runtime attempts (`r1`, wrong guessed receipt; `r2`, incomplete
+  archive extraction) were rejected and never used.
+
+  Replacement job `726984` started on `evc1` at 09:33 EDT with the unchanged
+  scientific treatment: one V100, 1,000 updates, seed 31/data seed 11, LR
+  3e-4, training-only oracle initial state, 16 effect slots, width 512, four
+  layers, eight heads, causal weight 4, and exact 524,288-token component
+  lineage. At update 340 it remains finite: loss 8.4538, pre-clip gradient
+  norm 1.9375, atomic-action loss 1.7165, operation-prefix loss 0.1767,
+  state loss 0.03537, and causal-delta loss 1.6313. These optimization numbers
+  are health signals only.
+
+  The external evaluator is upgraded before seeing the final result. It will
+  reload and measure both immutable initial and final compiler weights on the
+  same fresh held-out ordering, then report local effect, terminal-state, and
+  fully autonomous WORLD/COMMAND deltas. A deterministic result router has
+  five exclusive outcomes: fresh-population replication only for simultaneous
+  exact local/terminal/WORLD/COMMAND gain; public-AST role anchors for kind
+  collapse; entity-then-relation execution for accurate entity effects with
+  failed positive links; crossed state-sufficiency isolation for local/state
+  gain with zero strict axes; otherwise rejection. Five synthetic branch
+  tests pass. No seed, width, duration, or near-duplicate arm may bypass this
+  router.
+
+  Decision:
+  `finish_726984_measure_initial_to_final_deltas_and_launch_only_the_mechanism_distinct_branch_selected_by_the_sealed_router`.

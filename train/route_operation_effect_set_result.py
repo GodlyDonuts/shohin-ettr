@@ -1,0 +1,205 @@
+#!/usr/bin/env python3
+"""Route a sealed effect-set result to one preregistered successor."""
+
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+from typing import Mapping, Sequence
+
+
+REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-eval-report-v2"
+ROUTE_SCHEMA = "shohin-ettr-operation-effect-set-route-v1"
+
+
+class OperationEffectRouteError(RuntimeError):
+    """The measured report cannot support an exact branch decision."""
+
+
+def _mapping(value: object, label: str) -> Mapping[str, object]:
+    if not isinstance(value, Mapping):
+        raise OperationEffectRouteError(f"{label} differs")
+    return value
+
+
+def _number(value: object, label: str) -> float:
+    if not isinstance(value, (int, float)) or isinstance(value, bool):
+        raise OperationEffectRouteError(f"{label} differs")
+    result = float(value)
+    if not 0.0 <= result <= 1.0:
+        raise OperationEffectRouteError(f"{label} differs")
+    return result
+
+
+def _phase_local(report: Mapping[str, object], phase: str) -> Mapping[str, object]:
+    diagnostics = _mapping(
+        report.get("operation_effect_diagnostics"),
+        "operation effect diagnostics",
+    )
+    return _mapping(diagnostics.get(phase), f"{phase} operation effects")
+
+
+def _exact_rate(local: Mapping[str, object], name: str) -> float:
+    rates = _mapping(local.get("exact_rates"), "operation effect exact rates")
+    return _number(rates.get(name), f"operation effect {name}")
+
+
+def _positive_rate(local: Mapping[str, object], name: str) -> float | None:
+    rates = _mapping(
+        local.get("positive_exact_rates"),
+        "operation effect positive exact rates",
+    )
+    value = rates.get(name)
+    if value is None:
+        return None
+    return _number(value, f"operation effect positive {name}")
+
+
+def _strict_rate(report: Mapping[str, object], phase: str, factor: str) -> float:
+    evaluation = _mapping(report.get("evaluation"), "evaluation")
+    phase_value = _mapping(evaluation.get(phase), f"{phase} evaluation")
+    arms = _mapping(phase_value.get("arms"), "evaluation arms")
+    autonomous = _mapping(
+        arms.get("autonomous_program_autonomous_state"),
+        "fully autonomous arm",
+    )
+    causal = _mapping(
+        autonomous.get("source_deleted_causal"),
+        "source-deleted causal evaluation",
+    )
+    summary = _mapping(causal.get(factor), f"{factor} causal evaluation")
+    return _number(
+        summary.get("paired_order_joint_rate"),
+        f"{factor} strict paired rate",
+    )
+
+
+def _kind_shares(local: Mapping[str, object]) -> tuple[float, float]:
+    histogram = _mapping(
+        local.get("predicted_kind_histogram"),
+        "predicted effect kind histogram",
+    )
+    values = []
+    for name, value in histogram.items():
+        if not isinstance(name, str) or not isinstance(value, int) or value < 0:
+            raise OperationEffectRouteError("predicted effect kind histogram differs")
+        values.append((name, value))
+    total = sum(value for _name, value in values)
+    if total <= 0:
+        raise OperationEffectRouteError("predicted effect kind histogram is empty")
+    noop = next((value for name, value in values if name == "0"), 0) / total
+    dominant = max(value for _name, value in values) / total
+    return noop, dominant
+
+
+def route_result(report: Mapping[str, object]) -> dict[str, object]:
+    """Return exactly one mechanism-level successor from measured deltas."""
+
+    if report.get("schema") != REPORT_SCHEMA or report.get("status") != "pass":
+        raise OperationEffectRouteError("operation effect evaluation report differs")
+    before = _phase_local(report, "before")
+    after = _phase_local(report, "after")
+    before_set = _exact_rate(before, "complete_effect_set_exact")
+    after_set = _exact_rate(after, "complete_effect_set_exact")
+    before_dense = _exact_rate(before, "complete_dense_edit_exact")
+    after_dense = _exact_rate(after, "complete_dense_edit_exact")
+    before_terminal = _number(
+        before.get("terminal_state_exact_rate"),
+        "before terminal state exact rate",
+    )
+    after_terminal = _number(
+        after.get("terminal_state_exact_rate"),
+        "after terminal state exact rate",
+    )
+    before_world = _strict_rate(report, "before", "world")
+    after_world = _strict_rate(report, "after", "world")
+    before_command = _strict_rate(report, "before", "command")
+    after_command = _strict_rate(report, "after", "command")
+    noop_share, dominant_share = _kind_shares(after)
+    entity = _positive_rate(after, "entity")
+    relation_link = _positive_rate(after, "relation_link")
+
+    deltas = {
+        "command_strict": after_command - before_command,
+        "complete_dense_edit_exact": after_dense - before_dense,
+        "complete_effect_set_exact": after_set - before_set,
+        "terminal_state_exact": after_terminal - before_terminal,
+        "world_strict": after_world - before_world,
+    }
+    measured = {
+        "after_command_strict": after_command,
+        "after_complete_dense_edit_exact": after_dense,
+        "after_complete_effect_set_exact": after_set,
+        "after_terminal_state_exact": after_terminal,
+        "after_world_strict": after_world,
+        "dominant_kind_share": dominant_share,
+        "entity_positive_exact": entity,
+        "noop_share": noop_share,
+        "relation_link_positive_exact": relation_link,
+    }
+
+    local_exact_gain = after_set > before_set and after_set > 0.0
+    terminal_gain = after_terminal > before_terminal and after_terminal > 0.0
+    both_strict_gain = (
+        after_world > before_world
+        and after_world > 0.0
+        and after_command > before_command
+        and after_command > 0.0
+    )
+    if local_exact_gain and terminal_gain and both_strict_gain:
+        route = "replicate_fresh_population"
+        reason = "local effects, terminal state, WORLD, and COMMAND all improved"
+    elif noop_share >= 0.9 or dominant_share >= 0.9:
+        route = "public_ast_role_anchored_effect_queries"
+        reason = "hard effect kinds collapsed to NOOP or one dominant class"
+    elif (
+        entity is not None
+        and relation_link is not None
+        and entity >= 0.5
+        and relation_link <= 0.25
+        and entity - relation_link >= 0.25
+    ):
+        route = "two_phase_entity_then_relation_algebra"
+        reason = "entity effects are accurate while relation additions remain wrong"
+    elif (
+        (local_exact_gain or after_dense > before_dense)
+        and terminal_gain
+        and after_world == 0.0
+        and after_command == 0.0
+    ):
+        route = "crossed_state_sufficiency_isolation"
+        reason = "local/state exactness improved without fully autonomous causal gain"
+    else:
+        route = "reject_unordered_effect_set"
+        reason = "no preregistered exact local or causal advancement gate moved"
+    return {
+        "deltas": deltas,
+        "measured": measured,
+        "reason": reason,
+        "route": route,
+        "schema": ROUTE_SCHEMA,
+    }
+
+
+def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--report", type=Path, required=True)
+    parser.add_argument("--output", type=Path)
+    return parser.parse_args(argv)
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = _parse_args(argv)
+    report = json.loads(args.report.read_text(encoding="utf-8"))
+    result = route_result(_mapping(report, "evaluation report"))
+    payload = json.dumps(result, indent=2, sort_keys=True) + "\n"
+    if args.output is None:
+        print(payload, end="")
+    else:
+        args.output.write_text(payload, encoding="utf-8")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

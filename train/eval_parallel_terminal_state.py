@@ -77,8 +77,8 @@ from train_parallel_terminal_state_pilot import (
 from train_parallel_addressed_transaction_pilot import _training_initial_state
 
 
-CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-eval-contract-v1"
-REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-eval-report-v1"
+CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-eval-contract-v2"
+REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-eval-report-v2"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _RUN_FILES = (
@@ -179,6 +179,24 @@ def _require_module_state(
     ):
         raise ParallelTerminalStateEvaluationError(
             "terminal-state initial component differs"
+        )
+
+
+def _load_module_state(
+    module: torch.nn.Module,
+    state: Mapping[str, torch.Tensor],
+) -> None:
+    """Strictly replace one measured component without changing its geometry."""
+
+    try:
+        incompatibility = module.load_state_dict(state, strict=True)
+    except RuntimeError as exc:
+        raise ParallelTerminalStateEvaluationError(
+            "terminal-state measured component differs"
+        ) from exc
+    if incompatibility.missing_keys or incompatibility.unexpected_keys:
+        raise ParallelTerminalStateEvaluationError(
+            "terminal-state measured component differs"
         )
 
 
@@ -845,26 +863,55 @@ def main(argv: Sequence[str] | None = None) -> int:
                 raise ParallelTerminalStateEvaluationError(
                     "operation effect initial-state receipt differs"
                 )
-            operation_effect_diagnostics = _evaluate_operation_effects(
-                model.reactor.compiler,
-                oracle_executor,
-                model,
-                stream=stream,
-                packet_index=packet_index,
-                device=device,
-                data_seed=args.data_seed,
-                max_batches=args.max_batches,
-                training_initial_state=training_initial_state,
+            measured_compiler = model.reactor.compiler
+            initial_state = _load_state_file(
+                args.terminal_run_dir / "terminal-compiler-initial.safetensors"
             )
-        evaluation = _evaluate(
-            reader,
-            model,
-            stream=stream,
-            packet_index=packet_index,
-            device=device,
-            data_seed=args.data_seed,
-            max_batches=args.max_batches,
-        )
+            final_state = _load_state_file(
+                args.terminal_run_dir / "terminal-compiler-final.safetensors"
+            )
+            local_by_phase = {}
+            evaluation_by_phase = {}
+            for phase, state in (
+                ("before", initial_state),
+                ("after", final_state),
+            ):
+                _load_module_state(measured_compiler, state)
+                local_by_phase[phase] = _evaluate_operation_effects(
+                    measured_compiler,
+                    oracle_executor,
+                    model,
+                    stream=stream,
+                    packet_index=packet_index,
+                    device=device,
+                    data_seed=args.data_seed,
+                    max_batches=args.max_batches,
+                    training_initial_state=training_initial_state,
+                )
+                evaluation_by_phase[phase] = _evaluate(
+                    reader,
+                    model,
+                    stream=stream,
+                    packet_index=packet_index,
+                    device=device,
+                    data_seed=args.data_seed,
+                    max_batches=args.max_batches,
+                )
+            _load_module_state(measured_compiler, final_state)
+            operation_effect_diagnostics = local_by_phase
+            evaluation = evaluation_by_phase
+        else:
+            evaluation = {
+                "after": _evaluate(
+                    reader,
+                    model,
+                    stream=stream,
+                    packet_index=packet_index,
+                    device=device,
+                    data_seed=args.data_seed,
+                    max_batches=args.max_batches,
+                )
+            }
         report = {
             "compiler_contract_source_commit": compiler_contract["source_commit"],
             "contract_sha256": contract_sha256,
