@@ -799,3 +799,14 @@ verified files, has no links or writable entries, and has SHA256SUMS SHA-256
 Two-update generic-CUDA job `728770` is mechanics-only and isolated from sole
 scientific v15 fit `728691`. A v19 long fit remains prohibited unless v15
 independently measures the preregistered operation-family failure signature.
+
+The next failure branch is also specified before either GPU result. A
+full-corpus Stokes audit compares syntax-only family prediction with the same
+syntax augmented by oracle preceding-state topology and exact values. It
+reports both exact-signature transfer and a smoothed factorized classifier so
+unseen composite keys are not automatically failures. Syntax above 90% means
+v19 needs optimization; state-only crossing means the successor must arbitrate
+rails from evolving state; failure of every oracle-state mode rejects family
+as an explicit primitive and routes to latent typed-effect expert competition.
+The successor state, QUERY, answer, terminal packet, and transaction program
+remain excluded.

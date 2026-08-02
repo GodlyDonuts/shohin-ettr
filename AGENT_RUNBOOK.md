@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 14:20 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 14:21 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -24878,3 +24878,26 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `verify_v19_launch_and_gradient_isolation_without_spending_a_second_scientific_arm_then_route_from_v15_only`.
+
+- **2026-08-02 14:21 EDT** -- **A mechanism-distinct state-conditioning
+  audit is prequalified as the failure successor to v19.**
+
+  The first public family audit did not include the evolving typed state that
+  the deployed controller actually receives. A new full-corpus CPU audit
+  preregisters three nested feature interfaces: public syntax alone, syntax
+  plus oracle preceding-state topology, and syntax plus exact oracle
+  preceding-state values. It reports exact-signature coverage/oracles and a
+  smoothed factorized classifier that can generalize across unseen composite
+  signatures. Successor routing is fixed before measurement: syntax at or
+  above 90% makes v19 an optimization problem; only state-conditioned modes
+  above 90% select a state-conditioned latent rail arbiter; all modes below
+  90% reject NONE/WRITE/LINK as a standalone control primitive and select
+  direct latent expert competition over typed effects. No successor state,
+  QUERY, answer, terminal packet, or transaction program is an input feature.
+
+  Ten focused family/state/audit tests plus Ruff, byte compilation, Bash
+  syntax, and diff checks pass. This CPU audit cannot promote reasoning and
+  does not authorize another GPU fit by itself.
+
+  Decision:
+  `measure_whether_family_ambiguity_is_optimization_state_conditioning_or_an_invalid_control_primitive_before_implementing_the_post_v19_architecture`.
