@@ -25,6 +25,7 @@ PROTECTED_CHECKPOINT=${PROTECTED_CHECKPOINT:?set protected checkpoint}
 JOINT_RUN_DIR=${JOINT_RUN_DIR:?set composed Shohin run}
 COMPILER_RUN_DIR=${COMPILER_RUN_DIR:?set completed algebraic compiler run}
 OUTPUT=${OUTPUT:?set fresh pilot output}
+CAUSAL_DELTA_WEIGHT=${CAUSAL_DELTA_WEIGHT:?set causal delta weight}
 ARCHITECTURE_SEED=${ARCHITECTURE_SEED:?set architecture seed}
 DATA_SEED=${DATA_SEED:?set data seed}
 UPDATES=${UPDATES:-500}
@@ -103,6 +104,7 @@ compiler_sha=$(sha256sum \
   --start-position "$START_POSITION" \
   --learning-rate "$LEARNING_RATE" \
   --gradient-clip "$GRADIENT_CLIP" \
+  --causal-delta-weight "$CAUSAL_DELTA_WEIGHT" \
   --training-initial-state "$TRAINING_INITIAL_STATE" \
   --eval-batches "$EVAL_BATCHES" \
   --width "$WIDTH" \

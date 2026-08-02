@@ -33,6 +33,8 @@ from train_ettr_component_island import (
 )
 from train_parallel_terminal_state_pilot import (
     CONTRACT_SCHEMA as PILOT_CONTRACT_SCHEMA,
+    LEGACY_CONTRACT_SCHEMA as PILOT_LEGACY_CONTRACT_SCHEMA,
+    LEGACY_REPORT_SCHEMA as PILOT_LEGACY_REPORT_SCHEMA,
     REPORT_SCHEMA as PILOT_REPORT_SCHEMA,
 )
 
@@ -202,8 +204,14 @@ def _load_terminal_compiler(
     )
     architecture = contract.get("architecture")
     if (
-        contract.get("schema") != PILOT_CONTRACT_SCHEMA
-        or report.get("schema") != PILOT_REPORT_SCHEMA
+        contract.get("schema")
+        not in (PILOT_CONTRACT_SCHEMA, PILOT_LEGACY_CONTRACT_SCHEMA)
+        or report.get("schema")
+        not in (PILOT_REPORT_SCHEMA, PILOT_LEGACY_REPORT_SCHEMA)
+        or (
+            (contract.get("schema") == PILOT_CONTRACT_SCHEMA)
+            != (report.get("schema") == PILOT_REPORT_SCHEMA)
+        )
         or report.get("status") != "pass"
         or not isinstance(architecture, Mapping)
         or report.get("contract_sha256") != expected["pilot-contract.json"]
@@ -227,6 +235,19 @@ def _load_terminal_compiler(
         raise ParallelTerminalStateEvaluationError(
             "terminal-state run lineage differs"
         )
+    if contract.get("schema") == PILOT_CONTRACT_SCHEMA:
+        objective = contract.get("objective")
+        if (
+            architecture.get("causal_rectangle_delta_credit") is not True
+            or not isinstance(objective, Mapping)
+            or objective.get("causal_pairing")
+            != "complete-2x2-terminal-state-edges"
+            or not isinstance(objective.get("causal_delta_weight"), (int, float))
+            or float(objective["causal_delta_weight"]) <= 0.0
+        ):
+            raise ParallelTerminalStateEvaluationError(
+                "terminal-state causal delta contract differs"
+            )
     try:
         seed = int(architecture["seed"])
         width = int(architecture["width"])

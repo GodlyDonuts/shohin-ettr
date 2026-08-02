@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-01 21:57 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-01 22:10 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -112,7 +112,7 @@
 > COMMAND to zero, rejecting that mismatch as the primary repair. The next
 > architecture gate must preserve coherent whole-program identity or compile
 > the query-independent terminal-state quotient directly. That quotient
-> successor is now implemented and locally qualified. It replaces the learned
+> successor is implemented and measured. It replaces the learned
 > 64-step policy with an 18,520,349-parameter one-pass typed-state transport,
 > leaving the complete system below 200M. Its sealed trainer and independent
 > cross-population evaluator admit no QUERY, answer, target, oracle program,
@@ -123,9 +123,16 @@
 > `scratchpad/shohin_ettr_terminal_state_runtime_08cfaa4_r2` contains 3,429
 > measured files and has SHA256SUMS SHA-256
 > `d602487fc4cb3afcbd689b52c91d8aaf83b5b893baa16054743f45b4f3c7084f`.
-> Slurm test-only admission passed and the preregistered 500-update
-> autonomous-initial H100 canary is job `725476`, pending normal-partition
-> resources. No capability result is claimed from mechanics or queue state.
+> The preregistered 500-update H100 arm `725476` and matched V100 numerical
+> replication `725479` completed cleanly. H100 reaches 70.31% factual top-1,
+> but exact terminal packets and fully autonomous strict WORLD/COMMAND remain
+> zero; V100 independently reproduces both strict zeros. The fieldwise
+> terminal quotient is therefore closed: it learns the common state manifold
+> while erasing intervention-specific edits. Contract v2 now adds complete
+> 2x2 rectangle-level terminal-state delta credit on only target-changed WORLD
+> and COMMAND coordinates, with the full-state Brier objective retained as an
+> anchor. It still admits no QUERY or answer supervision. Matched delta-weight
+> 4.0/1.0 canaries are the next hard gate.
 > No current artifact is promoted as stable native reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
@@ -23020,3 +23027,41 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   resources. All healthy H100 nodes currently report both GPUs allocated;
   `evc36` is not free. A shorter backfill request did not obtain an earlier
   reservation, so the admitted single-writer job was retained.
+
+- **2026-08-01 21:57--22:10 EDT** -- **Direct terminal-state transport is a
+  replicated causal-invariance negative; explicit causal-delta credit is
+  implemented and preregistered.**
+
+  H100 job `725476` completed 500/500 updates on `evc50` in 6:32 with no
+  numerical or custody failure. Its final loss is `0.0646163`; the fully
+  autonomous arm reaches 70.31% factual top-1. Terminal fields reach 99.32%
+  active, 100% root/committed/halted, 99.61% relations, 91.03% type, and
+  52.88% value, but exact packets remain `0/512`. The unchanged source-deleted
+  gate is WORLD strict/margin-1 `0%/0%`, DID `0`; COMMAND `0%/0%`, DID
+  `-1.63e-7`. Report SHA-256 is
+  `e36f95c042987423974dba65ff3c31adbfca4e8ef3ef224c5c10af1ae43ed5b1`.
+
+  Matched generic-CUDA job `725479` completed on a 16GB V100 in 7:48. It
+  reaches final loss `0.0734916`, factual 67.19%, and again WORLD/COMMAND
+  strict and margin-1 all zero. Report SHA-256 is
+  `5a8fab285b7007d63320f7590e4cf074b212277086e2318c964a983e02fedea0`.
+  This rules out an H100-specific numerical artifact. Both receipts and
+  report/log sidecars are preserved under
+  `artifacts/r12/parallel_terminal_u500_autonomous_a31_d11_lr3em4_{h100,v100}`.
+
+  The failure is specific: aggregate field balance is not episode-difference
+  balance. The dense objective learns the dominant terminal-state manifold
+  and averages away rare coordinates that distinguish WORLD and COMMAND
+  interventions. Contract v2 adds `causal_terminal_delta_brier`, which treats
+  each complete 2x2 rectangle as a unit. It fits signed predicted-versus-true
+  terminal-state deltas along both WORLD and COMMAND edges, only on coordinates
+  whose exact target changes, while retaining the full-state Brier anchor.
+  Rectangle membership and terminal packets are training targets; QUERY bytes,
+  query targets, answers, oracle programs, external execution, and candidate
+  selection remain absent. Eleven focused tests pass with clean Ruff, byte
+  compilation, Bash syntax, and diff checks. The preregistered matched arms use
+  causal-delta weights `4.0` (primary) and `1.0` (dose control), otherwise
+  exactly matching seed 31/data 11/position zero/500 updates/LR `3e-4`.
+
+  Decision:
+  `reject_fieldwise_terminal_state_fit_and_require_joint_world_plus_command_movement_from_explicit_sparse_causal_delta_credit`.

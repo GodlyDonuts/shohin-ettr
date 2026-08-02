@@ -47,8 +47,10 @@ from train_parallel_addressed_transaction_pilot import (
 )
 
 
-CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v1"
-REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v1"
+CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v2"
+REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v2"
+LEGACY_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v1"
+LEGACY_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v1"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 
@@ -80,6 +82,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--start-position", type=int, default=0)
     parser.add_argument("--learning-rate", type=float, default=3e-4)
     parser.add_argument("--gradient-clip", type=float, default=1.0)
+    parser.add_argument("--causal-delta-weight", type=float, required=True)
     parser.add_argument(
         "--training-initial-state",
         choices=("oracle", "autonomous"),
@@ -132,6 +135,8 @@ def _validate_args(args: argparse.Namespace) -> None:
         or not 0.0 < args.learning_rate < 1.0
         or not math.isfinite(args.gradient_clip)
         or args.gradient_clip <= 0.0
+        or not math.isfinite(args.causal_delta_weight)
+        or args.causal_delta_weight <= 0.0
         or args.output.exists()
         or args.output.is_symlink()
         or not args.output.parent.is_dir()
@@ -139,6 +144,154 @@ def _validate_args(args: argparse.Namespace) -> None:
         raise ParallelTerminalStatePilotError(
             "terminal-state pilot arguments differ"
         )
+
+
+def _causal_edge_indices(
+    rectangle_rows: torch.Tensor,
+) -> dict[str, tuple[torch.Tensor, torch.Tensor]]:
+    if (
+        rectangle_rows.ndim != 3
+        or rectangle_rows.shape[1:] != (2, 2)
+        or rectangle_rows.dtype != torch.long
+    ):
+        raise ParallelTerminalStatePilotError(
+            "terminal-state causal rectangle geometry differs"
+        )
+    r00 = rectangle_rows[:, 0, 0]
+    r01 = rectangle_rows[:, 0, 1]
+    r10 = rectangle_rows[:, 1, 0]
+    r11 = rectangle_rows[:, 1, 1]
+    return {
+        "world": (torch.cat((r00, r01)), torch.cat((r10, r11))),
+        "command": (torch.cat((r00, r10)), torch.cat((r01, r11))),
+    }
+
+
+def _changed_coordinate_delta_brier(
+    predicted: torch.Tensor,
+    target: torch.Tensor,
+    *,
+    left: torch.Tensor,
+    right: torch.Tensor,
+    mask: torch.Tensor,
+    categorical: bool,
+) -> tuple[torch.Tensor | None, int]:
+    if (
+        predicted.shape != target.shape
+        or mask.shape != target.shape[: mask.ndim]
+        or mask.dtype != torch.bool
+        or predicted.shape[0] <= int(torch.stack((left, right)).max())
+    ):
+        raise ParallelTerminalStatePilotError(
+            "terminal-state causal delta geometry differs"
+        )
+    predicted_delta = (
+        predicted.index_select(0, right).float()
+        - predicted.index_select(0, left).float()
+    )
+    target_delta = (
+        target.index_select(0, right).float()
+        - target.index_select(0, left).float()
+    )
+    support = mask.index_select(0, left) & mask.index_select(0, right)
+    if categorical:
+        if predicted.ndim != 3 or mask.ndim != 2:
+            raise ParallelTerminalStatePilotError(
+                "terminal-state categorical causal delta geometry differs"
+            )
+        changed = support & target_delta.abs().amax(dim=-1).gt(0.0)
+        error = (predicted_delta - target_delta).square().sum(dim=-1)
+    else:
+        changed = support & target_delta.abs().gt(0.0)
+        error = (predicted_delta - target_delta).square()
+    changed_count = int(changed.sum().detach().cpu())
+    if changed_count == 0:
+        return None, 0
+    return error[changed].mean(), changed_count
+
+
+def causal_terminal_delta_brier(
+    predicted,
+    target,
+    *,
+    rectangle_rows: torch.Tensor,
+    slot_mask: torch.Tensor,
+    relation_mask: torch.Tensor,
+) -> tuple[torch.Tensor, dict[str, torch.Tensor], dict[str, int]]:
+    """Credit only terminal coordinates changed by WORLD or COMMAND.
+
+    Rectangle membership is a training-time grouping contract. The objective
+    consumes terminal packet targets, never QUERY bytes or answer labels.
+    """
+
+    if (
+        slot_mask.ndim != 2
+        or relation_mask.ndim != 4
+        or slot_mask.dtype != torch.bool
+        or relation_mask.dtype != torch.bool
+        or slot_mask.shape[0] != rectangle_rows.numel()
+        or relation_mask.shape[0] != rectangle_rows.numel()
+    ):
+        raise ParallelTerminalStatePilotError(
+            "terminal-state causal support geometry differs"
+        )
+    fields = {
+        "active": (predicted.active, target.active, slot_mask, False),
+        "root": (predicted.root, target.root, slot_mask, False),
+        "relations": (
+            predicted.relations,
+            target.relations,
+            relation_mask,
+            False,
+        ),
+        "type_index": (
+            predicted.type_probabilities,
+            target.type_probabilities,
+            slot_mask,
+            True,
+        ),
+        "value_code": (
+            predicted.value_probabilities,
+            target.value_probabilities,
+            slot_mask,
+            True,
+        ),
+        "committed": (
+            predicted.committed,
+            target.committed,
+            torch.ones_like(target.committed, dtype=torch.bool),
+            False,
+        ),
+        "halted": (
+            predicted.halted,
+            target.halted,
+            torch.ones_like(target.halted, dtype=torch.bool),
+            False,
+        ),
+    }
+    parts: dict[str, torch.Tensor] = {}
+    changed_counts: dict[str, int] = {}
+    for axis, (left, right) in _causal_edge_indices(rectangle_rows).items():
+        for field, (field_predicted, field_target, mask, categorical) in (
+            fields.items()
+        ):
+            value, changed_count = _changed_coordinate_delta_brier(
+                field_predicted,
+                field_target,
+                left=left,
+                right=right,
+                mask=mask,
+                categorical=categorical,
+            )
+            key = f"{axis}.{field}"
+            changed_counts[key] = changed_count
+            if value is not None:
+                parts[key] = value
+    if not parts:
+        raise ParallelTerminalStatePilotError(
+            "terminal-state causal delta has no changed coordinates"
+        )
+    return torch.stack(tuple(parts.values())).mean(), parts, changed_counts
 
 
 def _module_sha256(module: torch.nn.Module, path: Path) -> str:
@@ -333,6 +486,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         contract = {
             "architecture": {
+                "causal_rectangle_delta_credit": True,
                 "direct_terminal_quotient": True,
                 "layers": args.layers,
                 "no_query_input": True,
@@ -358,6 +512,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             "learning_rate": args.learning_rate,
             "objective": {
                 "binary": "class-balanced-brier",
+                "causal_delta_weight": args.causal_delta_weight,
+                "causal_pairing": "complete-2x2-terminal-state-edges",
                 "categorical": "categorical-brier",
                 "target": "query-independent-terminal-packet",
             },
@@ -425,13 +581,28 @@ def main(argv: Sequence[str] | None = None) -> int:
                     steps=batch.transaction_targets.opcode.shape[1],
                     hard=False,
                 )
-                loss, parts = _state_brier(
+                state_loss, state_parts = _state_brier(
                     predicted,
                     target,
                     slot_mask=batch.terminal_packet_targets.slot_mask,
                     relation_mask=(
                         batch.terminal_packet_targets.relation_mask
                     ),
+                )
+                causal_delta_loss, delta_parts, changed_counts = (
+                    causal_terminal_delta_brier(
+                        predicted,
+                        target,
+                        rectangle_rows=batch.causal_rectangles.rows,
+                        slot_mask=batch.terminal_packet_targets.slot_mask,
+                        relation_mask=(
+                            batch.terminal_packet_targets.relation_mask
+                        ),
+                    )
+                )
+                loss = (
+                    state_loss
+                    + args.causal_delta_weight * causal_delta_loss
                 )
             if not bool(torch.isfinite(loss)):
                 raise ParallelTerminalStatePilotError(
@@ -451,12 +622,21 @@ def main(argv: Sequence[str] | None = None) -> int:
                         gradient_norm.detach().float().cpu()
                     ),
                     "loss": last_loss,
-                    "parts": {
+                    "causal_delta_loss": float(
+                        causal_delta_loss.detach().cpu()
+                    ),
+                    "causal_delta_parts": {
                         name: float(value.detach().cpu())
-                        for name, value in parts.items()
+                        for name, value in delta_parts.items()
+                    },
+                    "changed_coordinates": changed_counts,
+                    "state_loss": float(state_loss.detach().cpu()),
+                    "state_parts": {
+                        name: float(value.detach().cpu())
+                        for name, value in state_parts.items()
                     },
                     "position": last_position,
-                    "schema": "shohin-ettr-parallel-terminal-state-metric-v1",
+                    "schema": "shohin-ettr-parallel-terminal-state-metric-v2",
                     "update": update,
                 }
                 with (args.output / "train.jsonl").open("ab", buffering=0) as log:

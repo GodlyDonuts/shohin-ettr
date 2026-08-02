@@ -2,8 +2,8 @@
 
 ## Status
 
-Implemented and locally qualified on 2026-08-01. No H100 result existed when
-this preregistration was written.
+Implemented and locally qualified on 2026-08-01. The preregistered H100 arm
+and a matched V100 numerical replication are complete and negative.
 
 ## Causal diagnosis
 
@@ -83,3 +83,25 @@ A positive result would show that Shohin can learn a query-independent semantic
 state transition without committing to an arbitrary operation serialization.
 It would not by itself prove unrestricted general reasoning beyond the frozen
 factorial qualification families.
+
+## Result
+
+The H100 arm completed 500 updates with final loss `0.0646163`. It reached
+70.31% fully autonomous factual top-1, 99.32% active, 100% root and terminal
+status, 99.61% relation-coordinate accuracy, 91.03% type, and 52.88% value.
+Despite that broad field fit, exact terminal packets remained `0/512` and the
+unchanged fully autonomous source-deleted gate remained WORLD `0%`, COMMAND
+`0%`, and margin-1 `0%` for both. WORLD DID was exactly zero and COMMAND DID
+was numerical zero (`-1.63e-7`). Report SHA-256 is
+`e36f95c042987423974dba65ff3c31adbfca4e8ef3ef224c5c10af1ae43ed5b1`.
+
+The same arm independently completed on a V100 with final loss `0.0734916`,
+67.19% factual top-1, and again zero WORLD/COMMAND strict and margin-1 gates.
+Report SHA-256 is
+`5a8fab285b7007d63320f7590e4cf074b212277086e2318c964a983e02fedea0`.
+This rejects hardware noise and closes unweighted fieldwise terminal-state
+transport. It learns the common terminal manifold while averaging away the
+rare coordinates that distinguish the complete 2x2 interventions.
+
+Disposition:
+`reject_fieldwise_terminal_quotient_retain_architecture_for_explicit_rectangle_delta_credit`.

@@ -53,6 +53,7 @@ def _train_args(tmp_path: Path):
         log_every=10,
         learning_rate=3e-4,
         gradient_clip=1.0,
+        causal_delta_weight=4.0,
     )
 
 

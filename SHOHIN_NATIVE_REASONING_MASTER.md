@@ -3,7 +3,7 @@
 ## Current Status — Read First
 
 **Current frontier, superseding older status text below (2026-08-01
-21:45 EDT):** Shohin still has no replicated two-population demonstration of
+22:10 EDT):** Shohin still has no replicated two-population demonstration of
 architecture-native general reasoning. The campaign has nevertheless moved
 from an undifferentiated failure to a measured interface decomposition. A
 fixed typed algebra is exact on the real held-out corpus, and a learned query
@@ -22,18 +22,18 @@ hard WORLD packet improves exact schedule imitation while returning both
 causal gates to zero. These results reject independent canonical schedule
 fields as the semantic objective.
 
-The new preregistered architecture compiles the query-independent terminal
-state quotient directly. `ParallelTerminalStateCompiler` consumes only the
-initial typed packet and COMMAND residuals, predicts one complete typed
-terminal state, and removes the 64-step learned policy from deployment. It
-adds 18,520,349 parameters and leaves the complete replacement system below
-200M. Hard inference enforces active-slot categorical values/types, one-or-none
-root, sparse relations only between active slots, and terminal status. The
-sealed trainer uses bounded class-balanced semantic loss; the unchanged hard
-source-deleted WORLD/COMMAND gate remains decisive. Local qualification is
-29/29 passing with clean static and shell checks. No H100 result existed at
-the time of this update. The protected step-300k checkpoint remains immutable
-and no raw-pretraining writer is active.
+The direct terminal-state quotient is now a measured negative rather than an
+open hypothesis. Its H100 arm reaches 70.31% factual top-1 and near-perfect
+common binary fields, while exact packets and fully autonomous strict WORLD
+and COMMAND remain zero; a V100 replication also returns both strict gates to
+zero. The architecture learns the dominant terminal-state manifold but erases
+the rare intervention-specific edits. The immediate successor keeps the same
+18,520,349-parameter one-pass typed-state architecture and adds explicit
+rectangle-level WORLD/COMMAND delta credit on only the terminal coordinates
+that actually change. It still admits no query or answer supervision. Local
+invariance and custody tests pass; matched delta-weight canaries are the next
+hard gate. The protected step-300k checkpoint remains immutable and no raw-
+pretraining writer is active.
 
 The older adversarial conclusions remain binding: the apparent 11/11
 episodic-generator result was not a Shohin claim because exact host code parsed,
@@ -53490,3 +53490,14 @@ a second architecture seed.
 
 Current decision:
 `replace_arbitrary_transaction_serialization_with_one_query_independent_terminal_state_prediction_then_require_replicated_world_and_command_causality`.
+
+The H100 and V100 results reject that fieldwise objective. Aggregate fit is
+real, but both systems are causally invariant. The replacement objective now
+treats each 2x2 rectangle as a unit and directly fits the signed terminal-state
+change along every WORLD and COMMAND edge, scoring only target-changed
+coordinates while retaining the full-state Brier anchor. This is not answer
+supervision: the compiler still receives only initial typed state and COMMAND,
+and the training target remains the query-independent terminal packet.
+
+Current decision:
+`preserve_direct_terminal_transport_but_make_sparse_causal_edits_first_class_then_reject_unless_both_axes_move`.

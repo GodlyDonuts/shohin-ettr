@@ -16,6 +16,7 @@ from parallel_terminal_state_compiler import (
     ParallelTerminalStateCompiler,
     ParallelTerminalStateReactor,
 )
+from train_parallel_terminal_state_pilot import causal_terminal_delta_brier
 
 
 def _config() -> TheoryReactorConfig:
@@ -206,3 +207,69 @@ def test_terminal_compiler_rejects_wrong_command_geometry() -> None:
     values["command_attention_mask"] = torch.ones(2, 5, dtype=torch.bool)
     with pytest.raises(TheoryReactorError, match="input differs"):
         compiler(_state(config), **values, hard=False)
+
+
+def test_causal_delta_loss_penalizes_intervention_invariance() -> None:
+    config = _config()
+    target = _state(config, batch=4)
+    target.value_probabilities[2, 0].zero_()
+    target.value_probabilities[2, 0, 3] = 1.0
+    target.value_probabilities[3, 0].zero_()
+    target.value_probabilities[3, 0, 3] = 1.0
+    rectangles = torch.tensor([[[0, 1], [2, 3]]], dtype=torch.long)
+    slot_mask = torch.ones(4, config.num_slots, dtype=torch.bool)
+    relation_mask = torch.ones_like(target.relations, dtype=torch.bool)
+
+    matched_loss, matched_parts, counts = causal_terminal_delta_brier(
+        target,
+        target,
+        rectangle_rows=rectangles,
+        slot_mask=slot_mask,
+        relation_mask=relation_mask,
+    )
+    invariant_loss, _, _ = causal_terminal_delta_brier(
+        _state(config, batch=4),
+        target,
+        rectangle_rows=rectangles,
+        slot_mask=slot_mask,
+        relation_mask=relation_mask,
+    )
+    assert matched_loss.item() == 0.0
+    assert invariant_loss.item() > 0.0
+    assert tuple(matched_parts) == ("world.value_code",)
+    assert counts["world.value_code"] == 2
+
+
+def test_causal_delta_loss_reaches_both_rectangle_axes() -> None:
+    config = _config()
+    target = _state(config, batch=4)
+    for row, code in ((1, 3), (2, 4), (3, 5)):
+        target.value_probabilities[row, 0].zero_()
+        target.value_probabilities[row, 0, code] = 1.0
+    predicted_values = target.value_probabilities.detach().clone()
+    predicted_values.requires_grad_(True)
+    predicted = TypedTheoryState(
+        value_probabilities=predicted_values,
+        type_probabilities=target.type_probabilities,
+        relations=target.relations,
+        active=target.active,
+        root=target.root,
+        committed=target.committed,
+        halted=target.halted,
+        step=target.step,
+    )
+    rectangles = torch.tensor([[[0, 1], [2, 3]]], dtype=torch.long)
+    loss, parts, counts = causal_terminal_delta_brier(
+        predicted,
+        target,
+        rectangle_rows=rectangles,
+        slot_mask=torch.ones(4, config.num_slots, dtype=torch.bool),
+        relation_mask=torch.ones_like(target.relations, dtype=torch.bool),
+    )
+    loss.backward()
+    assert "world.value_code" in parts
+    assert "command.value_code" in parts
+    assert counts["world.value_code"] == 2
+    assert counts["command.value_code"] == 2
+    assert predicted_values.grad is not None
+    assert bool(predicted_values.grad.isfinite().all())
