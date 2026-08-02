@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 13:15 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 14:20 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -24847,3 +24847,34 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `mechanically_smoke_v19_without_touching_v15_then_release_it_only_if_v15_measures_family_failure`.
+
+- **2026-08-02 14:09--14:20 EDT** -- **V19 is source-sealed and queued as a
+  mechanics-only check; incomplete transport artifacts were rejected before
+  allocation.**
+
+  The first streamed archive staging contained only 547 of 3,649 tracked
+  files and lacked its source/manifest receipts. A direct SCP retry was also
+  silently truncated at 100,302,848 of 832,327,680 bytes. Neither artifact
+  was submitted or used. The exact local archive was split into thirteen
+  independently transferred chunks, reconstructed on Newton, and matched to
+  the local archive SHA-256
+  `2bd31f568f6232a17f2f54a9d2bcd93e07c8bb6eefd701ca58a9930ee08c8624`.
+  Rejected staging and transport chunks were deleted after verification.
+
+  Immutable runtime
+  `scratchpad/shohin_ettr_operation_family_island_runtime_2456dd7_r2` is
+  bound to source `2456dd72bd35430a21ed91b5386a5ba35f5b28db`. It contains
+  3,651 files including `SOURCE_COMMIT` and `SHA256SUMS`, zero links, zero
+  writable entries, passes complete checksum replay, and has SHA256SUMS
+  SHA-256
+  `85de46600f25a0b0278d4f0fddaf0309cfc0ff140227ab18c135fa8f16d8c351`.
+
+  Slurm test-only admission passed for a generic CUDA GPU. Mechanics-only
+  smoke `728770` is queued for two updates with v19 family isolation enabled,
+  oracle preceding operation state, seed pair `31/11`, and an isolated output.
+  It cannot promote a scientific result. Sole scientific fit `728691` remains
+  untouched and retains its earlier priority, currently with a scheduler
+  estimate of 19:22 EDT.
+
+  Decision:
+  `verify_v19_launch_and_gradient_isolation_without_spending_a_second_scientific_arm_then_route_from_v15_only`.

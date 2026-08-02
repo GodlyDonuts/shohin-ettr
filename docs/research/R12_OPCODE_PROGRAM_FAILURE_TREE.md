@@ -790,3 +790,12 @@ rails remain random in this diagnostic, so terminal state and causal scores
 cannot promote it. Sixty-three focused architecture, objective, gradient,
 schema, evaluator, routing, audit, and custody tests pass with clean Ruff,
 byte compilation, Bash syntax, and diff checks.
+
+Exact Newton runtime
+`scratchpad/shohin_ettr_operation_family_island_runtime_2456dd7_r2` is bound
+to source `2456dd72bd35430a21ed91b5386a5ba35f5b28db`, contains 3,651
+verified files, has no links or writable entries, and has SHA256SUMS SHA-256
+`85de46600f25a0b0278d4f0fddaf0309cfc0ff140227ab18c135fa8f16d8c351`.
+Two-update generic-CUDA job `728770` is mechanics-only and isolated from sole
+scientific v15 fit `728691`. A v19 long fit remains prohibited unless v15
+independently measures the preregistered operation-family failure signature.

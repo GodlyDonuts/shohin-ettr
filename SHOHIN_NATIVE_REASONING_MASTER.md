@@ -53863,3 +53863,11 @@ and fails if any payload parameter receives a gradient. Its fixed gate is
 rail stage; failing closes this control variable without more duration or
 capacity. Random payload outputs mean v19 cannot itself claim terminal or
 causal reasoning progress.
+
+The exact v19 runtime is sealed on Newton from private source `2456dd72` with
+3,651 verified files, no links or writable entries, and SHA256SUMS SHA-256
+`85de46600f25a0b0278d4f0fddaf0309cfc0ff140227ab18c135fa8f16d8c351`.
+Mechanics-only smoke `728770` is queued without touching sole scientific v15
+fit `728691`. The smoke can validate launch custody and payload-gradient
+isolation only; scientific routing still comes exclusively from v15's
+independent held-out family/count/operand/state/causal diagnostics.
