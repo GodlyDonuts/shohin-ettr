@@ -30,7 +30,10 @@ from endogenous_typed_theory_reactor import (
     validate_deployed_state,
     validate_state,
 )
-from token_native_syntax_router import TokenNativeDocumentMask
+from token_native_syntax_router import (
+    TokenNativeDocumentMask,
+    TokenNativeOccurrenceEncoder,
+)
 
 
 def _hard_one_hot(probabilities: torch.Tensor) -> torch.Tensor:
@@ -144,6 +147,7 @@ class ParallelTerminalStateCompiler(nn.Module):
         atomic_edits: bool = False,
         lexical_command: bool = False,
         token_native_command_mask: bool = False,
+        token_native_occurrence_command: bool = False,
         token_native_codebook_ids: Sequence[int] | None = None,
         token_native_vocab_size: int | None = None,
     ) -> None:
@@ -163,7 +167,12 @@ class ParallelTerminalStateCompiler(nn.Module):
             or not isinstance(atomic_edits, bool)
             or not isinstance(lexical_command, bool)
             or not isinstance(token_native_command_mask, bool)
+            or not isinstance(token_native_occurrence_command, bool)
             or (residual_edits and atomic_edits)
+            or (
+                token_native_occurrence_command
+                and not token_native_command_mask
+            )
             or (
                 token_native_command_mask
                 and (
@@ -191,6 +200,9 @@ class ParallelTerminalStateCompiler(nn.Module):
         self.atomic_edits = atomic_edits
         self.lexical_command = lexical_command
         self.token_native_command_mask = token_native_command_mask
+        self.token_native_occurrence_command = (
+            token_native_occurrence_command
+        )
 
         self.command_projection = nn.Linear(config.d_model, width)
         self.command_lexical_projection = (
@@ -205,6 +217,18 @@ class ParallelTerminalStateCompiler(nn.Module):
                 vocab_size=token_native_vocab_size,
             )
             if token_native_command_mask
+            else None
+        )
+        self.command_occurrence_encoder = (
+            TokenNativeOccurrenceEncoder(
+                token_native_codebook_ids,
+                vocab_size=token_native_vocab_size,
+                width=width,
+                num_heads=num_heads,
+                maximum_positions=96,
+                maximum_identifier_codes=96,
+            )
+            if token_native_occurrence_command
             else None
         )
         self.value_embedding = nn.Parameter(
@@ -428,6 +452,16 @@ class ParallelTerminalStateCompiler(nn.Module):
                 )
             command = command + self.command_lexical_projection(command_lexical)
         command = self.command_norm(command)
+        if self.command_occurrence_encoder is not None:
+            if command_tokens is None:
+                raise TheoryReactorError(
+                    "terminal-state compiler COMMAND tokens are absent"
+                )
+            command = self.command_occurrence_encoder(
+                command,
+                command_tokens,
+                command_attention_mask,
+            )
         initial = self._initial_memory(state)
         memory = torch.cat((command, initial), dim=1)
         memory_padding = torch.cat(

@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-02 00:18 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 00:42 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -149,12 +149,15 @@
 > therefore also closed as a sufficient binding interface. Contract v5's
 > matched direct lexical rail also fails: oracle-initial value accuracy falls
 > from 74.34% to 70.20%, exact packets remain zero, and fully autonomous
-> WORLD/COMMAND remain zero. The active contract v6 treatment is a target-free
-> token-native syntax router. It retains lexical plus contextual COMMAND rails
-> but deletes deterministic fixed-width transport cover from compiler attention
-> by recovering the exact leading AST boundary from the public grammar. QUERY,
-> answers, targets, oracle programs, and host semantic execution remain absent.
-> No current artifact is promoted as stable native reasoning.
+> WORLD/COMMAND remain zero. Contract v6's target-free syntax router improves
+> matched oracle-initial value accuracy by 1.31 points to 71.51%, but remains
+> below the untouched 74.34% interface and leaves exact packets plus every
+> strict causal gate at zero. Dense token pooling is closed. Active contract v7
+> factorizes public grammar roles and explicitly broadcasts context across
+> equal opaque identifier occurrences before atomic edit compilation. It still
+> admits no sidecar names, QUERY, answers, targets, oracle programs, or host
+> semantic execution. No current artifact is promoted as stable native
+> reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -23264,3 +23267,38 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `mask_public_transport_cover_then_reject_dense_pooling_if_binding_does_not_materially_improve`.
+
+- **2026-08-02 00:18--00:42 EDT** -- **Syntax routing is directionally
+  positive but causally invariant; explicit identifier-occurrence binding is
+  implemented.**
+
+  Full-archive runtime
+  `scratchpad/shohin_ettr_token_native_router_runtime_8235fc9_r1` contains
+  3,570 measured files at source commit `8235fc9`; its SHA256SUMS SHA-256 is
+  `2cf5a84025538e0a641c94b88071d41c7ed967b42c09e7c7843af369110df8e0`.
+  Test-only admission passed and a 30-minute request started matched H100 job
+  `725537` immediately on `evc50`. It completed all 1,000 updates in 12:09
+  with no numerical or custody error. Report SHA-256 is
+  `6edf0342ecf97693e5057150171652f9960f99bb63eb5e1c428c584fafaaebc4`.
+
+  Exact cover deletion raises oracle-initial value accuracy from job
+  `725519`'s 70.196507% to 71.506550% and autonomous-initial value from
+  55.376638% to 55.704148%. The gain remains below the untouched 74.344978%
+  oracle interface. Exact packets are `0/512`; fully autonomous WORLD and
+  COMMAND strict, margin-1, and DID remain zero; factual top-1 remains 60.94%.
+  Cover was noise, but removing it does not solve local-name binding.
+
+  A source audit found and corrected an off-by-one fused-reification constant
+  in the new router. The admitted `base` release does not emit that
+  presentation, so this does not invalidate `725537`; all four fused renderer
+  forms now have direct coverage. `TokenNativeOccurrenceEncoder` is the v7
+  successor. It factorizes public structural roles, encodes opaque identifiers
+  without ordinal semantics, pools all equal identifier occurrences, and
+  broadcasts the shared binding before a second contextual pass. A one-to-one
+  local identifier rename leaves output exactly unchanged under fixed
+  contextual memory. The treatment remains target-free and below the 200M
+  cap. Fifty focused architecture/custody/model tests pass; Ruff, byte
+  compilation, Bash syntax, and diff checks are clean.
+
+  Decision:
+  `close_dense_token_pooling_and_launch_one_matched_occurrence_linked_h100_gate_then_move_to_sticky_schedules_if_state_remains_invariant`.

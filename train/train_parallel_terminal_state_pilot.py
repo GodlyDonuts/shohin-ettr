@@ -61,6 +61,12 @@ SYNTAX_ROUTED_ATOMIC_CONTRACT_SCHEMA = (
 SYNTAX_ROUTED_ATOMIC_REPORT_SCHEMA = (
     "shohin-ettr-parallel-terminal-state-report-v6"
 )
+OCCURRENCE_LINKED_ATOMIC_CONTRACT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-contract-v7"
+)
+OCCURRENCE_LINKED_ATOMIC_REPORT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-report-v7"
+)
 CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v3"
 REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v3"
 CAUSAL_DELTA_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v2"
@@ -114,6 +120,10 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--atomic-edits", action="store_true")
     parser.add_argument("--lexical-command", action="store_true")
     parser.add_argument("--token-native-command-mask", action="store_true")
+    parser.add_argument(
+        "--token-native-occurrence-command",
+        action="store_true",
+    )
     parser.add_argument("--atomic-action-weight", type=float, default=1.0)
     parser.add_argument(
         "--required-device-class",
@@ -165,6 +175,10 @@ def _validate_args(args: argparse.Namespace) -> None:
         or (
             args.token_native_command_mask
             and (not args.atomic_edits or not args.lexical_command)
+        )
+        or (
+            args.token_native_occurrence_command
+            and not args.token_native_command_mask
         )
         or args.output.exists()
         or args.output.is_symlink()
@@ -575,7 +589,23 @@ def _run_schemas(
     atomic_edits: bool = False,
     lexical_command: bool = False,
     token_native_command_mask: bool = False,
+    token_native_occurrence_command: bool = False,
 ) -> tuple[str, str, str]:
+    if token_native_occurrence_command:
+        if (
+            residual_edits
+            or not atomic_edits
+            or not lexical_command
+            or not token_native_command_mask
+        ):
+            raise ParallelTerminalStatePilotError(
+                "occurrence-linked terminal-state architecture schema differs"
+            )
+        return (
+            OCCURRENCE_LINKED_ATOMIC_CONTRACT_SCHEMA,
+            OCCURRENCE_LINKED_ATOMIC_REPORT_SCHEMA,
+            "shohin-ettr-parallel-terminal-state-metric-v7",
+        )
     if token_native_command_mask:
         if residual_edits or not atomic_edits or not lexical_command:
             raise ParallelTerminalStatePilotError(
@@ -713,6 +743,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.atomic_edits,
         args.lexical_command,
         args.token_native_command_mask,
+        args.token_native_occurrence_command,
     )
     if not torch.cuda.is_available():
         raise ParallelTerminalStatePilotError(
@@ -762,6 +793,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         atomic_edits=args.atomic_edits,
         lexical_command=args.lexical_command,
         token_native_command_mask=args.token_native_command_mask,
+        token_native_occurrence_command=(
+            args.token_native_occurrence_command
+        ),
         token_native_codebook_ids=(
             stream.codec.codebook.token_ids
             if args.token_native_command_mask
@@ -836,6 +870,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "lexical_command_rail": args.lexical_command,
                 "token_native_command_mask": (
                     args.token_native_command_mask
+                ),
+                "token_native_occurrence_command": (
+                    args.token_native_occurrence_command
                 ),
                 "token_native_codebook_sha256": (
                     stream.codec.codebook_sha256

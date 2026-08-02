@@ -2,8 +2,9 @@
 
 ## Status
 
-Preregistered after matched lexical-command H100 job `725519` failed and
-before optimization of a syntax-routed arm.
+Closed as a sufficient repair. Matched H100 job `725537` completed all 1,000
+updates in 12:09. Exact report SHA-256 is
+`6edf0342ecf97693e5057150171652f9960f99bb63eb5e1c428c584fafaaebc4`.
 
 ## Failure Localized
 
@@ -69,3 +70,18 @@ to typed state operations, rather than add another dense loss or wider latent.
 
 Decision:
 `delete_public_transport_cover_then_keep_only_measured_binding_gain_or_move_to_explicit_syntax_occurrence_pointers`.
+
+## Result
+
+Routing improves oracle-initial value accuracy from the lexical control's
+`70.196507%` to `71.506550%` and autonomous-initial value accuracy from
+`55.376638%` to `55.704148%`. It does not restore the untouched
+oracle-initial interface (`74.344978%`), produces `0/512` exact terminal
+packets, and leaves fully autonomous WORLD and COMMAND strict, margin-1, and
+difference-in-differences exactly zero. The end-to-end output is unchanged at
+60.9375% factual top-1 and is causally invariant.
+
+Deleting cover was directionally correct but generic token pooling remains
+the wrong binding topology. The next compiler factorizes public grammar roles
+and explicitly broadcasts information between repeated opaque identifier
+occurrences. It is not another mask, loss coefficient, or width-only arm.

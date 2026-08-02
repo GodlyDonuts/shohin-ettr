@@ -286,6 +286,26 @@ def test_production_lexical_atomic_compiler_fits_system_cap() -> None:
     assert parameters < 44_061_106
 
 
+def test_production_occurrence_linked_compiler_fits_system_cap() -> None:
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    compiler = ParallelTerminalStateCompiler(
+        TheoryReactorConfig(),
+        atomic_edits=True,
+        lexical_command=True,
+        token_native_command_mask=True,
+        token_native_occurrence_command=True,
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+    parameters = sum(parameter.numel() for parameter in compiler.parameters())
+    assert 19_869_528 < parameters < 44_061_106
+
+
 def test_syntax_routed_atomic_compiler_ignores_transport_cover() -> None:
     config = _config()
     compiler = ParallelTerminalStateCompiler(
@@ -302,8 +322,8 @@ def test_syntax_routed_atomic_compiler_ignores_transport_cover() -> None:
     )
     tokens = torch.tensor(
         [
-            [528, 528, 497, 565, 430, 564, 100, 200],
-            [528, 528, 497, 565, 430, 564, 300, 400],
+            [528, 528, 497, 565, 430, 566, 100, 200],
+            [528, 528, 497, 565, 430, 566, 300, 400],
         ],
         dtype=torch.long,
     )

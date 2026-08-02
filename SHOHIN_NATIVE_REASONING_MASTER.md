@@ -53593,3 +53593,23 @@ the architecture advances to explicit syntax-node occurrence pointers.
 
 Current decision:
 `remove_token_native_cover_before_asking_the_neural_compiler_to_bind_visible_syntax_then_move_to_explicit_occurrence_pointers_if_needed`.
+
+The matched router result is only directionally positive. Job `725537`
+improves oracle-initial value accuracy by 1.31 points over the unfiltered
+lexical arm (`71.51%` versus `70.20%`), but remains below the untouched
+`74.34%` interface. Exact terminal packets are `0/512`; fully autonomous
+WORLD and COMMAND strict, margin-1, and DID remain zero. Removing cover does
+not create command-sensitive state.
+
+This localizes the missing invariant more sharply. Opaque symbol token IDs are
+random document-local names. Their useful content is equality between
+occurrences linking an operation application to its declaration, not the
+frozen lexical embedding of the accidental codeword. The next architecture
+therefore factorizes grammar roles and performs an explicit equality broadcast
+between repeated identifier occurrences before atomic edit compilation. It
+adds no semantic parser, target, query, answer, trace, or solver. If that
+direct terminal arm remains invariant, the same bound occurrence memory moves
+to the sticky schedule compiler and exact transaction algebra.
+
+Current decision:
+`replace_generic_token_pooling_with_permutation_equivariant_occurrence_binding_and_test_the_exact_same_causal_gate`.
