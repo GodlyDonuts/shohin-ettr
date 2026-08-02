@@ -816,3 +816,23 @@ bound to source `2523e7e888c98e68a571a11c284d6d6e648b5c04`, contains 2,898
 verified files with no links or writable entries, and has SHA256SUMS SHA-256
 `9d3cf45b2f18ee83113505b4a856f99b3faeebcbbf1d089ea928ac2fe400014d`.
 Full-corpus Stokes job `760964` is running on 48 CPU cores.
+
+## Independent endpoint handoff
+
+V15 completion is no longer dependent on an interactive monitoring window.
+Source `a909b2866494d9a0cbae2684e4ee875f3fdee2f6` adds a self-hashing dispatch
+job and a source-bound deterministic router. Dependency-held job `728779`
+verifies the sealed v15 terminal bundle after `728691`, submits exactly one
+seed-13, 32-batch independent evaluator, then submits the CPU router after the
+evaluator succeeds. The dispatch and route script SHA-256 values are
+`10a001bdbb74a75dbac4fcbe396196b4d374c778191a3ad4c306791add3ab59f` and
+`21fb78ba85b2fdb5bc7ca51e2189b6aa4004ce5f1075919d1457f68d1c7153d2`.
+The router writes a read-only evidence receipt; it cannot submit a scientific
+successor.
+
+At 14:39:33 EDT, sole scientific fit `728691` started on `evc42` from the
+exact sealed v15 runtime. Joint/compiler checksum replay passed and the fresh
+output contains the initial compiler weights. It remains in startup/interface
+evaluation, so no optimization or capability conclusion is available yet.
+V19 job `728770` remains a mechanics-only smoke and Stokes job `760964`
+continues the independent full-corpus state-conditioning audit.

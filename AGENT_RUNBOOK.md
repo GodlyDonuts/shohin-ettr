@@ -24912,3 +24912,36 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `measure_whether_family_ambiguity_is_optimization_state_conditioning_or_an_invalid_control_primitive_before_implementing_the_post_v19_architecture`.
+
+- **2026-08-02 14:31--14:42 EDT** -- **The v15 endpoint now has an
+  unattended independent-evaluation handoff, and the sole scientific fit has
+  started.**
+
+  Source `a909b2866494d9a0cbae2684e4ee875f3fdee2f6` adds a source-verified
+  dispatch and deterministic route job without submitting any scientific
+  successor. Dispatch script
+  `scratchpad/dispatch_parallel_terminal_eval_a909b28_r1.sbatch` has SHA-256
+  `10a001bdbb74a75dbac4fcbe396196b4d374c778191a3ad4c306791add3ab59f`;
+  route script
+  `scratchpad/route_parallel_terminal_eval_a909b28_r1.sbatch` has SHA-256
+  `21fb78ba85b2fdb5bc7ca51e2189b6aa4004ce5f1075919d1457f68d1c7153d2`.
+  Dependency-held job `728779` runs only after successful completion of v15
+  `728691`. It verifies the sealed runtime and terminal bundle, submits one
+  fresh-seed-13 32-batch evaluator to
+  `train/ettr_operation_write_link_rails_eval_u1000_a31_train11_eval13_anygpu_2456dd7_r1`,
+  then submits a CPU router to
+  `artifacts/r12/ettr_operation_write_link_rails_route_u1000_a31_train11_eval13_2456dd7_r1.json`.
+  Nineteen focused tests and Bash syntax checks pass. The router records the
+  preregistered branch but cannot launch a successor.
+
+  At 14:39:33 EDT v15 job `728691` started on `evc42`. Slurm reports the exact
+  sealed v15 command path and a single generic CUDA GPU. Joint and compiler
+  bundle checksum replay passed, the fresh output contains the read-only
+  initial compiler artifact, and the process is in its startup/interface
+  evaluation phase. No training metric exists yet, so there is no scientific
+  result to interpret. Mechanics-only v19 smoke `728770` remains pending
+  resources and the 48-core state-conditioning audit `760964` remains running
+  on Stokes with no stderr.
+
+  Decision:
+  `let_one_sealed_v15_fit_complete_then_measure_it_on_an_independent_seed_and_route_exactly_one_mechanism_without_an_approval_or_monitoring_gap`.
