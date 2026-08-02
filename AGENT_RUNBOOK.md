@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 12:30 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 12:55 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -263,6 +263,15 @@
 > Release v16 only if the independent v15 evaluator selects the matching
 > count-without-payload failure branch; otherwise follow the frozen failure
 > tree rather than spending GPUs on a redundant arm.
+> Contract v17 is also mechanically staged for the orthogonal failure where
+> WRITEs bind but LINK endpoints do not. It keeps v15's original matching
+> objective and changes only architecture: LINK source/target query-key
+> binding consumes a differentiable post-WRITE typed-state encoding. A hostile
+> gradient test proves LINK loss reaches the WRITE value motor through that
+> state. The compiler has 49,998,457 parameters and the complete system has
+> 205,937,351. Fifty-two focused tests pass. V17 is not sealed or launched;
+> release it only for the WRITE-positive/LINK-negative signature. Never combine
+> v16 and v17 before one isolated mechanism earns that follow-up.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -24664,3 +24673,27 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `retain_the_honest_v14_rejection_run_one_typed_rail_gate_and_hold_the_prequalified_rail_local_repair_for_its_exact_failure_signature`.
+
+- **2026-08-02 12:31--12:55 EDT** -- **The next independent architectural
+  failure branch is implemented without confounding the supervision arm.**
+
+  Contract v17 predicts a specific v15 failure: WRITE count/pointer/value may
+  become correct while LINK relation binding remains zero because v15 binds
+  both rails against the pre-operation state. V17 preserves v15's detached
+  typed-set matching and changes only LINK architecture. It first forms the
+  differentiable post-WRITE value state, encodes that state through the fixed
+  typed-state memory interface, then performs relation-type plus source/target
+  query-key binding against those slots. Hard release and the fixed state
+  algebra remain unchanged.
+
+  A direct hostile test differentiates one selected LINK probability and
+  verifies nonzero finite gradients in the WRITE value head and all four LINK
+  source/target query-key matrices. Hard deployed-state validation also
+  passes. The compiler has exactly 49,998,457 parameters, or 205,937,351 in
+  the complete system. Contract/evaluator/launcher/schema/router custody and
+  52 focused tests plus Ruff, byte compilation, Bash syntax, and diff checks
+  pass. V17 remains unsealed and scientifically held. V16 and v17 are mutually
+  exclusive so any result remains attributable to supervision or architecture.
+
+  Decision:
+  `hold_two_orthogonal_prequalified_successors_rail_local_supervision_for_count_without_payload_and_post_write_binding_for_write_without_link`.

@@ -634,3 +634,16 @@ evaluator verifies the new objective string. Fifty-one focused tests plus
 Ruff, byte compilation, Bash syntax, and diff checks pass. V16 is not released
 for a scientific fit until the independent v15 report shows exact rail counts
 without payload binding or total joint-acquisition collapse.
+
+Contract v17 independently implements branch 3 without changing v15's loss.
+It computes the differentiable state after the predicted WRITE rail, embeds
+that typed state, and binds LINK source/target endpoints with query-key
+attention against those post-WRITE slots. Relation type remains conditioned on
+the public operation rail. Hard top-k release and fixed execution are
+unchanged. A hostile local test differentiates a selected LINK probability and
+observes nonzero finite gradient in the WRITE value head plus all LINK
+source/target query-key matrices. The compiler has 49,998,457 parameters and
+the complete system 205,937,351. Fifty-two focused tests and all static custody
+checks pass. V17 remains unsealed until v15 shows WRITE exactness with LINK
+failure. V16 and v17 are deliberately mutually exclusive; combining them
+before either isolated mechanism wins is prohibited.

@@ -52,6 +52,7 @@ from operation_state_transition_compiler import (
     EFFECT_WRITE,
     FactorizedOperationStateTransitionCompiler,
     OperationEffectSetCompiler,
+    OperationPostWriteLinkRailCompiler,
     OperationStateTransitionCompiler,
     OperationWriteLinkRailCompiler,
     LINK_RAIL_EFFECT_SLOTS,
@@ -129,6 +130,8 @@ WRITE_LINK_RAIL_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-
 WRITE_LINK_RAIL_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v15"
 RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v16"
 RAIL_LOCAL_EFFECT_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v16"
+POST_WRITE_LINK_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v17"
+POST_WRITE_LINK_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v17"
 CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v3"
 REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v3"
 CAUSAL_DELTA_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v2"
@@ -227,6 +230,10 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--operation-effect-rail-local-loss",
         action="store_true",
     )
+    parser.add_argument(
+        "--operation-effect-post-write-link-binding",
+        action="store_true",
+    )
     parser.add_argument("--atomic-action-weight", type=float, default=1.0)
     parser.add_argument(
         "--required-device-class",
@@ -270,6 +277,11 @@ def _validate_args(args: argparse.Namespace) -> None:
     operation_effect_rail_local_loss = getattr(
         args,
         "operation_effect_rail_local_loss",
+        False,
+    )
+    operation_effect_post_write_link_binding = getattr(
+        args,
+        "operation_effect_post_write_link_binding",
         False,
     )
     paths = (
@@ -348,6 +360,13 @@ def _validate_args(args: argparse.Namespace) -> None:
         or (operation_effect_write_link_rails and not operation_effect_role_anchors)
         or (operation_effect_write_link_rails and operation_effect_cardinality_gate)
         or (operation_effect_rail_local_loss and not operation_effect_write_link_rails)
+        or (
+            operation_effect_post_write_link_binding
+            and (
+                not operation_effect_write_link_rails
+                or operation_effect_rail_local_loss
+            )
+        )
         or args.output.exists()
         or args.output.is_symlink()
         or not args.output.parent.is_dir()
@@ -1385,6 +1404,7 @@ def _run_schemas(
     operation_effect_cardinality_gate: bool = False,
     operation_effect_write_link_rails: bool = False,
     operation_effect_rail_local_loss: bool = False,
+    operation_effect_post_write_link_binding: bool = False,
 ) -> tuple[str, str, str]:
     if operation_effect_write_link_rails:
         if (
@@ -1393,28 +1413,38 @@ def _run_schemas(
             or operation_effect_set_command
             or not operation_effect_role_anchors
             or operation_effect_cardinality_gate
+            or (
+                operation_effect_post_write_link_binding
+                and operation_effect_rail_local_loss
+            )
         ):
             raise ParallelTerminalStatePilotError(
                 "write/link rail architecture schema differs"
             )
         return (
             (
-                RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA
+                POST_WRITE_LINK_CONTRACT_SCHEMA
+                if operation_effect_post_write_link_binding
+                else RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA
                 if operation_effect_rail_local_loss
                 else WRITE_LINK_RAIL_CONTRACT_SCHEMA
             ),
             (
-                RAIL_LOCAL_EFFECT_REPORT_SCHEMA
+                POST_WRITE_LINK_REPORT_SCHEMA
+                if operation_effect_post_write_link_binding
+                else RAIL_LOCAL_EFFECT_REPORT_SCHEMA
                 if operation_effect_rail_local_loss
                 else WRITE_LINK_RAIL_REPORT_SCHEMA
             ),
             (
-                "shohin-ettr-parallel-terminal-state-metric-v16"
+                "shohin-ettr-parallel-terminal-state-metric-v17"
+                if operation_effect_post_write_link_binding
+                else "shohin-ettr-parallel-terminal-state-metric-v16"
                 if operation_effect_rail_local_loss
                 else "shohin-ettr-parallel-terminal-state-metric-v15"
             ),
         )
-    if operation_effect_rail_local_loss:
+    if operation_effect_rail_local_loss or operation_effect_post_write_link_binding:
         raise ParallelTerminalStatePilotError(
             "rail-local effect loss requires write/link rails"
         )
@@ -1687,6 +1717,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.operation_effect_cardinality_gate,
         args.operation_effect_write_link_rails,
         args.operation_effect_rail_local_loss,
+        args.operation_effect_post_write_link_binding,
     )
     if not torch.cuda.is_available():
         raise ParallelTerminalStatePilotError("terminal-state pilot requires CUDA")
@@ -1724,7 +1755,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     torch.manual_seed(args.architecture_seed)
     torch.cuda.manual_seed_all(args.architecture_seed)
     compiler_class = (
-        OperationWriteLinkRailCompiler
+        OperationPostWriteLinkRailCompiler
+        if args.operation_effect_post_write_link_binding
+        else OperationWriteLinkRailCompiler
         if args.operation_effect_write_link_rails
         else OperationEffectSetCompiler
         if args.operation_effect_set_command
@@ -1863,6 +1896,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "operation_effect_rail_local_loss": (
                     args.operation_effect_rail_local_loss
                 ),
+                "operation_effect_post_write_link_binding": (
+                    args.operation_effect_post_write_link_binding
+                ),
                 "operation_effect_slots": (
                     compiler.maximum_effects
                     if isinstance(
@@ -1984,6 +2020,13 @@ def main(argv: Sequence[str] | None = None) -> int:
                     else None
                 ),
                 "write_link_typed_rails": (args.operation_effect_write_link_rails),
+                "write_link_binding_state": (
+                    "post-write-differentiable-state"
+                    if args.operation_effect_post_write_link_binding
+                    else "pre-operation-state"
+                    if args.operation_effect_write_link_rails
+                    else None
+                ),
             },
             "protected_checkpoint_sha256": provenance.checkpoint_sha256,
             "reader_parameters": reader_parameters,

@@ -22,6 +22,7 @@ from operation_state_transition_compiler import (
     EFFECT_NOOP,
     FactorizedOperationStateTransitionCompiler,
     OperationEffectSetCompiler,
+    OperationPostWriteLinkRailCompiler,
     OperationStateTransitionCompiler,
     OperationStateTransitionTrace,
     OperationWriteLinkRailCompiler,
@@ -1015,6 +1016,71 @@ def test_production_write_link_rail_parameter_receipt() -> None:
     )
     assert sum(parameter.numel() for parameter in compiler.parameters()) == 49_015_545
     assert compiler.maximum_effects == 13
+    sequential = OperationPostWriteLinkRailCompiler(
+        TheoryReactorConfig(),
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_codebook_atoms=codec.codebook.atoms,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+    assert sum(parameter.numel() for parameter in sequential.parameters()) == 49_998_457
+
+
+def test_post_write_link_binding_uses_write_payload_state() -> None:
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+
+    config = replace(_config(), max_steps=16)
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    compiler = OperationPostWriteLinkRailCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        relation_width=16,
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_codebook_atoms=codec.codebook.atoms,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+    state = _state(config)
+    slots = torch.randn(2, config.num_slots, compiler.width)
+    anchors = torch.randn(2, 4, compiler.width)
+    role_valid = torch.tensor(
+        [[True, True, True, False], [True, True, False, False]],
+        dtype=torch.bool,
+    )
+    edits = compiler._operation_edits_from_slots(
+        state,
+        slots,
+        hard=False,
+        effect_anchors=(anchors, role_valid),
+    )
+    assert edits.effect_relation_link is not None
+    selected_link = edits.effect_relation_link[:, 3:, 0, 0, 1]
+    loss = -selected_link.clamp_min(1e-7).log().mean()
+    loss.backward()
+    for parameter in (
+        compiler.write_value_head.weight,
+        compiler.link_source_query.weight,
+        compiler.link_source_key.weight,
+        compiler.link_target_query.weight,
+        compiler.link_target_key.weight,
+    ):
+        assert parameter.grad is not None
+        assert bool(parameter.grad.isfinite().all())
+        assert float(parameter.grad.abs().sum()) > 0.0
+
+    hard = compiler._operation_edits_from_slots(
+        state,
+        slots,
+        hard=True,
+        effect_anchors=(anchors, role_valid),
+    )
+    validate_deployed_state(
+        compiler.apply_atomic_edits(state, hard, steps=1, hard=True),
+        config,
+    )
 
 
 def test_operation_effect_role_geometry_requires_even_role_banks() -> None:

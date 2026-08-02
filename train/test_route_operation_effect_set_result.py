@@ -6,6 +6,7 @@ from copy import deepcopy
 
 from route_operation_effect_set_result import (
     CARDINALITY_GATED_SCHEMA,
+    POST_WRITE_LINK_SCHEMA,
     RAIL_LOCAL_EFFECT_SCHEMA,
     REPORT_SCHEMA,
     ROLE_ANCHORED_SCHEMA,
@@ -109,6 +110,8 @@ def test_router_sends_typed_rail_collapse_to_payload_islands() -> None:
     result = route_result(report, {"schema": WRITE_LINK_RAIL_SCHEMA})
     assert result["route"] == "rail_local_pointer_payload_islands"
     result = route_result(report, {"schema": RAIL_LOCAL_EFFECT_SCHEMA})
+    assert result["route"] == "rail_local_pointer_payload_islands"
+    result = route_result(report, {"schema": POST_WRITE_LINK_SCHEMA})
     assert result["route"] == "rail_local_pointer_payload_islands"
 
 

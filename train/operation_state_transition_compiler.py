@@ -1173,6 +1173,34 @@ class OperationWriteLinkRailCompiler(OperationStateTransitionCompiler):
             nn.init.zeros_(head.weight)
             nn.init.zeros_(head.bias)
 
+    def _link_pointer(
+        self,
+        state: TypedTheoryState,
+        slots: torch.Tensor,
+        link_features: torch.Tensor,
+        *,
+        write_activity: torch.Tensor,
+        write_pointer: torch.Tensor,
+        write_value: torch.Tensor,
+    ) -> torch.Tensor:
+        """Bind LINK tuples against the pre-operation state."""
+
+        del slots, write_activity, write_pointer, write_value
+        if self.link_relation_source is None or self.link_relation_target is None:
+            raise TheoryReactorError("write/link rail endpoint heads are absent")
+        relation_logits = (
+            self.link_relation_type(link_features).float()[:, :, :, None, None]
+            + self.link_relation_source(link_features).float()[:, :, None, :, None]
+            + self.link_relation_target(link_features).float()[:, :, None, None, :]
+        )
+        active = state.active.gt(0.5)
+        relations = state.relations.gt(0.5)
+        pair_active = active[:, None, :, None] & active[:, None, None, :]
+        return _masked_flat_softmax(
+            relation_logits,
+            ((~relations) & pair_active)[:, None].expand_as(relation_logits),
+        )
+
     def _operation_edits_from_slots(
         self,
         state: TypedTheoryState,
@@ -1241,16 +1269,13 @@ class OperationWriteLinkRailCompiler(OperationStateTransitionCompiler):
         )
         write_value = self.write_value_head(write_features).float().softmax(-1)
 
-        relation_logits = (
-            self.link_relation_type(link_features).float()[:, :, :, None, None]
-            + self.link_relation_source(link_features).float()[:, :, None, :, None]
-            + self.link_relation_target(link_features).float()[:, :, None, None, :]
-        )
-        relations = state.relations.gt(0.5)
-        pair_active = active[:, None, :, None] & active[:, None, None, :]
-        link_pointer = _masked_flat_softmax(
-            relation_logits,
-            ((~relations) & pair_active)[:, None].expand_as(relation_logits),
+        link_pointer = self._link_pointer(
+            state,
+            slots,
+            link_features,
+            write_activity=write_activity,
+            write_pointer=write_pointer,
+            write_value=write_value,
         )
         if hard:
             write_pointer = _hard_categories(write_pointer)
@@ -1386,9 +1411,87 @@ class OperationWriteLinkRailCompiler(OperationStateTransitionCompiler):
         )
 
 
+class OperationPostWriteLinkRailCompiler(OperationWriteLinkRailCompiler):
+    """Bind LINK tuples against the differentiable state after WRITE release."""
+
+    def __init__(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
+        super().__init__(*args, **kwargs)
+        self.link_relation_source = None
+        self.link_relation_target = None
+        self.link_source_query = nn.Linear(self.width, self.width, bias=False)
+        self.link_source_key = nn.Linear(self.width, self.width, bias=False)
+        self.link_target_query = nn.Linear(self.width, self.width, bias=False)
+        self.link_target_key = nn.Linear(self.width, self.width, bias=False)
+
+    def _link_pointer(
+        self,
+        state: TypedTheoryState,
+        slots: torch.Tensor,
+        link_features: torch.Tensor,
+        *,
+        write_activity: torch.Tensor,
+        write_pointer: torch.Tensor,
+        write_value: torch.Tensor,
+    ) -> torch.Tensor:
+        del slots
+        write_mass = torch.einsum(
+            "bk,bks->bs",
+            write_activity,
+            write_pointer,
+        )
+        write_probability = write_mass.clamp(max=1.0).unsqueeze(-1)
+        dense_value = torch.einsum(
+            "bk,bks,bkv->bsv",
+            write_activity,
+            write_pointer,
+            write_value,
+        )
+        dense_value = dense_value / write_mass.unsqueeze(-1).clamp_min(1e-7)
+        post_value = (
+            state.value_probabilities.float() * (1.0 - write_probability)
+            + dense_value * write_probability
+        )
+        post_write_state = TypedTheoryState(
+            value_probabilities=post_value.to(state.value_probabilities.dtype),
+            type_probabilities=state.type_probabilities,
+            relations=state.relations,
+            active=state.active,
+            root=state.root,
+            committed=state.committed,
+            halted=state.halted,
+            step=state.step,
+        )
+        post_write_slots = self._initial_memory(post_write_state).to(
+            link_features.dtype
+        )
+        source_logits = torch.einsum(
+            "bkd,bsd->bks",
+            self.link_source_query(link_features),
+            self.link_source_key(post_write_slots),
+        )
+        target_logits = torch.einsum(
+            "bkd,bsd->bks",
+            self.link_target_query(link_features),
+            self.link_target_key(post_write_slots),
+        )
+        relation_logits = (
+            self.link_relation_type(link_features).float()[:, :, :, None, None]
+            + source_logits.float()[:, :, None, :, None]
+            + target_logits.float()[:, :, None, None, :]
+        )
+        active = post_write_state.active.gt(0.5)
+        relations = post_write_state.relations.gt(0.5)
+        pair_active = active[:, None, :, None] & active[:, None, None, :]
+        return _masked_flat_softmax(
+            relation_logits,
+            ((~relations) & pair_active)[:, None].expand_as(relation_logits),
+        )
+
+
 __all__ = [
     "FactorizedOperationStateTransitionCompiler",
     "OperationEffectSetCompiler",
+    "OperationPostWriteLinkRailCompiler",
     "OperationStateTransitionCompiler",
     "OperationStateTransitionTrace",
     "OperationWriteLinkRailCompiler",
