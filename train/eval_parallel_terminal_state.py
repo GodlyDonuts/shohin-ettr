@@ -547,6 +547,7 @@ def _load_terminal_compiler(
         "operation_effect_role_anchors": operation_effect_role_anchors,
         "operation_effect_cardinality_gate": (operation_effect_cardinality_gate),
         "operation_effect_write_link_rails": (operation_effect_write_link_rails),
+        "operation_public_ledger_deferred": (operation_effect_write_link_rails),
         "operation_effect_rail_local_loss": (operation_effect_rail_local_loss),
         "operation_effect_post_write_link_binding": (
             operation_effect_post_write_link_binding
@@ -615,6 +616,8 @@ def _load_terminal_compiler(
                 else "separate-write-link-count-heads-plus-top-k-per-rail"
             )
             or objective.get("write_link_typed_rails") is not True
+            or objective.get("operation_public_ledger")
+            != "command-cursor-outcome-disposition-final-suffix"
             or objective.get("operation_effect_family_control")
             != (
                 "exclusive-none-write-link-before-rail-release"
@@ -895,6 +898,10 @@ def _evaluate_operation_effects(
                 oracle_executor,
                 initial,
                 batch.transaction_targets,
+                defer_public_ledger=isinstance(
+                    compiler,
+                    OperationWriteLinkRailCompiler,
+                ),
             )
             command_hidden = model._encode_to_stage(
                 batch.episodes.command.tokens,

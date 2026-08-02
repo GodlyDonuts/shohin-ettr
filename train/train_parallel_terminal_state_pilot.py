@@ -1387,15 +1387,19 @@ def atomic_typed_edit_loss(
     count_specifications = {
         "node_edit_count": (
             edits.node_edit_count,
-            node_action.ne(0).sum(-1),
+            (node_action.ne(0) & slot_mask).sum(-1),
         ),
         "relation_link_count": (
             edits.relation_link_count,
-            target["relation_action"].eq(1).sum(dim=(1, 2, 3)),
+            (target["relation_action"].eq(1) & relation_mask).sum(
+                dim=(1, 2, 3)
+            ),
         ),
         "relation_unlink_count": (
             edits.relation_unlink_count,
-            target["relation_action"].eq(2).sum(dim=(1, 2, 3)),
+            (target["relation_action"].eq(2) & relation_mask).sum(
+                dim=(1, 2, 3)
+            ),
         ),
     }
     present_counts = [
@@ -2141,6 +2145,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "operation_boundary_labels_training_only": (
                     args.token_native_operation_state_command
                 ),
+                "operation_public_ledger_deferred": (
+                    args.operation_effect_write_link_rails
+                ),
                 "num_heads": args.num_heads,
                 "relation_width": args.relation_width,
                 "removed_recurrent_policy_parameters": (removed_reactor_parameters),
@@ -2228,6 +2235,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                     else None
                 ),
                 "write_link_typed_rails": (args.operation_effect_write_link_rails),
+                "operation_public_ledger": (
+                    "command-cursor-outcome-disposition-final-suffix"
+                    if args.operation_effect_write_link_rails
+                    else None
+                ),
                 "operation_effect_family_control": (
                     "exclusive-none-write-link-before-rail-release"
                     if args.operation_effect_family_gate
@@ -2311,6 +2323,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                     oracle_executor,
                     initial,
                     batch.transaction_targets,
+                    defer_public_ledger=(
+                        args.operation_effect_write_link_rails
+                    ),
                 )
                 if args.token_native_operation_state_command
                 else None

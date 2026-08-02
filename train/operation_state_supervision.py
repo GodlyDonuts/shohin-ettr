@@ -15,6 +15,7 @@ from probe_ettr_oracle_interfaces import target_policy
 _WRITE_OPCODE = 1
 _COMMAND_SLOT_START = 48
 _COMMAND_SLOT_STOP = 54
+_PUBLIC_LEDGER_SLOT_STOP = 56
 _TERMINAL_SUFFIX_STEPS = 2
 _MAXIMUM_OPERATIONS = _COMMAND_SLOT_STOP - _COMMAND_SLOT_START
 
@@ -77,6 +78,61 @@ def index_atomic_edits(
         effect_root_pointer=optional(edits.effect_root_pointer),
         effect_count=optional(edits.effect_count),
         effect_family=optional(edits.effect_family),
+    )
+
+
+def defer_public_operation_ledger(
+    state: TypedTheoryState,
+    initial: TypedTheoryState,
+) -> TypedTheoryState:
+    """Remove command/cursor bookkeeping from a semantic operation boundary.
+
+    The frozen transaction trace writes the public command atom before each
+    operation and advances the public cursor afterward. Those writes are
+    packet bookkeeping, not the operation's semantic WRITE/LINK effect. The
+    terminal suffix remains responsible for materializing slots 48..55.
+    """
+
+    if (
+        state.active.shape != initial.active.shape
+        or state.active.ndim != 2
+        or state.active.shape[1] < _PUBLIC_LEDGER_SLOT_STOP
+        or state.value_probabilities.shape != initial.value_probabilities.shape
+        or state.type_probabilities.shape != initial.type_probabilities.shape
+        or state.relations.shape != initial.relations.shape
+        or state.root.shape != initial.root.shape
+    ):
+        raise OperationStateSupervisionError(
+            "public operation ledger state geometry differs"
+        )
+    ledger = slice(_COMMAND_SLOT_START, _PUBLIC_LEDGER_SLOT_STOP)
+
+    def restore_slots(
+        value: torch.Tensor,
+        reference: torch.Tensor,
+    ) -> torch.Tensor:
+        result = value.clone()
+        result[:, ledger] = reference[:, ledger]
+        return result
+
+    relations = state.relations.clone()
+    relations[:, :, ledger, :] = initial.relations[:, :, ledger, :]
+    relations[:, :, :, ledger] = initial.relations[:, :, :, ledger]
+    return TypedTheoryState(
+        value_probabilities=restore_slots(
+            state.value_probabilities,
+            initial.value_probabilities,
+        ),
+        type_probabilities=restore_slots(
+            state.type_probabilities,
+            initial.type_probabilities,
+        ),
+        relations=relations,
+        active=restore_slots(state.active, initial.active),
+        root=restore_slots(state.root, initial.root),
+        committed=state.committed,
+        halted=state.halted,
+        step=state.step,
     )
 
 
@@ -149,8 +205,15 @@ def oracle_operation_boundary_states(
     executor,
     initial: TypedTheoryState,
     targets: ETTRTransactionTargets,
+    *,
+    defer_public_ledger: bool = False,
 ) -> OperationBoundaryTargets:
     """Replay assessor labels and gather cumulative state at each operation."""
+
+    if not isinstance(defer_public_ledger, bool):
+        raise OperationStateSupervisionError(
+            "public operation ledger deferral differs"
+        )
 
     boundaries, mask = operation_boundary_indices(targets)
     state = initial
@@ -194,6 +257,11 @@ def oracle_operation_boundary_states(
         gathered(boundaries[:, rank], step=rank + 1)
         for rank in range(_MAXIMUM_OPERATIONS)
     )
+    if defer_public_ledger:
+        states = tuple(
+            defer_public_operation_ledger(item, initial)
+            for item in states
+        )
     last_rank = mask.sum(-1) - 1
 
     def gather_last(field: str) -> torch.Tensor:
@@ -216,6 +284,7 @@ def oracle_operation_boundary_states(
 __all__ = [
     "OperationBoundaryTargets",
     "OperationStateSupervisionError",
+    "defer_public_operation_ledger",
     "index_atomic_edits",
     "index_typed_state",
     "operation_boundary_indices",

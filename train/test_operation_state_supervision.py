@@ -8,6 +8,7 @@ from endogenous_typed_theory_reactor import (
 )
 from ettr_objectives import ETTRTransactionTargets
 from operation_state_supervision import (
+    defer_public_operation_ledger,
     index_atomic_edits,
     operation_boundary_indices,
     oracle_operation_boundary_states,
@@ -133,3 +134,70 @@ def test_index_atomic_edits_preserves_operation_family() -> None:
     selected = index_atomic_edits(edits, torch.tensor([2, 0]))
     assert selected.effect_family is not None
     assert selected.effect_family.argmax(-1).tolist() == [2, 0]
+
+
+def test_public_operation_ledger_is_deferred_without_erasing_semantics() -> None:
+    config = TheoryReactorConfig(
+        d_model=16,
+        state_width=16,
+        num_slots=64,
+        num_types=3,
+        num_relations=2,
+        num_value_codes=8,
+        max_edges=8,
+        num_heads=2,
+        compiler_layers=1,
+        reactor_layers=1,
+        query_layers=1,
+        ff_multiplier=2,
+        max_steps=16,
+        stage_after_block=0,
+    )
+    initial = _initial(config)
+    values = initial.value_probabilities.argmax(-1)
+    values[:, 32] = 7
+    values[:, 48] = 3
+    values[:, 54] = 2
+    candidate = TypedTheoryState(
+        value_probabilities=F.one_hot(values, config.num_value_codes).float(),
+        type_probabilities=initial.type_probabilities,
+        relations=initial.relations,
+        active=initial.active,
+        root=initial.root,
+        committed=initial.committed,
+        halted=initial.halted,
+        step=1,
+    )
+    deferred = defer_public_operation_ledger(candidate, initial)
+    observed = deferred.value_probabilities.argmax(-1)
+    assert observed[:, 32].tolist() == [7, 7]
+    assert observed[:, 48].tolist() == [0, 0]
+    assert observed[:, 54].tolist() == [0, 0]
+
+
+def test_oracle_operation_states_can_defer_public_ledger() -> None:
+    config = TheoryReactorConfig(
+        d_model=16,
+        state_width=16,
+        num_slots=64,
+        num_types=3,
+        num_relations=2,
+        num_value_codes=8,
+        max_edges=8,
+        num_heads=2,
+        compiler_layers=1,
+        reactor_layers=1,
+        query_layers=1,
+        ff_multiplier=2,
+        max_steps=16,
+        stage_after_block=0,
+    )
+    result = oracle_operation_boundary_states(
+        GenericTransactionReactor(config),
+        _initial(config),
+        _targets(),
+        defer_public_ledger=True,
+    )
+    for state in result.states:
+        values = state.value_probabilities.argmax(-1)
+        assert bool(values[:, 48:56].eq(0).all())

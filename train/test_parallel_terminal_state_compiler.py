@@ -953,6 +953,24 @@ def test_write_link_rails_enforce_separate_counts_and_train_payloads() -> None:
     assert "effect_set" in parts
     assert counts["node_edit_count"]["2"] == 2
     assert counts["relation_link_count"]["1"] == 2
+
+    padded_target = target.detached_clone()
+    for slot in range(2, 5):
+        current = int(state.value_probabilities[0, slot].argmax())
+        value = (current + 1) % config.num_value_codes
+        padded_target.value_probabilities[:, slot].zero_()
+        padded_target.value_probabilities[:, slot, value] = 1.0
+    padded_labels = derive_atomic_edit_targets(state, padded_target)
+    padded_slot_mask = torch.ones_like(state.active, dtype=torch.bool)
+    padded_slot_mask[:, 2:5] = False
+    padded_loss, _padded_parts, padded_counts = atomic_typed_edit_loss(
+        soft,
+        padded_labels,
+        slot_mask=padded_slot_mask,
+        relation_mask=torch.ones_like(state.relations, dtype=torch.bool),
+    )
+    assert bool(padded_loss.isfinite())
+    assert padded_counts["node_edit_count"]["2"] == 2
     loss.backward()
     for parameter in (
         compiler.write_count_head.weight,
