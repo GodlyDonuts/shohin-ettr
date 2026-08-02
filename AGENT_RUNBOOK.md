@@ -95,8 +95,8 @@
 > replaces fixed 64-class source/target heads with state-grounded pointers and
 > an exact predicted-prefix validity replay. Its 500-update canary raises exact
 > schedules from the matched 10.76% to 12.59% and WORLD margin-1 from zero to
-> 7.14%; strict pairs remain zero. Three completed 5,000-update grounded arms
-> fail to sustain strict WORLD, including one arm with 18.28% exact schedules,
+> 7.14%; strict pairs remain zero. All four 5,000-update grounded arms fail to
+> sustain strict WORLD, including one arm with 18.28% exact schedules,
 > proving that better local schedule imitation is insufficient. Four
 > 15,000-update full-coverage controls remain live. Contract v4 now adds an
 > optional bounded semantic-prefix objective through the exact schedule
@@ -22777,14 +22777,19 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   a bounded closed-loop semantic-prefix objective is implemented for the
   exact schedule executor.**
 
-  Three of four grounded 5,000-update arms have completed. Seed 31 at
+  All four grounded 5,000-update arms completed. Seed 31 at
   learning rate `3e-4` reaches exact schedules `14.12%`, factual top-1
   `70.70%`, WORLD strict `0%` with margin-1 `1.79%`, and COMMAND strict
   `4.55%`. The matched `1e-4` arm improves exact schedules to `18.28%` but
   returns both strict gates to zero. Fresh seed 32 at `3e-4` reaches exact
   schedules `13.39%`, factual `67.19%`, and strict WORLD/COMMAND both zero.
-  Job `725299`, fresh seed 32 at `1e-4`, remains live. These completed arms
-  reject the interpretation that the 500-update grounded canary's WORLD
+  Its `1e-4` arm reaches exact schedules `12.97%`, factual `67.19%`, WORLD
+  strict zero, and COMMAND strict `3.57%`. Report SHA-256 values for the four
+  arms are `30f10ea3f1af8658c46d8da02f4771dcfd85fdedbda91bd7eaec44a4b78ef1cb`,
+  `8d22b52031a8de604582037061da87408c16cba53fe214acb117bb0a83e36376`,
+  `d18ec6f5f4aa6e8df9da10bee97f0457028663bbb2d752b88efbc838b5140ccb`,
+  and `a2349089d40539e5df480412ef16c0926f51deb0a594cf6273dc62c19a0ceb86`.
+  These arms reject the interpretation that the 500-update grounded canary's WORLD
   margin necessarily compounds with training. They also strengthen the
   finding that local instruction accuracy is not a sufficient proxy for
   semantic composition.
@@ -22799,9 +22804,14 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   state, or oracle program enters inference or evaluation. The default weight
   is zero, preserving all existing lineages. Twenty-one focused and related
   tests pass with clean Ruff, byte compilation, Bash syntax, and diff checks.
-  The preregistered canary uses seed 31/data 11, `3e-4`, 500 updates, and
-  semantic-prefix weight `0.25`; it must match the old initialization and
-  remain numerically bounded before any 5,000-update replication is allowed.
+  Private commit `82394b8` is pushed. Immutable runtime
+  `scratchpad/shohin_ettr_semantic_prefix_runtime_82394b8_r1` has 3,409
+  admitted files and SHA256SUMS SHA-256
+  `663b6aaa4b1338401fb68740734ad7a1ad47bef46006548a4096b705a385193a`.
+  The preregistered canary `725431` uses seed 31/data 11, `3e-4`, 500 updates,
+  and semantic-prefix weight `0.25`; it is live and initially bounded. It must
+  match the old initialization and remain numerically bounded before any
+  5,000-update replication is allowed.
 
   Decision:
   `reject_local_schedule_imitation_as_a_sufficient_objective_and_test_bounded_exact_prefix_state_credit_without_changing_the_hard_autonomous_gate`.
