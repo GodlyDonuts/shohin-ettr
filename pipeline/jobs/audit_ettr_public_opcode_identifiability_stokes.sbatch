@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=ettr-opcode-id
-#SBATCH --partition=general
+#SBATCH --partition=normal
 #SBATCH --time=01:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -11,6 +11,12 @@
 
 set -euo pipefail
 umask 077
+export PATH=/usr/bin:/bin
+export PYTHONNOUSERSITE=1
+export PYTHONDONTWRITEBYTECODE=1
+export OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+export MKL_NUM_THREADS=1
 
 CODE_ROOT=${CODE_ROOT:?set immutable source root}
 SOURCE_COMMIT=${SOURCE_COMMIT:?set exact source commit}
@@ -19,7 +25,7 @@ DATA_ROOT=${DATA_ROOT:?set immutable ETTR data root}
 TOKENIZER=${TOKENIZER:?set tokenizer artifact}
 OUTPUT=${OUTPUT:?set fresh report path}
 WORKERS=${WORKERS:-48}
-PYTHON=${PYTHON:-python3}
+PYTHON=${PYTHON:-/lustre/fs1/home/sa305415/shohin/miniforge3/bin/python3.13}
 
 for path in "$CODE_ROOT" "$DATA_ROOT" "$TOKENIZER" "$OUTPUT"; do
   [[ "$path" == /* ]] || {
@@ -45,7 +51,13 @@ cd "$CODE_ROOT"
     exit 2
   }
 
-"$PYTHON" pipeline/audit_ettr_public_opcode_identifiability.py \
+[[ -x "$PYTHON" && ! -L "$PYTHON" ]] || {
+  echo "public opcode audit Python runtime differs" >&2
+  exit 2
+}
+
+PYTHONPATH="$CODE_ROOT/pipeline:$CODE_ROOT/train" \
+  "$PYTHON" pipeline/audit_ettr_public_opcode_identifiability.py \
   --data-root "$DATA_ROOT" \
   --tokenizer "$TOKENIZER" \
   --output "$OUTPUT" \
