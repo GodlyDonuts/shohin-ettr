@@ -84,3 +84,33 @@ compilation.
 
 Decision:
 `compile_one_coherent_typed_state_difference_and_apply_it_atomically_before_scaling_any_dense_terminal_decoder`.
+
+## Result
+
+H100 primary `725510`, V100 replication `725511`, and H100 action-weight-4
+dose `725513` completed all 1,000 updates cleanly. Canonical edits exactly
+reconstructed the first real target packet before every run began. The H100
+primary learns low final-batch action NLL (`0.253`; value payload `1.076`) and
+reaches 54.49% factual top-1, but strict WORLD/COMMAND and both margin-1 rates
+remain zero. The oracle-program/autonomous-state cross has DID exactly zero on
+both axes. Report SHA-256 is
+`bd9e55a2dfabf632209efe7431d567f01d88add14f9ecccc558a81b40392fd9d`.
+
+The V100 result independently returns the same isolated zeros; report SHA-256
+is `b1c078e22eb2095094494a33288202ef6fa1b72404291b94805ce3185b3ef0c4`.
+Increasing action weight to 4 does not repair the gate. It reaches 54.69%
+factual but lowers value accuracy to 49.43%; every autonomous and isolated
+WORLD/COMMAND strict, margin-1, and DID metric is zero. Report SHA-256 is
+`051385f1fb3dbc7ca1111398d2f1322cfb464c4e6cebdc00ca61547d3d69406a`.
+
+Coherent edit mechanics are therefore insufficient when the initial packet is
+lossy. Training targets derived from an autonomous WORLD state include repairs
+for information the frozen WORLD compiler already discarded; COMMAND cannot
+identify those repairs. The next bounded diagnostic trains the same atomic
+editor from oracle initial packets to isolate COMMAND binding. It is not a
+reasoning claim. A positive result would require a jointly trainable WORLD
+compiler plus atomic COMMAND editor; a negative result would localize failure
+inside COMMAND-to-edit binding itself.
+
+Disposition:
+`retain_fixed_atomic_algebra_but_stop_asking_command_to_recover_world_information_that_the_initial_packet_erased`.
