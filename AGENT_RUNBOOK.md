@@ -23917,5 +23917,16 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   autonomous strict gates behind; it must be canceled if the oracle interface
   itself is neutral or worse.
 
+  The failure-after-recurrence CPU gate is also code-complete rather than
+  deferred. `pipeline/audit_ettr_public_operation_identifiability.py` resolves
+  public `call(3, identifier, ordinal, payload)` declarations, extracts each
+  top-level `call(4, ...)` operation, and measures whether its assessor-only
+  mutation target is identifiable from the resolved operation alone, with
+  WORLD, with the WORLD-conditioned operation prefix, or with the complete
+  WORLD/COMMAND plus rank. QUERY, answers, terminal packets, and low-level
+  transaction programs are not features. A full Stokes run will decide
+  whether the next branch should add operation-aligned intermediate state
+  supervision or reject the mutation target as publicly aliased.
+
   Decision:
   `close_episode_wide_guarded_edit_prediction_and_test_tied_latent_state_updates_once_per_explicit_public_command_operation`.

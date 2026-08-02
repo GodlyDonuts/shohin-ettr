@@ -189,3 +189,11 @@ independently of renderer layout and applies one tied latent state update per
 visible operation before emitting the guarded terminal difference. This
 directly tests multi-operation composition without learning or consuming the
 assessor's arbitrary low-level opcode schedule.
+
+Before reading that GPU endpoint, a CPU identifiability successor is staged.
+It uses assessor operation traces only as labels and measures whether a
+declaration-resolved public operation target generalizes under four contexts:
+operation only, WORLD plus operation, WORLD plus operation prefix, and WORLD
+plus complete COMMAND and rank. High coverage and Bayes accuracy justify an
+operation-aligned intermediate-state curriculum; low accuracy rejects that
+label ontology before another GPU run.
