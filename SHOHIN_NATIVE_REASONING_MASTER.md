@@ -53565,3 +53565,31 @@ cross-attention.
 
 Current decision:
 `preserve_exact_atomic_execution_but_stop_forcing_opaque_bindings_through_one_lossy_frozen_residual`.
+
+The matched dual-rail result is negative. H100 job `725519` completes all
+1,000 updates, but oracle-initial value accuracy falls from 74.34% before fit
+to 70.20% after fit, autonomous-initial value falls from 58.54% to 55.38%,
+exact packets remain zero, and fully autonomous strict WORLD and COMMAND stay
+zero. Raw lexical identity is therefore not sufficient when it is pooled over
+the unchanged fixed-width transport.
+
+That failure exposed a lower-level architecture mismatch. Token-native ETTR
+places the complete semantic AST first, then deterministically fills every
+remaining position to 192/96 tokens with public-codebook cover. Because cover
+is model-visible rather than padding, the ordinary attention mask marks it
+valid. The terminal editor has consequently been cross-attending dozens of
+nonsemantic codewords in every COMMAND. `TokenNativeDocumentMask` now recovers
+the exact AST boundary from public call/reification arities and renderer
+preambles and deletes only the cover from compiler attention. It has no
+learned parameters and no access to ontology labels, QUERY, answer, target,
+packet, trace, oracle program, or semantic executor. Four-renderer, legacy/
+local-root, malformed-source, cover-invariance, compiler, custody, and model
+tests pass, 47/47 total.
+
+The next H100 arm is a strictly matched oracle-initial lexical editor with only
+the syntax mask changed. If it fails to beat the lexical arm and restore value
+transport beyond the untouched 74.34% interface, dense pooling is closed and
+the architecture advances to explicit syntax-node occurrence pointers.
+
+Current decision:
+`remove_token_native_cover_before_asking_the_neural_compiler_to_bind_visible_syntax_then_move_to_explicit_occurrence_pointers_if_needed`.

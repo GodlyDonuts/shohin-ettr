@@ -13,6 +13,7 @@ typed-state constraints when ``hard=True``.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 import math
 
@@ -29,6 +30,7 @@ from endogenous_typed_theory_reactor import (
     validate_deployed_state,
     validate_state,
 )
+from token_native_syntax_router import TokenNativeDocumentMask
 
 
 def _hard_one_hot(probabilities: torch.Tensor) -> torch.Tensor:
@@ -141,6 +143,9 @@ class ParallelTerminalStateCompiler(nn.Module):
         residual_edits: bool = False,
         atomic_edits: bool = False,
         lexical_command: bool = False,
+        token_native_command_mask: bool = False,
+        token_native_codebook_ids: Sequence[int] | None = None,
+        token_native_vocab_size: int | None = None,
     ) -> None:
         super().__init__()
         config.validate()
@@ -157,7 +162,24 @@ class ParallelTerminalStateCompiler(nn.Module):
             or not isinstance(residual_edits, bool)
             or not isinstance(atomic_edits, bool)
             or not isinstance(lexical_command, bool)
+            or not isinstance(token_native_command_mask, bool)
             or (residual_edits and atomic_edits)
+            or (
+                token_native_command_mask
+                and (
+                    not atomic_edits
+                    or not lexical_command
+                    or token_native_codebook_ids is None
+                    or token_native_vocab_size is None
+                )
+            )
+            or (
+                not token_native_command_mask
+                and (
+                    token_native_codebook_ids is not None
+                    or token_native_vocab_size is not None
+                )
+            )
         ):
             raise TheoryReactorError("terminal-state compiler geometry differs")
         self.config = config
@@ -168,6 +190,7 @@ class ParallelTerminalStateCompiler(nn.Module):
         self.residual_edits = residual_edits
         self.atomic_edits = atomic_edits
         self.lexical_command = lexical_command
+        self.token_native_command_mask = token_native_command_mask
 
         self.command_projection = nn.Linear(config.d_model, width)
         self.command_lexical_projection = (
@@ -176,6 +199,14 @@ class ParallelTerminalStateCompiler(nn.Module):
             else None
         )
         self.command_norm = nn.LayerNorm(width)
+        self.command_document_mask = (
+            TokenNativeDocumentMask(
+                token_native_codebook_ids,
+                vocab_size=token_native_vocab_size,
+            )
+            if token_native_command_mask
+            else None
+        )
         self.value_embedding = nn.Parameter(
             torch.empty(config.num_value_codes, width)
         )
@@ -340,6 +371,7 @@ class ParallelTerminalStateCompiler(nn.Module):
         *,
         command_hidden: torch.Tensor,
         command_lexical: torch.Tensor | None,
+        command_tokens: torch.Tensor | None,
         command_attention_mask: torch.Tensor,
         steps: int,
     ) -> torch.Tensor:
@@ -361,10 +393,32 @@ class ParallelTerminalStateCompiler(nn.Module):
                 not self.lexical_command
                 and command_lexical is not None
             )
+            or (
+                self.token_native_command_mask
+                and (
+                    command_tokens is None
+                    or command_tokens.shape != command_hidden.shape[:2]
+                    or command_tokens.dtype != torch.long
+                )
+            )
+            or (
+                not self.token_native_command_mask
+                and command_tokens is not None
+            )
             or command_attention_mask.shape != command_hidden.shape[:2]
             or command_attention_mask.dtype != torch.bool
         ):
             raise TheoryReactorError("terminal-state compiler input differs")
+
+        if self.command_document_mask is not None:
+            if command_tokens is None:
+                raise TheoryReactorError(
+                    "terminal-state compiler COMMAND tokens are absent"
+                )
+            command_attention_mask = self.command_document_mask(
+                command_tokens,
+                command_attention_mask,
+            )
 
         command = self.command_projection(command_hidden)
         if self.command_lexical_projection is not None:
@@ -568,6 +622,7 @@ class ParallelTerminalStateCompiler(nn.Module):
         *,
         command_hidden: torch.Tensor,
         command_lexical: torch.Tensor | None = None,
+        command_tokens: torch.Tensor | None = None,
         command_attention_mask: torch.Tensor,
         steps: int,
         hard: bool,
@@ -576,6 +631,7 @@ class ParallelTerminalStateCompiler(nn.Module):
             state,
             command_hidden=command_hidden,
             command_lexical=command_lexical,
+            command_tokens=command_tokens,
             command_attention_mask=command_attention_mask,
             steps=steps,
         )
@@ -591,6 +647,7 @@ class ParallelTerminalStateCompiler(nn.Module):
         *,
         command_hidden: torch.Tensor,
         command_lexical: torch.Tensor | None = None,
+        command_tokens: torch.Tensor | None = None,
         command_attention_mask: torch.Tensor,
         steps: int,
         hard: bool,
@@ -599,6 +656,7 @@ class ParallelTerminalStateCompiler(nn.Module):
             state,
             command_hidden=command_hidden,
             command_lexical=command_lexical,
+            command_tokens=command_tokens,
             command_attention_mask=command_attention_mask,
             steps=steps,
         )
@@ -748,6 +806,7 @@ class ParallelTerminalStateReactor(nn.Module):
         self.config = config
         self.compiler = compiler
         self.requires_command_lexical = compiler.lexical_command
+        self.requires_command_tokens = compiler.token_native_command_mask
 
     def forward(
         self,
@@ -757,6 +816,7 @@ class ParallelTerminalStateReactor(nn.Module):
         hard: bool = False,
         command_hidden: torch.Tensor | None = None,
         command_lexical: torch.Tensor | None = None,
+        command_tokens: torch.Tensor | None = None,
         command_attention_mask: torch.Tensor | None = None,
     ) -> tuple[TypedTheoryState, ReactorTrace]:
         if command_hidden is None or command_attention_mask is None:
@@ -765,6 +825,7 @@ class ParallelTerminalStateReactor(nn.Module):
             state,
             command_hidden=command_hidden,
             command_lexical=command_lexical,
+            command_tokens=command_tokens,
             command_attention_mask=command_attention_mask.bool(),
             steps=steps,
             hard=hard,

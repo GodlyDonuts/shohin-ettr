@@ -55,6 +55,12 @@ LEXICAL_ATOMIC_CONTRACT_SCHEMA = (
     "shohin-ettr-parallel-terminal-state-contract-v5"
 )
 LEXICAL_ATOMIC_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v5"
+SYNTAX_ROUTED_ATOMIC_CONTRACT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-contract-v6"
+)
+SYNTAX_ROUTED_ATOMIC_REPORT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-report-v6"
+)
 CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v3"
 REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v3"
 CAUSAL_DELTA_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v2"
@@ -107,6 +113,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--residual-edits", action="store_true")
     parser.add_argument("--atomic-edits", action="store_true")
     parser.add_argument("--lexical-command", action="store_true")
+    parser.add_argument("--token-native-command-mask", action="store_true")
     parser.add_argument("--atomic-action-weight", type=float, default=1.0)
     parser.add_argument(
         "--required-device-class",
@@ -155,6 +162,10 @@ def _validate_args(args: argparse.Namespace) -> None:
         or args.atomic_action_weight <= 0.0
         or (args.residual_edits and args.atomic_edits)
         or (args.lexical_command and not args.atomic_edits)
+        or (
+            args.token_native_command_mask
+            and (not args.atomic_edits or not args.lexical_command)
+        )
         or args.output.exists()
         or args.output.is_symlink()
         or not args.output.parent.is_dir()
@@ -563,7 +574,18 @@ def _run_schemas(
     residual_edits: bool,
     atomic_edits: bool = False,
     lexical_command: bool = False,
+    token_native_command_mask: bool = False,
 ) -> tuple[str, str, str]:
+    if token_native_command_mask:
+        if residual_edits or not atomic_edits or not lexical_command:
+            raise ParallelTerminalStatePilotError(
+                "syntax-routed terminal-state architecture schema differs"
+            )
+        return (
+            SYNTAX_ROUTED_ATOMIC_CONTRACT_SCHEMA,
+            SYNTAX_ROUTED_ATOMIC_REPORT_SCHEMA,
+            "shohin-ettr-parallel-terminal-state-metric-v6",
+        )
     if lexical_command:
         if residual_edits or not atomic_edits:
             raise ParallelTerminalStatePilotError(
@@ -651,6 +673,11 @@ def _evaluate_interfaces(
                     initial,
                     command_hidden=command_hidden,
                     command_lexical=command_lexical,
+                    command_tokens=(
+                        batch.episodes.command.tokens
+                        if compiler.token_native_command_mask
+                        else None
+                    ),
                     command_attention_mask=(
                         batch.episodes.command.attention_mask.bool()
                     ),
@@ -685,6 +712,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.residual_edits,
         args.atomic_edits,
         args.lexical_command,
+        args.token_native_command_mask,
     )
     if not torch.cuda.is_available():
         raise ParallelTerminalStatePilotError(
@@ -733,6 +761,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         residual_edits=args.residual_edits,
         atomic_edits=args.atomic_edits,
         lexical_command=args.lexical_command,
+        token_native_command_mask=args.token_native_command_mask,
+        token_native_codebook_ids=(
+            stream.codec.codebook.token_ids
+            if args.token_native_command_mask
+            else None
+        ),
+        token_native_vocab_size=(
+            model.base.cfg.vocab_size
+            if args.token_native_command_mask
+            else None
+        ),
     ).to(device=device, dtype=next(model.parameters()).dtype)
     compiler_parameters = sum(
         parameter.numel() for parameter in compiler.parameters()
@@ -795,6 +834,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "atomic_typed_edits": args.atomic_edits,
                 "fixed_atomic_edit_algebra": args.atomic_edits,
                 "lexical_command_rail": args.lexical_command,
+                "token_native_command_mask": (
+                    args.token_native_command_mask
+                ),
+                "token_native_codebook_sha256": (
+                    stream.codec.codebook_sha256
+                    if args.token_native_command_mask
+                    else None
+                ),
                 "direct_terminal_quotient": True,
                 "layers": args.layers,
                 "no_query_input": True,
@@ -913,6 +960,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                             None
                             if command_lexical is None
                             else command_lexical.detach()
+                        ),
+                        command_tokens=(
+                            batch.episodes.command.tokens
+                            if args.token_native_command_mask
+                            else None
                         ),
                         command_attention_mask=(
                             batch.episodes.command.attention_mask.bool()

@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-02 00:05 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 00:18 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -146,10 +146,14 @@
 > isolation all fail the strict gate. The oracle-initial editor's held-out
 > value accuracy falls from 74.34% to 71.51%, exact packets remain zero, and
 > autonomous WORLD/COMMAND remain zero; the frozen layer-19 COMMAND residual is
-> therefore also closed as a sufficient binding interface. Contract v5 is the
-> active successor: it retains exact atomic execution but fuses a direct frozen
-> lexical embedding rail with the contextual COMMAND residual. QUERY, answers,
-> targets, oracle programs, and host execution remain absent.
+> therefore also closed as a sufficient binding interface. Contract v5's
+> matched direct lexical rail also fails: oracle-initial value accuracy falls
+> from 74.34% to 70.20%, exact packets remain zero, and fully autonomous
+> WORLD/COMMAND remain zero. The active contract v6 treatment is a target-free
+> token-native syntax router. It retains lexical plus contextual COMMAND rails
+> but deletes deterministic fixed-width transport cover from compiler attention
+> by recovering the exact leading AST boundary from the public grammar. QUERY,
+> answers, targets, oracle programs, and host semantic execution remain absent.
 > No current artifact is promoted as stable native reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
@@ -23224,3 +23228,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_residual_only_command_binding_and_test_direct_lexical_identity_before_explicit_occurrence_pointers`.
+
+- **2026-08-02 00:05--00:18 EDT** -- **Unfiltered lexical fusion is closed;
+  target-free token-native document routing is implemented and preregistered.**
+
+  Matched oracle-initial H100 job `725519` completes 1,000/1,000 updates on
+  `evc49` in 11:33. Report SHA-256 is
+  `e693588b0a680aa123f835f8e34fe18968713cb1e51e2926960871ec550c717d`;
+  SHA256SUMS SHA-256 is
+  `55120e01aa11ffa2e03a2f9dca16a18e73578c140d35f81a537126c656724202`.
+  Oracle-initial value accuracy falls from `74.344978%` before fit to
+  `70.196507%`; autonomous-initial value falls from `58.542576%` to
+  `55.376638%`. Exact packets remain `0/512`. Fully autonomous WORLD and
+  COMMAND strict and margin-1 remain zero. Raw lexical embedding access is
+  therefore closed as a sufficient binding repair.
+
+  The failure exposed a transport/compiler mismatch. Every token-native AST
+  is packed first and then filled to the fixed 192/96 width with deterministic
+  public-codebook cover, while the ordinary attention mask marks that cover as
+  valid. `TokenNativeDocumentMask` now recovers the exact leading AST boundary
+  from public call/reification arities and renderer preambles and deletes only
+  cover from compiler attention. It is tensor-native, has zero trainable
+  parameters, checkpoints its codebook inverse, and sees no family, ontology,
+  QUERY, answer, target, packet, oracle program, trace, or semantic executor.
+  Four-renderer prefix/postfix routing, both admitted root forms, malformed
+  sources, cover invariance, compiler, custody, and model paths pass `47/47`
+  tests. Ruff, byte compilation, Bash syntax, and diff checks are clean.
+
+  The matched v6 H100 gate keeps seed 31/data 11/oracle initial state/1,000
+  updates/LR `3e-4`/both loss weights 1/32 batches. Only the exact COMMAND AST
+  mask changes relative to `725519`. It must restore post-fit oracle value
+  above the untouched `74.344978%` interface without structural regression;
+  exact packets are stronger evidence. It cannot promote native reasoning
+  without simultaneous fully autonomous WORLD and COMMAND strict movement.
+
+  Decision:
+  `mask_public_transport_cover_then_reject_dense_pooling_if_binding_does_not_materially_improve`.

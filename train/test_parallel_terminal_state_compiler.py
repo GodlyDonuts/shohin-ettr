@@ -286,6 +286,46 @@ def test_production_lexical_atomic_compiler_fits_system_cap() -> None:
     assert parameters < 44_061_106
 
 
+def test_syntax_routed_atomic_compiler_ignores_transport_cover() -> None:
+    config = _config()
+    compiler = ParallelTerminalStateCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        relation_width=16,
+        atomic_edits=True,
+        lexical_command=True,
+        token_native_command_mask=True,
+        token_native_codebook_ids=tuple(range(700)),
+        token_native_vocab_size=700,
+    )
+    tokens = torch.tensor(
+        [
+            [528, 528, 497, 565, 430, 564, 100, 200],
+            [528, 528, 497, 565, 430, 564, 300, 400],
+        ],
+        dtype=torch.long,
+    )
+    hidden = torch.randn(2, 8, config.d_model)
+    lexical = torch.randn_like(hidden)
+    hidden[1, :6] = hidden[0, :6]
+    lexical[1, :6] = lexical[0, :6]
+    terminal = compiler(
+        _state(config),
+        command_hidden=hidden,
+        command_lexical=lexical,
+        command_tokens=tokens,
+        command_attention_mask=torch.ones(2, 8, dtype=torch.bool),
+        steps=3,
+        hard=False,
+    )
+    assert torch.allclose(
+        terminal.value_probabilities[0],
+        terminal.value_probabilities[1],
+    )
+
+
 def test_sparse_residual_gate_can_preserve_initial_identity() -> None:
     config = _config()
     compiler = ParallelTerminalStateCompiler(

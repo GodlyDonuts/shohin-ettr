@@ -2,8 +2,11 @@
 
 ## Status
 
-Preregistered after H100 oracle-initial job `725517` closed frozen-residual-only
-COMMAND binding and before any lexical-rail optimization is launched.
+Closed negative. Matched H100 job `725519` completed all 1,000 updates in
+11:33. Report SHA-256 is
+`e693588b0a680aa123f835f8e34fe18968713cb1e51e2926960871ec550c717d`;
+SHA256SUMS SHA-256 is
+`55120e01aa11ffa2e03a2f9dca16a18e73578c140d35f81a537126c656724202`.
 
 ## Diagnosis
 
@@ -49,4 +52,23 @@ it crosses, retain it and add the same stage-separated lexical preservation to
 a jointly trained WORLD compiler before the fully autonomous gate.
 
 Decision:
-`test_whether_preserving_raw_lexical_identity_repairs_command_edit_binding_before_replacing_the_editor_topology`.
+`reject_unfiltered_lexical_fusion_and_delete_token_native_transport_cover_before_explicit_occurrence_pointers`.
+
+## Sealed Result
+
+The direct lexical rail does not repair edit binding. On the exact held-out
+interface, oracle-initial value accuracy changes from `74.344978%` before fit
+to `70.196507%` after fit; autonomous-initial value accuracy changes from
+`58.542576%` to `55.376638%`. Exact terminal packets remain `0/512` in both
+arms. The fully autonomous source-deleted evaluator remains WORLD strict
+`0/80` and COMMAND strict `0/144`, with all margin-1 rates zero. Autonomous
+factual top-1 reaches `60.9375%`, which is not causal reasoning because the
+counterfactual pairs remain invariant.
+
+Inspection found that fixed-width token-native packing places the semantic
+COMMAND AST first and fills the remainder of all 96 model-visible positions
+with deterministic public-codebook cover. The ordinary transport attention
+mask marks the cover as valid. Direct lexical fusion therefore gives the
+editor more exact identity while also forcing it to attend dozens of
+nonsemantic codewords. The next treatment removes only that cover using the
+public grammar; it does not parse ontology semantics or execute a program.

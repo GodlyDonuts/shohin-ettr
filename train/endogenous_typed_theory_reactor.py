@@ -1321,6 +1321,12 @@ class EndogenousTypedTheoryReactorGPT(nn.Module):
                     "lexical COMMAND reactor requires command token ids"
                 )
             reactor_arguments["command_lexical"] = self.base.tok(command_idx)
+        if getattr(self.reactor, "requires_command_tokens", False):
+            if command_idx is None:
+                raise TheoryReactorError(
+                    "token-native COMMAND reactor requires command token ids"
+                )
+            reactor_arguments["command_tokens"] = command_idx
         return self.reactor(state, **reactor_arguments)
 
     def answer_query(
