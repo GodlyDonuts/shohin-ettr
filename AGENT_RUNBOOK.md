@@ -22843,8 +22843,12 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   and `1eb0eb2ce56853def5f09fe22a373037b1e4a4b89efc278416eb3852151d0088`.
   The seed-31/`1e-4` ordering-14 cross report SHA-256 is
   `e0d67a90b2b8c859afeb6df8c1529a0806c4d1b717cf2d31270765d54c542846`.
-  Ordering-12 job `725446` remains pending resources and is the difficult
-  transfer check.
+  Ordering-12 job `725446` completed the difficult transfer check in `2:45`.
+  Fully autonomous factual top-1 is `66.80%`, but WORLD and COMMAND strict
+  pairs, margin-1 rates, and positive causal orientation all return to zero;
+  mean DIDs are `-0.0838/-0.0138`. Report SHA-256 is
+  `6d055ab22bf9a39af4a994ccf2a550d6e8ab0d77a80e10d5176a9defba521d46`.
+  Thus seed 31 transfers to ordering 14 but not the difficult ordering 12.
 
   The 500-update semantic-prefix canary `725431` matches the old initial
   parameter hash and remains numerically bounded. Its exact schedule is

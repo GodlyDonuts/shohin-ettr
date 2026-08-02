@@ -53379,6 +53379,9 @@ WORLD. The signal is therefore not just one lucky evaluation subset, but it is
 still one fragile optimization basin. The higher-rate seed-31 arm reaches a
 better 18.95% exact schedule rate while scoring zero on both strict gates,
 again proving that local transaction imitation is not the target capability.
+The same seed-31 arm returns to WORLD 0% and COMMAND 0% on the difficult third
+ordering despite 66.80% factual top-1. This closes any claim of three-
+population stability for the current single compiler.
 
 Two bounded semantic repairs are now closed. The semantic-prefix canary stays
 finite and reaches 11.55% exact schedules and 70.31% factual top-1, but strict
