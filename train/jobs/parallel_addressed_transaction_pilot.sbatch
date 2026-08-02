@@ -42,10 +42,13 @@ VALID_POINTER_MASKS=${VALID_POINTER_MASKS:-0}
 TOKEN_NATIVE_COMMAND_MASK=${TOKEN_NATIVE_COMMAND_MASK:-0}
 TOKEN_NATIVE_OCCURRENCE_COMMAND=${TOKEN_NATIVE_OCCURRENCE_COMMAND:-0}
 TOKEN_NATIVE_SYNTAX_GRAPH_COMMAND=${TOKEN_NATIVE_SYNTAX_GRAPH_COMMAND:-0}
+OPCODE_PROGRAM_REGISTRY=${OPCODE_PROGRAM_REGISTRY:-}
+OPCODE_PROGRAM_REGISTRY_SHA256=${OPCODE_PROGRAM_REGISTRY_SHA256:-}
 REQUIRED_DEVICE_CLASS=${REQUIRED_DEVICE_CLASS:-h100}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
 POINTER_ARGS=()
+REGISTRY_ARGS=()
 if [[ "$GROUNDED_POINTERS" == 1 ]]; then
   POINTER_ARGS+=(--grounded-pointers)
 elif [[ "$GROUNDED_POINTERS" != 0 ]]; then
@@ -87,6 +90,19 @@ if [[ "$TOKEN_NATIVE_SYNTAX_GRAPH_COMMAND" == 1 ]]; then
 elif [[ "$TOKEN_NATIVE_SYNTAX_GRAPH_COMMAND" != 0 ]]; then
   echo "token-native syntax graph flag differs" >&2
   exit 2
+fi
+if [[ -n "$OPCODE_PROGRAM_REGISTRY" || -n "$OPCODE_PROGRAM_REGISTRY_SHA256" ]]; then
+  [[ -n "$OPCODE_PROGRAM_REGISTRY" \
+    && -n "$OPCODE_PROGRAM_REGISTRY_SHA256" \
+    && "$OPCODE_PROGRAM_REGISTRY" == /* \
+    && "$OPCODE_PROGRAM_REGISTRY_SHA256" =~ ^[0-9a-f]{64}$ ]] || {
+    echo "opcode program registry contract differs" >&2
+    exit 2
+  }
+  REGISTRY_ARGS+=(
+    --opcode-program-registry "$OPCODE_PROGRAM_REGISTRY"
+    --opcode-program-registry-sha256 "$OPCODE_PROGRAM_REGISTRY_SHA256"
+  )
 fi
 
 for path in "$CODE_ROOT" "$RELEASE_ROOT" "$ETTR_DATA_ROOT" \
@@ -159,6 +175,7 @@ compiler_sha=$(sha256sum \
   --layers "$LAYERS" \
   --num-heads "$NUM_HEADS" \
   "${POINTER_ARGS[@]}" \
+  "${REGISTRY_ARGS[@]}" \
   --required-device-class "$REQUIRED_DEVICE_CLASS"
 
 (

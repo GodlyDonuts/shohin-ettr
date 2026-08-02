@@ -14,6 +14,8 @@ def test_parallel_transaction_job_is_hash_bound_and_isolated() -> None:
         "--architecture-seed",
         "--compiler-contract-sha256",
         "--joint-run-contract-sha256",
+        "--opcode-program-registry",
+        "--opcode-program-registry-sha256",
         "--required-device-class",
         "--grounded-pointers",
         "--valid-pointer-masks",
@@ -21,6 +23,7 @@ def test_parallel_transaction_job_is_hash_bound_and_isolated() -> None:
         "--training-initial-state",
         "TRAINING_INITIAL_STATE=${TRAINING_INITIAL_STATE:-oracle}",
         "OUTPUT=${OUTPUT:?set fresh pilot output}",
+        "OPCODE_PROGRAM_REGISTRY=${OPCODE_PROGRAM_REGISTRY:-}",
     ):
         assert expected in text
     assert "--gres=gpu:nvidia_h100_pcie:1" in text

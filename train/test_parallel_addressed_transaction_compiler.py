@@ -5,6 +5,7 @@ import pytest
 
 from endogenous_typed_theory_reactor import (
     GenericTransactionReactor,
+    TRANSACTION_COUNT,
     TheoryReactorConfig,
     TheoryReactorError,
     TypedTheoryState,
@@ -450,6 +451,80 @@ def test_parameterless_reactor_reuses_the_exact_transaction_algebra() -> None:
     ):
         assert torch.equal(getattr(observed, field), getattr(expected, field))
     assert observed.step == expected.step
+
+
+def test_opcode_program_registry_selects_one_sticky_hard_skeleton() -> None:
+    config = _config()
+    programs = ((1, 1, 6), (3, 4, 6), (3, 5, 6))
+    compiler = ParallelAddressedTransactionCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        opcode_program_sequences=programs,
+    )
+    assert compiler.program_selector is not None
+    with torch.no_grad():
+        compiler.program_selector.weight.zero_()
+        compiler.program_selector.bias.copy_(torch.tensor((0.4, 0.3, 0.3)).log())
+    schedule = compiler(
+        _state(config),
+        command_hidden=torch.zeros(2, 5, config.d_model),
+        command_attention_mask=torch.ones(2, 5, dtype=torch.bool),
+        steps=3,
+        hard=True,
+    )
+    observed = schedule.applied_opcode.argmax(-1)
+    # Per-step marginal argmax would form the invalid hybrid (3, 1, 6).
+    assert schedule.opcode.argmax(-1)[0].tolist() == [3, 1, 6]
+    assert observed.tolist() == [list(programs[0]), list(programs[0])]
+    assert "opcode_program_table" in compiler.state_dict()
+
+
+def test_opcode_program_registry_receives_joint_sequence_gradient() -> None:
+    config = _config()
+    compiler = ParallelAddressedTransactionCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        opcode_program_sequences=((1, 1, 6), (3, 4, 6)),
+    )
+    schedule = compiler(
+        _state(config),
+        command_hidden=torch.randn(2, 5, config.d_model),
+        command_attention_mask=torch.ones(2, 5, dtype=torch.bool),
+        steps=3,
+        hard=False,
+    )
+    target = torch.tensor((1, 1, 6))[None, :, None].expand(2, -1, -1)
+    loss = -schedule.opcode.gather(-1, target).clamp_min(1e-8).log().mean()
+    loss.backward()
+    assert compiler.program_selector is not None
+    gradient = compiler.program_selector.weight.grad
+    assert gradient is not None
+    assert bool(torch.isfinite(gradient).all())
+    assert float(gradient.abs().sum()) > 0.0
+
+
+def test_opcode_program_registry_rejects_duplicate_or_invalid_programs() -> None:
+    config = _config()
+    with pytest.raises(TheoryReactorError, match="duplicates"):
+        ParallelAddressedTransactionCompiler(
+            config,
+            width=64,
+            layers=1,
+            num_heads=2,
+            opcode_program_sequences=((1, 6), (1, 6)),
+        )
+    with pytest.raises(TheoryReactorError, match="registry differs"):
+        ParallelAddressedTransactionCompiler(
+            config,
+            width=64,
+            layers=1,
+            num_heads=2,
+            opcode_program_sequences=((1, TRANSACTION_COUNT), (1, 6)),
+        )
 
 
 def test_pointer_masks_require_grounded_slot_scores() -> None:

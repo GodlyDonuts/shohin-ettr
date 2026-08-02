@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 02:24 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 02:50 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -23480,3 +23480,46 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_small_whole_program_codebooks_retain_sticky_opcode_macro_identity_and_emit_dynamic_operands_from_exact_syntax_nodes_after_the_fixed_trajectory`.
+
+- **2026-08-02 02:24--02:50 EDT** -- **The 5k syntax-graph endpoint rejects
+  early grokking and confirms a whole-program coherence failure.**
+
+  V100 job `725573` completed all 5,000 updates cleanly. Report SHA-256 is
+  `7922f9b26a41be8125983149d3d896ba812deb4a65765d5b7a02f4bfad8c8623`;
+  pilot-contract SHA-256 is
+  `fd5d09fe7b3e31f8f9facdb7a7ab679ef479a6df07eca4c4187c3ade4072257d`.
+  Relative to the independent 1k endpoint, held-out joint schedule accuracy
+  rises from 8.830% to 14.374%, opcode from 44.969% to 68.994%, source from
+  28.791% to 35.549%, target from 13.793% to 18.391%, and value from 22.809%
+  to 31.522%. Despite these broad local gains, oracle-initial exact terminal
+  packets collapse from `32/512` to `0/512`; fully autonomous factual top-1
+  stays 60.9375%, and strict WORLD/COMMAND, margin-1, and DID all remain zero.
+  The moving-average training loss continues downward rather than reaching a
+  classical pre-generalization plateau. There is therefore no current
+  evidence of grokking. The result instead demonstrates that improving
+  independent decisions can destroy rare coherent executions.
+
+  The full audit was rerun with a hash-bound train-only opcode registry.
+  Stokes job `760895` completed in 5m43s from immutable runtime
+  `scratchpad/shohin_ettr_program_audit_e868d3c_r3`, whose SHA256SUMS SHA-256
+  is `e2529d43b3d5076614929eb473c2c6c95f77708d176cd627f3622897cab17f42`.
+  Registry report file SHA-256 is
+  `03fc92829bc4a1c9f9e8381953ac506e04afeef746871a60ebfca1e482cbafcc`;
+  payload SHA-256 is
+  `d58185b4a5c7b28e54cd9497215dd8d5f0e52f7339a968f10facbc6669497b4b`.
+
+  The preregistered successor selects one of 2,530 complete opcode skeletons
+  once per episode, broadcasts that sticky identity to every syntax-graph
+  step query, applies the selected whole skeleton, and still predicts all
+  operands dynamically from public syntax and autonomous initial state. It
+  adds 1,942,873 parameters, for 171,364,040 complete-system parameters. The
+  evaluator now separately reports registry coverage, exact selector class,
+  selector probability entropy, selected-class entropy, and class use. The
+  implementation, hash-bound loader, job plumbing, and evaluator pass 39
+  focused tests plus Ruff, byte compilation, Bash syntax, and diff checks.
+  The 15k fixed trajectory `725574` remains live; the 1k sticky-macro gate may
+  launch independently because the preregistered 5k decision point is now
+  read.
+
+  Decision:
+  `reject_early_grokking_preserve_the_15k_endpoint_and_test_one_hard_train_only_opcode_skeleton_with_compositional_operands`.

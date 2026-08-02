@@ -48,6 +48,7 @@ class AddressedSchedule:
     applied_relation: torch.Tensor
     applied_type_index: torch.Tensor
     applied_value_code: torch.Tensor
+    program_probabilities: torch.Tensor | None = None
 
     def policy(self, step: int) -> TransactionPolicy:
         if not 0 <= step < self.opcode.shape[1]:
@@ -76,6 +77,31 @@ def _hard_one_hot(probabilities: torch.Tensor) -> torch.Tensor:
     return F.one_hot(indices, probabilities.shape[-1]).to(probabilities.dtype)
 
 
+def _opcode_programs(
+    value: Sequence[Sequence[int]] | None,
+    config: TheoryReactorConfig,
+) -> tuple[tuple[int, ...], ...] | None:
+    if value is None:
+        return None
+    if isinstance(value, (str, bytes)) or len(value) < 2:
+        raise TheoryReactorError("opcode program registry differs")
+    programs = []
+    for raw in value:
+        if isinstance(raw, (str, bytes)):
+            raise TheoryReactorError("opcode program registry differs")
+        program = tuple(raw)
+        if (
+            not 1 <= len(program) <= config.max_steps
+            or any(type(opcode) is not int for opcode in program)
+            or any(not 0 <= opcode < TRANSACTION_COUNT for opcode in program)
+        ):
+            raise TheoryReactorError("opcode program registry differs")
+        programs.append(program)
+    if len(programs) != len(set(programs)):
+        raise TheoryReactorError("opcode program registry contains duplicates")
+    return tuple(programs)
+
+
 class ParallelAddressedTransactionCompiler(nn.Module):
     """Compile fixed-address transactions without recurrent teacher forcing."""
 
@@ -93,6 +119,7 @@ class ParallelAddressedTransactionCompiler(nn.Module):
         token_native_syntax_graph_command: bool = False,
         token_native_codebook_ids: Sequence[int] | None = None,
         token_native_vocab_size: int | None = None,
+        opcode_program_sequences: Sequence[Sequence[int]] | None = None,
     ) -> None:
         super().__init__()
         config.validate()
@@ -137,6 +164,10 @@ class ParallelAddressedTransactionCompiler(nn.Module):
         self.token_native_command_mask = token_native_command_mask
         self.token_native_occurrence_command = token_native_occurrence_command
         self.token_native_syntax_graph_command = token_native_syntax_graph_command
+        self.opcode_program_sequences = _opcode_programs(
+            opcode_program_sequences,
+            config,
+        )
 
         self.command_projection = nn.Linear(config.d_model, width)
         self.command_norm = nn.LayerNorm(width)
@@ -204,7 +235,37 @@ class ParallelAddressedTransactionCompiler(nn.Module):
             enable_nested_tensor=False,
         )
         self.output_norm = nn.LayerNorm(width)
-        self.opcode_head = nn.Linear(width, TRANSACTION_COUNT)
+        if self.opcode_program_sequences is None:
+            self.opcode_head = nn.Linear(width, TRANSACTION_COUNT)
+            self.program_selector_norm = None
+            self.program_selector = None
+            self.program_embedding = None
+            self.register_buffer("opcode_program_table", None)
+            self.register_buffer("opcode_program_step_mask", None)
+        else:
+            table = torch.zeros(
+                len(self.opcode_program_sequences),
+                config.max_steps,
+                dtype=torch.long,
+            )
+            step_mask = torch.zeros(
+                len(self.opcode_program_sequences),
+                config.max_steps,
+                dtype=torch.bool,
+            )
+            for index, program in enumerate(self.opcode_program_sequences):
+                table[index, : len(program)] = torch.tensor(program)
+                step_mask[index, : len(program)] = True
+            self.register_buffer("opcode_program_table", table)
+            self.register_buffer("opcode_program_step_mask", step_mask)
+            self.program_selector_norm = nn.LayerNorm(width)
+            self.program_selector = nn.Linear(
+                width,
+                len(self.opcode_program_sequences),
+            )
+            self.program_embedding = nn.Parameter(
+                torch.empty(len(self.opcode_program_sequences), width)
+            )
         if grounded_pointers:
             self.source_query = nn.Linear(width, width, bias=False)
             self.target_query = nn.Linear(width, width, bias=False)
@@ -225,6 +286,8 @@ class ParallelAddressedTransactionCompiler(nn.Module):
             self.step_queries,
         ):
             nn.init.normal_(parameter, std=0.02)
+        if self.program_embedding is not None:
+            nn.init.normal_(self.program_embedding, std=0.02)
 
     def _state_memory(self, state: TypedTheoryState) -> torch.Tensor:
         values = torch.einsum(
@@ -341,6 +404,34 @@ class ParallelAddressedTransactionCompiler(nn.Module):
                 command_attention_mask,
             )
         state_memory = self._state_memory(state)
+        selector_probabilities = None
+        selected_program = None
+        program_context = None
+        if self.opcode_program_table is not None:
+            assert self.program_selector_norm is not None
+            assert self.program_selector is not None
+            assert self.program_embedding is not None
+            mask = command_attention_mask.unsqueeze(-1).to(command.dtype)
+            command_pool = (command * mask).sum(1) / mask.sum(1).clamp_min(1.0)
+            state_pool = state_memory.mean(1)
+            selector_probabilities = (
+                self.program_selector(
+                    self.program_selector_norm(command_pool + state_pool)
+                )
+                .float()
+                .softmax(-1)
+            )
+            selected_program = _hard_one_hot(selector_probabilities)
+            straight_through_program = (
+                selected_program
+                + selector_probabilities
+                - selector_probabilities.detach()
+            )
+            program_context = torch.einsum(
+                "bk,kw->bw",
+                straight_through_program.to(self.program_embedding.dtype),
+                self.program_embedding,
+            )
         memory = torch.cat((command, state_memory), dim=1)
         padding = torch.cat(
             (
@@ -356,6 +447,8 @@ class ParallelAddressedTransactionCompiler(nn.Module):
         )
         queries = self.step_queries[:steps].to(command.dtype)
         queries = queries.unsqueeze(0).expand(batch, -1, -1)
+        if program_context is not None:
+            queries = queries + program_context.unsqueeze(1).to(queries.dtype)
         read, _ = self.cross_attention(
             queries,
             memory,
@@ -364,7 +457,19 @@ class ParallelAddressedTransactionCompiler(nn.Module):
             need_weights=False,
         )
         hidden = self.output_norm(self.schedule_core(queries + read))
-        opcode = self.opcode_head(hidden).float().softmax(-1)
+        if self.opcode_program_table is None:
+            opcode = self.opcode_head(hidden).float().softmax(-1)
+        else:
+            assert selector_probabilities is not None
+            templates = F.one_hot(
+                self.opcode_program_table[:, :steps],
+                TRANSACTION_COUNT,
+            ).to(selector_probabilities.dtype)
+            opcode = torch.einsum(
+                "bk,ktc->btc",
+                selector_probabilities,
+                templates,
+            )
         if self.grounded_pointers:
             keys = self.slot_key(state_memory)
             source_logits = torch.einsum(
@@ -424,12 +529,26 @@ class ParallelAddressedTransactionCompiler(nn.Module):
             )
             for name, value in probabilities.items()
         }
+        if hard and self.opcode_program_table is not None:
+            assert selected_program is not None
+            selected_opcode = torch.einsum(
+                "bk,ktc->btc",
+                selected_program,
+                F.one_hot(
+                    self.opcode_program_table[:, :steps],
+                    TRANSACTION_COUNT,
+                ).to(selected_program.dtype),
+            )
+            applied["applied_opcode"] = selected_opcode.to(
+                state.value_probabilities.dtype
+            )
         return AddressedSchedule(
             **{
                 name: value.to(state.value_probabilities.dtype)
                 for name, value in probabilities.items()
             },
             **applied,
+            program_probabilities=selector_probabilities,
         )
 
 

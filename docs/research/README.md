@@ -35,6 +35,13 @@ Qualitative records from the frozen 300k model live in
 - [`RAW300K_INTERACTION_RESULT.md`](baselines/RAW300K_INTERACTION_RESULT.md)
 - [`RAW300K_FREEFORM_INTERACTION_RESULT.md`](baselines/RAW300K_FREEFORM_INTERACTION_RESULT.md)
 
+### Active architecture experiments
+
+New preregistrations that are not bound to legacy root-relative manifests live
+here directly:
+
+- [`R12_STICKY_OPCODE_MACRO_RAIL_PREREG.md`](R12_STICKY_OPCODE_MACRO_RAIL_PREREG.md)
+
 ## Documents Intentionally Kept At Root
 
 The following classes remain at repository root:
@@ -48,4 +55,3 @@ manifests, or named in immutable experiment receipts. Moving only some of them
 would silently break reproducibility. They should be migrated only after a
 single path-registry change updates code, tests, frozen manifests, and archival
 receipts together.
-

@@ -53729,3 +53729,36 @@ misreported as representational grokking.
 
 Current decision:
 `finish_the_fixed_syntax_graph_curve_then_test_a_sticky_opcode_macro_rail_with_compositional_syntax_node_operands_not_a_flat_program_memory`.
+
+### 2026-08-02: 5k separates local learning from coherent execution
+
+The fixed 5,000-update syntax-graph endpoint is negative for early grokking.
+Local held-out schedule metrics improve broadly: joint step accuracy rises from
+8.83% at 1k to 14.37%, opcode from 44.97% to 68.99%, source from 28.79% to
+35.55%, target from 13.79% to 18.39%, and value from 22.81% to 31.52%.
+Nevertheless, oracle-initial exact terminal packets fall from `32/512` to
+`0/512`, autonomous factual accuracy is unchanged at 60.94%, and every fully
+autonomous WORLD/COMMAND causal measure remains zero. Training loss is still
+descending, so the required train-saturation-then-held-out-jump pattern is
+absent. The 1k exact packets were a fragile hard-decision intersection, not a
+demonstrated generalization transition.
+
+This result strengthens the whole-program-coherence diagnosis. Marginally
+better transaction fields can combine into a worse executable program. The
+audit-driven successor therefore freezes a train-only registry of 2,530 opcode
+skeletons, selects one skeleton once per episode, and emits operands
+compositionally from exact syntax nodes and the autonomous initial state. The
+registry covers 99.275% of development instances but stores no operands or
+answers. Its report file/payload SHA-256 values are
+`03fc92829bc4a1c9f9e8381953ac506e04afeef746871a60ebfca1e482cbafcc`
+and `d58185b4a5c7b28e54cd9497215dd8d5f0e52f7339a968f10facbc6669497b4b`.
+The complete treatment is 171,364,040 parameters.
+
+The preregistration is
+`docs/research/R12_STICKY_OPCODE_MACRO_RAIL_PREREG.md`. Advancement still
+requires simultaneous strict WORLD and COMMAND gains on the unchanged
+source-deleted evaluator and replication across seeds and populations. The
+15k syntax-graph endpoint continues as the long-horizon grokking check.
+
+Current decision:
+`treat_5k_as_a_coherence_failure_not_grokking_and_test_a_single_sticky_opcode_macro_with_dynamic_operands`.

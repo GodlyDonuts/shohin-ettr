@@ -30,7 +30,7 @@ from ettr_il_v3_protocol import canonical_json_bytes
 from materialize_ettr_il_v3_corpus import _iter_records, _sha256_file
 
 
-REPORT_SCHEMA = "r12-ettr-program-template-audit-v1"
+REPORT_SCHEMA = "r12-ettr-program-template-audit-v2"
 _SPLITS = ("train", "development")
 _MODES = ("exact", "structural", "opcode")
 
@@ -115,7 +115,7 @@ def summarize_counter(counter: Counter[str]) -> dict[str, object]:
     }
 
 
-def _record_programs(record: object) -> Iterable[dict[str, str]]:
+def _record_programs(record: object) -> Iterable[dict[str, object]]:
     targets = record.assessor_only.targets
     if (
         len(targets.initial_packets) != 2
@@ -178,6 +178,7 @@ def _record_programs(record: object) -> Iterable[dict[str, str]]:
             )
             if terminal_packets[corner_index].committed != terminal.committed:
                 raise ProgramTemplateAuditError("terminal status differs")
+            steps = _active_steps(trace)
             yield {
                 **trace_signatures(trace),
                 "command": _digest(
@@ -187,6 +188,7 @@ def _record_programs(record: object) -> Iterable[dict[str, str]]:
                     }
                 ),
                 "family": family,
+                "opcode_sequence": tuple(step[0] for step in steps),
             }
 
 
@@ -206,6 +208,7 @@ def _audit_shard(
     dict[str, Counter[str]],
     Counter[str],
     Counter[str],
+    dict[str, tuple[int, ...]],
     set[str],
     dict[str, object],
 ]:
@@ -213,6 +216,7 @@ def _audit_shard(
     counters = {mode: Counter() for mode in _MODES}
     command_counter: Counter[str] = Counter()
     family_counter: Counter[str] = Counter()
+    opcode_registry: dict[str, tuple[int, ...]] = {}
     core_ids: set[str] = set()
     digest, size = _sha256_file(path)
     rows = 0
@@ -225,16 +229,28 @@ def _audit_shard(
         rows += 1
         for program in _record_programs(record):
             for mode in _MODES:
-                counters[mode][program[mode]] += 1
-            command_counter[program["command"]] += 1
-            family_counter[program["family"]] += 1
+                counters[mode][str(program[mode])] += 1
+            command_counter[str(program["command"])] += 1
+            family_counter[str(program["family"])] += 1
+            opcode_digest = str(program["opcode"])
+            opcode_sequence = tuple(program["opcode_sequence"])
+            previous = opcode_registry.setdefault(opcode_digest, opcode_sequence)
+            if previous != opcode_sequence or _digest(opcode_sequence) != opcode_digest:
+                raise ProgramTemplateAuditError("opcode registry collision")
     receipt = {
         "bytes": size,
         "path": path.relative_to(data_root).as_posix(),
         "rows": rows,
         "sha256": digest,
     }
-    return counters, command_counter, family_counter, core_ids, receipt
+    return (
+        counters,
+        command_counter,
+        family_counter,
+        opcode_registry,
+        core_ids,
+        receipt,
+    )
 
 
 def _audit_split(data_root: Path, split: str, workers: int) -> dict[str, object]:
@@ -251,9 +267,17 @@ def _audit_split(data_root: Path, split: str, workers: int) -> dict[str, object]
     counters = {mode: Counter() for mode in _MODES}
     command_counter: Counter[str] = Counter()
     family_counter: Counter[str] = Counter()
+    opcode_registry: dict[str, tuple[int, ...]] = {}
     core_ids: set[str] = set()
     shard_receipts = []
-    for shard_counters, commands, families, shard_ids, receipt in results:
+    for (
+        shard_counters,
+        commands,
+        families,
+        shard_registry,
+        shard_ids,
+        receipt,
+    ) in results:
         if core_ids.intersection(shard_ids):
             raise ProgramTemplateAuditError("duplicate semantic-core identity")
         core_ids.update(shard_ids)
@@ -261,11 +285,23 @@ def _audit_split(data_root: Path, split: str, workers: int) -> dict[str, object]
             counters[mode].update(shard_counters[mode])
         command_counter.update(commands)
         family_counter.update(families)
+        for digest, sequence in shard_registry.items():
+            previous = opcode_registry.setdefault(digest, sequence)
+            if previous != sequence:
+                raise ProgramTemplateAuditError("opcode registry collision")
         shard_receipts.append(receipt)
     return {
         "commands": summarize_counter(command_counter),
         "core_rows": len(core_ids),
         "families": dict(sorted(family_counter.items())),
+        "opcode_registry": [
+            {
+                "count": counters["opcode"][digest],
+                "opcodes": list(sequence),
+                "sha256": digest,
+            }
+            for digest, sequence in sorted(opcode_registry.items())
+        ],
         "programs": {mode: summarize_counter(counters[mode]) for mode in _MODES},
         "shards": shard_receipts,
         "_counters": counters,

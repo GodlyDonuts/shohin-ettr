@@ -13,6 +13,7 @@ from parallel_addressed_transaction_compiler import AddressedSchedule
 from train_parallel_addressed_transaction_pilot import (
     _balanced_binary_brier,
     _balanced_categorical_loss,
+    _program_statistics,
     _schedule_counts,
     _schedule_loss,
     _semantic_prefix_loss,
@@ -70,9 +71,7 @@ def test_balanced_categorical_loss_balances_observed_classes() -> None:
     mask = torch.ones_like(targets, dtype=torch.bool)
     loss = _balanced_categorical_loss(probabilities, targets, mask)
     assert loss is not None
-    expected = 0.5 * (
-        -torch.tensor([0.8, 0.9]).log().mean() - torch.tensor(0.6).log()
-    )
+    expected = 0.5 * (-torch.tensor([0.8, 0.9]).log().mean() - torch.tensor(0.6).log())
     assert torch.allclose(loss, expected)
     loss.backward()
     assert bool(torch.isfinite(probabilities.grad).all())
@@ -96,6 +95,55 @@ def test_schedule_loss_and_counts_cover_all_heads() -> None:
     assert counts["joint"] == (2, 2)
 
 
+def test_schedule_loss_supervises_one_complete_opcode_program() -> None:
+    schedule = _schedule()
+    schedule.program_probabilities = torch.tensor(
+        [[0.8, 0.2]],
+        requires_grad=True,
+    )
+    compiler = SimpleNamespace(
+        opcode_program_table=torch.tensor([[0, 3], [1, 6]]),
+        opcode_program_step_mask=torch.ones(2, 2, dtype=torch.bool),
+    )
+    loss, parts = _schedule_loss(schedule, _targets(), compiler)
+    assert "program" in parts
+    loss.backward()
+    assert schedule.program_probabilities.grad is not None
+    assert float(schedule.program_probabilities.grad[0, 0]) < 0.0
+
+
+def test_program_statistics_separates_known_coverage_accuracy_and_entropy() -> None:
+    schedule = _schedule()
+    schedule.program_probabilities = torch.tensor([[0.8, 0.2]])
+    compiler = SimpleNamespace(
+        opcode_program_table=torch.tensor([[0, 3], [1, 6]]),
+        opcode_program_step_mask=torch.ones(2, 2, dtype=torch.bool),
+    )
+    statistics = _program_statistics(schedule, _targets(), compiler)
+    assert statistics is not None
+    assert statistics["correct"] == 1
+    assert statistics["known"] == 1
+    assert statistics["rows"] == 1
+    assert statistics["selected_counts"].tolist() == [1, 0]
+    assert 0.0 < statistics["probability_entropy_sum"] < 1.0
+
+
+def test_program_statistics_reports_unknown_target_without_false_match() -> None:
+    schedule = _schedule()
+    schedule.program_probabilities = torch.tensor([[0.8, 0.2]])
+    compiler = SimpleNamespace(
+        opcode_program_table=torch.tensor([[0, 3], [1, 6]]),
+        opcode_program_step_mask=torch.ones(2, 2, dtype=torch.bool),
+    )
+    targets = _targets()
+    targets.opcode = torch.tensor([[3, 6]])
+    statistics = _program_statistics(schedule, targets, compiler)
+    assert statistics is not None
+    assert statistics["correct"] == 0
+    assert statistics["known"] == 0
+    assert statistics["rows"] == 1
+
+
 def test_balanced_binary_brier_does_not_reward_sparse_zero_collapse() -> None:
     predicted = torch.tensor([[0.2, 0.2, 0.2, 0.2]], requires_grad=True)
     target = torch.tensor([[1.0, 0.0, 0.0, 0.0]])
@@ -112,13 +160,9 @@ def test_state_brier_carries_gradients_from_every_semantic_field() -> None:
         active=torch.tensor([[0.8, 0.2]], requires_grad=True),
         committed=torch.tensor([0.2], requires_grad=True),
         halted=torch.tensor([0.2], requires_grad=True),
-        relations=torch.tensor(
-            [[[[0.1, 0.7], [0.2, 0.1]]]], requires_grad=True
-        ),
+        relations=torch.tensor([[[[0.1, 0.7], [0.2, 0.1]]]], requires_grad=True),
         root=torch.tensor([[0.7, 0.3]], requires_grad=True),
-        type_probabilities=torch.tensor(
-            [[[0.8, 0.2], [0.4, 0.6]]], requires_grad=True
-        ),
+        type_probabilities=torch.tensor([[[0.8, 0.2], [0.4, 0.6]]], requires_grad=True),
         value_probabilities=torch.tensor(
             [[[0.6, 0.4], [0.3, 0.7]]], requires_grad=True
         ),

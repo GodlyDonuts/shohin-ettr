@@ -28,7 +28,7 @@ from safetensors.torch import load_file
 import torch
 
 from algebraic_query_state_reader import AlgebraicQueryStateReader
-from endogenous_typed_theory_reactor import SYSTEM_PARAMETER_CAP
+from endogenous_typed_theory_reactor import SYSTEM_PARAMETER_CAP, TRANSACTION_COUNT
 from ettr_checkpoint import load_protected_base_model
 from ettr_objectives import ETTRObjectiveConfig
 from ettr_packet_index import ETTRDiskPacketSufficiencyIndex
@@ -47,6 +47,7 @@ from eval_ettr_joint_instruction_model import (
 )
 from eval_ettr_v3 import _parameter_sha256, _read_hash_bound_json
 from native_causal_disposition_reader import answer_token_ids_from_tokenizer
+from opcode_program_registry import load_opcode_program_registry
 from parallel_addressed_transaction_compiler import (
     ParallelAddressedTransactionCompiler,
     ParallelScheduledReactor,
@@ -88,6 +89,7 @@ _SCHEDULE_RUN_FILES = (
     "schedule-initial.safetensors",
     "train.jsonl",
 )
+_SCHEDULE_OPTIONAL_FILES = ("opcode-program-registry.json",)
 _SCHEDULE_SCHEMAS = {
     "shohin-ettr-parallel-addressed-transaction-contract-v1": (
         "shohin-ettr-parallel-addressed-transaction-report-v1"
@@ -109,6 +111,9 @@ _SCHEDULE_SCHEMAS = {
     ),
     "shohin-ettr-parallel-addressed-transaction-contract-v7": (
         "shohin-ettr-parallel-addressed-transaction-report-v7"
+    ),
+    "shohin-ettr-parallel-addressed-transaction-contract-v8": (
+        "shohin-ettr-parallel-addressed-transaction-report-v8"
     ),
 }
 _ARMS = (
@@ -359,14 +364,17 @@ def _load_parallel_schedule(
         if (
             len(fields) != 2
             or _HEX64.fullmatch(fields[0]) is None
-            or fields[1] not in _SCHEDULE_RUN_FILES
+            or fields[1] not in _SCHEDULE_RUN_FILES + _SCHEDULE_OPTIONAL_FILES
             or fields[1] in expected
         ):
             raise AlgebraicJointStateEvaluationError(
                 "parallel schedule run receipt differs"
             )
         expected[fields[1]] = fields[0]
-    if tuple(sorted(expected)) != tuple(sorted(_SCHEDULE_RUN_FILES)):
+    if tuple(sorted(expected)) not in {
+        tuple(sorted(_SCHEDULE_RUN_FILES)),
+        tuple(sorted(_SCHEDULE_RUN_FILES + _SCHEDULE_OPTIONAL_FILES)),
+    }:
         raise AlgebraicJointStateEvaluationError(
             "parallel schedule run receipt differs"
         )
@@ -423,6 +431,9 @@ def _load_parallel_schedule(
             "token_native_syntax_graph_command",
             False,
         )
+        opcode_program_registry_sha256 = architecture.get(
+            "opcode_program_registry_sha256"
+        )
     except (KeyError, TypeError, ValueError) as exc:
         raise AlgebraicJointStateEvaluationError(
             "parallel schedule architecture differs"
@@ -442,12 +453,36 @@ def _load_parallel_schedule(
             and architecture.get("token_native_codebook_sha256")
             != stream.codec.codebook_sha256
         )
+        or (
+            (opcode_program_registry_sha256 is None)
+            != ("opcode-program-registry.json" not in expected)
+        )
     ):
         raise AlgebraicJointStateEvaluationError(
             "parallel schedule architecture differs"
         )
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
+    opcode_registry = (
+        load_opcode_program_registry(
+            (args.schedule_run_dir / "opcode-program-registry.json").resolve(),
+            expected_sha256=opcode_program_registry_sha256,
+            max_steps=model.config.max_steps,
+            opcode_classes=TRANSACTION_COUNT,
+        )
+        if opcode_program_registry_sha256 is not None
+        else None
+    )
+    if opcode_registry is not None and (
+        architecture.get("opcode_program_classes") != opcode_registry.classes
+        or architecture.get("opcode_program_registry_payload_sha256")
+        != opcode_registry.payload_sha256
+        or architecture.get("opcode_program_development_instance_coverage")
+        != opcode_registry.development_instance_coverage
+    ):
+        raise AlgebraicJointStateEvaluationError(
+            "parallel schedule opcode registry differs"
+        )
     schedule = ParallelAddressedTransactionCompiler(
         model.config,
         width=width,
@@ -463,6 +498,9 @@ def _load_parallel_schedule(
         ),
         token_native_vocab_size=(
             model.base.cfg.vocab_size if token_native_command_mask else None
+        ),
+        opcode_program_sequences=(
+            opcode_registry.programs if opcode_registry is not None else None
         ),
     ).to(
         device=next(model.parameters()).device,

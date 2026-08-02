@@ -17,7 +17,7 @@ from typing import Sequence
 from safetensors.torch import save_file
 import torch
 
-from endogenous_typed_theory_reactor import TypedTheoryState
+from endogenous_typed_theory_reactor import TRANSACTION_COUNT, TypedTheoryState
 from eval_algebraic_query_joint_state import (
     _evaluate,
     _load_compiler,
@@ -27,6 +27,7 @@ from ettr_objectives import ETTRObjectiveConfig
 from ettr_packet_index import ETTRDiskPacketSufficiencyIndex
 from ettr_query_supervision import iter_batches_with_query_specs
 from ettr_v3_streaming import ETTRV3StreamingRelease, move_continuation_batch
+from opcode_program_registry import load_opcode_program_registry
 from parallel_addressed_transaction_compiler import (
     ParallelAddressedTransactionCompiler,
     ParallelScheduledReactor,
@@ -44,8 +45,8 @@ from train_ettr_component_island import (
 )
 
 
-CONTRACT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-contract-v7"
-REPORT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-report-v7"
+CONTRACT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-contract-v8"
+REPORT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-report-v8"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _FIELDS = (
@@ -112,6 +113,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         choices=("h100", "cuda"),
         default="h100",
     )
+    parser.add_argument("--opcode-program-registry", type=Path)
+    parser.add_argument("--opcode-program-registry-sha256")
     return parser.parse_args(argv)
 
 
@@ -126,13 +129,17 @@ def _validate_args(args: argparse.Namespace) -> None:
         args.compiler,
         args.compiler_contract,
         args.output,
-    )
+    ) + ((args.opcode_program_registry,) if args.opcode_program_registry else ())
     hashes = (
         args.release_sha256,
         args.joint_model_sha256,
         args.joint_run_contract_sha256,
         args.compiler_sha256,
         args.compiler_contract_sha256,
+    ) + (
+        (args.opcode_program_registry_sha256,)
+        if args.opcode_program_registry_sha256
+        else ()
     )
     if (
         any(not path.is_absolute() for path in paths)
@@ -153,6 +160,10 @@ def _validate_args(args: argparse.Namespace) -> None:
         or (
             args.token_native_occurrence_command
             and args.token_native_syntax_graph_command
+        )
+        or (
+            (args.opcode_program_registry is None)
+            != (args.opcode_program_registry_sha256 is None)
         )
         or not math.isfinite(args.learning_rate)
         or not 0.0 < args.learning_rate < 1.0
@@ -203,7 +214,38 @@ def _balanced_categorical_loss(
     return torch.stack(class_means).mean()
 
 
-def _schedule_loss(schedule, targets) -> tuple[torch.Tensor, dict[str, float]]:
+def _opcode_program_matches(targets, compiler) -> torch.Tensor:
+    if (
+        compiler is None
+        or compiler.opcode_program_table is None
+        or compiler.opcode_program_step_mask is None
+    ):
+        raise ParallelTransactionPilotError("opcode program loss geometry differs")
+    steps = targets.opcode.shape[1]
+    if (
+        compiler.opcode_program_table.ndim != 2
+        or compiler.opcode_program_step_mask.shape
+        != compiler.opcode_program_table.shape
+        or compiler.opcode_program_table.shape[1] < steps
+    ):
+        raise ParallelTransactionPilotError("opcode program loss geometry differs")
+    return (
+        compiler.opcode_program_step_mask[:, :steps].unsqueeze(0)
+        == targets.step_mask.unsqueeze(1)
+    ).all(-1) & (
+        (
+            compiler.opcode_program_table[:, :steps].unsqueeze(0)
+            == targets.opcode.unsqueeze(1)
+        )
+        | ~targets.step_mask.unsqueeze(1)
+    ).all(-1)
+
+
+def _schedule_loss(
+    schedule,
+    targets,
+    compiler: ParallelAddressedTransactionCompiler | None = None,
+) -> tuple[torch.Tensor, dict[str, float]]:
     masks = policy_masks(targets)
     losses = {}
     for name in _FIELDS:
@@ -214,6 +256,27 @@ def _schedule_loss(schedule, targets) -> tuple[torch.Tensor, dict[str, float]]:
         )
         if loss is not None:
             losses[name] = loss
+    program_probabilities = getattr(schedule, "program_probabilities", None)
+    if program_probabilities is not None:
+        if (
+            compiler is None
+            or compiler.opcode_program_table is None
+            or program_probabilities.ndim != 2
+            or program_probabilities.shape[1] != compiler.opcode_program_table.shape[0]
+        ):
+            raise ParallelTransactionPilotError("opcode program loss geometry differs")
+        matches = _opcode_program_matches(targets, compiler)
+        if not bool(matches.sum(-1).eq(1).all()):
+            raise ParallelTransactionPilotError(
+                "opcode program target is absent or ambiguous"
+            )
+        selected = program_probabilities.gather(
+            1,
+            matches.long().argmax(-1, keepdim=True),
+        ).squeeze(1)
+        losses["program"] = (
+            -selected.float().clamp_min(torch.finfo(torch.float32).eps).log().mean()
+        )
     if not losses:
         raise ParallelTransactionPilotError("parallel transaction loss has no support")
     return torch.stack(tuple(losses.values())).mean(), {
@@ -412,6 +475,41 @@ def _schedule_counts(schedule, targets) -> dict[str, tuple[int, int]]:
     return counts
 
 
+def _program_statistics(schedule, targets, compiler) -> dict[str, object] | None:
+    probabilities = getattr(schedule, "program_probabilities", None)
+    if probabilities is None:
+        return None
+    if (
+        probabilities.ndim != 2
+        or probabilities.shape[0] != targets.opcode.shape[0]
+        or compiler.opcode_program_table is None
+        or probabilities.shape[1] != compiler.opcode_program_table.shape[0]
+    ):
+        raise ParallelTransactionPilotError("opcode program metric geometry differs")
+    matches = _opcode_program_matches(targets, compiler)
+    if not bool(matches.sum(-1).le(1).all()):
+        raise ParallelTransactionPilotError("opcode program target is ambiguous")
+    known = matches.any(-1)
+    predicted = probabilities.argmax(-1)
+    target = matches.long().argmax(-1)
+    entropy = -(
+        probabilities.float()
+        * probabilities.float().clamp_min(torch.finfo(torch.float32).eps).log()
+    ).sum(-1)
+    return {
+        "correct": int((predicted.eq(target) & known).sum().detach().cpu()),
+        "known": int(known.sum().detach().cpu()),
+        "probability_entropy_sum": float(entropy.sum().detach().cpu()),
+        "rows": int(probabilities.shape[0]),
+        "selected_counts": torch.bincount(
+            predicted,
+            minlength=probabilities.shape[1],
+        )
+        .detach()
+        .cpu(),
+    }
+
+
 def _evaluate_interfaces(
     schedule_compiler,
     executor,
@@ -426,6 +524,11 @@ def _evaluate_interfaces(
     schedule_compiler.eval()
     schedule_counts = {}
     terminal_counts = {}
+    program_correct = 0
+    program_known = 0
+    program_entropy_sum = 0.0
+    program_rows = 0
+    program_selected_counts = None
     iterator = stream.iter_positioned_batches(
         "development",
         rank=0,
@@ -478,16 +581,54 @@ def _evaluate_interfaces(
             terminal_counts,
             _packet_batch_counts(terminal, batch.terminal_packet_targets),
         )
+        statistics = _program_statistics(
+            schedule,
+            batch.transaction_targets,
+            schedule_compiler,
+        )
+        if statistics is not None:
+            program_correct += statistics["correct"]
+            program_known += statistics["known"]
+            program_entropy_sum += statistics["probability_entropy_sum"]
+            program_rows += statistics["rows"]
+            selected_counts = statistics["selected_counts"]
+            program_selected_counts = (
+                selected_counts
+                if program_selected_counts is None
+                else program_selected_counts + selected_counts
+            )
         observed += 1
     if observed != max_batches:
         raise ParallelTransactionPilotError(
             "parallel transaction development split is too short"
         )
-    return {
+    result = {
         "batches": observed,
         "oracle_initial_hard_schedule": _summarize_counts(schedule_counts),
         "oracle_initial_terminal_packet": _summarize_counts(terminal_counts),
     }
+    if program_selected_counts is not None:
+        selected_probabilities = program_selected_counts.float() / program_rows
+        positive = selected_probabilities > 0
+        selected_entropy = -(
+            selected_probabilities[positive] * selected_probabilities[positive].log()
+        ).sum()
+        result["opcode_program_selector"] = {
+            "classes_used": int(positive.sum()),
+            "exact_class": {
+                "correct": program_correct,
+                "rate": program_correct / program_known if program_known else 0.0,
+                "total": program_known,
+            },
+            "known_target_coverage": {
+                "covered": program_known,
+                "rate": program_known / program_rows,
+                "total": program_rows,
+            },
+            "mean_probability_entropy": program_entropy_sum / program_rows,
+            "selected_class_entropy": float(selected_entropy),
+        }
+    return result
 
 
 def _module_sha256(module: torch.nn.Module, path: Path) -> str:
@@ -580,6 +721,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     for parameter in model.parameters():
         parameter.requires_grad_(False)
     executor = model.reactor
+    opcode_registry = (
+        load_opcode_program_registry(
+            args.opcode_program_registry,
+            expected_sha256=args.opcode_program_registry_sha256,
+            max_steps=model.config.max_steps,
+            opcode_classes=TRANSACTION_COUNT,
+        )
+        if args.opcode_program_registry is not None
+        else None
+    )
     torch.manual_seed(args.architecture_seed)
     torch.cuda.manual_seed_all(args.architecture_seed)
     schedule_compiler = ParallelAddressedTransactionCompiler(
@@ -597,6 +748,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         ),
         token_native_vocab_size=(
             model.base.cfg.vocab_size if args.token_native_command_mask else None
+        ),
+        opcode_program_sequences=(
+            opcode_registry.programs if opcode_registry is not None else None
         ),
     ).to(device=device, dtype=next(model.parameters()).dtype)
     schedule_parameters = sum(
@@ -619,6 +773,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     objective_config = ETTRObjectiveConfig(vocab_size=model.base.cfg.vocab_size)
     try:
         args.output.mkdir(mode=0o700)
+        if opcode_registry is not None:
+            _write_no_replace(
+                args.output / "opcode-program-registry.json",
+                opcode_registry.payload,
+            )
         initial_sha256 = _module_sha256(
             schedule_compiler,
             args.output / "schedule-initial.safetensors",
@@ -661,6 +820,22 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "layers": args.layers,
                 "grounded_pointers": args.grounded_pointers,
                 "num_heads": args.num_heads,
+                "opcode_program_classes": (
+                    opcode_registry.classes if opcode_registry is not None else None
+                ),
+                "opcode_program_development_instance_coverage": (
+                    opcode_registry.development_instance_coverage
+                    if opcode_registry is not None
+                    else None
+                ),
+                "opcode_program_registry_payload_sha256": (
+                    opcode_registry.payload_sha256
+                    if opcode_registry is not None
+                    else None
+                ),
+                "opcode_program_registry_sha256": (
+                    opcode_registry.file_sha256 if opcode_registry is not None else None
+                ),
                 "parameterless_exact_algebra": True,
                 "removed_recurrent_policy_parameters": (removed_reactor_parameters),
                 "seed": args.architecture_seed,
@@ -759,6 +934,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 schedule_loss, parts = _schedule_loss(
                     schedule,
                     batch.transaction_targets,
+                    schedule_compiler,
                 )
                 if args.semantic_prefix_weight > 0.0:
                     semantic_prefix_loss, semantic_prefix_parts = _semantic_prefix_loss(
@@ -860,7 +1036,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "schedule-final.safetensors",
             "schedule-initial.safetensors",
             "train.jsonl",
-        ):
+        ) + (("opcode-program-registry.json",) if opcode_registry is not None else ()):
             sums.append(f"{_sha256_file(args.output / name)}  {name}\n")
         _write_no_replace(
             args.output / "SHA256SUMS",
