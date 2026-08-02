@@ -54098,3 +54098,38 @@ frozen-backbone matrix remain the next evidence.
 
 Current decision:
 `freeze_the_implemented_unified_and_dense_mechanisms_then_measure_real_tensor_sufficiency_and_stratified_replay_before_any_backbone_scale_claim`.
+
+### 2026-08-02: canonical cohort preflight and real-residual interface gate
+
+The cross-tokenizer cohort now has direct release evidence. A bounded audit of
+eight hash-selected train and eight development semantic cores admitted all
+16 cores and all 256 causal rectangles across the accessible Shohin,
+Qwen3.5-0.8B, and SmolLM3-3B tokenizers. There were zero truncation or
+tokenization failures. The longest world/command/query sequences were
+`192/96/46`, `227/119/52`, and `228/119/53` respectively, far inside every
+candidate context limit. This rules out context overflow as the current
+interface bottleneck. It does not complete the four-tokenizer cohort:
+MobileLLM-R1 remains gated, and the exact pinned revision returned HTTP 403.
+
+The next test now consumes real model tensors rather than substituted symbolic
+features. `capability_floor_feature_sufficiency.py` verifies the protected
+300k Shohin checkpoint, extracts every selected COMMAND token's final
+post-norm residual, maps canonical public operation spans to exact token masks,
+and supplies only the exact preceding typed state allowed by the oracle-program
+component. The held-out set is balanced by complete renderer orbit and hashes
+features, masks, labels, states, source identities, and every control
+permutation. It reports clean family recovery, renderer stability,
+label-opposed source/state binding, value-code permutation, and state reset.
+The symbolic interpreter's labels remain assessor-only and never enter an
+autonomous candidate.
+
+This is a decisive diagnostic rather than another architecture variant. If
+exact frozen residual plus exact allowed state cannot recover operation family
+at 95%, the residual/state adapter is defective and must be redesigned before
+testing Qwen or SmolLM. If it passes while the controls collapse to chance,
+the information interface is sufficient and the campaign advances to exact
+component replay and H100-measured ETTR-versus-dense compute. No result from
+this runner is itself native reasoning.
+
+Current decision:
+`use_real_backbone_tensors_to_decide_interface_sufficiency_before_spending_the_capability_floor_matrix`.

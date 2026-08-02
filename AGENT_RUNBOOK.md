@@ -25393,3 +25393,55 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `do_not_spend_the_backbone_matrix_until_real_model_tensors_preserve_the_required_variable_then_run_ettr_and_the_exact_parameter_matched_dense_control_on_identical_replay_windows`.
+
+- **2026-08-02 18:22--20:08 EDT** -- **The canonical cohort passes its first
+  real-corpus audit, and the protected-Shohin real-residual sufficiency gate is
+  implemented but not yet measured.**
+
+  The exact admitted ETTR-v3 release remains
+  `training-e5f3705-packet-v2`, release SHA-256
+  `8c6d7d80603e29e92f14027929ae4ef7e848094a44a154ef37b2bcbf726d4462`.
+  Immutable Newton runtime
+  `scratchpad/capability_floor_runtime_ebc8483_r2` contains 3,687 files,
+  zero links, zero writable entries, and passes complete checksum replay;
+  its SHA256SUMS digest is
+  `4dfee5dba669507a3fd37dac9c1df8cd5a941bf75b0ff69138156c814cd3ce03`.
+
+  CPU preflight job `729533` audited eight hash-bound train and eight
+  development cores through the accessible Shohin, Qwen3.5-0.8B, and
+  SmolLM3-3B tokenizers. All 16 cores and 256 four-row causal rectangles were
+  admitted with zero tokenization or truncation rejection. Maximum
+  world/command/query lengths were `192/96/46` for Shohin, `227/119/52` for
+  Qwen, and `228/119/53` for SmolLM3. Receipt and cohort-index SHA-256 values
+  are respectively
+  `378b6c0239da7f803bbd5336fa81082ec172a251a47e6600360b5bf42721684f`
+  and
+  `ce2d0267898c5fda36ea96e858de60f6de6bd525436b626918cc050c4b50aed2`.
+  The status is correctly `preflight-incomplete`: the sample is bounded and
+  MobileLLM-R1 remains inaccessible. An exact gated-revision download returned
+  HTTP 403, so no approximate config or replacement model was admitted.
+
+  New `train/capability_floor_feature_sufficiency.py` is the first executable
+  exact-neural-tensor gate. It verifies the protected 300k checkpoint hash,
+  extracts final post-norm COMMAND residuals without vocabulary logits,
+  maps public operation roles through exact ASCII/token offsets, and pairs
+  each operation with the exact preceding typed state only inside the offline
+  assessor. Development selection is family-balanced by complete four-view
+  renderer orbit. Clean recovery, orbit accuracy/agreement, label-opposed
+  state derangement, global value-code permutation, and state reset are all
+  measured on hash-bound tensors. Exact categorical state is stored as booleans
+  and cast only per H100 minibatch, avoiding approximately fourfold needless
+  artifact expansion. Atomic no-replace publication prevents partial tensor
+  bundles from being promoted. The Slurm launcher is
+  `train/jobs/run_capability_floor_feature_sufficiency.sbatch`; 28 focused
+  capability-floor tests pass, plus Ruff, Python compilation, shell syntax,
+  and `git diff --check`.
+
+  No capability score exists yet. No GPU matrix run has been launched, and the
+  six historical held/dependency jobs remain untouched. The immediate next
+  gate is one protected-Shohin H100 measurement. A tensor score below 95% with
+  the exact symbolic interpreter at 100% mandates interface redesign; it does
+  not authorize more local-family variants or a larger backbone fit.
+
+  Decision:
+  `measure_the_exact_protected_shohin_residual_interface_once_then_redesign_on_failure_or_freeze_replay_and_compute_receipts_on_pass`.
