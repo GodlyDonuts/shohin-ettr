@@ -64,12 +64,10 @@ def _state(config: TheoryReactorConfig, batch: int = 2) -> TypedTheoryState:
     types[:, 1] = 1
     return TypedTheoryState(
         value_probabilities=(
-            F.one_hot(values, config.num_value_codes).float()
-            * active.unsqueeze(-1)
+            F.one_hot(values, config.num_value_codes).float() * active.unsqueeze(-1)
         ),
         type_probabilities=(
-            F.one_hot(types, config.num_types).float()
-            * active.unsqueeze(-1)
+            F.one_hot(types, config.num_types).float() * active.unsqueeze(-1)
         ),
         relations=torch.zeros(
             batch,
@@ -112,10 +110,7 @@ def test_terminal_compiler_emits_valid_hard_state() -> None:
     assert terminal.step == 3
     assert bool((terminal.root.sum(-1) <= 1).all())
     assert bool((terminal.root <= terminal.active).all())
-    pair_active = (
-        terminal.active[:, None, :, None]
-        * terminal.active[:, None, None, :]
-    )
+    pair_active = terminal.active[:, None, :, None] * terminal.active[:, None, None, :]
     assert bool((terminal.relations <= pair_active).all())
 
 
@@ -216,9 +211,7 @@ def test_terminal_compiler_backpropagates_every_semantic_head() -> None:
 
 
 def test_terminal_runtime_has_no_query_or_policy_interface() -> None:
-    parameters = inspect.signature(
-        ParallelTerminalStateCompiler.forward
-    ).parameters
+    parameters = inspect.signature(ParallelTerminalStateCompiler.forward).parameters
     assert "query" not in " ".join(parameters).lower()
     assert "targets" not in parameters
     assert not hasattr(
@@ -480,8 +473,7 @@ def test_operation_state_compiler_applies_each_public_operation() -> None:
     assert terminal.step == 8
     loss = terminal.value_probabilities.square().mean()
     loss = loss + sum(
-        state.value_probabilities.square().mean()
-        for state in trace.operation_states
+        state.value_probabilities.square().mean() for state in trace.operation_states
     )
     loss.backward()
     assert compiler.operation_recurrence is not None
@@ -541,9 +533,7 @@ def test_role_anchored_effect_compiler_runs_complete_public_trace() -> None:
     for edits in trace.operation_edits[:2]:
         assert edits.effect_kind is not None
         first_invalid = 2 * compiler.effect_motors_per_role
-        assert edits.effect_kind[:, first_invalid:].argmax(-1).eq(
-            EFFECT_NOOP
-        ).all()
+        assert edits.effect_kind[:, first_invalid:].argmax(-1).eq(EFFECT_NOOP).all()
     terminal.value_probabilities.square().mean().backward()
     assert compiler.effect_kind_head.weight.grad is not None
     assert bool(compiler.effect_kind_head.weight.grad.isfinite().all())
@@ -767,7 +757,7 @@ def test_operation_effect_set_promotes_bfloat16_pointers() -> None:
     assert edits.node_action.dtype == torch.float32
 
 
-def test_operation_effect_set_anchors_two_motors_per_public_role() -> None:
+def test_operation_effect_set_anchors_fixed_motors_per_public_role() -> None:
     from ettr_il_v2_token_native_surface import (
         DEFAULT_TOKENIZER_PATH,
         TokenNativeSurfaceCodec,
@@ -811,6 +801,78 @@ def test_operation_effect_set_anchors_two_motors_per_public_role() -> None:
     edits.effect_kind[:, :2, 1:].sum().backward()
     assert anchors.grad is not None
     assert bool(anchors.grad[:, 0].abs().sum().gt(0))
+
+
+def test_role_anchored_effect_set_enforces_explicit_total_cardinality() -> None:
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+
+    config = replace(_config(), max_steps=16)
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    compiler = OperationEffectSetCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        relation_width=16,
+        maximum_effects=6,
+        public_role_anchors=True,
+        maximum_effect_roles=3,
+        explicit_effect_cardinality=True,
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_codebook_atoms=codec.codebook.atoms,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+    assert compiler.effect_count_head is not None
+    assert compiler.effect_activity_head is not None
+    with torch.no_grad():
+        compiler.effect_count_head.weight.zero_()
+        compiler.effect_count_head.bias.fill_(-100.0)
+        compiler.effect_count_head.bias[3] = 100.0
+    anchors = torch.randn(2, 3, compiler.width, requires_grad=True)
+    valid = torch.tensor(
+        [[True, True, False], [True, False, False]],
+        dtype=torch.bool,
+    )
+    slots = torch.randn(2, config.num_slots, compiler.width)
+    hard = compiler._atomic_edits_from_slots(
+        _state(config),
+        slots,
+        hard=True,
+        effect_anchors=(anchors, valid),
+    )
+    assert hard.effect_count is not None
+    assert hard.effect_count.argmax(-1).tolist() == [3, 3]
+    assert hard.effect_kind is not None
+    # The second row has capacity two, so the requested count is clipped.
+    assert hard.effect_kind.argmax(-1).ne(EFFECT_NOOP).sum(-1).tolist() == [3, 2]
+    assert hard.effect_kind[0, 4:].argmax(-1).eq(EFFECT_NOOP).all()
+    assert hard.effect_kind[1, 2:].argmax(-1).eq(EFFECT_NOOP).all()
+
+    soft = compiler._atomic_edits_from_slots(
+        _state(config),
+        slots,
+        hard=False,
+        effect_anchors=(anchors, valid),
+    )
+    assert soft.effect_count is not None
+    target = _state(config).detached_clone()
+    target.value_probabilities[:, 1].zero_()
+    target.value_probabilities[:, 1, 4] = 1.0
+    labels = derive_atomic_edit_targets(_state(config), target)
+    loss = operation_effect_set_loss(
+        soft,
+        labels,
+        slot_mask=torch.ones_like(target.active, dtype=torch.bool),
+        relation_mask=torch.ones_like(target.relations, dtype=torch.bool),
+    )
+    loss.backward()
+    assert compiler.effect_count_head.weight.grad is not None
+    assert compiler.effect_activity_head.weight.grad is not None
+    assert bool(compiler.effect_count_head.weight.grad.isfinite().all())
+    assert bool(compiler.effect_activity_head.weight.grad.isfinite().all())
 
 
 def test_operation_effect_role_geometry_requires_even_role_banks() -> None:
@@ -1100,17 +1162,11 @@ def test_operation_boundary_objective_skips_empty_trailing_rank() -> None:
     labels = derive_atomic_edit_targets(state, state)
     edits = AtomicTypedEdits(
         node_action=F.one_hot(labels["node_action"], 5).float(),
-        value_code=F.one_hot(
-            labels["value_code"], config.num_value_codes
-        ).float(),
+        value_code=F.one_hot(labels["value_code"], config.num_value_codes).float(),
         type_index=F.one_hot(labels["type_index"], config.num_types).float(),
         relation_action=F.one_hot(labels["relation_action"], 3).float(),
-        root_action=F.one_hot(
-            labels["root_action"], 2 + config.num_slots
-        ).float(),
-        disposition_action=F.one_hot(
-            labels["disposition_action"], 4
-        ).float(),
+        root_action=F.one_hot(labels["root_action"], 2 + config.num_slots).float(),
+        disposition_action=F.one_hot(labels["disposition_action"], 4).float(),
     )
     mask = torch.tensor([[True, False], [True, False]])
     trace = OperationStateTransitionTrace(

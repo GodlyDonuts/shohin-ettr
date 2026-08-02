@@ -467,3 +467,57 @@ replacement capacity audit binds the earlier exact effect-capacity report by
 file SHA-256, checks matching corpus/tokenizer/operation counts, and requires
 both role and minimum-valid-motor capacity. This corrected geometry must pass
 a new two-update smoke before the bounded 1,000-update gate can be released.
+
+Both corrected mechanical gates now pass. Stokes job `760922` audited 40,000
+train and 5,000 development cores, comprising 494,480 and 60,512 operations,
+in 4m55s on 48 CPU cores. Both splits require four roles, both have a measured
+maximum of ten exact effects, and the corrected geometry guarantees at least
+ten valid motors. The report is
+`artifacts/r12/ettr_public_operation_role_capacity_33785eb_r2/report.json`;
+its file SHA-256 is
+`5d155f98c17431ddfcb6a5a4f5d2bd977d3ba1edeac522b42058cc0530c7dde8`
+and payload SHA-256 is
+`1d14493922ce6b9c27d982b3f2a6c4b33428ed952f7d8d60aec7cbfbc5e43041`.
+The first submission `760921` failed after five seconds because the exact
+prior capacity receipt had not been transferred to Stokes; it read no corpus
+and produced no scientific result. The receipt was transferred atomically,
+verified against its frozen SHA-256, and the unchanged audit was rerun.
+
+Newton V100-16GB smoke `726995` then completed two updates in 2m33s from
+immutable source `33785eba316905f63eaa084c9e3d8f12ac53b7cc` and runtime
+`scratchpad/shohin_ettr_effect_role_runtime_33785eb_r3` (SHA256SUMS SHA-256
+`bd244b7553957858943a27c97a3646444b3a4363a3d8c2c527c2796287012970`).
+Its complete system has 200,787,338 parameters. The report SHA-256 is
+`0ee84f77b97fbb0567825c03c9da4bf0446ba3a92db677883f2226e249a330dd`,
+contract SHA-256 is
+`d4718a6d39194920f98b052dc2829a94ee33c19b3ff3fb8eb6585e22f2ea5bb2`,
+and SHA256SUMS SHA-256 is
+`88d93ea90772b1bae1b7c848eb60308871bd92dd27a8c01ff0061455f18ec0fe`.
+The released H100 job had a ten-hour scheduler estimate because every H100
+was allocated, so it was canceled before allocation and replaced by the exact
+V100 scientific treatment as job `726997`. Prior matched v12 timing predicts
+roughly 23 minutes rather than a ten-hour idle wait.
+
+## Contract-v14 preregistered cardinality successor
+
+Contract v14 is implemented before reading the v13 endpoint. It targets one
+specific predicted failure: role anchors may break query permutation symmetry
+while every motor still independently chooses NOOP under hard argmax. V14
+separates three decisions:
+
+1. a pooled operation head predicts the exact total number of real effects;
+2. a role-conditioned activity head ranks the twenty anchored motors and the
+   hard executor activates exactly the predicted top-k valid motors;
+3. activated motors choose only among the eleven non-NOOP typed effects,
+   while inactive or absent-role motors are forced to NOOP.
+
+Training retains detached typed bipartite matching and adds a class-balanced
+exact count loss. Inference remains one deterministic hard trajectory with no
+QUERY, target, answer, trace, candidate search, or host semantic execution.
+This is not another seed or duration arm: it removes NOOP competition from
+the typed-kind decision and turns cardinality into an explicit public
+operation-level variable. Focused compiler, gradient, custody, evaluator,
+audit, and routing tests pass. It remains unsealed and unlaunched until the
+independent v13 evaluator selects the collapse branch. If v13 instead learns
+positive local effects, the router ignores v14 and selects the corresponding
+entity/relation or state-sufficiency branch.

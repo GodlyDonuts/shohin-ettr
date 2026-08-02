@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 10:37 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 10:58 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -217,9 +217,14 @@
 > maximum. Its apparent `pass` checked only role count and is invalid for
 > release. The corrected contract uses four measured roles and five motors per
 > role: 20 total slots and at least ten valid motors for every legal operation.
-> It requires a corrected hash-bound capacity audit and a new two-update smoke
-> before one bounded 1,000-update causal gate. No seed, width, duration, or
-> duplicate arm of contract v12 is authorized.
+> Corrected Stokes audit `760922` and V100 smoke `726995` now pass. Exact v13
+> fit `726997` is active on idle V100-16GB `evc1`; the unavailable H100 path
+> was canceled untouched rather than waiting ten hours. Contract v14 is
+> implemented and locally gated in advance: if v13 retains hard NOOP collapse,
+> it separates exact total cardinality, motor activity, and non-NOOP typed-kind
+> selection. It remains unlaunched until the independent v13 evaluator routes
+> the result. No seed, width, duration, or duplicate arm of contract v12/v13
+> is authorized.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -24445,3 +24450,55 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_the_role_only_capacity_pass_expand_v13_to_four_roles_by_five_motors_and_repeat_both_mechanical_gates_before_training`.
+
+- **2026-08-02 10:38--10:58 EDT** -- **Corrected v13 passes both release
+  gates; the exact long treatment runs while v14 is prepared in advance.**
+
+  The first corrected Stokes submission `760921` failed after five seconds
+  because the frozen v4 effect-capacity receipt existed only in the private
+  local artifact store, not at the supplied Stokes path. It read no corpus and
+  produced no model evidence. The exact file was transferred atomically and
+  verified at SHA-256
+  `894c287c80a093c9f4235358c00d7b7dfb42853b2218ac5b31a85b287eea8095`;
+  no custody check was weakened.
+
+  Unchanged audit `760922` then completed in 4m55s on 48 Stokes CPU cores.
+  Across 40,000 train and 5,000 development cores it measures 494,480 and
+  60,512 operations, maximum arity three, and four required roles. Both
+  splits retain the independently bound ten-effect maximum. Four roles by
+  five motors yields 20 total slots and guarantees ten valid motors for every
+  legal nonempty operation, so capacity passes. Report
+  `artifacts/r12/ettr_public_operation_role_capacity_33785eb_r2/report.json`
+  has file SHA-256
+  `5d155f98c17431ddfcb6a5a4f5d2bd977d3ba1edeac522b42058cc0530c7dde8`
+  and payload SHA-256
+  `1d14493922ce6b9c27d982b3f2a6c4b33428ed952f7d8d60aec7cbfbc5e43041`.
+
+  Corrected Newton V100-16GB smoke `726995` completed two updates in 2m33s
+  from exact source `33785eba316905f63eaa084c9e3d8f12ac53b7cc`. The complete
+  system has 200,787,338 parameters; last loss is 10.788805. Report,
+  contract, and SHA256SUMS SHA-256 values are respectively
+  `0ee84f77b97fbb0567825c03c9da4bf0446ba3a92db677883f2226e249a330dd`,
+  `d4718a6d39194920f98b052dc2829a94ee33c19b3ff3fb8eb6585e22f2ea5bb2`,
+  and `88d93ea90772b1bae1b7c848eb60308871bd92dd27a8c01ff0061455f18ec0fe`.
+  Full custody passes.
+
+  Held H100 fit `726996` was released only after both gates, but every H100
+  was allocated and Slurm estimated a 21:16 EDT start. It was canceled before
+  allocation and replaced with the exact scientific treatment on idle
+  V100-16GB `evc1` as job `726997`, where prior matched timing is 23 minutes.
+  Output is isolated at
+  `train/ettr_operation_effect_role_u1000_a31_d11_v10016_33785eb_r3`.
+
+  Contract v14 is implemented locally before v13 finishes. It predicts v13's
+  remaining failure in advance: role symmetry may be repaired while hard
+  motor argmax still collapses independently to NOOP. V14 predicts one exact
+  total-effect count, ranks valid role-anchored motors, activates exactly the
+  top-k at inference, and lets active motors choose only among non-NOOP typed
+  effects. A class-balanced count objective trains cardinality separately
+  from typed matching. It remains held and unsealed unless the v13 evaluator
+  selects the collapse branch. Focused local gates pass 51 tests plus clean
+  Ruff, byte compilation, Bash syntax, and diff checks.
+
+  Decision:
+  `finish_the_single_v13_gate_and_fresh_evaluator_while_holding_the_already_implemented_cardinality_gated_v14_successor_for_collapse_only`.

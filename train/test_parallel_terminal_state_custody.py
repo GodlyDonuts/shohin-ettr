@@ -140,14 +140,17 @@ def test_terminal_schema_tracks_residual_architecture() -> None:
         "shohin-ettr-parallel-terminal-state-report-v13",
         "shohin-ettr-parallel-terminal-state-metric-v13",
     )
+    assert _run_schemas(*effect_set, True, True) == (
+        "shohin-ettr-parallel-terminal-state-contract-v14",
+        "shohin-ettr-parallel-terminal-state-report-v14",
+        "shohin-ettr-parallel-terminal-state-metric-v14",
+    )
 
 
 def test_terminal_run_receipt_rejects_mutation(tmp_path: Path) -> None:
     for index, name in enumerate(_RUN_FILES):
         (tmp_path / name).write_bytes(f"artifact-{index}".encode())
-    lines = "".join(
-        f"{_sha256_file(tmp_path / name)}  {name}\n" for name in _RUN_FILES
-    )
+    lines = "".join(f"{_sha256_file(tmp_path / name)}  {name}\n" for name in _RUN_FILES)
     (tmp_path / "SHA256SUMS").write_text(lines, encoding="ascii")
     digest = _sha256_file(tmp_path / "SHA256SUMS")
     receipt = _run_receipt(tmp_path, digest)

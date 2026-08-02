@@ -77,28 +77,18 @@ from train_parallel_addressed_transaction_pilot import (
 
 ATOMIC_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v4"
 ATOMIC_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v4"
-LEXICAL_ATOMIC_CONTRACT_SCHEMA = (
-    "shohin-ettr-parallel-terminal-state-contract-v5"
-)
+LEXICAL_ATOMIC_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v5"
 LEXICAL_ATOMIC_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v5"
-SYNTAX_ROUTED_ATOMIC_CONTRACT_SCHEMA = (
-    "shohin-ettr-parallel-terminal-state-contract-v6"
-)
-SYNTAX_ROUTED_ATOMIC_REPORT_SCHEMA = (
-    "shohin-ettr-parallel-terminal-state-report-v6"
-)
+SYNTAX_ROUTED_ATOMIC_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v6"
+SYNTAX_ROUTED_ATOMIC_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v6"
 OCCURRENCE_LINKED_ATOMIC_CONTRACT_SCHEMA = (
     "shohin-ettr-parallel-terminal-state-contract-v7"
 )
-OCCURRENCE_LINKED_ATOMIC_REPORT_SCHEMA = (
-    "shohin-ettr-parallel-terminal-state-report-v7"
-)
+OCCURRENCE_LINKED_ATOMIC_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v7"
 DECLARATION_BOUND_ATOMIC_CONTRACT_SCHEMA = (
     "shohin-ettr-parallel-terminal-state-contract-v8"
 )
-DECLARATION_BOUND_ATOMIC_REPORT_SCHEMA = (
-    "shohin-ettr-parallel-terminal-state-report-v8"
-)
+DECLARATION_BOUND_ATOMIC_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v8"
 OPERATION_RECURRENT_ATOMIC_CONTRACT_SCHEMA = (
     "shohin-ettr-parallel-terminal-state-contract-v9"
 )
@@ -108,9 +98,7 @@ OPERATION_RECURRENT_ATOMIC_REPORT_SCHEMA = (
 OPERATION_STATE_ATOMIC_CONTRACT_SCHEMA = (
     "shohin-ettr-parallel-terminal-state-contract-v10"
 )
-OPERATION_STATE_ATOMIC_REPORT_SCHEMA = (
-    "shohin-ettr-parallel-terminal-state-report-v10"
-)
+OPERATION_STATE_ATOMIC_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v10"
 FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA = (
     "shohin-ettr-parallel-terminal-state-contract-v11"
 )
@@ -120,14 +108,18 @@ FACTORIZED_OPERATION_STATE_REPORT_SCHEMA = (
 OPERATION_EFFECT_SET_CONTRACT_SCHEMA = (
     "shohin-ettr-parallel-terminal-state-contract-v12"
 )
-OPERATION_EFFECT_SET_REPORT_SCHEMA = (
-    "shohin-ettr-parallel-terminal-state-report-v12"
-)
+OPERATION_EFFECT_SET_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v12"
 ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA = (
     "shohin-ettr-parallel-terminal-state-contract-v13"
 )
 ROLE_ANCHORED_EFFECT_SET_REPORT_SCHEMA = (
     "shohin-ettr-parallel-terminal-state-report-v13"
+)
+CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-contract-v14"
+)
+CARDINALITY_GATED_EFFECT_SET_REPORT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-report-v14"
 )
 CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v3"
 REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v3"
@@ -215,6 +207,10 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--operation-effect-role-anchors",
         action="store_true",
     )
+    parser.add_argument(
+        "--operation-effect-cardinality-gate",
+        action="store_true",
+    )
     parser.add_argument("--atomic-action-weight", type=float, default=1.0)
     parser.add_argument(
         "--required-device-class",
@@ -243,6 +239,11 @@ def _validate_args(args: argparse.Namespace) -> None:
     operation_effect_role_anchors = getattr(
         args,
         "operation_effect_role_anchors",
+        False,
+    )
+    operation_effect_cardinality_gate = getattr(
+        args,
+        "operation_effect_cardinality_gate",
         False,
     )
     paths = (
@@ -287,14 +288,8 @@ def _validate_args(args: argparse.Namespace) -> None:
             args.token_native_command_mask
             and (not args.atomic_edits or not args.lexical_command)
         )
-        or (
-            args.token_native_occurrence_command
-            and not args.token_native_command_mask
-        )
-        or (
-            args.cover_verified_command_mask
-            and not args.token_native_command_mask
-        )
+        or (args.token_native_occurrence_command and not args.token_native_command_mask)
+        or (args.cover_verified_command_mask and not args.token_native_command_mask)
         or (
             args.token_native_syntax_graph_command
             and not args.token_native_command_mask
@@ -311,25 +306,18 @@ def _validate_args(args: argparse.Namespace) -> None:
             args.token_native_operation_recurrence_command
             and not args.token_native_declaration_binding_command
         )
-        or (
-            operation_state
-            and not args.token_native_operation_recurrence_command
-        )
-        or (
-            operation_state
-            and args.training_initial_state != "oracle"
-        )
+        or (operation_state and not args.token_native_operation_recurrence_command)
+        or (operation_state and args.training_initial_state != "oracle")
         or (factorized_operation_effect and not operation_state)
         or (operation_effect_set and not operation_state)
         or (operation_effect_set and factorized_operation_effect)
         or (operation_effect_role_anchors and not operation_effect_set)
+        or (operation_effect_cardinality_gate and not operation_effect_role_anchors)
         or args.output.exists()
         or args.output.is_symlink()
         or not args.output.parent.is_dir()
     ):
-        raise ParallelTerminalStatePilotError(
-            "terminal-state pilot arguments differ"
-        )
+        raise ParallelTerminalStatePilotError("terminal-state pilot arguments differ")
 
 
 def _causal_edge_indices(
@@ -376,8 +364,7 @@ def _changed_coordinate_delta_brier(
         - predicted.index_select(0, left).float()
     )
     target_delta = (
-        target.index_select(0, right).float()
-        - target.index_select(0, left).float()
+        target.index_select(0, right).float() - target.index_select(0, left).float()
     )
     support = mask.index_select(0, left) & mask.index_select(0, right)
     if categorical:
@@ -458,9 +445,7 @@ def causal_terminal_delta_brier(
     parts: dict[str, torch.Tensor] = {}
     changed_counts: dict[str, int] = {}
     for axis, (left, right) in _causal_edge_indices(rectangle_rows).items():
-        for field, (field_predicted, field_target, mask, categorical) in (
-            fields.items()
-        ):
+        for field, (field_predicted, field_target, mask, categorical) in fields.items():
             value, changed_count = _changed_coordinate_delta_brier(
                 field_predicted,
                 field_target,
@@ -647,9 +632,7 @@ def _class_balanced_nll(
         if count:
             losses.append(-log_probabilities[..., index][selected].mean())
     if not losses:
-        raise ParallelTerminalStatePilotError(
-            "atomic typed-edit supervision is empty"
-        )
+        raise ParallelTerminalStatePilotError("atomic typed-edit supervision is empty")
     return torch.stack(losses).mean(), counts
 
 
@@ -678,13 +661,21 @@ def _operation_effect_targets(
     )
     node_kind = node_kinds[:, None].expand(-1, slots).reshape(-1)
     node_index = torch.arange(slots, device=device).repeat(4)
-    node_value = target["value_code"][:, None, :].expand(-1, 4, -1).reshape(
-        batch,
-        -1,
+    node_value = (
+        target["value_code"][:, None, :]
+        .expand(-1, 4, -1)
+        .reshape(
+            batch,
+            -1,
+        )
     )
-    node_type = target["type_index"][:, None, :].expand(-1, 4, -1).reshape(
-        batch,
-        -1,
+    node_type = (
+        target["type_index"][:, None, :]
+        .expand(-1, 4, -1)
+        .reshape(
+            batch,
+            -1,
+        )
     )
 
     relation_cells = relations * slots * slots
@@ -695,19 +686,21 @@ def _operation_effect_targets(
         ),
         dim=1,
     )
-    relation_kind = torch.tensor(
-        [EFFECT_LINK, EFFECT_UNLINK],
-        device=device,
-    )[:, None].expand(-1, relation_cells).reshape(-1)
+    relation_kind = (
+        torch.tensor(
+            [EFFECT_LINK, EFFECT_UNLINK],
+            device=device,
+        )[:, None]
+        .expand(-1, relation_cells)
+        .reshape(-1)
+    )
     relation_index = torch.arange(relation_cells, device=device).repeat(2)
 
     root_action = target["root_action"]
     root_mask = torch.cat(
         (
             root_action.eq(1).unsqueeze(-1),
-            root_action[:, None].eq(
-                torch.arange(slots, device=device)[None, :] + 2
-            ),
+            root_action[:, None].eq(torch.arange(slots, device=device)[None, :] + 2),
         ),
         dim=1,
     )
@@ -746,9 +739,7 @@ def _operation_effect_targets(
         dtype=torch.long,
         device=device,
     )
-    kind_values = torch.cat(
-        (node_kind, relation_kind, root_kind, disposition_kind)
-    )
+    kind_values = torch.cat((node_kind, relation_kind, root_kind, disposition_kind))
     node_values = torch.cat((node_index, zeros_node))
     relation_values = torch.cat(
         (
@@ -889,10 +880,7 @@ def operation_effect_set_loss(
     for target_rank in range(effects):
         target_kind = labels["kind"][:, target_rank]
         value = selected_nll(kind, target_kind)
-        node_kind = (
-            target_kind.ge(EFFECT_ALLOCATE)
-            & target_kind.le(EFFECT_REPLACE)
-        )
+        node_kind = target_kind.ge(EFFECT_ALLOCATE) & target_kind.le(EFFECT_REPLACE)
         pointer_channel = target_kind.ne(EFFECT_ALLOCATE).to(torch.long)
         selected_pointer = node_pointer.gather(
             2,
@@ -916,9 +904,7 @@ def operation_effect_set_loss(
             value_code,
             labels["value"][:, target_rank],
         )
-        writes_type = target_kind.eq(EFFECT_ALLOCATE) | target_kind.eq(
-            EFFECT_REPLACE
-        )
+        writes_type = target_kind.eq(EFFECT_ALLOCATE) | target_kind.eq(EFFECT_REPLACE)
         value = value + writes_type[:, None] * selected_nll(
             type_index,
             labels["type"][:, target_rank],
@@ -957,7 +943,16 @@ def operation_effect_set_loss(
         noop_count.reciprocal().to(cost.dtype),
     )
     weighted = assignment * column_weight[:, None, :]
-    return (weighted * cost).sum() / weighted.sum().clamp_min(1e-7)
+    matching_loss = (weighted * cost).sum() / weighted.sum().clamp_min(1e-7)
+    if edits.effect_count is None:
+        return matching_loss
+    batch_mask = torch.ones(batch, dtype=torch.bool, device=kind.device)
+    count_loss, _counts = _class_balanced_nll(
+        edits.effect_count,
+        labels["count"],
+        batch_mask,
+    )
+    return torch.stack((matching_loss, count_loss)).mean()
 
 
 def atomic_typed_edit_loss(
@@ -993,12 +988,7 @@ def atomic_typed_edit_loss(
         "value_code": (
             edits.value_code,
             target["value_code"],
-            slot_mask
-            & (
-                node_action.eq(1)
-                | node_action.eq(2)
-                | node_action.eq(4)
-            ),
+            slot_mask & (node_action.eq(1) | node_action.eq(2) | node_action.eq(4)),
         ),
         "type_index": (
             edits.type_index,
@@ -1017,9 +1007,7 @@ def atomic_typed_edit_loss(
     )
     present_effect_fields = [value is not None for value in effect_fields]
     if any(present_effect_fields) and not all(present_effect_fields):
-        raise ParallelTerminalStatePilotError(
-            "operation effect set heads differ"
-        )
+        raise ParallelTerminalStatePilotError("operation effect set heads differ")
     if all(present_effect_fields):
         parts["effect_set"] = operation_effect_set_loss(
             edits,
@@ -1065,9 +1053,7 @@ def atomic_typed_edit_loss(
         counts[name] = class_counts
     for name, (probabilities, labels, mask) in specifications.items():
         if not bool(mask.any()):
-            counts[name] = {
-                str(index): 0 for index in range(probabilities.shape[-1])
-            }
+            counts[name] = {str(index): 0 for index in range(probabilities.shape[-1])}
             continue
         value, class_counts = _class_balanced_nll(
             probabilities,
@@ -1214,6 +1200,7 @@ def _run_schemas(
     factorized_operation_effect_command: bool = False,
     operation_effect_set_command: bool = False,
     operation_effect_role_anchors: bool = False,
+    operation_effect_cardinality_gate: bool = False,
 ) -> tuple[str, str, str]:
     if operation_effect_set_command:
         if (
@@ -1223,19 +1210,29 @@ def _run_schemas(
             raise ParallelTerminalStatePilotError(
                 "operation effect set architecture schema differs"
             )
+        if operation_effect_cardinality_gate and not operation_effect_role_anchors:
+            raise ParallelTerminalStatePilotError(
+                "cardinality-gated effect architecture schema differs"
+            )
         return (
             (
-                ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA
+                CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA
+                if operation_effect_cardinality_gate
+                else ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA
                 if operation_effect_role_anchors
                 else OPERATION_EFFECT_SET_CONTRACT_SCHEMA
             ),
             (
-                ROLE_ANCHORED_EFFECT_SET_REPORT_SCHEMA
+                CARDINALITY_GATED_EFFECT_SET_REPORT_SCHEMA
+                if operation_effect_cardinality_gate
+                else ROLE_ANCHORED_EFFECT_SET_REPORT_SCHEMA
                 if operation_effect_role_anchors
                 else OPERATION_EFFECT_SET_REPORT_SCHEMA
             ),
             (
-                "shohin-ettr-parallel-terminal-state-metric-v13"
+                "shohin-ettr-parallel-terminal-state-metric-v14"
+                if operation_effect_cardinality_gate
+                else "shohin-ettr-parallel-terminal-state-metric-v13"
                 if operation_effect_role_anchors
                 else "shohin-ettr-parallel-terminal-state-metric-v12"
             ),
@@ -1450,8 +1447,7 @@ def _evaluate_interfaces(
     return {
         "batches": observed,
         "terminal_packet": {
-            source: _summarize_counts(values)
-            for source, values in counts.items()
+            source: _summarize_counts(values) for source, values in counts.items()
         },
     }
 
@@ -1472,18 +1468,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.factorized_operation_effect_command,
         args.operation_effect_set_command,
         args.operation_effect_role_anchors,
+        args.operation_effect_cardinality_gate,
     )
     if not torch.cuda.is_available():
-        raise ParallelTerminalStatePilotError(
-            "terminal-state pilot requires CUDA"
-        )
+        raise ParallelTerminalStatePilotError("terminal-state pilot requires CUDA")
     torch.cuda.set_device(0)
     device = torch.device("cuda", 0)
     is_h100 = "H100" in torch.cuda.get_device_name(device).upper()
     if args.required_device_class == "h100" and not is_h100:
-        raise ParallelTerminalStatePilotError(
-            "terminal-state pilot requires an H100"
-        )
+        raise ParallelTerminalStatePilotError("terminal-state pilot requires an H100")
 
     stream = ETTRV3StreamingRelease(
         args.release_root,
@@ -1532,12 +1525,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         lexical_command=args.lexical_command,
         token_native_command_mask=args.token_native_command_mask,
         cover_verified_command_mask=args.cover_verified_command_mask,
-        token_native_occurrence_command=(
-            args.token_native_occurrence_command
-        ),
-        token_native_syntax_graph_command=(
-            args.token_native_syntax_graph_command
-        ),
+        token_native_occurrence_command=(args.token_native_occurrence_command),
+        token_native_syntax_graph_command=(args.token_native_syntax_graph_command),
         token_native_declaration_binding_command=(
             args.token_native_declaration_binding_command
         ),
@@ -1545,25 +1534,20 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.token_native_operation_recurrence_command
         ),
         token_native_codebook_ids=(
-            stream.codec.codebook.token_ids
-            if args.token_native_command_mask
-            else None
+            stream.codec.codebook.token_ids if args.token_native_command_mask else None
         ),
         token_native_codebook_atoms=(
-            stream.codec.codebook.atoms
-            if args.cover_verified_command_mask
-            else None
+            stream.codec.codebook.atoms if args.cover_verified_command_mask else None
         ),
         token_native_vocab_size=(
-            model.base.cfg.vocab_size
-            if args.token_native_command_mask
-            else None
+            model.base.cfg.vocab_size if args.token_native_command_mask else None
         ),
         **(
             {
                 "maximum_effect_roles": ROLE_ANCHORED_EFFECT_ROLES,
                 "maximum_effects": ROLE_ANCHORED_EFFECT_SLOTS,
                 "public_role_anchors": True,
+                "explicit_effect_cardinality": (args.operation_effect_cardinality_gate),
             }
             if args.operation_effect_role_anchors
             else {"public_role_anchors": False}
@@ -1571,13 +1555,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             else {}
         ),
     ).to(device=device, dtype=next(model.parameters()).dtype)
-    compiler_parameters = sum(
-        parameter.numel() for parameter in compiler.parameters()
-    )
+    compiler_parameters = sum(parameter.numel() for parameter in compiler.parameters())
     complete_parameters = (
-        replacement_parameters
-        - removed_reactor_parameters
-        + compiler_parameters
+        replacement_parameters - removed_reactor_parameters + compiler_parameters
     )
     optimizer = torch.optim.AdamW(
         compiler.parameters(),
@@ -1628,12 +1608,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "atomic_typed_edits": args.atomic_edits,
                 "fixed_atomic_edit_algebra": args.atomic_edits,
                 "lexical_command_rail": args.lexical_command,
-                "token_native_command_mask": (
-                    args.token_native_command_mask
-                ),
-                "cover_verified_command_mask": (
-                    args.cover_verified_command_mask
-                ),
+                "token_native_command_mask": (args.token_native_command_mask),
+                "cover_verified_command_mask": (args.cover_verified_command_mask),
                 "token_native_occurrence_command": (
                     args.token_native_occurrence_command
                 ),
@@ -1652,11 +1628,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "factorized_operation_effect_command": (
                     args.factorized_operation_effect_command
                 ),
-                "operation_effect_set_command": (
-                    args.operation_effect_set_command
-                ),
-                "operation_effect_role_anchors": (
-                    args.operation_effect_role_anchors
+                "operation_effect_set_command": (args.operation_effect_set_command),
+                "operation_effect_role_anchors": (args.operation_effect_role_anchors),
+                "operation_effect_cardinality_gate": (
+                    args.operation_effect_cardinality_gate
                 ),
                 "operation_effect_slots": (
                     compiler.maximum_effects
@@ -1687,9 +1662,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ),
                 "num_heads": args.num_heads,
                 "relation_width": args.relation_width,
-                "removed_recurrent_policy_parameters": (
-                    removed_reactor_parameters
-                ),
+                "removed_recurrent_policy_parameters": (removed_reactor_parameters),
                 "sparse_residual_edits": args.residual_edits,
                 "seed": args.architecture_seed,
                 "typed_hard_state_constraints": True,
@@ -1727,9 +1700,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "global_sparse_effect_cardinality": (
                     args.factorized_operation_effect_command
                 ),
-                "unordered_typed_effect_set": (
-                    args.operation_effect_set_command
-                ),
+                "unordered_typed_effect_set": (args.operation_effect_set_command),
                 "effect_set_matching": (
                     "detached-sinkhorn-typed-bipartite"
                     if args.operation_effect_set_command
@@ -1744,11 +1715,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                     {
                         "effect_slots": ROLE_ANCHORED_EFFECT_SLOTS,
                         "maximum_roles": ROLE_ANCHORED_EFFECT_ROLES,
-                        "motors_per_role": (
-                            ROLE_ANCHORED_EFFECT_MOTORS_PER_ROLE
-                        ),
+                        "motors_per_role": (ROLE_ANCHORED_EFFECT_MOTORS_PER_ROLE),
                     }
                     if args.operation_effect_role_anchors
+                    else None
+                ),
+                "effect_set_cardinality": (
+                    "explicit-total-count-plus-top-k-motor-activity"
+                    if args.operation_effect_cardinality_gate
                     else None
                 ),
             },
@@ -1845,18 +1819,16 @@ def main(argv: Sequence[str] | None = None) -> int:
                         raise ParallelTerminalStatePilotError(
                             "operation-state training inputs are absent"
                         )
-                    predicted, operation_trace = (
-                        compiler.forward_with_operation_states(
-                            initial,
-                            command_hidden=command_hidden.detach(),
-                            command_lexical=command_lexical.detach(),
-                            command_tokens=batch.episodes.command.tokens,
-                            command_attention_mask=(
-                                batch.episodes.command.attention_mask.bool()
-                            ),
-                            steps=batch.transaction_targets.opcode.shape[1],
-                            hard=False,
-                        )
+                    predicted, operation_trace = compiler.forward_with_operation_states(
+                        initial,
+                        command_hidden=command_hidden.detach(),
+                        command_lexical=command_lexical.detach(),
+                        command_tokens=batch.episodes.command.tokens,
+                        command_attention_mask=(
+                            batch.episodes.command.attention_mask.bool()
+                        ),
+                        steps=batch.transaction_targets.opcode.shape[1],
+                        hard=False,
                     )
                     (
                         operation_prefix_loss,
@@ -1870,9 +1842,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                         initial,
                         target,
                         slot_mask=batch.terminal_packet_targets.slot_mask,
-                        relation_mask=(
-                            batch.terminal_packet_targets.relation_mask
-                        ),
+                        relation_mask=(batch.terminal_packet_targets.relation_mask),
                         verify_reconstruction=update == 1,
                     )
                 elif args.atomic_edits:
@@ -1907,9 +1877,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                         atomic_edits,
                         atomic_targets,
                         slot_mask=batch.terminal_packet_targets.slot_mask,
-                        relation_mask=(
-                            batch.terminal_packet_targets.relation_mask
-                        ),
+                        relation_mask=(batch.terminal_packet_targets.relation_mask),
                     )
                 else:
                     predicted = compiler(
@@ -1928,9 +1896,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     predicted,
                     target,
                     slot_mask=batch.terminal_packet_targets.slot_mask,
-                    relation_mask=(
-                        batch.terminal_packet_targets.relation_mask
-                    ),
+                    relation_mask=(batch.terminal_packet_targets.relation_mask),
                 )
                 causal_delta_loss, delta_parts, changed_counts = (
                     causal_terminal_delta_brier(
@@ -1938,9 +1904,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                         target,
                         rectangle_rows=batch.causal_rectangles.rows,
                         slot_mask=batch.terminal_packet_targets.slot_mask,
-                        relation_mask=(
-                            batch.terminal_packet_targets.relation_mask
-                        ),
+                        relation_mask=(batch.terminal_packet_targets.relation_mask),
                     )
                 )
                 loss = (
@@ -1967,16 +1931,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                         gradient_norm.detach().float().cpu()
                     ),
                     "loss": last_loss,
-                    "causal_delta_loss": float(
-                        causal_delta_loss.detach().cpu()
-                    ),
+                    "causal_delta_loss": float(causal_delta_loss.detach().cpu()),
                     "causal_delta_parts": {
                         name: float(value.detach().cpu())
                         for name, value in delta_parts.items()
                     },
-                    "atomic_action_loss": float(
-                        atomic_action_loss.detach().cpu()
-                    ),
+                    "atomic_action_loss": float(atomic_action_loss.detach().cpu()),
                     "atomic_action_parts": {
                         name: float(value.detach().cpu())
                         for name, value in atomic_action_parts.items()
@@ -2053,8 +2013,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         _write_no_replace(
             args.output / "SHA256SUMS",
             "".join(
-                f"{_sha256_file(args.output / name)}  {name}\n"
-                for name in names
+                f"{_sha256_file(args.output / name)}  {name}\n" for name in names
             ).encode("ascii"),
         )
         for path in args.output.iterdir():

@@ -2,39 +2,45 @@
 
 ## Current Status — Read First
 
-**Current frontier, superseding older status text below (2026-08-01
-22:25 EDT):** Shohin still has no replicated two-population demonstration of
-architecture-native general reasoning. The campaign has nevertheless moved
-from an undifferentiated failure to a measured interface decomposition. A
-fixed typed algebra is exact on the real held-out corpus, and a learned query
-compiler crosses both WORLD and COMMAND when supplied exact state. Crossing
-that stack with architecture-produced state gave the first fully autonomous
-nonzero result, but it was population-unstable. Hard-state, causal-owner,
-soft-state, semantic-basis, and bounded Brier objectives then localized the
-remaining failure to coherent autonomous state construction rather than query
-interpretation or answer execution.
+**Current frontier, superseding older status text below (2026-08-02
+10:58 EDT):** Shohin still has no replicated two-population demonstration of
+architecture-native general reasoning. The fixed typed algebra and learned
+query compiler are no longer the main unknown: the exact algebra is perfect
+on the held-out corpus, and predicted query programs with oracle state reach
+WORLD 31.94% and COMMAND 46.15%. The unresolved problem is compiling one
+coherent autonomous state transition from public WORLD and COMMAND inputs.
 
-The schedule lane is now closed as the primary repair. Full-coverage seed 31
-crosses both gates on two orderings but fails the difficult third ordering;
-seed 32 remains WORLD-zero. A four-basin probability-mean ensemble returns
-WORLD/COMMAND zero on all three orderings, and matched training on the deployed
-hard WORLD packet improves exact schedule imitation while returning both
-causal gates to zero. These results reject independent canonical schedule
-fields as the semantic objective.
+Independent field and schedule objectives are now closed. They learn common
+state fields or local program marginals while erasing intervention-specific
+edits. Longer training, wider capacity, four-basin averaging, deployed-state
+matching, causal-owner losses, bounded Brier variants, direct terminal edits,
+recurrence, occurrence equality, exact syntax graphs, and sticky macro
+selection all fail to produce stable strict WORLD plus COMMAND movement.
+These are documented negative mechanisms, not permission to repeat nearby
+hyperparameters.
 
-The direct terminal-state quotient and its loss-only causal-delta repair are
-now measured negatives. The fieldwise H100 arm reaches 70.31% factual top-1
-and near-perfect common binary fields, while exact packets and strict WORLD
-and COMMAND remain zero; V100 reproduces both zeros. Four matched causal-delta
-arms at weights 1 and 4 on H100/V100 also remain state-isolated WORLD/COMMAND
-zero. Stronger credit degrades factual state rather than producing stable
-edits. The immediate successor is an architectural separation: a copy-biased
-identity highway preserves initial typed state while independent COMMAND-
-conditioned gates purchase sparse value, type, active, root, relation, and
-status rewrites. It has 19,572,019 trainable parameters and leaves the complete
-system at 175,510,913. It still admits no query or answer supervision. The
-protected step-300k checkpoint remains immutable and no raw-pretraining writer
-is active.
+The active line compiles a bounded unordered set of typed effects and applies
+them through the exact algebra after each visible public operation. Anonymous
+effect queries collapsed completely after 1,000 updates: all 37,888 hard
+motors became NOOP and every exact local, terminal, WORLD, and COMMAND gate
+remained zero. Contract v13 therefore anchors motors to the public operation
+root and renderer-invariant direct semantic children. A corrected full-corpus
+audit covers 494,480 train and 60,512 development operations and proves four
+roles by five motors supplies the measured ten-effect maximum. V100 smoke
+`726995` is finite and custody-clean; exact 1,000-update fit `726997` is active
+on `evc1`.
+
+The next failure is engineered against in advance. Contract v14 separates
+exact total-effect cardinality, role-conditioned motor activity, and non-NOOP
+typed-kind choice. At inference it activates exactly the predicted top-k
+valid motors; absent roles remain NOOP. It changes the causal mechanism rather
+than seed, width, or duration, and remains unlaunched unless independent v13
+evaluation confirms role-local NOOP collapse. If v13 learns entities but not
+relations, the alternate successor applies entity effects first and predicts
+links/root against the post-entity state. If local state improves without
+strict causal answers, crossed state-sufficiency isolation replaces further
+training. The protected step-300k checkpoint remains immutable and no raw
+pretraining writer is active.
 
 The older adversarial conclusions remain binding: the apparent 11/11
 episodic-generator result was not a Shohin claim because exact host code parsed,

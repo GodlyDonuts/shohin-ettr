@@ -94,6 +94,7 @@ class AtomicTypedEdits:
     effect_relation_link: torch.Tensor | None = None
     effect_relation_unlink: torch.Tensor | None = None
     effect_root_pointer: torch.Tensor | None = None
+    effect_count: torch.Tensor | None = None
 
 
 class _TerminalStateLayer(nn.Module):
@@ -191,19 +192,10 @@ class ParallelTerminalStateCompiler(nn.Module):
             or not isinstance(token_native_declaration_binding_command, bool)
             or not isinstance(token_native_operation_recurrence_command, bool)
             or (residual_edits and atomic_edits)
-            or (
-                token_native_occurrence_command
-                and not token_native_command_mask
-            )
+            or (token_native_occurrence_command and not token_native_command_mask)
             or (cover_verified_command_mask and not token_native_command_mask)
-            or (
-                token_native_syntax_graph_command
-                and not token_native_command_mask
-            )
-            or (
-                token_native_occurrence_command
-                and token_native_syntax_graph_command
-            )
+            or (token_native_syntax_graph_command and not token_native_command_mask)
+            or (token_native_occurrence_command and token_native_syntax_graph_command)
             or (
                 token_native_declaration_binding_command
                 and not token_native_syntax_graph_command
@@ -245,9 +237,7 @@ class ParallelTerminalStateCompiler(nn.Module):
         self.lexical_command = lexical_command
         self.token_native_command_mask = token_native_command_mask
         self.cover_verified_command_mask = cover_verified_command_mask
-        self.token_native_occurrence_command = (
-            token_native_occurrence_command
-        )
+        self.token_native_occurrence_command = token_native_occurrence_command
         self.token_native_syntax_graph_command = token_native_syntax_graph_command
         self.token_native_declaration_binding_command = (
             token_native_declaration_binding_command
@@ -258,9 +248,7 @@ class ParallelTerminalStateCompiler(nn.Module):
 
         self.command_projection = nn.Linear(config.d_model, width)
         self.command_lexical_projection = (
-            nn.Linear(config.d_model, width, bias=False)
-            if lexical_command
-            else None
+            nn.Linear(config.d_model, width, bias=False) if lexical_command else None
         )
         self.command_norm = nn.LayerNorm(width)
         self.command_document_mask = (
@@ -312,16 +300,10 @@ class ParallelTerminalStateCompiler(nn.Module):
             if token_native_operation_recurrence_command
             else None
         )
-        self.value_embedding = nn.Parameter(
-            torch.empty(config.num_value_codes, width)
-        )
+        self.value_embedding = nn.Parameter(torch.empty(config.num_value_codes, width))
         self.type_embedding = nn.Parameter(torch.empty(config.num_types, width))
-        self.initial_slot_embedding = nn.Parameter(
-            torch.empty(config.num_slots, width)
-        )
-        self.terminal_slot_queries = nn.Parameter(
-            torch.empty(config.num_slots, width)
-        )
+        self.initial_slot_embedding = nn.Parameter(torch.empty(config.num_slots, width))
+        self.terminal_slot_queries = nn.Parameter(torch.empty(config.num_slots, width))
         self.active_projection = nn.Linear(1, width, bias=False)
         self.root_projection = nn.Linear(1, width, bias=False)
         self.status_projection = nn.Linear(2, width, bias=False)
@@ -499,10 +481,7 @@ class ParallelTerminalStateCompiler(nn.Module):
                     or command_lexical.shape != command_hidden.shape
                 )
             )
-            or (
-                not self.lexical_command
-                and command_lexical is not None
-            )
+            or (not self.lexical_command and command_lexical is not None)
             or (
                 self.token_native_command_mask
                 and (
@@ -511,10 +490,7 @@ class ParallelTerminalStateCompiler(nn.Module):
                     or command_tokens.dtype != torch.long
                 )
             )
-            or (
-                not self.token_native_command_mask
-                and command_tokens is not None
-            )
+            or (not self.token_native_command_mask and command_tokens is not None)
             or command_attention_mask.shape != command_hidden.shape[:2]
             or command_attention_mask.dtype != torch.bool
         ):
@@ -595,9 +571,7 @@ class ParallelTerminalStateCompiler(nn.Module):
             )
             for operation_index in range(operation_masks.shape[1]):
                 operation = torch.bmm(
-                    operation_masks[:, operation_index]
-                    .unsqueeze(1)
-                    .to(command.dtype),
+                    operation_masks[:, operation_index].unsqueeze(1).to(command.dtype),
                     command,
                 )
                 updated = self.operation_recurrence(
@@ -657,10 +631,8 @@ class ParallelTerminalStateCompiler(nn.Module):
         relation_logits = torch.stack(
             (
                 keep_logits,
-                link_logits
-                + self.relation_action_bias[:, 1].view(1, -1, 1, 1),
-                unlink_logits
-                + self.relation_action_bias[:, 2].view(1, -1, 1, 1),
+                link_logits + self.relation_action_bias[:, 1].view(1, -1, 1, 1),
+                unlink_logits + self.relation_action_bias[:, 2].view(1, -1, 1, 1),
             ),
             dim=-1,
         )
@@ -669,9 +641,9 @@ class ParallelTerminalStateCompiler(nn.Module):
         keep, allocate, _write, clear, _replace = node_action.unbind(-1)
         del keep
         initial_active = state.active.float()
-        projected_active = (
-            initial_active + allocate * (1.0 - initial_active)
-        ) * (1.0 - clear * initial_active)
+        projected_active = (initial_active + allocate * (1.0 - initial_active)) * (
+            1.0 - clear * initial_active
+        )
         pooled = slots.mean(1)
         root_prefix = self.root_control_head(pooled).float()
         root_set = self.root_head(slots).float().squeeze(-1)
@@ -720,8 +692,8 @@ class ParallelTerminalStateCompiler(nn.Module):
         )
         type_probability = type_probability * (1.0 - cleared.unsqueeze(-1))
         value_write = (
-            write * initial_active + allocated + replaced
-        ).clamp(max=1.0).unsqueeze(-1)
+            (write * initial_active + allocated + replaced).clamp(max=1.0).unsqueeze(-1)
+        )
         value = (
             state.value_probabilities.float() * (1.0 - value_write)
             + edits.value_code.float() * value_write
@@ -735,21 +707,20 @@ class ParallelTerminalStateCompiler(nn.Module):
         pair_active = active[:, None, :, None] * active[:, None, None, :]
         relations = relations * pair_active
         if hard:
-            relations = _hard_capped_relations(
-                relations,
-                maximum=self.config.max_edges,
-            ) * pair_active
+            relations = (
+                _hard_capped_relations(
+                    relations,
+                    maximum=self.config.max_edges,
+                )
+                * pair_active
+            )
 
         root_keep = edits.root_action[:, 0:1].float()
         root_set = edits.root_action[:, ROOT_EDIT_PREFIX_COUNT:].float()
         root = (root_keep * state.root.float() + root_set) * active
-        status_keep, commit, halt, reject = (
-            edits.disposition_action.float().unbind(-1)
-        )
+        status_keep, commit, halt, reject = edits.disposition_action.float().unbind(-1)
         del status_keep
-        open_state = (1.0 - state.committed.float()) * (
-            1.0 - state.halted.float()
-        )
+        open_state = (1.0 - state.committed.float()) * (1.0 - state.halted.float())
         committed = state.committed.float() + open_state * (commit + reject)
         halted = state.halted.float() + open_state * (halt + reject)
 
@@ -838,7 +809,9 @@ class ParallelTerminalStateCompiler(nn.Module):
         root_slot_logits = self.root_head(slots).float().squeeze(-1)
         pooled = slots.mean(1)
         no_root_logit = self.no_root_head(pooled).float()
-        root_with_none = torch.cat((root_slot_logits, no_root_logit), dim=-1).softmax(-1)
+        root_with_none = torch.cat((root_slot_logits, no_root_logit), dim=-1).softmax(
+            -1
+        )
         root = root_with_none[:, :-1]
 
         left = self.relation_left(slots).view(
@@ -869,14 +842,10 @@ class ParallelTerminalStateCompiler(nn.Module):
                 or self.relation_edit_bias is None
                 or self.status_edit_head is None
             ):
-                raise TheoryReactorError(
-                    "terminal-state residual edit path differs"
-                )
+                raise TheoryReactorError("terminal-state residual edit path differs")
             value_gate = self.value_edit_head(slots).float().sigmoid()
             type_gate = self.type_edit_head(slots).float().sigmoid()
-            active_gate = (
-                self.active_edit_head(slots).float().sigmoid().squeeze(-1)
-            )
+            active_gate = self.active_edit_head(slots).float().sigmoid().squeeze(-1)
             root_gate = self.root_edit_head(pooled).float().sigmoid()
             edit_left = self.relation_edit_left(slots).view_as(left)
             edit_right = self.relation_edit_right(slots).view_as(right)
@@ -928,10 +897,13 @@ class ParallelTerminalStateCompiler(nn.Module):
         pair_active = active[:, None, :, None] * active[:, None, None, :]
         relations = relations * pair_active
         if hard:
-            relations = _hard_capped_relations(
-                relations,
-                maximum=self.config.max_edges,
-            ) * pair_active
+            relations = (
+                _hard_capped_relations(
+                    relations,
+                    maximum=self.config.max_edges,
+                )
+                * pair_active
+            )
             committed = _hard_binary(committed)
             halted = _hard_binary(halted)
 

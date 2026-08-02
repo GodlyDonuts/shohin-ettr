@@ -54,6 +54,7 @@ def index_atomic_edits(
 ) -> AtomicTypedEdits:
     if index.ndim != 1 or index.dtype != torch.long:
         raise OperationStateSupervisionError("edit index differs")
+
     def optional(value: torch.Tensor | None) -> torch.Tensor | None:
         return None if value is None else value.index_select(0, index)
 
@@ -74,6 +75,7 @@ def index_atomic_edits(
         effect_relation_link=optional(edits.effect_relation_link),
         effect_relation_unlink=optional(edits.effect_relation_unlink),
         effect_root_pointer=optional(edits.effect_root_pointer),
+        effect_count=optional(edits.effect_count),
     )
 
 
@@ -93,9 +95,7 @@ def operation_boundary_indices(
         & targets.source.lt(_COMMAND_SLOT_STOP)
     )
     count = starts.sum(-1)
-    if not bool(
-        (count.ge(1) & count.le(_MAXIMUM_OPERATIONS)).all()
-    ):
+    if not bool((count.ge(1) & count.le(_MAXIMUM_OPERATIONS)).all()):
         raise OperationStateSupervisionError("operation start count differs")
     sentinel = torch.full_like(targets.source, valid.shape[1])
     ordered = torch.where(starts, positions[None, :], sentinel).sort(-1).values
@@ -104,12 +104,7 @@ def operation_boundary_indices(
     mask = ranks[None, :].lt(count[:, None])
     gathered_source = targets.source.gather(1, ordered.clamp_max(valid.shape[1] - 1))
     expected_source = _COMMAND_SLOT_START + ranks
-    if not bool(
-        (
-            gathered_source.eq(expected_source[None, :])
-            | ~mask
-        ).all()
-    ):
+    if not bool((gathered_source.eq(expected_source[None, :]) | ~mask).all()):
         raise OperationStateSupervisionError("operation start order differs")
 
     valid_count = valid.sum(-1)
@@ -130,10 +125,7 @@ def operation_boundary_indices(
     )
     boundaries = torch.where(mask, next_start - 1, torch.zeros_like(next_start))
     if not bool(
-        (
-            (boundaries.ge(ordered) & boundaries.lt(valid_count[:, None]))
-            | ~mask
-        ).all()
+        ((boundaries.ge(ordered) & boundaries.lt(valid_count[:, None])) | ~mask).all()
     ):
         raise OperationStateSupervisionError("operation boundary differs")
     return boundaries, mask
@@ -188,16 +180,12 @@ def oracle_operation_boundary_states(
             relations=_gather_trace_tensor(
                 tuple(item.relations for item in trace), index
             ),
-            active=_gather_trace_tensor(
-                tuple(item.active for item in trace), index
-            ),
+            active=_gather_trace_tensor(tuple(item.active for item in trace), index),
             root=_gather_trace_tensor(tuple(item.root for item in trace), index),
             committed=_gather_trace_tensor(
                 tuple(item.committed for item in trace), index
             ),
-            halted=_gather_trace_tensor(
-                tuple(item.halted for item in trace), index
-            ),
+            halted=_gather_trace_tensor(tuple(item.halted for item in trace), index),
             step=step,
         )
 

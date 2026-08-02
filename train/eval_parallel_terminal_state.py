@@ -52,6 +52,8 @@ from train_parallel_terminal_state_pilot import (
     ATOMIC_REPORT_SCHEMA as PILOT_ATOMIC_REPORT_SCHEMA,
     CAUSAL_DELTA_CONTRACT_SCHEMA as PILOT_CAUSAL_DELTA_CONTRACT_SCHEMA,
     CAUSAL_DELTA_REPORT_SCHEMA as PILOT_CAUSAL_DELTA_REPORT_SCHEMA,
+    CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA as PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
+    CARDINALITY_GATED_EFFECT_SET_REPORT_SCHEMA as PILOT_CARDINALITY_GATED_EFFECT_SET_REPORT_SCHEMA,
     CONTRACT_SCHEMA as PILOT_CONTRACT_SCHEMA,
     DECLARATION_BOUND_ATOMIC_CONTRACT_SCHEMA as PILOT_DECLARATION_CONTRACT_SCHEMA,
     DECLARATION_BOUND_ATOMIC_REPORT_SCHEMA as PILOT_DECLARATION_REPORT_SCHEMA,
@@ -176,8 +178,7 @@ def _require_module_state(
 ) -> None:
     current = module.state_dict()
     if current.keys() != state.keys() or any(
-        not torch.equal(current[name].detach().cpu(), state[name])
-        for name in current
+        not torch.equal(current[name].detach().cpu(), state[name]) for name in current
     ):
         raise ParallelTerminalStateEvaluationError(
             "terminal-state initial component differs"
@@ -205,9 +206,7 @@ def _load_module_state(
 def _run_receipt(run_dir: Path, expected_sha256: str) -> dict[str, str]:
     sums_path = run_dir / "SHA256SUMS"
     if _sha256_file(sums_path) != expected_sha256:
-        raise ParallelTerminalStateEvaluationError(
-            "terminal-state run receipt differs"
-        )
+        raise ParallelTerminalStateEvaluationError("terminal-state run receipt differs")
     expected: dict[str, str] = {}
     try:
         lines = sums_path.read_text(encoding="ascii").splitlines()
@@ -228,9 +227,7 @@ def _run_receipt(run_dir: Path, expected_sha256: str) -> dict[str, str]:
             )
         expected[fields[1]] = fields[0]
     if tuple(sorted(expected)) != tuple(sorted(_RUN_FILES)):
-        raise ParallelTerminalStateEvaluationError(
-            "terminal-state run receipt differs"
-        )
+        raise ParallelTerminalStateEvaluationError("terminal-state run receipt differs")
     for name, digest in expected.items():
         if _sha256_file(run_dir / name) != digest:
             raise ParallelTerminalStateEvaluationError(
@@ -282,6 +279,9 @@ def _load_terminal_compiler(
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA: (
             PILOT_ROLE_ANCHORED_EFFECT_SET_REPORT_SCHEMA
         ),
+        PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA: (
+            PILOT_CARDINALITY_GATED_EFFECT_SET_REPORT_SCHEMA
+        ),
     }
     run_schema = contract.get("schema")
     if (
@@ -292,13 +292,10 @@ def _load_terminal_compiler(
         or report.get("contract_sha256") != expected["pilot-contract.json"]
         or contract.get("release_file_sha256") != args.release_sha256
         or contract.get("joint_model_sha256") != args.joint_model_sha256
-        or contract.get("joint_run_contract_sha256")
-        != args.joint_run_contract_sha256
+        or contract.get("joint_run_contract_sha256") != args.joint_run_contract_sha256
         or contract.get("compiler_sha256") != args.compiler_sha256
-        or contract.get("compiler_contract_sha256")
-        != args.compiler_contract_sha256
-        or report.get("protected_checkpoint_sha256")
-        != provenance.checkpoint_sha256
+        or contract.get("compiler_contract_sha256") != args.compiler_contract_sha256
+        or report.get("protected_checkpoint_sha256") != provenance.checkpoint_sha256
         or report.get("initial_compiler_sha256")
         != expected["terminal-compiler-initial.safetensors"]
         or report.get("final_compiler_sha256")
@@ -307,9 +304,7 @@ def _load_terminal_compiler(
         or architecture.get("no_query_input") is not True
         or architecture.get("no_transaction_trace_claim") is not True
     ):
-        raise ParallelTerminalStateEvaluationError(
-            "terminal-state run lineage differs"
-        )
+        raise ParallelTerminalStateEvaluationError("terminal-state run lineage differs")
     if contract.get("schema") in (
         PILOT_ATOMIC_CONTRACT_SCHEMA,
         PILOT_LEXICAL_CONTRACT_SCHEMA,
@@ -321,6 +316,7 @@ def _load_terminal_compiler(
         PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
         PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CONTRACT_SCHEMA,
         PILOT_CAUSAL_DELTA_CONTRACT_SCHEMA,
     ):
@@ -328,8 +324,7 @@ def _load_terminal_compiler(
         if (
             architecture.get("causal_rectangle_delta_credit") is not True
             or not isinstance(objective, Mapping)
-            or objective.get("causal_pairing")
-            != "complete-2x2-terminal-state-edges"
+            or objective.get("causal_pairing") != "complete-2x2-terminal-state-edges"
             or not isinstance(objective.get("causal_delta_weight"), (int, float))
             or float(objective["causal_delta_weight"]) <= 0.0
         ):
@@ -348,6 +343,7 @@ def _load_terminal_compiler(
         PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
         PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
     }
     lexical_command = contract.get("schema") in {
         PILOT_LEXICAL_CONTRACT_SCHEMA,
@@ -359,6 +355,7 @@ def _load_terminal_compiler(
         PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
         PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
     }
     token_native_command_mask = contract.get("schema") in {
         PILOT_SYNTAX_CONTRACT_SCHEMA,
@@ -369,76 +366,67 @@ def _load_terminal_compiler(
         PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
         PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
     }
     token_native_occurrence_command = (
         contract.get("schema") == PILOT_OCCURRENCE_CONTRACT_SCHEMA
     )
-    token_native_syntax_graph_command = (
-        contract.get("schema")
-        in {
-            PILOT_DECLARATION_CONTRACT_SCHEMA,
-            PILOT_OPERATION_CONTRACT_SCHEMA,
-            PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
-            PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
-            PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
-            PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
-        }
-    )
-    token_native_declaration_binding_command = (
-        contract.get("schema")
-        in {
-            PILOT_DECLARATION_CONTRACT_SCHEMA,
-            PILOT_OPERATION_CONTRACT_SCHEMA,
-            PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
-            PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
-            PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
-            PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
-        }
-    )
-    cover_verified_command_mask = (
-        contract.get("schema")
-        in {
-            PILOT_DECLARATION_CONTRACT_SCHEMA,
-            PILOT_OPERATION_CONTRACT_SCHEMA,
-            PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
-            PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
-            PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
-            PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
-        }
-    )
-    token_native_operation_recurrence_command = (
-        contract.get("schema")
-        in {
-            PILOT_OPERATION_CONTRACT_SCHEMA,
-            PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
-            PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
-            PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
-            PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
-        }
-    )
-    token_native_operation_state_command = (
-        contract.get("schema")
-        in {
-            PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
-            PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
-            PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
-            PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
-        }
-    )
+    token_native_syntax_graph_command = contract.get("schema") in {
+        PILOT_DECLARATION_CONTRACT_SCHEMA,
+        PILOT_OPERATION_CONTRACT_SCHEMA,
+        PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
+        PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
+        PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
+    }
+    token_native_declaration_binding_command = contract.get("schema") in {
+        PILOT_DECLARATION_CONTRACT_SCHEMA,
+        PILOT_OPERATION_CONTRACT_SCHEMA,
+        PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
+        PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
+        PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
+    }
+    cover_verified_command_mask = contract.get("schema") in {
+        PILOT_DECLARATION_CONTRACT_SCHEMA,
+        PILOT_OPERATION_CONTRACT_SCHEMA,
+        PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
+        PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
+        PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
+    }
+    token_native_operation_recurrence_command = contract.get("schema") in {
+        PILOT_OPERATION_CONTRACT_SCHEMA,
+        PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
+        PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
+        PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
+    }
+    token_native_operation_state_command = contract.get("schema") in {
+        PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
+        PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
+        PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
+    }
     factorized_operation_effect_command = (
-        contract.get("schema")
-        == PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA
+        contract.get("schema") == PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA
     )
-    operation_effect_set_command = (
-        contract.get("schema")
-        in {
-            PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
-            PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
-        }
-    )
-    operation_effect_role_anchors = (
-        contract.get("schema")
-        == PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA
+    operation_effect_set_command = contract.get("schema") in {
+        PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
+    }
+    operation_effect_role_anchors = contract.get("schema") in {
+        PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
+    }
+    operation_effect_cardinality_gate = (
+        contract.get("schema") == PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA
     )
     if residual_edits != (architecture.get("sparse_residual_edits") is True):
         raise ParallelTerminalStateEvaluationError(
@@ -459,23 +447,22 @@ def _load_terminal_compiler(
         "token_native_operation_recurrence_command": (
             token_native_operation_recurrence_command
         ),
-        "token_native_operation_state_command": (
-            token_native_operation_state_command
-        ),
-        "factorized_operation_effect_command": (
-            factorized_operation_effect_command
-        ),
+        "token_native_operation_state_command": (token_native_operation_state_command),
+        "factorized_operation_effect_command": (factorized_operation_effect_command),
         "operation_effect_set_command": operation_effect_set_command,
         "operation_effect_role_anchors": operation_effect_role_anchors,
+        "operation_effect_cardinality_gate": (operation_effect_cardinality_gate),
         "token_native_syntax_graph_command": token_native_syntax_graph_command,
     }
-    if any(architecture.get(name, False) is not value for name, value in expected_flags.items()):
+    if any(
+        architecture.get(name, False) is not value
+        for name, value in expected_flags.items()
+    ):
         raise ParallelTerminalStateEvaluationError(
             "terminal-state public syntax architecture differs"
         )
     if token_native_command_mask and (
-        architecture.get("token_native_codebook_sha256")
-        != stream.codec.codebook_sha256
+        architecture.get("token_native_codebook_sha256") != stream.codec.codebook_sha256
     ):
         raise ParallelTerminalStateEvaluationError(
             "terminal-state token-native codebook differs"
@@ -486,9 +473,7 @@ def _load_terminal_compiler(
         layers = int(architecture["layers"])
         num_heads = int(architecture["num_heads"])
         relation_width = int(architecture["relation_width"])
-        operation_effect_slots = int(
-            architecture.get("operation_effect_slots", 0)
-        )
+        operation_effect_slots = int(architecture.get("operation_effect_slots", 0))
         operation_effect_role_count = int(
             architecture.get("operation_effect_role_count", 0)
         )
@@ -537,6 +522,12 @@ def _load_terminal_compiler(
                 operation_effect_role_count * operation_effect_motors_per_role
                 if operation_effect_role_anchors
                 else operation_effect_slots
+            )
+            or objective.get("effect_set_cardinality")
+            != (
+                "explicit-total-count-plus-top-k-motor-activity"
+                if operation_effect_cardinality_gate
+                else None
             )
         ):
             raise ParallelTerminalStateEvaluationError(
@@ -607,6 +598,11 @@ def _load_terminal_compiler(
             if operation_effect_role_anchors
             else {}
         ),
+        **(
+            {"explicit_effect_cardinality": True}
+            if operation_effect_cardinality_gate
+            else {}
+        ),
     ).to(
         device=next(model.parameters()).device,
         dtype=next(model.parameters()).dtype,
@@ -632,16 +628,12 @@ def _load_terminal_compiler(
         raise ParallelTerminalStateEvaluationError(
             "terminal-state final component differs"
         )
-    compiler_parameters = sum(
-        parameter.numel() for parameter in compiler.parameters()
-    )
+    compiler_parameters = sum(parameter.numel() for parameter in compiler.parameters())
     removed_reactor_parameters = sum(
         parameter.numel() for parameter in model.reactor.parameters()
     )
     complete_parameters = (
-        replacement_system_parameters
-        - removed_reactor_parameters
-        + compiler_parameters
+        replacement_system_parameters - removed_reactor_parameters + compiler_parameters
     )
     if (
         contract.get("compiler_parameters") != compiler_parameters
@@ -679,10 +671,7 @@ def _typed_state_exact_count(
     target_active = target.active.gt(0.5)
     active_mask = slot_mask & target_active
     exact = (
-        (
-            predicted.active.gt(0.5).eq(target_active)
-            | ~slot_mask
-        ).all(-1)
+        (predicted.active.gt(0.5).eq(target_active) | ~slot_mask).all(-1)
         & (
             predicted.value_probabilities.argmax(-1).eq(
                 target.value_probabilities.argmax(-1)
@@ -695,10 +684,9 @@ def _typed_state_exact_count(
             )
             | ~active_mask
         ).all(-1)
-        & (
-            predicted.relations.gt(0.5).eq(target.relations.gt(0.5))
-            | ~relation_mask
-        ).flatten(1).all(-1)
+        & (predicted.relations.gt(0.5).eq(target.relations.gt(0.5)) | ~relation_mask)
+        .flatten(1)
+        .all(-1)
         & predicted.root.gt(0.5).eq(target.root.gt(0.5)).all(-1)
         & predicted.committed.gt(0.5).eq(target.committed.gt(0.5))
         & predicted.halted.gt(0.5).eq(target.halted.gt(0.5))
@@ -770,9 +758,7 @@ def _evaluate_operation_effects(
                     strict=True,
                 )
             ):
-                index = torch.nonzero(
-                    oracle.mask[:, rank], as_tuple=False
-                ).flatten()
+                index = torch.nonzero(oracle.mask[:, rank], as_tuple=False).flatten()
                 if index.numel() == 0:
                     continue
                 predicted_selected = index_typed_state(predicted_state, index)
@@ -782,13 +768,9 @@ def _evaluate_operation_effects(
                     0, index
                 )
                 relation_mask = (
-                    batch.terminal_packet_targets.relation_mask.index_select(
-                        0, index
-                    )
+                    batch.terminal_packet_targets.relation_mask.index_select(0, index)
                 )
-                labels = derive_atomic_edit_targets(
-                    previous_selected, target_selected
-                )
+                labels = derive_atomic_edit_targets(previous_selected, target_selected)
                 values = effect_set_batch_counts(
                     index_atomic_edits(edits, index),
                     labels,
@@ -832,9 +814,9 @@ def _evaluate_operation_effects(
             counts = aggregate.setdefault("counts", {})
             assert isinstance(counts, dict)
             batch_size = int(batch.terminal_packet_targets.slot_mask.shape[0])
-            counts["terminal_state_instances"] = int(
-                counts.get("terminal_state_instances", 0)
-            ) + batch_size
+            counts["terminal_state_instances"] = (
+                int(counts.get("terminal_state_instances", 0)) + batch_size
+            )
             counts["terminal_state_exact"] = int(
                 counts.get("terminal_state_exact", 0)
             ) + _typed_state_exact_count(
@@ -852,13 +834,11 @@ def _evaluate_operation_effects(
     counts = summary["counts"]
     assert isinstance(counts, dict)
     summary["batches"] = observed
-    summary["operation_state_exact_rate"] = (
-        int(counts["operation_state_exact"])
-        / int(counts["operation_state_instances"])
+    summary["operation_state_exact_rate"] = int(counts["operation_state_exact"]) / int(
+        counts["operation_state_instances"]
     )
-    summary["terminal_state_exact_rate"] = (
-        int(counts["terminal_state_exact"])
-        / int(counts["terminal_state_instances"])
+    summary["terminal_state_exact_rate"] = int(counts["terminal_state_exact"]) / int(
+        counts["terminal_state_instances"]
     )
     return summary
 
@@ -1014,8 +994,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         _write_no_replace(
             args.output / "SHA256SUMS",
             "".join(
-                f"{_sha256_file(args.output / name)}  {name}\n"
-                for name in names
+                f"{_sha256_file(args.output / name)}  {name}\n" for name in names
             ).encode("ascii"),
         )
         for path in args.output.iterdir():

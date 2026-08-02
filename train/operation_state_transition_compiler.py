@@ -238,9 +238,7 @@ class OperationStateTransitionCompiler(ParallelTerminalStateCompiler):
         edits: list[AtomicTypedEdits] = []
         for operation_index in range(operation_masks.shape[1]):
             operation = torch.bmm(
-                operation_masks[:, operation_index]
-                .unsqueeze(1)
-                .to(command.dtype),
+                operation_masks[:, operation_index].unsqueeze(1).to(command.dtype),
                 command,
             )
             updated_slots = self.operation_recurrence(
@@ -301,9 +299,7 @@ class OperationStateTransitionCompiler(ParallelTerminalStateCompiler):
                 (
                     (
                         effect_anchors[0]
-                        * effect_anchors[1][..., None].to(
-                            effect_anchors[0].dtype
-                        )
+                        * effect_anchors[1][..., None].to(effect_anchors[0].dtype)
                     ).sum(1)
                     / effect_anchors[1]
                     .sum(1, keepdim=False)[..., None]
@@ -448,9 +444,7 @@ def _count_constrained_selection(
     return selection.reshape_as(scores)
 
 
-class FactorizedOperationStateTransitionCompiler(
-    OperationStateTransitionCompiler
-):
+class FactorizedOperationStateTransitionCompiler(OperationStateTransitionCompiler):
     """Compile sparse operation effects before binding state operands.
 
     Dense atomic heads decide KEEP independently at every coordinate.  This
@@ -496,9 +490,7 @@ class FactorizedOperationStateTransitionCompiler(
         pooled = slots.mean(1)
         node_count = self.node_edit_count_head(pooled).float().softmax(-1)
         link_count = self.relation_link_count_head(pooled).float().softmax(-1)
-        unlink_count = (
-            self.relation_unlink_count_head(pooled).float().softmax(-1)
-        )
+        unlink_count = self.relation_unlink_count_head(pooled).float().softmax(-1)
 
         active = state.active.gt(0.5)
         node_allowed = torch.stack(
@@ -615,9 +607,7 @@ def _masked_flat_softmax(
     flat_mask = mask.reshape(batch, effects, -1)
     probabilities = flat_logits.masked_fill(~flat_mask, -1e9).softmax(-1)
     probabilities = probabilities * flat_mask.to(probabilities.dtype)
-    probabilities = probabilities / probabilities.sum(-1, keepdim=True).clamp_min(
-        1e-7
-    )
+    probabilities = probabilities / probabilities.sum(-1, keepdim=True).clamp_min(1e-7)
     return probabilities.reshape_as(logits)
 
 
@@ -657,6 +647,7 @@ class OperationEffectSetCompiler(OperationStateTransitionCompiler):
         maximum_effects: int = 16,
         public_role_anchors: bool = False,
         maximum_effect_roles: int = ROLE_ANCHORED_EFFECT_ROLES,
+        explicit_effect_cardinality: bool = False,
         **kwargs,
     ) -> None:  # type: ignore[no-untyped-def]
         super().__init__(*args, **kwargs)
@@ -664,6 +655,7 @@ class OperationEffectSetCompiler(OperationStateTransitionCompiler):
             not isinstance(maximum_effects, int)
             or not 1 <= maximum_effects <= 64
             or not isinstance(public_role_anchors, bool)
+            or not isinstance(explicit_effect_cardinality, bool)
             or not isinstance(maximum_effect_roles, int)
             or (
                 public_role_anchors
@@ -676,13 +668,10 @@ class OperationEffectSetCompiler(OperationStateTransitionCompiler):
             raise TheoryReactorError("operation effect set geometry differs")
         self.maximum_effects = maximum_effects
         self.public_role_anchors = public_role_anchors
-        self.effect_role_count = (
-            maximum_effect_roles if public_role_anchors else 0
-        )
+        self.explicit_effect_cardinality = explicit_effect_cardinality
+        self.effect_role_count = maximum_effect_roles if public_role_anchors else 0
         self.effect_motors_per_role = (
-            maximum_effects // maximum_effect_roles
-            if public_role_anchors
-            else 0
+            maximum_effects // maximum_effect_roles if public_role_anchors else 0
         )
         self.effect_queries = nn.Parameter(torch.empty(maximum_effects, self.width))
         self.effect_input_norm = nn.LayerNorm(self.width)
@@ -705,6 +694,14 @@ class OperationEffectSetCompiler(OperationStateTransitionCompiler):
         )
         self.effect_output_norm = nn.LayerNorm(self.width)
         self.effect_kind_head = nn.Linear(self.width, EFFECT_KIND_COUNT)
+        self.effect_activity_head = (
+            nn.Linear(self.width, 1) if explicit_effect_cardinality else None
+        )
+        self.effect_count_head = (
+            nn.Linear(self.width, maximum_effects + 1)
+            if explicit_effect_cardinality
+            else None
+        )
         self.effect_node_query = nn.Linear(self.width, self.width, bias=False)
         self.effect_node_key = nn.Linear(self.width, self.width, bias=False)
         self.effect_value_head = nn.Linear(
@@ -733,10 +730,14 @@ class OperationEffectSetCompiler(OperationStateTransitionCompiler):
         effect_anchors: tuple[torch.Tensor, torch.Tensor] | None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         batch = slots.shape[0]
-        effects = self.effect_queries.to(slots.dtype).unsqueeze(0).expand(
-            batch,
-            -1,
-            -1,
+        effects = (
+            self.effect_queries.to(slots.dtype)
+            .unsqueeze(0)
+            .expand(
+                batch,
+                -1,
+                -1,
+            )
         )
         effects = effects + slots.mean(1, keepdim=True)
         valid = torch.ones(
@@ -750,8 +751,7 @@ class OperationEffectSetCompiler(OperationStateTransitionCompiler):
                 raise TheoryReactorError("public effect-role anchors are absent")
             anchors, role_valid = effect_anchors
             if (
-                anchors.shape
-                != (batch, self.effect_role_count, self.width)
+                anchors.shape != (batch, self.effect_role_count, self.width)
                 or role_valid.shape != (batch, self.effect_role_count)
                 or role_valid.dtype != torch.bool
             ):
@@ -802,13 +802,43 @@ class OperationEffectSetCompiler(OperationStateTransitionCompiler):
         base = super()._atomic_edits_from_slots(state, slots, hard=False)
         effects, effect_valid = self._effect_slots(slots, effect_anchors)
         kind_logits = self.effect_kind_head(effects).float()
-        forced_noop = torch.full_like(kind_logits, -1e9)
-        forced_noop[..., EFFECT_NOOP] = 0.0
-        kind = torch.where(
-            effect_valid[..., None],
-            kind_logits,
-            forced_noop,
-        ).softmax(-1)
+        effect_count = None
+        if self.explicit_effect_cardinality:
+            if self.effect_activity_head is None or self.effect_count_head is None:
+                raise TheoryReactorError("explicit effect-cardinality heads are absent")
+            valid_weight = effect_valid[..., None].to(effects.dtype)
+            pooled = (effects * valid_weight).sum(1) / valid_weight.sum(1).clamp_min(
+                1.0
+            )
+            effect_count = self.effect_count_head(pooled).float().softmax(-1)
+            activity_logits = self.effect_activity_head(effects).float().squeeze(-1)
+            selected = (
+                _count_constrained_selection(
+                    activity_logits,
+                    effect_valid,
+                    effect_count,
+                    capacity=effect_valid.sum(-1),
+                    hard=True,
+                )
+                if hard
+                else activity_logits.sigmoid() * effect_valid.to(torch.float32)
+            )
+            nonnoop = kind_logits[..., 1:].softmax(-1)
+            kind = torch.cat(
+                (
+                    (1.0 - selected).unsqueeze(-1),
+                    selected.unsqueeze(-1) * nonnoop,
+                ),
+                dim=-1,
+            )
+        else:
+            forced_noop = torch.full_like(kind_logits, -1e9)
+            forced_noop[..., EFFECT_NOOP] = 0.0
+            kind = torch.where(
+                effect_valid[..., None],
+                kind_logits,
+                forced_noop,
+            ).softmax(-1)
         value_code = self.effect_value_head(effects).float().softmax(-1)
         type_index = self.effect_type_head(effects).float().softmax(-1)
 
@@ -898,10 +928,7 @@ class OperationEffectSetCompiler(OperationStateTransitionCompiler):
 
         value_mass = (
             kind[..., EFFECT_ALLOCATE, None] * inactive_pointer
-            + (
-                kind[..., EFFECT_WRITE, None]
-                + kind[..., EFFECT_REPLACE, None]
-            )
+            + (kind[..., EFFECT_WRITE, None] + kind[..., EFFECT_REPLACE, None])
             * active_pointer
         )
         dense_value = torch.einsum("bks,bkv->bsv", value_mass, value_code)
@@ -943,14 +970,17 @@ class OperationEffectSetCompiler(OperationStateTransitionCompiler):
         )
         root_total = root_clear + root_set.sum(-1)
         root_normalizer = root_total.clamp_min(1.0).unsqueeze(-1)
-        root_action = torch.cat(
-            (
-                (1.0 - root_total).clamp_min(0.0).unsqueeze(-1),
-                root_clear.unsqueeze(-1),
-                root_set,
-            ),
-            dim=-1,
-        ) / root_normalizer
+        root_action = (
+            torch.cat(
+                (
+                    (1.0 - root_total).clamp_min(0.0).unsqueeze(-1),
+                    root_clear.unsqueeze(-1),
+                    root_set,
+                ),
+                dim=-1,
+            )
+            / root_normalizer
+        )
         disposition_action = self._dense_actions(
             kind[..., EFFECT_COMMIT].sum(-1),
             kind[..., EFFECT_HALT].sum(-1),
@@ -987,6 +1017,7 @@ class OperationEffectSetCompiler(OperationStateTransitionCompiler):
             effect_relation_link=relation_link,
             effect_relation_unlink=relation_unlink,
             effect_root_pointer=root_pointer,
+            effect_count=effect_count,
         )
 
 
