@@ -101,6 +101,9 @@ _SCHEDULE_SCHEMAS = {
     "shohin-ettr-parallel-addressed-transaction-contract-v4": (
         "shohin-ettr-parallel-addressed-transaction-report-v4"
     ),
+    "shohin-ettr-parallel-addressed-transaction-contract-v5": (
+        "shohin-ettr-parallel-addressed-transaction-report-v5"
+    ),
 }
 _ARMS = (
     "autonomous_program_autonomous_state",

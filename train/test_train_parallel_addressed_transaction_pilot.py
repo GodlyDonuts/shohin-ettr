@@ -17,6 +17,7 @@ from train_parallel_addressed_transaction_pilot import (
     _schedule_loss,
     _semantic_prefix_loss,
     _state_brier,
+    _training_initial_state,
 )
 
 
@@ -236,3 +237,71 @@ def test_semantic_prefix_loss_backpropagates_through_exact_execution() -> None:
     for value in (opcode_logits, source_logits, type_logits, value_logits):
         assert value.grad is not None
         assert bool(torch.isfinite(value.grad).all())
+
+
+def test_autonomous_training_uses_the_deployed_world_state() -> None:
+    config = TheoryReactorConfig(
+        d_model=16,
+        state_width=16,
+        num_slots=4,
+        num_types=3,
+        num_relations=2,
+        num_value_codes=7,
+        max_edges=8,
+        num_heads=2,
+        compiler_layers=1,
+        reactor_layers=1,
+        query_layers=1,
+        ff_multiplier=2,
+        max_steps=3,
+        stage_after_block=0,
+    )
+    expected = TypedTheoryState(
+        value_probabilities=torch.zeros(1, 4, 7),
+        type_probabilities=torch.zeros(1, 4, 3),
+        relations=torch.zeros(1, 2, 4, 4),
+        active=torch.zeros(1, 4),
+        root=torch.zeros(1, 4),
+        committed=torch.zeros(1),
+        halted=torch.zeros(1),
+        step=0,
+    )
+
+    class FakeModel:
+        def __init__(self) -> None:
+            self.config = config
+            self.calls = []
+
+        def compile_world(self, tokens, *, attention_mask, hard):
+            self.calls.append((tokens, attention_mask, hard))
+            return expected
+
+    tokens = torch.tensor([[1, 2]])
+    attention_mask = torch.tensor([[1, 1]])
+    batch = SimpleNamespace(
+        episodes=SimpleNamespace(
+            world=SimpleNamespace(
+                tokens=tokens,
+                attention_mask=attention_mask,
+            )
+        )
+    )
+    model = FakeModel()
+    observed = _training_initial_state(
+        model,
+        batch,
+        source="autonomous",
+        dtype=torch.bfloat16,
+    )
+    assert model.calls == [(tokens, attention_mask, True)]
+    assert observed is not expected
+    for field in (
+        "value_probabilities",
+        "type_probabilities",
+        "relations",
+        "active",
+        "root",
+        "committed",
+        "halted",
+    ):
+        assert torch.equal(getattr(observed, field), getattr(expected, field))

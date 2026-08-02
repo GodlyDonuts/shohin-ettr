@@ -18,6 +18,8 @@ def test_parallel_transaction_job_is_hash_bound_and_isolated() -> None:
         "--grounded-pointers",
         "--valid-pointer-masks",
         "--semantic-prefix-weight",
+        "--training-initial-state",
+        "TRAINING_INITIAL_STATE=${TRAINING_INITIAL_STATE:-oracle}",
         "OUTPUT=${OUTPUT:?set fresh pilot output}",
     ):
         assert expected in text

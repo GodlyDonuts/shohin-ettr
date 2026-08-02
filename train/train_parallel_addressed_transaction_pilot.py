@@ -17,6 +17,7 @@ from typing import Sequence
 from safetensors.torch import save_file
 import torch
 
+from endogenous_typed_theory_reactor import TypedTheoryState
 from eval_algebraic_query_joint_state import (
     _evaluate,
     _load_compiler,
@@ -43,8 +44,8 @@ from train_ettr_component_island import (
 )
 
 
-CONTRACT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-contract-v4"
-REPORT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-report-v4"
+CONTRACT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-contract-v5"
+REPORT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-report-v5"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _FIELDS = (
@@ -85,6 +86,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--learning-rate", type=float, default=3e-4)
     parser.add_argument("--gradient-clip", type=float, default=1.0)
     parser.add_argument("--semantic-prefix-weight", type=float, default=0.0)
+    parser.add_argument(
+        "--training-initial-state",
+        choices=("oracle", "autonomous"),
+        default="oracle",
+    )
     parser.add_argument("--eval-batches", type=int, default=16)
     parser.add_argument("--log-every", type=int, default=10)
     parser.add_argument("--width", type=int, default=384)
@@ -488,6 +494,32 @@ def _precision_context(is_h100: bool):
     )
 
 
+def _training_initial_state(
+    model,
+    batch,
+    *,
+    source: str,
+    dtype: torch.dtype,
+) -> TypedTheoryState:
+    if source == "oracle":
+        return packet_targets_to_state(
+            batch.packet_targets,
+            model.config,
+            step=0,
+            dtype=dtype,
+        )
+    if source == "autonomous":
+        with torch.no_grad():
+            return model.compile_world(
+                batch.episodes.world.tokens,
+                attention_mask=batch.episodes.world.attention_mask,
+                hard=True,
+            ).detached_clone()
+    raise ParallelTransactionPilotError(
+        "parallel transaction training initial state differs"
+    )
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     _validate_args(args)
@@ -633,6 +665,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "semantic_prefix_weight": args.semantic_prefix_weight,
             "source_commit": args.source_commit,
             "start_position": args.start_position,
+            "training_initial_state": args.training_initial_state,
             "updates": args.updates,
         }
         contract_sha256 = _write_no_replace(
@@ -663,10 +696,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             packet_index.verify_train((cpu_batch,))
             batch = move_continuation_batch(cpu_batch, device)
             batch.validate(model.config, objective_config)
-            initial = packet_targets_to_state(
-                batch.packet_targets,
-                model.config,
-                step=0,
+            initial = _training_initial_state(
+                model,
+                batch,
+                source=args.training_initial_state,
                 dtype=next(schedule_compiler.parameters()).dtype,
             )
             with torch.no_grad():

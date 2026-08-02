@@ -22889,3 +22889,16 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   records independent read-only H100 evaluations `725451/725452/725453` for
   data orderings `2026080111/12/14`. The jobs have fresh isolated outputs and
   cannot write any trained component.
+
+  A subsequent training-path audit found one remaining deployment mismatch.
+  Every parallel scheduler was trained with an exact oracle initial packet,
+  while every claim-bearing fully autonomous evaluation supplies Shohin's
+  hard predicted WORLD packet. Commit-pending contract v5 exposes a sealed
+  `training_initial_state` choice and permits training on exactly the deployed
+  hard WORLD state, using WORLD bytes only and with the frozen compiler under
+  `no_grad`. The historical oracle default is unchanged. The preregistered
+  first gate is a matched seed-31/data-11/LR-`3e-4`, position-zero,
+  1,000-update pair whose only changed factor is oracle versus autonomous
+  training state. Twenty-six focused/regression tests pass; Ruff, byte
+  compilation, Bash syntax, and diff checks are clean. Scale requires an
+  autonomous hard-gate or margin gain without factual/schedule collapse.

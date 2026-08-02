@@ -53400,3 +53400,24 @@ population-stable improvement counts.
 
 Current decision:
 `test_whether_deterministic_multi_basin_probability_aggregation_turns_a_reproducible_but_seed_fragile_schedule_signal_into_stable_native_causality`.
+
+## 2026-08-01 Deployed-State Curriculum
+
+An audit of the strongest scheduler uncovered a remaining train/deploy shift.
+All completed schedule compilers learned from exact oracle initial packets,
+but fully autonomous evaluation executes them against Shohin's own hard WORLD
+packet. The latter is only partially factual. A compiler can therefore fit the
+transaction labels well yet enter an unseen packet distribution precisely at
+the causal gate. The observation is consistent with seed sensitivity: one
+basin accidentally tolerates deployment errors while another does not.
+
+Contract v5 adds a controlled alternative that obtains the initial packet by
+running the frozen Shohin WORLD compiler on the same candidate-visible WORLD
+bytes used at inference. The state is hard and detached; no query, answer,
+oracle state, or gradient into the base is admitted. Schedule labels and the
+unchanged exact executor remain the same. A matched oracle/autonomous pair at
+equal initialization, data ordering, learning rate, stream position, update
+budget, and evaluator will test the cause directly before any scale-up.
+
+Current decision:
+`train_the_schedule_compiler_on_its_actual_deployed_world_state_and_require_a_matched_causal_gain_before_extending_the_curriculum`.
