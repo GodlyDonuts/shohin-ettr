@@ -259,3 +259,27 @@ gate factors the operation delta into shape, addressed coordinates, and
 payload transformations. Its result determines whether the next architecture
 is a grammar action classifier plus state pointers/value heads or whether the
 current state/edit ontology must be rejected entirely.
+
+The first factor audit is now measured and rejects that coarse three-way
+quotient as a sufficient target. Job `760909` completed 60,512 development
+operation instances on 48 Stokes cores in 23m39s. At broad coverage, exact
+shape transfers at only 54.64% (`world_alpha_operator_operation`, 98.73%
+coverage) against a 59.84% development Bayes ceiling; exact addresses reach
+45.59% (`world_topology_operation`, 99.98% coverage) against 47.00%; and exact
+payloads reach 47.66% (`world_alpha_operator_operation`, 98.73% coverage)
+against 52.46%. These are modest modal improvements, not a clean compiler
+interface. Report SHA-256 is
+`f3c7102121fe389f6c7c37e213a7deef71e1674d60910be5d61eca252c88ea43`;
+payload SHA-256 is
+`bed3110cd323b0b0c8adcc60d973a96c1738f2cd0df00b1179ac48b3f31d925a`.
+
+The failure branch is already concrete. A sparse operation compiler now
+predicts node-edit, relation-link, and relation-unlink cardinalities before
+binding addresses and payloads to the current typed state; hard inference
+applies exactly those counts through the existing fixed algebra. It remains
+unlaunched because the coarse shape audit does not validate those individual
+marginals. Audit v3 scores each cardinality, field-change histogram, and
+status change independently. High cardinality transfer releases one bounded
+factorized compiler gate. Low cardinality transfer rejects even this sparse
+effect ontology before GPU allocation and routes to state-conditioned public
+semantic primitives rather than more edit-head capacity.

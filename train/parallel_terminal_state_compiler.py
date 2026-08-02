@@ -84,6 +84,9 @@ class AtomicTypedEdits:
     relation_action: torch.Tensor
     root_action: torch.Tensor
     disposition_action: torch.Tensor
+    node_edit_count: torch.Tensor | None = None
+    relation_link_count: torch.Tensor | None = None
+    relation_unlink_count: torch.Tensor | None = None
 
 
 class _TerminalStateLayer(nn.Module):

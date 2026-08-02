@@ -24093,3 +24093,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `cancel_monolithic_operation_state_training_and_factor_public_effect_shape_from_state_grounded_operands_before_the_next_gpu_fit`.
+
+- **2026-08-02 07:26--07:58 EDT** -- **Coarse shape/address/payload
+  factorization is rejected; exact sparse cardinalities are the next CPU
+  gate.** Stokes job `760909` completed cleanly on 48 CPU cores in 23m39s,
+  with 9.04GB maximum batch RSS and zero errors. Its immutable v2 report is
+  preserved at
+  `artifacts/r12/ettr_public_operation_state_factors_3cdc96d_r1/report.json`
+  with file SHA-256
+  `f3c7102121fe389f6c7c37e213a7deef71e1674d60910be5d61eca252c88ea43`
+  and payload SHA-256
+  `bed3110cd323b0b0c8adcc60d973a96c1738f2cd0df00b1179ac48b3f31d925a`.
+
+  Broad-coverage exact shape reaches only 54.64% train-to-development transfer
+  at 98.73% coverage against a 59.84% development Bayes ceiling. Addresses
+  reach 45.59% at 99.98% coverage against 47.00%; payloads reach 47.66% at
+  98.73% coverage against 52.46%. This is not a clean three-head target and
+  does not authorize a GPU fit.
+
+  The next failure branch was implemented while the audit ran. A factorized
+  operation compiler predicts global node-edit, relation-link, and
+  relation-unlink cardinalities, binds only those operands to the current
+  typed state with straight-through sparse selection, and applies the same
+  fixed algebra. Hard cardinality, address gradients, schemas, custody, and
+  audit gates pass 36 focused tests with clean Ruff, byte compilation, Bash
+  syntax, and diff checks. Audit v3 now scores those three cardinalities plus
+  node-field histogram and status change independently. Only high marginal
+  transfer may release the held compiler path; low marginal transfer rejects
+  this sparse edit ontology before GPU use.
+
+  Obsolete held global-registry job `725605` was canceled. No Newton GPU job
+  is active and the protected 300k checkpoint remains untouched.
+
+  Decision:
+  `reject_coarse_effect_factorization_and_measure_the_exact_sparse_cardinality_targets_before_any_factorized_operation_gpu_fit`.

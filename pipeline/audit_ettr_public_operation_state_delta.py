@@ -44,11 +44,16 @@ from ettr_il_v3_protocol import canonical_json_bytes
 from materialize_ettr_il_v3_corpus import _iter_records, _sha256_file
 
 
-REPORT_SCHEMA = "r12-ettr-public-operation-state-delta-audit-v2"
+REPORT_SCHEMA = "r12-ettr-public-operation-state-delta-audit-v3"
 _SPLITS = ("train", "development")
 _TARGETS = (
     "operation_delta",
     "delta_shape",
+    "delta_node_edit_count",
+    "delta_edge_add_count",
+    "delta_edge_remove_count",
+    "delta_node_field_histogram",
+    "delta_status_change",
     "delta_addresses",
     "delta_payloads",
     "cumulative_runtime_state",
@@ -174,6 +179,14 @@ def state_delta_factor_values(
             "node_field_changes": sorted(shape_nodes),
             "status_changes": [status[0] != status[2], status[1] != status[3]],
         },
+        "delta_node_edit_count": len(nodes),
+        "delta_edge_add_count": len(added),
+        "delta_edge_remove_count": len(removed),
+        "delta_node_field_histogram": sorted(shape_nodes),
+        "delta_status_change": [
+            status[0] != status[2],
+            status[1] != status[3],
+        ],
         "delta_addresses": {
             "edges_added": sorted(added),
             "edges_removed": sorted(removed),
@@ -412,6 +425,11 @@ def audit(
             "assessor_operation_trace_used_as_label_only": True,
             "delta_factors_scored_separately": [
                 "shape",
+                "node_edit_count",
+                "edge_add_count",
+                "edge_remove_count",
+                "node_field_histogram",
+                "status_change",
                 "addresses",
                 "payloads",
             ],

@@ -19,6 +19,7 @@ from parallel_terminal_state_compiler import (
     ParallelTerminalStateReactor,
 )
 from operation_state_transition_compiler import (
+    FactorizedOperationStateTransitionCompiler,
     OperationStateTransitionCompiler,
 )
 from train_parallel_terminal_state_pilot import (
@@ -483,6 +484,78 @@ def test_operation_state_compiler_applies_each_public_operation() -> None:
     assert bool(gradient.isfinite().all())
 
 
+def test_factorized_operation_compiler_enforces_hard_effect_counts() -> None:
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+
+    config = replace(_config(), max_steps=16)
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    compiler = FactorizedOperationStateTransitionCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        relation_width=16,
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_codebook_atoms=codec.codebook.atoms,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+    with torch.no_grad():
+        for head, count in (
+            (compiler.node_edit_count_head, 2),
+            (compiler.relation_link_count_head, 1),
+            (compiler.relation_unlink_count_head, 0),
+        ):
+            head.weight.zero_()
+            head.bias.fill_(-100.0)
+            head.bias[count] = 100.0
+    edits = compiler._atomic_edits_from_slots(
+        _state(config),
+        torch.randn(2, config.num_slots, compiler.width),
+        hard=True,
+    )
+    assert edits.node_action.argmax(-1).ne(0).sum(-1).tolist() == [2, 2]
+    assert edits.relation_action.argmax(-1).eq(1).sum((1, 2, 3)).tolist() == [
+        1,
+        1,
+    ]
+    assert edits.relation_action.argmax(-1).eq(2).sum((1, 2, 3)).tolist() == [
+        0,
+        0,
+    ]
+    assert edits.node_edit_count is not None
+    assert edits.node_edit_count.argmax(-1).tolist() == [2, 2]
+
+    compiler.zero_grad(set_to_none=True)
+    soft = compiler._atomic_edits_from_slots(
+        _state(config),
+        torch.randn(
+            2,
+            config.num_slots,
+            compiler.width,
+            requires_grad=True,
+        ),
+        hard=False,
+    )
+    node_weight = torch.arange(config.num_slots).view(1, -1)
+    relation_weight = torch.arange(
+        config.num_relations * config.num_slots * config.num_slots
+    ).reshape(1, config.num_relations, config.num_slots, config.num_slots)
+    loss = (soft.node_action[..., 1] * node_weight).sum()
+    loss = loss + (soft.relation_action[..., 1] * relation_weight).sum()
+    loss.backward()
+    for parameter in (
+        compiler.node_action_head.weight,
+        compiler.node_edit_count_head.weight,
+        compiler.relation_left.weight,
+        compiler.relation_link_count_head.weight,
+    ):
+        assert parameter.grad is not None
+        assert bool(parameter.grad.isfinite().all())
+
+
 def test_syntax_routed_atomic_compiler_ignores_transport_cover() -> None:
     config = _config()
     compiler = ParallelTerminalStateCompiler(
@@ -684,6 +757,18 @@ def test_canonical_atomic_edits_reconstruct_target_state() -> None:
         relation_action=F.one_hot(labels["relation_action"], 3).float(),
         root_action=F.one_hot(labels["root_action"], 2 + config.num_slots).float(),
         disposition_action=F.one_hot(labels["disposition_action"], 4).float(),
+        node_edit_count=F.one_hot(
+            labels["node_action"].ne(0).sum(-1),
+            config.num_slots + 1,
+        ).float(),
+        relation_link_count=F.one_hot(
+            labels["relation_action"].eq(1).sum((1, 2, 3)),
+            config.max_edges + 1,
+        ).float(),
+        relation_unlink_count=F.one_hot(
+            labels["relation_action"].eq(2).sum((1, 2, 3)),
+            config.max_edges + 1,
+        ).float(),
     )
     terminal = compiler.apply_atomic_edits(initial, edits, steps=3, hard=True)
     for name in (
@@ -712,6 +797,18 @@ def test_atomic_action_loss_is_exact_for_canonical_edits() -> None:
         relation_action=F.one_hot(labels["relation_action"], 3).float(),
         root_action=F.one_hot(labels["root_action"], 2 + config.num_slots).float(),
         disposition_action=F.one_hot(labels["disposition_action"], 4).float(),
+        node_edit_count=F.one_hot(
+            labels["node_action"].ne(0).sum(-1),
+            config.num_slots + 1,
+        ).float(),
+        relation_link_count=F.one_hot(
+            labels["relation_action"].eq(1).sum((1, 2, 3)),
+            config.max_edges + 1,
+        ).float(),
+        relation_unlink_count=F.one_hot(
+            labels["relation_action"].eq(2).sum((1, 2, 3)),
+            config.max_edges + 1,
+        ).float(),
     )
     loss, parts, _counts = atomic_typed_edit_loss(
         edits,
@@ -721,6 +818,7 @@ def test_atomic_action_loss_is_exact_for_canonical_edits() -> None:
     )
     assert loss.item() == 0.0
     assert "node_action" in parts
+    assert "node_edit_count" in parts
     assert "value_code" in parts
 
 

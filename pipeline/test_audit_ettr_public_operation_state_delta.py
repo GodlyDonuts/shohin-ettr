@@ -54,6 +54,11 @@ def test_state_delta_factors_separate_shape_addresses_and_payloads() -> None:
             "node_field_changes": [[False, False, True, False]],
             "status_changes": [False, False],
         },
+        "delta_node_edit_count": 1,
+        "delta_edge_add_count": 1,
+        "delta_edge_remove_count": 0,
+        "delta_node_field_histogram": [[False, False, True, False]],
+        "delta_status_change": [False, False],
         "delta_addresses": {
             "edges_added": [(2, 32, 32)],
             "edges_removed": [],

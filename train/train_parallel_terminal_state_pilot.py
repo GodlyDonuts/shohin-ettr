@@ -37,6 +37,7 @@ from operation_state_supervision import (
     oracle_operation_boundary_states,
 )
 from operation_state_transition_compiler import (
+    FactorizedOperationStateTransitionCompiler,
     OperationStateTransitionCompiler,
 )
 from probe_ettr_oracle_interfaces import (
@@ -92,6 +93,12 @@ OPERATION_STATE_ATOMIC_CONTRACT_SCHEMA = (
 )
 OPERATION_STATE_ATOMIC_REPORT_SCHEMA = (
     "shohin-ettr-parallel-terminal-state-report-v10"
+)
+FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-contract-v11"
+)
+FACTORIZED_OPERATION_STATE_REPORT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-report-v11"
 )
 CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v3"
 REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v3"
@@ -167,6 +174,10 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--token-native-operation-state-command",
         action="store_true",
     )
+    parser.add_argument(
+        "--factorized-operation-effect-command",
+        action="store_true",
+    )
     parser.add_argument("--atomic-action-weight", type=float, default=1.0)
     parser.add_argument(
         "--required-device-class",
@@ -180,6 +191,11 @@ def _validate_args(args: argparse.Namespace) -> None:
     operation_state = getattr(
         args,
         "token_native_operation_state_command",
+        False,
+    )
+    factorized_operation_effect = getattr(
+        args,
+        "factorized_operation_effect_command",
         False,
     )
     paths = (
@@ -256,6 +272,7 @@ def _validate_args(args: argparse.Namespace) -> None:
             operation_state
             and args.training_initial_state != "oracle"
         )
+        or (factorized_operation_effect and not operation_state)
         or args.output.exists()
         or args.output.is_symlink()
         or not args.output.parent.is_dir()
@@ -632,6 +649,42 @@ def atomic_typed_edit_loss(
             slot_mask & (node_action.eq(1) | node_action.eq(4)),
         ),
     }
+    count_specifications = {
+        "node_edit_count": (
+            edits.node_edit_count,
+            node_action.ne(0).sum(-1),
+        ),
+        "relation_link_count": (
+            edits.relation_link_count,
+            target["relation_action"].eq(1).sum(dim=(1, 2, 3)),
+        ),
+        "relation_unlink_count": (
+            edits.relation_unlink_count,
+            target["relation_action"].eq(2).sum(dim=(1, 2, 3)),
+        ),
+    }
+    present_counts = [
+        probabilities is not None
+        for probabilities, _labels in count_specifications.values()
+    ]
+    if any(present_counts) and not all(present_counts):
+        raise ParallelTerminalStatePilotError(
+            "factorized operation effect count heads differ"
+        )
+    for name, (probabilities, labels) in count_specifications.items():
+        if probabilities is None:
+            continue
+        if int(labels.max().detach().cpu()) >= probabilities.shape[-1]:
+            raise ParallelTerminalStatePilotError(
+                f"factorized operation effect count exceeds support: {name}"
+            )
+        value, class_counts = _class_balanced_nll(
+            probabilities,
+            labels,
+            batch_mask,
+        )
+        parts[name] = value
+        counts[name] = class_counts
     for name, (probabilities, labels, mask) in specifications.items():
         if not bool(mask.any()):
             counts[name] = {
@@ -782,7 +835,18 @@ def _run_schemas(
     token_native_declaration_binding_command: bool = False,
     token_native_operation_recurrence_command: bool = False,
     token_native_operation_state_command: bool = False,
+    factorized_operation_effect_command: bool = False,
 ) -> tuple[str, str, str]:
+    if factorized_operation_effect_command:
+        if not token_native_operation_state_command:
+            raise ParallelTerminalStatePilotError(
+                "factorized operation effect architecture schema differs"
+            )
+        return (
+            FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
+            FACTORIZED_OPERATION_STATE_REPORT_SCHEMA,
+            "shohin-ettr-parallel-terminal-state-metric-v11",
+        )
     if token_native_operation_state_command:
         if (
             residual_edits
@@ -998,6 +1062,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.token_native_declaration_binding_command,
         args.token_native_operation_recurrence_command,
         args.token_native_operation_state_command,
+        args.factorized_operation_effect_command,
     )
     if not torch.cuda.is_available():
         raise ParallelTerminalStatePilotError(
@@ -1039,7 +1104,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     torch.manual_seed(args.architecture_seed)
     torch.cuda.manual_seed_all(args.architecture_seed)
     compiler_class = (
-        OperationStateTransitionCompiler
+        FactorizedOperationStateTransitionCompiler
+        if args.factorized_operation_effect_command
+        else OperationStateTransitionCompiler
         if args.token_native_operation_state_command
         else ParallelTerminalStateCompiler
     )
@@ -1164,6 +1231,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "token_native_operation_state_command": (
                     args.token_native_operation_state_command
                 ),
+                "factorized_operation_effect_command": (
+                    args.factorized_operation_effect_command
+                ),
                 "token_native_codebook_sha256": (
                     stream.codec.codebook_sha256
                     if args.token_native_command_mask
@@ -1214,6 +1284,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "target": "query-independent-terminal-packet",
                 "operation_boundary_state_credit": (
                     args.token_native_operation_state_command
+                ),
+                "global_sparse_effect_cardinality": (
+                    args.factorized_operation_effect_command
                 ),
             },
             "protected_checkpoint_sha256": provenance.checkpoint_sha256,

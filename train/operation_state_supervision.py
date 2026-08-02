@@ -54,6 +54,9 @@ def index_atomic_edits(
 ) -> AtomicTypedEdits:
     if index.ndim != 1 or index.dtype != torch.long:
         raise OperationStateSupervisionError("edit index differs")
+    def optional(value: torch.Tensor | None) -> torch.Tensor | None:
+        return None if value is None else value.index_select(0, index)
+
     return AtomicTypedEdits(
         node_action=edits.node_action.index_select(0, index),
         value_code=edits.value_code.index_select(0, index),
@@ -61,6 +64,9 @@ def index_atomic_edits(
         relation_action=edits.relation_action.index_select(0, index),
         root_action=edits.root_action.index_select(0, index),
         disposition_action=edits.disposition_action.index_select(0, index),
+        node_edit_count=optional(edits.node_edit_count),
+        relation_link_count=optional(edits.relation_link_count),
+        relation_unlink_count=optional(edits.relation_unlink_count),
     )
 
 

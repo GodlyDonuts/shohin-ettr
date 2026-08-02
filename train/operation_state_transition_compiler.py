@@ -17,6 +17,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import torch
+from torch import nn
 
 from endogenous_typed_theory_reactor import (
     TheoryReactorError,
@@ -313,7 +314,229 @@ class OperationStateTransitionCompiler(ParallelTerminalStateCompiler):
         return terminal
 
 
+def _hard_categories(probabilities: torch.Tensor) -> torch.Tensor:
+    indices = probabilities.argmax(dim=-1, keepdim=True)
+    return torch.zeros_like(probabilities).scatter_(-1, indices, 1.0)
+
+
+def _count_constrained_selection(
+    scores: torch.Tensor,
+    valid: torch.Tensor,
+    count_probabilities: torch.Tensor,
+    *,
+    capacity: torch.Tensor,
+    hard: bool,
+) -> torch.Tensor:
+    """Select the highest-scoring valid coordinates under a learned count."""
+
+    if (
+        scores.shape != valid.shape
+        or scores.ndim < 2
+        or valid.dtype != torch.bool
+        or count_probabilities.ndim != 2
+        or count_probabilities.shape[0] != scores.shape[0]
+        or capacity.shape != (scores.shape[0],)
+        or capacity.dtype != torch.long
+    ):
+        raise TheoryReactorError("operation effect selection differs")
+    batch = scores.shape[0]
+    flat_scores = scores.reshape(batch, -1)
+    flat_valid = valid.reshape(batch, -1)
+    order = flat_scores.masked_fill(~flat_valid, -torch.inf).argsort(
+        dim=-1,
+        descending=True,
+    )
+    ordered_valid = flat_valid.gather(1, order)
+    ranks = torch.arange(flat_scores.shape[1], device=scores.device)[None, :]
+    permitted = ranks.lt(capacity[:, None]) & ordered_valid
+    if hard:
+        count = count_probabilities.argmax(-1).minimum(capacity)
+        ordered_selection = ranks.lt(count[:, None]) & permitted
+        selection = torch.zeros_like(flat_scores)
+        selection.scatter_(1, order, ordered_selection.to(flat_scores.dtype))
+        return selection.reshape_as(scores)
+
+    # P(count > rank) is a differentiable exact-cardinality relaxation.  The
+    # ordering is discrete, while gradients still reach both count logits and
+    # the selected address/payload heads through their supervised objectives.
+    survival = 1.0 - count_probabilities.cumsum(-1)[:, :-1]
+    if survival.shape[1] < flat_scores.shape[1]:
+        survival = torch.cat(
+            (
+                survival,
+                torch.zeros(
+                    batch,
+                    flat_scores.shape[1] - survival.shape[1],
+                    dtype=survival.dtype,
+                    device=survival.device,
+                ),
+            ),
+            dim=1,
+        )
+    ordered_selection = survival[:, : flat_scores.shape[1]]
+    ordered_selection = ordered_selection * permitted.to(ordered_selection.dtype)
+    ranked_selection = torch.zeros_like(flat_scores)
+    ranked_selection.scatter_(
+        1,
+        order,
+        ordered_selection.to(ranked_selection.dtype),
+    )
+    masked_scores = flat_scores.masked_fill(~flat_valid, -1e9)
+    address_weights = masked_scores.softmax(-1) * flat_valid.to(flat_scores.dtype)
+    address_weights = address_weights / address_weights.sum(
+        -1,
+        keepdim=True,
+    ).clamp_min(1e-7)
+    soft_selection = (
+        address_weights * ranked_selection.sum(-1, keepdim=True).detach()
+    ).clamp(max=1.0)
+    # Preserve sparse count-constrained values in the forward pass while
+    # giving address scores a straight-through gradient.
+    selection = ranked_selection + soft_selection - soft_selection.detach()
+    return selection.reshape_as(scores)
+
+
+class FactorizedOperationStateTransitionCompiler(
+    OperationStateTransitionCompiler
+):
+    """Compile sparse operation effects before binding state operands.
+
+    Dense atomic heads decide KEEP independently at every coordinate.  This
+    variant first predicts three global effect cardinalities, then binds only
+    that many node edits, relation links, and relation unlinks to the current
+    state.  The same fixed typed algebra applies the resulting edit.
+    """
+
+    def __init__(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
+        super().__init__(*args, **kwargs)
+        self.node_edit_count_head = nn.Linear(
+            self.width,
+            self.config.num_slots + 1,
+        )
+        self.relation_link_count_head = nn.Linear(
+            self.width,
+            self.config.max_edges + 1,
+        )
+        self.relation_unlink_count_head = nn.Linear(
+            self.width,
+            self.config.max_edges + 1,
+        )
+        for head in (
+            self.node_edit_count_head,
+            self.relation_link_count_head,
+            self.relation_unlink_count_head,
+        ):
+            nn.init.zeros_(head.weight)
+            nn.init.constant_(head.bias, -8.0)
+            with torch.no_grad():
+                head.bias[0] = 4.0
+
+    def _atomic_edits_from_slots(
+        self,
+        state: TypedTheoryState,
+        slots: torch.Tensor,
+        *,
+        hard: bool,
+    ) -> AtomicTypedEdits:
+        base = super()._atomic_edits_from_slots(state, slots, hard=False)
+        pooled = slots.mean(1)
+        node_count = self.node_edit_count_head(pooled).float().softmax(-1)
+        link_count = self.relation_link_count_head(pooled).float().softmax(-1)
+        unlink_count = (
+            self.relation_unlink_count_head(pooled).float().softmax(-1)
+        )
+
+        active = state.active.gt(0.5)
+        node_allowed = torch.stack(
+            (
+                ~active,
+                active,
+                active,
+                active,
+            ),
+            dim=-1,
+        )
+        conditional_node = base.node_action[..., 1:] * node_allowed
+        conditional_node = conditional_node / conditional_node.sum(
+            -1,
+            keepdim=True,
+        ).clamp_min(1e-7)
+        node_score = conditional_node.max(-1).values.clamp_min(1e-7).log()
+        node_score = node_score - base.node_action[..., 0].clamp_min(1e-7).log()
+        node_selection = _count_constrained_selection(
+            node_score,
+            node_allowed.any(-1),
+            node_count,
+            capacity=node_allowed.any(-1).sum(-1),
+            hard=hard,
+        )
+        if hard:
+            conditional_node = _hard_categories(conditional_node)
+        node_action = torch.cat(
+            (
+                1.0 - node_selection.unsqueeze(-1),
+                node_selection.unsqueeze(-1) * conditional_node,
+            ),
+            dim=-1,
+        )
+
+        relations = state.relations.gt(0.5)
+        pair_active = active[:, None, :, None] & active[:, None, None, :]
+        link_valid = ~relations & pair_active
+        unlink_valid = relations & pair_active
+        existing = relations.sum(dim=(1, 2, 3)).to(torch.long)
+        link_capacity = (self.config.max_edges - existing).clamp_min(0)
+        unlink_capacity = existing
+        link_selection = _count_constrained_selection(
+            base.relation_action[..., 1],
+            link_valid,
+            link_count,
+            capacity=link_capacity,
+            hard=hard,
+        )
+        unlink_selection = _count_constrained_selection(
+            base.relation_action[..., 2],
+            unlink_valid,
+            unlink_count,
+            capacity=unlink_capacity,
+            hard=hard,
+        )
+        relation_action = torch.stack(
+            (
+                (1.0 - link_selection - unlink_selection).clamp_min(0.0),
+                link_selection,
+                unlink_selection,
+            ),
+            dim=-1,
+        )
+
+        value_code = base.value_code
+        type_index = base.type_index
+        root_action = base.root_action
+        disposition_action = base.disposition_action
+        if hard:
+            value_code = _hard_categories(value_code)
+            type_index = _hard_categories(type_index)
+            root_action = _hard_categories(root_action)
+            disposition_action = _hard_categories(disposition_action)
+            node_count = _hard_categories(node_count)
+            link_count = _hard_categories(link_count)
+            unlink_count = _hard_categories(unlink_count)
+        return AtomicTypedEdits(
+            node_action=node_action,
+            value_code=value_code,
+            type_index=type_index,
+            relation_action=relation_action,
+            root_action=root_action,
+            disposition_action=disposition_action,
+            node_edit_count=node_count,
+            relation_link_count=link_count,
+            relation_unlink_count=unlink_count,
+        )
+
+
 __all__ = [
+    "FactorizedOperationStateTransitionCompiler",
     "OperationStateTransitionCompiler",
     "OperationStateTransitionTrace",
 ]
