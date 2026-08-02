@@ -43,3 +43,24 @@ def test_resolved_operations_accept_outer_transport_wrapper() -> None:
     )
 
     assert len(resolved_operations(_call(15, ("integer", 0), semantic))) == 2
+
+
+def test_resolved_operations_accept_direct_local_command() -> None:
+    semantic = _call(
+        13,
+        _call(4, ("integer", 2), ("integer", 7), ("integer", 0)),
+        _call(4, ("integer", 1), ("integer", 3), ("integer", 1)),
+    )
+
+    assert resolved_operations(_call(15, ("integer", 0), semantic)) == (
+        [
+            "call",
+            4,
+            [["integer", 2], ["integer", 7], ["integer", 0]],
+        ],
+        [
+            "call",
+            4,
+            [["integer", 1], ["integer", 3], ["integer", 1]],
+        ],
+    )

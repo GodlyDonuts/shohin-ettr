@@ -68,6 +68,15 @@ def _command_parts(root: PublicNode) -> tuple[dict[int, PublicNode], tuple[Publi
         if len(children) != 2:
             raise PublicOperationIdentifiabilityError("COMMAND wrapper differs")
         root = children[1]
+    if _call(root, 13):
+        operations = tuple(root[2])
+        if not 1 <= len(operations) <= 6 or any(
+            not _call(item, 4) for item in operations
+        ):
+            raise PublicOperationIdentifiabilityError(
+                "direct COMMAND operation list differs"
+            )
+        return {}, operations
     if not _call(root, 14):
         raise PublicOperationIdentifiabilityError("COMMAND semantic root differs")
     children = tuple(root[2])
