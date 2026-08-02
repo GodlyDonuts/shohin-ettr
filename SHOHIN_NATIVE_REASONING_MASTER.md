@@ -3,7 +3,7 @@
 ## Current Status — Read First
 
 **Current frontier, superseding older status text below (2026-08-01
-17:05 EDT):** Shohin still has no replicated two-population demonstration of
+21:45 EDT):** Shohin still has no replicated two-population demonstration of
 architecture-native general reasoning. The campaign has nevertheless moved
 from an undifferentiated failure to a measured interface decomposition. A
 fixed typed algebra is exact on the real held-out corpus, and a learned query
@@ -14,24 +14,26 @@ soft-state, semantic-basis, and bounded Brier objectives then localized the
 remaining failure to coherent autonomous state construction rather than query
 interpretation or answer execution.
 
-The newest architecture removes recurrent teacher-forcing exposure. A
-6,462,753-parameter `ParallelAddressedTransactionCompiler` reads the initial
-typed packet and COMMAND once, emits a complete sticky categorical transaction
-schedule in parallel, and replays it through the exact state algebra. The
-complete replacement system is 192,158,864 parameters. After only 500 updates,
-held-out exact hard schedules improve from `0%` to `10.76%`, opcode accuracy to
-`65.53%`, and fully autonomous factual top-1 from `0%` to `67.19%`, with finite
-gradients and no runtime failure. Strict source-deleted WORLD and COMMAND pairs
-remain zero, so this is a real compiler/interface gain rather than native
-reasoning. Four sealed 5,000-update / 80,000-row jobs (`725247--725250`) now
-cross two architecture/data populations with learning rates `3e-4/1e-4`.
+The schedule lane is now closed as the primary repair. Full-coverage seed 31
+crosses both gates on two orderings but fails the difficult third ordering;
+seed 32 remains WORLD-zero. A four-basin probability-mean ensemble returns
+WORLD/COMMAND zero on all three orderings, and matched training on the deployed
+hard WORLD packet improves exact schedule imitation while returning both
+causal gates to zero. These results reject independent canonical schedule
+fields as the semantic objective.
 
-In parallel, the matched 80,000-row state-objective campaign remains live.
-Class-balanced Brier supervision removes the million-scale gradient pathology
-seen in log-basis arms, but its 20-update H100 and FP32 V100 canaries do not
-cross hard causal gates. These runs are controls, not promoted mechanisms. The
-protected step-300k checkpoint remains immutable and no raw-pretraining writer
-is active.
+The new preregistered architecture compiles the query-independent terminal
+state quotient directly. `ParallelTerminalStateCompiler` consumes only the
+initial typed packet and COMMAND residuals, predicts one complete typed
+terminal state, and removes the 64-step learned policy from deployment. It
+adds 18,520,349 parameters and leaves the complete replacement system below
+200M. Hard inference enforces active-slot categorical values/types, one-or-none
+root, sparse relations only between active slots, and terminal status. The
+sealed trainer uses bounded class-balanced semantic loss; the unchanged hard
+source-deleted WORLD/COMMAND gate remains decisive. Local qualification is
+29/29 passing with clean static and shell checks. No H100 result existed at
+the time of this update. The protected step-300k checkpoint remains immutable
+and no raw-pretraining writer is active.
 
 The older adversarial conclusions remain binding: the apparent 11/11
 episodic-generator result was not a Shohin claim because exact host code parsed,
@@ -53454,3 +53456,37 @@ decides the result.
 
 Current decision:
 `preserve_whole_program_coherence_or_learn_the_terminal_state_quotient_instead_of_optimizing_independent_canonical_schedule_fields`.
+
+## 2026-08-01 Direct Terminal-State Quotient Compiler
+
+The deployed-state curriculum closes the last simple schedule mismatch. It
+fits more canonical schedule labels but destroys the small causal margins,
+showing that the model is learning a serialization rather than the semantic
+effect of COMMAND. The next architecture removes serialization entirely.
+
+The direct terminal-state compiler jointly updates 64 terminal slot queries
+from the initial typed state and frozen COMMAND residuals. It predicts active,
+root, value, type, relation, committed, and halted fields in one pass. Root is
+a constrained slot-or-none categorical; relations are factorized by typed
+relation and masked to active endpoints; hard deployment caps the sparse edge
+ledger. No transaction sequence is emitted or claimed. The model-compatible
+reactor returns an explicitly policyless trace and the exact terminal packet
+to the existing algebraic query reader.
+
+The production module has 18,520,349 trainable parameters. Removing the old
+29,757,217-parameter recurrent reactor gives substantial room below the 200M
+system ceiling. The trainer freezes Shohin and the exact query stack, trains
+only terminal semantics with class-balanced bounded Brier objectives, and
+measures both oracle-initial and deployed-autonomous interfaces. An independent
+receipt-verifying evaluator supports fresh held-out orderings. Twenty-nine
+focused and related tests pass; Ruff, byte compilation, Bash syntax, and diff
+checks are clean.
+
+The first preregistered canary uses deployed autonomous initial state, seed 31,
+data ordering 11, position zero, 500 updates, and learning rate `3e-4`. Lower
+loss or better packet fields cannot promote it. It must improve both fully
+autonomous strict WORLD and COMMAND, then reproduce across three orderings and
+a second architecture seed.
+
+Current decision:
+`replace_arbitrary_transaction_serialization_with_one_query_independent_terminal_state_prediction_then_require_replicated_world_and_command_causality`.

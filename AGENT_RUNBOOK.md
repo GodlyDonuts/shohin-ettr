@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-01 20:49 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-01 21:47 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -111,8 +111,18 @@
 > WORLD packet improves exact schedule imitation but returns strict WORLD and
 > COMMAND to zero, rejecting that mismatch as the primary repair. The next
 > architecture gate must preserve coherent whole-program identity or compile
-> the query-independent terminal-state quotient directly. No current artifact
-> is promoted as stable native reasoning.
+> the query-independent terminal-state quotient directly. That quotient
+> successor is now implemented and locally qualified. It replaces the learned
+> 64-step policy with an 18,520,349-parameter one-pass typed-state transport,
+> leaving the complete system below 200M. Its sealed trainer and independent
+> cross-population evaluator admit no QUERY, answer, target, oracle program,
+> candidate selection, or host solver at inference. Hard output enforces
+> active-slot value/type, one-or-none root, active-endpoint sparse relations,
+> and terminal status. Twenty-nine focused and related tests pass with clean
+> static, bytecode, shell, and diff checks. The first 500-update
+> autonomous-initial H100 canary is preregistered but not yet launched; no
+> capability result is claimed from local mechanics. No current artifact is
+> promoted as stable native reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -22948,3 +22958,48 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `stop_splicing_or_overfitting_canonical_schedule_fields_preserve_one_complete_program_hypothesis_or_compile_the_query_independent_terminal_state_quotient_then_gate_across_three_populations`.
+
+- **2026-08-01 20:49--21:47 EDT** -- **Direct terminal-state quotient
+  transport is implemented, sealed locally, and preregistered for an H100
+  canary.**
+
+  The failed schedule ensemble and deployed-state curriculum jointly reject
+  canonical transaction serialization as the semantic training target. The
+  successor `ParallelTerminalStateCompiler` consumes only a typed initial
+  packet and frozen COMMAND residuals, jointly predicts the complete
+  query-independent terminal typed state, and removes the learned 64-step
+  policy from the deployment path. It predicts active slots, categorical
+  values and types, one-or-none root, factorized typed relations, committed,
+  and halted. Hard inference masks value/type/root/relations by active slots,
+  limits relations to active endpoints and the exact edge cap, and validates
+  the complete deployed packet. It receives no QUERY bytes, answer, target,
+  oracle program, best-of-K score, verifier, or host solver.
+
+  Production geometry is width 512, four joint slot layers, eight attention
+  heads, and relation rank 64. The module has exactly 18,520,349 parameters;
+  replacing the old 29,757,217-parameter recurrent reactor leaves the complete
+  system below 200M. The model-compatible wrapper emits an explicitly
+  policyless trace rather than inventing a transaction explanation.
+
+  The sealed trainer freezes Shohin and the exact algebraic query stack and
+  optimizes only terminal packet semantics. Binary fields use class-balanced
+  Brier loss; value/type use categorical Brier on target-active slots. It logs
+  oracle-initial and autonomous-initial interface accuracy separately and runs
+  the unchanged four-arm source-deleted evaluator before and after fit. The
+  independent evaluator validates the complete run receipt, exact initial and
+  final tensors, architecture geometry, lineage, and parameter count before a
+  fresh data ordering can run. Slurm scripts bind the immutable source commit,
+  source manifest, release, protected checkpoint, composed model, query reader,
+  and fresh output.
+
+  Twenty-nine focused and related tests pass in 3.00 seconds. Ruff, byte
+  compilation, Bash syntax, and diff checks are clean. Preregistration
+  `R12_PARALLEL_TERMINAL_STATE_QUOTIENT_PREREG.md` freezes the first gate:
+  architecture seed 31, data ordering 11, deployed autonomous initial packet,
+  position zero, 500 updates, LR `3e-4`, clip `1.0`, and 32 evaluation batches.
+  Loss and packet fields are diagnostics; extension requires both fully
+  autonomous strict WORLD and COMMAND movement, followed by three-ordering and
+  second-seed replication.
+
+  Decision:
+  `seal_the_direct_terminal_state_runtime_launch_one_bounded_autonomous_initial_canary_and_scale_only_on_joint_world_plus_command_causality`.
