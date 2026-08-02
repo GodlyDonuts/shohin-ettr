@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 04:54 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 05:07 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -23713,3 +23713,30 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `if_exact_mask_crosses_both_axes_replicate_it_else_route_high_identifiability_to_global_path_training_and_low_identifiability_to_a_new_syntax_local_edit_ontology`.
+
+- **2026-08-02 05:07 EDT** -- **The historical syntax router corrupts a
+  material, exactly localized corpus slice.**
+
+  Corrected Stokes document-mask audit `760905` completed all 1,440,000 public
+  WORLD/COMMAND transports. Report SHA-256 is
+  `7d4f0bc6ab3a720d8c72a91a406af5344ea1358c5973415733336e069dee278b`;
+  payload SHA-256 is
+  `eab966c483a45859306cd3bfc04f3b0e7fa55363c0d72f3ec96a4eb319e83016`.
+  The historical first-completion mask truncates `53,336/1,280,000 =
+  4.166875%` of train transports and `6,668/160,000 = 4.1675%` of development
+  transports. Every mismatch is exactly two tokens, occurs in renderer 3
+  WORLD, and is a truncation; no source includes cover. This is neither rare
+  noise nor a global format failure. It deletes the outer causal WORLD root
+  from one renderer/family slice while leaving the other 95.83% unchanged.
+
+  The immutable report is preserved at
+  `artifacts/r12/ettr_document_mask_integrity_e5dcb41_r1/report.json`. Clean
+  exact-mask H100 job `725603` is therefore authorized to become eligible at
+  05:19 EDT. The old-mask 5k/15k negatives remain valid for the historically
+  deployed architecture but cannot reject the corrected syntax interface.
+  Public-opcode identifiability job `760904` continues independently and will
+  choose the immediate successor if the exact-mask treatment remains below the
+  strict paired gate.
+
+  Decision:
+  `run_one_clean_exact_mask_gate_because_4.17_percent_of_public_transports_were_causally_truncated_then_route_without_seed_spam`.
