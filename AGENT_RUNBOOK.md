@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 15:54 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 16:00 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -25130,6 +25130,21 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Preregistration:
   `docs/research/R12_STATE_BOUND_OPERATION_FAMILY_PREREG.md`.
+
+  Immutable Newton runtime
+  `scratchpad/shohin_ettr_state_bound_family_runtime_898591c_r1` is bound to
+  source `898591cf5861cbff2aef2a293a89347c7fea8bcd`. It contains 3,658 files,
+  zero links, zero writable entries, passes full checksum replay, and has
+  SHA256SUMS SHA-256
+  `73b82ec26467de405ccd7d32ff4031cb0fbacd394c2708ebba355d86cec3d484`.
+  macOS archive metadata created fourteen untracked AppleDouble files during
+  staging; admission failed closed, those files were moved to staging
+  quarantine, and the final runtime was reverified against the locally
+  generated 3,657-entry manifest. No job used the invalid intermediate state.
+
+  At 15:59 EDT v15 `728844` remains pending priority with estimated start
+  18:13 EDT; `728845` remains dependency-held. No v19/v20 scientific or smoke
+  job is submitted.
 
   Decision:
   `prebuild_the_mechanism_distinct_failure_successor_but_spend_gpu_only_when_the_serial_evidence_route_selects_it`.

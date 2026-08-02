@@ -956,5 +956,12 @@ and releases joint payload acquisition; below 90% rejects standalone family
 control and routes to direct latent typed-effect competition. Full details are
 frozen in `R12_STATE_BOUND_OPERATION_FAMILY_PREREG.md`.
 
+Immutable runtime
+`scratchpad/shohin_ettr_state_bound_family_runtime_898591c_r1` is bound to
+source `898591cf5861cbff2aef2a293a89347c7fea8bcd`, contains 3,658 files,
+passes full replay with zero links or writable entries, and has SHA256SUMS
+SHA-256 `73b82ec26467de405ccd7d32ff4031cb0fbacd394c2708ebba355d86cec3d484`.
+No v20 job has been submitted.
+
 Current decision:
 `hold_v20_dormant_until_v19_failure_then_run_one_matched_family_island_gate`.

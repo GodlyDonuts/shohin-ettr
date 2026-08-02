@@ -1,6 +1,6 @@
 # R12 State-Bound Operation-Family Arbiter Preregistration
 
-**Status:** implemented and CPU-tested; dormant behind the v15/v19 route  
+**Status:** implemented, CPU-tested, and source-sealed; dormant behind the v15/v19 route
 **Contract:** `shohin-ettr-parallel-terminal-state-contract-v20`  
 **Promotion gate:** at least 90% independent held-out operation-family exactness  
 **Reasoning gate:** unchanged source-deleted WORLD and COMMAND strict pairs
@@ -103,3 +103,10 @@ gates on independent source-deleted populations can count as native reasoning.
 No v20 GPU job is authorized until the preceding v15 and v19 branches select
 it. This preserves single-writer scientific attribution while eliminating an
 implementation delay if the predicted pooled-controller failure occurs.
+
+The immutable Newton runtime is
+`scratchpad/shohin_ettr_state_bound_family_runtime_898591c_r1`, bound to source
+`898591cf5861cbff2aef2a293a89347c7fea8bcd`. Its 3,658 files pass complete
+checksum replay with zero links and zero writable entries. The SHA256SUMS
+SHA-256 is
+`73b82ec26467de405ccd7d32ff4031cb0fbacd394c2708ebba355d86cec3d484`.

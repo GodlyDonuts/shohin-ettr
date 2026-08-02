@@ -53931,3 +53931,10 @@ lets the project respond immediately to the predicted failure without
 destroying attribution by running similar scientific arms concurrently.
 Preregistration is
 `docs/research/R12_STATE_BOUND_OPERATION_FAMILY_PREREG.md`.
+
+The dormant implementation is immutable on Newton as
+`scratchpad/shohin_ettr_state_bound_family_runtime_898591c_r1`, exact source
+`898591cf5861cbff2aef2a293a89347c7fea8bcd`, 3,658 files, zero links, zero
+writable entries, full checksum replay, and SHA256SUMS SHA-256
+`73b82ec26467de405ccd7d32ff4031cb0fbacd394c2708ebba355d86cec3d484`.
+No v20 GPU job has been submitted.
