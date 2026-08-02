@@ -26,6 +26,9 @@ from parallel_terminal_state_compiler import (
     ParallelTerminalStateCompiler,
     ParallelTerminalStateReactor,
 )
+from operation_state_transition_compiler import (
+    OperationStateTransitionCompiler,
+)
 from train_ettr_component_island import (
     _canonical_bytes,
     _sha256_file,
@@ -47,6 +50,8 @@ from train_parallel_terminal_state_pilot import (
     OCCURRENCE_LINKED_ATOMIC_REPORT_SCHEMA as PILOT_OCCURRENCE_REPORT_SCHEMA,
     OPERATION_RECURRENT_ATOMIC_CONTRACT_SCHEMA as PILOT_OPERATION_CONTRACT_SCHEMA,
     OPERATION_RECURRENT_ATOMIC_REPORT_SCHEMA as PILOT_OPERATION_REPORT_SCHEMA,
+    OPERATION_STATE_ATOMIC_CONTRACT_SCHEMA as PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
+    OPERATION_STATE_ATOMIC_REPORT_SCHEMA as PILOT_OPERATION_STATE_REPORT_SCHEMA,
     REPORT_SCHEMA as PILOT_REPORT_SCHEMA,
     SYNTAX_ROUTED_ATOMIC_CONTRACT_SCHEMA as PILOT_SYNTAX_CONTRACT_SCHEMA,
     SYNTAX_ROUTED_ATOMIC_REPORT_SCHEMA as PILOT_SYNTAX_REPORT_SCHEMA,
@@ -228,6 +233,7 @@ def _load_terminal_compiler(
         PILOT_OCCURRENCE_CONTRACT_SCHEMA: PILOT_OCCURRENCE_REPORT_SCHEMA,
         PILOT_DECLARATION_CONTRACT_SCHEMA: PILOT_DECLARATION_REPORT_SCHEMA,
         PILOT_OPERATION_CONTRACT_SCHEMA: PILOT_OPERATION_REPORT_SCHEMA,
+        PILOT_OPERATION_STATE_CONTRACT_SCHEMA: PILOT_OPERATION_STATE_REPORT_SCHEMA,
     }
     run_schema = contract.get("schema")
     if (
@@ -263,6 +269,7 @@ def _load_terminal_compiler(
         PILOT_OCCURRENCE_CONTRACT_SCHEMA,
         PILOT_DECLARATION_CONTRACT_SCHEMA,
         PILOT_OPERATION_CONTRACT_SCHEMA,
+        PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
         PILOT_CONTRACT_SCHEMA,
         PILOT_CAUSAL_DELTA_CONTRACT_SCHEMA,
     ):
@@ -286,6 +293,7 @@ def _load_terminal_compiler(
         PILOT_OCCURRENCE_CONTRACT_SCHEMA,
         PILOT_DECLARATION_CONTRACT_SCHEMA,
         PILOT_OPERATION_CONTRACT_SCHEMA,
+        PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
     }
     lexical_command = contract.get("schema") in {
         PILOT_LEXICAL_CONTRACT_SCHEMA,
@@ -293,30 +301,48 @@ def _load_terminal_compiler(
         PILOT_OCCURRENCE_CONTRACT_SCHEMA,
         PILOT_DECLARATION_CONTRACT_SCHEMA,
         PILOT_OPERATION_CONTRACT_SCHEMA,
+        PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
     }
     token_native_command_mask = contract.get("schema") in {
         PILOT_SYNTAX_CONTRACT_SCHEMA,
         PILOT_OCCURRENCE_CONTRACT_SCHEMA,
         PILOT_DECLARATION_CONTRACT_SCHEMA,
         PILOT_OPERATION_CONTRACT_SCHEMA,
+        PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
     }
     token_native_occurrence_command = (
         contract.get("schema") == PILOT_OCCURRENCE_CONTRACT_SCHEMA
     )
     token_native_syntax_graph_command = (
         contract.get("schema")
-        in {PILOT_DECLARATION_CONTRACT_SCHEMA, PILOT_OPERATION_CONTRACT_SCHEMA}
+        in {
+            PILOT_DECLARATION_CONTRACT_SCHEMA,
+            PILOT_OPERATION_CONTRACT_SCHEMA,
+            PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
+        }
     )
     token_native_declaration_binding_command = (
         contract.get("schema")
-        in {PILOT_DECLARATION_CONTRACT_SCHEMA, PILOT_OPERATION_CONTRACT_SCHEMA}
+        in {
+            PILOT_DECLARATION_CONTRACT_SCHEMA,
+            PILOT_OPERATION_CONTRACT_SCHEMA,
+            PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
+        }
     )
     cover_verified_command_mask = (
         contract.get("schema")
-        in {PILOT_DECLARATION_CONTRACT_SCHEMA, PILOT_OPERATION_CONTRACT_SCHEMA}
+        in {
+            PILOT_DECLARATION_CONTRACT_SCHEMA,
+            PILOT_OPERATION_CONTRACT_SCHEMA,
+            PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
+        }
     )
     token_native_operation_recurrence_command = (
-        contract.get("schema") == PILOT_OPERATION_CONTRACT_SCHEMA
+        contract.get("schema")
+        in {PILOT_OPERATION_CONTRACT_SCHEMA, PILOT_OPERATION_STATE_CONTRACT_SCHEMA}
+    )
+    token_native_operation_state_command = (
+        contract.get("schema") == PILOT_OPERATION_STATE_CONTRACT_SCHEMA
     )
     if residual_edits != (architecture.get("sparse_residual_edits") is True):
         raise ParallelTerminalStateEvaluationError(
@@ -336,6 +362,9 @@ def _load_terminal_compiler(
         "token_native_occurrence_command": token_native_occurrence_command,
         "token_native_operation_recurrence_command": (
             token_native_operation_recurrence_command
+        ),
+        "token_native_operation_state_command": (
+            token_native_operation_state_command
         ),
         "token_native_syntax_graph_command": token_native_syntax_graph_command,
     }
@@ -362,7 +391,12 @@ def _load_terminal_compiler(
         ) from exc
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
-    compiler = ParallelTerminalStateCompiler(
+    compiler_class = (
+        OperationStateTransitionCompiler
+        if token_native_operation_state_command
+        else ParallelTerminalStateCompiler
+    )
+    compiler = compiler_class(
         model.config,
         width=width,
         layers=layers,

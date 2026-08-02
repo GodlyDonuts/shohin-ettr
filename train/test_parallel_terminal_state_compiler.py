@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+from dataclasses import replace
 
 import pytest
 import torch
@@ -16,6 +17,9 @@ from parallel_terminal_state_compiler import (
     AtomicTypedEdits,
     ParallelTerminalStateCompiler,
     ParallelTerminalStateReactor,
+)
+from operation_state_transition_compiler import (
+    OperationStateTransitionCompiler,
 )
 from train_parallel_terminal_state_pilot import (
     atomic_typed_edit_loss,
@@ -412,6 +416,67 @@ def test_public_operation_recurrence_backpropagates_across_renderers() -> None:
     )
     terminal.value_probabilities.square().mean().backward()
 
+    assert compiler.operation_recurrence is not None
+    gradient = compiler.operation_recurrence.ff[0].weight.grad
+    assert gradient is not None
+    assert bool(gradient.isfinite().all())
+
+
+def test_operation_state_compiler_applies_each_public_operation() -> None:
+    from ettr_il_v2_surface import SurfaceRenderer, call, integer, symbol
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+
+    config = replace(_config(), max_steps=16)
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    operator = symbol("x0000000000000001")
+    ast = call(
+        14,
+        integer(2),
+        call(1, call(3, operator, integer(0), call(0))),
+        call(13, call(4, operator), call(4, operator)),
+    )
+    transports = [
+        codec.pack(codec.serialize(ast, renderer), width=32)
+        for renderer in SurfaceRenderer
+    ]
+    tokens = torch.tensor(
+        [transport.token_ids for transport in transports],
+        dtype=torch.long,
+    )
+    compiler = OperationStateTransitionCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        relation_width=16,
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_codebook_atoms=codec.codebook.atoms,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+    hidden = torch.randn(4, 32, config.d_model)
+    terminal, trace = compiler.forward_with_operation_states(
+        _state(config, batch=4),
+        command_hidden=hidden,
+        command_lexical=torch.randn_like(hidden),
+        command_tokens=tokens,
+        command_attention_mask=torch.ones_like(tokens, dtype=torch.bool),
+        steps=8,
+        hard=False,
+    )
+    assert len(trace.operation_states) == 6
+    assert len(trace.operation_edits) == 6
+    assert trace.operation_mask.shape == (4, 6)
+    assert trace.operation_mask.sum(-1).eq(2).all()
+    assert terminal.step == 8
+    loss = terminal.value_probabilities.square().mean()
+    loss = loss + sum(
+        state.value_probabilities.square().mean()
+        for state in trace.operation_states
+    )
+    loss.backward()
     assert compiler.operation_recurrence is not None
     gradient = compiler.operation_recurrence.ff[0].weight.grad
     assert gradient is not None

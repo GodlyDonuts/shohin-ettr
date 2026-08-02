@@ -210,3 +210,14 @@ transition after every public operation and must receive operation-boundary
 credit. Stokes job `760906` selects the target ontology: identifiable local
 mutations admit cumulative intermediate-state supervision; aliased mutation
 labels require a state-delta quotient audit first.
+
+The high-identifiability branch is code-complete before the audit returns.
+It is not another opaque recurrent latent: after each public operation it
+decodes an atomic typed edit, applies that edit through the fixed algebra,
+and supplies the resulting state to the next tied transition. Training alone
+replays the frozen transaction labels to recover cumulative operation-
+boundary state targets and localize the first divergence. A final tied edit
+writes outcome/disposition. Inference remains source-deleted and reads no
+trace or target. This branch stays held until operation-target public
+identifiability is measured; a low-identifiability result routes to the
+state-delta audit instead of spending a GPU on an aliased label.

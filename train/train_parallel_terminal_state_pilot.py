@@ -31,6 +31,14 @@ from parallel_terminal_state_compiler import (
     ParallelTerminalStateCompiler,
     ParallelTerminalStateReactor,
 )
+from operation_state_supervision import (
+    index_atomic_edits,
+    index_typed_state,
+    oracle_operation_boundary_states,
+)
+from operation_state_transition_compiler import (
+    OperationStateTransitionCompiler,
+)
 from probe_ettr_oracle_interfaces import (
     _packet_batch_counts,
     packet_targets_to_state,
@@ -78,6 +86,12 @@ OPERATION_RECURRENT_ATOMIC_CONTRACT_SCHEMA = (
 )
 OPERATION_RECURRENT_ATOMIC_REPORT_SCHEMA = (
     "shohin-ettr-parallel-terminal-state-report-v9"
+)
+OPERATION_STATE_ATOMIC_CONTRACT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-contract-v10"
+)
+OPERATION_STATE_ATOMIC_REPORT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-report-v10"
 )
 CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v3"
 REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v3"
@@ -149,6 +163,10 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--token-native-operation-recurrence-command",
         action="store_true",
     )
+    parser.add_argument(
+        "--token-native-operation-state-command",
+        action="store_true",
+    )
     parser.add_argument("--atomic-action-weight", type=float, default=1.0)
     parser.add_argument(
         "--required-device-class",
@@ -159,6 +177,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def _validate_args(args: argparse.Namespace) -> None:
+    operation_state = getattr(
+        args,
+        "token_native_operation_state_command",
+        False,
+    )
     paths = (
         args.release_root,
         args.data_root,
@@ -224,6 +247,14 @@ def _validate_args(args: argparse.Namespace) -> None:
         or (
             args.token_native_operation_recurrence_command
             and not args.token_native_declaration_binding_command
+        )
+        or (
+            operation_state
+            and not args.token_native_operation_recurrence_command
+        )
+        or (
+            operation_state
+            and args.training_initial_state != "oracle"
         )
         or args.output.exists()
         or args.output.is_symlink()
@@ -617,6 +648,118 @@ def atomic_typed_edit_loss(
     return torch.stack(tuple(parts.values())).mean(), parts, counts
 
 
+def operation_boundary_objective(
+    compiler: OperationStateTransitionCompiler,
+    trace,
+    oracle,
+    initial,
+    terminal_target,
+    *,
+    slot_mask: torch.Tensor,
+    relation_mask: torch.Tensor,
+    verify_reconstruction: bool,
+) -> tuple[
+    torch.Tensor,
+    torch.Tensor,
+    dict[str, torch.Tensor],
+    dict[str, dict[str, int]],
+]:
+    """Credit every public operation at its exact cumulative state boundary."""
+
+    if (
+        len(trace.operation_states) != len(oracle.states)
+        or len(trace.operation_edits) != len(oracle.states)
+        or trace.operation_mask.shape != oracle.mask.shape
+        or not torch.equal(trace.operation_mask, oracle.mask)
+    ):
+        raise ParallelTerminalStatePilotError(
+            "operation-boundary supervision geometry differs"
+        )
+    state_losses = []
+    action_losses = []
+    parts: dict[str, torch.Tensor] = {}
+    counts: dict[str, dict[str, int]] = {}
+    previous = initial
+    for rank, (predicted, edits, target) in enumerate(
+        zip(
+            trace.operation_states,
+            trace.operation_edits,
+            oracle.states,
+            strict=True,
+        )
+    ):
+        index = torch.nonzero(oracle.mask[:, rank], as_tuple=False).flatten()
+        if index.numel() == 0:
+            raise ParallelTerminalStatePilotError(
+                "operation-boundary supervision is empty"
+            )
+        predicted_selected = index_typed_state(predicted, index)
+        target_selected = index_typed_state(target, index)
+        previous_selected = index_typed_state(previous, index)
+        selected_slots = slot_mask.index_select(0, index)
+        selected_relations = relation_mask.index_select(0, index)
+        state_loss, state_parts = _state_brier(
+            predicted_selected,
+            target_selected,
+            slot_mask=selected_slots,
+            relation_mask=selected_relations,
+        )
+        state_losses.append(state_loss)
+        for name, value in state_parts.items():
+            parts[f"operation_{rank}.state.{name}"] = value
+        labels = derive_atomic_edit_targets(previous_selected, target_selected)
+        if verify_reconstruction:
+            verify_atomic_edit_reconstruction(
+                compiler,
+                previous_selected,
+                target_selected,
+                labels,
+                steps=1,
+            )
+        action_loss, action_parts, action_counts = atomic_typed_edit_loss(
+            index_atomic_edits(edits, index),
+            labels,
+            slot_mask=selected_slots,
+            relation_mask=selected_relations,
+        )
+        action_losses.append(action_loss)
+        for name, value in action_parts.items():
+            parts[f"operation_{rank}.action.{name}"] = value
+        for name, value in action_counts.items():
+            counts[f"operation_{rank}.{name}"] = value
+        previous = target
+
+    final_labels = derive_atomic_edit_targets(
+        oracle.last_state,
+        terminal_target,
+    )
+    if verify_reconstruction:
+        verify_atomic_edit_reconstruction(
+            compiler,
+            oracle.last_state,
+            terminal_target,
+            final_labels,
+            steps=1,
+        )
+    final_action, final_parts, final_counts = atomic_typed_edit_loss(
+        trace.final_edits,
+        final_labels,
+        slot_mask=slot_mask,
+        relation_mask=relation_mask,
+    )
+    action_losses.append(final_action)
+    for name, value in final_parts.items():
+        parts[f"final.action.{name}"] = value
+    for name, value in final_counts.items():
+        counts[f"final.{name}"] = value
+    return (
+        torch.stack(state_losses).mean(),
+        torch.stack(action_losses).mean(),
+        parts,
+        counts,
+    )
+
+
 def _module_sha256(module: torch.nn.Module, path: Path) -> str:
     save_file(
         {
@@ -638,7 +781,27 @@ def _run_schemas(
     token_native_syntax_graph_command: bool = False,
     token_native_declaration_binding_command: bool = False,
     token_native_operation_recurrence_command: bool = False,
+    token_native_operation_state_command: bool = False,
 ) -> tuple[str, str, str]:
+    if token_native_operation_state_command:
+        if (
+            residual_edits
+            or not atomic_edits
+            or not lexical_command
+            or not token_native_command_mask
+            or token_native_occurrence_command
+            or not token_native_syntax_graph_command
+            or not token_native_declaration_binding_command
+            or not token_native_operation_recurrence_command
+        ):
+            raise ParallelTerminalStatePilotError(
+                "operation-state terminal architecture schema differs"
+            )
+        return (
+            OPERATION_STATE_ATOMIC_CONTRACT_SCHEMA,
+            OPERATION_STATE_ATOMIC_REPORT_SCHEMA,
+            "shohin-ettr-parallel-terminal-state-metric-v10",
+        )
     if token_native_operation_recurrence_command:
         if (
             residual_edits
@@ -834,6 +997,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.token_native_syntax_graph_command,
         args.token_native_declaration_binding_command,
         args.token_native_operation_recurrence_command,
+        args.token_native_operation_state_command,
     )
     if not torch.cuda.is_available():
         raise ParallelTerminalStatePilotError(
@@ -868,12 +1032,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     for parameter in model.parameters():
         parameter.requires_grad_(False)
+    oracle_executor = model.reactor
     removed_reactor_parameters = sum(
         parameter.numel() for parameter in model.reactor.parameters()
     )
     torch.manual_seed(args.architecture_seed)
     torch.cuda.manual_seed_all(args.architecture_seed)
-    compiler = ParallelTerminalStateCompiler(
+    compiler_class = (
+        OperationStateTransitionCompiler
+        if args.token_native_operation_state_command
+        else ParallelTerminalStateCompiler
+    )
+    compiler = compiler_class(
         model.config,
         width=args.width,
         layers=args.layers,
@@ -991,6 +1161,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "token_native_operation_recurrence_command": (
                     args.token_native_operation_recurrence_command
                 ),
+                "token_native_operation_state_command": (
+                    args.token_native_operation_state_command
+                ),
                 "token_native_codebook_sha256": (
                     stream.codec.codebook_sha256
                     if args.token_native_command_mask
@@ -1000,6 +1173,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "layers": args.layers,
                 "no_query_input": True,
                 "no_transaction_trace_claim": True,
+                "operation_boundary_labels_training_only": (
+                    args.token_native_operation_state_command
+                ),
                 "num_heads": args.num_heads,
                 "relation_width": args.relation_width,
                 "removed_recurrent_policy_parameters": (
@@ -1026,7 +1202,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                     args.atomic_action_weight if args.atomic_edits else 0.0
                 ),
                 "atomic_actions": (
-                    "canonical-class-balanced-state-difference"
+                    "operation-boundary-and-final-class-balanced-state-difference"
+                    if args.token_native_operation_state_command
+                    else "canonical-class-balanced-state-difference"
                     if args.atomic_edits
                     else None
                 ),
@@ -1034,6 +1212,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "causal_pairing": "complete-2x2-terminal-state-edges",
                 "categorical": "categorical-brier",
                 "target": "query-independent-terminal-packet",
+                "operation_boundary_state_credit": (
+                    args.token_native_operation_state_command
+                ),
             },
             "protected_checkpoint_sha256": provenance.checkpoint_sha256,
             "reader_parameters": reader_parameters,
@@ -1093,8 +1274,17 @@ def main(argv: Sequence[str] | None = None) -> int:
                     if args.lexical_command
                     else None
                 )
+            operation_targets = (
+                oracle_operation_boundary_states(
+                    oracle_executor,
+                    initial,
+                    batch.transaction_targets,
+                )
+                if args.token_native_operation_state_command
+                else None
+            )
             atomic_targets = None
-            if args.atomic_edits:
+            if args.atomic_edits and not args.token_native_operation_state_command:
                 atomic_targets = derive_atomic_edit_targets(initial, target)
                 if update == 1:
                     verify_atomic_edit_reconstruction(
@@ -1106,7 +1296,50 @@ def main(argv: Sequence[str] | None = None) -> int:
                     )
             optimizer.zero_grad(set_to_none=True)
             with _precision_context(is_h100):
-                if args.atomic_edits:
+                operation_prefix_loss = target.active.float().sum() * 0.0
+                if args.token_native_operation_state_command:
+                    if (
+                        not isinstance(
+                            compiler,
+                            OperationStateTransitionCompiler,
+                        )
+                        or operation_targets is None
+                        or command_lexical is None
+                    ):
+                        raise ParallelTerminalStatePilotError(
+                            "operation-state training inputs are absent"
+                        )
+                    predicted, operation_trace = (
+                        compiler.forward_with_operation_states(
+                            initial,
+                            command_hidden=command_hidden.detach(),
+                            command_lexical=command_lexical.detach(),
+                            command_tokens=batch.episodes.command.tokens,
+                            command_attention_mask=(
+                                batch.episodes.command.attention_mask.bool()
+                            ),
+                            steps=batch.transaction_targets.opcode.shape[1],
+                            hard=False,
+                        )
+                    )
+                    (
+                        operation_prefix_loss,
+                        atomic_action_loss,
+                        atomic_action_parts,
+                        atomic_action_counts,
+                    ) = operation_boundary_objective(
+                        compiler,
+                        operation_trace,
+                        operation_targets,
+                        initial,
+                        target,
+                        slot_mask=batch.terminal_packet_targets.slot_mask,
+                        relation_mask=(
+                            batch.terminal_packet_targets.relation_mask
+                        ),
+                        verify_reconstruction=update == 1,
+                    )
+                elif args.atomic_edits:
                     predicted, atomic_edits = compiler.forward_with_atomic_edits(
                         initial,
                         command_hidden=command_hidden.detach(),
@@ -1178,6 +1411,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     state_loss
                     + args.causal_delta_weight * causal_delta_loss
                     + args.atomic_action_weight * atomic_action_loss
+                    + operation_prefix_loss
                 )
             if not bool(torch.isfinite(loss)):
                 raise ParallelTerminalStatePilotError(
@@ -1212,6 +1446,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                         for name, value in atomic_action_parts.items()
                     },
                     "atomic_action_counts": atomic_action_counts,
+                    "operation_prefix_loss": float(
+                        operation_prefix_loss.detach().cpu()
+                    ),
                     "changed_coordinates": changed_counts,
                     "state_loss": float(state_loss.detach().cpu()),
                     "state_parts": {

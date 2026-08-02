@@ -23965,5 +23965,18 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   identifiability result rejects mutation labels and routes to a public
   state-delta quotient audit before any further GPU fit.
 
+  The high-identifiability successor is implemented and test-gated while the
+  CPU audit runs. `OperationStateTransitionCompiler` applies one tied hard/
+  soft atomic state edit after each of the 1--6 explicit public operations,
+  feeds that resulting typed state into the next operation, and uses one
+  final tied edit for outcome/disposition. Offline transaction labels are
+  replayed only during training to reconstruct exact cumulative operation-
+  boundary states; no trace, target, QUERY, answer, or host semantics enters
+  inference. Prefix-state and class-balanced edit losses provide local blame
+  without teacher-forcing a runtime state. Focused compiler, router, custody,
+  and job gates pass `68 passed, 1 CUDA-only skipped`; Ruff, byte compilation,
+  and Bash syntax are clean. It remains unlaunched until `760906` validates
+  the target ontology.
+
   Decision:
   `reject_terminal_only_latent_operation_recurrence_cancel_its_autonomous_duplicate_and_require_each_public_operation_to_purchase_a_supervised_state_transition`.
