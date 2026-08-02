@@ -23834,3 +23834,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `preseal_direct_guarded_state_edits_hold_until_the_declaration_bound_schedule_gate_then_release_without_new_design_delay_on_a_negative`.
+
+- **2026-08-02 05:44--05:52 EDT** -- **Declaration binding is a real local
+  interface gain but not a causal reasoning gain; guarded edits are live.**
+
+  Exact-mask plus declaration-binding V100 job `725613` completed all 1,000
+  updates cleanly on `evc13` in 11m45s. Its immutable report is preserved at
+  `artifacts/r12/ettr_syntax_graph_declaration_binding_u1000_a31_d11_v100_1bd41aa_r1/report.json`
+  with SHA-256
+  `35c6bedd04023af232bca927e146107e01d203dcd45e1e1ea6cd41fdbfb7d574`;
+  pilot-contract SHA-256 is
+  `01d4f32708011a4422dd3209131dca13b4a9d490ef4c359f1ab1afb123e0c344`.
+  Relative to the exact-mask-only control, joint schedule accuracy rises from
+  7.687% to 9.651%, opcode/source/target/value become
+  43.532%/25.495%/12.644%/17.391%, and exact oracle-initial terminal packets
+  rise from `0/512` to `32/512 = 6.25%`. This validates the missing public
+  declaration edge as an interface correction. It does not validate the
+  ordered schedule ontology: autonomous factual top-1 remains 60.9375%, both
+  source-deleted strict WORLD and COMMAND remain exactly zero, every strict
+  margin remains zero, and COMMAND difference-in-differences is identically
+  zero. The redundant pending H100 mirror `725614` was canceled.
+
+  Before reading this endpoint, private commit `17b4e60` had already sealed
+  the mechanism-distinct successor. Immutable Newton runtime
+  `scratchpad/shohin_ettr_guarded_edit_runtime_17b4e60_r1` is bound to exact
+  source `17b4e605689a707254699d01c7a543e9b88c9420`, contains 3,560 measured
+  files, has zero writable files, and has SHA256SUMS SHA-256
+  `b9fa32a0572e55a2d03f884a3cc827d7524e4501328fcb8630a2f3f46ec35e33`.
+  Held V100 job `725616` was released immediately after the negative and now
+  tests declaration-bound, exact-mask public syntax feeding the direct atomic
+  typed-edit algebra for 1,000 matched updates. It abandons arbitrary ordered
+  opcode imitation while retaining the verified public binding correction and
+  unchanged source-deleted evaluator. Global-registry job `725605` remains
+  held because the identifiability audit rejects its target ontology.
+
+  Decision:
+  `retain_declaration_binding_as_a_public_interface_invariant_reject_it_as_a_reasoning_repair_and_route_immediately_to_query_independent_guarded_terminal_state_edits`.

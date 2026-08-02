@@ -165,3 +165,15 @@ algebra enforces valid hard state. This directly tests whether the public
 syntax can identify the semantic quotient even when it cannot identify one
 arbitrary low-level program. It remains isolated and must stay held until the
 declaration-bound schedule gate is read.
+
+The declaration-binding gate is now measured. V100 job `725613` raises joint
+schedule accuracy from the exact-mask control's 7.687% to 9.651% and recovers
+`32/512 = 6.25%` exact oracle-initial terminal packets, so the public binding
+edge is retained. Autonomous factual top-1 remains 60.9375%, however, and both
+source-deleted strict WORLD and COMMAND remain exactly zero with no strict
+margin. This is outcome 3 above: a local interface correction without causal
+answer movement. The redundant H100 mirror was canceled and the already-held
+guarded-edit V100 job `725616` was released immediately. Its exact source is
+private commit `17b4e605689a707254699d01c7a543e9b88c9420`; its sealed runtime
+manifest SHA-256 is
+`b9fa32a0572e55a2d03f884a3cc827d7524e4501328fcb8630a2f3f46ec35e33`.
