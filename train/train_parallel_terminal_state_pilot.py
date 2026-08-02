@@ -1102,9 +1102,7 @@ def operation_boundary_objective(
     ):
         index = torch.nonzero(oracle.mask[:, rank], as_tuple=False).flatten()
         if index.numel() == 0:
-            raise ParallelTerminalStatePilotError(
-                "operation-boundary supervision is empty"
-            )
+            continue
         predicted_selected = index_typed_state(predicted, index)
         target_selected = index_typed_state(target, index)
         previous_selected = index_typed_state(previous, index)

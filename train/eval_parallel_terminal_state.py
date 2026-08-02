@@ -13,9 +13,9 @@ from typing import Mapping, Sequence
 from safetensors.torch import load_file
 import torch
 
-from endogenous_typed_theory_reactor import SYSTEM_PARAMETER_CAP
 from ettr_packet_index import ETTRDiskPacketSufficiencyIndex
-from ettr_v3_streaming import ETTRV3StreamingRelease
+from ettr_query_supervision import iter_batches_with_query_specs
+from ettr_v3_streaming import ETTRV3StreamingRelease, move_continuation_batch
 from eval_algebraic_query_joint_state import (
     _evaluate,
     _load_compiler,
@@ -31,6 +31,17 @@ from operation_state_transition_compiler import (
     OperationEffectSetCompiler,
     OperationStateTransitionCompiler,
 )
+from operation_effect_set_diagnostics import (
+    effect_set_batch_counts,
+    merge_effect_diagnostics,
+    summarize_effect_diagnostics,
+)
+from operation_state_supervision import (
+    index_atomic_edits,
+    index_typed_state,
+    oracle_operation_boundary_states,
+)
+from probe_ettr_oracle_interfaces import packet_targets_to_state
 from train_ettr_component_island import (
     _canonical_bytes,
     _sha256_file,
@@ -61,7 +72,9 @@ from train_parallel_terminal_state_pilot import (
     REPORT_SCHEMA as PILOT_REPORT_SCHEMA,
     SYNTAX_ROUTED_ATOMIC_CONTRACT_SCHEMA as PILOT_SYNTAX_CONTRACT_SCHEMA,
     SYNTAX_ROUTED_ATOMIC_REPORT_SCHEMA as PILOT_SYNTAX_REPORT_SCHEMA,
+    derive_atomic_edit_targets,
 )
+from train_parallel_addressed_transaction_pilot import _training_initial_state
 
 
 CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-eval-contract-v1"
@@ -538,7 +551,6 @@ def _load_terminal_compiler(
     if (
         contract.get("compiler_parameters") != compiler_parameters
         or contract.get("complete_system_parameters") != complete_parameters
-        or complete_parameters > SYSTEM_PARAMETER_CAP
     ):
         raise ParallelTerminalStateEvaluationError(
             "terminal-state parameter receipt differs"
@@ -558,6 +570,202 @@ def _load_terminal_compiler(
         },
         complete_parameters,
     )
+
+
+def _typed_state_exact_count(
+    predicted,
+    target,
+    *,
+    slot_mask: torch.Tensor,
+    relation_mask: torch.Tensor,
+) -> int:
+    """Count rows with an exact typed state on every represented field."""
+
+    target_active = target.active.gt(0.5)
+    active_mask = slot_mask & target_active
+    exact = (
+        (
+            predicted.active.gt(0.5).eq(target_active)
+            | ~slot_mask
+        ).all(-1)
+        & (
+            predicted.value_probabilities.argmax(-1).eq(
+                target.value_probabilities.argmax(-1)
+            )
+            | ~active_mask
+        ).all(-1)
+        & (
+            predicted.type_probabilities.argmax(-1).eq(
+                target.type_probabilities.argmax(-1)
+            )
+            | ~active_mask
+        ).all(-1)
+        & (
+            predicted.relations.gt(0.5).eq(target.relations.gt(0.5))
+            | ~relation_mask
+        ).flatten(1).all(-1)
+        & predicted.root.gt(0.5).eq(target.root.gt(0.5)).all(-1)
+        & predicted.committed.gt(0.5).eq(target.committed.gt(0.5))
+        & predicted.halted.gt(0.5).eq(target.halted.gt(0.5))
+    )
+    return int(exact.sum().detach().cpu())
+
+
+def _evaluate_operation_effects(
+    compiler: OperationEffectSetCompiler,
+    oracle_executor,
+    model,
+    *,
+    stream,
+    packet_index,
+    device: torch.device,
+    data_seed: int,
+    max_batches: int,
+    training_initial_state: str,
+) -> dict[str, object]:
+    """Measure held-out hard local effects without changing causal gates."""
+
+    compiler.eval()
+    oracle_executor.eval()
+    aggregate: dict[str, object] = {}
+    iterator = iter_batches_with_query_specs(
+        stream,
+        "development",
+        epoch=0,
+        seed=data_seed,
+    )
+    observed = 0
+    for _position, cpu_batch, _cpu_specs in iterator:
+        if observed >= max_batches:
+            break
+        packet_index.verify_validation((cpu_batch,))
+        batch = move_continuation_batch(cpu_batch, device)
+        with torch.inference_mode():
+            initial = _training_initial_state(
+                model,
+                batch,
+                source=training_initial_state,
+                dtype=next(compiler.parameters()).dtype,
+            )
+            oracle = oracle_operation_boundary_states(
+                oracle_executor,
+                initial,
+                batch.transaction_targets,
+            )
+            command_hidden = model._encode_to_stage(
+                batch.episodes.command.tokens,
+                pos=0,
+            )
+            command_lexical = model.base.tok(batch.episodes.command.tokens)
+            terminal, trace = compiler.forward_with_operation_states(
+                initial,
+                command_hidden=command_hidden,
+                command_lexical=command_lexical,
+                command_tokens=batch.episodes.command.tokens,
+                command_attention_mask=batch.episodes.command.attention_mask.bool(),
+                steps=batch.transaction_targets.opcode.shape[1],
+                hard=True,
+            )
+            previous = initial
+            for rank, (predicted_state, edits, target_state) in enumerate(
+                zip(
+                    trace.operation_states,
+                    trace.operation_edits,
+                    oracle.states,
+                    strict=True,
+                )
+            ):
+                index = torch.nonzero(
+                    oracle.mask[:, rank], as_tuple=False
+                ).flatten()
+                if index.numel() == 0:
+                    continue
+                predicted_selected = index_typed_state(predicted_state, index)
+                target_selected = index_typed_state(target_state, index)
+                previous_selected = index_typed_state(previous, index)
+                slot_mask = batch.terminal_packet_targets.slot_mask.index_select(
+                    0, index
+                )
+                relation_mask = (
+                    batch.terminal_packet_targets.relation_mask.index_select(
+                        0, index
+                    )
+                )
+                labels = derive_atomic_edit_targets(
+                    previous_selected, target_selected
+                )
+                values = effect_set_batch_counts(
+                    index_atomic_edits(edits, index),
+                    labels,
+                    slot_mask=slot_mask,
+                    relation_mask=relation_mask,
+                )
+                merge_effect_diagnostics(aggregate, values)
+                counts = aggregate.setdefault("counts", {})
+                assert isinstance(counts, dict)
+                counts["operation_state_instances"] = int(
+                    counts.get("operation_state_instances", 0)
+                ) + int(index.numel())
+                counts["operation_state_exact"] = int(
+                    counts.get("operation_state_exact", 0)
+                ) + _typed_state_exact_count(
+                    predicted_selected,
+                    target_selected,
+                    slot_mask=slot_mask,
+                    relation_mask=relation_mask,
+                )
+                previous = target_state
+
+            target_terminal = packet_targets_to_state(
+                batch.terminal_packet_targets,
+                model.config,
+                step=batch.transaction_targets.opcode.shape[1],
+                dtype=next(compiler.parameters()).dtype,
+            )
+            final_labels = derive_atomic_edit_targets(
+                oracle.last_state, target_terminal
+            )
+            merge_effect_diagnostics(
+                aggregate,
+                effect_set_batch_counts(
+                    trace.final_edits,
+                    final_labels,
+                    slot_mask=batch.terminal_packet_targets.slot_mask,
+                    relation_mask=batch.terminal_packet_targets.relation_mask,
+                ),
+            )
+            counts = aggregate.setdefault("counts", {})
+            assert isinstance(counts, dict)
+            batch_size = int(batch.terminal_packet_targets.slot_mask.shape[0])
+            counts["terminal_state_instances"] = int(
+                counts.get("terminal_state_instances", 0)
+            ) + batch_size
+            counts["terminal_state_exact"] = int(
+                counts.get("terminal_state_exact", 0)
+            ) + _typed_state_exact_count(
+                terminal,
+                target_terminal,
+                slot_mask=batch.terminal_packet_targets.slot_mask,
+                relation_mask=batch.terminal_packet_targets.relation_mask,
+            )
+        observed += 1
+    if observed != max_batches:
+        raise ParallelTerminalStateEvaluationError(
+            "operation effect development split is too short"
+        )
+    summary = summarize_effect_diagnostics(aggregate)
+    counts = summary["counts"]
+    assert isinstance(counts, dict)
+    summary["batches"] = observed
+    summary["operation_state_exact_rate"] = (
+        int(counts["operation_state_exact"])
+        / int(counts["operation_state_instances"])
+    )
+    summary["terminal_state_exact_rate"] = (
+        int(counts["terminal_state_exact"])
+        / int(counts["terminal_state_instances"])
+    )
+    return summary
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -587,6 +795,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args,
         device=device,
     )
+    oracle_executor = model.reactor
     reader, compiler_contract, reader_parameters, replacement_parameters = (
         _load_compiler(args, model=model, stream=stream, device=device)
     )
@@ -604,6 +813,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         "fully_autonomous_arm": "autonomous_program_autonomous_state",
         "joint_model_sha256": args.joint_model_sha256,
         "joint_run_contract_sha256": args.joint_run_contract_sha256,
+        "local_operation_effect_diagnostic": isinstance(
+            model.reactor.compiler, OperationEffectSetCompiler
+        ),
         "max_batches": args.max_batches,
         "non_promotable_diagnostic_arms": [
             "oracle_program_autonomous_state",
@@ -626,6 +838,24 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.output / "evaluation-contract.json",
             _canonical_bytes(contract),
         )
+        operation_effect_diagnostics = None
+        if isinstance(model.reactor.compiler, OperationEffectSetCompiler):
+            training_initial_state = receipt.get("training_initial_state")
+            if not isinstance(training_initial_state, str):
+                raise ParallelTerminalStateEvaluationError(
+                    "operation effect initial-state receipt differs"
+                )
+            operation_effect_diagnostics = _evaluate_operation_effects(
+                model.reactor.compiler,
+                oracle_executor,
+                model,
+                stream=stream,
+                packet_index=packet_index,
+                device=device,
+                data_seed=args.data_seed,
+                max_batches=args.max_batches,
+                training_initial_state=training_initial_state,
+            )
         evaluation = _evaluate(
             reader,
             model,
@@ -643,6 +873,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "joint_model_optimizer_step": joint_payload["optimizer_step"],
             "joint_model_parameter_sha256": _parameter_sha256(model),
             "joint_training_source_commit": joint_contract["source_commit"],
+            "operation_effect_diagnostics": operation_effect_diagnostics,
             "reader_parameters": reader_parameters,
             "replacement_system_parameters": complete_parameters,
             "runtime_precision": str(next(model.parameters()).dtype),

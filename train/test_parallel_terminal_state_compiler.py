@@ -22,11 +22,14 @@ from operation_state_transition_compiler import (
     FactorizedOperationStateTransitionCompiler,
     OperationEffectSetCompiler,
     OperationStateTransitionCompiler,
+    OperationStateTransitionTrace,
 )
+from operation_state_supervision import OperationBoundaryTargets
 from train_parallel_terminal_state_pilot import (
     atomic_typed_edit_loss,
     causal_terminal_delta_brier,
     derive_atomic_edit_targets,
+    operation_boundary_objective,
     operation_effect_set_loss,
 )
 
@@ -968,6 +971,50 @@ def test_atomic_action_loss_is_exact_for_canonical_edits() -> None:
     assert "node_action" in parts
     assert "node_edit_count" in parts
     assert "value_code" in parts
+
+
+def test_operation_boundary_objective_skips_empty_trailing_rank() -> None:
+    config = _config()
+    state = _state(config)
+    labels = derive_atomic_edit_targets(state, state)
+    edits = AtomicTypedEdits(
+        node_action=F.one_hot(labels["node_action"], 5).float(),
+        value_code=F.one_hot(
+            labels["value_code"], config.num_value_codes
+        ).float(),
+        type_index=F.one_hot(labels["type_index"], config.num_types).float(),
+        relation_action=F.one_hot(labels["relation_action"], 3).float(),
+        root_action=F.one_hot(
+            labels["root_action"], 2 + config.num_slots
+        ).float(),
+        disposition_action=F.one_hot(
+            labels["disposition_action"], 4
+        ).float(),
+    )
+    mask = torch.tensor([[True, False], [True, False]])
+    trace = OperationStateTransitionTrace(
+        operation_states=(state, state),
+        operation_edits=(edits, edits),
+        operation_mask=mask,
+        final_edits=edits,
+    )
+    oracle = OperationBoundaryTargets(
+        states=(state, state),
+        mask=mask,
+        last_state=state,
+    )
+    state_loss, action_loss, _parts, _counts = operation_boundary_objective(
+        None,  # type: ignore[arg-type]
+        trace,
+        oracle,
+        state,
+        state,
+        slot_mask=torch.ones_like(state.active, dtype=torch.bool),
+        relation_mask=torch.ones_like(state.relations, dtype=torch.bool),
+        verify_reconstruction=False,
+    )
+    assert state_loss.item() == 0.0
+    assert action_loss.item() == 0.0
 
 
 def test_terminal_compiler_rejects_wrong_command_geometry() -> None:
