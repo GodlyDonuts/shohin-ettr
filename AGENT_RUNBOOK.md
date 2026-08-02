@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 14:21 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 14:31 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -24898,6 +24898,17 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   Ten focused family/state/audit tests plus Ruff, byte compilation, Bash
   syntax, and diff checks pass. This CPU audit cannot promote reasoning and
   does not authorize another GPU fit by itself.
+
+  Exact Stokes runtime
+  `scratchpad/shohin_ettr_family_state_runtime_2523e7e_r1` is derived from the
+  prior verified family-audit runtime plus the complete tracked
+  `1ed1a60..2523e7e` delta. It is bound to source
+  `2523e7e888c98e68a571a11c284d6d6e648b5c04`, contains 2,898 files,
+  zero links, zero writable entries, passes full checksum replay, and has
+  SHA256SUMS SHA-256
+  `9d3cf45b2f18ee83113505b4a856f99b3faeebcbbf1d089ea928ac2fe400014d`.
+  Test-only admission passed and 48-core Stokes job `760964` is running on
+  `ec119`.
 
   Decision:
   `measure_whether_family_ambiguity_is_optimization_state_conditioning_or_an_invalid_control_primitive_before_implementing_the_post_v19_architecture`.

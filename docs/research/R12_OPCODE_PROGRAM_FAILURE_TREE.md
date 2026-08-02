@@ -810,3 +810,9 @@ rails from evolving state; failure of every oracle-state mode rejects family
 as an explicit primitive and routes to latent typed-effect expert competition.
 The successor state, QUERY, answer, terminal packet, and transaction program
 remain excluded.
+
+Exact runtime `scratchpad/shohin_ettr_family_state_runtime_2523e7e_r1` is
+bound to source `2523e7e888c98e68a571a11c284d6d6e648b5c04`, contains 2,898
+verified files with no links or writable entries, and has SHA256SUMS SHA-256
+`9d3cf45b2f18ee83113505b4a856f99b3faeebcbbf1d089ea928ac2fe400014d`.
+Full-corpus Stokes job `760964` is running on 48 CPU cores.
