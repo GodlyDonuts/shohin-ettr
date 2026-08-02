@@ -45,6 +45,19 @@ class EffectKindBalanceAuditError(ValueError):
     """A corpus receipt or exact effect label differs."""
 
 
+def operation_effect_family(kinds: Sequence[str]) -> str:
+    """Return the corpus-exact mutually exclusive operation family."""
+
+    values = set(kinds)
+    if not values:
+        return "none"
+    if values == {"write"}:
+        return "write"
+    if values == {"link"}:
+        return "link"
+    raise EffectKindBalanceAuditError("operation effect family differs")
+
+
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-root", type=Path, required=True)

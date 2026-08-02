@@ -24767,5 +24767,14 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   would discard accrued priority. No v16/v18 GPU job is authorized before its
   measured failure signature.
 
+  A mechanism-prerequisite Stokes audit is implemented but not yet measured.
+  It tests train-to-development identifiability of the exact NONE/WRITE/LINK
+  family from public resolved operation, abstract operation, WORLD topology,
+  operation prefix, and full COMMAND/rank contexts. The frozen broad-release
+  gate is at least 90% all-instance transfer; 70--90% permits only a bounded
+  family-first island; below 70% or within five points of majority at 90%
+  coverage rejects the public family head. No QUERY, answer, terminal packet,
+  or transaction program is an input feature.
+
   Decision:
   `preserve_v15_priority_while_sealing_the_mutually_exclusive_v18_successor_and_route_exactly_one_next_mechanism_from_family_count_operand_and_causal_metrics`.

@@ -53835,3 +53835,8 @@ Its immutable Newton runtime is source-bound to
 `d42a0544ff6b433963813d0c1fe61180b4ee0588`; 3,648 files pass full checksum
 replay with zero links or writable entries and SHA256SUMS SHA-256
 `8d72fe493d559de64a1ada1c66ce293ed3b4c44eac39dda7b5679d2ed8592703`.
+An exact CPU prerequisite now tests whether this coarse family is actually
+identifiable from public operation/state context across train/development.
+The preregistered broad gate is 90% all-instance transfer; a 70--90% middle
+band allows only isolated family acquisition, while lower or majority-level
+transfer rejects v18 as the primary repair before GPU scaling.

@@ -721,3 +721,22 @@ The v15-to-successor decision is frozen as follows:
 
 V18 remains mechanically complete but scientifically held while sole v15 fit
 `728691` retains its accrued Newton priority.
+
+Before a long v18 fit, an exact CPU identifiability gate measures whether the
+family label is predictable from the permitted public interface rather than
+merely enforceable by the architecture. It compares exact and literal-
+abstracted resolved operations, WORLD topology plus operation, WORLD operator
+quotient plus operation prefix, and WORLD operator quotient plus full COMMAND
+and rank. Assessor traces are family labels only; QUERY, answer, terminal
+packet, and low-level program are never features. The decision is fixed:
+
+- at least 90% train-to-development accuracy over all instances authorizes a
+  broad v18 family gate when v15 shows family error;
+- 70--90% permits only a bounded family-first acquisition/isolation before
+  joint rail release;
+- below 70%, or no mode exceeding the development majority baseline by five
+  points at at least 90% coverage, rejects this public family head as the
+  primary repair.
+
+This CPU result cannot promote reasoning. It only establishes whether the
+coarse control variable is learnable from inputs available at inference.
