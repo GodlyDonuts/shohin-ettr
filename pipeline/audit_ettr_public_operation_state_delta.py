@@ -44,9 +44,15 @@ from ettr_il_v3_protocol import canonical_json_bytes
 from materialize_ettr_il_v3_corpus import _iter_records, _sha256_file
 
 
-REPORT_SCHEMA = "r12-ettr-public-operation-state-delta-audit-v1"
+REPORT_SCHEMA = "r12-ettr-public-operation-state-delta-audit-v2"
 _SPLITS = ("train", "development")
-_TARGETS = ("operation_delta", "cumulative_runtime_state")
+_TARGETS = (
+    "operation_delta",
+    "delta_shape",
+    "delta_addresses",
+    "delta_payloads",
+    "cumulative_runtime_state",
+)
 _WORLD_MODES = ("alpha_exact", "alpha_operator", "topology")
 _CONTEXTS = ("operation", "prefix", "full_command_rank")
 _MODES = (
@@ -132,6 +138,53 @@ def runtime_state_value(state: object) -> dict[str, object]:
             if bool(state.active[slot])
         ],
         "status": [bool(state.committed), bool(state.halted)],
+    }
+
+
+def state_delta_factor_values(
+    delta: Mapping[str, object],
+) -> dict[str, object]:
+    """Factor a semantic delta into action shape, addresses, and payloads."""
+
+    nodes = list(delta["nodes"])
+    added = list(delta["edges_added"])
+    removed = list(delta["edges_removed"])
+    status = list(delta["status"])
+    shape_nodes = []
+    address_nodes = []
+    payload_nodes = []
+    for item in nodes:
+        slot, before, after = item
+        before = list(before)
+        after = list(after)
+        shape_nodes.append(
+            [
+                before[0] != after[0],
+                before[1] != after[1],
+                before[2] != after[2],
+                before[3] != after[3],
+            ]
+        )
+        address_nodes.append(int(slot))
+        payload_nodes.append([before, after])
+    return {
+        "delta_shape": {
+            "edge_additions": len(added),
+            "edge_removals": len(removed),
+            "node_field_changes": sorted(shape_nodes),
+            "status_changes": [status[0] != status[2], status[1] != status[3]],
+        },
+        "delta_addresses": {
+            "edges_added": sorted(added),
+            "edges_removed": sorted(removed),
+            "nodes": sorted(address_nodes),
+        },
+        "delta_payloads": {
+            "edge_relations_added": sorted(int(edge[0]) for edge in added),
+            "edge_relations_removed": sorted(int(edge[0]) for edge in removed),
+            "nodes": sorted(payload_nodes),
+            "status_after": status[2:],
+        },
     }
 
 
@@ -225,8 +278,10 @@ def _record_labels(
                     if steps
                     else state
                 )
+                delta = state_delta_value(state, after)
                 target_values = {
-                    "operation_delta": state_delta_value(state, after),
+                    "operation_delta": delta,
+                    **state_delta_factor_values(delta),
                     "cumulative_runtime_state": runtime_state_value(after),
                 }
                 keys = _keys(operation, operations, rank, worlds[corner_index])
@@ -355,6 +410,11 @@ def audit(
             "answer_read": False,
             "assessor_initial_packet_used_as_label_constructor_only": True,
             "assessor_operation_trace_used_as_label_only": True,
+            "delta_factors_scored_separately": [
+                "shape",
+                "addresses",
+                "payloads",
+            ],
             "mutation_order_and_cursor_removed_from_delta_target": True,
             "query_read": False,
             "terminal_packet_read": False,
