@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-01 21:47 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-01 21:57 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -119,10 +119,14 @@
 > candidate selection, or host solver at inference. Hard output enforces
 > active-slot value/type, one-or-none root, active-endpoint sparse relations,
 > and terminal status. Twenty-nine focused and related tests pass with clean
-> static, bytecode, shell, and diff checks. The first 500-update
-> autonomous-initial H100 canary is preregistered but not yet launched; no
-> capability result is claimed from local mechanics. No current artifact is
-> promoted as stable native reasoning.
+> static, bytecode, shell, and diff checks. Immutable runtime
+> `scratchpad/shohin_ettr_terminal_state_runtime_08cfaa4_r2` contains 3,429
+> measured files and has SHA256SUMS SHA-256
+> `d602487fc4cb3afcbd689b52c91d8aaf83b5b893baa16054743f45b4f3c7084f`.
+> Slurm test-only admission passed and the preregistered 500-update
+> autonomous-initial H100 canary is job `725476`, pending normal-partition
+> resources. No capability result is claimed from mechanics or queue state.
+> No current artifact is promoted as stable native reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -23003,3 +23007,16 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `seal_the_direct_terminal_state_runtime_launch_one_bounded_autonomous_initial_canary_and_scale_only_on_joint_world_plus_command_causality`.
+
+  Private commit `08cfaa4` is pushed. The first staged runtime was rejected
+  before launch: it contained every new architecture file but inherited the
+  older `fb5a3bd` inventory and omitted 18 intervening evidence files while
+  claiming the new source commit. It remains unused. Runtime `r2` was rebuilt
+  from the complete tracked `fb5a3bd..08cfaa4` diff, contains 3,429 files,
+  verifies every file, is fully read-only, and has SHA256SUMS SHA-256
+  `d602487fc4cb3afcbd689b52c91d8aaf83b5b893baa16054743f45b4f3c7084f`.
+  Slurm test-only admission passed. Job `725476` is the exact preregistered
+  500-update autonomous-initial arm and is pending normal-partition H100
+  resources. All healthy H100 nodes currently report both GPUs allocated;
+  `evc36` is not free. A shorter backfill request did not obtain an earlier
+  reservation, so the admitted single-writer job was retained.
