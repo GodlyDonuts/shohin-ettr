@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 16:56 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 17:08 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -25242,3 +25242,38 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `v15_completed_with_nonzero_command_but_zero_world_wait_for_independent_family_measurement_then_dispatch_exactly_one_finite_successor`.
+
+- **2026-08-02 16:57--17:08 EDT** -- **Independent v15 evaluation confirms a
+  COMMAND foothold but a hard WORLD/family failure; the finite route released
+  exactly one v19 family-island fit.**
+
+  Independent seed-13 evaluator `729309` completed on `evc10` in 2m45s;
+  route `729310` and successor dispatcher `729311` completed cleanly on
+  `evc21`. V15 generalizes to autonomous factual top-1 `59.7656%` and COMMAND
+  strict paired `20/144 = 13.8889%`, but WORLD is `0/48`, exact terminal state
+  is `0/512`, complete effect-set and dense-edit exactness are zero, and
+  operation-family exactness is only `1392/1856 = 75%`. The predicted output
+  remains 87.80% NOOP. Route receipt SHA-256 is
+  `637a1f3baff180e96812015315af7feb97151a25d1e210e860f0728691d82975`.
+
+  The frozen planner selected `operation_family_island_curriculum`, producing
+  v19 fit `729390` and dependency-held measurement `729391`. V19 is running on
+  `evc17` from the exact immutable `43084cd` runtime with architecture/data
+  seeds `31/11`, 1,000 updates, family-only oracle-state curriculum, and no
+  warm start. Its first update-10 metric is finite: loss `9.5040`, pre-clip
+  gradient norm `31.625`, and no stderr. No v20/v21 fit has been submitted.
+
+  The capability-floor interface preflight is also frozen while v19 runs.
+  It fixes one raw canonical ASCII envelope, forbids candidate chat templates
+  and truncation, requires a four-tokenizer intersection cohort, maps every
+  frozen final post-norm token residual through a counted bias-free projection
+  to width 512, and promotes by the minimum across seed pairs `(31,11)` and
+  `(32,12)`. Optimizer geometry and semantic batch 16 are exact. Interface
+  receipt SHA-256 is
+  `b42f5b127dd007a170ad687f5664864455133365080bfd36e07f1d471cd81676`.
+  Qwen3.5-0.8B and SmolLM3-3B configs are pinned and structurally validated.
+  MobileLLM-R1 remains manually gated under its license, so exact config
+  admission is blocked rather than guessed or omitted. Eleven tests pass.
+
+  Decision:
+  `v15_has_real_command_signal_but_world_and_family_fail_run_the_one_isolated_v19_gate_while_freezing_cross_backbone_comparability`.

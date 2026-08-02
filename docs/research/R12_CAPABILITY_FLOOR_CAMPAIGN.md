@@ -99,3 +99,32 @@ general instruction -> verified reasoning -> RLVR post-training plan.
 
 Machine-readable preregistration:
 `artifacts/r12/ettr_capability_floor_preregistration_v1.json`.
+
+## Frozen Interface Contract
+
+The first implementation preflight is
+`train/capability_floor_interface.py`. It freezes a raw canonical ASCII input
+envelope with no candidate-specific chat template, native required BOS only,
+no truncation, token-offset receipts, and a four-tokenizer intersection cohort.
+Every frozen parent exposes final post-norm hidden states for all source tokens.
+A candidate-specific bias-free projection maps those states to the common
+512-wide ETTR interface, followed by RMSNorm; projection parameters count
+against the treatment and its dense control.
+
+Optimizer geometry is fixed at semantic batch 16, fused AdamW, learning rate
+`3e-4`, betas `(0.9, 0.95)`, weight decay `0.01`, and gradient clip `1.0`.
+Seed pairs are `(31,11)` and `(32,12)`, and promotion uses the minimum score
+across seeds rather than their mean. The admitted release contributes 40,000
+train episodes, 5,000 development episodes, and a 180,000-row stream with
+SHA-256 `8f205de...20f87`. Complete causal rectangles remain atomic.
+
+Qwen3.5-0.8B and SmolLM3-3B official configuration files are pinned and
+validated structurally. MobileLLM-R1 is manually gated; the current credential
+has not accepted its license, so its exact config and weights cannot yet be
+receipted. This is a launch blocker, not permission to guess its geometry or
+drop the 360M arm. The generated interface receipt remains non-launchable
+until that access, all four tokenizer intersections, the final mechanism hash,
+and dense-control parameter/FLOP receipts exist.
+
+Machine-readable interface contract:
+`artifacts/r12/ettr_capability_floor_interface_v1.json`.

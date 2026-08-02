@@ -54001,3 +54001,27 @@ predecessor weights or proliferating nearby experiments.
 
 Current decision:
 `measure_v15_independently_then_spend_one_successor_budget_or_stop_according_to_the_frozen_transition_table`.
+
+### 2026-08-02: independent v15 diagnosis selects v19
+
+Fresh seed-13 evaluation retains a larger COMMAND foothold than the fit-seed
+view: `20/144 = 13.89%` strict pairs with 59.77% factual top-1. It does not
+solve composition. WORLD remains `0/48`, exact terminal state is `0/512`,
+operation-family exactness is 75%, and 87.80% of predicted effects are NOOP.
+The evidence therefore selects the preregistered family-island intervention,
+not another generic payload or full-system fit.
+
+V19 is the sole running successor. It bypasses rail payload learning and asks
+whether the current neural state-conditioned controller can cross 90% exact
+NONE/WRITE/LINK classification. A pass preserves its exact weights into v18;
+a miss selects the explicit role-state bilinear v20 mechanism. There is no
+parallel scientific alternative.
+
+In parallel, the capability-floor input boundary is now machine-frozen. It
+prevents candidate-specific chat prompts, truncation, tokenization cohorts,
+or average-across-seed scoring from explaining a result. The manually gated
+MobileLLM-R1 config remains an explicit admission blocker; Qwen3.5 and SmolLM3
+official configs have exact revision and config digests.
+
+Current decision:
+`test_whether_isolated_state_conditioned_family_control_can_explain_the_v15_failure_then_preserve_or_replace_it_exactly_once`.
