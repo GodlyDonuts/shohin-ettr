@@ -23906,5 +23906,16 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   and custody checks pass `65 passed, 1 CUDA-only skipped`; Ruff, byte
   compilation, and Bash syntax are clean.
 
+  Private commit `0e42ba1` is pushed. Immutable Newton runtime
+  `scratchpad/shohin_ettr_operation_recurrent_runtime_0e42ba1_r1` is bound to
+  exact source `0e42ba1970d55bd2338502299b9aa9ae925fde4d`, contains 3,562
+  measured files, has zero writable files, and has SHA256SUMS SHA-256
+  `7eaa4d68ab2d2cfb8cfe4bc9cfe0325fa8acfb7031110ca8bd7342995a9ebd87`.
+  Oracle-initial V100 gate `725618` is live on `evc18` for 1,000 matched
+  updates. Autonomous-initial job `725619` is held and may run only if the
+  oracle arm materially improves its own packet interface but leaves the
+  autonomous strict gates behind; it must be canceled if the oracle interface
+  itself is neutral or worse.
+
   Decision:
   `close_episode_wide_guarded_edit_prediction_and_test_tied_latent_state_updates_once_per_explicit_public_command_operation`.
