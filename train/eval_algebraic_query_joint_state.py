@@ -466,6 +466,10 @@ def _load_parallel_schedule(
             "token_native_syntax_graph_command",
             False,
         )
+        token_native_declaration_binding_command = architecture.get(
+            "token_native_declaration_binding_command",
+            False,
+        )
         opcode_program_registry_sha256 = architecture.get(
             "opcode_program_registry_sha256"
         )
@@ -481,10 +485,15 @@ def _load_parallel_schedule(
         or not isinstance(cover_verified_command_mask, bool)
         or not isinstance(token_native_occurrence_command, bool)
         or not isinstance(token_native_syntax_graph_command, bool)
+        or not isinstance(token_native_declaration_binding_command, bool)
         or (token_native_occurrence_command and not token_native_command_mask)
         or (token_native_syntax_graph_command and not token_native_command_mask)
         or (cover_verified_command_mask and not token_native_command_mask)
         or (token_native_occurrence_command and token_native_syntax_graph_command)
+        or (
+            token_native_declaration_binding_command
+            and not token_native_syntax_graph_command
+        )
         or (
             token_native_command_mask
             and architecture.get("token_native_codebook_sha256")
@@ -531,6 +540,9 @@ def _load_parallel_schedule(
         cover_verified_command_mask=cover_verified_command_mask,
         token_native_occurrence_command=token_native_occurrence_command,
         token_native_syntax_graph_command=(token_native_syntax_graph_command),
+        token_native_declaration_binding_command=(
+            token_native_declaration_binding_command
+        ),
         token_native_codebook_ids=(
             stream.codec.codebook.token_ids if token_native_command_mask else None
         ),

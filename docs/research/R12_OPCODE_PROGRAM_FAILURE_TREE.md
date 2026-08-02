@@ -101,3 +101,48 @@ local field accuracy already observed at 5k cannot justify longer runs.
 
 This policy uses all useful compute while preventing many simultaneous jobs
 from answering the same question.
+
+## Measured routing outcome (2026-08-02)
+
+The full corrected public-syntax audit is frozen at
+`artifacts/r12/ettr_public_opcode_identifiability_e5dcb41_r1/report.json`
+(file SHA-256
+`951fbd78006352db6c3c2d5cd4b192831a9d4891de792fbc2a981e2dff683985`,
+payload SHA-256
+`2f7479c763165f62d8e75401e160a5971580f6fcaa8ce16e7462ba835ac7e022`).
+It covers 40,000 train cores and 5,000 development cores. The current full
+opcode-sequence target is not reliably identifiable under any high-coverage
+public quotient:
+
+- exact alpha-normalized WORLD+COMMAND syntax has a 75.36% development Bayes
+  ceiling but only 5.66% train-to-development signature coverage;
+- operator-abstracted WORLD+COMMAND syntax has 79.71% coverage but only
+  55.18% development Bayes accuracy and 43.04% all-instance modal accuracy;
+- topology has 99.31% coverage but only 43.59% development Bayes accuracy and
+  40.02% all-instance modal accuracy.
+
+The globally normalized registry-training job therefore remains held. The
+audit routes to the syntax-local branch, but it also localizes a narrower
+missing interface before replacing the complete target ontology: public
+COMMAND documents explicitly declare opaque identifiers as
+`call(3, identifier, ordinal, payload)`, while contract-v8 makes applications
+discover that declaration through three synchronous equality/AST hops. The
+new declaration-binding treatment resolves that exact public path before
+learned graph propagation. It reads no sidecar, QUERY, answer, trace, target,
+or oracle state, adds no parameters, and remains equivariant to arbitrary
+opaque-name renaming. The unchanged exact executor and source-deleted gates
+remain decisive.
+
+Failure routing is fixed:
+
+1. If exact-mask-only crosses both axes, replicate exact masking first and
+   treat declaration binding as an ablation.
+2. If declaration binding crosses both axes while exact-mask-only does not,
+   replicate the binding on a fresh population, then promote the explicit
+   public symbol-table edge.
+3. If declaration binding improves local fields or terminal packets but not
+   both strict axes, retain it as an interface correction and replace ordered
+   opcode imitation with syntax-local guarded edit atoms.
+4. If it is neutral, close learned multi-hop declaration resolution as the
+   primary bottleneck and move directly to a state-grounded edit ontology;
+   do not run more seeds, depth, width, or duration on contract-v8.

@@ -262,6 +262,7 @@ def test_syntax_graph_schedule_is_identifier_rename_equivariant() -> None:
         num_heads=2,
         token_native_command_mask=True,
         token_native_syntax_graph_command=True,
+        token_native_declaration_binding_command=True,
         token_native_codebook_ids=codec.codebook.token_ids,
         token_native_vocab_size=codec.tokenizer.get_vocab_size(),
     ).eval()
@@ -300,6 +301,87 @@ def test_syntax_graph_schedule_is_identifier_rename_equivariant() -> None:
                 getattr(original, field),
                 getattr(permuted, field),
             )
+
+
+def test_declaration_binding_resolves_ordinal_before_graph_hops() -> None:
+    from ettr_il_v2_surface import SurfaceRenderer, call, integer, symbol
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+    from token_native_syntax_router import (
+        CALL_STRIDE,
+        CoverVerifiedTokenNativeDocumentMask,
+        TokenNativeSyntaxGraphEncoder,
+    )
+
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    first_symbol = symbol("x0000000000000001")
+    second_symbol = symbol("x0000000000000002")
+
+    def ast(first_ordinal: int, second_ordinal: int):
+        return call(
+            14,
+            integer(2),
+            call(
+                1,
+                call(3, first_symbol, integer(first_ordinal), call(0)),
+                call(3, second_symbol, integer(second_ordinal), call(0)),
+            ),
+            call(13, call(4, first_symbol)),
+        )
+
+    transports = tuple(
+        codec.pack(
+            codec.serialize(value, SurfaceRenderer.CANONICAL_JSON),
+            width=32,
+        )
+        for value in (ast(0, 1), ast(1, 0))
+    )
+    tokens = torch.tensor(
+        [transport.token_ids for transport in transports],
+        dtype=torch.long,
+    )
+    mask = CoverVerifiedTokenNativeDocumentMask(
+        codec.codebook.token_ids,
+        codec.codebook.atoms,
+        vocab_size=codec.tokenizer.get_vocab_size(),
+    )(tokens, torch.ones_like(tokens, dtype=torch.bool))
+    control = TokenNativeSyntaxGraphEncoder(
+        codec.codebook.token_ids,
+        vocab_size=codec.tokenizer.get_vocab_size(),
+        width=64,
+        layers=1,
+        maximum_positions=32,
+        maximum_identifier_codes=32,
+    ).eval()
+    treatment = TokenNativeSyntaxGraphEncoder(
+        codec.codebook.token_ids,
+        vocab_size=codec.tokenizer.get_vocab_size(),
+        width=64,
+        layers=1,
+        maximum_positions=32,
+        maximum_identifier_codes=32,
+        resolve_declarations=True,
+    ).eval()
+    treatment.load_state_dict(control.state_dict())
+    codes = treatment.inverse_codebook[tokens]
+    parent, _, _ = treatment._syntax_links(codes, mask)
+    first_code = len(codec.codebook.token_ids) - 2
+    operation = codes.eq(first_code) & codes.gather(
+        1,
+        parent.clamp_min(0),
+    ).eq(4 * CALL_STRIDE + 1)
+    assert operation.sum(dim=1).tolist() == [1, 1]
+    memory = torch.zeros(2, 32, 64)
+    with torch.no_grad():
+        control_hidden = control(memory, tokens, mask)
+        treatment_hidden = treatment(memory, tokens, mask)
+    control_operation = control_hidden[operation]
+    treatment_operation = treatment_hidden[operation]
+
+    assert torch.equal(control_operation[0], control_operation[1])
+    assert not torch.equal(treatment_operation[0], treatment_operation[1])
 
 
 def test_syntax_graph_can_use_cover_verified_public_document_mask() -> None:

@@ -20,6 +20,7 @@ def test_parallel_transaction_job_is_hash_bound_and_isolated() -> None:
         "--required-device-class",
         "--grounded-pointers",
         "--cover-verified-command-mask",
+        "--token-native-declaration-binding-command",
         "--valid-pointer-masks",
         "--semantic-prefix-weight",
         "--training-initial-state",
@@ -28,6 +29,7 @@ def test_parallel_transaction_job_is_hash_bound_and_isolated() -> None:
         "OPCODE_PROGRAM_REGISTRY=${OPCODE_PROGRAM_REGISTRY:-}",
         "REGISTRY_PROJECTED_OPCODE_TRAINING=${REGISTRY_PROJECTED_OPCODE_TRAINING:-0}",
         "COVER_VERIFIED_COMMAND_MASK=${COVER_VERIFIED_COMMAND_MASK:-0}",
+        "TOKEN_NATIVE_DECLARATION_BINDING_COMMAND=${TOKEN_NATIVE_DECLARATION_BINDING_COMMAND:-0}",
     ):
         assert expected in text
     assert "--gres=gpu:nvidia_h100_pcie:1" in text

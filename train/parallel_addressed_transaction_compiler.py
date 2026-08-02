@@ -211,6 +211,9 @@ class RegistryProjectedAddressedScheduleCompiler(nn.Module):
         self.token_native_syntax_graph_command = bool(
             getattr(compiler, "token_native_syntax_graph_command", False)
         )
+        self.token_native_declaration_binding_command = bool(
+            getattr(compiler, "token_native_declaration_binding_command", False)
+        )
         reference = next(compiler.parameters(), None)
         device = reference.device if reference is not None else None
         table = torch.zeros(
@@ -264,6 +267,7 @@ class ParallelAddressedTransactionCompiler(nn.Module):
         cover_verified_command_mask: bool = False,
         token_native_occurrence_command: bool = False,
         token_native_syntax_graph_command: bool = False,
+        token_native_declaration_binding_command: bool = False,
         token_native_codebook_ids: Sequence[int] | None = None,
         token_native_codebook_atoms: Sequence[str] | None = None,
         token_native_vocab_size: int | None = None,
@@ -286,10 +290,15 @@ class ParallelAddressedTransactionCompiler(nn.Module):
             or not isinstance(cover_verified_command_mask, bool)
             or not isinstance(token_native_occurrence_command, bool)
             or not isinstance(token_native_syntax_graph_command, bool)
+            or not isinstance(token_native_declaration_binding_command, bool)
             or (cover_verified_command_mask and not token_native_command_mask)
             or (token_native_occurrence_command and not token_native_command_mask)
             or (token_native_syntax_graph_command and not token_native_command_mask)
             or (token_native_occurrence_command and token_native_syntax_graph_command)
+            or (
+                token_native_declaration_binding_command
+                and not token_native_syntax_graph_command
+            )
             or (
                 token_native_command_mask
                 and (
@@ -320,6 +329,9 @@ class ParallelAddressedTransactionCompiler(nn.Module):
         self.cover_verified_command_mask = cover_verified_command_mask
         self.token_native_occurrence_command = token_native_occurrence_command
         self.token_native_syntax_graph_command = token_native_syntax_graph_command
+        self.token_native_declaration_binding_command = (
+            token_native_declaration_binding_command
+        )
         self.opcode_program_sequences = _opcode_programs(
             opcode_program_sequences,
             config,
@@ -361,6 +373,7 @@ class ParallelAddressedTransactionCompiler(nn.Module):
                 layers=layers,
                 maximum_positions=96,
                 maximum_identifier_codes=96,
+                resolve_declarations=token_native_declaration_binding_command,
             )
             if token_native_syntax_graph_command
             else None

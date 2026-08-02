@@ -111,6 +111,10 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         action="store_true",
     )
     parser.add_argument(
+        "--token-native-declaration-binding-command",
+        action="store_true",
+    )
+    parser.add_argument(
         "--required-device-class",
         choices=("h100", "cuda"),
         default="h100",
@@ -167,6 +171,10 @@ def _validate_args(args: argparse.Namespace) -> None:
         or (
             args.token_native_occurrence_command
             and args.token_native_syntax_graph_command
+        )
+        or (
+            args.token_native_declaration_binding_command
+            and not args.token_native_syntax_graph_command
         )
         or (
             (args.opcode_program_registry is None)
@@ -755,6 +763,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         cover_verified_command_mask=args.cover_verified_command_mask,
         token_native_occurrence_command=(args.token_native_occurrence_command),
         token_native_syntax_graph_command=(args.token_native_syntax_graph_command),
+        token_native_declaration_binding_command=(
+            args.token_native_declaration_binding_command
+        ),
         token_native_codebook_ids=(
             stream.codec.codebook.token_ids if args.token_native_command_mask else None
         ),
@@ -879,6 +890,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ),
                 "token_native_syntax_graph_command": (
                     args.token_native_syntax_graph_command
+                ),
+                "token_native_declaration_binding_command": (
+                    args.token_native_declaration_binding_command
                 ),
                 "token_native_codebook_sha256": (
                     stream.codec.codebook_sha256

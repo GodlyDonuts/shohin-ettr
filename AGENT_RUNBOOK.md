@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 05:07 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 05:31 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -23740,3 +23740,42 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_one_clean_exact_mask_gate_because_4.17_percent_of_public_transports_were_causally_truncated_then_route_without_seed_spam`.
+
+- **2026-08-02 05:07--05:31 EDT** -- **The current global opcode target is
+  publicly aliased; an explicit declaration-binding successor is ready.**
+
+  Corrected Stokes public-opcode audit `760904` completed over 40,000 train
+  and 5,000 development cores. The immutable report is preserved at
+  `artifacts/r12/ettr_public_opcode_identifiability_e5dcb41_r1/report.json`;
+  file SHA-256 is
+  `951fbd78006352db6c3c2d5cd4b192831a9d4891de792fbc2a981e2dff683985`
+  and payload SHA-256 is
+  `2f7479c763165f62d8e75401e160a5971580f6fcaa8ce16e7462ba835ac7e022`.
+  Exact alpha-normalized WORLD+COMMAND syntax has a 75.36% development Bayes
+  ceiling but only 5.66% train-to-development coverage. Operator abstraction
+  raises coverage to 79.71% while lowering the Bayes ceiling to 55.18% and
+  all-instance modal accuracy to 43.04%. Topology reaches 99.31% coverage but
+  only a 43.59% Bayes ceiling and 40.02% modal accuracy. The full ordered
+  opcode program is therefore the wrong globally classified target, and held
+  registry-training job `725605` must not be released on this evidence.
+
+  Source inspection identified a narrower interface omission before the
+  ontology is replaced. Every public COMMAND declaration explicitly has the
+  form `call(3, identifier, ordinal, payload)`, but contract-v8 only connects
+  an application to that binding through identifier equality and three
+  synchronous graph hops. A separately gated declaration resolver now
+  broadcasts the exact public ordinal/payload context to every equal symbol
+  occurrence before learned graph propagation. It reads no assessor symbol
+  sidecar, QUERY, answer, trace, target, oracle program, or host semantics;
+  adds no parameters; and remains exactly equivariant to opaque renaming.
+  Focused compiler/router/evaluator/job tests are `43 passed, 1 CUDA-only
+  skipped`; Ruff, byte compilation, and Bash syntax pass.
+
+  Exact-mask V100 control `725610` is running on `evc12`; H100 mirror `725603`
+  remains queued for resources. The next treatment is exact mask plus public
+  declaration binding. If it does not cross both strict axes, no seed/depth/
+  width expansion is allowed: retain the corrected interface and move to a
+  state-grounded syntax-local guarded-edit target.
+
+  Decision:
+  `hold_global_opcode_classification_run_exact_mask_control_then_test_one_explicit_public_declaration_binding_before_replacing_ordered_opcode_imitation_with_guarded_edits`.

@@ -582,6 +582,7 @@ class TokenNativeSyntaxGraphEncoder(nn.Module):
         layers: int = 3,
         maximum_positions: int = 96,
         maximum_identifier_codes: int = 96,
+        resolve_declarations: bool = False,
     ) -> None:
         super().__init__()
         ids = tuple(int(value) for value in codebook_token_ids)
@@ -601,6 +602,7 @@ class TokenNativeSyntaxGraphEncoder(nn.Module):
             or maximum_positions < 3
             or not isinstance(maximum_identifier_codes, int)
             or not 1 <= maximum_identifier_codes < maximum_positions + 1
+            or not isinstance(resolve_declarations, bool)
         ):
             raise TokenNativeSyntaxRouterError(
                 "token-native syntax graph geometry differs"
@@ -615,6 +617,7 @@ class TokenNativeSyntaxGraphEncoder(nn.Module):
         self.width = width
         self.maximum_positions = maximum_positions
         self.maximum_identifier_codes = maximum_identifier_codes
+        self.resolve_declarations = resolve_declarations
 
         self.category_embedding = nn.Embedding(self._CATEGORY_COUNT, width)
         self.head_embedding = nn.Embedding(self._HEAD_COUNT, width)
@@ -880,6 +883,52 @@ class TokenNativeSyntaxGraphEncoder(nn.Module):
             & is_identifier[:, :, None]
             & is_identifier[:, None, :]
         )
+        if self.resolve_declarations:
+            # Public declaration nodes have the exact form
+            # call(3, identifier, ordinal, payload).  Resolve that local
+            # binding before learned message passing so an application does
+            # not need three synchronous graph hops merely to discover the
+            # ordinal and declared payload of its opaque operator.  This uses
+            # only public AST edges and remains equivariant to identifier
+            # renaming.
+            declaration = codes.eq(3 * CALL_STRIDE + 3) & document_mask
+            declaration_identifier = (
+                is_identifier
+                & parent.ge(0)
+                & declaration.gather(1, parent.clamp_min(0))
+                & child_rank.eq(0)
+            )
+            declaration_child = (
+                document_mask
+                & parent.ge(0)
+                & declaration.gather(1, parent.clamp_min(0))
+                & (child_rank.eq(1) | child_rank.eq(2))
+            )
+            same_declaration = (
+                parent[:, :, None].eq(parent[:, None, :])
+                & declaration_identifier[:, :, None]
+                & declaration_child[:, None, :]
+            )
+            declaration_context = torch.bmm(
+                same_declaration.to(structural.dtype),
+                structural,
+            ) / same_declaration.sum(-1, keepdim=True).clamp_min(1).to(
+                structural.dtype
+            )
+            declaration_count = torch.bmm(
+                equality.to(structural.dtype),
+                declaration_identifier.to(structural.dtype).unsqueeze(-1),
+            )
+            torch._assert_async(
+                declaration_count.le(1).all(),
+                "token-native identifier has multiple public declarations",
+            )
+            resolved = torch.bmm(
+                equality.to(structural.dtype),
+                declaration_context,
+            )
+            structural = structural + resolved * is_identifier.unsqueeze(-1)
+            hidden = self.input_norm(memory + structural.to(memory.dtype))
         for layer in self.layers:
             hidden = layer(
                 hidden,
