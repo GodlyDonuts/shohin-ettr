@@ -39,6 +39,8 @@ LAYERS=${LAYERS:-3}
 NUM_HEADS=${NUM_HEADS:-8}
 GROUNDED_POINTERS=${GROUNDED_POINTERS:-0}
 VALID_POINTER_MASKS=${VALID_POINTER_MASKS:-0}
+TOKEN_NATIVE_COMMAND_MASK=${TOKEN_NATIVE_COMMAND_MASK:-0}
+TOKEN_NATIVE_OCCURRENCE_COMMAND=${TOKEN_NATIVE_OCCURRENCE_COMMAND:-0}
 REQUIRED_DEVICE_CLASS=${REQUIRED_DEVICE_CLASS:-h100}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
@@ -53,6 +55,22 @@ if [[ "$VALID_POINTER_MASKS" == 1 ]]; then
   POINTER_ARGS+=(--valid-pointer-masks)
 elif [[ "$VALID_POINTER_MASKS" != 0 ]]; then
   echo "valid-pointer-mask flag differs" >&2
+  exit 2
+fi
+if [[ "$TOKEN_NATIVE_COMMAND_MASK" == 1 ]]; then
+  POINTER_ARGS+=(--token-native-command-mask)
+elif [[ "$TOKEN_NATIVE_COMMAND_MASK" != 0 ]]; then
+  echo "token-native COMMAND mask flag differs" >&2
+  exit 2
+fi
+if [[ "$TOKEN_NATIVE_OCCURRENCE_COMMAND" == 1 ]]; then
+  [[ "$TOKEN_NATIVE_COMMAND_MASK" == 1 ]] || {
+    echo "occurrence binding requires token-native COMMAND masking" >&2
+    exit 2
+  }
+  POINTER_ARGS+=(--token-native-occurrence-command)
+elif [[ "$TOKEN_NATIVE_OCCURRENCE_COMMAND" != 0 ]]; then
+  echo "token-native occurrence flag differs" >&2
   exit 2
 fi
 

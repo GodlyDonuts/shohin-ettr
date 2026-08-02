@@ -25,6 +25,10 @@ from endogenous_typed_theory_reactor import (
     TransactionPolicy,
     TypedTheoryState,
 )
+from token_native_syntax_router import (
+    TokenNativeDocumentMask,
+    TokenNativeOccurrenceEncoder,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -83,6 +87,10 @@ class ParallelAddressedTransactionCompiler(nn.Module):
         num_heads: int = 8,
         grounded_pointers: bool = False,
         valid_pointer_masks: bool = False,
+        token_native_command_mask: bool = False,
+        token_native_occurrence_command: bool = False,
+        token_native_codebook_ids: Sequence[int] | None = None,
+        token_native_vocab_size: int | None = None,
     ) -> None:
         super().__init__()
         config.validate()
@@ -97,6 +105,26 @@ class ParallelAddressedTransactionCompiler(nn.Module):
             or not isinstance(grounded_pointers, bool)
             or not isinstance(valid_pointer_masks, bool)
             or (valid_pointer_masks and not grounded_pointers)
+            or not isinstance(token_native_command_mask, bool)
+            or not isinstance(token_native_occurrence_command, bool)
+            or (
+                token_native_occurrence_command
+                and not token_native_command_mask
+            )
+            or (
+                token_native_command_mask
+                and (
+                    token_native_codebook_ids is None
+                    or token_native_vocab_size is None
+                )
+            )
+            or (
+                not token_native_command_mask
+                and (
+                    token_native_codebook_ids is not None
+                    or token_native_vocab_size is not None
+                )
+            )
         ):
             raise TheoryReactorError("addressed schedule geometry differs")
         self.config = config
@@ -105,9 +133,33 @@ class ParallelAddressedTransactionCompiler(nn.Module):
         self.num_heads = num_heads
         self.grounded_pointers = grounded_pointers
         self.valid_pointer_masks = valid_pointer_masks
+        self.token_native_command_mask = token_native_command_mask
+        self.token_native_occurrence_command = (
+            token_native_occurrence_command
+        )
 
         self.command_projection = nn.Linear(config.d_model, width)
         self.command_norm = nn.LayerNorm(width)
+        self.command_document_mask = (
+            TokenNativeDocumentMask(
+                token_native_codebook_ids,
+                vocab_size=token_native_vocab_size,
+            )
+            if token_native_command_mask
+            else None
+        )
+        self.command_occurrence_encoder = (
+            TokenNativeOccurrenceEncoder(
+                token_native_codebook_ids,
+                vocab_size=token_native_vocab_size,
+                width=width,
+                num_heads=num_heads,
+                maximum_positions=96,
+                maximum_identifier_codes=96,
+            )
+            if token_native_occurrence_command
+            else None
+        )
         self.value_embedding = nn.Parameter(
             torch.empty(config.num_value_codes, width)
         )
@@ -239,6 +291,7 @@ class ParallelAddressedTransactionCompiler(nn.Module):
         *,
         command_hidden: torch.Tensor,
         command_attention_mask: torch.Tensor,
+        command_tokens: torch.Tensor | None = None,
         steps: int,
         hard: bool,
     ) -> AddressedSchedule:
@@ -250,9 +303,32 @@ class ParallelAddressedTransactionCompiler(nn.Module):
             or command_hidden.shape[-1] != self.config.d_model
             or command_attention_mask.shape != command_hidden.shape[:2]
             or command_attention_mask.dtype != torch.bool
+            or (
+                self.token_native_command_mask
+                and (
+                    command_tokens is None
+                    or command_tokens.shape != command_hidden.shape[:2]
+                    or command_tokens.dtype != torch.long
+                )
+            )
+            or (
+                not self.token_native_command_mask
+                and command_tokens is not None
+            )
         ):
             raise TheoryReactorError("addressed schedule input differs")
+        if self.command_document_mask is not None:
+            command_attention_mask = self.command_document_mask(
+                command_tokens,
+                command_attention_mask,
+            )
         command = self.command_norm(self.command_projection(command_hidden))
+        if self.command_occurrence_encoder is not None:
+            command = self.command_occurrence_encoder(
+                command,
+                command_tokens,
+                command_attention_mask,
+            )
         state_memory = self._state_memory(state)
         memory = torch.cat((command, state_memory), dim=1)
         padding = torch.cat(
@@ -372,6 +448,7 @@ class MeanParallelAddressedScheduleCompiler(nn.Module):
         *,
         command_hidden: torch.Tensor,
         command_attention_mask: torch.Tensor,
+        command_tokens: torch.Tensor | None = None,
         steps: int,
         hard: bool,
     ) -> AddressedSchedule:
@@ -380,6 +457,7 @@ class MeanParallelAddressedScheduleCompiler(nn.Module):
                 state,
                 command_hidden=command_hidden,
                 command_attention_mask=command_attention_mask,
+                command_tokens=command_tokens,
                 steps=steps,
                 hard=False,
             )
@@ -428,6 +506,7 @@ class ParallelScheduledReactor(nn.Module):
             raise TheoryReactorError("parallel reactor config differs")
         self.config = config
         self.compiler = compiler
+        self.requires_command_tokens = compiler.token_native_command_mask
 
     def apply(
         self,
@@ -455,6 +534,7 @@ class ParallelScheduledReactor(nn.Module):
         hard: bool = False,
         command_hidden: torch.Tensor | None = None,
         command_attention_mask: torch.Tensor | None = None,
+        command_tokens: torch.Tensor | None = None,
     ) -> tuple[TypedTheoryState, ReactorTrace]:
         if command_hidden is None or command_attention_mask is None:
             raise TheoryReactorError("parallel reactor requires COMMAND bytes")
@@ -462,6 +542,7 @@ class ParallelScheduledReactor(nn.Module):
             state,
             command_hidden=command_hidden,
             command_attention_mask=command_attention_mask.bool(),
+            command_tokens=command_tokens,
             steps=steps,
             hard=hard,
         )

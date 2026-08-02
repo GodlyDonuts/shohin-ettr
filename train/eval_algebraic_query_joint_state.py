@@ -104,6 +104,9 @@ _SCHEDULE_SCHEMAS = {
     "shohin-ettr-parallel-addressed-transaction-contract-v5": (
         "shohin-ettr-parallel-addressed-transaction-report-v5"
     ),
+    "shohin-ettr-parallel-addressed-transaction-contract-v6": (
+        "shohin-ettr-parallel-addressed-transaction-report-v6"
+    ),
 }
 _ARMS = (
     "autonomous_program_autonomous_state",
@@ -354,6 +357,7 @@ def _load_parallel_schedule(
     *,
     model,
     provenance,
+    stream,
     replacement_system_parameters: int,
 ) -> tuple[dict[str, object] | None, int]:
     if args.schedule_run_dir is None:
@@ -433,6 +437,14 @@ def _load_parallel_schedule(
         num_heads = int(architecture["num_heads"])
         grounded_pointers = architecture.get("grounded_pointers", False)
         valid_pointer_masks = architecture.get("valid_pointer_masks", False)
+        token_native_command_mask = architecture.get(
+            "token_native_command_mask",
+            False,
+        )
+        token_native_occurrence_command = architecture.get(
+            "token_native_occurrence_command",
+            False,
+        )
     except (KeyError, TypeError, ValueError) as exc:
         raise AlgebraicJointStateEvaluationError(
             "parallel schedule architecture differs"
@@ -441,6 +453,17 @@ def _load_parallel_schedule(
         not isinstance(grounded_pointers, bool)
         or not isinstance(valid_pointer_masks, bool)
         or (valid_pointer_masks and not grounded_pointers)
+        or not isinstance(token_native_command_mask, bool)
+        or not isinstance(token_native_occurrence_command, bool)
+        or (
+            token_native_occurrence_command
+            and not token_native_command_mask
+        )
+        or (
+            token_native_command_mask
+            and architecture.get("token_native_codebook_sha256")
+            != stream.codec.codebook_sha256
+        )
     ):
         raise AlgebraicJointStateEvaluationError(
             "parallel schedule architecture differs"
@@ -454,6 +477,18 @@ def _load_parallel_schedule(
         num_heads=num_heads,
         grounded_pointers=grounded_pointers,
         valid_pointer_masks=valid_pointer_masks,
+        token_native_command_mask=token_native_command_mask,
+        token_native_occurrence_command=token_native_occurrence_command,
+        token_native_codebook_ids=(
+            stream.codec.codebook.token_ids
+            if token_native_command_mask
+            else None
+        ),
+        token_native_vocab_size=(
+            model.base.cfg.vocab_size
+            if token_native_command_mask
+            else None
+        ),
     ).to(
         device=next(model.parameters()).device,
         dtype=next(model.parameters()).dtype,
@@ -965,6 +1000,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             args,
             model=model,
             provenance=provenance,
+            stream=stream,
             replacement_system_parameters=replacement_system_parameters,
         )
     )

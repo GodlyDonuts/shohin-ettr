@@ -93,6 +93,97 @@ def test_parallel_schedule_is_well_formed_and_hard() -> None:
         assert bool(((applied == 0) | (applied == 1)).all())
 
 
+def test_occurrence_linked_schedule_is_identifier_rename_equivariant() -> None:
+    from ettr_il_v2_surface import SurfaceRenderer, call, integer, symbol
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    ast = call(
+        14,
+        integer(2),
+        call(
+            1,
+            call(3, symbol("x0000000000000001"), integer(0), call(0)),
+            call(3, symbol("x0000000000000002"), integer(1), call(0)),
+        ),
+        call(
+            13,
+            call(4, symbol("x0000000000000002")),
+            call(4, symbol("x0000000000000001")),
+        ),
+    )
+    transport = codec.pack(
+        codec.serialize(ast, SurfaceRenderer.CANONICAL_JSON),
+        width=32,
+    )
+    tokens = torch.tensor([transport.token_ids], dtype=torch.long)
+    renamed = tokens.clone()
+    first, second = codec.codebook.token_ids[-2:]
+    renamed = torch.where(tokens.eq(first), second, renamed)
+    renamed = torch.where(tokens.eq(second), first, renamed)
+    compiler = ParallelAddressedTransactionCompiler(
+        _config(),
+        width=64,
+        layers=1,
+        num_heads=2,
+        token_native_command_mask=True,
+        token_native_occurrence_command=True,
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    ).eval()
+    state = _state(_config(), batch=1)
+    kwargs = {
+        "command_hidden": torch.zeros(1, 32, _config().d_model),
+        "command_attention_mask": torch.ones(1, 32, dtype=torch.bool),
+        "steps": 3,
+        "hard": False,
+    }
+    with torch.no_grad():
+        original = compiler(state, command_tokens=tokens, **kwargs)
+        permuted = compiler(state, command_tokens=renamed, **kwargs)
+    for field in (
+        "opcode",
+        "source",
+        "target",
+        "relation",
+        "type_index",
+        "value_code",
+    ):
+        assert torch.equal(getattr(original, field), getattr(permuted, field))
+    reactor = ParallelScheduledReactor(compiler, _config())
+    assert reactor.requires_command_tokens
+
+
+def test_occurrence_linked_schedule_requires_command_tokens() -> None:
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    compiler = ParallelAddressedTransactionCompiler(
+        _config(),
+        width=64,
+        layers=1,
+        num_heads=2,
+        token_native_command_mask=True,
+        token_native_occurrence_command=True,
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+    with pytest.raises(TheoryReactorError, match="input differs"):
+        compiler(
+            _state(_config()),
+            command_hidden=torch.randn(2, 5, _config().d_model),
+            command_attention_mask=torch.ones(2, 5, dtype=torch.bool),
+            steps=3,
+            hard=True,
+        )
+
+
 def test_mean_schedule_ensemble_averages_before_one_hard_decision() -> None:
     config = _config()
     compilers = [
@@ -367,6 +458,19 @@ def test_production_geometry_stays_inside_remaining_parameter_budget() -> None:
         185_696_111 - recurrent_policy_parameters + parameters
         == 162_401_647
     )
+
+
+def test_occurrence_linked_production_geometry_stays_inside_system_cap() -> None:
+    compiler = ParallelAddressedTransactionCompiler(
+        TheoryReactorConfig(),
+        token_native_command_mask=True,
+        token_native_occurrence_command=True,
+        token_native_codebook_ids=tuple(range(2_398)),
+        token_native_vocab_size=50_000,
+    )
+    parameters = sum(parameter.numel() for parameter in compiler.parameters())
+    complete = 185_696_111 - 29_757_217 + parameters
+    assert complete < 200_000_000
 
 
 def test_wide_geometry_uses_the_recovered_budget_without_crossing_cap() -> None:

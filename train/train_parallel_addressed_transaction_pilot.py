@@ -44,8 +44,8 @@ from train_ettr_component_island import (
 )
 
 
-CONTRACT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-contract-v5"
-REPORT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-report-v5"
+CONTRACT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-contract-v6"
+REPORT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-report-v6"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _FIELDS = (
@@ -98,6 +98,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--num-heads", type=int, default=8)
     parser.add_argument("--grounded-pointers", action="store_true")
     parser.add_argument("--valid-pointer-masks", action="store_true")
+    parser.add_argument("--token-native-command-mask", action="store_true")
+    parser.add_argument(
+        "--token-native-occurrence-command",
+        action="store_true",
+    )
     parser.add_argument(
         "--required-device-class",
         choices=("h100", "cuda"),
@@ -136,6 +141,10 @@ def _validate_args(args: argparse.Namespace) -> None:
         or args.eval_batches < 2
         or args.log_every < 1
         or (args.valid_pointer_masks and not args.grounded_pointers)
+        or (
+            args.token_native_occurrence_command
+            and not args.token_native_command_mask
+        )
         or not math.isfinite(args.learning_rate)
         or not 0.0 < args.learning_rate < 1.0
         or not math.isfinite(args.gradient_clip)
@@ -433,6 +442,11 @@ def _evaluate_interfaces(
             schedule = schedule_compiler(
                 initial,
                 command_hidden=command_hidden,
+                command_tokens=(
+                    batch.episodes.command.tokens
+                    if schedule_compiler.token_native_command_mask
+                    else None
+                ),
                 command_attention_mask=batch.episodes.command.attention_mask.bool(),
                 steps=batch.transaction_targets.opcode.shape[1],
                 hard=True,
@@ -566,6 +580,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         num_heads=args.num_heads,
         grounded_pointers=args.grounded_pointers,
         valid_pointer_masks=args.valid_pointer_masks,
+        token_native_command_mask=args.token_native_command_mask,
+        token_native_occurrence_command=(
+            args.token_native_occurrence_command
+        ),
+        token_native_codebook_ids=(
+            stream.codec.codebook.token_ids
+            if args.token_native_command_mask
+            else None
+        ),
+        token_native_vocab_size=(
+            model.base.cfg.vocab_size
+            if args.token_native_command_mask
+            else None
+        ),
     ).to(device=device, dtype=next(model.parameters()).dtype)
     schedule_parameters = sum(
         parameter.numel() for parameter in schedule_compiler.parameters()
@@ -644,6 +672,17 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ),
                 "seed": args.architecture_seed,
                 "sticky_schedule": True,
+                "token_native_command_mask": (
+                    args.token_native_command_mask
+                ),
+                "token_native_occurrence_command": (
+                    args.token_native_occurrence_command
+                ),
+                "token_native_codebook_sha256": (
+                    stream.codec.codebook_sha256
+                    if args.token_native_command_mask
+                    else None
+                ),
                 "valid_pointer_masks": args.valid_pointer_masks,
                 "width": args.width,
             },
@@ -712,6 +751,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                 schedule = schedule_compiler(
                     initial,
                     command_hidden=command_hidden.detach(),
+                    command_tokens=(
+                        batch.episodes.command.tokens
+                        if args.token_native_command_mask
+                        else None
+                    ),
                     command_attention_mask=(
                         batch.episodes.command.attention_mask.bool()
                     ),
@@ -763,7 +807,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "loss": last_loss,
                     "parts": parts,
                     "position": last_position,
-                    "schema": "shohin-ettr-parallel-addressed-transaction-metric-v1",
+                    "schema": "shohin-ettr-parallel-addressed-transaction-metric-v2",
                     "semantic_prefix_loss": last_semantic_prefix_loss,
                     "semantic_prefix_parts": semantic_prefix_parts,
                     "schedule_loss": last_schedule_loss,

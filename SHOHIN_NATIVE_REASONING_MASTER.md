@@ -53613,3 +53613,31 @@ to the sticky schedule compiler and exact transaction algebra.
 
 Current decision:
 `replace_generic_token_pooling_with_permutation_equivariant_occurrence_binding_and_test_the_exact_same_causal_gate`.
+
+### 2026-08-02: occurrence binding enters the exact-executor path
+
+The explicit equality circuit is now being tested in two different output
+topologies. Direct terminal-state prediction is running as V100 diagnostic
+`725555` with matched H100 claim job `725553` queued. The V100 arm has passed
+runtime custody and remains finite during training.
+
+In parallel, the same target-free occurrence memory has been integrated into
+the strongest prior architecture: one sticky transaction schedule followed by
+the fixed exact typed-state algebra. This distinction matters. A direct
+fieldwise editor can still average mutually incompatible edits even after it
+knows which identifiers match. The sticky compiler is forced to preserve one
+complete program hypothesis, and the exact executor guarantees that all
+state mutations follow the same transaction semantics.
+
+The narrow occurrence-linked scheduler adds no ontology decoder or external
+execution. Its trainable scheduler has 10,924,449 parameters; the complete
+system has 166,863,343 parameters, safely below the 200M limit. Independent
+loading, source-token enforcement, identifier-renaming equivariance, exact
+algebra replay, and parameter-cap tests pass. The preregistered comparison is
+the same seed-31/data-11, position-zero, 1,000-update oracle-initial gate as
+historical control `725460`. Promotion requires simultaneous strict WORLD and
+COMMAND improvement on the unchanged source-deleted board; schedule imitation
+alone does not count.
+
+Current decision:
+`bind_local_identity_before_compiling_one_coherent_schedule_and_measure_only_unchanged_autonomous_causal_gates`.

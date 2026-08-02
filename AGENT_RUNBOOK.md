@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-02 00:42 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 01:00 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -157,7 +157,12 @@
 > equal opaque identifier occurrences before atomic edit compilation. It still
 > admits no sidecar names, QUERY, answers, targets, oracle programs, or host
 > semantic execution. No current artifact is promoted as stable native
-> reasoning.
+> reasoning. The matched direct occurrence arm is running as V100 diagnostic
+> `725555` and queued as H100 claim job `725553`. In parallel, the same
+> occurrence quotient is now integrated into the stronger sticky schedule plus
+> exact-executor architecture. That complete system is 166,863,343 parameters,
+> receives no QUERY/answer/target/oracle program at inference, and passes its
+> focused architecture and deployment tests.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -23302,3 +23307,34 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_dense_token_pooling_and_launch_one_matched_occurrence_linked_h100_gate_then_move_to_sticky_schedules_if_state_remains_invariant`.
+
+- **2026-08-02 00:42--01:00 EDT** -- **The direct occurrence gate is live,
+  and occurrence-linked sticky scheduling is implemented under the cap.**
+
+  Private commit `9841b7d` is pushed. Immutable runtime
+  `scratchpad/shohin_ettr_occurrence_binding_runtime_9841b7d_r3` contains
+  3,574 measured files at exact source commit
+  `9841b7d71ed5c77673e720d43b536649490ed881`; SHA256SUMS SHA-256 is
+  `0b84be2885dc6e28084db5e8e7e898b0f29f19dc481ab9d7a1d41940aca30125`.
+  Two incomplete transfers were quarantined before submission and never
+  entered evidence. Matched H100 claim job `725553` is pending priority.
+  Non-competing V100 diagnostic `725555` is training cleanly on `evc21`; it
+  passed all runtime hashes and produced finite falling losses through the
+  latest check. It cannot promote a claim by itself.
+
+  The occurrence quotient is also integrated into the historically stronger
+  `ParallelAddressedTransactionCompiler`. The treatment masks public cover,
+  factorizes grammar roles, links all repeated opaque identifiers by exact
+  within-document equality, compiles one sticky schedule, and applies that
+  schedule through the unchanged exact transaction algebra. It receives no
+  QUERY, answer, target packet, oracle program, candidate selector, or host
+  semantic solver. Its deployment wrapper now explicitly requires source token
+  IDs, and the independent hash-bound schedule loader reconstructs and verifies
+  the new contract-v6 geometry. The scheduler has 10,924,449 parameters; the
+  complete system is 166,863,343, leaving 33,136,657 parameters under the hard
+  cap. Twenty-nine focused tests plus twenty-four executor/independent-loader
+  regressions pass; Ruff, byte compilation, Bash syntax, and diff checks are
+  clean.
+
+  Decision:
+  `finish_the_direct_diagnostic_while_sealing_the_occurrence_linked_sticky_schedule_then_gate_both_strict_causal_axes_against_725460`.
