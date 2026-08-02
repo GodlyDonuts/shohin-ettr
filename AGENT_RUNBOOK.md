@@ -22875,3 +22875,17 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reduce_compiler_basin_variance_by_uniformly_averaging_complete_schedule_probabilities_then_require_one_hard_autonomous_world_and_command_win_on_three_orderings`.
+
+  Private commit `03472e8` contains the implementation, tests, frozen reports,
+  and preregistration. Runtime
+  `scratchpad/shohin_ettr_ensemble_runtime_03472e8_r1` was constructed by
+  hardlinking the last admitted runtime, removing 69 unmanifested cache files,
+  replacing only commit-differing sources, and adding four new tracked runtime
+  files. Its 3,413-file `SHA256SUMS` has SHA-256
+  `80ccbe91ef199d507102fc3ea0aee36ae9c271e8ac137bfd91205c2ecf6f449e`.
+  Slurm test-only admission passed. Receipt
+  `scratchpad/ettr-parallel-schedule-ensemble-03472e8.tsv`, SHA-256
+  `5037febf9082496552760b840db6d0a75ee7503517016b57dea3cc0b700704a6`,
+  records independent read-only H100 evaluations `725451/725452/725453` for
+  data orderings `2026080111/12/14`. The jobs have fresh isolated outputs and
+  cannot write any trained component.
