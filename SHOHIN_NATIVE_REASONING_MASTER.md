@@ -53815,3 +53815,19 @@ source-deleted evaluator and replication across seeds and populations. The
 
 Current decision:
 `treat_5k_as_a_coherence_failure_not_grokking_and_test_a_single_sticky_opcode_macro_with_dynamic_operands`.
+
+### 2026-08-02: mutually exclusive operation-family control
+
+The full train/development mutation audit proves that WRITE and LINK never
+co-occur in one public operation. This closes post-WRITE relation binding and
+changes the next architecture question from simultaneous rail coordination to
+operation-family selection. Contract v18 adds one corpus-exact
+`NONE/WRITE/LINK` controller and hard-suppresses the losing rail before count
+and operand release. It retains v15's data, matching, payload heads, fixed
+algebra, and unchanged source-deleted evaluator. The compiler has 49,018,108
+parameters and passes 58 focused tests plus static custody. V18 is held behind
+the v15 independent diagnostic: family error or WRITE/LINK conflict releases
+v18; correct family with wrong operands releases v16; local-state gains with
+zero strict causal movement release crossed sufficiency isolation. This keeps
+the next GPU spend tied to a measured mechanism rather than running similar
+arms concurrently.

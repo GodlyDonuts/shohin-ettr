@@ -95,6 +95,7 @@ class AtomicTypedEdits:
     effect_relation_unlink: torch.Tensor | None = None
     effect_root_pointer: torch.Tensor | None = None
     effect_count: torch.Tensor | None = None
+    effect_family: torch.Tensor | None = None
 
 
 class _TerminalStateLayer(nn.Module):

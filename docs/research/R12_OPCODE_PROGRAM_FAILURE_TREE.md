@@ -680,3 +680,38 @@ NONE-only, WRITE-only, or LINK-only. A successor may therefore classify one
 operation family and release only that family's count and payload motors. This
 is not another per-effect kind classifier; it is one corpus-exact mutually
 exclusive control decision that prevents cross-rail interference.
+
+## Contract-v18 preregistered operation-family gate
+
+Contract v18 implements that exact invariant before reading v15's endpoint.
+One three-class head consumes the public operation-role anchors and current
+typed-state slots and predicts `NONE`, `WRITE`, or `LINK`. Hard inference
+releases only the selected rail, forces the losing rail's count to zero, and
+cannot emit both families. The final outcome/disposition stage is unaffected.
+The treatment retains v15's detached typed bipartite matching, count heads,
+operand heads, fixed algebra, data, and evaluation; it adds one class-balanced
+operation-family loss. This makes it an isolated control intervention rather
+than a bundled supervision-plus-architecture arm.
+
+The compiler has 49,018,108 parameters. Its focused hostile test forces both
+rail count heads to one and proves that deployed output contains exactly one
+family. A mixed `NONE/WRITE/LINK` batch gives finite direct gradients to the
+family head. Contract/report/metric schema v18, independent evaluator
+reconstruction, launcher exclusivity, operation-family diagnostics, and the
+sealed router are covered by 58 passing focused tests plus static checks.
+
+The v15-to-successor decision is frozen as follows:
+
+1. If local effects, terminal state, WORLD, and COMMAND improve together,
+   replicate v15 before changing architecture.
+2. If operation-family exactness is below 90% or predicted WRITE/LINK conflict
+   exceeds 1%, release v18.
+3. If family is already at least 90% exact but rail operands remain wrong,
+   release v16's rail-local pointer/payload acquisition.
+4. If v18's hard invariant is correct but its family head remains below 90%,
+   freeze payload rails and isolate family acquisition before joint release.
+5. If local/terminal exactness improves while strict axes remain zero, run
+   crossed state-sufficiency isolation; no duplicate state fit is allowed.
+
+V18 remains mechanically complete but scientifically held while sole v15 fit
+`728691` retains its accrued Newton priority.

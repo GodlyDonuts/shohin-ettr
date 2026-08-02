@@ -6,6 +6,7 @@ from copy import deepcopy
 
 from route_operation_effect_set_result import (
     CARDINALITY_GATED_SCHEMA,
+    OPERATION_FAMILY_GATE_SCHEMA,
     POST_WRITE_LINK_SCHEMA,
     RAIL_LOCAL_EFFECT_SCHEMA,
     REPORT_SCHEMA,
@@ -24,11 +25,19 @@ def _local(
     other: int = 80,
     entity: float = 0.0,
     link: float = 0.0,
+    family: float | None = None,
+    family_conflict: float | None = None,
 ) -> dict[str, object]:
+    exact_rates = {
+        "complete_dense_edit_exact": dense,
+        "complete_effect_set_exact": effect_set,
+    }
+    if family is not None:
+        exact_rates["operation_family_exact"] = family
     return {
-        "exact_rates": {
-            "complete_dense_edit_exact": dense,
-            "complete_effect_set_exact": effect_set,
+        "exact_rates": exact_rates,
+        "diagnostic_rates": {
+            "predicted_operation_family_conflict": family_conflict,
         },
         "positive_exact_rates": {
             "entity": entity,
@@ -113,6 +122,26 @@ def test_router_sends_typed_rail_collapse_to_payload_islands() -> None:
     assert result["route"] == "rail_local_pointer_payload_islands"
     result = route_result(report, {"schema": POST_WRITE_LINK_SCHEMA})
     assert result["route"] == "rail_local_pointer_payload_islands"
+
+
+def test_router_sends_cross_rail_conflict_to_operation_family_gate() -> None:
+    report = _report()
+    report["operation_effect_diagnostics"]["after"] = _local(
+        family=0.5,
+        family_conflict=0.25,
+    )
+    result = route_result(report, {"schema": WRITE_LINK_RAIL_SCHEMA})
+    assert result["route"] == "exclusive_operation_family_gate"
+
+
+def test_router_isolates_failed_operation_family_controller() -> None:
+    report = _report()
+    report["operation_effect_diagnostics"]["after"] = _local(
+        family=0.75,
+        family_conflict=0.0,
+    )
+    result = route_result(report, {"schema": OPERATION_FAMILY_GATE_SCHEMA})
+    assert result["route"] == "operation_family_island_curriculum"
 
 
 def test_router_sends_relation_binding_failure_to_two_phase_algebra() -> None:

@@ -18,7 +18,9 @@ from operation_state_transition_compiler import (
 from parallel_terminal_state_compiler import AtomicTypedEdits
 
 
-def _exact_edits(*, collapsed: bool = False) -> tuple[
+def _exact_edits(
+    *, collapsed: bool = False
+) -> tuple[
     AtomicTypedEdits,
     dict[str, torch.Tensor],
     torch.Tensor,
@@ -60,9 +62,13 @@ def _exact_edits(*, collapsed: bool = False) -> tuple[
     node_pointer = torch.zeros(batch, effects, 2, slots)
     node_pointer[:, :, :, 0] = 1.0
     node_pointer[0, 2, 0] = F.one_hot(torch.tensor(1), slots).float()
-    effect_value = F.one_hot(torch.zeros(batch, effects, dtype=torch.long), values).float()
+    effect_value = F.one_hot(
+        torch.zeros(batch, effects, dtype=torch.long), values
+    ).float()
     effect_value[0, 2] = F.one_hot(torch.tensor(4), values).float()
-    effect_type = F.one_hot(torch.zeros(batch, effects, dtype=torch.long), types).float()
+    effect_type = F.one_hot(
+        torch.zeros(batch, effects, dtype=torch.long), types
+    ).float()
     effect_type[0, 2] = F.one_hot(torch.tensor(2), types).float()
     relation_link = torch.zeros(batch, effects, relations, slots, slots)
     relation_link[:, :, 0, 0, 0] = 1.0
@@ -90,9 +96,7 @@ def _exact_edits(*, collapsed: bool = False) -> tuple[
         effect_root_pointer=root_pointer,
     )
     slot_mask = torch.ones(batch, slots, dtype=torch.bool)
-    relation_mask = torch.ones(
-        batch, relations, slots, slots, dtype=torch.bool
-    )
+    relation_mask = torch.ones(batch, relations, slots, slots, dtype=torch.bool)
     return edits, target, slot_mask, relation_mask
 
 

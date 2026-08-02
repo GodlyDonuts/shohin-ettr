@@ -57,6 +57,7 @@ OPERATION_EFFECT_CARDINALITY_GATE=${OPERATION_EFFECT_CARDINALITY_GATE:-0}
 OPERATION_EFFECT_WRITE_LINK_RAILS=${OPERATION_EFFECT_WRITE_LINK_RAILS:-0}
 OPERATION_EFFECT_RAIL_LOCAL_LOSS=${OPERATION_EFFECT_RAIL_LOCAL_LOSS:-0}
 OPERATION_EFFECT_POST_WRITE_LINK_BINDING=${OPERATION_EFFECT_POST_WRITE_LINK_BINDING:-0}
+OPERATION_EFFECT_FAMILY_GATE=${OPERATION_EFFECT_FAMILY_GATE:-0}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
 for path in "$CODE_ROOT" "$RELEASE_ROOT" "$ETTR_DATA_ROOT" \
@@ -272,6 +273,18 @@ if [[ "$OPERATION_EFFECT_POST_WRITE_LINK_BINDING" == 1 ]]; then
   residual_args+=(--operation-effect-post-write-link-binding)
 elif [[ "$OPERATION_EFFECT_POST_WRITE_LINK_BINDING" != 0 ]]; then
   echo "post-write link binding setting differs" >&2
+  exit 2
+fi
+if [[ "$OPERATION_EFFECT_FAMILY_GATE" == 1 ]]; then
+  [[ "$OPERATION_EFFECT_WRITE_LINK_RAILS" == 1 \
+    && "$OPERATION_EFFECT_RAIL_LOCAL_LOSS" == 0 \
+    && "$OPERATION_EFFECT_POST_WRITE_LINK_BINDING" == 0 ]] || {
+    echo "operation family gate requires original write/link supervision" >&2
+    exit 2
+  }
+  residual_args+=(--operation-effect-family-gate)
+elif [[ "$OPERATION_EFFECT_FAMILY_GATE" != 0 ]]; then
+  echo "operation family gate setting differs" >&2
   exit 2
 fi
 

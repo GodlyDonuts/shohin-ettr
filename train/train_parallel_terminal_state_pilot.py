@@ -52,6 +52,7 @@ from operation_state_transition_compiler import (
     EFFECT_WRITE,
     FactorizedOperationStateTransitionCompiler,
     OperationEffectSetCompiler,
+    OperationFamilyGatedWriteLinkCompiler,
     OperationPostWriteLinkRailCompiler,
     OperationStateTransitionCompiler,
     OperationWriteLinkRailCompiler,
@@ -61,6 +62,10 @@ from operation_state_transition_compiler import (
     ROLE_ANCHORED_EFFECT_SLOTS,
     WRITE_LINK_RAIL_EFFECT_SLOTS,
     WRITE_RAIL_EFFECT_SLOTS,
+    OPERATION_EFFECT_FAMILY_COUNT,
+    OPERATION_EFFECT_FAMILY_LINK,
+    OPERATION_EFFECT_FAMILY_NONE,
+    OPERATION_EFFECT_FAMILY_WRITE,
 )
 from probe_ettr_oracle_interfaces import (
     _packet_batch_counts,
@@ -132,6 +137,10 @@ RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contrac
 RAIL_LOCAL_EFFECT_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v16"
 POST_WRITE_LINK_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v17"
 POST_WRITE_LINK_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v17"
+OPERATION_FAMILY_GATE_CONTRACT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-contract-v18"
+)
+OPERATION_FAMILY_GATE_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v18"
 CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v3"
 REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v3"
 CAUSAL_DELTA_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v2"
@@ -234,6 +243,10 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--operation-effect-post-write-link-binding",
         action="store_true",
     )
+    parser.add_argument(
+        "--operation-effect-family-gate",
+        action="store_true",
+    )
     parser.add_argument("--atomic-action-weight", type=float, default=1.0)
     parser.add_argument(
         "--required-device-class",
@@ -282,6 +295,11 @@ def _validate_args(args: argparse.Namespace) -> None:
     operation_effect_post_write_link_binding = getattr(
         args,
         "operation_effect_post_write_link_binding",
+        False,
+    )
+    operation_effect_family_gate = getattr(
+        args,
+        "operation_effect_family_gate",
         False,
     )
     paths = (
@@ -365,6 +383,14 @@ def _validate_args(args: argparse.Namespace) -> None:
             and (
                 not operation_effect_write_link_rails
                 or operation_effect_rail_local_loss
+            )
+        )
+        or (
+            operation_effect_family_gate
+            and (
+                not operation_effect_write_link_rails
+                or operation_effect_rail_local_loss
+                or operation_effect_post_write_link_binding
             )
         )
         or args.output.exists()
@@ -1143,6 +1169,57 @@ def operation_write_link_rail_loss(
     return torch.stack(parts).mean()
 
 
+def operation_effect_family_loss(
+    edits: AtomicTypedEdits,
+    target: dict[str, torch.Tensor],
+    *,
+    slot_mask: torch.Tensor,
+    relation_mask: torch.Tensor,
+) -> tuple[torch.Tensor, dict[str, int]]:
+    """Supervise the corpus-exact mutually exclusive NONE/WRITE/LINK family."""
+
+    if (
+        edits.effect_family is None
+        or edits.effect_family.ndim != 2
+        or edits.effect_family.shape[-1] != OPERATION_EFFECT_FAMILY_COUNT
+    ):
+        raise ParallelTerminalStatePilotError(
+            "operation effect family prediction differs"
+        )
+    labels = _operation_effect_targets(
+        target,
+        maximum_effects=WRITE_LINK_RAIL_EFFECT_SLOTS,
+        slot_mask=slot_mask,
+        relation_mask=relation_mask,
+    )["kind"]
+    write = labels.eq(EFFECT_WRITE).any(-1)
+    link = labels.eq(EFFECT_LINK).any(-1)
+    unsupported = (
+        labels.ne(EFFECT_NOOP) & ~labels.eq(EFFECT_WRITE) & ~labels.eq(EFFECT_LINK)
+    )
+    if bool((write & link).any()) or bool(unsupported.any()):
+        raise ParallelTerminalStatePilotError(
+            "operation effect family target support differs"
+        )
+    family = torch.full_like(
+        write,
+        OPERATION_EFFECT_FAMILY_NONE,
+        dtype=torch.long,
+    )
+    family = torch.where(
+        write,
+        torch.full_like(family, OPERATION_EFFECT_FAMILY_WRITE),
+        family,
+    )
+    family = torch.where(
+        link,
+        torch.full_like(family, OPERATION_EFFECT_FAMILY_LINK),
+        family,
+    )
+    mask = torch.ones_like(family, dtype=torch.bool)
+    return _class_balanced_nll(edits.effect_family, family, mask)
+
+
 def atomic_typed_edit_loss(
     edits: AtomicTypedEdits,
     target: dict[str, torch.Tensor],
@@ -1213,6 +1290,19 @@ def atomic_typed_edit_loss(
                 relation_mask=relation_mask,
             )
         )
+    if edits.effect_family is not None:
+        if not all(present_effect_fields):
+            raise ParallelTerminalStatePilotError(
+                "operation effect family requires typed effect rails"
+            )
+        family_loss, family_counts = operation_effect_family_loss(
+            edits,
+            target,
+            slot_mask=slot_mask,
+            relation_mask=relation_mask,
+        )
+        parts["effect_family"] = family_loss
+        counts["effect_family"] = family_counts
     count_specifications = {
         "node_edit_count": (
             edits.node_edit_count,
@@ -1405,6 +1495,7 @@ def _run_schemas(
     operation_effect_write_link_rails: bool = False,
     operation_effect_rail_local_loss: bool = False,
     operation_effect_post_write_link_binding: bool = False,
+    operation_effect_family_gate: bool = False,
 ) -> tuple[str, str, str]:
     if operation_effect_write_link_rails:
         if (
@@ -1417,34 +1508,51 @@ def _run_schemas(
                 operation_effect_post_write_link_binding
                 and operation_effect_rail_local_loss
             )
+            or (
+                operation_effect_family_gate
+                and (
+                    operation_effect_post_write_link_binding
+                    or operation_effect_rail_local_loss
+                )
+            )
         ):
             raise ParallelTerminalStatePilotError(
                 "write/link rail architecture schema differs"
             )
         return (
             (
-                POST_WRITE_LINK_CONTRACT_SCHEMA
+                OPERATION_FAMILY_GATE_CONTRACT_SCHEMA
+                if operation_effect_family_gate
+                else POST_WRITE_LINK_CONTRACT_SCHEMA
                 if operation_effect_post_write_link_binding
                 else RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA
                 if operation_effect_rail_local_loss
                 else WRITE_LINK_RAIL_CONTRACT_SCHEMA
             ),
             (
-                POST_WRITE_LINK_REPORT_SCHEMA
+                OPERATION_FAMILY_GATE_REPORT_SCHEMA
+                if operation_effect_family_gate
+                else POST_WRITE_LINK_REPORT_SCHEMA
                 if operation_effect_post_write_link_binding
                 else RAIL_LOCAL_EFFECT_REPORT_SCHEMA
                 if operation_effect_rail_local_loss
                 else WRITE_LINK_RAIL_REPORT_SCHEMA
             ),
             (
-                "shohin-ettr-parallel-terminal-state-metric-v17"
+                "shohin-ettr-parallel-terminal-state-metric-v18"
+                if operation_effect_family_gate
+                else "shohin-ettr-parallel-terminal-state-metric-v17"
                 if operation_effect_post_write_link_binding
                 else "shohin-ettr-parallel-terminal-state-metric-v16"
                 if operation_effect_rail_local_loss
                 else "shohin-ettr-parallel-terminal-state-metric-v15"
             ),
         )
-    if operation_effect_rail_local_loss or operation_effect_post_write_link_binding:
+    if (
+        operation_effect_rail_local_loss
+        or operation_effect_post_write_link_binding
+        or operation_effect_family_gate
+    ):
         raise ParallelTerminalStatePilotError(
             "rail-local effect loss requires write/link rails"
         )
@@ -1718,6 +1826,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.operation_effect_write_link_rails,
         args.operation_effect_rail_local_loss,
         args.operation_effect_post_write_link_binding,
+        args.operation_effect_family_gate,
     )
     if not torch.cuda.is_available():
         raise ParallelTerminalStatePilotError("terminal-state pilot requires CUDA")
@@ -1755,7 +1864,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     torch.manual_seed(args.architecture_seed)
     torch.cuda.manual_seed_all(args.architecture_seed)
     compiler_class = (
-        OperationPostWriteLinkRailCompiler
+        OperationFamilyGatedWriteLinkCompiler
+        if args.operation_effect_family_gate
+        else OperationPostWriteLinkRailCompiler
         if args.operation_effect_post_write_link_binding
         else OperationWriteLinkRailCompiler
         if args.operation_effect_write_link_rails
@@ -1899,6 +2010,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "operation_effect_post_write_link_binding": (
                     args.operation_effect_post_write_link_binding
                 ),
+                "operation_effect_family_gate": (args.operation_effect_family_gate),
                 "operation_effect_slots": (
                     compiler.maximum_effects
                     if isinstance(
@@ -2013,13 +2125,20 @@ def main(argv: Sequence[str] | None = None) -> int:
                     else None
                 ),
                 "effect_set_cardinality": (
-                    "separate-write-link-count-heads-plus-top-k-per-rail"
+                    "operation-family-gated-separate-counts-plus-top-k"
+                    if args.operation_effect_family_gate
+                    else "separate-write-link-count-heads-plus-top-k-per-rail"
                     if args.operation_effect_write_link_rails
                     else "explicit-total-count-plus-top-k-motor-activity"
                     if args.operation_effect_cardinality_gate
                     else None
                 ),
                 "write_link_typed_rails": (args.operation_effect_write_link_rails),
+                "operation_effect_family_control": (
+                    "exclusive-none-write-link-before-rail-release"
+                    if args.operation_effect_family_gate
+                    else None
+                ),
                 "write_link_binding_state": (
                     "post-write-differentiable-state"
                     if args.operation_effect_post_write_link_binding

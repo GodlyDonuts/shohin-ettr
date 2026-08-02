@@ -30,9 +30,7 @@ class OperationEffectDiagnosticError(RuntimeError):
     """An effect-set diagnostic input or receipt differs."""
 
 
-_ENTITY_KINDS = frozenset(
-    (EFFECT_ALLOCATE, EFFECT_WRITE, EFFECT_CLEAR, EFFECT_REPLACE)
-)
+_ENTITY_KINDS = frozenset((EFFECT_ALLOCATE, EFFECT_WRITE, EFFECT_CLEAR, EFFECT_REPLACE))
 _ROOT_KINDS = frozenset((EFFECT_ROOT_CLEAR, EFFECT_ROOT_SET))
 _DISPOSITION_KINDS = frozenset((EFFECT_COMMIT, EFFECT_HALT, EFFECT_REJECT))
 
@@ -126,15 +124,19 @@ def effect_set_batch_counts(
 
     predicted_kind = effect_kind.argmax(-1)
     pointer_channel = predicted_kind.ne(EFFECT_ALLOCATE).to(torch.long)
-    predicted_node = effect_node_pointer.gather(
-        2,
-        pointer_channel[:, :, None, None].expand(
-            -1,
-            -1,
-            1,
-            effect_node_pointer.shape[-1],
-        ),
-    ).squeeze(2).argmax(-1)
+    predicted_node = (
+        effect_node_pointer.gather(
+            2,
+            pointer_channel[:, :, None, None].expand(
+                -1,
+                -1,
+                1,
+                effect_node_pointer.shape[-1],
+            ),
+        )
+        .squeeze(2)
+        .argmax(-1)
+    )
     predicted_link = effect_relation_link.flatten(2).argmax(-1)
     predicted_unlink = effect_relation_unlink.flatten(2).argmax(-1)
     predicted_relation = torch.where(
@@ -207,6 +209,34 @@ def effect_set_batch_counts(
         expected_counter = Counter(expected)
         predicted_kinds = Counter(value[0] for value in predicted)
         expected_kinds = Counter(value[0] for value in expected)
+        if all(
+            kind in (EFFECT_WRITE, EFFECT_LINK)
+            for kind in expected_kinds
+            if kind != EFFECT_NOOP
+        ):
+            predicted_write = predicted_kinds[EFFECT_WRITE] > 0
+            predicted_link = predicted_kinds[EFFECT_LINK] > 0
+            expected_write = expected_kinds[EFFECT_WRITE] > 0
+            expected_link = expected_kinds[EFFECT_LINK] > 0
+            if expected_write and expected_link:
+                raise OperationEffectDiagnosticError(
+                    "operation effect target family is not exclusive"
+                )
+            predicted_family = (
+                3
+                if predicted_write and predicted_link
+                else 1
+                if predicted_write
+                else 2
+                if predicted_link
+                else 0
+            )
+            expected_family = 1 if expected_write else 2 if expected_link else 0
+            counts["operation_family_exact"] += predicted_family == expected_family
+            counts["predicted_operation_family_conflict"] += (
+                predicted_write and predicted_link
+            )
+            counts["operation_family_instances"] += 1
         for kind in range(EFFECT_KIND_COUNT):
             true_positive_histogram[str(kind)] += min(
                 predicted_kinds[kind], expected_kinds[kind]
@@ -222,9 +252,7 @@ def effect_set_batch_counts(
             counts[f"{name}_set_exact"] += predicted_subset == expected_subset
             if expected_subset:
                 counts[f"{name}_positive_instances"] += 1
-                counts[f"{name}_positive_exact"] += (
-                    predicted_subset == expected_subset
-                )
+                counts[f"{name}_positive_exact"] += predicted_subset == expected_subset
 
     node_action = edits.node_action.argmax(-1)
     relation_action = edits.relation_action.argmax(-1)
@@ -233,21 +261,15 @@ def effect_set_batch_counts(
     value_code = edits.value_code.argmax(-1)
     type_index = edits.type_index.argmax(-1)
     target_node = target["node_action"]
-    value_mask = slot_mask & (
-        target_node.eq(1) | target_node.eq(2) | target_node.eq(4)
-    )
+    value_mask = slot_mask & (target_node.eq(1) | target_node.eq(2) | target_node.eq(4))
     type_mask = slot_mask & (target_node.eq(1) | target_node.eq(4))
     dense_exact = {
-        "node_action_exact": _masked_row_exact(
-            node_action, target_node, slot_mask
-        ),
+        "node_action_exact": _masked_row_exact(node_action, target_node, slot_mask),
         "relation_action_exact": _masked_row_exact(
             relation_action, target["relation_action"], relation_mask
         ),
         "root_action_exact": root_action.eq(target["root_action"]),
-        "disposition_action_exact": disposition_action.eq(
-            target["disposition_action"]
-        ),
+        "disposition_action_exact": disposition_action.eq(target["disposition_action"]),
         "value_payload_exact": _masked_row_exact(
             value_code, target["value_code"], value_mask
         ),
@@ -324,6 +346,19 @@ def summarize_effect_diagnostics(values: Mapping[str, object]) -> dict[str, obje
         and not name.endswith("_positive_exact")
         and name not in {"operation_state_exact", "terminal_state_exact"}
     }
+    family_instances = int(counts.get("operation_family_instances", 0))
+    diagnostic_rates = {
+        "predicted_operation_family_conflict": (
+            None
+            if family_instances == 0
+            else int(counts.get("predicted_operation_family_conflict", 0))
+            / family_instances
+        ),
+    }
+    if family_instances:
+        rates["operation_family_exact"] = (
+            int(counts.get("operation_family_exact", 0)) / family_instances
+        )
     positive_rates = {}
     for name, value in counts.items():
         if not name.endswith("_positive_exact"):
@@ -347,6 +382,7 @@ def summarize_effect_diagnostics(values: Mapping[str, object]) -> dict[str, obje
     return {
         "counts": dict(counts),
         "exact_rates": rates,
+        "diagnostic_rates": diagnostic_rates,
         "positive_exact_rates": positive_rates,
         "predicted_kind_histogram": dict(predicted),
         "target_kind_histogram": dict(target),

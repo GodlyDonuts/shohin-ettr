@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 13:14 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 13:15 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -24730,3 +24730,35 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_post_write_binding_without_gpu_and_replace_simultaneous_rails_with_a_corpus_exact_mutually_exclusive_operation_family_gate`.
+
+- **2026-08-02 13:15 EDT** -- **Contract v18 operation-family control is
+  mechanically complete; v15 retains the sole scientific GPU slot.**
+
+  The exact dependency audit implies a stronger invariant than v15 encodes:
+  every public operation is exactly NONE-only, WRITE-only, or LINK-only.
+  Contract v18 adds one operation-level three-way controller over public
+  operation-role anchors plus the typed state and releases only the selected
+  rail. Hard inference cannot emit WRITE and LINK in the same operation.
+  Separate WRITE/LINK count and operand heads, detached typed-set matching,
+  fixed algebra, final suffix head, data, seeds, and evaluator are unchanged.
+  A direct class-balanced family objective is the only new supervision.
+
+  The compiler has exactly 49,018,108 parameters, only 2,563 more than v15.
+  Fifty-eight focused tests prove exclusive hard release, zero-count
+  suppression on the losing rail, finite direct family gradients for
+  NONE/WRITE/LINK, exact schemas, evaluator reconstruction, launcher custody,
+  diagnostics, and deterministic routing. Ruff, byte compilation, Bash
+  syntax, and diff checks pass. V18 is held until v15's independent report
+  measures operation-family error or cross-rail conflict. If v15 already
+  learns family but misses operands, v16 remains the mechanism-distinct
+  rail-local successor. If local/terminal state improves but strict causal
+  gates remain zero, route to crossed state-sufficiency isolation instead of
+  another fit.
+
+  V15 job `728691` remains the sole scientific fit. At 13:15 EDT it is pending
+  priority with a scheduler estimate of 19:52 EDT on `evc4`; canceling it
+  would discard accrued priority. No v16/v18 GPU job is authorized before its
+  measured failure signature.
+
+  Decision:
+  `preserve_v15_priority_while_sealing_the_mutually_exclusive_v18_successor_and_route_exactly_one_next_mechanism_from_family_count_operand_and_causal_metrics`.

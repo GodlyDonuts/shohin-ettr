@@ -18,6 +18,7 @@ CARDINALITY_GATED_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v14"
 WRITE_LINK_RAIL_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v15"
 RAIL_LOCAL_EFFECT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v16"
 POST_WRITE_LINK_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v17"
+OPERATION_FAMILY_GATE_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v18"
 
 
 class OperationEffectRouteError(RuntimeError):
@@ -52,6 +53,14 @@ def _exact_rate(local: Mapping[str, object], name: str) -> float:
     return _number(rates.get(name), f"operation effect {name}")
 
 
+def _optional_exact_rate(local: Mapping[str, object], name: str) -> float | None:
+    rates = _mapping(local.get("exact_rates"), "operation effect exact rates")
+    value = rates.get(name)
+    if value is None:
+        return None
+    return _number(value, f"operation effect {name}")
+
+
 def _positive_rate(local: Mapping[str, object], name: str) -> float | None:
     rates = _mapping(
         local.get("positive_exact_rates"),
@@ -61,6 +70,16 @@ def _positive_rate(local: Mapping[str, object], name: str) -> float | None:
     if value is None:
         return None
     return _number(value, f"operation effect positive {name}")
+
+
+def _diagnostic_rate(local: Mapping[str, object], name: str) -> float | None:
+    rates = local.get("diagnostic_rates")
+    if rates is None:
+        return None
+    value = _mapping(rates, "operation effect diagnostic rates").get(name)
+    if value is None:
+        return None
+    return _number(value, f"operation effect diagnostic {name}")
 
 
 def _strict_rate(report: Mapping[str, object], phase: str, factor: str) -> float:
@@ -126,6 +145,7 @@ def _contract_schema(
         WRITE_LINK_RAIL_SCHEMA,
         RAIL_LOCAL_EFFECT_SCHEMA,
         POST_WRITE_LINK_SCHEMA,
+        OPERATION_FAMILY_GATE_SCHEMA,
     }:
         raise OperationEffectRouteError("terminal state effect contract differs")
     return str(schema)
@@ -160,6 +180,11 @@ def route_result(
     noop_share, dominant_share = _kind_shares(after)
     entity = _positive_rate(after, "entity")
     relation_link = _positive_rate(after, "relation_link")
+    operation_family = _optional_exact_rate(after, "operation_family_exact")
+    family_conflict = _diagnostic_rate(
+        after,
+        "predicted_operation_family_conflict",
+    )
 
     deltas = {
         "command_strict": after_command - before_command,
@@ -177,6 +202,8 @@ def route_result(
         "dominant_kind_share": dominant_share,
         "entity_positive_exact": entity,
         "noop_share": noop_share,
+        "operation_family_exact": operation_family,
+        "operation_family_conflict": family_conflict,
         "relation_link_positive_exact": relation_link,
     }
 
@@ -192,6 +219,29 @@ def route_result(
     if local_exact_gain and terminal_gain and both_strict_gain:
         route = "replicate_fresh_population"
         reason = "local effects, terminal state, WORLD, and COMMAND all improved"
+    elif (
+        contract_schema == WRITE_LINK_RAIL_SCHEMA
+        and operation_family is not None
+        and (
+            operation_family < 0.9
+            or (family_conflict is not None and family_conflict > 0.01)
+        )
+    ):
+        route = "exclusive_operation_family_gate"
+        reason = (
+            "independent rails violate or miss the corpus-exact NONE/WRITE/LINK "
+            "operation family; select one family before releasing rail payloads"
+        )
+    elif (
+        contract_schema == OPERATION_FAMILY_GATE_SCHEMA
+        and operation_family is not None
+        and operation_family < 0.9
+    ):
+        route = "operation_family_island_curriculum"
+        reason = (
+            "the exclusive architecture is correct but its family controller is "
+            "not yet exact; freeze rail payloads and isolate family acquisition"
+        )
     elif noop_share >= 0.9 or dominant_share >= 0.9:
         if contract_schema == ROLE_ANCHORED_SCHEMA:
             route = "explicit_effect_cardinality_gate"
@@ -209,6 +259,7 @@ def route_result(
             WRITE_LINK_RAIL_SCHEMA,
             RAIL_LOCAL_EFFECT_SCHEMA,
             POST_WRITE_LINK_SCHEMA,
+            OPERATION_FAMILY_GATE_SCHEMA,
         }:
             route = "rail_local_pointer_payload_islands"
             reason = (

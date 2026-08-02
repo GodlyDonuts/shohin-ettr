@@ -38,6 +38,10 @@ ROLE_ANCHORED_EFFECT_SLOTS = (
 WRITE_RAIL_EFFECT_SLOTS = 3
 LINK_RAIL_EFFECT_SLOTS = 10
 WRITE_LINK_RAIL_EFFECT_SLOTS = WRITE_RAIL_EFFECT_SLOTS + LINK_RAIL_EFFECT_SLOTS
+OPERATION_EFFECT_FAMILY_COUNT = 3
+OPERATION_EFFECT_FAMILY_NONE = 0
+OPERATION_EFFECT_FAMILY_WRITE = 1
+OPERATION_EFFECT_FAMILY_LINK = 2
 
 
 @dataclass(frozen=True, slots=True)
@@ -1488,9 +1492,152 @@ class OperationPostWriteLinkRailCompiler(OperationWriteLinkRailCompiler):
         )
 
 
+class OperationFamilyGatedWriteLinkCompiler(OperationWriteLinkRailCompiler):
+    """Select exactly one NONE/WRITE/LINK rail for each public operation."""
+
+    def __init__(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
+        super().__init__(*args, **kwargs)
+        self.effect_family_norm = nn.LayerNorm(self.width)
+        self.effect_family_head = nn.Linear(
+            self.width,
+            OPERATION_EFFECT_FAMILY_COUNT,
+        )
+
+    def _operation_edits_from_slots(
+        self,
+        state: TypedTheoryState,
+        slots: torch.Tensor,
+        *,
+        hard: bool,
+        effect_anchors: tuple[torch.Tensor, torch.Tensor] | None,
+    ) -> AtomicTypedEdits:
+        if effect_anchors is None:
+            raise TheoryReactorError("operation-family public anchors are absent")
+        edits = super()._operation_edits_from_slots(
+            state,
+            slots,
+            hard=hard,
+            effect_anchors=effect_anchors,
+        )
+        fields = (
+            edits.effect_kind,
+            edits.effect_node_pointer,
+            edits.effect_value_code,
+            edits.effect_relation_link,
+            edits.node_edit_count,
+            edits.relation_link_count,
+        )
+        if any(value is None for value in fields):
+            raise TheoryReactorError("operation-family rail predictions differ")
+        effect_kind = edits.effect_kind
+        node_pointer = edits.effect_node_pointer
+        value_code = edits.effect_value_code
+        relation_link = edits.effect_relation_link
+        write_count = edits.node_edit_count
+        link_count = edits.relation_link_count
+        assert effect_kind is not None
+        assert node_pointer is not None
+        assert value_code is not None
+        assert relation_link is not None
+        assert write_count is not None
+        assert link_count is not None
+
+        anchors, role_valid = effect_anchors
+        valid_weight = role_valid[..., None].to(anchors.dtype)
+        operation_context = (anchors * valid_weight).sum(1)
+        operation_context = operation_context / valid_weight.sum(1).clamp_min(1.0)
+        operation_context = operation_context + slots.mean(1)
+        family = (
+            self.effect_family_head(self.effect_family_norm(operation_context))
+            .float()
+            .softmax(-1)
+        )
+        if hard:
+            family = _hard_categories(family)
+        write_gate = family[:, OPERATION_EFFECT_FAMILY_WRITE]
+        link_gate = family[:, OPERATION_EFFECT_FAMILY_LINK]
+
+        write_activity = (
+            effect_kind[:, :WRITE_RAIL_EFFECT_SLOTS, EFFECT_WRITE] * write_gate[:, None]
+        )
+        link_activity = (
+            effect_kind[:, WRITE_RAIL_EFFECT_SLOTS:, EFFECT_LINK] * link_gate[:, None]
+        )
+        write_pointer = node_pointer[:, :WRITE_RAIL_EFFECT_SLOTS, 0]
+        write_value = value_code[:, :WRITE_RAIL_EFFECT_SLOTS]
+        link_pointer = relation_link[:, WRITE_RAIL_EFFECT_SLOTS:]
+
+        write_mass = torch.einsum("bk,bks->bs", write_activity, write_pointer)
+        zeros_node = torch.zeros_like(write_mass)
+        node_action = OperationEffectSetCompiler._dense_actions(
+            zeros_node,
+            write_mass,
+            zeros_node,
+            zeros_node,
+        )
+        dense_value = torch.einsum(
+            "bk,bks,bkv->bsv",
+            write_activity,
+            write_pointer,
+            write_value,
+        )
+        dense_value = dense_value / write_mass.unsqueeze(-1).clamp_min(1e-7)
+        dense_value = torch.where(
+            write_mass.unsqueeze(-1).gt(0),
+            dense_value,
+            edits.value_code,
+        )
+        link_mass = torch.einsum("bk,bkrst->brst", link_activity, link_pointer)
+        relation_action = OperationEffectSetCompiler._dense_actions(
+            link_mass,
+            torch.zeros_like(link_mass),
+        )
+        if hard:
+            node_action = _hard_categories(node_action)
+            dense_value = _hard_categories(dense_value)
+            relation_action = _hard_categories(relation_action)
+
+        kinds = torch.zeros_like(effect_kind)
+        kinds[:, :WRITE_RAIL_EFFECT_SLOTS, EFFECT_NOOP] = 1.0 - write_activity
+        kinds[:, :WRITE_RAIL_EFFECT_SLOTS, EFFECT_WRITE] = write_activity
+        kinds[:, WRITE_RAIL_EFFECT_SLOTS:, EFFECT_NOOP] = 1.0 - link_activity
+        kinds[:, WRITE_RAIL_EFFECT_SLOTS:, EFFECT_LINK] = link_activity
+        write_zero = torch.zeros_like(write_count)
+        write_zero[:, 0] = 1.0
+        link_zero = torch.zeros_like(link_count)
+        link_zero[:, 0] = 1.0
+        write_count = (
+            write_gate[:, None] * write_count + (1.0 - write_gate[:, None]) * write_zero
+        )
+        link_count = (
+            link_gate[:, None] * link_count + (1.0 - link_gate[:, None]) * link_zero
+        )
+        return AtomicTypedEdits(
+            node_action=node_action,
+            value_code=dense_value,
+            type_index=edits.type_index,
+            relation_action=relation_action,
+            root_action=edits.root_action,
+            disposition_action=edits.disposition_action,
+            node_edit_count=write_count,
+            relation_link_count=link_count,
+            relation_unlink_count=edits.relation_unlink_count,
+            effect_kind=kinds,
+            effect_node_pointer=node_pointer,
+            effect_value_code=value_code,
+            effect_type_index=edits.effect_type_index,
+            effect_relation_link=relation_link,
+            effect_relation_unlink=edits.effect_relation_unlink,
+            effect_root_pointer=edits.effect_root_pointer,
+            effect_count=edits.effect_count,
+            effect_family=family,
+        )
+
+
 __all__ = [
     "FactorizedOperationStateTransitionCompiler",
     "OperationEffectSetCompiler",
+    "OperationFamilyGatedWriteLinkCompiler",
     "OperationPostWriteLinkRailCompiler",
     "OperationStateTransitionCompiler",
     "OperationStateTransitionTrace",

@@ -160,6 +160,17 @@ def test_terminal_schema_tracks_residual_architecture() -> None:
         "shohin-ettr-parallel-terminal-state-report-v17",
         "shohin-ettr-parallel-terminal-state-metric-v17",
     )
+    assert _run_schemas(
+        False,
+        token_native_operation_state_command=True,
+        operation_effect_role_anchors=True,
+        operation_effect_write_link_rails=True,
+        operation_effect_family_gate=True,
+    ) == (
+        "shohin-ettr-parallel-terminal-state-contract-v18",
+        "shohin-ettr-parallel-terminal-state-report-v18",
+        "shohin-ettr-parallel-terminal-state-metric-v18",
+    )
 
 
 def test_write_link_rail_args_are_exclusive_and_operation_bound(tmp_path: Path) -> None:
@@ -180,6 +191,7 @@ def test_write_link_rail_args_are_exclusive_and_operation_bound(tmp_path: Path) 
     args.operation_effect_write_link_rails = True
     args.operation_effect_rail_local_loss = True
     args.operation_effect_post_write_link_binding = False
+    args.operation_effect_family_gate = False
     args.training_initial_state = "oracle"
     validate_train_args(args)
     args.operation_effect_rail_local_loss = False
@@ -190,6 +202,13 @@ def test_write_link_rail_args_are_exclusive_and_operation_bound(tmp_path: Path) 
         validate_train_args(args)
     args.operation_effect_rail_local_loss = False
     args.operation_effect_post_write_link_binding = False
+    args.operation_effect_family_gate = True
+    validate_train_args(args)
+    args.operation_effect_post_write_link_binding = True
+    with pytest.raises(ParallelTerminalStatePilotError, match="arguments differ"):
+        validate_train_args(args)
+    args.operation_effect_post_write_link_binding = False
+    args.operation_effect_family_gate = False
     args.operation_effect_write_link_rails = False
     with pytest.raises(ParallelTerminalStatePilotError, match="arguments differ"):
         validate_train_args(args)

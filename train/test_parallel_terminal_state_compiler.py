@@ -20,8 +20,11 @@ from parallel_terminal_state_compiler import (
 )
 from operation_state_transition_compiler import (
     EFFECT_NOOP,
+    EFFECT_LINK,
+    EFFECT_WRITE,
     FactorizedOperationStateTransitionCompiler,
     OperationEffectSetCompiler,
+    OperationFamilyGatedWriteLinkCompiler,
     OperationPostWriteLinkRailCompiler,
     OperationStateTransitionCompiler,
     OperationStateTransitionTrace,
@@ -1023,6 +1026,106 @@ def test_production_write_link_rail_parameter_receipt() -> None:
         token_native_vocab_size=codec.tokenizer.get_vocab_size(),
     )
     assert sum(parameter.numel() for parameter in sequential.parameters()) == 49_998_457
+    family_gated = OperationFamilyGatedWriteLinkCompiler(
+        TheoryReactorConfig(),
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_codebook_atoms=codec.codebook.atoms,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+    assert (
+        sum(parameter.numel() for parameter in family_gated.parameters()) == 49_018_108
+    )
+
+
+def test_operation_family_gate_is_exclusive_and_directly_supervised() -> None:
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+
+    config = replace(_config(), max_steps=16)
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    compiler = OperationFamilyGatedWriteLinkCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        relation_width=16,
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_codebook_atoms=codec.codebook.atoms,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+    with torch.no_grad():
+        for head in (compiler.write_count_head, compiler.link_count_head):
+            head.weight.zero_()
+            head.bias.fill_(-100.0)
+            head.bias[1] = 100.0
+        compiler.effect_family_head.weight.zero_()
+        compiler.effect_family_head.bias.copy_(torch.tensor((-100.0, 100.0, -100.0)))
+    state = _state(config, batch=3)
+    slots = torch.randn(3, config.num_slots, compiler.width)
+    anchors = torch.randn(3, 4, compiler.width)
+    role_valid = torch.ones(3, 4, dtype=torch.bool)
+    hard_write = compiler._operation_edits_from_slots(
+        state,
+        slots,
+        hard=True,
+        effect_anchors=(anchors, role_valid),
+    )
+    assert hard_write.effect_family is not None
+    assert hard_write.effect_family.argmax(-1).eq(1).all()
+    assert hard_write.effect_kind is not None
+    assert hard_write.effect_kind.argmax(-1).eq(EFFECT_LINK).sum() == 0
+    assert hard_write.effect_kind.argmax(-1).eq(EFFECT_WRITE).sum(-1).tolist() == [
+        1,
+        1,
+        1,
+    ]
+    assert hard_write.relation_link_count is not None
+    assert hard_write.relation_link_count.argmax(-1).eq(0).all()
+
+    with torch.no_grad():
+        compiler.effect_family_head.bias.copy_(torch.tensor((-100.0, -100.0, 100.0)))
+    hard_link = compiler._operation_edits_from_slots(
+        state,
+        slots,
+        hard=True,
+        effect_anchors=(anchors, role_valid),
+    )
+    assert hard_link.effect_kind is not None
+    assert hard_link.effect_kind.argmax(-1).eq(EFFECT_WRITE).sum() == 0
+    assert hard_link.effect_kind.argmax(-1).eq(EFFECT_LINK).sum(-1).tolist() == [
+        1,
+        1,
+        1,
+    ]
+    assert hard_link.node_edit_count is not None
+    assert hard_link.node_edit_count.argmax(-1).eq(0).all()
+
+    target = state.detached_clone()
+    target.value_probabilities[0, 0].zero_()
+    target.value_probabilities[0, 0, 3] = 1.0
+    target.relations[1, 0, 0, 1] = 1.0
+    labels = derive_atomic_edit_targets(state, target)
+    compiler.zero_grad(set_to_none=True)
+    soft = compiler._operation_edits_from_slots(
+        state,
+        slots,
+        hard=False,
+        effect_anchors=(anchors, role_valid),
+    )
+    loss, parts, counts = atomic_typed_edit_loss(
+        soft,
+        labels,
+        slot_mask=torch.ones_like(state.active, dtype=torch.bool),
+        relation_mask=torch.ones_like(state.relations, dtype=torch.bool),
+    )
+    assert bool(loss.isfinite())
+    assert "effect_family" in parts
+    assert counts["effect_family"] == {"0": 1, "1": 1, "2": 1}
+    loss.backward()
+    assert compiler.effect_family_head.weight.grad is not None
+    assert bool(compiler.effect_family_head.weight.grad.isfinite().all())
 
 
 def test_post_write_link_binding_uses_write_payload_state() -> None:
