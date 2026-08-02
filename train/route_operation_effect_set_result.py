@@ -15,6 +15,7 @@ ROUTE_SCHEMA = "shohin-ettr-operation-effect-set-route-v1"
 UNANCHORED_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v12"
 ROLE_ANCHORED_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v13"
 CARDINALITY_GATED_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v14"
+WRITE_LINK_RAIL_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v15"
 
 
 class OperationEffectRouteError(RuntimeError):
@@ -120,6 +121,7 @@ def _contract_schema(
         UNANCHORED_SCHEMA,
         ROLE_ANCHORED_SCHEMA,
         CARDINALITY_GATED_SCHEMA,
+        WRITE_LINK_RAIL_SCHEMA,
     }:
         raise OperationEffectRouteError("terminal state effect contract differs")
     return str(schema)
@@ -194,10 +196,16 @@ def route_result(
                 "motor activity, and non-NOOP kind selection"
             )
         elif contract_schema == CARDINALITY_GATED_SCHEMA:
-            route = "per_role_cardinality_and_typed_attribute_islands"
+            route = "write_link_typed_rails"
             reason = (
-                "global cardinality did not prevent kind collapse; localize counts and "
-                "typed attributes within public AST roles"
+                "global cardinality did not prevent kind collapse; remove the generic "
+                "kind decision and separate WRITE/LINK counts, motors, and payloads"
+            )
+        elif contract_schema == WRITE_LINK_RAIL_SCHEMA:
+            route = "rail_local_pointer_payload_islands"
+            reason = (
+                "typed rails still selected zero or one dominant outcome; isolate count, "
+                "pointer, and payload acquisition inside each rail"
             )
         else:
             route = "public_ast_role_anchored_effect_queries"

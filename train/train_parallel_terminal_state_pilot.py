@@ -53,9 +53,13 @@ from operation_state_transition_compiler import (
     FactorizedOperationStateTransitionCompiler,
     OperationEffectSetCompiler,
     OperationStateTransitionCompiler,
+    OperationWriteLinkRailCompiler,
+    LINK_RAIL_EFFECT_SLOTS,
     ROLE_ANCHORED_EFFECT_MOTORS_PER_ROLE,
     ROLE_ANCHORED_EFFECT_ROLES,
     ROLE_ANCHORED_EFFECT_SLOTS,
+    WRITE_LINK_RAIL_EFFECT_SLOTS,
+    WRITE_RAIL_EFFECT_SLOTS,
 )
 from probe_ettr_oracle_interfaces import (
     _packet_batch_counts,
@@ -121,6 +125,8 @@ CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA = (
 CARDINALITY_GATED_EFFECT_SET_REPORT_SCHEMA = (
     "shohin-ettr-parallel-terminal-state-report-v14"
 )
+WRITE_LINK_RAIL_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v15"
+WRITE_LINK_RAIL_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v15"
 CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v3"
 REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v3"
 CAUSAL_DELTA_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v2"
@@ -211,6 +217,10 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--operation-effect-cardinality-gate",
         action="store_true",
     )
+    parser.add_argument(
+        "--operation-effect-write-link-rails",
+        action="store_true",
+    )
     parser.add_argument("--atomic-action-weight", type=float, default=1.0)
     parser.add_argument(
         "--required-device-class",
@@ -244,6 +254,11 @@ def _validate_args(args: argparse.Namespace) -> None:
     operation_effect_cardinality_gate = getattr(
         args,
         "operation_effect_cardinality_gate",
+        False,
+    )
+    operation_effect_write_link_rails = getattr(
+        args,
+        "operation_effect_write_link_rails",
         False,
     )
     paths = (
@@ -311,8 +326,16 @@ def _validate_args(args: argparse.Namespace) -> None:
         or (factorized_operation_effect and not operation_state)
         or (operation_effect_set and not operation_state)
         or (operation_effect_set and factorized_operation_effect)
-        or (operation_effect_role_anchors and not operation_effect_set)
+        or (
+            operation_effect_role_anchors
+            and not (operation_effect_set or operation_effect_write_link_rails)
+        )
         or (operation_effect_cardinality_gate and not operation_effect_role_anchors)
+        or (operation_effect_write_link_rails and not operation_state)
+        or (operation_effect_write_link_rails and operation_effect_set)
+        or (operation_effect_write_link_rails and factorized_operation_effect)
+        or (operation_effect_write_link_rails and not operation_effect_role_anchors)
+        or (operation_effect_write_link_rails and operation_effect_cardinality_gate)
         or args.output.exists()
         or args.output.is_symlink()
         or not args.output.parent.is_dir()
@@ -1201,7 +1224,24 @@ def _run_schemas(
     operation_effect_set_command: bool = False,
     operation_effect_role_anchors: bool = False,
     operation_effect_cardinality_gate: bool = False,
+    operation_effect_write_link_rails: bool = False,
 ) -> tuple[str, str, str]:
+    if operation_effect_write_link_rails:
+        if (
+            not token_native_operation_state_command
+            or factorized_operation_effect_command
+            or operation_effect_set_command
+            or not operation_effect_role_anchors
+            or operation_effect_cardinality_gate
+        ):
+            raise ParallelTerminalStatePilotError(
+                "write/link rail architecture schema differs"
+            )
+        return (
+            WRITE_LINK_RAIL_CONTRACT_SCHEMA,
+            WRITE_LINK_RAIL_REPORT_SCHEMA,
+            "shohin-ettr-parallel-terminal-state-metric-v15",
+        )
     if operation_effect_set_command:
         if (
             not token_native_operation_state_command
@@ -1469,6 +1509,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.operation_effect_set_command,
         args.operation_effect_role_anchors,
         args.operation_effect_cardinality_gate,
+        args.operation_effect_write_link_rails,
     )
     if not torch.cuda.is_available():
         raise ParallelTerminalStatePilotError("terminal-state pilot requires CUDA")
@@ -1506,7 +1547,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     torch.manual_seed(args.architecture_seed)
     torch.cuda.manual_seed_all(args.architecture_seed)
     compiler_class = (
-        OperationEffectSetCompiler
+        OperationWriteLinkRailCompiler
+        if args.operation_effect_write_link_rails
+        else OperationEffectSetCompiler
         if args.operation_effect_set_command
         else FactorizedOperationStateTransitionCompiler
         if args.factorized_operation_effect_command
@@ -1544,6 +1587,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         ),
         **(
             {
+                "maximum_effect_roles": ROLE_ANCHORED_EFFECT_ROLES,
+            }
+            if args.operation_effect_write_link_rails
+            else {
                 "maximum_effect_roles": ROLE_ANCHORED_EFFECT_ROLES,
                 "maximum_effects": ROLE_ANCHORED_EFFECT_SLOTS,
                 "public_role_anchors": True,
@@ -1633,19 +1680,31 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "operation_effect_cardinality_gate": (
                     args.operation_effect_cardinality_gate
                 ),
+                "operation_effect_write_link_rails": (
+                    args.operation_effect_write_link_rails
+                ),
                 "operation_effect_slots": (
                     compiler.maximum_effects
-                    if isinstance(compiler, OperationEffectSetCompiler)
+                    if isinstance(
+                        compiler,
+                        (OperationEffectSetCompiler, OperationWriteLinkRailCompiler),
+                    )
                     else 0
                 ),
                 "operation_effect_role_count": (
                     compiler.effect_role_count
-                    if isinstance(compiler, OperationEffectSetCompiler)
+                    if isinstance(
+                        compiler,
+                        (OperationEffectSetCompiler, OperationWriteLinkRailCompiler),
+                    )
                     else 0
                 ),
                 "operation_effect_motors_per_role": (
                     compiler.effect_motors_per_role
-                    if isinstance(compiler, OperationEffectSetCompiler)
+                    if isinstance(
+                        compiler,
+                        (OperationEffectSetCompiler, OperationWriteLinkRailCompiler),
+                    )
                     else 0
                 ),
                 "token_native_codebook_sha256": (
@@ -1700,19 +1759,34 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "global_sparse_effect_cardinality": (
                     args.factorized_operation_effect_command
                 ),
-                "unordered_typed_effect_set": (args.operation_effect_set_command),
+                "unordered_typed_effect_set": (
+                    args.operation_effect_set_command
+                    or args.operation_effect_write_link_rails
+                ),
                 "effect_set_matching": (
                     "detached-sinkhorn-typed-bipartite"
-                    if args.operation_effect_set_command
+                    if (
+                        args.operation_effect_set_command
+                        or args.operation_effect_write_link_rails
+                    )
                     else None
                 ),
                 "effect_set_role_anchors": (
-                    "public-operation-root-and-semantic-children-five-motors-per-role"
+                    "shared-public-operation-root-and-semantic-children"
+                    if args.operation_effect_write_link_rails
+                    else "public-operation-root-and-semantic-children-five-motors-per-role"
                     if args.operation_effect_role_anchors
                     else None
                 ),
                 "effect_set_role_capacity": (
                     {
+                        "effect_slots": WRITE_LINK_RAIL_EFFECT_SLOTS,
+                        "link_slots": LINK_RAIL_EFFECT_SLOTS,
+                        "maximum_roles": ROLE_ANCHORED_EFFECT_ROLES,
+                        "write_slots": WRITE_RAIL_EFFECT_SLOTS,
+                    }
+                    if args.operation_effect_write_link_rails
+                    else {
                         "effect_slots": ROLE_ANCHORED_EFFECT_SLOTS,
                         "maximum_roles": ROLE_ANCHORED_EFFECT_ROLES,
                         "motors_per_role": (ROLE_ANCHORED_EFFECT_MOTORS_PER_ROLE),
@@ -1721,10 +1795,13 @@ def main(argv: Sequence[str] | None = None) -> int:
                     else None
                 ),
                 "effect_set_cardinality": (
-                    "explicit-total-count-plus-top-k-motor-activity"
+                    "separate-write-link-count-heads-plus-top-k-per-rail"
+                    if args.operation_effect_write_link_rails
+                    else "explicit-total-count-plus-top-k-motor-activity"
                     if args.operation_effect_cardinality_gate
                     else None
                 ),
+                "write_link_typed_rails": (args.operation_effect_write_link_rails),
             },
             "protected_checkpoint_sha256": provenance.checkpoint_sha256,
             "reader_parameters": reader_parameters,

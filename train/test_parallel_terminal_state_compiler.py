@@ -24,6 +24,7 @@ from operation_state_transition_compiler import (
     OperationEffectSetCompiler,
     OperationStateTransitionCompiler,
     OperationStateTransitionTrace,
+    OperationWriteLinkRailCompiler,
 )
 from operation_state_supervision import OperationBoundaryTargets
 from train_parallel_terminal_state_pilot import (
@@ -873,6 +874,117 @@ def test_role_anchored_effect_set_enforces_explicit_total_cardinality() -> None:
     assert compiler.effect_activity_head.weight.grad is not None
     assert bool(compiler.effect_count_head.weight.grad.isfinite().all())
     assert bool(compiler.effect_activity_head.weight.grad.isfinite().all())
+
+
+def test_write_link_rails_enforce_separate_counts_and_train_payloads() -> None:
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+
+    config = replace(_config(), max_steps=16)
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    compiler = OperationWriteLinkRailCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        relation_width=16,
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_codebook_atoms=codec.codebook.atoms,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+    with torch.no_grad():
+        for head, count in (
+            (compiler.write_count_head, 2),
+            (compiler.link_count_head, 1),
+        ):
+            head.weight.zero_()
+            head.bias.fill_(-100.0)
+            head.bias[count] = 100.0
+    state = _state(config)
+    slots = torch.randn(2, config.num_slots, compiler.width)
+    anchors = torch.randn(2, 4, compiler.width)
+    role_valid = torch.tensor(
+        [[True, True, True, False], [True, True, False, False]],
+        dtype=torch.bool,
+    )
+    hard = compiler._operation_edits_from_slots(
+        state,
+        slots,
+        hard=True,
+        effect_anchors=(anchors, role_valid),
+    )
+    assert hard.effect_kind is not None
+    kinds = hard.effect_kind.argmax(-1)
+    assert kinds.eq(2).sum(-1).tolist() == [2, 2]
+    assert kinds.eq(5).sum(-1).tolist() == [1, 1]
+    assert hard.node_edit_count is not None
+    assert hard.relation_link_count is not None
+    assert hard.node_edit_count.argmax(-1).tolist() == [2, 2]
+    assert hard.relation_link_count.argmax(-1).tolist() == [1, 1]
+    deployed = compiler.apply_atomic_edits(state, hard, steps=1, hard=True)
+    validate_deployed_state(deployed, config)
+
+    target = state.detached_clone()
+    target.value_probabilities[:, 0].zero_()
+    target.value_probabilities[:, 0, 3] = 1.0
+    target.value_probabilities[:, 1].zero_()
+    target.value_probabilities[:, 1, 4] = 1.0
+    target.relations[:, 0, 0, 1] = 1.0
+    labels = derive_atomic_edit_targets(state, target)
+    soft = compiler._operation_edits_from_slots(
+        state,
+        slots,
+        hard=False,
+        effect_anchors=(anchors, role_valid),
+    )
+    loss, parts, counts = atomic_typed_edit_loss(
+        soft,
+        labels,
+        slot_mask=torch.ones_like(state.active, dtype=torch.bool),
+        relation_mask=torch.ones_like(state.relations, dtype=torch.bool),
+    )
+    assert bool(loss.isfinite())
+    assert "effect_set" in parts
+    assert counts["node_edit_count"]["2"] == 2
+    assert counts["relation_link_count"]["1"] == 2
+    loss.backward()
+    for parameter in (
+        compiler.write_count_head.weight,
+        compiler.link_count_head.weight,
+        compiler.write_activity_head.weight,
+        compiler.link_activity_head.weight,
+        compiler.write_value_head.weight,
+        compiler.link_relation_source.weight,
+    ):
+        assert parameter.grad is not None
+        assert bool(parameter.grad.isfinite().all())
+
+    final_edits = compiler._final_edits_from_slots(
+        state,
+        slots,
+        hard=False,
+        effect_anchors=(anchors, role_valid),
+    )
+    assert final_edits.effect_kind is None
+
+
+def test_production_write_link_rail_parameter_receipt() -> None:
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    compiler = OperationWriteLinkRailCompiler(
+        TheoryReactorConfig(),
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_codebook_atoms=codec.codebook.atoms,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+    assert sum(parameter.numel() for parameter in compiler.parameters()) == 49_015_545
+    assert compiler.maximum_effects == 13
 
 
 def test_operation_effect_role_geometry_requires_even_role_banks() -> None:

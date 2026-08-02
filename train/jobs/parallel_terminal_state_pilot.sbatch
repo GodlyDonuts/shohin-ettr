@@ -54,6 +54,7 @@ FACTORIZED_OPERATION_EFFECT_COMMAND=${FACTORIZED_OPERATION_EFFECT_COMMAND:-0}
 OPERATION_EFFECT_SET_COMMAND=${OPERATION_EFFECT_SET_COMMAND:-0}
 OPERATION_EFFECT_ROLE_ANCHORS=${OPERATION_EFFECT_ROLE_ANCHORS:-0}
 OPERATION_EFFECT_CARDINALITY_GATE=${OPERATION_EFFECT_CARDINALITY_GATE:-0}
+OPERATION_EFFECT_WRITE_LINK_RAILS=${OPERATION_EFFECT_WRITE_LINK_RAILS:-0}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
 for path in "$CODE_ROOT" "$RELEASE_ROOT" "$ETTR_DATA_ROOT" \
@@ -217,8 +218,9 @@ elif [[ "$OPERATION_EFFECT_SET_COMMAND" != 0 ]]; then
   exit 2
 fi
 if [[ "$OPERATION_EFFECT_ROLE_ANCHORS" == 1 ]]; then
-  [[ "$OPERATION_EFFECT_SET_COMMAND" == 1 ]] || {
-    echo "operation effect role anchors require operation effect sets" >&2
+  [[ "$OPERATION_EFFECT_SET_COMMAND" == 1 \
+    || "$OPERATION_EFFECT_WRITE_LINK_RAILS" == 1 ]] || {
+    echo "operation effect role anchors require effect sets or write/link rails" >&2
     exit 2
   }
   residual_args+=(--operation-effect-role-anchors)
@@ -234,6 +236,19 @@ if [[ "$OPERATION_EFFECT_CARDINALITY_GATE" == 1 ]]; then
   residual_args+=(--operation-effect-cardinality-gate)
 elif [[ "$OPERATION_EFFECT_CARDINALITY_GATE" != 0 ]]; then
   echo "terminal-state effect cardinality setting differs" >&2
+  exit 2
+fi
+if [[ "$OPERATION_EFFECT_WRITE_LINK_RAILS" == 1 ]]; then
+  [[ "$OPERATION_EFFECT_ROLE_ANCHORS" == 1 \
+    && "$OPERATION_EFFECT_SET_COMMAND" == 0 \
+    && "$FACTORIZED_OPERATION_EFFECT_COMMAND" == 0 \
+    && "$OPERATION_EFFECT_CARDINALITY_GATE" == 0 ]] || {
+    echo "write/link rails require exclusive public role anchors" >&2
+    exit 2
+  }
+  residual_args+=(--operation-effect-write-link-rails)
+elif [[ "$OPERATION_EFFECT_WRITE_LINK_RAILS" != 0 ]]; then
+  echo "terminal-state write/link rail setting differs" >&2
   exit 2
 fi
 

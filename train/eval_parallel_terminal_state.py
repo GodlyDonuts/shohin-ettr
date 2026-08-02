@@ -30,6 +30,7 @@ from operation_state_transition_compiler import (
     FactorizedOperationStateTransitionCompiler,
     OperationEffectSetCompiler,
     OperationStateTransitionCompiler,
+    OperationWriteLinkRailCompiler,
 )
 from operation_effect_set_diagnostics import (
     effect_set_batch_counts,
@@ -76,6 +77,8 @@ from train_parallel_terminal_state_pilot import (
     REPORT_SCHEMA as PILOT_REPORT_SCHEMA,
     SYNTAX_ROUTED_ATOMIC_CONTRACT_SCHEMA as PILOT_SYNTAX_CONTRACT_SCHEMA,
     SYNTAX_ROUTED_ATOMIC_REPORT_SCHEMA as PILOT_SYNTAX_REPORT_SCHEMA,
+    WRITE_LINK_RAIL_CONTRACT_SCHEMA as PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
+    WRITE_LINK_RAIL_REPORT_SCHEMA as PILOT_WRITE_LINK_RAIL_REPORT_SCHEMA,
     derive_atomic_edit_targets,
 )
 from train_parallel_addressed_transaction_pilot import _training_initial_state
@@ -282,6 +285,7 @@ def _load_terminal_compiler(
         PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA: (
             PILOT_CARDINALITY_GATED_EFFECT_SET_REPORT_SCHEMA
         ),
+        PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA: PILOT_WRITE_LINK_RAIL_REPORT_SCHEMA,
     }
     run_schema = contract.get("schema")
     if (
@@ -317,6 +321,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
         PILOT_CONTRACT_SCHEMA,
         PILOT_CAUSAL_DELTA_CONTRACT_SCHEMA,
     ):
@@ -344,6 +349,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
     }
     lexical_command = contract.get("schema") in {
         PILOT_LEXICAL_CONTRACT_SCHEMA,
@@ -356,6 +362,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
     }
     token_native_command_mask = contract.get("schema") in {
         PILOT_SYNTAX_CONTRACT_SCHEMA,
@@ -367,6 +374,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
     }
     token_native_occurrence_command = (
         contract.get("schema") == PILOT_OCCURRENCE_CONTRACT_SCHEMA
@@ -379,6 +387,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
     }
     token_native_declaration_binding_command = contract.get("schema") in {
         PILOT_DECLARATION_CONTRACT_SCHEMA,
@@ -388,6 +397,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
     }
     cover_verified_command_mask = contract.get("schema") in {
         PILOT_DECLARATION_CONTRACT_SCHEMA,
@@ -397,6 +407,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
     }
     token_native_operation_recurrence_command = contract.get("schema") in {
         PILOT_OPERATION_CONTRACT_SCHEMA,
@@ -405,6 +416,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
     }
     token_native_operation_state_command = contract.get("schema") in {
         PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
@@ -412,6 +424,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
     }
     factorized_operation_effect_command = (
         contract.get("schema") == PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA
@@ -424,9 +437,13 @@ def _load_terminal_compiler(
     operation_effect_role_anchors = contract.get("schema") in {
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
     }
     operation_effect_cardinality_gate = (
         contract.get("schema") == PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA
+    )
+    operation_effect_write_link_rails = (
+        contract.get("schema") == PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA
     )
     if residual_edits != (architecture.get("sparse_residual_edits") is True):
         raise ParallelTerminalStateEvaluationError(
@@ -452,6 +469,7 @@ def _load_terminal_compiler(
         "operation_effect_set_command": operation_effect_set_command,
         "operation_effect_role_anchors": operation_effect_role_anchors,
         "operation_effect_cardinality_gate": (operation_effect_cardinality_gate),
+        "operation_effect_write_link_rails": (operation_effect_write_link_rails),
         "token_native_syntax_graph_command": token_native_syntax_graph_command,
     }
     if any(
@@ -484,7 +502,33 @@ def _load_terminal_compiler(
         raise ParallelTerminalStateEvaluationError(
             "terminal-state architecture differs"
         ) from exc
-    if operation_effect_set_command:
+    if operation_effect_write_link_rails:
+        objective = contract.get("objective")
+        if (
+            operation_effect_slots != 13
+            or operation_effect_role_count != 4
+            or operation_effect_motors_per_role != 0
+            or not isinstance(objective, Mapping)
+            or objective.get("unordered_typed_effect_set") is not True
+            or objective.get("effect_set_matching")
+            != "detached-sinkhorn-typed-bipartite"
+            or objective.get("effect_set_role_anchors")
+            != "shared-public-operation-root-and-semantic-children"
+            or objective.get("effect_set_role_capacity")
+            != {
+                "effect_slots": 13,
+                "link_slots": 10,
+                "maximum_roles": 4,
+                "write_slots": 3,
+            }
+            or objective.get("effect_set_cardinality")
+            != "separate-write-link-count-heads-plus-top-k-per-rail"
+            or objective.get("write_link_typed_rails") is not True
+        ):
+            raise ParallelTerminalStateEvaluationError(
+                "operation write/link rail contract differs"
+            )
+    elif operation_effect_set_command:
         objective = contract.get("objective")
         role_capacity = (
             objective.get("effect_set_role_capacity")
@@ -547,7 +591,9 @@ def _load_terminal_compiler(
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     compiler_class = (
-        OperationEffectSetCompiler
+        OperationWriteLinkRailCompiler
+        if operation_effect_write_link_rails
+        else OperationEffectSetCompiler
         if operation_effect_set_command
         else FactorizedOperationStateTransitionCompiler
         if factorized_operation_effect_command
@@ -695,7 +741,7 @@ def _typed_state_exact_count(
 
 
 def _evaluate_operation_effects(
-    compiler: OperationEffectSetCompiler,
+    compiler: OperationEffectSetCompiler | OperationWriteLinkRailCompiler,
     oracle_executor,
     model,
     *,
@@ -799,18 +845,19 @@ def _evaluate_operation_effects(
                 step=batch.transaction_targets.opcode.shape[1],
                 dtype=next(compiler.parameters()).dtype,
             )
-            final_labels = derive_atomic_edit_targets(
-                oracle.last_state, target_terminal
-            )
-            merge_effect_diagnostics(
-                aggregate,
-                effect_set_batch_counts(
-                    trace.final_edits,
-                    final_labels,
-                    slot_mask=batch.terminal_packet_targets.slot_mask,
-                    relation_mask=batch.terminal_packet_targets.relation_mask,
-                ),
-            )
+            if isinstance(compiler, OperationEffectSetCompiler):
+                final_labels = derive_atomic_edit_targets(
+                    oracle.last_state, target_terminal
+                )
+                merge_effect_diagnostics(
+                    aggregate,
+                    effect_set_batch_counts(
+                        trace.final_edits,
+                        final_labels,
+                        slot_mask=batch.terminal_packet_targets.slot_mask,
+                        relation_mask=batch.terminal_packet_targets.relation_mask,
+                    ),
+                )
             counts = aggregate.setdefault("counts", {})
             assert isinstance(counts, dict)
             batch_size = int(batch.terminal_packet_targets.slot_mask.shape[0])
@@ -889,7 +936,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         "joint_model_sha256": args.joint_model_sha256,
         "joint_run_contract_sha256": args.joint_run_contract_sha256,
         "local_operation_effect_diagnostic": isinstance(
-            model.reactor.compiler, OperationEffectSetCompiler
+            model.reactor.compiler,
+            (OperationEffectSetCompiler, OperationWriteLinkRailCompiler),
         ),
         "max_batches": args.max_batches,
         "non_promotable_diagnostic_arms": [
@@ -914,7 +962,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             _canonical_bytes(contract),
         )
         operation_effect_diagnostics = None
-        if isinstance(model.reactor.compiler, OperationEffectSetCompiler):
+        if isinstance(
+            model.reactor.compiler,
+            (OperationEffectSetCompiler, OperationWriteLinkRailCompiler),
+        ):
             training_initial_state = receipt.get("training_initial_state")
             if not isinstance(training_initial_state, str):
                 raise ParallelTerminalStateEvaluationError(

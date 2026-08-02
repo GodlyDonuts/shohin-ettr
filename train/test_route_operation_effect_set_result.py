@@ -8,6 +8,7 @@ from route_operation_effect_set_result import (
     CARDINALITY_GATED_SCHEMA,
     REPORT_SCHEMA,
     ROLE_ANCHORED_SCHEMA,
+    WRITE_LINK_RAIL_SCHEMA,
     route_result,
 )
 
@@ -94,11 +95,18 @@ def test_router_sends_role_anchored_collapse_to_cardinality_gate() -> None:
     assert result["terminal_contract_schema"] == ROLE_ANCHORED_SCHEMA
 
 
-def test_router_sends_cardinality_collapse_to_role_local_islands() -> None:
+def test_router_sends_cardinality_collapse_to_write_link_rails() -> None:
     report = _report()
     report["operation_effect_diagnostics"]["after"] = _local(noop=95, other=5)
     result = route_result(report, {"schema": CARDINALITY_GATED_SCHEMA})
-    assert result["route"] == "per_role_cardinality_and_typed_attribute_islands"
+    assert result["route"] == "write_link_typed_rails"
+
+
+def test_router_sends_typed_rail_collapse_to_payload_islands() -> None:
+    report = _report()
+    report["operation_effect_diagnostics"]["after"] = _local(noop=95, other=5)
+    result = route_result(report, {"schema": WRITE_LINK_RAIL_SCHEMA})
+    assert result["route"] == "rail_local_pointer_payload_islands"
 
 
 def test_router_sends_relation_binding_failure_to_two_phase_algebra() -> None:

@@ -565,3 +565,49 @@ The exact v14 schema, explicit count/top-k objective, finite loss/gradient,
 report seal, and full custody pass. This releases sole 1,000-update any-GPU
 fit `727778`; independent evaluator `727875` is dependency-held behind it.
 No duplicate seed, width, duration, or device arm is authorized.
+
+## Contract-v15 preregistered WRITE/LINK rails
+
+The second exact Stokes audit closes an ambiguity before reading v14's
+endpoint. Job `760929` replays all 494,480 train and 60,512 development
+operations. In both splits, every non-NOOP operation effect is WRITE or LINK.
+The per-operation maxima are exactly three WRITEs and ten LINKs. Train WRITE
+cardinality is only 0, 2, or 3; LINK cardinality spans 0--10. Development
+reproduces the same supports and maxima. The immutable report is
+`artifacts/r12/ettr_operation_effect_kind_cardinality_49464a2_r1/report.json`
+with file SHA-256
+`0922518c1df74488e8f2aa44a4200996cc839391d6be5f3121acc084492aaaf3`.
+
+This fixes the v14-collapse successor before the result is known. Contract
+v15 removes the generic effect-kind classifier instead of changing seed,
+width, or duration. One three-motor WRITE rail predicts an exact count, ranks
+motors, binds active state slots, and writes value codes. One ten-motor LINK
+rail independently predicts an exact count, ranks motors, and binds relation
+type/source/target tuples against the current state. Hard execution releases
+exactly top-k motors per rail. Both rails consume the same public operation
+root/semantic-child anchors and fixed typed state algebra. The final outcome
+and disposition suffix remains on the existing dense final-stage head, so an
+operation-only corpus fact is not incorrectly imposed on terminal suffixes.
+
+The treatment has 49,015,545 compiler parameters and 13 operation motors.
+It admits no QUERY, target, answer, assessor trace, candidate search, ontology
+sidecar, or host semantic execution. Fifty-one focused tests cover separate
+counts, activity and payload gradients, hard deployed state, final-stage
+separation, exact parameter/schema receipts, evaluator diagnostics, routing,
+and custody. V15 is not scientifically released by this implementation. An
+isolated two-update exact-source GPU smoke may qualify mechanics; a long fit
+is permitted only if v14's independent evaluator selects
+`write_link_typed_rails`.
+
+The v15 failure tree is also fixed in advance:
+
+1. Local WRITE/LINK sets, terminal state, WORLD, and COMMAND all improve:
+   replicate the exact contract on a fresh population before promotion.
+2. Counts become exact but pointers or payloads remain wrong: freeze the count
+   heads and train separate pointer/value islands before joint release.
+3. WRITEs become exact but LINKs remain wrong: execute WRITEs first and bind
+   the LINK rail against the post-WRITE state.
+4. Local/terminal exactness improves while both strict axes remain zero: run
+   crossed state-sufficiency isolation, not another fit.
+5. Rail counts collapse or no exact local metric moves: close joint rail
+   acquisition and advance to rail-local count/pointer/payload curricula.

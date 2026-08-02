@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 11:29 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 11:58 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -229,9 +229,19 @@
 > Contract v14 is sealed at exact source `0ca7408`, predicts total cardinality,
 > ranks role-bound motor activity, and removes NOOP from active kind choice.
 > Its isolated any-GPU two-update smoke `727090` completed cleanly on `evc13`.
-> The sole 1,000-update v14 fit `727778` is pending priority, and independent
-> evaluator `727875` is dependency-held behind it. All Newton GPUs are
-> allocated. Do not launch any duplicate fit, seed, width, or duration arm.
+> The sole 1,000-update v14 fit `727778` started on `evc5` at 11:37 EDT and is
+> finite through at least update 790; independent evaluator `727875` remains
+> dependency-held behind it. Do not launch any duplicate fit, seed, width, or
+> duration arm. Exact follow-up Stokes audit `760929` independently measures
+> per-operation maxima of three WRITEs and ten LINKs in both train and
+> development; every other effect kind is absent. Contract v15 is therefore
+> implemented in advance as mechanism-distinct WRITE/LINK rails: separate
+> 3-way/10-way motor banks, separate count heads, hard top-k release per rail,
+> and no generic kind classifier. Its final-stage disposition remains on the
+> existing dense algebra path. Fifty-one focused architecture, gradient,
+> parameter, schema, diagnostics, routing, and custody tests pass. V15 remains
+> a held contingency until v14's independent evaluator selects it; only an
+> isolated two-update mechanical smoke may run in parallel.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -24561,3 +24571,34 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_v13_and_release_exactly_one_v14_cardinality_smoke_then_one_bounded_fit_only_if_mechanics_and_custody_pass`.
+
+- **2026-08-02 11:30--11:58 EDT** -- **V14 consumes one GPU while exact CPU
+  measurement fixes a mechanism-distinct v15 contingency in advance.**
+
+  Sole v14 fit `727778` started on `evc5` at 11:37 EDT. It is finite through
+  at least update 790, with the latest observed loss 3.4435 and pre-clip
+  gradient norm 9.6875. Independent evaluator `727875` remains held by an
+  after-success dependency. No duplicate v14 run was submitted.
+
+  Stokes job `760929` completed in 5m44s on 48 CPU cores. It independently
+  replayed all 494,480 train and 60,512 development operations. Both splits
+  have maximum WRITE cardinality three and maximum LINK cardinality ten;
+  every other operation effect kind has maximum zero. Train WRITE counts use
+  only 0/2/3 and LINK spans 0--10; development reproduces the same support.
+  The report SHA-256 is
+  `0922518c1df74488e8f2aa44a4200996cc839391d6be5f3121acc084492aaaf3`.
+
+  Contract v15 is implemented but scientifically held. It removes the failed
+  generic 12-way kind decision and compiles two explicit typed rails: three
+  WRITE motors and ten LINK motors, each with its own count and activity
+  heads and exact hard top-k release. Payloads bind state slots or relation
+  tuples using the public operation-role context. Final disposition is kept
+  on the separate dense suffix path because the audit covers operations, not
+  terminal suffixes. The compiler has 49,015,545 parameters. Fifty-one
+  focused tests plus Ruff, byte compilation, Bash syntax, and diff checks
+  pass. A two-update exact-source smoke is authorized only for mechanical
+  qualification; a long v15 fit remains prohibited unless evaluator `727875`
+  routes v14 collapse to `write_link_typed_rails`.
+
+  Decision:
+  `finish_v14_once_while_mechanically_qualifying_the_audit_sized_write_link_successor_without_launching_a_second_scientific_arm`.

@@ -3,7 +3,7 @@
 ## Current Status — Read First
 
 **Current frontier, superseding older status text below (2026-08-02
-11:29 EDT):** Shohin still has no replicated two-population demonstration of
+11:58 EDT):** Shohin still has no replicated two-population demonstration of
 architecture-native general reasoning. The fixed typed algebra and learned
 query compiler are no longer the main unknown: the exact algebra is perfect
 on the held-out corpus, and predicted query programs with oracle state reach
@@ -42,8 +42,22 @@ files, no writable entries or links, and SHA256SUMS SHA-256
 Any-GPU smoke `727090` completed cleanly on a V100-32GB with finite gradients,
 exact v14 contract, and full custody. Its run SHA256SUMS is
 `190584b41e93cbfcb6ffc17a062fcf3f1e9cde2b5288af252b7c8d963060b4bd`.
-The sole 1,000-update fit `727778` is pending priority and evaluator `727875`
-is dependency-held behind it; no duplicate arm is authorized. The protected
+The sole 1,000-update fit `727778` is running on `evc5`, finite through at
+least update 790; evaluator `727875` is dependency-held behind it and no
+duplicate arm is authorized.
+
+The failure successor is already code-complete rather than being invented
+after the endpoint. Independent 48-core Stokes audit `760929` proves that
+every operation contains at most three WRITEs and ten LINKs in both train and
+development; all other operation effect kinds are exactly absent. Contract
+v15 therefore removes the generic 12-way kind classifier entirely. It uses
+separate three-motor WRITE and ten-motor LINK rails, separate exact count
+heads, public-role-conditioned payload binding, and deterministic top-k
+release inside each rail. The final disposition stage remains a distinct
+dense head. The compiler has 49,015,545 trainable parameters and passes 51
+focused architecture, gradient, schema, diagnostics, routing, and custody
+tests. It is held for v14 failure and may receive only a two-update mechanical
+smoke before the v14 evaluator routes the scientific branch. The protected
 step-300k checkpoint remains immutable and no raw pretraining writer is active.
 
 The older adversarial conclusions remain binding: the apparent 11/11

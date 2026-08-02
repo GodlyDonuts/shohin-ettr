@@ -145,6 +145,34 @@ def test_terminal_schema_tracks_residual_architecture() -> None:
         "shohin-ettr-parallel-terminal-state-report-v14",
         "shohin-ettr-parallel-terminal-state-metric-v14",
     )
+    assert _run_schemas(*effect_set[:-1], False, True, False, True) == (
+        "shohin-ettr-parallel-terminal-state-contract-v15",
+        "shohin-ettr-parallel-terminal-state-report-v15",
+        "shohin-ettr-parallel-terminal-state-metric-v15",
+    )
+
+
+def test_write_link_rail_args_are_exclusive_and_operation_bound(tmp_path: Path) -> None:
+    args = _train_args(tmp_path)
+    args.residual_edits = False
+    args.atomic_edits = True
+    args.lexical_command = True
+    args.token_native_command_mask = True
+    args.cover_verified_command_mask = True
+    args.token_native_syntax_graph_command = True
+    args.token_native_declaration_binding_command = True
+    args.token_native_operation_recurrence_command = True
+    args.token_native_operation_state_command = True
+    args.factorized_operation_effect_command = False
+    args.operation_effect_set_command = False
+    args.operation_effect_role_anchors = True
+    args.operation_effect_cardinality_gate = False
+    args.operation_effect_write_link_rails = True
+    args.training_initial_state = "oracle"
+    validate_train_args(args)
+    args.operation_effect_set_command = True
+    with pytest.raises(ParallelTerminalStatePilotError, match="arguments differ"):
+        validate_train_args(args)
 
 
 def test_terminal_run_receipt_rejects_mutation(tmp_path: Path) -> None:

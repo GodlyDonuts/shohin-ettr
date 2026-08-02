@@ -35,6 +35,9 @@ ROLE_ANCHORED_EFFECT_MOTORS_PER_ROLE = 5
 ROLE_ANCHORED_EFFECT_SLOTS = (
     ROLE_ANCHORED_EFFECT_ROLES * ROLE_ANCHORED_EFFECT_MOTORS_PER_ROLE
 )
+WRITE_RAIL_EFFECT_SLOTS = 3
+LINK_RAIL_EFFECT_SLOTS = 10
+WRITE_LINK_RAIL_EFFECT_SLOTS = WRITE_RAIL_EFFECT_SLOTS + LINK_RAIL_EFFECT_SLOTS
 
 
 @dataclass(frozen=True, slots=True)
@@ -197,6 +200,36 @@ class OperationStateTransitionCompiler(ParallelTerminalStateCompiler):
             effect_anchors,
         )
 
+    def _operation_edits_from_slots(
+        self,
+        state: TypedTheoryState,
+        slots: torch.Tensor,
+        *,
+        hard: bool,
+        effect_anchors: tuple[torch.Tensor, torch.Tensor] | None,
+    ) -> AtomicTypedEdits:
+        return self._atomic_edits_from_slots(
+            state,
+            slots,
+            hard=hard,
+            effect_anchors=effect_anchors,
+        )
+
+    def _final_edits_from_slots(
+        self,
+        state: TypedTheoryState,
+        slots: torch.Tensor,
+        *,
+        hard: bool,
+        effect_anchors: tuple[torch.Tensor, torch.Tensor] | None,
+    ) -> AtomicTypedEdits:
+        return self._atomic_edits_from_slots(
+            state,
+            slots,
+            hard=hard,
+            effect_anchors=effect_anchors,
+        )
+
     def forward_with_operation_states(
         self,
         state: TypedTheoryState,
@@ -247,7 +280,7 @@ class OperationStateTransitionCompiler(ParallelTerminalStateCompiler):
                 operation_padding,
             )
             selected = operation_count.gt(operation_index)
-            operation_edits = self._atomic_edits_from_slots(
+            operation_edits = self._operation_edits_from_slots(
                 current,
                 updated_slots,
                 hard=hard,
@@ -291,7 +324,7 @@ class OperationStateTransitionCompiler(ParallelTerminalStateCompiler):
                 dim=1,
             ),
         )
-        final_edits = self._atomic_edits_from_slots(
+        final_edits = self._final_edits_from_slots(
             current,
             final_slots,
             hard=hard,
@@ -1021,9 +1054,342 @@ class OperationEffectSetCompiler(OperationStateTransitionCompiler):
         )
 
 
+class _OperationTypedEffectRail(nn.Module):
+    """A typed motor bank conditioned on state slots and public AST roles."""
+
+    def __init__(self, width: int, num_heads: int, motors: int) -> None:
+        super().__init__()
+        self.motors = motors
+        self.queries = nn.Parameter(torch.empty(motors, width))
+        self.input_norm = nn.LayerNorm(width)
+        self.self_attention = nn.MultiheadAttention(
+            width,
+            num_heads,
+            batch_first=True,
+        )
+        self.memory_norm = nn.LayerNorm(width)
+        self.cross_attention = nn.MultiheadAttention(
+            width,
+            num_heads,
+            batch_first=True,
+        )
+        self.ff_norm = nn.LayerNorm(width)
+        self.ff = nn.Sequential(
+            nn.Linear(width, 4 * width),
+            nn.GELU(),
+            nn.Linear(4 * width, width),
+        )
+        self.output_norm = nn.LayerNorm(width)
+        nn.init.normal_(self.queries, std=0.02)
+
+    def forward(
+        self,
+        slots: torch.Tensor,
+        effect_anchors: tuple[torch.Tensor, torch.Tensor],
+    ) -> torch.Tensor:
+        anchors, role_valid = effect_anchors
+        batch, roles, width = anchors.shape
+        if (
+            slots.shape[0] != batch
+            or slots.shape[-1] != width
+            or role_valid.shape != (batch, roles)
+            or role_valid.dtype != torch.bool
+        ):
+            raise TheoryReactorError("typed effect rail anchors differ")
+        valid_weight = role_valid[..., None].to(anchors.dtype)
+        pooled_anchor = (anchors * valid_weight).sum(1, keepdim=True)
+        pooled_anchor = pooled_anchor / valid_weight.sum(1, keepdim=True).clamp_min(1.0)
+        effects = self.queries.to(slots.dtype).unsqueeze(0).expand(batch, -1, -1)
+        effects = effects + slots.mean(1, keepdim=True) + pooled_anchor.to(slots.dtype)
+        normalized = self.input_norm(effects)
+        attended, _ = self.self_attention(
+            normalized,
+            normalized,
+            normalized,
+            need_weights=False,
+        )
+        effects = effects + attended
+        memory = torch.cat((slots, anchors.to(slots.dtype)), dim=1)
+        memory_padding = torch.cat(
+            (
+                torch.zeros(
+                    batch,
+                    slots.shape[1],
+                    dtype=torch.bool,
+                    device=slots.device,
+                ),
+                ~role_valid,
+            ),
+            dim=1,
+        )
+        attended, _ = self.cross_attention(
+            self.input_norm(effects),
+            self.memory_norm(memory),
+            self.memory_norm(memory),
+            key_padding_mask=memory_padding,
+            need_weights=False,
+        )
+        effects = effects + attended
+        effects = effects + self.ff(self.ff_norm(effects))
+        return self.output_norm(effects)
+
+
+class OperationWriteLinkRailCompiler(OperationStateTransitionCompiler):
+    """Compile corpus-exact WRITE and LINK rails without a kind classifier."""
+
+    def __init__(
+        self,
+        *args,
+        maximum_effect_roles: int = ROLE_ANCHORED_EFFECT_ROLES,
+        **kwargs,
+    ) -> None:  # type: ignore[no-untyped-def]
+        super().__init__(*args, **kwargs)
+        if maximum_effect_roles != ROLE_ANCHORED_EFFECT_ROLES:
+            raise TheoryReactorError("write/link rail role geometry differs")
+        self.maximum_effects = WRITE_LINK_RAIL_EFFECT_SLOTS
+        self.effect_role_count = maximum_effect_roles
+        self.effect_motors_per_role = 0
+        self.write_rail = _OperationTypedEffectRail(
+            self.width,
+            self.num_heads,
+            WRITE_RAIL_EFFECT_SLOTS,
+        )
+        self.link_rail = _OperationTypedEffectRail(
+            self.width,
+            self.num_heads,
+            LINK_RAIL_EFFECT_SLOTS,
+        )
+        self.write_count_head = nn.Linear(self.width, WRITE_RAIL_EFFECT_SLOTS + 1)
+        self.link_count_head = nn.Linear(self.width, LINK_RAIL_EFFECT_SLOTS + 1)
+        self.write_activity_head = nn.Linear(self.width, 1)
+        self.link_activity_head = nn.Linear(self.width, 1)
+        self.write_node_query = nn.Linear(self.width, self.width, bias=False)
+        self.write_node_key = nn.Linear(self.width, self.width, bias=False)
+        self.write_value_head = nn.Linear(self.width, self.config.num_value_codes)
+        self.link_relation_source = nn.Linear(self.width, self.config.num_slots)
+        self.link_relation_target = nn.Linear(self.width, self.config.num_slots)
+        self.link_relation_type = nn.Linear(self.width, self.config.num_relations)
+        for head in (self.write_count_head, self.link_count_head):
+            nn.init.zeros_(head.weight)
+            nn.init.zeros_(head.bias)
+
+    def _operation_edits_from_slots(
+        self,
+        state: TypedTheoryState,
+        slots: torch.Tensor,
+        *,
+        hard: bool,
+        effect_anchors: tuple[torch.Tensor, torch.Tensor] | None,
+    ) -> AtomicTypedEdits:
+        if effect_anchors is None:
+            raise TheoryReactorError("write/link rail public anchors are absent")
+        base = super()._atomic_edits_from_slots(state, slots, hard=False)
+        batch = slots.shape[0]
+        write_features = self.write_rail(slots, effect_anchors)
+        link_features = self.link_rail(slots, effect_anchors)
+        write_count = self.write_count_head(write_features.mean(1)).float().softmax(-1)
+        link_count = self.link_count_head(link_features.mean(1)).float().softmax(-1)
+        write_valid = torch.ones(
+            batch,
+            WRITE_RAIL_EFFECT_SLOTS,
+            dtype=torch.bool,
+            device=slots.device,
+        )
+        link_valid = torch.ones(
+            batch,
+            LINK_RAIL_EFFECT_SLOTS,
+            dtype=torch.bool,
+            device=slots.device,
+        )
+        write_activity = _count_constrained_selection(
+            self.write_activity_head(write_features).float().squeeze(-1),
+            write_valid,
+            write_count,
+            capacity=torch.full(
+                (batch,),
+                WRITE_RAIL_EFFECT_SLOTS,
+                dtype=torch.long,
+                device=slots.device,
+            ),
+            hard=hard,
+        )
+        link_activity = _count_constrained_selection(
+            self.link_activity_head(link_features).float().squeeze(-1),
+            link_valid,
+            link_count,
+            capacity=torch.full(
+                (batch,),
+                LINK_RAIL_EFFECT_SLOTS,
+                dtype=torch.long,
+                device=slots.device,
+            ),
+            hard=hard,
+        )
+
+        active = state.active.gt(0.5)
+        write_logits = (
+            torch.einsum(
+                "bkd,bsd->bks",
+                self.write_node_query(write_features),
+                self.write_node_key(slots),
+            )
+            / self.width**0.5
+        )
+        write_pointer = _masked_flat_softmax(
+            write_logits,
+            active[:, None, :].expand_as(write_logits),
+        )
+        write_value = self.write_value_head(write_features).float().softmax(-1)
+
+        relation_logits = (
+            self.link_relation_type(link_features).float()[:, :, :, None, None]
+            + self.link_relation_source(link_features).float()[:, :, None, :, None]
+            + self.link_relation_target(link_features).float()[:, :, None, None, :]
+        )
+        relations = state.relations.gt(0.5)
+        pair_active = active[:, None, :, None] & active[:, None, None, :]
+        link_pointer = _masked_flat_softmax(
+            relation_logits,
+            ((~relations) & pair_active)[:, None].expand_as(relation_logits),
+        )
+        if hard:
+            write_pointer = _hard_categories(write_pointer)
+            write_value = _hard_categories(write_value)
+            link_pointer = _hard_categories(
+                link_pointer.reshape(batch, LINK_RAIL_EFFECT_SLOTS, -1)
+            ).reshape_as(link_pointer)
+
+        write_mass = torch.einsum(
+            "bk,bks->bs",
+            write_activity,
+            write_pointer,
+        )
+        zeros_node = torch.zeros_like(write_mass)
+        node_action = OperationEffectSetCompiler._dense_actions(
+            zeros_node,
+            write_mass,
+            zeros_node,
+            zeros_node,
+        )
+        dense_value = torch.einsum(
+            "bk,bks,bkv->bsv",
+            write_activity,
+            write_pointer,
+            write_value,
+        )
+        dense_value = dense_value / write_mass.unsqueeze(-1).clamp_min(1e-7)
+        dense_value = torch.where(
+            write_mass.unsqueeze(-1).gt(0),
+            dense_value,
+            base.value_code,
+        )
+        link_mass = torch.einsum(
+            "bk,bkrst->brst",
+            link_activity,
+            link_pointer,
+        )
+        relation_action = OperationEffectSetCompiler._dense_actions(
+            link_mass,
+            torch.zeros_like(link_mass),
+        )
+        root_action = torch.zeros_like(base.root_action)
+        root_action[..., 0] = 1.0
+        disposition_action = torch.zeros_like(base.disposition_action)
+        disposition_action[..., 0] = 1.0
+        type_index = base.type_index
+        if hard:
+            node_action = _hard_categories(node_action)
+            dense_value = _hard_categories(dense_value)
+            type_index = _hard_categories(type_index)
+            relation_action = _hard_categories(relation_action)
+            write_count = _hard_categories(write_count)
+            link_count = _hard_categories(link_count)
+
+        kinds = torch.zeros(
+            batch,
+            WRITE_LINK_RAIL_EFFECT_SLOTS,
+            EFFECT_KIND_COUNT,
+            dtype=write_activity.dtype,
+            device=slots.device,
+        )
+        kinds[:, :WRITE_RAIL_EFFECT_SLOTS, EFFECT_NOOP] = 1.0 - write_activity
+        kinds[:, :WRITE_RAIL_EFFECT_SLOTS, EFFECT_WRITE] = write_activity
+        kinds[:, WRITE_RAIL_EFFECT_SLOTS:, EFFECT_NOOP] = 1.0 - link_activity
+        kinds[:, WRITE_RAIL_EFFECT_SLOTS:, EFFECT_LINK] = link_activity
+        generic_node_pointer = torch.zeros(
+            batch,
+            WRITE_LINK_RAIL_EFFECT_SLOTS,
+            2,
+            self.config.num_slots,
+            dtype=write_pointer.dtype,
+            device=slots.device,
+        )
+        generic_node_pointer[:, :WRITE_RAIL_EFFECT_SLOTS, 0] = write_pointer
+        generic_node_pointer[:, :WRITE_RAIL_EFFECT_SLOTS, 1] = write_pointer
+        generic_value = torch.full(
+            (
+                batch,
+                WRITE_LINK_RAIL_EFFECT_SLOTS,
+                self.config.num_value_codes,
+            ),
+            1.0 / self.config.num_value_codes,
+            dtype=write_value.dtype,
+            device=slots.device,
+        )
+        generic_value[:, :WRITE_RAIL_EFFECT_SLOTS] = write_value
+        generic_type = torch.full(
+            (batch, WRITE_LINK_RAIL_EFFECT_SLOTS, self.config.num_types),
+            1.0 / self.config.num_types,
+            dtype=write_value.dtype,
+            device=slots.device,
+        )
+        generic_relation = torch.zeros(
+            batch,
+            WRITE_LINK_RAIL_EFFECT_SLOTS,
+            self.config.num_relations,
+            self.config.num_slots,
+            self.config.num_slots,
+            dtype=link_pointer.dtype,
+            device=slots.device,
+        )
+        generic_relation[:, WRITE_RAIL_EFFECT_SLOTS:] = link_pointer
+        generic_root = torch.full(
+            (batch, WRITE_LINK_RAIL_EFFECT_SLOTS, self.config.num_slots),
+            1.0 / self.config.num_slots,
+            dtype=write_value.dtype,
+            device=slots.device,
+        )
+        unlink_count = torch.zeros(
+            batch,
+            self.config.max_edges + 1,
+            dtype=link_count.dtype,
+            device=slots.device,
+        )
+        unlink_count[:, 0] = 1.0
+        return AtomicTypedEdits(
+            node_action=node_action,
+            value_code=dense_value,
+            type_index=type_index,
+            relation_action=relation_action,
+            root_action=root_action,
+            disposition_action=disposition_action,
+            node_edit_count=write_count,
+            relation_link_count=link_count,
+            relation_unlink_count=unlink_count,
+            effect_kind=kinds,
+            effect_node_pointer=generic_node_pointer,
+            effect_value_code=generic_value,
+            effect_type_index=generic_type,
+            effect_relation_link=generic_relation,
+            effect_relation_unlink=generic_relation,
+            effect_root_pointer=generic_root,
+        )
+
+
 __all__ = [
     "FactorizedOperationStateTransitionCompiler",
     "OperationEffectSetCompiler",
     "OperationStateTransitionCompiler",
     "OperationStateTransitionTrace",
+    "OperationWriteLinkRailCompiler",
 ]
