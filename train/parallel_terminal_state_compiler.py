@@ -119,6 +119,7 @@ class ParallelTerminalStateCompiler(nn.Module):
         layers: int = 4,
         num_heads: int = 8,
         relation_width: int = 64,
+        residual_edits: bool = False,
     ) -> None:
         super().__init__()
         config.validate()
@@ -132,6 +133,7 @@ class ParallelTerminalStateCompiler(nn.Module):
             or not 1 <= layers <= 8
             or not isinstance(relation_width, int)
             or relation_width < 8
+            or not isinstance(residual_edits, bool)
         ):
             raise TheoryReactorError("terminal-state compiler geometry differs")
         self.config = config
@@ -139,6 +141,7 @@ class ParallelTerminalStateCompiler(nn.Module):
         self.layers_count = layers
         self.num_heads = num_heads
         self.relation_width = relation_width
+        self.residual_edits = residual_edits
 
         self.command_projection = nn.Linear(config.d_model, width)
         self.command_norm = nn.LayerNorm(width)
@@ -182,6 +185,34 @@ class ParallelTerminalStateCompiler(nn.Module):
         )
         self.relation_bias = nn.Parameter(torch.zeros(config.num_relations))
         self.status_head = nn.Linear(width, 2)
+        if residual_edits:
+            self.value_edit_head = nn.Linear(width, 1)
+            self.type_edit_head = nn.Linear(width, 1)
+            self.active_edit_head = nn.Linear(width, 1)
+            self.root_edit_head = nn.Linear(width, 1)
+            self.relation_edit_left = nn.Linear(
+                width,
+                config.num_relations * relation_width,
+                bias=False,
+            )
+            self.relation_edit_right = nn.Linear(
+                width,
+                config.num_relations * relation_width,
+                bias=False,
+            )
+            self.relation_edit_bias = nn.Parameter(
+                torch.full((config.num_relations,), -2.0)
+            )
+            self.status_edit_head = nn.Linear(width, 2)
+        else:
+            self.value_edit_head = None
+            self.type_edit_head = None
+            self.active_edit_head = None
+            self.root_edit_head = None
+            self.relation_edit_left = None
+            self.relation_edit_right = None
+            self.register_parameter("relation_edit_bias", None)
+            self.status_edit_head = None
         self.reset_parameters()
 
     def reset_parameters(self) -> None:
@@ -192,6 +223,15 @@ class ParallelTerminalStateCompiler(nn.Module):
             self.terminal_slot_queries,
         ):
             nn.init.normal_(parameter, std=0.02)
+        for head in (
+            self.value_edit_head,
+            self.type_edit_head,
+            self.active_edit_head,
+            self.root_edit_head,
+            self.status_edit_head,
+        ):
+            if head is not None:
+                nn.init.constant_(head.bias, -2.0)
 
     def _initial_memory(self, state: TypedTheoryState) -> torch.Tensor:
         values = torch.einsum(
@@ -259,6 +299,8 @@ class ParallelTerminalStateCompiler(nn.Module):
         )
         slots = self.terminal_slot_queries.to(command.dtype)
         slots = slots.unsqueeze(0).expand(batch, -1, -1)
+        if self.residual_edits:
+            slots = slots + initial
         for layer in self.layers:
             slots = layer(slots, memory, memory_padding)
         slots = self.output_norm(slots)
@@ -290,11 +332,68 @@ class ParallelTerminalStateCompiler(nn.Module):
         status = self.status_head(pooled).float().sigmoid()
         committed, halted = status.unbind(-1)
 
+        if self.residual_edits:
+            if (
+                self.value_edit_head is None
+                or self.type_edit_head is None
+                or self.active_edit_head is None
+                or self.root_edit_head is None
+                or self.relation_edit_left is None
+                or self.relation_edit_right is None
+                or self.relation_edit_bias is None
+                or self.status_edit_head is None
+            ):
+                raise TheoryReactorError(
+                    "terminal-state residual edit path differs"
+                )
+            value_gate = self.value_edit_head(slots).float().sigmoid()
+            type_gate = self.type_edit_head(slots).float().sigmoid()
+            active_gate = (
+                self.active_edit_head(slots).float().sigmoid().squeeze(-1)
+            )
+            root_gate = self.root_edit_head(pooled).float().sigmoid()
+            edit_left = self.relation_edit_left(slots).view_as(left)
+            edit_right = self.relation_edit_right(slots).view_as(right)
+            relation_edit_logits = torch.einsum(
+                "bsrd,btrd->brst",
+                edit_left,
+                edit_right,
+            ) / math.sqrt(self.relation_width)
+            relation_edit_logits = relation_edit_logits + (
+                self.relation_edit_bias.view(1, -1, 1, 1)
+            )
+            relation_gate = relation_edit_logits.float().sigmoid()
+            status_gate = self.status_edit_head(pooled).float().sigmoid()
+            value = torch.lerp(
+                state.value_probabilities.float(),
+                value,
+                value_gate,
+            )
+            type_probability = torch.lerp(
+                state.type_probabilities.float(),
+                type_probability,
+                type_gate,
+            )
+            active = torch.lerp(state.active.float(), active, active_gate)
+            root = torch.lerp(state.root.float(), root, root_gate)
+            relations = torch.lerp(
+                state.relations.float(),
+                relations,
+                relation_gate,
+            )
+            initial_status = torch.stack(
+                (state.committed, state.halted),
+                dim=-1,
+            ).float()
+            status = torch.lerp(initial_status, status, status_gate)
+            committed, halted = status.unbind(-1)
+
         if hard:
             active = _hard_binary(active)
             value = _hard_one_hot(value)
             type_probability = _hard_one_hot(type_probability)
-            root_choice = _hard_one_hot(root_with_none)
+            no_root = (1.0 - root.sum(-1, keepdim=True)).clamp(0.0, 1.0)
+            root_choice = _hard_one_hot(torch.cat((root, no_root), dim=-1))
             root = root_choice[:, :-1]
 
         value = value * active.unsqueeze(-1)

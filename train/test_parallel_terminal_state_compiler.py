@@ -103,6 +103,21 @@ def test_terminal_compiler_emits_valid_hard_state() -> None:
     assert bool((terminal.relations <= pair_active).all())
 
 
+def test_sparse_residual_terminal_compiler_emits_valid_hard_state() -> None:
+    config = _config()
+    compiler = ParallelTerminalStateCompiler(
+        config,
+        width=64,
+        layers=2,
+        num_heads=2,
+        relation_width=16,
+        residual_edits=True,
+    )
+    terminal = compiler(_state(config), **_inputs(config), hard=True)
+    validate_deployed_state(terminal, config)
+    assert terminal.step == 3
+
+
 def test_terminal_compiler_backpropagates_every_semantic_head() -> None:
     config = _config()
     compiler = ParallelTerminalStateCompiler(
@@ -192,6 +207,96 @@ def test_production_terminal_compiler_fits_replacement_budget() -> None:
     # protected model plus production algebraic reader.
     assert parameters == 18_520_349
     assert parameters < 44_061_106
+
+
+def test_production_sparse_residual_compiler_fits_system_cap() -> None:
+    compiler = ParallelTerminalStateCompiler(
+        TheoryReactorConfig(),
+        residual_edits=True,
+    )
+    parameters = sum(parameter.numel() for parameter in compiler.parameters())
+    assert parameters == 19_572_019
+    assert parameters < 44_061_106
+
+
+def test_sparse_residual_gate_can_preserve_initial_identity() -> None:
+    config = _config()
+    compiler = ParallelTerminalStateCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        relation_width=16,
+        residual_edits=True,
+    )
+    for head in (
+        compiler.value_edit_head,
+        compiler.type_edit_head,
+        compiler.active_edit_head,
+        compiler.root_edit_head,
+        compiler.status_edit_head,
+    ):
+        assert head is not None
+        torch.nn.init.zeros_(head.weight)
+        torch.nn.init.constant_(head.bias, -100.0)
+    assert compiler.relation_edit_left is not None
+    assert compiler.relation_edit_right is not None
+    assert compiler.relation_edit_bias is not None
+    torch.nn.init.zeros_(compiler.relation_edit_left.weight)
+    torch.nn.init.zeros_(compiler.relation_edit_right.weight)
+    torch.nn.init.constant_(compiler.relation_edit_bias, -100.0)
+    initial = _state(config)
+    terminal = compiler(initial, **_inputs(config), hard=False)
+    for name in (
+        "value_probabilities",
+        "type_probabilities",
+        "relations",
+        "active",
+        "root",
+        "committed",
+        "halted",
+    ):
+        assert torch.equal(getattr(terminal, name), getattr(initial, name))
+
+
+def test_sparse_residual_edit_heads_receive_gradients() -> None:
+    config = _config()
+    compiler = ParallelTerminalStateCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        relation_width=16,
+        residual_edits=True,
+    )
+    terminal = compiler(_state(config), **_inputs(config), hard=False)
+    loss = sum(
+        value.float().square().mean()
+        for value in (
+            terminal.value_probabilities,
+            terminal.type_probabilities,
+            terminal.relations,
+            terminal.active,
+            terminal.root,
+            terminal.committed,
+            terminal.halted,
+        )
+    )
+    loss.backward()
+    parameters = dict(compiler.named_parameters())
+    for name in (
+        "value_edit_head.weight",
+        "type_edit_head.weight",
+        "active_edit_head.weight",
+        "root_edit_head.weight",
+        "relation_edit_left.weight",
+        "relation_edit_right.weight",
+        "relation_edit_bias",
+        "status_edit_head.weight",
+    ):
+        gradient = parameters[name].grad
+        assert gradient is not None, name
+        assert bool(gradient.isfinite().all()), name
 
 
 def test_terminal_compiler_rejects_wrong_command_geometry() -> None:

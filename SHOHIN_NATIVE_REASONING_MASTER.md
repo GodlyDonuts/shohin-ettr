@@ -3,7 +3,7 @@
 ## Current Status — Read First
 
 **Current frontier, superseding older status text below (2026-08-01
-22:10 EDT):** Shohin still has no replicated two-population demonstration of
+22:25 EDT):** Shohin still has no replicated two-population demonstration of
 architecture-native general reasoning. The campaign has nevertheless moved
 from an undifferentiated failure to a measured interface decomposition. A
 fixed typed algebra is exact on the real held-out corpus, and a learned query
@@ -22,18 +22,19 @@ hard WORLD packet improves exact schedule imitation while returning both
 causal gates to zero. These results reject independent canonical schedule
 fields as the semantic objective.
 
-The direct terminal-state quotient is now a measured negative rather than an
-open hypothesis. Its H100 arm reaches 70.31% factual top-1 and near-perfect
-common binary fields, while exact packets and fully autonomous strict WORLD
-and COMMAND remain zero; a V100 replication also returns both strict gates to
-zero. The architecture learns the dominant terminal-state manifold but erases
-the rare intervention-specific edits. The immediate successor keeps the same
-18,520,349-parameter one-pass typed-state architecture and adds explicit
-rectangle-level WORLD/COMMAND delta credit on only the terminal coordinates
-that actually change. It still admits no query or answer supervision. Local
-invariance and custody tests pass; matched delta-weight canaries are the next
-hard gate. The protected step-300k checkpoint remains immutable and no raw-
-pretraining writer is active.
+The direct terminal-state quotient and its loss-only causal-delta repair are
+now measured negatives. The fieldwise H100 arm reaches 70.31% factual top-1
+and near-perfect common binary fields, while exact packets and strict WORLD
+and COMMAND remain zero; V100 reproduces both zeros. Four matched causal-delta
+arms at weights 1 and 4 on H100/V100 also remain state-isolated WORLD/COMMAND
+zero. Stronger credit degrades factual state rather than producing stable
+edits. The immediate successor is an architectural separation: a copy-biased
+identity highway preserves initial typed state while independent COMMAND-
+conditioned gates purchase sparse value, type, active, root, relation, and
+status rewrites. It has 19,572,019 trainable parameters and leaves the complete
+system at 175,510,913. It still admits no query or answer supervision. The
+protected step-300k checkpoint remains immutable and no raw-pretraining writer
+is active.
 
 The older adversarial conclusions remain binding: the apparent 11/11
 episodic-generator result was not a Shohin claim because exact host code parsed,
@@ -53501,3 +53502,21 @@ and the training target remains the query-independent terminal packet.
 
 Current decision:
 `preserve_direct_terminal_transport_but_make_sparse_causal_edits_first_class_then_reject_unless_both_axes_move`.
+
+Four matched H100/V100 arms reject that loss-only repair. Weight 1 retains
+60.94% factual top-1; weight 4 falls as low as 48.24%. All four remain strict
+WORLD/COMMAND zero, and the oracle-program/autonomous-state cross-check is
+exactly invariant. The architecture absorbed the contrastive gradient by
+damaging its shared absolute-state estimate instead of building a reusable
+edit operation.
+
+The successor separates identity from intervention structurally. Initial
+slots directly seed terminal slots, and each semantic field has an explicit
+copy-versus-edit gate; relation edges receive their own factorized edit gate.
+Copy-biased initialization makes invariant state free and forces COMMAND to
+learn only the sparse rewrite. The 1,000-update gate keeps the same data,
+objective, seed, and evaluator, isolating architecture rather than budget or
+supervision.
+
+Current decision:
+`test_copy_biased_sparse_residual_state_transport_and_require_state_isolated_world_plus_command_causality`.

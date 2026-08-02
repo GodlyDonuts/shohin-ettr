@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-01 22:10 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-01 22:30 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -128,11 +128,15 @@
 > but exact terminal packets and fully autonomous strict WORLD/COMMAND remain
 > zero; V100 independently reproduces both strict zeros. The fieldwise
 > terminal quotient is therefore closed: it learns the common state manifold
-> while erasing intervention-specific edits. Contract v2 now adds complete
-> 2x2 rectangle-level terminal-state delta credit on only target-changed WORLD
-> and COMMAND coordinates, with the full-state Brier objective retained as an
-> anchor. It still admits no QUERY or answer supervision. Matched delta-weight
-> 4.0/1.0 canaries are the next hard gate.
+> while erasing intervention-specific edits. Four matched contract-v2 H100/
+> V100 causal-delta arms at weights 1 and 4 also leave state-isolated WORLD and
+> COMMAND exactly zero; stronger credit degrades factual state. Loss-only
+> repair is closed. Contract v3 structurally separates identity from editing:
+> initial typed slots directly seed terminal slots, while copy-biased per-field
+> and per-relation gates purchase sparse COMMAND-conditioned rewrites. The new
+> compiler has 19,572,019 parameters and leaves the complete system at
+> 175,510,913. It still admits no QUERY or answer supervision. A matched
+> 1,000-update residual-transport gate is next.
 > No current artifact is promoted as stable native reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
@@ -23065,3 +23069,42 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_fieldwise_terminal_state_fit_and_require_joint_world_plus_command_movement_from_explicit_sparse_causal_delta_credit`.
+
+- **2026-08-01 22:10--22:30 EDT** -- **Four matched runs reject loss-only
+  causal-delta repair; sparse residual terminal transport is implemented.**
+
+  H100 jobs `725486/725488` and V100 jobs `725490/725492` completed 500/500
+  updates cleanly for causal-delta weights `4.0/1.0`. Weight 1 reaches 60.94%
+  factual top-1 on both devices. Weight 4 reaches 48.24% on H100 and 60.94%
+  on V100. Every arm remains strict WORLD `0%` and strict COMMAND `0%`.
+  Crucially, every oracle-program/autonomous-state cross is WORLD/COMMAND
+  strict `0%`, margin-1 `0%`, and DID `0`. The H100 weight-4 autonomous stack
+  shows a 5% WORLD margin-1 and DID `0.252`, but that signal vanishes on V100
+  and when the query program is held exact while factual accuracy collapses;
+  it is rejected as a composition artifact. Report SHA-256 values are
+  `5effcde6064ad349408e6d9a9b6466b47d002adc851ceacd73a6894f5e677225`
+  (H100/w1),
+  `9ebb1af5437cfdda25329e254847a36ba37c1367206a29524a578951f3ea1bc8`
+  (H100/w4),
+  `99e22ebda447dce748b1017bd11919a819a8adbb3718e4fea01becd6faac171e`
+  (V100/w1), and
+  `90755ca4cab9a42dbf51512eda2d1e91a31309f6472ab769c61f1e66fd32f4fd`
+  (V100/w4). Sidecars are preserved under
+  `artifacts/r12/terminal_delta_u500_*`.
+
+  The next intervention is architectural, not another loss coefficient.
+  `ParallelTerminalStateCompiler(residual_edits=True)` directly seeds terminal
+  slot queries with the initial typed state. Independent COMMAND-conditioned
+  proposal heads can rewrite each field, while copy-biased slot, root, status,
+  and factorized relation gates decide whether an edit is purchased. This
+  gives invariant state an identity highway rather than forcing a dense decoder
+  to reconstruct it. The residual path adds 1,051,670 parameters: compiler
+  total 19,572,019; complete system 175,510,913. Hard typed constraints and the
+  query/answer firewall are unchanged. Fourteen focused tests pass; exact
+  identity preservation at closed edit gates and hard-state validity are
+  covered. The first preregistered gate is 1,000 updates, seed 31/data 11,
+  autonomous initial state, LR `3e-4`, clip 1, delta weight 1, and unchanged
+  512-row evaluation.
+
+  Decision:
+  `reject_loss_only_repair_and_test_copy_biased_identity_plus_sparse_typed_edits`.

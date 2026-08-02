@@ -32,6 +32,8 @@ from train_ettr_component_island import (
     _write_no_replace,
 )
 from train_parallel_terminal_state_pilot import (
+    CAUSAL_DELTA_CONTRACT_SCHEMA as PILOT_CAUSAL_DELTA_CONTRACT_SCHEMA,
+    CAUSAL_DELTA_REPORT_SCHEMA as PILOT_CAUSAL_DELTA_REPORT_SCHEMA,
     CONTRACT_SCHEMA as PILOT_CONTRACT_SCHEMA,
     LEGACY_CONTRACT_SCHEMA as PILOT_LEGACY_CONTRACT_SCHEMA,
     LEGACY_REPORT_SCHEMA as PILOT_LEGACY_REPORT_SCHEMA,
@@ -205,12 +207,24 @@ def _load_terminal_compiler(
     architecture = contract.get("architecture")
     if (
         contract.get("schema")
-        not in (PILOT_CONTRACT_SCHEMA, PILOT_LEGACY_CONTRACT_SCHEMA)
+        not in (
+            PILOT_CONTRACT_SCHEMA,
+            PILOT_CAUSAL_DELTA_CONTRACT_SCHEMA,
+            PILOT_LEGACY_CONTRACT_SCHEMA,
+        )
         or report.get("schema")
-        not in (PILOT_REPORT_SCHEMA, PILOT_LEGACY_REPORT_SCHEMA)
+        not in (
+            PILOT_REPORT_SCHEMA,
+            PILOT_CAUSAL_DELTA_REPORT_SCHEMA,
+            PILOT_LEGACY_REPORT_SCHEMA,
+        )
         or (
             (contract.get("schema") == PILOT_CONTRACT_SCHEMA)
             != (report.get("schema") == PILOT_REPORT_SCHEMA)
+        )
+        or (
+            (contract.get("schema") == PILOT_CAUSAL_DELTA_CONTRACT_SCHEMA)
+            != (report.get("schema") == PILOT_CAUSAL_DELTA_REPORT_SCHEMA)
         )
         or report.get("status") != "pass"
         or not isinstance(architecture, Mapping)
@@ -235,7 +249,10 @@ def _load_terminal_compiler(
         raise ParallelTerminalStateEvaluationError(
             "terminal-state run lineage differs"
         )
-    if contract.get("schema") == PILOT_CONTRACT_SCHEMA:
+    if contract.get("schema") in (
+        PILOT_CONTRACT_SCHEMA,
+        PILOT_CAUSAL_DELTA_CONTRACT_SCHEMA,
+    ):
         objective = contract.get("objective")
         if (
             architecture.get("causal_rectangle_delta_credit") is not True
@@ -248,6 +265,11 @@ def _load_terminal_compiler(
             raise ParallelTerminalStateEvaluationError(
                 "terminal-state causal delta contract differs"
             )
+    residual_edits = contract.get("schema") == PILOT_CONTRACT_SCHEMA
+    if residual_edits != (architecture.get("sparse_residual_edits") is True):
+        raise ParallelTerminalStateEvaluationError(
+            "terminal-state residual edit contract differs"
+        )
     try:
         seed = int(architecture["seed"])
         width = int(architecture["width"])
@@ -266,6 +288,7 @@ def _load_terminal_compiler(
         layers=layers,
         num_heads=num_heads,
         relation_width=relation_width,
+        residual_edits=residual_edits,
     ).to(
         device=next(model.parameters()).device,
         dtype=next(model.parameters()).dtype,

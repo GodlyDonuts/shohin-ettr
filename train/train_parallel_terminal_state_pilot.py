@@ -47,8 +47,10 @@ from train_parallel_addressed_transaction_pilot import (
 )
 
 
-CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v2"
-REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v2"
+CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v3"
+REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v3"
+CAUSAL_DELTA_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v2"
+CAUSAL_DELTA_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v2"
 LEGACY_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v1"
 LEGACY_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v1"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
@@ -94,6 +96,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--layers", type=int, default=4)
     parser.add_argument("--num-heads", type=int, default=8)
     parser.add_argument("--relation-width", type=int, default=64)
+    parser.add_argument("--residual-edits", action="store_true")
     parser.add_argument(
         "--required-device-class",
         choices=("h100", "cuda"),
@@ -428,6 +431,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         layers=args.layers,
         num_heads=args.num_heads,
         relation_width=args.relation_width,
+        residual_edits=args.residual_edits,
     ).to(device=device, dtype=next(model.parameters()).dtype)
     compiler_parameters = sum(
         parameter.numel() for parameter in compiler.parameters()
@@ -496,6 +500,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "removed_recurrent_policy_parameters": (
                     removed_reactor_parameters
                 ),
+                "sparse_residual_edits": args.residual_edits,
                 "seed": args.architecture_seed,
                 "typed_hard_state_constraints": True,
                 "width": args.width,

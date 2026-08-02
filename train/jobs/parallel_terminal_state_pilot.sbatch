@@ -39,6 +39,7 @@ LAYERS=${LAYERS:-4}
 NUM_HEADS=${NUM_HEADS:-8}
 RELATION_WIDTH=${RELATION_WIDTH:-64}
 REQUIRED_DEVICE_CLASS=${REQUIRED_DEVICE_CLASS:-h100}
+RESIDUAL_EDITS=${RESIDUAL_EDITS:-0}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
 for path in "$CODE_ROOT" "$RELEASE_ROOT" "$ETTR_DATA_ROOT" \
@@ -81,6 +82,14 @@ compiler_sha=$(sha256sum \
   "$COMPILER_RUN_DIR/typed-query-reader-final.safetensors" \
   | cut -d ' ' -f 1)
 
+residual_args=()
+if [[ "$RESIDUAL_EDITS" == 1 ]]; then
+  residual_args+=(--residual-edits)
+elif [[ "$RESIDUAL_EDITS" != 0 ]]; then
+  echo "terminal-state residual edit setting differs" >&2
+  exit 2
+fi
+
 "$PYTHON_ROOT/bin/python" \
   "$CODE_ROOT/train/train_parallel_terminal_state_pilot.py" \
   --release-root "$RELEASE_ROOT" \
@@ -111,6 +120,7 @@ compiler_sha=$(sha256sum \
   --layers "$LAYERS" \
   --num-heads "$NUM_HEADS" \
   --relation-width "$RELATION_WIDTH" \
+  "${residual_args[@]}" \
   --required-device-class "$REQUIRED_DEVICE_CLASS"
 
 (
