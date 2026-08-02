@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 06:51 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 07:26 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -184,7 +184,15 @@
 > control `725574` has now completed and rejects delayed emergence on that
 > objective: joint schedule accuracy reaches 15.20% and exact oracle-initial
 > terminal packets remain `32/512`, but fully autonomous WORLD and COMMAND
-> stay exactly zero. More duration on contract-v8 is closed.
+> stay exactly zero. More duration on contract-v8 is closed. Exact operation
+> and semantic state-delta audits now reject the next monolithic supervision
+> target. The best high-coverage exact-mutation transfer is 20.41%; cumulative
+> runtime state transfer is at most 9.43% in a useful operation context; and
+> the order-invariant operation delta reaches only a 44.75% high-coverage
+> modal baseline. The operation-state mechanics pass a real two-update V100
+> smoke, but its 1,000-update job was canceled before allocation because the
+> target is not publicly identifiable. A factorized shape/address/payload
+> audit is active; the next neural arm must predict only recoverable factors.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -24028,3 +24036,60 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_contract_v8_duration_scaling_and_run_exact_mutation_plus_semantic_state_quotient_identifiability_in_parallel_before_releasing_operation_state_training`.
+
+- **2026-08-02 07:15--07:26 EDT** -- **Monolithic operation-state
+  supervision is rejected; factorized effect compilation is the next gate.**
+
+  Corrected Stokes jobs `760907/760908` completed cleanly on 48 CPU cores each
+  in 22m09s and 23m18s. The exact-operation report is preserved at
+  `artifacts/r12/ettr_public_operation_identifiability_70e5dcb_r1/report.json`
+  with file SHA-256
+  `fd14cbeee6ae9c28ec47241d1b1c02c42d33578e6df6148bb701027992437dd3`
+  and payload SHA-256
+  `e59949d372e5961c1caa4fa548a5f154b939ef90e53db28c5a94203cc8228356`.
+  The semantic quotient report is preserved at
+  `artifacts/r12/ettr_public_operation_state_delta_70e5dcb_r1/report.json`
+  with file SHA-256
+  `9d0eeaead6921024e02ab90238efab403abef9a3852b940b75d2b15ac7baa7ae`
+  and payload SHA-256
+  `3eeb715a5c7c4c5430c89ebe8ab3d0cd8ace8c64d64e1ad797262066aa49f95d`.
+
+  Exact mutation labels are not a stable public target. Resolved operation
+  alone has 100% development coverage but only 20.41% train-to-development
+  modal accuracy and a 21.18% development Bayes ceiling. Exact WORLD plus
+  operation reaches only 9.20% all-instance transfer at 45.38% coverage.
+  Prefix and full-COMMAND contexts have 70--72% development ceilings but only
+  9.00% and 2.11% train-to-development coverage, so they do not justify exact
+  signature lookup or a monolithic mutation target.
+
+  Removing cursor and mutation ordering helps but does not solve the target.
+  The operation-only semantic delta reaches 43.49% transfer at full coverage;
+  topology plus operation reaches 44.75% at 99.98% coverage, essentially its
+  45.78% Bayes ceiling. Operator-abstracted full COMMAND plus rank reaches
+  56.16% on seen signatures but only 24.85% overall at 44.25% coverage.
+  Cumulative runtime state is worse: exact WORLD plus operation reaches 9.43%
+  overall and operator/topology high-coverage contexts are below 0.4%.
+
+  Mechanical smoke `726972` nevertheless proves the implementation itself is
+  viable on a 32GB V100. It completed the frozen 32-batch pre/post evaluator,
+  two updates, six operation-boundary state/action losses, backward, custody,
+  and report sealing in 2m17s. Final loss is finite at 7.2268 and pre-clip
+  gradient norm is 46.75. Report SHA-256 is
+  `4438b6baec465cc605b996da3fb5c8d53bc2b0d9e0e919581152f57fc73f20f1`.
+  The earlier two-batch smoke `726971` failed only because two batches cannot
+  form evaluator contrasts. Held 1,000-update job `726970` was canceled before
+  allocation after the negative audits.
+
+  Commit `3cdc96d` factors each semantic delta into action shape, addressed
+  coordinates, and payload transformations. Immutable Stokes runtime
+  `scratchpad/shohin_ettr_operation_factor_audit_runtime_3cdc96d_r1` binds
+  exact source `3cdc96d8a2d25d54bcb1d3cb658aba4f959484e7`, contains 3,574
+  measured files, has zero writable files, and has SHA256SUMS SHA-256
+  `f6281b95f89c63e62dc38aa4e3a33e54375b3fa1a3034136bf94c7ac7272b104`.
+  Job `760909` uses 48 Stokes CPU cores. If shape is identifiable but
+  addresses or payloads are not, the successor will use a public grammar
+  action classifier plus state-grounded pointer/value heads rather than
+  another joint edit softmax.
+
+  Decision:
+  `cancel_monolithic_operation_state_training_and_factor_public_effect_shape_from_state_grounded_operands_before_the_next_gpu_fit`.

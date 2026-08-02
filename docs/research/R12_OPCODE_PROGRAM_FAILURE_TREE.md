@@ -240,3 +240,22 @@ operator-abstracted, and topology WORLD contexts. This precomputes both
 failure branches: high public identifiability releases held operation-state
 job `726970`; low identifiability cancels it and requires a different public
 target ontology.
+
+Both reports are now measured and select the low-identifiability branch.
+Exact mutation labels reach only 20.41% transfer from resolved operation at
+full coverage; adding exact WORLD lowers useful all-instance transfer to
+9.20% at 45.38% coverage. The order-independent semantic delta improves to
+43.49% from operation alone and 44.75% from topology plus operation, but those
+values sit at their corresponding 43.55% and 45.78% Bayes ceilings. Cumulative
+runtime state reaches at most 9.43% in the exact-WORLD operation context and
+falls below 0.4% in high-coverage abstract contexts. This is target aliasing,
+not a request for more neural capacity.
+
+V100 smoke `726972` proves the operation-boundary implementation is
+mechanically healthy: all six boundaries reconstruct, forward/backward is
+finite, and custody seals after two updates. Held 1,000-update job `726970`
+was therefore canceled for scientific, not technical, reasons. The next CPU
+gate factors the operation delta into shape, addressed coordinates, and
+payload transformations. Its result determines whether the next architecture
+is a grammar action classifier plus state pointers/value heads or whether the
+current state/edit ontology must be rejected entirely.
