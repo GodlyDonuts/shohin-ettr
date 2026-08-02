@@ -53433,3 +53433,24 @@ budget, and evaluator will test the cause directly before any scale-up.
 
 Current decision:
 `train_the_schedule_compiler_on_its_actual_deployed_world_state_and_require_a_matched_causal_gain_before_extending_the_curriculum`.
+
+The matched 1,000-update result rejects the hypothesis as a sufficient repair.
+The oracle control reaches 8.92% exact schedules, 70.70% factual top-1, WORLD
+strict 0% with 3.57% margin-1, and COMMAND strict/margin-1 2.27%. Training on
+Shohin's deployed hard WORLD packet improves exact schedules to 10.82% and
+retains 70.31% factual top-1, but both WORLD and COMMAND strict and margin-1
+return to zero. The scheduler can adapt to the deployed packet distribution,
+yet that adaptation improves canonical label fit rather than causal state.
+
+Together with the failed fieldwise ensemble, this narrows the next mechanism.
+The architecture must not average incompatible program pieces, and it must not
+treat one arbitrary canonical transaction serialization as the semantic goal.
+Two admissible successors remain: select one coherent complete-program basin
+for the whole episode using only candidate-visible state/COMMAND evidence, or
+compile the query-independent terminal-state equivalence class directly and
+train against its typed semantics. In either case the late query stays deleted
+from state construction and the same three-population WORLD/COMMAND gate
+decides the result.
+
+Current decision:
+`preserve_whole_program_coherence_or_learn_the_terminal_state_quotient_instead_of_optimizing_independent_canonical_schedule_fields`.

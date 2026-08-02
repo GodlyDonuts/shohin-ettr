@@ -108,8 +108,11 @@
 > baseline. A deterministic 181.79M-parameter four-basin probability-mean
 > ensemble has now been rejected: it returns zero strict WORLD and COMMAND on
 > all three tested orderings. Matched training on the deployed autonomous
-> WORLD packet, rather than the historical oracle packet, is the active causal
-> test. No current artifact is promoted as stable native reasoning.
+> WORLD packet improves exact schedule imitation but returns strict WORLD and
+> COMMAND to zero, rejecting that mismatch as the primary repair. The next
+> architecture gate must preserve coherent whole-program identity or compile
+> the query-independent terminal-state quotient directly. No current artifact
+> is promoted as stable native reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -22930,3 +22933,18 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   records matched H100 jobs `725460` (oracle initial state) and `725461`
   (autonomous initial state). Both use seed 31/data 11, LR `3e-4`, position
   zero, 1,000 updates, 32 evaluation batches, and fresh isolated outputs.
+
+  Both jobs completed cleanly in `14:26/14:36`. The oracle control reaches
+  exact schedules `8.92%`, factual `70.70%`, WORLD strict `0%` with margin-1
+  `3.57%`, and COMMAND strict/margin-1 `2.27%`. The autonomous-state treatment
+  improves exact schedules to `10.82%` and retains factual `70.31%`, but WORLD
+  and COMMAND strict and margin-1 all become zero. Report SHA-256 values are
+  `2d078062097c503a7d89fe5736615b99d14828787c340192ba862bdf2c780e83`
+  and `f9b3aced933f8cf6ac964d129390bf79713c6792f2270149cc2e6835af956ec7`.
+  Training on the deployed initial-state distribution is closed as a
+  standalone repair. It improves label imitation while worsening causal
+  composition, reinforcing that canonical schedule supervision is not the
+  semantic objective.
+
+  Decision:
+  `stop_splicing_or_overfitting_canonical_schedule_fields_preserve_one_complete_program_hypothesis_or_compile_the_query_independent_terminal_state_quotient_then_gate_across_three_populations`.
