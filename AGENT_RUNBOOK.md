@@ -105,9 +105,11 @@
 > Contract v4's bounded semantic-prefix canary remains finite but fails both
 > strict gates, so it is not scaled. All completed bounded-Brier state arms
 > and their crosses fail to produce a reliable gain over the schedule-only
-> baseline. A deterministic under-cap multi-basin compiler ensemble is now
-> the preregistered variance-reduction gate. No current artifact is promoted
-> as stable native reasoning.
+> baseline. A deterministic 181.79M-parameter four-basin probability-mean
+> ensemble has now been rejected: it returns zero strict WORLD and COMMAND on
+> all three tested orderings. Matched training on the deployed autonomous
+> WORLD packet, rather than the historical oracle packet, is the active causal
+> test. No current artifact is promoted as stable native reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -22893,6 +22895,17 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   records independent read-only H100 evaluations `725451/725452/725453` for
   data orderings `2026080111/12/14`. The jobs have fresh isolated outputs and
   cannot write any trained component.
+
+  All three ensemble jobs completed cleanly. Ordering 11 reaches factual
+  `70.31%`, ordering 12 `67.19%`, and ordering 14 `68.75%`; strict WORLD,
+  WORLD margin-1, strict COMMAND, and COMMAND margin-1 are zero on every
+  ordering. Report SHA-256 values are
+  `7349b76c85d4c7c36e6169d03e3557b74b72662b21296c3e816d47d2932fda2a`,
+  `c98fef87e4314fbdbffe4a1b7a71c668ccc86ee08753c4ba7b29f15615c15a8a`,
+  and `045f2896dfb3cd94776ec559c8bb0b06e42db56d76949a69a3811c55451744d8`.
+  Uniform fieldwise probability averaging is closed: it retains broad factual
+  behavior but splices incompatible complete-program hypotheses into a
+  causally inert schedule.
 
   A subsequent training-path audit found one remaining deployment mismatch.
   Every parallel scheduler was trained with an exact oracle initial packet,

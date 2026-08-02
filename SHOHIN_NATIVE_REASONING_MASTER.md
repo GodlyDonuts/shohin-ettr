@@ -53401,6 +53401,15 @@ inside Shohin's 200M ceiling. The unchanged source-deleted WORLD and COMMAND
 gate will be run on three distinct orderings. Only a simultaneous and
 population-stable improvement counts.
 
+That test is now complete and negative. The four-member ensemble reaches
+70.31%, 67.19%, and 68.75% factual top-1 on orderings 11, 12, and 14, but
+WORLD and COMMAND strict pairs and margin-1 rates are zero on all three. The
+members do not appear to be noisy estimates of one unimodal schedule. They
+encode incompatible whole-program hypotheses, so independent field averaging
+constructs a new schedule that no member intended. Future basin aggregation,
+if used, must preserve one coherent candidate identity for the entire
+transaction rather than splice fields or steps.
+
 Current decision:
 `test_whether_deterministic_multi_basin_probability_aggregation_turns_a_reproducible_but_seed_fragile_schedule_signal_into_stable_native_causality`.
 
