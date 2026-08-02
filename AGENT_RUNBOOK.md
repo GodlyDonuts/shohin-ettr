@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 07:26 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 08:33 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -191,8 +191,15 @@
 > the order-invariant operation delta reaches only a 44.75% high-coverage
 > modal baseline. The operation-state mechanics pass a real two-update V100
 > smoke, but its 1,000-update job was canceled before allocation because the
-> target is not publicly identifiable. A factorized shape/address/payload
-> audit is active; the next neural arm must predict only recoverable factors.
+> target is not publicly identifiable. Coarse shape/address/payload factors
+> and exact global sparse cardinalities have now also failed their frozen
+> CPU release gates. Edge removal and status are exact, but high-coverage
+> edge-add count transfers at only 79.66% against the required 90%, while
+> node-edit count misses its 75% threshold at 74.82%. The held factorized GPU
+> job was canceled untouched. The active mechanism-distinct successor is an
+> unordered bounded typed-effect set compiler with state-grounded operands,
+> permutation-invariant training, and the same fixed state algebra; it is
+> locally test-gated but has not yet produced a reasoning result.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -24135,3 +24142,46 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_coarse_effect_factorization_and_measure_the_exact_sparse_cardinality_targets_before_any_factorized_operation_gpu_fit`.
+
+- **2026-08-02 08:20--08:33 EDT** -- **Global sparse cardinalities fail the
+  frozen release rule; unordered typed effects replace the coarse target.**
+
+  Stokes audit-v3 job `760912` completed cleanly on 48 CPU cores in 24m35s
+  with 24.10GB maximum batch RSS and zero errors. Its immutable report is
+  preserved at
+  `artifacts/r12/ettr_public_operation_state_marginals_e5cb34c_r1/report.json`
+  with file SHA-256
+  `bd6c8f35d93cf4ba2d99562a28825b4f86d43a18dd974de49d428f8b903d2dff`
+  and payload SHA-256
+  `3e828f59d31a7aac651c48d349520f4e863a3fb0925a2219eb5c54f3f0f269ec`.
+
+  No broad-coverage public context satisfies every preregistered marginal
+  threshold. Node-edit count transfers at 74.8248% with 100% coverage and a
+  75.2545% development Bayes ceiling, missing its 75% gate by 0.1752 points.
+  Edge-add count transfers at 79.6635% with 98.7308% coverage and an 84.5816%
+  Bayes ceiling, materially missing its 90% gate. Edge-remove count is exact
+  at 100% coverage; node-field histogram reaches 74.8248% at full coverage;
+  and status change is exact. This localizes the unresolved public ambiguity
+  to creating and binding positive relation effects, not deletion or terminal
+  disposition. Held V100 factorized job `726975` was canceled untouched.
+
+  The preregistered failure successor is code-complete. Contract v12 emits a
+  bounded unordered set of typed effects: allocate, write, clear, replace,
+  link, unlink, root clear/set, commit, halt, or reject. Learned effect slots
+  cross-attend to the operation-conditioned typed state; node, relation,
+  value, type, and root operands remain state-grounded. Training derives a
+  canonical target set from exact state differences and uses detached
+  Sinkhorn bipartite matching only to remove arbitrary target ordering. Hard
+  inference emits no target, trace, QUERY, answer, candidate search, or host
+  semantics and applies the same fixed atomic algebra. Relation-link and root
+  pointers explicitly admit nodes allocated in the same effect set, closing
+  an otherwise impossible simultaneous-update geometry. The sealed contract
+  binds the effect-slot count and matching rule. Compiler, integrated-loss,
+  evaluator, supervision, and custody gates pass 34 focused tests; Ruff,
+  byte compilation, Bash syntax, and diff checks are clean. A two-update
+  immutable-runtime GPU smoke is the next mechanical gate; no 1,000-update
+  fit is authorized until that smoke proves finite forward/backward,
+  capacity, evaluator, and custody behavior.
+
+  Decision:
+  `reject_global_sparse_cardinality_classification_and_test_an_unordered_typed_effect_set_that_can_bind_relation_creation_without_an_arbitrary_effect_order`.

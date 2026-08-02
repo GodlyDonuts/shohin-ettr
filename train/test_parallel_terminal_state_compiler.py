@@ -20,12 +20,14 @@ from parallel_terminal_state_compiler import (
 )
 from operation_state_transition_compiler import (
     FactorizedOperationStateTransitionCompiler,
+    OperationEffectSetCompiler,
     OperationStateTransitionCompiler,
 )
 from train_parallel_terminal_state_pilot import (
     atomic_typed_edit_loss,
     causal_terminal_delta_brier,
     derive_atomic_edit_targets,
+    operation_effect_set_loss,
 )
 
 
@@ -554,6 +556,118 @@ def test_factorized_operation_compiler_enforces_hard_effect_counts() -> None:
     ):
         assert parameter.grad is not None
         assert bool(parameter.grad.isfinite().all())
+
+
+def test_operation_effect_set_compiler_emits_valid_sparse_effects() -> None:
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+
+    config = replace(_config(), max_steps=16)
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    compiler = OperationEffectSetCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        relation_width=16,
+        maximum_effects=6,
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_codebook_atoms=codec.codebook.atoms,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+    state = _state(config)
+    slots = torch.randn(
+        2,
+        config.num_slots,
+        compiler.width,
+        requires_grad=True,
+    )
+    edits = compiler._atomic_edits_from_slots(state, slots, hard=False)
+    assert edits.effect_kind is not None
+    assert edits.effect_kind.shape == (2, 6, 12)
+    assert edits.effect_node_pointer is not None
+    assert edits.effect_node_pointer.shape == (2, 6, 2, config.num_slots)
+    assert edits.node_edit_count is not None
+    assert edits.node_edit_count.shape == (2, 7)
+    terminal = compiler.apply_atomic_edits(state, edits, steps=1, hard=False)
+    target = state.detached_clone()
+    target.value_probabilities[:, 1].zero_()
+    target.value_probabilities[:, 1, 4] = 1.0
+    labels = derive_atomic_edit_targets(state, target)
+    set_loss = operation_effect_set_loss(
+        edits,
+        labels,
+        slot_mask=torch.ones_like(state.active, dtype=torch.bool),
+        relation_mask=torch.ones_like(state.relations, dtype=torch.bool),
+    )
+    assert bool(set_loss.isfinite())
+    loss = terminal.value_probabilities.square().mean()
+    loss = loss + terminal.relations.square().mean()
+    loss = loss + set_loss
+    loss.backward()
+    for parameter in (
+        compiler.effect_queries,
+        compiler.effect_kind_head.weight,
+        compiler.effect_node_query.weight,
+        compiler.effect_relation_source.weight,
+    ):
+        assert parameter.grad is not None
+        assert bool(parameter.grad.isfinite().all())
+
+    hard = compiler._atomic_edits_from_slots(state, slots.detach(), hard=True)
+    deployed = compiler.apply_atomic_edits(state, hard, steps=1, hard=True)
+    validate_deployed_state(deployed, config)
+
+
+def test_operation_effect_set_integrates_with_atomic_loss() -> None:
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+
+    config = replace(_config(), max_steps=16)
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    compiler = OperationEffectSetCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        relation_width=16,
+        maximum_effects=6,
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_codebook_atoms=codec.codebook.atoms,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+    initial = _state(config)
+    target = initial.detached_clone()
+    target.active[:, 2] = 1.0
+    target.value_probabilities[:, 2, 3] = 1.0
+    target.type_probabilities[:, 2, 1] = 1.0
+    target.relations[:, 0, 0, 2] = 1.0
+    target.root.zero_()
+    target.root[:, 2] = 1.0
+    labels = derive_atomic_edit_targets(initial, target)
+    edits = compiler._atomic_edits_from_slots(
+        initial,
+        torch.randn(2, config.num_slots, compiler.width),
+        hard=False,
+    )
+    loss, parts, counts = atomic_typed_edit_loss(
+        edits,
+        labels,
+        slot_mask=torch.ones_like(initial.active, dtype=torch.bool),
+        relation_mask=torch.ones_like(initial.relations, dtype=torch.bool),
+    )
+    assert bool(loss.isfinite())
+    assert "effect_set" in parts
+    assert "node_edit_count" in parts
+    assert "relation_link_count" in parts
+    assert "relation_unlink_count" in parts
+    assert counts["node_edit_count"]["1"] == 2
+    loss.backward()
+    assert compiler.effect_kind_head.weight.grad is not None
 
 
 def test_syntax_routed_atomic_compiler_ignores_transport_cover() -> None:

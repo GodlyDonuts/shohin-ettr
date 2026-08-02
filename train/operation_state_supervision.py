@@ -67,6 +67,13 @@ def index_atomic_edits(
         node_edit_count=optional(edits.node_edit_count),
         relation_link_count=optional(edits.relation_link_count),
         relation_unlink_count=optional(edits.relation_unlink_count),
+        effect_kind=optional(edits.effect_kind),
+        effect_node_pointer=optional(edits.effect_node_pointer),
+        effect_value_code=optional(edits.effect_value_code),
+        effect_type_index=optional(edits.effect_type_index),
+        effect_relation_link=optional(edits.effect_relation_link),
+        effect_relation_unlink=optional(edits.effect_relation_unlink),
+        effect_root_pointer=optional(edits.effect_root_pointer),
     )
 
 

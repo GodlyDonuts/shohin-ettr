@@ -51,6 +51,7 @@ TOKEN_NATIVE_DECLARATION_BINDING_COMMAND=${TOKEN_NATIVE_DECLARATION_BINDING_COMM
 TOKEN_NATIVE_OPERATION_RECURRENCE_COMMAND=${TOKEN_NATIVE_OPERATION_RECURRENCE_COMMAND:-0}
 TOKEN_NATIVE_OPERATION_STATE_COMMAND=${TOKEN_NATIVE_OPERATION_STATE_COMMAND:-0}
 FACTORIZED_OPERATION_EFFECT_COMMAND=${FACTORIZED_OPERATION_EFFECT_COMMAND:-0}
+OPERATION_EFFECT_SET_COMMAND=${OPERATION_EFFECT_SET_COMMAND:-0}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
 for path in "$CODE_ROOT" "$RELEASE_ROOT" "$ETTR_DATA_ROOT" \
@@ -200,6 +201,17 @@ if [[ "$FACTORIZED_OPERATION_EFFECT_COMMAND" == 1 ]]; then
   residual_args+=(--factorized-operation-effect-command)
 elif [[ "$FACTORIZED_OPERATION_EFFECT_COMMAND" != 0 ]]; then
   echo "terminal-state factorized operation effect setting differs" >&2
+  exit 2
+fi
+if [[ "$OPERATION_EFFECT_SET_COMMAND" == 1 ]]; then
+  [[ "$TOKEN_NATIVE_OPERATION_STATE_COMMAND" == 1 \
+    && "$FACTORIZED_OPERATION_EFFECT_COMMAND" == 0 ]] || {
+    echo "operation effect sets require unfactorized operation-state transitions" >&2
+    exit 2
+  }
+  residual_args+=(--operation-effect-set-command)
+elif [[ "$OPERATION_EFFECT_SET_COMMAND" != 0 ]]; then
+  echo "terminal-state operation effect set setting differs" >&2
   exit 2
 fi
 

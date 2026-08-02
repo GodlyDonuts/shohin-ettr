@@ -292,3 +292,32 @@ Passing releases the single held sparse-effect run; missing any threshold
 cancels it without allocation and activates the operation-effect set
 transducer design, where a bounded unordered set of typed effects replaces
 episode-wide dense coordinate classification.
+
+The v3 gate is now measured and fails. Stokes job `760912` completed 60,512
+development operation instances in 24m35s on 48 cores. The report is frozen at
+`artifacts/r12/ettr_public_operation_state_marginals_e5cb34c_r1/report.json`
+(file SHA-256
+`bd6c8f35d93cf4ba2d99562a28825b4f86d43a18dd974de49d428f8b903d2dff`,
+payload SHA-256
+`3e828f59d31a7aac651c48d349520f4e863a3fb0925a2219eb5c54f3f0f269ec`).
+Node-edit count is 74.8248% at full coverage, edge-add count is 79.6635% at
+98.7308% coverage, edge-remove count is exact, node-field histogram is
+74.8248% at full coverage, and status change is exact. The first two miss the
+preregistered 75% and 90% thresholds, so held GPU job `726975` was canceled
+without allocation.
+
+The successor is mechanism-distinct rather than another cardinality head.
+Contract v12 predicts up to 16 unordered typed effects with kinds allocate,
+write, clear, replace, link, unlink, root clear/set, commit, halt, and reject.
+Each effect binds operands to the operation-conditioned typed state and the
+existing fixed algebra applies the aggregate. Training performs detached
+Sinkhorn bipartite matching against a canonical state-difference effect set;
+inference remains a single deterministic hard set and cannot inspect targets
+or select among candidates. Link and root pointers may address a node
+allocated by another effect in the same set, which is required by the
+simultaneous algebra. The sealed contract records the 16-slot capacity and
+matching rule. Local compiler, integrated loss, evaluator, supervision, and
+custody gates pass 34 tests. The next branch is a two-update GPU smoke; target
+capacity overflow is a technical geometry result and may raise the bounded
+capacity to the measured requirement, while finite smoke success alone only
+authorizes a bounded 1,000-update causal gate.

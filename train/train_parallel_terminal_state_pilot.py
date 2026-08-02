@@ -37,7 +37,21 @@ from operation_state_supervision import (
     oracle_operation_boundary_states,
 )
 from operation_state_transition_compiler import (
+    EFFECT_ALLOCATE,
+    EFFECT_CLEAR,
+    EFFECT_COMMIT,
+    EFFECT_HALT,
+    EFFECT_KIND_COUNT,
+    EFFECT_LINK,
+    EFFECT_NOOP,
+    EFFECT_REJECT,
+    EFFECT_REPLACE,
+    EFFECT_ROOT_CLEAR,
+    EFFECT_ROOT_SET,
+    EFFECT_UNLINK,
+    EFFECT_WRITE,
     FactorizedOperationStateTransitionCompiler,
+    OperationEffectSetCompiler,
     OperationStateTransitionCompiler,
 )
 from probe_ettr_oracle_interfaces import (
@@ -99,6 +113,12 @@ FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA = (
 )
 FACTORIZED_OPERATION_STATE_REPORT_SCHEMA = (
     "shohin-ettr-parallel-terminal-state-report-v11"
+)
+OPERATION_EFFECT_SET_CONTRACT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-contract-v12"
+)
+OPERATION_EFFECT_SET_REPORT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-report-v12"
 )
 CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v3"
 REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v3"
@@ -178,6 +198,10 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--factorized-operation-effect-command",
         action="store_true",
     )
+    parser.add_argument(
+        "--operation-effect-set-command",
+        action="store_true",
+    )
     parser.add_argument("--atomic-action-weight", type=float, default=1.0)
     parser.add_argument(
         "--required-device-class",
@@ -196,6 +220,11 @@ def _validate_args(args: argparse.Namespace) -> None:
     factorized_operation_effect = getattr(
         args,
         "factorized_operation_effect_command",
+        False,
+    )
+    operation_effect_set = getattr(
+        args,
+        "operation_effect_set_command",
         False,
     )
     paths = (
@@ -273,6 +302,8 @@ def _validate_args(args: argparse.Namespace) -> None:
             and args.training_initial_state != "oracle"
         )
         or (factorized_operation_effect and not operation_state)
+        or (operation_effect_set and not operation_state)
+        or (operation_effect_set and factorized_operation_effect)
         or args.output.exists()
         or args.output.is_symlink()
         or not args.output.parent.is_dir()
@@ -603,6 +634,313 @@ def _class_balanced_nll(
     return torch.stack(losses).mean(), counts
 
 
+def _operation_effect_targets(
+    target: dict[str, torch.Tensor],
+    *,
+    maximum_effects: int,
+    slot_mask: torch.Tensor,
+    relation_mask: torch.Tensor,
+) -> dict[str, torch.Tensor]:
+    """Canonicalize a dense atomic difference as an unordered effect set."""
+
+    node_action = target["node_action"]
+    relation_action = target["relation_action"]
+    batch, slots = node_action.shape
+    relations = relation_action.shape[1]
+    device = node_action.device
+
+    node_kinds = torch.tensor(
+        [EFFECT_ALLOCATE, EFFECT_WRITE, EFFECT_CLEAR, EFFECT_REPLACE],
+        device=device,
+    )
+    node_mask = torch.stack(
+        tuple(node_action.eq(index) & slot_mask for index in range(1, 5)),
+        dim=1,
+    )
+    node_kind = node_kinds[:, None].expand(-1, slots).reshape(-1)
+    node_index = torch.arange(slots, device=device).repeat(4)
+    node_value = target["value_code"][:, None, :].expand(-1, 4, -1).reshape(
+        batch,
+        -1,
+    )
+    node_type = target["type_index"][:, None, :].expand(-1, 4, -1).reshape(
+        batch,
+        -1,
+    )
+
+    relation_cells = relations * slots * slots
+    relation_mask_by_action = torch.stack(
+        (
+            relation_action.eq(1) & relation_mask,
+            relation_action.eq(2) & relation_mask,
+        ),
+        dim=1,
+    )
+    relation_kind = torch.tensor(
+        [EFFECT_LINK, EFFECT_UNLINK],
+        device=device,
+    )[:, None].expand(-1, relation_cells).reshape(-1)
+    relation_index = torch.arange(relation_cells, device=device).repeat(2)
+
+    root_action = target["root_action"]
+    root_mask = torch.cat(
+        (
+            root_action.eq(1).unsqueeze(-1),
+            root_action[:, None].eq(
+                torch.arange(slots, device=device)[None, :] + 2
+            ),
+        ),
+        dim=1,
+    )
+    root_kind = torch.tensor(
+        [EFFECT_ROOT_CLEAR, *([EFFECT_ROOT_SET] * slots)],
+        device=device,
+    )
+    root_index = torch.tensor([0, *range(slots)], device=device)
+
+    disposition = target["disposition_action"]
+    disposition_mask = torch.stack(
+        tuple(disposition.eq(index) for index in range(1, 4)),
+        dim=1,
+    )
+    disposition_kind = torch.tensor(
+        [EFFECT_COMMIT, EFFECT_HALT, EFFECT_REJECT],
+        device=device,
+    )
+
+    mask = torch.cat(
+        (
+            node_mask.reshape(batch, -1),
+            relation_mask_by_action.reshape(batch, -1),
+            root_mask,
+            disposition_mask,
+        ),
+        dim=1,
+    )
+    zeros_node = torch.zeros(
+        2 * relation_cells + 1 + slots + 3,
+        dtype=torch.long,
+        device=device,
+    )
+    zeros_relation = torch.zeros(
+        4 * slots + 1 + slots + 3,
+        dtype=torch.long,
+        device=device,
+    )
+    kind_values = torch.cat(
+        (node_kind, relation_kind, root_kind, disposition_kind)
+    )
+    node_values = torch.cat((node_index, zeros_node))
+    relation_values = torch.cat(
+        (
+            zeros_relation[: 4 * slots],
+            relation_index,
+            zeros_relation[4 * slots :],
+        )
+    )
+    root_values = torch.cat(
+        (
+            torch.zeros(
+                4 * slots + 2 * relation_cells,
+                dtype=torch.long,
+                device=device,
+            ),
+            root_index,
+            torch.zeros(3, dtype=torch.long, device=device),
+        )
+    )
+    payload_zeros = torch.zeros(
+        batch,
+        2 * relation_cells + 1 + slots + 3,
+        dtype=torch.long,
+        device=device,
+    )
+    value_values = torch.cat((node_value, payload_zeros), dim=1)
+    type_values = torch.cat((node_type, payload_zeros), dim=1)
+    if not (
+        mask.shape[1]
+        == kind_values.shape[0]
+        == node_values.shape[0]
+        == relation_values.shape[0]
+        == root_values.shape[0]
+        == value_values.shape[1]
+        == type_values.shape[1]
+    ):
+        raise ParallelTerminalStatePilotError(
+            "operation effect target geometry differs"
+        )
+    count = mask.sum(-1)
+    if bool(count.gt(maximum_effects).any()):
+        maximum = int(count.max().detach().cpu())
+        raise ParallelTerminalStatePilotError(
+            f"operation effect target exceeds set capacity: {maximum}"
+        )
+    rank = mask.cumsum(-1) - 1
+    outputs = {
+        name: torch.zeros(
+            batch,
+            maximum_effects,
+            dtype=torch.long,
+            device=device,
+        )
+        for name in ("kind", "node", "relation", "root", "value", "type")
+    }
+    sources = {
+        "kind": kind_values[None].expand(batch, -1),
+        "node": node_values[None].expand(batch, -1),
+        "relation": relation_values[None].expand(batch, -1),
+        "root": root_values[None].expand(batch, -1),
+        "value": value_values,
+        "type": type_values,
+    }
+    for effect_rank in range(maximum_effects):
+        selected = mask & rank.eq(effect_rank)
+        for name, source in sources.items():
+            outputs[name][:, effect_rank] = torch.where(
+                selected,
+                source,
+                torch.zeros_like(source),
+            ).sum(-1)
+    outputs["count"] = count
+    return outputs
+
+
+def operation_effect_set_loss(
+    edits: AtomicTypedEdits,
+    target: dict[str, torch.Tensor],
+    *,
+    slot_mask: torch.Tensor,
+    relation_mask: torch.Tensor,
+) -> torch.Tensor:
+    """Permutation-invariant typed-effect matching used only for training."""
+
+    fields = (
+        edits.effect_kind,
+        edits.effect_node_pointer,
+        edits.effect_value_code,
+        edits.effect_type_index,
+        edits.effect_relation_link,
+        edits.effect_relation_unlink,
+        edits.effect_root_pointer,
+    )
+    if any(value is None for value in fields):
+        raise ParallelTerminalStatePilotError(
+            "operation effect set predictions are incomplete"
+        )
+    kind = edits.effect_kind
+    node_pointer = edits.effect_node_pointer
+    value_code = edits.effect_value_code
+    type_index = edits.effect_type_index
+    relation_link = edits.effect_relation_link
+    relation_unlink = edits.effect_relation_unlink
+    root_pointer = edits.effect_root_pointer
+    assert kind is not None
+    assert node_pointer is not None
+    assert value_code is not None
+    assert type_index is not None
+    assert relation_link is not None
+    assert relation_unlink is not None
+    assert root_pointer is not None
+    if kind.ndim != 3 or kind.shape[-1] != EFFECT_KIND_COUNT:
+        raise ParallelTerminalStatePilotError(
+            "operation effect set kind geometry differs"
+        )
+    batch, effects, _kinds = kind.shape
+    labels = _operation_effect_targets(
+        target,
+        maximum_effects=effects,
+        slot_mask=slot_mask,
+        relation_mask=relation_mask,
+    )
+    costs = []
+    epsilon = 1e-7
+    flat_link = relation_link.reshape(batch, effects, -1)
+    flat_unlink = relation_unlink.reshape(batch, effects, -1)
+
+    def selected_nll(
+        probabilities: torch.Tensor,
+        label: torch.Tensor,
+    ) -> torch.Tensor:
+        gathered = probabilities.gather(
+            -1,
+            label[:, None, None].expand(-1, effects, 1),
+        ).squeeze(-1)
+        return -gathered.clamp_min(epsilon).log()
+
+    for target_rank in range(effects):
+        target_kind = labels["kind"][:, target_rank]
+        value = selected_nll(kind, target_kind)
+        node_kind = (
+            target_kind.ge(EFFECT_ALLOCATE)
+            & target_kind.le(EFFECT_REPLACE)
+        )
+        pointer_channel = target_kind.ne(EFFECT_ALLOCATE).to(torch.long)
+        selected_pointer = node_pointer.gather(
+            2,
+            pointer_channel[:, None, None, None].expand(
+                -1,
+                effects,
+                1,
+                node_pointer.shape[-1],
+            ),
+        ).squeeze(2)
+        value = value + node_kind[:, None] * selected_nll(
+            selected_pointer,
+            labels["node"][:, target_rank],
+        )
+        writes_value = (
+            target_kind.eq(EFFECT_ALLOCATE)
+            | target_kind.eq(EFFECT_WRITE)
+            | target_kind.eq(EFFECT_REPLACE)
+        )
+        value = value + writes_value[:, None] * selected_nll(
+            value_code,
+            labels["value"][:, target_rank],
+        )
+        writes_type = target_kind.eq(EFFECT_ALLOCATE) | target_kind.eq(
+            EFFECT_REPLACE
+        )
+        value = value + writes_type[:, None] * selected_nll(
+            type_index,
+            labels["type"][:, target_rank],
+        )
+        value = value + target_kind.eq(EFFECT_LINK)[:, None] * selected_nll(
+            flat_link,
+            labels["relation"][:, target_rank],
+        )
+        value = value + target_kind.eq(EFFECT_UNLINK)[:, None] * selected_nll(
+            flat_unlink,
+            labels["relation"][:, target_rank],
+        )
+        value = value + target_kind.eq(EFFECT_ROOT_SET)[:, None] * selected_nll(
+            root_pointer,
+            labels["root"][:, target_rank],
+        )
+        costs.append(value)
+    cost = torch.stack(costs, dim=-1)
+    log_assignment = -cost.detach() / 0.25
+    for _ in range(12):
+        log_assignment = log_assignment - log_assignment.logsumexp(
+            dim=2,
+            keepdim=True,
+        )
+        log_assignment = log_assignment - log_assignment.logsumexp(
+            dim=1,
+            keepdim=True,
+        )
+    assignment = log_assignment.exp().detach()
+    real = labels["kind"].ne(EFFECT_NOOP)
+    real_count = real.sum(-1, keepdim=True).clamp_min(1)
+    noop_count = (~real).sum(-1, keepdim=True).clamp_min(1)
+    column_weight = torch.where(
+        real,
+        real_count.reciprocal().to(cost.dtype),
+        noop_count.reciprocal().to(cost.dtype),
+    )
+    weighted = assignment * column_weight[:, None, :]
+    return (weighted * cost).sum() / weighted.sum().clamp_min(1e-7)
+
+
 def atomic_typed_edit_loss(
     edits: AtomicTypedEdits,
     target: dict[str, torch.Tensor],
@@ -649,6 +987,27 @@ def atomic_typed_edit_loss(
             slot_mask & (node_action.eq(1) | node_action.eq(4)),
         ),
     }
+    effect_fields = (
+        edits.effect_kind,
+        edits.effect_node_pointer,
+        edits.effect_value_code,
+        edits.effect_type_index,
+        edits.effect_relation_link,
+        edits.effect_relation_unlink,
+        edits.effect_root_pointer,
+    )
+    present_effect_fields = [value is not None for value in effect_fields]
+    if any(present_effect_fields) and not all(present_effect_fields):
+        raise ParallelTerminalStatePilotError(
+            "operation effect set heads differ"
+        )
+    if all(present_effect_fields):
+        parts["effect_set"] = operation_effect_set_loss(
+            edits,
+            target,
+            slot_mask=slot_mask,
+            relation_mask=relation_mask,
+        )
     count_specifications = {
         "node_edit_count": (
             edits.node_edit_count,
@@ -836,7 +1195,21 @@ def _run_schemas(
     token_native_operation_recurrence_command: bool = False,
     token_native_operation_state_command: bool = False,
     factorized_operation_effect_command: bool = False,
+    operation_effect_set_command: bool = False,
 ) -> tuple[str, str, str]:
+    if operation_effect_set_command:
+        if (
+            not token_native_operation_state_command
+            or factorized_operation_effect_command
+        ):
+            raise ParallelTerminalStatePilotError(
+                "operation effect set architecture schema differs"
+            )
+        return (
+            OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
+            OPERATION_EFFECT_SET_REPORT_SCHEMA,
+            "shohin-ettr-parallel-terminal-state-metric-v12",
+        )
     if factorized_operation_effect_command:
         if not token_native_operation_state_command:
             raise ParallelTerminalStatePilotError(
@@ -1063,6 +1436,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.token_native_operation_recurrence_command,
         args.token_native_operation_state_command,
         args.factorized_operation_effect_command,
+        args.operation_effect_set_command,
     )
     if not torch.cuda.is_available():
         raise ParallelTerminalStatePilotError(
@@ -1104,7 +1478,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     torch.manual_seed(args.architecture_seed)
     torch.cuda.manual_seed_all(args.architecture_seed)
     compiler_class = (
-        FactorizedOperationStateTransitionCompiler
+        OperationEffectSetCompiler
+        if args.operation_effect_set_command
+        else FactorizedOperationStateTransitionCompiler
         if args.factorized_operation_effect_command
         else OperationStateTransitionCompiler
         if args.token_native_operation_state_command
@@ -1234,6 +1610,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "factorized_operation_effect_command": (
                     args.factorized_operation_effect_command
                 ),
+                "operation_effect_set_command": (
+                    args.operation_effect_set_command
+                ),
+                "operation_effect_slots": (
+                    compiler.maximum_effects
+                    if isinstance(compiler, OperationEffectSetCompiler)
+                    else 0
+                ),
                 "token_native_codebook_sha256": (
                     stream.codec.codebook_sha256
                     if args.token_native_command_mask
@@ -1287,6 +1671,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ),
                 "global_sparse_effect_cardinality": (
                     args.factorized_operation_effect_command
+                ),
+                "unordered_typed_effect_set": (
+                    args.operation_effect_set_command
+                ),
+                "effect_set_matching": (
+                    "detached-sinkhorn-typed-bipartite"
+                    if args.operation_effect_set_command
+                    else None
                 ),
             },
             "protected_checkpoint_sha256": provenance.checkpoint_sha256,

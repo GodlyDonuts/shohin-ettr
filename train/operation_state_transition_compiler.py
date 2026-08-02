@@ -535,8 +535,350 @@ class FactorizedOperationStateTransitionCompiler(
         )
 
 
+EFFECT_KIND_COUNT = 12
+EFFECT_NOOP = 0
+EFFECT_ALLOCATE = 1
+EFFECT_WRITE = 2
+EFFECT_CLEAR = 3
+EFFECT_REPLACE = 4
+EFFECT_LINK = 5
+EFFECT_UNLINK = 6
+EFFECT_ROOT_CLEAR = 7
+EFFECT_ROOT_SET = 8
+EFFECT_COMMIT = 9
+EFFECT_HALT = 10
+EFFECT_REJECT = 11
+
+
+def _masked_flat_softmax(
+    logits: torch.Tensor,
+    mask: torch.Tensor,
+) -> torch.Tensor:
+    if logits.shape != mask.shape or mask.dtype != torch.bool:
+        raise TheoryReactorError("operation effect pointer mask differs")
+    batch, effects = logits.shape[:2]
+    flat_logits = logits.reshape(batch, effects, -1)
+    flat_mask = mask.reshape(batch, effects, -1)
+    probabilities = flat_logits.masked_fill(~flat_mask, -1e9).softmax(-1)
+    probabilities = probabilities * flat_mask.to(probabilities.dtype)
+    probabilities = probabilities / probabilities.sum(-1, keepdim=True).clamp_min(
+        1e-7
+    )
+    return probabilities.reshape_as(logits)
+
+
+def _bernoulli_count_distribution(probabilities: torch.Tensor) -> torch.Tensor:
+    """Exact differentiable count law for independent effect slots."""
+
+    if probabilities.ndim != 2:
+        raise TheoryReactorError("operation effect count probabilities differ")
+    batch, effects = probabilities.shape
+    distribution = torch.zeros(
+        batch,
+        effects + 1,
+        dtype=probabilities.dtype,
+        device=probabilities.device,
+    )
+    distribution[:, 0] = 1.0
+    for index in range(effects):
+        value = probabilities[:, index : index + 1]
+        stayed = distribution * (1.0 - value)
+        advanced = torch.cat(
+            (
+                torch.zeros_like(distribution[:, :1]),
+                distribution[:, :-1] * value,
+            ),
+            dim=1,
+        )
+        distribution = stayed + advanced
+    return distribution
+
+
+class OperationEffectSetCompiler(OperationStateTransitionCompiler):
+    """Emit an unordered bounded set of state-grounded typed effects."""
+
+    def __init__(
+        self,
+        *args,
+        maximum_effects: int = 16,
+        **kwargs,
+    ) -> None:  # type: ignore[no-untyped-def]
+        super().__init__(*args, **kwargs)
+        if not isinstance(maximum_effects, int) or not 1 <= maximum_effects <= 64:
+            raise TheoryReactorError("operation effect set geometry differs")
+        self.maximum_effects = maximum_effects
+        self.effect_queries = nn.Parameter(torch.empty(maximum_effects, self.width))
+        self.effect_input_norm = nn.LayerNorm(self.width)
+        self.effect_self_attention = nn.MultiheadAttention(
+            self.width,
+            self.num_heads,
+            batch_first=True,
+        )
+        self.effect_memory_norm = nn.LayerNorm(self.width)
+        self.effect_cross_attention = nn.MultiheadAttention(
+            self.width,
+            self.num_heads,
+            batch_first=True,
+        )
+        self.effect_ff_norm = nn.LayerNorm(self.width)
+        self.effect_ff = nn.Sequential(
+            nn.Linear(self.width, 4 * self.width),
+            nn.GELU(),
+            nn.Linear(4 * self.width, self.width),
+        )
+        self.effect_output_norm = nn.LayerNorm(self.width)
+        self.effect_kind_head = nn.Linear(self.width, EFFECT_KIND_COUNT)
+        self.effect_node_query = nn.Linear(self.width, self.width, bias=False)
+        self.effect_node_key = nn.Linear(self.width, self.width, bias=False)
+        self.effect_value_head = nn.Linear(
+            self.width,
+            self.config.num_value_codes,
+        )
+        self.effect_type_head = nn.Linear(self.width, self.config.num_types)
+        self.effect_relation_source = nn.Linear(
+            self.width,
+            self.config.num_slots,
+        )
+        self.effect_relation_target = nn.Linear(
+            self.width,
+            self.config.num_slots,
+        )
+        self.effect_relation_type = nn.Linear(
+            self.width,
+            self.config.num_relations,
+        )
+        self.effect_root_head = nn.Linear(self.width, self.config.num_slots)
+        nn.init.normal_(self.effect_queries, std=0.02)
+
+    def _effect_slots(self, slots: torch.Tensor) -> torch.Tensor:
+        batch = slots.shape[0]
+        effects = self.effect_queries.to(slots.dtype).unsqueeze(0).expand(
+            batch,
+            -1,
+            -1,
+        )
+        effects = effects + slots.mean(1, keepdim=True)
+        normalized = self.effect_input_norm(effects)
+        attended, _ = self.effect_self_attention(
+            normalized,
+            normalized,
+            normalized,
+            need_weights=False,
+        )
+        effects = effects + attended
+        attended, _ = self.effect_cross_attention(
+            self.effect_input_norm(effects),
+            self.effect_memory_norm(slots),
+            self.effect_memory_norm(slots),
+            need_weights=False,
+        )
+        effects = effects + attended
+        effects = effects + self.effect_ff(self.effect_ff_norm(effects))
+        return self.effect_output_norm(effects)
+
+    @staticmethod
+    def _dense_actions(*masses: torch.Tensor) -> torch.Tensor:
+        edited = torch.stack(masses, dim=-1)
+        total = edited.sum(-1, keepdim=True)
+        normalizer = total.clamp_min(1.0)
+        edited = edited / normalizer
+        keep = (1.0 - total).clamp_min(0.0) / normalizer
+        return torch.cat((keep, edited), dim=-1)
+
+    def _atomic_edits_from_slots(
+        self,
+        state: TypedTheoryState,
+        slots: torch.Tensor,
+        *,
+        hard: bool,
+    ) -> AtomicTypedEdits:
+        base = super()._atomic_edits_from_slots(state, slots, hard=False)
+        effects = self._effect_slots(slots)
+        kind = self.effect_kind_head(effects).float().softmax(-1)
+        value_code = self.effect_value_head(effects).float().softmax(-1)
+        type_index = self.effect_type_head(effects).float().softmax(-1)
+
+        node_query = self.effect_node_query(effects)
+        node_key = self.effect_node_key(slots)
+        node_logits = torch.einsum("bkd,bsd->bks", node_query, node_key)
+        node_logits = node_logits / self.width**0.5
+        active = state.active.gt(0.5)
+        inactive_pointer = _masked_flat_softmax(
+            node_logits,
+            ~active[:, None, :].expand_as(node_logits),
+        )
+        active_pointer = _masked_flat_softmax(
+            node_logits,
+            active[:, None, :].expand_as(node_logits),
+        )
+        node_pointer = torch.stack((inactive_pointer, active_pointer), dim=2)
+
+        relation_source = self.effect_relation_source(effects).float()
+        relation_target = self.effect_relation_target(effects).float()
+        relation_type = self.effect_relation_type(effects).float()
+        relation_logits = (
+            relation_type[:, :, :, None, None]
+            + relation_source[:, :, None, :, None]
+            + relation_target[:, :, None, None, :]
+        )
+        relations = state.relations.gt(0.5)
+        relation_link = _masked_flat_softmax(
+            relation_logits,
+            (~relations)[:, None].expand_as(relation_logits),
+        )
+        pair_active = active[:, None, :, None] & active[:, None, None, :]
+        relation_unlink = _masked_flat_softmax(
+            relation_logits,
+            (relations & pair_active)[:, None].expand_as(relation_logits),
+        )
+        root_pointer = self.effect_root_head(effects).float()
+        root_pointer = _masked_flat_softmax(
+            root_pointer,
+            torch.ones_like(root_pointer, dtype=torch.bool),
+        )
+
+        if hard:
+            kind = _hard_categories(kind)
+            value_code = _hard_categories(value_code)
+            type_index = _hard_categories(type_index)
+            inactive_pointer = _hard_categories(inactive_pointer)
+            active_pointer = _hard_categories(active_pointer)
+            node_pointer = torch.stack((inactive_pointer, active_pointer), dim=2)
+            relation_link = _hard_categories(
+                relation_link.reshape(
+                    relation_link.shape[0],
+                    relation_link.shape[1],
+                    -1,
+                )
+            ).reshape_as(relation_link)
+            relation_unlink = _hard_categories(
+                relation_unlink.reshape(
+                    relation_unlink.shape[0],
+                    relation_unlink.shape[1],
+                    -1,
+                )
+            ).reshape_as(relation_unlink)
+            root_pointer = _hard_categories(root_pointer)
+
+        allocate = torch.einsum(
+            "bk,bks->bs",
+            kind[..., EFFECT_ALLOCATE],
+            inactive_pointer,
+        )
+        write = torch.einsum(
+            "bk,bks->bs",
+            kind[..., EFFECT_WRITE],
+            active_pointer,
+        )
+        clear = torch.einsum(
+            "bk,bks->bs",
+            kind[..., EFFECT_CLEAR],
+            active_pointer,
+        )
+        replace = torch.einsum(
+            "bk,bks->bs",
+            kind[..., EFFECT_REPLACE],
+            active_pointer,
+        )
+        node_action = self._dense_actions(allocate, write, clear, replace)
+
+        value_mass = (
+            kind[..., EFFECT_ALLOCATE, None] * inactive_pointer
+            + (
+                kind[..., EFFECT_WRITE, None]
+                + kind[..., EFFECT_REPLACE, None]
+            )
+            * active_pointer
+        )
+        dense_value = torch.einsum("bks,bkv->bsv", value_mass, value_code)
+        dense_value = dense_value / value_mass.sum(1).unsqueeze(-1).clamp_min(1e-7)
+        dense_value = torch.where(
+            value_mass.sum(1).unsqueeze(-1).gt(0),
+            dense_value,
+            base.value_code,
+        )
+        type_mass = (
+            kind[..., EFFECT_ALLOCATE, None] * inactive_pointer
+            + kind[..., EFFECT_REPLACE, None] * active_pointer
+        )
+        dense_type = torch.einsum("bks,bkt->bst", type_mass, type_index)
+        dense_type = dense_type / type_mass.sum(1).unsqueeze(-1).clamp_min(1e-7)
+        dense_type = torch.where(
+            type_mass.sum(1).unsqueeze(-1).gt(0),
+            dense_type,
+            base.type_index,
+        )
+
+        link = torch.einsum(
+            "bk,bkrst->brst",
+            kind[..., EFFECT_LINK],
+            relation_link,
+        )
+        unlink = torch.einsum(
+            "bk,bkrst->brst",
+            kind[..., EFFECT_UNLINK],
+            relation_unlink,
+        )
+        relation_action = self._dense_actions(link, unlink)
+
+        root_clear = kind[..., EFFECT_ROOT_CLEAR].sum(-1)
+        root_set = torch.einsum(
+            "bk,bks->bs",
+            kind[..., EFFECT_ROOT_SET],
+            root_pointer,
+        )
+        root_total = root_clear + root_set.sum(-1)
+        root_normalizer = root_total.clamp_min(1.0).unsqueeze(-1)
+        root_action = torch.cat(
+            (
+                (1.0 - root_total).clamp_min(0.0).unsqueeze(-1),
+                root_clear.unsqueeze(-1),
+                root_set,
+            ),
+            dim=-1,
+        ) / root_normalizer
+        disposition_action = self._dense_actions(
+            kind[..., EFFECT_COMMIT].sum(-1),
+            kind[..., EFFECT_HALT].sum(-1),
+            kind[..., EFFECT_REJECT].sum(-1),
+        )
+
+        if hard:
+            node_action = _hard_categories(node_action)
+            dense_value = _hard_categories(dense_value)
+            dense_type = _hard_categories(dense_type)
+            relation_action = _hard_categories(relation_action)
+            root_action = _hard_categories(root_action)
+            disposition_action = _hard_categories(disposition_action)
+
+        node_count = _bernoulli_count_distribution(
+            kind[..., EFFECT_ALLOCATE : EFFECT_REPLACE + 1].sum(-1)
+        )
+        link_count = _bernoulli_count_distribution(kind[..., EFFECT_LINK])
+        unlink_count = _bernoulli_count_distribution(kind[..., EFFECT_UNLINK])
+        return AtomicTypedEdits(
+            node_action=node_action,
+            value_code=dense_value,
+            type_index=dense_type,
+            relation_action=relation_action,
+            root_action=root_action,
+            disposition_action=disposition_action,
+            node_edit_count=node_count,
+            relation_link_count=link_count,
+            relation_unlink_count=unlink_count,
+            effect_kind=kind,
+            effect_node_pointer=node_pointer,
+            effect_value_code=value_code,
+            effect_type_index=type_index,
+            effect_relation_link=relation_link,
+            effect_relation_unlink=relation_unlink,
+            effect_root_pointer=root_pointer,
+        )
+
+
 __all__ = [
     "FactorizedOperationStateTransitionCompiler",
+    "OperationEffectSetCompiler",
     "OperationStateTransitionCompiler",
     "OperationStateTransitionTrace",
 ]
