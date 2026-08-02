@@ -740,3 +740,10 @@ packet, and low-level program are never features. The decision is fixed:
 
 This CPU result cannot promote reasoning. It only establishes whether the
 coarse control variable is learnable from inputs available at inference.
+Exact Stokes runtime
+`scratchpad/shohin_ettr_effect_family_id_runtime_1ed1a60_r1` is bound to
+source `1ed1a60be92955de97b509653ce19c9f51ab531b`, has 2,164 files, zero
+links or writable files/directories, passes checksum replay, and has
+SHA256SUMS SHA-256
+`ceadb65fac36951566bd9518ba18842f90e3b8157be559563a1827fb7e35c87a`.
+Job `760955` runs the full audit on 48 Stokes CPU cores.

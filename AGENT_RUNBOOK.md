@@ -24775,6 +24775,16 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   family-first island; below 70% or within five points of majority at 90%
   coverage rejects the public family head. No QUERY, answer, terminal packet,
   or transaction program is an input feature.
+  Runtime `scratchpad/shohin_ettr_effect_family_id_runtime_1ed1a60_r1`
+  is bound to source `1ed1a60be92955de97b509653ce19c9f51ab531b`, contains
+  2,164 files, has zero links or writable files/directories, passes checksum
+  replay, and has SHA256SUMS SHA-256
+  `ceadb65fac36951566bd9518ba18842f90e3b8157be559563a1827fb7e35c87a`.
+  Stokes job `760955` is running on 48 CPU cores on `ec80`.
+
+  Newton queue now holds v15 fit `728691` before mechanics-only v18 smoke
+  `728738`; current estimates are 18:46 and 19:08 EDT respectively. The smoke
+  is two updates, isolated, and cannot promote a scientific claim.
 
   Decision:
   `preserve_v15_priority_while_sealing_the_mutually_exclusive_v18_successor_and_route_exactly_one_next_mechanism_from_family_count_operand_and_causal_metrics`.
