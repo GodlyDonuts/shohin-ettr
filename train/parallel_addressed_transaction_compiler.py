@@ -26,6 +26,7 @@ from endogenous_typed_theory_reactor import (
     TypedTheoryState,
 )
 from token_native_syntax_router import (
+    CoverVerifiedTokenNativeDocumentMask,
     TokenNativeDocumentMask,
     TokenNativeOccurrenceEncoder,
     TokenNativeSyntaxGraphEncoder,
@@ -260,9 +261,11 @@ class ParallelAddressedTransactionCompiler(nn.Module):
         grounded_pointers: bool = False,
         valid_pointer_masks: bool = False,
         token_native_command_mask: bool = False,
+        cover_verified_command_mask: bool = False,
         token_native_occurrence_command: bool = False,
         token_native_syntax_graph_command: bool = False,
         token_native_codebook_ids: Sequence[int] | None = None,
+        token_native_codebook_atoms: Sequence[str] | None = None,
         token_native_vocab_size: int | None = None,
         opcode_program_sequences: Sequence[Sequence[int]] | None = None,
     ) -> None:
@@ -280,8 +283,10 @@ class ParallelAddressedTransactionCompiler(nn.Module):
             or not isinstance(valid_pointer_masks, bool)
             or (valid_pointer_masks and not grounded_pointers)
             or not isinstance(token_native_command_mask, bool)
+            or not isinstance(cover_verified_command_mask, bool)
             or not isinstance(token_native_occurrence_command, bool)
             or not isinstance(token_native_syntax_graph_command, bool)
+            or (cover_verified_command_mask and not token_native_command_mask)
             or (token_native_occurrence_command and not token_native_command_mask)
             or (token_native_syntax_graph_command and not token_native_command_mask)
             or (token_native_occurrence_command and token_native_syntax_graph_command)
@@ -295,8 +300,13 @@ class ParallelAddressedTransactionCompiler(nn.Module):
                 not token_native_command_mask
                 and (
                     token_native_codebook_ids is not None
+                    or token_native_codebook_atoms is not None
                     or token_native_vocab_size is not None
                 )
+            )
+            or (
+                cover_verified_command_mask
+                != (token_native_codebook_atoms is not None)
             )
         ):
             raise TheoryReactorError("addressed schedule geometry differs")
@@ -307,6 +317,7 @@ class ParallelAddressedTransactionCompiler(nn.Module):
         self.grounded_pointers = grounded_pointers
         self.valid_pointer_masks = valid_pointer_masks
         self.token_native_command_mask = token_native_command_mask
+        self.cover_verified_command_mask = cover_verified_command_mask
         self.token_native_occurrence_command = token_native_occurrence_command
         self.token_native_syntax_graph_command = token_native_syntax_graph_command
         self.opcode_program_sequences = _opcode_programs(
@@ -317,7 +328,13 @@ class ParallelAddressedTransactionCompiler(nn.Module):
         self.command_projection = nn.Linear(config.d_model, width)
         self.command_norm = nn.LayerNorm(width)
         self.command_document_mask = (
-            TokenNativeDocumentMask(
+            CoverVerifiedTokenNativeDocumentMask(
+                token_native_codebook_ids,
+                token_native_codebook_atoms,
+                vocab_size=token_native_vocab_size,
+            )
+            if cover_verified_command_mask
+            else TokenNativeDocumentMask(
                 token_native_codebook_ids,
                 vocab_size=token_native_vocab_size,
             )

@@ -454,6 +454,10 @@ def _load_parallel_schedule(
             "token_native_command_mask",
             False,
         )
+        cover_verified_command_mask = architecture.get(
+            "cover_verified_command_mask",
+            False,
+        )
         token_native_occurrence_command = architecture.get(
             "token_native_occurrence_command",
             False,
@@ -474,10 +478,12 @@ def _load_parallel_schedule(
         or not isinstance(valid_pointer_masks, bool)
         or (valid_pointer_masks and not grounded_pointers)
         or not isinstance(token_native_command_mask, bool)
+        or not isinstance(cover_verified_command_mask, bool)
         or not isinstance(token_native_occurrence_command, bool)
         or not isinstance(token_native_syntax_graph_command, bool)
         or (token_native_occurrence_command and not token_native_command_mask)
         or (token_native_syntax_graph_command and not token_native_command_mask)
+        or (cover_verified_command_mask and not token_native_command_mask)
         or (token_native_occurrence_command and token_native_syntax_graph_command)
         or (
             token_native_command_mask
@@ -522,10 +528,14 @@ def _load_parallel_schedule(
         grounded_pointers=grounded_pointers,
         valid_pointer_masks=valid_pointer_masks,
         token_native_command_mask=token_native_command_mask,
+        cover_verified_command_mask=cover_verified_command_mask,
         token_native_occurrence_command=token_native_occurrence_command,
         token_native_syntax_graph_command=(token_native_syntax_graph_command),
         token_native_codebook_ids=(
             stream.codec.codebook.token_ids if token_native_command_mask else None
+        ),
+        token_native_codebook_atoms=(
+            stream.codec.codebook.atoms if cover_verified_command_mask else None
         ),
         token_native_vocab_size=(
             model.base.cfg.vocab_size if token_native_command_mask else None

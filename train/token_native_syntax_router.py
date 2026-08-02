@@ -10,6 +10,7 @@ It does not decode ontology symbols, inspect targets, or execute a program.
 from __future__ import annotations
 
 from collections.abc import Sequence
+import hashlib
 
 import torch
 import torch.nn as nn
@@ -134,6 +135,157 @@ class TokenNativeDocumentMask(nn.Module):
         torch._assert_async(
             routed.sum(dim=1).eq(terminal_index + 1).all(),
             "token-native source mask truncates the syntax tree",
+        )
+        return routed
+
+
+def _cover_indices(
+    document_payload: bytes,
+    *,
+    width: int,
+    count: int,
+    codebook_size: int,
+) -> tuple[int, ...]:
+    seed = hashlib.sha256(
+        b"R12-ETTR-IL-v2\0transport-cover\0"
+        + document_payload
+        + width.to_bytes(4, "big")
+    ).digest()
+    result: list[int] = []
+    counter = 0
+    while len(result) < count:
+        block = hashlib.sha256(seed + counter.to_bytes(8, "big")).digest()
+        counter += 1
+        for offset in range(0, len(block), 2):
+            result.append(
+                int.from_bytes(block[offset : offset + 2], "big")
+                % codebook_size
+            )
+            if len(result) == count:
+                break
+    return tuple(result)
+
+
+def _cover_verified_document_end(
+    codes: Sequence[int],
+    codebook_atoms: Sequence[str],
+) -> int:
+    values = tuple(int(value) for value in codes)
+    atoms = tuple(str(value) for value in codebook_atoms)
+    if (
+        len(values) < 3
+        or values[0] not in {FRAME_A, FRAME_B}
+        or values[1] not in {FRAME_A, FRAME_B}
+        or not atoms
+        or min(values) < 0
+        or max(values) >= len(atoms)
+    ):
+        raise TokenNativeSyntaxRouterError(
+            "cover-verified token-native transport differs"
+        )
+    prefix = values[0] == FRAME_A
+    state = 1 if prefix else 0
+    candidates: list[int] = []
+    for body_index, code in enumerate(values[2:]):
+        if 0 <= code < CALL_END:
+            arity = code % CALL_STRIDE
+        elif REIFY_BASE <= code < REIFY_END:
+            arity = code - REIFY_BASE + 1
+        else:
+            arity = 0
+        state += arity - 1 if prefix else 1 - arity
+        if (prefix and state == 0 and values[2] in ROOT_CODES) or (
+            not prefix and state == 1 and code in ROOT_CODES
+        ):
+            candidates.append(body_index + 3)
+    matches = []
+    for end in candidates:
+        try:
+            payload = "".join(atoms[code] for code in values[:end]).encode("ascii")
+        except UnicodeEncodeError as exc:
+            raise TokenNativeSyntaxRouterError(
+                "token-native codebook atoms must be ASCII"
+            ) from exc
+        expected = _cover_indices(
+            payload,
+            width=len(values),
+            count=len(values) - end,
+            codebook_size=len(atoms),
+        )
+        if values[end:] == expected:
+            matches.append(end)
+    if len(matches) != 1:
+        raise TokenNativeSyntaxRouterError(
+            "token-native transport lacks one cover-verified document"
+        )
+    return matches[0]
+
+
+class CoverVerifiedTokenNativeDocumentMask(TokenNativeDocumentMask):
+    """Recover the exact AST boundary by verifying the public cover hash.
+
+    The mask performs no ontology decoding. It synchronizes the small integer
+    token matrix to CPU because SHA-256 is intentionally outside the learned
+    graph, then returns a device-local boolean mask for the neural compiler.
+    """
+
+    def __init__(
+        self,
+        codebook_token_ids: Sequence[int],
+        codebook_atoms: Sequence[str],
+        *,
+        vocab_size: int,
+    ) -> None:
+        super().__init__(codebook_token_ids, vocab_size=vocab_size)
+        atoms = tuple(codebook_atoms)
+        if (
+            len(atoms) != len(tuple(codebook_token_ids))
+            or len(set(atoms)) != len(atoms)
+            or any(
+                not isinstance(atom, str)
+                or not atom
+                or not atom.startswith(" ")
+                or not atom.isascii()
+                for atom in atoms
+            )
+        ):
+            raise TokenNativeSyntaxRouterError(
+                "cover-verified token-native codebook differs"
+            )
+        self.codebook_atoms = atoms
+
+    def forward(
+        self,
+        tokens: torch.Tensor,
+        transport_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        if (
+            tokens.ndim != 2
+            or tokens.dtype != torch.long
+            or transport_mask.shape != tokens.shape
+            or transport_mask.dtype != torch.bool
+            or tokens.shape[1] < 3
+            or tokens.device != transport_mask.device
+        ):
+            raise TokenNativeSyntaxRouterError(
+                "token-native transport geometry differs"
+            )
+        codes = self.inverse_codebook[tokens]
+        torch._assert_async(
+            codes.ge(0).all(),
+            "token-native transport leaves the bound codebook",
+        )
+        cpu_codes = codes.detach().to(device="cpu", non_blocking=False).tolist()
+        ends = tuple(
+            _cover_verified_document_end(row, self.codebook_atoms)
+            for row in cpu_codes
+        )
+        terminal = torch.tensor(ends, dtype=torch.long, device=tokens.device)
+        positions = torch.arange(tokens.shape[1], device=tokens.device)
+        routed = transport_mask & positions[None, :].lt(terminal[:, None])
+        torch._assert_async(
+            routed.sum(dim=1).eq(terminal).all(),
+            "cover-verified source mask truncates the syntax tree",
         )
         return routed
 
@@ -737,6 +889,7 @@ class TokenNativeSyntaxGraphEncoder(nn.Module):
 
 
 __all__ = [
+    "CoverVerifiedTokenNativeDocumentMask",
     "TokenNativeDocumentMask",
     "TokenNativeOccurrenceEncoder",
     "TokenNativeSyntaxGraphEncoder",

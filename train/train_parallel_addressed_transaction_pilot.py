@@ -100,6 +100,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--grounded-pointers", action="store_true")
     parser.add_argument("--valid-pointer-masks", action="store_true")
     parser.add_argument("--token-native-command-mask", action="store_true")
+    parser.add_argument("--cover-verified-command-mask", action="store_true")
     parser.add_argument(
         "--token-native-occurrence-command",
         action="store_true",
@@ -152,6 +153,7 @@ def _validate_args(args: argparse.Namespace) -> None:
         or args.eval_batches < 2
         or args.log_every < 1
         or (args.valid_pointer_masks and not args.grounded_pointers)
+        or (args.cover_verified_command_mask and not args.token_native_command_mask)
         or (args.token_native_occurrence_command and not args.token_native_command_mask)
         or (
             args.token_native_syntax_graph_command
@@ -741,10 +743,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         grounded_pointers=args.grounded_pointers,
         valid_pointer_masks=args.valid_pointer_masks,
         token_native_command_mask=args.token_native_command_mask,
+        cover_verified_command_mask=args.cover_verified_command_mask,
         token_native_occurrence_command=(args.token_native_occurrence_command),
         token_native_syntax_graph_command=(args.token_native_syntax_graph_command),
         token_native_codebook_ids=(
             stream.codec.codebook.token_ids if args.token_native_command_mask else None
+        ),
+        token_native_codebook_atoms=(
+            stream.codec.codebook.atoms if args.cover_verified_command_mask else None
         ),
         token_native_vocab_size=(
             model.base.cfg.vocab_size if args.token_native_command_mask else None
@@ -841,6 +847,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "seed": args.architecture_seed,
                 "sticky_schedule": True,
                 "token_native_command_mask": (args.token_native_command_mask),
+                "cover_verified_command_mask": (
+                    args.cover_verified_command_mask
+                ),
                 "token_native_occurrence_command": (
                     args.token_native_occurrence_command
                 ),

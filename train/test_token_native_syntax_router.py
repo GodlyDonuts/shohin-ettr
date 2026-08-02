@@ -4,6 +4,7 @@ import pytest
 import torch
 
 from token_native_syntax_router import (
+    CoverVerifiedTokenNativeDocumentMask,
     TokenNativeDocumentMask,
     TokenNativeOccurrenceEncoder,
     TokenNativeSyntaxRouterError,
@@ -99,6 +100,51 @@ def test_router_accepts_fused_reification_for_every_renderer() -> None:
     )
     routed = router(tokens, torch.ones_like(tokens, dtype=torch.bool))
     assert routed.sum(dim=1).tolist() == [8, 8, 8, 8]
+
+
+def test_cover_verified_router_preserves_outer_reverse_postfix_root() -> None:
+    from ettr_il_v2_surface import SurfaceRenderer, call, integer
+
+    codec = _codec()
+    inner = call(
+        14,
+        integer(3),
+        call(
+            1,
+            call(6, integer(0), integer(1), integer(0), integer(2), integer(2)),
+            call(6, integer(1), integer(2), integer(1), integer(3), integer(2)),
+        ),
+        call(
+            7,
+            integer(1),
+            integer(2),
+            integer(3),
+            integer(3),
+            integer(2),
+            integer(0),
+        ),
+    )
+    ast = call(15, integer(0), inner)
+    documents = [codec.serialize(ast, renderer) for renderer in SurfaceRenderer]
+    transports = [codec.pack(document, width=96) for document in documents]
+    tokens = torch.tensor(
+        [transport.token_ids for transport in transports],
+        dtype=torch.long,
+    )
+    attention = torch.ones_like(tokens, dtype=torch.bool)
+    legacy = TokenNativeDocumentMask(
+        codec.codebook.token_ids,
+        vocab_size=codec.tokenizer.get_vocab_size(),
+    )(tokens, attention)
+    exact = CoverVerifiedTokenNativeDocumentMask(
+        codec.codebook.token_ids,
+        codec.codebook.atoms,
+        vocab_size=codec.tokenizer.get_vocab_size(),
+    )(tokens, attention)
+    expected = [len(document.token_ids) for document in documents]
+
+    assert exact.sum(dim=1).tolist() == expected
+    assert legacy[-1].sum().item() < expected[-1]
 
 
 def test_occurrence_encoder_is_equivariant_to_local_identifier_renaming() -> None:

@@ -302,6 +302,34 @@ def test_syntax_graph_schedule_is_identifier_rename_equivariant() -> None:
             )
 
 
+def test_syntax_graph_can_use_cover_verified_public_document_mask() -> None:
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+    from token_native_syntax_router import CoverVerifiedTokenNativeDocumentMask
+
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    compiler = ParallelAddressedTransactionCompiler(
+        _config(),
+        width=64,
+        layers=1,
+        num_heads=2,
+        token_native_command_mask=True,
+        cover_verified_command_mask=True,
+        token_native_syntax_graph_command=True,
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_codebook_atoms=codec.codebook.atoms,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+
+    assert compiler.cover_verified_command_mask is True
+    assert isinstance(
+        compiler.command_document_mask,
+        CoverVerifiedTokenNativeDocumentMask,
+    )
+
+
 def test_mean_schedule_ensemble_averages_before_one_hard_decision() -> None:
     config = _config()
     compilers = [

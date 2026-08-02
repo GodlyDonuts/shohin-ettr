@@ -40,6 +40,7 @@ NUM_HEADS=${NUM_HEADS:-8}
 GROUNDED_POINTERS=${GROUNDED_POINTERS:-0}
 VALID_POINTER_MASKS=${VALID_POINTER_MASKS:-0}
 TOKEN_NATIVE_COMMAND_MASK=${TOKEN_NATIVE_COMMAND_MASK:-0}
+COVER_VERIFIED_COMMAND_MASK=${COVER_VERIFIED_COMMAND_MASK:-0}
 TOKEN_NATIVE_OCCURRENCE_COMMAND=${TOKEN_NATIVE_OCCURRENCE_COMMAND:-0}
 TOKEN_NATIVE_SYNTAX_GRAPH_COMMAND=${TOKEN_NATIVE_SYNTAX_GRAPH_COMMAND:-0}
 OPCODE_PROGRAM_REGISTRY=${OPCODE_PROGRAM_REGISTRY:-}
@@ -65,6 +66,16 @@ if [[ "$TOKEN_NATIVE_COMMAND_MASK" == 1 ]]; then
   POINTER_ARGS+=(--token-native-command-mask)
 elif [[ "$TOKEN_NATIVE_COMMAND_MASK" != 0 ]]; then
   echo "token-native COMMAND mask flag differs" >&2
+  exit 2
+fi
+if [[ "$COVER_VERIFIED_COMMAND_MASK" == 1 ]]; then
+  [[ "$TOKEN_NATIVE_COMMAND_MASK" == 1 ]] || {
+    echo "cover verification requires token-native COMMAND masking" >&2
+    exit 2
+  }
+  POINTER_ARGS+=(--cover-verified-command-mask)
+elif [[ "$COVER_VERIFIED_COMMAND_MASK" != 0 ]]; then
+  echo "cover-verified COMMAND mask flag differs" >&2
   exit 2
 fi
 if [[ "$TOKEN_NATIVE_OCCURRENCE_COMMAND" == 1 ]]; then
