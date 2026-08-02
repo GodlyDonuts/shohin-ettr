@@ -23607,3 +23607,52 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_the_three_orthogonal_gates_then_route_immediately_to_global_program_training_opcode_conditioned_operands_or_a_new_public_edit_ontology_without_duplicate_seed_spam`.
+
+- **2026-08-02 03:49--04:42 EDT** -- **Duration and valid-program projection
+  are closed; a public document-boundary defect is isolated.**
+
+  The uninterrupted V100 syntax-graph control `725574` completed all 15,000
+  updates cleanly in 2h24m. Report SHA-256 is
+  `44637a3ac46f97cc1e96d68cdcc087e80fe7d9fa6c79882bc6ccf2979d1bf23d`.
+  Held-out joint schedule accuracy is 15.195%, opcode/source/target/value are
+  66.427%/38.791%/19.540%/31.658%, and oracle-initial exact terminal packets
+  are `32/512 = 6.25%`. Fully autonomous factual top-1 is 59.375%; strict
+  WORLD and COMMAND remain exactly zero. The training trajectory never shows
+  a plateau-then-transition. Fifteen-thousand-update duration scaling is
+  closed as a repair.
+
+  Corrected zero-parameter valid-program projection job `725597` also
+  completed cleanly. Report SHA-256 is
+  `21796dd49d21bcd4f31d6f13029fdb4bbeb2e06e11861f58c3a99dab6c9bfd4c`.
+  Selecting one globally valid train-only opcode skeleton raises the matched
+  5k joint schedule rate only from 14.374% to 14.990%, lowers opcode accuracy
+  to 58.316%, leaves oracle-initial exact terminal packets at `0/512`, leaves
+  factual top-1 at 60.9375%, and leaves both strict causal axes at zero.
+  Invalid stepwise opcode hybrids are not the primary bottleneck. The flat
+  selector and zero-parameter projection branches are both closed.
+
+  Stokes audit `760899` failed before producing scientific evidence because
+  its parser asserted renderer invariance on an incorrectly reconstructed
+  source geometry. The corpus stores four corner-conditioned WORLD sources
+  and four corner-conditioned COMMAND sources per renderer, not two. Further
+  hostile debugging exposed a more consequential production defect:
+  `TokenNativeDocumentMask` accepts the first postfix root-shaped completion.
+  Reverse-postfix rewrite documents can contain an inner `(head 14, arity 3)`
+  node before their true outer `(head 15, arity 2)` root, so the current
+  syntax graph can truncate a valid source at the inner node. Random
+  deterministic cover can also form later root-shaped completions.
+
+  The corrected CPU parser now verifies the deterministic cover hash using
+  only public source bytes and codebook geometry, then parses the unique exact
+  AST span. It preserves reification relations while reversing only endpoint
+  order, checks all four corner-conditioned sources, and passes a bounded
+  real-corpus sweep over all 15 ontology/family development shards. Fifteen
+  focused tests plus Ruff, byte compilation, and diff checks pass. A full
+  public-syntax identifiability audit and a separate corpus-wide comparison of
+  the old heuristic mask against the cover-verified boundary are the next CPU
+  gates. If the mask error is material, clean exact-mask retraining supersedes
+  all prior syntax-graph duration/projection variants; if it is rare, the
+  identifiability result routes directly to the public edit ontology branch.
+
+  Decision:
+  `quantify_the_mask_defect_retrain_from_a_cover_verified_public_AST_boundary_and_use_identifiability_to_choose_structured_program_training_vs_a_new_edit_ontology`.

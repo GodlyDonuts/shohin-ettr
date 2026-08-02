@@ -16,7 +16,7 @@ signature is sealed.  QUERY and answer fields are never read.
 from __future__ import annotations
 
 import argparse
-from collections import Counter
+from collections import Counter, defaultdict
 from concurrent.futures import ProcessPoolExecutor
 import hashlib
 import json
@@ -50,6 +50,7 @@ _REIFY_END = _REIFY_BASE + MAX_NATIVE_ARITY + 1
 _INTEGER_BASE = _REIFY_END
 _IDENTIFIER_WINDOW = 96
 _ROOT_GEOMETRY = {(14, 3), (15, 2)}
+_ROOT_CODES = {head * _CALL_STRIDE + arity for head, arity in _ROOT_GEOMETRY}
 
 PublicNode = tuple[object, ...]
 LabelCounts = dict[str, Counter[str]]
@@ -77,7 +78,8 @@ def _leaf_or_operator(code: int, codebook_size: int) -> tuple[str, int, int]:
         head, arity = divmod(code, _CALL_STRIDE)
         return "call", head, arity
     if _REIFY_BASE <= code < _REIFY_END:
-        return "reify", 2, code - _REIFY_BASE
+        endpoint_count = code - _REIFY_BASE
+        return "reify", endpoint_count, endpoint_count + 1
     identifier_floor = codebook_size - _IDENTIFIER_WINDOW
     if _INTEGER_BASE <= code < identifier_floor:
         return "integer", code - _INTEGER_BASE, 0
@@ -92,6 +94,99 @@ def _is_root(node: PublicNode) -> bool:
         and node[0] == "call"
         and (int(node[1]), len(tuple(node[2]))) in _ROOT_GEOMETRY
     )
+
+
+def _deterministic_cover(
+    document_payload: bytes,
+    *,
+    width: int,
+    count: int,
+    codebook_size: int,
+) -> tuple[int, ...]:
+    if (
+        not isinstance(document_payload, bytes)
+        or not isinstance(width, int)
+        or width < 1
+        or not isinstance(count, int)
+        or count < 0
+        or not isinstance(codebook_size, int)
+        or codebook_size < 1
+    ):
+        raise PublicOpcodeIdentifiabilityError("public transport cover differs")
+    seed = hashlib.sha256(
+        b"R12-ETTR-IL-v2\0transport-cover\0"
+        + document_payload
+        + width.to_bytes(4, "big")
+    ).digest()
+    result: list[int] = []
+    counter = 0
+    while len(result) < count:
+        block = hashlib.sha256(seed + counter.to_bytes(8, "big")).digest()
+        counter += 1
+        for offset in range(0, len(block), 2):
+            result.append(
+                int.from_bytes(block[offset : offset + 2], "big")
+                % codebook_size
+            )
+            if len(result) == count:
+                break
+    return tuple(result)
+
+
+def public_document_indices(
+    codec: TokenNativeSurfaceCodec,
+    source: str,
+) -> tuple[int, ...]:
+    """Recover one exact public AST span by verifying its deterministic cover."""
+
+    if not isinstance(source, str) or not source.isascii():
+        raise PublicOpcodeIdentifiabilityError("public source differs")
+    physical = codec._payload_indices(source.encode("ascii"))
+    if (
+        len(physical) < 3
+        or physical[0] not in {_FRAME_A, _FRAME_B}
+        or physical[1] not in {_FRAME_A, _FRAME_B}
+    ):
+        raise PublicOpcodeIdentifiabilityError("public transport geometry differs")
+    prefix = physical[0] == _FRAME_A
+    candidates: list[int] = []
+    state = 1 if prefix else 0
+    for body_index, code in enumerate(physical[2:]):
+        try:
+            _, _, arity = _leaf_or_operator(
+                int(code),
+                len(codec.codebook.token_ids),
+            )
+        except PublicOpcodeIdentifiabilityError:
+            if candidates:
+                break
+            raise
+        state += arity - 1 if prefix else 1 - arity
+        if (prefix and state == 0) or (
+            not prefix and state == 1 and int(code) in _ROOT_CODES
+        ):
+            candidates.append(body_index + 3)
+            if prefix:
+                break
+        if state < 0:
+            break
+    matches = []
+    for end in candidates:
+        document = tuple(physical[:end])
+        payload = codec._render_logical(document)
+        expected = _deterministic_cover(
+            payload,
+            width=len(physical),
+            count=len(physical) - end,
+            codebook_size=len(codec.codebook.token_ids),
+        )
+        if tuple(physical[end:]) == expected:
+            matches.append(document)
+    if len(matches) != 1:
+        raise PublicOpcodeIdentifiabilityError(
+            "public transport does not have one cover-verified AST"
+        )
+    return matches[0]
 
 
 def parse_public_transport(
@@ -120,16 +215,19 @@ def parse_public_transport(
         value: int,
         children: tuple[PublicNode, ...] = (),
     ) -> PublicNode:
-        if reverse_children:
-            children = tuple(reversed(children))
         if kind == "call":
+            if reverse_children:
+                children = tuple(reversed(children))
             return ("call", value, children)
         if kind == "reify":
             if len(children) != value + 1 or children[0][0] != "symbol":
                 raise PublicOpcodeIdentifiabilityError(
                     "public fused reification differs"
                 )
-            return ("reify", children[0], children[1:])
+            endpoints = children[1:]
+            if reverse_children:
+                endpoints = tuple(reversed(endpoints))
+            return ("reify", children[0], endpoints)
         if children:
             raise PublicOpcodeIdentifiabilityError("public leaf has children")
         return (kind, value)
@@ -151,6 +249,10 @@ def parse_public_transport(
         root = consume(1)
         if not _is_root(root):
             raise PublicOpcodeIdentifiabilityError("public prefix root differs")
+        if offset != len(body):
+            raise PublicOpcodeIdentifiabilityError(
+                "public prefix AST contains trailing codes"
+            )
         return root
 
     stack: list[PublicNode] = []
@@ -162,54 +264,131 @@ def parse_public_transport(
         if arity:
             del stack[-arity:]
         stack.append(node_from(kind, value, children))
-        if len(stack) == 1 and _is_root(stack[0]):
-            return stack[0]
+    if len(stack) == 1 and _is_root(stack[0]):
+        return stack[0]
     raise PublicOpcodeIdentifiabilityError("public postfix AST does not terminate")
 
 
 def canonical_public_tree(node: PublicNode, *, mode: str) -> object:
-    """Return one alpha-normalized public tree at a selected abstraction."""
+    """Return a renderer/layout-invariant public syntax-graph quotient.
+
+    Heads 1 and 2 are the protocol's explicit unordered collection heads.
+    Opaque names are represented only through equality edges. A fixed-round
+    Weisfeiler-Lehman refinement then yields an isomorphism-invariant graph
+    digest without consulting the assessor symbol sidecar.
+    """
 
     if mode not in _SIGNATURE_MODES:
         raise PublicOpcodeIdentifiabilityError("public signature mode differs")
-    symbols: dict[int, int] = {}
+    labels: list[object] = []
+    parents: list[tuple[int, int] | None] = []
+    children: list[list[tuple[int, int]]] = []
+    symbols: dict[int, list[int]] = defaultdict(list)
 
-    def visit(current: PublicNode) -> object:
+    def add(current: PublicNode, parent: int | None, rank: int) -> int:
+        index = len(labels)
         kind = str(current[0])
         if kind == "symbol":
-            value = int(current[1])
-            if mode == "topology":
-                return ["symbol"]
-            ordinal = symbols.setdefault(value, len(symbols))
-            return ["symbol", ordinal]
-        if kind == "integer":
-            if mode == "alpha_exact":
-                return ["integer", int(current[1])]
-            return ["integer"]
-        if kind == "call":
-            return [
-                "call",
-                int(current[1]),
-                [visit(child) for child in tuple(current[2])],
-            ]
-        if kind == "reify":
-            return [
-                "reify",
-                visit(current[1]),
-                [visit(child) for child in tuple(current[2])],
-            ]
-        raise PublicOpcodeIdentifiabilityError("public tree node differs")
+            label: object = ["symbol"]
+        elif kind == "integer":
+            label = (
+                ["integer", int(current[1])]
+                if mode == "alpha_exact"
+                else ["integer"]
+            )
+        elif kind == "call":
+            label = ["call", int(current[1]), len(tuple(current[2]))]
+        elif kind == "reify":
+            label = ["reify", len(tuple(current[2]))]
+        else:
+            raise PublicOpcodeIdentifiabilityError("public tree node differs")
+        labels.append(label)
+        parents.append(None if parent is None else (parent, rank))
+        children.append([])
+        if kind == "symbol":
+            symbols[int(current[1])].append(index)
+            descendants: tuple[PublicNode, ...] = ()
+            unordered = False
+        elif kind == "integer":
+            descendants = ()
+            unordered = False
+        elif kind == "call":
+            descendants = tuple(current[2])
+            unordered = int(current[1]) in {1, 2}
+        else:
+            descendants = (current[1], *tuple(current[2]))
+            unordered = False
+        for child_rank, child in enumerate(descendants):
+            edge_rank = -1 if unordered else child_rank
+            child_index = add(child, index, edge_rank)
+            children[index].append((child_index, edge_rank))
+        return index
 
-    return visit(node)
+    root = add(node, None, 0)
+    initial = [_digest(label) for label in labels]
+    palette = {value: index for index, value in enumerate(sorted(set(initial)))}
+    colors = [palette[value] for value in initial]
+    equality = {index: tuple(group) for group in symbols.values() for index in group}
+    for _ in range(len(labels) + 1):
+        signatures = []
+        for index in range(len(labels)):
+            messages: list[tuple[int, int, int]] = []
+            parent = parents[index]
+            if parent is not None:
+                messages.append((0, parent[1], colors[parent[0]]))
+            messages.extend(
+                (1, rank, colors[child])
+                for child, rank in children[index]
+            )
+            if mode != "topology":
+                messages.extend(
+                    (2, 0, colors[other])
+                    for other in equality.get(index, ())
+                    if other != index
+                )
+            signatures.append(
+                (
+                    colors[index],
+                    tuple(sorted(messages)),
+                )
+            )
+        ordered = sorted(set(signatures))
+        next_palette = {value: index for index, value in enumerate(ordered)}
+        refined = [next_palette[value] for value in signatures]
+        previous_classes = len(set(colors))
+        colors = refined
+        if len(ordered) == previous_classes:
+            break
+    fingerprints = []
+    for index, label in enumerate(labels):
+        messages: list[tuple[int, int, int]] = []
+        parent = parents[index]
+        if parent is not None:
+            messages.append((0, parent[1], colors[parent[0]]))
+        messages.extend(
+            (1, rank, colors[child]) for child, rank in children[index]
+        )
+        if mode != "topology":
+            messages.extend(
+                (2, 0, colors[other])
+                for other in equality.get(index, ())
+                if other != index
+            )
+        fingerprints.append(
+            _digest({"label": label, "messages": sorted(messages)})
+        )
+    histogram = Counter(fingerprints)
+    return {
+        "nodes": [[color, count] for color, count in sorted(histogram.items())],
+        "root": fingerprints[root],
+    }
 
 
 def public_source_signatures(
     codec: TokenNativeSurfaceCodec,
     source: str,
 ) -> dict[str, str]:
-    if not isinstance(source, str) or not source.isascii():
-        raise PublicOpcodeIdentifiabilityError("public source differs")
-    physical = codec._payload_indices(source.encode("ascii"))
+    physical = public_document_indices(codec, source)
     tree = parse_public_transport(
         physical,
         codebook_size=len(codec.codebook.token_ids),
@@ -229,7 +408,7 @@ def _source_orbits(
         raise PublicOpcodeIdentifiabilityError("public renderer orbit differs")
     worlds = []
     commands = []
-    for index in range(2):
+    for index in range(4):
         world_orbit = tuple(
             public_source_signatures(codec, view.world_sources[index]) for view in views
         )
@@ -263,13 +442,13 @@ def _record_labels(
             target = str(programs[corner]["opcode"])
             for mode in _SIGNATURE_MODES:
                 command_key = _digest(
-                    {"command": commands[command_index][mode], "mode": mode}
+                    {"command": commands[corner][mode], "mode": mode}
                 )
                 joint_key = _digest(
                     {
-                        "command": commands[command_index][mode],
+                        "command": commands[corner][mode],
                         "mode": mode,
-                        "world": worlds[world_index][mode],
+                        "world": worlds[corner][mode],
                     }
                 )
                 yield mode, "command", command_key, target
