@@ -14,6 +14,8 @@ from parallel_addressed_transaction_compiler import (
     MeanParallelAddressedScheduleCompiler,
     ParallelAddressedTransactionCompiler,
     ParallelScheduledReactor,
+    RegistryProjectedAddressedScheduleCompiler,
+    _project_opcode_programs,
 )
 
 
@@ -517,6 +519,55 @@ def test_opcode_program_registry_rejects_duplicate_or_invalid_programs() -> None
             num_heads=2,
             opcode_program_sequences=((1, 6), (1, 6)),
         )
+
+
+def test_opcode_program_projection_selects_global_path_without_class_prior() -> None:
+    probabilities = torch.full((1, 3, TRANSACTION_COUNT), 1e-4)
+    probabilities[0, 0, 1] = 0.9
+    probabilities[0, 1, 3] = 0.8
+    probabilities[0, 1, 1] = 0.2
+    probabilities[0, 2, 6] = 0.9
+    probabilities /= probabilities.sum(-1, keepdim=True)
+    table = torch.tensor(((1, 1, 6), (1, 3, 6)), dtype=torch.long)
+    mask = torch.ones_like(table, dtype=torch.bool)
+    program, projected, hard = _project_opcode_programs(
+        probabilities,
+        table,
+        mask,
+    )
+    assert program.argmax(-1).item() == 1
+    assert projected.argmax(-1).tolist() == [[1, 3, 6]]
+    assert hard.argmax(-1).tolist() == [[1, 3, 6]]
+
+
+def test_opcode_program_projection_wrapper_adds_no_learned_parameters() -> None:
+    config = _config()
+    base = ParallelAddressedTransactionCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+    )
+    projected = RegistryProjectedAddressedScheduleCompiler(
+        base,
+        ((1, 1, 6), (1, 3, 6)),
+    )
+    assert sum(p.numel() for p in projected.parameters()) == sum(
+        p.numel() for p in base.parameters()
+    )
+    schedule = projected(
+        _state(config),
+        command_hidden=torch.randn(2, 5, config.d_model),
+        command_attention_mask=torch.ones(2, 5, dtype=torch.bool),
+        steps=3,
+        hard=True,
+    )
+    observed = schedule.applied_opcode.argmax(-1).tolist()
+    assert all(tuple(row) in {(1, 1, 6), (1, 3, 6)} for row in observed)
+    assert schedule.program_probabilities is not None
+    assert tuple(projected.state_dict()) == tuple(
+        f"compiler.{name}" for name in base.state_dict()
+    )
     with pytest.raises(TheoryReactorError, match="registry differs"):
         ParallelAddressedTransactionCompiler(
             config,

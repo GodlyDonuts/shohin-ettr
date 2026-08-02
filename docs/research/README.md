@@ -41,6 +41,7 @@ New preregistrations that are not bound to legacy root-relative manifests live
 here directly:
 
 - [`R12_STICKY_OPCODE_MACRO_RAIL_PREREG.md`](R12_STICKY_OPCODE_MACRO_RAIL_PREREG.md)
+- [`R12_REGISTRY_CONSTRAINED_OPCODE_PROJECTION_PREREG.md`](R12_REGISTRY_CONSTRAINED_OPCODE_PROJECTION_PREREG.md)
 
 ## Documents Intentionally Kept At Root
 

@@ -10,7 +10,7 @@ transaction algebra.  No query bytes or answer labels enter the module.
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import torch
 import torch.nn as nn
@@ -100,6 +100,148 @@ def _opcode_programs(
     if len(programs) != len(set(programs)):
         raise TheoryReactorError("opcode program registry contains duplicates")
     return tuple(programs)
+
+
+def _project_opcode_programs(
+    opcode_probabilities: torch.Tensor,
+    program_table: torch.Tensor,
+    program_step_mask: torch.Tensor,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Project independent opcode evidence onto one complete valid program.
+
+    Programs are scored by their mean per-step log probability.  The registry
+    order and empirical class frequencies never enter the score, so this
+    projection cannot lower loss by learning the dominant program prior.
+    """
+
+    if (
+        opcode_probabilities.ndim != 3
+        or program_table.ndim != 2
+        or program_step_mask.shape != program_table.shape
+        or program_step_mask.dtype != torch.bool
+        or program_table.dtype != torch.long
+        or program_table.shape[0] < 2
+        or program_table.shape[1] < opcode_probabilities.shape[1]
+        or bool((program_table < 0).any())
+        or bool((program_table >= opcode_probabilities.shape[-1]).any())
+    ):
+        raise TheoryReactorError("opcode program projection geometry differs")
+    steps = opcode_probabilities.shape[1]
+    valid = ~program_step_mask[:, steps:].any(-1)
+    step_mask = program_step_mask[:, :steps]
+    valid &= step_mask.any(-1)
+    if not bool(valid.any()):
+        raise TheoryReactorError("opcode program projection has no valid program")
+    table = program_table[:, :steps]
+    log_probabilities = opcode_probabilities.float().clamp_min(
+        torch.finfo(torch.float32).eps
+    ).log()
+    gathered = log_probabilities[:, None].expand(
+        -1,
+        table.shape[0],
+        -1,
+        -1,
+    ).gather(
+        -1,
+        table[None, :, :, None].expand(
+            opcode_probabilities.shape[0],
+            -1,
+            -1,
+            -1,
+        ),
+    ).squeeze(-1)
+    scores = (gathered * step_mask[None]).sum(-1) / step_mask.sum(-1).clamp_min(
+        1
+    )[None]
+    scores = scores.masked_fill(~valid[None], float("-inf"))
+    program_probabilities = scores.softmax(-1)
+    selected = _hard_one_hot(program_probabilities)
+
+    terminal_opcode = program_table.gather(
+        1,
+        program_step_mask.sum(-1, keepdim=True).sub(1),
+    )
+    effective_table = torch.where(
+        step_mask,
+        table,
+        terminal_opcode.expand(-1, steps),
+    )
+    templates = F.one_hot(
+        effective_table,
+        opcode_probabilities.shape[-1],
+    ).to(program_probabilities.dtype)
+    projected_probabilities = torch.einsum(
+        "bk,ktc->btc",
+        program_probabilities,
+        templates,
+    )
+    projected_hard = torch.einsum("bk,ktc->btc", selected, templates)
+    return program_probabilities, projected_probabilities, projected_hard
+
+
+class RegistryProjectedAddressedScheduleCompiler(nn.Module):
+    """Constrain a trained per-step compiler to one registry-valid program.
+
+    This wrapper adds no learned parameters.  It is an inference diagnostic:
+    operands remain those produced by the sealed base compiler while opcodes
+    are globally projected onto one complete train-only skeleton.
+    """
+
+    def __init__(
+        self,
+        compiler: nn.Module,
+        opcode_program_sequences: Sequence[Sequence[int]],
+    ) -> None:
+        super().__init__()
+        config = getattr(compiler, "config", None)
+        if not isinstance(config, TheoryReactorConfig):
+            raise TheoryReactorError("opcode program projection compiler differs")
+        programs = _opcode_programs(opcode_program_sequences, config)
+        if programs is None or any(program[-1] < 6 for program in programs):
+            raise TheoryReactorError("opcode program projection registry differs")
+        self.compiler = compiler
+        self.config = config
+        self.token_native_command_mask = bool(
+            getattr(compiler, "token_native_command_mask", False)
+        )
+        self.token_native_occurrence_command = bool(
+            getattr(compiler, "token_native_occurrence_command", False)
+        )
+        self.token_native_syntax_graph_command = bool(
+            getattr(compiler, "token_native_syntax_graph_command", False)
+        )
+        table = torch.zeros(
+            (len(programs), config.max_steps),
+            dtype=torch.long,
+        )
+        step_mask = torch.zeros_like(table, dtype=torch.bool)
+        for index, program in enumerate(programs):
+            table[index, : len(program)] = torch.tensor(program)
+            step_mask[index, : len(program)] = True
+        self.register_buffer("opcode_program_table", table, persistent=False)
+        self.register_buffer(
+            "opcode_program_step_mask",
+            step_mask,
+            persistent=False,
+        )
+
+    def forward(self, *args, hard: bool, **kwargs) -> AddressedSchedule:
+        schedule = self.compiler(*args, hard=hard, **kwargs)
+        if schedule.program_probabilities is not None:
+            raise TheoryReactorError("opcode program projection is already selected")
+        probabilities, projected, selected = _project_opcode_programs(
+            schedule.opcode,
+            self.opcode_program_table,
+            self.opcode_program_step_mask,
+        )
+        return replace(
+            schedule,
+            opcode=projected.to(schedule.opcode.dtype),
+            applied_opcode=(selected if hard else projected).to(
+                schedule.applied_opcode.dtype
+            ),
+            program_probabilities=probabilities,
+        )
 
 
 class ParallelAddressedTransactionCompiler(nn.Module):

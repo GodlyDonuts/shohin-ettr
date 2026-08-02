@@ -56,6 +56,25 @@ if [[ -n "${SCHEDULE_RUN_DIR:-}" \
     --schedule-run-sha256s-sha256 "$SCHEDULE_RUN_SHA256SUMS_SHA256"
   )
 fi
+PROJECTION_ARGS=()
+if [[ -n "${OPCODE_PROJECTION_REGISTRY:-}" \
+  || -n "${OPCODE_PROJECTION_REGISTRY_SHA256:-}" ]]; then
+  OPCODE_PROJECTION_REGISTRY=${OPCODE_PROJECTION_REGISTRY:?set opcode projection registry}
+  OPCODE_PROJECTION_REGISTRY_SHA256=${OPCODE_PROJECTION_REGISTRY_SHA256:?set opcode projection registry hash}
+  [[ "$OPCODE_PROJECTION_REGISTRY" == /* ]] || {
+    echo "opcode projection registry path must be absolute" >&2
+    exit 2
+  }
+  [[ "$(sha256sum "$OPCODE_PROJECTION_REGISTRY" | cut -d ' ' -f 1)" \
+    == "$OPCODE_PROJECTION_REGISTRY_SHA256" ]] || {
+    echo "opcode projection registry hash differs" >&2
+    exit 2
+  }
+  PROJECTION_ARGS=(
+    --opcode-projection-registry "$OPCODE_PROJECTION_REGISTRY"
+    --opcode-projection-registry-sha256 "$OPCODE_PROJECTION_REGISTRY_SHA256"
+  )
+fi
 
 for path in "$CODE_ROOT" "$RELEASE_ROOT" "$ETTR_DATA_ROOT" \
   "$TOKENIZER" "$PROTECTED_CHECKPOINT" "$JOINT_RUN_DIR" \
@@ -114,6 +133,7 @@ compiler_sha=$(sha256sum \
   --compiler-contract-sha256 "$compiler_contract_sha" \
   "${STATE_ARGS[@]}" \
   "${SCHEDULE_ARGS[@]}" \
+  "${PROJECTION_ARGS[@]}" \
   --output "$OUTPUT" \
   --source-commit "$SOURCE_COMMIT" \
   --data-seed "$DATA_SEED" \

@@ -32,6 +32,8 @@ def _args(tmp_path: Path, **overrides: object) -> Namespace:
         "state_run_sha256s_sha256": None,
         "schedule_run_dir": None,
         "schedule_run_sha256s_sha256": None,
+        "opcode_projection_registry": None,
+        "opcode_projection_registry_sha256": None,
         "output": tmp_path / "output",
         "source_commit": "5" * 40,
         "data_seed": 7,
@@ -79,6 +81,34 @@ def test_schedule_run_arguments_accept_absolute_bound_receipt(
             tmp_path,
             schedule_run_dir=tmp_path,
             schedule_run_sha256s_sha256="7" * 64,
+        )
+    )
+
+
+def test_opcode_projection_requires_a_bound_schedule(tmp_path: Path) -> None:
+    with pytest.raises(
+        AlgebraicJointStateEvaluationError,
+        match="arguments differ",
+    ):
+        _validate_args(
+            _args(
+                tmp_path,
+                opcode_projection_registry=tmp_path / "registry.json",
+                opcode_projection_registry_sha256="8" * 64,
+            )
+        )
+
+
+def test_opcode_projection_accepts_bound_registry_and_schedule(
+    tmp_path: Path,
+) -> None:
+    _validate_args(
+        _args(
+            tmp_path,
+            schedule_run_dir=tmp_path,
+            schedule_run_sha256s_sha256="7" * 64,
+            opcode_projection_registry=tmp_path / "registry.json",
+            opcode_projection_registry_sha256="8" * 64,
         )
     )
 

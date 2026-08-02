@@ -51,6 +51,12 @@ from opcode_program_registry import load_opcode_program_registry
 from parallel_addressed_transaction_compiler import (
     ParallelAddressedTransactionCompiler,
     ParallelScheduledReactor,
+    RegistryProjectedAddressedScheduleCompiler,
+)
+from probe_ettr_oracle_interfaces import (
+    _packet_batch_counts,
+    packet_targets_to_state,
+    policy_masks,
 )
 from train_ettr_component_island import (
     _canonical_bytes,
@@ -69,6 +75,12 @@ from train_typed_query_state_reader_pilot import (
 
 CONTRACT_SCHEMA = "shohin-ettr-algebraic-joint-state-eval-contract-v2"
 REPORT_SCHEMA = "shohin-ettr-algebraic-joint-state-eval-report-v2"
+PROJECTION_CONTRACT_SCHEMA = (
+    "shohin-ettr-algebraic-joint-state-opcode-projection-contract-v1"
+)
+PROJECTION_REPORT_SCHEMA = (
+    "shohin-ettr-algebraic-joint-state-opcode-projection-report-v1"
+)
 STATE_CONTRACT_SCHEMA = "shohin-ettr-algebraic-state-semantic-contract-v1"
 STATE_REPORT_SCHEMA = "shohin-ettr-algebraic-state-semantic-report-v1"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
@@ -147,6 +159,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--state-run-sha256s-sha256")
     parser.add_argument("--schedule-run-dir", type=Path)
     parser.add_argument("--schedule-run-sha256s-sha256")
+    parser.add_argument("--opcode-projection-registry", type=Path)
+    parser.add_argument("--opcode-projection-registry-sha256")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--data-seed", type=int, required=True)
@@ -180,6 +194,13 @@ def _validate_args(args: argparse.Namespace) -> None:
     )
     state_run_supplied = args.state_run_dir is not None
     schedule_run_supplied = args.schedule_run_dir is not None
+    projection_registry = getattr(args, "opcode_projection_registry", None)
+    projection_registry_sha256 = getattr(
+        args,
+        "opcode_projection_registry_sha256",
+        None,
+    )
+    projection_supplied = projection_registry is not None
     if (
         any(not path.is_absolute() for path in paths)
         or any(_HEX64.fullmatch(value) is None for value in hashes)
@@ -188,6 +209,9 @@ def _validate_args(args: argparse.Namespace) -> None:
         or args.max_batches < 2
         or state_run_supplied != (args.state_run_sha256s_sha256 is not None)
         or schedule_run_supplied != (args.schedule_run_sha256s_sha256 is not None)
+        or projection_supplied
+        != (projection_registry_sha256 is not None)
+        or (projection_supplied and not schedule_run_supplied)
         or (
             state_run_supplied
             and (
@@ -200,6 +224,13 @@ def _validate_args(args: argparse.Namespace) -> None:
             and (
                 not args.schedule_run_dir.is_absolute()
                 or _HEX64.fullmatch(args.schedule_run_sha256s_sha256) is None
+            )
+        )
+        or (
+            projection_supplied
+            and (
+                not projection_registry.is_absolute()
+                or _HEX64.fullmatch(projection_registry_sha256) is None
             )
         )
         or args.output.exists()
@@ -783,6 +814,7 @@ def _evaluate(
     device: torch.device,
     data_seed: int,
     max_batches: int,
+    collect_state_diagnostics: bool = False,
 ) -> dict[str, object]:
     rows = {arm: {"world": [], "command": []} for arm in _ARMS}
     factual = {arm: 0 for arm in _ARMS}
@@ -793,6 +825,9 @@ def _evaluate(
         "operation_correct": 0,
         "rows": 0,
     }
+    diagnostic_schedule: dict[str, list[int]] = {}
+    diagnostic_oracle_terminal: dict[str, list[int]] = {}
+    diagnostic_autonomous_terminal: dict[str, list[int]] = {}
     objective_config = ETTRObjectiveConfig(vocab_size=model.base.cfg.vocab_size)
     iterator = iter_batches_with_query_specs(
         stream,
@@ -830,6 +865,22 @@ def _evaluate(
                 command_idx=batch.episodes.command.tokens,
                 command_attention_mask=(batch.episodes.command.attention_mask),
             )
+            if collect_state_diagnostics:
+                oracle_runtime_initial = packet_targets_to_state(
+                    batch.packet_targets,
+                    model.config,
+                    step=0,
+                    dtype=next(model.reactor.parameters()).dtype,
+                )
+                oracle_projected_terminal, oracle_trace = model.execute(
+                    oracle_runtime_initial,
+                    steps=batch.transaction_targets.opcode.shape[1],
+                    hard=True,
+                    command_idx=batch.episodes.command.tokens,
+                    command_attention_mask=(
+                        batch.episodes.command.attention_mask
+                    ),
+                )
             outputs = {
                 "autonomous_program_autonomous_state": _reader_forward(
                     reader,
@@ -883,6 +934,40 @@ def _evaluate(
             command_target,
         ) = batch.causal_rectangles.intervention_indices()
         depths = batch.transaction_targets.step_mask.sum(-1)
+        if collect_state_diagnostics:
+            masks = policy_masks(batch.transaction_targets)
+            joint = torch.ones_like(batch.transaction_targets.step_mask)
+            for name in (
+                "opcode",
+                "source",
+                "target",
+                "relation",
+                "type_index",
+                "value_code",
+            ):
+                mask = masks[name]
+                predicted = getattr(oracle_trace, f"applied_{name}").argmax(-1)
+                correct = predicted.eq(getattr(batch.transaction_targets, name))
+                values = diagnostic_schedule.setdefault(name, [0, 0])
+                values[0] += int((correct & mask).sum().detach().cpu())
+                values[1] += int(mask.sum().detach().cpu())
+                joint &= correct | ~mask
+            values = diagnostic_schedule.setdefault("joint", [0, 0])
+            values[0] += int(
+                (joint & batch.transaction_targets.step_mask).sum().detach().cpu()
+            )
+            values[1] += int(batch.transaction_targets.step_mask.sum().detach().cpu())
+            for destination, state in (
+                (diagnostic_oracle_terminal, oracle_projected_terminal),
+                (diagnostic_autonomous_terminal, autonomous_terminal),
+            ):
+                for name, counts in _packet_batch_counts(
+                    state,
+                    batch.terminal_packet_targets,
+                ).items():
+                    values = destination.setdefault(name, [0, 0])
+                    values[0] += counts[0]
+                    values[1] += counts[1]
         for arm, output in outputs.items():
             logits = output.vocab_logits
             factual[arm] += int(logits.argmax(-1).eq(targets).sum())
@@ -900,7 +985,7 @@ def _evaluate(
         raise AlgebraicJointStateEvaluationError(
             "algebraic joint-state evaluation support differs"
         )
-    return {
+    result = {
         "arms": {
             arm: {
                 "factual_top1": factual[arm] / expected,
@@ -920,6 +1005,27 @@ def _evaluate(
             "rows": expected,
         },
     }
+    if collect_state_diagnostics:
+        def summarize(values):
+            return {
+                name: {
+                    "correct": counts[0],
+                    "total": counts[1],
+                    "rate": counts[0] / counts[1] if counts[1] else 0.0,
+                }
+                for name, counts in sorted(values.items())
+            }
+
+        result["opcode_projection_diagnostic"] = {
+            "oracle_initial_hard_schedule": summarize(diagnostic_schedule),
+            "oracle_initial_terminal_packet": summarize(
+                diagnostic_oracle_terminal
+            ),
+            "autonomous_initial_terminal_packet": summarize(
+                diagnostic_autonomous_terminal
+            ),
+        }
+    return result
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -977,6 +1083,49 @@ def main(argv: Sequence[str] | None = None) -> int:
         stream=stream,
         replacement_system_parameters=replacement_system_parameters,
     )
+    projection_receipt = None
+    if args.opcode_projection_registry is not None:
+        if schedule_receipt is None or not isinstance(
+            model.reactor,
+            ParallelScheduledReactor,
+        ):
+            raise AlgebraicJointStateEvaluationError(
+                "opcode projection requires a parallel schedule"
+            )
+        base_schedule = model.reactor.compiler
+        if getattr(base_schedule, "opcode_program_table", None) is not None:
+            raise AlgebraicJointStateEvaluationError(
+                "opcode projection requires an unprojected schedule"
+            )
+        registry = load_opcode_program_registry(
+            args.opcode_projection_registry,
+            expected_sha256=args.opcode_projection_registry_sha256,
+            max_steps=model.config.max_steps,
+            opcode_classes=TRANSACTION_COUNT,
+        )
+        model.reactor = ParallelScheduledReactor(
+            RegistryProjectedAddressedScheduleCompiler(
+                base_schedule,
+                registry.programs,
+            ),
+            model.config,
+        )
+        projection_receipt = {
+            "classes": registry.classes,
+            "development_instance_coverage": (
+                registry.development_instance_coverage
+            ),
+            "parameter_delta": 0,
+            "payload_sha256": registry.payload_sha256,
+            "registry_sha256": registry.file_sha256,
+            "score": "mean-per-step-log-probability-without-class-prior",
+            "selection": "single-global-hard-valid-opcode-program",
+        }
+    schema = (
+        PROJECTION_CONTRACT_SCHEMA
+        if projection_receipt is not None
+        else CONTRACT_SCHEMA
+    )
     contract = {
         "compiler_contract_sha256": args.compiler_contract_sha256,
         "compiler_sha256": args.compiler_sha256,
@@ -986,6 +1135,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "joint_run_contract_sha256": args.joint_run_contract_sha256,
         "max_batches": args.max_batches,
         "non_promotable_diagnostic_arms": list(_ARMS[1:]),
+        "opcode_program_projection": projection_receipt,
         "protected_checkpoint_sha256": provenance.checkpoint_sha256,
         "reader_parameters": reader_parameters,
         "release_file_sha256": args.release_sha256,
@@ -993,7 +1143,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "required_device_class": args.required_device_class,
         "runtime_precision": str(next(model.parameters()).dtype),
         "schedule_receipt": schedule_receipt,
-        "schema": CONTRACT_SCHEMA,
+        "schema": schema,
         "source_commit": args.source_commit,
         "state_semantic_receipt": state_semantic_receipt,
     }
@@ -1012,6 +1162,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             device=device,
             data_seed=args.data_seed,
             max_batches=args.max_batches,
+            collect_state_diagnostics=projection_receipt is not None,
         )
         report = {
             "compiler_contract_source_commit": compiler_contract["source_commit"],
@@ -1021,11 +1172,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             "joint_model_optimizer_step": joint_payload["optimizer_step"],
             "joint_model_parameter_sha256": _parameter_sha256(model),
             "joint_training_source_commit": joint_contract["source_commit"],
+            "opcode_program_projection": projection_receipt,
             "reader_parameters": reader_parameters,
             "replacement_system_parameters": replacement_system_parameters,
             "runtime_precision": str(next(model.parameters()).dtype),
             "schedule_receipt": schedule_receipt,
-            "schema": REPORT_SCHEMA,
+            "schema": (
+                PROJECTION_REPORT_SCHEMA
+                if projection_receipt is not None
+                else REPORT_SCHEMA
+            ),
             "source_verification": source_verification,
             "state_semantic_receipt": state_semantic_receipt,
             "status": "pass",
