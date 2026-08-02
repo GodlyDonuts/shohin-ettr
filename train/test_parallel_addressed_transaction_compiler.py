@@ -233,6 +233,68 @@ def test_syntax_graph_recovers_prefix_and_postfix_parent_roles() -> None:
     ]
 
 
+def test_operation_router_exposes_renderer_invariant_effect_roles() -> None:
+    from ettr_il_v2_surface import SurfaceRenderer, call, integer, symbol
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+    from token_native_syntax_router import (
+        CoverVerifiedTokenNativeDocumentMask,
+        TokenNativeOperationRouter,
+    )
+
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    operator = symbol("x0000000000000001")
+    ast = call(
+        14,
+        integer(2),
+        call(1, call(3, operator, integer(0), call(0))),
+        call(
+            13,
+            call(4, operator, integer(3)),
+            call(4, operator),
+        ),
+    )
+    transports = tuple(
+        codec.pack(codec.serialize(ast, renderer), width=48)
+        for renderer in (
+            SurfaceRenderer.CANONICAL_JSON,
+            SurfaceRenderer.PREFIX_SEXPR,
+            SurfaceRenderer.REVERSE_POSTFIX,
+        )
+    )
+    tokens = torch.tensor(
+        [transport.token_ids for transport in transports],
+        dtype=torch.long,
+    )
+    document_mask = CoverVerifiedTokenNativeDocumentMask(
+        codec.codebook.token_ids,
+        codec.codebook.atoms,
+        vocab_size=codec.tokenizer.get_vocab_size(),
+    )(tokens, torch.ones_like(tokens, dtype=torch.bool))
+    router = TokenNativeOperationRouter(
+        codec.codebook.token_ids,
+        vocab_size=codec.tokenizer.get_vocab_size(),
+        maximum_positions=48,
+        maximum_operations=6,
+    )
+    operation_masks, counts = router(tokens, document_mask)
+    role_masks, valid = router.effect_role_masks(
+        tokens,
+        document_mask,
+        operation_masks,
+        maximum_roles=4,
+    )
+    assert counts.tolist() == [2, 2, 2]
+    assert valid[:, :2].tolist() == [
+        [[True, True, True, False], [True, True, False, False]],
+        [[True, True, True, False], [True, True, False, False]],
+        [[True, True, True, False], [True, True, False, False]],
+    ]
+    assert role_masks.sum(-1).eq(valid.to(torch.long)).all()
+
+
 def test_syntax_graph_schedule_is_identifier_rename_equivariant() -> None:
     from ettr_il_v2_surface import SurfaceRenderer, call, integer, symbol
     from ettr_il_v2_token_native_surface import (

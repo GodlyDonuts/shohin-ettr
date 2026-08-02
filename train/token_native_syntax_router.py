@@ -1038,6 +1038,85 @@ class TokenNativeOperationRouter(nn.Module):
         )
         return masks, count
 
+    def effect_role_masks(
+        self,
+        tokens: torch.Tensor,
+        document_mask: torch.Tensor,
+        operation_masks: torch.Tensor,
+        *,
+        maximum_roles: int,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Bind fixed effect motors to an operation root and semantic children.
+
+        Role zero is the public operation root.  Remaining roles are its direct
+        semantic children in renderer-independent child-rank order.  No
+        ontology, declaration payload, target, or execution trace is decoded.
+        """
+
+        if (
+            tokens.ndim != 2
+            or tokens.dtype != torch.long
+            or document_mask.shape != tokens.shape
+            or document_mask.dtype != torch.bool
+            or operation_masks.ndim != 3
+            or operation_masks.shape[0] != tokens.shape[0]
+            or operation_masks.shape[2] != tokens.shape[1]
+            or operation_masks.dtype != torch.bool
+            or not isinstance(maximum_roles, int)
+            or not 2 <= maximum_roles <= MAX_NATIVE_ARITY + 1
+        ):
+            raise TokenNativeSyntaxRouterError(
+                "token-native operation effect-role input differs"
+            )
+        codes = self.inverse_codebook[tokens]
+        torch._assert_async(
+            codes.ge(0).all(),
+            "token-native operation effect roles leave the bound codebook",
+        )
+        parent, child_rank, _depth = TokenNativeSyntaxGraphEncoder._syntax_links(
+            codes,
+            document_mask,
+        )
+        positions = torch.arange(tokens.shape[1], device=tokens.device)
+        operation_present = operation_masks.any(-1)
+        operation_position = (
+            operation_masks.to(torch.long) * positions[None, None, :]
+        ).sum(-1)
+        operation_arity = codes.gather(1, operation_position).remainder(
+            CALL_STRIDE
+        )
+        torch._assert_async(
+            (
+                ~operation_present
+                | operation_arity.le(maximum_roles - 1)
+            ).all(),
+            "token-native operation exceeds effect-role capacity",
+        )
+        direct_child = (
+            document_mask[:, None, :]
+            & operation_present[:, :, None]
+            & parent[:, None, :].eq(operation_position[:, :, None])
+        )
+        ranks = torch.arange(maximum_roles - 1, device=tokens.device)
+        child_masks = direct_child[:, :, None, :] & child_rank[
+            :, None, None, :
+        ].eq(ranks[None, None, :, None])
+        masks = torch.cat((operation_masks[:, :, None, :], child_masks), dim=2)
+        valid = masks.any(-1)
+        expected = torch.cat(
+            (
+                operation_present[:, :, None],
+                ranks[None, None, :].lt(operation_arity[:, :, None])
+                & operation_present[:, :, None],
+            ),
+            dim=2,
+        )
+        torch._assert_async(
+            masks.sum(-1).eq(expected.to(torch.long)).all(),
+            "token-native operation effect roles differ",
+        )
+        return masks, valid
+
 
 __all__ = [
     "CoverVerifiedTokenNativeDocumentMask",

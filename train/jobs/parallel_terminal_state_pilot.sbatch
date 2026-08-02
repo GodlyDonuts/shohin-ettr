@@ -52,6 +52,7 @@ TOKEN_NATIVE_OPERATION_RECURRENCE_COMMAND=${TOKEN_NATIVE_OPERATION_RECURRENCE_CO
 TOKEN_NATIVE_OPERATION_STATE_COMMAND=${TOKEN_NATIVE_OPERATION_STATE_COMMAND:-0}
 FACTORIZED_OPERATION_EFFECT_COMMAND=${FACTORIZED_OPERATION_EFFECT_COMMAND:-0}
 OPERATION_EFFECT_SET_COMMAND=${OPERATION_EFFECT_SET_COMMAND:-0}
+OPERATION_EFFECT_ROLE_ANCHORS=${OPERATION_EFFECT_ROLE_ANCHORS:-0}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
 for path in "$CODE_ROOT" "$RELEASE_ROOT" "$ETTR_DATA_ROOT" \
@@ -212,6 +213,16 @@ if [[ "$OPERATION_EFFECT_SET_COMMAND" == 1 ]]; then
   residual_args+=(--operation-effect-set-command)
 elif [[ "$OPERATION_EFFECT_SET_COMMAND" != 0 ]]; then
   echo "terminal-state operation effect set setting differs" >&2
+  exit 2
+fi
+if [[ "$OPERATION_EFFECT_ROLE_ANCHORS" == 1 ]]; then
+  [[ "$OPERATION_EFFECT_SET_COMMAND" == 1 ]] || {
+    echo "operation effect role anchors require operation effect sets" >&2
+    exit 2
+  }
+  residual_args+=(--operation-effect-role-anchors)
+elif [[ "$OPERATION_EFFECT_ROLE_ANCHORS" != 0 ]]; then
+  echo "terminal-state operation effect role-anchor setting differs" >&2
   exit 2
 fi
 

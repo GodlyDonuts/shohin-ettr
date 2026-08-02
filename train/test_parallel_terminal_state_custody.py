@@ -117,6 +117,29 @@ def test_terminal_schema_tracks_residual_architecture() -> None:
         "shohin-ettr-parallel-terminal-state-report-v9",
         "shohin-ettr-parallel-terminal-state-metric-v9",
     )
+    effect_set = (
+        False,
+        True,
+        True,
+        True,
+        False,
+        True,
+        True,
+        True,
+        True,
+        False,
+        True,
+    )
+    assert _run_schemas(*effect_set) == (
+        "shohin-ettr-parallel-terminal-state-contract-v12",
+        "shohin-ettr-parallel-terminal-state-report-v12",
+        "shohin-ettr-parallel-terminal-state-metric-v12",
+    )
+    assert _run_schemas(*effect_set, True) == (
+        "shohin-ettr-parallel-terminal-state-contract-v13",
+        "shohin-ettr-parallel-terminal-state-report-v13",
+        "shohin-ettr-parallel-terminal-state-metric-v13",
+    )
 
 
 def test_terminal_run_receipt_rejects_mutation(tmp_path: Path) -> None:

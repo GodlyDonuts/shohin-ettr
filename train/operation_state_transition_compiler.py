@@ -104,6 +104,7 @@ class OperationStateTransitionCompiler(ParallelTerminalStateCompiler):
         torch.Tensor,
         torch.Tensor,
         torch.Tensor,
+        tuple[torch.Tensor, torch.Tensor] | None,
         torch.Tensor,
         torch.Tensor,
         torch.Tensor,
@@ -162,6 +163,23 @@ class OperationStateTransitionCompiler(ParallelTerminalStateCompiler):
             command_tokens,
             document_mask,
         )
+        effect_anchors = None
+        effect_role_count = int(getattr(self, "effect_role_count", 0))
+        if effect_role_count:
+            role_masks, role_valid = self.command_operation_router.effect_role_masks(
+                command_tokens,
+                document_mask,
+                operation_masks,
+                maximum_roles=effect_role_count,
+            )
+            effect_anchors = (
+                torch.einsum(
+                    "borl,bld->bord",
+                    role_masks.to(command.dtype),
+                    command,
+                ),
+                role_valid,
+            )
         return (
             command,
             document_mask,
@@ -169,6 +187,7 @@ class OperationStateTransitionCompiler(ParallelTerminalStateCompiler):
             initial_memory,
             operation_masks,
             operation_count,
+            effect_anchors,
         )
 
     def forward_with_operation_states(
@@ -189,6 +208,7 @@ class OperationStateTransitionCompiler(ParallelTerminalStateCompiler):
             _initial_memory,
             operation_masks,
             operation_count,
+            effect_anchors,
         ) = self._prepare_public_context(
             state,
             command_hidden=command_hidden,
@@ -226,6 +246,14 @@ class OperationStateTransitionCompiler(ParallelTerminalStateCompiler):
                 current,
                 updated_slots,
                 hard=hard,
+                effect_anchors=(
+                    (
+                        effect_anchors[0][:, operation_index],
+                        effect_anchors[1][:, operation_index],
+                    )
+                    if effect_anchors is not None
+                    else None
+                ),
             )
             candidate = self.apply_atomic_edits(
                 current,
@@ -262,6 +290,23 @@ class OperationStateTransitionCompiler(ParallelTerminalStateCompiler):
             current,
             final_slots,
             hard=hard,
+            effect_anchors=(
+                (
+                    (
+                        effect_anchors[0]
+                        * effect_anchors[1][..., None].to(
+                            effect_anchors[0].dtype
+                        )
+                    ).sum(1)
+                    / effect_anchors[1]
+                    .sum(1, keepdim=False)[..., None]
+                    .clamp_min(1)
+                    .to(effect_anchors[0].dtype),
+                    effect_anchors[1].any(1),
+                )
+                if effect_anchors is not None
+                else None
+            ),
         )
         terminal = self.apply_atomic_edits(
             current,
@@ -437,7 +482,9 @@ class FactorizedOperationStateTransitionCompiler(
         slots: torch.Tensor,
         *,
         hard: bool,
+        effect_anchors: tuple[torch.Tensor, torch.Tensor] | None = None,
     ) -> AtomicTypedEdits:
+        del effect_anchors
         base = super()._atomic_edits_from_slots(state, slots, hard=False)
         pooled = slots.mean(1)
         node_count = self.node_edit_count_head(pooled).float().softmax(-1)
@@ -601,12 +648,22 @@ class OperationEffectSetCompiler(OperationStateTransitionCompiler):
         self,
         *args,
         maximum_effects: int = 16,
+        public_role_anchors: bool = False,
         **kwargs,
     ) -> None:  # type: ignore[no-untyped-def]
         super().__init__(*args, **kwargs)
-        if not isinstance(maximum_effects, int) or not 1 <= maximum_effects <= 64:
+        if (
+            not isinstance(maximum_effects, int)
+            or not 1 <= maximum_effects <= 64
+            or not isinstance(public_role_anchors, bool)
+            or (public_role_anchors and maximum_effects % 2)
+        ):
             raise TheoryReactorError("operation effect set geometry differs")
         self.maximum_effects = maximum_effects
+        self.public_role_anchors = public_role_anchors
+        self.effect_role_count = (
+            maximum_effects // 2 if public_role_anchors else 0
+        )
         self.effect_queries = nn.Parameter(torch.empty(maximum_effects, self.width))
         self.effect_input_norm = nn.LayerNorm(self.width)
         self.effect_self_attention = nn.MultiheadAttention(
@@ -650,7 +707,11 @@ class OperationEffectSetCompiler(OperationStateTransitionCompiler):
         self.effect_root_head = nn.Linear(self.width, self.config.num_slots)
         nn.init.normal_(self.effect_queries, std=0.02)
 
-    def _effect_slots(self, slots: torch.Tensor) -> torch.Tensor:
+    def _effect_slots(
+        self,
+        slots: torch.Tensor,
+        effect_anchors: tuple[torch.Tensor, torch.Tensor] | None,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         batch = slots.shape[0]
         effects = self.effect_queries.to(slots.dtype).unsqueeze(0).expand(
             batch,
@@ -658,6 +719,31 @@ class OperationEffectSetCompiler(OperationStateTransitionCompiler):
             -1,
         )
         effects = effects + slots.mean(1, keepdim=True)
+        valid = torch.ones(
+            batch,
+            self.maximum_effects,
+            dtype=torch.bool,
+            device=slots.device,
+        )
+        if self.public_role_anchors:
+            if effect_anchors is None:
+                raise TheoryReactorError("public effect-role anchors are absent")
+            anchors, role_valid = effect_anchors
+            if (
+                anchors.shape
+                != (batch, self.effect_role_count, self.width)
+                or role_valid.shape != (batch, self.effect_role_count)
+                or role_valid.dtype != torch.bool
+            ):
+                raise TheoryReactorError("public effect-role anchors differ")
+            effect_role = torch.arange(
+                self.maximum_effects,
+                device=slots.device,
+            ).div(2, rounding_mode="floor")
+            effects = effects + anchors.index_select(1, effect_role).to(slots.dtype)
+            valid = role_valid.index_select(1, effect_role)
+        elif effect_anchors is not None:
+            raise TheoryReactorError("unexpected public effect-role anchors")
         normalized = self.effect_input_norm(effects)
         attended, _ = self.effect_self_attention(
             normalized,
@@ -674,7 +760,7 @@ class OperationEffectSetCompiler(OperationStateTransitionCompiler):
         )
         effects = effects + attended
         effects = effects + self.effect_ff(self.effect_ff_norm(effects))
-        return self.effect_output_norm(effects)
+        return self.effect_output_norm(effects), valid
 
     @staticmethod
     def _dense_actions(*masses: torch.Tensor) -> torch.Tensor:
@@ -691,10 +777,18 @@ class OperationEffectSetCompiler(OperationStateTransitionCompiler):
         slots: torch.Tensor,
         *,
         hard: bool,
+        effect_anchors: tuple[torch.Tensor, torch.Tensor] | None = None,
     ) -> AtomicTypedEdits:
         base = super()._atomic_edits_from_slots(state, slots, hard=False)
-        effects = self._effect_slots(slots)
-        kind = self.effect_kind_head(effects).float().softmax(-1)
+        effects, effect_valid = self._effect_slots(slots, effect_anchors)
+        kind_logits = self.effect_kind_head(effects).float()
+        forced_noop = torch.full_like(kind_logits, -1e9)
+        forced_noop[..., EFFECT_NOOP] = 0.0
+        kind = torch.where(
+            effect_valid[..., None],
+            kind_logits,
+            forced_noop,
+        ).softmax(-1)
         value_code = self.effect_value_head(effects).float().softmax(-1)
         type_index = self.effect_type_head(effects).float().softmax(-1)
 

@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 09:48 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 10:17 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -203,9 +203,18 @@
 > two-update V100 smoke is mechanically clean and the exact corpus audit proves
 > that 16 slots cover the measured maximum of 10 effects. The first long job
 > `726981` exposed only an empty trailing operation-rank handling bug and
-> produced zero model evidence. Replacement job `726984` is the active exact
-> 1,000-update gate from corrected immutable source; it has not yet produced a
-> reasoning result.
+> produced zero model evidence. Corrected job `726984` then completed 1,000
+> updates cleanly, but independent held-out job `726988` proved total hard-kind
+> collapse: all `37,888/37,888` predicted effects are NOOP, complete effect-set,
+> dense-edit, operation-state, terminal-state, positive entity, and positive
+> relation-link exactness are all zero, and fully autonomous WORLD/COMMAND stay
+> exactly zero before and after training. Anonymous permutation-symmetric
+> effect queries are closed. The deterministic router selects contract v13:
+> bind two motors to each explicit public AST role (operation root followed by
+> direct semantic children), force absent roles to NOOP, audit the full corpus
+> for eight-role capacity, then require a two-update mechanical smoke before
+> one bounded 1,000-update causal gate. No seed, width, duration, or duplicate
+> arm of contract v12 is authorized.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -24347,3 +24356,42 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finish_726984_measure_initial_to_final_deltas_and_launch_only_the_mechanism_distinct_branch_selected_by_the_sealed_router`.
+
+- **2026-08-02 09:56--10:17 EDT** -- **The anonymous effect set collapses
+  completely; contract v13 binds motors to public AST roles.**
+
+  Corrected V100 job `726984` completed all 1,000 updates cleanly on `evc1` in
+  23m06s. It used exact source `16455f3`, sealed its output with SHA256SUMS
+  SHA-256
+  `1d1688b5fa027111f79e8eb945f4c924c5e5d6bd54eff6efe774b69e7545d89f`,
+  and preserved distinct initial/final compiler hashes. Independent
+  initial-to-final V100-16GB evaluator `726988` completed on `evc1` in 2m38s.
+  Its immutable report has file SHA-256
+  `63c49577615be4ebf88d0cb9e72cf6ec841e4decc91799abf0e9a1fd3dc78c6c`
+  and contract SHA-256
+  `7d50ddb745ff34e91dd6b28b4f76830008ed2e927d3649095c1e340666a3fe6a`;
+  the local copy and deterministic route are preserved under
+  `artifacts/r12/ettr_operation_effect_set_eval_u1000_a31_train11_eval13_v10016_3aefc3e_r1`.
+
+  The result is a decisive collapse, not a request for more training. Before
+  fitting, hard kinds occupy classes 5 (`22,280`), 8 (`15,583`), and 10
+  (`25`). After fitting, all `37,888/37,888` motors emit NOOP. Complete
+  effect-set, dense-edit, operation-state, terminal-state, positive entity,
+  and positive relation-link exactness remain zero. Fully autonomous factual,
+  WORLD strict, and COMMAND strict are all zero before and after. The router
+  selects `public_ast_role_anchored_effect_queries` exactly as preregistered.
+
+  Contract v13 is code-complete locally. It assigns role 0 to each visible
+  public operation root and roles 1 onward to its direct semantic children in
+  renderer-invariant child-rank order. Two motors attach to every role;
+  absent roles are forced to NOOP. It reads no ontology, declaration payload,
+  QUERY, target, answer, or execution trace. A new exact full-corpus audit
+  measures the required role capacity before release. The architecture,
+  trainer, evaluator, job wrapper, custody, renderer-invariance, invalid-role,
+  gradient, and audit gates pass 73 tests with one intentional skip; Ruff,
+  byte compilation, Bash syntax, and diff checks are clean. The next actions
+  are an immutable Stokes capacity audit and an isolated two-update GPU smoke.
+  A 1,000-update fit remains prohibited until both mechanical gates pass.
+
+  Decision:
+  `close_anonymous_effect_queries_and_test_only_the_role_anchored_symmetry_break_after_exact_capacity_and_smoke_gates`.

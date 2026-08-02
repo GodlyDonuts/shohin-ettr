@@ -120,6 +120,12 @@ OPERATION_EFFECT_SET_CONTRACT_SCHEMA = (
 OPERATION_EFFECT_SET_REPORT_SCHEMA = (
     "shohin-ettr-parallel-terminal-state-report-v12"
 )
+ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-contract-v13"
+)
+ROLE_ANCHORED_EFFECT_SET_REPORT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-report-v13"
+)
 CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v3"
 REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v3"
 CAUSAL_DELTA_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v2"
@@ -202,6 +208,10 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--operation-effect-set-command",
         action="store_true",
     )
+    parser.add_argument(
+        "--operation-effect-role-anchors",
+        action="store_true",
+    )
     parser.add_argument("--atomic-action-weight", type=float, default=1.0)
     parser.add_argument(
         "--required-device-class",
@@ -225,6 +235,11 @@ def _validate_args(args: argparse.Namespace) -> None:
     operation_effect_set = getattr(
         args,
         "operation_effect_set_command",
+        False,
+    )
+    operation_effect_role_anchors = getattr(
+        args,
+        "operation_effect_role_anchors",
         False,
     )
     paths = (
@@ -304,6 +319,7 @@ def _validate_args(args: argparse.Namespace) -> None:
         or (factorized_operation_effect and not operation_state)
         or (operation_effect_set and not operation_state)
         or (operation_effect_set and factorized_operation_effect)
+        or (operation_effect_role_anchors and not operation_effect_set)
         or args.output.exists()
         or args.output.is_symlink()
         or not args.output.parent.is_dir()
@@ -1194,6 +1210,7 @@ def _run_schemas(
     token_native_operation_state_command: bool = False,
     factorized_operation_effect_command: bool = False,
     operation_effect_set_command: bool = False,
+    operation_effect_role_anchors: bool = False,
 ) -> tuple[str, str, str]:
     if operation_effect_set_command:
         if (
@@ -1204,9 +1221,25 @@ def _run_schemas(
                 "operation effect set architecture schema differs"
             )
         return (
-            OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
-            OPERATION_EFFECT_SET_REPORT_SCHEMA,
-            "shohin-ettr-parallel-terminal-state-metric-v12",
+            (
+                ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA
+                if operation_effect_role_anchors
+                else OPERATION_EFFECT_SET_CONTRACT_SCHEMA
+            ),
+            (
+                ROLE_ANCHORED_EFFECT_SET_REPORT_SCHEMA
+                if operation_effect_role_anchors
+                else OPERATION_EFFECT_SET_REPORT_SCHEMA
+            ),
+            (
+                "shohin-ettr-parallel-terminal-state-metric-v13"
+                if operation_effect_role_anchors
+                else "shohin-ettr-parallel-terminal-state-metric-v12"
+            ),
+        )
+    if operation_effect_role_anchors:
+        raise ParallelTerminalStatePilotError(
+            "operation effect role-anchor architecture schema differs"
         )
     if factorized_operation_effect_command:
         if not token_native_operation_state_command:
@@ -1435,6 +1468,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.token_native_operation_state_command,
         args.factorized_operation_effect_command,
         args.operation_effect_set_command,
+        args.operation_effect_role_anchors,
     )
     if not torch.cuda.is_available():
         raise ParallelTerminalStatePilotError(
@@ -1522,6 +1556,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             if args.token_native_command_mask
             else None
         ),
+        **(
+            {"public_role_anchors": args.operation_effect_role_anchors}
+            if args.operation_effect_set_command
+            else {}
+        ),
     ).to(device=device, dtype=next(model.parameters()).dtype)
     compiler_parameters = sum(
         parameter.numel() for parameter in compiler.parameters()
@@ -1607,6 +1646,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "operation_effect_set_command": (
                     args.operation_effect_set_command
                 ),
+                "operation_effect_role_anchors": (
+                    args.operation_effect_role_anchors
+                ),
                 "operation_effect_slots": (
                     compiler.maximum_effects
                     if isinstance(compiler, OperationEffectSetCompiler)
@@ -1672,6 +1714,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "effect_set_matching": (
                     "detached-sinkhorn-typed-bipartite"
                     if args.operation_effect_set_command
+                    else None
+                ),
+                "effect_set_role_anchors": (
+                    "public-operation-root-and-semantic-children-two-motors-per-role"
+                    if args.operation_effect_role_anchors
                     else None
                 ),
             },

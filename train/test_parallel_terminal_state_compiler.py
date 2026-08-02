@@ -19,6 +19,7 @@ from parallel_terminal_state_compiler import (
     ParallelTerminalStateReactor,
 )
 from operation_state_transition_compiler import (
+    EFFECT_NOOP,
     FactorizedOperationStateTransitionCompiler,
     OperationEffectSetCompiler,
     OperationStateTransitionCompiler,
@@ -489,6 +490,62 @@ def test_operation_state_compiler_applies_each_public_operation() -> None:
     assert bool(gradient.isfinite().all())
 
 
+def test_role_anchored_effect_compiler_runs_complete_public_trace() -> None:
+    from ettr_il_v2_surface import SurfaceRenderer, call, integer, symbol
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+
+    config = replace(_config(), max_steps=16)
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    operator = symbol("x0000000000000001")
+    ast = call(
+        14,
+        integer(2),
+        call(1, call(3, operator, integer(0), call(0))),
+        call(13, call(4, operator), call(4, operator)),
+    )
+    transports = [
+        codec.pack(codec.serialize(ast, renderer), width=32)
+        for renderer in SurfaceRenderer
+    ]
+    tokens = torch.tensor(
+        [transport.token_ids for transport in transports],
+        dtype=torch.long,
+    )
+    compiler = OperationEffectSetCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        relation_width=16,
+        maximum_effects=16,
+        public_role_anchors=True,
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_codebook_atoms=codec.codebook.atoms,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+    hidden = torch.randn(4, 32, config.d_model)
+    terminal, trace = compiler.forward_with_operation_states(
+        _state(config, batch=4),
+        command_hidden=hidden,
+        command_lexical=torch.randn_like(hidden),
+        command_tokens=tokens,
+        command_attention_mask=torch.ones_like(tokens, dtype=torch.bool),
+        steps=8,
+        hard=False,
+    )
+    assert terminal.step == 8
+    assert trace.operation_mask.sum(-1).eq(2).all()
+    for edits in trace.operation_edits[:2]:
+        assert edits.effect_kind is not None
+        assert edits.effect_kind[:, 4:].argmax(-1).eq(EFFECT_NOOP).all()
+    terminal.value_probabilities.square().mean().backward()
+    assert compiler.effect_kind_head.weight.grad is not None
+    assert bool(compiler.effect_kind_head.weight.grad.isfinite().all())
+
+
 def test_factorized_operation_compiler_enforces_hard_effect_counts() -> None:
     from ettr_il_v2_token_native_surface import (
         DEFAULT_TOKENIZER_PATH,
@@ -705,6 +762,51 @@ def test_operation_effect_set_promotes_bfloat16_pointers() -> None:
     assert edits.effect_node_pointer is not None
     assert edits.effect_node_pointer.dtype == torch.float32
     assert edits.node_action.dtype == torch.float32
+
+
+def test_operation_effect_set_anchors_two_motors_per_public_role() -> None:
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+
+    config = replace(_config(), max_steps=16)
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    compiler = OperationEffectSetCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        relation_width=16,
+        maximum_effects=6,
+        public_role_anchors=True,
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_codebook_atoms=codec.codebook.atoms,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+    anchors = torch.randn(2, 3, compiler.width, requires_grad=True)
+    valid = torch.tensor(
+        [[True, True, False], [True, False, False]],
+        dtype=torch.bool,
+    )
+    edits = compiler._atomic_edits_from_slots(
+        _state(config),
+        torch.randn(2, config.num_slots, compiler.width),
+        hard=False,
+        effect_anchors=(anchors, valid),
+    )
+    assert edits.effect_kind is not None
+    predicted_kind = edits.effect_kind.argmax(-1)
+    assert predicted_kind[0, 4:].tolist() == [EFFECT_NOOP, EFFECT_NOOP]
+    assert predicted_kind[1, 2:].tolist() == [
+        EFFECT_NOOP,
+        EFFECT_NOOP,
+        EFFECT_NOOP,
+        EFFECT_NOOP,
+    ]
+    edits.effect_kind[:, :2, 1:].sum().backward()
+    assert anchors.grad is not None
+    assert bool(anchors.grad[:, 0].abs().sum().gt(0))
 
 
 def test_syntax_routed_atomic_compiler_ignores_transport_cover() -> None:

@@ -398,3 +398,55 @@ and payload SHA-256
 The sealed 16-slot compiler therefore has measured capacity headroom. This
 released the preregistered 1,000-update job `726981`; it does not relax any
 local-effect or source-deleted causal advancement gate.
+
+## Contract-v12 result and contract-v13 role-anchor route
+
+The first released long run `726981` found an empty trailing operation-rank
+padding defect and wrote no scientific artifact. The exact replacement
+`726984` completed all 1,000 updates from immutable source `16455f3` and sealed
+its output with SHA256SUMS SHA-256
+`1d1688b5fa027111f79e8eb945f4c924c5e5d6bd54eff6efe774b69e7545d89f`.
+Independent held-out V100-16GB evaluator `726988` then compared immutable
+initial and final compiler weights on data seed 13. Its sealed report has file
+SHA-256 `63c49577615be4ebf88d0cb9e72cf6ec841e4decc91799abf0e9a1fd3dc78c6c`.
+
+The result selects preregistered outcome 2 decisively. Before training, the
+37,888 hard motor predictions occupied only effect kinds 5, 8, and 10. After
+training, every one is kind 0/NOOP. Complete effect-set, complete dense-edit,
+operation-state, terminal-state, positive entity, and positive relation-link
+exactness are all zero before and after. The apparent relation-action rise
+from 26.56% to 67.57%, root rise from 57.26% to 100%, and unchanged roughly
+78% disposition score are negative/default-prior effects, not learned edits.
+Fully autonomous factual accuracy and both source-deleted strict axes remain
+exactly zero. This closes anonymous permutation-symmetric effect queries;
+loss reduction, extra seeds, width, duration, or more free motors cannot
+reopen them.
+
+Contract v13 breaks only the failed symmetry. Role 0 is the visible public
+operation root. Roles 1 onward are direct semantic children in the exact
+renderer-invariant child-rank order reconstructed by the public AST. Exactly
+two typed-effect motors attach to each role. Invalid or absent roles are
+mechanically forced to NOOP. The mechanism does not decode ontology,
+declaration payload, QUERY, target, assessor trace, answer, or host semantics;
+state operands and the fixed atomic algebra remain unchanged. A full-corpus
+CPU audit must first prove that eight roles cover every operation. Then a
+two-update isolated GPU smoke must prove finite hard forward/backward,
+nonempty role gradients, evaluator compatibility, and custody. Only those two
+mechanical gates release one 1,000-update fit.
+
+The post-v13 failure tree is frozen in advance:
+
+1. Exact local effects, terminal state, and both strict axes improve: replicate
+   the same contract on a fresh population before promotion.
+2. Role-local kinds remain collapsed or positive effects remain zero: reject
+   two-motors-per-role and replace categorical motor emission with a
+   role-conditioned typed transducer whose action cardinality is explicit.
+3. Entity effects become exact while positive links fail: apply entity motors
+   first and bind relation/root motors against the resulting post-entity
+   state.
+4. Local effects and terminal state improve while strict axes remain zero:
+   freeze v13 and run the crossed program/state sufficiency isolation; do not
+   spend on another state fit.
+5. No exact local or causal metric moves: close the effect-set state quotient
+   and advance to an architecture that compiles explicit public operation
+   transitions rather than predicting assessor-derived deltas.

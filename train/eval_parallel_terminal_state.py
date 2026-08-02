@@ -67,6 +67,8 @@ from train_parallel_terminal_state_pilot import (
     OPERATION_RECURRENT_ATOMIC_REPORT_SCHEMA as PILOT_OPERATION_REPORT_SCHEMA,
     OPERATION_EFFECT_SET_CONTRACT_SCHEMA as PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
     OPERATION_EFFECT_SET_REPORT_SCHEMA as PILOT_OPERATION_EFFECT_SET_REPORT_SCHEMA,
+    ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA as PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
+    ROLE_ANCHORED_EFFECT_SET_REPORT_SCHEMA as PILOT_ROLE_ANCHORED_EFFECT_SET_REPORT_SCHEMA,
     OPERATION_STATE_ATOMIC_CONTRACT_SCHEMA as PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
     OPERATION_STATE_ATOMIC_REPORT_SCHEMA as PILOT_OPERATION_STATE_REPORT_SCHEMA,
     REPORT_SCHEMA as PILOT_REPORT_SCHEMA,
@@ -277,6 +279,9 @@ def _load_terminal_compiler(
         PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA: (
             PILOT_OPERATION_EFFECT_SET_REPORT_SCHEMA
         ),
+        PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA: (
+            PILOT_ROLE_ANCHORED_EFFECT_SET_REPORT_SCHEMA
+        ),
     }
     run_schema = contract.get("schema")
     if (
@@ -315,6 +320,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
         PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
         PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CONTRACT_SCHEMA,
         PILOT_CAUSAL_DELTA_CONTRACT_SCHEMA,
     ):
@@ -341,6 +347,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
         PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
         PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
     }
     lexical_command = contract.get("schema") in {
         PILOT_LEXICAL_CONTRACT_SCHEMA,
@@ -351,6 +358,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
         PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
         PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
     }
     token_native_command_mask = contract.get("schema") in {
         PILOT_SYNTAX_CONTRACT_SCHEMA,
@@ -360,6 +368,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
         PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
         PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
+        PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
     }
     token_native_occurrence_command = (
         contract.get("schema") == PILOT_OCCURRENCE_CONTRACT_SCHEMA
@@ -372,6 +381,7 @@ def _load_terminal_compiler(
             PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
             PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
             PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
+            PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         }
     )
     token_native_declaration_binding_command = (
@@ -382,6 +392,7 @@ def _load_terminal_compiler(
             PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
             PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
             PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
+            PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         }
     )
     cover_verified_command_mask = (
@@ -392,6 +403,7 @@ def _load_terminal_compiler(
             PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
             PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
             PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
+            PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         }
     )
     token_native_operation_recurrence_command = (
@@ -401,6 +413,7 @@ def _load_terminal_compiler(
             PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
             PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
             PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
+            PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         }
     )
     token_native_operation_state_command = (
@@ -409,6 +422,7 @@ def _load_terminal_compiler(
             PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
             PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA,
             PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
+            PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         }
     )
     factorized_operation_effect_command = (
@@ -416,7 +430,15 @@ def _load_terminal_compiler(
         == PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA
     )
     operation_effect_set_command = (
-        contract.get("schema") == PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA
+        contract.get("schema")
+        in {
+            PILOT_OPERATION_EFFECT_SET_CONTRACT_SCHEMA,
+            PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
+        }
+    )
+    operation_effect_role_anchors = (
+        contract.get("schema")
+        == PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA
     )
     if residual_edits != (architecture.get("sparse_residual_edits") is True):
         raise ParallelTerminalStateEvaluationError(
@@ -444,6 +466,7 @@ def _load_terminal_compiler(
             factorized_operation_effect_command
         ),
         "operation_effect_set_command": operation_effect_set_command,
+        "operation_effect_role_anchors": operation_effect_role_anchors,
         "token_native_syntax_graph_command": token_native_syntax_graph_command,
     }
     if any(architecture.get(name, False) is not value for name, value in expected_flags.items()):
@@ -478,6 +501,12 @@ def _load_terminal_compiler(
             or objective.get("unordered_typed_effect_set") is not True
             or objective.get("effect_set_matching")
             != "detached-sinkhorn-typed-bipartite"
+            or objective.get("effect_set_role_anchors")
+            != (
+                "public-operation-root-and-semantic-children-two-motors-per-role"
+                if operation_effect_role_anchors
+                else None
+            )
         ):
             raise ParallelTerminalStateEvaluationError(
                 "operation effect set contract differs"
@@ -527,6 +556,11 @@ def _load_terminal_compiler(
         ),
         **(
             {"maximum_effects": operation_effect_slots}
+            if operation_effect_set_command
+            else {}
+        ),
+        **(
+            {"public_role_anchors": operation_effect_role_anchors}
             if operation_effect_set_command
             else {}
         ),

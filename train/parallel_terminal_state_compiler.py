@@ -615,6 +615,7 @@ class ParallelTerminalStateCompiler(nn.Module):
         slots: torch.Tensor,
         *,
         hard: bool,
+        effect_anchors: tuple[torch.Tensor, torch.Tensor] | None = None,
     ) -> AtomicTypedEdits:
         if (
             not self.atomic_edits
@@ -626,6 +627,7 @@ class ParallelTerminalStateCompiler(nn.Module):
             or self.disposition_action_head is None
         ):
             raise TheoryReactorError("atomic typed-edit path differs")
+        del effect_anchors
         batch = slots.shape[0]
         node_action = self.node_action_head(slots).float().softmax(-1)
         value_code = self.value_head(slots).float().softmax(-1)
