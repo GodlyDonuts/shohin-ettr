@@ -23568,3 +23568,42 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_flat_2530_way_macro_selection_preserve_the_15k_delayed_emergence_control_and_require_the_next_program_identity_to_remove_class_imbalance_without_reintroducing_stepwise_hybrids`.
+
+- **2026-08-02 03:13--03:49 EDT** -- **The campaign now uses an explicit
+  failure tree; valid-program projection is repaired and a public-syntax
+  identifiability audit is implemented.**
+
+  Commit `1a0cd1c` added a zero-parameter decoder that scores every complete
+  train-only opcode skeleton by mean per-step log probability, selects one
+  skeleton globally, and leaves all dynamic operands plus the exact executor
+  unchanged. Its first V100 submission `725590` failed before model loading
+  because the minimal immutable runtime omitted
+  `pipeline/ettr_il_v2_token_native_surface.py`. A corrected runtime was built
+  by overlaying every `00eefb9..1a0cd1c` tracked change onto the previously
+  complete syntax-graph runtime. Job `725592` then reached model execution and
+  exposed a second implementation defect: the newly registered program table
+  remained on CPU after wrapping a compiler already resident on CUDA. Neither
+  job produced a scientific result. The wrapper now creates its buffers on
+  the wrapped compiler's device; a CUDA-conditional regression test protects
+  that ordering. A fresh immutable runtime and exact resubmission are required
+  after this change is committed.
+
+  `pipeline/audit_ettr_public_opcode_identifiability.py` is the orthogonal
+  CPU lane. It removes deterministic cover, parses prefix/postfix and forward/
+  reverse child order into one canonical public tree, alpha-renames opaque
+  identifiers, verifies exact four-renderer orbits, and measures train-fit,
+  development Bayes ceiling, and train-to-development modal accuracy for
+  COMMAND-only and WORLD+COMMAND signatures at three abstraction levels.
+  Assessor traces are labels only; QUERY and answer fields are never read.
+  `docs/research/R12_OPCODE_PROGRAM_FAILURE_TREE.md` binds all combinations
+  of the projection, identifiability, and 15k outcomes to a specific successor
+  or rejection. Forty-two focused projection/audit/evaluator tests pass with
+  one CUDA-only test skipped locally; Ruff, byte compilation, Bash syntax, and
+  diff checks are clean.
+
+  The uninterrupted V100 trajectory `725574` remains healthy past update
+  11,100 with finite gradients and falling but noisy loss. It remains the sole
+  direct delayed-emergence control and must not be interrupted.
+
+  Decision:
+  `run_the_three_orthogonal_gates_then_route_immediately_to_global_program_training_opcode_conditioned_operands_or_a_new_public_edit_ontology_without_duplicate_seed_spam`.

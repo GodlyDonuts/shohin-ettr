@@ -210,13 +210,16 @@ class RegistryProjectedAddressedScheduleCompiler(nn.Module):
         self.token_native_syntax_graph_command = bool(
             getattr(compiler, "token_native_syntax_graph_command", False)
         )
+        reference = next(compiler.parameters(), None)
+        device = reference.device if reference is not None else None
         table = torch.zeros(
             (len(programs), config.max_steps),
             dtype=torch.long,
+            device=device,
         )
         step_mask = torch.zeros_like(table, dtype=torch.bool)
         for index, program in enumerate(programs):
-            table[index, : len(program)] = torch.tensor(program)
+            table[index, : len(program)] = torch.tensor(program, device=device)
             step_mask[index, : len(program)] = True
         self.register_buffer("opcode_program_table", table, persistent=False)
         self.register_buffer(

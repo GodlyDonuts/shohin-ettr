@@ -578,6 +578,23 @@ def test_opcode_program_projection_wrapper_adds_no_learned_parameters() -> None:
         )
 
 
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA is unavailable")
+def test_opcode_program_projection_wrapper_inherits_compiler_device() -> None:
+    config = _config()
+    base = ParallelAddressedTransactionCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+    ).cuda()
+    projected = RegistryProjectedAddressedScheduleCompiler(
+        base,
+        ((1, 1, 6), (1, 3, 6)),
+    )
+    assert projected.opcode_program_table.device.type == "cuda"
+    assert projected.opcode_program_step_mask.device.type == "cuda"
+
+
 def test_pointer_masks_require_grounded_slot_scores() -> None:
     with pytest.raises(
         TheoryReactorError,
