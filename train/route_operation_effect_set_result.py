@@ -19,6 +19,7 @@ WRITE_LINK_RAIL_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v15"
 RAIL_LOCAL_EFFECT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v16"
 POST_WRITE_LINK_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v17"
 OPERATION_FAMILY_GATE_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v18"
+OPERATION_FAMILY_ISLAND_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v19"
 
 
 class OperationEffectRouteError(RuntimeError):
@@ -146,6 +147,7 @@ def _contract_schema(
         RAIL_LOCAL_EFFECT_SCHEMA,
         POST_WRITE_LINK_SCHEMA,
         OPERATION_FAMILY_GATE_SCHEMA,
+        OPERATION_FAMILY_ISLAND_SCHEMA,
     }:
         raise OperationEffectRouteError("terminal state effect contract differs")
     return str(schema)
@@ -242,6 +244,23 @@ def route_result(
             "the exclusive architecture is correct but its family controller is "
             "not yet exact; freeze rail payloads and isolate family acquisition"
         )
+    elif contract_schema == OPERATION_FAMILY_ISLAND_SCHEMA:
+        if operation_family is None:
+            raise OperationEffectRouteError(
+                "operation family island result lacks family exactness"
+            )
+        if operation_family >= 0.9:
+            route = "joint_operation_family_rail_release"
+            reason = (
+                "the isolated public family controller crossed 90%; retain its "
+                "weights and release joint rail payload acquisition"
+            )
+        else:
+            route = "reject_public_operation_family_controller"
+            reason = (
+                "the isolated public family controller failed its 90% held-out "
+                "release gate; do not spend on joint v18 payload training"
+            )
     elif noop_share >= 0.9 or dominant_share >= 0.9:
         if contract_schema == ROLE_ANCHORED_SCHEMA:
             route = "explicit_effect_cardinality_gate"

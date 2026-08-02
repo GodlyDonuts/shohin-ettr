@@ -141,6 +141,12 @@ OPERATION_FAMILY_GATE_CONTRACT_SCHEMA = (
     "shohin-ettr-parallel-terminal-state-contract-v18"
 )
 OPERATION_FAMILY_GATE_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v18"
+OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-contract-v19"
+)
+OPERATION_FAMILY_ISLAND_REPORT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-report-v19"
+)
 CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v3"
 REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v3"
 CAUSAL_DELTA_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v2"
@@ -247,6 +253,10 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--operation-effect-family-gate",
         action="store_true",
     )
+    parser.add_argument(
+        "--operation-effect-family-island",
+        action="store_true",
+    )
     parser.add_argument("--atomic-action-weight", type=float, default=1.0)
     parser.add_argument(
         "--required-device-class",
@@ -300,6 +310,11 @@ def _validate_args(args: argparse.Namespace) -> None:
     operation_effect_family_gate = getattr(
         args,
         "operation_effect_family_gate",
+        False,
+    )
+    operation_effect_family_island = getattr(
+        args,
+        "operation_effect_family_island",
         False,
     )
     paths = (
@@ -393,6 +408,7 @@ def _validate_args(args: argparse.Namespace) -> None:
                 or operation_effect_post_write_link_binding
             )
         )
+        or (operation_effect_family_island and not operation_effect_family_gate)
         or args.output.exists()
         or args.output.is_symlink()
         or not args.output.parent.is_dir()
@@ -1169,23 +1185,14 @@ def operation_write_link_rail_loss(
     return torch.stack(parts).mean()
 
 
-def operation_effect_family_loss(
-    edits: AtomicTypedEdits,
+def operation_effect_family_targets(
     target: dict[str, torch.Tensor],
     *,
     slot_mask: torch.Tensor,
     relation_mask: torch.Tensor,
-) -> tuple[torch.Tensor, dict[str, int]]:
-    """Supervise the corpus-exact mutually exclusive NONE/WRITE/LINK family."""
+) -> torch.Tensor:
+    """Derive the corpus-exact mutually exclusive NONE/WRITE/LINK family."""
 
-    if (
-        edits.effect_family is None
-        or edits.effect_family.ndim != 2
-        or edits.effect_family.shape[-1] != OPERATION_EFFECT_FAMILY_COUNT
-    ):
-        raise ParallelTerminalStatePilotError(
-            "operation effect family prediction differs"
-        )
     labels = _operation_effect_targets(
         target,
         maximum_effects=WRITE_LINK_RAIL_EFFECT_SLOTS,
@@ -1216,8 +1223,82 @@ def operation_effect_family_loss(
         torch.full_like(family, OPERATION_EFFECT_FAMILY_LINK),
         family,
     )
+    return family
+
+
+def operation_effect_family_loss(
+    edits: AtomicTypedEdits,
+    target: dict[str, torch.Tensor],
+    *,
+    slot_mask: torch.Tensor,
+    relation_mask: torch.Tensor,
+) -> tuple[torch.Tensor, dict[str, int]]:
+    """Supervise the corpus-exact mutually exclusive NONE/WRITE/LINK family."""
+
+    if (
+        edits.effect_family is None
+        or edits.effect_family.ndim != 2
+        or edits.effect_family.shape[-1] != OPERATION_EFFECT_FAMILY_COUNT
+    ):
+        raise ParallelTerminalStatePilotError(
+            "operation effect family prediction differs"
+        )
+    family = operation_effect_family_targets(
+        target,
+        slot_mask=slot_mask,
+        relation_mask=relation_mask,
+    )
     mask = torch.ones_like(family, dtype=torch.bool)
     return _class_balanced_nll(edits.effect_family, family, mask)
+
+
+def operation_family_island_objective(
+    probabilities: tuple[torch.Tensor, ...],
+    mask: torch.Tensor,
+    oracle,
+    initial,
+    *,
+    slot_mask: torch.Tensor,
+    relation_mask: torch.Tensor,
+) -> tuple[torch.Tensor, dict[str, torch.Tensor], dict[str, dict[str, int]]]:
+    """Fit only the public operation family against oracle preceding states."""
+
+    if len(probabilities) != len(oracle.states) or not torch.equal(mask, oracle.mask):
+        raise ParallelTerminalStatePilotError(
+            "operation family island supervision geometry differs"
+        )
+    losses: list[torch.Tensor] = []
+    parts: dict[str, torch.Tensor] = {}
+    counts: dict[str, dict[str, int]] = {}
+    previous = initial
+    for rank, (family_probabilities, target) in enumerate(
+        zip(probabilities, oracle.states, strict=True)
+    ):
+        index = torch.nonzero(mask[:, rank], as_tuple=False).flatten()
+        if index.numel() == 0:
+            continue
+        previous_selected = index_typed_state(previous, index)
+        target_selected = index_typed_state(target, index)
+        labels = derive_atomic_edit_targets(previous_selected, target_selected)
+        family_target = operation_effect_family_targets(
+            labels,
+            slot_mask=slot_mask.index_select(0, index),
+            relation_mask=relation_mask.index_select(0, index),
+        )
+        loss, class_counts = _class_balanced_nll(
+            family_probabilities.index_select(0, index),
+            family_target,
+            torch.ones_like(family_target, dtype=torch.bool),
+        )
+        losses.append(loss)
+        parts[f"operation_{rank}.action.effect_family"] = loss
+        counts[f"operation_{rank}.effect_family"] = class_counts
+        previous = target
+    if not losses:
+        raise ParallelTerminalStatePilotError(
+            "operation family island supervision is empty"
+        )
+    return torch.stack(losses).mean(), parts, counts
 
 
 def atomic_typed_edit_loss(
@@ -1496,6 +1577,7 @@ def _run_schemas(
     operation_effect_rail_local_loss: bool = False,
     operation_effect_post_write_link_binding: bool = False,
     operation_effect_family_gate: bool = False,
+    operation_effect_family_island: bool = False,
 ) -> tuple[str, str, str]:
     if operation_effect_write_link_rails:
         if (
@@ -1515,13 +1597,16 @@ def _run_schemas(
                     or operation_effect_rail_local_loss
                 )
             )
+            or (operation_effect_family_island and not operation_effect_family_gate)
         ):
             raise ParallelTerminalStatePilotError(
                 "write/link rail architecture schema differs"
             )
         return (
             (
-                OPERATION_FAMILY_GATE_CONTRACT_SCHEMA
+                OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA
+                if operation_effect_family_island
+                else OPERATION_FAMILY_GATE_CONTRACT_SCHEMA
                 if operation_effect_family_gate
                 else POST_WRITE_LINK_CONTRACT_SCHEMA
                 if operation_effect_post_write_link_binding
@@ -1530,7 +1615,9 @@ def _run_schemas(
                 else WRITE_LINK_RAIL_CONTRACT_SCHEMA
             ),
             (
-                OPERATION_FAMILY_GATE_REPORT_SCHEMA
+                OPERATION_FAMILY_ISLAND_REPORT_SCHEMA
+                if operation_effect_family_island
+                else OPERATION_FAMILY_GATE_REPORT_SCHEMA
                 if operation_effect_family_gate
                 else POST_WRITE_LINK_REPORT_SCHEMA
                 if operation_effect_post_write_link_binding
@@ -1539,7 +1626,9 @@ def _run_schemas(
                 else WRITE_LINK_RAIL_REPORT_SCHEMA
             ),
             (
-                "shohin-ettr-parallel-terminal-state-metric-v18"
+                "shohin-ettr-parallel-terminal-state-metric-v19"
+                if operation_effect_family_island
+                else "shohin-ettr-parallel-terminal-state-metric-v18"
                 if operation_effect_family_gate
                 else "shohin-ettr-parallel-terminal-state-metric-v17"
                 if operation_effect_post_write_link_binding
@@ -1552,6 +1641,7 @@ def _run_schemas(
         operation_effect_rail_local_loss
         or operation_effect_post_write_link_binding
         or operation_effect_family_gate
+        or operation_effect_family_island
     ):
         raise ParallelTerminalStatePilotError(
             "rail-local effect loss requires write/link rails"
@@ -1827,6 +1917,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.operation_effect_rail_local_loss,
         args.operation_effect_post_write_link_binding,
         args.operation_effect_family_gate,
+        args.operation_effect_family_island,
     )
     if not torch.cuda.is_available():
         raise ParallelTerminalStatePilotError("terminal-state pilot requires CUDA")
@@ -2011,6 +2102,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                     args.operation_effect_post_write_link_binding
                 ),
                 "operation_effect_family_gate": (args.operation_effect_family_gate),
+                "operation_effect_family_island": (
+                    args.operation_effect_family_island
+                ),
                 "operation_effect_slots": (
                     compiler.maximum_effects
                     if isinstance(
@@ -2139,6 +2233,13 @@ def main(argv: Sequence[str] | None = None) -> int:
                     if args.operation_effect_family_gate
                     else None
                 ),
+                "operation_effect_family_training": (
+                    "oracle-state-family-only-payload-rails-bypassed"
+                    if args.operation_effect_family_island
+                    else "joint-family-count-payload"
+                    if args.operation_effect_family_gate
+                    else None
+                ),
                 "write_link_binding_state": (
                     "post-write-differentiable-state"
                     if args.operation_effect_post_write_link_binding
@@ -2228,7 +2329,47 @@ def main(argv: Sequence[str] | None = None) -> int:
             optimizer.zero_grad(set_to_none=True)
             with _precision_context(is_h100):
                 operation_prefix_loss = target.active.float().sum() * 0.0
-                if args.token_native_operation_state_command:
+                if args.operation_effect_family_island:
+                    if (
+                        not isinstance(
+                            compiler,
+                            OperationFamilyGatedWriteLinkCompiler,
+                        )
+                        or operation_targets is None
+                        or command_lexical is None
+                    ):
+                        raise ParallelTerminalStatePilotError(
+                            "operation family island inputs are absent"
+                        )
+                    family_probabilities, family_mask = (
+                        compiler.forward_with_oracle_operation_families(
+                            initial,
+                            operation_targets.states,
+                            operation_targets.mask,
+                            command_hidden=command_hidden.detach(),
+                            command_lexical=command_lexical.detach(),
+                            command_tokens=batch.episodes.command.tokens,
+                            command_attention_mask=(
+                                batch.episodes.command.attention_mask.bool()
+                            ),
+                            steps=batch.transaction_targets.opcode.shape[1],
+                            hard=False,
+                        )
+                    )
+                    (
+                        atomic_action_loss,
+                        atomic_action_parts,
+                        atomic_action_counts,
+                    ) = operation_family_island_objective(
+                        family_probabilities,
+                        family_mask,
+                        operation_targets,
+                        initial,
+                        slot_mask=batch.terminal_packet_targets.slot_mask,
+                        relation_mask=batch.terminal_packet_targets.relation_mask,
+                    )
+                    predicted = initial
+                elif args.token_native_operation_state_command:
                     if (
                         not isinstance(
                             compiler,
@@ -2330,10 +2471,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                     )
                 )
                 loss = (
-                    state_loss
-                    + args.causal_delta_weight * causal_delta_loss
-                    + args.atomic_action_weight * atomic_action_loss
-                    + operation_prefix_loss
+                    atomic_action_loss
+                    if args.operation_effect_family_island
+                    else (
+                        state_loss
+                        + args.causal_delta_weight * causal_delta_loss
+                        + args.atomic_action_weight * atomic_action_loss
+                        + operation_prefix_loss
+                    )
                 )
             if not bool(torch.isfinite(loss)):
                 raise ParallelTerminalStatePilotError(
@@ -2341,6 +2486,18 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
             last_loss = float(loss.detach().cpu())
             loss.backward()
+            if args.operation_effect_family_island:
+                forbidden_gradients = tuple(
+                    name
+                    for name, parameter in compiler.named_parameters()
+                    if name.startswith(("write_rail.", "link_rail."))
+                    or name.startswith(("write_", "link_"))
+                    if parameter.grad is not None
+                )
+                if forbidden_gradients:
+                    raise ParallelTerminalStatePilotError(
+                        "operation family island reached payload rails"
+                    )
             gradient_norm = torch.nn.utils.clip_grad_norm_(
                 compiler.parameters(),
                 args.gradient_clip,

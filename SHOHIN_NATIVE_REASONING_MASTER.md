@@ -53854,3 +53854,12 @@ The original queued v18 smoke was canceled before allocation after a custody
 review found that operation-boundary indexing dropped the new family tensor;
 the field is now preserved and regression-tested. This was a launch-path bug,
 not model evidence.
+
+Contract v19 now implements the only audit-authorized successor: a bounded
+family-first island. It teacher-forces the exact preceding state, uses only
+public operation syntax/role anchors, bypasses all WRITE/LINK payload modules,
+and fails if any payload parameter receives a gradient. Its fixed gate is
+90% held-out family exactness. Passing permits a later weight-preserving joint
+rail stage; failing closes this control variable without more duration or
+capacity. Random payload outputs mean v19 cannot itself claim terminal or
+causal reasoning progress.

@@ -1503,6 +1503,116 @@ class OperationFamilyGatedWriteLinkCompiler(OperationWriteLinkRailCompiler):
             OPERATION_EFFECT_FAMILY_COUNT,
         )
 
+    def _operation_family_from_context(
+        self,
+        slots: torch.Tensor,
+        effect_anchors: tuple[torch.Tensor, torch.Tensor],
+        *,
+        hard: bool,
+    ) -> torch.Tensor:
+        anchors, role_valid = effect_anchors
+        if (
+            anchors.shape
+            != (slots.shape[0], self.effect_role_count, self.width)
+            or role_valid.shape != anchors.shape[:2]
+            or role_valid.dtype != torch.bool
+        ):
+            raise TheoryReactorError("operation-family public anchors differ")
+        valid_weight = role_valid[..., None].to(anchors.dtype)
+        operation_context = (anchors * valid_weight).sum(1)
+        operation_context = operation_context / valid_weight.sum(1).clamp_min(1.0)
+        operation_context = operation_context + slots.mean(1)
+        family = (
+            self.effect_family_head(self.effect_family_norm(operation_context))
+            .float()
+            .softmax(-1)
+        )
+        return _hard_categories(family) if hard else family
+
+    def forward_with_oracle_operation_families(
+        self,
+        state: TypedTheoryState,
+        oracle_states: tuple[TypedTheoryState, ...],
+        oracle_mask: torch.Tensor,
+        *,
+        command_hidden: torch.Tensor,
+        command_lexical: torch.Tensor,
+        command_tokens: torch.Tensor,
+        command_attention_mask: torch.Tensor,
+        steps: int,
+        hard: bool,
+    ) -> tuple[tuple[torch.Tensor, ...], torch.Tensor]:
+        """Predict only operation families while teacher-forcing typed state.
+
+        This training-only island bypasses every WRITE/LINK payload rail.  It
+        cannot be used by deployed inference, which continues through
+        ``forward_with_operation_states`` and autonomous hard state updates.
+        """
+
+        (
+            command,
+            _document_mask,
+            slots,
+            _initial_memory,
+            operation_masks,
+            operation_count,
+            effect_anchors,
+        ) = self._prepare_public_context(
+            state,
+            command_hidden=command_hidden,
+            command_lexical=command_lexical,
+            command_tokens=command_tokens,
+            command_attention_mask=command_attention_mask,
+            steps=steps,
+        )
+        if (
+            self.operation_recurrence is None
+            or effect_anchors is None
+            or len(oracle_states) != operation_masks.shape[1]
+            or oracle_mask.shape != (state.active.shape[0], operation_masks.shape[1])
+        ):
+            raise TheoryReactorError("operation-family island geometry differs")
+        expected_mask = torch.arange(
+            operation_masks.shape[1],
+            device=command.device,
+        )[None, :].lt(operation_count[:, None])
+        if oracle_mask.dtype != torch.bool or not torch.equal(oracle_mask, expected_mask):
+            raise TheoryReactorError("operation-family island oracle mask differs")
+
+        batch = state.active.shape[0]
+        operation_padding = torch.zeros(
+            batch,
+            1 + self.config.num_slots,
+            dtype=torch.bool,
+            device=command.device,
+        )
+        current = state
+        families: list[torch.Tensor] = []
+        for operation_index, oracle_state in enumerate(oracle_states):
+            operation = torch.bmm(
+                operation_masks[:, operation_index].unsqueeze(1).to(command.dtype),
+                command,
+            )
+            updated_slots = self.operation_recurrence(
+                slots,
+                torch.cat((operation, self._initial_memory(current)), dim=1),
+                operation_padding,
+            )
+            selected = expected_mask[:, operation_index]
+            families.append(
+                self._operation_family_from_context(
+                    updated_slots,
+                    (
+                        effect_anchors[0][:, operation_index],
+                        effect_anchors[1][:, operation_index],
+                    ),
+                    hard=hard,
+                )
+            )
+            current = _select_state(current, oracle_state, selected)
+            slots = torch.where(selected[:, None, None], updated_slots, slots)
+        return tuple(families), expected_mask
+
     def _operation_edits_from_slots(
         self,
         state: TypedTheoryState,
@@ -1542,18 +1652,11 @@ class OperationFamilyGatedWriteLinkCompiler(OperationWriteLinkRailCompiler):
         assert write_count is not None
         assert link_count is not None
 
-        anchors, role_valid = effect_anchors
-        valid_weight = role_valid[..., None].to(anchors.dtype)
-        operation_context = (anchors * valid_weight).sum(1)
-        operation_context = operation_context / valid_weight.sum(1).clamp_min(1.0)
-        operation_context = operation_context + slots.mean(1)
-        family = (
-            self.effect_family_head(self.effect_family_norm(operation_context))
-            .float()
-            .softmax(-1)
+        family = self._operation_family_from_context(
+            slots,
+            effect_anchors,
+            hard=hard,
         )
-        if hard:
-            family = _hard_categories(family)
         write_gate = family[:, OPERATION_EFFECT_FAMILY_WRITE]
         link_gate = family[:, OPERATION_EFFECT_FAMILY_LINK]
 

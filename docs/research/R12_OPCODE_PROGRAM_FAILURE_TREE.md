@@ -770,3 +770,23 @@ typed-effect field except `effect_family`. The queued v18 smoke would therefore
 have failed in the loss path without testing the mechanism. Smoke `728738` was
 canceled while pending; v15 `728691` was left intact. The indexing helper now
 preserves `effect_family` and has a direct regression test.
+
+## Contract-v19 bounded operation-family island
+
+The preregistered middle-band successor is implemented without changing the
+deployed v18 inference path. During training only, it reconstructs the same
+public operation masks and semantic-role anchors, teacher-forces the exact
+preceding typed state at each operation boundary, and predicts only
+NONE/WRITE/LINK. It never calls either typed payload rail. A runtime gradient
+guard rejects any update that reaches WRITE/LINK rail, count, pointer, value,
+or relation parameters. The shared public syntax/state context and family
+head remain trainable because those are the mechanism being isolated.
+
+Contract/report/metric schemas are v19. The deterministic router is closed in
+advance: held-out family exactness at or above 90% releases a later
+weight-preserving joint rail stage; anything below 90% rejects the public
+family controller and prohibits duration or width escalation. The payload
+rails remain random in this diagnostic, so terminal state and causal scores
+cannot promote it. Sixty-three focused architecture, objective, gradient,
+schema, evaluator, routing, audit, and custody tests pass with clean Ruff,
+byte compilation, Bash syntax, and diff checks.

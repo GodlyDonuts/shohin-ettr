@@ -1128,6 +1128,69 @@ def test_operation_family_gate_is_exclusive_and_directly_supervised() -> None:
     assert bool(compiler.effect_family_head.weight.grad.isfinite().all())
 
 
+def test_operation_family_island_bypasses_payload_rails() -> None:
+    from ettr_il_v2_surface import SurfaceRenderer, call, integer, symbol
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+
+    config = replace(_config(), max_steps=16)
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    operator = symbol("x0000000000000001")
+    ast = call(
+        14,
+        integer(2),
+        call(1, call(3, operator, integer(0), call(0))),
+        call(13, call(4, operator), call(4, operator)),
+    )
+    transports = [
+        codec.pack(codec.serialize(ast, renderer), width=32)
+        for renderer in SurfaceRenderer
+    ]
+    tokens = torch.tensor(
+        [transport.token_ids for transport in transports],
+        dtype=torch.long,
+    )
+    compiler = OperationFamilyGatedWriteLinkCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        relation_width=16,
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_codebook_atoms=codec.codebook.atoms,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+    state = _state(config, batch=4)
+    hidden = torch.randn(4, 32, config.d_model)
+    oracle_states = tuple(state.detached_clone() for _ in range(6))
+    oracle_mask = torch.tensor([[True, True, False, False, False, False]] * 4)
+    families, mask = compiler.forward_with_oracle_operation_families(
+        state,
+        oracle_states,
+        oracle_mask,
+        command_hidden=hidden,
+        command_lexical=torch.randn_like(hidden),
+        command_tokens=tokens,
+        command_attention_mask=torch.ones_like(tokens, dtype=torch.bool),
+        steps=8,
+        hard=False,
+    )
+    assert torch.equal(mask, oracle_mask)
+    loss = -torch.stack(
+        (families[0][:, 1].clamp_min(1e-7).log().mean(),
+         families[1][:, 2].clamp_min(1e-7).log().mean())
+    ).mean()
+    loss.backward()
+    assert compiler.effect_family_head.weight.grad is not None
+    assert compiler.operation_recurrence is not None
+    assert compiler.operation_recurrence.ff[0].weight.grad is not None
+    for name, parameter in compiler.named_parameters():
+        if name.startswith(("write_rail.", "link_rail.", "write_", "link_")):
+            assert parameter.grad is None, name
+
+
 def test_post_write_link_binding_uses_write_payload_state() -> None:
     from ettr_il_v2_token_native_surface import (
         DEFAULT_TOKENIZER_PATH,

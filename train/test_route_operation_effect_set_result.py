@@ -144,6 +144,29 @@ def test_router_isolates_failed_operation_family_controller() -> None:
     assert result["route"] == "operation_family_island_curriculum"
 
 
+def test_router_releases_only_a_passing_operation_family_island() -> None:
+    report = _report()
+    report["operation_effect_diagnostics"]["after"] = _local(
+        family=0.91,
+        family_conflict=0.0,
+    )
+    result = route_result(
+        report,
+        {"schema": "shohin-ettr-parallel-terminal-state-contract-v19"},
+    )
+    assert result["route"] == "joint_operation_family_rail_release"
+
+    report["operation_effect_diagnostics"]["after"] = _local(
+        family=0.89,
+        family_conflict=0.0,
+    )
+    result = route_result(
+        report,
+        {"schema": "shohin-ettr-parallel-terminal-state-contract-v19"},
+    )
+    assert result["route"] == "reject_public_operation_family_controller"
+
+
 def test_router_sends_relation_binding_failure_to_two_phase_algebra() -> None:
     report = _report()
     report["operation_effect_diagnostics"]["after"] = _local(

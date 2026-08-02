@@ -78,6 +78,8 @@ from train_parallel_terminal_state_pilot import (
     OPERATION_STATE_ATOMIC_REPORT_SCHEMA as PILOT_OPERATION_STATE_REPORT_SCHEMA,
     OPERATION_FAMILY_GATE_CONTRACT_SCHEMA as PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
     OPERATION_FAMILY_GATE_REPORT_SCHEMA as PILOT_OPERATION_FAMILY_GATE_REPORT_SCHEMA,
+    OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA as PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
+    OPERATION_FAMILY_ISLAND_REPORT_SCHEMA as PILOT_OPERATION_FAMILY_ISLAND_REPORT_SCHEMA,
     POST_WRITE_LINK_CONTRACT_SCHEMA as PILOT_POST_WRITE_LINK_CONTRACT_SCHEMA,
     POST_WRITE_LINK_REPORT_SCHEMA as PILOT_POST_WRITE_LINK_REPORT_SCHEMA,
     RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA as PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
@@ -301,6 +303,9 @@ def _load_terminal_compiler(
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA: (
             PILOT_OPERATION_FAMILY_GATE_REPORT_SCHEMA
         ),
+        PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA: (
+            PILOT_OPERATION_FAMILY_ISLAND_REPORT_SCHEMA
+        ),
     }
     run_schema = contract.get("schema")
     if (
@@ -340,6 +345,7 @@ def _load_terminal_compiler(
         PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
         PILOT_POST_WRITE_LINK_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
+        PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
         PILOT_CONTRACT_SCHEMA,
         PILOT_CAUSAL_DELTA_CONTRACT_SCHEMA,
     ):
@@ -371,6 +377,7 @@ def _load_terminal_compiler(
         PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
         PILOT_POST_WRITE_LINK_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
+        PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
     }
     lexical_command = contract.get("schema") in {
         PILOT_LEXICAL_CONTRACT_SCHEMA,
@@ -387,6 +394,7 @@ def _load_terminal_compiler(
         PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
         PILOT_POST_WRITE_LINK_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
+        PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
     }
     token_native_command_mask = contract.get("schema") in {
         PILOT_SYNTAX_CONTRACT_SCHEMA,
@@ -402,6 +410,7 @@ def _load_terminal_compiler(
         PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
         PILOT_POST_WRITE_LINK_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
+        PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
     }
     token_native_occurrence_command = (
         contract.get("schema") == PILOT_OCCURRENCE_CONTRACT_SCHEMA
@@ -418,6 +427,7 @@ def _load_terminal_compiler(
         PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
         PILOT_POST_WRITE_LINK_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
+        PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
     }
     token_native_declaration_binding_command = contract.get("schema") in {
         PILOT_DECLARATION_CONTRACT_SCHEMA,
@@ -431,6 +441,7 @@ def _load_terminal_compiler(
         PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
         PILOT_POST_WRITE_LINK_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
+        PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
     }
     cover_verified_command_mask = contract.get("schema") in {
         PILOT_DECLARATION_CONTRACT_SCHEMA,
@@ -444,6 +455,7 @@ def _load_terminal_compiler(
         PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
         PILOT_POST_WRITE_LINK_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
+        PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
     }
     token_native_operation_recurrence_command = contract.get("schema") in {
         PILOT_OPERATION_CONTRACT_SCHEMA,
@@ -456,6 +468,7 @@ def _load_terminal_compiler(
         PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
         PILOT_POST_WRITE_LINK_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
+        PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
     }
     token_native_operation_state_command = contract.get("schema") in {
         PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
@@ -467,6 +480,7 @@ def _load_terminal_compiler(
         PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
         PILOT_POST_WRITE_LINK_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
+        PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
     }
     factorized_operation_effect_command = (
         contract.get("schema") == PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA
@@ -483,6 +497,7 @@ def _load_terminal_compiler(
         PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
         PILOT_POST_WRITE_LINK_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
+        PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
     }
     operation_effect_cardinality_gate = (
         contract.get("schema") == PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA
@@ -492,6 +507,7 @@ def _load_terminal_compiler(
         PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
         PILOT_POST_WRITE_LINK_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
+        PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
     }
     operation_effect_rail_local_loss = (
         contract.get("schema") == PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA
@@ -499,8 +515,12 @@ def _load_terminal_compiler(
     operation_effect_post_write_link_binding = (
         contract.get("schema") == PILOT_POST_WRITE_LINK_CONTRACT_SCHEMA
     )
-    operation_effect_family_gate = (
-        contract.get("schema") == PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA
+    operation_effect_family_gate = contract.get("schema") in {
+        PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
+        PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
+    }
+    operation_effect_family_island = (
+        contract.get("schema") == PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA
     )
     if residual_edits != (architecture.get("sparse_residual_edits") is True):
         raise ParallelTerminalStateEvaluationError(
@@ -532,6 +552,7 @@ def _load_terminal_compiler(
             operation_effect_post_write_link_binding
         ),
         "operation_effect_family_gate": operation_effect_family_gate,
+        "operation_effect_family_island": operation_effect_family_island,
         "token_native_syntax_graph_command": token_native_syntax_graph_command,
     }
     if any(
@@ -597,6 +618,14 @@ def _load_terminal_compiler(
             or objective.get("operation_effect_family_control")
             != (
                 "exclusive-none-write-link-before-rail-release"
+                if operation_effect_family_gate
+                else None
+            )
+            or objective.get("operation_effect_family_training")
+            != (
+                "oracle-state-family-only-payload-rails-bypassed"
+                if operation_effect_family_island
+                else "joint-family-count-payload"
                 if operation_effect_family_gate
                 else None
             )

@@ -24824,3 +24824,26 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_broad_v18_preserve_v15_and_prequalify_only_a_family_first_island_from_the_corrected_boundary_path`.
+
+- **2026-08-02 13:51--14:08 EDT** -- **The audit-authorized family-first
+  successor is implemented as a true isolation, not another joint fit.**
+
+  Contract v19 retains v18's deployed hard NONE/WRITE/LINK gate but changes
+  training only. It rebuilds public operation masks and role anchors, uses the
+  oracle preceding typed state at each operation boundary, and predicts only
+  the three-way family. It bypasses both WRITE/LINK typed rails and every
+  count, pointer, value, and relation head. A runtime gradient guard fails the
+  job if any payload-rail parameter receives credit. Shared public syntax,
+  recurrent context, typed-state memory, and the family norm/head remain
+  trainable because they are the isolated mechanism.
+
+  V19 has distinct contract/report/metric schemas. Its frozen route is binary:
+  at least 90% held-out operation-family exactness authorizes a later
+  weight-preserving joint rail stage; below 90% rejects the public family
+  controller and forbids duration/width escalation. Terminal and causal
+  metrics cannot promote v19 because its payload rails remain untrained.
+  Sixty-three focused tests plus Ruff, byte compilation, Bash syntax, and diff
+  checks pass.
+
+  Decision:
+  `mechanically_smoke_v19_without_touching_v15_then_release_it_only_if_v15_measures_family_failure`.
