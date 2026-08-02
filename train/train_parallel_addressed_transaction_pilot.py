@@ -31,6 +31,7 @@ from opcode_program_registry import load_opcode_program_registry
 from parallel_addressed_transaction_compiler import (
     ParallelAddressedTransactionCompiler,
     ParallelScheduledReactor,
+    RegistryProjectedAddressedScheduleCompiler,
 )
 from probe_ettr_oracle_interfaces import (
     _packet_batch_counts,
@@ -45,8 +46,8 @@ from train_ettr_component_island import (
 )
 
 
-CONTRACT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-contract-v8"
-REPORT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-report-v8"
+CONTRACT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-contract-v9"
+REPORT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-report-v9"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _FIELDS = (
@@ -116,6 +117,10 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--opcode-program-registry", type=Path)
     parser.add_argument("--opcode-program-registry-sha256")
+    parser.add_argument(
+        "--registry-projected-opcode-training",
+        action="store_true",
+    )
     return parser.parse_args(argv)
 
 
@@ -166,6 +171,10 @@ def _validate_args(args: argparse.Namespace) -> None:
         or (
             (args.opcode_program_registry is None)
             != (args.opcode_program_registry_sha256 is None)
+        )
+        or (
+            args.registry_projected_opcode_training
+            and args.opcode_program_registry is None
         )
         or not math.isfinite(args.learning_rate)
         or not 0.0 < args.learning_rate < 1.0
@@ -756,9 +765,21 @@ def main(argv: Sequence[str] | None = None) -> int:
             model.base.cfg.vocab_size if args.token_native_command_mask else None
         ),
         opcode_program_sequences=(
-            opcode_registry.programs if opcode_registry is not None else None
+            opcode_registry.programs
+            if opcode_registry is not None
+            and not args.registry_projected_opcode_training
+            else None
         ),
     ).to(device=device, dtype=next(model.parameters()).dtype)
+    if args.registry_projected_opcode_training:
+        if opcode_registry is None:
+            raise ParallelTransactionPilotError(
+                "registry-projected opcode training lacks a registry"
+            )
+        schedule_compiler = RegistryProjectedAddressedScheduleCompiler(
+            schedule_compiler,
+            opcode_registry.programs,
+        )
     schedule_parameters = sum(
         parameter.numel() for parameter in schedule_compiler.parameters()
     )
@@ -841,6 +862,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ),
                 "opcode_program_registry_sha256": (
                     opcode_registry.file_sha256 if opcode_registry is not None else None
+                ),
+                "registry_projected_opcode_training": (
+                    args.registry_projected_opcode_training
                 ),
                 "parameterless_exact_algebra": True,
                 "removed_recurrent_policy_parameters": (removed_reactor_parameters),

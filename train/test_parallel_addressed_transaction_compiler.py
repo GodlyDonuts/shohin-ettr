@@ -606,6 +606,34 @@ def test_opcode_program_projection_wrapper_adds_no_learned_parameters() -> None:
         )
 
 
+def test_opcode_program_projection_backpropagates_global_path_loss() -> None:
+    config = _config()
+    base = ParallelAddressedTransactionCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+    )
+    projected = RegistryProjectedAddressedScheduleCompiler(
+        base,
+        ((1, 1, 6), (1, 3, 6)),
+    )
+    schedule = projected(
+        _state(config),
+        command_hidden=torch.randn(2, 5, config.d_model),
+        command_attention_mask=torch.ones(2, 5, dtype=torch.bool),
+        steps=3,
+        hard=False,
+    )
+    assert schedule.program_probabilities is not None
+    loss = -schedule.program_probabilities[:, 1].clamp_min(1e-8).log().mean()
+    loss.backward()
+    gradient = base.opcode_head.weight.grad
+    assert gradient is not None
+    assert bool(torch.isfinite(gradient).all())
+    assert float(gradient.abs().sum()) > 0.0
+
+
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA is unavailable")
 def test_opcode_program_projection_wrapper_inherits_compiler_device() -> None:
     config = _config()

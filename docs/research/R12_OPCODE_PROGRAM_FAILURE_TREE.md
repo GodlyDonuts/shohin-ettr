@@ -58,6 +58,21 @@ Reject decoding-only repair. Route by the CPU audit:
   ontology and compile the query-independent terminal-state quotient through
   syntax-local edit atoms with explicit state guards.
 
+The high-identifiability successor is already implemented behind
+`--registry-projected-opcode-training`. Unlike the rejected flat selector, it
+does not learn a 2,530-way class-prior head. It derives a globally normalized
+distribution from the compiler's renderer-normalized per-step opcode evidence,
+backpropagates one complete-program likelihood, and keeps compositional
+operands plus the exact executor. This branch remains held until the public
+syntax audit demonstrates that the target program is identifiable.
+
+The low-identifiability successor is not another opcode variant. Its target is
+a syntax-local edit ontology: public AST productions propose guarded state
+edits, anonymous-token equality supplies bindings, and the exact state algebra
+applies those edits. It cannot inherit assessor-trace opcode class names or a
+global program registry. This branch is selected only if the audit rejects
+public identification of the current opcode ontology.
+
 ### D. The 15k trajectory crosses both strict axes
 
 Replicate at the same budget on a fresh population and compare the timing of
@@ -80,6 +95,9 @@ local field accuracy already observed at 5k cannot justify longer runs.
   or for replication after a strict-gate gain.
 - No capacity is spent on seed multiplication before a mechanism crosses the
   advancement gate.
+- Jobs may be submitted held or with a future begin time so scheduler latency
+  overlaps CPU gates, but only the branch justified by the frozen report may
+  execute.
 
 This policy uses all useful compute while preventing many simultaneous jobs
 from answering the same question.

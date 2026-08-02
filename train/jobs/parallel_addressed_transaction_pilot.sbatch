@@ -45,6 +45,7 @@ TOKEN_NATIVE_OCCURRENCE_COMMAND=${TOKEN_NATIVE_OCCURRENCE_COMMAND:-0}
 TOKEN_NATIVE_SYNTAX_GRAPH_COMMAND=${TOKEN_NATIVE_SYNTAX_GRAPH_COMMAND:-0}
 OPCODE_PROGRAM_REGISTRY=${OPCODE_PROGRAM_REGISTRY:-}
 OPCODE_PROGRAM_REGISTRY_SHA256=${OPCODE_PROGRAM_REGISTRY_SHA256:-}
+REGISTRY_PROJECTED_OPCODE_TRAINING=${REGISTRY_PROJECTED_OPCODE_TRAINING:-0}
 REQUIRED_DEVICE_CLASS=${REQUIRED_DEVICE_CLASS:-h100}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
@@ -114,6 +115,16 @@ if [[ -n "$OPCODE_PROGRAM_REGISTRY" || -n "$OPCODE_PROGRAM_REGISTRY_SHA256" ]]; 
     --opcode-program-registry "$OPCODE_PROGRAM_REGISTRY"
     --opcode-program-registry-sha256 "$OPCODE_PROGRAM_REGISTRY_SHA256"
   )
+fi
+if [[ "$REGISTRY_PROJECTED_OPCODE_TRAINING" == 1 ]]; then
+  [[ -n "$OPCODE_PROGRAM_REGISTRY" ]] || {
+    echo "registry projection requires an opcode program registry" >&2
+    exit 2
+  }
+  REGISTRY_ARGS+=(--registry-projected-opcode-training)
+elif [[ "$REGISTRY_PROJECTED_OPCODE_TRAINING" != 0 ]]; then
+  echo "registry-projected opcode training flag differs" >&2
+  exit 2
 fi
 
 for path in "$CODE_ROOT" "$RELEASE_ROOT" "$ETTR_DATA_ROOT" \

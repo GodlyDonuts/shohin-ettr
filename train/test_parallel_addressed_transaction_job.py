@@ -16,6 +16,7 @@ def test_parallel_transaction_job_is_hash_bound_and_isolated() -> None:
         "--joint-run-contract-sha256",
         "--opcode-program-registry",
         "--opcode-program-registry-sha256",
+        "--registry-projected-opcode-training",
         "--required-device-class",
         "--grounded-pointers",
         "--cover-verified-command-mask",
@@ -25,6 +26,7 @@ def test_parallel_transaction_job_is_hash_bound_and_isolated() -> None:
         "TRAINING_INITIAL_STATE=${TRAINING_INITIAL_STATE:-oracle}",
         "OUTPUT=${OUTPUT:?set fresh pilot output}",
         "OPCODE_PROGRAM_REGISTRY=${OPCODE_PROGRAM_REGISTRY:-}",
+        "REGISTRY_PROJECTED_OPCODE_TRAINING=${REGISTRY_PROJECTED_OPCODE_TRAINING:-0}",
         "COVER_VERIFIED_COMMAND_MASK=${COVER_VERIFIED_COMMAND_MASK:-0}",
     ):
         assert expected in text

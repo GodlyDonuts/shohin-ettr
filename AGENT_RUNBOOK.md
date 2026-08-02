@@ -23684,3 +23684,32 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `rerun_both_full_corpus_CPU_gates_from_the_earliest_verified_boundary_then_launch_one_clean_exact_mask_H100_treatment_with_prebuilt_structured_and_edit_ontology_successors`.
+
+- **2026-08-02 04:54--05:02 EDT** -- **The clean treatment is queued behind
+  the CPU gate and the first distinct failure successor is implemented.**
+
+  Exact commit `e5dcb41f95a2f6dc6390538e518dffd2355d67c6` is sealed on Stokes and
+  Newton as `shohin_ettr_cover_verified_runtime_e5dcb41_r1`, with 3,611 files,
+  zero writable files, and SHA256SUMS SHA-256
+  `0a650c7ab2ea3e0c1f62d4bc24a2cf247de09d96f8a3c7d8cdd68812b65c802d`.
+  Fresh 48-CPU full-corpus audits are Stokes jobs `760904/760905`. Obsolete
+  old-mask H100 jobs `725571/725572` were canceled; they duplicated already
+  closed 5k/15k evidence. Clean exact-mask H100 job `725603` passed test-only
+  allocation and is queued with a 05:19 EDT begin time, seed/data `31/11`,
+  1,000 updates, oracle initial state, exact syntax graph, and unchanged
+  source-deleted evaluator. It can be canceled before eligibility if either
+  CPU audit exposes another corpus-wide contract defect.
+
+  The high-identifiability successor is now code-complete. A new
+  `--registry-projected-opcode-training` path removes the rejected learned
+  2,530-way selector and instead globally normalizes the syntax compiler's
+  local opcode evidence over complete train-only programs. One complete-path
+  likelihood backpropagates through local opcode scores; registry frequency
+  never enters selection, dynamic operands remain compositional, and execution
+  remains the fixed audited algebra. The path is held pending the audit and
+  cannot run without an exact hash-bound registry. Sixty focused trainer,
+  compiler, job-contract, parser, and router tests pass with one CUDA-only
+  skip; Ruff, byte compilation, Bash syntax, and diff checks are clean.
+
+  Decision:
+  `if_exact_mask_crosses_both_axes_replicate_it_else_route_high_identifiability_to_global_path_training_and_low_identifiability_to_a_new_syntax_local_edit_ontology`.
