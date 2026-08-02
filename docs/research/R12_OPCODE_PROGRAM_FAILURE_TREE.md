@@ -146,3 +146,11 @@ Failure routing is fixed:
 4. If it is neutral, close learned multi-hop declaration resolution as the
    primary bottleneck and move directly to a state-grounded edit ontology;
    do not run more seeds, depth, width, or duration on contract-v8.
+
+The first branch is now measured. Exact-mask-only V100 job `725610` completes
+cleanly with 7.687% joint schedule accuracy, zero exact terminal packets,
+60.9375% autonomous factual top-1, and zero strict WORLD/COMMAND. Exact
+masking is retained as an interface invariant but closed as a standalone
+reasoning repair. The declaration-binding gate is therefore the sole live
+contract-v8 treatment; its negative result will immediately activate branch
+3 or 4 rather than another contract-v8 scale trial.

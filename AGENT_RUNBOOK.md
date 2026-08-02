@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 05:31 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 05:38 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -23779,3 +23779,34 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `hold_global_opcode_classification_run_exact_mask_control_then_test_one_explicit_public_declaration_binding_before_replacing_ordered_opcode_imitation_with_guarded_edits`.
+
+- **2026-08-02 05:31--05:38 EDT** -- **Exact document masking is necessary
+  for integrity but insufficient for reasoning; declaration binding is live.**
+
+  Exact-mask V100 control `725610` completed 1,000 updates cleanly on `evc12`
+  in 12m05s. Report SHA-256 is
+  `3b4f44e7fc4fbecf8cd12221a1d31a03dc17ddd1ff8e90b89f473571708cf141`
+  and pilot-contract SHA-256 is
+  `9d208546c5efc5eab3ad14bfa73b8c6f577f88bd3b8cd31739e712913d19ba9c`.
+  Held-out joint schedule accuracy is 7.687%, with opcode/source/target/value
+  rates 40.657%/25.797%/12.644%/17.374%. Oracle-initial exact terminal packets
+  are `0/512`; autonomous factual top-1 is 60.9375%; fully autonomous strict
+  WORLD and COMMAND remain exactly zero. Relative to the old-mask matched 1k
+  endpoint, exact masking repairs the public source but does not improve the
+  learned schedule. Redundant pending H100 control `725603` was canceled.
+
+  Private commit `1bd41aa` implements and documents exact public declaration
+  binding and is pushed to `origin/main`. Immutable Newton runtime
+  `scratchpad/shohin_ettr_declaration_binding_runtime_1bd41aa_r1` contains
+  3,559 measured files, zero writable files, exact source marker
+  `1bd41aa396d45d4006a50fd7ab3081fe4d6ea980`, and SHA256SUMS SHA-256
+  `074a4e6996aea81c58bba7cdbdb1623fcceb2aa65caf8009e34004e62ddf619f`.
+  Initial V100 submission `725611` failed before Python because the first
+  clone retained the base runtime source marker; it created no output and is
+  not evidence. The runtime was corrected and resealed. Replacement V100 job
+  `725613` and H100 job `725614` use exact masking plus declaration binding,
+  seed/data `31/11`, oracle initial state, 1,000 updates, and unchanged
+  source-deleted evaluation.
+
+  Decision:
+  `close_exact_mask_as_a_standalone_repair_read_declaration_binding_once_then_move_to_a_state_grounded_guarded_edit_ontology_if_both_axes_do_not_cross`.
