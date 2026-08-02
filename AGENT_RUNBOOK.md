@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 15:36 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 15:43 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -25057,3 +25057,46 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `retain_the_priority_bearing_single_v15_writer_complete_the_independent_state_audit_and_route_one_mechanism_only_from_measured_family_count_operand_and_causal_failures`.
+
+- **2026-08-02 15:37--15:43 EDT** -- **The independent state-conditioning
+  audit crosses its preregistered oracle gate and localizes the missing
+  family mechanism to nonlinear value binding.**
+
+  Corrected 48-core Stokes job `760967` completed cleanly on `ec119` in
+  22m39s. Its no-replace report covers 40,000 training rows / 494,480
+  operation instances and 5,000 development rows / 60,512 operation
+  instances across all fifteen semantic-core shards per split. Report file
+  SHA-256 is
+  `819aa0bdb57b3e46fcf1488323d17e18fd3668db277d4404ed685f76a69b75c5`;
+  payload SHA-256 is
+  `0a5574bf499440fe4a3ca47d80b08d39e9177e76343ecb8f6a3304f0247ea517`.
+
+  Development conditional-oracle family accuracy is 80.1692% from public
+  syntax, 80.4435% after adding preceding-state topology, and 94.0756% after
+  adding exact preceding-state values. The last result crosses the frozen
+  90% gate, while topology alone is effectively neutral. A smoothed additive
+  factor model remains fixed at 73.7110% in all three modes: LINK is perfect
+  (`25,328/25,328`), but NONE and WRITE are mutually confused. Exact composite
+  signatures also transfer poorly because only 18.79% of development
+  operations have a train-seen exact syntax-plus-state signature. The result
+  therefore does not authorize memorizing state signatures and is not a
+  reasoning claim.
+
+  The selected mechanism is a state-conditioned latent rail arbiter. The
+  missing function is specifically nonlinear relational binding between
+  public operation roles and current typed-state values, not more syntax,
+  topology, width, or duration. The already implemented v19 family island is
+  the first bounded neural realization and remains conditional on v15's
+  independent family diagnostic. If v19 fails its 90% held-out family gate,
+  generic pooled family heads are closed: the next implementation must use
+  explicit multiplicative or bilinear role queries over typed state slots
+  before the hard NONE/WRITE/LINK release. It may not repeat a wider or longer
+  pooled MLP.
+
+  Corrected v15 job `728844` remains the sole claim-bearing writer, pending
+  Newton priority with current estimated start 18:23 EDT. Dependency-held
+  `728845` still performs the exact seed-13 evaluation and deterministic route
+  after a valid terminal bundle; no duplicate scientific arm is queued.
+
+  Decision:
+  `preserve_the_single_v15_measurement_then_if_family_fails_test_v19_once_and_if_v19_misses_90_percent_replace_pooling_with_explicit_role_state_bilinear_binding`.

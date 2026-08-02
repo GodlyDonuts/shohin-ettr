@@ -901,3 +901,35 @@ one deterministic router only after a valid terminal bundle exists. All
 healthy H100/V100 nodes currently have both GPUs allocated, and preserving
 the priority-bearing single writer is faster than the tested deadline or
 shorter-walltime replacements.
+
+## State-conditioned family audit result
+
+Corrected 48-core Stokes job `760967` completes the preregistered audit over
+494,480 training and 60,512 development operation instances. Public syntax
+alone has a development conditional-oracle ceiling of 80.1692%. Adding the
+preceding state's typed topology changes that only to 80.4435%. Adding exact
+preceding-state values raises the ceiling to 94.0756%, crossing the frozen
+90% branch gate. The report file and payload SHA-256 values are
+`819aa0bdb57b3e46fcf1488323d17e18fd3668db277d4404ed685f76a69b75c5`
+and `0a5574bf499440fe4a3ca47d80b08d39e9177e76343ecb8f6a3304f0247ea517`.
+
+This is sufficient-information evidence, not transfer or reasoning evidence.
+The exact syntax-plus-state signatures cover only 18.7864% of development;
+their all-instance train-to-development accuracy is 13.2437%. The smoothed
+factorized transfer model remains at 73.7110% for syntax, topology, and exact
+state alike. It predicts every LINK correctly but confuses 8,995 NONE cases
+as WRITE and 6,913 WRITE cases as NONE. Simple additive state features cannot
+use the conditional signal.
+
+The route is therefore narrower than "add state." V19 is retained as one
+bounded test of the existing learned state-conditioned family island, only if
+v15 independently reports family failure. If v19 reaches 90% held-out family
+exactness, preserve its weights and release the joint rails. If it does not,
+reject generic pooled family classification, further duration, and width.
+The next mechanism must explicitly bind public operation roles to current
+typed-state slots with multiplicative or bilinear interactions, such as
+role-specific queries over slot key/value features, before producing the hard
+NONE/WRITE/LINK gate. Payload rails remain isolated until that gate passes.
+
+Current decision:
+`state_values_are_sufficient_but_additive_transfer_fails_test_one_existing_state_island_then_use_explicit_role_state_bilinear_binding_not_another_pooled_mlp`.

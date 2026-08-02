@@ -53871,3 +53871,38 @@ Mechanics-only smoke `728770` is queued without touching sole scientific v15
 fit `728691`. The smoke can validate launch custody and payload-gradient
 isolation only; scientific routing still comes exclusively from v15's
 independent held-out family/count/operand/state/causal diagnostics.
+
+### 2026-08-02: exact state values reveal a nonlinear binding opportunity
+
+The corrected full-corpus state-conditioning audit is complete. It covers
+40,000 training rows / 494,480 operations and 5,000 development rows / 60,512
+operations. Public syntax alone admits an 80.1692% development conditional
+oracle for NONE/WRITE/LINK. Preceding-state topology is almost irrelevant at
+80.4435%. Exact preceding-state values raise the conditional oracle to
+94.0756%, above the preregistered 90% mechanism gate. The report file SHA-256
+is `819aa0bdb57b3e46fcf1488323d17e18fd3668db277d4404ed685f76a69b75c5`;
+its payload SHA-256 is
+`0a5574bf499440fe4a3ca47d80b08d39e9177e76343ecb8f6a3304f0247ea517`.
+
+The positive result has a hard boundary. Exact composite state signatures
+cover only 18.7864% of development, and the additive factorized classifier
+does not improve over 73.7110% when exact values are added. LINK is already
+fully separable; the unresolved error is NONE versus WRITE. Thus the corpus
+contains enough information, but neither memorization nor additive pooling
+extracts it. This is not native reasoning evidence; it is a causal
+architecture selection result.
+
+The selected hypothesis is explicit operation-role-to-state binding. V19 is
+one bounded test of whether the existing neural state conditioner can realize
+that signal after isolated family acquisition. It may run only if v15's
+independent report measures family failure, and it must reach at least 90%
+held-out family exactness. A miss closes generic pooled family heads. The
+precommitted replacement is a mechanism-distinct multiplicative or bilinear
+arbiter: public semantic-role queries address typed state-slot keys/values,
+compose role-conditioned compatibility features, and only then release one
+of NONE/WRITE/LINK. This is intended to solve the measured binding problem,
+not to add undirected capacity.
+
+Corrected v15 mechanics now pass on GPU and sole 1,000-update scientific job
+`728844` is queued with fail-closed independent seed-13 evaluation and routing
+through dependency job `728845`. No duplicate scientific arm is active.
