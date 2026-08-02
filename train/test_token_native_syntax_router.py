@@ -7,6 +7,7 @@ from token_native_syntax_router import (
     CoverVerifiedTokenNativeDocumentMask,
     TokenNativeDocumentMask,
     TokenNativeOccurrenceEncoder,
+    TokenNativeOperationRouter,
     TokenNativeSyntaxRouterError,
 )
 
@@ -231,6 +232,51 @@ def test_occurrence_encoder_is_equivariant_to_local_identifier_renaming() -> Non
         original = encoder(memory, tokens, routed)
         permuted = encoder(memory, renamed, routed)
     assert torch.equal(original, permuted)
+
+
+def test_operation_router_recovers_semantic_order_for_every_renderer() -> None:
+    from ettr_il_v2_surface import SurfaceRenderer, call, integer, symbol
+
+    codec = _codec()
+    operator = symbol("x0000000000000001")
+    ast = call(
+        14,
+        integer(2),
+        call(1, call(3, operator, integer(0), call(0))),
+        call(
+            13,
+            call(4, operator),
+            call(4, operator, integer(1)),
+            call(4, operator, integer(2), integer(3)),
+        ),
+    )
+    transports = [
+        codec.pack(codec.serialize(ast, renderer), width=32)
+        for renderer in SurfaceRenderer
+    ]
+    tokens = torch.tensor(
+        [transport.token_ids for transport in transports],
+        dtype=torch.long,
+    )
+    document_mask = TokenNativeDocumentMask(
+        codec.codebook.token_ids,
+        vocab_size=codec.tokenizer.get_vocab_size(),
+    )(tokens, torch.ones_like(tokens, dtype=torch.bool))
+    router = TokenNativeOperationRouter(
+        codec.codebook.token_ids,
+        vocab_size=codec.tokenizer.get_vocab_size(),
+        maximum_positions=32,
+    )
+    masks, count = router(tokens, document_mask)
+    codes = router.inverse_codebook[tokens]
+    selected = (masks.to(torch.long) @ codes.unsqueeze(-1)).squeeze(-1)
+    expected = torch.tensor(
+        [4 * 33 + 1, 4 * 33 + 2, 4 * 33 + 3, 0, 0, 0],
+        dtype=torch.long,
+    )
+
+    assert count.tolist() == [3, 3, 3, 3]
+    assert torch.equal(selected, expected.unsqueeze(0).expand(4, -1))
 
 
 def test_router_rejects_non_codebook_source() -> None:

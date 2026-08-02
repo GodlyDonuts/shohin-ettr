@@ -332,6 +332,92 @@ def test_production_declaration_bound_compiler_fits_system_cap() -> None:
     assert 19_869_528 < parameters < 44_061_106
 
 
+def test_public_operation_recurrent_compiler_fits_system_cap() -> None:
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    compiler = ParallelTerminalStateCompiler(
+        TheoryReactorConfig(),
+        atomic_edits=True,
+        lexical_command=True,
+        token_native_command_mask=True,
+        cover_verified_command_mask=True,
+        token_native_syntax_graph_command=True,
+        token_native_declaration_binding_command=True,
+        token_native_operation_recurrence_command=True,
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_codebook_atoms=codec.codebook.atoms,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+    parameters = sum(parameter.numel() for parameter in compiler.parameters())
+
+    assert compiler.command_operation_router is not None
+    assert compiler.operation_recurrence is not None
+    assert 19_869_528 < parameters < 44_061_106
+
+
+def test_public_operation_recurrence_backpropagates_across_renderers() -> None:
+    from ettr_il_v2_surface import SurfaceRenderer, call, integer, symbol
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+
+    config = _config()
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    operator = symbol("x0000000000000001")
+    ast = call(
+        14,
+        integer(2),
+        call(1, call(3, operator, integer(0), call(0))),
+        call(13, call(4, operator), call(4, operator)),
+    )
+    transports = [
+        codec.pack(codec.serialize(ast, renderer), width=32)
+        for renderer in SurfaceRenderer
+    ]
+    tokens = torch.tensor(
+        [transport.token_ids for transport in transports],
+        dtype=torch.long,
+    )
+    compiler = ParallelTerminalStateCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        relation_width=16,
+        atomic_edits=True,
+        lexical_command=True,
+        token_native_command_mask=True,
+        cover_verified_command_mask=True,
+        token_native_syntax_graph_command=True,
+        token_native_declaration_binding_command=True,
+        token_native_operation_recurrence_command=True,
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_codebook_atoms=codec.codebook.atoms,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+    hidden = torch.randn(4, 32, config.d_model)
+    terminal = compiler(
+        _state(config, batch=4),
+        command_hidden=hidden,
+        command_lexical=torch.randn_like(hidden),
+        command_tokens=tokens,
+        command_attention_mask=torch.ones_like(tokens, dtype=torch.bool),
+        steps=3,
+        hard=False,
+    )
+    terminal.value_probabilities.square().mean().backward()
+
+    assert compiler.operation_recurrence is not None
+    gradient = compiler.operation_recurrence.ff[0].weight.grad
+    assert gradient is not None
+    assert bool(gradient.isfinite().all())
+
+
 def test_syntax_routed_atomic_compiler_ignores_transport_cover() -> None:
     config = _config()
     compiler = ParallelTerminalStateCompiler(

@@ -48,6 +48,7 @@ TOKEN_NATIVE_COVER_VERIFIED_COMMAND_MASK=${TOKEN_NATIVE_COVER_VERIFIED_COMMAND_M
 TOKEN_NATIVE_OCCURRENCE_COMMAND=${TOKEN_NATIVE_OCCURRENCE_COMMAND:-0}
 TOKEN_NATIVE_SYNTAX_GRAPH_COMMAND=${TOKEN_NATIVE_SYNTAX_GRAPH_COMMAND:-0}
 TOKEN_NATIVE_DECLARATION_BINDING_COMMAND=${TOKEN_NATIVE_DECLARATION_BINDING_COMMAND:-0}
+TOKEN_NATIVE_OPERATION_RECURRENCE_COMMAND=${TOKEN_NATIVE_OPERATION_RECURRENCE_COMMAND:-0}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
 for path in "$CODE_ROOT" "$RELEASE_ROOT" "$ETTR_DATA_ROOT" \
@@ -166,6 +167,16 @@ if [[ "$TOKEN_NATIVE_DECLARATION_BINDING_COMMAND" == 1 ]]; then
   residual_args+=(--token-native-declaration-binding-command)
 elif [[ "$TOKEN_NATIVE_DECLARATION_BINDING_COMMAND" != 0 ]]; then
   echo "terminal-state declaration binding setting differs" >&2
+  exit 2
+fi
+if [[ "$TOKEN_NATIVE_OPERATION_RECURRENCE_COMMAND" == 1 ]]; then
+  [[ "$TOKEN_NATIVE_DECLARATION_BINDING_COMMAND" == 1 ]] || {
+    echo "operation recurrence requires declaration binding" >&2
+    exit 2
+  }
+  residual_args+=(--token-native-operation-recurrence-command)
+elif [[ "$TOKEN_NATIVE_OPERATION_RECURRENCE_COMMAND" != 0 ]]; then
+  echo "terminal-state operation recurrence setting differs" >&2
   exit 2
 fi
 

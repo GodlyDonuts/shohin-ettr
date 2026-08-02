@@ -63,6 +63,7 @@ def _train_args(tmp_path: Path):
         token_native_occurrence_command=False,
         token_native_syntax_graph_command=False,
         token_native_declaration_binding_command=False,
+        token_native_operation_recurrence_command=False,
         atomic_action_weight=1.0,
     )
 
@@ -110,6 +111,11 @@ def test_terminal_schema_tracks_residual_architecture() -> None:
         "shohin-ettr-parallel-terminal-state-contract-v8",
         "shohin-ettr-parallel-terminal-state-report-v8",
         "shohin-ettr-parallel-terminal-state-metric-v8",
+    )
+    assert _run_schemas(False, True, True, True, False, True, True, True) == (
+        "shohin-ettr-parallel-terminal-state-contract-v9",
+        "shohin-ettr-parallel-terminal-state-report-v9",
+        "shohin-ettr-parallel-terminal-state-metric-v9",
     )
 
 

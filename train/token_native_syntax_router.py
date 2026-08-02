@@ -940,6 +940,105 @@ class TokenNativeSyntaxGraphEncoder(nn.Module):
         return self.output_norm(hidden)
 
 
+class TokenNativeOperationRouter(nn.Module):
+    """Extract explicit top-level COMMAND applications in semantic order.
+
+    Public COMMAND documents place their 1--6 operations directly beneath a
+    ``call(13, ...)`` node.  Prefix/postfix layout changes physical token
+    order, so selecting applications by position is incorrect.  This router
+    reuses the exact public AST links and returns one root-token mask per
+    semantic child rank.  It performs no ontology decoding or execution.
+    """
+
+    def __init__(
+        self,
+        codebook_token_ids: Sequence[int],
+        *,
+        vocab_size: int,
+        maximum_positions: int = 96,
+        maximum_operations: int = 6,
+    ) -> None:
+        super().__init__()
+        ids = tuple(int(value) for value in codebook_token_ids)
+        if (
+            not ids
+            or len(set(ids)) != len(ids)
+            or not isinstance(vocab_size, int)
+            or vocab_size < 1
+            or min(ids) < 0
+            or max(ids) >= vocab_size
+            or not isinstance(maximum_positions, int)
+            or maximum_positions < 3
+            or not isinstance(maximum_operations, int)
+            or maximum_operations < 1
+        ):
+            raise TokenNativeSyntaxRouterError(
+                "token-native operation geometry differs"
+            )
+        inverse = torch.full((vocab_size,), -1, dtype=torch.long)
+        inverse[torch.tensor(ids, dtype=torch.long)] = torch.arange(
+            len(ids),
+            dtype=torch.long,
+        )
+        self.register_buffer("inverse_codebook", inverse)
+        self.maximum_positions = maximum_positions
+        self.maximum_operations = maximum_operations
+
+    def forward(
+        self,
+        tokens: torch.Tensor,
+        document_mask: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        if (
+            tokens.ndim != 2
+            or tokens.dtype != torch.long
+            or document_mask.shape != tokens.shape
+            or document_mask.dtype != torch.bool
+            or tokens.shape[1] > self.maximum_positions
+            or tokens.device != document_mask.device
+        ):
+            raise TokenNativeSyntaxRouterError(
+                "token-native operation input differs"
+            )
+        codes = self.inverse_codebook[tokens]
+        torch._assert_async(
+            codes.ge(0).all(),
+            "token-native operation leaves the bound codebook",
+        )
+        parent, child_rank, _depth = TokenNativeSyntaxGraphEncoder._syntax_links(
+            codes,
+            document_mask,
+        )
+        is_call = codes.lt(CALL_END)
+        head = codes.div(CALL_STRIDE, rounding_mode="floor")
+        parent_head = head.gather(1, parent.clamp_min(0))
+        operation = (
+            document_mask
+            & parent.ge(0)
+            & is_call
+            & head.eq(4)
+            & parent_head.eq(13)
+        )
+        count = operation.sum(dim=1)
+        torch._assert_async(
+            (count.ge(1) & count.le(self.maximum_operations)).all(),
+            "token-native COMMAND operation count differs",
+        )
+        ranks = torch.arange(
+            self.maximum_operations,
+            device=tokens.device,
+        )
+        masks = operation[:, None, :] & child_rank[:, None, :].eq(
+            ranks[None, :, None]
+        )
+        expected = ranks[None, :].lt(count[:, None])
+        torch._assert_async(
+            masks.sum(dim=-1).eq(expected.to(torch.long)).all(),
+            "token-native COMMAND operation ranks differ",
+        )
+        return masks, count
+
+
 __all__ = [
     "CoverVerifiedTokenNativeDocumentMask",
     "TokenNativeDocumentMask",

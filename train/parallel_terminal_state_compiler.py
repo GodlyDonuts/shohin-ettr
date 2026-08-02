@@ -34,6 +34,7 @@ from token_native_syntax_router import (
     CoverVerifiedTokenNativeDocumentMask,
     TokenNativeDocumentMask,
     TokenNativeOccurrenceEncoder,
+    TokenNativeOperationRouter,
     TokenNativeSyntaxGraphEncoder,
 )
 
@@ -153,6 +154,7 @@ class ParallelTerminalStateCompiler(nn.Module):
         token_native_occurrence_command: bool = False,
         token_native_syntax_graph_command: bool = False,
         token_native_declaration_binding_command: bool = False,
+        token_native_operation_recurrence_command: bool = False,
         token_native_codebook_ids: Sequence[int] | None = None,
         token_native_codebook_atoms: Sequence[str] | None = None,
         token_native_vocab_size: int | None = None,
@@ -177,6 +179,7 @@ class ParallelTerminalStateCompiler(nn.Module):
             or not isinstance(token_native_occurrence_command, bool)
             or not isinstance(token_native_syntax_graph_command, bool)
             or not isinstance(token_native_declaration_binding_command, bool)
+            or not isinstance(token_native_operation_recurrence_command, bool)
             or (residual_edits and atomic_edits)
             or (
                 token_native_occurrence_command
@@ -194,6 +197,10 @@ class ParallelTerminalStateCompiler(nn.Module):
             or (
                 token_native_declaration_binding_command
                 and not token_native_syntax_graph_command
+            )
+            or (
+                token_native_operation_recurrence_command
+                and not token_native_declaration_binding_command
             )
             or (
                 token_native_command_mask
@@ -234,6 +241,9 @@ class ParallelTerminalStateCompiler(nn.Module):
         self.token_native_syntax_graph_command = token_native_syntax_graph_command
         self.token_native_declaration_binding_command = (
             token_native_declaration_binding_command
+        )
+        self.token_native_operation_recurrence_command = (
+            token_native_operation_recurrence_command
         )
 
         self.command_projection = nn.Linear(config.d_model, width)
@@ -282,6 +292,16 @@ class ParallelTerminalStateCompiler(nn.Module):
             if token_native_syntax_graph_command
             else None
         )
+        self.command_operation_router = (
+            TokenNativeOperationRouter(
+                token_native_codebook_ids,
+                vocab_size=token_native_vocab_size,
+                maximum_positions=96,
+                maximum_operations=6,
+            )
+            if token_native_operation_recurrence_command
+            else None
+        )
         self.value_embedding = nn.Parameter(
             torch.empty(config.num_value_codes, width)
         )
@@ -303,6 +323,11 @@ class ParallelTerminalStateCompiler(nn.Module):
         self.initial_state_norm = nn.LayerNorm(width)
         self.layers = nn.ModuleList(
             _TerminalStateLayer(width, num_heads) for _ in range(layers)
+        )
+        self.operation_recurrence = (
+            _TerminalStateLayer(width, num_heads)
+            if token_native_operation_recurrence_command
+            else None
         )
         self.output_norm = nn.LayerNorm(width)
         self.value_head = nn.Linear(width, config.num_value_codes)
@@ -543,6 +568,35 @@ class ParallelTerminalStateCompiler(nn.Module):
             slots = slots + initial
         for layer in self.layers:
             slots = layer(slots, memory, memory_padding)
+        if self.command_operation_router is not None:
+            if command_tokens is None or self.operation_recurrence is None:
+                raise TheoryReactorError(
+                    "terminal-state operation recurrence input differs"
+                )
+            operation_masks, operation_count = self.command_operation_router(
+                command_tokens,
+                command_attention_mask,
+            )
+            operation_padding = torch.zeros(
+                batch,
+                1 + self.config.num_slots,
+                dtype=torch.bool,
+                device=command.device,
+            )
+            for operation_index in range(operation_masks.shape[1]):
+                operation = torch.bmm(
+                    operation_masks[:, operation_index]
+                    .unsqueeze(1)
+                    .to(command.dtype),
+                    command,
+                )
+                updated = self.operation_recurrence(
+                    slots,
+                    torch.cat((operation, initial), dim=1),
+                    operation_padding,
+                )
+                active = operation_count.gt(operation_index).view(batch, 1, 1)
+                slots = torch.where(active, updated, slots)
         return self.output_norm(slots)
 
     def _atomic_edits_from_slots(

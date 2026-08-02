@@ -73,6 +73,12 @@ DECLARATION_BOUND_ATOMIC_CONTRACT_SCHEMA = (
 DECLARATION_BOUND_ATOMIC_REPORT_SCHEMA = (
     "shohin-ettr-parallel-terminal-state-report-v8"
 )
+OPERATION_RECURRENT_ATOMIC_CONTRACT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-contract-v9"
+)
+OPERATION_RECURRENT_ATOMIC_REPORT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-report-v9"
+)
 CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v3"
 REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v3"
 CAUSAL_DELTA_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v2"
@@ -137,6 +143,10 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--token-native-declaration-binding-command",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--token-native-operation-recurrence-command",
         action="store_true",
     )
     parser.add_argument("--atomic-action-weight", type=float, default=1.0)
@@ -210,6 +220,10 @@ def _validate_args(args: argparse.Namespace) -> None:
         or (
             args.token_native_declaration_binding_command
             and not args.token_native_syntax_graph_command
+        )
+        or (
+            args.token_native_operation_recurrence_command
+            and not args.token_native_declaration_binding_command
         )
         or args.output.exists()
         or args.output.is_symlink()
@@ -623,7 +637,26 @@ def _run_schemas(
     token_native_occurrence_command: bool = False,
     token_native_syntax_graph_command: bool = False,
     token_native_declaration_binding_command: bool = False,
+    token_native_operation_recurrence_command: bool = False,
 ) -> tuple[str, str, str]:
+    if token_native_operation_recurrence_command:
+        if (
+            residual_edits
+            or not atomic_edits
+            or not lexical_command
+            or not token_native_command_mask
+            or token_native_occurrence_command
+            or not token_native_syntax_graph_command
+            or not token_native_declaration_binding_command
+        ):
+            raise ParallelTerminalStatePilotError(
+                "operation-recurrent terminal-state architecture schema differs"
+            )
+        return (
+            OPERATION_RECURRENT_ATOMIC_CONTRACT_SCHEMA,
+            OPERATION_RECURRENT_ATOMIC_REPORT_SCHEMA,
+            "shohin-ettr-parallel-terminal-state-metric-v9",
+        )
     if token_native_declaration_binding_command:
         if (
             residual_edits
@@ -800,6 +833,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.token_native_occurrence_command,
         args.token_native_syntax_graph_command,
         args.token_native_declaration_binding_command,
+        args.token_native_operation_recurrence_command,
     )
     if not torch.cuda.is_available():
         raise ParallelTerminalStatePilotError(
@@ -858,6 +892,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         ),
         token_native_declaration_binding_command=(
             args.token_native_declaration_binding_command
+        ),
+        token_native_operation_recurrence_command=(
+            args.token_native_operation_recurrence_command
         ),
         token_native_codebook_ids=(
             stream.codec.codebook.token_ids
@@ -950,6 +987,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ),
                 "token_native_declaration_binding_command": (
                     args.token_native_declaration_binding_command
+                ),
+                "token_native_operation_recurrence_command": (
+                    args.token_native_operation_recurrence_command
                 ),
                 "token_native_codebook_sha256": (
                     stream.codec.codebook_sha256

@@ -177,3 +177,15 @@ guarded-edit V100 job `725616` was released immediately. Its exact source is
 private commit `17b4e605689a707254699d01c7a543e9b88c9420`; its sealed runtime
 manifest SHA-256 is
 `b9fa32a0572e55a2d03f884a3cc827d7524e4501328fcb8630a2f3f46ec35e33`.
+
+The guarded-edit gate is also now measured. V100 job `725616` decreases
+oracle-initial value accuracy from 74.345% to 70.961% and autonomous-initial
+value accuracy from 58.543% to 55.049%; exact packets and both strict axes
+remain zero. This closes one-shot episode-wide terminal editing even after
+the public declaration repair. The next branch is not another edit loss or
+seed. Public COMMAND syntax exposes 1--6 top-level applications beneath
+`call(13)`. The v9 successor extracts those roots in semantic child order
+independently of renderer layout and applies one tied latent state update per
+visible operation before emitting the guarded terminal difference. This
+directly tests multi-operation composition without learning or consuming the
+assessor's arbitrary low-level opcode schedule.

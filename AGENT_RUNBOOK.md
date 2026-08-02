@@ -23870,3 +23870,41 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `retain_declaration_binding_as_a_public_interface_invariant_reject_it_as_a_reasoning_repair_and_route_immediately_to_query_independent_guarded_terminal_state_edits`.
+
+- **2026-08-02 05:52--06:07 EDT** -- **One-shot guarded edits are closed;
+  explicit public-operation recurrence is the next mechanism.**
+
+  Declaration-bound guarded-edit V100 job `725616` completed all 1,000
+  updates cleanly on `evc15` in 12m48s. Its immutable report is preserved at
+  `artifacts/r12/ettr_guarded_edit_declaration_u1000_a31_d11_v100_17b4e60_r1/report.json`
+  with SHA-256
+  `ba90b89d2399e8069fae79cec76190e07690df578bbd2f5893cea62931491a78`;
+  pilot-contract SHA-256 is
+  `be28edfaee8039648cb840c8fce47bd18bd227ed21f8f44e8f22c55bf067727b`.
+  The 35,656,536-parameter editor leaves the complete system at 191,595,430
+  parameters. Despite falling atomic-action loss, it makes the held-out state
+  worse: oracle-initial value accuracy falls from 74.344978% to 70.960699%,
+  autonomous-initial value falls from 58.542576% to 55.049127%, exact packets
+  remain `0/512`, autonomous factual top-1 remains 60.9375%, and strict WORLD
+  and COMMAND remain exactly zero with zero margin and zero DID. Because the
+  oracle interface itself regresses, held autonomous-initial duplicate
+  `725617` was canceled without running. One-shot terminal edit prediction is
+  closed; the result is not evidence for more width, duration, or seeds.
+
+  The failure successor was implemented while `725616` ran. Public COMMAND
+  ASTs place 1--6 explicit operation applications directly under `call(13)`.
+  `TokenNativeOperationRouter` reconstructs exact AST parent and semantic
+  child-rank links, extracts only those top-level application roots, and
+  returns them in renderer-invariant semantic order. A tied latent state
+  transition then runs once per visible operation before the retained atomic
+  terminal edit is emitted. This adds no assessor trace, opcode schedule,
+  QUERY, answer, target, candidate search, or host semantic execution at
+  inference. It attacks the newly localized one-shot composition bottleneck
+  while retaining exact masking and declaration binding. The recurrent
+  compiler has 39,860,568 parameters and leaves the complete system near
+  195.8M. Renderer-order, recurrent-gradient, compiler, evaluator, schema,
+  and custody checks pass `65 passed, 1 CUDA-only skipped`; Ruff, byte
+  compilation, and Bash syntax are clean.
+
+  Decision:
+  `close_episode_wide_guarded_edit_prediction_and_test_tied_latent_state_updates_once_per_explicit_public_command_operation`.
