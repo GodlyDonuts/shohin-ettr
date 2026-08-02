@@ -140,6 +140,7 @@ class ParallelTerminalStateCompiler(nn.Module):
         relation_width: int = 64,
         residual_edits: bool = False,
         atomic_edits: bool = False,
+        lexical_command: bool = False,
     ) -> None:
         super().__init__()
         config.validate()
@@ -155,6 +156,7 @@ class ParallelTerminalStateCompiler(nn.Module):
             or relation_width < 8
             or not isinstance(residual_edits, bool)
             or not isinstance(atomic_edits, bool)
+            or not isinstance(lexical_command, bool)
             or (residual_edits and atomic_edits)
         ):
             raise TheoryReactorError("terminal-state compiler geometry differs")
@@ -165,8 +167,14 @@ class ParallelTerminalStateCompiler(nn.Module):
         self.relation_width = relation_width
         self.residual_edits = residual_edits
         self.atomic_edits = atomic_edits
+        self.lexical_command = lexical_command
 
         self.command_projection = nn.Linear(config.d_model, width)
+        self.command_lexical_projection = (
+            nn.Linear(config.d_model, width, bias=False)
+            if lexical_command
+            else None
+        )
         self.command_norm = nn.LayerNorm(width)
         self.value_embedding = nn.Parameter(
             torch.empty(config.num_value_codes, width)
@@ -331,6 +339,7 @@ class ParallelTerminalStateCompiler(nn.Module):
         state: TypedTheoryState,
         *,
         command_hidden: torch.Tensor,
+        command_lexical: torch.Tensor | None,
         command_attention_mask: torch.Tensor,
         steps: int,
     ) -> torch.Tensor:
@@ -341,12 +350,30 @@ class ParallelTerminalStateCompiler(nn.Module):
             or command_hidden.ndim != 3
             or command_hidden.shape[0] != batch
             or command_hidden.shape[-1] != self.config.d_model
+            or (
+                self.lexical_command
+                and (
+                    command_lexical is None
+                    or command_lexical.shape != command_hidden.shape
+                )
+            )
+            or (
+                not self.lexical_command
+                and command_lexical is not None
+            )
             or command_attention_mask.shape != command_hidden.shape[:2]
             or command_attention_mask.dtype != torch.bool
         ):
             raise TheoryReactorError("terminal-state compiler input differs")
 
-        command = self.command_norm(self.command_projection(command_hidden))
+        command = self.command_projection(command_hidden)
+        if self.command_lexical_projection is not None:
+            if command_lexical is None:
+                raise TheoryReactorError(
+                    "terminal-state compiler lexical COMMAND is absent"
+                )
+            command = command + self.command_lexical_projection(command_lexical)
+        command = self.command_norm(command)
         initial = self._initial_memory(state)
         memory = torch.cat((command, initial), dim=1)
         memory_padding = torch.cat(
@@ -540,6 +567,7 @@ class ParallelTerminalStateCompiler(nn.Module):
         state: TypedTheoryState,
         *,
         command_hidden: torch.Tensor,
+        command_lexical: torch.Tensor | None = None,
         command_attention_mask: torch.Tensor,
         steps: int,
         hard: bool,
@@ -547,6 +575,7 @@ class ParallelTerminalStateCompiler(nn.Module):
         slots = self._encode_slots(
             state,
             command_hidden=command_hidden,
+            command_lexical=command_lexical,
             command_attention_mask=command_attention_mask,
             steps=steps,
         )
@@ -561,6 +590,7 @@ class ParallelTerminalStateCompiler(nn.Module):
         state: TypedTheoryState,
         *,
         command_hidden: torch.Tensor,
+        command_lexical: torch.Tensor | None = None,
         command_attention_mask: torch.Tensor,
         steps: int,
         hard: bool,
@@ -568,6 +598,7 @@ class ParallelTerminalStateCompiler(nn.Module):
         slots = self._encode_slots(
             state,
             command_hidden=command_hidden,
+            command_lexical=command_lexical,
             command_attention_mask=command_attention_mask,
             steps=steps,
         )
@@ -716,6 +747,7 @@ class ParallelTerminalStateReactor(nn.Module):
             raise TheoryReactorError("terminal-state reactor config differs")
         self.config = config
         self.compiler = compiler
+        self.requires_command_lexical = compiler.lexical_command
 
     def forward(
         self,
@@ -724,6 +756,7 @@ class ParallelTerminalStateReactor(nn.Module):
         steps: int,
         hard: bool = False,
         command_hidden: torch.Tensor | None = None,
+        command_lexical: torch.Tensor | None = None,
         command_attention_mask: torch.Tensor | None = None,
     ) -> tuple[TypedTheoryState, ReactorTrace]:
         if command_hidden is None or command_attention_mask is None:
@@ -731,6 +764,7 @@ class ParallelTerminalStateReactor(nn.Module):
         terminal = self.compiler(
             state,
             command_hidden=command_hidden,
+            command_lexical=command_lexical,
             command_attention_mask=command_attention_mask.bool(),
             steps=steps,
             hard=hard,

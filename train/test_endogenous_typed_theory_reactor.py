@@ -16,6 +16,10 @@ from endogenous_typed_theory_reactor import (
     validate_state,
 )
 from model import GPT, GPTConfig
+from parallel_terminal_state_compiler import (
+    ParallelTerminalStateCompiler,
+    ParallelTerminalStateReactor,
+)
 
 
 def _model() -> EndogenousTypedTheoryReactorGPT:
@@ -157,6 +161,31 @@ def test_hard_reactor_emits_exact_transaction_choices() -> None:
     )
     assert bool((state.relations.sum(dim=(1, 2, 3)) <= model.config.max_edges).all())
     validate_state(state, model.config)
+
+
+def test_execute_supplies_direct_lexical_command_to_replacement_reactor() -> None:
+    model = _model()
+    compiler = ParallelTerminalStateCompiler(
+        model.config,
+        width=64,
+        layers=1,
+        num_heads=4,
+        relation_width=16,
+        atomic_edits=True,
+        lexical_command=True,
+    )
+    model.reactor = ParallelTerminalStateReactor(compiler, model.config)
+    state = model.compile_world(torch.randint(0, 64, (2, 8)), hard=True)
+    command = torch.randint(0, 64, (2, 7))
+    terminal, _trace = model.execute(
+        state,
+        steps=3,
+        hard=True,
+        command_idx=command,
+        command_attention_mask=torch.ones_like(command, dtype=torch.bool),
+    )
+    validate_state(terminal, model.config)
+    assert terminal.step == 3
 
 
 def test_parameter_receipt_counts_unique_complete_system() -> None:

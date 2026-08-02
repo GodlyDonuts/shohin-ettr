@@ -1309,13 +1309,19 @@ class EndogenousTypedTheoryReactorGPT(nn.Module):
         command_hidden = (
             None if command_idx is None else self._encode_to_stage(command_idx, pos=0)
         )
-        return self.reactor(
-            state,
-            steps=steps,
-            hard=hard,
-            command_hidden=command_hidden,
-            command_attention_mask=command_attention_mask,
-        )
+        reactor_arguments = {
+            "steps": steps,
+            "hard": hard,
+            "command_hidden": command_hidden,
+            "command_attention_mask": command_attention_mask,
+        }
+        if getattr(self.reactor, "requires_command_lexical", False):
+            if command_idx is None:
+                raise TheoryReactorError(
+                    "lexical COMMAND reactor requires command token ids"
+                )
+            reactor_arguments["command_lexical"] = self.base.tok(command_idx)
+        return self.reactor(state, **reactor_arguments)
 
     def answer_query(
         self,

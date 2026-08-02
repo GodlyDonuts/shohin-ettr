@@ -53541,3 +53541,27 @@ answer, target, candidate score, or external execution.
 
 Current decision:
 `replace_independent_field_interpolation_with_one_coherent_typed_edit_object_and_gate_it_before_any_scale_up`.
+
+The coherent edit object is mechanically valid but does not cross the causal
+gate. Three autonomous-initial runs leave WORLD and COMMAND strict and
+margin-1 at zero. A stronger action loss damages value transport. The sharper
+oracle-initial isolation also fails: with exact WORLD state, held-out terminal
+value accuracy decreases from 74.34% to 71.51% and exact packets remain zero.
+The positive oracle-terminal readout is unchanged before/after and therefore
+cannot be attributed to the editor. This rejects the frozen layer-19 COMMAND
+residual as a sufficient binding surface, not the exact atomic algebra.
+
+The active successor is dual-rail typed editing. It retains the fixed atomic
+state transition but fuses two position-aligned COMMAND representations: the
+frozen contextual residual and the frozen raw token embedding through an
+independent learned projection. This preserves opaque lexical identity that
+the undertrained backbone can erase while retaining contextual structure. No
+QUERY, answer, target packet, trace, oracle program, host solver, or candidate
+selection enters inference. A matched oracle-initial H100 arm decides whether
+the direct lexical rail repairs value binding. On success the same stage-
+separated principle moves to WORLD compilation; on failure the next topology
+must use explicit token-occurrence/value pointers rather than generic slot
+cross-attention.
+
+Current decision:
+`preserve_exact_atomic_execution_but_stop_forcing_opaque_bindings_through_one_lossy_frozen_residual`.

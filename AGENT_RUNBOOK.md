@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-01 23:05 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 00:05 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -140,11 +140,16 @@
 > WORLD/COMMAND and the oracle-program/autonomous-state causal isolation at
 > zero. The H100 report SHA-256 is
 > `eeb7115a55970547ecf5f724595caaaed11d52e7b3ec5e87e7d47c1ad2e512c0`;
-> sparse independent gates are closed. Contract v4 is the active successor:
-> it compiles categorical node, relation, root, and disposition edits and
-> applies them through a fixed atomic state algebra. Canonical action targets
-> are derived only from initial and terminal packets, never from QUERY or
-> answers. Local qualification is in progress.
+> sparse independent gates are closed. Contract v4 compiles categorical node,
+> relation, root, and disposition edits and applies them through a fixed atomic
+> state algebra. Three autonomous-initial arms and an oracle-initial H100
+> isolation all fail the strict gate. The oracle-initial editor's held-out
+> value accuracy falls from 74.34% to 71.51%, exact packets remain zero, and
+> autonomous WORLD/COMMAND remain zero; the frozen layer-19 COMMAND residual is
+> therefore also closed as a sufficient binding interface. Contract v5 is the
+> active successor: it retains exact atomic execution but fuses a direct frozen
+> lexical embedding rail with the contextual COMMAND residual. QUERY, answers,
+> targets, oracle programs, and host execution remain absent.
 > No current artifact is promoted as stable native reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
@@ -23185,3 +23190,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_atomic_weight_one_and_four_in_parallel_but_promote_only_joint_hard_causality`.
+
+- **2026-08-01 23:14--2026-08-02 00:05 EDT** -- **Atomic execution is exact,
+  but residual-only edit selection and the oracle-initial isolation are
+  closed; direct lexical preservation is implemented.**
+
+  H100 autonomous primary `725510`, V100 numerical replication `725511`, and
+  H100 action-weight-4 arm `725513` all complete 1,000 updates. Their held-out
+  factual rates are 54.49%, 54.69%, and 54.69%. Every arm has exact packet
+  `0/512`, fully autonomous WORLD/COMMAND strict and margin-1 zero, and
+  oracle-program/autonomous-state WORLD/COMMAND strict, margin-1, and DID
+  zero. Increasing action dose worsens value accuracy to 49.43%. Atomic edit
+  coherence is not the missing primitive.
+
+  Preregistered oracle-initial H100 job `725517` completes in 11:55. Its report
+  SHA-256 is
+  `071c1978ae7462e225fd016734f03022765613fa54aa9379db9ec9fd2bda204a`.
+  Held-out oracle-initial terminal value accuracy falls from 74.344978% to
+  71.506550%; exact packets remain zero. Autonomous-initial value accuracy
+  falls from 58.542576% to 55.431223%, and autonomous strict gates remain zero.
+  The unchanged 55% oracle-terminal reader control is explicitly not an editor
+  result. This cleanly rejects the frozen layer-19 COMMAND residual as a
+  sufficient edit-binding interface even when WORLD is exact.
+
+  Contract v5 adds one synchronized direct lexical rail to the retained atomic
+  editor: Shohin's frozen raw token embedding is independently projected and
+  fused with its frozen layer-19 contextual residual before COMMAND cross-
+  attention. The added projection raises the compiler from 19,574,616 to
+  19,869,528 parameters while retaining the sub-200M complete system. Raw
+  COMMAND is still deleted after edit compilation. Forty-seven focused and
+  related tests pass; Ruff, byte compilation, Bash syntax, and diff checks are
+  clean. The matched oracle-initial lexical arm is the next sealed H100 gate.
+
+  Decision:
+  `close_residual_only_command_binding_and_test_direct_lexical_identity_before_explicit_occurrence_pointers`.

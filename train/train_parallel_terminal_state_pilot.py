@@ -51,6 +51,10 @@ from train_parallel_addressed_transaction_pilot import (
 
 ATOMIC_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v4"
 ATOMIC_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v4"
+LEXICAL_ATOMIC_CONTRACT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-contract-v5"
+)
+LEXICAL_ATOMIC_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v5"
 CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v3"
 REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v3"
 CAUSAL_DELTA_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v2"
@@ -102,6 +106,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--relation-width", type=int, default=64)
     parser.add_argument("--residual-edits", action="store_true")
     parser.add_argument("--atomic-edits", action="store_true")
+    parser.add_argument("--lexical-command", action="store_true")
     parser.add_argument("--atomic-action-weight", type=float, default=1.0)
     parser.add_argument(
         "--required-device-class",
@@ -149,6 +154,7 @@ def _validate_args(args: argparse.Namespace) -> None:
         or not math.isfinite(args.atomic_action_weight)
         or args.atomic_action_weight <= 0.0
         or (args.residual_edits and args.atomic_edits)
+        or (args.lexical_command and not args.atomic_edits)
         or args.output.exists()
         or args.output.is_symlink()
         or not args.output.parent.is_dir()
@@ -556,7 +562,18 @@ def _module_sha256(module: torch.nn.Module, path: Path) -> str:
 def _run_schemas(
     residual_edits: bool,
     atomic_edits: bool = False,
+    lexical_command: bool = False,
 ) -> tuple[str, str, str]:
+    if lexical_command:
+        if residual_edits or not atomic_edits:
+            raise ParallelTerminalStatePilotError(
+                "lexical terminal-state architecture schema differs"
+            )
+        return (
+            LEXICAL_ATOMIC_CONTRACT_SCHEMA,
+            LEXICAL_ATOMIC_REPORT_SCHEMA,
+            "shohin-ettr-parallel-terminal-state-metric-v5",
+        )
     if atomic_edits:
         if residual_edits:
             raise ParallelTerminalStatePilotError(
@@ -618,6 +635,11 @@ def _evaluate_interfaces(
                 batch.episodes.command.tokens,
                 pos=0,
             )
+            command_lexical = (
+                model.base.tok(batch.episodes.command.tokens)
+                if compiler.lexical_command
+                else None
+            )
             for source in counts:
                 initial = _training_initial_state(
                     model,
@@ -628,6 +650,7 @@ def _evaluate_interfaces(
                 terminal = compiler(
                     initial,
                     command_hidden=command_hidden,
+                    command_lexical=command_lexical,
                     command_attention_mask=(
                         batch.episodes.command.attention_mask.bool()
                     ),
@@ -661,6 +684,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     contract_schema, report_schema, metric_schema = _run_schemas(
         args.residual_edits,
         args.atomic_edits,
+        args.lexical_command,
     )
     if not torch.cuda.is_available():
         raise ParallelTerminalStatePilotError(
@@ -708,6 +732,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         relation_width=args.relation_width,
         residual_edits=args.residual_edits,
         atomic_edits=args.atomic_edits,
+        lexical_command=args.lexical_command,
     ).to(device=device, dtype=next(model.parameters()).dtype)
     compiler_parameters = sum(
         parameter.numel() for parameter in compiler.parameters()
@@ -769,6 +794,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "causal_rectangle_delta_credit": True,
                 "atomic_typed_edits": args.atomic_edits,
                 "fixed_atomic_edit_algebra": args.atomic_edits,
+                "lexical_command_rail": args.lexical_command,
                 "direct_terminal_quotient": True,
                 "layers": args.layers,
                 "no_query_input": True,
@@ -861,6 +887,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                     batch.episodes.command.tokens,
                     pos=0,
                 )
+                command_lexical = (
+                    model.base.tok(batch.episodes.command.tokens)
+                    if args.lexical_command
+                    else None
+                )
             atomic_targets = None
             if args.atomic_edits:
                 atomic_targets = derive_atomic_edit_targets(initial, target)
@@ -878,6 +909,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                     predicted, atomic_edits = compiler.forward_with_atomic_edits(
                         initial,
                         command_hidden=command_hidden.detach(),
+                        command_lexical=(
+                            None
+                            if command_lexical is None
+                            else command_lexical.detach()
+                        ),
                         command_attention_mask=(
                             batch.episodes.command.attention_mask.bool()
                         ),

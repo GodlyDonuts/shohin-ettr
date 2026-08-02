@@ -42,6 +42,7 @@ REQUIRED_DEVICE_CLASS=${REQUIRED_DEVICE_CLASS:-h100}
 RESIDUAL_EDITS=${RESIDUAL_EDITS:-0}
 ATOMIC_EDITS=${ATOMIC_EDITS:-0}
 ATOMIC_ACTION_WEIGHT=${ATOMIC_ACTION_WEIGHT:-1.0}
+LEXICAL_COMMAND=${LEXICAL_COMMAND:-0}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
 for path in "$CODE_ROOT" "$RELEASE_ROOT" "$ETTR_DATA_ROOT" \
@@ -99,6 +100,16 @@ elif [[ "$ATOMIC_EDITS" != 0 ]]; then
 fi
 if [[ "$RESIDUAL_EDITS" == 1 && "$ATOMIC_EDITS" == 1 ]]; then
   echo "terminal-state edit architectures conflict" >&2
+  exit 2
+fi
+if [[ "$LEXICAL_COMMAND" == 1 ]]; then
+  [[ "$ATOMIC_EDITS" == 1 ]] || {
+    echo "terminal-state lexical COMMAND requires atomic edits" >&2
+    exit 2
+  }
+  residual_args+=(--lexical-command)
+elif [[ "$LEXICAL_COMMAND" != 0 ]]; then
+  echo "terminal-state lexical COMMAND setting differs" >&2
   exit 2
 fi
 

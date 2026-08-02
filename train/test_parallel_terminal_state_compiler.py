@@ -138,6 +138,32 @@ def test_atomic_terminal_compiler_emits_valid_hard_state() -> None:
     assert terminal.step == 3
 
 
+def test_lexical_atomic_compiler_requires_and_uses_direct_tokens() -> None:
+    config = _config()
+    compiler = ParallelTerminalStateCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        relation_width=16,
+        atomic_edits=True,
+        lexical_command=True,
+    )
+    inputs = _inputs(config)
+    with pytest.raises(TheoryReactorError, match="input differs"):
+        compiler(_state(config), **inputs, hard=False)
+    inputs["command_lexical"] = torch.randn_like(inputs["command_hidden"])
+    _terminal, edits = compiler.forward_with_atomic_edits(
+        _state(config),
+        **inputs,
+        hard=False,
+    )
+    edits.value_code.square().mean().backward()
+    gradient = compiler.command_lexical_projection.weight.grad
+    assert gradient is not None
+    assert bool(gradient.isfinite().all())
+
+
 def test_terminal_compiler_backpropagates_every_semantic_head() -> None:
     config = _config()
     compiler = ParallelTerminalStateCompiler(
@@ -246,6 +272,17 @@ def test_production_atomic_edit_compiler_fits_system_cap() -> None:
     )
     parameters = sum(parameter.numel() for parameter in compiler.parameters())
     assert parameters == 19_574_616
+    assert parameters < 44_061_106
+
+
+def test_production_lexical_atomic_compiler_fits_system_cap() -> None:
+    compiler = ParallelTerminalStateCompiler(
+        TheoryReactorConfig(),
+        atomic_edits=True,
+        lexical_command=True,
+    )
+    parameters = sum(parameter.numel() for parameter in compiler.parameters())
+    assert parameters == 19_869_528
     assert parameters < 44_061_106
 
 
