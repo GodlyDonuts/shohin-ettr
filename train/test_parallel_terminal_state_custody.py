@@ -14,6 +14,7 @@ from eval_parallel_terminal_state import (
 from train_ettr_component_island import _sha256_file
 from train_parallel_terminal_state_pilot import (
     ParallelTerminalStatePilotError,
+    _run_schemas,
     _validate_args as validate_train_args,
 )
 
@@ -64,6 +65,19 @@ def test_train_contract_accepts_only_fresh_absolute_output(tmp_path: Path) -> No
     args.output.mkdir()
     with pytest.raises(ParallelTerminalStatePilotError, match="arguments differ"):
         validate_train_args(args)
+
+
+def test_terminal_schema_tracks_residual_architecture() -> None:
+    assert _run_schemas(True) == (
+        "shohin-ettr-parallel-terminal-state-contract-v3",
+        "shohin-ettr-parallel-terminal-state-report-v3",
+        "shohin-ettr-parallel-terminal-state-metric-v3",
+    )
+    assert _run_schemas(False) == (
+        "shohin-ettr-parallel-terminal-state-contract-v2",
+        "shohin-ettr-parallel-terminal-state-report-v2",
+        "shohin-ettr-parallel-terminal-state-metric-v2",
+    )
 
 
 def test_terminal_run_receipt_rejects_mutation(tmp_path: Path) -> None:

@@ -309,6 +309,20 @@ def _module_sha256(module: torch.nn.Module, path: Path) -> str:
     return _sha256_file(path)
 
 
+def _run_schemas(residual_edits: bool) -> tuple[str, str, str]:
+    if residual_edits:
+        return (
+            CONTRACT_SCHEMA,
+            REPORT_SCHEMA,
+            "shohin-ettr-parallel-terminal-state-metric-v3",
+        )
+    return (
+        CAUSAL_DELTA_CONTRACT_SCHEMA,
+        CAUSAL_DELTA_REPORT_SCHEMA,
+        "shohin-ettr-parallel-terminal-state-metric-v2",
+    )
+
+
 def _state_sha256(module: torch.nn.Module) -> str:
     digest = hashlib.sha256()
     for name, value in sorted(module.state_dict().items()):
@@ -387,6 +401,9 @@ def _evaluate_interfaces(
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     _validate_args(args)
+    contract_schema, report_schema, metric_schema = _run_schemas(
+        args.residual_edits
+    )
     if not torch.cuda.is_available():
         raise ParallelTerminalStatePilotError(
             "terminal-state pilot requires CUDA"
@@ -526,7 +543,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "reader_parameters": reader_parameters,
             "release_file_sha256": args.release_sha256,
             "required_device_class": args.required_device_class,
-            "schema": CONTRACT_SCHEMA,
+            "schema": contract_schema,
             "source_commit": args.source_commit,
             "start_position": args.start_position,
             "training_initial_state": args.training_initial_state,
@@ -641,7 +658,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                         for name, value in state_parts.items()
                     },
                     "position": last_position,
-                    "schema": "shohin-ettr-parallel-terminal-state-metric-v2",
+                    "schema": metric_schema,
                     "update": update,
                 }
                 with (args.output / "train.jsonl").open("ab", buffering=0) as log:
@@ -683,7 +700,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "last_position": last_position,
             "protected_checkpoint_sha256": provenance.checkpoint_sha256,
             "runtime_precision": str(next(compiler.parameters()).dtype),
-            "schema": REPORT_SCHEMA,
+            "schema": report_schema,
             "source_verification": source_verification,
             "status": "pass",
             "updates_completed": args.updates,
