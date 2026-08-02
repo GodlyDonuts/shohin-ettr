@@ -22902,3 +22902,14 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   training state. Twenty-six focused/regression tests pass; Ruff, byte
   compilation, Bash syntax, and diff checks are clean. Scale requires an
   autonomous hard-gate or margin gain without factual/schedule collapse.
+
+  Private commit `fb5a3bd` is pushed. Immutable runtime
+  `scratchpad/shohin_ettr_deployed_state_runtime_fb5a3bd_r1` retains 3,413
+  admitted files and has SHA256SUMS SHA-256
+  `c49e050b8f2740bfdad3e45fd3639eb43ac462969a9a9b7e09da7a0fbb3d2465`.
+  Test-only admission passed. Immutable receipt
+  `scratchpad/ettr-parallel-deployed-state-factorial-fb5a3bd.tsv`, SHA-256
+  `e6c99cdfb78eaccdaadd5e9d5af7e3a914bd38df2dfba0fa272614acb65d9253`,
+  records matched H100 jobs `725460` (oracle initial state) and `725461`
+  (autonomous initial state). Both use seed 31/data 11, LR `3e-4`, position
+  zero, 1,000 updates, 32 evaluation batches, and fresh isolated outputs.
