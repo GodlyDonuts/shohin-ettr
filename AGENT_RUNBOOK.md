@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 15:17 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 15:36 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -25018,3 +25018,42 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `require_the_corrected_v19_two_update_gate_and_rerun_the_exact_state_conditioning_audit_before_any_long_fit_or_successor_release`.
+
+- **2026-08-02 15:13--15:36 EDT** -- **Both corrected neural paths pass
+  real GPU mechanics; the sole long fit and independent handoff are queued.**
+
+  V19 family-island job `728829` completed on `evc7` in 2m59s. Its immutable
+  bundle replays, contract/report schemas are v19, source is exact `3f9817e`,
+  the public ledger is explicitly deferred, two updates are finite, and the
+  runtime payload-gradient guard did not fire. Bundle/report SHA-256 values
+  are `3d4ce7a068cae74833ddbdee320cdba197bdf5292a6c60c156e8da22b15fd5f5`
+  and `9992719d2ea247f2574896bb5f13012e67b6d9db129a76aedee3731e2e4a5fd3`.
+  This is mechanics only; the logged final batch contains LINK-family labels
+  and cannot promote family identifiability.
+
+  V15 WRITE/LINK payload job `728837` independently completed on `evc35` in
+  2m14s. Its full evaluation startup, count/pointer/payload paths, two updates,
+  no-replace output, and bundle replay pass with no stderr. Last loss is finite
+  at `2.9187629`; bundle/report SHA-256 values are
+  `7889567c72a657e49e241b9da4c72d8c32e0fcbbb4ee2eb0a8ea579d9d48946a`
+  and `14e81e7d79dbf782bf80b0f5a52dab486a26ede8d9540190c846bafdc98b522a`.
+  These two independent passes close the corrected launch-mechanics gate.
+
+  The sole claim-bearing corrected v15 fit is job `728844`: 1,000 updates,
+  seed pair `31/11`, oracle preceding state, unchanged geometry and loss,
+  generic CUDA, and fresh output
+  `train/ettr_operation_write_link_rails_deferred_ledger_u1000_a31_d11_anygpu_3f9817e_r1`.
+  Fail-closed dependency job `728845` verifies that bundle after success,
+  submits exactly one fresh-seed-13 32-batch evaluator, then one deterministic
+  CPU router. All healthy GPU nodes currently report both devices allocated;
+  Slurm estimates `728844` at 18:13 EDT. Deadline modification is denied and
+  test-only deadline/shorter-walltime submissions produce later estimates, so
+  the priority-bearing single writer is retained.
+
+  Corrected 48-core audit `760967` remains running on Stokes without stderr.
+  No family, rail-local, width, duration, or duplicate scientific successor is
+  released before the long fit and independent audit resolve their fixed
+  routes.
+
+  Decision:
+  `retain_the_priority_bearing_single_v15_writer_complete_the_independent_state_audit_and_route_one_mechanism_only_from_measured_family_count_operand_and_causal_failures`.

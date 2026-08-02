@@ -880,3 +880,24 @@ runtime is rejected as a new launch base. Replacement Stokes runtime
 zero links or writable entries, and has SHA256SUMS SHA-256
 `7a7dae677d66ac6e8776b0fdf95f6f3611013c13209471e1c307db8f0b1f31ed`.
 Corrected 48-core job `760967` writes to a fresh no-replace report path.
+
+## Corrected mechanics release
+
+Both branches now pass real GPU mechanics from the immutable deferred-ledger
+runtime. V19 family isolation `728829` completed two finite updates on `evc7`;
+its bundle/report SHA-256 values are
+`3d4ce7a068cae74833ddbdee320cdba197bdf5292a6c60c156e8da22b15fd5f5`
+and `9992719d2ea247f2574896bb5f13012e67b6d9db129a76aedee3731e2e4a5fd3`.
+V15 payload smoke `728837` completed on `evc35`, exercised the real
+count/pointer/payload path with finite loss `2.9187629`, and has bundle/report
+SHA-256 values
+`7889567c72a657e49e241b9da4c72d8c32e0fcbbb4ee2eb0a8ea579d9d48946a`
+and `14e81e7d79dbf782bf80b0f5a52dab486a26ede8d9540190c846bafdc98b522a`.
+Neither two-update result is capability evidence.
+
+Sole 1,000-update v15 fit `728844` is queued from the corrected runtime. Its
+fail-closed dependency `728845` submits one independent seed-13 evaluator and
+one deterministic router only after a valid terminal bundle exists. All
+healthy H100/V100 nodes currently have both GPUs allocated, and preserving
+the priority-bearing single writer is faster than the tested deadline or
+shorter-walltime replacements.
