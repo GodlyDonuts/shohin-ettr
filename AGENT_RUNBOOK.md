@@ -23164,3 +23164,24 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_independent_sparse_gates_and_launch_one_coherent_categorical_edit_applied_by_fixed_state_algebra`.
+
+- **2026-08-01 23:05--23:14 EDT** -- **Atomic typed edits pass real-batch
+  expressivity and are live on H100 and V100.**
+
+  Private commit `fb368f2` is pushed. Immutable full-archive runtime
+  `scratchpad/shohin_ettr_atomic_typed_edit_runtime_fb368f2_r1` contains 3,506
+  measured files, exact trainer SHA-256
+  `0e4f384ebbfce6db5a718226c89a71533001ce007dcf1e45ec83f175ab37ff12`,
+  and SHA256SUMS SHA-256
+  `976746668fa87faedb0b64907471eba82de5ac070d42199e42e8133c395ee72a`.
+  H100 primary `725510` runs on `evc28`; non-competing V100 diagnostic `725511`
+  runs on `evc12`. Both passed the update-1 requirement that canonical actions
+  reconstruct the complete real target packet exactly. Early action loss is
+  finite and falling; the 256-way value payload is the dominant residual.
+
+  Before sealed results, an equal-budget H100 dose arm with atomic-action
+  weight 4 is admitted. It cannot promote from training telemetry or packet
+  fields; the same hard WORLD plus COMMAND gate applies.
+
+  Decision:
+  `run_atomic_weight_one_and_four_in_parallel_but_promote_only_joint_hard_causality`.

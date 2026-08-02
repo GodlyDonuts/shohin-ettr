@@ -60,6 +60,14 @@ checkpoint, source-deleted reader, and held-out ordering as the sparse-
 residual arm. This changes the edit representation and executor, not the data
 population or evaluation.
 
+The primary action-loss weight is `1.0`. Before inspecting any sealed result,
+an equal-budget `4.0` dose arm is admitted because live training telemetry
+localizes most residual action loss to the 256-way value payload while node,
+relation, root, and disposition actions are already low. The primary remains
+the claim-bearing architecture gate. The dose cannot promote on action NLL,
+state loss, or interface fields; it must independently move both hard WORLD
+and COMMAND under the unchanged evaluator.
+
 ## Promotion And Rejection
 
 Promotion requires nonzero strict WORLD and strict COMMAND under the fully
