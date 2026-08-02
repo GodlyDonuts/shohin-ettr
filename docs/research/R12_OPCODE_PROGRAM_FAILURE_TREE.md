@@ -836,3 +836,37 @@ output contains the initial compiler weights. It remains in startup/interface
 evaluation, so no optimization or capability conclusion is available yet.
 V19 job `728770` remains a mechanics-only smoke and Stokes job `760964`
 continues the independent full-corpus state-conditioning audit.
+
+## Deferred public-ledger correction
+
+Allocated jobs `728691` and `728770` both failed before their first optimizer
+update. V15 exceeded its node-count support and v19 observed an effect outside
+the NONE/WRITE/LINK family. The common cause is now exact: the low-level trace
+writes command slot `48 + operation_rank` before each operation and advances
+cursor slot 54 afterward. The old neural operation-boundary projection mixed
+both packet-bookkeeping writes into the semantic operation. This inflated a
+three-WRITE operation to five node edits and changed a LINK-only operation to
+WRITE+LINK. No model result can be inferred from either job.
+
+Source `3f9817e706a9c4110a53da60e83417f1c4c66ece` defers slots 48--55 and
+incident relations to the final dense suffix. Recurrent credit now sees only
+the assessor-equivalent semantic operation state. Count labels also apply the
+frozen slot/relation support masks. The independent evaluator reconstructs
+the same boundary and requires the deferred-ledger contract field. Sixty-three
+focused tests pass. Capacity inflation is rejected because it would preserve
+the false ontology rather than repair it.
+
+The corrected source is admitted as immutable Newton runtime
+`scratchpad/shohin_ettr_deferred_ledger_runtime_3f9817e_r1`: 3,657 files,
+zero links, zero writable entries, full checksum replay, and SHA256SUMS
+SHA-256 `442308743e9b1d0ea7018464c40e3a9fa3012a099058682b3de6586a9959187d`.
+Two-update v19 mechanics job `728829` is the only GPU release from it. A long
+v15 fit remains blocked until the corrected operation boundary executes and
+backpropagates cleanly.
+
+State-conditioning audit `760964` also failed technically before measurement:
+its visitor rejected the deliberately abstract integer node `["integer"]`.
+The visitor now supports both abstract and resolved integer forms, with a
+regression through the actual abstraction function. This changes no family
+labels or evaluator. The corrected audit must complete before v19 can be
+classified as an optimization problem or rejected as a control primitive.

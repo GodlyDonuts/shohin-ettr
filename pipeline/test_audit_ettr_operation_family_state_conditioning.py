@@ -5,6 +5,9 @@ from audit_ettr_operation_family_state_conditioning import (
     operation_features,
     state_features,
 )
+from audit_ettr_operation_effect_family_identifiability import (
+    abstract_resolved_operation,
+)
 from audit_ettr_public_operation_state_delta import runtime_state_value
 from test_audit_ettr_public_operation_state_delta import _state
 
@@ -15,6 +18,13 @@ def test_operation_features_factor_structure_without_literal_identity() -> None:
     different = operation_features(["call", 8, [["integer", 3]]])
     assert left == right
     assert left != different
+
+
+def test_operation_features_accept_abstract_integer_nodes() -> None:
+    left = abstract_resolved_operation(["call", 7, [["integer", 3]]])
+    right = abstract_resolved_operation(["call", 7, [["integer", -129]]])
+    assert left == ["call", 7, [["integer"]]]
+    assert operation_features(left) == operation_features(right)
 
 
 def test_state_features_separate_topology_from_exact_values() -> None:

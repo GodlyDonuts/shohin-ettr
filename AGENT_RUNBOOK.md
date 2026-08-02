@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 14:31 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 15:12 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -24945,3 +24945,63 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `let_one_sealed_v15_fit_complete_then_measure_it_on_an_independent_seed_and_route_exactly_one_mechanism_without_an_approval_or_monitoring_gap`.
+
+- **2026-08-02 14:43--14:55 EDT** -- **The first allocated v15/v19 jobs expose
+  one shared boundary-ontology defect before learning; semantic effects are
+  now separated from public packet bookkeeping.**
+
+  V15 job `728691` passed all immutable-parent checks but failed before update
+  one because a `node_edit_count` label exceeded the three-WRITE rail support.
+  Mechanics-only v19 job `728770` independently failed before update one
+  because its supposedly exclusive family contained an unsupported effect.
+  Dispatch `728779` canceled by its fail-closed `afterok` dependency. These
+  are launch-contract failures and contain no optimizer or model evidence.
+
+  Exact trace review found the common cause. Each low-level operation begins
+  by writing its public command atom to slots 48--53 and ends by advancing
+  cursor slot 54. The prior operation-boundary oracle included both ledger
+  writes in the semantic state delta. A legal three-WRITE operation therefore
+  appeared to need five node writes, while a legal LINK operation appeared as
+  WRITE+LINK. The full-corpus assessor audit was correct; the neural boundary
+  projection was not equivalent to that assessor ontology.
+
+  Source `3f9817e706a9c4110a53da60e83417f1c4c66ece` introduces an explicit
+  deferred public-ledger boundary. Recurrent operation credit restores slots
+  48--55 and all incident relations from the initial state, so only the true
+  semantic WRITE/LINK effect is learned there. The separate final dense suffix
+  remains responsible for command cells, cursor, outcome, and disposition.
+  The count objectives now also respect exact slot/relation support masks.
+  Contracts and the independent evaluator require the new deferred-ledger
+  declaration. Sixty-three focused tests, including hostile out-of-support
+  masked changes, pass with clean Ruff, byte compilation, and diff checks.
+
+  Decision:
+  `reject_capacity_inflation_separate_public_ledger_bookkeeping_from_semantic_effects_and_repeat_mechanics_before_releasing_the_same_scientific_hypothesis`.
+
+- **2026-08-02 14:56--15:12 EDT** -- **The deferred-ledger correction is
+  immutably admitted; the state-conditioning audit exposes a separate
+  abstraction-only bug.**
+
+  Newton runtime
+  `scratchpad/shohin_ettr_deferred_ledger_runtime_3f9817e_r1` is bound to
+  source `3f9817e706a9c4110a53da60e83417f1c4c66ece`. It contains 3,657 files,
+  zero links, zero writable entries, passes complete checksum replay, and has
+  SHA256SUMS SHA-256
+  `442308743e9b1d0ea7018464c40e3a9fa3012a099058682b3de6586a9959187d`.
+  Generic-CUDA two-update v19 mechanics job `728829` is pending resources from
+  this exact runtime. It uses the same seed pair, oracle preceding state,
+  geometry, and payload-gradient isolation as failed job `728770`; only the
+  corrected semantic boundary and fresh output differ. A long scientific fit
+  remains blocked on this mechanics result.
+
+  Stokes audit `760964` failed after 19m49s without producing a classifier
+  result. Its public-operation path intentionally called
+  `abstract_resolved_operation`, which changes an integer from
+  `["integer", value]` to `["integer"]`, while the downstream factor visitor
+  accepted only the former. The visitor now explicitly accepts both forms;
+  the abstract form contributes type but no literal-sign or magnitude feature.
+  A direct regression exercises the same abstraction path. Seventy focused
+  tests pass with clean Ruff, byte compilation, Bash syntax, and diff checks.
+
+  Decision:
+  `require_the_corrected_v19_two_update_gate_and_rerun_the_exact_state_conditioning_audit_before_any_long_fit_or_successor_release`.

@@ -80,6 +80,10 @@ def operation_features(value: object, *, prefix: str = "operation") -> set[str]:
             )
         result.add(_feature([prefix, "kind", list(path), kind]))
         if kind == "integer":
+            # ``abstract_resolved_operation`` deliberately removes literal
+            # identity before the corpus audit reaches this visitor.
+            if len(node) == 1:
+                return
             if len(node) != 2 or not isinstance(node[1], int):
                 raise OperationFamilyStateConditioningError(
                     "resolved integer differs"
