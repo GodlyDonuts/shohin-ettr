@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 16:35 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 16:56 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -25203,3 +25203,42 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finish_v15_to_v21_once_then_measure_the_capability_floor_and_retire_interfaces_or_ettr_when_the_frozen_gates_require_it`.
+
+- **2026-08-02 16:32--16:56 EDT** -- **V15 completed cleanly and the exact
+  finite successor campaign is now live from one immutable runtime.**
+
+  Corrected v15 job `728844` ran on `evc7` for 20m37s and completed all 1,000
+  updates with exit `0:0`, no stderr, bfloat16 runtime, final loss
+  `3.9395614`, and final pre-clip gradient norm `0.60546875`. All 100 logged
+  metric records are finite; the observed maximum pre-clip gradient norm is
+  `15.1875`. The final five-file bundle replays from SHA256SUMS SHA-256
+  `1360341ccca35e1d64ebdb4c0b86047589afcccf1d7a02f7d10fa2958a7bd32e`.
+  Report SHA-256 is
+  `bfafea023b9aeea068333971e145313b52b156fd4d52def23cf32877b62cd2b6`;
+  final compiler SHA-256 is
+  `859608757683a97e60c292d8c714b716ea6b53af63fa74f5b6c912e09d761a4a`.
+
+  The fit-seed evaluation is movement, not promotion: fully autonomous
+  factual top-1 is `60.5469%`, COMMAND strict paired is `8/144 = 5.5556%`,
+  WORLD strict paired is `0/80`, and exact terminal packets remain `0/512`.
+  The fresh seed-13 source-deleted evaluator remains authoritative.
+
+  Private source `43084cdb4395fcb1e57f87f5e4f97a9162625b65` is pushed to
+  `origin/main`. Immutable Newton runtime
+  `scratchpad/shohin_ettr_operation_family_campaign_runtime_43084cd_r1`
+  contains 3,667 files, zero links, zero writable entries, passes complete
+  tracked-file and checksum replay, and has SHA256SUMS SHA-256
+  `43c589f80407105d0adf2ee921599b751749cf108854ad4e4951fef70b8d49b4`.
+  Two staging admissions failed closed on inherited immutable permissions;
+  neither was promoted until the exact file list and every digest passed.
+
+  New dispatcher `729210` completed in eight seconds after replaying the v15
+  bundle. It submitted independent evaluator `729309`, route `729310`, and
+  successor decision `729311` as one serialized chain. Evaluator `729309` is
+  pending resources with estimated start 18:13 EDT. The obsolete
+  evaluator-only dependency `728845` was canceled only after `729210` was
+  accepted and dependency/command verified. No v19, v20, or v21 fit exists at
+  this checkpoint.
+
+  Decision:
+  `v15_completed_with_nonzero_command_but_zero_world_wait_for_independent_family_measurement_then_dispatch_exactly_one_finite_successor`.

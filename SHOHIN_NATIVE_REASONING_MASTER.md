@@ -53983,3 +53983,21 @@ for a trillion-token launch. Full preregistration:
 
 Current decision:
 `finish_the_hash_bound_local_route_once_then_find_the_smallest_backbone_that_can_own_the_full_reasoning_trajectory_or_retire_the_mechanism`.
+
+### 2026-08-02: corrected v15 result and automatic handoff
+
+The sole corrected v15 fit completed all 1,000 updates in 20m37s with finite
+loss and gradients. Its fit-seed evaluation reaches 60.55% autonomous factual
+top-1 and 5.56% COMMAND strict pairs, but WORLD strict pairs and exact terminal
+packets remain zero. This is useful movement, not native reasoning and not a
+route decision; independent seed-13 evaluation remains sealed.
+
+The complete v15 bundle, immutable campaign runtime, and finite transition
+planner are now linked by checksums. The dispatcher submitted exactly one
+independent evaluator, one deterministic route, and one successor decision.
+No mechanism successor exists until those jobs complete. This is the first
+time the local compiler line can finish unattended without either losing
+predecessor weights or proliferating nearby experiments.
+
+Current decision:
+`measure_v15_independently_then_spend_one_successor_budget_or_stop_according_to_the_frozen_transition_table`.
