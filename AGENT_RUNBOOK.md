@@ -25445,3 +25445,38 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `measure_the_exact_protected_shohin_residual_interface_once_then_redesign_on_failure_or_freeze_replay_and_compute_receipts_on_pass`.
+
+- **2026-08-02 20:09--20:55 EDT** -- **Exact runtime admission and the
+  fail-fast feature smoke succeed; the undersized split refuses a scientific
+  score, and the full protected-Shohin gate is queued.**
+
+  Private commit `651d5102ec385cf995e6a4243deda93e109e0c1d` is pushed to
+  `origin/main`. Its git archive transferred resumably after the first copy
+  truncated and failed SHA validation; the completed 832,768,000-byte archive
+  matches SHA-256
+  `67368706a983f28fd3907fadebabc1ae9946a6aa99fd50e284011eb34b0b2cb9`.
+  Immutable runtime `scratchpad/capability_floor_runtime_651d510_r1` contains
+  3,690 files, zero links, zero writable entries, passes full checksum replay,
+  and has SHA256SUMS SHA-256
+  `80c0be427b19723889d03e26a638cfa8ba55c0f435e1de8e5faef7b8e77bb1c3`.
+
+  H100 smoke `729547` completed real checkpoint loading and feature extraction
+  before failing closed at the intended family-balance assertion. The exact
+  55,833,170-byte bundle has SHA-256
+  `3b5c8b4a6d39cdec192e7d07f113f0b344927c94b05aa2a23b448529ba8cbb39`.
+  Its four train cores contain 176 operation-view examples with family counts
+  NONE/WRITE/LINK `68/28/80`; its four development cores contain 112 examples
+  with counts `80/32/0`. Because development has no LINK orbit, no optimizer
+  update, score, or model artifact was produced. This is a sample-size/setup
+  failure, not a Shohin failure. The bundle is preserved read-only at
+  `artifacts/capability_floor/quarantine-setup-incomplete-real_tensor_smoke_651d510_s31d11-job729547`.
+
+  Full protected-Shohin job `729554` is now queued from the same immutable
+  runtime with 128 hash-ranked train cores, 128 development cores, architecture
+  seed 31, data seed 11, and 2,000 updates. Slurm currently estimates a 21:12
+  EDT start. The job writes to a distinct no-replace output and cannot touch
+  the checkpoint or quarantined smoke. No Qwen, SmolLM, ETTR, or dense-control
+  fit is authorized until this exact tensor gate reports.
+
+  Decision:
+  `the_real_feature_path_is_valid_wait_for_the_balanced_128_core_shohin_tensor_gate_and_apply_its_forced_interface_decision`.

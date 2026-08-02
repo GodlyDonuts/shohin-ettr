@@ -54133,3 +54133,13 @@ this runner is itself native reasoning.
 
 Current decision:
 `use_real_backbone_tensors_to_decide_interface_sufficiency_before_spending_the_capability_floor_matrix`.
+
+The first H100 mechanics pass confirms that the protected checkpoint can be
+loaded and its real residual bundle can be extracted under the new contract.
+The intentionally tiny four-core development sample contained no LINK family,
+so the balance gate refused to train or emit a score. That is correct behavior,
+not evidence against Shohin. The incomplete bundle is quarantined, and one
+128-core-per-split, 2,000-update protected-Shohin measurement is queued. Its
+result has a forced interpretation: sub-95% clean tensor recovery means the
+adapter is redesigned; a clean pass with controls at chance advances the
+shared replay/FLOP gates. There is no retry-by-width or local-family fallback.
