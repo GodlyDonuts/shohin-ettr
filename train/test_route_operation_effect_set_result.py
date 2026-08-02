@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from copy import deepcopy
 
-from route_operation_effect_set_result import REPORT_SCHEMA, route_result
+from route_operation_effect_set_result import (
+    CARDINALITY_GATED_SCHEMA,
+    REPORT_SCHEMA,
+    ROLE_ANCHORED_SCHEMA,
+    route_result,
+)
 
 
 def _local(
@@ -39,6 +44,7 @@ def _report() -> dict[str, object]:
     return {
         "schema": REPORT_SCHEMA,
         "status": "pass",
+        "terminal_state_receipt": {"contract_sha256": "0" * 64},
         "operation_effect_diagnostics": {
             "before": _local(),
             "after": _local(),
@@ -66,9 +72,9 @@ def test_router_promotes_only_simultaneous_local_and_causal_gain() -> None:
         dense=0.2,
         terminal=0.1,
     )
-    arm = report["evaluation"]["after"]["arms"][
-        "autonomous_program_autonomous_state"
-    ]["source_deleted_causal"]
+    arm = report["evaluation"]["after"]["arms"]["autonomous_program_autonomous_state"][
+        "source_deleted_causal"
+    ]
     arm["world"] = _causal(0.05)
     arm["command"] = _causal(0.1)
     assert route_result(report)["route"] == "replicate_fresh_population"
@@ -77,10 +83,22 @@ def test_router_promotes_only_simultaneous_local_and_causal_gain() -> None:
 def test_router_sends_kind_collapse_to_ast_anchors() -> None:
     report = _report()
     report["operation_effect_diagnostics"]["after"] = _local(noop=95, other=5)
-    assert (
-        route_result(report)["route"]
-        == "public_ast_role_anchored_effect_queries"
-    )
+    assert route_result(report)["route"] == "public_ast_role_anchored_effect_queries"
+
+
+def test_router_sends_role_anchored_collapse_to_cardinality_gate() -> None:
+    report = _report()
+    report["operation_effect_diagnostics"]["after"] = _local(noop=95, other=5)
+    result = route_result(report, {"schema": ROLE_ANCHORED_SCHEMA})
+    assert result["route"] == "explicit_effect_cardinality_gate"
+    assert result["terminal_contract_schema"] == ROLE_ANCHORED_SCHEMA
+
+
+def test_router_sends_cardinality_collapse_to_role_local_islands() -> None:
+    report = _report()
+    report["operation_effect_diagnostics"]["after"] = _local(noop=95, other=5)
+    result = route_result(report, {"schema": CARDINALITY_GATED_SCHEMA})
+    assert result["route"] == "per_role_cardinality_and_typed_attribute_islands"
 
 
 def test_router_sends_relation_binding_failure_to_two_phase_algebra() -> None:
@@ -89,10 +107,7 @@ def test_router_sends_relation_binding_failure_to_two_phase_algebra() -> None:
         entity=0.75,
         link=0.1,
     )
-    assert (
-        route_result(report)["route"]
-        == "two_phase_entity_then_relation_algebra"
-    )
+    assert route_result(report)["route"] == "two_phase_entity_then_relation_algebra"
 
 
 def test_router_sends_state_only_gain_to_crossed_isolation() -> None:
@@ -102,16 +117,13 @@ def test_router_sends_state_only_gain_to_crossed_isolation() -> None:
         dense=0.1,
         terminal=0.05,
     )
-    assert (
-        route_result(report)["route"]
-        == "crossed_state_sufficiency_isolation"
-    )
+    assert route_result(report)["route"] == "crossed_state_sufficiency_isolation"
 
 
 def test_router_rejects_loss_only_and_one_axis_gain() -> None:
     report = _report()
     only_world = deepcopy(report)
-    only_world["evaluation"]["after"]["arms"][
-        "autonomous_program_autonomous_state"
-    ]["source_deleted_causal"]["world"] = _causal(0.5)
+    only_world["evaluation"]["after"]["arms"]["autonomous_program_autonomous_state"][
+        "source_deleted_causal"
+    ]["world"] = _causal(0.5)
     assert route_result(report)["route"] == "reject_unordered_effect_set"

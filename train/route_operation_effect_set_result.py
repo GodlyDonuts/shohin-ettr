@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 from typing import Mapping, Sequence
@@ -11,6 +12,9 @@ from typing import Mapping, Sequence
 
 REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-eval-report-v2"
 ROUTE_SCHEMA = "shohin-ettr-operation-effect-set-route-v1"
+UNANCHORED_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v12"
+ROLE_ANCHORED_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v13"
+CARDINALITY_GATED_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v14"
 
 
 class OperationEffectRouteError(RuntimeError):
@@ -93,7 +97,38 @@ def _kind_shares(local: Mapping[str, object]) -> tuple[float, float]:
     return noop, dominant
 
 
-def route_result(report: Mapping[str, object]) -> dict[str, object]:
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _contract_schema(
+    report: Mapping[str, object],
+    terminal_contract: Mapping[str, object] | None,
+) -> str | None:
+    if terminal_contract is None:
+        return None
+    receipt = _mapping(report.get("terminal_state_receipt"), "terminal state receipt")
+    expected = receipt.get("contract_sha256")
+    if not isinstance(expected, str) or len(expected) != 64:
+        raise OperationEffectRouteError("terminal state contract receipt differs")
+    schema = terminal_contract.get("schema")
+    if schema not in {
+        UNANCHORED_SCHEMA,
+        ROLE_ANCHORED_SCHEMA,
+        CARDINALITY_GATED_SCHEMA,
+    }:
+        raise OperationEffectRouteError("terminal state effect contract differs")
+    return str(schema)
+
+
+def route_result(
+    report: Mapping[str, object],
+    terminal_contract: Mapping[str, object] | None = None,
+) -> dict[str, object]:
     """Return exactly one mechanism-level successor from measured deltas."""
 
     if report.get("schema") != REPORT_SCHEMA or report.get("status") != "pass":
@@ -147,12 +182,28 @@ def route_result(report: Mapping[str, object]) -> dict[str, object]:
         and after_command > before_command
         and after_command > 0.0
     )
+    contract_schema = _contract_schema(report, terminal_contract)
     if local_exact_gain and terminal_gain and both_strict_gain:
         route = "replicate_fresh_population"
         reason = "local effects, terminal state, WORLD, and COMMAND all improved"
     elif noop_share >= 0.9 or dominant_share >= 0.9:
-        route = "public_ast_role_anchored_effect_queries"
-        reason = "hard effect kinds collapsed to NOOP or one dominant class"
+        if contract_schema == ROLE_ANCHORED_SCHEMA:
+            route = "explicit_effect_cardinality_gate"
+            reason = (
+                "role-bound motors still collapsed; separate exact total cardinality, "
+                "motor activity, and non-NOOP kind selection"
+            )
+        elif contract_schema == CARDINALITY_GATED_SCHEMA:
+            route = "per_role_cardinality_and_typed_attribute_islands"
+            reason = (
+                "global cardinality did not prevent kind collapse; localize counts and "
+                "typed attributes within public AST roles"
+            )
+        else:
+            route = "public_ast_role_anchored_effect_queries"
+            reason = (
+                "anonymous hard effect kinds collapsed to NOOP or one dominant class"
+            )
     elif (
         entity is not None
         and relation_link is not None
@@ -179,12 +230,14 @@ def route_result(report: Mapping[str, object]) -> dict[str, object]:
         "reason": reason,
         "route": route,
         "schema": ROUTE_SCHEMA,
+        "terminal_contract_schema": contract_schema,
     }
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--report", type=Path, required=True)
+    parser.add_argument("--terminal-contract", type=Path)
     parser.add_argument("--output", type=Path)
     return parser.parse_args(argv)
 
@@ -192,7 +245,18 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     report = json.loads(args.report.read_text(encoding="utf-8"))
-    result = route_result(_mapping(report, "evaluation report"))
+    terminal_contract = None
+    if args.terminal_contract is not None:
+        terminal_contract = _mapping(
+            json.loads(args.terminal_contract.read_text(encoding="utf-8")),
+            "terminal state contract",
+        )
+        receipt = _mapping(
+            report.get("terminal_state_receipt"), "terminal state receipt"
+        )
+        if _sha256_file(args.terminal_contract) != receipt.get("contract_sha256"):
+            raise OperationEffectRouteError("terminal state contract hash differs")
+    result = route_result(_mapping(report, "evaluation report"), terminal_contract)
     payload = json.dumps(result, indent=2, sort_keys=True) + "\n"
     if args.output is None:
         print(payload, end="")
