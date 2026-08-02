@@ -41,6 +41,7 @@ GROUNDED_POINTERS=${GROUNDED_POINTERS:-0}
 VALID_POINTER_MASKS=${VALID_POINTER_MASKS:-0}
 TOKEN_NATIVE_COMMAND_MASK=${TOKEN_NATIVE_COMMAND_MASK:-0}
 TOKEN_NATIVE_OCCURRENCE_COMMAND=${TOKEN_NATIVE_OCCURRENCE_COMMAND:-0}
+TOKEN_NATIVE_SYNTAX_GRAPH_COMMAND=${TOKEN_NATIVE_SYNTAX_GRAPH_COMMAND:-0}
 REQUIRED_DEVICE_CLASS=${REQUIRED_DEVICE_CLASS:-h100}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
@@ -71,6 +72,20 @@ if [[ "$TOKEN_NATIVE_OCCURRENCE_COMMAND" == 1 ]]; then
   POINTER_ARGS+=(--token-native-occurrence-command)
 elif [[ "$TOKEN_NATIVE_OCCURRENCE_COMMAND" != 0 ]]; then
   echo "token-native occurrence flag differs" >&2
+  exit 2
+fi
+if [[ "$TOKEN_NATIVE_SYNTAX_GRAPH_COMMAND" == 1 ]]; then
+  [[ "$TOKEN_NATIVE_COMMAND_MASK" == 1 ]] || {
+    echo "syntax graph requires token-native COMMAND masking" >&2
+    exit 2
+  }
+  [[ "$TOKEN_NATIVE_OCCURRENCE_COMMAND" == 0 ]] || {
+    echo "syntax graph and occurrence encoder are mutually exclusive" >&2
+    exit 2
+  }
+  POINTER_ARGS+=(--token-native-syntax-graph-command)
+elif [[ "$TOKEN_NATIVE_SYNTAX_GRAPH_COMMAND" != 0 ]]; then
+  echo "token-native syntax graph flag differs" >&2
   exit 2
 fi
 

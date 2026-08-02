@@ -28,6 +28,7 @@ from endogenous_typed_theory_reactor import (
 from token_native_syntax_router import (
     TokenNativeDocumentMask,
     TokenNativeOccurrenceEncoder,
+    TokenNativeSyntaxGraphEncoder,
 )
 
 
@@ -89,6 +90,7 @@ class ParallelAddressedTransactionCompiler(nn.Module):
         valid_pointer_masks: bool = False,
         token_native_command_mask: bool = False,
         token_native_occurrence_command: bool = False,
+        token_native_syntax_graph_command: bool = False,
         token_native_codebook_ids: Sequence[int] | None = None,
         token_native_vocab_size: int | None = None,
     ) -> None:
@@ -107,15 +109,14 @@ class ParallelAddressedTransactionCompiler(nn.Module):
             or (valid_pointer_masks and not grounded_pointers)
             or not isinstance(token_native_command_mask, bool)
             or not isinstance(token_native_occurrence_command, bool)
-            or (
-                token_native_occurrence_command
-                and not token_native_command_mask
-            )
+            or not isinstance(token_native_syntax_graph_command, bool)
+            or (token_native_occurrence_command and not token_native_command_mask)
+            or (token_native_syntax_graph_command and not token_native_command_mask)
+            or (token_native_occurrence_command and token_native_syntax_graph_command)
             or (
                 token_native_command_mask
                 and (
-                    token_native_codebook_ids is None
-                    or token_native_vocab_size is None
+                    token_native_codebook_ids is None or token_native_vocab_size is None
                 )
             )
             or (
@@ -134,9 +135,8 @@ class ParallelAddressedTransactionCompiler(nn.Module):
         self.grounded_pointers = grounded_pointers
         self.valid_pointer_masks = valid_pointer_masks
         self.token_native_command_mask = token_native_command_mask
-        self.token_native_occurrence_command = (
-            token_native_occurrence_command
-        )
+        self.token_native_occurrence_command = token_native_occurrence_command
+        self.token_native_syntax_graph_command = token_native_syntax_graph_command
 
         self.command_projection = nn.Linear(config.d_model, width)
         self.command_norm = nn.LayerNorm(width)
@@ -160,9 +160,19 @@ class ParallelAddressedTransactionCompiler(nn.Module):
             if token_native_occurrence_command
             else None
         )
-        self.value_embedding = nn.Parameter(
-            torch.empty(config.num_value_codes, width)
+        self.command_syntax_graph_encoder = (
+            TokenNativeSyntaxGraphEncoder(
+                token_native_codebook_ids,
+                vocab_size=token_native_vocab_size,
+                width=width,
+                layers=layers,
+                maximum_positions=96,
+                maximum_identifier_codes=96,
+            )
+            if token_native_syntax_graph_command
+            else None
         )
+        self.value_embedding = nn.Parameter(torch.empty(config.num_value_codes, width))
         self.type_embedding = nn.Parameter(torch.empty(config.num_types, width))
         self.slot_embedding = nn.Parameter(torch.empty(config.num_slots, width))
         self.active_projection = nn.Linear(1, width, bias=False)
@@ -258,9 +268,7 @@ class ParallelAddressedTransactionCompiler(nn.Module):
             clear = opcode[:, step, 2:3] * source[:, step]
             allocated = allocation * (1.0 - active)
             cleared = clear * active
-            active = (active + allocated * (1.0 - active)) * (
-                1.0 - cleared
-            )
+            active = (active + allocated * (1.0 - active)) * (1.0 - cleared)
         return torch.stack(values, dim=1)
 
     @staticmethod
@@ -311,10 +319,7 @@ class ParallelAddressedTransactionCompiler(nn.Module):
                     or command_tokens.dtype != torch.long
                 )
             )
-            or (
-                not self.token_native_command_mask
-                and command_tokens is not None
-            )
+            or (not self.token_native_command_mask and command_tokens is not None)
         ):
             raise TheoryReactorError("addressed schedule input differs")
         if self.command_document_mask is not None:
@@ -325,6 +330,12 @@ class ParallelAddressedTransactionCompiler(nn.Module):
         command = self.command_norm(self.command_projection(command_hidden))
         if self.command_occurrence_encoder is not None:
             command = self.command_occurrence_encoder(
+                command,
+                command_tokens,
+                command_attention_mask,
+            )
+        if self.command_syntax_graph_encoder is not None:
+            command = self.command_syntax_graph_encoder(
                 command,
                 command_tokens,
                 command_attention_mask,
@@ -408,9 +419,9 @@ class ParallelAddressedTransactionCompiler(nn.Module):
             "value_code": self.value_head(hidden).float().softmax(-1),
         }
         applied = {
-            f"applied_{name}": (
-                _hard_one_hot(value) if hard else value
-            ).to(state.value_probabilities.dtype)
+            f"applied_{name}": (_hard_one_hot(value) if hard else value).to(
+                state.value_probabilities.dtype
+            )
             for name, value in probabilities.items()
         }
         return AddressedSchedule(
@@ -436,9 +447,7 @@ class MeanParallelAddressedScheduleCompiler(nn.Module):
             )
         config = compilers[0].config
         if any(compiler.config != config for compiler in compilers):
-            raise TheoryReactorError(
-                "parallel schedule ensemble config differs"
-            )
+            raise TheoryReactorError("parallel schedule ensemble config differs")
         self.config = config
         self.compilers = nn.ModuleList(compilers)
 
@@ -478,9 +487,9 @@ class MeanParallelAddressedScheduleCompiler(nn.Module):
             )
         }
         applied = {
-            f"applied_{name}": (
-                _hard_one_hot(value) if hard else value
-            ).to(state.value_probabilities.dtype)
+            f"applied_{name}": (_hard_one_hot(value) if hard else value).to(
+                state.value_probabilities.dtype
+            )
             for name, value in probabilities.items()
         }
         return AddressedSchedule(

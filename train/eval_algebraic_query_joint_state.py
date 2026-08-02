@@ -107,6 +107,9 @@ _SCHEDULE_SCHEMAS = {
     "shohin-ettr-parallel-addressed-transaction-contract-v6": (
         "shohin-ettr-parallel-addressed-transaction-report-v6"
     ),
+    "shohin-ettr-parallel-addressed-transaction-contract-v7": (
+        "shohin-ettr-parallel-addressed-transaction-report-v7"
+    ),
 }
 _ARMS = (
     "autonomous_program_autonomous_state",
@@ -178,12 +181,8 @@ def _validate_args(args: argparse.Namespace) -> None:
         or _HEX40.fullmatch(args.source_commit) is None
         or not 0 <= args.data_seed < 2**63
         or args.max_batches < 2
-        or state_run_supplied != (
-            args.state_run_sha256s_sha256 is not None
-        )
-        or schedule_run_supplied != (
-            args.schedule_run_sha256s_sha256 is not None
-        )
+        or state_run_supplied != (args.state_run_sha256s_sha256 is not None)
+        or schedule_run_supplied != (args.schedule_run_sha256s_sha256 is not None)
         or (
             state_run_supplied
             and (
@@ -219,8 +218,7 @@ def _load_state_file(path: Path) -> dict[str, torch.Tensor]:
 def _require_module_state(module, state: Mapping[str, torch.Tensor]) -> None:
     current = module.state_dict()
     if current.keys() != state.keys() or any(
-        not torch.equal(current[name].detach().cpu(), state[name])
-        for name in current
+        not torch.equal(current[name].detach().cpu(), state[name]) for name in current
     ):
         raise AlgebraicJointStateEvaluationError(
             "state-semantic initial component differs"
@@ -237,9 +235,7 @@ def _load_state_semantic_components(
         return None
     sums_path = args.state_run_dir / "SHA256SUMS"
     if _sha256_file(sums_path) != args.state_run_sha256s_sha256:
-        raise AlgebraicJointStateEvaluationError(
-            "state-semantic run receipt differs"
-        )
+        raise AlgebraicJointStateEvaluationError("state-semantic run receipt differs")
     expected: dict[str, str] = {}
     try:
         lines = sums_path.read_text(encoding="ascii").splitlines()
@@ -260,14 +256,10 @@ def _load_state_semantic_components(
             )
         expected[fields[1]] = fields[0]
     if tuple(sorted(expected)) != tuple(sorted(_STATE_RUN_FILES)):
-        raise AlgebraicJointStateEvaluationError(
-            "state-semantic run receipt differs"
-        )
+        raise AlgebraicJointStateEvaluationError("state-semantic run receipt differs")
     for name, digest in expected.items():
         if _sha256_file(args.state_run_dir / name) != digest:
-            raise AlgebraicJointStateEvaluationError(
-                "state-semantic run file differs"
-            )
+            raise AlgebraicJointStateEvaluationError("state-semantic run file differs")
     contract = _read_hash_bound_json(
         args.state_run_dir / "pilot-contract.json",
         expected_sha256=expected["pilot-contract.json"],
@@ -283,30 +275,22 @@ def _load_state_semantic_components(
         contract.get("schema") != STATE_CONTRACT_SCHEMA
         or report.get("schema") != STATE_REPORT_SCHEMA
         or report.get("status") != "pass"
-        or report.get("contract_sha256")
-        != expected["pilot-contract.json"]
+        or report.get("contract_sha256") != expected["pilot-contract.json"]
         or contract.get("release_file_sha256") != args.release_sha256
         or contract.get("joint_model_sha256") != args.joint_model_sha256
-        or contract.get("joint_run_contract_sha256")
-        != args.joint_run_contract_sha256
+        or contract.get("joint_run_contract_sha256") != args.joint_run_contract_sha256
         or contract.get("compiler_sha256") != args.compiler_sha256
-        or contract.get("compiler_contract_sha256")
-        != args.compiler_contract_sha256
-        or report.get("protected_checkpoint_sha256")
-        != provenance.checkpoint_sha256
+        or contract.get("compiler_contract_sha256") != args.compiler_contract_sha256
+        or report.get("protected_checkpoint_sha256") != provenance.checkpoint_sha256
         or report.get("before_parameter_sha256") != before_sha256
         or report.get("initial_compiler_sha256")
         != expected["compiler-initial.safetensors"]
         or report.get("initial_reactor_sha256")
         != expected["reactor-initial.safetensors"]
-        or report.get("final_compiler_sha256")
-        != expected["compiler-final.safetensors"]
-        or report.get("final_reactor_sha256")
-        != expected["reactor-final.safetensors"]
+        or report.get("final_compiler_sha256") != expected["compiler-final.safetensors"]
+        or report.get("final_reactor_sha256") != expected["reactor-final.safetensors"]
     ):
-        raise AlgebraicJointStateEvaluationError(
-            "state-semantic lineage differs"
-        )
+        raise AlgebraicJointStateEvaluationError("state-semantic lineage differs")
     _require_module_state(
         model.compiler,
         _load_state_file(args.state_run_dir / "compiler-initial.safetensors"),
@@ -317,15 +301,11 @@ def _load_state_semantic_components(
     )
     try:
         compiler_result = model.compiler.load_state_dict(
-            _load_state_file(
-                args.state_run_dir / "compiler-final.safetensors"
-            ),
+            _load_state_file(args.state_run_dir / "compiler-final.safetensors"),
             strict=True,
         )
         reactor_result = model.reactor.load_state_dict(
-            _load_state_file(
-                args.state_run_dir / "reactor-final.safetensors"
-            ),
+            _load_state_file(args.state_run_dir / "reactor-final.safetensors"),
             strict=True,
         )
     except RuntimeError as exc:
@@ -415,21 +395,15 @@ def _load_parallel_schedule(
         or report.get("contract_sha256") != expected["pilot-contract.json"]
         or contract.get("release_file_sha256") != args.release_sha256
         or contract.get("joint_model_sha256") != args.joint_model_sha256
-        or contract.get("joint_run_contract_sha256")
-        != args.joint_run_contract_sha256
+        or contract.get("joint_run_contract_sha256") != args.joint_run_contract_sha256
         or contract.get("compiler_sha256") != args.compiler_sha256
-        or contract.get("compiler_contract_sha256")
-        != args.compiler_contract_sha256
-        or report.get("protected_checkpoint_sha256")
-        != provenance.checkpoint_sha256
+        or contract.get("compiler_contract_sha256") != args.compiler_contract_sha256
+        or report.get("protected_checkpoint_sha256") != provenance.checkpoint_sha256
         or report.get("initial_schedule_sha256")
         != expected["schedule-initial.safetensors"]
-        or report.get("final_schedule_sha256")
-        != expected["schedule-final.safetensors"]
+        or report.get("final_schedule_sha256") != expected["schedule-final.safetensors"]
     ):
-        raise AlgebraicJointStateEvaluationError(
-            "parallel schedule lineage differs"
-        )
+        raise AlgebraicJointStateEvaluationError("parallel schedule lineage differs")
     try:
         seed = int(architecture["seed"])
         width = int(architecture["width"])
@@ -445,6 +419,10 @@ def _load_parallel_schedule(
             "token_native_occurrence_command",
             False,
         )
+        token_native_syntax_graph_command = architecture.get(
+            "token_native_syntax_graph_command",
+            False,
+        )
     except (KeyError, TypeError, ValueError) as exc:
         raise AlgebraicJointStateEvaluationError(
             "parallel schedule architecture differs"
@@ -455,10 +433,10 @@ def _load_parallel_schedule(
         or (valid_pointer_masks and not grounded_pointers)
         or not isinstance(token_native_command_mask, bool)
         or not isinstance(token_native_occurrence_command, bool)
-        or (
-            token_native_occurrence_command
-            and not token_native_command_mask
-        )
+        or not isinstance(token_native_syntax_graph_command, bool)
+        or (token_native_occurrence_command and not token_native_command_mask)
+        or (token_native_syntax_graph_command and not token_native_command_mask)
+        or (token_native_occurrence_command and token_native_syntax_graph_command)
         or (
             token_native_command_mask
             and architecture.get("token_native_codebook_sha256")
@@ -479,15 +457,12 @@ def _load_parallel_schedule(
         valid_pointer_masks=valid_pointer_masks,
         token_native_command_mask=token_native_command_mask,
         token_native_occurrence_command=token_native_occurrence_command,
+        token_native_syntax_graph_command=(token_native_syntax_graph_command),
         token_native_codebook_ids=(
-            stream.codec.codebook.token_ids
-            if token_native_command_mask
-            else None
+            stream.codec.codebook.token_ids if token_native_command_mask else None
         ),
         token_native_vocab_size=(
-            model.base.cfg.vocab_size
-            if token_native_command_mask
-            else None
+            model.base.cfg.vocab_size if token_native_command_mask else None
         ),
     ).to(
         device=next(model.parameters()).device,
@@ -495,15 +470,11 @@ def _load_parallel_schedule(
     )
     _require_module_state(
         schedule,
-        _load_state_file(
-            args.schedule_run_dir / "schedule-initial.safetensors"
-        ),
+        _load_state_file(args.schedule_run_dir / "schedule-initial.safetensors"),
     )
     try:
         incompatibility = schedule.load_state_dict(
-            _load_state_file(
-                args.schedule_run_dir / "schedule-final.safetensors"
-            ),
+            _load_state_file(args.schedule_run_dir / "schedule-final.safetensors"),
             strict=True,
         )
     except RuntimeError as exc:
@@ -514,20 +485,14 @@ def _load_parallel_schedule(
         raise AlgebraicJointStateEvaluationError(
             "parallel schedule final component differs"
         )
-    schedule_parameters = sum(
-        parameter.numel() for parameter in schedule.parameters()
-    )
+    schedule_parameters = sum(parameter.numel() for parameter in schedule.parameters())
     removed_reactor_parameters = sum(
         parameter.numel() for parameter in model.reactor.parameters()
     )
     complete_parameters = (
-        replacement_system_parameters
-        - removed_reactor_parameters
-        + schedule_parameters
+        replacement_system_parameters - removed_reactor_parameters + schedule_parameters
     )
-    legacy_reported_parameters = (
-        replacement_system_parameters + schedule_parameters
-    )
+    legacy_reported_parameters = replacement_system_parameters + schedule_parameters
     reported_parameters = contract.get("complete_system_parameters")
     if (
         contract.get("schedule_parameters") != schedule_parameters
@@ -575,18 +540,12 @@ def _strict_load_joint_model(args, *, device: torch.device):
         or run_contract.get("ettr_release_sha256") != args.release_sha256
         or not isinstance(composition_hint, Mapping)
     ):
-        raise AlgebraicJointStateEvaluationError(
-            "joint run contract differs"
-        )
+        raise AlgebraicJointStateEvaluationError("joint run contract differs")
     try:
         parent_contract_path = Path(composition_hint["parent_run_contract"])
-        parent_contract_sha256 = str(
-            composition_hint["parent_run_contract_sha256"]
-        )
+        parent_contract_sha256 = str(composition_hint["parent_run_contract_sha256"])
         parent_model_path = Path(composition_hint["parent_joint_model"])
-        parent_model_sha256 = str(
-            composition_hint["parent_joint_model_sha256"]
-        )
+        parent_model_sha256 = str(composition_hint["parent_joint_model_sha256"])
     except (KeyError, TypeError, ValueError) as exc:
         raise AlgebraicJointStateEvaluationError(
             "joint composition parent receipt differs"
@@ -604,9 +563,7 @@ def _strict_load_joint_model(args, *, device: torch.device):
         parent_joint_model_sha256=parent_model_sha256,
     )
     if composition is None:
-        raise AlgebraicJointStateEvaluationError(
-            "joint composition receipt is missing"
-        )
+        raise AlgebraicJointStateEvaluationError("joint composition receipt is missing")
     parent_payload = _load_joint_payload(
         parent_model_path,
         expected_sha256=parent_model_sha256,
@@ -617,14 +574,11 @@ def _strict_load_joint_model(args, *, device: torch.device):
     )
     if (
         payload.get("schema") != MODEL_SCHEMA
-        or payload.get("run_contract_sha256")
-        != args.joint_run_contract_sha256
+        or payload.get("run_contract_sha256") != args.joint_run_contract_sha256
         or payload.get("source_commit") != run_contract.get("source_commit")
         or payload.get("ettr_config") != run_contract.get("model_config")
     ):
-        raise AlgebraicJointStateEvaluationError(
-            "joint model lineage differs"
-        )
+        raise AlgebraicJointStateEvaluationError("joint model lineage differs")
     _parent_config, candidate_config = _validate_model_lineage(
         parent_payload,
         payload,
@@ -655,9 +609,7 @@ def _strict_load_joint_model(args, *, device: torch.device):
     model.set_query_readout_geometry(
         str(payload.get("query_readout_geometry", "stage"))
     )
-    protected_provenance = load_protected_base_model(
-        args.protected_checkpoint
-    )[1]
+    protected_provenance = load_protected_base_model(args.protected_checkpoint)[1]
     parameter_receipt = asdict(model.parameter_receipt())
     if (
         provenance.checkpoint_sha256 != protected_provenance.checkpoint_sha256
@@ -675,9 +627,7 @@ def _strict_load_joint_model(args, *, device: torch.device):
             "joint model strict load differs"
         ) from exc
     if incompatibility.missing_keys or incompatibility.unexpected_keys:
-        raise AlgebraicJointStateEvaluationError(
-            "joint model strict load differs"
-        )
+        raise AlgebraicJointStateEvaluationError("joint model strict load differs")
     if not torch.cuda.is_bf16_supported():
         model.to(dtype=torch.float32)
     model.eval()
@@ -704,9 +654,7 @@ def _load_compiler(
         or not isinstance(architecture, Mapping)
         or architecture.get("executor_mode") != "algebraic"
     ):
-        raise AlgebraicJointStateEvaluationError(
-            "compiler contract differs"
-        )
+        raise AlgebraicJointStateEvaluationError("compiler contract differs")
     answer_token_ids = answer_token_ids_from_tokenizer(args.tokenizer)
     try:
         reader = AlgebraicQueryStateReader(
@@ -731,9 +679,8 @@ def _load_compiler(
             "compiler checkpoint is unreadable"
         ) from exc
     source_answer_ids = state.pop("answer_token_ids", None)
-    if (
-        not isinstance(source_answer_ids, torch.Tensor)
-        or source_answer_ids.shape != (4,)
+    if not isinstance(source_answer_ids, torch.Tensor) or source_answer_ids.shape != (
+        4,
     ):
         raise AlgebraicJointStateEvaluationError(
             "compiler answer-token receipt differs"
@@ -747,9 +694,7 @@ def _load_compiler(
     if incompatibility.missing_keys != ["answer_token_ids"] or (
         incompatibility.unexpected_keys
     ):
-        raise AlgebraicJointStateEvaluationError(
-            "compiler strict transplant differs"
-        )
+        raise AlgebraicJointStateEvaluationError("compiler strict transplant differs")
     reader_parameters = sum(parameter.numel() for parameter in reader.parameters())
     old_reader_parameters = sum(
         parameter.numel() for parameter in model.query_reader.parameters()
@@ -801,10 +746,7 @@ def _evaluate(
     data_seed: int,
     max_batches: int,
 ) -> dict[str, object]:
-    rows = {
-        arm: {"world": [], "command": []}
-        for arm in _ARMS
-    }
+    rows = {arm: {"world": [], "command": []} for arm in _ARMS}
     factual = {arm: 0 for arm in _ARMS}
     compiler = {
         "argument_correct": 0,
@@ -848,9 +790,7 @@ def _evaluate(
                 steps=batch.transaction_targets.opcode.shape[1],
                 hard=True,
                 command_idx=batch.episodes.command.tokens,
-                command_attention_mask=(
-                    batch.episodes.command.attention_mask
-                ),
+                command_attention_mask=(batch.episodes.command.attention_mask),
             )
             outputs = {
                 "autonomous_program_autonomous_state": _reader_forward(
@@ -910,9 +850,7 @@ def _evaluate(
             factual[arm] += int(logits.argmax(-1).eq(targets).sum())
             pairs = _reader_pairs_from_logits(logits, batch)
             for factor, pair in pairs.items():
-                target_index = (
-                    world_target if factor == "world" else command_target
-                )
+                target_index = world_target if factor == "world" else command_target
                 rows[arm][factor].extend(
                     _annotate_pair_rows(
                         pair,
@@ -929,8 +867,7 @@ def _evaluate(
             arm: {
                 "factual_top1": factual[arm] / expected,
                 "source_deleted_causal": {
-                    factor: _summary(values)
-                    for factor, values in rows[arm].items()
+                    factor: _summary(values) for factor, values in rows[arm].items()
                 },
             }
             for arm in _ARMS
@@ -995,14 +932,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         model=model,
         provenance=provenance,
     )
-    schedule_receipt, replacement_system_parameters = (
-        _load_parallel_schedule(
-            args,
-            model=model,
-            provenance=provenance,
-            stream=stream,
-            replacement_system_parameters=replacement_system_parameters,
-        )
+    schedule_receipt, replacement_system_parameters = _load_parallel_schedule(
+        args,
+        model=model,
+        provenance=provenance,
+        stream=stream,
+        replacement_system_parameters=replacement_system_parameters,
     )
     contract = {
         "compiler_contract_sha256": args.compiler_contract_sha256,
@@ -1065,8 +1000,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         _write_no_replace(
             args.output / "SHA256SUMS",
             "".join(
-                f"{_sha256_file(args.output / name)}  {name}\n"
-                for name in files
+                f"{_sha256_file(args.output / name)}  {name}\n" for name in files
             ).encode("ascii"),
         )
         for path in args.output.iterdir():

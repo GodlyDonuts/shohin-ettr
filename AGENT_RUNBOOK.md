@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 01:14 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 01:31 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -158,18 +158,19 @@
 > WORLD/COMMAND remain zero. Contract v6's target-free syntax router improves
 > matched oracle-initial value accuracy by 1.31 points to 71.51%, but remains
 > below the untouched 74.34% interface and leaves exact packets plus every
-> strict causal gate at zero. Dense token pooling is closed. Active contract v7
+> strict causal gate at zero. Dense token pooling is closed. Contract v7
 > factorizes public grammar roles and explicitly broadcasts context across
-> equal opaque identifier occurrences before atomic edit compilation. It still
-> admits no sidecar names, QUERY, answers, targets, oracle programs, or host
-> semantic execution. No current artifact is promoted as stable native
-> reasoning. The matched direct occurrence V100 diagnostic `725555` completed
-> with exact packets and both causal gates still zero; redundant pending H100
-> job `725553` was canceled. The same
-> occurrence quotient is now integrated into the stronger sticky schedule plus
-> exact-executor architecture. That complete system is 166,863,343 parameters,
-> receives no QUERY/answer/target/oracle program at inference, and passes its
-> focused architecture and deployment tests.
+> equal opaque identifier occurrences. Both its direct editor and stronger
+> sticky-schedule form are now rejected: job `725560` leaves exact schedules
+> flat, sharply regresses source/target fields and factual accuracy, and returns
+> every autonomous causal gate to zero. Redundant H100 job `725559` was canceled
+> before allocation. Active contract v8 reconstructs exact public AST
+> parent-child edges, renderer-correct semantic child ranks, depth, and opaque
+> equality before sticky scheduling and exact execution. It admits no sidecar
+> names, QUERY, answers, targets, oracle programs, candidate selector, or host
+> semantic execution. The complete system is 169,421,167 parameters and passes
+> 49 focused architecture, loader, terminal, and custody tests. No current
+> artifact is promoted as stable native reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -23377,3 +23378,32 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_direct_occurrence_editing_and_require_the_bound_identity_to_survive_one_coherent_sticky_program_plus_exact_execution`.
+
+- **2026-08-02 01:14--01:31 EDT** -- **Occurrence-linked sticky scheduling is
+  rejected; exact syntax-graph scheduling is implemented.**
+
+  V100 job `725560` completed all 1,000 updates in 11:10 with stable finite
+  optimization. Against matched seed-31 control `725460`, exact schedule
+  accuracy is flat (`8.881%` versus `8.924%`), source falls from `32.361%` to
+  `25.769%`, target falls from `26.471%` to `12.644%`, and autonomous factual
+  top-1 falls from `70.703%` to `60.938%`. Value rises only from `22.959%` to
+  `25.136%`. Exact terminal packets remain `0/512`; fully autonomous WORLD and
+  COMMAND strict, margin-1, and DID are all zero. Report SHA-256 is
+  `9d3b91a526fa1fe38d60eab30b9ad88d458786930f9f55002f9831d9d9e6f10b`.
+  Redundant pending H100 job `725559` was canceled before allocation. Equality
+  broadcast without syntax adjacency is closed.
+
+  `TokenNativeSyntaxGraphEncoder` now reconstructs exact prefix/postfix
+  parent-child edges, renderer-correct semantic child ranks, depth, document
+  boundary, and opaque-identifier equality from public grammar tokens. Three
+  graph layers exchange parent, child, and occurrence messages before one
+  sticky schedule is compiled and replayed by the unchanged exact algebra. It
+  admits no ontology sidecar, QUERY, answer, target, oracle program, candidate
+  selector, or host semantic execution. Hand-built parser tests cover all four
+  traversal geometries, and actual-codec identifier renaming is exactly
+  equivariant across all four renderers. Forty-nine focused compiler,
+  independent-loader, terminal, and custody tests pass. The scheduler has
+  `13,482,273` parameters and the complete system has `169,421,167`.
+
+  Decision:
+  `expose_exact_public_grammar_topology_before_schedule_compilation_then_use_field_movement_to_decide_syntax_failure_vs_whole_program_identity_failure`.

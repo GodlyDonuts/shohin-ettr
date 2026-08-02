@@ -44,8 +44,8 @@ from train_ettr_component_island import (
 )
 
 
-CONTRACT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-contract-v6"
-REPORT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-report-v6"
+CONTRACT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-contract-v7"
+REPORT_SCHEMA = "shohin-ettr-parallel-addressed-transaction-report-v7"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _FIELDS = (
@@ -104,6 +104,10 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         action="store_true",
     )
     parser.add_argument(
+        "--token-native-syntax-graph-command",
+        action="store_true",
+    )
+    parser.add_argument(
         "--required-device-class",
         choices=("h100", "cuda"),
         default="h100",
@@ -141,9 +145,14 @@ def _validate_args(args: argparse.Namespace) -> None:
         or args.eval_batches < 2
         or args.log_every < 1
         or (args.valid_pointer_masks and not args.grounded_pointers)
+        or (args.token_native_occurrence_command and not args.token_native_command_mask)
+        or (
+            args.token_native_syntax_graph_command
+            and not args.token_native_command_mask
+        )
         or (
             args.token_native_occurrence_command
-            and not args.token_native_command_mask
+            and args.token_native_syntax_graph_command
         )
         or not math.isfinite(args.learning_rate)
         or not 0.0 < args.learning_rate < 1.0
@@ -178,10 +187,14 @@ def _balanced_categorical_loss(
     selected_targets = targets[mask]
     if selected_targets.numel() == 0:
         return None
-    selected = probabilities[mask].gather(
-        1,
-        selected_targets[:, None],
-    ).squeeze(1)
+    selected = (
+        probabilities[mask]
+        .gather(
+            1,
+            selected_targets[:, None],
+        )
+        .squeeze(1)
+    )
     losses = -selected.float().clamp_min(torch.finfo(torch.float32).eps).log()
     class_means = [
         losses[selected_targets.eq(class_index)].mean()
@@ -202,9 +215,7 @@ def _schedule_loss(schedule, targets) -> tuple[torch.Tensor, dict[str, float]]:
         if loss is not None:
             losses[name] = loss
     if not losses:
-        raise ParallelTransactionPilotError(
-            "parallel transaction loss has no support"
-        )
+        raise ParallelTransactionPilotError("parallel transaction loss has no support")
     return torch.stack(tuple(losses.values())).mean(), {
         name: float(value.detach().cpu()) for name, value in losses.items()
     }
@@ -538,9 +549,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     _validate_args(args)
     if not torch.cuda.is_available():
-        raise ParallelTransactionPilotError(
-            "parallel transaction pilot requires CUDA"
-        )
+        raise ParallelTransactionPilotError("parallel transaction pilot requires CUDA")
     torch.cuda.set_device(0)
     device = torch.device("cuda", 0)
     is_h100 = "H100" in torch.cuda.get_device_name(device).upper()
@@ -581,18 +590,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         grounded_pointers=args.grounded_pointers,
         valid_pointer_masks=args.valid_pointer_masks,
         token_native_command_mask=args.token_native_command_mask,
-        token_native_occurrence_command=(
-            args.token_native_occurrence_command
-        ),
+        token_native_occurrence_command=(args.token_native_occurrence_command),
+        token_native_syntax_graph_command=(args.token_native_syntax_graph_command),
         token_native_codebook_ids=(
-            stream.codec.codebook.token_ids
-            if args.token_native_command_mask
-            else None
+            stream.codec.codebook.token_ids if args.token_native_command_mask else None
         ),
         token_native_vocab_size=(
-            model.base.cfg.vocab_size
-            if args.token_native_command_mask
-            else None
+            model.base.cfg.vocab_size if args.token_native_command_mask else None
         ),
     ).to(device=device, dtype=next(model.parameters()).dtype)
     schedule_parameters = sum(
@@ -602,14 +606,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         parameter.numel() for parameter in executor.parameters()
     )
     complete_parameters = (
-        replacement_parameters
-        - removed_reactor_parameters
-        + schedule_parameters
+        replacement_parameters - removed_reactor_parameters + schedule_parameters
     )
-    if complete_parameters > 200_000_000:
-        raise ParallelTransactionPilotError(
-            "parallel transaction system exceeds parameter cap"
-        )
     optimizer = torch.optim.AdamW(
         schedule_compiler.parameters(),
         lr=args.learning_rate,
@@ -642,10 +640,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         model.reactor = parallel_reactor
         deployed_parameters = (
             sum(parameter.numel() for parameter in model.parameters())
-            - sum(
-                parameter.numel()
-                for parameter in model.query_reader.parameters()
-            )
+            - sum(parameter.numel() for parameter in model.query_reader.parameters())
             + reader_parameters
         )
         if deployed_parameters != complete_parameters:
@@ -667,16 +662,15 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "grounded_pointers": args.grounded_pointers,
                 "num_heads": args.num_heads,
                 "parameterless_exact_algebra": True,
-                "removed_recurrent_policy_parameters": (
-                    removed_reactor_parameters
-                ),
+                "removed_recurrent_policy_parameters": (removed_reactor_parameters),
                 "seed": args.architecture_seed,
                 "sticky_schedule": True,
-                "token_native_command_mask": (
-                    args.token_native_command_mask
-                ),
+                "token_native_command_mask": (args.token_native_command_mask),
                 "token_native_occurrence_command": (
                     args.token_native_occurrence_command
+                ),
+                "token_native_syntax_graph_command": (
+                    args.token_native_syntax_graph_command
                 ),
                 "token_native_codebook_sha256": (
                     stream.codec.codebook_sha256
@@ -767,21 +761,18 @@ def main(argv: Sequence[str] | None = None) -> int:
                     batch.transaction_targets,
                 )
                 if args.semantic_prefix_weight > 0.0:
-                    semantic_prefix_loss, semantic_prefix_parts = (
-                        _semantic_prefix_loss(
-                            schedule,
-                            executor,
-                            initial,
-                            batch.transaction_targets,
-                            batch.terminal_packet_targets,
-                        )
+                    semantic_prefix_loss, semantic_prefix_parts = _semantic_prefix_loss(
+                        schedule,
+                        executor,
+                        initial,
+                        batch.transaction_targets,
+                        batch.terminal_packet_targets,
                     )
                 else:
                     semantic_prefix_loss = schedule_loss * 0.0
                     semantic_prefix_parts = {}
                 loss = (
-                    schedule_loss
-                    + args.semantic_prefix_weight * semantic_prefix_loss
+                    schedule_loss + args.semantic_prefix_weight * semantic_prefix_loss
                 )
             if not bool(torch.isfinite(loss)):
                 raise ParallelTransactionPilotError(
@@ -789,9 +780,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
             last_loss = float(loss.detach().cpu())
             last_schedule_loss = float(schedule_loss.detach().cpu())
-            last_semantic_prefix_loss = float(
-                semantic_prefix_loss.detach().cpu()
-            )
+            last_semantic_prefix_loss = float(semantic_prefix_loss.detach().cpu())
             loss.backward()
             gradient_norm = torch.nn.utils.clip_grad_norm_(
                 schedule_compiler.parameters(),

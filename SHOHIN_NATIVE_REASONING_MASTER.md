@@ -53656,3 +53656,25 @@ Immutable commit-`60ecda3` runtime `r3` is verified. Matched jobs `725559`
 comparison point rather than a hard ceiling, but expansion is conditional on
 measured evidence that the narrow causal path is capacity-limited; width alone
 has already failed and will not be repeated without that evidence.
+
+The occurrence-linked sticky result is now closed. V100 job `725560` completes
+1,000 stable updates but exact schedule accuracy is unchanged (`8.88%` versus
+the matched `8.92%`), source/target accuracy regresses to `25.77%/12.64%`,
+factual top-1 falls to `60.94%`, exact terminal packets remain zero, and all
+fully autonomous WORLD/COMMAND causal measures are zero. Pending H100 duplicate
+`725559` was canceled before allocation. Repeated-name equality is not enough
+when the compiler still has to infer parent-child structure from a lossy
+sequence representation.
+
+The successor is an exact public-grammar graph front end. It reconstructs AST
+parent-child edges under prefix and postfix order, corrects renderer-reversed
+child roles, supplies tree depth, and retains permutation-equivariant opaque
+identifier equality. Learned graph layers route messages only over those
+edges before the same sticky scheduler and exact transaction algebra. The
+complete system is `169,421,167` parameters and receives no query, answer,
+target, oracle trace, ontology sidecar, candidate score, or host execution.
+Promotion still requires simultaneous strict WORLD and COMMAND movement on the
+unchanged source-deleted gate.
+
+Current decision:
+`test_exact_syntax_topology_before_spending_relaxed_capacity_on_hard_whole_program_experts`.

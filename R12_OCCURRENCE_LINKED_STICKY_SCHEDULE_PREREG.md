@@ -62,3 +62,25 @@ only one strict gate, loses broad factual behavior, depends on identifier
 ordinals, violates the 200M complete-system cap, or fails independent
 source-deleted replay. Any surviving result must be repeated across fresh
 architecture and data seeds before it can become the training architecture.
+
+## Result
+
+V100 diagnostic `725560` completed all 1,000 updates in 11:10 with finite
+optimization. It is a decisive negative against matched seed-31 control
+`725460`:
+
+| Metric | Control | Occurrence-linked |
+|---|---:|---:|
+| Exact schedule | 8.924% | 8.881% |
+| Source field | 32.361% | 25.769% |
+| Target field | 26.471% | 12.644% |
+| Value field | 22.959% | 25.136% |
+| Autonomous factual top-1 | 70.703% | 60.938% |
+| WORLD strict / margin-1 | 0% / 3.571% | 0% / 0% |
+| COMMAND strict / margin-1 | 2.273% / 2.273% | 0% / 0% |
+
+Exact terminal packets remain `0/512`. The occurrence circuit gains only 2.18
+points on local value selection while damaging both pointer fields and broad
+factual behavior. Redundant H100 job `725559` was canceled before allocation.
+The lane is closed: equality broadcast without exact syntax adjacency is not a
+sufficient binding interface.

@@ -184,6 +184,121 @@ def test_occurrence_linked_schedule_requires_command_tokens() -> None:
         )
 
 
+def test_syntax_graph_recovers_prefix_and_postfix_parent_roles() -> None:
+    from token_native_syntax_router import (
+        CALL_STRIDE,
+        FRAME_A,
+        FRAME_B,
+        INTEGER_BASE,
+        TokenNativeSyntaxGraphEncoder,
+    )
+
+    root = 15 * CALL_STRIDE + 2
+    binary = 3 * CALL_STRIDE + 2
+    a, b, c = INTEGER_BASE, INTEGER_BASE + 1, INTEGER_BASE + 2
+    codes = torch.tensor(
+        [
+            [FRAME_A, FRAME_A, root, binary, a, b, c],
+            [FRAME_B, FRAME_A, a, b, binary, c, root],
+            [FRAME_A, FRAME_B, root, c, binary, b, a],
+            [FRAME_B, FRAME_B, c, b, a, binary, root],
+        ],
+        dtype=torch.long,
+    )
+    mask = torch.ones_like(codes, dtype=torch.bool)
+    parent, rank, depth = TokenNativeSyntaxGraphEncoder._syntax_links(
+        codes,
+        mask,
+    )
+    assert parent.tolist() == [
+        [-1, -1, -1, 2, 3, 3, 2],
+        [-1, -1, 4, 4, 6, 6, -1],
+        [-1, -1, -1, 2, 2, 4, 4],
+        [-1, -1, 6, 5, 5, 6, -1],
+    ]
+    assert rank[:, 2:].tolist() == [
+        [0, 0, 0, 1, 1],
+        [0, 1, 0, 1, 0],
+        [0, 1, 0, 1, 0],
+        [1, 1, 0, 0, 0],
+    ]
+    assert depth[:, 2:].tolist() == [
+        [0, 1, 2, 2, 1],
+        [2, 2, 1, 1, 0],
+        [0, 1, 1, 2, 2],
+        [1, 2, 2, 1, 0],
+    ]
+
+
+def test_syntax_graph_schedule_is_identifier_rename_equivariant() -> None:
+    from ettr_il_v2_surface import SurfaceRenderer, call, integer, symbol
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    ast = call(
+        14,
+        integer(2),
+        call(
+            1,
+            call(3, symbol("x0000000000000001"), integer(0), call(0)),
+            call(3, symbol("x0000000000000002"), integer(1), call(0)),
+        ),
+        call(
+            13,
+            call(4, symbol("x0000000000000002")),
+            call(4, symbol("x0000000000000001")),
+        ),
+    )
+    compiler = ParallelAddressedTransactionCompiler(
+        _config(),
+        width=64,
+        layers=1,
+        num_heads=2,
+        token_native_command_mask=True,
+        token_native_syntax_graph_command=True,
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    ).eval()
+    kwargs = {
+        "command_hidden": torch.zeros(1, 32, _config().d_model),
+        "command_attention_mask": torch.ones(1, 32, dtype=torch.bool),
+        "steps": 3,
+        "hard": False,
+    }
+    first, second = codec.codebook.token_ids[-2:]
+    for renderer in SurfaceRenderer:
+        transport = codec.pack(codec.serialize(ast, renderer), width=32)
+        tokens = torch.tensor([transport.token_ids], dtype=torch.long)
+        renamed = torch.where(tokens.eq(first), second, tokens)
+        renamed = torch.where(tokens.eq(second), first, renamed)
+        with torch.no_grad():
+            original = compiler(
+                _state(_config(), batch=1),
+                command_tokens=tokens,
+                **kwargs,
+            )
+            permuted = compiler(
+                _state(_config(), batch=1),
+                command_tokens=renamed,
+                **kwargs,
+            )
+        for field in (
+            "opcode",
+            "source",
+            "target",
+            "relation",
+            "type_index",
+            "value_code",
+        ):
+            assert torch.equal(
+                getattr(original, field),
+                getattr(permuted, field),
+            )
+
+
 def test_mean_schedule_ensemble_averages_before_one_hard_decision() -> None:
     config = _config()
     compilers = [
@@ -449,15 +564,10 @@ def test_production_geometry_stays_inside_remaining_parameter_budget() -> None:
     assert parameters == 6_462_753
     recurrent_policy_parameters = sum(
         parameter.numel()
-        for parameter in GenericTransactionReactor(
-            TheoryReactorConfig()
-        ).parameters()
+        for parameter in GenericTransactionReactor(TheoryReactorConfig()).parameters()
     )
     assert recurrent_policy_parameters == 29_757_217
-    assert (
-        185_696_111 - recurrent_policy_parameters + parameters
-        == 162_401_647
-    )
+    assert 185_696_111 - recurrent_policy_parameters + parameters == 162_401_647
 
 
 def test_occurrence_linked_production_geometry_stays_inside_system_cap() -> None:
@@ -481,21 +591,16 @@ def test_wide_geometry_uses_the_recovered_budget_without_crossing_cap() -> None:
         layers=4,
         num_heads=14,
     )
-    schedule_parameters = sum(
-        parameter.numel() for parameter in compiler.parameters()
-    )
+    schedule_parameters = sum(parameter.numel() for parameter in compiler.parameters())
     assert schedule_parameters == 43_074_721
     assert 185_696_111 - 29_757_217 + schedule_parameters == 199_013_615
 
 
 def test_six_basin_ensemble_stays_inside_system_cap() -> None:
     compilers = [
-        ParallelAddressedTransactionCompiler(TheoryReactorConfig())
-        for _ in range(6)
+        ParallelAddressedTransactionCompiler(TheoryReactorConfig()) for _ in range(6)
     ]
     ensemble = MeanParallelAddressedScheduleCompiler(compilers)
-    schedule_parameters = sum(
-        parameter.numel() for parameter in ensemble.parameters()
-    )
+    schedule_parameters = sum(parameter.numel() for parameter in ensemble.parameters())
     assert schedule_parameters == 6 * 6_462_753
     assert 185_696_111 - 29_757_217 + schedule_parameters == 194_715_412

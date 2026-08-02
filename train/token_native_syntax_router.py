@@ -56,9 +56,7 @@ class TokenNativeDocumentMask(nn.Module):
             or max(ids) >= vocab_size
             or len(ids) <= REIFY_END
         ):
-            raise TokenNativeSyntaxRouterError(
-                "token-native codebook geometry differs"
-            )
+            raise TokenNativeSyntaxRouterError("token-native codebook geometry differs")
         inverse = torch.full((vocab_size,), -1, dtype=torch.long)
         inverse[torch.tensor(ids, dtype=torch.long)] = torch.arange(
             len(ids),
@@ -87,9 +85,7 @@ class TokenNativeDocumentMask(nn.Module):
             codes.ge(0).all(),
             "token-native transport leaves the bound codebook",
         )
-        preamble = (
-            codes[:, 0].eq(FRAME_A) | codes[:, 0].eq(FRAME_B)
-        ) & (
+        preamble = (codes[:, 0].eq(FRAME_A) | codes[:, 0].eq(FRAME_B)) & (
             codes[:, 1].eq(FRAME_A) | codes[:, 1].eq(FRAME_B)
         )
         torch._assert_async(
@@ -245,9 +241,7 @@ class TokenNativeOccurrenceEncoder(nn.Module):
             or memory.device != tokens.device
             or tokens.device != document_mask.device
         ):
-            raise TokenNativeSyntaxRouterError(
-                "token-native occurrence input differs"
-            )
+            raise TokenNativeSyntaxRouterError("token-native occurrence input differs")
         codes = self.inverse_codebook[tokens]
         torch._assert_async(
             codes.ge(0).all(),
@@ -257,9 +251,7 @@ class TokenNativeOccurrenceEncoder(nn.Module):
         is_reified = codes.ge(REIFY_BASE) & codes.lt(REIFY_END)
         identifier_floor = self.codebook_size - self.maximum_identifier_codes
         is_identifier = codes.ge(identifier_floor) & document_mask
-        is_integer = (
-            codes.ge(INTEGER_BASE) & ~is_identifier & document_mask
-        )
+        is_integer = codes.ge(INTEGER_BASE) & ~is_identifier & document_mask
         is_frame = document_mask & ~(is_call | is_reified | is_integer | is_identifier)
         category = torch.zeros_like(codes)
         category = torch.where(is_call, torch.ones_like(category), category)
@@ -299,10 +291,9 @@ class TokenNativeOccurrenceEncoder(nn.Module):
             min=0,
             max=self.codebook_size - INTEGER_BASE - 1,
         )
-        renderer = (
-            codes[:, 0].eq(FRAME_B).to(torch.long) * 2
-            + codes[:, 1].eq(FRAME_B).to(torch.long)
-        )
+        renderer = codes[:, 0].eq(FRAME_B).to(torch.long) * 2 + codes[:, 1].eq(
+            FRAME_B
+        ).to(torch.long)
         positions = torch.arange(tokens.shape[1], device=tokens.device)
         structural = (
             self.category_embedding(category)
@@ -335,8 +326,419 @@ class TokenNativeOccurrenceEncoder(nn.Module):
         return self.output_norm(hidden)
 
 
+class _SyntaxGraphLayer(nn.Module):
+    """Exchange messages only across public syntax and equality edges."""
+
+    def __init__(self, width: int) -> None:
+        super().__init__()
+        self.parent_projection = nn.Linear(width, width, bias=False)
+        self.children_projection = nn.Linear(width, width, bias=False)
+        self.occurrence_projection = nn.Linear(width, width, bias=False)
+        self.message_gate = nn.Linear(3 * width, width)
+        self.message_norm = nn.LayerNorm(width)
+        self.ffn_norm = nn.LayerNorm(width)
+        self.ffn = nn.Sequential(
+            nn.Linear(width, 4 * width),
+            nn.GELU(),
+            nn.Linear(4 * width, width),
+        )
+
+    def forward(
+        self,
+        hidden: torch.Tensor,
+        *,
+        parent_index: torch.Tensor,
+        has_parent: torch.Tensor,
+        identifier_equality: torch.Tensor,
+        document_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        batch, length, width = hidden.shape
+        gather_index = (
+            parent_index.clamp_min(0)
+            .unsqueeze(-1)
+            .expand(
+                batch,
+                length,
+                width,
+            )
+        )
+        parent = hidden.gather(1, gather_index) * has_parent.unsqueeze(-1)
+
+        children = torch.zeros_like(hidden)
+        child_count = torch.zeros(
+            batch,
+            length,
+            1,
+            dtype=hidden.dtype,
+            device=hidden.device,
+        )
+        children.scatter_add_(1, gather_index, hidden * has_parent.unsqueeze(-1))
+        child_count.scatter_add_(
+            1,
+            parent_index.clamp_min(0).unsqueeze(-1),
+            has_parent.unsqueeze(-1).to(hidden.dtype),
+        )
+        children = children / child_count.clamp_min(1.0)
+
+        occurrence_count = identifier_equality.sum(
+            dim=-1,
+            keepdim=True,
+        ).clamp_min(1)
+        occurrence = torch.bmm(
+            identifier_equality.to(hidden.dtype),
+            hidden,
+        ) / occurrence_count.to(hidden.dtype)
+        projected = torch.cat(
+            (
+                self.parent_projection(parent),
+                self.children_projection(children),
+                self.occurrence_projection(occurrence),
+            ),
+            dim=-1,
+        )
+        message = torch.sigmoid(self.message_gate(projected)) * (
+            projected[..., :width]
+            + projected[..., width : 2 * width]
+            + projected[..., 2 * width :]
+        )
+        hidden = self.message_norm(hidden + message)
+        hidden = self.ffn_norm(hidden + self.ffn(hidden))
+        return hidden * document_mask.unsqueeze(-1)
+
+
+class TokenNativeSyntaxGraphEncoder(nn.Module):
+    """Route contextual states over the exact public token-native AST.
+
+    The graph is reconstructed from prefix/postfix arities.  It contains only
+    parent/child edges, semantic child ranks, depth, and equality edges between
+    opaque local identifiers.  It never decodes identifier names or executes
+    the represented command.
+    """
+
+    _CATEGORY_COUNT = 5
+    _HEAD_COUNT = MAX_HEAD + 2
+
+    def __init__(
+        self,
+        codebook_token_ids: Sequence[int],
+        *,
+        vocab_size: int,
+        width: int,
+        layers: int = 3,
+        maximum_positions: int = 96,
+        maximum_identifier_codes: int = 96,
+    ) -> None:
+        super().__init__()
+        ids = tuple(int(value) for value in codebook_token_ids)
+        if (
+            not ids
+            or len(set(ids)) != len(ids)
+            or not isinstance(vocab_size, int)
+            or vocab_size < 1
+            or min(ids) < 0
+            or max(ids) >= vocab_size
+            or len(ids) <= INTEGER_BASE + maximum_identifier_codes
+            or not isinstance(width, int)
+            or width < 64
+            or not isinstance(layers, int)
+            or not 1 <= layers <= 8
+            or not isinstance(maximum_positions, int)
+            or maximum_positions < 3
+            or not isinstance(maximum_identifier_codes, int)
+            or not 1 <= maximum_identifier_codes < maximum_positions + 1
+        ):
+            raise TokenNativeSyntaxRouterError(
+                "token-native syntax graph geometry differs"
+            )
+        inverse = torch.full((vocab_size,), -1, dtype=torch.long)
+        inverse[torch.tensor(ids, dtype=torch.long)] = torch.arange(
+            len(ids),
+            dtype=torch.long,
+        )
+        self.register_buffer("inverse_codebook", inverse)
+        self.codebook_size = len(ids)
+        self.width = width
+        self.maximum_positions = maximum_positions
+        self.maximum_identifier_codes = maximum_identifier_codes
+
+        self.category_embedding = nn.Embedding(self._CATEGORY_COUNT, width)
+        self.head_embedding = nn.Embedding(self._HEAD_COUNT, width)
+        self.arity_embedding = nn.Embedding(MAX_NATIVE_ARITY + 2, width)
+        self.integer_embedding = nn.Embedding(
+            self.codebook_size - INTEGER_BASE,
+            width,
+        )
+        self.renderer_embedding = nn.Embedding(4, width)
+        self.position_embedding = nn.Embedding(maximum_positions, width)
+        self.depth_embedding = nn.Embedding(maximum_positions, width)
+        self.child_rank_embedding = nn.Embedding(MAX_NATIVE_ARITY + 1, width)
+        self.input_norm = nn.LayerNorm(width)
+        self.layers = nn.ModuleList(_SyntaxGraphLayer(width) for _ in range(layers))
+        self.output_norm = nn.LayerNorm(width)
+
+    @staticmethod
+    def _syntax_links(
+        codes: torch.Tensor,
+        document_mask: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Return exact parent, semantic child rank, and tree depth."""
+
+        batch, length = codes.shape
+        positions = torch.arange(length, device=codes.device)
+        nodes = document_mask & positions[None, :].ge(2)
+        is_call = codes.lt(CALL_END)
+        is_reified = codes.ge(REIFY_BASE) & codes.lt(REIFY_END)
+        child_count = torch.zeros_like(codes)
+        child_count = torch.where(
+            is_call,
+            codes.remainder(CALL_STRIDE),
+            child_count,
+        )
+        child_count = torch.where(
+            is_reified,
+            codes - REIFY_BASE + 1,
+            child_count,
+        )
+        child_count = child_count * nodes
+        prefix = codes[:, 0].eq(FRAME_A)
+        reverse_children = codes[:, 1].eq(FRAME_B)
+        before = positions[:, None].lt(positions[None, :])
+        span = ~before.T
+
+        def segment_sums(effects: torch.Tensor) -> torch.Tensor:
+            cumulative = effects.cumsum(dim=1)
+            previous = torch.cat(
+                (
+                    torch.zeros(
+                        batch,
+                        1,
+                        dtype=effects.dtype,
+                        device=effects.device,
+                    ),
+                    cumulative[:, :-1],
+                ),
+                dim=1,
+            )
+            return cumulative[:, None, :] - previous[:, :, None]
+
+        prefix_segments = segment_sums((child_count - 1) * nodes)
+        prefix_completion = (
+            nodes[:, :, None]
+            & nodes[:, None, :]
+            & span[None, :, :]
+            & prefix_segments.eq(-1)
+        )
+        subtree_end = torch.where(
+            prefix_completion,
+            positions[None, None, :],
+            torch.full(
+                (1, 1, length),
+                length,
+                dtype=torch.long,
+                device=codes.device,
+            ),
+        ).amin(dim=-1)
+        torch._assert_async(
+            (~nodes | ~prefix[:, None] | subtree_end.lt(length)).all(),
+            "token-native prefix subtree does not terminate",
+        )
+        prefix_ancestors = (
+            child_count[:, None, :].gt(0)
+            & before.T[None, :, :]
+            & subtree_end[:, None, :].ge(positions[None, :, None])
+            & nodes[:, :, None]
+            & nodes[:, None, :]
+        )
+        prefix_parent = torch.where(
+            prefix_ancestors,
+            positions[None, None, :],
+            torch.full(
+                (1, 1, length),
+                -1,
+                dtype=torch.long,
+                device=codes.device,
+            ),
+        ).amax(dim=-1)
+
+        postfix_segments = segment_sums((1 - child_count) * nodes)
+        postfix_completion = (
+            nodes[:, :, None]
+            & nodes[:, None, :]
+            & span[None, :, :]
+            & postfix_segments.eq(1)
+        )
+        subtree_start = torch.where(
+            postfix_completion,
+            positions[None, :, None],
+            torch.full(
+                (1, length, 1),
+                -1,
+                dtype=torch.long,
+                device=codes.device,
+            ),
+        ).amax(dim=1)
+        torch._assert_async(
+            (~nodes | prefix[:, None] | subtree_start.ge(2)).all(),
+            "token-native postfix subtree does not start",
+        )
+        postfix_ancestors = (
+            child_count[:, None, :].gt(0)
+            & before[None, :, :]
+            & subtree_start[:, None, :].le(positions[None, :, None])
+            & nodes[:, :, None]
+            & nodes[:, None, :]
+        )
+        postfix_parent = torch.where(
+            postfix_ancestors,
+            positions[None, None, :],
+            torch.full(
+                (1, 1, length),
+                length,
+                dtype=torch.long,
+                device=codes.device,
+            ),
+        ).amin(dim=-1)
+        postfix_parent = torch.where(
+            postfix_parent.eq(length),
+            torch.full_like(postfix_parent, -1),
+            postfix_parent,
+        )
+
+        parent = torch.where(prefix[:, None], prefix_parent, postfix_parent)
+        ancestor_count = torch.where(
+            prefix[:, None, None],
+            prefix_ancestors,
+            postfix_ancestors,
+        ).sum(dim=-1)
+
+        root_count = (nodes & parent.lt(0)).sum(dim=1)
+        torch._assert_async(
+            root_count.eq(1).all(),
+            "token-native syntax graph does not contain one root",
+        )
+        has_parent = nodes & parent.ge(0)
+        same_parent = (
+            parent[:, :, None].eq(parent[:, None, :])
+            & has_parent[:, :, None]
+            & has_parent[:, None, :]
+        )
+        observed_rank = (same_parent & before.T[None, :, :]).sum(dim=-1)
+        total_children = child_count.gather(1, parent.clamp_min(0))
+        child_rank = torch.where(
+            reverse_children[:, None],
+            total_children - 1 - observed_rank,
+            observed_rank,
+        ).clamp_min(0)
+        child_rank = child_rank * has_parent
+        depth = ancestor_count
+        torch._assert_async(
+            depth.lt(length).all(),
+            "token-native syntax graph depth differs",
+        )
+        return parent, child_rank, depth
+
+    def forward(
+        self,
+        memory: torch.Tensor,
+        tokens: torch.Tensor,
+        document_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        if (
+            memory.ndim != 3
+            or memory.shape[:2] != tokens.shape
+            or memory.shape[-1] != self.width
+            or tokens.ndim != 2
+            or tokens.dtype != torch.long
+            or document_mask.shape != tokens.shape
+            or document_mask.dtype != torch.bool
+            or tokens.shape[1] > self.maximum_positions
+            or memory.device != tokens.device
+            or tokens.device != document_mask.device
+        ):
+            raise TokenNativeSyntaxRouterError(
+                "token-native syntax graph input differs"
+            )
+        codes = self.inverse_codebook[tokens]
+        torch._assert_async(
+            codes.ge(0).all(),
+            "token-native syntax graph leaves the bound codebook",
+        )
+        is_call = codes.lt(CALL_END)
+        is_reified = codes.ge(REIFY_BASE) & codes.lt(REIFY_END)
+        identifier_floor = self.codebook_size - self.maximum_identifier_codes
+        is_identifier = codes.ge(identifier_floor) & document_mask
+        is_integer = codes.ge(INTEGER_BASE) & ~is_identifier & document_mask
+        is_frame = document_mask & ~(is_call | is_reified | is_integer | is_identifier)
+        category = torch.zeros_like(codes)
+        category = torch.where(is_call, torch.ones_like(category), category)
+        category = torch.where(is_reified, torch.full_like(category, 2), category)
+        category = torch.where(is_integer, torch.full_like(category, 3), category)
+        category = torch.where(
+            is_identifier,
+            torch.full_like(category, 4),
+            category,
+        )
+        torch._assert_async(
+            (is_frame | is_call | is_reified | is_integer | is_identifier)[
+                document_mask
+            ].all(),
+            "token-native syntax graph category is incomplete",
+        )
+        head = torch.zeros_like(codes)
+        head = torch.where(
+            is_call,
+            codes.div(CALL_STRIDE, rounding_mode="floor"),
+            head,
+        )
+        head = torch.where(
+            is_reified,
+            torch.full_like(head, MAX_HEAD + 1),
+            head,
+        )
+        arity = torch.zeros_like(codes)
+        arity = torch.where(is_call, codes.remainder(CALL_STRIDE), arity)
+        arity = torch.where(is_reified, codes - REIFY_BASE + 1, arity)
+        integer = (codes - INTEGER_BASE).clamp(
+            min=0,
+            max=self.codebook_size - INTEGER_BASE - 1,
+        )
+        renderer = codes[:, 0].eq(FRAME_B).to(torch.long) * 2 + codes[:, 1].eq(
+            FRAME_B
+        ).to(torch.long)
+        positions = torch.arange(tokens.shape[1], device=tokens.device)
+        parent, child_rank, depth = self._syntax_links(codes, document_mask)
+        structural = (
+            self.category_embedding(category)
+            + self.head_embedding(head)
+            + self.arity_embedding(arity)
+            + self.renderer_embedding(renderer)[:, None, :]
+            + self.position_embedding(positions)[None, :, :]
+            + self.depth_embedding(depth)
+            + self.child_rank_embedding(child_rank)
+        )
+        structural = structural + (
+            self.integer_embedding(integer) * is_integer.unsqueeze(-1)
+        )
+        hidden = self.input_norm(memory + structural.to(memory.dtype))
+        equality = (
+            codes[:, :, None].eq(codes[:, None, :])
+            & is_identifier[:, :, None]
+            & is_identifier[:, None, :]
+        )
+        for layer in self.layers:
+            hidden = layer(
+                hidden,
+                parent_index=parent,
+                has_parent=document_mask & parent.ge(0),
+                identifier_equality=equality,
+                document_mask=document_mask,
+            )
+        return self.output_norm(hidden)
+
+
 __all__ = [
     "TokenNativeDocumentMask",
     "TokenNativeOccurrenceEncoder",
+    "TokenNativeSyntaxGraphEncoder",
     "TokenNativeSyntaxRouterError",
 ]
