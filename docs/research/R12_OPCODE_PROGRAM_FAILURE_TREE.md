@@ -812,7 +812,7 @@ The successor state, QUERY, answer, terminal packet, and transaction program
 remain excluded.
 
 Exact runtime `scratchpad/shohin_ettr_family_state_runtime_2523e7e_r1` is
-bound to source `2523e7e888c98e68a571a11c284d6d6e648b5c04`, contains 2,898
+bound to source `2523e7ec514d4107df36159683f8ab0e76229289`, contains 2,898
 verified files with no links or writable entries, and has SHA256SUMS SHA-256
 `9d3cf45b2f18ee83113505b4a856f99b3faeebcbbf1d089ea928ac2fe400014d`.
 Full-corpus Stokes job `760964` is running on 48 CPU cores.
@@ -870,3 +870,13 @@ The visitor now supports both abstract and resolved integer forms, with a
 regression through the actual abstraction function. This changes no family
 labels or evaluator. The corrected audit must complete before v19 can be
 classified as an optimization problem or rejected as a control primitive.
+
+The superseded audit runtime's full source receipt was also malformed: short
+commit `2523e7e` had been expanded to a nonexistent hash. Its audit file still
+matched actual commit `2523e7ec514d4107df36159683f8ab0e76229289`, but the old
+runtime is rejected as a new launch base. Replacement Stokes runtime
+`scratchpad/shohin_ettr_family_state_runtime_f6e65ec_r1` is bound to source
+`f6e65ecc7fd244857bd36240804bb9fbeb14bd44`, contains 2,901 verified files,
+zero links or writable entries, and has SHA256SUMS SHA-256
+`7a7dae677d66ac6e8776b0fdf95f6f3611013c13209471e1c307db8f0b1f31ed`.
+Corrected 48-core job `760967` writes to a fresh no-replace report path.

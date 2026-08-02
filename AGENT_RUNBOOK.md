@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 15:12 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 15:17 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -24903,7 +24903,7 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `scratchpad/shohin_ettr_family_state_runtime_2523e7e_r1` is derived from the
   prior verified family-audit runtime plus the complete tracked
   `1ed1a60..2523e7e` delta. It is bound to source
-  `2523e7e888c98e68a571a11c284d6d6e648b5c04`, contains 2,898 files,
+  `2523e7ec514d4107df36159683f8ab0e76229289`, contains 2,898 files,
   zero links, zero writable entries, passes full checksum replay, and has
   SHA256SUMS SHA-256
   `9d3cf45b2f18ee83113505b4a856f99b3faeebcbbf1d089ea928ac2fe400014d`.
@@ -25002,6 +25002,19 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   the abstract form contributes type but no literal-sign or magnitude feature.
   A direct regression exercises the same abstraction path. Seventy focused
   tests pass with clean Ruff, byte compilation, Bash syntax, and diff checks.
+
+  Custody review also found that the superseded runtime receipt expanded short
+  commit `2523e7e` to a nonexistent full hash. The actual source commit is
+  `2523e7ec514d4107df36159683f8ab0e76229289`; the prior manifest still replayed
+  and its audit source matched that commit byte-for-byte, but the malformed
+  identity receipt is rejected for further launches. Corrected Stokes runtime
+  `scratchpad/shohin_ettr_family_state_runtime_f6e65ec_r1` is bound to source
+  `f6e65ecc7fd244857bd36240804bb9fbeb14bd44`, contains 2,901 files, zero
+  links, zero writable entries, passes complete checksum replay, and has
+  SHA256SUMS SHA-256
+  `7a7dae677d66ac6e8776b0fdf95f6f3611013c13209471e1c307db8f0b1f31ed`.
+  Corrected 48-core audit job `760967` is queued from that runtime with a fresh
+  no-replace report path.
 
   Decision:
   `require_the_corrected_v19_two_update_gate_and_rerun_the_exact_state_conditioning_audit_before_any_long_fit_or_successor_release`.
