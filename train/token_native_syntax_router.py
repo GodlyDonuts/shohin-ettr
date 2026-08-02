@@ -214,11 +214,14 @@ def _cover_verified_document_end(
         )
         if values[end:] == expected:
             matches.append(end)
-    if len(matches) != 1:
+    if not matches:
         raise TokenNativeSyntaxRouterError(
-            "token-native transport lacks one cover-verified document"
+            "token-native transport lacks a cover-verified document"
         )
-    return matches[0]
+    # Full-width completions verify an empty cover vacuously.  Because the
+    # source materializer appends cover only after the complete document, the
+    # earliest verified completion is the exact generating boundary.
+    return min(matches)
 
 
 class CoverVerifiedTokenNativeDocumentMask(TokenNativeDocumentMask):

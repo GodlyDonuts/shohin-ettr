@@ -147,6 +147,45 @@ def test_cover_verified_router_preserves_outer_reverse_postfix_root() -> None:
     assert legacy[-1].sum().item() < expected[-1]
 
 
+def test_cover_verified_router_prefers_earliest_match_over_vacuous_width(
+    monkeypatch,
+) -> None:
+    import token_native_syntax_router as router_module
+
+    root = 14 * router_module.CALL_STRIDE + 3
+    document = (
+        router_module.FRAME_B,
+        router_module.FRAME_B,
+        router_module.INTEGER_BASE,
+        router_module.INTEGER_BASE + 1,
+        router_module.INTEGER_BASE + 2,
+        root,
+    )
+    values = (
+        *document,
+        router_module.INTEGER_BASE + 3,
+        router_module.INTEGER_BASE + 4,
+        router_module.INTEGER_BASE + 5,
+        root,
+    )
+    atoms = tuple(
+        f" atom{index}" for index in range(router_module.REIFY_END + 256)
+    )
+
+    def cover(payload, *, width, count, codebook_size):
+        assert width == len(values)
+        assert codebook_size == len(atoms)
+        if count == 0:
+            return ()
+        assert payload == "".join(atoms[code] for code in document).encode("ascii")
+        assert count == 4
+        return values[-4:]
+
+    monkeypatch.setattr(router_module, "_cover_indices", cover)
+
+    assert router_module._cover_verified_document_end(values, atoms) == len(document)
+
+
 def test_occurrence_encoder_is_equivariant_to_local_identifier_renaming() -> None:
     from ettr_il_v2_surface import SurfaceRenderer, call, integer, symbol
 

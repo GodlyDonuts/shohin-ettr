@@ -1,5 +1,6 @@
 from types import SimpleNamespace
 
+import audit_ettr_public_opcode_identifiability as opcode_audit
 from audit_ettr_document_mask_integrity import legacy_public_document_end
 from audit_ettr_public_opcode_identifiability import (
     _CALL_STRIDE,
@@ -73,3 +74,39 @@ def test_legacy_mask_truncates_a_nested_reverse_postfix_root():
 
     assert legacy < exact
     assert exact == len(document)
+
+
+def test_cover_verification_prefers_the_earliest_match_over_vacuous_width(
+    monkeypatch,
+):
+    codec = _FakeCodec()
+    root = 14 * _CALL_STRIDE + 3
+    document = (
+        _FRAME_B,
+        _FRAME_B,
+        _INTEGER_BASE,
+        _INTEGER_BASE + 1,
+        _INTEGER_BASE + 2,
+        root,
+    )
+    physical = (
+        *document,
+        _INTEGER_BASE + 3,
+        _INTEGER_BASE + 4,
+        _INTEGER_BASE + 5,
+        root,
+    )
+    source = codec._render_logical(physical).decode("ascii")
+
+    def cover(payload, *, width, count, codebook_size):
+        assert width == len(physical)
+        assert codebook_size == CODEBOOK_SIZE
+        if count == 0:
+            return ()
+        assert payload == codec._render_logical(document)
+        assert count == 4
+        return physical[-4:]
+
+    monkeypatch.setattr(opcode_audit, "_deterministic_cover", cover)
+
+    assert public_document_indices(codec, source) == document

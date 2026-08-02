@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 03:13 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 04:54 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -23656,3 +23656,31 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `quantify_the_mask_defect_retrain_from_a_cover_verified_public_AST_boundary_and_use_identifiability_to_choose_structured_program_training_vs_a_new_edit_ontology`.
+
+- **2026-08-02 04:35--04:54 EDT** -- **Full-corpus auditing exposes and
+  repairs a vacuous full-width cover match before GPU allocation.**
+
+  Stokes jobs `760900` and `760901` were independent 48-CPU full-corpus
+  public-opcode and document-mask audits. Both failed before producing a
+  scientific report on the same train transport. Exact localization found a
+  valid reverse-postfix COMMAND document ending at token 88 whose eight-token
+  deterministic cover accidentally formed a second grammar-complete root at
+  token 96. The physical-width candidate necessarily passes a zero-length
+  cover comparison, so requiring exactly one cover-verified completion was
+  incorrect. The materializer appends cover only after the complete document;
+  therefore the earliest hash-verified grammar completion is the generating
+  boundary, while later matches are cover collisions. The production GPU
+  router and both CPU auditors now enforce that rule.
+
+  Two adversarial regression tests construct an earlier non-empty verified
+  boundary followed by a vacuous full-width root and require the earlier
+  boundary. The focused parser, audit, syntax-router, and compiler suite is
+  `49 passed, 1 CUDA-only skipped`; Ruff, byte compilation, Bash syntax, and
+  diff checks are clean. Neither failed CPU job is scientific evidence. Both
+  audits must be rerun from one corrected immutable runtime before the clean
+  H100 exact-mask treatment launches. The incorrectly marked short-hash
+  Newton runtime `shohin_ettr_cover_verified_runtime_f85ee48_r1` is invalid
+  and must not be submitted.
+
+  Decision:
+  `rerun_both_full_corpus_CPU_gates_from_the_earliest_verified_boundary_then_launch_one_clean_exact_mask_H100_treatment_with_prebuilt_structured_and_edit_ontology_successors`.

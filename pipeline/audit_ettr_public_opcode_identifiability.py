@@ -182,11 +182,16 @@ def public_document_indices(
         )
         if tuple(physical[end:]) == expected:
             matches.append(document)
-    if len(matches) != 1:
+    if not matches:
         raise PublicOpcodeIdentifiabilityError(
-            "public transport does not have one cover-verified AST"
+            "public transport does not have a cover-verified AST"
         )
-    return matches[0]
+    # A completion at the physical width has an empty suffix and therefore
+    # passes cover verification vacuously.  The materializer appends cover
+    # only after the complete document, so the earliest verified completion
+    # is the generating boundary.  Later matches are cover collisions, not
+    # competing document parses.
+    return min(matches, key=len)
 
 
 def parse_public_transport(
