@@ -53694,3 +53694,38 @@ out exact packets plus both strict causal axes must rise.
 
 Current decision:
 `retain_exact_syntax_graphs_as_the_first_nontrivial_terminal_execution_interface_and_measure_the_preregistered_1k_5k_15k_curve_before_adding_program_experts`.
+
+### 2026-08-02: full-corpus program diversity separates memorization from macros
+
+A 24-CPU Stokes audit reconstructed every exact materializer program directly
+from the admitted semantic-core packets and transaction traces. It covers
+40,000 training cores / 160,000 WORLD-by-COMMAND programs and 5,000
+development cores / 20,000 programs. The report is independently hash-bound
+at file SHA-256
+`4cb8dc61feb0556aabb91a23d8341cc50e00b37039c74647459467b0808dcd36`.
+
+The result rejects the tempting small whole-program codebook. Training has
+59,442 exact programs and 31,269 structural programs. Exact train programs
+cover only 60.07% of development instances; structural programs cover 77.99%.
+Retrieving one of a few dozen or few hundred complete programs would therefore
+be a memorizer with a hard held-out ceiling, not a general compiler.
+
+The reusable regularity is one level higher. Training has only 2,530 opcode
+sequences, and they cover 99.275% of development instances. The next
+architecture candidate is consequently hierarchical: select one sticky
+opcode/macro skeleton from the exact syntax graph, then derive source, target,
+relation, type, and value operands from syntax-node bindings and initial-state
+slots. This preserves one program identity without storing complete answers.
+Its scientific role is still diagnostic until it improves both unchanged
+source-deleted WORLD and COMMAND gates across populations.
+
+This also sharpens the grokking hypothesis. The current syntax-graph model may
+undergo a discrete execution-coherence transition because exact packet
+accuracy requires every coupled categorical decision to cross its argmax
+threshold. That is distinct from classical delayed generalization. The fixed
+1k/5k/15k curve records loss, field accuracy, exact schedules, exact terminal
+packets, and strict causal pairs separately so a thresholded metric cannot be
+misreported as representational grokking.
+
+Current decision:
+`finish_the_fixed_syntax_graph_curve_then_test_a_sticky_opcode_macro_rail_with_compositional_syntax_node_operands_not_a_flat_program_memory`.

@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 02:01 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 02:24 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -23438,3 +23438,45 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `retain_the_graph_foothold_run_the_fixed_budget_trajectory_and_only_then_choose_hard_program_identity_vs_syntax_node_transaction_emission`.
+
+- **2026-08-02 02:01--02:24 EDT** -- **The full program-diversity audit
+  rejects a small exact-program codebook and isolates a reusable opcode-macro
+  rail.**
+
+  A permanent CPU-only audit reconstructs exact materializer schedules from
+  assessor-held packets and traces without expanding renderer or QUERY rows.
+  It is hash-bound, no-replace, parallel by immutable shard, and reuses the
+  same fixed transaction algebra that created training labels. Four focused
+  tests plus Ruff, byte compilation, and Bash syntax pass. Immutable Stokes
+  runtime `scratchpad/shohin_ettr_program_audit_632bde0_r2` has SHA256SUMS
+  SHA-256
+  `046b388eb7c1f2591d112bab0ce25da037b2f21cac84de883e40b9ecdfdc246d`.
+  Job `760894` used 24 CPUs on `ec83` and completed cleanly in 5m45s. The
+  report file SHA-256 is
+  `4cb8dc61feb0556aabb91a23d8341cc50e00b37039c74647459467b0808dcd36`;
+  its logical payload SHA-256 is
+  `447c4e0f79e2e36e3b96488ee38953aa6a5bda1f016308058b87f00cf72be35c`.
+
+  The 40,000 admitted training cores contain 160,000 WORLD-by-COMMAND
+  programs: 59,442 exact programs, 31,269 operand-structural programs, and
+  2,530 opcode sequences. The 5,000 development cores contain 20,000
+  programs: 9,038 exact, 5,244 structural, and 1,073 opcode sequences. Train
+  exact programs cover only 60.07% of development instances and 29.34% of
+  development-unique programs. Structural coverage is 77.99% by instance and
+  34.38% by unique program. A flat exact or structural codebook would
+  therefore memorize and is rejected. In contrast, training opcode sequences
+  cover 99.275% of development instances and 92.08% of unique development
+  opcode sequences. The surviving architecture hypothesis is a sticky
+  opcode/macro skeleton selected once from the syntax graph, with source,
+  target, relation, type, and value operands emitted compositionally from
+  exact syntax nodes and the initial state. It cannot count as reasoning if it
+  merely retrieves exact programs, and the unchanged fully autonomous gates
+  remain mandatory.
+
+  V100 trajectory jobs `725573/725574` remain finite through more than 2,000
+  updates. Their loss is still descending smoothly, so there is not yet
+  evidence of a classical plateau-then-generalization jump. Exact metrics at
+  5,000 and 15,000 remain the preregistered decision points.
+
+  Decision:
+  `reject_small_whole_program_codebooks_retain_sticky_opcode_macro_identity_and_emit_dynamic_operands_from_exact_syntax_nodes_after_the_fixed_trajectory`.
