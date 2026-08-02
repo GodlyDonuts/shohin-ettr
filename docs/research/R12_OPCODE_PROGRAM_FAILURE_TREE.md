@@ -300,11 +300,20 @@ development operation instances in 24m35s on 48 cores. The report is frozen at
 `bd6c8f35d93cf4ba2d99562a28825b4f86d43a18dd974de49d428f8b903d2dff`,
 payload SHA-256
 `3e828f59d31a7aac651c48d349520f4e863a3fb0925a2219eb5c54f3f0f269ec`).
-Node-edit count is 74.8248% at full coverage, edge-add count is 79.6635% at
-98.7308% coverage, edge-remove count is exact, node-field histogram is
+The v3 node-change count is 74.8248% at full coverage, while edge-add count is
+79.6635% at 98.7308% coverage, edge-remove count is exact, node-field histogram is
 74.8248% at full coverage, and status change is exact. The first two miss the
 preregistered 75% and 90% thresholds, so held GPU job `726975` was canceled
 without allocation.
+
+Post-result review found one label-alignment defect that does not change that
+decision: v3's node count includes root-only changes because root membership
+is part of the audited node tuple, while the deployed atomic algebra has a
+separate root action. Audit v4 preserves the old labels and adds exact atomic
+node, root, disposition, and total-effect counts. It also freezes train and
+development total-effect histograms and maxima so the neural set capacity is
+corpus-bound rather than guessed. The independent edge-add miss remains
+decisive, so the factorized run stays rejected.
 
 The successor is mechanism-distinct rather than another cardinality head.
 Contract v12 predicts up to 16 unordered typed effects with kinds allocate,
@@ -321,3 +330,10 @@ custody gates pass 34 tests. The next branch is a two-update GPU smoke; target
 capacity overflow is a technical geometry result and may raise the bounded
 capacity to the measured requirement, while finite smoke success alone only
 authorizes a bounded 1,000-update causal gate.
+
+The first two-update attempt, Newton job `726976`, produced no model evidence:
+it stopped before construction on the pilot's obsolete 200M parameter guard.
+The user had already removed that ceiling. The guard is deleted, parameter
+count remains contract-sealed, and held dependent job `726977` was canceled
+untouched. A new immutable-runtime smoke replaces it; the v4 Stokes capacity
+audit runs concurrently rather than waiting on the GPU result.

@@ -7,13 +7,19 @@ from audit_ettr_public_operation_state_delta import (
 )
 
 
-def _state(*, value: int, edge: bool = False) -> SimpleNamespace:
+def _state(
+    *,
+    value: int,
+    edge: bool = False,
+    rooted: bool = False,
+) -> SimpleNamespace:
     values = [0] * 64
     values[32] = value
     types = [0] * 64
     active = [False] * 64
     active[32] = True
     root = [False] * 64
+    root[32] = rooted
     return SimpleNamespace(
         active=tuple(active),
         committed=False,
@@ -55,9 +61,14 @@ def test_state_delta_factors_separate_shape_addresses_and_payloads() -> None:
             "status_changes": [False, False],
         },
         "delta_node_edit_count": 1,
+        "delta_atomic_node_edit_count": 1,
         "delta_edge_add_count": 1,
         "delta_edge_remove_count": 0,
         "delta_node_field_histogram": [[False, False, True, False]],
+        "delta_atomic_node_field_histogram": [[False, False, True]],
+        "delta_root_effect_count": 0,
+        "delta_disposition_effect_count": 0,
+        "delta_atomic_effect_count": 2,
         "delta_status_change": [False, False],
         "delta_addresses": {
             "edges_added": [(2, 32, 32)],
@@ -76,3 +87,15 @@ def test_state_delta_factors_separate_shape_addresses_and_payloads() -> None:
             "status_after": [False, False],
         },
     }
+
+
+def test_atomic_effect_count_separates_root_from_node_edits() -> None:
+    delta = state_delta_value(
+        _state(value=3, rooted=False),
+        _state(value=3, rooted=True),
+    )
+    factors = state_delta_factor_values(delta)
+    assert factors["delta_node_edit_count"] == 1
+    assert factors["delta_atomic_node_edit_count"] == 0
+    assert factors["delta_root_effect_count"] == 1
+    assert factors["delta_atomic_effect_count"] == 1

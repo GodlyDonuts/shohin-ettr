@@ -44,15 +44,20 @@ from ettr_il_v3_protocol import canonical_json_bytes
 from materialize_ettr_il_v3_corpus import _iter_records, _sha256_file
 
 
-REPORT_SCHEMA = "r12-ettr-public-operation-state-delta-audit-v3"
+REPORT_SCHEMA = "r12-ettr-public-operation-state-delta-audit-v4"
 _SPLITS = ("train", "development")
 _TARGETS = (
     "operation_delta",
     "delta_shape",
     "delta_node_edit_count",
+    "delta_atomic_node_edit_count",
     "delta_edge_add_count",
     "delta_edge_remove_count",
     "delta_node_field_histogram",
+    "delta_atomic_node_field_histogram",
+    "delta_root_effect_count",
+    "delta_disposition_effect_count",
+    "delta_atomic_effect_count",
     "delta_status_change",
     "delta_addresses",
     "delta_payloads",
@@ -156,22 +161,34 @@ def state_delta_factor_values(
     removed = list(delta["edges_removed"])
     status = list(delta["status"])
     shape_nodes = []
+    atomic_shape_nodes = []
     address_nodes = []
     payload_nodes = []
+    root_changed = False
     for item in nodes:
         slot, before, after = item
         before = list(before)
         after = list(after)
-        shape_nodes.append(
-            [
-                before[0] != after[0],
-                before[1] != after[1],
-                before[2] != after[2],
-                before[3] != after[3],
-            ]
-        )
+        shape = [
+            before[0] != after[0],
+            before[1] != after[1],
+            before[2] != after[2],
+            before[3] != after[3],
+        ]
+        shape_nodes.append(shape)
+        if any(shape[:3]):
+            atomic_shape_nodes.append(shape[:3])
+        root_changed = root_changed or shape[3]
         address_nodes.append(int(slot))
         payload_nodes.append([before, after])
+    disposition_changed = status[0] != status[2] or status[1] != status[3]
+    atomic_effect_count = (
+        len(atomic_shape_nodes)
+        + len(added)
+        + len(removed)
+        + int(root_changed)
+        + int(disposition_changed)
+    )
     return {
         "delta_shape": {
             "edge_additions": len(added),
@@ -180,9 +197,14 @@ def state_delta_factor_values(
             "status_changes": [status[0] != status[2], status[1] != status[3]],
         },
         "delta_node_edit_count": len(nodes),
+        "delta_atomic_node_edit_count": len(atomic_shape_nodes),
         "delta_edge_add_count": len(added),
         "delta_edge_remove_count": len(removed),
         "delta_node_field_histogram": sorted(shape_nodes),
+        "delta_atomic_node_field_histogram": sorted(atomic_shape_nodes),
+        "delta_root_effect_count": int(root_changed),
+        "delta_disposition_effect_count": int(disposition_changed),
+        "delta_atomic_effect_count": atomic_effect_count,
         "delta_status_change": [
             status[0] != status[2],
             status[1] != status[3],
@@ -299,7 +321,11 @@ def _record_labels(
                 }
                 keys = _keys(operation, operations, rank, worlds[corner_index])
                 for target, target_value in target_values.items():
-                    label = _digest(target_value)
+                    label = (
+                        str(target_value)
+                        if target == "delta_atomic_effect_count"
+                        else _digest(target_value)
+                    )
                     for mode, key in keys.items():
                         yield target, mode, key, label
                 state = after
@@ -401,6 +427,28 @@ def audit(
     }
     train = splits["train"].pop("_counts")
     development = splits["development"].pop("_counts")
+
+    def capacity_summary(
+        counts: dict[str, dict[str, dict[str, Counter[str]]]],
+    ) -> dict[str, object]:
+        histogram: Counter[str] = Counter()
+        for labels in counts["delta_atomic_effect_count"][
+            "resolved_operation"
+        ].values():
+            histogram.update(labels)
+        parsed = {int(label): count for label, count in histogram.items()}
+        return {
+            "histogram": {
+                str(label): parsed[label] for label in sorted(parsed)
+            },
+            "instances": sum(parsed.values()),
+            "maximum": max(parsed),
+        }
+
+    effect_set_capacity = {
+        "train": capacity_summary(train),
+        "development": capacity_summary(development),
+    }
     analyses = {
         target: {
             mode: {
@@ -419,6 +467,7 @@ def audit(
     report = {
         "analyses": analyses,
         "data_root": str(data_root),
+        "effect_set_capacity": effect_set_capacity,
         "input_contract": {
             "answer_read": False,
             "assessor_initial_packet_used_as_label_constructor_only": True,
@@ -426,9 +475,14 @@ def audit(
             "delta_factors_scored_separately": [
                 "shape",
                 "node_edit_count",
+                "atomic_node_edit_count",
                 "edge_add_count",
                 "edge_remove_count",
                 "node_field_histogram",
+                "atomic_node_field_histogram",
+                "root_effect_count",
+                "disposition_effect_count",
+                "atomic_effect_count",
                 "status_change",
                 "addresses",
                 "payloads",

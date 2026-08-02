@@ -194,8 +194,9 @@
 > target is not publicly identifiable. Coarse shape/address/payload factors
 > and exact global sparse cardinalities have now also failed their frozen
 > CPU release gates. Edge removal and status are exact, but high-coverage
-> edge-add count transfers at only 79.66% against the required 90%, while
-> node-edit count misses its 75% threshold at 74.82%. The held factorized GPU
+> edge-add count transfers at only 79.66% against the required 90%. The v3
+> node count was later found to bundle root-only changes and is being rerun
+> under an exactly algebra-aligned v4 label. The held factorized GPU
 > job was canceled untouched. The active mechanism-distinct successor is an
 > unordered bounded typed-effect set compiler with state-grounded operands,
 > permutation-invariant training, and the same fixed state algebra; it is
@@ -24156,8 +24157,12 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `3e828f59d31a7aac651c48d349520f4e863a3fb0925a2219eb5c54f3f0f269ec`.
 
   No broad-coverage public context satisfies every preregistered marginal
-  threshold. Node-edit count transfers at 74.8248% with 100% coverage and a
-  75.2545% development Bayes ceiling, missing its 75% gate by 0.1752 points.
+  threshold. The v3 node-change count transfers at 74.8248% with 100% coverage
+  and a 75.2545% development Bayes ceiling, missing its 75% gate by 0.1752
+  points. This label was subsequently found to include root-only changes,
+  whereas the deployed algebra represents root as a separate effect; it is
+  retained as historical v3 evidence but not claimed as an exact neural node
+  count.
   Edge-add count transfers at 79.6635% with 98.7308% coverage and an 84.5816%
   Bayes ceiling, materially missing its 90% gate. Edge-remove count is exact
   at 100% coverage; node-field histogram reaches 74.8248% at full coverage;
@@ -24185,3 +24190,30 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_global_sparse_cardinality_classification_and_test_an_unordered_typed_effect_set_that_can_bind_relation_creation_without_an_arbitrary_effect_order`.
+
+- **2026-08-02 08:37--08:43 EDT** -- **The first effect-set smoke fails only
+  an obsolete parameter policy; the algebra-aligned capacity audit is v4.**
+
+  Newton job `726976` allocated `evc1` but stopped before model construction,
+  evaluation, optimization, or report creation because the pilot still
+  enforced the retired 200M parameter ceiling. This is a technical policy
+  failure and contains no architecture evidence. Held dependent job `726977`
+  was canceled untouched. The stale guard is removed in accordance with the
+  user authorization recorded at the top of this runbook; complete parameter
+  count remains sealed in every contract and still requires causal-gate
+  evidence rather than loss-only promotion.
+
+  Review of audit v3 also found that its historical `delta_node_edit_count`
+  counted any changed node tuple, including a root-only change. The neural
+  atomic algebra treats root as its own action. Audit v4 therefore adds exact
+  algebra-aligned node edits, root effects, disposition effects, and total
+  effect count while preserving the v3 labels for comparison. It emits train
+  and development total-effect histograms plus the exact observed maximum,
+  which will bind the set capacity before a long GPU gate. The edge-add count
+  miss remains independently decisive, so this correction does not reverse
+  the cancellation of the factorized compiler. Expanded local architecture,
+  audit, supervision, custody, and job gates pass 39 tests with clean Ruff,
+  byte compilation, Bash syntax, and diff checks.
+
+  Decision:
+  `treat_726976_as_policy_only_remove_the_retired_cap_and_measure_exact_effect_set_capacity_concurrently_with_the_replacement_smoke`.

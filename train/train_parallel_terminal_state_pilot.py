@@ -1533,10 +1533,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         - removed_reactor_parameters
         + compiler_parameters
     )
-    if complete_parameters > 200_000_000:
-        raise ParallelTerminalStatePilotError(
-            "terminal-state system exceeds parameter cap"
-        )
     optimizer = torch.optim.AdamW(
         compiler.parameters(),
         lr=args.learning_rate,
