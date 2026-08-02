@@ -30,6 +30,13 @@ from parallel_terminal_state_compiler import (
 )
 
 
+ROLE_ANCHORED_EFFECT_ROLES = 4
+ROLE_ANCHORED_EFFECT_MOTORS_PER_ROLE = 5
+ROLE_ANCHORED_EFFECT_SLOTS = (
+    ROLE_ANCHORED_EFFECT_ROLES * ROLE_ANCHORED_EFFECT_MOTORS_PER_ROLE
+)
+
+
 @dataclass(frozen=True, slots=True)
 class OperationStateTransitionTrace:
     """Differentiable state/edit sequence emitted by the public executor."""
@@ -649,6 +656,7 @@ class OperationEffectSetCompiler(OperationStateTransitionCompiler):
         *args,
         maximum_effects: int = 16,
         public_role_anchors: bool = False,
+        maximum_effect_roles: int = ROLE_ANCHORED_EFFECT_ROLES,
         **kwargs,
     ) -> None:  # type: ignore[no-untyped-def]
         super().__init__(*args, **kwargs)
@@ -656,13 +664,25 @@ class OperationEffectSetCompiler(OperationStateTransitionCompiler):
             not isinstance(maximum_effects, int)
             or not 1 <= maximum_effects <= 64
             or not isinstance(public_role_anchors, bool)
-            or (public_role_anchors and maximum_effects % 2)
+            or not isinstance(maximum_effect_roles, int)
+            or (
+                public_role_anchors
+                and (
+                    not 2 <= maximum_effect_roles <= maximum_effects
+                    or maximum_effects % maximum_effect_roles
+                )
+            )
         ):
             raise TheoryReactorError("operation effect set geometry differs")
         self.maximum_effects = maximum_effects
         self.public_role_anchors = public_role_anchors
         self.effect_role_count = (
-            maximum_effects // 2 if public_role_anchors else 0
+            maximum_effect_roles if public_role_anchors else 0
+        )
+        self.effect_motors_per_role = (
+            maximum_effects // maximum_effect_roles
+            if public_role_anchors
+            else 0
         )
         self.effect_queries = nn.Parameter(torch.empty(maximum_effects, self.width))
         self.effect_input_norm = nn.LayerNorm(self.width)
@@ -739,7 +759,7 @@ class OperationEffectSetCompiler(OperationStateTransitionCompiler):
             effect_role = torch.arange(
                 self.maximum_effects,
                 device=slots.device,
-            ).div(2, rounding_mode="floor")
+            ).div(self.effect_motors_per_role, rounding_mode="floor")
             effects = effects + anchors.index_select(1, effect_role).to(slots.dtype)
             valid = role_valid.index_select(1, effect_role)
         elif effect_anchors is not None:

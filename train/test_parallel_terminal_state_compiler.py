@@ -540,7 +540,10 @@ def test_role_anchored_effect_compiler_runs_complete_public_trace() -> None:
     assert trace.operation_mask.sum(-1).eq(2).all()
     for edits in trace.operation_edits[:2]:
         assert edits.effect_kind is not None
-        assert edits.effect_kind[:, 4:].argmax(-1).eq(EFFECT_NOOP).all()
+        first_invalid = 2 * compiler.effect_motors_per_role
+        assert edits.effect_kind[:, first_invalid:].argmax(-1).eq(
+            EFFECT_NOOP
+        ).all()
     terminal.value_probabilities.square().mean().backward()
     assert compiler.effect_kind_head.weight.grad is not None
     assert bool(compiler.effect_kind_head.weight.grad.isfinite().all())
@@ -780,6 +783,7 @@ def test_operation_effect_set_anchors_two_motors_per_public_role() -> None:
         relation_width=16,
         maximum_effects=6,
         public_role_anchors=True,
+        maximum_effect_roles=3,
         token_native_codebook_ids=codec.codebook.token_ids,
         token_native_codebook_atoms=codec.codebook.atoms,
         token_native_vocab_size=codec.tokenizer.get_vocab_size(),
@@ -807,6 +811,21 @@ def test_operation_effect_set_anchors_two_motors_per_public_role() -> None:
     edits.effect_kind[:, :2, 1:].sum().backward()
     assert anchors.grad is not None
     assert bool(anchors.grad[:, 0].abs().sum().gt(0))
+
+
+def test_operation_effect_role_geometry_requires_even_role_banks() -> None:
+    config = _config()
+    with pytest.raises(TheoryReactorError):
+        OperationEffectSetCompiler(
+            config,
+            width=64,
+            layers=1,
+            num_heads=2,
+            relation_width=16,
+            maximum_effects=10,
+            public_role_anchors=True,
+            maximum_effect_roles=4,
+        )
 
 
 def test_syntax_routed_atomic_compiler_ignores_transport_cover() -> None:

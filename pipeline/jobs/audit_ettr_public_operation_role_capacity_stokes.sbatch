@@ -24,10 +24,13 @@ RUNTIME_SHA256SUMS_SHA256=${RUNTIME_SHA256SUMS_SHA256:?set runtime receipt hash}
 DATA_ROOT=${DATA_ROOT:?set immutable ETTR data root}
 TOKENIZER=${TOKENIZER:?set tokenizer artifact}
 OUTPUT=${OUTPUT:?set fresh report path}
+EFFECT_CAPACITY_REPORT=${EFFECT_CAPACITY_REPORT:?set exact effect-capacity report}
+EFFECT_CAPACITY_REPORT_SHA256=${EFFECT_CAPACITY_REPORT_SHA256:?set effect-capacity report hash}
 WORKERS=${WORKERS:-48}
 PYTHON=${PYTHON:-/lustre/fs1/home/sa305415/shohin/miniforge3/bin/python3.13}
 
-for path in "$CODE_ROOT" "$DATA_ROOT" "$TOKENIZER" "$OUTPUT"; do
+for path in "$CODE_ROOT" "$DATA_ROOT" "$TOKENIZER" "$OUTPUT" \
+  "$EFFECT_CAPACITY_REPORT"; do
   [[ "$path" == /* ]] || {
     echo "public operation role-capacity audit paths must be absolute" >&2
     exit 2
@@ -60,6 +63,8 @@ PYTHONPATH="$CODE_ROOT/pipeline:$CODE_ROOT/train" \
   "$PYTHON" pipeline/audit_ettr_public_operation_role_capacity.py \
   --data-root "$DATA_ROOT" \
   --tokenizer "$TOKENIZER" \
+  --effect-capacity-report "$EFFECT_CAPACITY_REPORT" \
+  --effect-capacity-report-sha256 "$EFFECT_CAPACITY_REPORT_SHA256" \
   --output "$OUTPUT" \
   --workers "$WORKERS"
 

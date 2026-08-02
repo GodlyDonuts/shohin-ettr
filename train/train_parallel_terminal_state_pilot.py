@@ -53,6 +53,9 @@ from operation_state_transition_compiler import (
     FactorizedOperationStateTransitionCompiler,
     OperationEffectSetCompiler,
     OperationStateTransitionCompiler,
+    ROLE_ANCHORED_EFFECT_MOTORS_PER_ROLE,
+    ROLE_ANCHORED_EFFECT_ROLES,
+    ROLE_ANCHORED_EFFECT_SLOTS,
 )
 from probe_ettr_oracle_interfaces import (
     _packet_batch_counts,
@@ -1557,7 +1560,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             else None
         ),
         **(
-            {"public_role_anchors": args.operation_effect_role_anchors}
+            {
+                "maximum_effect_roles": ROLE_ANCHORED_EFFECT_ROLES,
+                "maximum_effects": ROLE_ANCHORED_EFFECT_SLOTS,
+                "public_role_anchors": True,
+            }
+            if args.operation_effect_role_anchors
+            else {"public_role_anchors": False}
             if args.operation_effect_set_command
             else {}
         ),
@@ -1654,6 +1663,16 @@ def main(argv: Sequence[str] | None = None) -> int:
                     if isinstance(compiler, OperationEffectSetCompiler)
                     else 0
                 ),
+                "operation_effect_role_count": (
+                    compiler.effect_role_count
+                    if isinstance(compiler, OperationEffectSetCompiler)
+                    else 0
+                ),
+                "operation_effect_motors_per_role": (
+                    compiler.effect_motors_per_role
+                    if isinstance(compiler, OperationEffectSetCompiler)
+                    else 0
+                ),
                 "token_native_codebook_sha256": (
                     stream.codec.codebook_sha256
                     if args.token_native_command_mask
@@ -1717,7 +1736,18 @@ def main(argv: Sequence[str] | None = None) -> int:
                     else None
                 ),
                 "effect_set_role_anchors": (
-                    "public-operation-root-and-semantic-children-two-motors-per-role"
+                    "public-operation-root-and-semantic-children-five-motors-per-role"
+                    if args.operation_effect_role_anchors
+                    else None
+                ),
+                "effect_set_role_capacity": (
+                    {
+                        "effect_slots": ROLE_ANCHORED_EFFECT_SLOTS,
+                        "maximum_roles": ROLE_ANCHORED_EFFECT_ROLES,
+                        "motors_per_role": (
+                            ROLE_ANCHORED_EFFECT_MOTORS_PER_ROLE
+                        ),
+                    }
                     if args.operation_effect_role_anchors
                     else None
                 ),

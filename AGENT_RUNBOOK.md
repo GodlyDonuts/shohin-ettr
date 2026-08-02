@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 10:17 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 10:37 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -210,11 +210,16 @@
 > relation-link exactness are all zero, and fully autonomous WORLD/COMMAND stay
 > exactly zero before and after training. Anonymous permutation-symmetric
 > effect queries are closed. The deterministic router selects contract v13:
-> bind two motors to each explicit public AST role (operation root followed by
-> direct semantic children), force absent roles to NOOP, audit the full corpus
-> for eight-role capacity, then require a two-update mechanical smoke before
-> one bounded 1,000-update causal gate. No seed, width, duration, or duplicate
-> arm of contract v12 is authorized.
+> bind motors to each explicit public AST role (operation root followed by
+> direct semantic children) and force absent roles to NOOP. The first capacity
+> audit exposed that two motors per role could provide only eight valid motors
+> for a four-role operation despite the independently measured ten-effect
+> maximum. Its apparent `pass` checked only role count and is invalid for
+> release. The corrected contract uses four measured roles and five motors per
+> role: 20 total slots and at least ten valid motors for every legal operation.
+> It requires a corrected hash-bound capacity audit and a new two-update smoke
+> before one bounded 1,000-update causal gate. No seed, width, duration, or
+> duplicate arm of contract v12 is authorized.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -24383,7 +24388,7 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Contract v13 is code-complete locally. It assigns role 0 to each visible
   public operation root and roles 1 onward to its direct semantic children in
-  renderer-invariant child-rank order. Two motors attach to every role;
+  renderer-invariant child-rank order. Two motors initially attach to every role;
   absent roles are forced to NOOP. It reads no ontology, declaration payload,
   QUERY, target, answer, or execution trace. A new exact full-corpus audit
   measures the required role capacity before release. The architecture,
@@ -24395,3 +24400,48 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_anonymous_effect_queries_and_test_only_the_role_anchored_symmetry_break_after_exact_capacity_and_smoke_gates`.
+
+- **2026-08-02 10:18--10:37 EDT** -- **The role audit catches an invalid
+  motor-capacity assumption before long training; v13 is corrected to four
+  roles by five motors.**
+
+  Private commits `670e3cc` and `e1c8245` implement the first role-anchored
+  compiler, its independent evaluator, full-corpus audit, and Stokes custody
+  wrapper. Immutable runtime
+  `scratchpad/shohin_ettr_effect_role_runtime_e1c8245_r2` contains 3,654
+  measured payload files, zero writable files, passes a full independent
+  checksum verification, and has SHA256SUMS SHA-256
+  `19d1a78be87a141565c52a85c2de48a7d7eb58d8aabc049ab07050110698790e`.
+
+  First Newton smoke `726990` failed before model construction because the
+  submission supplied the materialized data parent rather than the separate
+  hash-bound optimizer release directory. It performed zero updates and has
+  no architecture evidence. Corrected smoke `726992` completed two updates on
+  `evc1` in 2m32s with finite BF16 forward/backward and sealed custody. Its
+  report SHA-256 is
+  `2e79c78851198b1fb811eca63e9bde84033e1cab9036e08e587bf6aeec89fae8`;
+  SHA256SUMS SHA-256 is
+  `16929577274fe18929ea50e71a8e01ba5cca791739521e7633462c2759f8dc12`.
+  That smoke validates only the now-superseded two-motors-per-role mechanics.
+
+  Stokes job `760920` then audited 494,480 train and 60,512 development
+  operations in 4m59s on 48 CPU cores. Public operation arity is at most three
+  semantic children, so at most four roles are required. The original audit
+  reported `pass`, but review before releasing the held H100 gate found that
+  its predicate checked role count only. Two motors across four valid roles
+  provide eight usable slots, below the independently audited maximum of ten
+  exact effects. Held long job `726993` was canceled untouched. The apparent
+  capacity pass is rejected as an audit defect, not architecture evidence.
+
+  Corrected v13 fixes four public roles and five motors per role. It has 20
+  total slots and guarantees at least ten valid motors even for the smallest
+  legal operation, while invalid roles remain forced to NOOP. The corrected
+  audit must bind the exact v4 effect-capacity report by SHA-256 and require
+  matching operation counts, maximum role count, and minimum valid-motor
+  capacity. Architecture, evaluator, audit, custody, and regression gates now
+  pass 76 tests with one intentional skip plus clean Ruff, byte compilation,
+  Bash syntax, and diff checks. A newly sealed runtime, corrected Stokes audit,
+  and corrected two-update smoke are required before any long release.
+
+  Decision:
+  `reject_the_role_only_capacity_pass_expand_v13_to_four_roles_by_five_motors_and_repeat_both_mechanical_gates_before_training`.

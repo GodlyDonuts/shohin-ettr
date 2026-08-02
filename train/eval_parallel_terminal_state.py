@@ -489,12 +489,23 @@ def _load_terminal_compiler(
         operation_effect_slots = int(
             architecture.get("operation_effect_slots", 0)
         )
+        operation_effect_role_count = int(
+            architecture.get("operation_effect_role_count", 0)
+        )
+        operation_effect_motors_per_role = int(
+            architecture.get("operation_effect_motors_per_role", 0)
+        )
     except (KeyError, TypeError, ValueError) as exc:
         raise ParallelTerminalStateEvaluationError(
             "terminal-state architecture differs"
         ) from exc
     if operation_effect_set_command:
         objective = contract.get("objective")
+        role_capacity = (
+            objective.get("effect_set_role_capacity")
+            if isinstance(objective, Mapping)
+            else None
+        )
         if (
             not 1 <= operation_effect_slots <= 64
             or not isinstance(objective, Mapping)
@@ -503,15 +514,42 @@ def _load_terminal_compiler(
             != "detached-sinkhorn-typed-bipartite"
             or objective.get("effect_set_role_anchors")
             != (
-                "public-operation-root-and-semantic-children-two-motors-per-role"
+                "public-operation-root-and-semantic-children-five-motors-per-role"
                 if operation_effect_role_anchors
                 else None
+            )
+            or operation_effect_role_count
+            != (4 if operation_effect_role_anchors else 0)
+            or operation_effect_motors_per_role
+            != (5 if operation_effect_role_anchors else 0)
+            or role_capacity
+            != (
+                {
+                    "effect_slots": 20,
+                    "maximum_roles": 4,
+                    "motors_per_role": 5,
+                }
+                if operation_effect_role_anchors
+                else None
+            )
+            or operation_effect_slots
+            != (
+                operation_effect_role_count * operation_effect_motors_per_role
+                if operation_effect_role_anchors
+                else operation_effect_slots
             )
         ):
             raise ParallelTerminalStateEvaluationError(
                 "operation effect set contract differs"
             )
-    elif operation_effect_slots != 0:
+    elif any(
+        value != 0
+        for value in (
+            operation_effect_slots,
+            operation_effect_role_count,
+            operation_effect_motors_per_role,
+        )
+    ):
         raise ParallelTerminalStateEvaluationError(
             "operation effect set geometry differs"
         )
@@ -562,6 +600,11 @@ def _load_terminal_compiler(
         **(
             {"public_role_anchors": operation_effect_role_anchors}
             if operation_effect_set_command
+            else {}
+        ),
+        **(
+            {"maximum_effect_roles": operation_effect_role_count}
+            if operation_effect_role_anchors
             else {}
         ),
     ).to(

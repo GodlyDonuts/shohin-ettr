@@ -424,13 +424,13 @@ reopen them.
 
 Contract v13 breaks only the failed symmetry. Role 0 is the visible public
 operation root. Roles 1 onward are direct semantic children in the exact
-renderer-invariant child-rank order reconstructed by the public AST. Exactly
-two typed-effect motors attach to each role. Invalid or absent roles are
-mechanically forced to NOOP. The mechanism does not decode ontology,
+renderer-invariant child-rank order reconstructed by the public AST. The
+first implementation attaches two typed-effect motors to each role. Invalid
+or absent roles are mechanically forced to NOOP. The mechanism does not decode ontology,
 declaration payload, QUERY, target, assessor trace, answer, or host semantics;
 state operands and the fixed atomic algebra remain unchanged. A full-corpus
-CPU audit must first prove that eight roles cover every operation. Then a
-two-update isolated GPU smoke must prove finite hard forward/backward,
+CPU audit must first prove that role and valid-motor capacity cover every
+operation. Then a two-update isolated GPU smoke must prove finite hard forward/backward,
 nonempty role gradients, evaluator compatibility, and custody. Only those two
 mechanical gates release one 1,000-update fit.
 
@@ -439,7 +439,7 @@ The post-v13 failure tree is frozen in advance:
 1. Exact local effects, terminal state, and both strict axes improve: replicate
    the same contract on a fresh population before promotion.
 2. Role-local kinds remain collapsed or positive effects remain zero: reject
-   two-motors-per-role and replace categorical motor emission with a
+   fixed motors-per-role and replace categorical motor emission with a
    role-conditioned typed transducer whose action cardinality is explicit.
 3. Entity effects become exact while positive links fail: apply entity motors
    first and bind relation/root motors against the resulting post-entity
@@ -450,3 +450,20 @@ The post-v13 failure tree is frozen in advance:
 5. No exact local or causal metric moves: close the effect-set state quotient
    and advance to an architecture that compiles explicit public operation
    transitions rather than predicting assessor-derived deltas.
+
+The first mechanical pass exposed a capacity flaw before long training.
+Stokes `760920` measured maximum public arity three, hence four public roles,
+but the original audit checked only whether eight reserved roles were enough.
+Because absent roles are forced to NOOP, a four-role operation with two motors
+per role exposes only eight valid motors while the independent exact-delta
+audit has a ten-effect maximum. The `760920` capacity verdict is therefore
+invalid for release even though its arity measurements are retained. Newton
+smoke `726992` proves only that the old geometry executes and backpropagates;
+held long job `726993` was canceled untouched.
+
+Corrected v13 fixes four roles and five motors per role: twenty total motors
+and at least ten valid motors for every legal nonempty operation. The
+replacement capacity audit binds the earlier exact effect-capacity report by
+file SHA-256, checks matching corpus/tokenizer/operation counts, and requires
+both role and minimum-valid-motor capacity. This corrected geometry must pass
+a new two-update smoke before the bounded 1,000-update gate can be released.

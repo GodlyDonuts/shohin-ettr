@@ -22,8 +22,12 @@ from ettr_il_v3_protocol import canonical_json_bytes
 from materialize_ettr_il_v3_corpus import _iter_records, _sha256_file
 
 
-REPORT_SCHEMA = "r12-ettr-public-operation-role-capacity-audit-v1"
+REPORT_SCHEMA = "r12-ettr-public-operation-role-capacity-audit-v2"
+EFFECT_CAPACITY_SCHEMA = "r12-ettr-public-operation-state-delta-audit-v4"
 _SPLITS = ("train", "development")
+EFFECT_SLOTS = 20
+MAXIMUM_ROLES = 4
+MOTORS_PER_ROLE = 5
 
 
 class OperationRoleCapacityAuditError(ValueError):
@@ -35,6 +39,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--data-root", type=Path, required=True)
     parser.add_argument("--tokenizer", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--effect-capacity-report", type=Path, required=True)
+    parser.add_argument("--effect-capacity-report-sha256", required=True)
     parser.add_argument("--workers", type=int, default=1)
     return parser.parse_args(argv)
 
@@ -143,10 +149,71 @@ def _audit_split(
     }
 
 
+def _load_effect_capacity(
+    path: Path,
+    expected_sha256: str,
+    *,
+    data_root: Path,
+    tokenizer_sha256: str,
+) -> dict[str, dict[str, object]]:
+    if (
+        len(expected_sha256) != 64
+        or any(character not in "0123456789abcdef" for character in expected_sha256)
+        or path.is_symlink()
+        or not path.is_file()
+    ):
+        raise OperationRoleCapacityAuditError(
+            "effect-capacity report receipt differs"
+        )
+    payload = path.read_bytes()
+    if hashlib.sha256(payload).hexdigest() != expected_sha256:
+        raise OperationRoleCapacityAuditError(
+            "effect-capacity report hash differs"
+        )
+    try:
+        report = json.loads(payload)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise OperationRoleCapacityAuditError(
+            "effect-capacity report cannot be decoded"
+        ) from exc
+    report_payload = dict(report) if isinstance(report, dict) else {}
+    claimed_payload_sha256 = report_payload.pop("report_payload_sha256", None)
+    if (
+        not isinstance(report, dict)
+        or report.get("schema") != EFFECT_CAPACITY_SCHEMA
+        or report.get("status") != "pass"
+        or Path(str(report.get("data_root"))).resolve() != data_root
+        or not isinstance(report.get("tokenizer"), dict)
+        or report["tokenizer"].get("sha256") != tokenizer_sha256
+        or not isinstance(report.get("effect_set_capacity"), dict)
+        or claimed_payload_sha256
+        != hashlib.sha256(canonical_json_bytes(report_payload)).hexdigest()
+    ):
+        raise OperationRoleCapacityAuditError(
+            "effect-capacity report contract differs"
+        )
+    result: dict[str, dict[str, object]] = {}
+    for split in _SPLITS:
+        value = report["effect_set_capacity"].get(split)
+        if (
+            not isinstance(value, dict)
+            or not isinstance(value.get("maximum"), int)
+            or not isinstance(value.get("instances"), int)
+            or not isinstance(value.get("histogram"), dict)
+        ):
+            raise OperationRoleCapacityAuditError(
+                "effect-capacity split differs"
+            )
+        result[split] = value
+    return result
+
+
 def audit(
     data_root: Path,
     tokenizer: Path,
     *,
+    effect_capacity_report: Path,
+    effect_capacity_report_sha256: str,
     workers: int = 1,
 ) -> dict[str, object]:
     if workers < 1:
@@ -154,21 +221,34 @@ def audit(
     data_root = data_root.resolve()
     tokenizer = tokenizer.resolve()
     tokenizer_sha256, tokenizer_bytes = _sha256_file(tokenizer)
+    effect_capacity_report = effect_capacity_report.resolve()
+    effect_capacity = _load_effect_capacity(
+        effect_capacity_report,
+        effect_capacity_report_sha256,
+        data_root=data_root,
+        tokenizer_sha256=tokenizer_sha256,
+    )
     splits = {
         split: _audit_split(data_root, tokenizer, split, workers)
         for split in _SPLITS
     }
-    maximum_roles = 8
-    effect_slots = 16
+    minimum_valid_motors = min(
+        2 * MOTORS_PER_ROLE,
+        MAXIMUM_ROLES * MOTORS_PER_ROLE,
+    )
     capacity_pass = all(
-        int(value["required_effect_roles"]) <= maximum_roles
-        for value in splits.values()
+        int(splits[split]["required_effect_roles"]) <= MAXIMUM_ROLES
+        and int(effect_capacity[split]["maximum"]) <= minimum_valid_motors
+        and int(effect_capacity[split]["instances"])
+        == int(splits[split]["operation_instances"])
+        for split in _SPLITS
     )
     report = {
         "capacity": {
-            "effect_slots": effect_slots,
-            "maximum_roles": maximum_roles,
-            "motors_per_role": 2,
+            "effect_slots": EFFECT_SLOTS,
+            "maximum_roles": MAXIMUM_ROLES,
+            "minimum_valid_motors": minimum_valid_motors,
+            "motors_per_role": MOTORS_PER_ROLE,
             "pass": capacity_pass,
         },
         "data_root": str(data_root),
@@ -179,6 +259,11 @@ def audit(
             "operation_root_is_role_zero": True,
             "remaining_roles_are_direct_semantic_children": True,
             "target_read": False,
+        },
+        "effect_capacity_receipt": {
+            "path": str(effect_capacity_report),
+            "sha256": effect_capacity_report_sha256,
+            "splits": effect_capacity,
         },
         "schema": REPORT_SCHEMA,
         "splits": splits,
@@ -209,6 +294,10 @@ def main(argv: Sequence[str] | None = None) -> None:
     report = audit(
         args.data_root,
         args.tokenizer,
+        effect_capacity_report=args.effect_capacity_report,
+        effect_capacity_report_sha256=(
+            args.effect_capacity_report_sha256
+        ),
         workers=args.workers,
     )
     _write_no_replace(args.output, canonical_json_bytes(report))
