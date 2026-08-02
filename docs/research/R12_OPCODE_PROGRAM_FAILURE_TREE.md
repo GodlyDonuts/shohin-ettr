@@ -283,3 +283,12 @@ status change independently. High cardinality transfer releases one bounded
 factorized compiler gate. Low cardinality transfer rejects even this sparse
 effect ontology before GPU allocation and routes to state-conditioned public
 semantic primitives rather than more edit-head capacity.
+
+The release rule is frozen before reading v3. One broad-coverage mode must
+cover at least 95% of development instances and transfer at least 75% for
+node-edit count, 90% for edge-add count, 90% for edge-remove count, 65% for
+node-field histogram, and 95% for status change. Every threshold must pass.
+Passing releases the single held sparse-effect run; missing any threshold
+cancels it without allocation and activates the operation-effect set
+transducer design, where a bounded unordered set of typed effects replaces
+episode-wide dense coordinate classification.

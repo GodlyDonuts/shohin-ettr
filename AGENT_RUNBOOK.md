@@ -24122,6 +24122,14 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   transfer may release the held compiler path; low marginal transfer rejects
   this sparse edit ontology before GPU use.
 
+  The preregistered release thresholds are all-instance transfer at at least
+  95% signature coverage of: node-edit count >=75%, edge-add count >=90%,
+  edge-remove count >=90%, node-field histogram >=65%, and status change
+  >=95%, with one broad-coverage context satisfying every gate. Stokes job
+  `760912` runs the immutable v3 audit on 48 CPU cores from commit `e5cb34c`.
+  Newton V100 job `726975` is submitted held from the same immutable source;
+  release it only if every threshold passes, otherwise cancel it untouched.
+
   Obsolete held global-registry job `725605` was canceled. No Newton GPU job
   is active and the protected 300k checkpoint remains untouched.
 
