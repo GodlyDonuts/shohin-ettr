@@ -46,6 +46,27 @@ reactivating obsolete source files in the live architecture.
 | `codex/main-integration` | `182738c` | Repository integration provenance | Records the earlier ETTR/public integration sequence. It introduces no unique canonical tree relative to its parents. |
 | `codex/public-pre-sanitization-20260727` | `062cc0c` | Public-scrub provenance | Records the public repository state before sanitization. Its ancestry is retained privately, but its tree is not allowed to replace private ETTR `main`. |
 
+## Preserved non-Git evidence
+
+The obsolete ER worktree contained two unique local result directories. They
+were moved intact into the canonical private evidence store before that
+worktree was removed:
+
+- `artifacts/r12/er_dual_stream_fresh_score_5499768532556522119`
+  (`compiler.pt` SHA-256
+  `01cbaa8c9de2c59ce75ff0eb95b6414e1cbb4c2636ca59fca03ee59d07ef3106`;
+  assessment SHA-256
+  `ddd607f326bf1b8cab6a5a67989ba5d5908a3323f4efba2b6c22d1184cf2e483`).
+- `artifacts/r12/er_dual_stream_ordinal_1790361034717866861`
+  (`compiler.pt` SHA-256
+  `99be7b89e0b7dfe35f745abf1320c6640ad61f2fb62624b288fb8f9502cd97e7`;
+  report SHA-256
+  `6cc31e67734afa2320bc825d8bc368c780125fb7e6bb98409841e08950a2dece`).
+
+Large tensors remain intentionally ignored by Git; the paths and hashes above
+make their local custody explicit rather than leaving them hidden in an old
+branch worktree.
+
 ## How to revisit an archived experiment
 
 1. Read the relevant result/preregistration and its contemporaneous section in
