@@ -9,6 +9,7 @@ transaction algebra.  No query bytes or answer labels enter the module.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 import torch
@@ -329,6 +330,74 @@ class ParallelAddressedTransactionCompiler(nn.Module):
             "relation": self.relation_head(hidden).float().softmax(-1),
             "type_index": self.type_head(hidden).float().softmax(-1),
             "value_code": self.value_head(hidden).float().softmax(-1),
+        }
+        applied = {
+            f"applied_{name}": (
+                _hard_one_hot(value) if hard else value
+            ).to(state.value_probabilities.dtype)
+            for name, value in probabilities.items()
+        }
+        return AddressedSchedule(
+            **{
+                name: value.to(state.value_probabilities.dtype)
+                for name, value in probabilities.items()
+            },
+            **applied,
+        )
+
+
+class MeanParallelAddressedScheduleCompiler(nn.Module):
+    """Average complete schedule distributions across independent basins."""
+
+    def __init__(
+        self,
+        compilers: Sequence[ParallelAddressedTransactionCompiler],
+    ) -> None:
+        super().__init__()
+        if len(compilers) < 2:
+            raise TheoryReactorError(
+                "parallel schedule ensemble requires multiple compilers"
+            )
+        config = compilers[0].config
+        if any(compiler.config != config for compiler in compilers):
+            raise TheoryReactorError(
+                "parallel schedule ensemble config differs"
+            )
+        self.config = config
+        self.compilers = nn.ModuleList(compilers)
+
+    def forward(
+        self,
+        state: TypedTheoryState,
+        *,
+        command_hidden: torch.Tensor,
+        command_attention_mask: torch.Tensor,
+        steps: int,
+        hard: bool,
+    ) -> AddressedSchedule:
+        schedules = [
+            compiler(
+                state,
+                command_hidden=command_hidden,
+                command_attention_mask=command_attention_mask,
+                steps=steps,
+                hard=False,
+            )
+            for compiler in self.compilers
+        ]
+        probabilities = {
+            name: torch.stack(
+                [getattr(schedule, name) for schedule in schedules],
+                dim=0,
+            ).mean(0)
+            for name in (
+                "opcode",
+                "source",
+                "target",
+                "relation",
+                "type_index",
+                "value_code",
+            )
         }
         applied = {
             f"applied_{name}": (

@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-01 19:47 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-01 20:49 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -98,10 +98,16 @@
 > 7.14%; strict pairs remain zero. All four 5,000-update grounded arms fail to
 > sustain strict WORLD, including one arm with 18.28% exact schedules,
 > proving that better local schedule imitation is insufficient. Four
-> 15,000-update full-coverage controls remain live. Contract v4 now adds an
-> optional bounded semantic-prefix objective through the exact schedule
-> executor; its seed-matched canary is the next gate. No current artifact is
-> promoted as stable native reasoning.
+> 15,000-update full-coverage controls are complete. Seed 31 at `1e-4`
+> crosses both gates on its native population and a second distinct ordering,
+> with WORLD/COMMAND `3.57%/2.27%` and `3.125%/3.125%`; seed 32 remains zero
+> on WORLD, confirming a smaller but reproducible basin-sensitive signal.
+> Contract v4's bounded semantic-prefix canary remains finite but fails both
+> strict gates, so it is not scaled. All completed bounded-Brier state arms
+> and their crosses fail to produce a reliable gain over the schedule-only
+> baseline. A deterministic under-cap multi-basin compiler ensemble is now
+> the preregistered variance-reduction gate. No current artifact is promoted
+> as stable native reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -22815,3 +22821,57 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_local_schedule_imitation_as_a_sufficient_objective_and_test_bounded_exact_prefix_state_credit_without_changing_the_hard_autonomous_gate`.
+
+- **2026-08-01 19:47--20:49 EDT** -- **Full data coverage preserves a small
+  seed-31 causal signal on a second held-out ordering, while bounded state
+  credit and semantic-prefix credit fail their hard gates; a deterministic
+  under-200M multi-basin ensemble is the next isolated test.**
+
+  The original narrow compiler's four 15,000-update, position-zero controls
+  completed. Seed 31 at `3e-4` reaches exact schedules `18.95%` and factual
+  top-1 `70.31%` but strict WORLD/COMMAND both remain zero. Seed 31 at `1e-4`
+  reaches exact schedules `15.34%`, factual `69.92%`, WORLD
+  `1/28 = 3.57%`, and COMMAND `1/44 = 2.27%`; both are margin-1 exact. On a
+  second distinct ordering it retains WORLD `1/32 = 3.125%` and COMMAND
+  `1/32 = 3.125%`, with positive intervention DIDs `+0.364/+0.287`. Seed 32
+  at `3e-4` reaches COMMAND strict `5/56 = 8.93%` but zero margin-1 and zero
+  WORLD; its `1e-4` arm is zero on both gates. Report SHA-256 values for the
+  four in-run reports are
+  `6da3972780228f23e6f586ba5c4f2cdde9b377644a48a30cd087c83a5830dd7d`,
+  `f35be33f898ce6c615b562ec1265a65d172e773e3873e59e7bfa5615ac34cbf3`,
+  `6ef5994c580bf6a4793e862030c5429dd089eebe9495045f0931880cf0e2bf89`,
+  and `1eb0eb2ce56853def5f09fe22a373037b1e4a4b89efc278416eb3852151d0088`.
+  The seed-31/`1e-4` ordering-14 cross report SHA-256 is
+  `e0d67a90b2b8c859afeb6df8c1529a0806c4d1b717cf2d31270765d54c542846`.
+  Ordering-12 job `725446` remains pending resources and is the difficult
+  transfer check.
+
+  The 500-update semantic-prefix canary `725431` matches the old initial
+  parameter hash and remains numerically bounded. Its exact schedule is
+  `11.55%`, factual top-1 `70.31%`, and strict WORLD/COMMAND both remain zero.
+  Report SHA-256 is
+  `7fa10538b7821e1fe55456de8cb652aeeb0c5e80bfc55959095aa342abe7b286`.
+  It does not clear the preregistered release gate and is not extended.
+
+  The three completed 5,000-update bounded-Brier state arms keep strict WORLD
+  at zero and reach COMMAND `0%`, `2.27%`, and `0%`. Crossing each with the
+  original best schedule on ordering 14 yields WORLD `6.25%` in all cases and
+  COMMAND `12.5%`, `9.375%`, and `9.375%`, but intervention margins and DIDs
+  are no better than the schedule-only control; one apparent strict COMMAND
+  increase is paired with a large WORLD DID collapse. These state arms are
+  closed as standalone repairs.
+
+  Code now defines a `MeanParallelAddressedScheduleCompiler`: two to six
+  independently trained complete schedule distributions are uniformly
+  averaged and only then converted into one hard autonomous schedule for the
+  existing exact executor. Four narrow members produce a complete
+  181,789,906-parameter system; six produce 194,715,412, both under the 200M
+  cap. There is no answer, query, oracle state, best-of-K choice, or external
+  selection. The first preregistered gate uses the four completed full-
+  coverage arms and evaluates the unchanged strict evaluator on orderings 11,
+  12, and 14. Thirty-two focused/regression tests pass; Ruff, byte compilation,
+  Bash syntax, and diff checks are clean. The result is not credited until it
+  improves both strict WORLD and COMMAND across populations.
+
+  Decision:
+  `reduce_compiler_basin_variance_by_uniformly_averaging_complete_schedule_probabilities_then_require_one_hard_autonomous_world_and_command_win_on_three_orderings`.

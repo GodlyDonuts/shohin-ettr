@@ -53367,3 +53367,36 @@ receipt, and improve hard terminal or causal behavior before replication.
 
 Current decision:
 `train_the_compiler_on_exact_semantic_prefix_consequences_not_only_independent_instruction_labels_then_require_multiseed_world_and_command_transfer`.
+
+## 2026-08-01 Full-Coverage Replication and Multi-Basin Compilation
+
+Training the original narrow schedule compiler from stream position zero for
+15,000 updates improves instruction imitation but does not remove architecture
+seed sensitivity. Seed 31 at learning rate `1e-4` crosses both strict causal
+gates on its native ordering (WORLD 3.57%, COMMAND 2.27%) and a second distinct
+held-out ordering (WORLD 3.125%, COMMAND 3.125%). Seed 32 does not reproduce
+WORLD. The signal is therefore not just one lucky evaluation subset, but it is
+still one fragile optimization basin. The higher-rate seed-31 arm reaches a
+better 18.95% exact schedule rate while scoring zero on both strict gates,
+again proving that local transaction imitation is not the target capability.
+
+Two bounded semantic repairs are now closed. The semantic-prefix canary stays
+finite and reaches 11.55% exact schedules and 70.31% factual top-1, but strict
+WORLD and COMMAND remain zero. Three completed 5,000-update bounded-Brier state
+arms also leave WORLD at zero; composing them with the best schedule does not
+reliably improve its causal intervention margins. Numerically clean losses are
+necessary, but they do not by themselves create the correct hard state.
+
+The next architecture test treats the surviving behavior as a multi-basin
+estimation problem. A deterministic ensemble averages the full categorical
+schedule distributions from four independently trained compilers, then makes
+one hard schedule and executes it once through the exact transaction algebra.
+This differs from best-of-K search: there is no candidate scoring, oracle,
+answer, or external selection at inference. The four-member complete system is
+181.79M parameters, and a future six-member version would be 194.72M, both
+inside Shohin's 200M ceiling. The unchanged source-deleted WORLD and COMMAND
+gate will be run on three distinct orderings. Only a simultaneous and
+population-stable improvement counts.
+
+Current decision:
+`test_whether_deterministic_multi_basin_probability_aggregation_turns_a_reproducible_but_seed_fragile_schedule_signal_into_stable_native_causality`.

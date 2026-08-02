@@ -10,6 +10,7 @@ from endogenous_typed_theory_reactor import (
     TypedTheoryState,
 )
 from parallel_addressed_transaction_compiler import (
+    MeanParallelAddressedScheduleCompiler,
     ParallelAddressedTransactionCompiler,
     ParallelScheduledReactor,
 )
@@ -90,6 +91,99 @@ def test_parallel_schedule_is_well_formed_and_hard() -> None:
         assert applied.shape == probability.shape
         assert torch.equal(applied.sum(-1), torch.ones(2, 3))
         assert bool(((applied == 0) | (applied == 1)).all())
+
+
+def test_mean_schedule_ensemble_averages_before_one_hard_decision() -> None:
+    config = _config()
+    compilers = [
+        ParallelAddressedTransactionCompiler(
+            config,
+            width=64,
+            layers=1,
+            num_heads=2,
+        )
+        for _ in range(2)
+    ]
+    state = _state(config)
+    command_hidden = torch.randn(2, 5, config.d_model)
+    command_attention_mask = torch.ones(2, 5, dtype=torch.bool)
+    soft_members = [
+        compiler(
+            state,
+            command_hidden=command_hidden,
+            command_attention_mask=command_attention_mask,
+            steps=3,
+            hard=False,
+        )
+        for compiler in compilers
+    ]
+    ensemble = MeanParallelAddressedScheduleCompiler(compilers)
+    observed = ensemble(
+        state,
+        command_hidden=command_hidden,
+        command_attention_mask=command_attention_mask,
+        steps=3,
+        hard=True,
+    )
+    for name in (
+        "opcode",
+        "source",
+        "target",
+        "relation",
+        "type_index",
+        "value_code",
+    ):
+        expected = torch.stack(
+            [getattr(schedule, name) for schedule in soft_members]
+        ).mean(0)
+        probability = getattr(observed, name)
+        applied = getattr(observed, f"applied_{name}")
+        assert torch.allclose(probability, expected)
+        assert torch.equal(applied.argmax(-1), expected.argmax(-1))
+        assert torch.equal(applied.sum(-1), torch.ones_like(applied[..., 0]))
+
+
+def test_mean_schedule_ensemble_rejects_incompatible_members() -> None:
+    first = ParallelAddressedTransactionCompiler(
+        _config(),
+        width=64,
+        layers=1,
+        num_heads=2,
+    )
+    incompatible = ParallelAddressedTransactionCompiler(
+        TheoryReactorConfig(
+            d_model=16,
+            state_width=16,
+            num_slots=5,
+            num_types=3,
+            num_relations=2,
+            num_value_codes=7,
+            max_edges=8,
+            num_heads=2,
+            compiler_layers=1,
+            reactor_layers=1,
+            query_layers=1,
+            ff_multiplier=2,
+            max_steps=3,
+            stage_after_block=0,
+        ),
+        width=64,
+        layers=1,
+        num_heads=2,
+    )
+    with pytest.raises(TheoryReactorError, match="ensemble config differs"):
+        MeanParallelAddressedScheduleCompiler([first, incompatible])
+
+
+def test_mean_schedule_ensemble_requires_multiple_members() -> None:
+    compiler = ParallelAddressedTransactionCompiler(
+        _config(),
+        width=64,
+        layers=1,
+        num_heads=2,
+    )
+    with pytest.raises(TheoryReactorError, match="requires multiple"):
+        MeanParallelAddressedScheduleCompiler([compiler])
 
 
 def test_parallel_reactor_uses_one_schedule_for_the_full_rollout() -> None:
@@ -288,3 +382,16 @@ def test_wide_geometry_uses_the_recovered_budget_without_crossing_cap() -> None:
     )
     assert schedule_parameters == 43_074_721
     assert 185_696_111 - 29_757_217 + schedule_parameters == 199_013_615
+
+
+def test_six_basin_ensemble_stays_inside_system_cap() -> None:
+    compilers = [
+        ParallelAddressedTransactionCompiler(TheoryReactorConfig())
+        for _ in range(6)
+    ]
+    ensemble = MeanParallelAddressedScheduleCompiler(compilers)
+    schedule_parameters = sum(
+        parameter.numel() for parameter in ensemble.parameters()
+    )
+    assert schedule_parameters == 6 * 6_462_753
+    assert 185_696_111 - 29_757_217 + schedule_parameters == 194_715_412
