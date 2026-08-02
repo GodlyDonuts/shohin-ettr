@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 12:55 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 13:14 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -263,20 +263,20 @@
 > Release v16 only if the independent v15 evaluator selects the matching
 > count-without-payload failure branch; otherwise follow the frozen failure
 > tree rather than spending GPUs on a redundant arm.
-> Contract v17 is also mechanically staged for the orthogonal failure where
+> Contract v17 was mechanically staged for the orthogonal failure where
 > WRITEs bind but LINK endpoints do not. It keeps v15's original matching
 > objective and changes only architecture: LINK source/target query-key
 > binding consumes a differentiable post-WRITE typed-state encoding. A hostile
 > gradient test proves LINK loss reaches the WRITE value motor through that
 > state. The compiler has 49,998,457 parameters and the complete system has
-> 205,937,351. Fifty-two focused tests pass. V17 is not sealed or launched;
-> release it only for the WRITE-positive/LINK-negative signature. Never combine
-> v16 and v17 before one isolated mechanism earns that follow-up.
-> V17 also requires a full Stokes necessity audit before GPU release. Broad
-> release requires at least 10% of same-operation WRITE+LINK cases and 10% of
-> added links to touch a written slot in both splits; below 1% closes it, while
-> 1--10% permits only a targeted auxiliary curriculum. This threshold is
-> frozen before reading the audit endpoint.
+> 205,937,351. Fifty-two focused tests pass. It is now closed before GPU use.
+> Exact 48-core Stokes audit `760951` proves zero operations contain both WRITE
+> and LINK in train or development, and zero of `395,200/50,995` links touch a
+> same-operation written slot. Report SHA-256 is
+> `8d27e89eaafe8eccc527e73ddf00f5d22e9e054227150d08355a4eb7ecbc3ac3`.
+> Post-WRITE LINK binding is structurally irrelevant to this corpus. The new
+> data-grounded successor is a mutually exclusive operation-family gate over
+> NONE/WRITE/LINK, followed by only the selected count/payload rail.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -24702,3 +24702,31 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `hold_two_orthogonal_prequalified_successors_rail_local_supervision_for_count_without_payload_and_post_write_binding_for_write_without_link`.
+
+- **2026-08-02 12:56--13:14 EDT** -- **A full CPU necessity audit closes v17
+  and reveals mutually exclusive operation families.**
+
+  Exact runtime
+  `scratchpad/shohin_ettr_write_link_dependency_runtime_e74f361_r1` is bound
+  to source `e74f3614ab062676ffb6a2ccf66bc672e8ae0d86`, contains 3,594
+  verified files, no writable files or links, and has SHA256SUMS SHA-256
+  `e89ea88a329315164e104e5dc2a0bf0d56c13f98fa39d5f928815c0fd3b9d6cb`.
+  Stokes job `760951` replayed every 494,480 train and 60,512 development
+  operation in 5m47s on 48 CPU cores.
+
+  Train has 131,862 WRITE operations and 204,092 LINK operations; development
+  has 16,062 and 25,328. In both splits, operations containing both kinds are
+  exactly zero. Zero of 395,200 train links and zero of 50,995 development
+  links touch a same-operation written slot. The frozen sub-1% rejection gate
+  is crossed at exactly zero. V17 is closed without consuming a GPU. Report
+  file and payload SHA-256 values are
+  `8d27e89eaafe8eccc527e73ddf00f5d22e9e054227150d08355a4eb7ecbc3ac3`
+  and `4ff2d2a72cf1beca081fcd20c27e511d688d14b6f77bab4df1b211484ee1731f`.
+
+  This is positive structural information: every operation belongs to one of
+  three mutually exclusive families, NONE, WRITE, or LINK. The next justified
+  architecture is therefore one operation-family gate followed by exactly one
+  count/payload rail, not simultaneous WRITE and LINK acquisition.
+
+  Decision:
+  `close_post_write_binding_without_gpu_and_replace_simultaneous_rails_with_a_corpus_exact_mutually_exclusive_operation_family_gate`.

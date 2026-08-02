@@ -76,14 +76,18 @@ focused tests and static/custody checks pass. It remains scientifically held
 until v15's independent evaluator selects that branch. The protected
 step-300k checkpoint remains immutable and no raw pretraining writer is active.
 
-An orthogonal v17 branch is also mechanically qualified for the narrower
+An orthogonal v17 branch was mechanically qualified for the narrower
 WRITE-positive/LINK-negative outcome. It retains v15's original matching loss
 and changes only architecture: LINK endpoint query-key binding consumes a
 differentiable post-WRITE typed-state encoding. A direct test proves LINK loss
 backpropagates through this state into the WRITE value motor. V17 has
 49,998,457 compiler parameters and a 205,937,351-parameter complete system.
-V16 and v17 are mutually exclusive prequalified branches; neither may run
-unless v15 selects its exact failure signature.
+Full 48-core Stokes audit `760951` closes it before GPU use: train and
+development contain zero operations with both WRITE and LINK, and zero of
+395,200/50,995 added links touches a same-operation written slot. The useful
+discovery is a strict NONE/WRITE/LINK operation-family partition. The next
+data-grounded successor gates the operation family first and runs only the
+selected count/payload rail. V16 remains the independent supervision branch.
 
 The older adversarial conclusions remain binding: the apparent 11/11
 episodic-generator result was not a Shohin claim because exact host code parsed,

@@ -663,3 +663,20 @@ WRITE. The decision is frozen in advance for both train and development:
 
 The audit reads assessor mutation traces only as labels and reads no QUERY,
 answer, target answer, or candidate-time solver output.
+
+Stokes job `760951` completed that audit over every 494,480 train and 60,512
+development operation. Train contains 131,862 WRITE operations and 204,092
+LINK operations; development contains 16,062 and 25,328. Both splits contain
+exactly zero operations with both kinds. Zero of 395,200 train links and zero
+of 50,995 development links touches a same-operation written slot. The report
+file and payload SHA-256 values are
+`8d27e89eaafe8eccc527e73ddf00f5d22e9e054227150d08355a4eb7ecbc3ac3`
+and `4ff2d2a72cf1beca081fcd20c27e511d688d14b6f77bab4df1b211484ee1731f`.
+V17 crosses the preregistered rejection boundary at exactly zero and is closed
+without GPU use.
+
+The audit instead identifies the next mechanism: every operation is exactly
+NONE-only, WRITE-only, or LINK-only. A successor may therefore classify one
+operation family and release only that family's count and payload motors. This
+is not another per-effect kind classifier; it is one corpus-exact mutually
+exclusive control decision that prevents cross-rail interference.
