@@ -154,3 +154,14 @@ masking is retained as an interface invariant but closed as a standalone
 reasoning repair. The declaration-binding gate is therefore the sole live
 contract-v8 treatment; its negative result will immediately activate branch
 3 or 4 rather than another contract-v8 scale trial.
+
+The branch-3/4 successor is implemented before that result. Contract-v8 of
+the terminal-state line combines the exact cover-verified AST and public
+declaration resolver with the previously audited atomic typed-edit algebra.
+It predicts one query-independent guarded state difference, not an ordered
+64-step opcode serialization. Initial state identity is copied unless a
+categorical node/relation/root/disposition edit is purchased, and the fixed
+algebra enforces valid hard state. This directly tests whether the public
+syntax can identify the semantic quotient even when it cannot identify one
+arbitrary low-level program. It remains isolated and must stay held until the
+declaration-bound schedule gate is read.

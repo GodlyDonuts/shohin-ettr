@@ -31,8 +31,10 @@ from endogenous_typed_theory_reactor import (
     validate_state,
 )
 from token_native_syntax_router import (
+    CoverVerifiedTokenNativeDocumentMask,
     TokenNativeDocumentMask,
     TokenNativeOccurrenceEncoder,
+    TokenNativeSyntaxGraphEncoder,
 )
 
 
@@ -147,8 +149,12 @@ class ParallelTerminalStateCompiler(nn.Module):
         atomic_edits: bool = False,
         lexical_command: bool = False,
         token_native_command_mask: bool = False,
+        cover_verified_command_mask: bool = False,
         token_native_occurrence_command: bool = False,
+        token_native_syntax_graph_command: bool = False,
+        token_native_declaration_binding_command: bool = False,
         token_native_codebook_ids: Sequence[int] | None = None,
+        token_native_codebook_atoms: Sequence[str] | None = None,
         token_native_vocab_size: int | None = None,
     ) -> None:
         super().__init__()
@@ -167,11 +173,27 @@ class ParallelTerminalStateCompiler(nn.Module):
             or not isinstance(atomic_edits, bool)
             or not isinstance(lexical_command, bool)
             or not isinstance(token_native_command_mask, bool)
+            or not isinstance(cover_verified_command_mask, bool)
             or not isinstance(token_native_occurrence_command, bool)
+            or not isinstance(token_native_syntax_graph_command, bool)
+            or not isinstance(token_native_declaration_binding_command, bool)
             or (residual_edits and atomic_edits)
             or (
                 token_native_occurrence_command
                 and not token_native_command_mask
+            )
+            or (cover_verified_command_mask and not token_native_command_mask)
+            or (
+                token_native_syntax_graph_command
+                and not token_native_command_mask
+            )
+            or (
+                token_native_occurrence_command
+                and token_native_syntax_graph_command
+            )
+            or (
+                token_native_declaration_binding_command
+                and not token_native_syntax_graph_command
             )
             or (
                 token_native_command_mask
@@ -180,12 +202,17 @@ class ParallelTerminalStateCompiler(nn.Module):
                     or not lexical_command
                     or token_native_codebook_ids is None
                     or token_native_vocab_size is None
+                    or (
+                        cover_verified_command_mask
+                        and token_native_codebook_atoms is None
+                    )
                 )
             )
             or (
                 not token_native_command_mask
                 and (
                     token_native_codebook_ids is not None
+                    or token_native_codebook_atoms is not None
                     or token_native_vocab_size is not None
                 )
             )
@@ -200,8 +227,13 @@ class ParallelTerminalStateCompiler(nn.Module):
         self.atomic_edits = atomic_edits
         self.lexical_command = lexical_command
         self.token_native_command_mask = token_native_command_mask
+        self.cover_verified_command_mask = cover_verified_command_mask
         self.token_native_occurrence_command = (
             token_native_occurrence_command
+        )
+        self.token_native_syntax_graph_command = token_native_syntax_graph_command
+        self.token_native_declaration_binding_command = (
+            token_native_declaration_binding_command
         )
 
         self.command_projection = nn.Linear(config.d_model, width)
@@ -212,7 +244,13 @@ class ParallelTerminalStateCompiler(nn.Module):
         )
         self.command_norm = nn.LayerNorm(width)
         self.command_document_mask = (
-            TokenNativeDocumentMask(
+            CoverVerifiedTokenNativeDocumentMask(
+                token_native_codebook_ids,
+                token_native_codebook_atoms,
+                vocab_size=token_native_vocab_size,
+            )
+            if cover_verified_command_mask
+            else TokenNativeDocumentMask(
                 token_native_codebook_ids,
                 vocab_size=token_native_vocab_size,
             )
@@ -229,6 +267,19 @@ class ParallelTerminalStateCompiler(nn.Module):
                 maximum_identifier_codes=96,
             )
             if token_native_occurrence_command
+            else None
+        )
+        self.command_syntax_graph_encoder = (
+            TokenNativeSyntaxGraphEncoder(
+                token_native_codebook_ids,
+                vocab_size=token_native_vocab_size,
+                width=width,
+                layers=layers,
+                maximum_positions=96,
+                maximum_identifier_codes=96,
+                resolve_declarations=token_native_declaration_binding_command,
+            )
+            if token_native_syntax_graph_command
             else None
         )
         self.value_embedding = nn.Parameter(
@@ -458,6 +509,16 @@ class ParallelTerminalStateCompiler(nn.Module):
                     "terminal-state compiler COMMAND tokens are absent"
                 )
             command = self.command_occurrence_encoder(
+                command,
+                command_tokens,
+                command_attention_mask,
+            )
+        if self.command_syntax_graph_encoder is not None:
+            if command_tokens is None:
+                raise TheoryReactorError(
+                    "terminal-state compiler COMMAND tokens are absent"
+                )
+            command = self.command_syntax_graph_encoder(
                 command,
                 command_tokens,
                 command_attention_mask,

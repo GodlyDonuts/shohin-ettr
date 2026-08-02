@@ -67,6 +67,12 @@ OCCURRENCE_LINKED_ATOMIC_CONTRACT_SCHEMA = (
 OCCURRENCE_LINKED_ATOMIC_REPORT_SCHEMA = (
     "shohin-ettr-parallel-terminal-state-report-v7"
 )
+DECLARATION_BOUND_ATOMIC_CONTRACT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-contract-v8"
+)
+DECLARATION_BOUND_ATOMIC_REPORT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-report-v8"
+)
 CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v3"
 REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v3"
 CAUSAL_DELTA_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v2"
@@ -120,8 +126,17 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--atomic-edits", action="store_true")
     parser.add_argument("--lexical-command", action="store_true")
     parser.add_argument("--token-native-command-mask", action="store_true")
+    parser.add_argument("--cover-verified-command-mask", action="store_true")
     parser.add_argument(
         "--token-native-occurrence-command",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--token-native-syntax-graph-command",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--token-native-declaration-binding-command",
         action="store_true",
     )
     parser.add_argument("--atomic-action-weight", type=float, default=1.0)
@@ -179,6 +194,22 @@ def _validate_args(args: argparse.Namespace) -> None:
         or (
             args.token_native_occurrence_command
             and not args.token_native_command_mask
+        )
+        or (
+            args.cover_verified_command_mask
+            and not args.token_native_command_mask
+        )
+        or (
+            args.token_native_syntax_graph_command
+            and not args.token_native_command_mask
+        )
+        or (
+            args.token_native_occurrence_command
+            and args.token_native_syntax_graph_command
+        )
+        or (
+            args.token_native_declaration_binding_command
+            and not args.token_native_syntax_graph_command
         )
         or args.output.exists()
         or args.output.is_symlink()
@@ -590,7 +621,30 @@ def _run_schemas(
     lexical_command: bool = False,
     token_native_command_mask: bool = False,
     token_native_occurrence_command: bool = False,
+    token_native_syntax_graph_command: bool = False,
+    token_native_declaration_binding_command: bool = False,
 ) -> tuple[str, str, str]:
+    if token_native_declaration_binding_command:
+        if (
+            residual_edits
+            or not atomic_edits
+            or not lexical_command
+            or not token_native_command_mask
+            or token_native_occurrence_command
+            or not token_native_syntax_graph_command
+        ):
+            raise ParallelTerminalStatePilotError(
+                "declaration-bound terminal-state architecture schema differs"
+            )
+        return (
+            DECLARATION_BOUND_ATOMIC_CONTRACT_SCHEMA,
+            DECLARATION_BOUND_ATOMIC_REPORT_SCHEMA,
+            "shohin-ettr-parallel-terminal-state-metric-v8",
+        )
+    if token_native_syntax_graph_command:
+        raise ParallelTerminalStatePilotError(
+            "syntax graph requires declaration-bound terminal-state architecture"
+        )
     if token_native_occurrence_command:
         if (
             residual_edits
@@ -744,6 +798,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.lexical_command,
         args.token_native_command_mask,
         args.token_native_occurrence_command,
+        args.token_native_syntax_graph_command,
+        args.token_native_declaration_binding_command,
     )
     if not torch.cuda.is_available():
         raise ParallelTerminalStatePilotError(
@@ -793,12 +849,24 @@ def main(argv: Sequence[str] | None = None) -> int:
         atomic_edits=args.atomic_edits,
         lexical_command=args.lexical_command,
         token_native_command_mask=args.token_native_command_mask,
+        cover_verified_command_mask=args.cover_verified_command_mask,
         token_native_occurrence_command=(
             args.token_native_occurrence_command
+        ),
+        token_native_syntax_graph_command=(
+            args.token_native_syntax_graph_command
+        ),
+        token_native_declaration_binding_command=(
+            args.token_native_declaration_binding_command
         ),
         token_native_codebook_ids=(
             stream.codec.codebook.token_ids
             if args.token_native_command_mask
+            else None
+        ),
+        token_native_codebook_atoms=(
+            stream.codec.codebook.atoms
+            if args.cover_verified_command_mask
             else None
         ),
         token_native_vocab_size=(
@@ -871,8 +939,17 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "token_native_command_mask": (
                     args.token_native_command_mask
                 ),
+                "cover_verified_command_mask": (
+                    args.cover_verified_command_mask
+                ),
                 "token_native_occurrence_command": (
                     args.token_native_occurrence_command
+                ),
+                "token_native_syntax_graph_command": (
+                    args.token_native_syntax_graph_command
+                ),
+                "token_native_declaration_binding_command": (
+                    args.token_native_declaration_binding_command
                 ),
                 "token_native_codebook_sha256": (
                     stream.codec.codebook_sha256

@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 05:38 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 05:44 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -23810,3 +23810,27 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_exact_mask_as_a_standalone_repair_read_declaration_binding_once_then_move_to_a_state_grounded_guarded_edit_ontology_if_both_axes_do_not_cross`.
+
+- **2026-08-02 05:38--05:44 EDT** -- **The declaration-binding failure
+  successor is implemented before the live gate completes.**
+
+  The next architecture no longer imitates one arbitrary ordered 64-step
+  transaction program. It combines the exact cover-verified public AST and
+  declaration resolver with the previously audited direct atomic typed-edit
+  compiler. The neural module predicts one query-independent categorical
+  difference over nodes, relations, root, and disposition; the fixed state
+  algebra preserves initial identity by default and applies hard valid edits.
+  It reads no QUERY, answer, assessor symbol sidecar, transaction trace, or
+  oracle program at inference. New contract/report/metric schemas are v8, and
+  the independent evaluator now reconstructs every v4--v8 public-input
+  geometry from the hash-bound run contract. Focused compiler and custody
+  tests are `26 passed`; Ruff, byte compilation, and Bash syntax pass.
+
+  Declaration-bound schedule V100 job `725613` remains live on `evc13`; H100
+  mirror `725614` is pending resources. The guarded-edit successor must be
+  sealed and submitted held, then released only if `725613` fails to cross
+  both strict axes. This preserves one result-driven branch while removing
+  scheduler latency from the response.
+
+  Decision:
+  `preseal_direct_guarded_state_edits_hold_until_the_declaration_bound_schedule_gate_then_release_without_new_design_delay_on_a_negative`.

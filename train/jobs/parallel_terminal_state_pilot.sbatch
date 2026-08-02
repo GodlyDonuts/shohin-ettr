@@ -44,7 +44,10 @@ ATOMIC_EDITS=${ATOMIC_EDITS:-0}
 ATOMIC_ACTION_WEIGHT=${ATOMIC_ACTION_WEIGHT:-1.0}
 LEXICAL_COMMAND=${LEXICAL_COMMAND:-0}
 TOKEN_NATIVE_COMMAND_MASK=${TOKEN_NATIVE_COMMAND_MASK:-0}
+TOKEN_NATIVE_COVER_VERIFIED_COMMAND_MASK=${TOKEN_NATIVE_COVER_VERIFIED_COMMAND_MASK:-0}
 TOKEN_NATIVE_OCCURRENCE_COMMAND=${TOKEN_NATIVE_OCCURRENCE_COMMAND:-0}
+TOKEN_NATIVE_SYNTAX_GRAPH_COMMAND=${TOKEN_NATIVE_SYNTAX_GRAPH_COMMAND:-0}
+TOKEN_NATIVE_DECLARATION_BINDING_COMMAND=${TOKEN_NATIVE_DECLARATION_BINDING_COMMAND:-0}
 PYTHON_ROOT=${PYTHON_ROOT:-/lustre/fs1/home/sa305415/shohin/miniforge3}
 
 for path in "$CODE_ROOT" "$RELEASE_ROOT" "$ETTR_DATA_ROOT" \
@@ -124,6 +127,16 @@ elif [[ "$TOKEN_NATIVE_COMMAND_MASK" != 0 ]]; then
   echo "terminal-state syntax routing setting differs" >&2
   exit 2
 fi
+if [[ "$TOKEN_NATIVE_COVER_VERIFIED_COMMAND_MASK" == 1 ]]; then
+  [[ "$TOKEN_NATIVE_COMMAND_MASK" == 1 ]] || {
+    echo "cover verification requires terminal-state syntax routing" >&2
+    exit 2
+  }
+  residual_args+=(--cover-verified-command-mask)
+elif [[ "$TOKEN_NATIVE_COVER_VERIFIED_COMMAND_MASK" != 0 ]]; then
+  echo "terminal-state cover verification setting differs" >&2
+  exit 2
+fi
 if [[ "$TOKEN_NATIVE_OCCURRENCE_COMMAND" == 1 ]]; then
   [[ "$TOKEN_NATIVE_COMMAND_MASK" == 1 ]] || {
     echo "terminal-state occurrence linking requires syntax routing" >&2
@@ -132,6 +145,27 @@ if [[ "$TOKEN_NATIVE_OCCURRENCE_COMMAND" == 1 ]]; then
   residual_args+=(--token-native-occurrence-command)
 elif [[ "$TOKEN_NATIVE_OCCURRENCE_COMMAND" != 0 ]]; then
   echo "terminal-state occurrence-link setting differs" >&2
+  exit 2
+fi
+if [[ "$TOKEN_NATIVE_SYNTAX_GRAPH_COMMAND" == 1 ]]; then
+  [[ "$TOKEN_NATIVE_COMMAND_MASK" == 1 \
+    && "$TOKEN_NATIVE_OCCURRENCE_COMMAND" == 0 ]] || {
+    echo "terminal-state syntax graph setting differs" >&2
+    exit 2
+  }
+  residual_args+=(--token-native-syntax-graph-command)
+elif [[ "$TOKEN_NATIVE_SYNTAX_GRAPH_COMMAND" != 0 ]]; then
+  echo "terminal-state syntax graph setting differs" >&2
+  exit 2
+fi
+if [[ "$TOKEN_NATIVE_DECLARATION_BINDING_COMMAND" == 1 ]]; then
+  [[ "$TOKEN_NATIVE_SYNTAX_GRAPH_COMMAND" == 1 ]] || {
+    echo "terminal-state declaration binding requires syntax graph" >&2
+    exit 2
+  }
+  residual_args+=(--token-native-declaration-binding-command)
+elif [[ "$TOKEN_NATIVE_DECLARATION_BINDING_COMMAND" != 0 ]]; then
+  echo "terminal-state declaration binding setting differs" >&2
   exit 2
 fi
 

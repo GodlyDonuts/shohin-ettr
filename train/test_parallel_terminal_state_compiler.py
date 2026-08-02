@@ -306,6 +306,32 @@ def test_production_occurrence_linked_compiler_fits_system_cap() -> None:
     assert 19_869_528 < parameters < 44_061_106
 
 
+def test_production_declaration_bound_compiler_fits_system_cap() -> None:
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    compiler = ParallelTerminalStateCompiler(
+        TheoryReactorConfig(),
+        atomic_edits=True,
+        lexical_command=True,
+        token_native_command_mask=True,
+        cover_verified_command_mask=True,
+        token_native_syntax_graph_command=True,
+        token_native_declaration_binding_command=True,
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_codebook_atoms=codec.codebook.atoms,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+    parameters = sum(parameter.numel() for parameter in compiler.parameters())
+
+    assert compiler.cover_verified_command_mask is True
+    assert compiler.token_native_declaration_binding_command is True
+    assert 19_869_528 < parameters < 44_061_106
+
+
 def test_syntax_routed_atomic_compiler_ignores_transport_cover() -> None:
     config = _config()
     compiler = ParallelTerminalStateCompiler(

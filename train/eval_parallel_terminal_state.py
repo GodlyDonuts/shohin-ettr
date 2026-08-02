@@ -37,9 +37,17 @@ from train_parallel_terminal_state_pilot import (
     CAUSAL_DELTA_CONTRACT_SCHEMA as PILOT_CAUSAL_DELTA_CONTRACT_SCHEMA,
     CAUSAL_DELTA_REPORT_SCHEMA as PILOT_CAUSAL_DELTA_REPORT_SCHEMA,
     CONTRACT_SCHEMA as PILOT_CONTRACT_SCHEMA,
+    DECLARATION_BOUND_ATOMIC_CONTRACT_SCHEMA as PILOT_DECLARATION_CONTRACT_SCHEMA,
+    DECLARATION_BOUND_ATOMIC_REPORT_SCHEMA as PILOT_DECLARATION_REPORT_SCHEMA,
     LEGACY_CONTRACT_SCHEMA as PILOT_LEGACY_CONTRACT_SCHEMA,
     LEGACY_REPORT_SCHEMA as PILOT_LEGACY_REPORT_SCHEMA,
+    LEXICAL_ATOMIC_CONTRACT_SCHEMA as PILOT_LEXICAL_CONTRACT_SCHEMA,
+    LEXICAL_ATOMIC_REPORT_SCHEMA as PILOT_LEXICAL_REPORT_SCHEMA,
+    OCCURRENCE_LINKED_ATOMIC_CONTRACT_SCHEMA as PILOT_OCCURRENCE_CONTRACT_SCHEMA,
+    OCCURRENCE_LINKED_ATOMIC_REPORT_SCHEMA as PILOT_OCCURRENCE_REPORT_SCHEMA,
     REPORT_SCHEMA as PILOT_REPORT_SCHEMA,
+    SYNTAX_ROUTED_ATOMIC_CONTRACT_SCHEMA as PILOT_SYNTAX_CONTRACT_SCHEMA,
+    SYNTAX_ROUTED_ATOMIC_REPORT_SCHEMA as PILOT_SYNTAX_REPORT_SCHEMA,
 )
 
 
@@ -190,6 +198,7 @@ def _load_terminal_compiler(
     *,
     model,
     provenance,
+    stream,
     replacement_system_parameters: int,
 ) -> tuple[dict[str, object], int]:
     expected = _run_receipt(
@@ -207,33 +216,20 @@ def _load_terminal_compiler(
         label="terminal-state report",
     )
     architecture = contract.get("architecture")
+    schema_pairs = {
+        PILOT_LEGACY_CONTRACT_SCHEMA: PILOT_LEGACY_REPORT_SCHEMA,
+        PILOT_CAUSAL_DELTA_CONTRACT_SCHEMA: PILOT_CAUSAL_DELTA_REPORT_SCHEMA,
+        PILOT_CONTRACT_SCHEMA: PILOT_REPORT_SCHEMA,
+        PILOT_ATOMIC_CONTRACT_SCHEMA: PILOT_ATOMIC_REPORT_SCHEMA,
+        PILOT_LEXICAL_CONTRACT_SCHEMA: PILOT_LEXICAL_REPORT_SCHEMA,
+        PILOT_SYNTAX_CONTRACT_SCHEMA: PILOT_SYNTAX_REPORT_SCHEMA,
+        PILOT_OCCURRENCE_CONTRACT_SCHEMA: PILOT_OCCURRENCE_REPORT_SCHEMA,
+        PILOT_DECLARATION_CONTRACT_SCHEMA: PILOT_DECLARATION_REPORT_SCHEMA,
+    }
+    run_schema = contract.get("schema")
     if (
-        contract.get("schema")
-        not in (
-            PILOT_ATOMIC_CONTRACT_SCHEMA,
-            PILOT_CONTRACT_SCHEMA,
-            PILOT_CAUSAL_DELTA_CONTRACT_SCHEMA,
-            PILOT_LEGACY_CONTRACT_SCHEMA,
-        )
-        or report.get("schema")
-        not in (
-            PILOT_ATOMIC_REPORT_SCHEMA,
-            PILOT_REPORT_SCHEMA,
-            PILOT_CAUSAL_DELTA_REPORT_SCHEMA,
-            PILOT_LEGACY_REPORT_SCHEMA,
-        )
-        or (
-            (contract.get("schema") == PILOT_ATOMIC_CONTRACT_SCHEMA)
-            != (report.get("schema") == PILOT_ATOMIC_REPORT_SCHEMA)
-        )
-        or (
-            (contract.get("schema") == PILOT_CONTRACT_SCHEMA)
-            != (report.get("schema") == PILOT_REPORT_SCHEMA)
-        )
-        or (
-            (contract.get("schema") == PILOT_CAUSAL_DELTA_CONTRACT_SCHEMA)
-            != (report.get("schema") == PILOT_CAUSAL_DELTA_REPORT_SCHEMA)
-        )
+        run_schema not in schema_pairs
+        or report.get("schema") != schema_pairs[run_schema]
         or report.get("status") != "pass"
         or not isinstance(architecture, Mapping)
         or report.get("contract_sha256") != expected["pilot-contract.json"]
@@ -259,6 +255,10 @@ def _load_terminal_compiler(
         )
     if contract.get("schema") in (
         PILOT_ATOMIC_CONTRACT_SCHEMA,
+        PILOT_LEXICAL_CONTRACT_SCHEMA,
+        PILOT_SYNTAX_CONTRACT_SCHEMA,
+        PILOT_OCCURRENCE_CONTRACT_SCHEMA,
+        PILOT_DECLARATION_CONTRACT_SCHEMA,
         PILOT_CONTRACT_SCHEMA,
         PILOT_CAUSAL_DELTA_CONTRACT_SCHEMA,
     ):
@@ -275,7 +275,36 @@ def _load_terminal_compiler(
                 "terminal-state causal delta contract differs"
             )
     residual_edits = contract.get("schema") == PILOT_CONTRACT_SCHEMA
-    atomic_edits = contract.get("schema") == PILOT_ATOMIC_CONTRACT_SCHEMA
+    atomic_edits = contract.get("schema") in {
+        PILOT_ATOMIC_CONTRACT_SCHEMA,
+        PILOT_LEXICAL_CONTRACT_SCHEMA,
+        PILOT_SYNTAX_CONTRACT_SCHEMA,
+        PILOT_OCCURRENCE_CONTRACT_SCHEMA,
+        PILOT_DECLARATION_CONTRACT_SCHEMA,
+    }
+    lexical_command = contract.get("schema") in {
+        PILOT_LEXICAL_CONTRACT_SCHEMA,
+        PILOT_SYNTAX_CONTRACT_SCHEMA,
+        PILOT_OCCURRENCE_CONTRACT_SCHEMA,
+        PILOT_DECLARATION_CONTRACT_SCHEMA,
+    }
+    token_native_command_mask = contract.get("schema") in {
+        PILOT_SYNTAX_CONTRACT_SCHEMA,
+        PILOT_OCCURRENCE_CONTRACT_SCHEMA,
+        PILOT_DECLARATION_CONTRACT_SCHEMA,
+    }
+    token_native_occurrence_command = (
+        contract.get("schema") == PILOT_OCCURRENCE_CONTRACT_SCHEMA
+    )
+    token_native_syntax_graph_command = (
+        contract.get("schema") == PILOT_DECLARATION_CONTRACT_SCHEMA
+    )
+    token_native_declaration_binding_command = (
+        contract.get("schema") == PILOT_DECLARATION_CONTRACT_SCHEMA
+    )
+    cover_verified_command_mask = (
+        contract.get("schema") == PILOT_DECLARATION_CONTRACT_SCHEMA
+    )
     if residual_edits != (architecture.get("sparse_residual_edits") is True):
         raise ParallelTerminalStateEvaluationError(
             "terminal-state residual edit contract differs"
@@ -283,6 +312,27 @@ def _load_terminal_compiler(
     if atomic_edits != (architecture.get("atomic_typed_edits") is True):
         raise ParallelTerminalStateEvaluationError(
             "terminal-state atomic edit contract differs"
+        )
+    expected_flags = {
+        "cover_verified_command_mask": cover_verified_command_mask,
+        "lexical_command_rail": lexical_command,
+        "token_native_command_mask": token_native_command_mask,
+        "token_native_declaration_binding_command": (
+            token_native_declaration_binding_command
+        ),
+        "token_native_occurrence_command": token_native_occurrence_command,
+        "token_native_syntax_graph_command": token_native_syntax_graph_command,
+    }
+    if any(architecture.get(name, False) is not value for name, value in expected_flags.items()):
+        raise ParallelTerminalStateEvaluationError(
+            "terminal-state public syntax architecture differs"
+        )
+    if token_native_command_mask and (
+        architecture.get("token_native_codebook_sha256")
+        != stream.codec.codebook_sha256
+    ):
+        raise ParallelTerminalStateEvaluationError(
+            "terminal-state token-native codebook differs"
         )
     try:
         seed = int(architecture["seed"])
@@ -304,6 +354,23 @@ def _load_terminal_compiler(
         relation_width=relation_width,
         residual_edits=residual_edits,
         atomic_edits=atomic_edits,
+        lexical_command=lexical_command,
+        token_native_command_mask=token_native_command_mask,
+        cover_verified_command_mask=cover_verified_command_mask,
+        token_native_occurrence_command=token_native_occurrence_command,
+        token_native_syntax_graph_command=token_native_syntax_graph_command,
+        token_native_declaration_binding_command=(
+            token_native_declaration_binding_command
+        ),
+        token_native_codebook_ids=(
+            stream.codec.codebook.token_ids if token_native_command_mask else None
+        ),
+        token_native_codebook_atoms=(
+            stream.codec.codebook.atoms if cover_verified_command_mask else None
+        ),
+        token_native_vocab_size=(
+            model.base.cfg.vocab_size if token_native_command_mask else None
+        ),
     ).to(
         device=next(model.parameters()).device,
         dtype=next(model.parameters()).dtype,
@@ -399,6 +466,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args,
         model=model,
         provenance=provenance,
+        stream=stream,
         replacement_system_parameters=replacement_parameters,
     )
     contract = {
