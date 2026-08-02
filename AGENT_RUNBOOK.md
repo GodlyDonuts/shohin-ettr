@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 08:33 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 08:47 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -24217,3 +24217,26 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `treat_726976_as_policy_only_remove_the_retired_cap_and_measure_exact_effect_set_capacity_concurrently_with_the_replacement_smoke`.
+
+- **2026-08-02 08:45--08:47 EDT** -- **The second smoke reaches the model and
+  catches a BF16 pointer promotion defect before optimization.**
+
+  Replacement Newton job `726978` passed all immutable runtime and parent
+  artifact receipts, constructed the expanded compiler, and entered its first
+  pre-training interface evaluation. It then failed in the first hard effect
+  aggregation because effect-kind probabilities were explicitly FP32 while
+  state-grounded node pointers retained BF16. PyTorch correctly rejected the
+  mixed-dtype `einsum`. The job performed no update and wrote no report; held
+  dependent `726979` was canceled untouched. This is a technical integration
+  result, not architecture evidence.
+
+  `_masked_flat_softmax` now promotes every masked pointer distribution to
+  FP32 before normalization, aligning node, relation, and root operands with
+  FP32 effect probabilities and aggregate algebra. A new BF16 regression test
+  instantiates the real effect compiler in BF16 and requires FP32 pointer and
+  action outputs. The complete local gate now passes 40 tests with clean Ruff,
+  byte compilation, shell syntax, and diff checks. Stokes capacity audit
+  `760916` remains active and unaffected.
+
+  Decision:
+  `fix_the_single_dtype_boundary_reseal_source_and_repeat_the_same_two_update_smoke_without_changing_the_scientific_treatment`.

@@ -337,3 +337,11 @@ The user had already removed that ceiling. The guard is deleted, parameter
 count remains contract-sealed, and held dependent job `726977` was canceled
 untouched. A new immutable-runtime smoke replaces it; the v4 Stokes capacity
 audit runs concurrently rather than waiting on the GPU result.
+
+The next sealed smoke, `726978`, passed lineage and model construction but
+failed during the first hard pre-training interface forward: effect kinds were
+FP32 and node pointers BF16 at their `einsum` boundary. It performed zero
+updates and produced no report. Held dependent `726979` was canceled. Masked
+pointer distributions are now explicitly promoted to FP32, with a BF16
+compiler regression test. This preserves the treatment and requires one more
+identical two-update smoke from newly sealed source before any long fit.

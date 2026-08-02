@@ -557,7 +557,7 @@ def _masked_flat_softmax(
     if logits.shape != mask.shape or mask.dtype != torch.bool:
         raise TheoryReactorError("operation effect pointer mask differs")
     batch, effects = logits.shape[:2]
-    flat_logits = logits.reshape(batch, effects, -1)
+    flat_logits = logits.float().reshape(batch, effects, -1)
     flat_mask = mask.reshape(batch, effects, -1)
     probabilities = flat_logits.masked_fill(~flat_mask, -1e9).softmax(-1)
     probabilities = probabilities * flat_mask.to(probabilities.dtype)

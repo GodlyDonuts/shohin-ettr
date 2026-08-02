@@ -670,6 +670,40 @@ def test_operation_effect_set_integrates_with_atomic_loss() -> None:
     assert compiler.effect_kind_head.weight.grad is not None
 
 
+def test_operation_effect_set_promotes_bfloat16_pointers() -> None:
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+
+    config = replace(_config(), max_steps=16)
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    compiler = OperationEffectSetCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        relation_width=16,
+        maximum_effects=6,
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_codebook_atoms=codec.codebook.atoms,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    ).to(dtype=torch.bfloat16)
+    edits = compiler._atomic_edits_from_slots(
+        _state(config),
+        torch.randn(
+            2,
+            config.num_slots,
+            compiler.width,
+            dtype=torch.bfloat16,
+        ),
+        hard=False,
+    )
+    assert edits.effect_node_pointer is not None
+    assert edits.effect_node_pointer.dtype == torch.float32
+    assert edits.node_action.dtype == torch.float32
+
+
 def test_syntax_routed_atomic_compiler_ignores_transport_cover() -> None:
     config = _config()
     compiler = ParallelTerminalStateCompiler(
