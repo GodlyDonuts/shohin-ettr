@@ -85,6 +85,12 @@ weights as the structured-decoder source rather than restarting from 1k.
 Close additional same-objective duration scaling. The lower loss and higher
 local field accuracy already observed at 5k cannot justify longer runs.
 
+**Measured:** job `725574` completed all 15,000 updates. Joint schedule
+accuracy reaches 15.20%, exact query programs remain 18.75%, and exact
+oracle-initial terminal packets remain `32/512 = 6.25%`; fully autonomous
+WORLD and COMMAND remain exactly zero with zero causal margin. Outcome E is
+final. Contract-v8 duration scaling is closed.
+
 ## Resource policy
 
 - Stokes CPUs run exhaustive corpus audits, parser invariance tests, and data
@@ -221,3 +227,16 @@ writes outcome/disposition. Inference remains source-deleted and reads no
 trace or target. This branch stays held until operation-target public
 identifiability is measured; a low-identifiability result routes to the
 state-delta audit instead of spending a GPU on an aliased label.
+
+The first exact-operation audit attempt `760906` failed technically rather
+than scientifically. Its parser omitted the valid direct local COMMAND form
+`call(15, nuisance, call(13, operations...))`. Commit `70e5dcb` aligns the
+audit with the already-correct production operation router and freezes a
+regression test. Repaired exact-label job `760907` now runs concurrently with
+state-delta quotient job `760908`, each using 48 Stokes CPU cores. The latter
+removes cursor and mutation ordering and separately audits per-operation
+semantic deltas plus cumulative runtime states under exact,
+operator-abstracted, and topology WORLD contexts. This precomputes both
+failure branches: high public identifiability releases held operation-state
+job `726970`; low identifiability cancels it and requires a different public
+target ontology.

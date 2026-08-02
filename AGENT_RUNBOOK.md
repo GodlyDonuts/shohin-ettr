@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 05:44 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 06:51 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -181,7 +181,10 @@
 > control's `32/512` exact terminal packets, leaves factual top-1 at 60.94%,
 > and leaves fully autonomous WORLD/COMMAND exactly zero. Flat 2,530-way
 > sticky selection is closed. The uninterrupted 15,000-update syntax-graph
-> control `725574` remains the sole direct delayed-emergence test.
+> control `725574` has now completed and rejects delayed emergence on that
+> objective: joint schedule accuracy reaches 15.20% and exact oracle-initial
+> terminal packets remain `32/512`, but fully autonomous WORLD and COMMAND
+> stay exactly zero. More duration on contract-v8 is closed.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -23980,3 +23983,48 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_terminal_only_latent_operation_recurrence_cancel_its_autonomous_duplicate_and_require_each_public_operation_to_purchase_a_supervised_state_transition`.
+
+- **2026-08-02 06:44--06:51 EDT** -- **The 15k delayed-emergence test is
+  negative; both operation-identifiability branches now run concurrently.**
+
+  Uninterrupted syntax-graph job `725574` completed 15,000 updates cleanly in
+  2h24m on `evc12`. Its report is preserved at
+  `artifacts/r12/ettr_syntax_graph_schedule_oracle_u15000_a31_d11_v100_00eefb9_r1/report.json`
+  with SHA-256
+  `44637a3ac46f97cc1e96d68cdcc087e80fe7d9fa6c79882bc6ccf2979d1bf23d`;
+  pilot-contract SHA-256 is
+  `419c95f40d1b1b7994cac39197a9bb81683af805706fb0c9eef04ef5170e3686`.
+  Joint schedule accuracy reaches `1184/7792 = 15.195%`, exact query programs
+  remain `96/512 = 18.75%`, and exact oracle-initial terminal packets remain
+  `32/512 = 6.25%`. Fully autonomous factual top-1 is 59.375%, but WORLD and
+  COMMAND have zero strict pairs, zero margins, and zero difference-in-
+  differences. Lower training loss and better local imitation do not produce
+  a late causal transition. Further duration scaling on this objective is
+  closed.
+
+  The first operation-identifiability job `760906` failed technically after
+  19m46s, without writing a report. The audit parser admitted only the
+  declaration-bearing COMMAND form
+  `call(14, version, declarations, call(13, operations...))`; the valid local
+  rewrite ontology uses the direct public form
+  `call(15, nuisance, call(13, operations...))`. The production neural router
+  already admits both. Commit `70e5dcb` repairs that public grammar and adds a
+  regression test.
+
+  The failure successor is no longer deferred. The new state-delta audit
+  independently measures two trace-order-invariant targets: each public
+  operation's semantic state difference and its cumulative runtime state. It
+  evaluates exact, operator-abstracted, and topology WORLD contexts with the
+  current operation, prefix, and complete COMMAND plus rank. QUERY, answers,
+  terminal packets, cursor, mutation ordering, and low-level programs are not
+  input features. Immutable Stokes runtime
+  `scratchpad/shohin_ettr_operation_audits_runtime_70e5dcb_r1` binds exact
+  source `70e5dcb00f2c6e6543d7368f2f2c43547e6922a2`, contains 3,574 measured
+  files, has zero writable files, and has SHA256SUMS SHA-256
+  `9e641fbb007f478cccd08e94dda6c62037845edcf2422974cefeaea63044c135`.
+  Repaired exact-mutation job `760907` and semantic-quotient job `760908` are
+  running concurrently on 48 Stokes CPU cores each. Held V100 job `726970`
+  remains untouched until these reports select its target ontology.
+
+  Decision:
+  `close_contract_v8_duration_scaling_and_run_exact_mutation_plus_semantic_state_quotient_identifiability_in_parallel_before_releasing_operation_state_training`.
