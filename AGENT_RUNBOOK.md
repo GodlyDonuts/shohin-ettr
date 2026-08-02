@@ -23930,3 +23930,40 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_episode_wide_guarded_edit_prediction_and_test_tied_latent_state_updates_once_per_explicit_public_command_operation`.
+
+- **2026-08-02 06:20--06:23 EDT** -- **Terminal-only operation recurrence is
+  closed; operation-boundary state application is the next mechanism.**
+
+  Public-operation recurrent V100 job `725618` completed all 1,000 updates
+  cleanly on `evc18` in 13m27s. Its immutable report is preserved at
+  `artifacts/r12/ettr_public_operation_recurrent_u1000_a31_d11_v100_0e42ba1_r1/report.json`
+  with SHA-256
+  `608de9b65d082d86c3ed6931e68a831e92e64d96ed3fa8df6880da5f25390ebf`;
+  pilot-contract SHA-256 is
+  `f610b25dfcc6ac60f4c7d382f37e6a842dc6b8f9b7e3c8f26db5aa2d4ba9c389`.
+  The recurrent compiler has 39,860,568 parameters and the complete system
+  has 195,799,462 parameters.
+
+  The model learns easy terminal disposition and lifts fully autonomous
+  factual top-1 from zero to 57.8125%, but its own packet interface regresses.
+  Oracle-initial value accuracy falls from 74.344978% to 66.375546%, and
+  autonomous-initial value accuracy falls from 58.542576% to 52.265284%.
+  Exact terminal packets remain `0/512`; source-deleted strict WORLD and
+  COMMAND remain exactly zero with zero margin and zero difference-in-
+  differences. Latent recurrence over visible operations is therefore not
+  sufficient when it receives only an episode-terminal edit target. The held
+  autonomous-initial duplicate `725619` was canceled without running.
+
+  Stokes CPU job `760906` is concurrently measuring whether operation-local
+  assessor mutations are identifiable from declaration-resolved public
+  operations under increasingly complete public context. It uses 48 CPU
+  cores from immutable source `f70bca182c8a5225f5aa34b39a13e1f8d47129c4`;
+  runtime SHA256SUMS SHA-256 is
+  `4a370c51065797a02de3cb684d694da04bc7cca03b18341da53d22d35bbcdd30`.
+  A high-identifiability result routes to explicit operation-boundary state
+  application with cumulative intermediate-state supervision. A low-
+  identifiability result rejects mutation labels and routes to a public
+  state-delta quotient audit before any further GPU fit.
+
+  Decision:
+  `reject_terminal_only_latent_operation_recurrence_cancel_its_autonomous_duplicate_and_require_each_public_operation_to_purchase_a_supervised_state_transition`.

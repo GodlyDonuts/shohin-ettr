@@ -197,3 +197,16 @@ operation only, WORLD plus operation, WORLD plus operation prefix, and WORLD
 plus complete COMMAND and rank. High coverage and Bayes accuracy justify an
 operation-aligned intermediate-state curriculum; low accuracy rejects that
 label ontology before another GPU run.
+
+The operation-recurrent endpoint is now measured. V100 job `725618` learns
+the terminal disposition and reaches 57.8125% autonomous factual top-1, but
+oracle-initial value accuracy falls from 74.344978% to 66.375546%, autonomous-
+initial value accuracy falls from 58.542576% to 52.265284%, exact packets stay
+zero, and both strict axes remain exactly zero. This closes recurrence that
+updates only a latent slot tensor and emits one episode-terminal edit. The
+failure is not routed to more recurrent depth, width, duration, or an
+autonomous-initial duplicate. The next neural mechanism must expose a state
+transition after every public operation and must receive operation-boundary
+credit. Stokes job `760906` selects the target ontology: identifiable local
+mutations admit cumulative intermediate-state supervision; aliased mutation
+labels require a state-delta quotient audit first.
