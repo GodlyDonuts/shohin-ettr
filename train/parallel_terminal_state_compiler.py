@@ -13,6 +13,7 @@ typed-state constraints when ``hard=True``.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 import math
 
 import torch
@@ -57,6 +58,24 @@ def _hard_capped_relations(
         retained.scatter_(1, indices, True)
         binary &= retained
     return binary.reshape_as(probabilities).to(probabilities.dtype)
+
+
+NODE_EDIT_COUNT = 5
+RELATION_EDIT_COUNT = 3
+ROOT_EDIT_PREFIX_COUNT = 2
+DISPOSITION_EDIT_COUNT = 4
+
+
+@dataclass(frozen=True, slots=True)
+class AtomicTypedEdits:
+    """One parallel, coherent state difference consumed by fixed algebra."""
+
+    node_action: torch.Tensor
+    value_code: torch.Tensor
+    type_index: torch.Tensor
+    relation_action: torch.Tensor
+    root_action: torch.Tensor
+    disposition_action: torch.Tensor
 
 
 class _TerminalStateLayer(nn.Module):
@@ -120,6 +139,7 @@ class ParallelTerminalStateCompiler(nn.Module):
         num_heads: int = 8,
         relation_width: int = 64,
         residual_edits: bool = False,
+        atomic_edits: bool = False,
     ) -> None:
         super().__init__()
         config.validate()
@@ -134,6 +154,8 @@ class ParallelTerminalStateCompiler(nn.Module):
             or not isinstance(relation_width, int)
             or relation_width < 8
             or not isinstance(residual_edits, bool)
+            or not isinstance(atomic_edits, bool)
+            or (residual_edits and atomic_edits)
         ):
             raise TheoryReactorError("terminal-state compiler geometry differs")
         self.config = config
@@ -142,6 +164,7 @@ class ParallelTerminalStateCompiler(nn.Module):
         self.num_heads = num_heads
         self.relation_width = relation_width
         self.residual_edits = residual_edits
+        self.atomic_edits = atomic_edits
 
         self.command_projection = nn.Linear(config.d_model, width)
         self.command_norm = nn.LayerNorm(width)
@@ -213,6 +236,33 @@ class ParallelTerminalStateCompiler(nn.Module):
             self.relation_edit_right = None
             self.register_parameter("relation_edit_bias", None)
             self.status_edit_head = None
+        if atomic_edits:
+            self.node_action_head = nn.Linear(width, NODE_EDIT_COUNT)
+            self.relation_unlink_left = nn.Linear(
+                width,
+                config.num_relations * relation_width,
+                bias=False,
+            )
+            self.relation_unlink_right = nn.Linear(
+                width,
+                config.num_relations * relation_width,
+                bias=False,
+            )
+            self.relation_action_bias = nn.Parameter(
+                torch.empty(config.num_relations, RELATION_EDIT_COUNT)
+            )
+            self.root_control_head = nn.Linear(width, ROOT_EDIT_PREFIX_COUNT)
+            self.disposition_action_head = nn.Linear(
+                width,
+                DISPOSITION_EDIT_COUNT,
+            )
+        else:
+            self.node_action_head = None
+            self.relation_unlink_left = None
+            self.relation_unlink_right = None
+            self.register_parameter("relation_action_bias", None)
+            self.root_control_head = None
+            self.disposition_action_head = None
         self.reset_parameters()
 
     def reset_parameters(self) -> None:
@@ -232,6 +282,21 @@ class ParallelTerminalStateCompiler(nn.Module):
         ):
             if head is not None:
                 nn.init.constant_(head.bias, -2.0)
+        if self.node_action_head is not None:
+            nn.init.zeros_(self.node_action_head.bias)
+            self.node_action_head.bias.data[0] = 3.0
+            self.node_action_head.bias.data[1:] = -3.0
+        if self.relation_action_bias is not None:
+            nn.init.constant_(self.relation_action_bias, -3.0)
+            self.relation_action_bias.data[:, 0] = 3.0
+        if self.root_control_head is not None:
+            nn.init.zeros_(self.root_control_head.bias)
+            self.root_control_head.bias.data[0] = 3.0
+            self.root_control_head.bias.data[1] = -3.0
+        if self.disposition_action_head is not None:
+            nn.init.zeros_(self.disposition_action_head.bias)
+            self.disposition_action_head.bias.data[0] = 3.0
+            self.disposition_action_head.bias.data[1:] = -3.0
 
     def _initial_memory(self, state: TypedTheoryState) -> torch.Tensor:
         values = torch.einsum(
@@ -261,15 +326,14 @@ class ParallelTerminalStateCompiler(nn.Module):
         )
         return self.initial_state_norm(memory)
 
-    def forward(
+    def _encode_slots(
         self,
         state: TypedTheoryState,
         *,
         command_hidden: torch.Tensor,
         command_attention_mask: torch.Tensor,
         steps: int,
-        hard: bool,
-    ) -> TypedTheoryState:
+    ) -> torch.Tensor:
         validate_state(state, self.config)
         batch = state.value_probabilities.shape[0]
         if (
@@ -299,11 +363,223 @@ class ParallelTerminalStateCompiler(nn.Module):
         )
         slots = self.terminal_slot_queries.to(command.dtype)
         slots = slots.unsqueeze(0).expand(batch, -1, -1)
-        if self.residual_edits:
+        if self.residual_edits or self.atomic_edits:
             slots = slots + initial
         for layer in self.layers:
             slots = layer(slots, memory, memory_padding)
-        slots = self.output_norm(slots)
+        return self.output_norm(slots)
+
+    def _atomic_edits_from_slots(
+        self,
+        state: TypedTheoryState,
+        slots: torch.Tensor,
+        *,
+        hard: bool,
+    ) -> AtomicTypedEdits:
+        if (
+            not self.atomic_edits
+            or self.node_action_head is None
+            or self.relation_unlink_left is None
+            or self.relation_unlink_right is None
+            or self.relation_action_bias is None
+            or self.root_control_head is None
+            or self.disposition_action_head is None
+        ):
+            raise TheoryReactorError("atomic typed-edit path differs")
+        batch = slots.shape[0]
+        node_action = self.node_action_head(slots).float().softmax(-1)
+        value_code = self.value_head(slots).float().softmax(-1)
+        type_index = self.type_head(slots).float().softmax(-1)
+
+        left = self.relation_left(slots).view(
+            batch,
+            self.config.num_slots,
+            self.config.num_relations,
+            self.relation_width,
+        )
+        right = self.relation_right(slots).view_as(left)
+        link_logits = torch.einsum(
+            "bsrd,btrd->brst",
+            left,
+            right,
+        ) / math.sqrt(self.relation_width)
+        unlink_left = self.relation_unlink_left(slots).view_as(left)
+        unlink_right = self.relation_unlink_right(slots).view_as(right)
+        unlink_logits = torch.einsum(
+            "bsrd,btrd->brst",
+            unlink_left,
+            unlink_right,
+        ) / math.sqrt(self.relation_width)
+        keep_logits = self.relation_action_bias[:, 0].view(1, -1, 1, 1)
+        keep_logits = keep_logits.expand_as(link_logits)
+        relation_logits = torch.stack(
+            (
+                keep_logits,
+                link_logits
+                + self.relation_action_bias[:, 1].view(1, -1, 1, 1),
+                unlink_logits
+                + self.relation_action_bias[:, 2].view(1, -1, 1, 1),
+            ),
+            dim=-1,
+        )
+        relation_action = relation_logits.float().softmax(-1)
+
+        keep, allocate, _write, clear, _replace = node_action.unbind(-1)
+        del keep
+        initial_active = state.active.float()
+        projected_active = (
+            initial_active + allocate * (1.0 - initial_active)
+        ) * (1.0 - clear * initial_active)
+        pooled = slots.mean(1)
+        root_prefix = self.root_control_head(pooled).float()
+        root_set = self.root_head(slots).float().squeeze(-1)
+        root_set = root_set + projected_active.clamp_min(1e-4).log()
+        root_action = torch.cat((root_prefix, root_set), dim=-1).softmax(-1)
+        disposition_action = self.disposition_action_head(pooled).float().softmax(-1)
+
+        if hard:
+            node_action = _hard_one_hot(node_action)
+            value_code = _hard_one_hot(value_code)
+            type_index = _hard_one_hot(type_index)
+            relation_action = _hard_one_hot(relation_action)
+            root_action = _hard_one_hot(root_action)
+            disposition_action = _hard_one_hot(disposition_action)
+        return AtomicTypedEdits(
+            node_action=node_action,
+            value_code=value_code,
+            type_index=type_index,
+            relation_action=relation_action,
+            root_action=root_action,
+            disposition_action=disposition_action,
+        )
+
+    def apply_atomic_edits(
+        self,
+        state: TypedTheoryState,
+        edits: AtomicTypedEdits,
+        *,
+        steps: int,
+        hard: bool,
+    ) -> TypedTheoryState:
+        """Apply one parallel typed difference with no learned executor."""
+
+        keep, allocate, write, clear, replace = edits.node_action.float().unbind(-1)
+        del keep
+        initial_active = state.active.float()
+        allocated = allocate * (1.0 - initial_active)
+        cleared = clear * initial_active
+        replaced = replace * initial_active
+        active = (initial_active + allocated) * (1.0 - cleared)
+
+        type_write = (allocated + replaced).clamp(max=1.0).unsqueeze(-1)
+        type_probability = (
+            state.type_probabilities.float() * (1.0 - type_write)
+            + edits.type_index.float() * type_write
+        )
+        type_probability = type_probability * (1.0 - cleared.unsqueeze(-1))
+        value_write = (
+            write * initial_active + allocated + replaced
+        ).clamp(max=1.0).unsqueeze(-1)
+        value = (
+            state.value_probabilities.float() * (1.0 - value_write)
+            + edits.value_code.float() * value_write
+        )
+        value = value * (1.0 - cleared.unsqueeze(-1))
+
+        _relation_keep, link, unlink = edits.relation_action.float().unbind(-1)
+        relations = state.relations.float()
+        relations = relations + link * (1.0 - relations)
+        relations = relations * (1.0 - unlink)
+        pair_active = active[:, None, :, None] * active[:, None, None, :]
+        relations = relations * pair_active
+        if hard:
+            relations = _hard_capped_relations(
+                relations,
+                maximum=self.config.max_edges,
+            ) * pair_active
+
+        root_keep = edits.root_action[:, 0:1].float()
+        root_set = edits.root_action[:, ROOT_EDIT_PREFIX_COUNT:].float()
+        root = (root_keep * state.root.float() + root_set) * active
+        status_keep, commit, halt, reject = (
+            edits.disposition_action.float().unbind(-1)
+        )
+        del status_keep
+        open_state = (1.0 - state.committed.float()) * (
+            1.0 - state.halted.float()
+        )
+        committed = state.committed.float() + open_state * (commit + reject)
+        halted = state.halted.float() + open_state * (halt + reject)
+
+        if hard:
+            active = _hard_binary(active)
+            value = _hard_one_hot(value) * active.unsqueeze(-1)
+            type_probability = _hard_one_hot(type_probability) * active.unsqueeze(-1)
+            root = root * active
+            committed = _hard_binary(committed)
+            halted = _hard_binary(halted)
+
+        terminal = TypedTheoryState(
+            value_probabilities=value.to(state.value_probabilities.dtype),
+            type_probabilities=type_probability.to(state.value_probabilities.dtype),
+            relations=relations.to(state.value_probabilities.dtype),
+            active=active.to(state.value_probabilities.dtype),
+            root=root.to(state.value_probabilities.dtype),
+            committed=committed.to(state.value_probabilities.dtype),
+            halted=halted.to(state.value_probabilities.dtype),
+            step=state.step + steps,
+        )
+        if hard:
+            validate_deployed_state(terminal, self.config)
+        else:
+            validate_state(terminal, self.config)
+        return terminal
+
+    def forward_with_atomic_edits(
+        self,
+        state: TypedTheoryState,
+        *,
+        command_hidden: torch.Tensor,
+        command_attention_mask: torch.Tensor,
+        steps: int,
+        hard: bool,
+    ) -> tuple[TypedTheoryState, AtomicTypedEdits]:
+        slots = self._encode_slots(
+            state,
+            command_hidden=command_hidden,
+            command_attention_mask=command_attention_mask,
+            steps=steps,
+        )
+        edits = self._atomic_edits_from_slots(state, slots, hard=hard)
+        return (
+            self.apply_atomic_edits(state, edits, steps=steps, hard=hard),
+            edits,
+        )
+
+    def forward(
+        self,
+        state: TypedTheoryState,
+        *,
+        command_hidden: torch.Tensor,
+        command_attention_mask: torch.Tensor,
+        steps: int,
+        hard: bool,
+    ) -> TypedTheoryState:
+        slots = self._encode_slots(
+            state,
+            command_hidden=command_hidden,
+            command_attention_mask=command_attention_mask,
+            steps=steps,
+        )
+        if self.atomic_edits:
+            edits = self._atomic_edits_from_slots(state, slots, hard=hard)
+            return self.apply_atomic_edits(
+                state,
+                edits,
+                steps=steps,
+                hard=hard,
+            )
+        batch = state.value_probabilities.shape[0]
 
         value = self.value_head(slots).float().softmax(-1)
         type_probability = self.type_head(slots).float().softmax(-1)
@@ -487,6 +763,11 @@ class ParallelTerminalStateReactor(nn.Module):
 
 
 __all__ = [
+    "AtomicTypedEdits",
+    "DISPOSITION_EDIT_COUNT",
+    "NODE_EDIT_COUNT",
     "ParallelTerminalStateCompiler",
     "ParallelTerminalStateReactor",
+    "RELATION_EDIT_COUNT",
+    "ROOT_EDIT_PREFIX_COUNT",
 ]

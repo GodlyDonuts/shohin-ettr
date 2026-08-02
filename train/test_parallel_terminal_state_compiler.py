@@ -13,10 +13,15 @@ from endogenous_typed_theory_reactor import (
     validate_deployed_state,
 )
 from parallel_terminal_state_compiler import (
+    AtomicTypedEdits,
     ParallelTerminalStateCompiler,
     ParallelTerminalStateReactor,
 )
-from train_parallel_terminal_state_pilot import causal_terminal_delta_brier
+from train_parallel_terminal_state_pilot import (
+    atomic_typed_edit_loss,
+    causal_terminal_delta_brier,
+    derive_atomic_edit_targets,
+)
 
 
 def _config() -> TheoryReactorConfig:
@@ -112,6 +117,21 @@ def test_sparse_residual_terminal_compiler_emits_valid_hard_state() -> None:
         num_heads=2,
         relation_width=16,
         residual_edits=True,
+    )
+    terminal = compiler(_state(config), **_inputs(config), hard=True)
+    validate_deployed_state(terminal, config)
+    assert terminal.step == 3
+
+
+def test_atomic_terminal_compiler_emits_valid_hard_state() -> None:
+    config = _config()
+    compiler = ParallelTerminalStateCompiler(
+        config,
+        width=64,
+        layers=2,
+        num_heads=2,
+        relation_width=16,
+        atomic_edits=True,
     )
     terminal = compiler(_state(config), **_inputs(config), hard=True)
     validate_deployed_state(terminal, config)
@@ -219,6 +239,16 @@ def test_production_sparse_residual_compiler_fits_system_cap() -> None:
     assert parameters < 44_061_106
 
 
+def test_production_atomic_edit_compiler_fits_system_cap() -> None:
+    compiler = ParallelTerminalStateCompiler(
+        TheoryReactorConfig(),
+        atomic_edits=True,
+    )
+    parameters = sum(parameter.numel() for parameter in compiler.parameters())
+    assert parameters == 19_574_616
+    assert parameters < 44_061_106
+
+
 def test_sparse_residual_gate_can_preserve_initial_identity() -> None:
     config = _config()
     compiler = ParallelTerminalStateCompiler(
@@ -297,6 +327,127 @@ def test_sparse_residual_edit_heads_receive_gradients() -> None:
         gradient = parameters[name].grad
         assert gradient is not None, name
         assert bool(gradient.isfinite().all()), name
+
+
+def test_atomic_edit_heads_receive_gradients() -> None:
+    config = _config()
+    compiler = ParallelTerminalStateCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        relation_width=16,
+        atomic_edits=True,
+    )
+    _terminal, edits = compiler.forward_with_atomic_edits(
+        _state(config),
+        **_inputs(config),
+        hard=False,
+    )
+    loss = sum(
+        value.float().square().mean()
+        for value in (
+            edits.node_action,
+            edits.value_code,
+            edits.type_index,
+            edits.relation_action,
+            edits.root_action,
+            edits.disposition_action,
+        )
+    )
+    loss.backward()
+    parameters = dict(compiler.named_parameters())
+    for name in (
+        "node_action_head.weight",
+        "value_head.weight",
+        "type_head.weight",
+        "relation_left.weight",
+        "relation_right.weight",
+        "relation_unlink_left.weight",
+        "relation_unlink_right.weight",
+        "relation_action_bias",
+        "root_control_head.weight",
+        "root_head.weight",
+        "disposition_action_head.weight",
+        "command_projection.weight",
+    ):
+        gradient = parameters[name].grad
+        assert gradient is not None, name
+        assert bool(gradient.isfinite().all()), name
+
+
+def test_canonical_atomic_edits_reconstruct_target_state() -> None:
+    config = _config()
+    compiler = ParallelTerminalStateCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        relation_width=16,
+        atomic_edits=True,
+    )
+    initial = _state(config)
+    target = initial.detached_clone()
+    target.active[0, 2] = 1.0
+    target.value_probabilities[0, 2, 3] = 1.0
+    target.type_probabilities[0, 2, 2] = 1.0
+    target.relations[0, 0, 0, 2] = 1.0
+    target.root[0].zero_()
+    target.root[0, 2] = 1.0
+    target.committed[0] = 1.0
+    target.value_probabilities[1, 1].zero_()
+    target.value_probabilities[1, 1, 4] = 1.0
+    target.active[1, 0] = 0.0
+    target.value_probabilities[1, 0].zero_()
+    target.type_probabilities[1, 0].zero_()
+    target.root[1].zero_()
+    target.halted[1] = 1.0
+    labels = derive_atomic_edit_targets(initial, target)
+    edits = AtomicTypedEdits(
+        node_action=F.one_hot(labels["node_action"], 5).float(),
+        value_code=F.one_hot(labels["value_code"], config.num_value_codes).float(),
+        type_index=F.one_hot(labels["type_index"], config.num_types).float(),
+        relation_action=F.one_hot(labels["relation_action"], 3).float(),
+        root_action=F.one_hot(labels["root_action"], 2 + config.num_slots).float(),
+        disposition_action=F.one_hot(labels["disposition_action"], 4).float(),
+    )
+    terminal = compiler.apply_atomic_edits(initial, edits, steps=3, hard=True)
+    for name in (
+        "value_probabilities",
+        "type_probabilities",
+        "relations",
+        "active",
+        "root",
+        "committed",
+        "halted",
+    ):
+        assert torch.equal(getattr(terminal, name), getattr(target, name)), name
+
+
+def test_atomic_action_loss_is_exact_for_canonical_edits() -> None:
+    config = _config()
+    initial = _state(config)
+    target = initial.detached_clone()
+    target.value_probabilities[:, 1].zero_()
+    target.value_probabilities[:, 1, 4] = 1.0
+    labels = derive_atomic_edit_targets(initial, target)
+    edits = AtomicTypedEdits(
+        node_action=F.one_hot(labels["node_action"], 5).float(),
+        value_code=F.one_hot(labels["value_code"], config.num_value_codes).float(),
+        type_index=F.one_hot(labels["type_index"], config.num_types).float(),
+        relation_action=F.one_hot(labels["relation_action"], 3).float(),
+        root_action=F.one_hot(labels["root_action"], 2 + config.num_slots).float(),
+        disposition_action=F.one_hot(labels["disposition_action"], 4).float(),
+    )
+    loss, parts, _counts = atomic_typed_edit_loss(
+        edits,
+        labels,
+        slot_mask=torch.ones_like(initial.active, dtype=torch.bool),
+        relation_mask=torch.ones_like(initial.relations, dtype=torch.bool),
+    )
+    assert loss.item() == 0.0
+    assert "node_action" in parts
+    assert "value_code" in parts
 
 
 def test_terminal_compiler_rejects_wrong_command_geometry() -> None:

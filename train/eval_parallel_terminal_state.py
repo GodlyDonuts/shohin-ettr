@@ -32,6 +32,8 @@ from train_ettr_component_island import (
     _write_no_replace,
 )
 from train_parallel_terminal_state_pilot import (
+    ATOMIC_CONTRACT_SCHEMA as PILOT_ATOMIC_CONTRACT_SCHEMA,
+    ATOMIC_REPORT_SCHEMA as PILOT_ATOMIC_REPORT_SCHEMA,
     CAUSAL_DELTA_CONTRACT_SCHEMA as PILOT_CAUSAL_DELTA_CONTRACT_SCHEMA,
     CAUSAL_DELTA_REPORT_SCHEMA as PILOT_CAUSAL_DELTA_REPORT_SCHEMA,
     CONTRACT_SCHEMA as PILOT_CONTRACT_SCHEMA,
@@ -208,15 +210,21 @@ def _load_terminal_compiler(
     if (
         contract.get("schema")
         not in (
+            PILOT_ATOMIC_CONTRACT_SCHEMA,
             PILOT_CONTRACT_SCHEMA,
             PILOT_CAUSAL_DELTA_CONTRACT_SCHEMA,
             PILOT_LEGACY_CONTRACT_SCHEMA,
         )
         or report.get("schema")
         not in (
+            PILOT_ATOMIC_REPORT_SCHEMA,
             PILOT_REPORT_SCHEMA,
             PILOT_CAUSAL_DELTA_REPORT_SCHEMA,
             PILOT_LEGACY_REPORT_SCHEMA,
+        )
+        or (
+            (contract.get("schema") == PILOT_ATOMIC_CONTRACT_SCHEMA)
+            != (report.get("schema") == PILOT_ATOMIC_REPORT_SCHEMA)
         )
         or (
             (contract.get("schema") == PILOT_CONTRACT_SCHEMA)
@@ -250,6 +258,7 @@ def _load_terminal_compiler(
             "terminal-state run lineage differs"
         )
     if contract.get("schema") in (
+        PILOT_ATOMIC_CONTRACT_SCHEMA,
         PILOT_CONTRACT_SCHEMA,
         PILOT_CAUSAL_DELTA_CONTRACT_SCHEMA,
     ):
@@ -266,9 +275,14 @@ def _load_terminal_compiler(
                 "terminal-state causal delta contract differs"
             )
     residual_edits = contract.get("schema") == PILOT_CONTRACT_SCHEMA
+    atomic_edits = contract.get("schema") == PILOT_ATOMIC_CONTRACT_SCHEMA
     if residual_edits != (architecture.get("sparse_residual_edits") is True):
         raise ParallelTerminalStateEvaluationError(
             "terminal-state residual edit contract differs"
+        )
+    if atomic_edits != (architecture.get("atomic_typed_edits") is True):
+        raise ParallelTerminalStateEvaluationError(
+            "terminal-state atomic edit contract differs"
         )
     try:
         seed = int(architecture["seed"])
@@ -289,6 +303,7 @@ def _load_terminal_compiler(
         num_heads=num_heads,
         relation_width=relation_width,
         residual_edits=residual_edits,
+        atomic_edits=atomic_edits,
     ).to(
         device=next(model.parameters()).device,
         dtype=next(model.parameters()).dtype,

@@ -15,6 +15,7 @@ from typing import Sequence
 
 from safetensors.torch import save_file
 import torch
+import torch.nn.functional as F
 
 from eval_algebraic_query_joint_state import (
     _evaluate,
@@ -26,6 +27,7 @@ from ettr_packet_index import ETTRDiskPacketSufficiencyIndex
 from ettr_query_supervision import iter_batches_with_query_specs
 from ettr_v3_streaming import ETTRV3StreamingRelease, move_continuation_batch
 from parallel_terminal_state_compiler import (
+    AtomicTypedEdits,
     ParallelTerminalStateCompiler,
     ParallelTerminalStateReactor,
 )
@@ -47,6 +49,8 @@ from train_parallel_addressed_transaction_pilot import (
 )
 
 
+ATOMIC_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v4"
+ATOMIC_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v4"
 CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v3"
 REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v3"
 CAUSAL_DELTA_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v2"
@@ -97,6 +101,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--num-heads", type=int, default=8)
     parser.add_argument("--relation-width", type=int, default=64)
     parser.add_argument("--residual-edits", action="store_true")
+    parser.add_argument("--atomic-edits", action="store_true")
+    parser.add_argument("--atomic-action-weight", type=float, default=1.0)
     parser.add_argument(
         "--required-device-class",
         choices=("h100", "cuda"),
@@ -140,6 +146,9 @@ def _validate_args(args: argparse.Namespace) -> None:
         or args.gradient_clip <= 0.0
         or not math.isfinite(args.causal_delta_weight)
         or args.causal_delta_weight <= 0.0
+        or not math.isfinite(args.atomic_action_weight)
+        or args.atomic_action_weight <= 0.0
+        or (args.residual_edits and args.atomic_edits)
         or args.output.exists()
         or args.output.is_symlink()
         or not args.output.parent.is_dir()
@@ -297,6 +306,241 @@ def causal_terminal_delta_brier(
     return torch.stack(tuple(parts.values())).mean(), parts, changed_counts
 
 
+def derive_atomic_edit_targets(
+    initial,
+    target,
+) -> dict[str, torch.Tensor]:
+    """Canonicalize an initial/terminal state difference without a trace."""
+
+    initial_active = initial.active.gt(0.5)
+    target_active = target.active.gt(0.5)
+    initial_value = initial.value_probabilities.argmax(-1)
+    target_value = target.value_probabilities.argmax(-1)
+    initial_type = initial.type_probabilities.argmax(-1)
+    target_type = target.type_probabilities.argmax(-1)
+
+    node_action = torch.zeros_like(initial_value)
+    node_action = torch.where(
+        ~initial_active & target_active,
+        torch.ones_like(node_action),
+        node_action,
+    )
+    node_action = torch.where(
+        initial_active & ~target_active,
+        torch.full_like(node_action, 3),
+        node_action,
+    )
+    retained = initial_active & target_active
+    node_action = torch.where(
+        retained & initial_type.ne(target_type),
+        torch.full_like(node_action, 4),
+        node_action,
+    )
+    node_action = torch.where(
+        retained & initial_type.eq(target_type) & initial_value.ne(target_value),
+        torch.full_like(node_action, 2),
+        node_action,
+    )
+
+    initial_relation = initial.relations.gt(0.5)
+    target_relation = target.relations.gt(0.5)
+    relation_action = torch.zeros_like(initial.relations, dtype=torch.long)
+    relation_action = torch.where(
+        ~initial_relation & target_relation,
+        torch.ones_like(relation_action),
+        relation_action,
+    )
+    relation_action = torch.where(
+        initial_relation & ~target_relation,
+        torch.full_like(relation_action, 2),
+        relation_action,
+    )
+
+    root_action = torch.zeros(
+        initial.root.shape[0],
+        dtype=torch.long,
+        device=initial.root.device,
+    )
+    root_changed = initial.root.ne(target.root).any(-1)
+    target_has_root = target.root.gt(0.5).any(-1)
+    root_action = torch.where(
+        root_changed & ~target_has_root,
+        torch.ones_like(root_action),
+        root_action,
+    )
+    root_action = torch.where(
+        root_changed & target_has_root,
+        target.root.argmax(-1) + 2,
+        root_action,
+    )
+
+    disposition_action = torch.zeros_like(root_action)
+    status_changed = initial.committed.ne(target.committed) | initial.halted.ne(
+        target.halted
+    )
+    disposition_action = torch.where(
+        status_changed & target.committed.gt(0.5) & target.halted.le(0.5),
+        torch.ones_like(disposition_action),
+        disposition_action,
+    )
+    disposition_action = torch.where(
+        status_changed & target.committed.le(0.5) & target.halted.gt(0.5),
+        torch.full_like(disposition_action, 2),
+        disposition_action,
+    )
+    disposition_action = torch.where(
+        status_changed & target.committed.gt(0.5) & target.halted.gt(0.5),
+        torch.full_like(disposition_action, 3),
+        disposition_action,
+    )
+    return {
+        "node_action": node_action,
+        "value_code": target_value,
+        "type_index": target_type,
+        "relation_action": relation_action,
+        "root_action": root_action,
+        "disposition_action": disposition_action,
+    }
+
+
+def verify_atomic_edit_reconstruction(
+    compiler: ParallelTerminalStateCompiler,
+    initial,
+    target,
+    labels: dict[str, torch.Tensor],
+    *,
+    steps: int,
+) -> None:
+    """Fail before optimization if the canonical edit cannot express target."""
+
+    edits = AtomicTypedEdits(
+        node_action=F.one_hot(labels["node_action"], 5).float(),
+        value_code=F.one_hot(
+            labels["value_code"],
+            compiler.config.num_value_codes,
+        ).float(),
+        type_index=F.one_hot(
+            labels["type_index"],
+            compiler.config.num_types,
+        ).float(),
+        relation_action=F.one_hot(labels["relation_action"], 3).float(),
+        root_action=F.one_hot(
+            labels["root_action"],
+            2 + compiler.config.num_slots,
+        ).float(),
+        disposition_action=F.one_hot(
+            labels["disposition_action"],
+            4,
+        ).float(),
+    )
+    reconstructed = compiler.apply_atomic_edits(
+        initial,
+        edits,
+        steps=steps,
+        hard=True,
+    )
+    for name in (
+        "value_probabilities",
+        "type_probabilities",
+        "relations",
+        "active",
+        "root",
+        "committed",
+        "halted",
+    ):
+        if not torch.equal(getattr(reconstructed, name), getattr(target, name)):
+            raise ParallelTerminalStatePilotError(
+                f"canonical atomic edit reconstruction differs: {name}"
+            )
+
+
+def _class_balanced_nll(
+    probabilities: torch.Tensor,
+    target: torch.Tensor,
+    mask: torch.Tensor,
+) -> tuple[torch.Tensor, dict[str, int]]:
+    if probabilities.shape[:-1] != target.shape or target.shape != mask.shape:
+        raise ParallelTerminalStatePilotError(
+            "atomic typed-edit supervision geometry differs"
+        )
+    losses = []
+    counts: dict[str, int] = {}
+    log_probabilities = probabilities.float().clamp_min(1e-7).log()
+    for index in range(probabilities.shape[-1]):
+        selected = mask & target.eq(index)
+        count = int(selected.sum().detach().cpu())
+        counts[str(index)] = count
+        if count:
+            losses.append(-log_probabilities[..., index][selected].mean())
+    if not losses:
+        raise ParallelTerminalStatePilotError(
+            "atomic typed-edit supervision is empty"
+        )
+    return torch.stack(losses).mean(), counts
+
+
+def atomic_typed_edit_loss(
+    edits: AtomicTypedEdits,
+    target: dict[str, torch.Tensor],
+    *,
+    slot_mask: torch.Tensor,
+    relation_mask: torch.Tensor,
+) -> tuple[torch.Tensor, dict[str, torch.Tensor], dict[str, dict[str, int]]]:
+    """Supervise a canonical coherent state difference, class-balanced."""
+
+    batch_mask = torch.ones(
+        edits.root_action.shape[0],
+        dtype=torch.bool,
+        device=edits.root_action.device,
+    )
+    node_action = target["node_action"]
+    parts: dict[str, torch.Tensor] = {}
+    counts: dict[str, dict[str, int]] = {}
+    specifications = {
+        "node_action": (edits.node_action, node_action, slot_mask),
+        "relation_action": (
+            edits.relation_action,
+            target["relation_action"],
+            relation_mask,
+        ),
+        "root_action": (edits.root_action, target["root_action"], batch_mask),
+        "disposition_action": (
+            edits.disposition_action,
+            target["disposition_action"],
+            batch_mask,
+        ),
+        "value_code": (
+            edits.value_code,
+            target["value_code"],
+            slot_mask
+            & (
+                node_action.eq(1)
+                | node_action.eq(2)
+                | node_action.eq(4)
+            ),
+        ),
+        "type_index": (
+            edits.type_index,
+            target["type_index"],
+            slot_mask & (node_action.eq(1) | node_action.eq(4)),
+        ),
+    }
+    for name, (probabilities, labels, mask) in specifications.items():
+        if not bool(mask.any()):
+            counts[name] = {
+                str(index): 0 for index in range(probabilities.shape[-1])
+            }
+            continue
+        value, class_counts = _class_balanced_nll(
+            probabilities,
+            labels,
+            mask,
+        )
+        parts[name] = value
+        counts[name] = class_counts
+    return torch.stack(tuple(parts.values())).mean(), parts, counts
+
+
 def _module_sha256(module: torch.nn.Module, path: Path) -> str:
     save_file(
         {
@@ -309,7 +553,20 @@ def _module_sha256(module: torch.nn.Module, path: Path) -> str:
     return _sha256_file(path)
 
 
-def _run_schemas(residual_edits: bool) -> tuple[str, str, str]:
+def _run_schemas(
+    residual_edits: bool,
+    atomic_edits: bool = False,
+) -> tuple[str, str, str]:
+    if atomic_edits:
+        if residual_edits:
+            raise ParallelTerminalStatePilotError(
+                "terminal-state architecture schema differs"
+            )
+        return (
+            ATOMIC_CONTRACT_SCHEMA,
+            ATOMIC_REPORT_SCHEMA,
+            "shohin-ettr-parallel-terminal-state-metric-v4",
+        )
     if residual_edits:
         return (
             CONTRACT_SCHEMA,
@@ -402,7 +659,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     _validate_args(args)
     contract_schema, report_schema, metric_schema = _run_schemas(
-        args.residual_edits
+        args.residual_edits,
+        args.atomic_edits,
     )
     if not torch.cuda.is_available():
         raise ParallelTerminalStatePilotError(
@@ -449,6 +707,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         num_heads=args.num_heads,
         relation_width=args.relation_width,
         residual_edits=args.residual_edits,
+        atomic_edits=args.atomic_edits,
     ).to(device=device, dtype=next(model.parameters()).dtype)
     compiler_parameters = sum(
         parameter.numel() for parameter in compiler.parameters()
@@ -508,6 +767,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         contract = {
             "architecture": {
                 "causal_rectangle_delta_credit": True,
+                "atomic_typed_edits": args.atomic_edits,
+                "fixed_atomic_edit_algebra": args.atomic_edits,
                 "direct_terminal_quotient": True,
                 "layers": args.layers,
                 "no_query_input": True,
@@ -534,6 +795,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             "learning_rate": args.learning_rate,
             "objective": {
                 "binary": "class-balanced-brier",
+                "atomic_action_weight": (
+                    args.atomic_action_weight if args.atomic_edits else 0.0
+                ),
+                "atomic_actions": (
+                    "canonical-class-balanced-state-difference"
+                    if args.atomic_edits
+                    else None
+                ),
                 "causal_delta_weight": args.causal_delta_weight,
                 "causal_pairing": "complete-2x2-terminal-state-edges",
                 "categorical": "categorical-brier",
@@ -592,17 +861,58 @@ def main(argv: Sequence[str] | None = None) -> int:
                     batch.episodes.command.tokens,
                     pos=0,
                 )
+            atomic_targets = None
+            if args.atomic_edits:
+                atomic_targets = derive_atomic_edit_targets(initial, target)
+                if update == 1:
+                    verify_atomic_edit_reconstruction(
+                        compiler,
+                        initial,
+                        target,
+                        atomic_targets,
+                        steps=batch.transaction_targets.opcode.shape[1],
+                    )
             optimizer.zero_grad(set_to_none=True)
             with _precision_context(is_h100):
-                predicted = compiler(
-                    initial,
-                    command_hidden=command_hidden.detach(),
-                    command_attention_mask=(
-                        batch.episodes.command.attention_mask.bool()
-                    ),
-                    steps=batch.transaction_targets.opcode.shape[1],
-                    hard=False,
-                )
+                if args.atomic_edits:
+                    predicted, atomic_edits = compiler.forward_with_atomic_edits(
+                        initial,
+                        command_hidden=command_hidden.detach(),
+                        command_attention_mask=(
+                            batch.episodes.command.attention_mask.bool()
+                        ),
+                        steps=batch.transaction_targets.opcode.shape[1],
+                        hard=False,
+                    )
+                    if atomic_targets is None:
+                        raise ParallelTerminalStatePilotError(
+                            "atomic typed-edit targets are absent"
+                        )
+                    (
+                        atomic_action_loss,
+                        atomic_action_parts,
+                        atomic_action_counts,
+                    ) = atomic_typed_edit_loss(
+                        atomic_edits,
+                        atomic_targets,
+                        slot_mask=batch.terminal_packet_targets.slot_mask,
+                        relation_mask=(
+                            batch.terminal_packet_targets.relation_mask
+                        ),
+                    )
+                else:
+                    predicted = compiler(
+                        initial,
+                        command_hidden=command_hidden.detach(),
+                        command_attention_mask=(
+                            batch.episodes.command.attention_mask.bool()
+                        ),
+                        steps=batch.transaction_targets.opcode.shape[1],
+                        hard=False,
+                    )
+                    atomic_action_loss = predicted.active.float().sum() * 0.0
+                    atomic_action_parts = {}
+                    atomic_action_counts = {}
                 state_loss, state_parts = _state_brier(
                     predicted,
                     target,
@@ -625,6 +935,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 loss = (
                     state_loss
                     + args.causal_delta_weight * causal_delta_loss
+                    + args.atomic_action_weight * atomic_action_loss
                 )
             if not bool(torch.isfinite(loss)):
                 raise ParallelTerminalStatePilotError(
@@ -651,6 +962,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                         name: float(value.detach().cpu())
                         for name, value in delta_parts.items()
                     },
+                    "atomic_action_loss": float(
+                        atomic_action_loss.detach().cpu()
+                    ),
+                    "atomic_action_parts": {
+                        name: float(value.detach().cpu())
+                        for name, value in atomic_action_parts.items()
+                    },
+                    "atomic_action_counts": atomic_action_counts,
                     "changed_coordinates": changed_counts,
                     "state_loss": float(state_loss.detach().cpu()),
                     "state_parts": {

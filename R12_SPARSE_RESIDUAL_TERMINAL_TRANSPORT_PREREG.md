@@ -2,8 +2,8 @@
 
 ## Status
 
-Implemented and locally qualified on 2026-08-01. No accelerator result exists
-at the time of preregistration.
+Implemented and locally qualified on 2026-08-01. The preregistered H100 gate
+and a V100 diagnostic are complete. The result is negative.
 
 ## Diagnosis
 
@@ -61,3 +61,31 @@ algebra, rather than mixing absolute fields.
 
 Decision:
 `make_identity_transport_default_and_force_command_to_purchase_sparse_typed_edits_then_gate_state_causality`.
+
+## Result
+
+Claim-bearing H100 job `725506` completed all 1,000 updates from exact commit
+`a543fd7` and immutable full-archive runtime `r4`. Runtime SHA256SUMS SHA-256 is
+`d5dd23174a4c806c29deafc10dee6e740ff9ba2853f0fee224c701a50b28fe56`.
+The run reaches 51.56% factual top-1, 99.02% active, 96.59% type, 53.28%
+value, and 99.65% relation accuracy, but exact terminal packets remain zero.
+Fully autonomous WORLD and COMMAND strict/margin-1 are all zero. Under the
+decisive oracle-program/autonomous-state isolation, both axes have strict
+zero, margin-1 zero, and DID exactly zero. Report SHA-256 is
+`eeb7115a55970547ecf5f724595caaaed11d52e7b3ec5e87e7d47c1ad2e512c0`.
+
+V100 job `725498` independently reaches the same state-isolated zeros with
+57.03% factual top-1. It is diagnostic only because its metric rows inherited
+the v2 label despite a v3 contract/report. Its report SHA-256 is
+`1da8b9316c3ff2e3f832f260da84736b88177422062f4a96b347618dccefc0f3`.
+The defect did not change tensors or optimization; corrected commit `a543fd7`
+binds contract, report, and metric schemas and produced the H100 result.
+
+Sparse independent gates therefore remain too factored. Identity transport is
+successful, but the model can alter value, type, relation, root, and status
+independently without constructing one legal causal edit. The preregistered
+successor is atomic typed-edit algebra: categorical coherent actions applied
+by a fixed state transition rather than per-field interpolation.
+
+Disposition:
+`reject_independent_residual_gates_and_compile_one_coherent_typed_state_difference`.

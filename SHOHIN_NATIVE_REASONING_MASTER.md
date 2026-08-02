@@ -53520,3 +53520,24 @@ supervision.
 
 Current decision:
 `test_copy_biased_sparse_residual_state_transport_and_require_state_isolated_world_plus_command_causality`.
+
+The exact-runtime H100 result rejects independent sparse residual gates. At
+1,000 updates it reaches 51.56% factual top-1, 96.59% type, and 53.28% value,
+but strict WORLD, strict COMMAND, and both margin-1 rates remain zero. Holding
+the query program exact while exposing only the learned state gives DID
+exactly zero on both axes. A V100 diagnostic independently reproduces the
+state invariance. Copying identity was necessary but not sufficient: separate
+field gates can still construct semantically incompatible partial edits.
+
+The active successor represents the state difference itself. Each slot emits
+one categorical `KEEP/ALLOCATE/WRITE/CLEAR/REPLACE` action; each typed edge
+emits `KEEP/LINK/UNLINK`; root and terminal disposition are single categorical
+choices. A fixed differentiable algebra applies all edits atomically, clears
+incident edges with nodes, masks relations to active endpoints, and never
+invokes a host solver. Training action labels are a deterministic canonical
+difference between the initial and terminal packets, not an oracle trace and
+not answer supervision. The complete inference path still receives no QUERY,
+answer, target, candidate score, or external execution.
+
+Current decision:
+`replace_independent_field_interpolation_with_one_coherent_typed_edit_object_and_gate_it_before_any_scale_up`.

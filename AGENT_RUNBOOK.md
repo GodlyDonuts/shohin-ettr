@@ -15,7 +15,7 @@
 > audits, and zero-overlap main/confirmation separation. New training outputs
 > must be isolated exact-resume artifacts.
 >
-> **Last updated:** 2026-08-01 22:30 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-01 23:05 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -135,8 +135,16 @@
 > initial typed slots directly seed terminal slots, while copy-biased per-field
 > and per-relation gates purchase sparse COMMAND-conditioned rewrites. The new
 > compiler has 19,572,019 parameters and leaves the complete system at
-> 175,510,913. It still admits no QUERY or answer supervision. A matched
-> 1,000-update residual-transport gate is next.
+> 175,510,913. It still admits no QUERY or answer supervision. Exact-runtime
+> H100 job `725506` and matched V100 diagnostic `725498` both leave strict
+> WORLD/COMMAND and the oracle-program/autonomous-state causal isolation at
+> zero. The H100 report SHA-256 is
+> `eeb7115a55970547ecf5f724595caaaed11d52e7b3ec5e87e7d47c1ad2e512c0`;
+> sparse independent gates are closed. Contract v4 is the active successor:
+> it compiles categorical node, relation, root, and disposition edits and
+> applies them through a fixed atomic state algebra. Canonical action targets
+> are derived only from initial and terminal packets, never from QUERY or
+> answers. Local qualification is in progress.
 > No current artifact is promoted as stable native reasoning.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
@@ -23108,3 +23116,51 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_loss_only_repair_and_test_copy_biased_identity_plus_sparse_typed_edits`.
+
+- **2026-08-01 22:30--23:05 EDT** -- **Sparse residual transport is a
+  replicated state-invariance negative; atomic typed-edit algebra is
+  implemented.**
+
+  Runtime custody rejected two mislabeled source bundles before the claim
+  gate. `r1` was incomplete. `r3` carried an `a543fd7` marker but its trainer
+  hash did not match that commit and lacked the v3 metric schema. The exact
+  full-archive `r4` contains 3,499 measured files, trainer SHA-256
+  `0234ae4f821d8d106e0d1e7b6af795dc3298da2a12d5730d9ba86c6e47008231`,
+  and SHA256SUMS SHA-256
+  `d5dd23174a4c806c29deafc10dee6e740ff9ba2853f0fee224c701a50b28fe56`.
+  Stale H100 job `725494` was canceled and its partial output explicitly
+  labeled rejected; it never entered evidence.
+
+  Claim-bearing H100 job `725506` completed all 1,000 updates on `evc49` in
+  11:30. It reaches 51.56% factual top-1, 99.02% active, 96.59% type, 53.28%
+  value, and 99.65% relation accuracy. Exact packets remain `0/512`. Fully
+  autonomous WORLD/COMMAND strict and margin-1 are all zero. Under oracle-
+  program/autonomous-state isolation, both axes have strict zero, margin-1
+  zero, and DID exactly zero. Report SHA-256 is
+  `eeb7115a55970547ecf5f724595caaaed11d52e7b3ec5e87e7d47c1ad2e512c0`;
+  receipt SHA-256 is
+  `2a3984a49cd7bde8ffc4f384b240ccd786beb359b1d1889bfe20d5c4f9ba57bb`.
+  V100 diagnostic `725498` independently returns the same isolated zeros and
+  57.03% factual top-1. Its report SHA-256 is
+  `1da8b9316c3ff2e3f832f260da84736b88177422062f4a96b347618dccefc0f3`;
+  it is diagnostic only because training metrics carried the older v2 label.
+
+  The negative localizes the defect: independent field gates still do not
+  represent one coherent causal edit. Contract v4 replaces interpolation with
+  one parallel typed difference. Every slot chooses `KEEP/ALLOCATE/WRITE/
+  CLEAR/REPLACE`; every relation chooses `KEEP/LINK/UNLINK`; root and terminal
+  disposition are single categorical actions. A fixed differentiable algebra
+  applies the complete edit atomically, including incident-edge clearing and
+  active-endpoint masks. Training receives canonical action labels derived
+  only from the initial and terminal packets and class-balances each action
+  family. Inference remains deterministic and receives no QUERY, answer,
+  target, oracle program, solver, candidate score, or external execution.
+
+  The atomic compiler has 19,574,616 parameters and leaves the complete system
+  below 200M. Fifty-five focused architecture/custody tests pass; Ruff, byte
+  compilation, Bash syntax, and diff checks are clean. Before H100 launch,
+  expand qualification with real-batch canonical reconstruction and bind a
+  fresh immutable full-archive runtime.
+
+  Decision:
+  `close_independent_sparse_gates_and_launch_one_coherent_categorical_edit_applied_by_fixed_state_algebra`.
