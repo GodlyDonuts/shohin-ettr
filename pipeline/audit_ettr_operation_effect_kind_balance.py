@@ -23,7 +23,7 @@ from ettr_il_v3_protocol import canonical_json_bytes
 from materialize_ettr_il_v3_corpus import _iter_records, _sha256_file
 
 
-REPORT_SCHEMA = "r12-ettr-operation-effect-kind-balance-audit-v1"
+REPORT_SCHEMA = "r12-ettr-operation-effect-kind-balance-audit-v2"
 CAPACITY_SCHEMA = "r12-ettr-public-operation-state-delta-audit-v4"
 _SPLITS = ("train", "development")
 _KIND_FAMILY = {
@@ -111,7 +111,9 @@ def effect_kinds(delta: Mapping[str, object]) -> tuple[str, ...]:
     return tuple(kinds)
 
 
-def _record_counts(record: object) -> tuple[Counter[str], Counter[int], int]:
+def _record_counts(
+    record: object,
+) -> tuple[Counter[str], Counter[int], Counter[tuple[str, int]], int]:
     targets = record.assessor_only.targets
     initial_packets = tuple(
         _packet_from_value(value, f"initial packet {index}")
@@ -132,6 +134,7 @@ def _record_counts(record: object) -> tuple[Counter[str], Counter[int], int]:
     )
     kind_counts: Counter[str] = Counter()
     cardinalities: Counter[int] = Counter()
+    per_kind_cardinalities: Counter[tuple[str, int]] = Counter()
     operations = 0
     for world_index in range(2):
         initial, static_ranks = _project_initial(
@@ -161,17 +164,28 @@ def _record_counts(record: object) -> tuple[Counter[str], Counter[int], int]:
                 kinds = effect_kinds(state_delta_value(state, after))
                 kind_counts.update(kinds)
                 cardinalities[len(kinds)] += 1
+                operation_kinds = Counter(kinds)
+                per_kind_cardinalities.update(
+                    (name, operation_kinds[name]) for name in _KIND_FAMILY
+                )
                 operations += 1
                 state = after
-    return kind_counts, cardinalities, operations
+    return kind_counts, cardinalities, per_kind_cardinalities, operations
 
 
 def _audit_shard(
     arguments: tuple[Path, Path, str],
-) -> tuple[Counter[str], Counter[int], set[str], dict[str, object]]:
+) -> tuple[
+    Counter[str],
+    Counter[int],
+    Counter[tuple[str, int]],
+    set[str],
+    dict[str, object],
+]:
     path, data_root, split = arguments
     kind_counts: Counter[str] = Counter()
     cardinalities: Counter[int] = Counter()
+    per_kind_cardinalities: Counter[tuple[str, int]] = Counter()
     core_ids: set[str] = set()
     operations = 0
     rows = 0
@@ -182,14 +196,21 @@ def _audit_shard(
         if record.identity.core_id in core_ids:
             raise EffectKindBalanceAuditError("duplicate semantic-core identity")
         core_ids.add(record.identity.core_id)
-        record_kinds, record_cardinalities, record_operations = _record_counts(record)
+        (
+            record_kinds,
+            record_cardinalities,
+            record_per_kind,
+            record_operations,
+        ) = _record_counts(record)
         kind_counts.update(record_kinds)
         cardinalities.update(record_cardinalities)
+        per_kind_cardinalities.update(record_per_kind)
         operations += record_operations
         rows += 1
     return (
         kind_counts,
         cardinalities,
+        per_kind_cardinalities,
         core_ids,
         {
             "bytes": size,
@@ -218,15 +239,23 @@ def _audit_split(
             results = tuple(pool.map(_audit_shard, arguments))
     kinds: Counter[str] = Counter()
     cardinalities: Counter[int] = Counter()
+    per_kind_cardinalities: Counter[tuple[str, int]] = Counter()
     core_ids: set[str] = set()
     receipts = []
-    for shard_kinds, shard_cardinalities, shard_ids, receipt in results:
+    for (
+        shard_kinds,
+        shard_cardinalities,
+        shard_per_kind,
+        shard_ids,
+        receipt,
+    ) in results:
         if core_ids.intersection(shard_ids):
             raise EffectKindBalanceAuditError(
                 "duplicate semantic-core identity across shards"
             )
         kinds.update(shard_kinds)
         cardinalities.update(shard_cardinalities)
+        per_kind_cardinalities.update(shard_per_kind)
         core_ids.update(shard_ids)
         receipts.append(receipt)
     families = Counter(
@@ -238,6 +267,15 @@ def _audit_split(
         }
     )
     present = [value for value in kinds.values() if value]
+    per_kind_histograms = {
+        name: {
+            str(count): per_kind_cardinalities[(name, count)]
+            for count in sorted(
+                value for kind, value in per_kind_cardinalities if kind == name
+            )
+        }
+        for name in sorted(_KIND_FAMILY)
+    }
     return {
         "cardinality_histogram": {
             str(key): cardinalities[key] for key in sorted(cardinalities)
@@ -246,8 +284,13 @@ def _audit_split(
         "family_histogram": dict(sorted(families.items())),
         "kind_histogram": {key: kinds[key] for key in sorted(_KIND_FAMILY)},
         "maximum_to_minimum_present_kind_ratio": max(present) / min(present),
+        "maximum_per_kind": {
+            name: max(int(count) for count in histogram)
+            for name, histogram in per_kind_histograms.items()
+        },
         "nonnoop_effects": sum(kinds.values()),
         "operation_instances": sum(cardinalities.values()),
+        "per_kind_cardinality_histograms": per_kind_histograms,
         "shards": receipts,
     }
 

@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 10:58 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 11:29 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -217,14 +217,21 @@
 > maximum. Its apparent `pass` checked only role count and is invalid for
 > release. The corrected contract uses four measured roles and five motors per
 > role: 20 total slots and at least ten valid motors for every legal operation.
-> Corrected Stokes audit `760922` and V100 smoke `726995` now pass. Exact v13
-> fit `726997` is active on idle V100-16GB `evc1`; the unavailable H100 path
-> was canceled untouched rather than waiting ten hours. Contract v14 is
-> implemented and locally gated in advance: if v13 retains hard NOOP collapse,
-> it separates exact total cardinality, motor activity, and non-NOOP typed-kind
-> selection. It remains unlaunched until the independent v13 evaluator routes
-> the result. No seed, width, duration, or duplicate arm of contract v12/v13
-> is authorized.
+> Corrected Stokes audit `760922` and V100 smoke `726995` pass. Exact v13 fit
+> `726997` completed 1,000 updates cleanly and independent evaluator `726998`
+> confirms the predicted collapse: 95.95% of hard effects are NOOP, the rest
+> are COMMIT, positive WRITE/LINK exactness is zero, exact effect sets and
+> terminal states are zero, and fully autonomous WORLD/COMMAND remain zero.
+> Contract-bound router output selects v14; no seed, width, duration, or
+> duplicate v13 arm is authorized. Independent 48-core Stokes audit `760928`
+> proves the actual corpus contains only WRITE and LINK effects at a mild
+> 1.50:1 development ratio, rejecting broad kind imbalance as the cause.
+> Contract v14 is sealed at exact source `0ca7408`, predicts total cardinality,
+> ranks role-bound motor activity, and removes NOOP from active kind choice.
+> Its isolated any-GPU two-update smoke `727090` completed cleanly on `evc13`.
+> The sole 1,000-update v14 fit `727778` is pending priority, and independent
+> evaluator `727875` is dependency-held behind it. All Newton GPUs are
+> allocated. Do not launch any duplicate fit, seed, width, or duration arm.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -24502,3 +24509,55 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finish_the_single_v13_gate_and_fresh_evaluator_while_holding_the_already_implemented_cardinality_gated_v14_successor_for_collapse_only`.
+
+- **2026-08-02 10:59--11:29 EDT** -- **V13 fails by the predicted discrete
+  activity collapse; exact routing releases cardinality-gated v14.**
+
+  V100-16GB fit `726997` completed all 1,000 updates in 25m46s from exact
+  source `33785eba316905f63eaa084c9e3d8f12ac53b7cc`. Run SHA256SUMS,
+  report, and pilot-contract SHA-256 values are respectively
+  `6a9fd5b145ff9f9d58cf9e8752c55ee518588dad1230a3e05646c073d1fdcd48`,
+  `b7ee0010c58831f83bf6c4d3db82c1cf231c67cc5f75db9bfdf12d563a7765c4`,
+  and `f1e22b279713a3a8c8d9d253c3690b4b29f63ca2fa8e011b144134a9a56d72fe`.
+  Independent evaluator `726998` completed in 3m10s; its SHA256SUMS and report
+  SHA-256 values are
+  `44816524e2e2de287af4c6019970ece098bb0d19587c331b75f886d6cb3ba6d2`
+  and `be7dbda5f6f2a3b12872d5b848ceeb6107b025ccb113799f223cae2f7c5257d0`.
+
+  The result is a clean rejection. After training, 45,440/47,360 hard effects
+  are NOOP and the remaining 1,920 are COMMIT. Positive entity and relation
+  link exactness, complete effect sets, complete dense edits, terminal states,
+  fully autonomous WORLD, and fully autonomous COMMAND are all zero. A new
+  contract-hash-bound router prevents v12/v13/v14 confusion and selects
+  `explicit_effect_cardinality_gate`; private commit `3cec5d3` contains seven
+  passing branch tests. No v13 seed, width, duration, or duplicate is allowed.
+
+  Exact Stokes audit `760928` then completed 494,480 train and 60,512
+  development operations in 5m53s on 48 CPU cores. Every real target effect
+  is WRITE or LINK. Train counts are 278,020/395,200; development counts are
+  33,927/50,995, giving only 1.4215/1.5031 imbalance. Report and payload
+  SHA-256 values are
+  `9505409bf8cbd1723d8a35e5371852c672d2d6ee672cc88ddd7b336d71010a8e`
+  and `980520d87a505f00d4deb277efa85d1703d2a947cb60bdbf0d86b49dff53bbff`.
+  Broad kind imbalance is rejected as the mechanism.
+
+  V14 exact runtime
+  `scratchpad/shohin_ettr_effect_cardinality_runtime_0ca7408_r2` is sealed
+  from source `0ca7408abf06a039736c07027d0ddf485cd7582a`. It contains 3,645
+  files, zero writable entries, zero links, passes full checksum replay, and
+  has SHA256SUMS SHA-256
+  `eee96d9544817ef45042dc86f51c5d99379895018de17cc20aa00612512627fd`.
+  Two untouched typed-GPU requests were canceled after scheduler probes showed
+  later starts. Generic any-GPU smoke `727090` then completed cleanly on
+  V100-32GB `evc13` in 3m07s. Its run, report, and contract SHA-256 values are
+  `190584b41e93cbfcb6ffc17a062fcf3f1e9cde2b5288af252b7c8d963060b4bd`,
+  `a31531cb2a09981b0ec5f0048540aebc18ef9f4282898f07b86d0a537613c740`,
+  and `4e4f6bf6ee20a8616dbb1470dfa7492de478005394b1cb673c337dd867b22ce2`.
+  The v14 schema, explicit count/top-k objective, finite 5.5139 loss, finite
+  14.75 pre-clip gradient, report seal, and full custody all pass. Complete
+  system size is 200,798,624 parameters. Sole 1,000-update fit `727778` is
+  pending priority on any compatible GPU; independent evaluator `727875` is
+  dependency-held after it. Do not submit a duplicate arm.
+
+  Decision:
+  `close_v13_and_release_exactly_one_v14_cardinality_smoke_then_one_bounded_fit_only_if_mechanics_and_custody_pass`.

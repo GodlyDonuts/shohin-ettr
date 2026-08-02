@@ -3,7 +3,7 @@
 ## Current Status — Read First
 
 **Current frontier, superseding older status text below (2026-08-02
-10:58 EDT):** Shohin still has no replicated two-population demonstration of
+11:29 EDT):** Shohin still has no replicated two-population demonstration of
 architecture-native general reasoning. The fixed typed algebra and learned
 query compiler are no longer the main unknown: the exact algebra is perfect
 on the held-out corpus, and predicted query programs with oracle state reach
@@ -21,26 +21,30 @@ hyperparameters.
 
 The active line compiles a bounded unordered set of typed effects and applies
 them through the exact algebra after each visible public operation. Anonymous
-effect queries collapsed completely after 1,000 updates: all 37,888 hard
-motors became NOOP and every exact local, terminal, WORLD, and COMMAND gate
-remained zero. Contract v13 therefore anchors motors to the public operation
-root and renderer-invariant direct semantic children. A corrected full-corpus
-audit covers 494,480 train and 60,512 development operations and proves four
-roles by five motors supplies the measured ten-effect maximum. V100 smoke
-`726995` is finite and custody-clean; exact 1,000-update fit `726997` is active
-on `evc1`.
+v12 effect queries collapsed completely. Contract v13 then anchored twenty
+motors to the public operation root and renderer-invariant direct semantic
+children, but the independent initial-to-final evaluator now closes it too.
+After 1,000 updates, 45,440/47,360 hard effects are NOOP and the remaining
+1,920 are COMMIT; positive WRITE and LINK exactness, complete effect sets,
+terminal states, WORLD, and COMMAND are all zero. The failure is discrete
+activity emission, not insufficient role capacity or a request for duration.
 
-The next failure is engineered against in advance. Contract v14 separates
-exact total-effect cardinality, role-conditioned motor activity, and non-NOOP
-typed-kind choice. At inference it activates exactly the predicted top-k
-valid motors; absent roles remain NOOP. It changes the causal mechanism rather
-than seed, width, or duration, and remains unlaunched unless independent v13
-evaluation confirms role-local NOOP collapse. If v13 learns entities but not
-relations, the alternate successor applies entity effects first and predicts
-links/root against the post-entity state. If local state improves without
-strict causal answers, crossed state-sufficiency isolation replaces further
-training. The protected step-300k checkpoint remains immutable and no raw
-pretraining writer is active.
+Contract v14 was implemented and sealed before reading that endpoint. It
+separates exact total-effect cardinality, role-conditioned motor activity, and
+non-NOOP typed-kind choice. At inference it activates exactly the predicted
+top-k valid motors; absent roles remain NOOP. A new exact 48-core corpus audit
+proves every real train/development effect is either WRITE or LINK, with only
+a 1.42:1/1.50:1 imbalance. Generic eleven-class imbalance therefore is not a
+credible explanation, and family-factorization is not the next treatment.
+The contract-bound router selects v14 exactly. Its immutable runtime has 3,645
+files, no writable entries or links, and SHA256SUMS SHA-256
+`eee96d9544817ef45042dc86f51c5d99379895018de17cc20aa00612512627fd`.
+Any-GPU smoke `727090` completed cleanly on a V100-32GB with finite gradients,
+exact v14 contract, and full custody. Its run SHA256SUMS is
+`190584b41e93cbfcb6ffc17a062fcf3f1e9cde2b5288af252b7c8d963060b4bd`.
+The sole 1,000-update fit `727778` is pending priority and evaluator `727875`
+is dependency-held behind it; no duplicate arm is authorized. The protected
+step-300k checkpoint remains immutable and no raw pretraining writer is active.
 
 The older adversarial conclusions remain binding: the apparent 11/11
 episodic-generator result was not a Shohin claim because exact host code parsed,

@@ -517,7 +517,51 @@ QUERY, target, answer, trace, candidate search, or host semantic execution.
 This is not another seed or duration arm: it removes NOOP competition from
 the typed-kind decision and turns cardinality into an explicit public
 operation-level variable. Focused compiler, gradient, custody, evaluator,
-audit, and routing tests pass. It remains unsealed and unlaunched until the
-independent v13 evaluator selects the collapse branch. If v13 instead learns
-positive local effects, the router ignores v14 and selects the corresponding
-entity/relation or state-sufficiency branch.
+audit, and routing tests pass.
+
+## Contract-v13 result and contract-v14 release
+
+V100-16GB job `726997` completed 1,000 updates in 25m46s from exact source
+`33785eba316905f63eaa084c9e3d8f12ac53b7cc`. Its run, report, and contract
+SHA-256 values are respectively
+`6a9fd5b145ff9f9d58cf9e8752c55ee518588dad1230a3e05646c073d1fdcd48`,
+`b7ee0010c58831f83bf6c4d3db82c1cf231c67cc5f75db9bfdf12d563a7765c4`,
+and `f1e22b279713a3a8c8d9d253c3690b4b29f63ca2fa8e011b144134a9a56d72fe`.
+Independent evaluator `726998` completed in 3m10s; its SHA256SUMS and report
+SHA-256 values are
+`44816524e2e2de287af4c6019970ece098bb0d19587c331b75f886d6cb3ba6d2`
+and `be7dbda5f6f2a3b12872d5b848ceeb6107b025ccb113799f223cae2f7c5257d0`.
+
+The predicted fixed-motor failure occurred. Before training, hard predictions
+used several kinds. After training, 45,440/47,360 predictions are NOOP and
+1,920 are COMMIT. Positive entity and relation-link exactness are both zero;
+complete effect-set, dense edit, terminal-state, WORLD strict, and COMMAND
+strict are all zero before and after. The exact contract-bound router records
+NOOP share 95.9459% and selects `explicit_effect_cardinality_gate`. V13 is
+closed; more seeds, width, duration, or motors are prohibited.
+
+Stokes job `760928` independently replayed 494,480 train and 60,512
+development operations on 48 CPU cores. Every exact non-NOOP target is either
+WRITE or LINK: train has 278,020/395,200 and development has 33,927/50,995.
+The maximum-to-minimum ratios are only 1.4215 and 1.5031. Report file and
+payload SHA-256 values are
+`9505409bf8cbd1723d8a35e5371852c672d2d6ee672cc88ddd7b336d71010a8e`
+and `980520d87a505f00d4deb277efa85d1703d2a947cb60bdbf0d86b49dff53bbff`.
+This rejects broad non-NOOP class imbalance and makes explicit cardinality the
+minimal justified intervention.
+
+V14 is sealed from exact source
+`0ca7408abf06a039736c07027d0ddf485cd7582a` at
+`scratchpad/shohin_ettr_effect_cardinality_runtime_0ca7408_r2`. It contains
+3,645 files, zero writable files, zero links, passes full checksum replay, and
+has SHA256SUMS SHA-256
+`eee96d9544817ef45042dc86f51c5d99379895018de17cc20aa00612512627fd`.
+The first two-update any-GPU smoke `727090` completed cleanly on V100-32GB
+`evc13` in 3m07s. Its run, report, and contract SHA-256 values are
+`190584b41e93cbfcb6ffc17a062fcf3f1e9cde2b5288af252b7c8d963060b4bd`,
+`a31531cb2a09981b0ec5f0048540aebc18ef9f4282898f07b86d0a537613c740`,
+and `4e4f6bf6ee20a8616dbb1470dfa7492de478005394b1cb673c337dd867b22ce2`.
+The exact v14 schema, explicit count/top-k objective, finite loss/gradient,
+report seal, and full custody pass. This releases sole 1,000-update any-GPU
+fit `727778`; independent evaluator `727875` is dependency-held behind it.
+No duplicate seed, width, duration, or device arm is authorized.
