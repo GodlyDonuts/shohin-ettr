@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 15:43 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 15:54 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -25100,3 +25100,36 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `preserve_the_single_v15_measurement_then_if_family_fails_test_v19_once_and_if_v19_misses_90_percent_replace_pooling_with_explicit_role_state_bilinear_binding`.
+
+- **2026-08-02 15:44--15:54 EDT** -- **The predicted v19 failure successor is
+  implemented and sealed behind the route instead of consuming another GPU
+  arm.**
+
+  Contract v20 adds an explicit state-bound family arbiter. Each valid public
+  semantic-role anchor forms multihead queries over the exact current typed
+  state slots; role, attended state, and their elementwise product are fused
+  before the hard NONE/WRITE/LINK decision. It preserves v19's family-only
+  oracle-state curriculum and runtime payload-gradient guard. QUERY, answer,
+  successor state, target packet, transaction program, candidate score, and
+  host semantic execution remain excluded from inference.
+
+  The compiler has 50,594,556 parameters, 1,576,448 more than v19; the full
+  system is 206,533,450 parameters. Exact-value counterfactual tests change
+  family probabilities with fixed syntax and produce finite nonzero gradients
+  through role queries, state keys/values, multiplicative fusion, and typed
+  value embeddings. Both v19 and v20 end-to-end family-island tests prove
+  WRITE/LINK payload parameters receive no gradient. Train, evaluator, router,
+  and Slurm launcher share contract v20. Sixty-eight focused tests pass with
+  clean Ruff, byte compilation, Bash syntax, and diff checks.
+
+  The fixed route remains serial: v15 first; v19 only if v15 family fails; v20
+  only if v19 misses 90%. A v20 pass preserves its weights for joint rail
+  release. A v20 miss rejects standalone operation family and routes to direct
+  typed-effect expert competition; width, duration, and reseed repetition are
+  prohibited. No v20 GPU job is submitted now.
+
+  Preregistration:
+  `docs/research/R12_STATE_BOUND_OPERATION_FAMILY_PREREG.md`.
+
+  Decision:
+  `prebuild_the_mechanism_distinct_failure_successor_but_spend_gpu_only_when_the_serial_evidence_route_selects_it`.

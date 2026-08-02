@@ -53906,3 +53906,28 @@ not to add undirected capacity.
 Corrected v15 mechanics now pass on GPU and sole 1,000-update scientific job
 `728844` is queued with fail-closed independent seed-13 evaluation and routing
 through dependency job `728845`. No duplicate scientific arm is active.
+
+### 2026-08-02: the nonlinear binding successor is launch-ready but dormant
+
+Contract v20 implements the audit-selected mechanism before v19 is allowed to
+fail. Each public operation role queries the exact current typed-state slots
+through multihead bilinear compatibility. The classifier receives the role,
+its attended state, and an explicit elementwise role-state product. This is
+mechanistically different from v19's pooled syntax/state context and targets
+the measured NONE-versus-WRITE ambiguity.
+
+The new compiler has 50,594,556 parameters and brings the complete system to
+206,533,450 parameters. The prior 200M ceiling is no longer binding, but the
+1,576,448-parameter increase still has one preregistered purpose. Sixty-eight
+focused tests prove exact state-value sensitivity, finite gradients through
+every binding stage, complete payload-gradient isolation during family-only
+training, and consistent v20 custody across the trainer, evaluator, router,
+and Slurm launcher.
+
+V20 is not a reasoning result and has no GPU allocation. The serial route is:
+measure v15; run v19 only on measured family failure; run v20 only if v19 is
+below 90%; reject standalone family control if v20 is also below 90%. This
+lets the project respond immediately to the predicted failure without
+destroying attribution by running similar scientific arms concurrently.
+Preregistration is
+`docs/research/R12_STATE_BOUND_OPERATION_FAMILY_PREREG.md`.

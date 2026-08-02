@@ -7,6 +7,7 @@ from copy import deepcopy
 from route_operation_effect_set_result import (
     CARDINALITY_GATED_SCHEMA,
     OPERATION_FAMILY_GATE_SCHEMA,
+    OPERATION_STATE_BOUND_FAMILY_SCHEMA,
     POST_WRITE_LINK_SCHEMA,
     RAIL_LOCAL_EFFECT_SCHEMA,
     REPORT_SCHEMA,
@@ -164,7 +165,24 @@ def test_router_releases_only_a_passing_operation_family_island() -> None:
         report,
         {"schema": "shohin-ettr-parallel-terminal-state-contract-v19"},
     )
-    assert result["route"] == "reject_public_operation_family_controller"
+    assert result["route"] == "operation_role_state_bilinear_arbiter"
+
+
+def test_router_releases_only_a_passing_state_bound_family_arbiter() -> None:
+    report = _report()
+    report["operation_effect_diagnostics"]["after"] = _local(
+        family=0.91,
+        family_conflict=0.0,
+    )
+    result = route_result(report, {"schema": OPERATION_STATE_BOUND_FAMILY_SCHEMA})
+    assert result["route"] == "joint_state_bound_family_rail_release"
+
+    report["operation_effect_diagnostics"]["after"] = _local(
+        family=0.89,
+        family_conflict=0.0,
+    )
+    result = route_result(report, {"schema": OPERATION_STATE_BOUND_FAMILY_SCHEMA})
+    assert result["route"] == "reject_standalone_operation_family_primitive"
 
 
 def test_router_sends_relation_binding_failure_to_two_phase_algebra() -> None:

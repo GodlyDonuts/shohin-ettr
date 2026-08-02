@@ -933,3 +933,28 @@ NONE/WRITE/LINK gate. Payload rails remain isolated until that gate passes.
 
 Current decision:
 `state_values_are_sufficient_but_additive_transfer_fails_test_one_existing_state_island_then_use_explicit_role_state_bilinear_binding_not_another_pooled_mlp`.
+
+## Contract-v20 prebuilt failure successor
+
+The explicit binding successor is implemented but not launched. For every
+valid public semantic role, it uses multihead bilinear compatibility to attend
+over the exact current typed-state slots, then fuses the role, attended state,
+and their elementwise product before NONE/WRITE/LINK classification. The
+family-only oracle-state curriculum and payload-gradient isolation are
+unchanged from v19. The compiler has 50,594,556 parameters and the complete
+system has 206,533,450.
+
+Contract, evaluator, router, and Slurm launcher agree on schema v20. Fixed-
+syntax exact-state counterfactuals change its family predictions, all binding
+modules and typed value embeddings receive finite nonzero family gradients,
+and both v19/v20 isolation tests leave payload rails gradient-free. Sixty-eight
+focused tests plus Ruff, byte compilation, Bash syntax, and diff checks pass.
+
+The implementation does not authorize a GPU job. V20 is selected only by a
+v19 held-out family result below 90%. V20 at or above 90% preserves its weights
+and releases joint payload acquisition; below 90% rejects standalone family
+control and routes to direct latent typed-effect competition. Full details are
+frozen in `R12_STATE_BOUND_OPERATION_FAMILY_PREREG.md`.
+
+Current decision:
+`hold_v20_dormant_until_v19_failure_then_run_one_matched_family_island_gate`.

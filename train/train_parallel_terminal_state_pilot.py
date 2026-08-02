@@ -53,6 +53,7 @@ from operation_state_transition_compiler import (
     FactorizedOperationStateTransitionCompiler,
     OperationEffectSetCompiler,
     OperationFamilyGatedWriteLinkCompiler,
+    OperationStateBoundFamilyGatedWriteLinkCompiler,
     OperationPostWriteLinkRailCompiler,
     OperationStateTransitionCompiler,
     OperationWriteLinkRailCompiler,
@@ -146,6 +147,12 @@ OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA = (
 )
 OPERATION_FAMILY_ISLAND_REPORT_SCHEMA = (
     "shohin-ettr-parallel-terminal-state-report-v19"
+)
+OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-contract-v20"
+)
+OPERATION_STATE_BOUND_FAMILY_REPORT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-report-v20"
 )
 CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v3"
 REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v3"
@@ -257,6 +264,10 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--operation-effect-family-island",
         action="store_true",
     )
+    parser.add_argument(
+        "--operation-effect-family-state-binding",
+        action="store_true",
+    )
     parser.add_argument("--atomic-action-weight", type=float, default=1.0)
     parser.add_argument(
         "--required-device-class",
@@ -315,6 +326,11 @@ def _validate_args(args: argparse.Namespace) -> None:
     operation_effect_family_island = getattr(
         args,
         "operation_effect_family_island",
+        False,
+    )
+    operation_effect_family_state_binding = getattr(
+        args,
+        "operation_effect_family_state_binding",
         False,
     )
     paths = (
@@ -409,6 +425,10 @@ def _validate_args(args: argparse.Namespace) -> None:
             )
         )
         or (operation_effect_family_island and not operation_effect_family_gate)
+        or (
+            operation_effect_family_state_binding
+            and not operation_effect_family_island
+        )
         or args.output.exists()
         or args.output.is_symlink()
         or not args.output.parent.is_dir()
@@ -1582,6 +1602,7 @@ def _run_schemas(
     operation_effect_post_write_link_binding: bool = False,
     operation_effect_family_gate: bool = False,
     operation_effect_family_island: bool = False,
+    operation_effect_family_state_binding: bool = False,
 ) -> tuple[str, str, str]:
     if operation_effect_write_link_rails:
         if (
@@ -1602,13 +1623,19 @@ def _run_schemas(
                 )
             )
             or (operation_effect_family_island and not operation_effect_family_gate)
+            or (
+                operation_effect_family_state_binding
+                and not operation_effect_family_island
+            )
         ):
             raise ParallelTerminalStatePilotError(
                 "write/link rail architecture schema differs"
             )
         return (
             (
-                OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA
+                OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA
+                if operation_effect_family_state_binding
+                else OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA
                 if operation_effect_family_island
                 else OPERATION_FAMILY_GATE_CONTRACT_SCHEMA
                 if operation_effect_family_gate
@@ -1619,7 +1646,9 @@ def _run_schemas(
                 else WRITE_LINK_RAIL_CONTRACT_SCHEMA
             ),
             (
-                OPERATION_FAMILY_ISLAND_REPORT_SCHEMA
+                OPERATION_STATE_BOUND_FAMILY_REPORT_SCHEMA
+                if operation_effect_family_state_binding
+                else OPERATION_FAMILY_ISLAND_REPORT_SCHEMA
                 if operation_effect_family_island
                 else OPERATION_FAMILY_GATE_REPORT_SCHEMA
                 if operation_effect_family_gate
@@ -1630,7 +1659,9 @@ def _run_schemas(
                 else WRITE_LINK_RAIL_REPORT_SCHEMA
             ),
             (
-                "shohin-ettr-parallel-terminal-state-metric-v19"
+                "shohin-ettr-parallel-terminal-state-metric-v20"
+                if operation_effect_family_state_binding
+                else "shohin-ettr-parallel-terminal-state-metric-v19"
                 if operation_effect_family_island
                 else "shohin-ettr-parallel-terminal-state-metric-v18"
                 if operation_effect_family_gate
@@ -1646,6 +1677,7 @@ def _run_schemas(
         or operation_effect_post_write_link_binding
         or operation_effect_family_gate
         or operation_effect_family_island
+        or operation_effect_family_state_binding
     ):
         raise ParallelTerminalStatePilotError(
             "rail-local effect loss requires write/link rails"
@@ -1922,6 +1954,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.operation_effect_post_write_link_binding,
         args.operation_effect_family_gate,
         args.operation_effect_family_island,
+        args.operation_effect_family_state_binding,
     )
     if not torch.cuda.is_available():
         raise ParallelTerminalStatePilotError("terminal-state pilot requires CUDA")
@@ -1959,7 +1992,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     torch.manual_seed(args.architecture_seed)
     torch.cuda.manual_seed_all(args.architecture_seed)
     compiler_class = (
-        OperationFamilyGatedWriteLinkCompiler
+        OperationStateBoundFamilyGatedWriteLinkCompiler
+        if args.operation_effect_family_state_binding
+        else OperationFamilyGatedWriteLinkCompiler
         if args.operation_effect_family_gate
         else OperationPostWriteLinkRailCompiler
         if args.operation_effect_post_write_link_binding
@@ -2109,6 +2144,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "operation_effect_family_island": (
                     args.operation_effect_family_island
                 ),
+                "operation_effect_family_state_binding": (
+                    args.operation_effect_family_state_binding
+                ),
                 "operation_effect_slots": (
                     compiler.maximum_effects
                     if isinstance(
@@ -2241,7 +2279,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                     else None
                 ),
                 "operation_effect_family_control": (
-                    "exclusive-none-write-link-before-rail-release"
+                    "role-state-bilinear-none-write-link-before-rail-release"
+                    if args.operation_effect_family_state_binding
+                    else "exclusive-none-write-link-before-rail-release"
                     if args.operation_effect_family_gate
                     else None
                 ),
@@ -2250,6 +2290,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                     if args.operation_effect_family_island
                     else "joint-family-count-payload"
                     if args.operation_effect_family_gate
+                    else None
+                ),
+                "operation_effect_family_binding": (
+                    "multihead-role-query-state-key-value-product"
+                    if args.operation_effect_family_state_binding
                     else None
                 ),
                 "write_link_binding_state": (

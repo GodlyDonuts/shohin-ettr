@@ -25,6 +25,7 @@ from operation_state_transition_compiler import (
     FactorizedOperationStateTransitionCompiler,
     OperationEffectSetCompiler,
     OperationFamilyGatedWriteLinkCompiler,
+    OperationStateBoundFamilyGatedWriteLinkCompiler,
     OperationPostWriteLinkRailCompiler,
     OperationStateTransitionCompiler,
     OperationStateTransitionTrace,
@@ -1053,6 +1054,16 @@ def test_production_write_link_rail_parameter_receipt() -> None:
     assert (
         sum(parameter.numel() for parameter in family_gated.parameters()) == 49_018_108
     )
+    state_bound_family = OperationStateBoundFamilyGatedWriteLinkCompiler(
+        TheoryReactorConfig(),
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_codebook_atoms=codec.codebook.atoms,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+    assert (
+        sum(parameter.numel() for parameter in state_bound_family.parameters())
+        == 50_594_556
+    )
 
 
 def test_operation_family_gate_is_exclusive_and_directly_supervised() -> None:
@@ -1146,7 +1157,14 @@ def test_operation_family_gate_is_exclusive_and_directly_supervised() -> None:
     assert bool(compiler.effect_family_head.weight.grad.isfinite().all())
 
 
-def test_operation_family_island_bypasses_payload_rails() -> None:
+@pytest.mark.parametrize(
+    "compiler_class",
+    (
+        OperationFamilyGatedWriteLinkCompiler,
+        OperationStateBoundFamilyGatedWriteLinkCompiler,
+    ),
+)
+def test_operation_family_island_bypasses_payload_rails(compiler_class) -> None:
     from ettr_il_v2_surface import SurfaceRenderer, call, integer, symbol
     from ettr_il_v2_token_native_surface import (
         DEFAULT_TOKENIZER_PATH,
@@ -1170,7 +1188,7 @@ def test_operation_family_island_bypasses_payload_rails() -> None:
         [transport.token_ids for transport in transports],
         dtype=torch.long,
     )
-    compiler = OperationFamilyGatedWriteLinkCompiler(
+    compiler = compiler_class(
         config,
         width=64,
         layers=1,
@@ -1207,6 +1225,68 @@ def test_operation_family_island_bypasses_payload_rails() -> None:
     for name, parameter in compiler.named_parameters():
         if name.startswith(("write_rail.", "link_rail.", "write_", "link_")):
             assert parameter.grad is None, name
+
+
+def test_state_bound_family_arbiter_uses_exact_typed_state_values() -> None:
+    from ettr_il_v2_token_native_surface import (
+        DEFAULT_TOKENIZER_PATH,
+        TokenNativeSurfaceCodec,
+    )
+
+    config = replace(_config(), max_steps=16)
+    codec = TokenNativeSurfaceCodec(DEFAULT_TOKENIZER_PATH)
+    torch.manual_seed(17)
+    compiler = OperationStateBoundFamilyGatedWriteLinkCompiler(
+        config,
+        width=64,
+        layers=1,
+        num_heads=2,
+        relation_width=16,
+        token_native_codebook_ids=codec.codebook.token_ids,
+        token_native_codebook_atoms=codec.codebook.atoms,
+        token_native_vocab_size=codec.tokenizer.get_vocab_size(),
+    )
+    state = _state(config, batch=2)
+    changed = state.detached_clone()
+    changed.value_probabilities[:, 0].zero_()
+    changed.value_probabilities[:, 0, 6] = 1.0
+    slots = torch.randn(2, config.num_slots, compiler.width)
+    anchors = torch.randn(2, 4, compiler.width)
+    role_valid = torch.tensor(
+        [[True, True, True, False], [True, True, False, False]],
+        dtype=torch.bool,
+    )
+    original = compiler._operation_family_from_context(
+        slots,
+        (anchors, role_valid),
+        hard=False,
+        state_memory=compiler._initial_memory(state),
+    )
+    counterfactual = compiler._operation_family_from_context(
+        slots,
+        (anchors, role_valid),
+        hard=False,
+        state_memory=compiler._initial_memory(changed),
+    )
+    assert not torch.allclose(original, counterfactual)
+    (-original[:, 1].clamp_min(1e-7).log().mean()).backward()
+    for parameter in (
+        compiler.family_role_query.weight,
+        compiler.family_state_key.weight,
+        compiler.family_state_value.weight,
+        compiler.family_binding_projection.weight,
+        compiler.value_embedding,
+    ):
+        assert parameter.grad is not None
+        assert bool(parameter.grad.isfinite().all())
+        assert bool(parameter.grad.abs().sum().gt(0))
+
+    with pytest.raises(TheoryReactorError, match="binding geometry differs"):
+        compiler._operation_family_from_context(
+            slots,
+            (anchors, role_valid),
+            hard=False,
+        )
 
 
 def test_post_write_link_binding_uses_write_payload_state() -> None:

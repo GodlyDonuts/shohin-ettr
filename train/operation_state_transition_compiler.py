@@ -1503,13 +1503,23 @@ class OperationFamilyGatedWriteLinkCompiler(OperationWriteLinkRailCompiler):
             OPERATION_EFFECT_FAMILY_COUNT,
         )
 
+    def _operation_family_state_memory(
+        self,
+        state: TypedTheoryState,
+        slots: torch.Tensor,
+    ) -> torch.Tensor | None:
+        del state, slots
+        return None
+
     def _operation_family_from_context(
         self,
         slots: torch.Tensor,
         effect_anchors: tuple[torch.Tensor, torch.Tensor],
         *,
         hard: bool,
+        state_memory: torch.Tensor | None = None,
     ) -> torch.Tensor:
+        del state_memory
         anchors, role_valid = effect_anchors
         if (
             anchors.shape
@@ -1607,6 +1617,10 @@ class OperationFamilyGatedWriteLinkCompiler(OperationWriteLinkRailCompiler):
                         effect_anchors[1][:, operation_index],
                     ),
                     hard=hard,
+                    state_memory=self._operation_family_state_memory(
+                        current,
+                        updated_slots,
+                    ),
                 )
             )
             current = _select_state(current, oracle_state, selected)
@@ -1656,6 +1670,7 @@ class OperationFamilyGatedWriteLinkCompiler(OperationWriteLinkRailCompiler):
             slots,
             effect_anchors,
             hard=hard,
+            state_memory=self._operation_family_state_memory(state, slots),
         )
         write_gate = family[:, OPERATION_EFFECT_FAMILY_WRITE]
         link_gate = family[:, OPERATION_EFFECT_FAMILY_LINK]
@@ -1737,10 +1752,94 @@ class OperationFamilyGatedWriteLinkCompiler(OperationWriteLinkRailCompiler):
         )
 
 
+class OperationStateBoundFamilyGatedWriteLinkCompiler(
+    OperationFamilyGatedWriteLinkCompiler
+):
+    """Bind each public operation role multiplicatively to typed state slots."""
+
+    def __init__(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
+        super().__init__(*args, **kwargs)
+        if self.width % self.num_heads:
+            raise TheoryReactorError("role/state family head geometry differs")
+        self.family_role_norm = nn.LayerNorm(self.width)
+        self.family_state_norm = nn.LayerNorm(self.width)
+        self.family_role_query = nn.Linear(self.width, self.width, bias=False)
+        self.family_state_key = nn.Linear(self.width, self.width, bias=False)
+        self.family_state_value = nn.Linear(self.width, self.width, bias=False)
+        self.family_binding_projection = nn.Linear(3 * self.width, self.width)
+        self.family_binding_norm = nn.LayerNorm(self.width)
+
+    def _operation_family_state_memory(
+        self,
+        state: TypedTheoryState,
+        slots: torch.Tensor,
+    ) -> torch.Tensor:
+        return self._initial_memory(state).to(slots.dtype)
+
+    def _operation_family_from_context(
+        self,
+        slots: torch.Tensor,
+        effect_anchors: tuple[torch.Tensor, torch.Tensor],
+        *,
+        hard: bool,
+        state_memory: torch.Tensor | None = None,
+    ) -> torch.Tensor:
+        anchors, role_valid = effect_anchors
+        batch = slots.shape[0]
+        if (
+            anchors.shape != (batch, self.effect_role_count, self.width)
+            or role_valid.shape != anchors.shape[:2]
+            or role_valid.dtype != torch.bool
+            or state_memory is None
+            or state_memory.shape != (batch, self.config.num_slots, self.width)
+        ):
+            raise TheoryReactorError("role/state family binding geometry differs")
+
+        head_width = self.width // self.num_heads
+        role = self.family_role_norm(anchors.to(slots.dtype))
+        memory = self.family_state_norm(state_memory.to(slots.dtype))
+        query = self.family_role_query(role).reshape(
+            batch,
+            self.effect_role_count,
+            self.num_heads,
+            head_width,
+        )
+        key = self.family_state_key(memory).reshape(
+            batch,
+            self.config.num_slots,
+            self.num_heads,
+            head_width,
+        )
+        value = self.family_state_value(memory).reshape_as(key)
+        compatibility = torch.einsum("brhd,bshd->brhs", query, key)
+        compatibility = compatibility / head_width**0.5
+        attention = compatibility.float().softmax(-1).to(value.dtype)
+        bound_state = torch.einsum("brhs,bshd->brhd", attention, value).reshape(
+            batch,
+            self.effect_role_count,
+            self.width,
+        )
+        interaction = self.family_binding_projection(
+            torch.cat((role, bound_state, role * bound_state), dim=-1)
+        )
+        interaction = self.family_binding_norm(interaction + role)
+        valid_weight = role_valid[..., None].to(interaction.dtype)
+        operation_context = (interaction * valid_weight).sum(1)
+        operation_context = operation_context / valid_weight.sum(1).clamp_min(1.0)
+        operation_context = operation_context + slots.mean(1)
+        family = (
+            self.effect_family_head(self.effect_family_norm(operation_context))
+            .float()
+            .softmax(-1)
+        )
+        return _hard_categories(family) if hard else family
+
+
 __all__ = [
     "FactorizedOperationStateTransitionCompiler",
     "OperationEffectSetCompiler",
     "OperationFamilyGatedWriteLinkCompiler",
+    "OperationStateBoundFamilyGatedWriteLinkCompiler",
     "OperationPostWriteLinkRailCompiler",
     "OperationStateTransitionCompiler",
     "OperationStateTransitionTrace",

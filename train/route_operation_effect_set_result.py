@@ -20,6 +20,9 @@ RAIL_LOCAL_EFFECT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v16"
 POST_WRITE_LINK_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v17"
 OPERATION_FAMILY_GATE_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v18"
 OPERATION_FAMILY_ISLAND_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v19"
+OPERATION_STATE_BOUND_FAMILY_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-contract-v20"
+)
 
 
 class OperationEffectRouteError(RuntimeError):
@@ -148,6 +151,7 @@ def _contract_schema(
         POST_WRITE_LINK_SCHEMA,
         OPERATION_FAMILY_GATE_SCHEMA,
         OPERATION_FAMILY_ISLAND_SCHEMA,
+        OPERATION_STATE_BOUND_FAMILY_SCHEMA,
     }:
         raise OperationEffectRouteError("terminal state effect contract differs")
     return str(schema)
@@ -256,10 +260,28 @@ def route_result(
                 "weights and release joint rail payload acquisition"
             )
         else:
-            route = "reject_public_operation_family_controller"
+            route = "operation_role_state_bilinear_arbiter"
             reason = (
                 "the isolated public family controller failed its 90% held-out "
-                "release gate; do not spend on joint v18 payload training"
+                "release gate; replace pooled state context with explicit "
+                "operation-role-to-typed-state multiplicative binding"
+            )
+    elif contract_schema == OPERATION_STATE_BOUND_FAMILY_SCHEMA:
+        if operation_family is None:
+            raise OperationEffectRouteError(
+                "state-bound operation family result lacks family exactness"
+            )
+        if operation_family >= 0.9:
+            route = "joint_state_bound_family_rail_release"
+            reason = (
+                "the explicit role/state binding controller crossed 90%; retain "
+                "its weights and release joint rail payload acquisition"
+            )
+        else:
+            route = "reject_standalone_operation_family_primitive"
+            reason = (
+                "explicit nonlinear state binding failed the 90% family gate; "
+                "compile typed effects without a standalone family variable"
             )
     elif noop_share >= 0.9 or dominant_share >= 0.9:
         if contract_schema == ROLE_ANCHORED_SCHEMA:
