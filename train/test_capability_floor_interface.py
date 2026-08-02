@@ -43,6 +43,13 @@ def test_interface_is_exact_and_launch_blocked() -> None:
     validate_interface_contract(payload)
     assert payload["launch_authorized"] is False
     assert payload["optimizer"]["seed_pairs"] == [[31, 11], [32, 12]]
+    assert payload["optimizer"]["semantic_microbatches_per_update"] == 4
+    assert payload["optimizer"]["stratification_receipt_required"] is True
+    assert payload["interface_sufficiency"]["strict_threshold"] == 0.95
+    assert (
+        payload["interface_sufficiency"]["assessor_features_available_at_inference"]
+        is False
+    )
     assert payload["input_envelope"]["chat_template"] == "forbidden"
     assert payload["data"]["token_truncation"].startswith("forbidden")
 

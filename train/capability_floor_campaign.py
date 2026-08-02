@@ -104,18 +104,20 @@ def build_preregistration() -> dict[str, object]:
         ],
         "launch_authorized": False,
         "mechanism_admission": {
-            "allowed_current_family_endpoint": "v21",
+            "closed_current_family_endpoint": "v20-failed-stop-no-v21",
             "architecture_hash": None,
-            "status": "waiting-for-final-v15-v21-route",
-            "successor_if_joint_gate_fails": (
-                "tied-world-state-command-terminal-query-trajectory"
-            ),
+            "status": "waiting-for-unified-model-owned-trajectory",
+            "successor": "tied-world-state-command-terminal-query-trajectory",
         },
         "optimizer_budget": {
+            "accumulation_normalization": "global-over-replay-window",
             "component_updates_per_seed": 2000,
             "composition_updates_per_seed": 5000,
             "evaluation": "full-frozen-development-then-sealed-confirmation",
             "matched_charged_positions_required": True,
+            "semantic_microbatch_size": 16,
+            "semantic_microbatches_per_update": 4,
+            "stratified_replay_receipt_required": True,
             "seeds": [31, 32],
         },
         "schema": SCHEMA,

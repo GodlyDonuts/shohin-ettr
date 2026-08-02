@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 17:08 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 17:52 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -25277,3 +25277,67 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `v15_has_real_command_signal_but_world_and_family_fail_run_the_one_isolated_v19_gate_while_freezing_cross_backbone_comparability`.
+
+- **2026-08-02 17:08--17:52 EDT** -- **The finite local family campaign stops
+  at v20, and a trace audit identifies a launch-blocking replay defect for the
+  capability-floor campaign.**
+
+  V19 job `729390` completed all 1,000 bfloat16 updates on `evc17` in 15m11s.
+  Independent evaluator `729466`, route `729467`, and dispatcher `729468`
+  completed and selected the sole permitted v20 successor. V19 independent
+  operation-family exactness is `464/1856 = 25%`; all 24,128 emitted effect
+  slots are NOOP, exact terminal packets are `0/512`, autonomous factual
+  top-1 is 42.1875%, WORLD is `0/48`, and COMMAND is `0/144`. Bundle manifest,
+  report, final compiler, independent report, route, and plan SHA-256 values
+  are respectively
+  `d9b89e04ceaf62e8c761c0f4f0fb99d275b05ec9f8405f0e08680cc58ea871c2`,
+  `16dd9d2d4acab13456df9e567dee406cbab19c6ea60e749b04489873e62896b4`,
+  `9b741d392c149b1e32bc4040621d603d93dd05c5a25759ae7df580150d445457`,
+  `d9a542a10c8a9badde81a4185a9ca42466856b0f7b88dec11aef7dd76abc1f49`,
+  `c05c7dd15e4cfc49f5fb784dbda4953b96c7ee3d2d43a1cfe2bfb611d0367e1f`,
+  and `55f5cf1db9b125f3d0a5f18cc293fa61cb8545d2a2cf4deda92b22bdaa3aba2a`.
+
+  V20 job `729470` then completed all 1,000 bfloat16 updates on `evc2` in
+  17m16s. Independent evaluator `729479`, route `729480`, and dispatcher
+  `729481` completed. The explicit bilinear role/state binder is identical at
+  the hard gate: family exact `464/1856 = 25%`, 100% NOOP, terminal `0/512`,
+  factual 42.1875%, WORLD `0/48`, COMMAND `0/144`. Its corresponding hashes
+  are
+  `077cd28f411bd7f5d99d187fc801636cbebf290d77742c61c72636cf1137ba3f`,
+  `1a51afeb357d2c659ef65796747a62340d15ce71cf08326be86ce30f9d75a10a`,
+  `0aba95f47bc4c0263872dd1e512798fae26c18fbee2f5b92d9295a2f71d1834f`,
+  `c34842af6d9a34bf9e66b8496870f914e3787f1396b4ef5ef4f268c68857f453`,
+  `5754f8c7dd5d70c3c1c511fd5e62b8d40ed0bbaa8c06eb22e547f0689e617780`,
+  and `21c898fc3644e79e0e545213af3d3ea71db717d558b41167ad1a7fb0f071a43d`.
+  The planner action is `stop`. V21 was correctly not submitted and no
+  campaign jobs remain. V20 is the final local family experiment; do not
+  create v22 or repeat width, duration, seed, or loss variants.
+
+  The failure postmortem changes the interpretation without reopening the
+  arm. The 94.0756% aggregate oracle used exact resolved public syntax plus
+  exact preceding-state factors. The neural arms consumed learned residuals,
+  pooled role anchors, and a learned state encoding; no symbolic-to-neural
+  sufficiency equivalence had been measured. More decisively, exact audit of
+  both hash-bound training logs shows every one of 100 logged updates omitted
+  at least one family, 33% were single-family, and LINK appeared in only 33%.
+  The final logged update is NONE/WRITE/LINK `12/4/0`. An all-LINK logged
+  update at position 499 reaches loss `7.87e-6` in v19 and `0.0` in v20, while
+  both final checkpoints emit only NOOP. This is direct evidence of regime fit
+  plus cross-regime erasure under the old semantic-core stream.
+
+  Trace report SHA-256 values are
+  `8ea22620f799fa3346c02260c36d122a1d62cd98669b391a9b55cd8d27df91a1`
+  for v19 and
+  `454d2233456fc80248be26098620f0abcb3d2d33c2e1c57bc4509fe8aa292ed4`
+  for v20. The cross-backbone interface now requires four deterministic
+  16-row semantic microbatches per optimizer update, globally normalized
+  replay windows, component-specific causal strata, and exact schedule
+  receipts shared by ETTR and dense controls. It also blocks launch until a
+  symbolic-reference versus exact-neural-tensor sufficiency probe is
+  receipted. Updated preregistration and interface receipt SHA-256 values are
+  `78f44e9a1210de0932bdfec955540ec05e39beea6a80744868cd8723f65d15aa`
+  and
+  `433e60de59a2192ed7cce67d223e09c6ab8e16d8e434e3acbaaa985b32c55cf6`.
+
+  Decision:
+  `close_the_local_family_line_build_one_model_owned_trajectory_and_prove_its_tensor_interface_and_replay_schedule_before_spending_the_four_backbone_matrix`.

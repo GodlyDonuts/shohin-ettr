@@ -1,6 +1,6 @@
 # R12 State-Bound Operation-Family Arbiter Preregistration
 
-**Status:** implemented, CPU-tested, and source-sealed; dormant behind the v15/v19 route
+**Status:** completed and rejected at the frozen gate; local family line closed
 **Contract:** `shohin-ettr-parallel-terminal-state-contract-v20`  
 **Promotion gate:** at least 90% independent held-out operation-family exactness  
 **Reasoning gate:** unchanged source-deleted WORLD and COMMAND strict pairs
@@ -100,9 +100,8 @@ gates on independent source-deleted populations can count as native reasoning.
 - Train, evaluator, router, and Slurm launcher agree on contract v20 and its
   fixed pass/fail route.
 
-No v20 GPU job is authorized until the preceding v15 and v19 branches select
-it. This preserves single-writer scientific attribution while eliminating an
-implementation delay if the predicted pooled-controller failure occurs.
+V20 was authorized only after v19 failed and was run exactly once. This
+preserved single-writer scientific attribution and the preregistered endpoint.
 
 The immutable Newton runtime is
 `scratchpad/shohin_ettr_state_bound_family_runtime_898591c_r1`, bound to source
@@ -110,3 +109,34 @@ The immutable Newton runtime is
 checksum replay with zero links and zero writable entries. The SHA256SUMS
 SHA-256 is
 `73b82ec26467de405ccd7d32ff4031cb0fbacd394c2708ebba355d86cec3d484`.
+
+## Measured closure
+
+The finite campaign selected v19 and then v20. Both completed all 1,000
+updates in bfloat16 and both failed the independent seed-13 gate identically:
+operation-family exactness `464/1856 = 25%`, 100% predicted `NOOP`, exact
+terminal packets `0/512`, WORLD strict `0/48`, and COMMAND strict `0/144`.
+V19 final compiler SHA-256 is
+`9b741d392c149b1e32bc4040621d603d93dd05c5a25759ae7df580150d445457`;
+v20 final compiler SHA-256 is
+`0aba95f47bc4c0263872dd1e512798fae26c18fbee2f5b92d9295a2f71d1834f`.
+The final planner action is `stop`; v21 was correctly not launched.
+
+Postmortem auditing found that the 94.0756% conditional oracle and the neural
+fit did not share an equivalent input or optimizer distribution. The oracle
+uses an exact symbolic resolver over public COMMAND structure plus exact
+preceding-state factors. V20 instead learns from language residuals, pooled
+public role anchors, and a learned typed-state encoding; equivalence was never
+measured. More decisively, every one of the 100 logged checkpoints in both
+fits omits at least one target family, 33% contain exactly one family, and
+LINK appears in only 33% of logged batches. At update 499 an all-LINK batch is
+fit essentially perfectly; the final batch is 75% NONE, 25% WRITE, 0% LINK,
+and the final model emits NOOP everywhere. The exact trace audits are
+`artifacts/r12/v19_operation_family_stream_drift.json` and
+`artifacts/r12/v20_operation_family_stream_drift.json`.
+
+This does not reopen v20. Standalone family control remains rejected under
+the frozen rules. It changes the capability-floor launch requirements: the
+new unified trajectory must first prove symbolic-to-neural interface
+sufficiency and use deterministic replay-balanced optimizer windows so one
+semantic regime cannot erase another.

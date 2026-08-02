@@ -134,22 +134,50 @@ def build_interface_contract() -> dict[str, object]:
             "semantic_bytes_identical_before-tokenization": True,
             "token_offsets_required": True,
         },
+        "interface_sufficiency": {
+            "assessor_features_available_at_inference": False,
+            "candidate": "exact-model-input-tensors-no-feature-substitution",
+            "controls": [
+                "renderer-orbit",
+                "binding-deranged",
+                "state-value-permuted",
+            ],
+            "failure_rule": (
+                "symbolic-pass-tensor-fail=>redesign-interface-before-backbone-matrix"
+            ),
+            "reference": (
+                "exact-source-visible-symbolic-syntax-plus-allowed-component-state"
+            ),
+            "strict_threshold": 0.95,
+        },
         "launch_authorized": False,
         "launch_blockers": [
-            "final-v15-v21-mechanism-hash-unset",
+            "unified-model-owned-trajectory-mechanism-hash-unset",
             "mobilellm-r1-manual-license-not-accepted",
             "four-tokenizer-semantic-intersection-not-receipted",
+            "symbolic-to-neural-interface-equivalence-not-receipted",
+            "component-stratified-replay-schedule-not-receipted",
             "dense-control-parameter-and-flop-receipts-not-built",
         ],
         "optimizer": {
+            "accumulation_normalization": "global-over-replay-window",
             "betas": [0.9, 0.95],
             "component_updates_per_seed": 2000,
             "composition_updates_per_seed": 5000,
+            "component_strata": {
+                "oracle-program-executor": ["NONE", "WRITE", "LINK"],
+                "oracle-state-query-reader": ["WORLD", "COMMAND"],
+                "world-compiler-effect-binding": ["WORLD-factor", "effect-family"],
+                "autonomous-composition": ["WORLD-factor", "COMMAND-factor"],
+            },
             "gradient_clip": 1.0,
             "learning_rate": 0.0003,
             "optimizer": "fused-adamw",
-            "semantic_batch_size": 16,
+            "semantic_microbatch_size": 16,
+            "semantic_microbatches_per_update": 4,
             "seed_pairs": [[31, 11], [32, 12]],
+            "stratification": "deterministic-label-stratified-replay-window",
+            "stratification_receipt_required": True,
             "weight_decay": 0.01,
         },
         "ownership_boundary": {
@@ -186,6 +214,9 @@ def validate_interface_contract(payload: Mapping[str, object]) -> None:
     data = _require_mapping(payload.get("data"), "data")
     optimizer = _require_mapping(payload.get("optimizer"), "optimizer")
     evaluation = _require_mapping(payload.get("evaluation"), "evaluation")
+    sufficiency = _require_mapping(
+        payload.get("interface_sufficiency"), "interface sufficiency"
+    )
     boundary = _require_mapping(payload.get("ownership_boundary"), "ownership")
     if (
         adapter.get("common_ettr_width") != 512
@@ -197,16 +228,21 @@ def validate_interface_contract(payload: Mapping[str, object]) -> None:
         or data.get("train_episodes") != 40000
         or data.get("development_episodes") != 5000
         or optimizer.get("seed_pairs") != [[31, 11], [32, 12]]
-        or optimizer.get("semantic_batch_size") != 16
+        or optimizer.get("semantic_microbatch_size") != 16
+        or optimizer.get("semantic_microbatches_per_update") != 4
+        or optimizer.get("stratification_receipt_required") is not True
         or evaluation.get("aggregation") != "minimum-across-seeds-not-mean"
+        or sufficiency.get("strict_threshold") != 0.95
+        or sufficiency.get("assessor_features_available_at_inference") is not False
         or boundary.get("query_available_during_world_or_command") is not False
     ):
         raise CapabilityFloorInterfaceError("capability-floor protocol differs")
     blockers = payload.get("launch_blockers")
     if (
         not isinstance(blockers, list)
-        or "final-v15-v21-mechanism-hash-unset" not in blockers
+        or "unified-model-owned-trajectory-mechanism-hash-unset" not in blockers
         or "mobilellm-r1-manual-license-not-accepted" not in blockers
+        or "component-stratified-replay-schedule-not-receipted" not in blockers
     ):
         raise CapabilityFloorInterfaceError("capability-floor blockers differ")
     if dict(payload) != build_interface_contract():

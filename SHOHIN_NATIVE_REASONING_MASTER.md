@@ -54025,3 +54025,37 @@ official configs have exact revision and config digests.
 
 Current decision:
 `test_whether_isolated_state_conditioned_family_control_can_explain_the_v15_failure_then_preserve_or_replace_it_exactly_once`.
+
+### 2026-08-02: local operation-family line closes and exposes optimizer-stream erasure
+
+The finite campaign is complete. V19 and the explicit bilinear v20 each ran
+for exactly 1,000 updates and both independently score 25% operation-family
+exactness by predicting NOOP for every operation. Both leave exact terminal
+packets, WORLD strict pairs, and COMMAND strict pairs at zero. The frozen
+planner stopped; no v21 or v22 was launched. This rejects the standalone
+NONE/WRITE/LINK variable in the local compiler family and ends width,
+duration, seed, and loss searches on that formulation.
+
+The postmortem identified why this result must not be generalized into
+"backbones cannot learn the variable." The 94.0756% reference oracle uses an
+exact symbolic resolver over public syntax and exact preceding state; the
+neural controller's learned residual/anchor/state tensors were never proven
+equivalent. Separately, every one of the 100 logged optimizer checkpoints in
+both v19 and v20 omits at least one family, 33% contain one family only, and
+LINK is present in only 33%. A mid-run all-LINK batch is fit to essentially
+zero loss, while the final NONE/WRITE batch leaves a universal NOOP model.
+The current data loader preserved causal rectangles but did not preserve
+cross-regime memory at the optimizer-step level.
+
+This is a useful architectural correction, not a reasoning win. The next
+mechanism is one differentiable model-owned WORLD -> state -> recurrent
+COMMAND -> terminal state -> late QUERY trajectory. Before any large
+cross-backbone fit, it must pass an exact symbolic-versus-neural tensor
+sufficiency audit and use deterministic four-microbatch replay windows that
+cover component-specific causal strata. The same windows, charged positions,
+and compute accounting apply to the favorable dense control. If the exact
+tensor interface fails while the symbolic interface passes, redesign the
+interface before testing scale.
+
+Current decision:
+`do_not_retry_the_closed_family_head_fix_the_information_and_optimization_interfaces_then_measure_the_smallest_backbone_that_can_own_the_full_trajectory`.

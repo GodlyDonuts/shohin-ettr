@@ -20,6 +20,10 @@ def test_capability_floor_is_frozen_and_not_launchable() -> None:
         "3b",
     ]
     assert payload["mechanism_admission"]["architecture_hash"] is None
+    assert payload["mechanism_admission"]["closed_current_family_endpoint"] == (
+        "v20-failed-stop-no-v21"
+    )
+    assert payload["optimizer_budget"]["semantic_microbatches_per_update"] == 4
 
 
 def test_capability_floor_rejects_premature_launch() -> None:
