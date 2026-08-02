@@ -699,6 +699,12 @@ family. A mixed `NONE/WRITE/LINK` batch gives finite direct gradients to the
 family head. Contract/report/metric schema v18, independent evaluator
 reconstruction, launcher exclusivity, operation-family diagnostics, and the
 sealed router are covered by 58 passing focused tests plus static checks.
+Immutable Newton runtime
+`scratchpad/shohin_ettr_operation_family_gate_runtime_d42a054_r1` is bound to
+source `d42a0544ff6b433963813d0c1fe61180b4ee0588`, contains 3,648 files with
+zero links or writable files, passes full checksum replay, and has
+SHA256SUMS SHA-256
+`8d72fe493d559de64a1ada1c66ce293ed3b4c44eac39dda7b5679d2ed8592703`.
 
 The v15-to-successor decision is frozen as follows:
 

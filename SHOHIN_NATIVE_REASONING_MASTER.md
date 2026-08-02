@@ -53831,3 +53831,7 @@ v18; correct family with wrong operands releases v16; local-state gains with
 zero strict causal movement release crossed sufficiency isolation. This keeps
 the next GPU spend tied to a measured mechanism rather than running similar
 arms concurrently.
+Its immutable Newton runtime is source-bound to
+`d42a0544ff6b433963813d0c1fe61180b4ee0588`; 3,648 files pass full checksum
+replay with zero links or writable entries and SHA256SUMS SHA-256
+`8d72fe493d559de64a1ada1c66ce293ed3b4c44eac39dda7b5679d2ed8592703`.

@@ -24755,6 +24755,13 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   gates remain zero, route to crossed state-sufficiency isolation instead of
   another fit.
 
+  Exact Newton runtime
+  `scratchpad/shohin_ettr_operation_family_gate_runtime_d42a054_r1` is bound
+  to private source `d42a0544ff6b433963813d0c1fe61180b4ee0588`. It contains
+  3,648 files, zero links, zero writable files, passes complete checksum
+  replay, and has SHA256SUMS SHA-256
+  `8d72fe493d559de64a1ada1c66ce293ed3b4c44eac39dda7b5679d2ed8592703`.
+
   V15 job `728691` remains the sole scientific fit. At 13:15 EDT it is pending
   priority with a scheduler estimate of 19:52 EDT on `evc4`; canceling it
   would discard accrued priority. No v16/v18 GPU job is authorized before its
