@@ -272,6 +272,11 @@
 > 205,937,351. Fifty-two focused tests pass. V17 is not sealed or launched;
 > release it only for the WRITE-positive/LINK-negative signature. Never combine
 > v16 and v17 before one isolated mechanism earns that follow-up.
+> V17 also requires a full Stokes necessity audit before GPU release. Broad
+> release requires at least 10% of same-operation WRITE+LINK cases and 10% of
+> added links to touch a written slot in both splits; below 1% closes it, while
+> 1--10% permits only a targeted auxiliary curriculum. This threshold is
+> frozen before reading the audit endpoint.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended

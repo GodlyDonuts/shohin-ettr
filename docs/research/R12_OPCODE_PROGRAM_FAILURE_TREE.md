@@ -647,3 +647,19 @@ the complete system 205,937,351. Fifty-two focused tests and all static custody
 checks pass. V17 remains unsealed until v15 shows WRITE exactness with LINK
 failure. V16 and v17 are deliberately mutually exclusive; combining them
 before either isolated mechanism wins is prohibited.
+
+Before any v17 GPU release, the full corpus must pass a source-bound CPU
+necessity audit. For each operation it measures whether newly added LINK
+source/target endpoints are slots whose values were changed by a same-operation
+WRITE. The decision is frozen in advance for both train and development:
+
+- at least 10% of WRITE+LINK operations must contain a touching link and at
+  least 10% of added links must touch a written slot to authorize a broad v17
+  fit;
+- below 1% on either measure closes post-WRITE binding as structurally
+  irrelevant;
+- the 1--10% middle band permits only a targeted dependency-positive auxiliary
+  curriculum, never a claim that this is the corpus-wide missing mechanism.
+
+The audit reads assessor mutation traces only as labels and reads no QUERY,
+answer, target answer, or candidate-time solver output.

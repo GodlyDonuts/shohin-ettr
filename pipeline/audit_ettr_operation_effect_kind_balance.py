@@ -23,7 +23,7 @@ from ettr_il_v3_protocol import canonical_json_bytes
 from materialize_ettr_il_v3_corpus import _iter_records, _sha256_file
 
 
-REPORT_SCHEMA = "r12-ettr-operation-effect-kind-balance-audit-v2"
+REPORT_SCHEMA = "r12-ettr-operation-effect-kind-balance-audit-v3"
 CAPACITY_SCHEMA = "r12-ettr-public-operation-state-delta-audit-v4"
 _SPLITS = ("train", "development")
 _KIND_FAMILY = {
@@ -111,9 +111,77 @@ def effect_kinds(delta: Mapping[str, object]) -> tuple[str, ...]:
     return tuple(kinds)
 
 
+def write_link_dependency_counts(delta: Mapping[str, object]) -> Counter[str]:
+    """Measure whether new LINK endpoints are changed by same-operation WRITEs."""
+
+    nodes = delta.get("nodes")
+    added = delta.get("edges_added")
+    if not isinstance(nodes, list) or not isinstance(added, list):
+        raise EffectKindBalanceAuditError("state delta differs")
+    written_slots: set[int] = set()
+    for item in nodes:
+        if not isinstance(item, list) or len(item) != 3:
+            raise EffectKindBalanceAuditError("state delta node differs")
+        slot, before_value, after_value = item
+        if (
+            not isinstance(slot, int)
+            or not isinstance(before_value, list)
+            or not isinstance(after_value, list)
+            or len(before_value) != 4
+            or len(after_value) != 4
+        ):
+            raise EffectKindBalanceAuditError("state delta node value differs")
+        if (
+            bool(before_value[0])
+            and bool(after_value[0])
+            and before_value[1] == after_value[1]
+            and before_value[2] != after_value[2]
+        ):
+            written_slots.add(slot)
+    source_written = 0
+    target_written = 0
+    links_touching_write = 0
+    for edge in added:
+        if (
+            not isinstance(edge, (list, tuple))
+            or len(edge) != 3
+            or any(not isinstance(value, int) for value in edge)
+        ):
+            raise EffectKindBalanceAuditError("state delta edge differs")
+        _relation, source, target = edge
+        source_hit = source in written_slots
+        target_hit = target in written_slots
+        source_written += int(source_hit)
+        target_written += int(target_hit)
+        links_touching_write += int(source_hit or target_hit)
+    has_write = bool(written_slots)
+    has_link = bool(added)
+    return Counter(
+        {
+            "link_source_endpoints_written": source_written,
+            "link_target_endpoints_written": target_written,
+            "links_added": len(added),
+            "links_touching_written_slot": links_touching_write,
+            "operations_with_link": int(has_link),
+            "operations_with_write": int(has_write),
+            "operations_with_write_and_link": int(has_write and has_link),
+            "operations_with_write_and_link_touching": int(
+                has_write and has_link and links_touching_write > 0
+            ),
+            "written_slots": len(written_slots),
+        }
+    )
+
+
 def _record_counts(
     record: object,
-) -> tuple[Counter[str], Counter[int], Counter[tuple[str, int]], int]:
+) -> tuple[
+    Counter[str],
+    Counter[int],
+    Counter[tuple[str, int]],
+    Counter[str],
+    int,
+]:
     targets = record.assessor_only.targets
     initial_packets = tuple(
         _packet_from_value(value, f"initial packet {index}")
@@ -135,6 +203,7 @@ def _record_counts(
     kind_counts: Counter[str] = Counter()
     cardinalities: Counter[int] = Counter()
     per_kind_cardinalities: Counter[tuple[str, int]] = Counter()
+    write_link_dependencies: Counter[str] = Counter()
     operations = 0
     for world_index in range(2):
         initial, static_ranks = _project_initial(
@@ -161,8 +230,10 @@ def _record_counts(
                     if steps
                     else state
                 )
-                kinds = effect_kinds(state_delta_value(state, after))
+                delta = state_delta_value(state, after)
+                kinds = effect_kinds(delta)
                 kind_counts.update(kinds)
+                write_link_dependencies.update(write_link_dependency_counts(delta))
                 cardinalities[len(kinds)] += 1
                 operation_kinds = Counter(kinds)
                 per_kind_cardinalities.update(
@@ -170,7 +241,13 @@ def _record_counts(
                 )
                 operations += 1
                 state = after
-    return kind_counts, cardinalities, per_kind_cardinalities, operations
+    return (
+        kind_counts,
+        cardinalities,
+        per_kind_cardinalities,
+        write_link_dependencies,
+        operations,
+    )
 
 
 def _audit_shard(
@@ -179,6 +256,7 @@ def _audit_shard(
     Counter[str],
     Counter[int],
     Counter[tuple[str, int]],
+    Counter[str],
     set[str],
     dict[str, object],
 ]:
@@ -186,6 +264,7 @@ def _audit_shard(
     kind_counts: Counter[str] = Counter()
     cardinalities: Counter[int] = Counter()
     per_kind_cardinalities: Counter[tuple[str, int]] = Counter()
+    write_link_dependencies: Counter[str] = Counter()
     core_ids: set[str] = set()
     operations = 0
     rows = 0
@@ -200,17 +279,20 @@ def _audit_shard(
             record_kinds,
             record_cardinalities,
             record_per_kind,
+            record_dependencies,
             record_operations,
         ) = _record_counts(record)
         kind_counts.update(record_kinds)
         cardinalities.update(record_cardinalities)
         per_kind_cardinalities.update(record_per_kind)
+        write_link_dependencies.update(record_dependencies)
         operations += record_operations
         rows += 1
     return (
         kind_counts,
         cardinalities,
         per_kind_cardinalities,
+        write_link_dependencies,
         core_ids,
         {
             "bytes": size,
@@ -240,12 +322,14 @@ def _audit_split(
     kinds: Counter[str] = Counter()
     cardinalities: Counter[int] = Counter()
     per_kind_cardinalities: Counter[tuple[str, int]] = Counter()
+    write_link_dependencies: Counter[str] = Counter()
     core_ids: set[str] = set()
     receipts = []
     for (
         shard_kinds,
         shard_cardinalities,
         shard_per_kind,
+        shard_dependencies,
         shard_ids,
         receipt,
     ) in results:
@@ -256,6 +340,7 @@ def _audit_split(
         kinds.update(shard_kinds)
         cardinalities.update(shard_cardinalities)
         per_kind_cardinalities.update(shard_per_kind)
+        write_link_dependencies.update(shard_dependencies)
         core_ids.update(shard_ids)
         receipts.append(receipt)
     families = Counter(
@@ -292,6 +377,9 @@ def _audit_split(
         "operation_instances": sum(cardinalities.values()),
         "per_kind_cardinality_histograms": per_kind_histograms,
         "shards": receipts,
+        "write_link_same_operation_dependency": {
+            key: write_link_dependencies[key] for key in sorted(write_link_dependencies)
+        },
     }
 
 
