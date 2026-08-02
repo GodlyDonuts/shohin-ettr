@@ -81,3 +81,30 @@ Smooth loss improvement, isolated value-field growth, or a late single-axis
 spike does not count as grokking. The 15k matched schedule-only controls remain
 the comparison, so longer compute cannot turn an ordinary budget effect into
 an architectural claim.
+
+## 1,000-Update Diagnostic
+
+V100 job `725570` completed in 11:55 with finite optimization. The result is
+not yet native reasoning: fully autonomous WORLD and COMMAND strict,
+margin-1, and DID remain zero, and factual top-1 is 60.94%. Local schedule
+accuracy is also essentially flat against the matched control:
+
+| Metric | Control `725460` | Syntax graph `725570` |
+|---|---:|---:|
+| Exact schedule | 8.924% | 8.830% |
+| Source | 32.361% | 28.791% |
+| Target | 26.471% | 13.793% |
+| Value | 22.959% | 22.809% |
+| Terminal value | 73.825% | 72.926% |
+| Exact terminal packet | 0/512 | **32/512** |
+
+The exact packets are nontrivial. An independent target audit finds `0/512`
+rows whose initial packet already equals its terminal packet; every row
+requires 4--31 active transaction steps. Exact state execution has therefore
+appeared at the oracle-initial interface even though end-to-end causal
+composition has not.
+
+The trajectory remains live: V100 jobs `725573/725574` run independent 5k and
+15k endpoints on `evc11/evc12`; H100 jobs `725569/725571/725572` preserve the
+same 1k/5k/15k endpoints for numerical replication. Promotion remains bound to
+the unchanged strict decision rule.

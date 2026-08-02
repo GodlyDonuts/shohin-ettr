@@ -53678,3 +53678,19 @@ unchanged source-deleted gate.
 
 Current decision:
 `test_exact_syntax_topology_before_spending_relaxed_capacity_on_hard_whole_program_experts`.
+
+The first syntax-graph diagnostic is a real interface foothold but not native
+reasoning. Job `725570` keeps fully autonomous WORLD/COMMAND at zero and does
+not improve exact schedules, yet produces `32/512 = 6.25%` exact terminal
+packets from an oracle initial state. A separate label-only audit proves none
+are identity/no-op cases: `0/512` initial packets equal their terminal targets,
+and each row requires 4--31 transactions. This is the first nontrivial exact
+terminal execution in these direct/occurrence/syntax compiler lanes.
+
+To distinguish an early foothold from delayed grokking, independent fixed-seed
+5k and 15k V100 endpoints are running concurrently, while H100 mirrors are
+queued. A delayed loss reduction alone cannot promote the architecture; held-
+out exact packets plus both strict causal axes must rise.
+
+Current decision:
+`retain_exact_syntax_graphs_as_the_first_nontrivial_terminal_execution_interface_and_measure_the_preregistered_1k_5k_15k_curve_before_adding_program_experts`.

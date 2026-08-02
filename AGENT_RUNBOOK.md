@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 01:31 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 02:01 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -23407,3 +23407,34 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `expose_exact_public_grammar_topology_before_schedule_compilation_then_use_field_movement_to_decide_syntax_failure_vs_whole_program_identity_failure`.
+
+- **2026-08-02 01:31--02:01 EDT** -- **Exact syntax graphs produce the first
+  nontrivial exact terminal packets; a fixed 1k/5k/15k trajectory is live.**
+
+  Private commit `00eefb9` is pushed. Immutable runtime
+  `scratchpad/shohin_ettr_syntax_graph_runtime_00eefb9_r1` contains 3,582
+  measured files at exact commit
+  `00eefb90438d7d24c2d71af83302edc7fd41acc0`; SHA256SUMS SHA-256 is
+  `4f9a18755dd4939e909f43a461bcb62fbb654e7dc3a8c691b2e026a7b5e38ac6`.
+  The graph parser was vectorized before deployment, removing nested
+  token-by-token GPU launch loops while preserving exact four-renderer tests.
+
+  V100 diagnostic `725570` completed all 1,000 updates in 11:55. Report
+  SHA-256 is
+  `791e122081513876773af128ca87a3468a4be65975d33a02ce470ac843ad805c`.
+  Exact schedules are flat at 8.830%; source/target/value are
+  28.791%/13.793%/22.809%; factual top-1 is 60.94%; and every fully autonomous
+  WORLD/COMMAND causal measure remains zero. However, oracle-initial exact
+  terminal packets rise from the matched control's `0/512` to `32/512`.
+  Independent target-only audit proves `0/512` initial packets equal terminal
+  targets, with 4--31 required transactions, so these are nontrivial exact
+  executions rather than copy/no-op cases.
+
+  V100 jobs `725573` (5k, `evc11`) and `725574` (15k, `evc12`) are running
+  concurrently. H100 mirrors `725569/725571/725572` are queued at 1k/5k/15k.
+  This directly tests delayed grokking under identical initialization, data
+  order, learning rate, objective, and evaluator. Loss reduction alone cannot
+  promote it; exact held-out state and both strict axes must move.
+
+  Decision:
+  `retain_the_graph_foothold_run_the_fixed_budget_trajectory_and_only_then_choose_hard_program_identity_vs_syntax_node_transaction_emission`.
