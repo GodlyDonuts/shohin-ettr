@@ -16,6 +16,7 @@ UNANCHORED_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v12"
 ROLE_ANCHORED_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v13"
 CARDINALITY_GATED_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v14"
 WRITE_LINK_RAIL_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v15"
+RAIL_LOCAL_EFFECT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v16"
 
 
 class OperationEffectRouteError(RuntimeError):
@@ -122,6 +123,7 @@ def _contract_schema(
         ROLE_ANCHORED_SCHEMA,
         CARDINALITY_GATED_SCHEMA,
         WRITE_LINK_RAIL_SCHEMA,
+        RAIL_LOCAL_EFFECT_SCHEMA,
     }:
         raise OperationEffectRouteError("terminal state effect contract differs")
     return str(schema)
@@ -201,7 +203,7 @@ def route_result(
                 "global cardinality did not prevent kind collapse; remove the generic "
                 "kind decision and separate WRITE/LINK counts, motors, and payloads"
             )
-        elif contract_schema == WRITE_LINK_RAIL_SCHEMA:
+        elif contract_schema in {WRITE_LINK_RAIL_SCHEMA, RAIL_LOCAL_EFFECT_SCHEMA}:
             route = "rail_local_pointer_payload_islands"
             reason = (
                 "typed rails still selected zero or one dominant outcome; isolate count, "

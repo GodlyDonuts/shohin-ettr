@@ -150,6 +150,11 @@ def test_terminal_schema_tracks_residual_architecture() -> None:
         "shohin-ettr-parallel-terminal-state-report-v15",
         "shohin-ettr-parallel-terminal-state-metric-v15",
     )
+    assert _run_schemas(*effect_set[:-1], False, True, False, True, True) == (
+        "shohin-ettr-parallel-terminal-state-contract-v16",
+        "shohin-ettr-parallel-terminal-state-report-v16",
+        "shohin-ettr-parallel-terminal-state-metric-v16",
+    )
 
 
 def test_write_link_rail_args_are_exclusive_and_operation_bound(tmp_path: Path) -> None:
@@ -168,8 +173,14 @@ def test_write_link_rail_args_are_exclusive_and_operation_bound(tmp_path: Path) 
     args.operation_effect_role_anchors = True
     args.operation_effect_cardinality_gate = False
     args.operation_effect_write_link_rails = True
+    args.operation_effect_rail_local_loss = True
     args.training_initial_state = "oracle"
     validate_train_args(args)
+    args.operation_effect_write_link_rails = False
+    with pytest.raises(ParallelTerminalStatePilotError, match="arguments differ"):
+        validate_train_args(args)
+    args.operation_effect_write_link_rails = True
+    args.operation_effect_rail_local_loss = False
     args.operation_effect_set_command = True
     with pytest.raises(ParallelTerminalStatePilotError, match="arguments differ"):
         validate_train_args(args)

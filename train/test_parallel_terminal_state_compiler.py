@@ -961,6 +961,36 @@ def test_write_link_rails_enforce_separate_counts_and_train_payloads() -> None:
         assert parameter.grad is not None
         assert bool(parameter.grad.isfinite().all())
 
+    compiler.zero_grad(set_to_none=True)
+    rail_local = compiler._operation_edits_from_slots(
+        state,
+        slots,
+        hard=False,
+        effect_anchors=(anchors, role_valid),
+    )
+    rail_loss, rail_parts, rail_counts = atomic_typed_edit_loss(
+        rail_local,
+        labels,
+        slot_mask=torch.ones_like(state.active, dtype=torch.bool),
+        relation_mask=torch.ones_like(state.relations, dtype=torch.bool),
+        rail_local_loss=True,
+    )
+    assert bool(rail_loss.isfinite())
+    assert "effect_set" in rail_parts
+    assert rail_counts == counts
+    rail_loss.backward()
+    for parameter in (
+        compiler.write_activity_head.weight,
+        compiler.link_activity_head.weight,
+        compiler.write_node_query.weight,
+        compiler.write_node_key.weight,
+        compiler.write_value_head.weight,
+        compiler.link_relation_source.weight,
+        compiler.link_relation_target.weight,
+    ):
+        assert parameter.grad is not None
+        assert bool(parameter.grad.isfinite().all())
+
     final_edits = compiler._final_edits_from_slots(
         state,
         slots,

@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 11:58 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 12:30 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -229,19 +229,40 @@
 > Contract v14 is sealed at exact source `0ca7408`, predicts total cardinality,
 > ranks role-bound motor activity, and removes NOOP from active kind choice.
 > Its isolated any-GPU two-update smoke `727090` completed cleanly on `evc13`.
-> The sole 1,000-update v14 fit `727778` started on `evc5` at 11:37 EDT and is
-> finite through at least update 790; independent evaluator `727875` remains
-> dependency-held behind it. Do not launch any duplicate fit, seed, width, or
-> duration arm. Exact follow-up Stokes audit `760929` independently measures
+> The sole 1,000-update v14 fit `727778` and independent evaluator `727875`
+> completed cleanly. Held-out effect-count exactness rises from `0.51%` to
+> `62.16%` and fully autonomous factual top-1 from zero to `57.81%`, proving
+> that explicit cardinality is learnable. It does not solve composition:
+> kind-multiset exactness reaches only `18.92%`, the model emits no LINK kind,
+> positive WRITE/LINK exactness, operation-state exactness, terminal-state
+> exactness, WORLD, and COMMAND all remain zero. The report SHA-256 is
+> `a70aede8c42fa0883d16ede0aa52681d43044d9c92544d84b17dcfa2d680c8b7`.
+> The sealed preregistered v14 router honestly returns
+> `reject_unordered_effect_set`: its 90% collapse threshold was not crossed
+> because NOOP/dominant mass was `87.03%`. Do not rewrite that sealed decision
+> after observing the result. Exact follow-up Stokes audit `760929` independently measures
 > per-operation maxima of three WRITEs and ten LINKs in both train and
 > development; every other effect kind is absent. Contract v15 is therefore
-> implemented in advance as mechanism-distinct WRITE/LINK rails: separate
+> advanced as a new post-result mechanism hypothesis, not misreported as the
+> preregistered router choice. It uses mechanism-distinct WRITE/LINK rails: separate
 > 3-way/10-way motor banks, separate count heads, hard top-k release per rail,
 > and no generic kind classifier. Its final-stage disposition remains on the
-> existing dense algebra path. Fifty-one focused architecture, gradient,
-> parameter, schema, diagnostics, routing, and custody tests pass. V15 remains
-> a held contingency until v14's independent evaluator selects it; only an
-> isolated two-update mechanical smoke may run in parallel.
+> existing dense algebra path. Exact immutable runtime
+> `scratchpad/shohin_ettr_write_link_rail_runtime_27f8b44_r1` has SHA256SUMS
+> SHA-256 `2f7279a8d91b785480dcde26a76eeadca7ee21439bb5c068f00405988088378c`.
+> Smoke `728550` completed two finite updates; its report SHA-256 is
+> `0dceb0e708de2d60d3b0ad6f39c59f993013e8bc5090c51773d1d2bb6fcbfaa6`.
+> The only long v15 fit is job `728691`, pending normal-partition priority as
+> a 45-minute any-GPU request. No duplicate scientific arm is authorized.
+> Contract v16 is prequalified but not scientifically released: it preserves
+> the v15 deployed architecture while replacing detached cross-kind Sinkhorn
+> supervision with deterministic canonical WRITE and LINK rail-local losses.
+> This gives count, activity, pointer, value, and relation heads independent
+> gradients if v15 learns rail counts but not operands. Fifty-one focused
+> architecture, gradient, schema, diagnostics, routing, and custody tests pass.
+> Release v16 only if the independent v15 evaluator selects the matching
+> count-without-payload failure branch; otherwise follow the frozen failure
+> tree rather than spending GPUs on a redundant arm.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -24602,3 +24623,44 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finish_v14_once_while_mechanically_qualifying_the_audit_sized_write_link_successor_without_launching_a_second_scientific_arm`.
+
+- **2026-08-02 11:59--12:30 EDT** -- **V14 learns cardinality but not typed
+  execution; v15 is mechanically released and v16 is prequalified.**
+
+  Fit `727778` completed 1,000 updates in 25m11s on `evc5`; independent
+  evaluator `727875` completed in 2m44s on `evc21`. Held-out effect-count
+  exactness rises from `0.0050676` to `0.6216216`, kind-multiset exactness from
+  zero to `0.1891892`, and fully autonomous factual top-1 from zero to
+  `0.578125`. The model emits no LINK kind. Positive WRITE/LINK, complete
+  effect-set, operation-state, terminal-state, WORLD, and COMMAND exactness
+  all remain zero. Evaluation report SHA-256 is
+  `a70aede8c42fa0883d16ede0aa52681d43044d9c92544d84b17dcfa2d680c8b7`.
+  The immutable preregistered router selects `reject_unordered_effect_set`
+  because the measured dominant-kind share `0.87027` is below its frozen
+  0.90 threshold. That receipt is preserved unchanged.
+
+  Exact v15 runtime
+  `scratchpad/shohin_ettr_write_link_rail_runtime_27f8b44_r1` is source-bound
+  to `27f8b443dac032dc684667652b79ad416eab6099`, read-only, and has SHA256SUMS
+  SHA-256 `2f7279a8d91b785480dcde26a76eeadca7ee21439bb5c068f00405988088378c`.
+  The first two-batch smoke `728495` produced no causal contrasts and exited
+  before model construction, so it is a launch-config failure with no model
+  evidence. Corrected 32-batch smoke `728550` completed two finite updates;
+  report SHA-256 is
+  `0dceb0e708de2d60d3b0ad6f39c59f993013e8bc5090c51773d1d2bb6fcbfaa6`.
+  Sole 1,000-update fit `728691` is pending normal-partition priority as a
+  45-minute any-GPU request. V15 is an explicit new post-result mechanism
+  hypothesis supported by the exact WRITE/LINK-only audit and v14 signature,
+  not a rewritten claim about the sealed router.
+
+  Contract v16 is code-complete and mechanically held. Its deployed v15
+  architecture is unchanged; training replaces detached cross-kind Sinkhorn
+  assignment with canonical rail-local supervision. WRITE targets sort by
+  state slot and LINK targets by flattened relation tuple, giving independent
+  activity, pointer, value, and relation gradients. Contract, evaluator,
+  launcher, schema, router, and direct-gradient checks pass 51 focused tests,
+  Ruff, byte compilation, Bash syntax, and diff checks. Release it only if
+  v15 learns rail counts without operands or collapses joint rail acquisition.
+
+  Decision:
+  `retain_the_honest_v14_rejection_run_one_typed_rail_gate_and_hold_the_prequalified_rail_local_repair_for_its_exact_failure_signature`.

@@ -127,6 +127,8 @@ CARDINALITY_GATED_EFFECT_SET_REPORT_SCHEMA = (
 )
 WRITE_LINK_RAIL_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v15"
 WRITE_LINK_RAIL_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v15"
+RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v16"
+RAIL_LOCAL_EFFECT_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v16"
 CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v3"
 REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v3"
 CAUSAL_DELTA_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v2"
@@ -221,6 +223,10 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--operation-effect-write-link-rails",
         action="store_true",
     )
+    parser.add_argument(
+        "--operation-effect-rail-local-loss",
+        action="store_true",
+    )
     parser.add_argument("--atomic-action-weight", type=float, default=1.0)
     parser.add_argument(
         "--required-device-class",
@@ -259,6 +265,11 @@ def _validate_args(args: argparse.Namespace) -> None:
     operation_effect_write_link_rails = getattr(
         args,
         "operation_effect_write_link_rails",
+        False,
+    )
+    operation_effect_rail_local_loss = getattr(
+        args,
+        "operation_effect_rail_local_loss",
         False,
     )
     paths = (
@@ -336,6 +347,7 @@ def _validate_args(args: argparse.Namespace) -> None:
         or (operation_effect_write_link_rails and factorized_operation_effect)
         or (operation_effect_write_link_rails and not operation_effect_role_anchors)
         or (operation_effect_write_link_rails and operation_effect_cardinality_gate)
+        or (operation_effect_rail_local_loss and not operation_effect_write_link_rails)
         or args.output.exists()
         or args.output.is_symlink()
         or not args.output.parent.is_dir()
@@ -978,12 +990,147 @@ def operation_effect_set_loss(
     return torch.stack((matching_loss, count_loss)).mean()
 
 
+def operation_write_link_rail_loss(
+    edits: AtomicTypedEdits,
+    target: dict[str, torch.Tensor],
+    *,
+    slot_mask: torch.Tensor,
+    relation_mask: torch.Tensor,
+) -> torch.Tensor:
+    """Supervise canonical WRITE/LINK motors without cross-kind matching.
+
+    The deployed object remains an unordered typed set.  Training assigns
+    WRITE targets in ascending state-slot order and LINK targets in ascending
+    flattened relation order.  This fixed convention removes the detached
+    cross-kind Sinkhorn assignment, so activity, pointer, and payload heads
+    receive independent gradients even when one rail initially collapses.
+    """
+
+    fields = (
+        edits.effect_kind,
+        edits.effect_node_pointer,
+        edits.effect_value_code,
+        edits.effect_relation_link,
+    )
+    if any(value is None for value in fields):
+        raise ParallelTerminalStatePilotError(
+            "write/link rail predictions are incomplete"
+        )
+    kind = edits.effect_kind
+    node_pointer = edits.effect_node_pointer
+    value_code = edits.effect_value_code
+    relation_link = edits.effect_relation_link
+    assert kind is not None
+    assert node_pointer is not None
+    assert value_code is not None
+    assert relation_link is not None
+    batch = kind.shape[0]
+    if (
+        kind.shape != (batch, WRITE_LINK_RAIL_EFFECT_SLOTS, EFFECT_KIND_COUNT)
+        or node_pointer.shape[:3] != (batch, WRITE_LINK_RAIL_EFFECT_SLOTS, 2)
+        or value_code.shape[:2] != (batch, WRITE_LINK_RAIL_EFFECT_SLOTS)
+        or relation_link.shape[:2] != (batch, WRITE_LINK_RAIL_EFFECT_SLOTS)
+    ):
+        raise ParallelTerminalStatePilotError(
+            "write/link rail prediction geometry differs"
+        )
+    labels = _operation_effect_targets(
+        target,
+        maximum_effects=WRITE_LINK_RAIL_EFFECT_SLOTS,
+        slot_mask=slot_mask,
+        relation_mask=relation_mask,
+    )
+    target_kind = labels["kind"]
+    write_mask = target_kind.eq(EFFECT_WRITE)
+    link_mask = target_kind.eq(EFFECT_LINK)
+    if (
+        int(write_mask.sum(-1).max().detach().cpu()) > WRITE_RAIL_EFFECT_SLOTS
+        or int(link_mask.sum(-1).max().detach().cpu()) > LINK_RAIL_EFFECT_SLOTS
+        or bool((target_kind.ne(EFFECT_NOOP) & ~write_mask & ~link_mask).any())
+    ):
+        raise ParallelTerminalStatePilotError("write/link rail target support differs")
+
+    write_active = torch.zeros(
+        batch,
+        WRITE_RAIL_EFFECT_SLOTS,
+        dtype=torch.long,
+        device=kind.device,
+    )
+    write_node = torch.zeros_like(write_active)
+    write_value = torch.zeros_like(write_active)
+    link_active = torch.zeros(
+        batch,
+        LINK_RAIL_EFFECT_SLOTS,
+        dtype=torch.long,
+        device=kind.device,
+    )
+    link_relation = torch.zeros_like(link_active)
+    write_rank = write_mask.cumsum(-1) - 1
+    link_rank = link_mask.cumsum(-1) - 1
+    for target_rank in range(WRITE_LINK_RAIL_EFFECT_SLOTS):
+        rows = torch.nonzero(write_mask[:, target_rank], as_tuple=False).flatten()
+        if rows.numel():
+            motors = write_rank[rows, target_rank]
+            write_active[rows, motors] = 1
+            write_node[rows, motors] = labels["node"][rows, target_rank]
+            write_value[rows, motors] = labels["value"][rows, target_rank]
+        rows = torch.nonzero(link_mask[:, target_rank], as_tuple=False).flatten()
+        if rows.numel():
+            motors = link_rank[rows, target_rank]
+            link_active[rows, motors] = 1
+            link_relation[rows, motors] = labels["relation"][rows, target_rank]
+
+    write_probability = kind[:, :WRITE_RAIL_EFFECT_SLOTS, EFFECT_WRITE]
+    link_probability = kind[:, WRITE_RAIL_EFFECT_SLOTS:, EFFECT_LINK]
+    all_write = torch.ones_like(write_active, dtype=torch.bool)
+    all_link = torch.ones_like(link_active, dtype=torch.bool)
+    parts = [
+        _class_balanced_nll(
+            torch.stack((1.0 - write_probability, write_probability), dim=-1),
+            write_active,
+            all_write,
+        )[0],
+        _class_balanced_nll(
+            torch.stack((1.0 - link_probability, link_probability), dim=-1),
+            link_active,
+            all_link,
+        )[0],
+    ]
+    write_positive = write_active.bool()
+    if bool(write_positive.any()):
+        parts.extend(
+            (
+                _class_balanced_nll(
+                    node_pointer[:, :WRITE_RAIL_EFFECT_SLOTS, 0],
+                    write_node,
+                    write_positive,
+                )[0],
+                _class_balanced_nll(
+                    value_code[:, :WRITE_RAIL_EFFECT_SLOTS],
+                    write_value,
+                    write_positive,
+                )[0],
+            )
+        )
+    link_positive = link_active.bool()
+    if bool(link_positive.any()):
+        parts.append(
+            _class_balanced_nll(
+                relation_link[:, WRITE_RAIL_EFFECT_SLOTS:].flatten(2),
+                link_relation,
+                link_positive,
+            )[0]
+        )
+    return torch.stack(parts).mean()
+
+
 def atomic_typed_edit_loss(
     edits: AtomicTypedEdits,
     target: dict[str, torch.Tensor],
     *,
     slot_mask: torch.Tensor,
     relation_mask: torch.Tensor,
+    rail_local_loss: bool = False,
 ) -> tuple[torch.Tensor, dict[str, torch.Tensor], dict[str, dict[str, int]]]:
     """Supervise a canonical coherent state difference, class-balanced."""
 
@@ -1032,11 +1179,20 @@ def atomic_typed_edit_loss(
     if any(present_effect_fields) and not all(present_effect_fields):
         raise ParallelTerminalStatePilotError("operation effect set heads differ")
     if all(present_effect_fields):
-        parts["effect_set"] = operation_effect_set_loss(
-            edits,
-            target,
-            slot_mask=slot_mask,
-            relation_mask=relation_mask,
+        parts["effect_set"] = (
+            operation_write_link_rail_loss(
+                edits,
+                target,
+                slot_mask=slot_mask,
+                relation_mask=relation_mask,
+            )
+            if rail_local_loss
+            else operation_effect_set_loss(
+                edits,
+                target,
+                slot_mask=slot_mask,
+                relation_mask=relation_mask,
+            )
         )
     count_specifications = {
         "node_edit_count": (
@@ -1098,6 +1254,7 @@ def operation_boundary_objective(
     slot_mask: torch.Tensor,
     relation_mask: torch.Tensor,
     verify_reconstruction: bool,
+    rail_local_loss: bool = False,
 ) -> tuple[
     torch.Tensor,
     torch.Tensor,
@@ -1159,6 +1316,7 @@ def operation_boundary_objective(
             labels,
             slot_mask=selected_slots,
             relation_mask=selected_relations,
+            rail_local_loss=rail_local_loss,
         )
         action_losses.append(action_loss)
         for name, value in action_parts.items():
@@ -1184,6 +1342,7 @@ def operation_boundary_objective(
         final_labels,
         slot_mask=slot_mask,
         relation_mask=relation_mask,
+        rail_local_loss=False,
     )
     action_losses.append(final_action)
     for name, value in final_parts.items():
@@ -1225,6 +1384,7 @@ def _run_schemas(
     operation_effect_role_anchors: bool = False,
     operation_effect_cardinality_gate: bool = False,
     operation_effect_write_link_rails: bool = False,
+    operation_effect_rail_local_loss: bool = False,
 ) -> tuple[str, str, str]:
     if operation_effect_write_link_rails:
         if (
@@ -1238,9 +1398,25 @@ def _run_schemas(
                 "write/link rail architecture schema differs"
             )
         return (
-            WRITE_LINK_RAIL_CONTRACT_SCHEMA,
-            WRITE_LINK_RAIL_REPORT_SCHEMA,
-            "shohin-ettr-parallel-terminal-state-metric-v15",
+            (
+                RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA
+                if operation_effect_rail_local_loss
+                else WRITE_LINK_RAIL_CONTRACT_SCHEMA
+            ),
+            (
+                RAIL_LOCAL_EFFECT_REPORT_SCHEMA
+                if operation_effect_rail_local_loss
+                else WRITE_LINK_RAIL_REPORT_SCHEMA
+            ),
+            (
+                "shohin-ettr-parallel-terminal-state-metric-v16"
+                if operation_effect_rail_local_loss
+                else "shohin-ettr-parallel-terminal-state-metric-v15"
+            ),
+        )
+    if operation_effect_rail_local_loss:
+        raise ParallelTerminalStatePilotError(
+            "rail-local effect loss requires write/link rails"
         )
     if operation_effect_set_command:
         if (
@@ -1510,6 +1686,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.operation_effect_role_anchors,
         args.operation_effect_cardinality_gate,
         args.operation_effect_write_link_rails,
+        args.operation_effect_rail_local_loss,
     )
     if not torch.cuda.is_available():
         raise ParallelTerminalStatePilotError("terminal-state pilot requires CUDA")
@@ -1683,6 +1860,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "operation_effect_write_link_rails": (
                     args.operation_effect_write_link_rails
                 ),
+                "operation_effect_rail_local_loss": (
+                    args.operation_effect_rail_local_loss
+                ),
                 "operation_effect_slots": (
                     compiler.maximum_effects
                     if isinstance(
@@ -1764,7 +1944,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                     or args.operation_effect_write_link_rails
                 ),
                 "effect_set_matching": (
-                    "detached-sinkhorn-typed-bipartite"
+                    "canonical-write-link-rail-local"
+                    if args.operation_effect_rail_local_loss
+                    else "detached-sinkhorn-typed-bipartite"
                     if (
                         args.operation_effect_set_command
                         or args.operation_effect_write_link_rails
@@ -1921,6 +2103,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                         slot_mask=batch.terminal_packet_targets.slot_mask,
                         relation_mask=(batch.terminal_packet_targets.relation_mask),
                         verify_reconstruction=update == 1,
+                        rail_local_loss=args.operation_effect_rail_local_loss,
                     )
                 elif args.atomic_edits:
                     predicted, atomic_edits = compiler.forward_with_atomic_edits(

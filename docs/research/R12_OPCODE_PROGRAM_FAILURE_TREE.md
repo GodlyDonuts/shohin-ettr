@@ -562,9 +562,16 @@ The first two-update any-GPU smoke `727090` completed cleanly on V100-32GB
 `a31531cb2a09981b0ec5f0048540aebc18ef9f4282898f07b86d0a537613c740`,
 and `4e4f6bf6ee20a8616dbb1470dfa7492de478005394b1cb673c337dd867b22ce2`.
 The exact v14 schema, explicit count/top-k objective, finite loss/gradient,
-report seal, and full custody pass. This releases sole 1,000-update any-GPU
-fit `727778`; independent evaluator `727875` is dependency-held behind it.
-No duplicate seed, width, duration, or device arm is authorized.
+report seal, and full custody pass. Sole 1,000-update any-GPU fit `727778` and
+independent evaluator `727875` completed. Effect-count exactness rises from
+0.51% to 62.16%, kind-multiset exactness reaches 18.92%, and fully autonomous
+factual top-1 rises from zero to 57.81%. No LINK is emitted; positive
+WRITE/LINK, operation-state, terminal-state, WORLD, and COMMAND exactness all
+remain zero. The report SHA-256 is
+`a70aede8c42fa0883d16ede0aa52681d43044d9c92544d84b17dcfa2d680c8b7`.
+The sealed v14 router returns `reject_unordered_effect_set` because its 90%
+dominant-kind threshold was not crossed (`87.03%`). This receipt is immutable;
+v15 is a new post-result mechanism hypothesis, not a rewritten router result.
 
 ## Contract-v15 preregistered WRITE/LINK rails
 
@@ -594,10 +601,15 @@ It admits no QUERY, target, answer, assessor trace, candidate search, ontology
 sidecar, or host semantic execution. Fifty-one focused tests cover separate
 counts, activity and payload gradients, hard deployed state, final-stage
 separation, exact parameter/schema receipts, evaluator diagnostics, routing,
-and custody. V15 is not scientifically released by this implementation. An
-isolated two-update exact-source GPU smoke may qualify mechanics; a long fit
-is permitted only if v14's independent evaluator selects
-`write_link_typed_rails`.
+and custody. Exact runtime
+`scratchpad/shohin_ettr_write_link_rail_runtime_27f8b44_r1` has SHA256SUMS
+SHA-256 `2f7279a8d91b785480dcde26a76eeadca7ee21439bb5c068f00405988088378c`.
+Two-update smoke `728550` completed with finite losses and gradients; report
+SHA-256 is
+`0dceb0e708de2d60d3b0ad6f39c59f993013e8bc5090c51773d1d2bb6fcbfaa6`.
+The sole long fit is `728691`, pending normal-partition priority. Its release
+is explicitly post-result and must not be retroactively described as the
+sealed router outcome.
 
 The v15 failure tree is also fixed in advance:
 
@@ -611,3 +623,14 @@ The v15 failure tree is also fixed in advance:
    crossed state-sufficiency isolation, not another fit.
 5. Rail counts collapse or no exact local metric moves: close joint rail
    acquisition and advance to rail-local count/pointer/payload curricula.
+
+Contract v16 implements the branch-2/5 supervision repair in advance. The
+deployed object and hard execution are unchanged from v15. Training assigns
+WRITE targets canonically by ascending state slot and LINK targets by
+ascending flattened relation tuple, eliminating detached cross-kind matching.
+Count, activity, WRITE pointer/value, and LINK type/source/target heads receive
+separate direct gradients. Contract/report/metric schemas are v16 and the
+evaluator verifies the new objective string. Fifty-one focused tests plus
+Ruff, byte compilation, Bash syntax, and diff checks pass. V16 is not released
+for a scientific fit until the independent v15 report shows exact rail counts
+without payload binding or total joint-acquisition collapse.

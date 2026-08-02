@@ -74,6 +74,8 @@ from train_parallel_terminal_state_pilot import (
     ROLE_ANCHORED_EFFECT_SET_REPORT_SCHEMA as PILOT_ROLE_ANCHORED_EFFECT_SET_REPORT_SCHEMA,
     OPERATION_STATE_ATOMIC_CONTRACT_SCHEMA as PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
     OPERATION_STATE_ATOMIC_REPORT_SCHEMA as PILOT_OPERATION_STATE_REPORT_SCHEMA,
+    RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA as PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
+    RAIL_LOCAL_EFFECT_REPORT_SCHEMA as PILOT_RAIL_LOCAL_EFFECT_REPORT_SCHEMA,
     REPORT_SCHEMA as PILOT_REPORT_SCHEMA,
     SYNTAX_ROUTED_ATOMIC_CONTRACT_SCHEMA as PILOT_SYNTAX_CONTRACT_SCHEMA,
     SYNTAX_ROUTED_ATOMIC_REPORT_SCHEMA as PILOT_SYNTAX_REPORT_SCHEMA,
@@ -286,6 +288,9 @@ def _load_terminal_compiler(
             PILOT_CARDINALITY_GATED_EFFECT_SET_REPORT_SCHEMA
         ),
         PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA: PILOT_WRITE_LINK_RAIL_REPORT_SCHEMA,
+        PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA: (
+            PILOT_RAIL_LOCAL_EFFECT_REPORT_SCHEMA
+        ),
     }
     run_schema = contract.get("schema")
     if (
@@ -322,6 +327,7 @@ def _load_terminal_compiler(
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
+        PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
         PILOT_CONTRACT_SCHEMA,
         PILOT_CAUSAL_DELTA_CONTRACT_SCHEMA,
     ):
@@ -350,6 +356,7 @@ def _load_terminal_compiler(
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
+        PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
     }
     lexical_command = contract.get("schema") in {
         PILOT_LEXICAL_CONTRACT_SCHEMA,
@@ -363,6 +370,7 @@ def _load_terminal_compiler(
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
+        PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
     }
     token_native_command_mask = contract.get("schema") in {
         PILOT_SYNTAX_CONTRACT_SCHEMA,
@@ -375,6 +383,7 @@ def _load_terminal_compiler(
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
+        PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
     }
     token_native_occurrence_command = (
         contract.get("schema") == PILOT_OCCURRENCE_CONTRACT_SCHEMA
@@ -388,6 +397,7 @@ def _load_terminal_compiler(
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
+        PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
     }
     token_native_declaration_binding_command = contract.get("schema") in {
         PILOT_DECLARATION_CONTRACT_SCHEMA,
@@ -398,6 +408,7 @@ def _load_terminal_compiler(
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
+        PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
     }
     cover_verified_command_mask = contract.get("schema") in {
         PILOT_DECLARATION_CONTRACT_SCHEMA,
@@ -408,6 +419,7 @@ def _load_terminal_compiler(
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
+        PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
     }
     token_native_operation_recurrence_command = contract.get("schema") in {
         PILOT_OPERATION_CONTRACT_SCHEMA,
@@ -417,6 +429,7 @@ def _load_terminal_compiler(
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
+        PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
     }
     token_native_operation_state_command = contract.get("schema") in {
         PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
@@ -425,6 +438,7 @@ def _load_terminal_compiler(
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
+        PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
     }
     factorized_operation_effect_command = (
         contract.get("schema") == PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA
@@ -438,12 +452,17 @@ def _load_terminal_compiler(
         PILOT_ROLE_ANCHORED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA,
         PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
+        PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
     }
     operation_effect_cardinality_gate = (
         contract.get("schema") == PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA
     )
-    operation_effect_write_link_rails = (
-        contract.get("schema") == PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA
+    operation_effect_write_link_rails = contract.get("schema") in {
+        PILOT_WRITE_LINK_RAIL_CONTRACT_SCHEMA,
+        PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
+    }
+    operation_effect_rail_local_loss = (
+        contract.get("schema") == PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA
     )
     if residual_edits != (architecture.get("sparse_residual_edits") is True):
         raise ParallelTerminalStateEvaluationError(
@@ -470,6 +489,7 @@ def _load_terminal_compiler(
         "operation_effect_role_anchors": operation_effect_role_anchors,
         "operation_effect_cardinality_gate": (operation_effect_cardinality_gate),
         "operation_effect_write_link_rails": (operation_effect_write_link_rails),
+        "operation_effect_rail_local_loss": (operation_effect_rail_local_loss),
         "token_native_syntax_graph_command": token_native_syntax_graph_command,
     }
     if any(
@@ -511,7 +531,11 @@ def _load_terminal_compiler(
             or not isinstance(objective, Mapping)
             or objective.get("unordered_typed_effect_set") is not True
             or objective.get("effect_set_matching")
-            != "detached-sinkhorn-typed-bipartite"
+            != (
+                "canonical-write-link-rail-local"
+                if operation_effect_rail_local_loss
+                else "detached-sinkhorn-typed-bipartite"
+            )
             or objective.get("effect_set_role_anchors")
             != "shared-public-operation-root-and-semantic-children"
             or objective.get("effect_set_role_capacity")

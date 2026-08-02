@@ -3,7 +3,7 @@
 ## Current Status — Read First
 
 **Current frontier, superseding older status text below (2026-08-02
-11:58 EDT):** Shohin still has no replicated two-population demonstration of
+12:30 EDT):** Shohin still has no replicated two-population demonstration of
 architecture-native general reasoning. The fixed typed algebra and learned
 query compiler are no longer the main unknown: the exact algebra is perfect
 on the held-out corpus, and predicted query programs with oracle state reach
@@ -42,12 +42,17 @@ files, no writable entries or links, and SHA256SUMS SHA-256
 Any-GPU smoke `727090` completed cleanly on a V100-32GB with finite gradients,
 exact v14 contract, and full custody. Its run SHA256SUMS is
 `190584b41e93cbfcb6ffc17a062fcf3f1e9cde2b5288af252b7c8d963060b4bd`.
-The sole 1,000-update fit `727778` is running on `evc5`, finite through at
-least update 790; evaluator `727875` is dependency-held behind it and no
-duplicate arm is authorized.
+The sole 1,000-update fit `727778` and evaluator `727875` completed. V14
+learns cardinality but not typed execution: held-out effect-count exactness
+rises from 0.51% to 62.16% and fully autonomous factual top-1 from zero to
+57.81%, while kind-multiset exactness is only 18.92%, no LINK is emitted,
+positive WRITE/LINK, operation-state, terminal-state, WORLD, and COMMAND
+remain exactly zero. The sealed preregistered router returns
+`reject_unordered_effect_set` because its 90% collapse threshold was not met;
+that decision is preserved rather than rewritten after seeing the endpoint.
 
-The failure successor is already code-complete rather than being invented
-after the endpoint. Independent 48-core Stokes audit `760929` proves that
+The mechanism successor was code-complete before the endpoint rather than
+being invented after it. Independent 48-core Stokes audit `760929` proves that
 every operation contains at most three WRITEs and ten LINKs in both train and
 development; all other operation effect kinds are exactly absent. Contract
 v15 therefore removes the generic 12-way kind classifier entirely. It uses
@@ -56,8 +61,19 @@ heads, public-role-conditioned payload binding, and deterministic top-k
 release inside each rail. The final disposition stage remains a distinct
 dense head. The compiler has 49,015,545 trainable parameters and passes 51
 focused architecture, gradient, schema, diagnostics, routing, and custody
-tests. It is held for v14 failure and may receive only a two-update mechanical
-smoke before the v14 evaluator routes the scientific branch. The protected
+tests. Exact-source smoke `728550` completed two finite updates. The sole
+1,000-update v15 fit is job `728691`, currently pending normal-partition
+priority. It advances as a new post-result mechanism hypothesis supported by
+the measured WRITE/LINK-only corpus and v14's exact count-without-binding
+signature, not as a falsified claim that the sealed router selected it.
+
+Contract v16 is already mechanically qualified for the predicted v15
+count-without-payload failure. It preserves the deployed v15 architecture but
+replaces detached cross-kind Sinkhorn supervision with deterministic
+canonical WRITE and LINK rail-local losses, giving activity, slot pointer,
+value, and relation source/target heads direct independent gradients. Its 51
+focused tests and static/custody checks pass. It remains scientifically held
+until v15's independent evaluator selects that branch. The protected
 step-300k checkpoint remains immutable and no raw pretraining writer is active.
 
 The older adversarial conclusions remain binding: the apparent 11/11
