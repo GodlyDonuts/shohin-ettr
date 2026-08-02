@@ -345,3 +345,56 @@ updates and produced no report. Held dependent `726979` was canceled. Masked
 pointer distributions are now explicitly promoted to FP32, with a BF16
 compiler regression test. This preserves the treatment and requires one more
 identical two-update smoke from newly sealed source before any long fit.
+
+## Contract-v12 advancement and failure routing
+
+The effect-set treatment is not an open-ended invitation to add slots, seeds,
+or duration. Its first 1,000-update gate has four preregistered outcomes:
+
+1. **Exact local effects and both strict axes improve.** Replicate the same
+   source, budget, and seed geometry on a fresh population. Only a replicated
+   WORLD and COMMAND gain can promote the unordered effect set.
+2. **Effect kinds collapse to NOOP or one dominant class.** Replace anonymous
+   learned effect queries with public-AST role anchors derived from the current
+   operation's semantic children. This branch changes the binding mechanism;
+   it does not increase free-slot count.
+3. **Entity effects become accurate but relation additions remain wrong.**
+   Split the algebra into two causal phases. Phase A applies allocate/write/
+   clear/replace effects. Phase B then predicts link/unlink/root/disposition
+   against the resulting post-entity state, making newly allocated endpoints
+   explicit rather than requiring simultaneous cross-slot coordination.
+4. **Local typed effects and terminal packets improve but fully autonomous
+   WORLD/COMMAND remain zero.** Freeze the compiler and rerun crossed
+   oracle-program/autonomous-state plus autonomous-program/oracle-state
+   isolation. If state is sufficient under an oracle program, the remaining
+   defect is query/compiler consumption; if not, close this state quotient.
+
+A mechanically clean run with falling loss but no exact local or causal gain
+is a rejection, not evidence for grokking. Width, more seeds, and longer
+duration are prohibited until one of the mechanism-specific local gates moves.
+
+## Contract-v12 mechanical and capacity result
+
+Newton V100 smoke `726980` completes two updates from immutable source
+`c630a5596c98a074198c25898d4362bb407b3e81` with finite BF16
+forward/backward, evaluator contrasts, report sealing, and custody. The
+authoritative runtime is
+`scratchpad/shohin_ettr_operation_effect_set_runtime_c630a55_r2`; its 3,582
+files are read-only and its SHA256SUMS SHA-256 is
+`d0380af5da80fc0a2825869f0edb366a35374887d6e4265d2bcba6d9fa135668`.
+The complete system has 200,785,290 parameters, including a 44,846,396-
+parameter effect compiler. The smoke is a mechanical pass only: two updates
+leave strict WORLD and COMMAND at zero.
+
+Independent Stokes audit `760916` then measures the exact algebra-aligned
+effect-set cardinality over 494,480 train and 60,512 development operations.
+Both splits have maximum 10 effects; train has 72 ten-effect operations and
+development has six. Report
+`artifacts/r12/ettr_public_operation_state_delta_v4_3c5b954_r1/report.json`
+has file SHA-256
+`894c287c80a093c9f4235358c00d7b7dfb42853b2218ac5b31a85b287eea8095`
+and payload SHA-256
+`88eb06581864b850e34045b0b2f96fbd78e797dc80a28bb4784f87f0f8a75bf5`.
+The sealed 16-slot compiler therefore has measured capacity headroom. This
+released the preregistered 1,000-update job `726981`; it does not relax any
+local-effect or source-deleted causal advancement gate.

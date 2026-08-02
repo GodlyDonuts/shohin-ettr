@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 08:47 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 09:13 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -199,8 +199,11 @@
 > under an exactly algebra-aligned v4 label. The held factorized GPU
 > job was canceled untouched. The active mechanism-distinct successor is an
 > unordered bounded typed-effect set compiler with state-grounded operands,
-> permutation-invariant training, and the same fixed state algebra; it is
-> locally test-gated but has not yet produced a reasoning result.
+> permutation-invariant training, and the same fixed state algebra. Its
+> two-update V100 smoke is mechanically clean and the exact corpus audit proves
+> that 16 slots cover the measured maximum of 10 effects. The preregistered
+> 1,000-update gate is released as Newton job `726981`; it has not yet produced
+> a reasoning result.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -24240,3 +24243,58 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `fix_the_single_dtype_boundary_reseal_source_and_repeat_the_same_two_update_smoke_without_changing_the_scientific_treatment`.
+
+  The post-smoke scientific routing is frozen before any long result. Exact
+  local effects plus both strict axes trigger fresh-population replication.
+  Kind collapse triggers public-AST role-anchored effect queries. Correct
+  entity edits with wrong relation additions trigger a two-phase entity-then-
+  relation algebra over the post-entity state. Better local effects or packets
+  with zero strict axes trigger crossed state-sufficiency isolation. Falling
+  loss without an exact local or causal gain rejects v12; it does not authorize
+  more slots, seeds, width, duration, or a grokking claim.
+
+- **2026-08-02 09:03--09:13 EDT** -- **The effect-set mechanics and exact
+  capacity gate pass; the preregistered 1,000-update fit is released.**
+
+  Newton V100 job `726980` completed the exact two-update smoke cleanly in
+  2m32s on `evc1`. It used immutable runtime
+  `scratchpad/shohin_ettr_operation_effect_set_runtime_c630a55_r2`, exact
+  source `c630a5596c98a074198c25898d4362bb407b3e81`, 3,582 measured files,
+  zero writable files, and SHA256SUMS SHA-256
+  `d0380af5da80fc0a2825869f0edb366a35374887d6e4265d2bcba6d9fa135668`.
+  The earlier `r1` runtime was rejected before submission because its guessed
+  source receipt was wrong; no job used it. The authoritative smoke report is
+  `artifacts/r12/ettr_operation_effect_set_smoke_u2_a31_d11_v100_c630a55_r1/report.json`
+  with file SHA-256
+  `f91e718f89569a9ab7a66c08a5dc48678b3f3ba2493a3d31bdd5c72365550962`
+  and contract SHA-256
+  `c940e13bad41e08474a2cf745a39656f7362a87de2e44186d9d73dd712c54784`.
+  The complete system has 200,785,290 parameters; the compiler has 44,846,396.
+  BF16 forward/backward, evaluator contrasts, custody, and report sealing all
+  pass. Last loss is 10.741863, pre-clip gradient norm is 10.3125, atomic
+  action loss is 6.33344, state loss is 0.14838, operation-prefix loss is
+  0.26004, and causal-delta loss is 1.000003. Two updates are a mechanics
+  check only: fully autonomous WORLD and COMMAND remain zero.
+
+  Stokes audit-v4 job `760916` independently completed 494,480 train and
+  60,512 development operation instances in 24m52s on 48 CPU cores. Its
+  report is preserved at
+  `artifacts/r12/ettr_public_operation_state_delta_v4_3c5b954_r1/report.json`
+  with file SHA-256
+  `894c287c80a093c9f4235358c00d7b7dfb42853b2218ac5b31a85b287eea8095`
+  and payload SHA-256
+  `88eb06581864b850e34045b0b2f96fbd78e797dc80a28bb4784f87f0f8a75bf5`.
+  The exact algebra-aligned total-effect maximum is 10 in both splits. Train
+  contains 72 ten-effect operations and development contains six; therefore
+  the sealed 16-slot compiler has measured headroom and no capacity increase
+  is authorized.
+
+  The capacity result released dependency-satisfied Newton job `726981` at
+  09:12 EDT. It uses the same immutable source and compiler contract for
+  1,000 updates in isolated output
+  `train/ettr_operation_effect_set_u1000_a31_d11_v100_c630a55_r1`.
+  Promotion still requires exact local effect movement and simultaneous strict
+  WORLD plus COMMAND movement; lower loss alone rejects the treatment.
+
+  Decision:
+  `release_the_measured_capacity_sufficient_effect_set_fit_and_route_its_result_by_exact_effect_kind_relation_and_causal_gates`.
