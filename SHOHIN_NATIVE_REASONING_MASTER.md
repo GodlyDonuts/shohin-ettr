@@ -53938,3 +53938,48 @@ The dormant implementation is immutable on Newton as
 writable entries, full checksum replay, and SHA256SUMS SHA-256
 `73b82ec26467de405ccd7d32ff4031cb0fbacd394c2708ebba355d86cec3d484`.
 No v20 GPU job has been submitted.
+
+### 2026-08-02: final local compiler boundary and capability-floor pivot
+
+The operation-family line now has a hard endpoint. A pure transition planner
+permits only v15 failure -> v19, v19 pass -> warm-started v18, v19 failure ->
+v20, and v20 pass -> warm-started v21. Every other outcome is STOP. V20/v21
+are the final bounded local-family experiments; no v22, width, duration, seed,
+or loss variants are authorized after a strict-gate miss.
+
+The release path is now evidentially continuous rather than nominal. V18 and
+v21 validate an exact five-file predecessor receipt and complete checksum
+manifest, then require the loaded compiler's initial safetensors SHA-256 to
+equal the predecessor final compiler SHA-256. Missing, extra, incompatible, or
+mismatched artifacts fail before optimization. Serial Slurm dispatchers
+evaluate, route, plan, and submit at most one successor while preserving a
+single scientific writer.
+
+This closes the assumption that Shohin's 125M residual is necessarily the
+right foundation. After the finite route, the same frozen ETTR interface is
+measured across protected Shohin 125M, MobileLLM-R1 360M, Qwen3.5-0.8B, and
+SmolLM3-3B using semantic-equivalent data, identical source-deletion tests,
+matched updates, and a favorable parameter/FLOP-matched dense recurrent
+control. Oracle-state reader, oracle-program executor, and WORLD
+compiler/effect binding each require at least 95%; autonomous exact terminal
+state, WORLD, and COMMAND each require at least 90%. Binding derangement,
+state reset, query-only, and shuffled-label controls must remain at chance.
+
+The matrix has explicit scientific consequences. A shared oracle-component
+failure identifies a defective interface rather than insufficient scale. A
+0.8B/3B pass with smaller failures establishes a capacity floor. A dense tie
+or win means ETTR has not earned inclusion. Failure even at 3B retires current
+ETTR. A failed joint release also retires separately trained component
+composition; its replacement must be one differentiable, model-owned
+WORLD -> state -> recurrent COMMAND -> terminal state -> late QUERY trajectory
+with tied recurrent state and adaptive STOP.
+
+No long pretraining follows directly from this decision. A scratch candidate
+is authorized only after capability-floor proof, and a long run requires a
+mostly fresh broad corpus plus staged general instruction, verified reasoning,
+and RLVR post-training. The replayed 57.8B corpus is not sufficient evidence
+for a trillion-token launch. Full preregistration:
+`docs/research/R12_CAPABILITY_FLOOR_CAMPAIGN.md`.
+
+Current decision:
+`finish_the_hash_bound_local_route_once_then_find_the_smallest_backbone_that_can_own_the_full_reasoning_trajectory_or_retire_the_mechanism`.

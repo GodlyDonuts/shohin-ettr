@@ -83,6 +83,8 @@ from train_parallel_terminal_state_pilot import (
     OPERATION_FAMILY_ISLAND_REPORT_SCHEMA as PILOT_OPERATION_FAMILY_ISLAND_REPORT_SCHEMA,
     OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA as PILOT_OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA,
     OPERATION_STATE_BOUND_FAMILY_REPORT_SCHEMA as PILOT_OPERATION_STATE_BOUND_FAMILY_REPORT_SCHEMA,
+    OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA as PILOT_OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA,
+    OPERATION_STATE_BOUND_FAMILY_JOINT_REPORT_SCHEMA as PILOT_OPERATION_STATE_BOUND_FAMILY_JOINT_REPORT_SCHEMA,
     POST_WRITE_LINK_CONTRACT_SCHEMA as PILOT_POST_WRITE_LINK_CONTRACT_SCHEMA,
     POST_WRITE_LINK_REPORT_SCHEMA as PILOT_POST_WRITE_LINK_REPORT_SCHEMA,
     RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA as PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA,
@@ -312,6 +314,9 @@ def _load_terminal_compiler(
         PILOT_OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA: (
             PILOT_OPERATION_STATE_BOUND_FAMILY_REPORT_SCHEMA
         ),
+        PILOT_OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA: (
+            PILOT_OPERATION_STATE_BOUND_FAMILY_JOINT_REPORT_SCHEMA
+        ),
     }
     run_schema = contract.get("schema")
     if (
@@ -353,6 +358,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
         PILOT_OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA,
+        PILOT_OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA,
         PILOT_CONTRACT_SCHEMA,
         PILOT_CAUSAL_DELTA_CONTRACT_SCHEMA,
     ):
@@ -386,6 +392,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
         PILOT_OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA,
+        PILOT_OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA,
     }
     lexical_command = contract.get("schema") in {
         PILOT_LEXICAL_CONTRACT_SCHEMA,
@@ -404,6 +411,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
         PILOT_OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA,
+        PILOT_OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA,
     }
     token_native_command_mask = contract.get("schema") in {
         PILOT_SYNTAX_CONTRACT_SCHEMA,
@@ -421,6 +429,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
         PILOT_OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA,
+        PILOT_OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA,
     }
     token_native_occurrence_command = (
         contract.get("schema") == PILOT_OCCURRENCE_CONTRACT_SCHEMA
@@ -439,6 +448,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
         PILOT_OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA,
+        PILOT_OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA,
     }
     token_native_declaration_binding_command = contract.get("schema") in {
         PILOT_DECLARATION_CONTRACT_SCHEMA,
@@ -454,6 +464,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
         PILOT_OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA,
+        PILOT_OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA,
     }
     cover_verified_command_mask = contract.get("schema") in {
         PILOT_DECLARATION_CONTRACT_SCHEMA,
@@ -469,6 +480,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
         PILOT_OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA,
+        PILOT_OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA,
     }
     token_native_operation_recurrence_command = contract.get("schema") in {
         PILOT_OPERATION_CONTRACT_SCHEMA,
@@ -483,6 +495,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
         PILOT_OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA,
+        PILOT_OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA,
     }
     token_native_operation_state_command = contract.get("schema") in {
         PILOT_OPERATION_STATE_CONTRACT_SCHEMA,
@@ -496,6 +509,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
         PILOT_OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA,
+        PILOT_OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA,
     }
     factorized_operation_effect_command = (
         contract.get("schema") == PILOT_FACTORIZED_OPERATION_STATE_CONTRACT_SCHEMA
@@ -514,6 +528,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
         PILOT_OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA,
+        PILOT_OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA,
     }
     operation_effect_cardinality_gate = (
         contract.get("schema") == PILOT_CARDINALITY_GATED_EFFECT_SET_CONTRACT_SCHEMA
@@ -525,6 +540,7 @@ def _load_terminal_compiler(
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
         PILOT_OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA,
+        PILOT_OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA,
     }
     operation_effect_rail_local_loss = (
         contract.get("schema") == PILOT_RAIL_LOCAL_EFFECT_CONTRACT_SCHEMA
@@ -536,14 +552,16 @@ def _load_terminal_compiler(
         PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
         PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
         PILOT_OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA,
+        PILOT_OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA,
     }
     operation_effect_family_island = contract.get("schema") in {
         PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
         PILOT_OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA,
     }
-    operation_effect_family_state_binding = (
-        contract.get("schema") == PILOT_OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA
-    )
+    operation_effect_family_state_binding = contract.get("schema") in {
+        PILOT_OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA,
+        PILOT_OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA,
+    }
     if residual_edits != (architecture.get("sparse_residual_edits") is True):
         raise ParallelTerminalStateEvaluationError(
             "terminal-state residual edit contract differs"
@@ -587,6 +605,38 @@ def _load_terminal_compiler(
     ):
         raise ParallelTerminalStateEvaluationError(
             "terminal-state public syntax architecture differs"
+        )
+    warm_start = contract.get("warm_start")
+    if contract.get("schema") == (
+        PILOT_OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA
+    ):
+        if (
+            not isinstance(warm_start, Mapping)
+            or warm_start.get("contract_schema")
+            != PILOT_OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA
+            or warm_start.get("compiler_sha256")
+            != report.get("initial_compiler_sha256")
+        ):
+            raise ParallelTerminalStateEvaluationError(
+                "state-bound family joint warm-start lineage differs"
+            )
+    elif (
+        contract.get("schema") == PILOT_OPERATION_FAMILY_GATE_CONTRACT_SCHEMA
+        and warm_start is not None
+    ):
+        if (
+            not isinstance(warm_start, Mapping)
+            or warm_start.get("contract_schema")
+            != PILOT_OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA
+            or warm_start.get("compiler_sha256")
+            != report.get("initial_compiler_sha256")
+        ):
+            raise ParallelTerminalStateEvaluationError(
+                "operation family joint warm-start lineage differs"
+            )
+    elif warm_start is not None:
+        raise ParallelTerminalStateEvaluationError(
+            "terminal-state warm-start lineage differs"
         )
     if token_native_command_mask and (
         architecture.get("token_native_codebook_sha256") != stream.codec.codebook_sha256

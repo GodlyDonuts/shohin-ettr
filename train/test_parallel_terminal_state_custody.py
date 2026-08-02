@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Mapping
 
 import pytest
+from safetensors.torch import save_file
+import torch
 
 from eval_parallel_terminal_state import (
     ParallelTerminalStateEvaluationError,
@@ -13,8 +17,13 @@ from eval_parallel_terminal_state import (
 )
 from train_ettr_component_island import _sha256_file
 from train_parallel_terminal_state_pilot import (
+    OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA,
+    OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA,
     ParallelTerminalStatePilotError,
+    _TERMINAL_RUN_FILES,
+    _load_terminal_warm_start,
     _run_schemas,
+    _terminal_warm_start_receipt,
     _validate_args as validate_train_args,
 )
 
@@ -65,6 +74,8 @@ def _train_args(tmp_path: Path):
         token_native_declaration_binding_command=False,
         token_native_operation_recurrence_command=False,
         atomic_action_weight=1.0,
+        terminal_warm_start_dir=None,
+        terminal_warm_start_sha256s_sha256=None,
     )
 
 
@@ -196,6 +207,18 @@ def test_terminal_schema_tracks_residual_architecture() -> None:
         "shohin-ettr-parallel-terminal-state-report-v20",
         "shohin-ettr-parallel-terminal-state-metric-v20",
     )
+    assert _run_schemas(
+        False,
+        token_native_operation_state_command=True,
+        operation_effect_role_anchors=True,
+        operation_effect_write_link_rails=True,
+        operation_effect_family_gate=True,
+        operation_effect_family_state_binding=True,
+    ) == (
+        "shohin-ettr-parallel-terminal-state-contract-v21",
+        "shohin-ettr-parallel-terminal-state-report-v21",
+        "shohin-ettr-parallel-terminal-state-metric-v21",
+    )
 
 
 def test_write_link_rail_args_are_exclusive_and_operation_bound(tmp_path: Path) -> None:
@@ -238,6 +261,12 @@ def test_write_link_rail_args_are_exclusive_and_operation_bound(tmp_path: Path) 
     args.operation_effect_family_island = False
     with pytest.raises(ParallelTerminalStatePilotError, match="arguments differ"):
         validate_train_args(args)
+    args.terminal_warm_start_dir = tmp_path / "warm-start"
+    args.terminal_warm_start_dir.mkdir()
+    args.terminal_warm_start_sha256s_sha256 = "0" * 64
+    validate_train_args(args)
+    args.terminal_warm_start_dir = None
+    args.terminal_warm_start_sha256s_sha256 = None
     args.operation_effect_family_island = True
     args.operation_effect_family_state_binding = False
     args.operation_effect_family_gate = False
@@ -258,6 +287,114 @@ def test_write_link_rail_args_are_exclusive_and_operation_bound(tmp_path: Path) 
     args.operation_effect_set_command = True
     with pytest.raises(ParallelTerminalStatePilotError, match="arguments differ"):
         validate_train_args(args)
+
+
+def _warm_start_run(
+    tmp_path: Path,
+    schema: str,
+    compiler_state: Mapping[str, torch.Tensor] | None = None,
+) -> tuple[Path, str]:
+    run_dir = tmp_path / "warm-start-run"
+    run_dir.mkdir()
+    contract = {"schema": schema}
+    contract_path = run_dir / "pilot-contract.json"
+    contract_path.write_text(
+        json.dumps(contract, sort_keys=True),
+        encoding="utf-8",
+    )
+    compiler_path = run_dir / "terminal-compiler-final.safetensors"
+    if compiler_state is None:
+        compiler_path.write_bytes(b"compiler-final")
+    else:
+        save_file(
+            {
+                name: value.detach().cpu().contiguous()
+                for name, value in compiler_state.items()
+            },
+            compiler_path,
+        )
+    (run_dir / "terminal-compiler-initial.safetensors").write_bytes(
+        b"compiler-initial"
+    )
+    (run_dir / "train.jsonl").write_bytes(b"")
+    report = {
+        "contract_sha256": _sha256_file(contract_path),
+        "final_compiler_sha256": _sha256_file(compiler_path),
+        "schema": "shohin-ettr-parallel-terminal-state-report-v20",
+        "status": "pass",
+    }
+    (run_dir / "report.json").write_text(
+        json.dumps(report, sort_keys=True),
+        encoding="utf-8",
+    )
+    manifest = "".join(
+        f"{_sha256_file(run_dir / name)}  {name}\n"
+        for name in _TERMINAL_RUN_FILES
+    )
+    (run_dir / "SHA256SUMS").write_text(manifest, encoding="ascii")
+    return run_dir, _sha256_file(run_dir / "SHA256SUMS")
+
+
+def test_terminal_warm_start_is_hash_bound_and_schema_bound(tmp_path: Path) -> None:
+    run_dir, receipt_sha = _warm_start_run(
+        tmp_path,
+        OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA,
+    )
+    receipt = _terminal_warm_start_receipt(
+        run_dir,
+        receipt_sha,
+        successor_schema=OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA,
+    )
+    assert receipt["compiler_sha256"] == _sha256_file(
+        run_dir / "terminal-compiler-final.safetensors"
+    )
+    with pytest.raises(ParallelTerminalStatePilotError, match="lineage differs"):
+        _terminal_warm_start_receipt(
+            run_dir,
+            receipt_sha,
+            successor_schema="shohin-ettr-parallel-terminal-state-contract-v18",
+        )
+
+
+def test_terminal_warm_start_loads_exact_state_and_rejects_geometry(
+    tmp_path: Path,
+) -> None:
+    torch.manual_seed(7)
+    source = torch.nn.Linear(3, 2)
+    run_dir, receipt_sha = _warm_start_run(
+        tmp_path,
+        OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA,
+        source.state_dict(),
+    )
+    target = torch.nn.Linear(3, 2)
+    for parameter in target.parameters():
+        parameter.data.zero_()
+    receipt = _load_terminal_warm_start(
+        target,
+        run_dir,
+        receipt_sha,
+        successor_schema=OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA,
+    )
+    assert receipt["compiler_sha256"] == _sha256_file(
+        run_dir / "terminal-compiler-final.safetensors"
+    )
+    for name, value in source.state_dict().items():
+        assert torch.equal(target.state_dict()[name], value)
+
+    with pytest.raises(ParallelTerminalStatePilotError, match="compiler differs"):
+        _load_terminal_warm_start(
+            torch.nn.Linear(4, 2),
+            run_dir,
+            receipt_sha,
+            successor_schema=OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA,
+        )
+    (run_dir / "terminal-compiler-final.safetensors").write_bytes(b"mutated")
+    with pytest.raises(ParallelTerminalStatePilotError, match="file differs"):
+        _terminal_warm_start_receipt(
+            run_dir,
+            receipt_sha,
+            successor_schema=OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA,
+        )
 
 
 def test_terminal_run_receipt_rejects_mutation(tmp_path: Path) -> None:

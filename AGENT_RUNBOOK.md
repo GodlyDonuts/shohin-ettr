@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 16:00 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 16:35 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -25148,3 +25148,58 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `prebuild_the_mechanism_distinct_failure_successor_but_spend_gpu_only_when_the_serial_evidence_route_selects_it`.
+
+- **2026-08-02 16:09--16:35 EDT** -- **The operation-family campaign is now
+  finite, its joint release is hash-preserving, and the next strategy is a
+  preregistered four-backbone capability-floor test.**
+
+  The v15 scientific fit `728844` remains the sole writer and is pending
+  resources with a current start estimate of 18:13 EDT. Dependency job
+  `728845` remains held. The exact v15 objective was re-audited against the
+  successful smoke contract: architecture seed 31, data seed 11, 1,000
+  updates, learning rate `3e-4`, gradient clip `1.0`, causal-delta weight
+  `1.0`, oracle initial state, and 32 evaluation batches. No competing
+  scientific fit was launched.
+
+  Contract v21 now implements the only permitted post-v20 joint release. It
+  requires a v20 predecessor and validates the predecessor's exact five-file
+  receipt, `SHA256SUMS` digest, every member digest, contract/report schemas,
+  and lineage before loading. The initial compiler safetensors must byte-match
+  the predecessor's final compiler. The same fail-closed path supports the
+  predeclared v19-to-v18 joint release. Missing, extra, incompatible, or
+  mismatched predecessor artifacts abort before training.
+
+  The finite planner admits only these transitions: v15 family failure to
+  v19; v19 pass to warm-started v18; v19 failure to v20; v20 pass to
+  warm-started v21; otherwise STOP. V20/v21 are the final bounded experiments
+  in this local compiler family. A miss does not authorize v22, more width,
+  more duration, another seed, or loss-weight search. The v15 failure route
+  was corrected to the preregistered family-island curriculum rather than the
+  obsolete exclusive-family branch. Serial fit/evaluate/route/dispatch Slurm
+  scripts preserve one-writer custody and submit at most one selected
+  successor.
+
+  The post-route campaign is frozen in
+  `docs/research/R12_CAPABILITY_FLOOR_CAMPAIGN.md` and machine preregistration
+  `artifacts/r12/ettr_capability_floor_preregistration_v1.json`, SHA-256
+  `14c0b5c9ae392e38ad1c6e2e47e27a337b82cdd046d19b6e7606ff3266fdf884`.
+  It compares protected Shohin 125M, MobileLLM-R1 360M, Qwen3.5-0.8B, and
+  SmolLM3-3B under the same ETTR mechanism, semantic data, update budget,
+  source-deleted evaluator, and a favorable parameter/FLOP-matched dense
+  recurrent control. Component gates are 95%; autonomous terminal packet and
+  WORLD/COMMAND gates are 90%; deranged/reset/query-only/shuffled controls
+  must remain at chance. All-backbone failure of one oracle component means
+  the interface is defective. A 3B composition failure retires current ETTR;
+  a dense-control tie or win denies ETTR inclusion.
+
+  If the final joint gate fails, separately fitting compiler, reactor, and
+  reader modules and merely composing them is retired. The replacement must
+  be one differentiable model-owned WORLD-to-state-to-COMMAND-to-terminal-
+  state-to-late-QUERY trajectory with a tied recurrent core and adaptive STOP.
+  Heavyweight matrix jobs remain unauthorized until the final mechanism hash,
+  semantic corpus receipts, matched budgets, and stop/go rules are sealed.
+  Eighty-eight focused tests pass with clean Ruff, byte compilation, Bash
+  syntax, and diff checks.
+
+  Decision:
+  `finish_v15_to_v21_once_then_measure_the_capability_floor_and_retire_interfaces_or_ettr_when_the_frozen_gates_require_it`.

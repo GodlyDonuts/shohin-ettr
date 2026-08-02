@@ -8,6 +8,7 @@ from route_operation_effect_set_result import (
     CARDINALITY_GATED_SCHEMA,
     OPERATION_FAMILY_GATE_SCHEMA,
     OPERATION_STATE_BOUND_FAMILY_SCHEMA,
+    OPERATION_STATE_BOUND_FAMILY_JOINT_SCHEMA,
     POST_WRITE_LINK_SCHEMA,
     RAIL_LOCAL_EFFECT_SCHEMA,
     REPORT_SCHEMA,
@@ -125,14 +126,14 @@ def test_router_sends_typed_rail_collapse_to_payload_islands() -> None:
     assert result["route"] == "rail_local_pointer_payload_islands"
 
 
-def test_router_sends_cross_rail_conflict_to_operation_family_gate() -> None:
+def test_router_sends_cross_rail_conflict_to_family_island() -> None:
     report = _report()
     report["operation_effect_diagnostics"]["after"] = _local(
         family=0.5,
         family_conflict=0.25,
     )
     result = route_result(report, {"schema": WRITE_LINK_RAIL_SCHEMA})
-    assert result["route"] == "exclusive_operation_family_gate"
+    assert result["route"] == "operation_family_island_curriculum"
 
 
 def test_router_isolates_failed_operation_family_controller() -> None:
@@ -183,6 +184,37 @@ def test_router_releases_only_a_passing_state_bound_family_arbiter() -> None:
     )
     result = route_result(report, {"schema": OPERATION_STATE_BOUND_FAMILY_SCHEMA})
     assert result["route"] == "reject_standalone_operation_family_primitive"
+
+
+def test_router_retires_component_composition_after_failed_joint_release() -> None:
+    report = _report()
+    report["operation_effect_diagnostics"]["after"] = _local(
+        family=0.92,
+        family_conflict=0.0,
+    )
+    result = route_result(
+        report,
+        {"schema": OPERATION_STATE_BOUND_FAMILY_JOINT_SCHEMA},
+    )
+    assert result["route"] == "retire_separate_component_composition"
+
+    arm = report["evaluation"]["after"]["arms"][
+        "autonomous_program_autonomous_state"
+    ]["source_deleted_causal"]
+    report["operation_effect_diagnostics"]["after"] = _local(
+        effect_set=0.1,
+        dense=0.2,
+        terminal=0.1,
+        family=0.92,
+        family_conflict=0.0,
+    )
+    arm["world"] = _causal(0.05)
+    arm["command"] = _causal(0.05)
+    result = route_result(
+        report,
+        {"schema": OPERATION_STATE_BOUND_FAMILY_JOINT_SCHEMA},
+    )
+    assert result["route"] == "seal_for_capability_floor"
 
 
 def test_router_sends_relation_binding_failure_to_two_phase_algebra() -> None:

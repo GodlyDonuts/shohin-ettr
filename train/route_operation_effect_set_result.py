@@ -23,6 +23,9 @@ OPERATION_FAMILY_ISLAND_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v
 OPERATION_STATE_BOUND_FAMILY_SCHEMA = (
     "shohin-ettr-parallel-terminal-state-contract-v20"
 )
+OPERATION_STATE_BOUND_FAMILY_JOINT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-contract-v21"
+)
 
 
 class OperationEffectRouteError(RuntimeError):
@@ -152,6 +155,7 @@ def _contract_schema(
         OPERATION_FAMILY_GATE_SCHEMA,
         OPERATION_FAMILY_ISLAND_SCHEMA,
         OPERATION_STATE_BOUND_FAMILY_SCHEMA,
+        OPERATION_STATE_BOUND_FAMILY_JOINT_SCHEMA,
     }:
         raise OperationEffectRouteError("terminal state effect contract differs")
     return str(schema)
@@ -222,7 +226,27 @@ def route_result(
         and after_command > 0.0
     )
     contract_schema = _contract_schema(report, terminal_contract)
-    if local_exact_gain and terminal_gain and both_strict_gain:
+    if contract_schema == OPERATION_STATE_BOUND_FAMILY_JOINT_SCHEMA:
+        if operation_family is None:
+            raise OperationEffectRouteError(
+                "joint state-bound family result lacks family exactness"
+            )
+        if local_exact_gain and terminal_gain and both_strict_gain:
+            route = "seal_for_capability_floor"
+            reason = (
+                "the final local-family release improved exact local effects, "
+                "terminal state, WORLD, and COMMAND; seal this exact mechanism "
+                "for the preregistered frozen-backbone capability-floor matrix"
+            )
+        else:
+            route = "retire_separate_component_composition"
+            reason = (
+                "the final local-family release missed its joint gate; retire "
+                "separately fitted compiler/reactor/reader composition and freeze "
+                "one differentiable model-owned trajectory before the capability "
+                "floor matrix"
+            )
+    elif local_exact_gain and terminal_gain and both_strict_gain:
         route = "replicate_fresh_population"
         reason = "local effects, terminal state, WORLD, and COMMAND all improved"
     elif (
@@ -233,10 +257,11 @@ def route_result(
             or (family_conflict is not None and family_conflict > 0.01)
         )
     ):
-        route = "exclusive_operation_family_gate"
+        route = "operation_family_island_curriculum"
         reason = (
             "independent rails violate or miss the corpus-exact NONE/WRITE/LINK "
-            "operation family; select one family before releasing rail payloads"
+            "operation family; isolate family acquisition while bypassing payload "
+            "rails before any joint release"
         )
     elif (
         contract_schema == OPERATION_FAMILY_GATE_SCHEMA

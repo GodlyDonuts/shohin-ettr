@@ -24,6 +24,8 @@ TOKENIZER=${TOKENIZER:?set source tokenizer path}
 PROTECTED_CHECKPOINT=${PROTECTED_CHECKPOINT:?set protected checkpoint}
 JOINT_RUN_DIR=${JOINT_RUN_DIR:?set composed Shohin run}
 COMPILER_RUN_DIR=${COMPILER_RUN_DIR:?set completed algebraic compiler run}
+TERMINAL_WARM_START_DIR=${TERMINAL_WARM_START_DIR:-}
+TERMINAL_WARM_START_SHA256SUMS_SHA256=${TERMINAL_WARM_START_SHA256SUMS_SHA256:-}
 OUTPUT=${OUTPUT:?set fresh pilot output}
 CAUSAL_DELTA_WEIGHT=${CAUSAL_DELTA_WEIGHT:?set causal delta weight}
 ARCHITECTURE_SEED=${ARCHITECTURE_SEED:?set architecture seed}
@@ -91,6 +93,22 @@ if [[ -e "$OUTPUT" || -L "$OUTPUT" ]]; then
   echo "terminal-state output exists" >&2
   exit 2
 fi
+if [[ -n "$TERMINAL_WARM_START_DIR" \
+  || -n "$TERMINAL_WARM_START_SHA256SUMS_SHA256" ]]; then
+  [[ -n "$TERMINAL_WARM_START_DIR" \
+    && -n "$TERMINAL_WARM_START_SHA256SUMS_SHA256" \
+    && "$TERMINAL_WARM_START_DIR" == /* \
+    && -d "$TERMINAL_WARM_START_DIR" \
+    && ! -L "$TERMINAL_WARM_START_DIR" \
+    && "$TERMINAL_WARM_START_DIR" != "$OUTPUT" \
+    && "$(sha256sum "$TERMINAL_WARM_START_DIR/SHA256SUMS" \
+      | cut -d ' ' -f 1)" == "$TERMINAL_WARM_START_SHA256SUMS_SHA256" \
+    && -z "$(cd "$TERMINAL_WARM_START_DIR" \
+      && sha256sum -c SHA256SUMS 2>&1 | grep -v ': OK$')" ]] || {
+    echo "terminal warm-start run differs" >&2
+    exit 2
+  }
+fi
 
 joint_contract_sha=$(sha256sum \
   "$JOINT_RUN_DIR/run-contract.json" | cut -d ' ' -f 1)
@@ -103,6 +121,13 @@ compiler_sha=$(sha256sum \
   | cut -d ' ' -f 1)
 
 residual_args=()
+if [[ -n "$TERMINAL_WARM_START_DIR" ]]; then
+  residual_args+=(
+    --terminal-warm-start-dir "$TERMINAL_WARM_START_DIR"
+    --terminal-warm-start-sha256s-sha256 \
+      "$TERMINAL_WARM_START_SHA256SUMS_SHA256"
+  )
+fi
 if [[ "$RESIDUAL_EDITS" == 1 ]]; then
   residual_args+=(--residual-edits)
 elif [[ "$RESIDUAL_EDITS" != 0 ]]; then
@@ -300,8 +325,8 @@ elif [[ "$OPERATION_EFFECT_FAMILY_ISLAND" != 0 ]]; then
   exit 2
 fi
 if [[ "$OPERATION_EFFECT_FAMILY_STATE_BINDING" == 1 ]]; then
-  [[ "$OPERATION_EFFECT_FAMILY_ISLAND" == 1 ]] || {
-    echo "state-bound family arbitration requires the family island" >&2
+  [[ "$OPERATION_EFFECT_FAMILY_GATE" == 1 ]] || {
+    echo "state-bound family arbitration requires the family gate" >&2
     exit 2
   }
   residual_args+=(--operation-effect-family-state-binding)

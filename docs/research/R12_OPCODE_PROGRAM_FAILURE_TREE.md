@@ -965,3 +965,29 @@ No v20 job has been submitted.
 
 Current decision:
 `hold_v20_dormant_until_v19_failure_then_run_one_matched_family_island_gate`.
+
+## Final Local-Family Boundary
+
+The operation-family search is no longer open-ended. The exact finite route
+is v15 family failure -> v19; v19 pass -> hash-bound v18 joint release; v19
+failure -> v20; v20 pass -> hash-bound v21 joint release; every other result
+stops the family. V21 must begin from the exact v20 compiler safetensors and
+must validate the predecessor's complete five-file checksum receipt before
+loading. V18 follows the same rule from v19. A fresh initialization masquerading
+as a release is impossible by contract.
+
+V20/v21 are the final local compiler experiments. Failure does not authorize
+v22, wider heads, longer training, another seed, or a changed loss. The next
+question is the capability floor of one frozen interface across Shohin 125M,
+MobileLLM-R1 360M, Qwen3.5-0.8B, and SmolLM3-3B, measured against a favorable
+parameter/FLOP-matched dense recurrent control. Full gates and retirement rules
+are in `R12_CAPABILITY_FLOOR_CAMPAIGN.md`.
+
+If the joint release fails, separate compiler/reactor/reader fitting followed
+by composition is closed. The only admissible redesign is a single
+differentiable model-owned trajectory with a tied recurrent state core,
+adaptive STOP, and late-query readout. If even the 3B ceiling fails its
+autonomous gate, current ETTR is retired rather than scaled blindly.
+
+Current decision:
+`run_the_finite_local_route_once_then_measure_or_retire_the_interface_across_a_real_backbone_capability_floor`.

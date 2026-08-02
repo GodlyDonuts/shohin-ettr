@@ -13,7 +13,7 @@ import re
 import shutil
 from typing import Sequence
 
-from safetensors.torch import save_file
+from safetensors.torch import load_file, save_file
 import torch
 import torch.nn.functional as F
 
@@ -154,6 +154,12 @@ OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA = (
 OPERATION_STATE_BOUND_FAMILY_REPORT_SCHEMA = (
     "shohin-ettr-parallel-terminal-state-report-v20"
 )
+OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-contract-v21"
+)
+OPERATION_STATE_BOUND_FAMILY_JOINT_REPORT_SCHEMA = (
+    "shohin-ettr-parallel-terminal-state-report-v21"
+)
 CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v3"
 REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v3"
 CAUSAL_DELTA_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v2"
@@ -162,6 +168,13 @@ LEGACY_CONTRACT_SCHEMA = "shohin-ettr-parallel-terminal-state-contract-v1"
 LEGACY_REPORT_SCHEMA = "shohin-ettr-parallel-terminal-state-report-v1"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
+_TERMINAL_RUN_FILES = (
+    "pilot-contract.json",
+    "report.json",
+    "terminal-compiler-final.safetensors",
+    "terminal-compiler-initial.safetensors",
+    "train.jsonl",
+)
 
 
 class ParallelTerminalStatePilotError(RuntimeError):
@@ -183,6 +196,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--compiler-sha256", required=True)
     parser.add_argument("--compiler-contract", type=Path, required=True)
     parser.add_argument("--compiler-contract-sha256", required=True)
+    parser.add_argument("--terminal-warm-start-dir", type=Path)
+    parser.add_argument("--terminal-warm-start-sha256s-sha256")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--architecture-seed", type=int, required=True)
@@ -333,6 +348,12 @@ def _validate_args(args: argparse.Namespace) -> None:
         "operation_effect_family_state_binding",
         False,
     )
+    terminal_warm_start_dir = getattr(args, "terminal_warm_start_dir", None)
+    terminal_warm_start_sha256s_sha256 = getattr(
+        args,
+        "terminal_warm_start_sha256s_sha256",
+        None,
+    )
     paths = (
         args.release_root,
         args.data_root,
@@ -425,9 +446,32 @@ def _validate_args(args: argparse.Namespace) -> None:
             )
         )
         or (operation_effect_family_island and not operation_effect_family_gate)
+        or (operation_effect_family_state_binding and not operation_effect_family_gate)
         or (
             operation_effect_family_state_binding
             and not operation_effect_family_island
+            and terminal_warm_start_dir is None
+        )
+        or (
+            terminal_warm_start_dir is not None
+            and (
+                not operation_effect_family_gate
+                or operation_effect_family_island
+            )
+        )
+        or (
+            (terminal_warm_start_dir is None)
+            != (terminal_warm_start_sha256s_sha256 is None)
+        )
+        or (
+            terminal_warm_start_dir is not None
+            and (
+                not terminal_warm_start_dir.is_absolute()
+                or terminal_warm_start_dir == args.output
+                or terminal_warm_start_dir.is_symlink()
+                or not terminal_warm_start_dir.is_dir()
+                or _HEX64.fullmatch(terminal_warm_start_sha256s_sha256) is None
+            )
         )
         or args.output.exists()
         or args.output.is_symlink()
@@ -1583,6 +1627,116 @@ def _module_sha256(module: torch.nn.Module, path: Path) -> str:
     return _sha256_file(path)
 
 
+def _terminal_warm_start_receipt(
+    run_dir: Path,
+    expected_sha256s_sha256: str,
+    *,
+    successor_schema: str,
+) -> dict[str, object]:
+    """Verify and describe one immutable terminal-compiler predecessor."""
+
+    sums_path = run_dir / "SHA256SUMS"
+    if (
+        sums_path.is_symlink()
+        or not sums_path.is_file()
+        or _sha256_file(sums_path) != expected_sha256s_sha256
+    ):
+        raise ParallelTerminalStatePilotError(
+            "terminal warm-start receipt differs"
+        )
+    entries: dict[str, str] = {}
+    for line in sums_path.read_text(encoding="ascii").splitlines():
+        fields = line.split("  ", 1)
+        if (
+            len(fields) != 2
+            or _HEX64.fullmatch(fields[0]) is None
+            or fields[1] not in _TERMINAL_RUN_FILES
+            or fields[1] in entries
+        ):
+            raise ParallelTerminalStatePilotError(
+                "terminal warm-start manifest differs"
+            )
+        entries[fields[1]] = fields[0]
+    if set(entries) != set(_TERMINAL_RUN_FILES):
+        raise ParallelTerminalStatePilotError(
+            "terminal warm-start file set differs"
+        )
+    for name, expected in entries.items():
+        path = run_dir / name
+        if path.is_symlink() or not path.is_file() or _sha256_file(path) != expected:
+            raise ParallelTerminalStatePilotError(
+                "terminal warm-start file differs"
+            )
+
+    try:
+        contract = json.loads((run_dir / "pilot-contract.json").read_text())
+        report = json.loads((run_dir / "report.json").read_text())
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ParallelTerminalStatePilotError(
+            "terminal warm-start metadata differs"
+        ) from exc
+    schema = contract.get("schema")
+    allowed_predecessor = {
+        OPERATION_FAMILY_GATE_CONTRACT_SCHEMA: (
+            OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA,
+            OPERATION_FAMILY_ISLAND_REPORT_SCHEMA,
+        ),
+        OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA: (
+            OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA,
+            OPERATION_STATE_BOUND_FAMILY_REPORT_SCHEMA,
+        ),
+    }.get(successor_schema)
+    if (
+        allowed_predecessor is None
+        or schema != allowed_predecessor[0]
+        or report.get("schema") != allowed_predecessor[1]
+        or report.get("status") != "pass"
+        or report.get("contract_sha256") != entries["pilot-contract.json"]
+        or report.get("final_compiler_sha256")
+        != entries["terminal-compiler-final.safetensors"]
+    ):
+        raise ParallelTerminalStatePilotError(
+            "terminal warm-start lineage differs"
+        )
+    return {
+        "compiler_sha256": entries["terminal-compiler-final.safetensors"],
+        "contract_schema": schema,
+        "contract_sha256": entries["pilot-contract.json"],
+        "report_sha256": entries["report.json"],
+        "run_dir": str(run_dir),
+        "sha256s_sha256": expected_sha256s_sha256,
+    }
+
+
+def _load_terminal_warm_start(
+    compiler: torch.nn.Module,
+    run_dir: Path,
+    expected_sha256s_sha256: str,
+    *,
+    successor_schema: str,
+) -> dict[str, object]:
+    receipt = _terminal_warm_start_receipt(
+        run_dir,
+        expected_sha256s_sha256,
+        successor_schema=successor_schema,
+    )
+    try:
+        state = load_file(
+            str(run_dir / "terminal-compiler-final.safetensors"),
+            device="cpu",
+        )
+        incompatibility = compiler.load_state_dict(state, strict=True)
+    except (OSError, RuntimeError, ValueError) as exc:
+        raise ParallelTerminalStatePilotError(
+            "terminal warm-start compiler differs"
+        ) from exc
+    if incompatibility.missing_keys or incompatibility.unexpected_keys:
+        raise ParallelTerminalStatePilotError(
+            "terminal warm-start compiler differs"
+        )
+    return receipt
+
+
 def _run_schemas(
     residual_edits: bool,
     atomic_edits: bool = False,
@@ -1625,7 +1779,7 @@ def _run_schemas(
             or (operation_effect_family_island and not operation_effect_family_gate)
             or (
                 operation_effect_family_state_binding
-                and not operation_effect_family_island
+                and not operation_effect_family_gate
             )
         ):
             raise ParallelTerminalStatePilotError(
@@ -1634,6 +1788,9 @@ def _run_schemas(
         return (
             (
                 OPERATION_STATE_BOUND_FAMILY_CONTRACT_SCHEMA
+                if operation_effect_family_state_binding
+                and operation_effect_family_island
+                else OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA
                 if operation_effect_family_state_binding
                 else OPERATION_FAMILY_ISLAND_CONTRACT_SCHEMA
                 if operation_effect_family_island
@@ -1648,6 +1805,9 @@ def _run_schemas(
             (
                 OPERATION_STATE_BOUND_FAMILY_REPORT_SCHEMA
                 if operation_effect_family_state_binding
+                and operation_effect_family_island
+                else OPERATION_STATE_BOUND_FAMILY_JOINT_REPORT_SCHEMA
+                if operation_effect_family_state_binding
                 else OPERATION_FAMILY_ISLAND_REPORT_SCHEMA
                 if operation_effect_family_island
                 else OPERATION_FAMILY_GATE_REPORT_SCHEMA
@@ -1660,6 +1820,9 @@ def _run_schemas(
             ),
             (
                 "shohin-ettr-parallel-terminal-state-metric-v20"
+                if operation_effect_family_state_binding
+                and operation_effect_family_island
+                else "shohin-ettr-parallel-terminal-state-metric-v21"
                 if operation_effect_family_state_binding
                 else "shohin-ettr-parallel-terminal-state-metric-v19"
                 if operation_effect_family_island
@@ -1956,6 +2119,24 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.operation_effect_family_island,
         args.operation_effect_family_state_binding,
     )
+    if (
+        contract_schema == OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA
+        and args.terminal_warm_start_dir is None
+    ):
+        raise ParallelTerminalStatePilotError(
+            "state-bound family joint release requires an exact warm start"
+        )
+    if (
+        args.terminal_warm_start_dir is not None
+        and contract_schema
+        not in {
+            OPERATION_FAMILY_GATE_CONTRACT_SCHEMA,
+            OPERATION_STATE_BOUND_FAMILY_JOINT_CONTRACT_SCHEMA,
+        }
+    ):
+        raise ParallelTerminalStatePilotError(
+            "terminal warm start is not valid for this release schema"
+        )
     if not torch.cuda.is_available():
         raise ParallelTerminalStatePilotError("terminal-state pilot requires CUDA")
     torch.cuda.set_device(0)
@@ -2053,6 +2234,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             else {}
         ),
     ).to(device=device, dtype=next(model.parameters()).dtype)
+    warm_start_receipt = None
+    if args.terminal_warm_start_dir is not None:
+        warm_start_receipt = _load_terminal_warm_start(
+            compiler,
+            args.terminal_warm_start_dir,
+            args.terminal_warm_start_sha256s_sha256,
+            successor_schema=contract_schema,
+        )
     compiler_parameters = sum(parameter.numel() for parameter in compiler.parameters())
     complete_parameters = (
         replacement_parameters - removed_reactor_parameters + compiler_parameters
@@ -2072,6 +2261,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             compiler,
             args.output / "terminal-compiler-initial.safetensors",
         )
+        if (
+            warm_start_receipt is not None
+            and initial_sha256 != warm_start_receipt["compiler_sha256"]
+        ):
+            raise ParallelTerminalStatePilotError(
+                "terminal warm-start preservation differs"
+            )
         before_interface = _evaluate_interfaces(
             compiler,
             model,
@@ -2314,6 +2510,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "start_position": args.start_position,
             "training_initial_state": args.training_initial_state,
             "updates": args.updates,
+            "warm_start": warm_start_receipt,
         }
         contract_sha256 = _write_no_replace(
             args.output / "pilot-contract.json",
