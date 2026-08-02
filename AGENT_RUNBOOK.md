@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 02:50 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 03:13 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -170,7 +170,18 @@
 > names, QUERY, answers, targets, oracle programs, candidate selector, or host
 > semantic execution. The complete system is 169,421,167 parameters and passes
 > 49 focused architecture, loader, terminal, and custody tests. No current
-> artifact is promoted as stable native reasoning.
+> artifact is promoted as stable native reasoning. The matched 5,000-update
+> syntax-graph arm improves all local schedule fields while exact terminal
+> packets regress from `32/512` at 1,000 updates to zero and every autonomous
+> causal gate remains zero; this rejects early grokking. A train-only sticky
+> opcode-macro selector was then tested at the fixed 1,000-update gate. It
+> collapses from three selected classes before training to one after training,
+> reaches `80/512 = 15.625%` exact selector classes by choosing the dominant
+> skeleton, reduces joint schedule accuracy to 2.67%, merely matches the
+> control's `32/512` exact terminal packets, leaves factual top-1 at 60.94%,
+> and leaves fully autonomous WORLD/COMMAND exactly zero. Flat 2,530-way
+> sticky selection is closed. The uninterrupted 15,000-update syntax-graph
+> control `725574` remains the sole direct delayed-emergence test.
 >
 > **PHASE ORDER CLARIFIED BY USER — 2026-07-26 EDT:** Current work is
 > architecture construction and systems qualification only. The intended
@@ -23523,3 +23534,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_early_grokking_preserve_the_15k_endpoint_and_test_one_hard_train_only_opcode_skeleton_with_compositional_operands`.
+
+- **2026-08-02 02:50--03:13 EDT** -- **Flat sticky opcode selection collapses
+  to the majority macro and is closed at its preregistered first gate.**
+
+  Private V100 diagnostic `725584` completed all 1,000 updates cleanly on
+  `evc11` in 11m34s from immutable runtime
+  `scratchpad/shohin_ettr_sticky_macro_runtime_960333f_r1`. Report SHA-256 is
+  `80fcbe70f929eaa605ef9aef13ca64a5c095a8cc23faa368dda6e37aa28137ae`;
+  pilot-contract SHA-256 is
+  `034926184639d66ab9c796ef65d2e1596926a6e774b0fb7c53d8880fda92efe1`.
+  The copied registry remains exact at SHA-256
+  `03fc92829bc4a1c9f9e8381953ac506e04afeef746871a60ebfca1e482cbafcc`.
+
+  The selector starts with three hard classes and zero exact held-out classes.
+  After training it selects exactly one class on all 512 development rows,
+  with zero selected-class entropy and `80/512 = 15.625%` exact classes. The
+  full-corpus registry independently shows a highly imbalanced label space:
+  the most frequent opcode skeleton is 20.324% of training instances and
+  21.2% of development instances, despite 5.93 bits of train entropy. The
+  treatment therefore learned the majority shortcut rather than conditional
+  whole-program identity.
+
+  Relative to matched contract-v8 at 1,000 updates, joint schedule accuracy
+  falls from 8.830% to 2.669% and opcode accuracy falls from 44.969% to
+  16.632%. Exact terminal packets are `32/512 = 6.25%`, only matching the
+  control; factual top-1 remains exactly 60.9375%; fully autonomous strict,
+  margin-1, and intervention-DID WORLD and COMMAND remain zero. This fails the
+  preregistered advancement rule. Redundant H100 mirror `725587` was canceled
+  before allocation after the mechanism-level failure was verified. The
+  15,000-update contract-v8 trajectory `725574` remains live and finite past
+  update 7,500; it is not interrupted.
+
+  Decision:
+  `close_flat_2530_way_macro_selection_preserve_the_15k_delayed_emergence_control_and_require_the_next_program_identity_to_remove_class_imbalance_without_reintroducing_stepwise_hybrids`.

@@ -1,7 +1,7 @@
 # R12 Sticky Opcode-Macro Rail Preregistration
 
-**Status:** implementation complete; GPU launch withheld until the fixed
-syntax-graph 5k endpoint is read.
+**Status:** first gate complete; closed negative. The treatment failed its
+preregistered advancement rule and is not authorized for scaling.
 
 **Date:** 2026-08-02 EDT
 
@@ -127,3 +127,33 @@ The concurrent 1k/5k/15k contract-v8 trajectory tests two distinct hypotheses:
 
 Only the first is evidence of delayed generalization. Neither counts as native
 reasoning unless both source-deleted causal axes improve and replicate.
+
+## Result
+
+V100 job `725584` completed 1,000 updates on `evc11` from exact source commit
+`960333fc8cdc0b115bd8b400b787c916872ba001`. The immutable report is preserved
+under
+`artifacts/r12/syntax_graph_sticky_opcode_oracle_u1000_a31_d11_v100_960333f_r1/`.
+
+- Report SHA-256:
+  `80fcbe70f929eaa605ef9aef13ca64a5c095a8cc23faa368dda6e37aa28137ae`.
+- Contract SHA-256:
+  `034926184639d66ab9c796ef65d2e1596926a6e774b0fb7c53d8880fda92efe1`.
+- Copied registry SHA-256:
+  `03fc92829bc4a1c9f9e8381953ac506e04afeef746871a60ebfca1e482cbafcc`.
+- Selector exact class: `80/512 = 15.625%`.
+- Selected classes: three before training, one after training.
+- Selected-class entropy after training: zero.
+- Joint schedule accuracy: `208/7,792 = 2.669%`.
+- Oracle-initial exact terminal packets: `32/512 = 6.25%`.
+- Fully autonomous factual top-1: `60.9375%`.
+- Fully autonomous strict WORLD and COMMAND: both zero.
+- Fully autonomous margin-1 and intervention DID: both zero on both axes.
+
+The dominant train opcode skeleton covers 20.324% of training instances and
+the dominant development skeleton covers 21.2%, while train opcode-label
+entropy is 5.93 bits. The selector therefore lowered loss through a
+majority-class shortcut. It recovered no coherence metric beyond the matched
+control, regressed schedule exactness from 8.830% to 2.669%, and did not move a
+causal axis. This is a closed architecture negative, not evidence of grokking
+or native reasoning.
