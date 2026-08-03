@@ -26493,3 +26493,45 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_v12_late_u1000_at_1536_as_current_product_leader_validate_on_full_boards_and_test_only_the_direct_u2000_dose_response_while_v13_is_token_exposure_matched`.
+
+- **2026-08-03 16:18--16:55 EDT** -- **Token matching closes V13 late-layer
+  as a non-leader while 11 independent H100s execute the V12 confirmation,
+  dose-response, and deployment-efficiency queue.**
+
+  V13 token-matched late-layer job `732606` completes 2,500 updates cleanly
+  in 34m25s, exposing `10,113,722` charged target tokens. Its final checkpoint
+  SHA-256 is
+  `d8b4e3918135fc64da9a7013358730d008b5bb2854e287f20ace6b0388466ee9`.
+  The fixed 768-token board is GSM8K `85/100`, MATH `21/100`, HumanEval
+  `5/20`, MBPP `5/20`, GPQA `14/100`, BBH `50/100`, AIME `0/30`, and manual
+  composition `7/12`; science is still running. Code mean is `25.0%` and the
+  five-domain macro is `39.0%`. This is better than its underexposed
+  equal-update checkpoint (`35.7%`) but remains `6.4` points below V12
+  late-1,000 at the candidate 1,536-token deployment budget. V13 late-layer
+  is therefore closed as a product leader; the result shows a modest
+  procedural-exposure gain, not a composition breakthrough.
+
+  V13 token-matched B1 `732605` remains healthy through update 4,120 and
+  `16,726,572` charged targets at about `4.92k` target tok/s. It continues to
+  7,500 updates to match the roughly 30.5M-target V12 B1 exposure. Its result
+  fan `732607--732615` remains dependency-bound.
+
+  V12 late-layer 2,000-update job `733201` starts on `evc47` after reducing
+  its pending wall request from 70 to 60 minutes. It is healthy through update
+  80 at roughly `6.6k` target tok/s with finite loss and gradient norms. Its
+  locked comparison fan is `733212--733220`. Seven corrected finalization
+  jobs `733293--733299` independently score GSM8K, MATH, GPQA, BBH, AIME,
+  fresh science, and the manual board on V12 late-1,000. They test the bounded
+  768+64-token efficiency path without consuming code GPUs where the
+  finalizer cannot change executable output.
+
+  Expanded V12 jobs `733119--733126` all started as H100s became available.
+  HumanEval has already completed at `45/164 = 27.44%`; the other full boards
+  remain in progress. At this checkpoint 11 campaign H100s are running and
+  the ready queue contains the remaining V13 domains, V12 finalization
+  domains, and post-training dose-response evaluations. Eight stale
+  dependency-never-satisfied wide/B1 jobs were canceled; no runnable evidence
+  job was removed.
+
+  Decision:
+  `close_v13_late_after_token_matching_keep_v12_late_u1000_t1536_as_leader_and_use_available_single_h100s_for_full_board_u2000_and_bounded_finalization_only`.

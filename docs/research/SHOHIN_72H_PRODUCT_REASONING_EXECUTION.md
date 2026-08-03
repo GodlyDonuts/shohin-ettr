@@ -760,3 +760,19 @@ the small models scale poorly with DDP, while independent training arms and
 domain evaluators scale nearly linearly across allocations. Every current H100
 request has a distinct product decision attached to it; unhealthy nodes
 `evc33/evc43` remain excluded.
+
+### V13 token-match decision
+
+The matched late-layer V13 run completes at 10.11M charged targets with
+GSM8K 85, MATH 21, HumanEval 25%, MBPP 25%, GPQA 14, BBH 50, AIME 0, and
+manual composition 7/12. Its five-domain macro is 39.0%. This closes V13 as a
+leader: the extra procedural exposure recovers 3.3 macro points over the
+underexposed checkpoint but does not beat V12. No further V13 late-layer dose
+or width variants are authorized.
+
+The active positive-direction queue is now:
+
+- `733119--733126`: full 1,536-token V12 late-1,000 board;
+- `733201` plus `733212--733220`: V12 late-layer 2,000-update dose response;
+- `733293--733299`: V12 late-1,000 deterministic 768+64 finalization path;
+- `732605` plus `732607--732615`: token-matched B1 completion and closure.

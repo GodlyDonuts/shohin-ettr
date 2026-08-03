@@ -54803,3 +54803,12 @@ remaining loss is answer commitment rather than missing derivation. The
 full-board V12 confirmation, token-exposure-matched V13 comparison, and V12
 late-layer 2,000-update dose response are active. No native ETTR claim is made
 from these adapter results; they are the practical reasoning-product track.
+
+Token exposure does not rescue V13 as the product leader. At 10.11M charged
+targets its late-layer checkpoint scores GSM8K 85, MATH 21, code mean 25,
+GPQA 14, and BBH 50, for a 39.0% five-domain macro. It improves on the
+underexposed 35.7% V13 checkpoint but remains well below V12 late-layer at
+1,536 tokens. The procedural stream is useful training material, but its 13%
+share does not solve autonomous composition under this recipe. V12 remains
+the promoted mixture while a 2,000-update dose response and full-board
+confirmation run.
