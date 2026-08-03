@@ -16,6 +16,7 @@ import torch
 from hf_product_reasoning_train import (
     ProductReasoningModel,
     _tokenize_rows,
+    load_product_backbone,
     load_trainable_checkpoint,
     reservoir_rows_with_sha256,
 )
@@ -73,7 +74,7 @@ def _weighted_mean(losses: list[float], charged: list[int]) -> float:
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
-    from transformers import AutoModelForMultimodalLM, AutoTokenizer
+    from transformers import AutoTokenizer
 
     payload = torch.load(args.checkpoint, map_location="cpu", weights_only=False)
     metadata = payload.get("metadata")
@@ -89,12 +90,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     tokenizer = AutoTokenizer.from_pretrained(args.model_root, trust_remote_code=True)
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
-    backbone = AutoModelForMultimodalLM.from_pretrained(
+    backbone, resolved_model_loader = load_product_backbone(
         args.model_root,
+        str(metadata.get("model_loader", "auto")),
         dtype=torch.bfloat16,
         device_map={"": 0},
-        low_cpu_mem_usage=True,
-        trust_remote_code=True,
     )
     workspace = metadata.get("workspace_config") or {}
     model = ProductReasoningModel(
@@ -146,6 +146,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "schema": "shohin-product-reasoning-training-fit-v1",
         "status": "complete",
         "model_revision": args.model_revision,
+        "model_loader": resolved_model_loader,
         "checkpoint": str(args.checkpoint.resolve()),
         "checkpoint_sha256": hashlib.sha256(args.checkpoint.read_bytes()).hexdigest(),
         "arm": metadata["arm"],
