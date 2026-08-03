@@ -168,7 +168,45 @@
 > 3,201,061 raw rows, SHA-256
 > `aeb373e8fb4fedc746527653e09e3d98e73d9749cd34e5dc628f9845de125e55`.
 >
-> **Last updated:** 2026-08-03 02:04 EDT. The protected 300k flagship remains immutable and
+> **PRODUCT CAMPAIGN UPDATE — 2026-08-03 03:13 EDT:** The balanced
+> 200-update chain retained a strong partial T2 lead before a node fault:
+> B1/T2/C2 GSM8K is `40/57/46`, raw MATH-500 `22/24/26`, and GPQA-Diamond
+> `20/46/32`. Every one of the eleven T2-only GSM8K wins that neither control
+> solves has an explicit, arithmetically valid multi-step derivation and none
+> exhausts the generation cap. Three board jobs failed before model load on
+> `evc43`, whose CUDA runtime exposed zero devices. Identical replacements
+> `730020/730021/730022` exclude `evc33,evc43`; existing downstream jobs
+> `729942/729948/729955` were dependency-repaired without repeating completed
+> boards. Final strict decision remains `729985`.
+>
+> A matched longer-exposure campaign is active on the same balanced artifact
+> and schedule. B1 job `729991` completed 1,000 updates and 2,685,410 charged
+> target tokens in 2,077.5 seconds (`1,292.6 tok/s`, 9.10 GB peak). T2/C2
+> jobs `729992/729993` are healthy and matched; at the last handoff both were
+> past update 330 at about `450 tok/s`. Their serial six-board chains are
+> `729995--730012`, strict finalizer is `730013`, and matched AIME-2024 jobs
+> are `730023/730024/730025`. Current 200-update AIME jobs are
+> `730017/730018/730019`.
+>
+> Token-exact data admission exposed two actionable quality defects. The 10k
+> OpenScience pilot supplies only 155,899 nontruncated science targets versus
+> the 400,000 required for a 4M-token mix; adding 1,009 consensus-science rows
+> adds no usable nontruncated capacity. A deterministic 50k prefix of the
+> already hash-shuffled 500k verified corpus is complete at SHA-256
+> `37a9fa96931ecfe719ceddc94c024ab298496f8a6e105ce4f78814a1c9e58937`;
+> replacement token mix `761173` is running. More importantly, V8 strips all
+> code-verification metadata, so the selected rows cannot distinguish bounded
+> execution from unverified completion after mixing. A previously omitted
+> full-test TACO derivative has now been restored as 2,936 explicit
+> `execution_verified` rows covering 239,533 passed tests, SHA-256
+> `960ebf7dbcefa92bf44b71738e510bb259cb3fab681a817b6fb3bd749760c5da`.
+> Selector commit `048dd8e` now consumes verified rows before weaker rows
+> within each domain. Verified 4M-token mix job `761175` follows `761173`.
+> A larger pinned TACO curation `761176` and 48-CPU full-test audit `761178`
+> are also live on Stokes; dataset revision is
+> `9e68575e01938f016199eda6f07d1a7ce96b35e1`.
+>
+> **Last updated:** 2026-08-03 03:13 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,

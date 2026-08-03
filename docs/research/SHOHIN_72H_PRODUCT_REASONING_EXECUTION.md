@@ -322,7 +322,33 @@ flawless. OpenMath `761161` is complete: 46,006 unique
 expected-answer-matched rows survive from 3,201,061 raw rows, with output
 SHA-256
 `aeb373e8fb4fedc746527653e09e3d98e73d9749cd34e5dc628f9845de125e55`.
-OpenThoughts consensus `761159` remains live.
+OpenThoughts consensus `761159` completed with 15,201 admitted rows
+(`14,192` math and `1,009` science), SHA-256
+`fb2af5eeaa0e2823355f7927997993b21ea35ea4adfdb13dfcc59e6112974346`.
+
+The first tokenizer-exact 4M-token build failed closed for the correct reason:
+the 10k OpenScience pilot provides only 155,899 nontruncated science response
+tokens, below the 400,000 target. The 1,009 consensus-science rows are too long
+to add any usable capacity at sequence length 1,024. A provenance-bound 50k
+prefix from the already deterministic/hash-shuffled 500k corpus is now
+materialized at SHA-256
+`37a9fa96931ecfe719ceddc94c024ab298496f8a6e105ce4f78814a1c9e58937`.
+Token mix job `761173` uses that pool; verified-priority successor `761175`
+adds the code repair below.
+
+The code bucket also required a provenance repair. All 7,250 V8 code rows lost
+their verification metadata during mix construction. Their direct
+CodeContests ancestor was bounded-tested on three cases, but that linkage is
+not available in the training rows and the bucket includes completion
+derivatives that cannot be scored as fully verified. A stronger TACO artifact
+had already replayed every supplied test but was accidentally omitted from V8.
+Commit `4910549` restores exact metadata only when candidate and verified
+response bytes match. The resulting 2,936-row corpus covers 239,533 passed
+tests and has SHA-256
+`960ebf7dbcefa92bf44b71738e510bb259cb3fab681a817b6fb3bd749760c5da`.
+Commit `048dd8e` then makes the token selector consume verified rows before
+weaker fallbacks within a domain. Pinned Stokes jobs `761176 -> 761178` scale
+this route toward 9,000 candidates and a 48-CPU all-tests audit.
 
 ## Execution Queue
 
