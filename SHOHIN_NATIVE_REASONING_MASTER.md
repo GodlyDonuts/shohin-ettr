@@ -54143,3 +54143,31 @@ not evidence against Shohin. The incomplete bundle is quarantined, and one
 result has a forced interpretation: sub-95% clean tensor recovery means the
 adapter is redesigned; a clean pass with controls at chance advances the
 shared replay/FLOP gates. There is no retry-by-width or local-family fallback.
+
+### 2026-08-02: replay split boundary corrected before launch
+
+The first full three-tokenizer cohort audit exposed a custody defect before it
+could contaminate training. Cohort-index v1 concatenated train and development
+cores without an explicit split field and inserted blank spacer lines between
+canonical JSON records. Aggregate tokenization counts from that audit remain
+diagnostic, but its index is permanently inadmissible for optimizer replay:
+the consumer could not prove that development rectangles were excluded.
+
+Cohort-index v2 now records `split` on every accepted core and emits strict
+JSONL. The replay loader requires an explicit `train` or `development` split
+and rejects v1. A new failure-atomic publication tool freezes all four
+component schedules for both seed pairs, gives every tokenizer the same
+rectangle order, accounts for its exact charged-token positions, and records
+identical ETTR/dense schedule hashes within each candidate. Fifty focused
+capability-floor tests pass. This is data-boundary and experimental-custody
+progress, not a capability score.
+
+Protected-Shohin real-tensor job `729554` is running independently on H100
+node `evc44`. Its forced decision remains unchanged: clean residual/state
+recovery below 95% redesigns the interface; a pass with controls at chance
+advances to measured ETTR/dense mechanics. The corrected v2 cohort must be
+rerun from an immutable source before any replay artifact or model fit is
+authorized.
+
+Current decision:
+`bind_the_split_in_the_data_itself_then_measure_information_and_compute_before_training_any_capability_floor_arm`.

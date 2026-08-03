@@ -53,8 +53,8 @@ from materialize_ettr_il_v3_corpus import (  # noqa: E402
 from token_native_syntax_router import TokenNativeOperationRouter  # noqa: E402
 
 
-CORPUS_SCHEMA = "shohin-ettr-capability-floor-corpus-v1"
-INDEX_SCHEMA = "shohin-ettr-capability-floor-core-index-v1"
+CORPUS_SCHEMA = "shohin-ettr-capability-floor-corpus-v2"
+INDEX_SCHEMA = "shohin-ettr-capability-floor-core-index-v2"
 TOKENIZER_CONFIG_SCHEMA = "shohin-ettr-capability-floor-tokenizers-v1"
 TOKENIZATION_SCHEMA = "shohin-ettr-capability-floor-tokenization-v1"
 REQUIRED_CANDIDATES = (
@@ -532,6 +532,7 @@ def _source_key(segment: str, view_index: int, source_index: int) -> str:
 
 def _audit_core(
     *,
+    split: str,
     record: object,
     payload: bytes,
     path_value: str,
@@ -540,6 +541,8 @@ def _audit_core(
     router: TokenNativeOperationRouter,
     adapters: Mapping[str, _TokenizerAdapter],
 ) -> dict[str, object]:
+    if split not in {"train", "development"}:
+        raise CapabilityFloorCorpusError("cohort split differs")
     core_id = str(record.identity.core_id)
     views = tuple(record.source_visible.views)
     if len(views) != 4:
@@ -719,6 +722,7 @@ def _audit_core(
         "source_payload_sha256": _digest(
             {key: value for key, value in sorted(source_values.items())}
         ),
+        "split": split,
         "tokenization_sha256": tokenization_receipts,
     }
 
@@ -821,6 +825,7 @@ def build_corpus_receipt(
                     break
                 seen += 1
                 value = _audit_core(
+                    split=split,
                     record=record,
                     payload=payload,
                     path_value=path_value,
@@ -850,7 +855,7 @@ def build_corpus_receipt(
                     rectangle_hasher.update(_canonical_bytes(rectangle))
                     for stratum in rectangle["strata"]:
                         strata_counts[stratum] = strata_counts.get(stratum, 0) + 1
-                row = _canonical_bytes(value) + b"\n"
+                row = _canonical_bytes(value)
                 index_file.write(row)
                 index_hasher.update(row)
             splits[split] = {

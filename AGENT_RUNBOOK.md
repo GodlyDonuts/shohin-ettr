@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 18:21 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 20:08 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -25446,7 +25446,7 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   Decision:
   `measure_the_exact_protected_shohin_residual_interface_once_then_redesign_on_failure_or_freeze_replay_and_compute_receipts_on_pass`.
 
-- **2026-08-02 20:09--20:55 EDT** -- **Exact runtime admission and the
+- **2026-08-02 19:22--20:08 EDT** -- **Exact runtime admission and the
   fail-fast feature smoke succeed; the undersized split refuses a scientific
   score, and the full protected-Shohin gate is queued.**
 
@@ -25471,12 +25471,45 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   failure, not a Shohin failure. The bundle is preserved read-only at
   `artifacts/capability_floor/quarantine-setup-incomplete-real_tensor_smoke_651d510_s31d11-job729547`.
 
-  Full protected-Shohin job `729554` is now queued from the same immutable
+  Full protected-Shohin job `729554` acquired `evc44` at 19:58 EDT from the same immutable
   runtime with 128 hash-ranked train cores, 128 development cores, architecture
-  seed 31, data seed 11, and 2,000 updates. Slurm currently estimates a 21:12
-  EDT start. The job writes to a distinct no-replace output and cannot touch
+  seed 31, data seed 11, and 2,000 updates. The job writes to a distinct no-replace output and cannot touch
   the checkpoint or quarantined smoke. No Qwen, SmolLM, ETTR, or dense-control
   fit is authorized until this exact tensor gate reports.
 
   Decision:
   `the_real_feature_path_is_valid_wait_for_the_balanced_128_core_shohin_tensor_gate_and_apply_its_forced_interface_decision`.
+
+- **2026-08-02 19:55--20:08 EDT** -- **A held-out split leak was prevented
+  before replay publication; the corrected split-aware replay path is locally
+  complete and tested.**
+
+  Full three-tokenizer cohort audit `729556` acquired CPU node `evc21` at
+  19:55 EDT. While implementing the consumer, exact schema inspection found
+  that the v1 cohort index concatenates training and development cores without
+  an explicit per-row split. It also emits a blank spacer line after every
+  canonical JSON row. The artifact remains useful for aggregate coverage, but
+  it cannot authorize optimizer replay: a consumer could silently mix held-out
+  development rectangles into training. Job `729556` was not canceled or
+  mutated and its output remains diagnostic only.
+
+  Local schema v2 now binds `split` on every accepted core and emits strict
+  one-object-per-line JSONL. Replay loading requires the requested split and
+  rejects v1 input. The new replay publication freezes all four component
+  schedules across seed pairs `(31,11)` and `(32,12)`, preserves one rectangle
+  order across candidate tokenizers, records candidate-specific charged-token
+  totals, and records equal ETTR/dense schedule hashes within each candidate.
+  Publication is one failure-atomic, no-overwrite, read-only JSON artifact.
+  The corrected CPU launchers are
+  `train/jobs/audit_capability_floor_corpus.sbatch` and
+  `train/jobs/materialize_capability_floor_replay.sbatch`. Fifty focused
+  capability-floor tests pass, plus Ruff, Python compilation, shell syntax,
+  and `git diff --check`.
+
+  No corrected v2 Newton runtime or job has been promoted yet. The next action
+  is to commit the tested source, build one checksum-verified immutable runtime,
+  rerun the cohort audit under v2, and materialize replay only after that audit
+  succeeds. This does not alter running tensor job `729554`.
+
+  Decision:
+  `never_train_from_the_split_ambiguous_v1_index_publish_v2_then_freeze_replay_from_train_rectangles_only`.

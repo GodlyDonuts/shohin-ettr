@@ -12,11 +12,14 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 import hashlib
 import json
+from pathlib import Path
 import random
 from typing import Mapping, Sequence
 
 
 REPLAY_SCHEMA = "shohin-ettr-component-stratified-replay-v1"
+REPLAY_MATRIX_SCHEMA = "shohin-ettr-candidate-replay-matrix-v1"
+CORPUS_INDEX_SCHEMA = "shohin-ettr-capability-floor-core-index-v2"
 
 
 class CapabilityFloorReplayError(ValueError):
@@ -267,4 +270,221 @@ def validate_replay_schedule(
 
 
 def replay_schedule_sha256(payload: Mapping[str, object]) -> str:
+    return hashlib.sha256(_canonical_bytes(payload)).hexdigest()
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for chunk in iter(lambda: source.read(8 * 1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def load_candidate_replay_rectangles(
+    index_path: Path,
+    *,
+    expected_sha256: str,
+    candidates: Sequence[str],
+    split: str,
+) -> dict[str, tuple[ReplayRectangle, ...]]:
+    """Load one audited cohort index with candidate-specific token charges.
+
+    Rectangle identities and strata are shared across every candidate.  Only
+    charged token positions may differ because tokenizers differ.  Parsing the
+    index once prevents candidate-specific row selection from entering later
+    schedules.
+    """
+
+    selected = tuple(candidates)
+    if (
+        len(expected_sha256) != 64
+        or not selected
+        or any(not candidate for candidate in selected)
+        or len(set(selected)) != len(selected)
+        or split not in {"train", "development"}
+    ):
+        raise CapabilityFloorReplayError("cohort replay inventory arguments differ")
+    if _sha256_file(index_path) != expected_sha256:
+        raise CapabilityFloorReplayError("cohort index SHA-256 differs")
+    values: dict[str, list[ReplayRectangle]] = {candidate: [] for candidate in selected}
+    seen: set[str] = set()
+    with index_path.open("r", encoding="ascii") as source:
+        for line_number, line in enumerate(source, 1):
+            try:
+                row = json.loads(line)
+            except (UnicodeDecodeError, json.JSONDecodeError) as error:
+                raise CapabilityFloorReplayError(
+                    f"cohort index row {line_number} is unreadable"
+                ) from error
+            if (
+                not isinstance(row, Mapping)
+                or row.get("index_schema") != CORPUS_INDEX_SCHEMA
+                or row.get("accepted") is not True
+                or row.get("assessor_fields_in_model_input") is not False
+                or row.get("split") not in {"train", "development"}
+            ):
+                raise CapabilityFloorReplayError("cohort index custody differs")
+            if row["split"] != split:
+                continue
+            rectangles = row.get("rectangles")
+            if not isinstance(rectangles, list) or not rectangles:
+                raise CapabilityFloorReplayError("cohort index rectangle set differs")
+            for rectangle in rectangles:
+                if not isinstance(rectangle, Mapping):
+                    raise CapabilityFloorReplayError("cohort index rectangle differs")
+                rectangle_id = rectangle.get("rectangle_id")
+                strata = rectangle.get("strata")
+                charged = rectangle.get("charged_positions")
+                if (
+                    not isinstance(rectangle_id, str)
+                    or not rectangle_id
+                    or rectangle_id in seen
+                    or not isinstance(strata, list)
+                    or not strata
+                    or any(not isinstance(value, str) or not value for value in strata)
+                    or not isinstance(charged, Mapping)
+                    or any(candidate not in charged for candidate in selected)
+                ):
+                    raise CapabilityFloorReplayError("cohort index rectangle differs")
+                seen.add(rectangle_id)
+                for candidate in selected:
+                    positions = charged[candidate]
+                    if (
+                        not isinstance(positions, int)
+                        or isinstance(positions, bool)
+                        or positions <= 0
+                    ):
+                        raise CapabilityFloorReplayError(
+                            "candidate charged positions differ"
+                        )
+                    values[candidate].append(
+                        ReplayRectangle(
+                            rectangle_id=rectangle_id,
+                            strata=tuple(strata),
+                            charged_positions=positions,
+                        )
+                    )
+    if not seen or any(len(rows) != len(seen) for rows in values.values()):
+        raise CapabilityFloorReplayError("cohort replay inventory is incomplete")
+    return {
+        candidate: tuple(rows)
+        for candidate, rows in values.items()
+    }
+
+
+def _shared_update_manifest(schedule: Mapping[str, object]) -> list[dict[str, object]]:
+    updates = schedule.get("updates")
+    if not isinstance(updates, list):
+        raise CapabilityFloorReplayError("candidate replay updates differ")
+    return [
+        {
+            "covered_strata": update["covered_strata"],
+            "microbatches": update["microbatches"],
+            "update": update["update"],
+        }
+        for update in updates
+    ]
+
+
+def build_candidate_replay_matrix(
+    rectangles: Mapping[str, Sequence[ReplayRectangle]],
+    config: ReplayScheduleConfig,
+) -> dict[str, object]:
+    """Build candidate schedules with one invariant rectangle order.
+
+    The complete ETTR and dense-control schedule is byte-identical within a
+    candidate.  Across tokenizers, update identities remain identical while
+    charged positions are candidate-specific and explicit.
+    """
+
+    if not rectangles:
+        raise CapabilityFloorReplayError("candidate replay matrix is empty")
+    schedules = {
+        candidate: build_replay_schedule(tuple(rows), config)
+        for candidate, rows in sorted(rectangles.items())
+    }
+    first_candidate = next(iter(schedules))
+    shared = _shared_update_manifest(schedules[first_candidate])
+    if any(
+        _shared_update_manifest(schedule) != shared
+        for schedule in schedules.values()
+    ):
+        raise CapabilityFloorReplayError("candidate rectangle schedules diverge")
+    payload: dict[str, object] = {
+        "arm_schedule_sha256": {
+            candidate: {
+                "dense": replay_schedule_sha256(schedule),
+                "ettr": replay_schedule_sha256(schedule),
+            }
+            for candidate, schedule in schedules.items()
+        },
+        "candidate_schedules": schedules,
+        "charged_positions": "candidate-tokenizer-specific",
+        "config": asdict(config),
+        "ettr_dense_schedule_identity": "byte-identical-within-candidate",
+        "schema": REPLAY_MATRIX_SCHEMA,
+        "shared_rectangle_order_across_candidates": True,
+        "shared_update_manifest_sha256": hashlib.sha256(
+            _canonical_bytes({"updates": shared})
+        ).hexdigest(),
+    }
+    validate_candidate_replay_matrix(payload, rectangles)
+    return payload
+
+
+def validate_candidate_replay_matrix(
+    payload: Mapping[str, object],
+    rectangles: Mapping[str, Sequence[ReplayRectangle]],
+) -> None:
+    if (
+        payload.get("schema") != REPLAY_MATRIX_SCHEMA
+        or payload.get("charged_positions") != "candidate-tokenizer-specific"
+        or payload.get("ettr_dense_schedule_identity")
+        != "byte-identical-within-candidate"
+        or payload.get("shared_rectangle_order_across_candidates") is not True
+    ):
+        raise CapabilityFloorReplayError("candidate replay matrix custody differs")
+    config_payload = payload.get("config")
+    schedules = payload.get("candidate_schedules")
+    arm_hashes = payload.get("arm_schedule_sha256")
+    if (
+        not isinstance(config_payload, Mapping)
+        or not isinstance(schedules, Mapping)
+        or not isinstance(arm_hashes, Mapping)
+    ):
+        raise CapabilityFloorReplayError("candidate replay matrix structure differs")
+    try:
+        config = ReplayScheduleConfig(**dict(config_payload))
+    except TypeError as error:
+        raise CapabilityFloorReplayError("candidate replay config differs") from error
+    config.validate()
+    if set(schedules) != set(rectangles):
+        raise CapabilityFloorReplayError("candidate replay set differs")
+    if set(arm_hashes) != set(rectangles):
+        raise CapabilityFloorReplayError("candidate replay arm set differs")
+    shared = None
+    for candidate in sorted(schedules):
+        schedule = schedules[candidate]
+        if not isinstance(schedule, Mapping):
+            raise CapabilityFloorReplayError("candidate replay schedule differs")
+        validate_replay_schedule(schedule, rectangles[candidate])
+        schedule_hash = replay_schedule_sha256(schedule)
+        if arm_hashes[candidate] != {
+            "dense": schedule_hash,
+            "ettr": schedule_hash,
+        }:
+            raise CapabilityFloorReplayError("ETTR and dense schedules diverge")
+        candidate_shared = _shared_update_manifest(schedule)
+        if shared is None:
+            shared = candidate_shared
+        elif candidate_shared != shared:
+            raise CapabilityFloorReplayError("candidate rectangle schedules diverge")
+    assert shared is not None
+    expected = hashlib.sha256(_canonical_bytes({"updates": shared})).hexdigest()
+    if payload.get("shared_update_manifest_sha256") != expected:
+        raise CapabilityFloorReplayError("shared update manifest digest differs")
+
+
+def candidate_replay_matrix_sha256(payload: Mapping[str, object]) -> str:
     return hashlib.sha256(_canonical_bytes(payload)).hexdigest()

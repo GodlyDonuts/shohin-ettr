@@ -1,4 +1,6 @@
 from copy import deepcopy
+import hashlib
+import json
 
 import pytest
 
@@ -6,8 +8,12 @@ from capability_floor_replay import (
     CapabilityFloorReplayError,
     ReplayRectangle,
     ReplayScheduleConfig,
+    build_candidate_replay_matrix,
     build_replay_schedule,
+    candidate_replay_matrix_sha256,
+    load_candidate_replay_rectangles,
     replay_schedule_sha256,
+    validate_candidate_replay_matrix,
     validate_replay_schedule,
 )
 
@@ -111,3 +117,101 @@ def test_validation_rejects_within_update_repetition_and_coverage_loss() -> None
     no_link["updates"][0]["covered_strata"] = ["NONE", "WRITE"]
     with pytest.raises(CapabilityFloorReplayError, match="omits"):
         validate_replay_schedule(no_link, rectangles)
+
+
+def test_cohort_index_builds_shared_candidate_schedule_with_exact_charges(
+    tmp_path,
+) -> None:
+    candidates = ("candidate-a", "candidate-b")
+    rows = []
+    for group in range(3):
+        rectangles = []
+        for offset in range(16):
+            index = 16 * group + offset
+            rectangles.append(
+                {
+                    "charged_positions": {
+                        "candidate-a": 100 + index,
+                        "candidate-b": 200 + 2 * index,
+                    },
+                    "rectangle_id": f"rectangle-{index:03d}",
+                    "strata": [("NONE", "WRITE", "LINK")[index % 3]],
+                }
+            )
+        rows.append(
+            {
+                "accepted": True,
+                "assessor_fields_in_model_input": False,
+                "index_schema": "shohin-ettr-capability-floor-core-index-v2",
+                "rectangles": rectangles,
+                "split": "train" if group < 2 else "development",
+            }
+        )
+    payload = b"".join(
+        (json.dumps(row, sort_keys=True, separators=(",", ":")) + "\n").encode(
+            "ascii"
+        )
+        for row in rows
+    )
+    path = tmp_path / "cohort-index.jsonl"
+    path.write_bytes(payload)
+    inventories = load_candidate_replay_rectangles(
+        path,
+        expected_sha256=hashlib.sha256(payload).hexdigest(),
+        candidates=candidates,
+        split="train",
+    )
+    assert len(inventories["candidate-a"]) == 32
+    matrix = build_candidate_replay_matrix(inventories, _config())
+    validate_candidate_replay_matrix(matrix, inventories)
+    schedules = matrix["candidate_schedules"]
+    assert [
+        update["microbatches"] for update in schedules["candidate-a"]["updates"]
+    ] == [
+        update["microbatches"] for update in schedules["candidate-b"]["updates"]
+    ]
+    assert [
+        update["charged_positions"]
+        for update in schedules["candidate-a"]["updates"]
+    ] != [
+        update["charged_positions"]
+        for update in schedules["candidate-b"]["updates"]
+    ]
+    assert len(candidate_replay_matrix_sha256(matrix)) == 64
+
+
+def test_cohort_replay_rejects_hash_or_missing_candidate(tmp_path) -> None:
+    payload = (
+        json.dumps(
+            {
+                "accepted": True,
+                "assessor_fields_in_model_input": False,
+                "index_schema": "shohin-ettr-capability-floor-core-index-v2",
+                "rectangles": [
+                    {
+                        "charged_positions": {"candidate-a": 10},
+                        "rectangle_id": "r0",
+                        "strata": ["NONE"],
+                    }
+                ],
+                "split": "train",
+            }
+        )
+        + "\n"
+    ).encode("ascii")
+    path = tmp_path / "cohort-index.jsonl"
+    path.write_bytes(payload)
+    with pytest.raises(CapabilityFloorReplayError, match="SHA-256"):
+        load_candidate_replay_rectangles(
+            path,
+            expected_sha256="0" * 64,
+            candidates=("candidate-a",),
+            split="train",
+        )
+    with pytest.raises(CapabilityFloorReplayError, match="rectangle differs"):
+        load_candidate_replay_rectangles(
+            path,
+            expected_sha256=hashlib.sha256(payload).hexdigest(),
+            candidates=("candidate-a", "candidate-b"),
+            split="train",
+        )

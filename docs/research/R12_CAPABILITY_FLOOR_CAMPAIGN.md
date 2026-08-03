@@ -179,8 +179,14 @@ four-row causal rectangle as indivisible, selects four rectangles per 16-row
 semantic microbatch, accumulates exactly four microbatches before an optimizer
 step, forbids a rectangle from repeating inside an update, proves all required
 strata are present, records charged positions, and emits a hashable schedule
-shared byte-for-byte by ETTR and dense control. Real release rows have not yet
-been materialized into the final replay receipt.
+shared byte-for-byte by ETTR and dense control. The first cohort-index schema
+was rejected before replay publication because it concatenated train and
+development cores without a per-row split. Schema v2 now binds the split,
+emits strict JSONL, and the loader rejects v1. The atomic publisher in
+`train/materialize_capability_floor_replay.py` freezes candidate-specific
+charged positions and equal ETTR/dense schedule hashes for every component and
+seed pair. A corrected v2 release audit must complete before the final replay
+receipt can be materialized.
 
 ## First interface deliverable
 

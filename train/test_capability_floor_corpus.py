@@ -3,6 +3,8 @@ from pathlib import Path
 import pytest
 
 from capability_floor_corpus import (
+    CORPUS_SCHEMA,
+    INDEX_SCHEMA,
     CapabilityFloorCorpusError,
     EncodedSource,
     TokenizerSpec,
@@ -10,6 +12,11 @@ from capability_floor_corpus import (
     query_dependency_strata,
     token_mask_for_spans,
 )
+
+
+def test_cohort_schema_binds_split_aware_jsonl() -> None:
+    assert CORPUS_SCHEMA.endswith("-v2")
+    assert INDEX_SCHEMA.endswith("-v2")
 
 
 def test_encoded_source_binds_offsets_and_context() -> None:
