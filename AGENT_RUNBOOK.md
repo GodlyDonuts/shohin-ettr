@@ -31,6 +31,43 @@
 > claims are secondary to answer-quality deltas. The active 72-hour queue is
 > `docs/research/SHOHIN_72H_PRODUCT_REASONING_EXECUTION.md`.
 >
+> **U1000 PRODUCT DECISION — 2026-08-03 05:20 EDT:** The short Qwen ETTR
+> lift does not survive the fixed longer-exposure/generalization gate. On the
+> balanced V8 stream, B1/T2/C2 reach `25.72% / 29.73% / 29.84%` macro and
+> solve `135 / 161 / 162` of 538; T2 loses dense by one answer and regresses
+> MATH by three points versus B1. On verified-priority V10, B1/T2/C2 reach
+> `22.90% / 22.90% / 22.00%` macro and solve `106 / 104 / 104`; T2 raises
+> MATH from `23/100` to `38/100` but collapses BBH from `24/100` to `5/100`
+> and GPQA to `0/198`. Current Qwen ETTR is closed for scale.
+>
+> The identical 1,000-update SmolLM3-3B campaign is also complete. B1/T2/C2
+> reach `41.72% / 40.91% / 43.21%` macro and solve `203 / 194 / 199` of 538.
+> T2 improves semantic MATH-500 to `58/100` and strict AIME-2024 to `2/30`,
+> but loses six GSM8K and seven GPQA answers versus B1; dense reaches the best
+> macro through `15/40` executable code. Direct transcript inspection confirms
+> one genuine ETTR-only AIME solution: the model correctly solves the two-rate
+> system and returns 204 minutes while B1 loops and C2 makes an algebra error.
+> ETTR is therefore retained as a hard-math specialist baseline, not promoted
+> as the general adapter. The only justified architectural successor is a
+> model-owned prompt gate that defaults exactly to the strongest general
+> adapter and releases a reasoning expert only where it has measured value.
+>
+> Production scaling now compares B1 LoRA and C2 dense residual on V11; T2
+> receives no blind continuation. Smol training used exactly 2,233,465 charged
+> target tokens per arm at `5205.9 / 2702.9 / 2714.3` tok/s with
+> `1.679M / 8.516M / 7.813M` trainable parameters. Campaign SHA-256 values are
+> Qwen V8 `3a13d872b798d8fe36b6f55f841e50275898351e60fc70d140bceb9411f2d593`,
+> Qwen V10 `c3333ab21e64226577f008e839b7e4ae37aaaa6bca8b4fa5e78acf1754b1aefa`,
+> and Smol `28d68e1dda1b282127ffedab34cc3db49a36909a80b150dcd1eb7f09bbea7363`.
+>
+> Context admission is corrected from 2,048 to 4,096. At 2,048 only
+> `7,388/46,006` OpenMath and `8,692/50,000` OpenScience rows are fully
+> retained; at 4,096 this rises to `24,498/46,006` and `24,552/50,000`.
+> Stokes TACO all-test audit `761178` is running after curation `761176`
+> completed; V11 8M-token build `761194` is dependency-held at 4,096 context.
+> Stable Smol B1 canaries select BS4/ACC4: `6124.8` charged tok/s at
+> `12.54 GiB`, versus BS1/2/8/16 at `3206.5/5174.5/5395.6/4750.8` tok/s.
+>
 > **PRODUCT CAMPAIGN STATUS — 2026-08-03 00:22 EDT:** Frozen
 > `Qwen/Qwen3.5-0.8B@2fc06364715b967f1860aea9cf38778875588b17`
 > now has directly measured baselines: GSM8K `17/100`, MATH-500 `4/100`,

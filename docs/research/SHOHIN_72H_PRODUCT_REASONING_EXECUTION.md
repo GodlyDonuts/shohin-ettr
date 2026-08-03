@@ -2,7 +2,7 @@
 
 Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 
-## Live Scoreboard (2026-08-03 03:41 EDT)
+## Live Scoreboard (2026-08-03 05:20 EDT)
 
 | Result | Status |
 |---|---:|
@@ -46,15 +46,47 @@ Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 | optimized T2/C2 throughput | BS8/ACC2: 1,090.5 / 1,095.8 target tok/s, 73.37 / 73.04 GB peak |
 | verified-priority V10 data | 4,000,967 target tokens; 2,308 full-test code + 767 answer-checked math/science rows |
 | V10 matched u1000 | training `730036/730037/730038`; strict aggregate `730057`; AIME `730058--730060` |
+| balanced V8 u1000 B1/T2/C2 | 25.72% / 29.73% / 29.84% macro; 135 / 161 / 162 solved; ETTR loses dense by one |
+| verified V10 u1000 B1/T2/C2 | 22.90% / 22.90% / 22.00% macro; 106 / 104 / 104 solved; ETTR math gain erased by logic/science collapse |
+| SmolLM3 u1000 B1/T2/C2 | 41.72% / 40.91% / 43.21% macro; 203 / 194 / 199 solved |
+| SmolLM3 strict AIME B1/T2/C2 | 0/30 / 2/30 / 1/30; one ETTR-only transcript is a valid complete derivation |
+| current ETTR disposition | reject general scale; retain hard-math specialist evidence only |
+| production scale candidates | SmolLM3 B1 LoRA and C2 dense residual on V11; no T2 continuation |
+| verified-row full retention, 2048 vs 4096 | OpenMath 16.06% -> 53.25%; OpenScience 17.38% -> 49.10% |
+| SmolLM3 B1 4096 throughput | BS4/ACC4 6,124.8 target tok/s at 12.54 GiB; selected over BS1/2/8/16 |
+
+## Decisive U1000 Result
+
+The first short Qwen result was real but transient. At 1,000 updates on the
+balanced V8 stream, T2 retains a four-point gain over LoRA but ties the dense
+control within one solved example and fails the frozen regression rule. On
+verified-priority V10, T2 specializes sharply into competition math while
+destroying logic and science. It therefore has not earned a Qwen scale run.
+
+SmolLM3 establishes the higher practical capability floor. Same-data LoRA
+reaches 93/100 GSM8K, 55/100 semantic MATH-500, and 203/538 solved overall.
+Dense has the best five-domain macro because it raises executable code to
+15/40. T2 reaches 58/100 MATH and 2/30 AIME, including one fully coherent
+ETTR-only 204-minute rate-problem solution, but its general macro and solved
+count both fall below LoRA. This is evidence of useful specialist computation,
+not a general adapter win.
+
+The immediate product decision is `scale-dense-or-lora`. V11 will compare B1
+and C2 only. A future ETTR successor must be a prompt-conditioned expert that
+defaults exactly to the general model outside its measured hard-math region;
+it may not retrain a globally active workspace and repeat the observed
+regression. The static per-domain expert ceiling from existing reports is
+45.52% macro and 213/538 solved, which makes routing a concrete opportunity,
+not a claim that the router has already been learned.
 
 ## Post-Gate 72-Hour Queue (2026-08-03)
 
-The first objective has been met: T2 produces a real matched product lift on
-Qwen rather than only a synthetic mechanism score. The next 72 hours answer
-whether that lift survives more exposure and better data, then move the exact
-same contract to SmolLM3 only when capacity is the measured blocker. No new
-layer-tap, byte-rail, compiler/reactor/reader, or source-deletion campaign is
-part of this queue.
+The first objective has been answered: T2 produces a real short-run Qwen lift,
+but it does not survive the longer matched gate and also loses the SmolLM3
+general comparison. The queue now advances the strongest practical adapters
+and treats ETTR as a measured hard-math specialist. No new layer-tap,
+byte-rail, compiler/reactor/reader, or globally active ETTR duration/width
+variant is part of this queue.
 
 ### Hours 0--8: close the two active causal questions
 
@@ -81,9 +113,10 @@ is the lever.
 
 1. Complete the 9,000-candidate TACO all-test audit and admit only programs
    that pass every supplied test.
-2. Measure exact 1,024/2,048/4,096-token retention for verified OpenMath and
-   OpenScience. Use the shortest context that materially retains more verified
-   targets; context length is not increased for unused VRAM.
+2. Exact retention selects 4,096 tokens: it preserves 53.25% of OpenMath and
+   49.10% of OpenScience rows versus 16.06% and 17.38% at 2,048. V11 job
+   `761194` is frozen at 4,096; context length is increased for retained
+   reasoning supervision, not unused VRAM.
 3. Build V11 as a charged-token-balanced, no-replay stream with at least
    8 million targets: 35% math, 25% executable code, 15% answer-checked
    science, 10% solver-checked logic/procedure, and 15% broad instruction.
@@ -94,11 +127,12 @@ is the lever.
 
 ### Hours 24--48: scale one Qwen lever or measure the capacity floor
 
-If V10 T2 passes the go rule, train matched B1/T2/C2 Qwen arms for 5,000
-updates on V11, saving 1,000-update checkpoints. Use measured-safe BS8/ACC2 for
-all arms unless an isolated parity canary proves a faster exact grouping. Run
-the compact five-domain board at each checkpoint and select one checkpoint by
-macro score plus validation loss, never by one benchmark.
+V10 T2 failed the go rule and the SmolLM3 comparison confirms that current T2
+should not scale. Train matched B1 and C2 SmolLM3 arms for 5,000 updates on
+V11, saving 1,000-update checkpoints. B1 uses measured BS4/ACC4 at 4,096;
+C2 uses its independently measured safe geometry. Run the compact five-domain
+board at each checkpoint and select one checkpoint by macro score plus
+validation loss, never by one benchmark.
 
 If V10 T2 fails the dense-control comparison, do not create another Qwen
 workspace variant. Run the now-generic trainer on pinned SmolLM3-3B:

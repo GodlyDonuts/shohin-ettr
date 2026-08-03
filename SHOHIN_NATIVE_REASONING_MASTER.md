@@ -2,6 +2,32 @@
 
 ## Current Status — Read First
 
+**Product-reasoning supersession (2026-08-03 05:20 EDT):** the immediate
+objective is measured problem solving, not maximizing an architecture-native
+claim. The first capable-backbone campaign is now decisive. On Qwen3.5-0.8B,
+the strong 200-update ETTR gain does not survive 1,000 updates: balanced V8
+B1/T2/C2 is `25.72% / 29.73% / 29.84%` macro, and verified V10 is
+`22.90% / 22.90% / 22.00%`. Current ETTR is not the general scale winner.
+
+On SmolLM3-3B with identical data and 1,000 updates, B1/T2/C2 reaches
+`41.72% / 40.91% / 43.21%` macro and `203 / 194 / 199` solved of 538. ETTR
+does retain a real hard-math signal: `58/100` semantic MATH-500 and `2/30`
+AIME versus B1 `55/100` and `0/30`. Manual inspection confirms one ETTR-only
+AIME answer is a complete correct rate-equation derivation, not answer leakage.
+That specialist gain is outweighed by losses on GSM8K and GPQA. The retained
+frontier is therefore: scale B1 LoRA and C2 dense on a 4,096-context verified
+V11 stream; preserve T2 as the hard-math expert baseline; only revisit ETTR as
+a model-owned prompt-gated expert that defaults exactly to the general model.
+Do not run another globally active ETTR width/duration variant.
+
+The static domain-specialist ceiling from completed reports is `45.52%` macro
+and `213/538` solved by selecting B1 for GSM8K/science, T2 for competition
+math, and C2 for code/logic. This is not an achieved single-model score,
+but it identifies expert routing as the only current architecture successor
+with a measured product ceiling. Stokes jobs `761178 -> 761194` are completing
+the all-test TACO audit and 8M-token V11 build. Exact retention requires 4,096
+tokens; Smol B1 BS4/ACC4 reaches `6124.8` charged target tok/s at `12.54 GiB`.
+
 **Current frontier, superseding older status text below (2026-08-02
 12:30 EDT):** Shohin still has no replicated two-population demonstration of
 architecture-native general reasoning. The fixed typed algebra and learned
