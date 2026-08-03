@@ -26790,3 +26790,24 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_update2000_as_a_proposal_source_and_replace_only_failed_short_slices_at_the_fragmentation_hardened_batch32_shape`.
+
+- **2026-08-03 18:15--19:05 EDT** -- **Single-GPU backfill reaches 18
+  concurrent H100s and production yield remains above admission at scale.**
+
+  Newton peaks at 18 concurrent campaign H100 jobs without a gang request.
+  As short shards close, up to 14 long-math production shards run at once.
+  Temporary user holds prioritize repair `733972`; CPU watchdog `733974`
+  releases every held math shard immediately when the repair starts, then
+  exits successfully. No hold remains.
+
+  Fourteen completed short reports contain 2,022 verified prompts: 1,568
+  science and 454 math. The remaining original short shard is nearly closed;
+  repair `733972` reaches 288/512 prompts with 79 positives at batch 32 and no
+  renewed OOM. Seven completed long-math reports contain `488/896 = 54.46%`
+  positive prompts. The first complete production shard reaches `77/128`,
+  independently matching the earlier long-budget replications. Math
+  production therefore needs only 24 additional verified prompts to clear
+  its 512-row minimum, while 25 shards remain running or queued.
+
+  Decision:
+  `continue_full_unique_slice_coverage_because_both_streams_are_now_empirically_above_quota_and_additional_verified_rows_raise_training_value`.
