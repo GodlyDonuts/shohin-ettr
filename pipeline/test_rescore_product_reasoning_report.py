@@ -103,3 +103,39 @@ def test_explicit_final_answer_markers() -> None:
     assert has_explicit_final_answer("The final answer: B")
     assert has_explicit_final_answer("answer is 12")
     assert not has_explicit_final_answer("We used option B in a partial thought")
+
+
+def test_aime_rescore_rejects_expression_prefix_false_positive(tmp_path: Path) -> None:
+    source = tmp_path / "aime.json"
+    source.write_text(
+        json.dumps(
+            {
+                "status": "complete",
+                "task": "aime",
+                "total": 2,
+                "correct": 2,
+                "accuracy": 1.0,
+                "results": [
+                    {
+                        "completion": r"The answer is 25^{9/5}.",
+                        "prediction": "25",
+                        "gold": "025",
+                        "correct": True,
+                        "max_token_exhausted": False,
+                    },
+                    {
+                        "completion": r"Therefore, the answer is 25.",
+                        "prediction": "25",
+                        "gold": "025",
+                        "correct": True,
+                        "max_token_exhausted": False,
+                    },
+                ],
+            }
+        )
+    )
+    report = rescore_report(source)
+    assert report["correct"] == 1
+    assert report["results"][0]["prediction"] is None
+    assert report["results"][1]["prediction"] == "25"
+    assert report["rescore_backend"] == "shohin-aime-v1-explicit-final-integer"

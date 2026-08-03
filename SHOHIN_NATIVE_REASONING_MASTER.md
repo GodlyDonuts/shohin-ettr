@@ -54531,3 +54531,42 @@ Pinned OpenMathReasoning also completed its strict expected-answer lane.
 From 3,201,061 raw rows, 46,006 unique answer-matched and benchmark-filtered
 rows survive. Output SHA-256 is
 `aeb373e8fb4fedc746527653e09e3d98e73d9749cd34e5dc628f9845de125e55`.
+
+### Balanced product gate and verified-data scale-up (2026-08-03 03:41 EDT)
+
+The balanced 200-update campaign is the strongest practical ETTR evidence so
+far. Under the same Qwen3.5-0.8B revision, data, update budget, decoding, and
+evaluation contracts, B1/T2/C2 reach `26.42% / 34.55% / 31.03%` five-domain
+macro accuracy and solve `131 / 185 / 162` of 538 examples. T2 therefore adds
+54 answers over LoRA and 23 over the parameter-matched dense residual. It
+improves GSM8K, MATH-500, BBH, and GPQA while tying B1 executable code at
+`7/40`; all numeric promotion rules pass.
+
+Direct model interaction keeps the claim bounded. The isolated arithmetic
+wins show valid multi-step computations, three T2-only code completions pass
+their tests, and most ordering/truth-chain wins are coherent. Some BBH
+explanations are weak or repetitive, and sampled GPQA wins often pair the
+correct option with unsupported or incorrect science. This is a genuine
+answer-quality and elementary reasoning gain beyond added dense capacity, but
+not yet consistent sophisticated reasoning.
+
+A manual AIME audit found and removed a dense-control scoring artifact. The
+strict extractor now requires a boxed or explicitly labelled final integer;
+it cannot truncate `25^{9/5}` to `25`. Corrected B1/T2/C2 AIME-2024 is
+`0/30 / 1/30 / 0/30`. The one T2 solve derives the sufficient invariant
+`xy=25`, although its later attempt to solve for `x` is algebraically invalid.
+
+The next campaign uses the verified-priority V10 corpus: 26,387 rows and
+4,000,967 exact charged target tokens at SHA-256
+`2461d6f70b44a142854d56c24e1fb42d600065e5788a2c4e055ba47b12696549`.
+It admits 2,308 programs that pass all supplied TACO tests, 552
+expected-answer-matched science traces, and 215 answer-matched math traces
+before weaker rows. It remains an experimental mix, not a final corpus,
+because 2,641 code rows and most math/teacher traces have weaker provenance.
+
+Training efficiency no longer blocks iteration. BS8/ACC2 raises T2 from
+roughly 454 to 1,090.5 target tok/s at 73.37 GB peak; the matched dense control
+reaches 1,095.8 tok/s. BS16/ACC1 OOMs for both architectural arms at about
+78.9 GB, establishing BS8 as the safe H100 boundary. Optimized V10 jobs
+`730036/730037/730038`, exact board chains, strict aggregate `730057`, and
+AIME jobs `730058--730060` are active.

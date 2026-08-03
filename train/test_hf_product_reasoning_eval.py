@@ -15,12 +15,14 @@ from hf_product_reasoning_eval import (
     _mbpp_program,
     _strip_reasoning_and_fences,
     _task_prompt,
+    extract_aime,
     extract_boxed,
     extract_gsm8k,
     extract_short_answer,
     gold_numeric_answer,
     gold_gsm8k,
     has_explicit_final_answer,
+    match_aime,
     match_math,
     match_gsm8k,
     match_short_answer,
@@ -51,6 +53,14 @@ class ProductReasoningEvalTests(unittest.TestCase):
         self.assertEqual(extract_boxed(r"Thus the result is \boxed{\frac{3}{4}}."), r"\frac{3}{4}")
         self.assertEqual(gold_gsm8k({"answer": "work\n#### -42"}), "-42")
         self.assertEqual(gold_numeric_answer({"answer": "204"}), "204")
+
+    def test_aime_requires_an_explicit_final_integer(self) -> None:
+        self.assertEqual(extract_aime(r"Work. Therefore \boxed{025}."), "025")
+        self.assertEqual(extract_aime("Work. The answer is 25."), "25")
+        self.assertIsNone(extract_aime(r"Work. The answer is 25^{9/5}."))
+        self.assertIsNone(extract_aime("Intermediate value 25, still working."))
+        self.assertTrue(match_aime("25", "025"))
+        self.assertFalse(match_aime(r"25^{9/5}", "025"))
 
     def test_explicit_final_answer_markers(self) -> None:
         self.assertTrue(has_explicit_final_answer(r"Therefore \boxed{4}."))

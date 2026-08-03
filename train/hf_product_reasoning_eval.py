@@ -62,6 +62,32 @@ def extract_gsm8k(text: str) -> str | None:
     return _clean_number(numbers[-1]) if numbers else None
 
 
+def _normalize_aime_integer(value: str | None) -> str | None:
+    if value is None:
+        return None
+    normalized = value.strip().replace("$", "").replace(",", "").rstrip(".")
+    return normalized if re.fullmatch(r"\d{1,3}", normalized) else None
+
+
+def extract_aime(text: str) -> str | None:
+    """Extract only an explicit final AIME integer, never an intermediate number."""
+
+    for value in reversed(_boxed_values(text)):
+        normalized = _normalize_aime_integer(value)
+        if normalized is not None:
+            return normalized
+    explicit = re.findall(
+        r"(?:answer|final answer)\s*(?:is|:)\s*([^\n]+)",
+        text,
+        flags=re.IGNORECASE,
+    )
+    for value in reversed(explicit):
+        normalized = _normalize_aime_integer(value)
+        if normalized is not None:
+            return normalized
+    return None
+
+
 def _boxed_values(text: str) -> list[str]:
     values: list[str] = []
     cursor = 0
@@ -198,6 +224,16 @@ def match_gsm8k(prediction: str | None, gold: str | None) -> bool:
     return predicted_fraction is not None and predicted_fraction == gold_fraction
 
 
+def match_aime(prediction: str | None, gold: str | None) -> bool:
+    predicted = _normalize_aime_integer(prediction)
+    expected = _normalize_aime_integer(gold)
+    return (
+        predicted is not None
+        and expected is not None
+        and int(predicted) == int(expected)
+    )
+
+
 def _normalize_math(value: str | None) -> str | None:
     if value is None:
         return None
@@ -229,9 +265,9 @@ def match_math(prediction: str | None, gold: str | None) -> bool:
 TASKS: dict[str, dict[str, Any]] = {
     "aime": {
         "kind": "answer",
-        "extract": extract_gsm8k,
+        "extract": extract_aime,
         "gold": gold_numeric_answer,
-        "match": match_gsm8k,
+        "match": match_aime,
     },
     "bbh_logic": {
         "kind": "answer",

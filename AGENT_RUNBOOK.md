@@ -206,7 +206,52 @@
 > are also live on Stokes; dataset revision is
 > `9e68575e01938f016199eda6f07d1a7ce96b35e1`.
 >
-> **Last updated:** 2026-08-03 03:13 EDT. The protected 300k flagship remains immutable and
+> **PRODUCT CAMPAIGN UPDATE — 2026-08-03 03:41 EDT:** The balanced
+> 200-update strict aggregate is complete at
+> `campaign_balanced_u200_aebf832_turnstop_v6.json`. B1/T2/C2 reach
+> `26.42% / 34.55% / 31.03%` macro and solve `131 / 185 / 162` of 538.
+> T2 adds 54 answers and 8.13 macro points over same-data LoRA, and 23
+> answers and 3.51 points over the parameter-matched dense control. It
+> improves four domains and ties B1 code at `7/40`, so every numeric
+> promotion gate passes. Manual review is mixed rather than ceremonial:
+> all eleven previously isolated T2-only GSM wins are valid multi-step
+> arithmetic; eight new T2-only BBH wins include five clearly coherent
+> deductions and three repetitive or weakly justified answers; three
+> T2-only executable-code wins pass their tests. GPQA remains unreliable:
+> T2 has 28 wins that neither control solves, but sampled rationales often
+> state unsupported or incorrect science before the right option. Call the
+> result a real broad practical lift with coherent math/code footholds, not
+> yet sophisticated general reasoning.
+>
+> Strict AIME-2024 rescoring also fixed a discovered evaluator false
+> positive. AIME now accepts only an explicit final integer, never an
+> intermediate numeric prefix. Balanced u200 B1/T2/C2 is therefore
+> `0/30 / 1/30 / 0/30`: T2 correctly derives the invariant `xy=25`, though
+> its transcript includes one unnecessary invalid attempt to solve for
+> `x`; dense C2's explicit `25^{9/5}` is correctly rejected. Runtime tests
+> pass `19/19`.
+>
+> Microbatch optimization is decisive. Matched BS8/ACC2 canaries
+> `730031/730032` completed at `1090.5/1095.8` target tok/s and
+> `73.37/73.04 GB` peak for T2/C2, about 2.4x the BS2/ACC8 rate. BS16/ACC1
+> architectural canaries `730033/730034` OOMed at about 78.9 GB, making BS8
+> the measured maximum safe setting. B1 BS16/ACC1 reaches 3109.7 tok/s at
+> 60.24 GB; matched future campaigns use BS8/ACC2 for all arms to preserve
+> exact microbatch grouping.
+>
+> Verified-priority V10 data is complete and hash-matched on Stokes/Newton:
+> 26,387 rows, 4,000,967 charged target tokens, SHA-256
+> `2461d6f70b44a142854d56c24e1fb42d600065e5788a2c4e055ba47b12696549`.
+> It contains 2,308 full-test TACO rows, 552 expected-answer-matched science
+> rows, and 215 expected-answer-matched math rows selected ahead of weaker
+> rows; 2,641 code rows and most math/teacher rows retain weaker provenance.
+> Optimized matched V10 u1000 training jobs are B1/T2/C2
+> `730036/730037/730038`. Their exact six-board chains end at
+> `730044/730050/730056`, strict aggregate is `730057`, and AIME jobs are
+> `730058/730059/730060`. The older V8 u1000 T2/C2 jobs `729992/729993`
+> remain healthy and must finish for the exposure-control comparison.
+>
+> **Last updated:** 2026-08-03 03:41 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,

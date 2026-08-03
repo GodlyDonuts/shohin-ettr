@@ -88,6 +88,8 @@ def rescore_report(path: Path) -> dict[str, Any]:
             score_backend = f"math-verify-{importlib.metadata.version('math-verify')}"
         except importlib.metadata.PackageNotFoundError:
             score_backend = "normalized-exact-fallback"
+    elif task_name == "aime":
+        score_backend = "shohin-aime-v1-explicit-final-integer"
     else:
         score_backend = "shohin-answer-v4-explicit-cap"
     report = dict(original)

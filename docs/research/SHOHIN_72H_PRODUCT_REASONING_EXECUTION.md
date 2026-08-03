@@ -2,7 +2,7 @@
 
 Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 
-## Live Scoreboard (2026-08-03 02:04 EDT)
+## Live Scoreboard (2026-08-03 03:41 EDT)
 
 | Result | Status |
 |---|---:|
@@ -38,6 +38,14 @@ Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 | corrected promotion decision | fail only on code regression: T2 0/40 versus B1 2/40 |
 | balanced B1 training / GSM8K | 521,327 target tokens at 1,260.0 tok/s; 40/100 GSM8K |
 | balanced T2/C2 training | both complete on 521,327 tokens; 450.0 / 451.6 tok/s; boards live |
+| balanced strict B1/T2/C2 | **26.42% / 34.55% / 31.03% macro**; 131 / 185 / 162 solved of 538 |
+| balanced promotion gate | **numeric pass**; T2 +8.13 points/+54 solved vs B1, +3.51/+23 vs C2; transcript gate mixed |
+| balanced code B1/T2/C2 | 7/40 / 7/40 / 6/40; prior ETTR code regression repaired |
+| strict balanced AIME-2024 B1/T2/C2 | 0/30 / **1/30** / 0/30; one genuine ETTR invariant solve, not yet robust |
+| optimized B1 throughput | BS16/ACC1: 3,109.7 target tok/s, 60.24 GB peak |
+| optimized T2/C2 throughput | BS8/ACC2: 1,090.5 / 1,095.8 target tok/s, 73.37 / 73.04 GB peak |
+| verified-priority V10 data | 4,000,967 target tokens; 2,308 full-test code + 767 answer-checked math/science rows |
+| V10 matched u1000 | training `730036/730037/730038`; strict aggregate `730057`; AIME `730058--730060` |
 
 Transcript inspection shows the deterministic thinking score is strongly
 affected by decode behavior: many GSM8K completions calculate the right value
