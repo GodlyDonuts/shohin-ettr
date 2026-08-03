@@ -196,6 +196,12 @@ TASKS: dict[str, dict[str, Any]] = {
         "gold": gold_gsm8k,
         "match": match_gsm8k,
     },
+    "gpqa": {
+        "kind": "answer",
+        "extract": extract_short_answer,
+        "gold": gold_short_answer,
+        "match": match_short_answer,
+    },
     "math500": {
         "kind": "answer",
         "extract": extract_boxed,
@@ -233,6 +239,14 @@ def _task_prompt(task: str, row: dict[str, Any]) -> str:
         return (
             f"{row['input']}\n\nReason carefully, then put only the exact requested "
             "answer or option label inside \\boxed{}."
+        )
+    if task == "gpqa":
+        choices = "\n".join(
+            f"({choice['label']}) {choice['text']}" for choice in row["choices"]
+        )
+        return (
+            f"{row['question']}\n\n{choices}\n\nReason carefully, then put only "
+            "the correct option label inside \\boxed{}."
         )
     return _question(row)
 

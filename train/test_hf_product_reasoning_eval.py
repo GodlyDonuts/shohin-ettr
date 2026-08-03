@@ -47,6 +47,22 @@ class ProductReasoningEvalTests(unittest.TestCase):
         self.assertTrue(match_short_answer("(b)", "(B)"))
         self.assertTrue(match_short_answer("TRUE.", "True"))
 
+    def test_gpqa_prompt_contains_only_labeled_choices(self) -> None:
+        row = {
+            "question": "Which option follows?",
+            "choices": [
+                {"label": "A", "text": "alpha"},
+                {"label": "B", "text": "beta"},
+                {"label": "C", "text": "gamma"},
+                {"label": "D", "text": "delta"},
+            ],
+            "answer": "C",
+        }
+        prompt = _task_prompt("gpqa", row)
+        alternate = _task_prompt("gpqa", {**row, "answer": "A"})
+        self.assertIn("(C) gamma", prompt)
+        self.assertEqual(prompt, alternate)
+
     def test_subset_is_stable_and_unique(self) -> None:
         rows = [{"question": f"q{index}", "answer": "#### 1"} for index in range(10)]
         first = select_rows("gsm8k", rows, 4, 31)
