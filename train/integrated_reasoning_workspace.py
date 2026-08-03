@@ -281,3 +281,23 @@ def dense_workspace_architecture_sha256(config: IntegratedWorkspaceConfig) -> st
     return hashlib.sha256(
         json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
+
+
+def residual_workspace_architecture_sha256(
+    config: IntegratedWorkspaceConfig,
+    *,
+    dense: bool,
+) -> str:
+    config.validate()
+    payload = {
+        "schema": "shohin-integrated-reasoning-prompt-residual-v1",
+        "config": asdict(config),
+        "mechanism": (
+            "token-embedding-prompt+tied-recurrent-workspace+gated-prompt-residual"
+            if not dense
+            else "token-embedding-prompt+untied-dense-workspace+gated-prompt-residual"
+        ),
+    }
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()

@@ -391,7 +391,7 @@ def _load_model(model_root: Path, adapter_checkpoint: Path | None):
         recurrent_steps=int(workspace.get("recurrent_steps", 8)),
         dense_width=(
             int(workspace.get("workspace_width", 192))
-            if metadata["arm"] == "dense"
+            if str(metadata["arm"]).startswith("dense")
             else 192
         ),
     ).to("cuda:0")

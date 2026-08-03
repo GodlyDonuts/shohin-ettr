@@ -56,6 +56,23 @@ class ProductReasoningTrainTests(unittest.TestCase):
         self.assertEqual(labels[0].tolist(), [-100, -100, -100, -100, -100, 4, 5])
         self.assertEqual(charged, 5)
 
+    def test_pack_adds_workspace_residual_without_extending_sequence(self) -> None:
+        embedding = nn.Embedding(20, 6)
+        residual = torch.ones(2, 3, 6)
+        packed, attention, labels, charged = pack_training_embeddings(
+            embedding,
+            [[1, 2], [3]],
+            [[4, 5], [6, 7, 8]],
+            None,
+            pad_token_id=0,
+            prompt_residuals=residual,
+        )
+        self.assertEqual(packed.shape, (2, 4, 6))
+        self.assertEqual(attention.sum(dim=1).tolist(), [4, 4])
+        self.assertEqual(labels[0].tolist(), [-100, -100, 4, 5])
+        self.assertTrue(torch.allclose(packed[0, :2], embedding(torch.tensor([1, 2])) + 1))
+        self.assertEqual(charged, 5)
+
     def test_reservoir_is_deterministic(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "rows.jsonl"

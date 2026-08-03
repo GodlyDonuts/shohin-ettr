@@ -22,6 +22,7 @@ from integrated_reasoning_workspace import (
     IntegratedReasoningWorkspace,
     IntegratedWorkspaceConfig,
     dense_workspace_architecture_sha256,
+    residual_workspace_architecture_sha256,
     workspace_architecture_sha256,
 )
 
@@ -138,14 +139,19 @@ def pack_training_embeddings(
     response_rows: list[list[int]],
     prefix_states: torch.Tensor | None,
     pad_token_id: int,
+    prompt_residuals: torch.Tensor | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, int]:
     """Pack prompt, optional workspace, and target with causal-LM labels."""
 
     if len(prompt_rows) != len(response_rows) or not prompt_rows:
         raise ProductReasoningTrainError("prompt/response batch differs")
     prefix_slots = 0 if prefix_states is None else int(prefix_states.shape[1])
+    if prefix_states is not None and prompt_residuals is not None:
+        raise ProductReasoningTrainError("workspace prefix and residual are mutually exclusive")
     if prefix_states is not None and prefix_states.shape[0] != len(prompt_rows):
         raise ProductReasoningTrainError("workspace batch differs")
+    if prompt_residuals is not None and prompt_residuals.shape[0] != len(prompt_rows):
+        raise ProductReasoningTrainError("workspace residual batch differs")
     sequences: list[torch.Tensor] = []
     labels: list[torch.Tensor] = []
     charged_tokens = 0
@@ -155,7 +161,15 @@ def pack_training_embeddings(
     ):
         prompt_tensor = torch.tensor(prompt, device=device, dtype=torch.long)
         response_tensor = torch.tensor(response, device=device, dtype=torch.long)
-        parts = [embedding(prompt_tensor)]
+        prompt_embeddings = embedding(prompt_tensor)
+        if prompt_residuals is not None:
+            residual_count = min(len(prompt), int(prompt_residuals.shape[1]))
+            prompt_embeddings = prompt_embeddings.clone()
+            prompt_embeddings[-residual_count:] = (
+                prompt_embeddings[-residual_count:]
+                + prompt_residuals[index, :residual_count]
+            )
+        parts = [prompt_embeddings]
         if prefix_states is not None:
             parts.append(prefix_states[index])
         parts.append(embedding(response_tensor))
@@ -208,7 +222,13 @@ class ProductReasoningModel(nn.Module):
         dense_width: int = 192,
     ) -> None:
         super().__init__()
-        if arm not in {"baseline", "ettr", "dense"}:
+        if arm not in {
+            "baseline",
+            "ettr",
+            "dense",
+            "ettr_residual",
+            "dense_residual",
+        }:
             raise ProductReasoningTrainError("training arm differs")
         self.backbone = backbone
         self.arm = arm
@@ -232,8 +252,12 @@ class ProductReasoningModel(nn.Module):
 
         self.workspace_config: IntegratedWorkspaceConfig | None = None
         self.workspace: IntegratedReasoningWorkspace | DenseReasoningWorkspace | None = None
-        if arm in {"ettr", "dense"}:
-            effective_width = workspace_width if arm == "ettr" else dense_width
+        self.workspace_injection = (
+            "prompt_residual" if arm.endswith("_residual") else "soft_prefix"
+        )
+        self.residual_gate: nn.Parameter | None = None
+        if arm != "baseline":
+            effective_width = workspace_width if arm.startswith("ettr") else dense_width
             self.workspace_config = IntegratedWorkspaceConfig(
                 backbone_width=hidden_size,
                 workspace_width=effective_width,
@@ -242,10 +266,17 @@ class ProductReasoningModel(nn.Module):
                 attention_heads=8,
                 ff_multiplier=4,
             )
-            if arm == "ettr":
+            if arm.startswith("ettr"):
                 self.workspace = IntegratedReasoningWorkspace(self.workspace_config)
             else:
                 self.workspace = DenseReasoningWorkspace(self.workspace_config)
+            if self.workspace_injection == "prompt_residual":
+                self.residual_gate = nn.Parameter(torch.tensor(-4.0))
+
+    def sequence_workspace_slots(self) -> int:
+        if self.workspace_config is None or self.workspace_injection != "soft_prefix":
+            return 0
+        return self.workspace_config.workspace_slots
 
     def trainable_parameter_count(self) -> int:
         return sum(parameter.numel() for parameter in self.parameters() if parameter.requires_grad)
@@ -258,6 +289,7 @@ class ProductReasoningModel(nn.Module):
     ) -> tuple[torch.Tensor, dict[str, float]]:
         embedding = self.text_model.embed_tokens
         prefix = None
+        prompt_residuals = None
         halting_loss = torch.zeros((), device=embedding.weight.device)
         stop_probability = 0.0
         delta_norm = 0.0
@@ -265,14 +297,24 @@ class ProductReasoningModel(nn.Module):
             prompt_ids, prompt_mask = _pad_token_rows(prompt_rows, pad_token_id)
             prompt_ids = prompt_ids.to(embedding.weight.device)
             prompt_mask = prompt_mask.to(embedding.weight.device)
-            with torch.no_grad():
-                prompt_features = self.text_model(
-                    input_ids=prompt_ids,
-                    attention_mask=prompt_mask,
-                    use_cache=False,
-                ).last_hidden_state
+            if self.workspace_injection == "prompt_residual":
+                prompt_features = embedding(prompt_ids)
+            else:
+                with torch.no_grad():
+                    prompt_features = self.text_model(
+                        input_ids=prompt_ids,
+                        attention_mask=prompt_mask,
+                        use_cache=False,
+                    ).last_hidden_state
             workspace_output = self.workspace(prompt_features, prompt_mask)
-            prefix = workspace_output.prefix_states.to(dtype=embedding.weight.dtype)
+            workspace_states = workspace_output.prefix_states.to(
+                dtype=embedding.weight.dtype
+            )
+            if self.workspace_injection == "prompt_residual":
+                assert self.residual_gate is not None
+                prompt_residuals = workspace_states * self.residual_gate.sigmoid()
+            else:
+                prefix = workspace_states
             halting_loss = self.workspace.halting_regularizer(workspace_output)
             stop_probability = float(
                 workspace_output.stop_logits[:, -1].sigmoid().detach().mean()
@@ -285,6 +327,7 @@ class ProductReasoningModel(nn.Module):
             response_rows,
             prefix,
             pad_token_id,
+            prompt_residuals,
         )
         outputs = self.text_model(
             inputs_embeds=inputs,
@@ -303,6 +346,11 @@ class ProductReasoningModel(nn.Module):
             "halting_loss": float(halting_loss.detach()),
             "final_stop_probability": stop_probability,
             "mean_step_delta": delta_norm,
+            "residual_gate": (
+                float(self.residual_gate.sigmoid().detach())
+                if self.residual_gate is not None
+                else 0.0
+            ),
             "charged_tokens": float(charged),
         }
 
@@ -437,13 +485,25 @@ def product_generation_embeddings(
     prompt_embeddings = embedding(prompt_ids)
     if model.workspace is None:
         return prompt_embeddings, prompt_attention
-    prompt_features = model.text_model(
-        input_ids=prompt_ids,
-        attention_mask=prompt_attention,
-        use_cache=False,
-    ).last_hidden_state
+    if model.workspace_injection == "prompt_residual":
+        prompt_features = prompt_embeddings
+    else:
+        prompt_features = model.text_model(
+            input_ids=prompt_ids,
+            attention_mask=prompt_attention,
+            use_cache=False,
+        ).last_hidden_state
     workspace_output = model.workspace(prompt_features, prompt_attention)
     prefix = workspace_output.prefix_states.to(dtype=prompt_embeddings.dtype)
+    if model.workspace_injection == "prompt_residual":
+        assert model.residual_gate is not None
+        residual_count = min(prompt_embeddings.shape[1], prefix.shape[1])
+        prompt_embeddings = prompt_embeddings.clone()
+        prompt_embeddings[:, -residual_count:] = (
+            prompt_embeddings[:, -residual_count:]
+            + prefix[:, :residual_count] * model.residual_gate.sigmoid()
+        )
+        return prompt_embeddings, prompt_attention
     prefix_attention = torch.ones(
         prefix.shape[:2], device=prompt_attention.device, dtype=prompt_attention.dtype
     )
@@ -530,11 +590,22 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "workspace_architecture_sha256": None,
     }
     if model.workspace_config is not None:
-        metadata["workspace_architecture_sha256"] = (
-            workspace_architecture_sha256(model.workspace_config)
-            if args.arm == "ettr"
-            else dense_workspace_architecture_sha256(model.workspace_config)
-        )
+        if args.arm.endswith("_residual"):
+            metadata["workspace_architecture_sha256"] = (
+                residual_workspace_architecture_sha256(
+                    model.workspace_config,
+                    dense=args.arm.startswith("dense"),
+                )
+            )
+        elif args.arm == "ettr":
+            metadata["workspace_architecture_sha256"] = workspace_architecture_sha256(
+                model.workspace_config
+            )
+        else:
+            metadata["workspace_architecture_sha256"] = (
+                dense_workspace_architecture_sha256(model.workspace_config)
+            )
+        metadata["workspace_injection"] = model.workspace_injection
 
     torch.cuda.reset_peak_memory_stats()
     optimizer.zero_grad(set_to_none=True)
@@ -545,7 +616,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     microstep = 0
     while update < args.updates:
         raw_batch = batch_stream[microstep % len(batch_stream)]
-        workspace_slots = args.workspace_slots if args.arm != "baseline" else 0
+        workspace_slots = model.sequence_workspace_slots()
         prompt_rows, response_rows = _tokenize_rows(
             tokenizer,
             raw_batch,
@@ -582,6 +653,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "halting_loss": metrics["halting_loss"],
                 "final_stop_probability": metrics["final_stop_probability"],
                 "mean_step_delta": metrics["mean_step_delta"],
+                "residual_gate": metrics["residual_gate"],
                 "gradient_norm": float(gradient_norm),
                 "learning_rate": learning_rate,
                 "charged_tokens": total_charged,
@@ -626,7 +698,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-revision", required=True)
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--arm", choices=("baseline", "ettr", "dense"), required=True)
+    parser.add_argument(
+        "--arm",
+        choices=("baseline", "ettr", "dense", "ettr_residual", "dense_residual"),
+        required=True,
+    )
     parser.add_argument("--updates", type=int, default=200)
     parser.add_argument("--batch-size", type=int, default=2)
     parser.add_argument("--gradient-accumulation", type=int, default=8)
@@ -662,7 +738,8 @@ def parse_args() -> argparse.Namespace:
     )
     if any(value <= 0 for value in positive) or args.learning_rate <= 0:
         parser.error("training dimensions and learning rate must be positive")
-    if args.max_sequence_length <= args.workspace_slots + 16:
+    reserved_slots = args.workspace_slots if args.arm in {"ettr", "dense"} else 0
+    if args.max_sequence_length <= reserved_slots + 16:
         parser.error("maximum sequence length leaves no prompt/target budget")
     return args
 

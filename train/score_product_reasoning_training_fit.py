@@ -46,9 +46,7 @@ def _per_example_nll(
     model.eval()
     losses: list[float] = []
     charged: list[int] = []
-    workspace_slots = (
-        model.workspace_config.workspace_slots if model.workspace_config else 0
-    )
+    workspace_slots = model.sequence_workspace_slots()
     for row in rows:
         prompts, responses = _tokenize_rows(
             tokenizer,
@@ -110,7 +108,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         recurrent_steps=int(workspace.get("recurrent_steps", 8)),
         dense_width=(
             int(workspace.get("workspace_width", 192))
-            if metadata["arm"] == "dense"
+            if str(metadata["arm"]).startswith("dense")
             else 192
         ),
     ).to("cuda:0")
