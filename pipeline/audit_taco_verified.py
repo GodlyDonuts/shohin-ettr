@@ -9,12 +9,21 @@ new immutable derivative. It never mutates its input.
 import argparse
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
+import hashlib
 import json
 import os
 from pathlib import Path
 
 from curate_apps import run_solution
 from curate_taco_verified import parse_cases
+
+
+def sha256_file(path, chunk_size=1024 * 1024):
+    digest = hashlib.sha256()
+    with open(path, "rb") as source:
+        while chunk := source.read(chunk_size):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def read_candidates(path):
@@ -200,6 +209,10 @@ def main():
     parser.add_argument("--out", required=True)
     parser.add_argument("--dataset", default="likaixin/TACO-verified")
     parser.add_argument("--revision", required=True)
+    parser.add_argument("--source-file", type=Path,
+                        help="optional locally pinned upstream JSON source")
+    parser.add_argument("--source-sha256",
+                        help="required expected SHA-256 when --source-file is used")
     parser.add_argument("--max-case-chars", type=int, default=20_000)
     parser.add_argument("--timeout", type=float, default=2.0)
     parser.add_argument("--max-source-rows", type=int, default=0,
@@ -214,6 +227,19 @@ def main():
             or args.progress_every <= 0 or args.workers <= 0):
         raise ValueError("timeout, max-case-chars, and progress-every must be positive; "
                          "max-source-rows non-negative")
+    if (args.source_file is None) != (args.source_sha256 is None):
+        raise ValueError("source-file and source-sha256 must be provided together")
+    if args.source_file is not None:
+        if not args.source_file.is_file():
+            raise FileNotFoundError(f"local source file is missing: {args.source_file}")
+        if (len(args.source_sha256) != 64
+                or any(char not in "0123456789abcdef" for char in args.source_sha256)):
+            raise ValueError("source-sha256 must be one lowercase SHA-256")
+        actual_source_sha256 = sha256_file(args.source_file)
+        if actual_source_sha256 != args.source_sha256:
+            raise ValueError("local source SHA-256 differs")
+    else:
+        actual_source_sha256 = None
 
     from datasets import load_dataset
 
@@ -229,12 +255,20 @@ def main():
     completed = read_completed_partial(partial, candidates) if partial.exists() else {}
     candidates = {key: row for key, row in candidates.items() if key not in completed}
     resumed = len(completed)
-    stream = load_dataset(
-        args.dataset,
-        split="train",
-        streaming=True,
-        revision=args.revision,
-    )
+    if args.source_file is None:
+        stream = load_dataset(
+            args.dataset,
+            split="train",
+            streaming=True,
+            revision=args.revision,
+        )
+    else:
+        stream = load_dataset(
+            "json",
+            data_files={"train": str(args.source_file)},
+            split="train",
+            streaming=True,
+        )
     with partial.open("a" if resumed else "w") as out:
         result = audit_source_stream(
             candidates=candidates,
@@ -256,6 +290,8 @@ def main():
     print(json.dumps({
         "dataset": args.dataset,
         "dataset_revision": args.revision,
+        "source_file": str(args.source_file) if args.source_file else None,
+        "source_file_sha256": actual_source_sha256,
         "input_rows": result["matched_source_rows"] + len(result["remaining"]),
         "source_rows_scanned": result["source_rows_scanned"],
         "matched_source_rows": result["matched_source_rows"],

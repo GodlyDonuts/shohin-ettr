@@ -6,7 +6,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from audit_taco_verified import audit_source_stream, read_completed_partial, verify_source_row
+from audit_taco_verified import (
+    audit_source_stream,
+    read_completed_partial,
+    sha256_file,
+    verify_source_row,
+)
 
 
 class TacoAuditResumeTests(unittest.TestCase):
@@ -57,6 +62,16 @@ class TacoAuditResumeTests(unittest.TestCase):
             output.flush()
             os.fsync(output.fileno())
             self.assertGreater(path.stat().st_size, 0)
+
+    def test_source_file_hash_is_exact(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        path = Path(directory.name) / "source.json"
+        path.write_bytes(b"[]\n")
+        self.assertEqual(
+            sha256_file(path),
+            "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        )
 
     def test_full_source_verification_runs_all_cases(self):
         row = {"problem_id": 17, "response": "import sys\nn = int(sys.stdin.read())\nprint(n * 2)"}
