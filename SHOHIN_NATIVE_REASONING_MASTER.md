@@ -54410,3 +54410,10 @@ against `2`, while a truncated `1 dollar 40 cents` response was extracted as
 saved-completion rescorer correct both without GPU regeneration; the net B1
 score remains `32/100`. All arms will be rescored through this same path
 before aggregation.
+
+The same audit closes an MATH-500 scoring defect. B1's raw normalized-string
+score is `15/100`; Hugging Face Math-Verify `0.9.0` recognizes three additional
+valid answers and yields `18/100`. The corrected rows are `\frac9{19}` versus
+`\frac{9}{19}`, choice `\text{(E)}` versus `E`, and `30^\circ` versus `30`.
+The verifier is installed in an isolated Newton target and its version is
+recorded in every v3 report.

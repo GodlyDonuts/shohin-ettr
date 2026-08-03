@@ -43,3 +43,4 @@ def test_rescore_repairs_decimal_and_currency_answer_errors(tmp_path: Path) -> N
     assert report["results"][0]["correct"] is True
     assert report["results"][1]["prediction"] == "1.4"
     assert report["results"][1]["correct"] is False
+    assert report["rescore_backend"] == "shohin-answer-v3"

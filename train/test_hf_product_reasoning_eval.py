@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import unittest
+from unittest.mock import patch
+import types
 
 from hf_product_reasoning_eval import (
     _completion_usage,
@@ -49,6 +51,15 @@ class ProductReasoningEvalTests(unittest.TestCase):
 
     def test_math_normalizes_fraction_command(self) -> None:
         self.assertTrue(match_math(r"\dfrac{1}{2}", r"\frac{1}{2}"))
+
+    def test_math_verify_backend_handles_equivalent_latex(self) -> None:
+        fake = types.SimpleNamespace(
+            LatexExtractionConfig=lambda: object(),
+            parse=lambda value, extraction_config: [value.replace("{", "").replace("}", "")],
+            verify=lambda gold, prediction: gold == prediction,
+        )
+        with patch.dict("sys.modules", {"math_verify": fake}):
+            self.assertTrue(match_math(r"\frac9{19}", r"\frac{9}{19}"))
 
     def test_short_answer_scoring_handles_bbh_labels(self) -> None:
         self.assertEqual(extract_short_answer(r"Therefore \boxed{(B)}."), "(B)")

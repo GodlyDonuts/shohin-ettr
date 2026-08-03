@@ -83,6 +83,10 @@
 > `1 dollar 40 cents` to `1`; evaluator numeric/currency normalization and
 > `pipeline/rescore_product_reasoning_report.py` repair both without repeating
 > generation. The corrected net score remains `32/100`.
+> B1's raw exact-string MATH-500 score is `15/100`; isolated Hugging Face
+> Math-Verify `0.9.0` rescores the same completions at `18/100`, recognizing
+> three valid equivalents (fraction formatting, choice `E`, and `30` versus
+> `30^\circ`). Every arm must use this same v3 backend before aggregation.
 >
 > **Last updated:** 2026-08-03 00:22 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256

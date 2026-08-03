@@ -199,11 +199,19 @@ def _normalize_math(value: str | None) -> str | None:
 
 
 def match_math(prediction: str | None, gold: str | None) -> bool:
-    return (
-        prediction is not None
-        and gold is not None
-        and _normalize_math(prediction) == _normalize_math(gold)
-    )
+    if prediction is None or gold is None:
+        return False
+    try:
+        from math_verify import LatexExtractionConfig, parse, verify
+
+        extraction = [LatexExtractionConfig()]
+        parsed_gold = parse(f"${gold}$", extraction_config=extraction)
+        parsed_prediction = parse(f"${prediction}$", extraction_config=extraction)
+        if parsed_gold and parsed_prediction:
+            return bool(verify(parsed_gold, parsed_prediction))
+    except (ImportError, RuntimeError, TypeError, ValueError):
+        pass
+    return _normalize_math(prediction) == _normalize_math(gold)
 
 
 TASKS: dict[str, dict[str, Any]] = {

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.metadata
 import json
 import os
 from pathlib import Path
@@ -73,6 +74,13 @@ def rescore_report(path: Path) -> dict[str, Any]:
         rescored_rows.append(rescored)
 
     correct = sum(bool(row["correct"]) for row in rescored_rows)
+    if task_name == "math500":
+        try:
+            score_backend = f"math-verify-{importlib.metadata.version('math-verify')}"
+        except importlib.metadata.PackageNotFoundError:
+            score_backend = "normalized-exact-fallback"
+    else:
+        score_backend = "shohin-answer-v3"
     report = dict(original)
     report.update(
         {
@@ -85,6 +93,7 @@ def rescore_report(path: Path) -> dict[str, Any]:
                 "false_to_true": false_to_true,
                 "true_to_false": true_to_false,
             },
+            "rescore_backend": score_backend,
             "rescored_from": str(path.resolve()),
             "rescored_from_sha256": _sha256(path),
             "results": rescored_rows,

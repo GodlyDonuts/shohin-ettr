@@ -24,6 +24,7 @@ Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 | `T2` matched short train | complete; 200 updates; 429,658 charged target tokens; 401.2 charged tok/s; 19.78 GB peak |
 | `C2` matched short train | running as job `729856`; identical data/order/budget |
 | `B1` matched GSM8K | 32/100 after answer-extraction rescore |
+| `B1` matched MATH-500 | 18/100 under Math-Verify 0.9.0; raw exact-string report was 15/100 |
 
 Transcript inspection shows the deterministic thinking score is strongly
 affected by decode behavior: many GSM8K completions calculate the right value
@@ -134,6 +135,10 @@ saved completions, so evaluator fixes never require or alter model generation.
 The first use corrected one GSM8K false negative (`2.00` versus `2`) and one
 truncation-driven false positive (`1 dollar 40 cents` parsed as `1`); B1's net
 score remains `32/100`.
+For MATH-500, the v3 lane uses isolated Hugging Face Math-Verify `0.9.0`.
+B1 rises from raw exact-string `15/100` to `18/100` because three predictions
+are mathematically equivalent to their references. The backend and version
+are embedded in each rescored report.
 
 ## Compared Systems
 
