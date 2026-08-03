@@ -15,6 +15,7 @@ set -euo pipefail
 : "${OUTPUT_ENV:?OUTPUT_ENV is required}"
 FLA_VERSION=${FLA_VERSION:-0.3.2}
 FLA_CORE_VERSION=${FLA_CORE_VERSION:-$FLA_VERSION}
+EINOPS_VERSION=${EINOPS_VERSION:-0.8.2}
 CAUSAL_CONV_VERSION=${CAUSAL_CONV_VERSION:-1.5.0.post8}
 
 test -x "$BASE_ENV/bin/python"
@@ -35,7 +36,8 @@ export PIP_NO_CACHE_DIR=1
 "$TEMP_ENV/bin/python" -m pip install \
   --no-deps \
   "flash-linear-attention==$FLA_VERSION" \
-  "fla-core==$FLA_CORE_VERSION"
+  "fla-core==$FLA_CORE_VERSION" \
+  "einops==$EINOPS_VERSION"
 "$TEMP_ENV/bin/python" -m pip install \
   --no-deps --no-build-isolation "causal-conv1d==$CAUSAL_CONV_VERSION"
 "$TEMP_ENV/bin/python" - <<'PY'
@@ -59,6 +61,7 @@ print(
         "cuda": torch.version.cuda,
         "fla": version("flash-linear-attention"),
         "fla_core": version("fla-core"),
+        "einops": version("einops"),
         "causal_conv1d": getattr(causal_conv1d, "__version__", "unknown"),
     },
     flush=True,
