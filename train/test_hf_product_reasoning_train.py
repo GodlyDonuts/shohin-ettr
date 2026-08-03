@@ -23,6 +23,7 @@ from hf_product_reasoning_train import (
     resolve_product_backbone_layout,
     reservoir_rows,
     reservoir_rows_with_sha256,
+    validate_warm_start_metadata,
 )
 
 
@@ -226,6 +227,31 @@ class ProductReasoningTrainTests(unittest.TestCase):
             )
             with self.assertRaises(ProductReasoningTrainError):
                 load_trainable_checkpoint(path, model)  # type: ignore[arg-type]
+
+    def test_warm_start_metadata_requires_same_trainable_geometry(self) -> None:
+        args = SimpleNamespace(
+            arm="baseline",
+            model_root=Path("/model"),
+            model_source_root=Path("/canonical-model"),
+            model_revision="revision",
+            lora_layers=4,
+            lora_rank=8,
+            lora_alpha=16.0,
+            unfreeze_layers=2,
+        )
+        metadata = {
+            "arm": "baseline",
+            "model_root": "/canonical-model",
+            "model_revision": "revision",
+            "lora_layers": 4,
+            "lora_rank": 8,
+            "lora_alpha": 16.0,
+            "unfreeze_layers": 2,
+        }
+        validate_warm_start_metadata(metadata, args)
+        metadata["unfreeze_layers"] = 1
+        with self.assertRaises(ProductReasoningTrainError):
+            validate_warm_start_metadata(metadata, args)
 
 
 if __name__ == "__main__":

@@ -567,6 +567,37 @@ def load_trainable_checkpoint(
     return int(payload["update"]), metadata
 
 
+def validate_warm_start_metadata(metadata: dict[str, Any], args: argparse.Namespace) -> None:
+    """Require the source checkpoint to describe the model being constructed."""
+
+    expected = {
+        "arm": args.arm,
+        "model_root": str((args.model_source_root or args.model_root).resolve()),
+        "model_revision": args.model_revision,
+        "lora_layers": args.lora_layers,
+        "lora_rank": args.lora_rank,
+        "lora_alpha": args.lora_alpha,
+        "unfreeze_layers": args.unfreeze_layers,
+    }
+    mismatches = {
+        key: {"expected": value, "actual": metadata.get(key)}
+        for key, value in expected.items()
+        if metadata.get(key) != value
+    }
+    if mismatches:
+        raise ProductReasoningTrainError(
+            f"warm-start metadata differs: {json.dumps(mismatches, sort_keys=True)}"
+        )
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
 def product_generation_embeddings(
     model: ProductReasoningModel,
     prompt_ids: torch.Tensor,
@@ -648,6 +679,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         args.dense_width,
         args.unfreeze_layers,
     ).to("cuda:0")
+    warm_start_update = None
+    warm_start_metadata = None
+    warm_start_sha256 = None
+    if args.warm_start_checkpoint is not None:
+        if not args.warm_start_checkpoint.is_file():
+            raise ProductReasoningTrainError("warm-start checkpoint is missing")
+        warm_start_update, warm_start_metadata = load_trainable_checkpoint(
+            args.warm_start_checkpoint, model
+        )
+        validate_warm_start_metadata(warm_start_metadata, args)
+        warm_start_sha256 = _sha256_file(args.warm_start_checkpoint)
     model.train()
     trainable_parameters = [
         parameter for parameter in model.parameters() if parameter.requires_grad
@@ -688,6 +730,18 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             asdict(model.workspace_config) if model.workspace_config else None
         ),
         "workspace_architecture_sha256": None,
+        "warm_start_checkpoint": (
+            str(args.warm_start_checkpoint.resolve())
+            if args.warm_start_checkpoint is not None
+            else None
+        ),
+        "warm_start_sha256": warm_start_sha256,
+        "warm_start_update": warm_start_update,
+        "warm_start_data_sha256": (
+            warm_start_metadata.get("data_sha256")
+            if warm_start_metadata is not None
+            else None
+        ),
     }
     if model.workspace_config is not None:
         if args.arm.endswith("_residual"):
@@ -803,6 +857,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--warm-start-checkpoint", type=Path)
     parser.add_argument(
         "--arm",
         choices=("baseline", "ettr", "dense", "ettr_residual", "dense_residual"),

@@ -35,6 +35,7 @@ SEED=${SEED:-31}
 DATA_SEED=${DATA_SEED:-20260802}
 CHECKPOINT_INTERVAL=${CHECKPOINT_INTERVAL:-100}
 UNFREEZE_LAYERS=${UNFREEZE_LAYERS:-0}
+WARM_START_CHECKPOINT=${WARM_START_CHECKPOINT:-}
 
 test -x "$PYTHON"
 test -f "$RUNTIME/train/hf_product_reasoning_train.py"
@@ -42,6 +43,9 @@ test -f "$RUNTIME/train/integrated_reasoning_workspace.py"
 test -d "$MODEL_ROOT"
 test -f "$DATA"
 test ! -e "$OUTPUT"
+if [[ -n "$WARM_START_CHECKPOINT" ]]; then
+  test -f "$WARM_START_CHECKPOINT"
+fi
 
 SOURCE_MODEL_ROOT=$MODEL_ROOT
 EFFECTIVE_MODEL_ROOT=$MODEL_ROOT
@@ -65,6 +69,11 @@ export TOKENIZERS_PARALLELISM=false
 export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
+EXTRA_ARGS=()
+if [[ -n "$WARM_START_CHECKPOINT" ]]; then
+  EXTRA_ARGS+=(--warm-start-checkpoint "$WARM_START_CHECKPOINT")
+fi
+
 "$PYTHON" "$RUNTIME/train/hf_product_reasoning_train.py" \
   --model-root "$EFFECTIVE_MODEL_ROOT" \
   --model-source-root "$SOURCE_MODEL_ROOT" \
@@ -85,4 +94,5 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
   --seed "$SEED" \
   --data-seed "$DATA_SEED" \
   --checkpoint-interval "$CHECKPOINT_INTERVAL" \
-  --unfreeze-layers "$UNFREEZE_LAYERS"
+  --unfreeze-layers "$UNFREEZE_LAYERS" \
+  "${EXTRA_ARGS[@]}"
