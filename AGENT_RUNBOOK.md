@@ -26734,3 +26734,28 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `scale_long_verified_math_and_short_verified_science_then_warm_start_the_broad_leader_with_equal_verified_replay_and_select_only_on_fixed_multidomain_deltas`.
+
+- **2026-08-03 17:44--17:50 EDT** -- **Two independent long-budget
+  replications confirm the math-yield intervention and Newton reaches 16
+  concurrent H100 jobs.**
+
+  The two disjoint 64-prompt replications close at `38/64` and `41/64`
+  verified positives. Their math splits are `20/31` and `23/35`; `16` and
+  `11` of those respective math positives are recovered only by the strict
+  exhausted-draft finalizer. Together with the matched first shard, the long
+  shape reaches math `54/91 = 59.34%` and science `52/101 = 51.49%` across
+  192 fresh prompts. Direct long decoding supplies 22 math positives and the
+  answer-only finalizer supplies 32 additional positives. This replication
+  rejects the hypothesis that the original `11/25` math result was a lucky
+  slice, while preserving the exact-answer verifier as the admission gate.
+
+  Newton admits 16 concurrent one-H100 jobs. Fourteen short-budget shards,
+  one full BBH milestone, and one proposal-source probe occupy the initial
+  wave; the first long-math production shard starts as capacity turns over.
+  The remaining 31 long-math shards are separate priority requests, so they
+  can backfill one GPU at a time. The complete campaign has 16 running and 55
+  pending/dependency jobs at this observation. No multi-GPU gang allocation
+  is on the critical path.
+
+  Decision:
+  `retain_the_replicated_long_math_shape_and_allow_single_gpu_production_jobs_to_backfill_every_released_h100`.
