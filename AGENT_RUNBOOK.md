@@ -26694,8 +26694,10 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `7fa7925539cda90cce61e8b7892ef42b419b2ff8f424ba38bb8c022ba35bec24`.
   Builder runtime `product_rollout_bank_60fdf53_math_r1` has SHA256SUMS hash
   `31d91df4ee57d1961a942fe4f50931a8d91c9d19b823914f6df02719971f4470`.
-  Thirty-two independent one-H100 jobs `733882--733914` cover disjoint
-  128-prompt slices at the admitted long shape; CPU aggregate `733915` checks
+  Thirty-two independent one-H100 jobs `733882--733891` and
+  `733893--733914` cover disjoint 128-prompt slices at the admitted long
+  shape; ID `733892` belongs to another account and is not part of this
+  campaign. CPU aggregate `733915` checks
   complete coverage and requires at least 512 math positives. The short
   8,192-prompt fan remains active for fast science collection. Its first five
   reported 64-prompt blocks yield `16/24/15/20/17` positives, averaging
@@ -26730,7 +26732,11 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   GPQA `15`, and BBH `47`; it is retained only as proposal-source probe
   `733876`. The update-1,000 leader's expanded board now confirms GSM8K
   `1018/1319`, MATH `239/500`, HumanEval `45/164`, MBPP `132/499`, GPQA
-  `27/198`, and AIME `0/30`; BBH and science remain live.
+  `27/198`, AIME `0/30`, science `129/500`, and BBH
+  `741/1,250 = 59.28%`. The BBH artifact SHA-256 is
+  `2ea1e76c1603b0d0ad7ae0006c64b861dcebda4c0ef011e2a04044edc9f0dbf3`.
+  Using GSM8K, MATH, mean code, GPQA, and BBH, the expanded fixed-board macro
+  is `44.97%`; this is the promotion baseline for rollout-replay checkpoints.
 
   Decision:
   `scale_long_verified_math_and_short_verified_science_then_warm_start_the_broad_leader_with_equal_verified_replay_and_select_only_on_fixed_multidomain_deltas`.
