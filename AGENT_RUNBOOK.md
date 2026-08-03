@@ -26535,3 +26535,72 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_v13_late_after_token_matching_keep_v12_late_u1000_t1536_as_leader_and_use_available_single_h100s_for_full_board_u2000_and_bounded_finalization_only`.
+
+- **2026-08-03 16:32--16:50 EDT** -- **A fresh verified self-rollout lane is
+  operational, two concrete infrastructure defects are fixed, rollout
+  generation is 9.5x faster, and sixteen independent H100 workers are staged
+  over the complete 8,192-prompt bank.**
+
+  V12 late-layer update 1,000 remains the product leader. The bounded
+  exhausted-trace finalizer closes as a non-material deployment variant:
+  GSM8K `82/100`, MATH `44/100`, GPQA `19/100`, BBH `53/100`, AIME `0/30`,
+  fresh science `38/100`, and manual composition `7/12`. Reusing the direct
+  checkpoint's unchanged 30% code mean gives a five-domain macro of `45.6%`,
+  only +0.2 point over direct 1,536-token decoding while losing four MATH
+  answers and three manual problems. Do not promote or extend finalization.
+
+  The expanded direct V12 board has durable completed results HumanEval
+  `45/164 = 27.44%`, MBPP `132/499 = 26.45%`, GPQA `27/198 = 13.64%`, and
+  AIME `0/30`; full GSM8K, MATH, BBH, and fresh science remain live. The
+  2,000-update V12 dose job `733201` is finite through update 970 at about
+  `6.73k` charged target tok/s. V13 token-matched B1 `732605` is finite
+  through update 5,790 and `23.51M` targets at about `4.92k` tok/s.
+
+  CPU bank builder commit `0df8b61` first produced 8,192 V12/V13-disjoint
+  prompts, exactly 4,096 math plus 4,096 science, with zero duplicates and
+  SHA-256
+  `571731ead2124adeaa75ea07e71a7c90da4133620f650d8cb35fc6c81a7c3364`.
+  A first rollout smoke `733742` failed before model load because its Slurm
+  wrapper used a Python environment without Transformers. Commit `0913858`
+  switches to the proven product environment, stages the pinned model on
+  node-local storage, and records canonical versus loaded model roots. Its
+  immutable Newton runtime has SHA256SUMS SHA-256
+  `5676a7387a4818a2a0dc11cb77593990984cfc351bd210a3786180f85dad1f14`.
+  Replacement smoke `733764` completed in 69 seconds; its 256-token cap was a
+  mechanics test only, with 15/16 trajectories cap-exhausted.
+
+  The smoke also exposed severe under-batching: one prompt times four samples
+  generated only `74.19` tok/s and used 6.36GB. Commit `96013f0` batches
+  multiple prompt groups without weakening exact verification. Matched
+  1,536-token canaries reach `450.93 / 590.50 / 706.83` generated tok/s at
+  prompt batches `4 / 8 / 16`, with peak allocated memory
+  `8.86 / 11.52 / 16.84`GB. Batch 16 is therefore a measured 9.53x speedup
+  over the original loop. The old unbatched shard fan was canceled after only
+  minutes, before spending GPU-hours; no training or benchmark job was
+  touched. Batch-32/64 canaries are the final throughput gate.
+
+  Transcript inspection then found a false-negative verifier contract:
+  science bank rows stored normalized short answers but wrapped their generic
+  `answer` field in `\\boxed{}`, so short-answer matching compared a raw model
+  answer against the literal wrapper. Commit `9f03c3e` scores science against
+  `expected_answer_normalized` and adds a raw `target`; 35 focused tests pass.
+  Stokes job `761378` rebuilt the corrected bank in 23 seconds at SHA-256
+  `b3f56ef940056ac09b58101c9e8ce1f93d8420c90aa1be00e6c3e05a68e7a3f4`.
+  Its immutable builder-runtime SHA256SUMS hash is
+  `f0c6cc8f17f5791b95bbc44ed6edafb32497842f03eb59343cc47b4f0324f4cf`;
+  corrected Newton rollout-runtime SHA256SUMS hash is
+  `6672dfdfca7ee69dc32fc47605ffc58858abcee876fa0ffbea2b7ca4487ad601`.
+
+  Offline rescoring of already-generated trajectories under the corrected
+  verifier gives `1/8` and `2/16` prompts with at least one exact positive at
+  K=4, about 12.5% prompt yield. This is enough to collect but too sparse for
+  a 2,048-prompt pilot. Corrected batch-32/64 canaries are `733801/733802`.
+  Sixteen one-H100 jobs `733805--733820` are dependency-staged after the
+  batch-64 gate, each covering a disjoint 512-row slice of the complete bank
+  at K=4 and 1,536 tokens. If the observed yield holds, the lane should create
+  roughly 1,000 exact-verified student trajectories in about one H100 wave.
+  No SFT is authorized until the complete aggregate proves actual positive
+  volume, group balance, unique identities, and immutable source hashes.
+
+  Decision:
+  `fix_the_verifier_then_batch_generation_to_fill_each_h100_and_collect_the_complete_fresh_bank_before_spending_any_update_on_self_training`.
