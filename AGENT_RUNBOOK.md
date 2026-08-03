@@ -26166,3 +26166,78 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `use_spare_h100s_for_checkpoint_learning_curves_and_transcript_evidence_then_release_v12_only_after_the_exact_data_gate`.
+
+- **2026-08-03 13:01--13:33 EDT** -- **The single-H100 product campaign is
+  widened aggressively, and the first capacity/duration decision is now
+  evidence-backed.**
+
+  Late-layer job `731579` completed cleanly after 1,000 updates. It trained
+  the last two transformer blocks plus the proven four-layer rank-8 LoRA,
+  totaling `157,925,376` trainable parameters. It processed `5,621,111`
+  charged targets at `5,517.189` tok/s and peaked at
+  `37,596,777,472` GPU bytes. Checkpoints 500 and 1,000 are both preserved.
+  On the identical 100/20-row development boards, update 500 scores GSM8K
+  `79/100`, MATH `26/100`, HumanEval `2/20`, MBPP `4/20`, GPQA `16/100`,
+  BBH `47/100`, AIME `2/30`, and fresh science `44/100`. Update 1,000 scores
+  `83/100`, `22/100`, `2/20`, `3/20`, `15/100`, `43/100`, `1/30`, and
+  `30/100`. The 500-update checkpoint is selected: one later GSM gain does
+  not compensate for simultaneous math, code, science, logic, GPQA, and AIME
+  regressions.
+
+  Wide-LoRA job `731512` remains healthy on `evc31` with eight adapted
+  layers, rank 32, alpha 64, BS4/ACC4, and about `4.69k` charged tok/s.
+  Update 1,000 scores GSM8K `78/100`, MATH `21/100`, HumanEval `4/20`, MBPP
+  `2/20`, GPQA `21/100`, BBH `51/100`, AIME `0/30`, and fresh science
+  `31/100`; manual composition is `3/12`. Update 2,000 has so far scored
+  GSM8K `79/100`, MATH `35/100`, HumanEval `5/20`, MBPP `4/20`, BBH
+  `38/100`, and AIME `1/30`; GPQA and science are still running. This is a
+  clear math/code gain coupled to a 13-point BBH loss, so no final selection
+  is allowed before the complete 2,000/3,000 curves arrive.
+
+  Direct generation inspection changes the diagnosis. Late-500 solves
+  `7/12` hand-written compositions and produces coherent multi-step solutions
+  for percentage inversion, ratios, recurrence, rates, unit conversion, and
+  schedule counting. It still makes value-retention mistakes such as
+  converting 86 dollars to 86 cents, and it computes some correct intermediate
+  results without emitting the requested final scalar. Wide-1,000 solves only
+  `3/12`; seven of twelve generations hit the 768-token ceiling, including
+  several with the right value still visible in the unfinished reasoning.
+  Late-500 hits the cap on four of twelve. The fixed ledger/recompute prompt
+  control `731861` is closed negative: it lowers late-500 GSM8K from `79/100`
+  to `66/100` and exhausts 17 generations. It must not become the default
+  inference prompt.
+
+  The 768-token evaluator cap is materially censoring hard-task capability.
+  Late-500 exhausts `54/100` MATH, `54/100` GPQA, `24/30` AIME, and
+  `27/100` fresh-science generations; wide-1,000 exhausts `73/100`, `46/100`,
+  `28/30`, and `39/100`. Three 1,536-token manual controls are
+  `732074--732076`. Sixteen matched 1,536-token hard-domain controls compare
+  selected B1-3k, C2-3k, late-500, and wide-2k under identical MATH/GPQA/
+  science/AIME settings: `732087--732102`. These are inference diagnostics,
+  not permission to change the locked 768-token historical scoreboard.
+
+  Full-board product measurement is now massively parallel rather than
+  serial. Eight independent late-500 jobs `732047--732054` cover all 1,319
+  GSM8K, 500 MATH, 164 HumanEval, 499 de-duplicated MBPP, 198 GPQA, 1,250 BBH,
+  30 AIME, and 500 fresh-science examples. Eight matching wide-3k jobs
+  `732055--732063` are dependency-bound after `731512`. The first attempted
+  expanded submissions `731999--732004` failed before evaluation because
+  they referenced the training-only runtime; pending siblings `732005--732014`
+  were canceled. Their replacements use immutable evaluator runtime
+  `product_outcome_eval_77f4cb1_r2`. No result or output was overwritten.
+
+  Exact TACO verification is also expanded rather than left serial. Eighteen
+  independent 32-CPU jobs `761272--761289` are running on Stokes over disjoint
+  deterministic shards: 576 CPUs total. At 13:24 EDT their durable partials
+  contain `3,675` verified rows after roughly 18 minutes. Merge `761290` and
+  V12 builder `761291` are dependency-bound. The six-way and monolithic
+  paths remain valid fallbacks, but the first hash-valid 9,000-row union wins;
+  every stale canonical V12 writer must be canceled before it can run.
+  Held Newton jobs `731325/731326/731919` remain user-held and compare B1,
+  wide LoRA, and late-layer-500-equivalent corpus exposure on V12. Release
+  them only after the V12 report proves the exact hashes, 16M charged targets,
+  zero selected truncation, zero duplicate questions, and the intended
+  `46/18/33/1/2` mix.
+
+  Decision:
+  `use_many_single_h100_requests_for_independent_product_questions_select_late500_over_late1000_keep_wide_pending_and_release_all_three_v12_arms_immediately_after_the_exact_data_gate`.
