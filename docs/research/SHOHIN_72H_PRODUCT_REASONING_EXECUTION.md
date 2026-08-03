@@ -71,6 +71,12 @@ Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 | source-label learned router | 92.807% source-held validation, but expanded 40.280% / 1,997 solved and unopened remainder 46.668% / 1,790 solved; not promoted |
 | dev-calibrated global threshold | dev 44.240%; unopened remainder 47.013% / 1,771 solved; overfits and loses both frozen arms in solved count |
 | router disposition | **closed**; no threshold/feature variant; future gating needs disjoint paired-outcome supervision or joint training |
+| fresh paired math B1/C2 | 6/100 / 8/100; oracle 10/100 |
+| fresh paired science B1/C2 | 26/100 / 7/100; oracle 28/100 |
+| paired outcome aggregate | B1 32/200, C2 15/200, oracle 38/200; 23 B1-only / 6 C2-only; **close routing** |
+| pinned TACO verifier | Stokes `761240`; 9,000 exact candidates; local source SHA-256 `d0593d49...92287e` |
+| V12 data candidate | 16M unique targets; 46m/18c/33s/1p/2t; job `761253` after TACO |
+| held V12 model gate | standard B1 `731325` vs 8x-wider LoRA `731326`; release only after V12 audit |
 
 ## Decisive U1000 Result
 
@@ -128,6 +134,32 @@ authorized. A future gate must be trained on a large disjoint corpus with
 paired frozen-expert outcomes, or learned jointly with the experts, and must
 beat the best single arm on an untouched board. Until then the deployable
 result is C2 as the strongest single arm, not the oracle ceiling.
+
+### Paired Outcome-Supervision Closure
+
+The one allowed stronger routing test also fails. Two new boards were built
+from answer-verified OpenMath and OpenScience rows after exact exclusion of
+every V11 training question. The first 100 rows of each were evaluated by the
+frozen selected 3k B1 and C2 adapters under the same model revision, decoding,
+and evaluator. Math is B1/C2 `6/100 / 8/100`, with only two B1-only and four
+C2-only wins. Fresh science is `26/100 / 7/100`, with 21 B1-only and two
+C2-only wins. Across 200 prompts, a perfect per-prompt selector raises B1 only
+from `32/200` to `38/200`; C2 contributes six exclusive answers and loses 23.
+
+This misses the outcome gate fixed before reading results: oracle lift at
+least five percentage points and at least 5% exclusive wins for each arm. The
+remaining 1,900 rows per board will not be spent on inference, and no
+outcome-label classifier will be trained. The result changes the practical
+interpretation of C2: it is a narrow in-distribution math specialist whose
+fresh science regression is severe, not a broadly complementary expert.
+
+The next product gate is data plus adapter capacity, not routing. After the
+9,000-program TACO audit, V12 attempts a unique 16M-target stream at
+`46m/18c/33s/1p/2t`. Matched one-pass 3,000-update jobs compare the proven
+1.679M-parameter LoRA with an approximately eight-times-wider LoRA. Both are
+held until the V12 capacity/hash/truncation report passes. Identical public and
+fresh boards decide whether verified-data breadth plus adapter capacity raises
+real solved counts without C2's code/science/logic tradeoff.
 
 ## Post-Gate 72-Hour Queue (2026-08-03)
 

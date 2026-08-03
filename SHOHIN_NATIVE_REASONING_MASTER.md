@@ -2,6 +2,25 @@
 
 ## Current Status — Read First
 
+**Fresh product closure and next gate (2026-08-03 12:20 EDT):** C2's expanded
+benchmark lead does not generalize as a useful expert. On 200 new verified,
+V11-disjoint prompts, B1/C2 score `32/200 / 15/200`; a perfect outcome oracle
+scores only `38/200`. The paired cells are 9 both-correct, 23 B1-only, 6
+C2-only, and 162 both-wrong. Held-out math is `6/100 / 8/100`, while held-out
+science is `26/100 / 7/100`. Both source-label and direct-outcome routing are
+therefore closed. C2 is retained as a narrow math-specialist result, not the
+next product model.
+
+The active lever is a larger, one-pass, verified posttraining run. Stokes job
+`761240` audits 9,000 programs from a locally pinned TACO source; jobs
+`761241/761253` build an 8M fallback and a 16M V12 candidate. V12 targets
+`46% math / 18% executable code / 33% answer-checked science / 1% procedural /
+2% teacher`. Newton jobs `731325/731326` are held pending the V12 report and
+compare the existing 1.679M LoRA with an approximately 8x-wider LoRA for the
+same 3,000 updates and data order. Product promotion is determined by solved
+counts on identical math, code, science, and logic boards; lower training loss
+alone is insufficient.
+
 **Product-reasoning supersession (2026-08-03 05:20 EDT):** the immediate
 objective is measured problem solving, not maximizing an architecture-native
 claim. The first capable-backbone campaign is now decisive. On Qwen3.5-0.8B,

@@ -183,6 +183,38 @@
 > token-balanced mix `761231` is held `afterok:761230`. Never resurrect dead
 > dependency `761203` or the pre-streaming auditor.
 >
+> **OUTCOME ROUTING CLOSED / V12 PRODUCT RUN STAGED — 2026-08-03 12:20 EDT:**
+> the remote-stream retry above was superseded by a locally pinned exact TACO
+> source. Stokes job `761240` verifies the same 9,000 candidates from
+> `likaixin/TACO-verified@9e68575e01938f016199eda6f07d1a7ce96b35e1`,
+> source SHA-256
+> `d0593d49df5466f53bbe701a830ade4fda1b2c8b57d47a0b76399c783892287e`.
+> It is healthy and writes a resumable source-order partial; 8M fallback mix
+> `761241` and 16M V12 mix `761253` are held `afterok:761240`.
+>
+> The final bounded frozen-expert routing diagnostic is complete on 200 fresh,
+> V11-disjoint, verified prompts. On held-out math B1/C2 score `6/100 / 8/100`;
+> on held-out science short-answer prompts they score `26/100 / 7/100`.
+> Identity pairing yields 9 both-correct, 23 B1-only, 6 C2-only, and 162
+> both-wrong. B1 therefore scores `32/200`, C2 `15/200`, and a perfect oracle
+> reaches only `38/200`: +3 points over B1. This misses the frozen +5-point
+> oracle-lift and >=5%-exclusive-win-per-arm rule. Outcome routing is closed;
+> do not evaluate the remaining 1,900 rows per board or train another router.
+> Analysis SHA-256 is
+> `dd41da9feee22788757d6b4f053a84c41cefcef6001e83b45f3312940c8a7b48`.
+>
+> V12 requests 16M unique charged targets at `46% math / 18% executable code /
+> 33% answer-checked science / 1% procedural / 2% teacher`. It is admitted
+> only if the final report proves capacity, zero selected truncation, no
+> duplicate questions, and the expected source hashes. Newton H100 jobs
+> `731325/731326` are user-held until that report is verified. They compare the
+> proven B1 LoRA (`4` layers, rank `8`, alpha `16`, 1.679M trainable) against
+> an approximately 8x-wider LoRA (`8` layers, rank `32`, alpha `64`) for the
+> same 3,000 updates, BS4/ACC4, 4,096 context, data order, LR, and seed. Runtime
+> `scratchpad/product_train_118a893_r1` replays from SHA256SUMS SHA-256
+> `fb1dcab03ee5e52435a4b7c9edf251eb367715dbd811b9ba04f68ec615e3271c`.
+> Never release these jobs before V12 exists and its report is checked.
+>
 > **PRODUCT CAMPAIGN STATUS — 2026-08-03 00:22 EDT:** Frozen
 > `Qwen/Qwen3.5-0.8B@2fc06364715b967f1860aea9cf38778875588b17`
 > now has directly measured baselines: GSM8K `17/100`, MATH-500 `4/100`,
