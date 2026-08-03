@@ -1,5 +1,6 @@
 from pipeline.product_prompt_router import route
 from pipeline.product_prompt_router import route_reports
+from pipeline.product_prompt_router import calibrate_threshold
 from pipeline.product_prompt_router import train_router
 from pipeline.product_prompt_router import training_label
 
@@ -53,3 +54,30 @@ def test_route_reports_selects_the_predicted_arm() -> None:
 
     assert routed["correct"] == 2
     assert routed["route_counts"] == {"baseline": 1, "dense_residual": 1}
+
+
+def test_calibration_selects_dense_without_regressing_other_domains() -> None:
+    model = {
+        "decision_threshold": 0.0,
+        "feature_weights": {"u:dense": 2.0, "u:base": -2.0},
+        "schema": "shohin-product-prompt-router-v1",
+    }
+    reports = {}
+    for task in ("gsm8k", "math500", "humaneval", "mbpp", "gpqa", "bbh_logic"):
+        baseline_results = []
+        dense_results = []
+        for index in range(10):
+            dense_prompt = task in {"gsm8k", "math500", "gpqa"}
+            question = ("dense" if dense_prompt else "base") + f" {task} {index}"
+            common = {"identity_sha256": f"{task}-{index}", "question": question}
+            baseline_results.append({**common, "correct": not dense_prompt})
+            dense_results.append({**common, "correct": dense_prompt})
+        reports[task] = (
+            {"results": baseline_results},
+            {"results": dense_results},
+        )
+
+    calibrated, report = calibrate_threshold(model, reports)
+
+    assert calibrated["decision_threshold"] > -2.0
+    assert report["selected"]["macro_accuracy"] == 1.0

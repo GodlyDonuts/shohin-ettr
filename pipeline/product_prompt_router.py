@@ -17,6 +17,13 @@ from typing import Any, Iterable
 MODEL_SCHEMA = "shohin-product-prompt-router-v1"
 ROUTED_REPORT_SCHEMA = "shohin-product-routed-report-v1"
 WORD_RE = re.compile(r"[a-z]+|\d+|[^\s]", re.IGNORECASE)
+TASKS_BY_DOMAIN = {
+    "grade_school_math": ("gsm8k",),
+    "competition_math": ("math500",),
+    "code": ("humaneval", "mbpp"),
+    "science": ("gpqa",),
+    "logic": ("bbh_logic",),
+}
 PROCEDURAL_MATH_CUES = (
     "arithmetic problem",
     "calculate",
@@ -251,6 +258,108 @@ def route_reports(
     }
 
 
+def _matched_rows(
+    baseline: dict[str, Any], dense: dict[str, Any]
+) -> list[tuple[dict[str, Any], dict[str, Any]]]:
+    baseline_results = baseline.get("results")
+    dense_results = dense.get("results")
+    if not isinstance(baseline_results, list) or not isinstance(dense_results, list):
+        raise PromptRouterError("input reports do not contain result lists")
+    dense_by_id = {row["identity_sha256"]: row for row in dense_results}
+    if len(dense_by_id) != len(dense_results):
+        raise PromptRouterError("dense report contains duplicate identities")
+    if {row["identity_sha256"] for row in baseline_results} != set(dense_by_id):
+        raise PromptRouterError("report identity sets differ")
+    result = []
+    for baseline_row in baseline_results:
+        dense_row = dense_by_id[baseline_row["identity_sha256"]]
+        if baseline_row.get("question") != dense_row.get("question"):
+            raise PromptRouterError("paired report questions differ")
+        result.append((baseline_row, dense_row))
+    return result
+
+
+def calibrate_threshold(
+    model: dict[str, Any], reports: dict[str, tuple[dict[str, Any], dict[str, Any]]]
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    expected_tasks = {
+        task for tasks in TASKS_BY_DOMAIN.values() for task in tasks
+    }
+    if set(reports) != expected_tasks:
+        raise PromptRouterError(
+            f"calibration tasks differ: {sorted(reports)} != {sorted(expected_tasks)}"
+        )
+    examples: dict[str, list[tuple[float, bool, bool]]] = {}
+    scores: list[float] = []
+    for task, (baseline, dense) in reports.items():
+        examples[task] = []
+        for baseline_row, dense_row in _matched_rows(baseline, dense):
+            score = route_score(model, str(baseline_row["question"]))
+            examples[task].append(
+                (score, bool(baseline_row["correct"]), bool(dense_row["correct"]))
+            )
+            scores.append(score)
+    if not scores:
+        raise PromptRouterError("calibration reports are empty")
+
+    def summary(threshold: float) -> dict[str, Any]:
+        tasks: dict[str, dict[str, int]] = {}
+        for task, rows in examples.items():
+            correct = sum(dense if score >= threshold else baseline for score, baseline, dense in rows)
+            tasks[task] = {"correct": correct, "total": len(rows)}
+        domains = {}
+        for domain, domain_tasks in TASKS_BY_DOMAIN.items():
+            correct = sum(tasks[task]["correct"] for task in domain_tasks)
+            total = sum(tasks[task]["total"] for task in domain_tasks)
+            domains[domain] = {"accuracy": correct / total, "correct": correct, "total": total}
+        return {
+            "domains": domains,
+            "macro_accuracy": sum(value["accuracy"] for value in domains.values()) / len(domains),
+            "solved": sum(value["correct"] for value in tasks.values()),
+            "tasks": tasks,
+            "threshold": threshold,
+        }
+
+    baseline_summary = summary(max(scores) + 1.0)
+    candidates = sorted(set(scores + [max(scores) + 1.0]))
+    eligible = []
+    for threshold in candidates:
+        candidate = summary(threshold)
+        maximum_regression = max(
+            baseline_summary["domains"][domain]["accuracy"]
+            - candidate["domains"][domain]["accuracy"]
+            for domain in TASKS_BY_DOMAIN
+        )
+        candidate["maximum_domain_regression"] = maximum_regression
+        if maximum_regression <= 0.02:
+            eligible.append(candidate)
+    if not eligible:
+        raise PromptRouterError("no calibration threshold satisfies the regression gate")
+    selected = max(
+        eligible,
+        key=lambda value: (
+            value["macro_accuracy"],
+            value["solved"],
+            value["threshold"],
+        ),
+    )
+    calibrated = dict(model)
+    calibrated["decision_threshold"] = selected["threshold"]
+    calibrated["calibration"] = {
+        "objective": "maximum five-domain development macro",
+        "regression_gate": "no domain more than 0.02 below all-baseline",
+        "selected": selected,
+    }
+    report = {
+        "all_baseline": baseline_summary,
+        "candidate_count": len(candidates),
+        "eligible_candidate_count": len(eligible),
+        "selected": selected,
+        "status": "complete",
+    }
+    return calibrated, report
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -260,6 +369,11 @@ def main() -> None:
     train.add_argument("--report", required=True, type=Path)
     train.add_argument("--min-feature-count", type=int, default=3)
     train.add_argument("--max-features", type=int, default=50000)
+    calibrate = subparsers.add_parser("calibrate")
+    calibrate.add_argument("--model", required=True, type=Path)
+    calibrate.add_argument("--manifest", required=True, type=Path)
+    calibrate.add_argument("--output-model", required=True, type=Path)
+    calibrate.add_argument("--report", required=True, type=Path)
     apply = subparsers.add_parser("route-reports")
     apply.add_argument("--model", required=True, type=Path)
     apply.add_argument("--baseline", required=True, type=Path)
@@ -279,6 +393,31 @@ def main() -> None:
         report["data_sha256"] = _sha256(args.data)
         _atomic_json(args.model, model)
         report["model_sha256"] = _sha256(args.model)
+        _atomic_json(args.report, report)
+        print(json.dumps(report, indent=2, sort_keys=True))
+        return
+
+    if args.command == "calibrate":
+        model = _load_json(args.model)
+        manifest = _load_json(args.manifest)
+        report_pairs = {}
+        report_files = {}
+        for task, paths in manifest.items():
+            if not isinstance(paths, dict):
+                raise PromptRouterError(f"calibration manifest entry is invalid: {task}")
+            baseline_path = Path(paths["baseline"])
+            dense_path = Path(paths["dense_residual"])
+            report_pairs[task] = (_load_json(baseline_path), _load_json(dense_path))
+            report_files[task] = {
+                "baseline": {"path": str(baseline_path.resolve()), "sha256": _sha256(baseline_path)},
+                "dense_residual": {"path": str(dense_path.resolve()), "sha256": _sha256(dense_path)},
+            }
+        calibrated, report = calibrate_threshold(model, report_pairs)
+        calibrated["parent_model_sha256"] = _sha256(args.model)
+        _atomic_json(args.output_model, calibrated)
+        report["calibrated_model_sha256"] = _sha256(args.output_model)
+        report["manifest_sha256"] = _sha256(args.manifest)
+        report["report_files"] = report_files
         _atomic_json(args.report, report)
         print(json.dumps(report, indent=2, sort_keys=True))
         return
