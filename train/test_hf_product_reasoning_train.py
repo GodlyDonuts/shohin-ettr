@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
+from types import SimpleNamespace
 import tempfile
 import unittest
 
@@ -18,12 +19,50 @@ from hf_product_reasoning_train import (
     load_trainable_checkpoint,
     pack_training_embeddings,
     product_generation_embeddings,
+    resolve_product_backbone_layout,
     reservoir_rows,
     reservoir_rows_with_sha256,
 )
 
 
 class ProductReasoningTrainTests(unittest.TestCase):
+    @staticmethod
+    def _text_backbone(multimodal: bool) -> nn.Module:
+        text = nn.Module()
+        text.embed_tokens = nn.Embedding(20, 8)
+        text.layers = nn.ModuleList([nn.Sequential(nn.Linear(8, 8))])
+        backbone = nn.Module()
+        backbone.lm_head = nn.Linear(8, 20, bias=False)
+        if multimodal:
+            wrapper = nn.Module()
+            wrapper.language_model = text
+            backbone.model = wrapper
+            backbone.config = SimpleNamespace(
+                text_config=SimpleNamespace(hidden_size=8)
+            )
+        else:
+            backbone.model = text
+            backbone.config = SimpleNamespace(hidden_size=8)
+        return backbone
+
+    def test_backbone_layout_supports_multimodal_qwen_text_path(self) -> None:
+        text, head, width, layout = resolve_product_backbone_layout(
+            self._text_backbone(multimodal=True)
+        )
+        self.assertTrue(hasattr(text, "embed_tokens"))
+        self.assertEqual(head.in_features, 8)
+        self.assertEqual(width, 8)
+        self.assertEqual(layout, "multimodal-language-model")
+
+    def test_backbone_layout_supports_standard_causal_lm(self) -> None:
+        text, head, width, layout = resolve_product_backbone_layout(
+            self._text_backbone(multimodal=False)
+        )
+        self.assertTrue(hasattr(text, "layers"))
+        self.assertEqual(head.out_features, 20)
+        self.assertEqual(width, 8)
+        self.assertEqual(layout, "causal-language-model")
+
     def test_lora_starts_as_exact_frozen_projection(self) -> None:
         torch.manual_seed(31)
         base = nn.Linear(5, 7, bias=False)

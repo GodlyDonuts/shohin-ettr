@@ -455,29 +455,43 @@ def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
     os.replace(temporary, path)
 
 
-def _load_model(model_root: Path, adapter_checkpoint: Path | None):
+def _load_model(
+    model_root: Path,
+    adapter_checkpoint: Path | None,
+    model_loader: str,
+):
     import torch
-    from transformers import AutoModelForMultimodalLM
-
-    backbone = AutoModelForMultimodalLM.from_pretrained(
-        model_root,
-        dtype=torch.bfloat16,
-        device_map={"": 0},
-        low_cpu_mem_usage=True,
-        trust_remote_code=True,
-    )
-    if adapter_checkpoint is None:
-        return backbone.eval(), None
 
     from hf_product_reasoning_train import (
         ProductReasoningModel,
+        load_product_backbone,
         load_trainable_checkpoint,
     )
 
-    payload = torch.load(adapter_checkpoint, map_location="cpu", weights_only=False)
-    metadata = payload.get("metadata")
-    if not isinstance(metadata, dict):
-        raise ProductEvalError("adapter checkpoint metadata is missing")
+    metadata = None
+    if adapter_checkpoint is not None:
+        payload = torch.load(
+            adapter_checkpoint, map_location="cpu", weights_only=False
+        )
+        metadata = payload.get("metadata")
+        if not isinstance(metadata, dict):
+            raise ProductEvalError("adapter checkpoint metadata is missing")
+        checkpoint_loader = str(metadata.get("model_loader", model_loader))
+        if model_loader != "auto" and checkpoint_loader != model_loader:
+            raise ProductEvalError("adapter checkpoint model loader differs")
+        model_loader = checkpoint_loader
+    backbone, resolved_model_loader = load_product_backbone(
+        model_root,
+        model_loader,
+        dtype=torch.bfloat16,
+        device_map={"": 0},
+    )
+    if adapter_checkpoint is None:
+        return backbone.eval(), None, resolved_model_loader
+
+    assert metadata is not None
+    if metadata.get("model_loader") not in (None, resolved_model_loader):
+        raise ProductEvalError("resolved model loader differs from checkpoint")
     workspace = metadata.get("workspace_config") or {}
     model = ProductReasoningModel(
         backbone=backbone,
@@ -496,7 +510,15 @@ def _load_model(model_root: Path, adapter_checkpoint: Path | None):
     ).to("cuda:0")
     update, restored_metadata = load_trainable_checkpoint(adapter_checkpoint, model)
     model.eval()
-    return model, {"update": update, **restored_metadata}
+    return (
+        model,
+        {
+            "update": update,
+            "model_loader": resolved_model_loader,
+            **restored_metadata,
+        },
+        resolved_model_loader,
+    )
 
 
 def _generation_arguments(mode: str, max_new_tokens: int) -> dict[str, Any]:
@@ -628,7 +650,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     tokenizer.padding_side = "left"
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
-    model, adapter_metadata = _load_model(args.model_root, args.adapter_checkpoint)
+    model, adapter_metadata, resolved_model_loader = _load_model(
+        args.model_root,
+        args.adapter_checkpoint,
+        args.model_loader,
+    )
     stop_token_ids = _generation_stop_token_ids(tokenizer)
 
     random.seed(args.generation_seed)
@@ -647,7 +673,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             _render_prompt(
                 tokenizer,
                 _task_prompt(args.task, row),
-                adapter_metadata is not None,
+                args.adapter_checkpoint is not None,
                 args.enable_thinking,
             )
             for row in batch
@@ -662,7 +688,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             generation_arguments["eos_token_id"] = (
                 stop_token_ids[0] if len(stop_token_ids) == 1 else stop_token_ids
             )
-            if adapter_metadata is None:
+            if args.adapter_checkpoint is None:
                 output = model.generate(
                     **encoded,
                     pad_token_id=tokenizer.pad_token_id,
@@ -744,6 +770,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "model_root": str((args.model_source_root or args.model_root).resolve()),
         "loaded_model_root": str(args.model_root.resolve()),
         "model_revision": args.model_revision,
+        "model_loader": resolved_model_loader,
         "adapter_checkpoint": (
             str(args.adapter_checkpoint.resolve()) if args.adapter_checkpoint else None
         ),
@@ -756,7 +783,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "generation_mode": args.generation_mode,
         "enable_thinking": args.enable_thinking,
         "effective_enable_thinking": (
-            args.enable_thinking if adapter_metadata is None else False
+            args.enable_thinking if args.adapter_checkpoint is None else False
         ),
         "max_new_tokens": args.max_new_tokens,
         "generation_stop_token_ids": stop_token_ids,
@@ -785,6 +812,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-root", type=Path, required=True)
     parser.add_argument("--model-source-root", type=Path)
     parser.add_argument("--model-revision", required=True)
+    parser.add_argument(
+        "--model-loader",
+        choices=("auto", "causal", "multimodal"),
+        default="auto",
+    )
     parser.add_argument("--adapter-checkpoint", type=Path)
     parser.add_argument("--task", choices=sorted(TASKS), required=True)
     parser.add_argument("--data", type=Path, required=True)

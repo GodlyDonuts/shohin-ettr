@@ -64,6 +64,75 @@ def install_lora(module: nn.Module, rank: int, alpha: float) -> int:
     return replaced
 
 
+def resolve_product_backbone_layout(backbone: nn.Module) -> tuple[nn.Module, nn.Module, int, str]:
+    """Expose a common decoder-only text path for Qwen multimodal and causal LMs."""
+
+    model = getattr(backbone, "model", None)
+    if model is None:
+        raise ProductReasoningTrainError("backbone exposes no decoder model")
+    if hasattr(model, "language_model"):
+        text_model = model.language_model
+        layout = "multimodal-language-model"
+    else:
+        text_model = model
+        layout = "causal-language-model"
+    lm_head = getattr(backbone, "lm_head", None)
+    if lm_head is None:
+        raise ProductReasoningTrainError("backbone exposes no language-model head")
+    if not hasattr(text_model, "layers") or not hasattr(text_model, "embed_tokens"):
+        raise ProductReasoningTrainError("backbone text path differs")
+    text_config = getattr(backbone.config, "text_config", backbone.config)
+    hidden_size = getattr(text_config, "hidden_size", None)
+    if hidden_size is None:
+        raise ProductReasoningTrainError("backbone text width is unavailable")
+    return text_model, lm_head, int(hidden_size), layout
+
+
+def resolve_product_model_loader(model_root: Path, requested: str) -> str:
+    """Select the exact HF auto class without guessing from a failed load."""
+
+    if requested not in {"auto", "causal", "multimodal"}:
+        raise ProductReasoningTrainError("model loader differs")
+    if requested != "auto":
+        return requested
+    from transformers import AutoConfig
+
+    config = AutoConfig.from_pretrained(model_root, trust_remote_code=True)
+    model_type = str(getattr(config, "model_type", ""))
+    if hasattr(config, "vision_config") or model_type.startswith("qwen3_5"):
+        return "multimodal"
+    return "causal"
+
+
+def load_product_backbone(
+    model_root: Path,
+    requested_loader: str,
+    *,
+    dtype: torch.dtype,
+    device_map: dict[str, int],
+) -> tuple[nn.Module, str]:
+    """Load either a multimodal wrapper or an ordinary causal LM."""
+
+    loader = resolve_product_model_loader(model_root, requested_loader)
+    if loader == "multimodal":
+        from transformers import AutoModelForMultimodalLM
+
+        auto_class = AutoModelForMultimodalLM
+    else:
+        from transformers import AutoModelForCausalLM
+
+        auto_class = AutoModelForCausalLM
+    backbone = auto_class.from_pretrained(
+        model_root,
+        dtype=dtype,
+        device_map=device_map,
+        low_cpu_mem_usage=True,
+        trust_remote_code=True,
+    )
+    resolve_product_backbone_layout(backbone)
+    return backbone, loader
+
+
 def _question_response(row: dict[str, Any]) -> tuple[str, str] | None:
     question = row.get("question") or row.get("problem") or row.get("prompt")
     response = (
@@ -233,15 +302,13 @@ class ProductReasoningModel(nn.Module):
         self.backbone = backbone
         self.arm = arm
         self.backbone.requires_grad_(False)
-        try:
-            self.text_model = self.backbone.model.language_model
-            self.lm_head = self.backbone.lm_head
-            layers = self.text_model.layers
-            hidden_size = int(self.backbone.config.text_config.hidden_size)
-        except AttributeError as exc:
-            raise ProductReasoningTrainError(
-                "backbone does not expose the Qwen text path"
-            ) from exc
+        (
+            self.text_model,
+            self.lm_head,
+            hidden_size,
+            self.backbone_layout,
+        ) = resolve_product_backbone_layout(self.backbone)
+        layers = self.text_model.layers
         if not 0 < lora_layers <= len(layers):
             raise ProductReasoningTrainError("LoRA layer count differs")
         self.lora_projection_count = 0
@@ -521,7 +588,7 @@ def _batches(rows: list[dict[str, str]], batch_size: int) -> Iterable[list[dict[
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
-    from transformers import AutoModelForMultimodalLM, AutoTokenizer
+    from transformers import AutoTokenizer
 
     if args.output.exists():
         raise ProductReasoningTrainError(f"output already exists: {args.output}")
@@ -533,12 +600,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     tokenizer = AutoTokenizer.from_pretrained(args.model_root, trust_remote_code=True)
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
-    backbone = AutoModelForMultimodalLM.from_pretrained(
+    backbone, resolved_model_loader = load_product_backbone(
         args.model_root,
+        args.model_loader,
         dtype=torch.bfloat16,
         device_map={"": 0},
-        low_cpu_mem_usage=True,
-        trust_remote_code=True,
     )
     model = ProductReasoningModel(
         backbone,
@@ -574,6 +640,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "model_root": str((args.model_source_root or args.model_root).resolve()),
         "loaded_model_root": str(args.model_root.resolve()),
         "model_revision": args.model_revision,
+        "model_loader": resolved_model_loader,
+        "backbone_layout": model.backbone_layout,
         "data": str(args.data.resolve()),
         "data_sha256": data_hash,
         "selected_rows": len(rows),
@@ -696,6 +764,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-root", type=Path, required=True)
     parser.add_argument("--model-source-root", type=Path)
     parser.add_argument("--model-revision", required=True)
+    parser.add_argument(
+        "--model-loader",
+        choices=("auto", "causal", "multimodal"),
+        default="auto",
+    )
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument(

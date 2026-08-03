@@ -47,6 +47,88 @@ Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 | verified-priority V10 data | 4,000,967 target tokens; 2,308 full-test code + 767 answer-checked math/science rows |
 | V10 matched u1000 | training `730036/730037/730038`; strict aggregate `730057`; AIME `730058--730060` |
 
+## Post-Gate 72-Hour Queue (2026-08-03)
+
+The first objective has been met: T2 produces a real matched product lift on
+Qwen rather than only a synthetic mechanism score. The next 72 hours answer
+whether that lift survives more exposure and better data, then move the exact
+same contract to SmolLM3 only when capacity is the measured blocker. No new
+layer-tap, byte-rail, compiler/reactor/reader, or source-deletion campaign is
+part of this queue.
+
+### Hours 0--8: close the two active causal questions
+
+1. Finish V8 exposure-control jobs `729992/729993` and their exact six-board
+   chains through strict aggregate `730013`. This decides whether 200 to 1,000
+   updates improves T2 relative to both B1 and C2, rather than merely fitting
+   the balanced stream harder.
+2. Finish verified-priority V10 jobs `730037/730038`, exact six-board chains
+   through `730057`, and strict AIME rescoring through `730063`. This decides
+   whether independently checked code/math/science examples improve hard
+   answers and rationale quality.
+3. Inspect every new T2-only AIME/code win and a stratified sample of
+   T2-only MATH/BBH/GPQA wins. A correct option with a false explanation is
+   recorded as answer accuracy, not sophisticated reasoning.
+
+Go rule: T2 must remain at least three macro points above B1, beat C2 by at
+least two macro points or ten additional answers, improve at least three
+domains, and avoid a domain regression greater than two points. If only C2
+improves, recurrence has not earned the next run. If V8 improves but V10 does
+not, exposure is the lever; if V10 improves at matched exposure, verified data
+is the lever.
+
+### Hours 8--24: build the next admitted training stream
+
+1. Complete the 9,000-candidate TACO all-test audit and admit only programs
+   that pass every supplied test.
+2. Measure exact 1,024/2,048/4,096-token retention for verified OpenMath and
+   OpenScience. Use the shortest context that materially retains more verified
+   targets; context length is not increased for unused VRAM.
+3. Build V11 as a charged-token-balanced, no-replay stream with at least
+   8 million targets: 35% math, 25% executable code, 15% answer-checked
+   science, 10% solver-checked logic/procedure, and 15% broad instruction.
+   Independently verified rows are consumed before teacher-only traces.
+4. Freeze data hash, tokenizer revision, source counts, verifier counts,
+   truncation counts, license inventory, and benchmark-overlap report before
+   any V11 fit.
+
+### Hours 24--48: scale one Qwen lever or measure the capacity floor
+
+If V10 T2 passes the go rule, train matched B1/T2/C2 Qwen arms for 5,000
+updates on V11, saving 1,000-update checkpoints. Use measured-safe BS8/ACC2 for
+all arms unless an isolated parity canary proves a faster exact grouping. Run
+the compact five-domain board at each checkpoint and select one checkpoint by
+macro score plus validation loss, never by one benchmark.
+
+If V10 T2 fails the dense-control comparison, do not create another Qwen
+workspace variant. Run the now-generic trainer on pinned SmolLM3-3B:
+
+1. frozen baseline and manual transcript sample;
+2. two-update generation smoke and 100-update bounded fit for B1/T2/C2;
+3. one matched 1,000-update campaign only if T2 learns the fit board at least
+   as well as C2 and generates valid autonomous answers.
+
+The trainer records whether the backbone is loaded through the multimodal
+Qwen text path or a standard causal-LM path. Data, update order, charged
+targets, decoding, and evaluators remain identical across arms.
+
+### Hours 48--72: public milestone and verified-reward decision
+
+Open the full milestone only for the best development arm that passed the go
+rule. Report full GSM8K, MATH-500, AIME 2024/2025, HumanEval, MBPP, a pinned
+LiveCodeBench slice, GPQA-Diamond, and the frozen logic board with identical
+decoding. Publish solved counts, pass rates, throughput, VRAM, wall time, and
+at least 50 manually classified transcripts.
+
+Start RLVR only if the selected SFT model produces at least a 5% deterministic
+positive rate on an independently verified math/code pool. The first RLVR arm
+must have an identical no-RLVR continuation control. Best-of-N or verifier
+selection is reported separately and cannot replace greedy pass@1.
+
+The 72-hour decision is one of: `scale-ettr`, `scale-dense-or-lora`,
+`move-to-smollm3-capacity-floor`, or `repair-data/evaluator`. It is never
+`repeat-a-similar-synthetic-architecture-arm`.
+
 Transcript inspection shows the deterministic thinking score is strongly
 affected by decode behavior: many GSM8K completions calculate the right value
 inside a long plan, then exhaust the 768-token limit before producing the
