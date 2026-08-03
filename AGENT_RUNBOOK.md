@@ -26319,3 +26319,51 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_v12_now_measure_decode_budget_separately_and_prepare_v13_as_the_specific_verified_composition_repair_instead_of_repeating_failed_width_or_router_searches`.
+
+- **2026-08-03 14:11--14:33 EDT** -- **Two V12 arms are training, V13 is
+  hash-released, and long-decode evidence promotes late-500 as the strongest
+  direct-interaction checkpoint.**
+
+  V12 B1 `731325` started on `evc36`; by update 160 it sustains about `6.76k`
+  charged target tok/s with finite loss and gradient norms. Wide `731326`
+  started on `evc34`; its early steady rate is about `5.77k` tok/s. The fixed
+  corpus/order and optimizer geometry match. Late-two-layer `731919` remains
+  priority-pending with a current start estimate near 15:05 EDT. Slurm permits
+  pending wall-time reduction but denies extension after start. B1's 75-minute
+  limit is projected to be just sufficient; wide may stop after checkpoint
+  2,000 but before 3,000. Sixteen `afterany` checkpoint-2k evaluators
+  `732513--732528` preserve both matched results if that happens; the original
+  final evaluators remain `afterok` and cannot score a partial run.
+
+  The complete 1,536-token late-500 hard board is MATH `46/100`, GPQA
+  `21/100`, science `46/100`, and AIME `2/30`, versus locked 768-token scores
+  `26/100`, `16/100`, `44/100`, and `2/30`. Manual composition is `10/12`
+  versus `7/12`. Missing GSM8K/HumanEval/MBPP/BBH 1,536-token jobs are
+  `732431--732434`; no mixed-budget macro will be reported before they finish.
+  Transcript inspection shows the two remaining manual failures are distinct:
+  one computes 86 dollars but violates the requested cents unit, while one
+  derives the correct CRT answer 52 and then loops to the cap without emitting
+  a final marker.
+
+  V13 builder `761297` completes with `62,874` unique selected rows and
+  `16,003,742` charged target tokens, exact weights `42% math / 16% code / 27%
+  science / 13% procedural / 2% teacher`, and zero selected prompt truncation,
+  response truncation, or duplicate questions. Output SHA-256 is
+  `7df4f35d15d925b3f1a039f7cd877b1a887a942dd050b70abe5d500dc1f05621`,
+  matched independently on Stokes and Newton. B1/late jobs `732353/732354`
+  are released with 1h45m/40m limits; benchmark workers `732357--732372`
+  remain dependency-bound.
+
+  Capped-finalization source was reviewed before allocation. The first five
+  queued jobs were canceled at zero runtime after detecting that an unboxed
+  failed finalizer could have allowed extraction from the capped draft.
+  Private fix `3d36df8` requires an explicit final marker from either the
+  original trace or finalizer; 17 tests pass. Immutable Newton runtime
+  `product_finalize_3d36df8_r1` has six files, no links/write bits, and
+  SHA256SUMS SHA-256
+  `ef2d4f966d472f3c489ea80e8d947f885ff0816d465fe6a47079ec375ef5123c`.
+  Correct manual/MATH/GPQA/science/AIME pilots are `732475/732477/732479/
+  732480/732481`.
+
+  Decision:
+  `treat_decode_budget_and_final_answer_emission_as_measured_product_levers_keep_training_data_repairs_separate_and_preserve_every_partial_checkpoint_before_walltime`.

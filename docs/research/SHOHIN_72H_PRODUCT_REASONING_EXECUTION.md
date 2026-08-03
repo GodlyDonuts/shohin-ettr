@@ -604,6 +604,18 @@ calculation and leaves the historical evaluator unchanged by default. It is
 measured separately because it repairs answer emission rather than underlying
 reasoning.
 
+V13 subsequently cleared the gate with 62,874 rows, 16,003,742 charged target
+tokens, zero selected truncation/duplicates, and SHA-256
+`7df4f35d15d925b3f1a039f7cd877b1a887a942dd050b70abe5d500dc1f05621`.
+Both staged arms are released. V12 B1 and wide are already training at about
+6.76k and 5.77k charged target tok/s respectively.
+
+The completed late-500 long-decode subset is materially stronger than the
+locked 768-token view: MATH `46/100` versus `26/100`, GPQA `21/100` versus
+`16/100`, science `46/100` versus `44/100`, AIME unchanged at `2/30`, and
+manual composition `10/12` versus `7/12`. GSM8K, code, and BBH long-decode
+shards are required before computing a consistent macro.
+
 ## Execution Queue
 
 ### Hours 0--6: make the backbone and measurements real

@@ -54752,6 +54752,17 @@ string transforms, number theory, and binding-like operations. B1 and the
 late-layer arm are the only staged treatments. V13 is a product data
 intervention, not evidence that ETTR itself has succeeded.
 
+V13 is now frozen at 62,874 rows and 16,003,742 charged target tokens, with
+zero selected truncation/duplicates and SHA-256
+`7df4f35d15d925b3f1a039f7cd877b1a887a942dd050b70abe5d500dc1f05621`.
+The B1 and late-layer arms are released. Meanwhile, a consistent 1,536-token
+late-500 subset reaches MATH 46/100, GPQA 21/100, science 46/100, AIME 2/30,
+and 10/12 direct compositions. This shows useful reasoning is already present
+but often too verbose or fails to serialize its final state. It does not yet
+show robust hard reasoning: the remaining manual errors include one unit
+binding failure and one correct CRT derivation that loops without committing
+the answer.
+
 ### TACO audit durability correction (2026-08-03)
 
 The 9,000-candidate all-test audit `761178` timed out after six hours without
