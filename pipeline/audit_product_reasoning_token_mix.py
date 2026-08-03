@@ -112,6 +112,9 @@ def audit(
             metrics["charged_target_tokens"] += charged_target
             metrics["response_truncated_rows"] += int(response_cut)
             metrics["prompt_truncated_rows"] += int(prompt_cut)
+            if not response_cut and not prompt_cut:
+                metrics["fully_untruncated_rows"] += 1
+                metrics["fully_untruncated_target_tokens"] += charged_target
             counters["valid_rows"] += 1
 
     if not counters["valid_rows"]:
