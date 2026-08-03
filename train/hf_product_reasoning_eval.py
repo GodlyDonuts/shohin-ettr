@@ -627,7 +627,9 @@ def _finalization_question(question: str, completion: str) -> str:
         "a final answer. Use only the original problem and draft. Do not redo or "
         "extend the reasoning. Return only one explicit final answer inside "
         "\\boxed{}.\n\nOriginal problem:\n"
-        f"{question}\n\nDraft reasoning:\n{completion}"
+        f"{question}\n\nDraft reasoning:\n{completion}\n\nEnd of draft. Do not "
+        "continue the reasoning. Respond now with exactly one line in this "
+        "form: \\boxed{answer}"
     )
 
 

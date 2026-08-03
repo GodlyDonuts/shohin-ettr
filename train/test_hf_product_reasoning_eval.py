@@ -77,6 +77,8 @@ class ProductReasoningEvalTests(unittest.TestCase):
         self.assertIn("6*7 = 42", rendered)
         self.assertIn(r"\boxed{}", rendered)
         self.assertIn("Do not redo or extend", rendered)
+        self.assertTrue(rendered.endswith(r"form: \boxed{answer}"))
+        self.assertLess(rendered.index("6*7 = 42"), rendered.rindex("Do not continue"))
 
     def test_finalization_requires_an_explicit_recovered_answer(self) -> None:
         capped = "Working toward 52 but still continuing"
