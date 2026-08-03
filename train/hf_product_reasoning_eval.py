@@ -26,6 +26,13 @@ def _clean_number(value: str | None) -> str | None:
 
 
 def extract_gsm8k(text: str) -> str | None:
+    boxed_numbers = [
+        _clean_number(value)
+        for value in _boxed_values(text)
+        if _clean_number(value) is not None
+    ]
+    if boxed_numbers:
+        return boxed_numbers[-1]
     explicit = re.findall(
         r"(?:answer|final answer)\s*(?:is|:)\s*\$?\s*(-?[\d,]+(?:\.\d+)?)",
         text,
@@ -37,9 +44,13 @@ def extract_gsm8k(text: str) -> str | None:
     return _clean_number(numbers[-1]) if numbers else None
 
 
-def extract_boxed(text: str) -> str | None:
-    start = text.rfind(r"\boxed")
-    if start >= 0:
+def _boxed_values(text: str) -> list[str]:
+    values: list[str] = []
+    cursor = 0
+    while True:
+        start = text.find(r"\boxed", cursor)
+        if start < 0:
+            break
         opening = text.find("{", start)
         if opening >= 0:
             depth = 0
@@ -49,7 +60,22 @@ def extract_boxed(text: str) -> str | None:
                 elif text[index] == "}":
                     depth -= 1
                     if depth == 0:
-                        return text[opening + 1 : index].strip()
+                        value = text[opening + 1 : index].strip()
+                        if value:
+                            values.append(value)
+                        cursor = index + 1
+                        break
+            else:
+                cursor = opening + 1
+        else:
+            cursor = start + len(r"\boxed")
+    return values
+
+
+def extract_boxed(text: str) -> str | None:
+    boxed = _boxed_values(text)
+    if boxed:
+        return boxed[-1]
     fallback = re.findall(
         r"(?:answer|final answer)\s*(?:is|:)\s*\$?\s*([^\n]+)",
         text,
@@ -371,6 +397,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "generation_seed": args.generation_seed,
         "generation_mode": args.generation_mode,
         "enable_thinking": args.enable_thinking,
+        "effective_enable_thinking": (
+            args.enable_thinking if adapter_metadata is None else False
+        ),
         "max_new_tokens": args.max_new_tokens,
         "batch_size": args.batch_size,
         "correct": correct,

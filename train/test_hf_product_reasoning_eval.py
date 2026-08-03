@@ -20,6 +20,11 @@ class ProductReasoningEvalTests(unittest.TestCase):
         self.assertEqual(extract_boxed(r"Thus the result is \boxed{\frac{3}{4}}."), r"\frac{3}{4}")
         self.assertEqual(gold_gsm8k({"answer": "work\n#### -42"}), "-42")
 
+    def test_later_empty_box_instruction_does_not_hide_answer(self) -> None:
+        transcript = r"Therefore \boxed{7}. Remember to use \boxed{}."
+        self.assertEqual(extract_gsm8k(transcript), "7")
+        self.assertEqual(extract_boxed(transcript), "7")
+
     def test_math_normalizes_fraction_command(self) -> None:
         self.assertTrue(match_math(r"\dfrac{1}{2}", r"\frac{1}{2}"))
 

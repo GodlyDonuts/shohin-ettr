@@ -25,6 +25,7 @@ BATCH_SIZE=${BATCH_SIZE:-4}
 MAX_NEW_TOKENS=${MAX_NEW_TOKENS:-768}
 GENERATION_MODE=${GENERATION_MODE:-greedy}
 ADAPTER_CHECKPOINT=${ADAPTER_CHECKPOINT:-}
+ENABLE_THINKING=${ENABLE_THINKING:-true}
 
 test -x "$PYTHON"
 test -f "$RUNTIME/train/hf_product_reasoning_eval.py"
@@ -45,6 +46,14 @@ if [[ -n "$ADAPTER_CHECKPOINT" ]]; then
   ADAPTER_ARGS+=(--adapter-checkpoint "$ADAPTER_CHECKPOINT")
 fi
 
+THINKING_ARG=--enable-thinking
+if [[ "$ENABLE_THINKING" == "false" ]]; then
+  THINKING_ARG=--no-enable-thinking
+elif [[ "$ENABLE_THINKING" != "true" ]]; then
+  echo "ENABLE_THINKING must be true or false" >&2
+  exit 2
+fi
+
 "$PYTHON" "$RUNTIME/train/hf_product_reasoning_eval.py" \
   --model-root "$MODEL_ROOT" \
   --model-revision "$MODEL_REVISION" \
@@ -55,4 +64,5 @@ fi
   --batch-size "$BATCH_SIZE" \
   --max-new-tokens "$MAX_NEW_TOKENS" \
   --generation-mode "$GENERATION_MODE" \
+  "$THINKING_ARG" \
   "${ADAPTER_ARGS[@]}"
