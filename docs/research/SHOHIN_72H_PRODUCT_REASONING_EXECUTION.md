@@ -30,6 +30,9 @@ Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 | `T2` matched BBH logic, stopped-prefix score | 43/100; B1 30, C2 32 |
 | `T2` matched GPQA, original decode | 34/198; B1 16/198; 105/198 T2 cap-exhausted and explanations remain unreliable |
 | `T2` matched executable code | HumanEval 0/20; MBPP 0/20; broad promotion blocked |
+| exact-turn GPQA B1/T2/C2 | 16/34/30 of 198; T2 +18 over B1 and +4 over C2 |
+| frozen concise no-thinking GPQA | 3/198 |
+| exact-turn raw MATH B1/T2/C2 | 15/24/27; provisional until common Math-Verify rescore |
 
 Transcript inspection shows the deterministic thinking score is strongly
 affected by decode behavior: many GSM8K completions calculate the right value
@@ -266,6 +269,28 @@ The artifact is hash-matched on Stokes and Newton. Code is now 20% rather than
 jobs `729936/729943/729950` and their identical corrected board chains
 `729937--729956` are dependency-held behind the current full campaign, so the
 data-mix repair begins without another approval or scheduling gap.
+
+This immediate artifact is balanced by rows, not by charged target tokens.
+Exact Qwen tokenizer audit `729980` measures the effective target-token mix as
+`47.14% math / 28.60% code / 7.33% procedural / 16.93% teacher` over
+6,094,439 charged targets. It also records 94 response-truncated and 1,488
+prompt-truncated rows. The arm comparison remains matched because every arm
+sees the same stream, and the 28.6% effective code exposure makes this a
+strong test of the data-exposure hypothesis. Future promoted mixes must be
+balanced by charged tokens and reduce long-example prompt truncation.
+
+OpenScienceReasoning-2 job `761160` completed with 500,000 unique
+expected-answer-matched rows selected from 1,600,812 raw rows after quality,
+duplicate, and benchmark-overlap filtering. The full output SHA-256 is
+`e11e1923d237e1986725a7148503219e8871523649072cb38c835176854a5caa`.
+A deterministic 10,000-row pilot has zero duplicate questions, zero replay,
+and SHA-256
+`eaca4020fc5dceab1cff41d5bae94e5308949773ee262a9153ee767deec89173`.
+It is hash-matched on Stokes and Newton and stored with its report and
+CC-BY-4.0 attribution in private dataset
+`Godlydonuts/shohin-ettr-reasoning-data`. Expected-answer agreement is an
+admission filter, not a guarantee that every intermediate explanation is
+flawless. OpenMath `761161` and OpenThoughts consensus `761159` remain live.
 
 ## Execution Queue
 

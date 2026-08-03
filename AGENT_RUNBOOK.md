@@ -116,8 +116,25 @@
 > chains `729937--729956` are dependency-held behind successful completion of
 > all three current corrected arms. They are the prebuilt repair for the
 > expected code-domain gate failure, not a replacement for the active result.
+> **PRODUCT CAMPAIGN UPDATE — 2026-08-03 01:36 EDT:** Exact-turn GPQA is
+> complete at B1/T2/C2 `16/34/30` of 198. T2 therefore retains `+18` solved
+> over LoRA and `+4` over the parameter-matched dense control, but direct
+> transcript errors still prohibit calling this sophisticated science
+> reasoning. The frozen concise no-thinking control is `3/198`. Exact-turn
+> raw MATH is provisionally B1/T2/C2 `15/24/27`; the dependency-bound
+> Math-Verify rescore must run before comparison. Qwen tokenizer audit
+> `729980` measures the balanced artifact's actual charged-target mix as
+> `47.14% math / 28.60% code / 7.33% procedural / 16.93% teacher`, with 94
+> response truncations and 1,488 prompt truncations. OpenScience job `761160`
+> completed 500,000 unique expected-answer-matched rows; full SHA-256 is
+> `e11e1923d237e1986725a7148503219e8871523649072cb38c835176854a5caa`.
+> A no-replay 10,000-row pilot has SHA-256
+> `eaca4020fc5dceab1cff41d5bae94e5308949773ee262a9153ee767deec89173`
+> and is hash-matched on Stokes/Newton and stored with report/CC-BY-4.0
+> attribution in private HF dataset `Godlydonuts/shohin-ettr-reasoning-data`.
+> OpenMath `761161` and OpenThoughts consensus `761159` remain live.
 >
-> **Last updated:** 2026-08-03 00:22 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-03 01:36 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,

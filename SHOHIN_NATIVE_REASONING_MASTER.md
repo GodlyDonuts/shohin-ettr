@@ -54457,3 +54457,33 @@ on both Stokes and Newton. This changes expected code exposure by 20x while
 holding examples unique. Matched balanced training and evaluation jobs
 `729936--729956` are dependency-held behind the current corrected campaign;
 they are a prepared response to the known code failure, not evidence yet.
+
+The corrected GPQA board is now complete. B1/T2/C2 score `16/34/30` of 198
+under the same exact-turn stop contract, so the recurrent treatment retains
+an `+18` answer gain over LoRA and `+4` over the parameter-matched dense
+control. The frozen concise no-thinking reference is only `3/198`. This is a
+real public-board answer delta, but not yet sophisticated scientific
+reasoning: direct audits found multiple correct choices supported by
+factually flawed explanations. Exact-turn raw MATH is B1/T2/C2 `15/24/27`;
+the common Math-Verify rescore remains the binding comparison.
+
+The balanced V8 diagnostic's percentages are exact by row rather than target
+token. A trainer-equivalent Qwen tokenizer audit measures 6,094,439 charged
+target tokens at `47.14% math / 28.60% code / 7.33% procedural / 16.93%
+teacher`, with 94 truncated responses and 1,488 truncated prompts. This
+preserves a valid matched arm comparison and supplies substantially more code
+exposure than intended, but future production mixes must balance charged
+tokens and explicitly control truncation.
+
+The verified science lane has also produced a durable corpus. Pinned
+OpenScienceReasoning-2 yielded 500,000 unique expected-answer-matched rows
+from 1,600,812 raw rows after duplicate, quality, and benchmark-overlap
+filters. Full SHA-256 is
+`e11e1923d237e1986725a7148503219e8871523649072cb38c835176854a5caa`.
+The deterministic 10,000-row pilot has zero duplicate questions, zero replay,
+and SHA-256
+`eaca4020fc5dceab1cff41d5bae94e5308949773ee262a9153ee767deec89173`.
+It is hash-matched on Stokes/Newton and stored with report and CC-BY-4.0
+attribution in private HF dataset `Godlydonuts/shohin-ettr-reasoning-data`.
+The pinned OpenMath and conservative OpenThoughts-consensus builders remain
+live on Stokes.
