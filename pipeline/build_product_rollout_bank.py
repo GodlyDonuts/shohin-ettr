@@ -162,6 +162,8 @@ def build_bank(
                     "source_prompt_sha256": row.get("prompt_sha256"),
                     "source_verification": row.get("verification"),
                 }
+                if group == "science":
+                    candidate["target"] = str(answer).strip()
                 previous = candidates.get(identity)
                 if previous is not None:
                     counters["duplicate_questions"] += 1

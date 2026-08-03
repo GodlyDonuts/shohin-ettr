@@ -8,6 +8,17 @@ def test_score_completion_requires_correct_explicit_math_answer() -> None:
     assert not score_completion(row, r"Final answer: \boxed{3}")["correct"]
 
 
+def test_score_completion_uses_normalized_science_answer() -> None:
+    row = {
+        "task": "bbh_logic",
+        "answer": r"\boxed{0}",
+        "expected_answer_normalized": "0",
+    }
+    score = score_completion(row, r"Therefore the answer is \boxed{0}.")
+    assert score["gold"] == "0"
+    assert score["correct"]
+
+
 def test_choose_positive_prefers_shortest_verified_trajectory() -> None:
     candidates = [
         {"correct": True, "generated_tokens": 80, "completion": "long", "sample_index": 0},

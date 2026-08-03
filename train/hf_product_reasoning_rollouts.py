@@ -36,7 +36,10 @@ def score_completion(row: dict[str, Any], completion: str) -> dict[str, Any]:
     if task is None or task["kind"] != "answer":
         raise ProductRolloutError("rollout row task is unsupported")
     prediction = task["extract"](completion)
-    gold = task["gold"](row)
+    if task_name == "bbh_logic" and row.get("expected_answer_normalized") is not None:
+        gold = str(row["expected_answer_normalized"])
+    else:
+        gold = task["gold"](row)
     explicit = has_explicit_final_answer(completion)
     correct = explicit and bool(task["match"](prediction, gold))
     return {
