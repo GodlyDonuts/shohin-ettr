@@ -64,6 +64,7 @@ def main():
     parser.add_argument("--out", required=True)
     parser.add_argument("--evals", required=True)
     parser.add_argument("--dataset", default="likaixin/TACO-verified")
+    parser.add_argument("--revision", required=True)
     parser.add_argument("--max-seen", type=int, default=500)
     parser.add_argument("--max-kept", type=int, default=250)
     parser.add_argument("--max-tests", type=int, default=3)
@@ -88,7 +89,12 @@ def main():
         raise SystemExit(f"refusing to overwrite existing output: {out_path}")
     out_path.parent.mkdir(parents=True, exist_ok=True)
     test_grams = build_test_grams(args.evals, args.ngram)
-    stream = load_dataset(args.dataset, split="train", streaming=True)
+    stream = load_dataset(
+        args.dataset,
+        split="train",
+        streaming=True,
+        revision=args.revision,
+    )
     # A prefix of a streaming competitive-programming dataset can be ordered by
     # source, difficulty, or upload time. Sample a deterministic reservoir-like
     # window instead, while the later full audit always replays selected IDs
@@ -130,14 +136,18 @@ def main():
                 "question": question,
                 "response": selected,
                 "source": "taco_verified_train",
+                "training_group": "code",
+                "verification": "execution_verified_bounded",
                 "problem_id": row.get("id"),
                 "difficulty": row.get("difficulty"),
                 "verified_cases": len(cases),
+                "dataset_revision": args.revision,
             }, ensure_ascii=False) + "\n")
             kept += 1
     os.replace(partial, out_path)
     print(json.dumps({
         "dataset": args.dataset,
+        "dataset_revision": args.revision,
         "split": "train",
         "seed": args.seed,
         "shuffle_buffer": args.shuffle_buffer,

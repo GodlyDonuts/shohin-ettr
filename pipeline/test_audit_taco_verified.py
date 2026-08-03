@@ -66,6 +66,8 @@ class TacoAuditResumeTests(unittest.TestCase):
         clean, drop = verify_source_row(row, source, max_case_chars=64, timeout=2.0)
         self.assertIsNone(drop)
         self.assertEqual(clean["full_verified_cases"], 2)
+        self.assertEqual(clean["training_group"], "code")
+        self.assertEqual(clean["verification"], "execution_verified")
 
 
 if __name__ == "__main__":

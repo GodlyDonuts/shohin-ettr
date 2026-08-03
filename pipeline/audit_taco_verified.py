@@ -100,6 +100,8 @@ def verify_source_row(row, source, max_case_chars, timeout):
         return None, "execution"
     clean = dict(row)
     clean["full_verified_cases"] = len(cases)
+    clean["training_group"] = "code"
+    clean["verification"] = "execution_verified"
     return clean, None
 
 
@@ -108,6 +110,7 @@ def main():
     parser.add_argument("--input", required=True)
     parser.add_argument("--out", required=True)
     parser.add_argument("--dataset", default="likaixin/TACO-verified")
+    parser.add_argument("--revision", required=True)
     parser.add_argument("--max-case-chars", type=int, default=20_000)
     parser.add_argument("--timeout", type=float, default=2.0)
     parser.add_argument("--max-source-rows", type=int, default=0,
@@ -140,7 +143,12 @@ def main():
     found = kept = resumed
     source_rows = 0
     drops = {key: 0 for key in ("missing_cases", "execution", "source_unmatched")}
-    stream = load_dataset(args.dataset, split="train", streaming=True)
+    stream = load_dataset(
+        args.dataset,
+        split="train",
+        streaming=True,
+        revision=args.revision,
+    )
     matches = []
     for source in stream:
         source_rows += 1
@@ -188,6 +196,7 @@ def main():
     os.replace(partial, out_path)
     print(json.dumps({
         "dataset": args.dataset,
+        "dataset_revision": args.revision,
         "input_rows": found + len(candidates),
         "source_rows_scanned": source_rows,
         "matched_source_rows": found,
