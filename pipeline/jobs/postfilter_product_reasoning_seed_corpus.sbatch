@@ -13,22 +13,29 @@ set -euo pipefail
 
 : "${RUNTIME:?RUNTIME is required}"
 : "${SOURCE:?SOURCE is required}"
-: "${EVAL_DIR:?EVAL_DIR is required}"
 : "${OUTPUT:?OUTPUT is required}"
 : "${REPORT:?REPORT is required}"
+EVAL_DIRS=${EVAL_DIRS:-${EVAL_DIR:-}}
+if [[ -z "$EVAL_DIRS" ]]; then
+  echo "EVAL_DIRS or EVAL_DIR is required" >&2
+  exit 2
+fi
 
 PYTHON=${PYTHON:-python3}
 test -f "$RUNTIME/pipeline/postfilter_product_reasoning_seed_corpus.py"
 test -f "$SOURCE"
-test -d "$EVAL_DIR"
 test ! -e "$OUTPUT"
 test ! -e "$REPORT"
 mkdir -p logs "$(dirname "$OUTPUT")" "$(dirname "$REPORT")"
 
 EVAL_ARGS=()
-while IFS= read -r -d '' path; do
-  EVAL_ARGS+=(--eval "$path")
-done < <(find "$EVAL_DIR" -maxdepth 1 -type f -name '*.jsonl' -print0 | sort -z)
+IFS=: read -r -a EVAL_DIRECTORY_LIST <<< "$EVAL_DIRS"
+for eval_dir in "${EVAL_DIRECTORY_LIST[@]}"; do
+  test -d "$eval_dir"
+  while IFS= read -r -d '' path; do
+    EVAL_ARGS+=(--eval "$path")
+  done < <(find "$eval_dir" -maxdepth 1 -type f -name '*.jsonl' -print0 | sort -z)
+done
 if (( ${#EVAL_ARGS[@]} < 4 )); then
   echo "fewer than four evaluation manifests were found" >&2
   exit 3
