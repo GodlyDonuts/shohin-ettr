@@ -28,7 +28,14 @@ def _row(identity: str, group: str, response: str = "\\boxed{1}") -> dict:
     }
 
 
-def _aggregate(tmp_path: Path, name: str, rows: list[dict], **contract_updates) -> Path:
+def _aggregate(
+    tmp_path: Path,
+    name: str,
+    rows: list[dict],
+    *,
+    admitted: bool = True,
+    **contract_updates,
+) -> Path:
     positives = tmp_path / f"{name}.jsonl"
     digest = _write_jsonl(positives, rows)
     contract = {
@@ -45,7 +52,8 @@ def _aggregate(tmp_path: Path, name: str, rows: list[dict], **contract_updates) 
             {
                 "schema": "shohin-product-rollout-aggregate-v1",
                 "status": "complete",
-                "admitted": True,
+                "admitted": admitted,
+                "admission_failures": [] if admitted else ["source_quota_failed"],
                 "contract": contract,
                 "positive_prompts": len(rows),
                 "positive_group_counts": {},
@@ -84,7 +92,12 @@ def test_merge_preserves_priority_and_deduplicates(tmp_path: Path) -> None:
 
 
 def test_merge_fails_closed_on_sparse_group(tmp_path: Path) -> None:
-    source = _aggregate(tmp_path, "source", [_row("a", "science")])
+    source = _aggregate(
+        tmp_path,
+        "source",
+        [_row("a", "science")],
+        admitted=False,
+    )
     report = merge(
         [source],
         tmp_path / "merged.jsonl",
@@ -93,6 +106,7 @@ def test_merge_fails_closed_on_sparse_group(tmp_path: Path) -> None:
     )
     assert report["admitted"] is False
     assert report["admission_failures"] == ["positive_math_below_minimum"]
+    assert report["sources"][0]["admitted"] is False
 
 
 def test_merge_rejects_model_contract_mismatch(tmp_path: Path) -> None:

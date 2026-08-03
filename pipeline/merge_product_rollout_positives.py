@@ -96,12 +96,8 @@ def merge(
         if not report_path.is_file():
             raise ProductRolloutMergeError(f"missing aggregate report: {report_path}")
         report = json.loads(report_path.read_text())
-        if (
-            report.get("schema") != AGGREGATE_SCHEMA
-            or report.get("status") != "complete"
-            or not report.get("admitted")
-        ):
-            raise ProductRolloutMergeError("aggregate report is not admitted")
+        if report.get("schema") != AGGREGATE_SCHEMA or report.get("status") != "complete":
+            raise ProductRolloutMergeError("aggregate report is structurally incomplete")
         contract = report.get("contract") or {}
         identity_contract = {
             key: contract.get(key)
@@ -140,6 +136,8 @@ def merge(
                 "positives": str(positives_path.resolve()),
                 "positives_sha256": report["positives_sha256"],
                 "max_new_tokens": contract.get("max_new_tokens"),
+                "admitted": bool(report.get("admitted")),
+                "admission_failures": report.get("admission_failures"),
                 "positive_prompts": len(rows),
                 "positive_group_counts": report.get("positive_group_counts"),
             }
