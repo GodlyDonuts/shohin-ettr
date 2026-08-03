@@ -54231,3 +54231,19 @@ and both ETTR and a dense control would receive it identically. This is the
 strongest source-legal test of the compression hypothesis: if it also misses
 95%, the family/state interface itself must change rather than the backbone or
 tokenizer.
+
+The frozen-depth experiment is complete and closes that route. Across input
+embedding and blocks 0, 4, 9, 14, 19, 24, and 29, clean operation-family
+recovery ranges only from 69.26% to 72.12%. Block 4 is best; no depth is within
+22 points of the 95% gate. Complete renderer-orbit accuracy is at most 69.89%
+and generally 53--59% after early layers. This means Shohin's problem is not
+merely that the final residual erased an otherwise linearly consumable
+variable. The allowed role-average interface is lossy throughout the frozen
+network.
+
+The campaign has therefore advanced to the stronger source-legal diagnosis:
+the ordered-byte rail. It preserves each public role atom exactly before the
+same state-conditioned probe. A pass says the transformer/token interface was
+the defect and justifies integrating the counted rail; a failure says the
+coarse family/state interface itself is inadequate and must be redesigned.
+This is not another Shohin seed or duration retry.

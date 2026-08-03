@@ -285,3 +285,27 @@ operation family, target, or oracle successor. It uses the same probe, exact
 state, 128/128 core population, 2,000 updates, and evaluator. A failure here
 localizes the defect beyond backbone token compression; a pass permits an
 architectural source rail only after source-matched binding also passes.
+
+## Frozen-Depth Decision
+
+Jobs `729667--729675` completed cleanly from immutable source `6fd7c94`.
+The shared 1.539 GB tap bundle is checksum-bound; every independent probe ran
+the fixed 2,000 updates. Held-out clean/orbit accuracies are:
+
+| Tap | Clean | Complete orbit | Orbit agreement |
+|---|---:|---:|---:|
+| embedding | 69.89% | 69.89% | 100.00% |
+| block 0 | 69.89% | 69.89% | 100.00% |
+| block 4 | **72.12%** | 58.60% | 74.35% |
+| block 9 | 70.83% | 56.37% | 70.89% |
+| block 14 | 70.43% | 58.91% | 76.27% |
+| block 19 | 69.26% | 55.45% | 71.97% |
+| block 24 | 70.12% | 55.53% | 70.66% |
+| block 29 postnorm | 70.79% | 53.23% | 65.28% |
+
+No frozen layer approaches 95%; block 4 is best and remains 22.88 points
+short. The depth-tap route is closed. This is evidence against a late-layer
+erasure-only diagnosis: the permitted mean public-role interface never exposes
+the required variable cleanly at any sampled depth. The prespecified lossless
+byte-role rail is therefore released. CPU materialization job `729767` is
+running and H100 fit `729768` is held `afterok:729767`.

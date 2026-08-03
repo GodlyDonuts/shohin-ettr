@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 20:51 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 21:14 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -25621,3 +25621,40 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `dfbc991caaac9bd287f18239bc2e616db7524f42e2d8e2dd16b078a330dfd43c`.
   Extraction `729667` is running on `evc42`; tap probes `729668--729675`
   are dependency-held for embedding and blocks `0/4/9/14/19/24/29`.
+
+- **2026-08-02 20:45--21:14 EDT** -- **Every frozen-depth interface fails;
+  the lossless byte rail is released without idle delay.**
+
+  Extraction `729667` completed cleanly on `evc42` in 24m14s. Its
+  1,538,888,398-byte exact tap bundle and receipt replay from SHA256SUMS
+  SHA-256
+  `0796dd97b4db95403b0abf22b5abd6ec8daba02eb1090373def30f3a8b909aa6`.
+  All eight independent 2,000-update H100 probes `729668--729675` completed
+  cleanly. Clean / complete renderer-orbit / renderer-agreement scores are:
+
+  - embedding: `69.8925% / 69.8925% / 100.0000%`;
+  - block 0: `69.8925% / 69.8925% / 100.0000%`;
+  - block 4: `72.1198% / 58.6022% / 74.3472%`;
+  - block 9: `70.8333% / 56.3748% / 70.8909%`;
+  - block 14: `70.4301% / 58.9094% / 76.2673%`;
+  - block 19: `69.2588% / 55.4531% / 71.9662%`;
+  - block 24: `70.1229% / 55.5299% / 70.6605%`;
+  - block 29 postnorm: `70.7949% / 53.2258% / 65.2842%`.
+
+  Block 4 is the best clean tap and still misses 95% by 22.88 points. No
+  frozen tap qualifies for the source-matched binding promotion score. The
+  sampled-depth route is closed; repeating depth, seed, width, or duration is
+  forbidden.
+
+  Lossless-byte source commit `dd6efea` is pushed privately. Its
+  832,870,400-byte archive has SHA-256
+  `001e854ac6cb067bdf96970b165a76078cc72644c45c0d3fb8a318e8fb53477e`.
+  Immutable runtime `scratchpad/capability_floor_runtime_dd6efea_r1` contains
+  3,702 files, zero links/write bits, passes checksum replay, and has
+  SHA256SUMS SHA-256
+  `ad017855d9af67b931afce2add548e7e60fdeb161219bc4cd8ba3700da6710e8`.
+  CPU materialization `729767` is running on `evc21`; H100 fit `729768` is
+  dependency-held after it.
+
+  Decision:
+  `close_frozen_depth_taps_measure_the_lossless_ordered_byte_role_rail_once_then_redesign_the_component_interface_if_it_fails`.
