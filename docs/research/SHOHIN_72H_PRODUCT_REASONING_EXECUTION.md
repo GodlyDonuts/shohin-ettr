@@ -54,6 +54,10 @@ Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 | production scale candidates | SmolLM3 B1 LoRA and C2 dense residual on V11; no T2 continuation |
 | verified-row full retention, 2048 vs 4096 | OpenMath 16.06% -> 53.25%; OpenScience 17.38% -> 49.10% |
 | SmolLM3 B1 4096 throughput | BS4/ACC4 6,124.8 target tok/s at 12.54 GiB; selected over BS1/2/8/16 |
+| admitted Smol V11i | 8,005,985 targets; 22,828 unique rows; 42m/25c/23s/4p/6t; SHA-256 `597293b6...c2cc423` |
+| live V11i B1 scale | job `730161`; 5,000 updates; BS4/ACC4; ~5.38k target tok/s on real mixed lengths |
+| live V11i C2 scale | job `730177`; 5,000 updates; BS2/ACC8; ~3.14k target tok/s; original BS4 job OOMed before update 1 |
+| V11i matched public boards | B1 `730163--730169`; C2 `730178--730184`; seven boards per arm |
 
 ## Decisive U1000 Result
 
@@ -114,12 +118,12 @@ is the lever.
 1. Complete the 9,000-candidate TACO all-test audit and admit only programs
    that pass every supplied test.
 2. Exact retention selects 4,096 tokens: it preserves 53.25% of OpenMath and
-   49.10% of OpenScience rows versus 16.06% and 17.38% at 2,048. V11 job
-   `761194` is frozen at 4,096; context length is increased for retained
-   reasoning supervision, not unused VRAM.
-3. Build V11 as a charged-token-balanced, no-replay stream with at least
-   8 million targets: 35% math, 25% executable code, 15% answer-checked
-   science, 10% solver-checked logic/procedure, and 15% broad instruction.
+   49.10% of OpenScience rows versus 16.06% and 17.38% at 2,048. Context is
+   increased for retained reasoning supervision, not unused VRAM.
+3. The Smol-tokenized capacity audit rejects the draft mix: procedural has
+   only 352,609 fully retained targets and teacher seed data only 807,714.
+   The admitted no-replay stream has 8,005,985 targets at 42% math, 25%
+   executable code, 23% answer-checked science, 4% procedural, and 6% teacher.
    Independently verified rows are consumed before teacher-only traces.
 4. Freeze data hash, tokenizer revision, source counts, verifier counts,
    truncation counts, license inventory, and benchmark-overlap report before
@@ -128,11 +132,11 @@ is the lever.
 ### Hours 24--48: scale one Qwen lever or measure the capacity floor
 
 V10 T2 failed the go rule and the SmolLM3 comparison confirms that current T2
-should not scale. Train matched B1 and C2 SmolLM3 arms for 5,000 updates on
-V11, saving 1,000-update checkpoints. B1 uses measured BS4/ACC4 at 4,096;
-C2 uses its independently measured safe geometry. Run the compact five-domain
-board at each checkpoint and select one checkpoint by macro score plus
-validation loss, never by one benchmark.
+should not scale. Matched B1 and C2 5,000-update jobs are now live on V11i.
+B1 uses BS4/ACC4 at 4,096. C2's short BS4 canary did not cover the longest V11
+batch and OOMed before update 1; BS2/ACC8 preserves the exact 16-example update
+and is the real-stream safe geometry. Seven identical public boards per arm
+are already dependency-bound to the final checkpoints.
 
 If V10 T2 fails the dense-control comparison, do not create another Qwen
 workspace variant. Run the now-generic trainer on pinned SmolLM3-3B:

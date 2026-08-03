@@ -24,9 +24,16 @@ The static domain-specialist ceiling from completed reports is `45.52%` macro
 and `213/538` solved by selecting B1 for GSM8K/science, T2 for competition
 math, and C2 for code/logic. This is not an achieved single-model score,
 but it identifies expert routing as the only current architecture successor
-with a measured product ceiling. Stokes jobs `761178 -> 761194` are completing
-the all-test TACO audit and 8M-token V11 build. Exact retention requires 4,096
-tokens; Smol B1 BS4/ACC4 reaches `6124.8` charged target tok/s at `12.54 GiB`.
+with a measured product ceiling. The first admitted Smol-tokenized V11 stream
+has `8,005,985` charged targets and SHA-256
+`597293b6d5248b6ffe90316643ee07535c30ff2c5447127f28e0ccebdc2cc423`.
+Its realized no-replay mix is `42% verified math / 25% execution-verified code /
+23% verified science / 4% procedural / 6% teacher`, across 22,828 unique rows
+with zero selected truncations. Matched 5,000-update B1/C2 jobs are `730161`
+and replacement `730177`; public-board chains are `730163--730169` and
+`730178--730184`. Exact retention requires 4,096 tokens. B1 uses BS4/ACC4;
+the real V11 C2 stream invalidated the short BS4 canary and uses BS2/ACC8
+after original job `730162` OOMed before its first update.
 
 **Current frontier, superseding older status text below (2026-08-02
 12:30 EDT):** Shohin still has no replicated two-population demonstration of

@@ -68,6 +68,33 @@
 > Stable Smol B1 canaries select BS4/ACC4: `6124.8` charged tok/s at
 > `12.54 GiB`, versus BS1/2/8/16 at `3206.5/5174.5/5395.6/4750.8` tok/s.
 >
+> **V11 SCALE RUN — 2026-08-03 07:11 EDT:** Smol tokenization exposed two
+> fail-closed capacity limits that the Qwen-tokenized draft hid: procedural
+> provides only `352,609` fully retained target tokens and teacher seed data
+> only `807,714`. The admitted no-replay interim stream therefore uses
+> `42% math / 25% code / 23% science / 4% procedural / 6% teacher`; 90% of
+> targets are answer- or execution-verified math/code/science. Artifact
+> `v11i_smollm3_tokenbalanced_42m25c23s4p6t_8m_verified2936_4k_r1.jsonl`
+> has `8,005,985` charged targets, `22,828` unique rows, zero selected prompt
+> or response truncations, zero duplicate questions, and SHA-256
+> `597293b6d5248b6ffe90316643ee07535c30ff2c5447127f28e0ccebdc2cc423`.
+> Builder commit `f242543` adds the exact trainer fallback envelope for
+> tokenizers without chat templates; its Stokes runtime SHA256SUMS hash is
+> `5244aac83d24fe96c394d6278dc353f13b452f5b80fea1e862fb78048ead309e`.
+>
+> Matched 5,000-update Smol jobs are live: B1 `730161` on `evc44` at BS4/ACC4
+> and about `5.38k` target tok/s; C2 replacement `730177` on `evc45` at
+> BS2/ACC8 and about `3.14k` target tok/s. Both retain 16 examples/update,
+> 4,096 context, identical data/order/LR schedule, and exact model revision.
+> Original C2 `730162` failed before update 1 because a near-4,096-token V11
+> batch required another 7.04 GiB after 72.4 GiB was already resident; the
+> short BS4 canary had not sampled this length shape. Its replacement is
+> healthy around 49.2 GiB. B1 evaluations are `730163--730169`; corrected C2
+> evaluations are `730178--730184`, covering GSM8K, MATH-500, HumanEval,
+> MBPP, GPQA-Diamond, BBH logic, and AIME-2024. TACO all-test audit `761178`
+> remains live; final larger-code mix `761203` is held after it and must not
+> replace this interim lineage silently.
+>
 > **PRODUCT CAMPAIGN STATUS — 2026-08-03 00:22 EDT:** Frozen
 > `Qwen/Qwen3.5-0.8B@2fc06364715b967f1860aea9cf38778875588b17`
 > now has directly measured baselines: GSM8K `17/100`, MATH-500 `4/100`,
