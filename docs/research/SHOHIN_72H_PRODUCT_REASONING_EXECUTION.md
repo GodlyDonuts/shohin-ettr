@@ -48,6 +48,14 @@ normalized from exact source commit
 `56686c06f5e19865c153de0fdb11be3890014df7`: 198 rows, deterministic balanced
 answer permutation, and two disclosed duplicate-distractor rows.
 
+The optional fast-kernel runtime remains rejected for use. Its H100 parity
+canary `729847` landed on the same unhealthy `evc33` node, ran more than five
+minutes against the base runtime's 20.7 seconds, produced no report, and was
+found beside a stuck `nvidia-smi` process. It was canceled as hardware-invalid
+rather than interpreted as a kernel benchmark. All product jobs continue on
+the known-good base environment unless a future isolated canary proves both
+output parity and lower wall time.
+
 ## Objective
 
 Produce the first credible, directly measured ETTR-versus-baseline reasoning
@@ -162,6 +170,18 @@ marks every surviving response `teacher_trace_unverified`. NVIDIA
 OpenCodeReasoning-2 and OpenScienceReasoning-2 are audit candidates for the
 next stage; code is admitted only after its judgement/pass-rate and executable
 solution are verified, and science labels are answer-checked before use.
+
+Jobs `729807 -> 729848` completed this seed path. The first pass selected
+64,938 unique prompts (`53,004` math, `6,243` science, `5,691` code); expanded
+replay against 59,512 evaluation prompts removed 19 more 13-gram overlaps.
+The frozen 64,919-row derivative has SHA-256
+`d9daa5720f7d27ed9c49a24be5fecf3f9db80bdd9dc12d648f11907e12928d90`.
+It remains seed material because upstream exposes no answer, test, or judge
+field. A new two-pass consensus lane recovers quality signal from the sixteen
+independent annotations: math/science rows require at least eight extracted
+answers, eight votes for one exact-normalized answer, at least 60% agreement,
+and a three-vote margin. Code is excluded from this lane until execution can
+verify it.
 
 ## Execution Queue
 

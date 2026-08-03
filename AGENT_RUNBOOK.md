@@ -47,10 +47,14 @@
 > it was canceled as hardware-invalid evidence and replaced unchanged by
 > `729849 -> 729850` with that node excluded. Official GPQA-Diamond is frozen at 198 rows under source commit
 > `56686c06f5e19865c153de0fdb11be3890014df7`; baseline `729846` is queued.
-> OpenThoughts seed build `729807` remains healthy, and post-admission job
-> `729848` replays every math/code/logic/science board before that corpus can
-> train a model. Fast Qwen kernels remain unpromoted until H100 canary `729847`
-> matches the base outputs and improves wall time. Product evaluator v2 records
+> OpenThoughts jobs `729807 -> 729848` completed: 64,938 unique seed rows,
+> 19 additional expanded-board overlap drops, and 64,919 surviving rows at
+> SHA-256 `d9daa5720f7d27ed9c49a24be5fecf3f9db80bdd9dc12d648f11907e12928d90`.
+> They remain teacher-unverified. The next CPU lane uses the upstream sixteen
+> annotations as a conservative answer-consensus verifier for math/science;
+> code remains excluded without execution. Fast-kernel canary `729847` was canceled hardware-invalid on
+> unhealthy `evc33` after more than five minutes, no report, and a stuck
+> `nvidia-smi`; retain the known-good base runtime. Product evaluator v2 records
 > per-sample generated tokens and cap exhaustion; corrected 1,024-token
 > HumanEval/MBPP jobs are `729851/729852`.
 >

@@ -54341,3 +54341,26 @@ currently best. T2 must match or beat that result and then produce a held-out
 public-board delta. Its first exact-fit allocation on `evc33` entered an
 NVIDIA-driver lock before checkpointing; that hardware-invalid run was
 canceled and preserved, and the unchanged replacement excludes the node.
+
+The first fast-Qwen environment attempt does not supply performance evidence.
+Its parity canary was allocated to the same unhealthy `evc33` node, exceeded
+the base runtime's 20.7-second wall time by more than an order of magnitude,
+produced no result, and coincided with a stuck `nvidia-smi`. It was canceled
+and the base environment remains the only promoted runtime.
+
+The first external post-training seed is now frozen. OpenThoughts acquisition
+selected 64,938 unique prompts from 1.2M annotations: 53,004 math, 6,243
+science, and 5,691 code. A second replay over the expanded 59,512-prompt eval
+inventory removed 19 additional 13-gram overlaps, leaving 64,919 rows at
+SHA-256 `d9daa5720f7d27ed9c49a24be5fecf3f9db80bdd9dc12d648f11907e12928d90`.
+The upstream schema contains no reference-answer, tests, or judge metadata, so
+this file remains teacher-unverified and cannot be treated as gold.
+
+The next quality lane uses information the first selector discarded: sixteen
+independent responses per question. A conservative two-pass builder extracts
+final answers from every math/science annotation and admits a trace only when
+at least eight answers are extractable, one exact-normalized answer receives
+at least eight votes and 60% support, and it leads the runner-up by at least
+three votes. The best trace is selected only among responses agreeing with the
+modal answer. Code is excluded because string agreement and compilation do not
+establish functional correctness.
