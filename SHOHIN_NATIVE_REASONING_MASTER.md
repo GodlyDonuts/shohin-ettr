@@ -54171,3 +54171,46 @@ authorized.
 
 Current decision:
 `bind_the_split_in_the_data_itself_then_measure_information_and_compute_before_training_any_capability_floor_arm`.
+
+### 2026-08-02: protected-Shohin final residual fails the information gate
+
+The first full exact-tensor measurement is complete and rejects the current
+adapter before any scale experiment. From 128 train and 128 development cores,
+the balanced probe sees 5,628 training and 5,208 development operation views.
+After 2,000 finite updates it reaches only 71.22% clean family recovery,
+51.77% complete renderer-orbit accuracy, and 62.75% renderer agreement. These
+are far below the frozen 95% interface gate. The report SHA-256 is
+`0ca8387bfba4c4b144fd34112b7aed2580884b9574583445b3210dbb37f45c7f`.
+
+This result is stronger than a failed architecture fit because it uses the
+exact frozen final post-norm residual, exact public role masks, and oracle
+preceding typed state. Even that favorable probe underperforms the historical
+80.17% source-syntax conditional oracle. The larger-backbone matrix is
+therefore blocked: repeating the same lossy final-residual interface at 0.8B
+or 3B would not distinguish scale from representation failure.
+
+The next bounded mechanism question is where the required public syntax
+survives. One extraction will compare input token embeddings and intermediate
+frozen-layer role features against the failed final layer. If none crosses
+95%, the interface receives a shared learned canonical-byte rail that is
+lossless, model-owned, parameter/FLOP-counted, and identical for ETTR and the
+dense control. No symbolic AST, family label, target, or oracle successor may
+enter that rail. Binding is evaluated only on source-matched cross-WORLD pairs
+whose correct family changes with preceding state; this avoids the invalid
+expectation that corrupting state should erase the approximately 80% family
+signal already present in public syntax.
+
+Current decision:
+`locate_or_restore_lossless_source_information_before_asking_any_backbone_to_own_the_recurrent_reasoning_trajectory`.
+
+The bounded depth-localization instrument is now implemented. It captures
+the protected model's input embedding and blocks 0, 4, 9, 14, 19, 24, and 29
+in one exact H100 extraction, pools only public operation-role spans, and fits
+the same state-conditioned probe independently at every depth. Block 29 is a
+required replication of the rejected final postnorm interface. No tap may be
+promoted on training loss or an easier population: the fixed held-out clean
+and renderer-orbit thresholds remain 95%, and a passing tap still needs the
+corrected source-matched binding control. If every tap fails, this is evidence
+that the frozen language path does not expose the necessary variable through
+role averaging; the next interface is a shared model-owned canonical-byte
+rail, not a wider version of the failed adapter.

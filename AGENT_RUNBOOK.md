@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 20:08 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 20:37 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -25513,3 +25513,82 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `never_train_from_the_split_ambiguous_v1_index_publish_v2_then_freeze_replay_from_train_rectangles_only`.
+
+- **2026-08-02 20:08--20:26 EDT** -- **The first protected-Shohin real-tensor
+  gate fails decisively and forces interface redesign before scale.**
+
+  H100 job `729554` completed cleanly on `evc44` in 25m17s from immutable
+  source `651d510`. The read-only artifact contains zero links or writable
+  files and replays from SHA256SUMS SHA-256
+  `029450ab45834628d892ed1cb2ee3abe690b0d1689557dae95d12a10e2ccc9f`.
+  Its 2,493,449,106-byte exact feature bundle has SHA-256
+  `c308378d5064381c8f08ab4d15f4e83fee0bc6c0e76a6ae38fc8fa86d1220c12`;
+  report/model SHA-256 values are
+  `0ca8387bfba4c4b144fd34112b7aed2580884b9574583445b3210dbb37f45c7f`
+  and
+  `45c6ef763be007a9259e796ebcf9b7997d6f5ffbbf0baa8db467ca0a57129b3c`.
+  The safe report is mirrored at
+  `artifacts/r12/capability_floor_shohin_tensor_sufficiency_s31d11_729554.json`.
+
+  On 5,628 family-balanced training examples and 5,208 development examples,
+  the 10,430,467-parameter probe completes all 2,000 updates with final loss
+  `0.541596` and finite pre-clip gradient norm `0.887383`. Clean held-out
+  family recovery is only `71.2174%`; renderer-orbit exactness is `51.7665%`
+  and orbit prediction agreement `62.7496%`. Binding-deranged accuracy is
+  `24.8848%`, state reset `37.1160%`, and global value-code permutation
+  `71.2174%`. The report decision is `redesign-neural-interface`.
+
+  The decision does not depend on interpreting the controls: clean recovery
+  itself misses the fixed 95% gate by 23.78 points and underperforms the
+  historical 80.17% exact public-syntax conditional oracle. The current final
+  post-norm residual plus mean role-span/state adapter has discarded or failed
+  to expose required syntax. The full-population chance-level expectation for
+  state corruption is also invalid for this coarse target because source
+  syntax alone carries about 80% signal; any future binding control must use
+  source-matched cross-WORLD pairs whose label changes only with preceding
+  state.
+
+  The forced successor is an interface audit, not a larger-backbone fit. It
+  must compare exact input-token embeddings and intermediate frozen layer taps
+  against the failed final residual, then add one shared lossless canonical
+  byte rail if no frozen tap crosses 95%. The rail is model-owned and counted;
+  it may not import a symbolic AST, oracle family, target, or successor state.
+  Only a renderer-stable >=95% interface with source-matched binding controls
+  can release Qwen, SmolLM, unified ETTR, or dense-control training.
+
+  Split-safe source commit `9bc1769aa0bdf35aa850da2ef936bcaa13e354e5`
+  is pushed to private `origin/main`. Immutable Newton runtime
+  `scratchpad/capability_floor_runtime_9bc1769_r1` contains 3,693 files, zero
+  links/writable entries, and has SHA256SUMS SHA-256
+  `caa73fa6e52b832c87a66b59acf9b7f29de6530975e1561abafd70baa158739a`.
+  Corrected cohort `729564` is running; replay publisher `729565` is held
+  `afterok:729564`.
+
+  Decision:
+  `reject_the_final_residual_interface_measure_early_and_intermediate_lossless_source_rails_then_scale_only_if_the_required_variable_is_recoverable`.
+
+- **2026-08-02 20:26--20:37 EDT** -- **The bounded frozen-depth interface
+  audit is implemented and passes every local mechanics gate.**
+
+  `train/capability_floor_layer_taps.py` captures the exact protected input
+  embedding and post-block tensors at blocks `0/4/9/14/19/24/29` in one H100
+  extraction. It pools only the same public root/direct-child role masks used
+  by the failed final-residual experiment, preserving exact typed preceding
+  state, renderer orbit, source hash, and sample identity. Eight independent
+  copies of the unchanged 10.43M-parameter family probe then fit for exactly
+  2,000 updates. The block-29 postnorm arm must replicate the failed interface;
+  all other arms differ only in frozen depth. One shared extraction prevents
+  repeated checkpoint forwards and allows isolated probes to run in parallel.
+
+  The launchers are
+  `train/jobs/extract_capability_floor_layer_taps.sbatch` and
+  `train/jobs/fit_capability_floor_layer_tap.sbatch`. They fail closed on
+  missing hashes, reject unsupported taps, publish no-overwrite checksum-bound
+  outputs, and never write the protected checkpoint. Fifty-one focused
+  capability-floor tests pass, plus Ruff, Python compilation, both Slurm shell
+  syntax checks, and `git diff --check`. No H100 job has been submitted from
+  this source yet; it must first be committed, pushed privately, and rebuilt as
+  an immutable checksum-verified Newton runtime.
+
+  Decision:
+  `extract_once_fit_all_frozen_depths_then_add_a_counted_lossless_byte_rail_only_if_every_frozen_tap_misses_95_percent`.

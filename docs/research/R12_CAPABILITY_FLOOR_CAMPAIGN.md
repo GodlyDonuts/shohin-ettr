@@ -236,3 +236,34 @@ measurement remain outstanding.
 - Thirty-seven focused campaign, trajectory, sufficiency, replay, and dense
   tests pass. These are mechanics and custody tests, not the 95%/90%
   capability gates.
+
+## First Real-Tensor Result
+
+Protected-Shohin H100 gate `729554` completed from the immutable step-300k
+checkpoint. The 2,000-update probe reaches 71.22% clean family accuracy,
+51.77% complete renderer-orbit accuracy, and 62.75% renderer prediction
+agreement on 5,208 balanced development examples. This decisively misses the
+95% gate before any negative-control interpretation. The report SHA-256 is
+`0ca8387bfba4c4b144fd34112b7aed2580884b9574583445b3210dbb37f45c7f`.
+
+The current final post-norm residual interface is rejected. Before testing a
+larger backbone, one bounded interface audit compares exact input embeddings
+and intermediate frozen-layer role features. If no frozen tap passes, a
+shared learned canonical-byte rail may be added, but it is counted and cannot
+consume a symbolic AST or assessor field. State binding must be measured on
+source-matched cross-WORLD pairs; full-population state corruption cannot be
+required to reach chance because public syntax alone predicts roughly 80% of
+the coarse family label.
+
+The frozen audit is preregistered in
+`train/capability_floor_layer_taps.py`. A single exact forward extraction
+captures the input embedding and blocks 0, 4, 9, 14, 19, 24, and 29 from the
+same 128-train/128-development core sample used by the failed gate. Each tap
+is pooled over the same four public role spans and receives an independently
+initialized copy of the same 10.43M-parameter probe for exactly 2,000 updates.
+The final block is an algebraic replication of the failed postnorm interface;
+earlier taps are the only experimental variable. Extracted tensors and every
+probe result are no-overwrite, checksum-bound artifacts. A frozen tap can
+advance only if clean and renderer-orbit accuracy reach 95%; promotion still
+requires the corrected source-matched binding control before any larger
+backbone fit.
