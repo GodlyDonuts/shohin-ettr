@@ -7,21 +7,28 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
-from typing import Sequence
+from typing import Mapping, Sequence
 
 import torch
 
 from capability_floor_corpus import EncodedSource
 from capability_floor_feature_sufficiency import (
+    REPORT_SCHEMA,
     _fit_probe,
     _load_feature_bundle,
+    _renderer_metrics,
     _save_feature_bundle,
     _select_records,
     _sha256_file,
     _source_tasks,
     _stack_state,
+    _write_no_replace,
 )
-from capability_floor_sufficiency import tensor_sha256
+from capability_floor_layer_taps import (
+    _score_indices,
+    source_matched_world_swap_indices,
+)
+from capability_floor_sufficiency import OperationFamilyTensorProbe, tensor_sha256
 from capability_floor_trajectory import UnifiedTrajectoryConfig
 from ettr_il_v2_token_native_surface import CODEWORD_BYTES
 from ettr_v3_streaming import ETTRV3StreamingRelease
@@ -225,9 +232,102 @@ def fit(args: argparse.Namespace) -> None:
     )
 
 
+def score_binding(args: argparse.Namespace) -> None:
+    if not torch.cuda.is_available() or "H100" not in torch.cuda.get_device_name(0).upper():
+        raise CapabilityFloorByteRailError("byte rail binding score requires one H100")
+    if _sha256_file(args.feature_bundle) != args.feature_bundle_sha256:
+        raise CapabilityFloorByteRailError("byte rail bundle SHA-256 differs")
+    bundle = dict(_load_feature_bundle(args.feature_bundle, args.feature_bundle_sha256))
+    bundle["feature_bundle_sha256"] = args.feature_bundle_sha256
+    if (
+        bundle.get("candidate") != BYTE_RAIL_CANDIDATE
+        or _sha256_file(args.probe_model) != args.probe_model_sha256
+    ):
+        raise CapabilityFloorByteRailError("byte rail binding parent differs")
+    try:
+        payload = torch.load(args.probe_model, map_location="cpu", weights_only=True)
+    except TypeError:
+        payload = torch.load(args.probe_model, map_location="cpu")
+    if (
+        not isinstance(payload, Mapping)
+        or payload.get("schema") != REPORT_SCHEMA
+        or payload.get("candidate") != BYTE_RAIL_CANDIDATE
+    ):
+        raise CapabilityFloorByteRailError("byte rail binding model differs")
+    config = UnifiedTrajectoryConfig(**dict(bundle["config"]))
+    probe = OperationFamilyTensorProbe(config, max_roles=4)
+    incompatible = probe.load_state_dict(payload["probe"], strict=True)
+    if incompatible.missing_keys or incompatible.unexpected_keys:
+        raise CapabilityFloorByteRailError("byte rail binding state differs")
+    device = torch.device("cuda", 0)
+    probe.to(device).eval().requires_grad_(False)
+    development = bundle["splits"]["development"]
+    source_indices, swapped_indices = source_matched_world_swap_indices(development)
+    clean = _score_indices(
+        probe,
+        development,
+        source_indices,
+        source_indices,
+        device=device,
+        batch_size=args.probe_batch,
+    )
+    swapped = _score_indices(
+        probe,
+        development,
+        source_indices,
+        swapped_indices,
+        device=device,
+        batch_size=args.probe_batch,
+    )
+    labels = development["tensors"]["labels"]
+    clean_targets = labels.index_select(0, source_indices)
+    swapped_targets = labels.index_select(0, swapped_indices)
+    source_orbits = [
+        development["identity"]["orbit_ids"][index]
+        for index in source_indices.tolist()
+    ]
+    swapped_orbit_accuracy, swapped_orbit_agreement = _renderer_metrics(
+        swapped,
+        swapped_targets,
+        source_orbits,
+    )
+    report = {
+        "candidate": BYTE_RAIL_CANDIDATE,
+        "causal_rows": int(source_indices.numel()),
+        "clean_accuracy": float(clean.eq(clean_targets).float().mean()),
+        "feature_bundle_sha256": args.feature_bundle_sha256,
+        "probe_model_sha256": args.probe_model_sha256,
+        "schema": "shohin-ettr-capability-floor-source-matched-binding-v1",
+        "source_indices_sha256": tensor_sha256(source_indices),
+        "swapped_indices_sha256": tensor_sha256(swapped_indices),
+        "swapped_original_accuracy": float(swapped.eq(clean_targets).float().mean()),
+        "swapped_renderer_orbit_accuracy": swapped_orbit_accuracy,
+        "swapped_renderer_orbit_agreement": swapped_orbit_agreement,
+        "swapped_target_accuracy": float(swapped.eq(swapped_targets).float().mean()),
+    }
+    _write_no_replace(
+        args.output,
+        (
+            json.dumps(
+                report,
+                allow_nan=False,
+                ensure_ascii=True,
+                separators=(",", ":"),
+                sort_keys=True,
+            )
+            + "\n"
+        ).encode("ascii"),
+    )
+    print(json.dumps(report, sort_keys=True), flush=True)
+
+
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", choices=("materialize", "fit"), required=True)
+    parser.add_argument(
+        "--mode",
+        choices=("materialize", "fit", "binding"),
+        required=True,
+    )
     parser.add_argument("--release-root", type=Path)
     parser.add_argument("--data-root", type=Path)
     parser.add_argument("--release-sha256")
@@ -235,6 +335,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--feature-bundle", type=Path, required=True)
     parser.add_argument("--feature-bundle-sha256")
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--probe-model", type=Path)
+    parser.add_argument("--probe-model-sha256")
     parser.add_argument("--train-cores", type=int, default=128)
     parser.add_argument("--development-cores", type=int, default=128)
     parser.add_argument("--selection-seed", type=int, default=11)
@@ -261,10 +363,19 @@ def main(argv: Sequence[str] | None = None) -> int:
         ):
             raise CapabilityFloorByteRailError("byte rail materialization arguments differ")
         materialize(args)
-    else:
+    elif args.mode == "fit":
         if not args.feature_bundle_sha256 or args.output is None:
             raise CapabilityFloorByteRailError("byte rail fit arguments differ")
         fit(args)
+    else:
+        if (
+            not args.feature_bundle_sha256
+            or args.output is None
+            or args.probe_model is None
+            or not args.probe_model_sha256
+        ):
+            raise CapabilityFloorByteRailError("byte rail binding arguments differ")
+        score_binding(args)
     return 0
 
 
