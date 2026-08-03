@@ -74,27 +74,25 @@ def _question_response(row: dict[str, Any]) -> tuple[str, str] | None:
     return str(question), str(response)
 
 
-def file_sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        while chunk := handle.read(8 * 1024 * 1024):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def reservoir_rows(path: Path, limit: int, seed: int) -> list[dict[str, str]]:
-    """Select a deterministic bounded population without loading the source twice."""
+def reservoir_rows_with_sha256(
+    path: Path,
+    limit: int,
+    seed: int,
+) -> tuple[list[dict[str, str]], str]:
+    """Hash and select a deterministic bounded population in one exact pass."""
 
     if limit <= 0:
         raise ProductReasoningTrainError("row limit must be positive")
     generator = random.Random(seed)
+    digest = hashlib.sha256()
     selected: list[dict[str, str]] = []
     valid = 0
-    with path.open("r", encoding="utf-8") as handle:
-        for line in handle:
+    with path.open("rb") as handle:
+        for raw_line in handle:
+            digest.update(raw_line)
             try:
-                row = json.loads(line)
-            except json.JSONDecodeError:
+                row = json.loads(raw_line)
+            except (json.JSONDecodeError, UnicodeDecodeError):
                 continue
             pair = _question_response(row)
             if pair is None:
@@ -110,7 +108,13 @@ def reservoir_rows(path: Path, limit: int, seed: int) -> list[dict[str, str]]:
     if not selected:
         raise ProductReasoningTrainError("training source has no valid rows")
     generator.shuffle(selected)
-    return selected
+    return selected, digest.hexdigest()
+
+
+def reservoir_rows(path: Path, limit: int, seed: int) -> list[dict[str, str]]:
+    """Compatibility wrapper returning only the selected deterministic rows."""
+
+    return reservoir_rows_with_sha256(path, limit, seed)[0]
 
 
 def _pad_token_rows(
@@ -491,8 +495,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         fused=True,
     )
 
-    data_hash = file_sha256(args.data)
-    rows = reservoir_rows(args.data, args.max_rows, args.data_seed)
+    rows, data_hash = reservoir_rows_with_sha256(
+        args.data, args.max_rows, args.data_seed
+    )
     batch_stream = list(_batches(rows, args.batch_size))
     if not batch_stream:
         raise ProductReasoningTrainError("training population is smaller than a batch")

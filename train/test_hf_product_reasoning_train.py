@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 import tempfile
 import unittest
@@ -18,6 +19,7 @@ from hf_product_reasoning_train import (
     pack_training_embeddings,
     product_generation_embeddings,
     reservoir_rows,
+    reservoir_rows_with_sha256,
 )
 
 
@@ -65,6 +67,8 @@ class ProductReasoningTrainTests(unittest.TestCase):
                 encoding="utf-8",
             )
             self.assertEqual(reservoir_rows(path, 5, 31), reservoir_rows(path, 5, 31))
+            _, digest = reservoir_rows_with_sha256(path, 5, 31)
+            self.assertEqual(digest, hashlib.sha256(path.read_bytes()).hexdigest())
 
     def test_pack_rejects_batch_mismatch(self) -> None:
         with self.assertRaises(ProductReasoningTrainError):
