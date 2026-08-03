@@ -54446,3 +54446,14 @@ The current model has improved elementary calculation and answer selection; it
 has not yet earned a claim of sophisticated general reasoning. Verified
 science rationales, execution-verified code, and the fully matched corrected
 campaign are the next product gates.
+
+The first data-mix repair is frozen in advance of that gate. A deterministic
+group-balanced selector takes the largest unique V8 subset supporting
+`35% math / 20% code / 20% procedural / 25% teacher` without replay. The
+result has 36,250 rows (`12,688 / 7,250 / 7,250 / 9,062`), zero duplicate
+questions, and SHA-256
+`aebf832278b8b0792cdde423b87f187808b918f5b6dc84631fde81e63a0b7fee`
+on both Stokes and Newton. This changes expected code exposure by 20x while
+holding examples unique. Matched balanced training and evaluation jobs
+`729936--729956` are dependency-held behind the current corrected campaign;
+they are a prepared response to the known code failure, not evidence yet.

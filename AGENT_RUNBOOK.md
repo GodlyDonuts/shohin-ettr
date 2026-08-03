@@ -107,6 +107,15 @@
 > boards. C2's original GPQA job `729872` is allowed to finish; obsolete
 > pending C2 code jobs were canceled. The protected Shohin 300k baseline is
 > unchanged and no pretraining writer exists.
+> A deterministic no-replay V8 rebalance is also complete on Stokes and
+> hash-matched on Newton: 36,250 unique rows, `12,688 math / 7,250 code /
+> 7,250 procedural / 9,062 teacher`, zero duplicate questions, SHA-256
+> `aebf832278b8b0792cdde423b87f187808b918f5b6dc84631fde81e63a0b7fee`.
+> This raises code from 1% to 20% without duplicating source rows. Matched
+> balanced training jobs `729936/729943/729950` and corrected evaluation
+> chains `729937--729956` are dependency-held behind successful completion of
+> all three current corrected arms. They are the prebuilt repair for the
+> expected code-domain gate failure, not a replacement for the active result.
 >
 > **Last updated:** 2026-08-03 00:22 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256

@@ -255,6 +255,18 @@ restricted to `problem_type=has_answer_extracted`. Both replay the complete
 local benchmark inventory before atomic output. A source label or upstream
 teacher score alone cannot admit a row.
 
+The immediate code-balance repair is already materialized rather than waiting
+for the first campaign to fail. `pipeline/build_balanced_product_reasoning_mix.py`
+selects the largest exact-weight subset possible without replaying or
+duplicating any prompt. From frozen V8 it produces 36,250 rows:
+`12,688 math / 7,250 code / 7,250 procedural / 9,062 teacher`, SHA-256
+`aebf832278b8b0792cdde423b87f187808b918f5b6dc84631fde81e63a0b7fee`.
+The artifact is hash-matched on Stokes and Newton. Code is now 20% rather than
+1%, while every selected row remains unique. Balanced 200-update B1/T2/C2
+jobs `729936/729943/729950` and their identical corrected board chains
+`729937--729956` are dependency-held behind the current full campaign, so the
+data-mix repair begins without another approval or scheduling gap.
+
 ## Execution Queue
 
 ### Hours 0--6: make the backbone and measurements real
