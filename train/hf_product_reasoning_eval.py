@@ -288,19 +288,25 @@ def _generate_adapter(
     generation_arguments: dict[str, Any],
     pad_token_id: int,
 ):
+    import torch
+
     from hf_product_reasoning_train import product_generation_embeddings
 
-    embeddings, attention = product_generation_embeddings(
-        model,
-        encoded["input_ids"],
-        encoded["attention_mask"],
-    )
-    return model.backbone.generate(
-        inputs_embeds=embeddings,
-        attention_mask=attention,
-        pad_token_id=pad_token_id,
-        **generation_arguments,
-    )
+    # LoRA and workspace parameters remain FP32 for optimizer stability while
+    # the frozen backbone is BF16. Training already runs under autocast; the
+    # same mixed-precision contract must hold during autonomous generation.
+    with torch.autocast("cuda", dtype=torch.bfloat16):
+        embeddings, attention = product_generation_embeddings(
+            model,
+            encoded["input_ids"],
+            encoded["attention_mask"],
+        )
+        return model.backbone.generate(
+            inputs_embeds=embeddings,
+            attention_mask=attention,
+            pad_token_id=pad_token_id,
+            **generation_arguments,
+        )
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
