@@ -26662,3 +26662,75 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_the_complete_short_budget_collection_and_the_long_math_contingency_in_parallel_then_train_only_from_a_hash_validated_group_balanced_positive_corpus`.
+
+- **2026-08-03 17:15--17:44 EDT** -- **A measured elevenfold math rollout
+  yield increase opens the first end-to-end verified self-improvement lane;
+  15 H100s run concurrently and the complete training/evaluation successor
+  graph is dependency-staged.**
+
+  Batch-64 short decoding establishes the matched first-64 baseline at math
+  `1/25` and science `15/39` positive prompts. Long-budget job `733837`
+  completes the identical prompts at K=4 with 3,072 draft tokens plus a
+  strict 64-token answer-only finalizer. It reaches math `11/25` and science
+  `16/39`, for `27/64` positives and `59/256` correct candidates. Direct long
+  decoding solves `6/25` math prompts; the finalizer recovers five additional
+  prompts. It does not add a science prompt. Math therefore improves from 4%
+  to 44% while science is unchanged within one answer. The intervention is
+  targeted: longer serialization plus explicit final emission, not host
+  calculation or best-of-K scoring at evaluation time.
+
+  The long canary generates 528,215 tokens in 1,398.47 seconds, or 377.71
+  tok/s. Live `nvidia-smi` measures about 73.7/81.6GB and 98% utilization at
+  batch 16, so this is the safe near-capacity shape. Batch 32 is not attempted.
+  Source breakdown is AOPS high-school `8/12`, olympiad `3/11`, and MATH
+  training `0/2`; this remains a bounded sample. Running disjoint pilots
+  `733843/733844` continue for variance, while five redundant pending pilots
+  are canceled before allocation.
+
+  A math-only bank is independently rebuilt from the same verified sources,
+  V12/V13 exclusions, and seed. It contains 4,096 unique rows at SHA-256
+  `51e05764916dd2a6cfcc609d7afeb47cec2cec92d3791b1281accaacdfa813e1`;
+  report SHA-256 is
+  `7fa7925539cda90cce61e8b7892ef42b419b2ff8f424ba38bb8c022ba35bec24`.
+  Builder runtime `product_rollout_bank_60fdf53_math_r1` has SHA256SUMS hash
+  `31d91df4ee57d1961a942fe4f50931a8d91c9d19b823914f6df02719971f4470`.
+  Thirty-two independent one-H100 jobs `733882--733914` cover disjoint
+  128-prompt slices at the admitted long shape; CPU aggregate `733915` checks
+  complete coverage and requires at least 512 math positives. The short
+  8,192-prompt fan remains active for fast science collection. Its first five
+  reported 64-prompt blocks yield `16/24/15/20/17` positives, averaging
+  28.75%.
+
+  Commits `3ed9162/eb77269` add a deterministic cross-budget positive merge.
+  It preserves first-source priority for duplicate identities, validates
+  every aggregate/file hash and model/sampling identity, and applies final
+  combined quotas even when one structurally valid input misses its standalone
+  quota. Runtime `product_rollout_merge_eb77269_r1` has SHA256SUMS hash
+  `b77813380655397b604a9392b89e4cd53d62202d3e0d5d3ee8cfba9068bb1306`;
+  merge job `733924` follows short aggregate `733827` and math aggregate
+  `733915`, requiring at least 512 math and 512 science rows.
+
+  Commit `35c5c9d` adds the protective replay builder. After merge admission,
+  CPU job `733931` includes every verified new trajectory and an equal number
+  of deterministic question-disjoint V12 rows. Replay runtime SHA256SUMS is
+  `f20eeb4a056455827befe5aeba9c51ee5880921930a5b4068468e34e8ae0888e`.
+  Warm-start job `733932` then restores the exact V12 late-1,000 trainable
+  state, uses a fresh optimizer, same 16 examples/update and 4,096 context,
+  trains 400 updates at peak LR `5e-6`, and writes checkpoints at 200/400.
+  Trainer runtime SHA256SUMS is
+  `0b9c4faa30e427bc60e76b0e81a03bac9df3169d18e2138b7a0b402d2bff8ad4`.
+  Eighteen identical 1,536-token evaluators `733936--733953` cover GSM8K,
+  MATH, HumanEval, MBPP, GPQA, BBH, AIME, fresh science, and manual
+  composition at both checkpoints. No new weights are promoted without a
+  broad benchmark lift.
+
+  The completed global-dose controls strengthen this choice. V13 B1 at 7,500
+  token-matched updates closes at a 34.5% five-domain macro. V12 late-layer
+  update 2,000 closes at 36.7%, with GSM8K `90`, MATH `19`, code mean `12.5`,
+  GPQA `15`, and BBH `47`; it is retained only as proposal-source probe
+  `733876`. The update-1,000 leader's expanded board now confirms GSM8K
+  `1018/1319`, MATH `239/500`, HumanEval `45/164`, MBPP `132/499`, GPQA
+  `27/198`, and AIME `0/30`; BBH and science remain live.
+
+  Decision:
+  `scale_long_verified_math_and_short_verified_science_then_warm_start_the_broad_leader_with_equal_verified_replay_and_select_only_on_fixed_multidomain_deltas`.
