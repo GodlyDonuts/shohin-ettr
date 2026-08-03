@@ -27,6 +27,13 @@ MAX_ROWS=${MAX_ROWS:-100000}
 MAX_SEQUENCE_LENGTH=${MAX_SEQUENCE_LENGTH:-1024}
 STAGE_MODEL=${STAGE_MODEL:-true}
 DENSE_WIDTH=${DENSE_WIDTH:-192}
+LEARNING_RATE=${LEARNING_RATE:-2e-4}
+LORA_LAYERS=${LORA_LAYERS:-4}
+LORA_RANK=${LORA_RANK:-8}
+LORA_ALPHA=${LORA_ALPHA:-16}
+SEED=${SEED:-31}
+DATA_SEED=${DATA_SEED:-20260802}
+CHECKPOINT_INTERVAL=${CHECKPOINT_INTERVAL:-100}
 
 test -x "$PYTHON"
 test -f "$RUNTIME/train/hf_product_reasoning_train.py"
@@ -69,4 +76,11 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
   --gradient-accumulation "$GRADIENT_ACCUMULATION" \
   --max-rows "$MAX_ROWS" \
   --max-sequence-length "$MAX_SEQUENCE_LENGTH" \
-  --dense-width "$DENSE_WIDTH"
+  --dense-width "$DENSE_WIDTH" \
+  --learning-rate "$LEARNING_RATE" \
+  --lora-layers "$LORA_LAYERS" \
+  --lora-rank "$LORA_RANK" \
+  --lora-alpha "$LORA_ALPHA" \
+  --seed "$SEED" \
+  --data-seed "$DATA_SEED" \
+  --checkpoint-interval "$CHECKPOINT_INTERVAL"
