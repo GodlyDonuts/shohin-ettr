@@ -26765,3 +26765,28 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `retain_the_replicated_long_math_shape_and_allow_single_gpu_production_jobs_to_backfill_every_released_h100`.
+
+- **2026-08-03 17:50--18:15 EDT** -- **The expanded leader baseline closes,
+  the update-2,000 proposal probe fails to improve yield, and one fragmented
+  short shard is replaced without weakening aggregate admission.**
+
+  Full BBH completes at `741/1,250 = 59.28%`, artifact SHA-256
+  `2ea1e76c1603b0d0ad7ae0006c64b861dcebda4c0ef011e2a04044edc9f0dbf3`.
+  The expanded five-domain macro for the update-1,000 leader is therefore
+  `44.97%`. Update-2,000 proposal probe `733876` completes on the identical
+  first 64 long-budget prompts at `27/64`, tying update 1,000 in aggregate.
+  Its math yield is lower (`9/25` versus `11/25`) while science is only two
+  prompts higher (`18/39` versus `16/39`). It is closed rather than scaled.
+
+  Short shard `733813` fails after 35 minutes with a CUDA allocator
+  fragmentation OOM at batch 64: 56.65GB is allocated but 19.54GB is
+  reserved and unallocated. Commit `79fb794` exports
+  `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`. Replacement `733972`
+  regenerates only immutable slice 08 at batch 32 and writes the original
+  atomic output names. Aggregate job `733827` is updated to require the
+  replacement instead of the failed job, so it cannot proceed on partial
+  coverage. Existing batch-64 shards continue because canceling completed
+  generation would waste more compute than bounded replacement.
+
+  Decision:
+  `close_update2000_as_a_proposal_source_and_replace_only_failed_short_slices_at_the_fragmentation_hardened_batch32_shape`.
