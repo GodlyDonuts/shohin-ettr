@@ -9,6 +9,7 @@ import types
 from hf_product_reasoning_eval import (
     _completion_usage,
     _generation_stop_token_ids,
+    _finalization_question,
     ProductEvalError,
     _bounded_program_result,
     _humaneval_program,
@@ -68,6 +69,13 @@ class ProductReasoningEvalTests(unittest.TestCase):
         self.assertFalse(
             has_explicit_final_answer("A capped partial thought mentions option B")
         )
+
+    def test_finalization_question_preserves_problem_and_draft(self) -> None:
+        rendered = _finalization_question("What is 6 times 7?", "6*7 = 42")
+        self.assertIn("What is 6 times 7?", rendered)
+        self.assertIn("6*7 = 42", rendered)
+        self.assertIn(r"\boxed{}", rendered)
+        self.assertIn("Do not redo or extend", rendered)
 
     def test_gsm8k_normalizes_numeric_equivalence_and_currency_phrases(self) -> None:
         transcript = "Work. The answer is 1 dollar 40 cents."

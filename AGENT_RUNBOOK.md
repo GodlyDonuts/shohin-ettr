@@ -26241,3 +26241,81 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `use_many_single_h100_requests_for_independent_product_questions_select_late500_over_late1000_keep_wide_pending_and_release_all_three_v12_arms_immediately_after_the_exact_data_gate`.
+
+- **2026-08-03 13:33--14:11 EDT** -- **The exact V12 corpus clears every
+  admission gate, three matched H100 arms are released, and a procedural V13
+  contingency is staged in parallel.**
+
+  Wide-LoRA `731512` completed 3,000 updates cleanly in 59m57s at about
+  `4,690.7` charged target tok/s. Its final fixed development scores are
+  GSM8K `78/100`, MATH `29/100`, HumanEval `6/20`, MBPP `4/20`, GPQA
+  `17/100`, BBH `47/100`, AIME `1/30`, and fresh science `18/100`. Update
+  2,000 was `79/35/5/4/11/38/1/12` on the same boards. The final five-domain
+  macro is `39.2%`, versus `37.1%` at update 2,000. Wider LoRA improves some
+  math and code cases but does not remove the science/logic interference; it
+  is not a promoted general arm.
+
+  The 1,536-token controls establish that the locked 768-token scoreboard
+  undercounts some model capability without explaining the full deficit.
+  Late-layer update 500 rises from `7/12` to `10/12` manual compositions and
+  reduces cap exhaustion from four to one; update 1,000 reaches `9/12` with
+  three exhaustions. Wide update 1,000 reaches `8/12` with four exhaustions.
+  B1-3k at 1,536 tokens scores MATH `43/100`, GPQA `21/100`, AIME `2/30`, and
+  science `33/100`. Wide-2k scores GPQA `13/100`, AIME `2/30`, and science
+  `18/100`. These controls authorize a larger deployment reasoning budget,
+  not retrospective replacement of the historical 768-token results.
+
+  The first expanded-board jobs died before inference on unhealthy `evc43`
+  and `evc33`; they are infrastructure failures, not model scores. Corrected
+  independent single-H100 replacements are `732252--732272`, with both bad
+  nodes excluded. The earlier late-layer replacement set also exposed an
+  immutable-runtime mismatch: `product_outcome_eval_77f4cb1_r2` could not
+  reconstruct checkpoints containing the two unfrozen transformer blocks.
+  Known-good runtime `product_train_ede4fb0_r1` now evaluates every late arm.
+  No checkpoint was corrupt and no result was overwritten.
+
+  Eighteen-way TACO audit merge `761290` accepts `8,919/9,000` programs and
+  drops 81 after replaying supplied tests. The merged output SHA-256 is
+  `4fe6e92737ef190423aff8e53246f77f213bb1fe0651c548a008b106fb04bfb4`;
+  candidate, manifest, and output hashes all replay. V12 builder `761291`
+  then completed in 24m57s. Artifact
+  `v12_smollm3_tokenbalanced_46m18c33s1p2t_16m_verified9000_4k_r1.jsonl`
+  contains `25,139` unique selected rows and `16,003,044` charged target
+  tokens at exact requested weights `46% math / 18% executable code / 33%
+  answer-checked science / 1% procedural / 2% teacher`. It has zero selected
+  prompt truncations, response truncations, or duplicate questions. Output
+  SHA-256 is
+  `98527177e6e2abad364112659aaf11c71313babfde7f7031c635cdd1dc9ce5ab`.
+  The 94,644,165-byte file is independently hash-matched on Stokes, the Mac
+  transfer buffer, and Newton.
+
+  H100 jobs `731325/731326/731919` were released immediately after the Newton
+  hash gate. They compare proven B1, wide LoRA, and late-two-layer release on
+  the identical V12 stream. Twenty-four dependency-bound benchmark workers
+  `731343--731358`, `731826--731848`, and `731920--731927` are already staged.
+  No multi-GPU reservation is required; each arm and evaluation can backfill
+  independently on one healthy H100.
+
+  The failure-prediction contingency is V13, not another width variant.
+  Product adapter `321dabb` admits all `374,659` execution-verified RG-v4
+  traces with zero malformed, duplicate, or exact evaluation-overlap drops;
+  its output SHA-256 is
+  `dfa5d45ad2c9b178dfff06117ea0b9738660af001e88da42969c18382e8f3d02`.
+  CPU builder `761297` requests `42% math / 16% code / 27% science / 13%
+  procedural / 2% teacher`. Only proven B1 and transcript-strong late-layer
+  jobs are staged as `732353/732354`; the broadly regressive wide arm is not
+  repeated. Their sixteen final benchmark workers are `732357--732372`.
+  Release remains hash-gated on the atomic V13 report.
+
+  A separate inference-only repair is implemented but not yet counted as a
+  score. `hf_product_reasoning_eval.py --finalize-exhausted` gives only
+  cap-exhausted, no-final-marker answer traces one deterministic 64-token pass
+  over the original problem and frozen draft, requiring the model to emit one
+  explicit boxed answer. It performs no host arithmetic, search, sampling, or
+  benchmark-specific extraction. Default behavior is unchanged. This is the
+  bounded test for cases such as the manual CRT trace that derives 52 and then
+  loops until the cap. Sixteen evaluator tests, Ruff, Python compilation,
+  Slurm shell syntax, and `git diff --check` pass before remote deployment.
+
+  Decision:
+  `run_v12_now_measure_decode_budget_separately_and_prepare_v13_as_the_specific_verified_composition_repair_instead_of_repeating_failed_width_or_router_searches`.

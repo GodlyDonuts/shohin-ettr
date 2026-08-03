@@ -565,6 +565,45 @@ checked candidates. Replacement `761230` runs the identical 9,000-candidate
 input, pinned source revision, and all supplied tests with a 12-hour ceiling;
 final mix `761231` is held after successful completion.
 
+### V12 scale gate and V13 contingency (2026-08-03)
+
+The exact-code bottleneck is closed. An 18-way, 576-CPU TACO replay admits
+8,919 of 9,000 candidate programs; the merged output SHA-256 is
+`4fe6e92737ef190423aff8e53246f77f213bb1fe0651c548a008b106fb04bfb4`.
+The resulting V12 corpus has 25,139 unique rows and 16,003,044 charged target
+tokens at `46% math / 18% code / 33% science / 1% procedural / 2% teacher`.
+There are zero selected prompt truncations, response truncations, or duplicate
+questions. Its SHA-256 is
+`98527177e6e2abad364112659aaf11c71313babfde7f7031c635cdd1dc9ce5ab`,
+matched on Stokes, transfer, and Newton.
+
+Three one-H100 V12 arms are released: B1 `731325`, wide LoRA `731326`, and
+late-two-layer release `731919`. Twenty-four independent fixed-board workers
+are dependency-staged. This maximizes useful cluster occupancy without paying
+small-model multi-GPU synchronization overhead.
+
+V11 wide LoRA closes at a 39.2% five-domain development macro after 3,000
+updates. It improves selected math/code cases but does not resolve the
+science/logic tradeoff. The strongest direct-interaction result is late-layer
+update 500 at 10/12 hand-written compositions under a 1,536-token generation
+budget, versus 7/12 at 768 tokens. Truncation is a real evaluation/deployment
+constraint, but harder public domains remain weak even at 1,536 tokens.
+
+V13 is the predeclared repair if V12's broad verified mix still loses
+composition. It substitutes 13% execution-verified procedural traces and uses
+`42/16/27/13/2` math/code/science/procedural/teacher weights. Only B1 and the
+manual-transcript-leading late-layer arm are staged (`732353/732354`), with
+sixteen independent benchmark workers. It will release only after exact
+hash/composition/truncation gates pass.
+
+One deployment-only diagnostic is permitted alongside training. For a trace
+that exhausts its budget without an explicit final marker, the same frozen
+model receives the original problem and its own draft once, then has 64 greedy
+tokens to emit only a boxed final answer. This performs no search or host
+calculation and leaves the historical evaluator unchanged by default. It is
+measured separately because it repairs answer emission rather than underlying
+reasoning.
+
 ## Execution Queue
 
 ### Hours 0--6: make the backbone and measurements real

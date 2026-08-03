@@ -23,6 +23,8 @@ PYTHON=${PYTHON:-/lustre/fs1/home/sa305415/shohin/envs/product-reasoning-b3a3603
 COUNT=${COUNT:-100}
 BATCH_SIZE=${BATCH_SIZE:-4}
 MAX_NEW_TOKENS=${MAX_NEW_TOKENS:-768}
+FINALIZE_EXHAUSTED=${FINALIZE_EXHAUSTED:-false}
+FINALIZE_MAX_NEW_TOKENS=${FINALIZE_MAX_NEW_TOKENS:-64}
 CODE_TIMEOUT=${CODE_TIMEOUT:-8}
 GENERATION_MODE=${GENERATION_MODE:-greedy}
 ADAPTER_CHECKPOINT=${ADAPTER_CHECKPOINT:-}
@@ -70,6 +72,14 @@ elif [[ "$ENABLE_THINKING" != "true" ]]; then
   exit 2
 fi
 
+FINALIZE_ARG=--no-finalize-exhausted
+if [[ "$FINALIZE_EXHAUSTED" == "true" ]]; then
+  FINALIZE_ARG=--finalize-exhausted
+elif [[ "$FINALIZE_EXHAUSTED" != "false" ]]; then
+  echo "FINALIZE_EXHAUSTED must be true or false" >&2
+  exit 2
+fi
+
 "$PYTHON" "$RUNTIME/train/hf_product_reasoning_eval.py" \
   --model-root "$EFFECTIVE_MODEL_ROOT" \
   --model-source-root "$SOURCE_MODEL_ROOT" \
@@ -80,7 +90,9 @@ fi
   --count "$COUNT" \
   --batch-size "$BATCH_SIZE" \
   --max-new-tokens "$MAX_NEW_TOKENS" \
+  --finalize-max-new-tokens "$FINALIZE_MAX_NEW_TOKENS" \
   --code-timeout "$CODE_TIMEOUT" \
   --generation-mode "$GENERATION_MODE" \
   "$THINKING_ARG" \
+  "$FINALIZE_ARG" \
   "${ADAPTER_ARGS[@]}"

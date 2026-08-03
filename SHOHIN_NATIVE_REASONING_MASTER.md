@@ -54725,6 +54725,33 @@ outcome supervision from a large disjoint training-only routing corpus or
 joint end-to-end optimization, followed by one untouched-board comparison
 against the strongest single frozen arm.
 
+### V12 verified scale and direct-generation correction (2026-08-03)
+
+The next product-scale stream is now frozen. V12 contains 25,139 unique rows
+and 16,003,044 charged target tokens at `46% math / 18% executable code / 33%
+answer-checked science / 1% procedural / 2% teacher`, with zero selected
+prompt/response truncations and zero duplicate questions. Its SHA-256 is
+`98527177e6e2abad364112659aaf11c71313babfde7f7031c635cdd1dc9ce5ab`.
+Its code source includes 8,919 TACO programs that replay all supplied tests.
+Proven LoRA, wide LoRA, and late-two-layer arms are running as matched
+single-H100 comparisons; no architectural claim is made before their fixed
+boards finish.
+
+The completed V11 width/duration search changes two practical conclusions.
+First, the wide arm finishes at 39.2% five-domain development macro and still
+trades math/code gains against science/logic losses, so width alone is not the
+solution. Second, direct interaction at 1,536 generated tokens raises the
+late-layer update-500 arm from 7/12 to 10/12 hand-written composition solves.
+Some apparent failure was final-answer truncation. It is not the whole
+problem: MATH, GPQA, science, and AIME remain weak and often cap-limited.
+
+The parallel V13 contingency directly attacks composition rather than adding
+width. It reserves 13% of 16M targets for 374,659 execution-verified
+procedural traces spanning arithmetic chains, equations, sorting/filtering,
+string transforms, number theory, and binding-like operations. B1 and the
+late-layer arm are the only staged treatments. V13 is a product data
+intervention, not evidence that ETTR itself has succeeded.
+
 ### TACO audit durability correction (2026-08-03)
 
 The 9,000-candidate all-test audit `761178` timed out after six hours without

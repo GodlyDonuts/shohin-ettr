@@ -621,6 +621,16 @@ def _render_prompt(
     )
 
 
+def _finalization_question(question: str, completion: str) -> str:
+    return (
+        "The draft below reached its generation limit before reliably emitting "
+        "a final answer. Use only the original problem and draft. Do not redo or "
+        "extend the reasoning. Return only one explicit final answer inside "
+        "\\boxed{}.\n\nOriginal problem:\n"
+        f"{question}\n\nDraft reasoning:\n{completion}"
+    )
+
+
 def _generate_adapter(
     model: Any,
     encoded: dict[str, Any],
@@ -646,6 +656,47 @@ def _generate_adapter(
             pad_token_id=pad_token_id,
             **generation_arguments,
         )
+
+
+def _generate_completions(
+    model: Any,
+    tokenizer: Any,
+    rendered: list[str],
+    adapter: bool,
+    generation_mode: str,
+    max_new_tokens: int,
+    stop_token_ids: list[int],
+) -> tuple[list[str], list[tuple[int, bool]]]:
+    import torch
+
+    encoded = tokenizer(rendered, padding=True, return_tensors="pt")
+    encoded = {key: value.to("cuda:0") for key, value in encoded.items()}
+    prompt_width = int(encoded["input_ids"].shape[1])
+    with torch.inference_mode():
+        generation_arguments = _generation_arguments(generation_mode, max_new_tokens)
+        generation_arguments["eos_token_id"] = (
+            stop_token_ids[0] if len(stop_token_ids) == 1 else stop_token_ids
+        )
+        if not adapter:
+            output = model.generate(
+                **encoded,
+                pad_token_id=tokenizer.pad_token_id,
+                **generation_arguments,
+            )
+            completion_ids = output[:, prompt_width:]
+        else:
+            completion_ids = _generate_adapter(
+                model,
+                encoded,
+                generation_arguments,
+                tokenizer.pad_token_id,
+            )
+    completions = tokenizer.batch_decode(completion_ids, skip_special_tokens=True)
+    usage = [
+        _completion_usage(token_row.tolist(), stop_token_ids, max_new_tokens)
+        for token_row in completion_ids
+    ]
+    return completions, usage
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
@@ -676,6 +727,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     correct = 0
     generated_tokens = 0
     max_token_exhausted = 0
+    finalization_attempts = 0
+    finalization_generated_tokens = 0
+    finalization_max_token_exhausted = 0
     results: list[dict[str, Any]] = []
 
     for offset in range(0, len(selected), args.batch_size):
@@ -689,44 +743,59 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             )
             for row in batch
         ]
-        encoded = tokenizer(rendered, padding=True, return_tensors="pt")
-        encoded = {key: value.to("cuda:0") for key, value in encoded.items()}
-        prompt_width = int(encoded["input_ids"].shape[1])
-        with torch.inference_mode():
-            generation_arguments = _generation_arguments(
-                args.generation_mode, args.max_new_tokens
-            )
-            generation_arguments["eos_token_id"] = (
-                stop_token_ids[0] if len(stop_token_ids) == 1 else stop_token_ids
-            )
-            if args.adapter_checkpoint is None:
-                output = model.generate(
-                    **encoded,
-                    pad_token_id=tokenizer.pad_token_id,
-                    **generation_arguments,
-                )
-                completion_ids = output[:, prompt_width:]
-            else:
-                output = _generate_adapter(
+        completions, completion_usage = _generate_completions(
+            model,
+            tokenizer,
+            rendered,
+            args.adapter_checkpoint is not None,
+            args.generation_mode,
+            args.max_new_tokens,
+            stop_token_ids,
+        )
+        finalizations: list[str | None] = [None] * len(batch)
+        finalization_usage: list[tuple[int, bool]] = [(0, False)] * len(batch)
+        if args.finalize_exhausted and task["kind"] != "code":
+            finalize_indices = [
+                index
+                for index, (_, exhausted) in enumerate(completion_usage)
+                if exhausted and not has_explicit_final_answer(completions[index])
+            ]
+            if finalize_indices:
+                finalize_rendered = [
+                    _render_prompt(
+                        tokenizer,
+                        _finalization_question(
+                            _task_prompt(args.task, batch[index]),
+                            completions[index],
+                        ),
+                        args.adapter_checkpoint is not None,
+                        False,
+                    )
+                    for index in finalize_indices
+                ]
+                recovered, recovered_usage = _generate_completions(
                     model,
-                    encoded,
-                    generation_arguments,
-                    tokenizer.pad_token_id,
+                    tokenizer,
+                    finalize_rendered,
+                    args.adapter_checkpoint is not None,
+                    "greedy",
+                    args.finalize_max_new_tokens,
+                    stop_token_ids,
                 )
-                completion_ids = output
-        completions = tokenizer.batch_decode(completion_ids, skip_special_tokens=True)
-        completion_usage = [
-            _completion_usage(
-                token_row.tolist(),
-                stop_token_ids,
-                args.max_new_tokens,
-            )
-            for token_row in completion_ids
-        ]
-        for row, completion, (token_count, exhausted) in zip(
+                for index, recovered_text, recovered_count in zip(
+                    finalize_indices, recovered, recovered_usage, strict=True
+                ):
+                    finalizations[index] = recovered_text
+                    finalization_usage[index] = recovered_count
+        for row, completion, (token_count, exhausted), finalization, (
+            finalize_token_count,
+            finalize_exhausted,
+        ) in zip(
             batch,
             completions,
             completion_usage,
+            finalizations,
+            finalization_usage,
             strict=True,
         ):
             execution = None
@@ -742,16 +811,24 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 gold = "pass"
                 is_correct = bool(execution["passed"])
             else:
+                scoring_completion = completion
+                if finalization is not None and has_explicit_final_answer(finalization):
+                    scoring_completion = finalization
                 prediction = (
                     None
-                    if exhausted and not has_explicit_final_answer(completion)
-                    else task["extract"](completion)
+                    if exhausted
+                    and finalization is None
+                    and not has_explicit_final_answer(completion)
+                    else task["extract"](scoring_completion)
                 )
                 gold = task["gold"](row)
                 is_correct = bool(task["match"](prediction, gold))
             correct += int(is_correct)
-            generated_tokens += token_count
+            generated_tokens += token_count + finalize_token_count
             max_token_exhausted += int(exhausted)
+            finalization_attempts += int(finalization is not None)
+            finalization_generated_tokens += finalize_token_count
+            finalization_max_token_exhausted += int(finalize_exhausted)
             identity = _row_identity(args.task, row)
             results.append(
                 {
@@ -763,6 +840,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     "generated_tokens": token_count,
                     "max_token_exhausted": exhausted,
                     "completion": completion,
+                    "finalization_completion": finalization,
+                    "finalization_generated_tokens": finalize_token_count,
+                    "finalization_max_token_exhausted": finalize_exhausted,
                     "program": program,
                     "execution": execution,
                 }
@@ -809,6 +889,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "generated_tokens": generated_tokens,
         "max_token_exhausted": max_token_exhausted,
         "cap_exhausted_explicit_answer_required": True,
+        "finalize_exhausted": args.finalize_exhausted,
+        "finalize_max_new_tokens": args.finalize_max_new_tokens,
+        "finalization_attempts": finalization_attempts,
+        "finalization_generated_tokens": finalization_generated_tokens,
+        "finalization_max_token_exhausted": finalization_max_token_exhausted,
         "generated_tokens_per_second": generated_tokens / elapsed,
         "peak_gpu_memory_bytes": int(torch.cuda.max_memory_allocated()),
         "selection_sha256": hashlib.sha256(
@@ -837,6 +922,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--generation-seed", type=int, default=31)
     parser.add_argument("--batch-size", type=int, default=4)
     parser.add_argument("--max-new-tokens", type=int, default=768)
+    parser.add_argument(
+        "--finalize-exhausted", action=argparse.BooleanOptionalAction, default=False
+    )
+    parser.add_argument("--finalize-max-new-tokens", type=int, default=64)
     parser.add_argument("--code-timeout", type=float, default=8.0)
     parser.add_argument(
         "--generation-mode", choices=("greedy", "qwen-thinking"), default="greedy"
@@ -845,8 +934,13 @@ def parse_args() -> argparse.Namespace:
         "--enable-thinking", action=argparse.BooleanOptionalAction, default=True
     )
     args = parser.parse_args()
-    if args.batch_size <= 0 or args.max_new_tokens <= 0 or args.code_timeout <= 0:
-        parser.error("batch size and max-new-tokens must be positive")
+    if (
+        args.batch_size <= 0
+        or args.max_new_tokens <= 0
+        or args.finalize_max_new_tokens <= 0
+        or args.code_timeout <= 0
+    ):
+        parser.error("batch size and generation limits must be positive")
     return args
 
 
