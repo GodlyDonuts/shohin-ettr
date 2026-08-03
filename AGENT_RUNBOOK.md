@@ -26604,3 +26604,61 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `fix_the_verifier_then_batch_generation_to_fill_each_h100_and_collect_the_complete_fresh_bank_before_spending_any_update_on_self_training`.
+
+- **2026-08-03 16:50--17:15 EDT** -- **The verified rollout lane clears its
+  throughput gate, the complete single-H100 fan is released, and a separate
+  near-memory-limit math recovery wave is live instead of hiding a severe
+  domain imbalance behind the aggregate positive rate.**
+
+  Corrected batch-32 canary `733801` finishes with `8/32` prompts and `15/128`
+  candidates exactly correct at `612.64` generated tok/s. It uses 27.70GB
+  peak allocated memory. All eight positive prompts are science; math is
+  `0/12`, and `46/48` math candidates exhaust the 1,536-token draft budget.
+  Batch-64 `733802` then completes cleanly in 7m47s at `674.42` generated
+  tok/s and 49.20GB peak. It yields `16/64` positive prompts and `28/256`
+  correct candidates. The group split is science `15/39` positive prompts
+  and `27/156` correct candidates versus math `1/25` and `1/100`; `96/100`
+  math candidates exhaust the cap. Batch 64 is the admitted short-budget
+  production shape, but the 25% aggregate prompt rate must not be reported as
+  balanced reasoning progress.
+
+  Sixteen disjoint one-H100 jobs `733805--733820` are released over the full
+  8,192-prompt bank at K=4, batch 64, and 1,536 tokens. CPU aggregate
+  `733827` follows only after all shards and fails closed unless it validates
+  exact slice coverage, candidate identities/cardinality, immutable input
+  hashes, at least 512 total positives, and at least 128 positives from each
+  group. Aggregate commits `cbd4a4e/ab9215d` and immutable runtime
+  `product_rollout_aggregate_ab9215d_r1` preserve that contract. Trainer
+  commit `abd4876` adds exact trainable-state warm start with a fresh
+  optimizer and validates the model/arm/LoRA/unfreeze geometry before any
+  verified-rollout update.
+
+  The math failure predicts two competing causes: insufficient rollout
+  length versus insufficient autonomous problem-solving probability. Commit
+  `565325c` adds an optional strictly verified exhausted-draft finalization
+  pass without host arithmetic. Immutable Newton runtime
+  `product_rollouts_565325c_r1` has SHA256SUMS SHA-256
+  `4433065ce1bd7fc06b2b266062a08da2bdd52142d200b397d075d5a7444a0a51`.
+  Job `733837` tests the first mixed 64 prompts at K=4, 3,072 draft tokens,
+  batch 16, and a 64-token finalization pass. Seven disjoint successors
+  `733843--733849` extend the estimate to 512 prompts. The live canary uses
+  about 73.7/81.6GB and 98% H100 utilization; batch 16 is therefore the
+  measured safe maximum for this long budget. Its first 16 prompts produce
+  eight exact positives, but the group split remains unknown until the
+  atomic output closes. Pending successors have 40-minute ceilings; do not
+  infer a math lift from this aggregate prefix.
+
+  Both remaining data/dose writers also close cleanly. V12 late-two-layer
+  update 2,000 consumes `20,283,879` charged targets at `6,732.22` tok/s and
+  writes SHA-256
+  `39d74e57b50ae4593c20e3ef17e5b556f42ddb8c3464114e676ef8a5c5520eb5`.
+  Early fixed-board results are GSM8K `90/100`, HumanEval `2/20`, and MBPP
+  `3/20`: the math gain is accompanied by an early code regression, so this
+  is not a leader yet. V13 token-matched B1 update 7,500 consumes
+  `30,490,728` targets at `4,928.34` tok/s and writes SHA-256
+  `bfbe8239589f0b3d5b5fcc764f9422626890e33a0126c26fd84c2d1cfdff5a42`.
+  Its first results are GSM8K `85/100`, HumanEval `0/20`, MBPP `3/20`, AIME
+  `0/30`, and manual composition `7/12`; remaining domains continue.
+
+  Decision:
+  `run_the_complete_short_budget_collection_and_the_long_math_contingency_in_parallel_then_train_only_from_a_hash_validated_group_balanced_positive_corpus`.
