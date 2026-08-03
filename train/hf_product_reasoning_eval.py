@@ -92,6 +92,53 @@ def gold_gsm8k(row: dict[str, Any]) -> str | None:
     return _clean_number(match.group(1)) if match else None
 
 
+def gold_numeric_answer(row: dict[str, Any]) -> str | None:
+    return _clean_number(str(row.get("answer", "")))
+
+
+def _normalize_short_answer(value: str | None) -> str | None:
+    if value is None:
+        return None
+    normalized = re.sub(r"\s+", " ", value.strip()).strip(" .")
+    if re.fullmatch(r"\(?[A-Za-z]\)?", normalized):
+        normalized = normalized.strip("()").upper()
+    return normalized.casefold()
+
+
+def extract_short_answer(text: str) -> str | None:
+    boxed = _boxed_values(text)
+    if boxed:
+        return boxed[-1]
+    explicit = re.findall(
+        r"(?:answer|final answer)\s*(?:is|:)\s*([^\n]+)",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if explicit:
+        return explicit[-1].strip()
+    labels = re.findall(r"(?<![A-Za-z])\(([A-Z])\)(?![A-Za-z])", text)
+    if labels:
+        return labels[-1]
+    booleans = re.findall(r"\b(?:true|false|yes|no)\b", text, flags=re.IGNORECASE)
+    if booleans:
+        return booleans[-1]
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    return lines[-1] if lines else None
+
+
+def gold_short_answer(row: dict[str, Any]) -> str | None:
+    target = row.get("target") or row.get("answer")
+    return str(target) if target is not None else None
+
+
+def match_short_answer(prediction: str | None, gold: str | None) -> bool:
+    return (
+        prediction is not None
+        and gold is not None
+        and _normalize_short_answer(prediction) == _normalize_short_answer(gold)
+    )
+
+
 def gold_math(row: dict[str, Any]) -> str | None:
     for key in ("answer", "solution", "expected_answer"):
         value = row.get(key)
@@ -131,6 +178,18 @@ def match_math(prediction: str | None, gold: str | None) -> bool:
 
 
 TASKS: dict[str, dict[str, Any]] = {
+    "aime": {
+        "kind": "answer",
+        "extract": extract_gsm8k,
+        "gold": gold_numeric_answer,
+        "match": match_gsm8k,
+    },
+    "bbh_logic": {
+        "kind": "answer",
+        "extract": extract_short_answer,
+        "gold": gold_short_answer,
+        "match": match_short_answer,
+    },
     "gsm8k": {
         "kind": "answer",
         "extract": extract_gsm8k,
@@ -149,7 +208,7 @@ TASKS: dict[str, dict[str, Any]] = {
 
 
 def _question(row: dict[str, Any]) -> str:
-    for key in ("question", "problem", "prompt", "text"):
+    for key in ("question", "problem", "prompt", "text", "input"):
         value = row.get(key)
         if value:
             return str(value)
@@ -169,6 +228,11 @@ def _task_prompt(task: str, row: dict[str, Any]) -> str:
             "Write Python code that solves the task and passes every test. Return "
             "only executable Python code, without Markdown fences.\n\nTask:\n"
             f"{row['text']}\n\nTests:\n{tests}"
+        )
+    if task == "bbh_logic":
+        return (
+            f"{row['input']}\n\nReason carefully, then put only the exact requested "
+            "answer or option label inside \\boxed{}."
         )
     return _question(row)
 

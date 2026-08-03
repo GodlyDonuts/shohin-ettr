@@ -13,8 +13,11 @@ from hf_product_reasoning_eval import (
     _task_prompt,
     extract_boxed,
     extract_gsm8k,
+    extract_short_answer,
+    gold_numeric_answer,
     gold_gsm8k,
     match_math,
+    match_short_answer,
     select_rows,
 )
 
@@ -24,6 +27,7 @@ class ProductReasoningEvalTests(unittest.TestCase):
         self.assertEqual(extract_gsm8k("Work. Final answer: 1,234."), "1234")
         self.assertEqual(extract_boxed(r"Thus the result is \boxed{\frac{3}{4}}."), r"\frac{3}{4}")
         self.assertEqual(gold_gsm8k({"answer": "work\n#### -42"}), "-42")
+        self.assertEqual(gold_numeric_answer({"answer": "204"}), "204")
 
     def test_later_empty_box_instruction_does_not_hide_answer(self) -> None:
         transcript = r"Therefore \boxed{7}. Remember to use \boxed{}."
@@ -32,6 +36,11 @@ class ProductReasoningEvalTests(unittest.TestCase):
 
     def test_math_normalizes_fraction_command(self) -> None:
         self.assertTrue(match_math(r"\dfrac{1}{2}", r"\frac{1}{2}"))
+
+    def test_short_answer_scoring_handles_bbh_labels(self) -> None:
+        self.assertEqual(extract_short_answer(r"Therefore \boxed{(B)}."), "(B)")
+        self.assertTrue(match_short_answer("(b)", "(B)"))
+        self.assertTrue(match_short_answer("TRUE.", "True"))
 
     def test_subset_is_stable_and_unique(self) -> None:
         rows = [{"question": f"q{index}", "answer": "#### 1"} for index in range(10)]
