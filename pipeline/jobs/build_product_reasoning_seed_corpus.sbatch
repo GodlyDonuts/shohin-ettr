@@ -22,6 +22,9 @@ HF_HOME=${HF_HOME:-$HOME/.cache/huggingface}
 export HF_HOME
 export HF_HUB_ENABLE_HF_TRANSFER=1
 export TOKENIZERS_PARALLELISM=false
+export OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+export MKL_NUM_THREADS=1
 
 test -f "$RUNTIME/pipeline/build_product_reasoning_seed_corpus.py"
 test -f "$EVAL_DIR/gsm8k.jsonl"
