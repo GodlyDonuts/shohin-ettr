@@ -488,15 +488,13 @@ def _generation_stop_token_ids(tokenizer: Any) -> list[int]:
     stop_ids: list[int] = []
     if tokenizer.eos_token_id is not None:
         stop_ids.append(int(tokenizer.eos_token_id))
-    special_tokens = set(getattr(tokenizer, "all_special_tokens", ()))
     for token in ("<|im_start|>", "<|user|>", "<|assistant|>"):
-        if token not in special_tokens:
-            continue
         token_id = tokenizer.convert_tokens_to_ids(token)
         if (
             isinstance(token_id, int)
             and token_id >= 0
             and token_id != tokenizer.unk_token_id
+            and tokenizer.convert_ids_to_tokens(token_id) == token
             and token_id not in stop_ids
         ):
             stop_ids.append(token_id)

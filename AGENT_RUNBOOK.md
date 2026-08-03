@@ -87,6 +87,26 @@
 > Math-Verify `0.9.0` rescores the same completions at `18/100`, recognizing
 > three valid equivalents (fraction formatting, choice `E`, and `30` versus
 > `30^\circ`). Every arm must use this same v3 backend before aggregation.
+> **PRODUCT CAMPAIGN UPDATE — 2026-08-03 00:58 EDT:** The original matched
+> decode exposes a real evaluator/runtime defect: adapter generation did not
+> explicitly pass Qwen's tokenizer EOS ID, so T2 often emitted a valid
+> `<|im_end|>` and then continued into a synthetic `assistant`/`user` turn.
+> Saved-prefix rescoring predicted that stopping at the first turn boundary
+> would improve rather than erase the score. Exact H100 confirmation `729881`
+> is clean: T2 GSM8K becomes `44/100`, with zero leaked role turns, versus
+> B1 `32/100` and dense C2 `41/100` under semantic answer rescoring. Original
+> stopped-prefix scores are T2/B1/C2 MATH-500 `30/18/29` and BBH
+> `43/30/32`; T2 GPQA is `34/198` versus B1 `16/198`, but manual science
+> explanations often contain factual errors and 105/198 T2 rows exhaust the
+> token cap, so that number is answer accuracy rather than sophisticated
+> scientific reasoning. T2 code remains `0/20` HumanEval and `0/20` MBPP
+> versus B1 `2/20` and `0/20`. The V8 pilot is only 1.0% code and has no clean
+> science bucket; do not interpret the short run as a broad posttraining
+> recipe. Exact-turn-stop runtime is now required. Fully matched corrected
+> chains are jobs `729918--729935`, three serial arms over the same six
+> boards. C2's original GPQA job `729872` is allowed to finish; obsolete
+> pending C2 code jobs were canceled. The protected Shohin 300k baseline is
+> unchanged and no pretraining writer exists.
 >
 > **Last updated:** 2026-08-03 00:22 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256

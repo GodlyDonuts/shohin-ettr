@@ -28,6 +28,7 @@ def _write_arm(
             "effective_enable_thinking": False,
             "generation_mode": "greedy",
             "generation_seed": 31 if task != changed_seed_task else 99,
+            "generation_stop_token_ids": [248046, 248045],
             "max_new_tokens": 1024 if task in {"humaneval", "mbpp"} else 768,
             "selection_sha256": f"selection-{task}",
             "status": "complete",

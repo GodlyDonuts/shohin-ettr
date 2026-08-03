@@ -54417,3 +54417,32 @@ valid answers and yields `18/100`. The corrected rows are `\frac9{19}` versus
 `\frac{9}{19}`, choice `\text{(E)}` versus `E`, and `30^\circ` versus `30`.
 The verifier is installed in an isolated Newton target and its version is
 recorded in every v3 report.
+
+The first held-out treatment result is now a measurable product foothold. T2
+scores `44/100` on the exact GSM8K development board after an explicit
+EOS/chat-turn stop, versus `32/100` for same-data LoRA B1 and `41/100` for the
+parameter-matched untied dense residual C2. Eleven T2-correct cases are missed
+by both controls and contain explicit chained arithmetic rather than answer
+extractor accidents. On the original saved completions, semantically rescored
+MATH-500 is T2/B1/C2 `30/18/29`, and BBH logic is `43/30/32`. T2 therefore
+shows a small recurrence-specific margin over dense capacity on grade-school
+and competition math and a larger logic margin, while costing 2.83x B1's
+training time.
+
+This result also corrected a runtime defect. Adapter generation had not passed
+Qwen's tokenizer EOS ID explicitly; the model often emitted a valid
+`<|im_end|>` and then generated a fictitious next chat turn. Exact job `729881`
+stops correctly, removes every leaked role turn, and raises rather than lowers
+GSM8K to 44. Commit `2ee1f7b` records the repair. Full matched stop-contract
+chains `729918--729935` rerun all six boards for B1, T2, and C2 before final
+aggregation.
+
+The boundary of the result is equally important. T2 GPQA rises to `34/198`
+from B1's `16/198`, but 105 T2 rows exhaust the generation cap and direct
+inspection finds correct choices paired with flawed physics or chemistry
+explanations. T2 is also `0/20` on both HumanEval and MBPP, while B1 is `2/20`
+and `0/20`. V8 contains only 7,250 code rows (1.0%) and no clean science group.
+The current model has improved elementary calculation and answer selection; it
+has not yet earned a claim of sophisticated general reasoning. Verified
+science rationales, execution-verified code, and the fully matched corrected
+campaign are the next product gates.

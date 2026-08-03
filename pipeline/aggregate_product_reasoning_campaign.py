@@ -27,6 +27,7 @@ COMPARABILITY_FIELDS = (
     "generation_mode",
     "generation_seed",
     "max_new_tokens",
+    "generation_stop_token_ids",
     "subset_seed",
     "effective_enable_thinking",
     "total",

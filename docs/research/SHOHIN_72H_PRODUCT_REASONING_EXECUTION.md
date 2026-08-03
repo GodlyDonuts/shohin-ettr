@@ -2,7 +2,7 @@
 
 Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 
-## Live Scoreboard (2026-08-03 00:22 EDT)
+## Live Scoreboard (2026-08-03 00:58 EDT)
 
 | Result | Status |
 |---|---:|
@@ -22,9 +22,14 @@ Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 | `T2` exact 16-row/100-update fit | NLL 1.168 -> 0.455; -61.0%; 16/16 improved |
 | `B1` matched short train | complete; 200 updates; 429,658 charged target tokens; 1,133.9 charged tok/s; 9.10 GB peak |
 | `T2` matched short train | complete; 200 updates; 429,658 charged target tokens; 401.2 charged tok/s; 19.78 GB peak |
-| `C2` matched short train | running as job `729856`; identical data/order/budget |
+| `C2` matched short train | complete; 200 updates; 429,658 charged target tokens; 410.9 charged tok/s; 19.68 GB peak |
 | `B1` matched GSM8K | 32/100 after answer-extraction rescore |
 | `B1` matched MATH-500 | 18/100 under Math-Verify 0.9.0; raw exact-string report was 15/100 |
+| `T2` matched GSM8K, explicit EOS/turn stop | **44/100**, zero leaked role turns; +12 over B1, +3 over C2 |
+| `T2` matched MATH-500, stopped-prefix semantic score | 30/100; B1 18, C2 29 |
+| `T2` matched BBH logic, stopped-prefix score | 43/100; B1 30, C2 32 |
+| `T2` matched GPQA, original decode | 34/198; B1 16/198; 105/198 T2 cap-exhausted and explanations remain unreliable |
+| `T2` matched executable code | HumanEval 0/20; MBPP 0/20; broad promotion blocked |
 
 Transcript inspection shows the deterministic thinking score is strongly
 affected by decode behavior: many GSM8K completions calculate the right value
@@ -139,6 +144,27 @@ For MATH-500, the v3 lane uses isolated Hugging Face Math-Verify `0.9.0`.
 B1 rises from raw exact-string `15/100` to `18/100` because three predictions
 are mathematically equivalent to their references. The backend and version
 are embedded in each rescored report.
+
+The first treatment board exposed an adapter-generation defect before any
+promotion decision. Qwen's tokenizer EOS token was not passed explicitly to
+`generate`, so a completion could emit the correct `<|im_end|>` delimiter and
+then continue into another synthetic chat turn. Those later turns were decoded
+as literal `assistant`/`user` text and sometimes contradicted an earlier
+correct result. A saved-prefix audit showed that removing the invalid suffix
+raises T2 GSM8K from 42 to 44 and leaves MATH/BBH at 30/43. Exact H100 job
+`729881` confirms T2 GSM8K `44/100` with zero leaked role turns. Runtime commit
+`2ee1f7b` passes EOS explicitly and stops on exact turn delimiters. The fully
+matched corrected campaign is `729918--729935`; every B1/T2/C2 board must use
+the same recorded stop-token IDs before final aggregation.
+
+Manual behavior remains part of the gate. Eleven GSM8K cases are solved by
+T2 that neither control solves, with explicit multi-step arithmetic for rates,
+inventory, proportions, and totals. Conversely, several T2-only GPQA answers
+select the correct option while giving dimensionally or chemically incorrect
+explanations. Current evidence is therefore a credible elementary-math and
+logic foothold, not sophisticated general reasoning. The immediate corpus
+repair is verified science rationale and executable code, where V8 is plainly
+underrepresented.
 
 ## Compared Systems
 

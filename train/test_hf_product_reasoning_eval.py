@@ -39,6 +39,9 @@ class ProductReasoningEvalTests(unittest.TestCase):
             unk_token_id=0,
             all_special_tokens=["<|im_start|>", "<|im_end|>"],
             convert_tokens_to_ids=lambda token: {"<|im_start|>": 9}.get(token, 0),
+            convert_ids_to_tokens=lambda token_id: {9: "<|im_start|>"}.get(
+                token_id, "<unk>"
+            ),
         )
         self.assertEqual(_generation_stop_token_ids(tokenizer), [2, 9])
 
