@@ -276,11 +276,11 @@ def parse_args() -> argparse.Namespace:
         args.samples <= 1
         or args.samples > 8
         or args.prompt_batch_size <= 0
-        or args.prompt_batch_size > 16
+        or args.prompt_batch_size > 64
         or args.max_new_tokens <= 0
     ):
         parser.error(
-            "samples must be in [2, 8], prompt batch size in [1, 16], and "
+            "samples must be in [2, 8], prompt batch size in [1, 64], and "
             "generation limit must be positive"
         )
     return args
