@@ -26367,3 +26367,34 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `treat_decode_budget_and_final_answer_emission_as_measured_product_levers_keep_training_data_repairs_separate_and_preserve_every_partial_checkpoint_before_walltime`.
+
+- **2026-08-03 14:33--14:40 EDT** -- **All three V12 training arms are live,
+  the one-H100 queue is saturated with useful work, and update-1,000 evidence
+  will arrive before the writers terminate.**
+
+  V12 B1 `731325` is healthy through update 340 at about `6.81k` charged
+  target tok/s. Wide `731326` is healthy through update 200 at about `5.82k`
+  tok/s. Late-two-layer `731919` started on `evc23` and is healthy through
+  update 140 at about `6.64k` tok/s. Loss and gradient norms are finite in all
+  three arms. At the queue check, 13 one-H100 jobs were running and 91
+  independent one-H100 requests were runnable in addition to dependency-held
+  result fans. Normal-partition priority, not an undersized request queue, is
+  the current allocation constraint.
+
+  B1 and wide checkpoint every 1,000 updates. Eighteen independent delayed
+  evaluation jobs `732542--732559` now target their update-1,000 checkpoints
+  across GSM8K, MATH, HumanEval, MBPP, GPQA, BBH, AIME, fresh science, and the
+  12-example direct-interaction board. They use the same fixed 768-token,
+  thinking-disabled development protocol as the historical small-board curve.
+  They fail fast if a writer misses the projected checkpoint time and never
+  share a training output. Existing update-2,000 and final fans remain intact.
+
+  The first expanded-board outputs are also durable. Late-500 scores
+  HumanEval `33/164`, unique MBPP `116/499`, GPQA `24/198`, and AIME `2/30`.
+  Wide-3,000 scores HumanEval `36/164` and fresh science `85/500`; its final
+  AIME worker started after reducing the still-pending wall request from three
+  hours to 45 minutes. Remaining expanded domains are still running, so these
+  are partial product measurements rather than a macro.
+
+  Decision:
+  `keep_many_single_h100_jobs_but_require_each_allocation_to_answer_a_distinct_checkpoint_domain_or_failure-contingency_question`.
