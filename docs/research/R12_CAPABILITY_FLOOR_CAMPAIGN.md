@@ -275,3 +275,13 @@ changes. The frozen source tensor is held fixed while the typed preceding state
 is swapped. A binding-capable probe must predict the opposite-WORLD target and
 remain renderer-stable; a syntax-only probe instead preserves the original
 label. This scorer cannot alter weights or choose candidates.
+
+The no-tap fallback is implemented but remains held until the frozen-depth
+decision. `train/capability_floor_byte_rail.py` maps each of the eight bytes in
+an allowed public role atom to a distinct `(within-atom position, ASCII byte)`
+coordinate. The resulting 1,024-wide sparse role vector is lossless for that
+atom, shared across all candidate backbones, and contains no AST class,
+operation family, target, or oracle successor. It uses the same probe, exact
+state, 128/128 core population, 2,000 updates, and evaluator. A failure here
+localizes the defect beyond backbone token compression; a pass permits an
+architectural source rail only after source-matched binding also passes.

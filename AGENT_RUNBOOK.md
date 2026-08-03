@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 20:45 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 20:51 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -25584,7 +25584,7 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `train/jobs/extract_capability_floor_layer_taps.sbatch` and
   `train/jobs/fit_capability_floor_layer_tap.sbatch`. They fail closed on
   missing hashes, reject unsupported taps, publish no-overwrite checksum-bound
-  outputs, and never write the protected checkpoint. Fifty-one focused
+  outputs, and never write the protected checkpoint. Fifty-five focused
   capability-floor tests pass, plus Ruff, Python compilation, both Slurm shell
   syntax checks, and `git diff --check`. No H100 job has been submitted from
   this source yet; it must first be committed, pushed privately, and rebuilt as
@@ -25601,6 +25601,16 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   and cannot select a tap. Two focused tests cover causal filtering and reject
   source-byte mismatch. It will run only for a tap that first crosses the clean
   and renderer gates.
+
+  The forced no-tap successor is also implemented, but not launched.
+  `train/capability_floor_byte_rail.py` losslessly represents each allowed
+  eight-byte public role atom in 1,024 sparse `(within-atom position, ASCII
+  byte)` coordinates. It supplies no parser class, family, target, or oracle
+  successor and uses the unchanged exact state/probe/update/evaluator contract.
+  CPU materialization and H100 fit launchers are
+  `train/jobs/materialize_capability_floor_byte_rail.sbatch` and
+  `train/jobs/fit_capability_floor_byte_rail.sbatch`. This branch is released
+  only if every frozen tap misses the 95% clean/orbit gate.
 
   Private source commit `6fd7c94ed37488daa9230b689629f980db9fc5a0`
   is pushed to `origin/main`. Its 832,839,680-byte git archive has SHA-256

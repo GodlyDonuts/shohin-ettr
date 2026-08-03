@@ -54222,3 +54222,12 @@ and swaps the typed preceding state. Predicting the opposite-WORLD target is
 the positive criterion; retaining the original label diagnoses syntax-only
 classification. This removes the logically invalid requirement that a global
 state shuffle erase family signal already present in public syntax.
+
+The fallback byte rail is now mechanically defined rather than hypothetical.
+For every permitted public role atom it creates one sparse coordinate for each
+exact `(byte position, ASCII byte)` pair, preserving all eight ordered bytes in
+1,024 dimensions. It is a fixed model input representation, not a parser label,
+and both ETTR and a dense control would receive it identically. This is the
+strongest source-legal test of the compression hypothesis: if it also misses
+95%, the family/state interface itself must change rather than the backbone or
+tokenizer.
