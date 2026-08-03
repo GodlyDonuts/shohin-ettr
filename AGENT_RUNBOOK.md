@@ -26811,3 +26811,23 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `continue_full_unique_slice_coverage_because_both_streams_are_now_empirically_above_quota_and_additional_verified_rows_raise_training_value`.
+
+- **2026-08-03 19:32 EDT** -- **The complete short-budget stream is admitted
+  and every long-math production shard has started.**
+
+  Repair `733972` completes cleanly at batch 32 in 64m37s. Aggregate `733827`
+  then validates all 8,192 bank rows, 32,768 candidate identities, report and
+  file hashes, and exact slice coverage in six seconds. It admits 2,324
+  verified prompts: 524 math and 1,800 science, a 28.37% prompt yield with
+  4,525 correct candidates. Aggregate report SHA-256 is
+  `e3440ed6ac07f97cf69eec821ca0b3d7ff7698083b04834cfb07772b5a29d232`;
+  positives SHA-256 is
+  `009a49df27090102a846d80e0a10d1b4ceb8c26bb452f0b77b5db25cde0dba3b`.
+
+  Long-math production reaches 13 completed and 19 running shards: all 32
+  unique slices have now received one H100. No production shard remains
+  pending. Merge `733924` correctly stays dependency-held until the complete
+  long-math aggregate closes.
+
+  Decision:
+  `accept_the_hash_validated_short_stream_and_wait_only_for_complete_long_math_coverage_before_the_staged_merge_replay_warmstart_chain`.
