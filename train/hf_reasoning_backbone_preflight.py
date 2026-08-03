@@ -41,7 +41,6 @@ def _package_version(name: str) -> str | None:
 
 def _load_model(model_root: Path):
     import torch
-    from transformers import AutoModelForCausalLM
 
     common = {
         "pretrained_model_name_or_path": str(model_root),
@@ -52,6 +51,20 @@ def _load_model(model_root: Path):
     }
     attempts: list[dict[str, str]] = []
     try:
+        from transformers import AutoModelForMultimodalLM
+
+        return AutoModelForMultimodalLM.from_pretrained(**common), attempts
+    except Exception as exc:  # pragma: no cover - depends on installed Transformers
+        attempts.append(
+            {
+                "loader": "AutoModelForMultimodalLM",
+                "error": f"{type(exc).__name__}: {exc}"[:2000],
+            }
+        )
+
+    try:
+        from transformers import AutoModelForCausalLM
+
         return AutoModelForCausalLM.from_pretrained(**common), attempts
     except Exception as exc:  # pragma: no cover - depends on installed Transformers
         attempts.append(
@@ -113,6 +126,7 @@ def run_preflight(args: argparse.Namespace) -> dict[str, Any]:
             messages,
             tokenize=False,
             add_generation_prompt=True,
+            enable_thinking=True,
         )
     else:  # pragma: no cover - current candidates have chat templates
         rendered = args.prompt
@@ -154,6 +168,7 @@ def run_preflight(args: argparse.Namespace) -> dict[str, Any]:
         ),
         "dtype": str(next(model.parameters()).dtype),
         "prompt": args.prompt,
+        "thinking_mode_requested": True,
         "rendered_prompt": rendered,
         "completion": completion,
         "prompt_tokens": prompt_tokens,
