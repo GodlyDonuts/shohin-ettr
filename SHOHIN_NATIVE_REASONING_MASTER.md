@@ -54604,7 +54604,7 @@ reaches 1,095.8 tok/s. BS16/ACC1 OOMs for both architectural arms at about
 `730036/730037/730038`, exact board chains, strict aggregate `730057`, and
 AIME jobs `730058--730060` are active.
 
-## SmolLM3 V11 Scale and Sealed Milestone (2026-08-03)
+## SmolLM3 V11 Scale and Expanded Full-Board Milestone (2026-08-03)
 
 The V11 campaign establishes a useful but bounded practical result. Both arms
 use exact SmolLM3 revision `a07cc9a04f16550a088caea529712d1d335b0ac1`, the
@@ -54628,7 +54628,7 @@ about 2.10 passes over the 8,005,985-token stream. Five thousand updates
 consume 28,042,427 targets, about 3.50 passes, and regress both arms. More
 replay is not more capability.
 
-The selected checkpoints were then evaluated on the sealed full boards:
+The selected checkpoints were then evaluated on the expanded full boards:
 
 | Domain | B1 | C2 | Delta C2-B1 |
 |---|---:|---:|---:|
@@ -54648,12 +54648,32 @@ are valid derivations. Sampled C2-only GPQA answers often contain factual or
 quantitative errors, so the science score cannot be called trustworthy
 scientific reasoning.
 
+This full-board result is not wholly sealed. The full reports contain the
+100/20-row development subsets used for checkpoint selection, and GPQA/AIME
+were already consumed in full during development. Exact identity subtraction
+leaves 3,392 previously unopened GSM8K/MATH/code/BBH examples:
+
+| Non-overlapping remainder | B1 | C2 |
+|---|---:|---:|
+| GSM8K | 922/1219 (75.64%) | 982/1219 (80.56%) |
+| MATH | 160/400 (40.00%) | 195/400 (48.75%) |
+| executable code | 111/623 (17.82%) | 92/623 (14.77%) |
+| BBH logic | 589/1150 (51.22%) | 512/1150 (44.52%) |
+| four-domain macro | **46.168%** | **47.149%** |
+| solved | **1,782/3,392** | 1,781/3,392 |
+
+C2's domain reallocation generalizes, but broad solved count does not improve
+on unopened rows. A fresh science board is required before any sealed
+five-domain claim.
+
 The arms are complementary. An oracle domain choice gives 43.894% macro and
 2,102/3,930 solved by selecting C2 for GSM8K/MATH/GPQA and B1 for code/logic.
-That ceiling is not a model score. The only justified architectural follow-up
-is a learned prompt gate trained on ordinary source-domain labels, with both
-3k experts frozen and one unchanged sealed evaluation. More globally active
-dense-workspace duration/width variants are not justified.
+On the unopened four-domain remainder, the same policy gives 49.586% macro
+and 1,877/3,392 solved. These ceilings are not model scores. The only
+justified architectural follow-up is a learned prompt gate trained on
+ordinary source-domain labels, with both 3k experts frozen and one unchanged
+remainder evaluation. More globally active dense-workspace duration/width
+variants are not justified.
 
 Direct interaction supports the same bounded diagnosis. On twelve new manual
 composition questions, B1 solves 5 and C2 solves 8. C2 correctly preserves a

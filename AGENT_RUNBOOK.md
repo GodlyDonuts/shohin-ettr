@@ -104,7 +104,8 @@
 > `28,042,427` targets, about 3.50 passes, and reduced held-out capability.
 > Do not select the final checkpoint merely because it trained longer.
 >
-> The sealed 3k milestone opens all `1,319` GSM8K, `500` MATH-500, `164`
+> The expanded 3k full-board milestone opens all `1,319` GSM8K, `500`
+> MATH-500, `164`
 > HumanEval, `499` unique MBPP, `198` GPQA-Diamond, and `1,250` BBH-logic
 > problems (`3,930` total; AIME-2024 is reported separately). B1/C2 score:
 > GSM8K `1009/1067`, MATH `203/244`, executable code `116/97` of 663,
@@ -115,12 +116,24 @@
 > the macro lift is below three points and the code/logic regressions exceed
 > two points.
 >
-> A domain-routed static ceiling chooses C2 for GSM8K/MATH/GPQA and B1 for
-> code/logic, reaching `43.894%` macro and `2,102/3,930` solved. This is not a
-> model result. It authorizes one learned prompt-gate experiment over the two
-> frozen 3k adapters; it does not authorize more globally active C2 duration
-> or width variants. The router must be trained without sealed labels and
-> evaluated once on the unchanged full board.
+> Claim correction: the expanded board contains the 100/20-row development
+> subsets used for checkpoint selection; GPQA and AIME were already consumed
+> in full during development. It is not entirely sealed. Exact identity
+> subtraction leaves 3,392 previously unopened GSM/MATH/code/BBH examples.
+> On this non-overlapping remainder B1/C2 solve `1,782 / 1,781` and reach
+> `46.168% / 47.149%` four-domain macro. C2's math gains therefore trade
+> almost one-for-one against code/logic losses rather than producing a broad
+> solved-count gain.
+>
+> An expanded-board static ceiling chooses C2 for GSM8K/MATH/GPQA and B1 for
+> code/logic, reaching `43.894%` macro and `2,102/3,930` solved. On only the
+> unopened four-domain remainder, the analogous ceiling is `49.586%` and
+> `1,877/3,392` solved. Neither is a model result. The remainder ceiling
+> authorizes one learned prompt-gate experiment over the two frozen 3k
+> adapters; it does not authorize more globally active C2 duration or width
+> variants. The router must be trained without any evaluation labels and
+> evaluated once on the unchanged remainder. A genuinely fresh science board
+> is still required for a sealed five-domain claim.
 >
 > Direct interaction on twelve hand-written composition problems is B1/C2
 > `5/12 / 8/12`. C2 preserves a cents conversion and emits completed

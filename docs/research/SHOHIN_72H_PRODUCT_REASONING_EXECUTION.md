@@ -61,11 +61,12 @@ Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 | V11i 1k/3k/5k B1 macro | 34.42% / **40.03%** / 37.53%; 178 / **207** / 197 solved |
 | V11i 1k/3k/5k C2 macro | 37.12% / **42.44%** / 40.84%; 186 / **226** / 212 solved |
 | selected V11i checkpoint | 3,000 updates; 16,783,669 charged targets; about 2.10 corpus passes |
-| sealed full B1/C2 macro | 39.960% / **42.104%** over 3,930 tasks; 1,989 / 2,007 solved |
-| sealed C2 gains | GSM8K +58, MATH +41, GPQA +14 answers |
-| sealed C2 regressions | executable code -19, BBH logic -76, AIME -1 |
-| sealed promotion decision | C2 is best single arm but **fails broad gate**: +2.144 macro and material code/logic regressions |
-| static domain-routing ceiling | 43.894% macro / 2,102 solved; diagnostic ceiling, not a model result |
+| expanded full-board B1/C2 macro | 39.960% / **42.104%** over 3,930 tasks; 1,989 / 2,007 solved; includes development subsets |
+| expanded-board C2 gains | GSM8K +58, MATH +41, GPQA +14 answers |
+| expanded-board C2 regressions | executable code -19, BBH logic -76, AIME -1 |
+| non-overlapping remainder B1/C2 | 46.168% / 47.149% four-domain macro; 1,782 / 1,781 solved of 3,392 |
+| promotion decision | C2 is best single arm but **fails broad gate**; unopened solved count does not improve |
+| static domain-routing ceiling | expanded 43.894% / 2,102 solved; unopened remainder 49.586% / 1,877 solved; neither is a model result |
 | direct manual composition B1/C2 | 5/12 / 8/12; both still fail four combinatorial/state-composition prompts |
 
 ## Decisive U1000 Result
