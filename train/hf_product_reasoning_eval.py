@@ -140,7 +140,16 @@ def gold_numeric_answer(row: dict[str, Any]) -> str | None:
 def _normalize_short_answer(value: str | None) -> str | None:
     if value is None:
         return None
-    normalized = re.sub(r"\s+", " ", value.strip()).strip(" .")
+    normalized = re.sub(r"\s+", " ", value.strip()).strip("$ ")
+    while True:
+        wrapped = re.fullmatch(
+            r"\\(?:text|textrm|mathrm|mathbf|operatorname)\s*\{([^{}]*)\}",
+            normalized,
+        )
+        if wrapped is None:
+            break
+        normalized = wrapped.group(1).strip()
+    normalized = normalized.strip(" .,:;\"'")
     if re.fullmatch(r"\(?[A-Za-z]\)?", normalized):
         normalized = normalized.strip("()").upper()
     return normalized.casefold()

@@ -97,6 +97,8 @@ class ProductReasoningEvalTests(unittest.TestCase):
         self.assertEqual(extract_short_answer(r"Therefore \boxed{(B)}."), "(B)")
         self.assertTrue(match_short_answer("(b)", "(B)"))
         self.assertTrue(match_short_answer("TRUE.", "True"))
+        self.assertTrue(match_short_answer(r"\text{False}", "False"))
+        self.assertTrue(match_short_answer(r"\mathrm{D}", "(D)"))
 
     def test_gpqa_prompt_contains_only_labeled_choices(self) -> None:
         row = {
