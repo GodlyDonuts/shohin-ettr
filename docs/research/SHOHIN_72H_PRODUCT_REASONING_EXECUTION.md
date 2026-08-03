@@ -733,3 +733,30 @@ development delta with real solved examples and no evaluator artifact. Strong
 success is a dev-gate pass plus improvement on the sealed public milestone.
 If neither occurs, the campaign still ends with a hard capacity/interface
 decision rather than another open-ended synthetic experiment.
+
+## Live Product Scoreboard (2026-08-03 16:18 EDT)
+
+| System | Decode | Five-domain dev macro | Key result |
+|---|---:|---:|---|
+| V11 late-500 | 768 | 36.6% | prior locked leader |
+| V11 late-500 | 1,536 | 41.6% | same weights, longer reasoning |
+| V11 late-500 + finalizer | 768 + bounded 64 | 42.0% | efficient answer-commitment repair |
+| V12 late-1,000 | 768 | 38.2% | 10.22M verified charged targets |
+| **V12 late-1,000** | **1,536** | **45.4%** | **current product leader** |
+| V12 B1-2,000 | 768 | 35.9% | broad adapter below leader |
+| V12 wide-2,000 | 768 | 33.5% | closed negative |
+| V13 late-1,000 | 768 | 35.7% | underexposed at 4.11M targets |
+
+The macro is GSM8K, MATH, code mean, GPQA, and BBH. V12 late-1,000 at 1,536
+tokens scores `81/48/30/16/52`, with science `30`, AIME `0`, and manual
+composition `10/12`. Expanded full-board jobs `733119--733126` are active or
+independently pending. Token-matched V13 jobs `732605/732606` and their result
+fan `732607--732624` test whether its equal-update loss was only target-length
+underexposure. V12 late-layer 2,000-update job `733201` and evaluators
+`733212--733220` test the single direct dose-response question.
+
+At peak this campaign used 14 concurrent single-H100 jobs. This is deliberate:
+the small models scale poorly with DDP, while independent training arms and
+domain evaluators scale nearly linearly across allocations. Every current H100
+request has a distinct product decision attached to it; unhealthy nodes
+`evc33/evc43` remain excluded.

@@ -54782,3 +54782,24 @@ futures to twice the worker count, and fsyncs every 100 checked rows for exact
 resume. Replacement `761230` uses the same candidate bytes, dataset revision,
 all tests, and 48 workers under a 12-hour limit. Mix builder `761231` remains
 strictly after-success and cannot consume a partial audit.
+
+### Current product leader (2026-08-03)
+
+The strongest practical system is no longer the V11 late-500 checkpoint.
+Late-two-layer V12 update 1,000, trained on 10.22M charged targets from the
+verified 16M-token V12 mixture, reaches a five-domain development macro of
+38.2% at the locked 768-token budget and 45.4% at a deterministic 1,536-token
+reasoning budget. The long-budget domain scores are GSM8K 81, MATH 48, code
+mean 30, GPQA 16, and BBH 52. It also scores science 30, AIME 0, and 10/12 on
+the direct-interaction composition board. This is a 3.8-point macro gain over
+the previous long-decode leader and establishes a reproducible product
+advance from the verified data mix plus late-layer release.
+
+The boundary is equally important. The model is not yet a robust hard
+reasoner: AIME remains at zero, GPQA is weak, and increasing decode length
+does not improve code. A deterministic final-answer repair reaches a 42.0%
+macro on V11 late-500 with a bounded 64-token second pass, showing that some
+remaining loss is answer commitment rather than missing derivation. The
+full-board V12 confirmation, token-exposure-matched V13 comparison, and V12
+late-layer 2,000-update dose response are active. No native ETTR claim is made
+from these adapter results; they are the practical reasoning-product track.

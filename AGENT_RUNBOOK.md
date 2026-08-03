@@ -26429,3 +26429,67 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `use_1536_as_the_candidate_deployment_reasoning_budget_keep_768_for_historical_comparability_and_measure_v12_checkpoint_curves_in_parallel`.
+
+- **2026-08-03 14:57--16:18 EDT** -- **V12 late-layer update 1,000 is the
+  new product leader, 14 H100s were used concurrently, and both a full-board
+  confirmation and a higher-dose continuation are active.**
+
+  Late-two-layer V12 job `731919` completed 1,000 updates cleanly in 26m07s.
+  It consumed `10,222,554` charged target tokens and wrote
+  `checkpoint_0001000.pt` with SHA-256
+  `e4b71f466fc6db2891aa024b1dd0ab7061e455a7c23a48467076093df913709f`.
+  At the locked 768-token development budget it scores GSM8K `80/100`, MATH
+  `19/100`, HumanEval `5/20`, MBPP `7/20`, GPQA `12/100`, BBH `50/100`, AIME
+  `0/30`, and fresh science `22/100`. Code mean is `30.0%`; the five-domain
+  macro is `38.2%`.
+
+  With the same weights and deterministic 1,536-token thinking-enabled
+  decode, the scores are GSM8K `81/100`, MATH `48/100`, HumanEval `5/20`,
+  MBPP `7/20`, GPQA `16/100`, BBH `52/100`, AIME `0/30`, fresh science
+  `30/100`, and manual composition `10/12`. Code mean remains `30.0%`; the
+  five-domain macro is `45.4%`. This is `+3.8` points over the previous V11
+  late-500 long-decode leader (`41.6%`). It is a meaningful product gain, but
+  not a solved hard-reasoning system: AIME remains zero and GPQA is only 16%.
+
+  Eight independent expanded-board workers `733119--733126` cover all 1,319
+  GSM8K, 500 MATH, 164 HumanEval, 499 unique MBPP, 198 GPQA, 1,250 BBH, 30
+  AIME, and 500 fresh-science examples at 1,536 tokens. The first three
+  started immediately; the remaining five are normal-partition
+  priority/resource pending and will backfill healthy H100s independently.
+
+  Deterministic capped-trace finalization is also now a credible efficiency
+  path. Private commit `8d0f195` repeats the strict one-box command after the
+  draft so the model does not merely continue a capped trace. Its immutable
+  Newton runtime is `scratchpad/product_finalize_8d0f195_r1`; the SHA256SUMS
+  file hashes to
+  `3c75c65efe5f6c224b50f9b59ccd9d858c72f9eb9b2bc98e9c83b0834918f646`.
+  On V11 late-500 it reaches GSM8K `79`, MATH `46`, code mean `15`, GPQA `23`,
+  BBH `47`, science `48`, AIME `2`, and manual `9/12`, for a five-domain
+  macro of `42.0%`. This 64-token second pass is used only for cap-exhausted
+  answer traces and performs no host arithmetic or search.
+
+  V12 B1 `731325` completed 3,000 updates in 1h14m19s, writing final SHA-256
+  `bc7c6c18706821c6cb515ebacb18b7db9ab84ca23d5c86d6967bfc39e43c1373`.
+  Its update-2,000 board is GSM8K `85`, MATH `22`, HumanEval `3/20`, MBPP
+  `0/20`, GPQA `16`, BBH `49`, AIME `0`, and science `22`; the five-domain
+  macro is `35.9%`. V12 wide `731326` timed out after preserving update 2,000
+  with SHA-256
+  `f644c2310e9369e3342b24c8384c6d7d4bb53af459ffbeda9ea3e262839b36cf`.
+  Its update-2,000 five-domain macro is `33.5%`; the wide V12 arm is closed.
+
+  Equal-update V13 is confounded by shorter procedural targets. Its 1,000
+  late-layer updates expose only `4,110,266` charged target tokens and score
+  a `35.7%` macro, while V13 B1 exposes `12,101,428` tokens in 3,000 updates.
+  Token-exposure-matched jobs `732605/732606` therefore run to 7,500/2,500
+  updates. At 16:14 EDT both are healthy near `9.8M` target tokens and about
+  `4.9k` target tok/s; evaluators `732607--732624` are dependency-staged.
+
+  To exploit available H100s without small-model DDP overhead, the winning
+  V12 late-layer recipe was extended as independent 2,000-update job `733201`.
+  Nine locked 768-token comparison workers `733212--733220` are staged
+  `afterok`. Together with the full-board and token-matched fans, this keeps
+  a large queue of useful single-H100 work ready while preserving independent
+  outputs and excluding unhealthy `evc33/evc43`.
+
+  Decision:
+  `promote_v12_late_u1000_at_1536_as_current_product_leader_validate_on_full_boards_and_test_only_the_direct_u2000_dose_response_while_v13_is_token_exposure_matched`.
