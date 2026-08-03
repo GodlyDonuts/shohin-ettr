@@ -26,6 +26,7 @@ GRADIENT_ACCUMULATION=${GRADIENT_ACCUMULATION:-8}
 MAX_ROWS=${MAX_ROWS:-100000}
 MAX_SEQUENCE_LENGTH=${MAX_SEQUENCE_LENGTH:-1024}
 STAGE_MODEL=${STAGE_MODEL:-true}
+DENSE_WIDTH=${DENSE_WIDTH:-192}
 
 test -x "$PYTHON"
 test -f "$RUNTIME/train/hf_product_reasoning_train.py"
@@ -67,4 +68,5 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
   --batch-size "$BATCH_SIZE" \
   --gradient-accumulation "$GRADIENT_ACCUMULATION" \
   --max-rows "$MAX_ROWS" \
-  --max-sequence-length "$MAX_SEQUENCE_LENGTH"
+  --max-sequence-length "$MAX_SEQUENCE_LENGTH" \
+  --dense-width "$DENSE_WIDTH"

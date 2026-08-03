@@ -218,6 +218,11 @@ def _load_model(model_root: Path, adapter_checkpoint: Path | None):
         workspace_width=int(workspace.get("workspace_width", 512)),
         workspace_slots=int(workspace.get("workspace_slots", 16)),
         recurrent_steps=int(workspace.get("recurrent_steps", 8)),
+        dense_width=(
+            int(workspace.get("workspace_width", 192))
+            if metadata["arm"] == "dense"
+            else 192
+        ),
     ).to("cuda:0")
     update, restored_metadata = load_trainable_checkpoint(adapter_checkpoint, model)
     model.eval()

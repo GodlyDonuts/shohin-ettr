@@ -18,8 +18,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from integrated_reasoning_workspace import (
+    DenseReasoningWorkspace,
     IntegratedReasoningWorkspace,
     IntegratedWorkspaceConfig,
+    dense_workspace_architecture_sha256,
     workspace_architecture_sha256,
 )
 
@@ -203,9 +205,10 @@ class ProductReasoningModel(nn.Module):
         workspace_width: int,
         workspace_slots: int,
         recurrent_steps: int,
+        dense_width: int = 192,
     ) -> None:
         super().__init__()
-        if arm not in {"baseline", "ettr"}:
+        if arm not in {"baseline", "ettr", "dense"}:
             raise ProductReasoningTrainError("training arm differs")
         self.backbone = backbone
         self.arm = arm
@@ -228,17 +231,21 @@ class ProductReasoningModel(nn.Module):
             raise ProductReasoningTrainError("no text projections received LoRA")
 
         self.workspace_config: IntegratedWorkspaceConfig | None = None
-        self.workspace: IntegratedReasoningWorkspace | None = None
-        if arm == "ettr":
+        self.workspace: IntegratedReasoningWorkspace | DenseReasoningWorkspace | None = None
+        if arm in {"ettr", "dense"}:
+            effective_width = workspace_width if arm == "ettr" else dense_width
             self.workspace_config = IntegratedWorkspaceConfig(
                 backbone_width=hidden_size,
-                workspace_width=workspace_width,
+                workspace_width=effective_width,
                 workspace_slots=workspace_slots,
                 recurrent_steps=recurrent_steps,
                 attention_heads=8,
                 ff_multiplier=4,
             )
-            self.workspace = IntegratedReasoningWorkspace(self.workspace_config)
+            if arm == "ettr":
+                self.workspace = IntegratedReasoningWorkspace(self.workspace_config)
+            else:
+                self.workspace = DenseReasoningWorkspace(self.workspace_config)
 
     def trainable_parameter_count(self) -> int:
         return sum(parameter.numel() for parameter in self.parameters() if parameter.requires_grad)
@@ -482,6 +489,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         args.workspace_width,
         args.workspace_slots,
         args.recurrent_steps,
+        args.dense_width,
     ).to("cuda:0")
     model.train()
     trainable_parameters = [
@@ -519,12 +527,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "workspace_config": (
             asdict(model.workspace_config) if model.workspace_config else None
         ),
-        "workspace_architecture_sha256": (
-            workspace_architecture_sha256(model.workspace_config)
-            if model.workspace_config
-            else None
-        ),
+        "workspace_architecture_sha256": None,
     }
+    if model.workspace_config is not None:
+        metadata["workspace_architecture_sha256"] = (
+            workspace_architecture_sha256(model.workspace_config)
+            if args.arm == "ettr"
+            else dense_workspace_architecture_sha256(model.workspace_config)
+        )
 
     torch.cuda.reset_peak_memory_stats()
     optimizer.zero_grad(set_to_none=True)
@@ -535,7 +545,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     microstep = 0
     while update < args.updates:
         raw_batch = batch_stream[microstep % len(batch_stream)]
-        workspace_slots = args.workspace_slots if args.arm == "ettr" else 0
+        workspace_slots = args.workspace_slots if args.arm != "baseline" else 0
         prompt_rows, response_rows = _tokenize_rows(
             tokenizer,
             raw_batch,
@@ -616,7 +626,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-revision", required=True)
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--arm", choices=("baseline", "ettr"), required=True)
+    parser.add_argument("--arm", choices=("baseline", "ettr", "dense"), required=True)
     parser.add_argument("--updates", type=int, default=200)
     parser.add_argument("--batch-size", type=int, default=2)
     parser.add_argument("--gradient-accumulation", type=int, default=8)
@@ -627,6 +637,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lora-rank", type=int, default=8)
     parser.add_argument("--lora-alpha", type=float, default=16.0)
     parser.add_argument("--workspace-width", type=int, default=512)
+    parser.add_argument("--dense-width", type=int, default=192)
     parser.add_argument("--workspace-slots", type=int, default=16)
     parser.add_argument("--recurrent-steps", type=int, default=8)
     parser.add_argument("--seed", type=int, default=31)
@@ -643,6 +654,7 @@ def parse_args() -> argparse.Namespace:
         args.lora_layers,
         args.lora_rank,
         args.workspace_width,
+        args.dense_width,
         args.workspace_slots,
         args.recurrent_steps,
         args.log_interval,

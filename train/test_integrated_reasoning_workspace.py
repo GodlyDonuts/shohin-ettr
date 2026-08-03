@@ -8,6 +8,7 @@ import unittest
 import torch
 
 from integrated_reasoning_workspace import (
+    DenseReasoningWorkspace,
     IntegratedReasoningWorkspace,
     IntegratedWorkspaceConfig,
     IntegratedWorkspaceError,
@@ -69,6 +70,24 @@ class IntegratedReasoningWorkspaceTests(unittest.TestCase):
             workspace_architecture_sha256(self.config),
             workspace_architecture_sha256(self.config),
         )
+
+    def test_dense_control_is_capacity_matched_and_finite(self) -> None:
+        recurrent = IntegratedReasoningWorkspace(
+            IntegratedWorkspaceConfig(backbone_width=1024, workspace_width=512)
+        )
+        dense = DenseReasoningWorkspace(
+            IntegratedWorkspaceConfig(backbone_width=1024, workspace_width=192)
+        )
+        relative = abs(
+            recurrent.trainable_parameter_count() - dense.trainable_parameter_count()
+        ) / recurrent.trainable_parameter_count()
+        self.assertLess(relative, 0.05)
+        output = dense(
+            torch.randn(2, 7, 1024),
+            torch.ones(2, 7, dtype=torch.long),
+        )
+        self.assertEqual(output.prefix_states.shape, (2, 16, 1024))
+        self.assertTrue(torch.isfinite(output.prefix_states).all())
 
 
 if __name__ == "__main__":

@@ -189,6 +189,72 @@ class IntegratedReasoningWorkspace(nn.Module):
         return sum(parameter.numel() for parameter in self.parameters())
 
 
+class DenseReasoningWorkspace(nn.Module):
+    """Capacity-matched untied control for the recurrent workspace."""
+
+    def __init__(self, config: IntegratedWorkspaceConfig) -> None:
+        super().__init__()
+        config.validate()
+        self.config = config
+        self.prompt_projection = nn.Linear(
+            config.backbone_width, config.workspace_width, bias=False
+        )
+        self.initial_slots = nn.Parameter(
+            torch.empty(config.workspace_slots, config.workspace_width)
+        )
+        self.cells = nn.ModuleList(
+            TiedWorkspaceCell(config) for _ in range(config.recurrent_steps)
+        )
+        self.output_norm = nn.LayerNorm(config.workspace_width)
+        self.output_projection = nn.Linear(
+            config.workspace_width, config.backbone_width, bias=False
+        )
+        nn.init.normal_(self.initial_slots, mean=0.0, std=0.02)
+
+    def forward(
+        self,
+        prompt_features: torch.Tensor,
+        prompt_attention_mask: torch.Tensor,
+    ) -> IntegratedWorkspaceOutput:
+        if prompt_features.ndim != 3:
+            raise IntegratedWorkspaceError("prompt features must have rank three")
+        batch, tokens, width = prompt_features.shape
+        if width != self.config.backbone_width:
+            raise IntegratedWorkspaceError("prompt feature width differs")
+        if prompt_attention_mask.shape != (batch, tokens):
+            raise IntegratedWorkspaceError("prompt attention mask geometry differs")
+        if not torch.isfinite(prompt_features).all():
+            raise IntegratedWorkspaceError("prompt features contain nonfinite values")
+        active = prompt_attention_mask.to(dtype=torch.bool)
+        if not active.any(dim=1).all():
+            raise IntegratedWorkspaceError("every prompt must contain an active token")
+
+        prompt = self.prompt_projection(prompt_features)
+        state = self.initial_slots.unsqueeze(0).expand(batch, -1, -1)
+        stop_logits: list[torch.Tensor] = []
+        step_deltas: list[torch.Tensor] = []
+        for cell in self.cells:
+            state, stop_logit, delta = cell(state, prompt, ~active)
+            stop_logits.append(stop_logit)
+            step_deltas.append(delta.square().mean(dim=(1, 2)).sqrt())
+        prefix = self.output_projection(self.output_norm(state))
+        return IntegratedWorkspaceOutput(
+            prefix_states=prefix,
+            workspace_states=state,
+            stop_logits=torch.stack(stop_logits, dim=1),
+            step_deltas=torch.stack(step_deltas, dim=1),
+        )
+
+    def halting_regularizer(self, output: IntegratedWorkspaceOutput) -> torch.Tensor:
+        probabilities = output.stop_logits.sigmoid()
+        monotone_penalty = F.relu(probabilities[:, :-1] - probabilities[:, 1:]).mean()
+        final_penalty = (1.0 - probabilities[:, -1]).mean()
+        return monotone_penalty + final_penalty
+
+    def trainable_parameter_count(self) -> int:
+        return sum(parameter.numel() for parameter in self.parameters())
+
+
 def workspace_architecture_sha256(config: IntegratedWorkspaceConfig) -> str:
     config.validate()
     payload = {
@@ -196,6 +262,20 @@ def workspace_architecture_sha256(config: IntegratedWorkspaceConfig) -> str:
         "config": asdict(config),
         "mechanism": (
             "prompt-projection+learned-slots+tied-cross-self-gated-cell+soft-prefix"
+        ),
+    }
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+
+
+def dense_workspace_architecture_sha256(config: IntegratedWorkspaceConfig) -> str:
+    config.validate()
+    payload = {
+        "schema": "shohin-dense-reasoning-workspace-control-v1",
+        "config": asdict(config),
+        "mechanism": (
+            "prompt-projection+learned-slots+untied-cross-self-gated-cells+soft-prefix"
         ),
     }
     return hashlib.sha256(
