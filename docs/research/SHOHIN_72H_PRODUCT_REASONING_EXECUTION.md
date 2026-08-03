@@ -2,7 +2,7 @@
 
 Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 
-## Live Scoreboard (2026-08-03 00:10 EDT)
+## Live Scoreboard (2026-08-03 00:22 EDT)
 
 | Result | Status |
 |---|---:|
@@ -21,8 +21,9 @@ Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 | `C2` exact 16-row/100-update fit | NLL 1.154 -> 0.457; -60.4%; 16/16 improved |
 | `T2` exact 16-row/100-update fit | NLL 1.168 -> 0.455; -61.0%; 16/16 improved |
 | `B1` matched short train | complete; 200 updates; 429,658 charged target tokens; 1,133.9 charged tok/s; 9.10 GB peak |
-| `T2` matched short train | running as job `729855`; identical data/order/budget |
-| `C2` matched short train | pending as job `729856`; identical data/order/budget |
+| `T2` matched short train | complete; 200 updates; 429,658 charged target tokens; 401.2 charged tok/s; 19.78 GB peak |
+| `C2` matched short train | running as job `729856`; identical data/order/budget |
+| `B1` matched GSM8K | 32/100 after answer-extraction rescore |
 
 Transcript inspection shows the deterministic thinking score is strongly
 affected by decode behavior: many GSM8K completions calculate the right value
@@ -128,6 +129,11 @@ gate passes.
 decode/data comparability, the five-domain numeric gates, and the dense-control
 comparison. It deliberately leaves transcript coherence as a required manual
 gate rather than inferring it from aggregate accuracy.
+`pipeline/rescore_product_reasoning_report.py` replays answer extraction over
+saved completions, so evaluator fixes never require or alter model generation.
+The first use corrected one GSM8K false negative (`2.00` versus `2`) and one
+truncation-driven false positive (`1 dollar 40 cents` parsed as `1`); B1's net
+score remains `32/100`.
 
 ## Compared Systems
 

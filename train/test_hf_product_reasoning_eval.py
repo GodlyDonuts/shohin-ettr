@@ -18,6 +18,7 @@ from hf_product_reasoning_eval import (
     gold_numeric_answer,
     gold_gsm8k,
     match_math,
+    match_gsm8k,
     match_short_answer,
     select_rows,
 )
@@ -33,6 +34,13 @@ class ProductReasoningEvalTests(unittest.TestCase):
         self.assertEqual(extract_boxed(r"Thus the result is \boxed{\frac{3}{4}}."), r"\frac{3}{4}")
         self.assertEqual(gold_gsm8k({"answer": "work\n#### -42"}), "-42")
         self.assertEqual(gold_numeric_answer({"answer": "204"}), "204")
+
+    def test_gsm8k_normalizes_numeric_equivalence_and_currency_phrases(self) -> None:
+        transcript = "Work. The answer is 1 dollar 40 cents."
+        self.assertEqual(extract_gsm8k(transcript), "1.4")
+        self.assertTrue(match_gsm8k("2.00", "2"))
+        self.assertTrue(match_gsm8k("3/4", "0.75"))
+        self.assertFalse(match_gsm8k(extract_gsm8k(transcript), "1"))
 
     def test_later_empty_box_instruction_does_not_hide_answer(self) -> None:
         transcript = r"Therefore \boxed{7}. Remember to use \boxed{}."

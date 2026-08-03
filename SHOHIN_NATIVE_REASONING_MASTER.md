@@ -54395,3 +54395,18 @@ OpenScienceReasoning-2/OpenMathReasoning revisions and admit only exact
 normalized agreement between a generated final answer and the provided
 reference, followed by complete benchmark overlap replay. Their pending
 outputs are not training data until the atomic reports and hashes exist.
+
+T2 has completed the matched 200-update short run. It consumes the exact same
+429,658 charged target tokens as B1, but needs 1,070.8 seconds instead of
+378.9: `401.2` versus `1,133.9` charged tokens/second. Peak GPU memory is
+19.78 GB versus B1's 9.10 GB. The final logged minibatch language loss is
+`0.335` versus B1's `0.392`, but the 2.83x throughput cost makes held-out
+solved examples the only acceptable justification for recurrence.
+
+B1's first matched public board is GSM8K `32/100`. Direct transcript review
+found two opposing evaluator errors: decimal-equivalent `2.00` was rejected
+against `2`, while a truncated `1 dollar 40 cents` response was extracted as
+`1` and credited against gold `1`. Numeric/currency normalization plus a
+saved-completion rescorer correct both without GPU regeneration; the net B1
+score remains `32/100`. All arms will be rescored through this same path
+before aggregation.

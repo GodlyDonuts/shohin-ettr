@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+from decimal import Decimal, InvalidOperation
+from fractions import Fraction
 import hashlib
 import json
 import os
@@ -36,6 +38,19 @@ def extract_gsm8k(text: str) -> str | None:
     ]
     if boxed_numbers:
         return boxed_numbers[-1]
+    currency = re.findall(
+        r"(?:answer|final answer)\s*(?:is|:)\s*\$?\s*"
+        r"(-?[\d,]+)\s+dollars?(?:\s+and)?\s+([\d,]+)\s+cents?",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if currency:
+        dollars, cents = currency[-1]
+        sign = -1 if dollars.startswith("-") else 1
+        amount = Decimal(dollars.replace(",", "")) + sign * (
+            Decimal(cents.replace(",", "")) / Decimal(100)
+        )
+        return format(amount, "f")
     explicit = re.findall(
         r"(?:answer|final answer)\s*(?:is|:)\s*\$?\s*(-?[\d,]+(?:\.\d+)?)",
         text,
@@ -150,11 +165,25 @@ def gold_math(row: dict[str, Any]) -> str | None:
 
 
 def match_gsm8k(prediction: str | None, gold: str | None) -> bool:
-    return (
-        prediction is not None
-        and gold is not None
-        and _clean_number(prediction) == _clean_number(gold)
-    )
+    if prediction is None or gold is None:
+        return False
+    predicted_number = _clean_number(prediction)
+    gold_number = _clean_number(gold)
+    if predicted_number is None or gold_number is None:
+        return False
+
+    def numeric_fraction(value: str) -> Fraction | None:
+        try:
+            if "/" in value:
+                numerator, denominator = value.split("/", 1)
+                return Fraction(int(numerator), int(denominator))
+            return Fraction(Decimal(value))
+        except (InvalidOperation, ValueError, ZeroDivisionError):
+            return None
+
+    predicted_fraction = numeric_fraction(predicted_number)
+    gold_fraction = numeric_fraction(gold_number)
+    return predicted_fraction is not None and predicted_fraction == gold_fraction
 
 
 def _normalize_math(value: str | None) -> str | None:

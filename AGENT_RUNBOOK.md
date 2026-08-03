@@ -31,7 +31,7 @@
 > claims are secondary to answer-quality deltas. The active 72-hour queue is
 > `docs/research/SHOHIN_72H_PRODUCT_REASONING_EXECUTION.md`.
 >
-> **PRODUCT CAMPAIGN STATUS — 2026-08-03 00:10 EDT:** Frozen
+> **PRODUCT CAMPAIGN STATUS — 2026-08-03 00:22 EDT:** Frozen
 > `Qwen/Qwen3.5-0.8B@2fc06364715b967f1860aea9cf38778875588b17`
 > now has directly measured baselines: GSM8K `17/100`, MATH-500 `4/100`,
 > AIME-2024 `0/30`, BBH logic `13/100`, HumanEval `3/20`, and MBPP `5/20`
@@ -49,8 +49,11 @@
 > six-board evaluations `729858--729875` dependency-bound. B1 completed 200
 > updates and 429,658 charged target tokens in 378.9 seconds (1,133.9 charged
 > tok/s, 9.10 GB peak GPU memory); its logged minibatch language loss moves
-> from `1.305` at update 1 to `0.392` at update 200. T2 is running unchanged
-> on `evc24`; C2 remains pending. Do not compare answer capability until all
+> from `1.305` at update 1 to `0.392` at update 200. T2 also completed 200
+> updates and the same 429,658 charged tokens in 1,070.8 seconds (401.2
+> charged tok/s, 19.78 GB peak); its logged minibatch language loss moves from
+> `1.254` to `0.335`. T2 is therefore 2.83x slower than B1 and must buy a
+> material answer-quality gain. C2 is running on `evc44`. Do not compare answer capability until all
 > three checkpoints finish their identical boards. Official GPQA-Diamond is frozen at 198 rows under source commit
 > `56686c06f5e19865c153de0fdb11be3890014df7`; baseline `729846` is queued.
 > OpenThoughts jobs `729807 -> 729848` completed: 64,938 unique seed rows,
@@ -75,8 +78,13 @@
 > `pipeline/aggregate_product_reasoning_campaign.py` is the fail-closed
 > campaign scorer; it validates matched report contracts and computes the
 > five-domain numeric gate, but transcript coherence remains manual.
+> B1's first matched board is GSM8K `32/100`. A transcript audit exposed one
+> false-negative `2.00` versus `2` and one false-positive truncation of
+> `1 dollar 40 cents` to `1`; evaluator numeric/currency normalization and
+> `pipeline/rescore_product_reasoning_report.py` repair both without repeating
+> generation. The corrected net score remains `32/100`.
 >
-> **Last updated:** 2026-08-03 00:10 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-03 00:22 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
