@@ -616,6 +616,13 @@ locked 768-token view: MATH `46/100` versus `26/100`, GPQA `21/100` versus
 manual composition `10/12` versus `7/12`. GSM8K, code, and BBH long-decode
 shards are required before computing a consistent macro.
 
+Those shards now complete. The consistent 1,536-token late-500 board is
+GSM8K `79/100`, MATH `46/100`, HumanEval `2/20`, MBPP `4/20`, GPQA `21/100`,
+and BBH `47/100`. The five-domain macro is `41.6%` when code is the mean of
+HumanEval and MBPP percentages, versus `36.6%` for identical weights under
+the locked 768-token budget. This promotes 1,536 tokens for deployment trials
+without changing the historical experimental protocol.
+
 ## Execution Queue
 
 ### Hours 0--6: make the backbone and measurements real

@@ -54763,6 +54763,13 @@ show robust hard reasoning: the remaining manual errors include one unit
 binding failure and one correct CRT derivation that loops without committing
 the answer.
 
+The remaining 1,536-token domains subsequently complete: GSM8K is 79/100,
+HumanEval 2/20, MBPP 4/20, and BBH 47/100. With code represented by the mean
+of HumanEval and MBPP percentages, the consistent five-domain macro is 41.6%,
+up from 36.6% for the identical late-500 weights at 768 tokens. This promotes
+1,536 tokens as the current candidate deployment reasoning budget while the
+768-token board remains the locked experimental comparison.
+
 ### TACO audit durability correction (2026-08-03)
 
 The 9,000-candidate all-test audit `761178` timed out after six hours without

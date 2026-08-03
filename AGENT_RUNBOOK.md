@@ -26398,3 +26398,34 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `keep_many_single_h100_jobs_but_require_each_allocation_to_answer_a_distinct_checkpoint_domain_or_failure-contingency_question`.
+
+- **2026-08-03 14:40--14:57 EDT** -- **The first V12 checkpoints are
+  immutable, both V13 arms are training, and a consistent long-decode board
+  establishes a five-point product gain.**
+
+  V12 B1 passes update 1,000 and writes
+  `checkpoint_0001000.pt` with SHA-256
+  `d15064f124c82e619a8237cf9995232b11c127c36d9fde8f4152978008f0a097`.
+  Its nine update-1,000 evaluators are `732542--732550`. V12 late-two-layer
+  writes update 500 with SHA-256
+  `949941c56515dda4e9b710f6207eb22b34a1ab00c6b43d8a10fe81bffcdc0c80`;
+  nine immediate matched evaluators are `732581--732589`. These establish
+  checkpoint curves while all writers continue. V12 wide is still healthy
+  and approaching its first update-1,000 checkpoint.
+
+  Both V13 arms now run concurrently: B1 `732353` is healthy through update
+  730 at about `5.17k` charged target tok/s, while late-two-layer `732354` is
+  healthy through update 590 at about `5.02k` tok/s. V12 B1/wide/late and V13
+  B1/late therefore occupy five independent training H100s; eight concurrent
+  evaluation H100s keep aggregate allocation at 13.
+
+  The now-complete late-500 1,536-token board is GSM8K `79/100`, MATH
+  `46/100`, HumanEval `2/20`, MBPP `4/20`, GPQA `21/100`, and BBH `47/100`.
+  Treating code as the mean of HumanEval and MBPP percentages gives a
+  five-domain macro of `41.6%`, versus `36.6%` for the same checkpoint at the
+  locked 768-token budget. Fresh science is `46/100`, AIME is `2/30`, and
+  direct manual composition is `10/12`. This is a real same-weight product
+  gain from enough decode budget, not a training or search claim.
+
+  Decision:
+  `use_1536_as_the_candidate_deployment_reasoning_budget_keep_768_for_historical_comparability_and_measure_v12_checkpoint_curves_in_parallel`.
