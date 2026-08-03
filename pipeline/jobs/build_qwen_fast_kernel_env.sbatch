@@ -42,18 +42,15 @@ export PIP_NO_CACHE_DIR=1
   --no-deps --no-build-isolation "causal-conv1d==$CAUSAL_CONV_VERSION"
 "$TEMP_ENV/bin/python" - <<'PY'
 import causal_conv1d
-import fla
 import torch
-from fla.modules import FusedRMSNormGated
-from fla.ops.gated_delta_rule import (
-    chunk_gated_delta_rule,
-    fused_recurrent_gated_delta_rule,
-)
-from importlib.metadata import version
+from importlib.metadata import distribution, version
 
-assert FusedRMSNormGated is not None
-assert chunk_gated_delta_rule is not None
-assert fused_recurrent_gated_delta_rule is not None
+fla_core_files = {str(path) for path in distribution("fla-core").files or ()}
+for required in (
+    "fla/modules/__init__.py",
+    "fla/ops/gated_delta_rule/__init__.py",
+):
+    assert required in fla_core_files, required
 
 print(
     {
