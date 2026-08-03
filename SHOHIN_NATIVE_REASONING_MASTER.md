@@ -54301,3 +54301,43 @@ prompt, preserves math/code/science source metadata, removes exact and
 13-gram benchmark overlap, applies degeneration checks, and marks every
 teacher trace unverified. Code and science enter the promoted corpus only
 after execution or answer verification, respectively.
+
+The first complete product baseline exposes the actual capability floor.
+Frozen Qwen3.5-0.8B scores GSM8K `17/100`, MATH-500 `4/100`, AIME-2024
+`0/30`, BBH logic `13/100`, HumanEval `3/20`, and MBPP `5/20` under the
+recorded deterministic configurations. These are strict emitted-answer or
+executable-test results. Product evaluator v2 records per-example generated
+tokens and cap exhaustion because code transcript review found both genuine
+algorithm defects and responses truncated mid-function.
+
+The first integrated workspace is rejected as the interface to scale. On the
+exact same 16 held-in examples and 100 updates, same-data LoRA reduces
+token-weighted NLL by 54.9%, the parameter-matched dense soft-prefix control by
+43.2%, and tied recurrent T1 by only 35.8%. All improve 16/16 examples, so the
+data path is learnable; T1 simply fails to earn its added compute. Its single
+replacement is T2, a gated prompt-residual workspace. T2 reads frozen token
+embeddings, runs the same tied recurrent core, and injects a near-zero residual
+into existing late prompt positions. It therefore starts close to the LoRA
+function, adds no sequence positions, and avoids the duplicate full-backbone
+prompt pass. Two-update H100 mechanics pass at 181.1 charged target tok/s;
+the matched dense residual reaches 202.5 tok/s. Their exact fit gate is active
+before any real-board training.
+
+The data lane is also fail-closed at the product boundary. OpenThoughts3 is
+deduplicated to one trace per question and remains teacher-unverified. A
+second no-replace admission pass binds the source hash and removes exact and
+13-gram overlap against GSM8K, MATH, HumanEval, MBPP, AIME, BBH logic, and the
+official 198-row GPQA-Diamond board. The GPQA source is pinned to commit
+`56686c06f5e19865c153de0fdb11be3890014df7`; its deterministic answer
+permutation is balanced `A/B/C/D = 49/45/50/54`, and two official rows with
+duplicate distractors are disclosed rather than silently altered.
+
+The residual interface's matched dense control has completed its exact
+16-example gate. C2 moves token-weighted NLL from `1.154` to `0.457`, a 60.4%
+reduction with all 16 examples improved. This exceeds the same-data LoRA
+reduction of 54.9%, so prompt-residual injection is a credible trainable
+interface, but it is not evidence for recurrence: the untied dense control is
+currently best. T2 must match or beat that result and then produce a held-out
+public-board delta. Its first exact-fit allocation on `evc33` entered an
+NVIDIA-driver lock before checkpointing; that hardware-invalid run was
+canceled and preserved, and the unchanged replacement excludes the node.

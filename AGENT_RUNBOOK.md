@@ -31,7 +31,30 @@
 > claims are secondary to answer-quality deltas. The active 72-hour queue is
 > `docs/research/SHOHIN_72H_PRODUCT_REASONING_EXECUTION.md`.
 >
-> **Last updated:** 2026-08-02 22:15 EDT. The protected 300k flagship remains immutable and
+> **PRODUCT CAMPAIGN STATUS — 2026-08-02 23:38 EDT:** Frozen
+> `Qwen/Qwen3.5-0.8B@2fc06364715b967f1860aea9cf38778875588b17`
+> now has directly measured baselines: GSM8K `17/100`, MATH-500 `4/100`,
+> AIME-2024 `0/30`, BBH logic `13/100`, HumanEval `3/20`, and MBPP `5/20`
+> under the recorded deterministic configurations. The old soft-prefix T1
+> learns all 16 held-in examples but reduces token-weighted NLL only 35.8%,
+> versus 54.9% for same-data LoRA and 43.2% for its dense control; do not scale
+> T1 unchanged. Its one allowed replacement is a gated prompt-residual
+> workspace that removes the duplicate backbone pass and random sequence
+> extension. Two-update H100 smokes `729829/729830` pass at 181.1/202.5
+> charged target tok/s. Dense residual C2 completed its exact gate at NLL
+> `1.154 -> 0.457` (`-60.4%`, `16/16` improved), ahead of LoRA's `-54.9%`.
+> T2 job `729837` produced no checkpoint after an `evc33` NVIDIA-driver lock;
+> it was canceled as hardware-invalid evidence and replaced unchanged by
+> `729849 -> 729850` with that node excluded. Official GPQA-Diamond is frozen at 198 rows under source commit
+> `56686c06f5e19865c153de0fdb11be3890014df7`; baseline `729846` is queued.
+> OpenThoughts seed build `729807` remains healthy, and post-admission job
+> `729848` replays every math/code/logic/science board before that corpus can
+> train a model. Fast Qwen kernels remain unpromoted until H100 canary `729847`
+> matches the base outputs and improves wall time. Product evaluator v2 records
+> per-sample generated tokens and cap exhaustion; corrected 1,024-token
+> HumanEval/MBPP jobs are `729851/729852`.
+>
+> **Last updated:** 2026-08-02 23:38 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,

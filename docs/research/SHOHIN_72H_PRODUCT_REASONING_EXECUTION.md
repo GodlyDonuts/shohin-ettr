@@ -2,15 +2,22 @@
 
 Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 
-## Live Scoreboard (2026-08-02 22:15 EDT)
+## Live Scoreboard (2026-08-02 23:38 EDT)
 
 | Result | Status |
 |---|---:|
 | frozen Qwen, GSM8K deterministic thinking, 100-row hash subset | 17/100 |
 | frozen Qwen, MATH-500 deterministic thinking, same subset size | 4/100 |
-| `B1` LoRA two-update H100 mechanics | pass; 0.902M trainable, 2.37 GB peak |
-| `T1` recurrent workspace two-update H100 mechanics | pass; 6.690M trainable, 3.62 GB peak |
-| `C1` dense control capacity match | implemented; workspace is 0.825% smaller than `T1` |
+| frozen Qwen, AIME-2024 | 0/30 |
+| frozen Qwen, BBH logic hash subset | 13/100 |
+| frozen Qwen, HumanEval executable subset | 3/20; 15% |
+| frozen Qwen, MBPP executable subset | 5/20; 25% |
+| `B1` exact 16-row/100-update fit | NLL 1.232 -> 0.555; -54.9%; 16/16 improved |
+| `T1` soft-prefix exact fit | NLL 1.240 -> 0.796; -35.8%; 16/16 improved; reject unchanged scaling |
+| `C1` dense-prefix exact fit | NLL 1.225 -> 0.695; -43.2%; 16/16 improved |
+| `T2` gated residual mechanics | pass; 6.690M trainable; 181.1 charged tok/s |
+| `C2` gated dense residual mechanics | pass; 6.642M trainable; 202.5 charged tok/s |
+| `C2` exact 16-row/100-update fit | NLL 1.154 -> 0.457; -60.4%; 16/16 improved |
 
 Transcript inspection shows the deterministic thinking score is strongly
 affected by decode behavior: many GSM8K completions calculate the right value
@@ -18,6 +25,28 @@ inside a long plan, then exhaust the 768-token limit before producing the
 requested final answer. Frozen no-thinking controls and official sampling are
 therefore running. This is a decoding diagnosis, not permission to count an
 unemitted answer as correct.
+
+The original T1 interface is not advancing. It learned the bounded fit set,
+but less efficiently than both controls and incurred severe score-time
+latency. The one permitted redesign keeps the tied recurrent core while
+reading frozen token embeddings and adding a near-zero gated residual to the
+existing prompt positions. This removes the second full Qwen prompt pass and
+the 16 random soft-prefix positions. C2 completed its exact gate and now leads
+the bounded fit comparison at a 60.4% NLL reduction, ahead of LoRA's 54.9%.
+The original T2 job `729837` encountered an `evc33` NVIDIA-driver lock before
+writing a checkpoint and was canceled as hardware-invalid evidence. Its empty
+output was preserved with an aborted-job suffix. Unchanged replacement
+`729849` excludes `evc33`, with scorer `729850`; no duration or width variant
+follows a negative result.
+
+Evaluator schema v2 now records per-example token usage and explicit
+max-token exhaustion. The first HumanEval run exposed both real algorithm
+errors and mid-function truncation, so code milestone scores are rerun at
+1,024 generated tokens before promotion (`729851/729852`). Official
+GPQA-Diamond has been
+normalized from exact source commit
+`56686c06f5e19865c153de0fdb11be3890014df7`: 198 rows, deterministic balanced
+answer permutation, and two disclosed duplicate-distractor rows.
 
 ## Objective
 
@@ -75,25 +104,26 @@ gate passes.
 |---|---|
 | `B0` frozen/pretrained | establishes native checkpoint capability and evaluator health |
 | `B1` LoRA SFT | ordinary same-data post-training baseline |
-| `T1` integrated ETTR + LoRA | practical recurrent-workspace treatment |
-| `C1` dense adapter + LoRA | capacity/compute control without tied recurrent workspace |
+| `T2` integrated ETTR residual + LoRA | practical recurrent-workspace treatment |
+| `C2` dense residual adapter + LoRA | capacity/compute control without tied recurrence |
 
-`T1` is an end-to-end language model, not a composition of separately fitted
+`T2` is an end-to-end language model, not a composition of separately fitted
 compiler, reactor, and reader checkpoints:
 
-1. The backbone encodes the entire problem prompt.
-2. Learned queries compress prompt hidden states into 16 workspace slots.
+1. Frozen token embeddings expose the entire problem prompt to the workspace.
+2. Learned queries compress those embeddings into 16 workspace slots.
 3. One tied gated recurrent cell updates those slots for 8 internal steps
    while cross-attending to the prompt. A learned STOP head is trained, but
    the first bounded gate also reports fixed-step behavior.
-4. The final workspace becomes learned soft-prefix state before rationale and
-   answer tokens.
+4. The final workspace is projected back into existing late prompt positions
+   through a near-zero initialized residual gate; it adds no sequence tokens
+   and does not run the full backbone twice.
 5. Workspace, prompt projection, STOP/readout, and backbone LoRA parameters are
    optimized jointly from rationale and final-answer losses.
 
-`C1` receives the same prompt features, parameter budget, update count, and a
+`C2` receives the same prompt features, parameter budget, update count, and a
 matched number of dense transformations, but its transformations are untied.
-If `C1` matches or beats `T1`, recurrence/ETTR has not earned inclusion even if
+If `C2` matches or beats `T2`, recurrence/ETTR has not earned inclusion even if
 both beat `B1`.
 
 ## Data Contract
@@ -171,7 +201,7 @@ Deliverable: three trainable arms that generate answers from identical prompts.
 
 ### Hours 18--36: matched short training
 
-1. Train `B1`, `T1`, and `C1` on the same frozen mixed stream for the same
+1. Train `B1`, `T2`, and `C2` on the same frozen mixed stream for the same
    charged target-token and update budgets.
 2. Reserve separate H100s when available so wall-clock queue differences do
    not become training differences.
@@ -187,10 +217,10 @@ throughput, VRAM, and transcripts.
 
 | Result | Action |
 |---|---|
-| `T1` clears the promotion gate and beats `C1` | scale Qwen data/update budget and run sealed milestone |
-| `T1` beats `B1` but not `C1` | retain the practical adapter gain; remove unsupported ETTR claim |
+| `T2` clears the promotion gate and beats `C2` | scale Qwen data/update budget and run sealed milestone |
+| `T2` beats `B1` but not `C2` | retain the practical adapter gain; remove unsupported ETTR claim |
 | all trained arms improve equally | improve data/post-training; architecture is not the current lever |
-| `T1` fails while `B1` improves | redesign workspace-to-backbone injection once |
+| `T2` fails while `B1` improves | move to the backbone fallback; the one injection redesign is spent |
 | all arms fail to learn | fix data formatting/trainer/evaluator before any model conclusion |
 | corrected Qwen treatment remains flat | move the identical campaign to SmolLM3-3B |
 
@@ -215,8 +245,8 @@ scaling helps. Parallelism is across informative arms and evaluations:
 |---|---:|
 | Qwen baseline evaluation | 1 |
 | `B1` training | 1 |
-| `T1` training | 1 |
-| `C1` training | 1 |
+| `T2` training | 1 |
+| `C2` training | 1 |
 | independent evaluation workers | 2 |
 | SmolLM3 fallback/profile | 2--4 |
 

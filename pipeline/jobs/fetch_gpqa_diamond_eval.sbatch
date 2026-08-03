@@ -15,8 +15,9 @@ set -euo pipefail
 : "${OUTPUT:?OUTPUT is required}"
 : "${REPORT:?REPORT is required}"
 
-PYTHON=${PYTHON:-python3}
+PYTHON=${PYTHON:-/lustre/fs1/home/sa305415/shohin/envs/product-reasoning-b3a3603-r2/bin/python}
 SEED=${SEED:-20260802}
+test -x "$PYTHON"
 test -f "$RUNTIME/pipeline/fetch_gpqa_diamond_eval.py"
 test ! -e "$OUTPUT"
 test ! -e "$REPORT"
