@@ -1,7 +1,15 @@
 # R12 Frozen-Backbone Capability-Floor Campaign
 
-Status: local family route closed; unified mechanism implemented and frozen;
-real-tensor/interface/FLOP preflight still blocks launch. Date: 2026-08-02.
+Status: historical capability-floor evidence retained; product-reasoning pivot
+active after the one running byte-rail result. Date: 2026-08-02.
+
+> **Operational supersession:** this document preserves the causal/mechanistic
+> campaign and its negative evidence. It is no longer the primary execution
+> queue. The active queue is
+> `docs/research/SHOHIN_72H_PRODUCT_REASONING_EXECUTION.md`, which prioritizes
+> Qwen3.5/SmolLM3 end-to-end answer accuracy over maximal source-deletion or
+> architecture-native claims. Existing jobs may finish; this local interface
+> family receives no new variants.
 
 ## Purpose
 

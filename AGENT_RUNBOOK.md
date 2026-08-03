@@ -21,7 +21,17 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 21:14 EDT. The protected 300k flagship remains immutable and
+> **PRODUCT-REASONING PIVOT — 2026-08-02 21:26 EDT:** The operational
+> objective is actual sophisticated problem solving, measured by real math,
+> code, science, and logic pass rates. Let already-running mechanistic jobs
+> finish, but do not extend the layer-tap/byte-rail family. Primary development
+> now uses pinned Qwen3.5-0.8B and, if needed, SmolLM3-3B with one jointly
+> trained prompt-to-workspace-to-answer trajectory. Compare against same-data
+> LoRA and capacity-matched dense controls. Source-deletion/native-mechanism
+> claims are secondary to answer-quality deltas. The active 72-hour queue is
+> `docs/research/SHOHIN_72H_PRODUCT_REASONING_EXECUTION.md`.
+>
+> **Last updated:** 2026-08-02 21:26 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -25658,3 +25668,26 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_frozen_depth_taps_measure_the_lossless_ordered_byte_role_rail_once_then_redesign_the_component_interface_if_it_fails`.
+
+- **2026-08-02 21:14--21:26 EDT** -- **Primary work pivots from mechanism
+  proof to measured product reasoning; pinned Qwen preflight is live.**
+
+  The frozen-depth route is closed by the completed negative evidence above.
+  Existing cohort jobs `729556/729564/729565` and the one prespecified byte
+  measurement `729767/729768` may finish, but they receive no follow-on family
+  variants. Private commit `e5c2f1e` adds a pinned Hugging Face backbone
+  preflight that must run on an allocated GPU node, records model/package/GPU
+  geometry and a manual generation transcript, and never emits credentials.
+  Qwen preflight job `729773` targets exact revision
+  `2fc06364715b967f1860aea9cf38778875588b17`.
+
+  The new 72-hour queue compares frozen Qwen, same-data LoRA, jointly trained
+  recurrent-workspace plus LoRA, and a capacity-matched dense adapter on
+  identical real reasoning boards. Promotion requires at least +3 macro
+  points or +10% relative solved examples, gains in at least three of five
+  domains, and no domain regression greater than two points. SmolLM3-3B is the
+  forced capacity fallback after one corrected Qwen interface, not an
+  open-ended scale search.
+
+  Decision:
+  `measure_real_reasoning_delta_first_scale_only_the_winning_data_or_architecture_lever`.

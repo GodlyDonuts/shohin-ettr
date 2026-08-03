@@ -54247,3 +54247,32 @@ same state-conditioned probe. A pass says the transformer/token interface was
 the defect and justifies integrating the counted rail; a failure says the
 coarse family/state interface itself is inadequate and must be redesigned.
 This is not another Shohin seed or duration retry.
+
+### 2026-08-02: product-reasoning pivot and 72-hour measured campaign
+
+The layer-tap result closes the assumption that more local mechanistic probing
+is the shortest path to a useful reasoner. Shohin remains the protected 125M
+baseline, but primary development moves to the pinned Qwen3.5-0.8B text path
+and then SmolLM3-3B if one corrected Qwen interface remains flat. The target is
+now directly measured math, code, science, and logic problem solving.
+
+The practical ETTR treatment is one jointly differentiable system: prompt
+hidden states are compressed into learned workspace slots, a tied recurrent
+core updates those slots, and the resulting workspace is injected before the
+rationale and final answer. Backbone LoRA and workspace parameters train
+together. It is compared with the frozen parent, same-data LoRA, and a
+capacity-matched dense adapter. Separate compiler/reactor/reader checkpoint
+composition is retired for this path.
+
+The first gate is product-level: at least +3 absolute macro points or +10%
+relative solved examples over the same-data baseline, more solved examples in
+three of five domains, no domain regression above two points, and no win by the
+matched dense control. The boards cover held-out GSM8K/MATH, AIME, executable
+code, science, and logic for development, followed by sealed GSM8K, MATH-500,
+AIME, LiveCodeBench/code, GPQA, and in-house logic milestones.
+
+Private commit `e5c2f1e` adds the exact-revision external-backbone preflight.
+Newton job `729773` is the first Qwen load/generation/throughput gate. The full
+hours 0--72 job graph, data mix, compute layout, promotion rules, and stop
+conditions are recorded in
+`docs/research/SHOHIN_72H_PRODUCT_REASONING_EXECUTION.md`.
