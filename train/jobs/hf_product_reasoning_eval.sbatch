@@ -19,11 +19,12 @@ set -euo pipefail
 : "${DATA:?DATA is required}"
 : "${OUTPUT:?OUTPUT is required}"
 
-PYTHON=${PYTHON:-/lustre/fs1/home/sa305415/shohin/envs/product-reasoning-b3a3603/bin/python}
+PYTHON=${PYTHON:-/lustre/fs1/home/sa305415/shohin/envs/product-reasoning-b3a3603-r2/bin/python}
 COUNT=${COUNT:-100}
 BATCH_SIZE=${BATCH_SIZE:-4}
 MAX_NEW_TOKENS=${MAX_NEW_TOKENS:-768}
 GENERATION_MODE=${GENERATION_MODE:-greedy}
+ADAPTER_CHECKPOINT=${ADAPTER_CHECKPOINT:-}
 
 test -x "$PYTHON"
 test -f "$RUNTIME/train/hf_product_reasoning_eval.py"
@@ -38,6 +39,12 @@ export MKL_NUM_THREADS=1
 export TOKENIZERS_PARALLELISM=false
 export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
 
+ADAPTER_ARGS=()
+if [[ -n "$ADAPTER_CHECKPOINT" ]]; then
+  test -f "$ADAPTER_CHECKPOINT"
+  ADAPTER_ARGS+=(--adapter-checkpoint "$ADAPTER_CHECKPOINT")
+fi
+
 "$PYTHON" "$RUNTIME/train/hf_product_reasoning_eval.py" \
   --model-root "$MODEL_ROOT" \
   --model-revision "$MODEL_REVISION" \
@@ -47,4 +54,5 @@ export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
   --count "$COUNT" \
   --batch-size "$BATCH_SIZE" \
   --max-new-tokens "$MAX_NEW_TOKENS" \
-  --generation-mode "$GENERATION_MODE"
+  --generation-mode "$GENERATION_MODE" \
+  "${ADAPTER_ARGS[@]}"

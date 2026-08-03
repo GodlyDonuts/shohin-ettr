@@ -375,6 +375,73 @@ def _save_checkpoint(
     os.replace(temporary, path)
 
 
+def load_trainable_checkpoint(
+    path: Path,
+    model: ProductReasoningModel,
+) -> tuple[int, dict[str, Any]]:
+    """Restore only the explicitly trainable product-reasoning parameters."""
+
+    payload = torch.load(path, map_location="cpu", weights_only=False)
+    if payload.get("schema") != "shohin-hf-product-reasoning-checkpoint-v1":
+        raise ProductReasoningTrainError("product checkpoint schema differs")
+    metadata = payload.get("metadata")
+    saved = payload.get("trainable_state")
+    if not isinstance(metadata, dict) or not isinstance(saved, dict):
+        raise ProductReasoningTrainError("product checkpoint payload is incomplete")
+    current = {
+        name: parameter
+        for name, parameter in model.named_parameters()
+        if parameter.requires_grad
+    }
+    if set(saved) != set(current):
+        missing = sorted(set(current) - set(saved))
+        unexpected = sorted(set(saved) - set(current))
+        raise ProductReasoningTrainError(
+            f"product checkpoint parameter contract differs: "
+            f"missing={missing[:4]} unexpected={unexpected[:4]}"
+        )
+    with torch.no_grad():
+        for name, parameter in current.items():
+            tensor = saved[name]
+            if tensor.shape != parameter.shape:
+                raise ProductReasoningTrainError(
+                    f"product checkpoint tensor shape differs: {name}"
+                )
+            parameter.copy_(tensor.to(device=parameter.device, dtype=parameter.dtype))
+    return int(payload["update"]), metadata
+
+
+def product_generation_embeddings(
+    model: ProductReasoningModel,
+    prompt_ids: torch.Tensor,
+    prompt_attention: torch.Tensor,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Build the exact prompt plus learned-workspace prefix used at inference."""
+
+    if prompt_ids.ndim != 2 or prompt_attention.shape != prompt_ids.shape:
+        raise ProductReasoningTrainError("generation prompt geometry differs")
+    embedding = model.text_model.embed_tokens
+    prompt_ids = prompt_ids.to(embedding.weight.device)
+    prompt_attention = prompt_attention.to(embedding.weight.device)
+    prompt_embeddings = embedding(prompt_ids)
+    if model.workspace is None:
+        return prompt_embeddings, prompt_attention
+    prompt_features = model.text_model(
+        input_ids=prompt_ids,
+        attention_mask=prompt_attention,
+        use_cache=False,
+    ).last_hidden_state
+    workspace_output = model.workspace(prompt_features, prompt_attention)
+    prefix = workspace_output.prefix_states.to(dtype=prompt_embeddings.dtype)
+    prefix_attention = torch.ones(
+        prefix.shape[:2], device=prompt_attention.device, dtype=prompt_attention.dtype
+    )
+    return (
+        torch.cat((prompt_embeddings, prefix), dim=1),
+        torch.cat((prompt_attention, prefix_attention), dim=1),
+    )
+
+
 def _batches(rows: list[dict[str, str]], batch_size: int) -> Iterable[list[dict[str, str]]]:
     for offset in range(0, len(rows), batch_size):
         batch = rows[offset : offset + batch_size]

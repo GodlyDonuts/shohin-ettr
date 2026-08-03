@@ -159,17 +159,43 @@ def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
     os.replace(temporary, path)
 
 
-def _load_model(model_root: Path):
+def _load_model(model_root: Path, adapter_checkpoint: Path | None):
     import torch
     from transformers import AutoModelForMultimodalLM
 
-    return AutoModelForMultimodalLM.from_pretrained(
+    backbone = AutoModelForMultimodalLM.from_pretrained(
         model_root,
         dtype=torch.bfloat16,
         device_map={"": 0},
         low_cpu_mem_usage=True,
         trust_remote_code=True,
-    ).eval()
+    )
+    if adapter_checkpoint is None:
+        return backbone.eval(), None
+
+    from hf_product_reasoning_train import (
+        ProductReasoningModel,
+        load_trainable_checkpoint,
+    )
+
+    payload = torch.load(adapter_checkpoint, map_location="cpu", weights_only=False)
+    metadata = payload.get("metadata")
+    if not isinstance(metadata, dict):
+        raise ProductEvalError("adapter checkpoint metadata is missing")
+    workspace = metadata.get("workspace_config") or {}
+    model = ProductReasoningModel(
+        backbone=backbone,
+        arm=str(metadata["arm"]),
+        lora_layers=int(metadata["lora_layers"]),
+        lora_rank=int(metadata["lora_rank"]),
+        lora_alpha=float(metadata["lora_alpha"]),
+        workspace_width=int(workspace.get("workspace_width", 512)),
+        workspace_slots=int(workspace.get("workspace_slots", 16)),
+        recurrent_steps=int(workspace.get("recurrent_steps", 8)),
+    ).to("cuda:0")
+    update, restored_metadata = load_trainable_checkpoint(adapter_checkpoint, model)
+    model.eval()
+    return model, {"update": update, **restored_metadata}
 
 
 def _generation_arguments(mode: str, max_new_tokens: int) -> dict[str, Any]:
@@ -196,6 +222,56 @@ def _make_prompt(question: str) -> str:
     )
 
 
+def _render_prompt(
+    tokenizer: Any,
+    question: str,
+    adapter: bool,
+    enable_thinking: bool,
+) -> str:
+    if adapter:
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    "You are a careful reasoning assistant. Give concise, "
+                    "verifiable reasoning and a clearly marked final answer."
+                ),
+            },
+            {"role": "user", "content": question},
+        ]
+        thinking = False
+    else:
+        messages = [{"role": "user", "content": _make_prompt(question)}]
+        thinking = enable_thinking
+    return tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True,
+        enable_thinking=thinking,
+    )
+
+
+def _generate_adapter(
+    model: Any,
+    encoded: dict[str, Any],
+    generation_arguments: dict[str, Any],
+    pad_token_id: int,
+):
+    from hf_product_reasoning_train import product_generation_embeddings
+
+    embeddings, attention = product_generation_embeddings(
+        model,
+        encoded["input_ids"],
+        encoded["attention_mask"],
+    )
+    return model.backbone.generate(
+        inputs_embeds=embeddings,
+        attention_mask=attention,
+        pad_token_id=pad_token_id,
+        **generation_arguments,
+    )
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     import torch
     from transformers import AutoTokenizer
@@ -209,7 +285,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     tokenizer.padding_side = "left"
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
-    model = _load_model(args.model_root)
+    model, adapter_metadata = _load_model(args.model_root, args.adapter_checkpoint)
 
     random.seed(args.generation_seed)
     torch.manual_seed(args.generation_seed)
@@ -223,11 +299,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     for offset in range(0, len(selected), args.batch_size):
         batch = selected[offset : offset + args.batch_size]
         rendered = [
-            tokenizer.apply_chat_template(
-                [{"role": "user", "content": _make_prompt(_question(row))}],
-                tokenize=False,
-                add_generation_prompt=True,
-                enable_thinking=args.enable_thinking,
+            _render_prompt(
+                tokenizer,
+                _question(row),
+                adapter_metadata is not None,
+                args.enable_thinking,
             )
             for row in batch
         ]
@@ -235,14 +311,25 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         encoded = {key: value.to("cuda:0") for key, value in encoded.items()}
         prompt_width = int(encoded["input_ids"].shape[1])
         with torch.inference_mode():
-            output = model.generate(
-                **encoded,
-                pad_token_id=tokenizer.pad_token_id,
-                **_generation_arguments(args.generation_mode, args.max_new_tokens),
+            generation_arguments = _generation_arguments(
+                args.generation_mode, args.max_new_tokens
             )
-        completions = tokenizer.batch_decode(
-            output[:, prompt_width:], skip_special_tokens=True
-        )
+            if adapter_metadata is None:
+                output = model.generate(
+                    **encoded,
+                    pad_token_id=tokenizer.pad_token_id,
+                    **generation_arguments,
+                )
+                completion_ids = output[:, prompt_width:]
+            else:
+                output = _generate_adapter(
+                    model,
+                    encoded,
+                    generation_arguments,
+                    tokenizer.pad_token_id,
+                )
+                completion_ids = output
+        completions = tokenizer.batch_decode(completion_ids, skip_special_tokens=True)
         for row, completion in zip(batch, completions, strict=True):
             prediction = task["extract"](completion)
             gold = task["gold"](row)
@@ -259,7 +346,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     "completion": completion,
                 }
             )
-        generated_tokens += int(output.shape[1] - prompt_width) * len(batch)
+        generated_tokens += int(completion_ids.shape[1]) * len(batch)
         print(
             f"[product-eval] {min(offset + len(batch), len(selected))}/"
             f"{len(selected)} correct={correct}",
@@ -273,6 +360,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "status": "complete",
         "model_root": str(args.model_root.resolve()),
         "model_revision": args.model_revision,
+        "adapter_checkpoint": (
+            str(args.adapter_checkpoint.resolve()) if args.adapter_checkpoint else None
+        ),
+        "adapter_metadata": adapter_metadata,
         "task": args.task,
         "data": str(args.data.resolve()),
         "data_sha256": hashlib.sha256(data_bytes).hexdigest(),
@@ -300,6 +391,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model-root", type=Path, required=True)
     parser.add_argument("--model-revision", required=True)
+    parser.add_argument("--adapter-checkpoint", type=Path)
     parser.add_argument("--task", choices=sorted(TASKS), required=True)
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
