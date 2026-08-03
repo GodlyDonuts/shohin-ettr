@@ -24,6 +24,7 @@ class ProductCorpusError(RuntimeError):
 
 
 ALLOWED_DOMAINS = ("math", "code", "science")
+EVAL_PROMPT_FIELDS = ("question", "problem", "prompt", "text", "input", "puzzle")
 
 
 def normalize_text(text: str) -> str:
@@ -137,7 +138,10 @@ def load_eval_contamination(paths: Iterable[Path]) -> tuple[set[str], set[str]]:
                 if not line.strip():
                     continue
                 row = json.loads(line)
-                question = row.get("question") or row.get("problem") or row.get("prompt")
+                question = next(
+                    (row.get(field) for field in EVAL_PROMPT_FIELDS if row.get(field)),
+                    None,
+                )
                 if not question:
                     continue
                 normalized = normalize_text(str(question))

@@ -2,12 +2,18 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+import tempfile
 import unittest
 
 from build_product_reasoning_seed_corpus import (
     extract_openthoughts_row,
+    load_eval_contamination,
     parse_caps,
+    prompt_sha256,
     select_rows,
+    word_ngrams,
 )
 
 
@@ -76,6 +82,24 @@ class ProductReasoningSeedCorpusTests(unittest.TestCase):
             parse_caps(["math=1", "code=2", "science=3"]),
             {"math": 1, "code": 2, "science": 3},
         )
+
+    def test_eval_contamination_loads_mbpp_and_bbh_prompt_fields(self) -> None:
+        mbpp = "Write a Python function that returns the sum of two distinct integers."
+        bbh = "Determine whether this formal logical argument is valid or invalid."
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "eval.jsonl"
+            path.write_text(
+                "".join(
+                    json.dumps(row) + "\n"
+                    for row in ({"text": mbpp}, {"input": bbh})
+                ),
+                encoding="utf-8",
+            )
+            exact, ngrams = load_eval_contamination([path])
+
+        self.assertEqual(exact, {prompt_sha256(mbpp), prompt_sha256(bbh)})
+        self.assertTrue(word_ngrams(mbpp) <= ngrams)
+        self.assertTrue(word_ngrams(bbh) <= ngrams)
 
 
 if __name__ == "__main__":
