@@ -24,6 +24,15 @@ class FakeTokenizer:
         return text.split()
 
 
+class FakeTokenizerWithoutTemplate:
+    name_or_path = "fake-tokenizer-without-template"
+    chat_template = None
+
+    def encode(self, text, add_special_tokens=False):
+        del add_special_tokens
+        return text.split()
+
+
 def _write(path: Path, group: str, count: int, response_words: int = 4) -> None:
     with path.open("w", encoding="utf-8") as handle:
         for index in range(count):
@@ -186,3 +195,23 @@ def test_token_balanced_mix_selects_verified_rows_before_unverified(
     )
     rows = [json.loads(line) for line in output.read_text().splitlines()]
     assert [row["question"] for row in rows] == ["verified question"]
+
+
+def test_token_balanced_mix_supports_tokenizer_without_chat_template(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "source.jsonl"
+    _write(source, "math", 4, 4)
+    report = build_token_balanced_mix(
+        [source],
+        tmp_path / "output.jsonl",
+        tmp_path / "report.json",
+        tokenizer=FakeTokenizerWithoutTemplate(),
+        model_revision="test",
+        weights=parse_weights("math=1"),
+        total_target_tokens=8,
+        max_sequence_length=64,
+        workspace_slots=0,
+        seed=31,
+    )
+    assert report["selected_groups"]["math"]["charged_target_tokens"] >= 8

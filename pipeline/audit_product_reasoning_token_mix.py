@@ -22,6 +22,26 @@ class TokenMixAuditError(RuntimeError):
     """The corpus or tokenizer contract cannot be audited exactly."""
 
 
+def render_reasoning_prompt(tokenizer: Any, question: str) -> str:
+    """Render the same native-or-fallback prompt envelope used by the trainer."""
+
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": question},
+    ]
+    if getattr(tokenizer, "chat_template", None):
+        return tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+            enable_thinking=False,
+        )
+    rendered = "\n\n".join(
+        f"{message['role'].capitalize()}: {message['content']}" for message in messages
+    )
+    return f"{rendered}\n\nAssistant:"
+
+
 def question_response(row: dict[str, Any]) -> tuple[str, str] | None:
     question = row.get("question") or row.get("problem") or row.get("prompt")
     response = (
@@ -87,15 +107,7 @@ def audit(
                 continue
             question, response = pair
             group = str(row.get("training_group") or row.get("domain") or "unknown")
-            rendered = tokenizer.apply_chat_template(
-                [
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user", "content": question},
-                ],
-                tokenize=False,
-                add_generation_prompt=True,
-                enable_thinking=False,
-            )
+            rendered = render_reasoning_prompt(tokenizer, question)
             prompt_length = len(tokenizer.encode(rendered, add_special_tokens=False))
             response_length = len(tokenizer.encode(response, add_special_tokens=False))
             kept_prompt, charged_target, response_cut, prompt_cut = truncate_lengths(

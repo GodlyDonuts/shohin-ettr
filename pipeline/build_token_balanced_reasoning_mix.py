@@ -16,14 +16,14 @@ from typing import Any, Iterable
 
 try:
     from pipeline.audit_product_reasoning_token_mix import (
-        SYSTEM_PROMPT,
         question_response,
+        render_reasoning_prompt,
         truncate_lengths,
     )
 except ModuleNotFoundError:  # Direct execution with pipeline/ on PYTHONPATH.
     from audit_product_reasoning_token_mix import (
-        SYSTEM_PROMPT,
         question_response,
+        render_reasoning_prompt,
         truncate_lengths,
     )
 
@@ -92,15 +92,7 @@ def _source_sha256(path: Path) -> str:
 
 
 def _token_lengths(tokenizer: Any, question: str, response: str) -> tuple[int, int]:
-    rendered = tokenizer.apply_chat_template(
-        [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": question},
-        ],
-        tokenize=False,
-        add_generation_prompt=True,
-        enable_thinking=False,
-    )
+    rendered = render_reasoning_prompt(tokenizer, question)
     return (
         len(tokenizer.encode(rendered, add_special_tokens=False)),
         len(tokenizer.encode(response, add_special_tokens=False)),
