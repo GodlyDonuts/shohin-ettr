@@ -142,3 +142,47 @@ def test_token_balanced_mix_prefers_verified_duplicate(tmp_path: Path) -> None:
     duplicate = next(row for row in rows if row["question"] == "same question")
     assert duplicate["response"] == "verified response"
     assert report["scan_counters"]["duplicate_replacements"] == 1
+
+
+def test_token_balanced_mix_selects_verified_rows_before_unverified(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "source.jsonl"
+    source.write_text(
+        "\n".join(
+            [
+                json.dumps(
+                    {
+                        "question": "unverified question",
+                        "response": "code code code code",
+                        "training_group": "code",
+                    }
+                ),
+                json.dumps(
+                    {
+                        "question": "verified question",
+                        "response": "code code code code",
+                        "training_group": "code",
+                        "verification": "execution_verified",
+                    }
+                ),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    output = tmp_path / "output.jsonl"
+    build_token_balanced_mix(
+        [source],
+        output,
+        tmp_path / "report.json",
+        tokenizer=FakeTokenizer(),
+        model_revision="test",
+        weights=parse_weights("code=1"),
+        total_target_tokens=4,
+        max_sequence_length=64,
+        workspace_slots=0,
+        seed=31,
+    )
+    rows = [json.loads(line) for line in output.read_text().splitlines()]
+    assert [row["question"] for row in rows] == ["verified question"]

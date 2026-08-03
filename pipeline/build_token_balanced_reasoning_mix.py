@@ -210,7 +210,9 @@ def _read_candidates(
     availability = {}
     for group, weight in weights.items():
         candidates = grouped[group]
-        candidates.sort(key=lambda candidate: candidate.priority)
+        candidates.sort(
+            key=lambda candidate: (-candidate.quality_rank, candidate.priority)
+        )
         available_tokens = sum(candidate.charged_tokens for candidate in candidates)
         required_tokens = math.ceil(total_target_tokens * weight)
         availability[group] = {
