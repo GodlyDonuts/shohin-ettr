@@ -31,6 +31,33 @@ class ProductReasoningTrainError(RuntimeError):
     """The matched product-reasoning training contract was violated."""
 
 
+PRODUCT_SYSTEM_PROMPT = (
+    "You are a careful reasoning assistant. Give concise, verifiable reasoning "
+    "and a clearly marked final answer."
+)
+
+
+def render_reasoning_messages(
+    tokenizer: Any,
+    messages: list[dict[str, str]],
+    *,
+    enable_thinking: bool,
+) -> str:
+    """Render native chat when available, otherwise use one stable text envelope."""
+
+    if getattr(tokenizer, "chat_template", None):
+        return tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+            enable_thinking=enable_thinking,
+        )
+    rendered = "\n\n".join(
+        f"{message['role'].capitalize()}: {message['content']}" for message in messages
+    )
+    return f"{rendered}\n\nAssistant:"
+
+
 class LoRALinear(nn.Module):
     """A frozen linear projection plus a trainable low-rank residual."""
 
@@ -432,19 +459,15 @@ def _tokenize_rows(
     response_rows: list[list[int]] = []
     response_budget_floor = min(256, max_sequence_length // 2)
     for row in rows:
-        rendered = tokenizer.apply_chat_template(
+        rendered = render_reasoning_messages(
+            tokenizer,
             [
                 {
                     "role": "system",
-                    "content": (
-                        "You are a careful reasoning assistant. Give concise, "
-                        "verifiable reasoning and a clearly marked final answer."
-                    ),
+                    "content": PRODUCT_SYSTEM_PROMPT,
                 },
                 {"role": "user", "content": row["question"]},
             ],
-            tokenize=False,
-            add_generation_prompt=True,
             enable_thinking=False,
         )
         prompt = tokenizer.encode(rendered, add_special_tokens=False)

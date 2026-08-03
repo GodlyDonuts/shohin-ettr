@@ -19,6 +19,7 @@ from hf_product_reasoning_train import (
     load_trainable_checkpoint,
     pack_training_embeddings,
     product_generation_embeddings,
+    render_reasoning_messages,
     resolve_product_backbone_layout,
     reservoir_rows,
     reservoir_rows_with_sha256,
@@ -26,6 +27,40 @@ from hf_product_reasoning_train import (
 
 
 class ProductReasoningTrainTests(unittest.TestCase):
+    def test_plain_reasoning_envelope_supports_base_tokenizer(self) -> None:
+        tokenizer = SimpleNamespace(chat_template=None)
+        rendered = render_reasoning_messages(
+            tokenizer,
+            [
+                {"role": "system", "content": "be precise"},
+                {"role": "user", "content": "2+2?"},
+            ],
+            enable_thinking=False,
+        )
+        self.assertEqual(
+            rendered,
+            "System: be precise\n\nUser: 2+2?\n\nAssistant:",
+        )
+
+    def test_native_reasoning_template_remains_authoritative(self) -> None:
+        class Tokenizer:
+            chat_template = "native"
+
+            def apply_chat_template(self, messages, **kwargs):
+                self.call = (messages, kwargs)
+                return "native-render"
+
+        tokenizer = Tokenizer()
+        messages = [{"role": "user", "content": "question"}]
+        rendered = render_reasoning_messages(
+            tokenizer,
+            messages,
+            enable_thinking=True,
+        )
+        self.assertEqual(rendered, "native-render")
+        self.assertEqual(tokenizer.call[0], messages)
+        self.assertTrue(tokenizer.call[1]["enable_thinking"])
+
     @staticmethod
     def _text_backbone(multimodal: bool) -> nn.Module:
         text = nn.Module()

@@ -88,6 +88,18 @@ def _load_model(model_root: Path):
     raise BackbonePreflightError(json.dumps(attempts, sort_keys=True))
 
 
+def _render_prompt(tokenizer: Any, prompt: str) -> str:
+    messages = [{"role": "user", "content": prompt}]
+    if getattr(tokenizer, "chat_template", None):
+        return tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+            enable_thinking=True,
+        )
+    return f"User: {prompt}\n\nAssistant:"
+
+
 def run_preflight(args: argparse.Namespace) -> dict[str, Any]:
     import torch
     import transformers
@@ -120,16 +132,7 @@ def run_preflight(args: argparse.Namespace) -> dict[str, Any]:
     model, failed_loaders = _load_model(model_root)
     model.eval()
 
-    messages = [{"role": "user", "content": args.prompt}]
-    if hasattr(tokenizer, "apply_chat_template"):
-        rendered = tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True,
-            enable_thinking=True,
-        )
-    else:  # pragma: no cover - current candidates have chat templates
-        rendered = args.prompt
+    rendered = _render_prompt(tokenizer, args.prompt)
     encoded = tokenizer(rendered, return_tensors="pt")
     encoded = {key: value.to("cuda:0") for key, value in encoded.items()}
 

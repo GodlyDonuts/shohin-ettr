@@ -587,14 +587,16 @@ def _render_prompt(
     adapter: bool,
     enable_thinking: bool,
 ) -> str:
+    from hf_product_reasoning_train import (
+        PRODUCT_SYSTEM_PROMPT,
+        render_reasoning_messages,
+    )
+
     if adapter:
         messages = [
             {
                 "role": "system",
-                "content": (
-                    "You are a careful reasoning assistant. Give concise, "
-                    "verifiable reasoning and a clearly marked final answer."
-                ),
+                "content": PRODUCT_SYSTEM_PROMPT,
             },
             {"role": "user", "content": question},
         ]
@@ -602,10 +604,9 @@ def _render_prompt(
     else:
         messages = [{"role": "user", "content": _make_prompt(question)}]
         thinking = enable_thinking
-    return tokenizer.apply_chat_template(
+    return render_reasoning_messages(
+        tokenizer,
         messages,
-        tokenize=False,
-        add_generation_prompt=True,
         enable_thinking=thinking,
     )
 

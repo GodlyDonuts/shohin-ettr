@@ -7,10 +7,23 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from hf_reasoning_backbone_preflight import _atomic_json, _package_version
+from hf_reasoning_backbone_preflight import (
+    _atomic_json,
+    _package_version,
+    _render_prompt,
+)
 
 
 class BackbonePreflightTests(unittest.TestCase):
+    def test_base_tokenizer_uses_stable_plain_envelope(self) -> None:
+        class Tokenizer:
+            chat_template = None
+
+        self.assertEqual(
+            _render_prompt(Tokenizer(), "2+2?"),
+            "User: 2+2?\n\nAssistant:",
+        )
+
     def test_atomic_json_replaces_temporary_file(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "report.json"
