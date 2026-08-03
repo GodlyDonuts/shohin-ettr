@@ -8,6 +8,7 @@ import types
 
 from hf_product_reasoning_eval import (
     _completion_usage,
+    _generation_stop_token_ids,
     ProductEvalError,
     _bounded_program_result,
     _humaneval_program,
@@ -28,8 +29,18 @@ from hf_product_reasoning_eval import (
 
 class ProductReasoningEvalTests(unittest.TestCase):
     def test_completion_usage_distinguishes_eos_from_exhaustion(self) -> None:
-        self.assertEqual(_completion_usage([4, 5, 2, 2], 2, 4), (3, False))
-        self.assertEqual(_completion_usage([4, 5, 6, 7], 2, 4), (4, True))
+        self.assertEqual(_completion_usage([4, 5, 2, 2], [2, 9], 4), (3, False))
+        self.assertEqual(_completion_usage([4, 9, 2, 2], [2, 9], 4), (2, False))
+        self.assertEqual(_completion_usage([4, 5, 6, 7], [2, 9], 4), (4, True))
+
+    def test_generation_stops_at_eos_and_new_chat_turn(self) -> None:
+        tokenizer = types.SimpleNamespace(
+            eos_token_id=2,
+            unk_token_id=0,
+            all_special_tokens=["<|im_start|>", "<|im_end|>"],
+            convert_tokens_to_ids=lambda token: {"<|im_start|>": 9}.get(token, 0),
+        )
+        self.assertEqual(_generation_stop_token_ids(tokenizer), [2, 9])
 
     def test_extracts_explicit_and_boxed_answers(self) -> None:
         self.assertEqual(extract_gsm8k("Work. Final answer: 1,234."), "1234")

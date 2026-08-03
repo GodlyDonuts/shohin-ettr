@@ -469,12 +469,40 @@ def _generation_arguments(mode: str, max_new_tokens: int) -> dict[str, Any]:
 
 def _completion_usage(
     token_ids: list[int],
-    eos_token_id: int | None,
+    stop_token_ids: list[int],
     max_new_tokens: int,
 ) -> tuple[int, bool]:
-    if eos_token_id is not None and eos_token_id in token_ids:
-        return token_ids.index(eos_token_id) + 1, False
+    stop_positions = [
+        token_ids.index(token_id)
+        for token_id in stop_token_ids
+        if token_id in token_ids
+    ]
+    if stop_positions:
+        return min(stop_positions) + 1, False
     return len(token_ids), len(token_ids) >= max_new_tokens
+
+
+def _generation_stop_token_ids(tokenizer: Any) -> list[int]:
+    """Stop at EOS or any new chat turn instead of decoding a fake dialogue."""
+
+    stop_ids: list[int] = []
+    if tokenizer.eos_token_id is not None:
+        stop_ids.append(int(tokenizer.eos_token_id))
+    special_tokens = set(getattr(tokenizer, "all_special_tokens", ()))
+    for token in ("<|im_start|>", "<|user|>", "<|assistant|>"):
+        if token not in special_tokens:
+            continue
+        token_id = tokenizer.convert_tokens_to_ids(token)
+        if (
+            isinstance(token_id, int)
+            and token_id >= 0
+            and token_id != tokenizer.unk_token_id
+            and token_id not in stop_ids
+        ):
+            stop_ids.append(token_id)
+    if not stop_ids:
+        raise ProductEvalError("tokenizer exposes no generation stop token")
+    return stop_ids
 
 
 def _make_prompt(question: str) -> str:
@@ -555,6 +583,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
     model, adapter_metadata = _load_model(args.model_root, args.adapter_checkpoint)
+    stop_token_ids = _generation_stop_token_ids(tokenizer)
 
     random.seed(args.generation_seed)
     torch.manual_seed(args.generation_seed)
@@ -584,6 +613,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             generation_arguments = _generation_arguments(
                 args.generation_mode, args.max_new_tokens
             )
+            generation_arguments["eos_token_id"] = (
+                stop_token_ids[0] if len(stop_token_ids) == 1 else stop_token_ids
+            )
             if adapter_metadata is None:
                 output = model.generate(
                     **encoded,
@@ -603,7 +635,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         completion_usage = [
             _completion_usage(
                 token_row.tolist(),
-                tokenizer.eos_token_id,
+                stop_token_ids,
                 args.max_new_tokens,
             )
             for token_row in completion_ids
@@ -677,6 +709,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             args.enable_thinking if adapter_metadata is None else False
         ),
         "max_new_tokens": args.max_new_tokens,
+        "generation_stop_token_ids": stop_token_ids,
         "batch_size": args.batch_size,
         "code_timeout_seconds": (
             args.code_timeout if task["kind"] == "code" else None
