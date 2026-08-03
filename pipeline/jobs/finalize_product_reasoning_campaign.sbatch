@@ -18,6 +18,8 @@ set -euo pipefail
 
 PYTHON=${PYTHON:-/lustre/fs1/home/sa305415/shohin/envs/product-reasoning-b3a3603-r2/bin/python}
 PREFIX_TAG=${PREFIX_TAG:-short_u200_ce6e532}
+INPUT_VERSION=${INPUT_VERSION:-v4}
+OUTPUT_VERSION=${OUTPUT_VERSION:-v5}
 test -x "$PYTHON"
 test -f "$RUNTIME/pipeline/rescore_product_reasoning_report.py"
 test -f "$RUNTIME/pipeline/aggregate_product_reasoning_campaign.py"
@@ -31,8 +33,8 @@ export PYTHONPATH="$MATH_VERIFY:$RUNTIME/train:$RUNTIME/pipeline"
 for arm in baseline ettr_residual dense_residual; do
   prefix="$ROOT/${arm}_${PREFIX_TAG}"
   for task in gsm8k math500 humaneval mbpp gpqa bbh_logic; do
-    input="${prefix}_${task}_dev_v4.json"
-    output="${prefix}_${task}_dev_v5.json"
+    input="${prefix}_${task}_dev_${INPUT_VERSION}.json"
+    output="${prefix}_${task}_dev_${OUTPUT_VERSION}.json"
     test -s "$input"
     test ! -e "$output"
     "$PYTHON" "$RUNTIME/pipeline/rescore_product_reasoning_report.py" \
@@ -44,5 +46,5 @@ done
   --baseline "B1=$ROOT/baseline_${PREFIX_TAG}" \
   --treatment "T2=$ROOT/ettr_residual_${PREFIX_TAG}" \
   --control "C2=$ROOT/dense_residual_${PREFIX_TAG}" \
-  --suffix _dev_v5.json \
+  --suffix "_dev_${OUTPUT_VERSION}.json" \
   --output "$OUTPUT"

@@ -3,7 +3,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from pipeline.rescore_product_reasoning_report import rescore_report
+from pipeline.rescore_product_reasoning_report import (
+    has_explicit_final_answer,
+    rescore_report,
+)
 
 
 def test_rescore_repairs_decimal_and_currency_answer_errors(tmp_path: Path) -> None:
@@ -43,4 +46,60 @@ def test_rescore_repairs_decimal_and_currency_answer_errors(tmp_path: Path) -> N
     assert report["results"][0]["correct"] is True
     assert report["results"][1]["prediction"] == "1.4"
     assert report["results"][1]["correct"] is False
-    assert report["rescore_backend"] == "shohin-answer-v3"
+    assert report["rescore_backend"] == "shohin-answer-v4-explicit-cap"
+
+
+def test_capped_fallback_number_requires_explicit_final_answer(tmp_path: Path) -> None:
+    source = tmp_path / "gsm8k_capped.json"
+    source.write_text(
+        json.dumps(
+            {
+                "accuracy": 1.0,
+                "correct": 3,
+                "results": [
+                    {
+                        "completion": "The algebra is impossible. Given $2 for grape...",
+                        "correct": True,
+                        "gold": "2",
+                        "max_token_exhausted": True,
+                        "prediction": "2",
+                    },
+                    {
+                        "completion": "Work continues. The answer is 2.",
+                        "correct": True,
+                        "gold": "2",
+                        "max_token_exhausted": True,
+                        "prediction": "2",
+                    },
+                    {
+                        "completion": "A concise uncapped derivation ends with 2",
+                        "correct": True,
+                        "gold": "2",
+                        "max_token_exhausted": False,
+                        "prediction": "2",
+                    },
+                ],
+                "schema": "shohin-hf-product-reasoning-eval-v2",
+                "status": "complete",
+                "task": "gsm8k",
+                "total": 3,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    report = rescore_report(source)
+
+    assert report["correct"] == 2
+    assert report["cap_exhausted_without_explicit_answer"] == 1
+    assert report["results"][0]["prediction"] is None
+    assert report["results"][0]["correct"] is False
+    assert report["results"][1]["correct"] is True
+    assert report["results"][2]["correct"] is True
+
+
+def test_explicit_final_answer_markers() -> None:
+    assert has_explicit_final_answer(r"Therefore \boxed{4}.")
+    assert has_explicit_final_answer("The final answer: B")
+    assert has_explicit_final_answer("answer is 12")
+    assert not has_explicit_final_answer("We used option B in a partial thought")

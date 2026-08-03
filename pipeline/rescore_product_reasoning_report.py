@@ -9,6 +9,7 @@ import importlib.metadata
 import json
 import os
 from pathlib import Path
+import re
 import sys
 from typing import Any
 
@@ -19,11 +20,23 @@ if str(TRAIN_DIRECTORY) not in sys.path:
 from hf_product_reasoning_eval import TASKS  # noqa: E402
 
 
-SCHEMA = "shohin-hf-product-reasoning-eval-v3-rescore"
+SCHEMA = "shohin-hf-product-reasoning-eval-v4-rescore"
 
 
 class ProductRescoreError(RuntimeError):
     """Raised when a saved report cannot be rescored exactly."""
+
+
+def has_explicit_final_answer(completion: str) -> bool:
+    """Require a deliberate answer emission before crediting a capped trace."""
+
+    return r"\boxed" in completion or bool(
+        re.search(
+            r"(?:the\s+)?(?:final\s+)?answer\s*(?:is|:)",
+            completion,
+            flags=re.IGNORECASE,
+        )
+    )
 
 
 def _sha256(path: Path) -> str:
@@ -52,6 +65,7 @@ def rescore_report(path: Path) -> dict[str, Any]:
     rescored_rows: list[dict[str, Any]] = []
     false_to_true = 0
     true_to_false = 0
+    exhausted_without_explicit_answer = 0
     for row in rows:
         rescored = dict(row)
         old_prediction = row.get("prediction")
@@ -63,8 +77,16 @@ def rescore_report(path: Path) -> dict[str, Any]:
             completion = row.get("completion")
             if not isinstance(completion, str):
                 raise ProductRescoreError("answer row is missing its completion")
-            new_prediction = task["extract"](completion)
-            new_correct = bool(task["match"](new_prediction, row.get("gold")))
+            capped_without_answer = bool(row.get("max_token_exhausted")) and not (
+                has_explicit_final_answer(completion)
+            )
+            if capped_without_answer:
+                new_prediction = None
+                new_correct = False
+                exhausted_without_explicit_answer += 1
+            else:
+                new_prediction = task["extract"](completion)
+                new_correct = bool(task["match"](new_prediction, row.get("gold")))
         rescored["original_prediction"] = old_prediction
         rescored["original_correct"] = old_correct
         rescored["prediction"] = new_prediction
@@ -80,7 +102,7 @@ def rescore_report(path: Path) -> dict[str, Any]:
         except importlib.metadata.PackageNotFoundError:
             score_backend = "normalized-exact-fallback"
     else:
-        score_backend = "shohin-answer-v3"
+        score_backend = "shohin-answer-v4-explicit-cap"
     report = dict(original)
     report.update(
         {
@@ -94,6 +116,10 @@ def rescore_report(path: Path) -> dict[str, Any]:
                 "true_to_false": true_to_false,
             },
             "rescore_backend": score_backend,
+            "cap_exhausted_explicit_answer_required": True,
+            "cap_exhausted_without_explicit_answer": (
+                exhausted_without_explicit_answer
+            ),
             "rescored_from": str(path.resolve()),
             "rescored_from_sha256": _sha256(path),
             "results": rescored_rows,
