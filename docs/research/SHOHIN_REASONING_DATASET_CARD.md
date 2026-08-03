@@ -23,6 +23,15 @@ exposure from the original V8 pilot's roughly 1% to 20%, but its teacher rows
 are mostly synthetic HY3 traces and its code mix is not yet a final broad
 execution-verified recipe.
 
+Its exact row weights do not equal its effective training-token weights.
+`reports/v8_balanced_35m20p20c25t_unique_r1.token_mix_qwen35.json` applies the
+same pinned Qwen tokenizer, chat template, response-first truncation, and
+1,024-token budget as the trainer. It measures 6,094,439 charged target tokens:
+47.14% math, 28.60% code, 7.33% procedural, and 16.93% teacher. It also records
+94 response-truncated and 1,488 prompt-truncated rows. This artifact is useful
+as a matched code-exposure diagnostic; a promoted mix must instead balance
+charged tokens and reduce prompt truncation.
+
 The OpenScience pilot is a deterministic no-replay subset of a 500,000-row
 answer-matched build. The full build has SHA-256
 `e11e1923d237e1986725a7148503219e8871523649072cb38c835176854a5caa`.
