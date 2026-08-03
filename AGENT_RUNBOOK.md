@@ -26131,3 +26131,38 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finish_generation_and_overfit_gates_then_measure_identical_B1_T1_C1_answer_deltas`.
+
+- **2026-08-03 12:36--13:01 EDT** -- **Useful single-H100 work is expanded
+  without cloning the failed router/ETTR searches.**
+
+  V11i wide-LoRA job `731512` is healthy on `evc31` with the exact pinned
+  SmolLM3 revision, 8 adapted layers, rank 32, alpha 64, BS4/ACC4, 4,096
+  context, seed 31/data seed 20260802, and 3,000 updates. At update 1,060 it
+  sustains about `4.69k` charged target tokens/s with finite loss/gradient
+  norms. Atomic checkpoint `checkpoint_0001000.pt` is preserved. Its fixed
+  1,000-update benchmark fan is `731794--731801`; the already-staged final
+  3,000-update fan is `731513--731520`.
+
+  A distinct late-layer release arm was admitted after canary `731578`
+  completed 10/10 updates. It trains the last two transformer blocks plus the
+  proven four-layer rank-8 LoRA: `157,925,376` trainable parameters,
+  `37,453,594,112` peak GPU bytes, finite losses/gradients, and no OOM. Full
+  job `731579` is healthy on `evc38` near `5.51k` charged target tokens/s for
+  1,000 updates at LR `5e-5`. Atomic update-500 checkpoint is preserved;
+  evaluation fan `731770--731777` measures it while training continues, and
+  final fan `731580--731587` follows update 1,000. Manual 12-problem transcript
+  jobs `731808/731809` compare late-layer-500 and wide-LoRA-1000. Partial live
+  scores are not promotion evidence.
+
+  V12 remains fail-closed on exact code verification. Original 48-core Stokes
+  audit `761240` has verified 1,794/1,800 kept rows at its latest durable
+  flush. Six independent 32-core shards `761256--761261` run concurrently;
+  merge/build are `761262 -> 761263`. Because Stokes denied wall-limit edits
+  and observed shard rate makes three hours marginal, resumable continuations
+  `761264--761269` plus alternate merge/build `761270 -> 761271` are
+  dependency-bound. They change no candidates or tests. Whichever path first
+  produces a hash-valid canonical V12 will be accepted; stale writers must be
+  canceled before release of held H100 training pair `731325/731326`.
+
+  Decision:
+  `use_spare_h100s_for_checkpoint_learning_curves_and_transcript_evidence_then_release_v12_only_after_the_exact_data_gate`.
