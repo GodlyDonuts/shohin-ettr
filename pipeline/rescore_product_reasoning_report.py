@@ -9,7 +9,6 @@ import importlib.metadata
 import json
 import os
 from pathlib import Path
-import re
 import sys
 from typing import Any
 
@@ -17,7 +16,7 @@ TRAIN_DIRECTORY = Path(__file__).resolve().parents[1] / "train"
 if str(TRAIN_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(TRAIN_DIRECTORY))
 
-from hf_product_reasoning_eval import TASKS  # noqa: E402
+from hf_product_reasoning_eval import TASKS, has_explicit_final_answer  # noqa: E402
 
 
 SCHEMA = "shohin-hf-product-reasoning-eval-v4-rescore"
@@ -25,18 +24,6 @@ SCHEMA = "shohin-hf-product-reasoning-eval-v4-rescore"
 
 class ProductRescoreError(RuntimeError):
     """Raised when a saved report cannot be rescored exactly."""
-
-
-def has_explicit_final_answer(completion: str) -> bool:
-    """Require a deliberate answer emission before crediting a capped trace."""
-
-    return r"\boxed" in completion or bool(
-        re.search(
-            r"(?:the\s+)?(?:final\s+)?answer\s*(?:is|:)",
-            completion,
-            flags=re.IGNORECASE,
-        )
-    )
 
 
 def _sha256(path: Path) -> str:

@@ -20,6 +20,7 @@ from hf_product_reasoning_eval import (
     extract_short_answer,
     gold_numeric_answer,
     gold_gsm8k,
+    has_explicit_final_answer,
     match_math,
     match_gsm8k,
     match_short_answer,
@@ -50,6 +51,13 @@ class ProductReasoningEvalTests(unittest.TestCase):
         self.assertEqual(extract_boxed(r"Thus the result is \boxed{\frac{3}{4}}."), r"\frac{3}{4}")
         self.assertEqual(gold_gsm8k({"answer": "work\n#### -42"}), "-42")
         self.assertEqual(gold_numeric_answer({"answer": "204"}), "204")
+
+    def test_explicit_final_answer_markers(self) -> None:
+        self.assertTrue(has_explicit_final_answer(r"Therefore \boxed{4}."))
+        self.assertTrue(has_explicit_final_answer("The final answer: B"))
+        self.assertFalse(
+            has_explicit_final_answer("A capped partial thought mentions option B")
+        )
 
     def test_gsm8k_normalizes_numeric_equivalence_and_currency_phrases(self) -> None:
         transcript = "Work. The answer is 1 dollar 40 cents."

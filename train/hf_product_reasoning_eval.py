@@ -141,6 +141,18 @@ def extract_short_answer(text: str) -> str | None:
     return lines[-1] if lines else None
 
 
+def has_explicit_final_answer(completion: str) -> bool:
+    """Return whether a trace deliberately emitted a final-answer marker."""
+
+    return r"\boxed" in completion or bool(
+        re.search(
+            r"(?:the\s+)?(?:final\s+)?answer\s*(?:is|:)",
+            completion,
+            flags=re.IGNORECASE,
+        )
+    )
+
+
 def gold_short_answer(row: dict[str, Any]) -> str | None:
     target = row.get("target") or row.get("answer")
     return str(target) if target is not None else None
@@ -657,7 +669,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 gold = "pass"
                 is_correct = bool(execution["passed"])
             else:
-                prediction = task["extract"](completion)
+                prediction = (
+                    None
+                    if exhausted and not has_explicit_final_answer(completion)
+                    else task["extract"](completion)
+                )
                 gold = task["gold"](row)
                 is_correct = bool(task["match"](prediction, gold))
             correct += int(is_correct)
@@ -687,7 +703,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     torch.cuda.synchronize()
     elapsed = time.monotonic() - started
     return {
-        "schema": "shohin-hf-product-reasoning-eval-v2",
+        "schema": "shohin-hf-product-reasoning-eval-v3",
         "status": "complete",
         "model_root": str((args.model_source_root or args.model_root).resolve()),
         "loaded_model_root": str(args.model_root.resolve()),
@@ -718,6 +734,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "elapsed_seconds": elapsed,
         "generated_tokens": generated_tokens,
         "max_token_exhausted": max_token_exhausted,
+        "cap_exhausted_explicit_answer_required": True,
         "generated_tokens_per_second": generated_tokens / elapsed,
         "peak_gpu_memory_bytes": int(torch.cuda.max_memory_allocated()),
         "selection_sha256": hashlib.sha256(
