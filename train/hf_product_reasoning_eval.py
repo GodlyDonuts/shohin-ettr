@@ -516,6 +516,7 @@ def _load_model(
             if str(metadata["arm"]).startswith("dense")
             else 192
         ),
+        unfreeze_layers=int(metadata.get("unfreeze_layers", 0)),
     ).to("cuda:0")
     update, restored_metadata = load_trainable_checkpoint(adapter_checkpoint, model)
     model.eval()

@@ -34,6 +34,7 @@ LORA_ALPHA=${LORA_ALPHA:-16}
 SEED=${SEED:-31}
 DATA_SEED=${DATA_SEED:-20260802}
 CHECKPOINT_INTERVAL=${CHECKPOINT_INTERVAL:-100}
+UNFREEZE_LAYERS=${UNFREEZE_LAYERS:-0}
 
 test -x "$PYTHON"
 test -f "$RUNTIME/train/hf_product_reasoning_train.py"
@@ -83,4 +84,5 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
   --lora-alpha "$LORA_ALPHA" \
   --seed "$SEED" \
   --data-seed "$DATA_SEED" \
-  --checkpoint-interval "$CHECKPOINT_INTERVAL"
+  --checkpoint-interval "$CHECKPOINT_INTERVAL" \
+  --unfreeze-layers "$UNFREEZE_LAYERS"

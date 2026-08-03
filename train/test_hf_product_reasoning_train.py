@@ -115,6 +115,40 @@ class ProductReasoningTrainTests(unittest.TestCase):
         self.assertIsInstance(module[0], LoRALinear)
         self.assertIsInstance(module[1][0], LoRALinear)
 
+    def test_last_layer_unfreeze_is_explicit_and_local(self) -> None:
+        frozen = ProductReasoningModel(
+            self._text_backbone(multimodal=False),
+            "baseline",
+            1,
+            2,
+            4.0,
+            8,
+            2,
+            1,
+            unfreeze_layers=0,
+        )
+        unfrozen = ProductReasoningModel(
+            self._text_backbone(multimodal=False),
+            "baseline",
+            1,
+            2,
+            4.0,
+            8,
+            2,
+            1,
+            unfreeze_layers=1,
+        )
+
+        frozen_projection = frozen.text_model.layers[0][0]
+        unfrozen_projection = unfrozen.text_model.layers[0][0]
+        self.assertIsInstance(frozen_projection, LoRALinear)
+        self.assertIsInstance(unfrozen_projection, LoRALinear)
+        self.assertFalse(frozen_projection.base.weight.requires_grad)
+        self.assertTrue(unfrozen_projection.base.weight.requires_grad)
+        self.assertGreater(
+            unfrozen.trainable_parameter_count(), frozen.trainable_parameter_count()
+        )
+
     def test_pack_masks_prompt_and_workspace(self) -> None:
         embedding = nn.Embedding(20, 6)
         prefix = torch.randn(2, 3, 6)

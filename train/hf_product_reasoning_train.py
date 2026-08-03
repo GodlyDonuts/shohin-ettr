@@ -316,6 +316,7 @@ class ProductReasoningModel(nn.Module):
         workspace_slots: int,
         recurrent_steps: int,
         dense_width: int = 192,
+        unfreeze_layers: int = 0,
     ) -> None:
         super().__init__()
         if arm not in {
@@ -338,11 +339,17 @@ class ProductReasoningModel(nn.Module):
         layers = self.text_model.layers
         if not 0 < lora_layers <= len(layers):
             raise ProductReasoningTrainError("LoRA layer count differs")
+        if not 0 <= unfreeze_layers <= len(layers):
+            raise ProductReasoningTrainError("unfrozen layer count differs")
+        self.unfreeze_layers = unfreeze_layers
         self.lora_projection_count = 0
         for layer in layers[-lora_layers:]:
             self.lora_projection_count += install_lora(layer, lora_rank, lora_alpha)
         if self.lora_projection_count == 0:
             raise ProductReasoningTrainError("no text projections received LoRA")
+        if unfreeze_layers:
+            for layer in layers[-unfreeze_layers:]:
+                layer.requires_grad_(True)
 
         self.workspace_config: IntegratedWorkspaceConfig | None = None
         self.workspace: IntegratedReasoningWorkspace | DenseReasoningWorkspace | None = None
@@ -639,6 +646,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         args.workspace_slots,
         args.recurrent_steps,
         args.dense_width,
+        args.unfreeze_layers,
     ).to("cuda:0")
     model.train()
     trainable_parameters = [
@@ -674,6 +682,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "lora_rank": args.lora_rank,
         "lora_alpha": args.lora_alpha,
         "lora_projection_count": model.lora_projection_count,
+        "unfreeze_layers": model.unfreeze_layers,
         "trainable_parameters": model.trainable_parameter_count(),
         "workspace_config": (
             asdict(model.workspace_config) if model.workspace_config else None
@@ -812,6 +821,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dense-width", type=int, default=192)
     parser.add_argument("--workspace-slots", type=int, default=16)
     parser.add_argument("--recurrent-steps", type=int, default=8)
+    parser.add_argument("--unfreeze-layers", type=int, default=0)
     parser.add_argument("--seed", type=int, default=31)
     parser.add_argument("--data-seed", type=int, default=20260802)
     parser.add_argument("--log-interval", type=int, default=10)
@@ -832,7 +842,11 @@ def parse_args() -> argparse.Namespace:
         args.log_interval,
         args.checkpoint_interval,
     )
-    if any(value <= 0 for value in positive) or args.learning_rate <= 0:
+    if (
+        any(value <= 0 for value in positive)
+        or args.learning_rate <= 0
+        or args.unfreeze_layers < 0
+    ):
         parser.error("training dimensions and learning rate must be positive")
     reserved_slots = args.workspace_slots if args.arm in {"ettr", "dense"} else 0
     if args.max_sequence_length <= reserved_slots + 16:
