@@ -1,4 +1,8 @@
-from hf_product_reasoning_rollouts import choose_positive, score_completion
+from hf_product_reasoning_rollouts import (
+    choose_positive,
+    combine_finalization,
+    score_completion,
+)
 
 
 def test_score_completion_requires_correct_explicit_math_answer() -> None:
@@ -27,3 +31,9 @@ def test_choose_positive_prefers_shortest_verified_trajectory() -> None:
     ]
     assert choose_positive(candidates)["completion"] == "short"
     assert choose_positive([candidates[1]]) is None
+
+
+def test_combine_finalization_only_appends_explicit_recovery() -> None:
+    assert combine_finalization("draft", True, r"\boxed{7}") == "draft\n\n\\boxed{7}"
+    assert combine_finalization("draft", False, r"\boxed{7}") == "draft"
+    assert combine_finalization("draft", True, "still reasoning") == "draft"

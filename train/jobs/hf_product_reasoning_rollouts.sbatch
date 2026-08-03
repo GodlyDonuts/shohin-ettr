@@ -26,6 +26,9 @@ PROMPT_BATCH_SIZE=${PROMPT_BATCH_SIZE:-1}
 SEED=${SEED:-20260803}
 MAX_NEW_TOKENS=${MAX_NEW_TOKENS:-1536}
 STAGE_MODEL=${STAGE_MODEL:-true}
+FINALIZE_EXHAUSTED=${FINALIZE_EXHAUSTED:-false}
+FINALIZE_MAX_NEW_TOKENS=${FINALIZE_MAX_NEW_TOKENS:-64}
+FINALIZE_BATCH_SIZE=${FINALIZE_BATCH_SIZE:-32}
 
 test -x "$PYTHON"
 for path in "$RUNTIME/train/hf_product_reasoning_rollouts.py" "$ADAPTER_CHECKPOINT" "$DATA"; do
@@ -55,6 +58,13 @@ export OPENBLAS_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export TOKENIZERS_PARALLELISM=false
 export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
+EXTRA_ARGS=()
+if [[ "$FINALIZE_EXHAUSTED" == "true" ]]; then
+  EXTRA_ARGS+=(--finalize-exhausted)
+elif [[ "$FINALIZE_EXHAUSTED" != "false" ]]; then
+  echo "FINALIZE_EXHAUSTED must be true or false" >&2
+  exit 5
+fi
 cd "$RUNTIME/train"
 "$PYTHON" hf_product_reasoning_rollouts.py \
   --model-root "$EFFECTIVE_MODEL_ROOT" \
@@ -69,5 +79,8 @@ cd "$RUNTIME/train"
   --count "$COUNT" \
   --samples "$SAMPLES" \
   --prompt-batch-size "$PROMPT_BATCH_SIZE" \
+  --finalize-max-new-tokens "$FINALIZE_MAX_NEW_TOKENS" \
+  --finalize-batch-size "$FINALIZE_BATCH_SIZE" \
   --seed "$SEED" \
-  --max-new-tokens "$MAX_NEW_TOKENS"
+  --max-new-tokens "$MAX_NEW_TOKENS" \
+  "${EXTRA_ARGS[@]}"

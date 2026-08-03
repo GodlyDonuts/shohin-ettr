@@ -16,6 +16,7 @@ from typing import Any
 from hf_product_reasoning_eval import (
     TASKS,
     _generate_completions,
+    _finalization_question,
     _generation_stop_token_ids,
     _load_model,
     _render_prompt,
@@ -62,6 +63,16 @@ def choose_positive(candidates: list[dict[str, Any]]) -> dict[str, Any] | None:
             candidate["sample_index"],
         ),
     )
+
+
+def combine_finalization(
+    completion: str,
+    exhausted: bool,
+    finalization: str | None,
+) -> str:
+    if exhausted and finalization and has_explicit_final_answer(finalization):
+        return f"{completion.rstrip()}\n\n{finalization.strip()}"
+    return completion
 
 
 def _atomic_lines(path: Path, rows: list[dict[str, Any]]) -> str:
@@ -145,6 +156,50 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             args.max_new_tokens,
             stop_token_ids,
         )
+        finalizations: list[str | None] = [None] * len(completions)
+        finalization_usage: list[tuple[int, bool]] = [(0, False)] * len(completions)
+        if args.finalize_exhausted:
+            finalize_indices = [
+                index
+                for index, (completion, (_, exhausted)) in enumerate(
+                    zip(completions, usage, strict=True)
+                )
+                if exhausted and not has_explicit_final_answer(completion)
+            ]
+            torch.manual_seed(batch_seed + 1)
+            torch.cuda.manual_seed_all(batch_seed + 1)
+            for finalize_start in range(
+                0, len(finalize_indices), args.finalize_batch_size
+            ):
+                chunk_indices = finalize_indices[
+                    finalize_start : finalize_start + args.finalize_batch_size
+                ]
+                finalize_rendered = [
+                    _render_prompt(
+                        tokenizer,
+                        _finalization_question(
+                            batch[index // args.samples]["question"],
+                            completions[index],
+                        ),
+                        True,
+                        False,
+                    )
+                    for index in chunk_indices
+                ]
+                recovered, recovered_usage = _generate_completions(
+                    model,
+                    tokenizer,
+                    finalize_rendered,
+                    True,
+                    "greedy",
+                    args.finalize_max_new_tokens,
+                    stop_token_ids,
+                )
+                for index, recovered_text, recovered_count in zip(
+                    chunk_indices, recovered, recovered_usage, strict=True
+                ):
+                    finalizations[index] = recovered_text
+                    finalization_usage[index] = recovered_count
         if len(completions) != len(batch) * args.samples:
             raise ProductRolloutError("generation batch cardinality differs")
         for batch_index, row in enumerate(batch):
@@ -159,7 +214,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     strict=True,
                 )
             ):
-                score = score_completion(row, completion)
+                flat_index = sample_start + sample_index
+                finalization = finalizations[flat_index]
+                finalize_token_count, finalize_exhausted = finalization_usage[flat_index]
+                scoring_completion = combine_finalization(
+                    completion, exhausted, finalization
+                )
+                score = score_completion(row, scoring_completion)
                 candidate = {
                     "schema": SCHEMA,
                     "identity_sha256": row["identity_sha256"],
@@ -169,9 +230,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     "sample_index": sample_index,
                     "batch_seed": batch_seed,
                     "row_seed": row_seed,
-                    "completion": completion,
-                    "generated_tokens": token_count,
-                    "max_token_exhausted": exhausted,
+                    "completion": scoring_completion,
+                    "draft_completion": completion,
+                    "finalization": finalization,
+                    "generated_tokens": token_count + finalize_token_count,
+                    "draft_generated_tokens": token_count,
+                    "finalization_generated_tokens": finalize_token_count,
+                    "max_token_exhausted": (
+                        finalize_exhausted if finalization is not None else exhausted
+                    ),
+                    "draft_max_token_exhausted": exhausted,
+                    "finalization_max_token_exhausted": finalize_exhausted,
                     **score,
                 }
                 candidate_rows.append(candidate)
@@ -181,8 +250,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 counters["explicit_candidates"] += int(
                     candidate["explicit_final_answer"]
                 )
-                counters["max_token_exhausted"] += int(exhausted)
-                counters["generated_tokens"] += token_count
+                counters["max_token_exhausted"] += int(
+                    candidate["max_token_exhausted"]
+                )
+                counters["draft_max_token_exhausted"] += int(exhausted)
+                counters["finalization_attempts"] += int(finalization is not None)
+                counters["finalization_max_token_exhausted"] += int(
+                    finalize_exhausted
+                )
+                counters["draft_generated_tokens"] += token_count
+                counters["finalization_generated_tokens"] += finalize_token_count
+                counters["generated_tokens"] += token_count + finalize_token_count
             positive = choose_positive(per_prompt)
             if positive is not None:
                 negatives = [candidate for candidate in per_prompt if not candidate["correct"]]
@@ -240,6 +318,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "count": args.count,
         "samples": args.samples,
         "prompt_batch_size": args.prompt_batch_size,
+        "finalize_exhausted": args.finalize_exhausted,
+        "finalize_max_new_tokens": args.finalize_max_new_tokens,
+        "finalize_batch_size": args.finalize_batch_size,
         "seed": args.seed,
         "max_new_tokens": args.max_new_tokens,
         "counters": dict(sorted(counters.items())),
@@ -272,6 +353,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--count", type=int, default=128)
     parser.add_argument("--samples", type=int, default=4)
     parser.add_argument("--prompt-batch-size", type=int, default=1)
+    parser.add_argument("--finalize-exhausted", action="store_true")
+    parser.add_argument("--finalize-max-new-tokens", type=int, default=64)
+    parser.add_argument("--finalize-batch-size", type=int, default=32)
     parser.add_argument("--seed", type=int, default=20260803)
     parser.add_argument("--max-new-tokens", type=int, default=1536)
     args = parser.parse_args()
@@ -280,6 +364,8 @@ def parse_args() -> argparse.Namespace:
         or args.samples > 8
         or args.prompt_batch_size <= 0
         or args.prompt_batch_size > 64
+        or args.finalize_max_new_tokens <= 0
+        or args.finalize_batch_size <= 0
         or args.max_new_tokens <= 0
     ):
         parser.error(
