@@ -31,7 +31,7 @@
 > claims are secondary to answer-quality deltas. The active 72-hour queue is
 > `docs/research/SHOHIN_72H_PRODUCT_REASONING_EXECUTION.md`.
 >
-> **PRODUCT CAMPAIGN STATUS — 2026-08-02 23:57 EDT:** Frozen
+> **PRODUCT CAMPAIGN STATUS — 2026-08-03 00:10 EDT:** Frozen
 > `Qwen/Qwen3.5-0.8B@2fc06364715b967f1860aea9cf38778875588b17`
 > now has directly measured baselines: GSM8K `17/100`, MATH-500 `4/100`,
 > AIME-2024 `0/30`, BBH logic `13/100`, HumanEval `3/20`, and MBPP `5/20`
@@ -46,23 +46,37 @@
 > T2 replacement `729849 -> 729850` completed at NLL `1.168 -> 0.455`
 > (`-61.0%`, `16/16`), narrowly ahead of C2 and materially ahead of LoRA.
 > Matched B1/T2/C2 200-update jobs are `729854/729855/729856`, with identical
-> six-board evaluations `729858--729875` dependency-bound. Official GPQA-Diamond is frozen at 198 rows under source commit
+> six-board evaluations `729858--729875` dependency-bound. B1 completed 200
+> updates and 429,658 charged target tokens in 378.9 seconds (1,133.9 charged
+> tok/s, 9.10 GB peak GPU memory); its logged minibatch language loss moves
+> from `1.305` at update 1 to `0.392` at update 200. T2 is running unchanged
+> on `evc24`; C2 remains pending. Do not compare answer capability until all
+> three checkpoints finish their identical boards. Official GPQA-Diamond is frozen at 198 rows under source commit
 > `56686c06f5e19865c153de0fdb11be3890014df7`; baseline `729846` is queued.
 > OpenThoughts jobs `729807 -> 729848` completed: 64,938 unique seed rows,
 > 19 additional expanded-board overlap drops, and 64,919 surviving rows at
 > SHA-256 `d9daa5720f7d27ed9c49a24be5fecf3f9db80bdd9dc12d648f11907e12928d90`.
 > They remain teacher-unverified. The next CPU lane uses the upstream sixteen
 > annotations as a conservative answer-consensus verifier for math/science;
-> Stokes job `761159` is live from private commit `e55412f`; code remains
-> excluded without execution. Fast-kernel canary `729847` was canceled hardware-invalid on
+> Stokes consensus job `761159` is live from private commit `e55412f`. Two
+> answer-verified builders from private commit `12f3b0c` are also live on
+> Stokes: OpenScienceReasoning-2 job `761160` at pinned revision
+> `174b02c9cdf231f220765b2a1d5ece4550921894`, and OpenMathReasoning job
+> `761161` at pinned revision
+> `d3d08664755704f422af97d43a7ff0ded4bd95df`. Their outputs are not admitted
+> until immutable reports, benchmark replay, and output hashes complete. Code
+> remains excluded without execution. Fast-kernel canary `729847` was canceled hardware-invalid on
 > unhealthy `evc33` after more than five minutes, no report, and a stuck
 > `nvidia-smi`; retain the known-good base runtime. Product evaluator v2 records
 > per-sample generated tokens and cap exhaustion. Corrected code results are
 > HumanEval `6/20` and MBPP `5/20`. GPQA thinking mode is `20/198`, but all
 > `198/198` rows cap-exhausted; no-thinking control `729877` is the usable
 > baseline gate.
+> `pipeline/aggregate_product_reasoning_campaign.py` is the fail-closed
+> campaign scorer; it validates matched report contracts and computes the
+> five-domain numeric gate, but transcript coherence remains manual.
 >
-> **Last updated:** 2026-08-02 23:57 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-03 00:10 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,

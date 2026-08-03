@@ -2,7 +2,7 @@
 
 Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 
-## Live Scoreboard (2026-08-02 23:57 EDT)
+## Live Scoreboard (2026-08-03 00:10 EDT)
 
 | Result | Status |
 |---|---:|
@@ -20,6 +20,9 @@ Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 | `C2` gated dense residual mechanics | pass; 6.642M trainable; 202.5 charged tok/s |
 | `C2` exact 16-row/100-update fit | NLL 1.154 -> 0.457; -60.4%; 16/16 improved |
 | `T2` exact 16-row/100-update fit | NLL 1.168 -> 0.455; -61.0%; 16/16 improved |
+| `B1` matched short train | complete; 200 updates; 429,658 charged target tokens; 1,133.9 charged tok/s; 9.10 GB peak |
+| `T2` matched short train | running as job `729855`; identical data/order/budget |
+| `C2` matched short train | pending as job `729856`; identical data/order/budget |
 
 Transcript inspection shows the deterministic thinking score is strongly
 affected by decode behavior: many GSM8K completions calculate the right value
@@ -121,6 +124,11 @@ The first result is evidence of a useful mechanism, not proof that ETTR alone
 caused general reasoning. The full sealed board is opened only after the dev
 gate passes.
 
+`pipeline/aggregate_product_reasoning_campaign.py` enforces report completeness,
+decode/data comparability, the five-domain numeric gates, and the dense-control
+comparison. It deliberately leaves transcript coherence as a required manual
+gate rather than inferring it from aggregate accuracy.
+
 ## Compared Systems
 
 | Arm | Purpose |
@@ -199,6 +207,16 @@ and a three-vote margin. Code is excluded from this lane until execution can
 verify it. Stokes job `761159` runs from private commit `e55412f`; its runtime
 manifest SHA-256 is
 `f515310809570f251709e9b09f8aae2986e18db1cf643a120dd4e6f50059b8b7`.
+
+Two independent expected-answer lanes run from private commit `12f3b0c`.
+Stokes job `761160` reads pinned
+`nvidia/OpenScienceReasoning-2@174b02c9cdf231f220765b2a1d5ece4550921894`
+and admits only rows whose normalized generated final answer exactly matches
+the provided expected answer. Job `761161` applies the same rule to pinned
+`nvidia/OpenMathReasoning@d3d08664755704f422af97d43a7ff0ded4bd95df`,
+restricted to `problem_type=has_answer_extracted`. Both replay the complete
+local benchmark inventory before atomic output. A source label or upstream
+teacher score alone cannot admit a row.
 
 ## Execution Queue
 

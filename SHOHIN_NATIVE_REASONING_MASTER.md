@@ -54379,3 +54379,19 @@ move. The first GPQA-Diamond thinking run scores `20/198`, yet every generation
 exhausted 768 tokens and most extracted predictions are unfinished fragments;
 it is a decoding-path failure, not a sound capability estimate. A concise
 no-thinking control is required before using GPQA in the product scoreboard.
+
+The first matched short-training checkpoint is now real. Same-data LoRA B1
+completed 200 updates over 429,658 charged target tokens in 378.9 seconds,
+measuring 1,133.9 charged target tokens/second and 9.10 GB peak GPU memory.
+Its logged minibatch language loss is `1.305` at update 1 and `0.392` at
+update 200. T2 is running under the identical stream and C2 is queued; none of
+these training-loss values is a product claim. The decisive evidence remains
+the eighteen dependency-bound, identically decoded answer boards.
+
+Verified-corpus construction has also split into three independent CPU lanes.
+OpenThoughts consensus job `761159` requires agreement across its repeated
+annotations. Expected-answer jobs `761160/761161` process pinned
+OpenScienceReasoning-2/OpenMathReasoning revisions and admit only exact
+normalized agreement between a generated final answer and the provided
+reference, followed by complete benchmark overlap replay. Their pending
+outputs are not training data until the atomic reports and hashes exist.
