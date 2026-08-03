@@ -26,8 +26,12 @@ export TOKENIZERS_PARALLELISM=false
 
 trap 'touch "$ENV_ROOT/FAILED" 2>/dev/null || true' ERR
 "$BASE_PYTHON" -m venv --system-site-packages "$ENV_ROOT"
-"$ENV_ROOT/bin/python" -m pip install --no-deps \
-  "git+https://github.com/huggingface/transformers.git@${TRANSFORMERS_COMMIT}"
+"$ENV_ROOT/bin/python" -m pip install \
+  "git+https://github.com/huggingface/transformers.git@${TRANSFORMERS_COMMIT}" \
+  "torchvision==0.21.0" \
+  accelerate \
+  peft \
+  sentencepiece
 
 "$ENV_ROOT/bin/python" - <<'PY' > "$ENV_ROOT/runtime.json"
 import json
