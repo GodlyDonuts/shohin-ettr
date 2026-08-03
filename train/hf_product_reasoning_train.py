@@ -498,7 +498,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise ProductReasoningTrainError("training population is smaller than a batch")
     metadata = {
         "arm": args.arm,
-        "model_root": str(args.model_root.resolve()),
+        "model_root": str((args.model_source_root or args.model_root).resolve()),
+        "loaded_model_root": str(args.model_root.resolve()),
         "model_revision": args.model_revision,
         "data": str(args.data.resolve()),
         "data_sha256": data_hash,
@@ -606,6 +607,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model-root", type=Path, required=True)
+    parser.add_argument("--model-source-root", type=Path)
     parser.add_argument("--model-revision", required=True)
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)

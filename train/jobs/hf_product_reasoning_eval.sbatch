@@ -26,12 +26,27 @@ MAX_NEW_TOKENS=${MAX_NEW_TOKENS:-768}
 GENERATION_MODE=${GENERATION_MODE:-greedy}
 ADAPTER_CHECKPOINT=${ADAPTER_CHECKPOINT:-}
 ENABLE_THINKING=${ENABLE_THINKING:-true}
+STAGE_MODEL=${STAGE_MODEL:-true}
 
 test -x "$PYTHON"
 test -f "$RUNTIME/train/hf_product_reasoning_eval.py"
 test -d "$MODEL_ROOT"
 test -f "$DATA"
 test ! -e "$OUTPUT"
+
+SOURCE_MODEL_ROOT=$MODEL_ROOT
+EFFECTIVE_MODEL_ROOT=$MODEL_ROOT
+if [[ "$STAGE_MODEL" == "true" ]]; then
+  LOCAL_PARENT=${SLURM_TMPDIR:-/tmp/$USER/$SLURM_JOB_ID}
+  EFFECTIVE_MODEL_ROOT=$LOCAL_PARENT/model
+  mkdir -p "$EFFECTIVE_MODEL_ROOT"
+  cp -a "$SOURCE_MODEL_ROOT"/. "$EFFECTIVE_MODEL_ROOT"/
+  test -f "$EFFECTIVE_MODEL_ROOT/config.json"
+  test -f "$EFFECTIVE_MODEL_ROOT/model.safetensors.index.json"
+elif [[ "$STAGE_MODEL" != "false" ]]; then
+  echo "STAGE_MODEL must be true or false" >&2
+  exit 2
+fi
 
 mkdir -p logs "$(dirname "$OUTPUT")"
 export OMP_NUM_THREADS=1
@@ -55,7 +70,8 @@ elif [[ "$ENABLE_THINKING" != "true" ]]; then
 fi
 
 "$PYTHON" "$RUNTIME/train/hf_product_reasoning_eval.py" \
-  --model-root "$MODEL_ROOT" \
+  --model-root "$EFFECTIVE_MODEL_ROOT" \
+  --model-source-root "$SOURCE_MODEL_ROOT" \
   --model-revision "$MODEL_REVISION" \
   --task "$TASK" \
   --data "$DATA" \
