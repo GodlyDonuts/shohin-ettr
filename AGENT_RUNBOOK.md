@@ -169,6 +169,20 @@
 > training. The practical single-model target remains improving code/logic
 > without surrendering C2's math gains.
 >
+> **TACO AUDIT RECOVERY — 2026-08-03 10:57 EDT:** Stokes job `761178`
+> timed out after 6h00m with a zero-byte partial because the old implementation
+> scanned the complete streaming source before submitting any of its 9,000
+> candidates to the 48 verification workers. This is a pipeline failure, not
+> a code-quality result. Private commit `c6febaa` overlaps deterministic
+> source-order verification with source discovery, bounds the in-flight FIFO,
+> and fsyncs resumable output every 100 checked rows. Immutable minimal Stokes
+> runtime `scratchpad/taco_audit_c6febaa_r1` has SHA256SUMS SHA-256
+> `f793bc48cf18a54c6ec8096fca27bedebbb0db906e723952e4e17cdc395c4ac4`.
+> Replacement `761230` is running with the identical candidate artifact,
+> TACO revision, all supplied tests, 48 workers, and a 12-hour ceiling; final
+> token-balanced mix `761231` is held `afterok:761230`. Never resurrect dead
+> dependency `761203` or the pre-streaming auditor.
+>
 > **PRODUCT CAMPAIGN STATUS — 2026-08-03 00:22 EDT:** Frozen
 > `Qwen/Qwen3.5-0.8B@2fc06364715b967f1860aea9cf38778875588b17`
 > now has directly measured baselines: GSM8K `17/100`, MATH-500 `4/100`,

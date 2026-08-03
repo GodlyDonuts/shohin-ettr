@@ -54705,3 +54705,16 @@ seed, or feature variant follows. Any future gate requires paired expert
 outcome supervision from a large disjoint training-only routing corpus or
 joint end-to-end optimization, followed by one untouched-board comparison
 against the strongest single frozen arm.
+
+### TACO audit durability correction (2026-08-03)
+
+The 9,000-candidate all-test audit `761178` timed out after six hours without
+checking a candidate or writing a durable row. The old program performed the
+entire streaming source scan before starting its 48-worker executor. This is
+a pipeline scheduling failure, not negative evidence about TACO examples.
+Private commit `c6febaa` preserves deterministic source-order output while
+overlapping source discovery and bounded test execution, limits in-flight
+futures to twice the worker count, and fsyncs every 100 checked rows for exact
+resume. Replacement `761230` uses the same candidate bytes, dataset revision,
+all tests, and 48 workers under a 12-hour limit. Mix builder `761231` remains
+strictly after-success and cannot consume a partial audit.

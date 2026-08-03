@@ -524,6 +524,15 @@ Commit `048dd8e` then makes the token selector consume verified rows before
 weaker fallbacks within a domain. Pinned Stokes jobs `761176 -> 761178` scale
 this route toward 9,000 candidates and a 48-CPU all-tests audit.
 
+The original audit `761178` timed out after six hours with zero checked rows:
+its implementation first scanned the entire streaming source and only then
+submitted matches to the 48 verification workers. This is not a data-quality
+failure. Commit `c6febaa` changes the audit to overlap deterministic
+source-order verification with discovery and fsync resumable output every 100
+checked candidates. Replacement `761230` runs the identical 9,000-candidate
+input, pinned source revision, and all supplied tests with a 12-hour ceiling;
+final mix `761231` is held after successful completion.
+
 ## Execution Queue
 
 ### Hours 0--6: make the backbone and measurements real
