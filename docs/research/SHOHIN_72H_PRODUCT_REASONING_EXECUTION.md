@@ -58,6 +58,15 @@ Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 | live V11i B1 scale | job `730161`; 5,000 updates; BS4/ACC4; ~5.38k target tok/s on real mixed lengths |
 | live V11i C2 scale | job `730177`; 5,000 updates; BS2/ACC8; ~3.14k target tok/s; original BS4 job OOMed before update 1 |
 | V11i matched public boards | B1 `730163--730169`; C2 `730178--730184`; seven boards per arm |
+| V11i 1k/3k/5k B1 macro | 34.42% / **40.03%** / 37.53%; 178 / **207** / 197 solved |
+| V11i 1k/3k/5k C2 macro | 37.12% / **42.44%** / 40.84%; 186 / **226** / 212 solved |
+| selected V11i checkpoint | 3,000 updates; 16,783,669 charged targets; about 2.10 corpus passes |
+| sealed full B1/C2 macro | 39.960% / **42.104%** over 3,930 tasks; 1,989 / 2,007 solved |
+| sealed C2 gains | GSM8K +58, MATH +41, GPQA +14 answers |
+| sealed C2 regressions | executable code -19, BBH logic -76, AIME -1 |
+| sealed promotion decision | C2 is best single arm but **fails broad gate**: +2.144 macro and material code/logic regressions |
+| static domain-routing ceiling | 43.894% macro / 2,102 solved; diagnostic ceiling, not a model result |
+| direct manual composition B1/C2 | 5/12 / 8/12; both still fail four combinatorial/state-composition prompts |
 
 ## Decisive U1000 Result
 

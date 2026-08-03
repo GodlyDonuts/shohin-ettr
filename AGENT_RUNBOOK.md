@@ -95,6 +95,50 @@
 > remains live; final larger-code mix `761203` is held after it and must not
 > replace this interim lineage silently.
 >
+> **SMOL V11 PRODUCT MILESTONE — 2026-08-03 10:11 EDT:** The matched
+> learning curve is complete. At 1k/3k/5k updates, B1 reaches
+> `34.42%/40.03%/37.53%` macro and `178/207/197` solved of 538; C2 reaches
+> `37.12%/42.44%/40.84%` and `186/226/212`. Step 3k is therefore the selected
+> checkpoint for both arms. It consumed exactly `16,783,669` charged targets,
+> about 2.10 passes over the 8.006M-token stream. Continuing to 5k consumed
+> `28,042,427` targets, about 3.50 passes, and reduced held-out capability.
+> Do not select the final checkpoint merely because it trained longer.
+>
+> The sealed 3k milestone opens all `1,319` GSM8K, `500` MATH-500, `164`
+> HumanEval, `499` unique MBPP, `198` GPQA-Diamond, and `1,250` BBH-logic
+> problems (`3,930` total; AIME-2024 is reported separately). B1/C2 score:
+> GSM8K `1009/1067`, MATH `203/244`, executable code `116/97` of 663,
+> GPQA `29/43`, BBH `632/556`, and AIME `2/1` of 30. Five-domain macro is
+> `39.960% / 42.104%`; solved count is `1,989 / 2,007`. C2 gains 2.144 macro
+> points and 18 answers, but loses 19 code tasks and 76 logic tasks. It is the
+> strongest single arm, yet it fails the fixed broad-promotion gate because
+> the macro lift is below three points and the code/logic regressions exceed
+> two points.
+>
+> A domain-routed static ceiling chooses C2 for GSM8K/MATH/GPQA and B1 for
+> code/logic, reaching `43.894%` macro and `2,102/3,930` solved. This is not a
+> model result. It authorizes one learned prompt-gate experiment over the two
+> frozen 3k adapters; it does not authorize more globally active C2 duration
+> or width variants. The router must be trained without sealed labels and
+> evaluated once on the unchanged full board.
+>
+> Direct interaction on twelve hand-written composition problems is B1/C2
+> `5/12 / 8/12`. C2 preserves a cents conversion and emits completed
+> recurrence/probability answers that B1 computes but truncates. Both fail the
+> grid-path, CRT, mislabeled-box, and schedule-counting prompts. C2 is more
+> disciplined and better at carrying familiar computations to an answer; it
+> is not yet a robust general combinatorial reasoner. Sampled C2-only MATH
+> wins are coherent, while several C2-only GPQA wins contain incorrect
+> chemistry or quantitative explanations and must remain answer-accuracy
+> evidence only.
+>
+> B1 completed at `5,508.5` charged tok/s, 36.39GB peak, and 1.679M trainable
+> parameters; C2 completed at `3,321.1` tok/s, 49.59GB, and 7.813M trainable
+> parameters. Full MBPP contained one duplicated `count_Squares` prompt.
+> Private commit `e8b27d0` freezes a deterministic 499-row board; source SHA
+> is `730cb8e3...d8ba44`, output SHA is `2697f139...ae0409`, and exactly task
+> id 76 is dropped in favor of id 347. Manual board commit is `eeafb80`.
+>
 > **PRODUCT CAMPAIGN STATUS — 2026-08-03 00:22 EDT:** Frozen
 > `Qwen/Qwen3.5-0.8B@2fc06364715b967f1860aea9cf38778875588b17`
 > now has directly measured baselines: GSM8K `17/100`, MATH-500 `4/100`,

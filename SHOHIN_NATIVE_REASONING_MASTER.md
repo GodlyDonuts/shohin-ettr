@@ -54603,3 +54603,62 @@ reaches 1,095.8 tok/s. BS16/ACC1 OOMs for both architectural arms at about
 78.9 GB, establishing BS8 as the safe H100 boundary. Optimized V10 jobs
 `730036/730037/730038`, exact board chains, strict aggregate `730057`, and
 AIME jobs `730058--730060` are active.
+
+## SmolLM3 V11 Scale and Sealed Milestone (2026-08-03)
+
+The V11 campaign establishes a useful but bounded practical result. Both arms
+use exact SmolLM3 revision `a07cc9a04f16550a088caea529712d1d335b0ac1`, the
+same V11i data SHA `597293b6d5248b6ffe90316643ee07535c30ff2c5447127f28e0ccebdc2cc423`,
+4,096-token context, sixteen examples per optimizer update, seed/order, and
+learning-rate schedule. B1 is LoRA with 1,679,360 trainable parameters. C2
+adds the untied dense residual workspace and has 7,813,001 trainable
+parameters. B1 runs at 5,508.5 charged target tok/s with 36.39GB peak H100
+memory; C2 runs at 3,321.1 tok/s with 49.59GB peak.
+
+The learning curve, under the same strict v7 semantic evaluator, is:
+
+| Checkpoint | B1 macro | B1 solved | C2 macro | C2 solved |
+|---|---:|---:|---:|---:|
+| 1,000 updates | 34.42% | 178/538 | 37.12% | 186/538 |
+| 3,000 updates | **40.03%** | **207/538** | **42.44%** | **226/538** |
+| 5,000 updates | 37.53% | 197/538 | 40.84% | 212/538 |
+
+The selected 3,000-update checkpoint consumed 16,783,669 charged targets,
+about 2.10 passes over the 8,005,985-token stream. Five thousand updates
+consume 28,042,427 targets, about 3.50 passes, and regress both arms. More
+replay is not more capability.
+
+The selected checkpoints were then evaluated on the sealed full boards:
+
+| Domain | B1 | C2 | Delta C2-B1 |
+|---|---:|---:|---:|
+| GSM8K | 1009/1319 (76.50%) | 1067/1319 (80.89%) | +58 |
+| MATH-500 | 203/500 (40.60%) | 244/500 (48.80%) | +41 |
+| executable code | 116/663 (17.50%) | 97/663 (14.63%) | -19 |
+| GPQA-Diamond | 29/198 (14.65%) | 43/198 (21.72%) | +14 |
+| BBH logic | 632/1250 (50.56%) | 556/1250 (44.48%) | -76 |
+| five-domain macro | **39.960%** | **42.104%** | **+2.144 points** |
+| solved | 1,989/3,930 | 2,007/3,930 | +18 |
+| AIME-2024 | 2/30 | 1/30 | -1 |
+
+C2 is the best single arm but does not pass the broad promotion gate. It
+improves grade-school math, competition math, and GPQA answer accuracy while
+regressing executable code, logic, and AIME. Sampled C2-only MATH solutions
+are valid derivations. Sampled C2-only GPQA answers often contain factual or
+quantitative errors, so the science score cannot be called trustworthy
+scientific reasoning.
+
+The arms are complementary. An oracle domain choice gives 43.894% macro and
+2,102/3,930 solved by selecting C2 for GSM8K/MATH/GPQA and B1 for code/logic.
+That ceiling is not a model score. The only justified architectural follow-up
+is a learned prompt gate trained on ordinary source-domain labels, with both
+3k experts frozen and one unchanged sealed evaluation. More globally active
+dense-workspace duration/width variants are not justified.
+
+Direct interaction supports the same bounded diagnosis. On twelve new manual
+composition questions, B1 solves 5 and C2 solves 8. C2 correctly preserves a
+cents conversion and avoids B1's answer-emission truncation on recurrence and
+probability. Both fail grid-path exclusion, CRT, mislabeled boxes, and
+schedule counting. The current system is more reliable at familiar
+multi-step calculation, but genuine general compositional reasoning remains
+unfinished.
