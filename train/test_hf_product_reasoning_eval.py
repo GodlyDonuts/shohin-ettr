@@ -5,6 +5,7 @@ from __future__ import annotations
 import unittest
 
 from hf_product_reasoning_eval import (
+    _completion_usage,
     ProductEvalError,
     _bounded_program_result,
     _humaneval_program,
@@ -23,6 +24,10 @@ from hf_product_reasoning_eval import (
 
 
 class ProductReasoningEvalTests(unittest.TestCase):
+    def test_completion_usage_distinguishes_eos_from_exhaustion(self) -> None:
+        self.assertEqual(_completion_usage([4, 5, 2, 2], 2, 4), (3, False))
+        self.assertEqual(_completion_usage([4, 5, 6, 7], 2, 4), (4, True))
+
     def test_extracts_explicit_and_boxed_answers(self) -> None:
         self.assertEqual(extract_gsm8k("Work. Final answer: 1,234."), "1234")
         self.assertEqual(extract_boxed(r"Thus the result is \boxed{\frac{3}{4}}."), r"\frac{3}{4}")

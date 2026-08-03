@@ -416,6 +416,16 @@ def _generation_arguments(mode: str, max_new_tokens: int) -> dict[str, Any]:
     raise ProductEvalError("unsupported generation mode")
 
 
+def _completion_usage(
+    token_ids: list[int],
+    eos_token_id: int | None,
+    max_new_tokens: int,
+) -> tuple[int, bool]:
+    if eos_token_id is not None and eos_token_id in token_ids:
+        return token_ids.index(eos_token_id) + 1, False
+    return len(token_ids), len(token_ids) >= max_new_tokens
+
+
 def _make_prompt(question: str) -> str:
     return (
         "Solve the problem carefully. Show the reasoning needed to verify the "
@@ -502,6 +512,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     started = time.monotonic()
     correct = 0
     generated_tokens = 0
+    max_token_exhausted = 0
     results: list[dict[str, Any]] = []
 
     for offset in range(0, len(selected), args.batch_size):
@@ -538,7 +549,20 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 )
                 completion_ids = output
         completions = tokenizer.batch_decode(completion_ids, skip_special_tokens=True)
-        for row, completion in zip(batch, completions, strict=True):
+        completion_usage = [
+            _completion_usage(
+                token_row.tolist(),
+                tokenizer.eos_token_id,
+                args.max_new_tokens,
+            )
+            for token_row in completion_ids
+        ]
+        for row, completion, (token_count, exhausted) in zip(
+            batch,
+            completions,
+            completion_usage,
+            strict=True,
+        ):
             execution = None
             program = None
             if task["kind"] == "code":
@@ -556,6 +580,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 gold = task["gold"](row)
                 is_correct = bool(task["match"](prediction, gold))
             correct += int(is_correct)
+            generated_tokens += token_count
+            max_token_exhausted += int(exhausted)
             identity = _row_identity(args.task, row)
             results.append(
                 {
@@ -564,12 +590,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     "gold": gold,
                     "prediction": prediction,
                     "correct": is_correct,
+                    "generated_tokens": token_count,
+                    "max_token_exhausted": exhausted,
                     "completion": completion,
                     "program": program,
                     "execution": execution,
                 }
             )
-        generated_tokens += int(completion_ids.shape[1]) * len(batch)
         print(
             f"[product-eval] {min(offset + len(batch), len(selected))}/"
             f"{len(selected)} correct={correct}",
@@ -579,7 +606,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     torch.cuda.synchronize()
     elapsed = time.monotonic() - started
     return {
-        "schema": "shohin-hf-product-reasoning-eval-v1",
+        "schema": "shohin-hf-product-reasoning-eval-v2",
         "status": "complete",
         "model_root": str((args.model_source_root or args.model_root).resolve()),
         "loaded_model_root": str(args.model_root.resolve()),
@@ -608,6 +635,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "accuracy": correct / len(selected),
         "elapsed_seconds": elapsed,
         "generated_tokens": generated_tokens,
+        "max_token_exhausted": max_token_exhausted,
         "generated_tokens_per_second": generated_tokens / elapsed,
         "peak_gpu_memory_bytes": int(torch.cuda.max_memory_allocated()),
         "selection_sha256": hashlib.sha256(
