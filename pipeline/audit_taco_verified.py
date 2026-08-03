@@ -7,10 +7,11 @@ program and executes all bounded supplied stdin/stdout cases before emitting a
 new immutable derivative. It never mutates its input.
 """
 import argparse
+from collections import deque
+from concurrent.futures import ThreadPoolExecutor
 import json
 import os
 from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor
 
 from curate_apps import run_solution
 from curate_taco_verified import parse_cases
@@ -105,6 +106,94 @@ def verify_source_row(row, source, max_case_chars, timeout):
     return clean, None
 
 
+def audit_source_stream(
+    *,
+    candidates,
+    stream,
+    output,
+    resumed_rows,
+    workers,
+    progress_every,
+    max_source_rows,
+    max_case_chars,
+    timeout,
+):
+    """Overlap source discovery with bounded verification and durable output.
+
+    Keeping only a small FIFO of futures preserves deterministic source-order
+    output while ensuring a time-limited audit writes resumable progress during
+    the source scan instead of waiting for the entire dataset traversal.
+    """
+    remaining = dict(candidates)
+    pending = deque()
+    kept = resumed_rows
+    matched = resumed_rows
+    checked = resumed_rows
+    source_rows = 0
+    drops = {key: 0 for key in ("missing_cases", "execution", "source_unmatched")}
+
+    def verify(match):
+        row, source = match
+        return verify_source_row(row, source, max_case_chars, timeout)
+
+    def record(future):
+        nonlocal checked, kept
+        clean, drop = future.result()
+        checked += 1
+        if drop:
+            drops[drop] += 1
+        else:
+            output.write(json.dumps(clean, ensure_ascii=False) + "\n")
+            kept += 1
+        if checked % progress_every == 0:
+            output.flush()
+            os.fsync(output.fileno())
+            print(
+                f"[taco-full-audit] matched={matched} checked={checked} kept={kept} "
+                f"source_rows_scanned={source_rows} source_remaining={len(remaining)} "
+                f"verification_pending={len(pending)} resumed={resumed_rows} "
+                f"workers={workers}",
+                flush=True,
+            )
+
+    max_pending = max(workers * 2, 1)
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        for source in stream:
+            source_rows += 1
+            if max_source_rows and source_rows > max_source_rows:
+                break
+            key = str(source.get("id"))
+            row = remaining.pop(key, None)
+            if row is None:
+                continue
+            matched += 1
+            pending.append(executor.submit(verify, (row, source)))
+            if len(pending) >= max_pending:
+                record(pending.popleft())
+            if not remaining:
+                break
+        while pending:
+            record(pending.popleft())
+
+    output.flush()
+    os.fsync(output.fileno())
+    drops["source_unmatched"] = len(remaining)
+    print(
+        f"[taco-full-audit] matched={matched} checked={checked} kept={kept} "
+        f"source_rows_scanned={source_rows} source_remaining={len(remaining)} "
+        f"verification_pending=0 resumed={resumed_rows} workers={workers}",
+        flush=True,
+    )
+    return {
+        "source_rows_scanned": source_rows,
+        "matched_source_rows": matched,
+        "checked_source_rows": checked,
+        "kept": kept,
+        "remaining": remaining,
+        "drops": drops,
+    }
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", required=True)
@@ -140,69 +229,40 @@ def main():
     completed = read_completed_partial(partial, candidates) if partial.exists() else {}
     candidates = {key: row for key, row in candidates.items() if key not in completed}
     resumed = len(completed)
-    found = kept = resumed
-    source_rows = 0
-    drops = {key: 0 for key in ("missing_cases", "execution", "source_unmatched")}
     stream = load_dataset(
         args.dataset,
         split="train",
         streaming=True,
         revision=args.revision,
     )
-    matches = []
-    for source in stream:
-        source_rows += 1
-        if args.max_source_rows and source_rows > args.max_source_rows:
-            break
-        key = str(source.get("id"))
-        row = candidates.pop(key, None)
-        if row is None:
-            continue
-        matches.append((row, source))
-        if not candidates:
-            break
-    drops["source_unmatched"] = len(candidates)
-    if candidates:
-        partial.unlink(missing_ok=True)
-        raise SystemExit(f"[taco-full-audit] source records missing for {len(candidates)} input rows")
-
-    found += len(matches)
     with partial.open("a" if resumed else "w") as out:
-        def verify(match):
-            row, source = match
-            return verify_source_row(row, source, args.max_case_chars, args.timeout)
-
-        with ThreadPoolExecutor(max_workers=args.workers) as executor:
-            for index, (clean, drop) in enumerate(executor.map(verify, matches), 1):
-                if drop:
-                    drops[drop] += 1
-                else:
-                    out.write(json.dumps(clean, ensure_ascii=False) + "\n")
-                    kept += 1
-                checked = resumed + index
-                if checked % args.progress_every == 0 or index == len(matches):
-                # A time-limited Slurm job can be terminated between progress
-                # lines. Make every reported retained batch durable before the
-                # caller is told it exists, so --resume-partial has a real
-                # checkpoint rather than only a buffered TextIOWriter.
-                    out.flush()
-                    os.fsync(out.fileno())
-                    print(
-                        f"[taco-full-audit] matched={checked} kept={kept} "
-                        f"source_rows_scanned={source_rows} remaining={len(matches) - index} "
-                        f"resumed={resumed} workers={args.workers}",
-                        flush=True,
-                    )
+        result = audit_source_stream(
+            candidates=candidates,
+            stream=stream,
+            output=out,
+            resumed_rows=resumed,
+            workers=args.workers,
+            progress_every=args.progress_every,
+            max_source_rows=args.max_source_rows,
+            max_case_chars=args.max_case_chars,
+            timeout=args.timeout,
+        )
+    if result["remaining"]:
+        raise SystemExit(
+            f"[taco-full-audit] source records missing for {len(result['remaining'])} input rows; "
+            f"durable partial retained at {partial}"
+        )
     os.replace(partial, out_path)
     print(json.dumps({
         "dataset": args.dataset,
         "dataset_revision": args.revision,
-        "input_rows": found + len(candidates),
-        "source_rows_scanned": source_rows,
-        "matched_source_rows": found,
-        "kept": kept,
+        "input_rows": result["matched_source_rows"] + len(result["remaining"]),
+        "source_rows_scanned": result["source_rows_scanned"],
+        "matched_source_rows": result["matched_source_rows"],
+        "checked_source_rows": result["checked_source_rows"],
+        "kept": result["kept"],
         "resumed_preverified_rows": resumed,
-        "dropped": drops,
+        "dropped": result["drops"],
         "out": str(out_path),
     }, sort_keys=True))
 

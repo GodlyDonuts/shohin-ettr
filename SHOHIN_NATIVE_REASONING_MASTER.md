@@ -54682,3 +54682,26 @@ probability. Both fail grid-path exclusion, CRT, mislabeled boxes, and
 schedule counting. The current system is more reliable at familiar
 multi-step calculation, but genuine general compositional reasoning remains
 unfinished.
+
+### Prompt-gate closure (2026-08-03)
+
+The one bounded learned-router experiment is negative. A prompt-only
+50,000-feature hashed word/bigram classifier trained on 17,976 ordinary V11
+source-labelled prompts attains 92.807% source-held validation but routes
+almost all public reasoning prompts to B1. Its expanded-board result is
+40.280% macro and 1,997/3,930 solved; its previously unopened four-domain
+remainder is 46.668% and 1,790/3,392. One allowed global-threshold calibration
+uses only the existing development reports and selects
+`-133.58884639320723`, reaching 44.240% development macro. It does not
+generalize: expanded performance is 41.907% and 2,003/3,930, while the
+unopened remainder falls to 47.013% and 1,771/3,392, below both frozen arms in
+solved count. Manual composition is 5/12 uncalibrated and 8/12 calibrated,
+with the latter routing all twelve prompts to C2.
+
+The static B1/C2 expert ceiling remains evidence of complementary errors, not
+a deployable score. Source-domain labels and one global threshold do not
+predict per-prompt expert advantage. This family is closed: no threshold,
+seed, or feature variant follows. Any future gate requires paired expert
+outcome supervision from a large disjoint training-only routing corpus or
+joint end-to-end optimization, followed by one untouched-board comparison
+against the strongest single frozen arm.

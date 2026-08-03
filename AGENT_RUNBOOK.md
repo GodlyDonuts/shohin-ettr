@@ -152,6 +152,23 @@
 > is `730cb8e3...d8ba44`, output SHA is `2697f139...ae0409`, and exactly task
 > id 76 is dropped in favor of id 347. Manual board commit is `eeafb80`.
 >
+> **PROMPT-ROUTER DECISION — 2026-08-03 10:28 EDT:** The one authorized
+> learned gate is closed as a negative. A 50k-feature hashed word/bigram
+> classifier trained on 17,976 V11 source-labelled prompts reaches 92.807%
+> source-held validation, but routes almost every public prompt to B1. On the
+> expanded board it reaches 40.280% macro and 1,997/3,930 solved; on the
+> previously unopened four-domain remainder it reaches 46.668% and
+> 1,790/3,392 solved. A single bounded repair calibrated one global threshold
+> on development reports without using remainder labels. That threshold
+> raises development macro to 44.240%, but over-routes C2 and falls to 47.013%
+> and 1,771/3,392 solved on the unopened remainder, below both frozen arms in
+> solved count. Manual composition is 5/12 uncalibrated and 8/12 calibrated.
+> The static expert ceiling remains diagnostic only. Do not tune another
+> threshold, feature set, or source-label router: a future gate requires
+> outcome supervision on a large disjoint routing corpus or joint end-to-end
+> training. The practical single-model target remains improving code/logic
+> without surrendering C2's math gains.
+>
 > **PRODUCT CAMPAIGN STATUS — 2026-08-03 00:22 EDT:** Frozen
 > `Qwen/Qwen3.5-0.8B@2fc06364715b967f1860aea9cf38778875588b17`
 > now has directly measured baselines: GSM8K `17/100`, MATH-500 `4/100`,

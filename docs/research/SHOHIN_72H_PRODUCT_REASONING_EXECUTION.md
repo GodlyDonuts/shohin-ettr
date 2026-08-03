@@ -68,6 +68,9 @@ Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 | promotion decision | C2 is best single arm but **fails broad gate**; unopened solved count does not improve |
 | static domain-routing ceiling | expanded 43.894% / 2,102 solved; unopened remainder 49.586% / 1,877 solved; neither is a model result |
 | direct manual composition B1/C2 | 5/12 / 8/12; both still fail four combinatorial/state-composition prompts |
+| source-label learned router | 92.807% source-held validation, but expanded 40.280% / 1,997 solved and unopened remainder 46.668% / 1,790 solved; not promoted |
+| dev-calibrated global threshold | dev 44.240%; unopened remainder 47.013% / 1,771 solved; overfits and loses both frozen arms in solved count |
+| router disposition | **closed**; no threshold/feature variant; future gating needs disjoint paired-outcome supervision or joint training |
 
 ## Decisive U1000 Result
 
@@ -92,6 +95,39 @@ it may not retrain a globally active workspace and repeat the observed
 regression. The static per-domain expert ceiling from existing reports is
 45.52% macro and 213/538 solved, which makes routing a concrete opportunity,
 not a claim that the router has already been learned.
+
+### Learned Prompt-Gate Result
+
+The expert complementarity did not translate into a successful learned
+product router. The preregistered prompt-only classifier uses 50,000 hashed
+word and bigram features and 17,976 V11 prompts labelled only by ordinary
+training source: math/science/arithmetic procedure selects C2, code and
+non-arithmetic procedure selects B1, and teacher rows are excluded. It sees no
+benchmark outcomes. Although source-held validation is 92.807%, the learned
+score distribution sends almost every public prompt to B1. It reaches 40.280%
+macro and 1,997/3,930 solved on the expanded board, and 46.668% macro with
+1,790/3,392 solved on the previously unopened four-domain remainder. That is
+only eight more remainder answers than B1 and remains far below the static
+ceiling.
+
+One bounded calibration repair enumerated a single global score threshold on
+the already-used development reports, maximizing five-domain development
+macro subject to no domain falling more than two points below B1. It selected
+threshold `-133.58884639320723` and reached 44.240% development macro, but the
+apparent gain did not generalize. The calibrated router reaches 41.907% and
+2,003/3,930 solved on the expanded board, then 47.013% and 1,771/3,392 solved
+on the unopened remainder. It routes nearly all math, MBPP, and BBH prompts to
+C2 and loses both frozen arms in broad solved count. Manual composition is
+5/12 before calibration and 8/12 after calibration because every manual
+prompt is routed to C2.
+
+This router family is closed. Source identity is not a sufficient proxy for
+per-prompt expert advantage, and a global threshold calibrated on a small
+development board overfits. No further threshold or feature variants are
+authorized. A future gate must be trained on a large disjoint corpus with
+paired frozen-expert outcomes, or learned jointly with the experts, and must
+beat the best single arm on an untouched board. Until then the deployable
+result is C2 as the strongest single arm, not the oracle ceiling.
 
 ## Post-Gate 72-Hour Queue (2026-08-03)
 

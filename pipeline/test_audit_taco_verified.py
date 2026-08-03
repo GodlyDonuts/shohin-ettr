@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from audit_taco_verified import read_completed_partial, verify_source_row
+from audit_taco_verified import audit_source_stream, read_completed_partial, verify_source_row
 
 
 class TacoAuditResumeTests(unittest.TestCase):
@@ -68,6 +68,37 @@ class TacoAuditResumeTests(unittest.TestCase):
         self.assertEqual(clean["full_verified_cases"], 2)
         self.assertEqual(clean["training_group"], "code")
         self.assertEqual(clean["verification"], "execution_verified")
+
+    def test_streaming_audit_verifies_before_source_scan_finishes(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        path = Path(directory.name) / "progress.jsonl.partial"
+        candidates = {
+            "17": {"problem_id": 17, "response": "print('ok')"},
+        }
+        sources = iter([
+            {"id": "17", "input_output": json.dumps({
+                "inputs": ["\n"], "outputs": ["ok\n"],
+            })},
+            {"id": "unused"},
+        ])
+        with path.open("w") as output:
+            result = audit_source_stream(
+                candidates=candidates,
+                stream=sources,
+                output=output,
+                resumed_rows=0,
+                workers=1,
+                progress_every=1,
+                max_source_rows=0,
+                max_case_chars=64,
+                timeout=2.0,
+            )
+        self.assertEqual(result["source_rows_scanned"], 1)
+        self.assertEqual(result["checked_source_rows"], 1)
+        self.assertEqual(result["kept"], 1)
+        self.assertFalse(result["remaining"])
+        self.assertGreater(path.stat().st_size, 0)
 
 
 if __name__ == "__main__":
