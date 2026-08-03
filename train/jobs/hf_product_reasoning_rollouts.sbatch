@@ -57,6 +57,7 @@ export OMP_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export TOKENIZERS_PARALLELISM=false
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
 EXTRA_ARGS=()
 if [[ "$FINALIZE_EXHAUSTED" == "true" ]]; then
