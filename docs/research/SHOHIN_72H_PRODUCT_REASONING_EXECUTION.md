@@ -2,6 +2,23 @@
 
 Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 
+## Live Scoreboard (2026-08-02 22:15 EDT)
+
+| Result | Status |
+|---|---:|
+| frozen Qwen, GSM8K deterministic thinking, 100-row hash subset | 17/100 |
+| frozen Qwen, MATH-500 deterministic thinking, same subset size | 4/100 |
+| `B1` LoRA two-update H100 mechanics | pass; 0.902M trainable, 2.37 GB peak |
+| `T1` recurrent workspace two-update H100 mechanics | pass; 6.690M trainable, 3.62 GB peak |
+| `C1` dense control capacity match | implemented; workspace is 0.825% smaller than `T1` |
+
+Transcript inspection shows the deterministic thinking score is strongly
+affected by decode behavior: many GSM8K completions calculate the right value
+inside a long plan, then exhaust the 768-token limit before producing the
+requested final answer. Frozen no-thinking controls and official sampling are
+therefore running. This is a decoding diagnosis, not permission to count an
+unemitted answer as correct.
+
 ## Objective
 
 Produce the first credible, directly measured ETTR-versus-baseline reasoning
@@ -105,6 +122,16 @@ length/format validation, domain accounting, and reproducible manifests. The
 72-hour target is 0.5--2.0 million admitted examples; the subsequent target is
 several million. RLVR starts only after a trained model generates a nontrivial
 positive rate under deterministic reward checkers.
+
+The first external seed is pinned OpenThoughts3. Its nominal 1.2M rows are 16
+annotations over roughly 75,000 unique questions, so the acquisition job keeps
+one deterministic best trace per normalized prompt rather than miscounting
+annotations as independent data. It then applies math/code/science caps,
+length and repeated-line checks, exact and 13-gram benchmark filtering, and
+marks every surviving response `teacher_trace_unverified`. NVIDIA
+OpenCodeReasoning-2 and OpenScienceReasoning-2 are audit candidates for the
+next stage; code is admitted only after its judgement/pass-rate and executable
+solution are verified, and science labels are answer-checked before use.
 
 ## Execution Queue
 

@@ -31,7 +31,7 @@
 > claims are secondary to answer-quality deltas. The active 72-hour queue is
 > `docs/research/SHOHIN_72H_PRODUCT_REASONING_EXECUTION.md`.
 >
-> **Last updated:** 2026-08-02 21:26 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 22:15 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -25691,3 +25691,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `measure_real_reasoning_delta_first_scale_only_the_winning_data_or_architecture_lever`.
+
+- **2026-08-02 21:26--22:15 EDT** -- **The product campaign reaches its first
+  real baseline and all three matched training arms become executable.**
+
+  Exact Qwen revision `2fc06364715b967f1860aea9cf38778875588b17` loads as
+  `Qwen3_5ForConditionalGeneration` with 852,985,920 parameters. Frozen
+  deterministic thinking-mode evaluation on the hash-ranked 100-row boards is
+  GSM8K `17/100` and MATH-500 `4/100`. Transcript inspection finds a material
+  decode confound: multiple scored-wrong GSM8K completions perform the correct
+  arithmetic in a verbose internal plan but use all 768 tokens before emitting
+  the final answer. Official sampling and no-thinking controls are running;
+  no hidden/intermediate answer is credited.
+
+  `B1` LoRA and `T1` integrated recurrent-workspace two-update H100 smokes both
+  complete with finite loss. `B1` has 901,888 trainable parameters and peaks at
+  2,370,154,496 GPU bytes; `T1` has 6,690,049 trainable parameters and peaks at
+  3,615,708,672 bytes. Their first logged language losses are 0.939611 and
+  1.027462. Checkpoint-generation smokes are queued before bounded overfit.
+  `C1` is now an executable untied eight-cell dense control: its workspace has
+  5,740,424 parameters versus 5,788,161 for `T1`, a -0.825% capacity delta.
+  It uses identical prompt access, slot count, internal-step count, LoRA,
+  examples, and update budget.
+
+  Product runtime improvements stage the 1.7GB Qwen checkpoint onto node-local
+  storage while retaining the original source path in reports, and hash/select
+  the 489MB V8 seed in one pass. A CPU OpenThoughts3 builder now selects one
+  best trace per normalized prompt, applies math/code/science caps and
+  degeneration checks, decontaminates against every local eval JSONL, and
+  labels teacher traces unverified. It is not a solver-verified corpus yet.
+
+  The already-authorized byte-rail job `729768` completes and fails cleanly at
+  72.50% clean/orbit accuracy versus the fixed 95% gate. No layer-tap or
+  byte-rail successor is authorized.
+
+  Decision:
+  `finish_generation_and_overfit_gates_then_measure_identical_B1_T1_C1_answer_deltas`.

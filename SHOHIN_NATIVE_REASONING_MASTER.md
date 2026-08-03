@@ -54276,3 +54276,28 @@ Newton job `729773` is the first Qwen load/generation/throughput gate. The full
 hours 0--72 job graph, data mix, compute layout, promotion rules, and stop
 conditions are recorded in
 `docs/research/SHOHIN_72H_PRODUCT_REASONING_EXECUTION.md`.
+
+The first product measurements are now available. Frozen Qwen3.5-0.8B scores
+17/100 on the fixed GSM8K subset and 4/100 on the fixed MATH-500 subset under
+deterministic thinking-mode generation. These are emitted-final-answer scores,
+not latent-chain scores. Manual transcript inspection shows that several
+GSM8K misses contain a correct calculation inside an overlong planning loop
+but truncate before the final answer, so official-sampling and no-thinking
+controls are required before interpreting the capability floor.
+
+All matched architecture arms are now concrete. The ordinary LoRA baseline
+has 0.902M trainable parameters. The tied recurrent treatment has 6.690M total
+trainable parameters, of which 5.788M belong to the workspace. Its untied
+dense control has 5.740M workspace parameters, only 0.825% fewer, with the same
+slots, prompt access, internal steps, LoRA, data, and updates. Both baseline
+and recurrent two-update H100 smokes are finite; autonomous checkpoint
+generation and bounded overfit remain the release gates before a product
+training comparison.
+
+The external data path now treats annotation count and unique-problem count
+separately. OpenThoughts3's 1.2M rows are repeated annotations over roughly
+75,000 questions. The new CPU builder selects one best trace per normalized
+prompt, preserves math/code/science source metadata, removes exact and
+13-gram benchmark overlap, applies degeneration checks, and marks every
+teacher trace unverified. Code and science enter the promoted corpus only
+after execution or answer verification, respectively.
