@@ -33,6 +33,9 @@ Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 | exact-turn GPQA B1/T2/C2 | 16/34/30 of 198; T2 +18 over B1 and +4 over C2 |
 | frozen concise no-thinking GPQA | 3/198 |
 | exact-turn raw MATH B1/T2/C2 | 15/24/27; provisional until common Math-Verify rescore |
+| corrected five-domain macro B1/T2/C2 | 18.62% / **26.83%** / 23.43% |
+| corrected solved examples B1/T2/C2 | 98 / **151** / 132 of 538 |
+| corrected promotion decision | fail only on code regression: T2 0/40 versus B1 2/40 |
 
 Transcript inspection shows the deterministic thinking score is strongly
 affected by decode behavior: many GSM8K completions calculate the right value
@@ -168,6 +171,19 @@ explanations. Current evidence is therefore a credible elementary-math and
 logic foothold, not sophisticated general reasoning. The immediate corpus
 repair is verified science rationale and executable code, where V8 is plainly
 underrepresented.
+
+The first full corrected decision is now closed. T2 reaches `26.83%` macro
+and `151/538` solved, versus B1 `18.62%` and `98/538`, and dense C2 `23.43%`
+and `132/538`. Relative to B1, T2 adds 12 GSM8K, 12 semantic MATH-500, 13 BBH
+logic, and 18 GPQA answers. It beats C2 by 3.40 macro points and 19 total
+solved examples, so tied recurrence has earned a practical foothold rather
+than merely matching extra dense capacity. The numeric gate remains false
+only because code falls from B1 `2/40` to T2 `0/40`. Direct code transcripts
+show that T2 frequently identifies the requested operation but answers in
+prose or emits malformed Python. Balanced jobs `729936/729943/729950` began
+immediately and automatic semantic decision `729983` follows their exact
+boards. This is a targeted repair of one failed domain, not an attempt to
+erase the positive four-domain result.
 
 ## Compared Systems
 

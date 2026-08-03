@@ -54487,3 +54487,21 @@ It is hash-matched on Stokes/Newton and stored with report and CC-BY-4.0
 attribution in private HF dataset `Godlydonuts/shohin-ettr-reasoning-data`.
 The pinned OpenMath and conservative OpenThoughts-consensus builders remain
 live on Stokes.
+
+The first corrected product decision is complete. Same-data B1/T2/C2 macro
+accuracy is `18.62% / 26.83% / 23.43%`; solved counts are `98 / 151 / 132`
+of 538. T2 improves four domains over B1, adding 12 GSM8K, 12 semantic
+MATH-500, 13 BBH logic, and 18 GPQA answers. It also exceeds the
+parameter-matched dense C2 by 3.40 macro points and 19 solved examples. This
+is the first credible broad product-level evidence that the tied recurrent
+workspace adds utility beyond same-data LoRA and comparable dense capacity.
+
+The promotion gate remains false for one explicit reason: code is T2 `0/40`
+versus B1 `2/40`, a five-point domain regression. Code transcripts show
+algorithm recognition followed by prose answers, malformed functions, or
+degeneration rather than executable completion. The no-replay balanced mix
+supplies 28.60% of its actual target tokens as code. Matched jobs
+`729936/729943/729950` are running now, with exact serial evaluations and
+automatic semantic aggregate `729983`. A transient CUDA-visibility failure
+on `evc43` affected only the first C2 HumanEval launch; identical replacements
+completed on `evc29` and no completed model board was repeated.

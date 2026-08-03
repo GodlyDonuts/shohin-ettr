@@ -133,6 +133,21 @@
 > and is hash-matched on Stokes/Newton and stored with report/CC-BY-4.0
 > attribution in private HF dataset `Godlydonuts/shohin-ettr-reasoning-data`.
 > OpenMath `761161` and OpenThoughts consensus `761159` remain live.
+> **FIRST PRODUCT DECISION — 2026-08-03 01:52 EDT:** Corrected aggregate
+> `campaign_short_u200_turnstop_v5.json` is complete. B1/T2/C2 macro accuracy
+> is `18.62% / 26.83% / 23.43%`, with `98 / 151 / 132` solved of 538. T2
+> improves four domains over B1: GSM8K `+12`, MATH-500 `+12`, BBH logic
+> `+13`, and GPQA `+18` solved. It also beats dense C2 overall by 3.40 macro
+> points and 19 solved examples. The sole failed gate is code: T2 `0/40`
+> versus B1 `2/40`, a five-point domain regression. Manual code inspection
+> shows algorithm recognition but prose emission or malformed Python. Numeric
+> promotion is therefore false only on the code-regression rule. Matched
+> balanced jobs `729936/729943/729950` are now running on three H100s; their
+> serial exact evaluations remain `729937--729956`, with automatic semantic
+> finalizer `729983`. C2 HumanEval job `729934` failed before model load when
+> `evc43` lost CUDA visibility; exact replacements `729981 -> 729982`
+> completed on `evc29`, and downstream dependencies were repaired without
+> repeating completed boards.
 >
 > **Last updated:** 2026-08-03 01:36 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
