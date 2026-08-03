@@ -23,6 +23,7 @@ PYTHON=${PYTHON:-/lustre/fs1/home/sa305415/shohin/envs/product-reasoning-b3a3603
 COUNT=${COUNT:-100}
 BATCH_SIZE=${BATCH_SIZE:-4}
 MAX_NEW_TOKENS=${MAX_NEW_TOKENS:-768}
+CODE_TIMEOUT=${CODE_TIMEOUT:-8}
 GENERATION_MODE=${GENERATION_MODE:-greedy}
 ADAPTER_CHECKPOINT=${ADAPTER_CHECKPOINT:-}
 ENABLE_THINKING=${ENABLE_THINKING:-true}
@@ -79,6 +80,7 @@ fi
   --count "$COUNT" \
   --batch-size "$BATCH_SIZE" \
   --max-new-tokens "$MAX_NEW_TOKENS" \
+  --code-timeout "$CODE_TIMEOUT" \
   --generation-mode "$GENERATION_MODE" \
   "$THINKING_ARG" \
   "${ADAPTER_ARGS[@]}"

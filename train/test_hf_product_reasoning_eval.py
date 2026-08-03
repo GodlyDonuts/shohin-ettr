@@ -6,6 +6,11 @@ import unittest
 
 from hf_product_reasoning_eval import (
     ProductEvalError,
+    _bounded_program_result,
+    _humaneval_program,
+    _mbpp_program,
+    _strip_reasoning_and_fences,
+    _task_prompt,
     extract_boxed,
     extract_gsm8k,
     gold_gsm8k,
@@ -38,6 +43,33 @@ class ProductReasoningEvalTests(unittest.TestCase):
     def test_subset_rejects_oversized_request(self) -> None:
         with self.assertRaises(ProductEvalError):
             select_rows("gsm8k", [{"question": "q"}], 2, 31)
+
+    def test_code_prompts_and_fences_are_normalized(self) -> None:
+        row = {
+            "prompt": "def add(a, b):\n",
+            "test": "def check(fn): assert fn(2, 3) == 5",
+            "entry_point": "add",
+        }
+        completion = "<think>simple</think>\n```python\ndef add(a, b):\n    return a + b\n```"
+        self.assertIn(
+            "complete the python function", _task_prompt("humaneval", row).lower()
+        )
+        self.assertEqual(
+            _strip_reasoning_and_fences(completion),
+            "def add(a, b):\n    return a + b",
+        )
+        program = _humaneval_program(row, completion)
+        self.assertTrue(_bounded_program_result(program, 2.0)["passed"])
+
+    def test_mbpp_program_executes_official_tests(self) -> None:
+        row = {
+            "text": "add two integers",
+            "test_list": ["assert add(4, 7) == 11"],
+            "test_setup_code": "",
+        }
+        self.assertIn("passes every test", _task_prompt("mbpp", row))
+        program = _mbpp_program(row, "def add(a, b):\n    return a + b")
+        self.assertTrue(_bounded_program_result(program, 2.0)["passed"])
 
 
 if __name__ == "__main__":

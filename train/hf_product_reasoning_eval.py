@@ -9,6 +9,9 @@ import os
 from pathlib import Path
 import random
 import re
+import subprocess
+import sys
+import tempfile
 import time
 from typing import Any
 
@@ -129,24 +132,128 @@ def match_math(prediction: str | None, gold: str | None) -> bool:
 
 TASKS: dict[str, dict[str, Any]] = {
     "gsm8k": {
+        "kind": "answer",
         "extract": extract_gsm8k,
         "gold": gold_gsm8k,
         "match": match_gsm8k,
     },
     "math500": {
+        "kind": "answer",
         "extract": extract_boxed,
         "gold": gold_math,
         "match": match_math,
     },
+    "humaneval": {"kind": "code"},
+    "mbpp": {"kind": "code"},
 }
 
 
 def _question(row: dict[str, Any]) -> str:
-    for key in ("question", "problem", "prompt"):
+    for key in ("question", "problem", "prompt", "text"):
         value = row.get(key)
         if value:
             return str(value)
     raise ProductEvalError("evaluation row has no question")
+
+
+def _task_prompt(task: str, row: dict[str, Any]) -> str:
+    if task == "humaneval":
+        return (
+            "Complete the Python function below. Return only executable Python "
+            "code containing the complete function, without Markdown fences.\n\n"
+            f"{row['prompt']}"
+        )
+    if task == "mbpp":
+        tests = "\n".join(str(item) for item in row.get("test_list", ()))
+        return (
+            "Write Python code that solves the task and passes every test. Return "
+            "only executable Python code, without Markdown fences.\n\nTask:\n"
+            f"{row['text']}\n\nTests:\n{tests}"
+        )
+    return _question(row)
+
+
+def _strip_reasoning_and_fences(completion: str) -> str:
+    text = re.sub(r"<think>.*?</think>", "", completion, flags=re.DOTALL).strip()
+    fenced = re.findall(r"```(?:python|py)?\s*\n(.*?)```", text, flags=re.DOTALL | re.IGNORECASE)
+    if fenced:
+        text = fenced[-1].strip()
+    text = re.sub(r"^\s*(?:answer|final answer)\s*:\s*", "", text, flags=re.IGNORECASE)
+    return text.strip()
+
+
+def _truncate_code(completion: str, stops: tuple[str, ...]) -> str:
+    code = _strip_reasoning_and_fences(completion)
+    locations = [location for stop in stops if (location := code.find(stop)) >= 0]
+    return code[: min(locations)].rstrip() if locations else code.rstrip()
+
+
+def _humaneval_program(row: dict[str, Any], completion: str) -> str:
+    code = _truncate_code(
+        completion,
+        ("\nif __name__", "\nprint(", "\nassert ", "\nQuestion:"),
+    )
+    if re.search(r"(?m)^\s*def\s+", code):
+        candidate = code
+    else:
+        candidate = str(row["prompt"]) + code
+    return candidate + "\n\n" + str(row["test"]) + f"\ncheck({row['entry_point']})\n"
+
+
+def _mbpp_program(row: dict[str, Any], completion: str) -> str:
+    code = _truncate_code(
+        completion,
+        ("\n[DONE]", "\nQuestion:", "\nif __name__", "\n>>>"),
+    )
+    setup = str(row.get("test_setup_code", "") or "")
+    tests = "\n".join(str(item) for item in row.get("test_list", ()))
+    return code + "\n" + setup + "\n" + tests + "\n"
+
+
+def _bounded_program_result(program: str, timeout_seconds: float) -> dict[str, Any]:
+    """Execute generated code with wall/CPU/memory limits and bounded diagnostics."""
+
+    if timeout_seconds <= 0:
+        raise ProductEvalError("code timeout must be positive")
+    with tempfile.TemporaryDirectory(prefix="shohin-product-code-") as directory:
+        path = Path(directory) / "candidate.py"
+        path.write_text(program, encoding="utf-8")
+
+        def limits() -> None:
+            try:
+                import resource
+
+                cpu = max(1, int(timeout_seconds))
+                resource.setrlimit(resource.RLIMIT_CPU, (cpu, cpu + 1))
+                resource.setrlimit(resource.RLIMIT_AS, (1 << 30, 1 << 30))
+                resource.setrlimit(resource.RLIMIT_FSIZE, (1 << 20, 1 << 20))
+                resource.setrlimit(resource.RLIMIT_NPROC, (32, 32))
+            except (ImportError, OSError, ValueError):
+                pass
+
+        try:
+            result = subprocess.run(
+                [sys.executable, "-I", str(path)],
+                cwd=directory,
+                capture_output=True,
+                text=True,
+                timeout=timeout_seconds,
+                preexec_fn=limits,
+                check=False,
+            )
+            return {
+                "passed": result.returncode == 0,
+                "returncode": result.returncode,
+                "stdout": result.stdout[-2000:],
+                "stderr": result.stderr[-4000:],
+            }
+        except subprocess.TimeoutExpired as exc:
+            return {
+                "passed": False,
+                "returncode": None,
+                "stdout": (exc.stdout or "")[-2000:],
+                "stderr": "execution timed out",
+            }
 
 
 def _row_identity(task: str, row: dict[str, Any]) -> str:
@@ -338,7 +445,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         rendered = [
             _render_prompt(
                 tokenizer,
-                _question(row),
+                _task_prompt(args.task, row),
                 adapter_metadata is not None,
                 args.enable_thinking,
             )
@@ -368,9 +475,22 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 completion_ids = output
         completions = tokenizer.batch_decode(completion_ids, skip_special_tokens=True)
         for row, completion in zip(batch, completions, strict=True):
-            prediction = task["extract"](completion)
-            gold = task["gold"](row)
-            is_correct = bool(task["match"](prediction, gold))
+            execution = None
+            program = None
+            if task["kind"] == "code":
+                program = (
+                    _humaneval_program(row, completion)
+                    if args.task == "humaneval"
+                    else _mbpp_program(row, completion)
+                )
+                execution = _bounded_program_result(program, args.code_timeout)
+                prediction = "pass" if execution["passed"] else "fail"
+                gold = "pass"
+                is_correct = bool(execution["passed"])
+            else:
+                prediction = task["extract"](completion)
+                gold = task["gold"](row)
+                is_correct = bool(task["match"](prediction, gold))
             correct += int(is_correct)
             identity = _row_identity(args.task, row)
             results.append(
@@ -381,6 +501,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     "prediction": prediction,
                     "correct": is_correct,
                     "completion": completion,
+                    "program": program,
+                    "execution": execution,
                 }
             )
         generated_tokens += int(completion_ids.shape[1]) * len(batch)
@@ -414,6 +536,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         ),
         "max_new_tokens": args.max_new_tokens,
         "batch_size": args.batch_size,
+        "code_timeout_seconds": (
+            args.code_timeout if task["kind"] == "code" else None
+        ),
         "correct": correct,
         "total": len(selected),
         "accuracy": correct / len(selected),
@@ -442,6 +567,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--generation-seed", type=int, default=31)
     parser.add_argument("--batch-size", type=int, default=4)
     parser.add_argument("--max-new-tokens", type=int, default=768)
+    parser.add_argument("--code-timeout", type=float, default=8.0)
     parser.add_argument(
         "--generation-mode", choices=("greedy", "qwen-thinking"), default="greedy"
     )
@@ -449,7 +575,7 @@ def parse_args() -> argparse.Namespace:
         "--enable-thinking", action=argparse.BooleanOptionalAction, default=True
     )
     args = parser.parse_args()
-    if args.batch_size <= 0 or args.max_new_tokens <= 0:
+    if args.batch_size <= 0 or args.max_new_tokens <= 0 or args.code_timeout <= 0:
         parser.error("batch size and max-new-tokens must be positive")
     return args
 
