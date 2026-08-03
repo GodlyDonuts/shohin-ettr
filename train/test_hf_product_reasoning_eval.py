@@ -8,6 +8,7 @@ import types
 
 from hf_product_reasoning_eval import (
     _completion_usage,
+    _completion_for_scoring,
     _generation_stop_token_ids,
     _finalization_question,
     ProductEvalError,
@@ -76,6 +77,21 @@ class ProductReasoningEvalTests(unittest.TestCase):
         self.assertIn("6*7 = 42", rendered)
         self.assertIn(r"\boxed{}", rendered)
         self.assertIn("Do not redo or extend", rendered)
+
+    def test_finalization_requires_an_explicit_recovered_answer(self) -> None:
+        capped = "Working toward 52 but still continuing"
+        self.assertIsNone(_completion_for_scoring(capped, True, None))
+        self.assertIsNone(
+            _completion_for_scoring(capped, True, "Probably 52")
+        )
+        self.assertEqual(
+            _completion_for_scoring(capped, True, r"\boxed{52}"),
+            r"\boxed{52}",
+        )
+        self.assertEqual(
+            _completion_for_scoring("The answer is 7", True, r"\boxed{9}"),
+            "The answer is 7",
+        )
 
     def test_gsm8k_normalizes_numeric_equivalence_and_currency_phrases(self) -> None:
         transcript = "Work. The answer is 1 dollar 40 cents."

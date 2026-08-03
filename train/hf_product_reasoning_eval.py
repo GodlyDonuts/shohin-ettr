@@ -631,6 +631,18 @@ def _finalization_question(question: str, completion: str) -> str:
     )
 
 
+def _completion_for_scoring(
+    completion: str,
+    exhausted: bool,
+    finalization: str | None,
+) -> str | None:
+    if not exhausted or has_explicit_final_answer(completion):
+        return completion
+    if finalization is not None and has_explicit_final_answer(finalization):
+        return finalization
+    return None
+
+
 def _generate_adapter(
     model: Any,
     encoded: dict[str, Any],
@@ -811,15 +823,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 gold = "pass"
                 is_correct = bool(execution["passed"])
             else:
-                scoring_completion = completion
-                if finalization is not None and has_explicit_final_answer(finalization):
-                    scoring_completion = finalization
+                scoring_completion = _completion_for_scoring(
+                    completion,
+                    exhausted,
+                    finalization,
+                )
                 prediction = (
-                    None
-                    if exhausted
-                    and finalization is None
-                    and not has_explicit_final_answer(completion)
-                    else task["extract"](scoring_completion)
+                    task["extract"](scoring_completion)
+                    if scoring_completion is not None
+                    else None
                 )
                 gold = task["gold"](row)
                 is_correct = bool(task["match"](prediction, gold))
