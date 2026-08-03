@@ -259,7 +259,7 @@ def main() -> int:
         min_positive_per_group=args.min_positive_per_group,
     )
     print(json.dumps(report, sort_keys=True))
-    return 0
+    return 0 if report["admitted"] else 2
 
 
 if __name__ == "__main__":
