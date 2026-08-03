@@ -54214,3 +54214,11 @@ corrected source-matched binding control. If every tap fails, this is evidence
 that the frozen language path does not expose the necessary variable through
 role averaging; the next interface is a shared model-owned canonical-byte
 rail, not a wider version of the failed adapter.
+
+The corrected binding control is also executable before the tap results are
+known. It constructs only byte-identical COMMAND pairs across opposite WORLD
+factors where the true operation family changes, freezes the source tensor,
+and swaps the typed preceding state. Predicting the opposite-WORLD target is
+the positive criterion; retaining the original label diagnoses syntax-only
+classification. This removes the logically invalid requirement that a global
+state shuffle erase family signal already present in public syntax.

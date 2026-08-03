@@ -14,18 +14,24 @@ import torch
 
 from capability_floor_feature_sufficiency import (
     PROTECTED_CANDIDATE,
+    REPORT_SCHEMA,
     _RawTokenizerAdapter,
     _fit_probe,
+    _family_logits,
+    _index_state,
     _load_protected_model,
+    _renderer_metrics,
     _select_records,
     _sha256_file,
     _source_tasks,
     _stack_state,
+    _state_from_payload,
     _torch_save_no_replace,
     _write_no_replace,
 )
 from capability_floor_corpus import TokenizerSpec
 from capability_floor_sufficiency import tensor_sha256
+from capability_floor_sufficiency import OperationFamilyTensorProbe
 from capability_floor_trajectory import UnifiedTrajectoryConfig
 from ettr_v3_streaming import ETTRV3StreamingRelease
 from token_native_syntax_router import TokenNativeOperationRouter
@@ -309,6 +315,178 @@ def virtual_feature_bundle(
     }
 
 
+def source_matched_world_swap_indices(
+    split: Mapping[str, object],
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Pair byte-identical COMMAND rows whose WORLD changes the family."""
+
+    identity = split["identity"]
+    labels = split["tensors"]["labels"]
+    sample_ids = identity["sample_ids"]
+    source_hashes = identity["source_sha256"]
+    if labels.ndim != 1 or len(sample_ids) != labels.numel():
+        raise CapabilityFloorLayerTapError("binding-pair identity geometry differs")
+    groups: dict[tuple[str, int, int, int], dict[int, int]] = {}
+    for index, sample_id in enumerate(sample_ids):
+        try:
+            core_id, corner_text, operation_text, view_text = sample_id.rsplit(":", 3)
+            corner = int(corner_text)
+            operation = int(operation_text)
+            if not view_text.startswith("view="):
+                raise ValueError
+            view = int(view_text.removeprefix("view="))
+        except (AttributeError, TypeError, ValueError) as error:
+            raise CapabilityFloorLayerTapError(
+                "binding-pair sample identity differs"
+            ) from error
+        if not 0 <= corner < 4 or not 0 <= view < 4 or operation < 0:
+            raise CapabilityFloorLayerTapError("binding-pair coordinate differs")
+        world = corner // 2
+        command = corner % 2
+        key = (core_id, command, operation, view)
+        by_world = groups.setdefault(key, {})
+        if world in by_world:
+            raise CapabilityFloorLayerTapError("binding-pair WORLD duplicate")
+        by_world[world] = index
+    source_indices = []
+    swapped_indices = []
+    for key in sorted(groups):
+        by_world = groups[key]
+        if set(by_world) != {0, 1}:
+            raise CapabilityFloorLayerTapError("binding-pair WORLD incomplete")
+        left = by_world[0]
+        right = by_world[1]
+        if source_hashes[left] != source_hashes[right]:
+            raise CapabilityFloorLayerTapError("binding-pair COMMAND source differs")
+        if int(labels[left]) == int(labels[right]):
+            continue
+        source_indices.extend((left, right))
+        swapped_indices.extend((right, left))
+    if not source_indices:
+        raise CapabilityFloorLayerTapError("binding-pair causal subset is empty")
+    source = torch.tensor(source_indices, dtype=torch.long)
+    swapped = torch.tensor(swapped_indices, dtype=torch.long)
+    if not torch.equal(source.sort().values, swapped.sort().values):
+        raise CapabilityFloorLayerTapError("binding-pair swap is not bijective")
+    return source, swapped
+
+
+def _score_indices(
+    probe: OperationFamilyTensorProbe,
+    split: Mapping[str, object],
+    source_indices: torch.Tensor,
+    state_indices: torch.Tensor,
+    *,
+    device: torch.device,
+    batch_size: int,
+) -> torch.Tensor:
+    tensors = split["tensors"]
+    source_state = _state_from_payload(tensors["state"])
+    predictions = []
+    for start in range(0, source_indices.numel(), batch_size):
+        selected = source_indices[start : start + batch_size]
+        selected_state = state_indices[start : start + batch_size]
+        state = _index_state(
+            source_state,
+            selected_state,
+            device=device,
+            dtype=torch.float32,
+        )
+        features = tensors["source_features"].index_select(0, selected).to(device)
+        source_mask = tensors["source_mask"].index_select(0, selected).to(device)
+        role_masks = tensors["role_masks"].index_select(0, selected).to(device)
+        with torch.inference_mode(), torch.autocast(
+            device_type="cuda",
+            dtype=torch.bfloat16,
+        ):
+            logits = _family_logits(probe, features, source_mask, role_masks, state)
+        predictions.append(logits.argmax(-1).cpu())
+    return torch.cat(predictions)
+
+
+def score_binding(args: argparse.Namespace) -> None:
+    bundle = _load_tap_bundle(args.feature_bundle, args.feature_bundle_sha256)
+    virtual = virtual_feature_bundle(
+        bundle,
+        tap_name=args.tap,
+        bundle_sha256=args.feature_bundle_sha256,
+    )
+    if _sha256_file(args.probe_model) != args.probe_model_sha256:
+        raise CapabilityFloorLayerTapError("binding probe model SHA-256 differs")
+    try:
+        model_payload = torch.load(
+            args.probe_model,
+            map_location="cpu",
+            weights_only=True,
+        )
+    except TypeError:
+        model_payload = torch.load(args.probe_model, map_location="cpu")
+    if (
+        not isinstance(model_payload, Mapping)
+        or model_payload.get("schema") != REPORT_SCHEMA
+        or model_payload.get("candidate") != virtual["candidate"]
+    ):
+        raise CapabilityFloorLayerTapError("binding probe model contract differs")
+    config = UnifiedTrajectoryConfig(**dict(virtual["config"]))
+    probe = OperationFamilyTensorProbe(config, max_roles=4)
+    incompatible = probe.load_state_dict(model_payload["probe"], strict=True)
+    if incompatible.missing_keys or incompatible.unexpected_keys:
+        raise CapabilityFloorLayerTapError("binding probe model state differs")
+    device = torch.device("cuda", 0)
+    probe.to(device).eval().requires_grad_(False)
+    development = virtual["splits"]["development"]
+    source_indices, swapped_indices = source_matched_world_swap_indices(development)
+    clean = _score_indices(
+        probe,
+        development,
+        source_indices,
+        source_indices,
+        device=device,
+        batch_size=args.probe_batch,
+    )
+    swapped = _score_indices(
+        probe,
+        development,
+        source_indices,
+        swapped_indices,
+        device=device,
+        batch_size=args.probe_batch,
+    )
+    labels = development["tensors"]["labels"]
+    clean_targets = labels.index_select(0, source_indices)
+    swapped_targets = labels.index_select(0, swapped_indices)
+    source_orbits = [
+        development["identity"]["orbit_ids"][index]
+        for index in source_indices.tolist()
+    ]
+    swapped_orbit_accuracy, swapped_orbit_agreement = _renderer_metrics(
+        swapped,
+        swapped_targets,
+        source_orbits,
+    )
+    report = {
+        "candidate": virtual["candidate"],
+        "causal_rows": int(source_indices.numel()),
+        "clean_accuracy": float(clean.eq(clean_targets).float().mean()),
+        "feature_bundle_sha256": args.feature_bundle_sha256,
+        "probe_model_sha256": args.probe_model_sha256,
+        "schema": "shohin-ettr-capability-floor-source-matched-binding-v1",
+        "source_indices_sha256": tensor_sha256(source_indices),
+        "swapped_indices_sha256": tensor_sha256(swapped_indices),
+        "swapped_original_accuracy": float(
+            swapped.eq(clean_targets).float().mean()
+        ),
+        "swapped_renderer_orbit_accuracy": swapped_orbit_accuracy,
+        "swapped_renderer_orbit_agreement": swapped_orbit_agreement,
+        "swapped_target_accuracy": float(
+            swapped.eq(swapped_targets).float().mean()
+        ),
+        "tap": args.tap,
+    }
+    _write_no_replace(args.output, _canonical_bytes(report))
+    print(json.dumps(report, sort_keys=True), flush=True)
+
+
 def extract_taps(args: argparse.Namespace) -> None:
     device = torch.device("cuda", 0)
     stream = ETTRV3StreamingRelease(
@@ -393,7 +571,7 @@ def fit_tap(args: argparse.Namespace) -> None:
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", choices=("extract", "fit"), required=True)
+    parser.add_argument("--mode", choices=("extract", "fit", "binding"), required=True)
     parser.add_argument("--release-root", type=Path)
     parser.add_argument("--data-root", type=Path)
     parser.add_argument("--release-sha256")
@@ -403,6 +581,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--feature-bundle", type=Path, required=True)
     parser.add_argument("--feature-bundle-sha256")
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--probe-model", type=Path)
+    parser.add_argument("--probe-model-sha256")
     parser.add_argument("--tap", choices=TAP_NAMES)
     parser.add_argument("--train-cores", type=int, default=128)
     parser.add_argument("--development-cores", type=int, default=128)
@@ -431,7 +611,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if any(value is None for value in required) or args.feature_bundle_sha256:
             raise CapabilityFloorLayerTapError("tap extraction arguments differ")
         extract_taps(args)
-    else:
+    elif args.mode == "fit":
         if (
             not args.feature_bundle_sha256
             or args.output is None
@@ -439,6 +619,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         ):
             raise CapabilityFloorLayerTapError("tap fit arguments differ")
         fit_tap(args)
+    else:
+        if (
+            not args.feature_bundle_sha256
+            or args.output is None
+            or args.tap is None
+            or args.probe_model is None
+            or not args.probe_model_sha256
+        ):
+            raise CapabilityFloorLayerTapError("tap binding arguments differ")
+        score_binding(args)
     return 0
 
 

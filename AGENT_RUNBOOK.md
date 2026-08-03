@@ -21,7 +21,7 @@
 > requires a preregistered causal purpose and unchanged source-deleted gates;
 > parameter growth or lower training loss alone is not progress.
 >
-> **Last updated:** 2026-08-02 20:37 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 20:45 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,
@@ -25592,3 +25592,22 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `extract_once_fit_all_frozen_depths_then_add_a_counted_lossless_byte_rail_only_if_every_frozen_tap_misses_95_percent`.
+
+  The source-matched promotion control is now implemented in the same runner
+  and `train/jobs/score_capability_floor_layer_binding.sbatch`. It pairs only
+  byte-identical COMMAND/renderer/operation rows across opposite WORLD factors
+  whose assessor family changes, holds the source tensor fixed, swaps exact
+  preceding state, and scores the opposite-WORLD target. It does no training
+  and cannot select a tap. Two focused tests cover causal filtering and reject
+  source-byte mismatch. It will run only for a tap that first crosses the clean
+  and renderer gates.
+
+  Private source commit `6fd7c94ed37488daa9230b689629f980db9fc5a0`
+  is pushed to `origin/main`. Its 832,839,680-byte git archive has SHA-256
+  `8f784ea0a6aa5e5791426976ed8afa3c6577d9126f19b929eaeb763a88270672`.
+  Immutable Newton runtime
+  `scratchpad/capability_floor_runtime_6fd7c94_r1` contains 3,697 files,
+  zero links/write bits, replays every checksum, and has SHA256SUMS SHA-256
+  `dfbc991caaac9bd287f18239bc2e616db7524f42e2d8e2dd16b078a330dfd43c`.
+  Extraction `729667` is running on `evc42`; tap probes `729668--729675`
+  are dependency-held for embedding and blocks `0/4/9/14/19/24/29`.

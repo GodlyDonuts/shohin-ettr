@@ -267,3 +267,11 @@ probe result are no-overwrite, checksum-bound artifacts. A frozen tap can
 advance only if clean and renderer-orbit accuracy reach 95%; promotion still
 requires the corrected source-matched binding control before any larger
 backbone fit.
+
+That correction is implemented as a post-fit gate. It pairs rows with
+byte-identical COMMAND source, renderer view, command factor, and operation
+position across the two WORLD factors, retaining only pairs whose exact family
+changes. The frozen source tensor is held fixed while the typed preceding state
+is swapped. A binding-capable probe must predict the opposite-WORLD target and
+remain renderer-stable; a syntax-only probe instead preserves the original
+label. This scorer cannot alter weights or choose candidates.

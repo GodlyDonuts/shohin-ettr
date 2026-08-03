@@ -5,6 +5,7 @@ from capability_floor_layer_taps import (
     CapabilityFloorLayerTapError,
     TAP_NAMES,
     pool_task_taps,
+    source_matched_world_swap_indices,
     virtual_feature_bundle,
 )
 
@@ -111,3 +112,38 @@ def test_pool_rejects_role_geometry_drift() -> None:
             source_length=3,
             role_masks=(((True, False, False),),),
         )
+
+
+def test_source_matched_world_swap_keeps_only_label_changing_worlds() -> None:
+    split = _bundle()["splits"]["development"]
+    split["identity"] = {
+        "orbit_ids": [
+            "core:0:0",
+            "core:2:0",
+            "core:1:0",
+            "core:3:0",
+        ],
+        "sample_ids": [
+            "core:0:0:view=0",
+            "core:2:0:view=0",
+            "core:1:0:view=0",
+            "core:3:0:view=0",
+        ],
+        "source_sha256": ["a" * 64, "a" * 64, "b" * 64, "b" * 64],
+    }
+    split["tensors"]["labels"] = torch.tensor([0, 2, 1, 1])
+    source, swapped = source_matched_world_swap_indices(split)
+    assert source.tolist() == [0, 1]
+    assert swapped.tolist() == [1, 0]
+
+
+def test_source_matched_world_swap_rejects_different_command_bytes() -> None:
+    split = _bundle()["splits"]["development"]
+    split["identity"] = {
+        "orbit_ids": ["core:0:0", "core:2:0"],
+        "sample_ids": ["core:0:0:view=0", "core:2:0:view=0"],
+        "source_sha256": ["a" * 64, "b" * 64],
+    }
+    split["tensors"]["labels"] = torch.tensor([0, 2])
+    with pytest.raises(CapabilityFloorLayerTapError, match="COMMAND source"):
+        source_matched_world_swap_indices(split)
