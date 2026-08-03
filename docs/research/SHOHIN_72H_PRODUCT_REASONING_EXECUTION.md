@@ -2,7 +2,7 @@
 
 Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 
-## Live Scoreboard (2026-08-02 23:38 EDT)
+## Live Scoreboard (2026-08-02 23:57 EDT)
 
 | Result | Status |
 |---|---:|
@@ -10,14 +10,16 @@ Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 | frozen Qwen, MATH-500 deterministic thinking, same subset size | 4/100 |
 | frozen Qwen, AIME-2024 | 0/30 |
 | frozen Qwen, BBH logic hash subset | 13/100 |
-| frozen Qwen, HumanEval executable subset | 3/20; 15% |
+| frozen Qwen, HumanEval executable subset, evaluator v2 / 1,024 tokens | 6/20; 30% |
 | frozen Qwen, MBPP executable subset | 5/20; 25% |
+| frozen Qwen, GPQA-Diamond thinking mode | 20/198; invalid as capability estimate because 198/198 cap-exhausted |
 | `B1` exact 16-row/100-update fit | NLL 1.232 -> 0.555; -54.9%; 16/16 improved |
 | `T1` soft-prefix exact fit | NLL 1.240 -> 0.796; -35.8%; 16/16 improved; reject unchanged scaling |
 | `C1` dense-prefix exact fit | NLL 1.225 -> 0.695; -43.2%; 16/16 improved |
 | `T2` gated residual mechanics | pass; 6.690M trainable; 181.1 charged tok/s |
 | `C2` gated dense residual mechanics | pass; 6.642M trainable; 202.5 charged tok/s |
 | `C2` exact 16-row/100-update fit | NLL 1.154 -> 0.457; -60.4%; 16/16 improved |
+| `T2` exact 16-row/100-update fit | NLL 1.168 -> 0.455; -61.0%; 16/16 improved |
 
 Transcript inspection shows the deterministic thinking score is strongly
 affected by decode behavior: many GSM8K completions calculate the right value
@@ -39,6 +41,12 @@ output was preserved with an aborted-job suffix. Unchanged replacement
 `729849` excludes `evc33`, with scorer `729850`; no duration or width variant
 follows a negative result.
 
+T2 therefore clears the mechanics/fit release by narrowly beating C2 and
+materially beating B1. This is authorization for a held-out comparison, not a
+reasoning claim. Matched 200-update jobs are B1 `729854`, T2 `729855`, and C2
+`729856`; jobs `729858--729875` bind the same six development boards to their
+resulting checkpoints.
+
 Evaluator schema v2 now records per-example token usage and explicit
 max-token exhaustion. The first HumanEval run exposed both real algorithm
 errors and mid-function truncation, so code milestone scores are rerun at
@@ -47,6 +55,13 @@ GPQA-Diamond has been
 normalized from exact source commit
 `56686c06f5e19865c153de0fdb11be3890014df7`: 198 rows, deterministic balanced
 answer permutation, and two disclosed duplicate-distractor rows.
+
+The first full GPQA thinking run is a decoding failure: every one of 198
+responses exhausted 768 tokens, and its `20/198` exact score is largely driven
+by accidental final option letters in unfinished text. No-thinking control
+`729877` establishes the usable frozen reference. Evaluator-v2 HumanEval at
+1,024 tokens rises from `3/20` to `6/20`; MBPP remains `5/20`, proving that
+truncation explained some HumanEval misses but not the broader code deficit.
 
 The optional fast-kernel runtime remains rejected for use. Its H100 parity
 canary `729847` landed on the same unhealthy `evc33` node, ran more than five
@@ -181,7 +196,9 @@ field. A new two-pass consensus lane recovers quality signal from the sixteen
 independent annotations: math/science rows require at least eight extracted
 answers, eight votes for one exact-normalized answer, at least 60% agreement,
 and a three-vote margin. Code is excluded from this lane until execution can
-verify it.
+verify it. Stokes job `761159` runs from private commit `e55412f`; its runtime
+manifest SHA-256 is
+`f515310809570f251709e9b09f8aae2986e18db1cf643a120dd4e6f50059b8b7`.
 
 ## Execution Queue
 

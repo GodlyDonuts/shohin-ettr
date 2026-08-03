@@ -31,7 +31,7 @@
 > claims are secondary to answer-quality deltas. The active 72-hour queue is
 > `docs/research/SHOHIN_72H_PRODUCT_REASONING_EXECUTION.md`.
 >
-> **PRODUCT CAMPAIGN STATUS — 2026-08-02 23:38 EDT:** Frozen
+> **PRODUCT CAMPAIGN STATUS — 2026-08-02 23:57 EDT:** Frozen
 > `Qwen/Qwen3.5-0.8B@2fc06364715b967f1860aea9cf38778875588b17`
 > now has directly measured baselines: GSM8K `17/100`, MATH-500 `4/100`,
 > AIME-2024 `0/30`, BBH logic `13/100`, HumanEval `3/20`, and MBPP `5/20`
@@ -43,22 +43,26 @@
 > extension. Two-update H100 smokes `729829/729830` pass at 181.1/202.5
 > charged target tok/s. Dense residual C2 completed its exact gate at NLL
 > `1.154 -> 0.457` (`-60.4%`, `16/16` improved), ahead of LoRA's `-54.9%`.
-> T2 job `729837` produced no checkpoint after an `evc33` NVIDIA-driver lock;
-> it was canceled as hardware-invalid evidence and replaced unchanged by
-> `729849 -> 729850` with that node excluded. Official GPQA-Diamond is frozen at 198 rows under source commit
+> T2 replacement `729849 -> 729850` completed at NLL `1.168 -> 0.455`
+> (`-61.0%`, `16/16`), narrowly ahead of C2 and materially ahead of LoRA.
+> Matched B1/T2/C2 200-update jobs are `729854/729855/729856`, with identical
+> six-board evaluations `729858--729875` dependency-bound. Official GPQA-Diamond is frozen at 198 rows under source commit
 > `56686c06f5e19865c153de0fdb11be3890014df7`; baseline `729846` is queued.
 > OpenThoughts jobs `729807 -> 729848` completed: 64,938 unique seed rows,
 > 19 additional expanded-board overlap drops, and 64,919 surviving rows at
 > SHA-256 `d9daa5720f7d27ed9c49a24be5fecf3f9db80bdd9dc12d648f11907e12928d90`.
 > They remain teacher-unverified. The next CPU lane uses the upstream sixteen
 > annotations as a conservative answer-consensus verifier for math/science;
-> code remains excluded without execution. Fast-kernel canary `729847` was canceled hardware-invalid on
+> Stokes job `761159` is live from private commit `e55412f`; code remains
+> excluded without execution. Fast-kernel canary `729847` was canceled hardware-invalid on
 > unhealthy `evc33` after more than five minutes, no report, and a stuck
 > `nvidia-smi`; retain the known-good base runtime. Product evaluator v2 records
-> per-sample generated tokens and cap exhaustion; corrected 1,024-token
-> HumanEval/MBPP jobs are `729851/729852`.
+> per-sample generated tokens and cap exhaustion. Corrected code results are
+> HumanEval `6/20` and MBPP `5/20`. GPQA thinking mode is `20/198`, but all
+> `198/198` rows cap-exhausted; no-thinking control `729877` is the usable
+> baseline gate.
 >
-> **Last updated:** 2026-08-02 23:38 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-02 23:57 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,

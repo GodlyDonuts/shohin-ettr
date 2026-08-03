@@ -54364,3 +54364,18 @@ at least eight votes and 60% support, and it leads the runner-up by at least
 three votes. The best trace is selected only among responses agreeing with the
 modal answer. Code is excluded because string agreement and compilation do not
 establish functional correctness.
+
+T2 has now crossed its bounded fit gate. On the exact same 16 examples and
+100 updates, tied recurrent residual T2 reaches token-weighted NLL `0.455`
+from `1.168` (`-61.0%`), versus `0.457` (`-60.4%`) for dense residual C2 and
+`0.555` (`-54.9%`) for LoRA B1. The treatment advantage over the dense control
+is small, so only the matched held-out board can establish utility. B1/T2/C2
+200-update jobs `729854/729855/729856` and eighteen identical six-board jobs
+`729858--729875` are the active product comparison.
+
+Frozen evaluator-v2 code results are HumanEval `6/20` and MBPP `5/20` at a
+1,024-token cap. HumanEval doubled from its 512-token score, but MBPP did not
+move. The first GPQA-Diamond thinking run scores `20/198`, yet every generation
+exhausted 768 tokens and most extracted predictions are unfinished fragments;
+it is a decoding-path failure, not a sound capability estimate. A concise
+no-thinking control is required before using GPQA in the product scoreboard.
