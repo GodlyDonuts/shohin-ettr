@@ -121,78 +121,98 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     positive_rows: list[dict[str, Any]] = []
     counters: Counter[str] = Counter()
     started = time.monotonic()
-    for local_index, row in enumerate(rows):
-        global_index = args.skip + local_index
-        row_seed = args.seed + global_index * 1009
-        torch.manual_seed(row_seed)
-        torch.cuda.manual_seed_all(row_seed)
-        rendered = _render_prompt(tokenizer, row["question"], True, False)
+    processed = 0
+    for batch_start in range(0, len(rows), args.prompt_batch_size):
+        batch = rows[batch_start : batch_start + args.prompt_batch_size]
+        global_batch_start = args.skip + batch_start
+        batch_seed = args.seed + global_batch_start * 1009
+        torch.manual_seed(batch_seed)
+        torch.cuda.manual_seed_all(batch_seed)
+        rendered = [
+            _render_prompt(tokenizer, row["question"], True, False)
+            for row in batch
+            for _ in range(args.samples)
+        ]
         completions, usage = _generate_completions(
             model,
             tokenizer,
-            [rendered] * args.samples,
+            rendered,
             True,
             "qwen-thinking",
             args.max_new_tokens,
             stop_token_ids,
         )
-        per_prompt: list[dict[str, Any]] = []
-        for sample_index, (completion, (token_count, exhausted)) in enumerate(
-            zip(completions, usage, strict=True)
-        ):
-            score = score_completion(row, completion)
-            candidate = {
-                "schema": SCHEMA,
-                "identity_sha256": row["identity_sha256"],
-                "question": row["question"],
-                "task": row["task"],
-                "training_group": row["training_group"],
-                "sample_index": sample_index,
-                "seed": row_seed,
-                "completion": completion,
-                "generated_tokens": token_count,
-                "max_token_exhausted": exhausted,
-                **score,
-            }
-            candidate_rows.append(candidate)
-            per_prompt.append(candidate)
-            counters["candidates"] += 1
-            counters["correct_candidates"] += int(candidate["correct"])
-            counters["explicit_candidates"] += int(candidate["explicit_final_answer"])
-            counters["max_token_exhausted"] += int(exhausted)
-            counters["generated_tokens"] += token_count
-        positive = choose_positive(per_prompt)
-        if positive is not None:
-            negatives = [candidate for candidate in per_prompt if not candidate["correct"]]
-            positive_rows.append(
-                {
+        if len(completions) != len(batch) * args.samples:
+            raise ProductRolloutError("generation batch cardinality differs")
+        for batch_index, row in enumerate(batch):
+            global_index = global_batch_start + batch_index
+            row_seed = args.seed + global_index * 1009
+            sample_start = batch_index * args.samples
+            per_prompt: list[dict[str, Any]] = []
+            for sample_index, (completion, (token_count, exhausted)) in enumerate(
+                zip(
+                    completions[sample_start : sample_start + args.samples],
+                    usage[sample_start : sample_start + args.samples],
+                    strict=True,
+                )
+            ):
+                score = score_completion(row, completion)
+                candidate = {
+                    "schema": SCHEMA,
+                    "identity_sha256": row["identity_sha256"],
                     "question": row["question"],
-                    "response": positive["completion"],
-                    "answer": row["answer"],
-                    "expected_answer_normalized": row["expected_answer_normalized"],
+                    "task": row["task"],
                     "training_group": row["training_group"],
-                    "verification": "student_exact_answer_match_v1",
-                    "source_identity_sha256": row["identity_sha256"],
-                    "source_adapter_checkpoint": str(args.adapter_checkpoint.resolve()),
-                    "chosen_sample_index": positive["sample_index"],
-                    "rejected_response": (
-                        min(
-                            negatives,
-                            key=lambda candidate: (
-                                candidate["generated_tokens"],
-                                candidate["sample_index"],
-                            ),
-                        )["completion"]
-                        if negatives
-                        else None
-                    ),
+                    "sample_index": sample_index,
+                    "batch_seed": batch_seed,
+                    "row_seed": row_seed,
+                    "completion": completion,
+                    "generated_tokens": token_count,
+                    "max_token_exhausted": exhausted,
+                    **score,
                 }
-            )
-            counters["positive_prompts"] += 1
-        counters["prompts"] += 1
-        if (local_index + 1) % 8 == 0 or local_index + 1 == len(rows):
+                candidate_rows.append(candidate)
+                per_prompt.append(candidate)
+                counters["candidates"] += 1
+                counters["correct_candidates"] += int(candidate["correct"])
+                counters["explicit_candidates"] += int(
+                    candidate["explicit_final_answer"]
+                )
+                counters["max_token_exhausted"] += int(exhausted)
+                counters["generated_tokens"] += token_count
+            positive = choose_positive(per_prompt)
+            if positive is not None:
+                negatives = [candidate for candidate in per_prompt if not candidate["correct"]]
+                positive_rows.append(
+                    {
+                        "question": row["question"],
+                        "response": positive["completion"],
+                        "answer": row["answer"],
+                        "expected_answer_normalized": row["expected_answer_normalized"],
+                        "training_group": row["training_group"],
+                        "verification": "student_exact_answer_match_v1",
+                        "source_identity_sha256": row["identity_sha256"],
+                        "source_adapter_checkpoint": str(args.adapter_checkpoint.resolve()),
+                        "chosen_sample_index": positive["sample_index"],
+                        "rejected_response": (
+                            min(
+                                negatives,
+                                key=lambda candidate: (
+                                    candidate["generated_tokens"],
+                                    candidate["sample_index"],
+                                ),
+                            )["completion"]
+                            if negatives
+                            else None
+                        ),
+                    }
+                )
+                counters["positive_prompts"] += 1
+            counters["prompts"] += 1
+        processed += len(batch)
+        if processed % 8 == 0 or processed == len(rows):
             print(
-                f"[product-rollout] {local_index + 1}/{len(rows)} "
+                f"[product-rollout] {processed}/{len(rows)} "
                 f"positive={counters['positive_prompts']} "
                 f"correct={counters['correct_candidates']}/{counters['candidates']}",
                 flush=True,
@@ -216,6 +236,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "skip": args.skip,
         "count": args.count,
         "samples": args.samples,
+        "prompt_batch_size": args.prompt_batch_size,
         "seed": args.seed,
         "max_new_tokens": args.max_new_tokens,
         "counters": dict(sorted(counters.items())),
@@ -247,11 +268,21 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--skip", type=int, default=0)
     parser.add_argument("--count", type=int, default=128)
     parser.add_argument("--samples", type=int, default=4)
+    parser.add_argument("--prompt-batch-size", type=int, default=1)
     parser.add_argument("--seed", type=int, default=20260803)
     parser.add_argument("--max-new-tokens", type=int, default=1536)
     args = parser.parse_args()
-    if args.samples <= 1 or args.samples > 8 or args.max_new_tokens <= 0:
-        parser.error("samples must be in [2, 8] and generation limit must be positive")
+    if (
+        args.samples <= 1
+        or args.samples > 8
+        or args.prompt_batch_size <= 0
+        or args.prompt_batch_size > 16
+        or args.max_new_tokens <= 0
+    ):
+        parser.error(
+            "samples must be in [2, 8], prompt batch size in [1, 16], and "
+            "generation limit must be positive"
+        )
     return args
 
 

@@ -22,6 +22,7 @@ REPORT=${REPORT:?set report output}
 SKIP=${SKIP:-0}
 COUNT=${COUNT:-128}
 SAMPLES=${SAMPLES:-4}
+PROMPT_BATCH_SIZE=${PROMPT_BATCH_SIZE:-1}
 SEED=${SEED:-20260803}
 MAX_NEW_TOKENS=${MAX_NEW_TOKENS:-1536}
 STAGE_MODEL=${STAGE_MODEL:-true}
@@ -67,5 +68,6 @@ cd "$RUNTIME/train"
   --skip "$SKIP" \
   --count "$COUNT" \
   --samples "$SAMPLES" \
+  --prompt-batch-size "$PROMPT_BATCH_SIZE" \
   --seed "$SEED" \
   --max-new-tokens "$MAX_NEW_TOKENS"
