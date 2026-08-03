@@ -15,6 +15,7 @@ the file into a final training recipe.
 |---|---:|---|---|
 | `data/v8_balanced_35m20p20c25t_unique_r1.jsonl` | 36,250 | `aebf832278b8b0792cdde423b87f187808b918f5b6dc84631fde81e63a0b7fee` | Controlled balanced-data diagnostic |
 | `data/openscience2_expected_verified_10k_r1.jsonl` | 10,000 | `eaca4020fc5dceab1cff41d5bae94e5308949773ee262a9153ee767deec89173` | Verified-science pilot |
+| `data/openmath_expected_verified_12f3b0c.jsonl` | 46,006 | `aeb373e8fb4fedc746527653e09e3d98e73d9749cd34e5dc628f9845de125e55` | Verified-math source |
 
 The balanced V8 diagnostic contains 12,688 math, 7,250 code, 7,250
 procedural, and 9,062 teacher rows. It has zero duplicate questions and zero
@@ -41,6 +42,13 @@ answer, unique normalized prompts, general quality checks, and no exact or
 is a strong filter, but it is not a proof that every intermediate rationale is
 scientifically flawless.
 
+The OpenMath artifact is the complete surviving set from a 3,201,061-row
+scan. It requires `problem_type=has_answer_extracted`, exact agreement between
+the generated and published final answers, unique normalized prompts, and no
+exact or 13-gram overlap with the local benchmark inventory. The tokenizer-
+exact promoted-mix builder additionally rejects any row whose prompt or answer
+would be truncated at the configured training context.
+
 ## Provenance and license
 
 The science rows derive from
@@ -48,6 +56,11 @@ The science rows derive from
 licensed CC-BY-4.0. See the upstream
 [dataset card](https://huggingface.co/datasets/nvidia/OpenScienceReasoning-2/blob/main/README.md).
 The exact attribution record is stored beside the selection report.
+
+The math rows derive from
+`nvidia/OpenMathReasoning@d3d08664755704f422af97d43a7ff0ded4bd95df`,
+licensed CC-BY-4.0. Its source revision and selection counters are recorded in
+`data/openmath_expected_verified_12f3b0c.report.json`.
 
 The balanced V8 artifact derives from Shohin's internal frozen reasoning-v8
 candidate. Its report records the exact source hash, weights, group counts,

@@ -54505,3 +54505,29 @@ supplies 28.60% of its actual target tokens as code. Matched jobs
 automatic semantic aggregate `729983`. A transient CUDA-visibility failure
 on `evc43` affected only the first C2 HumanEval launch; identical replacements
 completed on `evc29` and no completed model board was repeated.
+
+### Strict product correction and balanced follow-up (2026-08-03 02:04 EDT)
+
+The authoritative product aggregate is now
+`campaign_short_u200_turnstop_v6.json`. It rejects implicit fallback answers
+from cap-exhausted traces unless the completion emitted a boxed or explicitly
+labelled final answer. B1/T2/C2 score `18.31% / 26.33% / 22.93%` macro and
+solve `95 / 148 / 128` of 538 examples. T2 therefore retains `+8.02` macro
+points and `+53` solved over same-data LoRA, and `+3.41` points and `+20`
+solved over the parameter-matched dense residual. Its gains over B1 span
+GSM8K `+11`, semantic MATH-500 `+12`, BBH `+12`, and GPQA `+20`; executable
+code remains `-2` and is the sole numeric-gate failure. Manual transcripts
+contain real coherent arithmetic and logic chains, but also unit mistakes and
+contradictory explanations, so the result is a practical broad answer gain
+rather than consistently sophisticated reasoning.
+
+The balanced B1/T2/C2 arms each completed exactly 521,327 charged target
+tokens. Throughput is `1260.0 / 450.0 / 451.6` tok/s; T2 and dense C2 are
+therefore tightly compute-matched. Their identical strict boards are live.
+B1's first balanced GSM8K result is `40/100`, up from `32/100` under the old
+mix, establishing that the data rebalance itself has a measurable effect.
+
+Pinned OpenMathReasoning also completed its strict expected-answer lane.
+From 3,201,061 raw rows, 46,006 unique answer-matched and benchmark-filtered
+rows survive. Output SHA-256 is
+`aeb373e8fb4fedc746527653e09e3d98e73d9749cd34e5dc628f9845de125e55`.

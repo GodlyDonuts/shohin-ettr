@@ -148,8 +148,27 @@
 > `evc43` lost CUDA visibility; exact replacements `729981 -> 729982`
 > completed on `evc29`, and downstream dependencies were repaired without
 > repeating completed boards.
+> **STRICT PRODUCT DECISION — 2026-08-03 02:04 EDT:** Explicit-answer
+> rescoring supersedes v5 with
+> `campaign_short_u200_turnstop_v6.json`. Cap-exhausted answer tasks now
+> receive no prediction unless the model emitted a boxed or explicitly
+> labelled final answer. B1/T2/C2 macro accuracy is
+> `18.31% / 26.33% / 22.93%`, with `95 / 148 / 128` solved of 538. T2
+> retains a broad `+8.02` macro-point and `+53`-answer gain over B1 and a
+> `+3.41`-point, `+20`-answer gain over dense C2. Its domain gains over B1
+> are GSM8K `+11`, semantic MATH-500 `+12`, BBH `+12`, and GPQA `+20`;
+> code remains `-2` and is the sole numeric-gate failure. Manual transcripts
+> confirm many coherent arithmetic and truth-chain solutions, but also one
+> unit error and several contradictory BBH/GPQA explanations; call this a
+> broad practical answer-quality gain, not yet consistently sophisticated
+> reasoning. Balanced B1/T2/C2 training completed on exactly 521,327 charged
+> target tokens per arm at `1260.0 / 450.0 / 451.6` tok/s. Their identical
+> strict evaluation chains `729937--729956` are live. Stokes OpenMath job
+> `761161` also completed: 46,006 unique expected-answer-matched rows from
+> 3,201,061 raw rows, SHA-256
+> `aeb373e8fb4fedc746527653e09e3d98e73d9749cd34e5dc628f9845de125e55`.
 >
-> **Last updated:** 2026-08-03 01:36 EDT. The protected 300k flagship remains immutable and
+> **Last updated:** 2026-08-03 02:04 EDT. The protected 300k flagship remains immutable and
 > hash-matched at SHA-256
 > `211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6`; no flagship writer is
 > active. Final raw benchmark job `692787` completed cleanly on `evc32`: GSM8K maj@4 `4/100`,

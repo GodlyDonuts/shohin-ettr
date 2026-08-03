@@ -2,7 +2,7 @@
 
 Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 
-## Live Scoreboard (2026-08-03 00:58 EDT)
+## Live Scoreboard (2026-08-03 02:04 EDT)
 
 | Result | Status |
 |---|---:|
@@ -33,9 +33,11 @@ Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 | exact-turn GPQA B1/T2/C2 | 16/34/30 of 198; T2 +18 over B1 and +4 over C2 |
 | frozen concise no-thinking GPQA | 3/198 |
 | exact-turn raw MATH B1/T2/C2 | 15/24/27; provisional until common Math-Verify rescore |
-| corrected five-domain macro B1/T2/C2 | 18.62% / **26.83%** / 23.43% |
-| corrected solved examples B1/T2/C2 | 98 / **151** / 132 of 538 |
+| strict five-domain macro B1/T2/C2 | 18.31% / **26.33%** / 22.93% |
+| strict solved examples B1/T2/C2 | 95 / **148** / 128 of 538 |
 | corrected promotion decision | fail only on code regression: T2 0/40 versus B1 2/40 |
+| balanced B1 training / GSM8K | 521,327 target tokens at 1,260.0 tok/s; 40/100 GSM8K |
+| balanced T2/C2 training | both complete on 521,327 tokens; 450.0 / 451.6 tok/s; boards live |
 
 Transcript inspection shows the deterministic thinking score is strongly
 affected by decode behavior: many GSM8K completions calculate the right value
@@ -172,10 +174,12 @@ logic foothold, not sophisticated general reasoning. The immediate corpus
 repair is verified science rationale and executable code, where V8 is plainly
 underrepresented.
 
-The first full corrected decision is now closed. T2 reaches `26.83%` macro
-and `151/538` solved, versus B1 `18.62%` and `98/538`, and dense C2 `23.43%`
-and `132/538`. Relative to B1, T2 adds 12 GSM8K, 12 semantic MATH-500, 13 BBH
-logic, and 18 GPQA answers. It beats C2 by 3.40 macro points and 19 total
+The first full strict decision is now closed. V6 rejects implicit fallback
+answers from cap-exhausted traces unless the model emitted a boxed or labelled
+final answer. T2 reaches `26.33%` macro and `148/538` solved, versus B1
+`18.31%` and `95/538`, and dense C2 `22.93%` and `128/538`. Relative to B1,
+T2 adds 11 GSM8K, 12 semantic MATH-500, 12 BBH logic, and 20 GPQA answers. It
+beats C2 by 3.41 macro points and 20 total
 solved examples, so tied recurrence has earned a practical foothold rather
 than merely matching extra dense capacity. The numeric gate remains false
 only because code falls from B1 `2/40` to T2 `0/40`. Direct code transcripts
@@ -184,6 +188,14 @@ prose or emits malformed Python. Balanced jobs `729936/729943/729950` began
 immediately and automatic semantic decision `729983` follows their exact
 boards. This is a targeted repair of one failed domain, not an attempt to
 erase the positive four-domain result.
+
+The strict aggregate does not clear the transcript gate unconditionally.
+Many T2-only GSM8K and BBH solutions contain coherent multi-step arithmetic
+or truth chains, but the manual sample also contains one correct arithmetic
+result with the wrong unit and several correct final options preceded by a
+contradictory explanation. GPQA rationales remain especially unreliable.
+Accordingly, v6 is evidence of broad practical answer improvement, not yet a
+claim of consistently sophisticated reasoning.
 
 ## Compared Systems
 
@@ -306,7 +318,11 @@ It is hash-matched on Stokes and Newton and stored with its report and
 CC-BY-4.0 attribution in private dataset
 `Godlydonuts/shohin-ettr-reasoning-data`. Expected-answer agreement is an
 admission filter, not a guarantee that every intermediate explanation is
-flawless. OpenMath `761161` and OpenThoughts consensus `761159` remain live.
+flawless. OpenMath `761161` is complete: 46,006 unique
+expected-answer-matched rows survive from 3,201,061 raw rows, with output
+SHA-256
+`aeb373e8fb4fedc746527653e09e3d98e73d9749cd34e5dc628f9845de125e55`.
+OpenThoughts consensus `761159` remains live.
 
 ## Execution Queue
 
