@@ -27066,3 +27066,223 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `retain_the_expanded_rollout_replay_leader_reject_both_cumulative_hard_continuations_and_move_self_improvement_to_a_fully_fresh_verified_bank`.
+
+- **2026-08-04 03:00--05:14 EDT** -- **A fully fresh 8,192-prompt
+  rollout wave completes at high yield and saturates the available H100
+  backfill capacity.**
+
+  The corrected read-only rollout runtime processes every frozen bank row.
+  Math covers 4,096 prompts and finds at least one verifier-correct trajectory
+  for 2,812 (`68.6523%`), with 7,496 correct candidates across four samples
+  per prompt. Its candidates/positives/report SHA-256 values are respectively
+  `60ed197f21f1584818038ec31f6809c72a14a614a2b3ee405f530ad6a3e6a9c1`,
+  `aecce347b55f66865c9a1023cf8b18b672a8469246e23f21c9c84b3074b37681`,
+  and `5d4cfe8d5e44cede0c9147b1c1f1e316055f84fe06ddd2358dda3f0d9fd4d67e`.
+  Science covers 4,096 prompts and finds 2,275 positive prompts
+  (`55.5420%`) with 5,306 correct candidates. Its positives SHA-256 is
+  `cb0cf45f9c6f412653fc504848deff0e59ae60e242595e99a815901345fd5956`;
+  aggregate report SHA-256 is
+  `ec4f602d32ca4bc318bff4d735db4bd813a0e9b0802d3a2f6ec24cd11aa65e2b`.
+  Mean measured generation throughput is approximately 506 math and 478
+  science tokens/s/H100. The independent single-H100 wave peaks at 22
+  simultaneous jobs with sampled utilization at 99%, about 26GB VRAM, and
+  308W.
+
+  The admitted merge contains 5,087 unique verifier-correct prompts: 2,812
+  math and 2,275 science. Its JSONL SHA-256 is
+  `aaed21e22b59be00c09f54171f93ce3a8e1f2e292a92c91e02cc532be731cd25`;
+  merge report SHA-256 is
+  `8b82b764b0574c7a79394a251332674320f73626bfc026f153ee2a2d7201a73f`.
+  A one-to-one broad replay mix adds 5,087 prior rows,
+  producing 10,174 unique training rows at
+  `artifacts/product_reasoning/data/rest_rollout_replay_v12u400_freshv3_prior1x_r1.jsonl`,
+  SHA-256
+  `11cb9d7803690c59b156ab73eaf1595ca4db6c23d101e0807ee015ac40680085`.
+  Replay groups are code 1,368, math 1,728, procedural 354, science 1,332,
+  and teacher 305; report SHA-256 is
+  `fbd6ce7ad7b0618ab4d93294b7eb09488d6f9970dc3d4d6368fafeddabf93aab`.
+
+  Decision:
+  `train_one_hash_bound_fresh_bank_continuation_with_broad_replay_then_measure_both_midpoint_and_endpoint`.
+
+- **2026-08-04 05:14--05:53 EDT** -- **The first fresh-bank training output
+  is quarantined after proving it did not warm-start; a corrected continuation
+  then completes with explicit source-checkpoint provenance.**
+
+  Job `735026` completes 400 updates under
+  `baseline_late2_rollout_replay_fresh3_u400_r1`, but its inherited wrapper
+  silently omits `WARM_START_CHECKPOINT`. The report contains no warm-start
+  fields, proving it trained a fresh adapter rather than continuing the
+  promoted checkpoint. Its update-200/update-400 SHA-256 values are
+  `bf147ec569b2127d0bfc28b06e094761db92f5ea946e0d17f28525d1031e2059`
+  and
+  `0d95d9e236814137d87f820a70010b0a25eecbfdf725b77afb5176e5979d8df7`;
+  they remain diagnostic-only. All 18 child
+  evaluators are canceled before promotion use. This arm cannot enter the
+  product scoreboard.
+
+  Corrected runtime `scratchpad/product_train_runtime_e804aaf_r1` adds
+  fail-closed trainable-state restore and metadata validation. Job `735125`
+  then completes in 14m28s from exact promoted checkpoint SHA-256
+  `34c82454e0c53609bc1ac6a9f127437080e431f147e28ae63b4080c413d9a82e`.
+  It trains 400 fresh-optimizer updates over 8,307,207 charged tokens at
+  9,870.55 tokens/s, peak 37.44GB, LR `3e-6`, and 157,925,376 trainable
+  parameters. Its report binds source update 400 and source-data SHA-256
+  `4557d8de503578ae37c344e92601fcc45ea87e5542d2ee88f3e09648b54b17f3`.
+  Corrected update-200/update-400 checkpoint SHA-256 values are
+  `baf4623755d26ae13b4a8de8b304c07ae197d95a51f0119e0c67f62a0aa139b5`
+  and `c815cee48522fc379fc9f5f7eb4124d7aad1d24dc56e34562d4eea650e981de1`.
+
+  Eighteen independent 30-minute one-H100 evaluations `735126--735143`
+  compare both corrected checkpoints to the fixed leader board. Update 200
+  closes at GSM8K 90, MATH 53, HumanEval `4/20`, MBPP `7/20`, GPQA 26,
+  BBH 54, AIME `1/30`, science 38, and manual `9/12`. Its primary five-domain
+  macro is `50.1%`, only `+1.2` points over the leader, while mean code falls
+  five points; it therefore cannot satisfy the broad promotion gate. Update
+  400 closes at GSM8K 89, MATH 53, HumanEval `5/20`, MBPP `7/20`, GPQA 17,
+  BBH 50, AIME `0/30`, science 37, and manual `10/12`. Its five-domain macro
+  is `47.8%`. Neither checkpoint advances to expanded evaluation; the
+  existing expanded rollout-replay checkpoint remains protected.
+
+  Decision:
+  `quarantine_the_non_warm_started_output_and_accept_only_reports_that_bind_the_exact_source_checkpoint_hash`.
+
+- **2026-08-04 05:53--06:25 EDT** -- **Verifier preference correction is
+  operationalized as the next direct attack on pass@1 selection while broad
+  replay protects retained capability.**
+
+  Across the fresh rollout candidates, 3,732 prompts retain at least one
+  non-empty correct and one non-empty wrong trajectory after dropping 286
+  empty science completions. A deterministic maximum-two-pairs-per-prompt
+  build freezes 7,452 within-prompt chosen/rejected pairs: 3,888 math and
+  3,564 science. The pair JSONL is
+  `artifacts/product_reasoning/data/rest_rollout_preferences_freshv3_k4_p2_r1.jsonl`
+  at SHA-256
+  `38d582fa6f5626f34d7f390e243bc4f17c4114ce06d83fe0feca755bd7b88ba6`;
+  its report SHA-256 is
+  `1d7c2d8b6bfa9feabee6abab2c84cf16a8813b9db544df71a38e8fd05b999493`.
+  Every pair comes from the same prompt and exact promoted-checkpoint rollout,
+  so preference labels measure trajectory choice rather than task or prompt
+  identity.
+
+  Commit `644d575` introduces a memory-bounded reference-free pairwise
+  trainer. It measures chosen/rejected average log probability without
+  gradients, derives the exact detached logistic gradient coefficient, and
+  replays chosen and rejected graphs sequentially so a 3B model never retains
+  both graphs in VRAM. Commit `62ee3ed` adds one hash-bound broad replay SFT
+  graph per preference microstep after the fresh-SFT board reveals code
+  forgetting. Defaults are beta 2.0, margin 0, chosen SFT weight 0.25, replay
+  weight 0.5, LR `1e-6`, 4,096 tokens, and sequential accumulation. Five
+  focused tests pass. Runtime source/trainer/wrapper SHA-256 values are
+  `d35006ceb17bd347b174cb6051e3d93483c1d93121c427d041f64d07c4422bdb`,
+  `5ed1e3a3c14b3e48dcd8867a2b51061087ecf054fd957302520a46949a166fa6`,
+  and `f280f296aafabe5db3b2440854ef438f8439c7e75c08735f80e64a0dbd7887b4`.
+  One-update mechanics/memory smoke `735165` completes in 21 seconds. Its
+  report binds exact leader SHA-256
+  `34c82454e0c53609bc1ac6a9f127437080e431f147e28ae63b4080c413d9a82e`,
+  preference-data SHA-256
+  `38d582fa6f5626f34d7f390e243bc4f17c4114ce06d83fe0feca755bd7b88ba6`,
+  and replay-data SHA-256
+  `4557d8de503578ae37c344e92601fcc45ea87e5542d2ee88f3e09648b54b17f3`.
+  Loss and gradient are finite, peak VRAM is 12,235,730,944 bytes, and the
+  sampled correct trajectory outranks its wrong counterpart. Smoke checkpoint
+  SHA-256 is
+  `d31d7acb41ee59cd66825e2703d17eb40100b9a77fd33b5bf8d5718b55117115`;
+  report SHA-256 is
+  `ed9e6de0ee589a0e6897a8573c3943fa565bb4fd54ee4c90a600be871ba03ad4`.
+
+  Production job `735175` starts immediately on `evc31`: 200 updates,
+  accumulation 16, exact 4,096-token handling, LR `1e-6`, checkpoints at
+  100/200, and the same leader/pair/replay hashes. Measured GPU utilization is
+  99%, approximately 14.3GB VRAM, and 294W; charged-token throughput warms to
+  12.7k/s. Update 100 is atomically saved at SHA-256
+  `ca8ad50ff06504f3ce818f3bdf9325a9e5418762e3bce5c8db6e167fd0976060`.
+  Its nine independent fixed-board jobs `735214--735222` are released while
+  production continues. Endpoint jobs `735185--735193` remain dependency-held
+  on successful training completion.
+
+  Decision:
+  `prefer_verified_correct_trajectories_over_same_prompt_failures_while_interleaving_the_leaders_broad_replay_distribution`.
+
+- **2026-08-04 06:25--07:04 EDT** -- **The bounded verifier-preference
+  correction completes cleanly but fails the fixed-board regression gate, so
+  the protected rollout-replay leader remains unchanged.**
+
+  Production job `735175` completes 200 updates in 19m33s over 14,669,474
+  charged tokens at 12,723.21 tokens/s, with 14,520,768,512 peak allocated GPU
+  bytes and 157,925,376 trainable parameters. Exact source checkpoint,
+  preference-data, and broad-replay hashes match the submitted contract. The
+  update-100 checkpoint is SHA-256
+  `ca8ad50ff06504f3ce818f3bdf9325a9e5418762e3bce5c8db6e167fd0976060`;
+  update 200 is
+  `538e1672018875e2f5efa8ec73efa7feb011c150703f6c720d0b00f06d1897d6`.
+  The final report SHA-256 is
+  `aa32ba8e85e1a94194517bdc88df73fd56158a4ca67a374cc0f4f9bae756c725`.
+
+  Update 100 immediately fails promotion at GSM8K `88/100`, three points below
+  the leader. Update 200 scores GSM8K `89/100`, MATH `50/100`, HumanEval
+  `6/20`, and MBPP `7/20`. Its mean code score (`32.5%`) exactly retains the
+  leader, and HumanEval individually improves five points, but MATH regresses
+  three points from `53/100`, beyond the maximum two-point domain floor. The
+  remaining endpoint jobs are canceled as soon as that decisive failure is
+  known, releasing their H100s. Transcript comparison confirms the arm fixes
+  some arithmetic selection mistakes while introducing new unit/time
+  composition errors and one looping truncation; this is not broad capability
+  improvement.
+
+  Decision:
+  `reject_both_preference_checkpoints_retain_the_34c8245_leader_and_move_selection_out_of_the_generator_weights`.
+
+- **2026-08-04 07:04--07:14 EDT** -- **A deterministic non-gold
+  self-consistency selector exposes a large inference-time selection gain on
+  the exact fresh rollout bank; sealed fixed-board generation is parallelized
+  across independent H100 shards.**
+
+  New utilities `pipeline/build_product_self_consistency_bank.py` and
+  `pipeline/select_product_self_consistency.py` freeze the evaluator's exact
+  row selection and select only the modal canonical answer across autonomous
+  candidates. The selector never reads correctness labels or gold answers;
+  ties select the earliest sample and empty answers do not vote. Four focused
+  tests pass. Runtime builder and selector SHA-256 values are respectively
+  `be7976f2877e85d8465a2d614efdaf21a374070e1fdac93afc220f29e1cc0ed0`
+  and
+  `bd6e28f03166436ede4de06fe82d343b0ba88f234e0b6effaef878409e62160f`.
+
+  On the 4,096-prompt fresh math bank, first autonomous sample accuracy is
+  `1897/4096 = 46.31%`, modal-answer selection is
+  `2447/4096 = 59.74%`, and the K=4 oracle ceiling is
+  `2812/4096 = 68.65%`. Simple selection therefore recovers `+13.43` points
+  without changing model weights. On the fresh science bank, first sample is
+  `1360/4096 = 33.20%`, modal selection is
+  `1656/4096 = 40.43%`, and oracle is
+  `2275/4096 = 55.54%`, a `+7.23` point realized lift with another 15.11
+  points of selection headroom. The math/science selection report SHA-256
+  values are
+  `a5012a1632c9e0d9fb052b366f7fce1c59e4f092d2808d0cb5b24cc5843be034`
+  and
+  `c03423de9b4a3b9bb773411392e124210215a2e04529b06ff6402405de08329d`.
+
+  Six fixed boards are frozen with the exact original subset seed: GSM8K 100,
+  MATH 100, GPQA 100, BBH 100, science 100, and AIME 30. Their bank SHA-256
+  values are GSM
+  `5232266a799861fcb7bea2ed1172c9e9d0302d38c4c02698d76e1da530ff7917`,
+  MATH
+  `9e0a51ab92c5500eb3d9f08688e577589bdb076fa502bca5fde54ec6c488273e`,
+  GPQA
+  `3ee8dd19a7d11d84296ffbeffc78664879d584f9a4569b9b5ea52bad6affce36`,
+  BBH
+  `e7262ee99708e0c7c5505e4cd314669fd6abdccf24885880663e1e8a6f4bae85`,
+  science
+  `e3fe3a65f910f5ffb830ba220ecda39b3f9ba31b71bbcc6ddd930455005b4e4b`,
+  and AIME
+  `28950b510695cafc42ad7b1eeedf36931ed969db9ba2cfdb0a4aba9c751688fd`.
+  Rather than wait for six long jobs, generation is split into 22
+  non-overlapping single-H100 jobs (`735269--735290`, excluding canceled
+  predecessor IDs): four 25-prompt shards per 100-row board and two 15-prompt
+  AIME shards, each K=4 with bounded answer finalization. Four MATH shards are
+  already running concurrently on `evc47/evc34/evc31/evc22`; the remainder
+  stay queued for the next available H100s. Fixed-board scores remain pending
+  and no product promotion is claimed from the fresh-bank diagnostic alone.
+
+  Decision:
+  `measure_inference_time_modal_selection_on_the_sealed_product_board_then_train_a_separate_reranker_only_if_modal_selection_leaves_material_oracle_headroom`.
