@@ -28091,3 +28091,49 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_terminal_u25_at_69_finish_only_frozen_curve_and_test_one_verified_prefix_credit_frontier_gate_derived_from_transcripts`.
+
+- **2026-08-04 16:09--16:48 EDT** -- **Prefix-frontier credit increases
+  useful policy signal fourfold but still regresses the fixed benchmark;
+  optimizer blast radius becomes the next causal boundary.**
+
+  Jobs `737538--737542` complete 25 exact-resume updates. Through update 20,
+  115/320 trajectories are verifier-correct, reward mass is 92.5, and 42/80
+  prompt groups are mixed. This is 52.5% useful-group density versus 13% for
+  terminal-only uniform sampling, proving that the competence-frontier bank
+  fixes signal starvation. Real-tokenizer replay over 47 correct exhausted
+  terminal-only transcripts also validates the prefix operation in every
+  case; the retained verifier-correct prefix averages 80.16% of the original
+  trajectory length, so looping tails are materially excluded.
+
+  Product scores do not improve. Fixed eval `737596` measures update 20 at
+  `71/100`; dependency eval `737543` measures update 25 at `68/100`, versus
+  source 73. Their report SHA-256 values are
+  `40441124129a3a450f1af17ce274d8a5bc1177c345eaae7df268bbd6c172723f`
+  and
+  `ac2551e4267a62633fde74a6d498fb6bf3fd02041a55c93c9c4c580dd5a37d8d`.
+  Update-25 training report and checkpoint SHA-256 values are
+  `56670dd047d25d724e6063c679dcc2a4e898ed07cfeacf68c79672f398b3334f`
+  and
+  `ba4903a3b4f85d0d04a373f6bbd6173f1aad28128805acc27d3b9cf2880b3c6c`.
+  Prefix-frontier credit is closed; no extension is submitted.
+
+  The shared pattern is now clear: replay-only scores `71` at update 25,
+  terminal RLVR scores `69`, and stronger-signal prefix RLVR scores `68`, all
+  while the warm specialist exposes 157,925,376 trainable parameters. Commit
+  `459ae3f` adds an optimizer-scope contract that retains and checkpoints the
+  complete source state but steps only LoRA A/B tensors. Non-optimizer late-
+  layer gradients are explicitly cleared before clipping, and exact resume
+  binds the scope. The implementation passes 42 focused tests plus lint,
+  formatting, compilation, and shell checks. Newton runtime
+  `product_rlvr_runtime_459ae3f_r1` has manifest SHA-256
+  `0a6ce5c5246eabf3c97ec65dfd790d8a6a05d298fe9726f7bf09255a0648e46f`.
+
+  Jobs `737626--737630` run one 25-update prefix-frontier curve from the
+  original source with identical data, reward, replay, LR, seeds, and global
+  schedule, changing only optimizer authority from the full late-two-layer
+  contract to LoRA tensors. Fixed eval is `737631`. It stops at update 25
+  unless it beats 73. Terminal-only continuation remains bounded to its
+  already-submitted endpoint; update 50 scores `70/100` and remains negative.
+
+  Decision:
+  `close_prefix_frontier_at_71_68_and_test_one_lora_only_update_boundary_before_retiring_this_rlvr_family`.

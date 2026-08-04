@@ -1166,3 +1166,16 @@ exact original reward rows. The selected bank SHA-256 is
 Jobs `737538--737542` test 25 matched prefix-frontier updates and `737543`
 applies the unchanged fixed gate. It must exceed 73 to continue; no
 reward-weight, seed, or duration family follows a failure.
+
+The gate fails despite the intended signal increase. Prefix-frontier update
+20 scores `71/100` and update 25 scores `68/100`. Through update 20, 42/80
+groups provide mixed policy signal versus 13/100 for terminal-only uniform
+sampling, so this is not another signal-starvation failure. The likely common
+cause is update blast radius: replay-only and both RLVR objectives all regress
+while 157,925,376 warm-specialist parameters remain optimizer-controlled.
+
+The final bounded RLVR boundary keeps the full specialist state loaded and
+checkpointed but steps only its LoRA A/B tensors, approximately 1.68M
+parameters. All other data, reward, replay, LR, seed, and schedule contracts
+remain unchanged. Jobs `737626--737630` train 25 updates and `737631` applies
+the fixed gate. A score at or below 73 retires this RLVR family.
