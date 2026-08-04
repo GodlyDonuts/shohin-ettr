@@ -27825,3 +27825,50 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_math_k8_shape_at_366_stop_sampling_expansion_and_move_compute_to_new_verified_training_data`.
+
+- **2026-08-04 13:19--13:38 EDT** -- **A rollout-materialization defect is
+  intercepted before V4 training; complete verified teacher traces replace
+  truncated student drafts.**
+
+  Manual inspection of completed V4 positives finds that the old positive
+  builder can select a max-token-exhausted student draft whose reasoning ends
+  mid-derivation merely because an earlier sentence contains a matching
+  `answer is ...` marker. The separately recovered final answer is correct,
+  but `response` is not necessarily a complete training target. This also
+  affects prior fresh-bank corpora and is a plausible cause of their weak
+  transfer. No V4 student-positive row is admitted to training unchanged.
+
+  Private commit `668eb01` changes future rollout selection to prefer a
+  non-exhausted terminal finalization, then a non-exhausted draft, before
+  token length. It also adds a fail-closed join from the immutable rollout
+  prompt bank back to its original answer-verified teacher source. The 4,096
+  V4 prompts map exactly to 4,096 DeepSeek-R1 teacher derivations. The joined
+  corpus and report SHA-256 values are
+  `128059b0184708c2d69555cc598ccec95cf49178882e63524c09b7a885413f7f`
+  and
+  `0587f60eb8240fbd984cd3ced1e42c3899df406949c725b706cabf69b2aa443e`.
+
+  A tokenizer-exact 4,096-context audit rejects 1,759 response-truncated rows
+  and 12 additional prompt-truncated rows. The admitted corpus contains 2,172
+  unique complete traces and 5,002,781 charged target tokens, with zero
+  selected prompt or response truncations. Every selected response has one
+  balanced `<think>`/`</think>` pair and an explicit final-answer marker.
+  Data and report SHA-256 values are
+  `d44b93aaddca5aac44a1e944b128d2487e4bdf2413a7e5fc615c64f5b6600f56`
+  and
+  `66635a11b3598337f1ce6d01100975dbdea892db2006fd64cce7a173fa307893`.
+  Immutable Newton runtime `product_teacher_trace_runtime_668eb01_r1` has
+  SHA256SUMS SHA-256
+  `afd95c2c6530f4d6135fca30cdc7f224e641ad6b033578c9b18a144bf29831b6`.
+
+  Job `737104` performs one 200-update, 100/200-checkpoint continuation from
+  the promoted mixed update-200 MATH specialist, with BS4/ACC4, 4,096
+  context, LR `1e-6`, and the same 157,925,376 trainable parameters. It is
+  healthy through update 100 at about 13.9k charged target tok/s. Same-runtime
+  fixed MATH jobs `737115/737116/737117` compare the source, update 100, and
+  update 200 under identical choice-aware finalizing evaluation. The old V4
+  generation fan is allowed to finish for evidence, but it is no longer the
+  training source.
+
+  Decision:
+  `replace_truncated_self_rollout_targets_with_fresh_complete_verified_teacher_traces_and_measure_one_conservative_specialist_curve`.

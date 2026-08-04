@@ -1014,3 +1014,27 @@ No K=16 extension is authorized: K=8 already leaves a 32-answer
 shape-to-oracle gap, so the next bottleneck is generator/data quality rather
 than candidate availability. Released H100s immediately backfill the V4
 verified OpenMath rollout jobs.
+
+### V4 target-quality correction
+
+Manual inspection catches a defect before V4 training: the previous rollout
+positive path could validate an answer mentioned inside a max-token-exhausted
+draft, then store a response that ended mid-derivation. Correct-answer
+verification did not imply a complete training target. Commit `668eb01`
+repairs future candidate ranking and adds a hash-bound join to the original
+answer-verified DeepSeek-R1 response for every immutable V4 prompt.
+
+All 4,096 bank identities join exactly. Tokenizer-exact 4,096-context
+filtering then retains 2,172 complete, unique traces totaling 5,002,781 target
+tokens, with zero selected prompt or response truncations. Every retained
+trace has balanced reasoning tags and an explicit final answer. The admitted
+data SHA-256 is
+`d44b93aaddca5aac44a1e944b128d2487e4bdf2413a7e5fc615c64f5b6600f56`;
+its report SHA-256 is
+`66635a11b3598337f1ce6d01100975dbdea892db2006fd64cce7a173fa307893`.
+
+One conservative warm continuation, job `737104`, starts from the promoted
+mixed update-200 specialist with LR `1e-6`, BS4/ACC4, and checkpoints at
+100/200 updates. Source and both checkpoints are compared immediately by
+same-runtime fixed MATH jobs `737115--737117`. This is a data-quality
+intervention, not another width, seed, or sampling variant.
