@@ -78,3 +78,24 @@ def test_merge_rejects_tampered_input(tmp_path):
     pairs[0][0].write_text("tampered\n")
     with pytest.raises(OpenCodeReasoningMergeError, match="hash differs"):
         read_bound_inputs([pair[0] for pair in pairs], [pair[1] for pair in pairs])
+
+
+def test_merge_accepts_multiple_disjoint_shards_per_dataset(tmp_path):
+    pairs = [
+        write_pair(tmp_path, "apps", [verified_row("apps", "a", "apps one")]),
+        write_pair(tmp_path, "taco", [verified_row("taco", "b", "taco one")]),
+        write_pair(
+            tmp_path,
+            "code_contests",
+            [verified_row("code_contests", "c", "contest one")],
+        ),
+    ]
+    extra_dir = tmp_path / "extra"
+    extra_dir.mkdir()
+    extra = write_pair(extra_dir, "taco", [verified_row("taco", "d", "taco two")])
+    rows, evidence = read_bound_inputs(
+        [pair[0] for pair in pairs] + [extra[0]],
+        [pair[1] for pair in pairs] + [extra[1]],
+    )
+    assert len(rows) == 4
+    assert evidence["counters"]["verified_cases"] == 12

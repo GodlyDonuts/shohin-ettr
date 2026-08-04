@@ -43,6 +43,7 @@ def read_bound_inputs(
     selected: dict[str, dict[str, Any]] = {}
     by_question: dict[str, str] = {}
     datasets: set[str] = set()
+    source_revisions: dict[str, str] = {}
     counters: Counter[str] = Counter()
     receipts: list[dict[str, Any]] = []
     for input_path, report_path in zip(inputs, reports):
@@ -52,9 +53,15 @@ def read_bound_inputs(
         if report.get("schema") != REPORT_SCHEMA or report.get("status") != "complete":
             raise OpenCodeReasoningMergeError("verification report is not complete")
         dataset = str(report.get("dataset") or "")
-        if dataset not in EXPECTED_DATASETS or dataset in datasets:
+        if dataset not in EXPECTED_DATASETS:
             raise OpenCodeReasoningMergeError("dataset report set is invalid")
         datasets.add(dataset)
+        source_revision = str(report.get("source_revision") or "")
+        if not source_revision:
+            raise OpenCodeReasoningMergeError("source revision is missing")
+        previous_revision = source_revisions.setdefault(dataset, source_revision)
+        if previous_revision != source_revision:
+            raise OpenCodeReasoningMergeError("source revisions differ within dataset")
         input_sha = sha256_file(input_path)
         if report.get("output_sha256") != input_sha:
             raise OpenCodeReasoningMergeError("verified input hash differs from report")
@@ -109,7 +116,7 @@ def read_bound_inputs(
                 "input_sha256": input_sha,
                 "report": str(report_path.resolve()),
                 "report_sha256": sha256_file(report_path),
-                "source_revision": report["source_revision"],
+                "source_revision": source_revision,
                 "rows": report_rows,
             }
         )
@@ -143,8 +150,8 @@ def atomic_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--inputs", nargs=3, type=Path, required=True)
-    parser.add_argument("--reports", nargs=3, type=Path, required=True)
+    parser.add_argument("--inputs", nargs="+", type=Path, required=True)
+    parser.add_argument("--reports", nargs="+", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
     args = parser.parse_args()
