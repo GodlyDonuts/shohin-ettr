@@ -1,8 +1,12 @@
+import hashlib
+import json
+
 import pytest
 import torch
 
 from hf_product_reasoning_rlvr_train import (
     ProductRLVRTrainError,
+    _reservoir_reward_rows,
     policy_objective,
     standardized_group_advantages,
 )
@@ -44,3 +48,26 @@ def test_policy_objective_lowers_negative_reward_log_probability() -> None:
     policy_objective(negative_logp, torch.tensor(-0.5)).backward()
     assert negative_logp.grad is not None
     assert float(negative_logp.grad) > 0
+
+
+def test_reward_reservoir_preserves_verifier_fields(tmp_path) -> None:
+    path = tmp_path / "reward.jsonl"
+    rows = [
+        {
+            "identity_sha256": f"id-{index}",
+            "question": f"q-{index}",
+            "answer": str(index),
+            "task": "math500",
+        }
+        for index in range(4)
+    ]
+    encoded = b"".join(
+        (json.dumps(row, sort_keys=True) + "\n").encode() for row in rows
+    )
+    path.write_bytes(encoded)
+
+    selected, digest = _reservoir_reward_rows(path, limit=3, seed=17)
+
+    assert len(selected) == 3
+    assert all("identity_sha256" in row and "answer" in row for row in selected)
+    assert digest == hashlib.sha256(encoded).hexdigest()

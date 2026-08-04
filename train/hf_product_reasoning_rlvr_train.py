@@ -91,6 +91,41 @@ def _atomic_jsonl(path: Path, rows: list[dict[str, Any]]) -> str:
     return digest.hexdigest()
 
 
+def _reservoir_reward_rows(
+    path: Path,
+    limit: int,
+    seed: int,
+) -> tuple[list[dict[str, Any]], str]:
+    """Hash and sample verifier rows without discarding identity or gold fields."""
+
+    if limit <= 0:
+        raise ProductRLVRTrainError("reward row limit must be positive")
+    generator = random.Random(seed)
+    digest = hashlib.sha256()
+    selected: list[dict[str, Any]] = []
+    valid = 0
+    with path.open("rb") as handle:
+        for raw_line in handle:
+            digest.update(raw_line)
+            try:
+                row = json.loads(raw_line)
+            except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+                raise ProductRLVRTrainError("reward bank is malformed") from exc
+            if not isinstance(row, dict):
+                raise ProductRLVRTrainError("reward-bank row is not an object")
+            valid += 1
+            if len(selected) < limit:
+                selected.append(row)
+            else:
+                position = generator.randrange(valid)
+                if position < limit:
+                    selected[position] = row
+    if not selected:
+        raise ProductRLVRTrainError("reward bank has no rows")
+    generator.shuffle(selected)
+    return selected, digest.hexdigest()
+
+
 def _validate_reward_rows(rows: list[dict[str, Any]]) -> None:
     identities: set[str] = set()
     for row in rows:
@@ -212,7 +247,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     validate_warm_start_metadata(warm_metadata, args)
     warm_sha256 = _sha256_file(args.warm_start_checkpoint)
 
-    reward_rows, reward_data_sha256 = reservoir_rows_with_sha256(
+    reward_rows, reward_data_sha256 = _reservoir_reward_rows(
         args.data, args.max_rows, args.data_seed
     )
     _validate_reward_rows(reward_rows)
