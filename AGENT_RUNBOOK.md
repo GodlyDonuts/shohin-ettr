@@ -27716,3 +27716,28 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_domain_math_and_aime_transfer_keep_mixed_update200_and_run_only_the_oracle_gap_justified_math_k8_gate`.
+
+- **2026-08-04 12:47--12:52 EDT** -- **A disjoint fourth OpenMath rollout
+  bank is frozen and queued behind the decision-critical K=8 gate.**
+
+  The bank builder scans all 46,006 answer-verified OpenMath source rows and
+  excludes prompt overlap with V12, V13, and rollout banks V1/V2/V3. It finds
+  34,571 admissible rows after 11,435 overlaps and deterministically selects
+  4,096 new math prompts. Artifact
+  `artifacts/product_reasoning/data/rest_bank_v4_math4096_fresh_r1.jsonl`
+  has SHA-256
+  `e8a03468d8b229ad06d84e15931ab6daa0e6f90e763780847b858fefd6719ead`;
+  its report SHA-256 is
+  `da3f84be0e4d698667e39567118ce5c2256a6ee2d0d9c42495eabc35b49c9fa7`.
+
+  Thirty-two independent one-H100 jobs `736832--736863` cover exact 128-row
+  shards with four candidates per prompt from the promoted mixed update-200
+  generator. They are submitted after the earlier K=8 jobs in scheduler
+  order, so no decision-critical evaluation is displaced. CPU aggregator
+  `736864` requires complete shard coverage and at least 512 verifier-correct
+  prompt identities. No training is dependency-launched: the immutable
+  positive ledger and aggregate report must first pass audit, then a new
+  corpus can be hash-bound and compared against the current specialist.
+
+  Decision:
+  `keep_h100s_productive_by_generating_new_disjoint_verified_math_data_while_preserving_k8_as_the_next_model_gate`.

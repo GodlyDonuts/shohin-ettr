@@ -955,3 +955,13 @@ bounded inference gate is K=8 on MATH, where the accepted K=4 result still has
 an 18-answer oracle gap. Jobs `736767--736776` add four independent draws and
 `736777` performs the validated merge and unchanged selectors. Promotion
 requires shape selection above `353/500`; oracle-only lift does not count.
+
+In parallel, the next training-data wave is frozen without touching public
+evaluation labels. After excluding V12, V13, and prior rollout banks V1/V2/V3,
+4,096 prompts are selected from 34,571 still-admissible answer-verified
+OpenMath rows. The bank SHA-256 is
+`e8a03468d8b229ad06d84e15931ab6daa0e6f90e763780847b858fefd6719ead`.
+Jobs `736832--736863` search it with four trajectories per prompt from the
+promoted generator; `736864` admits the ledger only after complete coverage
+and at least 512 verifier-correct identities. This is data production, not a
+model result. Any continuation waits for the ledger hash and a frozen mix.
