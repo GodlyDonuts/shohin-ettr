@@ -940,3 +940,18 @@ questions, gold values, task labels, training groups, and per-source sample
 indices agree exactly, then reindexes the supplement contiguously. Additional
 inference is promoted only if unchanged shape selection beats the K=4 route;
 oracle-only gains are diagnostic.
+
+The domain-only MATH update-400 branch fails its full-board decision despite
+the positive fixed subset. Its corrected first/modal/shape/oracle vector is
+`266/330/352/367`; shape is one answer below the mixed update-200 route at
+`353`. Domain-only MATH is closed. The mixed specialist also fails to transfer
+to AIME-2024: first/modal/shape/oracle are all `2/30`, below the retained
+protected-leader route at `4/30`. This is an oracle-level generator failure,
+so AIME receives no additional sampling.
+
+The mixed specialist's full greedy results are `257/500` MATH and `171/500`
+science, confirming that its improvement exists before selection. The final
+bounded inference gate is K=8 on MATH, where the accepted K=4 result still has
+an 18-answer oracle gap. Jobs `736767--736776` add four independent draws and
+`736777` performs the validated merge and unchanged selectors. Promotion
+requires shape selection above `353/500`; oracle-only lift does not count.

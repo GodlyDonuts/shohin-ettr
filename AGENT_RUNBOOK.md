@@ -27673,3 +27673,46 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_mixed_update200_for_science_by_two_answers_and_test_more_inference_only_where_the_measured_oracle_gap_justifies_it`.
+
+- **2026-08-04 12:40--12:47 EDT** -- **The domain-only MATH branch and the
+  mixed-specialist AIME transfer both fail; MATH K=8 is the sole active
+  improvement gate.**
+
+  Domain-MATH update 400 completes its full 500-row K=4 board. Numeric
+  rescoring repairs 18 false negatives and none in the opposite direction.
+  Corrected first/modal/shape/oracle are `266/330/352/367`. Its
+  `352/500 = 70.40%` shape result is one answer below the mixed update-200
+  specialist at `353/500 = 70.60%`; the earlier fixed-board `56/100` signal
+  was optimistic. Domain-only MATH is rejected without a duration, seed, or
+  width retry. Its corrected-candidate and shape-report SHA-256 values are
+  `0ae63972d93ceb9e605d031552a208819cd82e10c25349bfc4844550303db24d`
+  and
+  `5c75322034fc68b9c17ca751324df2d83dc26df89c5003f30fd50ca62342db89`.
+
+  The mixed update-200 generator is also tested on all 30 AIME-2024
+  identities with K=4. First, modal, shape, and oracle all solve the same
+  `2/30`, below the accepted protected-leader route at `4/30`. Because the
+  oracle itself is lower, this is a generator-transfer failure, not a
+  selection failure. AIME stays on the protected leader and receives no K=8
+  expansion. Corrected-candidate and shape-report SHA-256 values are
+  `c288b8e44df64b6d448e5c4201d8e67277eb4153cb62b7bfec5effe119c72d67`
+  and
+  `4b1cc14f5cef7774bdbab519c2d43cce62389fd409046f6433dbf46a5954b9d0`.
+
+  The mixed update-200 full greedy reports are `257/500 = 51.40%` MATH and
+  `171/500 = 34.20%` science, at SHA-256
+  `4732f2ac51eff0cc6520518098232920024460e827edfe62f7a0b274dbb78d1b`
+  and
+  `74b494b8c16b0ae7baefcd1c5066fdb2e7fced4fa86da646b2d994188b9b44bc`.
+  These confirm a generator gain before reranking, but the accepted routes
+  remain K=4 shape because they score `353` and `229`.
+
+  Jobs `736767--736776` generate four additional independent MATH draws per
+  identity from the promoted specialist. Selector `736777` merges them with
+  the immutable first four using the validated candidate-set merger, then
+  applies unchanged numeric rescoring, modal selection, and shape selection.
+  K=8 is promoted only if shape exceeds `353/500`; a higher oracle alone is
+  insufficient.
+
+  Decision:
+  `reject_domain_math_and_aime_transfer_keep_mixed_update200_and_run_only_the_oracle_gap_justified_math_k8_gate`.
