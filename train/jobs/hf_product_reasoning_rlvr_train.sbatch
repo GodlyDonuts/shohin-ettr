@@ -36,6 +36,7 @@ LORA_RANK=${LORA_RANK:-8}
 LORA_ALPHA=${LORA_ALPHA:-16}
 UNFREEZE_LAYERS=${UNFREEZE_LAYERS:-2}
 REPLAY_WEIGHT=${REPLAY_WEIGHT:-0.25}
+REWARD_CONTRACT=${REWARD_CONTRACT:-exact_math_answer_with_explicit_marker_and_terminal_stop_v1}
 SEED=${SEED:-20260804}
 DATA_SEED=${DATA_SEED:-20260804}
 REPLAY_DATA_SEED=${REPLAY_DATA_SEED:-20260802}
@@ -99,6 +100,7 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
   --lora-alpha "$LORA_ALPHA" \
   --unfreeze-layers "$UNFREEZE_LAYERS" \
   --replay-weight "$REPLAY_WEIGHT" \
+  --reward-contract "$REWARD_CONTRACT" \
   --seed "$SEED" \
   --data-seed "$DATA_SEED" \
   --replay-data-seed "$REPLAY_DATA_SEED" \

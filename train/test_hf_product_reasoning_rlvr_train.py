@@ -6,12 +6,16 @@ import pytest
 import torch
 
 from hf_product_reasoning_rlvr_train import (
+    PREFIX_CREDIT_REWARD,
+    TERMINAL_ONLY_REWARD,
     ProductRLVRTrainError,
     _reservoir_reward_rows,
+    _shortest_verified_prefix_ids,
     _validate_resume_contract,
     policy_objective,
     standardized_group_advantages,
     verified_terminal_reward,
+    verified_trajectory_reward,
 )
 
 
@@ -66,6 +70,45 @@ def test_verified_reward_requires_correct_answer_and_termination() -> None:
     )
 
 
+def test_prefix_credit_preserves_correct_exhausted_trajectory() -> None:
+    candidate = {"correct": True, "max_token_exhausted": True}
+    assert verified_trajectory_reward(candidate, TERMINAL_ONLY_REWARD) == 0.0
+    assert verified_trajectory_reward(candidate, PREFIX_CREDIT_REWARD) == 0.5
+    candidate["max_token_exhausted"] = False
+    assert verified_trajectory_reward(candidate, PREFIX_CREDIT_REWARD) == 1.0
+
+
+def test_prefix_credit_never_rewards_wrong_trajectory() -> None:
+    for exhausted in (False, True):
+        assert (
+            verified_trajectory_reward(
+                {"correct": False, "max_token_exhausted": exhausted},
+                PREFIX_CREDIT_REWARD,
+            )
+            == 0.0
+        )
+
+
+def test_verified_prefix_discards_post_answer_loop() -> None:
+    class CharacterTokenizer:
+        @staticmethod
+        def decode(ids: list[int], *, skip_special_tokens: bool) -> str:
+            assert skip_special_tokens
+            return "".join(chr(value) for value in ids)
+
+    response = "Work carefully. The answer is 42\nLoop forever."
+    response_ids = [ord(value) for value in response]
+    prefix_ids = _shortest_verified_prefix_ids(
+        CharacterTokenizer(),
+        {"task": "math500", "answer": r"\boxed{42}"},
+        response_ids,
+        stride=8,
+    )
+    prefix = CharacterTokenizer.decode(prefix_ids, skip_special_tokens=True)
+    assert prefix.endswith("42")
+    assert "Loop forever" not in prefix
+
+
 def test_reward_reservoir_preserves_verifier_fields(tmp_path) -> None:
     path = tmp_path / "reward.jsonl"
     rows = [
@@ -100,10 +143,11 @@ def test_resume_contract_requires_exact_global_cursor() -> None:
         max_new_tokens=1536,
         replay_weight=0.25,
         schedule_total_updates=100,
+        reward_contract=TERMINAL_ONLY_REWARD,
     )
     metadata = {
         "rlvr_algorithm": "single_use_on_policy_group_normalized_reinforce_v1",
-        "rlvr_reward": "exact_math_answer_with_explicit_marker_and_terminal_stop_v1",
+        "rlvr_reward": TERMINAL_ONLY_REWARD,
         "data_sha256": "reward",
         "rlvr_replay_data_sha256": "replay",
         "seed": 31,

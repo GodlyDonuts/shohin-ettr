@@ -36,6 +36,9 @@ from hf_product_reasoning_train import (
 
 
 SCHEMA = "shohin-hf-product-reasoning-rlvr-training-v1"
+TERMINAL_ONLY_REWARD = "exact_math_answer_with_explicit_marker_and_terminal_stop_v1"
+PREFIX_CREDIT_REWARD = "exact_math_verified_prefix_with_terminal_bonus_v1"
+REWARD_CONTRACTS = (TERMINAL_ONLY_REWARD, PREFIX_CREDIT_REWARD)
 
 
 class ProductRLVRTrainError(RuntimeError):
@@ -47,7 +50,7 @@ def standardized_group_advantages(
     *,
     epsilon: float = 1e-6,
 ) -> torch.Tensor:
-    """Center binary rewards within one prompt and suppress uniform groups."""
+    """Center rewards within one prompt and suppress uniform groups."""
 
     if rewards.ndim != 1 or rewards.numel() < 2:
         raise ProductRLVRTrainError("a reward group must contain at least two values")
@@ -68,6 +71,53 @@ def verified_terminal_reward(candidate: dict[str, Any]) -> float:
     """Reward only an exact answer emitted by a self-terminated trajectory."""
 
     return float(candidate["correct"] and not candidate["max_token_exhausted"])
+
+
+def verified_trajectory_reward(
+    candidate: dict[str, Any],
+    reward_contract: str,
+) -> float:
+    """Score exact terminal answers, with bounded prefix credit when requested."""
+
+    if reward_contract == TERMINAL_ONLY_REWARD:
+        return verified_terminal_reward(candidate)
+    if reward_contract != PREFIX_CREDIT_REWARD:
+        raise ProductRLVRTrainError(f"unsupported reward contract: {reward_contract}")
+    if not candidate["correct"]:
+        return 0.0
+    return 1.0 if not candidate["max_token_exhausted"] else 0.5
+
+
+def _shortest_verified_prefix_ids(
+    tokenizer: Any,
+    row: dict[str, Any],
+    response_ids: list[int],
+    *,
+    stride: int = 16,
+) -> list[int]:
+    """Keep only the earliest generated prefix that the exact verifier accepts."""
+
+    if stride <= 0:
+        raise ProductRLVRTrainError("verified-prefix stride must be positive")
+    if not response_ids:
+        raise ProductRLVRTrainError("a correct trajectory has no response tokens")
+    coarse_endpoints = list(range(stride, len(response_ids), stride)) + [
+        len(response_ids)
+    ]
+    for endpoint in coarse_endpoints:
+        completion = tokenizer.decode(response_ids[:endpoint], skip_special_tokens=True)
+        if not score_completion(row, completion)["correct"]:
+            continue
+        start = max(1, endpoint - stride + 1)
+        for refined_endpoint in range(start, endpoint + 1):
+            completion = tokenizer.decode(
+                response_ids[:refined_endpoint], skip_special_tokens=True
+            )
+            if score_completion(row, completion)["correct"]:
+                return response_ids[:refined_endpoint]
+    raise ProductRLVRTrainError(
+        "a verifier-correct trajectory has no verifier-correct token prefix"
+    )
 
 
 def _average_logp(
@@ -164,7 +214,7 @@ def _validate_resume_contract(
         return
     expected = {
         "rlvr_algorithm": "single_use_on_policy_group_normalized_reinforce_v1",
-        "rlvr_reward": "exact_math_answer_with_explicit_marker_and_terminal_stop_v1",
+        "rlvr_reward": args.reward_contract,
         "data_sha256": reward_data_sha256,
         "rlvr_replay_data_sha256": replay_data_sha256,
         "seed": args.seed,
@@ -209,6 +259,7 @@ def _generate_group_batch(
     max_new_tokens: int,
     seed: int,
     stop_token_ids: list[int],
+    reward_contract: str,
 ) -> list[list[dict[str, Any]]]:
     rendered_prompts = [
         _render_prompt(tokenizer, str(row["question"]), True, False) for row in rows
@@ -247,11 +298,23 @@ def _generate_group_batch(
             response_ids = raw_ids[:token_count]
             completion = tokenizer.decode(response_ids, skip_special_tokens=True)
             score = score_completion(row, completion)
+            policy_response_ids = response_ids
+            if (
+                reward_contract == PREFIX_CREDIT_REWARD
+                and score["correct"]
+                and exhausted
+            ):
+                policy_response_ids = _shortest_verified_prefix_ids(
+                    tokenizer,
+                    row,
+                    response_ids,
+                )
             candidates.append(
                 {
                     "sample_index": sample_index,
                     "prompt_ids": prompt_ids,
                     "response_ids": response_ids,
+                    "policy_response_ids": policy_response_ids,
                     "completion": completion,
                     "generated_tokens": token_count,
                     "max_token_exhausted": exhausted,
@@ -362,7 +425,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "rlvr_samples": args.samples,
         "rlvr_groups_per_update": args.groups_per_update,
         "rlvr_max_new_tokens": args.max_new_tokens,
-        "rlvr_reward": "exact_math_answer_with_explicit_marker_and_terminal_stop_v1",
+        "rlvr_reward": args.reward_contract,
         "rlvr_replay_weight": args.replay_weight,
         "rlvr_replay_data": str(args.replay_data.resolve()),
         "rlvr_replay_data_sha256": replay_data_sha256,
@@ -383,6 +446,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     generated_tokens = 0
     correct_candidates = 0
     rewarded_candidates = 0
+    reward_mass = 0.0
     correct_exhausted_candidates = 0
     candidates = 0
     mixed_groups = 0
@@ -404,6 +468,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             max_new_tokens=args.max_new_tokens,
             seed=generation_seed,
             stop_token_ids=stop_token_ids,
+            reward_contract=args.reward_contract,
         )
 
         update_reward = 0.0
@@ -412,7 +477,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         update_policy_terms = 0
         for row, group in zip(batch_rows, groups, strict=True):
             rewards = torch.tensor(
-                [verified_terminal_reward(candidate) for candidate in group],
+                [
+                    verified_trajectory_reward(candidate, args.reward_contract)
+                    for candidate in group
+                ],
                 device="cuda:0",
             )
             advantages = standardized_group_advantages(rewards)
@@ -424,7 +492,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             for candidate, advantage in zip(group, advantages, strict=True):
                 generated_tokens += int(candidate["generated_tokens"])
                 correct_candidates += int(candidate["correct"])
-                rewarded_candidates += int(verified_terminal_reward(candidate))
+                reward = verified_trajectory_reward(candidate, args.reward_contract)
+                rewarded_candidates += int(reward > 0)
+                reward_mass += reward
                 correct_exhausted_candidates += int(
                     candidate["correct"] and candidate["max_token_exhausted"]
                 )
@@ -441,9 +511,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                         "prediction": candidate["prediction"],
                         "gold": candidate["gold"],
                         "correct": candidate["correct"],
-                        "reward": verified_terminal_reward(candidate),
+                        "reward": reward,
                         "explicit_final_answer": candidate["explicit_final_answer"],
                         "generated_tokens": candidate["generated_tokens"],
+                        "policy_tokens": len(candidate["policy_response_ids"]),
                         "max_token_exhausted": candidate["max_token_exhausted"],
                         "advantage": float(advantage),
                     }
@@ -451,7 +522,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 if not float(advantage):
                     continue
                 if (
-                    len(candidate["prompt_ids"]) + len(candidate["response_ids"])
+                    len(candidate["prompt_ids"]) + len(candidate["policy_response_ids"])
                     > args.max_sequence_length
                 ):
                     raise ProductRLVRTrainError(
@@ -461,7 +532,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     logp, tokens = _average_logp(
                         model,
                         candidate["prompt_ids"],
-                        candidate["response_ids"],
+                        candidate["policy_response_ids"],
                         tokenizer.pad_token_id,
                     )
                     objective = policy_objective(logp, advantage) / (
@@ -554,6 +625,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "candidate_accuracy": correct_candidates / candidates,
         "rewarded_candidates": rewarded_candidates,
         "reward_rate": rewarded_candidates / candidates,
+        "reward_mass": reward_mass,
+        "mean_reward": reward_mass / candidates,
         "correct_exhausted_candidates": correct_exhausted_candidates,
         "mixed_groups": mixed_groups,
         "uniform_groups": uniform_groups,
@@ -595,6 +668,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lora-alpha", type=float, default=16.0)
     parser.add_argument("--unfreeze-layers", type=int, default=2)
     parser.add_argument("--replay-weight", type=float, default=0.25)
+    parser.add_argument(
+        "--reward-contract",
+        choices=REWARD_CONTRACTS,
+        default=TERMINAL_ONLY_REWARD,
+    )
     parser.add_argument("--seed", type=int, default=20260804)
     parser.add_argument("--data-seed", type=int, default=20260804)
     parser.add_argument("--replay-data-seed", type=int, default=20260802)
