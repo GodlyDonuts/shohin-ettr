@@ -58,6 +58,12 @@ def choose_positive(candidates: list[dict[str, Any]]) -> dict[str, Any] | None:
     return min(
         correct,
         key=lambda candidate: (
+            not (
+                candidate.get("finalization")
+                and has_explicit_final_answer(str(candidate["finalization"]))
+                and not candidate.get("finalization_max_token_exhausted", False)
+            ),
+            bool(candidate.get("draft_max_token_exhausted", False)),
             candidate["generated_tokens"],
             len(candidate["completion"]),
             candidate["sample_index"],
@@ -115,7 +121,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise ProductRolloutError("requested rollout slice is outside the bank")
     rows = all_rows[args.skip : args.skip + args.count]
     identities = [str(row.get("identity_sha256")) for row in rows]
-    if any(not identity for identity in identities) or len(set(identities)) != len(rows):
+    if any(not identity for identity in identities) or len(set(identities)) != len(
+        rows
+    ):
         raise ProductRolloutError("rollout slice identities differ")
 
     tokenizer = AutoTokenizer.from_pretrained(args.model_root, trust_remote_code=True)
@@ -216,7 +224,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             ):
                 flat_index = sample_start + sample_index
                 finalization = finalizations[flat_index]
-                finalize_token_count, finalize_exhausted = finalization_usage[flat_index]
+                finalize_token_count, finalize_exhausted = finalization_usage[
+                    flat_index
+                ]
                 scoring_completion = combine_finalization(
                     completion, exhausted, finalization
                 )
@@ -250,20 +260,18 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 counters["explicit_candidates"] += int(
                     candidate["explicit_final_answer"]
                 )
-                counters["max_token_exhausted"] += int(
-                    candidate["max_token_exhausted"]
-                )
+                counters["max_token_exhausted"] += int(candidate["max_token_exhausted"])
                 counters["draft_max_token_exhausted"] += int(exhausted)
                 counters["finalization_attempts"] += int(finalization is not None)
-                counters["finalization_max_token_exhausted"] += int(
-                    finalize_exhausted
-                )
+                counters["finalization_max_token_exhausted"] += int(finalize_exhausted)
                 counters["draft_generated_tokens"] += token_count
                 counters["finalization_generated_tokens"] += finalize_token_count
                 counters["generated_tokens"] += token_count + finalize_token_count
             positive = choose_positive(per_prompt)
             if positive is not None:
-                negatives = [candidate for candidate in per_prompt if not candidate["correct"]]
+                negatives = [
+                    candidate for candidate in per_prompt if not candidate["correct"]
+                ]
                 positive_rows.append(
                     {
                         "question": row["question"],
@@ -273,7 +281,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                         "training_group": row["training_group"],
                         "verification": "student_exact_answer_match_v1",
                         "source_identity_sha256": row["identity_sha256"],
-                        "source_adapter_checkpoint": str(args.adapter_checkpoint.resolve()),
+                        "source_adapter_checkpoint": str(
+                            args.adapter_checkpoint.resolve()
+                        ),
                         "chosen_sample_index": positive["sample_index"],
                         "rejected_response": (
                             min(
@@ -343,7 +353,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-root", type=Path, required=True)
     parser.add_argument("--model-source-root", type=Path)
     parser.add_argument("--model-revision", required=True)
-    parser.add_argument("--model-loader", choices=("auto", "causal", "multimodal"), default="auto")
+    parser.add_argument(
+        "--model-loader", choices=("auto", "causal", "multimodal"), default="auto"
+    )
     parser.add_argument("--adapter-checkpoint", type=Path, required=True)
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--candidates-output", type=Path, required=True)
