@@ -27360,11 +27360,12 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   oracle is `522/857 = 60.91%`. Artifact SHA-256 is
   `b64b2f4a185e41891000123b8d0dc0bf1d5e43b8397b45a8cdd8016427d97160`.
 
-  On fixed public candidates the reranker scores GSM8K `91/100`, MATH
-  `70/100`, GPQA `24/100`, BBH `60/100`, science `50/100`, and AIME
-  `4/30`. Relative to modal selection, its fixed MATH choices add four
-  correct answers with zero losses and its GPQA choices add five with zero
-  losses. On the expanded boards it scores BBH `772/1250 = 61.76%`, only
+  On fixed public candidates under the original labels the reranker scores
+  GSM8K `91/100`, MATH `70/100`, GPQA `24/100`, BBH `60/100`, science
+  `50/100`, and AIME `4/30`. Relative to modal selection, its fixed MATH
+  choices add four correct answers with zero losses and its GPQA choices add
+  five with zero losses. On the expanded boards it scores BBH
+  `772/1250 = 61.76%`, only
   two answers above greedy, and science `227/500 = 45.40%`, seven answers
   above modal and 71 above greedy. BBH remains effectively greedy-routed;
   science advances to the shape reranker. Expanded 500-row MATH remains the
@@ -27373,11 +27374,81 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   Private commits `4215f78` and `dcd8334` add the shape reranker and an
   isolated semantic verifier. The latter asks the protected generator to
   judge each candidate under two reversed `A/B` verdict mappings and averages
-  oriented log odds, canceling fixed label bias. Four-candidate smoke
-  `735522` is pending; it must beat the cheap selector on held-out candidates
-  before receiving a large fan-out. MATH replacement shards `735450--735458`
-  exclude `evc43`, where nine original shards failed before inference because
-  the assigned accelerator was unavailable.
+  oriented log odds, canceling fixed label bias. Commit `24701c3` avoids a
+  full-vocabulary projection at every verifier input position and projects
+  only the final verdict states. Smoke `735588` then matches its four-group
+  oracle at `4/4` in 18 seconds, 11.59 candidates/s, 6.54GB peak, and zero
+  truncation. The complete fixed gate is negative: semantic selection scores
+  corrected MATH `70/100`, GSM8K `81/100`, GPQA `16/100`, BBH `46/100`,
+  science `40/100`, and AIME `4/30`. It loses to the shape reranker on every
+  non-tied routed domain and receives no expanded fan-out.
+
+  Transcript inspection also exposes evaluator false negatives: plain `1/4`
+  versus `\frac{1}{4}` and `1,250` versus `1250` were marked different when
+  the symbolic backend declined them. Commit `6e5016c` adds exact numeric
+  fallback and non-destructive candidate rescoring. On fixed MATH it changes
+  12 of 400 labels from false to true; first/modal/oracle become
+  `52/69/79` instead of `48/66/76`, and the shape reranker becomes `72/100`
+  rather than `70/100`. The selector gain remains three points over modal.
+  Expanded MATH will be reported only under these corrected labels.
+
+  MATH replacement shards `735450--735456` exclude `evc43`, where nine
+  original shards failed before inference because the assigned accelerator
+  was unavailable. Pending final ranges were split into four 25-row jobs
+  `735593--735596` so released H100s can finish the board in parallel.
 
   Decision:
-  `reject_universal_consensus_promote_the_disjoint_shape_reranker_for_science_hold_math_for_500_row_validation_and_test_one_counterbalanced_semantic_verifier_smoke`.
+  `reject_universal_consensus_and_zero_shot_semantic_judging_promote_the_disjoint_shape_reranker_for_science_and_hold_math_for_corrected_500_row_validation`.
+
+- **2026-08-04 08:02--09:25 EDT** -- **Corrected full-board MATH validates
+  the disjoint reranker and closes the inference-selection campaign with a
+  reproducible product gain.**
+
+  All 2,000 K=4 MATH candidate rows are present across 500 identities. Exact
+  numeric rescoring changes 29 labels from false to true and none from true
+  to false. Corrected first/modal/oracle scores are respectively
+  `263/500 = 52.60%`, `323/500 = 64.60%`, and `369/500 = 73.80%`. The
+  disjoint completion-shape reranker reaches `335/500 = 67.00%`, adding 12
+  answers over modal selection and 80 over the corrected greedy checkpoint's
+  `255/500 = 51.00%`. The original greedy report was `249/500 = 49.80%`;
+  six additional answers are exact numeric-equivalence evaluator repairs,
+  not model gains.
+
+  The corrected candidate bank SHA-256 is
+  `17ec3a3f2a8baa8b85e1197d0148dc20d1080e54672b3b8ab0788064316b59cf`.
+  Rescore, modal, shape, and corrected-greedy report SHA-256 values are
+  `86c98a136b57c41b205e42684ab64f4011a56296ae9a01261b056e693b2d1675`,
+  `37f7865985dcc8723ca11b73b2b8bdc5fa2b6902cd4553de43af9a9306a33e91`,
+  `4dea0532d1fc853ad70cfb12ea230a512259b4b3f8ee939f8cfab151cb11b6fe`,
+  and
+  `d3724beeb0e779b3377fa226b147b7e93c648d1af3f39c65e4081aee3b82a1eb`.
+
+  The final efficient route keeps greedy decoding for GSM8K, code, GPQA, and
+  BBH, and uses K=4 plus the shape reranker for MATH. Its expanded five-domain
+  vector is `79.303 / 67.000 / 27.948 / 17.172 / 61.600`, macro
+  `50.604%`, and `2,372` solved across the 3,930 primary task instances when
+  HumanEval and MBPP are counted separately. The evaluator-corrected greedy
+  leader is `79.303 / 51.000 / 27.948 / 17.172 / 61.600`, macro `47.404%`,
+  and `2,292` solved. Selection therefore produces a real `+3.200` macro
+  lift and `+80` solved answers with no primary-domain regression. Science is
+  routed separately through the same reranker and rises from greedy
+  `156/500 = 31.20%` to `227/500 = 45.40%`, a `+14.20` point and 71-answer
+  gain. AIME remains a small separate signal at `4/30` versus greedy `0/30`.
+
+  The shape reranker is not a native-reasoning claim and costs four
+  trajectories on routed tasks. Its value is practical: the protected 3B
+  generator already contains substantially more pass@4 capability than
+  greedy decoding exposes. The remaining oracle gaps are 34 MATH answers
+  (`6.8` points) and 57 science answers (`11.4` points). The counterbalanced
+  zero-shot semantic verifier fails to recover that gap and is closed; any
+  successor must learn correctness from a disjoint candidate corpus rather
+  than ask the generator to judge itself zero-shot.
+
+  Six user-held July jobs from the retired joint-component lane
+  (`723950/723951/723956/723957/724016/724017`) are canceled. They had never
+  started and consumed no GPU time. The Newton queue is empty at close; all
+  accepted generator, candidate, selector, and corrected-evaluator artifacts
+  remain immutable.
+
+  Decision:
+  `promote_greedy_plus_math_shape_and_science_shape_as_the_current_reasoning_system_preserve_the_generator_and_only_reopen_selection_with_a_disjointly_trained_correctness_model`.

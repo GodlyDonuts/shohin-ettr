@@ -776,3 +776,53 @@ The active positive-direction queue is now:
 - `733201` plus `733212--733220`: V12 late-layer 2,000-update dose response;
 - `733293--733299`: V12 late-1,000 deterministic 768+64 finalization path;
 - `732605` plus `732607--732615`: token-matched B1 completion and closure.
+
+## Final Rollout-Replay And Selection Result (2026-08-04)
+
+The protected generator is the SmolLM3-3B V12 late-two-layer checkpoint after
+1,000 broad updates plus 400 verified rollout-replay updates:
+
+`artifacts/product_reasoning/smollm3-3b-a07cc9a/baseline_late2_v12u1000_rollout_replay_u400_r1/checkpoint_0000400.pt`
+
+Its SHA-256 is
+`34c82454e0c53609bc1ac6a9f127437080e431f147e28ae63b4080c413d9a82e`.
+Further fresh-SFT and preference-training corrections did not clear the fixed
+regression gate, so this checkpoint remains immutable.
+
+The final practical system uses greedy decoding for GSM8K, HumanEval, MBPP,
+GPQA-Diamond, and BBH. It generates four autonomous candidates and applies the
+disjointly trained completion-shape reranker only for MATH; science uses the
+same K=4 reranker and is reported separately. The reranker reads answer-vote,
+truncation, explicit-final, repetition, length, and response-shape features,
+but never gold answers or correctness labels at inference. Its artifact
+SHA-256 is
+`b64b2f4a185e41891000123b8d0dc0bf1d5e43b8397b45a8cdd8016427d97160`.
+
+| System | GSM8K | MATH-500 | Code mean | GPQA | BBH | Macro | Solved |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| corrected greedy leader | 79.303% | 51.000% | 27.948% | 17.172% | 61.600% | 47.404% | 2,292/3,930 |
+| **routed K=4 system** | **79.303%** | **67.000%** | **27.948%** | **17.172%** | **61.600%** | **50.604%** | **2,372/3,930** |
+
+The routed system adds 3.200 macro points and 80 primary-board solves with no
+primary-domain regression. On the separate 500-row held-out science board it
+scores `227/500 = 45.40%`, versus greedy `156/500 = 31.20%`, adding 71 solves.
+On AIME-2024 it scores `4/30`, versus greedy `0/30`; this remains a small,
+high-variance signal.
+
+MATH uses corrected exact-equivalence labels. Across 2,000 K=4 candidates,
+numeric fallback repairs 29 false negatives; first/modal/shape/oracle become
+`263/323/335/369` of 500. The original greedy MATH report changes from
+`249/500` to `255/500`. These six evaluator repairs are not model gains.
+Corrected candidate-bank and shape-report SHA-256 values are
+`17ec3a3f2a8baa8b85e1197d0148dc20d1080e54672b3b8ab0788064316b59cf`
+and
+`4dea0532d1fc853ad70cfb12ea230a512259b4b3f8ee939f8cfab151cb11b6fe`.
+
+Two tempting routes are explicitly closed. Modal self-consistency scores only
+`706/1250 = 56.48%` on full BBH, below greedy `770/1250 = 61.60%`; the fixed
+100-row gain did not generalize. A counterbalanced zero-shot semantic verifier
+also loses to the cheap shape reranker on every non-tied routed domain. The
+remaining useful target is a correctness model trained on a disjoint candidate
+corpus: current shape-to-oracle gaps are 34 MATH answers and 57 science
+answers. This is an inference-selection opportunity, not evidence of native
+ETTR reasoning or a reason to mutate the protected generator.
