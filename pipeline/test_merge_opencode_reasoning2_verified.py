@@ -64,6 +64,8 @@ def test_merge_requires_all_sources_and_deduplicates_questions(tmp_path):
         [pair[0] for pair in pairs], [pair[1] for pair in pairs]
     )
     assert [row["identity_sha256"][0] for row in rows] == ["b", "c"]
+    assert all(row["training_group"] == "code" for row in rows)
+    assert all(row["reasoning_subtype"] == "ocr2_execution_verified" for row in rows)
     assert evidence["counters"]["duplicate_questions"] == 1
     assert evidence["counters"]["verified_cases"] == 6
 

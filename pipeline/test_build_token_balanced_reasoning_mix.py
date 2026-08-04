@@ -6,10 +6,15 @@ from pathlib import Path
 import pytest
 
 from pipeline.build_token_balanced_reasoning_mix import (
+    _quality_rank,
     TokenBalancedMixError,
     build_token_balanced_mix,
     parse_weights,
 )
+
+
+def test_source_test_replay_has_verified_priority() -> None:
+    assert _quality_rank({"verification": "execution_verified_source_tests"}) == 3
 
 
 class FakeTokenizer:

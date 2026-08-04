@@ -54,11 +54,15 @@ def parse_weights(value: str) -> dict[str, float]:
         group, raw_weight = item.split("=", 1)
         group = group.strip()
         if not group or group in weights:
-            raise argparse.ArgumentTypeError("weight groups must be unique and nonempty")
+            raise argparse.ArgumentTypeError(
+                "weight groups must be unique and nonempty"
+            )
         try:
             weight = float(raw_weight)
         except ValueError as exc:
-            raise argparse.ArgumentTypeError("weight fractions must be numeric") from exc
+            raise argparse.ArgumentTypeError(
+                "weight fractions must be numeric"
+            ) from exc
         if not 0.0 < weight <= 1.0:
             raise argparse.ArgumentTypeError("weight fractions must be in (0, 1]")
         weights[group] = weight
@@ -76,7 +80,11 @@ def _normalized_question(question: str) -> str:
 
 def _quality_rank(row: dict[str, Any]) -> int:
     verification = str(row.get("verification") or "")
-    if verification in {"expected_answer_match_v1", "execution_verified"}:
+    if verification in {
+        "expected_answer_match_v1",
+        "execution_verified",
+        "execution_verified_source_tests",
+    }:
         return 3
     if row.get("answer") or row.get("expected_answer_normalized"):
         return 2

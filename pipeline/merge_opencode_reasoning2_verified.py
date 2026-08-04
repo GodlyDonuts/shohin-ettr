@@ -116,6 +116,9 @@ def read_bound_inputs(
     if datasets != EXPECTED_DATASETS:
         raise OpenCodeReasoningMergeError("all three source datasets are required")
     rows = sorted(selected.values(), key=lambda row: row["identity_sha256"])
+    for row in rows:
+        row["training_group"] = "code"
+        row["reasoning_subtype"] = "ocr2_execution_verified"
     counters["selected_rows"] = len(rows)
     counters["verified_cases"] = sum(int(row["verified_cases"]) for row in rows)
     counters["response_chars"] = sum(len(str(row["response"])) for row in rows)
