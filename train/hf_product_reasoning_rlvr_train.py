@@ -143,6 +143,56 @@ def _validate_reward_rows(rows: list[dict[str, Any]]) -> None:
             raise ProductRLVRTrainError("reward-bank answer is missing")
 
 
+def _validate_resume_contract(
+    warm_update: int,
+    warm_metadata: dict[str, Any],
+    args: argparse.Namespace,
+    reward_data_sha256: str,
+    replay_data_sha256: str,
+) -> None:
+    """Require every short backfill chunk to continue one exact RLVR trajectory."""
+
+    if args.start_update == 0:
+        if warm_metadata.get("rlvr_algorithm") is not None:
+            raise ProductRLVRTrainError("a zero-offset run cannot resume an RLVR chunk")
+        return
+    expected = {
+        "rlvr_algorithm": "single_use_on_policy_group_normalized_reinforce_v1",
+        "data_sha256": reward_data_sha256,
+        "rlvr_replay_data_sha256": replay_data_sha256,
+        "seed": args.seed,
+        "data_seed": args.data_seed,
+        "rlvr_replay_data_seed": args.replay_data_seed,
+        "rlvr_samples": args.samples,
+        "rlvr_groups_per_update": args.groups_per_update,
+        "rlvr_max_new_tokens": args.max_new_tokens,
+        "rlvr_replay_weight": args.replay_weight,
+        "rlvr_schedule_total_updates": args.schedule_total_updates,
+    }
+    mismatches = {
+        key: {"expected": value, "actual": warm_metadata.get(key)}
+        for key, value in expected.items()
+        if warm_metadata.get(key) != value
+    }
+    if warm_update != args.start_update:
+        mismatches["checkpoint_update"] = {
+            "expected": args.start_update,
+            "actual": warm_update,
+        }
+    if mismatches:
+        raise ProductRLVRTrainError(
+            f"RLVR resume contract differs: {json.dumps(mismatches, sort_keys=True)}"
+        )
+
+
+def _restore_optimizer(path: Path, optimizer: torch.optim.Optimizer) -> None:
+    payload = torch.load(path, map_location="cpu", weights_only=False)
+    optimizer_state = payload.get("optimizer")
+    if not isinstance(optimizer_state, dict):
+        raise ProductRLVRTrainError("RLVR checkpoint optimizer state is missing")
+    optimizer.load_state_dict(optimizer_state)
+
+
 def _generate_group_batch(
     model: ProductReasoningModel,
     tokenizer: Any,
@@ -254,6 +304,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     replay_rows, replay_data_sha256 = reservoir_rows_with_sha256(
         args.replay_data, args.replay_max_rows, args.replay_data_seed
     )
+    _validate_resume_contract(
+        warm_update,
+        warm_metadata,
+        args,
+        reward_data_sha256,
+        replay_data_sha256,
+    )
     if len(reward_rows) < args.groups_per_update:
         raise ProductRLVRTrainError("reward population is smaller than one update")
     stop_token_ids = _generation_stop_token_ids(tokenizer)
@@ -268,6 +325,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         weight_decay=0.01,
         fused=True,
     )
+    if args.start_update:
+        _restore_optimizer(args.warm_start_checkpoint, optimizer)
     metadata = {
         "arm": args.arm,
         "model_root": str((args.model_source_root or args.model_root).resolve()),
@@ -302,15 +361,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "rlvr_replay_data_sha256": replay_data_sha256,
         "rlvr_replay_rows": len(replay_rows),
         "rlvr_replay_data_seed": args.replay_data_seed,
+        "rlvr_start_update": args.start_update,
+        "rlvr_schedule_total_updates": args.schedule_total_updates,
     }
 
     model.train()
     torch.cuda.reset_peak_memory_stats()
     optimizer.zero_grad(set_to_none=True)
     started = time.monotonic()
-    update = 0
-    reward_cursor = 0
-    replay_cursor = 0
+    update = args.start_update
+    reward_cursor = args.start_update * args.groups_per_update
+    replay_cursor = args.start_update * args.groups_per_update
     charged_tokens = 0
     generated_tokens = 0
     correct_candidates = 0
@@ -422,7 +483,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             replay_logp_sum += float(replay_logp.detach())
 
         gradient_norm = torch.nn.utils.clip_grad_norm_(trainable, 1.0)
-        progress = update / max(args.updates - 1, 1)
+        progress = update / max(args.schedule_total_updates - 1, 1)
         learning_rate = args.learning_rate * 0.5 * (1.0 + math.cos(math.pi * progress))
         for group in optimizer.param_groups:
             group["lr"] = learning_rate
@@ -468,6 +529,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "status": "complete",
         **metadata,
         "updates": update,
+        "chunk_updates": update - args.start_update,
         "learning_rate": args.learning_rate,
         "generated_tokens": generated_tokens,
         "generated_tokens_per_second": generated_tokens / elapsed,
@@ -501,7 +563,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--warm-start-checkpoint", type=Path, required=True)
     parser.add_argument("--arm", choices=("baseline",), default="baseline")
+    parser.add_argument("--start-update", type=int, default=0)
     parser.add_argument("--updates", type=int, default=100)
+    parser.add_argument("--schedule-total-updates", type=int, default=100)
     parser.add_argument("--samples", type=int, default=4)
     parser.add_argument("--groups-per-update", type=int, default=4)
     parser.add_argument("--max-rows", type=int, default=4096)
@@ -522,6 +586,7 @@ def parse_args() -> argparse.Namespace:
     args = parser.parse_args()
     positive = (
         args.updates,
+        args.schedule_total_updates,
         args.samples,
         args.groups_per_update,
         args.max_rows,
@@ -538,6 +603,8 @@ def parse_args() -> argparse.Namespace:
     )
     if any(value <= 0 for value in positive) or args.unfreeze_layers < 0:
         parser.error("RLVR dimensions must be positive")
+    if not 0 <= args.start_update < args.updates <= args.schedule_total_updates:
+        parser.error("RLVR updates must satisfy 0 <= start < end <= schedule total")
     if not 2 <= args.samples <= 8:
         parser.error("RLVR samples must be in [2, 8]")
     return args

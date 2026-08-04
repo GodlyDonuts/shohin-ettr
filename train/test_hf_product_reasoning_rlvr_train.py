@@ -1,5 +1,6 @@
 import hashlib
 import json
+from types import SimpleNamespace
 
 import pytest
 import torch
@@ -7,6 +8,7 @@ import torch
 from hf_product_reasoning_rlvr_train import (
     ProductRLVRTrainError,
     _reservoir_reward_rows,
+    _validate_resume_contract,
     policy_objective,
     standardized_group_advantages,
 )
@@ -71,3 +73,46 @@ def test_reward_reservoir_preserves_verifier_fields(tmp_path) -> None:
     assert len(selected) == 3
     assert all("identity_sha256" in row and "answer" in row for row in selected)
     assert digest == hashlib.sha256(encoded).hexdigest()
+
+
+def test_resume_contract_requires_exact_global_cursor() -> None:
+    args = SimpleNamespace(
+        start_update=5,
+        seed=31,
+        data_seed=41,
+        replay_data_seed=43,
+        samples=4,
+        groups_per_update=4,
+        max_new_tokens=1536,
+        replay_weight=0.25,
+        schedule_total_updates=100,
+    )
+    metadata = {
+        "rlvr_algorithm": "single_use_on_policy_group_normalized_reinforce_v1",
+        "data_sha256": "reward",
+        "rlvr_replay_data_sha256": "replay",
+        "seed": 31,
+        "data_seed": 41,
+        "rlvr_replay_data_seed": 43,
+        "rlvr_samples": 4,
+        "rlvr_groups_per_update": 4,
+        "rlvr_max_new_tokens": 1536,
+        "rlvr_replay_weight": 0.25,
+        "rlvr_schedule_total_updates": 100,
+    }
+
+    _validate_resume_contract(5, metadata, args, "reward", "replay")
+    with pytest.raises(ProductRLVRTrainError, match="checkpoint_update"):
+        _validate_resume_contract(4, metadata, args, "reward", "replay")
+
+
+def test_zero_offset_rejects_accidental_rlvr_resume() -> None:
+    args = SimpleNamespace(start_update=0)
+    with pytest.raises(ProductRLVRTrainError, match="zero-offset"):
+        _validate_resume_contract(
+            5,
+            {"rlvr_algorithm": "single_use_on_policy_group_normalized_reinforce_v1"},
+            args,
+            "reward",
+            "replay",
+        )

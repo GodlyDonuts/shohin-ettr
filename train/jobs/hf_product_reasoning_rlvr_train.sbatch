@@ -22,6 +22,8 @@ set -euo pipefail
 
 PYTHON=${PYTHON:-/lustre/fs1/home/sa305415/shohin/envs/product-reasoning-b3a3603-r2/bin/python}
 UPDATES=${UPDATES:-100}
+START_UPDATE=${START_UPDATE:-0}
+SCHEDULE_TOTAL_UPDATES=${SCHEDULE_TOTAL_UPDATES:-100}
 SAMPLES=${SAMPLES:-4}
 GROUPS_PER_UPDATE=${GROUPS_PER_UPDATE:-4}
 MAX_ROWS=${MAX_ROWS:-4096}
@@ -82,7 +84,9 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
   --output "$OUTPUT" \
   --warm-start-checkpoint "$WARM_START_CHECKPOINT" \
   --arm baseline \
+  --start-update "$START_UPDATE" \
   --updates "$UPDATES" \
+  --schedule-total-updates "$SCHEDULE_TOTAL_UPDATES" \
   --samples "$SAMPLES" \
   --groups-per-update "$GROUPS_PER_UPDATE" \
   --max-rows "$MAX_ROWS" \
