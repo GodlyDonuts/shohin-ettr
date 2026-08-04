@@ -40,6 +40,12 @@ def build_rows(
         gold = task["gold"](row)
         if gold is None:
             raise SelfConsistencyBankError("selected row has no scoreable answer")
+        if task_name == "gsm8k":
+            stored_answer = f"#### {gold}"
+        elif task_name == "math500":
+            stored_answer = rf"\boxed{{{gold}}}"
+        else:
+            stored_answer = gold
         frozen.append(
             {
                 "schema": SCHEMA,
@@ -47,7 +53,7 @@ def build_rows(
                 "question": _task_prompt(task_name, row),
                 "task": task_name,
                 "training_group": "sealed_self_consistency_eval",
-                "answer": f"#### {gold}" if task_name == "gsm8k" else gold,
+                "answer": stored_answer,
                 "expected_answer_normalized": gold,
             }
         )

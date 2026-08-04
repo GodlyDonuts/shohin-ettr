@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from build_product_self_consistency_bank import build_rows
+from hf_product_reasoning_eval import TASKS
 from select_product_self_consistency import (
     canonical_prediction,
     choose_modal_candidate,
@@ -31,6 +32,18 @@ def test_bank_uses_exact_evaluator_selection_and_prompt() -> None:
     assert len({row["identity_sha256"] for row in rows}) == 3
     assert all(row["training_group"] == "sealed_self_consistency_eval" for row in rows)
     assert all(row["answer"].startswith("#### ") for row in rows)
+    assert all(TASKS["gsm8k"]["gold"](row) is not None for row in rows)
+
+
+def test_math_bank_round_trips_through_evaluator_gold_parser() -> None:
+    rows = build_rows(
+        "math500",
+        [{"problem": "Compute one half.", "solution": r"Thus \boxed{\frac{1}{2}}."}],
+        1,
+        17,
+    )
+    assert rows[0]["answer"] == r"\boxed{\frac{1}{2}}"
+    assert TASKS["math500"]["gold"](rows[0]) == r"\frac{1}{2}"
 
 
 def test_modal_selector_normalizes_numeric_equivalence() -> None:
