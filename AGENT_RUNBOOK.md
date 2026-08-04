@@ -26999,7 +26999,7 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   Decision:
   `promote_the_first_rollout_replay_checkpoint_and_run_one_lower_rate_cumulative_hard_correction_continuation_with_automatic_two_checkpoint_evaluation`.
 
-- **2026-08-03 23:22--2026-08-04 02:42 EDT** -- **A cumulative hard-only
+- **2026-08-03 23:22--2026-08-04 03:00 EDT** -- **A cumulative hard-only
   continuation is rejected, while a completely fresh rollout bank enters
   production.**
 
@@ -27039,18 +27039,30 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   respectively to a missing mirrored script and the cluster's legacy system
   Python; the corrected job uses the Python 3.11 module and absolute paths.
 
-  A dedicated read-only rollout runtime is frozen at
-  `scratchpad/product_rollout_runtime_97f6026_r1`; its rollout implementation
-  SHA-256 is
-  `cd6e404926c88095813d6fadc536d97f3e1631383e998166ffb2c47b02bddf4e`
+  Initial read-only runtime
+  `scratchpad/product_rollout_runtime_97f6026_r1` packages the current rollout
+  implementation and wrapper but retains an older evaluator API. Jobs
+  `734877--734879` fail before model loading on that import mismatch, and
+  queued jobs `734880--734924` are canceled before allocation. Corrected
+  runtime `scratchpad/product_rollout_runtime_97f6026_r2` passes an explicit
+  import smoke test before submission. Its evaluator SHA-256 is
+  `827b381f839b1f2af305ee455385fe48e6586e0bb7e13303a2586bdf1780c600`,
+  rollout implementation SHA-256 is
+  `cd6e404926c88095813d6fadc536d97f3e1631383e998166ffb2c47b02bddf4e`,
   and job wrapper SHA-256 is
   `d435200a9228a89be3cd080462a8b02071d4aa33a260abc3f1229c10a50a2673`.
-  Forty-eight independent one-H100 jobs are submitted against the retained
-  promoted checkpoint: math `734877--734908` covers 32 exact 128-row shards
-  at four samples, 3,072 tokens, and strict 64-token answer finalization;
-  science `734909--734924` covers 16 exact 256-row shards at four samples and
-  1,536 tokens. Seed is 20260805. This new-bank production proceeds while the
-  rejected continuation remains preserved for diagnosis.
+
+  Forty-eight corrected independent one-H100 jobs `734927--734974` are
+  submitted against the retained promoted checkpoint with one-hour measured
+  backfill windows. Math covers 32 exact 128-row shards at four samples,
+  3,072 tokens, and strict 64-token answer finalization; science covers 16
+  exact 256-row shards at four samples and 1,536 tokens. Seed is 20260805.
+  Job `734927` then proves `evc33` exposes no CUDA accelerator despite the
+  H100 allocation, and `734929` is canceled on the same node. All pending
+  shards exclude `evc33`; replacement math shards 00/02 are `734979/734980`.
+  Jobs on `evc22`, `evc48`, and `evc37` pass model loading and continue
+  generation. This new-bank production proceeds while the rejected
+  continuation remains preserved for diagnosis.
 
   Decision:
   `retain_the_expanded_rollout_replay_leader_reject_both_cumulative_hard_continuations_and_move_self_improvement_to_a_fully_fresh_verified_bank`.
