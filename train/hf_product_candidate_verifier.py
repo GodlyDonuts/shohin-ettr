@@ -165,25 +165,35 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     started = time.monotonic()
     output_rows: list[dict[str, Any]] = []
     truncated = 0
+    empty_completions = 0
     for completed, identity in enumerate(selected_identities, start=1):
         for row in grouped[identity]:
             question = str(row.get("question") or "")
             completion = str(row.get("completion") or "")
-            if not question or not completion:
-                raise CandidateVerifierError("candidate question or completion is empty")
-            forward_prompt = verifier_prompt(
-                question, completion, reversed_labels=False
-            )
-            reversed_prompt = verifier_prompt(
-                question, completion, reversed_labels=True
-            )
-            forward_score, reversed_score, was_truncated = _score_pair(
-                model,
-                tokenizer,
-                forward_prompt,
-                reversed_prompt,
-                args.max_sequence_length,
-            )
+            if not question:
+                raise CandidateVerifierError("candidate question is empty")
+            if completion:
+                forward_prompt = verifier_prompt(
+                    question, completion, reversed_labels=False
+                )
+                reversed_prompt = verifier_prompt(
+                    question, completion, reversed_labels=True
+                )
+                forward_score, reversed_score, was_truncated = _score_pair(
+                    model,
+                    tokenizer,
+                    forward_prompt,
+                    reversed_prompt,
+                    args.max_sequence_length,
+                )
+                score = counterbalanced_score(forward_score, reversed_score)
+            else:
+                # Empty autonomous samples contain no solution to verify and must
+                # never outrank any finite semantic verdict.
+                forward_score = reversed_score = 0.0
+                score = -1e9
+                was_truncated = False
+                empty_completions += 1
             truncated += int(was_truncated)
             output_rows.append(
                 {
@@ -196,10 +206,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     "correct": bool(row["correct"]),
                     "forward_a_minus_b_logp": forward_score,
                     "reversed_a_minus_b_logp": reversed_score,
-                    "verifier_score": counterbalanced_score(
-                        forward_score, reversed_score
-                    ),
+                    "verifier_score": score,
                     "prompt_truncated": was_truncated,
+                    "empty_completion": not completion,
                 }
             )
         if completed % 10 == 0 or completed == len(selected_identities):
@@ -233,6 +242,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "scored_candidates": len(output_rows),
         "max_sequence_length": args.max_sequence_length,
         "prompt_truncated": truncated,
+        "empty_completions": empty_completions,
         "counterbalanced_labels": True,
         "selector_reads_gold": False,
         "elapsed_seconds": elapsed,
