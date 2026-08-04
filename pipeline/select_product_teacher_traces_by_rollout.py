@@ -95,7 +95,7 @@ def select_teacher_traces(
                 continue
             counters["rollout_positive_rows"] += 1
             row = json.loads(line)
-            if row.get("verification") != "expected_answer_match_v1":
+            if row.get("verification") != "student_exact_answer_match_v1":
                 raise RolloutTeacherSelectionError(
                     "rollout selection contains an unverified row"
                 )

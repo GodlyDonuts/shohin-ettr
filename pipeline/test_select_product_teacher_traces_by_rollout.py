@@ -35,7 +35,7 @@ def _positive(question: str, answer: str = "2") -> dict:
         "response": "A possibly truncated student response",
         "training_group": "math",
         "expected_answer_normalized": answer,
-        "verification": "expected_answer_match_v1",
+        "verification": "student_exact_answer_match_v1",
         "source_identity_sha256": _identity(question),
     }
 
