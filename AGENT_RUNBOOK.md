@@ -27730,14 +27730,18 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   its report SHA-256 is
   `da3f84be0e4d698667e39567118ce5c2256a6ee2d0d9c42495eabc35b49c9fa7`.
 
-  Thirty-two independent one-H100 jobs `736832--736863` cover exact 128-row
-  shards with four candidates per prompt from the promoted mixed update-200
-  generator. They are submitted after the earlier K=8 jobs in scheduler
-  order, so no decision-critical evaluation is displaced. CPU aggregator
-  `736864` requires complete shard coverage and at least 512 verifier-correct
-  prompt identities. No training is dependency-launched: the immutable
-  positive ledger and aggregate report must first pass audit, then a new
-  corpus can be hash-bound and compared against the current specialist.
+  The initial 32 jobs `736832--736863` are canceled while still pending and
+  before consuming GPU time because they inherited the under-batched
+  evaluation shape. Replacement jobs `736893--736924` cover the same exact
+  128-row slices at the already validated prompt batch 64, which previously
+  measured `674.42` generated tok/s at 49.20GB peak. Each produces four
+  candidates per prompt from the promoted mixed update-200 generator. They
+  remain behind the earlier K=8 jobs in scheduler order, so no
+  decision-critical evaluation is displaced. CPU aggregator `736925`
+  requires complete shard coverage and at least 512 verifier-correct prompt
+  identities. No training is dependency-launched: the immutable positive
+  ledger and aggregate report must first pass audit, then a new corpus can be
+  hash-bound and compared against the current specialist.
 
   Decision:
   `keep_h100s_productive_by_generating_new_disjoint_verified_math_data_while_preserving_k8_as_the_next_model_gate`.

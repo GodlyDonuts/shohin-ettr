@@ -961,7 +961,10 @@ evaluation labels. After excluding V12, V13, and prior rollout banks V1/V2/V3,
 4,096 prompts are selected from 34,571 still-admissible answer-verified
 OpenMath rows. The bank SHA-256 is
 `e8a03468d8b229ad06d84e15931ab6daa0e6f90e763780847b858fefd6719ead`.
-Jobs `736832--736863` search it with four trajectories per prompt from the
-promoted generator; `736864` admits the ledger only after complete coverage
-and at least 512 verifier-correct identities. This is data production, not a
-model result. Any continuation waits for the ledger hash and a frozen mix.
+The initial under-batched jobs `736832--736863` are canceled before allocation.
+Replacement jobs `736893--736924` search the same exact slices with four
+trajectories per prompt at the previously validated prompt batch 64
+production shape (`674.42` generated tok/s, 49.20GB peak); `736925` admits
+the ledger only after complete coverage and at least 512 verifier-correct
+identities. This is data production, not a model result. Any continuation
+waits for the ledger hash and a frozen mix.
