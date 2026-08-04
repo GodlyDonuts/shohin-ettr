@@ -109,13 +109,24 @@ def _score_pair(
     for index, row in enumerate(rows):
         input_ids[index, : len(row)] = torch.tensor(row, device="cuda:0")
         attention[index, : len(row)] = 1
-    backbone = getattr(model, "backbone", model)
+    if hasattr(model, "text_model") and hasattr(model, "lm_head"):
+        text_model = model.text_model
+        lm_head = model.lm_head
+    else:
+        from hf_product_reasoning_train import resolve_product_backbone_layout
+
+        text_model, lm_head, _, _ = resolve_product_backbone_layout(model)
     with torch.inference_mode(), torch.autocast("cuda", dtype=torch.bfloat16):
-        outputs = backbone(input_ids=input_ids, attention_mask=attention, use_cache=False)
+        outputs = text_model(
+            input_ids=input_ids,
+            attention_mask=attention,
+            use_cache=False,
+        )
     lengths = attention.sum(dim=1) - 1
-    logits = outputs.logits[
+    final_hidden = outputs.last_hidden_state[
         torch.arange(2, device="cuda:0"), lengths
-    ].float()
+    ]
+    logits = lm_head(final_hidden).float()
     a_ids = tokenizer.encode("A", add_special_tokens=False)
     b_ids = tokenizer.encode("B", add_special_tokens=False)
     if len(a_ids) != 1 or len(b_ids) != 1 or a_ids == b_ids:
