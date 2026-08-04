@@ -27326,3 +27326,58 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `retain_the_generator_promote_task_routed_inference_as_the_new_reasoning_system_validate_it_at_scale_and_attack_the_remaining_oracle_gap_with_a_separate_reranker`.
+
+- **2026-08-04 07:14--08:02 EDT** -- **Scale validation rejects the apparent
+  BBH consensus gain, confirms the science gain, and a disjointly trained
+  completion-shape reranker recovers additional pass@K value without changing
+  generator weights.**
+
+  Full K=4 BBH generation covers all 1,250 rows. First sample, modal answer,
+  and oracle score `570/1250 = 45.60%`, `706/1250 = 56.48%`, and
+  `982/1250 = 78.56%`; the protected greedy checkpoint scores
+  `770/1250 = 61.60%`. The fixed 100-row modal gain therefore does not
+  generalize and BBH consensus is rejected. Expanded BBH selection and
+  aggregate report SHA-256 values are
+  `57ffbe4c2cf1bbb22f50aeaba5cae11e3e8bfbb477c48fe7d58582c2e7643a4c`
+  and
+  `3f8a48a8164ce15457acb5985580a1b6902ebacce20ddebd322fc0137a1b6e6a`.
+
+  The 500-row held-out science gate does generalize. First sample is
+  `194/500 = 38.80%`, modal K=4 is `220/500 = 44.00%`, and the oracle is
+  `284/500 = 56.80%`, compared with greedy `156/500 = 31.20%`. Modal
+  inference therefore realizes a durable `+12.80` point science lift.
+  Selection and aggregate report SHA-256 values are
+  `027becdbcf5b0d6bde34a9fca7af0aeca6832ae6ccc0486a53f313a94d1c576a`
+  and
+  `7b2dd65821eb32a8f049dcf310a9b554bf65896b85c5c435579ea85e34befd78`.
+
+  A cheap groupwise candidate reranker is fit only on the disjoint 4,096-prompt
+  fresh math bank plus 4,096-prompt fresh science bank. It uses answer-vote,
+  truncation, explicit-final, repetition, length, and completion-shape
+  features; feature extraction and inference never read gold or correctness.
+  Its deterministic 857-prompt identity holdout scores `467/857 = 54.49%`,
+  versus modal `424/857 = 49.47%` and first sample `352/857 = 41.07%`;
+  oracle is `522/857 = 60.91%`. Artifact SHA-256 is
+  `b64b2f4a185e41891000123b8d0dc0bf1d5e43b8397b45a8cdd8016427d97160`.
+
+  On fixed public candidates the reranker scores GSM8K `91/100`, MATH
+  `70/100`, GPQA `24/100`, BBH `60/100`, science `50/100`, and AIME
+  `4/30`. Relative to modal selection, its fixed MATH choices add four
+  correct answers with zero losses and its GPQA choices add five with zero
+  losses. On the expanded boards it scores BBH `772/1250 = 61.76%`, only
+  two answers above greedy, and science `227/500 = 45.40%`, seven answers
+  above modal and 71 above greedy. BBH remains effectively greedy-routed;
+  science advances to the shape reranker. Expanded 500-row MATH remains the
+  final scale gate before promoting the MATH route.
+
+  Private commits `4215f78` and `dcd8334` add the shape reranker and an
+  isolated semantic verifier. The latter asks the protected generator to
+  judge each candidate under two reversed `A/B` verdict mappings and averages
+  oriented log odds, canceling fixed label bias. Four-candidate smoke
+  `735522` is pending; it must beat the cheap selector on held-out candidates
+  before receiving a large fan-out. MATH replacement shards `735450--735458`
+  exclude `evc43`, where nine original shards failed before inference because
+  the assigned accelerator was unavailable.
+
+  Decision:
+  `reject_universal_consensus_promote_the_disjoint_shape_reranker_for_science_hold_math_for_500_row_validation_and_test_one_counterbalanced_semantic_verifier_smoke`.
