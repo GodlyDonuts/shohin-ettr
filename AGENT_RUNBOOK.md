@@ -26910,3 +26910,41 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `advance_update400_to_the_exact_expanded_leader_boards_while_rejecting_update200_as_an_unbalanced_intermediate`.
+
+- **2026-08-03 21:02--21:16 EDT** -- **A second verified self-improvement
+  wave targets only prompts the promoted checkpoint has not yet seen solved.**
+
+  Commit `3dc3c07` adds a fail-closed hard-bank filter. It recomputes every
+  normalized prompt identity, rejects conflicting duplicate bank rows,
+  validates every positive-ledger identity, removes all solved prompts, and
+  atomically freezes original bank rows without rewriting targets. Tests pass
+  `2/2`. Across the two rollout banks it audits 12,288 rows, removes 4,096
+  identical duplicate bank rows, preserves 8,192 unique prompts, and excludes
+  all 4,113 previously solved identities.
+
+  The remaining math bank has 1,783 rows at SHA-256
+  `c959d6e6bd29a2ec2afa482675689d6b0a5656c568a0cbf07dcc6d02f500a6c7`;
+  the remaining science bank has 2,296 rows at SHA-256
+  `9af3f9cabfb9283d7ed6a7e7845b02a77a2c4616684359ecf52c704ea13f638f`.
+  These are hard negatives relative to both first-round verified-positive
+  ledgers, not benchmark prompts or newly sourced examples.
+
+  Fourteen one-H100 long-math jobs `734114--734127` cover the complete math
+  bank in 128-row shards, with the final shard containing 119 rows. Eight
+  one-H100 science jobs `734128--734135` cover the complete science bank in
+  exact 287-row shards at fragmentation-safe prompt batch 32. Every job uses
+  update-400 checkpoint SHA-256
+  `34c82454e0c53609bc1ac6a9f127437080e431f147e28ae63b4080c413d9a82e`,
+  four deterministic candidates per prompt, seed 20260804, and the existing
+  exact-answer verifier. Math retains the admitted 3,072-token plus strict
+  answer-finalizer shape; science retains the 1,536-token shape. CPU
+  aggregators `734136/734137` follow complete successful slice coverage and
+  require at least 64 new positives per group.
+
+  At submission Newton holds 34 active single-H100 requests: six expanded
+  evaluators run and 28 jobs wait for backfill. Expanded HumanEval completes
+  first at `45/164 = 27.44%`, exactly tying the leader. No multi-GPU gang
+  reservation blocks either evaluation or generation.
+
+  Decision:
+  `use_the_promoted_checkpoint_to_search_only_previous_failures_then_train_again_only_if_new_verified_coverage_is_material`.
