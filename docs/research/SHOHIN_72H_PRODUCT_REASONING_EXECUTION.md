@@ -1143,3 +1143,20 @@ The production training chain is `737432--737451`; fixed evaluations are
 `737452/737453/737454`. At the time of this update the first chunk remains
 pending H100 priority. Only a checkpoint above `73/100` advances to the full
 500-row K=8 product gate.
+
+Update 25 is negative at `69/100`, versus source 73 and replay-only control
+71. The first 400 trajectories contain 79 correct answers, but only 42 are
+correct and self-terminating; terminal-only reward discards the other 37.
+Transcript inspection confirms these are not all false-positive answer
+substrings: one complete Legendre-formula derivation reaches and states the
+correct exponent 2005 before wasting the remaining context on repeated
+verification.
+
+One failover objective follows directly from that error. It gives reward 1 to
+a correct terminal trajectory and 0.5 to a correct exhausted trajectory, but
+computes the latter's policy objective only through the earliest token prefix
+accepted by the exact verifier. This preserves the reasoning and answer while
+assigning no positive credit to the post-answer loop. Wrong trajectories still
+receive zero. Jobs `737523--737527` test 25 matched updates and `737528` applies
+the unchanged fixed gate. It must exceed 73 to continue; no reward-weight,
+seed, or duration family follows a failure.

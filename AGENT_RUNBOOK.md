@@ -28030,3 +28030,51 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_one_terminal_reward_rlvr_curve_against_source_73_and_replay_control_71_70_71_then_promote_only_a_strict_fixed_gate_win`.
+
+- **2026-08-04 15:43--16:09 EDT** -- **Terminal-only RLVR is negative at
+  update 25; direct transcript evidence produces one materially different
+  prefix-credit failover.**
+
+  Jobs `737432--737436` complete five optimizer-exact handoffs on `evc31`.
+  Each five-update allocation takes 3m59s--4m29s. Across the first 400 fresh
+  trajectories, 79 answers are verifier-correct (`19.75%`), but only 42 are
+  correct and self-terminating (`10.50%`); 37 correct derivations continue to
+  the 1,536-token cap. The first chunk has one mixed group and the next four
+  have `6/1/2/3`, so the policy signal is valid but sparse. Update-25 fixed
+  evaluation `737452` scores `69/100`, four answers below source and two below
+  the replay-only update-25 control. It is not promoted. Evaluation report,
+  training report, and checkpoint SHA-256 values are
+  `62af4fef56856b9ae131aac891eb44ee1583392f07b3f564a6d261405335997a`,
+  `eff21586235fcdf3d51070166a40e4a5168a4e6db68cbdf5b7158d3f4922c8d3`,
+  and
+  `e023e681abec2ccd3bb2e3d04f4f6461a5d3d062f1f13a8f01ba4eeb0d373839`.
+  The terminal-only curve is released to finish its already-frozen 50/100
+  checkpoints, because the replay control is non-monotonic; no extra duration
+  is authorized.
+
+  Direct inspection identifies why the objective can destroy useful behavior.
+  One zero-reward trajectory correctly applies Legendre's formula, sums the
+  exponent of two in `2014!` to `2005`, states the correct answer, and then
+  repeats verification until the cap. In a mixed group terminal-only reward
+  can assign that correct derivation a negative advantage merely because
+  another sample stops earlier. Commit `32077b2` implements the bounded
+  failover `exact_math_verified_prefix_with_terminal_bonus_v1`: a correct
+  self-terminating trajectory receives reward 1; a correct exhausted
+  trajectory receives reward 0.5, but its policy objective ends at the
+  earliest token prefix accepted by the exact verifier, so no post-answer loop
+  token receives positive credit; wrong trajectories receive zero. The
+  implementation passes 37 focused evaluator/rollout/RLVR tests plus Ruff,
+  formatting, compilation, and shell syntax checks. Immutable Newton runtime
+  `product_rlvr_runtime_32077b2_r1` has manifest SHA-256
+  `9cbcd0e02cefa1fb1ea88b37fadc9c0463f0b57b9b4f2aa474ac3669c7ea1651`.
+
+  Jobs `737523--737527` run exactly 25 prefix-credit updates from the original
+  promoted source under the same prompts, samples, replay, LR, seed, and
+  global 100-update schedule. Fixed evaluation `737528` uses the unchanged
+  100-row board. Both the terminal continuation and prefix failover are
+  pending H100 backfill after update-25 evaluation released `evc31`.
+  Prefix-credit stops at update 25 unless it beats `73/100`; it is not another
+  offline imitation or an unbounded reward-weight sweep.
+
+  Decision:
+  `reject_terminal_u25_at_69_finish_only_frozen_curve_and_test_one_verified_prefix_credit_gate_derived_from_transcripts`.
