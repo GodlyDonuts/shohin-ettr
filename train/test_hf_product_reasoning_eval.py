@@ -110,6 +110,12 @@ class ProductReasoningEvalTests(unittest.TestCase):
     def test_math_normalizes_fraction_command(self) -> None:
         self.assertTrue(match_math(r"\dfrac{1}{2}", r"\frac{1}{2}"))
 
+    def test_math_numeric_fallback_ignores_equivalent_surface_forms(self) -> None:
+        self.assertTrue(match_math("1/4", r"\frac{1}{4}"))
+        self.assertTrue(match_math("1,250", "1250"))
+        self.assertTrue(match_math("0.25", r"\frac{1}{4}"))
+        self.assertFalse(match_math("0.2", r"\frac{1}{4}"))
+
     def test_math_verify_backend_handles_equivalent_latex(self) -> None:
         fake = types.SimpleNamespace(
             LatexExtractionConfig=lambda: object(),

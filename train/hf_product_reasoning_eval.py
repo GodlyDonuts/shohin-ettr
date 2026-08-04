@@ -255,17 +255,56 @@ def _normalize_math(value: str | None) -> str | None:
     )
 
 
+def _simple_math_fraction(value: str | None) -> Fraction | None:
+    """Parse plain numeric answers when the symbolic backend declines them."""
+
+    normalized = _normalize_math(value)
+    if normalized is None:
+        return None
+    compact = (
+        normalized.replace(r"\left", "")
+        .replace(r"\right", "")
+        .replace(",", "")
+    )
+    latex_fraction = re.fullmatch(
+        r"\\frac(?:\{([+-]?\d+)\}|([+-]?\d+))\{([+-]?\d+)\}",
+        compact,
+    )
+    if latex_fraction is not None:
+        numerator = latex_fraction.group(1) or latex_fraction.group(2)
+        try:
+            return Fraction(int(numerator), int(latex_fraction.group(3)))
+        except ZeroDivisionError:
+            return None
+    plain_fraction = re.fullmatch(r"([+-]?\d+)/([+-]?\d+)", compact)
+    if plain_fraction is not None:
+        try:
+            return Fraction(int(plain_fraction.group(1)), int(plain_fraction.group(2)))
+        except ZeroDivisionError:
+            return None
+    if re.fullmatch(r"[+-]?\d+(?:\.\d+)?", compact):
+        try:
+            return Fraction(Decimal(compact))
+        except InvalidOperation:
+            return None
+    return None
+
+
 def match_math(prediction: str | None, gold: str | None) -> bool:
     if prediction is None or gold is None:
         return False
+    predicted_number = _simple_math_fraction(prediction)
+    gold_number = _simple_math_fraction(gold)
+    if predicted_number is not None and gold_number is not None:
+        return predicted_number == gold_number
     try:
         from math_verify import LatexExtractionConfig, parse, verify
 
         extraction = [LatexExtractionConfig()]
         parsed_gold = parse(f"${gold}$", extraction_config=extraction)
         parsed_prediction = parse(f"${prediction}$", extraction_config=extraction)
-        if parsed_gold and parsed_prediction:
-            return bool(verify(parsed_gold, parsed_prediction))
+        if parsed_gold and parsed_prediction and verify(parsed_gold, parsed_prediction):
+            return True
     except (ImportError, RuntimeError, TypeError, ValueError):
         pass
     return _normalize_math(prediction) == _normalize_math(gold)
