@@ -26831,3 +26831,50 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `accept_the_hash_validated_short_stream_and_wait_only_for_complete_long_math_coverage_before_the_staged_merge_replay_warmstart_chain`.
+
+- **2026-08-03 19:32--20:28 EDT** -- **The complete rollout-replay campaign
+  trains cleanly, and both checkpoints enter an 18-single-H100 fixed-board
+  evaluation.**
+
+  All 32 long-math slices complete. Aggregate `733915` validates 4,096 unique
+  prompts and 16,384 candidates, then admits 2,269 verified positive prompts
+  from 5,123 correct candidates (`55.40%` positive-prompt yield). Its
+  positives SHA-256 is
+  `809c715a6679492b930ddd787b969c8c5d8aaf063900c370775ae73b34d16651`;
+  aggregate report SHA-256 is
+  `cff2d91e234f4a752af99fc83262841f01bb64199ec5caf2a318f9958a75336e`.
+  This is the full-scale replication of the long-budget math intervention,
+  not an extrapolation from the 192-prompt canaries.
+
+  Cross-budget merge `733924` receives 4,593 admitted rows, removes 480
+  duplicate prompt identities, and freezes 4,113 unique positives: 2,313
+  math and 1,800 science. The merged positives SHA-256 is
+  `c7297b040b5a8b220c9ee7a2b9503e3c5547b37271436832f8335d4235162545`;
+  report SHA-256 is
+  `78bd2db83d4b7ef04fcf03137bbf5ceb4748a6df1ad3b0ec6737b8b576c13cda`.
+  Replay builder `733931` adds exactly 4,113 question-disjoint V12 rows for
+  an 8,226-row training set. Replay groups are code 2,212, math 479,
+  procedural 557, science 368, and teacher 497; the frozen dataset SHA-256 is
+  `4557d8de503578ae37c344e92601fcc45ea87e5542d2ee88f3e09648b54b17f3`.
+
+  Warm-start `733932` restores V12 update 1,000 at SHA-256
+  `e4b71f466fc6db2891aa024b1dd0ab7061e455a7c23a48467076093df913709f`
+  with a fresh optimizer and completes all 400 updates in 835.37 seconds.
+  It charges 7,240,246 tokens at 8,667.1 tokens/s, peaks at 37.60GB GPU
+  memory, and trains 157,925,376 parameters. Update 400 closes with language
+  loss `0.5526` and gradient norm `0.5741`; no numerical failure is observed.
+  Checkpoint update 200 has SHA-256
+  `5c66a379df055533d8a2597977bf62f0cf76b124950187a4ae79957877de3067`;
+  update 400 has SHA-256
+  `34c82454e0c53609bc1ac6a9f127437080e431f147e28ae63b4080c413d9a82e`.
+
+  Evaluators `733936--733953` are independent one-H100 requests, nine per
+  checkpoint, over GSM8K, MATH, HumanEval, MBPP, GPQA, BBH, AIME, fresh
+  science, and manual composition. Update-200 jobs receive scheduler priority
+  first; after all nine start, every update-400 request is released so idle
+  H100s can backfill without a gang-allocation barrier. Promotion remains
+  conditional on matched fixed-board improvement over the update-1,000
+  leader; low training loss or rollout yield alone is not sufficient.
+
+  Decision:
+  `evaluate_both_rollout_replay_checkpoints_in_parallel_single_h100_jobs_and_promote_only_a_broad_fixed_board_improvement`.
