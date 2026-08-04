@@ -27745,3 +27745,46 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `keep_h100s_productive_by_generating_new_disjoint_verified_math_data_while_preserving_k8_as_the_next_model_gate`.
+
+- **2026-08-04 12:52--13:08 EDT** -- **Manual transcript review finds and
+  fixes MATH multiple-choice undercounting; the mixed specialist retains a
+  17-answer model gain under the corrected evaluator.**
+
+  One audited oracle-miss transcript correctly converts
+  `r^2 cos(2 theta) = 4` to `x^2 - y^2 = 4`, identifies a hyperbola, and
+  emits bare `E`. Gold is `\\text{(E)}`; the numeric-aware MATH matcher marks
+  the semantically identical labels different. Commit `d69e9e6` adds a
+  narrowly scoped single-letter A--E normalizer before symbolic/numeric MATH
+  matching. It does not treat arbitrary expressions as choices. The complete
+  focused evaluator/selector suite passes `27/27` with lint and formatting.
+
+  Under the new matcher, the protected-leader K=4 bank changes
+  first/modal/shape/oracle from `263/323/335/369` to `264/326/338/371`.
+  The mixed update-200 bank changes from `273/337/353/371` to
+  `275/339/355/372`. The evaluator repair therefore adds three selected
+  answers to the protected route and two to the specialist route; it is not a
+  model gain. The fair specialist delta remains `+17` MATH answers and
+  `+3.40` points. Its current five-domain vector is
+  `79.303 / 71.000 / 27.948 / 17.172 / 61.600`, macro `51.405%`, and
+  `2,392/3,930` solved.
+
+  Mixed corrected-candidate and shape-report SHA-256 values are
+  `ab06c170c4e819f771eaed76de95cee8dc652e69e33e7c4bbc65e329fa01a41c`
+  and
+  `70382e8ebac85e2daea00e81facd8859e72deb1ac870cf4b3227b8806ee852b7`.
+  Protected equivalents are
+  `df20edbe4e8338d0f372498a03832e61cba2a7dd8988e673a3cdf5942a4d1d90`
+  and
+  `9c52c2d7477060f743e3dc08d55b19620dec2daf54edd7e7dc2c8ee0d7a14ec0`.
+  K=8 must now beat `355/500`, not `353/500`.
+
+  Newton runtime `product_rollout_runtime_d69e9e6_r1` binds evaluator SHA-256
+  `4496f0a3af5cf9ecb7a3def2e25e35d0fb99255df6dcd0689e3a9f6fa5e3be6f`.
+  Selector runtime `product_selector_runtime_d69e9e6_r1` has manifest SHA-256
+  `ff3071924f9abacb78cc6b055e92b15a566dcd118ac04627bb75c3d20ba1084a`.
+  K=8 selector `736940` uses the corrected runtime. The V4 data fan is
+  resubmitted before any allocation as `736941--736972`, with aggregator
+  `736973`, so newly collected choice-format positives are not discarded.
+
+  Decision:
+  `separate_evaluator_repairs_from_model_gains_raise_the_k8_floor_to_355_and_keep_the_mixed_specialist_promoted_by_17_answers`.

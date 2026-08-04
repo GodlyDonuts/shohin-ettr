@@ -968,3 +968,28 @@ production shape (`674.42` generated tok/s, 49.20GB peak); `736925` admits
 the ledger only after complete coverage and at least 512 verifier-correct
 identities. This is data production, not a model result. Any continuation
 waits for the ledger hash and a frozen mix.
+
+### Choice-equivalence evaluator correction
+
+Transcript review finds a correct hyperbola derivation whose bare option `E`
+was scored against `\\text{(E)}` as wrong. Commit `d69e9e6` adds exact
+single-letter A--E equivalence to the MATH matcher; all 27 focused evaluator
+and selector tests pass. This correction is reported separately from model
+gain.
+
+With the same corrected matcher, protected-leader K=4
+first/modal/shape/oracle is `264/326/338/371`, while mixed-update-200 K=4 is
+`275/339/355/372`. The mixed specialist therefore retains a 17-answer,
+3.40-point generator-plus-selection advantage. The current primary route is
+`79.303 / 71.000 / 27.948 / 17.172 / 61.600`, macro `51.405%`, and
+`2,392/3,930` solved. Mixed corrected-candidate and shape-report SHA-256
+values are
+`ab06c170c4e819f771eaed76de95cee8dc652e69e33e7c4bbc65e329fa01a41c`
+and
+`70382e8ebac85e2daea00e81facd8859e72deb1ac870cf4b3227b8806ee852b7`.
+The live K=8 gate must beat `355/500` under this evaluator.
+
+The corrected immutable Newton rollout runtime is
+`product_rollout_runtime_d69e9e6_r1`. V4 jobs are replaced before allocation
+as `736941--736972`, with aggregate `736973`; this avoids dropping valid bare
+choice labels from the future verified-positive ledger.
