@@ -9,6 +9,7 @@ from hf_product_reasoning_rlvr_train import (
     PREFIX_CREDIT_REWARD,
     TERMINAL_ONLY_REWARD,
     ProductRLVRTrainError,
+    _optimization_parameters,
     _reservoir_reward_rows,
     _shortest_verified_prefix_ids,
     _validate_resume_contract,
@@ -55,6 +56,27 @@ def test_policy_objective_lowers_negative_reward_log_probability() -> None:
     policy_objective(negative_logp, torch.tensor(-0.5)).backward()
     assert negative_logp.grad is not None
     assert float(negative_logp.grad) > 0
+
+
+def test_lora_only_scope_excludes_other_checkpoint_parameters() -> None:
+    class Toy(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.layer = torch.nn.Linear(2, 2)
+            self.layer.lora_a = torch.nn.Linear(2, 1, bias=False)
+            self.layer.lora_b = torch.nn.Linear(1, 2, bias=False)
+
+    model = Toy()
+    optimized, excluded = _optimization_parameters(model, "lora_only_update")
+    assert sum(parameter.numel() for parameter in optimized) == 4
+    assert sum(parameter.numel() for parameter in excluded) == 6
+
+
+def test_all_trainable_scope_optimizes_full_contract() -> None:
+    model = torch.nn.Linear(2, 2)
+    optimized, excluded = _optimization_parameters(model, "all_trainable")
+    assert sum(parameter.numel() for parameter in optimized) == 6
+    assert excluded == []
 
 
 def test_verified_reward_requires_correct_answer_and_termination() -> None:
@@ -144,6 +166,7 @@ def test_resume_contract_requires_exact_global_cursor() -> None:
         replay_weight=0.25,
         schedule_total_updates=100,
         reward_contract=TERMINAL_ONLY_REWARD,
+        parameter_scope="all_trainable",
     )
     metadata = {
         "rlvr_algorithm": "single_use_on_policy_group_normalized_reinforce_v1",
@@ -158,6 +181,7 @@ def test_resume_contract_requires_exact_global_cursor() -> None:
         "rlvr_max_new_tokens": 1536,
         "rlvr_replay_weight": 0.25,
         "rlvr_schedule_total_updates": 100,
+        "rlvr_parameter_scope": "all_trainable",
     }
 
     _validate_resume_contract(5, metadata, args, "reward", "replay")

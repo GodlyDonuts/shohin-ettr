@@ -39,6 +39,7 @@ SCHEMA = "shohin-hf-product-reasoning-rlvr-training-v1"
 TERMINAL_ONLY_REWARD = "exact_math_answer_with_explicit_marker_and_terminal_stop_v1"
 PREFIX_CREDIT_REWARD = "exact_math_verified_prefix_with_terminal_bonus_v1"
 REWARD_CONTRACTS = (TERMINAL_ONLY_REWARD, PREFIX_CREDIT_REWARD)
+PARAMETER_SCOPES = ("all_trainable", "lora_only_update")
 
 
 class ProductRLVRTrainError(RuntimeError):
@@ -128,6 +129,35 @@ def _average_logp(
 ) -> tuple[torch.Tensor, int]:
     loss, metrics = model.forward_batch([prompt_ids], [response_ids], pad_token_id)
     return -loss, int(metrics["charged_tokens"])
+
+
+def _optimization_parameters(
+    model: ProductReasoningModel,
+    parameter_scope: str,
+) -> tuple[list[torch.nn.Parameter], list[torch.nn.Parameter]]:
+    """Select optimizer parameters while retaining the full checkpoint contract."""
+
+    contract_parameters: list[torch.nn.Parameter] = []
+    optimized: list[torch.nn.Parameter] = []
+    excluded: list[torch.nn.Parameter] = []
+    for name, parameter in model.named_parameters():
+        if not parameter.requires_grad:
+            continue
+        contract_parameters.append(parameter)
+        is_lora = ".lora_a." in name or ".lora_b." in name
+        if parameter_scope == "all_trainable" or (
+            parameter_scope == "lora_only_update" and is_lora
+        ):
+            optimized.append(parameter)
+        else:
+            excluded.append(parameter)
+    if parameter_scope not in PARAMETER_SCOPES:
+        raise ProductRLVRTrainError(
+            f"unsupported optimization parameter scope: {parameter_scope}"
+        )
+    if not contract_parameters or not optimized:
+        raise ProductRLVRTrainError("optimization parameter selection is empty")
+    return optimized, excluded
 
 
 def _atomic_jsonl(path: Path, rows: list[dict[str, Any]]) -> str:
@@ -225,6 +255,7 @@ def _validate_resume_contract(
         "rlvr_max_new_tokens": args.max_new_tokens,
         "rlvr_replay_weight": args.replay_weight,
         "rlvr_schedule_total_updates": args.schedule_total_updates,
+        "rlvr_parameter_scope": args.parameter_scope,
     }
     mismatches = {
         key: {"expected": value, "actual": warm_metadata.get(key)}
@@ -385,11 +416,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise ProductRLVRTrainError("reward population is smaller than one update")
     stop_token_ids = _generation_stop_token_ids(tokenizer)
 
-    trainable = [
-        parameter for parameter in model.parameters() if parameter.requires_grad
-    ]
+    optimized_parameters, excluded_parameters = _optimization_parameters(
+        model,
+        args.parameter_scope,
+    )
     optimizer = torch.optim.AdamW(
-        trainable,
+        optimized_parameters,
         lr=args.learning_rate,
         betas=(0.9, 0.95),
         weight_decay=0.01,
@@ -433,6 +465,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "rlvr_replay_data_seed": args.replay_data_seed,
         "rlvr_start_update": args.start_update,
         "rlvr_schedule_total_updates": args.schedule_total_updates,
+        "rlvr_parameter_scope": args.parameter_scope,
+        "rlvr_optimized_parameters": sum(
+            parameter.numel() for parameter in optimized_parameters
+        ),
     }
 
     model.train()
@@ -567,7 +603,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             charged_tokens += replay_tokens
             replay_logp_sum += float(replay_logp.detach())
 
-        gradient_norm = torch.nn.utils.clip_grad_norm_(trainable, 1.0)
+        for parameter in excluded_parameters:
+            parameter.grad = None
+        gradient_norm = torch.nn.utils.clip_grad_norm_(optimized_parameters, 1.0)
         progress = update / max(args.schedule_total_updates - 1, 1)
         learning_rate = args.learning_rate * 0.5 * (1.0 + math.cos(math.pi * progress))
         for group in optimizer.param_groups:
@@ -672,6 +710,11 @@ def parse_args() -> argparse.Namespace:
         "--reward-contract",
         choices=REWARD_CONTRACTS,
         default=TERMINAL_ONLY_REWARD,
+    )
+    parser.add_argument(
+        "--parameter-scope",
+        choices=PARAMETER_SCOPES,
+        default="all_trainable",
     )
     parser.add_argument("--seed", type=int, default=20260804)
     parser.add_argument("--data-seed", type=int, default=20260804)
