@@ -38,7 +38,7 @@ REPORT="$OUTPUT_ROOT/shards/part-${PADDED}.report.json"
 test ! -e "$OUT"
 test ! -e "$REPORT"
 
-curl --fail --location --retry 20 --retry-delay 15 --retry-all-errors \
+curl --fail --location --retry 20 --retry-delay 15 \
   --connect-timeout 30 --output "$PARQUET" "$URL"
 test -s "$PARQUET"
 
