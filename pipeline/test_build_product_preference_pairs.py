@@ -60,6 +60,7 @@ def test_builds_only_mixed_within_prompt_pairs_deterministically(tmp_path: Path)
             _candidate("mixed", 1, True),
             _candidate("mixed", 2, False),
             _candidate("mixed", 3, False),
+            {**_candidate("empty", 0, False), "completion": ""},
             *[_candidate("all-good", index, True) for index in range(4)],
             *[_candidate("all-bad", index, False) for index in range(4)],
         ],

@@ -127,10 +127,12 @@ def build_pairs(
                 if any(key not in row for key in required):
                     raise ProductPreferencePairError("candidate row schema differs")
                 identity = str(row["identity_sha256"])
-                if not identity or not str(row["question"]).strip() or not str(
-                    row["completion"]
-                ).strip():
-                    raise ProductPreferencePairError("candidate row is empty")
+                if not identity or not str(row["question"]).strip():
+                    raise ProductPreferencePairError("candidate identity or question is empty")
+                if not str(row["completion"]).strip():
+                    counters["empty_completion_drops"] += 1
+                    local_rows += 1
+                    continue
                 grouped[identity].append(row)
                 local_rows += 1
         if local_rows != int(report.get("candidates", -1)):
