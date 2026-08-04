@@ -27580,8 +27580,8 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   Exact fixed-board jobs `736386--736391` score MATH update 100/200/400 at
   `52/54/56` of 100 and science at `35/31/35`. Domain-only science therefore
   fails to beat the existing mixed update-200 checkpoint's `38/100` and is
-  closed. MATH update 400 is three answers above the protected leader's
-  original `53/100` fixed score and earns one full 500-row K=4 gate. Its
+  closed. MATH update 400 is five answers above the protected leader's
+  `51/100` fixed score and earns one full 500-row K=4 gate. Its
   checkpoint SHA-256 is
   `1c1e4e29710d6f4670330d397bad434b837a2b26e60c99fb17381851c3514858`.
 
