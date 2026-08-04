@@ -14,7 +14,8 @@ from pipeline.build_token_balanced_reasoning_mix import (
 
 
 def test_source_test_replay_has_verified_priority() -> None:
-    assert _quality_rank({"verification": "execution_verified_source_tests"}) == 3
+    assert _quality_rank({"verification": "execution_verified_source_tests"}) == 4
+    assert _quality_rank({"verification": "execution_verified"}) == 3
 
 
 class FakeTokenizer:

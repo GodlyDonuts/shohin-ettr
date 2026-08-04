@@ -80,10 +80,11 @@ def _normalized_question(question: str) -> str:
 
 def _quality_rank(row: dict[str, Any]) -> int:
     verification = str(row.get("verification") or "")
+    if verification == "execution_verified_source_tests":
+        return 4
     if verification in {
         "expected_answer_match_v1",
         "execution_verified",
-        "execution_verified_source_tests",
     }:
         return 3
     if row.get("answer") or row.get("expected_answer_normalized"):
