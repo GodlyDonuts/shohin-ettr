@@ -28,7 +28,28 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def select(paths: list[Path]) -> dict[str, Any]:
+def _label_map(path: Path | None) -> dict[tuple[str, int], bool] | None:
+    if path is None:
+        return None
+    labels: dict[tuple[str, int], bool] = {}
+    with path.open(encoding="utf-8") as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            key = (str(row.get("identity_sha256") or ""), int(row["sample_index"]))
+            if not key[0] or key in labels:
+                raise VerifiedCandidateSelectionError("label candidate identity differs")
+            labels[key] = bool(row["correct"])
+    if not labels:
+        raise VerifiedCandidateSelectionError("label candidate source is empty")
+    return labels
+
+
+def select(
+    paths: list[Path], label_candidates: Path | None = None
+) -> dict[str, Any]:
+    labels = _label_map(label_candidates)
     grouped: OrderedDict[str, list[dict[str, Any]]] = OrderedDict()
     for path in paths:
         with path.open(encoding="utf-8") as handle:
@@ -40,9 +61,22 @@ def select(paths: list[Path]) -> dict[str, Any]:
                 score = row.get("verifier_score")
                 if not identity or not isinstance(score, (int, float)) or not math.isfinite(score):
                     raise VerifiedCandidateSelectionError("candidate identity or score differs")
+                if labels is not None:
+                    key = (identity, int(row["sample_index"]))
+                    if key not in labels:
+                        raise VerifiedCandidateSelectionError("candidate label is missing")
+                    row["correct"] = labels[key]
                 grouped.setdefault(identity, []).append(row)
     if not grouped:
         raise VerifiedCandidateSelectionError("scored candidate source is empty")
+    if labels is not None:
+        observed = {
+            (identity, int(row["sample_index"]))
+            for identity, rows in grouped.items()
+            for row in rows
+        }
+        if observed != set(labels):
+            raise VerifiedCandidateSelectionError("label and scored candidate sets differ")
     total = first = oracle = selected = 0
     results: list[dict[str, Any]] = []
     for identity, rows in grouped.items():
@@ -83,11 +117,15 @@ def select(paths: list[Path]) -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--scored-candidates", type=Path, action="append", required=True)
+    parser.add_argument("--label-candidates", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    report = select(args.scored_candidates)
+    report = select(args.scored_candidates, args.label_candidates)
     report["scored_candidate_paths"] = [str(path.resolve()) for path in args.scored_candidates]
     report["scored_candidate_sha256"] = [_sha256(path) for path in args.scored_candidates]
+    if args.label_candidates is not None:
+        report["label_candidates"] = str(args.label_candidates.resolve())
+        report["label_candidates_sha256"] = _sha256(args.label_candidates)
     if args.output.exists():
         raise VerifiedCandidateSelectionError(f"refusing existing output: {args.output}")
     args.output.parent.mkdir(parents=True, exist_ok=True)

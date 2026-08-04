@@ -36,3 +36,18 @@ def test_selector_uses_score_and_not_correctness(tmp_path) -> None:
     report = select([source])
     assert report["selected_correct"] == 0
     assert report["results"][0]["selected_sample_index"] == 1
+
+
+def test_selector_can_report_against_corrected_labels(tmp_path) -> None:
+    scores = tmp_path / "scores.jsonl"
+    labels = tmp_path / "labels.jsonl"
+    scores.write_text(
+        '{"identity_sha256":"x","task":"math500","sample_index":0,'
+        '"verifier_score":2.0,"correct":false}\n'
+    )
+    labels.write_text(
+        '{"identity_sha256":"x","task":"math500","sample_index":0,'
+        '"correct":true}\n'
+    )
+    report = select([scores], labels)
+    assert report["selected_correct"] == 1
