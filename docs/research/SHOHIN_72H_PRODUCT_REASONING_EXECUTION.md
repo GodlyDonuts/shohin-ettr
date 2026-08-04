@@ -854,3 +854,31 @@ and
 This result says that candidate correctness is not reliably exposed by these
 pooled frozen states. Further progress must come from process-level checking
 or stronger generator training, not another static-state pooling variant.
+
+### End-to-end process verifier
+
+The distinct process-level successor is implemented in private commit
+`d17a1fd`. It reads the entire problem and candidate trajectory, combines the
+final contextual state with the fixed label-blind shape vector, and updates an
+isolated copy of the leader's late two layers plus LoRA. The protected
+generator is never modified. Prompt-identity hashing reserves 6,539 train,
+794 development, and 859 untouched final prompts; training alternates MATH and
+science correct/wrong pairs.
+
+Job `736193` completes 300 updates and 2,400 pair presentations in 1,469.25
+seconds. At the development-selected update 200, process selection reaches
+`203/794` versus shape `194/794`: science gains nine answers and MATH ties.
+The untouched final fold reverses the result: process `185/859`, shape
+`190/859`; science `142/419` versus `143/419`, MATH `43/440` versus `47/440`.
+Model/report SHA-256 values are
+`bd4cd0e0030c2cde8599b744e5a030b7697cfdb8723dd0575ff639decdf1cea4`
+and
+`ddab0c3375492e0b2fcd263123197eaf01ad6ff29beb8c049b517d1cf3c7ddf4`.
+The static and end-to-end verifier directions are therefore closed on this
+candidate bank.
+
+The immediate replacement is task-specialist routing. Existing fresh-replay
+update 200 scored fixed MATH/science `53/38` versus leader `51/31` but was
+discarded for unrelated-domain regressions. Full-board jobs `736338/736339`
+now test it only as a routed MATH/science expert; no other domain or generator
+lineage changes unless those 500-row gates improve.

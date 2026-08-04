@@ -27505,3 +27505,48 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_frozen_late_state_correctness_decoding_and_do_not_tune_pooling_the_remaining_oracle_gap_requires_process_verification_or_better_generator_training`.
+
+- **2026-08-04 10:15--10:52 EDT** -- **End-to-end process verification is
+  operational, shows a development gain, then fails its untouched final fold;
+  a task-specialist generator gate replaces verifier tuning.**
+
+  Commit `d17a1fd` adds a separate process verifier that reads the full problem
+  and candidate solution, combines its final contextual state with the fixed
+  label-blind shape features, and updates an isolated copy of the protected
+  leader's late-two-layer plus LoRA trainable state. The generator checkpoint
+  is never overwritten. Data are divided by prompt identity into 6,539 train,
+  794 development, and 859 final prompts. Training alternates MATH and science
+  within-prompt correct/wrong pairs rather than allowing the larger science
+  population to dominate.
+
+  Mechanics smokes `736176/736185` complete with exact leader SHA-256
+  `34c82454e0c53609bc1ac6a9f127437080e431f147e28ae63b4080c413d9a82e`,
+  finite gradients, zero truncation, checkpoint restore, and only 8.9GB peak
+  allocated VRAM. Full job `736193` runs on `evc34` for 300 updates / 2,400
+  balanced pair presentations in 1,469.25 seconds. It trains 157,925,376
+  leader-copy parameters plus a 1,221,825-parameter verifier head and peaks at
+  10,473,577,984 allocated bytes. Best development update 200 selects
+  `203/794` versus shape `194/794`: science `146/418` versus `137/418` and
+  MATH an exact `57/376` tie.
+
+  The untouched final fold reverses that gain. Process selection is
+  `185/859`, below shape `190/859`; science is `142/419` versus `143/419`,
+  and MATH `43/440` versus `47/440`. Oracle is `250/859`. Model/report
+  SHA-256 values are
+  `bd4cd0e0030c2cde8599b744e5a030b7697cfdb8723dd0575ff639decdf1cea4`
+  and
+  `ddab0c3375492e0b2fcd263123197eaf01ad6ff29beb8c049b517d1cf3c7ddf4`.
+  This closes both static-state and end-to-end candidate-verifier tuning on
+  the current bank.
+
+  The next product attack exploits task routing rather than globally changing
+  the leader. A previously rejected fresh-replay checkpoint improved fixed
+  MATH/science to `53/38` from leader `51/31` but lost unrelated domains. Its
+  exact update-200 SHA-256 is
+  `baf4623755d26ae13b4a8de8b304c07ae197d95a51f0119e0c67f62a0aa139b5`.
+  Jobs `736338/736339` evaluate it read-only on the full 500-row MATH/science
+  boards. It can be retained only as a routed specialist if those full boards
+  improve; all other domains remain on the protected leader.
+
+  Decision:
+  `reject_candidate_verification_promote_no_new_selector_and_test_the_existing_fresh_replay_checkpoint_only_as_a_routed_math_science_specialist`.
