@@ -27242,9 +27242,9 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `pipeline/select_product_self_consistency.py` freeze the evaluator's exact
   row selection and select only the modal canonical answer across autonomous
   candidates. The selector never reads correctness labels or gold answers;
-  ties select the earliest sample and empty answers do not vote. Four focused
+  ties select the earliest sample and empty answers do not vote. Five focused
   tests pass. Runtime builder and selector SHA-256 values are respectively
-  `be7976f2877e85d8465a2d614efdaf21a374070e1fdac93afc220f29e1cc0ed0`
+  `f08f26ace149078981752ae1706e934cd1b81c395c04df9636ca3a153918b6f2`
   and
   `bd6e28f03166436ede4de06fe82d343b0ba88f234e0b6effaef878409e62160f`.
 
@@ -27267,7 +27267,7 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   values are GSM
   `5232266a799861fcb7bea2ed1172c9e9d0302d38c4c02698d76e1da530ff7917`,
   MATH
-  `9e0a51ab92c5500eb3d9f08688e577589bdb076fa502bca5fde54ec6c488273e`,
+  `ff483fe5da67449acd9542c53ac181d7db73a807c02bd8d8b090db2d76895038`,
   GPQA
   `3ee8dd19a7d11d84296ffbeffc78664879d584f9a4569b9b5ea52bad6affce36`,
   BBH
@@ -27276,13 +27276,53 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `e3fe3a65f910f5ffb830ba220ecda39b3f9ba31b71bbcc6ddd930455005b4e4b`,
   and AIME
   `28950b510695cafc42ad7b1eeedf36931ed969db9ba2cfdb0a4aba9c751688fd`.
-  Rather than wait for six long jobs, generation is split into 22
-  non-overlapping single-H100 jobs (`735269--735290`, excluding canceled
-  predecessor IDs): four 25-prompt shards per 100-row board and two 15-prompt
-  AIME shards, each K=4 with bounded answer finalization. Four MATH shards are
-  already running concurrently on `evc47/evc34/evc31/evc22`; the remainder
-  stay queued for the next available H100s. Fixed-board scores remain pending
-  and no product promotion is claimed from the fresh-bank diagnostic alone.
+  Generation is split into non-overlapping single-H100 shards: GPQA
+  `735273--735276`, BBH `735277--735280`, science `735281--735284`, AIME
+  `735285--735286`, GSM8K `735287--735290`, and corrected MATH
+  `735293--735296`. An initial MATH fan `735269--735272` is stopped after
+  eight prompts when its bank is found to omit the evaluator-required boxed
+  gold wrapper; it produces no accepted aggregate. The corrected builder adds
+  explicit GSM8K/MATH gold-parser round-trip tests before relaunch.
+
+  The complete sealed results establish that selection must be routed by task:
+
+  | Board | greedy leader | first K=4 sample | modal K=4 | oracle K=4 |
+  |---|---:|---:|---:|---:|
+  | GSM8K | `91/100` | `71/100` | `87/100` | `96/100` |
+  | MATH | `53/100` | `48/100` | `66/100` | `76/100` |
+  | GPQA | `20/100` | `13/100` | `19/100` | `45/100` |
+  | BBH | `50/100` | `50/100` | `57/100` | `81/100` |
+  | science | `31/100` | `40/100` | `49/100` | `62/100` |
+  | AIME | `0/30` | `2/30` | `4/30` | `4/30` |
+
+  Consensus is therefore not a universal replacement for greedy decoding:
+  it gains 13 points on MATH, seven on BBH, 18 on science, and four AIME
+  solves, but loses four on GSM8K and one on GPQA. A deterministic task router
+  that retains greedy GSM8K/GPQA/code and uses modal K=4 for MATH/BBH yields
+  the five-domain primary vector `91,66,32.5,20,57`, macro `53.3%`, up `4.4`
+  points from the protected leader's `48.9%` with no primary-domain
+  regression. Science rises separately from 31 to 49 and AIME from zero to
+  four. Selection report SHA-256 values are GSM
+  `8c932e541eb71286a6809c012914d3cc3824551402490f0c41464c3d298a69b0`,
+  MATH
+  `1b8ac55612dfa966efde468e47a20fa0f0509078f183cd79b4d3a08f1aca1aba`,
+  GPQA
+  `a520133ca70325ad23a1eda183661cd6d9b55221ba880c2fa998e8a14273b0df`,
+  BBH
+  `e280fdec0a1c9261a9bc6006bfa0665f4f969c3522f1b7a3629fbf73697be4f2`,
+  science
+  `e702aa1ab58256a4724cb20766f52a03deec7893908068e6444b750f3660fd70`,
+  and AIME
+  `9f7807e43baa3fc55c32df92990002d28c7b087b25b1c121690ef91e4adfb2db`.
+
+  A generalization gate now covers all 1,250 BBH rows and 500 held-out
+  science rows. Their bank SHA-256 values are respectively
+  `1934d65aab8ad2cd90b6cfc6ec04f170174147db7798a09f8883221abb244374`
+  and
+  `663c59d8492d77811b729a71efbc470bbe909663083a6d6dc151f8fe7cd0e53e`.
+  Thirty-five independent one-H100 shards `735325--735359` are submitted; 16
+  BBH shards immediately run concurrently across the available H100 pool,
+  including `evc36`. Expanded scores remain pending.
 
   Decision:
-  `measure_inference_time_modal_selection_on_the_sealed_product_board_then_train_a_separate_reranker_only_if_modal_selection_leaves_material_oracle_headroom`.
+  `retain_the_generator_promote_task_routed_inference_as_the_new_reasoning_system_validate_it_at_scale_and_attack_the_remaining_oracle_gap_with_a_separate_reranker`.
