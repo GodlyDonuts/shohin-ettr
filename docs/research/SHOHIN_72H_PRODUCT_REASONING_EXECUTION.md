@@ -1157,6 +1157,12 @@ a correct terminal trajectory and 0.5 to a correct exhausted trajectory, but
 computes the latter's policy objective only through the earliest token prefix
 accepted by the exact verifier. This preserves the reasoning and answer while
 assigning no positive credit to the post-answer loop. Wrong trajectories still
-receive zero. Jobs `737523--737527` test 25 matched updates and `737528` applies
-the unchanged fixed gate. It must exceed 73 to continue; no reward-weight,
-seed, or duration family follows a failure.
+receive zero. Uniform sampling is also replaced before allocation because it
+yields mixed reward in only 13/100 prompt groups through terminal update 25.
+The bounded replacement uses the 2,176 disjoint V4 identities where the source
+already demonstrated at least one verifier-correct trajectory, restoring their
+exact original reward rows. The selected bank SHA-256 is
+`48b28c777ca6f3b3402a5b30a213ab55681009530022b644009e575adf25b604`.
+Jobs `737538--737542` test 25 matched prefix-frontier updates and `737543`
+applies the unchanged fixed gate. It must exceed 73 to continue; no
+reward-weight, seed, or duration family follows a failure.

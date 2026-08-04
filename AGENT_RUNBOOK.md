@@ -28068,13 +28068,26 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `product_rlvr_runtime_32077b2_r1` has manifest SHA-256
   `9cbcd0e02cefa1fb1ea88b37fadc9c0463f0b57b9b4f2aa474ac3669c7ea1651`.
 
-  Jobs `737523--737527` run exactly 25 prefix-credit updates from the original
-  promoted source under the same prompts, samples, replay, LR, seed, and
-  global 100-update schedule. Fixed evaluation `737528` uses the unchanged
-  100-row board. Both the terminal continuation and prefix failover are
-  pending H100 backfill after update-25 evaluation released `evc31`.
-  Prefix-credit stops at update 25 unless it beats `73/100`; it is not another
-  offline imitation or an unbounded reward-weight sweep.
+  A reward-efficiency audit closes the initially submitted uniform-prefix jobs
+  `737523--737528` before allocation. Uniform terminal-only sampling produces
+  mixed reward in only 13/100 prompt groups through update 25. The source V4
+  rollout bank already supplies a disjoint competence-frontier mask: 2,176 of
+  4,096 identities have at least one verifier-correct source trajectory.
+  Commit `b59a4c7` adds a fail-closed join that restores the exact original
+  reward rows for those identities. The selected reward bank has 2,176 unique
+  rows at SHA-256
+  `48b28c777ca6f3b3402a5b30a213ab55681009530022b644009e575adf25b604`;
+  its report SHA-256 is
+  `00d962f4815de7c683607a75f84e353932819652611414f06d5eee871a01ef97`.
+  Updated runtime-manifest SHA-256 is
+  `80440d4ea71ee30833cf642a2358e3a7191f2dc729792102b78b34458a848439`.
+
+  Replacement jobs `737538--737542` run exactly 25 prefix-credit updates from
+  the original promoted source under the same samples, replay, LR, seed, and
+  global 100-update schedule, but spend prompts only at the measured
+  competence frontier. Fixed evaluation `737543` uses the unchanged 100-row
+  board. Prefix-frontier credit stops at update 25 unless it beats `73/100`;
+  it is not another offline imitation or an unbounded reward-weight sweep.
 
   Decision:
-  `reject_terminal_u25_at_69_finish_only_frozen_curve_and_test_one_verified_prefix_credit_gate_derived_from_transcripts`.
+  `reject_terminal_u25_at_69_finish_only_frozen_curve_and_test_one_verified_prefix_credit_frontier_gate_derived_from_transcripts`.
