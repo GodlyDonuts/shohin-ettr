@@ -77,6 +77,7 @@ def test_builds_only_mixed_within_prompt_pairs_deterministically(tmp_path: Path)
     assert result["mixed_prompts"] == 1
     assert result["all_correct_prompts"] == 1
     assert result["all_wrong_prompts"] == 1
+    assert result["counters"]["empty_completion_drops"] == 1
     assert result["pairs"] == 2
     assert all(row["identity_sha256"] == "mixed" for row in rows)
     assert all(row["chosen"] != row["rejected"] for row in rows)

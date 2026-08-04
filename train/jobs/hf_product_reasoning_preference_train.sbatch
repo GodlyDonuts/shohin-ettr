@@ -16,6 +16,7 @@ set -euo pipefail
 : "${MODEL_ROOT:?MODEL_ROOT is required}"
 : "${MODEL_REVISION:?MODEL_REVISION is required}"
 : "${DATA:?DATA is required}"
+: "${REPLAY_DATA:?REPLAY_DATA is required}"
 : "${OUTPUT:?OUTPUT is required}"
 : "${WARM_START_CHECKPOINT:?WARM_START_CHECKPOINT is required}"
 
@@ -23,6 +24,7 @@ PYTHON=${PYTHON:-/lustre/fs1/home/sa305415/shohin/envs/product-reasoning-b3a3603
 UPDATES=${UPDATES:-200}
 GRADIENT_ACCUMULATION=${GRADIENT_ACCUMULATION:-16}
 MAX_ROWS=${MAX_ROWS:-100000}
+REPLAY_MAX_ROWS=${REPLAY_MAX_ROWS:-100000}
 MAX_SEQUENCE_LENGTH=${MAX_SEQUENCE_LENGTH:-4096}
 LEARNING_RATE=${LEARNING_RATE:-1e-6}
 LORA_LAYERS=${LORA_LAYERS:-4}
@@ -31,9 +33,11 @@ LORA_ALPHA=${LORA_ALPHA:-16}
 UNFREEZE_LAYERS=${UNFREEZE_LAYERS:-2}
 BETA=${BETA:-2.0}
 MARGIN=${MARGIN:-0.0}
-SFT_WEIGHT=${SFT_WEIGHT:-1.0}
+SFT_WEIGHT=${SFT_WEIGHT:-0.25}
+REPLAY_WEIGHT=${REPLAY_WEIGHT:-0.5}
 SEED=${SEED:-31}
 DATA_SEED=${DATA_SEED:-20260806}
+REPLAY_DATA_SEED=${REPLAY_DATA_SEED:-20260802}
 CHECKPOINT_INTERVAL=${CHECKPOINT_INTERVAL:-100}
 STAGE_MODEL=${STAGE_MODEL:-true}
 
@@ -43,6 +47,7 @@ test -f "$RUNTIME/train/hf_product_reasoning_train.py"
 test -f "$RUNTIME/train/integrated_reasoning_workspace.py"
 test -d "$MODEL_ROOT"
 test -f "$DATA"
+test -f "$REPLAY_DATA"
 test -f "$WARM_START_CHECKPOINT"
 test ! -e "$OUTPUT"
 
@@ -73,12 +78,14 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
   --model-source-root "$SOURCE_MODEL_ROOT" \
   --model-revision "$MODEL_REVISION" \
   --data "$DATA" \
+  --replay-data "$REPLAY_DATA" \
   --output "$OUTPUT" \
   --warm-start-checkpoint "$WARM_START_CHECKPOINT" \
   --arm baseline \
   --updates "$UPDATES" \
   --gradient-accumulation "$GRADIENT_ACCUMULATION" \
   --max-rows "$MAX_ROWS" \
+  --replay-max-rows "$REPLAY_MAX_ROWS" \
   --max-sequence-length "$MAX_SEQUENCE_LENGTH" \
   --learning-rate "$LEARNING_RATE" \
   --lora-layers "$LORA_LAYERS" \
@@ -88,6 +95,8 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
   --beta "$BETA" \
   --margin "$MARGIN" \
   --sft-weight "$SFT_WEIGHT" \
+  --replay-weight "$REPLAY_WEIGHT" \
   --seed "$SEED" \
   --data-seed "$DATA_SEED" \
+  --replay-data-seed "$REPLAY_DATA_SEED" \
   --checkpoint-interval "$CHECKPOINT_INTERVAL"

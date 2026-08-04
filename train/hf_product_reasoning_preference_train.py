@@ -20,9 +20,11 @@ from hf_product_reasoning_train import (
     _atomic_json,
     _save_checkpoint,
     _sha256_file,
+    _tokenize_rows,
     load_product_backbone,
     load_trainable_checkpoint,
     render_reasoning_messages,
+    reservoir_rows_with_sha256,
     validate_warm_start_metadata,
 )
 
@@ -184,6 +186,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     validate_warm_start_metadata(warm_metadata, args)
     warm_start_sha256 = _sha256_file(args.warm_start_checkpoint)
     rows, data_sha256 = _reservoir_pairs(args.data, args.max_rows, args.data_seed)
+    replay_rows, replay_data_sha256 = reservoir_rows_with_sha256(
+        args.replay_data, args.replay_max_rows, args.replay_data_seed
+    )
 
     trainable_parameters = [
         parameter for parameter in model.parameters() if parameter.requires_grad
@@ -222,6 +227,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "preference_beta": args.beta,
         "preference_margin": args.margin,
         "preference_sft_weight": args.sft_weight,
+        "preference_replay_data": str(args.replay_data.resolve()),
+        "preference_replay_data_sha256": replay_data_sha256,
+        "preference_replay_rows": len(replay_rows),
+        "preference_replay_data_seed": args.replay_data_seed,
+        "preference_replay_weight": args.replay_weight,
         "preference_gradient_strategy": "detached_coefficient_sequential_exact_v1",
     }
 
@@ -238,6 +248,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "chosen_logp": 0.0,
         "rejected_logp": 0.0,
         "preference_accuracy": 0.0,
+        "replay_logp": 0.0,
     }
     while update < args.updates:
         row = rows[microstep % len(rows)]
@@ -296,11 +307,33 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         rejected_objective.backward()
         del rejected_logp, rejected_objective
 
-        charged_tokens += chosen_tokens + rejected_tokens
+        replay_row = replay_rows[microstep % len(replay_rows)]
+        replay_prompt, replay_response = _tokenize_rows(
+            tokenizer,
+            [replay_row],
+            args.max_sequence_length,
+            workspace_slots=0,
+        )
+        with torch.autocast("cuda", dtype=torch.bfloat16):
+            replay_logp, replay_tokens = _average_logp(
+                model,
+                replay_prompt[0],
+                replay_response[0],
+                tokenizer.pad_token_id,
+            )
+            replay_objective = (
+                -args.replay_weight * replay_logp / args.gradient_accumulation
+            )
+            replay_logp_value = float(replay_logp.detach())
+        replay_objective.backward()
+        del replay_logp, replay_objective
+
+        charged_tokens += chosen_tokens + rejected_tokens + replay_tokens
         metric_sums["preference_loss"] += float(preference_value)
         metric_sums["chosen_logp"] += float(chosen_probe)
         metric_sums["rejected_logp"] += float(rejected_probe)
         metric_sums["preference_accuracy"] += float(chosen_probe > rejected_probe)
+        metric_sums["replay_logp"] += replay_logp_value
         microstep += 1
         if microstep % args.gradient_accumulation:
             continue
@@ -324,6 +357,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "chosen_logp": metric_sums["chosen_logp"] / divisor,
                 "rejected_logp": metric_sums["rejected_logp"] / divisor,
                 "preference_accuracy": metric_sums["preference_accuracy"] / divisor,
+                "replay_logp": metric_sums["replay_logp"] / divisor,
                 "gradient_norm": float(gradient_norm),
                 "learning_rate": learning_rate,
                 "charged_tokens": charged_tokens,
@@ -370,12 +404,14 @@ def parse_args() -> argparse.Namespace:
         "--model-loader", choices=("auto", "causal", "multimodal"), default="auto"
     )
     parser.add_argument("--data", type=Path, required=True)
+    parser.add_argument("--replay-data", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--warm-start-checkpoint", type=Path, required=True)
     parser.add_argument("--arm", choices=("baseline",), default="baseline")
     parser.add_argument("--updates", type=int, default=200)
     parser.add_argument("--gradient-accumulation", type=int, default=16)
     parser.add_argument("--max-rows", type=int, default=100000)
+    parser.add_argument("--replay-max-rows", type=int, default=100000)
     parser.add_argument("--max-sequence-length", type=int, default=4096)
     parser.add_argument("--learning-rate", type=float, default=1e-6)
     parser.add_argument("--lora-layers", type=int, default=4)
@@ -384,9 +420,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--unfreeze-layers", type=int, default=2)
     parser.add_argument("--beta", type=float, default=2.0)
     parser.add_argument("--margin", type=float, default=0.0)
-    parser.add_argument("--sft-weight", type=float, default=1.0)
+    parser.add_argument("--sft-weight", type=float, default=0.25)
+    parser.add_argument("--replay-weight", type=float, default=0.5)
     parser.add_argument("--seed", type=int, default=31)
     parser.add_argument("--data-seed", type=int, default=20260806)
+    parser.add_argument("--replay-data-seed", type=int, default=20260802)
     parser.add_argument("--log-interval", type=int, default=10)
     parser.add_argument("--checkpoint-interval", type=int, default=100)
     args = parser.parse_args()
@@ -394,6 +432,7 @@ def parse_args() -> argparse.Namespace:
         args.updates,
         args.gradient_accumulation,
         args.max_rows,
+        args.replay_max_rows,
         args.max_sequence_length,
         args.learning_rate,
         args.lora_layers,
@@ -401,6 +440,7 @@ def parse_args() -> argparse.Namespace:
         args.lora_alpha,
         args.beta,
         args.sft_weight,
+        args.replay_weight,
         args.log_interval,
         args.checkpoint_interval,
     )

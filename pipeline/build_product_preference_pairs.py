@@ -203,6 +203,7 @@ def build_pairs(
         "mixed_prompts": counters["mixed_prompts"],
         "all_correct_prompts": counters["all_correct_prompts"],
         "all_wrong_prompts": counters["all_wrong_prompts"],
+        "counters": dict(sorted(counters.items())),
         "pairs": len(rows),
         "group_counts": dict(sorted(group_counts.items())),
         "output": str(output.resolve()),
