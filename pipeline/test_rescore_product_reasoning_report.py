@@ -3,10 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from pipeline.rescore_product_reasoning_report import (
-    has_explicit_final_answer,
-    rescore_report,
-)
+from pipeline.rescore_product_reasoning_report import rescore_report
+from hf_product_reasoning_eval import has_explicit_final_answer
 
 
 def test_rescore_repairs_decimal_and_currency_answer_errors(tmp_path: Path) -> None:
@@ -96,6 +94,38 @@ def test_capped_fallback_number_requires_explicit_final_answer(tmp_path: Path) -
     assert report["results"][0]["correct"] is False
     assert report["results"][1]["correct"] is True
     assert report["results"][2]["correct"] is True
+
+
+def test_capped_report_replays_saved_finalization(tmp_path: Path) -> None:
+    source = tmp_path / "math_finalized.json"
+    source.write_text(
+        json.dumps(
+            {
+                "accuracy": 1.0,
+                "correct": 1,
+                "results": [
+                    {
+                        "completion": "An unfinished derivation reaches",
+                        "correct": True,
+                        "finalization_completion": r"\boxed{7}",
+                        "gold": "7",
+                        "max_token_exhausted": True,
+                        "prediction": "7",
+                    }
+                ],
+                "schema": "shohin-hf-product-reasoning-eval-v3",
+                "status": "complete",
+                "task": "math500",
+                "total": 1,
+            }
+        )
+    )
+
+    report = rescore_report(source)
+
+    assert report["correct"] == 1
+    assert report["rescore_change_count"] == 0
+    assert report["results"][0]["prediction"] == "7"
 
 
 def test_explicit_final_answer_markers() -> None:

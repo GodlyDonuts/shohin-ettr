@@ -16,7 +16,10 @@ TRAIN_DIRECTORY = Path(__file__).resolve().parents[1] / "train"
 if str(TRAIN_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(TRAIN_DIRECTORY))
 
-from hf_product_reasoning_eval import TASKS, has_explicit_final_answer  # noqa: E402
+from hf_product_reasoning_eval import (  # noqa: E402
+    TASKS,
+    _completion_for_scoring,
+)
 
 
 SCHEMA = "shohin-hf-product-reasoning-eval-v4-rescore"
@@ -64,15 +67,17 @@ def rescore_report(path: Path) -> dict[str, Any]:
             completion = row.get("completion")
             if not isinstance(completion, str):
                 raise ProductRescoreError("answer row is missing its completion")
-            capped_without_answer = bool(row.get("max_token_exhausted")) and not (
-                has_explicit_final_answer(completion)
+            scoring_completion = _completion_for_scoring(
+                completion,
+                bool(row.get("max_token_exhausted")),
+                row.get("finalization_completion"),
             )
-            if capped_without_answer:
+            if scoring_completion is None:
                 new_prediction = None
                 new_correct = False
                 exhausted_without_explicit_answer += 1
             else:
-                new_prediction = task["extract"](completion)
+                new_prediction = task["extract"](scoring_completion)
                 new_correct = bool(task["match"](new_prediction, row.get("gold")))
         rescored["original_prediction"] = old_prediction
         rescored["original_correct"] = old_correct
