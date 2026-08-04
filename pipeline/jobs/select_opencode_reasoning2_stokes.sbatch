@@ -30,16 +30,27 @@ mkdir -p logs "$OUTPUT_ROOT/shards"
 printf -v PADDED '%05d' "$INDEX"
 NAME="train-${PADDED}-of-00070.parquet"
 URL="https://huggingface.co/datasets/nvidia/OpenCodeReasoning-2/resolve/${DATASET_REVISION}/train/python/${NAME}"
-LOCAL_ROOT=${SLURM_TMPDIR:-/tmp/$USER/$SLURM_JOB_ID}
-mkdir -p "$LOCAL_ROOT"
-PARQUET="$LOCAL_ROOT/$NAME"
 OUT="$OUTPUT_ROOT/shards/part-${PADDED}.jsonl"
 REPORT="$OUTPUT_ROOT/shards/part-${PADDED}.report.json"
 test ! -e "$OUT"
 test ! -e "$REPORT"
 
-curl --fail --location --retry 20 --retry-delay 15 \
-  --connect-timeout 30 --output "$PARQUET" "$URL"
+REMOVE_PARQUET=0
+if [[ -n "${INPUT_ROOT:-}" ]]; then
+  PARQUET="$INPUT_ROOT/$NAME"
+else
+  LOCAL_ROOT=${SLURM_TMPDIR:-/tmp/$USER/$SLURM_JOB_ID}
+  mkdir -p "$LOCAL_ROOT"
+  PARQUET="$LOCAL_ROOT/$NAME"
+  REMOVE_PARQUET=1
+  if [[ -n "${URL_MANIFEST:-}" ]]; then
+    test -s "$URL_MANIFEST"
+    URL=$(sed -n "$((INDEX + 1))p" "$URL_MANIFEST")
+    [[ "$URL" == https://* ]]
+  fi
+  curl --fail --location --retry 20 --retry-delay 15 \
+    --connect-timeout 30 --output "$PARQUET" "$URL"
+fi
 test -s "$PARQUET"
 
 export OPENBLAS_NUM_THREADS=1
@@ -53,4 +64,6 @@ export OMP_NUM_THREADS=1
   --max-response-chars "$MAX_RESPONSE_CHARS" \
   --max-code-chars "$MAX_CODE_CHARS"
 
-rm -f "$PARQUET"
+if [[ "$REMOVE_PARQUET" -eq 1 ]]; then
+  rm -f "$PARQUET"
+fi
