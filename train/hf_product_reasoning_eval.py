@@ -261,11 +261,7 @@ def _simple_math_fraction(value: str | None) -> Fraction | None:
     normalized = _normalize_math(value)
     if normalized is None:
         return None
-    compact = (
-        normalized.replace(r"\left", "")
-        .replace(r"\right", "")
-        .replace(",", "")
-    )
+    compact = normalized.replace(r"\left", "").replace(r"\right", "").replace(",", "")
     latex_fraction = re.fullmatch(
         r"\\frac(?:\{([+-]?\d+)\}|([+-]?\d+))\{([+-]?\d+)\}",
         compact,
@@ -290,9 +286,20 @@ def _simple_math_fraction(value: str | None) -> Fraction | None:
     return None
 
 
+def _normalize_math_choice(value: str | None) -> str | None:
+    """Normalize a single MATH multiple-choice label without touching expressions."""
+
+    normalized = _normalize_short_answer(value)
+    return normalized if normalized in {"a", "b", "c", "d", "e"} else None
+
+
 def match_math(prediction: str | None, gold: str | None) -> bool:
     if prediction is None or gold is None:
         return False
+    predicted_choice = _normalize_math_choice(prediction)
+    gold_choice = _normalize_math_choice(gold)
+    if predicted_choice is not None and gold_choice is not None:
+        return predicted_choice == gold_choice
     predicted_number = _simple_math_fraction(prediction)
     gold_number = _simple_math_fraction(gold)
     if predicted_number is not None and gold_number is not None:
@@ -386,7 +393,9 @@ def _task_prompt(task: str, row: dict[str, Any]) -> str:
 
 def _strip_reasoning_and_fences(completion: str) -> str:
     text = re.sub(r"<think>.*?</think>", "", completion, flags=re.DOTALL).strip()
-    fenced = re.findall(r"```(?:python|py)?\s*\n(.*?)```", text, flags=re.DOTALL | re.IGNORECASE)
+    fenced = re.findall(
+        r"```(?:python|py)?\s*\n(.*?)```", text, flags=re.DOTALL | re.IGNORECASE
+    )
     if fenced:
         text = fenced[-1].strip()
     text = re.sub(r"^\s*(?:answer|final answer)\s*:\s*", "", text, flags=re.IGNORECASE)
@@ -518,9 +527,7 @@ def _load_model(
 
     metadata = None
     if adapter_checkpoint is not None:
-        payload = torch.load(
-            adapter_checkpoint, map_location="cpu", weights_only=False
-        )
+        payload = torch.load(adapter_checkpoint, map_location="cpu", weights_only=False)
         metadata = payload.get("metadata")
         if not isinstance(metadata, dict):
             raise ProductEvalError("adapter checkpoint metadata is missing")
@@ -932,9 +939,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "max_new_tokens": args.max_new_tokens,
         "generation_stop_token_ids": stop_token_ids,
         "batch_size": args.batch_size,
-        "code_timeout_seconds": (
-            args.code_timeout if task["kind"] == "code" else None
-        ),
+        "code_timeout_seconds": (args.code_timeout if task["kind"] == "code" else None),
         "correct": correct,
         "total": len(selected),
         "accuracy": correct / len(selected),

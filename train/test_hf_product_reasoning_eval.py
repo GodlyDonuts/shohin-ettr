@@ -52,7 +52,9 @@ class ProductReasoningEvalTests(unittest.TestCase):
 
     def test_extracts_explicit_and_boxed_answers(self) -> None:
         self.assertEqual(extract_gsm8k("Work. Final answer: 1,234."), "1234")
-        self.assertEqual(extract_boxed(r"Thus the result is \boxed{\frac{3}{4}}."), r"\frac{3}{4}")
+        self.assertEqual(
+            extract_boxed(r"Thus the result is \boxed{\frac{3}{4}}."), r"\frac{3}{4}"
+        )
         self.assertEqual(gold_gsm8k({"answer": "work\n#### -42"}), "-42")
         self.assertEqual(gold_numeric_answer({"answer": "204"}), "204")
 
@@ -83,9 +85,7 @@ class ProductReasoningEvalTests(unittest.TestCase):
     def test_finalization_requires_an_explicit_recovered_answer(self) -> None:
         capped = "Working toward 52 but still continuing"
         self.assertIsNone(_completion_for_scoring(capped, True, None))
-        self.assertIsNone(
-            _completion_for_scoring(capped, True, "Probably 52")
-        )
+        self.assertIsNone(_completion_for_scoring(capped, True, "Probably 52"))
         self.assertEqual(
             _completion_for_scoring(capped, True, r"\boxed{52}"),
             r"\boxed{52}",
@@ -116,10 +116,18 @@ class ProductReasoningEvalTests(unittest.TestCase):
         self.assertTrue(match_math("0.25", r"\frac{1}{4}"))
         self.assertFalse(match_math("0.2", r"\frac{1}{4}"))
 
+    def test_math_normalizes_multiple_choice_labels(self) -> None:
+        self.assertTrue(match_math("E", r"\text{(E)}"))
+        self.assertTrue(match_math("(b)", r"\mathrm{B}"))
+        self.assertFalse(match_math("D", r"\text{(E)}"))
+        self.assertFalse(match_math("x + 1", "A"))
+
     def test_math_verify_backend_handles_equivalent_latex(self) -> None:
         fake = types.SimpleNamespace(
             LatexExtractionConfig=lambda: object(),
-            parse=lambda value, extraction_config: [value.replace("{", "").replace("}", "")],
+            parse=lambda value, extraction_config: [
+                value.replace("{", "").replace("}", "")
+            ],
             verify=lambda gold, prediction: gold == prediction,
         )
         with patch.dict("sys.modules", {"math_verify": fake}):
@@ -165,7 +173,9 @@ class ProductReasoningEvalTests(unittest.TestCase):
             "test": "def check(fn): assert fn(2, 3) == 5",
             "entry_point": "add",
         }
-        completion = "<think>simple</think>\n```python\ndef add(a, b):\n    return a + b\n```"
+        completion = (
+            "<think>simple</think>\n```python\ndef add(a, b):\n    return a + b\n```"
+        )
         self.assertIn(
             "complete the python function", _task_prompt("humaneval", row).lower()
         )
