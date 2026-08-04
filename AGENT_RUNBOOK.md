@@ -26878,3 +26878,35 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `evaluate_both_rollout_replay_checkpoints_in_parallel_single_h100_jobs_and_promote_only_a_broad_fixed_board_improvement`.
+
+- **2026-08-03 20:33--21:02 EDT** -- **Rollout replay produces the first
+  broad product-reasoning lift; update 400 advances to expanded evaluation.**
+
+  The matched 1,536-token update-200 board closes at GSM8K 89, MATH 48,
+  HumanEval 20, MBPP 30, GPQA 19, BBH 52, AIME 0, science 37, and manual
+  composition `7/12`. Its five-domain macro is `46.6%`, `+1.2` points over
+  the V12 update-1,000 leader, but mean code loses five points and manual
+  composition loses three cases. Update 200 is not promoted.
+
+  Update 400 closes at GSM8K 91, MATH 51, HumanEval 25, MBPP 40, GPQA 20,
+  BBH 50, AIME 0, science 31, and manual composition `9/12`. Its five-domain
+  macro is `48.9%`, a `+3.5` point matched-board lift. Relative deltas are
+  GSM8K `+10`, MATH `+3`, mean code `+2.5`, GPQA `+4`, and BBH `-2`;
+  science gains one point and manual loses one of twelve. The ordered
+  SHA-256 manifest digest over all 18 update-200/update-400 JSON reports is
+  `cc4213e01110dcb5d8f5c95cd825a221be4935c2c6769514aa255cc5c4d5e0cc`.
+  This is a broad development-set improvement, while AIME and the BBH/manual
+  regressions remain explicit limitations.
+
+  Seven independent one-H100 expanded evaluators are submitted immediately:
+  `734099` GSM8K 1,319, `734100` MATH 500, `734101` HumanEval 164,
+  `734103` GPQA 198, `734104` BBH 1,250, `734105` science 500, and replacement
+  `734107` MBPP 499. Initial MBPP job `734102` fails closed before generation
+  because it was pointed at the raw board containing duplicate prompts;
+  `734107` uses the leader's exact canonical
+  `mbpp_full_unique499.jsonl` board. The other six expanded jobs load and
+  generate normally. They remain separate requests so every available H100
+  can backfill independently.
+
+  Decision:
+  `advance_update400_to_the_exact_expanded_leader_boards_while_rejecting_update200_as_an_unbalanced_intermediate`.
