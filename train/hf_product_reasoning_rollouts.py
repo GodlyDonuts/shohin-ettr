@@ -52,18 +52,17 @@ def score_completion(row: dict[str, Any], completion: str) -> dict[str, Any]:
 
 
 def choose_positive(candidates: list[dict[str, Any]]) -> dict[str, Any] | None:
-    correct = [candidate for candidate in candidates if candidate["correct"]]
+    correct = [
+        candidate
+        for candidate in candidates
+        if candidate["correct"]
+        and not candidate.get("draft_max_token_exhausted", False)
+    ]
     if not correct:
         return None
     return min(
         correct,
         key=lambda candidate: (
-            not (
-                candidate.get("finalization")
-                and has_explicit_final_answer(str(candidate["finalization"]))
-                and not candidate.get("finalization_max_token_exhausted", False)
-            ),
-            bool(candidate.get("draft_max_token_exhausted", False)),
             candidate["generated_tokens"],
             len(candidate["completion"]),
             candidate["sample_index"],
@@ -275,7 +274,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 positive_rows.append(
                     {
                         "question": row["question"],
-                        "response": positive["completion"],
+                        "response": positive["draft_completion"],
                         "answer": row["answer"],
                         "expected_answer_normalized": row["expected_answer_normalized"],
                         "training_group": row["training_group"],

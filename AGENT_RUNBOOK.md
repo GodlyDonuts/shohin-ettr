@@ -27872,3 +27872,59 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `replace_truncated_self_rollout_targets_with_fresh_complete_verified_teacher_traces_and_measure_one_conservative_specialist_curve`.
+
+- **2026-08-04 13:38--14:22 EDT** -- **The complete all-difficulty teacher
+  continuation fails its repaired fixed gate; one competence-frontier
+  curriculum is the final bounded follow-up.**
+
+  V4 generation completes all 32 shards and aggregation: 16,384 candidates,
+  5,007 verifier-correct candidates, and 2,176 positive prompt identities of
+  4,096 (`53.125%`). Candidate, positive-ledger, and aggregate-report SHA-256
+  values are
+  `cc8c3895fc4d65d6c2e9ead0fada3a03fedae4d08d28b3ba41c3f4ce2ea4aefa`,
+  `3e2adaae6ee47d25563188e3b94d4de8eddf1c44610977d167b933b6db029358`,
+  and
+  `0bf3dec0282d25dc96212dc44e0c2e00a1cc71ab847a11f0e9a3d9250a33b2d6`.
+
+  Teacher job `737104` completes 200 updates and 7,385,868 charged targets in
+  531.9 seconds at 13,885.4 tok/s, with 37.58GB peak memory. A rescore defect
+  initially reports `61/60/61`: it ignores saved finalizations and is invalid.
+  Private commit `eee6c74` replays those finalizations and yields the fair
+  source/update-100/update-200 scores `73/69/71` on the identical 100-row
+  MATH gate. Update 200 is therefore two answers below source and is rejected;
+  no full K=8 evaluation is run. Training-report and update-200 SHA-256 values
+  are
+  `3e3d2942ec3d89c2d43abb8f7308d58047f2433de3442f323611729e56835f7f`
+  and
+  `cf65e9111d47ea9fb00bc57b425402f430de73f56aeea9361e653ec5afc4fb9b`.
+
+  The final unresolved curriculum distinction is difficulty selection rather
+  than target integrity. Private commits `efa6cbc/f96ed7b` add a fail-closed
+  join that uses V4 student-positive identities as a mask but restores their
+  complete verified DeepSeek-R1 traces. All 2,176 identities join exactly.
+  Tokenizer-exact filtering leaves 1,734 fully retained rows and 3,705,995
+  available targets; the frozen training artifact selects 1,684 rows and
+  3,600,762 targets at SHA-256
+  `34380cd46602d54185be45d85859d2da0b4985922eef32593f2b08cc2a2c1580`.
+
+  One-H100 job `737170` completes 100 updates from the exact promoted mixed
+  specialist with the same LR `1e-6`, BS4/ACC4, 4,096 context, and checkpoints
+  at 50/100. It consumes 3,428,920 charged targets in 267 seconds at 14,450.0
+  tok/s. Jobs `737171/737174` compare both checkpoints to the repaired
+  `73/100` source floor and score `66/67`. Their report SHA-256 values are
+  `a4d9ae0fe973a3be3af9a376f7f1d069e89f0bd62673c8a1220e1e425e088cb4`
+  and
+  `9a59a7f5ae6fb49fae0b091377142a68197fcb75c26917413878e7b05e2c9061`.
+  Teacher continuation is closed without another LR, seed, width, or duration
+  variant; K=8 MATH at `366/500` remains the production route.
+
+  V4 candidate audit identifies 691 positive prompt identities with a
+  verifier-correct, non-exhausted autonomous draft. Another 1,309 require a
+  separately prompted finalization, while 176 have no clean terminal
+  trajectory. The next and final self-training data intervention admits only
+  those 691 complete student-native drafts and pairs them with disjoint replay.
+  It must not materialize exhausted drafts plus appended finalizations as if
+  they were uninterrupted reasoning traces.
+
+  Decision:
+  `reject_all_teacher_continuations_allow-one-clean-student-native-replay-curve-then-retain-k8-if-it-fails`.

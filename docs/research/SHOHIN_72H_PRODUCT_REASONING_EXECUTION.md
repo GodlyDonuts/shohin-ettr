@@ -1038,3 +1038,54 @@ mixed update-200 specialist with LR `1e-6`, BS4/ACC4, and checkpoints at
 100/200 updates. Source and both checkpoints are compared immediately by
 same-runtime fixed MATH jobs `737115--737117`. This is a data-quality
 intervention, not another width, seed, or sampling variant.
+
+That continuation is now closed as a negative. It completes 200 updates and
+7,385,868 charged targets in 531.9 seconds at 13,885.4 target tok/s. Under the
+repaired scorer, which replays each saved finalization rather than silently
+discarding it, source/update-100/update-200 score `73/69/71` on the identical
+fixed 100-row MATH gate. The intermediate `61/60/61` rescore is tooling-invalid
+and must never be cited: it rescored drafts without the saved finalization.
+The fair update-200 delta is therefore `-2`, so neither checkpoint advances to
+K=8. Training-report and update-200 checkpoint SHA-256 values are
+`3e3d2942ec3d89c2d43abb8f7308d58047f2433de3442f323611729e56835f7f`
+and
+`cf65e9111d47ea9fb00bc57b425402f430de73f56aeea9361e653ec5afc4fb9b`.
+
+The completed V4 search remains useful as a capability-frontier map. Four
+trajectories for each of 4,096 disjoint prompts produce 16,384 candidates,
+5,007 correct candidates, and 2,176 prompt identities with at least one
+correct answer (`53.125%`). Candidate, positive-ledger, and aggregate-report
+SHA-256 values are
+`cc8c3895fc4d65d6c2e9ead0fada3a03fedae4d08d28b3ba41c3f4ce2ea4aefa`,
+`3e2adaae6ee47d25563188e3b94d4de8eddf1c44610977d167b933b6db029358`,
+and
+`0bf3dec0282d25dc96212dc44e0c2e00a1cc71ab847a11f0e9a3d9250a33b2d6`.
+
+The sole remaining nonredundant curriculum test uses those 2,176 identities
+only as a selection mask, while restoring the complete verified teacher
+response for every selected prompt. The joined data have SHA-256
+`b001068dbba1fce95002b7a7c42729a1afeb38a1f75faf31e6bb200d9f0e2d02`.
+Tokenizer-exact filtering retains 1,734 complete rows and 3,705,995 available
+targets; the frozen training subset contains 1,684 rows and 3,600,762 targets
+at SHA-256
+`34380cd46602d54185be45d85859d2da0b4985922eef32593f2b08cc2a2c1580`.
+Job `737170` completes one bounded 100-update curve from the same promoted
+specialist in 267 seconds at 14,450.0 charged target tok/s. Jobs
+`737171/737174` test updates 50/100 against the unchanged fixed gate. Their
+repaired scores are `66/67`, both below the source floor of `73/100`.
+Rescore-report SHA-256 values are
+`a4d9ae0fe973a3be3af9a376f7f1d069e89f0bd62673c8a1220e1e425e088cb4`
+and
+`9a59a7f5ae6fb49fae0b091377142a68197fcb75c26917413878e7b05e2c9061`.
+Teacher continuation is closed without another data/LR/duration retry.
+
+This paired negative isolates a useful distinction. Complete teacher traces
+are not sufficient: both the uniform and student-frontier subsets overwrite
+useful behavior. Prior student self-distillation is still the only weight
+update that produced the promoted MATH specialist. The final data-quality
+intervention therefore admits only verifier-correct, non-exhausted student
+drafts whose explicit terminal answer is present in the autonomous draft
+itself. The V4 bank contains 691 such prompt identities; 1,309 additional
+positive identities require a separate finalization and 176 have no clean
+terminal trajectory, so neither category is silently converted into a
+reasoning target.

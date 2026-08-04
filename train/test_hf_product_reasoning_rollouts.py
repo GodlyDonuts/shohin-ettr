@@ -25,7 +25,7 @@ def test_score_completion_uses_normalized_science_answer() -> None:
     assert score["correct"]
 
 
-def test_choose_positive_prefers_complete_recovery_before_shortest_trajectory() -> None:
+def test_choose_positive_requires_uninterrupted_autonomous_trajectory() -> None:
     candidates = [
         {
             "correct": True,
@@ -44,15 +44,26 @@ def test_choose_positive_prefers_complete_recovery_before_shortest_trajectory() 
         },
         {
             "correct": True,
-            "generated_tokens": 80,
-            "completion": r"complete derivation\n\n\boxed{2}",
+            "generated_tokens": 100,
+            "completion": r"exhausted derivation\n\n\boxed{2}",
             "sample_index": 2,
             "draft_max_token_exhausted": True,
             "finalization": r"\boxed{2}",
             "finalization_max_token_exhausted": False,
         },
+        {
+            "correct": True,
+            "generated_tokens": 80,
+            "completion": r"complete derivation\n\n\boxed{2}",
+            "sample_index": 3,
+            "draft_max_token_exhausted": False,
+            "finalization": None,
+            "finalization_max_token_exhausted": False,
+        },
     ]
     assert choose_positive(candidates)["completion"].endswith(r"\boxed{2}")
+    assert choose_positive(candidates)["sample_index"] == 3
+    assert choose_positive([candidates[2]]) is None
     assert choose_positive([candidates[1]]) is None
 
 
