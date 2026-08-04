@@ -993,3 +993,24 @@ The corrected immutable Newton rollout runtime is
 `product_rollout_runtime_d69e9e6_r1`. V4 jobs are replaced before allocation
 as `736941--736972`, with aggregate `736973`; this avoids dropping valid bare
 choice labels from the future verified-positive ledger.
+
+### K=8 MATH promotion
+
+Four additional independent candidates per MATH identity are merged with the
+immutable K=4 bank under the validated contiguous-index contract. With the
+choice-aware evaluator, K=8 first/modal/shape/oracle is
+`275/360/366/398` of 500. Shape reaches `73.20%`, 11 answers above K=4 at
+`71.00%`.
+
+| Current routed system | GSM8K | MATH-500 | Code mean | GPQA | BBH | Macro | Solved |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| **mixed-u200 MATH K=8** | **79.303%** | **73.200%** | **27.948%** | **17.172%** | **61.600%** | **51.845%** | **2,403/3,930** |
+
+Corrected-candidate and shape-report SHA-256 values are
+`f4a12477883ac5ae8c0ad6ce06d284a32652fe55870c38b3a56b44fd2f88b90e`
+and
+`8551baa43471bbbd60ed69d23fc85e0a8bb86f7f682d19cf29690db8abf968d9`.
+No K=16 extension is authorized: K=8 already leaves a 32-answer
+shape-to-oracle gap, so the next bottleneck is generator/data quality rather
+than candidate availability. Released H100s immediately backfill the V4
+verified OpenMath rollout jobs.

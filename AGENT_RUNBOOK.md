@@ -27788,3 +27788,40 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `separate_evaluator_repairs_from_model_gains_raise_the_k8_floor_to_355_and_keep_the_mixed_specialist_promoted_by_17_answers`.
+
+- **2026-08-04 13:08--13:19 EDT** -- **K=8 clears the corrected MATH gate
+  by 11 answers and becomes the production MATH route.**
+
+  Ten one-H100 supplement jobs `736767--736776` complete without failure.
+  They contribute four new independent trajectories for each of the 500 MATH
+  identities. Corrected selector job `736940` validates every shard, merges
+  the supplement with the immutable first four candidates, proves contiguous
+  per-identity indices `0..7`, and applies the choice-aware evaluator plus the
+  unchanged disjoint shape model.
+
+  K=8 first/modal/shape/oracle scores are `275/360/366/398` of 500. Shape
+  reaches `73.20%`, adding 11 answers and 2.20 points over the corrected K=4
+  route at `355/500 = 71.00%`. The primary product vector is now
+  `79.303 / 73.200 / 27.948 / 17.172 / 61.600`, macro `51.845%`, and
+  `2,403/3,930` solved. Relative to the equally rescored protected-leader K=4
+  route at MATH `338/500`, the specialist-plus-K=8 route adds 28 MATH answers
+  and 1.12 five-domain macro points.
+
+  Supplement, merge, corrected-candidate, rescore, modal, and shape report
+  SHA-256 values are
+  `271510fd5aacf7b3cd5a35b259b2448551051e351110cfced14e5b182838f72e`,
+  `9cd2aaa0158c5ad715a58a114c15567e10387165b67d910613425ffb644f310c`,
+  `f4a12477883ac5ae8c0ad6ce06d284a32652fe55870c38b3a56b44fd2f88b90e`,
+  `c193d7d58efc3cb8765c8f89fcd2247c7f3c85a51a833ad20ad540b7859c2feb`,
+  `ad18131b11e17cba63f58a9921b1f450e804be2775ecb8e7fbb0140e6eb45047`,
+  and
+  `8551baa43471bbbd60ed69d23fc85e0a8bb86f7f682d19cf29690db8abf968d9`.
+
+  K=16 is not launched. K=8 raises the oracle to 398 but selection captures
+  366, leaving a 32-answer selector gap; additional sampling would primarily
+  enlarge a gap that two frozen-state and process-verifier campaigns already
+  failed to close. Compute moves to the disjoint V4 verified-data wave
+  `736941--736972 -> 736973`, which backfills every H100 released by K=8.
+
+  Decision:
+  `promote_math_k8_shape_at_366_stop_sampling_expansion_and_move_compute_to_new_verified_training_data`.
