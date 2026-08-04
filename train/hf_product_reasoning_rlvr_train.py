@@ -64,6 +64,12 @@ def policy_objective(logp: torch.Tensor, advantage: torch.Tensor) -> torch.Tenso
     return -(advantage.detach() * logp)
 
 
+def verified_terminal_reward(candidate: dict[str, Any]) -> float:
+    """Reward only an exact answer emitted by a self-terminated trajectory."""
+
+    return float(candidate["correct"] and not candidate["max_token_exhausted"])
+
+
 def _average_logp(
     model: ProductReasoningModel,
     prompt_ids: list[int],
@@ -158,6 +164,7 @@ def _validate_resume_contract(
         return
     expected = {
         "rlvr_algorithm": "single_use_on_policy_group_normalized_reinforce_v1",
+        "rlvr_reward": "exact_math_answer_with_explicit_marker_and_terminal_stop_v1",
         "data_sha256": reward_data_sha256,
         "rlvr_replay_data_sha256": replay_data_sha256,
         "seed": args.seed,
@@ -355,7 +362,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "rlvr_samples": args.samples,
         "rlvr_groups_per_update": args.groups_per_update,
         "rlvr_max_new_tokens": args.max_new_tokens,
-        "rlvr_reward": "exact_math_answer_with_explicit_marker_v1",
+        "rlvr_reward": "exact_math_answer_with_explicit_marker_and_terminal_stop_v1",
         "rlvr_replay_weight": args.replay_weight,
         "rlvr_replay_data": str(args.replay_data.resolve()),
         "rlvr_replay_data_sha256": replay_data_sha256,
@@ -375,6 +382,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     charged_tokens = 0
     generated_tokens = 0
     correct_candidates = 0
+    rewarded_candidates = 0
+    correct_exhausted_candidates = 0
     candidates = 0
     mixed_groups = 0
     uniform_groups = 0
@@ -403,7 +412,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         update_policy_terms = 0
         for row, group in zip(batch_rows, groups, strict=True):
             rewards = torch.tensor(
-                [float(candidate["correct"]) for candidate in group],
+                [verified_terminal_reward(candidate) for candidate in group],
                 device="cuda:0",
             )
             advantages = standardized_group_advantages(rewards)
@@ -415,6 +424,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             for candidate, advantage in zip(group, advantages, strict=True):
                 generated_tokens += int(candidate["generated_tokens"])
                 correct_candidates += int(candidate["correct"])
+                rewarded_candidates += int(verified_terminal_reward(candidate))
+                correct_exhausted_candidates += int(
+                    candidate["correct"] and candidate["max_token_exhausted"]
+                )
                 candidates += 1
                 rollout_ledger.append(
                     {
@@ -428,6 +441,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                         "prediction": candidate["prediction"],
                         "gold": candidate["gold"],
                         "correct": candidate["correct"],
+                        "reward": verified_terminal_reward(candidate),
                         "explicit_final_answer": candidate["explicit_final_answer"],
                         "generated_tokens": candidate["generated_tokens"],
                         "max_token_exhausted": candidate["max_token_exhausted"],
@@ -494,7 +508,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             elapsed = time.monotonic() - started
             event: dict[str, float | int] = {
                 "update": update,
-                "candidate_accuracy": update_reward / args.groups_per_update,
+                "reward_rate": update_reward / args.groups_per_update,
                 "mixed_groups": update_mixed,
                 "policy_mean_logp": (
                     update_policy_logp / update_policy_terms
@@ -538,6 +552,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "candidates": candidates,
         "correct_candidates": correct_candidates,
         "candidate_accuracy": correct_candidates / candidates,
+        "rewarded_candidates": rewarded_candidates,
+        "reward_rate": rewarded_candidates / candidates,
+        "correct_exhausted_candidates": correct_exhausted_candidates,
         "mixed_groups": mixed_groups,
         "uniform_groups": uniform_groups,
         "elapsed_seconds": elapsed,
@@ -614,7 +631,8 @@ def main() -> int:
     report = run(parse_args())
     print(
         f"[product-rlvr] updates={report['updates']} "
-        f"reward={report['candidate_accuracy']:.4f} "
+        f"answer_accuracy={report['candidate_accuracy']:.4f} "
+        f"reward={report['reward_rate']:.4f} "
         f"generated_tokens/s={report['generated_tokens_per_second']:.1f}",
         flush=True,
     )

@@ -11,6 +11,7 @@ from hf_product_reasoning_rlvr_train import (
     _validate_resume_contract,
     policy_objective,
     standardized_group_advantages,
+    verified_terminal_reward,
 )
 
 
@@ -52,6 +53,19 @@ def test_policy_objective_lowers_negative_reward_log_probability() -> None:
     assert float(negative_logp.grad) > 0
 
 
+def test_verified_reward_requires_correct_answer_and_termination() -> None:
+    assert (
+        verified_terminal_reward({"correct": True, "max_token_exhausted": False}) == 1.0
+    )
+    assert (
+        verified_terminal_reward({"correct": True, "max_token_exhausted": True}) == 0.0
+    )
+    assert (
+        verified_terminal_reward({"correct": False, "max_token_exhausted": False})
+        == 0.0
+    )
+
+
 def test_reward_reservoir_preserves_verifier_fields(tmp_path) -> None:
     path = tmp_path / "reward.jsonl"
     rows = [
@@ -89,6 +103,7 @@ def test_resume_contract_requires_exact_global_cursor() -> None:
     )
     metadata = {
         "rlvr_algorithm": "single_use_on_policy_group_normalized_reinforce_v1",
+        "rlvr_reward": "exact_math_answer_with_explicit_marker_and_terminal_stop_v1",
         "data_sha256": "reward",
         "rlvr_replay_data_sha256": "replay",
         "seed": 31,
