@@ -54812,3 +54812,34 @@ underexposed 35.7% V13 checkpoint but remains well below V12 late-layer at
 share does not solve autonomous composition under this recipe. V12 remains
 the promoted mixture while a 2,000-update dose response and full-board
 confirmation run.
+
+### Product reasoning closure after verified-reward training (2026-08-04)
+
+The promoted practical system is the mixed update-200 SmolLM3-3B specialist
+used only for MATH, with eight independent trajectories and the frozen
+completion-shape selector. It solves 366/500 MATH examples (73.20%). Combined
+with the protected general generator on the other routed domains, the system
+reaches a five-domain macro of 51.845% and solves 2,403/3,930 primary task
+instances. This is the current product baseline; it is not a native ETTR
+reasoning claim.
+
+Four controlled attempts to improve the 73/100 greedy fixed MATH source with
+short verified-reward optimization all fail: matched replay-only reaches 71,
+terminal-only RLVR reaches 69, competence-frontier prefix RLVR reaches 68,
+and the same prefix objective with only 1,679,360 LoRA parameters under
+optimizer control reaches 70. The LoRA-only arm has strong usable signal
+(147/400 verifier-correct trajectories and 50/100 mixed groups) and finite
+gradients, so the failure cannot be explained solely by sparse positives or
+the previous 157,925,376-parameter late-layer optimizer scope. Paired fixed
+evaluation shows three gains and six losses, with answer commitment and
+token-cap exhaustion among the regressions. This local RLVR family is closed;
+no nearby LR, seed, width, reward-weight, optimizer-scope, or duration retry
+is warranted.
+
+The next product bottleneck is data breadth. The audited retained pools offer
+approximately 62.01M math and 60.41M science target tokens, but only 3.01M
+execution-verified code, 0.35M procedural, and 0.81M teacher tokens. A larger
+mix assembled today would mainly replay math and science. The next end-to-end
+training gate therefore requires new verified code and compositional procedure
+capacity, while preserving the current K=8 routed system as the comparison
+floor.

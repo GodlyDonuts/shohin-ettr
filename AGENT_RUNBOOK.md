@@ -28137,3 +28137,58 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_prefix_frontier_at_71_68_and_test_one_lora_only_update_boundary_before_retiring_this_rlvr_family`.
+
+- **2026-08-04 16:48--17:45 EDT** -- **LoRA-only policy updates preserve
+  dense-layer weights but do not recover product accuracy; the complete local
+  RLVR family is closed.**
+
+  Jobs `737626--737630` complete 25 optimizer-exact five-update chunks from
+  the unchanged promoted MATH specialist. Tightening the pending training
+  requests from eight to six minutes moves the scheduler estimate forward by
+  about four hours without resetting priority; the final three allocations
+  then run continuously on `evc47`. The optimizer controls exactly 1,679,360
+  LoRA A/B parameters while retaining the full 157,925,376-parameter
+  trainable-state checkpoint contract for exact resume. Across 400 fresh
+  trajectories, 147 are verifier-correct, 63 are correct but token-cap
+  exhausted, reward mass is 115.5, and exactly 50/100 prompt groups are mixed.
+  All reported gradients are finite. This proves that neither signal
+  starvation nor broad late-layer optimizer authority explains the entire
+  product regression.
+
+  Unchanged fixed MATH-100 job `737631` scores `70/100`, below source
+  `73/100`. Pairing on the identical identities finds three gains and six
+  losses. Token-cap exhaustion rises from 39 source trajectories to 43, and
+  several losses are answer-commitment failures after useful derivations;
+  one additional loss is a base-notation serialization mismatch. The result
+  remains a model loss under the locked evaluator and is not promoted.
+  Update-25 training-report, checkpoint, and evaluation-report SHA-256 values
+  are
+  `00d64138498b25464edd2a0d6752688db8c6aef01e41e86c1a1fdef18c6f753f`,
+  `0d90a42adf3b6b980acb68ccd03dee1ac71e00cce629c83374146d0776eadc3b`,
+  and
+  `f1913e0d4c7e137611ea88dd403c52fda12722b61d2c1a36b3f3ff5c9704a15c`.
+
+  The terminal-only arm is also closed early after its already-running update
+  65 chunk completed. Update 65 report/checkpoint SHA-256 values are
+  `5964a7aae2f63c357b66b11da37424c34ab69b0ec232ea7f29596ee65a8baae7`
+  and
+  `c36165aa5b2e15d5ec26c7f028c1a30ab9cb2951f9784b86ca529aee634275dc`.
+  Job `737445` had run for only 28 seconds when canceled and produced no
+  report; its empty output directory is quarantined as
+  `chunk_065_070.aborted_job737445`. Jobs `737446--737451` and endpoint eval
+  `737454` were canceled before allocation. No Shohin job remains queued.
+
+  The complete fixed update-25 comparison is now replay-only `71`, terminal
+  reward `69`, prefix-frontier credit `68`, and prefix-frontier LoRA-only
+  `70`, all below source `73`. No LR, seed, width, reward-weight, optimizer-
+  scope, or duration retry is authorized. The production route remains the
+  promoted mixed update-200 generator with K=8 MATH shape selection at
+  `366/500 = 73.20%`, five-domain macro `51.845%`, and 2,403/3,930 solved.
+  The next training campaign must be materially different and begins from the
+  measured data boundary: current retained capacity is about 62.01M math and
+  60.41M science target tokens, but only 3.01M executable-code, 0.35M
+  procedural, and 0.81M teacher tokens. Scaling the current mix would mostly
+  replay math/science rather than broaden reasoning.
+
+  Decision:
+  `retire_local_rlvr_preserve_the_73p2_math_k8_product_route_and_build_new_verified_code_procedure_capacity_before_the_next_end_to_end_gate`.

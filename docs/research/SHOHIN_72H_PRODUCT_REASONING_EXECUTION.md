@@ -51,6 +51,10 @@ Status: active. Start: 2026-08-02 21:26 EDT. Owner: Codex.
 | SmolLM3 u1000 B1/T2/C2 | 41.72% / 40.91% / 43.21% macro; 203 / 194 / 199 solved |
 | SmolLM3 strict AIME B1/T2/C2 | 0/30 / 2/30 / 1/30; one ETTR-only transcript is a valid complete derivation |
 | current ETTR disposition | reject general scale; retain hard-math specialist evidence only |
+| promoted routed product | MATH K=8 shape 366/500; five-domain macro 51.845%; 2,403/3,930 solved |
+| fixed MATH-100 source | 73/100 |
+| replay / terminal / prefix / LoRA-only RLVR at update 25 | 71 / 69 / 68 / 70; all rejected |
+| next data boundary | 62.01M math, 60.41M science, 3.01M code, 0.35M procedural, 0.81M teacher retained tokens |
 | production scale candidates | SmolLM3 B1 LoRA and C2 dense residual on V11; no T2 continuation |
 | verified-row full retention, 2048 vs 4096 | OpenMath 16.06% -> 53.25%; OpenScience 17.38% -> 49.10% |
 | SmolLM3 B1 4096 throughput | BS4/ACC4 6,124.8 target tok/s at 12.54 GiB; selected over BS1/2/8/16 |
