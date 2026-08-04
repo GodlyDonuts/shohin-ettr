@@ -27452,3 +27452,56 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_greedy_plus_math_shape_and_science_shape_as_the_current_reasoning_system_preserve_the_generator_and_only_reopen_selection_with_a_disjointly_trained_correctness_model`.
+
+- **2026-08-04 09:25--10:15 EDT** -- **A disjointly supervised late-state
+  correctness head is built, parallelized, and rejected after its only earned
+  full-board gate.**
+
+  Before training, the current numeric matcher non-destructively rescores the
+  8,192-prompt fresh candidate bank. Across 32,768 trajectories it repairs 160
+  false-negative labels and changes no true label to false. The corrected
+  source SHA-256 is
+  `20a496867c1afc46d094a1ee2762cc553bd0460bd2915cc7e60d9c53025aa816`;
+  the rescore report SHA-256 is
+  `dfd7057a82fd36b1af3a7448967ccceb9cca1dfed55a2230388ab09a431b1dba`.
+
+  Commit `d5da4cc` adds a frozen-backbone correctness scorer. It extracts the
+  last token, last-32-token mean, and full-completion mean from backbone layer
+  offsets `-1/-2/-4/-8`, producing 24,576 hidden features plus the 32 existing
+  label-blind shape features per candidate. A smoke over 32 candidates binds
+  exact leader SHA-256
+  `34c82454e0c53609bc1ac6a9f127437080e431f147e28ae63b4080c413d9a82e`,
+  records zero truncation, 9.87 candidates/s, and 7.61GB peak allocated VRAM.
+  The full bank is extracted by 16 independent one-H100 jobs
+  `735922--735937`; all 32,768 candidates complete with zero reported
+  truncation. Runtime SHA256SUMS SHA-256 is
+  `6a8e9b088454a126aabfd0a15ba23f37aa1b47f13b8d33f522c49a1ee89d7636`.
+
+  A 3,206,497-parameter pairwise/BCE head is trained only on within-prompt
+  correct-versus-wrong pairs, with the deterministic identity holdout never
+  used for gradients. On 766 held-out prompts it selects `170/766 = 22.19%`
+  versus the frozen shape selector's `168/766 = 21.93%`: only two answers.
+  Domain decomposition rejects MATH immediately (`41/389` neural versus
+  `44/389` shape) and grants one science-only scale gate (`129/377` versus
+  `124/377`, with 16 neural-only and 11 shape-only wins). Model SHA-256 is
+  `aa11215843ef810008f86dbd864459557ccba25ce30424d17dca076783529838`;
+  complete training-selection report SHA-256 is
+  `ab57e1035e6274c88c32857494f8f3ab50a3023bf9388cde055934d243a76a84`.
+
+  The full 500-row science gate reverses the small holdout gain. Neural
+  selection reaches `215/500 = 43.00%`, below modal `220/500 = 44.00%` and
+  the promoted shape selector `227/500 = 45.40%`; oracle remains
+  `284/500 = 56.80%`. Science feature extraction runs at 23.05 candidates/s,
+  zero truncation, and 7.91GB peak allocated VRAM. Its extraction and
+  selection report SHA-256 values are
+  `4d2300286e8ddc7ae8de703827241c269f5dcd49d481ae0fa810ea26e63fe0d2`
+  and
+  `780e72b0d94d5cdab01361476ca8c70e7deb38962391779766112b76cc6f901d`.
+
+  No generator weights are changed, no public MATH feature fan-out is run,
+  and no layer/pooling/width/seed variant is authorized. The Newton queue is
+  empty at closure. The promoted greedy-plus-MATH/science-shape system remains
+  unchanged.
+
+  Decision:
+  `reject_frozen_late_state_correctness_decoding_and_do_not_tune_pooling_the_remaining_oracle_gap_requires_process_verification_or_better_generator_training`.

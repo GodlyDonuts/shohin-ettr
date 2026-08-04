@@ -826,3 +826,31 @@ remaining useful target is a correctness model trained on a disjoint candidate
 corpus: current shape-to-oracle gaps are 34 MATH answers and 57 science
 answers. This is an inference-selection opportunity, not evidence of native
 ETTR reasoning or a reason to mutate the protected generator.
+
+### Supervised late-state correctness head
+
+The one justified successor is also complete and negative. The 8,192-prompt
+fresh candidate bank is first rescored with the corrected numeric matcher,
+repairing 160 of 32,768 trajectory labels. Sixteen independent H100 jobs then
+extract three pooled representations from each of backbone layer offsets
+`-1/-2/-4/-8`, yielding 24,576 hidden features plus 32 label-blind shape
+features per candidate. A 3,206,497-parameter pairwise correctness head is trained
+only on within-prompt correct/wrong pairs while holding out complete prompt
+identities.
+
+On 766 held-out prompts the head selects `170`, versus `168` for the existing
+shape reranker. The per-domain split is MATH `41/389` versus `44/389` and
+science `129/377` versus `124/377`; only science earns a full-board test. On
+the 500-row science board the apparent gain reverses: neural `215`, modal
+`220`, shape `227`, oracle `284`. The head is therefore closed without a
+public MATH run or any pooling/layer/width/seed variant. The generator and
+promoted route remain unchanged.
+
+Corrected source, neural model, and full-science selection SHA-256 values are
+`20a496867c1afc46d094a1ee2762cc553bd0460bd2915cc7e60d9c53025aa816`,
+`aa11215843ef810008f86dbd864459557ccba25ce30424d17dca076783529838`,
+and
+`780e72b0d94d5cdab01361476ca8c70e7deb38962391779766112b76cc6f901d`.
+This result says that candidate correctness is not reliably exposed by these
+pooled frozen states. Further progress must come from process-level checking
+or stronger generator training, not another static-state pooling variant.
