@@ -54843,3 +54843,28 @@ mix assembled today would mainly replay math and science. The next end-to-end
 training gate therefore requires new verified code and compositional procedure
 capacity, while preserving the current K=8 routed system as the comparison
 floor.
+
+### Source-replayed code reasoning intervention (2026-08-04)
+
+The first materially different post-RLVR campaign attacks the measured code-
+data deficit. From 5,243 unique OpenCodeReasoning-2 Python candidates, the
+pipeline reconstructs pinned APPS/TACO/CodeContests problems and independently
+executes candidate programs against all available bounded source tests. The
+result is 3,944 unique accepted reasoning traces backed by 412,094 passing
+executions. Its SHA-256 is
+`c25e85294a11e72642b757d5375e29e490af66e6e13441e06acdc52226b3f8c7`.
+At SmolLM3's 4,096-token limit, 2,450 examples remain fully untruncated and
+provide 4.53M verified target tokens.
+
+A controlled 4M-token pair is now live. Control and treatment share exactly
+2,997 non-code rows and the same 46/18/33/1/2 domain-token mixture. Treatment
+replaces its code budget with 378 long, source-test-verified traces; all of
+them satisfy the new verification contract. Because the treatment traces are
+longer, the trainers use different examples per optimizer update but nearly
+equal tokens per update and exactly one corpus epoch: control 16 examples x
+385 updates, treatment 8 examples x 421 updates. Both warm-start from the
+same protected update-200 generator with identical LR, seed, and trainable
+geometry. Sixteen independent H100 jobs will compare both endpoints on
+GSM8K, MATH, HumanEval, MBPP, GPQA, BBH, science, and AIME. This experiment
+tests whether stronger executable reasoning data produces an actual product
+lift; it is not another ETTR-native mechanism claim.

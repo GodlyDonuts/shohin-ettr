@@ -396,7 +396,7 @@ def _task_prompt(task: str, row: dict[str, Any]) -> str:
         )
     if task == "bbh_logic":
         return (
-            f"{row['input']}\n\nReason carefully, then put only the exact requested "
+            f"{_question(row)}\n\nReason carefully, then put only the exact requested "
             "answer or option label inside \\boxed{}."
         )
     if task == "gpqa":

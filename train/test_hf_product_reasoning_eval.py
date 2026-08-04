@@ -210,6 +210,14 @@ class ProductReasoningEvalTests(unittest.TestCase):
         program = _mbpp_program(row, "def add(a, b):\n    return a + b")
         self.assertTrue(_bounded_program_result(program, 2.0)["passed"])
 
+    def test_bbh_prompt_accepts_generic_question_rows(self) -> None:
+        prompt = _task_prompt(
+            "bbh_logic",
+            {"question": "Which option is correct?", "answer": "C"},
+        )
+        self.assertIn("Which option is correct?", prompt)
+        self.assertIn("\\boxed{}", prompt)
+
 
 if __name__ == "__main__":
     unittest.main()

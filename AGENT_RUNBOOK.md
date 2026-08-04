@@ -28192,3 +28192,61 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `retire_local_rlvr_preserve_the_73p2_math_k8_product_route_and_build_new_verified_code_procedure_capacity_before_the_next_end_to_end_gate`.
+
+- **2026-08-04 17:45--19:35 EDT** -- **A new independently replayed code-
+  reasoning corpus clears the data gate, and a token-matched product trial is
+  live on two H100s with a 16-H100 evaluation fan queued.**
+
+  The new lane uses pinned `nvidia/OpenCodeReasoning-2` revision
+  `eadf535931451525f3e5621d0f960c240bc62fd9`, but does not trust its reported
+  pass rates. Candidate solutions are joined back to pinned APPS, TACO, and
+  CodeContests source rows, rejected for unsafe capabilities or benchmark
+  overlap, and executed against every bounded upstream source test. Parallel
+  Stokes jobs `762844--762850`, `762858`, and `762859` validate and then shard
+  the replay. Redundant serial jobs `762849/762850` are canceled only after
+  the complete sharded result exists. Merge job `762882` produces 3,944
+  unique source-test-verified problems covering 412,094 executed cases,
+  41,436,429 response characters, and 2,054,213 solution characters. The
+  merged JSONL SHA-256 is
+  `c25e85294a11e72642b757d5375e29e490af66e6e13441e06acdc52226b3f8c7`.
+
+  SmolLM3 token audit `762996` measures 10,562,073 charged targets at sequence
+  length 4,096. Exactly 2,450 rows and 4,534,428 target tokens fit without any
+  prompt or response truncation; truncated rows are excluded from training.
+  Matched control build `762994` contains 6,166 rows and 4,003,956 charged
+  targets at SHA-256
+  `e78e478e0be82d7557f1256c711a4b69652a0992888ff41ae2870c18b6025603`.
+  Treatment build `762995` contains 3,375 rows and 4,006,464 charged targets
+  at SHA-256
+  `5c2a0ad163e62882b27ed4a4ef45a4ef1cacd09bc06765422ed81916885575e0`.
+  Both retain the exact 46% math, 18% code, 33% science, 1% procedural, and
+  2% teacher token contract. All 2,997 non-code rows are byte-identical. The
+  treatment code bucket is 378 longer rows / 722,599 targets and every row is
+  independently source-test verified; pair audit `763003` passes at report
+  SHA-256
+  `8802897a2e02c199617152385c15440510a3aeadbd51825f5fa15bccc6d099fa`.
+
+  Unequal trace lengths make equal update counts a hidden token-dosage
+  confound. The corrected one-epoch design therefore uses the same protected
+  update-200 source checkpoint SHA-256
+  `baf4623755d26ae13b4a8de8b304c07ae197d95a51f0119e0c67f62a0aa139b5`,
+  `baseline` arm, late-two-layer plus four-layer rank-8 LoRA geometry, LR
+  `3e-6`, model/data seeds `31/20260804`, and 4,096-token limit, but matches
+  charged tokens per optimizer step: control job `737783` uses batch 4,
+  accumulation 4, and 385 updates; treatment `737784` uses batch 2,
+  accumulation 4, and 421 updates. Both consume nearly one complete 4M-token
+  corpus. Runtime `product_train_runtime_7d863d1_r1` passes all five internal
+  SHA checks; manifest SHA-256 is
+  `cf44949c60fce3ce7dfd63c7122005b8140ef3f84352b74ef393a451961c3fa9`.
+  Jobs start immediately on `evc22/evc27`; treatment runs at about 10.7k and
+  control at about 6.6k charged targets/s with finite gradients.
+
+  Endpoint jobs `737788--737803` request sixteen independent H100s for the
+  identical GSM8K-100, MATH-100, HumanEval-164, MBPP-100, GPQA-100, BBH-100,
+  held-out science-100, and AIME-30 boards. The decision is product-facing:
+  promote only a treatment that improves executable-code accuracy over both
+  the matched control and protected source without an unacceptable broad
+  macro regression.
+
+  Decision:
+  `replace_reported_pass_rate_code_with_source_replayed_traces_and_measure_one_full_token_matched_epoch_on_the_complete_product_board`.
