@@ -1089,3 +1089,29 @@ itself. The V4 bank contains 691 such prompt identities; 1,309 additional
 positive identities require a separate finalization and 176 have no clean
 terminal trajectory, so neither category is silently converted into a
 reasoning target.
+
+The immutable self/replay corpus contains 691 complete student trajectories
+and 691 disjoint V12 MATH replay rows. All 1,382 rows are retained at 4,096
+context, totaling 2,136,502 charged target tokens; data and token-audit-report
+SHA-256 values are
+`fd66831fddd5601aac1e921dd62822c4299489e29485699073e93a7f482090b1`
+and
+`e4fd6d9be250e8b3735bd452272d3fbdcdf7d765a47adc01e8c8bfbcf972ff4f`.
+Job `737197` completes 100 updates in under five minutes at 11,445 target
+tok/s. Update 50 scores `70/100`: it gains five source misses but loses eight
+source solves, so it is three answers below the `73/100` floor. Endpoint eval
+`737199` is hardware-invalid because evc33 exposes no CUDA accelerator and
+fails before model loading. Fair replacement `737206` excludes evc33 and
+completes on evc46; failure-only fallback `737209` is canceled without
+allocation. Update 100 scores `66/100`, gaining six former misses but losing
+thirteen source solves on the identical prompt identities. Its rescore-report
+SHA-256 is
+`1d2547d24c76f316569c43170ebc4f530414c5ac651b4ebdab40ea40763ddeac`.
+
+This closes the complete-teacher, student-frontier-teacher, and clean
+student-native offline-imitation family. All three reduce the unchanged fixed
+score despite valid targets and bounded updates. Another replay ratio, LR,
+seed, or duration is not justified. The promoted mixed specialist and K=8
+MATH shape route at `366/500` remain the production result; the next training
+intervention must change the optimization signal rather than repackage
+offline traces.

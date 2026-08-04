@@ -27928,3 +27928,42 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_all_teacher_continuations_allow-one-clean-student-native-replay-curve-then-retain-k8-if-it-fails`.
+
+- **2026-08-04 14:22--15:19 EDT** -- **Complete student-native self-training
+  is substantially healthier than teacher continuation but remains below the
+  protected fixed gate throughout its curve.**
+
+  Private commit `9846dbb` changes future rollout admission to require a
+  verifier-correct, non-exhausted autonomous draft and adds an aggregate-hash-
+  bound rematerializer. V4 yields 691 such prompts. Their positive JSONL has
+  SHA-256
+  `51a1fb2816727c8335c67b75c287732d17b0efcdac5237c3d514191645603cf2`.
+  A one-to-one mix with 691 disjoint V12 MATH replay rows produces 1,382
+  unique examples and 2,136,502 fully retained target tokens, with zero prompt
+  or response truncation. Data and token-audit-report SHA-256 values are
+  `fd66831fddd5601aac1e921dd62822c4299489e29485699073e93a7f482090b1`
+  and
+  `e4fd6d9be250e8b3735bd452272d3fbdcdf7d765a47adc01e8c8bfbcf972ff4f`.
+
+  Short-backfill H100 job `737197` completes 100 updates from the promoted
+  mixed specialist, consuming 2,483,676 targets at 11,445.0 tok/s. Update 50
+  scores `70/100` under the repaired fixed MATH evaluator versus source 73.
+  Pairing shows five gains and eight losses, confirming useful corrections but
+  net interference. Its rescore-report SHA-256 is
+  `debeec71b5364cfaec210ca6fd53d202cbd64b7dbbe708082fcdd1317ea27531`.
+  Endpoint job `737199` is hardware-invalid on evc33: CUDA is unavailable and
+  the process fails before loading weights. Fair replacement `737206` excludes
+  evc33 and completes on evc46; failure-only fallback `737209` is canceled
+  without allocation. Update 100 scores `66/100`, with six gains and thirteen
+  losses against the source on the same identities. Its rescore-report
+  SHA-256 is
+  `1d2547d24c76f316569c43170ebc4f530414c5ac651b4ebdab40ea40763ddeac`.
+  No H100 jobs remain queued.
+
+  Complete-teacher, student-frontier-teacher, and complete-student replay all
+  fail the same fixed gate. This is sufficient evidence against another
+  offline SFT data/LR/seed/duration variant in this family. Preserve the
+  promoted mixed specialist and its K=8 MATH shape route at `366/500`.
+
+  Decision:
+  `close_offline_imitation_retain_k8_and_move_to_a_materially_different_on_policy_objective`.
