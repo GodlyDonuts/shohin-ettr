@@ -27597,3 +27597,47 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_domain_only_science_retain_math_update400_for_one_full_k4_gate_and_compare_both_candidate_generators_against_the_existing_shape_routed_system`.
+
+- **2026-08-04 11:53--12:24 EDT** -- **The existing mixed update-200
+  checkpoint clears the expanded MATH specialist gate and becomes the new
+  routed MATH generator.**
+
+  Ten independent one-H100 jobs `736437--736446` generate all 2,000 K=4
+  candidates for the 500-row MATH board from the previously measured mixed
+  fresh-replay update-200 checkpoint. Its exact SHA-256 is
+  `baf4623755d26ae13b4a8de8b304c07ae197d95a51f0119e0c67f62a0aa139b5`.
+  The GPU aggregation completes successfully; a missing live-root rescore
+  script causes only the first CPU selector job to fail. No candidates are
+  regenerated. A minimal hash-preserving selector runtime reuses the valid
+  aggregate and completes as job `736649`.
+
+  Exact numeric rescoring repairs 25 false-negative candidate labels and no
+  true label. Corrected first/modal/oracle scores are `273/337/371` of 500.
+  The unchanged disjoint completion-shape model selects `353/500 = 70.60%`,
+  adding 18 answers and 3.60 points over the previously accepted protected-
+  leader route at `335/500 = 67.00%`. Raw aggregate, corrected candidates,
+  rescore report, modal report, and shape report SHA-256 values are
+  `2a26889a81592bfe3599bea2639ef8f039bcf7ef928c08a47c504fe65926a7c0`,
+  `c21cabd81d809d778e6369d607449389dc17226cc3fe032463a412085b05803a`,
+  `4bb070e50acf30ccffebdf3c77a0ddb09276547d59ff332fd2933d84d79d1781`,
+  `34efd984f1c7192785fa738cfd5c35c5d3202f413059834c3dd6d2ee8d40ce67`,
+  and
+  `662fafa746aa92e38e54d3f28232afbde155dc94afb4a1235e16fcfd79a301d3`.
+
+  The product route now keeps the protected leader for GSM8K, code, GPQA,
+  and BBH, but uses this mixed update-200 generator plus K=4 shape selection
+  for MATH. Its five-domain vector is
+  `79.303 / 70.600 / 27.948 / 17.172 / 61.600`, macro `51.324%`, and
+  `2,390/3,930` solved. This is a `+0.720` macro and 18-answer lift over the
+  prior routed system, and a `+3.920` macro and 98-answer lift over corrected
+  greedy, without changing another primary domain.
+
+  The old mixed science K=4 fan and the new domain-MATH update-400 K=4 fan
+  remain bounded gates. Their selectors are dependency-held as
+  `736665/736666`. Science must exceed `227/500`; domain-MATH must exceed the
+  new `353/500` floor. The full greedy mixed-checkpoint jobs `736338/736339`
+  are documentation signals only. Never regenerate valid GPU shards to
+  repair a downstream CPU selector.
+
+  Decision:
+  `promote_mixed_update200_as_the_math_k4_generator_and_require_every_successor_to_beat_353_of_500`.

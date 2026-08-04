@@ -893,3 +893,32 @@ full 500-row K=4 generation/shape-selection gate, while the earlier mixed
 update-200 checkpoint is measured on full MATH and science boards in
 parallel. Promotion requires beating the existing corrected routed results,
 not merely the old fixed subset: MATH `335/500` and science `227/500`.
+
+### Routed MATH specialist promotion
+
+The mixed fresh-replay update-200 checkpoint clears that scale gate. It has
+SHA-256
+`baf4623755d26ae13b4a8de8b304c07ae197d95a51f0119e0c67f62a0aa139b5`
+and is used only as the MATH candidate generator; every other primary domain
+stays on the protected leader. Across the full 500-row MATH board its K=4
+candidate bank scores first/modal/shape/oracle `273/337/353/371` after exact
+numeric rescoring. Shape selection is `70.60%`, 18 answers above the former
+protected-leader K=4 route at `67.00%`.
+
+| Routed system | GSM8K | MATH-500 | Code mean | GPQA | BBH | Macro | Solved |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| former protected-leader K=4 route | 79.303% | 67.000% | 27.948% | 17.172% | 61.600% | 50.604% | 2,372/3,930 |
+| **mixed-u200 MATH specialist route** | **79.303%** | **70.600%** | **27.948%** | **17.172%** | **61.600%** | **51.324%** | **2,390/3,930** |
+
+This is a real generator-plus-selection gain: numeric rescoring repairs 25
+candidate labels but does not account for the 18-answer delta because both
+routes use the same corrected evaluator. Corrected candidate and shape-report
+SHA-256 values are
+`c21cabd81d809d778e6369d607449389dc17226cc3fe032463a412085b05803a`
+and
+`662fafa746aa92e38e54d3f28232afbde155dc94afb4a1235e16fcfd79a301d3`.
+
+The science fan and domain-MATH update-400 fan remain one-shot gates. Their
+new floors are `227/500` science and `353/500` MATH. Completed GPU candidate
+shards are immutable; downstream selector failures are repaired from their
+aggregates rather than by rerunning inference.
