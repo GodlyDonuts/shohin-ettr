@@ -26998,3 +26998,59 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_the_first_rollout_replay_checkpoint_and_run_one_lower_rate_cumulative_hard_correction_continuation_with_automatic_two_checkpoint_evaluation`.
+
+- **2026-08-03 23:22--2026-08-04 02:42 EDT** -- **A cumulative hard-only
+  continuation is rejected, while a completely fresh rollout bank enters
+  production.**
+
+  Continuation `734774` completes cleanly on one H100 from the promoted
+  rollout-replay update-400 checkpoint. It trains 400 fresh-optimizer updates
+  over 7,443,288 charged tokens at 8,794.17 tok/s, with peak GPU memory
+  37,596,777,472 bytes, peak LR `3e-6`, and 157,925,376 trainable parameters.
+  The cumulative 8,943-row correction mix remains hash-bound at SHA-256
+  `39699ea1ce59fe8b2104209ce87edf35e32ac431f6440509468053ad27594e04`.
+  Update 200 is SHA-256
+  `169ef5e9fe01baf33ce4d9771c2d42a51f8af127a297cd96a93bd71ed5e0cd45`;
+  update 400 is SHA-256
+  `004d36e688760dfe9aa93a7c23930244de081130d0f9fd42d8ada29a66729083`.
+
+  All 18 independent fixed-board jobs `734775--734792` complete. Update 200
+  scores GSM8K 87, MATH 52, HumanEval `5/20`, MBPP `7/20`, GPQA 21, BBH 50,
+  AIME `1/30`, science 37, and manual composition `8/12`; its five-domain
+  macro is `48.0%`. Update 400 scores GSM8K 87, MATH 53, HumanEval `5/20`,
+  MBPP `4/20`, GPQA 20, BBH 56, AIME `0/30`, science 36, and manual
+  composition `11/12`; its macro is `47.7%`. Both trail the promoted
+  checkpoint's `48.9%` macro. Update 400's MATH, BBH, and manual gains do not
+  compensate for its GSM8K and severe MBPP regressions. The ordered digest
+  manifest over the 18 JSON report digests is
+  `b277827cafd67d10aa67ea71a0c9a50a5ba5da3a313859f4fc3f3b6e0a58633c`.
+  Neither checkpoint advances to expanded evaluation; the first rollout-
+  replay update-400 checkpoint remains the product leader.
+
+  CPU job `734860` then freezes a new non-overlapping 8,192-prompt bank from
+  82,253 admissible verified source rows after excluding 13,753 prior-bank or
+  training overlaps. It contains 4,096 math and 4,096 science prompts at
+  SHA-256 `08c647c7750688d2be76edd043217fc0e36c899f78fddd741418b68751f51fdf`.
+  The exact math split is SHA-256
+  `c53f440a9d1e1072e947592e5832694d80ae38af4a306382f56177e85eae231d`;
+  the science split is SHA-256
+  `387b284c235521fccf75bf640b231e8f36b08ce7c87b7f53f9eeabc87e919f51`.
+  Two preceding CPU submissions `734840/734852` fail before doing work due
+  respectively to a missing mirrored script and the cluster's legacy system
+  Python; the corrected job uses the Python 3.11 module and absolute paths.
+
+  A dedicated read-only rollout runtime is frozen at
+  `scratchpad/product_rollout_runtime_97f6026_r1`; its rollout implementation
+  SHA-256 is
+  `cd6e404926c88095813d6fadc536d97f3e1631383e998166ffb2c47b02bddf4e`
+  and job wrapper SHA-256 is
+  `d435200a9228a89be3cd080462a8b02071d4aa33a260abc3f1229c10a50a2673`.
+  Forty-eight independent one-H100 jobs are submitted against the retained
+  promoted checkpoint: math `734877--734908` covers 32 exact 128-row shards
+  at four samples, 3,072 tokens, and strict 64-token answer finalization;
+  science `734909--734924` covers 16 exact 256-row shards at four samples and
+  1,536 tokens. Seed is 20260805. This new-bank production proceeds while the
+  rejected continuation remains preserved for diagnosis.
+
+  Decision:
+  `retain_the_expanded_rollout_replay_leader_reject_both_cumulative_hard_continuations_and_move_self_improvement_to_a_fully_fresh_verified_bank`.
