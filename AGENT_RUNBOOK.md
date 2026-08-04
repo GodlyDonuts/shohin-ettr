@@ -27641,3 +27641,35 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_mixed_update200_as_the_math_k4_generator_and_require_every_successor_to_beat_353_of_500`.
+
+- **2026-08-04 12:24--12:40 EDT** -- **The same mixed update-200 checkpoint
+  narrowly improves the routed science result and exposes a larger inference
+  selection gap.**
+
+  All 2,000 science candidates are preserved when two downstream CPU selector
+  attempts fail on runtime path and positive-minimum arguments. Corrected job
+  `736740` reuses those artifacts and completes in six seconds. Numeric
+  rescoring repairs 13 false negatives and none in the opposite direction.
+  Corrected first/modal/shape/oracle scores are `186/220/229/308` of 500.
+  Shape selection reaches `45.80%`, two answers above the accepted protected-
+  leader science route at `227/500 = 45.40%`; the oracle increases by 24
+  answers from `284` to `308`.
+
+  The corrected-candidate, aggregate, rescore, modal, and shape report
+  SHA-256 values are
+  `4bdc0e304f1fc3dfd07ad04fa00114b9a74c660ebce4319873f7fcc828f1faf5`,
+  `9bd82012bc8d607fdd918e57a3924a07d28ec68f92ac3e0d2acb40f7fd26afeb`,
+  `fd036816316cb33e1c3658ff09cb86bda2cc84ae7f64c25734cdf64f61b2df71`,
+  `dd7d77e273e51f0ad1204ddf95994c138ecaf6e7a04f0c63a85c2f8f585f774a`,
+  and
+  `559cfb8235cb84979ba8cd8bbe9d03ebfca7ee3ed3c806418b573621bb472156`.
+
+  The two-answer gain is promoted for science-only use, but the much larger
+  79-answer shape-to-oracle gap is the actionable result. A K=8 merger is
+  added with exact identity, prompt, invariant-field, and contiguous-index
+  checks. It permits a targeted additional-draw gate without retraining or
+  weakening artifact accounting. The first such use is MATH only and must
+  beat the current `353/500` route.
+
+  Decision:
+  `promote_mixed_update200_for_science_by_two_answers_and_test_more_inference_only_where_the_measured_oracle_gap_justifies_it`.

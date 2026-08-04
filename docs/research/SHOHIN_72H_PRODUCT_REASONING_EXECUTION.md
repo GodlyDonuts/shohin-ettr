@@ -922,3 +922,21 @@ The science fan and domain-MATH update-400 fan remain one-shot gates. Their
 new floors are `227/500` science and `353/500` MATH. Completed GPU candidate
 shards are immutable; downstream selector failures are repaired from their
 aggregates rather than by rerunning inference.
+
+The science result clears its floor by two answers. Corrected
+first/modal/shape/oracle scores are `186/220/229/308` of 500, so the mixed
+update-200 generator plus the unchanged shape selector becomes the science
+route at `45.80%`. This is only a 0.40-point final-answer gain over the prior
+route, but its oracle rises from `56.80%` to `61.60%`. The generator has
+created 24 additional solvable candidate groups that the current selector
+does not capture. Corrected-candidate and shape-report SHA-256 values are
+`4bdc0e304f1fc3dfd07ad04fa00114b9a74c660ebce4319873f7fcc828f1faf5`
+and
+`559cfb8235cb84979ba8cd8bbe9d03ebfca7ee3ed3c806418b573621bb472156`.
+
+`pipeline/merge_product_candidate_sets.py` supports the resulting bounded
+K=8 diagnostic. It merges independent draws only when identity sets,
+questions, gold values, task labels, training groups, and per-source sample
+indices agree exactly, then reindexes the supplement contiguously. Additional
+inference is promoted only if unchanged shape selection beats the K=4 route;
+oracle-only gains are diagnostic.
