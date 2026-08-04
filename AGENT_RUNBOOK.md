@@ -26948,3 +26948,53 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `use_the_promoted_checkpoint_to_search_only_previous_failures_then_train_again_only_if_new_verified_coverage_is_material`.
+
+- **2026-08-03 21:16--23:22 EDT** -- **The rollout-replay lift survives
+  every expanded domain, and hard-negative self-improvement adds 813 new
+  verified trajectories.**
+
+  Update 400 completes the exact expanded leader boards at GSM8K
+  `1046/1319 = 79.30%`, MATH `249/500 = 49.80%`, HumanEval
+  `45/164 = 27.44%`, MBPP `142/499 = 28.46%`, GPQA
+  `34/198 = 17.17%`, BBH `770/1250 = 61.60%`, and fresh science
+  `156/500 = 31.20%`. Relative to the previous expanded leader, deltas are
+  `+2.12/+2.00/+0.00/+2.00/+3.54/+2.32/+5.40` points respectively. The
+  expanded five-domain macro rises from `44.9684%` to `47.1644%`, a
+  `+2.1960` point lift with no expanded-domain regression. The ordered
+  expanded-report manifest digest is
+  `b09dd0d1dea0287ea9e857ff344d52ed13563537bcb58a33598e89934db4f217`.
+  This promotes checkpoint 400 over the V12 update-1,000 leader.
+
+  Every second-wave GPU shard and both CPU aggregates complete cleanly.
+  Math recovers 342 of 1,783 previously unsolved prompts (`19.18%`) from 455
+  correct candidates; its positives SHA-256 is
+  `1b48801e9e40452a5b480555bfcd86b763c243662e39f105e2b8763ec923553b`
+  and aggregate report SHA-256 is
+  `2799b32814ee3f4d7df72b019ce00f1b291f1c5eea1d1d0073b4f5d276428a4d`.
+  Science recovers 471 of 2,296 previously unsolved prompts (`20.51%`) from
+  658 correct candidates; its positives SHA-256 is
+  `397be614d418f86699da38cf30048aa3d61d0d008f5d3f45c57720e26d04a1c4`
+  and report SHA-256 is
+  `27f03d274136731b78a1b0352fc4fef6684147415001fd35bb55b8f3cae9244c`.
+  Newton reaches 17 simultaneous H100 jobs during this combined evaluation
+  and generation wave.
+
+  The two update-400 ledgers merge without duplicates into 813 new positives:
+  342 math and 471 science, SHA-256
+  `6808842be823384d80c2da9e208229c2f8d8af2ee9f8eb39ccfc6bc6b282f19d`.
+  A cumulative correction mix retains 8,130 of the prior 8,226 rollout/replay
+  rows and adds all 813 new hard solutions, producing 8,943 unique rows at
+  SHA-256
+  `39699ea1ce59fe8b2104209ce87edf35e32ac431f6440509468053ad27594e04`.
+  Its retained groups are code 2,190, math 2,756, procedural 551, science
+  2,141, and teacher 492, in addition to the new math/science rows.
+
+  Continuation `734774` waits for one H100. It warm-starts the promoted
+  checkpoint 400 with a fresh optimizer, identical late-two-layer plus LoRA
+  geometry, 400 updates, 16 examples/update, 4,096 context, and lower peak LR
+  `3e-6`. Eighteen one-H100 jobs `734775--734792` follow successful training,
+  evaluating identical 200/400 fixed boards. No second-round checkpoint is
+  promoted without beating the now-expanded checkpoint-400 leader.
+
+  Decision:
+  `promote_the_first_rollout_replay_checkpoint_and_run_one_lower_rate_cumulative_hard_correction_continuation_with_automatic_two_checkpoint_evaluation`.
