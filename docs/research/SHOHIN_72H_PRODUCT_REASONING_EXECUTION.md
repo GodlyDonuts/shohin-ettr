@@ -1115,3 +1115,31 @@ seed, or duration is not justified. The promoted mixed specialist and K=8
 MATH shape route at `366/500` remain the production result; the next training
 intervention must change the optimization signal rather than repackage
 offline traces.
+
+### On-policy verified-reward gate
+
+The replacement optimization signal is a single bounded RLVR curve. For each
+update, the changing model samples four trajectories for each of four unseen
+V4 MATH prompts. The exact MATH verifier assigns a positive reward only when
+the final answer is correct, an explicit answer marker is present, and the
+trajectory terminates before the 1,536-token cap. Advantages are centered
+within each four-sample prompt group; uniform groups intentionally contribute
+no policy gradient. Four broad V12 replay rows per update provide a matched
+behavior anchor at weight `0.25`. Training uses the promoted specialist,
+4,096 context, LR `2e-7`, 100 global updates, and exact optimizer resume across
+five-update short-backfill jobs.
+
+This reward contract is important. An earlier answer-only diagnostic found
+11/80 answer-correct candidates, but seven continued looping until the token
+cap after stating the answer. Rewarding those drafts would optimize answer
+substring discovery rather than complete autonomous reasoning. Only the four
+correct self-terminating candidates are positives under the production
+contract, establishing exactly 5% initial clean reward density.
+
+The identical no-RLVR continuation control finishes 100 updates with fixed
+MATH-100 scores `71/70/71` at updates `25/50/100`, versus the protected source
+at `73`. Therefore the on-policy arm must beat 73, not merely beat the control.
+The production training chain is `737432--737451`; fixed evaluations are
+`737452/737453/737454`. At the time of this update the first chunk remains
+pending H100 priority. Only a checkpoint above `73/100` advances to the full
+500-row K=8 product gate.

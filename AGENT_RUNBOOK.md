@@ -27967,3 +27967,66 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_offline_imitation_retain_k8_and_move_to_a_materially_different_on_policy_objective`.
+
+- **2026-08-04 15:19--15:46 EDT** -- **The first on-policy verified-reward
+  campaign is implemented, exact-resume tested, and restarted with a
+  terminal-trajectory reward; its matched replay-only control is negative.**
+
+  Private commits `d776e26/3a5a84b/ef7cbf0/ebed117` add a memory-bounded
+  on-policy trainer, preserve verifier identity and gold fields in the reward
+  reservoir, support optimizer-exact continuation across short Slurm chunks,
+  and require a verifier-correct answer from a trajectory that terminates
+  before the generation cap. Each global update samples four fresh
+  trajectories for each of four V4 prompts from the changing model, applies
+  group-normalized binary REINFORCE only to mixed groups, and anchors the
+  model with four V12 replay examples at weight `0.25`. The schedule is fixed
+  at 100 global updates, LR `2e-7`, context 4,096, maximum generation 1,536,
+  seed/data seed `20260804`, and the exact promoted specialist warm start.
+  The implementation passes `36` focused tests, Ruff, Python compilation,
+  and shell syntax checks.
+
+  Full-shape smoke `737233` proves finite one-update training: 16 candidates,
+  six verifier-correct answers, one mixed group, gradient norm `0.879`, and
+  9.5GB peak GPU memory. Jobs `737260 -> 737261` independently prove that a
+  second Slurm allocation restores both the update cursor and AdamW state and
+  reaches global update two under the unchanged contract.
+
+  Matched replay-only control `737251` completes 100 updates and 262,924
+  charged targets in 44.16 seconds. Its fixed MATH-100 curve is
+  `71/70/71` at updates `25/50/100`, below the unchanged source score
+  `73/100`. Control checkpoint SHA-256 values at `25/50/75/100` are
+  `78a3315cea890099845b242e02cc0564c66ae7d04cef9262c132c0821f9b15c8`,
+  `eb20c2f28aa78c211d7b79138bd451995d7932722b9b88bae765c5112537475e`,
+  `01eb70ed37931f21a039bea6194c91718bf79abefaee6d43247e62d078607bc3`,
+  and
+  `6bf92069c9b74e291fb864cc3d44a7b1bbb104e5520df205ed26daa989997372`.
+  Its report SHA-256 is
+  `a5efcd5d55525d921f145b16bfc30b589dc583fd8d56b64d0bae69147085a26a`;
+  fixed-eval report hashes at `25/50/100` are
+  `e14f2de356e1b65fc3c8721e0071905a45ef6abb9ec390f76072402b8d2d8d12`,
+  `976fd633d2729d490a43aac65550a0605305f8301a6758d723f04a0c7c917095`,
+  and
+  `536fdb98fe6802b428fa45b65ae17328ce87ea654757e96dcd1feb48ab731f95`.
+
+  The first five-update production chunk `737322` is retained as a diagnostic
+  but must never be resumed. Its answer-only reward counted 11/80 correct
+  candidates, yet seven of those eleven exhausted all 1,536 tokens after
+  stating an answer and continuing in a loop. Only four candidates were both
+  correct and self-terminating. The chain was stopped before another chunk
+  could train on that loophole. This observation supplies the required 5%
+  clean-positive density and motivates the corrected reward
+  `exact_math_answer_with_explicit_marker_and_terminal_stop_v1`.
+
+  The corrected production root is
+  `baseline_late2_rlvr_terminal_v4_math_u100_ebed117_r1`. Jobs
+  `737432--737451` form twenty optimizer-exact five-update chunks; fixed
+  MATH-100 evaluations `737452/737453/737454` gate updates `25/50/100`.
+  At this journal point the first chunk is pending normal-partition priority,
+  with all dependencies intact. The 15-minute training requests were safely
+  tightened to eight minutes after the matching five-update chunk measured
+  4m11s. Promotion requires strictly exceeding both source `73/100` and the
+  replay-only control before any K=8 full-board evaluation. A score at or
+  below 73 is not progress and receives no full-board inference.
+
+  Decision:
+  `run_one_terminal_reward_rlvr_curve_against_source_73_and_replay_control_71_70_71_then_promote_only_a_strict_fixed_gate_win`.
