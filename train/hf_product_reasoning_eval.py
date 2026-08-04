@@ -125,7 +125,26 @@ def extract_boxed(text: str) -> str | None:
         text,
         flags=re.IGNORECASE,
     )
-    return fallback[-1].strip().rstrip(".") if fallback else None
+    return _trim_explicit_answer(fallback[-1]) if fallback else None
+
+
+def _trim_explicit_answer(value: str) -> str:
+    """Stop an explicit answer before a new prose verification sentence."""
+
+    answer = re.split(r"</think>|<\|", value, maxsplit=1)[0].strip()
+    answer = re.split(
+        r"\.\s+(?=(?:but|however|wait|hmm|let|i|this|that|so|therefore)\b)",
+        answer,
+        maxsplit=1,
+        flags=re.IGNORECASE,
+    )[0]
+    answer = re.split(
+        r",\s+(?=(?:which|but|although|however)\b)",
+        answer,
+        maxsplit=1,
+        flags=re.IGNORECASE,
+    )[0]
+    return answer.strip().rstrip(".")
 
 
 def gold_gsm8k(row: dict[str, Any]) -> str | None:
@@ -165,7 +184,7 @@ def extract_short_answer(text: str) -> str | None:
         flags=re.IGNORECASE,
     )
     if explicit:
-        return explicit[-1].strip()
+        return _trim_explicit_answer(explicit[-1])
     labels = re.findall(r"(?<![A-Za-z])\(([A-Z])\)(?![A-Za-z])", text)
     if labels:
         return labels[-1]

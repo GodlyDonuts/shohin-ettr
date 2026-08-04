@@ -58,6 +58,20 @@ class ProductReasoningEvalTests(unittest.TestCase):
         self.assertEqual(gold_gsm8k({"answer": "work\n#### -42"}), "-42")
         self.assertEqual(gold_numeric_answer({"answer": "204"}), "204")
 
+    def test_explicit_answer_stops_before_verification_restart(self) -> None:
+        self.assertEqual(
+            extract_boxed("The answer is 1997/2. But let me verify this."),
+            "1997/2",
+        )
+        self.assertEqual(
+            extract_boxed("The answer is 9/100, which is 0.09. However..."),
+            "9/100",
+        )
+        self.assertEqual(
+            extract_short_answer("Final answer: 0.09. Hmm. Check again."),
+            "0.09",
+        )
+
     def test_aime_requires_an_explicit_final_integer(self) -> None:
         self.assertEqual(extract_aime(r"Work. Therefore \boxed{025}."), "025")
         self.assertEqual(extract_aime("Work. The answer is 25."), "25")
