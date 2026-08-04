@@ -882,3 +882,14 @@ update 200 scored fixed MATH/science `53/38` versus leader `51/31` but was
 discarded for unrelated-domain regressions. Full-board jobs `736338/736339`
 now test it only as a routed MATH/science expert; no other domain or generator
 lineage changes unless those 500-row gates improve.
+
+That gate is now running alongside a stronger domain-only test. Hash-bound
+MATH and science corpora contain respectively 5,624 and 4,550 unique prompts,
+each split evenly between fresh verifier-correct trajectories and disjoint
+in-domain V12 replay. Matched 400-update warm starts finish in 17 minutes.
+MATH checkpoints score `52/54/56` on the fixed 100-row board; science scores
+`35/31/35`. The science branch is rejected. MATH update 400 advances to one
+full 500-row K=4 generation/shape-selection gate, while the earlier mixed
+update-200 checkpoint is measured on full MATH and science boards in
+parallel. Promotion requires beating the existing corrected routed results,
+not merely the old fixed subset: MATH `335/500` and science `227/500`.

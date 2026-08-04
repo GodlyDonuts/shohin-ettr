@@ -27550,3 +27550,50 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_candidate_verification_promote_no_new_selector_and_test_the_existing_fresh_replay_checkpoint_only_as_a_routed_math_science_specialist`.
+
+- **2026-08-04 10:52--11:53 EDT** -- **Routed domain specialization produces
+  a fixed-board MATH gain, rejects its science analogue, and enters parallel
+  full-board K=4 validation.**
+
+  Private commit `ef50a89` adds a fail-closed domain-specialist corpus builder.
+  It verifies the admitted positive-merge hash, selects one training group,
+  removes prompt overlap, deterministically selects equal-count in-domain V12
+  replay, and writes immutable data/report hashes. The MATH corpus contains
+  2,812 fresh verifier-correct trajectories plus 2,812 replay rows, 5,624
+  unique prompts total, at SHA-256
+  `60a1473b9a55266d5eb457183cd32393ad471fc9ddd6c9569cec626877dcb855`.
+  The science corpus contains 2,275 plus 2,275 rows, 4,550 total, at SHA-256
+  `2b1308756a2b6269235c49be7098e1762c8b7f3a1aa02fd63af3de3f2dd04956`.
+  Six focused builder tests pass with lint and formatting checks.
+
+  Independent one-H100 jobs `736379/736380` warm-start exact protected leader
+  SHA-256
+  `34c82454e0c53609bc1ac6a9f127437080e431f147e28ae63b4080c413d9a82e`
+  and train the same late-two-layer plus LoRA state for 400 updates, with
+  checkpoints at 100/200/400. MATH consumes 14,631,549 charged targets in
+  17m26s at 14,343.7 tok/s; science consumes 8,830,389 in 16m17s at 9,283.1
+  tok/s. Their training report SHA-256 values are
+  `90a2b55205daadd17a81fa051ae93cb7ed2b4ad29818937244be09e6a4a99b0d`
+  and
+  `91f3c9c8fcad48e51e721ae9dfc6f03e61de9a7d9488f57c9f60e910f562a106`.
+
+  Exact fixed-board jobs `736386--736391` score MATH update 100/200/400 at
+  `52/54/56` of 100 and science at `35/31/35`. Domain-only science therefore
+  fails to beat the existing mixed update-200 checkpoint's `38/100` and is
+  closed. MATH update 400 is three answers above the protected leader's
+  original `53/100` fixed score and earns one full 500-row K=4 gate. Its
+  checkpoint SHA-256 is
+  `1c1e4e29710d6f4670330d397bad434b837a2b26e60c99fb17381851c3514858`.
+
+  In parallel, the existing mixed update-200 checkpoint is being evaluated
+  greedily over all 500 MATH/science rows (`736338/736339`) and through K=4
+  candidate fans: MATH `736437--736446`, science `736448--736457`, followed by
+  aggregate/shape selection `736447/736458`. The newly earned MATH-400 K=4
+  fan is `736545--736554`, followed by `736555`. All are independent
+  single-H100 requests; the campaign reached 16 simultaneous H100 jobs. The
+  protected leader and accepted MATH/science shape routes remain unchanged
+  until a corrected 500-row result beats `335/500` MATH or `227/500`
+  science.
+
+  Decision:
+  `reject_domain_only_science_retain_math_update400_for_one_full_k4_gate_and_compare_both_candidate_generators_against_the_existing_shape_routed_system`.
