@@ -55249,3 +55249,13 @@ generators. S7 remains the positive template: forced Cayley composition gave
 100% unseen-law transfer while an exact-fit ordinary Transformer remained near
 chance. A successor must generalize that principle without hard-coding one
 cyclic task.
+
+The concrete successor is Prompt-Selected Presented Algebra (PSPA). A source
+selects and fills anonymous carrier slots, complete generator actions, and
+relations between generator words. One tied executor composes those actions;
+the late query can only execute the completed presentation. The first gate
+compares PSPA with matched recurrent, ordinary-Transformer, and exchanged-
+relation controls over cyclic/affine, noncommuting, and finite-transformation
+families under longer words and fresh carrier renamings. Full details and the
+fixed compute envelope are in
+`docs/research/PROMPT_SELECTED_PRESENTED_ALGEBRA.md`.

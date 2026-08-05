@@ -28951,3 +28951,11 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_pcdl_and_design_prompt_selected_generator_algebra_not_another_opaque_basis`.
+
+  The bounded successor is frozen in
+  `docs/research/PROMPT_SELECTED_PRESENTED_ALGEBRA.md`. It selects and fills a
+  finite carrier/generator/relation presentation and answers only through tied
+  whole-generator composition. The fail-fast pilot is four single-H100 jobs
+  with an expected 0.15 H100-hour use and a hard four-H100-hour ceiling; no
+  multi-seed or long-run allocation follows unless seed one clears +5 macro
+  and every-family direction.
