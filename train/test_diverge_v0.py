@@ -29,9 +29,11 @@ from diverge_v0 import (
     assignment_mass,
     account_packet,
     build_packet,
+    commuting_patch_schedule,
     enumerate_assignments,
     execute_packet,
     merge_certified_classes,
+    materialized_world_bytes,
     named_commitment,
     packet_bytes,
     packet_commitment,
@@ -296,6 +298,39 @@ class DivergeV0ContractTests(unittest.TestCase):
         self.assertGreater(accounting.duplicated_transactions, accounting.unique_transactions)
         self.assertGreater(accounting.shared_transactions, 0)
         self.assertLess(accounting.packet_bytes, accounting.materialized_world_bytes)
+        self.assertEqual(
+            sum(materialized_world_bytes(episode.packet, world) for world in receipt.worlds),
+            accounting.materialized_world_bytes,
+        )
+
+    def test_disjoint_commuting_schedule_preserves_states_and_ordered_semantics(self) -> None:
+        for episode in self.board:
+            original = execute_packet(episode.packet)
+            scheduled = execute_packet(episode.packet, commute_disjoint=True)
+            self.assertEqual(
+                tuple(world.record() for world in scheduled.worlds),
+                tuple(world.record() for world in original.worlds),
+            )
+            self.assertLessEqual(scheduled.unique_transactions, original.unique_transactions)
+
+        episode = self.board[0]
+        primary = [
+            patch
+            for patch in commuting_patch_schedule(episode.packet.patches)
+            if 0 in {literal.variable_id for literal in patch.guard.literals}
+        ]
+        option_zero = [
+            patch.transaction.opcode
+            for patch in primary
+            if patch.guard == Guard((Literal(0, 0),))
+        ]
+        option_one = [
+            patch.transaction.opcode
+            for patch in primary
+            if patch.guard == Guard((Literal(0, 1),))
+        ]
+        self.assertEqual(option_zero, ["ADD_VALUE", "SWAP_VALUE"])
+        self.assertEqual(option_one, ["SWAP_VALUE", "ADD_VALUE"])
 
     def test_hard_factor_support_is_exact(self) -> None:
         episode = build_delayed_episode(

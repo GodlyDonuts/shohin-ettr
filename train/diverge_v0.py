@@ -687,6 +687,54 @@ def apply_transaction(state: TypedState, transaction: TypedTransaction) -> Typed
     return TypedState(tuple(cells.values()), tuple(edges))
 
 
+def transaction_touched_slots(transaction: TypedTransaction) -> frozenset[int]:
+    """Return a conservative slot footprint for certified commutation."""
+
+    opcode = transaction.opcode
+    arguments = transaction.arguments
+    if opcode in {"SET_VALUE", "ADD_VALUE", "SET_TYPE"}:
+        return frozenset((arguments[0],))
+    if opcode in {"COPY_VALUE", "SWAP_VALUE"}:
+        return frozenset((arguments[0], arguments[1]))
+    if opcode in {"LINK", "UNLINK"}:
+        return frozenset((arguments[0], arguments[2]))
+    raise DivergeContractError("unknown transaction")  # pragma: no cover
+
+
+def commuting_patch_schedule(
+    patches: Iterable[GuardedPatch],
+) -> tuple[GuardedPatch, ...]:
+    """Canonicalize only adjacent transactions proven disjoint.
+
+    Guard truth is assignment-owned and cannot be changed by a transaction.
+    Transactions with disjoint conservative slot footprints therefore commute.
+    All overlapping pairs retain their original relative order, preserving the
+    packet's noncommuting chronological semantics.
+    """
+
+    scheduled = list(patches)
+
+    def key(patch: GuardedPatch) -> tuple[object, ...]:
+        slots = tuple(sorted(transaction_touched_slots(patch.transaction)))
+        return slots, patch.provenance, patch.index
+
+    changed = True
+    while changed:
+        changed = False
+        for index in range(len(scheduled) - 1):
+            left = scheduled[index]
+            right = scheduled[index + 1]
+            if (
+                transaction_touched_slots(left.transaction).isdisjoint(
+                    transaction_touched_slots(right.transaction)
+                )
+                and key(right) < key(left)
+            ):
+                scheduled[index], scheduled[index + 1] = right, left
+                changed = True
+    return tuple(scheduled)
+
+
 @dataclass(frozen=True)
 class WorldResult:
     assignment: tuple[int, ...]
@@ -719,6 +767,7 @@ def execute_packet(
     packet: EpistemicPacket,
     *,
     patch_limit: int | None = None,
+    commute_disjoint: bool = False,
 ) -> ExecutionReceipt:
     if packet.overflow:
         return ExecutionReceipt((), 0, 0, True)
@@ -727,6 +776,8 @@ def execute_packet(
     else:
         patch_limit = _nonnegative(patch_limit, "patch limit")
         patches = packet.patches[:patch_limit]
+    if commute_disjoint:
+        patches = commuting_patch_schedule(patches)
     assignments = enumerate_assignments(packet)
     states: dict[tuple[int, ...], TypedState | None] = {
         assignment: packet.shared_state for assignment in assignments
@@ -1048,10 +1099,18 @@ def _materialized_world_record(
     }
 
 
+def materialized_world_bytes(packet: EpistemicPacket, world: WorldResult) -> int:
+    """Return the canonical storage charged to one complete particle."""
+
+    if world.assignment not in enumerate_assignments(packet):
+        raise DivergeContractError("materialized world is outside packet support")
+    return len(canonical_json_bytes(_materialized_world_record(packet, world)))
+
+
 def account_packet(packet: EpistemicPacket, receipt: ExecutionReceipt) -> PacketAccounting:
     serialized = packet_bytes(packet)
     world_bytes = sum(
-        len(canonical_json_bytes(_materialized_world_record(packet, world)))
+        materialized_world_bytes(packet, world)
         for world in receipt.worlds
     )
     worlds = len(receipt.worlds)
