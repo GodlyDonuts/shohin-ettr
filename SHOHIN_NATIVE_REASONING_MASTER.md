@@ -54926,3 +54926,15 @@ MBPP K=4 gate select `193/375`; the last quarter is being replayed after a
 bytes-valued timeout diagnostic caused post-generation serialization to fail.
 The exact record is
 `artifacts/product_reasoning/function_code_promotion_b62fbf3_r1.json`.
+
+The completed visible-test ensemble further strengthens the result. With
+update 224 greedy as the anchor, update 112 greedy as a fallback, and four
+update-112 samples, it selects HumanEval `96/164` and MBPP `288/499`. MBPP
+selection is exact because all official tests are part of the prompt;
+HumanEval selection uses only docstring examples and syntax, while its hidden
+oracle remains separately labelled. The resulting routed system reaches
+`57.880%` five-domain macro and `2,600/3,930` solved, a `+6.137` macro and
+`+200` solved-task gain over the corrected protected route. A single final
+candidate-diversity gate samples update 224 independently and must add at
+least five code solves; failure closes inference scaling and redirects effort
+to a larger verified function-shaped corpus.

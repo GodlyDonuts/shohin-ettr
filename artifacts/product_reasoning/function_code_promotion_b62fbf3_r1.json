@@ -1,7 +1,7 @@
 {
   "schema": "shohin-function-code-promotion-v1",
-  "status": "promoted_greedy_and_humaneval_anchor_pending_final_mbpp_k4_quarter",
-  "recorded_at": "2026-08-04T21:05:00-04:00",
+  "status": "promoted_complete",
+  "recorded_at": "2026-08-04T21:20:58-04:00",
   "protected_source": {
     "checkpoint_sha256": "baf4623755d26ae13b4a8de8b304c07ae197d95a51f0119e0c67f62a0aa139b5",
     "humaneval": {
@@ -64,6 +64,35 @@
     "routed_with_update_112_greedy_mbpp_macro_percent": 56.356143974716694,
     "routed_with_update_112_greedy_mbpp_solved": 2526
   },
+  "final_visible_test_ensemble": {
+    "candidate_arms": [
+      "update_224_greedy_anchor",
+      "update_112_greedy_fallback",
+      "update_112_four_samples"
+    ],
+    "humaneval": {
+      "first_correct": 89,
+      "oracle_correct_diagnostic_only": 115,
+      "selected_correct": 96,
+      "total": 164,
+      "report_sha256": "40c42f540ba0f1bcec2ec1f3c5afe042ceeb7498c9eb991c6fcba51bfdb95aa5"
+    },
+    "mbpp": {
+      "first_correct": 217,
+      "oracle_correct": 288,
+      "selected_correct": 288,
+      "total": 499,
+      "report_sha256": "527bd5454a5905d0922c76969754330052e227e9fbede9f7e75f4e573b95e34b"
+    },
+    "selector_reads_hidden_tests": false,
+    "selection_policy": "anchor-first",
+    "routed_code_domain_percent": 58.12600811378855,
+    "routed_five_domain_macro_percent": 57.880045436176204,
+    "routed_solved": 2600,
+    "routed_total": 3930,
+    "delta_vs_corrected_source_macro_points": 6.136663571044528,
+    "delta_vs_corrected_source_solved": 200
+  },
   "paired_update_224_vs_source": {
     "humaneval_gains": 51,
     "humaneval_losses": 6,
@@ -75,12 +104,29 @@
     "anchor_search_manifest_sha256": "562d23df89daded3022160470a7d2703f17a6d5c1fc1bb2f9a1048156b9fec0c",
     "timeout_safe_rollout_manifest_sha256": "165d955e8289e94582325606d4371b3a4421970bd02dc4a3abbb2f214f184b47"
   },
-  "active_final_gate": {
+  "completed_final_gate": {
     "description": "visible-test K=4 MBPP selection for update 112",
-    "completed_selected": 193,
-    "completed_total": 375,
-    "remaining_total": 124,
-    "fallback_job": 738069,
-    "parallel_jobs": [738101, 738103, 738105, 738107, 738109, 738111, 738113, 738115]
+    "selected_correct": 252,
+    "total": 499,
+    "missing_quarter_job": 738069,
+    "missing_quarter_selected": 59,
+    "missing_quarter_total": 124,
+    "missing_quarter_report_sha256": "3549d2b65ce5b0685b3d3737adeb978b769f407e5bbba7b97a4599b3c991e17d",
+    "canceled_unallocated_parallel_jobs": [
+      738101,
+      738103,
+      738105,
+      738107,
+      738109,
+      738111,
+      738113,
+      738115
+    ]
+  },
+  "successor_gate": {
+    "description": "independent update-224 K=4 samples against the final visible-test ensemble",
+    "pass_threshold": "at least five additional selected code tasks",
+    "humaneval_jobs": [738176, 738177, 738178, 738179],
+    "mbpp_jobs": [738180, 738181, 738182, 738183, 738184, 738185, 738186, 738187]
   }
 }

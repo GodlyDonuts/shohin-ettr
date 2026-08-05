@@ -28360,3 +28360,35 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_function_code_routing_keep_update224_greedy_and_update112_visible_search_finish_only_the_missing_mbpp_quarter`.
+
+- **2026-08-04 21:05--21:21 EDT** -- **Visible-test search closes at a new
+  product leader: `57.880%` macro and `2,600/3,930` solved.**
+
+  Corrected retry `738069` completes the missing update-112 MBPP K=4 quarter
+  at `59/124`; the complete four-sample board is `252/499`. Because every
+  MBPP test used for selection is present in its user prompt, this selected
+  count is deployable rather than a hidden-harness oracle. A final frozen
+  ensemble anchors on update-224 greedy, adds update-112 greedy and four
+  update-112 samples, and switches only on prompt-visible evidence. It selects
+  HumanEval `96/164` and MBPP `288/499`; HumanEval's `115/164` union oracle
+  remains diagnostic only.
+
+  The resulting code-domain mean is `58.126%`. Keeping the promoted MATH K=8
+  route and protected GSM8K/GPQA/BBH generators yields `57.880%` five-domain
+  macro and exactly `2,600/3,930` solved. Relative to the corrected protected
+  route this is `+6.137` macro points and `+200` solved tasks; relative to the
+  prior published route it is `+6.035` and `+197`. HumanEval ensemble report
+  SHA-256 is
+  `40c42f540ba0f1bcec2ec1f3c5afe042ceeb7498c9eb991c6fcba51bfdb95aa5`;
+  MBPP report SHA-256 is
+  `527bd5454a5905d0922c76969754330052e227e9fbede9f7e75f4e573b95e34b`.
+
+  The next bounded gate is not another training-nearby variant. Jobs
+  `738176--738179` and `738180--738187` request twelve independent H100s for
+  update-224 K=4 candidates on HumanEval and MBPP. They promote only if the
+  same visible-test ensemble adds at least five code solves over `96/288`.
+  Otherwise inference scaling closes and the next intervention must expand
+  decontaminated, execution-verified function-shaped training data.
+
+  Decision:
+  `promote_57p880_product_route_test_one_update224_candidate_diversity_gate_then_expand_function_shaped_data`.
