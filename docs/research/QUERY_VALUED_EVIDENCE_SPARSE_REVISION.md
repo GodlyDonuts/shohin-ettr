@@ -1,6 +1,6 @@
 # Query-Valued Evidence Sparse Revision
 
-Status: one bounded credit-assignment pilot; no reasoning or novelty claim.
+Status: closed negative after one bounded credit-assignment pilot.
 
 ## Hypothesis
 
@@ -57,3 +57,40 @@ if UTILITY:
 A miss closes QVESR and the nearby sparse-revision selector family. It does
 not authorize another duration, width, seed, temperature, loss, or top-k
 variant.
+
+## Result
+
+The first dispatch (`739242--739244`) failed before training because the
+immutable runtime omitted one imported support module. It produced no reports
+or checkpoints. The corrected fail-fast runtime has SHA256SUMS SHA-256
+`7c2b11bac068ce8cc47273ecf9719c00d4c10a1f637d5ff70c2ff0a553c9ef3d`.
+
+Valid jobs `739246--739248` complete with identical 120,983-parameter models:
+
+| Family | Depth | Utility | Fixed | Residual |
+|---|---:|---:|---:|---:|
+| Noncommuting | 5 | 25.488% | 26.660% | 22.754% |
+| Noncommuting | 7 | 29.590% | 29.492% | 32.910% |
+| Binding | 5 | 20.605% | 20.117% | 18.066% |
+| Binding | 7 | 14.355% | 15.137% | 13.477% |
+| Induction | 5 | 9.570% | 9.961% | 9.961% |
+| Induction | 7 | 9.375% | 9.277% | 8.887% |
+| **Macro** | | **18.164%** | **18.441%** | **17.676%** |
+
+UTILITY loses to FIXED by `0.277` points and fails the all-family requirement.
+Shuffling selected outcomes lowers UTILITY to `10.726%`, confirming that the
+revision still depends on evidence. Shuffling only the selector query lowers
+it by merely `0.423` points to `17.741%`; the learned policy does not acquire
+material query-specific value assignment. Contradiction reduction is
+`0.608 / 0.288 / 0.779` for utility/fixed/residual, again showing that better
+local correction does not imply better final composition.
+
+QVESR and nearby sparse evidence-selector variants are closed. The next
+architecture must change how structured state transitions and composes, not
+retune evidence routing into this revision operator.
+
+Report SHA-256 values:
+
+- utility: `d50da2a6f7bdee8fb6ae951faeb2e1a1f18672ee0a35293fd04963d6bdc61f82`
+- fixed: `7b895de5751b3c01486ee734ecd2d86520617cef1eedf3a9a0ffde023630c335`
+- residual: `5cd99aefc42c1d4fdfc37ad6d49bb3d1121e6f4175b33bf8a1cb33dfc44ec7d3`

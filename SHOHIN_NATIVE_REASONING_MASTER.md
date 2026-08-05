@@ -55176,3 +55176,22 @@ duration variants. The only allowed successor in this family learns a query-
 conditioned value-of-counterexample policy through the answer objective and
 must clear a fixed +5-point, all-family gate against parameter- and compute-
 matched fixed coverage.
+
+### Query-valued evidence result (2026-08-05)
+
+QVESR directly tests the CGSGR credit-assignment diagnosis. A
+query-conditioned value network replaces raw residual ranking while keeping
+one coherent state, the same consequence head, sparse write budget, recurrent
+operator, data, and training budget. Utility, fixed, and residual arms each
+contain 120,983 parameters.
+
+The result is negative: utility/fixed/residual reach
+18.164%/18.441%/17.676% macro exact. Evidence remains causally important,
+because shuffled selected outcomes cost utility 7.438 points. The query is not
+materially used for selection, because shuffling it only for the selector
+costs 0.423 points. This closes sparse evidence-selection variants around the
+same additive revision core. Across PCSD, FCPT, CGSGR, and QVESR, the stable
+failure boundary is no longer evidence availability or mechanistic activity;
+it is reliable compositional state transition. The next architecture must
+change that transition rather than another selector, invariant, or particle
+objective.

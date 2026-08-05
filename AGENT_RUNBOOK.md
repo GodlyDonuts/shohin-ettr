@@ -28850,3 +28850,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_raw_residual_cgsgr_and_test_one_learned_answer_utility_selector`.
+
+- **2026-08-05 04:35--04:55 EDT** -- **Query-valued evidence selection also
+  misses; the sparse revision-selector family closes.**
+
+  QVESR changes only evidence credit assignment: a hard-forward,
+  straight-through selector sees the coherent state, source evidence, current
+  residual, visit novelty, and query. FIXED and RESIDUAL instantiate the same
+  120,983 parameters and execute the same modules. Twenty-two focused tests,
+  Ruff, byte compilation, shell validation, and a three-arm CPU smoke pass.
+
+  Initial jobs `739242--739244` fail before update one because the immutable
+  runtime omitted `falsification_coupled_particles.py`; no artifact is
+  produced. Corrected runtime SHA256SUMS SHA-256 is
+  `7c2b11bac068ce8cc47273ecf9719c00d4c10a1f637d5ff70c2ff0a553c9ef3d`.
+  Valid jobs `739246--739248` use seed 29, 1,000 updates, 256
+  examples/update, and the same frozen six cohorts.
+
+  UTILITY/FIXED/RESIDUAL macro exact is
+  `18.164% / 18.441% / 17.676%`. UTILITY loses FIXED by `0.277` and does not
+  improve every family. Shuffling selected outcomes reduces UTILITY to
+  `10.726%`, but shuffling only the selector query reduces it only to
+  `17.741%` (`-0.423`). Contradiction reduction is
+  `0.608 / 0.288 / 0.779`; local correction again fails to predict final
+  composition.
+
+  UTILITY/FIXED/RESIDUAL report SHA-256 values are
+  `d50da2a6f7bdee8fb6ae951faeb2e1a1f18672ee0a35293fd04963d6bdc61f82`,
+  `7b895de5751b3c01486ee734ecd2d86520617cef1eedf3a9a0ffde023630c335`,
+  and
+  `5cd99aefc42c1d4fdfc37ad6d49bb3d1121e6f4175b33bf8a1cb33dfc44ec7d3`.
+  No selector duration, width, seed, temperature, loss, or top-k extension
+  follows. The next lane must replace the transition/composition mechanism,
+  not route evidence into the same sparse additive updater.
+
+  Decision:
+  `close_qvesr_and_the_sparse_revision_selector_family`.
