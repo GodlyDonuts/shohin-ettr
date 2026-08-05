@@ -54938,3 +54938,30 @@ oracle remains separately labelled. The resulting routed system reaches
 candidate-diversity gate samples update 224 independently and must add at
 least five code solves; failure closes inference scaling and redirects effort
 to a larger verified function-shaped corpus.
+
+### Verified compositional function capacity (2026-08-04)
+
+That successor data now exists. Sixteen Stokes shards generate 80,000 unique
+typed function tasks, balanced equally across list pipelines, string
+pipelines, number-theory folds, and record pipelines. Every reference function
+passes ten randomized execution tests. Independent merge replay verifies every
+file and row hash, exact identity coverage, and zero 13-gram overlap against
+HumanEval-164 and unique MBPP-499. A verification-hash split freezes 75,966
+training rows and 4,034 confirmation rows. The training file SHA-256 is
+`636d21b3c78176205b050f025cd93b04d5fa409d7a9fa2f0c78274a7cb8e8bbd`.
+
+The full train split contains 5,375,615 SmolLM3 charged target tokens, with no
+prompt or response truncation at 4,096 tokens. To prevent the synthetic task
+grammar from replacing real function behavior, the first curriculum replays
+all 446 decontaminated, execution-verified MBPP training functions 32 times.
+This produces 90,238 rows and 6,207,839 targets, 13.4% of them real-function
+anchors, at SHA-256
+`938221205f4fdda29158d4675a3a7998a889d5313fabb0406be1b2855e210553`.
+
+One continuation from the update-224 code leader is queued as Newton job
+`738208`. It uses a conservative `1e-7` learning rate and exposes one nested
+25/50/75/100% dose curve rather than unrelated retries. Eight full corrected
+HumanEval/MBPP jobs (`738209--738216`) evaluate those checkpoints. The weight
+gate is explicit: exceed the current greedy 306/663 code total by at least
+five tasks without unacceptable broad-product regression. Synthetic
+confirmation accuracy alone cannot promote a model.

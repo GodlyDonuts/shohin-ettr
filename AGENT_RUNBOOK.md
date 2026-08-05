@@ -28392,3 +28392,49 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_57p880_product_route_test_one_update224_candidate_diversity_gate_then_expand_function_shaped_data`.
+
+- **2026-08-04 21:21--21:47 EDT** -- **The verified function-capacity
+  successor is admitted and its one-pass dose curve is queued.**
+
+  Stokes array `763352` completes 16 independent shards in about 100 seconds
+  each. Hardened merger commit `4c8d2d1` independently verifies all shard
+  paths and hashes, complete identity coverage, row execution receipts,
+  source receipts, and zero replayed 13-gram overlap with HumanEval-164 and
+  unique MBPP-499. The admitted corpus has exactly 80,000 rows: 20,000 each
+  of list, string, number-theory, and record pipelines. Its frozen split is
+  75,966 train and 4,034 confirmation. Train/confirmation/merge-report
+  SHA-256 values are
+  `636d21b3c78176205b050f025cd93b04d5fa409d7a9fa2f0c78274a7cb8e8bbd`,
+  `7e456367ec9b185054b63f66dc8656835b714d59f3d47efdb0ffc734f500b81d`,
+  and
+  `77b309270a7b020a7149c9426f4964241c4d9f942bc5a8b8f34ecbdfe39a3173`.
+  Runtime-manifest SHA-256 is
+  `c616816a2d0c90dd490eac0ce7965fd80fd6c0289fc2da8015f1f47913468b9a`.
+
+  SmolLM3 token audit `763377` measures 5,375,615 charged target tokens in
+  the train split with zero prompt or response truncation at 4,096 tokens.
+  Audit SHA-256 is
+  `6316ad0950e015b45e22b8855784a093a739fafe56948ef2a840554a5086f993`.
+  Curriculum commit `16e6cc6` adds 32 deterministic replays of each of the
+  446 protected real MBPP train/validation functions. The resulting 90,238-
+  row artifact has SHA-256
+  `938221205f4fdda29158d4675a3a7998a889d5313fabb0406be1b2855e210553`
+  and exactly 6,207,839 charged targets: 5,375,615 generated and 832,224
+  real-function anchors, again with zero truncation. Curriculum report and
+  token-audit SHA-256 values are
+  `a05cfaa266b9d7ab2870675f75f5eb4bdbf9931d670ec940de699df516ad5283`
+  and
+  `b4365a6afd00d12c19c555cbbc0ee77ebdc8ee966ce6b3de9cb440ae66f9fa90`.
+
+  Newton job `738208` continues from the exact update-224 function leader
+  with unchanged late-two-layer plus four-layer rank-8 LoRA geometry,
+  BS4/ACC2, LR `1e-7`, seed/data seed `31/20260804`, and one nested 11,279-
+  update pass. Checkpoints at 2,820/5,640/8,460/11,279 expose a single
+  25/50/75/100% dose curve. Full corrected HumanEval/MBPP evaluations are
+  dependency-held as `738209--738216`. Promotion first requires at least five
+  additional greedy code solves over the update-224 `89+217=306` floor;
+  only then is candidate search rerun. Broad product regressions reject the
+  checkpoint even if synthetic confirmation improves.
+
+  Decision:
+  `run_one_anchored_function_graph_dose_curve_promote_only_a_real_full_board_code_gain`.
