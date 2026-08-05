@@ -1,6 +1,6 @@
 import hashlib
 
-from build_model_failure_repair_curriculum import build
+from build_model_failure_repair_curriculum import build, preference_pairs
 from materialize_verified_mbpp_anchor_board import materialize
 
 
@@ -51,3 +51,16 @@ def test_builds_only_actual_model_failures() -> None:
     assert "Previous solution:\ndef inc(x)" in rows[0]["question"]
     assert "AssertionError" in rows[0]["question"]
     assert rows[0]["response"] == _raw()["code"]
+    assert rows[0]["rejected_response"] == "def inc(x):\n    return x"
+
+    pairs = preference_pairs(rows)
+    assert pairs == [
+        {
+            "schema": "shohin-product-verifier-preference-pairs-v1",
+            "question": rows[0]["question"],
+            "chosen": _raw()["code"],
+            "rejected": "def inc(x):\n    return x",
+            "source_identity_sha256": identity,
+            "verification": "model_failure_vs_execution_verified_gold_v1",
+        }
+    ]

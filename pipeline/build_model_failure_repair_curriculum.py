@@ -12,6 +12,7 @@ from typing import Any
 
 
 SCHEMA = "shohin-model-failure-repair-curriculum-v1"
+PAIR_SCHEMA = "shohin-product-verifier-preference-pairs-v1"
 SYSTEM_TASK = (
     "Write Python code that solves the task and passes every test. Return only "
     "executable Python code, without Markdown fences."
@@ -83,6 +84,7 @@ def build(
             {
                 "question": f"{SYSTEM_TASK}\n\nTask:\n{repair}\n\nTests:\n{tests}",
                 "response": str(source["code"]).strip(),
+                "rejected_response": completion,
                 "source": "mbpp_model_failure_repair",
                 "source_identity_sha256": identity,
                 "task_id": int(source["task_id"]),
@@ -93,6 +95,26 @@ def build(
             }
         )
     return rows
+
+
+def preference_pairs(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    pairs = []
+    for row in rows:
+        chosen = str(row.get("response") or "").strip()
+        rejected = str(row.get("rejected_response") or "").strip()
+        if not chosen or not rejected or chosen == rejected:
+            raise ModelFailureRepairError("repair row cannot form a preference pair")
+        pairs.append(
+            {
+                "schema": PAIR_SCHEMA,
+                "question": str(row["question"]),
+                "chosen": chosen,
+                "rejected": rejected,
+                "source_identity_sha256": str(row["source_identity_sha256"]),
+                "verification": "model_failure_vs_execution_verified_gold_v1",
+            }
+        )
+    return pairs
 
 
 def _rows(path: Path) -> list[dict[str, Any]]:
@@ -124,6 +146,7 @@ def main() -> int:
     parser.add_argument("--board", type=Path, required=True)
     parser.add_argument("--evaluation", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--preference-output", type=Path)
     parser.add_argument("--report", type=Path, required=True)
     args = parser.parse_args()
     evaluation = json.loads(args.evaluation.read_text())
@@ -145,6 +168,13 @@ def main() -> int:
         "output": str(args.output.resolve()),
     }
     report["output_sha256"] = _atomic_lines(args.output, rows)
+    if args.preference_output is not None:
+        pairs = preference_pairs(rows)
+        report["preference_output"] = str(args.preference_output.resolve())
+        report["preference_rows"] = len(pairs)
+        report["preference_output_sha256"] = _atomic_lines(
+            args.preference_output, pairs
+        )
     if args.report.exists():
         raise ModelFailureRepairError(f"refusing existing report: {args.report}")
     args.report.write_text(json.dumps(report, sort_keys=True, indent=2) + "\n")
