@@ -82,31 +82,50 @@ def build_curriculum(
     if any(row.get("split") != "train" for row in generated_rows):
         raise FunctionGraphCurriculumError("generated corpus contains non-train rows")
 
-    ranked_generated = sorted(
-        generated_rows,
-        key=lambda row: hashlib.sha256(
-            f"{seed}\0{row.get('global_identity')}\0{row.get('verification_sha256')}".encode()
-        ).digest(),
-    )
+    grouped: dict[str, dict[str, list[dict[str, Any]]]] = {}
+    for row in generated_rows:
+        family = str(row.get("family") or "unknown")
+        graph_key = family + "\0" + json.dumps(row.get("graph"), sort_keys=True)
+        grouped.setdefault(family, {}).setdefault(graph_key, []).append(row)
+    for graphs in grouped.values():
+        for graph_key, values in graphs.items():
+            values.sort(
+                key=lambda row: hashlib.sha256(
+                    f"{seed}\0{graph_key}\0{row.get('global_identity')}\0"
+                    f"{row.get('verification_sha256')}".encode()
+                ).digest()
+            )
+
     graph_counts: Counter[str] = Counter()
     family_counts: Counter[str] = Counter()
     selected_generated: list[dict[str, Any]] = []
-    for row in ranked_generated:
-        family = str(row.get("family") or "unknown")
-        graph_key = family + "\0" + json.dumps(row.get("graph"), sort_keys=True)
-        if (
-            generated_max_per_graph
-            and graph_counts[graph_key] >= generated_max_per_graph
-        ):
-            continue
-        if (
-            generated_max_per_family
-            and family_counts[family] >= generated_max_per_family
-        ):
-            continue
-        graph_counts[graph_key] += 1
-        family_counts[family] += 1
-        selected_generated.append(row)
+    for family in sorted(grouped):
+        graphs = grouped[family]
+        graph_keys = sorted(
+            graphs,
+            key=lambda graph_key: hashlib.sha256(
+                f"{seed}\0{graph_key}".encode()
+            ).digest(),
+        )
+        depth_limit = generated_max_per_graph or max(map(len, graphs.values()))
+        for depth in range(depth_limit):
+            for graph_key in graph_keys:
+                if (
+                    generated_max_per_family
+                    and family_counts[family] >= generated_max_per_family
+                ):
+                    break
+                values = graphs[graph_key]
+                if depth >= len(values):
+                    continue
+                graph_counts[graph_key] += 1
+                family_counts[family] += 1
+                selected_generated.append(values[depth])
+            if (
+                generated_max_per_family
+                and family_counts[family] >= generated_max_per_family
+            ):
+                break
     if not selected_generated:
         raise FunctionGraphCurriculumError("semantic cap removed every generated row")
 
