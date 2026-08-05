@@ -55594,3 +55594,31 @@ Seed report SHA-256 values are `2ac508b6...35118`, `0f6096f6...5047f`,
 `74d9582b...c6919`, `ccaade86...ba524`, and `b9119858...431a6`. Exact full
 hashes and checkpoint hashes are in
 `docs/research/DIVERGE_V0_NEURAL_COMPONENT_PILOT.md`.
+
+### DIVERGE passes the source-sealed matched mechanism gate (2026-08-05)
+
+The first complete A--G result is positive after two invalid pilots were
+discarded: one had a 2:1 sensitive-label imbalance, and one reused source alias
+representations at delayed-evidence time. The accepted runtime performs learned
+source compilation first, retains only packet commitments/typed programs, and
+then binds delayed evidence against those commitments without source bytes,
+residuals, KV, aliases, query, or answer access.
+
+Across five compiler seeds, 720 episodes, and 2,160 sensitive/invariant/
+underdetermined queries, full DIVERGE is **100%**. Single top-1, matched whole
+particles, and equal-transaction recurrence are 33.333%; independent coherent
+trajectories average 40.602%; soft field aggregation and factorization without
+conflict are 66.667%. Every seed and ontology passes, all 720 compiled packets
+and supports are exact, and G has zero false certificates. Removing conflict,
+forcing top-1, shuffling provenance, swapping packets, resetting state, and
+shuffling labels produce the preregistered collapses.
+
+The factorized 64-world packet is 4,745 bytes versus 176,177 bytes for complete
+particles (`37.129x`) and uses 52 unique versus 448 duplicated transaction
+applications (`8.615x`). Aggregate report SHA-256 is
+`0d78b271cd4bf4761dde5aa80b929e24ad50fe5057ae5f9cd2c1ea763a8b918d`.
+
+This establishes a compact source-sealed delayed-recovery mechanism on the
+frozen synthetic board. It does not establish unrestricted language reasoning,
+public benchmark lift, or a final Shohin model. CUDA resource profiling and a
+broader learned-language transfer gate remain before scaling.

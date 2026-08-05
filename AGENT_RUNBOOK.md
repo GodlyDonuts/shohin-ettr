@@ -29504,3 +29504,46 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `qualify_token_role_source_boundary_then_run_the_frozen_complete_diverge_a_to_g_gate`.
+
+- **2026-08-05 19:00--19:40 EDT** -- **DIVERGE passes the balanced source-
+  sealed matched A--G CPU gate on five of five seeds; CUDA receipt pending.**
+
+  Complete arms A--G now share the same 135,528,970-parameter frozen-Smol plus
+  1,013,962-trainable-parameter source compiler and exact 600-update / 9,600-
+  episode charge. Deterministic reconstruction counts 3,855,149 Smol token
+  positions and 869,822 alias-character positions per seed. Full particles are
+  limited by the candidate packet's actual canonical bytes and unique guarded
+  transaction applications. A certified commuting schedule reorders only
+  provably disjoint slot footprints; 13 core tests prove exact state parity and
+  preserve every overlapping/noncommuting pair.
+
+  Two pre-results are retained but invalid. V1 has a 2:1 sensitive-label
+  imbalance. Balanced V2 still re-encodes source aliases when delayed evidence
+  arrives, so its source-deletion check is too late. V3 compile/evidence phases
+  are separated: source fields become packet option commitments; after source
+  deletion, the delayed key is hashed and matched using only packet+evidence.
+  The candidate appends that certificate independently. The assessor validates
+  it afterward and cannot change runtime output.
+
+  Stokes jobs `766177--766181` complete all five V3 seeds. Over 720 episodes /
+  2,160 queries, A/B/D are 33.333%, C averages 40.602% (39.352--42.130%), E/F
+  are 66.667%, and G is 100%. All 720 packets, compile supports, and post-
+  conflict valid supports are exact; G has zero false certificates and 100%
+  sensitive recovery in every ontology. Minimum causal drops are conflict
+  33.333, forced top-1 66.667, shuffled guard/provenance 33.333, packet swap
+  34.722, state reset 100, and shuffled labels 100 points. Query-only equals
+  its 83.333% empirical-majority ceiling.
+
+  At 64 worlds, packet/particle bytes are 4,745/176,177 (`37.129x`) and unique/
+  duplicated transactions are 52/448 (`8.615x`). Aggregate report SHA-256 is
+  `0d78b271cd4bf4761dde5aa80b929e24ad50fe5057ae5f9cd2c1ea763a8b918d`;
+  five exact input hashes are in the DIVERGE architecture dossier. Accepted
+  runtime is private commit `8e846c3`, archive SHA-256
+  `778d33c37241f27c502ba274bc1b35ce70f3456778e24c46d2fbd4bb8bd3fadc`.
+
+  H100 job `742054` remains pending for profiler FLOPs/peak-memory and CUDA
+  parity; `742055--742058` follow after success. Do not call this general
+  reasoning. It is a positive finite-grammar delayed-recovery mechanism gate.
+
+  Decision:
+  `provisionally_accept_diverge_mechanism_then_complete_cuda_receipt_and_broader_language_transfer`.

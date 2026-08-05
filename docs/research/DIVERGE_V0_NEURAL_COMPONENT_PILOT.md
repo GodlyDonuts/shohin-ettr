@@ -1,8 +1,8 @@
 # DIVERGE-v0 Neural Component Pilot
 
-Status: the tiny source compiler is closed as a robustness negative; one frozen
-SmolLM2 residual compiler gate is the active successor. This is not the frozen
-A--G architecture promotion experiment.
+Status: the tiny and pooled source compilers are closed. The token-role/source-
+copy compiler qualifies, and its source-sealed matched A--G CPU gate passes
+five of five seeds. CUDA resource profiling remains pending.
 
 Date: 2026-08-05
 
@@ -113,6 +113,14 @@ All reports/checkpoints are read-only and hash-verified locally and on Newton.
 This clears only the learned source-boundary prerequisite. The next gate must
 implement the complete matched A--G arms, three late-query types, resource
 receipts, and causal interventions already frozen in the promotion contract.
+
+That matched CPU gate is now complete. Five seeds / 720 episodes / 2,160 late
+queries give G DIVERGE 100% versus 66.667% for the strongest soft and no-
+conflict controls. Exact details and the two invalid pre-promotion attempts are
+recorded in `DIVERGE_V0_SOURCE_SEALED_FACTORIZED_CSDC.md`. Delayed evidence no
+longer reuses source aliases: it binds only to option commitments in the sealed
+packet. The aggregate report SHA-256 is
+`0d78b271cd4bf4761dde5aa80b929e24ad50fe5057ae5f9cd2c1ea763a8b918d`.
 
 ## Claim boundary
 

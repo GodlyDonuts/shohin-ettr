@@ -1,8 +1,9 @@
 # DIVERGE-v0 Source-Sealed Factorized CSDC
 
-Status: CPU mechanics passed and the token-role/source-copy compiler qualified
-on five of five seeds. The complete resource-matched A--G architecture gate is
-not yet run, so no DIVERGE promotion or general-reasoning claim exists.
+Status: CPU mechanics, the token-role/source-copy compiler, and the source-
+sealed matched A--G gate pass on five of five seeds. The CUDA resource receipt
+is pending, so promotion remains provisional and no general-reasoning claim
+exists.
 
 Date: 2026-08-05
 
@@ -307,7 +308,67 @@ a ten-point OOD gain over every matched control, gains on every family and four
 of five seeds, and the specified causal intervention collapses. A merely
 working factorized executor does not pass.
 
-## 8. Kill conditions
+## 9. Provisional matched A--G result
+
+The first two aggregate attempts are retained but invalid for promotion. The
+first board accidentally gave one sensitive label two-thirds prevalence. The
+balanced successor still re-encoded source aliases when delayed evidence
+arrived, so source deletion occurred too late. Neither result is used below.
+
+The corrected runtime separates the phases. Source-time inference predicts
+only token roles, ordered actions, support priors, and complete fault-line
+records. It then deletes the source view. Delayed evidence supplies an alias;
+the runtime hashes that alias and matches it against option commitments already
+inside the sealed packet. It creates the binary nogood from that match alone.
+The independent assessor checks the candidate certificate afterward but does
+not gate, repair, or change runtime execution.
+
+Five compiler checkpoints each evaluate the same balanced 144-episode board:
+three ontologies, two held renderers, widths 2--64, and sensitive, invariant,
+and underdetermined late queries. Across 720 episodes / 2,160 queries:
+
+| Arm | Mean exact |
+|---|---:|
+| A single immediate top-1 | 33.333% |
+| B memory/FLOP-capped whole particles | 33.333% |
+| C independent coherent trajectories | 40.602% |
+| D equal-transaction recurrence | 33.333% |
+| E soft field aggregation | 66.667% |
+| F factorized packet without conflict | 66.667% |
+| **G full DIVERGE** | **100.000%** |
+
+Every seed has 100% exact packets, compile-time gold-support recall, valid-
+support preservation, sensitive recovery, invariant answers, required
+abstentions, and zero false G certificates. G is 100% in every ontology. The
+strongest A--F control is 66.667%, a 33.333-point margin. C ranges from 39.352%
+to 42.130% across seeds.
+
+Causal drops from G are 33.333 points without conflict, 66.667 under forced
+top-1, 33.333 with shuffled guard/provenance, 34.722 under packet swap, and 100
+under state reset or shuffled labels. Query-only equals its balanced empirical
+majority at 83.333%. Source deletion is bit-identical.
+
+At 64 worlds the packet uses 4,745 canonical bytes versus 176,177 complete-
+particle bytes (`37.129x`) and 52 unique versus 448 duplicated transaction
+applications (`8.615x`). The width-eight transaction ratio is exactly the
+frozen `2.0x` floor after a semantics-preserving schedule moves only provably
+disjoint slot transactions; all overlapping/noncommuting pairs retain source
+order and exact execution parity.
+
+The immutable five-seed aggregate SHA-256 is
+`0d78b271cd4bf4761dde5aa80b929e24ad50fe5057ae5f9cd2c1ea763a8b918d`.
+Per-seed report hashes are `039015b0...8aa8`, `c25a449a...9fa2`,
+`b3a5a0f8...9154`, `9834f958...aca`, and `da1e5ef5...d8f`. Runtime commit is
+`8e846c3`; minimal archive SHA-256 is
+`778d33c37241f27c502ba274bc1b35ce70f3456778e24c46d2fbd4bb8bd3fadc`.
+
+This is a real synthetic mechanism win, not unrestricted language reasoning.
+The finite grammar exposes candidate records and a parseable delayed key. The
+remaining CUDA run supplies profiled compiler FLOPs and peak device memory;
+subsequent promotion must then broaden the language compiler and execute a
+sealed distribution shift without changing this gate.
+
+## 10. Kill conditions
 
 Kill or sharply narrow DIVERGE if any of the following occurs:
 
@@ -322,7 +383,7 @@ Kill or sharply narrow DIVERGE if any of the following occurs:
 - answers depend on query statistics, raw source retention, hidden host
   repair, or assessor access.
 
-## 9. Evidence and novelty boundary
+## 11. Evidence and novelty boundary
 
 Protected CSDC has already established
 `plastic local evidence -> complete hypotheses -> source counterexample

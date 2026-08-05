@@ -135,6 +135,14 @@ qualifies the compiler only. The full resource-matched A--G matrix, late-query
 types, causal interventions, and sharing receipts remain required before any
 architecture claim.
 
+The subsequent balanced, source-sealed A--G CPU gate passes all five compiler
+seeds. Full DIVERGE is 100% over 2,160 late queries; the strongest A--F controls
+are soft aggregation and no-conflict factorization at 66.667%. Whole particles
+are capped by the same packet-byte and unique-transaction budgets and score
+33.333%. This is the first complete positive DIVERGE mechanism result, but its
+scope is still a finite synthetic grammar with an exact delayed-key binder.
+CUDA resource profiling and broader learned-language transfer remain open.
+
 ## Terminology
 
 Do not call this "schizophrenic AI" in code, a paper, a resume, or a public
