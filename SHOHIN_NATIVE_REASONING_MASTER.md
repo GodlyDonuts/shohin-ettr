@@ -54897,3 +54897,32 @@ and K=4 visible-test selection run. K=4 oracle execution is reported only as
 a capability ceiling. A deployable selector may execute tests present in an
 MBPP-style user prompt and HumanEval docstring examples, but it may not read
 the hidden benchmark harness.
+
+### Function-specialist promotion on corrected full code boards (2026-08-04)
+
+The provisional gain survives a corrected executor and the complete unique
+MBPP board. The protected source solves HumanEval `44/164` and MBPP `140/499`.
+Function-aligned updates 56/112/224 solve `84/211`, `89/215`, and `89/217`.
+The update-224 specialist therefore adds 122 executable solves over source.
+When only code is routed to it, the existing five-domain product moves from a
+corrected `51.743%` macro and `2,400/3,930` solved to `56.030%` and
+`2,522/3,930`. This is the first material product improvement after the local
+RLVR family closed.
+
+The mechanism is narrow but informative: 446 compact, execution-verified,
+decontaminated function examples outperform millions of longer contest-code
+tokens because their supervision interface matches the required output. The
+result is not merely function formatting. Paired transcript execution shows
+51 HumanEval gains against 6 losses and 115 MBPP gains against 38 losses,
+including correct multi-step algorithms for prime products, fraction
+simplification, Collatz traversal, counting sort, and typed collection tasks.
+
+Test-time search is made conservative instead of best-of-K. A strong greedy
+answer is the anchor; alternatives are considered only using tests exposed in
+the prompt. On HumanEval, update 112 rises from `89/164` greedy to `95/164`
+selected with four additional samples, without reading hidden tests. Its
+`115/164` union oracle is only a diagnostic ceiling. Three quarters of the
+MBPP K=4 gate select `193/375`; the last quarter is being replayed after a
+bytes-valued timeout diagnostic caused post-generation serialization to fail.
+The exact record is
+`artifacts/product_reasoning/function_code_promotion_b62fbf3_r1.json`.

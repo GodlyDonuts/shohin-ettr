@@ -1,0 +1,86 @@
+{
+  "schema": "shohin-function-code-promotion-v1",
+  "status": "promoted_greedy_and_humaneval_anchor_pending_final_mbpp_k4_quarter",
+  "recorded_at": "2026-08-04T21:05:00-04:00",
+  "protected_source": {
+    "checkpoint_sha256": "baf4623755d26ae13b4a8de8b304c07ae197d95a51f0119e0c67f62a0aa139b5",
+    "humaneval": {
+      "correct": 44,
+      "total": 164,
+      "report_sha256": "b2355871388f818ae8fa4b444aea912a32ed829179e6cec8a3b6e80ae41cb1b6"
+    },
+    "mbpp": {
+      "correct": 140,
+      "total": 499,
+      "report_sha256": "40b103c04fd5145a648d0eafe8ac85dbcb95265b60572bf888c90e219055143c"
+    },
+    "routed_code_domain_percent": 27.44269025856591,
+    "routed_five_domain_macro_percent": 51.743381865131674,
+    "routed_solved": 2400,
+    "routed_total": 3930
+  },
+  "training": {
+    "data_rows": 446,
+    "data_sha256": "bc43c959841039a7a9e222e6f4cd17131d5a182fd666545b4429bc1393eb06e6",
+    "data_contract": "MBPP train and validation functions; source-test verified; 13-gram decontaminated from evaluation prompts",
+    "charged_target_tokens_four_pass": 104776,
+    "source_geometry": "late two layers plus four-layer rank-8 LoRA",
+    "learning_rate": 0.000003,
+    "model_seed": 31,
+    "data_seed": 20260804
+  },
+  "greedy_checkpoints": {
+    "update_56": {
+      "checkpoint_sha256": "a246ea59a7a72a0f7485bc3d9640696b11e00a23df510648260067916fde891e",
+      "humaneval_correct": 84,
+      "mbpp_correct": 211
+    },
+    "update_112": {
+      "checkpoint_sha256": "a7b32ff7b74aac4f6d28f8256b0588e69f10915d2b394b0c1942df9636220d18",
+      "humaneval_correct": 89,
+      "mbpp_correct": 215
+    },
+    "update_224": {
+      "checkpoint_sha256": "0f5755d1ec7e6ce4add46ef77f60e7e092fe0883dec257ef5099ffdf22e802c8",
+      "humaneval_correct": 89,
+      "mbpp_correct": 217,
+      "routed_code_domain_percent": 48.87763331541131,
+      "routed_five_domain_macro_percent": 56.03037047650076,
+      "routed_solved": 2522,
+      "routed_total": 3930
+    }
+  },
+  "humaneval_anchor_search": {
+    "anchor": "update_112_greedy",
+    "samples": 5,
+    "first_correct": 89,
+    "oracle_correct_diagnostic_only": 115,
+    "selected_correct": 95,
+    "total": 164,
+    "selector_reads_hidden_tests": false,
+    "selection_policy": "anchor-first",
+    "report_sha256": "fcee15c69b66d602d3cf5bb8fa5f8638198e9e3e5d1ca6c9d0f6c7805d461072",
+    "candidate_merge_sha256": "b1b2f540e6e879531ffe1bc0698f449fe2c01a1f369ed10e50add1dea7d8aaee",
+    "routed_with_update_112_greedy_mbpp_macro_percent": 56.356143974716694,
+    "routed_with_update_112_greedy_mbpp_solved": 2526
+  },
+  "paired_update_224_vs_source": {
+    "humaneval_gains": 51,
+    "humaneval_losses": 6,
+    "mbpp_gains": 115,
+    "mbpp_losses": 38
+  },
+  "runtimes": {
+    "corrected_eval_manifest_sha256": "80457ee4133306ec5c9eeec6ddabe85a196596fb96262842db1089435b458650",
+    "anchor_search_manifest_sha256": "562d23df89daded3022160470a7d2703f17a6d5c1fc1bb2f9a1048156b9fec0c",
+    "timeout_safe_rollout_manifest_sha256": "165d955e8289e94582325606d4371b3a4421970bd02dc4a3abbb2f214f184b47"
+  },
+  "active_final_gate": {
+    "description": "visible-test K=4 MBPP selection for update 112",
+    "completed_selected": 193,
+    "completed_total": 375,
+    "remaining_total": 124,
+    "fallback_job": 738069,
+    "parallel_jobs": [738101, 738103, 738105, 738107, 738109, 738111, 738113, 738115]
+  }
+}

@@ -28314,3 +28314,49 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_mixed_and_contest_only_code_sft_promote_function_aligned_update112_pending_full499_and_measure_visible_test_k4`.
+
+- **2026-08-04 20:18--21:05 EDT** -- **Corrected execution and the full
+  499-row board promote function-aligned code specialization as a material
+  product gain.**
+
+  The HumanEval assembler previously discarded prompt preambles such as
+  `typing` imports whenever a completion emitted a complete function. Commit
+  `5ff978c` corrects that behavior and indents body-only completions. The
+  protected source now scores HumanEval `44/164` and full unique MBPP
+  `140/499`. Function checkpoints at updates 56/112/224 score HumanEval
+  `84/89/89` and MBPP `211/215/217`. Update 224 therefore solves `306/663`
+  code tasks versus source `184/663`; paired execution finds 51 gains and 6
+  losses on HumanEval plus 115 gains and 38 losses on MBPP. Inspected gains
+  contain real prime-factor, fraction, Collatz, counting-sort, parity, and
+  list/string algorithms rather than format-only repairs.
+
+  Replacing only the old code route with corrected source gives `51.743%`
+  five-domain macro and `2,400/3,930` solved. Greedy update 224 raises this to
+  `56.030%` and `2,522/3,930`, a `+4.287` macro and `+122` solved-task lift.
+  This clears the practical promotion gate. Update 112 remains useful for
+  test-time search: one greedy anchor plus four stochastic candidates, with a
+  selector that reads only public docstring examples, raises HumanEval from
+  `89/164` to `95/164`; its hidden-harness oracle `115/164` is diagnostic
+  only. With greedy MBPP this intermediate route reaches `56.356%` and
+  `2,526/3,930`.
+
+  Three of four update-112 MBPP K=4 shards complete at `193/375` selected;
+  MBPP tests are present in the user prompt, so selected equals exact oracle
+  on those rows. The fourth generated all 124 rows but an evaluator edge case
+  returned timeout stdout as bytes and failed only during JSON serialization.
+  Commit `b62fbf3` decodes bounded diagnostics, preserves the failed partial,
+  and reruns only the missing quarter. Fallback job `738069` and eight short
+  single-H100 backfill parts `738101/103/105/107/109/111/113/115` race using
+  disjoint outputs; cancel the losing route after one complete result exists.
+
+  Structured promotion record is
+  `artifacts/product_reasoning/function_code_promotion_b62fbf3_r1.json`.
+  Runtime manifest SHA-256 values are corrected evaluation
+  `80457ee4133306ec5c9eeec6ddabe85a196596fb96262842db1089435b458650`,
+  anchor selection
+  `562d23df89daded3022160470a7d2703f17a6d5c1fc1bb2f9a1048156b9fec0c`,
+  and timeout-safe rollout
+  `165d955e8289e94582325606d4371b3a4421970bd02dc4a3abbb2f214f184b47`.
+
+  Decision:
+  `promote_function_code_routing_keep_update224_greedy_and_update112_visible_search_finish_only_the_missing_mbpp_quarter`.
