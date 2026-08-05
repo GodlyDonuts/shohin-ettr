@@ -1,3 +1,5 @@
+import hashlib
+
 from build_visible_code_repair_bank import (
     SCHEMA,
     VisibleCodeRepairError,
@@ -51,6 +53,19 @@ def test_builds_visible_only_repair_prompt() -> None:
     assert "Previous solution" in rows[0]["text"]
     assert "AssertionError" in rows[0]["text"]
     assert rows[0]["test_list"] == ["assert inc(1) == 2"]
+
+
+def test_derives_evaluator_identity_for_canonical_bank_row() -> None:
+    identity = hashlib.sha256(b"mbpp\0Return x + 1.").hexdigest()
+    bank = _bank(identity)
+    bank.pop("identity_sha256")
+    rows = build_repair_rows(
+        [bank],
+        [_candidate(identity, 0, False)],
+        _selection(identity),
+        diagnostic_chars=100,
+    )
+    assert rows[0]["original_identity_sha256"] == identity
 
 
 def test_drops_already_correct_selection() -> None:

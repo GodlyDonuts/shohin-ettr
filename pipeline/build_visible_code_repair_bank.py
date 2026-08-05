@@ -36,9 +36,20 @@ def _rows(path: Path) -> list[dict[str, Any]]:
 
 def _identity(row: dict[str, Any]) -> str:
     identity = str(row.get("identity_sha256") or "")
-    if not identity:
-        raise VisibleCodeRepairError("row identity is missing")
-    return identity
+    if identity:
+        return identity
+    task = str(row.get("task") or "")
+    question = next(
+        (
+            str(row[key])
+            for key in ("question", "problem", "prompt", "text", "input")
+            if row.get(key)
+        ),
+        "",
+    )
+    if not task or not question:
+        raise VisibleCodeRepairError("row identity cannot be derived")
+    return hashlib.sha256(f"{task}\0{question}".encode()).hexdigest()
 
 
 def _diagnostic(execution: dict[str, Any], limit: int) -> str:
