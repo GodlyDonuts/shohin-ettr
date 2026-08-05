@@ -54965,3 +54965,16 @@ HumanEval/MBPP jobs (`738209--738216`) evaluate those checkpoints. The weight
 gate is explicit: exceed the current greedy 306/663 code total by at least
 five tasks without unacceptable broad-product regression. Synthetic
 confirmation accuracy alone cannot promote a model.
+
+The pre-launch semantic audit then found a critical distinction between
+prompt count and reasoning diversity. The 75,966-row train split contains
+13,510 distinct operation graphs: 13,198 list graphs but only 12 number-
+theory, 156 record, and 144 string graphs. The unallocated full-corpus job was
+canceled at zero runtime. A diversity-first cap retains at most eight examples
+per graph and 5,000 per family, selecting 7,496 generated rows across 5,312
+distinct graphs. Eight real-anchor replays yield an 11,064-row, 747,650-target
+curriculum with zero truncation, SHA-256
+`69ad92d3ba59e58715aca828463198d4ae5597f270129b924f912bc8269b4a17`.
+Newton job `738224` trains one 1,383-update curve from u224; full code-board
+jobs `738225--738232` retain the same +5-task promotion rule. This correction
+spends compute on semantic variety rather than renamed template volume.

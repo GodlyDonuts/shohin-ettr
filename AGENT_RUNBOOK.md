@@ -28438,3 +28438,38 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_one_anchored_function_graph_dose_curve_promote_only_a_real_full_board_code_gain`.
+
+- **2026-08-04 21:47--22:06 EDT** -- **Semantic diversity audit prevents a
+  low-value 6.2M-token replay and replaces it with a compact curve.**
+
+  Before Newton job `738208` allocated, a graph-key audit found that the raw
+  75,966-row train split contains only 13,510 distinct computations: 13,198
+  list graphs, 12 number-theory graphs, 156 record graphs, and 144 string
+  graphs. Unique prompts and randomized tests do not make identical operation
+  graphs new supervision. Job `738208` and dependencies `738209--738216` were
+  therefore canceled at exactly zero elapsed time; their artifacts remain
+  absent and the full admitted corpus is preserved for future generator work.
+
+  Commits `9ec54d8/912b8fb` cap each graph at eight examples, cap each family
+  at 5,000, and select diversity-first before allowing a repeat. The frozen
+  result contains 7,496 generated rows spanning 5,312 distinct graphs:
+  5,000 list, 96 number-theory, 1,248 record, and 1,152 string rows. Eight
+  replays of each of the 446 real-function anchors produce 11,064 total rows.
+  Data/report/token-audit SHA-256 values are
+  `69ad92d3ba59e58715aca828463198d4ae5597f270129b924f912bc8269b4a17`,
+  `e41a01022d92d0d21cccb9b49d9a2d593d69566b1339066eb1080177956350b8`,
+  and
+  `e1cd692ba06e59664af3b04bcc30eb8af692422050a2b600d94ced70a64af68b`.
+  It contains exactly 747,650 charged targets: 539,594 generated and 208,056
+  anchor, with zero truncation. Runtime-manifest SHA-256 is
+  `f3903d0cfc3b6f0dd85a9e803f67ac06dfeca3f4196936107b14c34689ee1ff8`.
+
+  Newton job `738224` now runs the actual one-pass curve from u224 at LR
+  `3e-7`, BS4/ACC2, checkpoints 346/692/1,038/1,383. Full corrected code
+  evaluations are `738225--738232`. The unchanged greedy floor is 306/663;
+  promotion requires at least 311/663 plus acceptable broad behavior. The
+  first 400 confirmation rows are separately queued from u224 as `738219` to
+  distinguish learned transfer from memorizing public benchmark shapes.
+
+  Decision:
+  `train_semantic_diversity_not_prompt_volume_and_keep_the_plus5_full_code_gate`.
