@@ -62,6 +62,27 @@ def _diagnostic(execution: dict[str, Any], limit: int) -> str:
     return rendered[:limit]
 
 
+def _original_task_text(row: dict[str, Any]) -> str:
+    """Recover the root task instead of recursively nesting repair prompts."""
+
+    explicit = str(row.get("original_task_text") or "").strip()
+    if explicit:
+        return explicit
+    text = str(row.get("text") or "").strip()
+    if row.get("repair_schema") == SCHEMA:
+        prefix = "Original task:\n"
+        suffix = "\n\nPrevious solution:\n"
+        start = text.find(prefix)
+        end = text.find(suffix, start + len(prefix)) if start >= 0 else -1
+        if start >= 0 and end > start:
+            recovered = text[start + len(prefix) : end].strip()
+            if recovered:
+                return recovered
+    if not text:
+        raise VisibleCodeRepairError("repair row has no root task text")
+    return text
+
+
 def build_repair_rows(
     bank_rows: list[dict[str, Any]],
     candidates: list[dict[str, Any]],
@@ -107,10 +128,17 @@ def build_repair_rows(
         completion = str(candidate.get("completion") or "").strip()
         if not completion:
             completion = "# No executable solution was produced."
+        original_task_text = _original_task_text(original)
+        repair_round = int(original.get("repair_round") or 0) + 1
+        root_identity = str(
+            original.get("root_identity_sha256")
+            or original.get("original_identity_sha256")
+            or identity
+        )
         prompt = (
             "Repair the previous Python solution. Return only the complete corrected "
             "executable Python code, without Markdown fences or explanation.\n\n"
-            f"Original task:\n{original['text']}\n\n"
+            f"Original task:\n{original_task_text}\n\n"
             f"Previous solution:\n{completion}\n\n"
             "Observed result from executing only the public tests shown below:\n"
             f"{_diagnostic(execution, diagnostic_chars)}\n\n"
@@ -121,6 +149,9 @@ def build_repair_rows(
             {
                 "text": prompt,
                 "original_identity_sha256": identity,
+                "root_identity_sha256": root_identity,
+                "original_task_text": original_task_text,
+                "repair_round": repair_round,
                 "selected_sample_index": sample_index,
                 "repair_source_execution": execution,
                 "repair_schema": SCHEMA,

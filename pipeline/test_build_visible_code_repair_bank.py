@@ -50,9 +50,37 @@ def test_builds_visible_only_repair_prompt() -> None:
     assert len(rows) == 1
     assert rows[0]["repair_schema"] == SCHEMA
     assert rows[0]["original_identity_sha256"] == "a"
+    assert rows[0]["root_identity_sha256"] == "a"
+    assert rows[0]["original_task_text"] == "Return x + 1."
+    assert rows[0]["repair_round"] == 1
     assert "Previous solution" in rows[0]["text"]
     assert "AssertionError" in rows[0]["text"]
     assert rows[0]["test_list"] == ["assert inc(1) == 2"]
+
+
+def test_second_round_recovers_root_task_without_nested_prompt() -> None:
+    first = build_repair_rows(
+        [_bank("a")],
+        [_candidate("a", 0, False)],
+        _selection("a"),
+        diagnostic_chars=100,
+    )[0]
+    second_identity = "a"
+    second_selection = _selection(second_identity)
+    second_candidate = _candidate(second_identity, 0, False)
+    second_candidate["completion"] = "def inc(x):\n    return x + 2"
+    rows = build_repair_rows(
+        [first],
+        [second_candidate],
+        second_selection,
+        diagnostic_chars=100,
+    )
+    assert len(rows) == 1
+    assert rows[0]["repair_round"] == 2
+    assert rows[0]["root_identity_sha256"] == "a"
+    assert rows[0]["original_task_text"] == "Return x + 1."
+    assert rows[0]["text"].count("Repair the previous Python solution") == 1
+    assert "def inc(x):\n    return x + 2" in rows[0]["text"]
 
 
 def test_derives_evaluator_identity_for_canonical_bank_row() -> None:
