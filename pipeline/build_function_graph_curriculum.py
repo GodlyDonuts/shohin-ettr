@@ -58,9 +58,15 @@ def build_curriculum(
     *,
     anchor_repeats: int,
     seed: int,
+    generated_max_per_graph: int = 0,
+    generated_max_per_family: int = 0,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    if anchor_repeats <= 0:
-        raise FunctionGraphCurriculumError("anchor repetition must be positive")
+    if (
+        anchor_repeats <= 0
+        or generated_max_per_graph < 0
+        or generated_max_per_family < 0
+    ):
+        raise FunctionGraphCurriculumError("curriculum limits differ")
     generated_questions = [_question(row).strip().casefold() for row in generated_rows]
     anchor_questions = [_question(row).strip().casefold() for row in anchor_rows]
     if any(not value for value in generated_questions + anchor_questions) or any(
@@ -76,8 +82,36 @@ def build_curriculum(
     if any(row.get("split") != "train" for row in generated_rows):
         raise FunctionGraphCurriculumError("generated corpus contains non-train rows")
 
+    ranked_generated = sorted(
+        generated_rows,
+        key=lambda row: hashlib.sha256(
+            f"{seed}\0{row.get('global_identity')}\0{row.get('verification_sha256')}".encode()
+        ).digest(),
+    )
+    graph_counts: Counter[str] = Counter()
+    family_counts: Counter[str] = Counter()
+    selected_generated: list[dict[str, Any]] = []
+    for row in ranked_generated:
+        family = str(row.get("family") or "unknown")
+        graph_key = family + "\0" + json.dumps(row.get("graph"), sort_keys=True)
+        if (
+            generated_max_per_graph
+            and graph_counts[graph_key] >= generated_max_per_graph
+        ):
+            continue
+        if (
+            generated_max_per_family
+            and family_counts[family] >= generated_max_per_family
+        ):
+            continue
+        graph_counts[graph_key] += 1
+        family_counts[family] += 1
+        selected_generated.append(row)
+    if not selected_generated:
+        raise FunctionGraphCurriculumError("semantic cap removed every generated row")
+
     output: list[dict[str, Any]] = []
-    for row in generated_rows:
+    for row in selected_generated:
         output.append({**row, "curriculum_origin": "generated_function_graph"})
     for repetition in range(anchor_repeats):
         for row in anchor_rows:
@@ -94,17 +128,16 @@ def build_curriculum(
         "status": "complete",
         "seed": seed,
         "rows": len(output),
-        "generated_rows": len(generated_rows),
+        "generated_input_rows": len(generated_rows),
+        "generated_selected_rows": len(selected_generated),
+        "generated_dropped_semantic_cap": len(generated_rows) - len(selected_generated),
+        "generated_max_per_graph": generated_max_per_graph,
+        "generated_max_per_family": generated_max_per_family,
+        "generated_unique_graphs_selected": len(graph_counts),
         "anchor_unique_rows": len(anchor_rows),
         "anchor_repeats": anchor_repeats,
         "anchor_materialized_rows": len(anchor_rows) * anchor_repeats,
-        "family_counts": dict(
-            sorted(
-                Counter(
-                    str(row.get("family") or "anchor") for row in generated_rows
-                ).items()
-            )
-        ),
+        "family_counts": dict(sorted(family_counts.items())),
     }
 
 
@@ -145,6 +178,8 @@ def main() -> int:
     parser.add_argument("--anchor", type=Path, required=True)
     parser.add_argument("--anchor-sha256", required=True)
     parser.add_argument("--anchor-repeats", type=int, required=True)
+    parser.add_argument("--generated-max-per-graph", type=int, default=0)
+    parser.add_argument("--generated-max-per-family", type=int, default=0)
     parser.add_argument("--seed", type=int, default=20260804)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
@@ -158,6 +193,8 @@ def main() -> int:
         _rows(args.anchor),
         anchor_repeats=args.anchor_repeats,
         seed=args.seed,
+        generated_max_per_graph=args.generated_max_per_graph,
+        generated_max_per_family=args.generated_max_per_family,
     )
     report.update(
         {
