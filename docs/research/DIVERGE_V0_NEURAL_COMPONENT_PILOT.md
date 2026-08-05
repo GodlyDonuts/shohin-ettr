@@ -58,16 +58,34 @@ million-parameter projection, two-layer local Transformer, and the same finite
 heads. The packet runtime, data budget, split, causal release, evaluator, and
 strict joint metric remain unchanged.
 
-The first H100 job is a one-update loading and finite-gradient smoke. A
-600-update seed follows only after that smoke succeeds. If the frozen Smol
-representation does not make the component stable across four of five seeds,
-do not tune another tiny width, threshold, wrapper, loss, or duration. Record
-the source interface as unqualified and redesign the compiler before the full
-A--G architecture gate.
+The real-backbone interface smoke completed on Stokes in 28 seconds with a
+finite update, gradient, report, and checkpoint. The first 600-update H100 seed
+then completed on `evc30` in 2m54s, training 1,068,775 parameters over 9,600
+charged episodes at 91.07 episodes/s. It fails decisively:
+
+| Split | Gold support | Exact packet | DIVERGE answer | Joint packet+answer | Program | Prior | Evidence binding |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Development | 99.609% | 0% | 88.672% | 0% | 60.000% | 100% | 100% |
+| Confirmation | 62.891% | 0.781% | 62.891% | 0.781% | 100% | 79.134% | 100% |
+
+Development also has 12.694% distractor false positives; confirmation
+fault-line recall is only 93.164%. Report/checkpoint SHA-256 values are
+`6b9ecebcf94cb5bbdab62b7d29dddd00bdd6b85f5867628b767da48cd87ff6ca` /
+`246a4600f1ed9c3d8269582be10c56baadb30ed2943c4a11c8cba0726a9fd42f`.
+The remaining four seeds are not launched because seed one misses the strict
+joint gate by orders of magnitude.
+
+The pooled-residual compiler is closed. Its renderer-dependent inversion
+(development program order versus confirmation prior/candidate support) calls
+for an interface redesign, not another tiny width, threshold, wrapper, loss,
+duration, or seed. The next implementation must preserve token-level semantic
+roles and source order through constrained copy/closure rather than compressing
+an entire option into one pooled vector. A read-only fieldwise error audit is
+permitted before freezing that replacement.
 
 ## Claim boundary
 
-The scores named A--G in this pilot are mechanism diagnostics, not complete
+The scores named A--G in these pilots are mechanism diagnostics, not complete
 parameter/FLOP-matched neural controls. In particular, A--D currently share
 the compiler's immediate top-1 decision. No result from this component pilot
 can promote DIVERGE. Promotion still requires the frozen complete controls and

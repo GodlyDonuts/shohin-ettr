@@ -29432,3 +29432,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_unstable_tiny_compiler_then_test_one_frozen_smol_residual_interface_without_changing_diverge_semantics`.
+
+- **2026-08-05 17:20--18:20 EDT** -- **The pooled Smol residual compiler also
+  fails; DIVERGE needs a token-role/source-copy compiler redesign.**
+
+  Immutable runtime r1 exposed one packaging omission and failed before model
+  execution because `categorical_microcode.py` was absent. No learned score
+  was produced. Runtime r2 adds that exact transitive import at tar SHA-256
+  `9ebf02067bdab5d8d6a2638965ba335039708932e906736023a992b22a018906`.
+  Its Stokes CPU smoke `765531` loaded the pinned 386MB Smol parent, performed
+  one finite update in 28 seconds, and emitted a valid isolated artifact.
+
+  Full seed `741495` then completed 600 updates / 9,600 charged episodes on
+  `evc30` in 2m54s. The 1,068,775 trainable parameters ran at 91.07
+  episodes/s. Development gold support / exact packet / DIVERGE answer / joint
+  packet+answer are `99.609% / 0% / 88.672% / 0%`. Confirmation values are
+  `62.891% / 0.781% / 62.891% / 0.781%`. Evidence binding remains 100%, but
+  development program compilation is only 60%, development distractor FPR is
+  12.694%, confirmation prior accuracy is 79.134%, and confirmation fault-line
+  recall is 93.164%. The remaining four seeds are not launched: seed one is a
+  decisive strict-joint failure, not a near-pass.
+
+  Report/checkpoint SHA-256 values are
+  `6b9ecebcf94cb5bbdab62b7d29dddd00bdd6b85f5867628b767da48cd87ff6ca` /
+  `246a4600f1ed9c3d8269582be10c56baadb30ed2943c4a11c8cba0726a9fd42f`.
+  Both are read-only and hash-verified locally/Newton. Exact packet mechanics
+  and evidence refinement are not implicated; support is already lost or
+  miscompiled at source sealing. Close pooled option vectors. Run one
+  read-only confusion audit, then freeze a materially different compiler that
+  predicts token-level semantic roles and copies ordered source actions into
+  complete options before closure. Do not repair this result with more seeds,
+  width, duration, thresholds, wrappers, or losses.
+
+  Decision:
+  `close_pooled_smol_compiler_then_preserve_token_roles_and_order_at_the_source_boundary`.
