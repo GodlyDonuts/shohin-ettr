@@ -1,6 +1,6 @@
 # Counterexample-Guided Sparse Global Revision
 
-Status: bounded mechanics pilot; no reasoning claim yet.
+Status: closed negative after the bounded mechanics pilot.
 
 ## Thesis
 
@@ -68,3 +68,37 @@ authorize language pretraining by itself.
 The mechanics tests require exact sparse-write cardinality, equal treatment
 and control parameter counts, finite gradients, query-late ownership, and the
 predicted state change under shuffled counterexamples.
+
+## Result
+
+Jobs `739226` (`GUIDED`) and `739227` (`FIXED`) used seed 23, 1,000
+updates, 256 examples/update, identical 108,438-parameter models, and the
+same frozen depth-5/7 cohorts. Exact answer accuracy was:
+
+| Family | Depth | Guided | Fixed | Delta |
+|---|---:|---:|---:|---:|
+| Noncommuting | 5 | 25.879% | 25.977% | -0.098 |
+| Noncommuting | 7 | 35.840% | 33.789% | +2.051 |
+| Binding | 5 | 17.578% | 18.750% | -1.172 |
+| Binding | 7 | 12.109% | 14.453% | -2.344 |
+| Induction | 5 | 9.961% | 10.059% | -0.098 |
+| Induction | 7 | 8.496% | 9.766% | -1.270 |
+| **Macro** | | **18.311%** | **18.799%** | **-0.488** |
+
+The mechanism is active but misaligned. Guided revision reduces mean source
+contradiction by `1.209`, versus `0.663` for fixed revision. Shuffling the
+selected counterexample outcomes drops guided macro accuracy from `18.311%`
+to `9.782%` (`-8.529` points), proving that the state update materially uses
+the selected evidence. Nevertheless, choosing the largest current residual
+hurts final-answer exactness and loses on four of six cohorts.
+
+The likely failure is credit assignment: the most surprising or locally
+incorrect consequence is not necessarily the evidence with greatest value
+for the requested answer. Raw-residual CGSGR therefore closes. There is no
+duration, width, seed, or loss extension. A successor must learn final-answer
+value of evidence rather than reuse contradiction magnitude as a proxy.
+
+Report SHA-256 values:
+
+- guided: `00481eaf101b48d5e56f2254a7a7cf41539a5f1ae39ed3db48b846da998c2853`
+- fixed: `28fbc6cd75a1df717893541097035196ed62e7afbf9525b24af45d33cc8b9cbe`

@@ -28818,3 +28818,35 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_fcpt_and_build_counterexample_guided_sparse_global_revision`.
+
+- **2026-08-05 04:20--04:35 EDT** -- **CGSGR proves active evidence-driven
+  revision but fails final-answer selection; raw-residual guidance closes.**
+
+  Jobs `739226`/`739227` compare largest-residual counterexample selection
+  with a fixed cyclic evidence schedule. Both use 108,438 parameters, seed
+  23, 1,000 updates, 256 examples/update, and the same frozen depth-5/7
+  cohorts. Guided/fixed exact macro is `18.311% / 18.799%`, a `-0.488` point
+  guided delta. Guided loses four of six cohorts and misses both the +5 pilot
+  margin and all-family direction requirements.
+
+  The mechanism is not inert. Guided revision reduces mean source
+  contradiction by `1.209` versus `0.663` for fixed revision. Shuffling the
+  chosen counterexample outcomes cuts guided macro from `18.311%` to
+  `9.782%`, an `8.529` point loss. The causal operation therefore works, but
+  "largest local residual" is a bad proxy for "highest final-answer value."
+  It over-services surprising evidence and under-covers evidence needed by
+  the query.
+
+  Guided/fixed report SHA-256 values are
+  `00481eaf101b48d5e56f2254a7a7cf41539a5f1ae39ed3db48b846da998c2853`
+  and
+  `28fbc6cd75a1df717893541097035196ed62e7afbf9525b24af45d33cc8b9cbe`.
+  No raw-residual duration, width, seed, or loss extension follows. One
+  materially changed credit-assignment pilot may learn a query-conditioned
+  value-of-counterexample policy through a hard-forward, differentiable
+  evidence bottleneck. It must beat identical fixed coverage by at least five
+  macro points, improve every family, and retain the predicted shuffled-
+  evidence failure; otherwise this sparse-revision family closes.
+
+  Decision:
+  `close_raw_residual_cgsgr_and_test_one_learned_answer_utility_selector`.

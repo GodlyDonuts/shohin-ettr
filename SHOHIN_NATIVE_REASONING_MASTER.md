@@ -55158,3 +55158,21 @@ disagreement bus does not convert that plurality into better composition. The
 next mechanism uses one coherent, globally revisable state and lets its own
 source-evidence prediction residual select sparse counterexample-conditioned
 updates.
+
+### Counterexample-guided sparse revision result (2026-08-05)
+
+CGSGR supplies the cleanest causal separation in this architecture sequence,
+but not a capability win. Its guided and fixed arms share 108,438 parameters,
+seed 23, 1,000 updates, 256 examples/update, and the same six frozen
+depth-5/7 cohorts. Largest-residual guidance reaches 18.311% macro exact,
+versus 18.799% for fixed cyclic coverage. It loses four of six cohorts.
+
+The internal operation is demonstrably active: guided revision reduces
+source contradiction by 1.209 versus 0.663, and shuffling selected outcomes
+costs 8.529 answer points. The failure is therefore not an unused module. It
+is a value-alignment error inside deliberation: local surprise is not final-
+answer utility. Raw-residual guidance is closed without nearby scale or
+duration variants. The only allowed successor in this family learns a query-
+conditioned value-of-counterexample policy through the answer objective and
+must clear a fixed +5-point, all-family gate against parameter- and compute-
+matched fixed coverage.
