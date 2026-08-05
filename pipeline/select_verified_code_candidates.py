@@ -35,7 +35,9 @@ def visible_humaneval_result(
     try:
         module = ast.parse(prompt)
         function = next(
-            node for node in module.body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            node
+            for node in module.body
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
         )
         public_examples = ast.get_docstring(function, clean=False) or ""
     except (SyntaxError, StopIteration, TypeError):
@@ -92,11 +94,24 @@ def _shortest(candidates: list[dict[str, Any]]) -> dict[str, Any]:
     )
 
 
+def _visible_choice(
+    group: list[dict[str, Any]],
+    visible: list[dict[str, Any]],
+    policy: str,
+) -> dict[str, Any]:
+    if policy == "anchor-first" and group[0] in visible:
+        return group[0]
+    return _shortest(visible)
+
+
 def select(
     candidates: list[dict[str, Any]],
     bank_rows: list[dict[str, Any]],
     timeout_seconds: float,
+    policy: str = "shortest-visible",
 ) -> dict[str, Any]:
+    if policy not in {"shortest-visible", "anchor-first"}:
+        raise CodeCandidateSelectionError(f"unsupported selection policy: {policy}")
     bank = {
         str(row.get("identity_sha256") or _row_identity(str(row["task"]), row)): row
         for row in bank_rows
@@ -116,13 +131,15 @@ def select(
                 for candidate in group
                 if bool((candidate.get("execution") or {}).get("passed"))
             ]
-            selected = _shortest(visible) if visible else group[0]
+            selected = _visible_choice(group, visible, policy) if visible else group[0]
             visible_pass_groups += int(bool(visible))
             selection = "visible_task_tests" if visible else "first_fallback"
             diagnostics = None
         elif task == "humaneval":
             diagnostics = [
-                visible_humaneval_result(row, str(candidate["completion"]), timeout_seconds)
+                visible_humaneval_result(
+                    row, str(candidate["completion"]), timeout_seconds
+                )
                 for candidate in group
             ]
             visible = [
@@ -133,15 +150,14 @@ def select(
             syntax_clean = [
                 candidate
                 for candidate, diagnostic in zip(group, diagnostics, strict=True)
-                if diagnostic["attempted_examples"] == 0
-                and diagnostic["syntax_clean"]
+                if diagnostic["attempted_examples"] == 0 and diagnostic["syntax_clean"]
             ]
             if visible:
-                selected = _shortest(visible)
+                selected = _visible_choice(group, visible, policy)
                 visible_pass_groups += 1
                 selection = "visible_docstring_tests"
             elif syntax_clean:
-                selected = _shortest(syntax_clean)
+                selected = _visible_choice(group, syntax_clean, policy)
                 syntax_fallback_groups += 1
                 selection = "syntax_clean_fallback"
             else:
@@ -183,6 +199,7 @@ def select(
         "visible_pass_groups": visible_pass_groups,
         "syntax_fallback_groups": syntax_fallback_groups,
         "selector_reads_hidden_tests": False,
+        "selection_policy": policy,
         "results": results,
     }
 
@@ -206,6 +223,11 @@ def main() -> int:
     parser.add_argument("--bank", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--timeout-seconds", type=float, default=3.0)
+    parser.add_argument(
+        "--policy",
+        choices=("shortest-visible", "anchor-first"),
+        default="shortest-visible",
+    )
     args = parser.parse_args()
     if args.timeout_seconds <= 0:
         parser.error("timeout must be positive")
@@ -213,7 +235,7 @@ def main() -> int:
     bank_bytes = args.bank.read_bytes()
     candidates = [json.loads(line) for line in candidate_bytes.splitlines() if line]
     rows = [json.loads(line) for line in bank_bytes.splitlines() if line]
-    report = select(candidates, rows, args.timeout_seconds)
+    report = select(candidates, rows, args.timeout_seconds, args.policy)
     report["candidates"] = str(args.candidates.resolve())
     report["candidates_sha256"] = hashlib.sha256(candidate_bytes).hexdigest()
     report["bank"] = str(args.bank.resolve())

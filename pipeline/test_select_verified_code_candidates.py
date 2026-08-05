@@ -59,3 +59,20 @@ def test_mbpp_selector_uses_visible_execution_result() -> None:
     report = select(candidates, [row], 1)
     assert report["selected_correct"] == 1
     assert report["results"][0]["selection"] == "visible_task_tests"
+
+
+def test_anchor_first_keeps_visible_anchor() -> None:
+    row = {
+        "task": "humaneval",
+        "identity_sha256": "id",
+        "prompt": 'def add(a, b):\n    """\n    >>> add(2, 3)\n    5\n    """\n',
+        "entry_point": "add",
+    }
+    candidates = [
+        _candidate(0, True, "def add(a, b):\n    return a + b"),
+        _candidate(1, False, "def add(a, b):\n    return 5"),
+    ]
+    report = select(candidates, [row], 1, "anchor-first")
+    assert report["selected_correct"] == 1
+    assert report["results"][0]["selected_sample_index"] == 0
+    assert report["selection_policy"] == "anchor-first"
