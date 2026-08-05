@@ -14,14 +14,14 @@ from diverge_v0_matched_gate import (
 
 
 def test_board_balances_wrong_primary_program_and_three_query_types() -> None:
-    board = build_gate_board(202608056000, 1)
-    assert len(board) == 36
+    board = build_gate_board(202608056000, 2)
+    assert len(board) == 72
     assert {episode.family for episode in board} == {
         "register-workshop",
         "parcel-relation",
         "signal-routing",
     }
-    answers = set()
+    answers = []
     for gate in board:
         truth = _truth_prediction(gate.source)
         packet, canonical, _ = pilot._build_predicted_packet(gate.source, truth)
@@ -41,8 +41,8 @@ def test_board_balances_wrong_primary_program_and_three_query_types() -> None:
             world for world in initial.worlds if world.assignment[variable] == primary.gold_option
         )
         assert gold_world.state is not None
-        answers.add(gold_world.state.cells[0].value)
-    assert answers == {10, 13}
+        answers.append(gold_world.state.cells[0].value)
+    assert answers.count(10) == answers.count(13) == 36
 
 
 def test_primary_rewrite_keeps_source_self_consistent() -> None:

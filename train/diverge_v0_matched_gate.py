@@ -81,6 +81,7 @@ class CompiledEpisode:
     prediction: pilot.CompilerPrediction
     packet_exact: bool
     gold_support_recalled: bool
+    primary_variable: int | None
     evidence_variable: int | None
     evidence_option: int | None
     primary_gold_option: int
@@ -246,7 +247,7 @@ def build_gate_board(seed: int, repetitions: int) -> tuple[GateEpisode, ...]:
                     )
                     source = _replace_primary_semantics(
                         source,
-                        gold_program=(serial + repetition + family_index) % 2,
+                        gold_program=repetition % 2,
                     )
                     truth = _truth_prediction(source)
                     packet, canonical, _ = pilot._build_predicted_packet(source, truth)
@@ -334,6 +335,7 @@ def _compile_episode(
             bool(component["gold_support_recalled"]),
             None,
             None,
+            None,
             true_primary.gold_option,
             None,
             None,
@@ -376,6 +378,7 @@ def _compile_episode(
         prediction,
         bool(component["packet_exact"]),
         bool(component["gold_support_recalled"]),
+        canonical[episode.primary_record_id],
         evidence_variable,
         evidence_option,
         true_primary.gold_option,
@@ -644,20 +647,12 @@ def _intervention_decisions(
         }
     if name == "shuffled_guard_provenance":
         if compiled.evidence_variable is not None and compiled.evidence_option is not None:
-            primary = next(
-                variable.variable_id
-                for variable in compiled.packet.variables
-                if variable.provenance
-                == next(
-                    value.provenance
-                    for value in compiled.packet.variables
-                    if value.variable_id == compiled.evidence_variable
-                )
-            )
+            if compiled.primary_variable is None:
+                raise AssertionError("shuffled-guard control lacks primary variable")
             valid = tuple(
                 assignment
                 for assignment in enumerate_assignments(compiled.packet)
-                if assignment[primary] == compiled.primary_gold_option
+                if assignment[compiled.primary_variable] == compiled.primary_gold_option
             )
             invalid = verify_nogood(
                 compiled.packet,
