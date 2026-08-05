@@ -1,7 +1,7 @@
 # Prompt-Selected Presented Algebra
 
-Status: next architecture hypothesis after the closed PCDL gate; implementation
-not yet score-bearing; no novelty or reasoning claim.
+Status: mechanics and favorable neural-control pilot implemented; no novelty or
+general reasoning claim.
 
 ## Thesis
 
@@ -51,28 +51,40 @@ topology or emitting operation embeddings.
 
 ## Minimal discriminating gate
 
-The first board uses anonymous, freshly permuted carriers and three action
+The first mechanics board uses anonymous, freshly permuted carriers and three action
 families:
 
 1. cyclic/affine actions;
 2. noncommuting dihedral or permutation-generator actions; and
-3. finite transformation-monoid actions with repeated binding.
+3. random multi-generator permutation actions with repeated binding.
 
 Training uses words of length 1--4. Frozen development uses lengths 8 and 12,
-new carrier renamings, unseen generator words, and held-out relation sets. A
-separate confirmation board is generated but not opened by a failed pilot.
+new carrier renamings and unseen generator words.
 
-Matched arms instantiate and execute the same encoder and action tensors:
+The mechanics harness evaluates:
 
-- PSPA: relation-constrained whole-generator completion and exact tied word
+- PSPA: source-challenge-constrained whole-generator completion and exact tied word
   composition;
 - RECURRENT: an unconstrained tied dense state updater;
-- TRANSFORMER: a parameter-matched ordinary sequence model;
-- BROKEN-RELATION: PSPA with source relations exchanged across episodes.
+- TRANSFORMER: an ordinary two-layer sequence model;
+- SHUFFLED-CHALLENGE: PSPA with source challenge outcomes exchanged across
+  episodes; and
+- LINEAGE-SWAP: PSPA with selected whole presentations exchanged across
+  episodes before query execution.
 
-The first seed is a fail-fast pilot. PSPA advances to five seeds only if it
+The combined harness has 180,054 trainable neural-control parameters. The
+structured PSPA runtime itself is deterministic and receives strictly less
+trainable capacity than both controls. This first result is therefore a
+favorable-control mechanics test, not the final parameter/FLOP-matched learning
+claim. A pass authorizes a learned language-to-presentation compiler and its
+matched gate; it does not by itself establish a superior learned architecture.
+
+The first seed is a fail-fast mechanics pilot. PSPA advances to a learned
+compiler only if it
 beats the best non-intervention control by at least five macro points and gains
-on every family. The five-seed gate then requires:
+on every family, reconstructs at least 95% of complete generator tables, and
+loses at least five points under both causal interventions. The later learned
+compiler's five-seed gate requires:
 
 - at least +10 absolute OOD macro points over the best matched control;
 - positive gain on every family in at least four of five seeds;
@@ -81,30 +93,34 @@ on every family. The five-seed gate then requires:
 - at least 95% primitive generator fit but no answer supervision leakage; and
 - one unchanged-weight confirmation pass after all development gates pass.
 
-Failure of the first seed closes this exact compiler/runtime without width,
-duration, seed, loss, carrier, or relation-set tuning.
+Failure of the first seed closes this exact structured compiler/runtime without
+width, duration, seed, loss, carrier, or challenge-set tuning.
 
 ## Resource envelope
 
-Board generation and exhaustive oracle/identifiability checks are CPU-only:
-one Stokes job, 32 cores, four-hour wall limit, at most 128 CPU-hours.
+Board generation and oracle/identifiability checks are CPU-only. Eight focused
+tests and an end-to-end CPU smoke already pass. At lengths 8/12, all three
+families have 100% exact generator reconstruction and answers; shuffled source
+challenges score roughly 44--67% and lineage swaps roughly 5--27% in the smoke.
 
-The pilot requests four independent single-H100 jobs. Each has a one-hour
-Slurm ceiling, 1,000 updates, 256 examples/update, and an expected runtime
-under two minutes from the preceding 51k--113k parameter gates. Expected pilot
-use is at most 0.15 H100-hours; hard allocation ceiling is four H100-hours.
+The first full control pilot is one single-H100 job because one checkpoint
+trains both favorable controls on identical examples and reports PSPA plus both
+interventions. It has a one-hour Slurm ceiling, 1,000 updates, 128
+examples/update, and an expected runtime under 15 minutes. Hard allocation
+ceiling is one H100-hour.
 
-Only a passing pilot releases the five-seed matrix: 20 single-H100 jobs with
-the same one-hour ceiling, expected under 0.7 H100-hours and hard-capped at 20
-H100-hours. Confirmation is one additional unchanged-weight H100 job. No long
-pretraining run is authorized by mechanics or training loss alone.
+Only a passing mechanics pilot authorizes implementation of the learned
+compiler and the originally specified matched four-arm, five-seed matrix. That
+later matrix remains hard-capped at 20 H100-hours. No long pretraining run is
+authorized by mechanics or training loss alone.
 
 ## Immediate implementation order
 
-1. implement exact anonymous-carrier composition and relation checking;
-2. prove permutation equivariance and no fieldwise action mixing;
-3. generate and audit the three-family board and answer identifiability;
-4. implement the shared compiler plus all four matched arms;
-5. pass focused gradients, equal-parameter, equal-execution, and CPU smoke;
-6. run one seed on four single H100s; and
-7. apply the fixed pass/kill rule before any extension.
+1. ~~implement exact anonymous-carrier whole-generator composition~~;
+2. ~~prove query-late ownership and no fieldwise action mixing~~;
+3. ~~generate and audit the three-family depth-shift board~~;
+4. ~~implement recurrent and Transformer favorable controls~~;
+5. ~~pass focused gradients and CPU smoke~~;
+6. run one combined seed-43 H100 pilot; and
+7. if it passes, implement the learned language-to-presentation compiler and
+   freeze its parameter/FLOP-matched gate before scoring it.
