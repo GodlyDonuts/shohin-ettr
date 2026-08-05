@@ -1,7 +1,10 @@
+import inspect
+
 from hf_product_reasoning_rollouts import (
     choose_positive,
     combine_finalization,
     render_rollout_prompt,
+    run,
     score_completion,
 )
 
@@ -121,3 +124,10 @@ def test_direct_bare_prompt_does_not_add_boxed_answer_wrapper() -> None:
     )
     assert rendered == "User: Return only executable Python code.\n\nAssistant:"
     assert "boxed" not in rendered
+
+
+def test_rollout_generation_uses_resolved_adapter_mode() -> None:
+    source = inspect.getsource(run)
+    assert "rendered,\n            adapter," in source
+    assert "finalize_rendered,\n                    adapter," in source
+    assert "_render_prompt(\n                        tokenizer" not in source

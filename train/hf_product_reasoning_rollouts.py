@@ -216,7 +216,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             model,
             tokenizer,
             rendered,
-            True,
+            adapter,
             "qwen-thinking",
             args.max_new_tokens,
             stop_token_ids,
@@ -242,7 +242,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     finalize_start : finalize_start + args.finalize_batch_size
                 ]
                 finalize_rendered = [
-                    _render_prompt(
+                    render_rollout_prompt(
                         tokenizer,
                         _finalization_question(
                             _task_prompt(
@@ -261,7 +261,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     model,
                     tokenizer,
                     finalize_rendered,
-                    True,
+                    adapter,
                     "greedy",
                     args.finalize_max_new_tokens,
                     stop_token_ids,
