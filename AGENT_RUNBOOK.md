@@ -29273,5 +29273,16 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   safe merges, query invariance/abstention, canonical accounting, and
   fail-closed overflow before neural scoring or long training.
 
+  Read-only reuse audit: `version_space_product_tree.py` and
+  `version_space_accounting.py` pass all 14 focused mechanics/accounting tests.
+  Reusable pieces are canonical commitments, exact deduplication, monotone
+  refinement, sticky fail-closed overflow, query-set agreement, and disjoint
+  byte/transaction stores. The old tree itself is affine-event-specific and
+  retains external source references, so it is not the DIVERGE packet. The
+  dormant R10 workspace evaluator has 3/17 stale code-identity test failures
+  because its frozen required-file set no longer matches the consolidated
+  repository. Do not repair or cite that closed score chain; build a new
+  DIVERGE schema and independent tests around only the passing mechanics.
+
   Decision:
   `finish_one_span_quotient_gate_then_build_diverge_v0_cpu_semantics_without_reopening_pcsd_or_fcpt`.
