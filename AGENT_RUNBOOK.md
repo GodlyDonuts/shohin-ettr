@@ -28990,3 +28990,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `pspa_mechanics_passes_then_build_one_learned_language_compiler_gate`.
+
+- **2026-08-05 06:30--07:00 EDT** -- **Joint learned closure fails, while
+  deferred closure exposes a strong non-causal completion baseline.**
+
+  Learned-PSPA job `739335` trains PRESENTED, ROW_SOFT, and DIRECT together
+  for 2,000 updates / 256,000 examples. PRESENTED and ROW_SOFT each contain
+  122,763 parameters; DIRECT contains 130,827. PRESENTED/ROW_SOFT/DIRECT OOD
+  macro is `9.147% / 25.798% / 9.749%`. PRESENTED complete-table exact is
+  zero, challenge exact is `10.227%`, and its shuffled/lineage interventions
+  are chance-flat. Report SHA-256 is
+  `d525fbe5aac6d6622575324775b979b6673638091c12829dbd59eb3df92c11e4`.
+  Joint Sinkhorn closure is closed.
+
+  Read-only diagnosis shows ROW_SOFT parses 100% of observed rows and 84--91%
+  of all active rows, while PRESENTED learns only 17--34% and corrupts
+  observations. Applying whole-permutation closure once after ROW_SOFT
+  training creates Deferred Whole-Presentation Closure (DWPC). Full frozen
+  evaluation job `739360` reaches `58.643%` macro, versus unchanged ROW_SOFT
+  `25.798%` and joint PRESENTED `9.147%`; whole-lineage swaps reduce it to
+  `11.865%`.
+
+  DWPC nevertheless fails causality: shuffled challenge outcomes leave
+  `58.561%`, only 0.081 points lower. It closes local observations and guesses
+  unresolved completion bits rather than using counterexamples. Complete
+  table exact is `40.218%`, including the expected approximately 50% cyclic
+  and 13--14% random three-generator completion rates. Report SHA-256 is
+  `17e4e0da326bf659d89a80804caf3793ac285c064acc7bf671070f3954fe31d2`.
+
+  Confirmation remains unopened. The reusable architecture principle is
+  `learn local evidence while plastic, then commit global structure once`.
+  The only justified successor adds explicit source-counterexample scoring
+  over complete presentation candidates at that one commit. Do not relaunch
+  Sinkhorn, DWPC retraining, or longer versions of either.
+
+  Decision:
+  `close_joint_and_deferred_projection_then_build_counterexample_selected_commit`.

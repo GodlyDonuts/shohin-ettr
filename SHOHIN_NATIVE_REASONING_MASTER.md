@@ -55285,3 +55285,26 @@ evidence and enumerates a small presentation set. The next and only authorized
 successor is a learned language-to-presentation compiler with the same tied
 executor and matched neural controls. Failure of that gate closes PSPA despite
 the perfect mechanics result.
+
+### Learned PSPA and deferred-closure boundary (2026-08-05)
+
+The first learned language compiler fails. Joint Sinkhorn projection reaches
+9.147% OOD macro versus 25.798% for an identical row-soft compiler and 9.749%
+for the favorable direct answer control. It recovers no complete tables and
+does not use challenge evidence. The matched row-soft checkpoint, however,
+parses every observed generator row exactly. This isolates the failure to
+differentiating through global closure rather than source-language parsing.
+
+One unchanged-weight operation then reveals a large architectural effect.
+Projecting the already-learned row-soft tables to whole permutations only at
+the source/query boundary raises exact OOD macro to 58.643%, with gains on all
+three families and both depths. Swapping whole committed lineages reduces it
+to 11.865%. Plastic local evidence learning followed by one discrete global
+commit is therefore much more trainable than enforcing closure throughout
+learning.
+
+This is not yet reasoning. Shuffling every source-challenge outcome leaves
+58.561%, proving that deferred closure ignores counterexamples and guesses the
+remaining presentation bit. The confirmation gate stays unopened. The next
+architecture must preserve the successful phase separation while making the
+one-time whole-presentation commit explicitly counterexample-conditioned.

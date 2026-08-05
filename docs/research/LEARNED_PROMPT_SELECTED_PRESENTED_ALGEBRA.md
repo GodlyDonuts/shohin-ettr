@@ -1,6 +1,6 @@
 # Learned Prompt-Selected Presented Algebra
 
-Status: implementation gate frozen after the deterministic PSPA mechanics pass.
+Status: one-seed gate failed; joint projection compiler closed.
 
 ## Capability hypothesis
 
@@ -77,3 +77,35 @@ Only a passing pilot authorizes up to 15 independent single-H100 development
 jobs and a total ceiling of 20 H100-hours. No language pretraining or Shohin
 integration follows from training loss alone.
 
+## Result
+
+Seed-47 job `739335` trained all arms for 2,000 updates and 256,000 examples.
+The matched PRESENTED and ROW_SOFT compilers each have 122,763 parameters;
+DIRECT has 130,827. The run completed in 519.701 seconds at 492.591
+examples/s.
+
+| Arm or diagnostic | Six-cohort OOD macro exact |
+|---|---:|
+| PRESENTED | 9.147% |
+| ROW_SOFT | **25.798%** |
+| DIRECT | 9.749% |
+| PRESENTED with shuffled challenges | 8.984% |
+| PRESENTED with whole-lineage swap | 8.887% |
+| PRESENTED source-challenge exact | 10.227% |
+| PRESENTED complete-table exact | 0.000% |
+
+PRESENTED loses the matched ROW_SOFT control by 16.651 points, remains near
+chance, and has no causal challenge signal. Its source loss remains near the
+uniform floor for roughly the first 1,400 updates and ends at 4.366, while
+ROW_SOFT falls to 1.565. This is a decisive miss.
+
+A read-only checkpoint diagnosis shows that ROW_SOFT parses every observed
+generator row exactly and reaches 84--91% active-row accuracy. PRESENTED
+reaches only 17--34% active-row accuracy and corrupts observed facts. The
+failure is therefore the optimization interface of imposing doubly stochastic
+closure during learning, not the rendered-language parser.
+
+Report SHA-256 is
+`d525fbe5aac6d6622575324775b979b6673638091c12829dbd59eb3df92c11e4`.
+Joint Sinkhorn projection closes without duration, width, seed, temperature,
+renderer, or loss variants.

@@ -1,7 +1,7 @@
 # Deferred Whole-Presentation Closure
 
-Status: exploratory checkpoint-only development signal; full intervention
-evaluation pending.
+Status: strong completion gain but causal gate failed; closed before
+confirmation.
 
 ## Hypothesis
 
@@ -62,3 +62,39 @@ Development and confirmation are evaluation-only. Each is one single-H100
 job with a 20-minute ceiling and expected use below 0.1 H100-hour. No training
 or long pretraining follows unless unchanged weights pass confirmation.
 
+## Full development result
+
+Evaluation job `739360` uses the unchanged failed learned-PSPA checkpoint and
+all 1,024 examples in each of the six frozen OOD cohorts.
+
+| Arm or diagnostic | Six-cohort OOD macro exact |
+|---|---:|
+| DWPC | **58.643%** |
+| Unclosed ROW_SOFT | 25.798% |
+| Jointly projected PRESENTED | 9.147% |
+| DWPC with shuffled challenge outcomes | 58.561% |
+| DWPC with whole-presentation lineage swap | 11.865% |
+| DWPC source-challenge exact | 71.407% |
+| DWPC complete-table exact | 40.218% |
+
+DWPC gains 32.845 points over its own unclosed checkpoint and improves every
+family. Cyclic length-8/12 is `55.273% / 49.414%`, dihedral is
+`75.977% / 76.562%`, and random permutation is `52.637% / 41.992%`.
+Whole-lineage swapping removes 46.777 points, proving that coherent committed
+tables cause the answers.
+
+The challenge intervention is decisive in the opposite direction: exchanging
+all source-challenge outcomes changes macro by only 0.081 points. DWPC is not
+using counterexamples. It parses observed rows, closes each permutation, and
+guesses the unresolved completion. The approximately 50% cyclic table score
+and 13--14% random three-generator table score match that interpretation.
+
+This misses the fixed causal rule, so confirmation remains unopened and DWPC
+closes without retraining. The reusable result is the phase separation:
+evidence-first local learning followed by one whole-object commit is far more
+trainable than differentiating through closure. The successor must add
+explicit counterexample-conditioned whole-presentation selection at that
+single commit, not another continuous projection.
+
+Report SHA-256 is
+`17e4e0da326bf659d89a80804caf3793ac285c064acc7bf671070f3954fe31d2`.
