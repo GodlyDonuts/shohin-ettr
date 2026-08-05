@@ -99,3 +99,11 @@ Checkpoint SHA-256 is
 
 Decision:
 `close_this_semantic_parser_preserve_csdc_and_target_sequence_compilation_as_a_later_integrated_interface_problem`.
+
+## Bounded successor
+
+The role-gated copy successor resolves this boundary without tuning the closed
+decoder. It reaches `99.593% / 99.723%` end-to-end exact answers and 100%
+complete challenge tuples on development/held-renderer splits by selecting
+semantic token roles and copying the ordered source tokens. See
+`docs/research/CSDC_ROLE_GATED_COPY_BRIDGE.md`.

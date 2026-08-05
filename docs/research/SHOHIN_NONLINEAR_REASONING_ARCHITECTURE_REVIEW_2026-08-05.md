@@ -91,6 +91,18 @@ variants. The result localizes the remaining controlled-language loss to
 ordered sequence compilation rather than counterexample selection or late
 execution; it does not reopen PCSD or FCPT.
 
+The materially different role-gated copy interface then removes that loss.
+Instead of regenerating a word from one record summary, it predicts source
+token roles and copies model-selected state/operator tokens in source order.
+With fewer parameters and the same 192,000 examples, frozen CSDC reaches
+`99.593% / 99.723%` development/held-renderer answers, exactly matching its
+typed oracle. Complete challenge tuples are 100%, selected presentations are
+`99.007% / 99.284%`, shuffled outcomes score `53.630%`, and lineage swaps
+score `13.623% / 13.346%`. This becomes the protected controlled
+rendered-source baseline. It validates preservation of source identity at the
+semantic-symbolic boundary; it is not yet an unrestricted language claim and
+still does not reopen PCSD or FCPT.
+
 ## Terminology
 
 Do not call this "schizophrenic AI" in code, a paper, a resume, or a public

@@ -29096,3 +29096,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_this_semantic_parser_preserve_csdc_and_localize_the_remaining_error_to_ordered_sequence_compilation`.
+
+- **2026-08-05 07:55--08:20 EDT** -- **Role-gated source copying removes the
+  CSDC sequence bottleneck and passes every frozen gate.**
+
+  Commit `6359453` replaces summary-vector word regeneration with a
+  71,622-parameter token-role parser. It predicts challenge-record identity
+  plus `START`/`OUTCOME`/`WORD` source roles, then copies model-selected token
+  values in original order. It receives no query, answer, selected-table,
+  terminal-state, or CSDC supervision. The seed-47 compiler, CSDC candidate
+  construction, falsifier, commit, and late executor remain frozen. Focused
+  mechanics, exact oracle-copy, finite-gradient, and CPU smoke tests pass.
+
+  Immutable H100 job `739448` trains for 1,500 updates / 192,000 examples in
+  461.997 seconds. Development/held-renderer exact answers are
+  `99.593% / 99.723%`, identical to typed oracle. Complete tuples and ordered
+  words are 100%; selected presentations are `99.007% / 99.284%`; every
+  cohort exceeds 98.9% answers. Shuffled outcomes score `53.630% / 53.630%`;
+  whole-lineage swaps score `13.623% / 13.346%`. All promotion conditions pass.
+
+  Promote this as the controlled rendered-source CSDC baseline. Do not call it
+  unrestricted natural-language or public-benchmark reasoning. The next
+  interface gate must broaden lexical/compositional language while preserving
+  token identity, source-only compilation, one coherent commit, and the
+  unchanged causal interventions.
+
+  Runtime SHA256SUMS SHA-256 is
+  `145c87d760e2c7ee3aee0433c2609ef5849b3d31feb2c7d0c763aeb42dc9afa6`;
+  report SHA-256 is
+  `808f50e6e3a1026761f7fa0e29aa022346bde6befd419e9051e719fd9448ea37`;
+  checkpoint SHA-256 is
+  `55b5ef79110625f383f6800ac89a20dba9d0a1420bd554fd928ee70f42fdf956`.
+
+  Decision:
+  `promote_role_gated_copy_csdc_then_expand_language_semantics_without_reopening_closed_particle_or_projection_lanes`.

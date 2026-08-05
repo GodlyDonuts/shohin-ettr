@@ -55372,3 +55372,41 @@ Report SHA-256 is
 `c463a96a1c67f86e51540fc44352892d9e8c921b5fc22740521f24ff9d115aa8`;
 checkpoint SHA-256 is
 `e70a87313f51403bbd408c84c145d76c88739b892f248f8b9e653af3f9cfc77e`.
+
+### Role-gated copy removes the CSDC semantic bottleneck (2026-08-05)
+
+The closed bridge's error is architectural rather than a lack of supervision:
+one summary vector must regenerate a variable-length ordered program. The
+role-gated copy bridge instead learns token-level `START`, `OUTCOME`, and
+`WORD` roles, then copies values and generator tokens directly from the
+model-selected source positions while preserving source order. It has 71,622
+parameters, fewer than the failed 75,912-parameter decoder. All CSDC
+reasoning components, data, update budget, cohorts, and interventions remain
+unchanged.
+
+Job `739448` completes 1,500 updates / 192,000 examples on one H100. Learned
+rendered-source CSDC reaches `99.593%` development and `99.723%` unseen-field-
+order exact answers, exactly matching typed-oracle CSDC. Complete challenge
+tuples and ordered words are 100% on both splits. Complete selected
+presentations reach `99.007% / 99.284%`. Every family/depth cohort exceeds
+98.9% answers.
+
+The path remains causal. Shuffling copied outcomes reduces answers to
+`53.630%` on both splits. Swapping the committed whole lineage reduces them to
+`13.623% / 13.346%`. The gate therefore passes in full and promotes the
+controlled rendered-source system.
+
+The result establishes a reusable boundary:
+`learn source roles -> copy identity-preserving semantic tokens -> construct
+small complete hypotheses -> falsify with source evidence -> commit one whole
+lineage -> execute late`. It does not establish unrestricted natural language
+or public reasoning benchmarks. Any broader language integration must preserve
+the copy/commit boundary and test unseen lexical composition rather than return
+to unconstrained summary-vector decoding.
+
+Runtime manifest SHA-256 is
+`145c87d760e2c7ee3aee0433c2609ef5849b3d31feb2c7d0c763aeb42dc9afa6`;
+report SHA-256 is
+`808f50e6e3a1026761f7fa0e29aa022346bde6befd419e9051e719fd9448ea37`;
+checkpoint SHA-256 is
+`55b5ef79110625f383f6800ac89a20dba9d0a1420bd554fd928ee70f42fdf956`.
