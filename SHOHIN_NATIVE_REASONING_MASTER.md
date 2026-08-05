@@ -54868,3 +54868,32 @@ geometry. Sixteen independent H100 jobs will compare both endpoints on
 GSM8K, MATH, HumanEval, MBPP, GPQA, BBH, science, and AIME. This experiment
 tests whether stronger executable reasoning data produces an actual product
 lift; it is not another ETTR-native mechanism claim.
+
+### Function-aligned code specialization (2026-08-04)
+
+The source-replayed OCR2 corpus is high-quality evidence but the first mixed
+training use is negative. Protected source, token-matched non-OCR2 control,
+OCR2 update 100, OCR2 update 200, and OCR2 endpoint reach `50.422%`, `45.544%`,
+`47.161%`, `46.878%`, and `47.500%` five-domain development macro. OCR2
+endpoint solves 69 of the 264 HumanEval/MBPP development tasks, below source
+75. A routed specialist trained only on the 378 OCR2 rows also misses: its best
+checkpoint solves 77, only two above source. Long standalone contest traces
+are therefore not interchangeable with compact function-completion targets.
+
+The matched successor changes the data interface rather than model width,
+learning rate, or seed. It uses 446 MBPP train+validation functions whose
+reference programs pass their source tests and whose questions passed the
+existing 13-gram test-board filter. From the identical protected source,
+one/two/four passes solve `116/119/119` of the same 264 development tasks. The
+two-pass update-112 checkpoint scores HumanEval `72/164` and MBPP `47/100`, a
+44-task gain over source, after only about 52,000 charged target tokens at
+that checkpoint. The full four-pass training run uses 104,776 charged targets.
+
+This is a practical reasoning result, not an ETTR-native claim. It shows that
+the model already has substantial code competence and that representation of
+the supervision target can dominate millions of additional but mismatched
+tokens. Update 112 is the provisional routed code expert while full MBPP-499
+and K=4 visible-test selection run. K=4 oracle execution is reported only as
+a capability ceiling. A deployable selector may execute tests present in an
+MBPP-style user prompt and HumanEval docstring examples, but it may not read
+the hidden benchmark harness.

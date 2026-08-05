@@ -28250,3 +28250,67 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `replace_reported_pass_rate_code_with_source_replayed_traces_and_measure_one_full_token_matched_epoch_on_the_complete_product_board`.
+
+- **2026-08-04 19:35--20:18 EDT** -- **The mixed verified-code endpoint is
+  rejected, but function-aligned verified data produces the campaign's first
+  large code gain.**
+
+  Both matched 4M-token jobs complete from the exact protected update-200
+  source. Control `737783` consumes 3,998,646 charged targets; OCR2 treatment
+  `737784` consumes 4,000,037, a 0.035% difference. Their endpoint five-domain
+  development macros are `45.544% / 47.500%`, while the protected source is
+  `50.422%` after replacing its old 20-row code probes with HumanEval-164 and
+  MBPP-100. Treatment gains three MATH and nine BBH answers over control but
+  solves only `69/264` code tasks versus source `75/264`. Earlier treatment
+  checkpoints also fail: update 100 reaches `47.161%` and update 200 reaches
+  `46.878%`, each solving `66/264` code tasks. Immutable dose report
+  `ocr2_code_quality_dose_449020d_r1/dose_comparison.json` has SHA-256
+  `595473660fa0f63aa546a5dfb4c3a93f46e4cffdc4d5eb4cfaad62f264aae072`.
+  No mixed OCR2 checkpoint is promoted.
+
+  A routed code-only replay of the 378 long OCR2 traces then tests whether
+  non-code interference caused the loss. One/two/four-pass checkpoints score
+  HumanEval/MBPP `46/30`, `48/29`, and `47/25`, versus source `43/32`.
+  The best combined count is only `77/264`, two above source and below the
+  fixed +5-task gate. This specialist is also rejected. It consumes 2,933,003
+  charged targets; checkpoint SHA-256 values at updates 48/96/192 are
+  `893c74182c5c84ca889aa3aaeb7f325e6018e66f2104d20bb245553aecab413c`,
+  `1db0c6dfe5a428c2550901d6fa821cafd780354bb44697c21279121cc1ec728b`,
+  and
+  `f7d5f9bb2603c7363a3ff479f30fa1ccf84a03330ec2d8aef96457009bd41a2c`.
+
+  The failure prediction is data-interface mismatch: OCR2 is dominated by
+  standalone contest programs and long narrated targets, while
+  HumanEval/MBPP require compact function emission. The successor therefore
+  uses the existing 446-row MBPP train+validation function corpus, already
+  execution-verified and 13-gram decontaminated from the test boards, SHA-256
+  `bc43c959841039a7a9e222e6f4cd17131d5a182fd666545b4429bc1393eb06e6`.
+  From the same protected source and geometry, one/two/four-pass checkpoints
+  score HumanEval/MBPP `71/45`, `72/47`, and `73/46`. The two-pass checkpoint
+  therefore solves `119/264`, **44 more tasks than source**, and is the
+  provisional routed code specialist. This gain uses only 104,776 charged
+  target tokens across the complete four-pass run. Update 56/112/224
+  checkpoint SHA-256 values are
+  `a246ea59a7a72a0f7485bc3d9640696b11e00a23df510648260067916fde891e`,
+  `a7b32ff7b74aac4f6d28f8256b0588e69f10915d2b394b0c1942df9636220d18`,
+  and
+  `0f5755d1ec7e6ce4add46ef77f60e7e092fe0883dec257ef5099ffdf22e802c8`;
+  training-report SHA-256 is
+  `e777cf4368290d288fffe504b4ca685538630a47c02cd35e8cfe459b365b1b7f`.
+
+  Full MBPP-499 confirmations `737915--737917` and protected source baseline
+  `737919` are live or queued. Independent K=4 source/treatment searches are
+  `737835--737838`. Private commits `19ef4ab` and `5fc7127` add exact
+  execution verification to sampled code rollouts and a hidden-test-blind
+  selector using prompt-visible MBPP tests plus HumanEval docstring examples.
+  Rollout runtime manifest SHA-256 is
+  `339bf44ba0147d1bcec360f2a79211ce7943a3efc23fb48ad12dbca245e8d645`;
+  selector runtime manifest SHA-256 is
+  `e11a39de4433128c320b13f7df5325176a9e6ffd164cc5e9f246cf9fa9daea02`.
+  Eight single-H100 function-specialist K=4 shards are
+  `737925/737927/737929/737931/737933/737935/737937/737939`, with dependent
+  visible-only selectors. Oracle pass@4 remains diagnostic; only the visible
+  selector may count as a deployable code-search gain.
+
+  Decision:
+  `reject_mixed_and_contest_only_code_sft_promote_function_aligned_update112_pending_full499_and_measure_visible_test_k4`.
