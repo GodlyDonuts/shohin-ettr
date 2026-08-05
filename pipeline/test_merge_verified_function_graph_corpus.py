@@ -104,3 +104,38 @@ def test_merge_rejects_verification_hash_mismatch(tmp_path: Path) -> None:
     report.write_text(json.dumps(metadata))
     with pytest.raises(FunctionGraphMergeError, match="verification hash differs"):
         merge_shards([shard], [report], expected_shards=1, expected_rows=2)
+
+
+def test_merge_accepts_only_explicit_source_schema(tmp_path: Path) -> None:
+    rows, _ = generate_rows(
+        count=2,
+        seed=31,
+        shard_index=0,
+        shard_count=1,
+        blocked_grams=set(),
+        ngram_width=13,
+        timeout_seconds=2,
+    )
+    alternate_schema = "shohin-verified-function-graph-v2"
+    for row in rows:
+        row["schema"] = alternate_schema
+    rows[0]["split"] = "train"
+    rows[1]["split"] = "confirmation"
+    shard, report = _write_shard(tmp_path, 0, rows)
+    metadata = json.loads(report.read_text())
+    metadata["schema"] = alternate_schema
+    metadata["shard_count"] = 1
+    report.write_text(json.dumps(metadata))
+
+    with pytest.raises(FunctionGraphMergeError, match="not complete"):
+        merge_shards([shard], [report], expected_shards=1, expected_rows=2)
+
+    merged, merged_report = merge_shards(
+        [shard],
+        [report],
+        expected_shards=1,
+        expected_rows=2,
+        expected_schema=alternate_schema,
+    )
+    assert len(merged) == 2
+    assert merged_report["source_schema"] == alternate_schema

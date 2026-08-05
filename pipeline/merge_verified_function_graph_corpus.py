@@ -14,7 +14,7 @@ from typing import Any
 from build_verified_function_graph_corpus import SCHEMA, _grams, evaluation_grams
 
 
-MERGE_SCHEMA = "shohin-verified-function-graph-merge-v1"
+MERGE_SCHEMA = "shohin-verified-function-graph-merge-v2"
 
 
 class FunctionGraphMergeError(RuntimeError):
@@ -35,6 +35,7 @@ def merge_shards(
     *,
     expected_shards: int,
     expected_rows: int,
+    expected_schema: str = SCHEMA,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     if len(shard_paths) != len(report_paths) or len(shard_paths) != expected_shards:
         raise FunctionGraphMergeError("shard and report cardinality differs")
@@ -63,7 +64,10 @@ def merge_shards(
     rows: list[dict[str, Any]] = []
     for path, report_path in zip(shard_paths, report_paths, strict=True):
         report = json.loads(report_path.read_text())
-        if report.get("schema") != SCHEMA or report.get("status") != "complete":
+        if (
+            report.get("schema") != expected_schema
+            or report.get("status") != "complete"
+        ):
             raise FunctionGraphMergeError("shard report is not complete")
         if Path(str(report.get("output"))).resolve() != path.resolve():
             raise FunctionGraphMergeError("shard output path differs")
@@ -98,7 +102,7 @@ def merge_shards(
         questions
     ):
         raise FunctionGraphMergeError("merged questions differ")
-    if any(row.get("schema") != SCHEMA for row in rows):
+    if any(row.get("schema") != expected_schema for row in rows):
         raise FunctionGraphMergeError("merged row schema differs")
     seed = next(iter(seeds))
     if any(int(row.get("seed", -1)) != seed for row in rows):
@@ -134,6 +138,7 @@ def merge_shards(
         "schema": MERGE_SCHEMA,
         "status": "complete",
         "rows": len(rows),
+        "source_schema": expected_schema,
         "seed": seed,
         "shards": expected_shards,
         "ngram_width": next(iter(ngram_widths)),
@@ -186,12 +191,14 @@ def main() -> int:
     parser.add_argument("--report", type=Path, required=True)
     parser.add_argument("--expected-shards", type=int, required=True)
     parser.add_argument("--expected-rows", type=int, required=True)
+    parser.add_argument("--expected-schema", default=SCHEMA)
     args = parser.parse_args()
     rows, report = merge_shards(
         args.shard,
         args.shard_report,
         expected_shards=args.expected_shards,
         expected_rows=args.expected_rows,
+        expected_schema=args.expected_schema,
     )
     train = [row for row in rows if row["split"] == "train"]
     confirmation = [row for row in rows if row["split"] == "confirmation"]
