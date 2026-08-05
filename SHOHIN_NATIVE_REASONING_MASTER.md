@@ -55515,3 +55515,56 @@ merge only extensionally equivalent worlds, issue no false query certificate,
 account canonical bytes/transactions, and fail closed on overflow. Neural
 scoring, long pretraining, and public benchmarks wait for that representation
 gate.
+
+### Whole-mention grounding closes; DIVERGE-v0 begins (2026-08-05)
+
+The one frozen whole-mention experiment is complete. Job `741299` trained the
+9.495M span adapter for exactly 1,500 updates / 192,000 episodes. Development
+is solved: 99.691% answers, 100% complete challenge tuples, 99.202% selected
+tables, and 100% exact gold mentions. Under the disjoint lexical renderer and
+alias pool, however, answers fall to 84.294%, complete tuples to 17.920%,
+selected tables to 74.447%, and exact gold mentions to 83.021%. The weakest
+shifted cohort reaches 77.832% answers.
+
+The negative is mechanically clean. Typed oracle accuracy remains 99.463%.
+Shuffled outcomes and whole-lineage swaps reduce shifted answers to 51.807%
+and 12.500%, so decoded evidence still causally selects a coherent world.
+Class-ID reindexing is bit-identical, tokenizer representability is 100%, and
+the decoder accepts zero partial/superset/overlap identities. The boundary is
+global role and nominal generalization: shifted records produce 16,625
+duplicate outcomes, 5,050 duplicate starts, 1,984 missing outcomes, and 2,496
+missing starts. Exact-surface span quotienting does not resolve those choices.
+
+Report/checkpoint SHA-256 values are
+`d81a1c9648b10f8afb409116463b3ca8b5084abc472a33cd4922d0e5d17ebcca` /
+`a2b16103dcc63d1a1b08ac9e24be23520066b5cd772feb8e679b21e9a315b19b`.
+This lane is closed without repair. DIVERGE-v0 now starts from the protected
+typed/role-copy CSDC result. Its first claim is exact factorized epistemic
+state and recovery mechanics, not raw-language compilation; learned semantic
+fault lines return only after the packet passes its CPU gate.
+
+### DIVERGE-v0 exact mechanics result (2026-08-05)
+
+DIVERGE-v0 now has a tested CPU reference implementation. On a frozen board of
+12 delayed-disambiguation episodes / 252 complete worlds spanning widths 2--64,
+candidate execution is extensionally identical to an independent enumerator.
+There are zero compile gold-support losses, zero valid-world losses from 12
+verified conflict cores, zero false answer certificates, and zero unsafe merge
+receipts. Invariant queries answer, unresolved queries abstain, and delayed
+evidence recovers the sensitive answer despite every initial top-1 being wrong.
+
+The factorized representation is also materially smaller than a properly
+charged complete-particle control: 37,930 versus 640,960 bytes aggregate
+(`16.90x`), reaching `38.34x` at 64 worlds. Shared execution uses 320 unique
+state/transaction applications instead of 1,792 duplicated applications
+(`5.60x`). The CPU report SHA-256 is
+`b3562654524d773901a5ed4aebf91d0c1408883d4786451ae1053d6766daddec`.
+
+This is a mechanics milestone, not native reasoning. Fault lines, support,
+guards, and conflict certificates are still supplied by the deterministic
+board. The next discriminating result is whether a source-only learned
+compiler/refiner preserves all valid worlds and gives DIVERGE at least a
+10-point OOD recovery advantage over matched single-state, particle,
+independent, recurrence, soft-mixture, and no-conflict controls. The gate is
+frozen before training in
+`docs/research/DIVERGE_V0_NEURAL_PROMOTION_GATE.json`.

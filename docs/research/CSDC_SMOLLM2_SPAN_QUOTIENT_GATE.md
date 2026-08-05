@@ -185,3 +185,42 @@ deliverable is CPU-only packet semantics, exact enumeration parity, verified
 nogoods, safe merging, query invariance/abstention, canonical accounting, and
 fail-closed overflow on the Delayed Disambiguation/Recovery board. No long
 pretraining or public benchmark run is authorized by this span result.
+
+## 8. Immutable result
+
+Status: **closed negative**. Newton job `741299` completed on `evc30` with
+exit code zero in `00:30:02`. It trained the frozen 9,495,302-parameter span
+adapter for exactly 1,500 updates / 192,000 charged episodes. Training took
+1,572.116 seconds at 122.128 episodes/s and reported 10,029,806,592 peak GPU
+bytes. The one hard minibatch at update 1,200 recovered immediately; no OOM,
+nonfinite value, or runtime failure occurred.
+
+| Split | Answer | Complete tuple | Selected table | Gold mention | Oracle |
+|---|---:|---:|---:|---:|---:|
+| Development | 99.691% | 100.000% | 99.202% | 100.000% | 99.691% |
+| Lexical shift | **84.294%** | **17.920%** | **74.447%** | **83.021%** | 99.463% |
+
+All six development cohorts pass. On lexical shift, the weakest answer cohort
+is 77.832%. Shuffled outcomes reduce shifted answers to 51.807%, and whole-
+lineage swaps reduce them to 12.500%; the source challenges and coherent CSDC
+lineage are therefore still causally used. Exact-surface class-ID reindexing
+is bit-identical. No partial, strict-superset, or overlapping mention is ever
+accepted as an exact identity copy.
+
+The failure is not tokenizer representability: every gold alias fits under
+the frozen width-four cap. It is joint role/identity generalization. Across
+the six shifted cohorts the strict decoder records 16,625 duplicate outcomes,
+5,050 duplicate starts, 1,984 missing outcomes, 2,496 missing starts, 116
+nonexact identities, and 223 selected partial spans that are correctly
+rejected. Shifted start/outcome mentions remain about 93.2%/93.4% exact, but
+ordered WORD mentions fall to 78.1%, so complete challenge records survive in
+only 17.9% of episodes. Exact-surface occurrence pooling solves neither unseen
+nominal grounding nor globally coherent role assignment.
+
+The report/checkpoint SHA-256 values are
+`d81a1c9648b10f8afb409116463b3ca8b5084abc472a33cd4922d0e5d17ebcca` /
+`a2b16103dcc63d1a1b08ac9e24be23520066b5cd772feb8e679b21e9a315b19b`.
+Both artifacts are read-only and hash-verified on Newton and in local disaster
+recovery storage. This exact span architecture receives no repair run.
+DIVERGE-v0 begins from protected typed/role-copy CSDC and treats learned
+raw-language fault-line compilation as an unresolved later gate.

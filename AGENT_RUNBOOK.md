@@ -29318,3 +29318,83 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `wait_for_the_released_immutable_span_gate_then_transition_directly_to_diverge_v0`.
+
+- **2026-08-05 15:25--16:05 EDT** -- **Whole-mention span quotient closes;
+  DIVERGE-v0 is now the active architecture lane.**
+
+  Full job `741299` completed cleanly on `evc30` in `00:30:02`, exit code
+  zero. It ran exactly 1,500 updates / 192,000 charged episodes from immutable
+  runtime `csdc_span_quotient_e28f6d3_r3`; the 9,495,302 trainable adapter
+  reached 122.128 episodes/s over 1,572.116 training seconds with
+  10,029,806,592 peak GPU bytes. A finite update-1,200 loss spike recovered
+  at the next logged boundary.
+
+  Development answers/tuples/tables/gold mentions are
+  `99.691% / 100.000% / 99.202% / 100.000%`. Lexical-shift values are only
+  `84.294% / 17.920% / 74.447% / 83.021%`, with a 77.832% minimum answer
+  cohort. The shifted typed oracle is 99.463%. Shuffled outcomes and lineage
+  swaps fall to 51.807% and 12.500%; exact-surface class reindexing is
+  bit-identical; zero partial/superset/overlap identity is accepted. The
+  failure is therefore coherent unseen role/identity assignment, not
+  representability, a CSDC bypass, or malformed-span acceptance. Do not run a
+  span width, duration, seed, threshold, loss, or structured-decoder repair.
+
+  Report/checkpoint SHA-256 values are
+  `d81a1c9648b10f8afb409116463b3ca8b5084abc472a33cd4922d0e5d17ebcca` /
+  `a2b16103dcc63d1a1b08ac9e24be23520066b5cd772feb8e679b21e9a315b19b`.
+  Both are read-only and hash-verified on Newton and locally under
+  `artifacts/reasoning/csdc_smollm2_span_quotient_v1/`.
+
+  Begin DIVERGE-v0 now. First freeze the source-sealed packet schema, finite
+  guard language, delayed-disambiguation board, A--G controls, independent
+  enumerator contract, and quantitative CPU gates. Then implement exact
+  extensional parity, verifier-safe nogoods, conservative merging, query
+  invariance/abstention, canonical accounting, and sticky fail-closed
+  overflow. PCSD and FCPT remain closed. Do not begin neural scoring or long
+  pretraining before this CPU mechanism gate passes.
+
+  Decision:
+  `close_span_quotient_then_freeze_and_implement_diverge_v0_cpu_semantics`.
+
+- **2026-08-05 16:05--16:44 EDT** -- **DIVERGE-v0 exact CPU semantics pass;
+  learned recovery remains unproven.**
+
+  Implemented the source-sealed factorized packet, finite equality guards,
+  hard/support factors, guarded noncommuting transactions, independent
+  enumerative assessor, externally verified nogood admission, exact
+  invariant/abstaining reader, conservative certified merge, canonical
+  storage/accounting, and sticky fail-closed caps. The focused suite has 11/11
+  passing tests. The independent assessor is statically checked not to call
+  candidate enumeration, execution, transaction, query, or merge semantics.
+
+  Frozen board seed `20260805` contains 12 episodes / 252 worlds at ambiguity
+  widths 2--64 and command depths 2--9, with a held-out signal-routing
+  ontology. All initial top-1 assignments are wrong while the gold world is in
+  support. Candidate/reference parity failures, compile-time gold-support
+  losses, conflict valid-support losses, false query certificates, and unsafe
+  merge receipts are all zero. Twelve independently verified nogoods remove
+  exactly 126 invalid worlds and recover the sensitive answer while invariant
+  queries answer and underdetermined queries abstain.
+
+  Correct complete-particle accounting is 37,930 factorized bytes versus
+  640,960 materialized bytes (`16.90x`) and 320 unique versus 1,792 duplicated
+  transaction applications (`5.60x`). The width-64 receipts are 5,023 versus
+  192,561 bytes (`38.34x`) and 64 versus 576 transactions (`9.00x`). Preserve
+  the initial undercharged-control negative report SHA-256
+  `da555952246730a1df854aec39b9256cb69a6d3624a23ced2b4478fb72496da9`;
+  it counted only terminal states and therefore failed aggregate storage. The
+  corrected report changes only full-particle accounting, not packet semantics
+  or board data. Board commitment is
+  `c8c371293b7d023d8bea9d7e9defa31c87da9d046c08a58177d496765ce88a17`;
+  report SHA-256 is
+  `b3562654524d773901a5ed4aebf91d0c1408883d4786451ae1053d6766daddec`.
+
+  Neural A--G promotion thresholds are now frozen before learned results. G
+  must retain 100% source support, issue zero false certificates, recover at
+  least 90% of wrong-top-1 cases, beat every matched control by at least 10
+  OOD points, gain on every family and four of five seeds, and collapse under
+  the named causal interventions. This CPU result authorizes a minimal learned
+  compiler/refiner gate; it is not evidence of learned reasoning.
+
+  Decision:
+  `promote_diverge_v0_exact_mechanics_to_one_matched_neural_gate_without_scaling_or_pretraining`.

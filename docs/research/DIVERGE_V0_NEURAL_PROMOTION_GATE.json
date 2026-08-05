@@ -1,0 +1,62 @@
+{
+  "schema": "shohin-diverge-v0-neural-promotion-gate-v1",
+  "frozen_after_cpu_calibration_and_before_neural_results": true,
+  "cpu_board_commitment": "c8c371293b7d023d8bea9d7e9defa31c87da9d046c08a58177d496765ce88a17",
+  "required_seeds": 5,
+  "minimum_winning_seeds": 4,
+  "matched_budget_tolerance_fraction": 0.01,
+  "required_arms": {
+    "A": "single_state_immediate_top1_csdc_ettr",
+    "B": "full_k_coherent_whole_state_particles_shared_weights",
+    "C": "k_independent_trajectories",
+    "D": "single_state_equal_total_flop_extra_recurrence",
+    "E": "soft_field_aggregating_latent_mixture",
+    "F": "factorized_version_space_without_conflict_learning",
+    "G": "full_diverge"
+  },
+  "absolute_gates": {
+    "compile_gold_support_recall": 1.0,
+    "valid_support_recall_after_every_conflict": 1.0,
+    "maximum_false_query_certificates": 0,
+    "minimum_initially_wrong_top1_recovery_exact": 0.90,
+    "minimum_recovery_exact_each_board_family": 0.85,
+    "minimum_ood_exact_gain_over_strongest_A_to_F_points": 10.0,
+    "minimum_gain_each_board_family_points": 5.0,
+    "maximum_64_world_packet_bytes": 8192,
+    "minimum_storage_advantage_at_4_worlds": 2.0,
+    "minimum_storage_advantage_at_32_worlds": 10.0,
+    "minimum_transaction_sharing_ratio_at_8_worlds": 2.0,
+    "minimum_transaction_sharing_ratio_at_64_worlds": 5.0
+  },
+  "causal_interventions": {
+    "conflict_disabled_minimum_drop_points": 5.0,
+    "forced_premature_top1_minimum_drop_points": 20.0,
+    "shuffled_guard_or_provenance_minimum_drop_points": 20.0,
+    "packet_swap_minimum_drop_points": 20.0,
+    "state_reset_minimum_drop_points": 20.0,
+    "query_only_maximum_above_empirical_majority_points": 5.0,
+    "shuffled_labels_maximum_above_empirical_majority_points": 5.0,
+    "source_deletion_requires_bit_identical_outputs": true
+  },
+  "resource_receipts": [
+    "trainable_and_total_parameters",
+    "training_tokens",
+    "forward_and_backward_flops",
+    "activation_memory",
+    "peak_device_memory",
+    "wall_clock",
+    "verifier_calls",
+    "packet_bytes",
+    "unique_and_duplicated_transactions"
+  ],
+  "kill_or_narrow_conditions": [
+    "any_compile_time_gold_support_loss",
+    "any_false_query_certificate",
+    "full_particles_match_G_within_two_points_at_equal_memory_and_flops",
+    "soft_aggregation_matches_G_within_two_points",
+    "no_positive_gain_on_any_board_family",
+    "fewer_than_four_winning_seeds",
+    "factorized_packet_exceeds_8192_bytes_at_64_worlds",
+    "required_causal_intervention_does_not_collapse_performance"
+  ]
+}

@@ -106,10 +106,15 @@ still does not reopen PCSD or FCPT.
 The subsequent SmolLM2 lexical integration reaches `99.691% / 95.915%`
 development/combined-shift answers and retains large shuffled-evidence and
 lineage-swap failures, but all-eight shifted challenge tuples are exact in only
-`17.920%` of episodes. Its first-subtoken copy interface is closed. One frozen
-whole-mention span-quotient gate now tests whether complete model-selected
-mentions restore exact identity under tokenizer and lexical shift. It changes
-no CSDC reasoning mechanics and receives no repair variants.
+`17.920%` of episodes. Its first-subtoken copy interface is closed. The one
+frozen whole-mention span-quotient successor also closes. It reaches 99.691%
+development answers, 100% complete tuples, and 99.202% selected tables, but
+under lexical shift falls to `84.294% / 17.920% / 74.447%`. Exact shifted gold
+mentions are 83.021%; duplicate and missing role assignments dominate despite
+100% tokenizer representability. Causal challenge/lineage interventions still
+collapse and no nonexact span is accepted. Whole-span pooling plus exact-
+surface occurrence messages therefore do not solve unseen nominal grounding
+or coherent record-level role assignment. No repair variant follows.
 
 After that one gate, the ordered successor is **DIVERGE**, not another PCSD or
 FCPT run. DIVERGE extends the protected CSDC principle from a small explicit
