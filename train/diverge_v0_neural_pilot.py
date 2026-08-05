@@ -769,8 +769,11 @@ def score_episode(
     model: DivergePilotCompiler,
     episode: PilotEpisode,
     device: torch.device,
+    *,
+    prediction: CompilerPrediction | None = None,
 ) -> dict[str, int]:
-    prediction = predict_episode(model, episode, device)
+    if prediction is None:
+        prediction = predict_episode(model, episode, device)
     true_fault = {record.record_id for record in episode.records if record.is_fault_line}
     selected_fault = {
         record.record_id
