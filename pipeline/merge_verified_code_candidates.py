@@ -90,7 +90,15 @@ def _load(path: Path) -> list[dict[str, Any]]:
         rows = parsed.get("results") if isinstance(parsed, dict) else parsed
         if not isinstance(rows, list):
             raise VerifiedCodeCandidateMergeError("JSON source has no result rows")
-        return rows
+        task = parsed.get("task") if isinstance(parsed, dict) else None
+        normalized: list[dict[str, Any]] = []
+        for row in rows:
+            candidate = dict(row)
+            if task is not None:
+                candidate.setdefault("task", task)
+            candidate.setdefault("sample_index", 0)
+            normalized.append(candidate)
+        return normalized
     return [json.loads(line) for line in payload.splitlines() if line]
 
 

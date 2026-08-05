@@ -1,7 +1,9 @@
 import pytest
+import json
 
 from merge_verified_code_candidates import (
     VerifiedCodeCandidateMergeError,
+    _load,
     merge_arms,
 )
 
@@ -39,3 +41,13 @@ def test_merge_arms_preserves_first_arm_as_anchor() -> None:
 def test_merge_arms_rejects_identity_mismatch() -> None:
     with pytest.raises(VerifiedCodeCandidateMergeError, match="identities differ"):
         merge_arms([("one", [_row("a", 0)]), ("two", [_row("b", 0)])])
+
+
+def test_load_eval_report_inherits_top_level_task(tmp_path) -> None:
+    path = tmp_path / "eval.json"
+    path.write_text(
+        json.dumps({"task": "humaneval", "results": [{"identity_sha256": "a"}]})
+    )
+    assert _load(path) == [
+        {"identity_sha256": "a", "task": "humaneval", "sample_index": 0}
+    ]
