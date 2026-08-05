@@ -215,6 +215,13 @@ def test_span_gate_requires_every_causal_condition() -> None:
                     "accepted_overlap": 0,
                     "candidate_classes": 100,
                     "selected_classes": 20,
+                    "missing_start": 0,
+                    "duplicate_start": 0,
+                    "missing_outcome": 0,
+                    "duplicate_outcome": 0,
+                    "missing_word": 0,
+                    "excess_word": 0,
+                    "nonexact_identity": 0,
                 }
             )
     summary = aggregate_evaluations(rows)

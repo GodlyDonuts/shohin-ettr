@@ -118,6 +118,13 @@ class SpanDecodeAudit:
     selected_candidate: torch.Tensor
     selected_mask: torch.Tensor
     valid: torch.Tensor
+    missing_start: torch.Tensor
+    duplicate_start: torch.Tensor
+    missing_outcome: torch.Tensor
+    duplicate_outcome: torch.Tensor
+    missing_word: torch.Tensor
+    excess_word: torch.Tensor
+    nonexact_identity: torch.Tensor
 
 
 def _positions_for_span(
@@ -555,9 +562,9 @@ def _decode_record_candidates(
     source: SpanLexicalSource,
     indices: torch.Tensor,
     maximum_word_length: int,
-) -> tuple[list[int], bool]:
+) -> tuple[list[int], tuple[int, int, int]]:
     if indices.numel() == 0:
-        return [], False
+        return [], (0, 0, 0)
     local = role_logits[indices]
     predicted = local.argmax(-1)
     margin = local.gather(-1, predicted[:, None]).squeeze(-1) - local[:, OTHER_ROLE]
@@ -589,12 +596,11 @@ def _decode_record_candidates(
         ),
         key=lambda index: int(source.candidate_start[index].item()),
     )
-    shape_valid = (
-        len(start_candidates) == 1
-        and len(outcome_candidates) == 1
-        and 1 <= len(word_candidates) <= maximum_word_length
+    return start_candidates + outcome_candidates + word_candidates, (
+        len(start_candidates),
+        len(outcome_candidates),
+        len(word_candidates),
     )
-    return start_candidates + outcome_candidates + word_candidates, shape_valid
 
 
 def decode_span_logits(
@@ -624,6 +630,13 @@ def decode_span_logits(
         algebra.maximum_challenges,
         dtype=torch.bool,
     )
+    missing_start = torch.zeros_like(valid)
+    duplicate_start = torch.zeros_like(valid)
+    missing_outcome = torch.zeros_like(valid)
+    duplicate_outcome = torch.zeros_like(valid)
+    missing_word = torch.zeros_like(valid)
+    excess_word = torch.zeros_like(valid)
+    nonexact_identity = torch.zeros_like(valid)
     start = torch.zeros_like(valid, dtype=torch.long)
     outcome = torch.zeros_like(valid, dtype=torch.long)
     length = torch.ones_like(valid, dtype=torch.long)
@@ -644,7 +657,7 @@ def decode_span_logits(
                 candidate_start,
                 candidate_end,
             )
-            selected, shape_valid = _decode_record_candidates(
+            selected, counts = _decode_record_candidates(
                 cpu_role_logits,
                 cpu_source,
                 candidates,
@@ -654,6 +667,18 @@ def decode_span_logits(
                 count = min(len(selected), maximum_selected)
                 selected_candidate[row, slot, :count] = torch.tensor(selected[:count])
                 selected_mask[row, slot, :count] = True
+            start_count, outcome_count, word_count = counts
+            missing_start[row, slot] = start_count == 0
+            duplicate_start[row, slot] = start_count > 1
+            missing_outcome[row, slot] = outcome_count == 0
+            duplicate_outcome[row, slot] = outcome_count > 1
+            missing_word[row, slot] = word_count == 0
+            excess_word[row, slot] = word_count > algebra.maximum_word_length
+            shape_valid = (
+                start_count == 1
+                and outcome_count == 1
+                and 1 <= word_count <= algebra.maximum_word_length
+            )
             if not shape_valid:
                 continue
             start_index, outcome_index, *word_indices = selected
@@ -663,6 +688,7 @@ def decode_span_logits(
             exact_valid = exact_valid and bool(target_roles[1].eq(OUTCOME_ROLE))
             exact_valid = exact_valid and bool(target_roles[2:].eq(WORD_ROLE).all())
             if not exact_valid:
+                nonexact_identity[row, slot] = True
                 continue
             start[row, slot] = cpu_source.candidate_target_value[start_index]
             outcome[row, slot] = cpu_source.candidate_target_value[outcome_index]
@@ -688,6 +714,13 @@ def decode_span_logits(
             selected_candidate=selected_candidate.to(output_device),
             selected_mask=selected_mask.to(output_device),
             valid=valid.to(output_device),
+            missing_start=missing_start.to(output_device),
+            duplicate_start=duplicate_start.to(output_device),
+            missing_outcome=missing_outcome.to(output_device),
+            duplicate_outcome=duplicate_outcome.to(output_device),
+            missing_word=missing_word.to(output_device),
+            excess_word=excess_word.to(output_device),
+            nonexact_identity=nonexact_identity.to(output_device),
         ),
     )
 
@@ -809,6 +842,13 @@ def evaluate_cohort(
         "accepted_overlap": 0,
         "candidate_classes": 0,
         "selected_classes": 0,
+        "missing_start": 0,
+        "duplicate_start": 0,
+        "missing_outcome": 0,
+        "duplicate_outcome": 0,
+        "missing_word": 0,
+        "excess_word": 0,
+        "nonexact_identity": 0,
     }
     batch_hashes: list[str] = []
     processed = 0
@@ -999,6 +1039,16 @@ def evaluate_cohort(
             if selected_ids.numel()
             else 0
         )
+        for metric in (
+            "missing_start",
+            "duplicate_start",
+            "missing_outcome",
+            "duplicate_outcome",
+            "missing_word",
+            "excess_word",
+            "nonexact_identity",
+        ):
+            totals[metric] += int(getattr(audit, metric).sum().item())
         processed += current
 
     challenge_total = count * reasoner.algebra.maximum_challenges
@@ -1039,6 +1089,13 @@ def evaluate_cohort(
         "accepted_overlap": totals["accepted_overlap"],
         "candidate_classes": totals["candidate_classes"],
         "selected_classes": totals["selected_classes"],
+        "missing_start": totals["missing_start"],
+        "duplicate_start": totals["duplicate_start"],
+        "missing_outcome": totals["missing_outcome"],
+        "duplicate_outcome": totals["duplicate_outcome"],
+        "missing_word": totals["missing_word"],
+        "excess_word": totals["excess_word"],
+        "nonexact_identity": totals["nonexact_identity"],
     }
 
 
@@ -1070,6 +1127,13 @@ def aggregate_evaluations(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "accepted_overlap",
         "candidate_classes",
         "selected_classes",
+        "missing_start",
+        "duplicate_start",
+        "missing_outcome",
+        "duplicate_outcome",
+        "missing_word",
+        "excess_word",
+        "nonexact_identity",
     )
     for split in ("development", "lexical_shift"):
         selected = [row for row in rows if row["split"] == split]
