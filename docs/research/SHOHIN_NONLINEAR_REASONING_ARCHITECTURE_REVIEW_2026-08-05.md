@@ -127,6 +127,14 @@ not neural scaling. Full particles remain a matched control. The bounded
 candidate contribution is the learned source-sealed conjunction and sharing
 advantage, not particles, BDDs, conflict clauses, or typed state individually.
 
+DIVERGE's first learned source-boundary result is now available. Whole-option
+pooling fails, but a materially different token-role/source-copy compiler
+reaches exact packet construction and delayed recovery on development and
+held renderer/ontology confirmation for five of five seeds. The result
+qualifies the compiler only. The full resource-matched A--G matrix, late-query
+types, causal interventions, and sharing receipts remain required before any
+architecture claim.
+
 ## Terminology
 
 Do not call this "schizophrenic AI" in code, a paper, a resume, or a public

@@ -29466,3 +29466,41 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_pooled_smol_compiler_then_preserve_token_roles_and_order_at_the_source_boundary`.
+
+- **2026-08-05 18:20--19:00 EDT** -- **Token-role/source-copy compilation
+  qualifies DIVERGE's learned source boundary on five of five seeds.**
+
+  Read-only error audit `765567` confirms the pooled failure is fieldwise and
+  renderer-specific. Development maps all 256 secondary program-2 options to
+  program 3 and selects 16/96 distractors. Confirmation programs are exact,
+  but 168/384 reserve priors become favored and 26/384 true fault records are
+  dropped. Primary programs and priors are exact in both splits. Audit report
+  SHA-256 is
+  `5259a7b58b62279dbd1eba3b355f20f028f34af40bfb53d0e4c8f7d18a9c2c24`.
+
+  The replacement predicts source-token roles for candidate/background cues,
+  favored/reserve priors, four action identities, and action order, then copies
+  a complete option into the unchanged exact packet. One save-order smoke bug
+  was fixed before science. Runtime r2 is private commit `e1bdf8b`, tar SHA-256
+  `21c9179727d2a721b281b336d6abd18e28ec1ff8bcb22e0fa13170f45c4d8c12`.
+  The 1,013,962-parameter adapter trains for 600 updates / 9,600 charged
+  episodes per seed.
+
+  Seed `2026080522` on `evc50` and seeds `2026080523--26` serially backfilled
+  on `evc23`. All five reach 100% development and confirmation gold-support
+  recall, record set, program, prior, evidence binding, exact packet, DIVERGE
+  answer, and strict joint packet-plus-answer over 2,560 evaluated episodes.
+  Distractor FPR is zero. Immediate top-1, soft/no-conflict, and single-state
+  diagnostics remain at zero. All artifacts are read-only and hash-verified
+  locally/Newton; exact hashes are recorded in
+  `docs/research/DIVERGE_V0_NEURAL_COMPONENT_PILOT.md`.
+
+  This clears the learned source compiler prerequisite only. Do not call it a
+  DIVERGE architecture win or general reasoning. Implement the complete
+  resource-matched A--G arms, sensitive/invariant/underdetermined late queries,
+  sharing/resource receipts, and shuffled-guard/provenance, forced-top1,
+  packet-swap, conflict-disabled, and source-deletion controls under the
+  already-frozen promotion thresholds.
+
+  Decision:
+  `qualify_token_role_source_boundary_then_run_the_frozen_complete_diverge_a_to_g_gate`.

@@ -1,7 +1,8 @@
 # DIVERGE-v0 Source-Sealed Factorized CSDC
 
-Status: CPU mechanics implemented and passed on the frozen calibration board;
-no neural score or reasoning claim exists.
+Status: CPU mechanics passed and the token-role/source-copy compiler qualified
+on five of five seeds. The complete resource-matched A--G architecture gate is
+not yet run, so no DIVERGE promotion or general-reasoning claim exists.
 
 Date: 2026-08-05
 

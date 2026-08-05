@@ -83,6 +83,37 @@ roles and source order through constrained copy/closure rather than compressing
 an entire option into one pooled vector. A read-only fieldwise error audit is
 permitted before freezing that replacement.
 
+## Token-role/source-copy qualification
+
+The replacement preserves the semantic boundary at token resolution. Separate
+learned roles identify candidate/background cues, favored/reserve support,
+four finite action identities, and their source order. A constrained decoder
+copies those roles into one complete option before packet closure. It never
+averages program fields or consumes the late query. The adapter has 1,013,962
+trainable parameters, fewer than the failed pooled compiler.
+
+Five matched seeds each trained for 600 updates / 9,600 charged episodes. Every
+seed reaches 100% on both the 256-episode development split and the 256-episode
+held-renderer/held-ontology confirmation split for gold-support recall, exact
+record set, program, prior, evidence binding, exact packet, DIVERGE answer, and
+strict joint packet-plus-answer. Distractor false-positive rate is zero. The
+immediate top-1 and no-conflict diagnostics remain zero as predicted.
+
+| Seed | Development joint | Confirmation joint | Report SHA-256 | Checkpoint SHA-256 |
+|---:|---:|---:|---|---|
+| 2026080522 | 100% | 100% | `2ac508b6456499658c71eae7a34213cfe372b24e33d16a498a944ba5cad35118` | `d614690f6446bf1635fc474d4ae941677b01ac465c0c60381c4b11bbe189826f` |
+| 2026080523 | 100% | 100% | `0f6096f6112a103f0d750c3163a05b8c166b9db7846530cb86f2b9ea20a5047f` | `81d3747ef6981524f58e60ca3f4cff377e32b96d3fb3a964bad35bbd9fe9058d` |
+| 2026080524 | 100% | 100% | `74d9582b9e68da23d269f740f097e1cbf25b8ad4eb56f7add74fc9ee5e2c6919` | `d53ffc0bce3f58132e8932235c43588ee89a5b6881e289934dae32a73316b742` |
+| 2026080525 | 100% | 100% | `ccaade86b32d0cda97f2d8e60f7bf91c3464c74615c578299bad18cf037ba524` | `71c04b7054d821e310c282475ab96d83258b529506e979b452b56246e71791cd` |
+| 2026080526 | 100% | 100% | `b91198584f2ed3e60b419f297a5ba2c0f9770d2c65a1ac09bf74db95c2f431a6` | `20e34d06c56b469f80171f8e3f156ef6ea60ddfbb9d5c81f9cbbfe8dedd9d23a` |
+
+Runtime r2 is pinned to private commit `e1bdf8b` at tar SHA-256
+`21c9179727d2a721b281b336d6abd18e28ec1ff8bcb22e0fa13170f45c4d8c12`.
+All reports/checkpoints are read-only and hash-verified locally and on Newton.
+This clears only the learned source-boundary prerequisite. The next gate must
+implement the complete matched A--G arms, three late-query types, resource
+receipts, and causal interventions already frozen in the promotion contract.
+
 ## Claim boundary
 
 The scores named A--G in these pilots are mechanism diagnostics, not complete

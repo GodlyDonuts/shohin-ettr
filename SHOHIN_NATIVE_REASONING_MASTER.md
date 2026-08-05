@@ -55568,3 +55568,29 @@ compiler/refiner preserves all valid worlds and gives DIVERGE at least a
 independent, recurrence, soft-mixture, and no-conflict controls. The gate is
 frozen before training in
 `docs/research/DIVERGE_V0_NEURAL_PROMOTION_GATE.json`.
+
+### DIVERGE learned source boundary qualifies (2026-08-05)
+
+Two direct source compilers failed before the successful interface was found.
+A 243,319-parameter from-scratch compiler was exact on only two of five seeds.
+A 1,068,775-parameter frozen-Smol pooled compiler then reached zero strict
+development packets and only 0.781% strict confirmation packets. A fieldwise
+audit showed the mechanism of failure: renderer-2 `SWAP(2,3)` collapsed into
+`SWAP(3,4)`, renderer-3 reserve priors collapsed toward favored, and fault-line
+selection dropped support. Primary noncommuting options and evidence binding
+were already exact, so more pooled capacity was not justified.
+
+The replacement keeps candidate cues, support priors, action identities, and
+action order as separately supervised source-token roles, then copies those
+roles into one complete option before closure. This 1,013,962-parameter
+adapter reaches 100% exact source support, packet construction, evidence
+binding, conflict recovery, and strict answers on development and held
+renderer/ontology confirmation for all five seeds (2,560 evaluated episodes).
+Every immediate-top-1 and no-conflict diagnostic remains at zero. The result
+qualifies learned fault-line compilation for the complete A--G test; it does
+not yet establish a resource-matched DIVERGE advantage or language reasoning.
+
+Seed report SHA-256 values are `2ac508b6...35118`, `0f6096f6...5047f`,
+`74d9582b...c6919`, `ccaade86...ba524`, and `b9119858...431a6`. Exact full
+hashes and checkpoint hashes are in
+`docs/research/DIVERGE_V0_NEURAL_COMPONENT_PILOT.md`.
