@@ -148,6 +148,9 @@ def build_repair_rows(
         repaired.update(
             {
                 "text": prompt,
+                "identity_sha256": hashlib.sha256(
+                    f"{task}\0{prompt}".encode()
+                ).hexdigest(),
                 "original_identity_sha256": identity,
                 "root_identity_sha256": root_identity,
                 "original_task_text": original_task_text,

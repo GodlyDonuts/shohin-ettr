@@ -65,7 +65,7 @@ def test_second_round_recovers_root_task_without_nested_prompt() -> None:
         _selection("a"),
         diagnostic_chars=100,
     )[0]
-    second_identity = "a"
+    second_identity = first["identity_sha256"]
     second_selection = _selection(second_identity)
     second_candidate = _candidate(second_identity, 0, False)
     second_candidate["completion"] = "def inc(x):\n    return x + 2"

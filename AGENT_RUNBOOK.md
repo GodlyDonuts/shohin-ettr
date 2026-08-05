@@ -28642,3 +28642,98 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_qwen_verified_mbpp_repair_as_practical_system_close_simple_repair_weight_training_finish_full_host_gate_then_iterate_execution_feedback`.
+
+- **2026-08-05 02:00--03:10 EDT** -- **The complete external-host code
+  control is frozen, its execution-feedback successor passes, and product
+  routing is demoted from the primary research objective.**
+
+  Preference checkpoint update 32 completes its entire 173-row repair gate at
+  exactly `0/173`; later checkpoints were canceled under the fixed early-stop
+  rule. Direct exact-revision Qwen2.5-Coder-7B-Instruct K=2 reaches HumanEval
+  sample-zero `142/164` and MBPP prompt-visible selection `405/499`.
+  HumanEval best-of-two is `147/164` but is diagnostic because hidden tests
+  cannot select it; the public-doctest selector is worse at `139/164` and is
+  rejected. Canonical HumanEval and MBPP candidate SHA-256 values are
+  `a11fe31613187bd9440d1ba7c0cadee0775b06e1231ffb099a9fec7c5e317aa3`
+  and
+  `ad225850ea16a1288b8967a4619e30c599cc435f8cc0f7881a977d2a6a01d0b9`.
+  Selection-report SHA-256 values are
+  `6102785c6884177b73dff1f338a6a8070e6de206211ea940c3e5ecf547c5802e`
+  and
+  `3414131e2d01bd0575e2a608253b36fdc5f2b3c0d16a355e53cf4c03cf4b4435`.
+
+  Four H100 jobs `739157--739160` then run one exact public-test-feedback turn
+  over the 94 remaining MBPP failures. K=4 solves 18 additional prompts with
+  39 passing candidates among 376, crossing the fixed +10 promotion gate and
+  raising the diagnostic routed result to MBPP `423/499`. Candidate, positive,
+  aggregate-report, and selection-report SHA-256 values are
+  `f904e010c6c5e2acb635a37259f807e8110818b79917874b67ac81278613d58b`,
+  `f846f48d0e2eec0f31e74c038cb735c1a04ce66e68c33feb2719b7d0df7106d4`,
+  `ce9054eb993521263b5e762dbc1fb19f4db7be724e06e35ecb43b70dc9358489`,
+  and
+  `912553f36c4222bcbc8fb2fce0713358f516d2dd13181c7031ea51206a152cfa`.
+  With HumanEval sample-zero fixed at 142, this route would be `85.6775%`
+  code mean, `63.3903%` five-domain macro, and `2,781/3,930` solved. It is
+  frozen as an external-host control, not a Shohin-weight or architecture
+  claim. No further benchmark-specific host search is authorized as primary
+  work.
+
+  Aggregation exposed and repaired two generic metadata assumptions: derived
+  prompt identities and absent optional training groups are now supported,
+  and future repair rows carry explicit prompt identities. Seventeen focused
+  artifact tests pass without regenerating any frozen rollout.
+
+  The new primary candidate is Prompt-Conditioned Syndrome Dynamics (PCSD).
+  The source compiles sticky factorized parity checks; every tied recurrent
+  proposal is projected by a differentiable minimum-norm solve back onto the
+  source-defined affine syndrome manifold before the next step. Query and
+  answer tensors are absent from the transition API. Generic random-corruption
+  self-correction is already known, so no novelty is claimed for that broad
+  idea; PCSD's testable differentiator is prompt-specific check compilation
+  plus explicit transaction projection. The architecture and matched
+  Conservation-Shift gate are frozen in
+  `docs/research/PROMPT_CONDITIONED_SYNDROME_DYNAMICS.md`. Nine focused
+  mechanism tests pass, including finite gradients, deterministic replay,
+  source-dependent checks, more than 1000x syndrome suppression, and <1%
+  treatment/dense parameter mismatch. A ten-update CPU smoke is finite.
+
+  Decision:
+  `freeze_external_host_results_as_controls_and_run_one_matched_model_owned_prompt_conditioned_syndrome_falsifier`.
+
+- **2026-08-05 03:10--03:45 EDT** -- **PCSD is bounded as a conservation
+  falsifier; Falsification-Coupled Particle Transformers become the primary
+  architecture hypothesis.**
+
+  Close PCSD prior families include differentiable constraint projection,
+  latent conservation, and learned invariant projection. PCSD therefore gets
+  one matched Conservation-Shift decision and no automatic expansion. Its
+  possible separator is prompt-compiled sticky checks over a reasoning
+  trajectory, which must transfer beyond conservation-shaped programs before
+  supporting a broader claim.
+
+  The primary hypothesis is now a Falsification-Coupled Particle Transformer
+  (FCPT): exchangeable complete world/program particles, shared recurrent
+  proposals, a bandwidth-limited contradiction bus, calibrated evidence
+  weights, whole-particle selection/resampling, behaviorally certified
+  merging, and answer reading from one coherent lineage. Fieldwise state
+  averaging is prohibited because the existing multi-seed schedule result
+  measured that exact Frankenstein failure mode.
+
+  Before launch, PCSD training was restricted to frozen development depths
+  8/12. Depths 16/32 now require a separately loaded checkpoint and explicit
+  confirmation mode. A checkpoint-reload smoke proves this boundary. Twenty-
+  seven focused tests, Ruff, byte compilation, and diff checks pass. The
+  matched one-H100 launcher is
+  `train/jobs/pcsd_conservation_shift.sbatch`.
+
+  FCPT's gate uses ambiguous noncommuting programs, repeated-binding graph
+  programs, and counterexample-guided function induction. It advances only
+  with at least +10 points exact OOD aggregate over the best parameter- and
+  total-FLOP-matched control, positive gains on every family in four of five
+  seeds, a >=5-point falsifier-ablation loss, predicted shuffled-message and
+  lineage-swap failures, and one unopened confirmation result. Recurrent
+  depth, independent particles, soft aggregation, and whole-particle
+  selection without falsification are explicit controls.
+
+  Decision:
+  `finish_one_pcsd_conservation_gate_then_build_fcpt_as_the_primary_whole_hypothesis_architecture`.

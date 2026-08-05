@@ -20,6 +20,24 @@ class ProductRolloutAggregateError(RuntimeError):
     """The rollout fan cannot be admitted."""
 
 
+def _identity(row: dict[str, Any]) -> str:
+    identity = str(row.get("identity_sha256") or "")
+    if identity:
+        return identity
+    task = str(row.get("task") or "")
+    question = next(
+        (
+            str(row[key])
+            for key in ("question", "problem", "prompt", "text", "input")
+            if row.get(key)
+        ),
+        "",
+    )
+    if not task or not question:
+        raise ProductRolloutAggregateError("bank identity cannot be derived")
+    return hashlib.sha256(f"{task}\0{question}".encode()).hexdigest()
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -79,7 +97,7 @@ def aggregate(
 ) -> dict[str, Any]:
     bank_bytes = bank_path.read_bytes()
     bank_rows = [json.loads(line) for line in bank_bytes.splitlines() if line.strip()]
-    bank_identities = [str(row.get("identity_sha256")) for row in bank_rows]
+    bank_identities = [_identity(row) for row in bank_rows]
     if not bank_rows or any(not identity for identity in bank_identities):
         raise ProductRolloutAggregateError("bank identities are incomplete")
     if len(set(bank_identities)) != len(bank_identities):
@@ -199,7 +217,7 @@ def aggregate(
     admission_failures: list[str] = []
     if len(all_positives) < min_positive_total:
         admission_failures.append("positive_total_below_minimum")
-    bank_groups = sorted({str(row["training_group"]) for row in bank_rows})
+    bank_groups = sorted({str(row.get("training_group")) for row in bank_rows})
     for group in bank_groups:
         if group_counts[group] < min_positive_per_group:
             admission_failures.append(f"positive_{group}_below_minimum")

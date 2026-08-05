@@ -55047,3 +55047,74 @@ two-part architecture: a compact routed generator for first attempts and a
 strong execution-feedback repair host for failures. Full direct-host code
 evaluation and a second repair turn are the next discriminating gates, while
 large-scale distillation must use disjoint execution-verified training tasks.
+
+### External-host ceiling and architecture-research pivot (2026-08-05)
+
+The full practical code-host control is now known. Exact-revision
+Qwen2.5-Coder-7B-Instruct obtains HumanEval sample-zero `142/164` and
+prompt-visible MBPP K=2 `405/499`. A single execution-feedback turn solves
+`18/94` remaining MBPP failures, yielding `423/499`. Combined with the frozen
+non-code routes, the diagnostic system reaches `63.3903%` five-domain macro
+and `2,781/3,930` solved. HumanEval hidden-test best-of-two and any later
+benchmark-specific routing are not part of the deployable claim. This result
+is a useful capability ceiling and distillation source, not model-owned
+Shohin reasoning.
+
+Primary research therefore pivots to Prompt-Conditioned Syndrome Dynamics
+(PCSD). PCSD represents a latent trajectory as a prompt-specific
+error-correcting code. A source-only compiler emits sticky factorized checks,
+a tied recurrent core proposes sparse updates, and a differentiable
+minimum-norm projection restores the initial affine syndrome after every
+commit. The late query can read only the final corrected state. This directly
+targets the project's repeated failure signature: local operations emerge,
+then composition drifts into inconsistent state.
+
+The novelty boundary is explicit. Latent recurrence, discretization, injected
+errors, state denoising, and generic self-correction are established ideas.
+The candidate contribution is the source-conditioned check geometry and
+explicit syndrome-conserving transaction operator. It will be rejected unless
+it beats a parameter/FLOP-matched dense corrector and tied recurrence on a
+sealed depth/composition shift, survives three seeds, and loses its gain under
+zero-projection and shuffled-check ablations. Full equations, controls, and
+fixed pass/kill rules are in
+`docs/research/PROMPT_CONDITIONED_SYNDROME_DYNAMICS.md`. The standalone
+mechanism, matched synthetic gate, and nine focused tests are implemented in
+`train/prompt_conditioned_syndrome.py` and
+`train/pcsd_conservation_shift.py`.
+
+### Whole-hypothesis pivot: FCPT (2026-08-05)
+
+The broader literature review narrows PCSD's claim. Differentiable projection,
+conservation-constrained latent dynamics, and learned invariant projection all
+have close prior art. PCSD remains a bounded test of accumulated state drift,
+and potentially a within-particle stabilizer, but it does not solve multimodal
+complete-program basins. It is not promoted beyond one matched Conservation-
+Shift gate unless it transfers beyond conservation-shaped tasks.
+
+The main architecture hypothesis is now a **Falsification-Coupled Particle
+Transformer (FCPT)**. FCPT preserves several exchangeable, complete candidate
+world/program states through tied recurrent computation. A structured,
+bandwidth-limited contradiction bus identifies behavioral disagreements;
+calibrated evidence updates whole-particle weights; resampling clones complete
+lineages; and the answer reader consumes one coherent surviving particle.
+Coordinates from incompatible particles are never averaged. This directly
+targets Shohin's measured failure where useful local schedule fields formed
+incompatible complete programs and soft averaging erased causality.
+
+The novelty statement is narrow: particles, recurrence, workspaces, latent
+reasoning, counterexamples, and differentiable resampling are established.
+The testable contribution is model-owned falsification-coupled sequential
+Monte Carlo over structured latent programs, with persistent whole-program
+identity and behaviorally certified merging. The first experiment must beat
+matched Transformer, single recurrent stream, independent-particle, soft-
+aggregation, and selection-without-falsification controls across three
+generated families. The exact gate is +10 absolute OOD aggregate, gains on
+every family and four of five seeds, >=5 points lost when falsification is
+removed, predicted shuffled-challenge and lineage-swap degradation, and an
+unopened confirmation pass. No Qwen, tool, teacher, hidden answer, or
+fieldwise aggregation is available at claim time.
+
+PCSD evaluation is phase-separated: training sees only frozen depths 8/12;
+depths 16/32 can be opened only by checkpoint-only confirmation mode. The
+checkpoint reload path and split isolation pass an end-to-end smoke, and the
+focused architecture/artifact suite now passes 27 tests.

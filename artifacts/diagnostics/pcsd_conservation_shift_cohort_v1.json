@@ -1,0 +1,45 @@
+{
+  "batches": [
+    {
+      "count": 4096,
+      "depth": 8,
+      "seed": 41008,
+      "sha256": "5a1177c9afd90d4a9f47ca228b0b97aa9a4338f58273b678d334e22aa0c5c862",
+      "split": "development"
+    },
+    {
+      "count": 4096,
+      "depth": 12,
+      "seed": 41012,
+      "sha256": "e9a5da6f6e8e78fef061d39e56ff8e23d4def8bee3cd634687a15254674571fd",
+      "split": "development"
+    },
+    {
+      "count": 4096,
+      "depth": 16,
+      "seed": 91016,
+      "sha256": "9138618c2f796ad9f1eae0c3a030294d4bbaa2e17bd444a30541f7e7d8d9cfe1",
+      "split": "confirmation"
+    },
+    {
+      "count": 4096,
+      "depth": 32,
+      "seed": 91032,
+      "sha256": "a00a99028899621ad4127339e95e08f4eefb518cd1473d4b33eac0a80caa370b",
+      "split": "confirmation"
+    }
+  ],
+  "claim_boundary": "The cohort tests a conservative latent-transaction mechanism. It is not a public-benchmark or general-reasoning claim.",
+  "config": {
+    "checks": 4,
+    "ff_multiplier": 2,
+    "heads": 4,
+    "maximum_depth": 32,
+    "modulus": 11,
+    "registers": 8,
+    "width": 64
+  },
+  "generator": "train/pcsd_conservation_shift.py",
+  "schema": "shohin-pcsd-conservation-shift-cohort-v1",
+  "status": "frozen"
+}
