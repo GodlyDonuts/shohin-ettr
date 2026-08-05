@@ -6,6 +6,7 @@ from __future__ import annotations
 import diverge_v0_neural_pilot as pilot
 from diverge_v0 import ABSTAIN, ANSWER, execute_packet, query_execution
 from diverge_v0_matched_gate import (
+    _bind_delayed_evidence,
     _mean_field_decision,
     _replace_primary_semantics,
     _truth_prediction,
@@ -75,10 +76,26 @@ def test_soft_control_commits_on_uncertain_query() -> None:
     assert query_execution(execute_packet(packet), gate.underdetermined_query).disposition == ABSTAIN
 
 
+def test_delayed_binder_uses_only_sealed_packet_and_new_evidence() -> None:
+    gate = build_gate_board(202608056000, 1)[0]
+    truth = _truth_prediction(gate.source)
+    packet, canonical, _ = pilot._build_predicted_packet(gate.source, truth)
+    assert packet is not None
+    certificate = _bind_delayed_evidence(packet, gate.source.evidence_text)
+    assert certificate is not None
+    primary = next(
+        record for record in gate.source.records if record.record_id == gate.source.primary_record_id
+    )
+    assert certificate.variable_id == canonical[gate.source.primary_record_id]
+    assert certificate.confirmed_option == primary.gold_option
+    assert _bind_delayed_evidence(packet, "evidence without a sealed key") is None
+
+
 def main() -> None:
     test_board_balances_wrong_primary_program_and_three_query_types()
     test_primary_rewrite_keeps_source_self_consistent()
     test_soft_control_commits_on_uncertain_query()
+    test_delayed_binder_uses_only_sealed_packet_and_new_evidence()
     print("DIVERGE matched gate tests: passed")
 
 

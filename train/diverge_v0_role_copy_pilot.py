@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import hashlib
 import json
 import os
@@ -385,6 +386,27 @@ def predict_episode(
     episode: pilot.PilotEpisode,
     device: torch.device,
 ) -> pilot.CompilerPrediction:
+    source = predict_source_fields(model, episode, device)
+    options = [option for record in episode.records for option in record.options]
+    with torch.no_grad():
+        aliases = [option.alias for option in options]
+        keys = model.encode_aliases([pilot.char_ids(value) for value in aliases], device)
+        evidence = model.encode_aliases([pilot.char_ids(episode.evidence_alias)], device)
+        selected_alias = int((evidence @ keys.T).argmax(-1).item())
+    return dataclasses.replace(
+        source,
+        evidence_record=selected_alias // 2,
+        evidence_option=selected_alias % 2,
+    )
+
+
+def predict_source_fields(
+    model: SmolDivergeRoleCopyCompiler,
+    episode: pilot.PilotEpisode,
+    device: torch.device,
+) -> pilot.CompilerPrediction:
+    """Compile source fields without consuming delayed evidence."""
+
     model.eval()
     with torch.no_grad():
         records = [
@@ -409,16 +431,12 @@ def predict_episode(
             tuple(prior_values[index : index + 2])
             for index in range(0, len(prior_values), 2)
         )
-        aliases = [option.alias for option in options]
-        keys = model.encode_aliases([pilot.char_ids(value) for value in aliases], device)
-        evidence = model.encode_aliases([pilot.char_ids(episode.evidence_alias)], device)
-        selected_alias = int((evidence @ keys.T).argmax(-1).item())
     return pilot.CompilerPrediction(
         selected,
         programs,
         priors,
-        selected_alias // 2,
-        selected_alias % 2,
+        0,
+        0,
     )
 
 

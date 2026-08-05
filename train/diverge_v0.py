@@ -320,6 +320,58 @@ class VerifiedNogood:
 
 
 @dataclass(frozen=True)
+class OptionEvidenceCertificate:
+    variable_id: int
+    confirmed_option: int
+    nogood: VerifiedNogood
+
+
+def certify_binary_option_evidence(
+    packet: "EpistemicPacket",
+    *,
+    option_commitment: str,
+    evidence_commitment: str,
+) -> OptionEvidenceCertificate | None:
+    """Bind delayed evidence to one sealed binary option without source access."""
+
+    if packet.overflow:
+        return None
+    option_commitment = validate_commitment(option_commitment, "evidence option")
+    evidence_commitment = validate_commitment(evidence_commitment, "option evidence")
+    matches = [
+        (variable.variable_id, option)
+        for variable in packet.variables
+        for option, commitment in enumerate(variable.options)
+        if commitment == option_commitment
+    ]
+    if len(matches) != 1:
+        return None
+    variable_id, confirmed = matches[0]
+    variable = next(
+        item for item in packet.variables if item.variable_id == variable_id
+    )
+    if len(variable.options) != 2:
+        return None
+    rejected = 1 - confirmed
+    guard = Guard((Literal(variable_id, rejected),))
+    verifier_commitment = _commit(
+        "diverge-v0-sealed-option-evidence",
+        {
+            "source_commitment": packet.source_commitment,
+            "variable_provenance": variable.provenance,
+            "confirmed_option_commitment": option_commitment,
+            "evidence_commitment": evidence_commitment,
+            "rejected_guard": guard.record(),
+        },
+    )
+    return OptionEvidenceCertificate(
+        variable_id,
+        confirmed,
+        VerifiedNogood(guard, evidence_commitment, verifier_commitment, True),
+    )
+
+
+@dataclass(frozen=True)
 class EpistemicPacket:
     source_commitment: str
     shared_state: TypedState

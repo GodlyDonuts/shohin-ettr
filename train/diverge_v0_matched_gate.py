@@ -15,6 +15,7 @@ import hashlib
 import json
 import os
 import random
+import re
 import tempfile
 import time
 from collections import Counter, defaultdict
@@ -38,15 +39,18 @@ from diverge_v0 import (
     WorldResult,
     account_packet,
     append_verified_nogood,
+    certify_binary_option_evidence,
     enumerate_assignments,
     execute_packet,
     materialized_world_bytes,
+    named_commitment,
+    packet_bytes,
     query_execution,
 )
 from diverge_v0_reference import verify_nogood
 from diverge_v0_role_copy_pilot import (
     SmolDivergeRoleCopyCompiler,
-    predict_episode,
+    predict_source_fields,
 )
 from frozen_pointer_backbone import load_frozen_pointer_backbone
 
@@ -63,6 +67,9 @@ ARM_NAMES = (
 )
 QUERY_KINDS = ("sensitive", "invariant", "underdetermined")
 ONTOLOGIES = ("register-workshop", "parcel-relation", "signal-routing")
+EVIDENCE_PATTERN = re.compile(
+    r"^delayed diagnostic confirms active key ([a-z]+-[0-9]+)\.$"
+)
 
 
 @dataclass(frozen=True)
@@ -219,6 +226,21 @@ def _refine_packet(
     return append_verified_nogood(packet, verification.nogood), verification
 
 
+def _bind_delayed_evidence(packet, evidence_text: str):
+    """Produce a nogood from only the sealed packet and delayed evidence."""
+
+    match = EVIDENCE_PATTERN.fullmatch(evidence_text.lower())
+    if match is None:
+        return None
+    option_commitment = named_commitment("diverge-neural-option", match.group(1))
+    evidence_commitment = pilot._digest("diverge-neural-evidence", evidence_text)
+    return certify_binary_option_evidence(
+        packet,
+        option_commitment=option_commitment,
+        evidence_commitment=evidence_commitment,
+    )
+
+
 def _find_underdetermined_query(receipt: ExecutionReceipt) -> Query:
     for slot in (2, 3, 4, 0, 1):
         query = Query("READ_VALUE", (slot,))
@@ -323,16 +345,27 @@ def _compile_episode(
         "underdetermined": query_execution(true_initial, gate.underdetermined_query),
     }
 
-    prediction = predict_episode(model, episode, device)
-    component = pilot.score_episode(model, episode, device, prediction=prediction)
+    prediction = predict_source_fields(model, episode, device)
     packet, canonical, _ = pilot._build_predicted_packet(episode, prediction)
+    packet_exact = (
+        packet is not None
+        and not packet.overflow
+        and packet_bytes(packet) == packet_bytes(true_packet)
+    )
+    true_faults = {record.record_id for record in episode.records if record.is_fault_line}
+    predicted_faults = {
+        record.record_id
+        for record, selected in zip(episode.records, prediction.selected, strict=True)
+        if selected
+    }
+    gold_support_recalled = true_faults.issubset(predicted_faults)
     if packet is None or packet.overflow or episode.primary_record_id not in canonical:
         return CompiledEpisode(
             gate,
             packet,
             prediction,
-            bool(component["packet_exact"]),
-            bool(component["gold_support_recalled"]),
+            packet_exact,
+            gold_support_recalled,
             None,
             None,
             None,
@@ -343,41 +376,43 @@ def _compile_episode(
             0,
             False,
         )
-    predicted_record = episode.records[prediction.evidence_record]
-    if predicted_record.record_id not in canonical:
+    certificate = _bind_delayed_evidence(packet, episode.evidence_text)
+    if certificate is None:
         evidence_variable = None
         evidence_option = None
     else:
-        evidence_variable = canonical[predicted_record.record_id]
-        evidence_option = prediction.evidence_option
+        evidence_variable = certificate.variable_id
+        evidence_option = certificate.confirmed_option
     initial = execute_packet(packet, commute_disjoint=True)
     refined = None
     verifier_calls = 0
     valid_support_preserved = False
-    if evidence_variable is not None and evidence_option is not None:
+    if certificate is not None:
         candidate_primary = canonical[episode.primary_record_id]
         valid = tuple(
             assignment
             for assignment in enumerate_assignments(packet)
             if assignment[candidate_primary] == true_primary.gold_option
         )
-        refined_packet, verification = _refine_packet(
+        verification = verify_nogood(
             packet,
-            variable=evidence_variable,
-            confirmed=evidence_option,
+            guard=certificate.nogood.guard,
+            evidence_commitment=certificate.nogood.evidence_commitment,
             valid_assignments=valid,
-            evidence_text=episode.evidence_text,
         )
         verifier_calls = 1
-        if verification.accepted:
-            refined = execute_packet(refined_packet, commute_disjoint=True)
-            valid_support_preserved = set(enumerate_assignments(refined_packet)) == set(valid)
+        refined_packet = append_verified_nogood(packet, certificate.nogood)
+        refined = execute_packet(refined_packet, commute_disjoint=True)
+        valid_support_preserved = (
+            verification.accepted
+            and set(enumerate_assignments(refined_packet)) == set(valid)
+        )
     return CompiledEpisode(
         gate,
         packet,
         prediction,
-        bool(component["packet_exact"]),
-        bool(component["gold_support_recalled"]),
+        packet_exact,
+        gold_support_recalled,
         canonical[episode.primary_record_id],
         evidence_variable,
         evidence_option,

@@ -29,6 +29,7 @@ from diverge_v0 import (
     assignment_mass,
     account_packet,
     build_packet,
+    certify_binary_option_evidence,
     commuting_patch_schedule,
     enumerate_assignments,
     execute_packet,
@@ -192,6 +193,35 @@ class DivergeV0ContractTests(unittest.TestCase):
         self.assertFalse(invalid.accepted)
         self.assertEqual(invalid.reason, "would-remove-valid-world")
         self.assertIsNone(invalid.nogood)
+
+    def test_delayed_option_evidence_binds_from_sealed_commitments_only(self) -> None:
+        episode = self.board[-1]
+        primary = episode.evidence.reject_guard.literals[0].variable_id
+        confirmed = 1
+        certificate = certify_binary_option_evidence(
+            episode.packet,
+            option_commitment=episode.packet.variables[primary].options[confirmed],
+            evidence_commitment=episode.evidence.evidence_commitment,
+        )
+        self.assertIsNotNone(certificate)
+        assert certificate is not None
+        self.assertEqual(certificate.variable_id, primary)
+        self.assertEqual(certificate.confirmed_option, confirmed)
+        self.assertEqual(certificate.nogood.guard, episode.evidence.reject_guard)
+        verification = verify_nogood(
+            episode.packet,
+            guard=certificate.nogood.guard,
+            evidence_commitment=certificate.nogood.evidence_commitment,
+            valid_assignments=episode.evidence.valid_assignments,
+        )
+        self.assertTrue(verification.accepted)
+        self.assertIsNone(
+            certify_binary_option_evidence(
+                episode.packet,
+                option_commitment=named_commitment("unknown-option", "absent"),
+                evidence_commitment=episode.evidence.evidence_commitment,
+            )
+        )
 
     def test_query_invariance_abstention_and_source_sealing(self) -> None:
         for episode in self.board:
