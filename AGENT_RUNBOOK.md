@@ -28886,3 +28886,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_qvesr_and_the_sparse_revision_selector_family`.
+
+- **2026-08-05 05:00--05:30 EDT** -- **CEER is causally active but misses;
+  checkpoint-only diagnosis selects reusable-law representation as the next
+  bottleneck.**
+
+  Jobs `739254`/`739255` compare Counterfactual Energy Equilibrium Reasoning
+  with an identical dense recurrent updater. Both arms contain 112,726
+  parameters, see 256,000 examples, and execute both transition modules each
+  round. ENERGY/RECURRENT exact macro is `21.891% / 21.729%`, only `+0.163`
+  for ENERGY. ENERGY loses three of six cohorts and leaves induction at
+  `9.863% / 9.766%`, approximately chance. It does reduce source-evidence
+  energy by `0.720`; shuffled outcomes reduce it to `10.449%` macro and
+  zeroing the energy gradient reduces it to `10.661%`. The mechanism works,
+  but it does not create compositional capability.
+
+  ENERGY/RECURRENT report SHA-256 values are
+  `9eaf0bed993d3a662b971131a8e1505ead902b8a274faa7f882863f2696d4868`
+  and
+  `e96a49c86badef46dba930faa4ed8541437249f9910e7cd5a1b18605b1ef5f76`.
+  A read-only shared-consequence diagnostic then applies the trained evidence
+  head to the held-out query. It reaches only `4.801% / 4.867%` macro for the
+  two checkpoints, versus `21.891% / 21.729%` through their separate readers,
+  and scores zero on both noncommuting cohorts. Diagnostic SHA-256 is
+  `f03ae392464a406a09052459b8124b509c2f229191c4a5d20349dc27a8639c2b`.
+
+  The stable failure is now sharper: source consequences are fitted without
+  inducing a reusable law that extrapolates to an unseen probe. Close this
+  exact energy transition. The next gate must train one restricted,
+  probe-conditioned law representation to serve evidence prediction and the
+  late query jointly, with a matched opaque-reader control. Do not launch
+  selector, step-size, recurrence, width, or duration variants.
+
+  Decision:
+  `close_ceer_and_test_one_shared_determining_law_representation`.

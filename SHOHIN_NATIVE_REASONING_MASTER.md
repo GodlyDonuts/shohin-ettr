@@ -55195,3 +55195,32 @@ failure boundary is no longer evidence availability or mechanistic activity;
 it is reliable compositional state transition. The next architecture must
 change that transition rather than another selector, invariant, or particle
 objective.
+
+### Counterfactual energy result and reusable-law diagnosis (2026-08-05)
+
+CEER changes the state transition from an arbitrary learned proposal to
+gradient descent on prompt-owned consequence energy. It is a clean causal
+mechanism but not a capability win. Under exact matched parameters, data, and
+module execution, ENERGY reaches 21.891% macro exact and RECURRENT reaches
+21.729%. ENERGY sharply fails when its evidence outcomes are shuffled or its
+energy gradient is removed, proving that inference uses the intended path,
+but the net gain is only 0.163 points, three cohorts regress, and polynomial
+induction remains approximately chance.
+
+A frozen-checkpoint diagnostic exposes the deeper interface failure. The
+learned consequence head, when asked to answer the held-out query directly,
+reaches only 4.801%/4.867% macro on the ENERGY/RECURRENT checkpoints and 0%
+on both noncommuting cohorts. Their separate query readers reach 21.891% and
+21.729%. The system therefore learns one representation for fitting observed
+evidence and another shortcut surface for answering queries; it does not form
+a single law that can be evaluated at a new probe.
+
+This closes CEER and also rules out a post-hoc shared-head replacement. The
+next bounded architecture must make the latent object a determining
+representation of a restricted prompt-conditioned law and must train the same
+probe-conditioned operator on both source consequences and final queries.
+This follows the earlier S6/S7 lesson: an opaque state can fit every training
+law while learning lookup; successful composition requires a representation
+whose geometry forces generator or law composition. A matched opaque-reader
+arm must instantiate and execute the same modules so that only the law-state
+constraint differs.

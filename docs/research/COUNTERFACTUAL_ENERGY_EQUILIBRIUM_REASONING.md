@@ -58,3 +58,51 @@ induction cohorts. ENERGY advances only if it:
 
 A miss closes this exact energy-transition mechanism. It does not authorize a
 step-size, duration, width, seed, preconditioner, energy, or recurrence sweep.
+
+## Result
+
+The bounded seed-37 pilot is complete and CEER is closed.
+
+| Family | Depth | ENERGY | RECURRENT | Delta |
+|---|---:|---:|---:|---:|
+| Noncommuting | 5 | 27.051% | 24.023% | +3.027 |
+| Noncommuting | 7 | 50.684% | 52.051% | -1.367 |
+| Binding | 5 | 18.945% | 20.898% | -1.953 |
+| Binding | 7 | 15.039% | 15.332% | -0.293 |
+| Induction | 5 | 9.863% | 9.961% | -0.098 |
+| Induction | 7 | 9.766% | 8.105% | +1.660 |
+| **Macro** | | **21.891%** | **21.729%** | **+0.163** |
+
+Both arms have exactly 112,726 parameters, receive 256,000 training examples,
+execute both transition modules at every round, and differ only at the selected
+state transition. ENERGY reduces prompt-evidence energy by a mean 0.720 nats.
+Its mechanism is causally active: shuffling evidence outcomes reduces macro
+accuracy to 10.449% and zeroing the energy gradient reduces it to 10.661%.
+Nevertheless, the final capability gain is only 0.163 points, it is negative
+on three of six cohorts, and polynomial induction remains at chance. CEER
+therefore misses both the +5-point and every-family gates.
+
+Report SHA-256 values are:
+
+- ENERGY: `9eaf0bed993d3a662b971131a8e1505ead902b8a274faa7f882863f2696d4868`
+- RECURRENT: `e96a49c86badef46dba930faa4ed8541437249f9910e7cd5a1b18605b1ef5f76`
+
+## Read-only interface diagnostic
+
+CEER learns evidence predictions with `ConsequenceHead` but answers the late
+query with a separate attention/readout head. A checkpoint-only diagnostic
+applied the learned consequence head directly to the held-out query without
+changing weights. This shared consequence readout reaches only 4.801% macro
+for ENERGY and 4.867% for RECURRENT, versus 21.891% and 21.729% through the
+separate readers. It scores 0% on both noncommuting cohorts and remains near
+chance on induction.
+
+Diagnostic SHA-256:
+`f03ae392464a406a09052459b8124b509c2f229191c4a5d20349dc27a8639c2b`.
+
+This rules out a post-hoc shared-head swap. The learned state/head pair can fit
+observed consequences but does not encode one law that extends to an unseen
+probe. The next bounded mechanism must make a single probe-conditioned law
+responsible for both source consequences and the final query during training.
+It must not add another selector, recurrence sweep, or unconstrained opaque
+state reader.
