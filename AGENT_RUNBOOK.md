@@ -28572,3 +28572,73 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_u1038_only_as_routed_code_expert_close_humaneval_search_finish_one_mbpp_k4_shard_and_one_failure_aligned_weight_gate`.
+
+- **2026-08-05 00:20--01:50 EDT** -- **The frozen small-model route is
+  finalized; direct model-repair training closes negative, while a verified
+  external code teacher produces the first subsequent material product gain.**
+
+  The last update-1,038 MBPP shard completes the frozen student route at
+  HumanEval `97/164` and MBPP `326/499`. Code-domain mean is `62.239%`; the
+  five-domain product route reaches `58.703%` and `2,639/3,930` solved. The
+  MBPP selection SHA-256 is
+  `f43ceb689a0b5571429a03127cfc5e2f54cca2a724397a179b2c438e0fa22a54`;
+  HumanEval selection remains
+  `2a70d2000e88551948fdd19e114c6508373dc485aa39ac203a8b6478795cb196`.
+
+  Failure-aligned V2 is a clean negative. Its update 512/1,024/1,536/2,048
+  checkpoints solve `327/322/323/325` of 663 raw code tasks and all miss the
+  fixed `332` gate. Greedy repair by update 1,038 fixes `0/173` selected MBPP
+  failures; a separately trained AST-mutation repair specialist also fixes
+  `0/173` at every checkpoint. These results close nearby synthetic-function
+  and simple repair-specialist variants.
+
+  A model-specific real-failure board was captured on the disjoint 446-row
+  MBPP train/validation split: update 1,038 solves `204/446`, leaving exactly
+  242 executable failures. Board/evaluation SHA-256 values are
+  `206268e1d521322ad5b47613151e5cbb71f4f61926d6761a2cea6e24567d62e9`
+  and
+  `33cb46e5abeff0aa7a0a75b65872b43f87de0c92a4267b6114fb479a35ac618d`.
+  One 384-update late-two-layer continuation over their verified reference
+  repairs still scores zero on the disjoint 173-row public repair gate at
+  updates 128 and 256, and zero on the first 109 rows at update 384. This
+  closes direct tiny-corpus SFT. A preference continuation over the same 242
+  pairs also remains at `0.0` preference accuracy through all 96 updates:
+  the frozen model assigns substantially higher token likelihood to its own
+  failed code than to the longer verified repair. Only the full update-32
+  repair gate is retained; later-checkpoint evaluations were canceled under
+  the early-stop rule.
+
+  Test-time diversity gives a small but real student-system effect: eight
+  stochastic update-1,038 repairs solve `9/173`, with 11 passing candidates
+  among 1,384. This misses the fixed ten-repair promotion threshold but is
+  retained as a bounded fallback. Candidate/positive/report SHA-256 values
+  are
+  `1c308cb13259e37f4b48997e9600b6b44eab74529da8ef6617c857a7b053ecc4`,
+  `075c266ec4fa44bfdf468e32e2fc86f331d0ea95ec8fbfd48790b8b055d0ec63`,
+  and
+  `9f2b49263fd6b741a2b01afde7942dc8b93098f767d479858df2dab2c797d0bb`.
+
+  `Qwen/Qwen2.5-Coder-7B-Instruct` at exact revision
+  `c03e6d358207e414f1eca0bb1891e29f1db0e242` is the first strong external
+  verifier-guided repair host. Four samples repair `51/173` update-1,038
+  failures, with 135 passing candidates among 692. Because MBPP tests are
+  visible in each prompt, these repairs are deployable. They raise MBPP
+  `326 -> 377/499`, code-domain mean `62.239% -> 67.349%`, product macro
+  `58.703% -> 59.725%`, and solved count `2,639 -> 2,690/3,930` without
+  changing the other domains. Candidate/positive/report SHA-256 values are
+  `a7ba488bdc12bf5abd27632c71973857b83c83811ddd795388691055547672e7`,
+  `b7d4f5067c580f8397a44208e9fd922a94de600d0bf337bf5925aef754de34cf`,
+  and
+  `eab01def004555a6094e68ffee28f7d7abe76e308a038555ddd131795bea417a`.
+  This is a strong system result, not a small-model weight claim.
+
+  Full direct Qwen K=2 evaluation is live as HumanEval jobs
+  `738966--738969` and MBPP jobs `738970--738977`. HumanEval promotion uses
+  sample zero only; its hidden-test best-of-two oracle is diagnostic. MBPP may
+  select with visible tests. The immediate successor is a second
+  execution-feedback repair turn over first-round failures, followed by a
+  disjoint verified teacher-distillation corpus if the host route remains
+  materially stronger.
+
+  Decision:
+  `promote_qwen_verified_mbpp_repair_as_practical_system_close_simple_repair_weight_training_finish_full_host_gate_then_iterate_execution_feedback`.

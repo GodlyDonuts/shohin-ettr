@@ -55019,3 +55019,31 @@ from update 1,038 must reach at least `332/663` raw code solves; otherwise the
 synthetic function-curriculum family closes and the next data intervention
 uses broader solver-verified real-code trajectories. This is product
 reasoning progress, not evidence for a native ETTR mechanism.
+
+### Final student route and verifier-guided host gain (2026-08-05)
+
+The frozen small-model route finishes at HumanEval `97/164` and MBPP
+`326/499`, a `62.239%` code mean. Combined with the existing protected domain
+routes, it reaches `58.703%` five-domain macro and `2,639/3,930` solved. This
+is the current Shohin-weight product baseline.
+
+The remaining nearby weight interventions are negative. Failure-aligned V2
+peaks at `327/663`, below its fixed `332` gate. Greedy repair, an AST-mutation
+repair specialist, a 384-update SFT over 242 model-specific verified repairs,
+and the first preference-trained checkpoint all solve zero disjoint repair
+prompts. The preference trace is especially informative: through 96 updates,
+the model still gives its concise failed completion much higher likelihood
+than the longer verified repair. This is an objective mismatch, not evidence
+that a few more identical updates will suddenly create debugging ability.
+
+Stochastic student repair retains a small signal at `9/173`. A stronger
+execution-guided host produces a much larger one. Exact-revision
+Qwen2.5-Coder-7B-Instruct repairs `51/173` failures with four samples and only
+prompt-visible MBPP tests. This raises deployable MBPP to `377/499`, code mean
+to `67.349%`, product macro to `59.725%`, and solved count to `2,690/3,930`.
+The gain belongs to the complete verifier-guided system; it is not represented
+as a 3B-weight improvement. The current frontier is therefore a practical
+two-part architecture: a compact routed generator for first attempts and a
+strong execution-feedback repair host for failures. Full direct-host code
+evaluation and a second repair turn are the next discriminating gates, while
+large-scale distillation must use disjoint execution-verified training tasks.
