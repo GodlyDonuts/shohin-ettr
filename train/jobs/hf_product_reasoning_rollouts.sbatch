@@ -29,6 +29,8 @@ STAGE_MODEL=${STAGE_MODEL:-true}
 FINALIZE_EXHAUSTED=${FINALIZE_EXHAUSTED:-false}
 FINALIZE_MAX_NEW_TOKENS=${FINALIZE_MAX_NEW_TOKENS:-64}
 FINALIZE_BATCH_SIZE=${FINALIZE_BATCH_SIZE:-32}
+ENABLE_THINKING=${ENABLE_THINKING:-true}
+CODE_TIMEOUT=${CODE_TIMEOUT:-3}
 
 test -x "$PYTHON"
 for path in "$RUNTIME/train/hf_product_reasoning_rollouts.py" "$ADAPTER_CHECKPOINT" "$DATA"; do
@@ -66,6 +68,12 @@ elif [[ "$FINALIZE_EXHAUSTED" != "false" ]]; then
   echo "FINALIZE_EXHAUSTED must be true or false" >&2
   exit 5
 fi
+if [[ "$ENABLE_THINKING" == "true" ]]; then
+  EXTRA_ARGS+=(--enable-thinking)
+elif [[ "$ENABLE_THINKING" != "false" ]]; then
+  echo "ENABLE_THINKING must be true or false" >&2
+  exit 6
+fi
 cd "$RUNTIME/train"
 "$PYTHON" hf_product_reasoning_rollouts.py \
   --model-root "$EFFECTIVE_MODEL_ROOT" \
@@ -82,6 +90,7 @@ cd "$RUNTIME/train"
   --prompt-batch-size "$PROMPT_BATCH_SIZE" \
   --finalize-max-new-tokens "$FINALIZE_MAX_NEW_TOKENS" \
   --finalize-batch-size "$FINALIZE_BATCH_SIZE" \
+  --code-timeout "$CODE_TIMEOUT" \
   --seed "$SEED" \
   --max-new-tokens "$MAX_NEW_TOKENS" \
   "${EXTRA_ARGS[@]}"

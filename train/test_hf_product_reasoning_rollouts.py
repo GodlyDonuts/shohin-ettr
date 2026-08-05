@@ -25,6 +25,20 @@ def test_score_completion_uses_normalized_science_answer() -> None:
     assert score["correct"]
 
 
+def test_score_completion_executes_mbpp_candidate() -> None:
+    row = {
+        "task": "mbpp",
+        "text": "Return the sum of two integers.",
+        "test_setup_code": "",
+        "test_list": ["assert add(2, 3) == 5", "assert add(-2, 2) == 0"],
+    }
+    passing = score_completion(row, "def add(a, b):\n    return a + b", code_timeout=1)
+    failing = score_completion(row, "def add(a, b):\n    return a - b", code_timeout=1)
+    assert passing["correct"]
+    assert passing["execution"]["passed"]
+    assert not failing["correct"]
+
+
 def test_choose_positive_requires_uninterrupted_autonomous_trajectory() -> None:
     candidates = [
         {

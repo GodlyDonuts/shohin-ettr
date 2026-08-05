@@ -15,11 +15,17 @@ from typing import Any
 
 from hf_product_reasoning_eval import (
     TASKS,
+    _bounded_program_result,
     _generate_completions,
     _finalization_question,
     _generation_stop_token_ids,
+    _humaneval_program,
     _load_model,
+    _mbpp_program,
+    _question,
     _render_prompt,
+    _row_identity,
+    _task_prompt,
     has_explicit_final_answer,
 )
 
@@ -31,11 +37,30 @@ class ProductRolloutError(RuntimeError):
     """The product rollout contract was violated."""
 
 
-def score_completion(row: dict[str, Any], completion: str) -> dict[str, Any]:
+def score_completion(
+    row: dict[str, Any],
+    completion: str,
+    code_timeout: float = 3.0,
+) -> dict[str, Any]:
     task_name = str(row.get("task"))
     task = TASKS.get(task_name)
-    if task is None or task["kind"] != "answer":
+    if task is None:
         raise ProductRolloutError("rollout row task is unsupported")
+    if task["kind"] == "code":
+        program = (
+            _humaneval_program(row, completion)
+            if task_name == "humaneval"
+            else _mbpp_program(row, completion)
+        )
+        execution = _bounded_program_result(program, code_timeout)
+        return {
+            "prediction": "pass" if execution["passed"] else "fail",
+            "gold": "pass",
+            "explicit_final_answer": True,
+            "correct": bool(execution["passed"]),
+            "program": program,
+            "execution": execution,
+        }
     prediction = task["extract"](completion)
     if task_name == "bbh_logic" and row.get("expected_answer_normalized") is not None:
         gold = str(row["expected_answer_normalized"])
@@ -48,6 +73,8 @@ def score_completion(row: dict[str, Any], completion: str) -> dict[str, Any]:
         "gold": gold,
         "explicit_final_answer": explicit,
         "correct": correct,
+        "program": None,
+        "execution": None,
     }
 
 
@@ -119,10 +146,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if args.skip < 0 or args.count <= 0 or args.skip + args.count > len(all_rows):
         raise ProductRolloutError("requested rollout slice is outside the bank")
     rows = all_rows[args.skip : args.skip + args.count]
-    identities = [str(row.get("identity_sha256")) for row in rows]
-    if any(not identity for identity in identities) or len(set(identities)) != len(
-        rows
-    ):
+    identities = [
+        str(row.get("identity_sha256") or _row_identity(str(row.get("task")), row))
+        for row in rows
+    ]
+    if len(set(identities)) != len(rows):
         raise ProductRolloutError("rollout slice identities differ")
 
     tokenizer = AutoTokenizer.from_pretrained(args.model_root, trust_remote_code=True)
@@ -150,7 +178,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         torch.manual_seed(batch_seed)
         torch.cuda.manual_seed_all(batch_seed)
         rendered = [
-            _render_prompt(tokenizer, row["question"], True, False)
+            _render_prompt(
+                tokenizer,
+                _task_prompt(str(row["task"]), row),
+                True,
+                args.enable_thinking,
+            )
             for row in batch
             for _ in range(args.samples)
         ]
@@ -165,7 +198,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
         finalizations: list[str | None] = [None] * len(completions)
         finalization_usage: list[tuple[int, bool]] = [(0, False)] * len(completions)
-        if args.finalize_exhausted:
+        if args.finalize_exhausted and all(
+            TASKS[str(row["task"])]["kind"] != "code" for row in batch
+        ):
             finalize_indices = [
                 index
                 for index, (completion, (_, exhausted)) in enumerate(
@@ -185,7 +220,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     _render_prompt(
                         tokenizer,
                         _finalization_question(
-                            batch[index // args.samples]["question"],
+                            _task_prompt(
+                                str(batch[index // args.samples]["task"]),
+                                batch[index // args.samples],
+                            ),
                             completions[index],
                         ),
                         True,
@@ -211,6 +249,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             raise ProductRolloutError("generation batch cardinality differs")
         for batch_index, row in enumerate(batch):
             global_index = global_batch_start + batch_index
+            identity = identities[batch_start + batch_index]
             row_seed = args.seed + global_index * 1009
             sample_start = batch_index * args.samples
             per_prompt: list[dict[str, Any]] = []
@@ -229,13 +268,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 scoring_completion = combine_finalization(
                     completion, exhausted, finalization
                 )
-                score = score_completion(row, scoring_completion)
+                score = score_completion(
+                    row, scoring_completion, code_timeout=args.code_timeout
+                )
                 candidate = {
                     "schema": SCHEMA,
-                    "identity_sha256": row["identity_sha256"],
-                    "question": row["question"],
+                    "identity_sha256": identity,
+                    "question": _question(row),
                     "task": row["task"],
-                    "training_group": row["training_group"],
+                    "training_group": row.get("training_group"),
                     "sample_index": sample_index,
                     "batch_seed": batch_seed,
                     "row_seed": row_seed,
@@ -273,13 +314,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 ]
                 positive_rows.append(
                     {
-                        "question": row["question"],
+                        "question": _question(row),
                         "response": positive["draft_completion"],
-                        "answer": row["answer"],
-                        "expected_answer_normalized": row["expected_answer_normalized"],
-                        "training_group": row["training_group"],
-                        "verification": "student_exact_answer_match_v1",
-                        "source_identity_sha256": row["identity_sha256"],
+                        "answer": row.get("answer"),
+                        "expected_answer_normalized": row.get(
+                            "expected_answer_normalized"
+                        ),
+                        "training_group": row.get("training_group"),
+                        "verification": (
+                            "student_execution_verified_v1"
+                            if TASKS[str(row["task"])]["kind"] == "code"
+                            else "student_exact_answer_match_v1"
+                        ),
+                        "source_identity_sha256": identity,
                         "source_adapter_checkpoint": str(
                             args.adapter_checkpoint.resolve()
                         ),
@@ -330,6 +377,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "finalize_exhausted": args.finalize_exhausted,
         "finalize_max_new_tokens": args.finalize_max_new_tokens,
         "finalize_batch_size": args.finalize_batch_size,
+        "enable_thinking": args.enable_thinking,
+        "code_timeout": args.code_timeout,
         "seed": args.seed,
         "max_new_tokens": args.max_new_tokens,
         "counters": dict(sorted(counters.items())),
@@ -367,6 +416,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--finalize-exhausted", action="store_true")
     parser.add_argument("--finalize-max-new-tokens", type=int, default=64)
     parser.add_argument("--finalize-batch-size", type=int, default=32)
+    parser.add_argument("--enable-thinking", action="store_true")
+    parser.add_argument("--code-timeout", type=float, default=3.0)
     parser.add_argument("--seed", type=int, default=20260803)
     parser.add_argument("--max-new-tokens", type=int, default=1536)
     args = parser.parse_args()
@@ -378,6 +429,7 @@ def parse_args() -> argparse.Namespace:
         or args.finalize_max_new_tokens <= 0
         or args.finalize_batch_size <= 0
         or args.max_new_tokens <= 0
+        or args.code_timeout <= 0
     ):
         parser.error(
             "samples must be in [2, 8], prompt batch size in [1, 64], and "
