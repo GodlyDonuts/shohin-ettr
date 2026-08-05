@@ -29163,3 +29163,38 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_one_matched_shohin_smollm2_lexical_transfer_gate_then_integrate_with_csdc_only_on_pass`.
+
+- **2026-08-05 08:55--09:25 EDT** -- **The lexical capability-floor gate
+  passes decisively; pretrained role-copy is authorized for CSDC integration.**
+
+  CPU job `739553` creates one 108,288-row semantic board and an exact SmolLM2
+  retokenization. All audits pass, with semantic identity SHA-256
+  `3ec090657cd0ee90d509d7313147a156ec65b617b13b9c7edb4f32fd47d18cab`.
+  Real-parent probe `739556` recovers all `134,515,008` exact imported
+  parameters and pinned upstream receipts.
+
+  H100 jobs `739590/739591/739592` compare protected Shohin, exact SmolLM2,
+  and shuffled-label SmolLM2. Known-compositional exact programs are
+  `100.000% / 100.000% / 0.342%`. Lexical-OOD exact programs are
+  `77.344% / 95.947% / 0.293%`; answers are
+  `85.352% / 96.582% / 0.391%`; all-four exact groups are
+  `221 / 443 / 0` of 512. SmolLM2 therefore gains `18.604` exact-program
+  points over Shohin and clears every frozen threshold. Automatic assessor
+  `739615` returns `advance_role_copy_predictions_to_frozen_csdc`.
+
+  Both real arms see the same 96,000 examples once. Shohin/Smol token counts
+  are `9,624,734 / 9,493,338`; length-bucket packing yields `1,517 / 1,515`
+  updates, a disclosed 0.13% schedule difference. The result is the combined
+  practical effect of backbone plus tokenizer, not weights alone. Total H100
+  allocation is `29:06` (`0.485` H100-hours). Assessment SHA-256 is
+  `6ac70d3d0a1938366342411fab380182ea3c3c9ab5ab6269a9971232ccfa3fa7`.
+
+  The compiler still ends in a host list machine. It is not yet a CSDC or
+  public-reasoning result. The next gate freezes this Smol role-copy compiler
+  and the protected CSDC core, substitutes model-decoded lexical fields for
+  controlled source roles, and requires end-to-end hypothesis falsification,
+  coherent commit, late answers, shuffled-challenge failure, and lineage-swap
+  failure.
+
+  Decision:
+  `promote_smollm2_lexical_role_copy_then_run_one_frozen_end_to_end_csdc_integration_gate`.

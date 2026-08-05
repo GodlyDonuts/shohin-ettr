@@ -55433,3 +55433,16 @@ controlled CSDC source roles. A miss selects explicit in-prompt definitions or
 contrastive lexical grounding and closes residual-only transfer without
 duration, width, seed, or threshold variants. This is a language-substrate
 gate, not yet a natural-language reasoning or public-benchmark claim.
+
+The gate passes. SmolLM2 reaches 95.947% exact lexical-OOD programs and
+96.582% answers, versus Shohin's 77.344% and 85.352% on identical semantic
+rows. The exact-program gain is 18.604 points; all-four lexical groups improve
+from 221/512 to 443/512, while shuffled SmolLM2 reaches only 0.293%. Known-
+compositional programs remain 100% for both real arms. All frozen thresholds
+clear.
+
+This establishes the missing lexical capability floor for the controlled
+architecture. It does not establish end-to-end CSDC language reasoning because
+the evaluator still dereferences copied tokens and runs a host list machine.
+The next gate must feed the frozen Smol role-copy outputs into the frozen CSDC
+candidate/falsify/commit/execute path and retain the predicted causal failures.
