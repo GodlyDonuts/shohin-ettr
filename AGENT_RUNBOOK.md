@@ -29291,3 +29291,30 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finish_one_span_quotient_gate_then_build_diverge_v0_cpu_semantics_without_reopening_pcsd_or_fcpt`.
+
+- **2026-08-05 14:24--15:05 EDT** -- **Whole-mention runtime smokes pass;
+  the one immutable science gate is released unchanged.**
+
+  Four isolated one-update infrastructure smokes (`741283`, `741287`,
+  `741289`, and `741302`) completed with exit code zero on four independent
+  H100 nodes. Each loaded the pinned Smol parent and adapters, trained one
+  update with finite loss/gradient norm, decoded all twelve tiny evaluation
+  cohorts, preserved exact typed-oracle answers, emitted fail-closed
+  partial/superset/overlap receipts, and passed class-ID reindex invariance.
+  Their expected one-update answer/tuple gates fail and are not scientific
+  results. No duplicate smoke remains queued.
+
+  Full job `741299` was released from its user hold at 14:53 EDT. It runs the
+  final immutable `scratchpad/csdc_span_quotient_e28f6d3_r3` runtime with tar
+  SHA-256
+  `463cbb4b070d316eddd3acfe4258e176be0fc9f0743aa03533757e9a895a3940`,
+  `SOURCE_COMMIT=e28f6d3`, the frozen 1,500-update/192,000-episode budget, and
+  output root `train/csdc_smollm2_span_quotient_v1`. Slurm currently holds it
+  pending normal-partition priority. Test-only checks found no earlier valid
+  H100 route: preemptable estimates the following day and the earliest
+  node-specific normal estimate is later the same evening. Do not clone,
+  widen, shorten, or alter the gate. After it resolves, record one pass/kill
+  result and begin DIVERGE-v0 CPU semantics.
+
+  Decision:
+  `wait_for_the_released_immutable_span_gate_then_transition_directly_to_diverge_v0`.
