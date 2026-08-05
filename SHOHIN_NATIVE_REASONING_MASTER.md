@@ -55118,3 +55118,24 @@ PCSD evaluation is phase-separated: training sees only frozen depths 8/12;
 depths 16/32 can be opened only by checkpoint-only confirmation mode. The
 checkpoint reload path and split isolation pass an end-to-end smoke, and the
 focused architecture/artifact suite now passes 27 tests.
+
+### PCSD result and FCPT mechanics (2026-08-05)
+
+PCSD is a clean negative. Under identical seed-31 data and 4,000 updates, it
+scores 19.092%/14.038% answer exact at development depths 8/12, versus
+20.996%/14.209% for the parameter-matched dense corrector. Both score 0% exact
+terminal state. PCSD enforces its invariant almost perfectly, but disabling or
+shuffling the checks changes depth-12 accuracy by less than one point, and the
+projection path is 3.36x slower. This is strong evidence that conserving a
+prompt-compiled linear syndrome is not the missing composition mechanism.
+Confirmation remains unopened and PCSD is closed as a standalone lane.
+
+FCPT mechanics are now executable. The module maintains complete candidate
+states, produces shared-weight branches, chooses a bounded source-evidence
+challenge by behavioral disagreement, applies proper evidence scores, selects
+whole states, retains ancestry, and reads one winning lineage. Independent,
+soft-aggregation, and no-falsifier controls use the same components. The first
+six tests prove finite gradients, particle-permutation invariance, whole-state
+gathering, preserved lineage, query-late ownership, and consequence-based
+equivalence. No reasoning capability is claimed until the three-family matched
+development and unopened confirmation gates pass.

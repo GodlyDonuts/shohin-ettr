@@ -140,3 +140,34 @@ integration; it does not by itself establish general reasoning.
 
 The frozen Qwen-hosted product route remains a practical control. It is not an
 arm in this architectural claim and supplies no inference-time component.
+
+## 7. Result: closed negative
+
+The one-seed full decision used seed 31, data seed 20260806, 4,000 updates,
+1,024 examples per update, identical depth-2--8 data, and the frozen 4,096-row
+development cohorts. PCSD had 68,537 trainable parameters and DENSE had 68,445,
+a 0.134% mismatch.
+
+| Arm | Depth 8 answer | Depth 12 answer | Depth 8 state | Depth 12 state | Examples/s |
+|---|---:|---:|---:|---:|---:|
+| PCSD | 19.092% | 14.038% | 0.000% | 0.000% | 15,315.7 |
+| DENSE | 20.996% | 14.209% | 0.000% | 0.000% | 51,464.9 |
+
+PCSD reduced the learned syndrome from roughly 10 RMS to roughly 0.001 RMS
+and reached 100% decoded invariant validity. That conservation did not produce
+terminal-state composition. At depth 12, disabling projection loses only
+0.976 answer points and shuffled checks lose only 0.659 points, both far below
+the required 10-point causal ablation. PCSD is also 3.36x slower in measured
+training throughput.
+
+This seed already violates the required per-seed matched-control gain, exact-
+state requirement, and ablation effects. Since every seed had to pass, more
+seeds cannot rescue the preregistered gate. Confirmation depths 16/32 remain
+unopened. PCSD is closed as a standalone reasoning architecture. Its projector
+may be reconsidered only as an optional within-particle stabilizer after an
+independent architecture establishes useful whole-hypothesis reasoning.
+
+Report SHA-256 values:
+
+- PCSD: `aee38ad1b52e0c3361d4f0c18d028769b05a72e5746a61f6701c447215b8e1f3`
+- DENSE: `37360c6ed61dc989c05252b5e53937668be7d19e3efe2e8719db709402927768`

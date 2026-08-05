@@ -28737,3 +28737,34 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finish_one_pcsd_conservation_gate_then_build_fcpt_as_the_primary_whole_hypothesis_architecture`.
+
+- **2026-08-05 03:45--04:00 EDT** -- **PCSD fails its development gate and is
+  closed without opening confirmation; FCPT mechanics are implemented.**
+
+  Jobs `739181` (PCSD) and `739182` (dense) use seed 31, identical 4,000
+  updates, 1,024-example batches, data seed 20260806, depth-2--8 training, and
+  frozen 4,096-row depth-8/12 development cohorts. PCSD/DENSE parameters are
+  68,537/68,445. PCSD scores `19.092%`/`14.038%` answer exact at depths 8/12;
+  DENSE scores `20.996%`/`14.209%`. Both have `0.000%` exact terminal state.
+  PCSD reaches 100% invariant validity and ~10,000x syndrome suppression, but
+  zero-projection and shuffled-check ablations cost only 0.976 and 0.659 depth-
+  12 answer points. It also trains at 15,315.7 examples/s versus 51,464.9 for
+  dense. This is conservation without composition, and the required every-
+  seed margin is already impossible. Depth-16/32 confirmation remains sealed.
+
+  PCSD/DENSE report SHA-256 values are
+  `aee38ad1b52e0c3361d4f0c18d028769b05a72e5746a61f6701c447215b8e1f3`
+  and
+  `37360c6ed61dc989c05252b5e53937668be7d19e3efe2e8719db709402927768`.
+
+  `train/falsification_coupled_particles.py` now implements shared complete-
+  state branch proposals, disagreement-selected source probes, calibrated
+  evidence scoring, whole-state selection, lineage tracking, late-query
+  reading, and explicit independent/soft/no-falsifier controls. Six mechanics
+  tests pass, including particle-permutation invariance and a direct no-field-
+  mixing test. The exact three-family gate and 30-H100-hour maximum development
+  envelope are frozen in
+  `docs/research/FALSIFICATION_COUPLED_PARTICLE_TRANSFORMER.md`.
+
+  Decision:
+  `close_pcsd_standalone_and_advance_fcpt_to_three_family_data_and_matched_control_implementation`.
