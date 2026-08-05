@@ -55446,3 +55446,42 @@ architecture. It does not establish end-to-end CSDC language reasoning because
 the evaluator still dereferences copied tokens and runs a host list machine.
 The next gate must feed the frozen Smol role-copy outputs into the frozen CSDC
 candidate/falsify/commit/execute path and retain the predicted causal failures.
+
+### Smol lexical fields control CSDC, with an exact grounding boundary (2026-08-05)
+
+The end-to-end integration gate removes the list-machine endpoint. A frozen
+SmolLM2-135M parent plus the passing lexical adapter reads natural-language
+challenge records containing independently permuted episode-local state and
+generator aliases. Its copied START, OUTCOME, and ordered WORD fields select
+one of the frozen CSDC complete presentations; the late query then executes
+only against that committed world. Typed observation compilation remains
+frozen, and no query, answer, table, or terminal-state supervision trains the
+lexical bridge.
+
+Job `739765` trains 8.605M adapter/head parameters for 1,500 updates / 192,000
+episodes. Development exact answers are 99.691%, exact challenge tuples are
+100%, and selected-table exactness is 99.202%. On the combined unseen syntax
+template and disjoint alias pool, answers remain 95.915% and selected tables
+93.197%; every family/depth cohort exceeds 94.8%. Shuffling decoded outcomes
+costs 42.611 points on the shifted split, while swapping the whole selected
+lineage costs 82.878 points. This is direct causal evidence that decoded
+natural-language constraints control CSDC's model-owned world choice.
+
+The preregistered gate nevertheless fails one exact condition. All eight held
+challenge tuples are simultaneously exact in only 17.920% of episodes, and
+all fields are source-valid in 75.472%. CSDC's redundant constraints tolerate
+missing tuples well enough to preserve answers, but the lexical interface is
+not exact enough to expand to observations and queries. The likely systems
+boundary is privileging one first tokenizer subword as the copied identity.
+This exact bridge is closed without variants.
+
+The next architecture is tokenization-invariant span-quotient grounding:
+predict mention boundaries/equivalence, collapse every subtoken in a source
+alias mention into one identity-bearing state, and apply semantic role/copy
+decisions only over those whole mentions. The frozen CSDC core and causal
+controls remain unchanged. This is a qualitatively different grounding
+interface, not another optimization of the failed first-subtoken parser.
+
+Report/checkpoint SHA-256 values are
+`b3ae0526e9e28ef21e93f2b32bacd7845f40cdb663d8d4b48d74ed9b7cfc05c5` /
+`12a95731e5be263dce96a3bf13c21d3e28b55167fecae70e714228eb3a5bdcec`.

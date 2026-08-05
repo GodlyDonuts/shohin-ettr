@@ -29198,3 +29198,44 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_smollm2_lexical_role_copy_then_run_one_frozen_end_to_end_csdc_integration_gate`.
+
+- **2026-08-05 09:25--10:05 EDT** -- **Smol lexical CSDC is a causal
+  end-to-end near-pass, but the exact first-subtoken interface closes.**
+
+  Commit `96217cb` freezes the one authorized integration gate. A frozen exact
+  SmolLM2-135M parent plus its passing 8.608M lexical adapter reads natural
+  challenge records with episode-local aliases. Model-decoded START, OUTCOME,
+  and ordered WORD fields drive the frozen seed-47 CSDC candidate/falsify/
+  commit/late-execute path. Typed observations remain frozen. The language
+  backbone, learned-PSPA reasoner, query, answer, and selected tables provide
+  no training signal. Ten focused tests and a real-backbone smoke pass before
+  allocation. Immutable runtime SHA-256 is
+  `4328e07470e474d2eed02da14123d9d07c708ee413bd9e3b8a1012cc876e8d02`.
+
+  H100 job `739765` on `evc26` completes 1,500 updates / 192,000 episodes.
+  Training takes 817.266 seconds at 234.930 episodes/s; total allocation with
+  two 6,144-row evaluations is 14:54. Development/combined unseen-template-
+  alias answers are `99.691% / 95.915%`; selected complete tables are
+  `99.202% / 93.197%`; every held cohort exceeds 94.8%. Shuffled outcomes
+  reduce answers to `52.604% / 53.304%`; whole-lineage swaps reduce them to
+  `13.867% / 13.037%`. Natural decoded evidence therefore controls the world
+  commit rather than serving as a decorative side channel.
+
+  The frozen promotion gate still fails exactly one of thirteen conditions:
+  all-eight challenge tuples under combined lexical shift reach only 17.920%
+  versus the required 90%; all-eight source-valid decodes are 75.472%.
+  Redundant counterexamples let CSDC recover the right world despite incomplete
+  tuples. Do not redefine the gate or launch a seed/width/duration/loss repair.
+  Close this first-subtoken interface and preserve the near-pass. The next
+  permitted architecture must explicitly quotient all subtokens of a model-
+  predicted alias mention into one identity-bearing state, then classify and
+  copy roles over whole mentions. Only exact shifted-tuple recovery can
+  authorize lexical observations and query expansion.
+
+  Report SHA-256 is
+  `b3ae0526e9e28ef21e93f2b32bacd7845f40cdb663d8d4b48d74ed9b7cfc05c5`;
+  checkpoint SHA-256 is
+  `12a95731e5be263dce96a3bf13c21d3e28b55167fecae70e714228eb3a5bdcec`.
+
+  Decision:
+  `close_first_subtoken_bridge_preserve_causal_near_pass_then_build_model_owned_span_quotient_grounding`.
