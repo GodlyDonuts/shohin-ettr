@@ -587,6 +587,7 @@ def main() -> None:
         },
     )
     checkpoint = args.output.with_suffix(".pt")
+    checkpoint.parent.mkdir(parents=True, exist_ok=True)
     temporary = checkpoint.with_suffix(".pt.partial")
     torch.save(
         {
