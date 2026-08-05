@@ -55224,3 +55224,28 @@ law while learning lookup; successful composition requires a representation
 whose geometry forces generator or law composition. A matched opaque-reader
 arm must instantiate and execute the same modules so that only the law-state
 constraint differs.
+
+### Differentiable determining-law result (2026-08-05)
+
+PCDL tests whether an explicit episode-level regression law fixes CEER's
+evidence/query split. A shared learned basis embeds every witness and the late
+query; source outcomes determine class-valued coefficients through a
+differentiable ridge solve; and the treatment has no separate answer reader.
+The matched dense set-attention arm executes the same components.
+
+The result is substantially worse, not merely flat. PCDL reaches 5.957% macro
+exact versus 21.777% for DENSE, including 0% on both noncommuting cohorts.
+It nevertheless reconstructs most observed witnesses. Even more decisively,
+shuffling witness outcomes or exchanging solved coefficients across episodes
+improves its score to roughly 10--11%. The low-rank object is an interpolation
+surface whose episode-specific fit actively damages unseen-query behavior.
+
+This closes arbitrary learned-basis law induction. The distinction between a
+named law object and a determining representation is now empirical: solving
+coefficients is not enough if the feature geometry does not enforce the
+relevant algebra. The next architecture must ask the prompt to select a
+restricted hypothesis family and then fill and compose that family's learned
+generators. S7 remains the positive template: forced Cayley composition gave
+100% unseen-law transfer while an exact-fit ordinary Transformer remained near
+chance. A successor must generalize that principle without hard-coding one
+cyclic task.

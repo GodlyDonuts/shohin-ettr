@@ -28920,3 +28920,34 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_ceer_and_test_one_shared_determining_law_representation`.
+
+- **2026-08-05 05:30--06:05 EDT** -- **A solved learned basis also fails;
+  PCDL closes and arbitrary interpolation is rejected.**
+
+  Prompt-Conditioned Determining Law forces source witnesses and the late
+  query through one rank-eight basis and one differentiable ridge-solved law.
+  The matched DENSE arm executes the same modules and uses a standard
+  outcome-embedded set-attention reader. Focused tests, lint, byte compilation,
+  shell validation, and a two-arm CPU smoke pass. Runtime SHA256SUMS SHA-256 is
+  `71f3ed7ea5ed8d12ae6ab55d0879905c32c8e14fe7609bedaa6dd7f9c4289f61`.
+
+  Jobs `739305`/`739306` each use 51,038 parameters, seed 41, 1,000 updates,
+  256 examples/update, and the same six frozen cohorts. PCDL/DENSE exact macro
+  is `5.957% / 21.777%`, a `-15.820` point loss. PCDL scores zero on both
+  noncommuting cohorts. Despite this, it reconstructs roughly 85.5--95.2% of
+  observed witnesses. Shuffling outcomes raises PCDL to `10.254%`, and
+  exchanging solved coefficients across episodes raises it to `10.677%`.
+  The nominal law object is therefore actively harmful at unseen queries.
+
+  PCDL/DENSE report SHA-256 values are
+  `fc1d4810a09f07af7f7e87fb14009bd76faa53dbbb0d0fb959c43c7f9933a894`
+  and
+  `6aa1442f4d83cb4987408032d688f3c80388b40e2d4098eaddf6b42ddd563021`.
+  Close PCDL without rank, ridge, seed, width, duration, or basis-network
+  variants. The combined CEER/PCDL diagnosis is that neither opaque state
+  optimization nor arbitrary learned interpolation induces an extrapolatable
+  algebra. The only repository precedent that crosses this boundary is S7:
+  force a restricted hypothesis family and compose its learned generator.
+
+  Decision:
+  `close_pcdl_and_design_prompt_selected_generator_algebra_not_another_opaque_basis`.
