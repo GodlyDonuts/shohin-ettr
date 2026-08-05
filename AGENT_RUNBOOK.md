@@ -29063,3 +29063,36 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `protect_csdc_then_learn_semantic_challenge_compilation_without_changing_reasoning_core`.
+
+- **2026-08-05 07:25--07:55 EDT** -- **Rendered semantic CSDC reaches
+  95.6%/93.9%, but the frozen parser gate closes on ordered-word recovery.**
+
+  Commit `152d42f` adds a source-only 75,912-parameter semantic bridge. It
+  reads shuffled rendered records and predicts challenge identity, start,
+  outcome, length, and ordered generator word. The seed-47 row-local compiler,
+  candidate constructor, CSDC falsifier, and late executor are frozen. Focused
+  Newton tests and a complete CPU smoke pass before allocation. Immutable
+  runtime SHA256SUMS SHA-256 is
+  `bfd78e2841f425f13910c49604a7bcef66eac78f4a7add10c3a30c089bd744b5`.
+
+  H100 job `739385` completes 1,500 updates / 192,000 examples in 408.458
+  training seconds. Development/held-renderer exact answers are
+  `95.573% / 93.896%`, versus typed oracle `99.593% / 99.723%`.
+  Shuffled outcomes score `57.503% / 54.671%`; lineage swaps score
+  `13.525% / 13.167%`. The rendered source path is therefore causally used.
+
+  The fixed promotion gate still fails: complete words are
+  `89.290% / 84.153%`, challenge tuples `89.290% / 84.145%`, selected tables
+  `90.706% / 86.377%`, and the held-renderer oracle gap is 5.827 points. The
+  exact parser closes without width, duration, seed, template, or loss-weight
+  variants. Protect typed CSDC; retain this checkpoint as a diagnostic and do
+  not describe templated challenge compilation as general natural-language
+  reasoning.
+
+  Report SHA-256 is
+  `c463a96a1c67f86e51540fc44352892d9e8c921b5fc22740521f24ff9d115aa8`;
+  checkpoint SHA-256 is
+  `e70a87313f51403bbd408c84c145d76c88739b892f248f8b9e653af3f9cfc77e`.
+
+  Decision:
+  `close_this_semantic_parser_preserve_csdc_and_localize_the_remaining_error_to_ordered_sequence_compilation`.

@@ -55338,3 +55338,37 @@ the selector through a typed source interface. The next phase freezes CSDC as
 the oracle ceiling and learns the language-to-typed-challenge compiler. A
 failure there would localize the problem to semantic parsing rather than
 invalidate the reasoning operator.
+
+### CSDC semantic challenge bridge result (2026-08-05)
+
+The source-only semantic bridge removes CSDC's direct access to typed
+challenge fields. A 75,912-parameter record Transformer learns challenge
+identity, start state, outcome, length, and ordered generator word from
+shuffled rendered records. The frozen row-local compiler produces complete
+presentation candidates; frozen CSDC then falsifies those candidates using
+only parser-decoded challenges and executes the late query from one selected
+lineage. No answer, query, selected-presentation, table, or terminal-state
+label trains the bridge.
+
+Job `739385` completes 1,500 updates / 192,000 examples on one H100. Exact
+end-to-end answer macro is `95.573%` on new episodes using the three training
+template families and `93.896%` under an unseen challenge field order. Typed
+oracle CSDC reaches `99.593% / 99.723%`. Record/start/outcome/length parsing
+is essentially perfect. Shuffling parsed challenge outcomes reduces accuracy
+to `57.503% / 54.671%`; swapping committed lineages reduces it to
+`13.525% / 13.167%`. The rendered challenge path is therefore materially and
+causally used.
+
+The preregistered gate nevertheless fails. Complete ordered words reach only
+`89.290% / 84.153%`, complete tuples `89.290% / 84.145%`, and selected-table
+exactness `90.706% / 86.377%`. The held-out renderer also trails its oracle by
+5.827 points, above the five-point maximum. Cyclic programs remain 100%; most
+loss is concentrated in longer random-permutation words. This exact parser is
+closed without variants. CSDC remains the protected synthetic causal-reasoning
+result, and the new evidence localizes its next systems boundary to ordered
+semantic sequence compilation rather than hypothesis falsification.
+
+Report SHA-256 is
+`c463a96a1c67f86e51540fc44352892d9e8c921b5fc22740521f24ff9d115aa8`;
+checkpoint SHA-256 is
+`e70a87313f51403bbd408c84c145d76c88739b892f248f8b9e653af3f9cfc77e`.

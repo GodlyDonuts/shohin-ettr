@@ -79,6 +79,18 @@ replaces FCPT as the protected synthetic architecture baseline. Its remaining
 boundary is typed source challenges rather than ordinary-language semantic
 compilation.
 
+The bounded semantic bridge then trained a 75,912-parameter source-only
+parser while freezing CSDC. End-to-end exact answers reach `95.573%` on
+development and `93.896%` under an unseen challenge field order, versus
+`99.593% / 99.723%` with typed source fields. Shuffling parsed outcomes cuts
+the scores to `57.503% / 54.671%`, and swapping committed lineages cuts them
+to `13.525% / 13.167%`, so the learned path is causally used. The frozen gate
+still fails: complete ordered challenge words reach only `89.290% / 84.153%`
+and selected presentations `90.706% / 86.377%`. This parser is closed without
+variants. The result localizes the remaining controlled-language loss to
+ordered sequence compilation rather than counterexample selection or late
+execution; it does not reopen PCSD or FCPT.
+
 ## Terminology
 
 Do not call this "schizophrenic AI" in code, a paper, a resume, or a public

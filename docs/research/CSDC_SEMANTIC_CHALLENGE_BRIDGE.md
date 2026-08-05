@@ -1,7 +1,6 @@
 # CSDC Semantic Challenge Bridge
 
-Status: gate frozen; implementation and Newton CPU smoke pass; H100 gate
-pending.
+Status: completed mixed negative; parser closes under the frozen gate.
 
 ## Objective
 
@@ -56,3 +55,47 @@ The parser is trained in one single-H100 job for 1,500 updates at 128 examples
 per update. The same job evaluates development and held-out renderers. Hard
 ceiling is one H100-hour; expected use is below 0.25 H100-hour. No Shohin-scale
 integration follows from parser training loss alone.
+
+## Result
+
+Immutable job `739385` ran commit `152d42f` on one H100 for 1,500 updates,
+192,000 examples, and 408.458 training seconds. The parser contains 75,912
+trainable parameters. The CSDC reasoner and seed-47 row-local compiler stayed
+frozen.
+
+| Metric | Development | Held-out renderer |
+|---|---:|---:|
+| End-to-end exact answer | 95.573% | 93.896% |
+| Oracle CSDC answer | 99.593% | 99.723% |
+| Challenge record | 100.000% | 100.000% |
+| Start state | 100.000% | 100.000% |
+| Outcome state | 100.000% | 99.996% |
+| Word length | 100.000% | 99.994% |
+| Complete ordered word | 89.290% | 84.153% |
+| Complete challenge tuple | 89.290% | 84.145% |
+| Selected presentation | 90.706% | 86.377% |
+| Shuffled outcome answer | 57.503% | 54.671% |
+| Swapped lineage answer | 13.525% | 13.167% |
+
+The parser clears the answer and causal-use conditions on development, but it
+misses the 95% complete-word and selected-presentation thresholds. The held-out
+renderer clears 90% answer accuracy but misses the five-point oracle-gap and
+90% tuple thresholds. Most remaining error is concentrated in ordered
+generator-word serialization: cyclic cohorts are 100%, while the held-out
+random-permutation cohorts reach only 86.426% and 83.496% answers.
+
+This is strong evidence that the protected CSDC mechanism can operate from
+learned rendered source records. It is still controlled templated language,
+not unrestricted natural language. Under the frozen rules this exact parser
+is closed without width, duration, seed, template, or loss-weight variants.
+CSDC remains the protected typed-source architecture result; this checkpoint
+is retained as a diagnostic and possible future systems component, not a
+promoted architecture milestone.
+
+Report SHA-256 is
+`c463a96a1c67f86e51540fc44352892d9e8c921b5fc22740521f24ff9d115aa8`.
+Checkpoint SHA-256 is
+`e70a87313f51403bbd408c84c145d76c88739b892f248f8b9e653af3f9cfc77e`.
+
+Decision:
+`close_this_semantic_parser_preserve_csdc_and_target_sequence_compilation_as_a_later_integrated_interface_problem`.
