@@ -13,7 +13,7 @@ import time
 import torch
 from tokenizers import Tokenizer
 
-from model import GPT, GPTConfig
+from frozen_pointer_backbone import load_frozen_pointer_backbone
 from referential_literal_pointer_compiler import (
     CompletePointerCompiler,
     OrdinaryTokenTaggerCompiler,
@@ -109,16 +109,15 @@ def main():
         raise SystemExit("complete-pointer label ledger does not match split rows")
 
     tokenizer = Tokenizer.from_file(args.tokenizer)
-    checkpoint = torch.load(args.base, map_location="cpu")
-    cfg = GPTConfig(**checkpoint["cfg"])
+    model, cfg, backbone_receipt = load_frozen_pointer_backbone(
+        args.base, device="cuda",
+    )
     examples = load_examples(
         args.data, tokenizer, "train", cfg.seq_len, keep_evidence=False,
         limit=args.max_examples,
     )
     if args.shuffle_supervision:
         examples = shuffle_supervision_within_length(examples, args.seed ^ 0xBAD5EED)
-    model = GPT(cfg).to("cuda").eval()
-    model.load_state_dict(checkpoint["model"])
     if args.ordinary_tagger:
         compiler = OrdinaryTokenTaggerCompiler(
             model,
@@ -169,7 +168,11 @@ def main():
         "corpus_schema": corpus_schema,
         "base": os.path.realpath(args.base),
         "base_sha256": sha256_file(args.base),
-        "base_step": checkpoint.get("step"),
+        "base_step": backbone_receipt.base_step,
+        "base_checkpoint_format": backbone_receipt.checkpoint_format,
+        "base_initialization": backbone_receipt.initialization,
+        "base_import": backbone_receipt.base_import,
+        "base_rms_norm_eps": backbone_receipt.base_rms_norm_eps,
         "data": os.path.realpath(args.data),
         "data_sha256": data_sha256,
         "report": os.path.realpath(args.report),

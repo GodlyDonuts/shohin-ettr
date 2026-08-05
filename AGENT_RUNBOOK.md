@@ -29130,3 +29130,36 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_role_gated_copy_csdc_then_expand_language_semantics_without_reopening_closed_particle_or_projection_lanes`.
+
+- **2026-08-05 08:20--08:55 EDT** -- **The literature redirect is reconciled
+  with executed evidence; a matched lexical-backbone transfer gate is ready.**
+
+  The nonlinear-architecture review's original PCSD/FCPT recommendation is
+  historical. PCSD already lost dense at depth 8/12 (`19.092%/14.038%` versus
+  `20.996%/14.209%`), and corrected FCPT coverage remained `12.093%` versus
+  `11.800%` whole-particle selection. Neither lane may be relaunched. The
+  promoted controlled baseline remains role-gated copy CSDC at
+  `99.593%/99.723%` development/held-renderer answers.
+
+  The next fail-fast question is whether real pretrained residuals can ground
+  unseen lexical operators without discarding identity-preserving copying.
+  `docs/research/CSDC_LEXICAL_BACKBONE_TRANSFER_GATE.md` freezes a paired
+  semantic board and three arms: protected step-300k Shohin, exact imported
+  SmolLM2-135M-Instruct, and shuffled-label SmolLM2. Questions, character
+  spans, labels, examples, layer 19, 8.608M role-copy head, optimizer, update
+  count, and exact list-machine executor are matched; only backbone/tokenizer
+  representations differ. A derivation utility proves exact semantic identity
+  after retokenization. The pointer trainer/evaluator now fail-closed load both
+  plain `{cfg,model}` and ETTR-parent `{base_config,base.*}` schemas.
+
+  Promotion requires both real arms >=98% known-compositional programs,
+  SmolLM2 >=90% lexical-OOD programs and >=95% answers, a >=15-point lexical
+  program advantage over Shohin, >=410/512 all-four lexical groups, and
+  shuffled SmolLM2 <=5%. A miss closes residual-only lexical grounding and
+  selects explicit in-prompt definitions or contrastive grounding; no width,
+  duration, seed, or threshold variant follows. Four focused tests, Ruff,
+  byte compilation, shell validation, and diff checks pass. Expected use is
+  below one H100-hour with a hard three-H100-hour ceiling.
+
+  Decision:
+  `run_one_matched_shohin_smollm2_lexical_transfer_gate_then_integrate_with_csdc_only_on_pass`.

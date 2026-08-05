@@ -12,7 +12,7 @@ from pathlib import Path
 import torch
 from tokenizers import Tokenizer
 
-from model import GPT, GPTConfig
+from frozen_pointer_backbone import load_frozen_pointer_backbone
 from referential_literal_pointer_compiler import (
     CompletePointerCompiler,
     OrdinaryTokenTaggerCompiler,
@@ -84,14 +84,18 @@ def main():
         raise SystemExit("compiler does not bind tokenizer")
 
     tokenizer = Tokenizer.from_file(args.tokenizer)
-    checkpoint = torch.load(args.base, map_location="cpu")
-    cfg = GPTConfig(**checkpoint["cfg"])
+    model, cfg, backbone_receipt = load_frozen_pointer_backbone(
+        args.base, device="cuda",
+    )
     examples = load_examples(
         args.data, tokenizer, args.split, cfg.seq_len, keep_evidence=True, limit=args.limit,
     )
     encodings = [tokenizer.encode(example.question) for example in examples]
-    model = GPT(cfg).to("cuda").eval()
-    model.load_state_dict(checkpoint["model"])
+    if metadata.get("base_checkpoint_format") not in {
+        None,
+        backbone_receipt.checkpoint_format,
+    }:
+        raise SystemExit("compiler backbone format differs")
     if metadata.get("ordinary_tagger"):
         compiler = OrdinaryTokenTaggerCompiler(
             model,

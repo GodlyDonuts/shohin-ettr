@@ -55410,3 +55410,26 @@ report SHA-256 is
 `808f50e6e3a1026761f7fa0e29aa022346bde6befd419e9051e719fd9448ea37`;
 checkpoint SHA-256 is
 `55b5ef79110625f383f6800ac89a20dba9d0a1420bd554fd928ee70f42fdf956`.
+
+### Lexical backbone transfer gate (2026-08-05)
+
+The next experiment does not reopen PCSD or FCPT. Both recommendations in the
+early nonlinear-architecture review have already received their bounded tests
+and failed. Instead, it asks whether the successful role-copy/CSDC interface
+can acquire unseen operator semantics from a real pretrained residual.
+
+One semantic factorized corpus is rendered once and retokenized without
+changing a question, character span, program, answer, split identity, or
+quartet. Protected step-300k Shohin and exact imported SmolLM2-135M-Instruct
+receive the same 8.608M-parameter ordinary role-copy compiler, layer-19 tap,
+examples, labels, one-pass update budget, seed, and exact executor. A
+shuffled-label SmolLM2 arm detects leakage. The fixed pass condition requires
+>=98% known-compositional programs for both real arms, >=90% lexical-OOD
+programs and >=95% answers for SmolLM2, a >=15-point program advantage over
+Shohin, >=410/512 exact lexical quartets, and <=5% for shuffled labels.
+
+A pass authorizes substituting these model-owned copied fields for the
+controlled CSDC source roles. A miss selects explicit in-prompt definitions or
+contrastive lexical grounding and closes residual-only transfer without
+duration, width, seed, or threshold variants. This is a language-substrate
+gate, not yet a natural-language reasoning or public-benchmark claim.
