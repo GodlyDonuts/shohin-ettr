@@ -35,6 +35,7 @@ test -f "$CHECKPOINT"
 test -f "$SOURCE_REPORT"
 test ! -e "$OUT" || { echo "refusing existing output: $OUT" >&2; exit 2; }
 mkdir -p "$(dirname "$OUT")"
+trap 'test ! -e "$OUT" || chmod a-w "$OUT"' EXIT
 
 echo "[diverge-a-g-cpu] node=${SLURMD_NODENAME:-?} code=$CODE_ROOT commit=$SOURCE_COMMIT seed=$SEED"
 "$PYTHON" "$CODE_ROOT/train/test_diverge_v0_matched_gate.py"
@@ -54,5 +55,4 @@ echo "[diverge-a-g-cpu] node=${SLURMD_NODENAME:-?} code=$CODE_ROOT commit=$SOURC
   --threads 4 \
   --device cpu
 
-chmod a-w "$OUT"
 echo "[diverge-a-g-cpu] completed"
