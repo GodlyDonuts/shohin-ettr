@@ -29398,3 +29398,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_diverge_v0_exact_mechanics_to_one_matched_neural_gate_without_scaling_or_pretraining`.
+
+- **2026-08-05 16:44--17:20 EDT** -- **The tiny DIVERGE compiler is a
+  five-seed robustness negative; frozen Smol residuals are the one bounded
+  successor.**
+
+  A 243,319-parameter source compiler learns record selection, finite ordered
+  programs, wrong support priors, and exact delayed alias binding over the
+  source-sealed CPU packet. Counterfactual wrapper pairs remove the trivial
+  record-kind shortcut. Seeds `2026080517` and `2026080518` reach 100% strict
+  joint packet-plus-answer on both development and confirmation. Seed
+  `2026080519` reaches only 60% development prior accuracy and therefore zero
+  strict joint packets. Seeds `2026080520/21` select every development
+  distractor, reducing DIVERGE answers to 10.156%/11.328% and strict joint
+  success to zero. All five happen to reach 100% confirmation, which cannot
+  override the frozen four-of-five requirement. The tiny compiler is closed
+  at two of five strict seeds.
+
+  The exact DIVERGE packet is not implicated: program compilation, evidence
+  binding, conflict verification, and confirmation execution remain exact.
+  The localized failure is seed-stable lexical candidate grounding. One
+  bounded successor replaces only the tiny hash/GRU source representation
+  with frozen layer-17 SmolLM2-135M residuals plus a small trainable projection
+  and local Transformer. Packet semantics, finite heads, 600 updates / 9,600
+  charged episodes, split, and evaluator remain fixed. Run one real-backbone
+  smoke before one full seed, then evaluate the remaining four seeds only if
+  the first strict joint result passes. This remains a component-island gate;
+  A--D are not yet parameter/FLOP-matched complete neural controls, and no
+  DIVERGE architecture promotion is permitted from these scores.
+
+  Report hashes and the exact boundary are recorded in
+  `docs/research/DIVERGE_V0_NEURAL_COMPONENT_PILOT.md`.
+
+  Decision:
+  `close_unstable_tiny_compiler_then_test_one_frozen_smol_residual_interface_without_changing_diverge_semantics`.
