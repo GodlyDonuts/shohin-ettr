@@ -29026,3 +29026,40 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_joint_and_deferred_projection_then_build_counterexample_selected_commit`.
+
+- **2026-08-05 07:00--07:25 EDT** -- **Counterexample-Selected Deferred
+  Closure passes development and unchanged-weight confirmation.**
+
+  CSDC preserves the successful evidence-first phase separation. The frozen
+  ROW_SOFT compiler identifies two uncertain rows per generator; the runtime
+  forms both whole permutation completions, takes their Cartesian product,
+  executes source-owned challenges against every complete presentation, and
+  commits the least-contradictory lineage once before the late query. No
+  query, answer, new weights, external model, or tool participates.
+
+  Development job `739370` reaches `99.577%` exact macro on the six 1,024-row
+  OOD cohorts, versus DWPC `58.643%` and ROW_SOFT `25.798%`. Challenge exact
+  is `99.908%`, complete selected-table exact `99.072%`, and candidate truth
+  coverage `99.707%`. Shuffled challenge outcomes reduce exactness to
+  `53.418%`; whole-lineage swaps reduce it to `13.216%`. Development report
+  SHA-256 is
+  `45fd76fcc7702e19a79799c939e318db44a5bb4df84e28861f562ceed17101f4`.
+
+  Unchanged-weight confirmation job `739373` uses new episode and renderer
+  seeds. It reaches `99.723%` macro, `99.943%` challenge exact, `99.284%`
+  selected-table exact, and `99.805%` truth coverage. Shuffled challenges
+  score `52.376%`; lineage swaps score `13.916%`. Confirmation report SHA-256
+  is
+  `c0c565b3f35d7fde306aad955d15891a0e324ada55926cb39db7cb122f798d3a`.
+
+  This is the new protected synthetic causal-reasoning baseline. Its exact
+  principle is `plastic local evidence -> small complete hypothesis set ->
+  source counterexample falsification -> one coherent commit -> tied late
+  execution`. It is not yet a natural-language reasoning claim because
+  challenge fields enter selection through the typed source interface. The
+  next gate learns only the rendered-language-to-typed-challenge bridge while
+  freezing CSDC as the oracle ceiling. Do not replace this result with FCPT,
+  joint Sinkhorn, or another opaque recurrent state.
+
+  Decision:
+  `protect_csdc_then_learn_semantic_challenge_compilation_without_changing_reasoning_core`.

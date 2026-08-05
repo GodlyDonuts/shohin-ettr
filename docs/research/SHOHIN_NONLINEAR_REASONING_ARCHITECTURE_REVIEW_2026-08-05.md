@@ -68,6 +68,17 @@ enumerates a small structured presentation family. The result authorizes only
 a learned language-to-presentation compiler and a parameter/FLOP-matched
 gate. It does not authorize long pretraining or a general-reasoning claim.
 
+Later execution found the missing optimization boundary. Joint Sinkhorn
+compilation failed (`9.147%`), but learning local evidence first and imposing
+whole-presentation closure once at commitment reached `58.643%`. That closure
+still ignored counterexamples. Adding explicit counterexample selection over
+the confidence-derived complete presentations produced CSDC: `99.577%`
+development and `99.723%` unchanged-weight confirmation, with large predicted
+failures under shuffled challenge outcomes and whole-lineage swaps. CSDC now
+replaces FCPT as the protected synthetic architecture baseline. Its remaining
+boundary is typed source challenges rather than ordinary-language semantic
+compilation.
+
 ## Terminology
 
 Do not call this "schizophrenic AI" in code, a paper, a resume, or a public

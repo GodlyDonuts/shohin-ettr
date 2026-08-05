@@ -55308,3 +55308,33 @@ This is not yet reasoning. Shuffling every source-challenge outcome leaves
 remaining presentation bit. The confirmation gate stays unopened. The next
 architecture must preserve the successful phase separation while making the
 one-time whole-presentation commit explicitly counterexample-conditioned.
+
+### Counterexample-selected deferred closure passes (2026-08-05)
+
+CSDC makes that one-time commit explicit. The frozen row-local compiler
+identifies two uncertain rows per generator. CSDC forms both complete
+permutation hypotheses, combines them into at most eight complete
+presentations, executes every source challenge against each presentation, and
+commits the least-contradictory whole lineage before the query arrives.
+
+Development exactness is 99.577% across six 1,024-row depth-shift cohorts,
+with 99.908% source-challenge exactness and 99.072% complete-table recovery.
+Unchanged-weight confirmation on new episodes and renderer streams is 99.723%,
+with 99.943% challenge exactness and 99.284% table recovery. Shuffling source
+challenge outcomes cuts confirmation to 52.376%; swapping selected lineages
+cuts it to 13.916%. The reasoning path is therefore both nearly exact and
+causally necessary.
+
+This is the strongest architecture result in the current campaign. Unlike
+FCPT, it does not maintain a large unconstrained particle cloud during
+learning. Unlike joint Sinkhorn, it does not force a global manifold while
+the parser is still plastic. It learns local evidence in a tractable space,
+constructs only the small residual set of complete algebraic hypotheses, and
+uses counterexamples exactly once to crystallize a coherent executable world.
+
+The remaining boundary is semantic, not compositional. Observation records
+are learned from randomized rendered text, but challenge fields still enter
+the selector through a typed source interface. The next phase freezes CSDC as
+the oracle ceiling and learns the language-to-typed-challenge compiler. A
+failure there would localize the problem to semantic parsing rather than
+invalidate the reasoning operator.
