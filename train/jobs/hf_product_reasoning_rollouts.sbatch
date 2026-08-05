@@ -14,7 +14,7 @@ RUNTIME=${RUNTIME:?set immutable runtime}
 PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
 MODEL_ROOT=${MODEL_ROOT:?set pinned model root}
 MODEL_REVISION=${MODEL_REVISION:?set pinned model revision}
-ADAPTER_CHECKPOINT=${ADAPTER_CHECKPOINT:?set adapter checkpoint}
+ADAPTER_CHECKPOINT=${ADAPTER_CHECKPOINT:-}
 DATA=${DATA:?set fresh rollout bank}
 CANDIDATES_OUTPUT=${CANDIDATES_OUTPUT:?set candidate output}
 POSITIVES_OUTPUT=${POSITIVES_OUTPUT:?set positive output}
@@ -30,12 +30,19 @@ FINALIZE_EXHAUSTED=${FINALIZE_EXHAUSTED:-false}
 FINALIZE_MAX_NEW_TOKENS=${FINALIZE_MAX_NEW_TOKENS:-64}
 FINALIZE_BATCH_SIZE=${FINALIZE_BATCH_SIZE:-32}
 ENABLE_THINKING=${ENABLE_THINKING:-true}
+BARE_PROMPT_STYLE=${BARE_PROMPT_STYLE:-reasoning}
 CODE_TIMEOUT=${CODE_TIMEOUT:-3}
 
 test -x "$PYTHON"
-for path in "$RUNTIME/train/hf_product_reasoning_rollouts.py" "$ADAPTER_CHECKPOINT" "$DATA"; do
+for path in "$RUNTIME/train/hf_product_reasoning_rollouts.py" "$DATA"; do
   [ -f "$path" ] || { echo "[product-rollout] missing input: $path" >&2; exit 2; }
 done
+if [[ -n "$ADAPTER_CHECKPOINT" ]]; then
+  [ -f "$ADAPTER_CHECKPOINT" ] || {
+    echo "[product-rollout] missing adapter: $ADAPTER_CHECKPOINT" >&2
+    exit 2
+  }
+fi
 for path in "$CANDIDATES_OUTPUT" "$POSITIVES_OUTPUT" "$REPORT"; do
   [ ! -e "$path" ] || { echo "[product-rollout] refusing existing output: $path" >&2; exit 3; }
   mkdir -p "$(dirname "$path")"
@@ -62,6 +69,9 @@ export TOKENIZERS_PARALLELISM=false
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
 EXTRA_ARGS=()
+if [[ -n "$ADAPTER_CHECKPOINT" ]]; then
+  EXTRA_ARGS+=(--adapter-checkpoint "$ADAPTER_CHECKPOINT")
+fi
 if [[ "$FINALIZE_EXHAUSTED" == "true" ]]; then
   EXTRA_ARGS+=(--finalize-exhausted)
 elif [[ "$FINALIZE_EXHAUSTED" != "false" ]]; then
@@ -79,7 +89,6 @@ cd "$RUNTIME/train"
   --model-root "$EFFECTIVE_MODEL_ROOT" \
   --model-source-root "$SOURCE_MODEL_ROOT" \
   --model-revision "$MODEL_REVISION" \
-  --adapter-checkpoint "$ADAPTER_CHECKPOINT" \
   --data "$DATA" \
   --candidates-output "$CANDIDATES_OUTPUT" \
   --positives-output "$POSITIVES_OUTPUT" \
@@ -93,4 +102,5 @@ cd "$RUNTIME/train"
   --code-timeout "$CODE_TIMEOUT" \
   --seed "$SEED" \
   --max-new-tokens "$MAX_NEW_TOKENS" \
+  --bare-prompt-style "$BARE_PROMPT_STYLE" \
   "${EXTRA_ARGS[@]}"

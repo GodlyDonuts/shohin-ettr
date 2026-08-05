@@ -1,6 +1,7 @@
 from hf_product_reasoning_rollouts import (
     choose_positive,
     combine_finalization,
+    render_rollout_prompt,
     score_completion,
 )
 
@@ -105,3 +106,18 @@ def test_combine_finalization_only_appends_explicit_recovery() -> None:
     assert combine_finalization("draft", True, r"\boxed{7}") == "draft\n\n\\boxed{7}"
     assert combine_finalization("draft", False, r"\boxed{7}") == "draft"
     assert combine_finalization("draft", True, "still reasoning") == "draft"
+
+
+def test_direct_bare_prompt_does_not_add_boxed_answer_wrapper() -> None:
+    class Tokenizer:
+        chat_template = None
+
+    rendered = render_rollout_prompt(
+        Tokenizer(),
+        "Return only executable Python code.",
+        adapter=False,
+        enable_thinking=False,
+        bare_prompt_style="direct",
+    )
+    assert rendered == "User: Return only executable Python code.\n\nAssistant:"
+    assert "boxed" not in rendered

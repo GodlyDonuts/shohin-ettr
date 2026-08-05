@@ -107,6 +107,29 @@ def combine_finalization(
     return completion
 
 
+def render_rollout_prompt(
+    tokenizer: Any,
+    task_prompt: str,
+    *,
+    adapter: bool,
+    enable_thinking: bool,
+    bare_prompt_style: str,
+) -> str:
+    """Render either the established adapter prompt or a direct bare-model task."""
+
+    if adapter or bare_prompt_style == "reasoning":
+        return _render_prompt(tokenizer, task_prompt, adapter, enable_thinking)
+    if bare_prompt_style != "direct":
+        raise ProductRolloutError("unsupported bare prompt style")
+    from hf_product_reasoning_train import render_reasoning_messages
+
+    return render_reasoning_messages(
+        tokenizer,
+        [{"role": "user", "content": task_prompt}],
+        enable_thinking=enable_thinking,
+    )
+
+
 def _atomic_lines(path: Path, rows: list[dict[str, Any]]) -> str:
     if path.exists():
         raise ProductRolloutError(f"refusing to replace output: {path}")
@@ -160,6 +183,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     model, adapter_metadata, model_loader = _load_model(
         args.model_root, args.adapter_checkpoint, args.model_loader
     )
+    adapter = args.adapter_checkpoint is not None
     stop_token_ids = _generation_stop_token_ids(tokenizer)
     random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -178,11 +202,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         torch.manual_seed(batch_seed)
         torch.cuda.manual_seed_all(batch_seed)
         rendered = [
-            _render_prompt(
+            render_rollout_prompt(
                 tokenizer,
                 _task_prompt(str(row["task"]), row),
-                True,
-                args.enable_thinking,
+                adapter=adapter,
+                enable_thinking=args.enable_thinking,
+                bare_prompt_style=args.bare_prompt_style,
             )
             for row in batch
             for _ in range(args.samples)
@@ -226,8 +251,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                             ),
                             completions[index],
                         ),
-                        True,
-                        False,
+                        adapter=adapter,
+                        enable_thinking=False,
+                        bare_prompt_style=args.bare_prompt_style,
                     )
                     for index in chunk_indices
                 ]
@@ -327,8 +353,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                             else "student_exact_answer_match_v1"
                         ),
                         "source_identity_sha256": identity,
-                        "source_adapter_checkpoint": str(
-                            args.adapter_checkpoint.resolve()
+                        "source_adapter_checkpoint": (
+                            str(args.adapter_checkpoint.resolve())
+                            if args.adapter_checkpoint is not None
+                            else None
+                        ),
+                        "source_model_root": str(
+                            (args.model_source_root or args.model_root).resolve()
                         ),
                         "chosen_sample_index": positive["sample_index"],
                         "rejected_response": (
@@ -366,7 +397,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "loaded_model_root": str(args.model_root.resolve()),
         "model_revision": args.model_revision,
         "model_loader": model_loader,
-        "adapter_checkpoint": str(args.adapter_checkpoint.resolve()),
+        "adapter_checkpoint": (
+            str(args.adapter_checkpoint.resolve())
+            if args.adapter_checkpoint is not None
+            else None
+        ),
         "adapter_metadata": adapter_metadata,
         "data": str(args.data.resolve()),
         "data_sha256": hashlib.sha256(data_bytes).hexdigest(),
@@ -378,6 +413,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "finalize_max_new_tokens": args.finalize_max_new_tokens,
         "finalize_batch_size": args.finalize_batch_size,
         "enable_thinking": args.enable_thinking,
+        "bare_prompt_style": args.bare_prompt_style,
         "code_timeout": args.code_timeout,
         "seed": args.seed,
         "max_new_tokens": args.max_new_tokens,
@@ -404,7 +440,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--model-loader", choices=("auto", "causal", "multimodal"), default="auto"
     )
-    parser.add_argument("--adapter-checkpoint", type=Path, required=True)
+    parser.add_argument("--adapter-checkpoint", type=Path)
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--candidates-output", type=Path, required=True)
     parser.add_argument("--positives-output", type=Path, required=True)
@@ -417,6 +453,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--finalize-max-new-tokens", type=int, default=64)
     parser.add_argument("--finalize-batch-size", type=int, default=32)
     parser.add_argument("--enable-thinking", action="store_true")
+    parser.add_argument(
+        "--bare-prompt-style",
+        choices=("reasoning", "direct"),
+        default="reasoning",
+    )
     parser.add_argument("--code-timeout", type=float, default=3.0)
     parser.add_argument("--seed", type=int, default=20260803)
     parser.add_argument("--max-new-tokens", type=int, default=1536)
