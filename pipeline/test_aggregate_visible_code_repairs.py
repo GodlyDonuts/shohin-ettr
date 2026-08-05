@@ -6,11 +6,12 @@ from aggregate_visible_code_repairs import (
 )
 
 
-def _repair(original: str, text: str) -> dict:
+def _repair(original: str, text: str, root: str | None = None) -> dict:
     return {
         "task": "mbpp",
         "text": text,
         "original_identity_sha256": original,
+        "root_identity_sha256": root or original,
         "repair_schema": "shohin-visible-code-repair-bank-v1",
     }
 
@@ -63,6 +64,20 @@ def test_aggregates_complete_disjoint_repairs(tmp_path) -> None:
     assert report["repair_correct"] == 1
     assert report["final_correct"] == 11
     assert report["gain"] == 1
+    assert report["results"][0]["root_identity_sha256"] == "a"
+
+
+def test_preserves_root_identity_across_repair_rounds(tmp_path) -> None:
+    path = tmp_path / "round2.json"
+    path.write_text("round2")
+    report = aggregate(
+        [_repair("round1-prompt", "repair round 2", root="root-task")],
+        _build(1),
+        [_eval(_result("repair round 2", True))],
+        eval_paths=[path],
+    )
+    assert report["results"][0]["original_identity_sha256"] == "round1-prompt"
+    assert report["results"][0]["root_identity_sha256"] == "root-task"
 
 
 def test_rejects_incomplete_coverage(tmp_path) -> None:

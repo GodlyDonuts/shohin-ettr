@@ -71,6 +71,7 @@ def aggregate(
 
     by_eval_identity: dict[str, dict[str, Any]] = {}
     original_identities: set[str] = set()
+    root_identities: set[str] = set()
     for row in repair_rows:
         if row.get("repair_schema") != "shohin-visible-code-repair-bank-v1":
             raise VisibleCodeRepairAggregateError("repair row schema differs")
@@ -78,6 +79,10 @@ def aggregate(
         if not original or original in original_identities:
             raise VisibleCodeRepairAggregateError("repair source identities repeat")
         original_identities.add(original)
+        root = str(row.get("root_identity_sha256") or original)
+        if not root or root in root_identities:
+            raise VisibleCodeRepairAggregateError("repair root identities repeat")
+        root_identities.add(root)
         identity = _eval_identity(row)
         if identity in by_eval_identity:
             raise VisibleCodeRepairAggregateError("repair prompt identities repeat")
@@ -138,6 +143,10 @@ def aggregate(
             {
                 "original_identity_sha256": str(
                     by_eval_identity[identity]["original_identity_sha256"]
+                ),
+                "root_identity_sha256": str(
+                    by_eval_identity[identity].get("root_identity_sha256")
+                    or by_eval_identity[identity]["original_identity_sha256"]
                 ),
                 "repair_identity_sha256": identity,
                 "correct": bool(result.get("correct")),
