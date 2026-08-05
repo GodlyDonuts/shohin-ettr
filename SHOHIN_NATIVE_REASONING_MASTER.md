@@ -54993,3 +54993,29 @@ and 1,201,348 charged targets with zero 4,096-token truncation. Its SHA-256 is
 This V2 arm is not trained concurrently: it starts from the identical u224
 source only if all V1 checkpoints miss `311/663`, while a V1 pass advances
 directly to broad product regression checks.
+
+### Compact function curve and routed product leader (2026-08-05)
+
+The diversity-first V1 curriculum transfers. Its one-pass checkpoints solve
+`311`, `316`, `322`, and `318` of the 663 HumanEval plus unique-MBPP tasks;
+update 1,038 is the raw-code winner at HumanEval `90/164` and MBPP `232/499`.
+This is a real weight gain over update 224's `306/663`, but it is not a safe
+general adapter: fixed GSM8K moves `91 -> 89`, GPQA `20 -> 21`, and BBH
+`50 -> 42`. The correct product use is explicit code-task routing, not global
+replacement.
+
+Search remains verifier-conservative. Update-224 K=4 candidates raise MBPP
+from `288/499` to `313/499` using only tests supplied in the prompt; adding
+update-1,038 greedy raises it to `319/499`. Update-1,038 K=4 raises HumanEval
+only `96 -> 97/164`, so HumanEval search closes below its three-solve
+materiality threshold. The current route is provisionally `58.562%`
+five-domain macro and `2,632/3,930` solved before the last MBPP search shard,
+with a `61.537%` code-domain mean.
+
+The final two bounded successors are explicit. The remaining MBPP K=4 shard
+must reach a final selected score of at least `324/499`; otherwise
+same-checkpoint inference scaling closes. One failure-aligned V2 continuation
+from update 1,038 must reach at least `332/663` raw code solves; otherwise the
+synthetic function-curriculum family closes and the next data intervention
+uses broader solver-verified real-code trajectories. This is product
+reasoning progress, not evidence for a native ETTR mechanism.

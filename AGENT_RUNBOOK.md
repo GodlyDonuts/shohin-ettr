@@ -28515,3 +28515,60 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `freeze_failure_aligned_v2_now_launch_only_if_the_compact_v1_public_gate_fails`.
+
+- **2026-08-04 22:31--2026-08-05 00:20 EDT** -- **The compact function
+  curve produces a stronger routed code expert, while broad evaluation
+  rejects it as a general adapter.**
+
+  Update-224 K=4 expansion completes all eight MBPP shards with 1,996
+  candidates and 529 candidate passes. The unchanged prompt-visible selector
+  raises MBPP from `288/499` to `313/499`, a material `+25` solve gain. Adding
+  the later compact-curve update-1,038 greedy output raises it again to
+  `319/499`. The corresponding merged candidate/selection SHA-256 values are
+  `87326aca94a58e922e716bdca5b9894af432e418306fc034bebe01838a1bae93`
+  and
+  `537c03ac857c69c3f52b0263b7cdf3c7358ab0bab905290fb7ba75908b78e70b`.
+
+  Compact V1 job `738224` consumes exactly 747,650 charged targets in 1,383
+  updates at 4,524.6 target tokens/s. Its 25/50/75/100% checkpoints solve
+  HumanEval+MBPP `311/316/322/318` of 663. Update 1,038 is the weight winner,
+  `+16` over update 224's `306/663`, at checkpoint SHA-256
+  `c32f8401347a4844cfc3a4d7ae94d1873b042082ce50f3ac3d3c8ad128236668`.
+  Its individual full-board scores are HumanEval `90/164` and MBPP `232/499`.
+
+  The broad replacement gate correctly rejects this checkpoint: fixed
+  GSM8K is `89/100` versus protected `91`, GPQA is `21/100` versus `20`, but
+  BBH falls to `42/100` versus `50`. MATH job `738317` timed out after the
+  BBH rejection had already made replacement impossible. The checkpoint is
+  therefore task-routed only; it cannot alter math, science, or logic output.
+
+  Four update-1,038 HumanEval K=4 shards add only one selected solve,
+  `96 -> 97/164`, below the fixed `+3` materiality threshold. Candidate,
+  merged, and selection SHA-256 values are
+  `1441f05293f424f29569755e59263ef88b31991369fea9aa02c13f18a7f7dd81`,
+  `60e7de6e186cc09e5de373570f5f800381c8778cd9d0b6648c59873736cd4d57`,
+  and
+  `2a70d2000e88551948fdd19e114c6508373dc485aa39ac203a8b6478795cb196`.
+  HumanEval inference scaling is closed. Before the final update-1,038 MBPP
+  K=4 shard, the best routed system is provisionally `58.562%` five-domain
+  macro and `2,632/3,930` solved, with code mean `61.537%` from HumanEval
+  `97/164` and MBPP `319/499`.
+
+  Seven of eight update-1,038 MBPP K=4 shards are complete. The original
+  shard-7 attempt spent its allocation on `evc33` without entering rollout
+  progress and timed out; short replacement `738381` excludes that node.
+  The lane promotes only at `>=324/499`; otherwise further same-checkpoint
+  search stops. Job `738382` is the one failure-aligned V2 weight successor:
+  one 1,201,348-target pass warm-started from update 1,038, with checkpoints
+  every 512 updates. It must reach at least `332/663` raw code solves.
+  Failure closes synthetic function curricula and moves to solver-verified
+  real-code trajectories rather than another duration, width, seed, or LR
+  variant.
+
+  Evaluator commit `9f00eb9` adds a preformatted short-answer path for frozen
+  rendered banks; all 25 focused tests pass. Newton runtime-manifest SHA-256
+  is
+  `0cc5c36a55cd2ef5f473e713d4b02cbd91adea4353caf6f156ff301fcbcbd824`.
+
+  Decision:
+  `promote_u1038_only_as_routed_code_expert_close_humaneval_search_finish_one_mbpp_k4_shard_and_one_failure_aligned_weight_gate`.
