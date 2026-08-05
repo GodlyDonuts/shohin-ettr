@@ -28959,3 +28959,34 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   with an expected 0.15 H100-hour use and a hard four-H100-hour ceiling; no
   multi-seed or long-run allocation follows unless seed one clears +5 macro
   and every-family direction.
+
+- **2026-08-05 06:05--06:30 EDT** -- **Repaired PSPA mechanics clears its
+  gate; advance only to a learned language compiler.**
+
+  The initial runtime had three ambiguous episodes among 6,144 because its
+  six source challenges did not always identify one complete multi-generator
+  presentation. The source generator was repaired to construct up to eight
+  whole-candidate challenges and reject any episode whose wrong complete
+  presentations are not all eliminated. Exhaustive local replay then reached
+  `6,144/6,144` exact selected tables and answers.
+
+  Repaired job `739318` ran seed 43 on one H100 for 80.512 seconds, trained
+  the two neural controls for 1,000 updates over 128,000 examples, and used
+  180,054 combined trainable control parameters. Six-cohort OOD macro is
+  PSPA `100.000%`, tied recurrent `9.961%`, and Transformer `10.840%`.
+  Shuffling source-challenge outcomes reduces PSPA to `52.507%`; swapping
+  whole selected-presentation lineages reduces it to `13.574%`. Challenge
+  exact and selected-table exact are both `100.000%`.
+
+  Report SHA-256 is
+  `b88aabc9d09ec4dce2790efd7a12814722c132e8d104d580f96468b966842539`.
+  This passes the favorable-control mechanics gate, not the learned
+  architecture or general-reasoning gate. PCSD and FCPT remain closed; the
+  literature review's FCPT recommendation predates their executed negative
+  pilots and must not relaunch them. The only authorized successor is one
+  learned language-to-presentation compiler with the same tied executor,
+  source/query separation, and parameter/FLOP-matched controls. No long
+  pretraining is authorized by this result.
+
+  Decision:
+  `pspa_mechanics_passes_then_build_one_learned_language_compiler_gate`.

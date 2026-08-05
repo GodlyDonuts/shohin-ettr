@@ -41,6 +41,33 @@ combination inside a language model:
 That novelty claim must remain a hypothesis until a broader search and matched
 experiments establish it.
 
+## Execution addendum — 2026-08-05
+
+This review preceded the completed PCSD and FCPT pilots. Do not use its
+immediate recommendation to relaunch either lane.
+
+- PCSD reached `19.092% / 14.038%` exact answers at depths 8/12 versus
+  `20.996% / 14.209%` for the matched dense arm. It enforced its learned
+  invariant almost perfectly, but exact terminal state remained zero, causal
+  projection ablations cost less than one point, and throughput was 3.36x
+  worse. PCSD is closed as a standalone architecture.
+- FCPT v1 reached `12.174%` macro versus `11.475%` for whole-particle
+  selection. A corrected coverage objective increased behavioral uniqueness
+  from roughly 1.2--1.5 to 3.06--4.28 of eight candidates, but capability
+  remained `12.093%` versus `11.800%`, lost on two cohorts, and missed the
+  fixed pilot gate. FCPT is closed without a full matrix or confirmation run.
+- The successor Prompt-Selected Presented Algebra (PSPA) changes the
+  hypothesis class rather than adding another particle or projection
+  objective. Its repaired mechanics pilot reaches 100% exact answers and
+  complete-presentation recovery on six depth-shift cohorts, versus `9.961%`
+  tied recurrence and `10.840%` Transformer controls. Shuffled challenge
+  outcomes reduce it to `52.507%`; whole-lineage swaps reduce it to `13.574%`.
+
+PSPA is not yet a learned language architecture. Its current source compiler
+enumerates a small structured presentation family. The result authorizes only
+a learned language-to-presentation compiler and a parameter/FLOP-matched
+gate. It does not authorize long pretraining or a general-reasoning claim.
+
 ## Terminology
 
 Do not call this "schizophrenic AI" in code, a paper, a resume, or a public

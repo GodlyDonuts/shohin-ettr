@@ -1,7 +1,7 @@
 # Prompt-Selected Presented Algebra
 
-Status: mechanics and favorable neural-control pilot implemented; no novelty or
-general reasoning claim.
+Status: repaired mechanics pilot passes; learned compiler not yet implemented;
+no novelty or general reasoning claim.
 
 ## Thesis
 
@@ -96,6 +96,44 @@ compiler's five-seed gate requires:
 Failure of the first seed closes this exact structured compiler/runtime without
 width, duration, seed, loss, carrier, or challenge-set tuning.
 
+## Repaired mechanics result
+
+The first immutable runtime exposed three ties among 6,144 development
+episodes because six source challenges did not always identify a unique
+complete multi-generator presentation. This was an oracle-generation defect,
+not a model error. The repaired generator constructs up to eight
+whole-candidate challenges and proves that every wrong complete presentation
+is eliminated before evaluation. Exhaustive local replay then recovered all
+6,144 presentations and answers exactly.
+
+The repaired seed-43 H100 pilot used 1,000 updates, 128 examples per update,
+180,054 combined trainable control parameters, and 128,000 charged examples.
+It completed in 80.512 seconds at 1,589.829 examples/s.
+
+| Arm or diagnostic | Six-cohort OOD macro exact |
+|---|---:|
+| PSPA | **100.000%** |
+| Tied recurrent control | 9.961% |
+| Two-layer Transformer control | 10.840% |
+| Shuffled source-challenge outcomes | 52.507% |
+| Whole selected-presentation lineage swap | 13.574% |
+| Complete selected-presentation recovery | **100.000%** |
+| Source-challenge prediction | **100.000%** |
+
+PSPA is 100% exact on cyclic, dihedral, and random-permutation families at
+both length 8 and length 12. It clears the fixed mechanics requirements by
+89.160 points over the best neural control, with large causal losses under
+both interventions. The result file is
+`artifacts/reasoning/pspa_presented_pilot_071229a/seed43.json`, SHA-256
+`b88aabc9d09ec4dce2790efd7a12814722c132e8d104d580f96468b966842539`.
+
+This is a mechanics result under favorable controls. The structured compiler
+still receives anonymous tables and exact challenge tuples rather than
+language. The next gate must learn the language-to-presentation map, retain
+the tied model-owned executor, remove deterministic candidate enumeration at
+inference, and compare against parameter- and total-FLOP-matched neural
+controls. A failure there closes PSPA despite this perfect mechanics score.
+
 ## Resource envelope
 
 Board generation and oracle/identifiability checks are CPU-only. Eight focused
@@ -121,6 +159,6 @@ authorized by mechanics or training loss alone.
 3. ~~generate and audit the three-family depth-shift board~~;
 4. ~~implement recurrent and Transformer favorable controls~~;
 5. ~~pass focused gradients and CPU smoke~~;
-6. run one combined seed-43 H100 pilot; and
-7. if it passes, implement the learned language-to-presentation compiler and
+6. ~~run one combined seed-43 H100 pilot~~; and
+7. implement the learned language-to-presentation compiler and
    freeze its parameter/FLOP-matched gate before scoring it.

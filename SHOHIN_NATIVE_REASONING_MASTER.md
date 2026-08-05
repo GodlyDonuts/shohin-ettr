@@ -55259,3 +55259,29 @@ relation controls over cyclic/affine, noncommuting, and finite-transformation
 families under longer words and fresh carrier renamings. Full details and the
 fixed compute envelope are in
 `docs/research/PROMPT_SELECTED_PRESENTED_ALGEBRA.md`.
+
+### PSPA repaired mechanics result (2026-08-05)
+
+The first PSPA mechanics runtime revealed three ambiguous examples among
+6,144: a fixed six-challenge source did not always separate all complete
+multi-generator presentations. The repaired generator explicitly constructs
+up to eight whole-candidate challenges and admits an episode only after every
+wrong complete presentation is eliminated. Exhaustive replay then recovered
+all 6,144 complete presentations and late-query answers.
+
+The repaired seed-43 H100 run reaches 100.000% OOD exact answers and 100.000%
+selected-presentation recovery across cyclic, dihedral, and random-permutation
+families at word lengths 8 and 12. The tied recurrent and ordinary Transformer
+controls reach 9.961% and 10.840%. Shuffling challenge outcomes cuts PSPA to
+52.507%; swapping whole selected-presentation lineages cuts it to 13.574%.
+The report SHA-256 is
+`b88aabc9d09ec4dce2790efd7a12814722c132e8d104d580f96468b966842539`.
+
+This is the first post-S7 architecture lane to cross its synthetic OOD
+mechanics gate, and it does so by restricting the latent object to an
+executable algebra rather than optimizing an arbitrary state. It is not yet
+language reasoning: the current compiler consumes structured anonymous action
+evidence and enumerates a small presentation set. The next and only authorized
+successor is a learned language-to-presentation compiler with the same tied
+executor and matched neural controls. Failure of that gate closes PSPA despite
+the perfect mechanics result.
