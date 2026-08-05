@@ -37,9 +37,8 @@ test ! -e "$OUT" || { echo "refusing existing output: $OUT" >&2; exit 2; }
 mkdir -p "$(dirname "$OUT")"
 
 echo "[diverge-a-g-cpu] node=${SLURMD_NODENAME:-?} code=$CODE_ROOT commit=$SOURCE_COMMIT seed=$SEED"
-"$PYTHON" -m pytest -q \
-  "$CODE_ROOT/train/test_diverge_v0.py" \
-  "$CODE_ROOT/train/test_diverge_v0_matched_gate.py"
+"$PYTHON" "$CODE_ROOT/train/test_diverge_v0.py" -q
+"$PYTHON" "$CODE_ROOT/train/test_diverge_v0_matched_gate.py"
 "$PYTHON" "$CODE_ROOT/train/diverge_v0_matched_gate.py" \
   --base "$PARENT" \
   --tokenizer "$TOKENIZER" \

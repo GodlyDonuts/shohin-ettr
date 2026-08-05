@@ -175,6 +175,7 @@ def main() -> None:
     test_primary_rewrite_keeps_source_self_consistent()
     test_soft_control_commits_on_uncertain_query()
     test_delayed_binder_uses_only_sealed_packet_and_new_evidence()
+    test_factorized_arm_and_full_particles_use_the_same_measured_budget()
     print("DIVERGE matched gate tests: passed")
 
 
