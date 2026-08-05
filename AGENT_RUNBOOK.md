@@ -29257,6 +29257,11 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   compilation, shell validation, and diff checks pass. Immutable Newton
   runtime `scratchpad/csdc_span_quotient_405fcbb_r2` has tar SHA-256
   `b9e6b7b56587e748aa4379f35e856a4c267a77d33f694dde54e36c9029aca14c`.
+  A real Smol tokenizer CPU preflight on Newton represents `1,203/1,203`
+  sampled mentions; exact mention widths are one through three tokens. The
+  exhaustive pools confirm train/shift state aliases max at three tokens and
+  train/shift generator aliases max at two, with zero aliases above the frozen
+  width-four cap.
   Real-backbone smoke jobs `741283` (normal) and `741287` (20-minute normal
   backfill) are pending priority; `741289` is the preemptable fallback. They
   are duplicate infrastructure smokes with isolated outputs, not scientific
