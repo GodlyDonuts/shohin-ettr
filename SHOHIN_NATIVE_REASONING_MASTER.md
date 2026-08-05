@@ -54978,3 +54978,18 @@ curriculum with zero truncation, SHA-256
 Newton job `738224` trains one 1,383-update curve from u224; full code-board
 jobs `738225--738232` retain the same +5-task promotion rule. This correction
 spends compute on semantic variety rather than renamed template volume.
+
+The immediate failover is now frozen rather than improvised after a negative.
+Update-224 failure transcripts were converted into seven verified function
+families covering index rewrites, frequency filters, nested support, sentence
+scans, pair scans, rounded affine formulas, and set relations. Fourteen Stokes
+shards produced 56,000 execution-verified rows with zero replayed 13-gram
+overlap against the two code boards. The admitted train split contains 53,100
+rows and spans 11,945 distinct transformation graphs overall. A diversity-
+first curriculum retains 12,816 generated examples across 8,068 graphs and
+adds 3,568 protected real-function replay rows, totaling exactly 16,384 rows
+and 1,201,348 charged targets with zero 4,096-token truncation. Its SHA-256 is
+`80114ce65e35fc280d0b1fb3abdc5bac2e6856e37e174daf8fe67fabdc4c8c04`.
+This V2 arm is not trained concurrently: it starts from the identical u224
+source only if all V1 checkpoints miss `311/663`, while a V1 pass advances
+directly to broad product regression checks.

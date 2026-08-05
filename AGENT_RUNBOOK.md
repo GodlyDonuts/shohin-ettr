@@ -28473,3 +28473,45 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `train_semantic_diversity_not_prompt_volume_and_keep_the_plus5_full_code_gate`.
+
+- **2026-08-04 22:06--22:31 EDT** -- **A failure-aligned function corpus is
+  admitted as the immediate failover, without spending H100 time before the
+  active compact curve reports.**
+
+  Transcript inspection of update-224 misses identifies concrete capability
+  holes rather than a generic need for more examples: index-subset rewrites,
+  all-occurrence frequency filtering, stable/tied transforms, nested support,
+  pair scans, sentence/delimiter parsing, rounded affine formulas, and set
+  relations. Commit `ea52bf8` adds seven generators aligned to those holes;
+  every reference is executed against ten randomized tests and the same
+  HumanEval/MBPP 13-gram firewall. Stokes array `763390` completes all 14
+  shards cleanly, yielding exactly 56,000 rows, 8,000 per family. Schema-
+  explicit merger commit `b706f49` independently validates every shard hash,
+  all identities, verification hashes, split receipts, and replayed eval
+  sources before admitting 53,100 train and 2,900 confirmation rows.
+
+  The raw corpus spans 11,945 distinct transformation graphs. A diversity-
+  first cap of eight rows per graph and 4,000 per family retains 12,816
+  generated rows over 8,068 graphs; eight replays of each of the 446 real
+  function anchors bring the frozen curriculum to exactly 16,384 rows. Its
+  data/report/token-audit SHA-256 values are
+  `80114ce65e35fc280d0b1fb3abdc5bac2e6856e37e174daf8fe67fabdc4c8c04`,
+  `c7f9d32a711bd0be66ca610bb7025292127be5294c39175cc823503ff1933b7e`,
+  and
+  `641ef3117c23ce00db2c659b291c1d6cd67e6184a2d77d62bc3e6efdc0132901`.
+  The token audit records 1,201,348 charged targets and zero prompt or response
+  truncation at 4,096 tokens. Train/confirmation/merge-report SHA-256 values
+  are
+  `4491d36963d6c5ef9197341560586d6c0913ab14c9327daed3d14999376fc047`,
+  `eade1dce96b2eef538122188021dbfe4b117f798b6e66fe240ea51e7bb390d2a`,
+  and
+  `1554ead08f2f642c48e69feb3a62255fe90544c1ed77e332bd436dab5d25b29f`.
+  The clean runtime manifest is
+  `d296743fcbe3effd6ee85960afcbb925a9365ce7ee756514cda8c7765a75cf7c`.
+
+  This is a failover, not a second simultaneous training guess. It launches
+  from the same update-224 source only if every checkpoint in `738224` remains
+  below `311/663`; a V1 pass instead advances to broad regression gates.
+
+  Decision:
+  `freeze_failure_aligned_v2_now_launch_only_if_the_compact_v1_public_gate_fails`.
