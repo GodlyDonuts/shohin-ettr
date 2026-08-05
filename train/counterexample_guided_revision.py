@@ -134,6 +134,7 @@ class SparseRevisionOperator(nn.Module):
         *,
         dense: bool,
         shuffle_outcomes: bool,
+        selection_weight: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         batch, _, width = probes.shape
         selected_features = torch.gather(
@@ -155,6 +156,10 @@ class SparseRevisionOperator(nn.Module):
                 -1,
             )
         )
+        if selection_weight is not None:
+            if selection_weight.shape != selected_probe.shape:
+                raise RevisionDynamicsError("selection-weight geometry differs")
+            challenge = challenge * selection_weight.unsqueeze(-1)
         affinity = torch.einsum(
             "bsd,bpd->bsp",
             self.slot_key(state),
