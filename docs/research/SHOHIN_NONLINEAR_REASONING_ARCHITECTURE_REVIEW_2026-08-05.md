@@ -103,6 +103,25 @@ rendered-source baseline. It validates preservation of source identity at the
 semantic-symbolic boundary; it is not yet an unrestricted language claim and
 still does not reopen PCSD or FCPT.
 
+The subsequent SmolLM2 lexical integration reaches `99.691% / 95.915%`
+development/combined-shift answers and retains large shuffled-evidence and
+lineage-swap failures, but all-eight shifted challenge tuples are exact in only
+`17.920%` of episodes. Its first-subtoken copy interface is closed. One frozen
+whole-mention span-quotient gate now tests whether complete model-selected
+mentions restore exact identity under tokenizer and lexical shift. It changes
+no CSDC reasoning mechanics and receives no repair variants.
+
+After that one gate, the ordered successor is **DIVERGE**, not another PCSD or
+FCPT run. DIVERGE extends the protected CSDC principle from a small explicit
+Cartesian candidate set to a source-sealed factorized version-space packet:
+shared typed graph/state, episode-local fault-line variables, guarded patches,
+hard constraints, calibrated support, provenance, verifier-checked nogoods,
+safe equivalence merges, and query-invariant commitment or abstention. Its
+first deliverable is an exact CPU reference and delayed-disambiguation board,
+not neural scaling. Full particles remain a matched control. The bounded
+candidate contribution is the learned source-sealed conjunction and sharing
+advantage, not particles, BDDs, conflict clauses, or typed state individually.
+
 ## Terminology
 
 Do not call this "schizophrenic AI" in code, a paper, a resume, or a public

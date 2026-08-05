@@ -29239,3 +29239,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_first_subtoken_bridge_preserve_causal_near_pass_then_build_model_owned_span_quotient_grounding`.
+
+- **2026-08-05 13:30--14:10 EDT** -- **One whole-mention span gate is frozen;
+  DIVERGE is the ordered successor after its immutable result.**
+
+  Private commits `f1b91e9`, `405fcbb`, and `948c728` freeze the protocol,
+  implementation, smoke wrapper, and complete decoder receipts. The new head
+  enumerates every width-one-through-four span inside a record, represents the
+  complete span, shares an exact-surface occurrence-class message, and emits
+  whole-mention `START`/`OUTCOME`/`WORD` roles. It rejects partial, superset,
+  overlapping, duplicate, missing, and excess identities rather than repairing
+  them. The Smol parent, warm adapter, seed, 1,500 updates / 192,000 episodes,
+  renderer split, frozen CSDC core, and answer/tuple/table/causal thresholds
+  remain matched to the closed first-subtoken control.
+
+  Twenty-six focused and inherited CSDC/PSPA tests pass; Ruff, byte
+  compilation, shell validation, and diff checks pass. Immutable Newton
+  runtime `scratchpad/csdc_span_quotient_405fcbb_r2` has tar SHA-256
+  `b9e6b7b56587e748aa4379f35e856a4c267a77d33f694dde54e36c9029aca14c`.
+  Real-backbone smoke jobs `741283` (normal) and `741287` (20-minute normal
+  backfill) are pending priority; `741289` is the preemptable fallback. They
+  are duplicate infrastructure smokes with isolated outputs, not scientific
+  arms. Cancel remaining duplicates immediately after one completes. Do not
+  launch the full gate until one smoke trains, decodes, and emits a valid
+  report. Rebuild the final runtime from `948c728` so the full result includes
+  missing/duplicate/nonexact receipts.
+
+  After the one span result is immutable, do not extend it. Begin DIVERGE-v0
+  as a source-sealed factorized extension of protected CSDC. PCSD and FCPT
+  remain closed. First freeze the packet schema, guard language, independent
+  enumerator, delayed-disambiguation board, A--G matched controls, and
+  quantitative CPU gates. Require exact extensional parity, valid nogoods,
+  safe merges, query invariance/abstention, canonical accounting, and
+  fail-closed overflow before neural scoring or long training.
+
+  Decision:
+  `finish_one_span_quotient_gate_then_build_diverge_v0_cpu_semantics_without_reopening_pcsd_or_fcpt`.

@@ -55485,3 +55485,33 @@ interface, not another optimization of the failed first-subtoken parser.
 Report/checkpoint SHA-256 values are
 `b3ae0526e9e28ef21e93f2b32bacd7845f40cdb663d8d4b48d74ed9b7cfc05c5` /
 `12a95731e5be263dce96a3bf13c21d3e28b55167fecae70e714228eb3a5bdcec`.
+
+### Frozen whole-mention gate and DIVERGE sequencing (2026-08-05)
+
+The first-subtoken bridge is not being tuned. Commit `f1b91e9` freezes one
+new interface: enumerate bounded nonempty spans inside each record, pool the
+entire span, quotient exact-surface occurrences, classify whole spans as
+`START`/`OUTCOME`/`WORD`, and copy only exact nonoverlapping mentions into the
+unchanged CSDC candidate/falsify/commit/execute path. It retains the same
+SmolLM2 parent, warm adapter, 1,500 updates, 192,000 episodes, seed, train and
+shift renderers, CSDC reasoner, and absolute/causal gates. Shifted all-eight
+tuple, answer, and selected-table exactness must each reach at least 90%, with
+exact shifted mentions at least 90% and class-ID reindexing bit-identical. A
+miss closes the span architecture without a repair variant.
+
+The ordered architecture after that immutable result is DIVERGE: a
+source-sealed factorized extension of the protected CSDC result. It represents
+many coherent worlds as a shared graph/state plus episode-local discrete fault
+lines, guarded patches, a hard factor circuit, calibrated support,
+evidence/transaction provenance, verifier-checked nogoods, conservative
+equivalence merges, and query-invariant commitment or calibrated abstention.
+It never averages incompatible fields. PCSD and FCPT remain closed; full
+particles are a matched control, not the claim.
+
+DIVERGE-v0 begins with CPU semantics only. The packet must enumerate exactly
+the same worlds as an independent reference on a Delayed Disambiguation/
+Recovery board, remove no valid world through a verifier-accepted nogood,
+merge only extensionally equivalent worlds, issue no false query certificate,
+account canonical bytes/transactions, and fail closed on overflow. Neural
+scoring, long pretraining, and public benchmarks wait for that representation
+gate.
