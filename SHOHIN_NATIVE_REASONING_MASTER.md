@@ -55139,3 +55139,12 @@ six tests prove finite gradients, particle-permutation invariance, whole-state
 gathering, preserved lineage, query-late ownership, and consequence-based
 equivalence. No reasoning capability is claimed until the three-family matched
 development and unopened confirmation gates pass.
+
+The first FCPT pilot does not pass. It gains only 0.699 macro development
+points over identical fixed-probe whole selection and retains only about
+1.2--1.5 distinct behaviors among eight candidates. The postmortem identifies
+a direct objective conflict: applying gold evidence CE to every particle
+forces the very posterior collapse FCPT is intended to avoid. V1 is immutable.
+One corrected pilot uses a best-complete-hypothesis coverage loss and stronger
+behavioral diversity under the same seed, updates, data, and +5-point gate. A
+second miss closes FCPT before any full multi-arm or confirmation campaign.

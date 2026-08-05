@@ -24,6 +24,8 @@ UPDATES=${UPDATES:-1000}
 BATCH_SIZE=${BATCH_SIZE:-256}
 EVAL_COUNT=${EVAL_COUNT:-1024}
 LOG_EVERY=${LOG_EVERY:-50}
+BEHAVIOR_OBJECTIVE=${BEHAVIOR_OBJECTIVE:-coverage}
+DIVERSITY_WEIGHT=${DIVERSITY_WEIGHT:-0.2}
 REPORT=$OUT_ROOT/${ARM}_seed${SEED}.json
 MANIFEST=$RUNTIME/artifacts/diagnostics/fcpt_plural_cohort_v1.json
 
@@ -51,6 +53,8 @@ nvidia-smi -L
   --batch-size "$BATCH_SIZE" \
   --eval-count "$EVAL_COUNT" \
   --log-every "$LOG_EVERY" \
+  --behavior-objective "$BEHAVIOR_OBJECTIVE" \
+  --diversity-weight "$DIVERSITY_WEIGHT" \
   --cohort-manifest "$MANIFEST"
 
 test -s "$REPORT"

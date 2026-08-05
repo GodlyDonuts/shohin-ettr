@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 import random
 import time
-from typing import Any
+from typing import Any, Literal
 
 import torch
 import torch.nn as nn
@@ -28,6 +28,7 @@ from falsification_coupled_particles import (
 SCHEMA = "shohin-fcpt-plural-reasoning-v1"
 MODULUS = 11
 FAMILIES = ("noncommuting", "binding", "induction")
+BehaviorObjective = Literal["all", "coverage"]
 
 
 class PluralReasoningError(RuntimeError):
@@ -344,7 +345,9 @@ class PluralReasoner(nn.Module):
         )
 
 
-def behavior_loss(trajectory: ParticleTrajectory, batch: PluralBatch) -> torch.Tensor:
+def _candidate_behavior_nll(
+    trajectory: ParticleTrajectory, batch: PluralBatch
+) -> tuple[torch.Tensor, ...]:
     losses = []
     for step in trajectory.rounds:
         batch_size, candidates, evidence, classes = step.behavior_logits.shape
@@ -355,8 +358,25 @@ def behavior_loss(trajectory: ParticleTrajectory, batch: PluralBatch) -> torch.T
             reduction="none",
         ).view(batch_size, candidates, evidence)
         mask = batch.evidence_mask[:, None].expand_as(per_item)
-        losses.append((per_item * mask).sum() / mask.sum().clamp_min(1))
-    return torch.stack(losses).mean()
+        losses.append(
+            (per_item * mask).sum(-1) / mask.sum(-1).clamp_min(1)
+        )
+    return tuple(losses)
+
+
+def behavior_loss(
+    trajectory: ParticleTrajectory,
+    batch: PluralBatch,
+    objective: BehaviorObjective = "all",
+) -> torch.Tensor:
+    """Train all candidates or one best complete hypothesis per episode."""
+
+    candidate_losses = _candidate_behavior_nll(trajectory, batch)
+    if objective == "all":
+        return torch.stack([loss.mean() for loss in candidate_losses]).mean()
+    if objective == "coverage":
+        return torch.stack([loss.min(-1).values.mean() for loss in candidate_losses]).mean()
+    raise PluralReasoningError(f"unknown behavior objective: {objective}")
 
 
 def behavioral_diversity(trajectory: ParticleTrajectory, batch: PluralBatch) -> torch.Tensor:
@@ -495,7 +515,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
         logits, trajectory = model(batch)
         answer_loss = F.cross_entropy(logits, batch.answer)
-        prediction_loss = behavior_loss(trajectory, batch)
+        prediction_loss = behavior_loss(trajectory, batch, args.behavior_objective)
         diversity = behavioral_diversity(trajectory, batch)
         loss = answer_loss + args.behavior_weight * prediction_loss - args.diversity_weight * diversity
         optimizer.zero_grad(set_to_none=True)
@@ -575,6 +595,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "learning_rate": args.learning_rate,
         "weight_decay": args.weight_decay,
         "behavior_weight": args.behavior_weight,
+        "behavior_objective": args.behavior_objective,
         "diversity_weight": args.diversity_weight,
         "parameters": parameter_count(model),
         "charged_examples": args.updates * args.batch_size,
@@ -615,7 +636,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--learning-rate", type=float, default=3e-4)
     parser.add_argument("--weight-decay", type=float, default=0.01)
     parser.add_argument("--behavior-weight", type=float, default=0.5)
-    parser.add_argument("--diversity-weight", type=float, default=0.05)
+    parser.add_argument(
+        "--behavior-objective", choices=("all", "coverage"), default="coverage"
+    )
+    parser.add_argument("--diversity-weight", type=float, default=0.2)
     parser.add_argument("--log-every", type=int, default=50)
     parser.add_argument("--allow-cpu", action="store_true")
     parser.add_argument("--cohort-manifest", type=Path)

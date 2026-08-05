@@ -140,3 +140,33 @@ single-H100 jobs. The initial ceiling is 30 H100-hours; jobs stop early for
 chance-flat or collapsed behavior. Ablations and confirmation are launched
 only for a development winner. No scratch language pretraining begins from
 this gate alone.
+
+## Pilot v1 result and objective correction
+
+Seed-17 jobs `739194` (FCPT) and `739195` (fixed-probe whole selection) used
+identical 88,727-parameter models, 1,000 updates, 256 examples per update, and
+the six frozen depth-5/7 development cohorts. FCPT reaches 12.174% macro exact
+versus 11.475%, only +0.699 points. It loses slightly on depth-5 binding and
+ties depth-7 induction. This misses the fixed +5 pilot trend and does not
+authorize the full matrix.
+
+The failure exposes an objective contradiction rather than a duration issue.
+V1 applies gold behavior cross-entropy independently to every candidate. That
+loss explicitly trains every particle to make the same predictions, while a
+small diversity term tries to separate them. Final hard behavior uniqueness is
+only 1.2--1.5 among eight branch candidates and mutual-information diversity
+is about 0.0005--0.0007. The falsifier cannot allocate useful contradiction
+bandwidth when its candidate set has already collapsed.
+
+V1 is frozen. One corrected pilot replaces all-candidate behavior CE with a
+multiple-hypothesis coverage objective: for each episode and round, only the
+lowest complete-candidate evidence NLL is charged. A stronger behavioral
+mutual-information term keeps the uncharged alternatives distinct. Data,
+architecture, updates, seed, evaluation, and FCPT-versus-selection comparison
+remain fixed. This is the only authorized successor. It must still clear +5
+points and noncollapse; otherwise FCPT closes before the full matrix.
+
+V1 report SHA-256 values:
+
+- FCPT: `09fc81a4aa0c36153b949e735ff7458d28901e9ac88b3da9ab4296bb1d7226d0`
+- selection: `3c03af58878f75a57d1907c94cc8e5d4b2dfd82bf34b88d5ce40f72bcad85e63`

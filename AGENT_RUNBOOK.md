@@ -28768,3 +28768,30 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_pcsd_standalone_and_advance_fcpt_to_three_family_data_and_matched_control_implementation`.
+
+- **2026-08-05 04:00--04:12 EDT** -- **FCPT v1 misses the pilot gate and
+  reveals a collapse-inducing training objective.**
+
+  Jobs `739194`/`739195` compare disagreement-selected FCPT with identical
+  fixed-probe whole-particle selection. Both use 88,727 parameters, seed 17,
+  1,000 updates, 256 examples/update, and six hash-frozen depth-5/7 cohorts.
+  FCPT macro exact is `12.174%`; selection is `11.475%`, a `+0.699` gain. FCPT
+  is slightly worse on depth-5 binding and tied on depth-7 induction, so it
+  misses the fixed +5 pilot threshold and the full matrix is not launched.
+
+  V1's auxiliary behavior CE charges every candidate against the same gold
+  outcome. It therefore trains all hypotheses to collapse, directly opposing
+  the architecture's plural premise. Measured hard behavior uniqueness is
+  only 1.2--1.5 of eight candidates and behavioral mutual information is
+  ~0.0005--0.0007. V1 is frozen with FCPT/selection report SHA-256 values
+  `09fc81a4aa0c36153b949e735ff7458d28901e9ac88b3da9ab4296bb1d7226d0`
+  and
+  `3c03af58878f75a57d1907c94cc8e5d4b2dfd82bf34b88d5ce40f72bcad85e63`.
+
+  One objective-corrected pilot is authorized: best-complete-hypothesis
+  evidence NLL replaces all-candidate CE, and the diversity coefficient moves
+  from 0.05 to 0.2. Everything else, including seed and gate, remains fixed.
+  No duration, width, extra-seed, or full-matrix extension follows a miss.
+
+  Decision:
+  `run_one_coverage_objective_fcpt_pilot_then_pass_to_full_matrix_or_close_fcpt`.

@@ -64,10 +64,27 @@ def test_plural_reasoner_one_step_is_finite() -> None:
     logits, trajectory = model(batch)
     loss = (
         F.cross_entropy(logits, batch.answer)
-        + 0.5 * behavior_loss(trajectory, batch)
+        + 0.5 * behavior_loss(trajectory, batch, "coverage")
         - 0.05 * behavioral_diversity(trajectory, batch)
     )
     loss.backward()
     assert torch.isfinite(loss)
     assert model.core.proposer.branch_seed.grad is not None
     assert torch.isfinite(model.core.proposer.branch_seed.grad).all()
+
+
+def test_coverage_objective_does_not_force_every_hypothesis_to_gold() -> None:
+    board = BoardConfig(width=24)
+    particles = ParticleConfig(
+        width=24,
+        heads=3,
+        rounds=1,
+        outcome_classes=board.modulus,
+        answer_classes=board.modulus,
+    )
+    model = PluralReasoner(board, particles, "fcpt")
+    batch = generate_batch(4, 3, board, seed=37)
+    _, trajectory = model(batch)
+    all_candidates = behavior_loss(trajectory, batch, "all")
+    coverage = behavior_loss(trajectory, batch, "coverage")
+    assert coverage <= all_candidates
