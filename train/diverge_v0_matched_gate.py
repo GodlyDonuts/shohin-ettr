@@ -32,6 +32,7 @@ from diverge_v0 import (
     ANSWER,
     REJECT,
     ExecutionReceipt,
+    FactorizedExecutionReceipt,
     Guard,
     Literal,
     Query,
@@ -42,10 +43,13 @@ from diverge_v0 import (
     certify_binary_option_evidence,
     enumerate_assignments,
     execute_packet,
+    execute_packet_factorized,
+    factorized_query_execution,
     materialized_world_bytes,
     named_commitment,
     packet_bytes,
     query_execution,
+    refine_factorized_receipt,
 )
 from diverge_v0_reference import verify_nogood
 from diverge_v0_role_copy_pilot import (
@@ -55,7 +59,7 @@ from diverge_v0_role_copy_pilot import (
 from frozen_pointer_backbone import load_frozen_pointer_backbone
 
 
-SCHEMA = "shohin-diverge-v0-matched-a-g-gate-v1"
+SCHEMA = "shohin-diverge-v0-matched-a-g-gate-v2"
 ARM_NAMES = (
     "A_single",
     "B_full_particles",
@@ -85,6 +89,7 @@ class GateEpisode:
 class CompiledEpisode:
     gate: GateEpisode
     packet: object | None
+    refined_packet: object | None
     prediction: pilot.CompilerPrediction
     packet_exact: bool
     gold_support_recalled: bool
@@ -94,6 +99,8 @@ class CompiledEpisode:
     primary_gold_option: int
     initial: ExecutionReceipt | None
     refined: ExecutionReceipt | None
+    factorized_initial: FactorizedExecutionReceipt | None
+    factorized_refined: FactorizedExecutionReceipt | None
     expected: dict[str, QueryDecision]
     verifier_calls: int
     valid_support_preserved: bool
@@ -361,20 +368,23 @@ def _compile_episode(
     gold_support_recalled = true_faults.issubset(predicted_faults)
     if packet is None or packet.overflow or episode.primary_record_id not in canonical:
         return CompiledEpisode(
-            gate,
-            packet,
-            prediction,
-            packet_exact,
-            gold_support_recalled,
-            None,
-            None,
-            None,
-            true_primary.gold_option,
-            None,
-            None,
-            expected,
-            0,
-            False,
+            gate=gate,
+            packet=packet,
+            refined_packet=None,
+            prediction=prediction,
+            packet_exact=packet_exact,
+            gold_support_recalled=gold_support_recalled,
+            primary_variable=None,
+            evidence_variable=None,
+            evidence_option=None,
+            primary_gold_option=true_primary.gold_option,
+            initial=None,
+            refined=None,
+            factorized_initial=None,
+            factorized_refined=None,
+            expected=expected,
+            verifier_calls=0,
+            valid_support_preserved=False,
         )
     certificate = _bind_delayed_evidence(packet, episode.evidence_text)
     if certificate is None:
@@ -384,7 +394,10 @@ def _compile_episode(
         evidence_variable = certificate.variable_id
         evidence_option = certificate.confirmed_option
     initial = execute_packet(packet, commute_disjoint=True)
+    factorized_initial = execute_packet_factorized(packet)
     refined = None
+    factorized_refined = None
+    refined_packet = None
     verifier_calls = 0
     valid_support_preserved = False
     if certificate is not None:
@@ -403,25 +416,32 @@ def _compile_episode(
         verifier_calls = 1
         refined_packet = append_verified_nogood(packet, certificate.nogood)
         refined = execute_packet(refined_packet, commute_disjoint=True)
+        factorized_refined = refine_factorized_receipt(
+            refined_packet,
+            factorized_initial,
+        )
         valid_support_preserved = (
             verification.accepted
             and set(enumerate_assignments(refined_packet)) == set(valid)
         )
     return CompiledEpisode(
-        gate,
-        packet,
-        prediction,
-        packet_exact,
-        gold_support_recalled,
-        canonical[episode.primary_record_id],
-        evidence_variable,
-        evidence_option,
-        true_primary.gold_option,
-        initial,
-        refined,
-        expected,
-        verifier_calls,
-        valid_support_preserved,
+        gate=gate,
+        packet=packet,
+        refined_packet=refined_packet,
+        prediction=prediction,
+        packet_exact=packet_exact,
+        gold_support_recalled=gold_support_recalled,
+        primary_variable=canonical[episode.primary_record_id],
+        evidence_variable=evidence_variable,
+        evidence_option=evidence_option,
+        primary_gold_option=true_primary.gold_option,
+        initial=initial,
+        refined=refined,
+        factorized_initial=factorized_initial,
+        factorized_refined=factorized_refined,
+        expected=expected,
+        verifier_calls=verifier_calls,
+        valid_support_preserved=valid_support_preserved,
     )
 
 
@@ -452,9 +472,26 @@ def _world_transaction_count(packet, world: WorldResult) -> int:
 
 
 def _select_full_particles(compiled: CompiledEpisode) -> tuple[tuple[WorldResult, ...], dict[str, int]]:
-    if compiled.packet is None or compiled.initial is None:
+    if (
+        compiled.packet is None
+        or compiled.initial is None
+        or compiled.factorized_initial is None
+    ):
         return (), {"particles": 0, "bytes": 0, "transactions": 0}
     accounting = account_packet(compiled.packet, compiled.initial)
+    factorized = compiled.factorized_initial
+    byte_budget = accounting.packet_bytes + factorized.peak_group_bytes
+    transaction_budget = factorized.unique_transactions
+    if compiled.refined_packet is not None and compiled.factorized_refined is not None:
+        byte_budget = max(
+            byte_budget,
+            len(packet_bytes(compiled.refined_packet))
+            + compiled.factorized_refined.peak_group_bytes,
+        )
+        transaction_budget = max(
+            transaction_budget,
+            compiled.factorized_refined.unique_transactions,
+        )
     ordered = sorted(compiled.initial.worlds, key=lambda world: (-world.mass, world.assignment))
     selected = []
     used_bytes = 0
@@ -463,8 +500,8 @@ def _select_full_particles(compiled: CompiledEpisode) -> tuple[tuple[WorldResult
         byte_cost = materialized_world_bytes(compiled.packet, world)
         transaction_cost = _world_transaction_count(compiled.packet, world)
         if (
-            used_bytes + byte_cost <= accounting.packet_bytes
-            and used_transactions + transaction_cost <= accounting.unique_transactions
+            used_bytes + byte_cost <= byte_budget
+            and used_transactions + transaction_cost <= transaction_budget
         ):
             selected.append(world)
             used_bytes += byte_cost
@@ -629,34 +666,62 @@ def _decisions_for_arm(
             "transactions": len(compiled.packet.patches),
         }
     if arm == "F_factorized_no_conflict":
+        if compiled.factorized_initial is None:
+            return empty, {"particles": 0, "bytes": 0, "transactions": 0}
+        factorized = compiled.factorized_initial
         return {
-            "sensitive": query_execution(compiled.initial, queries["sensitive"]),
-            "invariant": query_execution(compiled.initial, queries["invariant"]),
-            "underdetermined": query_execution(
-                compiled.initial, queries["underdetermined"]
+            "sensitive": factorized_query_execution(
+                compiled.packet, factorized, queries["sensitive"]
+            ),
+            "invariant": factorized_query_execution(
+                compiled.packet, factorized, queries["invariant"]
+            ),
+            "underdetermined": factorized_query_execution(
+                compiled.packet, factorized, queries["underdetermined"]
             ),
         }, {
-            "particles": len(compiled.initial.worlds),
-            "bytes": account_packet(compiled.packet, compiled.initial).packet_bytes,
-            "transactions": account_packet(compiled.packet, compiled.initial).unique_transactions,
+            "particles": 0,
+            "state_groups": len(factorized.groups),
+            "bytes": len(packet_bytes(compiled.packet)) + factorized.peak_group_bytes,
+            "transactions": factorized.unique_transactions,
+            "logical_transaction_applications": factorized.logical_transaction_applications,
+            "mask_operations": factorized.mask_operations,
         }
     if arm == "G_diverge":
+        if compiled.factorized_initial is None:
+            return empty, {"particles": 0, "bytes": 0, "transactions": 0}
+        factorized = compiled.factorized_initial
         sensitive = (
             QueryDecision(REJECT, None, (), 0)
-            if compiled.refined is None
-            else query_execution(compiled.refined, queries["sensitive"])
+            if compiled.factorized_refined is None
+            else factorized_query_execution(
+                compiled.packet,
+                compiled.factorized_refined,
+                queries["sensitive"],
+            )
         )
-        accounting = account_packet(compiled.packet, compiled.initial)
+        runtime_bytes = len(packet_bytes(compiled.packet)) + factorized.peak_group_bytes
+        if compiled.refined_packet is not None and compiled.factorized_refined is not None:
+            runtime_bytes = max(
+                runtime_bytes,
+                len(packet_bytes(compiled.refined_packet))
+                + compiled.factorized_refined.peak_group_bytes,
+            )
         return {
             "sensitive": sensitive,
-            "invariant": query_execution(compiled.initial, queries["invariant"]),
-            "underdetermined": query_execution(
-                compiled.initial, queries["underdetermined"]
+            "invariant": factorized_query_execution(
+                compiled.packet, factorized, queries["invariant"]
+            ),
+            "underdetermined": factorized_query_execution(
+                compiled.packet, factorized, queries["underdetermined"]
             ),
         }, {
-            "particles": len(compiled.initial.worlds),
-            "bytes": accounting.packet_bytes,
-            "transactions": accounting.unique_transactions,
+            "particles": 0,
+            "state_groups": len(factorized.groups),
+            "bytes": runtime_bytes,
+            "transactions": factorized.unique_transactions,
+            "logical_transaction_applications": factorized.logical_transaction_applications,
+            "mask_operations": factorized.mask_operations,
         }
     raise ValueError(f"unknown arm: {arm}")
 
@@ -675,10 +740,18 @@ def _intervention_decisions(
     if compiled.packet is None or compiled.initial is None:
         return {kind: QueryDecision(REJECT, None, (), 0) for kind in QUERY_KINDS}
     if name == "conflict_disabled":
+        if compiled.factorized_initial is None:
+            return {kind: QueryDecision(REJECT, None, (), 0) for kind in QUERY_KINDS}
         return {
-            "sensitive": query_execution(compiled.initial, gate.sensitive_query),
-            "invariant": query_execution(compiled.initial, gate.invariant_query),
-            "underdetermined": query_execution(compiled.initial, gate.underdetermined_query),
+            "sensitive": factorized_query_execution(
+                compiled.packet, compiled.factorized_initial, gate.sensitive_query
+            ),
+            "invariant": factorized_query_execution(
+                compiled.packet, compiled.factorized_initial, gate.invariant_query
+            ),
+            "underdetermined": factorized_query_execution(
+                compiled.packet, compiled.factorized_initial, gate.underdetermined_query
+            ),
         }
     if name == "shuffled_guard_provenance":
         if compiled.evidence_variable is not None and compiled.evidence_option is not None:
@@ -700,20 +773,38 @@ def _intervention_decisions(
             )
             if invalid.accepted:
                 raise AssertionError("shuffled provenance removed valid support")
+        if compiled.factorized_initial is None:
+            return {kind: QueryDecision(REJECT, None, (), 0) for kind in QUERY_KINDS}
         return {
-            "sensitive": query_execution(compiled.initial, gate.sensitive_query),
-            "invariant": query_execution(compiled.initial, gate.invariant_query),
-            "underdetermined": query_execution(compiled.initial, gate.underdetermined_query),
+            "sensitive": factorized_query_execution(
+                compiled.packet, compiled.factorized_initial, gate.sensitive_query
+            ),
+            "invariant": factorized_query_execution(
+                compiled.packet, compiled.factorized_initial, gate.invariant_query
+            ),
+            "underdetermined": factorized_query_execution(
+                compiled.packet, compiled.factorized_initial, gate.underdetermined_query
+            ),
         }
     if name == "packet_swap":
-        if swapped is None or swapped.initial is None or swapped.packet is None:
+        if (
+            swapped is None
+            or swapped.factorized_initial is None
+            or swapped.packet is None
+        ):
             return {kind: QueryDecision(REJECT, None, (), 0) for kind in QUERY_KINDS}
         if swapped.packet.source_commitment == compiled.packet.source_commitment:
             raise AssertionError("packet-swap control reused the same source packet")
         return {
-            "sensitive": query_execution(swapped.initial, gate.sensitive_query),
-            "invariant": query_execution(swapped.initial, gate.invariant_query),
-            "underdetermined": query_execution(swapped.initial, gate.underdetermined_query),
+            "sensitive": factorized_query_execution(
+                swapped.packet, swapped.factorized_initial, gate.sensitive_query
+            ),
+            "invariant": factorized_query_execution(
+                swapped.packet, swapped.factorized_initial, gate.invariant_query
+            ),
+            "underdetermined": factorized_query_execution(
+                swapped.packet, swapped.factorized_initial, gate.underdetermined_query
+            ),
         }
     if name == "forced_premature_top1":
         return _decisions_for_arm("A_single", compiled, particle_seed=0)[0]
@@ -988,8 +1079,14 @@ def run_gate(args: argparse.Namespace) -> dict[str, object]:
                     _decision_correct(decisions[kind], expected[kind])
                 )
                 interventions[name]["queries"] += 1
-        if item.packet is not None and item.initial is not None:
-            packet_accounts.append(account_packet(item.packet, item.initial))
+        if (
+            item.packet is not None
+            and item.initial is not None
+            and item.factorized_initial is not None
+        ):
+            packet_accounts.append(
+                (account_packet(item.packet, item.initial), item.factorized_initial)
+            )
 
     episodes = len(compiled)
     compiler = {
@@ -1039,19 +1136,42 @@ def run_gate(args: argparse.Namespace) -> dict[str, object]:
     strongest_control = max(arm_reports[arm]["exact"] for arm in ARM_NAMES[:-1])
     width_accounts = defaultdict(list)
     for item, accounting in zip(
-        (item for item in compiled if item.packet is not None and item.initial is not None),
+        (
+            item
+            for item in compiled
+            if item.packet is not None
+            and item.initial is not None
+            and item.factorized_initial is not None
+        ),
         packet_accounts,
         strict=True,
     ):
         width_accounts[len(item.packet.variables)].append(accounting)
     sharing = {
         str(2 ** width): {
-            "mean_packet_bytes": sum(row.packet_bytes for row in rows) / len(rows),
-            "mean_materialized_bytes": sum(row.materialized_world_bytes for row in rows) / len(rows),
-            "storage_ratio": sum(row.materialized_world_bytes for row in rows)
-            / sum(row.packet_bytes for row in rows),
-            "transaction_ratio": sum(row.duplicated_transactions for row in rows)
-            / max(1, sum(row.unique_transactions for row in rows)),
+            "mean_packet_bytes": sum(row[0].packet_bytes for row in rows) / len(rows),
+            "mean_peak_group_bytes": sum(row[1].peak_group_bytes for row in rows)
+            / len(rows),
+            "mean_effective_factorized_bytes": sum(
+                row[0].packet_bytes + row[1].peak_group_bytes for row in rows
+            )
+            / len(rows),
+            "mean_materialized_bytes": sum(
+                row[0].materialized_world_bytes for row in rows
+            )
+            / len(rows),
+            "storage_ratio": sum(row[0].materialized_world_bytes for row in rows)
+            / sum(row[0].packet_bytes + row[1].peak_group_bytes for row in rows),
+            "static_packet_storage_ratio": sum(
+                row[0].materialized_world_bytes for row in rows
+            )
+            / sum(row[0].packet_bytes for row in rows),
+            "transaction_ratio": sum(row[0].duplicated_transactions for row in rows)
+            / max(1, sum(row[1].unique_transactions for row in rows)),
+            "mean_peak_state_groups": sum(row[1].peak_groups for row in rows)
+            / len(rows),
+            "mean_mask_operations": sum(row[1].mask_operations for row in rows)
+            / len(rows),
         }
         for width, rows in sorted(width_accounts.items())
     }
@@ -1096,7 +1216,10 @@ def run_gate(args: argparse.Namespace) -> dict[str, object]:
             "compiler_inference_wall_seconds": compile_seconds,
             "compiler_inference_episodes_per_second": episodes / compile_seconds,
             "executor_flop_proxy": "exact guarded transaction applications",
-            "activation_memory_proxy": "canonical packet or whole-particle bytes",
+            "activation_memory_proxy": (
+                "canonical packet plus measured peak factorized state-group bytes "
+                "or complete whole-particle bytes"
+            ),
         },
         "gate": {
             "compile_gold_support_recall": compiler["gold_support_recall"] == 1.0,

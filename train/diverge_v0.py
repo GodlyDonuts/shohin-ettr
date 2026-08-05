@@ -815,6 +815,300 @@ class ExecutionReceipt:
         return self.duplicated_transactions - self.unique_transactions
 
 
+@dataclass(frozen=True)
+class FactorizedStateGroup:
+    support_mask: int
+    state: TypedState | None
+    contradiction: bool
+
+    def __post_init__(self) -> None:
+        if _exact_int(self.support_mask, "support mask") <= 0:
+            raise DivergeContractError("factorized state group requires nonempty support")
+        if self.contradiction != (self.state is None):
+            raise DivergeContractError("factorized contradiction/state mismatch")
+
+    def record(self) -> dict[str, object]:
+        return {
+            "support_mask": format(self.support_mask, "x"),
+            "state": None if self.state is None else self.state.record(),
+            "contradiction": self.contradiction,
+        }
+
+
+@dataclass(frozen=True)
+class FactorizedExecutionReceipt:
+    groups: tuple[FactorizedStateGroup, ...]
+    represented_worlds: int
+    unique_transactions: int
+    logical_transaction_applications: int
+    peak_groups: int
+    peak_group_bytes: int
+    mask_operations: int
+    overflow: bool
+
+    @property
+    def shared_transactions(self) -> int:
+        return self.logical_transaction_applications - self.unique_transactions
+
+
+def _assignment_geometry(packet: EpistemicPacket) -> tuple[tuple[int, ...], tuple[int, ...], int]:
+    domains = tuple(len(variable.options) for variable in packet.variables)
+    strides = tuple(
+        _product(domains[index + 1 :]) for index in range(len(domains))
+    )
+    return domains, strides, _product(domains)
+
+
+def _product(values: Iterable[int]) -> int:
+    result = 1
+    for value in values:
+        result *= value
+    return result
+
+
+def _assignment_from_index(
+    index: int,
+    domains: tuple[int, ...],
+    strides: tuple[int, ...],
+) -> tuple[int, ...]:
+    return tuple((index // stride) % domain for domain, stride in zip(domains, strides, strict=True))
+
+
+def _literal_mask(
+    *,
+    variable: int,
+    option: int,
+    domains: tuple[int, ...],
+    strides: tuple[int, ...],
+    worlds: int,
+) -> int:
+    if variable >= len(domains) or option >= domains[variable]:
+        raise DivergeContractError("literal is outside factorized assignment geometry")
+    stride = strides[variable]
+    period = domains[variable] * stride
+    mask = 0
+    for start in range(option * stride, worlds, period):
+        width = min(stride, worlds - start)
+        mask |= ((1 << width) - 1) << start
+    return mask
+
+
+def _guard_mask(
+    guard: Guard,
+    *,
+    domains: tuple[int, ...],
+    strides: tuple[int, ...],
+    worlds: int,
+) -> tuple[int, int]:
+    mask = (1 << worlds) - 1
+    operations = 0
+    for literal in guard.literals:
+        mask &= _literal_mask(
+            variable=literal.variable_id,
+            option=literal.option,
+            domains=domains,
+            strides=strides,
+            worlds=worlds,
+        )
+        operations += 1
+    return mask, operations
+
+
+def _factorized_support_mask(
+    packet: EpistemicPacket,
+) -> tuple[int, tuple[int, ...], tuple[int, ...], int]:
+    domains, strides, worlds = _assignment_geometry(packet)
+    if worlds > packet.caps.max_worlds:
+        return 0, domains, strides, 0
+    support = (1 << worlds) - 1
+    operations = 0
+    for factor in packet.hard_factors:
+        factor_mask = 0
+        for row in factor.allowed:
+            row_mask = (1 << worlds) - 1
+            for variable, option in zip(factor.scope, row, strict=True):
+                row_mask &= _literal_mask(
+                    variable=variable,
+                    option=option,
+                    domains=domains,
+                    strides=strides,
+                    worlds=worlds,
+                )
+                operations += 1
+            factor_mask |= row_mask
+        support &= factor_mask
+    for nogood in packet.nogoods:
+        rejected, charged = _guard_mask(
+            nogood.guard,
+            domains=domains,
+            strides=strides,
+            worlds=worlds,
+        )
+        operations += charged
+        support &= ~rejected
+    return support, domains, strides, operations
+
+
+def _group_bytes(groups: Iterable[FactorizedStateGroup]) -> int:
+    return len(canonical_json_bytes([group.record() for group in groups]))
+
+
+def _merge_state_groups(
+    groups: Iterable[FactorizedStateGroup],
+) -> tuple[FactorizedStateGroup, ...]:
+    masks: dict[bytes, int] = {}
+    states: dict[bytes, TypedState | None] = {}
+    for group in groups:
+        key = canonical_json_bytes(
+            {"state": None if group.state is None else group.state.record()}
+        )
+        masks[key] = masks.get(key, 0) | group.support_mask
+        states[key] = group.state
+    return tuple(
+        FactorizedStateGroup(mask, states[key], states[key] is None)
+        for key, mask in sorted(masks.items())
+    )
+
+
+def execute_packet_factorized(packet: EpistemicPacket) -> FactorizedExecutionReceipt:
+    """Execute exact guarded state groups without materializing whole worlds."""
+
+    if packet.overflow:
+        return FactorizedExecutionReceipt((), 0, 0, 0, 0, 0, 0, True)
+    support, domains, strides, mask_operations = _factorized_support_mask(packet)
+    if not support:
+        return FactorizedExecutionReceipt((), 0, 0, 0, 0, 0, mask_operations, False)
+    groups = (FactorizedStateGroup(support, packet.shared_state, False),)
+    peak_groups = 1
+    peak_bytes = _group_bytes(groups)
+    unique_transactions = 0
+    logical_applications = 0
+    for patch in commuting_patch_schedule(packet.patches):
+        guard, charged = _guard_mask(
+            patch.guard,
+            domains=domains,
+            strides=strides,
+            worlds=_product(domains),
+        )
+        mask_operations += charged
+        inactive = []
+        active_by_state: dict[bytes, tuple[TypedState, int]] = {}
+        for group in groups:
+            active = group.support_mask & guard
+            remainder = group.support_mask & ~guard
+            if remainder:
+                inactive.append(
+                    FactorizedStateGroup(remainder, group.state, group.contradiction)
+                )
+            if not active or group.state is None:
+                if active:
+                    inactive.append(FactorizedStateGroup(active, None, True))
+                continue
+            key = canonical_json_bytes(group.state.record())
+            previous = active_by_state.get(key)
+            active_by_state[key] = (
+                group.state,
+                active | (0 if previous is None else previous[1]),
+            )
+        updated = list(inactive)
+        for state, active in active_by_state.values():
+            unique_transactions += 1
+            logical_applications += active.bit_count()
+            try:
+                next_state = apply_transaction(state, patch.transaction)
+            except DivergeContractError:
+                next_state = None
+            if (
+                next_state is not None
+                and integer_bit_growth(next_state.record()).max_magnitude_bits
+                > packet.caps.max_integer_bits
+            ):
+                return FactorizedExecutionReceipt(
+                    (), 0, unique_transactions, logical_applications,
+                    peak_groups, peak_bytes, mask_operations, True,
+                )
+            updated.append(FactorizedStateGroup(active, next_state, next_state is None))
+        groups = _merge_state_groups(updated)
+        peak_groups = max(peak_groups, len(groups))
+        peak_bytes = max(peak_bytes, _group_bytes(groups))
+    return FactorizedExecutionReceipt(
+        groups,
+        support.bit_count(),
+        unique_transactions,
+        logical_applications,
+        peak_groups,
+        peak_bytes,
+        mask_operations,
+        False,
+    )
+
+
+def refine_factorized_receipt(
+    packet: EpistemicPacket,
+    receipt: FactorizedExecutionReceipt,
+) -> FactorizedExecutionReceipt:
+    """Intersect an executed state partition with newly certified support.
+
+    Delayed evidence changes epistemic support, not the already executed
+    transition history. Refinement therefore filters group masks in place and
+    never replays transactions.
+    """
+
+    if packet.overflow or receipt.overflow:
+        return FactorizedExecutionReceipt((), 0, 0, 0, 0, 0, 0, True)
+    support, _, _, charged = _factorized_support_mask(packet)
+    groups = _merge_state_groups(
+        FactorizedStateGroup(
+            group.support_mask & support,
+            group.state,
+            group.contradiction,
+        )
+        for group in receipt.groups
+        if group.support_mask & support
+    )
+    group_bytes = _group_bytes(groups) if groups else 0
+    return FactorizedExecutionReceipt(
+        groups=groups,
+        represented_worlds=sum(group.support_mask.bit_count() for group in groups),
+        unique_transactions=receipt.unique_transactions,
+        logical_transaction_applications=receipt.logical_transaction_applications,
+        peak_groups=max(receipt.peak_groups, len(groups)),
+        peak_group_bytes=max(receipt.peak_group_bytes, group_bytes),
+        mask_operations=receipt.mask_operations + charged,
+        overflow=False,
+    )
+
+
+def factorized_query_execution(
+    packet: EpistemicPacket,
+    receipt: FactorizedExecutionReceipt,
+    query: Query,
+) -> QueryDecision:
+    if receipt.overflow:
+        return QueryDecision(OVERFLOW, None, (), 0)
+    if not receipt.groups or any(group.contradiction for group in receipt.groups):
+        return QueryDecision(REJECT, None, (), 0)
+    domains, strides, _ = _assignment_geometry(packet)
+    masses: dict[int, int] = {}
+    for group in receipt.groups:
+        assert group.state is not None
+        answer = read_query(group.state, query)
+        mass = 0
+        remaining = group.support_mask
+        while remaining:
+            least = remaining & -remaining
+            index = least.bit_length() - 1
+            assignment = _assignment_from_index(index, domains, strides)
+            mass += assignment_mass(packet, assignment)
+            remaining ^= least
+        masses[answer] = masses.get(answer, 0) + mass
+    marginals = tuple(sorted(masses.items()))
+    total = sum(masses.values())
+    if len(marginals) == 1:
+        return QueryDecision(ANSWER, marginals[0][0], marginals, total)
+    return QueryDecision(ABSTAIN, None, marginals, total)
+
+
 def execute_packet(
     packet: EpistemicPacket,
     *,

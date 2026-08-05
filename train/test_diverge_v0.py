@@ -33,6 +33,9 @@ from diverge_v0 import (
     commuting_patch_schedule,
     enumerate_assignments,
     execute_packet,
+    execute_packet_factorized,
+    factorized_query_execution,
+    refine_factorized_receipt,
     merge_certified_classes,
     materialized_world_bytes,
     named_commitment,
@@ -134,6 +137,23 @@ class DivergeV0ContractTests(unittest.TestCase):
                     query_execution(candidate, episode.invariant_query),
                     reference_query(episode.packet, episode.invariant_query),
                 )
+                factorized = execute_packet_factorized(episode.packet)
+                self.assertEqual(
+                    factorized_query_execution(
+                        episode.packet, factorized, episode.invariant_query
+                    ),
+                    reference_query(episode.packet, episode.invariant_query),
+                )
+                self.assertEqual(
+                    factorized_query_execution(
+                        episode.packet, factorized, episode.underdetermined_query
+                    ),
+                    reference_query(episode.packet, episode.underdetermined_query),
+                )
+                self.assertEqual(
+                    factorized.unique_transactions,
+                    execute_packet(episode.packet, commute_disjoint=True).unique_transactions,
+                )
                 self.assertEqual(
                     query_execution(candidate, episode.underdetermined_query),
                     reference_query(episode.packet, episode.underdetermined_query),
@@ -180,6 +200,31 @@ class DivergeV0ContractTests(unittest.TestCase):
                 self.assertEqual(sensitive.disposition, ANSWER)
                 self.assertEqual(sensitive, reference_query(refined, episode.sensitive_query))
                 self.assertEqual(sensitive.answer, 13)
+                factorized = execute_packet_factorized(refined)
+                incrementally_refined = refine_factorized_receipt(
+                    refined,
+                    execute_packet_factorized(episode.packet),
+                )
+                self.assertEqual(
+                    tuple(group.record() for group in incrementally_refined.groups),
+                    tuple(group.record() for group in factorized.groups),
+                )
+                self.assertEqual(
+                    incrementally_refined.unique_transactions,
+                    execute_packet_factorized(episode.packet).unique_transactions,
+                )
+                self.assertEqual(
+                    factorized_query_execution(
+                        refined, factorized, episode.sensitive_query
+                    ),
+                    sensitive,
+                )
+                self.assertEqual(
+                    factorized_query_execution(
+                        refined, incrementally_refined, episode.sensitive_query
+                    ),
+                    sensitive,
+                )
 
     def test_invalid_nogood_is_rejected_by_independent_verifier(self) -> None:
         episode = self.board[-1]
@@ -332,6 +377,9 @@ class DivergeV0ContractTests(unittest.TestCase):
             sum(materialized_world_bytes(episode.packet, world) for world in receipt.worlds),
             accounting.materialized_world_bytes,
         )
+        factorized = execute_packet_factorized(episode.packet)
+        self.assertLess(factorized.peak_groups, factorized.represented_worlds)
+        self.assertGreater(factorized.peak_group_bytes, 0)
 
     def test_disjoint_commuting_schedule_preserves_states_and_ordered_semantics(self) -> None:
         for episode in self.board:

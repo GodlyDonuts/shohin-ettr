@@ -4,11 +4,26 @@
 from __future__ import annotations
 
 import diverge_v0_neural_pilot as pilot
-from diverge_v0 import ABSTAIN, ANSWER, execute_packet, query_execution
+from diverge_v0 import (
+    ABSTAIN,
+    ANSWER,
+    enumerate_assignments,
+    execute_packet,
+    execute_packet_factorized,
+    materialized_world_bytes,
+    packet_bytes,
+    query_execution,
+    refine_factorized_receipt,
+)
 from diverge_v0_matched_gate import (
+    CompiledEpisode,
     _bind_delayed_evidence,
+    _decisions_for_arm,
     _mean_field_decision,
+    _primary_record,
+    _refine_packet,
     _replace_primary_semantics,
+    _select_full_particles,
     _truth_prediction,
     build_gate_board,
 )
@@ -89,6 +104,70 @@ def test_delayed_binder_uses_only_sealed_packet_and_new_evidence() -> None:
     assert certificate.variable_id == canonical[gate.source.primary_record_id]
     assert certificate.confirmed_option == primary.gold_option
     assert _bind_delayed_evidence(packet, "evidence without a sealed key") is None
+
+
+def test_factorized_arm_and_full_particles_use_the_same_measured_budget() -> None:
+    gate = build_gate_board(202608056000, 1)[-1]
+    prediction = _truth_prediction(gate.source)
+    packet, canonical, _ = pilot._build_predicted_packet(gate.source, prediction)
+    assert packet is not None and not packet.overflow
+    primary = _primary_record(gate.source)
+    variable = canonical[gate.source.primary_record_id]
+    valid = tuple(
+        assignment
+        for assignment in enumerate_assignments(packet)
+        if assignment[variable] == primary.gold_option
+    )
+    refined_packet, verification = _refine_packet(
+        packet,
+        variable=variable,
+        confirmed=primary.gold_option,
+        valid_assignments=valid,
+        evidence_text=gate.source.evidence_text,
+    )
+    assert verification.accepted
+    initial = execute_packet(packet, commute_disjoint=True)
+    refined = execute_packet(refined_packet, commute_disjoint=True)
+    factorized_initial = execute_packet_factorized(packet)
+    factorized_refined = refine_factorized_receipt(refined_packet, factorized_initial)
+    expected = {
+        "sensitive": query_execution(refined, gate.sensitive_query),
+        "invariant": query_execution(initial, gate.invariant_query),
+        "underdetermined": query_execution(initial, gate.underdetermined_query),
+    }
+    compiled = CompiledEpisode(
+        gate=gate,
+        packet=packet,
+        refined_packet=refined_packet,
+        prediction=prediction,
+        packet_exact=True,
+        gold_support_recalled=True,
+        primary_variable=variable,
+        evidence_variable=variable,
+        evidence_option=primary.gold_option,
+        primary_gold_option=primary.gold_option,
+        initial=initial,
+        refined=refined,
+        factorized_initial=factorized_initial,
+        factorized_refined=factorized_refined,
+        expected=expected,
+        verifier_calls=1,
+        valid_support_preserved=True,
+    )
+    g_decisions, g_resources = _decisions_for_arm(
+        "G_diverge", compiled, particle_seed=17
+    )
+    assert g_decisions == expected
+    assert g_resources["bytes"] == max(
+        len(packet_bytes(packet)) + factorized_initial.peak_group_bytes,
+        len(packet_bytes(refined_packet)) + factorized_refined.peak_group_bytes,
+    )
+    selected, b_resources = _select_full_particles(compiled)
+    assert b_resources["bytes"] == sum(
+        materialized_world_bytes(packet, world) for world in selected
+    )
+    assert b_resources["bytes"] <= g_resources["bytes"]
+    assert b_resources["transactions"] <= g_resources["transactions"]
 
 
 def main() -> None:
