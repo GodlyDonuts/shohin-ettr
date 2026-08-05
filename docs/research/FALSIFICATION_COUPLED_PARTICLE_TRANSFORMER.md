@@ -170,3 +170,28 @@ V1 report SHA-256 values:
 
 - FCPT: `09fc81a4aa0c36153b949e735ff7458d28901e9ac88b3da9ab4296bb1d7226d0`
 - selection: `3c03af58878f75a57d1907c94cc8e5d4b2dfd82bf34b88d5ce40f72bcad85e63`
+
+## Pilot v2 result: FCPT closed
+
+The coverage objective succeeds at its intended intermediate effect. FCPT
+candidate uniqueness rises to 3.06--4.28 of eight on development, and the
+selection control reaches 2.91--4.39. Behavioral mutual information rises by
+roughly three orders of magnitude to 0.8--1.2 during training. Posterior
+collapse is no longer the primary failure.
+
+Capability still does not clear the gate. FCPT macro exact is 12.093% versus
+11.800% for fixed-probe whole selection, only +0.293 points. FCPT loses on
+depth-5 binding and depth-7 induction and remains close to chance on induction.
+The learned disagreement bus therefore does not produce a material advantage
+even when distinct hypotheses exist.
+
+No additional FCPT widths, durations, seeds, losses, or full controls are
+authorized. The lane closes before confirmation. The next architecture target
+is a single coherent but globally revisable state whose own prediction errors
+select sparse counterexample-conditioned updates, avoiding both particle
+collapse and premature whole-hypothesis selection.
+
+V2 report SHA-256 values:
+
+- FCPT: `18cc9e5175979b954ff1c4311404638fd840216846bf4cf7ac545cab80afa536`
+- selection: `2368c2055e365c239af6308040cb7d18dc55becd2d2f6d22958c73b2c3df84ac`

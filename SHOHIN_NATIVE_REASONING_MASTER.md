@@ -55148,3 +55148,13 @@ forces the very posterior collapse FCPT is intended to avoid. V1 is immutable.
 One corrected pilot uses a best-complete-hypothesis coverage loss and stronger
 behavioral diversity under the same seed, updates, data, and +5-point gate. A
 second miss closes FCPT before any full multi-arm or confirmation campaign.
+
+The corrected FCPT pilot raises behavioral diversity by roughly three orders
+of magnitude and retains 3--4 distinct candidate behaviors, but exact-answer
+advantage shrinks to +0.293 points and is negative on two cohorts. FCPT is
+therefore closed before confirmation. The measured boundary is precise:
+preserving multiple complete hypotheses is learnable, but the current learned
+disagreement bus does not convert that plurality into better composition. The
+next mechanism uses one coherent, globally revisable state and lets its own
+source-evidence prediction residual select sparse counterexample-conditioned
+updates.

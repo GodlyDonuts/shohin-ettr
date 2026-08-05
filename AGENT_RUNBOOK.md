@@ -28795,3 +28795,26 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_one_coverage_objective_fcpt_pilot_then_pass_to_full_matrix_or_close_fcpt`.
+
+- **2026-08-05 04:12--04:20 EDT** -- **Coverage repairs particle diversity but
+  FCPT still misses; the architecture lane closes before confirmation.**
+
+  Coverage jobs `739209`/`739210` keep every v1 variable fixed except the
+  preregistered behavior objective and diversity coefficient. FCPT candidate
+  uniqueness rises to 3.06--4.28 of eight and training behavioral mutual
+  information rises to 0.8--1.2, so the collapse diagnosis and correction are
+  validated. Capability remains weak: FCPT macro exact is `12.093%` versus
+  selection `11.800%`, only `+0.293`. It loses depth-5 binding and depth-7
+  induction. This misses +5 and the all-family direction requirement.
+
+  FCPT/selection report SHA-256 values are
+  `18cc9e5175979b954ff1c4311404638fd840216846bf4cf7ac545cab80afa536`
+  and
+  `2368c2055e365c239af6308040cb7d18dc55becd2d2f6d22958c73b2c3df84ac`.
+  No FCPT duration, width, seed, loss, full-control, or confirmation extension
+  follows. The next target is one coherent mutable program grid with model-
+  owned counterexample scoring and sparse global revision, compared against
+  an identical recurrent updater with fixed or shuffled revision evidence.
+
+  Decision:
+  `close_fcpt_and_build_counterexample_guided_sparse_global_revision`.
