@@ -171,6 +171,19 @@ class ProductReasoningEvalTests(unittest.TestCase):
         self.assertIn("(C) gamma", prompt)
         self.assertEqual(prompt, alternate)
 
+    def test_preformatted_short_answer_prompt_is_unchanged(self) -> None:
+        question = (
+            "Which option follows?\n\n(A) alpha\n(B) beta\n\n"
+            r"Put the correct option label inside \boxed{}."
+        )
+        self.assertEqual(
+            _task_prompt(
+                "preformatted_short_answer",
+                {"question": question, "answer": "B"},
+            ),
+            question,
+        )
+
     def test_subset_is_stable_and_unique(self) -> None:
         rows = [{"question": f"q{index}", "answer": "#### 1"} for index in range(10)]
         first = select_rows("gsm8k", rows, 4, 31)

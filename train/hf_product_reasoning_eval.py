@@ -367,6 +367,12 @@ TASKS: dict[str, dict[str, Any]] = {
         "gold": gold_math,
         "match": match_math,
     },
+    "preformatted_short_answer": {
+        "kind": "answer",
+        "extract": extract_short_answer,
+        "gold": gold_short_answer,
+        "match": match_short_answer,
+    },
     "humaneval": {"kind": "code"},
     "mbpp": {"kind": "code"},
 }
