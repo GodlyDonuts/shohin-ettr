@@ -427,15 +427,24 @@ def _truncate_code(completion: str, stops: tuple[str, ...]) -> str:
     return code[: min(locations)].rstrip() if locations else code.rstrip()
 
 
-def _humaneval_program(row: dict[str, Any], completion: str) -> str:
+def _humaneval_candidate_source(row: dict[str, Any], completion: str) -> str:
     code = _truncate_code(
         completion,
         ("\nif __name__", "\nprint(", "\nassert ", "\nQuestion:"),
     )
-    if re.search(r"(?m)^\s*def\s+", code):
-        candidate = code
-    else:
-        candidate = str(row["prompt"]) + code
+    prompt = str(row["prompt"])
+    if re.search(r"(?m)^\s*(?:async\s+)?def\s+", code):
+        definition = re.search(r"(?m)^\s*(?:async\s+)?def\s+", prompt)
+        preamble = prompt[: definition.start()] if definition is not None else ""
+        return preamble + code
+    indented = "\n".join(
+        f"    {line}" if line else line for line in code.splitlines()
+    )
+    return prompt + indented
+
+
+def _humaneval_program(row: dict[str, Any], completion: str) -> str:
+    candidate = _humaneval_candidate_source(row, completion)
     return candidate + "\n\n" + str(row["test"]) + f"\ncheck({row['entry_point']})\n"
 
 

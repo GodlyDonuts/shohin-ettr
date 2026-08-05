@@ -200,6 +200,29 @@ class ProductReasoningEvalTests(unittest.TestCase):
         program = _humaneval_program(row, completion)
         self.assertTrue(_bounded_program_result(program, 2.0)["passed"])
 
+    def test_humaneval_preserves_prompt_imports_for_full_function(self) -> None:
+        row = {
+            "prompt": "from typing import List\n\ndef total(values: List[int]) -> int:\n",
+            "test": "def check(fn): assert fn([2, 3]) == 5",
+            "entry_point": "total",
+        }
+        program = _humaneval_program(
+            row,
+            "def total(values: List[int]) -> int:\n    return sum(values)",
+        )
+        self.assertIn("from typing import List", program)
+        self.assertTrue(_bounded_program_result(program, 2.0)["passed"])
+
+    def test_humaneval_indents_body_only_completion(self) -> None:
+        row = {
+            "prompt": "def add(a, b):\n",
+            "test": "def check(fn): assert fn(2, 3) == 5",
+            "entry_point": "add",
+        }
+        program = _humaneval_program(row, "return a + b")
+        self.assertIn("\n    return a + b", program)
+        self.assertTrue(_bounded_program_result(program, 2.0)["passed"])
+
     def test_mbpp_program_executes_official_tests(self) -> None:
         row = {
             "text": "add two integers",

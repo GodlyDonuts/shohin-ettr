@@ -10,13 +10,12 @@ import hashlib
 import json
 import os
 from pathlib import Path
-import re
 from typing import Any
 
 from hf_product_reasoning_eval import (
     _bounded_program_result,
+    _humaneval_candidate_source,
     _row_identity,
-    _truncate_code,
 )
 
 
@@ -25,14 +24,6 @@ SCHEMA = "shohin-visible-code-candidate-selection-v1"
 
 class CodeCandidateSelectionError(RuntimeError):
     """Candidate rows cannot support visible-test selection."""
-
-
-def _humaneval_source(row: dict[str, Any], completion: str) -> str:
-    code = _truncate_code(
-        completion,
-        ("\nif __name__", "\nprint(", "\nassert ", "\nQuestion:"),
-    )
-    return code if re.search(r"(?m)^\s*def\s+", code) else str(row["prompt"]) + code
 
 
 def visible_humaneval_result(
@@ -49,7 +40,7 @@ def visible_humaneval_result(
         public_examples = ast.get_docstring(function, clean=False) or ""
     except (SyntaxError, StopIteration, TypeError):
         public_examples = ""
-    source = _humaneval_source(row, completion)
+    source = _humaneval_candidate_source(row, completion)
     attempted = public_examples.count(">>>")
     if attempted:
         source += (
