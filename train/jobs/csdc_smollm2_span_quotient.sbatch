@@ -21,6 +21,10 @@ REASONER=$BASE/artifacts/reasoning/learned_pspa_pilot_8fb5d61/seed47.pt
 FIRST_SUBTOKEN=$BASE/train/csdc_smollm2_lexical_bridge_v1/seed2026080507.json
 OUT_ROOT=${OUT_ROOT:-$BASE/train/csdc_smollm2_span_quotient_v1}
 OUT=$OUT_ROOT/seed2026080507.json
+UPDATES=${UPDATES:-1500}
+BATCH_SIZE=${BATCH_SIZE:-128}
+EVAL_COUNT=${EVAL_COUNT:-1024}
+EVAL_BATCH_SIZE=${EVAL_BATCH_SIZE:-64}
 
 export PYTHONPATH="$CODE_ROOT/train:$CODE_ROOT/pipeline"
 export OMP_NUM_THREADS=4
@@ -55,10 +59,10 @@ nvidia-smi -L
   --output "$OUT" \
   --source-commit "$SOURCE_COMMIT" \
   --seed 2026080507 \
-  --updates 1500 \
-  --batch-size 128 \
-  --eval-count 1024 \
-  --eval-batch-size 64 \
+  --updates "$UPDATES" \
+  --batch-size "$BATCH_SIZE" \
+  --eval-count "$EVAL_COUNT" \
+  --eval-batch-size "$EVAL_BATCH_SIZE" \
   --learning-rate 0.0003 \
   --weight-decay 0.01 \
   --train-templates 0,1,2
