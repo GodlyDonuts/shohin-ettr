@@ -437,9 +437,7 @@ def _humaneval_candidate_source(row: dict[str, Any], completion: str) -> str:
         definition = re.search(r"(?m)^\s*(?:async\s+)?def\s+", prompt)
         preamble = prompt[: definition.start()] if definition is not None else ""
         return preamble + code
-    indented = "\n".join(
-        f"    {line}" if line else line for line in code.splitlines()
-    )
+    indented = "\n".join(f"    {line}" if line else line for line in code.splitlines())
     return prompt + indented
 
 
@@ -456,6 +454,14 @@ def _mbpp_program(row: dict[str, Any], completion: str) -> str:
     setup = str(row.get("test_setup_code", "") or "")
     tests = "\n".join(str(item) for item in row.get("test_list", ()))
     return code + "\n" + setup + "\n" + tests + "\n"
+
+
+def _diagnostic_text(value: str | bytes | None, limit: int) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        value = value.decode("utf-8", errors="replace")
+    return value[-limit:]
 
 
 def _bounded_program_result(program: str, timeout_seconds: float) -> dict[str, Any]:
@@ -492,14 +498,14 @@ def _bounded_program_result(program: str, timeout_seconds: float) -> dict[str, A
             return {
                 "passed": result.returncode == 0,
                 "returncode": result.returncode,
-                "stdout": result.stdout[-2000:],
-                "stderr": result.stderr[-4000:],
+                "stdout": _diagnostic_text(result.stdout, 2000),
+                "stderr": _diagnostic_text(result.stderr, 4000),
             }
         except subprocess.TimeoutExpired as exc:
             return {
                 "passed": False,
                 "returncode": None,
-                "stdout": (exc.stdout or "")[-2000:],
+                "stdout": _diagnostic_text(exc.stdout, 2000),
                 "stderr": "execution timed out",
             }
 

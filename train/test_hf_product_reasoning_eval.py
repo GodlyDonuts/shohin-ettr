@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import subprocess
+import types
 import unittest
 from unittest.mock import patch
-import types
 
 from hf_product_reasoning_eval import (
     _completion_usage,
@@ -232,6 +233,15 @@ class ProductReasoningEvalTests(unittest.TestCase):
         self.assertIn("passes every test", _task_prompt("mbpp", row))
         program = _mbpp_program(row, "def add(a, b):\n    return a + b")
         self.assertTrue(_bounded_program_result(program, 2.0)["passed"])
+
+    def test_timeout_diagnostics_decode_bytes(self) -> None:
+        with patch("subprocess.run") as run:
+            run.side_effect = subprocess.TimeoutExpired(
+                cmd=["python"], timeout=1, output=b"partial\xff"
+            )
+            result = _bounded_program_result("pass", 1.0)
+        self.assertFalse(result["passed"])
+        self.assertEqual(result["stdout"], "partial\ufffd")
 
     def test_bbh_prompt_accepts_generic_question_rows(self) -> None:
         prompt = _task_prompt(
