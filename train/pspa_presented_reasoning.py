@@ -114,6 +114,77 @@ def _distinguishing_challenge(
     raise PresentedReasoningError("failed to construct distinguishing challenge")
 
 
+def _completion_candidates(
+    true_tables: list[list[int]],
+    missing: list[tuple[list[int], list[int]]],
+) -> list[list[list[int]]]:
+    candidates = []
+    for candidate in range(1 << len(true_tables)):
+        tables = [list(action) for action in true_tables]
+        for generator, (inputs, outputs) in enumerate(missing):
+            ordered_outputs = sorted(outputs)
+            swapped = (candidate >> generator) & 1
+            tables[generator][inputs[0]] = ordered_outputs[swapped]
+            tables[generator][inputs[1]] = ordered_outputs[1 - swapped]
+        candidates.append(tables)
+    return candidates
+
+
+def _identifying_challenges(
+    true_tables: list[list[int]],
+    missing: list[tuple[list[int], list[int]]],
+    rng: random.Random,
+    maximum_challenges: int,
+    maximum_length: int,
+) -> list[tuple[int, list[int], int]]:
+    active = len(true_tables)
+    carrier = len(true_tables[0])
+    false_candidates = [
+        tables
+        for tables in _completion_candidates(true_tables, missing)
+        if tables != true_tables
+    ]
+    challenges = []
+    while false_candidates:
+        best: tuple[int, list[int], int] | None = None
+        best_remaining = false_candidates
+        for _ in range(1024):
+            length = rng.randint(2, min(6, maximum_length))
+            word = [rng.randrange(active) for _ in range(length)]
+            start = rng.randrange(carrier)
+            outcome = _apply_python(true_tables, start, word)
+            remaining = [
+                candidate
+                for candidate in false_candidates
+                if _apply_python(candidate, start, word) == outcome
+            ]
+            if len(remaining) < len(best_remaining):
+                best = (start, word, outcome)
+                best_remaining = remaining
+                if not remaining:
+                    break
+        if best is None:
+            for generator, (inputs, _) in enumerate(missing):
+                for start in inputs:
+                    word = [generator]
+                    outcome = _apply_python(true_tables, start, word)
+                    remaining = [
+                        candidate
+                        for candidate in false_candidates
+                        if _apply_python(candidate, start, word) == outcome
+                    ]
+                    if len(remaining) < len(best_remaining):
+                        best = (start, word, outcome)
+                        best_remaining = remaining
+        if best is None or len(challenges) >= maximum_challenges:
+            raise PresentedReasoningError(
+                "source challenges do not identify one complete presentation"
+            )
+        challenges.append(best)
+        false_candidates = best_remaining
+    return challenges
+
+
 def _row(
     family: int,
     query_length: int,
@@ -126,7 +197,7 @@ def _row(
     missing: list[tuple[list[int], list[int]]] = []
     observations = []
     for generator, table in enumerate(tables):
-        missing_inputs = rng.sample(range(carrier), 2)
+        missing_inputs = sorted(rng.sample(range(carrier), 2))
         missing_outputs = [table[index] for index in missing_inputs]
         missing.append((missing_inputs, missing_outputs))
         for source, target in enumerate(table):
@@ -134,21 +205,13 @@ def _row(
                 observations.append((generator, source, target))
     rng.shuffle(observations)
 
-    challenges = []
-    for generator in range(active):
-        false_tables = [list(action) for action in tables]
-        inputs, outputs = missing[generator]
-        false_tables[generator][inputs[0]] = outputs[1]
-        false_tables[generator][inputs[1]] = outputs[0]
-        challenges.append(
-            _distinguishing_challenge(
-                tables,
-                false_tables,
-                active,
-                rng,
-                config.maximum_word_length,
-            )
-        )
+    challenges = _identifying_challenges(
+        tables,
+        missing,
+        rng,
+        config.maximum_challenges,
+        config.maximum_word_length,
+    )
     while len(challenges) < config.maximum_challenges:
         length = rng.randint(2, min(6, config.maximum_word_length))
         word = [rng.randrange(active) for _ in range(length)]

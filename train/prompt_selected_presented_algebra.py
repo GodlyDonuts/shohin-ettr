@@ -17,7 +17,7 @@ class PresentedAlgebraConfig:
     carrier_size: int = 11
     maximum_generators: int = 3
     maximum_observations: int = 27
-    maximum_challenges: int = 6
+    maximum_challenges: int = 8
     maximum_word_length: int = 12
 
     @property
