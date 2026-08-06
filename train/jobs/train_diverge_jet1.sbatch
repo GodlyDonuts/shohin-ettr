@@ -15,7 +15,7 @@ SOURCE_COMMIT=${SOURCE_COMMIT:?set immutable SOURCE_COMMIT}
 OUT=${OUT:?set isolated checkpoint path}
 REPORT=${REPORT:?set isolated report path}
 MODE=${MODE:-scientific}
-PYTHON=$BASE/miniforge3/bin/python3
+PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
 MODEL=$BASE/artifacts/external/qwen3.5-0.8b-2fc0636
 
 export PYTHONPATH="$CODE_ROOT/train:$CODE_ROOT/pipeline"

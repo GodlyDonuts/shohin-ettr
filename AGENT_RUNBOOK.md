@@ -30207,3 +30207,18 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_one_jet1_smoke_then_one_frozen_joint_gate_without_local_variants`.
+
+- **2026-08-06 02:37--02:39 EDT** -- **JET1 smoke `743293` stops before
+  model loading because the launcher selected the wrong Python envelope.**
+
+  Both standalone JET1 tests pass on `evc30`, then base Miniforge raises
+  `ModuleNotFoundError: transformers`. No Qwen tensor is loaded, no optimizer
+  is created, no episode is trained or scored, and no architecture evidence is
+  produced. The completed Qwen product campaign used the dedicated immutable
+  `envs/product-reasoning-b3a3603-r2` environment. Change only the launcher's
+  Python path to that established environment and repeat the two-update
+  mechanical smoke; keep source/data/model hashes, model geometry, seed,
+  budget, losses, controls, and scientific gate unchanged.
+
+  Decision:
+  `repeat_only_the_jet1_mechanical_smoke_in_the_verified_product_python_environment`.
