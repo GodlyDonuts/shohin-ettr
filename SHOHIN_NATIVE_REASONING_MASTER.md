@@ -2,25 +2,22 @@
 
 ## Current Status — Read First
 
-**Current active gate (2026-08-06 04:20 EDT):** DIVERGE-VMT1 is the one
-bounded successor to collapsed LTM1. It replaces single-response
-marginalization with two independently observed autonomous trajectories for
-the same prompt, exactly one verifier-correct and one wrong. Two sticky
-internal lineages are matched bijectively to the complete observed traces; a
-model-owned validity head selects one whole internal lineage before ordinary
-decoding. The wrong response supplies trace supervision but never language-
-model imitation loss.
+**Current architecture result (2026-08-06 04:54 EDT):** DIVERGE-VMT1 is
+closed after its one frozen fit. It successfully fits all 16 correct responses
+and reaches 0.8671 matched trace cosine, but crossed matching is also 0.8668
+and the two internal lineages converge to cosine 0.9988. Model-owned selection
+is only 11/16, split 7/8 versus 4/8 across balanced correct-response
+orientations. The objective has a verified symmetric fixed point: coincident
+lineages produce a 50/50 assignment posterior, exactly zero validity gradient,
+and identical trace gradients. More training or a harder assignment would be
+a local repair, not evidence of reasoning.
 
-The implementation, exact trainer, board builder, two Newton launchers, and 14
-CPU tests are complete. The corrected 8,192-prompt K=4 bank is hash-confirmed
-at `20a496867c1afc46d094a1ee2762cc553bd0460bd2915cc7e60d9c53025aa816`.
-Positions 0/1 contain 14/27 structurally admissible math pairs and 144/184
-science pairs by correct-response orientation before tokenizer admission.
-The CPU board job will select exactly four rows from each cell after exact
-1,024-token admission. No H100 result exists yet. One mechanical smoke and one
-16-row/100-update fit are authorized; failure of any frozen selector, trace,
-separation, swap-control, finiteness, or frozen-weight gate closes VMT1 without
-a nearby variant. See
+The next admissible direction is temporally asymmetric rather than another
+parallel version-space fit: model-owned draft -> prompt-conditioned
+contradiction/correction trajectory -> final answer, trained from paired wrong
+and correct autonomous traces plus correct-draft no-op examples. It must beat
+an ordinary matched two-pass correction baseline and must work when its first
+draft is generated autonomously. No successor result exists yet. See
 `docs/research/DIVERGE_VMT1_VERIFIED_MULTI_TRAJECTORY_MATCHING.md`.
 
 **Current architecture result (2026-08-06 04:02 EDT):** DIVERGE-LTM1 is
@@ -56055,6 +56052,45 @@ LTM1 report/checkpoint SHA-256 values are
 B1 score/checkpoint SHA-256 values are
 `1fced5300959bb3d6de28ec491ff5fe9d998c7ef8f6e3fe36615492459aaddd0` /
 `c099e16c7ec8f2df9f3fe9a68030ffa521f4c392410eb1885d7a7b8ec0529ce1`.
+
+### DIVERGE-VMT1 verified multi-trajectory result (2026-08-06)
+
+VMT1 changed the information substrate rather than tuning LTM1. Every prompt
+supplied two genuinely distinct autonomous responses from fixed positions 0
+and 1, exactly one independently verifier-correct. Two sticky recurrent
+lineages were matched over both complete assignment permutations; only the
+lineage matched to the correct observed trace received language loss, and a
+model-owned terminal validity head selected one complete prefix at inference.
+
+The exact board contains 16 nontruncated rows, four per math/science and
+correct-position cell. The 4.610M-parameter treatment completed 100 updates,
+658,200 logical response tokens, 1,316,400 candidate tokens, and 1,138,900
+trace-target tokens in 1,606.677 seconds. All values remained finite and all
+non-LoRA Qwen tensors remained hash-identical.
+
+The result is a clean mechanism rejection. All 16 NLLs improve and the
+token-weighted aggregate moves `1.084766 -> 0.183080`. Matched trace cosine
+reaches 0.867081, but crossed cosine is 0.866763; the assignment advantage is
+only 0.000318. Internal lineage cosine rises to 0.998769. Selection reaches
+11/16 overall but only 7/8 and 4/8 in the two balanced orientations. The model
+has fitted response language and a weak selector over one shared latent
+trajectory, not two coherent alternatives.
+
+The collapse is an exact stationary point of the objective. At coincident
+lineages the two assignments receive posterior 0.5, validity gradient is zero,
+all four trace costs receive equal 0.25 gradients, and both NLLs receive equal
+0.5 gradients. VMT1 is therefore closed without a local matching, trace,
+temperature, capacity, seed, or duration repair. The next materially distinct
+test should impose causal temporal roles: autonomous draft, model-owned
+contradiction/correction, and final answer, with both wrong-to-correct and
+correct-to-correct supervision and an ordinary two-pass control.
+
+Board/report SHA-256 values are
+`4e5677e00bcf3c1fd72cff11d36a994ec949c9ce658edaedd43676ee8754f685` /
+`aac1fd11b2ea2207b6a015eac511bc31b3cc732780d4f58a1ae8f4a7296d5ae7`.
+Fit report/checkpoint SHA-256 values are
+`058ac42381dbd9d023a5e6bc716476b60716b871add6ed55dd36de7eb888ab9b` /
+`a6ca16175804b8346ad0c8906f1cca3b0a587fb248386963cedbda4d02b50741`.
 
 ### DIVERGE-VMT1 verified multi-trajectory gate (frozen 2026-08-06)
 

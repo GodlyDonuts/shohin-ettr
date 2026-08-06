@@ -30434,3 +30434,51 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `build_and_hash_the_exact_vmt1_board_then_run_one_smoke_and_one_fit_gate_only`.
+
+- **2026-08-06 04:21--04:54 EDT** -- **DIVERGE-VMT1 closes: verified
+  distinct responses still converge to one symmetric latent barycenter.**
+
+  Board job `743309` selects 16 exact nontruncated rows, four per
+  math/science and correct-position cell, from 208 tokenizer-admissible pairs.
+  Maximum selected length is 1,010/1,024. Board/report SHA-256 values are
+  `4e5677e00bcf3c1fd72cff11d36a994ec949c9ce658edaedd43676ee8754f685` /
+  `aac1fd11b2ea2207b6a015eac511bc31b3cc732780d4f58a1ae8f4a7296d5ae7`.
+  Smoke `743310` completes mechanically on `evc32`; report/checkpoint hashes
+  are `cb4c715c7d1a753e768143e4c68594bd94ced99197afdda2c277cf7947d9c8db` /
+  `20aac48be82fced5457bb2f27b5067ac8e96b99163104937d1c44a7fbc38dad8`.
+
+  Sole fit `743311` completes all 100 updates in 1,606.677 seconds and exits 1
+  only on the frozen capability gate. The 4,610,052 trainable parameters
+  consume 658,200 logical, 1,316,400 candidate, and 1,138,900 trace-target
+  tokens at 409.665 logical tok/s and 19.28GB peak allocated memory. Frozen
+  tensors remain hash-identical and all values are finite.
+
+  NLL improves `1.084766 -> 0.183080` on all 16 rows and matched trace cosine
+  reaches 0.867081. These are not a mechanism pass: crossed cosine is
+  0.866763, only 0.000318 lower, while internal lineage cosine rises to
+  0.998769. Selector accuracy is 11/16 rather than 15/16, with 7/8 versus 4/8
+  in the two balanced correct-position cohorts. Swapping scores yields 5/16,
+  but this only proves a weak asymmetric score, not two semantic trajectories.
+
+  The failure is mathematically identified. At coincident lineages, the two
+  complete assignments have posterior 0.5; validity gradient is exactly zero,
+  all four trace-cost entries receive the same 0.25 gradient, and both NLLs
+  receive 0.5. The soft bijective objective therefore contains a stable
+  collapsed barycenter. The source trajectories are genuinely distinct: all
+  final predictions differ, median character-prefix overlap is 0.65%, and
+  median word Jaccard is 22.05%.
+
+  No VMT1 matching, temperature, width, depth, trace, seed, duration, or loss
+  repair is authorized. The next distinct hypothesis uses temporally ordered
+  roles: a model-owned draft, prompt-conditioned contradiction/correction
+  reactor, and final answer, with paired wrong-to-correct and correct-to-
+  correct no-op supervision. It must beat a matched ordinary two-pass
+  correction control and must survive autonomous rather than teacher-supplied
+  drafts before scale.
+
+  Fit report/checkpoint SHA-256 values are
+  `058ac42381dbd9d023a5e6bc716476b60716b871add6ed55dd36de7eb888ab9b` /
+  `a6ca16175804b8346ad0c8906f1cca3b0a587fb248386963cedbda4d02b50741`.
+
+  Decision:
+  `close_vmt1_and_replace_exchangeable_parallel_matching_with_verified_temporal_correction`.

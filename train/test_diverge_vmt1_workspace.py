@@ -92,6 +92,27 @@ class VMTWorkspaceTest(unittest.TestCase):
                 validity_weight=0.25,
             )
 
+    def test_collapsed_lineages_are_a_symmetric_stationary_point(self) -> None:
+        trace_cost = torch.tensor([[[0.4, 0.8], [0.4, 0.8]]], requires_grad=True)
+        validity = torch.zeros(1, 2, requires_grad=True)
+        nll = torch.tensor([[0.3, 0.3]], requires_grad=True)
+        result = verified_pair_assignment_objective(
+            trace_cost,
+            validity,
+            torch.tensor([[True, False]]),
+            nll,
+            assignment_temperature=0.1,
+            validity_margin=1.0,
+            trace_weight=1.0,
+            validity_weight=0.25,
+        )
+        result.loss.backward()
+        self.assertTrue(
+            torch.equal(result.assignment_posterior, torch.tensor([[0.5, 0.5]]))
+        )
+        self.assertTrue(torch.equal(validity.grad, torch.zeros_like(validity)))
+        self.assertTrue(torch.equal(trace_cost.grad, torch.full_like(trace_cost, 0.25)))
+
 
 if __name__ == "__main__":
     unittest.main()

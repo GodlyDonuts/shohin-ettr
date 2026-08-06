@@ -1,6 +1,6 @@
 # DIVERGE-VMT1: Verified Multi-Trajectory Matching
 
-Status: frozen fit-only successor after the negative LTM1 gate.
+Status: closed negative after the one frozen fit.
 
 ## Capability hypothesis
 
@@ -80,3 +80,64 @@ Failure closes VMT1 without another seed, branch count, width, depth, trace
 representation, loss weight, margin, duration, layer count, or schedule.
 Passing only authorizes a separate matched broad contract; it is not itself a
 reasoning or benchmark result.
+
+## Result
+
+CPU board job `743309` completed in 26 seconds. From 32,768 corrected
+candidate rows it found 369 structurally admissible opposite-outcome pairs and
+208 exact tokenizer-admissible pairs. The selected board has four rows per
+group/orientation cell, maximum total length 1,010 of 1,024, and zero
+truncation. Board/report SHA-256 values are
+`4e5677e00bcf3c1fd72cff11d36a994ec949c9ce658edaedd43676ee8754f685` /
+`aac1fd11b2ea2207b6a015eac511bc31b3cc732780d4f58a1ae8f4a7296d5ae7`.
+
+Mechanical H100 smoke `743310` completed cleanly on `evc32`: all ten on-node
+tests passed, all 473 pinned Qwen tensors loaded, two finite updates ran, and
+the frozen hash was unchanged. It used 4,610,052 trainable parameters and
+17,659,465,216 peak allocated CUDA bytes. Smoke report/checkpoint SHA-256
+values are `cb4c715c7d1a753e768143e4c68594bd94ced99197afdda2c277cf7947d9c8db` /
+`20aac48be82fced5457bb2f27b5067ac8e96b99163104937d1c44a7fbc38dad8`.
+
+The sole fit `743311` completed all 100 updates and both exact audits in
+1,606.677 seconds. It consumed 658,200 logical correct-response tokens,
+1,316,400 candidate tokens, and 1,138,900 trace-target tokens at 409.665
+logical tokens/s, peaking at 19,281,572,352 allocated CUDA bytes. All tensors
+remain finite and every non-LoRA parameter is hash-identical.
+
+Language and average trace fit succeed, but coherent alternatives do not:
+
+- token-weighted selected NLL improves `1.084766 -> 0.183080`, with 16/16
+  rows improved;
+- matched trace cosine reaches 0.867081, above the 0.85 threshold;
+- crossed trace cosine also reaches 0.866763, leaving only 0.000318 advantage
+  versus the required 0.10;
+- internal trajectory cosine rises `0.807822 -> 0.998769`, failing the 0.95
+  ceiling;
+- model-owned selection reaches 11/16, split 7/8 versus 4/8 across the two
+  balanced observed-correct orientations, below the 15/16 and per-orientation
+  gates;
+- swapped selection reaches 5/16, so the swap drop passes, but it acts on a
+  weak asymmetric selector rather than two separated semantic lineages.
+
+The failure has an exact local explanation. When both internal trajectories
+coincide, the identity and swapped assignments have equal cost and posterior
+0.5. The expected validity gradient is exactly zero, every element of the
+2-by-2 trace-cost matrix receives the same 0.25 gradient, and both language
+NLLs receive the same 0.5 gradient. The collapsed barycenter is therefore a
+symmetric stationary point of the frozen objective. The distinct response
+texts are not the problem: all 16 selected pairs have different final
+predictions, median character-prefix overlap is 0.65%, and median word-set
+Jaccard overlap is 22.05%.
+
+VMT1 is closed. There is no hard-matching, temperature, width, depth, seed,
+loss, duration, or trace-target repair. A next mechanism must remove
+exchangeable semantic roles rather than merely repel branches. The ordered
+candidate data support a materially different hypothesis: a model-owned first
+draft followed by a prompt-conditioned verified correction trajectory, with
+correct-draft no-op cases and wrong-draft-to-correct targets. That successor
+must be compared with an ordinary two-pass correction baseline and must close
+the teacher-draft/autonomous-draft gap before any broad claim.
+
+Fit report/checkpoint SHA-256 values are
+`058ac42381dbd9d023a5e6bc716476b60716b871add6ed55dd36de7eb888ab9b` /
+`a6ca16175804b8346ad0c8906f1cca3b0a587fb248386963cedbda4d02b50741`.
