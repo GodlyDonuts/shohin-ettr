@@ -30842,3 +30842,50 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_one_fta1_smoke_then_one_frozen_1600_update_component_gate;_compose_with_crp1_only_on_a_conjunctive_pass`.
+
+- **2026-08-06 11:24--11:40 EDT** -- **DIVERGE-FTA1 eliminates ATS1's
+  length-transfer failure and passes every frozen component condition.**
+
+  Private commit `8eeb136` and immutable capsule
+  `diverge_fta1_8eeb136_r1` bind the implementation; archive SHA-256 is
+  `3f415cd7b104567b98b82eebd3a8078a6fb2849434c2a49bbab3adbe997e35ad`.
+  Smoke `743581` completes both finite BF16/CUDA updates. Scientific job
+  `743585` completes all 1,600 updates in 97.040 seconds on `evc41` with
+  400,724 parameters, 32,262,081 source bytes, 332,461 bytes/s, and
+  357,808,640 peak allocated CUDA bytes. Development is 96/96 exact terminals
+  and trajectories with every compiler metric exact.
+
+  Untouched OOD evaluator `743590` reaches 3,854/3,854 exact source packets,
+  480/480 exact terminals, 480/480 complete trajectories, and 160/160 in each
+  scalar/register/symbolic family with zero invalid packets. Initial-packet
+  swap scores 3/480 and operation shift 1/480. FTA1 therefore improves the
+  protected ATS1 control from 272 to 480 terminals while using fewer
+  parameters. The finite-state recurrence specifically repairs absolute
+  offset memorization; it is not yet an open-domain reasoning claim.
+
+  Training report/checkpoint hashes are
+  `06536c2f63e7eed1c464217d1314ef751510b398455b4cb0caacbf7bd99f8929` /
+  `9321b78372d9926930d4de073d70e82c94e8360a69e09be695bab91b2e479f2d`.
+  Evaluation/gate hashes are
+  `7b7f3a6830a9f777464325321b9be1dde271ff602de012483ec77a77d931678c` /
+  `dd5f0d261fdf88f18bbcf7aee6574d46f5d48a5d31e438bfcf0cc8181f3dfa72`.
+
+  Decision:
+  `run_exactly_one_source_sealed_autonomous_contradiction_replay_gate_on_crp1;_no_fta_width_seed_or_duration_variants`.
+
+- **2026-08-06 11:42 EDT** -- **FTA1-AC1 freezes autonomous contradiction
+  replay before its result.**
+
+  The runtime compares each compiled claimed successor with the independent
+  typed algebraic successor. It commits at the first mismatch, then ignores
+  all later right-side claims and carries one computed state lineage. Exact
+  first-error localization remains required, preventing an always-replay-from-
+  step-one shortcut. The 480-row board, FTA1 checkpoint, component pass,
+  compiler, and algebra are hash-fixed; no additional training or CRP1
+  language generator is used. Promotion requires at least 432 selections,
+  terminals, and trajectories, at least 136 of each per family, zero invalid
+  packets, and large trust-source, ignored-conflict, packet-swap, and
+  operation-shift drops.
+
+  Decision:
+  `run_the_one_cpu_exact_autonomous_gate;_natural_verified_trace_transfer_only_on_a_conjunctive_pass`.

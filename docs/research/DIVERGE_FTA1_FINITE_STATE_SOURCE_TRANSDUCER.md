@@ -1,7 +1,6 @@
 # DIVERGE-FTA1: Length-Equivariant Finite-State Source Transducer
 
-Status: implementation and local QA complete; frozen before any H100 neural
-result on 2026-08-06.
+Status: passed the one frozen component gate on 2026-08-06.
 
 ## 1. Capability hypothesis
 
@@ -48,3 +47,37 @@ Parameter count, source bytes, H100 time, peak memory, and every ATS1 score are
 reported beside FTA1. A pass authorizes one autonomous CRP1 composition gate.
 A failure closes this local rendered-step compiler without recurrent width,
 direction, layer, seed, duration, optimizer, role, or loss variants.
+
+## 4. Result
+
+Immutable capsule `diverge_fta1_8eeb136_r1` has archive SHA-256
+`3f415cd7b104567b98b82eebd3a8078a6fb2849434c2a49bbab3adbe997e35ad`.
+Smoke `743581` completed both BF16/CUDA updates. Scientific job `743585`
+completed exactly 1,600 updates in 97.040 seconds with 400,724 trainable
+parameters, 32,262,081 source bytes, 332,461 source bytes/s, and 357,808,640
+peak allocated CUDA bytes. The 96-row development probe was completely exact.
+
+Untouched evaluator `743590` then passed every frozen held-length condition:
+
+| Metric | FTA1 | ATS1 control |
+|---|---:|---:|
+| valid/compiler-exact segments | 3,854/3,854 | 3,093/3,854 |
+| exact terminals | **480/480** | 272/480 |
+| exact complete trajectories | **480/480** | 272/480 |
+| scalar/register/symbolic terminals | **160/160/160** | 100/128/44 |
+| initial-packet swap terminals | 3/480 | 2/480 |
+| operation-shift terminals | 1/480 | 1/480 |
+
+Removing absolute positions and tying the recurrent source update therefore
+repairs the exact observed length-transfer failure with fewer parameters than
+ATS1. This is causal evidence for delimiter-relative finite-state compilation,
+not an open-domain reasoning result.
+
+Training report/checkpoint SHA-256 values are
+`06536c2f63e7eed1c464217d1314ef751510b398455b4cb0caacbf7bd99f8929` /
+`9321b78372d9926930d4de073d70e82c94e8360a69e09be695bab91b2e479f2d`.
+Evaluation/gate SHA-256 values are
+`7b7f3a6830a9f777464325321b9be1dde271ff602de012483ec77a77d931678c` /
+`dd5f0d261fdf88f18bbcf7aee6574d46f5d48a5d31e438bfcf0cc8181f3dfa72`.
+The pass authorizes exactly one autonomous contradiction-guided composition
+gate on the unchanged CRP1 OOD board.

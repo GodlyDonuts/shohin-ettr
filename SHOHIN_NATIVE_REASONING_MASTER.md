@@ -56400,3 +56400,22 @@ bidirectional finite-state byte transducer whose update is tied at every source
 position. The algebraic state, data, evaluator, and thresholds remain exactly
 fixed, making ATS1 the protected control. FTA1 must still reach 432/480 OOD
 terminals and every per-family/causal gate before autonomous CRP1 composition.
+
+### DIVERGE-FTA1 result and autonomous gate (2026-08-06)
+
+FTA1 passes completely. Its 400,724-parameter finite-state compiler trains for
+1,600 updates, then compiles all 3,854 held segments exactly. Forced replay is
+480/480 exact terminals and trajectories, with 160/160 in every family and
+zero invalid packets. Initial-packet swap falls to 3 and operation shift to 1.
+The protected absolute-position ATS1 control was 272/480. The result isolates a
+real architectural cause: tying byte-state transitions across length repairs
+the held span-length failure without adding capacity.
+
+The next and only authorized composition is FTA1-AC1. Each source step becomes
+a sealed typed transaction. A hard contradiction circuit compares its claimed
+successor with the algebraically computed successor, commits at the first
+mismatch, and then replays later operations without trusting their claimed
+states. This is evaluated with no answer labels or oracle error location and
+must localize the first error as well as answer, so always restarting from the
+first step cannot satisfy the gate. Even a pass remains bounded to the closed
+synthetic operation vocabulary; natural verified-trace transfer is separate.
