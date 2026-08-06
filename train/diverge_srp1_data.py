@@ -148,7 +148,19 @@ def augment_board(
 
 
 def validate_srp1_board_row(record: Mapping[str, Any]) -> None:
-    validate_board_row(record)
+    payload = dict(record)
+    identity = str(payload.pop("identity_sha256"))
+    if canonical_sha256(payload) != identity:
+        raise SRP1DataError("SRP1 board identity differs")
+    compatible = dict(record)
+    compatible["natural_queries"] = {
+        name: {**item, "renderer": int(item["renderer"]) % 3}
+        for name, item in record["natural_queries"].items()
+    }
+    compatible_payload = dict(compatible)
+    compatible_payload.pop("identity_sha256")
+    compatible["identity_sha256"] = canonical_sha256(compatible_payload)
+    validate_board_row(compatible)
     selection = record.get("selection")
     if not isinstance(selection, Mapping):
         raise SRP1DataError("SRP1 selection receipt is absent")
@@ -160,6 +172,8 @@ def validate_srp1_board_row(record: Mapping[str, Any]) -> None:
     ):
         raise SRP1DataError("SRP1 selection receipt differs")
     for item in record["natural_queries"].values():
+        if int(item["renderer"]) not in range(6):
+            raise SRP1DataError("SRP1 query renderer differs")
         expected = query_text(
             int(item["renderer"]),
             target=str(item["target"]),
@@ -177,4 +191,3 @@ __all__ = [
     "query_text",
     "validate_srp1_board_row",
 ]
-
