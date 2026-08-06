@@ -29967,3 +29967,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `correct_the_invalid_query_assay_then_run_one_final_frozen_report_without_further_variants`.
+
+- **2026-08-06 00:06--00:12 EDT** -- **Corrected DIVERGE-ULC1 frozen-HSC1
+  gate `743195` passes every frozen capability, causal, integrity, and sharing
+  threshold.**
+
+  Immutable runtime `bf049df` evaluates 64 fresh episodes per cohort on
+  `evc38` in `00:02:44` with 1,310,888K maximum host RSS. No weights update.
+  HSC1 K=2 gold semantic support and gold typed execution are 100% in train,
+  lexical, renderer, and composition cohorts. Full DIVERGE is 100% exact in
+  all four, versus single-state top-1 `17.1875% / 25% / 25% / 20.3125%` and
+  soft aggregation `6.25% / 3.125% / 9.375% / 4.6875%`. Equal-budget whole
+  particles and two independent paths score zero; extra recurrence and
+  conflict-disabled factorization remain at 0--4.6875%.
+
+  All frozen causal/integrity gates pass. Shuffled guards score 0--3.125%,
+  state reset 9.375--28.125%, source swaps are rejected, post-seal poison is
+  invariant, represented gold is never removed, invariants answer, and
+  certified underdetermined reads abstain. Each episode represents 125 to
+  25,930,800 coherent worlds, but exact sharing uses at most 4,692 MDD nodes
+  and 224 simultaneous state groups. Matched particles fit only 6--71 complete
+  paths. Aggregate conservative byte sharing is 23,098.7--74,490.7x and
+  transaction sharing is 676.1--2,272.7x across cohorts. These extreme ratios
+  reflect this redundant synthetic grammar and are not generalized.
+
+  Accepted report SHA-256 is
+  `b538565639e89f34ec6aa969e22a0017d00a4b1f3ef70e005ca727d8f2c2faa2`.
+  The result establishes a learned-source uncertainty-lift mechanism, not
+  native neural reasoning: exact typed host transitions and assessor-issued
+  effect observations remain. It authorizes one bounded model-owned
+  evidence/execution interface gate, not long continuation pretraining or
+  benchmark optimization.
+
+  Decision:
+  `promote_diverge_to_one_model_owned_evidence_and_execution_interface_gate`.

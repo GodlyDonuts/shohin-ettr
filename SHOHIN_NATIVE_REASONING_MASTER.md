@@ -55818,3 +55818,28 @@ factorized support without conflict, and full DIVERGE. The pre-result gate also
 requires >=90% exact recovery, shifted >=10-point capability gains, perfect
 source/evidence integrity, and >=2x byte / >=1.25x transaction sharing. No
 weights update and no threshold may change after the first report.
+
+### DIVERGE-ULC1 learned-source mechanism pass (2026-08-06)
+
+The bounded frozen-HSC1 runtime gate passes after one assay-only correction.
+Across 64 fresh episodes in each of train, lexical, renderer, and composition
+cohorts, K=2 retains the exact gold semantic interpretation in 100%. Full
+DIVERGE recovers 100% sensitive answers, versus 17.188--25% for one top-1
+state, 0% for resource-matched whole particles and two independent paths, and
+3.125--9.375% shifted accuracy for soft terminal aggregation. Extra recurrence
+and factorization without delayed conflict evidence remain at 0--4.688%.
+
+All causal and integrity gates pass: shuffled evidence guards fall to
+0--3.125%, state reset to 9.375--28.125%, packet swaps are rejected, post-seal
+source poisoning is invariant, represented gold is never deleted, invariant
+queries answer, and certified underdetermined queries abstain. Exact support
+contains 125--25,930,800 worlds per episode while retaining at most 4,692 MDD
+nodes and 224 state groups. The accepted report SHA-256 is
+`b538565639e89f34ec6aa969e22a0017d00a4b1f3ef70e005ca727d8f2c2faa2`.
+
+This resolves the mechanism question positively but not the model-owned
+reasoning question. The source score producer is learned and frozen; candidate
+program execution is still an exact typed host operation, and delayed effect
+evidence is issued by an independent assessor. DIVERGE has earned a bounded
+learned evidence/execution interface gate, not continuation pretraining or a
+general reasoning claim.

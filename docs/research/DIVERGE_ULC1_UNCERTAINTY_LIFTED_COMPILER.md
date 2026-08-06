@@ -1,6 +1,7 @@
 # DIVERGE-ULC1 Uncertainty-Lifted Compiler
 
-**Status:** exact CPU mechanics passed; frozen-HSC1 matched gate authorized
+**Status:** exact CPU mechanics and frozen-HSC1 matched runtime gate passed;
+model-owned execution/evidence remains open
 
 **Decision date:** 2026-08-05
 
@@ -205,6 +206,52 @@ claim fails. If support is absent before evidence, the compiler fails. If
 evidence helps only through an exact host operation unavailable to the future
 neural reactor, retain the result as mechanics only and do not promote it as
 model-owned reasoning.
+
+### Frozen-HSC1 runtime result
+
+The corrected immutable job `743195` completes on `evc38` in `00:02:44` from
+runtime commit `bf049df`. It evaluates 64 fresh episodes in each of four
+cohorts with no weight updates. The accepted report SHA-256 is
+`b538565639e89f34ec6aa969e22a0017d00a4b1f3ef70e005ca727d8f2c2faa2`.
+
+| Arm exact | Train | Lexical | Renderer | Composition |
+|---|---:|---:|---:|---:|
+| A single state | 17.188% | 25.000% | 25.000% | 20.312% |
+| B matched whole particles | 0% | 0% | 0% | 0% |
+| C two independent paths | 0% | 0% | 0% | 0% |
+| D extra single-state recurrence | 1.562% | 4.688% | 3.125% | 0% |
+| E soft terminal aggregation | 6.250% | 3.125% | 9.375% | 4.688% |
+| F factorized, no conflict evidence | 1.562% | 0% | 0% | 0% |
+| **G full DIVERGE** | **100%** | **100%** | **100%** | **100%** |
+
+Gold semantic support, represented-gold preservation, invariant answers,
+certified underdetermined abstention, packet-swap rejection, source-poison
+invariance, and gold-state execution are all 100%. Shuffled evidence guards
+score 0--3.125%; state reset scores 9.375--28.125%. All frozen gates pass.
+
+The packed support is substantially wider than the calibrated CPU board: per
+episode it ranges from 125 to 25,930,800 worlds. Exact sharing keeps the MDD to
+61--4,692 expression nodes and at most 224 simultaneous typed-state groups.
+The matched particle arm stores only 6--71 complete paths under the same byte
+and transaction budgets and never contains a sufficient surviving lineage.
+Aggregate conservative whole-particle/factorized byte ratios range from
+23,098.7x to 74,490.7x; duplicated/unique transaction ratios range from 676.1x
+to 2,272.7x. These large ratios are specific to this highly redundant
+synthetic grammar and are not a general language-efficiency claim.
+
+Job `743159` used the same scores and runtime but mislabeled one invariant
+slot-zero query as underdetermined. Its report is preserved under SHA-256
+`f90b14f91a3f626d31aaba74c0dd92b54d6a9d8fdb830b569141e6cdbef08f71`
+and explicitly invalidated. Schema v2 selects an underdetermined query only
+after certifying cross-world disagreement in the sealed typed state; no model,
+score, evidence, sensitive answer, arm, budget, or threshold changed.
+
+This is the first learned-source DIVERGE mechanism pass, but it is not native
+neural reasoning. HSC1 supplies frozen learned source scores; the typed host
+executes candidate programs; and an independent assessor supplies observable
+program-effect evidence. The next gate must learn those evidence and execution
+interfaces while retaining whole-hypothesis coherence and the same sealed
+support behavior.
 
 ## 6. Claim boundary
 
