@@ -75,7 +75,7 @@ from diverge_v0_neural_pilot import PROGRAMS
 from diverge_wra1_neural_compiler import sha256_file
 from diverge_wra1_whole_record import detect_segments
 
-SCHEMA = "shohin-diverge-ulc1-frozen-hsc1-gate-v1"
+SCHEMA = "shohin-diverge-ulc1-frozen-hsc1-gate-v2"
 COHORTS = ("train", "lexical_shift", "renderer_shift", "composition_shift")
 COHORT_OFFSETS = {
     "train": 0,
@@ -220,6 +220,7 @@ class CompiledEpisode:
     execution: MDDExecution
     sensitive_query: Query
     invariant_query: Query
+    underdetermined_query: Query | None
     segmentation_exact: bool
     support_recalled: bool
     source_words: int
@@ -541,6 +542,18 @@ def _expected_state(
     return state
 
 
+def _choose_underdetermined_query(execution: MDDExecution) -> Query | None:
+    """Choose a late state query certified to disagree across sealed worlds."""
+
+    if execution.overflow:
+        return None
+    for slot in range(5):
+        query = Query("READ_VALUE", (slot,))
+        if query_mdd(execution, query).disposition == ABSTAIN:
+            return query
+    return None
+
+
 def _compile_batch(
     model: HierarchicalStructuredCompiler,
     episodes: Sequence[RawSourceEpisode],
@@ -623,6 +636,7 @@ def _compile_batch(
                 execution,
                 Query("READ_VALUE", (0,)),
                 Query("EDGE_COUNT", ()),
+                _choose_underdetermined_query(execution),
                 segmentation_exact,
                 support_recalled and not execution.overflow,
                 len(episode.tokens),
@@ -938,6 +952,11 @@ def _evaluate_compiled(
         allowed = _rejected_allowed(compiled)
     full = query_mdd(compiled.execution, compiled.sensitive_query, allowed=allowed)
     no_conflict = query_mdd(compiled.execution, compiled.sensitive_query)
+    underdetermined = (
+        query_mdd(compiled.execution, compiled.underdetermined_query)
+        if compiled.underdetermined_query is not None
+        else QueryDecision("REJECT", None, (), 0)
+    )
     invariant = query_mdd(compiled.execution, compiled.invariant_query, allowed=allowed)
     particles, particle_resources = _select_equal_budget_particles(compiled)
     particle = _path_decision(compiled, particles, allowed=allowed)
@@ -990,7 +1009,7 @@ def _evaluate_compiled(
         "F_no_conflict_exact": _decision_exact(no_conflict, expected),
         "G_diverge_exact": full_exact,
         "invariant_exact": invariant.disposition == ANSWER and invariant.answer == 0,
-        "underdetermined_abstains": no_conflict.disposition == ABSTAIN,
+        "underdetermined_abstains": underdetermined.disposition == ABSTAIN,
         "shuffled_provenance_exact": _decision_exact(shuffled, expected),
         "state_reset_exact": reset_answer == expected,
         "packet_swap_rejected": _packet_swap_rejected(compiled, donor_evidence),
@@ -1005,6 +1024,7 @@ def _evaluate_compiled(
             "F_no_conflict": no_conflict.disposition,
             "G_diverge": full.disposition,
             "invariant": invariant.disposition,
+            "underdetermined": underdetermined.disposition,
             "shuffled_provenance": shuffled.disposition,
         },
         "resources": {

@@ -7,6 +7,7 @@ from dataclasses import replace
 
 from diverge_ulc1_mdd import RuntimeChoice, execute_choice_path, execute_mdd, query_mdd
 from diverge_v0 import (
+    ABSTAIN,
     ANSWER,
     DivergeContractError,
     Query,
@@ -19,6 +20,7 @@ from diverge_v0 import (
 from evaluate_diverge_ulc1_hsc1 import (
     CompiledEpisode,
     _certify_delayed_evidence,
+    _choose_underdetermined_query,
     _delayed_evidence,
     _evaluate_compiled,
     _factorized_packet_bytes,
@@ -88,6 +90,7 @@ def _compiled(name: str) -> CompiledEpisode:
         execution,
         Query("READ_VALUE", (0,)),
         Query("EDGE_COUNT", ()),
+        Query("READ_VALUE", (0,)),
         True,
         True,
         12,
@@ -108,6 +111,9 @@ def test_delayed_evidence_recovers_the_gold_lineage() -> None:
     assert decision.answer == read_query(
         compiled.expected_state, compiled.sensitive_query
     )
+    chosen = _choose_underdetermined_query(compiled.execution)
+    assert chosen is not None
+    assert query_mdd(compiled.execution, chosen).disposition == ABSTAIN
 
 
 def test_evidence_provenance_and_packet_swaps_fail_closed() -> None:

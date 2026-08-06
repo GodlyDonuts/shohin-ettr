@@ -29943,3 +29943,27 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `remove_the_last_test_only_pytest_import_then_repeat_the_mechanical_smoke`.
+
+- **2026-08-06 00:00--00:04 EDT** -- **Full frozen report from `743159` is
+  preserved but invalidated by an underdetermined-query construction error.**
+
+  Runtime/model execution completes and report SHA-256 is
+  `f90b14f91a3f626d31aaba74c0dd92b54d6a9d8fdb830b569141e6cdbef08f71`.
+  K=2 gold support, full DIVERGE exactness, represented-gold preservation,
+  source seals, invariant queries, causal drops, and all storage/transaction
+  gates are 100% or pass in every cohort. Shifted single-state exactness is
+  20.3125--25%, while full DIVERGE is 100%. The report's only failed gate is
+  `underdetermined_never_false_commits`: one train episode returns a justified
+  answer because every represented world agrees on the supposedly
+  underdetermined slot-zero read. This is not a false commitment; the query was
+  invariant on that episode.
+
+  Preserve the report under its original hash and do not count it as a pass or
+  architecture failure. Version the evaluator schema and choose the late
+  underdetermined query solely from the sealed state as the first register read
+  with certified cross-world disagreement. If no such query exists, fail the
+  episode contract. This changes no scores, candidates, gold support, evidence,
+  sensitive query, answer, arm, resource budget, threshold, or model weight.
+
+  Decision:
+  `correct_the_invalid_query_assay_then_run_one_final_frozen_report_without_further_variants`.

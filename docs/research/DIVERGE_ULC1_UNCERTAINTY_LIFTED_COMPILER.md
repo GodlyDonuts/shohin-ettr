@@ -116,6 +116,10 @@ Matched arms receive the same frozen score tensors and typed transition budget:
 Additional interventions are shuffled evidence guards, packet swap between
 matched episodes, forced premature top-1, state reset before query, and
 post-seal source poisoning. Full hypothesis fields are never averaged.
+The underdetermined query is selected late from the sealed typed state as the
+first register read with certified disagreement across represented worlds. If
+no such read exists, the episode fails the board contract; a safe invariant
+answer is never mislabeled as a false commitment.
 
 ## 4. CPU mechanics gate
 
