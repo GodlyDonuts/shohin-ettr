@@ -55680,3 +55680,17 @@ to identify the necessary interface failure, but no SC1 threshold, width,
 duration, loss, or seed repair follows. Report/checkpoint SHA-256 values are
 `1a23d1aaae3276d54ec8d27abea266b822b0c9f28a058951dd2d942108d59059` /
 `7b5348cacb1772bf45e34442e94010db71a6be20bd8d689477d037ac5fee2ffd`.
+
+The one read-only component audit closes the diagnosis. Across 128 episodes,
+the learned boundary has 1,494 true positives and zero false positives or
+misses. Replacing learned roles and pairs while retaining that learned
+boundary restores 100% exact packets in all four cohorts; replacing either
+component alone does not. The pair graph has only 37.162% precision and
+78.809% recall, while active-role recall is 98.873% but confuses record-kind
+cues and alias starts. These errors turn 54--63 calibrated options into
+111--140 and 273--328 calibrated complete records into 1,976--2,875. The
+reasoning packet fails before execution because independent local labels do not
+compose into a globally valid object. Any future successor must encode a
+bounded whole-record assignment with exact-one constraints by construction;
+it cannot be an SC1 threshold or scale repair. Audit SHA-256 is
+`e6dd4874029f653f808c426d04b15a98da390c67c83b30429e9d015b00ab9799`.

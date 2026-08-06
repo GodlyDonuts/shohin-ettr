@@ -29638,3 +29638,31 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_sc1_after_seed_one_and_localize_quadratic_pair_error_amplification_read_only`.
+
+- **2026-08-05 20:59--21:06 EDT** -- **SC1 read-only audit proves a joint
+  role-and-pair interface failure; learned boundaries are exact.**
+
+  H100 job `742457` completed in 3m16s on `evc31`, evaluating 128 frozen
+  episodes without gradients or parameter changes. Learned boundary confusion
+  is `TP=1494, FP=0, FN=0, TN=34064`. Substituting CPU-calibrated roles and
+  pairs while retaining learned boundaries restores 100% exact packets in
+  train, lexical, renderer, and composition cohorts. Every substitution that
+  leaves either learned roles or learned pairs is 0% outside one 6.25% train
+  role-only cell.
+
+  Pair confusion is `TP=4697, FP=7942, FN=1263, TN=445271`, or 37.162%
+  precision / 78.809% recall. Active-role recall is 98.873% with zero inactive
+  false positives, but record-kind cues and alias starts are assigned wrong
+  active roles. Learned scores produce 111--140 options and 1,976--2,875
+  complete records per episode, versus 54--63 and 273--328 under calibrated
+  factors. This 7.2--9.4x record explosion explains the support loss and
+  overflow.
+
+  Immutable report SHA-256 is
+  `e6dd4874029f653f808c426d04b15a98da390c67c83b30429e9d015b00ab9799`.
+  SC1 is closed. Do not tune it. A future separately frozen source compiler
+  must construct bounded whole-record assignments with exact-one constraints
+  instead of thresholding independent dense pair edges.
+
+  Decision:
+  `require_globally_normalized_whole_record_compilation_before_any_new_diverge_language_gate`.

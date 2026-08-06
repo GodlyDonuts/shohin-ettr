@@ -158,6 +158,19 @@ audit may localize this combinatorial amplification; it cannot reopen SC1.
 DIVERGE therefore still lacks a learned autonomous raw-source front end and
 has no unrestricted language claim.
 
+That read-only localization is complete. The learned boundary is exactly
+correct over 128 audited episodes, and keeping it while replacing role and
+pair factors restores 100% packets in every cohort. Either learned roles or
+learned pairs remain independently fatal. Pair precision is only 37.162% and
+recall 78.809%; role activation recall is 98.873%, with the remaining errors
+concentrated in record-kind cues and alias starts. These errors double option
+proposals and multiply complete-record proposals by 7.2--9.4x. The failure is
+therefore not a lack of downstream DIVERGE capacity. It is the use of
+independent edge labels to construct a conjunctive object. A future source
+compiler, if separately authorized, must emit a bounded globally normalized
+whole-record assignment with exact-one constraints rather than repair SC1's
+thresholded pair graph.
+
 ## Terminology
 
 Do not call this "schizophrenic AI" in code, a paper, a resume, or a public

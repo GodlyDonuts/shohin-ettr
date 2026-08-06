@@ -1,6 +1,6 @@
 # DIVERGE-SC1 Raw-Source Object Compiler
 
-**Status:** closed by the first neural seed; read-only localization pending
+**Status:** closed; read-only failure localization complete
 
 **Decision date:** 2026-08-05
 
@@ -273,3 +273,46 @@ may not search thresholds, update weights, or reopen SC1.
 Report/checkpoint SHA-256 values are
 `1a23d1aaae3276d54ec8d27abea266b822b0c9f28a058951dd2d942108d59059` /
 `7b5348cacb1772bf45e34442e94010db71a6be20bd8d689477d037ac5fee2ffd`.
+
+## 11. Read-only failure localization
+
+Job `742457` evaluated 128 frozen episodes (32 per cohort) without gradients,
+threshold search, or parameter changes. It substituted the accepted CPU
+calibrated role, boundary, and pair factors into the failed checkpoint one
+component at a time.
+
+The causal result is exact:
+
+| Substitution | Train | Lexical | Renderer | Composition |
+|---|---:|---:|---:|---:|
+| Learned all | 0% | 0% | 0% | 0% |
+| Oracle boundary only | 0% | 0% | 0% | 0% |
+| Oracle pair only | 0% | 0% | 0% | 0% |
+| Oracle role only | 6.25% | 0% | 0% | 0% |
+| Oracle role + boundary | 6.25% | 0% | 0% | 0% |
+| Oracle boundary + pair | 0% | 0% | 0% | 0% |
+| **Oracle role + pair, learned boundary** | **100%** | **100%** | **100%** | **100%** |
+| Oracle all | 100% | 100% | 100% | 100% |
+
+The learned boundary is exact over this audit: 1,494 true positives, 34,064
+true negatives, and zero false positives or misses. The pair head has 4,697
+true positives, 7,942 false positives, 1,263 misses, and 445,271 true
+negatives: `37.162%` precision and `78.809%` recall despite high aggregate
+accuracy. Active-role detection has zero false positives and `98.873%` recall,
+but record-kind cues and alias starts are confused with other active roles.
+
+Those errors amplify combinatorially. Learned decoding creates about
+111--140 option candidates per episode versus 54--63 under calibrated factors,
+and 1,976--2,875 complete-record candidates versus 273--328: roughly `2x`
+options and `7.2--9.4x` records. This explains both support deletion and the
+hard-cap overflows.
+
+The conclusion is architectural: independent dense edge classification plus
+thresholded Cartesian proposal generation is not a viable source boundary for
+support-preserving reasoning. Any future, separately frozen successor must
+construct bounded whole-record assignments by design (for example, a
+boundary-first typed matching object with exact-one constraints). It may not
+be presented as a threshold, seed, width, duration, or loss repair of SC1.
+
+Audit report SHA-256 is
+`e6dd4874029f653f808c426d04b15a98da390c67c83b30429e9d015b00ab9799`.
