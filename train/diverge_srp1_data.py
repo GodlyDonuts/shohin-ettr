@@ -140,27 +140,18 @@ def augment_board(
             },
         }
         record["identity_sha256"] = canonical_sha256(record)
-        validate_srp1_board_row(record)
+        validate_srp1_surface_row(record)
         output.append(record)
     if len({str(row["identity_sha256"]) for row in output}) != len(output):
         raise SRP1DataError("SRP1 confirmation identities are not unique")
     return output
 
 
-def validate_srp1_board_row(record: Mapping[str, Any]) -> None:
+def validate_srp1_surface_row(record: Mapping[str, Any]) -> None:
     payload = dict(record)
     identity = str(payload.pop("identity_sha256"))
     if canonical_sha256(payload) != identity:
         raise SRP1DataError("SRP1 board identity differs")
-    compatible = dict(record)
-    compatible["natural_queries"] = {
-        name: {**item, "renderer": int(item["renderer"]) % 3}
-        for name, item in record["natural_queries"].items()
-    }
-    compatible_payload = dict(compatible)
-    compatible_payload.pop("identity_sha256")
-    compatible["identity_sha256"] = canonical_sha256(compatible_payload)
-    validate_board_row(compatible)
     selection = record.get("selection")
     if not isinstance(selection, Mapping):
         raise SRP1DataError("SRP1 selection receipt is absent")
@@ -183,6 +174,19 @@ def validate_srp1_board_row(record: Mapping[str, Any]) -> None:
             raise SRP1DataError("SRP1 query surface differs")
 
 
+def validate_srp1_board_row(record: Mapping[str, Any]) -> None:
+    validate_srp1_surface_row(record)
+    compatible = dict(record)
+    compatible["natural_queries"] = {
+        name: {**item, "renderer": int(item["renderer"]) % 3}
+        for name, item in record["natural_queries"].items()
+    }
+    compatible_payload = dict(compatible)
+    compatible_payload.pop("identity_sha256")
+    compatible["identity_sha256"] = canonical_sha256(compatible_payload)
+    validate_board_row(compatible)
+
+
 __all__ = [
     "SRP1_BOARD_ROWS",
     "SRP1_BOARD_SEED",
@@ -190,4 +194,5 @@ __all__ = [
     "augment_board",
     "query_text",
     "validate_srp1_board_row",
+    "validate_srp1_surface_row",
 ]

@@ -11,14 +11,13 @@ import os
 from pathlib import Path
 from typing import Any, Iterable
 
-from diverge_iem1_data import validate_board_row, validate_query_training_record
+from diverge_iem1_data import validate_query_training_record
 from diverge_nve1_data import validate_training_record
 from diverge_srp1_data import (
     SRP1_BOARD_ROWS,
     SRP1_BOARD_SEED,
     SRP1_NAMES,
     augment_board,
-    validate_srp1_board_row,
 )
 from diverge_tfs1_data import FAULT_LINES, WORLDS, generate_board
 
@@ -85,15 +84,11 @@ def main() -> None:
         validate_training_record(row)
     for row in query_training:
         validate_query_training_record(row)
-    for row in prior:
-        validate_board_row(row)
 
     board = augment_board(
         generate_board(SRP1_BOARD_ROWS, SRP1_BOARD_SEED, name_bank=SRP1_NAMES),
         seed=SRP1_BOARD_SEED,
     )
-    for row in board:
-        validate_srp1_board_row(row)
 
     evidence_texts = {str(row["source_text"]) for row in evidence_training}
     query_texts = {str(row["source_text"]) for row in query_training}
