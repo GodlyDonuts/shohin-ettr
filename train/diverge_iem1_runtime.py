@@ -527,6 +527,8 @@ def compile_query_batch(
 ) -> tuple[QueryCompilation, ...]:
     if len(texts) != len(packets):
         raise IEM1RuntimeError("IEM1 query batch geometry differs")
+    if not texts:
+        return ()
     records = [
         {"source_text": text, "symbols": list(packet.symbols)}
         for text, packet in zip(texts, packets, strict=True)

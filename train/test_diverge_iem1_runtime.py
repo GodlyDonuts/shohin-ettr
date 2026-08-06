@@ -15,6 +15,7 @@ from diverge_iem1_runtime import (
     IntegratedEpistemicMachine,
     NaturalQueryReceipt,
     canonical_sha256,
+    compile_query_batch,
     load_nve1_state,
     mutate_query_receipt,
     seal_natural_query,
@@ -85,6 +86,16 @@ def main() -> None:
         if parameter.grad is None or not torch.isfinite(parameter.grad).all()
     ]
     assert not invalid_gradients, invalid_gradients
+    assert (
+        compile_query_batch(
+            model,
+            (),
+            (),
+            compiler_commitment="c" * 64,
+            device=device,
+        )
+        == ()
+    )
 
     packet = SimpleNamespace(commitment="a" * 64, symbols=("alpha", "beta"))
     provisional = NaturalQueryReceipt(
