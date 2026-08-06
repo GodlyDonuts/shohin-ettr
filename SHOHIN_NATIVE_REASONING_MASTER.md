@@ -56459,3 +56459,9 @@ supplies every operation class; the finite-state projection supplies a legal
 field sequence. This is a real transfer result but still receives presegmented
 equations. The next gate removes that convenience by scanning one full
 question/work/final document into an ordered transaction packet sequence.
+
+NTA3 freezes that next boundary. The runtime no longer receives presegmented
+steps; it scans one full problem/reasoning/final document, extracts an ordered
+transaction stream, then invokes the unchanged learned operation head and
+typed contradiction executor. This tests source segmentation and execution
+composition, while remaining explicitly limited to arithmetic equation spans.

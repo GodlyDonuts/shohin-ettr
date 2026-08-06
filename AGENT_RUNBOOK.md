@@ -30984,3 +30984,16 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_one_zero_update_full_document_transaction_scanner_gate;_no_supervised_fit_before_scanner_result`.
+
+- **2026-08-06 12:10 EDT** -- **NTA3 full-document scanner freezes before
+  board materialization or result.**
+
+  Runtime inputs become one problem/reasoning/final document and contain no
+  structured step list. A source-only section scanner must recover all 963
+  transaction spans; unchanged NTA2 projection, learned operation head,
+  contradiction commit, and typed replay then execute them. Promotion requires
+  exact scanning of all 279 documents/963 spans and at least 250 autonomous
+  answers/trajectories with the existing causal drops. No weights update.
+
+  Decision:
+  `build_and_hash_the_document_board_then_run_one_zero_update_nta3_gate`.
