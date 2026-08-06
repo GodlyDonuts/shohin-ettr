@@ -31280,3 +31280,30 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_iem1_shared_semantic_transport;_preserve_tol3_nve1;_next_test_stage_owned_transactional_integration`.
+
+- **2026-08-06 16:13--16:24 EDT** -- **Read-only IEM1 ownership splice
+  localizes the failure and freezes DIVERGE-SOT1.**
+
+  New diagnostic `train/diagnose_diverge_iem1_stage_ownership.py` never
+  changes or promotes IEM1. It replaces only the failed shared source path
+  with immutable TOL3 packets, then applies the exact IEM1 checkpoint to
+  evidence and query text. Source is 256/256, evidence is 3,072/3,072, all 256
+  episodes seal, and sensitive answers are 256/256. General natural query
+  transactions remain only 280/768 exact. Result SHA-256 is
+  `d4b8f208...9a3c`, stored read-only.
+
+  This attributes the catastrophic IEM1 result to source semantic ownership,
+  not the factorized runtime, while showing that the shared query path is not
+  a qualified general owner. Do not reinterpret the splice as an IEM1 pass.
+
+  The successor is frozen in
+  `docs/research/DIVERGE_SOT1_STAGE_OWNED_TRANSACTIONS.md`. SOT1 packages
+  immutable TOL3 WORLD and NVE1 EVIDENCE owners with one fresh disjoint QUERY
+  owner. Transactions bind type, provenance, packet/source identity, and
+  owner-state hash. Query plasticity uses a two-phase commit: non-target owner
+  hashes must remain bit-identical. The opened IEM1 board is development-only;
+  generate one fresh 256-program board at seed `2026080617` before training.
+  No continuation pretraining is authorized.
+
+  Decision:
+  `freeze_sot1_stage_owned_transactions;_build_fresh_board_then_one_isolated_query_owner_and_composite_gate`.

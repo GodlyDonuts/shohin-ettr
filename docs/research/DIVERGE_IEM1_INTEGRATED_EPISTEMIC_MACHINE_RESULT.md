@@ -109,6 +109,25 @@ controls, protected regressions, and promotion conditions; its diagnostic
 SHA-256 is
 `9ee1baef29cd53e11b8817dd3750f3d9e46a2cabdd3bf4a63b8a0a8986cef674`.
 
+## Read-only stage-ownership attribution
+
+One post-result diagnostic changes no weight or gate. It replaces only the
+failed IEM1 source path with the immutable TOL3 source owner, then applies the
+unchanged IEM1 evidence and query paths to those qualified packets:
+
+- source programs: **256/256**;
+- IEM1 evidence receipts: **3,072/3,072**;
+- fully sealed episodes: **256/256**;
+- IEM1 natural query transactions: **280/768** exact;
+- sensitive end-to-end answers: **256/256**.
+
+This does not rescue IEM1. It localizes the catastrophic end-to-end failure to
+shared source semantic ownership and independently shows that the general
+query owner is not qualified. The evidence owner and sensitive late-read path
+remain useful initialization evidence for a stage-owned successor. Diagnostic
+SHA-256 is
+`d4b8f208836d9aa6742fb0ee663b936d6a9f8d4e520a349ed52e0f043e239a3c`.
+
 ## Decision and architectural implication
 
 IEM1 fails the first component condition by the maximum possible margin. The

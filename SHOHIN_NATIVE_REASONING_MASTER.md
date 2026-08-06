@@ -17,6 +17,13 @@ valid source packet existed; zero-denominator integrity flags are not a pass.
 The H100 and independent CPU decisions match exactly. Official evaluation
 SHA-256 is `afe52c7e...04bf`; checkpoint SHA-256 is `c7560eb5...e84a`.
 
+A read-only owner splice then restores only the immutable TOL3 source packets.
+Without changing IEM1 weights, evidence becomes 3,072/3,072, all 256 episodes
+seal, and sensitive answers become 256/256. General natural queries are still
+only 280/768 exact. Diagnostic SHA-256 is `d4b8f208...9a3c`. This localizes the
+catastrophic failure to shared source ownership while rejecting the IEM query
+path as a general reusable owner.
+
 The architectural lesson is that a universal shared encoder with anonymous
 latent semantic transport is too brittle for transaction-critical ownership.
 The next mechanism must retain qualified source/evidence/query specialists in
@@ -25,6 +32,14 @@ transaction bus with a model-owned recurrent controller. TOL3, TFS1, and NVE1
 remain protected positive controls; no continuation pretraining is authorized.
 See
 `docs/research/DIVERGE_IEM1_INTEGRATED_EPISTEMIC_MACHINE_RESULT.md`.
+
+**Next frozen gate:** DIVERGE-SOT1 replaces universal ownership with three
+disjoint stage owners, typed provenance-bound transactions, and two-phase
+owner-local plasticity. TOL3 and NVE1 remain immutable; one fresh isolated
+QUERY owner is trained and serialized with them in one composite checkpoint.
+The opened IEM1 board is development-only, and SOT1 requires a fresh 256-row
+board before training. See
+`docs/research/DIVERGE_SOT1_STAGE_OWNED_TRANSACTIONS.md`.
 
 **Current architecture result (2026-08-06 14:32 EDT): DIVERGE-NVE1 passes the
 complete natural-variable evidence gate.** One 435,076-parameter,
@@ -56729,3 +56744,35 @@ qualified specialists, enforce typed provenance-bound contracts, and train a
 model-owned recurrent controller over their transactions in one composite
 checkpoint. This is a new integration mechanism, not an IEM1 transport or
 capacity repair.
+
+The read-only ownership splice makes that attribution quantitative. Immutable
+TOL3 packets restore source programs to 256/256; unchanged IEM1 evidence is
+3,072/3,072, all 256 episodes seal, and sensitive answers are 256/256. IEM1's
+general query transactions remain only 280/768 exact. The splice cannot
+promote IEM1, but it proves that complete stage ownership recovers the path
+without changing the factorized runtime. Diagnostic SHA-256 is
+`d4b8f208...9a3c`.
+
+### DIVERGE-SOT1 gate: stage-owned epistemic transactions
+
+SOT1 freezes the direct successor before implementation. One composite model
+contains three disjoint parameter owners: immutable TOL3 WORLD semantics,
+immutable NVE1 EVIDENCE binding, and one fresh isolated natural QUERY binder.
+Owners can communicate only through typed transactions that bind schema,
+source/packet identity, provenance, and exact owner-state commitment. The
+epistemic microkernel checks and routes transactions but cannot infer or repair
+their semantic fields.
+
+Plasticity uses a two-phase commit. The first gate updates only the QUERY
+owner; WORLD and EVIDENCE hashes must remain bit-identical before and after
+training and composite reload. The opened IEM1 board is development-only. A
+fresh 256-program board with new identities and query surfaces is generated
+at seed `2026080617` before training. The conjunctive gate requires retained
+source/evidence ceilings, at least 752/768 exact natural queries, at least
+245/256 exact sensitive answers, the prior abstention/causal/integrity
+conditions, and exact owner hash isolation.
+
+This is not an IEM1 variant and does not claim general reasoning. It tests the
+new architectural thesis that semantic ownership and atomic interface
+contracts are necessary for plastic neural components to coexist without one
+lost primitive invalidating the entire reasoning trajectory.
