@@ -29917,3 +29917,17 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_one_hash_locked_frozen_hsc1_ulc1_gate_then_accept_or_close_without_variants`.
+
+- **2026-08-05 23:53--23:55 EDT** -- **ULC1-HSC1 smoke `743149` stops in
+  preflight before model loading.**
+
+  The immutable `2e7b326` runtime and all four model/tokenizer hashes verify,
+  but Newton's Python environment has no `pytest` module. The job exits while
+  invoking the test runner; no model is loaded, no episode is scored, and no
+  architecture evidence is produced. The test files already expose strict
+  standalone entry points, so the replacement runtime invokes those directly.
+  Model code, score tensors, seed, K, cohorts, evidence, controls, accounting,
+  and pass/kill thresholds remain byte-identical.
+
+  Decision:
+  `replace_only_the_absent_pytest_preflight_and_repeat_the_mechanical_smoke`.

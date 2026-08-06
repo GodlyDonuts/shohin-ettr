@@ -42,9 +42,8 @@ trap 'test ! -e "$OUT" || chmod a-w "$OUT"' EXIT
 
 echo "[ulc1-hsc1] node=${SLURMD_NODENAME:-?} code=$CODE_ROOT commit=$SOURCE_COMMIT"
 nvidia-smi -L
-"$PYTHON" -m pytest -q \
-  "$CODE_ROOT/train/test_diverge_ulc1_mdd.py" \
-  "$CODE_ROOT/train/test_evaluate_diverge_ulc1_hsc1.py"
+"$PYTHON" "$CODE_ROOT/train/test_diverge_ulc1_mdd.py"
+"$PYTHON" "$CODE_ROOT/train/test_evaluate_diverge_ulc1_hsc1.py"
 "$PYTHON" "$CODE_ROOT/train/evaluate_diverge_ulc1_hsc1.py" \
   --base "$PARENT" \
   --tokenizer "$TOKENIZER" \
