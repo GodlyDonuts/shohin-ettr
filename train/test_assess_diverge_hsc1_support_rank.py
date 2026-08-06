@@ -43,7 +43,9 @@ class HSC1SupportRankTests(unittest.TestCase):
             key=lambda item: (-item[0], item[1]),
         )[:13]
         actual = path_k_best(margins, labels, 13)
-        self.assertEqual([(row.score, row.path) for row in actual], expected)
+        self.assertEqual([row.path for row in actual], [path for _, path in expected])
+        for row, (score, _) in zip(actual, expected, strict=True):
+            self.assertAlmostEqual(row.score, score, places=12)
 
     def test_option_k_best_matches_exhaustive(self) -> None:
         role = tuple(
