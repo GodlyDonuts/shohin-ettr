@@ -116,3 +116,22 @@ after a component pass closes NFE1 without a second seed, width, duration,
 renderer, or loss variant. A pass authorizes a broader natural program/evidence
 compiler with variables and predicates; it does not authorize continuation
 pretraining or a general reasoning claim.
+
+## 6. Pre-implementation control amendment
+
+Frozen on 2026-08-06 before implementation, data materialization, model
+training, or evaluation. The original `operation shift` control was specified
+as the cyclic label permutation `+ -> - -> * -> +`. NFE1 deliberately retains
+all three scalar operations at every fault line, so that permutation preserves
+the candidate function set exactly. Full hard-evidence factorization is
+therefore mathematically invariant to it, making the stated collapse condition
+impossible rather than discriminating.
+
+Replace only that impossible control with an operand-semantic shift: the
+executor receives `argument + 1` for every candidate operation while the
+source-sealed packet, operation support, evidence receipts, and expected answer
+remain unchanged. This tests causal dependence on the compiled argument and
+arithmetic transition path without removing or relabeling any candidate.
+Condition 7 consequently reads `shuffled evidence, initial-state reset, and
+operand-semantic shift` everywhere. All other data, architecture, budgets,
+controls, thresholds, and one-run rules remain unchanged.
