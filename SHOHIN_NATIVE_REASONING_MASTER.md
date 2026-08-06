@@ -56419,3 +56419,14 @@ states. This is evaluated with no answer labels or oracle error location and
 must localize the first error as well as answer, so always restarting from the
 first step cannot satisfy the gate. Even a pass remains bounded to the closed
 synthetic operation vocabulary; natural verified-trace transfer is separate.
+
+FTA1-AC1 passes that composition test: 480/480 exact first-error locations,
+terminals, and complete trajectories with zero invalid states. Trusting the
+wrong trace or ignoring its first contradiction scores zero; swapping initial
+typed packets scores two and shifting operations scores zero. This is the
+first Shohin research mechanism in this lineage that autonomously compiles,
+falsifies, commits, and executes every held synthetic program without an
+oracle location. Its boundary is equally important: the compiler sees a
+closed arithmetic/register/string grammar and the state algebra is exact
+engineered code. The next test is zero-shot transfer to independently
+answer-verified natural arithmetic traces, not a claim of general reasoning.

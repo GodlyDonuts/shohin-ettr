@@ -30889,3 +30889,25 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_the_one_cpu_exact_autonomous_gate;_natural_verified_trace_transfer_only_on_a_conjunctive_pass`.
+
+- **2026-08-06 11:44 EDT** -- **FTA1-AC1 passes exact autonomous fault
+  localization and replay on all 480 held programs.**
+
+  Private commit `e88d3e5` freezes the source-sealed evaluator and gate before
+  execution. The runtime reads only compiled typed packets: no oracle error
+  index, answer label, query, CRP1 generator, or language-model hidden state.
+  It reaches 480/480 exact first-conflict selections, terminals, and complete
+  trajectories, 160/160 in every family, all 3,854 transitions exact, and zero
+  invalid packets. Trusting corrupted source claims or ignoring the first
+  contradiction scores 0/480; initial packet swap scores 2/480 and operation
+  shift 0/480. Every frozen condition passes.
+
+  Evaluation/gate SHA-256 values are
+  `853cc7ac6b888e50218b3d5ae81b272801165e7801fdc5d7b511ea5f7067ab08` /
+  `6441a6d9bdfd9b3d33ddde1a14083b8f26d08c0234057555993d3c7c8b161100`.
+  This proves autonomous model-compiled execution in the closed typed board,
+  not open-domain reasoning: the algebra and operation vocabulary remain
+  engineered.
+
+  Decision:
+  `run_one_zero_shot_transfer_gate_on_answer_verified_natural_arithmetic_traces;_do_not_call_ac1_general_reasoning`.

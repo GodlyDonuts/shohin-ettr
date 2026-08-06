@@ -1,6 +1,6 @@
 # DIVERGE-FTA1-AC1: Autonomous Contradiction Replay
 
-Status: frozen before implementation result on 2026-08-06.
+Status: passed the one frozen autonomous gate on 2026-08-06.
 
 ## Hypothesis
 
@@ -47,3 +47,27 @@ A pass authorizes one natural verified-trace transfer gate. It does not by
 itself establish open-domain language reasoning: the operation vocabulary and
 typed algebra are still closed and engineered. A failure closes this exact
 autonomous composition without selector, threshold, or control repair.
+
+## Result
+
+The committed evaluator runs on the untouched 480-row depth/value/renderer OOD
+board and passes every condition:
+
+| Arm | First-error selection | Terminal | Complete trajectory |
+|---|---:|---:|---:|
+| normal contradiction replay | **480/480** | **480/480** | **480/480** |
+| trust corrupted source | 0/480 | 0/480 | 0/480 |
+| ignore first contradiction | 0/480 | 0/480 | 0/480 |
+| initial typed packet swap | 77/480 | 2/480 | 2/480 |
+| operation shift | 57/480 | 0/480 | 0/480 |
+
+Normal replay is 160/160 in each scalar, register, and symbolic family, has
+zero invalid packets, and executes all 3,854 transitions exactly. The learned
+finite-state compiler supplies the source roles and operation; the hard typed
+contradiction/transaction circuit supplies exact commit and state evolution.
+
+Evaluation/gate SHA-256 values are
+`853cc7ac6b888e50218b3d5ae81b272801165e7801fdc5d7b511ea5f7067ab08` /
+`6441a6d9bdfd9b3d33ddde1a14083b8f26d08c0234057555993d3c7c8b161100`.
+The result authorizes one zero-shot natural verified arithmetic-trace transfer
+gate. It does not authorize a broad reasoning claim or long training run.
