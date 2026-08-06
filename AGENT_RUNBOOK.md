@@ -30322,3 +30322,17 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_one_ltm1_h100_smoke_then_one_matched_fit_gate_without_nearby_variants`.
+
+- **2026-08-06 03:29 EDT** -- **LTM1 smoke `743301` stops before model load
+  on read-only Python bytecode output; no architecture evidence exists.**
+
+  The immutable capsule reaches H100 `evc32` and passes all seven workspace
+  tests, then explicit `py_compile` receives `EACCES` while attempting to
+  create `train/__pycache__` inside the read-only source. Qwen is not loaded,
+  no optimizer exists, and zero examples or updates run. Redirect
+  `PYTHONPYCACHEPREFIX` to node-local scratch and repeat only the identical
+  two-update smoke from a new immutable commit/capsule. Model, data, seed,
+  geometry, objective, and gate remain unchanged.
+
+  Decision:
+  `repair_only_read_only_bytecode_output_then_repeat_the_ltm1_smoke`.

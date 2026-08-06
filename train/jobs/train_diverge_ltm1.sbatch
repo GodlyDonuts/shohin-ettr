@@ -24,6 +24,8 @@ export OPENBLAS_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export TOKENIZERS_PARALLELISM=false
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+export PYTHONPYCACHEPREFIX=${SLURM_TMPDIR:-/tmp/$USER/$SLURM_JOB_ID}/pycache
+mkdir -p "$PYTHONPYCACHEPREFIX"
 cd "$BASE"
 
 test "$(sha256sum "$MODEL/config.json" | awk '{print $1}')" = \
