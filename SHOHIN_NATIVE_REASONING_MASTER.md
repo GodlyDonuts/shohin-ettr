@@ -56473,3 +56473,23 @@ to-falsification-to-execution pipeline for the closed integer arithmetic
 domain. It does not solve the key scaling boundary: learned compilation into a
 broader typed operation language. That is now the active architecture target;
 the closed FTA1/NTA subsystem receives no more local tuning.
+
+### DIVERGE-TOL1 result: semantics transfer, binding fails
+
+TOL1 extends the target machine to exact rationals, named registers, direct
+updates, swaps, six comparisons, guarded branches, and a late query. A
+515,362-parameter finite-state compiler reaches 512/512 exact development
+programs after 2,000 H100 updates, but the frozen 1,024-program OOD gate fails:
+98.348% operation classification, 68.481% exact typed instructions, zero exact
+complete programs, and 16.797% exact answers. The raw role control scores zero
+answers.
+
+This is a sharper boundary than a generic failure. SET is 100% and direct
+arithmetic remains roughly 89--93%, so learned operation meaning survives
+disjoint names and longer programs. GUARD falls to 16.08% exact and QUERY to
+68.55% because the per-clause model lacks the document's declared-register
+quotient and binds ordinary words into state roles after held-out word-order
+changes. TOL1 is closed. The successor must make binding contextual and
+relational: one source-owned register table, local operation/comparison
+anchors, typed anchor-to-argument edges, separately decoded guard regions, and
+canonical symmetric operations.

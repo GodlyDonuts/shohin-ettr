@@ -31020,3 +31020,32 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `freeze_fta1_ac1_nta2_nta3_as_working_closed_subsystem;_design_broader_typed_operation_learning_before_any_more_training`.
+
+- **2026-08-05 18:05 EDT** -- **DIVERGE-TOL1 learns broad operation names but
+  fails variable-role transfer under held-out word order.**
+
+  Private commit `89622d5` froze an exact rational register machine and one
+  515,362-parameter recurrent source compiler over direct updates, SWAP,
+  six-way guarded updates, and late QUERY. Its 24,000/512/1,024 board contains
+  263,972/5,633/16,888 clauses with no split identity overlap; every OOD row
+  has depth 9--14 and both composition bigrams absent from training. Board
+  hashes are train `d8b4af07...b52b8ba`, development
+  `790e4098...54a108`, and OOD `f8f94746...189f70`.
+
+  Smoke `743662` and component `743668` completed cleanly. The component ran
+  2,000 updates in 96.879 seconds, used 621,024,768 peak GPU bytes, and reached
+  512/512 development programs and answers. Unopened OOD `743681` scores
+  16,609/16,888 opcodes but only 11,565/16,888 exact instructions, 0/1,024
+  complete programs, and 172/1,024 answers. SET is perfect; GUARD is only
+  403/2,506 exact and QUERY 702/1,024. Ordinary words compete with registers
+  because the clause-local compiler has no document symbol table. Evaluation
+  and gate hashes are `d6ab92ca...d6c98` / `a3f5e4cb...b3517`.
+
+  TOL1 is closed with no local width/duration/renderer tuning. Build the next
+  interface around a document-owned register quotient, local semantic anchors,
+  pairwise anchor-to-argument relations, independent guard-region decoding,
+  and symmetric-bytecode canonicalization. The opened TOL1 OOD board is now
+  development evidence only; any promoted successor needs a fresh renderer.
+
+  Decision:
+  `kill_clause_global_tol1;_build_document_symbol_table_and_anchor_relational_compiler`.
