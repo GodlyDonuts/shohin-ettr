@@ -55643,3 +55643,26 @@ once ambiguity reaches eight worlds on this generated board. No H100 receipt,
 continuation pretraining, public benchmark, or unrestricted reasoning claim is
 authorized. Aggregate SHA-256 is
 `8e4405920379b7c0a2f4a0c9acc463839a3816b4a87e84f78fcb9d656e17aaab`.
+
+### DIVERGE-SC1 raw-source compiler (2026-08-05)
+
+The successful DIVERGE role-copy component was not autonomous: it received
+gold physical records and options in separate model calls. DIVERGE-SC1 keeps
+the exact high-ambiguity DIVERGE packet/executor but replaces that source
+boundary with one complete raw-source pass. It emits token roles, source-gap
+scores, and pairwise binding factors, then hard-decodes complete records while
+keeping physical occurrences separate from exact-byte nominal identity.
+
+The CPU mechanism gate passes on 1,000 episodes across train, lexical,
+renderer, and composition cohorts. Joint decode and an independent reference
+are 100% exact; independent local, pair-disabled, and boundary-shuffled arms
+are 0%; alpha renaming and post-seal poisoning are 100% invariant; 99.7% of
+episodes contain a locally rank-two/three gold field; and incorrectly fusing
+occurrences by nominal identity leaves only 5.2% exact. A retained 1,024-
+candidate calibration fails closed once; the frozen 4,096 cap covers the
+measured 1,124-proposal maximum without changing scores or gates.
+
+This proves structured compiler mechanics only. One bounded frozen-Smol neural
+seed is staged at 1,200 updates / 9,600 charged episodes. It must learn the raw
+roles, boundaries, and associations and clear the held-out packet floors before
+any additional seeds or end-to-end DIVERGE claim.

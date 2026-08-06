@@ -29581,3 +29581,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_broad_diverge_v0_promotion_and_retain_only_the_measured_high_ambiguity_delayed_recovery_boundary`.
+
+- **2026-08-05 20:00--21:15 EDT** -- **DIVERGE-SC1 raw-source compiler CPU
+  mechanics pass; one autonomous neural seed is staged.**
+
+  The qualified DIVERGE token-role pilot was found to receive every physical
+  record and option in separate model calls. DIVERGE-SC1 removes that scaffold:
+  one raw-source pass emits token roles, source-gap boundaries, and pairwise
+  binding factors; a hard complete-object decoder keeps physical occurrences
+  separate from exact-byte nominal identity and seals one coherent packet.
+  The existing DIVERGE executor is unchanged.
+
+  The 1,000-episode CPU board passes at 100% joint/reference parity, joint
+  exactness, alpha-renamed exactness, and post-seal source-poison invariance.
+  Independent local, pair-disabled, and boundary-shuffled controls are 0%; the
+  occurrence-fused control is 5.2%; 99.7% of episodes contain a locally rank-
+  two/three gold field. Mean candidate counts are 59.74 options and 305.705
+  records. One pre-freeze 1,024-candidate calibration failed closed on a
+  452-token/nine-record episode with 1,124 proposals. That negative is retained;
+  the production cap is frozen at 4,096 before neural results. Calibration and
+  final report SHA-256 values are
+  `61dd90839b534f1e934d5bc3a9f2c7e88b1a99be8bc7b84fa65a85de5d48c4c2` and
+  `1626e3fe5fbba89203bf76c5368da8fe5a847d398cec4d2dde02bbadfaa031f0`.
+
+  The bounded neural executable is now implemented. It uses frozen layer-17
+  SmolLM2 residuals, a shared 192-wide two-layer encoder warm-started only from
+  the immutable qualified role-copy encoder, and new role/boundary/64-wide pair
+  heads. Training is frozen at 1,200 updates, batch 8, 9,600 charged episodes;
+  evaluation uses 256 fresh episodes in each train, lexical, renderer, and
+  composition cohort. Run a finite H100 smoke first, then one full seed. The
+  remaining four seeds are allowed only if seed one passes the frozen support,
+  packet, shift, source-poison, and no-overflow floors.
+
+  Decision:
+  `promote_exact_sc1_cpu_mechanics_to_one_raw_source_neural_seed_without_changing_diverge_execution`.
