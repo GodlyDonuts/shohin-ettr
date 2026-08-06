@@ -30997,3 +30997,26 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `build_and_hash_the_document_board_then_run_one_zero_update_nta3_gate`.
+
+- **2026-08-06 12:12 EDT** -- **NTA3 passes full-document source scanning
+  and autonomous typed replay on all 279 corpus traces.**
+
+  Board SHA-256
+  `76587f9645cc5499071400b5fe287e2da69701df02f2c4b6f8383f05f914e1b7`
+  binds 279 problem/reasoning/final documents and 963 transactions with no
+  runtime step arrays. The scanner recovers 279/279 documents and 963/963
+  transaction hashes. The unchanged learned operation head plus constrained
+  fields and typed contradiction replay reaches 279/279 exact selections,
+  answers, and trajectories; causal controls remain 0/0/2/0 terminals for
+  trust/ignore/swap/operation shift. Evaluation/gate hashes are
+  `26f26c3828a6be87b8c079ed5675b87b4339328e8d4376186be139ef6f206405` /
+  `e3fb003da9f81445b24e8f74fd128642b79802cefff0ee82db97c8441819f1a4`.
+
+  The closed arithmetic transaction subsystem is now frozen. Do not spend
+  more experiments on its renderer, width, or duration. The next architectural
+  target is a learned typed operation language covering variables, signed and
+  rational constants, predicates, and stateful transforms, evaluated on
+  source-disjoint verified traces before Shohin integration.
+
+  Decision:
+  `freeze_fta1_ac1_nta2_nta3_as_working_closed_subsystem;_design_broader_typed_operation_learning_before_any_more_training`.

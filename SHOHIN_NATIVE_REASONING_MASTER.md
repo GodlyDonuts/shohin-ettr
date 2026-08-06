@@ -56465,3 +56465,11 @@ steps; it scans one full problem/reasoning/final document, extracts an ordered
 transaction stream, then invokes the unchanged learned operation head and
 typed contradiction executor. This tests source segmentation and execution
 composition, while remaining explicitly limited to arithmetic equation spans.
+
+NTA3 passes exactly: 279/279 full documents and 963/963 transaction spans are
+recovered, and all 279 traces are autonomously corrected through one coherent
+typed state lineage. This establishes a working source-document-to-transaction-
+to-falsification-to-execution pipeline for the closed integer arithmetic
+domain. It does not solve the key scaling boundary: learned compilation into a
+broader typed operation language. That is now the active architecture target;
+the closed FTA1/NTA subsystem receives no more local tuning.
