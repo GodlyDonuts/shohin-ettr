@@ -30759,3 +30759,43 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `isolate_the_reference_assessor_dependency_then_repeat_only_the_mechanical_smoke`.
+
+- **2026-08-06 11:03--11:07 EDT** -- **ATS1 smoke `743544` and scientific
+  fit `743546` complete cleanly; development is exact.**
+
+  The replacement smoke passes all tests, performs two finite updates, and
+  writes a verified atomic checkpoint. The frozen scientific job then trains
+  all 1,600 updates in 83.393 seconds on `evc38`. Its 443,156 parameters see
+  32,253,627 source bytes at 386,767 bytes/s and peak at 592,967,168 allocated
+  CUDA bytes. Final operation and role losses are effectively zero.
+
+  On the protected 96-row development probe, compiler operation, role, LHS,
+  RHS, argument, and validity rates are all 100%. Replay reaches 96/96 exact
+  terminals, 96/96 complete trajectories, and 389/389 exact transitions with
+  zero invalid packets. Initial-packet swap and operation shift each score
+  0/96. Checkpoint SHA-256 is
+  `3c4fbb93be0bbc16fcbd4d58480da4594b674c693925faf5dd564a9204ed715f`.
+
+  Decision:
+  `run_the_one_untouched_480_row_forced_ood_gate`.
+
+- **2026-08-06 11:08 EDT** -- **ATS1 OOD evaluation `743554` localizes a
+  source-span generalization failure; one control-only accounting fix is
+  required before final closure.**
+
+  Operation classes are 3,854/3,854 exact and every valid compiled packet
+  replays its full trajectory exactly. The compiler accepts only 3,093/3,854
+  held segments, however: scalar/register/symbolic validity is
+  93.276%/96.398%/51.541%. Forced terminal exactness is 272/480, split
+  100/160 scalar, 128/160 register, and 44/160 symbolic. There are 208 invalid
+  rows. This is a major improvement over RSM1's zero but fails every frozen
+  breadth threshold.
+
+  The initial-packet swap arm was accidentally skipped because its evaluator
+  required all 480 initial packets to be valid before rolling any. Correct it
+  to roll only the valid packets and rescore the same immutable checkpoint;
+  treatment tensors, source compiler, data, threshold, and scientific result
+  remain unchanged. No retraining or autonomous run is authorized.
+
+  Decision:
+  `correct_only_partial_valid_packet_swap_accounting_then_finalize_the_failed_gate_from_the_same_checkpoint`.

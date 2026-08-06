@@ -210,7 +210,9 @@ def _rolled_states(
     output = dict(starts)
     by_family: dict[str, list[str]] = defaultdict(list)
     for row in rows:
-        by_family[str(row["family"])].append(str(row["identity_sha256"]))
+        identity = str(row["identity_sha256"])
+        if identity in starts:
+            by_family[str(row["family"])].append(identity)
     for identities in by_family.values():
         if len(identities) < 2:
             raise ATS1ProductError("packet-swap control needs two rows per family")
@@ -237,7 +239,7 @@ def evaluate_replay(
         key = (identity, selection - 1, "wrong")
         if key in compiled:
             starts[identity] = compiled[key].lhs
-    if ablation == "initial_swap" and len(starts) == len(rows):
+    if ablation == "initial_swap":
         starts = _rolled_states(rows, starts)
 
     totals: Counter[str] = Counter()
