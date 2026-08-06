@@ -55895,3 +55895,31 @@ adaptation rather than another unconditioned classifier. Report/checkpoint
 SHA-256 values are
 `265ef25b99a64ee58f38acc1b0d7506a3e08adb3194b98069c1fc29f1672b24a` /
 `19e82c966adb753d3159235a60f3923bc591459476b3fbc8e148b39311cb3eed`.
+
+### DIVERGE-QTG1 query-conditioned source result (2026-08-06)
+
+QTG1 made the source computation query-conditioned and jointly adapted a copy
+of HSC1's source-side memory stack. Ten fixed natural-language questions each
+requested one before/after register value; one shared gatherer selected atomic
+mentions and an exact one-to-one assignment preserved their provenance. This
+was the final bounded isolated evidence-reader test.
+
+The 2.17M-parameter model fits the train renderer almost exactly: 99.905%
+complete state pairs, 99.975% complete assignments, and 99.993% selected
+values over 20,000 held train-renderer records. It does not learn transferable
+language grounding. Complete state-pair exactness falls to 23.080% lexical,
+0.710% renderer, and 0% composition; complete assignments are 28.985%, 0%,
+and 0%. The source-reset control gives zero valid packets in every cohort,
+showing that adaptation is used but overfits the training language. Assignment
+integrity, duplicate/overflow rejection, frozen backbone, and the qualified
+learned executor/query remain sound.
+
+This closes the isolated source-interface sequence. Whole spans, pooled fields,
+globally matched mentions, and query-conditioned pointers all fail unseen
+nominal grounding when trained apart from the trajectory they must support.
+No QTG1 repair or full composition is run. The next candidate must train one
+end-to-end source -> persistent state -> recurrent execution -> late query
+trajectory on a capable development backbone, with DIVERGE factorization used
+only if the jointly learned trajectory earns it. Report/checkpoint SHA-256
+values are `0b30d6698b583901c67b1a9095d99238e5eb2aabb295d41476988005748f2d18` /
+`623172dee51317cc01d1b5f07c0048637581beab83fd96ee00bc7f75af74e9f0`.

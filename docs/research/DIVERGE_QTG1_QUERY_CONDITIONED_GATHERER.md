@@ -144,3 +144,46 @@ token/span/pointer reader.
 
 No continuation pretraining, public benchmark optimization, or general
 reasoning claim is authorized by this gate.
+
+## 7. Frozen result
+
+Newton job `743269` completed the only authorized seed on one H100 in 38m40s.
+The optimizer executed exactly 1,600 updates / 102,400 source records /
+1,024,000 query-conditioned sequences. The optimizer phase reached update
+1,600 after 1,400.67 seconds; the complete training plus four-cohort and
+source-reset evaluation took 2,302.67 seconds. The model used 2,170,241
+trainable parameters and 2,381,004,800 peak allocated CUDA bytes.
+
+The in-distribution fit is nearly exact: before and after states are each
+99.94%, complete state pairs 99.905%, complete assignments 99.975%, and
+selected values 99.993%. That fit does not transfer:
+
+| cohort | before | after | complete pair | assignment | selected value | valid |
+|---|---:|---:|---:|---:|---:|---:|
+| train | 99.940% | 99.940% | 99.905% | 99.975% | 99.993% | 99.975% |
+| lexical | 27.755% | 28.155% | 23.080% | 28.985% | 79.0815% | 34.160% |
+| renderer | 3.745% | 0.780% | 0.710% | 0.000% | 37.570% | 31.990% |
+| composition | 0.000% | 0.015% | 0.000% | 0.000% | 23.7525% | 4.645% |
+
+Source adaptation is causally necessary but not sufficient. Resetting the
+source adapter to its immutable HSC1 initialization produces zero complete
+state pairs and zero valid packets in all four 2,000-record diagnostics.
+Question and value shuffles also produce zero complete pairs, but the shifted
+treatment is too weak to satisfy the frozen 50-point causal-drop gates. There
+are no accepted duplicate mentions or overflows, renderer parity is 100%, and
+the frozen backbone, learned executor, and learned query hashes remain
+identical. Shifted valid packets nevertheless contain 2,188 lexical, 63,973
+renderer, and 9,194 composition provenance mismatches.
+
+This is a semantic-generalization failure, not an assignment, executor, query,
+or infrastructure failure. Canonical typed questions plus joint adaptation of
+the small HSC1 source stack memorize the training renderer while failing unseen
+nominal and compositional grounding. The conjunctive gate fails, so no full
+HSC1 -> ULC1 -> QTG1 composition run is authorized.
+
+QTG1 and the entire isolated token/span/pointer evidence-reader sequence are
+closed without repair. The ordered successor must jointly train the language
+source, persistent state trajectory, recurrent execution, and late query path
+on a capable development backbone. Report/checkpoint SHA-256 values are
+`0b30d6698b583901c67b1a9095d99238e5eb2aabb295d41476988005748f2d18` /
+`623172dee51317cc01d1b5f07c0048637581beab83fd96ee00bc7f75af74e9f0`.

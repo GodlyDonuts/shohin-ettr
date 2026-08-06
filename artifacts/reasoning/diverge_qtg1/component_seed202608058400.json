@@ -1,0 +1,223 @@
+{
+  "architecture": {
+    "config": {
+      "ff_multiplier": 4,
+      "heads": 4,
+      "input_width": 192,
+      "layers": 1,
+      "maximum_candidates": 12,
+      "pointer_width": 96,
+      "width": 256
+    },
+    "exact_one_to_one_assignment": true,
+    "field_queries": 10,
+    "fieldwise_averaging": false,
+    "shared_gatherer": true,
+    "source_adapter_trainable_parameters": 1001472,
+    "source_audit": {
+      "forbidden_findings": [],
+      "pass": true
+    },
+    "total_trainable_parameters": 2170241,
+    "trainable_gatherer_parameters": 1168769
+  },
+  "arguments": {
+    "base": "/lustre/fs1/home/sa305415/shohin/train/ettr_smollm2_control_parent_a2026072801_7881d8e/joint-model-final.pt",
+    "batch_size": 64,
+    "device": "cuda",
+    "eval_batch_size": 64,
+    "eval_count": 20000,
+    "gatherer_lr": 0.0003,
+    "grad_clip": 1.0,
+    "heads": 4,
+    "hsc1_checkpoint": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_hsc1/neural_seed202608056900.pt",
+    "input_width": 192,
+    "layer": 17,
+    "layers": 1,
+    "local_heads": 4,
+    "local_layers": 2,
+    "log_every": 50,
+    "mei1_checkpoint": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_mei1/neural_seed202608057800.pt",
+    "output": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_qtg1/neural_seed202608058400.pt",
+    "parity_count": 10000,
+    "pointer_width": 96,
+    "report": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_qtg1/component_seed202608058400.json",
+    "reset_eval_count": 2000,
+    "sc1_checkpoint": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_sc1/neural_seed202608056200.pt",
+    "seed": 202608058400,
+    "source_lr": 0.0001,
+    "source_pair_width": 64,
+    "threads": 4,
+    "tokenizer": "/lustre/fs1/home/sa305415/shohin/artifacts/external/smollm2_135m_instruct_83212e1e/tokenizer.json",
+    "updates": 1600,
+    "weight_decay": 0.01,
+    "width": 256
+  },
+  "claim_boundary": "Synthetic query-conditioned source-interface gate only. Full DIVERGE composition remains blocked unless every conjunctive gate passes.",
+  "evaluations": {
+    "composition_shift": {
+      "accepted_duplicate_mentions": 0,
+      "accepted_overflow": 0,
+      "after_state_exact": 0.00015,
+      "before_state_exact": 0.0,
+      "complete_assignment_exact": 0.0,
+      "complete_state_pair_exact": 0.0,
+      "examples": 20000,
+      "provenance_mismatches": 9194,
+      "query_shuffle_complete": 0.0,
+      "selected_value_exact": 0.237525,
+      "valid_rate": 0.04645,
+      "value_shuffle_complete": 0.0
+    },
+    "lexical_shift": {
+      "accepted_duplicate_mentions": 0,
+      "accepted_overflow": 0,
+      "after_state_exact": 0.28155,
+      "before_state_exact": 0.27755,
+      "complete_assignment_exact": 0.28985,
+      "complete_state_pair_exact": 0.2308,
+      "examples": 20000,
+      "provenance_mismatches": 2188,
+      "query_shuffle_complete": 0.0,
+      "selected_value_exact": 0.790815,
+      "valid_rate": 0.3416,
+      "value_shuffle_complete": 0.0
+    },
+    "renderer_shift": {
+      "accepted_duplicate_mentions": 0,
+      "accepted_overflow": 0,
+      "after_state_exact": 0.0078,
+      "before_state_exact": 0.03745,
+      "complete_assignment_exact": 0.0,
+      "complete_state_pair_exact": 0.0071,
+      "examples": 20000,
+      "provenance_mismatches": 63973,
+      "query_shuffle_complete": 0.0,
+      "selected_value_exact": 0.3757,
+      "valid_rate": 0.3199,
+      "value_shuffle_complete": 0.0
+    },
+    "train": {
+      "accepted_duplicate_mentions": 0,
+      "accepted_overflow": 0,
+      "after_state_exact": 0.9994,
+      "before_state_exact": 0.9994,
+      "complete_assignment_exact": 0.99975,
+      "complete_state_pair_exact": 0.99905,
+      "examples": 20000,
+      "provenance_mismatches": 0,
+      "query_shuffle_complete": 0.0,
+      "selected_value_exact": 0.99993,
+      "valid_rate": 0.99975,
+      "value_shuffle_complete": 0.0
+    }
+  },
+  "frozen_backbone_after": "3167a097aa23bf9f5ee8f9c127d33340e82b3f1cf1b91bd3f46c0b64b9f83f0c",
+  "frozen_backbone_before": "3167a097aa23bf9f5ee8f9c127d33340e82b3f1cf1b91bd3f46c0b64b9f83f0c",
+  "frozen_component_hashes_after": {
+    "executor": "f6f75358a6fc36130c520b0f35c8a60e3c52683986d4feee5ae8870ad2ad7621",
+    "query": "c1dc5d557fdee6be2f9c0544a3ad10f9e77e3ba90ad7d974690fd4f58963dfc7"
+  },
+  "frozen_component_hashes_before": {
+    "executor": "f6f75358a6fc36130c520b0f35c8a60e3c52683986d4feee5ae8870ad2ad7621",
+    "query": "c1dc5d557fdee6be2f9c0544a3ad10f9e77e3ba90ad7d974690fd4f58963dfc7"
+  },
+  "gate": {
+    "after_state_99pct_each": false,
+    "before_state_99pct_each": false,
+    "candidate_source_audit": true,
+    "complete_assignment_99pct_each": false,
+    "frozen_algebra_query_unchanged": true,
+    "frozen_backbone_unchanged": true,
+    "pass": false,
+    "query_shuffle_drops_shifted_50pp_each": false,
+    "renderer_parity_100pct": true,
+    "selected_value_99_9pct_each": false,
+    "value_shuffle_drops_shifted_50pp_each": false,
+    "zero_integrity_failures": false
+  },
+  "inputs": {
+    "base_sha256": "8196f810a31e0abe7f3bf0eae0a37b103195f109b7a8e962c7b74b5710c98a02",
+    "hsc1_sha256": "34c7eaee885ba5201e6e07335add1737b7b7d26b2709861b7967e0b97be64a05",
+    "mei1_sha256": "bed9abefa2ecd2401c11515fe182d89871ab537bd8f8716bd5688ae693b79c29",
+    "sc1_sha256": "7b5348cacb1772bf45e34442e94010db71a6be20bd8d689477d037ac5fee2ffd",
+    "tokenizer_sha256": "9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c"
+  },
+  "renderer_parity": {
+    "distractor_field_labels": 0,
+    "examples": 10000,
+    "expected_mentions": 100000,
+    "pass": true,
+    "represented_mentions": 100000,
+    "word_mismatches": 0
+  },
+  "schema": "shohin-diverge-qtg1-component-training-v1",
+  "source_reset_evaluations": {
+    "composition_shift": {
+      "accepted_duplicate_mentions": 0,
+      "accepted_overflow": 0,
+      "after_state_exact": 0.0,
+      "before_state_exact": 0.0,
+      "complete_assignment_exact": 0.0,
+      "complete_state_pair_exact": 0.0,
+      "examples": 2000,
+      "provenance_mismatches": 0,
+      "selected_value_exact": 0.02535,
+      "valid_rate": 0.0
+    },
+    "lexical_shift": {
+      "accepted_duplicate_mentions": 0,
+      "accepted_overflow": 0,
+      "after_state_exact": 0.0,
+      "before_state_exact": 0.0,
+      "complete_assignment_exact": 0.0,
+      "complete_state_pair_exact": 0.0,
+      "examples": 2000,
+      "provenance_mismatches": 0,
+      "selected_value_exact": 0.01735,
+      "valid_rate": 0.0
+    },
+    "renderer_shift": {
+      "accepted_duplicate_mentions": 0,
+      "accepted_overflow": 0,
+      "after_state_exact": 0.0,
+      "before_state_exact": 0.0,
+      "complete_assignment_exact": 0.0,
+      "complete_state_pair_exact": 0.0,
+      "examples": 2000,
+      "provenance_mismatches": 0,
+      "selected_value_exact": 0.0213,
+      "valid_rate": 0.0
+    },
+    "train": {
+      "accepted_duplicate_mentions": 0,
+      "accepted_overflow": 0,
+      "after_state_exact": 0.0,
+      "before_state_exact": 0.0,
+      "complete_assignment_exact": 0.0,
+      "complete_state_pair_exact": 0.0,
+      "examples": 2000,
+      "provenance_mismatches": 0,
+      "selected_value_exact": 0.0228,
+      "valid_rate": 0.0
+    }
+  },
+  "status": "bounded-query-conditioned-source-gate-complete",
+  "training": {
+    "elapsed_seconds": 2302.6688413619995,
+    "final_batch": {
+      "gold_value_exact": 1.0,
+      "loss": 0.0005745403468608856,
+      "pointer_exact": 1.0,
+      "pointer_loss": 1.2935570339323021e-05,
+      "value_loss": 0.0005616048001684248
+    },
+    "gatherer_state_sha256": "a51563245b4c90be58a9cf846bfb985ea9972d3dfa074f57ad24b9253723c764",
+    "peak_cuda_bytes": 2381004800,
+    "query_conditioned_sequences": 1024000,
+    "source_adapted_sha256": "c614a70963fa905be44bb2bf0352d4f9e449e5f729b1ec65d956d0cd9ae3590c",
+    "source_initial_sha256": "afb36404aa2440339d839e0423584cd4ddb7bf5bbe5c326afd39dff03625dbaf",
+    "source_records": 102400,
+    "updates": 1600
+  }
+}

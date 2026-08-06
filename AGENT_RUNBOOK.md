@@ -30138,3 +30138,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_one_query_conditioned_source_gate_then_compose_once_only_on_a_conjunctive_pass`.
+
+- **2026-08-06 01:29--02:07 EDT** -- **DIVERGE-QTG1 closes the isolated
+  evidence-reader family; its exact train fit does not transfer.**
+
+  Immutable job `743269` ran the only authorized seed on `evc30` and finished
+  all 1,600 updates / 102,400 source records / 1,024,000 query-conditioned
+  sequences plus the frozen four-cohort evaluation in 38m40s. It exited 1
+  solely because the conjunctive component gate failed. The 2,170,241
+  trainable parameters reached 99.905% train complete-state pairs and 99.993%
+  selected-value exactness.
+
+  Held transfer is sharply negative. Complete state-pair exactness is 23.080%
+  lexical, 0.710% renderer, and 0% composition. Complete assignment exactness
+  is 28.985%, 0%, and 0%; selected-value exactness is 79.0815%, 37.570%, and
+  23.7525%. Resetting the adapted HSC1 source modules yields zero complete
+  pairs and zero valid packets in every cohort, proving the adaptation is used
+  but does not learn transferable grounding. Shifted valid packets contain
+  2,188 / 63,973 / 9,194 provenance mismatches. Renderer parity, source audit,
+  duplicate/overflow rejection, frozen backbone, and qualified executor/query
+  hashes all pass.
+
+  This is not an assignment or learned-algebra failure. Canonical typed
+  questions plus a separately trained source adapter memorize the training
+  renderer and fail unseen semantic binding. No full composition run follows,
+  and QTG1 receives no query, width, duration, layer, LR, optimizer, threshold,
+  renderer, or seed repair. No further isolated token/span/pointer reader is
+  authorized. The ordered successor jointly trains language grounding,
+  persistent typed state, recurrent execution, and late query behavior in one
+  end-to-end trajectory on a capable development backbone.
+
+  The report/checkpoint are read-only and hash-identical locally/Newton at
+  `0b30d6698b583901c67b1a9095d99238e5eb2aabb295d41476988005748f2d18` /
+  `623172dee51317cc01d1b5f07c0048637581beab83fd96ee00bc7f75af74e9f0`.
+
+  Decision:
+  `close_isolated_evidence_readers_and_build_one_joint_source_state_execution_query_trajectory`.
