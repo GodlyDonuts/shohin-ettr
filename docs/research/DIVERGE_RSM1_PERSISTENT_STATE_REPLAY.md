@@ -115,3 +115,26 @@ If and only if the component gate passes:
 
 A pass establishes only a bounded model-owned packet-to-state replay
 mechanism. Natural verified traces remain a separate transfer gate.
+
+## Result
+
+RSM1 fails the oracle-selection component gate and is closed. Job `743478`
+completed the frozen 1,600 updates in 614.601 seconds with 3,583,784 trainable
+parameters, 8,133,819 source tokens, 4,919,496 state-target tokens, 13,234.3
+source tok/s, and 6.64GB peak allocated CUDA memory. Frozen source and packet
+tensors remain unchanged.
+
+Forced OOD evaluation `743484` selects the gold packet on all 480 rows, but
+scores 0 exact selected-boundary states, 0 exact terminal states, and 0 exact
+complete trajectories. Only 2/2,662 active transitions are exact and 356
+terminal strings are malformed. Every family scores 0/160. Development
+free-running transition exactness is 0.2315% and oracle one-step exactness is
+0.4276%.
+
+Emitted states collapse to frequent templates such as `1,`, `1,,1`, and
+`vizzz`. The failure is therefore upstream of recurrent composition: the
+selected continuous CRP1 packet never enters an exact decodable byte-state
+manifold. This gate rejects flat hard-byte serialization as that interface; it
+does not show that a correctly initialized structured executor cannot reason.
+No autonomous, unguarded, seed, width, duration, loss, or vocabulary repair is
+authorized.

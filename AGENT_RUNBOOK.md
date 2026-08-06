@@ -30673,3 +30673,43 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_one_two_update_mechanical_smoke_then_one_guarded_1600_update_component_gate;_do_not_launch_autonomous_controls_on_component_failure`.
+
+- **2026-08-06 09:36--10:01 EDT** -- **DIVERGE-RSM1 fails before
+  composition; hard byte-state replay is closed without autonomous arms.**
+
+  Tokenizer audit passes all 5,760 board identities / 11,520 wrong-correct
+  renderings with zero truncation, maximum 547 source tokens, balanced family
+  counts, and operation-mask digest
+  `c335bfd825c380756a3f18ab40ccdbbf0ceb276d5a824185c60f0fb9b2fa5792`.
+  Audit report SHA-256 is
+  `9a165954f6dd2d79aa2f1e386d91db711d14d306b84bcf09d2ee3f159cfee4e4`.
+  Immutable capsule `diverge_rsm1_f19c6dc_r1` has SHA256SUMS SHA-256
+  `b261debc5af4473b525eeda6de2caac4785ad86f4705b1f356868f12f4f66943`.
+
+  Smoke `743473` completes in 57 seconds. Scientific job `743478` completes
+  all 1,600 updates in 614.601 seconds with 3,583,784 trainable replay
+  parameters, 8,133,819 source tokens, 4,919,496 state-target tokens,
+  13,234.3 source tok/s, and 6.64GB peak allocated CUDA memory. The frozen
+  SmolLM3+CRP1 source remains hash-identical. On the development probe,
+  selected-boundary exactness, terminal exactness, and complete trajectory
+  exactness are all zero; free-running transition exactness is 0.2315% and
+  oracle one-step exactness is 0.4276%.
+
+  Forced OOD evaluator `743484` removes localization as a confound: packet
+  selection is 480/480, but initial states, terminal states, and complete
+  trajectories are all 0/480. Only 2/2,662 transitions are exact and 356/480
+  terminal byte strings are invalid. Every family is 0/160. Emissions collapse
+  to common templates such as `1,`, `1,,1`, and `vizzz`, showing that the
+  selected CRP1 packet does not enter an exact decodable state manifold under
+  this interface. This is failure before recurrent composition, not evidence
+  about attainable arithmetic depth.
+
+  Checkpoint/training-report SHA-256 values are
+  `519666b45f9f637bc9d5ed013e542c1b268f07a992910b3101f88cbaef6f0fc4` /
+  `7fce0a066dcfbb4666d9b0bad1c50e18f0f42f76a113506a07ad26b50193adf1`;
+  evaluation/gate SHA-256 values are
+  `04ba067441912007a0c97fd395e0020968e7e27b794a906f63a1e7e859daf20b` /
+  `7e0237c7ee1c832cbe3f25e0d0b788405c7b5fd2b702271924c6accace642286`.
+
+  Decision:
+  `close_rsm1_without_autonomous_or_unguarded_runs;_reject_flat_byte_serialization_as_the_state_interface`.

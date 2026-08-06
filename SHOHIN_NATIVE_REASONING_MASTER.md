@@ -56301,3 +56301,48 @@ states. The component must reach 432/480 forced exact terminals, 136/160 in
 every family, and 128/160 exact complete hard trajectories per family with
 zero malformed states or changed frozen tensors. Failure closes RSM1 before
 autonomous controls. At this freeze point, no H100 result exists.
+
+### DIVERGE-RSM1 persistent discrete state replay result (2026-08-06)
+
+RSM1 is a decisive component failure. Its 3,583,784 trainable parameters
+complete 1,600 updates over 8,133,819 source tokens and 4,919,496 state-target
+tokens in 614.601 seconds. Peak allocated H100 memory is 6.64GB and the
+frozen SmolLM3+CRP1 source remains hash-identical.
+
+The forced-selection OOD result is:
+
+| Metric | Result |
+|---|---:|
+| packet selection | 480/480 |
+| exact selected-boundary state | 0/480 |
+| exact terminal state | 0/480 |
+| exact complete state trajectory | 0/480 |
+| exact individual transitions | 2/2,662 |
+| malformed terminal states | 356/480 |
+
+Scalar, register, and symbolic terminal accuracy are each 0/160. The emitted
+states collapse to frequent low-entropy templates (`1,`, `1,,1`, `vizzz`)
+rather than recovering episode values. Development agrees: 0% exact initial
+and terminal states, 0.2315% free-running transition exactness, and 0.4276%
+oracle one-step exactness.
+
+This localizes the failure before recurrent composition. CRP1 can localize a
+fault and condition language revision, but its six continuous prefix vectors
+do not become an exact flat character state through this decoder/training
+interface. RSM1 therefore does not test a successfully initialized executor;
+it tests and rejects flat hard-byte serialization as the bridge from CRP1 to
+execution. Autonomous and unguarded arms are correctly not run. A successor
+must change the state substrate, not retune this loss, seed, width, duration,
+or tokenizer.
+
+Immutable SHA-256 receipts:
+
+- training report/checkpoint:
+  `7fce0a066dcfbb4666d9b0bad1c50e18f0f42f76a113506a07ad26b50193adf1` /
+  `519666b45f9f637bc9d5ed013e542c1b268f07a992910b3101f88cbaef6f0fc4`;
+- forced OOD evaluation:
+  `04ba067441912007a0c97fd395e0020968e7e27b794a906f63a1e7e859daf20b`;
+- frozen component gate:
+  `7e0237c7ee1c832cbe3f25e0d0b788405c7b5fd2b702271924c6accace642286`;
+- tokenizer audit:
+  `9a165954f6dd2d79aa2f1e386d91db711d14d306b84bcf09d2ee3f159cfee4e4`.
