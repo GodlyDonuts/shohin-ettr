@@ -105,7 +105,7 @@ def main() -> None:
         json.dumps(
             {
                 "output": str(args.output),
-                "valid_segments": compiler["counts"]["valid"],
+                "valid_segments": compiler["counts"].get("valid", 0),
                 "segments": compiler["counts"]["segments"],
                 "selection_exact": arms["normal"]["counts"]["selection_exact"],
                 "terminal_exact": arms["normal"]["counts"]["terminal_exact"],

@@ -1,6 +1,6 @@
 # DIVERGE-NTA1: Natural Arithmetic Transfer
 
-Status: frozen before board construction or model result on 2026-08-06.
+Status: closed after the one frozen zero-shot gate on 2026-08-06.
 
 ## Question
 
@@ -35,3 +35,30 @@ renderer/source shift while keeping the transaction algebra fixed.
 The gate is zero-shot and one-pass. A pass authorizes one source-disjoint
 supervised natural-compiler gate; it does not authorize a general reasoning
 claim. A failure is localized before any natural-interface training.
+
+## Result
+
+The builder emits exactly 279 rows / 963 transactions at board SHA-256
+`d71f1875ca967e2ff84cf0ff9e9940794643685c42a6298af90151b1a958d5b3`.
+Depth counts are 78/60/78/63 for depths 2/3/4/5, and every wrong terminal
+differs from the verified answer.
+
+Zero-shot operation transfer is perfect: 963/963 operation classes. Unconstrained
+role argmax nevertheless yields 0/963 valid packets and therefore zero
+autonomous selections or answers. Token audit makes the boundary precise:
+
+- the source-free CLS position is predicted as `LHS_A` on all 963 segments;
+- all 2,748 LHS bytes and all 2,939 RHS bytes are otherwise exact;
+- 2,265/2,354 argument bytes are exact;
+- the remaining 86 errors assign leading digits of long subtraction arguments
+  to `RHS_A`, violating contiguous field structure.
+
+Thus semantic operation recognition transfers, but independent token argmax
+does not preserve a valid finite-state field sequence after the renderer shift.
+Evaluation/gate SHA-256 values are
+`c0c270778cb643316776e84b3512d7ef738d93272a20b9f57f4e8d4b9e4e4750` /
+`ea86c3bde7a4c83b8333aafec78a5a6285c493501273d6b1db9750a5d0fb4e09`.
+
+The ordered successor is one zero-update constrained finite-state decoder that
+forces CLS/punctuation to `OTHER` and finds the highest-scoring legal
+`LHS -> argument -> RHS` field path. NTA1 is not rescored.

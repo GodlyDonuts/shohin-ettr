@@ -30930,3 +30930,24 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `build_and_hash_the_279_row_board_then_run_the_one_zero_shot_gate;_no_weight_update_before_result`.
+
+- **2026-08-06 11:54--12:00 EDT** -- **NTA1 zero-shot transfer fails only
+  at unconstrained role sequencing; operation semantics are 963/963.**
+
+  Board SHA-256 is
+  `d71f1875ca967e2ff84cf0ff9e9940794643685c42a6298af90151b1a958d5b3`:
+  279 corpus-derived rows, 963 independently verified transitions, depths
+  2--5, and zero wrong/correct terminal collisions. The unchanged FTA1 model
+  predicts all 963 operation classes exactly but produces zero valid complete
+  packets under independent role argmax, so autonomous score is 0/279.
+
+  The failure is sharply localized. CLS, which is never a source byte, is
+  called `LHS_A` in every segment. All 2,748 true LHS and 2,939 RHS bytes are
+  otherwise exact; 2,265/2,354 argument bytes are exact. The last 86 errors
+  assign leading digits of long subtraction arguments to `RHS_A`, creating a
+  noncontiguous illegal field. Evaluation/gate hashes are
+  `c0c270778cb643316776e84b3512d7ef738d93272a20b9f57f4e8d4b9e4e4750` /
+  `ea86c3bde7a4c83b8333aafec78a5a6285c493501273d6b1db9750a5d0fb4e09`.
+
+  Decision:
+  `preserve_nta1_as_zero_shot_negative_then_run_one_zero_update_finite_state_constrained_role_decode;_do_not_retrain_before_that_gate`.

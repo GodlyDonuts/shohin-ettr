@@ -56437,3 +56437,12 @@ wrapper while preserving the source equation substrings, injects one wrong
 transaction, and locally recomputes the corrupted suffix. The FTA1 compiler is
 not updated. This measures whether its delimiter-relative state machine has
 learned transaction structure rather than only the CRP renderer.
+
+NTA1 is a useful sharp negative. FTA1 recognizes every natural transaction's
+operation (963/963), and nearly every numeric byte has the right semantic role,
+but unconstrained per-byte argmax creates no valid packet. The non-source CLS
+token is mislabeled as the left field universally, while 86 leading digits in
+long subtraction arguments jump prematurely to the RHS role. This is not loss
+of arithmetic semantics; it is failure to enforce a legal field-path topology.
+The next no-training test replaces independent role argmax with one constrained
+finite-state path decoder before considering any supervised adaptation.
