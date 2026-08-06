@@ -5,8 +5,6 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-import pytest
-
 from diverge_ulc1_mdd import RuntimeChoice, execute_choice_path, execute_mdd, query_mdd
 from diverge_v0 import (
     ANSWER,
@@ -121,8 +119,12 @@ def test_evidence_provenance_and_packet_swaps_fail_closed() -> None:
         tampered[0],
         record_provenance=named_commitment("ulc1-hsc1-tamper", "record"),
     )
-    with pytest.raises(DivergeContractError):
+    try:
         _certify_delayed_evidence(left, tampered)
+    except DivergeContractError:
+        pass
+    else:
+        raise AssertionError("tampered evidence provenance was accepted")
 
 
 def test_source_seal_is_charged_and_post_seal_poison_is_invariant() -> None:

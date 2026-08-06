@@ -29931,3 +29931,15 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `replace_only_the_absent_pytest_preflight_and_repeat_the_mechanical_smoke`.
+
+- **2026-08-05 23:56--23:58 EDT** -- **Replacement smoke `743152` also stops
+  in preflight; the standalone test retained one `pytest` import.**
+
+  The MDD entry point passes, then the evaluator contract test stops while
+  importing `pytest` for one exception assertion. Again no model loads and no
+  episode or neural score is evaluated. Replace that assertion with an
+  explicit `try/except`; no runtime, evidence, arm, seed, resource, or gate
+  behavior changes.
+
+  Decision:
+  `remove_the_last_test_only_pytest_import_then_repeat_the_mechanical_smoke`.
