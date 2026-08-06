@@ -30001,3 +30001,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_diverge_to_one_model_owned_evidence_and_execution_interface_gate`.
+
+- **2026-08-06 00:20--00:47 EDT** -- **DIVERGE-MEI1 model-owned interface
+  gate is frozen before training.**
+
+  The accepted ULC1-HSC1 result remains untouched. MEI1 retains its frozen K=2
+  learned source envelope, sealed coherent lineages, and factorized structural
+  bookkeeping, while replacing the three remaining semantic host interfaces.
+  Delayed evidence is now a natural-language random probe before/after state,
+  not an effect or program ID. A learned evidence reader predicts all ten probe
+  values; a tied learned route-plus-delta register operator executes every
+  candidate transaction and recurrent step; and a learned late reader answers
+  typed register queries from complete predicted states. The candidate runtime
+  has no import of the exact transaction executor or query reader and never
+  averages fields across hypotheses.
+
+  Component gates are frozen at >=99% before/after evidence-state exactness in
+  every held renderer cohort, >=99.9% one-step complete-state execution,
+  >=99% free-running terminal state at depths 4/8/16/24, and >=99.9% query
+  reading. Only if all pass may the same checkpoint enter one full HSC1+DIVERGE
+  composition gate, which requires >=90% exactness and wrong-top1 recovery in
+  every cohort, <=5-point loss from exact-host DIVERGE, perfect provenance and
+  source-seal controls, and the frozen causal drops. No component or full-gate
+  threshold may change after the first report; failure authorizes no seed,
+  width, duration, renderer, optimizer, or loss variant.
+
+  The independent supervisor may create successor/evidence targets, but exact
+  semantics are isolated in `diverge_mei1_data.py`; the candidate-only runtime
+  is `diverge_mei1_runtime.py`. Standalone runtime tests pass, including
+  coherent six-world execution, learned evidence guards, unresolved abstention,
+  and the forbidden-import audit. The frozen dossier is
+  `docs/research/DIVERGE_MEI1_MODEL_OWNED_INTERFACES.md`.
+
+  Decision:
+  `run_one_mei1_component_gate_then_compose_once_only_if_every_component_passes`.
