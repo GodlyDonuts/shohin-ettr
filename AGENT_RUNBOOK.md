@@ -30799,3 +30799,46 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `correct_only_partial_valid_packet_swap_accounting_then_finalize_the_failed_gate_from_the_same_checkpoint`.
+
+- **2026-08-06 11:10--11:20 EDT** -- **DIVERGE-ATS1 closes as a large
+  causal improvement whose absolute-position source compiler fails length
+  transfer.**
+
+  Corrected evaluator `743558` leaves treatment unchanged and measures the
+  packet swap correctly. The final result is 272/480 exact forced terminals:
+  100 scalar, 128 register, and 44 symbolic. All 272 valid terminal packets
+  also have complete exact trajectories. Operation classes are 3,854/3,854;
+  only 3,093/3,854 complete source packets are valid. Packet swap scores 2 and
+  operation shift 1, so the typed packet and operation path are causally used.
+
+  Error audit localizes the boundary. Whole-role transfer is 100% for
+  seven-character symbolic tapes but 35.84%/29.36% at lengths eight/nine;
+  four-character register fields are 55.79% and five-character scalar fields
+  60%. The dominant confusion swaps LHS_SYMBOL and RHS_SYMBOL while retaining
+  the surface span. The absolute-position compiler memorized offsets; the
+  algebraic transaction layer did not fail.
+
+  Training report/checkpoint hashes are
+  `914b24ca87962aa13f638c628df58e1332072250a06896267df5f64cad3bae14` /
+  `3c4fbb93be0bbc16fcbd4d58480da4594b674c693925faf5dd564a9204ed715f`;
+  evaluation/gate hashes are
+  `b7e3bf3d45b6b5b499e0a8d8085bc544a3e7cf0927b15db0cfb8e0a93108566b` /
+  `1cb1e321263c88549c0622df344c77e73604f92c5422a254db4131a8a564904a`.
+  All are hash-verified locally/Newton. No autonomous composition runs.
+
+  Decision:
+  `close_ats1_preserve_the_algebraic_packet_and_replace_absolute_position_compilation_with_one_length_equivariant_finite_state_transducer`.
+
+- **2026-08-06 11:22 EDT** -- **DIVERGE-FTA1 is frozen as the one ordered
+  source-interface successor.**
+
+  FTA1 keeps every ATS1 byte, label, algebraic kernel, split, seed family,
+  budget, evaluator, control, and threshold. It replaces only the 443k
+  absolute-position Transformer compiler with a roughly matched two-layer
+  bidirectional finite-state transducer: width 192, hidden 96/direction,
+  packed active lengths, no position embeddings. The recurrent byte update is
+  tied across length, directly testing the observed offset-memorization
+  failure rather than retuning ATS1.
+
+  Decision:
+  `run_one_fta1_smoke_then_one_frozen_1600_update_component_gate;_compose_with_crp1_only_on_a_conjunctive_pass`.

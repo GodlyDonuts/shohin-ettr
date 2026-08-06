@@ -1,6 +1,6 @@
 # DIVERGE-ATS1: Source-Sealed Algebraic Typed State
 
-Status: frozen before implementation or neural results on 2026-08-06.
+Status: closed after the one frozen component gate on 2026-08-06.
 
 ## 1. Decision boundary
 
@@ -128,3 +128,46 @@ The audit report SHA-256 is
 
 Local source-role, runtime, gate, Python compilation, Ruff, Bash syntax, and
 two-update CPU smoke checks pass. No H100 capability result exists yet.
+
+## 8. Frozen result
+
+Smoke `743544`, scientific fit `743546`, and corrected evaluator `743558`
+complete cleanly. The 443,156-parameter compiler trains for exactly 1,600
+updates / 32,253,627 source bytes in 83.393 seconds on one H100, peaks at
+592,967,168 allocated bytes, and reaches zero-like final role/operation loss.
+Its 96-row development probe is completely exact: 96 terminals, 96 complete
+trajectories, and all 389 transitions.
+
+The untouched depth/value/length-shift gate is a bounded positive/negative:
+
+| Metric | Result |
+|---|---:|
+| operation class | 3,854/3,854 |
+| valid complete source packets | 3,093/3,854 |
+| exact terminals | 272/480 |
+| scalar terminals | 100/160 |
+| register terminals | 128/160 |
+| symbolic terminals | 44/160 |
+| initial-packet swap | 2/480 |
+| operation shift | 1/480 |
+
+Every accepted packet executes every remaining transition and terminal
+exactly. The algebraic state is therefore sufficient on this board and is
+causally used. The failure is solely compiler transfer: exact whole-span rates
+fall from 100% at trained lengths to 55.79% for four-character register
+fields, 60% for five-character scalar fields, and 35.84%/29.36% for
+eight-/nine-character symbolic tapes. The dominant error swaps LHS_SYMBOL and
+RHS_SYMBOL while preserving the copied surface, exposing reliance on absolute
+positions rather than delimiter-relative structure.
+
+The frozen gate fails and autonomous CRP1 composition is not launched. ATS1
+receives no seed, width, duration, role, modulus, optimizer, or loss repair.
+The source compiler is replaced by one position-free finite-state transducer;
+the algebraic packet, data, seed family, and evaluator remain protected.
+
+Training report/checkpoint SHA-256 values are
+`914b24ca87962aa13f638c628df58e1332072250a06896267df5f64cad3bae14` /
+`3c4fbb93be0bbc16fcbd4d58480da4594b674c693925faf5dd564a9204ed715f`.
+Evaluation/gate SHA-256 values are
+`b7e3bf3d45b6b5b499e0a8d8085bc544a3e7cf0927b15db0cfb8e0a93108566b` /
+`1cb1e321263c88549c0622df344c77e73604f92c5422a254db4131a8a564904a`.

@@ -56377,3 +56377,26 @@ copy LHS state at 95%, and reach 432/480 exact OOD terminals, 136/160 terminals
 and 128/160 trajectories in every family, with zero malformed packets and
 large packet/operation intervention drops. Only that pass unlocks autonomous
 CRP1 selection. At this freeze point, no H100 result exists.
+
+### DIVERGE-ATS1 result and FTA1 successor (2026-08-06)
+
+ATS1 moves the mechanism boundary substantially. It reaches 272/480 exact OOD
+terminals where RSM1 reached zero. Every accepted typed packet executes its
+complete remaining trajectory exactly. Packet swap reduces answers to 2/480
+and operation shift to 1/480. This establishes that source-sealed typed state
+plus the internal algebraic transaction layer is a working causal mechanism on
+the rendered board.
+
+The frozen promotion gate still fails. The absolute-position source compiler
+accepts only 3,093/3,854 held segments. Scalar/register/symbolic terminals are
+100/128/44 of 160. Operation class is 100%, but longer copied fields lose side
+identity: symbolic role exactness drops from 100% at length seven to 35.84% and
+29.36% at lengths eight/nine. The dominant confusion swaps left and right
+symbol spans; arithmetic itself is exact whenever compilation succeeds.
+
+FTA1 is the ordered architectural response, not an ATS1 tuning run. It removes
+all position embeddings and replaces global attention with a packed two-layer
+bidirectional finite-state byte transducer whose update is tied at every source
+position. The algebraic state, data, evaluator, and thresholds remain exactly
+fixed, making ATS1 the protected control. FTA1 must still reach 432/480 OOD
+terminals and every per-family/causal gate before autonomous CRP1 composition.
