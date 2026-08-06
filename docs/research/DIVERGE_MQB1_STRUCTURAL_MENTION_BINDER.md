@@ -178,3 +178,46 @@ must jointly optimize the complete source-to-state trajectory.
 
 No continuation pretraining, public benchmark optimization, or general
 reasoning claim is authorized by this gate.
+
+## 8. Immutable result
+
+Status: **closed negative**. Newton job `743263` completed the frozen one-seed
+run on `evc30` in 6m03s. Its scientific process exited 1 only because the
+conjunctive gate failed. It trained exactly 1,600 updates / 102,400 examples,
+used 1,953,676 trainable parameters, and preserved the MEI1 executor/query
+state hashes exactly. Renderer parity and the candidate source audit passed.
+No full-composition job ran.
+
+| Cohort | Valid | Before | After | Complete assignment | Complete state pair | Selected value |
+|---|---:|---:|---:|---:|---:|---:|
+| train | 100.000% | 98.325% | 98.085% | 100.000% | 96.865% | 99.6385% |
+| lexical | 2.885% | 0.000% | 0.000% | 0.000% | 0.000% | 39.7405% |
+| renderer | 39.310% | 0.000% | 0.010% | 0.000% | 0.000% | 35.5405% |
+| composition | 6.955% | 0.760% | 1.315% | 0.000% | 0.755% | 35.9425% |
+
+The exact assignment layer never accepted duplicate mentions or overflow and
+the pair-certificate negation rejected 100% of otherwise valid packets. It did
+not recover semantic grounding: accepted shifted packets contained 4,477,
+74,920, and 13,903 field/provenance mismatches for lexical, renderer, and
+composition cohorts. Value and field interventions consequently had no
+50-point drop to demonstrate because the untreated shifted system was already
+near zero.
+
+MQB1 therefore disproves the hypothesis that preserving atomic value mentions
+and adding a complete one-to-one assignment is sufficient. The repeated
+failure shared by the span quotient, pooled MEI1 reader, and MQB1 is now the
+frozen one-pass source representation's inability to ground unseen
+phase/address language, not fieldwise averaging or assignment combinatorics.
+MQB1 receives no seed, width, duration, renderer, optimizer, threshold, or loss
+repair.
+
+Report/checkpoint SHA-256 values are
+`265ef25b99a64ee58f38acc1b0d7506a3e08adb3194b98069c1fc29f1672b24a` /
+`19e82c966adb753d3159235a60f3923bc591459476b3fbc8e148b39311cb3eed`.
+Both are read-only and hash-verified on Newton and in local disaster recovery.
+
+The next admissible interface must alter source computation itself. A
+query-conditioned typed gatherer, jointly adapting the source-side memory
+encoder while asking one explicit semantic question per field, is materially
+different from another unconditioned token/span classifier. It must be frozen
+as a new gate before results and may not reuse MQB1's failed head.

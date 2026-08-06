@@ -55869,3 +55869,29 @@ remain qualified, while the evidence interface must be replaced by a
 structural whole-mention address/value binder. Report/checkpoint SHA-256 values
 are `a081ab0b3257149643b20b7f320269a7e2193df0fd6665d26fc283210aa80429` /
 `bed9abefa2ecd2401c11515fe182d89871ab537bd8f8716bd5688ae693b79c29`.
+
+### DIVERGE-MQB1 structural mention result (2026-08-06)
+
+MQB1 tested whether MEI1's language failure was primarily caused by mixing
+field and value predictions. Every observed number remained attached to one
+contextual mention, and an exact constrained decoder selected ten distinct
+mentions into the ten before/after register fields. The decoder never averaged
+fields or detached a selected value from its source mention.
+
+The answer is negative. The one-seed 1.95M-parameter binder reached 100% train
+assignment, but shifted complete assignments were 0% across lexical, renderer,
+and composition cohorts. Complete state-pair scores were 0%, 0%, and 0.755%.
+The assignment mechanics were sound: no duplicate/overflow mention was
+accepted, pair-certificate interventions rejected every valid packet, and the
+qualified MEI1 executor/query remained hash-identical. The model simply mapped
+unseen phase/address language to the wrong canonical fields.
+
+This closes the theory that whole-mention identity plus a global matching
+constraint is sufficient. Across the earlier span quotient, pooled MEI1 head,
+and MQB1, the common bottleneck is frozen one-pass semantic grounding. MQB1
+receives no repair run. The next source interface must change computation
+materially, using explicit typed semantic queries and joint source-side
+adaptation rather than another unconditioned classifier. Report/checkpoint
+SHA-256 values are
+`265ef25b99a64ee58f38acc1b0d7506a3e08adb3194b98069c1fc29f1672b24a` /
+`19e82c966adb753d3159235a60f3923bc591459476b3fbc8e148b39311cb3eed`.

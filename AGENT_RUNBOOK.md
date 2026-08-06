@@ -30090,3 +30090,31 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_one_structural_mention_binding_gate_then_compose_once_only_on_a_conjunctive_pass`.
+
+- **2026-08-06 01:04--01:11 EDT** -- **DIVERGE-MQB1 closes: exact assignment
+  cannot repair ungrounded frozen source representations.**
+
+  Immutable commit/runtime `8fef9c6` launched as one-H100 job `743263` on
+  `evc30`. It completes the only seed in 6m03s, exactly 1,600 updates / 102,400
+  examples. The 1,953,676-parameter binder reaches 100% train assignment but
+  only 96.865% train complete-state pairs. Shifted complete assignments are
+  zero in lexical, renderer, and composition cohorts. Complete state-pair
+  exactness is 0% / 0% / 0.755%, while selected-value exactness is only
+  39.741% / 35.541% / 35.943%.
+
+  The global decoder itself behaves correctly: zero duplicate or overflow
+  mentions are accepted, pair-certificate negation rejects every otherwise
+  valid packet, source/renderer audits pass, and frozen MEI1 executor/query
+  hashes remain identical. The failure is semantic role grounding before the
+  decoder; shifted valid packets carry thousands of wrong field/provenance
+  assignments. No full DIVERGE composition is launched.
+
+  MQB1 is closed without repair. Report/checkpoint SHA-256 values are
+  `265ef25b99a64ee58f38acc1b0d7506a3e08adb3194b98069c1fc29f1672b24a` /
+  `19e82c966adb753d3159235a60f3923bc591459476b3fbc8e148b39311cb3eed`,
+  read-only and hash-verified locally/Newton. The next admissible source
+  interface must be query-conditioned and jointly adapt source-side reading;
+  no further unconditioned token/span classifier is authorized.
+
+  Decision:
+  `close_mqb1_and_replace_frozen_one_pass_grounding_with_query_conditioned_source_computation`.
