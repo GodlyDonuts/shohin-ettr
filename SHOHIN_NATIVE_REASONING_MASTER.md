@@ -56346,3 +56346,34 @@ Immutable SHA-256 receipts:
   `7e0237c7ee1c832cbe3f25e0d0b788405c7b5fd2b702271924c6accace642286`;
 - tokenizer audit:
   `9a165954f6dd2d79aa2f1e386d91db711d14d306b84bcf09d2ee3f159cfee4e4`.
+
+### DIVERGE-ATS1 source-sealed algebraic typed state (frozen 2026-08-06)
+
+ATS1 is the first direct substrate change after RSM1. It does not regenerate a
+state from continuous packet vectors and does not autoregress intermediate
+text. A small byte-level compiler tags source-owned state and argument spans,
+copies them in source order, and seals one typed packet. Numeric state lives in
+five CRT residues with a 6,678,671-state signed range; symbolic state remains a
+hard character tape. The internal transaction layer composes the frozen scalar,
+register, and symbolic operations directly in those packets at every depth.
+
+This design makes the claim narrower and stronger. The architecture supplies
+an internal algebraic machine; learning must ground unchanged source bytes into
+its roles and operation vocabulary. It is therefore not unrestricted
+reasoning, but it can cleanly determine whether source identity plus typed
+state removes the exact-entry/composition failure that destroyed RSM1.
+
+The pre-neural reference is exact across all 5,760 existing identities and
+30,266 transitions. Train/development/evaluation counts are
+4,800/480/480 rows and 24,044/2,368/3,854 transitions; every terminal is exact.
+Trajectory digest is
+`4b7e06df1f7cd9237e7309fb74e633d9fac2c7f60583692c140f5d8ab3ca5eeb`
+and audit report SHA-256 is
+`eaadb1793c3a4e40d5c7e81ec4d3f4fce75bde19b727230d67284faaaf8b1314`.
+
+The one frozen neural gate uses seed `2026080606`, 1,600 updates, batch 512,
+and the unchanged CRP1 splits. It must compile operations/arguments at 99%,
+copy LHS state at 95%, and reach 432/480 exact OOD terminals, 136/160 terminals
+and 128/160 trajectories in every family, with zero malformed packets and
+large packet/operation intervention drops. Only that pass unlocks autonomous
+CRP1 selection. At this freeze point, no H100 result exists.

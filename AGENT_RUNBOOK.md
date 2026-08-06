@@ -30713,3 +30713,35 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_rsm1_without_autonomous_or_unguarded_runs;_reject_flat_byte_serialization_as_the_state_interface`.
+
+- **2026-08-06 10:12--10:55 EDT** -- **DIVERGE-ATS1 freezes a source-sealed
+  algebraic typed-state successor and passes every pre-neural gate.**
+
+  ATS1 does not repair RSM1's byte decoder. A two-layer 128-wide byte source
+  compiler predicts whole source-owned roles and one operation class from the
+  selected CRP1 step. Selected decimal bytes fold into five CRT residues over
+  moduli 17/19/23/29/31; symbols remain one hard copied character tape. A tied
+  internal transaction layer composes scalar, two-register, and symbolic
+  operations directly in these typed packets. Claimed source successors are
+  compiled only for audit and never enter replay.
+
+  The frozen one-seed component gate uses the unchanged CRP1 boards, seed
+  `2026080606`, at most 1,600 AdamW updates, batch 512, and no pretrained
+  language-model weights. Forced OOD promotion requires >=99% operation and
+  argument compilation, >=95% copied LHS state, 432/480 terminals, 136/160
+  terminals and 128/160 complete trajectories in every family, zero invalid
+  packets, RHS poison invariance, and >=240-answer drops under initial-packet
+  swap and operation shift. Autonomous CRP1 composition remains forbidden on
+  any component failure.
+
+  The independent CPU reference executes all 24,044 / 2,368 / 3,854
+  train/development/evaluation transitions and all 5,760 terminals exactly.
+  Trajectory digest is
+  `4b7e06df1f7cd9237e7309fb74e633d9fac2c7f60583692c140f5d8ab3ca5eeb`;
+  audit report SHA-256 is
+  `eaadb1793c3a4e40d5c7e81ec4d3f4fce75bde19b727230d67284faaaf8b1314`.
+  Source-role, runtime, gate, Python compilation, Ruff, Bash, diff, and
+  two-update CPU smoke checks pass. No H100 capability result exists yet.
+
+  Decision:
+  `run_one_two_update_h100_smoke_then_one_1600_update_forced_component_gate;_launch_autonomous_crp1_only_on_a_conjunctive_pass`.
