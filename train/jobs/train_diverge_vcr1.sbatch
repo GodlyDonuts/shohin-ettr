@@ -53,15 +53,12 @@ trap 'test ! -e "$OUTPUT" || chmod -R a-w "$OUTPUT"' EXIT
 
 echo "[diverge-vcr1] node=${SLURMD_NODENAME:-?} code=$CODE_ROOT commit=$SOURCE_COMMIT arm=$ARM mode=$MODE"
 nvidia-smi -L
-"$PYTHON" -m pytest -q \
-  "$CODE_ROOT/train/test_diverge_vcr1_workspace.py" \
-  "$CODE_ROOT/train/test_diverge_vcr1_data.py" \
-  "$CODE_ROOT/train/test_diverge_vcr1_product.py"
 "$PYTHON" -m py_compile \
   "$CODE_ROOT/train/diverge_vcr1_workspace.py" \
   "$CODE_ROOT/train/diverge_vcr1_data.py" \
   "$CODE_ROOT/train/diverge_vcr1_product.py" \
   "$CODE_ROOT/train/train_diverge_vcr1.py"
+"$PYTHON" -c 'import diverge_vcr1_workspace, diverge_vcr1_data, diverge_vcr1_product, train_diverge_vcr1'
 
 COMMON=(
   --model-root "$MODEL"

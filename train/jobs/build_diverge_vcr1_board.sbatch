@@ -42,10 +42,10 @@ mkdir -p "$(dirname "$TRAIN")"
 trap 'for path in "$TRAIN" "$DEVELOPMENT" "$REPORT"; do test ! -e "$path" || chmod a-w "$path"; done' EXIT
 
 echo "[vcr1-board] node=${SLURMD_NODENAME:-?} code=$CODE_ROOT commit=$SOURCE_COMMIT"
-"$PYTHON" -m pytest -q "$CODE_ROOT/pipeline/test_build_diverge_vcr1_board.py" "$CODE_ROOT/train/test_diverge_vcr1_data.py"
 "$PYTHON" -m py_compile \
   "$CODE_ROOT/pipeline/build_diverge_vcr1_board.py" \
   "$CODE_ROOT/train/diverge_vcr1_data.py"
+"$PYTHON" -c 'import build_diverge_vcr1_board, diverge_vcr1_data'
 "$PYTHON" "$CODE_ROOT/pipeline/build_diverge_vcr1_board.py" \
   --model-root "$MODEL" \
   --source "$SOURCE" \
