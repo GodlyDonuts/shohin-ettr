@@ -29811,3 +29811,72 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_hsc1_and_autonomous_diverge_promotion_after_shifted_first_pass_support_loss`.
+
+- **2026-08-05 22:42--23:06 EDT** -- **Frozen HSC1 rank audit proves shifted
+  semantics survive; hard cue commitment is the fatal deletion.**
+
+  The read-only assessor loads the exact failed HSC1 checkpoint without
+  gradients and evaluates 1,024 fresh episodes / 6,144 records / 12,288
+  options. Record segmentation is 100% in all cohorts. Gold semantic-template
+  top-1 is `100% / 99.316% / 99.802% / 100%` for train / lexical / renderer /
+  composition, and the gold alignment is Viterbi in 100% of options. Cue
+  top-1, however, falls to `73.959% / 67.128% / 13.845%` on the three shifts.
+
+  A K=2 packed envelope retains the valid complete fault-line interpretation
+  in 100% of every cohort. K=1 support is 93.750% lexical, 97.656% renderer,
+  and 100% composition, while the hard all-component K=1 path is only 10.156%
+  lexical and zero on renderer/composition. Composition K=2 stores 324,877 DP
+  cells rather than materializing an upper bound of
+  1,909,871,477,785,735,488 complete interpretations.
+
+  Newton attempts `742869` and `742874` stopped before model loading on a
+  cross-platform final-bit float assertion; the tolerance/path-only test fix
+  passed locally. Redundant pending smoke `742907` was canceled after the full
+  local CPU audit completed from the exact checkpoint. No science result is
+  attributed to those jobs. Immutable rank report SHA-256 is
+  `d2fea259a9ef68f6bd7414de8364350ff68d028e7ecc7cb27ae769cb00fd437a`.
+
+  HSC1 remains closed. The result authorizes a distinct uncertainty-lifted
+  runtime test with the same frozen score producer; it does not authorize an
+  HSC1 repair, new seed, or learned reasoning claim.
+
+  Decision:
+  `replace_irreversible_viterbi_commitment_with_one_source_sealed_k2_uncertainty_lift`.
+
+- **2026-08-05 23:06--23:24 EDT** -- **DIVERGE-ULC1 exact factorized CPU
+  mechanics pass the frozen 1,024-episode gate.**
+
+  ULC1 represents each record with one coherent categorical variable:
+  `BACKGROUND / ACTIVE-left / ACTIVE-right`; the primary record has only the
+  two active alternatives. This replaces the first draft's independent
+  membership/option axes, which would create invalid Cartesian states. A
+  sparse hard factor also forbids one held-out background-to-active transition.
+  The calibrated board therefore represents exactly 2, 6, 16, and 42 worlds
+  across held lexical renderers, aliases/entities, depths, compositions, and a
+  confirmation ontology.
+
+  Across 1,024 episodes and 16,896 worlds, all initial top-1 parses are wrong
+  and all 1,024 sensitive answers recover after 4,096 independently verified
+  state-evidence nogoods. There are zero extensional-parity failures, valid-
+  world deletions, nonmonotone refinements, false query commitments, packet-
+  swap acceptances, shuffled-provenance acceptances, source-poison failures,
+  or overflow leaks. Invariant queries answer; underdetermined and conflict-
+  disabled queries abstain. Source-order perturbation changes the result.
+
+  Whole particles consume 64,157,184 canonical bytes versus 11,454,285 for
+  the charged factorized packet/runtime over the board. The minimum storage
+  ratio in the retained >=8-world regime is `50,696 / 12,571 = 4.0337x`.
+  Whole particles require 205,824 transaction applications versus 141,056
+  unique factorized applications, sharing 64,768. The architecture is not
+  promoted at two or six worlds, where fixed packet overhead can lose.
+
+  Report and board SHA-256 commitments are
+  `4123def2e71041987a14eef28385e6491565c34427fd93cc7fc5247fe09a061b` /
+  `6013ea82c2949ac33b9744964f1144520e8c158ad72fa287496e553072417478`.
+  Twenty-four focused/inherited tests pass. This exact synthetic mechanics
+  result authorizes one frozen-HSC1 neural-score runtime gate. It is not a
+  learned-language, neural-execution, continuation-pretraining, or model-owned
+  reasoning result.
+
+  Decision:
+  `promote_ulc1_cpu_mechanics_to_one_frozen_hsc1_score_runtime_gate_without_weight_updates`.

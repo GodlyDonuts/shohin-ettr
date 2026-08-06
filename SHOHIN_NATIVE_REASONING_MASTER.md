@@ -55760,3 +55760,52 @@ variant. No DIVERGE composition or continuation pretraining is authorized.
 Report/checkpoint SHA-256 values are
 `62ac144d66818e32ba261fade1ac9103d5adbe962d3572004f3a249ba94c56ad` /
 `34c7eaee885ba5201e6e07335add1737b7b7d26b2709861b7967e0b97be64a05`.
+
+### HSC1 support-rank diagnosis (2026-08-05)
+
+The frozen failed HSC1 checkpoint contains substantially more shifted
+semantics than its hard packet scores reveal. On 1,024 new episodes, gold
+semantic-template top-1 is at least 99.316% in every cohort and gold token
+alignment is always Viterbi. Shifted cue top-1 falls as low as 13.845%, so a
+single wrong cue choice destroys an otherwise valid complete parse.
+
+Retaining only K=2 structured alternatives preserves the valid complete
+fault-line interpretation in 100% of train, lexical, renderer, and composition
+episodes. The prior conclusion "HSC1 cannot ground shifted language" is thus
+too coarse: hard HSC1 cannot emit an exact shifted packet, but its frozen score
+tensor usually contains the correct interpretation. HSC1 remains closed as a
+compiler; this result motivates a different runtime object rather than a new
+training variant. Report SHA-256 is
+`d2fea259a9ef68f6bd7414de8364350ff68d028e7ecc7cb27ae769cb00fd437a`.
+
+### DIVERGE-ULC1 exact mechanics result (2026-08-05)
+
+DIVERGE-ULC1 is the first source-sealed factorized successor justified by that
+diagnosis. Each record is one categorical coherent interpretation rather than
+independent membership and option fields. A sealed packet carries complete
+parse witnesses, guarded noncommuting programs, exact support, state-evidence
+provenance, and verifier-certified nogoods. Complete worlds are never averaged;
+identical typed states may share execution, and a query answers only when all
+surviving worlds agree.
+
+The independent 1,024-episode CPU reference represents 2, 6, 16, or 42 worlds
+per episode across held renderers, aliases, widths, depths, compositions, and
+one held ontology. All 1,024 learned-prior top-1 choices are deliberately wrong;
+all 1,024 recover exactly after delayed state evidence. Across 16,896 worlds
+there are zero parity failures, valid-world deletions, false commitments,
+source-poison failures, packet-swap acceptances, shuffled-provenance
+acceptances, or overflow leaks. Conflict-disabled and unresolved packets
+abstain.
+
+Whole particles cost 64,157,184 canonical bytes versus 11,454,285 for the
+charged factorized representation. At the retained >=8-world widths, the
+minimum sharing advantage is 4.0337x; 64,768 of 205,824 logical transaction
+applications are shared. At two and six worlds fixed ULC1 overhead can lose,
+so no universal resource claim is made.
+
+Report SHA-256 is
+`4123def2e71041987a14eef28385e6491565c34427fd93cc7fc5247fe09a061b`.
+This is exact synthetic mechanics, not model-owned reasoning. The only
+authorized successor is a bounded gate that gives hard Viterbi, K=2 complete
+particles, soft aggregation, conflict-disabled ULC1, and full ULC1 the same
+frozen HSC1 score tensor and typed transition budget.
