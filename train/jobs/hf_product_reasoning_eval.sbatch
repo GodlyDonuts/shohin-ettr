@@ -23,6 +23,8 @@ PYTHON=${PYTHON:-/lustre/fs1/home/sa305415/shohin/envs/product-reasoning-b3a3603
 COUNT=${COUNT:-100}
 BATCH_SIZE=${BATCH_SIZE:-4}
 MAX_NEW_TOKENS=${MAX_NEW_TOKENS:-768}
+SUBSET_SEED=${SUBSET_SEED:-20260802}
+GENERATION_SEED=${GENERATION_SEED:-31}
 FINALIZE_EXHAUSTED=${FINALIZE_EXHAUSTED:-false}
 FINALIZE_MAX_NEW_TOKENS=${FINALIZE_MAX_NEW_TOKENS:-64}
 CODE_TIMEOUT=${CODE_TIMEOUT:-8}
@@ -91,6 +93,8 @@ fi
   --count "$COUNT" \
   --batch-size "$BATCH_SIZE" \
   --max-new-tokens "$MAX_NEW_TOKENS" \
+  --subset-seed "$SUBSET_SEED" \
+  --generation-seed "$GENERATION_SEED" \
   --finalize-max-new-tokens "$FINALIZE_MAX_NEW_TOKENS" \
   --code-timeout "$CODE_TIMEOUT" \
   --generation-mode "$GENERATION_MODE" \
