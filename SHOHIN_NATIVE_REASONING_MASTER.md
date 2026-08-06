@@ -56569,3 +56569,41 @@ reasoning: the ambiguity renderer, state evidence, exact rational executor, and
 verifier remain engineered. TFS1 is frozen with no variants. The next boundary
 is learned natural source/evidence compilation into the unchanged sealed
 factorized runtime; no continuation pretraining follows from TFS1 alone.
+
+### DIVERGE-NFE1 result: learned natural evidence compilation passes
+
+NFE1 crosses that next boundary on source-disjoint verified arithmetic text.
+One 183,043-parameter position-free whole-mention GRU trains on 2,179 exact
+`reasoning_gym_trace` equations. It receives no confirmation rows and assigns
+three complete numeric mentions to a hard one-to-one `LHS/ARGUMENT/RHS`
+permutation. The fixed FTA1 checkpoint supplies support over all three scalar
+operations; candidate support is never allowed to delete an operation before
+evidence.
+
+The 96-episode confirmation board comes from exact-overlap-free
+`augmented_gsm8k` rows and contains 222 chained transactions at depths two to
+five. Every visible operator is deterministically wrong. The learned mention
+interface transfers 222/222 exactly. FTA1's highest-support operation is wrong
+on 221/222 transactions and in all 96 episodes.
+
+Premature top-1 and equal-memory complete particles score 0/96. No-evidence
+factorization abstains 96/96. Source-sealed hard evidence recovers 96/96,
+including every initially wrong episode, with exact agreement against full
+assignment enumeration. Shuffled evidence, state reset, and operand-semantic
+shift score zero; every packet/query swap rejects; source poisoning is
+bit-invariant; and no invalid evidence, false commitment, malformed packet, or
+overflow is accepted.
+
+Complete particles charge 3,654,126 canonical bytes versus 244,490 factorized
+bytes (14.946x). The shared runtime maps 2,610 logical applications to 666
+unique state-group applications (3.919x). Data/checkpoint/evaluation SHA-256
+values are `85439544...f9858`, `c7ef7b4c...68764`, and
+`ad77a3b2...2eb7f`.
+
+This is the first source-disjoint learned natural-evidence pass for DIVERGE,
+but it is not unrestricted reasoning. Numeric span proposal, the three
+operation domain, FTA1 operation support, and exact arithmetic verification
+remain engineered. NFE1 receives no variants and does not unlock continuation
+pretraining. The next boundary is a learned natural compiler over variables,
+predicates, and noncommuting stateful updates using the same sealed factorized
+mechanics.

@@ -31142,3 +31142,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `freeze_tfs1_as_a_working_typed_factorized_mechanism;_next_test_natural_verified_evidence_compilation_without_runtime_changes`.
+
+- **2026-08-06 12:08--12:13 EDT** -- **DIVERGE-NFE1 passes learned
+  source-disjoint natural evidence compilation and delayed recovery.**
+
+  Private commits `d7f4d0d`, `117747c`, and `e31a6c1` freeze and repair the
+  preregistration before implementation; `f9a70b7` freezes code. Corpus SHA
+  `2461d6f7...6549` yields 2,179 deduplicated verified `reasoning_gym_trace`
+  training equations and 109 exact-overlap-free eligible `augmented_gsm8k`
+  rows. The deterministic board keeps 96 episodes / 222 transactions at
+  depths 2--5. Training/board/report hashes are `e05d05ab...fa7e9`,
+  `85439544...f9858`, and `dc85f6b8...02c95`.
+
+  The only new model is a 183,043-parameter two-layer bidirectional byte GRU,
+  width 128, assigning complete integer mentions by one hard
+  LHS/ARGUMENT/RHS permutation. The frozen 1,000-update CPU run fits 2,179/2,179
+  training equations and transfers 222/222 mention assignments. Checkpoint,
+  model-state, and report hashes are `c7ef7b4c...68764`,
+  `ad5923dc...d41cb`, and `16350f09...57f8`.
+
+  FTA1 top-1 is wrong in all 96 episodes. Top-1 and equal-memory complete
+  particles score 0/96; no-evidence support abstains 96/96; full source-sealed
+  factorization recovers 96/96. Enumeration parity is exact. Shuffled
+  evidence, state reset, and operand-semantic shift score zero; all query swaps
+  reject; source poison is invariant; invalid evidence/false commitments/
+  malformed packets/overflow are zero. Complete particles use 3,654,126 bytes
+  versus 244,490 factorized bytes (14.946x); shared work is 2,610 logical / 666
+  unique applications (3.919x). Evaluation hash is `ad77a3b2...2eb7f`.
+
+  This is a narrow learned natural-equation evidence pass, not open-domain
+  reasoning. Numeric span proposal, operation domain, FTA1 support, exact
+  executor, and verifier remain engineered. Do not run NFE1 variants or
+  continuation pretraining. Next test one learned natural compiler over
+  variables, predicates, and noncommuting stateful updates.
+
+  Decision:
+  `freeze_nfe1_as_the_first_source_disjoint_learned_evidence_pass;_next_test_broader_natural_program_and_evidence_compilation_without_nfe1_variants`.
