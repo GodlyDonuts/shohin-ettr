@@ -55950,3 +55950,35 @@ frozen-backbone thresholds. Local candidate and trainer tests pass. This is a
 synthetic end-to-end mechanism gate, not a public reasoning result. One H100
 smoke is next; a scientific pass would authorize exactly one full DIVERGE
 integration and one parameter/training-FLOP-matched dense recurrent control.
+
+### DIVERGE-JET1 result (2026-08-06)
+
+JET1 is a decisive negative. The one frozen run completed all 1,600 updates,
+57,600 source records, and 8,192 evaluation episodes. It trained 2.318M
+parameters on top of pinned Qwen3.5-0.8B, with the entire non-LoRA backbone
+verified unchanged.
+
+The joint trajectory does not form. Primitive execution is 0/20,000, complete
+evidence pairs are 0/106,496, free-running terminal states are 0/8,192, and
+answers are 280/8,192 = 3.418%. Every evaluation cell gives exactly the same
+answer score after evidence is shuffled across episodes. Final evidence loss
+is 13.599, much worse than a uniform 128-way prediction, and 402 episodes have
+invalid state mass. State reset often improves the answer. The end-to-end
+system is therefore not using delayed source evidence and has not learned its
+small typed transition algebra.
+
+This changes the diagnosis. Separate source modules failed transfer, but
+simply joining all losses under hard straight-through commitments does not
+solve the interface problem; the competing discrete paths destabilize even
+the easy components. JET1 and this synthetic register/evidence trajectory are
+closed under their frozen stop rule. No HSC1 integration or matched dense
+control follows because treatment did not qualify. The exact-host DIVERGE
+mechanics pass remains valid but bounded: it is not evidence that the same
+computation can be acquired as one model-owned neural trajectory.
+
+Future architecture work must move to a broader real-language task with a
+smooth learnable path before any discrete commitment, and then earn hard
+model-owned inference causally. It must not return to another isolated reader
+or a nearby JET1 seed/loss/schedule repair. Report/checkpoint SHA-256 values are
+`d4b81340eff7bae2cd9cf721c20914eeeaead4055fcbc158ada2ee339c112f63` /
+`7b8ad52ebf7b861e52ad920009b6458d0db2f715e9532083cae397ad60e1e1e6`.

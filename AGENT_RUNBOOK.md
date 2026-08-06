@@ -30258,3 +30258,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_job_743298_to_completion_then_accept_or_close_jet1_without_variants`.
+
+- **2026-08-06 02:49--03:05 EDT** -- **DIVERGE-JET1 fails decisively and
+  closes the synthetic model-owned register/evidence trajectory.**
+
+  Job `743298` completes all 1,600 updates / 12,800 episodes / 57,600 source
+  records and all 8,192 held episodes in 15m44s on `evc30`. The 2,317,961
+  trainable parameters encode 4,056,405 training tokens and peak at
+  8,635,438,080 allocated CUDA bytes. The frozen non-LoRA Qwen state remains
+  hash-identical and the candidate-source audit passes. It exits 1 solely on
+  the frozen capability gate.
+
+  Capability is absent. Primitive execution is 0/20,000; complete evidence
+  pairs are 0/106,496; terminal states are 0/8,192; and answers are 280/8,192
+  = 3.41797%, with cell scores 1.7578--6.0547%. Complete program sequences
+  peak at 2.34375%; 402 episodes carry invalid mass. Evidence shuffling is
+  numerically identical to treatment in all 16 cells, while state reset often
+  improves answers. Final evidence loss is 13.5988, far worse than the
+  uninformative 128-way value loss near 4.8520. The source head becomes
+  confidently wrong, the tied algebra never forms, and the answer path ignores
+  evidence.
+
+  This is an optimization/interface failure before shifted generalization, not
+  a marginal threshold miss. The preregistered stop rule closes JET1 without a
+  new seed, duration, LR, loss, rank, width, renderer, soft/hard schedule,
+  HSC1 integration, or dense control. Exact-host ULC1 remains a preserved
+  mechanics result; it has not transferred to a model-owned trajectory. Any
+  future architecture gate must move to a broader real-language task and must
+  not require multiple unlearned hard straight-through interfaces to emerge
+  simultaneously.
+
+  The report/checkpoint are hash-verified and read-only locally/Newton at
+  `d4b81340eff7bae2cd9cf721c20914eeeaead4055fcbc158ada2ee339c112f63` /
+  `7b8ad52ebf7b861e52ad920009b6458d0db2f715e9532083cae397ad60e1e1e6`.
+
+  Decision:
+  `close_jet1_and_do_not_run_hsc1_or_dense_controls; retire_the_synthetic_register_evidence_trajectory`.

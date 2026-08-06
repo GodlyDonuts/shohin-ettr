@@ -143,3 +143,48 @@ width, rank, duration, layer, LR, loss, threshold, or seed variant is allowed.
 Failure closes the synthetic register/evidence trajectory; do not retreat to a
 fifth isolated source reader. Passing treatment but losing to the matched dense
 control denies DIVERGE/JET1 inclusion.
+
+## Result
+
+Status: closed negative on 2026-08-06. No HSC1 integration or dense control is
+authorized.
+
+Newton job `743298` completed all 1,600 updates, exactly 12,800 training
+episodes, 57,600 raw evidence records, and the full 8,192-episode / 16-cell
+evaluation. The candidate has 2,317,961 trainable parameters: 901,888 Qwen
+LoRA parameters and 1,416,073 trajectory parameters. It encoded 4,056,405
+training tokens, used 8,635,438,080 peak allocated CUDA bytes, and completed in
+15m44s Slurm elapsed time. The frozen non-LoRA Qwen state remained
+hash-identical and the candidate-source audit passed.
+
+Capability fails decisively:
+
+- one-step primitive execution is `0/20,000` exact;
+- complete evidence-state pairs are `0/106,496` across evaluation;
+- free-running terminal states are `0/8,192`;
+- answers are `280/8,192 = 3.41797%`, ranging from `1.7578%` to `6.0547%`
+  by cell;
+- complete program-choice sequences range from `0%` to `2.34375%`;
+- 402 episodes accept nonzero out-of-range mass; and
+- every one of the 16 cells has exactly the same answer score after
+  cross-episode evidence shuffling as under treatment.
+
+The final train batch has evidence loss `13.5988` versus an uninformative
+128-way value loss near `ln(128) = 4.8520`, primitive loss `12.0900`, terminal
+loss `13.8171`, zero evidence-pair exactness, and zero terminal exactness.
+State reset frequently scores above the learned trajectory. The joint hard
+straight-through objectives therefore do not merely overfit a renderer: they
+destabilize source grounding and fail to acquire even the separately trivial
+typed algebra. The final answer path is effectively source-insensitive.
+
+The frozen stop rule applies. Do not run a new seed, duration, LR, loss weight,
+renderer curriculum, width, rank, soft/hard schedule, HSC1 composition, or
+matched dense control. Preserve the accepted exact-host ULC1 result as a
+mechanics result, but close this synthetic register/evidence route to
+model-owned DIVERGE. Any future architecture gate must use a broader
+real-language task and avoid requiring several unlearned discrete interfaces
+to emerge simultaneously from hard straight-through training.
+
+Report/checkpoint SHA-256 values are
+`d4b81340eff7bae2cd9cf721c20914eeeaead4055fcbc158ada2ee339c112f63` /
+`7b8ad52ebf7b861e52ad920009b6458d0db2f715e9532083cae397ad60e1e1e6`.
