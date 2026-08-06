@@ -30550,3 +30550,42 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `retain_the_role_blind_recurrent_prefix_as_a_finalizer_baseline_and_move_to_explicit_wrong_causal_revision`.
+
+- **2026-08-06 06:32--06:50 EDT** -- **DIVERGE-CRP1 freezes the first
+  complete explicit-wrong causal-revision gate.**
+
+  CRP1 is not a VCR1 tuning variant. Its deterministic board contains scalar,
+  noncommuting two-register, and symbolic-string programs. Every wrong trace
+  is complete, has exactly one verifier-certified first invalid step, and
+  recomputes every later step from that corrupted state. Correct and wrong
+  final answers always differ. Train/development depths are 4--6; the exact
+  evaluation board holds out depths 7--9, renderer forms, and value/width
+  bands. Every wrong trace has a correct no-op twin.
+
+  The model-owned packet retains one coherent recurrent candidate for
+  `NO_ERROR` and every possible first-error location. Candidate `e` receives
+  separate guarded views of the valid prefix, fault step, and dependent
+  suffix. Tied weights update all candidates, one whole candidate is selected,
+  and only that candidate's prefix reaches the frozen SmolLM3-3B generator.
+  Candidate fields are never averaged. The exact control has identical
+  parameters, candidate identities, recurrence, language/localization losses,
+  tokens, and FLOPs, but every candidate sees the entire trace in every
+  channel.
+
+  The frozen one-seed contract is 4,800 train / 480 development / 480 OOD
+  rows; two-update smokes; then exactly 200 updates at accumulation 8 for
+  guarded and unguarded arms. Promotion requires at least 240/480 wrong-trace
+  solves, +48 over prompt-only, +24 over unguarded, 360/480 packet
+  localizations, 192/480 jointly localized repairs, 432/480 correct-twin
+  preservation and no-error selections, a positive guarded advantage in all
+  three families, and predicted collapse under reset, shifted selection, and
+  packet swap. Failure closes this exact packet without local seed, width,
+  duration, loss, renderer, depth, or threshold repair.
+
+  Twenty-one focused tests, Ruff, Python compilation, Bash parsing, and diff
+  checks pass locally. No neural result exists yet. The next action is one
+  tokenizer-exact CPU board build, then matched smokes and fits only if that
+  board satisfies its frozen contract.
+
+  Decision:
+  `build_and_hash_crp1_then_run_one_guarded_and_one_unguarded_gate_without_nearby_variants`.

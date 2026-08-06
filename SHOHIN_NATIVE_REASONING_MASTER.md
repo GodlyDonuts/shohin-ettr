@@ -56180,3 +56180,29 @@ Key immutable SHA-256 receipts:
 - targeted prompt-only finalizer MATH/science reports:
   `3f55a85816845af01d2d01341c2a2feb7cf7791170cc736c37de2074ee55f5d1` /
   `4dfa70dd5f9103a1c0141fb62790596735b83b1a93aa897165ed023a5e7dfee6`.
+
+### DIVERGE-CRP1 complete-trace causal-revision gate (frozen 2026-08-06)
+
+CRP1 directly tests the capability VCR1 did not establish. Its source draft
+is always complete and explicitly wrong, with one exact first error and a
+dependent suffix recomputed from the corrupted state. The board spans scalar,
+two-register, and symbolic programs, trains at depths 4--6, and evaluates new
+renderers/value bands at depths 7--9. A model cannot pass by finalizing an
+already-correct derivation because the displayed final answer is wrong by
+construction.
+
+The architecture is a bounded factorized DIVERGE packet over first-error
+location. `NO_ERROR` and each trace step remain separate whole recurrent
+candidates. Causal guards expose the valid prefix, candidate fault, and replay
+suffix through distinct channels; one candidate is hard-selected before its
+prefix conditions the frozen product generator. An equal-parameter and
+equal-FLOP control retains the same candidate width and recurrence but removes
+the guards by exposing the whole trace in every channel.
+
+The implemented frozen gate requires material exact-answer advantage over
+both prompt-only and unguarded controls, autonomous first-error localization,
+correct-trace preservation, gains in every task family, and causal collapse
+under packet reset, location shift, and cross-example packet swap. Passing is
+only evidence for bounded model-owned trace revision; transfer to natural
+verified traces remains necessary. Twenty-one focused tests and all static
+checks pass. No H100 result exists at freeze time.
