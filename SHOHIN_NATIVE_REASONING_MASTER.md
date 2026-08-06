@@ -56446,3 +56446,9 @@ long subtraction arguments jump prematurely to the RHS role. This is not loss
 of arithmetic semantics; it is failure to enforce a legal field-path topology.
 The next no-training test replaces independent role argmax with one constrained
 finite-state path decoder before considering any supervised adaptation.
+
+NTA2 implements that boundary as a finite-state structural projection over
+signed numeric runs. It does not change FTA1's weights or learned operation
+decision. The protected NTA1 raw-argmax result remains zero; NTA2 asks whether
+explicitly preserving a legal field topology is sufficient for corpus-derived
+transaction transfer.

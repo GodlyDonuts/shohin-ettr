@@ -30951,3 +30951,16 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `preserve_nta1_as_zero_shot_negative_then_run_one_zero_update_finite_state_constrained_role_decode;_do_not_retrain_before_that_gate`.
+
+- **2026-08-06 12:04 EDT** -- **NTA2 finite-state role projection freezes
+  before its zero-update result.**
+
+  NTA2 changes only decoding: signed numeric runs are projected into exactly
+  three ordered `LHS/argument/RHS` fields; CLS and separators are `OTHER`.
+  FTA1 weights, learned operation head, 279-row board, 963 transactions,
+  algebra, and controls are unchanged. Promotion requires 250/279 autonomous
+  selections/answers/trajectories, >=80% in every operation/depth slice, zero
+  invalid rows, and large causal-control drops.
+
+  Decision:
+  `run_one_nta2_zero_update_gate;_context_rich_natural_transfer_only_on_pass`.
