@@ -30964,3 +30964,23 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_one_nta2_zero_update_gate;_context_rich_natural_transfer_only_on_pass`.
+
+- **2026-08-06 12:06 EDT** -- **NTA2 passes all 279 verified natural
+  arithmetic traces with zero updates.**
+
+  Learned operation classification remains 963/963. Finite-state projection
+  turns the protected raw-role result from 0/963 into 963/963 legal exact
+  packets. Autonomous first-error selection, terminal answer, and complete
+  trajectory are each 279/279 with all 963 transitions exact and zero invalid
+  rows. Trust-source and ignored-conflict controls score zero, initial packet
+  swap scores two, and operation shift zero. Evaluation/gate hashes are
+  `0d9c0755bc66bf8b3279acebde627080745289534f13ab2b9b7d8e1bc6bea550` /
+  `39c3fb35e59c6b4383925dbf9183c0a270eeda3946ea9c7b2de34149c364e531`.
+
+  This is exact corpus-derived transaction reasoning, but step equations are
+  still handed to the compiler separately. The next gate must scan one full
+  question/work/final document and recover its transaction sequence before
+  contradiction replay.
+
+  Decision:
+  `run_one_zero_update_full_document_transaction_scanner_gate;_no_supervised_fit_before_scanner_result`.

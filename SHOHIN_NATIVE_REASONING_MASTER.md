@@ -56452,3 +56452,10 @@ signed numeric runs. It does not change FTA1's weights or learned operation
 decision. The protected NTA1 raw-argmax result remains zero; NTA2 asks whether
 explicitly preserving a legal field topology is sufficient for corpus-derived
 transaction transfer.
+
+It is sufficient on the isolated natural transactions: NTA2 compiles all 963
+and autonomously solves all 279 traces with no update. The learned head still
+supplies every operation class; the finite-state projection supplies a legal
+field sequence. This is a real transfer result but still receives presegmented
+equations. The next gate removes that convenience by scanning one full
+question/work/final document into an ordered transaction packet sequence.

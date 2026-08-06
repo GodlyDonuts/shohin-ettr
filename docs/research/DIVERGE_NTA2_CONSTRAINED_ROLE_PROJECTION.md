@@ -1,6 +1,6 @@
 # DIVERGE-NTA2: Constrained Role Projection
 
-Status: frozen before model result on 2026-08-06.
+Status: passed the one frozen zero-update gate on 2026-08-06.
 
 ## Hypothesis
 
@@ -27,3 +27,24 @@ A pass promotes the projection only to one context-rich natural trace gate
 where extra numeric spans make field choice nontrivial. It is not a broad
 reasoning claim. A failure closes this zero-update projection before supervised
 adaptation.
+
+## Result
+
+NTA2 passes every condition without changing a weight:
+
+- 963/963 learned operation classes remain exact;
+- finite-state projection produces 963/963 exact legal role paths and packets;
+- all 279 first-error selections, terminals, and complete trajectories are
+  exact across all 963 transitions;
+- every operation/depth slice is exact and no packet is invalid;
+- trust-source and ignored-conflict controls score 0/279, initial packet swap
+  scores 2/279, and operation shift scores 0/279.
+
+Raw independent role argmax remains 0/963, preserving NTA1 as the control. The
+result therefore belongs to the conjunction of learned operation recognition
+and explicit field topology, not to a post-hoc model update.
+
+Evaluation/gate SHA-256 values are
+`0d9c0755bc66bf8b3279acebde627080745289534f13ab2b9b7d8e1bc6bea550` /
+`39c3fb35e59c6b4383925dbf9183c0a270eeda3946ea9c7b2de34149c364e531`.
+One full-document scanner gate is authorized; broader reasoning is not.
