@@ -33,9 +33,9 @@ only when it contains a complete chain of two to five verified integer
 equations, its final RHS equals the answer field, every operation's three
 type-correct alternatives produce distinct immediate values, magnitudes remain
 below 3,000,000, and none of its exact equations occurs in training. This
-leaves 112 rows before selection. Hash-sort all eligible rows, retain every
+leaves 109 rows before selection. Hash-sort all eligible rows, retain every
 depth-three-or-greater row, then take the lowest-hash depth-two rows until the
-board has exactly 96 episodes. The expected board contains 223 transactions.
+board has exactly 96 episodes. The expected board contains 222 transactions.
 No model score participates in board selection.
 
 For each confirmation equation, deterministically rotate its visible operator
@@ -86,12 +86,12 @@ assessor may enumerate worlds and check arithmetic but cannot repair a packet.
 Matched arms are premature highest-support top-1, equal-memory complete
 particles, no-evidence factorized support, posterior answer aggregation, and
 full hard-evidence factorization. Controls shuffle evidence across episodes,
-swap packet/query commitments, reset the initial state, rotate operation
+swap packet/query commitments, reset the initial state, shift operand
 semantics, and poison raw source after sealing.
 
 All conditions are conjunctive:
 
-1. at least 221/223 complete confirmation equations have exact learned
+1. at least 220/222 complete confirmation equations have exact learned
    LHS/ARGUMENT/RHS mention assignment;
 2. every accepted packet contains all three distinct type-correct operation
    candidates and therefore retains the verified gold operation;
@@ -101,7 +101,7 @@ All conditions are conjunctive:
 5. full NFE1 beats top-1 and equal-memory particles by at least 30 percentage
    points each;
 6. no-evidence support abstains on at least 90/96 terminal queries;
-7. shuffled evidence, initial-state reset, and operation shift each reduce
+7. shuffled evidence, initial-state reset, and operand-semantic shift each reduce
    exactness by at least 50 points; every packet/query swap rejects and
    post-seal source poisoning is bit-invariant;
 8. zero evidence receipt accepted with a wrong source, step, mention, or value;
@@ -135,3 +135,13 @@ arithmetic transition path without removing or relabeling any candidate.
 Condition 7 consequently reads `shuffled evidence, initial-state reset, and
 operand-semantic shift` everywhere. All other data, architecture, budgets,
 controls, thresholds, and one-run rules remain unchanged.
+
+The same pre-implementation audit re-ran exact equation extraction directly
+from the frozen corpus. It reproduced 2,256 verified training occurrences and
+2,179 exact deduplicated spans, but strict exclusion of any confirmation row
+containing one of those spans leaves 109 eligible rows with depth counts
+`85/20/2/2`, not the draft's 112 with `87/21/2/2`. The deterministic selection
+therefore retains all 24 depth-three-or-greater rows and 72 hash-first depth-two
+rows, for 96 episodes and 222 transactions. The component threshold is changed
+from 221/223 to 220/222, preserving the same greater-than-99% requirement. No
+source overlap is relaxed to recover a planned count.
