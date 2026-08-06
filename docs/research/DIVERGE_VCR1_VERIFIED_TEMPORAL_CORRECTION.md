@@ -142,4 +142,7 @@ VCR1 advances only if all are true:
 If plain or role-blind two-pass equals or beats VCR1, temporal correction may
 still be a useful product technique, but this architecture has not earned
 promotion. Failure closes VCR1 without a nearby seed, width, depth, loss,
-duration, or threshold repair.
+duration, or threshold repair. The exact reducer is
+`pipeline/score_diverge_vcr1_gate.py`; it additionally fails closed unless all
+five correction arms consume the same complete ordered 100-row draft bank in
+each domain with zero admission skips.
