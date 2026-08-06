@@ -30482,3 +30482,71 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_vmt1_and_replace_exchangeable_parallel_matching_with_verified_temporal_correction`.
+
+- **2026-08-06 05:24--06:31 EDT** -- **DIVERGE-VCR1 produces a large
+  model-owned finalization gain, but the proposed question/draft fault line is
+  rejected and no new reasoning correction is demonstrated.**
+
+  VCR1 replaced exchangeable parallel trajectories with an autonomous draft,
+  a tied recurrent correction reactor, and one final response. The protected
+  SmolLM3-3B product generator remained bit-identical. Treatment and the
+  parameter/FLOP-matched role-blind control each trained exactly 5,571,969 new
+  parameters for 200 updates / 30,572 target tokens from byte-identical
+  initial reactor states. Both completed in about 997 seconds and used 41.16GB
+  peak allocated CUDA memory. Treatment checkpoint/report SHA-256 values are
+  `f3055731e48d7659431423effab6b2f21ec525e06fb11d1f526b8a11749c9970` /
+  `3a3d836ea73ffaaf0c404815a1efa543a3c1e508839ef6116a41c333b42552d8`;
+  role-blind values are
+  `c67c0d2f92dc930f8ac9a0613adcc490d8e969ab78fbabca8068529788e24a42` /
+  `294fbb6e9d526af57197588c029bcc3a7ac54e810aa835d7692bbff7557fe704`.
+
+  The exact board contains 2,800 train and 320 development identities,
+  balanced equally across math/science, with zero truncation and maximum 3,481
+  positions. It was derived from 7,452 same-generator verified preference rows
+  after excluding 2,500 evaluation questions; 60 exact overlaps were removed.
+  Train/development/report SHA-256 values are
+  `219cd59d120acc4fb7592743da666e71183b5e65045014b0824a726738da74b1` /
+  `a66d4b92edd2693085c334feb46fede491255266acc94a47d759cf84184ca32c` /
+  `b3e23ee1648e4356ecd58057a7ce7764ed14e46c7e8db86761fe91026f1b069a`.
+
+  On one shared 100 MATH-500 + 100 held-science autonomous draft bank, the
+  protected source scores 70/200 (50 math, 20 science). Plain two-pass
+  correction scores 23/200. A seed/subset/first-completion-identical targeted
+  zero-parameter finalizer scores 91/200 (59/32). VCR1 treatment scores
+  121/200 (67/54): it preserves 69/70 source solves and repairs 52/130 source
+  failures, with one regression. Resetting the learned prefix falls to 69/200,
+  proving that learned prefix state causes the practical gain. Treatment
+  validity accuracy is 88% math / 82% science and no correction generation
+  reaches its 256-token cap.
+
+  The architecture claim fails. The role-blind control also scores exactly
+  121/200 (67/54); 87/100 math and 94/100 science completions are byte-identical
+  to treatment. Swapping question/draft roles scores 120/200, while reset
+  scores 69/200. The frozen gate therefore fails solely because treatment does
+  not beat role-blind by three. Gate report SHA-256 is
+  `2c59ef0170b3d42de5a22295a84288bbbdc5f52754a5bc2e4c74dd566cc74932`.
+  Targeted prompt-only finalizer report SHA-256 values for MATH/science are
+  `3f55a85816845af01d2d01341c2a2feb7cf7791170cc736c37de2074ee55f5d1` /
+  `4dfa70dd5f9103a1c0141fb62790596735b83b1a93aa897165ed023a5e7dfee6`.
+
+  Direct transcript audit narrows the capability further. All 18 math repairs
+  and 31/34 science repairs begin from drafts that hit their generation cap;
+  17/18 math repairs had already derived the gold result but never emitted a
+  scoreable final answer. The three non-exhausted science repairs are also
+  normalization/readout cases: the draft text identifies the right option or
+  value, while the generic extractor reads a different trailing token or an
+  over-precise numeric form. No inspected case changes a complete, explicit,
+  semantically wrong derivation into a correct one.
+
+  VCR1 is retained as a strong model-owned learned finalizer/answer reader and
+  a practical baseline: it adds 30 exact solves beyond a targeted prompt-only
+  finalizer and emits about 10.8 correction tokens per problem. It is not
+  evidence of new reasoning, and the question/draft channel split is closed.
+  The next gate must exclude truncation/formatting repairs by construction and
+  train on complete explicit-wrong derivations with verifier-certified first
+  error localization, coherent downstream revision, and matched generic
+  recurrent/finalization controls. No VCR1 width, duration, seed, loss, or
+  role-mask repair is authorized.
+
+  Decision:
+  `retain_the_role_blind_recurrent_prefix_as_a_finalizer_baseline_and_move_to_explicit_wrong_causal_revision`.

@@ -56121,3 +56121,62 @@ admission, fixed positions 0/1 provide 14 math/correct-0, 27 math/correct-1,
 144 science/correct-0, and 184 science/correct-1 pairs. Fourteen local tests,
 Ruff, Python compilation, and Bash parsing pass. This is an implemented and
 frozen fit gate, not evidence of reasoning or benchmark improvement.
+
+### DIVERGE-VCR1 verified temporal correction result (2026-08-06)
+
+VCR1 removed VMT1's exchangeable-lineage symmetry. A protected SmolLM3-3B
+generator first emits one autonomous draft. A 5.572M-parameter tied recurrent
+reactor reads the problem and draft, predicts draft validity, and emits an
+eight-token correction prefix into the same frozen generator. Training uses
+verified wrong/correct response pairs with a common concise boxed-answer
+target. A role-blind arm has identical parameters, recurrence, losses, tokens,
+and FLOPs but does not preserve separate question/draft attention masks.
+
+The practical result is large and causal. On one shared, non-overlapping 100
+MATH-500 + 100 held-science draft bank:
+
+| System | MATH | Science | Aggregate |
+|---|---:|---:|---:|
+| protected first pass | 50 | 20 | 70/200 |
+| plain correction prompt | 2 | 21 | 23/200 |
+| targeted prompt-only finalizer | 59 | 32 | 91/200 |
+| VCR1 with prefix reset | 41 | 28 | 69/200 |
+| VCR1 treatment | **67** | **54** | **121/200** |
+| role-blind recurrent prefix | **67** | **54** | **121/200** |
+| swapped question/draft roles | 67 | 53 | 120/200 |
+
+Treatment preserves 69/70 existing solves, repairs 52/130 failures, and
+regresses once. Reset removes 52 aggregate solves, so learned recurrent prefix
+state causes the gain. A targeted zero-parameter finalizer is 30 solves worse,
+showing that the learned prefix does more than reproduce one better prompt.
+Both trained arms use 5,571,969 parameters, 200 updates, 30,572 target tokens,
+41.16GB peak allocated CUDA memory, and a bit-identical protected generator.
+
+The proposed architectural separator does not survive its matched control.
+Role-blind ties treatment exactly; 87% of math and 94% of science completions
+are byte-identical. The question/draft fault line is therefore unnecessary on
+this gate. The frozen gate report correctly records failure despite the large
+product gain.
+
+More importantly, this is reliable answer readout, not yet new reasoning.
+Every repaired math draft and 31/34 repaired science drafts hit the first-pass
+token cap. In inspected non-exhausted science cases, the draft already states
+the right answer but fails exact extraction or numeric normalization. VCR1 has
+not been shown to revise a complete explicit wrong derivation. It is preserved
+as the strongest learned finalizer baseline, while the next architecture gate
+must operate only on complete explicit-wrong traces and must localize the first
+invalid step, apply one coherent correction, and re-execute dependent steps.
+
+Key immutable SHA-256 receipts:
+
+- treatment checkpoint/report:
+  `f3055731e48d7659431423effab6b2f21ec525e06fb11d1f526b8a11749c9970` /
+  `3a3d836ea73ffaaf0c404815a1efa543a3c1e508839ef6116a41c333b42552d8`;
+- role-blind checkpoint/report:
+  `c67c0d2f92dc930f8ac9a0613adcc490d8e969ab78fbabca8068529788e24a42` /
+  `294fbb6e9d526af57197588c029bcc3a7ac54e810aa835d7692bbff7557fe704`;
+- autonomous gate report:
+  `2c59ef0170b3d42de5a22295a84288bbbdc5f52754a5bc2e4c74dd566cc74932`.
+- targeted prompt-only finalizer MATH/science reports:
+  `3f55a85816845af01d2d01341c2a2feb7cf7791170cc736c37de2074ee55f5d1` /
+  `4dfa70dd5f9103a1c0141fb62790596735b83b1a93aa897165ed023a5e7dfee6`.
