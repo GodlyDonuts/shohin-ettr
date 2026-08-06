@@ -29880,3 +29880,40 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_ulc1_cpu_mechanics_to_one_frozen_hsc1_score_runtime_gate_without_weight_updates`.
+
+- **2026-08-05 23:24--23:52 EDT** -- **DIVERGE-ULC1 frozen-HSC1 runtime and
+  A--G gate are frozen before neural execution.**
+
+  A generalized exact multi-valued decision-DAG now represents disjoint
+  record-choice lineages without assigning one bit to every Cartesian world.
+  It hash-conses extension/union expressions, merges only identical complete
+  typed states, preserves reversible lineage expressions after merging,
+  supports exact constrained mass and K-best product paths, and fails closed
+  on node/group caps. Five focused MDD tests and the inherited ULC1 suite pass.
+
+  The executable gate freezes the failed HSC1 score producer and K=2 component
+  envelope. The seven arms are: single top-1 state, resource-matched complete
+  particles, two independent trajectories, equal-transaction recurrence on
+  one state, soft terminal aggregation, factorized support without conflict,
+  and full DIVERGE. Assessor evidence is not a gold parse hash: it is the
+  observable typed-state effect signature of the gold record program on a
+  fixed probe state. It reveals no alias, prior, parse index, query, or answer.
+  Evidence is source-commitment and record-provenance bound; donor-packet
+  evidence is actually rejected and post-seal source replacement is tested
+  through the sealed runtime API. Witness metadata is not written into typed
+  state, because doing so would destroy exact state sharing and materialize the
+  product.
+
+  Before seeing neural results, the pass gate is frozen at: >=8 worlds every
+  episode; >=95% gold semantic support and >=90% final exactness per cohort;
+  >=90% recovery conditional on wrong top-1; >=10-point shifted gains over
+  top-1, matched particles, recurrence, and soft aggregation; perfect invariant
+  answers, abstention, source seals, and represented-gold preservation; >=20
+  point provenance/state-reset causal drops; and shifted sharing ratios of at
+  least 2x conservative whole-particle bytes and 1.25x duplicated-versus-unique
+  transactions. Thirty-eight focused/inherited tests pass. No weights are
+  trained by this gate, and no threshold may change after its first frozen
+  report.
+
+  Decision:
+  `run_one_hash_locked_frozen_hsc1_ulc1_gate_then_accept_or_close_without_variants`.

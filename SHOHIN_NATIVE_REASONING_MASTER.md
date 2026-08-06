@@ -55806,6 +55806,15 @@ so no universal resource claim is made.
 Report SHA-256 is
 `4123def2e71041987a14eef28385e6491565c34427fd93cc7fc5247fe09a061b`.
 This is exact synthetic mechanics, not model-owned reasoning. The only
-authorized successor is a bounded gate that gives hard Viterbi, K=2 complete
-particles, soft aggregation, conflict-disabled ULC1, and full ULC1 the same
-frozen HSC1 score tensor and typed transition budget.
+authorized successor is one bounded frozen-HSC1 runtime gate. Its exact MDD
+implementation preserves complete categorical lineages through hash-consed
+decision expressions and merges only identical typed states. Delayed evidence
+is an independently observed program-effect signature on a fixed typed probe,
+not a gold parse key or answer label; it is bound to the sealed source and
+record provenance. The frozen A--G matrix compares one top-1 state,
+resource-matched complete particles, two independent trajectories,
+equal-transaction single-state recurrence, soft terminal aggregation,
+factorized support without conflict, and full DIVERGE. The pre-result gate also
+requires >=90% exact recovery, shifted >=10-point capability gains, perfect
+source/evidence integrity, and >=2x byte / >=1.25x transaction sharing. No
+weights update and no threshold may change after the first report.

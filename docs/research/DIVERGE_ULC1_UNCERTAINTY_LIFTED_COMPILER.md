@@ -92,24 +92,30 @@ score/runtime gate proves that uncertainty lifting itself is useful.
 ## 3. First discriminating gate
 
 Use fresh raw-source episodes from all four existing cohorts. For each record,
-construct delayed post-record state evidence from the independent supervisor,
-then remove all source access before execution. Initial learned top-1 must be
-wrong in a measured subset; evidence must identify the valid lineage through
-state consequences rather than answer labels.
+the independent assessor supplies the observable effect signature produced by
+the gold record program on a fixed typed probe state, then removes all source
+access before execution. The signature never contains alias identity, prior
+class, parse index, query, or answer. Every candidate independently predicts
+the same effect signature from its own complete program, and the verifier may
+remove only candidates whose predicted effect conflicts with the observation.
+Initial learned top-1 must be wrong in a measured subset; evidence must identify
+the valid behavioral lineage through state consequences rather than labels.
 
 Matched arms receive the same frozen score tensors and typed transition budget:
 
 | Arm | Runtime |
 |---|---|
-| A | closed HSC1 single Viterbi parse |
-| B | K=2 complete particles, whole-lineage only |
-| C | soft fieldwise score aggregation |
-| D | ULC1 lattice without delayed evidence |
-| E | full ULC1 lattice plus verified evidence refinement |
+| A | closed HSC1 single top-1 state |
+| B | complete whole-state particles admitted under the exact factorized byte and transaction budgets |
+| C | two independent complete trajectories |
+| D | one top-1 state replayed recurrently under the factorized transaction budget |
+| E | posterior-weighted soft terminal-answer aggregation |
+| F | factorized version space without delayed conflict refinement |
+| G | full ULC1 factorization plus verified evidence refinement |
 
-Additional interventions are shuffled evidence provenance, cue-factor swap,
-lineage-field swap, packet swap between matched episodes, forced premature
-top-1, and state reset before query.
+Additional interventions are shuffled evidence guards, packet swap between
+matched episodes, forced premature top-1, state reset before query, and
+post-seal source poisoning. Full hypothesis fields are never averaged.
 
 ## 4. CPU mechanics gate
 
@@ -173,15 +179,22 @@ queries, and all controls before reading result accuracy.
 
 ULC1 passes only if:
 
+- every episode represents at least eight coherent worlds;
 - gold source support is at least 95% in every cohort;
+- final exactness is at least 90% in every cohort;
 - wrong-top-1 exact recovery is at least 90% in every cohort;
 - final sensitive-query exactness beats hard Viterbi and equal-memory whole
   particles by at least 10 points in every shifted cohort;
+- final exactness beats equal-transaction single-state recurrence and soft
+  aggregation by at least 10 points in every shifted cohort;
 - invariant queries are 100% and underdetermined queries never falsely commit;
-- cue/provenance/packet/state interventions each lose at least 20 points where
-  causally relevant; and
-- no invalid merge, false certificate, overflow, or post-seal source dependence
-  is observed.
+- provenance and state-reset interventions each lose at least 20 points;
+- packet swaps are rejected and post-seal source poisoning is bit-invariant;
+- verifier-derived guards never remove a represented gold world;
+- conservative whole-particle component bytes are at least 2x the factorized
+  packet bytes in every shifted cohort; and
+- duplicated transaction applications are at least 1.25x unique shared
+  applications in every shifted cohort.
 
 If K=2 full particles equal or beat ULC1 at matched memory/FLOPs, the sharing
 claim fails. If support is absent before evidence, the compiler fails. If
