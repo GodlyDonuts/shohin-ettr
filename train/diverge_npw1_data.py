@@ -9,7 +9,15 @@ import random
 from typing import Mapping, Sequence
 
 from diverge_tfs1_data import StepSpec, steps_from_record
-from diverge_tol1_ir import Action
+from diverge_tol1_ir import (
+    DIRECT_OPS,
+    Action,
+    Atom,
+    Instruction,
+    Predicate,
+    instruction_from_record,
+    instruction_record,
+)
 
 
 SCHEMA = "shohin-diverge-npw1-world-v1"
@@ -271,6 +279,151 @@ def augment_board(
     return output
 
 
+def _rename_atom(atom: Atom, mapping: Mapping[str, str]) -> Atom:
+    atom.validate()
+    if atom.kind == "CONST":
+        return atom
+    return Atom("REF", mapping[atom.value])
+
+
+def _rename_action(action: Action, mapping: Mapping[str, str]) -> Action:
+    action.validate()
+    return Action(
+        action.operation,
+        mapping[action.target],
+        _rename_atom(action.operand, mapping),
+    )
+
+
+def rename_instruction(
+    instruction: Instruction,
+    mapping: Mapping[str, str],
+) -> Instruction:
+    instruction.validate()
+    if instruction.operation in DIRECT_OPS:
+        assert instruction.action is not None
+        return Instruction(
+            instruction.operation,
+            action=_rename_action(instruction.action, mapping),
+        )
+    if instruction.operation == "SWAP":
+        assert instruction.swap_left and instruction.swap_right
+        return Instruction(
+            "SWAP",
+            swap_left=mapping[instruction.swap_left],
+            swap_right=mapping[instruction.swap_right],
+        )
+    if instruction.operation == "GUARD":
+        assert instruction.predicate is not None
+        assert instruction.true_action is not None
+        assert instruction.false_action is not None
+        predicate = instruction.predicate
+        return Instruction(
+            "GUARD",
+            predicate=Predicate(
+                predicate.comparator,
+                mapping[predicate.left],
+                _rename_atom(predicate.right, mapping),
+            ),
+            true_action=_rename_action(instruction.true_action, mapping),
+            false_action=_rename_action(instruction.false_action, mapping),
+        )
+    if instruction.operation == "QUERY":
+        assert instruction.query is not None
+        return Instruction("QUERY", query=mapping[instruction.query])
+    raise NPW1DataError("unknown instruction during NPW1 renaming")
+
+
+def step_record(step: StepSpec) -> dict[str, object]:
+    return {
+        "text": step.text,
+        "fixed": None if step.fixed is None else instruction_record(step.fixed),
+        "options": (
+            None
+            if step.options is None
+            else [instruction_record(value) for value in step.options]
+        ),
+        "fault_index": step.fault_index,
+    }
+
+
+def training_record_from_tol1(
+    row: Mapping[str, object],
+    *,
+    index: int,
+    seed: int,
+) -> dict[str, object]:
+    clauses = row.get("clauses")
+    if not isinstance(clauses, list) or not clauses:
+        raise NPW1DataError("NPW1 training source lacks clauses")
+    original = [instruction_from_record(value["instruction"]) for value in clauses]
+    declarations = [
+        value.action.target
+        for value in original
+        if value.operation == "SET" and value.action is not None
+    ]
+    symbols = tuple(dict.fromkeys(declarations))
+    if len(symbols) != 4:
+        raise NPW1DataError("NPW1 training symbol table differs")
+    rng = random.Random(seed + index * 65537)
+    renamed = tuple(rng.sample(TRAIN_NAMES, len(symbols)))
+    mapping = dict(zip(symbols, renamed, strict=True))
+    instructions = [rename_instruction(value, mapping) for value in original]
+    steps = []
+    fault_index = 0
+    for step_index, instruction in enumerate(instructions):
+        if instruction.operation == "QUERY":
+            continue
+        if (
+            instruction.operation in DIRECT_OPS
+            and instruction.action is not None
+            and (index + step_index) % 4 == 0
+        ):
+            alternatives = tuple(
+                value for value in DIRECT_OPS if value != instruction.operation
+            )
+            alternate = alternatives[(index + step_index) % len(alternatives)]
+            options = (
+                instruction,
+                Instruction(
+                    alternate,
+                    action=Action(
+                        alternate,
+                        instruction.action.target,
+                        instruction.action.operand,
+                    ),
+                ),
+            )
+            steps.append(
+                StepSpec(
+                    f"npw1-training-ambiguous-{step_index}",
+                    options=options,
+                    fault_index=fault_index,
+                )
+            )
+            fault_index += 1
+        else:
+            steps.append(
+                StepSpec(f"npw1-training-fixed-{step_index}", fixed=instruction)
+            )
+    records = [step_record(value) for value in steps]
+    semantic_identity = hashlib.sha256(
+        json.dumps(records, sort_keys=True, separators=(",", ":")).encode("ascii")
+    ).hexdigest()
+    record: dict[str, object] = {
+        "schema": "shohin-diverge-npw1-training-v1",
+        "id": f"npw1-train-{index:07d}-{semantic_identity[:12]}",
+        "identity_sha256": semantic_identity,
+        "symbols": list(renamed),
+        "steps": records,
+    }
+    return augment_board(
+        [record],
+        seed=seed + index * 104729,
+        confirmation=False,
+    )[0]
+
+
 def validate_augmented_row(row: Mapping[str, object], *, confirmation: bool) -> None:
     steps = steps_from_record(row["steps"])  # type: ignore[arg-type]
     world = row["natural_world"]
@@ -327,5 +480,8 @@ __all__ = [
     "augment_board",
     "render_event",
     "render_narrative",
+    "rename_instruction",
+    "step_record",
+    "training_record_from_tol1",
     "validate_augmented_row",
 ]

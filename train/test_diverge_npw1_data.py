@@ -3,7 +3,12 @@
 
 from __future__ import annotations
 
-from diverge_npw1_data import augment_board, render_narrative
+from diverge_npw1_data import (
+    TRAIN_NAMES,
+    augment_board,
+    render_narrative,
+    training_record_from_tol1,
+)
 from diverge_tfs1_data import StepSpec
 from diverge_tol1_ir import Action, Atom, Instruction, Predicate, instruction_record
 
@@ -78,7 +83,28 @@ def test_augmentation_commits_semantics_and_source() -> None:
     assert first[0]["npw1_identity_sha256"] != row["identity_sha256"]
 
 
+def test_tol1_training_conversion_renames_and_adds_ambiguity() -> None:
+    instructions = (
+        Instruction("SET", action=Action("SET", "alpha", Atom("CONST", "3"))),
+        Instruction("SET", action=Action("SET", "beta", Atom("CONST", "4"))),
+        Instruction("SET", action=Action("SET", "gamma", Atom("CONST", "5"))),
+        Instruction("SET", action=Action("SET", "delta", Atom("CONST", "6"))),
+        Instruction("ADD", action=Action("ADD", "alpha", Atom("REF", "beta"))),
+        Instruction("SWAP", swap_left="gamma", swap_right="delta"),
+        Instruction("QUERY", query="alpha"),
+    )
+    row = {"clauses": [{"instruction": instruction_record(value)} for value in instructions]}
+    converted = training_record_from_tol1(row, index=0, seed=2026080618)
+    assert set(converted["symbols"]) <= set(TRAIN_NAMES)
+    assert set(converted["symbols"]).isdisjoint({"alpha", "beta", "gamma", "delta"})
+    assert any(
+        event["form"] == "AMBIGUOUS"
+        for event in converted["natural_world"]["events"]
+    )
+
+
 if __name__ == "__main__":
     test_narrative_has_no_instruction_lines_and_exact_spans()
     test_augmentation_commits_semantics_and_source()
+    test_tol1_training_conversion_renames_and_adds_ambiguity()
     print("diverge NPW1 data tests passed")
