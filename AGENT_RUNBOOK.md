@@ -31307,3 +31307,48 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `freeze_sot1_stage_owned_transactions;_build_fresh_board_then_one_isolated_query_owner_and_composite_gate`.
+
+- **2026-08-06 17:05 EDT** -- **DIVERGE-SOT1 closes negative at the isolated
+  QUERY owner; WORLD and EVIDENCE retention remain exact.**
+
+  Training fit all 50,000 query rows while preserving immutable WORLD and
+  EVIDENCE hashes. Sealed evaluation job `744146` completed normally on
+  `evc32`. Fresh WORLD is 256/256, EVIDENCE 3,072/3,072, fully sealed episodes
+  256/256, and protected TOL3/NVE1 remain 1,024/1,024 and 256/256. QUERY is
+  only 485/768: sensitive/invariant/underdetermined are 0/256, 243/256, and
+  242/256. Sensitive answers are 6/256 while forced QUERY role swap reaches
+  256/256. Evaluation SHA-256 is
+  `a38f95a691b7177e7e8fe6db447950033ae039c542410354d629bb675cdd6e7c`.
+
+  The one authorized read-only attribution removes the board's mode/renderer
+  confound. Across all 768 counterfactual queries per renderer, the QUERY
+  owner scores 0/768, 712/768, and 724/768; renderer 0 is a complete 768/768
+  role inversion. The qualified EVIDENCE symbol head transfers only
+  1,132/2,304 (49.13%), so direct owner reuse is invalid. Diagnostic SHA-256
+  is `c186884ccb4698d1d1faf3912cc48eb2635e073b8f6152da46d11e30b9c0010a`;
+  all owner hashes are unchanged. Close SOT1 without local retries.
+
+  The pass-only NPW1 route is void. Its already-staged 20,000-program corpus,
+  fresh board, and runtime remain preserved but must not launch after SOT1
+  FAIL. Training/board hashes are `8f34e758...1b22` and
+  `023b8efd...c3da`.
+
+  Decision:
+  `close_stage_local_query_ownership;_run_one_semantic_primitive_successor`.
+
+- **2026-08-06 17:20 EDT** -- **DIVERGE-SRP1 freezes one structurally
+  different successor before data or model result.**
+
+  SRP1 owns `TARGET/DISTRACTOR` once across EVIDENCE and QUERY through an
+  exchange-equivariant pair scorer. TOL3 WORLD and NVE1 numeric evidence stay
+  immutable. The REFERENT encoder warm-starts from NVE1 and fits jointly on
+  the immutable 50,000 evidence plus 50,000 query rows for exactly 1,000
+  updates. A fresh 256-row board at seed `2026080620` uses disjoint entities,
+  six balanced query renderers crossed with every mode, and zero model-based
+  selection. Frozen SOT1 is the matched read-only baseline. Promotion requires
+  the full SOT transaction/answer gate, at least 122/128 per renderer, and at
+  least +77/768 exact query transactions over frozen SOT1. No SRP1 variant is
+  authorized after a miss.
+
+  Decision:
+  `materialize_and_hash_srp1_board;_then_launch_one_joint_referent_gate`.
