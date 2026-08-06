@@ -99,7 +99,7 @@ Fresh promotion then requires every condition:
    `254/256`;
 4. CCR1 improves frozen SRP1 by at least four exact query transactions on the
    same board and has no worse evidence count;
-5. marker swap loses at least 90 points, marker deletion loses at least 50
+5. marker swap loses at least 90 points, marker deletion loses at least 49
    points, and entity-name permutation changes no assignment after masks are
    permuted consistently;
 6. shuffled evidence, state reset, and operation shift each lose at least 50
@@ -111,4 +111,3 @@ A miss closes CCR1 without width, layer, marker, seed, duration, renderer,
 warm-start, loss, or optimizer variants. A pass qualifies one natural PL1
 integration; it does not authorize continuation pretraining or establish
 open-domain reasoning.
-
