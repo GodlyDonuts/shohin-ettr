@@ -1,6 +1,6 @@
 # DIVERGE-TOL3: Position-Free Local Semantic Anchors
 
-Status: frozen before training or development result on 2026-08-05.
+Status: qualified controlled-language front end on 2026-08-06.
 
 TOL2 fixes document binding but misses its gate because the unchanged TOL1
 clause-global heads make 277 top-level operation mistakes and 89 local guard
@@ -53,3 +53,42 @@ direct-action orders, and the previously unused
 checkpoint must satisfy the same four 90% exactness conditions and accept no
 malformed packet. No result-dependent renderer or decoder changes are
 permitted after the board hash is materialized.
+
+## Fresh confirmation result
+
+The board materializes exactly 1,024 programs / 23,063 clauses at depths
+15--20. Every row contains guards, swaps, register operands, and rational
+values. Its register names are disjoint from both prior name banks and its
+program identity overlap with all 25,536 earlier rows is zero. Board/report
+SHA-256 values are
+`36a5fb51f5129294fac4a6ea30cef22c4637d4ae79f633bbee65cec2b5735ed3` /
+`714eac5590209cb4b71974bb6da80273fe4e44338987eff49a542e451b8772e5`.
+
+The unchanged checkpoint passes every condition:
+
+| Metric | Fresh confirmation |
+|---|---:|
+| exact semantic programs | 1,024 / 1,024 |
+| exact answers | 1,024 / 1,024 |
+| exact guard clauses | 3,663 / 3,663 |
+| rows with every guard exact | 1,024 / 1,024 |
+| exact top-level operations | 23,063 / 23,063 |
+| invalid rows / accepted malformed packets | 0 / 0 |
+| operation-shift answers | 0 / 1,024 |
+| binding-derangement answers | 21 / 1,024 |
+| state-reset answers | 0 / 1,024 |
+
+Confirmation evaluation SHA-256 is
+`2f5b1ca3c08f4b82f8e220713441014178da72a257b8fafb67b0887f28ad5700`.
+All six artifacts are hash-identical in local disaster recovery and immutable
+Newton path
+`artifacts/reasoning/diverge_tol3_0dfaf53_r1`.
+
+TOL3 is promoted only as a controlled typed-language compiler. It has learned
+local operation/comparator semantics and composes them with document-owned
+binding across new names, order, and depth. Its exact rational executor and
+grammar partition remain engineered, so this is not unrestricted language or
+general reasoning. No TOL3 seed, width, duration, or renderer variant follows.
+The next gate must combine this source compiler with factorized language-
+derived fault lines, delayed evidence, and one coherent DIVERGE commitment;
+single top-1 parsing and full particles are protected controls.

@@ -56502,3 +56502,33 @@ frozen 90% promotion threshold. The remaining 366 local semantic decisions are
 not binding failures: 277 top-level opcodes and 89 branch/comparator labels.
 The next bounded mechanism is therefore a position-free learned semantic-anchor
 head over the retained document relation graph, not more TOL1/TOL2 training.
+
+### DIVERGE-TOL3 result: controlled typed language compiles exactly
+
+TOL3 replaces the failed clause-global semantic decisions with a 28,109-
+parameter position-free byte encoder over local operation words and comparator
+phrases. Supervisor anchor dictionaries exist only while extracting 68
+deduplicated training snippets. Candidate runtime sees source strings and
+model logits, selects one operation span by its positive non-NONE margin, and
+passes that model-owned span into TOL2's retained document symbol table and
+anchor-relative argument graph. The runtime does not consult the verb map.
+
+The single seed fits all 68 snippets in 750 full-batch updates and 6.844 CPU
+seconds. On the opened TOL1 OOD board it reaches 1,024/1,024 exact programs
+and answers with all 2,506 guards exact. That pass opened one hash-frozen
+confirmation board with disjoint register names, 15--20-step bodies,
+recombined direct orders, and a never-trained guard order.
+
+The unchanged checkpoint again reaches 1,024/1,024 exact programs and answers,
+all 3,663 guards exact, all 23,063 top-level operations exact, and zero invalid
+rows. Operation shift and state reset score zero; binding derangement scores
+21/1,024. Board/evaluation SHA-256 values are
+`36a5fb51f5129294fac4a6ea30cef22c4637d4ae79f633bbee65cec2b5735ed3` /
+`2f5b1ca3c08f4b82f8e220713441014178da72a257b8fafb67b0887f28ad5700`.
+
+This promotes a controlled typed-language front end, not general reasoning.
+The rational executor and source grammar remain engineered. TOL3 receives no
+local variants. Its justified successor is one composition with the protected
+DIVERGE version-space mechanics: language-derived semantic fault lines remain
+separate through delayed evidence, then one coherent typed program commits.
+Single top-1 parsing and resource-matched whole particles are the controls.

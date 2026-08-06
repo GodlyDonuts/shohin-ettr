@@ -31070,3 +31070,38 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_tol2_below_gate;_train_one_local_semantic_anchor_head_over_the_fixed_document_graph`.
+
+- **2026-08-06 10:20--10:36 EDT** -- **DIVERGE-TOL3 qualifies a controlled
+  typed-language compiler on fresh confirmation.**
+
+  Private commit `212b35a` froze a 28,109-parameter position-free byte encoder
+  before fitting. It classifies deduplicated local source words as NONE or one
+  operation and separately classifies six comparator phrases. Runtime selects
+  a single positive-margin source span from learned logits and passes that span
+  to the retained document symbol table/relation graph; only supervisor-side
+  extraction can read the fixed anchor dictionary.
+
+  The one seed runs exactly 750 full-batch updates over 68 unique snippets in
+  6.844 CPU seconds and fits 68/68. The opened 1,024-row development board is
+  1,024/1,024 exact programs and answers with 2,506/2,506 exact guards. This
+  authorized one renderer frozen in private commit `0dfaf53` before board
+  creation.
+
+  Fresh board `36a5fb51...5735ed3` contains 1,024 disjoint programs / 23,063
+  clauses, new names, depth 15--20, recombined action orders, and the held
+  `otherwise FALSE; if PREDICATE, then TRUE` order. The unchanged checkpoint
+  again reaches 1,024/1,024 programs and answers, 3,663/3,663 guards, all
+  23,063 top operations, and zero invalid rows. Operation shift/state reset
+  score zero; binding derangement scores 21. Evaluation SHA-256 is
+  `2f5b1ca3...ad5700`. Checkpoint SHA-256 is
+  `b8b9dfe5...c030328`. Local/Newton disaster-recovery copies match all six
+  artifact hashes.
+
+  This is a promoted controlled-language front end, not open-domain reasoning:
+  the grammar partition and exact rational executor remain engineered. Do not
+  run TOL3 width, duration, seed, or renderer variants. Compose its model-owned
+  semantic fault lines once with protected DIVERGE delayed-evidence mechanics,
+  against single-top1 and matched whole-particle controls.
+
+  Decision:
+  `freeze_tol3_as_working_typed_frontend;_next_test_factorized_language_fault_lines_and_delayed_coherent_commitment`.
