@@ -56430,3 +56430,10 @@ oracle location. Its boundary is equally important: the compiler sees a
 closed arithmetic/register/string grammar and the state algebra is exact
 engineered code. The next test is zero-shot transfer to independently
 answer-verified natural arithmetic traces, not a claim of general reasoning.
+
+NTA1 freezes that transfer test against 279 eligible chained integer traces
+from the hash-bound V10 verified corpus. It strips the synthetic `Step N:`
+wrapper while preserving the source equation substrings, injects one wrong
+transaction, and locally recomputes the corrupted suffix. The FTA1 compiler is
+not updated. This measures whether its delimiter-relative state machine has
+learned transaction structure rather than only the CRP renderer.

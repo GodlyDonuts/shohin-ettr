@@ -30911,3 +30911,22 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_one_zero_shot_transfer_gate_on_answer_verified_natural_arithmetic_traces;_do_not_call_ac1_general_reasoning`.
+
+- **2026-08-06 11:52 EDT** -- **DIVERGE-NTA1 freezes the first external
+  renderer/source transfer gate before board materialization or prediction.**
+
+  NTA1 deterministically selects exactly 279 answer-verified
+  `reasoning_gym_trace` rows from V10 corpus SHA-256
+  `2461d6f70b44a142854d56c24e1fb42d600065e5788a2c4e055ba47b12696549`.
+  Rows contain two to five exact chained integer arithmetic transactions with
+  nonnegative explicit arguments and CRT-safe values. Original equation
+  substrings lose the generated `Step N:` wrapper; one deterministic wrong
+  result is injected and its suffix recomputed. FTA1 receives zero updates.
+
+  Promotion requires at least 200/279 exact autonomous selections, terminals,
+  and trajectories, >=60% in every error-operation and depth slice, strong
+  destructive-control drops, and compiler operation/role/validity floors.
+  This is corpus-derived arithmetic transfer, not broad natural language.
+
+  Decision:
+  `build_and_hash_the_279_row_board_then_run_the_one_zero_shot_gate;_no_weight_update_before_result`.
