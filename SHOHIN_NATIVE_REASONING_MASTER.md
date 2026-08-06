@@ -55743,9 +55743,20 @@ fully invariant, and linear accounting is exact over 280,803 source words,
 Canonical report digest is
 `23fa3a02f4299a2ff2b29dde415e8fcefc7bc8ecd2a56877cdee68d446c81809`.
 
-The neural contract remains unopened. It freezes 200 updates / 1,600 episodes
-of hierarchy training before 1,000 updates / 8,000 new episodes of option CRF
-training. Stage B sees only stage-A Viterbi spans and has no gold-span fallback.
-One failed seed closes HSC1. A pass would authorize only one unchanged
-high-ambiguity DIVERGE recovery composition, not continuation pretraining,
-public benchmark optimization, or a broad reasoning claim.
+The neural contract is now resolved as a negative. Full job `742775` completes
+the frozen 200-update hierarchy stage and 1,000-update option-CRF stage over
+exactly 9,600 episodes. Training is stable, stage-B loss reaches `4.849e-5`,
+and segmentation is 100% in all cohorts. Exact packets, however, are only
+96.094% on train, 8.594% on lexical shift, and zero on renderer and composition
+shift. Gold-support recall is 96.875% / 47.266% / 96.094% / 11.328%.
+
+This is a sharper result than WRA1 but still fatal: globally coherent finite-
+state paths solve in-distribution binding yet do not provide shifted raw-
+language grounding. Overflow and invalid overlap remain zero, and source-
+poison invariance is 100%; those mechanics cannot recover a valid world that
+the compiler failed to preserve. HSC1 is closed after seed one without a cue,
+template, stage, width, duration, loss, source-layer, optimizer, or seed
+variant. No DIVERGE composition or continuation pretraining is authorized.
+Report/checkpoint SHA-256 values are
+`62ac144d66818e32ba261fade1ac9103d5adbe962d3572004f3a249ba94c56ad` /
+`34c7eaee885ba5201e6e07335add1737b7b7d26b2709861b7967e0b97be64a05`.

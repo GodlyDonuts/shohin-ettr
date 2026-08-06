@@ -1,6 +1,6 @@
 # DIVERGE-HSC1 Hierarchical Structured Compiler
 
-**Status:** exact CPU mechanics pass; neural result unopened
+**Status:** neural seed-one negative; closed without variants
 
 **Decision date:** 2026-08-05
 
@@ -167,3 +167,36 @@ stored JSON SHA-256 is
 `ef795c698a9ab4195eba43a6d8f84b46e55528aad66f708893de59dfd22dbad2`.
 This authorizes only the frozen two-update real-checkpoint smoke and, if that
 is mechanically clean, one 1,200-update neural seed.
+
+## 8. Neural result and decision
+
+The portable immutable runtime is commit `fce7efb`, archive SHA-256
+`317e85f1182ba6bb63d7bcf2e1256a751b59d487a26e0118aa89d9f71b4e2c0e`,
+and manifest SHA-256
+`b738e6f31b4bee91de3b033307027228b9801dfd83563ec70f52f9fb38f6afd0`.
+Smoke job `742764` reaches 100% stage-A phase parsing and exercises one exact
+stage-B update over all 96 predicted option spans without fallback. Full job
+`742775` completes the frozen 1,200 updates / 9,600 episodes in 8m09s. The
+893,393 trainable parameters peak at 759,383,040 allocated GPU bytes. Stage-B
+loss falls from `9.47937` to `4.849e-5`.
+
+The autonomous result fails the gate:
+
+| Cohort | Segmentation | Phase parse | Gold support | Exact packet |
+|---|---:|---:|---:|---:|
+| Train | 100% | 95.313% | 96.875% | 96.094% |
+| Lexical shift | 100% | 97.656% | 47.266% | 8.594% |
+| Renderer shift | 100% | 99.219% | 96.094% | 0% |
+| Composition shift | 100% | 99.609% | 11.328% | 0% |
+
+Overflow and accepted overlap remain zero, and source-poison invariance stays
+100%. Those mechanical passes cannot override first-pass support loss and zero
+shifted packet exactness. Report/checkpoint SHA-256 values are
+`62ac144d66818e32ba261fade1ac9103d5adbe962d3572004f3a249ba94c56ad` /
+`34c7eaee885ba5201e6e07335add1737b7b7d26b2709861b7967e0b97be64a05`.
+
+HSC1 is closed after seed one. Do not run another seed, width, duration,
+source layer, stage allocation, optimizer, loss, cue repair, template repair,
+or threshold. The result localizes the remaining failure to shifted language
+grounding rather than exact structured decoding. It does not authorize a
+DIVERGE composition, continuation pretraining, or reasoning claim.

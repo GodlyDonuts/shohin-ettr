@@ -29770,3 +29770,44 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_exact_hsc1_cpu_mechanics_to_one_real_checkpoint_smoke_then_one_frozen_neural_seed`.
+
+- **2026-08-05 22:20--22:42 EDT** -- **DIVERGE-HSC1 solves train binding but
+  fails shifted support; HSC1 is closed.**
+
+  Runtime r1 failed during unpack because read-only directory modes were
+  preserved; no job or model code ran. Runtime r2 unpacked and job `742748`
+  reached only preflight, where a cross-platform exact-float assertion rejected
+  `3.433076561793647` versus `3.4330765617936474` despite an identical Viterbi
+  path. No model loaded. Commit `fce7efb` changes only that test to exact-path /
+  tolerance-score comparison. Accepted runtime r3 archive/manifest SHA-256 are
+  `317e85f1182ba6bb63d7bcf2e1256a751b59d487a26e0118aa89d9f71b4e2c0e` /
+  `b738e6f31b4bee91de3b033307027228b9801dfd83563ec70f52f9fb38f6afd0`.
+
+  Smoke `742764` exercised the real Smol parent, frozen SC1 source pass, all
+  200 hierarchy updates, stage freeze, and one option-CRF update. Phase parsing
+  reaches 100% and all 96 predicted option spans are charged without gold
+  fallback. Full job `742775` then completes 1,200 updates / 9,600 episodes on
+  `evc32` in `00:08:09`. The 893,393 trainable parameters use 759,383,040 peak
+  allocated bytes; stage A runs at 56.89 episodes/s and stage B at 37.71.
+  Stage-B loss falls from 9.47937 to `4.849e-5`.
+
+  Autonomous segmentation is 100% in all four 256-episode cohorts, but
+  phase/support/exact packet rates are train
+  `95.313% / 96.875% / 96.094%`, lexical
+  `97.656% / 47.266% / 8.594%`, renderer
+  `99.219% / 96.094% / 0%`, and composition
+  `99.609% / 11.328% / 0%`. Overflow and accepted overlap are zero; source-
+  poison invariance is 100%. The valid world is still lost under shifted
+  language before DIVERGE can recover it.
+
+  Seed one therefore closes HSC1. Do not run another seed, width, duration,
+  source layer, stage allocation, optimizer, loss, cue/template repair, or
+  threshold. No DIVERGE composition follows. DIVERGE retains only the exact
+  scaffolded `>=8`-world delayed-recovery observation and has no autonomous
+  learned raw-language front end or broad resource win. Report/checkpoint
+  SHA-256 values are
+  `62ac144d66818e32ba261fade1ac9103d5adbe962d3572004f3a249ba94c56ad` /
+  `34c7eaee885ba5201e6e07335add1737b7b7d26b2709861b7967e0b97be64a05`.
+
+  Decision:
+  `close_hsc1_and_autonomous_diverge_promotion_after_shifted_first_pass_support_loss`.

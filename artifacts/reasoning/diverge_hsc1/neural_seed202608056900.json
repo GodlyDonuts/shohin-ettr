@@ -1,0 +1,235 @@
+{
+  "arguments": {
+    "base": "/lustre/fs1/home/sa305415/shohin/train/ettr_smollm2_control_parent_a2026072801_7881d8e/joint-model-final.pt",
+    "batch_size": 8,
+    "cpu_report": "/lustre/fs1/home/sa305415/shohin/scratchpad/diverge_hsc1_fce7efb_r3/artifacts/reasoning/diverge_hsc1/cpu_gate_seed202608056800.json",
+    "data_seed": 202608057000,
+    "device": "cuda",
+    "eval_batch_size": 4,
+    "eval_count": 256,
+    "eval_seed": 202608057100,
+    "layer": 17,
+    "learning_rate": 0.0003,
+    "local_heads": 4,
+    "local_layers": 2,
+    "log_every": 100,
+    "output": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_hsc1/neural_seed202608056900.json",
+    "pair_width": 64,
+    "sc1_checkpoint": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_sc1/neural_seed202608056200.pt",
+    "seed": 202608056900,
+    "stage_a_updates": 200,
+    "stage_b_updates": 1000,
+    "threads": 4,
+    "tokenizer": "/lustre/fs1/home/sa305415/shohin/artifacts/external/smollm2_135m_instruct_83212e1e/tokenizer.json",
+    "width": 192
+  },
+  "backbone_receipt": {
+    "base_step": null,
+    "checkpoint_format": "ettr-parent-base",
+    "initialization": null
+  },
+  "checkpoint": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_hsc1/neural_seed202608056900.pt",
+  "checkpoint_sha256": "34c7eaee885ba5201e6e07335add1737b7b7d26b2709861b7967e0b97be64a05",
+  "evaluations": {
+    "composition_shift": {
+      "cohort": "composition_shift",
+      "count": 256,
+      "rates": {
+        "accepted_overlap": 0.0,
+        "cut_shuffle_exact": 0.0,
+        "exact_packet": 0.0,
+        "failed_closed": 0.00390625,
+        "mean_predicted_options": 11.5390625,
+        "mean_predicted_records": 5.76953125,
+        "mean_source_words": 274.84375,
+        "overflow": 0.0,
+        "phase_exact": 0.99609375,
+        "segmentation_exact": 1.0,
+        "semantic_shuffle_exact": 0.0,
+        "source_poison_invariant": 1.0,
+        "support_recalled": 0.11328125
+      },
+      "totals": {
+        "accepted_overlap": 0,
+        "cut_shuffle_exact": 0,
+        "episodes": 256,
+        "exact_packet": 0,
+        "failed_closed": 1,
+        "overflow": 0,
+        "phase_exact": 255,
+        "predicted_options": 2954,
+        "predicted_records": 1477,
+        "segmentation_exact": 256,
+        "semantic_shuffle_exact": 0,
+        "source_poison_invariant": 256,
+        "source_words": 70360,
+        "support_recalled": 29
+      }
+    },
+    "lexical_shift": {
+      "cohort": "lexical_shift",
+      "count": 256,
+      "rates": {
+        "accepted_overlap": 0.0,
+        "cut_shuffle_exact": 0.0,
+        "exact_packet": 0.0859375,
+        "failed_closed": 0.00390625,
+        "mean_predicted_options": 11.890625,
+        "mean_predicted_records": 5.9453125,
+        "mean_source_words": 284.2265625,
+        "overflow": 0.0,
+        "phase_exact": 0.9765625,
+        "segmentation_exact": 1.0,
+        "semantic_shuffle_exact": 0.0,
+        "source_poison_invariant": 1.0,
+        "support_recalled": 0.47265625
+      },
+      "totals": {
+        "accepted_overlap": 0,
+        "cut_shuffle_exact": 0,
+        "episodes": 256,
+        "exact_packet": 22,
+        "failed_closed": 1,
+        "overflow": 0,
+        "phase_exact": 250,
+        "predicted_options": 3044,
+        "predicted_records": 1522,
+        "segmentation_exact": 256,
+        "semantic_shuffle_exact": 0,
+        "source_poison_invariant": 256,
+        "source_words": 72762,
+        "support_recalled": 121
+      }
+    },
+    "renderer_shift": {
+      "cohort": "renderer_shift",
+      "count": 256,
+      "rates": {
+        "accepted_overlap": 0.0,
+        "cut_shuffle_exact": 0.0,
+        "exact_packet": 0.0,
+        "failed_closed": 0.00390625,
+        "mean_predicted_options": 12.09375,
+        "mean_predicted_records": 6.046875,
+        "mean_source_words": 288.91015625,
+        "overflow": 0.0,
+        "phase_exact": 0.9921875,
+        "segmentation_exact": 1.0,
+        "semantic_shuffle_exact": 0.0,
+        "source_poison_invariant": 1.0,
+        "support_recalled": 0.9609375
+      },
+      "totals": {
+        "accepted_overlap": 0,
+        "cut_shuffle_exact": 0,
+        "episodes": 256,
+        "exact_packet": 0,
+        "failed_closed": 1,
+        "overflow": 0,
+        "phase_exact": 254,
+        "predicted_options": 3096,
+        "predicted_records": 1548,
+        "segmentation_exact": 256,
+        "semantic_shuffle_exact": 0,
+        "source_poison_invariant": 256,
+        "source_words": 73961,
+        "support_recalled": 246
+      }
+    },
+    "train": {
+      "cohort": "train",
+      "count": 256,
+      "rates": {
+        "accepted_overlap": 0.0,
+        "cut_shuffle_exact": 0.171875,
+        "exact_packet": 0.9609375,
+        "failed_closed": 0.0078125,
+        "mean_predicted_options": 11.796875,
+        "mean_predicted_records": 5.8984375,
+        "mean_source_words": 282.21484375,
+        "overflow": 0.0,
+        "phase_exact": 0.953125,
+        "segmentation_exact": 1.0,
+        "semantic_shuffle_exact": 0.0,
+        "source_poison_invariant": 1.0,
+        "support_recalled": 0.96875
+      },
+      "totals": {
+        "accepted_overlap": 0,
+        "cut_shuffle_exact": 44,
+        "episodes": 256,
+        "exact_packet": 246,
+        "failed_closed": 2,
+        "overflow": 0,
+        "phase_exact": 244,
+        "predicted_options": 3020,
+        "predicted_records": 1510,
+        "segmentation_exact": 256,
+        "semantic_shuffle_exact": 0,
+        "source_poison_invariant": 256,
+        "source_words": 72247,
+        "support_recalled": 248
+      }
+    }
+  },
+  "gates": {
+    "closed_compiler_advantage": false,
+    "cut_causality": false,
+    "exact_packet": false,
+    "no_invalid": true,
+    "no_overflow": true,
+    "phase_parse": false,
+    "segmentation": true,
+    "semantic_causality": false,
+    "source_poison": true,
+    "support": false
+  },
+  "input_hashes": {
+    "base": "8196f810a31e0abe7f3bf0eae0a37b103195f109b7a8e962c7b74b5710c98a02",
+    "cpu_report": "ef795c698a9ab4195eba43a6d8f84b46e55528aad66f708893de59dfd22dbad2",
+    "sc1_checkpoint": "7b5348cacb1772bf45e34442e94010db71a6be20bd8d689477d037ac5fee2ffd",
+    "tokenizer": "9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c"
+  },
+  "model_state_sha256": "0abda150ebe8cac8805f6621c1788cde0c3401be434a398d9afd5053181e24cf",
+  "parameters": {
+    "complete": 136512221,
+    "trainable_total": 893393
+  },
+  "passed_seed_gate": false,
+  "schema": "shohin-diverge-hsc1-neural-structured-compiler-v1",
+  "seed": 202608056900,
+  "training": {
+    "charged_episodes": 9600,
+    "peak_memory_bytes": 759383040,
+    "stage_a": {
+      "charged_episodes": 1600,
+      "episodes_per_second": 56.89044735138608,
+      "final_metrics": {
+        "boundary_failures": 0.0,
+        "loss": 0.804828941822052,
+        "phase_exact": 1.0,
+        "predicted_records": 47.0,
+        "segmentation_exact": 1.0,
+        "supervised_records": 47.0
+      },
+      "parameters": 1158,
+      "seconds": 28.1242295409902,
+      "updates": 200
+    },
+    "stage_b": {
+      "charged_episodes": 8000,
+      "episodes_per_second": 37.71181005339058,
+      "final_metrics": {
+        "boundary_failures": 0.0,
+        "eligible_options": 99.0,
+        "loss": 4.8492893256479874e-05,
+        "phase_exact": 0.99,
+        "predicted_options": 100.0
+      },
+      "parameters": 892235,
+      "seconds": 212.1351372069912,
+      "updates": 1000
+    },
+    "updates": 1200
+  }
+}
