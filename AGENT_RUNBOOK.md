@@ -30118,3 +30118,23 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_mqb1_and_replace_frozen_one_pass_grounding_with_query_conditioned_source_computation`.
+
+- **2026-08-06 01:18 EDT** -- **DIVERGE-QTG1 query-conditioned typed gatherer
+  is frozen as the final isolated evidence-compiler gate.**
+
+  QTG1 re-reads unchanged MEI1 evidence under ten fixed canonical natural-
+  language field questions, shares one extractive pointer/value gatherer, and
+  jointly adapts only a copy of HSC1's ~1M-parameter source memory adapter. The
+  Smol backbone and qualified MEI1 executor/query remain frozen. One exact
+  assignment preserves whole selected mentions; it does not supply semantics.
+
+  The one-seed 1,600-update / 102,400-record budget, 20,000-record four-cohort
+  evaluation, causal question/value shuffles, source-reset diagnostic, and
+  >=99% complete component thresholds are frozen in
+  `docs/research/DIVERGE_QTG1_QUERY_CONDITIONED_GATHERER.md`. If this distinct
+  source computation fails, no further isolated reader is authorized; move to
+  a jointly trained end-to-end source-to-state trajectory on a capable
+  development backbone.
+
+  Decision:
+  `run_one_query_conditioned_source_gate_then_compose_once_only_on_a_conjunctive_pass`.
