@@ -30589,3 +30589,55 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `build_and_hash_crp1_then_run_one_guarded_and_one_unguarded_gate_without_nearby_variants`.
+
+- **2026-08-06 06:50--08:46 EDT** -- **DIVERGE-CRP1 demonstrates real
+  complete-trace revision but misses its frozen breadth and control gate.**
+
+  Board job `743403`, smokes `743405/743406`, prompt baselines
+  `743407/743408`, matched fits `743412/743413`, and evaluation jobs
+  `743418--743424` all complete cleanly. The board contains 4,800 train, 480
+  development, and 480 OOD evaluation rows with zero overlap, malformed rows,
+  or truncation; maximum position count is 824/4,096. Train/development/eval
+  SHA-256 values are `33dacc5e...b0b2ede`, `ad27c4ca...2cfde5`, and
+  `db0bde0c...be6849`; full values are in the CRP1 research note.
+
+  Guarded and unguarded each train exactly 3,556,353 parameters for 200
+  updates on 191,201 charged response tokens from packet initialization
+  `dc5f273d...a5966e`. Both preserve the frozen SmolLM3-3B source and peak at
+  12.45GB allocated CUDA memory. Guarded final development wrong-step
+  localization is 68.75% versus 27.083% unguarded.
+
+  On the identical 480-row OOD board, prompt-only / unguarded / guarded wrong
+  answers are `1 / 194 / 213`; packet localization is `n/a / 64 / 313`, and
+  joint localized repairs are `n/a / 60 / 183`. Correct-twin answers are
+  `349 / 476 / 475`; guarded selects `NO_ERROR` correctly on 463. Reset,
+  shifted selection, and packet swap reduce guarded answers to `0 / 36 / 100`.
+  Guarded therefore passes all causal-drop and valid-trace preservation checks.
+
+  It fails promotion: the frozen bars are 240 answers, 360 packet
+  localizations, 192 joint repairs, and +24 over unguarded. The actual matched
+  answer lift is +19. Family guarded-minus-unguarded is `+20` scalar, `-1`
+  register, and `0` symbolic; both arms solve zero symbolic rows. Some prompt
+  and destructive-control generations also exhaust, failing the all-arms
+  exhaustion check.
+
+  The positive evidence is genuine and bounded. Guarded creates 129 joint
+  wins absent from unguarded while losing six. Transcript audit finds 181
+  exact canonical complete correction targets and 182 complete correct suffix
+  replays among 183 joint successes. Scalar/register examples explicitly
+  replace an invalid step and recompute every dependent state. This is not
+  VCR1 finalization, but it is not broad enough to promote.
+
+  Gate report SHA-256 is
+  `cdd5a717e55cb3c589fecdefc7455a83903f9ef68376b822c3846f9da7573e8c`.
+  Guarded/unguarded report SHA-256 values are
+  `ff0419e26295125a5451603de078a8b25b7c2ebaa8ad902585b6d5f958000bc7` /
+  `0a0353c450c245acd6f44aaa34974e5ff1caa718ea54c371056aad80e84f0f85`;
+  checkpoint SHA-256 values are
+  `588dce4f608fde47516a8b29feedc40bf7ee58d2ff2aa8b344848915dcacb5ce` /
+  `93e7e71db74e1f4efe68d13b028157cdaea449bb34e2f8e8bdc528af40ce4ced`.
+  All board, checkpoint, report, and evaluation artifacts are hash-verified in
+  local ignored `artifacts/reasoning/diverge_crp1`.
+
+  Decision:
+  `close_exact_crp1_preserve_real_arithmetic_register_revision_and_replace_frozen_language_replay_with_persistent_model_owned_state_execution`.

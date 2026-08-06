@@ -2,6 +2,27 @@
 
 ## Current Status — Read First
 
+**Current architecture result (2026-08-06 08:46 EDT):** DIVERGE-CRP1 is
+closed after its one frozen matched gate. On 480 complete explicit-wrong OOD
+traces, prompt-only / unguarded / guarded score `1 / 194 / 213`; guarded
+packet localization is `313/480` versus `64/480` unguarded, and joint
+localized repairs are `183/480` versus `60/480`. Reset, shifted selection,
+and packet swap reduce answers to `0 / 36 / 100`, proving that learned packet
+state, candidate identity, and episode provenance are causal. Correct-twin
+preservation is `475/480` with `463/480` correct `NO_ERROR` commitments.
+
+This is the first clean complete-trace correction evidence in the lane: 181
+guarded outputs exactly match the canonical full correction target and 182 of
+183 joint cases contain the complete corrected dependent suffix. The result
+still fails promotion. It misses the 240-answer, 360-localization, 192-joint,
+and +24-over-control bars; guarded beats unguarded by only 19 answers. Its
+family delta is `+20 / -1 / 0` on scalar / register / symbolic, with both arms
+at zero symbolic solves. Exact CRP1 is closed without local repair. Preserve
+the packet as evidence that guarded first-error localization can cause genuine
+replay, but replace frozen-language generation with persistent model-owned
+state execution/readout before any further claim. Gate SHA-256 is
+`cdd5a717e55cb3c589fecdefc7455a83903f9ef68376b822c3846f9da7573e8c`.
+
 **Current architecture result (2026-08-06 04:54 EDT):** DIVERGE-VMT1 is
 closed after its one frozen fit. It successfully fits all 16 correct responses
 and reaches 0.8671 matched trace cosine, but crossed matching is also 0.8668
@@ -56206,3 +56227,49 @@ under packet reset, location shift, and cross-example packet swap. Passing is
 only evidence for bounded model-owned trace revision; transfer to natural
 verified traces remains necessary. Twenty-one focused tests and all static
 checks pass. No H100 result exists at freeze time.
+
+### DIVERGE-CRP1 complete-trace causal-revision result (2026-08-06)
+
+The exact one-seed gate is complete. The board has 4,800 train, 480
+development, and 480 OOD evaluation rows with no overlap, malformed row, or
+token truncation. Guarded and unguarded each train 3,556,353 parameters for
+200 updates on 191,201 charged response tokens from byte-identical packet
+initialization; the protected SmolLM3-3B generator remains unchanged.
+
+| Arm | Wrong answers | Packet localization | Joint | Correct twins |
+|---|---:|---:|---:|---:|
+| prompt-only | 1/480 | n/a | n/a | 349/480 |
+| unguarded | 194/480 | 64/480 | 60/480 | 476/480 |
+| guarded | **213/480** | **313/480** | **183/480** | 475/480 |
+| reset | 0/480 | 313/480 | 0/480 | n/a |
+| shifted candidate | 36/480 | 23/480 | 28/480 | n/a |
+| packet swap | 100/480 | 313/480 | 39/480 | n/a |
+
+Guarded yields 62 answer wins unavailable to unguarded but loses 43, for a
+net +19. Its joint advantage is much cleaner: 129 unique wins versus six
+losses. Direct transcript audit finds 181 whitespace-normalized exact target
+matches and 182 complete corrected suffixes among 183 joint successes. These
+are genuine revisions of complete wrong arithmetic/register derivations, not
+finalization of truncated drafts.
+
+The mechanism is not broad enough. Guarded / unguarded family answers are
+`135/115` scalar, `78/79` register, and `0/0` symbolic. The frozen gate fails
+the absolute answer, localization, joint, matched-control, cross-family, and
+all-arms exhaustion checks, while passing valid-trace preservation and every
+causal-intervention drop. Exact CRP1 is closed without nearby variants. The
+next admissible mechanism must couple the selected causal packet directly to
+one persistent model-owned state replay and late readout, instead of relying
+on a frozen autoregressive generator to independently reconstruct the trace.
+
+Immutable receipts:
+
+- board report:
+  `b9ead3db62c91622231cb310fd5cc6f48d814e69cf26b40ad195c8306a689d8d`;
+- guarded report/checkpoint:
+  `ff0419e26295125a5451603de078a8b25b7c2ebaa8ad902585b6d5f958000bc7` /
+  `588dce4f608fde47516a8b29feedc40bf7ee58d2ff2aa8b344848915dcacb5ce`;
+- unguarded report/checkpoint:
+  `0a0353c450c245acd6f44aaa34974e5ff1caa718ea54c371056aad80e84f0f85` /
+  `93e7e71db74e1f4efe68d13b028157cdaea449bb34e2f8e8bdc528af40ce4ced`;
+- gate report:
+  `cdd5a717e55cb3c589fecdefc7455a83903f9ef68376b822c3846f9da7573e8c`.
