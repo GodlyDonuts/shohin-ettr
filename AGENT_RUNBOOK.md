@@ -29547,3 +29547,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `provisionally_accept_diverge_mechanism_then_complete_cuda_receipt_and_broader_language_transfer`.
+
+- **2026-08-05 19:40--20:00 EDT** -- **Resource-corrected DIVERGE V4 fails
+  the frozen broad gate; retain only the high-ambiguity delayed-recovery
+  boundary.**
+
+  Audit found that V3 called the world-materializing executor while charging
+  only static packet bytes. Pending H100 jobs `742054--742058` were canceled
+  before allocation. Private commits `0ae846a--e56a37f` implement a true exact
+  bitset/state-group executor, incremental post-execution evidence filtering,
+  measured peak group bytes, and a whole-particle control bounded by the same
+  bytes and unique transaction applications. Local tests are 21/21; a wider
+  audit covers 360 episodes / 7,560 worlds / 2,160 exact query comparisons.
+
+  Stokes jobs `766191--766195` evaluate five frozen compiler seeds. Across 720
+  episodes / 2,160 queries, A/D are 33.333%, B is 72.222%, C averages 65.278%
+  (62.500--68.750%), E/F are 66.667%, and G is 100%. Packet/support/refinement
+  minima remain 100%, G has zero false certificates, and causal interventions
+  still collapse as predicted. Corrected storage ratios at 2/4/8/16/32/64
+  worlds are 1.010/1.893/3.412/6.412/13.359/27.365x. All five seeds fail only
+  the frozen four-world `>=2x` requirement. Broad promotion is therefore
+  negative; do not post-hoc relax it or run the canceled CUDA chain.
+
+  Immutable local reports are under
+  `artifacts/reasoning/diverge_v0/matched_gate_v4/`; aggregate SHA-256 is
+  `8e4405920379b7c0a2f4a0c9acc463839a3816b4a87e84f78fcb9d656e17aaab`.
+  Runtime archive SHA-256 is
+  `841e901c849ee8bee805067aff54367f5e7f7c31dd8f658fbd683ba45a7fb11f`.
+  Preserve V3 as invalid undercharged evidence. Retain DIVERGE only as a
+  source-sealed delayed-recovery mechanism for the observed `>=8`-world
+  amortization regime. Do not launch continuation pretraining or make a
+  general-reasoning claim from this board.
+
+  Decision:
+  `close_broad_diverge_v0_promotion_and_retain_only_the_measured_high_ambiguity_delayed_recovery_boundary`.

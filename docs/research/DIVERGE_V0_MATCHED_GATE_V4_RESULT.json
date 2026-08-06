@@ -1,0 +1,257 @@
+{
+  "arms": {
+    "A_single": {
+      "maximum_exact": 0.3333333333333333,
+      "mean_exact": 0.3333333333333333,
+      "minimum_exact": 0.3333333333333333,
+      "per_seed": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+      ]
+    },
+    "B_full_particles": {
+      "maximum_exact": 0.7222222222222222,
+      "mean_exact": 0.7222222222222222,
+      "minimum_exact": 0.7222222222222222,
+      "per_seed": [
+        0.7222222222222222,
+        0.7222222222222222,
+        0.7222222222222222,
+        0.7222222222222222,
+        0.7222222222222222
+      ]
+    },
+    "C_independent": {
+      "maximum_exact": 0.6875,
+      "mean_exact": 0.6527777777777778,
+      "minimum_exact": 0.625,
+      "per_seed": [
+        0.625,
+        0.6342592592592593,
+        0.6712962962962963,
+        0.6458333333333334,
+        0.6875
+      ]
+    },
+    "D_recurrent_single": {
+      "maximum_exact": 0.3333333333333333,
+      "mean_exact": 0.3333333333333333,
+      "minimum_exact": 0.3333333333333333,
+      "per_seed": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+      ]
+    },
+    "E_soft": {
+      "maximum_exact": 0.6666666666666666,
+      "mean_exact": 0.6666666666666666,
+      "minimum_exact": 0.6666666666666666,
+      "per_seed": [
+        0.6666666666666666,
+        0.6666666666666666,
+        0.6666666666666666,
+        0.6666666666666666,
+        0.6666666666666666
+      ]
+    },
+    "F_factorized_no_conflict": {
+      "maximum_exact": 0.6666666666666666,
+      "mean_exact": 0.6666666666666666,
+      "minimum_exact": 0.6666666666666666,
+      "per_seed": [
+        0.6666666666666666,
+        0.6666666666666666,
+        0.6666666666666666,
+        0.6666666666666666,
+        0.6666666666666666
+      ]
+    },
+    "G_diverge": {
+      "maximum_exact": 1.0,
+      "mean_exact": 1.0,
+      "minimum_exact": 1.0,
+      "per_seed": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  },
+  "board": {
+    "episodes": 144,
+    "families": [
+      "register-workshop",
+      "parcel-relation",
+      "signal-routing"
+    ],
+    "queries": 432,
+    "renderers": [
+      2,
+      3
+    ],
+    "repetitions": 4,
+    "widths": [
+      2,
+      4,
+      8,
+      16,
+      32,
+      64
+    ]
+  },
+  "claim_boundary": "Five-seed synthetic source-sealed delayed-disambiguation mechanism result; not unrestricted language reasoning or public benchmark evidence.",
+  "compiler_minima": {
+    "gold_support_recall": 1.0,
+    "packet_exact": 1.0,
+    "valid_support_preserved": 1.0
+  },
+  "gate": {
+    "minimum_required_winning_seeds": 4,
+    "pass": false,
+    "winning_seeds": 0
+  },
+  "inputs": [
+    {
+      "checkpoint_sha256": "d614690f6446bf1635fc474d4ae941677b01ac465c0c60381c4b11bbe189826f",
+      "path": "artifacts/reasoning/diverge_v0/matched_gate_v4/seed2026080522_cpu.json",
+      "seed": 2026080522,
+      "sha256": "9a9310178751f91852adedfa9e5da0c6765a2b15bee599d5b2d080bc644a85a7"
+    },
+    {
+      "checkpoint_sha256": "81d3747ef6981524f58e60ca3f4cff377e32b96d3fb3a964bad35bbd9fe9058d",
+      "path": "artifacts/reasoning/diverge_v0/matched_gate_v4/seed2026080523_cpu.json",
+      "seed": 2026080523,
+      "sha256": "ea0177102c05e670afa8c2a5c951e7b4316f0765fb6df6dc86017c1e8b5ff77a"
+    },
+    {
+      "checkpoint_sha256": "d53ffc0bce3f58132e8932235c43588ee89a5b6881e289934dae32a73316b742",
+      "path": "artifacts/reasoning/diverge_v0/matched_gate_v4/seed2026080524_cpu.json",
+      "seed": 2026080524,
+      "sha256": "d181845a69342e6319ea36c0e534c0fec10d1484e86aec9380fc075f41095ac6"
+    },
+    {
+      "checkpoint_sha256": "71c04b7054d821e310c282475ab96d83258b529506e979b452b56246e71791cd",
+      "path": "artifacts/reasoning/diverge_v0/matched_gate_v4/seed2026080525_cpu.json",
+      "seed": 2026080525,
+      "sha256": "de78c4917d813d4a35da64fd2506097eedfc7c0f84fccc8800abf82c6b043a6b"
+    },
+    {
+      "checkpoint_sha256": "20e34d06c56b469f80171f8e3f156ef6ea60ddfbb9d5c81f9cbbfe8dedd9d23a",
+      "path": "artifacts/reasoning/diverge_v0/matched_gate_v4/seed2026080526_cpu.json",
+      "seed": 2026080526,
+      "sha256": "1b4a06a22b5f5b348ea9e3dd0a689f74a524fe432c54687fe1969e65bba78c5f"
+    }
+  ],
+  "intervention_drops": {
+    "conflict_disabled": {
+      "mean_drop_points": 33.333333333333336,
+      "minimum_drop_points": 33.333333333333336
+    },
+    "forced_premature_top1": {
+      "mean_drop_points": 66.66666666666667,
+      "minimum_drop_points": 66.66666666666667
+    },
+    "packet_swap": {
+      "mean_drop_points": 34.72222222222222,
+      "minimum_drop_points": 34.72222222222222
+    },
+    "query_only": {
+      "mean_drop_points": 16.666666666666664,
+      "minimum_drop_points": 16.666666666666664
+    },
+    "shuffled_guard_provenance": {
+      "mean_drop_points": 33.333333333333336,
+      "minimum_drop_points": 33.333333333333336
+    },
+    "shuffled_labels": {
+      "mean_drop_points": 100.0,
+      "minimum_drop_points": 100.0
+    },
+    "state_reset": {
+      "mean_drop_points": 100.0,
+      "minimum_drop_points": 100.0
+    }
+  },
+  "schema": "shohin-diverge-v0-matched-a-g-aggregate-v1",
+  "sharing": {
+    "16": {
+      "mean_effective_factorized_bytes": 4996.583333333333,
+      "mean_mask_operations": 10.0,
+      "mean_materialized_bytes": 32037.0,
+      "mean_packet_bytes": 3439.0,
+      "mean_peak_group_bytes": 1557.5833333333333,
+      "mean_peak_state_groups": 12.0,
+      "static_packet_storage_ratio": 9.31578947368421,
+      "storage_ratio": 6.411781383945696,
+      "transaction_ratio": 2.857142857142857
+    },
+    "2": {
+      "mean_effective_factorized_bytes": 1743.0,
+      "mean_mask_operations": 4.0,
+      "mean_materialized_bytes": 1760.0,
+      "mean_packet_bytes": 1486.0,
+      "mean_peak_group_bytes": 257.0,
+      "mean_peak_state_groups": 2.0,
+      "static_packet_storage_ratio": 1.1843876177658144,
+      "storage_ratio": 1.0097532989099254,
+      "transaction_ratio": 1.0
+    },
+    "32": {
+      "mean_effective_factorized_bytes": 5695.0,
+      "mean_mask_operations": 12.0,
+      "mean_materialized_bytes": 76081.0,
+      "mean_packet_bytes": 4092.0,
+      "mean_peak_group_bytes": 1603.0,
+      "mean_peak_state_groups": 12.0,
+      "static_packet_storage_ratio": 18.592619745845553,
+      "storage_ratio": 13.359262510974538,
+      "transaction_ratio": 4.8
+    },
+    "4": {
+      "mean_effective_factorized_bytes": 2650.0,
+      "mean_mask_operations": 6.0,
+      "mean_materialized_bytes": 5016.0,
+      "mean_packet_bytes": 2137.0,
+      "mean_peak_group_bytes": 513.0,
+      "mean_peak_state_groups": 4.0,
+      "static_packet_storage_ratio": 2.347215722976135,
+      "storage_ratio": 1.8928301886792454,
+      "transaction_ratio": 1.5
+    },
+    "64": {
+      "mean_effective_factorized_bytes": 6438.083333333333,
+      "mean_mask_operations": 14.0,
+      "mean_materialized_bytes": 176177.0,
+      "mean_packet_bytes": 4745.0,
+      "mean_peak_group_bytes": 1693.0833333333333,
+      "mean_peak_state_groups": 12.0,
+      "static_packet_storage_ratio": 37.128977871443624,
+      "storage_ratio": 27.364821310690292,
+      "transaction_ratio": 8.615384615384615
+    },
+    "8": {
+      "mean_effective_factorized_bytes": 3817.0,
+      "mean_mask_operations": 8.0,
+      "mean_materialized_bytes": 13025.0,
+      "mean_packet_bytes": 2788.0,
+      "mean_peak_group_bytes": 1029.0,
+      "mean_peak_state_groups": 8.0,
+      "static_packet_storage_ratio": 4.67180774748924,
+      "storage_ratio": 3.4123657322504584,
+      "transaction_ratio": 2.0
+    }
+  },
+  "totals": {
+    "episodes": 720,
+    "queries": 2160,
+    "seeds": 5
+  }
+}

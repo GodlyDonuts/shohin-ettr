@@ -669,3 +669,22 @@ question is:
 If yes, Shohin has a credible architecture program. If no, close the lane
 before expensive pretraining and move to the diffusion/global-revision
 alternative.
+
+## 11. Superseding architecture decision and DIVERGE result
+
+The later owner directive closes PCSD and FCPT and orders DIVERGE as a
+factorized extension of the protected CSDC role-copy result. The bounded gate
+is now resolved. Learned source compilation and delayed conflict recovery are
+exact across five seeds, but the first V3 comparison omitted active
+state-group memory. The corrected exact runtime raises the matched
+whole-particle control from 33.333% to 72.222%; DIVERGE remains 100%, soft and
+no-conflict controls remain 66.667%, and independent particles average
+65.278% across 720 episodes / 2,160 queries.
+
+The broad gate nevertheless fails on all five seeds because four-world
+effective storage is `1.893x` versus the frozen `2.0x` minimum. Sharing becomes
+material at eight worlds (`3.412x`) and reaches `27.365x` at 64. This supports
+only a narrow delayed-recovery/version-space result above the observed
+amortization boundary. It does not authorize CUDA profiling, long pretraining,
+or a general architecture claim. Aggregate SHA-256:
+`8e4405920379b7c0a2f4a0c9acc463839a3816b4a87e84f78fcb9d656e17aaab`.

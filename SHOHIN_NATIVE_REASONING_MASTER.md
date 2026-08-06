@@ -55595,7 +55595,7 @@ Seed report SHA-256 values are `2ac508b6...35118`, `0f6096f6...5047f`,
 hashes and checkpoint hashes are in
 `docs/research/DIVERGE_V0_NEURAL_COMPONENT_PILOT.md`.
 
-### DIVERGE passes the source-sealed matched mechanism gate (2026-08-05)
+### Provisional DIVERGE V3 result, later invalidated (2026-08-05)
 
 The first complete A--G result is positive after two invalid pilots were
 discarded: one had a 2:1 sensitive-label imbalance, and one reused source alias
@@ -55622,3 +55622,24 @@ This establishes a compact source-sealed delayed-recovery mechanism on the
 frozen synthetic board. It does not establish unrestricted language reasoning,
 public benchmark lift, or a final Shohin model. CUDA resource profiling and a
 broader learned-language transfer gate remain before scaling.
+
+### DIVERGE V3 correction and final bounded decision (2026-08-05)
+
+The provisional positive above is superseded. V3's executor materialized one
+state per represented world internally while charging only static packet
+bytes, underfunding whole-particle B and omitting DIVERGE activation memory.
+The exact V4 bitset/state-group runtime passes 21 focused tests and an
+additional 360-episode / 7,560-world parity audit. Five seeds retain 100% G,
+but fair B rises to 72.222%, independent particles average 65.278%, and E/F
+remain 66.667% over 720 episodes / 2,160 queries.
+
+Effective factorized storage versus complete particles is
+`1.010x/1.893x/3.412x/6.412x/13.359x/27.365x` at widths
+`2/4/8/16/32/64`. Every seed fails
+the frozen `>=2x` four-world requirement. The broad DIVERGE promotion gate is
+therefore negative. Retain only the exact compiler qualification and the
+narrow observation that delayed conflict recovery is accurate and compact
+once ambiguity reaches eight worlds on this generated board. No H100 receipt,
+continuation pretraining, public benchmark, or unrestricted reasoning claim is
+authorized. Aggregate SHA-256 is
+`8e4405920379b7c0a2f4a0c9acc463839a3816b4a87e84f78fcb9d656e17aaab`.

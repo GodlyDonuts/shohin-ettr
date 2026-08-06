@@ -1,9 +1,9 @@
 # DIVERGE-v0 Source-Sealed Factorized CSDC
 
-Status: CPU mechanics, the token-role/source-copy compiler, and the source-
-sealed matched A--G gate pass on five of five seeds. The CUDA resource receipt
-is pending, so promotion remains provisional and no general-reasoning claim
-exists.
+Status: CPU mechanics and the token-role/source-copy compiler pass. The final
+resource-corrected A--G gate fails its frozen broad-promotion rule on five of
+five seeds. DIVERGE is retained only as a delayed-recovery mechanism for
+ambiguity widths where factorization amortizes its runtime state overhead.
 
 Date: 2026-08-05
 
@@ -308,7 +308,7 @@ a ten-point OOD gain over every matched control, gains on every family and four
 of five seeds, and the specified causal intervention collapses. A merely
 working factorized executor does not pass.
 
-## 9. Provisional matched A--G result
+## 9. Invalid provisional V3 matched A--G result
 
 The first two aggregate attempts are retained but invalid for promotion. The
 first board accidentally gave one sensitive label two-thirds prevalence. The
@@ -367,6 +367,51 @@ The finite grammar exposes candidate records and a parseable delayed key. The
 remaining CUDA run supplies profiled compiler FLOPs and peak device memory;
 subsequent promotion must then broaden the language compiler and execute a
 sealed distribution shift without changing this gate.
+
+### Resource-corrected final matched result
+
+The result above is V3 and is **not claim-eligible**. Its executor called the
+enumerative world path internally while its receipt charged only static packet
+bytes. That underfunded the complete-particle control and omitted DIVERGE's
+active state-group memory. Pending CUDA jobs `742054--742058` were canceled
+before allocation once this was found.
+
+V4 replaces that path with an exact bitset/state-group executor. It represents
+each distinct terminal state once, associates it with a disjoint support mask,
+merges only bit-identical states, and refines delayed evidence by intersecting
+already-executed masks without replaying transactions. It matches independent
+enumeration on an additional 360-episode / 7,560-world audit with 2,160 exact
+pre/post-evidence query comparisons. The focused suite has 21 passing tests.
+Whole-particle B receives the maximum of DIVERGE's pre/post-evidence canonical
+packet plus measured peak state-group bytes and the same unique transaction
+budget.
+
+Five Stokes seeds (`766191--766195`) cover 720 episodes / 2,160 late queries:
+
+| Arm | V4 mean exact | Five-seed range |
+|---|---:|---:|
+| A single immediate top-1 | 33.333% | 33.333% |
+| B resource-matched whole particles | 72.222% | 72.222% |
+| C independent coherent trajectories | 65.278% | 62.500--68.750% |
+| D equal-transaction recurrence | 33.333% | 33.333% |
+| E soft field aggregation | 66.667% | 66.667% |
+| F factorized packet without conflict | 66.667% | 66.667% |
+| **G full DIVERGE** | **100.000%** | **100.000%** |
+
+Packet/support/refinement minima remain 100%, with zero false G certificates
+and the same required causal collapses. The corrected effective storage ratios
+(static packet plus peak active groups versus complete particles) are `1.010x,
+1.893x, 3.412x, 6.412x, 13.359x, 27.365x` at 2, 4, 8, 16, 32, and 64 worlds.
+The frozen four-world threshold is `>=2.0x`; every seed therefore fails the
+formal broad gate. The result is narrowed to the observed `>=8`-world regime,
+not promoted, and no CUDA receipt or continuation pretraining is authorized.
+
+Aggregate SHA-256 is
+`8e4405920379b7c0a2f4a0c9acc463839a3816b4a87e84f78fcb9d656e17aaab`.
+Per-seed hashes are `9a931017...5a7`, `ea017710...77a`, `d181845a...ac6`,
+`de78c491...a6b`, and `1b4a06a2...c5f`. Exact source runtime is private
+commit `e56a37f`; archive SHA-256 is
+`841e901c849ee8bee805067aff54367f5e7f7c31dd8f658fbd683ba45a7fb11f`.
 
 ## 10. Kill conditions
 

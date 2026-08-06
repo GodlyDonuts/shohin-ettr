@@ -1,8 +1,8 @@
 # DIVERGE-v0 Neural Component Pilot
 
 Status: the tiny and pooled source compilers are closed. The token-role/source-
-copy compiler qualifies, and its source-sealed matched A--G CPU gate passes
-five of five seeds. CUDA resource profiling remains pending.
+copy compiler qualifies. The resource-corrected A--G gate is a five-seed broad-
+promotion negative, while retaining a narrower delayed-recovery result.
 
 Date: 2026-08-05
 
@@ -121,6 +121,16 @@ recorded in `DIVERGE_V0_SOURCE_SEALED_FACTORIZED_CSDC.md`. Delayed evidence no
 longer reuses source aliases: it binds only to option commitments in the sealed
 packet. The aggregate report SHA-256 is
 `0d78b271cd4bf4761dde5aa80b929e24ad50fe5057ae5f9cd2c1ea763a8b918d`.
+
+**Superseding resource correction:** that V3 aggregate undercharged DIVERGE's
+active state groups and therefore underfunded complete-particle B. Exact V4
+raises B from 33.333% to 72.222% while G remains 100%; C averages 65.278% and
+E/F remain 66.667%. V4 fails the frozen `>=2x` storage advantage at four
+worlds (`1.893x`) on all five seeds, although corrected sharing grows to
+`3.412x` at eight worlds and `27.365x` at 64. Aggregate SHA-256 is
+`8e4405920379b7c0a2f4a0c9acc463839a3816b4a87e84f78fcb9d656e17aaab`.
+The broad architecture gate is negative; only the learned compiler
+qualification and a narrow high-ambiguity delayed-recovery mechanism survive.
 
 ## Claim boundary
 
