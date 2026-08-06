@@ -348,8 +348,11 @@ def _generate_candidate(
     rng: random.Random,
     *,
     index: int,
+    name_bank: Sequence[str] = TFS1_NAMES,
 ) -> dict[str, object] | None:
-    names = tuple(rng.sample(TFS1_NAMES, REGISTER_COUNT))
+    if len(set(name_bank)) < REGISTER_COUNT:
+        raise TFS1DataError("TFS1 name bank is too small")
+    names = tuple(rng.sample(tuple(name_bank), REGISTER_COUNT))
     active = names[:ACTIVE_REGISTERS]
     sentinel = names[-1]
     gold = [0] * (FAULT_LINES // 2) + [1] * (FAULT_LINES // 2)
@@ -576,18 +579,31 @@ def _generate_candidate(
     }
 
 
-def generate_row(rng: random.Random, *, index: int) -> dict[str, object]:
+def generate_row(
+    rng: random.Random,
+    *,
+    index: int,
+    name_bank: Sequence[str] = TFS1_NAMES,
+) -> dict[str, object]:
     for _ in range(100):
-        row = _generate_candidate(rng, index=index)
+        row = _generate_candidate(rng, index=index, name_bank=name_bank)
         if row is not None:
             validate_row(row)
             return row
     raise TFS1DataError("could not generate a bounded TFS1 episode")
 
 
-def generate_board(count: int, seed: int) -> list[dict[str, object]]:
+def generate_board(
+    count: int,
+    seed: int,
+    *,
+    name_bank: Sequence[str] = TFS1_NAMES,
+) -> list[dict[str, object]]:
     rng = random.Random(seed)
-    rows = [generate_row(rng, index=index) for index in range(count)]
+    rows = [
+        generate_row(rng, index=index, name_bank=name_bank)
+        for index in range(count)
+    ]
     identities = [str(row["identity_sha256"]) for row in rows]
     if len(set(identities)) != len(identities):
         raise TFS1DataError("duplicate TFS1 episode identity")
