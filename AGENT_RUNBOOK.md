@@ -31352,3 +31352,30 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `materialize_and_hash_srp1_board;_then_launch_one_joint_referent_gate`.
+
+- **2026-08-06 17:20--17:53 EDT** -- **DIVERGE-SRP1 closes negative; raw
+  language is not admitted to branch-local plasticity.**
+
+  Training job `744234` completes exactly 1,000 updates and fits both 50,000-
+  row assignment sets. Sealed evaluation `744246` completes normally on
+  `evc32`. Fresh WORLD is `256/256`, EVIDENCE `3,067/3,072`, QUERY `753/768`,
+  sensitive answers `248/256`, and fully sealed episodes `253/256`. Protected
+  TOL3/NVE1 remain `1,024/1,024` and `256/256`.
+
+  Frozen SOT1 scores `742/768` on the same deconfounded queries, so SRP1 gains
+  only `11/768` rather than the required `77/768`. Renderer 3 is `114/128`,
+  below the frozen `122/128` floor. Extensional parity and universal swap/
+  poison conditions also fail because three episodes do not seal. The exact
+  SRP1 family is closed without variants.
+
+  Checkpoint/model-state/evaluation SHA-256 values are
+  `0e4365d9...86cd`, `4b54f333...2182`, and
+  `8b68d19bbf67007addc6c9e9ec5287414580b4cd9b108198cb199fd171257ebe`.
+  The local evaluation copy is read-only and hash-matched to Newton.
+
+  DIVERGE-PL1 may proceed only as an oracle-typed CPU/small mechanics ceiling.
+  Do not connect it to raw language, Shohin, or continuation pretraining until
+  a semantic referent/compiler interface independently qualifies.
+
+  Decision:
+  `close_srp1;_freeze_oracle_typed_pl1_mechanics_only;_semantic_compilation_remains_the_language_bottleneck`.

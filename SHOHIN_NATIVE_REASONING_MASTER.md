@@ -56776,3 +56776,53 @@ This is not an IEM1 variant and does not claim general reasoning. It tests the
 new architectural thesis that semantic ownership and atomic interface
 contracts are necessary for plastic neural components to coexist without one
 lost primitive invalidating the entire reasoning trajectory.
+
+### DIVERGE-SOT1 result: stage-local QUERY ownership fails
+
+SOT1 preserves the protected stage owners exactly: fresh WORLD is `256/256`,
+EVIDENCE is `3,072/3,072`, all episodes seal, and protected TOL3/NVE1 remain
+`1,024/1,024` and `256/256`. Its isolated QUERY owner nevertheless reaches
+only `485/768`; sensitive queries are `0/256` and sensitive answers `6/256`.
+A forced complete role swap reaches `256/256`, identifying a systematic
+semantic inversion rather than insufficient fitting.
+
+The single read-only attribution deconfounds mode and renderer. SOT1 scores
+`0/768`, `712/768`, and `724/768` across the three renderers; renderer 0 is a
+complete inversion. Direct reuse of the NVE1 EVIDENCE symbol head reaches only
+`1,132/2,304`. SOT1 and direct owner reuse are closed. Evaluation and
+diagnostic SHA-256 values are `a38f95a6...e7c` and `c186884c...10a`.
+
+### DIVERGE-SRP1 result: shared semantic referent nearly fits but is not causal
+
+SRP1 owns `TARGET/DISTRACTOR` once through one exchange-equivariant REFERENT
+primitive shared by EVIDENCE and QUERY. It fits both 50,000-row training sets
+in exactly 1,000 updates while keeping WORLD and numeric-EVIDENCE immutable.
+
+On the fresh balanced six-renderer board, WORLD is `256/256`, EVIDENCE is
+`3,067/3,072`, QUERY is `753/768`, and sensitive answers are `248/256`.
+Only `253/256` episodes seal. Renderer counts are `128`, `127`, `128`, `114`,
+`128`, and `128` out of 128. Frozen SOT1 unexpectedly scores `742/768` on the
+same deconfounded queries, so SRP1 gains only 11 transactions instead of the
+required 77.
+
+SRP1 is therefore closed negative despite its high raw score. The result
+shows that exchange-equivariant semantic sharing reduces renderer inversion,
+but it does not establish a materially better owner and loses three complete
+episodes through evidence errors. Evaluation SHA-256 is
+`8b68d19bbf67007addc6c9e9ec5287414580b4cd9b108198cb199fd171257ebe`.
+Raw-language branch-local plasticity is not admitted through this interface.
+
+### DIVERGE-PL1 boundary: oracle-typed plasticity mechanics only
+
+The next independent lane tests whether verifier-certified branch-local
+eligibility writes can improve later attempts after all demonstrations and
+feedback text are removed. Because SRP1 failed, PL1 uses an oracle-typed
+referent boundary. WORLD, EVIDENCE, REFERENT, and executor owners are immutable
+and hash-checked; only one 8-by-8 policy state may change. Static,
+context-only, ordinary branch sampling, simple fast-weight, and transient
+gradient controls receive matched proposals and verifier calls.
+
+This is a mechanics ceiling, not a language or reasoning claim. A pass can
+authorize a later natural integration only after a semantic compiler
+separately qualifies. A failure closes the exact update rule without rank,
+width, duration, branch-count, seed, or budget variants.
