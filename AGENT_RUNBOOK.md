@@ -29666,3 +29666,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `require_globally_normalized_whole_record_compilation_before_any_new_diverge_language_gate`.
+
+- **2026-08-05 21:06--21:45 EDT** -- **DIVERGE-WRA1 exact whole-record CPU
+  mechanics pass; neural result remains unopened.**
+
+  The separately frozen successor does not tune SC1. It reuses only the
+  immutable SC1 source encoder and already-exact boundary detector, then emits
+  two exchangeable complete option objects per predicted segment through one
+  shared slot decoder. Each object owns its alias span, prior class and source
+  witness, ordered program class and action witnesses; a separate record-kind
+  head owns an explicit cue witness. Inference emits exactly one object per
+  slot, rejects duplicate or overlapping physical fields, canonicalizes by
+  source position, and has no edge threshold, Cartesian proposal set, retry,
+  beam, top-k repair, or answer guidance.
+
+  The 1,000-episode CPU gate reaches 100% calibrated reconstruction,
+  independent-reference parity, slot-swap invariance, invalid-duplicate
+  rejection, post-seal source-poison invariance, and exact linear object
+  accounting. Fieldwise lineage shuffle is 0%, overflow is zero, and no pair
+  matrix is allocated. Canonical report digest is
+  `3cc986b32fcaf97be89d1df246da6ebed7e03a7a447e00ddf71c44626deb7ea1`;
+  stored JSON SHA-256 is
+  `ad0c56a0dca0dc53f0cc514d3dba3c9b1d20a2d2c4204b15fb172ed9d6e4ea2f`.
+
+  One neural seed is implemented but not yet scored. It freezes the failed
+  SC1 checkpoint byte-for-byte as source encoder plus boundary detector and
+  trains only the two-layer complete-object slot decoder for 1,200 updates /
+  9,600 episodes. Run a two-update immutable H100 smoke, then exactly one full
+  seed. Seed one must reach at least 99% segmentation and 95% support/exact
+  packets in every cohort, with zero overflow/accepted duplicates, 100%
+  source-poison invariance, and the frozen causal drops. Failure closes WRA1
+  without a seed, threshold, width, duration, source-layer, or loss variant.
+
+  Decision:
+  `run_one_immutable_wra1_smoke_then_one_frozen_neural_seed_without_reopening_sc1`.

@@ -1,0 +1,45 @@
+{
+  "accounting": {
+    "objects_per_record": 3,
+    "pair_matrix_entries": 0
+  },
+  "count": 1000,
+  "gates": {
+    "exact": true,
+    "extensional_parity": true,
+    "invalid_fail_closed": true,
+    "lineage_shuffle_drop": true,
+    "linear_accounting": true,
+    "no_overflow": true,
+    "reference_exact": true,
+    "slot_swap_invariance": true,
+    "source_poison": true
+  },
+  "passed": true,
+  "rates": {
+    "duplicate_failed_closed": 1.0,
+    "exact": 1.0,
+    "exact_object_accounting": 1.0,
+    "extensional_parity": 1.0,
+    "lineage_shuffle_exact": 0.0,
+    "overflow": 0.0,
+    "reference_exact": 1.0,
+    "slot_swap_exact": 1.0,
+    "source_poison_invariant": 1.0
+  },
+  "report_sha256": "3cc986b32fcaf97be89d1df246da6ebed7e03a7a447e00ddf71c44626deb7ea1",
+  "schema": "shohin-diverge-wra1-whole-record-cpu-v1",
+  "seed": 202608056500,
+  "totals": {
+    "duplicate_failed_closed": 1000,
+    "episodes": 1000,
+    "exact": 1000,
+    "exact_object_accounting": 1000,
+    "extensional_parity": 1000,
+    "lineage_shuffle_exact": 0,
+    "overflow": 0,
+    "reference_exact": 1000,
+    "slot_swap_exact": 1000,
+    "source_poison_invariant": 1000
+  }
+}
