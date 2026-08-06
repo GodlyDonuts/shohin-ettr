@@ -881,33 +881,25 @@ def query_soft_answers(
 ) -> QueryDecision:
     if query.packet_commitment != packet.commitment:
         return QueryDecision(REJECT, None, 0)
-    try:
-        evidence = verify_evidence(packet, evidence_records)
-    except TFS1RuntimeError:
+    receipt = execute_factorized(packet, evidence_records)
+    if receipt.rejected or not receipt.groups:
         return QueryDecision(REJECT, None, 0)
     weighted: dict[Fraction, float] = {}
-    represented = 0
-    scores = []
-    candidates = []
-    for assignment in (
-        assignment_from_index(index) for index in range(1 << FAULT_LINES)
-    ):
-        matches, terminal = assignment_matches_evidence(packet, assignment, evidence)
-        if not matches:
-            continue
+    worlds = receipt_extensional_map(receipt)
+    maximum = max(assignment_score(packet, assignment) for assignment in worlds)
+    for assignment, terminal in worlds.items():
         value = dict(terminal).get(query.register)
         if value is None:
-            return QueryDecision(REJECT, None, represented)
-        candidates.append((value, assignment))
-        scores.append(assignment_score(packet, assignment))
-        represented += 1
-    if not candidates:
-        return QueryDecision(REJECT, None, 0)
-    maximum = max(scores)
-    for (value, _), score in zip(candidates, scores, strict=True):
-        weighted[value] = weighted.get(value, 0.0) + math.exp(score - maximum)
+            return QueryDecision(REJECT, None, receipt.represented_worlds)
+        weighted[value] = weighted.get(value, 0.0) + math.exp(
+            assignment_score(packet, assignment) - maximum
+        )
     answer = max(weighted, key=lambda value: (weighted[value], format_fraction(value)))
-    return QueryDecision(ANSWER, format_fraction(answer), represented)
+    return QueryDecision(
+        ANSWER,
+        format_fraction(answer),
+        receipt.represented_worlds,
+    )
 
 
 def evidence_bytes(records: Sequence[Mapping[str, object]]) -> int:

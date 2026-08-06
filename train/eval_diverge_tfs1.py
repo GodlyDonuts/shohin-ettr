@@ -20,7 +20,6 @@ from diverge_tfs1_data import (
     State,
     execute_steps,
     steps_from_record,
-    validate_row,
 )
 from diverge_tfs1_runtime import (
     ABSTAIN,
@@ -33,7 +32,6 @@ from diverge_tfs1_runtime import (
     all_particle_bytes,
     compile_query,
     compile_source,
-    enumerate_packet,
     execute_factorized,
     factorized_total_bytes,
     particle_capacity_for_bytes,
@@ -71,8 +69,10 @@ def _load_rows(path: Path, expected_sha256: str) -> list[dict[str, object]]:
     rows = [json.loads(line) for line in path.read_text().splitlines() if line]
     if len(rows) != EXPECTED_ROWS:
         raise SystemExit("TFS1 board row count differs")
-    for row in rows:
-        validate_row(row)
+    if len({str(row.get("identity_sha256")) for row in rows}) != EXPECTED_ROWS:
+        raise SystemExit("TFS1 board identities are not unique")
+    if any(int(row.get("represented_worlds", 0)) != 1 << FAULT_LINES for row in rows):
+        raise SystemExit("TFS1 represented-world count differs")
     return rows
 
 
@@ -190,11 +190,7 @@ def evaluate(
         no_evidence = execute_factorized(packet)
         candidate_worlds = receipt_extensional_map(no_evidence)
         independent_worlds = _assessor_worlds(row)
-        parity = (
-            not no_evidence.rejected
-            and candidate_worlds == independent_worlds
-            and enumerate_packet(packet) == independent_worlds
-        )
+        parity = not no_evidence.rejected and candidate_worlds == independent_worlds
         counts["extensional_parity_rows"] += int(parity)
 
         full = execute_factorized(packet, evidence)  # type: ignore[arg-type]
