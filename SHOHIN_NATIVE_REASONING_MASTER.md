@@ -2,6 +2,22 @@
 
 ## Current Status — Read First
 
+**Current architecture gate (2026-08-06 03:22 EDT):** JET1 is closed after a
+decisive optimization failure: 0/20,000 primitive execution, 0/106,496 exact
+evidence pairs, 0/8,192 terminal states, and 280/8,192 answers despite 1,600
+updates on Qwen3.5-0.8B. Its answer path was exactly invariant to evidence
+shuffle. No hard-interface repair follows.
+
+The frozen successor is DIVERGE-LTM1. It trains four source-conditioned,
+sticky complete latent trajectories with tied recurrent computation, ordered
+semantic trace alignment, and smooth whole-sequence log-sum-exp credit. It
+never averages candidate state fields and selects one complete source-prior
+lineage before autonomous decoding. The first evidence will be a 16-row
+verified real-language fit against exact LoRA-only B1, followed only on a
+conjunctive pass by the established 538-example math/code/science/logic board.
+The implementation and ten local mechanics tests pass; no H100 result exists
+yet. See `docs/research/DIVERGE_LTM1_LATENT_TRAJECTORY_MARGINALIZATION.md`.
+
 **Fresh product closure and next gate (2026-08-03 12:20 EDT):** C2's expanded
 benchmark lead does not generalize as a useful expert. On 200 new verified,
 V11-disjoint prompts, B1/C2 score `32/200 / 15/200`; a perfect outcome oracle

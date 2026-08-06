@@ -29,6 +29,7 @@ CODE_TIMEOUT=${CODE_TIMEOUT:-8}
 GENERATION_MODE=${GENERATION_MODE:-greedy}
 ADAPTER_CHECKPOINT=${ADAPTER_CHECKPOINT:-}
 ENABLE_THINKING=${ENABLE_THINKING:-true}
+LTM_SELECTION=${LTM_SELECTION:-highest_prior}
 STAGE_MODEL=${STAGE_MODEL:-true}
 
 test -x "$PYTHON"
@@ -93,6 +94,7 @@ fi
   --finalize-max-new-tokens "$FINALIZE_MAX_NEW_TOKENS" \
   --code-timeout "$CODE_TIMEOUT" \
   --generation-mode "$GENERATION_MODE" \
+  --ltm-selection "$LTM_SELECTION" \
   "$THINKING_ARG" \
   "$FINALIZE_ARG" \
   "${ADAPTER_ARGS[@]}"

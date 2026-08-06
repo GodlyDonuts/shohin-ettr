@@ -30294,3 +30294,31 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_jet1_and_do_not_run_hsc1_or_dense_controls; retire_the_synthetic_register_evidence_trajectory`.
+
+- **2026-08-06 03:22 EDT** -- **DIVERGE-LTM1 freezes a materially different
+  smooth whole-trajectory gate on verified real language.**
+
+  JET1's failure forbids another repair to its hard straight-through source,
+  program, state, or query interfaces. LTM1 instead forms four complete latent
+  trajectories from two sticky source-conditioned fault lines, evolves each
+  with one tied recurrent cell, aligns ordered latent steps to detached
+  contiguous teacher-response chunks, and optimizes an exact log-sum-exp over
+  complete response energies. Candidate state fields are never averaged;
+  inference chooses the source-prior MAP lineage before ordinary decoding.
+
+  The gate uses pinned Qwen3.5-0.8B plus final-four-layer rank-8 LoRA, latent
+  width 384, eight slots, eight tied steps, and the existing hash-audited V10
+  verified math/code/science/logic stream. The staged contract is one
+  two-update smoke, one 16-row/100-update fit against exact B1, then one
+  200-update matched broad gate only on a conjunctive fit pass. Broad promotion
+  requires +3 macro, +15 solved, gains in three of five domains, bounded
+  regressions, and predicted losses under state reset and lowest-prior lineage.
+
+  The frozen dossier is
+  `docs/research/DIVERGE_LTM1_LATENT_TRAJECTORY_MARGINALIZATION.md`. The
+  workspace, product wrapper, trainer, evaluator reconstruction, job launcher,
+  and ten CPU tests are implemented. All ten tests, Python compilation, Ruff,
+  and Bash parsing pass locally. No H100 result exists yet.
+
+  Decision:
+  `run_one_ltm1_h100_smoke_then_one_matched_fit_gate_without_nearby_variants`.

@@ -588,22 +588,41 @@ def _load_model(
     if metadata.get("model_loader") not in (None, resolved_model_loader):
         raise ProductEvalError("resolved model loader differs from checkpoint")
     workspace = metadata.get("workspace_config") or {}
-    model = ProductReasoningModel(
-        backbone=backbone,
-        arm=str(metadata["arm"]),
-        lora_layers=int(metadata["lora_layers"]),
-        lora_rank=int(metadata["lora_rank"]),
-        lora_alpha=float(metadata["lora_alpha"]),
-        workspace_width=int(workspace.get("workspace_width", 512)),
-        workspace_slots=int(workspace.get("workspace_slots", 16)),
-        recurrent_steps=int(workspace.get("recurrent_steps", 8)),
-        dense_width=(
-            int(workspace.get("workspace_width", 192))
-            if str(metadata["arm"]).startswith("dense")
-            else 192
-        ),
-        unfreeze_layers=int(metadata.get("unfreeze_layers", 0)),
-    ).to("cuda:0")
+    if metadata.get("architecture") == "diverge-ltm1":
+        from diverge_ltm1_product import LTM1ProductModel
+
+        model = LTM1ProductModel(
+            backbone,
+            lora_layers=int(metadata["lora_layers"]),
+            lora_rank=int(metadata["lora_rank"]),
+            lora_alpha=float(metadata["lora_alpha"]),
+            latent_width=int(workspace["latent_width"]),
+            trajectory_slots=int(workspace["trajectory_slots"]),
+            recurrent_steps=int(workspace["recurrent_steps"]),
+            fault_bits=int(workspace["fault_bits"]),
+            attention_heads=int(workspace["attention_heads"]),
+            ff_multiplier=int(workspace["ff_multiplier"]),
+            trace_weight=float(metadata["trace_weight"]),
+            balance_weight=float(metadata["balance_weight"]),
+            halting_weight=float(metadata["halting_weight"]),
+        ).to("cuda:0")
+    else:
+        model = ProductReasoningModel(
+            backbone=backbone,
+            arm=str(metadata["arm"]),
+            lora_layers=int(metadata["lora_layers"]),
+            lora_rank=int(metadata["lora_rank"]),
+            lora_alpha=float(metadata["lora_alpha"]),
+            workspace_width=int(workspace.get("workspace_width", 512)),
+            workspace_slots=int(workspace.get("workspace_slots", 16)),
+            recurrent_steps=int(workspace.get("recurrent_steps", 8)),
+            dense_width=(
+                int(workspace.get("workspace_width", 192))
+                if str(metadata["arm"]).startswith("dense")
+                else 192
+            ),
+            unfreeze_layers=int(metadata.get("unfreeze_layers", 0)),
+        ).to("cuda:0")
     update, restored_metadata = load_trainable_checkpoint(adapter_checkpoint, model)
     model.eval()
     return (
@@ -739,17 +758,22 @@ def _generate_adapter(
 ):
     import torch
 
-    from hf_product_reasoning_train import product_generation_embeddings
-
     # LoRA and workspace parameters remain FP32 for optimizer stability while
     # the frozen backbone is BF16. Training already runs under autocast; the
     # same mixed-precision contract must hold during autonomous generation.
     with torch.autocast("cuda", dtype=torch.bfloat16):
-        embeddings, attention = product_generation_embeddings(
-            model,
-            encoded["input_ids"],
-            encoded["attention_mask"],
-        )
+        if hasattr(model, "generation_embeddings"):
+            embeddings, attention = model.generation_embeddings(
+                encoded["input_ids"], encoded["attention_mask"]
+            )
+        else:
+            from hf_product_reasoning_train import product_generation_embeddings
+
+            embeddings, attention = product_generation_embeddings(
+                model,
+                encoded["input_ids"],
+                encoded["attention_mask"],
+            )
         return model.backbone.generate(
             inputs_embeds=embeddings,
             attention_mask=attention,
@@ -817,6 +841,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         args.adapter_checkpoint,
         args.model_loader,
     )
+    if hasattr(model, "set_selection_strategy"):
+        model.set_selection_strategy(args.ltm_selection)
     stop_token_ids = _generation_stop_token_ids(tokenizer)
 
     random.seed(args.generation_seed)
@@ -973,6 +999,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "generation_seed": args.generation_seed,
         "generation_mode": args.generation_mode,
         "enable_thinking": args.enable_thinking,
+        "ltm_selection": args.ltm_selection,
         "effective_enable_thinking": (
             args.enable_thinking if args.adapter_checkpoint is None else False
         ),
@@ -1030,6 +1057,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--enable-thinking", action=argparse.BooleanOptionalAction, default=True
+    )
+    parser.add_argument(
+        "--ltm-selection",
+        choices=("highest_prior", "lowest_prior", "reset"),
+        default="highest_prior",
     )
     args = parser.parse_args()
     if (
