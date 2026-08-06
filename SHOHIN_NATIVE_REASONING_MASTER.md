@@ -56826,3 +56826,31 @@ This is a mechanics ceiling, not a language or reasoning claim. A pass can
 authorize a later natural integration only after a semantic compiler
 separately qualifies. A failure closes the exact update rule without rank,
 width, duration, branch-count, seed, or budget variants.
+
+### DIVERGE-PL1 result: verified branch-local policy updates pass oracle mechanics
+
+PL1 tests a separate axis after SRP1's language failure. Each episode defines
+an unseen eight-symbol mini-language over eight noncommuting register
+transforms. Eight complete branches run per attempt. The verifier returns only
+PASS or the first invalid transition. Verified correct prefixes potentiate
+their symbol/operation assignments; the first failed assignment is depressed.
+Only one 64-scalar policy state persists after all text and feedback are
+deleted.
+
+Across five fixed seeds, PL1 solves `17,726/20,480` held-out depth-12--20
+transfer programs (`86.553%`) and recovers `1,104/1,280` complete mappings
+(`86.250%`). The strongest matched baseline is transient full-branch gradient
+at `533/20,480` (`2.603%`); ordinary coherent branch retention is
+`66/20,480`, and simple fast weights are `5/20,480`. Every seed passes.
+
+Reset falls to `1/20,480`, shuffled credit to `485/20,480`, wrong-branch
+credit to `3/20,480`, unrelated state transplant to `3/20,480`, and removing
+eligibility to `70/20,480`. Poison changes behavior in every episode and exact
+rollback restores every hash and output. Protected mutation fails closed.
+Homeostasis has no measured effect and is not claimed.
+
+This is a strong causal result for verified branch-local credit accumulation,
+not native language reasoning. The runtime uses oracle referents, exact typed
+execution, first-error certificates, and zero learned parameters. SRP1's
+failure still blocks raw-language integration. Data/evaluation SHA-256 values
+are `738b60f8...3058` and `0cc2a242...d5fb`.

@@ -31379,3 +31379,38 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_srp1;_freeze_oracle_typed_pl1_mechanics_only;_semantic_compilation_remains_the_language_bottleneck`.
+
+- **2026-08-06 17:53--18:10 EDT** -- **Oracle-typed DIVERGE-PL1 passes all
+  branch-local verified-plasticity mechanics gates.**
+
+  Private commit `33e6a7b` freezes the contract, data/runtime, matched arms,
+  controls, and evaluator before confirmation. Data comprise 2,048 train, 256
+  development, and five disjoint 256-episode confirmation seeds, with zero
+  alias/program overlap. Every episode has 12 eight-branch acquisition
+  attempts and 16 context-free transfer programs at depths 12--20.
+
+  On 20,480 confirmation transfers, STATIC/CONTEXT/DIVERGE/FAST_WEIGHT/
+  TRANSIENT_GRAD score `1/1/66/5/533`; PL1 scores `17,726` (`86.553%`) and
+  recovers `1,104/1,280` exact mappings. Per-seed transfer is
+  `85.205/85.107/88.818/83.984/89.648%`. The assessor-only probe rises from
+  `7/20,480` after attempt 1 to `17,726/20,480` after attempt 12.
+
+  Reset/shuffled/wrong-branch/transplant/no-eligibility score
+  `1/485/3/3/70` of 20,480. Poison and exact rollback pass `1,280/1,280`;
+  protected mutation rejects `5/5`; normal owner hashes remain exact. Removing
+  the homeostatic cap is identical, so homeostasis is excluded from the causal
+  claim.
+
+  Data/evaluation SHA-256 values are
+  `738b60f8c837fa479a9bb1cf82b11ff06441280a50f490f2d3155e82e24f3058`
+  and
+  `0cc2a24267c38396e166dbce7e540aaba87c5acf2474ede26be0939cfe9fd5fb`.
+  Both local artifacts are read-only.
+
+  This passes only an oracle-typed, zero-learned-parameter mechanics ceiling.
+  SRP1 failed, so raw-language PL1 remains prohibited. Preserve PL1 without
+  variants and return to a structurally different semantic compiler/referent
+  interface before one natural integration.
+
+  Decision:
+  `freeze_pl1_as_verified_branch_local_credit_mechanics;_do_not_claim_language_reasoning;_qualify_a_new_semantic_interface_before_natural_integration`.
