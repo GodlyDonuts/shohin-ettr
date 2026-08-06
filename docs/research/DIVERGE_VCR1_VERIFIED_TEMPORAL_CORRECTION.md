@@ -119,6 +119,9 @@ from the protected generator on 100 MATH-500 and 100 held-out OpenScience
 short-answer problems. The same draft bank is consumed by plain two-pass,
 role-blind, and VCR1 correction. Report for each arm:
 
+- correction generation is deterministic greedy decoding, capped at 256 new
+  tokens inside one common 4,096-position admission contract;
+
 - total and per-domain exact accuracy;
 - `wrong -> right`, `right -> right`, `right -> wrong`, and `wrong -> wrong`;
 - net correction (`wrong -> right - right -> wrong`);
