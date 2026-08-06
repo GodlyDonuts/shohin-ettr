@@ -55923,3 +55923,30 @@ trajectory on a capable development backbone, with DIVERGE factorization used
 only if the jointly learned trajectory earns it. Report/checkpoint SHA-256
 values are `0b30d6698b583901c67b1a9095d99238e5eb2aabb295d41476988005748f2d18` /
 `623172dee51317cc01d1b5f07c0048637581beab83fd96ee00bc7f75af74e9f0`.
+
+### DIVERGE-JET1 joint trajectory gate (frozen 2026-08-06)
+
+JET1 tests the specific optimization-boundary hypothesis left open by QTG1:
+semantic grounding may transfer only when source adaptation, typed evidence,
+whole-program falsification, persistent recurrent execution, and the eventual
+answer are optimized together. It uses the pinned Qwen3.5-0.8B text path with
+only final-four-layer rank-8 LoRA plus a new typed trajectory. It does not load
+the separately fitted MEI1/MQB1/QTG1 modules.
+
+Each delayed record supplies two complete candidate programs under a prior
+that deliberately favors the wrong one. Qwen reads the raw record once; ten
+typed queries produce complete before/after categorical states; the same
+learned route-plus-delta executor tests each whole program and executes the
+selected program on persistent state; a learned late route answers from the
+terminal state. Forward choices and typed values are exactly discrete through
+straight-through estimators, so incompatible candidate fields are never
+averaged into one runtime state.
+
+The frozen gate uses one seed, 1,600 updates, 57,600 source records, only the
+existing train renderers at depths 1--8, and all lexical/renderer/composition
+shifts held from optimization. All 16 cohort/depth cells must clear evidence,
+program, terminal-state, answer, wrong-prior, causal-control, integrity, and
+frozen-backbone thresholds. Local candidate and trainer tests pass. This is a
+synthetic end-to-end mechanism gate, not a public reasoning result. One H100
+smoke is next; a scientific pass would authorize exactly one full DIVERGE
+integration and one parameter/training-FLOP-matched dense recurrent control.

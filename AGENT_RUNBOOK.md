@@ -30174,3 +30174,36 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_isolated_evidence_readers_and_build_one_joint_source_state_execution_query_trajectory`.
+
+- **2026-08-06 02:15--02:34 EDT** -- **DIVERGE-JET1 joint epistemic
+  trajectory is frozen and passes its local implementation gates.**
+
+  JET1 is the ordered end-to-end successor to QTG1, not another isolated
+  evidence reader. It uses pinned
+  `Qwen/Qwen3.5-0.8B@2fc06364715b967f1860aea9cf38778875588b17`, frozen except
+  rank-8/alpha-16 LoRA in its final four text layers, and jointly trains one
+  source-to-state-to-program-choice-to-recurrent-state-to-late-query path. No
+  MEI1, MQB1, or QTG1 weights are loaded. The fixed wrong prior favors the
+  false complete program at every recurrent step; a straight-through hard
+  whole-program choice preserves one coherent lineage in the forward pass.
+
+  The one-seed gate is frozen at 1,600 updates, batch eight, exactly 57,600
+  raw evidence records, train depths 1--8, and 512 episodes in every
+  cohort/depth cell at depths 4/8/16/24. It requires >=95% complete evidence
+  pairs, >=90% choice/terminal/answer/wrong-prior recovery in every cell,
+  >=99.9% one-step algebra, >=20-point evidence-shuffle and state-reset drops
+  in every shifted cell, zero invalid acceptance, and an unchanged non-LoRA
+  backbone. Failure closes this synthetic register/evidence trajectory; pass
+  authorizes one HSC1 integration and one matched dense control only.
+
+  Candidate and trainer tests pass locally. They cover exact straight-through
+  hard values, deterministic board construction, wrong-prior recovery,
+  gradients into the jointly adapted source, tied executor and late query,
+  source audit, tensorization, Qwen-wrapper LoRA, LR schedule, and the
+  conjunctive gate reducer. The pinned Newton Qwen config/weight/index/tokenizer
+  SHA-256 values are recorded in `train/jobs/train_diverge_jet1.sbatch`.
+  Next action is one isolated two-update H100 smoke, followed by the exact
+  scientific gate only if that smoke completes mechanically.
+
+  Decision:
+  `run_one_jet1_smoke_then_one_frozen_joint_gate_without_local_variants`.
