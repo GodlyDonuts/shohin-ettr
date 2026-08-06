@@ -2,6 +2,27 @@
 
 ## Current Status — Read First
 
+**Current active gate (2026-08-06 04:20 EDT):** DIVERGE-VMT1 is the one
+bounded successor to collapsed LTM1. It replaces single-response
+marginalization with two independently observed autonomous trajectories for
+the same prompt, exactly one verifier-correct and one wrong. Two sticky
+internal lineages are matched bijectively to the complete observed traces; a
+model-owned validity head selects one whole internal lineage before ordinary
+decoding. The wrong response supplies trace supervision but never language-
+model imitation loss.
+
+The implementation, exact trainer, board builder, two Newton launchers, and 14
+CPU tests are complete. The corrected 8,192-prompt K=4 bank is hash-confirmed
+at `20a496867c1afc46d094a1ee2762cc553bd0460bd2915cc7e60d9c53025aa816`.
+Positions 0/1 contain 14/27 structurally admissible math pairs and 144/184
+science pairs by correct-response orientation before tokenizer admission.
+The CPU board job will select exactly four rows from each cell after exact
+1,024-token admission. No H100 result exists yet. One mechanical smoke and one
+16-row/100-update fit are authorized; failure of any frozen selector, trace,
+separation, swap-control, finiteness, or frozen-weight gate closes VMT1 without
+a nearby variant. See
+`docs/research/DIVERGE_VMT1_VERIFIED_MULTI_TRAJECTORY_MATCHING.md`.
+
 **Current architecture result (2026-08-06 04:02 EDT):** DIVERGE-LTM1 is
 closed at its frozen 16-row matched-fit gate. It fixes JET1's immediate hard-
 interface optimization failure: all 16 rows improve, all gradients remain
@@ -56034,3 +56055,33 @@ LTM1 report/checkpoint SHA-256 values are
 B1 score/checkpoint SHA-256 values are
 `1fced5300959bb3d6de28ec491ff5fe9d998c7ef8f6e3fe36615492459aaddd0` /
 `c099e16c7ec8f2df9f3fe9a68030ffa521f4c392410eb1885d7a7b8ec0529ce1`.
+
+### DIVERGE-VMT1 verified multi-trajectory gate (frozen 2026-08-06)
+
+VMT1 changes the information available to the architecture rather than tuning
+LTM1. Every prompt contributes two distinct autonomous complete responses from
+fixed sample positions 0 and 1, with exactly one outcome marked correct by the
+existing independent verifier. The correct sample position is balanced across
+math and science. Two model-owned sticky recurrent lineages receive an exact
+two-permutation whole-trace matching objective. Only the lineage matched to the
+correct observed trajectory receives correct-response language loss; the wrong
+response is used only as a detached semantic trace target. A terminal validity
+head must identify the correct internal lineage without any candidate response,
+verifier, teacher, answer, or external model at inference.
+
+The frozen fit uses pinned Qwen3.5-0.8B, final-four-layer rank-8/alpha-16 LoRA,
+latent width 384, eight slots, eight tied recurrent steps, and 100 updates at
+batch one / accumulation 16. The exact trainer refuses board/report hash drift,
+unbalanced orientation cells, tokenizer drift, truncation, non-finite loss or
+gradients, changed non-LoRA tensors, and existing output paths. Promotion
+requires all 16 selected correct-response NLLs to improve, selector accuracy
+at least 15/16 and 7/8 per response orientation, matched trace cosine at least
+0.85, at least 0.10 matched-over-crossed advantage, internal lineage cosine at
+most 0.95, and at least a 25-point loss when validity scores are swapped.
+
+The corrected source contains 32,768 candidate rows and is 195,886,074 bytes.
+Its live Newton key/schema audit matches the builder. Before tokenizer
+admission, fixed positions 0/1 provide 14 math/correct-0, 27 math/correct-1,
+144 science/correct-0, and 184 science/correct-1 pairs. Fourteen local tests,
+Ruff, Python compilation, and Bash parsing pass. This is an implemented and
+frozen fit gate, not evidence of reasoning or benchmark improvement.

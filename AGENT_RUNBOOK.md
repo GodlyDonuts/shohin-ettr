@@ -30399,3 +30399,38 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_ltm1_without_stage2_and_replace_single_trace_marginalization_with_verified_multi_trajectory_supervision`.
+
+- **2026-08-06 04:08--04:20 EDT** -- **DIVERGE-VMT1 verified
+  multi-trajectory matching is frozen and locally qualified for board
+  construction.**
+
+  VMT1 is not an LTM1 diversity repair. It consumes two distinct autonomous
+  responses from fixed same-prompt sample positions 0/1, exactly one corrected
+  verifier-positive and one negative. Two sticky internal recurrent lineages
+  are assigned bijectively to the two complete trace targets under the exact
+  two whole-lineage permutations. Only the lineage assigned to the correct
+  observed trace receives correct-response language loss. A model-owned
+  terminal validity head selects one complete prefix at inference; the wrong
+  response, external verifier, candidate bank, and teacher are absent.
+
+  The corrected source is live-audited on Newton at 32,768 rows / 195,886,074
+  bytes with SHA-256
+  `20a496867c1afc46d094a1ee2762cc553bd0460bd2915cc7e60d9c53025aa816`.
+  Positions 0/1 contain 14/27 admissible math pairs and 144/184 science pairs
+  by correct orientation before tokenizer admission. The deterministic CPU
+  builder selects four per cell only after exact Qwen token admission; the
+  trainer recomputes and requires byte-identical token accounting and forbids
+  truncation.
+
+  Board/workspace/product/trainer code, four focused test modules, and CPU/H100
+  immutable launchers are complete. Fourteen tests, Ruff, Python compilation,
+  and Bash parsing pass locally. The one-seed contract is two smoke updates,
+  then exactly 16 rows / 100 updates only on mechanical success. Promotion
+  requires 16/16 NLL improvements, validity selection >=15/16 and >=7/8 in
+  each observed correct-position cohort, matched trace cosine >=0.85,
+  matched-minus-crossed >=0.10, internal cosine <=0.95, finite execution,
+  unchanged frozen tensors, and >=25-point collapse under validity-score swap.
+  Failure closes VMT1 without local seed/width/depth/loss/duration repair.
+
+  Decision:
+  `build_and_hash_the_exact_vmt1_board_then_run_one_smoke_and_one_fit_gate_only`.
