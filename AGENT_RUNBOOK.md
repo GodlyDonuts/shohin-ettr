@@ -31236,3 +31236,47 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `freeze_nve1_as_a_complete_controlled_natural_interface_pass;_next_build_one_jointly_trainable_diverge_module_without_continuation_pretraining`.
+
+- **2026-08-06 14:32--16:13 EDT** -- **DIVERGE-IEM1 fails the frozen shared
+  integration gate; universal semantic ownership is closed.**
+
+  Commits `6f75eca`, `058d2ad`, and `8fd48c5` freeze the specification,
+  implementation, and hash-bound launcher. `112f5d7` corrects only historical
+  Newton artifact paths before the successful run. Training job `744075`
+  completes exactly 1,000 H100 AdamW updates in 119.504 seconds with no skipped
+  or non-finite update. The 550,343-parameter model consumes 43,176,637 source
+  bytes, fits 50,000/50,000 evidence assignments and 50,000/50,000 query
+  assignments, and reaches 48/50 local operations and 11/18 comparators.
+
+  Checkpoint/model-state/training-report hashes are
+  `c7560eb5...e84a`, `6552b6fb...1738`, and `1bb8861c...19dd`.
+  Query-training/confirmation/data-report hashes are
+  `8dc6085f...1fa`, `4294799c...e8a`, and `2e516549...6c`.
+
+  The first serial evaluation reached an empty-packet condition because the
+  learned compiler transferred no valid program. `fb23f6b` adds only a
+  fail-closed empty-input return; it changes no model, data, prediction, gate,
+  or denominator. Evaluation-only job `744089` then completes cleanly on
+  `evc31`. IEM1 compiles 0/256 fresh programs; all 256 failures are declaration
+  operation mismatches because `SET` is 0/2. The immutable separate source
+  ceiling is 256/256. No valid IEM1 packet reaches evidence, query, or
+  execution, so all matched arms are zero and fresh evidence/query transfer is
+  unmeasured rather than passed. Protected TOL3 through the shared source path
+  is 0/1,024 and protected NVE1 composition is 0/256.
+
+  Official H100 evaluation SHA-256 is `afe52c7e...04bf`. Independent CPU
+  diagnostic SHA-256 `9ee1baef...674` matches every scientific count,
+  condition, and decision. Local checkpoint, reports, and both evaluations are
+  read-only; Newton copies remain immutable.
+
+  IEM1 is closed without width, duration, seed, transport, renderer, optimizer,
+  or loss variants. The factorized runtime was never reached. Reject the
+  universal shared encoder plus anonymous latent transport. The next
+  architecture must preserve qualified stage-specific specialists and connect
+  them through a typed provenance-bound transaction bus with one model-owned
+  recurrent controller and one composite checkpoint. First gate component
+  retention before autonomous composition; do not start continuation
+  pretraining.
+
+  Decision:
+  `close_iem1_shared_semantic_transport;_preserve_tol3_nve1;_next_test_stage_owned_transactional_integration`.

@@ -2,6 +2,30 @@
 
 ## Current Status — Read First
 
+**Current architecture result (2026-08-06 16:13 EDT): DIVERGE-IEM1 fails its
+one frozen integration gate.** The 550,343-parameter shared model trains for
+exactly 1,000 H100 updates and fits all 50,000 evidence-role and 50,000
+query-role examples. It reaches 48/50 local operations but only 11/18 local
+comparators. Most importantly, it learns `SET` at 0/2. On the 256-program
+confirmation board, that one mandatory declaration error causes **0/256**
+learned source programs to compile; every autonomous and matched arm therefore
+scores zero. The immutable separate source ceiling remains 256/256.
+
+This closes IEM1 without width, duration, seed, transport, renderer, optimizer,
+or loss variants. Fresh evidence/query transfer was not evaluated because no
+valid source packet existed; zero-denominator integrity flags are not a pass.
+The H100 and independent CPU decisions match exactly. Official evaluation
+SHA-256 is `afe52c7e...04bf`; checkpoint SHA-256 is `c7560eb5...e84a`.
+
+The architectural lesson is that a universal shared encoder with anonymous
+latent semantic transport is too brittle for transaction-critical ownership.
+The next mechanism must retain qualified source/evidence/query specialists in
+one composite checkpoint and connect them through a typed provenance-bound
+transaction bus with a model-owned recurrent controller. TOL3, TFS1, and NVE1
+remain protected positive controls; no continuation pretraining is authorized.
+See
+`docs/research/DIVERGE_IEM1_INTEGRATED_EPISTEMIC_MACHINE_RESULT.md`.
+
 **Current architecture result (2026-08-06 14:32 EDT): DIVERGE-NVE1 passes the
 complete natural-variable evidence gate.** One 435,076-parameter,
 position-free byte GRU learns hard `STEP/VALUE` and `TARGET/DISTRACTOR`
@@ -56673,3 +56697,35 @@ operation set, exact executor, and verifier remain engineered. NVE1 receives
 no variants and does not unlock continuation pretraining. Its pass authorizes
 one jointly trainable DIVERGE model over source compilation, factorized state,
 evidence refinement, execution, and late query readout.
+
+### DIVERGE-IEM1 result: universal shared integration fails
+
+IEM1 tests whether one 550,343-parameter checkpoint and one optimizer can
+replace the separately qualified source, evidence, and query interfaces. The
+model starts from NVE1's byte GRU, shares it across every natural interface,
+and learns anonymous four-channel operation and six-channel comparator
+transports into the fixed rational state algebra.
+
+The frozen H100 run completes exactly 1,000 updates. It fits all 50,000
+evidence statements and all 50,000 query statements, reaches 48/50 local
+operation phrases and 11/18 comparator phrases, and preserves exact checkpoint
+and data receipts. Checkpoint/model-state/report hashes are
+`c7560eb5...e84a`, `6552b6fb...1738`, and `1bb8861c...19dd`.
+
+Confirmation fails before execution. The immutable source ceiling compiles
+256/256 programs, but IEM1 compiles 0/256. Every failure is a declaration
+operation mismatch caused by `SET` transferring at 0/2. With no valid packet,
+the integrated, top-1, equal-memory, no-evidence, and ceiling-in-joint-loop
+arms all report zero; fresh evidence and query transfer have no valid
+denominator. Protected TOL3 and NVE1 composition through the IEM1 source path
+also score zero. H100 and CPU reports agree on all scientific fields. Their
+SHA-256 values are `afe52c7e...04bf` and `9ee1baef...674`.
+
+IEM1 is closed with no local variants. The factorized runtime was not reached
+and is not implicated. The failed assumption is universal shared semantic
+ownership through symmetric latent transport: one lost structural primitive
+invalidates every transaction. The next architecture must preserve distinct
+qualified specialists, enforce typed provenance-bound contracts, and train a
+model-owned recurrent controller over their transactions in one composite
+checkpoint. This is a new integration mechanism, not an IEM1 transport or
+capacity repair.
