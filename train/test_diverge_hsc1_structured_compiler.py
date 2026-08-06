@@ -34,7 +34,9 @@ class DivergeHSC1Tests(unittest.TestCase):
             self.assertAlmostEqual(
                 cut_log_partition(cuts), expected_partition, places=10
             )
-            self.assertEqual(cut_viterbi(cuts), expected_best)
+            actual_score, actual_path = cut_viterbi(cuts)
+            self.assertAlmostEqual(actual_score, expected_best[0], places=10)
+            self.assertEqual(actual_path, expected_best[1])
 
     def test_template_dynamic_program_matches_exhaustive_reference(self) -> None:
         rng = random.Random(202608056802)
@@ -52,7 +54,9 @@ class DivergeHSC1Tests(unittest.TestCase):
                 expected_partition,
                 places=10,
             )
-            self.assertEqual(path_viterbi(margins, template.labels), expected_best)
+            actual_score, actual_path = path_viterbi(margins, template.labels)
+            self.assertAlmostEqual(actual_score, expected_best[0], places=10)
+            self.assertEqual(actual_path, expected_best[1])
 
     def test_calibrated_complete_packet_is_exact(self) -> None:
         for index, cohort in enumerate(
