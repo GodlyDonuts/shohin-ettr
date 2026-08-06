@@ -30035,3 +30035,36 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_one_mei1_component_gate_then_compose_once_only_if_every_component_passes`.
+
+- **2026-08-06 00:32--00:36 EDT** -- **MEI1 qualifies model-owned recurrent
+  execution but closes the monolithic delayed-language evidence interface.**
+
+  Newton job `743224` runs the only authorized seed on `evc30`. It completes
+  1,600 updates / 102,400 evidence examples in 112 seconds, saves both
+  artifacts, and exits 1 because the conjunctive component gate fails. The
+  dependent full-composition gate is not submitted.
+
+  The tied learned route-plus-delta executor reaches 100% complete-state exact
+  on 20,000 held one-step states and 100% free-running terminal-state exact on
+  2,000 held programs at each of depths 4, 8, 16, and 24. The learned late
+  query reader reaches 100% on 20,000 held state/query pairs. Invalid accepted
+  range mass is zero and the candidate forbidden-import audit passes.
+
+  The fixed ten-field natural-language evidence head is the fatal component.
+  Before/after complete-state exactness is `94.629% / 95.020%` in distribution,
+  `9.473% / 7.812%` lexical, `0.098% / 1.855%` renderer, and zero composition.
+  Field exactness is `98.936% / 65.283% / 27.549% / 16.680%`. It learns values
+  in familiar templates but loses whole address/value and phase identity under
+  lexical renaming, reordering, and interleaving.
+
+  MEI1 is closed without a second seed, duration, renderer, width, optimizer,
+  or loss variant. Its executor and query reader remain qualified components;
+  its pooled field evidence reader does not. Any successor must structurally
+  bind whole address/value mentions, rather than extending this head. Current
+  verified report/checkpoint SHA-256 values are
+  `a081ab0b3257149643b20b7f320269a7e2193df0fd6665d26fc283210aa80429` /
+  `bed9abefa2ecd2401c11515fe182d89871ab537bd8f8716bd5688ae693b79c29`;
+  the checkpoint-embedded report is byte-identical to the external report.
+
+  Decision:
+  `retain_the_qualified_model_owned_algebra_but_replace_fixed_field_evidence_with_structural_mention_binding`.

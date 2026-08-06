@@ -162,3 +162,38 @@ interpreter, learned recurrent executor, and learned late reader can jointly
 recover coherent answers over the existing synthetic DIVERGE board. It does not
 mean Shohin can yet reason over unrestricted language, and the extreme ULC1
 sharing ratios remain properties of a redundant grammar-specific board.
+
+## Frozen result
+
+Job `743224` ran the only authorized seed on one H100. It completed 1,600
+updates / 102,400 evidence examples in 112 seconds and exited nonzero solely
+because the conjunctive component gate failed. No full-composition job ran.
+
+The structured model-owned algebra succeeded:
+
+- one-step complete-state exactness: 100% on 20,000 held states;
+- free-running terminal-state exactness: 100% at depths 4, 8, 16, and 24,
+  with 2,000 held programs at each depth;
+- late-query exactness: 100% on 20,000 held state/query pairs;
+- accepted out-of-range mass: zero; and
+- candidate source audit: pass.
+
+The monolithic fixed-field evidence reader failed sharply. Complete before /
+after state exactness was `94.629% / 95.020%` in distribution,
+`9.473% / 7.812%` on lexical shift, `0.098% / 1.855%` on renderer shift,
+and zero on composition shift. Fieldwise exactness was 98.936%, 65.283%,
+27.549%, and 16.680%, respectively. This is a binding failure: the head can
+learn values in familiar fixed templates but cannot preserve address/value and
+before/after identity under renamed, reordered, or interleaved evidence.
+
+MEI1 is therefore closed without a second seed, longer training, new renderer,
+width, optimizer, or loss. The learned route-plus-delta executor and learned
+query reader remain qualified reusable components; the fixed ten-query evidence
+head does not. Any successor must change the evidence interface structurally,
+using explicit whole-mention address/value binding rather than another pooled
+field head.
+
+The immutable external report and checkpoint currently verify at SHA-256
+`a081ab0b3257149643b20b7f320269a7e2193df0fd6665d26fc283210aa80429` and
+`bed9abefa2ecd2401c11515fe182d89871ab537bd8f8716bd5688ae693b79c29`.
+The checkpoint-embedded report is byte-identical to the external report.

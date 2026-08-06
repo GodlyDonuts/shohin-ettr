@@ -106,11 +106,12 @@ def generate_probe_evidence(
     seed: int,
     cohort: str,
     program: int | None = None,
+    sample_program: bool = True,
 ) -> ProbeEvidence:
     rng = random.Random(seed)
     if cohort not in EVIDENCE_COHORTS:
         raise ValueError("unknown evidence cohort")
-    if program is None and rng.randrange(5):
+    if sample_program and program is None and rng.randrange(5):
         program = rng.randrange(4)
     values = rng.sample(range(5, 91), REGISTER_COUNT)
     before = tuple(values)

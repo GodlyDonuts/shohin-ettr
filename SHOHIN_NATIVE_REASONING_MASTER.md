@@ -55843,3 +55843,29 @@ program execution is still an exact typed host operation, and delayed effect
 evidence is issued by an independent assessor. DIVERGE has earned a bounded
 learned evidence/execution interface gate, not continuation pretraining or a
 general reasoning claim.
+
+### DIVERGE-MEI1 model-owned interface result (2026-08-06)
+
+MEI1 replaced the accepted gate's effect ID, exact transaction executor, and
+exact late value reader. Delayed evidence became natural-language random-probe
+before/after states. A learned evidence head predicted all ten values; a tied
+learned route-plus-delta operator executed every candidate recurrently; and a
+learned query reader read complete predicted states. The candidate runtime has
+no exact semantic executor or query-reader import.
+
+The model-owned state algebra works exactly on its frozen component board:
+100% over 20,000 held one-step states, 100% free-running terminal states at
+depths 4/8/16/24, and 100% over 20,000 held late queries. This is the first
+clean evidence in this lane that the learned recurrent transition itself is not
+the bottleneck.
+
+The monolithic language evidence reader fails. Complete before/after state
+exactness is about 95% in distribution, 8--9% lexical, 0--2% renderer, and zero
+composition. It predicts many individual values correctly but loses which
+whole value mention belongs to which register and before/after phase when the
+surface order changes. Because the component gate was conjunctive, no full
+composition was run. MEI1 is closed after one seed; the executor/query modules
+remain qualified, while the evidence interface must be replaced by a
+structural whole-mention address/value binder. Report/checkpoint SHA-256 values
+are `a081ab0b3257149643b20b7f320269a7e2193df0fd6665d26fc283210aa80429` /
+`bed9abefa2ecd2401c11515fe182d89871ab537bd8f8716bd5688ae693b79c29`.

@@ -1,0 +1,169 @@
+{
+  "architecture": {
+    "action_names": [
+      "ADD0_3",
+      "SWAP01",
+      "SWAP23",
+      "SWAP34"
+    ],
+    "candidate_source_audit": {
+      "forbidden_hits": [],
+      "pass": true,
+      "sha256": "ebf8df9a9038b833c931d6a4dbe59c48d529fd887db3ba46ae7ffcf5d1c89a56"
+    },
+    "config": {
+      "evidence_ff_multiplier": 4,
+      "evidence_heads": 4,
+      "evidence_layers": 2,
+      "evidence_width": 192,
+      "input_width": 192,
+      "register_count": 5,
+      "value_count": 128
+    },
+    "deltas": [
+      -3,
+      -2,
+      -1,
+      0,
+      1,
+      2,
+      3
+    ],
+    "schema": "shohin-diverge-mei1-model-owned-runtime-v1",
+    "state_fields": [
+      "five-complete-categorical-register-values"
+    ],
+    "trainable_parameters": 1102089,
+    "whole_hypothesis_only": true
+  },
+  "arguments": {
+    "algebra_lr": 0.05,
+    "base": "/lustre/fs1/home/sa305415/shohin/train/ettr_smollm2_control_parent_a2026072801_7881d8e/joint-model-final.pt",
+    "batch_size": 64,
+    "device": "cuda",
+    "eval_batch_size": 128,
+    "eval_depth_count": 2000,
+    "eval_depths": [
+      4,
+      8,
+      16,
+      24
+    ],
+    "eval_evidence_count": 1024,
+    "eval_executor_count": 20000,
+    "eval_query_count": 20000,
+    "evidence_heads": 4,
+    "evidence_layers": 2,
+    "evidence_lr": 0.0003,
+    "evidence_width": 192,
+    "grad_clip": 1.0,
+    "hsc1_checkpoint": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_hsc1/neural_seed202608056900.pt",
+    "input_width": 192,
+    "layer": 17,
+    "local_heads": 4,
+    "local_layers": 2,
+    "log_every": 50,
+    "output": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_mei1/neural_seed202608057800.pt",
+    "pair_width": 64,
+    "report": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_mei1/component_seed202608057800.json",
+    "sc1_checkpoint": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_sc1/neural_seed202608056200.pt",
+    "seed": 202608057800,
+    "threads": 4,
+    "tokenizer": "/lustre/fs1/home/sa305415/shohin/artifacts/external/smollm2_135m_instruct_83212e1e/tokenizer.json",
+    "updates": 1600,
+    "weight_decay": 0.01
+  },
+  "claim_boundary": "Component-island result only. Passing interfaces must still clear the frozen source-sealed full-composition gate.",
+  "evidence": {
+    "composition_shift": {
+      "after_state_exact": 0.0,
+      "before_state_exact": 0.0,
+      "examples": 1024,
+      "field_exact": 0.166796875
+    },
+    "lexical_shift": {
+      "after_state_exact": 0.078125,
+      "before_state_exact": 0.0947265625,
+      "examples": 1024,
+      "field_exact": 0.65283203125
+    },
+    "renderer_shift": {
+      "after_state_exact": 0.0185546875,
+      "before_state_exact": 0.0009765625,
+      "examples": 1024,
+      "field_exact": 0.27548828125
+    },
+    "train": {
+      "after_state_exact": 0.9501953125,
+      "before_state_exact": 0.9462890625,
+      "examples": 1024,
+      "field_exact": 0.98935546875
+    }
+  },
+  "executor": {
+    "complete_state_exact": 1.0,
+    "examples": 20000,
+    "maximum_invalid_mass": 0.0,
+    "register_exact": 1.0,
+    "soft_target_probability": 1.0
+  },
+  "gate": {
+    "candidate_source_audit": true,
+    "evidence_after_99pct_each": false,
+    "evidence_before_99pct_each": false,
+    "held_depth_99pct_each": true,
+    "one_step_99_9pct": true,
+    "pass": false,
+    "query_99_9pct": true,
+    "zero_accepted_out_of_range_mass": true
+  },
+  "held_depths": {
+    "16": {
+      "examples": 2000,
+      "register_exact": 1.0,
+      "terminal_state_exact": 1.0
+    },
+    "24": {
+      "examples": 2000,
+      "register_exact": 1.0,
+      "terminal_state_exact": 1.0
+    },
+    "4": {
+      "examples": 2000,
+      "register_exact": 1.0,
+      "terminal_state_exact": 1.0
+    },
+    "8": {
+      "examples": 2000,
+      "register_exact": 1.0,
+      "terminal_state_exact": 1.0
+    }
+  },
+  "inputs": {
+    "base_sha256": "8196f810a31e0abe7f3bf0eae0a37b103195f109b7a8e962c7b74b5710c98a02",
+    "hsc1_sha256": "34c7eaee885ba5201e6e07335add1737b7b7d26b2709861b7967e0b97be64a05",
+    "sc1_sha256": "7b5348cacb1772bf45e34442e94010db71a6be20bd8d689477d037ac5fee2ffd",
+    "tokenizer_sha256": "9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c"
+  },
+  "query": {
+    "exact": 1.0,
+    "examples": 20000
+  },
+  "schema": "shohin-diverge-mei1-component-training-v1",
+  "status": "bounded-component-training-complete",
+  "training": {
+    "elapsed_seconds": 112.01705622673035,
+    "examples": 102400,
+    "final_batch": {
+      "evidence_complete_exact": 0.921875,
+      "evidence_loss": 0.06346282362937927,
+      "executor_complete_exact": 1.0,
+      "executor_loss": -0.0,
+      "invalid_mass": 0.0,
+      "loss": 0.06346282362937927,
+      "query_exact": 1.0,
+      "query_loss": -0.0
+    },
+    "model_state_sha256": "18c5e081ae38b77e77b0d2346e9a56d0fe32fe5f99cd45896380f01f6092d1eb"
+  }
+}
