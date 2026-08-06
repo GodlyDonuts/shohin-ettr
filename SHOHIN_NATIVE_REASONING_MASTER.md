@@ -56532,3 +56532,40 @@ local variants. Its justified successor is one composition with the protected
 DIVERGE version-space mechanics: language-derived semantic fault lines remain
 separate through delayed evidence, then one coherent typed program commits.
 Single top-1 parsing and resource-matched whole particles are the controls.
+
+### DIVERGE-TFS1 result: typed factorized delayed commitment passes
+
+TFS1 performs that one authorized composition without updating TOL3. Its
+256-episode board contains 12 binary operation fault lines per episode, 4,096
+coherent complete programs per episode, and 1,048,576 represented programs in
+total. Gold choices are balanced and shuffled independently of model
+confidence. Every episode supplies source-committed delayed state observations,
+a sensitive query, an invariant query, and a query that remains genuinely
+underdetermined when the last observation is withheld.
+
+The learned source compiler emits exactly two positive-margin semantic options
+for all 3,072 fault lines and retains gold support in 256/256 episodes. Exact
+state groups match independent enumeration in 256/256 episodes and never
+remove gold. A/B/C/D top-1, equal-memory-particle, independent-trajectory, and
+extra-recurrence controls each score 0/256. Full factorized DIVERGE G scores
+256/256, including all 256 initially wrong top-1 episodes. No-evidence F
+abstains on all sensitive queries and answers all invariant queries; partial
+evidence abstains on all underdetermined queries. Soft answer aggregation E
+also scores 256/256 after full evidence isolates one world, so it is not an
+accuracy separator.
+
+Shuffled evidence, state reset, and operation shift each score zero; all packet
+swaps reject; source poisoning after seal is bit-invariant. There are no
+compiler failures, false commitments, gold deletions, malformed accepted
+packets, or overflows. Complete particles require 8,671,220,064 canonical bytes
+versus 4,143,311 for factorized packet/state/evidence accounting, a 2,092.824x
+ratio. The shared runtime performs 7,639,040 logical applications through only
+9,472 unique state-group applications, a factor of 806.486.
+
+Board/report/evaluation hashes are `818ec558...fc511`,
+`ddcfe2cf...a4e3da`, and `6f740db9...eecdc`; all match local/Newton DR copies.
+This is a controlled typed delayed-disambiguation pass, not unrestricted
+reasoning: the ambiguity renderer, state evidence, exact rational executor, and
+verifier remain engineered. TFS1 is frozen with no variants. The next boundary
+is learned natural source/evidence compilation into the unchanged sealed
+factorized runtime; no continuation pretraining follows from TFS1 alone.

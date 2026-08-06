@@ -1,6 +1,7 @@
 # DIVERGE-TFS1: Typed Semantic Fault-Line Composition
 
-Status: frozen before board materialization or result on 2026-08-06.
+Status: **passed every frozen condition** on 2026-08-06; controlled typed
+mechanism promoted, natural-language/evidence transfer not yet established.
 
 ## 1. Hypothesis
 
@@ -113,3 +114,70 @@ duplicated particles on this controlled language. The rational executor and
 evidence verifier remain exact architecture components. A pass is therefore
 not unrestricted language understanding or general reasoning; it authorizes a
 learned natural evidence/interface successor, not continuation pretraining.
+
+## 6. Frozen result
+
+Private implementation commits `5489c6f` and `f71f7ba` bind the exact board,
+compiler, runtime, controls, accounting, and evaluator. The board contains 256
+unique episodes, 3,072 model-owned binary operation fault lines, and exactly
+1,048,576 represented complete programs. Every operation-pair family occurs
+512 times, and withholding the last evidence receipt leaves exactly two
+answer-disagreeing worlds in every episode.
+
+The unchanged 28,109-parameter TOL3 checkpoint compiles all 256 programs and
+all 3,072 fault lines exactly. Both options at every fault line come from a
+distinct positive-margin learned source span, so gold support is 256/256 before
+evidence. Exact state-group execution has extensional parity with independent
+enumeration in all 256 episodes and never deletes the gold assignment.
+
+| Arm / check | Result |
+|---|---:|
+| A: highest-support top-1 | 0/256 |
+| B: equal-memory complete particles | 0/256 |
+| C: equal-count independent trajectories | 0/256 |
+| D: extra execution of top-1 | 0/256 |
+| E: posterior answer aggregation after full evidence | 256/256 |
+| F: no-evidence sensitive abstention | 256/256 |
+| F: no-evidence invariant answer | 256/256 |
+| Partial-evidence underdetermined abstention | 256/256 |
+| G: factorized delayed-evidence answer | 256/256 |
+| G on initially wrong top-1 episodes | 256/256 |
+
+All destructive controls behave as frozen: shuffled evidence, state reset, and
+operation shift score 0/256; all 256 packet swaps reject; post-seal source
+poisoning is bit-invariant. There are zero compiler failures, false query
+commitments, gold-support deletions, malformed accepted packets, or overflows.
+
+Canonical accounting charges complete particles 8,671,220,064 bytes versus
+4,143,311 bytes for the factorized packet plus peak state groups and evidence,
+a 2,092.824x ratio. The equal-memory control funds exactly one complete
+particle per episode. Factorized execution performs 7,639,040 logical
+instruction applications through 9,472 unique state-group applications, an
+806.486x sharing ratio; peak state groups are two per episode because each
+delayed receipt immediately refines the newly split fault line.
+
+Artifact SHA-256 values are:
+
+- board: `818ec5581b4b93180d73939c31efbd39eee805a04b3c8b3628c68d15cf2fc511`;
+- board report: `ddcfe2cfc1e5025e8c8a76a2be7fdd536682a91d507f432a92602d74eaa4e3da`;
+- evaluation: `6f740db9b89adee048ee1b054da33052e2d4f10448058106bbf26ef1d12eecdc`;
+- TOL3 checkpoint: `b8b9dfe54b7ab4a31a74739625b8650fa4ee93a41221ab5d82610ebc1c030328`.
+
+Local and Newton copies match. TFS1 receives no width, seed, duration, evidence,
+or renderer variants.
+
+## 7. Decision
+
+TFS1 establishes the controlled conjunction sought by DIVERGE: a learned
+language interface preserves mutually incompatible complete operation meanings,
+exact shared execution retains their coherent lineages, and delayed evidence
+turns an initially wrong top-1 interpretation into a justified late answer.
+It also shows that soft answer aggregation can be exact once evidence already
+isolates one world, so accuracy alone is not a factorization claim; the measured
+advantage is shared storage/execution and correct abstention before commitment.
+
+The claim remains narrow. Ambiguity syntax, state observations, grammar
+partitioning, exact rational execution, and evidence verification are engineered.
+The next and only authorized successor is a learned source-bound evidence
+compiler on natural verified traces, preserving all alternatives before the
+exact TFS1 runtime. No continuation pretraining is authorized by this result.

@@ -31105,3 +31105,40 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `freeze_tol3_as_working_typed_frontend;_next_test_factorized_language_fault_lines_and_delayed_coherent_commitment`.
+
+- **2026-08-06 11:25--12:05 EDT** -- **DIVERGE-TFS1 passes the complete
+  typed semantic fault-line and delayed-commitment gate.**
+
+  Private commits `5489c6f` and `f71f7ba` freeze the implementation and
+  equivalent evaluator optimization before the one result. Board
+  `818ec558...fc511` has 256 episodes, 12 binary model-owned operation fault
+  lines and 4,096 worlds per episode, 1,048,576 worlds total, and exactly two
+  answer-disagreeing partial survivors per episode. Report SHA-256 is
+  `ddcfe2cf...a4e3da`.
+
+  The unchanged TOL3 checkpoint compiles 256/256 programs and all 3,072
+  two-option fault lines exactly with 100% gold support. Exact state-group
+  execution has 256/256 extensional parity and zero gold deletions. A/B/C/D
+  top-1, equal-memory particles, independent trajectories, and extra recurrence
+  score 0/256; factorized delayed-evidence G scores 256/256, including every
+  initially wrong top-1 episode. F abstains on 256/256 sensitive and partial
+  underdetermined queries while answering 256/256 invariant queries. E soft
+  answer aggregation also scores 256/256 after full evidence isolates one
+  world.
+
+  Shuffled evidence, state reset, and operation shift score zero; all packet
+  swaps reject and post-seal source poisoning is invariant. Complete particles
+  charge 8,671,220,064 bytes versus 4,143,311 factorized bytes (2,092.824x),
+  while 7,639,040 logical instruction applications use 9,472 unique shared
+  applications (806.486x). Evaluation SHA-256 is
+  `6f740db9...eecdc`; local/Newton hashes match.
+
+  This is a controlled typed-language mechanism pass, not broad reasoning.
+  The ambiguity syntax, typed state evidence, grammar partitions, exact
+  rational executor, and verifier remain engineered. Do not run TFS1 width,
+  seed, duration, evidence, or renderer variants and do not start continuation
+  pretraining. The one justified successor is learned natural source/evidence
+  compilation into the unchanged source-sealed factorized runtime.
+
+  Decision:
+  `freeze_tfs1_as_a_working_typed_factorized_mechanism;_next_test_natural_verified_evidence_compilation_without_runtime_changes`.
