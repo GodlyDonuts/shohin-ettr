@@ -55,6 +55,7 @@ from diverge_tfs1_runtime import (
     receipt_extensional_map,
 )
 from diverge_tol2_anchor_decoder import semantic_instruction_equal
+from diverge_tol1_ir import format_fraction
 from diverge_tol3_semantic_anchor import (
     LocalSemanticAnchor,
     TOL3Config,
@@ -480,7 +481,9 @@ def evaluate(
         no_evidence_parity = no_evidence_worlds == independent_worlds
         oracle_full = execute_factorized(packet, oracle)
         oracle_decision = query_receipt(packet, oracle_full, sensitive)
-        oracle_parity = set(receipt_extensional_map(oracle_full)) == {gold_assignment}
+        oracle_parity = receipt_extensional_map(oracle_full) == {
+            gold_assignment: independent_worlds[gold_assignment]
+        }
         learned_full = execute_factorized(packet, typed)
         learned_decision = query_receipt(packet, learned_full, sensitive)
         learned_worlds = receipt_extensional_map(learned_full)
@@ -606,7 +609,9 @@ def evaluate(
             and all(text not in json.dumps(packet_record) for text in poisoned)
         )
         extensional_values = {
-            dict(state).get(sensitive.register) for state in learned_worlds.values()
+            format_fraction(value)
+            for state in learned_worlds.values()
+            if (value := dict(state).get(sensitive.register)) is not None
         }
         false_commitment = learned_decision.disposition == ANSWER and (
             len(extensional_values) != 1
