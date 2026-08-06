@@ -248,6 +248,85 @@ def build_segments(
     return output
 
 
+def _format_state(family: str, state: Any) -> str:
+    if family == "scalar":
+        return str(int(state))
+    if family == "register":
+        if not isinstance(state, (tuple, list)) or len(state) != 2:
+            raise ATS1DataError("register state differs")
+        return f"{int(state[0])},{int(state[1])}"
+    if family == "symbolic":
+        value = str(state)
+        if not value.isalpha() or not value.islower():
+            raise ATS1DataError("symbol state differs")
+        return value
+    raise ATS1DataError("unknown state family")
+
+
+def supervisor_states(row: dict[str, Any]) -> tuple[str, ...]:
+    """Independent assessor trajectory; never available to the candidate."""
+
+    family = str(row.get("family"))
+    program = row.get("program")
+    if not isinstance(program, list) or len(program) != int(row.get("depth", -1)):
+        raise ATS1DataError("supervisor program/depth contract differs")
+    raw_initial = row.get("initial_state")
+    if family == "scalar":
+        state: Any = int(raw_initial)
+    elif family == "register":
+        if not isinstance(raw_initial, list) or len(raw_initial) != 2:
+            raise ATS1DataError("supervisor register state differs")
+        state = (int(raw_initial[0]), int(raw_initial[1]))
+    elif family == "symbolic":
+        state = str(raw_initial)
+    else:
+        raise ATS1DataError("unknown supervisor family")
+    output = [_format_state(family, state)]
+    for operation in program:
+        if family == "scalar":
+            kind, raw_value = operation
+            value = int(raw_value)
+            if kind == "add":
+                state += value
+            elif kind == "subtract":
+                state -= value
+            elif kind == "multiply":
+                state *= value
+            else:
+                raise ATS1DataError("unknown scalar supervisor operation")
+        elif family == "register":
+            left, right = state
+            if operation == "A+=B":
+                state = (left + right, right)
+            elif operation == "B-=A":
+                state = (left, right - left)
+            elif operation == "swap":
+                state = (right, left)
+            elif operation == "A*=2":
+                state = (2 * left, right)
+            elif operation == "B+=A":
+                state = (left, right + left)
+            else:
+                raise ATS1DataError("unknown register supervisor operation")
+        else:
+            kind, raw_left, raw_right = operation
+            left, right = int(raw_left), int(raw_right)
+            if kind == "reverse":
+                state = state[::-1]
+            elif kind == "rotate":
+                state = state[left:] + state[:left]
+            elif kind == "swap":
+                values = list(state)
+                values[left - 1], values[right - 1] = values[right - 1], values[left - 1]
+                state = "".join(values)
+            else:
+                raise ATS1DataError("unknown symbolic supervisor operation")
+        output.append(_format_state(family, state))
+    if output[-1] != str(row.get("answer")):
+        raise ATS1DataError("supervisor terminal state differs")
+    return tuple(output)
+
+
 __all__ = [
     "ATS1DataError",
     "BYTE_OFFSET",
@@ -266,4 +345,5 @@ __all__ = [
     "encode_bytes",
     "operation_id",
     "segment_target",
+    "supervisor_states",
 ]

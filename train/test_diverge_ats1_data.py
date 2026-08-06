@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """Focused standalone checks for ATS1 byte-role supervision."""
 
-from diverge_ats1_data import OPERATION_TO_ID, ROLE_TO_ID, segment_target
+from diverge_ats1_data import (
+    OPERATION_TO_ID,
+    ROLE_TO_ID,
+    segment_target,
+    supervisor_states,
+)
 
 
 def _row(family: str, step: str, operation: object) -> dict[str, object]:
@@ -61,10 +66,22 @@ def test_symbol_roles() -> None:
     assert target.arguments == ("2", "5")
 
 
+def test_supervisor_states() -> None:
+    row = {
+        "family": "register",
+        "depth": 2,
+        "program": ["A+=B", "swap"],
+        "initial_state": [2, 3],
+        "answer": "3,5",
+    }
+    assert supervisor_states(row) == ("2,3", "5,3", "3,5")
+
+
 def main() -> None:
     test_scalar_roles()
     test_register_roles()
     test_symbol_roles()
+    test_supervisor_states()
     print("diverge ATS1 data tests passed")
 
 

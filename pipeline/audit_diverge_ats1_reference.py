@@ -9,10 +9,9 @@ import json
 import os
 from pathlib import Path
 
-from diverge_ats1_data import segment_target
+from diverge_ats1_data import segment_target, supervisor_states
 from diverge_ats1_product import load_jsonl
 from diverge_ats1_runtime import compile_segment, execute_step, render_typed_state
-from diverge_rsm1_data import supervisor_states
 
 
 def main() -> None:

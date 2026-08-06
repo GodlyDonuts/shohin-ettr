@@ -30745,3 +30745,17 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_one_two_update_h100_smoke_then_one_1600_update_forced_component_gate;_launch_autonomous_crp1_only_on_a_conjunctive_pass`.
+
+- **2026-08-06 11:00 EDT** -- **ATS1 smoke `743536` stops before model
+  construction on a capsule-only reference dependency.**
+
+  All source-role, runtime, and reducer tests pass on `evc38`, then importing
+  the independent trajectory assessor follows `diverge_rsm1_data.py` into an
+  unrelated product module absent from the minimal capsule. The compiler is
+  never constructed and zero optimizer updates or source segments run. Move
+  the byte-identical assessor semantics into ATS1's supervisor-only data module
+  and repeat the exact two-update smoke. Seed, board, model, budget, optimizer,
+  thresholds, and scientific route remain unchanged.
+
+  Decision:
+  `isolate_the_reference_assessor_dependency_then_repeat_only_the_mechanical_smoke`.

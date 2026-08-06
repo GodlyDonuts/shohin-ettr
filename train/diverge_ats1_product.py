@@ -17,6 +17,7 @@ from diverge_ats1_data import (
     ROLE_TO_ID,
     SegmentTarget,
     build_segments,
+    supervisor_states,
 )
 from diverge_ats1_runtime import (
     ATS1RuntimeError,
@@ -28,7 +29,6 @@ from diverge_ats1_runtime import (
     render_typed_state,
     shifted_operation,
 )
-from diverge_rsm1_data import supervisor_states
 
 
 class ATS1ProductError(RuntimeError):
