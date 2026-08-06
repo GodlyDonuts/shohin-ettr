@@ -1,6 +1,6 @@
 # DIVERGE-WRA1 Whole-Record Assignment Compiler
 
-**Status:** CPU mechanics passed; neural scoring unopened
+**Status:** neural seed failed; WRA1 closed without variants
 
 **Decision date:** 2026-08-05
 
@@ -145,3 +145,38 @@ than consequences of locally calibrated edges.
 A pass authorizes one unchanged DIVERGE delayed-recovery evaluation in the
 already-supported `>=8`-world regime. It does not reopen DIVERGE's failed broad
 resource gate, authorize long pretraining, or establish general reasoning.
+
+## 6. Frozen neural result
+
+Newton job `742579` completed the one authorized full seed on `evc35` in
+`00:06:13`. The trainable whole-record compiler has `1,411,405` parameters
+inside a `137,030,233`-parameter frozen-parent system. It consumed exactly
+`9,600` raw-source episodes in `336.189` training seconds (`28.555`
+episodes/s) and peaked at `765,621,248` allocated GPU bytes. Optimization was
+finite and source segmentation remained exactly `100%` throughout; final
+minibatch loss was `2.1227` after starting at `39.5029`.
+
+The autonomous result fails every semantic promotion floor:
+
+| Cohort | Segmentation | Support recall | Exact packet | Fail closed |
+|---|---:|---:|---:|---:|
+| train | 100% | 2.344% | 0% | 69.531% |
+| lexical shift | 100% | 0% | 0% | 97.266% |
+| renderer shift | 100% | 0% | 0% | 98.438% |
+| composition shift | 100% | 0% | 0% | 97.656% |
+
+Overflow remains zero and source-poison invariance remains 100%, showing that
+the hard decoder fails closed as designed. Those safety properties cannot
+compensate for missing gold support. The first-pass support-loss condition is
+fatal by the frozen contract; the remaining four seeds are not run and WRA1
+receives no threshold, width, duration, source-layer, loss, or decoding
+variant.
+
+The immutable report/checkpoint SHA-256 values are
+`4bfa0400815df77e00ec7f45c16dc7ca84b9f0dbe5181b4b3801a45d713d31c5` /
+`38fbf931af0b1d0fc75c058948aed467593606877b035cf1a6e2679d8e3ef834`.
+Runtime commit is `4f07bdf`; archive and manifest SHA-256 values are
+`a75b7c73fb6fd4e90cd56fa1f406aa66b932640d69d727429404375ee2f6e2d3` /
+`bb6a11878b367b3f722910cbb5eddfe94512b48fc7999235ece23c5a1f43f216`.
+
+**Decision:** `close_wra1_and_do_not_promote_learned_diverge`.

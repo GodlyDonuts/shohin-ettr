@@ -171,6 +171,16 @@ compiler, if separately authorized, must emit a bounded globally normalized
 whole-record assignment with exact-one constraints rather than repair SC1's
 thresholded pair graph.
 
+That whole-record requirement was tested once as DIVERGE-WRA1. It keeps the
+exact learned boundaries and removes SC1's dense edge thresholds and Cartesian
+candidate construction, instead decoding two complete exchangeable option
+objects per record with permutation-matched supervision and hard exact-one
+validation. CPU mechanics are exact, but the learned compiler reaches zero
+exact packets in all four cohorts; support is 2.344% on train and zero under
+lexical, renderer, and composition shift. Bounded cardinality alone therefore
+does not solve multi-field binding. WRA1 is closed without variants, and
+learned DIVERGE scaling remains a no-go.
+
 ## Terminology
 
 Do not call this "schizophrenic AI" in code, a paper, a resume, or a public

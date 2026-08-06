@@ -55694,3 +55694,33 @@ compose into a globally valid object. Any future successor must encode a
 bounded whole-record assignment with exact-one constraints by construction;
 it cannot be an SC1 threshold or scale repair. Audit SHA-256 is
 `e6dd4874029f653f808c426d04b15a98da390c67c83b30429e9d015b00ab9799`.
+
+### DIVERGE-WRA1 whole-record assignment result (2026-08-05)
+
+WRA1 tested the required qualitatively different source interface. It froze
+SC1's exact source encoder and boundary detector, removed the dense pair graph
+and Cartesian proposal decoder, and predicted exactly two exchangeable
+complete option objects per detected record. A 1,000-episode CPU gate passed
+100% reconstruction, independent-reference parity, slot-swap invariance,
+duplicate rejection, source-poison invariance, and linear object accounting;
+fieldwise lineage corruption reduced exactness to zero.
+
+The one frozen neural seed is nevertheless a decisive negative. Job `742579`
+trains stably for 1,200 updates / 9,600 episodes and preserves 100% source
+segmentation, but reaches zero exact autonomous packets in train, lexical,
+renderer, and composition cohorts. Gold-support recall is 2.344% on train and
+zero on all three shifts. Most episodes fail closed rather than emitting an
+invalid packet; overflow is zero and source-poison invariance is 100%.
+
+This sharpens the boundary: globally bounded object cardinality is necessary
+but not sufficient. Parallel slot representations trained with permutation-
+matched field losses still fail to bind every alias, prior, ordered action,
+and source witness into exact complete objects under renderer and lexical
+shift. The valid world is again absent before DIVERGE execution begins.
+
+WRA1 is closed after seed one with no variants. DIVERGE is not promoted: only
+the scaffolded exact `>=8`-world delayed-recovery mechanism remains, while an
+autonomous raw-language compiler and broad resource advantage are both absent.
+Report/checkpoint SHA-256 values are
+`4bfa0400815df77e00ec7f45c16dc7ca84b9f0dbe5181b4b3801a45d713d31c5` /
+`38fbf931af0b1d0fc75c058948aed467593606877b035cf1a6e2679d8e3ef834`.

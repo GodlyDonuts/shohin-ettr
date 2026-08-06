@@ -1,0 +1,196 @@
+{
+  "arguments": {
+    "base": "/lustre/fs1/home/sa305415/shohin/train/ettr_smollm2_control_parent_a2026072801_7881d8e/joint-model-final.pt",
+    "batch_size": 8,
+    "cpu_report": "/lustre/fs1/home/sa305415/shohin/scratchpad/diverge_wra1_4f07bdf_r1/artifacts/reasoning/diverge_wra1/cpu_gate_seed202608056500.json",
+    "data_seed": 202608056600,
+    "device": "cuda",
+    "eval_batch_size": 4,
+    "eval_count": 256,
+    "eval_seed": 202608056700,
+    "layer": 17,
+    "learning_rate": 0.0003,
+    "log_every": 100,
+    "output": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_wra1/neural_seed202608056500.json",
+    "pair_width": 64,
+    "sc1_checkpoint": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_sc1/neural_seed202608056200.pt",
+    "seed": 202608056500,
+    "slot_heads": 4,
+    "slot_layers": 2,
+    "threads": 4,
+    "tokenizer": "/lustre/fs1/home/sa305415/shohin/artifacts/external/smollm2_135m_instruct_83212e1e/tokenizer.json",
+    "updates": 1200,
+    "width": 192
+  },
+  "backbone_receipt": {
+    "base_step": null,
+    "checkpoint_format": "ettr-parent-base",
+    "initialization": null
+  },
+  "checkpoint": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_wra1/neural_seed202608056500.pt",
+  "checkpoint_sha256": "38fbf931af0b1d0fc75c058948aed467593606877b035cf1a6e2679d8e3ef834",
+  "evaluations": {
+    "composition_shift": {
+      "cohort": "composition_shift",
+      "count": 256,
+      "rates": {
+        "accepted_duplicate_fields": 0.0,
+        "exact_packet": 0.0,
+        "failed_closed": 0.9765625,
+        "lineage_shuffle_exact": 0.0,
+        "mean_predicted_segments": 6.1796875,
+        "mean_predicted_slots": 12.359375,
+        "mean_source_words": 293.265625,
+        "overflow": 0.0,
+        "segmentation_exact": 1.0,
+        "source_poison_invariant": 1.0,
+        "support_recalled": 0.0
+      },
+      "totals": {
+        "accepted_duplicate_fields": 0,
+        "episodes": 256,
+        "exact_packet": 0,
+        "failed_closed": 250,
+        "lineage_shuffle_exact": 0,
+        "overflow": 0,
+        "predicted_segments": 1582,
+        "predicted_slots": 3164,
+        "segmentation_exact": 256,
+        "source_poison_invariant": 256,
+        "source_words": 75076,
+        "support_recalled": 0
+      }
+    },
+    "lexical_shift": {
+      "cohort": "lexical_shift",
+      "count": 256,
+      "rates": {
+        "accepted_duplicate_fields": 0.0,
+        "exact_packet": 0.0,
+        "failed_closed": 0.97265625,
+        "lineage_shuffle_exact": 0.0,
+        "mean_predicted_segments": 6.03125,
+        "mean_predicted_slots": 12.0625,
+        "mean_source_words": 285.890625,
+        "overflow": 0.0,
+        "segmentation_exact": 1.0,
+        "source_poison_invariant": 1.0,
+        "support_recalled": 0.0
+      },
+      "totals": {
+        "accepted_duplicate_fields": 0,
+        "episodes": 256,
+        "exact_packet": 0,
+        "failed_closed": 249,
+        "lineage_shuffle_exact": 0,
+        "overflow": 0,
+        "predicted_segments": 1544,
+        "predicted_slots": 3088,
+        "segmentation_exact": 256,
+        "source_poison_invariant": 256,
+        "source_words": 73188,
+        "support_recalled": 0
+      }
+    },
+    "renderer_shift": {
+      "cohort": "renderer_shift",
+      "count": 256,
+      "rates": {
+        "accepted_duplicate_fields": 0.0,
+        "exact_packet": 0.0,
+        "failed_closed": 0.984375,
+        "lineage_shuffle_exact": 0.0,
+        "mean_predicted_segments": 6.05859375,
+        "mean_predicted_slots": 12.1171875,
+        "mean_source_words": 287.6875,
+        "overflow": 0.0,
+        "segmentation_exact": 1.0,
+        "source_poison_invariant": 1.0,
+        "support_recalled": 0.0
+      },
+      "totals": {
+        "accepted_duplicate_fields": 0,
+        "episodes": 256,
+        "exact_packet": 0,
+        "failed_closed": 252,
+        "lineage_shuffle_exact": 0,
+        "overflow": 0,
+        "predicted_segments": 1551,
+        "predicted_slots": 3102,
+        "segmentation_exact": 256,
+        "source_poison_invariant": 256,
+        "source_words": 73648,
+        "support_recalled": 0
+      }
+    },
+    "train": {
+      "cohort": "train",
+      "count": 256,
+      "rates": {
+        "accepted_duplicate_fields": 0.0,
+        "exact_packet": 0.0,
+        "failed_closed": 0.6953125,
+        "lineage_shuffle_exact": 0.0,
+        "mean_predicted_segments": 5.93359375,
+        "mean_predicted_slots": 11.8671875,
+        "mean_source_words": 282.06640625,
+        "overflow": 0.0,
+        "segmentation_exact": 1.0,
+        "source_poison_invariant": 1.0,
+        "support_recalled": 0.0234375
+      },
+      "totals": {
+        "accepted_duplicate_fields": 0,
+        "episodes": 256,
+        "exact_packet": 0,
+        "failed_closed": 178,
+        "lineage_shuffle_exact": 0,
+        "overflow": 0,
+        "predicted_segments": 1519,
+        "predicted_slots": 3038,
+        "segmentation_exact": 256,
+        "source_poison_invariant": 256,
+        "source_words": 72209,
+        "support_recalled": 6
+      }
+    }
+  },
+  "gates": {
+    "exact_packet": false,
+    "lineage_causality": false,
+    "no_duplicates": true,
+    "no_overflow": true,
+    "sc1_shift_advantage": false,
+    "segmentation": true,
+    "source_poison": true,
+    "support": false
+  },
+  "input_hashes": {
+    "base": "8196f810a31e0abe7f3bf0eae0a37b103195f109b7a8e962c7b74b5710c98a02",
+    "cpu_report": "ad0c56a0dca0dc53f0cc514d3dba3c9b1d20a2d2c4204b15fb172ed9d6e4ea2f",
+    "sc1_checkpoint": "7b5348cacb1772bf45e34442e94010db71a6be20bd8d689477d037ac5fee2ffd",
+    "tokenizer": "9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c"
+  },
+  "model_state_sha256": "2c4bedbb161cbfd02dc878162e1e00e1b1c16497107335a0f41f89d90e213600",
+  "parameters": {
+    "complete": 137030233,
+    "trainable": 1411405
+  },
+  "passed_seed_gate": false,
+  "schema": "shohin-diverge-wra1-neural-whole-record-v1",
+  "seed": 202608056500,
+  "training": {
+    "charged_episodes": 9600,
+    "episodes_per_second": 28.555341083332014,
+    "final_metrics": {
+      "boundary_failures": 0.0,
+      "loss": 2.1227259635925293,
+      "matched_segments": 51.0,
+      "predicted_segments": 51.0,
+      "segmentation_exact": 1.0
+    },
+    "peak_memory_bytes": 765621248,
+    "seconds": 336.1892954451032,
+    "updates": 1200
+  }
+}

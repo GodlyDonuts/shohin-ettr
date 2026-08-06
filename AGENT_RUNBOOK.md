@@ -29700,3 +29700,40 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_one_immutable_wra1_smoke_then_one_frozen_neural_seed_without_reopening_sc1`.
+
+- **2026-08-05 21:45--21:50 EDT** -- **DIVERGE-WRA1 fails the autonomous
+  source-compilation gate and is closed.**
+
+  Immutable smoke `742533` exercised the complete real checkpoint, source
+  encoder, boundary detector, slot loss, autonomous decoder, and artifact
+  path. Full seed `742579` then completed on `evc35` in `00:06:13`. The
+  1,411,405-trainable-parameter compiler consumed exactly 9,600 episodes at
+  28.555 episodes/s, peaked at 765,621,248 allocated GPU bytes, and retained
+  100% segmentation with no boundary failures. Loss fell from 39.5029 to
+  2.1227.
+
+  Autonomous support/exact packet rates are `2.344% / 0%` on train and
+  `0% / 0%` on lexical, renderer, and composition shifts. Fail-closed rates
+  are `69.531% / 97.266% / 98.438% / 97.656%`; overflow is zero and post-seal
+  source-poison invariance is 100%. Exact complete-object slots therefore
+  eliminate SC1's Cartesian overflow but do not learn the required joint
+  multi-field binding. Valid worlds are still deleted at compilation, before
+  conflict recovery can help.
+
+  Per the frozen contract, seed one closes WRA1. Do not run the other four
+  seeds or alter its threshold, width, duration, source layer, loss, decoder,
+  or matching objective. DIVERGE retains only its exact scaffolded `>=8`-world
+  delayed-recovery observation; it has no autonomous learned raw-language
+  front end, no broad resource win, and no authorization for continuation
+  pretraining or a reasoning claim. PCSD and FCPT remain closed; the protected
+  CSDC role-copy result remains unchanged.
+
+  Report/checkpoint SHA-256 values are
+  `4bfa0400815df77e00ec7f45c16dc7ca84b9f0dbe5181b4b3801a45d713d31c5` /
+  `38fbf931af0b1d0fc75c058948aed467593606877b035cf1a6e2679d8e3ef834`.
+  Runtime commit/archive/manifest are `4f07bdf` /
+  `a75b7c73fb6fd4e90cd56fa1f406aa66b932640d69d727429404375ee2f6e2d3` /
+  `bb6a11878b367b3f722910cbb5eddfe94512b48fc7999235ece23c5a1f43f216`.
+
+  Decision:
+  `close_wra1_and_learned_diverge_scaling_after_fatal_first_pass_support_loss`.
