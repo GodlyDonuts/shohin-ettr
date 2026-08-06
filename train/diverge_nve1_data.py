@@ -287,7 +287,6 @@ def augment_confirmation_board(
     rng = random.Random(seed ^ 0x4E564531)
     output: list[dict[str, Any]] = []
     for row_index, tfs1 in enumerate(rows):
-        validate_tfs1_row(tfs1)
         symbols = tuple(str(value) for value in tfs1["symbols"])  # type: ignore[arg-type]
         natural: list[dict[str, Any]] = []
         for evidence_index, typed in enumerate(tfs1["evidence"]):  # type: ignore[union-attr]
