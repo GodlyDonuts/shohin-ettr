@@ -1,0 +1,57 @@
+{
+  "arm": "diverge_ltm1",
+  "b1": {
+    "checkpoint_sha256": "c099e16c7ec8f2df9f3fe9a68030ffa521f4c392410eb1885d7a7b8ec0529ce1",
+    "elapsed_seconds": 898.0534574009944,
+    "final_token_weighted_nll": 0.10286999365858739,
+    "improved_rows": 16,
+    "initial_token_weighted_nll": 1.0736656160657978,
+    "peak_gpu_memory_bytes": 4571359744,
+    "report_sha256": "3ebb07c363c2a7fca8c1cd743c3f7dbd5ef700ec3976a7175aff32ff747ae4e8",
+    "score_sha256": "1fced5300959bb3d6de28ec491ff5fe9d998c7ef8f6e3fe36615492459aaddd0",
+    "trainable_parameters": 901888,
+    "training_tokens_per_second": 248.5375432392972
+  },
+  "broad_stage_launched": false,
+  "data_sha256": "2461d6f70b44a142854d56c24e1fb42d600065e5788a2c4e055ba47b12696549",
+  "decision": "closed_negative",
+  "failure_reasons": [
+    "final_token_weighted_nll_worse_than_b1",
+    "selected_trace_cosine_below_0.90",
+    "complete_trajectory_representation_collapse"
+  ],
+  "fit": {
+    "candidate_charged_tokens": 892800,
+    "candidate_tokens_per_second": 731.531513419358,
+    "checkpoint_sha256": "0871c5825e7651282aacf709ec9a676863a6aa1a4cfc1eee254b2cf8647af19f",
+    "elapsed_seconds": 1220.4532321879524,
+    "final_candidate_cosine": 1.0,
+    "final_posterior_entropy": 1.3851362466812134,
+    "final_token_weighted_nll": 0.2425075572742265,
+    "improved_rows": 16,
+    "initial_token_weighted_nll": 1.0627382882072933,
+    "logical_tokens_per_second": 182.8828783548395,
+    "peak_gpu_memory_bytes": 28944206336,
+    "report_sha256": "20045826ea4d6e6c7abaf7cac6874e6a70ed8f752f8333649052348a2d468bd5",
+    "selected_trace_cosine": 0.773302998393774,
+    "selected_trajectory_ids": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "trainable_parameters": 4911621
+  },
+  "jobs": {
+    "b1_fit": 743307,
+    "b1_score": 743308,
+    "ltm1_fit": 743306
+  },
+  "logical_charged_tokens_per_arm": 223200,
+  "model_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+  "rows": 16,
+  "schema": "shohin-diverge-ltm1-gate-result-v1",
+  "seed": 2026080601,
+  "status": "complete",
+  "updates": 100
+}

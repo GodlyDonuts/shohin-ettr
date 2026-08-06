@@ -2,21 +2,24 @@
 
 ## Current Status — Read First
 
-**Current architecture gate (2026-08-06 03:22 EDT):** JET1 is closed after a
-decisive optimization failure: 0/20,000 primitive execution, 0/106,496 exact
-evidence pairs, 0/8,192 terminal states, and 280/8,192 answers despite 1,600
-updates on Qwen3.5-0.8B. Its answer path was exactly invariant to evidence
-shuffle. No hard-interface repair follows.
+**Current architecture result (2026-08-06 04:02 EDT):** DIVERGE-LTM1 is
+closed at its frozen 16-row matched-fit gate. It fixes JET1's immediate hard-
+interface optimization failure: all 16 rows improve, all gradients remain
+finite, and smooth latent traces reach 0.773 cosine. It does not produce a
+version space. All four complete trajectories converge to candidate cosine
+1.0, while final token-weighted NLL is 0.242508 versus exact B1 at 0.102870.
+LTM1 is also 26.4% slower in logical tokens/s and uses about 6.3 times B1's
+peak allocated memory. Stage 2 is canceled; no benchmark or reasoning lift is
+claimed.
 
-The frozen successor is DIVERGE-LTM1. It trains four source-conditioned,
-sticky complete latent trajectories with tied recurrent computation, ordered
-semantic trace alignment, and smooth whole-sequence log-sum-exp credit. It
-never averages candidate state fields and selects one complete source-prior
-lineage before autonomous decoding. The first evidence will be a 16-row
-verified real-language fit against exact LoRA-only B1, followed only on a
-conjunctive pass by the established 538-example math/code/science/logic board.
-The implementation and ten local mechanics tests pass; no H100 result exists
-yet. See `docs/research/DIVERGE_LTM1_LATENT_TRAJECTORY_MARGINALIZATION.md`.
+The updated diagnosis is supervision-level rather than another local
+architecture knob: one gold response per prompt teaches every exchangeable
+lineage the same semantic target. The next admissible substrate must use
+multiple complete same-prompt trajectories with independently verified
+correct/incorrect outcomes or contradiction evidence, then train a model-owned
+whole-lineage selector. It cannot be a generic diversity loss or another LTM1
+seed/width/duration repair. See
+`docs/research/DIVERGE_LTM1_LATENT_TRAJECTORY_MARGINALIZATION.md`.
 
 **Fresh product closure and next gate (2026-08-03 12:20 EDT):** C2's expanded
 benchmark lead does not generalize as a useful expert. On 200 new verified,
@@ -55998,3 +56001,36 @@ model-owned inference causally. It must not return to another isolated reader
 or a nearby JET1 seed/loss/schedule repair. Report/checkpoint SHA-256 values are
 `d4b81340eff7bae2cd9cf721c20914eeeaead4055fcbc158ada2ee339c112f63` /
 `7b8ad52ebf7b861e52ad920009b6458d0db2f715e9532083cae397ad60e1e1e6`.
+
+### DIVERGE-LTM1 smooth trajectory result (2026-08-06)
+
+LTM1 replaced JET1's simultaneous straight-through commitments with four
+complete sticky latent trajectories, tied recurrent computation, ordered
+teacher-trace alignment, and exact log-sum-exp credit over complete response
+energies. It used pinned Qwen3.5-0.8B, final-four-layer rank-8 LoRA, 4.912M
+trainable parameters, and one exact 16-row/100-update gate against B1.
+
+The smooth system is trainable but negative. LTM1 improves every row and moves
+token-weighted NLL from 1.062738 to 0.242508, yet exact B1 moves from 1.073666
+to 0.102870 on the same logical tokens. Selected-trace cosine reaches only
+0.773303 against the required 0.90. Final candidate cosine is 1.0 and
+posterior entropy is 1.385 nats: all four lineages encode the same trajectory
+despite source priors selecting all four IDs. Logical throughput is
+182.883 tokens/s versus B1's 248.538, and peak allocated memory is 28.94GB
+versus 4.57GB.
+
+This closes LTM1 before broad evaluation. Smooth marginal credit solves the
+worst optimization symptom but cannot infer semantic alternatives that are
+absent from supervision. The required successor learning substrate is a
+same-prompt bank of distinct complete trajectories with independently checked
+outcomes and contradiction evidence, coupled to a model-owned coherent
+lineage selector. Existing verified rollout banks and 7,452 same-prompt
+preference pairs provide raw material, but their use requires a new frozen
+gate rather than an LTM1 repair.
+
+LTM1 report/checkpoint SHA-256 values are
+`20045826ea4d6e6c7abaf7cac6874e6a70ed8f752f8333649052348a2d468bd5` /
+`0871c5825e7651282aacf709ec9a676863a6aa1a4cfc1eee254b2cf8647af19f`.
+B1 score/checkpoint SHA-256 values are
+`1fced5300959bb3d6de28ec491ff5fe9d998c7ef8f6e3fe36615492459aaddd0` /
+`c099e16c7ec8f2df9f3fe9a68030ffa521f4c392410eb1885d7a7b8ec0529ce1`.

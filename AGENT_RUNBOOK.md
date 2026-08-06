@@ -30359,3 +30359,43 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_one_ltm1_100_update_fit_and_one_exact_b1_control_then_apply_the_frozen_conjunctive_gate`.
+
+- **2026-08-06 03:34--04:02 EDT** -- **DIVERGE-LTM1 is learnable but
+  collapses to one trajectory and loses the matched B1 fit; Stage 2 is
+  canceled.**
+
+  Treatment `743306`, B1 `743307`, and scorer `743308` all complete cleanly.
+  Both arms use the same 16 V10 rows, seed `2026080601`, 100 updates, and
+  223,200 logical response tokens. Every frozen non-LoRA Qwen tensor remains
+  hash-identical. LTM1 improves all 16 rows and reduces token-weighted NLL
+  `1.062738 -> 0.242508`; B1 improves all 16 and reaches
+  `1.073666 -> 0.102870`. LTM1 therefore loses the exact matched fit by a
+  factor of 2.36 in final NLL.
+
+  The internal trajectory gate also fails. Selected trace cosine is 0.773303
+  against the frozen 0.90 threshold. Although source priors select all four
+  trajectory IDs, final candidate-to-candidate cosine is exactly 1.0 and
+  posterior entropy is 1.385 nats, approximately `ln(4)`. The four nominal
+  lineages have converged to one shared teacher trajectory. LTM1 runs at
+  182.883 logical tok/s and 28.94GB peak allocated memory versus B1 at
+  248.538 tok/s and 4.57GB.
+
+  Smooth complete-trajectory credit fixes JET1's catastrophic hard-interface
+  optimization symptom, but one gold response per prompt contains no signal
+  that can assign different semantic alternatives to exchangeable lineages.
+  Do not repair this with a diversity coefficient, width, fault-bit count,
+  duration, seed, trace target, layer count, or schedule. The 200-update broad
+  run and 538-example evaluation are not launched. A successor must change the
+  learning substrate to independently verified, distinct same-prompt complete
+  trajectories plus model-owned contradiction and whole-lineage selection.
+
+  LTM1 report/checkpoint SHA-256 values are
+  `20045826ea4d6e6c7abaf7cac6874e6a70ed8f752f8333649052348a2d468bd5` /
+  `0871c5825e7651282aacf709ec9a676863a6aa1a4cfc1eee254b2cf8647af19f`.
+  B1 score/training-report/checkpoint SHA-256 values are
+  `1fced5300959bb3d6de28ec491ff5fe9d998c7ef8f6e3fe36615492459aaddd0` /
+  `3ebb07c363c2a7fca8c1cd743c3f7dbd5ef700ec3976a7175aff32ff747ae4e8` /
+  `c099e16c7ec8f2df9f3fe9a68030ffa521f4c392410eb1885d7a7b8ec0529ce1`.
+
+  Decision:
+  `close_ltm1_without_stage2_and_replace_single_trace_marginalization_with_verified_multi_trajectory_supervision`.

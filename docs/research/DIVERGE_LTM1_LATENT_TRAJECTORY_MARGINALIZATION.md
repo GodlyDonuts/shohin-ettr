@@ -1,6 +1,6 @@
 # DIVERGE-LTM1: Latent Trajectory Marginalization
 
-Status: frozen successor gate after JET1. No result yet.
+Status: closed negative after the frozen matched-fit gate.
 
 ## Decision
 
@@ -166,3 +166,53 @@ JET1. It is not authorization for long continuation pretraining, public score
 routing, more candidates, annealed hard selection, alternate chunking, or a
 nearby schedule/loss variant. A negative result requires a different state or
 learning substrate.
+
+## Result
+
+The frozen Stage 1 gate completed on 2026-08-06 and LTM1 is closed. Treatment
+job `743306`, matched B1 job `743307`, and B1 scorer `743308` all completed
+cleanly. Both arms used the same 16 rows, seed, 100 updates, and 223,200
+logical response tokens. Every non-LoRA backbone tensor in LTM1 remained
+hash-identical.
+
+| Measure | LTM1 | B1 |
+|---|---:|---:|
+| Initial token-weighted NLL | 1.062738 | 1.073666 |
+| Final token-weighted NLL | **0.242508** | **0.102870** |
+| Improved rows | 16/16 | 16/16 |
+| Selected-trace cosine | **0.773303** | n/a |
+| Selected trajectory IDs | 4/4 | n/a |
+| Logical tokens/s | 182.883 | 248.538 |
+| Training wall time | 1,220.45 s | 898.05 s |
+| Peak allocated GPU memory | 28.94 GB | 4.57 GB |
+| Trainable parameters | 4,911,621 | 901,888 |
+
+LTM1 misses two conjunctive requirements. Its final NLL is 2.36 times B1's,
+and its selected-trace cosine is below the frozen 0.90 threshold. More
+importantly, final candidate-to-candidate cosine reaches exactly 1.0 while
+posterior entropy remains 1.385 nats, essentially `ln(4)`. The four nominal
+lineages therefore converge to one shared response trace. Different source
+priors still select all four IDs across the tiny fit board, but those IDs no
+longer identify distinct hypotheses.
+
+This localizes the failure. Smooth whole-trajectory marginal credit is
+learnable and avoids JET1's zero-gradient hard-interface collapse, but one
+teacher response per prompt supplies no information that could associate
+different fault-line assignments with different semantic alternatives.
+Generic balance or entropy regularization cannot create those alternatives.
+The next admissible substrate must present multiple complete, semantically
+different trajectories for the same prompt, carry independent verifier labels
+or contradiction evidence, and train a model-owned whole-lineage selector.
+It must not be an LTM1 diversity-weight, width, duration, seed, or schedule
+repair.
+
+Stage 2 and its 538-example broad evaluation are canceled by the frozen stop
+rule. No public reasoning improvement is claimed.
+
+Artifact SHA-256 values:
+
+- LTM1 checkpoint: `0871c5825e7651282aacf709ec9a676863a6aa1a4cfc1eee254b2cf8647af19f`
+- LTM1 report: `20045826ea4d6e6c7abaf7cac6874e6a70ed8f752f8333649052348a2d468bd5`
+- B1 checkpoint: `c099e16c7ec8f2df9f3fe9a68030ffa521f4c392410eb1885d7a7b8ec0529ce1`
+- B1 training report: `3ebb07c363c2a7fca8c1cd743c3f7dbd5ef700ec3976a7175aff32ff747ae4e8`
+- B1 fit score: `1fced5300959bb3d6de28ec491ff5fe9d998c7ef8f6e3fe36615492459aaddd0`
