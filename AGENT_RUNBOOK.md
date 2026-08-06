@@ -29737,3 +29737,36 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_wra1_and_learned_diverge_scaling_after_fatal_first_pass_support_loss`.
+
+- **2026-08-05 21:50--22:35 EDT** -- **DIVERGE-HSC1 exact hierarchical
+  compiler mechanics pass; neural score remains unopened.**
+
+  The next source compiler is materially different from closed SC1 and WRA1.
+  It retains only SC1's exact frozen source encoder/boundary detector, then
+  globally normalizes three monotonic record cuts and parses each predicted
+  option through one of 128 complete finite-state semantic templates. Fields
+  are never normalized or matched independently. There is no dense pair
+  graph, Cartesian proposal set, exchangeable slot, Hungarian assignment,
+  beam, retry, top-k repair, query, answer, or execution signal.
+
+  The frozen 1,000-episode CPU gate passes 100% packet reconstruction,
+  malformed fail-closed behavior, source-poison invariance, and exact linear
+  accounting. Cut-channel and semantic-role shuffles each leave zero exact
+  packets; overflow is zero. Receipts cover 280,803 source words, 5,904
+  records, 195,251 option words, and 1,511,424 fixed-template evaluations
+  without a pair matrix. Exact cut/path dynamic programs match exhaustive
+  references, and the differentiable forms match their CPU partitions with
+  finite gradients.
+
+  Canonical report digest / stored JSON SHA-256 are
+  `23fa3a02f4299a2ff2b29dde415e8fcefc7bc8ecd2a56877cdee68d446c81809` /
+  `ef795c698a9ab4195eba43a6d8f84b46e55528aad66f708893de59dfd22dbad2`.
+  The neural executable freezes stage A after exactly 200 updates / 1,600
+  episodes, then trains the shared option CRF for 1,000 updates / 8,000 new
+  episodes using only stage-A Viterbi spans. Run one immutable two-update
+  H100 smoke, then one full seed if mechanically clean. A failed seed closes
+  HSC1 without variants. A pass authorizes only one unchanged `>=8`-world
+  DIVERGE recovery gate; it is not a reasoning or pretraining result.
+
+  Decision:
+  `promote_exact_hsc1_cpu_mechanics_to_one_real_checkpoint_smoke_then_one_frozen_neural_seed`.

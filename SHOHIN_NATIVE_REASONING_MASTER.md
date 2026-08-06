@@ -55724,3 +55724,28 @@ autonomous raw-language compiler and broad resource advantage are both absent.
 Report/checkpoint SHA-256 values are
 `4bfa0400815df77e00ec7f45c16dc7ca84b9f0dbe5181b4b3801a45d713d31c5` /
 `38fbf931af0b1d0fc75c058948aed467593606877b035cf1a6e2679d8e3ef834`.
+
+### DIVERGE-HSC1 hierarchical structured compiler (2026-08-05)
+
+HSC1 is the separately frozen successor to SC1 and WRA1, not a repair variant
+of either. It keeps SC1's exact source encoder and record boundaries, then
+globally normalizes a monotonic `HEADER | OPTION_A | OPTION_B | TRAILER`
+hierarchy. Each predicted option is decoded by one shared finite-state CRF
+over 128 complete semantic templates. Alias, prior, ordered actions, and source
+witnesses therefore belong to one path; there is no pair threshold, Cartesian
+proposal set, exchangeable slot, matching loss, beam, retry, or answer signal.
+
+The exact CPU gate passes 1,000/1,000 episodes across train, lexical,
+renderer, and composition cohorts. Cut and semantic shuffles both reduce
+exact packets to zero, malformed outputs fail closed, source poisoning is
+fully invariant, and linear accounting is exact over 280,803 source words,
+5,904 records, and 1,511,424 fixed-template evaluations with no pair matrix.
+Canonical report digest is
+`23fa3a02f4299a2ff2b29dde415e8fcefc7bc8ecd2a56877cdee68d446c81809`.
+
+The neural contract remains unopened. It freezes 200 updates / 1,600 episodes
+of hierarchy training before 1,000 updates / 8,000 new episodes of option CRF
+training. Stage B sees only stage-A Viterbi spans and has no gold-span fallback.
+One failed seed closes HSC1. A pass would authorize only one unchanged
+high-ambiguity DIVERGE recovery composition, not continuation pretraining,
+public benchmark optimization, or a broad reasoning claim.

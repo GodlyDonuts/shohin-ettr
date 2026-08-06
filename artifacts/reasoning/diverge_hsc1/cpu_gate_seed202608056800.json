@@ -1,0 +1,49 @@
+{
+  "count": 1000,
+  "gates": {
+    "cut_causality": true,
+    "exact": true,
+    "linear_accounting": true,
+    "malformed_fail_closed": true,
+    "no_overflow": true,
+    "semantic_causality": true,
+    "source_poison": true
+  },
+  "grammar": {
+    "cue_roles": 3,
+    "cut_channels": 3,
+    "pair_matrix_entries": 0,
+    "semantic_roles": 11,
+    "templates": 128
+  },
+  "passed": true,
+  "rates": {
+    "cut_shuffle_exact": 0.0,
+    "exact": 1.0,
+    "linear_accounting": 1.0,
+    "malformed_failed_closed": 1.0,
+    "overflow": 0.0,
+    "semantic_shuffle_exact": 0.0,
+    "source_poison_invariant": 1.0
+  },
+  "report_sha256": "23fa3a02f4299a2ff2b29dde415e8fcefc7bc8ecd2a56877cdee68d446c81809",
+  "schema": "shohin-diverge-hsc1-structured-cpu-v1",
+  "seed": 202608056800,
+  "totals": {
+    "cue_score_cells": 798297,
+    "cut_score_cells": 798297,
+    "cut_shuffle_exact": 0,
+    "episodes": 1000,
+    "exact": 1000,
+    "linear_accounting": 1000,
+    "malformed_failed_closed": 1000,
+    "option_words": 195251,
+    "overflow": 0,
+    "records": 5904,
+    "semantic_score_cells": 2147761,
+    "semantic_shuffle_exact": 0,
+    "source_poison_invariant": 1000,
+    "source_words": 280803,
+    "template_evaluations": 1511424
+  }
+}
