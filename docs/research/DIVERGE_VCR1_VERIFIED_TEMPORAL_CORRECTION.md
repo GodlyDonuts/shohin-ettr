@@ -36,9 +36,19 @@ drafts from the exact protected generator.
 The pair source contains 7,452 same-generator math/science pairs. Every pair
 has one independently verifier-correct response and one wrong response. A
 deterministic identity split prevents any problem from crossing train and
-teacher-draft development sets. The builder admits a pair only when both the
-wrong-draft correction example and the correct-draft no-op example fit in the
-4,096-token contract without truncation.
+teacher-draft development sets. The builder keeps each complete autonomous
+draft and derives one concise terminal target from the verifier-correct
+response using the same task-specific answer extractor used for scoring. It
+admits a pair only when both the wrong-draft correction example and the
+correct-draft no-op example fit in the 4,096-token contract without truncating
+the draft or terminal target. The first full-response admission attempt is a
+mechanical pre-training negative: it left only 211 train-math identities and
+produced no board or model result.
+
+The correction instruction matches this target: the model verifies or repairs
+the draft internally and emits exactly one terminal boxed-answer line. The
+complete draft remains available to the correction reactor; no source trace is
+truncated or replaced by a gold trace.
 
 ## Architecture
 
@@ -90,7 +100,8 @@ zero-parameter prompt baseline.
 
 - seed `2026080603`; data seed `2026080603`;
 - one wrong-draft and one correct-draft presentation per selected pair;
-- identical chosen response as the target in both presentations;
+- identical verifier-accepted terminal answer as the target in both
+  presentations;
 - 4,096 total positions including eight correction slots;
 - 200 updates, eight pairs per update through gradient accumulation;
 - AdamW, fused, LR `3e-4`, cosine decay, gradient clip 1.0;

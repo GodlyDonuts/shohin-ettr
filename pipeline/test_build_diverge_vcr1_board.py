@@ -49,7 +49,7 @@ def _write_source(path: Path) -> None:
                     ).hexdigest(),
                     "training_group": group,
                     "question": f"{group} question {index}",
-                    "chosen": f"correct response {index}",
+                    "chosen": f"The final answer is \\boxed{{{index}}}.",
                     "rejected": f"wrong response {index}",
                 }
             )

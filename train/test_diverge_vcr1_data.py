@@ -5,6 +5,7 @@ import pytest
 from diverge_vcr1_data import (
     DRAFT_OPEN,
     VCR1DataError,
+    correction_user_content,
     tokenize_correction_example,
 )
 
@@ -51,6 +52,13 @@ def test_correction_tokenization_preserves_disjoint_segments() -> None:
         for question, draft in zip(tokens.question_mask, tokens.draft_mask, strict=True)
     )
     assert tokens.response_ids[-1] == 0
+
+
+def test_correction_instruction_matches_terminal_target() -> None:
+    prompt = correction_user_content("question", "draft")
+    assert "exactly one line" in prompt
+    assert "Final answer: \\boxed{answer}" in prompt
+    assert "complete response" not in prompt
 
 
 def test_correction_tokenization_rejects_truncation() -> None:

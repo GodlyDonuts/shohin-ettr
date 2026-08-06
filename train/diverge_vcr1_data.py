@@ -42,8 +42,8 @@ def correction_user_content(question: str, draft: str) -> str:
         f"{DRAFT_OPEN}\n{draft}\n{DRAFT_CLOSE}\n\n"
         "Verify the first-pass draft against the original problem. If the draft "
         "is correct, preserve its result. If it is wrong, repair the reasoning "
-        "and answer. Return one complete response with concise verifiable "
-        "reasoning and put only the final answer inside \\boxed{}."
+        "internally. Return exactly one line in the form: Final answer: "
+        "\\boxed{answer}"
     )
 
 

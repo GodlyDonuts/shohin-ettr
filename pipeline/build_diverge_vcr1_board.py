@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from diverge_vcr1_data import tokenize_correction_example
+from hf_product_reasoning_eval import extract_boxed, extract_short_answer
 
 
 PAIR_SCHEMA = "shohin-product-verifier-preference-pairs-v1"
@@ -35,6 +36,19 @@ def _rank(seed: int, label: str, identity: str) -> str:
 
 def _normalized_question(value: str) -> str:
     return " ".join(value.casefold().split())
+
+
+def _terminal_target(group: str, chosen: str) -> tuple[str, str] | None:
+    if group == "math":
+        answer = extract_boxed(chosen)
+    elif group == "science":
+        answer = extract_short_answer(chosen)
+    else:
+        raise VCR1BoardError("preference training group differs")
+    if answer is None or not answer.strip():
+        return None
+    answer = answer.strip()
+    return answer, f"Final answer: \\boxed{{{answer}}}"
 
 
 def _excluded_questions(paths: list[Path]) -> set[str]:
@@ -125,6 +139,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
     admitted: dict[tuple[str, str], list[dict[str, Any]]] = {}
     rejected_overlap = 0
     rejected_length = 0
+    rejected_target_extraction = 0
     max_positions = 0
     for row in pairs:
         question = str(row["question"]).strip()
@@ -134,11 +149,17 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         identity = str(row["identity_sha256"])
         split_value = int(_rank(args.seed, "split", identity)[:16], 16) / 2**64
         split = "development" if split_value < args.development_fraction else "train"
+        group = str(row["training_group"])
+        target = _terminal_target(group, str(row["chosen"]))
+        if target is None:
+            rejected_target_extraction += 1
+            continue
+        target_answer, target_response = target
         wrong = tokenize_correction_example(
             tokenizer,
             question,
             str(row["rejected"]),
-            str(row["chosen"]),
+            target_response,
             max_sequence_length=args.max_sequence_length,
             workspace_slots=args.workspace_slots,
         )
@@ -146,7 +167,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
             tokenizer,
             question,
             str(row["chosen"]),
-            str(row["chosen"]),
+            target_response,
             max_sequence_length=args.max_sequence_length,
             workspace_slots=args.workspace_slots,
         )
@@ -158,9 +179,6 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
             len(wrong.prompt_ids) + args.workspace_slots + len(wrong.response_ids),
             len(correct.prompt_ids) + args.workspace_slots + len(correct.response_ids),
         )
-        group = str(row["training_group"])
-        if group not in {"math", "science"}:
-            raise VCR1BoardError("preference training group differs")
         admitted.setdefault((split, group), []).append(
             {
                 "schema": BOARD_SCHEMA,
@@ -171,7 +189,8 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
                 "question": question,
                 "wrong_draft": str(row["rejected"]).strip(),
                 "correct_draft": str(row["chosen"]).strip(),
-                "target": str(row["chosen"]).strip(),
+                "target_answer": target_answer,
+                "target": target_response,
                 "wrong_positions": len(wrong.prompt_ids)
                 + args.workspace_slots
                 + len(wrong.response_ids),
@@ -226,6 +245,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         "excluded_eval_files": [str(path.resolve()) for path in args.exclude_eval],
         "excluded_eval_questions": len(excluded),
         "rejected_exact_eval_overlap": rejected_overlap,
+        "rejected_target_extraction": rejected_target_extraction,
         "rejected_length": rejected_length,
         "available": available,
         "selected_train_rows": len(selected["train"]),
