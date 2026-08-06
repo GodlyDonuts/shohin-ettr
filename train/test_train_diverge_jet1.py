@@ -14,6 +14,8 @@ from diverge_mei1_data import EVIDENCE_COHORTS
 from train_diverge_jet1 import (
     EVAL_DEPTHS,
     QwenJET1,
+    _state_sha256,
+    _state_sha256_from_dict,
     build_gate,
     cosine_scale,
     tensorize_episodes,
@@ -141,9 +143,18 @@ def test_schedule_and_gate_contract() -> None:
     )["pass"]
 
 
+def test_state_hash_accepts_bfloat16() -> None:
+    module = nn.Linear(4, 3, bias=False).to(dtype=torch.bfloat16)
+    first = _state_sha256(module)
+    second = _state_sha256(module)
+    assert first == second
+    assert first == _state_sha256_from_dict(module.state_dict())
+
+
 def main() -> None:
     test_tensorization_and_joint_backward()
     test_schedule_and_gate_contract()
+    test_state_hash_accepts_bfloat16()
     print("DIVERGE-JET1 trainer tests passed", flush=True)
 
 

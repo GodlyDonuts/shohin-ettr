@@ -159,7 +159,7 @@ def _state_sha256(
         digest.update(name.encode("utf-8"))
         digest.update(str(raw.dtype).encode("ascii"))
         digest.update(str(tuple(raw.shape)).encode("ascii"))
-        digest.update(raw.numpy().tobytes())
+        digest.update(raw.view(torch.uint8).numpy().tobytes())
     return digest.hexdigest()
 
 
@@ -870,7 +870,7 @@ def _state_sha256_from_dict(state: dict[str, torch.Tensor]) -> str:
         digest.update(name.encode("utf-8"))
         digest.update(str(raw.dtype).encode("ascii"))
         digest.update(str(tuple(raw.shape)).encode("ascii"))
-        digest.update(raw.numpy().tobytes())
+        digest.update(raw.view(torch.uint8).numpy().tobytes())
     return digest.hexdigest()
 
 

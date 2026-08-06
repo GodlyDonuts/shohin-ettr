@@ -30222,3 +30222,17 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `repeat_only_the_jet1_mechanical_smoke_in_the_verified_product_python_environment`.
+
+- **2026-08-06 02:42--02:44 EDT** -- **JET1 replacement smoke `743296`
+  loads Qwen, then stops at the pre-training frozen-weight hash.**
+
+  The product environment works and all 473 exact Qwen tensors load on
+  `evc30`. Before optimizer creation, the integrity hasher attempts direct
+  NumPy conversion of a BF16 tensor and raises `TypeError: unsupported
+  ScalarType BFloat16`. No optimizer step, episode score, or architecture
+  result occurs. Hash the same contiguous bytes through a `torch.uint8` view
+  and add a BF16 regression test. This changes no tensor or scientific
+  contract; repeat the mechanical smoke once from a new immutable capsule.
+
+  Decision:
+  `fix_only_dtype_agnostic_tensor_hashing_then_repeat_the_jet1_smoke`.
