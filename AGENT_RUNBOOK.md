@@ -31049,3 +31049,24 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `kill_clause_global_tol1;_build_document_symbol_table_and_anchor_relational_compiler`.
+
+- **2026-08-05 18:23 EDT** -- **Zero-update TOL2 repairs binding but stops at
+  74.512% answers; local semantic anchors are now the exact next boundary.**
+
+  TOL2 adds no parameters or updates. It compiles one declaration-owned symbol
+  table, restricts all pointers to it, decodes guard regions separately, and
+  canonicalizes SWAP. On the opened TOL1 OOD board it raises answers from
+  172/1,024 to 763/1,024 and semantic programs to 749/1,024. This is a real
+  +57.715-point interface gain, but it misses the frozen 90%/90% thresholds;
+  no confirmation board was generated. Artifact hash is
+  `c8d3f112...1e4bea`.
+
+  Residuals are 277 top-level operation mistakes plus 89 local guard semantic
+  mistakes: six true opcodes, 39 false opcodes, and 44 comparators. Binding is
+  no longer the broad failure. Preserve the document quotient/relation graph;
+  replace global pooling with a learned position-free classifier over local
+  operation-anchor words and comparator phrases. Do not encode a runtime
+  verb-to-opcode dictionary and do not tune TOL2.
+
+  Decision:
+  `close_tol2_below_gate;_train_one_local_semantic_anchor_head_over_the_fixed_document_graph`.

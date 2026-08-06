@@ -56493,3 +56493,12 @@ changes. TOL1 is closed. The successor must make binding contextual and
 relational: one source-owned register table, local operation/comparison
 anchors, typed anchor-to-argument edges, separately decoded guard regions, and
 canonical symmetric operations.
+
+TOL2 tests that diagnosis without changing weights. A document-owned register
+table, typed anchor relations, separate guard regions, and symmetric SWAP
+canonicalization raise OOD answers from 16.797% to 74.512% and semantic
+programs to 73.145%. This is a large causal interface gain, but it misses the
+frozen 90% promotion threshold. The remaining 366 local semantic decisions are
+not binding failures: 277 top-level opcodes and 89 branch/comparator labels.
+The next bounded mechanism is therefore a position-free learned semantic-anchor
+head over the retained document relation graph, not more TOL1/TOL2 training.
