@@ -55666,3 +55666,17 @@ This proves structured compiler mechanics only. One bounded frozen-Smol neural
 seed is staged at 1,200 updates / 9,600 charged episodes. It must learn the raw
 roles, boundaries, and associations and clear the held-out packet floors before
 any additional seeds or end-to-end DIVERGE claim.
+
+The neural seed is now complete and closes SC1. Job `742328` fits the local
+supervision almost perfectly (`99.999994%` roles, `100%` boundaries,
+`98.381054%` pairs), but produces **zero exact autonomous packets** in train,
+lexical-shift, renderer-shift, and composition-shift cohorts. Gold-support
+recall is only `0.781%` even in train and zero in every shift; overflow ranges
+from `32.422%` to `58.984%`. This is the exact failure DIVERGE was designed not
+to hide: small local pair errors are amplified by the complete-record product
+and remove the valid world before recovery can begin. The remaining four seeds
+were canceled. A single no-gradient component-substitution audit is permitted
+to identify the necessary interface failure, but no SC1 threshold, width,
+duration, loss, or seed repair follows. Report/checkpoint SHA-256 values are
+`1a23d1aaae3276d54ec8d27abea266b822b0c9f28a058951dd2d942108d59059` /
+`7b5348cacb1772bf45e34442e94010db71a6be20bd8d689477d037ac5fee2ffd`.

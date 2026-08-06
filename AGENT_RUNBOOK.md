@@ -29615,3 +29615,26 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_exact_sc1_cpu_mechanics_to_one_raw_source_neural_seed_without_changing_diverge_execution`.
+
+- **2026-08-05 20:29--20:59 EDT** -- **DIVERGE-SC1 fails at autonomous
+  complete-object construction; four follow-on seeds canceled.**
+
+  Newton job `742328` completed 1,200 updates / 9,600 charged episodes on
+  `evc35`. Optimization was stable at 85.294 episodes/s and 796,946,432 peak
+  allocated bytes. Final local role/boundary/pair accuracies are
+  `99.999994% / 100% / 98.381054%`, but these local metrics do not compose.
+  Exact packets are zero on all four 256-episode cohorts. Gold support is
+  `0.781%` on train and zero on lexical, renderer, and composition shifts;
+  overflow is `58.984% / 47.266% / 32.422% / 40.625%`. Source-poison
+  invariance is 100%, the only passing executable gate.
+
+  Scheduler-held seeds `742329--742332` were canceled without allocation.
+  The report/checkpoint are read-only and hash-verified locally/Newton at
+  `1a23d1aa...59059` / `7b5348ca...2ffd`. Run one no-gradient component-
+  substitution audit only, using the existing CPU calibrated scores to replace
+  role, boundary, or pair factors. Do not tune thresholds, train more seeds,
+  widen, extend duration, alter losses, or claim an autonomous DIVERGE front
+  end from this family.
+
+  Decision:
+  `close_sc1_after_seed_one_and_localize_quadratic_pair_error_amplification_read_only`.

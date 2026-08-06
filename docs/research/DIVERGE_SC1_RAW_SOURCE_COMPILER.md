@@ -1,6 +1,6 @@
 # DIVERGE-SC1 Raw-Source Object Compiler
 
-**Status:** architecture frozen; CPU cap calibrated before neural results
+**Status:** closed by the first neural seed; read-only localization pending
 
 **Decision date:** 2026-08-05
 
@@ -154,6 +154,13 @@ The frozen neural pass gate is:
 - source deletion and post-seal poison invariance exactly `100%`; and
 - at least 20-point collapse for the causally relevant E/F/G controls.
 
+The second and fourth bullets overlap. For adjudication, the stricter written
+requirement controls: **every shifted exact-packet cohort must reach at least
+95%**. The executable's `>=90%` `shift_packet` field is only a coarse process
+exit condition for dependency dispatch and cannot override this scientific
+floor. Follow-on seeds remain scheduler-held until the report is checked
+against the stricter threshold.
+
 Failure closes this raw-source compiler family. Passing authorizes one
 end-to-end DIVERGE packet/recovery evaluation, not long pretraining.
 
@@ -206,3 +213,63 @@ Calibration/final report SHA-256 values are
 This establishes exact and nontrivial structured mechanics under synthetic
 scores only. It authorizes one neural raw-source seed; it is not learned
 language evidence.
+
+## 9. Reconciliation with the external architecture proposal
+
+The external proposal's central prescription is retained: premature certainty
+must be structurally avoidable, incompatible worlds must remain coherent, and
+commitment must be licensed by evidence or query invariance. Its individual
+ingredients are not treated as novel. Version spaces, guarded execution,
+particles, conflict clauses, typed state, and source deletion all have prior
+art.
+
+The empirical record narrows the proposal in two ways:
+
+1. Resource-corrected DIVERGE-v4 misses its frozen sharing gate at four worlds
+   (`1.893x`, below `2x`). The current claim is therefore restricted to the
+   observed high-ambiguity regime, where sharing first clears the threshold at
+   eight worlds and grows to `27.365x` at 64 worlds.
+2. The protected token-role compiler was not autonomous because it received
+   gold record/option segmentation. SC1 is the first bounded test of whether a
+   single raw-source pass can construct the coherent packet. A pass qualifies
+   this source boundary; a failure leaves DIVERGE as exact synthetic mechanics
+   without a learned raw-language front end.
+
+This reconciliation also supersedes the review's original FCPT recommendation.
+PCSD and FCPT remain closed by their measured negatives. Full particles remain
+the principal matched scaffold/control, while CSDC's protected role-copy result
+is not replaced or weakened.
+
+## 10. Neural result
+
+Newton job `742328` completed all 1,200 updates / 9,600 charged episodes, wrote
+its immutable report and checkpoint, and exited nonzero because the capability
+gate failed. Training itself was stable and deceptively strong: final role,
+boundary, and pair accuracies were `99.999994%`, `100%`, and `98.381054%`;
+loss was `0.061805`; throughput was `85.294` episodes/s; peak allocated GPU
+memory was 796,946,432 bytes.
+
+Autonomous complete-object decoding failed decisively:
+
+| Cohort | Gold support | Exact packet | Overflow |
+|---|---:|---:|---:|
+| Train | 0.781% | 0% | 58.984% |
+| Lexical shift | 0% | 0% | 47.266% |
+| Renderer shift | 0% | 0% | 32.422% |
+| Composition shift | 0% | 0% | 40.625% |
+
+Alpha-renamed exactness, independent decode, pair-disabled decode, and
+boundary-shuffled decode are all zero. Post-seal source-poison invariance is
+100%, but that is the only passing executable gate. The four held follow-on
+seeds `742329--742332` were canceled without allocation.
+
+The immediate diagnosis is combinatorial error amplification, not insufficient
+local fit: a small false-positive rate in a quadratic pair graph creates enough
+plausible complete records to erase support or hit the hard proposal cap. One
+no-gradient audit may substitute the already-accepted CPU oracle role,
+boundary, and pair scores componentwise to localize the necessary failure. It
+may not search thresholds, update weights, or reopen SC1.
+
+Report/checkpoint SHA-256 values are
+`1a23d1aaae3276d54ec8d27abea266b822b0c9f28a058951dd2d942108d59059` /
+`7b5348cacb1772bf45e34442e94010db71a6be20bd8d689477d037ac5fee2ffd`.

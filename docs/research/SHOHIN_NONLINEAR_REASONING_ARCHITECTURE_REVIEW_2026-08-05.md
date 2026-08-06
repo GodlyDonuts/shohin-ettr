@@ -135,13 +135,28 @@ qualifies the compiler only. The full resource-matched A--G matrix, late-query
 types, causal interventions, and sharing receipts remain required before any
 architecture claim.
 
-The subsequent balanced, source-sealed A--G CPU gate passes all five compiler
-seeds. Full DIVERGE is 100% over 2,160 late queries; the strongest A--F controls
-are soft aggregation and no-conflict factorization at 66.667%. Whole particles
-are capped by the same packet-byte and unique-transaction budgets and score
-33.333%. This is the first complete positive DIVERGE mechanism result, but its
-scope is still a finite synthetic grammar with an exact delayed-key binder.
-CUDA resource profiling and broader learned-language transfer remain open.
+The subsequent balanced, source-sealed A--G CPU gate initially appeared to
+pass all five compiler seeds, but that V3 result is not accepted: its executor
+materialized one state per world while charging only static packet bytes. The
+resource-corrected V4 bitset/state-group runtime keeps DIVERGE at 100% over
+2,160 late queries, but the fair whole-particle control rises to 72.222% and
+the sharing ratio at four worlds is only `1.893x`, below the frozen `2x` gate.
+Broad DIVERGE promotion is therefore negative. The retained result is narrower:
+exact delayed recovery and increasing factorized savings at eight or more
+worlds, reaching `27.365x` storage savings at 64 worlds.
+
+The qualified token-role source compiler also contained a hidden scaffold: it
+received each gold record and option in a separate model call. DIVERGE-SC1
+tested the missing boundary with one unsegmented raw-source pass, token-role,
+gap-boundary, and pairwise binding scores, and one complete-object decoder.
+Its exact CPU mechanics pass 1,000/1,000 episodes, but its one frozen neural
+seed is a decisive negative. Local role/boundary/pair accuracies reach
+`99.999994% / 100% / 98.381054%`, yet exact packets are zero in train and all
+three shifts, support recall is at most 0.781%, and 32.422--58.984% of episodes
+overflow. Follow-on seeds were canceled. One read-only component substitution
+audit may localize this combinatorial amplification; it cannot reopen SC1.
+DIVERGE therefore still lacks a learned autonomous raw-source front end and
+has no unrestricted language claim.
 
 ## Terminology
 
