@@ -30641,3 +30641,35 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_exact_crp1_preserve_real_arithmetic_register_revision_and_replace_frozen_language_replay_with_persistent_model_owned_state_execution`.
+
+- **2026-08-06 08:47--09:35 EDT** -- **DIVERGE-RSM1 persistent discrete
+  state replay is frozen and locally qualified for one component gate.**
+
+  RSM1 retains the immutable guarded CRP1 source/packet and replaces the
+  frozen language generator after selection. One selected whole packet must
+  decode to a 24-slot hard byte state. A tied 256-wide recurrent transition
+  consumes only each rendered operation phrase, emits a hard straight-through
+  byte state, and receives only that emitted state on the next step. The
+  terminal state is the answer; no LM generation, program object, host
+  execution, beam, retry, or fieldwise averaging exists in the candidate
+  runtime.
+
+  The CPU supervisor reconstructs exact trajectories for all 5,760 existing
+  CRP1 rows: 1,600 train / 160 development / 160 evaluation rows per scalar,
+  register, and symbolic family, maximum state text length nine, trajectory
+  digest `b286a5fef8b2b970b968cf8e35dd76b7dd0679d10fc4080c5d249d8f1f318518`.
+  Operation masks are constrained inside the original step span and exclude
+  every claimed successor state. Ten train-side tests plus two gate tests,
+  Ruff, Python compilation, Bash parsing, and diff checks pass locally.
+
+  The sole component run uses seed `2026080605`, 1,600 updates, eight board
+  identities / 16 wrong-correct traces per update, 1,600-row/family data,
+  state width 256, equal selected-boundary/free-running/oracle-one-step
+  losses, and a fixed cosine AdamW schedule. Promotion requires 432/480 exact
+  forced terminal states, 136/160 per family, 128/160 complete hard replay
+  trajectories per family, zero invalid states or semantic runtime calls, and
+  unchanged source/packet tensors. Only that pass authorizes autonomous and
+  unguarded controls. No neural result exists at this freeze point.
+
+  Decision:
+  `run_one_two_update_mechanical_smoke_then_one_guarded_1600_update_component_gate;_do_not_launch_autonomous_controls_on_component_failure`.

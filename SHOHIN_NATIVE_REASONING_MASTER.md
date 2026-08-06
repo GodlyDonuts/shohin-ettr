@@ -56273,3 +56273,31 @@ Immutable receipts:
   `93e7e71db74e1f4efe68d13b028157cdaea449bb34e2f8e8bdc528af40ce4ced`;
 - gate report:
   `cdd5a717e55cb3c589fecdefc7455a83903f9ef68376b822c3846f9da7573e8c`.
+
+### DIVERGE-RSM1 persistent discrete state replay (frozen 2026-08-06)
+
+RSM1 tests the specific substrate CRP1 lacked. It freezes the successful
+guarded CRP1 localizer and removes the post-selection language generator. The
+selected whole packet initializes one 24-byte discrete state; one tied
+256-wide recurrent core consumes the remaining rendered operation phrases,
+emits a hard straight-through state after every step, and receives only that
+emitted state at the next step. The terminal hard state is the answer. Exact
+program objects and state trajectories are supervisor/assessor data only.
+
+This is an ordered component test, not a new result. Training first forces the
+gold CRP1 selection and uses equal selected-boundary, autonomous hard-replay,
+and gold-predecessor one-step losses. The frozen budget is 1,600 updates at
+eight board identities per update, seed `2026080605`, and about 2.67 passes
+over the 4,800-row training board. The existing 480-row OOD board remains the
+only component evaluation.
+
+The pre-neural CPU contract passes across all 5,760 rows. Scalar, register,
+and symbolic trajectories reconstruct exactly, all state strings round-trip
+through one shared vocabulary, maximum state text length is nine, and the
+trajectory digest is
+`b286a5fef8b2b970b968cf8e35dd76b7dd0679d10fc4080c5d249d8f1f318518`.
+Executor masks include only operation phrases and exclude rendered successor
+states. The component must reach 432/480 forced exact terminals, 136/160 in
+every family, and 128/160 exact complete hard trajectories per family with
+zero malformed states or changed frozen tensors. Failure closes RSM1 before
+autonomous controls. At this freeze point, no H100 result exists.
