@@ -35,3 +35,21 @@ guard exact, with zero accepted malformed packets.
 A miss kills this local-anchor design. A pass permits one fresh confirmation
 renderer under the already frozen TOL2 thresholds. No width, duration, or seed
 variants are authorized.
+
+## Development result and confirmation contract
+
+The one fit completes in 6.844 seconds on CPU with 28,109 parameters and
+reaches 68/68 exact deduplicated snippets. Checkpoint SHA-256 is
+`b8b9dfe54b7ab4a31a74739625b8650fa4ee93a41221ab5d82610ebc1c030328`.
+On the opened 1,024-row TOL1 OOD board, TOL3 reaches 1,024 exact programs and
+answers, all 2,506 guard clauses exact, and zero invalid rows. Development
+report SHA-256 is
+`b86187b2bad4f3f953acfc2aa9665ae69fa944404f488dc80b3c17269277b40e`.
+
+This pass authorizes one fresh 1,024-row confirmation board at seed
+`2026080506`. It uses disjoint register names, body depth 15--20, recombined
+direct-action orders, and the previously unused
+`otherwise FALSE; if PREDICATE, then TRUE` guard order. The unchanged
+checkpoint must satisfy the same four 90% exactness conditions and accept no
+malformed packet. No result-dependent renderer or decoder changes are
+permitted after the board hash is materialized.
