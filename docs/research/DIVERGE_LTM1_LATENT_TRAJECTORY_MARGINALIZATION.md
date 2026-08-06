@@ -115,10 +115,13 @@ without changing the scientific contract.
 - One seed: `2026080601`.
 - 100 updates, 16 selected rows, context 1,024.
 - One LTM1 arm and one exact LoRA-only B1 control.
+- Both arms receive the same 1,016 logical prompt/response token budget. LTM1
+  appends eight latent slots to reach 1,024 backbone positions; B1 receives no
+  hidden prefix. Final NLL is compared with identical per-token weighting.
 
 LTM1 qualifies for broad training only if:
 
-- final mean response NLL is no worse than B1;
+- final token-weighted response NLL is no worse than B1;
 - all 16 examples improve from update zero under teacher forcing;
 - selected-trajectory trace cosine similarity is at least 0.90;
 - at least two of four trajectory IDs are selected across the 16 prompts;

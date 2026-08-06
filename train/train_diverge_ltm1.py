@@ -37,6 +37,7 @@ def _audit_fit(
     nlls: list[float] = []
     trace_cosines: list[float] = []
     prior_indices: list[int] = []
+    charged_tokens: list[int] = []
     losses: list[float] = []
     with torch.inference_mode():
         for offset in range(0, len(rows), batch_size):
@@ -59,11 +60,20 @@ def _audit_fit(
                 float(value) for value in metrics["trace_cosine_rows"]
             )
             prior_indices.extend(int(value) for value in metrics["prior_indices"])
+            charged_tokens.extend(len(response) for response in response_rows)
     model.train()
+    token_total = sum(charged_tokens)
     return {
         "loss": sum(losses) / len(losses),
         "prior_selected_nll_rows": nlls,
         "mean_prior_selected_nll": sum(nlls) / len(nlls),
+        "token_weighted_prior_selected_nll": sum(
+            nll * tokens
+            for nll, tokens in zip(nlls, charged_tokens, strict=True)
+        )
+        / token_total,
+        "charged_tokens_rows": charged_tokens,
+        "charged_tokens": token_total,
         "trace_cosine_rows": trace_cosines,
         "mean_trace_cosine": sum(trace_cosines) / len(trace_cosines),
         "prior_indices": prior_indices,

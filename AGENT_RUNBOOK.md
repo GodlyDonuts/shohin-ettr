@@ -30336,3 +30336,26 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `repair_only_read_only_bytecode_output_then_repeat_the_ltm1_smoke`.
+
+- **2026-08-06 03:31--03:33 EDT** -- **LTM1 replacement smoke `743303`
+  completes; the exact 16-row matched fit is released.**
+
+  Immutable source `135301a` passes all seven workspace tests, loads all 473
+  pinned Qwen tensors, performs two finite four-trajectory updates, writes its
+  checkpoint/report atomically, and verifies every frozen parameter unchanged.
+  LTM1 has 4,911,621 trainable parameters and peaks at 9,092,630,016 allocated
+  CUDA bytes. Across four smoke examples, source-prior selected NLL falls from
+  1.48573 to 1.31936 and all four improve; trace cosine rises from 0.02248 to
+  0.07498 and two trajectory IDs remain selected. The expected two-update
+  failure of the 0.90 trace threshold is not scientific evidence.
+
+  Before fit release, the reporting contract is tightened without changing
+  computation: LTM1 now records token-weighted selected NLL so it can be
+  compared exactly with the existing B1 fit scorer. Both arms consume the
+  same 1,016 logical prompt/response budget; LTM1 adds eight latent slots to
+  reach 1,024 backbone positions. Smoke checkpoint/report hashes are
+  `31a2e981e8f2f40c72735a9360b459de6284cacbc412914a451b9d151a42a0ff` /
+  `995819c864a8e3c7ded3946360108b5f5e70075581f57cb0d1cfc229e420c77b`.
+
+  Decision:
+  `run_one_ltm1_100_update_fit_and_one_exact_b1_control_then_apply_the_frozen_conjunctive_gate`.
