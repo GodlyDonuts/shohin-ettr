@@ -32,6 +32,8 @@ class ProbeEvidence:
     before: tuple[int, ...]
     after: tuple[int, ...]
     program: int | None
+    renderer: int
+    noise: int
 
 
 def exact_program(
@@ -123,15 +125,23 @@ def generate_probe_evidence(
         "composition_shift": 2,
     }
     renderer = rng.randrange(renderer_counts[cohort])
+    noise = rng.randrange(1000, 9999)
     words = render_probe(
         before,
         after,
         cohort=cohort,
         renderer=renderer,
-        noise=rng.randrange(1000, 9999),
+        noise=noise,
     )
     return ProbeEvidence(
-        f"mei1-probe-{cohort}-{seed}", cohort, words, before, after, program
+        f"mei1-probe-{cohort}-{seed}",
+        cohort,
+        words,
+        before,
+        after,
+        program,
+        renderer,
+        noise,
     )
 
 

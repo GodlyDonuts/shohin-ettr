@@ -30068,3 +30068,25 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `retain_the_qualified_model_owned_algebra_but_replace_fixed_field_evidence_with_structural_mention_binding`.
+
+- **2026-08-06 01:02 EDT** -- **DIVERGE-MQB1 structural whole-mention binder
+  is frozen as the single successor to the failed MEI1 evidence head.**
+
+  MQB1 leaves the four MEI1 evidence cohorts, frozen HSC1 source encoder,
+  1,600-update/102,400-example budget, and qualified executor/query state
+  unchanged. It predicts value, phase, and address from one contextual source
+  mention, then uses an exact typed assignment to choose ten distinct mention
+  objects. Values can never be detached from the selected address mention or
+  averaged across fields. Learned before/after same-address certificates must
+  also pass or the packet abstains.
+
+  The gate is frozen before code or neural results in
+  `docs/research/DIVERGE_MQB1_STRUCTURAL_MENTION_BINDER.md`. It requires >=99%
+  before state, after state, and complete assignment exactness in every cohort,
+  >=99.9% selected-value exactness, perfect integrity/source audits, and strong
+  causal collapse under value and field-score interventions. There is one seed
+  and no width/duration/loss/renderer/optimizer repair. Full DIVERGE composition
+  remains blocked unless every component condition passes.
+
+  Decision:
+  `run_one_structural_mention_binding_gate_then_compose_once_only_on_a_conjunctive_pass`.
