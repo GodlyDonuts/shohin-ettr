@@ -30236,3 +30236,25 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `fix_only_dtype_agnostic_tensor_hashing_then_repeat_the_jet1_smoke`.
+
+- **2026-08-06 02:47--02:49 EDT** -- **JET1 mechanical smoke `743297`
+  completes and releases the one frozen scientific gate.**
+
+  Immutable source `751035c` runs end to end on `evc30` in 44 seconds. It
+  loads the exact pinned Qwen artifact, passes both standalone suites, creates
+  31 LoRA projections, performs two joint optimizer updates, evaluates all 16
+  treatment/control cells, verifies every frozen non-LoRA tensor unchanged,
+  and atomically writes both artifacts. The candidate has 2,317,961 trainable
+  parameters: 901,888 source LoRA and 1,416,073 trajectory parameters. Peak
+  allocated CUDA memory is 3,160,756,224 bytes.
+
+  The two-update capability gate is expectedly false and is not evidence.
+  Its purpose was mechanical. Smoke report/checkpoint SHA-256 values are
+  `4e3a021bbff864c120fb2af7f1c2d2af661c6bcde56f027e4de56001c1a4b2bd` /
+  `249c6d6439cc326cf75b695bcfbecb5def5dfbc7e1a11f926db7304511fa80b9`.
+  The full 1,600-update scientific job is `743298`, launched from the same
+  read-only capsule with unchanged seed, model, board, losses, controls, and
+  gates.
+
+  Decision:
+  `run_job_743298_to_completion_then_accept_or_close_jet1_without_variants`.
