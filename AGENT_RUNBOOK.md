@@ -31178,3 +31178,61 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `freeze_nfe1_as_the_first_source_disjoint_learned_evidence_pass;_next_test_broader_natural_program_and_evidence_compilation_without_nfe1_variants`.
+
+- **2026-08-06 12:13--14:32 EDT** -- **DIVERGE-NVE1 passes natural variable,
+  rational, predicate, and stateful evidence composition on every frozen
+  condition.**
+
+  Private commit `5ca88f6` freezes the gate. `ada830d` implements one
+  435,076-parameter two-layer bidirectional byte GRU with hard `STEP/VALUE`
+  and `TARGET/DISTRACTOR` permutations. The first build correctly stopped on
+  an accidental confirmation-to-confirmation uniqueness requirement not
+  present in the preregistration. Before any artifact or model result,
+  `da2adcd` removes only that extra check, reports duplicates, and removes two
+  redundant full-world audits. Seeds, examples, renderers, model, and gates do
+  not change. `fbb2f33` strengthens evaluator parity and answer typing before
+  confirmation is opened.
+
+  Data contain 50,000 training statements and a fresh 256-episode board with
+  3,072 natural evidence items, 12 binary fault lines per episode, and
+  1,048,576 represented worlds. Held layouts contribute 1,024 items each.
+  Four confirmation occurrences repeat within confirmation; exact overlap
+  with training is zero and no model score enters selection. Training/board/
+  report hashes are `7eb27276...5b35`, `23e06c65...0add`, and
+  `54aaf1d5...40e7`.
+
+  Newton H100 requests `743985` (one hour) and `743987` (20 minutes) remained
+  pending priority; the shorter request had a three-hour start estimate. Both
+  were canceled before execution, and the unchanged run completed locally.
+  Exactly 1,000 AdamW updates process 25,618,773 source bytes in 2,582.580
+  seconds. Numeric, symbol, and joint training assignments are 50,000/50,000.
+  Checkpoint/model-state/report hashes are
+  `16108154...00ff`, `ab321d50...5fcd`, and `d6bc7bb0...f67c`.
+
+  Confirmation is exact: TOL3 compiles 256/256 programs, preserves two options
+  at all 3,072 faults, and retains gold support. Natural evidence compilation
+  is 3,072/3,072, including 1,024/1,024 per held renderer, and all 256 sets
+  seal. Initial top-1 is wrong in all 256 episodes. Top-1/equal-memory
+  particles score 0/256; no evidence abstains 256/256; oracle typed, soft after
+  evidence, and learned natural factorization each score 256/256. Exact
+  factorized maps match independent enumeration.
+
+  Shuffled evidence, both forced role swaps, state reset, and operation shift
+  score zero. All packet/query swaps reject; post-seal poison is invariant;
+  no wrong source/packet/sentence/step/target/distractor/value receipt is
+  accepted; false commitments, malformed packets, gold deletions, and
+  overflows are zero. Complete particles use 11,320,697,243 bytes versus
+  4,788,501 factorized bytes (2,364.142x). Shared work is 7,639,040 logical /
+  9,472 unique applications (806.486x). Evaluation takes 1,432.164 seconds;
+  SHA-256 is `2cda0580...2d6c3`.
+
+  This qualifies the controlled natural interface, not open-domain reasoning.
+  Grammar, lexical proposals, source symbol table, operation vocabulary,
+  rational executor, and verifier remain engineered. Do not run NVE1 variants
+  or continuation pretraining. Implement one integrated trainable DIVERGE
+  module over source semantics, coherent factorized state, evidence
+  refinement, execution, and late query readout, retaining TFS1/NVE1 as
+  protected controls.
+
+  Decision:
+  `freeze_nve1_as_a_complete_controlled_natural_interface_pass;_next_build_one_jointly_trainable_diverge_module_without_continuation_pretraining`.

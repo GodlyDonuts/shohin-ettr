@@ -2,6 +2,32 @@
 
 ## Current Status — Read First
 
+**Current architecture result (2026-08-06 14:32 EDT): DIVERGE-NVE1 passes the
+complete natural-variable evidence gate.** One 435,076-parameter,
+position-free byte GRU learns hard `STEP/VALUE` and `TARGET/DISTRACTOR`
+permutations from 50,000 statements. On 256 fresh programs with 3,072 natural
+evidence sentences and 1,048,576 represented worlds, it compiles every receipt
+exactly across three unseen layouts. The protected TOL3 compiler also retains
+all 3,072 two-option fault lines and gold support.
+
+Premature top-1 and equal-memory particles score `0/256`; no-evidence support
+abstains `256/256`; oracle typed and learned natural evidence each recover
+`256/256`, including all 256 initially wrong top-1 programs. Shuffled evidence,
+both forced role swaps, state reset, and operation shift score zero; all query
+swaps reject; source poisoning is invariant; invalid receipts, false
+commitments, gold deletions, malformed accepted packets, and overflows are
+zero. Complete particles require 2,364.142x the canonical storage, and shared
+execution maps 7,639,040 logical applications to 9,472 unique applications
+(806.486x). Evaluation SHA-256 is `2cda0580...2d6c3`.
+
+This is a strong controlled mechanism result, not open-domain reasoning. The
+grammar, lexical candidate scanners, register table, exact rational executor,
+and verifier remain engineered. Freeze NVE1 without variants. The one
+authorized successor is an integrated trainable DIVERGE module that learns
+source semantics, coherent version-space state, refinement, execution, and
+late readout jointly while retaining NVE1/TFS1 as protected controls. See
+`docs/research/DIVERGE_NVE1_NATURAL_VARIABLE_EVIDENCE_RESULT.md`.
+
 **Current architecture result (2026-08-06 08:46 EDT):** DIVERGE-CRP1 is
 closed after its one frozen matched gate. On 480 complete explicit-wrong OOD
 traces, prompt-only / unguarded / guarded score `1 / 194 / 213`; guarded
@@ -56607,3 +56633,43 @@ remain engineered. NFE1 receives no variants and does not unlock continuation
 pretraining. The next boundary is a learned natural compiler over variables,
 predicates, and noncommuting stateful updates using the same sealed factorized
 mechanics.
+
+### DIVERGE-NVE1 result: natural variable and predicate evidence passes
+
+NVE1 composes the protected TOL3 compiler and TFS1 runtime with one new
+435,076-parameter evidence compiler. The model sees a complete natural
+evidence sentence, two numeric/rational mention candidates, and repeated
+source-owned register identity groups. It must assign hard `STEP/VALUE` and
+`TARGET/DISTRACTOR` permutations before exact parsing. The sealing boundary
+does not repair an incorrect assignment: only a fully committed natural
+receipt can become the unchanged typed TFS1 equality receipt.
+
+The training set has 50,000 independent statements across six layouts. The
+fresh board has 256 programs, 3,072 natural evidence items across three held
+layouts, 12 binary semantic fault lines per program, and 1,048,576 coherent
+worlds. Training/board/report hashes are `7eb27276...5b35`,
+`23e06c65...0add`, and `54aaf1d5...40e7`; exact train/confirmation sentence
+overlap is zero.
+
+The frozen 1,000-update model fits all 50,000 assignments and transfers
+3,072/3,072 exact receipts, 1,024/1,024 in every held layout. TOL3 remains
+256/256 exact and preserves both options at all 3,072 faults. All 256 top-1
+programs are wrong. Top-1 and equal-memory particles score zero; no-evidence
+support abstains 256/256; oracle typed and learned natural evidence each solve
+256/256 with complete extensional parity and gold preservation.
+
+Shuffled evidence, target/distractor swap, step/value swap, state reset, and
+operation shift score zero. Query swaps reject universally and post-seal
+source poison is bit-invariant. No invalid receipt, false commitment,
+malformed packet, gold deletion, or overflow is accepted. Complete particles
+charge 11,320,697,243 bytes versus 4,788,501 factorized bytes (2,364.142x);
+shared work is 7,639,040 logical versus 9,472 unique applications (806.486x).
+Checkpoint and evaluation hashes are `16108154...00ff` and
+`2cda0580...2d6c3`.
+
+NVE1 qualifies the controlled natural interface but does not establish general
+reasoning. The evidence grammar, numeric scanner, source symbol table, typed
+operation set, exact executor, and verifier remain engineered. NVE1 receives
+no variants and does not unlock continuation pretraining. Its pass authorizes
+one jointly trainable DIVERGE model over source compilation, factorized state,
+evidence refinement, execution, and late query readout.
