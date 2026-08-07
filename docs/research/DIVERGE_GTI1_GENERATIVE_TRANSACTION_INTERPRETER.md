@@ -104,3 +104,36 @@ scratch-training target. If every real arm fails, the isolated semantic-parser
 sequence is closed; the next system must learn transaction semantics inside a
 broader end-to-end natural task rather than add another token/span/pointer or
 renderer-local reader.
+
+## 6. Result: closed negative
+
+Immutable commit `4e3b6c5` ran matched one-H100 jobs
+`744544/744545/744546`; assessor `744547` wrote its report and exited `1` on
+the frozen gate. All three arms completed exactly 782 updates. Training
+exactness is `99,291/100,000` for Shohin, `99,989/100,000` for SmolLM2, and
+`50,060/100,000` against shuffled supervision (`49,486/100,000` against true
+roles). The shuffled arm therefore stays at chance while both real arms fit.
+
+Transfer is negative:
+
+| Arm | Development QUERY | Exact renderers |
+|---|---:|---|
+| Shohin | `512/768` | 1, 2, 3, 5 |
+| SmolLM2 | `384/768` | 1, 3, 5 |
+| shuffled SmolLM2 | `384/768` | 2, 3, 4 |
+
+Every miss is a complete `0/128` renderer block. Context scrub is exactly
+`384/768` with zero mean signed margin for every arm. Mention swapping is not
+equivariant, while entity-renaming prompts, predictions, and score tensors are
+bit-exact and every non-LoRA tensor remains unchanged. The system learned
+template-level transaction lookup rather than target/distractor meaning.
+
+Development-result SHA-256 values are
+`b81677ac3a26b55abb2151b3fb66860c2537ba8393504aedee15add7b71eaf96`,
+`1c4b759e56f1c3902ba26874577dbf98369630d78c185bef244f05c2d0826002`,
+and `b06b874e0fe447b18a1b4d5e717656beb28e060b91ce7bcd560e970ce1f6498f`.
+The matched assessment SHA-256 is
+`62176a6409700f89c185c888f8697badf8fda3037c2568b8f800f90a89edf231`.
+Fail-closed confirmation job `744549` was canceled by dependency and the
+sealed board was never opened. GTI1 is closed without prompt, LoRA, layer,
+duration, seed, renderer, tokenizer, or data variants.

@@ -31514,3 +31514,41 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_sti1_renderer_shortcut;_do_not_admit_npl1;_preserve_pl1_oracle_mechanics;_freeze_a_pretrained_counterfactual_semantic_compiler`.
+
+- **2026-08-07 00:00--00:46 EDT** -- **DIVERGE-PQI1 closes: stronger
+  pretraining does not rescue the pooled semantic interface.**
+
+  Matched jobs `744506/744507/744508` score protected Shohin and exact
+  SmolLM2 at the identical `640/768`, versus shuffled SmolLM2 at `128/768`.
+  Both real arms are exact on renderers 0--4 and exactly wrong on renderer 5;
+  role-slot swap reverses that block, context scrub falls to `384/768`, and
+  entity renaming is bit-exact. Assessor SHA-256 is `c8b482de...db48` and
+  confirmation remains unopened.
+
+  Fixed-prompt read-only causal-LM jobs `744542/744543` independently score
+  both raw parents at `384/768`, exact on renderers 0/2/4 and zero on 1/3/5.
+  Stokes job `767010` reproduces the sealed board byte-for-byte at SHA-256
+  `27f19868...01b8`. Close PQI1 without variants.
+
+  Decision:
+  `close_pqi1_pooled_pretrained_grounding;_preserve_sealed_board;_change_the_computation_boundary`.
+
+- **2026-08-07 00:46--01:04 EDT** -- **DIVERGE-GTI1 fits but does not
+  transfer; isolated semantic parsing is closed.**
+
+  Commit `4e3b6c5`, archive SHA-256 `29d06111...7454`, and jobs
+  `744544/744545/744546` run the frozen one-epoch final-four-block LoRA arms.
+  Training exactness is `99,291/100,000` Shohin, `99,989/100,000` SmolLM2,
+  and chance for shuffled SmolLM2. Development is only `512/768`, `384/768`,
+  and `384/768`; every failure is a complete renderer block. Context scrub is
+  exactly chance with zero margin, mention swap is not equivariant, entity
+  renaming is bit-exact, and non-LoRA tensors remain frozen.
+
+  Assessor `744547` writes negative SHA-256 `62176a64...f231` and exits `1`;
+  dependency-held confirmation `744549` cancels without opening the sealed
+  board. Close GTI1 without local variants. Run one read-only candidate-wise
+  Qwen entailment ceiling, then freeze an outcome-grounded full-episode
+  successor rather than another role-label parser.
+
+  Decision:
+  `close_gti1_renderer_lookup;_keep_confirmation_sealed;_ground_transactions_through_downstream_consequences_and_intervention_orbits`.

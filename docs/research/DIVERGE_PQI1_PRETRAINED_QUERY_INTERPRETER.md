@@ -81,3 +81,30 @@ Only a full composite pass may activate the already frozen natural PL1
 contract on development data. PQI1 does not authorize continuation pretraining
 or establish open-domain reasoning by itself.
 
+## Result: closed negative
+
+Matched H100 jobs `744506/744507/744508` and assessor `744512` completed the
+single development gate. Protected Shohin and exact imported SmolLM2 both
+score `640/768`; shuffled SmolLM2 scores `128/768`. The two real arms emit the
+same assignment vector: renderers 0--4 are each `128/128`, while renderer 5 is
+`0/128`. Forced role-slot swap makes renderer 5 exact and all others zero.
+Context scrub falls to `384/768`; arbitrary entity renaming is bit-exact. The
+stronger pretrained residual therefore does not change the failure through
+this pooled mention-scoring interface.
+
+The matched assessment SHA-256 is
+`c8b482de5384e8b75796c34436948e26927bde3ef3289deb696322582ab0db48`.
+The three development-result SHA-256 values are
+`e7bdfbfc7c5e077f390de8a4dd870cfc303ae55236d4aa23664632594f09b3bb`,
+`588ad26fa2ee88c3f03c9e06b433c91712f16e963fbe190854191f875fb62e2d`,
+and `7ebb61273220bcf4b67e18cf49985c65fab73748fb81be68898a84a0d9a6f7a7`.
+Confirmation stayed sealed.
+
+Read-only autoregressive attribution jobs `744542/744543` score both raw
+backbones at `384/768`, with renderers 0/2/4 exact and 1/3/5 zero. Their result
+hashes are `fc53ad879ecd6a42c7906509879ebc47fca7105dd34b9b24d2d702a080d87f5e`
+and `b92c481ad0efe12d4895f6146d317ad97fb2978264bc2791fbdd947bfc332f1e`.
+Independent Stokes job `767010` regenerated the sealed board byte-for-byte
+with SHA-256
+`27f198680cc7bcd7e0203949fe4dee1658fc057fe75302b7e2d43d74321201b8`.
+PQI1 is closed without variants.

@@ -56943,3 +56943,27 @@ variants. The positive PL1 result remains oracle-typed. The next admissible
 lane must replace the fresh surface classifier with a structurally different,
 pretrained and counterfactually grounded semantic compiler before plasticity
 can consume natural transactions.
+
+### DIVERGE-PQI1 and GTI1: pretraining and autoregressive emission do not fix semantic shortcuts
+
+PQI1 compares the same pooled candidate scorer over protected Shohin and
+SmolLM2-135M. Both score the identical `640/768`, with one complete held
+renderer inversion; shuffled supervision reaches `128/768`. Fixed-prompt raw
+causal-LM attribution is only `384/768` for both parents. Independent Stokes
+job `767010` reproduces the sealed board byte-for-byte at SHA-256
+`27f19868...01b8`. PQI1 is closed and confirmation stays unopened.
+
+GTI1 changes the interface to final-four-block LoRA and autoregressive
+`READ(alpha|beta)` transaction likelihood. SmolLM2 fits `99,989/100,000` and
+Shohin fits `99,291/100,000`, while shuffled supervision stays at chance. Yet
+held transfer is only `384/768` and `512/768`; every error is an entire
+renderer block and mention swapping is not equivariant. Assessor SHA-256 is
+`62176a64...f231`; fail-closed confirmation never starts.
+
+The combined result is stronger than another capacity or output-format
+failure: both shallow pooled scoring and adapted causal transaction emission
+memorize lexical layouts without learning target/distractor meaning. The next
+mechanism must remove direct renderer-local role fitting and identify latent
+transactions through complete downstream state/answer consequences under
+same-meaning, clause-order, entity-renaming, and role-reversal intervention
+orbits.
