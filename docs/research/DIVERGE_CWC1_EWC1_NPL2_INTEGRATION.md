@@ -1,6 +1,6 @@
 # DIVERGE CWC1 -> EWC1 -> NPL2 Integration
 
-Status: frozen before integrated WORLD or late-query scoring.
+Status: confirmed across development and five fixed confirmation seeds.
 
 ## Capability hypothesis
 
@@ -84,3 +84,41 @@ confirmed source-deleted NPL2 reasoning. Candidate generation, the
 mini-language, execution, and verification remain engineered. It would not
 establish unrestricted language reasoning, an involution score advantage, or
 permission for a long pretraining run.
+
+## Frozen result
+
+Development job `744665` passes the unchanged NPL2 conjunctive gate at
+`84.8145%`, exactly equal to PL1 oracle and above the strongest non-oracle
+arm at `3.4668%`. Primary result SHA-256 is `b0fffe1a...ff24d`.
+
+The frozen base NPL2 report format did not serialize the wrapper's WORLD
+receipt. A reporting-only patch added a separate atomic compilation report;
+no weights, data, prompts, thresholds, evaluator, or control changed. Exact
+isolated replay `744666` reproduces every score and records:
+
+- CWC normal selection `7168/7168`;
+- mapped counterfactual selection `7168/7168` and `0/7168` against the
+  original physical world;
+- directive scrub `3584/7168` with exactly zero margin;
+- selected EWC typed WORLD `7168/7168`;
+- forced opposite WORLD `0/7168` against true while EWC transcribes that
+  decoy `7168/7168`;
+- exact zero projection residual.
+
+Replay result and compilation SHA-256 values are `19155055...3e83` and
+`ceee236a...e4b`.
+
+Five concurrent confirmation jobs `744668`--`744672` pass, and CPU aggregate
+`744673` passes every original NPL2 and new WORLD-composition condition.
+Aggregate NPL2 is `35,066/40,960 = 85.6104%`, exactly equal to oracle. The
+strongest non-oracle arm is `3.9185%`; EVIDENCE is `614,321/614,400` and
+QUERY is `40,960/40,960`. Per-seed NPL2/oracle rates are `87.0972%`,
+`82.6416%`, `85.7178%`, `87.3169%`, and `85.2783%`. Every seed has 100%
+selector and selected-structure exactness, chance/zero-margin directive scrub,
+and complete causal flip under mapped counterfactual. Aggregate SHA-256 is
+`fb84120ea92aec7b6b44e833ef3603c23b767eea53954c178741f98b92fd5c33`.
+
+This confirms the bounded composition. It does not change the earlier CWC1
+control finding: standard augmentation selected the controlled candidates
+equally well. It also does not remove engineered candidate construction,
+mini-language execution, or verification.

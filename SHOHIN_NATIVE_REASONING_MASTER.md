@@ -57191,3 +57191,22 @@ learning. Exactly one frozen composition now places CWC1 before the closed
 EWC1 structural extractor and unchanged confirmed NPL2. Its contract is
 `docs/research/DIVERGE_CWC1_EWC1_NPL2_INTEGRATION.md`; no component retraining
 or local retry family is authorized.
+
+The single composition confirms. On development, CWC1 selects all
+`7168/7168` true complete worlds, mapped counterfactual selects all
+`7168/7168` partners and none of the original worlds, directive deletion is
+exactly 50% with zero margin, and frozen EWC transcribes all selected and
+forced-decoy programs exactly. Unchanged NPL2 remains `84.8145%`, exactly at
+oracle. Five fixed confirmation seeds retain 100% WORLD selection and
+structure while aggregate NPL2 is `35,066/40,960 = 85.6104%`, again exactly
+oracle versus `3.9185%` strongest non-oracle. Aggregate SHA-256 is
+`fb84120e...fd5c33`.
+
+This is the strongest controlled end-to-end Shohin reasoning path so far: a
+learned natural directive selects one coherent WORLD, a learned byte compiler
+transcribes its structure, and source-deleted branch-local plastic reasoning
+answers late queries. The remaining hard boundaries are equally explicit:
+candidate generation, the mini-language, exact execution, and verification
+are engineered; CWC's involution has no score advantage over standard
+augmentation on this board; and this is not unrestricted natural-language
+reasoning or a public-benchmark claim.

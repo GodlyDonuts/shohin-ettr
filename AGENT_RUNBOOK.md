@@ -32053,3 +32053,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `stage_immutable_0077e78_overlay_and_wrapper_data;_run_one_development_gate;_release_five_fixed_confirmations_only_on_pass`.
+
+- **2026-08-07 08:45--09:00 EDT** -- **The learned whole-WORLD -> learned
+  structure -> NPL2 composition confirms at the oracle ceiling.**
+
+  Development `744665` completes in 4m28s and passes every unchanged NPL2
+  condition: late QUERY `84.8145%`, exactly PL1 oracle, versus `3.4668%`
+  strongest non-oracle; WORLD is `7168/7168`, EVIDENCE `122872/122880`, and
+  QUERY semantics `8192/8192`. Primary result SHA-256 is `b0fffe1a...ff24d`.
+
+  The frozen `107ac8f` NPL2 serializer predates the new WORLD-custody field.
+  Commit `4d102a1` changes reporting only by writing a separate atomic
+  compilation receipt. Exact isolated replay `744666` reproduces all scores.
+  Its receipt records CWC normal and mapped-counterfactual `7168/7168`, mapped
+  counterfactual `0/7168` against the original physical world, directive scrub
+  `3584/7168` with zero margin, selected EWC structure `7168/7168`, and forced
+  opposite `0/7168` against truth while EWC transcribes the decoy
+  `7168/7168`. Replay/receipt hashes are `19155055...3e83` and
+  `ceee236a...e4b`.
+
+  Confirmation jobs `744668`--`744672` complete concurrently in 4m25s--4m32s.
+  Aggregate `744673` passes all original and added gates: NPL2
+  `35,066/40,960 = 85.6104%`, exactly oracle, strongest non-oracle `3.9185%`;
+  transfer `85.3223%`, mapping `85.0781%`, EVIDENCE `614321/614400`, QUERY
+  `40960/40960`. Per-seed NPL2/oracle is `87.0972%`, `82.6416%`, `85.7178%`,
+  `87.3169%`, and `85.2783%`. Every seed has exact selector and EWC structure,
+  mapped causal flip, chance/zero-margin scrub, and protected owner hashes.
+  Aggregate SHA-256 is
+  `fb84120ea92aec7b6b44e833ef3603c23b767eea53954c178741f98b92fd5c33`.
+  All 13 final reports are hash-verified and read-only locally/Newton.
+
+  Qualify the bounded controlled composition. Do not overclaim: candidate
+  generation, exact executor/verifier, and the mini-language remain
+  engineered; standard augmentation matched CWC1 selection accuracy.
+
+  Decision:
+  `preserve_as_strongest_controlled_reasoning_path;_close_this_bounded_lane;_target_the_next_largest_engineered_scaffold_without_retraining_qualified_owners`.
