@@ -15,6 +15,7 @@ from diverge_npl1_data import (
     DEVELOPMENT_SEED,
     SCHEMA,
     natural_assessor_record,
+    natural_program_identities,
     natural_public_record,
 )
 from diverge_pl1_data import (
@@ -82,9 +83,15 @@ def main() -> None:
         count=args.development_count,
     )
     prior = _load_prior(args.prior_assessor)
-    aliases = {alias for episode in episodes for alias in episode.aliases}
+    public_rows = tuple(natural_public_record(episode) for episode in episodes)
+    assessor_rows = tuple(natural_assessor_record(episode) for episode in episodes)
+    aliases = {alias for row in public_rows for alias in row["aliases"]}
     prior_aliases = {alias for episode in prior for alias in episode.aliases}
-    programs = set(iter_program_identities(episodes))
+    programs = {
+        identity
+        for episode in episodes
+        for identity in natural_program_identities(episode)
+    }
     prior_programs = set(iter_program_identities(prior))
     overlap = {
         "aliases_with_pl1": len(aliases & prior_aliases),
@@ -97,8 +104,6 @@ def main() -> None:
     if any(overlap.values()):
         raise SystemExit(f"NPL1 development overlaps PL1: {overlap}")
 
-    public_rows = tuple(natural_public_record(episode) for episode in episodes)
-    assessor_rows = tuple(natural_assessor_record(episode) for episode in episodes)
     args.output.mkdir(parents=True)
     public_path = args.output / "development_public.jsonl"
     assessor_path = args.output / "development_assessor.jsonl"

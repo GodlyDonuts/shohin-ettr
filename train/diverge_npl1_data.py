@@ -51,6 +51,15 @@ def episode_names(episode: Episode) -> tuple[tuple[str, ...], tuple[str, str]]:
     return branches, (registers[0], registers[1])
 
 
+def operation_aliases(episode: Episode) -> tuple[str, ...]:
+    aliases = tuple(
+        "nup" + _name("operation", episode.episode_id, index) for index in range(8)
+    )
+    if len(set(aliases)) != 8:
+        raise NPL1DataError("NPL1 operation aliases collide")
+    return aliases
+
+
 def program_surface(
     program: Program,
     aliases: Sequence[str],
@@ -107,14 +116,15 @@ def render_feedback(plan: Mapping[str, object], certificate_code: int) -> str:
 
 def natural_public_record(episode: Episode) -> dict[str, object]:
     branches, registers = episode_names(episode)
-    symbols = (*episode.aliases, *branches, *registers)
+    aliases = operation_aliases(episode)
+    symbols = (*aliases, *branches, *registers)
     offset = int(episode.episode_id[:8], 16)
     acquisition = [
-        program_surface(program, episode.aliases, registers)
+        program_surface(program, aliases, registers)
         for program in episode.acquisition
     ]
     transfer = [
-        program_surface(program, episode.aliases, registers)
+        program_surface(program, aliases, registers)
         for program in episode.transfer
     ]
     feedback_plan = []
@@ -177,7 +187,7 @@ def natural_public_record(episode: Episode) -> dict[str, object]:
         "schema": SCHEMA,
         "episode_id": episode.episode_id,
         "split": episode.split,
-        "aliases": list(episode.aliases),
+        "aliases": list(aliases),
         "branch_names": list(branches),
         "register_names": list(registers),
         "symbol_table": list(symbols),
@@ -189,6 +199,17 @@ def natural_public_record(episode: Episode) -> dict[str, object]:
     payload["identity_sha256"] = commitment("diverge-npl1-public", payload)
     validate_natural_public_record(payload)
     return payload
+
+
+def natural_program_identities(episode: Episode) -> tuple[str, ...]:
+    aliases = operation_aliases(episode)
+    return tuple(
+        commitment(
+            "diverge-npl1-program-identity",
+            [program.initial_state, [aliases[symbol] for symbol in program.symbols]],
+        )
+        for program in (*episode.acquisition, *episode.transfer)
+    )
 
 
 def natural_assessor_record(episode: Episode) -> dict[str, object]:
@@ -243,7 +264,9 @@ __all__ = [
     "SCHEMA",
     "episode_names",
     "natural_assessor_record",
+    "natural_program_identities",
     "natural_public_record",
+    "operation_aliases",
     "parse_program_surface",
     "render_feedback",
     "validate_natural_public_record",

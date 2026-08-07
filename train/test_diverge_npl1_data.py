@@ -7,6 +7,7 @@ from diverge_npl1_data import (
     DEVELOPMENT_SEED,
     episode_names,
     natural_public_record,
+    operation_aliases,
     parse_program_surface,
     render_feedback,
     validate_natural_public_record,
@@ -21,12 +22,13 @@ def main() -> None:
     record = natural_public_record(episode)
     validate_natural_public_record(record)
     _, registers = episode_names(episode)
+    aliases = operation_aliases(episode)
     for surface, program in zip(
         (*record["acquisition"], *record["transfer"]),
         (*episode.acquisition, *episode.transfer),
         strict=True,
     ):
-        initial, symbols = parse_program_surface(surface, episode.aliases, registers)
+        initial, symbols = parse_program_surface(surface, aliases, registers)
         assert initial == program.initial_state
         assert symbols == program.symbols
     for plan in record["feedback_plan"]:
