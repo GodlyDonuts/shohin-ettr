@@ -85,3 +85,11 @@ treatments pass, selection is deterministic by exact count, signed margin,
 then SmolLM2. A development pass admits exactly one fresh balanced
 confirmation board. A miss closes the exact outcome mechanism without seed,
 width, duration, renderer, prompt, or threshold variants.
+
+The confirmation generator is frozen before development results. It uses seed
+`2026080703`, 256 new exact TFS1 programs, a disjoint 32-entity bank, six new
+query families, and two clause orders per family. Every renderer contains
+exactly 64 transaction-0 and 64 transaction-1 queries. Generation runs on
+Stokes with exhaustive source/query/entity overlap audits against CGL1
+training, the development board, and the already-open PQI/QTE board. The board
+remains unopened unless assessor `744568` passes.
