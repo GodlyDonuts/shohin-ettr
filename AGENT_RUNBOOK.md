@@ -32906,3 +32906,34 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `commit_frozen_opb1;_package_immutable_runtime_and_data;_train_treatment_and_decoy_in_parallel;_run_one_end_to_end_development_gate`.
+
+- **2026-08-07 15:50--16:20 EDT** -- **QST1 freezes a current-Qwen product
+  transplant while OPB1 waits for H100 admission.**
+
+  The product host is exact pinned `Qwen/Qwen3.5-0.8B` revision
+  `2fc06364715b967f1860aea9cf38778875588b17` (852,985,920 parameters). Existing
+  baseline, dense, and old globally active ETTR V10 results remain the matched
+  controls. OPB1 treatment/control jobs `744993/744994` remain queued and are
+  not modified.
+
+  DIVERGE-QST1 replaces the failed global workspace with three disjoint owners:
+  an eight-slot immutable source packet compiled from contextual prompt states,
+  an eight-slot tied copy-on-write transaction state with monotone adaptive
+  stop, and a four-slot late query owner. One complete source/state/query packet
+  is appended as a soft prefix. There are no hard straight-through interfaces,
+  exchangeable particles, fieldwise hypothesis averages, external solver, host
+  arithmetic, answer router, or teacher at inference. Batch-contrastive
+  provenance and state-reset margin losses directly target measured owner
+  interference and trajectory collapse.
+
+  Freeze V10 SHA-256 `2461d6f7...96549`, 26,387 selected rows, seed/data seed
+  `31/20260802`, 1,000 updates, 16 logical examples/update, 1,024 context,
+  `2e-4` cosine learning rate, and the exact B1 final-four-layer rank-8 LoRA.
+  Checkpoint 200 is diagnostic only; checkpoint 1,000 decides promotion on the
+  unchanged seven-domain evaluator. Require at least +3 five-domain macro,
+  +15 solved, gains in three domains, no domain regression beyond two points,
+  protected-weight identity, and causal loss under packet swap/state reset.
+  Exact contract: `docs/research/DIVERGE_QST1_QWEN_PRODUCT_GATE.md`.
+
+  Decision:
+  `verify_cpu_integration;_commit_and_package_qst1;_run_short_cuda_canary;_release_one_v10_u1000_job_on_success;_evaluate_checkpoint_1000_against_immutable_b1`.
