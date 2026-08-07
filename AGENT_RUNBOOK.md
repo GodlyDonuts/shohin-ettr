@@ -32137,3 +32137,32 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_mze1_as_model_owned_executor;_next_remove_explicit_complete_candidate_construction_or_broaden_episode_local_law_induction_without_retraining_qualified_owners`.
+
+- **2026-08-07 09:46--10:02 EDT** -- **DIVERGE-EAL1 is frozen before
+  corpus materialization or neural scoring.**
+
+  EAL1 removes MZE1's globally fixed operation semantics in one isolated
+  system-identification gate. A 397,636-parameter byte-GRU reads four complete
+  integer mentions from natural before/after evidence. Exact whole-alias
+  scanning binds each statement to one of eight fresh episode-local
+  operations; a factorized 25-row support state commits only singleton 2x2
+  affine laws over Z/97. The demonstrations are then deleted and only the
+  sealed laws recurrently execute sixteen transfer programs at depths 12--32.
+  The runtime imports no EAL1/PL1 exact operation table and has no verifier.
+
+  Frozen data are 100,000 training statements and 256 development episodes,
+  with disjoint opaque names and disjoint train/development matrix catalogs.
+  Every operation receives three demonstrations: the first leaves exactly
+  five rows possible, the first two identify the law, and the third checks
+  consistency. Normal and temporal-counterfactual views are equally charged.
+  Scrub, shuffled-episode evidence, law reset, unrelated-law transplant, and
+  one-example controls are fixed. The conjunctive gate requires at least 99%
+  learned role, law, state, and query exactness; renderer/depth floors; exact
+  oracle; causal-control collapse; fail-closed underdetermination; and source
+  deletion.
+
+  Data/runtime tests, a real backward pass, Python compilation, Ruff, and
+  Slurm shell syntax pass. No EAL1 corpus, checkpoint, or score exists yet.
+
+  Decision:
+  `commit_frozen_eal1;_materialize_and_reproduce_all_data;_run_exactly_one_development_gate;_close_without_local_variants_on_failure`.
