@@ -1,6 +1,7 @@
 # DIVERGE-EWC1: Equivariant WORLD Compiler
 
-Status: frozen before data generation, training, or model scoring.
+Status: development FAIL. Confirmation remains unopened; EWC1 is closed
+without local variants.
 
 Pre-score implementation note: the first deterministic build rejected one
 depth-28 row because the original 512-byte tensor cap was too short. It wrote
@@ -126,3 +127,41 @@ Even a complete pass establishes controlled learned natural-WORLD reasoning,
 not unrestricted prose, public benchmark reasoning, or authorization for a
 long pretraining run. The exact executor and verifier remain the next
 engineered boundary.
+
+## Result
+
+Matched one-H100 jobs `744648/744649` complete in 7m29s. Both 582,530-
+parameter arms fit all `50,000/50,000` typed WORLDs exactly, use 1.159 GB peak
+allocated VRAM, and process about 261k source bytes/s. Treatment and control
+checkpoint SHA-256 values are
+`0816ed1c65d51951cf11625f505ea7886a176c008cc42ac3ac821f369788d1ed`
+and
+`208ec08c0d4a4d26853724e0bbf384b64252ca75d4c193350f92d5691d4c8829`.
+
+Development job `744650` obtains:
+
+| Arm / intervention | Joint exact | Initial | Operations |
+|---|---:|---:|---:|
+| treatment normal | 100.000% | 100.000% | 100.000% |
+| treatment register table, mapped | 100.000% | 100.000% | 100.000% |
+| treatment alias table, mapped | 100.000% | 100.000% | 100.000% |
+| treatment entity rename | 100.000% | 100.000% | 100.000% |
+| treatment source scrub | **27.832%** | 29.834% | 84.888% |
+| absolute control normal | 100.000% | 100.000% | 100.000% |
+| absolute control register table, mapped | 0.000% | 0.000% | 100.000% |
+| absolute control source scrub | 2.954% | 24.512% | 11.011% |
+
+Every held-out renderer is 100%, and every frozen gate passes except source
+scrub, whose ceiling was 20%. EWC1 is therefore a strict FAIL. It learned a
+highly accurate and exactly equivariant structural compiler, but operation
+selection still recovers 84.9% when all language context is destroyed. The
+punctuation/position geometry remains a shortcut, so the result does not
+qualify as language-grounded WORLD semantics. Development report SHA-256 is
+`2e173969609a4d50f7fb169b18d56611033a28a03c7c71d618c873a9ce1e5760`.
+
+Confirmation `744651` and conditional NPL2 jobs `744652`--`744657` never open
+and are canceled. Preserve EWC1 only as a frozen structural extraction
+baseline. The successor must make two or more complete candidate worlds
+positionally symmetric and use counterfactual semantic role language to
+commit one coherent world; changing EWC1's threshold, renderer, duration,
+width, seed, or loss is not authorized.

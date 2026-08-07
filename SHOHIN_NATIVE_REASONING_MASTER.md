@@ -57128,3 +57128,15 @@ matched development gate and one pass-gated confirmation are authorized. If
 confirmed, exactly one unchanged-NPL2 integration may replace the regex; if
 not, this EWC1 mechanism closes without local variants. See
 `docs/research/DIVERGE_EWC1_EQUIVARIANT_WORLD_COMPILER.md`.
+
+EWC1 closes FAIL on development. Treatment and matched control both fit all
+50,000 training rows and score `4096/4096` normally. The treatment is also
+`4096/4096` under mapped register reorder, mapped alias reorder, and unseen
+entity renaming, while the absolute-role control falls to `0/4096` under the
+register action. However, treatment source scrub remains `1140/4096 =
+27.832%`, above the frozen 20% ceiling; its operation sequence alone remains
+84.888% exact without language context. This is accurate equivariant
+structure extraction, not admitted semantic WORLD compilation. Confirmation
+and NPL2 integration remain unopened. The next lane must remove positional
+identifiability with complete-world counterfactual candidates rather than
+tune EWC1.

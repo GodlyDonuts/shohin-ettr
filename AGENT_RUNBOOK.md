@@ -31878,3 +31878,34 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `launch_matched_ewc1_treatment_and_absolute_control;_open_confirmation_only_on_conjunctive_development_pass;_then_integrate_once_with_protected_npl2`.
+
+- **2026-08-07 07:30--07:45 EDT** -- **EWC1 learns exact equivariant
+  structure but fails the language-dependence gate; confirmation stays
+  sealed.**
+
+  Packaging-only jobs `744644/744645` exited before data access because the
+  Newton environment lacks pytest; dead dependencies `744646/744647` were
+  canceled. Commit `d1f9008` replaces only that runtime check with built-in
+  `py_compile`. Replacements `744648/744649` complete in 7m29s with exact
+  `50,000/50,000` train fit in both 582,530-parameter arms, identical 1.159 GB
+  peak allocation, and about 261k source bytes/s.
+
+  Development `744650` is exact `4,096/4,096` normally, on every held-out
+  renderer, under mapped register and alias table actions, and under unseen
+  entity renaming. The absolute-role control is also exact normally but
+  becomes `0/4,096` under mapped register reorder, proving the treatment's
+  intended equivariance. The conjunctive gate nevertheless fails: context
+  scrub retains `1,140/4,096 = 27.832%` joint exactness versus the frozen 20%
+  ceiling, with operation sequence still `84.888%` exact. The compiler can
+  exploit punctuation/position geometry after semantic words are destroyed.
+
+  Result SHA-256 is
+  `2e173969609a4d50f7fb169b18d56611033a28a03c7c71d618c873a9ce1e5760`;
+  treatment/control checkpoint hashes are `0816ed1c...d1ed` and
+  `208ec08c...8829`. Both are hash-verified and read-only locally/Newton.
+  Confirmation `744651`, NPL2 development `744652`, and confirmation seeds
+  `744653`--`744657` never open and are canceled. Do not run EWC1 threshold,
+  renderer, duration, width, seed, or loss variants.
+
+  Decision:
+  `close_ewc1_as_semantic_world_owner;_retain_as_structural_extraction_baseline;_freeze_a_positionally_symmetric_counterfactual_whole_world_commit_successor`.
