@@ -1,6 +1,6 @@
 # DIVERGE-SNL1: Spanless Neural Episode Laws
 
-Status: frozen before fresh-board materialization or SNL1 scoring.
+Status: confirmed on development and all five fixed source-disjoint boards.
 
 ## Capability Hypothesis
 
@@ -85,3 +85,39 @@ spanless value extraction and neural unseen-law induction. It would remove the
 exact law-support solver from this path. It would not establish learned alias
 resolution, unrestricted arithmetic, open-domain natural-language reasoning,
 or public benchmark capability.
+
+## Confirmed Result
+
+Commit `24519884361a2f23c74d042795f4316ab6bad0ff` corrects two evaluator-only
+custody/accounting defects before the official score: the preserved NLS1
+parent names its metric `matrix_rate`, and episode-law rows must be assessed in
+the arm's anonymous table-position basis. A complete local CPU replay then
+passed every condition; its read-only report SHA-256 is
+`af6ea98afd2ba2dc5c735e6513bd372741fb7570d843c8900bc058dac24dc30b`.
+Immutable runtime `diverge_snl1_2451988_r1` has SHA256SUMS SHA-256
+`e02aa777f77e5744c3d2b51bb569e2eaec85d6995545153277174cee63100b5a`.
+
+Official development job `744945` completed on one CUDA V100 in 1m46s. Its
+report SHA-256 is
+`f84395b09133d6c5e4cc485c471b975ea938ff76835bde890c63a164dbcba1dd`.
+Treatment, unseen register rename, and coherent table reindex each recovered
+`256/256` law packets, `4096/4096` terminal states, and `8192/8192` answers,
+with a 100% minimum depth rate. The cross-owner reindex retained only
+`2/4096` states and `94/8192` answers. Value scrub, occurrence break,
+shuffled-event model, and law reset retained zero terminal states.
+
+The five unchanged confirmation jobs `744951`--`744955` all passed. Aggregate
+job `744956` reports, for each positive arm, `1280/1280` laws,
+`20,480/20,480` terminal states, and `40,960/40,960` answers. Cross-owner
+reindex falls to `11/20,480` states and `428/40,960` answers. Value scrub,
+occurrence break, shuffled-event model, and law reset remain exactly zero;
+shuffled-law, outcome-scrub, and one-example controls remain near chance and
+below every frozen ceiling. Aggregate SHA-256 is
+`8a6b3a1475c8e58a96decd46418af12f447bc0a2c070ab19a428399f2c3993c5`;
+the complete local/remote result manifest SHA-256 is
+`5e391d05a2bce337feccad6af02b2079b86855de1785edb47de6b2ede96f3f1b`.
+
+SNL1 therefore qualifies the frozen composition exactly within the claim
+boundary above. The next unresolved runtime scaffold is exact evidence-to-
+operation alias binding; no SNL1 weight, seed, threshold, renderer, or
+duration variant is authorized.

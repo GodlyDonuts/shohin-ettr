@@ -32839,3 +32839,34 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `commit_verified_evaluator_corrections;_launch_one_official_snl1_development;_open_confirmation_only_if_that_report_passes`.
+
+- **2026-08-07 14:55--15:02 EDT** -- **SNL1 confirms exact model-owned
+  spanless value transduction plus neural unseen-law induction.**
+
+  Evaluator-only correction commit `2451988` is pushed to private main.
+  Immutable runtime `diverge_snl1_2451988_r1` verifies locally/Newton with
+  SHA256SUMS SHA-256 `e02aa777...00b5a`. Official development job `744945`
+  runs once on one CUDA V100 and completes in 1m46s. Report SHA-256 is
+  `f84395b0...a1dd`; treatment, unseen rename, and coherent table reindex each
+  reach `256/256` laws, `4096/4096` terminal states, `8192/8192` answers, and
+  a 100% minimum depth rate. Cross-owner reindex is `2/4096` states and
+  `94/8192` answers. All other frozen controls remain below ceiling.
+
+  This pass opens only the five fixed source-disjoint seeds. Jobs
+  `744951`--`744955` all complete cleanly; aggregate `744956` passes. Each
+  positive arm totals `1280/1280` laws, `20,480/20,480` terminal states, and
+  `40,960/40,960` answers. Cross-owner reindex retains `11/20,480` states and
+  `428/40,960` answers. Value scrub, occurrence break, shuffled-event model,
+  and law reset are exactly zero states/answers. Shuffled-law, outcome-scrub,
+  and one-example controls remain near chance and below their frozen ceilings.
+  Aggregate SHA-256 is `8a6b3a14...93c5`; the hash-matched local/Newton
+  result manifest is `5e391d05...f3f1b`. All seven reports are read-only.
+
+  Qualify only the controlled composition. SNL1 removes exact law-support
+  intersection from the natural evidence -> command -> recurrent execution ->
+  late-query path. Exact evidence operation binding, declared repeated-surface
+  identity, the bounded 25-row vocabulary, and modular Z/97 execution remain
+  engineered. Do not run SNL1 variants.
+
+  Decision:
+  `promote_snl1;_preserve_all_parent_weights;_freeze_one_successor_that_removes_exact_evidence_operation_binding_without_retraining_qualified_owners`.

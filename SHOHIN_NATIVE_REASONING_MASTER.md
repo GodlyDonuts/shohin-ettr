@@ -57413,3 +57413,30 @@ system, not general reasoning. Exact repeated-surface quotienting, evidence
 operation binding, bounded episode-law support intersection, coefficient
 vocabulary, and modular execution remain engineered. The next gate targets
 the exact law-support solver while preserving every qualified semantic owner.
+
+### DIVERGE-SNL1: confirmed spanless neural unseen-law composition
+
+SNL1 removes the exact episode-law support-intersection solver without
+retraining any qualified owner. Frozen OQB1/NCP1/SVE1 components emit anonymous
+query addresses, natural command programs, complete value-bearing evidence,
+and initial-state events. The preserved NLS1 neural set synthesizer consumes
+only those events, commits one hard episode-local law packet, and feeds the
+unchanged recurrent executor. The runtime contains no numeric-span scanner,
+raw integer parser, or exact coefficient-support intersection.
+
+Development is exact for treatment, unseen register rename, and coherent
+table reindex: each reaches `256/256` laws, `4096/4096` terminal states, and
+`8192/8192` answers at every depth 12--32. Five fixed source-disjoint
+confirmations reproduce the result. Each positive aggregate is
+`1280/1280` laws, `20,480/20,480` states, and `40,960/40,960` answers.
+Cross-owner reindex causally collapses to `11/20,480` states and
+`428/40,960` answers; value scrub, occurrence break, the shuffled-event owner,
+and law reset remain exactly zero. Aggregate SHA-256 is
+`8a6b3a1475c8e58a96decd46418af12f447bc0a2c070ab19a428399f2c3993c5`.
+
+This qualifies controlled model-owned value transduction plus neural unseen-
+law induction and recurrent execution. It does not yet qualify unrestricted
+reasoning: exact evidence operation binding, the declared repeated-surface
+identity table, the bounded 25-row law vocabulary, and modular Z/97 execution
+remain engineered. The next gate removes evidence operation binding while
+holding every newly qualified owner fixed.
