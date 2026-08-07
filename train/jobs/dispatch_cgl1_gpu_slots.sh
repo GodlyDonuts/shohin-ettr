@@ -9,7 +9,7 @@ DATA=$BASE/artifacts/reasoning/diverge_ccr1/data_ec6d2f3_r1/confirmation_board.j
 DATA_SHA256=299237068f436ba33a68487b5300fcd724f8c98bd8bfe6b1916a4ebc7541ebf7
 TOOL=$DISPATCH/eval_diverge_cgl1_hf_ceiling_3bcbc81.py
 TOOL_SHA256=c8e41002e85ad67b86c9c71b796f4f381e94c5249490ef906ccaf8d223bb5f72
-SLOT=$(basename "$0" .sh)
+SLOT=${CGL1_SLOT:-$(basename "$0" .sh)}
 
 export PYTHONPATH="$DISPATCH:$BASE_RUNTIME/train:$BASE_RUNTIME/pipeline"
 export OMP_NUM_THREADS=8
