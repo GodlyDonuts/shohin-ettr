@@ -32742,3 +32742,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_sve1_as_qualified_spanless_value_owner;_preserve_weights;_next_remove_exact_episode_law_support_without_retraining_qualified_owners`.
+
+- **2026-08-07 14:13--14:30 EDT** -- **SNL1 freezes a no-retraining
+  spanless-neural-law composition before fresh data or scores.**
+
+  Two read-only compatibility diagnostics resolve the shortest next path.
+  First, qualified NCP1 does not transfer as an evidence alias pointer:
+  `37/6144 = 0.6022%` exact, usually emitting repeated spurious CTC symbols
+  because an evidence statement repeats one alias four times. Exact operation
+  binding therefore remains disclosed rather than silently claimed learned.
+  Second, the frozen NLS1 treatment recovers all `2048/2048` coefficient
+  matrices on the already-open SVE1 development assessor when fed complete
+  before/after events. This is an interface diagnostic, not a new score.
+
+  DIVERGE-SNL1 now freezes one composition with no training or changed weights:
+  qualified OQB1/NCP1/SVE1 owners feed the frozen NLS1 neural set synthesizer,
+  which emits one hard episode-law packet before source-deleted recurrent
+  execution. The old NLS1 conjunctive FAIL and unopened NLS1 confirmations
+  remain immutable. SNL1 contains no support-intersection solver, numeric-span
+  scanner, or raw integer parser; exact operation alias binding, the bounded
+  25-row vocabulary, exact occurrence quotient, and modular execution remain
+  engineered.
+
+  Fresh development seed `2026080852` and conditional confirmation seeds
+  `2026080853`--`57` are fixed at 256 episodes each. They must be transitively
+  source/name/identity-disjoint from complete SVE1 and NLS1 lineages and
+  regenerate byte-for-byte. Positive arms require 99% component/law/state/
+  answer exactness and a 95% depth floor. Cross-owner reindex, value scrub,
+  occurrence break, independent shuffled event/law models, outcome scrub,
+  one-example, and law-reset controls have fixed ceilings. Confirmation remains
+  sealed behind one conjunctive development pass; a miss closes exact SNL1
+  without local variants.
+
+  Decision:
+  `commit_frozen_snl1;_materialize_and_regenerate_fresh_boards;_run_one_development_composition;_open_fixed_confirmations_only_on_pass`.
