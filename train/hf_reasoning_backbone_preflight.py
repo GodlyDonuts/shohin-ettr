@@ -110,21 +110,26 @@ def run_preflight(args: argparse.Namespace) -> dict[str, Any]:
         raise BackbonePreflightError("CUDA is unavailable")
 
     started = time.monotonic()
-    model_root = Path(
-        snapshot_download(
-            repo_id=args.model,
-            revision=args.revision,
-            local_dir=args.model_root,
-            allow_patterns=[
-                "*.json",
-                "*.safetensors",
-                "*.model",
-                "*.txt",
-                "*.tiktoken",
-                "*.py",
-            ],
-        )
-    ).resolve()
+    if args.skip_download:
+        model_root = args.model_root.resolve()
+        if not model_root.is_dir():
+            raise BackbonePreflightError("local model root is missing")
+    else:
+        model_root = Path(
+            snapshot_download(
+                repo_id=args.model,
+                revision=args.revision,
+                local_dir=args.model_root,
+                allow_patterns=[
+                    "*.json",
+                    "*.safetensors",
+                    "*.model",
+                    "*.txt",
+                    "*.tiktoken",
+                    "*.py",
+                ],
+            )
+        ).resolve()
     download_seconds = time.monotonic() - started
 
     config = AutoConfig.from_pretrained(model_root, trust_remote_code=True)
@@ -167,7 +172,9 @@ def run_preflight(args: argparse.Namespace) -> dict[str, Any]:
         "model_type": getattr(config, "model_type", None),
         "parameter_count": parameter_count,
         "trainable_parameter_count": sum(
-            parameter.numel() for parameter in model.parameters() if parameter.requires_grad
+            parameter.numel()
+            for parameter in model.parameters()
+            if parameter.requires_grad
         ),
         "dtype": str(next(model.parameters()).dtype),
         "prompt": args.prompt,
@@ -181,6 +188,7 @@ def run_preflight(args: argparse.Namespace) -> dict[str, Any]:
             new_tokens / generation_seconds if generation_seconds else None
         ),
         "download_seconds": download_seconds,
+        "download_skipped": args.skip_download,
         "peak_gpu_memory_bytes": int(torch.cuda.max_memory_allocated()),
         "gpu": {
             "name": device.name,
@@ -208,6 +216,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--max-new-tokens", type=int, default=128)
+    parser.add_argument("--skip-download", action="store_true")
     parser.add_argument(
         "--prompt",
         default=(

@@ -17,6 +17,7 @@ set -euo pipefail
 : "${REVISION:?REVISION is required}"
 : "${MODEL_ROOT:?MODEL_ROOT is required}"
 : "${OUTPUT:?OUTPUT is required}"
+SKIP_DOWNLOAD=${SKIP_DOWNLOAD:-false}
 
 PYTHON=${PYTHON:-/lustre/fs1/home/sa305415/shohin/miniforge3/bin/python3.13}
 test -x "$PYTHON"
@@ -32,8 +33,17 @@ export TOKENIZERS_PARALLELISM=false
 export HF_HOME=${HF_HOME:-/lustre/fs1/home/sa305415/shohin/.cache/huggingface}
 export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
 
+EXTRA_ARGS=()
+if [[ "$SKIP_DOWNLOAD" == "true" ]]; then
+  EXTRA_ARGS+=(--skip-download)
+elif [[ "$SKIP_DOWNLOAD" != "false" ]]; then
+  echo "SKIP_DOWNLOAD must be true or false" >&2
+  exit 2
+fi
+
 "$PYTHON" "$RUNTIME/train/hf_reasoning_backbone_preflight.py" \
   --model "$MODEL" \
   --revision "$REVISION" \
   --model-root "$MODEL_ROOT" \
-  --output "$OUTPUT"
+  --output "$OUTPUT" \
+  "${EXTRA_ARGS[@]}"
