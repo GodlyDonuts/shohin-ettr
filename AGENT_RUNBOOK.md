@@ -32466,3 +32466,38 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_ncp1_as_qualified_natural_command_owner;_preserve_weights;_next_remove_one_remaining_engineered_interface_without_retraining_qualified_owners`.
+
+- **2026-08-07 12:00--12:18 EDT** -- **JRB1 freezes one shared learned
+  register owner before final data materialization or scoring.**
+
+  DIVERGE-JRB1 removes three connected scaffolds at once: EAL2's exact
+  register-name scanner, typed initial-state vectors, and typed late-query
+  register indices. One shared 128-wide, two-layer bidirectional byte owner
+  points evidence numbers, initial-state numbers, and natural queries into the
+  same two-entry episode-local register table. Its outputs now group the
+  qualified bit-identical EAL2 temporal logits; the qualified bit-identical
+  NCP1 command pointer remains the program owner. Exact numeric spans, exact
+  operation lookup, exact bounded law support, and the modular executor remain
+  explicit limitations.
+
+  Freeze 100,000 training rows at seed `2026080811`, development seed
+  `2026080812`, and five conditional confirmation seeds `2026080813`--`17`.
+  Training is exactly 1,000 AdamW updates, batch 128, learning rate 0.001 for
+  treatment and an identically initialized shuffled-table control. Candidate
+  public boards omit typed programs, initial states, register targets,
+  terminal states, and answers. Train/development renderer compositions are
+  disjoint while their primitives recur.
+
+  The unchanged conjunctive development gate requires at least 99% evidence,
+  initial, query, complete-role, law, terminal-state, and answer exactness;
+  at least 95% terminal-state exactness at every depth 12--32; at least 99%
+  under unseen register renaming and semantic table permutation; and at most
+  5% state/answer exactness under register-source scrub and the independently
+  trained shuffled-table model. Table permutation is correctly treated as a
+  positive equivariance test, not an information-breaking negative. All five
+  confirmations remain sealed unless development passes. Mechanics, oracle
+  end-to-end execution, backward pass, Python compilation, and Ruff pass; no
+  final JRB1 corpus, checkpoint, or score exists at freeze.
+
+  Decision:
+  `commit_frozen_jrb1;_materialize_and_hash_all_boards;_train_one_matched_pair;_score_development_once;_open_confirmations_only_on_pass`.
