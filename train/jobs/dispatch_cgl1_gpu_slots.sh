@@ -64,6 +64,8 @@ case "$SLOT" in
     (cd "$BASE_RUNTIME" && sha256sum -c SHA256SUMS >/dev/null)
     "$PYTHON" "$BASE_RUNTIME/train/test_diverge_cgl1_runtime.py"
     RESULTS=$BASE/artifacts/reasoning/diverge_cgl1/results_33f6f10_r1
+    REPLAY_ROOT=$BASE/artifacts/reasoning/diverge_cgl1/independent_replays_3bcbc81_r1
+    mkdir -p "$REPLAY_ROOT"
     if [[ "$SLOT" == slot_07 ]]; then
       ARM=shohin
       PARENT=$BASE/train/flagship_out/ckpt_0300000.pt
@@ -85,7 +87,8 @@ case "$SLOT" in
     done
     test -s "$CHECKPOINT" && test -s "$SOURCE_RESULT"
     CHECKPOINT_SHA256=$(sha256sum "$CHECKPOINT" | awk '{print $1}')
-    OUTPUT=$RESULTS/$ARM/independent_development_${SLURM_JOB_ID}.json
+    # Primary arm directories become immutable before the source report exists.
+    OUTPUT=$REPLAY_ROOT/${ARM}_development_${SLURM_JOB_ID}.json
     test ! -e "$OUTPUT"
     "$PYTHON" "$BASE_RUNTIME/train/eval_diverge_cgl1.py" \
       --checkpoint "$CHECKPOINT" --checkpoint-sha256 "$CHECKPOINT_SHA256" \
