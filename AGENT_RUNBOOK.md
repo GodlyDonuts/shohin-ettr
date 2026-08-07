@@ -32596,3 +32596,36 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_cab1_without_confirmation;_replace_learned_name_similarity_with_one_structurally_different_episode_local_occurrence_quotient;_keep_semantic_roles_learned`.
+
+- **2026-08-07 13:12--13:25 EDT** -- **OQB1 freezes one structurally
+  different occurrence-quotient register bus before final data or scores.**
+
+  CAB1 remains closed. OQB1 does not retrain its similarity metric. A generic
+  exact whole-word occurrence operator maps the two declared episode names to
+  anonymous table-position markers and deletes raw names. A shared
+  200,069-parameter byte-GRU owner must still attach evidence numbers, initial
+  values, and natural late queries to those anonymous classes. Qualified EAL2
+  and NCP1 owners remain frozen. Exact numeric spans, the declared two-name
+  table, exact law support, bounded arithmetic, and the modular executor are
+  explicit scaffolds.
+
+  Treatment and an identically initialized broken-quotient control receive
+  exactly 1,000 AdamW updates, batch 128, learning rate 0.001, and the same
+  100,000 records. The control independently hashes each occurrence before raw
+  names are deleted, so CAB1's cross-namespace suffix shortcut is absent.
+  Training/development/confirmation seeds are `2026080831`, `2026080832`, and
+  `2026080833`--`37`. Final data must be transitively disjoint from CAB1 and
+  deterministically regenerated before any score.
+
+  The frozen development gate requires at least 99% on every positive
+  component/state/answer arm and at least 95% at every depth. Coherent table
+  reindexing is positive. Evidence-only reindexing, source scrub, an
+  occurrence-level coherence break, and the independently trained broken
+  model are negative. All five confirmations remain sealed behind development.
+  A miss closes OQB1 without local marker, width, duration, seed, threshold,
+  renderer, loss, or quotient variants. Ruff, Python compilation, Slurm syntax,
+  deterministic quotient/reindex mechanics, real backward, source scrub
+  fail-closed behavior, and oracle end-to-end execution pass before freeze.
+
+  Decision:
+  `commit_frozen_oqb1;_materialize_and_regenerate_all_boards;_train_one_matched_pair;_score_development_once;_open_confirmation_only_on_pass`.
