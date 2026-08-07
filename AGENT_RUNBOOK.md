@@ -32665,3 +32665,36 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_oqb1_as_qualified_identity_bus;_preserve_weights;_next_remove_the_exact_numeric_span_carrier_without_retraining_qualified_owners`.
+
+- **2026-08-07 13:32--14:05 EDT** -- **SVE1 freezes a spanless
+  byte-to-value-event gate before final data or scores.**
+
+  DIVERGE-SVE1 preserves qualified OQB1 query binding and NCP1 command
+  compilation bit-for-bit while replacing evidence/initial numeric spans and
+  host-parsed values. A shared 472,136-parameter two-layer byte GRU emits CTC
+  sequences of complete `(temporal role, anonymous slot, value)` evidence
+  events and `(anonymous slot, value)` initialization events. Law compilation
+  and initial state construction consume only those emitted tokens and fail
+  closed on incomplete role/slot sets. The candidate runtime contains no
+  numeric-span scanner or raw-integer parser. Teacher-only frame alignment is
+  confined to training and never reaches runtime or evaluation.
+
+  Freeze 100,000 fresh rows at seed `2026080841`, development seed
+  `2026080842`, and five conditional confirmation seeds `2026080843`--`47`.
+  Treatment and an identically initialized 50,021-row-offset shuffled-target
+  control receive exactly 1,500 AdamW updates, batch 128, learning rate 0.001.
+  Final materialization must be transitively source/name/identity-disjoint from
+  qualified OQB1 and independently regenerate byte-for-byte.
+
+  Positive treatment, unseen-name, and coherent-table-reindex arms require at
+  least 99% exact event/query/law/state/answer cells and a 95% depth floor.
+  Evidence-only reindex, digit-byte scrub, occurrence break, and the trained
+  shuffled-target control have frozen chance ceilings. Confirmation remains
+  sealed behind the conjunctive development pass. A miss closes exact SVE1
+  without width, duration, seed, threshold, renderer, loss, alignment,
+  vocabulary, or parser variants. Ruff, Python compilation, Slurm syntax,
+  deterministic data mechanics, source scrub, real backward, runtime source
+  audit, and oracle end-to-end execution pass before freeze.
+
+  Decision:
+  `commit_frozen_sve1;_materialize_and_regenerate_fresh_boards;_train_one_matched_pair;_score_development_once;_open_fixed_confirmations_only_on_pass`.
