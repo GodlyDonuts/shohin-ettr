@@ -14,6 +14,7 @@ from typing import Any, Mapping, Sequence
 import torch
 from tokenizers import Tokenizer
 
+from diverge_cgl1_confirmation_data import BOARD_ROWS, validate_confirmation_row
 from diverge_cgl1_runtime import (
     CGL1Config,
     CausalGroundingInterpreter,
@@ -24,7 +25,8 @@ from diverge_cgl1_runtime import (
 )
 from diverge_gti1_runtime import expected_transaction
 from eval_diverge_ccr1 import _referent_records, _rename_records
-from eval_diverge_pqi1 import _load_board, sha256_path
+from eval_diverge_pqi1 import _load_board as _load_legacy_board
+from eval_diverge_pqi1 import sha256_path
 from frozen_pointer_backbone import load_frozen_pointer_backbone
 
 
@@ -33,6 +35,24 @@ SCHEMA = "shohin-diverge-cgl1-evaluation-v1"
 
 class CGL1EvaluationError(RuntimeError):
     """A CGL1 checkpoint, board, or evaluation receipt differs."""
+
+
+def _load_board(
+    path: Path, expected_sha256: str, board_type: str
+) -> list[dict[str, Any]]:
+    if board_type == "development":
+        return _load_legacy_board(path, expected_sha256, "development")
+    if board_type != "confirmation" or sha256_path(path) != expected_sha256:
+        raise CGL1EvaluationError("CGL1 confirmation board receipt differs")
+    rows = []
+    with path.open(encoding="utf-8") as handle:
+        for line in handle:
+            row = json.loads(line)
+            validate_confirmation_row(row)
+            rows.append(row)
+    if len(rows) != BOARD_ROWS:
+        raise CGL1EvaluationError("CGL1 confirmation board count differs")
+    return rows
 
 
 def _load_model(
