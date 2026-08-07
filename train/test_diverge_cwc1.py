@@ -88,4 +88,6 @@ def test_every_frozen_split_has_exact_target_balance():
     )
     report = overlap_report(*groups)
     assert report["exact_target_balance"] is True
+    assert report["renderer_target_balanced"] is True
+    assert max(report["renderer_target_max_imbalance"].values()) <= 1
     assert report["all_zero"] is True

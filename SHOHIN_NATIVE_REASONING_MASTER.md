@@ -57160,3 +57160,10 @@ renderer, collapse to 49--51% with zero margin when the directive is deleted,
 and preserve exact projection and matched-compute receipts. A miss closes the
 mechanism without local variants. See
 `docs/research/DIVERGE_CWC1_COUNTERFACTUAL_WHOLE_WORLD_COMMIT.md`.
+
+The first materialized corpus is rejected before neural scoring: with 12
+confirmation renderer pairs, `serial mod 2` made every renderer perfectly
+correlated with one target position. The preserved rejected bytes are not
+admissible. The corrected deterministic schedule alternates target position
+both across renderer index and repeated cycles, and the builder now fails
+closed unless every renderer's target imbalance is at most one.

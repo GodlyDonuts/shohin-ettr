@@ -70,7 +70,11 @@ def main() -> None:
         name: {"path": str(path), "sha256": sha256_path(path), "bytes": path.stat().st_size}
         for name, path in paths.items()
     }
-    if not report["all_zero"] or not report["exact_target_balance"]:
+    if (
+        not report["all_zero"]
+        or not report["exact_target_balance"]
+        or not report["renderer_target_balanced"]
+    ):
         raise SystemExit("CWC1 split overlap or balance audit failed")
     report_path = args.output / "report.json"
     _atomic_json(report_path, report)

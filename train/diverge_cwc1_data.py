@@ -164,7 +164,14 @@ def _record(
         )
     block_order = [0, 1]
     rng.shuffle(block_order)
-    target_position = serial % 2
+    pair_count = {
+        "train": len(TRAIN_PAIRS),
+        "development": len(DEVELOPMENT_PAIRS),
+        "confirmation": len(CONFIRMATION_PAIRS),
+    }[split]
+    pair_index = serial % pair_count
+    cycle = serial // pair_count
+    target_position = (pair_index + cycle) % 2
     valid_label_index = block_order[target_position]
     decoy_label_index = 1 - valid_label_index
     positive = _POSITIVE[pair[0]].format(label=labels[valid_label_index])
@@ -300,6 +307,7 @@ def overlap_report(*groups: tuple[str, Sequence[Mapping[str, Any]]]) -> dict[str
         directive_order = {str(index): 0 for index in range(2)}
         directive_position = {str(index): 0 for index in range(2)}
         renderers: dict[str, int] = {}
+        renderer_targets: dict[str, dict[str, int]] = {}
         maximum_source_bytes = 0
         for row in rows:
             target[str(int(row["target_position"]))] += 1
@@ -307,6 +315,9 @@ def overlap_report(*groups: tuple[str, Sequence[Mapping[str, Any]]]) -> dict[str
             directive_position[str(int(row["directive_position"]))] += 1
             renderer = ":".join(str(value) for value in row["renderer"])
             renderers[renderer] = renderers.get(renderer, 0) + 1
+            renderer_targets.setdefault(renderer, {"0": 0, "1": 0})[
+                str(int(row["target_position"]))
+            ] += 1
             maximum_source_bytes = max(
                 maximum_source_bytes, len(str(row["source_text"]).encode("ascii")) + 1
             )
@@ -315,11 +326,22 @@ def overlap_report(*groups: tuple[str, Sequence[Mapping[str, Any]]]) -> dict[str
             "directive_order": directive_order,
             "directive_position": directive_position,
             "renderer": dict(sorted(renderers.items())),
+            "renderer_target": dict(sorted(renderer_targets.items())),
             "maximum_source_bytes": maximum_source_bytes,
         }
     exact_target_balance = all(
         report["target_position"]["0"] == report["target_position"]["1"]
         for report in balance.values()
+    )
+    renderer_target_max_imbalance = {
+        name: max(
+            abs(value["0"] - value["1"])
+            for value in report["renderer_target"].values()
+        )
+        for name, report in balance.items()
+    }
+    renderer_target_balanced = all(
+        value <= 1 for value in renderer_target_max_imbalance.values()
     )
     return {
         "schema": REPORT_SCHEMA,
@@ -327,6 +349,8 @@ def overlap_report(*groups: tuple[str, Sequence[Mapping[str, Any]]]) -> dict[str
         "overlaps": reports,
         "balance": balance,
         "exact_target_balance": exact_target_balance,
+        "renderer_target_max_imbalance": renderer_target_max_imbalance,
+        "renderer_target_balanced": renderer_target_balanced,
         "all_zero": all(value == 0 for report in reports.values() for value in report.values()),
     }
 

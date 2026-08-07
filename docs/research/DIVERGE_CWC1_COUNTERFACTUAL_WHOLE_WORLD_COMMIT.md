@@ -48,7 +48,8 @@ mixing.
   opaque candidate labels per row;
 - zero source, identity, alias, register, or candidate-label overlap between
   splits;
-- exact 50/50 target position in every split;
+- exact 50/50 target position in every split and target imbalance at most one
+  row inside every renderer composition;
 - eight positive and eight negative semantic directive renderers;
 - renderer *compositions* partitioned into train, development, and
   confirmation by `(2 * positive + 3 * negative) mod 5`;

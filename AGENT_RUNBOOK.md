@@ -31958,3 +31958,22 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `materialize_and_hash_all_cwc1_splits_before_scoring;_run_three_matched_single_h100_arms;_open_confirmation_only_on_conjunctive_pass`.
+
+- **2026-08-07 08:03--08:08 EDT** -- **The first CWC1 corpus is rejected
+  before neural scoring for renderer-target correlation.**
+
+  The independent aggregate audit finds exact global target balance but a
+  fatal confirmation interaction: 12 renderer pairs combined with
+  `serial mod 2` assign every renderer exclusively to one target position.
+  No model has accessed any CWC1 split. The 126.8 MiB rejected corpus is
+  preserved at
+  `artifacts/reasoning/diverge_cwc1/data_rejected_renderer_target_correlation_2c116f4_r1`.
+
+  The sole correction sets target parity from renderer index plus repeated
+  cycle. The builder now reports per-renderer target counts and rejects any
+  split with imbalance above one. Seeds, sources, phrase partitions, model,
+  training schedule, gates, and confirmation policy remain unchanged. All ten
+  tests, compilation, and Ruff pass after the pre-score correction.
+
+  Decision:
+  `commit_balance_fix;_rebuild_all_splits_from_zero;_rerun_independent_overlap_balance_and_reproducibility_audits_before_any_h100`.
