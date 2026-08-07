@@ -32322,3 +32322,35 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_eal2_as_qualified_episode_law_owner;_preserve_weights;_next_remove_typed_program_or_exact_register_scaffold_in_one_structurally_different_gate`.
+
+- **2026-08-07 10:36--10:48 EDT** -- **NLS1 freezes the first neural
+  scaffold-removal successor before data materialization or scoring.**
+
+  EAL2's largest internal induction scaffold is exact support intersection
+  over 25 possible coefficient rows. DIVERGE-NLS1 replaces only that owner
+  with one 216,946-parameter permutation-invariant neural set synthesizer:
+  shared value embeddings and demonstration encoder, sum pooling over three
+  complete before/after transitions, and two categorical coefficient-row
+  heads. The qualified 397,250-parameter EAL2 temporal reader and exact typed
+  executor remain frozen. Candidate code contains no exact support solver or
+  oracle transition; the bounded 25-row output carrier is explicit.
+
+  The frozen schedule trains treatment and shuffled-outcome control from the
+  same initialization and 100,000 typed records for exactly 500 AdamW
+  updates, batch 2,048, learning rate 0.003. Development seed is
+  `2026080782`; five conditional confirmation seeds are
+  `2026080783`--`2026080787` and must be generated before development
+  scoring. The gate requires at least 99% treatment row/state/query exactness,
+  at least 95% at every depth 12--32, and at least 99% temporal-
+  counterfactual state exactness. Shuffled-outcome and outcome-scrub controls
+  must remain at most 5% state exact; one-example at most 20%; temporal scrub
+  at most 10%. Custody, source deletion, and no-exact-solver audits are
+  conjunctive.
+
+  Local mechanics, backward-pass, full 500-update trainer, evaluator smoke,
+  Python compilation, Ruff, and Slurm syntax all pass. No final NLS1 data,
+  checkpoint, or score exists at freeze time. A development miss closes the
+  lane without width, schedule, seed, duration, or threshold variants.
+
+  Decision:
+  `commit_frozen_nls1;_materialize_and_independently_regenerate_all_boards;_train_two_matched_arms;_open_confirmation_only_on_development_pass`.
