@@ -93,3 +93,16 @@ exactly 64 transaction-0 and 64 transaction-1 queries. Generation runs on
 Stokes with exhaustive source/query/entity overlap audits against CGL1
 training, the development board, and the already-open PQI/QTE board. The board
 remains unopened unless assessor `744568` passes.
+
+The confirmation evaluator is frozen at commit `c08be09`. Its minimal
+read-only Newton overlay is
+`runtime_overlays/diverge_cgl1_confirm_runtime_c08be09_r3`, with
+`SHA256SUMS` SHA-256
+`367a85bf08767842983ebf636f38f5bda580c54201f9093ef2dd361a11cf50d7`.
+The overlay contains only the confirmation data contract, evaluator, job
+wrapper, source receipt, and checksum manifest; all other imports resolve from
+the already-qualified CGL1 base runtime. A fail-closed CPU dispatcher may run
+only after `744568` exits successfully. It verifies the fixed board, verifies
+that the assessment selected exactly one admitted treatment, submits exactly
+one H100 confirmation, and records the child job and artifact hashes. It does
+not alter an arm, threshold, board, or score.
