@@ -28,7 +28,12 @@
 > jobs `745181/745182`, evaluations `745183--745196`, and decision `745198`
 > all completed cleanly. Final QPT1 checkpoint/report SHA-256 are
 > `97351d9b...3350` / `46c66df5...d12`. Preserve QPT1 as a strong
-> math/science/logic specialist result, not the general model.
+> math/science/logic specialist result, not the general model. The sole active
+> architecture successor is frozen SAG1: a bit-identical protected B1 branch,
+> separate pointer-transaction expert, and prompt-only hard router trained on
+> detached per-example base/expert advantage. CPU integration is 37/37; no
+> SAG1 CUDA score exists. Exact contract:
+> `docs/research/DIVERGE_SAG1_COUNTERFACTUAL_ADVANTAGE_GATE.md`.
 
 > **CAB1 FREEZE — 2026-08-07:** JRB1 remains a development FAIL because its
 > mean-pooled natural query owner reached 96.58%, although evidence, initial
@@ -33148,3 +33153,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_exact_qpt1;_preserve_artifacts;_freeze_a_structurally_distinct_selective_specialist_successor_or_larger_host_control_before_more_cuda`.
+
+- **2026-08-07 19:47--19:58 EDT** -- **SAG1 freezes a protected-base,
+  advantage-gated successor; Qwen3.5-9B compatibility runs in parallel.**
+
+  Read-only QPT1/B1 code attribution finds that the four-answer net code loss
+  is not a formatting artifact: QPT1 emits complete but locally wrong
+  algorithms for prime-factor multiplicity, fraction simplification, Collatz
+  filtering, string construction, integer relations, and vowel reversal. A
+  globally active expert is therefore the wrong topology even though it adds
+  69 answers overall.
+
+  DIVERGE-SAG1 loads the qualified B1 checkpoint
+  `f7354e6a...81feb`, freezes its host and LoRA bit-identically, and trains a
+  separate pointer-transaction expert. During training, a prompt-only router
+  receives detached per-example base-versus-expert loss advantage. At
+  inference it commits to one complete lineage; abstention is exactly B1 and
+  no logits or incompatible fields are averaged. Freeze 256 updates, V10
+  `2461d6f7...96549`, seed `2026080711`, QPT geometry 512/8/4/8, router width
+  256, margin 0.02, threshold 0.5, and router/risk/sparsity weights
+  `0.20/0.50/0.01`. Existing 538 tasks are development only. Require the full
+  `30/40` B1 code score, +3 macro, +15 solved, three improved domains, and a
+  nontrivial non-universal router before opening a source-disjoint larger
+  confirmation or 9B transplant. CPU integration passes 37/37. No threshold,
+  margin, weight, width, duration, seed, or task-label rescue family is
+  authorized.
+
+  In parallel, official Apache-2.0 `Qwen/Qwen3.5-9B` exact revision
+  `c202236235762e1c871ad0ccb60c8ee5ba337b9a` is admitted only for a local
+  compatibility preflight. Job `745328` runs on `evc23`; initial Hugging Face
+  requests received bounded 429 backoff. It has no benchmark access and does
+  not alter SAG1's 4B development gate.
+
+  Decision:
+  `pass_one_two_update_sag1_identity_canary;_then_run_one_frozen_4b_development_fit;_transplant_to_9b_only_after_development_pass_and_9b_preflight`.

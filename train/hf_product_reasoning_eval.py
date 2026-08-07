@@ -645,6 +645,34 @@ def _load_model(
             coverage_weight=float(metadata["coverage_weight"]),
             reset_weight=float(metadata["reset_weight"]),
         ).to("cuda:0")
+    elif metadata.get("architecture") == "diverge-sag1":
+        from diverge_sag1_product import SAG1ProductModel
+
+        model = SAG1ProductModel(
+            backbone,
+            base_checkpoint=Path(metadata["base_checkpoint"]),
+            base_checkpoint_sha256=str(metadata["base_checkpoint_sha256"]),
+            model_revision=str(metadata["model_revision"]),
+            lora_layers=int(metadata["lora_layers"]),
+            lora_rank=int(metadata["lora_rank"]),
+            lora_alpha=float(metadata["lora_alpha"]),
+            workspace_width=int(workspace["workspace_width"]),
+            source_slots=int(workspace["source_slots"]),
+            query_slots=int(workspace["query_slots"]),
+            recurrent_steps=int(workspace["recurrent_steps"]),
+            attention_heads=int(workspace["attention_heads"]),
+            ff_multiplier=int(workspace["ff_multiplier"]),
+            pointer_temperature=float(workspace["pointer_temperature"]),
+            binding_weight=float(metadata["binding_weight"]),
+            coverage_weight=float(metadata["coverage_weight"]),
+            reset_weight=float(metadata["reset_weight"]),
+            router_hidden=int(metadata["router_hidden"]),
+            advantage_margin=float(metadata["advantage_margin"]),
+            router_threshold=float(metadata["router_threshold"]),
+            router_weight=float(metadata["router_weight"]),
+            risk_weight=float(metadata["risk_weight"]),
+            sparsity_weight=float(metadata["sparsity_weight"]),
+        ).to("cuda:0")
     else:
         model = ProductReasoningModel(
             backbone=backbone,
