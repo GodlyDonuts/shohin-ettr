@@ -76,7 +76,7 @@ case "$SLOT" in
       ARM=smollm2
       PARENT=$BASE/train/ettr_smollm2_control_parent_a2026072801_7881d8e/joint-model-final.pt
       PARENT_SHA256=8196f810a31e0abe7f3bf0eae0a37b103195f109b7a8e962c7b74b5710c98a02
-      TOKENIZER=$BASE/artifacts/external/smollm2_135m_instruct_83212e1/tokenizer.json
+      TOKENIZER=$BASE/artifacts/external/smollm2_135m_instruct_83212e1e/tokenizer.json
       TOKENIZER_SHA256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
     fi
     CHECKPOINT=$RESULTS/$ARM/model/checkpoint.pt
