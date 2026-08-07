@@ -94,6 +94,16 @@ Stokes with exhaustive source/query/entity overlap audits against CGL1
 training, the development board, and the already-open PQI/QTE board. The board
 remains unopened unless assessor `744568` passes.
 
+The first independent build job `767032` rejected the proposed entity bank
+before writing a board: 15 of its natural-word symbols already occurred in a
+prior board. Timeout-only recovery `767035` was canceled as soon as that
+deterministic data-contract failure was known. Before any CGL1 neural result,
+the bank was replaced with 32 fixed opaque symbols independently checked to
+have zero overlap with the 300,000 CGL1 public rows and both prior boards.
+Seed, typed programs, query templates, renderer/order balance, overlap rules,
+and evaluator are unchanged. The corrected build must still pass the complete
+Stokes audit before a confirmation job can be dependency-released.
+
 The confirmation evaluator is frozen at commit `c08be09`. Its minimal
 read-only Newton overlay is
 `runtime_overlays/diverge_cgl1_confirm_runtime_c08be09_r3`, with

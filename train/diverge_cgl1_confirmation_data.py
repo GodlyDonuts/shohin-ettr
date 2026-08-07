@@ -20,12 +20,11 @@ SCHEMA = "shohin-diverge-cgl1-confirmation-board-v1"
 BOARD_SEED = 2026080703
 BOARD_ROWS = 256
 NAMES = (
-    "amaranth", "bluefin", "cloudspire", "duskfall", "evergreen",
-    "firecrest", "goldfinch", "hearthstone", "ironwood", "javelin",
-    "kingfisher", "lumen", "moonstone", "nightjar", "opaline", "pinecone",
-    "quicklime", "riverbend", "starling", "thunderhead", "ultraviolet",
-    "verdant", "windward", "xenolith", "youngberry", "zinnia", "ashgrove",
-    "bramble", "copperleaf", "driftwood", "elmshade", "frostline",
+    "nqvaq", "nqvbr", "nqvcs", "nqvdt", "nqveu", "nqvfv", "nqvgw",
+    "nqvhx", "nqviy", "nqvjz", "nqvka", "nqvlb", "nqvmc", "nqvnd",
+    "nqvoe", "nqvpf", "zrjaf", "zrjbe", "zrjcd", "zrjdc", "zrjeb",
+    "zrjfa", "zrjgz", "zrjhy", "zrjix", "zrjjw", "zrjkv", "zrjlu",
+    "zrjmt", "zrjns", "zrjor", "zrjpq",
 )
 MODES = ("sensitive", "invariant", "underdetermined")
 
