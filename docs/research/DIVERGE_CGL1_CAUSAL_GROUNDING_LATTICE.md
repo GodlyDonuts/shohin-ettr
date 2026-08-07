@@ -40,13 +40,17 @@ contain only the committed public identity and terminal answer. Exhaustive
 generation verifies every six-record orbit, value swap, equal-outcome case,
 clause-order answer invariant, identity, and forbidden-field audit.
 
-The first local exhaustive build produced provisional hashes:
+The first local/Stokes cross-host build reproduced the public and supervisor
+files exactly, but exposed that report v1 serialized absolute host paths. That
+receipt format is rejected before neural use. Report v2 stores only canonical
+roles and relative artifact names; public and supervisor bytes are unchanged.
+The canonical hashes are:
 
 - public: `bc438f793a3ced67a3b5493d70c14cbc39db4c20f3fe0fb50579af6b5f1daea9`;
 - supervisor: `affa2cc36412f07f2816a00bbe2abfb06ee93be3b602c79b79b248f4ccf2552d`;
-- report: `9823ba87ba37e710800701760e12486c701a281bf1d630ce019bbc7aee8d49ee`.
+- report: `e9267aadaa1413778d7ac54db6a72a95500da92acee733fccaa655830b9cb1a6`.
 
-Stokes must reproduce those hashes before neural admission.
+Stokes must reproduce all three canonical hashes before neural admission.
 
 ## Neural admission boundary
 

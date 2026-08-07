@@ -67,11 +67,11 @@ def main() -> None:
     _atomic_jsonl(supervisor_path, supervisors)
     report = {
         **report,
-        "source": str(args.source),
+        "source_role": "rrg1_query_training",
         "source_sha256": args.source_sha256,
-        "public": str(public_path),
+        "public": public_path.name,
         "public_sha256": sha256_path(public_path),
-        "supervisor": str(supervisor_path),
+        "supervisor": supervisor_path.name,
         "supervisor_sha256": sha256_path(supervisor_path),
     }
     _atomic_json(report_path, report)

@@ -14,7 +14,7 @@ from diverge_rrg1_data import ROWS_PER_STAGE, validate_training_record
 
 PUBLIC_SCHEMA = "shohin-diverge-cgl1-public-training-v1"
 SUPERVISOR_SCHEMA = "shohin-diverge-cgl1-outcome-supervisor-v1"
-REPORT_SCHEMA = "shohin-diverge-cgl1-data-report-v1"
+REPORT_SCHEMA = "shohin-diverge-cgl1-data-report-v2"
 DATA_SEED = 2026080701
 STATE_ORBITS = 3
 
