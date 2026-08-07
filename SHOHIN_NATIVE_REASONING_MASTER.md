@@ -1,5 +1,28 @@
 # Shohin Native Reasoning Master Ledger
 
+## Latest Result — 2026-08-07
+
+**DIVERGE-MZE1 confirms removal of the hard-coded Z/97 operation semantics
+from Shohin's strongest controlled reasoning path.** A 400-parameter presented
+finite-field law owner learns eight opaque 2x2 transition laws from input and
+successor-state outcomes only. It is exact on all `75,272` possible one-step
+transitions and on held autonomous programs through depth 32; a matched
+shifted-outcome control scores `0.2657%`. The candidate runtime imports no
+exact PL1 operation implementation.
+
+Inserted into unchanged CWC1 -> EWC1 -> NPL2, MZE1 reaches
+`35,066/40,960 = 85.6104%` across five fixed seeds, exactly equal to the oracle
+on every seed and versus `3.9185%` for the strongest non-oracle. Every existing
+WORLD, EVIDENCE, QUERY, plasticity, causal-control, rollback, source-deletion,
+and owner-custody gate passes. Aggregate SHA-256 is
+`14f05b8a8a7f30f01418c0d00034a91e528da18395652304dd20d92e0325dbdd`.
+
+This is controlled model-owned recurrent execution, not open-domain reasoning.
+Complete candidate construction, exact external verification, and the narrow
+mini-language remain engineered. No long continuation pretraining is
+authorized. See
+`docs/research/DIVERGE_MZE1_MODEL_OWNED_Z97_EXECUTOR.md`.
+
 ## Current Status — Read First
 
 **Current architecture result (2026-08-06 16:13 EDT): DIVERGE-IEM1 fails its
@@ -57210,3 +57233,34 @@ candidate generation, the mini-language, exact execution, and verification
 are engineered; CWC's involution has no score advantage over standard
 augmentation on this board; and this is not unrestricted natural-language
 reasoning or a public-benchmark claim.
+
+### DIVERGE-MZE1: learn the recurrent transition laws from outcomes
+
+MZE1 replaces only the exact Z/97 operation implementation in the confirmed
+CWC1 -> EWC1 -> NPL2 composition. For each opaque operation and output
+register, a presented-law owner learns a distribution over bounded linear
+coefficient rows. It is supervised only by input and successor states. Hard
+inference commits one 2x2 law per operation and reuses it at every recurrent
+step. CWC1, EWC1, NVE1, NPL2 plasticity, EIC1 queries, data, prompts, seeds,
+verifier, and thresholds are unchanged.
+
+The component gate passes. Treatment is exact on all `8 * 97 * 97 = 75,272`
+state transitions and on 2,000 held programs at each depth 4, 8, 16, and 32.
+The equal-parameter, equal-update shifted-outcome control is `0.2657%` exact
+against true operations. The candidate runtime has no import of the PL1 exact
+operation. Component checkpoint/report SHA-256 values are
+`0526e0e4...a9124c` and `5846528b...349bf`.
+
+Development is `84.8145%`, exactly oracle. A caching-only replay commits the
+already-learned rows once and reduces wall time from 16m45s to 4m34s while
+reproducing every semantic score, intervention, gate, and owner state. Five
+parallel confirmation jobs then reproduce the protected result exactly:
+`87.0972%`, `82.6416%`, `85.7178%`, `87.3169%`, and `85.2783%`. Aggregate is
+`85.6104%`, exactly oracle on every seed, versus `3.9185%` strongest
+non-oracle. Aggregate SHA-256 is `14f05b8a...25dbdd`.
+
+This qualifies a learned recurrent executor inside the strongest controlled
+path. The remaining boundaries are now narrower and clearer: raw inputs still
+present explicit complete candidate worlds, the verifier remains exact and
+external, and the task is a synthetic mini-language. The next gate must remove
+one of those boundaries without retraining or weakening the qualified owners.

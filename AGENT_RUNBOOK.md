@@ -32089,3 +32089,51 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `preserve_as_strongest_controlled_reasoning_path;_close_this_bounded_lane;_target_the_next_largest_engineered_scaffold_without_retraining_qualified_owners`.
+
+- **2026-08-07 09:00--09:46 EDT** -- **A learned finite-field executor
+  replaces NPL2's hard-coded operation semantics and confirms at oracle.**
+
+  DIVERGE-MZE1 freezes one 400-parameter presented-law owner. For each of the
+  eight opaque operations and two output registers it learns a categorical
+  coefficient row over `{-2,-1,0,1,2}^2` from input/successor outcomes only.
+  Hard inference commits one 2x2 law and ties it across recurrent depth. The
+  runtime imports neither `diverge_pl1_data` nor exact `apply_operation`.
+  CWC1, EWC1, NVE1, NPL2 plasticity, EIC1, all data/prompts/seeds, the exact
+  verifier, and every prior threshold remain unchanged.
+
+  The component gate passes locally before composition: treatment is exact on
+  all `75,272/75,272` possible one-step transitions and on 2,000 held programs
+  at depths 4, 8, 16, and 32. The equal-parameter/equal-update shifted-outcome
+  control is `0.2657%` exact against the true operations. Checkpoint SHA-256 is
+  `0526e0e4ec167b8263ae5879cc8b29472ac860aff542f18d137220a406a9124c`;
+  report SHA-256 is
+  `5846528b5f07403b338f804839760347aa34d38bdcda2a7b677af17b4a8349bf`.
+
+  Development `744698` passes at `84.8145%`, exactly oracle, but takes 16m45s
+  because the first wrapper reconstructs learned rows through Torch on every
+  microstep. Commit `088839f` caches the already-committed rows once. Exact
+  replay `744700` finishes in 4m34s and reproduces all score, control, gate,
+  state, and custody fields except elapsed time and packaging paths. Replay
+  result SHA-256 is
+  `5fc8d0d39b99168a3426481f742c30ed1c7609eb0af6a8333405e54a4134cec4`.
+  Immutable runtime `diverge_mze1_cwc1_npl2_088839f_r1` has SHA256SUMS
+  SHA-256 `49fe5eb131a823e7a381a4296f96c4e205459995238b6b819053e7a5051d9740`.
+
+  Five fixed confirmation jobs `744701`--`744705` complete concurrently in
+  4m32s--4m52s; aggregate `744706` completes in 17 seconds. Aggregate NPL2 is
+  `35,066/40,960 = 85.6104%`, exactly equal to oracle on every seed. The
+  strongest non-oracle remains `3.9185%`; every original WORLD, EVIDENCE,
+  QUERY, plasticity, reset, shuffled-credit, wrong-branch, transplant,
+  eligibility, rollback, source-deletion, and owner-custody condition passes.
+  Aggregate SHA-256 is
+  `14f05b8a8a7f30f01418c0d00034a91e528da18395652304dd20d92e0325dbdd`.
+  All final reports are hash-matched and read-only locally/Newton.
+
+  Qualify learned recurrent operation execution in the strongest controlled
+  Shohin path. Do not overclaim: exact verification, explicit complete-world
+  candidate construction, the bounded coefficient catalog, and the synthetic
+  mini-language remain engineered. This does not authorize long continuation
+  pretraining.
+
+  Decision:
+  `promote_mze1_as_model_owned_executor;_next_remove_explicit_complete_candidate_construction_or_broaden_episode_local_law_induction_without_retraining_qualified_owners`.
