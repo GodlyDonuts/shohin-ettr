@@ -1,0 +1,46 @@
+#!/bin/bash
+#SBATCH --job-name=pqi1-ar
+#SBATCH --partition=normal
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=32G
+#SBATCH --gres=gpu:h100:1
+#SBATCH --time=00:20:00
+#SBATCH --output=/lustre/fs1/home/%u/shohin/logs/pqi1_ar_%j.out
+
+set -euo pipefail
+
+: "${CODE_ROOT:?}"
+: "${SOURCE_COMMIT:?}"
+: "${BASE:?}"
+: "${BASE_SHA256:?}"
+: "${TOKENIZER:?}"
+: "${TOKENIZER_SHA256:?}"
+: "${BACKBONE_NAME:?}"
+: "${DATA:?}"
+: "${DATA_SHA256:?}"
+: "${OUTPUT:?}"
+
+if [[ -e "$OUTPUT" ]]; then
+  echo "refusing existing attribution output: $OUTPUT" >&2
+  exit 1
+fi
+
+cd "$CODE_ROOT"
+export PYTHONPATH="$CODE_ROOT/train${PYTHONPATH:+:$PYTHONPATH}"
+export PYTHONUNBUFFERED=1
+
+echo "[pqi1-ar] node=$(hostname) backbone=$BACKBONE_NAME commit=$SOURCE_COMMIT"
+nvidia-smi --query-gpu=index,name --format=csv,noheader
+srun python -u train/diagnose_diverge_pqi1_autoregressive.py \
+  --base "$BASE" \
+  --base-sha256 "$BASE_SHA256" \
+  --tokenizer "$TOKENIZER" \
+  --tokenizer-sha256 "$TOKENIZER_SHA256" \
+  --backbone-name "$BACKBONE_NAME" \
+  --data "$DATA" \
+  --data-sha256 "$DATA_SHA256" \
+  --output "$OUTPUT" \
+  --batch-size 64 \
+  --device cuda
