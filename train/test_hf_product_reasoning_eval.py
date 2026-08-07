@@ -5,7 +5,7 @@ from __future__ import annotations
 import subprocess
 import types
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from hf_product_reasoning_eval import (
     _completion_usage,
@@ -16,6 +16,7 @@ from hf_product_reasoning_eval import (
     _bounded_program_result,
     _humaneval_program,
     _mbpp_program,
+    _set_inference_control,
     _strip_reasoning_and_fences,
     _task_prompt,
     extract_aime,
@@ -34,6 +35,17 @@ from hf_product_reasoning_eval import (
 
 
 class ProductReasoningEvalTests(unittest.TestCase):
+    def test_qpt_control_requires_qpt_checkpoint(self) -> None:
+        model = types.SimpleNamespace(set_control=Mock())
+        _set_inference_control(
+            model,
+            {"architecture": "diverge-qpt1"},
+            "state_reset",
+        )
+        model.set_control.assert_called_once_with("state_reset")
+        with self.assertRaises(ProductEvalError):
+            _set_inference_control(model, {"architecture": "baseline"}, "state_reset")
+
     def test_completion_usage_distinguishes_eos_from_exhaustion(self) -> None:
         self.assertEqual(_completion_usage([4, 5, 2, 2], [2, 9], 4), (3, False))
         self.assertEqual(_completion_usage([4, 9, 2, 2], [2, 9], 4), (2, False))

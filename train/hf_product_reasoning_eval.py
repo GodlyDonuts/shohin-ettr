@@ -691,6 +691,29 @@ def _generation_arguments(mode: str, max_new_tokens: int) -> dict[str, Any]:
     raise ProductEvalError("unsupported generation mode")
 
 
+def _set_inference_control(
+    model: Any,
+    adapter_metadata: dict[str, Any] | None,
+    control: str,
+) -> None:
+    """Apply a frozen QPT1 causal intervention or fail closed."""
+
+    if control == "normal":
+        if (
+            adapter_metadata is not None
+            and adapter_metadata.get("architecture") == "diverge-qpt1"
+        ):
+            model.set_control(control)
+        return
+    if (
+        adapter_metadata is None
+        or adapter_metadata.get("architecture") != "diverge-qpt1"
+        or not hasattr(model, "set_control")
+    ):
+        raise ProductEvalError("QPT1 control requires a QPT1 checkpoint")
+    model.set_control(control)
+
+
 def _completion_usage(
     token_ids: list[int],
     stop_token_ids: list[int],
@@ -882,6 +905,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     )
     if hasattr(model, "set_selection_strategy"):
         model.set_selection_strategy(args.ltm_selection)
+    _set_inference_control(model, adapter_metadata, args.qpt_control)
     stop_token_ids = _generation_stop_token_ids(tokenizer)
 
     random.seed(args.generation_seed)
@@ -1039,6 +1063,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "generation_mode": args.generation_mode,
         "enable_thinking": args.enable_thinking,
         "ltm_selection": args.ltm_selection,
+        "qpt_control": args.qpt_control,
         "effective_enable_thinking": (
             args.enable_thinking if args.adapter_checkpoint is None else False
         ),
@@ -1101,6 +1126,11 @@ def parse_args() -> argparse.Namespace:
         "--ltm-selection",
         choices=("highest_prior", "lowest_prior", "reset"),
         default="highest_prior",
+    )
+    parser.add_argument(
+        "--qpt-control",
+        choices=("normal", "packet_swap", "state_reset", "release_off"),
+        default="normal",
     )
     args = parser.parse_args()
     if (

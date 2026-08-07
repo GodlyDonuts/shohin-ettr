@@ -32,6 +32,7 @@ GENERATION_MODE=${GENERATION_MODE:-greedy}
 ADAPTER_CHECKPOINT=${ADAPTER_CHECKPOINT:-}
 ENABLE_THINKING=${ENABLE_THINKING:-true}
 LTM_SELECTION=${LTM_SELECTION:-highest_prior}
+QPT_CONTROL=${QPT_CONTROL:-normal}
 STAGE_MODEL=${STAGE_MODEL:-true}
 
 test -x "$PYTHON"
@@ -99,6 +100,7 @@ fi
   --code-timeout "$CODE_TIMEOUT" \
   --generation-mode "$GENERATION_MODE" \
   --ltm-selection "$LTM_SELECTION" \
+  --qpt-control "$QPT_CONTROL" \
   "$THINKING_ARG" \
   "$FINALIZE_ARG" \
   "${ADAPTER_ARGS[@]}"
