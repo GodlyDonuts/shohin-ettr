@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import hashlib
 
-import pytest
-
 from diverge_iem1_data import canonical_sha256, _symbol_role_ids
 from diverge_rrg1_data import (
     RRG1DataError,
@@ -71,13 +69,17 @@ def _record(*, stage: str, order: int) -> dict[str, object]:
     return record
 
 
-@pytest.mark.parametrize("stage", ("EVIDENCE", "QUERY"))
-@pytest.mark.parametrize("order", (0, 1))
-def test_rrg1_record_is_exact_and_counterfactual(stage: str, order: int) -> None:
+def _assert_record_is_exact_and_counterfactual(stage: str, order: int) -> None:
     record = _record(stage=stage, order=order)
     validate_training_record(record)
     expected = [0, 1] if order == 0 else [1, 0]
     assert record["symbol_role_ids"] == expected
+
+
+def test_rrg1_records_are_exact_and_counterfactual() -> None:
+    for stage in ("EVIDENCE", "QUERY"):
+        for order in (0, 1):
+            _assert_record_is_exact_and_counterfactual(stage, order)
 
 
 def test_rrg1_record_fails_closed_on_role_change() -> None:
@@ -86,6 +88,19 @@ def test_rrg1_record_fails_closed_on_role_change() -> None:
     record["identity_sha256"] = canonical_sha256(
         {key: value for key, value in record.items() if key != "identity_sha256"}
     )
-    with pytest.raises(RRG1DataError, match="role assignment"):
+    try:
         validate_training_record(record)
+    except RRG1DataError as error:
+        assert "role assignment" in str(error)
+    else:
+        raise AssertionError("RRG1 accepted a changed role assignment")
 
+
+def main() -> None:
+    test_rrg1_records_are_exact_and_counterfactual()
+    test_rrg1_record_fails_closed_on_role_change()
+    print("DIVERGE-RRG1 data tests passed")
+
+
+if __name__ == "__main__":
+    main()

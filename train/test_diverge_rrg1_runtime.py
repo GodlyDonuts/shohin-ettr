@@ -69,3 +69,13 @@ def test_rrg1_owner_storage_and_protection() -> None:
     assert hashes["NUMERIC_EVIDENCE"]
     assert hashes["QUERY"] == hashes["REFERENT"]
 
+
+def main() -> None:
+    test_rrg1_name_bytes_and_lengths_are_unobservable()
+    test_rrg1_group_and_role_slot_equivariance()
+    test_rrg1_owner_storage_and_protection()
+    print("DIVERGE-RRG1 runtime tests passed")
+
+
+if __name__ == "__main__":
+    main()
