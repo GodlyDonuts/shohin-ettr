@@ -31741,3 +31741,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `2026080713`, typed programs, query templates, renderer/order balance,
   overlap rules, training data, live H100 jobs, and all gates remain exact.
   One replacement CPU build is authorized before any EIC1 development result.
+
+- **2026-08-07 04:13--05:03 EDT** -- **DIVERGE-EIC1 passes matched
+  development and sealed confirmation.**
+
+  Four independent one-H100 arms complete exactly 1,563 updates and fit
+  `100,000/100,000` true assignments. Shohin involution `744625` scores
+  `768/768` normal and mapped swap with zero projection error; equal-FLOP
+  duplicate control `744626` remains `768/768` normal but falls to `384/768`
+  mapped swap. SmolLM2 treatment/control `744627/744628` score `768/768`
+  versus `512/768` mapped swap. The architectural projection therefore adds
+  384 Shohin swapped assignments without changing normal accuracy.
+
+  Assessor `744629` passes all six frozen conditions at SHA-256
+  `556a85e07d5a00ab2a50c3fafe2188017c4fc61fbcee5e4947d61e63a6d31acd`.
+  The corrected confirmation board was built independently before results:
+  256 programs, 768 balanced queries, 1,048,576 worlds, zero overlap, board
+  SHA-256 `20ae06c6...a64947f`, report `e2238127...f26054b`. CPU authorizer
+  `744632` passes before exactly one H100 confirmation `744633` opens it.
+
+  Confirmation is exact: normal and mapped swap `768/768`, each mode
+  `256/256`, each renderer `128/128`, entity rename bit-exact, source scrub
+  `384/768` with zero margin, projection residual zero, and frozen parent
+  exact. Result SHA-256 is
+  `268d2b0e7fc263c0a2d2db990d040a25f87612698bf4a90f5dc6fef857441a5c`;
+  selected checkpoint SHA-256 is
+  `cd86f7335b9b7df078acc4b17c4dbe6b8bf944daee40f5397b452a0b5fae8849`.
+
+  Preserve EIC1 as the qualified typed QUERY semantic owner. It is not yet an
+  end-to-end reasoning claim. The immediate successor must reuse protected
+  NVE1 EVIDENCE, structural WORLD/execution, and oracle-qualified PL1 mechanics
+  while replacing STI1's failed RRG1 QUERY owner with EIC1. First run one
+  source-disjoint semantic admission, then exactly one natural verified-
+  plasticity integration if and only if that interface passes.
+
+  Decision:
+  `qualify_eic1_query_owner;_compose_once_with_nve1_and_pl1;_do_not_continue_pretraining_yet`.

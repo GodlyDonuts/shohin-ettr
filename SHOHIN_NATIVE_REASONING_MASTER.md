@@ -57036,3 +57036,26 @@ control by at least 200 swapped assignments. A new source-disjoint board is
 frozen before training and remains sealed behind that development result.
 EIC1 is a semantic-owner qualification gate, not yet an open-domain reasoning
 claim or authorization for continuation pretraining.
+
+### DIVERGE-EIC1 result: exact equivariant identity commits transfer
+
+EIC1 is the first small-Shohin semantic owner in this campaign to pass both a
+matched causal development gate and an independently generated confirmation.
+Shohin's involution arm scores `768/768` normal and `768/768` under mapped
+mention swap, while its equal-FLOP duplicate-forward control scores `768/768`
+normal but only `384/768` after the same swap. SmolLM2 independently shows
+`768/768` versus `512/768`. All four arms fit `100,000/100,000` true training
+assignments, so fit alone does not explain the transfer difference.
+
+The sole Shohin confirmation remains exact across all 768 assignments, all
+three modes, all six renderers, mapped mention swap, and arbitrary entity
+renaming. Deleting source context falls to balanced chance (`384/768`) with
+zero mean margin, and the exact projection residual is zero. Assessment and
+confirmation SHA-256 values are `556a85e0...1acd` and `268d2b0e...41a5c`.
+
+This qualifies the typed QUERY transaction owner and closes the prior
+renderer-inversion bottleneck. It does not by itself execute programs, update
+an epistemic state, or solve open-domain tasks. The next bounded lane composes
+EIC1 with protected NVE1 evidence parsing and the positive PL1 verified-credit
+mechanics on the source-disjoint natural mini-language. No continuation
+pretraining is authorized by this result.
