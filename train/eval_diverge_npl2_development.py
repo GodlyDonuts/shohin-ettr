@@ -46,7 +46,8 @@ from eval_diverge_eni1_semantics import _load_jsonl, _query_records
 from eval_diverge_pqi1 import sha256_path
 from eval_diverge_sti1 import _load_sti1
 
-SCHEMA = "shohin-diverge-npl2-development-v1"
+DEVELOPMENT_SCHEMA = "shohin-diverge-npl2-development-v1"
+CONFIRMATION_SEED_SCHEMA = "shohin-diverge-npl2-confirmation-seed-v1"
 RUN_SEED = 2026080799
 NATURAL_ARMS = (
     "STATIC",
@@ -390,6 +391,11 @@ def main() -> None:
     parser.add_argument("--assessor-data-sha256", required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--batch-size", type=int, default=512)
+    parser.add_argument(
+        "--evaluation-split",
+        choices=("development", "confirmation"),
+        default="development",
+    )
     args = parser.parse_args()
     if args.output.exists():
         raise SystemExit("refusing existing NPL2 development result")
@@ -619,9 +625,36 @@ def main() -> None:
         and mutation_rejected,
         "source_deleted_before_transfer": True,
     }
+    integrity_conditions = {
+        "world_exact": conditions["world_exact"],
+        "evidence_semantics_at_least_99_5_percent": conditions[
+            "evidence_semantics_at_least_99_5_percent"
+        ],
+        "query_semantics_at_least_99_5_percent": conditions[
+            "query_semantics_at_least_99_5_percent"
+        ],
+        "protected_owner_hashes_exact": conditions["protected_owner_hashes_exact"],
+        "source_deleted_before_transfer": conditions["source_deleted_before_transfer"],
+    }
+    if args.evaluation_split == "development":
+        status = "pass" if all(conditions.values()) else "fail"
+        schema = DEVELOPMENT_SCHEMA
+    else:
+        status = "complete" if all(integrity_conditions.values()) else "invalid"
+        schema = CONFIRMATION_SEED_SCHEMA
+    episode_seeds = {episode.seed for episode in assessors}
+    if len(episode_seeds) != 1:
+        raise SystemExit("NPL2 evaluation seed geometry differs")
     report = {
-        "schema": SCHEMA,
-        "status": "pass" if all(conditions.values()) else "fail",
+        "schema": schema,
+        "status": status,
+        "evaluation_split": args.evaluation_split,
+        "episode_seed": next(iter(episode_seeds)),
+        "episode_ids_sha256": hashlib.sha256(
+            json.dumps(
+                [episode.episode_id for episode in assessors], separators=(",", ":")
+            ).encode("ascii")
+        ).hexdigest(),
         "source_commit": args.source_commit,
         "world": dict(world),
         "semantic_compilation": {
@@ -634,6 +667,10 @@ def main() -> None:
         "transplant_query_rate": transplant_rate,
         "rollback": rollback,
         "gate": {"conditions": conditions, "passed": all(conditions.values())},
+        "integrity_gate": {
+            "conditions": integrity_conditions,
+            "passed": all(integrity_conditions.values()),
+        },
         "resource_contract": {
             "episodes": len(typed),
             "branches_per_attempt": 8,
@@ -658,7 +695,7 @@ def main() -> None:
             "assessor_data": str(args.assessor_data),
             "assessor_data_sha256": args.assessor_data_sha256,
             "owner_hashes_exact": owner_hashes_exact,
-            "confirmation_data_accessed": False,
+            "confirmation_data_accessed": args.evaluation_split == "confirmation",
         },
     }
     _atomic_json(args.output, report)
