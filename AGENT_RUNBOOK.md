@@ -1,6 +1,6 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **OPB1 CONFIRMED / QST1 CLOSED / QPT1 FROZEN — 2026-08-07 17:45 EDT:**
+> **OPB1 CONFIRMED / QST1 CLOSED / QPT1 CLOSED — 2026-08-07 19:33 EDT:**
 > OPB1 development and all five source-disjoint confirmations pass. Aggregate
 > SHA-256 is `79ce10ae...1a6d6`: treatment/full rename/coherent reindex are
 > exact across `30,720` operation bindings, `20,480` terminal states, and
@@ -8,18 +8,27 @@
 > states/answers. QST1 on Qwen3.5-0.8B is closed as a broad product negative:
 > `23.908%` five-domain macro and `119` solved versus B1 `22.901% / 106`, but
 > executable code regresses `6/40 -> 3/40`. Do not run QST1 variants. The sole
-> stronger-host product successor is QPT1 on exact pinned
+> stronger-host product successor QPT1 ran once on exact pinned
 > `Qwen/Qwen3.5-4B@851bf6e...cd0a`: hard query-conditioned pointers, whole-slot
 > transactions, fixed recurrent depth, and zero-initialized same-sequence
-> residual injection. Its 256-update matched QPT1/B1 gate is frozen; no QPT1
-> capability score exists yet. Exact local-only preflight `745178` passes on
+> residual injection. Its matched 256-update gate completed with exact
+> training integrity. B1/QPT1 score `55.630% / 62.588%` five-domain macro and
+> `248 / 317` solved of 538. QPT1 moves GSM8K `85 -> 93`, MATH-500 `50 -> 54`,
+> GPQA `30 -> 87` of 198, and BBH logic `53 -> 57`, but executable code falls
+> `30/40 -> 26/40`; AIME separately falls `4/30 -> 1/30`. The `+6.958` macro,
+> `+69` solved, four-domain lift is real, but the 10-point code regression
+> violates the frozen two-point maximum. Aggregate SHA-256 is
+> `4827808a...afaada`; `required_next_step=close_exact_qpt1`. Do not run QPT1
+> controls, duration/width/seed/threshold/loss variants, or claim broad
+> promotion. Exact local-only preflight `745178` passed on
 > `evc50`: `4,539,265,536` parameters, 8.56 GiB peak, and successful native
 > generation; report SHA-256 is `c07696aa...5d781f`. Canary `745179` passes:
 > 657 charged targets, 107.61 tok/s, 24.31 GiB peak, frozen weights unchanged,
 > checkpoint/report SHA-256 `416c76f8...3d71a` / `9ceb582d...7e73`. Matched
-> QPT1/B1 jobs `745181/745182` are both running; fourteen domain evaluations
-> `745183--745196` and automatic decision `745198` are dependency-gated.
-> Do not alter this chain.
+> jobs `745181/745182`, evaluations `745183--745196`, and decision `745198`
+> all completed cleanly. Final QPT1 checkpoint/report SHA-256 are
+> `97351d9b...3350` / `46c66df5...d12`. Preserve QPT1 as a strong
+> math/science/logic specialist result, not the general model.
 
 > **CAB1 FREEZE — 2026-08-07:** JRB1 remains a development FAIL because its
 > mean-pooled natural query owner reached 96.58%, although evidence, initial
@@ -33106,3 +33115,36 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finish_both_arms;_prove_qwen_checkpoint_generation;_run_identical_evaluations;_open_controls_only_on_score_pass`.
+
+- **2026-08-07 19:18--19:33 EDT** -- **QPT1 produces a large four-domain
+  lift but fails broad promotion on code; exact QPT1 is closed.**
+
+  QPT1 job `745181` completes all 256 updates in 1:10:10 with `619,734`
+  charged targets at `148.691` target tok/s. Matched B1 `745182` uses the
+  identical target count and update geometry. All training values are finite,
+  the protected 4B host hash is unchanged, and final QPT1 checkpoint/report
+  SHA-256 values are
+  `97351d9b572b371ff09a7f675ef4b1893c20b69739727b4a207ec5a3c9813350` /
+  `46c66df57e905947602b63137d2b99901d946913847ea0e2fa667845cf6ffd12`.
+
+  The seven evaluations per arm complete under the identical evaluator.
+  B1/QPT1 reach `55.630% / 62.588%` five-domain macro and `248 / 317`
+  solved of 538. Domain results are GSM8K `85/100 -> 93/100`, MATH-500
+  `50/100 -> 54/100`, executable code `30/40 -> 26/40`, GPQA
+  `30/198 -> 87/198`, and BBH logic `53/100 -> 57/100`. AIME is separate at
+  `4/30 -> 1/30`. QPT1 gains `+6.958` macro points and `+69` solved while
+  improving four domains, but code regresses by 10 percentage points.
+
+  Frozen decision job `745198` therefore rejects broad promotion solely on
+  the no-regression conjunction. Aggregate report SHA-256 is
+  `4827808a5d0ec4635e8c72cbdcf23bc6b812f91ffe39b3303f29219854afaada`
+  and explicitly records `promotion_authorized=false` and
+  `required_next_step=close_exact_qpt1`. The staged packet-swap/state-reset/
+  release-off controls remain unopened because the score gate did not pass.
+  Do not rescue QPT1 with width, duration, seed, loss, threshold, or evaluator
+  variants. Preserve its large specialist lift as evidence that coherent
+  pointer transactions can add capability, while the globally active
+  residual path still damages a protected capability.
+
+  Decision:
+  `close_exact_qpt1;_preserve_artifacts;_freeze_a_structurally_distinct_selective_specialist_successor_or_larger_host_control_before_more_cuda`.

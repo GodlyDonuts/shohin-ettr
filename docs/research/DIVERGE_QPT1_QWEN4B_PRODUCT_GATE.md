@@ -1,6 +1,7 @@
 # DIVERGE-QPT1: Qwen3.5-4B Pointer-Transaction Gate
 
-Status: frozen before any QPT1 CUDA score.
+Status: complete and closed. The score gate produced a large aggregate lift
+but failed the conjunctive no-regression rule; controls remain unopened.
 
 ## Objective
 
@@ -66,3 +67,37 @@ A miss closes exact QPT1 without pointer-temperature, width, duration, seed,
 loss-weight, or threshold variants. A pass authorizes one larger-data
 continuation and a fresh benchmark milestone; it does not by itself establish
 general reasoning.
+
+## Result
+
+Jobs `745181/745182` completed the exact 256-update QPT1/B1 comparison with
+`619,734` charged targets per arm, 16 logical examples/update, finite training,
+and unchanged protected Qwen3.5-4B weights. QPT1 trained at `148.691` charged
+target tok/s. Its final checkpoint and training-report SHA-256 values are:
+
+- checkpoint: `97351d9b572b371ff09a7f675ef4b1893c20b69739727b4a207ec5a3c9813350`;
+- report: `46c66df57e905947602b63137d2b99901d946913847ea0e2fa667845cf6ffd12`.
+
+| Domain | B1 | QPT1 | Delta |
+|---|---:|---:|---:|
+| GSM8K | 85/100 | 93/100 | +8 |
+| MATH-500 | 50/100 | 54/100 | +4 |
+| HumanEval + MBPP | 30/40 | 26/40 | -4 |
+| GPQA-Diamond | 30/198 | 87/198 | +57 |
+| BBH logic | 53/100 | 57/100 | +4 |
+| Five-domain macro | 55.630% | 62.588% | +6.958 points |
+| Five-domain solved | 248/538 | 317/538 | +69 |
+| AIME-2024 (separate) | 4/30 | 1/30 | -3 |
+
+QPT1 clears the macro, solved-count, and improved-domain requirements, but
+the 10-point code regression exceeds the frozen two-point maximum. Automatic
+decision job `745198` therefore records `promotion_authorized=false` and
+`required_next_step=close_exact_qpt1`. Aggregate SHA-256 is
+`4827808a5d0ec4635e8c72cbdcf23bc6b812f91ffe39b3303f29219854afaada`.
+The exact aggregate is preserved in
+`docs/research/DIVERGE_QPT1_QWEN4B_PRODUCT_GATE_RESULT.json`.
+
+This is a strong specialist result, not a broad model promotion. The
+conditional packet-swap, state-reset, and release-off evaluations were not
+opened because the score conjunction failed. Exact QPT1 is closed without a
+rescue variant.

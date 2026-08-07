@@ -57481,7 +57481,7 @@ Five-domain macro rose only `22.901% -> 23.908%`, and solved count rose
 `106 -> 119`. This misses the frozen `+3` macro and `+15` solved gates and
 violates the no-regression rule. Exact QST1 is closed, not scaled.
 
-### QPT1 stronger-host successor: preflight passed, awaiting training evidence
+### QPT1 stronger-host successor: large specialist lift, broad gate failed
 
 The next product gate uses exact pinned post-trained Qwen3.5-4B revision
 `851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a`. QPT1 replaces QST1's global
@@ -57495,7 +57495,18 @@ preflight `745178` passed for the 4.539B-parameter host at 8.56 GiB peak;
 report SHA-256 is
 `c07696aa5bb7da32cc6dc3f910372c8af03f97b612c0a0f8fbb4c608f15d781f`.
 Canary `745179` passed with 657 charged targets, 107.61 tok/s, 24.31 GiB peak,
-and protected weights unchanged. Matched training jobs `745181/745182` now run
-concurrently; fourteen parallel domain evaluations `745183--745196` and the
-automatic frozen decision `745198` form the remaining chain. No QPT1
-capability score exists yet.
+and protected weights unchanged. The complete matched chain then ran once.
+B1/QPT1 reach `55.630% / 62.588%` five-domain macro and `248 / 317` solved of
+538. QPT1 improves GSM8K `85 -> 93`, MATH-500 `50 -> 54`, GPQA
+`30 -> 87` of 198, and BBH logic `53 -> 57`, but code falls
+`30/40 -> 26/40`; AIME separately falls `4/30 -> 1/30`. Training integrity is
+exact and the host weights remain unchanged.
+
+The `+6.958` macro and `+69` solved result is the strongest broad product lift
+yet observed from a Shohin architecture module, but it is not promotable: the
+10-point code regression violates the frozen two-point maximum. Automatic
+decision `745198` closes exact QPT1; aggregate SHA-256 is
+`4827808a5d0ec4635e8c72cbdcf23bc6b812f91ffe39b3303f29219854afaada`.
+Controls remain unopened. Preserve QPT1 as a math/science/logic specialist
+baseline and require a structurally distinct successor to protect code rather
+than tuning this closed formulation.

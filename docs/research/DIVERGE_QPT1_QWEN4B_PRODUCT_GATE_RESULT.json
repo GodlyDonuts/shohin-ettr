@@ -1,0 +1,228 @@
+{
+  "arms": {
+    "B1": {
+      "aime": {
+        "accuracy": 0.13333333333333333,
+        "correct": 4,
+        "total": 30
+      },
+      "domains": {
+        "code": {
+          "accuracy": 0.75,
+          "correct": 30,
+          "tasks": [
+            "humaneval",
+            "mbpp"
+          ],
+          "total": 40
+        },
+        "competition_math": {
+          "accuracy": 0.5,
+          "correct": 50,
+          "tasks": [
+            "math500"
+          ],
+          "total": 100
+        },
+        "grade_school_math": {
+          "accuracy": 0.85,
+          "correct": 85,
+          "tasks": [
+            "gsm8k"
+          ],
+          "total": 100
+        },
+        "logic": {
+          "accuracy": 0.53,
+          "correct": 53,
+          "tasks": [
+            "bbh_logic"
+          ],
+          "total": 100
+        },
+        "science": {
+          "accuracy": 0.15151515151515152,
+          "correct": 30,
+          "tasks": [
+            "gpqa"
+          ],
+          "total": 198
+        }
+      },
+      "macro_accuracy": 0.5563030303030303,
+      "solved": 248,
+      "total": 538
+    },
+    "QPT1": {
+      "aime": {
+        "accuracy": 0.03333333333333333,
+        "correct": 1,
+        "total": 30
+      },
+      "domains": {
+        "code": {
+          "accuracy": 0.65,
+          "correct": 26,
+          "tasks": [
+            "humaneval",
+            "mbpp"
+          ],
+          "total": 40
+        },
+        "competition_math": {
+          "accuracy": 0.54,
+          "correct": 54,
+          "tasks": [
+            "math500"
+          ],
+          "total": 100
+        },
+        "grade_school_math": {
+          "accuracy": 0.93,
+          "correct": 93,
+          "tasks": [
+            "gsm8k"
+          ],
+          "total": 100
+        },
+        "logic": {
+          "accuracy": 0.57,
+          "correct": 57,
+          "tasks": [
+            "bbh_logic"
+          ],
+          "total": 100
+        },
+        "science": {
+          "accuracy": 0.4393939393939394,
+          "correct": 87,
+          "tasks": [
+            "gpqa"
+          ],
+          "total": 198
+        }
+      },
+      "macro_accuracy": 0.6258787878787879,
+      "solved": 317,
+      "total": 538
+    }
+  },
+  "comparison": {
+    "domain_deltas_qpt1_vs_b1": {
+      "code": {
+        "accuracy_delta": -0.09999999999999998,
+        "solved_delta": -4
+      },
+      "competition_math": {
+        "accuracy_delta": 0.040000000000000036,
+        "solved_delta": 4
+      },
+      "grade_school_math": {
+        "accuracy_delta": 0.08000000000000007,
+        "solved_delta": 8
+      },
+      "logic": {
+        "accuracy_delta": 0.039999999999999925,
+        "solved_delta": 4
+      },
+      "science": {
+        "accuracy_delta": 0.28787878787878785,
+        "solved_delta": 57
+      }
+    },
+    "improved_domain_count": 4,
+    "macro_delta_qpt1_vs_b1": 0.06957575757575762,
+    "maximum_domain_regression": 0.09999999999999998,
+    "numeric_gates": {
+      "improves_at_least_three_domains": true,
+      "macro_delta_at_least_three_points": true,
+      "no_domain_regression_over_two_points": false,
+      "solved_delta_at_least_fifteen": true
+    },
+    "score_and_training_gate_pass": false,
+    "solved_delta_qpt1_vs_b1": 69,
+    "training_gates": {
+      "both_16_examples_per_update": true,
+      "both_256_updates": true,
+      "both_finite": true,
+      "correct_arms": true,
+      "qpt1_frozen_weights_unchanged": true
+    }
+  },
+  "eval_files": {
+    "B1": {
+      "aime": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e_eval_aime.json",
+        "sha256": "bcfbd4c5bd5b8f5d06a99dd34d5b7d433a2f892c7a474d739fffb3e2ecb5a4da"
+      },
+      "bbh_logic": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e_eval_bbh_logic.json",
+        "sha256": "3b32f4686113d1ef52678d6e61c1e90f83e45edfa9355360c4b7a5c51fe8dcf8"
+      },
+      "gpqa": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e_eval_gpqa.json",
+        "sha256": "62269d2ac86bc0cf04bb98cc3dd1055e52faed9dfeef0969bc8e7c6e23892183"
+      },
+      "gsm8k": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e_eval_gsm8k.json",
+        "sha256": "5ad2189708ce58c7705555ba238e4cb0228d12f7f4e388c0001188ca078c667b"
+      },
+      "humaneval": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e_eval_humaneval.json",
+        "sha256": "350761bb28c73c612028bb9dd4c4e21e2692cc8f850ded285d0346d30cda330d"
+      },
+      "math500": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e_eval_math500.json",
+        "sha256": "c13252c86d30a07fc0dd1064396ba4f202fb9bb84ab092d62edf8a2a34a6563f"
+      },
+      "mbpp": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e_eval_mbpp.json",
+        "sha256": "63e2c6e847bf87d684f79d4069072f84e6629c9fb87736f08cb5fd1428827253"
+      }
+    },
+    "QPT1": {
+      "aime": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_qpt1_u256_402fa8e_eval_aime.json",
+        "sha256": "6f93d87052b6a83a05ed6d75a5baaf8dbe311ecce510df5cf757f6137061e3fd"
+      },
+      "bbh_logic": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_qpt1_u256_402fa8e_eval_bbh_logic.json",
+        "sha256": "4c521333540068d8668fc03c73763521aadb5828496c5717c1a71ae927ec4017"
+      },
+      "gpqa": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_qpt1_u256_402fa8e_eval_gpqa.json",
+        "sha256": "a5484a584cac38b399dbd4e8db8ae5487ef7d8cf7832431104c359e56081c7f9"
+      },
+      "gsm8k": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_qpt1_u256_402fa8e_eval_gsm8k.json",
+        "sha256": "80e19ffc881f658bc72e27f049d7d73a53fb80324cc798d9e44fc0603ed86f9b"
+      },
+      "humaneval": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_qpt1_u256_402fa8e_eval_humaneval.json",
+        "sha256": "6bc5104759bbbc6c30d760e81317760e9cc827c63855c6187ef069d3df984f7c"
+      },
+      "math500": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_qpt1_u256_402fa8e_eval_math500.json",
+        "sha256": "dc3f7a779146f0061f71b284577303163a00d490934b259c7ee6d9a5f84965a5"
+      },
+      "mbpp": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_qpt1_u256_402fa8e_eval_mbpp.json",
+        "sha256": "4ef6e71f2c61c49be8a78a8253791ef4cde0ec68dee2f411d9606ad49c4725a2"
+      }
+    }
+  },
+  "promotion_authorized": false,
+  "required_next_step": "close_exact_qpt1",
+  "schema": "shohin-qpt1-product-gate-v1",
+  "status": "complete",
+  "training_files": {
+    "B1": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e/report.json",
+      "sha256": "39013476a9646276ed1c708992d01943b541b5cf64e0b33ac67b4c16715fb13b"
+    },
+    "QPT1": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_u256_402fa8e/report.json",
+      "sha256": "46c66df57e905947602b63137d2b99901d946913847ea0e2fa667845cf6ffd12"
+    }
+  }
+}
