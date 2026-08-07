@@ -459,7 +459,9 @@ def main() -> None:
             "total_rows": total_rows,
             "learned_row_exact_rate": learned_row_exact / total_rows,
             "learned_errors": {
-                error: sum(value.error == error for value in learned_compilations)
+                "none" if error is None else error: sum(
+                    value.error == error for value in learned_compilations
+                )
                 for error in (None, "empty_support", "underdetermined")
             },
         },

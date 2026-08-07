@@ -32166,3 +32166,38 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `commit_frozen_eal1;_materialize_and_reproduce_all_data;_run_exactly_one_development_gate;_close_without_local_variants_on_failure`.
+
+- **2026-08-07 10:02--10:08 EDT** -- **EAL1 closes as an identified
+  interface failure; one reporting-only replay is authorized.**
+
+  Corpus `data_9dc9125_r1` materializes with 100,000 unique training sources,
+  6,144 unique development evidence sources, zero source/name/matrix overlap,
+  and byte-exact independent regeneration. Training SHA-256 is
+  `94f1fe0c...b4e1a`; public/assessor hashes are `0a03ee14...773c6` and
+  `3ebc6a6e...414cc`; report SHA-256 is `bcca6a50...922d8`.
+
+  H100 job `744708` completes all 1,000 frozen updates. Loss converges to
+  about `1.386` and raw role accuracy to exactly 50%. Its fixed 10,000-row
+  training sample reaches only 31.41% normal and 31.81% temporal-
+  counterfactual complete-role exactness, so the 99% gate is already
+  conjunctively impossible. Root cause is structural and identifiable: the
+  reader learns temporal before/after semantics, but it is also asked to infer
+  which of two fresh random register names is episode X versus Y without
+  receiving that episode-local table. That bit is absent from its interface.
+
+  The evaluator computes the remaining metrics but fails while serializing a
+  diagnostic dictionary containing mixed `None` and string keys. This cannot
+  alter the scientific failure. Freeze checkpoint SHA-256
+  `fc1be2b1...342f87` and training-report SHA-256 `75d8cf68...acca74`.
+  Correct only the report key representation and replay the exact frozen
+  evaluator into a new isolated path. EAL1 weights, data, prompts, thresholds,
+  and gate remain closed.
+
+  Structurally different successor: assign episode-random register identity
+  to the existing exact structural owner, while the learned reader owns only
+  the observable temporal before/after distinction. Compose those independent
+  coordinates into the four transition roles before unchanged factorized law
+  induction. This is not a width/duration/seed rescue.
+
+  Decision:
+  `close_eal1;_preserve_one_reporting_only_replay;_freeze_eal2_temporal_semantics_plus_exact_local_register_binding`.
