@@ -31909,3 +31909,28 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_ewc1_as_semantic_world_owner;_retain_as_structural_extraction_baseline;_freeze_a_positionally_symmetric_counterfactual_whole_world_commit_successor`.
+
+- **2026-08-07 07:50--08:00 EDT** -- **Fresh hash-bound CGL1 development
+  replays reproduce both protected reports byte-for-byte.**
+
+  Commit `8cf7f50` adds an explicit writable replay-root override, rejects any
+  replay output below the immutable primary result tree, and binds the exact
+  source checkpoint and source-report SHA-256 values for both backbones. The
+  runtime, model weights, parent checkpoints, tokenizer bytes, development
+  board, prompts, thresholds, and evaluator are unchanged.
+
+  Independent one-H100 jobs `744658` Shohin on `evc22` and `744659` SmolLM2
+  on `evc23` complete normally in 6m41s and 6m46s. Their fresh isolated
+  reports are byte-identical to the protected primaries: Shohin SHA-256
+  `a02479576a5d404f3d5a7bc55d5218652877656db7c76dd8e130dd46d431a38c`
+  and SmolLM2 SHA-256
+  `5b788fa7fe8a79e59e80b814c09f2d4084868450b64b1f458c6b83f99058eaf4`.
+  The fresh copies are read-only.
+
+  This is a reproducibility result only. Preserve the Shohin CGL1 primary
+  conjunctive FAIL exactly: normal `768/768`, mapped mention swap `384/768`.
+  SmolLM2 remains normal `768/768`, mapped swap `512/768`. Confirmation was
+  not accessed and CGL1 remains closed.
+
+  Decision:
+  `preserve_exact_cgl1_replays;_do_not_reopen_cgl1_or_confirmation;_continue_the_structurally_different_world_successor`.
