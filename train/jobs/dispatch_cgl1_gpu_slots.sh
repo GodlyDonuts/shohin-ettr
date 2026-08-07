@@ -64,7 +64,13 @@ case "$SLOT" in
     (cd "$BASE_RUNTIME" && sha256sum -c SHA256SUMS >/dev/null)
     "$PYTHON" "$BASE_RUNTIME/train/test_diverge_cgl1_runtime.py"
     RESULTS=$BASE/artifacts/reasoning/diverge_cgl1/results_33f6f10_r1
-    REPLAY_ROOT=$BASE/artifacts/reasoning/diverge_cgl1/independent_replays_3bcbc81_r1
+    REPLAY_ROOT=${CGL1_REPLAY_ROOT:-$BASE/artifacts/reasoning/diverge_cgl1/independent_replays_3bcbc81_r1}
+    case "$REPLAY_ROOT" in
+      "$RESULTS"|"$RESULTS"/*)
+        echo "refusing CGL1 replay output inside the immutable primary result tree" >&2
+        exit 2
+        ;;
+    esac
     mkdir -p "$REPLAY_ROOT"
     if [[ "$SLOT" == slot_07 ]]; then
       ARM=shohin
@@ -72,12 +78,16 @@ case "$SLOT" in
       PARENT_SHA256=211d6b2cddf0c2cf8b12cb0b2d73f9c4440d85f6f531018080c8afd35b2f66a6
       TOKENIZER=$BASE/artifacts/shohin-tok-32k.json
       TOKENIZER_SHA256=87532df5c121753de3b29194e1f9e3de47986d3f5359548fdf93606773a233d4
+      CHECKPOINT_SHA256=7b15104922ad2dbfd0c4ce48f3425e47ef6eafdb8cd5215cf97f772c2614cf3b
+      SOURCE_RESULT_SHA256=a02479576a5d404f3d5a7bc55d5218652877656db7c76dd8e130dd46d431a38c
     else
       ARM=smollm2
       PARENT=$BASE/train/ettr_smollm2_control_parent_a2026072801_7881d8e/joint-model-final.pt
       PARENT_SHA256=8196f810a31e0abe7f3bf0eae0a37b103195f109b7a8e962c7b74b5710c98a02
       TOKENIZER=$BASE/artifacts/external/smollm2_135m_instruct_83212e1e/tokenizer.json
       TOKENIZER_SHA256=9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c
+      CHECKPOINT_SHA256=6deb7d2d9b3a6809c903d53212d7803c0a7b6f11319ef9716ac3c91b946176a3
+      SOURCE_RESULT_SHA256=5b788fa7fe8a79e59e80b814c09f2d4084868450b64b1f458c6b83f99058eaf4
     fi
     CHECKPOINT=$RESULTS/$ARM/model/checkpoint.pt
     SOURCE_RESULT=$RESULTS/$ARM/development.json
@@ -86,7 +96,8 @@ case "$SLOT" in
       sleep 5
     done
     test -s "$CHECKPOINT" && test -s "$SOURCE_RESULT"
-    CHECKPOINT_SHA256=$(sha256sum "$CHECKPOINT" | awk '{print $1}')
+    test "$(sha256sum "$CHECKPOINT" | awk '{print $1}')" = "$CHECKPOINT_SHA256"
+    test "$(sha256sum "$SOURCE_RESULT" | awk '{print $1}')" = "$SOURCE_RESULT_SHA256"
     # Primary arm directories become immutable before the source report exists.
     OUTPUT=$REPLAY_ROOT/${ARM}_development_${SLURM_JOB_ID}.json
     test ! -e "$OUTPUT"
