@@ -3,7 +3,10 @@
 
 from __future__ import annotations
 
+import torch
+
 from diverge_ccr1_data import query_text
+from diverge_iem1_runtime import tensorize_queries
 from eval_diverge_ccr1 import _fresh_conditions, _rename_records
 
 
@@ -42,6 +45,7 @@ def main() -> None:
     assert "asteroid" not in renamed[0]["source_text"]
     assert "birchwood" not in renamed[0]["source_text"]
     assert renamed[0]["symbol_role_ids"] == [0, 1]
+    tensorize_queries(renamed, torch.device("cpu"))
 
     predictions = [(0, 1)] * 3840
     normal = _score(query_exact=768, predictions=predictions)

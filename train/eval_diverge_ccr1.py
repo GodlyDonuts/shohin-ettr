@@ -134,7 +134,12 @@ def _rename_records(records: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]
     symbols = sorted(
         {str(symbol) for record in records for symbol in record["symbols"]}
     )
-    aliases = {symbol: f"referent_{index:03d}" for index, symbol in enumerate(symbols)}
+    aliases = {
+        symbol: "referent"
+        + chr(ord("a") + index // 26)
+        + chr(ord("a") + index % 26)
+        for index, symbol in enumerate(symbols)
+    }
     renamed = []
     for record in records:
         text = str(record["source_text"])
