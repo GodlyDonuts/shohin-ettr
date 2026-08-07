@@ -34,8 +34,10 @@ export PYTHONPYCACHEPREFIX=${SLURM_TMPDIR:-/tmp/$USER/$SLURM_JOB_ID}/pycache
 mkdir -p "$PYTHONPYCACHEPREFIX" "$BASE/logs"
 
 if [[ -e "$CONFIRMATION_OUTPUT" ]]; then
-  echo "[run-diverge-sti1-confirmation] existing result preserved; no retry"
-  exit 0
+  EXISTING_STATUS=$("$PYTHON" -c 'import json,sys; print(json.load(open(sys.argv[1]))["status"])' "$CONFIRMATION_OUTPUT")
+  echo "[run-diverge-sti1-confirmation] existing result preserved status=$EXISTING_STATUS"
+  test "$EXISTING_STATUS" = pass
+  exit
 fi
 
 check_hash() {
