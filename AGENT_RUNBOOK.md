@@ -32776,3 +32776,66 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `commit_frozen_snl1;_materialize_and_regenerate_fresh_boards;_run_one_development_composition;_open_fixed_confirmations_only_on_pass`.
+
+- **2026-08-07 14:30--14:42 EDT** -- **SNL1 final boards reproduce; a CPU
+  preflight catches one custody-key typo before neural scoring.**
+
+  Final `data_6876723_r1` and an independent scratch generation are
+  byte-identical. The data report SHA-256 is `47c3f21f...09197`; all six boards
+  have zero transitive source/name/identity overlap against SVE1 and NLS1.
+  Immutable runtime `diverge_snl1_6876723_r1` verifies at SHA256SUMS SHA-256
+  `9b5e82cf...c1c3a0`.
+
+  Before any GPU model forward, local CPU preflight exits in parent custody:
+  the preserved NLS1 development report names its exact matrix metric
+  `matrix_rate`, while the new evaluator requested nonexistent `exact_rate`.
+  Queued development `744914` and dependency-held confirmation allocations
+  `744916`--`744920` are canceled unopened. Correct only this report-key
+  binding, rebuild the immutable runtime at the new source commit, and relaunch
+  the unchanged data, weights, arms, thresholds, and evaluator logic into a
+  fresh output root. No SNL1 neural score exists.
+
+  Decision:
+  `correct_parent_metric_key_only;_repackage_and_relaunch_unchanged_snl1_gate`.
+
+- **2026-08-07 14:42--14:49 EDT** -- **Full CPU preflight proves execution
+  exact and catches table-basis law-accounting before official scoring.**
+
+  After the parent-key correction, the unchanged full development preflight
+  reaches `4096/4096` terminal states, `8192/8192` answers, and a 100% depth
+  floor for treatment, unseen rename, and coherent table reindex. Every frozen
+  negative control is beneath its ceiling. The report nevertheless marks only
+  `119/256 = 46.4844%` treatment law packets exact because `_law_score`
+  compares anonymous table-position rows directly against canonical-register
+  matrices. The complementary coherent-reindex arm is `137/256 = 53.5156%`;
+  together they partition all 256 table rotations. This is a deterministic
+  assessor-coordinate error, not a model miss: the same packets execute every
+  held program exactly.
+
+  Correct only the law assessor by conjugating each canonical matrix into the
+  arm's disclosed table-position basis before equality. Preserve the 99% law
+  threshold, all model outputs, controls, boards, and execution evaluator.
+  The CPU report is preflight evidence only and cannot admit confirmation.
+
+  Decision:
+  `correct_law_basis_accounting_only;_rerun_cpu_preflight;_then_package_and_launch_first_official_snl1_development`.
+
+- **2026-08-07 14:49--14:55 EDT** -- **Corrected full-board CPU preflight
+  passes; SNL1 is admitted to one official GPU development evaluation.**
+
+  Read-only preflight `/tmp/snl1_cpu_preflight_basisfix.json` has SHA-256
+  `af6ea98a...c30b` and `status=pass`. Treatment, unseen rename, and coherent
+  table reindex each recover `256/256` episode laws, `4096/4096` terminal
+  states, `8192/8192` query answers, and a 100% minimum depth rate. The
+  cross-owner basis break remains causal at `2/4096` terminal states and
+  `94/8192` answers; value scrub, occurrence break, shuffled-event model, and
+  law reset produce zero correct terminal states; all other frozen negative
+  controls remain below their ceilings. Every gate condition is true.
+
+  This local CPU replay validates implementation only. It does not constitute
+  the official development score and does not open confirmation. Commit the
+  parent-key and table-basis accounting corrections, rebuild a hash-bound
+  immutable runtime, and run the unchanged development board once on CUDA.
+
+  Decision:
+  `commit_verified_evaluator_corrections;_launch_one_official_snl1_development;_open_confirmation_only_if_that_report_passes`.

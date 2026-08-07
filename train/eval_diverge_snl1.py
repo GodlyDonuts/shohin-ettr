@@ -25,6 +25,7 @@ from eval_diverge_eal1 import _load_jsonl
 from eval_diverge_jrb1 import _predict_programs, _program_score
 from eval_diverge_oqb1 import _execution_score
 from eval_diverge_sve1 import (
+    _canonical_to_position,
     _decode_initial_states,
     _gold_evidence_events,
     _gold_initial_events,
@@ -102,15 +103,37 @@ def _compile_packets(
 
 def _law_score(
     packets: Sequence[EpisodeLawPacket | None],
+    public: Sequence[Mapping[str, Any]],
     assessor: Sequence[Mapping[str, Any]],
+    *,
+    table_key: str,
+    canonical_key: str,
+    reverse_table: bool,
 ) -> dict[str, Any]:
     exact = 0
     rows = 0
     row_exact = 0
-    for packet, hidden in zip(packets, assessor, strict=True):
-        gold = tuple(
+    for packet, visible, hidden in zip(packets, public, assessor, strict=True):
+        canonical = tuple(
             tuple(tuple(int(value) for value in row) for row in matrix)
             for matrix in hidden["matrices"]
+        )
+        positions = _canonical_to_position(
+            visible,
+            hidden,
+            table_key=table_key,
+            canonical_key=canonical_key,
+            reverse_table=reverse_table,
+        )
+        gold = tuple(
+            tuple(
+                tuple(
+                    matrix[output][source]
+                    for source in sorted(range(2), key=positions.__getitem__)
+                )
+                for output in sorted(range(2), key=positions.__getitem__)
+            )
+            for matrix in canonical
         )
         if packet is not None:
             exact += int(packet.rows == gold)
@@ -194,7 +217,7 @@ def main() -> None:
         or nls1_parent.get("arms", {})
         .get("treatment", {})
         .get("law", {})
-        .get("exact_rate")
+        .get("matrix_rate")
         != 1.0
         or data_report.get("schema") != DATA_REPORT_SCHEMA
         or not data_report.get("zero_source_name_and_identity_overlap")
@@ -377,7 +400,14 @@ def main() -> None:
                     reverse_table=spec["query_reverse"],
                 ),
             ),
-            "law": _law_score(packets, assessor),
+            "law": _law_score(
+                packets,
+                public,
+                assessor,
+                table_key=spec["table_key"],
+                canonical_key=spec["canonical_key"],
+                reverse_table=spec["evidence_reverse"],
+            ),
             "execution": _execution_score(
                 packets,
                 public,

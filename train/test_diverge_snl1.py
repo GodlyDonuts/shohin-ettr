@@ -9,9 +9,11 @@ import torch
 import torch.nn as nn
 
 from build_diverge_snl1_data import DEVELOPMENT_SEED
+from diverge_eal1_runtime import EpisodeLawPacket
 from diverge_mze1_runtime import ROW_CANDIDATES
 from diverge_snl1_runtime import compile_neural_event_laws
 from diverge_sve1_data import augment_evaluation_episode
+from eval_diverge_snl1 import _law_score
 from eval_diverge_sve1 import _gold_evidence_events
 
 
@@ -34,6 +36,24 @@ class _OracleLawModel(nn.Module):
 
 
 def main() -> None:
+    swapped_packet = EpisodeLawPacket(
+        aliases=("operation",),
+        rows=(((4, 3), (2, 1)),),
+        evidence_commitments=(),
+        reader_state_sha256="0" * 64,
+        commitment="",
+    )
+    swapped_score = _law_score(
+        [swapped_packet],
+        [{"register_table": ["second", "first"]}],
+        [{"canonical_registers": ["first", "second"], "matrices": [[[1, 2], [3, 4]]]}],
+        table_key="register_table",
+        canonical_key="canonical_registers",
+        reverse_table=False,
+    )
+    if swapped_score["exact_rate"] != 1.0 or swapped_score["row_rate"] != 1.0:
+        raise RuntimeError("SNL1 law scorer did not conjugate into table basis")
+
     public, assessor = augment_evaluation_episode(0, seed=DEVELOPMENT_SEED)
     events = _gold_evidence_events(
         [public],
