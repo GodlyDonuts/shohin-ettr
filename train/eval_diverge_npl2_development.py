@@ -56,6 +56,8 @@ NATURAL_ARMS = (
     "FAST_WEIGHT",
     "TRANSIENT_GRAD",
 )
+WORLD_OWNER_RECEIPT = "structural-npl1-world-v1"
+WORLD_OWNER_CUSTODY: Mapping[str, str] | None = None
 
 
 def _atomic_json(path: Path, payload: Mapping[str, Any]) -> None:
@@ -469,7 +471,7 @@ def main() -> None:
         and sti_hash_before == sti.owner_hashes()
     )
     protected = {
-        "WORLD": "structural-npl1-world-v1",
+        "WORLD": WORLD_OWNER_RECEIPT,
         "EVIDENCE": sti_hash_before["EVIDENCE"],
         "QUERY_BACKBONE": eic_hash_before,
         "QUERY_ADAPTER": str(eic_checkpoint["adapter_state_sha256"]),
@@ -696,6 +698,7 @@ def main() -> None:
             "assessor_data_sha256": args.assessor_data_sha256,
             "owner_hashes_exact": owner_hashes_exact,
             "confirmation_data_accessed": args.evaluation_split == "confirmation",
+            "world_owner": WORLD_OWNER_CUSTODY,
         },
     }
     _atomic_json(args.output, report)
