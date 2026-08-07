@@ -11,7 +11,8 @@
 
 set -euo pipefail
 
-: "${CODE_ROOT:?}"
+: "${BASE_CODE_ROOT:?}"
+: "${OVERLAY_ROOT:?}"
 : "${SOURCE_COMMIT:?}"
 : "${BASE:?}"
 : "${BASE_SHA256:?}"
@@ -27,13 +28,13 @@ if [[ -e "$OUTPUT" ]]; then
   exit 1
 fi
 
-cd "$CODE_ROOT"
-export PYTHONPATH="$CODE_ROOT/train${PYTHONPATH:+:$PYTHONPATH}"
+cd "$BASE_CODE_ROOT"
+export PYTHONPATH="$BASE_CODE_ROOT/train${PYTHONPATH:+:$PYTHONPATH}"
 export PYTHONUNBUFFERED=1
 
 echo "[pqi1-ar] node=$(hostname) backbone=$BACKBONE_NAME commit=$SOURCE_COMMIT"
 nvidia-smi --query-gpu=index,name --format=csv,noheader
-srun python -u train/diagnose_diverge_pqi1_autoregressive.py \
+srun python -u "$OVERLAY_ROOT/train/diagnose_diverge_pqi1_autoregressive.py" \
   --base "$BASE" \
   --base-sha256 "$BASE_SHA256" \
   --tokenizer "$TOKENIZER" \
