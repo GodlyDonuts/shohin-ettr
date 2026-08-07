@@ -16,6 +16,7 @@ from eval_diverge_pqi1 import sha256_path
 SCHEMA = "shohin-diverge-cwc1-ewc1-npl2-confirmation-v1"
 SEED_SCHEMA = "shohin-diverge-cwc1-ewc1-npl2-confirmation-seed-v1"
 _REPORTS: list[dict[str, Any]] = []
+_COMPILATION_REPORTS: list[dict[str, Any]] = []
 _WRAPPER_AUDIT: dict[str, Any]
 _WRAPPER_AUDIT_PATH: Path
 _WRAPPER_AUDIT_SHA256: str
@@ -23,15 +24,11 @@ _WRAPPER_AUDIT_SHA256: str
 
 def _load(path: Path) -> dict[str, Any]:
     report = json.loads(path.read_text(encoding="utf-8"))
-    compilation = report.get("custody", {}).get("world_owner", {}).get(
-        "compilation", {}
-    )
     if (
         report.get("schema") != SEED_SCHEMA
         or report.get("status") != "complete"
         or report.get("evaluation_split") != "confirmation"
         or not report.get("integrity_gate", {}).get("passed")
-        or not compilation.get("gate", {}).get("passed")
     ):
         raise SystemExit(f"invalid CWC1/EWC1/NPL2 confirmation report: {path}")
     _REPORTS.append(report)
@@ -42,9 +39,17 @@ def _atomic_json(path: Path, payload: Mapping[str, Any]) -> None:
     result = dict(payload)
     per_seed = {}
     all_world_gates = True
+    by_public = {
+        report["public_data_sha256"]: report for report in _COMPILATION_REPORTS
+    }
+    if len(by_public) != 5:
+        raise SystemExit("CWC1/EWC1/NPL2 compilation result geometry differs")
     for report in _REPORTS:
         seed = str(report["episode_seed"])
-        compilation = report["custody"]["world_owner"]["compilation"]
+        compilation_report = by_public.get(report["custody"]["public_data_sha256"])
+        if compilation_report is None:
+            raise SystemExit("CWC1/EWC1/NPL2 compilation/public pairing differs")
+        compilation = compilation_report["compilation"]
         per_seed[seed] = compilation
         all_world_gates &= bool(compilation["gate"]["passed"])
     result["schema"] = SCHEMA
@@ -73,12 +78,27 @@ def main() -> None:
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--wrapper-audit", type=Path, required=True)
     parser.add_argument("--wrapper-audit-sha256", required=True)
+    parser.add_argument(
+        "--compilation-result", type=Path, action="append", required=True
+    )
     args, remaining = parser.parse_known_args()
     if sha256_path(args.wrapper_audit) != args.wrapper_audit_sha256:
         raise SystemExit("CWC1/EWC1/NPL2 wrapper audit hash differs")
     audit = json.loads(args.wrapper_audit.read_text(encoding="utf-8"))
     if not audit.get("all_conditions_passed"):
         raise SystemExit("CWC1/EWC1/NPL2 wrapper audit did not pass")
+    if len(args.compilation_result) != 5:
+        raise SystemExit("CWC1/EWC1/NPL2 requires five compilation reports")
+    for path in args.compilation_result:
+        report = json.loads(path.read_text(encoding="utf-8"))
+        if (
+            report.get("schema")
+            != "shohin-diverge-cwc1-ewc1-npl2-world-compilation-v1"
+            or report.get("evaluation_split") != "confirmation"
+            or not report.get("all_conditions_passed")
+        ):
+            raise SystemExit(f"invalid CWC1/EWC1 compilation report: {path}")
+        _COMPILATION_REPORTS.append(report)
     global _WRAPPER_AUDIT, _WRAPPER_AUDIT_PATH, _WRAPPER_AUDIT_SHA256
     _WRAPPER_AUDIT = audit
     _WRAPPER_AUDIT_PATH = args.wrapper_audit

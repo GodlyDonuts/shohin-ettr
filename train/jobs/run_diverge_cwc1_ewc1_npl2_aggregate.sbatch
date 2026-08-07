@@ -26,5 +26,10 @@ test ! -e "$OUTPUT"
   --data-report "${DATA_REPORT:?}" --data-report-sha256 "${DATA_REPORT_SHA256:?}" \
   --wrapper-audit "${WRAPPER_AUDIT:?}" \
   --wrapper-audit-sha256 "${WRAPPER_AUDIT_SHA256:?}" \
+  --compilation-result "${COMPILATION_1:?}" \
+  --compilation-result "${COMPILATION_2:?}" \
+  --compilation-result "${COMPILATION_3:?}" \
+  --compilation-result "${COMPILATION_4:?}" \
+  --compilation-result "${COMPILATION_5:?}" \
   --output "$OUTPUT"
 test "$("$PYTHON" -c 'import json,sys; print(json.load(open(sys.argv[1]))["gate"]["passed"])' "$OUTPUT")" = True

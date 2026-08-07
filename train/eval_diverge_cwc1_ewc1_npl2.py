@@ -7,6 +7,7 @@ import argparse
 from collections import Counter, defaultdict
 import hashlib
 import json
+import os
 from pathlib import Path
 import sys
 from typing import Any, Mapping, Sequence
@@ -28,6 +29,19 @@ from eval_diverge_ewc1_npl2 import build_typed_cache, _load_world_model
 
 DEVELOPMENT_SCHEMA = "shohin-diverge-cwc1-ewc1-npl2-development-v1"
 CONFIRMATION_SCHEMA = "shohin-diverge-cwc1-ewc1-npl2-confirmation-seed-v1"
+COMPILATION_SCHEMA = "shohin-diverge-cwc1-ewc1-npl2-world-compilation-v1"
+
+
+def _atomic_json(path: Path, payload: object) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    with temporary.open("x", encoding="utf-8") as handle:
+        json.dump(payload, handle, sort_keys=True, indent=2)
+        handle.write("\n")
+        handle.flush()
+        os.fsync(handle.fileno())
+    temporary.replace(path)
+    os.chmod(path, 0o444)
 
 
 def _option(arguments: Sequence[str], name: str) -> str:
@@ -261,9 +275,12 @@ def main() -> None:
     parser.add_argument("--ewc-checkpoint-sha256", required=True)
     parser.add_argument("--ewc-result", type=Path, required=True)
     parser.add_argument("--ewc-result-sha256", required=True)
+    parser.add_argument("--compilation-output", type=Path, required=True)
     parser.add_argument("--cwc-batch-size", type=int, default=256)
     parser.add_argument("--ewc-batch-size", type=int, default=512)
     args, remaining = parser.parse_known_args()
+    if args.compilation_output.exists():
+        raise SystemExit("refusing existing CWC1/EWC1 compilation output")
     if not torch.cuda.is_available():
         raise SystemExit("CWC1/EWC1/NPL2 integration requires CUDA")
     if sha256_path(args.cwc_result) != args.cwc_result_sha256:
@@ -318,6 +335,23 @@ def main() -> None:
         )["model_state_sha256"]
     )
     ewc_state_sha256 = str(ewc_checkpoint["model_state_sha256"])
+    compilation_report = {
+        "schema": COMPILATION_SCHEMA,
+        "evaluation_split": _option(remaining, "--evaluation-split"),
+        "source_commit": _option(remaining, "--source-commit"),
+        "public_data": str(public_path),
+        "public_data_sha256": public_sha256,
+        "wrapper_data": str(args.cwc_wrapper_data),
+        "wrapper_data_sha256": args.cwc_wrapper_data_sha256,
+        "selector_checkpoint_sha256": args.cwc_checkpoint_sha256,
+        "selector_training_report_sha256": args.cwc_training_report_sha256,
+        "selector_qualification_result_sha256": args.cwc_result_sha256,
+        "structural_checkpoint_sha256": args.ewc_checkpoint_sha256,
+        "structural_result_sha256": args.ewc_result_sha256,
+        "compilation": compilation,
+        "all_conditions_passed": compilation["gate"]["passed"],
+    }
+    _atomic_json(args.compilation_output, compilation_report)
     del cwc, ewc, wrappers, public
     torch.cuda.empty_cache()
 
@@ -346,6 +380,8 @@ def main() -> None:
         "wrapper_data": str(args.cwc_wrapper_data),
         "wrapper_data_sha256": args.cwc_wrapper_data_sha256,
         "compilation": compilation,
+        "compilation_result": str(args.compilation_output),
+        "compilation_result_sha256": sha256_path(args.compilation_output),
         "complete_candidate_commit_before_structure": True,
         "fieldwise_candidate_averaging": False,
         "source_deleted_after_compilation": True,

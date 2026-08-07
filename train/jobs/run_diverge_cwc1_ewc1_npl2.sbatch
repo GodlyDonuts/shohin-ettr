@@ -27,6 +27,7 @@ ASSESSOR_DATA_SHA256=${ASSESSOR_DATA_SHA256:?set NPL2 assessor hash}
 WRAPPER_DATA=${WRAPPER_DATA:?set immutable CWC1 wrapper data}
 WRAPPER_DATA_SHA256=${WRAPPER_DATA_SHA256:?set CWC1 wrapper hash}
 OUTPUT=${OUTPUT:?set isolated integration output}
+COMPILATION_OUTPUT=${COMPILATION_OUTPUT:?set isolated WORLD compilation output}
 EVALUATION_SPLIT=${EVALUATION_SPLIT:-development}
 PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
 PARENT=$BASE/train/flagship_out/ckpt_0300000.pt
@@ -57,7 +58,7 @@ export PYTHONPYCACHEPREFIX=${SLURM_TMPDIR:-/tmp/$USER/$SLURM_JOB_ID}/pycache
 mkdir -p "$PYTHONPYCACHEPREFIX" "$BASE/logs"
 (cd "$BASE_CODE_ROOT" && sha256sum -c SHA256SUMS >/dev/null)
 (cd "$OVERLAY_ROOT" && sha256sum -c SHA256SUMS >/dev/null)
-test ! -e "$OUTPUT"
+test ! -e "$OUTPUT" && test ! -e "$COMPILATION_OUTPUT"
 nvidia-smi -L
 "$PYTHON" "$OVERLAY_ROOT/train/test_diverge_cwc1_npl2.py"
 "$PYTHON" "$OVERLAY_ROOT/train/eval_diverge_cwc1_ewc1_npl2.py" \
@@ -70,6 +71,7 @@ nvidia-smi -L
   --ewc-checkpoint "$EWC_CHECKPOINT" \
   --ewc-checkpoint-sha256 "$EWC_CHECKPOINT_SHA256" \
   --ewc-result "$EWC_RESULT" --ewc-result-sha256 "$EWC_RESULT_SHA256" \
+  --compilation-output "$COMPILATION_OUTPUT" \
   --source-commit "${SOURCE_COMMIT:?set integration source commit}" \
   --eni1-result "$ENI1_RESULT" --eni1-result-sha256 "$ENI1_RESULT_SHA256" \
   --eic-checkpoint "$EIC_CHECKPOINT" \
