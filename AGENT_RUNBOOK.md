@@ -32030,3 +32030,26 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `freeze_one_cwc1_to_ewc1_to_npl2_composition;_require_exact_world_and_existing_npl2_gates;_close_without_variants_on_failure`.
+
+- **2026-08-07 08:35--08:45 EDT** -- **The one CWC1 -> EWC1 -> NPL2
+  composition is frozen and all six wrapper boards pass before scoring.**
+
+  Commit `0077e78` fixes the complete path, unchanged owner hashes, wrapper
+  generator, interventions, and conjunctive pass/kill thresholds. Each of the
+  existing NPL2 WORLD programs receives one deterministic same-grammar,
+  same-depth decoy with different state and operations. The CWC selector must
+  commit a physical complete candidate before the closed EWC compiler is
+  allowed to transcribe structure.
+
+  Development and five confirmation wrappers each contain 7,168 decisions,
+  all 64 renderer pairs, exact 50/50 global and within-renderer targets, and a
+  maximum width of 931/1,536 bytes. Across all six splits, all 43,008 sources,
+  43,008 identities, and 86,016 labels are unique. A clean second generation
+  is byte-identical. Development SHA-256 is `cd5e53e7...e98a9`; confirmation
+  hashes are `7fde2eb1...cb64`, `f94a63e0...c369f`, `e03c407e...f9c83`,
+  `22923c76...08f2`, and `04f6c9cc...f972`. Aggregate audit SHA-256 is
+  `23ca6485b3c0b7ce7e7073a5460a726d6739969ffe06281b4ea822baf33ff4a3`.
+  No integrated neural score exists yet.
+
+  Decision:
+  `stage_immutable_0077e78_overlay_and_wrapper_data;_run_one_development_gate;_release_five_fixed_confirmations_only_on_pass`.

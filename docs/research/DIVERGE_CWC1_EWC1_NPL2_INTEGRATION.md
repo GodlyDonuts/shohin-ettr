@@ -46,6 +46,17 @@ Development wraps the fixed 256-episode NPL1/NPL2 development split, yielding
 five already-frozen NPL2 confirmation seeds. All wrapper JSONL files and input
 hashes must be materialized and audited before the first integrated score.
 
+Revision `0077e78-r1` is admitted before scoring. Every split has 7,168 rows,
+all 64 renderer pairs, exact `3584/3584` target balance, and 56/56 targets
+inside every renderer. Across six splits there are 43,008 unique sources,
+43,008 unique identities, and 86,016 unique candidate labels with zero
+cross-split overlap. Independent clean regeneration is byte-identical. The
+aggregate audit SHA-256 is
+`23ca6485b3c0b7ce7e7073a5460a726d6739969ffe06281b4ea822baf33ff4a3`.
+Wrapper SHA-256 values are development `cd5e53e7...e98a9` and confirmation
+seeds `7fde2eb1...cb64`, `f94a63e0...c369f`, `e03c407e...f9c83`,
+`22923c76...08f2`, and `04f6c9cc...f972`.
+
 ## Conjunctive development gate
 
 - CWC normal and mapped-counterfactual selection at least 99%;
