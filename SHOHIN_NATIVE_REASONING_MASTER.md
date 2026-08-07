@@ -57174,3 +57174,20 @@ identity, or opaque-name overlap, and byte-identical independent regeneration.
 Training/development/confirmation SHA-256 values are `34e87803...a3bf0`,
 `2f2ada12...cad56`, and `9fe34722...4af9d`. No neural score existed when
 these bytes and thresholds were frozen.
+
+CWC1 subsequently confirms. Jobs `744660`--`744662` fit all three matched
+arms, development `744663` passes every frozen gate, and confirmation `744664`
+is exact `4096/4096` on normal, mapped counterfactual, entity rename, and
+complete-block swap with a 100% renderer floor. Directive deletion is exactly
+`2048/4096` with zero margin and the involution residual is zero. Development
+and confirmation report SHA-256 values are `6d15274b...10248` and
+`f42802ce...f5a9d`.
+
+The ordinary controls prevent a stronger claim: duplicate-forward and
+standard counterfactual augmentation also score 100% throughout development.
+CWC1 is therefore admitted as a practical learned source-dependent
+whole-world selector, not as an accuracy advantage over standard supervised
+learning. Exactly one frozen composition now places CWC1 before the closed
+EWC1 structural extractor and unchanged confirmed NPL2. Its contract is
+`docs/research/DIVERGE_CWC1_EWC1_NPL2_INTEGRATION.md`; no component retraining
+or local retry family is authorized.

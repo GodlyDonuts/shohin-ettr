@@ -32001,3 +32001,32 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `stage_immutable_714b631_runtime_and_data;_launch_three_independent_matched_h100_arms;_hold_development_after_all_three`.
+
+- **2026-08-07 08:12--08:35 EDT** -- **CWC1 confirms as a practical
+  whole-world selector; matched controls remove the score-based novelty
+  claim.**
+
+  Training jobs `744660`--`744662` complete in 7m32s--7m45s and fit all
+  `50,000/50,000` rows. Development `744663` is exact on normal, mapped
+  counterfactual, entity rename, and complete-block swap for all three arms.
+  The involution treatment additionally gives exact zero projection residual
+  and exactly `2048/4096` directive-scrub accuracy with zero margin. Its
+  development report SHA-256 is
+  `6d15274b348dabb85bb283aa0c011d9e5850ead00b288eccb90491cc6de10248`.
+
+  Pass-gated confirmation `744664` remains exact `4096/4096` on every semantic
+  intervention with a 100% renderer floor; directive scrub is exactly chance
+  and marginless. Confirmation SHA-256 is
+  `f42802ceeb6bae47b3c6f66d1c08be3808423a3ed91c03f59d05f3979ecf5a9d`.
+  All eight result/checkpoint files are hash-verified and read-only locally
+  and on Newton.
+
+  Duplicate-forward and ordinary augmentation controls also reach 100% on
+  every development board. Qualify CWC1 as a learned source-dependent
+  whole-world selector, but do not claim a score advantage for its involution
+  projection. Freeze one composition only: CWC1 complete-world selection,
+  closed EWC1 structural transcription inside the selected candidate, then
+  unchanged confirmed NPL2.
+
+  Decision:
+  `freeze_one_cwc1_to_ewc1_to_npl2_composition;_require_exact_world_and_existing_npl2_gates;_close_without_variants_on_failure`.

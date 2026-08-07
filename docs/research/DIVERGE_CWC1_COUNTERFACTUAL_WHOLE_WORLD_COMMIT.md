@@ -1,6 +1,6 @@
 # DIVERGE-CWC1: Counterfactual Whole-World Commit
 
-Status: frozen before data materialization or neural scoring.
+Status: confirmed on the frozen development and confirmation boards.
 
 ## Failure boundary
 
@@ -119,3 +119,28 @@ a semantic owner.
 
 A failure closes this selector design and requires a structurally different
 WORLD mechanism. No continuation pretraining is authorized by CWC1 alone.
+
+## Frozen result
+
+Three independent single-H100 training jobs (`744660`--`744662`) fit all
+`50,000/50,000` rows. Development job `744663` passes every frozen treatment
+condition. The involution treatment is exact on normal, mapped
+counterfactual, entity-rename, and complete-block-swap boards; directive scrub
+is exactly `2048/4096` with zero margin and the projection residual is zero.
+The development report SHA-256 is
+`6d15274b348dabb85bb283aa0c011d9e5850ead00b288eccb90491cc6de10248`.
+
+Pass-gated confirmation job `744664` is also exact `4096/4096` on normal,
+counterfactual, rename, and block swap, with a 100% renderer floor. Directive
+scrub remains exactly `2048/4096` with zero margin. Confirmation SHA-256 is
+`f42802ceeb6bae47b3c6f66d1c08be3808423a3ed91c03f59d05f3979ecf5a9d`.
+All checkpoints and reports are hash-verified and read-only locally and on
+Newton.
+
+The matched controls are decisive for interpretation: duplicate-forward and
+ordinary counterfactual augmentation also reach 100% on every development
+generalization board. CWC1 therefore qualifies a practical learned
+source-dependent whole-world selector, but this experiment provides no score
+advantage for the involution projection over standard supervised learning.
+Its exact algebra and zero-margin scrub behavior are real properties, not an
+accuracy-based novelty result.
