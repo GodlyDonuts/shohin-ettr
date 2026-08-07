@@ -1,5 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **CAB1 FREEZE — 2026-08-07:** JRB1 remains a development FAIL because its
+> mean-pooled natural query owner reached 96.58%, although evidence, initial
+> binding, and recurrent execution were exact. Its shuffled-table arm was a
+> coherent global coordinate swap, not an information-deleting control. The
+> sole active successor is DIVERGE-CAB1: all owners operate in one randomly
+> ordered episode-local register table, late queries use token-level pointer
+> evidence, whole-table permutation is a positive equivariance arm, and only a
+> cross-owner basis break is the causal negative. Freeze seeds 2026080821 train,
+> 2026080822 development, and 2026080823--27 conditional confirmation; 100,000
+> rows; 1,000 AdamW updates; BS128; LR0.001; matched treatment/decoy-table arms.
+> Require >=99% positive components/state/answer, >=95% depth floor, calibrated
+> chance controls, exact custody, and all five confirmations. No CAB1 score
+> exists at freeze. Do not open confirmation unless development passes; do not
+> run CAB1 width/duration/seed/threshold/renderer/loss variants.
+
 > **If you are a new agent taking over, read THIS FILE FIRST, top to bottom.** It is the single
 > source of truth for the live training run and the standing directive. Everything you need to keep
 > the model alive, hit the next milestone, and not break anything is here. Other docs
