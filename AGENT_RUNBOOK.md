@@ -31702,3 +31702,31 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_cgl1_orbit_product_as_shohin_solution;_freeze_one_structurally_different_typed_equivariant_identity_commit_gate`.
+
+- **2026-08-07 03:36 EDT** -- **DIVERGE-EIC1 freezes the exact identity
+  involution inside the trainable forward path.**
+
+  `docs/research/DIVERGE_EIC1_EQUIVARIANT_IDENTITY_COMMIT.md` freezes the
+  successor before training. For raw two-candidate evidence `r(x)`, the
+  treatment can commit only through
+  `0.5 * (r(x) + g^-1 r(gx))`; the shared LoRA owner therefore receives the
+  exact candidate transposition before both loss and inference. An equal-FLOP
+  control evaluates the normal view twice with identical parameters, data,
+  schedule, and two backbone forwards. Shohin is decisive; SmolLM2 is a
+  capacity ceiling.
+
+  The opened CGL1 board is development-only. Shohin treatment requires
+  `>=765/768` normal and mapped-swap exactness, all renderer/mode floors,
+  context-deletion and identity controls, exact projection algebra, and at
+  least +200 mapped-swap assignments over its duplicate-forward control with
+  no more than three normal losses. Seed `2026080713` freezes a separate
+  256-program EIC1 confirmation generator with new query families and opaque
+  entities. It must pass exhaustive overlap audits before staging and remains
+  inaccessible to models unless Shohin development passes. The unopened CGL1
+  confirmation is used only as a byte-level overlap input and is never scored.
+
+  A miss closes EIC1 without local variants. No continuation pretraining is
+  authorized.
+
+  Decision:
+  `implement_and_hash_eic1;_build_confirmation_on_stokes;_run_four_matched_single_h100_development_arms`.

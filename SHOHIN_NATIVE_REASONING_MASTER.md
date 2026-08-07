@@ -57018,3 +57018,21 @@ closed as Shohin solutions. The next architecture must represent physical
 candidate identity equivariantly inside the learned transaction state and
 commit one coherent hypothesis through that typed identity, rather than infer
 identity from renderer-local evidence after the fact.
+
+### DIVERGE-EIC1: put the permutation quotient inside learning
+
+EIC1 is the bounded successor to CGL1. It does not pool a finished model's
+scores after the fact. Every training and inference decision is projected into
+the antisymmetric representation of the two-candidate swap group:
+`e(x) = 0.5 * (r(x) + g^-1 r(gx))`. Renderer-local evidence that does not
+transform with physical candidate identity is removed before it can drive the
+loss or hard commit.
+
+Four matched arms compare Shohin and SmolLM2 treatments against duplicate-
+forward controls with identical parameters and two backbone evaluations. The
+protected Shohin arm must retain at least `765/768` normal accuracy, become at
+least `765/768` equivariant under mapped mention swap, and beat its equal-FLOP
+control by at least 200 swapped assignments. A new source-disjoint board is
+frozen before training and remains sealed behind that development result.
+EIC1 is a semantic-owner qualification gate, not yet an open-domain reasoning
+claim or authorization for continuation pretraining.
