@@ -14,6 +14,13 @@
 > chance controls, exact custody, and all five confirmations. No CAB1 score
 > exists at freeze. Do not open confirmation unless development passes; do not
 > run CAB1 width/duration/seed/threshold/renderer/loss variants.
+>
+> The first pre-score materialization under `fe73f7f` failed closed because
+> hash-derived opaque words produced one collision among 500,000 training
+> names. It is a data-construction rejection, not a model result. Preserve the
+> rejected 100,000-row file and require the corrected deterministic name
+> carrier to prove all 500,000 operation/register/decoy names unique before
+> any H100 sees CAB1 data.
 
 > **If you are a new agent taking over, read THIS FILE FIRST, top to bottom.** It is the single
 > source of truth for the live training run and the standing directive. Everything you need to keep

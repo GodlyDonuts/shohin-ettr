@@ -51,9 +51,21 @@ def _hash(text: str) -> str:
 
 
 def _word(namespace: str, seed: int, serial: int, index: int) -> str:
-    if not namespace.startswith("cab1-"):
+    tags = {
+        "cab1-train-operation": "c",
+        "cab1-train-register": "r",
+        "cab1-train-decoy-register": "d",
+    }
+    if namespace not in tags or serial < 0 or index not in (0, 1):
         raise CAB1DataError("CAB1 opaque-name namespace differs")
-    return eal_word(namespace, seed, serial, index)
+    value = serial * REGISTERS + index
+    suffix = ""
+    for _ in range(4):
+        suffix = chr(ord("a") + value % 26) + suffix
+        value //= 26
+    if value:
+        raise CAB1DataError("CAB1 opaque-name serial exceeds frozen carrier")
+    return eal_word(namespace, seed, serial, index) + tags[namespace] + suffix
 
 
 def table_rotation(seed: int, serial: int) -> int:

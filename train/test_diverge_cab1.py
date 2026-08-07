@@ -38,6 +38,16 @@ def main() -> None:
     first = build_training_record(17)
     assert first == build_training_record(17)
     assert first != build_training_record(18)
+    names = {
+        value
+        for serial in range(1_000)
+        for value in (
+            build_training_record(serial)["operation"],
+            *build_training_record(serial)["register_table"],
+            *build_training_record(serial)["decoy_register_table"],
+        )
+    }
+    assert len(names) == 5_000
     assert sorted(first["evidence_position_targets"]) == [0, 0, 1, 1]
     assert sorted(first["initial_position_targets"]) == [0, 1]
     assert rotate_table(("rax", "reb"), 0) == ("rax", "reb")
