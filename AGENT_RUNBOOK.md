@@ -32253,3 +32253,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `correct_seed_binding_only;_relaunch_unchanged_eal2_gate`.
+
+- **2026-08-07 10:20--10:30 EDT** -- **EAL2 passes every frozen development
+  condition; five fixed independent confirmation boards are staged pre-score.**
+
+  Corrected launcher job `744712` completes all 1,000 unchanged updates on
+  one H100 in 2m20s. The 397,250-parameter temporal reader is exact on normal
+  and counterfactual source-disjoint development: `6,144/6,144` in each view
+  with a 100% renderer floor. Temporal scrub is `1,738/6,144 = 28.2878%`,
+  under the frozen 30% ceiling.
+
+  Learned episode-local induction commits all `256/256` laws and recovers all
+  `4,096/4,096` coefficient rows. Source-deleted execution is exact on
+  `4,096/4,096` terminal states and `8,192/8,192` queries, including every
+  held depth from 12 through 32. Oracle temporal roles are exact. One example
+  never commits; reset abstains on all 4,096 programs; shuffled evidence and
+  unrelated-law transplant score `0/4,096` states and `76/8,192` queries.
+  Runtime-source and source-deletion audits pass.
+
+  Checkpoint, training-report, and development-report SHA-256 values are
+  `c53cafe8478ab783ea4cd8d630a5f52245587d7957ed6565b960c48355636a36`,
+  `4650a289111a61f72e73e3823bf6f8ec0400d8543f4f2350c65f2f79687c218a`,
+  and `e4934f8447c9298663a6544c26b4aceff110a63f534b83e4bd81bd29f9585743`.
+  Local and Newton copies are hash-matched and read-only.
+
+  Confirmation is frozen before scoring at seeds `2026080763`--`2026080767`.
+  The same checkpoint is evaluated without retraining on five independently
+  generated 256-episode boards with zero source, opaque-name, or identity
+  overlap against training, development, and each other. The builder binds
+  all four immutable base-data hashes and independently regenerates every
+  board. Every seed must pass the unchanged conjunctive gate before the exact
+  aggregate can qualify EAL2.
+
+  Decision:
+  `materialize_and_hash_five_eal2_confirmations;_run_same_frozen_reader_once_per_seed;_qualify_only_on_all_five_pass`.

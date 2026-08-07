@@ -1,6 +1,7 @@
 # DIVERGE-EAL2 Identifiable Temporal Interface
 
-Status: frozen after the EAL1 failure and before EAL2 neural scoring.
+Status: development PASS; five fixed independent confirmation boards frozen
+before confirmation scoring.
 
 ## Structural correction
 
@@ -66,3 +67,36 @@ A miss closes EAL2 without local seed, width, update, learning-rate, renderer,
 or duration variants. A pass may open fixed independent confirmation boards
 and one composition with qualified Shohin owners. It does not authorize long
 continuation pretraining.
+
+## Development result
+
+The first admitted neural job, Newton `744712`, completed the unchanged 1,000
+updates in 2m20s. The frozen 397,250-parameter reader is exact on all 6,144
+normal and 6,144 temporal-counterfactual development statements, including a
+100% renderer floor. Temporal scrub retains 1,738/6,144 = 28.2878% complete
+accuracy, below the frozen 30% ceiling.
+
+All 256 learned episode-law packets commit. All 4,096 coefficient rows,
+4,096 terminal states, and 8,192 late queries are exact, with 100% at every
+held depth from 12 through 32. Oracle temporal roles are also exact. One
+example never commits; reset always abstains; shuffled-evidence and unrelated-
+law controls reach 0/4,096 states and 76/8,192 queries. Source deletion and
+runtime-source audits pass.
+
+Immutable hashes:
+
+- checkpoint: `c53cafe8478ab783ea4cd8d630a5f52245587d7957ed6565b960c48355636a36`;
+- training report: `4650a289111a61f72e73e3823bf6f8ec0400d8543f4f2350c65f2f79687c218a`;
+- development report: `e4934f8447c9298663a6544c26b4aceff110a63f534b83e4bd81bd29f9585743`.
+
+## Fixed confirmation
+
+The same frozen checkpoint is evaluated without retraining on five fixed
+source-, name-, and identity-disjoint boards under seeds `2026080763` through
+`2026080767`. The original training, development public, development assessor,
+and data-report hashes are bound before board generation. Each board contains
+256 episodes and must independently satisfy the unchanged development gate.
+The aggregate passes only if all five boards pass, normal and counterfactual
+reading remain exact, temporal scrub remains at most 30%, and learned state
+and query execution remain exact. No confirmation result exists at this
+document revision.

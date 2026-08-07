@@ -36,6 +36,7 @@ ASSESSOR_SCHEMA = "shohin-diverge-eal2-assessor-v1"
 REPORT_SCHEMA = "shohin-diverge-eal2-data-report-v1"
 TRAIN_SEED = 2026080761
 DEVELOPMENT_SEED = 2026080762
+CONFIRMATION_SEEDS = (2026080763, 2026080764, 2026080765, 2026080766, 2026080767)
 
 
 def _transition_record(
@@ -151,18 +152,17 @@ def validate_training_record(record: Mapping[str, Any]) -> None:
     validate_transition_record(record)
 
 
-def build_development_episode(serial: int) -> tuple[dict[str, Any], dict[str, Any]]:
-    rng = random.Random(
-        canonical_sha256(["eal2-development", DEVELOPMENT_SEED, serial])
-    )
-    episode_id = canonical_sha256(["eal2-episode", DEVELOPMENT_SEED, serial])[:24]
+def build_evaluation_episode(
+    serial: int, *, seed: int
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    rng = random.Random(canonical_sha256(["eal2-development", seed, serial]))
+    episode_id = canonical_sha256(["eal2-episode", seed, serial])[:24]
     aliases = tuple(
-        _word("eal2-alias", DEVELOPMENT_SEED, serial, index)
-        for index in range(OPERATIONS)
+        _word("eal2-alias", seed, serial, index) for index in range(OPERATIONS)
     )
     registers = (
-        _word("eal2-register", DEVELOPMENT_SEED, serial, 0),
-        _word("eal2-register", DEVELOPMENT_SEED, serial, 1),
+        _word("eal2-register", seed, serial, 0),
+        _word("eal2-register", seed, serial, 1),
     )
     matrices = tuple(rng.sample(DEVELOPMENT_MATRICES, OPERATIONS))
     evidence_public = []
@@ -175,7 +175,7 @@ def build_development_episode(serial: int) -> tuple[dict[str, Any], dict[str, An
             after = apply_matrix(matrix, before)
             record = _transition_record(
                 split="development",
-                seed=DEVELOPMENT_SEED,
+                seed=seed,
                 serial=transition_serial,
                 operation_index=operation_index,
                 operation=alias,
@@ -236,7 +236,7 @@ def build_development_episode(serial: int) -> tuple[dict[str, Any], dict[str, An
     public = {
         "schema": PUBLIC_SCHEMA,
         "episode_id": episode_id,
-        "seed": DEVELOPMENT_SEED,
+        "seed": seed,
         "serial": serial,
         "aliases": list(aliases),
         "registers": list(registers),
@@ -259,6 +259,10 @@ def build_development_episode(serial: int) -> tuple[dict[str, Any], dict[str, An
     assessor["identity_sha256"] = canonical_sha256(assessor)
     validate_episode(public, assessor)
     return public, assessor
+
+
+def build_development_episode(serial: int) -> tuple[dict[str, Any], dict[str, Any]]:
+    return build_evaluation_episode(serial, seed=DEVELOPMENT_SEED)
 
 
 def validate_episode(public: Mapping[str, Any], assessor: Mapping[str, Any]) -> None:
@@ -288,6 +292,7 @@ def validate_episode(public: Mapping[str, Any], assessor: Mapping[str, Any]) -> 
 
 __all__ = [
     "ASSESSOR_SCHEMA",
+    "CONFIRMATION_SEEDS",
     "DEVELOPMENT_EPISODES",
     "DEVELOPMENT_SEED",
     "PUBLIC_SCHEMA",
@@ -296,6 +301,7 @@ __all__ = [
     "TRAIN_SCHEMA",
     "TRAIN_SEED",
     "build_development_episode",
+    "build_evaluation_episode",
     "build_training_record",
     "overlap_report",
     "validate_episode",
