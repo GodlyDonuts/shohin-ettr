@@ -32870,3 +32870,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_snl1;_preserve_all_parent_weights;_freeze_one_successor_that_removes_exact_evidence_operation_binding_without_retraining_qualified_owners`.
+
+- **2026-08-07 15:02--15:16 EDT** -- **OPB1 freezes and materializes the
+  learned evidence-operation binding gate.**
+
+  A read-only diagnostic on all 6,144 open SNL1 development evidence
+  statements shows that the frozen command pointer does not already solve the
+  interface: exact CTC sequence decoding was `37/6144 = 0.6022%`; richer
+  majority, probability-sum, max-logit, and logsumexp reductions peak at only
+  `53.3366%`. Reusing that owner by a post-hoc pooling choice is rejected.
+
+  DIVERGE-OPB1 instead freezes one dynamic byte-to-alias pointer. It encodes
+  the raw evidence and eight fresh episode-local aliases with shared recurrent
+  encoders, aggregates token-level compatibility into one hard operation
+  position, and uses those positions to group the already-qualified SVE1
+  events before the frozen NLS1 synthesizer. OQB1, NCP1, SVE1, NLS1, and the
+  executor remain bit-identical. Runtime source contains no regex, substring
+  search, alias lookup, typed operation target, numeric parser, or support
+  solver.
+
+  Freeze seed `2026080861`, 100,000 rows, 1,000 AdamW updates, BS128, LR0.001,
+  matched treatment/decoy-table arms. Development seed `2026080862` and
+  conditional confirmations `2026080863`--`67` contain 256 episodes each.
+  Positive normal, full rename, and coherent operation-table reindex require
+  >=99% operation/law/state/answer and >=95% depth floor. Cross-owner reindex,
+  operation scrub, and the decoy model have fixed causal ceilings. No width,
+  seed, duration, threshold, renderer, or loss variant is authorized.
+
+  Complete local preflight data materialization is deterministic and
+  source/name/identity-disjoint from the transitive SNL1 lineage. It produces
+  100,000 balanced training rows and six exactly balanced 6,144-statement
+  boards; report SHA-256 is `be0e948c...1fc77`, training SHA-256 is
+  `d56e95b8...7de3`. Operation targets are assessor-only. This is preflight
+  evidence; no neural OPB1 score exists yet.
+
+  Decision:
+  `commit_frozen_opb1;_package_immutable_runtime_and_data;_train_treatment_and_decoy_in_parallel;_run_one_end_to_end_development_gate`.
