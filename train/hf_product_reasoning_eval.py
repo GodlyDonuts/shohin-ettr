@@ -626,6 +626,25 @@ def _load_model(
             reset_weight=float(metadata["reset_weight"]),
             halting_weight=float(metadata["halting_weight"]),
         ).to("cuda:0")
+    elif metadata.get("architecture") == "diverge-qpt1":
+        from diverge_qpt1_product import QPT1ProductModel
+
+        model = QPT1ProductModel(
+            backbone,
+            lora_layers=int(metadata["lora_layers"]),
+            lora_rank=int(metadata["lora_rank"]),
+            lora_alpha=float(metadata["lora_alpha"]),
+            workspace_width=int(workspace["workspace_width"]),
+            source_slots=int(workspace["source_slots"]),
+            query_slots=int(workspace["query_slots"]),
+            recurrent_steps=int(workspace["recurrent_steps"]),
+            attention_heads=int(workspace["attention_heads"]),
+            ff_multiplier=int(workspace["ff_multiplier"]),
+            pointer_temperature=float(workspace["pointer_temperature"]),
+            binding_weight=float(metadata["binding_weight"]),
+            coverage_weight=float(metadata["coverage_weight"]),
+            reset_weight=float(metadata["reset_weight"]),
+        ).to("cuda:0")
     else:
         model = ProductReasoningModel(
             backbone=backbone,

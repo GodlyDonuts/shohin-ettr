@@ -1,0 +1,131 @@
+{
+  "all_seed_gates_passed": true,
+  "arms": {
+    "alias_reindex": {
+      "answer_exact": 40960,
+      "answer_rate": 1.0,
+      "law_exact": 1280,
+      "law_rate": 1.0,
+      "law_total": 1280,
+      "operation_exact": 30720,
+      "operation_rate": 1.0,
+      "operation_total": 30720,
+      "programs": 20480,
+      "queries": 40960,
+      "state_exact": 20480,
+      "state_rate": 1.0
+    },
+    "cross_owner_reindex": {
+      "answer_exact": 420,
+      "answer_rate": 0.01025390625,
+      "law_exact": 1280,
+      "law_rate": 1.0,
+      "law_total": 1280,
+      "operation_exact": 30720,
+      "operation_rate": 1.0,
+      "operation_total": 30720,
+      "programs": 20480,
+      "queries": 40960,
+      "state_exact": 8,
+      "state_rate": 0.000390625
+    },
+    "decoy_table_model": {
+      "answer_exact": 0,
+      "answer_rate": 0.0,
+      "law_exact": 0,
+      "law_rate": 0.0,
+      "law_total": 1280,
+      "operation_exact": 3915,
+      "operation_rate": 0.12744140625,
+      "operation_total": 30720,
+      "programs": 20480,
+      "queries": 40960,
+      "state_exact": 0,
+      "state_rate": 0.0
+    },
+    "operation_scrub": {
+      "answer_exact": 0,
+      "answer_rate": 0.0,
+      "law_exact": 0,
+      "law_rate": 0.0,
+      "law_total": 1280,
+      "operation_exact": 3825,
+      "operation_rate": 0.12451171875,
+      "operation_total": 30720,
+      "programs": 20480,
+      "queries": 40960,
+      "state_exact": 0,
+      "state_rate": 0.0
+    },
+    "renamed": {
+      "answer_exact": 40960,
+      "answer_rate": 1.0,
+      "law_exact": 1280,
+      "law_rate": 1.0,
+      "law_total": 1280,
+      "operation_exact": 30720,
+      "operation_rate": 1.0,
+      "operation_total": 30720,
+      "programs": 20480,
+      "queries": 40960,
+      "state_exact": 20480,
+      "state_rate": 1.0
+    },
+    "treatment": {
+      "answer_exact": 40960,
+      "answer_rate": 1.0,
+      "law_exact": 1280,
+      "law_rate": 1.0,
+      "law_total": 1280,
+      "operation_exact": 30720,
+      "operation_rate": 1.0,
+      "operation_total": 30720,
+      "programs": 20480,
+      "queries": 40960,
+      "state_exact": 20480,
+      "state_rate": 1.0
+    }
+  },
+  "development": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_opb1/results_1d5b1b7_r1/development.json",
+    "sha256": "9f0c2b170e30510aa27a5ab42d4050cd38f67e1b21f84f88e72843086aebad69"
+  },
+  "identity_sha256": "64795d5d676d3de50a0de4f463eed77f391cb6372d7a82647676b5755298c1d7",
+  "reports": [
+    {
+      "identity_sha256": "f39913f88c346383604086da501c8c4c03a1c8818a3059e9241b0853a49aa1c0",
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_opb1/results_1d5b1b7_r1/confirmation_2026080863.json",
+      "sha256": "0b3e3b4e7d038695914f83ec685ed5695c7a65f0220471a7d254d9a63f1372c9"
+    },
+    {
+      "identity_sha256": "02c867e40710cabb41e6a2066f86dee9a4a667734eee91f24fd331af8b920ea7",
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_opb1/results_1d5b1b7_r1/confirmation_2026080864.json",
+      "sha256": "b8625a01217190d9fcfec27396228d4757da90ce097f342d91408f1e99b8ffb6"
+    },
+    {
+      "identity_sha256": "c5760fbd5b21ce2e51bd41200765d576bcdf70896b51a2d6679e6153903887e4",
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_opb1/results_1d5b1b7_r1/confirmation_2026080865.json",
+      "sha256": "b6702cd3195c30a6dc8761c4a579715b300a21bda3302d9a61f05023910b22c8"
+    },
+    {
+      "identity_sha256": "1c0c7739ba3baac2d215f4582fdd456f4e0a17cb9f83df44eb0e8f463ec640d4",
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_opb1/results_1d5b1b7_r1/confirmation_2026080866.json",
+      "sha256": "a969526beda20a7c3cbe6c7a9ddd8fa8aa93be6a6d2de1e96a2bb1484e254d3d"
+    },
+    {
+      "identity_sha256": "651a00745cdbfb67cc39d0201f3725842ce186d3118f7242f6b93e1b2845e93b",
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_opb1/results_1d5b1b7_r1/confirmation_2026080867.json",
+      "sha256": "39c8f7b56d8b4ab06b3fe316fe468a44403f0a5eda818bcb32412e7cba794649"
+    }
+  ],
+  "schema": "shohin-diverge-opb1-confirmation-aggregate-v1",
+  "seeds": [
+    2026080863,
+    2026080864,
+    2026080865,
+    2026080866,
+    2026080867
+  ],
+  "source_commit": "1d5b1b7c76b20b397f6c0025d3b873a371b78f96",
+  "status": "pass"
+}

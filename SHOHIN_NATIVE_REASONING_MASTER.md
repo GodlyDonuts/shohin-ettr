@@ -57440,3 +57440,55 @@ reasoning: exact evidence operation binding, the declared repeated-surface
 identity table, the bounded 25-row law vocabulary, and modular Z/97 execution
 remain engineered. The next gate removes evidence operation binding while
 holding every newly qualified owner fixed.
+
+### DIVERGE-OPB1: confirmed learned evidence-operation binding
+
+OPB1 removes SNL1's exact whole-word operation lookup. A shared recurrent byte
+encoder embeds each raw evidence statement and all eight fresh episode-local
+operation aliases. Token-level compatibility commits one hard alias position,
+which groups the already-qualified SVE1 events before the frozen SNL1 law
+synthesizer. OQB1, NCP1, SVE1, NLS1, and the executor remain bit-identical.
+
+Treatment learns the 100,000-row binding corpus perfectly; an
+identically-budgeted decoy-table control reaches only `14.6484%`. Development
+is exact for treatment, full unseen rename, and coherent alias-table reindex:
+`6144/6144` operation bindings, `4096/4096` laws and terminal states, and
+`8192/8192` answers at every tested depth. Five fixed source-disjoint
+confirmations reproduce exact positives: each aggregate reaches
+`30,720/30,720` operation bindings, `20,480/20,480` states, and
+`40,960/40,960` answers. Cross-owner reindex preserves operation binding but
+falls to `8/20,480` states and `420/40,960` answers. Operation scrub and the
+decoy model produce zero states/answers at near-chance operation accuracy.
+Aggregate SHA-256 is
+`79ce10aeb6b8c787a522c914eaf4e2ce7e63d42627a9a4221b3f2e5ccb01a6d6`.
+
+This is the strongest confirmed controlled architecture result so far: raw
+natural evidence, initialization, command, and query text now traverses
+learned source owners into recurrent execution without exact numeric parsing,
+typed program input, exact law support intersection, or evidence-operation
+string lookup. It is not an open-domain reasoning result. Exact repeated-name
+quotienting, a bounded 25-row coefficient vocabulary, and Z/97 execution remain
+engineered.
+
+### QST1 product transplant: useful bias, failed broad promotion
+
+QST1 transplanted explicit source/state/query owners into pinned
+Qwen3.5-0.8B. It trained 1,000 updates over `2,438,433` charged target tokens
+at `623.59` tok/s with protected backbone weights unchanged. Against matched
+B1, it moved GSM8K `52 -> 54`, MATH `23 -> 26`, GPQA `1 -> 8`, and BBH
+`24 -> 28`, but executable code fell `6/40 -> 3/40`; AIME remained zero.
+Five-domain macro rose only `22.901% -> 23.908%`, and solved count rose
+`106 -> 119`. This misses the frozen `+3` macro and `+15` solved gates and
+violates the no-regression rule. Exact QST1 is closed, not scaled.
+
+### QPT1 stronger-host successor: frozen, awaiting CUDA evidence
+
+The next product gate uses exact pinned post-trained Qwen3.5-4B revision
+`851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a`. QPT1 replaces QST1's global
+soft prefix and learned early halt with hard query-conditioned source
+pointers, eight whole-source-read/whole-state-write recurrent transactions,
+fixed depth, and a zero-initialized gated residual on existing prompt tokens.
+This keeps sequence length and positional geometry identical to the matched
+LoRA path. A 256-update QPT1/B1 matched gate is frozen in
+`docs/research/DIVERGE_QPT1_QWEN4B_PRODUCT_GATE.md`; no QPT1 CUDA score exists
+yet.

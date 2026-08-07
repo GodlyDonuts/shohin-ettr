@@ -1,5 +1,21 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **OPB1 CONFIRMED / QST1 CLOSED / QPT1 FROZEN — 2026-08-07 17:45 EDT:**
+> OPB1 development and all five source-disjoint confirmations pass. Aggregate
+> SHA-256 is `79ce10ae...1a6d6`: treatment/full rename/coherent reindex are
+> exact across `30,720` operation bindings, `20,480` terminal states, and
+> `40,960` answers; operation scrub and the decoy model produce zero
+> states/answers. QST1 on Qwen3.5-0.8B is closed as a broad product negative:
+> `23.908%` five-domain macro and `119` solved versus B1 `22.901% / 106`, but
+> executable code regresses `6/40 -> 3/40`. Do not run QST1 variants. The sole
+> stronger-host product successor is QPT1 on exact pinned
+> `Qwen/Qwen3.5-4B@851bf6e...cd0a`: hard query-conditioned pointers, whole-slot
+> transactions, fixed recurrent depth, and zero-initialized same-sequence
+> residual injection. Its 256-update matched QPT1/B1 gate is frozen; no QPT1
+> CUDA score exists yet. Shared model cache is warm; corrected preflight job
+> `745166` changes only the Python environment after infrastructure-only job
+> `745151` failed before importing Transformers.
+
 > **CAB1 FREEZE — 2026-08-07:** JRB1 remains a development FAIL because its
 > mean-pooled natural query owner reached 96.58%, although evidence, initial
 > binding, and recurrent execution were exact. Its shuffled-table arm was a
@@ -32937,3 +32953,100 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `verify_cpu_integration;_commit_and_package_qst1;_run_short_cuda_canary;_release_one_v10_u1000_job_on_success;_evaluate_checkpoint_1000_against_immutable_b1`.
+
+- **2026-08-07 16:20--17:36 EDT** -- **QST1 completes and closes as a broad
+  product negative with a bounded specialist signal.**
+
+  Private commit `0973e7e13be57d88ebf06ee85fe24ac53cfc2532` packages the
+  stage-owned QST1 runtime; its Newton SHA256SUMS manifest is
+  `4f0576af...151b64b`. Two-update canary `745034` passes. Full job `745035`
+  completes all 1,000 updates, charges exactly `2,438,433` target tokens in
+  3,910.31 seconds (`623.5907` target tok/s), peaks at 34.6014 GiB, and leaves
+  every protected Qwen parameter bit-identical. Final checkpoint SHA-256 is
+  `1bf34868...17ec9`; training report SHA-256 is `ae53eb00...9977`.
+
+  The unchanged seven-board evaluation is complete:
+
+  - GSM8K `54/100` versus B1 `52/100`;
+  - MATH-500 `26/100` versus `23/100`;
+  - HumanEval `1/20` versus `3/20`;
+  - MBPP `2/20` versus `3/20`;
+  - GPQA-Diamond `8/198` versus `1/198`;
+  - BBH logic `28/100` versus `24/100`;
+  - AIME-2024 `0/30` versus `0/30`.
+
+  Five-domain macro is `23.9081%` versus `22.9010%` (`+1.0071`), and solved
+  count is `119` versus `106` (`+13`). Combined executable code is `3/40`
+  versus `6/40`, a 7.5-point regression. QST1 therefore misses the frozen
+  `+3` macro and `+15` solved thresholds and violates the no-domain-regression
+  condition. Do not run QST1 width, seed, duration, halt, or scale rescues.
+  Retain it only as evidence that explicit stage ownership can trade code for
+  modest math/science/logic gains on the 0.8B host.
+
+  Decision:
+  `close_exact_qst1;_preserve_scores_and_transcripts;_replace_soft_prefix_and_learned_early_halt_before_any_stronger_host_test`.
+
+- **2026-08-07 17:15--17:39 EDT** -- **OPB1 confirms learned natural
+  evidence-to-operation binding across all five source-disjoint seeds.**
+
+  Matched treatment/control jobs `744993/744994` complete cleanly. Treatment
+  training sample accuracy is `1.000000`; the identically budgeted decoy-table
+  control is `0.146484375`. Treatment checkpoint/report SHA-256 values are
+  `27c73ef8...bb8` / `72421e5b...2f11`; control values are
+  `b35e5952...6486d` / `2953fa91...05f1`.
+
+  Official development replacement `745076` passes in 1m59s after the first
+  allocation failed closed on a node with no visible CUDA device. Treatment,
+  unseen full rename, and coherent alias-table reindex each reach exact
+  `6144/6144` operation bindings, `4096/4096` laws and terminal states, and
+  `8192/8192` answers with a 100% minimum depth rate. Cross-owner reindex keeps
+  local operation binding at 100% while collapsing terminal state to `0/4096`
+  and answer to `82/8192 = 1.00098%`. Operation scrub and the decoy model reach
+  only `12.79297% / 12.17448%` operation binding and zero terminal
+  states/answers. Development SHA-256 is `9f0c2b17...bad69`.
+
+  This opens exactly the frozen confirmations. Jobs `745142`--`745146` all
+  pass; aggregate `745148` has SHA-256 `79ce10ae...1a6d6`. Across five seeds,
+  treatment, full rename, and coherent reindex total exact `30,720/30,720`
+  operation bindings, `20,480/20,480` terminal states, and
+  `40,960/40,960` answers. Cross-owner reindex retains `8/20,480` states and
+  `420/40,960` answers. Operation scrub and decoy retain zero states/answers
+  with `12.4512% / 12.7441%` operation binding. All five seed gates pass.
+
+  Qualify the controlled natural compiler trajectory only: OPB1 removes exact
+  evidence-operation string binding while preserving parent owners
+  bit-identically. Declared repeated-register occurrence identity, the bounded
+  25-row coefficient vocabulary, and modular Z/97 execution remain engineered.
+  No OPB1 variant is authorized.
+
+  Decision:
+  `promote_opb1_as_the_confirmed_controlled_interface;_preserve_all_parent_weights;_transplant_its_hard_pointer_transaction_principle_into_one_identity_preserving_product_successor`.
+
+- **2026-08-07 17:36--17:45 EDT** -- **QPT1 freezes the structurally
+  different stronger-host product successor.**
+
+  The exact host is official post-trained `Qwen/Qwen3.5-4B` revision
+  `851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a`. Shared-cache job `745152`
+  completes. Preflight `745151` fails before model load because its wrapper
+  selected a Python environment without Transformers; this is an
+  infrastructure rejection and has no model score. Corrected preflight
+  `745166` changes only the Python executable.
+
+  DIVERGE-QPT1 replaces QST1's unconditional 20-token prefix and learned halt
+  with query-conditioned straight-through source pointers, eight tied
+  whole-source-read/whole-state-write transactions at fixed depth, and four
+  zero-initialized gated residuals on existing terminal prompt tokens. Prompt
+  length and positional geometry remain unchanged, and the initial adapter is
+  exactly the matched LoRA path. There is no external solver, answer router,
+  host arithmetic, fieldwise hypothesis average, or teacher at inference.
+
+  Freeze 256 updates, 16 examples/update, V10 SHA-256 `2461d6f7...96549`,
+  seed/data seed `2026080702/20260802`, 1,024 context, `2e-4` cosine LR, and
+  identical final-four-layer rank-8 LoRA for QPT1 and B1. Require `+3` macro,
+  `+15` solved, three improved domains, no regression over two points, and
+  causal packet/reset/release behavior after a score pass. Exact contract is
+  `docs/research/DIVERGE_QPT1_QWEN4B_PRODUCT_GATE.md`. No CUDA QPT1 score
+  exists at freeze.
+
+  Decision:
+  `finish_cpu_tests_and_immutable_packaging;_pass_one_two_update_4b_canary;_then_run_exactly_one_matched_qpt1_vs_b1_development_pair`.

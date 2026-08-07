@@ -1,0 +1,1107 @@
+{
+  "arms": {
+    "alias_reindex": {
+      "evidence_events": {
+        "element_exact": 24576,
+        "element_rate": 1.0,
+        "elements": 24576,
+        "exact": 6144,
+        "exact_rate": 1.0,
+        "total": 6144
+      },
+      "execution": {
+        "abstained_programs": 0,
+        "answer_exact": 8192,
+        "answer_exact_rate": 1.0,
+        "by_depth": {
+          "12": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "13": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "14": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "16": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "17": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "18": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "20": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "21": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "22": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "24": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "25": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "26": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "28": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "29": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "30": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "32": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          }
+        },
+        "minimum_depth_rate": 1.0,
+        "programs": 4096,
+        "queries": 8192,
+        "state_exact": 4096,
+        "state_exact_rate": 1.0
+      },
+      "initial_events": {
+        "element_exact": 8192,
+        "element_rate": 1.0,
+        "elements": 8192,
+        "exact": 4096,
+        "exact_rate": 1.0,
+        "total": 4096
+      },
+      "law": {
+        "exact": 256,
+        "exact_rate": 1.0,
+        "row_exact": 4096,
+        "row_rate": 1.0,
+        "rows": 4096,
+        "total": 256
+      },
+      "operation": {
+        "exact": 6144,
+        "rate": 1.0,
+        "total": 6144
+      },
+      "query_register": {
+        "exact": 8192,
+        "rate": 1.0,
+        "total": 8192
+      }
+    },
+    "cross_owner_reindex": {
+      "evidence_events": {
+        "element_exact": 24576,
+        "element_rate": 1.0,
+        "elements": 24576,
+        "exact": 6144,
+        "exact_rate": 1.0,
+        "total": 6144
+      },
+      "execution": {
+        "abstained_programs": 0,
+        "answer_exact": 77,
+        "answer_exact_rate": 0.0093994140625,
+        "by_depth": {
+          "12": {
+            "exact": 1,
+            "rate": 0.00390625,
+            "total": 256
+          },
+          "13": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "14": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "16": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "17": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "18": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "20": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "21": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "22": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "24": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "25": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "26": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "28": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "29": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "30": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "32": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          }
+        },
+        "minimum_depth_rate": 0.0,
+        "programs": 4096,
+        "queries": 8192,
+        "state_exact": 1,
+        "state_exact_rate": 0.000244140625
+      },
+      "initial_events": {
+        "element_exact": 8192,
+        "element_rate": 1.0,
+        "elements": 8192,
+        "exact": 4096,
+        "exact_rate": 1.0,
+        "total": 4096
+      },
+      "law": {
+        "exact": 256,
+        "exact_rate": 1.0,
+        "row_exact": 4096,
+        "row_rate": 1.0,
+        "rows": 4096,
+        "total": 256
+      },
+      "operation": {
+        "exact": 6144,
+        "rate": 1.0,
+        "total": 6144
+      },
+      "query_register": {
+        "exact": 8192,
+        "rate": 1.0,
+        "total": 8192
+      }
+    },
+    "decoy_table_model": {
+      "evidence_events": {
+        "element_exact": 24576,
+        "element_rate": 1.0,
+        "elements": 24576,
+        "exact": 6144,
+        "exact_rate": 1.0,
+        "total": 6144
+      },
+      "execution": {
+        "abstained_programs": 4096,
+        "answer_exact": 0,
+        "answer_exact_rate": 0.0,
+        "by_depth": {
+          "12": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "13": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "14": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "16": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "17": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "18": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "20": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "21": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "22": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "24": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "25": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "26": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "28": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "29": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "30": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "32": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          }
+        },
+        "minimum_depth_rate": 0.0,
+        "programs": 4096,
+        "queries": 8192,
+        "state_exact": 0,
+        "state_exact_rate": 0.0
+      },
+      "initial_events": {
+        "element_exact": 8192,
+        "element_rate": 1.0,
+        "elements": 8192,
+        "exact": 4096,
+        "exact_rate": 1.0,
+        "total": 4096
+      },
+      "law": {
+        "exact": 0,
+        "exact_rate": 0.0,
+        "row_exact": 0,
+        "row_rate": 0.0,
+        "rows": 4096,
+        "total": 256
+      },
+      "operation": {
+        "exact": 807,
+        "rate": 0.13134765625,
+        "total": 6144
+      },
+      "query_register": {
+        "exact": 8192,
+        "rate": 1.0,
+        "total": 8192
+      }
+    },
+    "operation_scrub": {
+      "evidence_events": {
+        "element_exact": 24576,
+        "element_rate": 1.0,
+        "elements": 24576,
+        "exact": 6144,
+        "exact_rate": 1.0,
+        "total": 6144
+      },
+      "execution": {
+        "abstained_programs": 4080,
+        "answer_exact": 0,
+        "answer_exact_rate": 0.0,
+        "by_depth": {
+          "12": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "13": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "14": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "16": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "17": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "18": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "20": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "21": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "22": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "24": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "25": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "26": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "28": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "29": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "30": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          },
+          "32": {
+            "exact": 0,
+            "rate": 0.0,
+            "total": 256
+          }
+        },
+        "minimum_depth_rate": 0.0,
+        "programs": 4096,
+        "queries": 8192,
+        "state_exact": 0,
+        "state_exact_rate": 0.0
+      },
+      "initial_events": {
+        "element_exact": 8192,
+        "element_rate": 1.0,
+        "elements": 8192,
+        "exact": 4096,
+        "exact_rate": 1.0,
+        "total": 4096
+      },
+      "law": {
+        "exact": 0,
+        "exact_rate": 0.0,
+        "row_exact": 7,
+        "row_rate": 0.001708984375,
+        "rows": 4096,
+        "total": 256
+      },
+      "operation": {
+        "exact": 738,
+        "rate": 0.1201171875,
+        "total": 6144
+      },
+      "query_register": {
+        "exact": 8192,
+        "rate": 1.0,
+        "total": 8192
+      }
+    },
+    "renamed": {
+      "evidence_events": {
+        "element_exact": 24576,
+        "element_rate": 1.0,
+        "elements": 24576,
+        "exact": 6144,
+        "exact_rate": 1.0,
+        "total": 6144
+      },
+      "execution": {
+        "abstained_programs": 0,
+        "answer_exact": 8192,
+        "answer_exact_rate": 1.0,
+        "by_depth": {
+          "12": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "13": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "14": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "16": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "17": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "18": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "20": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "21": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "22": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "24": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "25": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "26": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "28": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "29": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "30": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "32": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          }
+        },
+        "minimum_depth_rate": 1.0,
+        "programs": 4096,
+        "queries": 8192,
+        "state_exact": 4096,
+        "state_exact_rate": 1.0
+      },
+      "initial_events": {
+        "element_exact": 8192,
+        "element_rate": 1.0,
+        "elements": 8192,
+        "exact": 4096,
+        "exact_rate": 1.0,
+        "total": 4096
+      },
+      "law": {
+        "exact": 256,
+        "exact_rate": 1.0,
+        "row_exact": 4096,
+        "row_rate": 1.0,
+        "rows": 4096,
+        "total": 256
+      },
+      "operation": {
+        "exact": 6144,
+        "rate": 1.0,
+        "total": 6144
+      },
+      "query_register": {
+        "exact": 8192,
+        "rate": 1.0,
+        "total": 8192
+      }
+    },
+    "treatment": {
+      "evidence_events": {
+        "element_exact": 24576,
+        "element_rate": 1.0,
+        "elements": 24576,
+        "exact": 6144,
+        "exact_rate": 1.0,
+        "total": 6144
+      },
+      "execution": {
+        "abstained_programs": 0,
+        "answer_exact": 8192,
+        "answer_exact_rate": 1.0,
+        "by_depth": {
+          "12": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "13": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "14": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "16": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "17": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "18": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "20": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "21": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "22": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "24": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "25": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "26": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "28": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "29": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "30": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          },
+          "32": {
+            "exact": 256,
+            "rate": 1.0,
+            "total": 256
+          }
+        },
+        "minimum_depth_rate": 1.0,
+        "programs": 4096,
+        "queries": 8192,
+        "state_exact": 4096,
+        "state_exact_rate": 1.0
+      },
+      "initial_events": {
+        "element_exact": 8192,
+        "element_rate": 1.0,
+        "elements": 8192,
+        "exact": 4096,
+        "exact_rate": 1.0,
+        "total": 4096
+      },
+      "law": {
+        "exact": 256,
+        "exact_rate": 1.0,
+        "row_exact": 4096,
+        "row_rate": 1.0,
+        "rows": 4096,
+        "total": 256
+      },
+      "operation": {
+        "exact": 6144,
+        "rate": 1.0,
+        "total": 6144
+      },
+      "query_register": {
+        "exact": 8192,
+        "rate": 1.0,
+        "total": 8192
+      }
+    }
+  },
+  "data": {
+    "assessor": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_opb1/data_1d5b1b7_r1/confirmation_2026080865_assessor.jsonl",
+    "assessor_sha256": "d38a59e2654bd52f0ed44dc0944b1a1b9fc4cd8d28e2f5c7692bdd894381bdcc",
+    "board_identity_sha256": "c5760fbd5b21ce2e51bd41200765d576bcdf70896b51a2d6679e6153903887e4",
+    "board_label": "confirmation_2026080865",
+    "board_seed": 2026080865,
+    "public": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_opb1/data_1d5b1b7_r1/confirmation_2026080865_public.jsonl",
+    "public_sha256": "1ce5d696209ccc206935b1a45edfab4004df1abacb99ebecc563936bedcc1c7e",
+    "report": "/lustre/fs1/home/sa305415/shohin/artifacts/reasoning/diverge_opb1/data_1d5b1b7_r1/report.json",
+    "report_sha256": "be0e948c0a13936db324b63b75d9afa83db4c5a5cf04d04da6d2b42e8d21fc77"
+  },
+  "gate": {
+    "conditions": {
+      "all_positive_components_at_least_99_percent": true,
+      "all_positive_depth_floors_at_least_95_percent": true,
+      "all_positive_execution_at_least_99_percent": true,
+      "all_positive_operation_at_least_99_percent": true,
+      "all_program_paths_at_least_99_percent": true,
+      "checkpoint_report_custody_matches": true,
+      "cross_owner_reindex_collapses_execution": true,
+      "cross_owner_reindex_preserves_local_binding": true,
+      "decoy_table_model_collapses": true,
+      "learned_pointer_runtime_has_no_exact_alias_search": true,
+      "matched_operation_training": true,
+      "operation_scrub_collapses": true,
+      "operation_targets_are_assessor_only": true,
+      "snl1_parent_passes": true,
+      "snl1_parent_weights_bit_identical": true
+    },
+    "passed": true
+  },
+  "parents": {
+    "snl1_data_report_sha256": "47c3f21ffff4b70b1c50a2c36dbbd264b2796bf9efd0ad85a2f9a8aa84909197",
+    "snl1_development_report_sha256": "f84395b09133d6c5e4cc485c471b975ea938ff76835bde890c63a164dbcba1dd",
+    "state_sha256": {
+      "command": "b25ea80f12577b01c0d4224cda92944d79ffc567e6063312351a72bd7785b3c0",
+      "control": "9b07e4e88837c741ca61c902a528456fa392fc9fc44861fcf0011339966ae702",
+      "event": "f85ab8f1ba78ab3dabf7d4dc94611bc230ffc0736c04e336c47eda82a23d62d3",
+      "law": "afd6e96377591f07377aaa5f806a114d5f8cc706c834bf0d42cbd16c65d05fdc",
+      "query": "ccffc805656051fc19f956add82b31e35552a30f8709f22cb164638176b99acf",
+      "treatment": "5b42430668d75d54d2875bee685f182fc3c6a4924efe4ba10705ffc1582bb49a"
+    }
+  },
+  "program": {
+    "original": {
+      "by_depth": {
+        "12": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "13": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "14": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "16": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "17": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "18": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "20": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "21": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "22": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "24": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "25": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "26": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "28": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "29": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "30": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "32": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        }
+      },
+      "exact": 4096,
+      "exact_rate": 1.0,
+      "minimum_depth_rate": 1.0,
+      "token_exact": 88832,
+      "token_rate": 1.0,
+      "tokens": 88832,
+      "total": 4096
+    },
+    "renamed": {
+      "by_depth": {
+        "12": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "13": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "14": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "16": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "17": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "18": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "20": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "21": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "22": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "24": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "25": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "26": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "28": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "29": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "30": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "32": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        }
+      },
+      "exact": 4096,
+      "exact_rate": 1.0,
+      "minimum_depth_rate": 1.0,
+      "token_exact": 88832,
+      "token_rate": 1.0,
+      "tokens": 88832,
+      "total": 4096
+    },
+    "rotated": {
+      "by_depth": {
+        "12": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "13": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "14": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "16": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "17": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "18": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "20": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "21": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "22": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "24": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "25": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "26": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "28": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "29": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "30": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        },
+        "32": {
+          "exact": 256,
+          "rate": 1.0,
+          "total": 256
+        }
+      },
+      "exact": 4096,
+      "exact_rate": 1.0,
+      "minimum_depth_rate": 1.0,
+      "token_exact": 88832,
+      "token_rate": 1.0,
+      "tokens": 88832,
+      "total": 4096
+    }
+  },
+  "schema": "shohin-diverge-opb1-evaluation-v1",
+  "source_audit": {
+    "contains_exact_alias_search": false,
+    "public_exposes_operation_target": false,
+    "runtime": "/lustre/fs1/home/sa305415/shohin/scratchpad/diverge_opb1_1d5b1b7_r1/train/diverge_opb1_runtime.py",
+    "runtime_sha256": "87fee68b179ddb60ef33f470e9f37e608057d0238096dd738b79311a18a18691",
+    "uses_dynamic_alias_pointer": true,
+    "uses_pointer_selected_groups": true
+  },
+  "source_commit": "1d5b1b7c76b20b397f6c0025d3b873a371b78f96",
+  "status": "pass",
+  "training": {
+    "control_checkpoint_sha256": "b35e595240721874c36c42ae910fc95f67250ad2d304ec5e1d45ebaf4536486d",
+    "control_report_sha256": "2953fa91d0a2e856d507aff1020003979824127023099db239d2de0bbc5f7051",
+    "treatment_checkpoint_sha256": "27c73ef892a7e23b729879c4fb576ffc100a2461d4977c14f83a843c12b32bb8",
+    "treatment_report_sha256": "72421e5b046a559cccb5619f0a673ca65d70e93c261b83530959968f78992f11"
+  }
+}
