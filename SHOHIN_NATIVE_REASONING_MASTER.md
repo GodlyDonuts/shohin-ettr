@@ -57494,6 +57494,8 @@ LoRA path. A 256-update QPT1/B1 matched gate is frozen in
 preflight `745178` passed for the 4.539B-parameter host at 8.56 GiB peak;
 report SHA-256 is
 `c07696aa5bb7da32cc6dc3f910372c8af03f97b612c0a0f8fbb4c608f15d781f`.
-Canary `745179`, matched training `745181/745182`, and fourteen parallel
-domain evaluations `745183--745196` form the frozen dependency chain. No QPT1
+Canary `745179` passed with 657 charged targets, 107.61 tok/s, 24.31 GiB peak,
+and protected weights unchanged. Matched training jobs `745181/745182` now run
+concurrently; fourteen parallel domain evaluations `745183--745196` and the
+automatic frozen decision `745198` form the remaining chain. No QPT1
 capability score exists yet.

@@ -14,9 +14,12 @@
 > residual injection. Its 256-update matched QPT1/B1 gate is frozen; no QPT1
 > capability score exists yet. Exact local-only preflight `745178` passes on
 > `evc50`: `4,539,265,536` parameters, 8.56 GiB peak, and successful native
-> generation; report SHA-256 is `c07696aa...5d781f`. Canary `745179` is queued;
-> matched QPT1/B1 jobs `745181/745182` and fourteen domain evaluations
-> `745183--745196` are dependency-gated behind it. Do not alter this chain.
+> generation; report SHA-256 is `c07696aa...5d781f`. Canary `745179` passes:
+> 657 charged targets, 107.61 tok/s, 24.31 GiB peak, frozen weights unchanged,
+> checkpoint/report SHA-256 `416c76f8...3d71a` / `9ceb582d...7e73`. Matched
+> QPT1/B1 jobs `745181/745182` are both running; fourteen domain evaluations
+> `745183--745196` and automatic decision `745198` are dependency-gated.
+> Do not alter this chain.
 
 > **CAB1 FREEZE — 2026-08-07:** JRB1 remains a development FAIL because its
 > mean-pooled natural query owner reached 96.58%, although evidence, initial
@@ -33078,3 +33081,28 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `let_canary_run_once;_on_success_run_the_matched_pair;_evaluate_all_domains_in_parallel;_apply_the_frozen_promotion_rule`.
+
+- **2026-08-07 18:07--18:24 EDT** -- **QPT1 passes its 4B integration canary;
+  both matched training arms are live concurrently.**
+
+  Canary `745179` completes two updates in 60 wall seconds, with 6.106 seconds
+  inside the measured optimizer loop. It charges 657 targets at 107.605
+  tok/s, peaks at `26,106,814,976` CUDA bytes, exposes `15,576,066` trainable
+  parameters, and leaves the protected 4B backbone hash unchanged. Checkpoint
+  SHA-256 is `416c76f8a8c42497877a3915d6a99c648f0c3ea534620a173b41c37c02b3d71a`;
+  report SHA-256 is
+  `9ceb582d884fd9a8655693805c6de07bcf4e6763fbb21eaa3f0416b1626f7e73`.
+
+  Dependency release starts QPT1 `745181` on `evc49` and matched B1 `745182`
+  on `evc22`. At updates 56/120 they are finite at approximately `151/542`
+  charged tok/s; B1 update 64 is durably checkpointed. The initial language
+  loss is exactly equal (`0.6350876689`) before QPT1 auxiliary terms, proving
+  identity-preserving initialization. Qwen-specific generation smoke `745199`
+  is queued against the canary checkpoint. Frozen score jobs `745183--745196`
+  and fail-closed CPU decision `745198` remain held behind their exact parents.
+  Conditional control runtime `diverge_qpt1_controls_d50e262_r1` is staged
+  with SHA256SUMS SHA-256 `e9f94d10...58e82`; it must remain unopened unless
+  the score gate passes.
+
+  Decision:
+  `finish_both_arms;_prove_qwen_checkpoint_generation;_run_identical_evaluations;_open_controls_only_on_score_pass`.
