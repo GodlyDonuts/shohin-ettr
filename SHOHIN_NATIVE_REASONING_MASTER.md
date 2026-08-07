@@ -56854,3 +56854,37 @@ not native language reasoning. The runtime uses oracle referents, exact typed
 execution, first-error certificates, and zero learned parameters. SRP1's
 failure still blocks raw-language integration. Data/evaluation SHA-256 values
 are `738b60f8...3058` and `0cc2a242...d5fb`.
+
+### DIVERGE-CCR1 result: candidate-relative encoding learns surface shortcuts
+
+CCR1 replaces each candidate by SELF and the other candidate by OTHER before
+two tied encodings. It fits all 100,000 training assignments with 546,433
+plastic parameters, but development reaches only `2,097/3,072` EVIDENCE and
+`695/768` QUERY; zero episodes seal. Sealed confirmation remains unopened.
+
+The complete read-only renderer matrix shows the failure is discrete rather
+than gradual. EVIDENCE renderer 0 is `159/3,072`, versus exact renderers 1/2;
+QUERY renderer 0 is `351/768`, versus exact renderers 1--5. SELF/OTHER marker
+swap barely changes behavior and entity renaming changes 122 assignments.
+CCR1 therefore did not learn a candidate-relative semantic primitive.
+
+The root data audit is stronger: every training renderer is perfectly
+confounded with one role order in both 50,000-row sets. Renderer recognition
+alone fits every label. CCR1 is closed; its checkpoint/development/diagnostic
+hashes are `dd528718...dc1d`, `c87a51ed...5d5f`, and
+`86eae09b...7178`.
+
+### DIVERGE-RRG1 gate: identify the semantic relation before fitting
+
+RRG1 changes both the identifiability condition and representation boundary.
+Every training lexical family contains paired TARGET-first and
+DISTRACTOR-first realizations. Full entity mentions collapse to one shared,
+length-free anonymous token before one sentence encoding. Two explicit
+semantic role slots are jointly matched to the two contextual mention states
+under one exact permutation.
+
+The opened SRP1 board can reject RRG1 but cannot promote it. Only a
+`765/768` QUERY, `3,070/3,072` EVIDENCE, and `255/256` sealing pass opens the
+still-unseen CCR1 board. Entity renaming must be bit-invariant and role-slot
+swap must causally invert behavior. A pass qualifies one natural PL1
+integration; a failure closes this interface without local variants.

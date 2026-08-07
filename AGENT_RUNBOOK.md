@@ -31414,3 +31414,35 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `freeze_pl1_as_verified_branch_local_credit_mechanics;_do_not_claim_language_reasoning;_qualify_a_new_semantic_interface_before_natural_integration`.
+
+- **2026-08-06 18:10--20:46 EDT** -- **DIVERGE-CCR1 closes negative and
+  exposes a perfectly confounded semantic supervisor.**
+
+  Commits `8c721a2/f05359b` freeze the candidate-conditioned SELF/OTHER gate;
+  `ec6d2f3/c2ee33f` implement it and correct only a pre-result lowercase audit
+  alias. Fresh board SHA-256 is `29923706...1ebf7`: 256 episodes, 3,072
+  evidence items, 768 balanced queries, 1,048,576 worlds, and zero
+  source/query/identity/entity overlap with training or SRP1. It remains
+  unopened because development failed.
+
+  H100 training `744334` fits 50,000/50,000 evidence and query rows in exactly
+  1,000 updates. Trainable/total parameters are 546,433/1,009,618. Checkpoint
+  and report hashes are `dd528718...dc1d` and `2695cd21...997b`.
+
+  Development `744340` scores EVIDENCE `2,097/3,072`, QUERY `695/768`, and
+  seals `0/256`; report SHA-256 is `c87a51ed...5d5f`. Confirmation `744343`
+  was dependency-blocked and canceled. Read-only attribution `744352` shows
+  EVIDENCE renderer 0 at `159/3,072` while renderers 1/2 are exact, and QUERY
+  renderer 0 at `351/768` while 1--5 are exact. Marker swap barely changes
+  query accuracy (`695 -> 683`), and entity renaming changes 122 assignments.
+  Diagnostic SHA-256 is `86eae09b...7178`.
+
+  Both immutable 50,000-row training sets map each renderer to exactly one
+  role order. Training exactness therefore did not identify semantic roles.
+  Close CCR1 without variants. Freeze RRG1: collapse full mentions to one
+  anonymous length-free token, encode once, jointly match explicit semantic
+  role slots, and fit a paired role-order-complete corpus before one admission
+  and one still-unopened confirmation.
+
+  Decision:
+  `close_ccr1_surface_shortcut;_freeze_rrg1_with_counterfactually_complete_role_supervision;_do_not_open_confirmation_before_development_pass`.
