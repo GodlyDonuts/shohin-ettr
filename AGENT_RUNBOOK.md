@@ -31578,3 +31578,34 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_qte1_without_retry;_retain_0.8b_semantic_ceiling;_advance_to_outcome_grounded_cgl1`.
+
+- **2026-08-07 01:22--02:04 EDT** -- **DIVERGE-CGL1 is admitted and three
+  matched single-H100 arms are live.**
+
+  CGL1 derives 300,000 public and 300,000 terminal-outcome supervisor rows
+  from 50,000 complete RRG1 semantic pairs. Direct target/distractor and gold
+  transaction fields are absent. Mac and independent Stokes job `767029`
+  reproduce the path-independent v2 artifacts exactly: public SHA-256
+  `bc438f793a3ced67a3b5493d70c14cbc39db4c20f3fe0fb50579af6b5f1daea9`,
+  supervisor `affa2cc36412f07f2816a00bbe2abfb06ee93be3b602c79b79b248f4ccf2552d`,
+  and report `e9267aadaa1413778d7ac54db6a72a95500da92acee733fccaa655830b9cb1a6`.
+  The first report format was rejected before training because absolute host
+  paths made only its receipt hash differ; substantive data bytes never
+  changed.
+
+  Commit `33f6f10` freezes final-eight-block rank-16 candidate-entailment LoRA,
+  exact six-row outcome sufficient statistics, `0.25` clause-order
+  consistency, one 50,000-pair epoch, and the matched flipped-outcome control.
+  Immutable runtime SHA256SUMS is
+  `3ac802fe8d8fbfc5afe5247a515ddfd8cbc6ffb6c2b979863da498d4cb3eb16e`.
+  Shohin `744565`, SmolLM2 `744566`, and flipped SmolLM2 `744567` run on three
+  independently allocated H100s; assessor `744568` is fail-closed after all
+  three. Early finite losses collapse as expected but are training fit only.
+
+  Commit `93fb9c4` freezes a fresh confirmation generator before development
+  results. Stokes job `767032` builds 256 new exact programs with disjoint
+  entities and exactly 64 transaction-0 plus 64 transaction-1 examples inside
+  every renderer. Do not open or evaluate that board unless `744568` passes.
+
+  Decision:
+  `finish_744565_744566_744567_once;_apply_744568_exactly;_open_767032_board_only_on_pass`.
