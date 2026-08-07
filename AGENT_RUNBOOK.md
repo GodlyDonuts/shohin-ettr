@@ -31841,3 +31841,40 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `preserve_npl2_as_the_best_native_reasoning_baseline;_next_remove_the_structural_world_or_exact_verifier_scaffold_without_reopening_npl2_variants`.
+
+- **2026-08-07 07:16--07:30 EDT** -- **DIVERGE-EWC1 is frozen and staged to
+  replace the structural WORLD regex.**
+
+  NPL2 remains immutable. EWC1 changes only WORLD compilation: a 582,530-
+  parameter two-layer byte GRU receives generic integer spans plus exact
+  occurrences of already-declared aliases/registers, binds two values to the
+  two register identities, and selects the ordered executable alias mentions.
+  Its register-value interface is permutation-equivariant by construction. An
+  equal-parameter/equal-forward absolute-role control uses learned register
+  keys instead of source-derived register groups. Ten data/runtime/evaluator
+  tests and a backward-pass smoke test pass for both arms.
+
+  The first pre-score build rejected a 512-byte cap before writing board
+  files. After the cap-only correction to 768, corpus revision 1 rejected one
+  opaque alias collision between train and confirmation; source and identity
+  overlap were zero. The rejected 51 MiB corpus is retained at
+  `artifacts/reasoning/diverge_ewc1/data_rejected_alias_collision_r1`. Nonces
+  alone were lengthened before any training or score.
+
+  Frozen revision 2 contains 50,000 train, 4,096 development, and 4,096 sealed
+  confirmation rows over disjoint clause-composition partitions, depths 3--28,
+  distractor values/aliases, clause orders, and entirely disjoint opaque
+  symbols. All source, identity, alias, and register overlaps are zero. Hashes:
+
+  - train `72a4a378758e8901f66f3773dc447a55e8d9efe07ee334ec679c764862717bba`;
+  - development `015dd29f68e598daee06d6387a90974c847b531d8634a5bc081e1ff0a3847f07`;
+  - unopened confirmation `372eaf436b5918f66b29410ae9e6121ae874922e2528068818e88dc054bf8c0c`;
+  - report `a09fbcc2f34aac54c4f8677fc87edc5094557591e068aa3ff2f21cdc33c4a856`.
+
+  Two independent single-H100 model arms, one dependency-held development
+  comparison, and one pass-gated confirmation are ready. A miss closes EWC1
+  without local variants; a confirmed pass admits exactly one integration
+  into unchanged NPL2.
+
+  Decision:
+  `launch_matched_ewc1_treatment_and_absolute_control;_open_confirmation_only_on_conjunctive_development_pass;_then_integrate_once_with_protected_npl2`.

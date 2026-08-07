@@ -57110,3 +57110,21 @@ demonstrations and verifier text are deleted. The claim is deliberately
 bounded. WORLD parsing remains structural and execution/verification remain
 exact; this is controlled natural mini-language reasoning, not yet
 unrestricted open-domain reasoning or permission for a long pretraining run.
+
+### DIVERGE-EWC1: remove the structural WORLD regex
+
+EWC1 is the frozen successor to NPL2. It replaces only
+`parse_program_surface` with a 582,530-parameter byte-level compiler that must
+bind candidate values to episode-local register identities and select ordered
+operation mentions amid numeric and alias distractors. The treatment is
+permutation-equivariant over the declared register table by construction; an
+equal-parameter absolute-role arm is the matched causal control. NVE1, EIC1,
+PL1, execution, verification, prompts, and NPL2 thresholds remain unchanged.
+
+Before any score, 50,000 training rows and disjoint 4,096-row development and
+confirmation boards were generated across held-out clause compositions. The
+accepted revision has zero source, identity, alias, or register overlap. One
+matched development gate and one pass-gated confirmation are authorized. If
+confirmed, exactly one unchanged-NPL2 integration may replace the regex; if
+not, this EWC1 mechanism closes without local variants. See
+`docs/research/DIVERGE_EWC1_EQUIVARIANT_WORLD_COMPILER.md`.
