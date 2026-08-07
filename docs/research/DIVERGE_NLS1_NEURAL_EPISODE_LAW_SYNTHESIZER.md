@@ -71,3 +71,35 @@ learning-rate, renderer, threshold, or duration variants. A pass opens the
 five already-built confirmation boards exactly once with the same frozen
 reader and synthesizer checkpoints. NLS1 does not authorize continuation
 pretraining or an open-domain reasoning claim.
+
+## Development result
+
+NLS1 is **closed as a conjunctive FAIL**. Jobs `744720` and `744721` trained
+the matched treatment and shuffled-outcome arms from identical initialization.
+Treatment reached 100% on its fixed 10,000-matrix training sample; the
+shuffled control reached 0.53%. Development job `744722` then measured:
+
+- treatment coefficient rows, terminal states, late queries, and every held
+  depth: **100%**;
+- shuffled-outcome model, outcome scrub, one example, and temporal scrub:
+  **0% terminal-state exactness**;
+- inherited normal and temporal-counterfactual readers: **100%** complete;
+  inherited temporal scrub: **28.4668%**;
+- temporal-counterfactual compiled execution against the unchanged original-
+  world assessor: **0%**, failing its frozen 99% condition.
+
+The failed condition was specified incorrectly for this intervention. The
+counterfactual renderer swaps BEFORE and AFTER semantics around fixed numeric
+values, thereby defining reversed demonstrations and generally a different or
+unrepresentable inverse law. Exact reading therefore cannot imply the original
+terminal state. This diagnosis does not change the preregistered result:
+confirmation remains unopened and no NLS1 variant is authorized. The exact
+normal-path result remains development evidence that a neural set synthesizer
+can replace support intersection on this bounded carrier, not a qualified
+claim.
+
+Development report SHA-256 is
+`f5500c41ef71e30644031aae31f2e07041b5e712ad68aeafa11ad5e581bff241`.
+Treatment/control checkpoint SHA-256 values are
+`dfbabe8c5993f0cf0dc9a0d1f370cf3292d1ce8bc0b7bd4215205c923506f99f`
+and `14184513a2a01be6f4091886fb1d53350a966aa87b1e7f295623621731b60d41`.

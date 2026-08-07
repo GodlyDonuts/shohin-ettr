@@ -32354,3 +32354,40 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `commit_frozen_nls1;_materialize_and_independently_regenerate_all_boards;_train_two_matched_arms;_open_confirmation_only_on_development_pass`.
+
+- **2026-08-07 10:48--10:55 EDT** -- **NLS1 normal induction is exact,
+  but its frozen conjunctive gate fails one semantically invalid condition;
+  confirmation stays closed.**
+
+  Final data `data_eff7d06_r1` independently regenerates byte-for-byte.
+  Training has 100,000 rows (SHA-256 `fad95961...ab5b`); data-report SHA-256
+  is `d0f368f9...35a4`. Immutable runtime SHA256SUMS SHA-256 is
+  `027692ba...a9c`. Treatment job `744720` and shuffled-outcome job `744721`
+  run on independent H100s from identical initialization. Their fixed
+  10,000-matrix training samples reach 100% and 0.53% matrix exactness,
+  respectively, in 1.77 and 4.06 seconds of charged training.
+
+  Development job `744722` obtains 100% treatment coefficient-row,
+  terminal-state, late-query, and every-depth exactness. Shuffled-outcome,
+  outcome-scrub, one-example, and temporal-scrub controls each score 0%
+  terminal-state exactness. The inherited reader remains 100% normal and
+  temporal-counterfactual; temporal scrub is 28.4668%.
+
+  The sole failed condition is counterfactual compiled execution: 0% versus a
+  frozen 99% threshold. This is a gate-design error, not evidence that the
+  normal synthesizer missed its law. Counterfactual rendering swaps BEFORE and
+  AFTER semantics around fixed numeric values, so it presents reversed
+  transitions and generally defines a different or unrepresentable inverse
+  law; the unchanged original-world assessor cannot remain the expected
+  target. Preserve the preregistered outcome anyway: NLS1 is conjunctive FAIL,
+  do not open its five confirmation boards, and do not run local width,
+  schedule, seed, threshold, or intervention variants.
+
+  Development report SHA-256 is `f5500c41...f241`; treatment/control
+  checkpoint SHA-256 values are `dfbabe8c...f99f` and `14184513...0d41`.
+  The exact normal path is retained only as development evidence that neural
+  set synthesis can replace exact support intersection on the bounded 25-row
+  carrier.
+
+  Decision:
+  `close_nls1_without_confirmation;_preserve_exact_normal_path_as_unqualified_evidence;_freeze_one_structurally_different_successor_that_removes_the_typed_executor_or_register_scanner`.

@@ -57266,3 +57266,45 @@ path. The remaining boundaries are now narrower and clearer: raw inputs still
 present explicit complete candidate worlds, the verifier remains exact and
 external, and the task is a synthetic mini-language. The next gate must remove
 one of those boundaries without retraining or weakening the qualified owners.
+
+### DIVERGE-EAL2: identifiable natural temporal semantics and unseen laws
+
+EAL2 isolates an interface that earlier whole-role readers could not identify.
+A frozen 397,250-parameter byte-GRU owns only observable BEFORE versus AFTER
+semantics; exact whole-register matching owns the disclosed episode-local X/Y
+table. Their product feeds episode-local law induction and a source-deleted
+typed recurrent executor. Development is exact on 6,144/6,144 normal and
+counterfactual temporal mentions, all 256 law commits, 4,096/4,096 terminal
+states, and 8,192/8,192 late queries through depths 12--32. Temporal scrub is
+28.2878%; shuffled evidence and unrelated-law transplant collapse.
+
+Five fixed source-disjoint confirmation seeds reproduce 30,720/30,720 normal
+and counterfactual temporal readings, 20,480/20,480 states, and
+40,960/40,960 queries. Aggregate SHA-256 is
+`3445cd0e797029fbbff88d1f597637ad8cab860fb9611f862cbb515a7a0dc953`.
+EAL2 therefore qualifies only the controlled conjunction of natural temporal
+interpretation, episode-local unseen-law induction, and recurrent execution.
+Exact register scanning, exact support intersection, typed programs/queries,
+the bounded coefficient catalog, and synthetic Z/97 remain engineered.
+
+### DIVERGE-NLS1: neural law synthesis development result
+
+NLS1 replaces EAL2's exact support intersection with a 216,946-parameter
+permutation-invariant neural set synthesizer trained from three complete
+before/after transactions. Its matched shuffled-outcome control has identical
+initialization, parameters, sampled batches, update count, and optimizer
+schedule.
+
+On fresh source-disjoint development, treatment coefficient rows, terminal
+states, late queries, and every depth are 100%. Shuffled-outcome, after-value
+scrub, one-example, and temporal-scrub controls each score 0% terminal-state
+exactness. This is strong development evidence that neural induction can
+replace exact support intersection on the bounded 25-row carrier.
+
+NLS1 nevertheless closes as a conjunctive FAIL without confirmation. Its
+frozen gate incorrectly required original-world execution after a temporal
+counterfactual that swaps BEFORE and AFTER labels around fixed values and thus
+defines reversed transitions. That condition scores 0% against the unchanged
+original-world assessor. The preregistered outcome is preserved rather than
+reinterpreted: no NLS1 retry family and no confirmation access. Development
+report SHA-256 is `f5500c41...f241`.
