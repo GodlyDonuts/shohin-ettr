@@ -11,7 +11,8 @@
 set -euo pipefail
 
 BASE=/lustre/fs1/home/sa305415/shohin
-CODE_ROOT=${CODE_ROOT:?set immutable EWC1/NPL2 runtime root}
+BASE_CODE_ROOT=${BASE_CODE_ROOT:?set immutable qualified NPL2 runtime root}
+OVERLAY_ROOT=${OVERLAY_ROOT:?set immutable EWC1/NPL2 overlay root}
 EWC_CHECKPOINT=${EWC_CHECKPOINT:?set confirmed EWC1 checkpoint}
 EWC_RESULT=${EWC_RESULT:?set passing EWC1 confirmation}
 ENI1_RESULT=${ENI1_RESULT:?set passing ENI1 receipt}
@@ -36,20 +37,21 @@ case "$EVALUATION_SPLIT" in
   development|confirmation) ;;
   *) echo "invalid EWC1/NPL2 evaluation split" >&2; exit 2 ;;
 esac
-export PYTHONPATH="$CODE_ROOT/train:$CODE_ROOT/pipeline"
+export PYTHONPATH="$OVERLAY_ROOT/train:$BASE_CODE_ROOT/train:$BASE_CODE_ROOT/pipeline"
 export OMP_NUM_THREADS=8 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export PYTHONPYCACHEPREFIX=${SLURM_TMPDIR:-/tmp/$USER/$SLURM_JOB_ID}/pycache
 mkdir -p "$PYTHONPYCACHEPREFIX" "$BASE/logs"
-(cd "$CODE_ROOT" && sha256sum -c SHA256SUMS >/dev/null)
+(cd "$BASE_CODE_ROOT" && sha256sum -c SHA256SUMS >/dev/null)
+(cd "$OVERLAY_ROOT" && sha256sum -c SHA256SUMS >/dev/null)
 test ! -e "$OUTPUT"
 EWC_CHECKPOINT_SHA256=$(sha256sum "$EWC_CHECKPOINT" | cut -d' ' -f1)
 EWC_RESULT_SHA256=$(sha256sum "$EWC_RESULT" | cut -d' ' -f1)
 nvidia-smi -L
 "$PYTHON" -m py_compile \
-  "$CODE_ROOT/train/eval_diverge_ewc1_npl2.py" \
-  "$CODE_ROOT/train/eval_diverge_npl2_development.py"
-"$PYTHON" "$CODE_ROOT/train/eval_diverge_ewc1_npl2.py" \
+  "$OVERLAY_ROOT/train/eval_diverge_ewc1_npl2.py" \
+  "$OVERLAY_ROOT/train/eval_diverge_npl2_development.py"
+"$PYTHON" "$OVERLAY_ROOT/train/eval_diverge_ewc1_npl2.py" \
   --ewc-checkpoint "$EWC_CHECKPOINT" \
   --ewc-checkpoint-sha256 "$EWC_CHECKPOINT_SHA256" \
   --ewc-result "$EWC_RESULT" --ewc-result-sha256 "$EWC_RESULT_SHA256" \
