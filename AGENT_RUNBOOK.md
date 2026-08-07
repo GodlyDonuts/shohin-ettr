@@ -32562,3 +32562,37 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_jrb1;_preserve_exact_evidence_initial_execution_evidence;_freeze_content_addressed_table_relative_successor`.
+
+- **2026-08-07 12:32--13:12 EDT** -- **CAB1 closes: the learned
+  content-addressed bus follows generator structure and misses the positive
+  execution gate; confirmation remains sealed.**
+
+  Final CAB1 data `data_6820c49_r1` contains 100,000 training rows after the
+  pre-score rejection of one opaque-name collision. Treatment/control jobs
+  `744838/744839` complete the matched 1,000-update schedule from identical
+  initialization. Both reach `2048/2048` fixed-sample joint exactness.
+  Development job `744841` runs the unchanged frozen evaluator once and emits
+  report SHA-256
+  `ffd29db045d22478367338253d3fc004695f63fdb5f5107eb6ee759652931bdc`.
+
+  NCP1 program compilation remains `4096/4096`. CAB1 treatment commits only
+  `211/256` laws, reaches `3373/4096 = 82.349%` terminal states and
+  `6730/8192 = 82.153%` answers, with an `82.031%` minimum depth cell. Unseen
+  renaming reaches `86.426%` answers; coherent table permutation reproduces
+  treatment. The cross-owner basis break collapses to `2/4096` states and
+  `61/8192` answers, as predicted. Source scrub remains too high at `36.414%`
+  answers. The absent-name decoy model reaches `77.258%` answers and fails its
+  calibrated chance gate.
+
+  The sole read-only attribution finds state exactness flat across depths
+  12--32 and almost identical to per-episode law-commit rates in treatment,
+  renamed, and decoy arms. Recurrent execution is not degrading; one global
+  register-compilation decision succeeds or fails for the entire episode.
+  Real and decoy training names share a deterministic serial/index suffix,
+  which supplies a non-source alignment shortcut and explains why the decoy
+  control is invalid. Preserve that defect and the overall FAIL; it cannot
+  rescue treatment's own 17.8-point answer miss. No confirmation file was
+  opened and no local repair family is authorized.
+
+  Decision:
+  `close_cab1_without_confirmation;_replace_learned_name_similarity_with_one_structurally_different_episode_local_occurrence_quotient;_keep_semantic_roles_learned`.

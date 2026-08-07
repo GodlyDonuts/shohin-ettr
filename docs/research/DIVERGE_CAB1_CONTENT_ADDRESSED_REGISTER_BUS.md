@@ -1,6 +1,6 @@
 # DIVERGE-CAB1: Content-Addressed Register Bus
 
-**Status:** frozen before corpus materialization or neural scoring
+**Status:** closed conjunctive development failure; confirmation unopened
 
 **Parents:** confirmed NCP1 command owner, confirmed EAL2 temporal owner, closed JRB1 attribution
 
@@ -137,3 +137,47 @@ scaffold, selected from numeric spans, law support, or the exact executor.
 
 A FAIL means this token-evidence bus does not clear the controlled composition
 gate under the frozen budget. Its exact failure is preserved and not tuned.
+
+## Immutable result
+
+CAB1 is a conjunctive development **FAIL**. Matched treatment and decoy-table
+jobs `744838/744839` completed all 1,000 frozen updates from the same initial
+state. Both fit their fixed 2,048-row training sample exactly, but that fit did
+not establish content addressing. The unchanged development evaluator ran
+once in job `744841`; its report SHA-256 is
+`ffd29db045d22478367338253d3fc004695f63fdb5f5107eb6ee759652931bdc`.
+
+| arm | laws committed | terminal state | late answer | minimum depth |
+|---|---:|---:|---:|---:|
+| treatment | 211/256 | 82.349% | 82.153% | 82.031% |
+| unseen rename | 222/256 | 86.719% | 86.426% | 86.719% |
+| whole-table permutation | 211/256 | 82.349% | 82.153% | 82.031% |
+| cross-owner permutation | 211/256 | 0.049% | 0.745% | 0.000% |
+| source scrub | 94/256 | 18.555% | 36.414% | 18.359% |
+| decoy-table model | 199/256 | 77.344% | 77.258% | 76.953% |
+
+Program compilation remains exact at `4096/4096`. The treatment misses the
+positive component, execution, and depth gates. Source scrub exceeds its
+answer ceiling, and the independently trained decoy model is far above every
+calibrated chance ceiling. The cross-owner intervention does produce the
+predicted causal collapse, but that one positive causal result cannot rescue
+the conjunctive failure.
+
+The one permitted read-only attribution finds no recurrent-depth degradation.
+Treatment state exactness is flat at roughly `211/256` for every depth from 12
+through 32 and follows the `211/256` episode-law commit count. Renamed and
+decoy arms show the same pattern at `222/256` and roughly `198/256`. The failed
+owner is therefore episode-global register compilation/binding, not repeated
+execution. The training-name correction also gave real and decoy namespaces a
+shared deterministic serial/index suffix. The decoy's 77.258% answer rate is
+consistent with exploitation of that generator structure rather than source
+presence. This invalidates the intended matched control and is preserved as a
+data-construction defect; it does not explain away the treatment's own large
+miss.
+
+No confirmation file was accessed. No width, duration, seed, threshold,
+renderer, loss, or corrected-control rerun is authorized. CAB1 closes exactly.
+The ordered successor is structurally different: an episode-local occurrence
+quotient supplies discrete identity addresses for exact repeated opaque names,
+while learned owners remain responsible for semantic roles. It is not a
+retraining or repair of the CAB1 similarity metric.
