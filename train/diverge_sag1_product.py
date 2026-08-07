@@ -292,6 +292,7 @@ class SAG1ProductModel(QPT1ProductModel):
             ).last_hidden_state
             base_logits = self.lm_head(base_hidden)
             base_losses = self._per_example_cross_entropy(base_logits, labels)
+        del base_hidden, base_logits, base_inputs
         expert_hidden = self.text_model(
             inputs_embeds=expert_inputs,
             attention_mask=expert_attention,
