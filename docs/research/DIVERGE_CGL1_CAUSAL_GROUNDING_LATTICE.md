@@ -143,3 +143,44 @@ SHA-256 values in normal/scrub/swap order are Qwen
 `796c53a2...bc7`, `e3d345fa...525`, `e8cb6b8c...a7f`. Full reports are
 preserved read-only under
 `artifacts/reasoning/diverge_cgl1/capacity_3bcbc81_r1`.
+
+## Development result and attribution boundary
+
+The frozen three-arm development gate is closed as a conjunctive failure.
+Shohin and SmolLM2 each fit all `100,000/100,000` true training assignments
+and score `768/768` normally. Their context-scrub scores are both `384/768`
+with zero mean margin, entity renaming is bit-exact, and frozen parents are
+unchanged. Shohin mapped mention swap is only `384/768`; SmolLM2 is
+`512/768`. Every swap error occurs as a complete renderer block. The flipped
+SmolLM2 control fits all flipped supervisors, fits `0/100,000` true labels,
+and scores `0/768` normally. Outcome supervision therefore causally controls
+the learned decision, but does not identify a permutation-equivariant
+referent binding.
+
+Development report SHA-256 values are Shohin `a0247957...a38c`, SmolLM2
+`5b788fa7...eaf4`, and flipped SmolLM2 `2b7befd3...7f7d`. Assessor `744568`
+writes fail receipt `8c2e2975...eb67` and exits nonzero. Fail-closed dispatcher
+`744617` is canceled without running, so confirmation remains unopened.
+
+The corrected independent confirmation board nevertheless completed its
+pre-result Stokes construction and zero-overlap audit. It has 256 rows, 768
+balanced queries, 1,048,576 represented worlds, zero source/query/identity/
+entity overlap against all bound inputs, board SHA-256 `ede48fc5...e7cea`,
+and report SHA-256 `b399b686...46758`. Exact bytes are staged read-only on
+Newton and locally but are not model-scored.
+
+Exactly one read-only attribution is frozen after closure. For each opened
+development query it computes normal candidate log evidence `s(x)`, computes
+the alpha/beta-swapped counterfactual `s(gx)`, maps the latter into the
+original physical-identity frame, and reports the fixed orbit product
+
+\[
+  s_{orbit}(x) = s(x) + g^{-1}s(gx).
+\]
+
+This is a diagnostic ceiling, not a CGL rescue or promotion. It changes no
+weight, data, prompt, threshold, or confirmation state. If the product
+recovers the renderer-block failures, the next architecture may enforce an
+exact permutation-quotient commit boundary; otherwise that hypothesis is
+rejected. No additional CGL seed, width, duration, loss, or prompt variant is
+authorized.

@@ -31640,3 +31640,42 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `retain_capacity_results_as_ceiling_only;_finish_the_frozen_three_arm_gate_once;_release_exactly_one_confirmation_only_on_assessor_pass`.
+
+- **2026-08-07 02:54--03:21 EDT** -- **CGL1 closes negative despite perfect
+  normal development accuracy; one read-only orbit attribution is frozen.**
+
+  Shohin `744565`, SmolLM2 `744566`, and flipped SmolLM2 `744567` complete
+  normally. Shohin and SmolLM2 each fit `100,000/100,000` true training
+  assignments and score `768/768` on normal development. Both fall to
+  `384/768` with zero margin after source deletion and preserve bit-exact
+  entity-renaming and frozen-parent controls. The decisive mapped mention-swap
+  scores are only `384/768` Shohin and `512/768` SmolLM2, with whole renderer
+  blocks inverted. The flipped arm fits all flipped supervisors, fits
+  `0/100,000` true labels, and scores `0/768` normally. Outcome labels control
+  the model, but do not identify physical mention binding.
+
+  Development SHA-256 values are `a0247957...a38c`, `5b788fa7...eaf4`, and
+  `2b7befd3...7f7d`. Assessor `744568` writes fail receipt
+  `8c2e2975...eb67`; confirmation dispatcher `744617` cancels dependency-
+  failed without allocation. The corrected Stokes board build `767069`
+  completed in 20m57s with 256 rows, 768 balanced queries, 1,048,576 worlds,
+  all overlap counts zero, board SHA-256 `ede48fc5...e7cea`, and report
+  `b399b686...46758`. It is hash-verified and read-only on both hosts but
+  remains unopened.
+
+  Emergency replay `744612` failed before a score because it wrote inside the
+  correctly immutable primary arm tree; `744613` was canceled before the same
+  deterministic failure. Commits `5e4d98e/f423274` move replay outputs to a
+  separate root and permit explicit Slurm role binding. Replacements `744620`
+  Shohin and `744621` SmolLM2 are admitted with unchanged checkpoints, board,
+  evaluator, and prompts.
+
+  One attribution is frozen in
+  `train/diagnose_diverge_cgl1_orbit_quotient.py`: add normal candidate log
+  evidence to alpha/beta-swapped evidence mapped back into the same physical-
+  identity frame. It uses only the opened board and cannot rescue CGL1 or open
+  confirmation. Unit mechanics pass before neural scoring. No CGL1 variant is
+  authorized after it.
+
+  Decision:
+  `close_cgl1_outcome_grounding;_run_one_read_only_orbit_product_attribution;_then_freeze_one_structurally_different_equivariant_commit_successor`.
