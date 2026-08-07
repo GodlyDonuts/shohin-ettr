@@ -57140,3 +57140,23 @@ structure extraction, not admitted semantic WORLD compilation. Confirmation
 and NPL2 integration remain unopened. The next lane must remove positional
 identifiability with complete-world counterfactual candidates rather than
 tune EWC1.
+
+### DIVERGE-CWC1: semantic commitment between complete worlds
+
+CWC1 is frozen as the structurally different successor to EWC1. Each source
+contains two complete executable candidate worlds in randomized order. Only a
+natural directive identifies the valid lineage. The 470,785-parameter shared
+byte encoder scores whole candidates; it cannot average fields between them.
+Its treatment projects normal and directive-counterfactual views into an
+exact candidate-role involution. Equal-compute duplicate-forward and ordinary
+counterfactual-augmentation arms are frozen controls.
+
+The source-disjoint corpus contains 50,000 training rows and 4,096-row
+development and confirmation splits, with exact target balance and held-out
+positive/negative directive-renderer compositions. Before confirmation can
+open, treatment must reach at least 99% on normal, mapped-counterfactual,
+entity-renamed, and complete-block-swapped development, at least 95% on every
+renderer, collapse to 49--51% with zero margin when the directive is deleted,
+and preserve exact projection and matched-compute receipts. A miss closes the
+mechanism without local variants. See
+`docs/research/DIVERGE_CWC1_COUNTERFACTUAL_WHOLE_WORLD_COMMIT.md`.

@@ -31934,3 +31934,27 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `preserve_exact_cgl1_replays;_do_not_reopen_cgl1_or_confirmation;_continue_the_structurally_different_world_successor`.
+
+- **2026-08-07 08:00 EDT** -- **DIVERGE-CWC1 is frozen before data
+  materialization or neural scoring.**
+
+  CWC1 replaces EWC1's single positionally identifiable program with two
+  complete randomized candidate worlds. A natural directive is the only
+  valid-world signal. The 470,785-parameter whole-world scorer receives both
+  normal and directive-counterfactual views through an exact candidate-role
+  involution. Equal-compute duplicate-forward and ordinary augmentation arms
+  use identical parameters, initialization, data, sample order, 1,000-update
+  schedule, batch 128, and two encoder forwards per update.
+
+  Frozen data are 50,000 training plus 4,096 development and 4,096 sealed
+  confirmation rows, exact 50/50 target position, disjoint opaque names, and
+  disjoint positive/negative directive-renderer compositions. The
+  conjunctive gate requires at least 99% normal, mapped counterfactual,
+  entity-rename, and complete-block-swap exactness; at least 95% per renderer;
+  exact projection; complete matched receipts; and 49--51% with zero margin
+  after deleting the complete directive. Confirmation remains dependency-
+  gated. Ten mechanics/evaluator tests, Python compilation, shell syntax, and
+  Ruff pass before corpus creation.
+
+  Decision:
+  `materialize_and_hash_all_cwc1_splits_before_scoring;_run_three_matched_single_h100_arms;_open_confirmation_only_on_conjunctive_pass`.
