@@ -32698,3 +32698,47 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `commit_frozen_sve1;_materialize_and_regenerate_fresh_boards;_train_one_matched_pair;_score_development_once;_open_fixed_confirmations_only_on_pass`.
+
+- **2026-08-07 14:05--14:13 EDT** -- **SVE1 confirms spanless natural-value
+  transduction across development and five fixed boards.**
+
+  Final `data_bf7656f_r2` independently regenerates byte-for-byte and is
+  transitively disjoint from OQB1. Data-report/training SHA-256 values are
+  `d15edf84...12e2a` and `1585058c...fabd`. Immutable runtime
+  `diverge_sve1_bf7656f_r3` has SHA256SUMS SHA-256
+  `2fc906e8...9bdf0` and contains neither the numeric-span scanner nor a raw
+  integer parser.
+
+  Matched jobs `744855/744856` complete all 1,500 updates in under three
+  minutes. Treatment fits `2048/2048`; the 50,021-row-offset shuffled-target
+  control fits `0/2048`. Treatment/control checkpoint SHA-256 values are
+  `4d037d61...3d901` and `643ef2a9...ebe15`.
+
+  Development `744857` passes every frozen condition. NCP1 programs are
+  `4096/4096`. Treatment, unseen rename, and coherent table reindex are each
+  exact on `6144/6144` evidence events, `4096/4096` initial events and terminal
+  states, and `8192/8192` answers, with a 100% depth floor from 12 through 32.
+  Value scrub and the shuffled-target model produce zero complete events,
+  states, or answers. Occurrence break produces zero states/answers.
+  Cross-owner reindex preserves local event decoding but collapses to
+  `2/4096` states and `95/8192` answers. Development SHA-256 is
+  `93096b61...472d6`.
+
+  Five unchanged confirmation jobs `744860`--`744864` run once in parallel;
+  aggregate `744865` passes. Treatment, unseen rename, and coherent reindex
+  are each exact on `30,720/30,720` evidence sequences, `20,480/20,480`
+  initial sequences and states, and `40,960/40,960` answers. Value scrub,
+  occurrence break, and the shuffled-target model each produce zero states
+  and answers. Cross-owner reindex retains `6/20,480` states and
+  `400/40,960` answers. Aggregate SHA-256 is
+  `41b31368...03c4b`; all reports/checkpoints are hash-matched and read-only
+  locally/Newton.
+
+  Qualify only byte-to-complete-value-event transduction in this controlled
+  bounded system. Exact repeated-surface quotienting, operation alias binding,
+  episode-law support intersection, bounded coefficient catalog, and modular
+  execution remain engineered. This is not a public benchmark or open-domain
+  reasoning result and does not authorize long continuation pretraining.
+
+  Decision:
+  `promote_sve1_as_qualified_spanless_value_owner;_preserve_weights;_next_remove_exact_episode_law_support_without_retraining_qualified_owners`.

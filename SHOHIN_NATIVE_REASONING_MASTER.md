@@ -57365,3 +57365,51 @@ The structurally different successor is a content-addressed register bus:
 targets are positions in a randomly ordered episode table rather than hidden
 canonical labels, execution remains in that table-relative basis, and query
 readout uses token-level evidence instead of whole-sentence mean pooling.
+
+### DIVERGE-OQB1: confirmed anonymous occurrence quotient bus
+
+OQB1 replaces CAB1's learned name-similarity shortcut with a generic exact
+whole-word quotient. Repeated raw register surfaces become two anonymous
+episode-local addresses and are deleted; a shared 200,069-parameter byte owner
+then attaches evidence values and natural late queries to those addresses.
+Qualified EAL2 and NCP1 owners remain frozen.
+
+Development and all five fixed confirmation boards pass exactly. Aggregate
+treatment, unseen rename, and coherent table reindex each reach
+`20,480/20,480` terminal states and `40,960/40,960` answers. Source scrub,
+occurrence break, and the independently trained broken-quotient model each
+produce zero states/answers; cross-owner reindex falls to `9/20,480` states
+and `453/40,960` answers. Aggregate SHA-256 is
+`da5f88071ffd75ec64a3637d5657592cd9c494566d4b57212f1b762163f344a3`.
+
+This qualifies a narrow identity bus, not learned alias/coreference. Exact
+whole-word equality, the two-name declaration, numeric spans, law support, and
+execution remained engineered at this stage.
+
+### DIVERGE-SVE1: confirmed spanless value-event transduction
+
+SVE1 removes host-provided numeric mention boundaries and raw integer parsing.
+A 472,136-parameter two-layer byte GRU emits complete CTC evidence events
+`(temporal role, anonymous slot, value)` and initialization events
+`(anonymous slot, value)`. Only these model-emitted events reach law
+compilation and initial-state construction; incomplete sequences fail closed.
+Qualified OQB1 query binding and NCP1 command compilation remain bit-identical.
+
+Development is exact on all positive components and all recurrent depths:
+`6144/6144` evidence sequences, `4096/4096` initial sequences and terminal
+states, and `8192/8192` answers for treatment, unseen rename, and coherent
+table reindex. Five fixed source-disjoint confirmations reproduce that result:
+each positive arm reaches `30,720/30,720` evidence sequences,
+`20,480/20,480` initial sequences and states, and `40,960/40,960` answers.
+Value scrub, occurrence break, and the shuffled-target model produce zero
+states/answers. Cross-owner reindex causally collapses to `6/20,480` states
+and `400/40,960` answers. Aggregate SHA-256 is
+`41b31368e26d00dcb161c9f55c29f132520e78bff95d3a13e647254fd9603c4b`.
+
+This is a material scaffold reduction: raw natural evidence, initialization,
+commands, and late queries now feed a source-deleted recurrent path without a
+digit parser or typed value carrier. It is still a controlled synthetic
+system, not general reasoning. Exact repeated-surface quotienting, evidence
+operation binding, bounded episode-law support intersection, coefficient
+vocabulary, and modular execution remain engineered. The next gate targets
+the exact law-support solver while preserving every qualified semantic owner.

@@ -1,6 +1,6 @@
 # DIVERGE-SVE1: Spanless Value-Event Transduction
 
-Status: frozen before final data materialization or model scoring.
+Status: confirmed across development and five fixed source-disjoint boards.
 
 ## Capability Hypothesis
 
@@ -97,3 +97,37 @@ inside this controlled bounded algebra and the already-qualified OQB/NCP
 system. It would not establish open-domain numerical parsing, alias/coreference
 equivalence, learned law search, unrestricted natural-program reasoning, or
 public benchmark capability.
+
+## Confirmed Result
+
+Matched one-H100 jobs `744855/744856` completed all 1,500 frozen updates from
+identical initialization. Treatment reached `2048/2048` on its fixed training
+sample; the 50,021-row-offset shuffled-target control reached `0/2048`.
+Treatment/control checkpoint SHA-256 values are
+`4d037d61b313d4237bf1d2309b00cf0905fe32478c2b399db56d2204d923d901`
+and
+`643ef2a9193ecb6a40d6957e3590bd0286f73329e24d86845624660e0bfebe15`.
+
+Development job `744857` passed every frozen condition. NCP1 programs were
+`4096/4096`. Treatment, unseen rename, and coherent table reindex were each
+exact on `6144/6144` evidence event sequences, `4096/4096` initial event
+sequences, `4096/4096` terminal states, and `8192/8192` answers, with a 100%
+floor at every depth 12--32. Value scrub and the shuffled-target model produced
+zero complete events, states, or answers. Occurrence break produced zero
+states/answers. Cross-owner reindex preserved the local events but collapsed
+to `2/4096` states and `95/8192` answers. Development report SHA-256 is
+`93096b61b34528157ac6c1eb71dd43807aa2d87eff4bd1b077be0282051472d6`.
+
+The five fixed confirmation jobs `744860`--`744864` ran once without retraining
+and all passed. Aggregate treatment, unseen rename, and coherent reindex were
+each exact on `30,720/30,720` evidence sequences, `20,480/20,480` initial
+sequences and terminal states, and `40,960/40,960` answers. Value scrub,
+occurrence break, and the shuffled-target model each produced zero states and
+answers. Cross-owner reindex retained only `6/20,480` states and `400/40,960`
+answers. Aggregate SHA-256 is
+`41b31368e26d00dcb161c9f55c29f132520e78bff95d3a13e647254fd9603c4b`.
+
+SVE1 therefore qualifies the narrow mechanism claimed above. The next
+scaffold-removal target is the host's exact episode-law support solver; exact
+operation alias binding, bounded coefficient vocabulary, modular execution,
+and the two-name occurrence quotient remain explicit limitations.
