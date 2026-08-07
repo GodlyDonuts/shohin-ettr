@@ -1,7 +1,7 @@
 # DIVERGE-NPL2: Equivariant Natural Verified Plasticity
 
-Status: ENI1 passed its unchanged semantic-interface gate. NPL2 development is
-authorized exactly once from the frozen owners and mechanics below.
+Status: PASS on the single development run and all five frozen confirmation
+seeds. The exact result and claim boundary are recorded below.
 
 ## Capability hypothesis
 
@@ -92,3 +92,46 @@ seed, renderer, prompt, write-budget, or duration variants. A pass opens the
 five frozen confirmation seeds exactly once. Even a confirmation pass is a
 controlled synthetic reasoning result, not yet open-domain reasoning or
 authorization for long pretraining.
+
+## Result
+
+Development job `744637` passes every condition. All `122,880` legal natural
+verifier messages are compiled before any branch outcome is selected;
+`122,872` are exact. EIC1 decodes all `8,192/8,192` late queries. After source
+deletion, NPL2 answers `84.8145%` exactly, identical to oracle PL1, while the
+strongest non-oracle arm reaches `3.4668%`. The immutable development report
+SHA-256 is
+`6a856799991ba744b480f54656d5e873f2db08fcca160d4859bd14442b576920`.
+
+Five independent one-H100 confirmation jobs `744638`--`744642` evaluate the
+pre-generated seeds without tuning. NPL2 equals oracle PL1 on every seed:
+
+| Seed | NPL2 | Oracle PL1 | Strongest non-oracle |
+|---|---:|---:|---:|
+| `2026080911` | 87.0972% | 87.0972% | 4.9927% |
+| `2026080912` | 82.6416% | 82.6416% | 3.0029% |
+| `2026080913` | 85.7178% | 85.7178% | 2.5879% |
+| `2026080914` | 87.3169% | 87.3169% | 5.3833% |
+| `2026080915` | 85.2783% | 85.2783% | 3.6255% |
+
+Aggregate late-query exactness is `35,066/40,960 = 85.6104%`; exact terminal
+state-pair transfer is `85.3223%`, and exact operation-map recovery is
+`85.0781%`. Oracle PL1 is exactly `85.6104%`; the strongest non-oracle arm is
+`3.9185%`. Natural EVIDENCE compilation is `614,321/614,400 = 99.9871%`, and
+QUERY compilation is `40,960/40,960`.
+
+The causal controls remain low: reset `1.0571%`, shuffled credit `3.7646%`,
+wrong-branch credit `1.0669%`, unrelated-state transplant `1.0278%`, and
+no-eligibility `1.1182%`. Poison changes all `1,280/1,280` sessions and exact
+rollback restores all `1,280/1,280`. Every protected owner and source-deletion
+receipt is exact. CPU aggregate job `744643` passes all fourteen conjunctive
+conditions. Aggregate SHA-256 is
+`ef585debf543e137838ab92ef303740ad318b8eda7dd911f8a692a927aba5e79`.
+
+NPL2 therefore qualifies a controlled natural verified-plasticity reasoning
+mechanism: learned natural transactions guide coherent branch-local session
+updates, and the retained model-owned policy solves unseen deeper programs
+after demonstrations and feedback text are gone. It still relies on a
+structural WORLD lexer plus exact executor/verifier and is not unrestricted
+natural-language, math, code, or open-domain reasoning. No long continuation
+pretraining is authorized by this mechanism result alone.

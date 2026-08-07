@@ -31805,3 +31805,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `run_exactly_one_npl2_development;_open_five_frozen_confirmation_seeds_only_on_pass;_otherwise_close_without_variants`.
+
+- **2026-08-07 07:00--07:15 EDT** -- **DIVERGE-NPL2 passes development and
+  all five frozen confirmation seeds at the oracle ceiling.**
+
+  Development job `744637` compiles `122,872/122,880` legal natural verifier
+  messages and `8,192/8,192` EIC1 queries. Source-deleted NPL2 reaches
+  `84.8145%` late-query exactness, exactly matching PL1 oracle and beating the
+  strongest non-oracle arm at `3.4668%`. All reset, shuffled-credit,
+  wrong-branch, transplant, no-eligibility, rollback, source-deletion, and
+  protected-owner conditions pass. Development SHA-256 is
+  `6a856799991ba744b480f54656d5e873f2db08fcca160d4859bd14442b576920`.
+
+  Confirmation jobs `744638`--`744642` run concurrently on five H100s from
+  immutable runtime `107ac8f` (manifest SHA-256
+  `7d550705a7c035c813a71b19f2047b117e3665fc84c719f708eb2e4d1226a512`).
+  Per-seed NPL2/oracle scores are exactly equal at `87.0972%`, `82.6416%`,
+  `85.7178%`, `87.3169%`, and `85.2783%`. CPU aggregate `744643` passes all
+  fourteen frozen conditions: NPL2 `35,066/40,960 = 85.6104%`, oracle
+  `85.6104%`, strongest non-oracle `3.9185%`; state-pair transfer `85.3223%`;
+  map recovery `85.0781%`; EVIDENCE `614,321/614,400`; QUERY
+  `40,960/40,960`.
+
+  Reset is `1.0571%`, shuffled `3.7646%`, wrong-branch `1.0669%`, transplant
+  `1.0278%`, and no-eligibility `1.1182%`. Poison changes and rollback restores
+  all `1,280/1,280` sessions. Aggregate SHA-256 is
+  `ef585debf543e137838ab92ef303740ad318b8eda7dd911f8a692a927aba5e79`;
+  all seed and aggregate copies are hash-verified and read-only locally and on
+  Newton.
+
+  Qualify NPL2 as controlled source-deleted natural mini-language reasoning.
+  Do not overclaim: WORLD uses a structural lexer, and executor/verifier are
+  exact. This result does not by itself establish unrestricted natural-
+  language reasoning or authorize long continuation pretraining.
+
+  Decision:
+  `preserve_npl2_as_the_best_native_reasoning_baseline;_next_remove_the_structural_world_or_exact_verifier_scaffold_without_reopening_npl2_variants`.

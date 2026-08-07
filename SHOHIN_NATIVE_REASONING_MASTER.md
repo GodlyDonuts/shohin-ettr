@@ -57088,3 +57088,25 @@ development, and the other new seeds are zero. The frozen corpus report
 SHA-256 is
 `b430a9d30e0cba9a7ebc770674b2146d64d2bd09e45d8b197ac69027ff1f81ba`.
 Those splits remain unopened unless the single development gate passes.
+
+NPL2 passes both stages. Development reaches `84.8145%` late-query exactness,
+exactly matching oracle PL1 and exceeding the strongest non-oracle arm at
+`3.4668%`. On the five frozen confirmation seeds it scores `87.0972%`,
+`82.6416%`, `85.7178%`, `87.3169%`, and `85.2783%`; oracle PL1 is bit-for-bit
+identical on every seed. The aggregate is `35,066/40,960 = 85.6104%`, versus
+`3.9185%` for the strongest non-oracle arm. Natural EVIDENCE compilation is
+`614,321/614,400`, and EIC1 QUERY compilation is `40,960/40,960`.
+
+All causal controls collapse: reset `1.0571%`, shuffled credit `3.7646%`,
+wrong-branch `1.0669%`, unrelated transplant `1.0278%`, and no eligibility
+`1.1182%`. Poison changes all 1,280 sessions and exact rollback restores all
+1,280. The aggregate report SHA-256 is
+`ef585debf543e137838ab92ef303740ad318b8eda7dd911f8a692a927aba5e79`.
+
+This is the strongest qualified result in the native-reasoning program so
+far: a learned natural interface drives branch-local model-owned adaptation,
+and the retained 64-scalar policy solves unseen deeper compositions after all
+demonstrations and verifier text are deleted. The claim is deliberately
+bounded. WORLD parsing remains structural and execution/verification remain
+exact; this is controlled natural mini-language reasoning, not yet
+unrestricted open-domain reasoning or permission for a long pretraining run.
