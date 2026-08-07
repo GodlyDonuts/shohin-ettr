@@ -15,8 +15,8 @@ set -euo pipefail
 : "${BASE_CODE_ROOT:?}"
 : "${OVERLAY_ROOT:?}"
 : "${SOURCE_COMMIT:?}"
-: "${BASE:?}"
-: "${BASE_SHA256:?}"
+: "${PARENT:?}"
+: "${PARENT_SHA256:?}"
 : "${TOKENIZER:?}"
 : "${TOKENIZER_SHA256:?}"
 : "${BACKBONE_NAME:?}"
@@ -24,8 +24,8 @@ set -euo pipefail
 : "${DATA_SHA256:?}"
 : "${OUTPUT:?}"
 
-BASE=/lustre/fs1/home/sa305415/shohin
-PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
+CLUSTER_ROOT=/lustre/fs1/home/sa305415/shohin
+PYTHON=${PYTHON:-$CLUSTER_ROOT/envs/product-reasoning-b3a3603-r2/bin/python}
 
 if [[ -e "$OUTPUT" ]]; then
   echo "refusing existing attribution output: $OUTPUT" >&2
@@ -39,8 +39,8 @@ export PYTHONUNBUFFERED=1
 echo "[pqi1-ar] node=$(hostname) backbone=$BACKBONE_NAME commit=$SOURCE_COMMIT"
 nvidia-smi --query-gpu=index,name --format=csv,noheader
 "$PYTHON" -u "$OVERLAY_ROOT/train/diagnose_diverge_pqi1_autoregressive.py" \
-  --base "$BASE" \
-  --base-sha256 "$BASE_SHA256" \
+  --base "$PARENT" \
+  --base-sha256 "$PARENT_SHA256" \
   --tokenizer "$TOKENIZER" \
   --tokenizer-sha256 "$TOKENIZER_SHA256" \
   --backbone-name "$BACKBONE_NAME" \
