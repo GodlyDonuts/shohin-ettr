@@ -31977,3 +31977,27 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `commit_balance_fix;_rebuild_all_splits_from_zero;_rerun_independent_overlap_balance_and_reproducibility_audits_before_any_h100`.
+
+- **2026-08-07 08:08--08:12 EDT** -- **Corrected CWC1 data pass all
+  pre-score audits and are admitted for staging.**
+
+  Accepted corpus `data_714b631_r1` contains 50,000 training, 4,096
+  development, and 4,096 sealed confirmation rows. Every split is exactly
+  target-balanced; maximum target imbalance inside any renderer is one.
+  Directive order, directive position, candidate-length ordering, and target
+  are independently near-balanced. Source, identity, and all opaque-name
+  overlaps are zero between every pair of splits. A clean second generation
+  reproduces all three JSONL files byte-for-byte.
+
+  Hashes are training
+  `34e87803e1d142577eb29c74e3e9fb52d9ae5e248fa769675f3b6114136a3bf0`,
+  development
+  `2f2ada126f3022fd00fecbc04bc5a8abbf92e6434c5ea8a78c31f1a453ecad56`,
+  confirmation
+  `9fe347222d3d4d25a3d25bfeb3264fc223bb28cfbd47c690673cfb5c55d4af9d`,
+  and report
+  `7e755d39d7aed695916d513e348c8117bedaf33c0e5f7e0bc2ff3018fa23883b`.
+  No neural score exists yet.
+
+  Decision:
+  `stage_immutable_714b631_runtime_and_data;_launch_three_independent_matched_h100_arms;_hold_development_after_all_three`.

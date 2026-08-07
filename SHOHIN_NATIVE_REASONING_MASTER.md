@@ -57167,3 +57167,10 @@ correlated with one target position. The preserved rejected bytes are not
 admissible. The corrected deterministic schedule alternates target position
 both across renderer index and repeated cycles, and the builder now fails
 closed unless every renderer's target imbalance is at most one.
+
+Corrected revision `714b631` passes: 50,000/4,096/4,096 rows, exact global
+target balance, at most one target of imbalance per renderer, zero source,
+identity, or opaque-name overlap, and byte-identical independent regeneration.
+Training/development/confirmation SHA-256 values are `34e87803...a3bf0`,
+`2f2ada12...cad56`, and `9fe34722...4af9d`. No neural score existed when
+these bytes and thresholds were frozen.
