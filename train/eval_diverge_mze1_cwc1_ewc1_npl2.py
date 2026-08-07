@@ -11,7 +11,7 @@ import sys
 import diverge_npl2_runtime as npl2_runtime
 import eval_diverge_cwc1_ewc1_npl2 as composed
 import eval_diverge_npl2_development as npl2_evaluator
-from diverge_mze1_runtime import load_executor, sha256_path
+from diverge_mze1_runtime import freeze_transition, load_executor, sha256_path
 
 
 DEVELOPMENT_SCHEMA = "shohin-diverge-mze1-cwc1-ewc1-npl2-development-v1"
@@ -36,7 +36,7 @@ def main() -> None:
     if not checkpoint.get("gate_passed"):
         raise SystemExit("MZE1 checkpoint is not qualified")
 
-    learned_transition = executor.transition
+    learned_transition = freeze_transition(executor)
     npl2_runtime.apply_operation = learned_transition
     state_sha256 = str(checkpoint["treatment_state_sha256"])
     npl2_evaluator.EXECUTOR_OWNER_RECEIPT = f"mze1:{state_sha256}"

@@ -7,7 +7,7 @@ from dataclasses import asdict, dataclass
 import hashlib
 import json
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Callable, Mapping
 
 import torch
 import torch.nn as nn
@@ -153,6 +153,26 @@ class PresentedZ97Executor(nn.Module):
         }
 
 
+def freeze_transition(
+    model: PresentedZ97Executor,
+) -> Callable[[int, tuple[int, int]], tuple[int, int]]:
+    """Commit learned rows once so recurrent execution performs no Torch launch."""
+
+    rows = model.hard_rows()
+
+    def transition(operation: int, state: tuple[int, int]) -> tuple[int, int]:
+        if operation < 0 or operation >= OPERATIONS:
+            raise MZE1RuntimeError("MZE1 operation is outside its carrier")
+        if any(value < 0 or value >= PRIME for value in state):
+            raise MZE1RuntimeError("MZE1 state is outside Z/97Z")
+        selected = rows[operation]
+        return tuple(
+            (row[0] * state[0] + row[1] * state[1]) % PRIME for row in selected
+        )  # type: ignore[return-value]
+
+    return transition
+
+
 def load_executor(
     path: Path,
     expected_sha256: str,
@@ -192,6 +212,7 @@ __all__ = [
     "PresentedZ97Executor",
     "ROW_CANDIDATES",
     "canonical_sha256",
+    "freeze_transition",
     "load_executor",
     "module_state_sha256",
     "sha256_path",

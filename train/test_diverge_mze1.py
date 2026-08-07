@@ -10,7 +10,7 @@ import unittest
 import torch
 
 import diverge_npl2_runtime as npl2_runtime
-from diverge_mze1_runtime import PresentedZ97Executor, ROW_CANDIDATES
+from diverge_mze1_runtime import PresentedZ97Executor, ROW_CANDIDATES, freeze_transition
 from diverge_npl1_data import natural_public_record, render_feedback
 from diverge_npl2_runtime import (
     DecodedEvidence,
@@ -46,11 +46,12 @@ def exact_model() -> PresentedZ97Executor:
 class MZE1Test(unittest.TestCase):
     def test_hard_learned_law_matches_every_exact_transition(self) -> None:
         model = exact_model()
+        frozen = freeze_transition(model)
         for operation in range(8):
             for x in range(97):
                 for y in range(97):
                     self.assertEqual(
-                        model.transition(operation, (x, y)),
+                        frozen(operation, (x, y)),
                         apply_operation(operation, (x, y)),
                     )
 
