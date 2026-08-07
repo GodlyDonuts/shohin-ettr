@@ -172,6 +172,9 @@ def main() -> None:
     parser.add_argument("--model-root", type=Path, required=True)
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--data-sha256", required=True)
+    parser.add_argument(
+        "--board-type", choices=("development", "confirmation"), default="development"
+    )
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--batch-size", type=int, default=32)
     args = parser.parse_args()
@@ -190,7 +193,7 @@ def main() -> None:
         low_cpu_mem_usage=True,
         trust_remote_code=True,
     ).eval()
-    board = _load_board(args.data, args.data_sha256, "development")
+    board = _load_board(args.data, args.data_sha256, args.board_type)
     records = [row for row in _referent_records(board) if row["stage"] == "QUERY"]
     controls = {}
     token_lengths = None
@@ -219,6 +222,7 @@ def main() -> None:
             "opened GTI1 development board; not a promoted semantic interface."
         ),
         "model_root": str(args.model_root),
+        "board_type": args.board_type,
         "data": str(args.data),
         "data_sha256": args.data_sha256,
         "system_sha256": hashlib.sha256(SYSTEM.encode("ascii")).hexdigest(),
