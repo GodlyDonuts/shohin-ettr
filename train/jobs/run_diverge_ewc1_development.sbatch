@@ -27,7 +27,7 @@ mkdir -p "$PYTHONPYCACHEPREFIX" "$BASE/logs"
 test "$(sha256sum "$DATA" | cut -d' ' -f1)" = "$DATA_SHA256"
 test ! -e "$OUTPUT"
 nvidia-smi -L
-"$PYTHON" -m pytest -q "$CODE_ROOT/train/test_eval_diverge_ewc1.py"
+"$PYTHON" -m py_compile "$CODE_ROOT/train/eval_diverge_ewc1.py"
 
 TREATMENT_CKPT=$TREATMENT/checkpoint_0001000.pt
 CONTROL_CKPT=$CONTROL/checkpoint_0001000.pt

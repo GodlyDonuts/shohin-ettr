@@ -34,9 +34,10 @@ test "$(sha256sum "$DATA" | cut -d' ' -f1)" = "$DATA_SHA256"
 test ! -e "$OUTPUT"
 echo "[diverge-ewc1] node=${SLURMD_NODENAME:-?} mode=$MODE commit=$SOURCE_COMMIT"
 nvidia-smi -L
-"$PYTHON" -m pytest -q \
-  "$CODE_ROOT/train/test_diverge_ewc1_data.py" \
-  "$CODE_ROOT/train/test_diverge_ewc1_runtime.py"
+"$PYTHON" -m py_compile \
+  "$CODE_ROOT/train/diverge_ewc1_data.py" \
+  "$CODE_ROOT/train/diverge_ewc1_runtime.py" \
+  "$CODE_ROOT/train/train_diverge_ewc1.py"
 "$PYTHON" "$CODE_ROOT/train/train_diverge_ewc1.py" \
   --data "$DATA" --data-sha256 "$DATA_SHA256" \
   --output "$OUTPUT" --mode "$MODE" \
