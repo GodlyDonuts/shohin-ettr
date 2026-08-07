@@ -5,8 +5,9 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=32G
-#SBATCH --gres=gpu:h100:1
+#SBATCH --gres=gpu:nvidia_h100_pcie:1
 #SBATCH --time=00:20:00
+#SBATCH --exclude=evc33,evc43
 #SBATCH --output=/lustre/fs1/home/%u/shohin/logs/pqi1_ar_%j.out
 
 set -euo pipefail
@@ -23,6 +24,9 @@ set -euo pipefail
 : "${DATA_SHA256:?}"
 : "${OUTPUT:?}"
 
+BASE=/lustre/fs1/home/sa305415/shohin
+PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
+
 if [[ -e "$OUTPUT" ]]; then
   echo "refusing existing attribution output: $OUTPUT" >&2
   exit 1
@@ -34,7 +38,7 @@ export PYTHONUNBUFFERED=1
 
 echo "[pqi1-ar] node=$(hostname) backbone=$BACKBONE_NAME commit=$SOURCE_COMMIT"
 nvidia-smi --query-gpu=index,name --format=csv,noheader
-srun python -u "$OVERLAY_ROOT/train/diagnose_diverge_pqi1_autoregressive.py" \
+"$PYTHON" -u "$OVERLAY_ROOT/train/diagnose_diverge_pqi1_autoregressive.py" \
   --base "$BASE" \
   --base-sha256 "$BASE_SHA256" \
   --tokenizer "$TOKENIZER" \
