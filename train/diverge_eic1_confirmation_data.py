@@ -19,7 +19,10 @@ from diverge_tfs1_data import FAULT_LINES, generate_board, validate_row
 SCHEMA = "shohin-diverge-eic1-confirmation-board-v1"
 BOARD_SEED = 2026080713
 BOARD_ROWS = 256
-NAMES = tuple(f"eix{index:02d}q" for index in range(32))
+NAMES = tuple(
+    f"eix{chr(ord('a') + index // 26)}{chr(ord('a') + index % 26)}q"
+    for index in range(32)
+)
 MODES = ("sensitive", "invariant", "underdetermined")
 
 

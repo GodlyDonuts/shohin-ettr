@@ -31730,3 +31730,14 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `implement_and_hash_eic1;_build_confirmation_on_stokes;_run_four_matched_single_h100_development_arms`.
+
+- **2026-08-07 03:55 EDT** -- **The first EIC1 confirmation build rejects an
+  invalid opaque-name bank before writing a board.**
+
+  Stokes job `767174` exits after the exact mention parser rejects decimal
+  digits in the proposed opaque entity names. It writes no board and observes
+  no model result. The correction changes only the 32-name bank to unique
+  lowercase ASCII words and adds a pre-generation parser test. Seed
+  `2026080713`, typed programs, query templates, renderer/order balance,
+  overlap rules, training data, live H100 jobs, and all gates remain exact.
+  One replacement CPU build is authorized before any EIC1 development result.
