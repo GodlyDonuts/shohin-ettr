@@ -1,7 +1,7 @@
 # DIVERGE-EAL2 Identifiable Temporal Interface
 
-Status: development PASS; five fixed independent confirmation boards frozen
-before confirmation scoring.
+Status: qualified on development and five fixed independent confirmation
+boards.
 
 ## Structural correction
 
@@ -91,12 +91,33 @@ Immutable hashes:
 
 ## Fixed confirmation
 
-The same frozen checkpoint is evaluated without retraining on five fixed
+The same frozen checkpoint was evaluated without retraining on five fixed
 source-, name-, and identity-disjoint boards under seeds `2026080763` through
 `2026080767`. The original training, development public, development assessor,
 and data-report hashes are bound before board generation. Each board contains
 256 episodes and must independently satisfy the unchanged development gate.
 The aggregate passes only if all five boards pass, normal and counterfactual
 reading remain exact, temporal scrub remains at most 30%, and learned state
-and query execution remain exact. No confirmation result exists at this
-document revision.
+and query execution remain exact.
+
+Jobs `744713`--`744717` all pass in 22--46 seconds. Across the five boards,
+normal and counterfactual reading are each `30,720/30,720`; learned terminal
+state is `20,480/20,480`; and late-query execution is `40,960/40,960`.
+Temporal scrub is `8,683/30,720 = 28.26497%`. Shuffled-evidence and unrelated-
+law-transplant controls each retain only `4/20,480` states and `390/40,960`
+queries. Every per-seed original gate also passes.
+
+The confirmation-data report SHA-256 is
+`bafad3ddccaf66911eead6bdfe15e085a659481af071a18a2ac8b45a0c7b9816`.
+The aggregate report SHA-256 is
+`3445cd0e797029fbbff88d1f597637ad8cab860fb9611f862cbb515a7a0dc953`;
+its six-file manifest SHA-256 is
+`50c92146f86ecba38fb8d4c3faa1bf691c27efb759369273e5f95fff279a2f0d`.
+All data and results are hash-matched and read-only locally and on Newton.
+
+EAL2 therefore qualifies a controlled episode-local system-identification
+mechanism. This is not unrestricted language reasoning: exact register
+scanning, typed transfer programs, a bounded linear-law catalog, and the
+synthetic finite-field world remain engineered. The qualified reader should
+not be retrained; the next experiment must remove one of those larger
+scaffolds or integrate the mechanism into the strongest qualified Shohin path.

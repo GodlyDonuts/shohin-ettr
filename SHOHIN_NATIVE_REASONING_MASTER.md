@@ -2,26 +2,28 @@
 
 ## Latest Result — 2026-08-07
 
-**DIVERGE-MZE1 confirms removal of the hard-coded Z/97 operation semantics
-from Shohin's strongest controlled reasoning path.** A 400-parameter presented
-finite-field law owner learns eight opaque 2x2 transition laws from input and
-successor-state outcomes only. It is exact on all `75,272` possible one-step
-transitions and on held autonomous programs through depth 32; a matched
-shifted-outcome control scores `0.2657%`. The candidate runtime imports no
-exact PL1 operation implementation.
+**DIVERGE-EAL2 confirms episode-local law induction and deep source-deleted
+execution from natural before/after evidence.** Its 397,250-parameter byte-GRU
+owns only the identifiable temporal coordinate; an exact disclosed-register
+owner supplies the episode-local X/Y coordinate. Their product induces eight
+fresh 2x2 laws over Z/97 from outcomes, deletes the demonstrations, and reuses
+the committed laws through held programs at depths 12--32.
 
-Inserted into unchanged CWC1 -> EWC1 -> NPL2, MZE1 reaches
-`35,066/40,960 = 85.6104%` across five fixed seeds, exactly equal to the oracle
-on every seed and versus `3.9185%` for the strongest non-oracle. Every existing
-WORLD, EVIDENCE, QUERY, plasticity, causal-control, rollback, source-deletion,
-and owner-custody gate passes. Aggregate SHA-256 is
-`14f05b8a8a7f30f01418c0d00034a91e528da18395652304dd20d92e0325dbdd`.
+Development and all five fixed independent confirmation seeds pass. Aggregate
+normal and temporal-counterfactual reading are each `30,720/30,720`; learned
+terminal state is `20,480/20,480`; and learned late-query execution is
+`40,960/40,960`. Temporal scrub is `8,683/30,720 = 28.26497%`; shuffled
+evidence and unrelated-law transplant each fall to `4/20,480` states and
+`390/40,960` queries. Confirmation aggregate SHA-256 is
+`3445cd0e797029fbbff88d1f597637ad8cab860fb9611f862cbb515a7a0dc953`.
 
-This is controlled model-owned recurrent execution, not open-domain reasoning.
-Complete candidate construction, exact external verification, and the narrow
-mini-language remain engineered. No long continuation pretraining is
-authorized. See
-`docs/research/DIVERGE_MZE1_MODEL_OWNED_Z97_EXECUTOR.md`.
+This is the strongest isolated system-identification result, not open-domain
+reasoning. Exact register scanning, typed transfer programs, a bounded linear
+law catalog, and the synthetic finite-field world remain engineered. The
+qualified reader is frozen. The next gate must remove one of those scaffolds
+or integrate the owner into the strongest qualified Shohin path without
+retraining it. No long continuation pretraining is authorized. See
+`docs/research/DIVERGE_EAL2_IDENTIFIABLE_TEMPORAL_INTERFACE.md`.
 
 ## Current Status — Read First
 

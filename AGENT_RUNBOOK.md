@@ -32287,3 +32287,38 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `materialize_and_hash_five_eal2_confirmations;_run_same_frozen_reader_once_per_seed;_qualify_only_on_all_five_pass`.
+
+- **2026-08-07 10:30--10:36 EDT** -- **EAL2 confirms across five fixed
+  independent boards at exact learned execution.**
+
+  Confirmation data under seeds `2026080763`--`2026080767` regenerate
+  byte-for-byte and have zero source, opaque-name, or episode-identity overlap
+  against training, development, or each other. Data-report SHA-256 is
+  `bafad3ddccaf66911eead6bdfe15e085a659481af071a18a2ac8b45a0c7b9816`.
+  Immutable runtime `diverge_eal2_confirmation_b29c4b7_r1` has SHA256SUMS
+  SHA-256 `360ac4fd62654edc512a325f0cf95e72e95854b59b004915b00437321899176e`.
+
+  Five independent one-H100 jobs `744713`--`744717` complete in 22--46
+  seconds. Normal and counterfactual temporal reading are each
+  `30,720/30,720`; learned state is `20,480/20,480`; learned late queries are
+  `40,960/40,960`. Temporal scrub remains `8,683/30,720 = 28.26497%`.
+  Shuffled evidence and unrelated-law transplant each retain only
+  `4/20,480` states and `390/40,960` queries. Every original per-seed gate
+  passes.
+
+  Scheduler-managed CPU aggregate `744718` passes. Aggregate SHA-256 is
+  `3445cd0e797029fbbff88d1f597637ad8cab860fb9611f862cbb515a7a0dc953`;
+  result-manifest SHA-256 is
+  `50c92146f86ecba38fb8d4c3faa1bf691c27efb759369273e5f95fff279a2f0d`.
+  All confirmation data/results are hash-matched and read-only locally and on
+  Newton.
+
+  Qualify EAL2 as controlled natural temporal interpretation, episode-local
+  unseen-law induction, and source-deleted recurrent execution. Do not call
+  it unrestricted reasoning: exact register scanning, typed transfer
+  programs, the bounded linear coefficient catalog, and the synthetic Z/97
+  world remain engineered. Do not retrain the qualified reader or launch long
+  continuation pretraining from this result alone.
+
+  Decision:
+  `promote_eal2_as_qualified_episode_law_owner;_preserve_weights;_next_remove_typed_program_or_exact_register_scaffold_in_one_structurally_different_gate`.
