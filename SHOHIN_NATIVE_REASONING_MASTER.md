@@ -56967,3 +56967,29 @@ mechanism must remove direct renderer-local role fitting and identify latent
 transactions through complete downstream state/answer consequences under
 same-meaning, clause-order, entity-renaming, and role-reversal intervention
 orbits.
+
+### DIVERGE-QTE1: perfect semantic answers, failed causal deletion gate
+
+QTE1 changes the computation to candidate-wise textual entailment with pinned
+Qwen3.5-0.8B and no training. Development is `768/768`; sealed confirmation
+job `744558` is also `768/768`, with all three modes `256/256`, all six
+renderers `128/128`, and mapped mention swap `768/768`. This establishes a
+clear capability-floor result: the same task that renderer-locks Shohin and
+SmolLM2 is directly readable by a stronger pretrained language model when
+posed as complete-candidate entailment.
+
+QTE1 nevertheless fails its frozen conjunctive gate because context scrub is
+`512/768`, above the required `430/768`. Dependency-held end-to-end
+composition cancels without allocation. Result SHA-256 is
+`ee55580e...0b6e`.
+
+The one read-only attribution shows that every scrubbed prompt is the same
+`alpha then beta` string, the board contains 512 alpha versus 256 beta
+targets, and QTE1 predicts alpha uniformly. Thus `512/768` is exactly the
+majority baseline rather than evidence that two-thirds of source meaning
+survives deletion. Attribution SHA-256 is `7475c231...69d8`. This exposes an
+imbalanced causal control but does not retroactively relax the frozen gate.
+QTE1 is preserved as a strong 0.8B semantic ceiling, not promoted as a
+qualified model-owned transaction interface. CGL1 is the structurally
+different successor: infer latent transactions only through terminal outcomes
+across paired state and clause-order interventions.

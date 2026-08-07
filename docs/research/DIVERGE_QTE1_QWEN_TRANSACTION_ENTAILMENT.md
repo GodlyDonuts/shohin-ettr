@@ -1,7 +1,7 @@
 # DIVERGE-QTE1: Qwen Transaction Entailment
 
-Status: frozen after one opened development result and before sealed
-confirmation. No training is authorized in QTE1.
+Status: closed after one sealed confirmation. No training, prompt repair, or
+QTE1 variant is authorized.
 
 ## Hypothesis and boundary
 
@@ -53,3 +53,25 @@ protected NVE1 EVIDENCE, exact factorized execution, and QTE1 QUERY. That
 composite must pass the existing end-to-end semantic floors before natural
 PL1 can run. A confirmation miss closes QTE1 without prompt, wording, label,
 normalization, model, renderer, or threshold variants.
+
+## Sealed result and attribution
+
+Job `744558` scored QUERY `768/768`, every mode `256/256`, every renderer
+`128/128`, and mapped mention swap `768/768`. Context scrub scored `512/768`,
+above the frozen `430/768` maximum, so QTE1 formally fails and dependency-held
+composition `744559` canceled without allocation. Result SHA-256 is
+`ee55580e3aa0b140990ac983543b0eacd8657987e128b18d434f6e5749570b6e`.
+
+The one read-only accounting attribution explains the failed control without
+changing the decision. Every scrubbed source is exactly `alpha then beta`.
+The sealed board contains 512 transaction-0 targets and 256 transaction-1
+targets, and QTE1 predicts transaction 0 on all 768 scrubbed rows. Its
+`512/768` is therefore exactly the majority-class baseline, not retained
+source semantics. Attribution SHA-256 is
+`7475c231956d0d5c5107c77344c06996eac7738170c3116bdad826c544e269d8`.
+
+QTE1 remains useful evidence that candidate-wise entailment at the 0.8B
+capability floor can read all held semantic renderers. It is not promoted as a
+causally qualified transaction owner because the frozen conjunctive gate
+failed. No QTE1 retry is allowed; the next mechanism is the independently
+frozen outcome-grounded CGL1 lane.

@@ -31552,3 +31552,29 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_gti1_renderer_lookup;_keep_confirmation_sealed;_ground_transactions_through_downstream_consequences_and_intervention_orbits`.
+
+- **2026-08-07 01:04--01:22 EDT** -- **DIVERGE-QTE1 is perfect on sealed
+  semantics but fails the frozen causal scrub condition.**
+
+  Zero-training candidate-wise Qwen3.5-0.8B entailment job `744558` scores
+  QUERY `768/768`, every mode `256/256`, every renderer `128/128`, and mapped
+  mention swap `768/768`. Context scrub is `512/768`, above the frozen
+  `430/768` ceiling, so the conjunctive gate fails. Pass-only composition
+  `744559` cancels without allocation. Result SHA-256 is
+  `ee55580e3aa0b140990ac983543b0eacd8657987e128b18d434f6e5749570b6e`.
+
+  The one read-only attribution proves all 768 scrubbed prompts are identical
+  `alpha then beta` strings. The board contains 512 transaction-0 and 256
+  transaction-1 targets, and the aggregate renderer receipts uniquely imply
+  transaction 0 on all 768 rows. The failed `512/768` deletion score is
+  exactly the majority-class baseline, not retained source semantics.
+  Attribution SHA-256 is
+  `7475c231956d0d5c5107c77344c06996eac7738170c3116bdad826c544e269d8`.
+
+  Preserve QTE1 as evidence that 0.8B candidate entailment reads the held
+  semantics, but do not relax, retry, or promote the failed frozen gate. CGL1
+  is already frozen as the structurally different successor: outcome-only
+  latent transaction supervision over paired state/clause-order orbits.
+
+  Decision:
+  `close_qte1_without_retry;_retain_0.8b_semantic_ceiling;_advance_to_outcome_grounded_cgl1`.
