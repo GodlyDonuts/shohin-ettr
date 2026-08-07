@@ -57308,3 +57308,32 @@ defines reversed transitions. That condition scores 0% against the unchanged
 original-world assessor. The preregistered outcome is preserved rather than
 reinterpreted: no NLS1 retry family and no confirmation access. Development
 report SHA-256 is `f5500c41...f241`.
+
+### DIVERGE-NCP1: natural command compilation without typed programs
+
+NCP1 removes EAL2's engineered transfer-program symbol list. A 273,794-
+parameter content-addressed CTC pointer reads raw variable-length command
+bytes and a fresh episode-local eight-alias table, then emits one coherent
+ordered alias sequence. Inference receives no mention spans, target length,
+typed operation symbols, or alignment. Qualified EAL2 temporal semantics,
+law packets, and execution stay frozen.
+
+The final treatment and cyclically shifted-table control start identically and
+receive the same 100,000-row corpus, 1,500 updates, batches, and optimizer
+schedule. Treatment reaches 100% fixed-sample exactness while control is 0%.
+On source-disjoint development, normal, independently renamed, and reverse-
+order programs are each `4096/4096`; terminal states are `4096/4096` and late
+queries `8192/8192`. Source scrub, table shuffle, and the independently
+trained shuffled-table model are all `0/4096` program exact.
+
+Five fixed confirmations reproduce the result: each positive program arm is
+`20,480/20,480`, normal and renamed state are `20,480/20,480`, and normal and
+renamed query are `40,960/40,960`; every information-breaking program control
+is `0/20,480`. Aggregate SHA-256 is
+`ca02448696540a3b58d4baf0e944cb6abfbfdde5b1a74d761b82975c092ff8da`.
+
+This is a real scaffold reduction, not a public reasoning benchmark result.
+Raw natural commands now compile into recurrent execution without a typed
+program list, but the alias table, register binder, bounded episode-law
+catalog/solver, typed initial state/query, and algebraic executor remain
+engineered. Those boundaries define the next architecture work.

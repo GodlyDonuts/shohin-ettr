@@ -32426,3 +32426,43 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `commit_frozen_ncp1;_materialize_and_independently_regenerate_fresh_boards;_train_two_matched_arms;_open_confirmation_only_on_final_development_pass`.
+
+- **2026-08-07 11:30--12:00 EDT** -- **NCP1 passes development and all five
+  confirmations; independent CGL1 replays remain byte-exact.**
+
+  Fresh CGL1 replay jobs `744743/744744` finish on independent H100s in
+  6m52s. Shohin and SmolLM2 reports are byte-identical to their protected
+  primaries at SHA-256 `a0247957...a38c` and `5b788fa7...8eaf4` respectively.
+  Preserve the primary Shohin conjunctive FAIL exactly: normal `768/768`,
+  mapped mention swap `384/768`; confirmation remains unopened.
+
+  NCP1's first treatment allocation `744741` on `evc33` exposed no CUDA
+  device and was canceled without a scientific result. Matched shuffled-table
+  control `744742` and unchanged treatment replacement `744745` complete all
+  1,500 updates. Their fixed training samples are `0/2048` and `2048/2048`;
+  checkpoint SHA-256 values are `ec5f3bde...dc19` and `f830757f...da46`.
+
+  Development job `744797` passes every frozen gate: temporal reader
+  `6144/6144`, law commits `256/256`, normal/renamed/reverse programs each
+  `4096/4096`, normal and renamed states `4096/4096`, and late queries
+  `8192/8192`. Source scrub, table shuffle, and independently trained control
+  are each `0/4096` program exact. Development SHA-256 is
+  `be9347aed80529e5f6c4651973bb1d1d1199b180c1daf85ad5f8d21d8a60f292`.
+
+  The five fixed confirmation seeds `2026080799`--`2026080803` run once with
+  unchanged weights/evaluator. All pass: aggregate normal, renamed, and
+  reverse programs are each `20,480/20,480`; normal and renamed states are
+  `20,480/20,480`; normal and renamed queries are `40,960/40,960`; all three
+  information-breaking program controls are exactly `0/20,480`. Aggregate
+  SHA-256 is
+  `ca02448696540a3b58d4baf0e944cb6abfbfdde5b1a74d761b82975c092ff8da`.
+  Reports are hash-matched and read-only locally/Newton.
+
+  Qualify only learned raw-command-to-ordered-operation compilation inside
+  the controlled EAL2 system. The explicit alias table, exact register
+  binding, exact law-support solver, typed initial/query state, bounded Z/97
+  algebra, and exact executor remain engineered. This does not authorize
+  continuation pretraining or an unrestricted/public reasoning claim.
+
+  Decision:
+  `promote_ncp1_as_qualified_natural_command_owner;_preserve_weights;_next_remove_one_remaining_engineered_interface_without_retraining_qualified_owners`.

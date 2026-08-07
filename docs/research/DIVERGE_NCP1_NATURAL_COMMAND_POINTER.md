@@ -1,7 +1,6 @@
 # DIVERGE-NCP1 Natural Command Pointer
 
-Status: frozen after bounded feasibility calibration and before final data
-materialization or final neural scoring.
+Status: confirmed across five fixed source-disjoint boards.
 
 ## Capability hypothesis
 
@@ -87,3 +86,46 @@ learning-rate, renderer, decoder, threshold, or duration variants. A pass
 opens the five already-built confirmation boards exactly once with unchanged
 weights. NCP1 does not authorize continuation pretraining or an unrestricted
 reasoning claim.
+
+## Final result
+
+The final corpus independently regenerates byte-for-byte and has zero source,
+opaque-name, or episode-identity overlap against EAL2, NLS1, both opened pilot
+boards, development, or any other confirmation seed. Training contains
+100,000 rows at SHA-256
+`3078eb9f14abfa0bcc54dd97cc36e6d45a4fc8fdbe4c1ffc81a03c1cbe2c28ef`.
+
+The first treatment allocation, job `744741` on `evc33`, exposed no CUDA
+device and was canceled without a scientific result. The matched shuffled-
+table control `744742` and exact unchanged treatment replacement `744745`
+complete 1,500 updates from the same initial state. Treatment reaches
+`2048/2048` on its fixed training sample; control reaches `0/2048`.
+Treatment/control checkpoint SHA-256 values are
+`f830757fb2c735909732c75b8ce042a41993f4f47c59fe39f58e697381c0da46`
+and
+`ec5f3bde4d9f4a8bbcd4c210463123a04b032ce685f9696544187a00b827dc19`.
+
+Development job `744797` passes every frozen condition. Normal, independently
+renamed, and reverse-order raw commands are each `4096/4096` program exact
+with a 100% depth floor through depth 32. Normal and renamed execution are
+each `4096/4096` terminal-state and `8192/8192` late-query exact. Source scrub,
+alias-table shuffle, and the independently trained shuffled-table model are
+each `0/4096` program exact. The inherited temporal reader is `6144/6144` and
+all `256/256` episode laws commit. Development report SHA-256 is
+`be9347aed80529e5f6c4651973bb1d1d1199b180c1daf85ad5f8d21d8a60f292`.
+
+Five fixed confirmations under seeds `2026080799`--`2026080803` all pass with
+unchanged weights and evaluator. Aggregate normal, renamed, and reversed
+programs are each `20,480/20,480`; normal and renamed states are each
+`20,480/20,480`; normal and renamed queries are each `40,960/40,960`.
+Each information-breaking program control remains exactly `0/20,480`.
+Aggregate SHA-256 is
+`ca02448696540a3b58d4baf0e944cb6abfbfdde5b1a74d761b82975c092ff8da`.
+
+NCP1 therefore qualifies the narrow capability claim: a learned natural-
+command owner can replace an engineered typed transfer-program list while
+preserving unseen alias binding, variable order and repetition, recurrent
+execution, and late-query correctness. It does not qualify unrestricted
+language reasoning. The explicit alias table, exact register binder, exact
+law-support solver, typed initial state/query, bounded algebra, and exact
+executor remain engineered.
