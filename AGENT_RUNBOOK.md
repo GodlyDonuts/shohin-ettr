@@ -31446,3 +31446,38 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_ccr1_surface_shortcut;_freeze_rrg1_with_counterfactually_complete_role_supervision;_do_not_open_confirmation_before_development_pass`.
+
+- **2026-08-06 20:46--21:28 EDT** -- **DIVERGE-RRG1 closes negative while
+  producing a qualified natural QUERY owner.**
+
+  Commits `8246fcb/f23d032` implement the frozen data, length-free single
+  encoder, complete-permutation fit, evaluator, and serial admission chain.
+  The immutable corpus has 100,000 EVIDENCE and 100,000 QUERY rows, 50,000
+  complete role-order pairs per stage, exact family/form/order balance, and
+  zero development/confirmation source or entity overlap. Evidence/query/data
+  report hashes are `56f0e6e5...d67fe`, `2d325c86...78c1c`, and
+  `7439147d...36b3`.
+
+  H100 job `744379` on `evc22` completes exactly 2,000 updates in 85.681
+  training seconds. All 200,000 rows, 100,000 pairs, families, forms, and
+  orders are exact. Trainable/total parameters are 733,249/1,196,434.
+  Checkpoint/training-report hashes are `05c7b6c7...36ae` and
+  `0e0b681f...57db`; WORLD and numeric-EVIDENCE hashes remain exact.
+
+  Development QUERY is `768/768`: every mode is `256/256` and every renderer
+  is `128/128`. EVIDENCE is `2,048/3,072`, every episode remains unsealed, and
+  confirmation is never opened. Evaluation SHA-256 is `6ca42dab...6db`.
+
+  The one read-only attribution at commit `7038868` scores every established
+  evidence surface. Confirmation renderer 0 and legacy training renderer 0
+  are each `0/3,072`; the other seven surfaces are each `3,072/3,072`.
+  Arbitrary entity renaming changes zero assignments and zero logit bits.
+  Owner hashes remain exact; diagnostic SHA-256 is `0095b8ca...5409`.
+
+  Close universal RRG1 sharing without variants. Preserve RRG1 only as the
+  qualified QUERY owner. Freeze STI1 as a zero-training structural successor:
+  immutable NVE1 owns EVIDENCE and RRG1 owns QUERY behind typed transactions.
+  Require integrated development admission before opening confirmation.
+
+  Decision:
+  `close_rrg1_universal_role_sharing;_preserve_query_owner;_freeze_sti1_stage_typed_composition_without_retraining`.

@@ -56888,3 +56888,33 @@ The opened SRP1 board can reject RRG1 but cannot promote it. Only a
 still-unseen CCR1 board. Entity renaming must be bit-invariant and role-slot
 swap must causally invert behavior. A pass qualifies one natural PL1
 integration; a failure closes this interface without local variants.
+
+### DIVERGE-RRG1 result: QUERY qualifies but universal sharing fails
+
+RRG1 uses 733,249 trainable parameters and fits the full counterfactually
+complete 200,000-row corpus exactly in 2,000 updates. Every 50,000-pair stage,
+family, form, and role order is exact; names and lengths are structurally
+unobservable.
+
+Development separates the two stages. QUERY is a complete `768/768`, with all
+three modes at `256/256` and all six renderers at `128/128`. EVIDENCE is only
+`2,048/3,072`, leaving every episode unsealed. The one read-only cross-surface
+matrix shows exact, deterministic inversion on confirmation renderer 0 and
+legacy training renderer 0 (`0/3,072` each), while the other seven established
+evidence surfaces are all `3,072/3,072`. Entity renaming changes no assignment
+or logit bit.
+
+RRG1 is closed without variants. It establishes a qualified natural QUERY
+owner but rejects one universal EVIDENCE/QUERY referent owner. Checkpoint,
+development, and diagnostic SHA-256 values are `05c7b6c7...36ae`,
+`6ca42dab...6db`, and `0095b8ca...5409`.
+
+### DIVERGE-STI1 gate: stage-typed semantic composition
+
+STI1 is the zero-training structural successor. Protected NVE1 owns the full
+EVIDENCE transaction and frozen RRG1 owns QUERY; TOL3 WORLD and the rational
+executor remain immutable. Typed provenance-bound transactions are the only
+connection. The opened board must reach at least `3,070/3,072` evidence,
+`765/768` query, and `255/256` sealed episodes before the still-unopened CCR1
+board can be accessed. A pass qualifies one natural PL1 integration; a miss
+closes this owner composition without local variants.
