@@ -32201,3 +32201,35 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_eal1;_preserve_one_reporting_only_replay;_freeze_eal2_temporal_semantics_plus_exact_local_register_binding`.
+
+- **2026-08-07 10:08--10:16 EDT** -- **The exact EAL1 failure is
+  preserved; EAL2 is corrected pre-score and frozen.**
+
+  Reporting-only replay `744709` completes from the frozen EAL1 checkpoint in
+  46 seconds. On 6,144 source-disjoint development statements, complete-role
+  exactness is 128/6,144 = 2.0833% normal and 207/6,144 = 3.3691%
+  counterfactual. Every learned episode reaches empty support, so learned law
+  commits are 0/256 and learned execution is 0/4,096 programs and 0/8,192
+  queries. The mechanics are sound: oracle roles commit 256/256 and execute
+  4,096/4,096 programs and 8,192/8,192 queries, including 256/256 at every
+  depth from 12 through 32. One-example never commits; source deletion and
+  runtime audits pass. Final report SHA-256 is
+  `073f7e4a4afc7a9ffba2a587104c067ad5e29a15e08b1da1660467b9bf85349e`.
+
+  A pre-score EAL2 renderer audit catches a second identifiability error in
+  the old corpus: `(before + 2*after) mod 2` withheld entire before-synonym
+  families, not just phrase-pair compositions. A scratch byte reader cannot
+  infer lexical meanings absent from training. No EAL2 code is committed and
+  no EAL2 model has run, so the data contract is corrected before freeze.
+
+  Frozen EAL2 uses seeds `2026080761/62`; train and development renderer pairs
+  are disjoint under `(before + after) mod 2`, while every individual before
+  and after primitive appears in both. The 397,250-parameter reader owns only
+  observable temporal semantics. Exact whole-register scanning owns the
+  disclosed episode-local X/Y table; their product yields the four complete
+  roles before unchanged law induction and execution. Data/runtime tests,
+  exact oracle mechanics, a real backward pass, Python compilation, Ruff, and
+  Slurm syntax pass. No EAL2 corpus, checkpoint, or score exists yet.
+
+  Decision:
+  `commit_identifiable_eal2;_materialize_and_reproduce_fresh_data;_run_one_matched_development_gate;_close_without_local_variants_on_failure`.
