@@ -56993,3 +56993,28 @@ QTE1 is preserved as a strong 0.8B semantic ceiling, not promoted as a
 qualified model-owned transaction interface. CGL1 is the structurally
 different successor: infer latent transactions only through terminal outcomes
 across paired state and clause-order interventions.
+
+### DIVERGE-CGL1: outcomes control the decision but do not ground identity
+
+CGL1 removes direct TARGET/DISTRACTOR labels and supervises only terminal
+outcomes over paired state and clause-order interventions. Shohin and
+SmolLM2 each fit all `100,000/100,000` assignments and score `768/768` on the
+opened development board, while a flipped-outcome SmolLM2 control fits the
+flipped labels and scores `0/768` against the true transaction. This proves
+that the outcome signal causally controls the learned decision.
+
+The decisive intervention still fails: mapped mention swap is only `384/768`
+for Shohin and `512/768` for SmolLM2, with complete renderer-block inversions.
+The conjunctive gate therefore closes and confirmation remains unopened.
+Independent jobs `744620/744624` reproduce both development reports
+byte-for-byte.
+
+One frozen read-only orbit product combines normal candidate evidence with
+mapped alpha/beta-swapped evidence. It reaches `512/768` for Shohin but
+`768/768` for SmolLM2. Thus explicit permutation pooling can expose the
+relation in the stronger parent, yet it does not repair Shohin and cannot be
+treated as learned native grounding. CGL1 and inference-only orbit pooling are
+closed as Shohin solutions. The next architecture must represent physical
+candidate identity equivariantly inside the learned transaction state and
+commit one coherent hypothesis through that typed identity, rather than infer
+identity from renderer-local evidence after the fact.

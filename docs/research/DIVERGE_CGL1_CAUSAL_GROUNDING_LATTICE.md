@@ -184,3 +184,32 @@ recovers the renderer-block failures, the next architecture may enforce an
 exact permutation-quotient commit boundary; otherwise that hypothesis is
 rejected. No additional CGL seed, width, duration, loss, or prompt variant is
 authorized.
+
+## Independent replay and orbit-attribution result
+
+The corrected independent development replays closed without changing any
+scientific input. Shohin job `744620` reproduced the primary development
+report byte-for-byte at SHA-256
+`a02479576a5d404f3d5a7bc55d5218652877656db7c76dd8e130dd46d431a38c`.
+After correcting only a stale immutable-tokenizer directory receipt, SmolLM2
+job `744624` reproduced its primary development report byte-for-byte at
+SHA-256
+`5b788fa7fe8a79e59e80b814c09f2d4084868450b64b1f458c6b83f99058eaf4`.
+Both jobs used separate writable output roots. The failed/canceled launch
+attempts remain preserved as infrastructure evidence and never produced a
+score.
+
+The one frozen attribution completed on jobs `744622/744623`:
+
+| Parent | Normal | Mapped swap | Orbit product | Product report SHA-256 |
+|---|---:|---:|---:|---|
+| Shohin | 768/768 | 384/768 | 512/768 | `ed8763e5...9974` |
+| SmolLM2 | 768/768 | 512/768 | 768/768 | `0579f08e...0714` |
+
+SmolLM2's product is exact across all six renderers, but Shohin still inverts
+renderers 1 and 5 completely. Exact two-element log-evidence pooling is
+therefore a useful stronger-backbone capacity result, not a Shohin mechanism
+and not a CGL1 rescue. The CGL1 confirmation remains unopened. The successor
+must change the learned computation boundary so that candidate identity is a
+typed equivariant object throughout compilation and commitment, rather than
+trying another CGL1 fit or relying on inference-only score pooling.

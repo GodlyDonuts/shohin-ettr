@@ -31679,3 +31679,26 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_cgl1_outcome_grounding;_run_one_read_only_orbit_product_attribution;_then_freeze_one_structurally_different_equivariant_commit_successor`.
+
+- **2026-08-07 03:21--03:36 EDT** -- **Independent CGL1 replays reproduce
+  exactly; orbit pooling is a SmolLM2 ceiling but not a Shohin solution.**
+
+  Corrected isolated-output replay `744620` reproduces the Shohin development
+  report byte-for-byte at SHA-256 `a0247957...a38c`. After correcting only the
+  stale immutable-tokenizer directory receipt, replay `744624` reproduces the
+  SmolLM2 report byte-for-byte at `5b788fa7...eaf4`. Both jobs complete
+  normally; no model, board, prompt, evaluator, threshold, or confirmation
+  state changes. Local primary checkpoints/reports and assessor receipt are
+  hash-verified and read-only.
+
+  Frozen read-only attribution jobs `744622/744623` complete normally. Shohin
+  normal/mapped-swap/orbit-product scores are `768/384/512` of 768; SmolLM2
+  scores `768/512/768`. Report SHA-256 values are `ed8763e5...9974` and
+  `0579f08e...0714`. Shohin's product remains exactly wrong on renderers 1 and
+  5. Two-element log-evidence pooling therefore does not solve the protected
+  backbone's identity binding and cannot rescue CGL1. The perfect SmolLM2
+  product is retained only as a capacity diagnostic. Confirmation remains
+  unopened.
+
+  Decision:
+  `close_cgl1_orbit_product_as_shohin_solution;_freeze_one_structurally_different_typed_equivariant_identity_commit_gate`.
