@@ -32391,3 +32391,38 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_nls1_without_confirmation;_preserve_exact_normal_path_as_unqualified_evidence;_freeze_one_structurally_different_successor_that_removes_the_typed_executor_or_register_scanner`.
+
+- **2026-08-07 10:55--11:25 EDT** -- **NCP1 freezes a raw natural-command
+  pointer after one bounded feasibility calibration.**
+
+  DIVERGE-NLS1 remains closed. The structurally different NCP1 successor
+  removes EAL2's typed transfer-program list. A 273,794-parameter shared-byte
+  CTC pointer encodes raw command bytes and an episode-local eight-alias table,
+  emits dynamic alias positions, and preserves variable order/repetition by
+  greedy CTC collapse. Training-only mention spans provide frame supervision;
+  inference receives no spans, target length, typed symbols, or alignment.
+  Qualified EAL2 weights are frozen.
+
+  One non-claim feasibility calibration identifies and corrects the interface
+  before freeze. At 1,000 updates, the first treatment is 4,083/4,096 normal
+  programs and states with 4,083/4,096 reverse programs; table shuffle,
+  command scrub, and shuffled-table model are each 0/4,096. Renamed aliases
+  are only 1,560/4,096 because the pilot rename generator uses a different
+  character carrier. Replacing only that pre-freeze generator with EAL2's
+  consonant-vowel carrier raises renamed exactness to 4,052/4,096. One final
+  1,500-update calibration on the corrected carrier reaches 4,096/4,096
+  normal, renamed, and reverse programs and 4,096/4,096 terminal states at
+  every depth 12--32; all three negative controls remain 0/4,096.
+
+  Pilot boards are opened development aids and cannot count as final evidence.
+  Freeze fresh development seed `2026080798` and five conditional confirmation
+  seeds `2026080799`--`2026080803` before materialization. Final training is
+  100,000 rows under seed `2026080791`; treatment and cyclically shifted-table
+  control start identically and receive exactly 1,500 AdamW updates, batch
+  128, learning rate 0.001. The conjunctive final gate requires at least 99%
+  normal/renamed/reverse program, state, and query exactness (95% every depth)
+  and at most 5% for every information-breaking control. No final corpus,
+  checkpoint, or score exists at freeze time.
+
+  Decision:
+  `commit_frozen_ncp1;_materialize_and_independently_regenerate_fresh_boards;_train_two_matched_arms;_open_confirmation_only_on_final_development_pass`.
