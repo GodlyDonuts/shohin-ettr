@@ -53,7 +53,7 @@ nvidia-smi -L
   --data "$TRAINING_DATA" --data-sha256 "$TRAINING_SHA256" \
   --output "$TRAINING_OUTPUT" --source-commit "$SOURCE_COMMIT" \
   --updates 1000 --batch-size 256 --evaluation-batch-size 512 \
-  --learning-rate 0.003 --seed 2026080751 --log-interval 25
+  --learning-rate 0.003 --seed 2026080761 --log-interval 25
 
 CHECKPOINT=$TRAINING_OUTPUT/checkpoint.pt
 TRAINING_REPORT=$TRAINING_OUTPUT/report.json

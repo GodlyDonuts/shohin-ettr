@@ -32233,3 +32233,23 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `commit_identifiable_eal2;_materialize_and_reproduce_fresh_data;_run_one_matched_development_gate;_close_without_local_variants_on_failure`.
+
+- **2026-08-07 10:16--10:20 EDT** -- **EAL2 data pass every frozen audit;
+  first launcher admission fails closed before training.**
+
+  Corpus `data_a3462bf_r1` contains 100,000 training and 256 development
+  episodes. All sources are unique; source/name/matrix overlap is zero; all
+  files regenerate byte-for-byte. Eight training and eight development
+  renderer pairs are disjoint, while all four before and all four after
+  primitives occur in each split. Training/public/assessor/report SHA-256
+  values are `e0101434...962de`, `9303b2a0...b24a1`,
+  `bdb997cb...59d22`, and `05d1e958...8bb31`.
+
+  Job `744711` runs all immutable tests, then exits before loading data or
+  taking an optimizer step because the launcher passes old EAL1 seed
+  `2026080751` instead of frozen EAL2 seed `2026080761`. Correct only this
+  launcher argument, rebuild the immutable overlay, and relaunch into a fresh
+  output. No checkpoint or EAL2 neural score exists.
+
+  Decision:
+  `correct_seed_binding_only;_relaunch_unchanged_eal2_gate`.
