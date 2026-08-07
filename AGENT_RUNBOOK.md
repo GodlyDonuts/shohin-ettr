@@ -31609,3 +31609,34 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finish_744565_744566_744567_once;_apply_744568_exactly;_open_767032_board_only_on_pass`.
+
+- **2026-08-07 02:30--02:46 EDT** -- **Six zero-training CGL1 backbone
+  ceilings complete; all eight emergency H100 allocations were attached.**
+
+  Jobs `744606--744611` use pinned Qwen3.5-0.8B and SmolLM3-3B on the opened
+  CGL1 development board, one intervention per independent H100. Qwen normal,
+  context scrub, and mapped mention swap score `384/768`, `384/768`, and
+  `640/768`. SmolLM3 scores `640/768`, `384/768`, and `768/768`. Qwen normal
+  alternates complete renderer blocks; SmolLM3 normal is exact on renderers
+  0--4 and exactly wrong on renderer 5. Both scrubbed arms are the balanced-
+  order baseline with zero mean signed margin. SmolLM3 therefore supplies a
+  strong semantic/equivariance ceiling, not a qualified owner or promotion.
+
+  Report SHA-256 values are Qwen `eccff4c9...a12`, `e493244b...c75`, and
+  `6a4e647e...025`; SmolLM3 `796c53a2...bc7`, `e3d345fa...525`, and
+  `e8cb6b8c...a7f`. Read-only local copies are under
+  `artifacts/reasoning/diverge_cgl1/capacity_3bcbc81_r1`. Jobs `744612/744613`
+  remain allocated as independent Shohin/SmolLM2 development replays and wait
+  for the exact live checkpoints and source reports. They never access
+  confirmation data. The primary `744565/744566/744567 -> 744568` gate is
+  unchanged.
+
+  The first confirmation build correctly rejected a 15-symbol overlap.
+  Commit `8d29dc6` replaces only the fixed entity bank before any neural
+  result. Corrected Stokes job `767069` runs from immutable runtime
+  `diverge_cgl1_confirm_runtime_8d29dc6_r2`, whose `SHA256SUMS` hash is
+  `c62a5ebf...ecb2e`; it must pass all overlap audits before the board can be
+  transferred. Confirmation remains fail-closed behind assessor `744568`.
+
+  Decision:
+  `retain_capacity_results_as_ceiling_only;_finish_the_frozen_three_arm_gate_once;_release_exactly_one_confirmation_only_on_assessor_pass`.

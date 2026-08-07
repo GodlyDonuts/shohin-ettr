@@ -116,3 +116,30 @@ only after `744568` exits successfully. It verifies the fixed board, verifies
 that the assessment selected exactly one admitted treatment, submits exactly
 one H100 confirmation, and records the child job and artifact hashes. It does
 not alter an arm, threshold, board, or score.
+
+## Zero-training backbone ceilings
+
+While the frozen CGL1 arms ran, six independent single-H100 jobs measured the
+already-open development board without training or changing the CGL1 decision.
+Each arm scored one fixed intervention with candidate-wise `YES` versus `NO`
+likelihood under an exact pinned parent:
+
+| Parent | Normal | Context scrub | Mapped mention swap |
+|---|---:|---:|---:|
+| Qwen3.5-0.8B | 384/768 | 384/768 | 640/768 |
+| SmolLM3-3B | 640/768 | 384/768 | 768/768 |
+
+Qwen normal is exact on renderers 0/2/4 and zero on 1/3/5. SmolLM3 normal is
+exact on renderers 0--4 and zero on renderer 5. Both scrubbed arms fall to the
+same 384/768 balanced-order baseline with zero mean signed margin. SmolLM3's
+perfect mapped swap shows that a stronger pretrained parent can expose the
+relation equivariantly, but the normal renderer-5 inversion prevents treating
+it as a qualified semantic owner. These are capability ceilings only, not
+trained CGL1 results or promotion evidence.
+
+Jobs `744606--744611` all completed normally in about 13 minutes. Report
+SHA-256 values in normal/scrub/swap order are Qwen
+`eccff4c9...a12`, `e493244b...c75`, `6a4e647e...025`; and SmolLM3
+`796c53a2...bc7`, `e3d345fa...525`, `e8cb6b8c...a7f`. Full reports are
+preserved read-only under
+`artifacts/reasoning/diverge_cgl1/capacity_3bcbc81_r1`.
