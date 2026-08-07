@@ -57337,3 +57337,31 @@ Raw natural commands now compile into recurrent execution without a typed
 program list, but the alias table, register binder, bounded episode-law
 catalog/solver, typed initial state/query, and algebraic executor remain
 engineered. Those boundaries define the next architecture work.
+
+### DIVERGE-JRB1: learned evidence and initial binding; query/control FAIL
+
+JRB1 replaces exact register scanning, typed initial vectors, and typed query
+indices with one 290,177-parameter dynamic two-register pointer. On fresh
+source-disjoint development it binds every evidence mention (`6144/6144`),
+every natural initial-state mention (`4096/4096`), compiles every law
+(`256/256`), and executes every program (`4096/4096`) at every held depth.
+Unseen register renaming preserves all evidence, initial, and terminal-state
+results. This is the first model-owned composition of natural command,
+natural transition, natural initial-state, and recurrent execution in this
+lineage.
+
+It is not qualified. Mean-pooled natural queries reach only `7912/8192`
+register exact and `7914/8192` answer exact, below the frozen 99% gate;
+renaming reaches `7844/8192` and `7846/8192`. The fixed-rotation matched
+control also exposes an architectural symmetry error in the gate: a coherent
+global register swap yields only `30/4096` canonical state tuples but
+`7811/8192` correct semantic answers. Register-source scrub component scores
+are near their actual chance levels, while its downstream 5% thresholds were
+not chance-calibrated. JRB1 remains a conjunctive FAIL, confirmation is closed,
+and development report SHA-256 is
+`df8827dbea25428f843e06751bd722c0f52d362f7e8619550d23ffd9c3473171`.
+
+The structurally different successor is a content-addressed register bus:
+targets are positions in a randomly ordered episode table rather than hidden
+canonical labels, execution remains in that table-relative basis, and query
+readout uses token-level evidence instead of whole-sentence mean pooling.

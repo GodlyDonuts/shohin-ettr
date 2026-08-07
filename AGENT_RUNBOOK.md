@@ -32501,3 +32501,42 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `commit_frozen_jrb1;_materialize_and_hash_all_boards;_train_one_matched_pair;_score_development_once;_open_confirmations_only_on_pass`.
+
+- **2026-08-07 12:18--12:32 EDT** -- **JRB1 learns natural evidence and
+  initial-state binding exactly, but query readout and invalid control ceilings
+  close the conjunctive gate.**
+
+  Final data report/training SHA-256 values are `d240756f...c2dd` and
+  `2181593d...0c38`. Matched jobs `744822/744823` complete all 1,000 updates;
+  treatment reaches `2048/2048` fixed-sample joint exactness. Its checkpoint
+  SHA-256 is `bc3fc348...6552e`. First evaluator `744827` exits before model
+  load because qualified parent files were absent remotely; they are restored
+  from hash-verified local custody. Exact replacement `744828` produces frozen
+  development SHA-256 `df8827db...3171`.
+
+  The substantive path is strong: NCP1 programs `4096/4096`; evidence register
+  and complete roles `6144/6144`; initial binding, terminal state, and every
+  depth `4096/4096`; renamed evidence/initial/state also exact; all 256 laws
+  commit. Natural query binding is only `7912/8192` normal and `7844/8192`
+  renamed, yielding `7914/8192` and `7846/8192` exact answers. This misses the
+  frozen 99% positive gate.
+
+  The one allowed read-only attribution finds query errors distributed across
+  all eight held renderer pairs, implicating whole-query mean pooling rather
+  than an absent lexical primitive. Source scrub is near component chance:
+  evidence `1395/6144`, initial `1029/4096`, query `4044/8192`; its downstream
+  state/answer `643/4096` and `2314/8192` prove the frozen 5% ceilings were not
+  calibrated to this structured chance process. The shuffled-table model
+  produces `30/4096` canonical states but `7811/8192` answers because one
+  coherent global register swap is a representational symmetry, not deleted
+  information. Preserve the FAIL without reinterpretation; do not open JRB1
+  confirmation or run width/duration/seed/threshold variants.
+
+  Structurally different successor: a content-addressed register bus trained
+  against positions in a randomly ordered episode table, with table-relative
+  recurrent state and token-level query-to-table evidence. Its negative
+  control must break basis coherence across evidence versus initial/query,
+  rather than apply one valid global permutation.
+
+  Decision:
+  `close_jrb1;_preserve_exact_evidence_initial_execution_evidence;_freeze_content_addressed_table_relative_successor`.

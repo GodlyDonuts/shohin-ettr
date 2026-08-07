@@ -1,6 +1,6 @@
 # DIVERGE-JRB1: Joint Register Binder
 
-**Status:** frozen before final data materialization, model training, or scoring  
+**Status:** development FAIL; confirmation closed
 **Parent:** confirmed DIVERGE-NCP1 command owner and confirmed DIVERGE-EAL2 temporal owner  
 **Objective:** remove exact register-name scanning plus typed initial-state and query-register inputs in one integrated gate
 
@@ -120,3 +120,51 @@ previously qualified command and temporal owners. It would not establish
 open-domain language understanding, unrestricted arithmetic, general reasoning,
 or superiority on public benchmarks. A FAIL would show that this shared dynamic
 pointer does not remove the three register scaffolds under the frozen budget.
+
+## Development result
+
+Final corpus report SHA-256 is
+`d240756fa82052cc204a93596064524dec74ec0a3da8f84199f5106863ecc2dd`;
+training SHA-256 is
+`2181593d3813636a398cd75090577d3e3aaf60f15269cfac509cef9de7000c38`.
+Treatment/control jobs `744822/744823` complete the unchanged schedule from
+identical initialization. Treatment reaches `2048/2048` joint fixed-sample
+exactness. Its 290,177-parameter checkpoint SHA-256 is
+`bc3fc348acac017e0782e09465036640b32819da5245811f418c2b8f3c56552e`.
+
+Frozen development replacement `744828` passes the substantive evidence,
+initial-state, and recurrent-execution path:
+
+- parent NCP1 programs: `4096/4096`;
+- evidence register binding: `6144/6144` normal and renamed;
+- complete transition roles and law commits: `6144/6144` and `256/256`;
+- natural initial-state binding: `4096/4096` normal and renamed;
+- terminal recurrent state: `4096/4096` normal and renamed, with 100% at every
+  depth 12--32;
+- natural query binding: `7912/8192 = 96.5820%` normal and
+  `7844/8192 = 95.7520%` renamed;
+- exact natural-query answers: `7914/8192 = 96.6064%` normal and
+  `7846/8192 = 95.7764%` renamed.
+
+The conjunctive result is FAIL. Report SHA-256 is
+`df8827dbea25428f843e06751bd722c0f52d362f7e8619550d23ffd9c3473171`;
+confirmation remains unopened.
+
+One read-only attribution closes the lane. Query errors are spread across all
+eight held renderer compositions rather than one missing primitive; the worst
+normal pair is `952/1024 = 92.97%`. Mean-pooling the complete query is the
+remaining positive-path bottleneck. Register-source scrub gives
+`1395/6144 = 22.71%` evidence, `1029/4096 = 25.12%` initial, and
+`4044/8192 = 49.37%` query exactness, which is near the relevant grouping and
+binary chance levels. Its downstream state/answer rates (`15.70%/28.25%`)
+show that the frozen 5% ceilings were not chance-calibrated.
+
+The shuffled-table model commits all 256 laws but produces only `30/4096`
+canonical terminal states and `7811/8192` correct answers. This is the expected
+signature of one coherent global coordinate swap: the state tuple is permuted,
+while a correspondingly permuted query still retrieves the correct semantic
+answer. A fixed table rotation is therefore an equivalent representation, not
+an information-deleting control. The preregistered verdict remains FAIL; the
+result is not relabeled. The successor must represent state in table-relative
+content-addressed slots, focus query evidence token-wise, and break owner
+coherence only in causal controls.
