@@ -1,7 +1,7 @@
 # DIVERGE-NPL2: Equivariant Natural Verified Plasticity
 
-Status: conditionally frozen while ENI1 runs. No NPL2 model evaluation may
-start unless ENI1 passes its unchanged semantic-interface gate.
+Status: ENI1 passed its unchanged semantic-interface gate. NPL2 development is
+authorized exactly once from the frozen owners and mechanics below.
 
 ## Capability hypothesis
 
@@ -79,9 +79,16 @@ The confirmation gate is conjunctive:
 10. every protected owner hash, verifier receipt, and source-deletion check is
     exact.
 
+Before confirmation, the single 256-episode development run must satisfy the
+same aggregate semantic floors, at least 80% late-query exactness, remain
+within five points of oracle PL1, beat every non-oracle arm by ten points,
+improve at least 50 points from attempt 1 to attempt 12, and reproduce the
+reset, shuffled-credit, wrong-branch, no-eligibility, rollback, and protected-
+owner controls above. Every legal verifier message is compiled before any
+branch outcome is selected; no hidden outcome may trigger model inference.
+
 A development miss closes NPL2 without owner, rank, width, branch, attempt,
 seed, renderer, prompt, write-budget, or duration variants. A pass opens the
 five frozen confirmation seeds exactly once. Even a confirmation pass is a
 controlled synthetic reasoning result, not yet open-domain reasoning or
 authorization for long pretraining.
-

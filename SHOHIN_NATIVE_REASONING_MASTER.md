@@ -57059,3 +57059,32 @@ an epistemic state, or solve open-domain tasks. The next bounded lane composes
 EIC1 with protected NVE1 evidence parsing and the positive PL1 verified-credit
 mechanics on the source-disjoint natural mini-language. No continuation
 pretraining is authorized by this result.
+
+### DIVERGE-ENI1 and NPL2: the natural interface is admitted end to end
+
+ENI1 replaces only STI1's renderer-inverting QUERY owner with confirmed EIC1,
+while retaining the protected NVE1 EVIDENCE owner and structural WORLD parser.
+Job `744634` closes PASS on the source-disjoint 256-episode NPL1 board: WORLD
+is `7,168/7,168`; QUERY is `8,192/8,192` normally and under mapped mention
+swap; EVIDENCE is `24,574/24,576` jointly exact and `24,576/24,576` on its
+numeric fields. Every renderer clears its frozen floor, source scrub falls to
+chance, the equivariance residual is zero, and all protected hashes remain
+exact. The immutable result SHA-256 is
+`503ec03578c39db2ef3e678842ec84f080f56662aae5c6debad8be4cca34eca5`.
+
+This admits exactly one DIVERGE-NPL2 development run. NPL2 preserves PL1's
+eight coherent branches, twelve attempts, exact verifier, localized update,
+64-scalar session policy, write budget, and matched controls. The changed
+factor is that every legal natural verifier message is compiled before branch
+outcomes exist, only model-decoded transactions may drive PL1 writes, and EIC1
+selects the physical terminal register for each late query after source text
+is removed. Oracle-semantic unit tests reproduce PL1's selected mapping and
+policy matrix exactly; malformed natural credit fails closed.
+
+Five conditional confirmation splits were generated before any NPL2 model
+score: seeds `2026080911`--`2026080915`, 256 episodes each. All alias,
+episode, and natural-program overlaps against every PL1 split, NPL1
+development, and the other new seeds are zero. The frozen corpus report
+SHA-256 is
+`b430a9d30e0cba9a7ebc770674b2146d64d2bd09e45d8b197ac69027ff1f81ba`.
+Those splits remain unopened unless the single development gate passes.

@@ -31777,3 +31777,31 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `qualify_eic1_query_owner;_compose_once_with_nve1_and_pl1;_do_not_continue_pretraining_yet`.
+
+- **2026-08-07 06:39--06:57 EDT** -- **ENI1 passes; one source-deleted NPL2
+  integration is frozen and its confirmation corpus is sealed pre-score.**
+
+  ENI1 job `744634` completes in 4m14s. Structural WORLD parsing is
+  `7,168/7,168`; EIC1 QUERY is `8,192/8,192` normally and under mapped mention
+  swap; NVE1 EVIDENCE is `24,574/24,576` joint, with all `24,576` numeric
+  fields exact. Every renderer floor, source-scrub, entity-rename, projection,
+  and protected-hash condition passes. The read-only result SHA-256 is
+  `503ec03578c39db2ef3e678842ec84f080f56662aae5c6debad8be4cca34eca5`.
+
+  `diverge_npl2_runtime.py` preserves the exact PL1 proposal RNG and local
+  update algebra but accepts only precompiled natural receipts. Every legal
+  PASS/first-error message is inferred before any candidate outcome selects a
+  receipt; malformed target, decoy, attempt, or certificate fields reject.
+  EIC1 supplies late physical-register selectors after source strings are no
+  longer passed to the session runtime. Oracle-semantic tests reproduce PL1's
+  selected mapping and complete 64-scalar policy state exactly.
+
+  The conditional NPL2 confirmation corpus was generated before any NPL2
+  score: five new seeds `2026080911`--`2026080915`, 256 episodes each, with
+  zero alias, episode, or natural-program overlap against all PL1/NPL1 priors
+  and between seeds. Report SHA-256 is
+  `b430a9d30e0cba9a7ebc770674b2146d64d2bd09e45d8b197ac69027ff1f81ba`.
+  It remains unopened unless the single 256-episode development run passes.
+
+  Decision:
+  `run_exactly_one_npl2_development;_open_five_frozen_confirmation_seeds_only_on_pass;_otherwise_close_without_variants`.
