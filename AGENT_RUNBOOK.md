@@ -32629,3 +32629,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `commit_frozen_oqb1;_materialize_and_regenerate_all_boards;_train_one_matched_pair;_score_development_once;_open_confirmation_only_on_pass`.
+
+- **2026-08-07 13:25--13:32 EDT** -- **OQB1 confirms an exact occurrence
+  quotient plus learned semantic attachment at 100% across six boards.**
+
+  Final `data_2ead185_r1` independently regenerates byte-for-byte. It contains
+  100,000 training records, development seed `2026080832`, and sealed seeds
+  `2026080833`--`37`, with zero transitive source/name/identity overlap against
+  CAB1. Data-report/training SHA-256 values are `a11e062c...5e94` and
+  `9622737f...b4fb`. Immutable runtime SHA256SUMS SHA-256 is
+  `9b2d6112...981e8`.
+
+  Matched treatment/control jobs `744843/744844` complete all 1,000 updates
+  from identical state. Treatment fits `2048/2048`; the broken-quotient model
+  fits `17/2048 = 0.8301%`. Development `744845` is exact on NCP1 programs and
+  all treatment/renamed/coherent-reindex component, state, answer, and depth
+  cells. Source scrub, occurrence break, and the independently trained broken
+  model each produce zero states/answers. Evidence-only reindexing collapses
+  to `3/4096` states and `76/8192` answers. Development SHA-256 is
+  `d78e1622...87e9`.
+
+  Five unchanged confirmation jobs `744846`--`744850` all pass. Aggregate
+  treatment, unseen rename, and coherent reindex are each `20,480/20,480`
+  terminal states and `40,960/40,960` answers. Source scrub, occurrence break,
+  and broken model are each exactly zero states/answers. Cross-owner
+  reindexing is `9/20,480` states and `453/40,960` answers. Aggregate SHA-256
+  is `da5f8807...44a3`; every checkpoint/report is hash-matched and read-only
+  locally and on Newton.
+
+  Qualify only this controlled mechanism: generic exact repeated-surface
+  identity becomes an anonymous episode-local address, while the neural owner
+  learns value/query attachment. Alias/coreference equivalence, exact numeric
+  spans, exact bounded law support, and the modular algebra remain outside the
+  claim.
+
+  Decision:
+  `promote_oqb1_as_qualified_identity_bus;_preserve_weights;_next_remove_the_exact_numeric_span_carrier_without_retraining_qualified_owners`.

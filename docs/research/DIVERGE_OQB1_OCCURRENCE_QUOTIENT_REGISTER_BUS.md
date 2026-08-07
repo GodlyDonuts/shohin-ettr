@@ -1,6 +1,6 @@
 # DIVERGE-OQB1: Occurrence-Quotient Register Bus
 
-**Status:** frozen before final corpus materialization or neural scoring
+**Status:** confirmed across development and five fixed confirmation seeds
 
 **Parents:** confirmed NCP1 command owner, confirmed EAL2 temporal owner,
 closed CAB1 attribution
@@ -122,3 +122,49 @@ open-domain language understanding, or public benchmark capability. It permits
 composition with the already-confirmed model-owned executor and the next
 single scaffold-removal gate. A failure closes exact-occurrence quotient plus
 this neural semantic attachment owner.
+
+## Immutable result
+
+OQB1 passes every frozen gate. Final data `data_2ead185_r1` contains 100,000
+training records, 256 development episodes, and five 256-episode confirmation
+boards. It independently regenerates byte-for-byte and has zero source, name,
+or identity overlap against the transitive CAB1 lineage. Data-report and
+training SHA-256 values are
+`a11e062cb41f81096de32f164a181928908a4750b6c9a8bd0d924f4cec6c5e94`
+and
+`9622737f0c36ae80bd5f3acdf0e1f57e5ef79fa6a918ef58bb75c6411d3eb4fb`.
+The immutable Newton runtime has SHA256SUMS SHA-256
+`9b2d6112b09b97e8a9446de3dde60f172cf13531d1c4b0b9b618b4cd111981e8`.
+
+Matched jobs `744843/744844` complete all 1,000 updates from identical
+initialization. Treatment fits `2048/2048` fixed rows in 82.29 seconds. The
+broken-quotient control fits only `17/2048 = 0.8301%`; its final loss remains
+`2.0835`, approximately three independent binary cross-entropies. Treatment
+and control checkpoint SHA-256 values are
+`8c4e9b83230e75edbc146d1aa43375d14202783057eeb22bbb8ec6c5b60c8ab7`
+and
+`ec353abfd212e6a166504dc258b3a9e96095b05cc4c2f32517da43ae57042baa`.
+
+Development job `744845` passes every condition. NCP1 programs, evidence,
+temporal role, complete role, initial state, late query, law commit, terminal
+state, late answer, and every depth are exactly 100% for treatment, unseen
+renaming, and coherent table reindexing. Source scrub and inference-time
+occurrence break produce zero committed laws, states, and answers. The
+independently trained broken model also produces zero states/answers. The
+evidence-only basis break reaches `3/4096 = 0.0732%` states and
+`76/8192 = 0.9277%` answers. Development report SHA-256 is
+`d78e1622746a951cb7a82207986aa5c8a8ef93e16587976f759eb183287c87e9`.
+
+Confirmation jobs `744846`--`744850` each pass unchanged. Across all five
+seeds, treatment, unseen renaming, and coherent reindexing are each
+`20,480/20,480` terminal states and `40,960/40,960` late answers. Source scrub,
+occurrence break, and the broken model are each `0/20,480` states and
+`0/40,960` answers. Cross-owner reindexing is `9/20,480` states and
+`453/40,960` answers. Aggregate SHA-256 is
+`da5f88071ffd75ec64a3637d5657592cd9c494566d4b57212f1b762163f344a3`.
+
+The qualified claim remains narrow but useful: exact repeated surface identity
+is now a stable discrete address primitive, and the neural owner learns
+renderer-general semantic attachment into that anonymous basis. OQB1 does not
+learn alias/coreference equivalence. The next scaffold-removal target is the
+exact numeric-span carrier; qualified OQB1/EAL2/NCP1 weights remain immutable.
