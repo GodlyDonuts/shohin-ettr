@@ -54,12 +54,34 @@ Stokes must reproduce all three canonical hashes before neural admission.
 
 ## Neural admission boundary
 
-No neural CGL1 run starts until QTE1 closes and a trainer/control contract is
-frozen. At minimum, treatment must be compared against the closed GTI1 direct
-role result and a matched flipped-outcome control. A small-model pass requires
-at least `765/768`, every mode `254/256`, every renderer `127/128`, mapped
-mention-swap equivariance `765/768`, and flipped control at most `430/768`.
-Equal-outcome transactions must agree with their paired distinct-outcome
-orbits rather than collapse to arbitrary state values. A miss closes the exact
-outcome mechanism without seed, width, duration, renderer, or threshold
-variants.
+QTE1 is closed and independent Stokes job `767029` reproduces all three data
+hashes exactly. The frozen neural interpreter uses each parent model's final
+eight blocks with LoRA rank 16 and alpha 32. For each complete candidate it
+scores `YES` versus `NO` likelihood for the fixed claim that the candidate is
+the requested source and the other is the distractor. The transaction
+distribution is trained only through the terminal-outcome marginal. No direct
+role or transaction label enters the candidate-visible or supervisor files.
+
+The complete 300,000-row objective is evaluated through exact sufficient
+statistics: each of 50,000 semantic pairs has two clause orders, two
+informative distinct-outcome copies, and one zero-gradient equal-outcome copy.
+The compressed mean multiplies source cross-entropy by `2/3`, exactly matching
+the six-row mean. A `0.25` symmetric clause-order consistency penalty aligns
+the two distributions by physical mention identity without revealing which
+identity is TARGET. Training is one deterministic epoch over 50,000 pairs,
+pair batch 32, AdamW `1e-4` cosine decay, seed `2026080702`.
+
+Three independent single-H100 arms run concurrently: protected Shohin,
+SmolLM2-135M, and a matched SmolLM2 control whose distinct terminal outcomes
+are flipped. All receive identical data, order, updates, objective geometry,
+and evaluation. Development uses the source-disjoint CCR1 board at SHA-256
+`299237068f436ba33a68487b5300fcd724f8c98bd8bfe6b1916a4ebc7541ebf7`.
+
+A treatment pass requires at least `765/768`, every mode `254/256`, every
+renderer `127/128`, mapped mention-swap equivariance `765/768`, a context-
+scrub drop of at least 250, bit-exact entity-renaming behavior, and an unchanged
+frozen parent. The flipped control must remain at most `430/768`. If both
+treatments pass, selection is deterministic by exact count, signed margin,
+then SmolLM2. A development pass admits exactly one fresh balanced
+confirmation board. A miss closes the exact outcome mechanism without seed,
+width, duration, renderer, prompt, or threshold variants.
