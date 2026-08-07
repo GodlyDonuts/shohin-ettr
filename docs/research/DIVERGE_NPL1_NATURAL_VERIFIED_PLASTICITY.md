@@ -1,8 +1,9 @@
 # DIVERGE-NPL1: Stage-Typed Natural Verified Plasticity
 
-Status: conditional pass-only successor drafted while the frozen STI1 gate is
-running. NPL1 is inactive unless STI1 passes its unchanged confirmation gate.
-No NPL1 confirmation data may be generated or evaluated before that admission.
+Status: not admitted and closed before training/evaluation. STI1 failed its
+unchanged confirmation gate, so no NPL1 confirmation data were generated and
+no natural plastic write was executed. The prepared development-only corpus
+and semantic-admission code remain provenance artifacts, not results.
 
 ## 1. Capability hypothesis
 
@@ -138,3 +139,24 @@ seed, or threshold. One read-only attribution may distinguish semantic
 compilation failure from policy-credit failure. A pass qualifies a controlled
 natural verified-plasticity mechanism; it still does not authorize
 continuation pretraining or establish open-domain reasoning.
+
+## 9. Admission result
+
+STI1 confirmation reaches only `640/768` QUERY transactions and fails its
+renderer, mode, sensitive-answer, invariant-answer, and abstention floors.
+The missing query semantics are a complete role inversion on one held-out
+renderer; the protected EVIDENCE path remains `3,072/3,072`. Natural
+branch-local credit therefore cannot distinguish correct from inverted query
+transactions reliably enough to satisfy this contract.
+
+The development corpus contains 256 unique episodes, 24,576 evidence plans,
+and 8,192 queries with zero overlap against prior PL1 splits. Its public,
+assessor, and report SHA-256 values are
+`a38381a01bfe50d76ac50acf80ec814664508534228936493eec6e91039ae4af`,
+`da5ca87479960317d92c47ead18e70741b41a4eae33e329fdb40db3b2e494583`,
+and `45425ba00ef98f353eed681047956a8f682c4b7366c9dda5c9ab25849dcd4206`.
+It is retained read-only. `confirmation_generated=false` remains exact.
+
+Conditional semantic jobs `744406/744412` were canceled without allocation.
+Oracle-typed PL1 remains the protected positive mechanics result; raw-language
+PL1 remains blocked pending a structurally different semantic compiler.

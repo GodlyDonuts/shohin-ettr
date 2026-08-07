@@ -31481,3 +31481,36 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_rrg1_universal_role_sharing;_preserve_query_owner;_freeze_sti1_stage_typed_composition_without_retraining`.
+
+- **2026-08-06 21:45--23:37 EDT** -- **DIVERGE-STI1 passes development but
+  fails sealed confirmation through one complete renderer inversion; natural
+  NPL1 is not admitted.**
+
+  Commit `8880157` implements a zero-training composite: protected TOL3 owns
+  WORLD, protected NVE1 owns full EVIDENCE transactions, frozen RRG1 owns
+  QUERY, and the exact rational runtime executes the sealed packet. Runtime
+  archive SHA-256 is `f85c5f22...2890`. Job `744404` on `evc26` passes all
+  tests and the opened development board at WORLD `256/256`, EVIDENCE
+  `3,072/3,072`, QUERY `768/768`, and sealing `256/256`; development result
+  SHA-256 is `d150d38d...2890`.
+
+  The admitted CCR1 confirmation closes STI1. WORLD, EVIDENCE, sealing, and
+  extensional parity remain `256/256`, `3,072/3,072`, `256/256`, and
+  `256/256`, but QUERY falls to `640/768`; sensitive/invariant answers are
+  `213/256 / 215/256`, no-evidence abstention `246/256`, and partial
+  underdetermination `214/256`. Query renderers 1--5 are each `128/128`, while
+  renderer 0 is exactly `0/128`. Forced role-slot swap makes renderer 0 exact
+  and all others zero. Marker deletion changes no prediction, while entity
+  renaming changes no assignment or logit bit. The failure is an unseen-
+  renderer semantic inversion, not evidence, execution, capacity, or duration.
+
+  Confirmation SHA-256 is `02ba1cad...3f59`; protected owner hashes remain
+  exact and no training update occurred. Job `744404` exits `1` by design
+  after writing the negative; fail-closed job `744410` preserves the existing
+  fail without rerun. Conditional NPL1 jobs `744406/744412` are canceled
+  without allocation. NPL1 confirmation data remain ungenerated. Close STI1
+  and raw-language NPL1 without variants; preserve oracle PL1 and return to a
+  structurally different pretrained semantic compiler.
+
+  Decision:
+  `close_sti1_renderer_shortcut;_do_not_admit_npl1;_preserve_pl1_oracle_mechanics;_freeze_a_pretrained_counterfactual_semantic_compiler`.

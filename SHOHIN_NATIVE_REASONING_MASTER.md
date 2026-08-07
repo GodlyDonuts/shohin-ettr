@@ -56918,3 +56918,28 @@ connection. The opened board must reach at least `3,070/3,072` evidence,
 `765/768` query, and `255/256` sealed episodes before the still-unopened CCR1
 board can be accessed. A pass qualifies one natural PL1 integration; a miss
 closes this owner composition without local variants.
+
+### DIVERGE-STI1 result: perfect development hides a held-renderer inversion
+
+STI1 passes development at WORLD `256/256`, EVIDENCE `3,072/3,072`, QUERY
+`768/768`, and sealing `256/256`, legitimately opening the frozen
+confirmation board. Confirmation preserves WORLD `256/256`, EVIDENCE
+`3,072/3,072`, all 256 sealed episodes, and exact execution, but QUERY falls
+to `640/768`. Sensitive answers are `213/256`, invariant answers `215/256`,
+no-evidence abstention `246/256`, and partial underdetermination `214/256`.
+
+The error is one complete semantic inversion: five query renderers are each
+`128/128`, while the held renderer is `0/128`. A role-slot swap makes only the
+held renderer exact. Marker deletion changes no predictions, proving that the
+purported semantic marker is not causally used. Entity renaming remains bit-
+invariant, all protected owner hashes remain exact, and no training update
+occurred. STI1 therefore improved frozen SRP1 from `522/768` to `640/768` on
+this board without producing a transferable semantic owner.
+
+Confirmation SHA-256 is
+`02ba1cadf2200f6bbb6edac039c6a18f776a1396be67e8500072261393973f59`.
+STI1 and its conditional natural PL1 successor are closed without local
+variants. The positive PL1 result remains oracle-typed. The next admissible
+lane must replace the fresh surface classifier with a structurally different,
+pretrained and counterfactually grounded semantic compiler before plasticity
+can consume natural transactions.
