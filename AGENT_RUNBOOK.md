@@ -12,9 +12,11 @@
 > `Qwen/Qwen3.5-4B@851bf6e...cd0a`: hard query-conditioned pointers, whole-slot
 > transactions, fixed recurrent depth, and zero-initialized same-sequence
 > residual injection. Its 256-update matched QPT1/B1 gate is frozen; no QPT1
-> CUDA score exists yet. Shared model cache is warm; corrected preflight job
-> `745166` changes only the Python environment after infrastructure-only job
-> `745151` failed before importing Transformers.
+> capability score exists yet. Exact local-only preflight `745178` passes on
+> `evc50`: `4,539,265,536` parameters, 8.56 GiB peak, and successful native
+> generation; report SHA-256 is `c07696aa...5d781f`. Canary `745179` is queued;
+> matched QPT1/B1 jobs `745181/745182` and fourteen domain evaluations
+> `745183--745196` are dependency-gated behind it. Do not alter this chain.
 
 > **CAB1 FREEZE — 2026-08-07:** JRB1 remains a development FAIL because its
 > mean-pooled natural query owner reached 96.58%, although evidence, initial
@@ -33050,3 +33052,29 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finish_cpu_tests_and_immutable_packaging;_pass_one_two_update_4b_canary;_then_run_exactly_one_matched_qpt1_vs_b1_development_pair`.
+
+- **2026-08-07 17:59--18:16 EDT** -- **Pinned Qwen3.5-4B passes the exact
+  local-only preflight and the complete QPT1 decision chain is admitted.**
+
+  Private commit `9d5fa57` adds fail-closed local-model preflight without
+  changing model, tokenizer, prompt, or generation semantics. Immutable
+  runtime `qwen4b_preflight_9d5fa57_r1` has SHA256SUMS SHA-256
+  `e3637533...7158f`. Job `745178` loads exact revision
+  `851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a` from the fully materialized
+  Newton artifact and completes in 27 seconds on `evc50`. It identifies
+  `Qwen3_5ForConditionalGeneration`, counts `4,539,265,536` parameters, peaks
+  at `9,187,179,520` CUDA bytes, and generates 128 native thinking tokens at
+  `23.1255` tok/s. Report SHA-256 is
+  `c07696aa5bb7da32cc6dc3f910372c8af03f97b612c0a0f8fbb4c608f15d781f`.
+
+  Two-update integration canary `745179` is queued on the normal H100 lane.
+  Exact matched 256-update QPT1/B1 jobs `745181/745182` are held
+  `afterok:745179`. Seven identical evaluation jobs per arm are already held
+  behind their own training job: QPT1 `745183--745189`, B1
+  `745190--745196`. The account has no valid `highgpu`, `short`, or `ucfit`
+  association, and every normal H100 is allocated; the scheduler estimates
+  canary start at 20:03 EDT. Do not run an alternative model, QPT variant, or
+  altered evaluator while this exact chain is pending.
+
+  Decision:
+  `let_canary_run_once;_on_success_run_the_matched_pair;_evaluate_all_domains_in_parallel;_apply_the_frozen_promotion_rule`.

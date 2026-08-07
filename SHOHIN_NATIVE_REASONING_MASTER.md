@@ -57481,7 +57481,7 @@ Five-domain macro rose only `22.901% -> 23.908%`, and solved count rose
 `106 -> 119`. This misses the frozen `+3` macro and `+15` solved gates and
 violates the no-regression rule. Exact QST1 is closed, not scaled.
 
-### QPT1 stronger-host successor: frozen, awaiting CUDA evidence
+### QPT1 stronger-host successor: preflight passed, awaiting training evidence
 
 The next product gate uses exact pinned post-trained Qwen3.5-4B revision
 `851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a`. QPT1 replaces QST1's global
@@ -57490,5 +57490,10 @@ pointers, eight whole-source-read/whole-state-write recurrent transactions,
 fixed depth, and a zero-initialized gated residual on existing prompt tokens.
 This keeps sequence length and positional geometry identical to the matched
 LoRA path. A 256-update QPT1/B1 matched gate is frozen in
-`docs/research/DIVERGE_QPT1_QWEN4B_PRODUCT_GATE.md`; no QPT1 CUDA score exists
-yet.
+`docs/research/DIVERGE_QPT1_QWEN4B_PRODUCT_GATE.md`. Exact local-only
+preflight `745178` passed for the 4.539B-parameter host at 8.56 GiB peak;
+report SHA-256 is
+`c07696aa5bb7da32cc6dc3f910372c8af03f97b612c0a0f8fbb4c608f15d781f`.
+Canary `745179`, matched training `745181/745182`, and fourteen parallel
+domain evaluations `745183--745196` form the frozen dependency chain. No QPT1
+capability score exists yet.
