@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import asdict
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -29,12 +30,119 @@ from hf_product_reasoning_train import (
 )
 
 
+RESUME_MATCH_FIELDS = (
+    "architecture",
+    "arm",
+    "model_root",
+    "model_revision",
+    "data_sha256",
+    "selected_rows",
+    "seed",
+    "data_seed",
+    "lora_layers",
+    "lora_rank",
+    "lora_alpha",
+    "workspace_config",
+    "workspace_architecture_sha256",
+    "base_checkpoint_sha256",
+)
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def load_sag1_training_checkpoint(
+    path: Path,
+    model: SAG1ProductModel,
+    optimizer: torch.optim.Optimizer,
+    expected_metadata: dict[str, Any],
+) -> tuple[int, dict[str, Any]]:
+    """Restore a SAG1 training checkpoint and fail closed on lineage drift."""
+
+    payload = torch.load(path, map_location="cpu", weights_only=False)
+    if payload.get("schema") != "shohin-hf-product-reasoning-checkpoint-v1":
+        raise ProductReasoningTrainError("SAG1 resume checkpoint schema differs")
+    saved = payload.get("trainable_state")
+    metadata = payload.get("metadata")
+    optimizer_state = payload.get("optimizer")
+    if not isinstance(saved, dict) or not isinstance(metadata, dict):
+        raise ProductReasoningTrainError("SAG1 resume checkpoint is incomplete")
+    if not isinstance(optimizer_state, dict):
+        raise ProductReasoningTrainError("SAG1 resume optimizer state is missing")
+    mismatches = {
+        field: {"expected": expected_metadata.get(field), "actual": metadata.get(field)}
+        for field in RESUME_MATCH_FIELDS
+        if metadata.get(field) != expected_metadata.get(field)
+    }
+    if mismatches:
+        raise ProductReasoningTrainError(
+            f"SAG1 resume metadata differs: {json.dumps(mismatches, sort_keys=True)}"
+        )
+    current = {
+        name: parameter
+        for name, parameter in model.named_parameters()
+        if parameter.requires_grad
+    }
+    if set(saved) != set(current):
+        raise ProductReasoningTrainError("SAG1 resume parameter contract differs")
+    with torch.no_grad():
+        for name, parameter in current.items():
+            tensor = saved[name]
+            if tensor.shape != parameter.shape:
+                raise ProductReasoningTrainError(
+                    f"SAG1 resume tensor shape differs: {name}"
+                )
+            parameter.copy_(tensor.to(device=parameter.device, dtype=parameter.dtype))
+    optimizer.load_state_dict(optimizer_state)
+    for state in optimizer.state.values():
+        for key, value in state.items():
+            if isinstance(value, torch.Tensor):
+                state[key] = value.to(next(iter(current.values())).device)
+    update = payload.get("update")
+    if not isinstance(update, int) or update <= 0:
+        raise ProductReasoningTrainError("SAG1 resume update is invalid")
+    return update, metadata
+
+
+def _charged_tokens_before(
+    *,
+    tokenizer: Any,
+    batch_stream: list[list[dict[str, str]]],
+    microsteps: int,
+    max_sequence_length: int,
+    workspace_slots: int,
+) -> int:
+    total = 0
+    for microstep in range(microsteps):
+        _, response_rows = _tokenize_rows(
+            tokenizer,
+            batch_stream[microstep % len(batch_stream)],
+            max_sequence_length,
+            workspace_slots,
+        )
+        total += sum(len(row) for row in response_rows)
+    return total
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     from transformers import AutoTokenizer
 
-    if args.output.exists():
-        raise ProductReasoningTrainError(f"output already exists: {args.output}")
-    args.output.mkdir(parents=True)
+    if args.resume_checkpoint is None:
+        if args.output.exists():
+            raise ProductReasoningTrainError(f"output already exists: {args.output}")
+        args.output.mkdir(parents=True)
+    else:
+        if not args.output.is_dir() or not args.resume_checkpoint.is_file():
+            raise ProductReasoningTrainError("SAG1 resume output/checkpoint is missing")
+        if args.resume_checkpoint.resolve().parent != args.output.resolve():
+            raise ProductReasoningTrainError("SAG1 resume checkpoint is outside output")
+        if (args.output / "report.json").exists():
+            raise ProductReasoningTrainError("SAG1 output is already complete")
     random.seed(args.seed)
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
@@ -131,13 +239,35 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         weight_decay=0.01,
         fused=True,
     )
+    resume_update = 0
+    resume_sha256 = None
+    if args.resume_checkpoint is not None:
+        resume_update, _ = load_sag1_training_checkpoint(
+            args.resume_checkpoint,
+            model,
+            optimizer,
+            metadata,
+        )
+        if resume_update >= args.updates:
+            raise ProductReasoningTrainError("SAG1 resume is already at target update")
+        resume_sha256 = _sha256_file(args.resume_checkpoint)
+        metadata["resume_checkpoint"] = str(args.resume_checkpoint.resolve())
+        metadata["resume_checkpoint_sha256"] = resume_sha256
+        metadata["resume_update"] = resume_update
     optimizer.zero_grad(set_to_none=True)
     model.train()
     torch.cuda.reset_peak_memory_stats()
     started = time.monotonic()
-    update = 0
-    microstep = 0
-    logical_tokens = 0
+    update = resume_update
+    microstep = resume_update * args.gradient_accumulation
+    logical_tokens = _charged_tokens_before(
+        tokenizer=tokenizer,
+        batch_stream=batch_stream,
+        microsteps=microstep,
+        max_sequence_length=args.max_sequence_length,
+        workspace_slots=model.sequence_workspace_slots(),
+    )
+    segment_logical_tokens = 0
     trace: list[dict[str, float | int]] = []
 
     while update < args.updates:
@@ -157,6 +287,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             scaled_loss = loss / args.gradient_accumulation
         scaled_loss.backward()
         logical_tokens += int(metrics["logical_charged_tokens"])
+        segment_logical_tokens += int(metrics["logical_charged_tokens"])
         microstep += 1
         if microstep % args.gradient_accumulation:
             continue
@@ -179,7 +310,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "learning_rate": learning_rate,
                 **metrics,
                 "logical_charged_tokens": logical_tokens,
-                "logical_tokens_per_second": logical_tokens / elapsed,
+                "logical_tokens_per_second": segment_logical_tokens / elapsed,
             }
             trace.append(event)
             print(json.dumps(event, sort_keys=True), flush=True)
@@ -206,13 +337,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "max_sequence_length": args.max_sequence_length,
         "learning_rate": args.learning_rate,
         "logical_charged_tokens": logical_tokens,
+        "segment_logical_charged_tokens": segment_logical_tokens,
         "elapsed_seconds": elapsed,
-        "logical_tokens_per_second": logical_tokens / elapsed,
+        "logical_tokens_per_second": segment_logical_tokens / elapsed,
         "peak_gpu_memory_bytes": int(torch.cuda.max_memory_allocated()),
         "frozen_parameter_sha256_before": frozen_before,
         "frozen_parameter_sha256_after": frozen_after,
         "frozen_parameters_unchanged": frozen_before == frozen_after,
         "trace": trace,
+        "resume_checkpoint_sha256": resume_sha256,
+        "resume_update": resume_update or None,
     }
     _atomic_json(args.output / "report.json", report)
     return report
@@ -228,6 +362,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--base-checkpoint", type=Path, required=True)
     parser.add_argument("--base-checkpoint-sha256", required=True)
+    parser.add_argument("--resume-checkpoint", type=Path)
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--updates", type=int, default=256)
