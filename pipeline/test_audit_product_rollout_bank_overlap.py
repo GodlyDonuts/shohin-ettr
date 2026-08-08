@@ -43,3 +43,42 @@ def test_overlap_duplicate_and_missing_answer_fail(tmp_path: Path) -> None:
     assert report["rows_with_reference_ngram_hit"] == 3
     assert report["duplicate_normalized_rows"] == 1
     assert report["missing_answers"] == 1
+
+
+def test_common_wrapper_is_reported_but_not_treated_as_content_overlap(
+    tmp_path: Path,
+) -> None:
+    candidate = tmp_path / "candidate.jsonl"
+    reference = tmp_path / "reference.jsonl"
+    wrapper = "solve the following problem and put only the answer inside the box"
+    write_rows(
+        reference,
+        [
+            {"question": f"{wrapper} reference item {index}", "answer": str(index)}
+            for index in range(100)
+        ],
+    )
+    write_rows(
+        candidate,
+        [{"question": f"{wrapper} entirely novel item", "answer": "x"}],
+    )
+    report = audit(candidate, [reference], ngram=5)
+    assert report["rows_with_reference_ngram_hit"] == 1
+    assert report["rows_with_informative_reference_ngram_hit"] == 0
+    assert report["admitted"] is True
+
+
+def test_rare_near_duplicate_still_fails(tmp_path: Path) -> None:
+    candidate = tmp_path / "candidate.jsonl"
+    reference = tmp_path / "reference.jsonl"
+    write_rows(
+        reference,
+        [{"question": "alpha beta gamma delta epsilon", "answer": "1"}],
+    )
+    write_rows(
+        candidate,
+        [{"question": "new alpha beta gamma delta ending", "answer": "2"}],
+    )
+    report = audit(candidate, [reference], ngram=4)
+    assert report["rows_with_informative_reference_ngram_hit"] == 1
+    assert report["admitted"] is False

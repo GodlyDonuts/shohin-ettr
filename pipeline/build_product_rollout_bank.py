@@ -7,14 +7,15 @@ import argparse
 from collections import Counter, defaultdict
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import re
 from typing import Any
 
-
 SCHEMA = "shohin-product-rollout-bank-v1"
 TASK_BY_GROUP = {"math": "math500", "science": "bbh_logic"}
+WORD = re.compile(r"\w+")
 
 
 class ProductRolloutBankError(RuntimeError):
@@ -38,10 +39,20 @@ def _question(row: dict[str, Any]) -> str | None:
 
 
 def _identity(question: str) -> str:
-    normalized = re.sub(r"\s+", " ", question).strip().casefold()
-    if not normalized:
+    words = _normalized_words(question)
+    if not words:
         raise ProductRolloutBankError("question identity is empty")
-    return hashlib.sha256(normalized.encode()).hexdigest()
+    return hashlib.sha256(" ".join(words).encode()).hexdigest()
+
+
+def _normalized_words(question: str) -> tuple[str, ...]:
+    return tuple(WORD.findall(question.casefold()))
+
+
+def _shingles(words: tuple[str, ...], width: int) -> set[tuple[str, ...]]:
+    if len(words) < width:
+        return set()
+    return {words[index : index + width] for index in range(len(words) - width + 1)}
 
 
 def _parse_counts(values: list[str]) -> dict[str, int]:
@@ -65,9 +76,16 @@ def _parse_counts(values: list[str]) -> dict[str, int]:
     return counts
 
 
-def _excluded_identities(paths: list[Path]) -> tuple[set[str], list[dict[str, Any]]]:
+def _excluded_constraints(
+    paths: list[Path],
+    *,
+    ngram_width: int,
+    max_reference_ngram_document_rate: float,
+) -> tuple[set[str], set[tuple[str, ...]], list[dict[str, Any]], int]:
     identities: set[str] = set()
+    shingle_documents: Counter[tuple[str, ...]] = Counter()
     reports: list[dict[str, Any]] = []
+    question_documents = 0
     for path in paths:
         if not path.is_file():
             raise ProductRolloutBankError(f"exclude source is missing: {path}")
@@ -86,7 +104,11 @@ def _excluded_identities(paths: list[Path]) -> tuple[set[str], list[dict[str, An
                 question = _question(row)
                 if question:
                     identities.add(_identity(question))
+                    shingle_documents.update(
+                        _shingles(_normalized_words(question), ngram_width)
+                    )
                     questions += 1
+                    question_documents += 1
         reports.append(
             {
                 "path": str(path.resolve()),
@@ -95,7 +117,15 @@ def _excluded_identities(paths: list[Path]) -> tuple[set[str], list[dict[str, An
                 "questions": questions,
             }
         )
-    return identities, reports
+    document_ceiling = max(
+        1, math.ceil(question_documents * max_reference_ngram_document_rate)
+    )
+    informative_shingles = {
+        shingle
+        for shingle, documents in shingle_documents.items()
+        if documents <= document_ceiling
+    }
+    return identities, informative_shingles, reports, document_ceiling
 
 
 def build_bank(
@@ -106,12 +136,29 @@ def build_bank(
     *,
     counts: dict[str, int],
     seed: int,
+    ngram_width: int = 13,
+    max_reference_ngram_document_rate: float = 0.001,
 ) -> dict[str, Any]:
     if not sources:
         raise ProductRolloutBankError("at least one source is required")
     if output.exists() or report_path.exists():
         raise ProductRolloutBankError("refusing to replace rollout bank output")
-    excluded, exclude_reports = _excluded_identities(excludes)
+    if ngram_width <= 1:
+        raise ProductRolloutBankError("ngram width must exceed one")
+    if not 0.0 <= max_reference_ngram_document_rate < 1.0:
+        raise ProductRolloutBankError(
+            "max reference ngram document rate must be in [0, 1)"
+        )
+    (
+        excluded,
+        excluded_shingles,
+        exclude_reports,
+        informative_document_ceiling,
+    ) = _excluded_constraints(
+        excludes,
+        ngram_width=ngram_width,
+        max_reference_ngram_document_rate=max_reference_ngram_document_rate,
+    )
     counters: Counter[str] = Counter()
     source_reports: list[dict[str, Any]] = []
     candidates: dict[str, dict[str, Any]] = {}
@@ -129,7 +176,9 @@ def build_bank(
                 try:
                     row = json.loads(line)
                 except json.JSONDecodeError as exc:
-                    raise ProductRolloutBankError(f"malformed source JSONL: {path}") from exc
+                    raise ProductRolloutBankError(
+                        f"malformed source JSONL: {path}"
+                    ) from exc
                 question = _question(row)
                 answer = row.get("expected_answer_normalized")
                 group = str(row.get("training_group") or row.get("domain") or "")
@@ -149,6 +198,13 @@ def build_bank(
                 if identity in excluded:
                     counters["excluded_overlap"] += 1
                     source_counter["excluded_overlap"] += 1
+                    continue
+                if (
+                    _shingles(_normalized_words(question), ngram_width)
+                    & excluded_shingles
+                ):
+                    counters["excluded_informative_ngram_overlap"] += 1
+                    source_counter["excluded_informative_ngram_overlap"] += 1
                     continue
                 candidate = {
                     "schema": SCHEMA,
@@ -222,6 +278,9 @@ def build_bank(
         "schema": SCHEMA,
         "status": "complete",
         "seed": seed,
+        "ngram_width": ngram_width,
+        "max_reference_ngram_document_rate": max_reference_ngram_document_rate,
+        "informative_ngram_document_ceiling": informative_document_ceiling,
         "counts_requested": counts,
         "counts_selected": selected_counts,
         "rows": len(selected),
@@ -250,6 +309,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
     parser.add_argument("--seed", type=int, default=20260803)
+    parser.add_argument("--ngram-width", type=int, default=13)
+    parser.add_argument(
+        "--max-reference-ngram-document-rate", type=float, default=0.001
+    )
     args = parser.parse_args()
     args.counts = _parse_counts(args.count)
     return args
@@ -264,6 +327,8 @@ def main() -> int:
         args.report,
         counts=args.counts,
         seed=args.seed,
+        ngram_width=args.ngram_width,
+        max_reference_ngram_document_rate=(args.max_reference_ngram_document_rate),
     )
     print(json.dumps(report, sort_keys=True))
     return 0

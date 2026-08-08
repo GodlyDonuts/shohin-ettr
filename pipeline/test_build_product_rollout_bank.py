@@ -73,3 +73,51 @@ def test_build_bank_refuses_overwrite(tmp_path: Path) -> None:
             counts={"math": 1},
             seed=1,
         )
+
+
+def test_build_bank_excludes_punctuation_variant_and_rare_near_overlap(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "source.jsonl"
+    excluded = tmp_path / "excluded.jsonl"
+    _write(
+        excluded,
+        [{"question": "Alpha, beta gamma delta epsilon!"}],
+    )
+    _write(
+        source,
+        [
+            {
+                "question": "alpha beta gamma delta epsilon",
+                "expected_answer_normalized": "1",
+                "training_group": "math",
+                "verification": "expected_answer_match_v1",
+            },
+            {
+                "question": "new alpha beta gamma delta ending",
+                "expected_answer_normalized": "2",
+                "training_group": "math",
+                "verification": "expected_answer_match_v1",
+            },
+            {
+                "question": "entirely fresh unrelated content here",
+                "expected_answer_normalized": "3",
+                "training_group": "math",
+                "verification": "expected_answer_match_v1",
+            },
+        ],
+    )
+    output = tmp_path / "bank.jsonl"
+    report = build_bank(
+        [source],
+        [excluded],
+        output,
+        tmp_path / "report.json",
+        counts={"math": 1},
+        seed=1,
+        ngram_width=4,
+    )
+    selected = [json.loads(line) for line in output.read_text().splitlines()]
+    assert selected[0]["question"] == "entirely fresh unrelated content here"
+    assert report["counters"]["excluded_overlap"] == 1
+    assert report["counters"]["excluded_informative_ngram_overlap"] == 1
