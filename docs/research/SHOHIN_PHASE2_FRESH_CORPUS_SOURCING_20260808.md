@@ -137,9 +137,15 @@ documents and independently verifying the complete output. It emitted
 `295,999,956` target tokens from `308,147,626` source tokens, a `3.942%`
 reduction, with manifest/report payload SHA-256 values `f2ce81ed...c93e` and
 `9a30a5fd...78c7`. Its pass released `768276--768278` concurrently on three
-48-core Stokes nodes. Exact and near deduplication will both rerun on final
-49K outputs. Formal Logic remains zero weight because its source has no domain
-provenance and cannot satisfy the domain-holdout gate.
+48-core Stokes nodes. The final-token near-audit specification preserves the
+frozen source priority: peS2O, Essential-Web, FinePDF, then FineWeb. It is
+dependency-gated on all conversions and uses the existing exact-confirmed
+five-token-shingle algorithm and thresholds without alteration. Immutable
+runtime SHA256SUMS SHA-256 is `22d958d8...c947`, specification SHA-256 is
+`8fd3a734...0344`, and dependency-held job `768282` will release only after
+all three conversions succeed. Formal Logic remains zero weight and is absent
+from that specification because its source has no domain provenance and
+cannot satisfy the domain-holdout gate.
 
 Essential-Web job `768237` separately exercises the complete historical-32K
 holdout creator and independent verifier as a transport-mechanics canary; its

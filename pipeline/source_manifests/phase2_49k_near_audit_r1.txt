@@ -1,0 +1,4 @@
+pes2o=/lustre/fs1/home/sa305415/shohin/artifacts/shards/pes2o_sensitive_smollm2_49k_r2::/lustre/fs1/home/sa305415/shohin/runtime/phase2_retokenize_a481bc4_r4/pipeline/retokenize_v3_corpus.py
+essential_web=/lustre/fs1/home/sa305415/shohin/artifacts/shards/essential_web_phase2_exact_smollm2_49k_r4::/lustre/fs1/home/sa305415/shohin/runtime/phase2_retokenize_a481bc4_r4/pipeline/retokenize_v3_corpus.py
+finepdf_core=/lustre/fs1/home/sa305415/shohin/artifacts/shards/finepdf_core_smollm2_49k_r2::/lustre/fs1/home/sa305415/shohin/runtime/phase2_retokenize_a481bc4_r4/pipeline/retokenize_v3_corpus.py
+fineweb=/lustre/fs1/home/sa305415/shohin/artifacts/shards/fineweb_edu_phase2_exact_smollm2_49k_r2::/lustre/fs1/home/sa305415/shohin/runtime/phase2_retokenize_a481bc4_r4/pipeline/retokenize_v3_corpus.py

@@ -10,7 +10,11 @@
 > or dropped. Dependency release started FinePDF `768276`, peS2O `768277`,
 > and FineWeb `768278` concurrently on three 48-core Stokes nodes. These
 > outputs remain quarantined; this is a retokenization mechanics pass, not
-> corpus admission.
+> corpus admission. Final-token near-audit runtime
+> `phase2_near49k_f9aeeef_r1` has SHA256SUMS SHA-256
+> `22d958d8...c947`; frozen priority spec SHA-256 is
+> `8fd3a734...0344`. Audit job `768282` is fail-closed after all three large
+> conversions and retains the existing exact-confirmed algorithm/thresholds.
 
 > **IDR08 FIT COMPLETE / FINAL-49K RETOKENIZATION R4 LIVE — 2026-08-08
 > 17:33 EDT:** exact 0.8B capacity-boundary fit `746046` completed all 256
