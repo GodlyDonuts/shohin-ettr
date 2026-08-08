@@ -1,5 +1,18 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **IDR1 ATTRIBUTION CONTROL SHARDED — 2026-08-08 07:45 EDT:** The exact
+> untrained-B1 second pass emits long continuations and measured too slowly to
+> finish jobs `745657/745658` inside their three-hour limits. After `27m17s`
+> they were canceled and replaced by four contiguous, batch-aligned shards per
+> split (`745659--745666`) with identical full data hashes, row order, batch
+> pairs, weights, prompts, greedy decoding, token budget, seed, and evaluator.
+> Runtime manifest SHA-256 is `063ec667...a6da`. Job `745665` received the
+> known CUDA-invisible device on `evc33` and failed before model execution;
+> exact replacement `745667` is live with `evc33` excluded. Merge requires
+> complete unique identity coverage before one full-split score. Expected
+> sharded charge is `5--6` H100-hours plus `0.91` already spent on the
+> superseded monoliths.
+
 > **IDR1 SOURCE GATE CLOSED / ATTRIBUTION CONTROL LIVE — 2026-08-08
 > 07:16 EDT:** Exact 256-update training `745652` completed in 19m50s with
 > checkpoint SHA-256 `df3c264d...c473`. Development/holdout score

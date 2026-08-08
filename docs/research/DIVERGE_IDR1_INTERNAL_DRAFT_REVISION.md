@@ -103,12 +103,17 @@ continuation/finalization effect, especially for long truncated trajectories.
 
 ## Matched Attribution Control
 
-Jobs `745657/745658` run the same frozen internal drafts, source-plus-draft
+The matched control runs the same frozen internal drafts, source-plus-draft
 prompt, evaluator, generation budget, and split using the original exact 9B B1
-adapter rather than the trained IDR1 revision state. This is the required
-matched control for separating learned revision from the benefit of a second
-inference pass. Its outcome cannot reopen the exact IDR1 gate or authorize the
-sealed product board.
+adapter rather than the trained IDR1 revision state. Slow long-form generation
+made monolithic jobs `745657/745658` unable to fit their scheduler windows.
+They were replaced by four contiguous batch-aligned shards per split,
+`745659--745667`, with no model, prompt, ordering, batching, decoding, seed, or
+scoring change. One failed CUDA-invisible allocation is replaced exactly.
+Complete identity coverage is mandatory before merge and scoring. This is the
+required matched control for separating learned revision from the benefit of a
+second inference pass. Its outcome cannot reopen the exact IDR1 gate or
+authorize the sealed product board.
 
 ## Frozen Revision Gate
 
