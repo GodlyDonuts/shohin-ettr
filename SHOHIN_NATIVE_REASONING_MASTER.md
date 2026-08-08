@@ -57746,3 +57746,24 @@ router, or tool at inference, but it is still a Qwen-hosted multistage system,
 not native reasoning in the 125M Shohin checkpoint. Exact AQC1 treatment,
 control, and aggregate hashes are `9f72644c...5563`, `fdf9ead0...26b`, and
 `c56b0401...e74`.
+
+The protected seven-task product evaluation confirms that this is not merely
+a source-disjoint synthetic gain. IDR1 alone reaches `374/538`, `75.005%`
+macro, and `3/30` AIME. Its domains are GSM8K `88/100`, MATH `69/100`, code
+`35/40`, GPQA `104/198`, and BBH logic `78/100`. The matched original-B1
+second pass reaches only `316/538` and `67.263%`, a 58-answer causal gap.
+
+The qualified AQC commit then reaches **`383/538`, `75.815%`, and `6/30`
+AIME**: GSM8K `87`, MATH `72`, code `35`, GPQA `114`, and logic `75`. This
+beats external-proposal VCR1 by 15 solved and `+3.513` macro points while
+using only one pinned model family at inference and repairing VCR1's code
+regression (`29->35`). Its coherent oracle is `399/538`, so 16 answers of
+selection headroom remain. The independent-score commit reaches `382/538`,
+again showing that learned whole-trajectory commitment matters while the
+specific antisymmetric relation is not the cause of the gain.
+
+This is the strongest practical reasoning result in the Shohin program as of
+2026-08-08. It demonstrates a credible architecture on a current model used
+in practice, but its parameter and multi-pass costs are those of Qwen3.5-9B.
+Transferring the recipe into a smaller scratch Shohin remains a separate
+training problem; the result must not be relabeled as sub-200M capability.

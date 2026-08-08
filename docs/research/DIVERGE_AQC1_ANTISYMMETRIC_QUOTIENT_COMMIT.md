@@ -114,3 +114,32 @@ Treatment/control/aggregate report SHA-256 values are
 `9f72644c...5563`, `fdf9ead0...26b`, and `c56b0401...e74`. The two full
 jobs consume `0.666` H100-hours; the two integration canaries consume another
 `0.368` H100-hours.
+
+## Protected Product Result
+
+Passing source-disjoint capability opened one exact seven-task application.
+The same B1 owner generated 568 internal drafts; the trained IDR1 adapter and
+matched original-B1 control each revised those exact drafts. The frozen AQC1
+treatment and independent control then selected whole trajectories without
+new training, labels, task routing, verifier feedback, or threshold fitting.
+
+| System | Solved | Macro | GSM8K | MATH | Code | GPQA | Logic | AIME |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Original-B1 second pass | 316/538 | 67.263% | 85 | 60 | 34 | 62 | 75 | 4/30 |
+| Trained IDR1 | 374/538 | 75.005% | 88 | 69 | 35 | 104 | 78 | 3/30 |
+| Independent commit | 382/538 | 75.813% | 87 | 73 | 35 | 112 | 75 | 6/30 |
+| **AQC1 commit** | **383/538** | **75.815%** | **87** | **72** | **35** | **114** | **75** | **6/30** |
+| Coherent oracle | 399/538 | 78.619% | 90 | 77 | 35 | 118 | 79 | 6/30 |
+
+AQC1 passes every frozen product condition. Relative to VCR1 it adds 15 main
+answers, `+3.513` macro points, and six code answers. Relative to IDR1, commit
+adds nine main answers and three AIME answers. It trades one GSM8K and three
+logic answers for three MATH and ten GPQA answers; this is a measured boundary,
+not a Pareto claim on every domain.
+
+Treatment has zero swap error, 100% order consistency, and three truncated
+candidate-assessment prompts. Treatment report and selected-candidate hashes
+are `3e86751b...7187` and `a7faca96...43e1`; independent report hash is
+`605f2197...c3e`. Product work consumed `3.518` H100-hours. The final claim is
+same-family model-owned draft/revision/whole-trajectory commitment, not a
+distinct benefit from antisymmetry and not a sub-200M Shohin result.

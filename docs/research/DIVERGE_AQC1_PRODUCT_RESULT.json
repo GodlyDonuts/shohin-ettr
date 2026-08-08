@@ -1,0 +1,315 @@
+{
+  "arm": "antisymmetric",
+  "arms": {
+    "control": {
+      "aime": {
+        "accuracy": 0.13333333333333333,
+        "correct": 4,
+        "total": 30
+      },
+      "domains": {
+        "code": {
+          "accuracy": 0.85,
+          "correct": 34,
+          "total": 40
+        },
+        "competition_math": {
+          "accuracy": 0.6,
+          "correct": 60,
+          "total": 100
+        },
+        "grade_school_math": {
+          "accuracy": 0.85,
+          "correct": 85,
+          "total": 100
+        },
+        "logic": {
+          "accuracy": 0.75,
+          "correct": 75,
+          "total": 100
+        },
+        "science": {
+          "accuracy": 0.31313131313131315,
+          "correct": 62,
+          "total": 198
+        }
+      },
+      "macro_accuracy": 0.6726262626262626,
+      "solved": 316,
+      "tasks": {
+        "aime": {
+          "accuracy": 0.13333333333333333,
+          "correct": 4,
+          "total": 30
+        },
+        "bbh_logic": {
+          "accuracy": 0.75,
+          "correct": 75,
+          "total": 100
+        },
+        "gpqa": {
+          "accuracy": 0.31313131313131315,
+          "correct": 62,
+          "total": 198
+        },
+        "gsm8k": {
+          "accuracy": 0.85,
+          "correct": 85,
+          "total": 100
+        },
+        "humaneval": {
+          "correct": 19,
+          "total": 20
+        },
+        "math500": {
+          "accuracy": 0.6,
+          "correct": 60,
+          "total": 100
+        },
+        "mbpp": {
+          "correct": 15,
+          "total": 20
+        }
+      },
+      "total": 538
+    },
+    "idr1": {
+      "aime": {
+        "accuracy": 0.1,
+        "correct": 3,
+        "total": 30
+      },
+      "domains": {
+        "code": {
+          "accuracy": 0.875,
+          "correct": 35,
+          "total": 40
+        },
+        "competition_math": {
+          "accuracy": 0.69,
+          "correct": 69,
+          "total": 100
+        },
+        "grade_school_math": {
+          "accuracy": 0.88,
+          "correct": 88,
+          "total": 100
+        },
+        "logic": {
+          "accuracy": 0.78,
+          "correct": 78,
+          "total": 100
+        },
+        "science": {
+          "accuracy": 0.5252525252525253,
+          "correct": 104,
+          "total": 198
+        }
+      },
+      "macro_accuracy": 0.7500505050505051,
+      "solved": 374,
+      "tasks": {
+        "aime": {
+          "accuracy": 0.1,
+          "correct": 3,
+          "total": 30
+        },
+        "bbh_logic": {
+          "accuracy": 0.78,
+          "correct": 78,
+          "total": 100
+        },
+        "gpqa": {
+          "accuracy": 0.5252525252525253,
+          "correct": 104,
+          "total": 198
+        },
+        "gsm8k": {
+          "accuracy": 0.88,
+          "correct": 88,
+          "total": 100
+        },
+        "humaneval": {
+          "correct": 20,
+          "total": 20
+        },
+        "math500": {
+          "accuracy": 0.69,
+          "correct": 69,
+          "total": 100
+        },
+        "mbpp": {
+          "correct": 15,
+          "total": 20
+        }
+      },
+      "total": 538
+    },
+    "oracle": {
+      "aime": {
+        "accuracy": 0.2,
+        "correct": 6,
+        "total": 30
+      },
+      "domains": {
+        "code": {
+          "accuracy": 0.875,
+          "correct": 35,
+          "total": 40
+        },
+        "competition_math": {
+          "accuracy": 0.77,
+          "correct": 77,
+          "total": 100
+        },
+        "grade_school_math": {
+          "accuracy": 0.9,
+          "correct": 90,
+          "total": 100
+        },
+        "logic": {
+          "accuracy": 0.79,
+          "correct": 79,
+          "total": 100
+        },
+        "science": {
+          "accuracy": 0.5959595959595959,
+          "correct": 118,
+          "total": 198
+        }
+      },
+      "macro_accuracy": 0.7861919191919192,
+      "solved": 399,
+      "tasks": {
+        "aime": {
+          "accuracy": 0.2,
+          "correct": 6,
+          "total": 30
+        },
+        "bbh_logic": {
+          "accuracy": 0.79,
+          "correct": 79,
+          "total": 100
+        },
+        "gpqa": {
+          "accuracy": 0.5959595959595959,
+          "correct": 118,
+          "total": 198
+        },
+        "gsm8k": {
+          "accuracy": 0.9,
+          "correct": 90,
+          "total": 100
+        },
+        "humaneval": {
+          "correct": 20,
+          "total": 20
+        },
+        "math500": {
+          "accuracy": 0.77,
+          "correct": 77,
+          "total": 100
+        },
+        "mbpp": {
+          "correct": 15,
+          "total": 20
+        }
+      },
+      "total": 538
+    },
+    "selected": {
+      "aime": {
+        "accuracy": 0.2,
+        "correct": 6,
+        "total": 30
+      },
+      "domains": {
+        "code": {
+          "accuracy": 0.875,
+          "correct": 35,
+          "total": 40
+        },
+        "competition_math": {
+          "accuracy": 0.72,
+          "correct": 72,
+          "total": 100
+        },
+        "grade_school_math": {
+          "accuracy": 0.87,
+          "correct": 87,
+          "total": 100
+        },
+        "logic": {
+          "accuracy": 0.75,
+          "correct": 75,
+          "total": 100
+        },
+        "science": {
+          "accuracy": 0.5757575757575758,
+          "correct": 114,
+          "total": 198
+        }
+      },
+      "macro_accuracy": 0.7581515151515152,
+      "solved": 383,
+      "tasks": {
+        "aime": {
+          "accuracy": 0.2,
+          "correct": 6,
+          "total": 30
+        },
+        "bbh_logic": {
+          "accuracy": 0.75,
+          "correct": 75,
+          "total": 100
+        },
+        "gpqa": {
+          "accuracy": 0.5757575757575758,
+          "correct": 114,
+          "total": 198
+        },
+        "gsm8k": {
+          "accuracy": 0.87,
+          "correct": 87,
+          "total": 100
+        },
+        "humaneval": {
+          "correct": 20,
+          "total": 20
+        },
+        "math500": {
+          "accuracy": 0.72,
+          "correct": 72,
+          "total": 100
+        },
+        "mbpp": {
+          "correct": 15,
+          "total": 20
+        }
+      },
+      "total": 538
+    }
+  },
+  "candidates_output": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/aqc1_product_f8b2d41_r1/selection/antisymmetric.candidates.jsonl",
+  "candidates_sha256": "a7faca96a982c3fe35f0823b7685824ff7dc6dc24353ff9c9c9342834ac743e1",
+  "commit": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/aqc1_38bc1f3_r1/antisymmetric/commit.pt",
+  "commit_report": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/aqc1_38bc1f3_r1/antisymmetric/report.json",
+  "commit_report_sha256": "9f72644cd39c4880788d5a58b09753bd57f3346810cad3f01226923d6eda5563",
+  "commit_sha256": "434d1ec0a8e05d49ee8cc6eaaba1ad36657f507d7416a7417931096c23d2aabc",
+  "elapsed_seconds": 103.84714587288909,
+  "gate_pass": true,
+  "gates": {
+    "at_least_three_domains_match_vcr1": true,
+    "code_at_least_30_of_40": true,
+    "macro_at_least_vcr1": true,
+    "solved_at_least_vcr1_368": true
+  },
+  "maximum_swap_error": 0.0,
+  "order_consistency": 1.0,
+  "pairs": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/aqc1_product_f8b2d41_r1/pairs.jsonl",
+  "pairs_sha256": "c0b9c8bf350453d8cd41d106905ad02f91e42994095b149c014c84cae2eab3ed",
+  "peak_gpu_memory_bytes": 21487723520,
+  "prompt_truncated": 3,
+  "schema": "shohin-aqc1-product-application-v1",
+  "status": "complete"
+}

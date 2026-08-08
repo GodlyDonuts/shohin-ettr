@@ -1,18 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **AQC1 FROZEN / IMPLEMENTED — 2026-08-08 09:35 EDT:** IDR1 plus its exact
-> untrained same-family continuation has a `671/1,279` coherent oracle ceiling.
-> A fixed development-trained metadata selector reaches `645`, proving 20
-> answers of deployable headroom over IDR1 `625` without holdout fitting. The
-> sole bounded successor is AQC1: a shared 9B candidate encoder plus an exactly
-> antisymmetric relational margin `phi(a,b)-phi(b,a)`, compared against a
-> stronger-parameter independent scalar scorer on identical data/compute.
-> Frozen holdout requires overall `>=646`, MATH `>=255`, logic `>=349`, code
-> `>=24`, exact order consistency, and net lift; the relational mechanism also
-> must beat its matched control by five. Development is partitioned 80/20 by
-> seed `2026080820`; original holdout remains untouched. Both arms use 128
-> updates and estimated aggregate charge `2--4` H100-hours. CPU tests are 4/4.
-> Product remains sealed. Contract:
+> **SAME-FAMILY DRAFT/REVISE/COMMIT PRODUCT PASS — 2026-08-08 11:18 EDT:**
+> the complete Qwen3.5-9B architecture now scores `383/538`, `75.815%`
+> five-domain macro, and `6/30` AIME on the protected product board. Domains
+> are GSM8K `87/100`, MATH `72/100`, code `35/40`, GPQA `114/198`, and BBH
+> logic `75/100`. This exceeds prior external-proposal VCR1 by 15 solved and
+> `+3.513` macro points while improving code `29->35`. IDR1 revision alone is
+> `374/538 / 75.005%`; matched untrained second pass is `316 / 67.263%`, so
+> revision training contributes `+58` answers on the product board. Learned
+> whole-trajectory commitment adds another nine. The same-family oracle is
+> `399/538`. Exact AQC order consistency is 100% with zero swap error.
+> Independent commit scores `382`; the one-answer treatment edge again
+> rejects a distinct antisymmetric mechanism claim. Treatment report/candidate
+> hashes are `3e86751b...7187` and `a7faca96...43e1`. Product jobs cost
+> `3.518` H100-hours including `0.044` failed pre-model scratch copies. Current
+> Newton usage is `445.2/2,000.0` GPU-hours. Contract/result:
 > `docs/research/DIVERGE_AQC1_ANTISYMMETRIC_QUOTIENT_COMMIT.md`.
 
 > **IDR1 TRAINED REVISION CAUSALLY POSITIVE / EXACT GATE CLOSED — 2026-08-08
@@ -33958,3 +33960,40 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `promote_652_as_the_qualified_same_family_whole_trajectory_commit;_reject_distinct_aqc1_relational_novelty;_no_nearby_aqc1_variants`.
+
+- **2026-08-08 10:21--11:18 EDT** -- **The protected product gate passes;
+  same-family internal draft/revision/commit is the strongest practical
+  architecture in the campaign.**
+
+  Runtime `runtime/aqc1_product_2bcf977_r2` has manifest SHA-256
+  `92b3a4ba...25e1`. Eight exact B1 draft shards `745683--745690` cover all
+  568 product identities. The first pass solves 266/568 and exhausts 308
+  trajectories. Eight trained-IDR1 revision shards `745692--745699` complete
+  in 57--143 seconds each; eight control shards `745700--745705/745758/745759`
+  use the original B1 adapter. Initial control jobs `745706/745707` fail
+  before model load because `evc38` local scratch is full; exact replacements
+  exclude that node. No output or scientific setting changes.
+
+  Trained IDR1 alone solves `374/538` main questions at `75.005%` macro plus
+  `3/30` AIME: GSM8K `88`, MATH `69`, code `35/40`, GPQA `104/198`, and
+  logic `78`. The matched untrained second pass solves `316/538` at `67.263%`
+  plus `4/30` AIME, proving `+58` answers from the learned revision policy.
+  The coherent two-lineage oracle is `399/538`, `78.619%`, and `6/30` AIME.
+
+  Frozen product apply jobs `745764/745765` complete in `2m33s/2m31s`.
+  Antisymmetric treatment selects `383/538`, `75.815%`, and `6/30` AIME:
+  GSM8K `87`, MATH `72`, code `35`, GPQA `114`, and logic `75`. It passes all
+  four product conditions and exceeds VCR1 by 15 solved and `+3.513` macro
+  points while fixing VCR1 code `29->35`. Independent control selects
+  `382/538`, `75.813%`, and `6/30`. Both have exact order consistency, zero
+  swap error, and three truncated candidate-assessment prompts. Treatment
+  report/candidate and control report SHA-256 values are
+  `3e86751b...7187`, `a7faca96...43e1`, and `605f2197...c3e`.
+
+  Product collection/evaluation costs `3.518` H100-hours across 28 jobs,
+  including `0.044` hours in the two pre-model scratch failures, versus the
+  declared `10--14` hour envelope. Monthly usage is now
+  `445.2/2,000.0` GPU-hours.
+
+  Decision:
+  `promote_same_family_internal_draft_then_trained_revision_then_whole_trajectory_commit_as_current_best;_retain_independent_commit_as_near_equal_control;_reject_antisymmetry_as_distinct_cause;_do_not_tune_product_board`.
