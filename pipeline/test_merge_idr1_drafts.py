@@ -27,7 +27,12 @@ def test_frozen_idr1_draft_constants() -> None:
     assert SEED == 2026080818
 
 
-def test_merge_accepts_exact_8392_row_geometry(tmp_path: Path) -> None:
+def _make_exact_fixture(
+    tmp_path: Path,
+    *,
+    model_revision: str = MODEL_REVISION,
+    adapter_sha256: str = ADAPTER_SHA256,
+) -> tuple[list[Path], list[Path]]:
     banks: list[Path] = []
     reports: list[Path] = []
     identity_index = 0
@@ -77,8 +82,8 @@ def test_merge_accepts_exact_8392_row_geometry(tmp_path: Path) -> None:
             report = {
                 "schema": ROLLOUT_SCHEMA,
                 "status": "complete",
-                "model_revision": MODEL_REVISION,
-                "adapter_checkpoint_sha256": ADAPTER_SHA256,
+                "model_revision": model_revision,
+                "adapter_checkpoint_sha256": adapter_sha256,
                 "samples": 1,
                 "generation_mode": "greedy",
                 "prompt_batch_size": 4,
@@ -99,6 +104,11 @@ def test_merge_accepts_exact_8392_row_geometry(tmp_path: Path) -> None:
             report_path = tmp_path / f"{domain}-{shard}.report.json"
             report_path.write_text(json.dumps(report), encoding="utf-8")
             reports.append(report_path)
+    return reports, banks
+
+
+def test_merge_accepts_exact_8392_row_geometry(tmp_path: Path) -> None:
+    reports, banks = _make_exact_fixture(tmp_path)
 
     output = tmp_path / "merged.jsonl"
     receipt_path = tmp_path / "receipt.json"
@@ -109,11 +119,37 @@ def test_merge_accepts_exact_8392_row_geometry(tmp_path: Path) -> None:
     assert len(output.read_text(encoding="utf-8").splitlines()) == 8392
 
 
+def test_merge_binds_an_alternate_same_family_checkpoint(tmp_path: Path) -> None:
+    model_revision = "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+    adapter_sha256 = "f" * 64
+    reports, banks = _make_exact_fixture(
+        tmp_path,
+        model_revision=model_revision,
+        adapter_sha256=adapter_sha256,
+    )
+    receipt = merge(
+        reports,
+        banks,
+        tmp_path / "merged.jsonl",
+        tmp_path / "receipt.json",
+        model_revision=model_revision,
+        adapter_sha256=adapter_sha256,
+    )
+    assert receipt["model_revision"] == model_revision
+    assert receipt["adapter_checkpoint_sha256"] == adapter_sha256
+
+
 def test_main_forwards_receipt_path(monkeypatch, tmp_path: Path) -> None:
     captured = {}
 
-    def fake_merge(reports, banks, output, receipt):
-        captured.update(reports=reports, banks=banks, output=output, receipt=receipt)
+    def fake_merge(reports, banks, output, receipt, **kwargs):
+        captured.update(
+            reports=reports,
+            banks=banks,
+            output=output,
+            receipt=receipt,
+            **kwargs,
+        )
         return {"unique_identities": 8392, "output_sha256": "0" * 64}
 
     monkeypatch.setattr(merge_idr1_drafts, "merge", fake_merge)
@@ -134,3 +170,5 @@ def test_main_forwards_receipt_path(monkeypatch, tmp_path: Path) -> None:
     )
     assert merge_idr1_drafts.main() == 0
     assert captured["receipt"] == tmp_path / "receipt.json"
+    assert captured["model_revision"] == MODEL_REVISION
+    assert captured["adapter_sha256"] == ADAPTER_SHA256

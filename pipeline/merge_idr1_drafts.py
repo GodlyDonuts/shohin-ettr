@@ -83,8 +83,16 @@ def _question(row: dict[str, Any]) -> str:
 
 
 def merge(
-    reports: list[Path], banks: list[Path], output: Path, receipt_path: Path
+    reports: list[Path],
+    banks: list[Path],
+    output: Path,
+    receipt_path: Path,
+    *,
+    model_revision: str = MODEL_REVISION,
+    adapter_sha256: str = ADAPTER_SHA256,
 ) -> dict[str, Any]:
+    if not model_revision or len(adapter_sha256) != 64:
+        raise IDR1DraftError("IDR1 model provenance is invalid")
     if len(reports) != 17 or len(banks) != 3:
         raise IDR1DraftError("IDR1 requires exactly 17 reports and three banks")
     bank_rows = {sha256_file(path): _load_jsonl(path) for path in banks}
@@ -111,8 +119,8 @@ def merge(
         required = {
             "schema": ROLLOUT_SCHEMA,
             "status": "complete",
-            "model_revision": MODEL_REVISION,
-            "adapter_checkpoint_sha256": ADAPTER_SHA256,
+            "model_revision": model_revision,
+            "adapter_checkpoint_sha256": adapter_sha256,
             "samples": 1,
             "generation_mode": "greedy",
             "prompt_batch_size": 4,
@@ -212,8 +220,8 @@ def merge(
     receipt = {
         "schema": RECEIPT_SCHEMA,
         "status": "complete",
-        "model_revision": MODEL_REVISION,
-        "adapter_checkpoint_sha256": ADAPTER_SHA256,
+        "model_revision": model_revision,
+        "adapter_checkpoint_sha256": adapter_sha256,
         "generation": {
             "mode": "greedy",
             "prompt_batch_size": 4,
@@ -253,8 +261,17 @@ def main() -> int:
     )
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--receipt", type=Path, required=True)
+    parser.add_argument("--model-revision", default=MODEL_REVISION)
+    parser.add_argument("--adapter-sha256", default=ADAPTER_SHA256)
     args = parser.parse_args()
-    report = merge(args.reports, args.banks, args.output, args.receipt)
+    report = merge(
+        args.reports,
+        args.banks,
+        args.output,
+        args.receipt,
+        model_revision=args.model_revision,
+        adapter_sha256=args.adapter_sha256,
+    )
     print(
         json.dumps(
             {"rows": report["unique_identities"], "sha256": report["output_sha256"]},

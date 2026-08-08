@@ -1,5 +1,22 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **IDR4 SCALE-TRANSFER DRAFTS LIVE — 2026-08-08 11:28 EDT:** The 9B
+> same-family draft/revise/commit result is now being compressed before any
+> scratch Shohin commitment. Jobs `745767--745783` run 17 independent
+> single-H100 shards over the exact 8,392-row source-disjoint IDR1 bank using
+> pinned `Qwen3.5-4B@851bf6e...cd0a`, its existing B1 adapter, greedy
+> batch-4 decoding, no thinking mode, and 768 generated tokens. All shards
+> started across 15 Newton nodes. Expected draft charge is `10--16`
+> H100-hours; revision fit and source gates are expected to add `2--4`.
+> Outputs are isolated at `artifacts/product_reasoning/idr1_4b_drafts_r1`.
+> Merge must prove exact identity coverage and bind the 4B model revision and
+> adapter hash. The causal gate is trained 4B revision versus the same 4B B1
+> second pass on identical internal drafts; product access requires a
+> source-disjoint gain of at least 5 points overall, nonnegative deltas in
+> math/logic/code, and development/holdout agreement. A miss closes 4B and
+> selects one 3B/0.8B capacity-boundary decision rather than nearby variants.
+> Contract: `docs/research/SHOHIN_IDR4_SCALE_TRANSFER.md`.
+
 > **SAME-FAMILY DRAFT/REVISE/COMMIT PRODUCT PASS — 2026-08-08 11:18 EDT:**
 > the complete Qwen3.5-9B architecture now scores `383/538`, `75.815%`
 > five-domain macro, and `6/30` AIME on the protected product board. Domains
