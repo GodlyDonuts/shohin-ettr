@@ -9,6 +9,14 @@
 > started across 15 Newton nodes. Expected draft charge is `10--16`
 > H100-hours; revision fit and source gates are expected to add `2--4`.
 > Outputs are isolated at `artifacts/product_reasoning/idr1_4b_drafts_r1`.
+> Draft-dependent builder `745788` and matched train/evaluation dispatcher
+> `745791` are fail-closed behind all shards. Immutable downstream runtime
+> `runtime/idr4_687a91a_r1` has SHA256SUMS SHA-256
+> `fb1c67dcc81df8bf407e02f379eaefba1fbb9a3811e15e8520647607d00cc8cf`.
+> It launches four exact batch-aligned evaluation shards per split for both
+> trained revision and unchanged-B1 control, then scores once after complete
+> identity coverage. Superseded monolithic dispatchers `745789/745790` were
+> canceled at zero runtime.
 > Merge must prove exact identity coverage and bind the 4B model revision and
 > adapter hash. The causal gate is trained 4B revision versus the same 4B B1
 > second pass on identical internal drafts; product access requires a
