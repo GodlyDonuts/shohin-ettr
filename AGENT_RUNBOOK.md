@@ -1,5 +1,18 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **IDR08 CLOSED / SCRATCH SCALE = `shohin_920m` — 2026-08-08 18:03 EDT:**
+> all eight trained and eight unchanged-B1 evaluation shards completed, both
+> split merges passed, and immutable comparison `746062` closed with report
+> SHA-256 `6f42de42...347f`. Development improves
+> `236 -> 323 / 1,289` (`+87`, `+6.749` points): math `44->64`, logic/science
+> `190->257`, code `2->2`. Holdout improves `242 -> 328 / 1,279` (`+86`,
+> `+6.724` points): math `39->74`, logic/science `194->246`, but code
+> `9->8`. Development passes every frozen condition; holdout fails only the
+> nonnegative-code condition. The conjunctive gate therefore FAILS and selects
+> `shohin_920m` exactly as preregistered. This is strong causal evidence that
+> internal draft/revision helps the 0.8B backbone overall, but it does not
+> support the smaller `shohin_390m` risk. Do not run a nearby 0.8B rescue.
+
 > **FINAL-49K RETOKENIZATION CANARY PASS — 2026-08-08 17:43 EDT:** r4
 > Essential-Web canary `768275` completed in `8m23s`, preserving all `108,115`
 > documents and independently verifying every shard/ledger/external input. It

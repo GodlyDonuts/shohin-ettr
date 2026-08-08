@@ -1,9 +1,9 @@
 # Shohin Phase 2 Scale Decision
 
-Status: capacity-boundary decision live, 2026-08-08. The protected 4B product
-aggregate closed as a mixed conjunctive failure; the frozen 0.8B transfer now
-selects the scratch scale. This document does not authorize a large pretraining
-launch by itself.
+Status: capacity-boundary decision complete, 2026-08-08. The protected 4B
+product aggregate and frozen 0.8B transfer both closed under their original
+conjunctive gates. The selected scratch trunk is `shohin_920m`. This document
+does not authorize a large pretraining launch by itself.
 
 ## Evidence Boundary
 
@@ -87,11 +87,30 @@ optimizer/state bitwise equal. Training `746046` completed all 256 updates in
 `13m38s`, charging `365,028` tokens at `455.0 tok/s`; checkpoint/report
 SHA-256 values are `540771a3cd6c446c6fb90e225b1b1dc69050152669152761b129d58e1a41b357`
 and `8a756b50de52545f552754e169914c320df85119f52afc6e5896b9c7e79b466a`.
-Eight trained and eight unchanged-B1 evaluation shards are now running under
-the same evaluator, with deterministic split merges and one conjunctive scale
-comparison dependency-gated behind them. There is no nearby 0.8B retry family.
+Eight trained and eight unchanged-B1 evaluation shards ran under the same
+evaluator, followed by deterministic split merges and one conjunctive scale
+comparison. All completed cleanly; the comparison report SHA-256 is
+`6f42de42dfb78ef77042238308e11d82f1fb748f624ba5babae3216c5c53347f`.
 
-This test determines the smallest plausible scratch trunk. It is not a nearby
+| Split/domain | Unchanged B1 | Trained revision | Delta |
+|---|---:|---:|---:|
+| Development overall | 236/1,289 | 323/1,289 | +87 (+6.749 points) |
+| Development MATH-500 | 44/623 | 64/623 | +20 |
+| Development logic/science | 190/637 | 257/637 | +67 |
+| Development MBPP | 2/29 | 2/29 | 0 |
+| Holdout overall | 242/1,279 | 328/1,279 | +86 (+6.724 points) |
+| Holdout MATH-500 | 39/621 | 74/621 | +35 |
+| Holdout logic/science | 194/625 | 246/625 | +52 |
+| Holdout MBPP | 9/33 | 8/33 | -1 |
+
+Development passes all four frozen conditions. Holdout passes the five-point
+overall, math, and logic/science conditions but fails nonnegative code by one
+answer. The conjunctive result is therefore FAIL and selects `shohin_920m`.
+The 0.8B mechanism shows real, source-disjoint overall improvement, but its
+code retention is not robust enough to justify the 389M risk. There is no
+nearby 0.8B retry family.
+
+This test determined the smallest plausible scratch trunk. It is not a nearby
 variant of the failed QST1 workspace: the changed factor is the already
 qualified complete-trajectory revision mechanism.
 
