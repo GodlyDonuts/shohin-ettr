@@ -20,6 +20,7 @@ from build_vcr1_revision_data import (
     training_target,
 )
 from hf_pcj1_pairwise_judge import assigned_split
+from ttr1_revision import internal_revision_prompt
 
 PAIR_SCHEMA = "shohin-cvg1-whole-lineage-pairs-v1"
 DRAFT_SCHEMA = "shohin-idr1-internal-drafts-v1"
@@ -61,20 +62,6 @@ def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
         handle.flush()
         os.fsync(handle.fileno())
     os.replace(temporary, path)
-
-
-def internal_revision_prompt(task_prompt: str, draft: str, task: str) -> str:
-    format_instruction = (
-        "Return only executable Python code, without Markdown fences."
-        if task == "mbpp"
-        else "Return a complete corrected solution with the exact final answer in \\boxed{}."
-    )
-    return (
-        "Solve the original problem by checking and revising the model's earlier draft. "
-        "The draft may contain useful steps or errors; do not merely critique it.\n\n"
-        f"Original problem:\n{task_prompt}\n\nInternal draft:\n{draft}\n\n"
-        f"{format_instruction}\n\nOriginal problem:\n{task_prompt}"
-    )
 
 
 def build(args: argparse.Namespace) -> dict[str, Any]:

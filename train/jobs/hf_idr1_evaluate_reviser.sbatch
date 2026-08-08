@@ -28,6 +28,7 @@ set -euo pipefail
 : "${REPORT:?REPORT is required}"
 SHARD_INDEX=${SHARD_INDEX:-0}
 SHARD_COUNT=${SHARD_COUNT:-1}
+MODEL_LOADER=${MODEL_LOADER:-auto}
 
 BASE=/lustre/fs1/home/sa305415/shohin
 PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
@@ -74,6 +75,7 @@ nvidia-smi
   --model-root "$EFFECTIVE_MODEL_ROOT" \
   --model-source-root "$SOURCE_MODEL_ROOT" \
   --model-revision "$MODEL_REVISION" \
+  --model-loader "$MODEL_LOADER" \
   --adapter-checkpoint "$ADAPTER_CHECKPOINT" \
   --data "$DATA" \
   --data-report "$DATA_REPORT" \

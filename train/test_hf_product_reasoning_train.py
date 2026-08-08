@@ -182,6 +182,21 @@ class ProductReasoningTrainTests(unittest.TestCase):
         self.assertTrue(torch.allclose(packed[0, :2], embedding(torch.tensor([1, 2])) + 1))
         self.assertEqual(charged, 5)
 
+    def test_pack_preserves_geometry_while_masking_draft_keys(self) -> None:
+        embedding = nn.Embedding(20, 6)
+        packed, attention, labels, charged = pack_training_embeddings(
+            embedding,
+            [[1, 2, 3, 4]],
+            [[5, 6]],
+            None,
+            pad_token_id=0,
+            prompt_attention_rows=[[1, 0, 0, 1]],
+        )
+        self.assertEqual(packed.shape, (1, 6, 6))
+        self.assertEqual(attention.tolist(), [[1, 0, 0, 1, 1, 1]])
+        self.assertEqual(labels.tolist(), [[-100, -100, -100, -100, 5, 6]])
+        self.assertEqual(charged, 2)
+
     def test_reservoir_is_deterministic(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "rows.jsonl"

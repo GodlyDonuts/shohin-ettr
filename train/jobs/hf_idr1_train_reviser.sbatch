@@ -24,6 +24,7 @@ set -euo pipefail
 : "${DATA_REPORT:?DATA_REPORT is required}"
 : "${DATA_REPORT_SHA256:?DATA_REPORT_SHA256 is required}"
 : "${OUTPUT:?OUTPUT is required}"
+MODEL_LOADER=${MODEL_LOADER:-auto}
 
 BASE=/lustre/fs1/home/sa305415/shohin
 PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
@@ -85,7 +86,7 @@ nvidia-smi
   --model-root "$EFFECTIVE_MODEL_ROOT" \
   --model-source-root "$SOURCE_MODEL_ROOT" \
   --model-revision "$MODEL_REVISION" \
-  --model-loader multimodal \
+  --model-loader "$MODEL_LOADER" \
   --data "$DATA" \
   --output "$OUTPUT" \
   --warm-start-checkpoint "$WARM_START" \

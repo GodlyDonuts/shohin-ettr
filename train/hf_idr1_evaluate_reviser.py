@@ -161,7 +161,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
     model, adapter_metadata, model_loader = _load_model(
-        args.model_root, args.adapter_checkpoint, "multimodal"
+        args.model_root, args.adapter_checkpoint, args.model_loader
     )
     stop_token_ids = _generation_stop_token_ids(tokenizer)
     torch.manual_seed(args.seed)
@@ -261,6 +261,11 @@ def main() -> int:
     parser.add_argument("--model-root", type=Path, required=True)
     parser.add_argument("--model-source-root", type=Path, required=True)
     parser.add_argument("--model-revision", required=True)
+    parser.add_argument(
+        "--model-loader",
+        choices=("auto", "causal", "multimodal"),
+        default="auto",
+    )
     parser.add_argument("--adapter-checkpoint", type=Path, required=True)
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--data-report", type=Path, required=True)

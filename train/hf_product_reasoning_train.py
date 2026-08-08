@@ -236,6 +236,7 @@ def pack_training_embeddings(
     prefix_states: torch.Tensor | None,
     pad_token_id: int,
     prompt_residuals: torch.Tensor | None = None,
+    prompt_attention_rows: list[list[int]] | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, int]:
     """Pack prompt, optional workspace, and target with causal-LM labels."""
 
@@ -248,6 +249,14 @@ def pack_training_embeddings(
         raise ProductReasoningTrainError("workspace batch differs")
     if prompt_residuals is not None and prompt_residuals.shape[0] != len(prompt_rows):
         raise ProductReasoningTrainError("workspace residual batch differs")
+    if prompt_attention_rows is not None:
+        if len(prompt_attention_rows) != len(prompt_rows) or any(
+            len(mask) != len(prompt)
+            for prompt, mask in zip(prompt_rows, prompt_attention_rows, strict=True)
+        ):
+            raise ProductReasoningTrainError("prompt attention geometry differs")
+        if any(value not in (0, 1) for mask in prompt_attention_rows for value in mask):
+            raise ProductReasoningTrainError("prompt attention values differ")
     sequences: list[torch.Tensor] = []
     labels: list[torch.Tensor] = []
     charged_tokens = 0
@@ -292,12 +301,22 @@ def pack_training_embeddings(
         torch.tensor([pad_token_id], device=device, dtype=torch.long)
     )[0]
     packed[:] = pad_embedding
-    for index, (sequence, row_labels) in enumerate(
-        zip(sequences, labels, strict=True)
+    for index, (sequence, row_labels, prompt) in enumerate(
+        zip(sequences, labels, prompt_rows, strict=True)
     ):
         length = sequence.shape[0]
         packed[index, :length] = sequence
-        attention[index, :length] = 1
+        prompt_attention = (
+            prompt_attention_rows[index]
+            if prompt_attention_rows is not None
+            else [1] * len(prompt)
+        )
+        attention[index, : len(prompt)] = torch.tensor(
+            prompt_attention,
+            device=attention.device,
+            dtype=attention.dtype,
+        )
+        attention[index, len(prompt) : length] = 1
         packed_labels[index, :length] = row_labels
     return packed, attention, packed_labels, charged_tokens
 
@@ -387,6 +406,7 @@ class ProductReasoningModel(nn.Module):
         prompt_rows: list[list[int]],
         response_rows: list[list[int]],
         pad_token_id: int,
+        prompt_attention_rows: list[list[int]] | None = None,
     ) -> tuple[torch.Tensor, dict[str, float]]:
         embedding = self.text_model.embed_tokens
         prefix = None
@@ -396,6 +416,22 @@ class ProductReasoningModel(nn.Module):
         delta_norm = 0.0
         if self.workspace is not None:
             prompt_ids, prompt_mask = _pad_token_rows(prompt_rows, pad_token_id)
+            if prompt_attention_rows is not None:
+                if len(prompt_attention_rows) != len(prompt_rows):
+                    raise ProductReasoningTrainError(
+                        "workspace prompt attention batch differs"
+                    )
+                prompt_mask.zero_()
+                for index, (prompt, mask) in enumerate(
+                    zip(prompt_rows, prompt_attention_rows, strict=True)
+                ):
+                    if len(prompt) != len(mask) or any(
+                        value not in (0, 1) for value in mask
+                    ):
+                        raise ProductReasoningTrainError(
+                            "workspace prompt attention geometry differs"
+                        )
+                    prompt_mask[index, : len(mask)] = torch.tensor(mask)
             prompt_ids = prompt_ids.to(embedding.weight.device)
             prompt_mask = prompt_mask.to(embedding.weight.device)
             if self.workspace_injection == "prompt_residual":
@@ -429,6 +465,7 @@ class ProductReasoningModel(nn.Module):
             prefix,
             pad_token_id,
             prompt_residuals,
+            prompt_attention_rows,
         )
         outputs = self.text_model(
             inputs_embeds=inputs,
@@ -456,14 +493,16 @@ class ProductReasoningModel(nn.Module):
         }
 
 
-def _tokenize_rows(
+def _tokenize_rows_with_attention(
     tokenizer: Any,
     rows: list[dict[str, str]],
     max_sequence_length: int,
     workspace_slots: int,
-) -> tuple[list[list[int]], list[list[int]]]:
+    mask_internal_draft: bool = False,
+) -> tuple[list[list[int]], list[list[int]], list[list[int]]]:
     prompt_rows: list[list[int]] = []
     response_rows: list[list[int]] = []
+    prompt_attention_rows: list[list[int]] = []
     response_budget_floor = min(256, max_sequence_length // 2)
     for row in rows:
         rendered = render_reasoning_messages(
@@ -477,7 +516,15 @@ def _tokenize_rows(
             ],
             enable_thinking=False,
         )
-        prompt = tokenizer.encode(rendered, add_special_tokens=False)
+        if mask_internal_draft:
+            from ttr1_revision import tokenize_with_draft_mask
+
+            prompt, prompt_attention, _ = tokenize_with_draft_mask(
+                tokenizer, rendered
+            )
+        else:
+            prompt = tokenizer.encode(rendered, add_special_tokens=False)
+            prompt_attention = [1] * len(prompt)
         response = tokenizer.encode(row["response"], add_special_tokens=False)
         target_budget = max_sequence_length - workspace_slots
         if len(response) > target_budget - 9:
@@ -487,12 +534,34 @@ def _tokenize_rows(
             response = response[:response_budget_floor]
             prompt_budget = target_budget - len(response)
         prompt = prompt[-prompt_budget:]
+        prompt_attention = prompt_attention[-prompt_budget:]
         response.append(tokenizer.eos_token_id)
         if prompt and response:
             prompt_rows.append(prompt)
             response_rows.append(response)
+            prompt_attention_rows.append(prompt_attention)
     if not prompt_rows:
         raise ProductReasoningTrainError("tokenization removed every row")
+    if mask_internal_draft and any(all(mask) for mask in prompt_attention_rows):
+        raise ProductReasoningTrainError("truncation removed an internal draft mask")
+    return prompt_rows, response_rows, prompt_attention_rows
+
+
+def _tokenize_rows(
+    tokenizer: Any,
+    rows: list[dict[str, str]],
+    max_sequence_length: int,
+    workspace_slots: int,
+) -> tuple[list[list[int]], list[list[int]]]:
+    """Compatibility wrapper for existing unmasked training consumers."""
+
+    prompt_rows, response_rows, _ = _tokenize_rows_with_attention(
+        tokenizer,
+        rows,
+        max_sequence_length,
+        workspace_slots,
+        mask_internal_draft=False,
+    )
     return prompt_rows, response_rows
 
 
@@ -725,6 +794,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "lora_alpha": args.lora_alpha,
         "lora_projection_count": model.lora_projection_count,
         "unfreeze_layers": model.unfreeze_layers,
+        "mask_internal_draft": args.mask_internal_draft,
         "trainable_parameters": model.trainable_parameter_count(),
         "workspace_config": (
             asdict(model.workspace_config) if model.workspace_config else None
@@ -771,17 +841,27 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     while update < args.updates:
         raw_batch = batch_stream[microstep % len(batch_stream)]
         workspace_slots = model.sequence_workspace_slots()
-        prompt_rows, response_rows = _tokenize_rows(
-            tokenizer,
-            raw_batch,
-            args.max_sequence_length,
-            workspace_slots,
-        )
+        if args.mask_internal_draft:
+            prompt_rows, response_rows, prompt_attention_rows = (
+                _tokenize_rows_with_attention(
+                    tokenizer,
+                    raw_batch,
+                    args.max_sequence_length,
+                    workspace_slots,
+                    mask_internal_draft=True,
+                )
+            )
+        else:
+            prompt_rows, response_rows = _tokenize_rows(
+                tokenizer, raw_batch, args.max_sequence_length, workspace_slots
+            )
+            prompt_attention_rows = None
         with torch.autocast("cuda", dtype=torch.bfloat16):
             loss, metrics = model.forward_batch(
                 prompt_rows,
                 response_rows,
                 tokenizer.pad_token_id,
+                prompt_attention_rows,
             )
             scaled_loss = loss / args.gradient_accumulation
         scaled_loss.backward()
@@ -877,6 +957,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--workspace-slots", type=int, default=16)
     parser.add_argument("--recurrent-steps", type=int, default=8)
     parser.add_argument("--unfreeze-layers", type=int, default=0)
+    parser.add_argument("--mask-internal-draft", action="store_true")
     parser.add_argument("--seed", type=int, default=31)
     parser.add_argument("--data-seed", type=int, default=20260802)
     parser.add_argument("--log-interval", type=int, default=10)
