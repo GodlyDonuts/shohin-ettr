@@ -33275,10 +33275,16 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   is `269/538`. Receipt SHA-256 is `70f49783...549cc`.
 
   The equal-exposure 4B B1 continuation `745356` also completes 256 updates
-  and exactly 619,734 targets in 19m46s at 535.574 target tok/s. Its first
-  completed scores already show the ordinary-continuation trade: GSM8K
-  `85 -> 88`, MATH `50 -> 58`, but code `30/40 -> 28/40`. This validates the
-  need to compare SAG1 against both the original and continued B1.
+  and exactly 619,734 targets in 19m46s at 535.574 target tok/s. Its complete
+  seven-board result is `57.1172%` five-domain macro and `252/538` solved:
+  GSM8K `88/100`, MATH-500 `58/100`, HumanEval `16/20`, MBPP `12/20`,
+  GPQA `17/198`, BBH logic `61/100`, and AIME `3/30`. This is only `+1.487`
+  macro points and four solved answers over original B1 while executable code
+  falls from `30/40` to `28/40`. Hash-bound receipt
+  `DIVERGE_SAG1_B1_CONTINUATION_U256_RESULT.json` has SHA-256
+  `f5e8e7d817b9a2a1df3d74ceb4c3c80694e232b3c7beeb78ca0e9038629aa23c`.
+  This validates the need to compare SAG1 against both the original and
+  continued B1.
 
   A hash-bound identity-matched union analysis of the already-opened QPT1/B1
   reports finds 49 answers of headroom beyond QPT1. Static whole-lineage
