@@ -1,5 +1,22 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **IDR4 PRODUCT RESULTS PENDING TRANSPORT / RELEASE PATH PRESTAGED —
+> 2026-08-08 15:45 EDT:** All 16 protected product evaluation workers and
+> aggregate job `745923` were already released before the local Cisco tunnel
+> lost its address. Their result must be read from the immutable product root;
+> no score is inferred from scheduler timing. Private commits `50ad1db` and
+> `5482b47` add a hash-bound eight-prompt direct-interaction batch and a
+> fail-closed two-role delta packager. The interaction job loads each 4B owner
+> once, binds model/config/checkpoint/prompt/runtime hashes, and writes atomic
+> draft/revision transcripts. The packager refuses a failed product gate,
+> mismatched artifact, or existing output. Focused tests are `16/16`, Ruff is
+> clean, and the private worktree is clean. Current infrastructure blocker is
+> local only: Cisco's root VPN agent reports unavailable, `utun5` has no local
+> address, and the surviving authenticated SSH transport lost its mux socket.
+> Do not rerun product evaluation; retrieve `comparison.report.json` first
+> when Newton access returns, then launch direct interaction and package only
+> on an exact product PASS.
+
 > **IDR4 4B SCALE TRANSFER CAUSALLY QUALIFIED / PRODUCT CONFIRMATION LIVE —
 > 2026-08-08 14:31 EDT:** Both exact source-disjoint splits pass. Development
 > is trained `529/1,289 = 41.04%` versus unchanged-B1 `371/1,289 = 28.78%`
