@@ -147,6 +147,12 @@ all three conversions succeed. Formal Logic remains zero weight and is absent
 from that specification because its source has no domain provenance and
 cannot satisfy the domain-holdout gate.
 
+FinePDF conversion `768276` completed in `3m42s`, retaining all `31,702`
+documents and independently verifying `97,196,851` target tokens versus
+`100,004,847` source tokens, a `2.808%` reduction. Report and manifest file
+SHA-256 values are `f6bae4d8...f497` and `9ac0c611...48d3`. This remains a
+quarantined conversion result; it does not satisfy the later admission gates.
+
 Essential-Web job `768237` separately exercises the complete historical-32K
 holdout creator and independent verifier as a transport-mechanics canary; its
 partitions are not the final 49K training contract. None of these jobs marks a

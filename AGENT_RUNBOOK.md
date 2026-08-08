@@ -15,6 +15,10 @@
 > `22d958d8...c947`; frozen priority spec SHA-256 is
 > `8fd3a734...0344`. Audit job `768282` is fail-closed after all three large
 > conversions and retains the existing exact-confirmed algorithm/thresholds.
+> FinePDF `768276` completed in `3m42s`, preserving all `31,702` documents and
+> reducing `100,004,847 -> 97,196,851` tokens (`2.808%`); report/manifest file
+> SHA-256 values are `f6bae4d8...f497` and `9ac0c611...48d3`. peS2O and
+> FineWeb remain live.
 
 > **IDR08 FIT COMPLETE / FINAL-49K RETOKENIZATION R4 LIVE — 2026-08-08
 > 17:33 EDT:** exact 0.8B capacity-boundary fit `746046` completed all 256
