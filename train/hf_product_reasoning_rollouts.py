@@ -415,6 +415,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             if args.adapter_checkpoint is not None
             else None
         ),
+        "adapter_checkpoint_sha256": (
+            hashlib.sha256(args.adapter_checkpoint.read_bytes()).hexdigest()
+            if args.adapter_checkpoint is not None
+            else None
+        ),
         "adapter_metadata": adapter_metadata,
         "data": str(args.data.resolve()),
         "data_sha256": hashlib.sha256(data_bytes).hexdigest(),
