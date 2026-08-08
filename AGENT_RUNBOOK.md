@@ -33310,3 +33310,30 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finish_exact_sag1_once;_on_pass_confirm_then_transplant_to_the_qualified_9b_host;_on_fail_launch_exactly_one_cvg1_outcome_arbitration_gate`.
+
+- **2026-08-07 21:12--21:28 EDT** -- **A source/evaluation-disjoint
+  rollout bank is admitted before either conditional successor opens.**
+
+  The pre-existing 8,192-row V3 candidate and old 2,000-row math/science
+  holdouts are rejected: they contain respectively `132`, `54`, and `22`
+  normalized exact V10 prompt hits. The first fresh build also rejects because
+  its whitespace-only identity allowed six punctuation-normalized math hits
+  and nine duplicate math questions. These are data-construction negatives,
+  not model scores.
+
+  Commit `5e63a06` aligns builder/auditor identity, removes content-bearing
+  13-gram overlap, and distinguishes high-document-frequency boilerplate from
+  semantic near-duplicates. Unit/lint/format gates pass. Stokes jobs
+  `767936--767939` build and independently audit corrected immutable banks:
+  `4,096` math rows SHA-256 `e0ede832...ddbe5` and `4,096` science rows
+  SHA-256 `5a96859f...37017`. Both have zero normalized duplicates, missing
+  fields, exact V10/opened-evaluation hits, and informative 13-gram hits. The
+  science audit separately reports the mandatory common wrapper on all rows;
+  its reference document frequency exceeds the frozen 0.1% content-bearing
+  ceiling, so it is recorded but not misclassified as contamination.
+
+  The two banks and four build/audit receipts are read-only on Newton at
+  `artifacts/product_reasoning/router_outcomes/cvg1_disjoint_5e63a06`.
+  `SHA256SUMS` SHA-256 is `5e9184a6...1a37e`. They are conditional inputs only:
+  no SAG1 confirmation, CVG1 fit, or 9B transplant is authorized until the
+  exact SAG1 development decision closes.
