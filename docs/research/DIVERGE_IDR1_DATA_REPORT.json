@@ -1,0 +1,88 @@
+{
+  "assessor_fields_visible_to_model": false,
+  "banks": [
+    {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/router_outcomes/cvg1_disjoint_5e63a06/math_disjoint4096_2026080709_r2.jsonl",
+      "sha256": "e0ede83257e441050a019f59fb13d9c85bd6cba1d6a755ab86fb7129966ddbe5"
+    },
+    {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/router_outcomes/cvg1_disjoint_5e63a06/science_disjoint4096_2026080709_r2.jsonl",
+      "sha256": "5a96859fd9088cde598b61da60dd2c6cb7281323ee06c034742a1b4e0e237017"
+    },
+    {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/router_outcomes/cvg1_code_disjoint_1b49ca7/mbpp_disjoint200_2026080715_r1.jsonl",
+      "sha256": "0b6d068b4d71f407cb234579b9278dc640df09139ea906dd0f52a6ab71e05398"
+    }
+  ],
+  "counts": {
+    "development": {
+      "base_only": 69,
+      "bbh_logic": 637,
+      "both_correct": 271,
+      "both_wrong": 767,
+      "draft_correct": 257,
+      "expert_only": 182,
+      "math500": 623,
+      "mbpp": 29,
+      "pairs": 1289
+    },
+    "holdout": {
+      "base_only": 81,
+      "bbh_logic": 625,
+      "both_correct": 263,
+      "both_wrong": 727,
+      "draft_correct": 265,
+      "expert_only": 208,
+      "math500": 621,
+      "mbpp": 33,
+      "pairs": 1279
+    },
+    "train": {
+      "base_only": 339,
+      "bbh_logic": 2834,
+      "both_correct": 1253,
+      "both_wrong": 3294,
+      "draft_correct": 1262,
+      "expert_only": 938,
+      "math500": 2852,
+      "mbpp": 138,
+      "pairs": 5824
+    }
+  },
+  "draft_receipt": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/idr1_drafts_e7b5be3_r1/receipt.json",
+  "draft_receipt_sha256": "2154a49811dece70f25ccb309c8ef1fdc08d4513880477b500a4cbfba156a852",
+  "drafts": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/idr1_drafts_e7b5be3_r1/merged_drafts.jsonl",
+  "drafts_sha256": "509b114e42773dbe8d14536ff5ce7e5a2f92b45b3acd57a37a035fce43505d73",
+  "external_candidate_text_visible": false,
+  "internal_draft_visible": true,
+  "outputs": {
+    "development": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/idr1_data_ad790b0_r1/development.jsonl",
+      "rows": 1289,
+      "sha256": "0c52dd35fa6013d88befe5ee627894fe74fe62072b358e19890a71455d844224"
+    },
+    "holdout": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/idr1_data_ad790b0_r1/holdout.jsonl",
+      "rows": 1279,
+      "sha256": "df347d5990748cdca73c3a546e46e1eda861043d90347e5765549ffc3fe836f2"
+    },
+    "train": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/idr1_data_ad790b0_r1/train.jsonl",
+      "rows": 9655,
+      "sha256": "6df3204573ce807db1b5057bce709189366b6674e38e5224ee3d17a3e6f0ac6c"
+    }
+  },
+  "pairs": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/cvg1_pairs_a960206_r1/pairs.jsonl",
+  "pairs_sha256": "45f1d66ce5e87dc2a1f4c3594bdde2bae26e9417e879d16eb4eddb228b696afe",
+  "runtime_fields": [
+    "question"
+  ],
+  "schema": "shohin-idr1-revision-data-report-v1",
+  "split_seed": 2026080811,
+  "status": "complete",
+  "target_counts": {
+    "shortest_verified_candidate": 1253,
+    "source_verified_repair": 3294,
+    "verified_candidate": 5108
+  }
+}
