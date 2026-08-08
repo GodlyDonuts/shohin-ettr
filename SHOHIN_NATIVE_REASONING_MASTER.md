@@ -57580,3 +57580,28 @@ trained on source-disjoint verified rollouts, and hard-selects one whole
 lineage. It may not receive benchmark identity, evaluator labels, gold answers,
 or external solver output at inference. Its purpose is to recover the measured
 49-answer headroom without reviving QPT1's global code regression.
+
+### CVG1 source-disjoint completion critic: calibrated but closed
+
+CVG1 completes once on 8,392 source-disjoint prompts: 4,096 math, 4,096
+science/logic, and 200 independently execution-verified code rows. B1 and
+QPT1 solve `2,276/8,392 = 27.121%` and `3,115/8,392 = 37.119%`; their whole-
+lineage oracle solves `3,604/8,392 = 42.946%`. The merged pair corpus contains
+489 B1-only and 1,328 QPT1-only outcomes, proving real selection headroom.
+Pair and merge-report SHA-256 values are `45f1d66c...6afe` and
+`d38e6790...e4fd`.
+
+The frozen prompt-plus-completion critic trains for 256 updates. On its
+untouched 852-row holdout it passes calibration (`0.14529` Brier), disagreement
+selection (`62.234%`), and commit-rate (`24.178%`) checks, but selects only
+`300/852 = 35.211%` correct. QPT1 alone scores `331/852 = 38.850%`; the oracle
+scores `371/852 = 43.545%`. Selection loses 12 math and 21 science/logic answers
+to QPT1 while recovering two code answers. Development agrees (`292/832`
+selected versus `305/832` QPT1). The decisive stronger-lineage-plus-two-point
+gate fails, so the conditional 568-row product scorer refuses to run and CVG1
+has no public benchmark score.
+
+Exact critic/verifier report SHA-256 values are `10c022b3...9f15` and
+`891b2d41...6886`. This closes independent per-completion outcome scoring in
+the exact CVG1 form. It does not erase the lineage complementarity ceiling,
+but no threshold, width, duration, seed, renderer, or loss rescue is permitted.

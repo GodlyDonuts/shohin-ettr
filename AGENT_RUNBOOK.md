@@ -33632,3 +33632,47 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `reject_mid_gate_batch_change;_finish_the_exact_batch4_corpus;_run_the_single_dependency_held_critic_and_conditional_score`.
+
+- **2026-08-08 00:10--02:34 EDT** -- **CVG1 completes its full source-
+  disjoint gate and fails: an independently scored completion critic does not
+  beat the stronger whole lineage.**
+
+  All exact rollout jobs `745509--745542` complete successfully. Both
+  lineages contain 17 hash-valid reports and 8,392 unique identities spanning
+  4,096 math, 4,096 science/logic, and 200 execution-verified code prompts.
+  B1 produces `2,276/8,392 = 27.121%` correct candidates and QPT1 produces
+  `3,115/8,392 = 37.119%`; their coherent union ceiling is
+  `3,604/8,392 = 42.946%`. The exact pair corpus has SHA-256
+  `45f1d66c...6afe`, with `489` base-only, `1,787` both-correct, `4,788`
+  both-wrong, and `1,328` expert-only outcomes. Merge-report SHA-256 is
+  `d38e6790...e4fd`. Independent audits verify every candidate/positive hash,
+  exact source identity parity between lineages, and `6,708/832/852`
+  train/development/holdout rows.
+
+  Frozen critic `745546` completes 256 updates and 2,048 pair presentations
+  in 1,066.18 training/evaluation seconds, peaks at 18,034,512,896 CUDA
+  bytes, truncates one training prompt and zero development/holdout prompts,
+  and leaves the protected B1 checkpoint bit-identical. Verifier SHA-256 is
+  `891b2d41...6886`; exact report SHA-256 is `10c022b3...9f15`.
+
+  The holdout critic is calibrated but not useful enough. It passes Brier
+  (`0.14529 <= 0.24`), disagreement selection (`117/188 = 62.234%`), and
+  expert commit-rate (`206/852 = 24.178%`) gates. Its hard selected lineage,
+  however, solves only `300/852 = 35.211%`, versus QPT1
+  `331/852 = 38.850%`, B1 `223/852 = 26.174%`, and the coherent oracle
+  `371/852 = 43.545%`. By domain it selects `88/406` math versus QPT1 `100`,
+  `204/430` science/logic versus QPT1 `225`, and `8/16` code versus QPT1 `6`.
+  It therefore loses 31 answers to the strongest lineage and fails the frozen
+  requirement to beat that lineage by two points. Development independently
+  shows the same direction: selected `292/832` versus QPT1 `305/832`.
+
+  Conditional application `745547` starts only to inspect the qualified
+  report, observes `holdout.gate_pass=false`, and fails closed in 28 seconds
+  before loading or scoring the 568-row development board. Its output remains
+  absent, so CVG1 has no public-board score. Rollouts, critic, and the
+  fail-closed application consume `29.649` H100-hours total, below the
+  predeclared `31--38` hour envelope; the separate batching/integration
+  canaries consumed another `0.151` hour.
+
+  Decision:
+  `close_exact_cvg1;_no_threshold_width_seed_duration_or_renderer_rescue;_preserve_qpt1_and_sag1_as_specialist_results_and_require_a_structurally_different_successor`.
