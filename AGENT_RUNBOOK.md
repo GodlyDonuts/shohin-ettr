@@ -1,5 +1,24 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **TTR1 CROSS-FAMILY CAMPAIGN LIVE — 2026-08-08 18:34 EDT:** pinned
+> SmolLM3-3B mechanics job `746132` passed in `32s` on `evc27` after CPU
+> metadata migration `746131`. It restored causal adapter update `1000`, ran
+> 24 balanced math/logic/code examples, produced nonempty drafts and complete
+> second passes, proved treatment/unchanged prompt-token identity, and masked
+> exactly `1,503` draft tokens without changing any input IDs or positions.
+> Report SHA-256 is `f12fdb1c...0d38`; normalized checkpoint SHA-256 is
+> `b260d1ac...0edb`. This is a mechanics pass, not a capability result.
+>
+> Full source-only draft jobs `746138--746154` launched as 17 independent
+> single-H100 shards. Jobs `746149/746150` failed after two seconds on `evc38`
+> because its local staging disk is full; their exact science shards 3/4 were
+> replaced once as `746155/746156` with `evc38` excluded. The other 15 jobs
+> remain healthy. CPU build `746157` is dependency-held on the corrected 17-job
+> set and will produce only development/holdout data; holdout remains sealed.
+> Expected total TTR1 development charge, including matched controls, is
+> approximately `24--40` H100-hours. Immutable runtime r2 SHA256SUMS SHA-256
+> is `1b6abe09...20ef`; current control-capable r3 is `005d3f25...0b21`.
+
 > **MISSION REDIRECT / TTR1 FROZEN — 2026-08-08:** the primary objective is
 > now a transferable temporal reasoning architecture for existing pretrained
 > models, not scratch Shohin pretraining. Preserve Qwen3.5-0.8B/4B/9B as the
