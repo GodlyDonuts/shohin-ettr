@@ -1,5 +1,33 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **IDR4 PRODUCT MIXED FAIL / IDR08 CAPACITY BOUNDARY LIVE — 2026-08-08
+> 16:24 EDT:** VPN and authenticated Newton access are restored. All 16
+> immutable 4B product evaluation shards completed; original aggregate job
+> `745923` failed in six seconds because the product builder did not admit the
+> already-defined `idr4` lineage label. Private commit `28c1246` adds only
+> that parser label and a regression test. Deterministic CPU merge/score job
+> `745960` completed from the unchanged shard artifacts. IDR4 scores
+> `320/538 = 59.48%` main-answer accuracy and `61.391%` five-domain macro,
+> versus unchanged-B1 second pass `272/538 = 50.56% / 51.053%`: `+48`
+> answers and `+10.338` macro points. Science improves `52->90` and code
+> `6->21`; GSM8K regresses `88->86`, MATH-500 `61->60`, BBH logic `65->63`,
+> and AIME remains `3/30`. The conjunctive no-domain-regression gate therefore
+> FAILS honestly despite the large aggregate lift. Comparison SHA-256 is
+> `64ae7bd8dc94e4952c9ed0d36e028ff57e3f533889505088de6b9217d66413ef`;
+> do not package IDR4 as a qualified release or tune this gate.
+>
+> The single frozen IDR08 capacity-boundary campaign is now live. Runtime
+> `idr08_28c1246_r1` has SHA256SUMS SHA-256
+> `52e6a0bc4b853bd3db195897d9d811d566d261d19fbee935c8089d26987c0a65`.
+> Seventeen single-H100 source-only draft jobs `745961--745977` run the exact
+> 8,392-row bank from pinned Qwen3.5-0.8B B1 checkpoint SHA-256
+> `14d1a2e34fc7c452b4af507d5e9cd39c039e2526fb9c0393999d2a4fabef0e28`.
+> CPU build `745978` and complete training/evaluation/decision dispatcher
+> `745979` are dependency-held. The immutable scorer selects `shohin_390m`
+> only on a >=5-point treatment gain with nonnegative MATH, logic/science,
+> and code deltas on both source-disjoint splits; any miss selects
+> `shohin_920m`. No nearby 0.8B variant is allowed.
+
 > **NATIVE IDR PATH COMPLETE / IDR08 DECISION AUTOMATED — 2026-08-08
 > 16:30 EDT:** Private commits `995809c`, `96abeaf`, and `03d791f` implement
 > Shohin's shared-trunk draft/revision role states, one-role hash-bound SFT,

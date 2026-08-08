@@ -21,6 +21,8 @@ from pipeline.verify_tokenized_shards import verify_manifest  # noqa: E402
 
 
 CONTRACT_SCHEMA = "shohin-general-training-data-contract-v1"
+ADMISSION_BUNDLE_SCHEMA = "shohin-phase2-admission-bundle-v1"
+ADMISSION_LEVELS = {"canary": 0, "production": 1}
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
 CORPUS_FIELDS = {
     "manifest_payload_sha256",
@@ -212,4 +214,159 @@ def checkpoint_binding(resolution: Mapping[str, Any]) -> dict[str, Any]:
         "normalized_domain_weights": list(resolution["domain_weights"]),
         "tokenizer_sha256": resolution["tokenizer_sha256"],
         "tokenizer_vocab_size": resolution["tokenizer_vocab_size"],
+    }
+
+
+def resolve_phase2_admission_bundle(
+    path: Path,
+    *,
+    expected_sha256: str,
+    data_resolution: Mapping[str, Any],
+    required_level: str,
+) -> dict[str, Any]:
+    if required_level not in ADMISSION_LEVELS:
+        raise TrainingDataContractError("Phase-2 admission level differs")
+    if HEX64.fullmatch(expected_sha256) is None:
+        raise TrainingDataContractError("Phase-2 admission SHA-256 is malformed")
+    receipt = file_receipt(path)
+    if receipt["sha256"] != expected_sha256:
+        raise TrainingDataContractError("Phase-2 admission SHA-256 differs")
+    try:
+        report = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise TrainingDataContractError("Phase-2 admission is unreadable") from exc
+    if not isinstance(report, dict):
+        raise TrainingDataContractError("Phase-2 admission is not an object")
+    claimed = report.get("payload_sha256")
+    unsigned = dict(report)
+    unsigned.pop("payload_sha256", None)
+    level = report.get("requested_level")
+    if (
+        report.get("schema") != ADMISSION_BUNDLE_SCHEMA
+        or report.get("status") != "admitted"
+        or report.get("training_eligible") is not True
+        or report.get("deep_verified") is not True
+        or not isinstance(claimed, str)
+        or HEX64.fullmatch(claimed) is None
+        or canonical_payload_sha256(unsigned) != claimed
+        or level not in ADMISSION_LEVELS
+        or ADMISSION_LEVELS[level] < ADMISSION_LEVELS[required_level]
+    ):
+        raise TrainingDataContractError("Phase-2 admission payload differs")
+    gates = report.get("gates")
+    if not isinstance(gates, dict) or not gates or not all(
+        value is True for value in gates.values()
+    ):
+        raise TrainingDataContractError("Phase-2 admission gates differ")
+    if (
+        data_resolution.get("deep_verified") is not True
+        or
+        report.get("contract", {}).get("sha256")
+        != data_resolution["contract"]["sha256"]
+        or report.get("contract_payload_sha256")
+        != data_resolution["contract_payload_sha256"]
+        or report.get("tokenizer_sha256") != data_resolution["tokenizer_sha256"]
+        or report.get("tokenizer_vocab_size")
+        != data_resolution["tokenizer_vocab_size"]
+        or report.get("normalized_domain_weights")
+        != data_resolution["domain_weights"]
+    ):
+        raise TrainingDataContractError("Phase-2 admission contract/tokenizer differs")
+    corpora = report.get("corpora")
+    expected_corpora = {
+        item["name"]: item["manifest_payload_sha256"]
+        for item in data_resolution["corpora"]
+    }
+    if not isinstance(corpora, dict) or set(corpora) != set(expected_corpora):
+        raise TrainingDataContractError("Phase-2 admission corpus coverage differs")
+    for name, manifest_sha256 in expected_corpora.items():
+        value = corpora[name]
+        admission_path = Path(str(value.get("path", ""))) if isinstance(value, dict) else Path()
+        if (
+            not isinstance(value, dict)
+            or value.get("manifest_payload_sha256") != manifest_sha256
+            or not admission_path.is_absolute()
+            or not admission_path.is_file()
+            or admission_path.is_symlink()
+            or not isinstance(value.get("sha256"), str)
+            or HEX64.fullmatch(value["sha256"]) is None
+            or file_receipt(admission_path)["sha256"] != value["sha256"]
+            or not isinstance(value.get("payload_sha256"), str)
+            or HEX64.fullmatch(value["payload_sha256"]) is None
+            or not isinstance(value.get("unique_tokens"), int)
+            or value["unique_tokens"] <= 0
+        ):
+            raise TrainingDataContractError("Phase-2 admission corpus binding differs")
+        try:
+            corpus_admission = json.loads(admission_path.read_text())
+        except (OSError, json.JSONDecodeError) as exc:
+            raise TrainingDataContractError(
+                "Phase-2 corpus admission is unreadable"
+            ) from exc
+        unsigned_admission = dict(corpus_admission)
+        unsigned_admission.pop("payload_sha256", None)
+        if (
+            corpus_admission.get("payload_sha256") != value["payload_sha256"]
+            or canonical_payload_sha256(unsigned_admission)
+            != value["payload_sha256"]
+        ):
+            raise TrainingDataContractError(
+                "Phase-2 corpus admission payload differs"
+            )
+        evidence = value.get("evidence")
+        if not isinstance(evidence, list) or len(evidence) < 6:
+            raise TrainingDataContractError(
+                "Phase-2 admission evidence is incomplete"
+            )
+        for evidence_receipt in evidence:
+            if not isinstance(evidence_receipt, dict):
+                raise TrainingDataContractError(
+                    "Phase-2 admission evidence binding differs"
+                )
+            evidence_path = Path(str(evidence_receipt.get("path", "")))
+            evidence_sha256 = evidence_receipt.get("sha256")
+            if (
+                not evidence_path.is_absolute()
+                or not evidence_path.is_file()
+                or evidence_path.is_symlink()
+                or not isinstance(evidence_sha256, str)
+                or HEX64.fullmatch(evidence_sha256) is None
+                or file_receipt(evidence_path)["sha256"] != evidence_sha256
+            ):
+                raise TrainingDataContractError(
+                    "Phase-2 admission evidence binding differs"
+                )
+    if (
+        not isinstance(report.get("unique_tokens"), int)
+        or report["unique_tokens"] <= 0
+        or not isinstance(report.get("minimum_unique_tokens"), int)
+        or report["unique_tokens"] < report["minimum_unique_tokens"]
+        or not isinstance(report.get("fresh_sampling_weight"), (int, float))
+        or isinstance(report.get("fresh_sampling_weight"), bool)
+        or report["fresh_sampling_weight"] < 0.70
+    ):
+        raise TrainingDataContractError("Phase-2 admission token/freshness gate differs")
+    return {
+        "schema": "shohin-phase2-admission-resolution-v1",
+        "receipt": receipt,
+        "payload_sha256": claimed,
+        "level": level,
+        "unique_tokens": report["unique_tokens"],
+        "minimum_unique_tokens": report["minimum_unique_tokens"],
+        "fresh_sampling_weight": float(report["fresh_sampling_weight"]),
+        "corpus_admission_sha256s": {
+            name: corpora[name]["sha256"] for name in sorted(corpora)
+        },
+    }
+
+
+def checkpoint_admission_binding(resolution: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "admission_sha256": resolution["receipt"]["sha256"],
+        "admission_payload_sha256": resolution["payload_sha256"],
+        "admission_level": resolution["level"],
+        "unique_tokens": resolution["unique_tokens"],
+        "minimum_unique_tokens": resolution["minimum_unique_tokens"],
+        "fresh_sampling_weight": resolution["fresh_sampling_weight"],
+        "corpus_admission_sha256s": resolution["corpus_admission_sha256s"],
     }

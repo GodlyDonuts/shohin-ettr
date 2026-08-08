@@ -5,7 +5,11 @@ import unittest
 from dataclasses import asdict, replace
 
 from model import GPTConfig
-from train import validate_resume_config
+from train import (
+    validate_model_data_identity,
+    validate_resume_config,
+    validate_resume_data_bindings,
+)
 
 
 class ResumeConfigContractTests(unittest.TestCase):
@@ -50,6 +54,42 @@ class ResumeConfigContractTests(unittest.TestCase):
         unknown["future_behavior"] = True
         with self.assertRaisesRegex(ValueError, "unknown fields: future_behavior"):
             validate_resume_config(self.cfg, unknown)
+
+    def test_tokenizer_vocabulary_must_match_model(self):
+        validate_model_data_identity(49_152, {"tokenizer_vocab_size": 49_152})
+        with self.assertRaisesRegex(ValueError, "model vocabulary differs"):
+            validate_model_data_identity(32_768, {"tokenizer_vocab_size": 49_152})
+
+    def test_phase2_resume_requires_bound_admission(self):
+        binding = {"admission_sha256": "a" * 64}
+        with self.assertRaisesRegex(ValueError, "lacks a Phase-2 admission"):
+            validate_resume_data_bindings(
+                size="shohin_390m",
+                checkpoint_data_binding=None,
+                data_binding={"contract_sha256": "b" * 64},
+                checkpoint_admission=None,
+                admission_binding=binding,
+                allow_transition=False,
+            )
+        validate_resume_data_bindings(
+            size="shohin_390m",
+            checkpoint_data_binding=None,
+            data_binding={"contract_sha256": "b" * 64},
+            checkpoint_admission=None,
+            admission_binding=binding,
+            allow_transition=True,
+        )
+
+    def test_resume_rejects_admission_substitution(self):
+        with self.assertRaisesRegex(ValueError, "Phase-2 admission differs"):
+            validate_resume_data_bindings(
+                size="shohin_920m",
+                checkpoint_data_binding={"contract_sha256": "b" * 64},
+                data_binding={"contract_sha256": "b" * 64},
+                checkpoint_admission={"admission_sha256": "a" * 64},
+                admission_binding={"admission_sha256": "c" * 64},
+                allow_transition=False,
+            )
 
 
 if __name__ == "__main__":

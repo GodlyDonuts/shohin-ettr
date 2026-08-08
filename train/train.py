@@ -22,7 +22,9 @@ from model import GPT, GPTConfig
 from muon import Muon, split_params
 from data import ShardLoader, stream_seed
 from data_contract import (
+    checkpoint_admission_binding,
     checkpoint_binding,
+    resolve_phase2_admission_bundle,
     resolve_training_data_contract,
 )
 
@@ -46,6 +48,8 @@ CONFIGS = {
         seq_len=4096, rope_theta=1_000_000.0,
     ),
 }
+
+PHASE2_SCRATCH_SIZES = frozenset(("shohin_390m", "shohin_920m"))
 
 
 def parameter_count_for_config(config, vocab_size):
@@ -102,6 +106,63 @@ def validate_resume_config(requested_cfg, checkpoint_cfg):
         raise ValueError(f"resume checkpoint cfg does not match requested model ({rendered})")
 
 
+def validate_model_data_identity(config_vocab_size, data_resolution):
+    if (
+        data_resolution is not None
+        and config_vocab_size != data_resolution["tokenizer_vocab_size"]
+    ):
+        raise ValueError(
+            "model vocabulary differs from the admitted training tokenizer"
+        )
+
+
+def validate_resume_data_bindings(
+    *,
+    size,
+    checkpoint_data_binding,
+    data_binding,
+    checkpoint_admission,
+    admission_binding,
+    allow_transition,
+):
+    if checkpoint_data_binding is not None and data_binding is None:
+        raise ValueError(
+            "resume checkpoint has a data contract but this run does not"
+        )
+    if (
+        checkpoint_data_binding is not None
+        and checkpoint_data_binding != data_binding
+        and not allow_transition
+    ):
+        raise ValueError(
+            "resume data contract differs; use "
+            "--allow-data-contract-transition for an intentional stage change"
+        )
+    if checkpoint_admission is not None and admission_binding is None:
+        raise ValueError(
+            "resume checkpoint has a Phase-2 admission but this run does not"
+        )
+    if (
+        checkpoint_admission is None
+        and admission_binding is not None
+        and size in PHASE2_SCRATCH_SIZES
+        and not allow_transition
+    ):
+        raise ValueError(
+            "resume checkpoint lacks a Phase-2 admission; use "
+            "--allow-data-contract-transition for an intentional stage change"
+        )
+    if (
+        checkpoint_admission is not None
+        and checkpoint_admission != admission_binding
+        and not allow_transition
+    ):
+        raise ValueError(
+            "resume Phase-2 admission differs; use "
+            "--allow-data-contract-transition for an intentional stage change"
+        )
+
+
 def wsd_lr(step, total, warmup, decay_frac=0.2, final=0.1):
     if step < warmup:
         return step / max(1, warmup)
@@ -124,6 +185,13 @@ def main():
                     help="required physical SHA-256 for --data-contract")
     ap.add_argument("--allow-data-contract-transition", action="store_true",
                     help="explicitly permit a resume checkpoint to change its recorded data contract")
+    ap.add_argument("--phase2-admission-bundle", default="",
+                    help="quality-admission bundle required for Phase-2 scratch scales")
+    ap.add_argument("--phase2-admission-bundle-sha256", default="",
+                    help="required physical SHA-256 for --phase2-admission-bundle")
+    ap.add_argument("--phase2-admission-level", default="canary",
+                    choices=("canary", "production"),
+                    help="minimum corpus admission level for this run")
     ap.add_argument("--steps", type=int, default=100)
     ap.add_argument("--batch-size", type=int, default=16)     # per-rank micro-batch (sequences)
     ap.add_argument("--grad-accum", type=int, default=1)
@@ -159,13 +227,18 @@ def main():
 
     data_resolution = None
     data_binding = None
+    admission_resolution = None
+    admission_binding = None
     if a.data_contract:
         if not a.data_contract_sha256:
             ap.error("--data-contract requires --data-contract-sha256")
         data_resolution = resolve_training_data_contract(
             Path(a.data_contract),
             expected_sha256=a.data_contract_sha256,
-            deep_verify=False,
+            deep_verify=(
+                a.size in PHASE2_SCRATCH_SIZES
+                or bool(a.phase2_admission_bundle)
+            ),
         )
         resolved_dirs = data_resolution["shard_dirs"]
         resolved_weights = data_resolution["domain_weights"]
@@ -192,6 +265,29 @@ def main():
         ap.error("--data-contract-sha256 requires --data-contract")
     if not a.shard_dirs:
         ap.error("--shard-dirs or --data-contract is required")
+    if a.phase2_admission_bundle:
+        if not a.data_contract:
+            ap.error("--phase2-admission-bundle requires --data-contract")
+        if not a.phase2_admission_bundle_sha256:
+            ap.error(
+                "--phase2-admission-bundle requires "
+                "--phase2-admission-bundle-sha256"
+            )
+        admission_resolution = resolve_phase2_admission_bundle(
+            Path(a.phase2_admission_bundle),
+            expected_sha256=a.phase2_admission_bundle_sha256,
+            data_resolution=data_resolution,
+            required_level=a.phase2_admission_level,
+        )
+        admission_binding = checkpoint_admission_binding(admission_resolution)
+    elif a.phase2_admission_bundle_sha256:
+        ap.error(
+            "--phase2-admission-bundle-sha256 requires --phase2-admission-bundle"
+        )
+    if a.size in PHASE2_SCRATCH_SIZES and admission_binding is None:
+        ap.error(
+            f"--size {a.size} requires a verified --phase2-admission-bundle"
+        )
 
     ddp = "RANK" in os.environ
     if ddp:
@@ -207,6 +303,7 @@ def main():
     torch.set_float32_matmul_precision("high")
 
     cfg = GPTConfig(vocab_size=a.vocab_size, n_loop=a.n_loop, **CONFIGS[a.size])
+    validate_model_data_identity(cfg.vocab_size, data_resolution)
     model = GPT(cfg).to(device)
     if master:
         print(f"[model] size={a.size} params={model.num_params()/1e6:.1f}M "
@@ -235,19 +332,15 @@ def main():
         ck = torch.load(_cks[-1], map_location=device)
         validate_resume_config(cfg, ck.get("cfg"))
         checkpoint_data_binding = ck.get("data_contract")
-        if checkpoint_data_binding is not None and data_binding is None:
-            raise ValueError(
-                "resume checkpoint has a data contract but this run does not"
-            )
-        if (
-            checkpoint_data_binding is not None
-            and checkpoint_data_binding != data_binding
-            and not a.allow_data_contract_transition
-        ):
-            raise ValueError(
-                "resume data contract differs; use "
-                "--allow-data-contract-transition for an intentional stage change"
-            )
+        checkpoint_admission = ck.get("phase2_admission")
+        validate_resume_data_bindings(
+            size=a.size,
+            checkpoint_data_binding=checkpoint_data_binding,
+            data_binding=data_binding,
+            checkpoint_admission=checkpoint_admission,
+            admission_binding=admission_binding,
+            allow_transition=a.allow_data_contract_transition,
+        )
         raw.load_state_dict(ck["model"])
         if not a.fresh_opt:
             if "opt_muon" in ck and opt_muon is not None:
@@ -359,7 +452,8 @@ def main():
                        cfg=cfg.__dict__, step=step, data_seed=a.data_seed,
                        data_stream_generation=data_stream_generation,
                        data_stream_seed=data_stream_seed,
-                       data_contract=data_binding)
+                       data_contract=data_binding,
+                       phase2_admission=admission_binding)
             if opt_muon is not None:
                 _sd["opt_muon"] = opt_muon.state_dict()
             torch.save(_sd, os.path.join(a.out, f"ckpt_{step:07d}.pt"))
@@ -373,7 +467,8 @@ def main():
         torch.save(dict(model=raw.state_dict(), cfg=cfg.__dict__, step=a.steps,
                         data_seed=a.data_seed, data_stream_generation=data_stream_generation,
                         data_stream_seed=data_stream_seed,
-                        data_contract=data_binding),
+                        data_contract=data_binding,
+                        phase2_admission=admission_binding),
                    os.path.join(a.out, "ckpt_final.pt"))
         print(f"[done] {a.steps} steps in {time.time()-t0:.0f}s", flush=True)
     if ddp:

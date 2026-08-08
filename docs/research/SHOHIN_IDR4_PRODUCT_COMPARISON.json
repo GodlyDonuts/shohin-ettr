@@ -1,0 +1,197 @@
+{
+  "control": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/idr4_product_54454d7_r1/revisions/control.jsonl",
+  "control_report_sha256": "2896e9d846998cfde03e990247f49e38c87f35380b1bf18e2098d480e88eb609",
+  "control_sha256": "fbaf5879cc11b9c417a5db273585a19055247fcd3c055bdf5db543f453040ad2",
+  "control_summary": {
+    "accuracy": 0.5055762081784386,
+    "aime": {
+      "accuracy": 0.1,
+      "correct": 3,
+      "total": 30
+    },
+    "domains": {
+      "code": {
+        "accuracy": 0.15,
+        "correct": 6,
+        "total": 40
+      },
+      "competition_math": {
+        "accuracy": 0.61,
+        "correct": 61,
+        "total": 100
+      },
+      "grade_school_math": {
+        "accuracy": 0.88,
+        "correct": 88,
+        "total": 100
+      },
+      "logic": {
+        "accuracy": 0.65,
+        "correct": 65,
+        "total": 100
+      },
+      "science": {
+        "accuracy": 0.26262626262626265,
+        "correct": 52,
+        "total": 198
+      }
+    },
+    "macro_accuracy": 0.5105252525252525,
+    "solved": 272,
+    "tasks": {
+      "aime": {
+        "accuracy": 0.1,
+        "correct": 3,
+        "total": 30
+      },
+      "bbh_logic": {
+        "accuracy": 0.65,
+        "correct": 65,
+        "total": 100
+      },
+      "gpqa": {
+        "accuracy": 0.26262626262626265,
+        "correct": 52,
+        "total": 198
+      },
+      "gsm8k": {
+        "accuracy": 0.88,
+        "correct": 88,
+        "total": 100
+      },
+      "humaneval": {
+        "accuracy": 0.15,
+        "correct": 3,
+        "total": 20
+      },
+      "math500": {
+        "accuracy": 0.61,
+        "correct": 61,
+        "total": 100
+      },
+      "mbpp": {
+        "accuracy": 0.15,
+        "correct": 3,
+        "total": 20
+      }
+    },
+    "total": 538
+  },
+  "deltas": {
+    "accuracy": 0.08921933085501865,
+    "aime_correct": 0,
+    "domains": {
+      "code": {
+        "accuracy": 0.375,
+        "correct": 15
+      },
+      "competition_math": {
+        "accuracy": -0.010000000000000009,
+        "correct": -1
+      },
+      "grade_school_math": {
+        "accuracy": -0.020000000000000018,
+        "correct": -2
+      },
+      "logic": {
+        "accuracy": -0.020000000000000018,
+        "correct": -2
+      },
+      "science": {
+        "accuracy": 0.19191919191919188,
+        "correct": 38
+      }
+    },
+    "macro_accuracy": 0.10338383838383836,
+    "solved": 48
+  },
+  "gate_pass": false,
+  "gates": {
+    "all_five_domain_deltas_nonnegative": false,
+    "at_least_0_05_macro_gain": true,
+    "at_least_27_additional_main_answers": true
+  },
+  "schema": "shohin-idr-product-comparison-v1",
+  "source": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/aqc1_product_f8b2d41_r1/source.jsonl",
+  "source_report_sha256": "62ea8e1545d7b9481fa14feb528aa93ad4e31c3c7f31176b41091eb71ecd613e",
+  "source_sha256": "3477285de75f3596b3d099a40e4939e672bc9355f0c3dac0537c9a4a17a3685b",
+  "status": "complete",
+  "treatment": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/idr4_product_54454d7_r1/revisions/idr4.jsonl",
+  "treatment_report_sha256": "adc2537381bd18eb71cce37919a974784a2e78e124e0e44f69b623960430f8be",
+  "treatment_sha256": "2a37863b543424b5e6c2f605603fdb090559bee695117f3ba7e67671a0163ae9",
+  "treatment_summary": {
+    "accuracy": 0.5947955390334573,
+    "aime": {
+      "accuracy": 0.1,
+      "correct": 3,
+      "total": 30
+    },
+    "domains": {
+      "code": {
+        "accuracy": 0.525,
+        "correct": 21,
+        "total": 40
+      },
+      "competition_math": {
+        "accuracy": 0.6,
+        "correct": 60,
+        "total": 100
+      },
+      "grade_school_math": {
+        "accuracy": 0.86,
+        "correct": 86,
+        "total": 100
+      },
+      "logic": {
+        "accuracy": 0.63,
+        "correct": 63,
+        "total": 100
+      },
+      "science": {
+        "accuracy": 0.45454545454545453,
+        "correct": 90,
+        "total": 198
+      }
+    },
+    "macro_accuracy": 0.6139090909090908,
+    "solved": 320,
+    "tasks": {
+      "aime": {
+        "accuracy": 0.1,
+        "correct": 3,
+        "total": 30
+      },
+      "bbh_logic": {
+        "accuracy": 0.63,
+        "correct": 63,
+        "total": 100
+      },
+      "gpqa": {
+        "accuracy": 0.45454545454545453,
+        "correct": 90,
+        "total": 198
+      },
+      "gsm8k": {
+        "accuracy": 0.86,
+        "correct": 86,
+        "total": 100
+      },
+      "humaneval": {
+        "accuracy": 0.55,
+        "correct": 11,
+        "total": 20
+      },
+      "math500": {
+        "accuracy": 0.6,
+        "correct": 60,
+        "total": 100
+      },
+      "mbpp": {
+        "accuracy": 0.5,
+        "correct": 10,
+        "total": 20
+      }
+    },
+    "total": 538
+  }
+}

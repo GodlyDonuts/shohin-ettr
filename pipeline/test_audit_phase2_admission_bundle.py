@@ -15,6 +15,12 @@ from audit_phase2_admission_bundle import (
 )
 from pipeline.tokenize_shards import canonical_payload_sha256, sha256_file
 from test_data_contract import _contract
+from data_contract import (
+    TrainingDataContractError,
+    checkpoint_admission_binding,
+    resolve_phase2_admission_bundle,
+    resolve_training_data_contract,
+)
 
 
 def write_admission(
@@ -84,9 +90,65 @@ def arguments(
 
 
 def test_canary_admission_does_not_require_completed_utility(tmp_path: Path):
-    report = audit(arguments(tmp_path))
+    args = arguments(tmp_path)
+    report = audit(args)
     assert report["training_eligible"] is True
     assert report["fresh_sampling_weight"] == 1.0
+    data_resolution = resolve_training_data_contract(
+        args.contract,
+        expected_sha256=args.contract_sha256,
+        deep_verify=True,
+    )
+    resolution = resolve_phase2_admission_bundle(
+        args.output,
+        expected_sha256=sha256_file(args.output),
+        data_resolution=data_resolution,
+        required_level="canary",
+    )
+    binding = checkpoint_admission_binding(resolution)
+    assert binding["admission_level"] == "canary"
+    assert binding["fresh_sampling_weight"] == 1.0
+
+
+def test_non_deep_verified_bundle_is_rejected_by_trainer(tmp_path: Path):
+    args = arguments(tmp_path)
+    args.deep_verify = False
+    audit(args)
+    data_resolution = resolve_training_data_contract(
+        args.contract,
+        expected_sha256=args.contract_sha256,
+        deep_verify=True,
+    )
+    with pytest.raises(
+        TrainingDataContractError, match="admission payload differs"
+    ):
+        resolve_phase2_admission_bundle(
+            args.output,
+            expected_sha256=sha256_file(args.output),
+            data_resolution=data_resolution,
+            required_level="canary",
+        )
+
+
+def test_post_audit_evidence_mutation_is_rejected_by_trainer(tmp_path: Path):
+    args = arguments(tmp_path)
+    report = audit(args)
+    data_resolution = resolve_training_data_contract(
+        args.contract,
+        expected_sha256=args.contract_sha256,
+        deep_verify=True,
+    )
+    evidence_path = Path(report["corpora"]["candidate"]["evidence"][0]["path"])
+    evidence_path.write_text("mutated after audit\n")
+    with pytest.raises(
+        TrainingDataContractError, match="admission evidence binding differs"
+    ):
+        resolve_phase2_admission_bundle(
+            args.output,
+            expected_sha256=sha256_file(args.output),
+            data_resolution=data_resolution,
+            required_level="canary",
+        )
 
 
 def test_production_admission_requires_completed_utility(tmp_path: Path):

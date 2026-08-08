@@ -149,6 +149,7 @@ def validate_admission(
         "path": str(path.resolve()),
         "sha256": file_receipt(path)["sha256"],
         "payload_sha256": claimed,
+        "manifest_payload_sha256": corpus["manifest_payload_sha256"],
         "admission_level": level,
         "fresh_source": report["fresh_source"],
         "unique_tokens": report["unique_tokens"],

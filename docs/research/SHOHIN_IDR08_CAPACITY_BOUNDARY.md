@@ -1,8 +1,7 @@
 # Shohin IDR08 Capacity Boundary
 
-Status: frozen before 0.8B draft generation, training, or source-disjoint
-scores. Launch remains conditional on closing the pending 4B protected product
-comparison.
+Status: live. The 4B protected product comparison closed as a mixed
+conjunctive failure, and the exact frozen 0.8B campaign launched on 2026-08-08.
 
 ## Question
 
@@ -62,3 +61,17 @@ coverage and all downstream jobs remain dependency-gated.
 The result chooses a plausible scratch capacity. It does not authorize the
 large scratch run until the fresh-corpus contract, multi-H100 transport canary,
 checkpoint/resume test, and 5B-token capability canary also pass.
+
+## Launch Receipt
+
+- Immutable runtime: `idr08_28c1246_r1`
+- Runtime SHA256SUMS SHA-256:
+  `52e6a0bc4b853bd3db195897d9d811d566d261d19fbee935c8089d26987c0a65`
+- B1 checkpoint:
+  `baseline_v10_verified_u1000_2461d6f/checkpoint_0001000.pt`
+- B1 checkpoint SHA-256:
+  `14d1a2e34fc7c452b4af507d5e9cd39c039e2526fb9c0393999d2a4fabef0e28`
+- Draft jobs: `745961--745977`
+- Draft-dependent build: `745978`
+- Training/evaluation/decision dispatcher: `745979`
+- Fresh output root: `artifacts/product_reasoning/idr08_0p8b_28c1246_r1`
