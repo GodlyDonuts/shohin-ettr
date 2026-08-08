@@ -70,6 +70,53 @@ class TTR1ComparisonTests(unittest.TestCase):
             )
             self.assertFalse(result["holdout_authorized"])
 
+    def test_accepts_complete_merged_control(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            shared = {
+                "status": "complete",
+                "split": "development",
+                "model_revision": "revision",
+                "data_sha256": "d" * 64,
+                "data_report_sha256": "r" * 64,
+                "full_row_count": 1289,
+                "shard_count": 1,
+            }
+            treatment = root / "treatment.json"
+            treatment.write_text(
+                json.dumps(
+                    {
+                        **shared,
+                        "schema": "shohin-idr1-revision-evaluation-v1",
+                        "metrics": metrics(500, 100, 390, 10),
+                    }
+                )
+            )
+            control_paths = []
+            for name in CONTROLS:
+                path = root / f"{name}.json"
+                path.write_text(
+                    json.dumps(
+                        {
+                            **shared,
+                            "schema": "shohin-ttr1-control-evaluation-v1",
+                            "control": name,
+                            "merged_from_shards": True,
+                            "shard_count": 8,
+                            "metrics": metrics(400, 90, 301, 9),
+                        }
+                    )
+                )
+                control_paths.append(path)
+            result = compare(
+                argparse.Namespace(
+                    treatment=treatment,
+                    control_report=control_paths,
+                    output=root / "comparison.json",
+                )
+            )
+            self.assertTrue(result["gate_pass"])
+
 
 if __name__ == "__main__":
     unittest.main()

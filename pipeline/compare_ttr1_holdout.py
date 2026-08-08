@@ -51,6 +51,18 @@ def correct(report: dict[str, Any], domain: str) -> int:
     return int(metrics["generated_correct"])
 
 
+def complete_coverage(report: dict[str, Any]) -> bool:
+    shard_count = report.get("shard_count")
+    return report.get("full_row_count") == 1279 and (
+        shard_count == 1
+        or (
+            report.get("merged_from_shards") is True
+            and isinstance(shard_count, int)
+            and shard_count >= 2
+        )
+    )
+
+
 def atomic_json(path: Path, payload: dict[str, Any]) -> None:
     if path.exists() or path.is_symlink():
         raise FileExistsError(f"refusing existing comparison: {path}")
@@ -86,8 +98,7 @@ def compare(args: argparse.Namespace) -> dict[str, Any]:
             report.get("schema") != "shohin-ttr1-control-evaluation-v1"
             or report.get("control") != name
             or any(report.get(key) != treatment.get(key) for key in shared)
-            or report.get("shard_count") != 1
-            or report.get("full_row_count") != 1279
+            or not complete_coverage(report)
         ):
             raise TTR1HoldoutComparisonError(
                 f"TTR1 holdout control is not matched: {name}"
@@ -110,7 +121,7 @@ def compare(args: argparse.Namespace) -> dict[str, Any]:
         "treatment_beats_strongest_control_by_3_points": treatment_accuracy
         >= control_accuracy[strongest_name] + 0.03,
         "complete_identity_coverage": all(
-            report.get("full_row_count") == 1279
+            complete_coverage(report)
             for report in (treatment, *controls.values())
         ),
     }

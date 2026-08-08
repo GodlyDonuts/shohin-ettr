@@ -263,6 +263,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "row_start": row_start,
         "row_end": row_end,
         "full_row_count": len(all_rows),
+        "batch_size": args.batch_size,
         "max_new_tokens_per_attempt": max_new_tokens,
         "attempts_per_identity": 2 if args.control == "best_of_two" else 1,
         "counters": dict(sorted(counters.items())),
