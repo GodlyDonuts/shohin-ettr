@@ -57661,3 +57661,27 @@ reasoning. It does establish a high-value recipe: verified counterexample
 targets plus whole-solution regeneration can turn complementary but flawed
 traces into answers beyond their static oracle. Exact result and candidate
 SHA-256 values are `f7a6b860...fafbc` and `013375c8...587b`.
+
+### SDR1 source-only control: candidate trajectories are causal
+
+SDR1 asks whether VCR1 can be collapsed into one direct model call. It uses
+the same pinned 9B warm start, 9,655 verified targets in identical order, 256
+updates, optimizer, LoRA scope, split, and seeds. The only changed factor is
+that both candidate solutions are removed from every training and inference
+prompt. An independent audit proves exact response-target parity and zero
+candidate markers.
+
+The answer is no. Source-only development reaches `448/1,289`, below QPT1
+`453` and far below VCR1 `575`. Holdout reaches `490/1,279`, a modest gain over
+QPT1 `471` but 153 answers below VCR1 `643`. The largest loss is MATH:
+`273/621 -> 142/621`. Logic falls `345 -> 321`; code rises `25 -> 27` of 33.
+SDR1 still solves 137 cases where both frozen source lineages were wrong,
+showing useful verified-target transfer, but it fails the frozen overall,
+MATH, and science retention gates.
+
+This localizes the practical architecture requirement. VCR1's success cannot
+be reduced to ordinary source-only SFT on the same targets. A deployable
+successor must preserve temporal separation: first create a model-owned draft
+or hypothesis trajectory, then expose that trajectory to a later revision
+owner. The next test should internalize proposal generation in the same host,
+not discard the intermediate computation.

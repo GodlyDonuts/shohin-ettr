@@ -1,6 +1,8 @@
 # DIVERGE-SDR1: Source-Only Verified Reasoning Distillation
 
-Status: frozen before any SDR1 model score on 2026-08-08.
+Status: completed once and closed on 2026-08-08. Development and holdout both
+fail the frozen retention gate, so the product board remains sealed and SDR1
+receives no variants.
 
 ## Capability Question
 
@@ -81,3 +83,39 @@ candidate-conditioned reasoning was removed without capability loss.
 Projected total charge before launch is `2--4` H100-hours for one fit, two
 source-disjoint evaluations, and one conditional product evaluation. Current
 monthly use is `409.9/2000.0` H100-hours.
+
+## Result
+
+Training job `745625` completes all 256 matched updates in `00:12:33`, charging
+365,028 target tokens at 511.70 target tok/s. Checkpoint and report SHA-256
+values are
+`8947a593793d42321e76f671cefd8c28ad34c94cc005ad91ac5ce8c756697195`
+and
+`c15ff1dbe6ab7fbcfa2062f925efbbb0d3fb765518e9cb294c54e6361309fa7d`.
+The shorter source-only context makes fit `1.72x` faster than VCR1 but does not
+preserve its capability.
+
+| Split | QPT1 | VCR1 | SDR1 | SDR1 both-wrong solved |
+|---|---:|---:|---:|---:|
+| Development | 453/1,289 | 575/1,289 | **448/1,289** | 126 |
+| Holdout | 471/1,279 | 643/1,279 | **490/1,279** | 137 |
+
+On holdout, SDR1 scores MATH `142/621`, BBH logic `321/625`, and MBPP
+`27/33`. Code and the both-wrong floor pass, but overall, MATH, and science
+retention fail. Development independently agrees: MATH `109/623`, logic
+`319/637`, MBPP `20/29`, and overall `448/1,289`. Development/holdout report
+SHA-256 values are
+`64282b672a7fe3c644f823bbfd8933594c600f2aaa200fc3a665c0e75ca756f3`
+and
+`516f244896dee9c1ad1e08049c55bf3f43a507d085c0d606413ba7268a1cc481`.
+
+This is a clean causal result. The verified target curriculum alone does not
+explain VCR1: source-only holdout is 153 answers below candidate-conditioned
+VCR1. Candidate trajectories are especially important for MATH, where VCR1
+solves 273 and SDR1 only 142. SDR1 still demonstrates some direct transfer
+over QPT1 on holdout (`+19`) and strong code, but it is not a standalone
+replacement. The prebuilt product board stays unopened. The next architecture
+must generate a draft internally and revise it in a later model-owned pass;
+one-pass source-only distillation is closed.
+
+Training plus both evaluations consumed `0.676` H100-hours, below budget.

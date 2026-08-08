@@ -1,5 +1,19 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **SDR1 CLOSED / INTERNAL DRAFT-REVISION REQUIRED — 2026-08-08 05:05 EDT:**
+> Exact source-only distillation trains in `12m33s` and is `1.72x` faster than
+> VCR1, but both source-disjoint gates fail. Development is `448/1,289`
+> versus QPT1 `453` and VCR1 `575`; holdout is `490/1,279` versus `471/643`.
+> Holdout code is strong at `27/33` and 137 both-source-wrong cases are solved,
+> but MATH collapses from VCR1 `273/621` to `142/621`; logic falls `345->321`.
+> Development independently reproduces the direction. Product remains sealed;
+> exact SDR1 gets no variant. Reports hash to `64282b67...56f3` and
+> `516f2448...c481`; total charge is `0.676` H100-hours. Candidate trajectories
+> are causally necessary. The structurally different successor must generate
+> a draft internally and revise it in a later model-owned pass, rather than
+> one-pass source-only distillation. Contract/result:
+> `docs/research/DIVERGE_SDR1_SOURCE_ONLY_DISTILLATION.md`.
+
 > **SDR1 FROZEN / READY — 2026-08-08 04:42 EDT:** The next bounded gate tests
 > whether VCR1's verified-repair gain can become a standalone reasoner. SDR1
 > matches the exact 9B warm start, 9,655 targets/order, 256-update schedule,
@@ -33789,3 +33803,26 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `retain_vcr1_as_the_strongest_practical_multistage_system;_close_exact_vcr1_without_a_code_route_or_nearby_rescue;_do_not_call_it_native_shohin_reasoning`.
+
+- **2026-08-08 04:30--05:05 EDT** -- **Source-only verified distillation is
+  fast but fails to retain candidate-conditioned reasoning.**
+
+  SDR1 changes one factor from VCR1: all 9,655 response targets,
+  presentations, source identities, split assignments, warm start, optimizer,
+  256-update schedule, and seeds are exact, while both candidate solutions are
+  removed from the model input. Audit proves target/order parity and zero
+  candidate markers; prompt bytes fall `40.82M -> 6.06M`. Train/development/
+  holdout SHA-256 values are `a97344d...71d6`, `aa0e7000...f5f0`, and
+  `3e623da7...96ce`.
+
+  Job `745625` completes 365,028 targets in `00:12:33` at 511.70 tok/s.
+  Checkpoint/report SHA-256 values are `8947a593...7195` and
+  `c15ff1db...fa7d`. Development job `745626` solves `448/1,289`, including
+  MATH `109/623`, logic `319/637`, code `20/29`, and 126 both-source-wrong
+  rows. Holdout `745627` solves `490/1,279`, including MATH `142/621`, logic
+  `321/625`, code `27/33`, and 137 both-source-wrong rows. Only code and the
+  both-wrong floors pass; overall and broad-domain retention fail. Product
+  data were prebuilt and boundary-audited but never scored.
+
+  Decision:
+  `close_exact_sdr1;_candidate_trajectories_are_causally_necessary;_build_a_model_owned_internal_draft_then_revision_successor`.
