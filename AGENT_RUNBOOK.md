@@ -33566,3 +33566,28 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finish_all_exact_rollouts;_fit_one_fixed_critic;_on_holdout_pass_only_apply_it_to_the_preserved_matched_development_completions`.
+
+- **2026-08-07 23:25--23:29 EDT** -- **The conditional CVG1 scorer is
+  immutable, hash-bound, and dependency-admitted.**
+
+  Private commit `88498a1` is pushed. Newton runtime
+  `runtime/cvg1_apply_88498a1_r1` is read-only with `SHA256SUMS` SHA-256
+  `07a82255516b099ce0ae31307c3a6c6929c8c71554ce7d1675055f2807db432f`.
+  Its actual preserved-report merge contains 568 unique examples (538 main
+  plus 30 AIME) at
+  `artifacts/product_reasoning/cvg1_eval_pairs_88498a1_r1/pairs.jsonl`,
+  SHA-256
+  `5013f580b7eb5b1015bbd9db33659648ba4749b537fccc77e77ad55cd727a0ee`;
+  merge-report SHA-256 is
+  `ab9729e455498845b7cbb890867b6c5c0cf44b6c8b0dd03c322765bbe7af6b36`.
+  An independent recount exactly reproduces B1 `248/538` and QPT1 `317/538`
+  plus every per-task count.
+
+  Conditional one-H100 application `745547` is held `afterok:745546` and
+  excludes `evc33`. It refuses to score unless the critic report says the
+  complete frozen source-disjoint holdout conjunction passed. Rollout job
+  `745511` has meanwhile joined `745509/745510` on a third valid H100
+  (`evc38`); all three exact replay shards are healthy.
+
+  Decision:
+  `let_the_immutable_dependency_chain_run;_do_not_open_or_tune_development_selection_before_the_holdout_gate`.
