@@ -25,8 +25,10 @@
 > but MATH regresses 12 points from equal-exposure continuation `58/100` and
 > irreversibly closes the conjunctive gate. Remaining GPQA/BBH/AIME jobs still
 > finish for a complete record. The sole frozen successor CVG1 has launched
-> exact rollout jobs `745462--745495`; projected total campaign charge was
-> reported before launch as 31--38 GPU-hours.
+> exact replay rollout jobs `745509--745542`, excluding CUDA-invisible
+> `evc33`; projected total campaign charge was reported before launch as
+> 31--38 GPU-hours. Barriers `745543/745544`, merge `745545`, and fixed
+> source-disjoint critic `745546` are dependency-held behind all shards.
 >
 > An equal-exposure 4B B1 continuation `745356` starts from the same protected
 > checkpoint for another 256 updates with identical V10 data/order, context,
@@ -33469,3 +33471,35 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_exact_sag1_after_complete_receipt;_collect_the_single_frozen_cvg1_whole_lineage_corpus_without_sag1_rescue_variants`.
+
+- **2026-08-07 22:50--23:02 EDT** -- **A CUDA-invisible node fails before
+  inference; the exact CVG1 replay and critic chain are repaired immediately.**
+
+  Initial rollout jobs `745462--745464` land on `evc33` and fail while loading
+  the frozen backbone because PyTorch reports no accelerator device. Job
+  `745465` is canceled while entering the same invalid state, and pending jobs
+  `745466--745495` are canceled before allocation. Read-only inspection proves
+  the original rollout directory contains zero files: no completion, label,
+  or score was produced. These are infrastructure failures, not model results.
+
+  Private commit `9ae073b` adds only the measured `evc33` exclusion to the
+  same hash-bound launcher. A 34/34-command dry run passes, then exact replay
+  jobs `745509--745542` are submitted to a new isolated `r2` output root with
+  unchanged model weights, banks, prompts, decoding, seeds, sample count, and
+  thresholds. No retry family is opened.
+
+  In parallel, commits `cbfee0c/a960206` implement and wrap the frozen CVG1
+  completion critic. It receives only problem text and one complete candidate
+  at inference, uses no task/benchmark label or handcrafted task features,
+  balances verified training strata, and commits to one whole lineage with B1
+  as the insufficient-evidence default. Its 256-update schedule and holdout
+  gates are fixed before data are visible. Eight merger/critic tests, Ruff,
+  Black, shell syntax, and bytecode checks pass. Immutable runtime
+  `runtime/cvg1_critic_a960206_r1` has manifest SHA-256
+  `15cd00f6162fc69601b0ac81bbe268f68dd34912748fec55cf6a2fad130177a5`.
+  Two 17-job barriers `745543/745544` avoid the site's dependency-count cap;
+  merge `745545` and one-H100 critic `745546` release only after all exact
+  replay shards succeed. Critic execution also excludes `evc33`.
+
+  Decision:
+  `preserve_the_hardware_negative;_run_one_exact_isolated_replay_then_one_fixed_source_disjoint_critic_gate`.
