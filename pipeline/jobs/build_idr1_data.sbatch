@@ -13,6 +13,8 @@ set -euo pipefail
 
 : "${RUNTIME:?RUNTIME is required}"
 : "${RUNTIME_MANIFEST_SHA256:?RUNTIME_MANIFEST_SHA256 is required}"
+: "${MODEL_REVISION:?MODEL_REVISION is required}"
+: "${ADAPTER_SHA256:?ADAPTER_SHA256 is required}"
 : "${DRAFT_ROOT:?DRAFT_ROOT is required}"
 : "${MERGED_DRAFTS:?MERGED_DRAFTS is required}"
 : "${DRAFT_RECEIPT:?DRAFT_RECEIPT is required}"
@@ -66,7 +68,9 @@ export PYTHONPATH="$RUNTIME/pipeline:$RUNTIME/train"
   --bank "$SCIENCE_BANK" \
   --bank "$CODE_BANK" \
   --output "$MERGED_DRAFTS" \
-  --receipt "$DRAFT_RECEIPT"
+  --receipt "$DRAFT_RECEIPT" \
+  --model-revision "$MODEL_REVISION" \
+  --adapter-sha256 "$ADAPTER_SHA256"
 
 "$PYTHON" "$RUNTIME/pipeline/build_idr1_revision_data.py" \
   --pairs "$PAIRS" \
