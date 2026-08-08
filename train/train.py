@@ -33,7 +33,39 @@ CONFIGS = {
     "mame":   dict(n_layer=12, n_head=6, n_kv_head=2, d_model=384, d_ff=1024, seq_len=2048),
     # flagship (~125-135M)
     "shohin": dict(n_layer=30, n_head=9, n_kv_head=3, d_model=576, d_ff=1536, seq_len=2048),
+    # Phase-2 scale candidates. These retain the proven deep-thin GQA trunk while
+    # moving to a 4k training context. The Qwen-compatible 49,152-token vocabulary
+    # is selected explicitly with --vocab-size so tokenizer choice remains visible
+    # in every launch receipt.
+    "shohin_390m": dict(
+        n_layer=30, n_head=16, n_kv_head=4, d_model=1024, d_ff=2816,
+        seq_len=4096, rope_theta=1_000_000.0,
+    ),
+    "shohin_920m": dict(
+        n_layer=32, n_head=24, n_kv_head=8, d_model=1536, d_ff=4352,
+        seq_len=4096, rope_theta=1_000_000.0,
+    ),
 }
+
+
+def parameter_count_for_config(config, vocab_size):
+    """Return the exact tied-embedding parameter count without allocating a model."""
+
+    n_layer = int(config["n_layer"])
+    n_head = int(config["n_head"])
+    n_kv_head = int(config["n_kv_head"])
+    d_model = int(config["d_model"])
+    d_ff = int(config["d_ff"])
+    if d_model % n_head:
+        raise ValueError("d_model must be divisible by n_head")
+    if n_head % n_kv_head:
+        raise ValueError("n_head must be divisible by n_kv_head")
+    head_dim = d_model // n_head
+    embedding = int(vocab_size) * d_model
+    attention = 2 * d_model * d_model + 2 * d_model * n_kv_head * head_dim
+    mlp = 3 * d_model * d_ff
+    block_norms = 2 * d_model + 2 * head_dim
+    return embedding + n_layer * (attention + mlp + block_norms) + d_model
 
 
 def validate_resume_config(requested_cfg, checkpoint_cfg):
