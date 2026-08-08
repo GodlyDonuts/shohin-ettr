@@ -1,8 +1,9 @@
 # Shohin Phase 2 Scale Decision
 
-Status: executable decision draft, 2026-08-08. The protected 4B product
-aggregate remains the immediate dependency. This document does not authorize a
-large pretraining launch by itself.
+Status: capacity-boundary decision live, 2026-08-08. The protected 4B product
+aggregate closed as a mixed conjunctive failure; the frozen 0.8B transfer now
+selects the scratch scale. This document does not authorize a large pretraining
+launch by itself.
 
 ## Evidence Boundary
 
@@ -21,9 +22,13 @@ The strongest causal result is now same-family internal draft/revision:
 
 On source-disjoint data, trained revision beats the unchanged second pass by
 `+158/1,289` development answers and `+174/1,279` holdout answers. Every math,
-logic/science, and executable-code delta is positive. The protected 568-case
-product confirmation decides whether this mechanism is ready to become the
-practical Shohin product architecture.
+logic/science, and executable-code delta is positive. On the protected
+568-case product board, treatment scores `320/538 = 59.48%` and `61.391%`
+five-domain macro versus unchanged-B1 `272/538 = 50.56%` and `51.053%`.
+Science improves `52->90` and code `6->21`, but GSM8K, MATH-500, and BBH logic
+regress by `2/1/2` answers. The no-domain-regression product gate therefore
+fails despite the `+48` aggregate lift. The 4B artifact is retained as causal
+evidence and is not packaged as a qualified product.
 
 ## Candidate Trunks
 
@@ -54,8 +59,8 @@ measured inference path.
 
 The decision is capability-driven rather than parameter-count-driven.
 
-1. If the 4B protected product gate passes, package that exact shared-base
-   system as the first deployable Shohin reasoning model.
+1. Preserve the closed 4B mixed failure without local threshold, prompt,
+   decoding, rank, or duration rescue variants.
 2. Run one matched 0.8B internal-draft/revision transfer using the already
    pinned Qwen3.5-0.8B B1 state, exact source-disjoint bank, exact 256-update
    revision schedule, and unchanged control.
@@ -63,6 +68,12 @@ The decision is capability-driven rather than parameter-count-driven.
    gain with nonnegative math, logic/science, and code deltas on both splits.
 4. Otherwise select `shohin_920m`. Do not spend the remaining compute on a
    scratch scale already contradicted by the capacity-boundary result.
+
+The frozen 0.8B campaign is live as jobs `745961--745979`. Seventeen
+single-H100 source-only draft shards feed one hash-bound data build and an
+automatic train/evaluate/compare dispatcher. The comparison is conjunctive
+across development and holdout and writes the scale decision once; there is no
+nearby 0.8B retry family.
 
 This test determines the smallest plausible scratch trunk. It is not a nearby
 variant of the failed QST1 workspace: the changed factor is the already

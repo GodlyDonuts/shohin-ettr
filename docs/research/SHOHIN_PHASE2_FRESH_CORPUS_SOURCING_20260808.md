@@ -1,7 +1,7 @@
 # Shohin Phase 2 Fresh Corpus Sourcing
 
-Status: sourcing and admission plan, 2026-08-08. This document does not admit
-any quarantined corpus or authorize a large scratch run.
+Status: sourcing and admission graph live, 2026-08-08. This document does not
+admit any quarantined corpus or authorize a large scratch run.
 
 ## Objective
 
@@ -96,6 +96,23 @@ reported separately from unique base-pretraining tokens.
 4. **Production corpus:** production-level admission, mostly fresh unique
    data, exact licenses and redistribution terms, and a physical token budget
    consistent with the selected 389M or 919M trunk.
+
+## Current Physical Gate
+
+The frozen five-source exact cross-source audit covers 13,620,050,554 tokens
+in peS2o, Essential-Web, bounded FinePDF, Formal Logic, and FineWeb-Edu and
+found zero exact cross-source duplicate documents. Stokes job `768241` is now
+running the independently exact-confirmed near-duplicate audit over that
+priority order. Jobs `768243--768247` are fail-closed behind it and will
+materialize one physical near residual per source; jobs `768248--768251` then
+create and independently verify train/document/domain partitions for peS2o,
+Essential-Web, FinePDF core, and FineWeb-Edu. Formal Logic remains zero weight:
+its source has no domain provenance and cannot satisfy the domain-holdout gate.
+
+Essential-Web job `768237` separately exercises the complete holdout creator
+and independent verifier as a small transport canary. None of these jobs marks
+a source admitted; privacy, license, retained-review, and canary utility
+evidence remain required by the physical training contract.
 
 The 5B canary is not evidence that 5B tokens are enough to train a competitive
 model. It is the smallest economical gate for optimization, data-mix, and

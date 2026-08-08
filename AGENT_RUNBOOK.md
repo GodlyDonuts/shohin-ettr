@@ -1,5 +1,25 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **IDR08 AND PHASE-2 DATA LANES SATURATED — 2026-08-08 16:49 EDT:**
+> authenticated Newton and Stokes multiplexed access is healthy. IDR08 code
+> draft job `745977` completed `200/200` in `13m42s` with `38` correct drafts;
+> the sixteen 512-row math/science shards `745961--745976` remain healthy and
+> were at roughly `232--248/512` with no fatal error. Build `745978` and the
+> complete 256-update train/evaluate/compare dispatcher `745979` remain
+> dependency-held. Newton usage is `485.0/2,000.0` GPU-hours.
+>
+> On Stokes, immutable holdout runtime `phase2_holdout_3ab418c_r4` has
+> SHA256SUMS SHA-256 `28691eeb...e0b4c`; Essential-Web canary `768237` is
+> running. The earlier `768235` failed before corpus mutation because its
+> minimal runtime omitted one transitive policy module; dead dependent
+> `768236` was canceled and no scientific setting changed. Full five-source
+> near audit `768241` is running over the existing hash-bound 13.620B-token
+> priority specification. Conditional near-residual jobs `768243--768247`
+> and valid-domain holdout jobs `768248--768251` are staged behind exact
+> success. Formal Logic stays zero-weight because its ledger has no domain
+> provenance. No corpus is training-admitted and no scratch optimizer is
+> authorized yet.
+
 > **IDR4 PRODUCT MIXED FAIL / IDR08 CAPACITY BOUNDARY LIVE — 2026-08-08
 > 16:24 EDT:** VPN and authenticated Newton access are restored. All 16
 > immutable 4B product evaluation shards completed; original aggregate job
