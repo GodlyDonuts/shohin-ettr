@@ -10,9 +10,8 @@
 > AdamW, absolute data position, and cosine schedule, and completed update 256
 > with exact cumulative `619,734` charged targets. Final checkpoint SHA-256 is
 > `9ccd0285...7955`; report SHA-256 is `494b37bf...e868`; the protected B1 hash
-> remains bit-identical. Recovery evaluations `745366--745372` are released;
-> GSM8K and MATH are live while five one-H100 jobs await priority/resources.
-> This is scheduler fault tolerance, not a scientific variant. Private commit
+> remains bit-identical. Recovery evaluations `745366--745372` and aggregate
+> `745459` complete. This is scheduler fault tolerance, not a scientific variant. Private commit
 > `d901582` implements and tests the fail-closed resume path. The remaining
 > pending evaluator time limits were reduced using measured identical-job
 > runtimes to improve Slurm backfill, without changing evaluation content.
@@ -20,11 +19,13 @@
 > hash-bind and merge the immutable primary trace through checkpoint 192 with
 > the resumed report through update 256. It must observe the exact 33 frozen
 > log points; replacement affects only accounting, not model/evaluator/gates.
-> Completed scores so far are GSM8K `91/100`, MATH-500 `46/100`, HumanEval
-> `18/20`, and MBPP `12/20`. Code therefore retains the frozen `30/40` floor,
-> but MATH regresses 12 points from equal-exposure continuation `58/100` and
-> irreversibly closes the conjunctive gate. Remaining GPQA/BBH/AIME jobs still
-> finish for a complete record. The sole frozen successor CVG1 has launched
+> Final SAG1 scores are GSM8K `91/100`, MATH-500 `46/100`, HumanEval `18/20`,
+> MBPP `12/20`, GPQA `52/198`, BBH logic `73/100`, and AIME `0/30`: `62.253%`
+> five-domain macro and `292/538` solved. This is `+6.622/+44` over original B1
+> and `+5.135/+40` over equal-exposure continuation. Code retains `30/40` and
+> every gate except continuation domain-regression passes, but MATH falls from
+> `58` to `46`, so exact SAG1 is closed. Receipt SHA-256 is `c96c3f78...19b3`.
+> The sole frozen successor CVG1 has launched
 > exact replay rollout jobs `745509--745542`, excluding CUDA-invisible
 > `evc33`; projected total campaign charge was reported before launch as
 > 31--38 GPU-hours. Barriers `745543/745544`, merge `745545`, and fixed
@@ -33503,3 +33504,33 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `preserve_the_hardware_negative;_run_one_exact_isolated_replay_then_one_fixed_source_disjoint_critic_gate`.
+
+- **2026-08-07 23:08--23:11 EDT** -- **SAG1's complete seven-board receipt
+  closes with a large but non-Pareto specialist gain.**
+
+  All recovery evaluations complete successfully. Exact SAG1 scores are
+  GSM8K `91/100`, MATH-500 `46/100`, HumanEval `18/20`, MBPP `12/20`, GPQA
+  `52/198`, BBH logic `73/100`, and AIME `0/30`. Its five-domain macro is
+  `62.252525%` with `292/538` solved, versus original B1 `55.630303% / 248`
+  and equal-exposure continuation `57.117172% / 252`. Deltas are
+  `+6.622222` macro and `+44` solved over original, and `+5.135354` / `+40`
+  over continuation. Relative to continuation, domain deltas are GSM `+3`,
+  MATH `-12`, code `+2`, GPQA `+35`, and BBH `+12` answers.
+
+  Aggregate `745459` independently reports every training gate true and
+  seven of eight numeric gates true. The sole false gate is
+  `continuation_no_domain_regression_over_two_points`, because MATH regresses
+  12 points. Mean router commit is exactly `2/3` across all 33 scheduled
+  samples. Required next step is `close_exact_sag1`; no 9B transplant or SAG1
+  rescue variant is authorized. The read-only v2 receipt is preserved locally
+  as `docs/research/DIVERGE_SAG1_PRODUCT_RESULT.json` and on Newton, with
+  SHA-256
+  `c96c3f7887a4798e567bfed82963d606c087c4cae7192d828cfdd7b30ec719b3`.
+
+  SAG1 remains a measured 4B specialist: it exceeds the current 9B B1's
+  `61.330% / 269` broad aggregate, but is not Pareto-safe because the 9B B1
+  retains stronger MATH (`49`), code (`35/40`), and AIME (`3`). CVG1 now
+  tests whether whole-completion arbitration can retain complementary gains.
+
+  Decision:
+  `close_sag1_without_variants;_continue_exact_cvg1_completion_verification`.

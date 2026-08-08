@@ -1,0 +1,477 @@
+{
+  "arms": {
+    "B1_continuation": {
+      "aime": {
+        "accuracy": 0.1,
+        "correct": 3,
+        "total": 30
+      },
+      "domains": {
+        "code": {
+          "accuracy": 0.7,
+          "correct": 28,
+          "tasks": [
+            "humaneval",
+            "mbpp"
+          ],
+          "total": 40
+        },
+        "competition_math": {
+          "accuracy": 0.58,
+          "correct": 58,
+          "tasks": [
+            "math500"
+          ],
+          "total": 100
+        },
+        "grade_school_math": {
+          "accuracy": 0.88,
+          "correct": 88,
+          "tasks": [
+            "gsm8k"
+          ],
+          "total": 100
+        },
+        "logic": {
+          "accuracy": 0.61,
+          "correct": 61,
+          "tasks": [
+            "bbh_logic"
+          ],
+          "total": 100
+        },
+        "science": {
+          "accuracy": 0.08585858585858586,
+          "correct": 17,
+          "tasks": [
+            "gpqa"
+          ],
+          "total": 198
+        }
+      },
+      "macro_accuracy": 0.5711717171717171,
+      "solved": 252,
+      "total": 538
+    },
+    "B1_original": {
+      "aime": {
+        "accuracy": 0.13333333333333333,
+        "correct": 4,
+        "total": 30
+      },
+      "domains": {
+        "code": {
+          "accuracy": 0.75,
+          "correct": 30,
+          "tasks": [
+            "humaneval",
+            "mbpp"
+          ],
+          "total": 40
+        },
+        "competition_math": {
+          "accuracy": 0.5,
+          "correct": 50,
+          "tasks": [
+            "math500"
+          ],
+          "total": 100
+        },
+        "grade_school_math": {
+          "accuracy": 0.85,
+          "correct": 85,
+          "tasks": [
+            "gsm8k"
+          ],
+          "total": 100
+        },
+        "logic": {
+          "accuracy": 0.53,
+          "correct": 53,
+          "tasks": [
+            "bbh_logic"
+          ],
+          "total": 100
+        },
+        "science": {
+          "accuracy": 0.15151515151515152,
+          "correct": 30,
+          "tasks": [
+            "gpqa"
+          ],
+          "total": 198
+        }
+      },
+      "macro_accuracy": 0.5563030303030303,
+      "solved": 248,
+      "total": 538
+    },
+    "SAG1": {
+      "aime": {
+        "accuracy": 0.0,
+        "correct": 0,
+        "total": 30
+      },
+      "domains": {
+        "code": {
+          "accuracy": 0.75,
+          "correct": 30,
+          "tasks": [
+            "humaneval",
+            "mbpp"
+          ],
+          "total": 40
+        },
+        "competition_math": {
+          "accuracy": 0.46,
+          "correct": 46,
+          "tasks": [
+            "math500"
+          ],
+          "total": 100
+        },
+        "grade_school_math": {
+          "accuracy": 0.91,
+          "correct": 91,
+          "tasks": [
+            "gsm8k"
+          ],
+          "total": 100
+        },
+        "logic": {
+          "accuracy": 0.73,
+          "correct": 73,
+          "tasks": [
+            "bbh_logic"
+          ],
+          "total": 100
+        },
+        "science": {
+          "accuracy": 0.26262626262626265,
+          "correct": 52,
+          "tasks": [
+            "gpqa"
+          ],
+          "total": 198
+        }
+      },
+      "macro_accuracy": 0.6225252525252525,
+      "solved": 292,
+      "total": 538
+    }
+  },
+  "comparison": {
+    "development_gate_pass": false,
+    "mean_logged_router_commit_rate": 0.6666666666666666,
+    "numeric_gates": {
+      "continuation_improves_at_least_three_domains": true,
+      "continuation_macro_delta_at_least_three_points": true,
+      "continuation_no_domain_regression_over_two_points": false,
+      "continuation_solved_delta_at_least_fifteen": true,
+      "original_improves_at_least_three_domains": true,
+      "original_macro_delta_at_least_three_points": true,
+      "original_solved_delta_at_least_fifteen": true,
+      "retains_original_b1_code_30_of_40": true
+    },
+    "router_commit_sample_count": 33,
+    "training_gates": {
+      "both_16_examples_per_update": true,
+      "both_256_updates": true,
+      "both_finite": true,
+      "continuation_starts_at_update_256": true,
+      "correct_arms": true,
+      "frozen_base_unchanged": true,
+      "frozen_revision_and_data": true,
+      "nontrivial_nonuniversal_router": true,
+      "same_logical_target_exposure": true,
+      "shared_protected_base_checkpoint": true
+    },
+    "versus_b1_continuation": {
+      "domain_deltas": {
+        "code": {
+          "accuracy_delta": 0.050000000000000044,
+          "solved_delta": 2
+        },
+        "competition_math": {
+          "accuracy_delta": -0.11999999999999994,
+          "solved_delta": -12
+        },
+        "grade_school_math": {
+          "accuracy_delta": 0.030000000000000027,
+          "solved_delta": 3
+        },
+        "logic": {
+          "accuracy_delta": 0.12,
+          "solved_delta": 12
+        },
+        "science": {
+          "accuracy_delta": 0.1767676767676768,
+          "solved_delta": 35
+        }
+      },
+      "improved_domain_count": 4,
+      "macro_delta": 0.05135353535353537,
+      "maximum_domain_regression": 0.11999999999999994,
+      "solved_delta": 40
+    },
+    "versus_b1_original": {
+      "domain_deltas": {
+        "code": {
+          "accuracy_delta": 0.0,
+          "solved_delta": 0
+        },
+        "competition_math": {
+          "accuracy_delta": -0.03999999999999998,
+          "solved_delta": -4
+        },
+        "grade_school_math": {
+          "accuracy_delta": 0.06000000000000005,
+          "solved_delta": 6
+        },
+        "logic": {
+          "accuracy_delta": 0.19999999999999996,
+          "solved_delta": 20
+        },
+        "science": {
+          "accuracy_delta": 0.11111111111111113,
+          "solved_delta": 22
+        }
+      },
+      "improved_domain_count": 3,
+      "macro_delta": 0.06622222222222218,
+      "maximum_domain_regression": 0.03999999999999998,
+      "solved_delta": 44
+    }
+  },
+  "eval_files": {
+    "B1_continuation": {
+      "aime": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/sag1_b1cont_u256_eb2600c_eval_aime.json",
+        "sha256": "1cc42cdf8b6f6498e43d65d0d19b066a15873d3172c0a9af6ca4af0c6c12480e"
+      },
+      "bbh_logic": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/sag1_b1cont_u256_eb2600c_eval_bbh_logic.json",
+        "sha256": "2246253bb88665873a6ff346e280a43ad20dff7453918568da9ec4ebfe31d4f8"
+      },
+      "gpqa": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/sag1_b1cont_u256_eb2600c_eval_gpqa.json",
+        "sha256": "258e0e5767242663b35d542d14df82c6eb998f56716d17cccc6e9bf7c4f404a0"
+      },
+      "gsm8k": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/sag1_b1cont_u256_eb2600c_eval_gsm8k.json",
+        "sha256": "1097618a3f3ac007ce28d4a37890fa41720b38edef01c3d3ed42c2e78eb375be"
+      },
+      "humaneval": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/sag1_b1cont_u256_eb2600c_eval_humaneval.json",
+        "sha256": "018716239d9b0881ecb52ac95f0a0d75106b0c5c920de3b775d44315d732c185"
+      },
+      "math500": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/sag1_b1cont_u256_eb2600c_eval_math500.json",
+        "sha256": "6692f8ae29c58d795ee760d39e487af14f354123477d0f6a687a1da8e30b9be4"
+      },
+      "mbpp": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/sag1_b1cont_u256_eb2600c_eval_mbpp.json",
+        "sha256": "315b834e2aba28f9e2e0940b9f4d54072e84ca2de1c9ce4ac23a5865ff8e733b"
+      }
+    },
+    "B1_original": {
+      "aime": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e_eval_aime.json",
+        "sha256": "bcfbd4c5bd5b8f5d06a99dd34d5b7d433a2f892c7a474d739fffb3e2ecb5a4da"
+      },
+      "bbh_logic": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e_eval_bbh_logic.json",
+        "sha256": "3b32f4686113d1ef52678d6e61c1e90f83e45edfa9355360c4b7a5c51fe8dcf8"
+      },
+      "gpqa": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e_eval_gpqa.json",
+        "sha256": "62269d2ac86bc0cf04bb98cc3dd1055e52faed9dfeef0969bc8e7c6e23892183"
+      },
+      "gsm8k": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e_eval_gsm8k.json",
+        "sha256": "5ad2189708ce58c7705555ba238e4cb0228d12f7f4e388c0001188ca078c667b"
+      },
+      "humaneval": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e_eval_humaneval.json",
+        "sha256": "350761bb28c73c612028bb9dd4c4e21e2692cc8f850ded285d0346d30cda330d"
+      },
+      "math500": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e_eval_math500.json",
+        "sha256": "c13252c86d30a07fc0dd1064396ba4f202fb9bb84ab092d62edf8a2a34a6563f"
+      },
+      "mbpp": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e_eval_mbpp.json",
+        "sha256": "63e2c6e847bf87d684f79d4069072f84e6629c9fb87736f08cb5fd1428827253"
+      }
+    },
+    "SAG1": {
+      "aime": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/sag1_u256_dddb36f_eval_aime.json",
+        "sha256": "bf9c1a4bfebc0c574491add804784ffc0e7a9a13695ba021441967dc622fea16"
+      },
+      "bbh_logic": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/sag1_u256_dddb36f_eval_bbh_logic.json",
+        "sha256": "ffa103a99101a84d4b997b988f15cbf44fb6cea9523bc88ebd821497110e70b8"
+      },
+      "gpqa": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/sag1_u256_dddb36f_eval_gpqa.json",
+        "sha256": "ab68dca336c2f3ddc3599927661b7a0252183ea991e95123fcaef97739c7c903"
+      },
+      "gsm8k": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/sag1_u256_dddb36f_eval_gsm8k.json",
+        "sha256": "241ce8f593ca398793e8455bff06f532aa680f353f708c4fa9f21d58cc742392"
+      },
+      "humaneval": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/sag1_u256_dddb36f_eval_humaneval.json",
+        "sha256": "80fb1a150a5752ade248da5e8d40fffa3fbfd9f704c6ee3657866525ea4eff37"
+      },
+      "math500": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/sag1_u256_dddb36f_eval_math500.json",
+        "sha256": "6b01db00383093b490d8094bc890357e76deed371d3c2d58d8046cff81a98a52"
+      },
+      "mbpp": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/sag1_u256_dddb36f_eval_mbpp.json",
+        "sha256": "1349762a0ed725d79783b611978df683c2d7dc236588b6cedcfa20e194aa5088"
+      }
+    }
+  },
+  "promotion_authorized": false,
+  "required_next_step": "close_exact_sag1",
+  "schema": "shohin-sag1-product-gate-v2",
+  "status": "complete",
+  "training_files": {
+    "B1_continuation": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/sag1_b1cont_u256_eb2600c/report.json",
+      "sha256": "0dfcb2a6858bbe2b07be0ccfc913edeef562d0617802b96aeb82fff91f54aacc"
+    },
+    "SAG1": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/sag1_u256_dddb36f/report.json",
+      "sha256": "494b37bf0e0a9d400e2d409d239d30fbdaf9063fcbead81ce4125c7501a3e868"
+    }
+  },
+  "treatment_trace_receipt": {
+    "expected_updates": [
+      1,
+      8,
+      16,
+      24,
+      32,
+      40,
+      48,
+      56,
+      64,
+      72,
+      80,
+      88,
+      96,
+      104,
+      112,
+      120,
+      128,
+      136,
+      144,
+      152,
+      160,
+      168,
+      176,
+      184,
+      192,
+      200,
+      208,
+      216,
+      224,
+      232,
+      240,
+      248,
+      256
+    ],
+    "merged_updates": [
+      1,
+      8,
+      16,
+      24,
+      32,
+      40,
+      48,
+      56,
+      64,
+      72,
+      80,
+      88,
+      96,
+      104,
+      112,
+      120,
+      128,
+      136,
+      144,
+      152,
+      160,
+      168,
+      176,
+      184,
+      192,
+      200,
+      208,
+      216,
+      224,
+      232,
+      240,
+      248,
+      256
+    ],
+    "mode": "checkpoint_prefix_plus_resumed_report",
+    "prefix_log": {
+      "path": "/lustre/fs1/home/sa305415/shohin/logs/diverge_sag1_745346.out",
+      "sha256": "6b61c2686313d94380656205cd52708844e6838f8bb9992cbe19a79ce13b7294"
+    },
+    "prefix_updates_used": [
+      1,
+      8,
+      16,
+      24,
+      32,
+      40,
+      48,
+      56,
+      64,
+      72,
+      80,
+      88,
+      96,
+      104,
+      112,
+      120,
+      128,
+      136,
+      144,
+      152,
+      160,
+      168,
+      176,
+      184,
+      192
+    ],
+    "report_segment_updates": [
+      200,
+      208,
+      216,
+      224,
+      232,
+      240,
+      248,
+      256
+    ],
+    "resume_update": 192,
+    "suffix_updates_used": [
+      200,
+      208,
+      216,
+      224,
+      232,
+      240,
+      248,
+      256
+    ]
+  }
+}
