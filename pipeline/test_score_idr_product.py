@@ -4,8 +4,25 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import subprocess
+import sys
 
 from score_idr_product import compare
+
+
+def test_product_builder_accepts_idr4_lineage() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(Path(__file__).with_name("build_aqc1_product.py")),
+            "merge",
+            "--help",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert "idr4" in result.stdout
 
 
 def _write_bound(path: Path, report: Path, rows: list[dict], stage: str) -> None:

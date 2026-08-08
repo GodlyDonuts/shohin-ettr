@@ -278,7 +278,7 @@ def main() -> int:
         "--candidate-report", type=Path, action="append", required=True
     )
     merge_parser.add_argument(
-        "--lineage", choices=("draft", "idr1", "control"), required=True
+        "--lineage", choices=("draft", "idr1", "idr4", "control"), required=True
     )
 
     revision_parser = subparsers.add_parser("revision", parents=[common])
