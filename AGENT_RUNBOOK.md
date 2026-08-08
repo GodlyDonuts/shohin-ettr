@@ -1,5 +1,21 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **VCR1 FROZEN / READY TO LAUNCH — 2026-08-08 03:35 EDT:** The exact
+> structurally different successor to PCJ1 is VCR1, a Qwen3.5-9B B1 revision
+> policy that receives both complete 4B B1/QPT1 attempts and emits one new
+> whole solution. It is not another selector and can exceed the 552/1,279
+> source-lineage oracle by repairing both-wrong pairs. The hash-bound corpus
+> contains 9,655 train presentations plus 1,289 development and 1,279 holdout
+> identities. Train/development/holdout SHA-256 values are
+> `55635fbe...73d9d`, `f0f98244...328e`, and `f135fcff...148`; report SHA is
+> `b6e4e94d...53b3`. Runtime sees only the revision prompt; verifier answers,
+> correctness, task labels, and assessor fields remain supervisor-only. Exact
+> fit is 256 updates, BS1/ACC8, context 4096, LR 2e-5, seed 2026080815. Frozen
+> holdout requires >=497/1,279, <=2-point math/science regressions, code not
+> below QPT1, and at least one both-wrong repair. Projected total charge is
+> `3--6` H100-hours. Contract:
+> `docs/research/DIVERGE_VCR1_VERIFIER_COUNTEREXAMPLE_REVISION.md`.
+
 > **PCJ1 CLOSED / VCR1 NEXT — 2026-08-08 03:23 EDT:** PCJ1 jobs
 > `745612/745615` complete all 256 updates. On the actual NUL-delimited
 > `5,824/1,289/1,279` split, 4B selection improves QPT1 from `471` to `489`
