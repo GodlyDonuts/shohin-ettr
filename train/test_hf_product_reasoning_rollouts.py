@@ -1,11 +1,15 @@
 import inspect
 
+import pytest
+
 from hf_product_reasoning_rollouts import (
+    ProductRolloutError,
     choose_positive,
     combine_finalization,
     render_rollout_prompt,
     run,
     score_completion,
+    validate_generation_geometry,
 )
 
 
@@ -131,3 +135,14 @@ def test_rollout_generation_uses_resolved_adapter_mode() -> None:
     assert "rendered,\n            adapter," in source
     assert "finalize_rendered,\n                    adapter," in source
     assert "_render_prompt(\n                        tokenizer" not in source
+
+
+def test_rollout_generation_geometry_separates_deployment_and_sampling() -> None:
+    validate_generation_geometry("greedy", 1)
+    validate_generation_geometry("qwen-thinking", 2)
+    with pytest.raises(
+        ProductRolloutError, match="greedy rollout collection requires one"
+    ):
+        validate_generation_geometry("greedy", 2)
+    with pytest.raises(ProductRolloutError, match="requires 2--8 samples"):
+        validate_generation_geometry("qwen-thinking", 1)

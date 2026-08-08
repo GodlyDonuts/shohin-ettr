@@ -29,7 +29,6 @@ from hf_product_reasoning_eval import (
     has_explicit_final_answer,
 )
 
-
 SCHEMA = "shohin-hf-product-reasoning-rollouts-v1"
 
 
@@ -105,6 +104,20 @@ def combine_finalization(
     if exhausted and finalization and has_explicit_final_answer(finalization):
         return f"{completion.rstrip()}\n\n{finalization.strip()}"
     return completion
+
+
+def validate_generation_geometry(mode: str, samples: int) -> None:
+    if mode == "greedy":
+        if samples != 1:
+            raise ProductRolloutError("greedy rollout collection requires one sample")
+        return
+    if mode == "qwen-thinking":
+        if not 2 <= samples <= 8:
+            raise ProductRolloutError(
+                "stochastic rollout collection requires 2--8 samples"
+            )
+        return
+    raise ProductRolloutError("unsupported rollout generation mode")
 
 
 def render_rollout_prompt(
@@ -217,7 +230,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             tokenizer,
             rendered,
             adapter,
-            "qwen-thinking",
+            args.generation_mode,
             args.max_new_tokens,
             stop_token_ids,
         )
@@ -408,6 +421,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "skip": args.skip,
         "count": args.count,
         "samples": args.samples,
+        "generation_mode": args.generation_mode,
         "prompt_batch_size": args.prompt_batch_size,
         "finalize_exhausted": args.finalize_exhausted,
         "finalize_max_new_tokens": args.finalize_max_new_tokens,
@@ -448,6 +462,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--skip", type=int, default=0)
     parser.add_argument("--count", type=int, default=128)
     parser.add_argument("--samples", type=int, default=4)
+    parser.add_argument(
+        "--generation-mode",
+        choices=("greedy", "qwen-thinking"),
+        default="qwen-thinking",
+    )
     parser.add_argument("--prompt-batch-size", type=int, default=1)
     parser.add_argument("--finalize-exhausted", action="store_true")
     parser.add_argument("--finalize-max-new-tokens", type=int, default=64)
@@ -463,9 +482,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-new-tokens", type=int, default=1536)
     args = parser.parse_args()
     if (
-        args.samples <= 1
-        or args.samples > 8
-        or args.prompt_batch_size <= 0
+        args.prompt_batch_size <= 0
         or args.prompt_batch_size > 64
         or args.finalize_max_new_tokens <= 0
         or args.finalize_batch_size <= 0
@@ -473,9 +490,13 @@ def parse_args() -> argparse.Namespace:
         or args.code_timeout <= 0
     ):
         parser.error(
-            "samples must be in [2, 8], prompt batch size in [1, 64], and "
+            "prompt batch size must be in [1, 64], and "
             "generation limit must be positive"
         )
+    try:
+        validate_generation_geometry(args.generation_mode, args.samples)
+    except ProductRolloutError as exc:
+        parser.error(str(exc))
     return args
 
 

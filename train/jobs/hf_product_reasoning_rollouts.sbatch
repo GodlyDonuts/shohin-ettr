@@ -22,6 +22,7 @@ REPORT=${REPORT:?set report output}
 SKIP=${SKIP:-0}
 COUNT=${COUNT:-128}
 SAMPLES=${SAMPLES:-4}
+GENERATION_MODE=${GENERATION_MODE:-qwen-thinking}
 PROMPT_BATCH_SIZE=${PROMPT_BATCH_SIZE:-1}
 SEED=${SEED:-20260803}
 MAX_NEW_TOKENS=${MAX_NEW_TOKENS:-1536}
@@ -96,6 +97,7 @@ cd "$RUNTIME/train"
   --skip "$SKIP" \
   --count "$COUNT" \
   --samples "$SAMPLES" \
+  --generation-mode "$GENERATION_MODE" \
   --prompt-batch-size "$PROMPT_BATCH_SIZE" \
   --finalize-max-new-tokens "$FINALIZE_MAX_NEW_TOKENS" \
   --finalize-batch-size "$FINALIZE_BATCH_SIZE" \
