@@ -1,0 +1,24 @@
+{
+  "assessor_fields_visible_to_model": false,
+  "output": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/vcr1_product_data_37866af_r1/product.jsonl",
+  "output_sha256": "c1ebc24bab12e79753797cd14a790d1c5c4f750348412749c9329d2b968f5c4f",
+  "pair_report": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/cvg1_eval_pairs_88498a1_r1/report.json",
+  "pair_report_sha256": "ab9729e455498845b7cbb890867b6c5c0cf44b6c8b0dd03c322765bbe7af6b36",
+  "pairs": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/cvg1_eval_pairs_88498a1_r1/pairs.jsonl",
+  "pairs_sha256": "5013f580b7eb5b1015bbd9db33659648ba4749b537fccc77e77ad55cd727a0ee",
+  "rows": 568,
+  "runtime_fields": [
+    "question"
+  ],
+  "schema": "shohin-vcr1-product-data-report-v1",
+  "status": "complete",
+  "tasks": [
+    "aime",
+    "bbh_logic",
+    "gpqa",
+    "gsm8k",
+    "humaneval",
+    "math500",
+    "mbpp"
+  ]
+}

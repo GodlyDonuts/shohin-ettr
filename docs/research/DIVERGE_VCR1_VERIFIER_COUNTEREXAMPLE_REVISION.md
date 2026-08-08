@@ -1,6 +1,9 @@
 # DIVERGE-VCR1: Verifier-Supervised Counterexample Revision
 
-Status: frozen before any VCR1 model score on 2026-08-08.
+Status: completed once on 2026-08-08. The source-disjoint revision gate passed
+decisively; the conditional product gate failed one conjunct because generated
+code was `29/40` against a fixed `30/40` floor. Exact VCR1 is closed without a
+rescue variant.
 
 ## Hypothesis
 
@@ -86,3 +89,62 @@ Projected charge before launch is `3--6` H100-hours including training, both
 source-disjoint evaluations, and a conditional product evaluation. Current
 monthly balance before launch is approximately 1,591 H100-hours. No larger
 campaign is authorized by this gate.
+
+## Result
+
+Training job `745618` completed all 256 updates in `00:21:34`. The final
+checkpoint SHA-256 is
+`28c23825dacec511c8e5a147446a3aad60bf3c2740421db3a7086a17c3bc2f7f`;
+the training report SHA-256 is
+`c5b79653dd4b9a6784c1c9455316f1d9cb0270592f3befb0689e7c0f05b0b9cf`.
+
+The independent development and holdout jobs both pass every frozen gate:
+
+| Split | B1 | QPT1 | Source oracle | VCR1 | Both-wrong repairs |
+|---|---:|---:|---:|---:|---:|
+| Development | 340/1,289 | 453/1,289 | 522/1,289 | **575/1,289** | 113 |
+| Holdout | 344/1,279 | 471/1,279 | 552/1,279 | **643/1,279** | 153 |
+
+Development and holdout result SHA-256 values are respectively
+`4d04fbc64ad416627a629be6db2bdfa3347df38374c6f84baf47ac2bcf7ae6ad`
+and
+`942579931cc11b813fa7aab26ec7c61bed5521d51f8e5b9b5551a22d5957dce7`.
+The holdout result is not selection: VCR1 exceeds the two-candidate oracle by
+91 answers because it generates corrected solutions for 153 cases where both
+inputs were wrong.
+
+Both passing splits release one unchanged reconstruction of the preserved
+568-example product board. Product-data SHA-256 is
+`c1ebc24bab12e79753797cd14a790d1c5c4f750348412749c9329d2b968f5c4f`;
+its report SHA-256 is
+`f655c9a20493d9f42e19a67880389b6edbbde31e5a2b7b63c48e2ab62eed7170`.
+Job `745624` produces:
+
+| Domain | B1 | QPT1 | VCR1 | Source oracle |
+|---|---:|---:|---:|---:|
+| GSM8K | 85/100 | 93/100 | **92/100** | 96/100 |
+| MATH-500 | 50/100 | 54/100 | **68/100** | 64/100 |
+| Executable code | 30/40 | 26/40 | **29/40** | 34/40 |
+| GPQA | 30/198 | 87/198 | **101/198** | 97/198 |
+| BBH logic | 53/100 | 57/100 | **78/100** | 75/100 |
+| Five-domain macro | 55.630% | 62.588% | **72.302%** | 73.798% |
+| Solved | 248/538 | 317/538 | **368/538** | 366/538 |
+| AIME-2024 | 4/30 | 1/30 | **6/30** | 5/30 |
+
+VCR1 improves the strongest single lineage by `+9.714` macro points and 51
+main-board answers, improves four of five domains, stays within one point on
+GSM8K, and generates 38 correct answers where both source attempts were
+wrong. It also loses 35 answers that at least one source candidate solved.
+Every product condition passes except `code_at_least_30_of_40`; therefore the
+conjunctive product decision is **FAIL**, despite the large aggregate gain.
+Product report SHA-256 is
+`f7a6b8606505dfeb5e0821f04f56436c77ef9ce910847df472975d0f562fafbc`;
+candidate SHA-256 is
+`013375c8711df7e9e691830418e5239da06d56b82ee6c5a8a4fd3edb48e9587b`.
+
+The four scientific GPU jobs consumed `1.040` H100-hours in total, below the
+projected `3--6` hours. Exact VCR1 receives no prompt, seed, duration, context,
+decoding, threshold, or code-routing rescue. Retain it as the strongest
+measured practical reasoning system in this campaign, while keeping the claim
+bounded: the runtime uses two 4B proposal lineages and a 9B reviser and is not
+a standalone Shohin architecture result.

@@ -1,5 +1,22 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **VCR1 LARGE PRODUCT GAIN / EXACT GATE CLOSED — 2026-08-08 04:23 EDT:**
+> Qwen3.5-9B counterexample-revision VCR1 completes once. Development and
+> holdout both pass every source-disjoint gate: VCR1 solves `575/1,289` and
+> `643/1,279`, versus QPT1 `453` and `471`, and repairs `113/153` cases where
+> both source attempts were wrong. On the unchanged 568-row product board it
+> reaches **72.302% five-domain macro and 368/538 solved**, versus QPT1
+> `62.588% / 317`; MATH is `68/100`, GPQA `101/198`, logic `78/100`, AIME
+> `6/30`, and executable code `29/40`. This exceeds the static source oracle
+> by two main-board answers but misses the frozen `30/40` code floor by one,
+> so exact product promotion is a conjunctive FAIL and receives no rescue
+> variant. Product report SHA is `f7a6b860...fafbc`; holdout SHA is
+> `94257993...dce7`; total charge is `1.040` H100-hours. Preserve VCR1 as the
+> strongest measured practical system, not native Shohin: it uses two 4B
+> proposals plus a 9B reviser. Current Newton usage is `409.9/2000.0`
+> GPU-hours. Contract/result:
+> `docs/research/DIVERGE_VCR1_VERIFIER_COUNTEREXAMPLE_REVISION.md`.
+
 > **VCR1 FROZEN / READY TO LAUNCH — 2026-08-08 03:35 EDT:** The exact
 > structurally different successor to PCJ1 is VCR1, a Qwen3.5-9B B1 revision
 > policy that receives both complete 4B B1/QPT1 attempts and emits one new
@@ -33723,3 +33740,38 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_exact_cvg1;_no_threshold_width_seed_duration_or_renderer_rescue;_preserve_qpt1_and_sag1_as_specialist_results_and_require_a_structurally_different_successor`.
+
+- **2026-08-08 03:35--04:23 EDT** -- **Verifier-supervised whole-solution
+  revision clears both source-disjoint gates and produces the campaign's
+  largest product gain, but misses strict code promotion by one answer.**
+
+  Exact VCR1 trains pinned Qwen3.5-9B B1 for 256 adapter updates over 9,655
+  verifier-supervised presentations. Job `745618` completes in `00:21:34`;
+  final checkpoint/report SHA-256 values are `28c23825...2f7f` and
+  `c5b79653...b9cf`. Independent jobs `745620/745622` both pass. Development
+  solves `575/1,289` versus QPT1 `453` and repairs 113 both-wrong pairs.
+  Holdout solves `643/1,279 = 50.274%` versus QPT1 `471 = 36.826%`, exceeds
+  the two-source oracle `552`, and repairs 153 both-wrong pairs. Holdout and
+  development report hashes are `94257993...dce7` and `4d04fbc6...e6ad`.
+
+  A conditional board prebuild initially fails before output because an
+  immutable runtime omitted one transitive import; its second attempt catches
+  that the three-task training renderer cannot reconstruct all seven product
+  tasks. Both failures write no data and are preserved. Commit `37866af`
+  fixes only conditional reconstruction by reusing the original seven-task
+  renderer. Runtime `runtime/vcr1_product_37866af_r1` has manifest SHA-256
+  `36ca3664...e97`; the audited 568-row board reproduces B1 `252`, QPT1
+  `318`, and source oracle `371` of 568 exactly.
+
+  Conditional product job `745624` completes in `00:08:10`. VCR1 scores
+  GSM8K `92/100`, MATH `68/100`, code `29/40`, GPQA `101/198`, BBH logic
+  `78/100`, and AIME `6/30`: `72.302%` macro and `368/538` solved. This is
+  `+9.714` macro and `+51` solved over QPT1 and two answers above the static
+  source oracle. It generates 38 both-wrong repairs but loses 35 examples
+  solved by at least one input. Four product conditions pass; the exact gate
+  fails only `code_at_least_30_of_40`. Report/candidate SHA-256 values are
+  `f7a6b860...fafbc` and `013375c8...587b`. All four jobs consume `1.040`
+  H100-hours.
+
+  Decision:
+  `retain_vcr1_as_the_strongest_practical_multistage_system;_close_exact_vcr1_without_a_code_route_or_nearby_rescue;_do_not_call_it_native_shohin_reasoning`.

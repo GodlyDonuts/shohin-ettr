@@ -57629,3 +57629,35 @@ used NUL. Immutable reports agree on `5,824/1,289/1,279`. This reporting error
 is preserved and corrected; it did not change any score. PCJ1 is closed without
 variants. The next structural test is verifier-supervised generation of a
 revised whole solution rather than another selector.
+
+### Counterexample-revision VCR1: strongest practical reasoning result
+
+The successor stops selecting between completed attempts and instead trains a
+pinned Qwen3.5-9B revision policy to consume the original problem plus both
+complete 4B B1/QPT1 attempts and emit one corrected solution. Its 9,655
+training presentations use only independently verified source candidates or
+source-verified repairs. Runtime receives no gold, correctness, task label,
+execution result, or assessor field.
+
+This change is decisive on two source-disjoint partitions. Development reaches
+`575/1,289 = 44.608%` versus QPT1 `453`; holdout reaches
+`643/1,279 = 50.274%` versus QPT1 `471`. VCR1 repairs 113 and 153 examples,
+respectively, where both input solutions were wrong, proving it is doing more
+than selecting the better source. Both splits pass every frozen capability
+condition.
+
+On the preserved product board, VCR1 reaches `72.302%` five-domain macro and
+`368/538` solved, compared with QPT1 `62.588% / 317` and the static two-source
+oracle `73.798% / 366`. It scores GSM8K `92/100`, MATH-500 `68/100`, code
+`29/40`, GPQA `101/198`, BBH logic `78/100`, and AIME `6/30`. This is the
+campaign's largest broad practical gain. It is not promoted under the frozen
+conjunctive rule because code misses the required `30/40` floor by one answer.
+No nearby rescue is permitted.
+
+The claim boundary matters: this is a practical model-owned revision system
+using two 4B proposal lineages and a 9B reviser. It is not standalone Shohin,
+not under 200M parameters, and not proof that ETTR itself supplies native
+reasoning. It does establish a high-value recipe: verified counterexample
+targets plus whole-solution regeneration can turn complementary but flawed
+traces into answers beyond their static oracle. Exact result and candidate
+SHA-256 values are `f7a6b860...fafbc` and `013375c8...587b`.

@@ -1,0 +1,272 @@
+{
+  "adapter_checkpoint": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/vcr1_595de28_r1/train/checkpoint_0000256.pt",
+  "adapter_checkpoint_sha256": "28c23825dacec511c8e5a147446a3aad60bf3c2740421db3a7086a17c3bc2f7f",
+  "adapter_metadata": {
+    "arm": "baseline",
+    "backbone_layout": "multimodal-language-model",
+    "data": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/vcr1_data_8152cc8_r1/train.jsonl",
+    "data_seed": 2026080814,
+    "data_sha256": "55635fbeed1f342dca961827c184e08a4959390dc9889ac7b7ceb72433773d9d",
+    "loaded_model_root": "/tmp/sa305415/745618/model",
+    "lora_alpha": 16.0,
+    "lora_layers": 4,
+    "lora_projection_count": 31,
+    "lora_rank": 8,
+    "model_loader": "multimodal",
+    "model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+    "model_root": "/lustre/fs1/home/sa305415/shohin/artifacts/external/qwen3.5-9b-c202236",
+    "seed": 2026080815,
+    "selected_rows": 9655,
+    "trainable_parameters": 2704896,
+    "unfreeze_layers": 0,
+    "update": 256,
+    "warm_start_checkpoint": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-9b-c202236/b1_u256_dddb36f/checkpoint_0000256.pt",
+    "warm_start_data_sha256": "2461d6f70b44a142854d56c24e1fb42d600065e5788a2c4e055ba47b12696549",
+    "warm_start_sha256": "854a7cc44fbc2b54418f4e5bd09b7efeed0da44fc9ce217b0bb6b1997b722971",
+    "warm_start_update": 256,
+    "workspace_architecture_sha256": null,
+    "workspace_config": null
+  },
+  "arms": {
+    "base": {
+      "aime": {
+        "accuracy": 0.13333333333333333,
+        "correct": 4,
+        "total": 30
+      },
+      "domains": {
+        "code": {
+          "accuracy": 0.75,
+          "correct": 30,
+          "total": 40
+        },
+        "competition_math": {
+          "accuracy": 0.5,
+          "correct": 50,
+          "total": 100
+        },
+        "grade_school_math": {
+          "accuracy": 0.85,
+          "correct": 85,
+          "total": 100
+        },
+        "logic": {
+          "accuracy": 0.53,
+          "correct": 53,
+          "total": 100
+        },
+        "science": {
+          "accuracy": 0.15151515151515152,
+          "correct": 30,
+          "total": 198
+        }
+      },
+      "macro_accuracy": 0.5563030303030303,
+      "solved": 248,
+      "total": 538
+    },
+    "expert": {
+      "aime": {
+        "accuracy": 0.03333333333333333,
+        "correct": 1,
+        "total": 30
+      },
+      "domains": {
+        "code": {
+          "accuracy": 0.65,
+          "correct": 26,
+          "total": 40
+        },
+        "competition_math": {
+          "accuracy": 0.54,
+          "correct": 54,
+          "total": 100
+        },
+        "grade_school_math": {
+          "accuracy": 0.93,
+          "correct": 93,
+          "total": 100
+        },
+        "logic": {
+          "accuracy": 0.57,
+          "correct": 57,
+          "total": 100
+        },
+        "science": {
+          "accuracy": 0.4393939393939394,
+          "correct": 87,
+          "total": 198
+        }
+      },
+      "macro_accuracy": 0.6258787878787879,
+      "solved": 317,
+      "total": 538
+    },
+    "generated": {
+      "aime": {
+        "accuracy": 0.2,
+        "correct": 6,
+        "total": 30
+      },
+      "domains": {
+        "code": {
+          "accuracy": 0.725,
+          "correct": 29,
+          "total": 40
+        },
+        "competition_math": {
+          "accuracy": 0.68,
+          "correct": 68,
+          "total": 100
+        },
+        "grade_school_math": {
+          "accuracy": 0.92,
+          "correct": 92,
+          "total": 100
+        },
+        "logic": {
+          "accuracy": 0.78,
+          "correct": 78,
+          "total": 100
+        },
+        "science": {
+          "accuracy": 0.51010101010101,
+          "correct": 101,
+          "total": 198
+        }
+      },
+      "macro_accuracy": 0.723020202020202,
+      "solved": 368,
+      "total": 538
+    },
+    "oracle": {
+      "aime": {
+        "accuracy": 0.16666666666666666,
+        "correct": 5,
+        "total": 30
+      },
+      "domains": {
+        "code": {
+          "accuracy": 0.85,
+          "correct": 34,
+          "total": 40
+        },
+        "competition_math": {
+          "accuracy": 0.64,
+          "correct": 64,
+          "total": 100
+        },
+        "grade_school_math": {
+          "accuracy": 0.96,
+          "correct": 96,
+          "total": 100
+        },
+        "logic": {
+          "accuracy": 0.75,
+          "correct": 75,
+          "total": 100
+        },
+        "science": {
+          "accuracy": 0.4898989898989899,
+          "correct": 97,
+          "total": 198
+        }
+      },
+      "macro_accuracy": 0.737979797979798,
+      "solved": 366,
+      "total": 538
+    }
+  },
+  "candidates_output": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/vcr1_595de28_r1/eval_product/candidates.jsonl",
+  "candidates_sha256": "013375c8711df7e9e691830418e5239da06d56b82ee6c5a8a4fd3edb48e9587b",
+  "comparison": {
+    "domain_accuracy_deltas": {
+      "code": 0.07499999999999996,
+      "competition_math": 0.14,
+      "grade_school_math": -0.010000000000000009,
+      "logic": 0.21000000000000008,
+      "science": 0.07070707070707066
+    },
+    "gate_pass": false,
+    "gates": {
+      "code_at_least_30_of_40": false,
+      "improves_at_least_three_domains": true,
+      "macro_delta_at_least_three_points": true,
+      "no_domain_regression_over_two_points": true,
+      "solved_delta_at_least_fifteen": true
+    },
+    "macro_delta": 0.09714141414141408,
+    "solved_delta": 51,
+    "strongest_single_lineage": "expert"
+  },
+  "data": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/vcr1_product_data_37866af_r1/product.jsonl",
+  "data_report": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/vcr1_product_data_37866af_r1/report.json",
+  "data_report_sha256": "f655c9a20493d9f42e19a67880389b6edbbde31e5a2b7b63c48e2ab62eed7170",
+  "data_sha256": "c1ebc24bab12e79753797cd14a790d1c5c4f750348412749c9329d2b968f5c4f",
+  "elapsed_seconds": 447.094149582088,
+  "generated_tokens": 12064,
+  "generated_tokens_per_second": 26.983130983209183,
+  "max_token_exhausted": 2,
+  "model_loader": "multimodal",
+  "model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+  "model_root": "/lustre/fs1/home/sa305415/shohin/artifacts/external/qwen3.5-9b-c202236",
+  "peak_gpu_memory_bytes": 23066609152,
+  "runtime_fields": [
+    "question"
+  ],
+  "schema": "shohin-vcr1-product-evaluation-v1",
+  "source_holdout_report": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/vcr1_595de28_r1/eval_holdout/report.json",
+  "source_holdout_report_sha256": "942579931cc11b813fa7aab26ec7c61bed5521d51f8e5b9b5551a22d5957dce7",
+  "status": "complete",
+  "tasks": {
+    "aime": {
+      "base_correct": 4,
+      "expert_correct": 1,
+      "generated_correct": 6,
+      "oracle_correct": 5,
+      "total": 30
+    },
+    "bbh_logic": {
+      "base_correct": 53,
+      "expert_correct": 57,
+      "generated_correct": 78,
+      "oracle_correct": 75,
+      "total": 100
+    },
+    "gpqa": {
+      "base_correct": 30,
+      "expert_correct": 87,
+      "generated_correct": 101,
+      "oracle_correct": 97,
+      "total": 198
+    },
+    "gsm8k": {
+      "base_correct": 85,
+      "expert_correct": 93,
+      "generated_correct": 92,
+      "oracle_correct": 96,
+      "total": 100
+    },
+    "humaneval": {
+      "base_correct": 18,
+      "expert_correct": 14,
+      "generated_correct": 17,
+      "oracle_correct": 20,
+      "total": 20
+    },
+    "math500": {
+      "base_correct": 50,
+      "expert_correct": 54,
+      "generated_correct": 68,
+      "oracle_correct": 64,
+      "total": 100
+    },
+    "mbpp": {
+      "base_correct": 12,
+      "expert_correct": 12,
+      "generated_correct": 12,
+      "oracle_correct": 14,
+      "total": 20
+    }
+  }
+}
