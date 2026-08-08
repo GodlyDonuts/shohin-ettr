@@ -257,6 +257,18 @@ def metrics(rows: list[dict[str, Any]], selections: dict[str, tuple[int, bool]],
     return result
 
 
+def select_candidate(margin: float, candidates: list[dict[str, Any]]) -> int:
+    """Select by margin with an order-independent rule for exact score ties."""
+    if margin > 0:
+        return 0
+    if margin < 0:
+        return 1
+    completions = [str(candidate["completion"]) for candidate in candidates]
+    if completions[0] == completions[1]:
+        return 0
+    return 0 if completions[0] < completions[1] else 1
+
+
 def evaluate(
     model: nn.Module,
     head: nn.Module,
@@ -289,11 +301,14 @@ def evaluate(
                 maximum_swap_error, float((forward + swapped).abs().max().cpu())
             )
             for row, direct, reverse in zip(batch, forward.tolist(), swapped.tolist(), strict=True):
-                chosen = 0 if direct >= 0 else 1
-                swapped_mapped = 1 if reverse >= 0 else 0
+                chosen = select_candidate(direct, row["candidates"])
+                swapped_choice = select_candidate(reverse, list(reversed(row["candidates"])))
+                swapped_mapped = 1 - swapped_choice
                 selections[row["identity_sha256"]] = (
                     chosen,
-                    chosen == swapped_mapped,
+                    chosen == swapped_mapped
+                    or row["candidates"][0]["completion"]
+                    == row["candidates"][1]["completion"],
                 )
     return metrics(rows, selections, split), truncated, maximum_swap_error
 

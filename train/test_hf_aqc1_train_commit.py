@@ -13,6 +13,7 @@ from hf_aqc1_train_commit import (
     IndependentCommitHead,
     load_pairs,
     metrics,
+    select_candidate,
 )
 
 
@@ -27,6 +28,17 @@ def test_heads_are_exactly_order_antisymmetric() -> None:
         direct = head.margin(left, right)
         reverse = head.margin(right, left)
         assert torch.equal(direct, -reverse)
+
+
+def test_exact_margin_ties_are_order_independent() -> None:
+    candidates = [
+        {"completion": "zeta"},
+        {"completion": "alpha"},
+    ]
+    direct = select_candidate(0.0, candidates)
+    swapped = select_candidate(-0.0, list(reversed(candidates)))
+    assert direct == 1
+    assert 1 - swapped == direct
 
 
 def test_pair_loading_and_metrics(tmp_path) -> None:
