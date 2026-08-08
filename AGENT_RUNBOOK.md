@@ -33591,3 +33591,44 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `let_the_immutable_dependency_chain_run;_do_not_open_or_tune_development_selection_before_the_holdout_gate`.
+
+- **2026-08-07 23:35--2026-08-08 00:10 EDT** -- **A bounded throughput
+  probe exposes large batching headroom but fails exact output parity; the
+  production critic path passes its integration canary.**
+
+  A read-only overlap probe of live rollout `745509` measured about 48% GPU
+  utilization and 9.85 GB device memory, so three isolated 64-prompt canaries
+  tested the unchanged frozen B1 checkpoint/data/prompt/greedy-decoding path
+  at prompt batches 8/16/32. Jobs `745549/745550/745551` complete in
+  `239.994/121.898/62.754` generation seconds at
+  `161.467/316.665/613.488` generated tok/s and
+  `9.306/10.116/11.737` GiB peak memory. The exact production batch-4
+  reference `745509` completes all 512 rows in 3,767.123 generation seconds
+  at 87.303 tok/s and 8.949 GiB; report SHA-256 is
+  `95451a1a...63b6`.
+
+  The larger batches are approximately `1.85x/3.63x/7.03x` faster, but they
+  are not an admissible mid-gate optimization. Against the first 64 exact
+  production rows, batches 8/16/32 change respectively `43/46/45`
+  completions, two predictions each, and `0/1/1` correctness labels. None
+  passes the predeclared exact semantic-parity condition. Their report
+  SHA-256 values are `26bb2736...a1a`, `f8535af9...8eec`, and
+  `4ccf22ce...af9a`. Preserve this as a future-runtime result and keep every
+  current CVG1 production shard at the frozen prompt batch 4; do not cancel,
+  replace, or mix rollout corpora.
+
+  Critic integration canary `745552` fails before model load because its
+  ad-hoc wrapper assumed `SLURM_TMPDIR` existed on `evc32`; it consumes zero
+  training seconds and creates no output. Exact infrastructure replay
+  `745553` uses the production wrapper's existing `/tmp/$USER/$SLURM_JOB_ID`
+  fallback and completes in 33 wall seconds. It executes two finite updates,
+  writes verifier SHA-256 `9f0cc618...21b9`, report SHA-256
+  `0cee7110...da0`, peaks at 9,436,421,632 CUDA bytes, and proves the
+  protected B1 checkpoint remains bit-identical. Its synthetic 12-row
+  holdout score is intentionally non-scientific and does not open or modify
+  the real gate. All four completed canaries consume about `0.151` H100-hours
+  in total. Eight frozen production rollout shards are now concurrent and
+  the remaining 26 are queued.
+
+  Decision:
+  `reject_mid_gate_batch_change;_finish_the_exact_batch4_corpus;_run_the_single_dependency_held_critic_and_conditional_score`.
