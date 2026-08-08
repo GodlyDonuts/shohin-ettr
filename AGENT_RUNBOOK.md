@@ -1,5 +1,16 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **IDR1 DRAFT GENERATION FROZEN — 2026-08-08 05:12 EDT:** SDR1 proves that
+> candidate trajectories, not verified targets alone, cause most of VCR1's
+> gain. The sole successor is IDR1: exact pinned 9B B1 first generates one
+> complete source-only draft; a later revision owner on the same 9B host sees
+> source plus that internal draft. No 4B proposal remains at inference. Draft
+> collection is 17 independent one-H100 shards over the exact 8,392-row bank,
+> greedy batch4/no-thinking/max768/seed2026080818. Projected charge is `3--6`
+> H100-hours for drafts plus `2--4` for conditional fit/evaluation. Require a
+> complete 8,392-identity receipt before building revision data. Contract:
+> `docs/research/DIVERGE_IDR1_INTERNAL_DRAFT_REVISION.md`.
+
 > **SDR1 CLOSED / INTERNAL DRAFT-REVISION REQUIRED — 2026-08-08 05:05 EDT:**
 > Exact source-only distillation trains in `12m33s` and is `1.72x` faster than
 > VCR1, but both source-disjoint gates fail. Development is `448/1,289`
