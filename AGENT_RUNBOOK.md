@@ -1,5 +1,36 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **IDR4 4B SCALE TRANSFER CAUSALLY QUALIFIED / PRODUCT CONFIRMATION LIVE —
+> 2026-08-08 14:31 EDT:** Both exact source-disjoint splits pass. Development
+> is trained `529/1,289 = 41.04%` versus unchanged-B1 `371/1,289 = 28.78%`
+> (`+158`, `+12.26` points); holdout is trained `554/1,279 = 43.32%` versus
+> unchanged-B1 `380/1,279 = 29.71%` (`+174`, `+13.61` points). Every domain
+> is concordant. Development math/logic/code move `140/223/8 -> 208/305/16`;
+> holdout moves `151/223/6 -> 217/319/18`. Corrected control report hashes are
+> `eaa61767...f697` and `a3f4c824...3248`. This establishes that learned
+> model-owned draft revision survives on pinned Qwen3.5-4B and constrains the
+> practical capacity floor below 9B. Product draft jobs `745885--745892` now
+> generate fresh 4B B1 trajectories over all 568 protected identities; they
+> do not reuse the prior 9B drafts. Dispatch receipt SHA-256 is
+> `2692af542cd5459901d422cefd6194c8096815498eb2104d152a25a467cbad6e`.
+> Expected complete product charge is under three H100-hours.
+
+> **IDR4 DEVELOPMENT CAUSAL GATE PASS / HOLDOUT MERGE PENDING — 2026-08-08
+> 14:00 EDT:** The 4B trained revision owner scores `529/1,289 = 41.04%`
+> on the source-disjoint development split, versus `371/1,289 = 28.78%`
+> for the unchanged 4B B1 second pass. This is `+158` answers and `+12.26`
+> absolute points. Every domain improves: math `140->208`, logic/science
+> `223->305`, and executable code `8->16`. The control report SHA-256 is
+> `eaa61767df7363f37ecfef1777c34c7fad298e756e23fdfabe4079ec4652f697`.
+> Trained holdout is already `554/1,279 = 43.32%`; the exact unchanged-B1
+> holdout merge remains the final conjunctive dependency. Jobs `745870/745871`
+> failed before model execution on CUDA-unavailable `evc46`; exact shard-3/4
+> replacements `745877/745878` exclude that node and corrected merge `745879`
+> requires all eight shard reports. Recovery receipt SHA-256 is
+> `9f48e5d42e14346cadc33d30d3dceb1245a7b4e145ea7cdff9bd82e0ca8578cc`.
+> No scientific setting changed and the protected product board remains
+> unopened until holdout closes.
+
 > **IDR4 SCALE-TRANSFER EVALUATIONS LIVE — 2026-08-08 12:54 EDT:** The 9B
 > same-family draft/revise/commit result is now being compressed before any
 > scratch Shohin commitment. Jobs `745767--745783` ran 17 independent

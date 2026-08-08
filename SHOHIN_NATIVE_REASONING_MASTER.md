@@ -2,6 +2,15 @@
 
 ## Latest Practical Reasoning Campaign — 2026-08-08
 
+**The learned same-family draft/revision mechanism now transfers from 9B to
+4B with a larger matched causal margin.** On pinned Qwen3.5-4B, 256-update
+revision training raises development from `371/1,289` to `529/1,289`
+(`+12.26` points) and holdout from `380/1,279` to `554/1,279` (`+13.61`
+points). Every math, logic/science, and executable-code delta is positive on
+both splits. This is the smallest host yet shown to preserve the complete
+model-owned internal-draft/revision mechanism. A single protected product
+confirmation using fresh 4B drafts is live; no 9B trajectory is reused.
+
 **IDR1 demonstrates a strong same-family two-pass capability gain, but its
 frozen conjunctive gate failed.** VCR1 established a
 strong practical ceiling: a 9B reviser over two external 4B attempts reached

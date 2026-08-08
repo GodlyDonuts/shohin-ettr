@@ -1,7 +1,7 @@
 # Shohin IDR4 Scale Transfer
 
-Status: draft custody and revision training complete; matched source-disjoint
-evaluations live. No capability score exists yet.
+Status: exact matched source-disjoint attribution passes on both splits. The
+protected product confirmation is now permitted and live.
 
 ## Capability Hypothesis
 
@@ -56,8 +56,25 @@ Train/development/holdout data SHA-256 values are `a40d209a...ee7b`,
 Revision fit `745819` completed all 256 updates in 16m32s, charging 365,028
 target tokens at 382.4 target tok/s. Checkpoint SHA-256 is
 `ae3847fe0728b1debcc13049822ea7499f744836b62d6d1c5bcb7c1000d8560b`.
-Four exact evaluation shards per split now run for both trained revision and
-unchanged-B1 control; complete identity coverage is required before scoring.
+The trained revision scores `529/1,289 = 41.04%` on development and
+`554/1,279 = 43.32%` on holdout. The corrected eight-shard unchanged-B1
+development control scores `371/1,289 = 28.78%`, establishing a
+`+158`-answer / `+12.26`-point development gain. Domain deltas are all
+positive: math `140->208`, logic/science `223->305`, and executable code
+`8->16`.
+
+The corrected holdout control scores `380/1,279 = 29.71%`, versus trained
+revision `554/1,279 = 43.32%`: `+174` answers and `+13.61` absolute points.
+Holdout domain deltas are math `151->217`, logic/science `223->319`, and
+executable code `6->18`; every development and holdout domain is positive.
+The control report SHA-256 is
+`a3f4c824e644b13aa412535c553edb5706305430780d604fa114b074a0a03248`.
+
+Two original holdout shards on `evc46` failed before model execution because
+CUDA was unavailable; exact shard replacements `745877/745878` excluded that
+node and completed cleanly. No examples, weights, prompts, thresholds,
+decoding fields, or evaluator code changed. Corrected merge `745879` proves
+all eight shard receipts and complete identity coverage.
 
 ## Matched Gate
 
@@ -73,10 +90,14 @@ Pass requires all of:
 3. the direction reproduces independently on development and holdout;
 4. complete custody and generation receipts pass without exclusions.
 
-Only a pass opens the unchanged protected product board. A failure closes this
-exact 4B transfer without seed, rank, duration, prompt, threshold, decoding,
-or data variants. The next decision then concerns the capacity boundary, not
-a local rescue sweep.
+The pass opens the unchanged protected product board exactly once. Product
+confirmation uses a new 4B B1 internal draft for every protected identity,
+then compares the trained 4B revision owner with the unchanged 4B B1 second
+pass on those identical drafts. It does not reuse 9B product trajectories.
+Before any product completion was opened, confirmation success was frozen as
+at least 27 additional correct main-board answers, at least `+0.05` five-domain
+macro accuracy, and nonnegative correct-answer deltas in every one of the five
+main domains. AIME is reported separately rather than used as a 30-item gate.
 
 ## Relation To Shohin
 
