@@ -11,8 +11,7 @@ import os
 from pathlib import Path
 from typing import Any
 
-
-SCHEMA = "shohin-sag1-product-gate-v1"
+SCHEMA = "shohin-sag1-product-gate-v2"
 BASE_CHECKPOINT_SHA256 = (
     "f7354e6a0c4311ad792b73358b4e62d9dbe0ae1bd2d41896cf55482d9ce81feb"
 )
@@ -54,6 +53,8 @@ TRAINING_MATCH_FIELDS = (
     "selected_rows",
     "updates",
 )
+EXPECTED_TREATMENT_TRACE_UPDATES = (1, *range(8, 257, 8))
+TRACE_FINITE_FIELDS = ("loss", "language_loss", "gradient_norm")
 
 
 class SAG1AggregationError(RuntimeError):
@@ -106,10 +107,134 @@ def _finite_training(report: dict[str, Any]) -> bool:
         and all(
             isinstance(row.get(field), (int, float))
             and math.isfinite(float(row[field]))
-            for field in ("loss", "language_loss", "gradient_norm")
+            for field in TRACE_FINITE_FIELDS
         )
         for row in trace
     )
+
+
+def _trace_rows_by_update(
+    rows: Any,
+    *,
+    source: str,
+) -> dict[int, dict[str, Any]]:
+    if not isinstance(rows, list):
+        raise SAG1AggregationError(f"trace is not a list: {source}")
+    indexed: dict[int, dict[str, Any]] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            raise SAG1AggregationError(f"trace row is not an object: {source}")
+        update = row.get("update")
+        if not isinstance(update, int) or update <= 0:
+            raise SAG1AggregationError(f"trace update is invalid: {source}")
+        if update in indexed:
+            raise SAG1AggregationError(f"duplicate trace update {update}: {source}")
+        required = (*TRACE_FINITE_FIELDS, "router_commit_rate")
+        if not all(
+            isinstance(row.get(field), (int, float))
+            and math.isfinite(float(row[field]))
+            for field in required
+        ):
+            raise SAG1AggregationError(
+                f"trace update {update} has a missing/nonfinite metric: {source}"
+            )
+        indexed[update] = row
+    return indexed
+
+
+def _load_jsonl_trace(path: Path) -> dict[int, dict[str, Any]]:
+    if not path.is_file():
+        raise SAG1AggregationError(f"missing treatment prefix trace log: {path}")
+    rows: list[dict[str, Any]] = []
+    with path.open("r", encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, start=1):
+            stripped = line.strip()
+            if not stripped.startswith("{"):
+                continue
+            try:
+                payload = json.loads(stripped)
+            except json.JSONDecodeError as error:
+                raise SAG1AggregationError(
+                    f"malformed JSON trace row at {path}:{line_number}"
+                ) from error
+            if isinstance(payload, dict) and isinstance(payload.get("update"), int):
+                rows.append(payload)
+    return _trace_rows_by_update(rows, source=str(path))
+
+
+def _complete_treatment_trace(
+    report: dict[str, Any],
+    prefix_trace_log: Path | None,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    report_rows = _trace_rows_by_update(
+        report.get("trace"), source="SAG1 treatment report"
+    )
+    resume_update = report.get("resume_update")
+    receipts: dict[str, Any] = {
+        "expected_updates": list(EXPECTED_TREATMENT_TRACE_UPDATES),
+        "report_segment_updates": sorted(report_rows),
+    }
+    if resume_update is None:
+        if prefix_trace_log is not None:
+            raise SAG1AggregationError(
+                "treatment prefix trace log supplied for a non-resumed SAG1 report"
+            )
+        merged = report_rows
+        receipts["mode"] = "single_report"
+    else:
+        if not isinstance(resume_update, int) or resume_update <= 0:
+            raise SAG1AggregationError("SAG1 resume_update is invalid")
+        if prefix_trace_log is None:
+            raise SAG1AggregationError(
+                "resumed SAG1 report requires the immutable prefix trace log"
+            )
+        prefix_rows = _load_jsonl_trace(prefix_trace_log)
+        prefix = {
+            update: row
+            for update, row in prefix_rows.items()
+            if update <= resume_update
+        }
+        suffix = {
+            update: row for update, row in report_rows.items() if update > resume_update
+        }
+        if any(update <= resume_update for update in report_rows):
+            raise SAG1AggregationError(
+                "resumed SAG1 report unexpectedly contains pre-resume trace rows"
+            )
+        merged = {**prefix, **suffix}
+        receipts.update(
+            {
+                "mode": "checkpoint_prefix_plus_resumed_report",
+                "prefix_log": {
+                    "path": str(prefix_trace_log.resolve()),
+                    "sha256": _sha256(prefix_trace_log),
+                },
+                "prefix_updates_used": sorted(prefix),
+                "resume_update": resume_update,
+                "suffix_updates_used": sorted(suffix),
+            }
+        )
+
+    observed_updates = tuple(sorted(merged))
+    if observed_updates != EXPECTED_TREATMENT_TRACE_UPDATES:
+        raise SAG1AggregationError(
+            "SAG1 treatment trace coverage differs: "
+            f"expected={list(EXPECTED_TREATMENT_TRACE_UPDATES)} "
+            f"observed={list(observed_updates)}"
+        )
+    logical_tokens = [row.get("logical_charged_tokens") for row in merged.values()]
+    if all(isinstance(value, int) for value in logical_tokens):
+        ordered_tokens = [
+            merged[update]["logical_charged_tokens"] for update in observed_updates
+        ]
+        if any(
+            right <= left for left, right in zip(ordered_tokens, ordered_tokens[1:])
+        ):
+            raise SAG1AggregationError(
+                "SAG1 treatment trace logical token accounting is not increasing"
+            )
+    receipts["merged_updates"] = list(observed_updates)
+    return [merged[update] for update in observed_updates], receipts
 
 
 def _summarize(reports: dict[str, dict[str, Any]]) -> dict[str, Any]:
@@ -167,6 +292,7 @@ def aggregate_sag1(
     treatment_prefix: Path,
     continuation_training: Path,
     treatment_training: Path,
+    treatment_prefix_trace_log: Path | None = None,
 ) -> dict[str, Any]:
     prefixes = {
         "B1_original": original_prefix,
@@ -207,12 +333,17 @@ def aggregate_sag1(
         if training["B1_continuation"].get(field) != training["SAG1"].get(field):
             raise SAG1AggregationError(f"unmatched training field: {field}")
 
+    treatment_trace, treatment_trace_receipt = _complete_treatment_trace(
+        training["SAG1"], treatment_prefix_trace_log
+    )
+    treatment_for_gates = {**training["SAG1"], "trace": treatment_trace}
+
     arms = {arm: _summarize(reports) for arm, reports in eval_reports.items()}
     versus_original = _comparison(arms["SAG1"], arms["B1_original"])
     versus_continuation = _comparison(arms["SAG1"], arms["B1_continuation"])
     router_commit_samples = [
         float(row["router_commit_rate"])
-        for row in training["SAG1"].get("trace", [])
+        for row in treatment_trace
         if isinstance(row, dict)
         and isinstance(row.get("router_commit_rate"), (int, float))
         and math.isfinite(float(row["router_commit_rate"]))
@@ -224,8 +355,11 @@ def aggregate_sag1(
     )
 
     training_gates = {
-        "both_finite": all(_finite_training(report) for report in training.values()),
-        "both_256_updates": all(report.get("updates") == 256 for report in training.values()),
+        "both_finite": _finite_training(training["B1_continuation"])
+        and _finite_training(treatment_for_gates),
+        "both_256_updates": all(
+            report.get("updates") == 256 for report in training.values()
+        ),
         "both_16_examples_per_update": all(
             report.get("batch_size", 0) * report.get("gradient_accumulation", 0) == 16
             for report in training.values()
@@ -240,15 +374,12 @@ def aggregate_sag1(
             "warm_start_sha256"
         )
         == BASE_CHECKPOINT_SHA256
-        and training["SAG1"].get("base_checkpoint_sha256")
-        == BASE_CHECKPOINT_SHA256,
+        and training["SAG1"].get("base_checkpoint_sha256") == BASE_CHECKPOINT_SHA256,
         "continuation_starts_at_update_256": training["B1_continuation"].get(
             "warm_start_update"
         )
         == 256,
-        "frozen_base_unchanged": training["SAG1"].get(
-            "frozen_parameters_unchanged"
-        )
+        "frozen_base_unchanged": training["SAG1"].get("frozen_parameters_unchanged")
         is True,
         "frozen_revision_and_data": training["SAG1"].get("model_revision")
         == MODEL_REVISION
@@ -259,16 +390,11 @@ def aggregate_sag1(
         and 0.05 <= float(mean_router_commit_rate) <= 0.95,
     }
     numeric_gates = {
-        "retains_original_b1_code_30_of_40": arms["SAG1"]["domains"]["code"][
-            "correct"
-        ]
+        "retains_original_b1_code_30_of_40": arms["SAG1"]["domains"]["code"]["correct"]
         >= 30,
-        "original_macro_delta_at_least_three_points": versus_original[
-            "macro_delta"
-        ]
+        "original_macro_delta_at_least_three_points": versus_original["macro_delta"]
         >= 0.03,
-        "original_solved_delta_at_least_fifteen": versus_original["solved_delta"]
-        >= 15,
+        "original_solved_delta_at_least_fifteen": versus_original["solved_delta"] >= 15,
         "original_improves_at_least_three_domains": versus_original[
             "improved_domain_count"
         ]
@@ -319,6 +445,7 @@ def aggregate_sag1(
                 ("SAG1", treatment_training),
             )
         },
+        "treatment_trace_receipt": treatment_trace_receipt,
     }
 
 
@@ -338,6 +465,7 @@ def main() -> None:
     parser.add_argument("--treatment-prefix", required=True, type=Path)
     parser.add_argument("--continuation-training", required=True, type=Path)
     parser.add_argument("--treatment-training", required=True, type=Path)
+    parser.add_argument("--treatment-prefix-trace-log", type=Path)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
     report = aggregate_sag1(
@@ -346,6 +474,7 @@ def main() -> None:
         treatment_prefix=args.treatment_prefix,
         continuation_training=args.continuation_training,
         treatment_training=args.treatment_training,
+        treatment_prefix_trace_log=args.treatment_prefix_trace_log,
     )
     _atomic_write(args.output, report)
     print(json.dumps(report["comparison"], indent=2, sort_keys=True))

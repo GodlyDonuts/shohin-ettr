@@ -7,11 +7,11 @@ import pytest
 
 from pipeline.aggregate_sag1_product_gate import (
     BASE_CHECKPOINT_SHA256,
+    EXPECTED_TREATMENT_TRACE_UPDATES,
     SAG1AggregationError,
     TASKS,
     aggregate_sag1,
 )
-
 
 TOTALS = {
     "gsm8k": 100,
@@ -78,9 +78,11 @@ def _write_training(
                 "gradient_norm": 1.0,
                 "language_loss": 0.5,
                 "loss": 0.6,
-                "router_commit_rate": router_rate,
+                "logical_charged_tokens": index * 1000,
+                "router_commit_rate": router_rates[(index - 1) % len(router_rates)],
+                "update": update,
             }
-            for router_rate in router_rates
+            for index, update in enumerate(EXPECTED_TREATMENT_TRACE_UPDATES, start=1)
         ],
         "updates": 256,
         "warm_start_sha256": BASE_CHECKPOINT_SHA256 if arm == "baseline" else None,
@@ -144,15 +146,15 @@ def test_code_loss_or_collapsed_router_closes_sag1(tmp_path: Path) -> None:
     treatment = {task: min(60, TOTALS[task]) for task in TASKS}
     treatment["humaneval"] = 14
     treatment["mbpp"] = 15
-    report = _run(
-        tmp_path, original, continuation, treatment, router_rates=(1.0, 1.0)
+    report = _run(tmp_path, original, continuation, treatment, router_rates=(1.0, 1.0))
+    assert (
+        report["comparison"]["numeric_gates"]["retains_original_b1_code_30_of_40"]
+        is False
     )
-    assert report["comparison"]["numeric_gates"][
-        "retains_original_b1_code_30_of_40"
-    ] is False
-    assert report["comparison"]["training_gates"][
-        "nontrivial_nonuniversal_router"
-    ] is False
+    assert (
+        report["comparison"]["training_gates"]["nontrivial_nonuniversal_router"]
+        is False
+    )
     assert report["required_next_step"] == "close_exact_sag1"
 
 
@@ -160,9 +162,7 @@ def test_unmatched_evaluator_configuration_fails_closed(tmp_path: Path) -> None:
     scores = {task: min(10, TOTALS[task]) for task in TASKS}
     original = _write_evals(tmp_path, "original", scores)
     continuation = _write_evals(tmp_path, "continuation", scores)
-    treatment = _write_evals(
-        tmp_path, "sag1", scores, changed_seed_task="gsm8k"
-    )
+    treatment = _write_evals(tmp_path, "sag1", scores, changed_seed_task="gsm8k")
     with pytest.raises(SAG1AggregationError, match="generation_seed"):
         aggregate_sag1(
             original_prefix=original,
@@ -170,4 +170,63 @@ def test_unmatched_evaluator_configuration_fails_closed(tmp_path: Path) -> None:
             treatment_prefix=treatment,
             continuation_training=_write_training(tmp_path, "baseline"),
             treatment_training=_write_training(tmp_path, "diverge_sag1"),
+        )
+
+
+def test_resumed_treatment_uses_hash_bound_prefix_trace(tmp_path: Path) -> None:
+    scores = {task: min(30, TOTALS[task]) for task in TASKS}
+    treatment_training = _write_training(tmp_path, "diverge_sag1")
+    payload = json.loads(treatment_training.read_text(encoding="utf-8"))
+    payload["resume_update"] = 192
+    payload["trace"] = [
+        row for row in payload["trace"] if row["update"] > payload["resume_update"]
+    ]
+    treatment_training.write_text(json.dumps(payload), encoding="utf-8")
+
+    prefix_log = tmp_path / "primary.out"
+    prefix_rows = [
+        {
+            "gradient_norm": 1.0,
+            "language_loss": 0.5,
+            "logical_charged_tokens": index * 1000,
+            "loss": 0.6,
+            "router_commit_rate": 0.0,
+            "update": update,
+        }
+        for index, update in enumerate(EXPECTED_TREATMENT_TRACE_UPDATES, start=1)
+        if update <= 192
+    ]
+    prefix_log.write_text(
+        "startup\n" + "".join(json.dumps(row) + "\n" for row in prefix_rows),
+        encoding="utf-8",
+    )
+    report = aggregate_sag1(
+        original_prefix=_write_evals(tmp_path, "original", scores),
+        continuation_prefix=_write_evals(tmp_path, "continuation", scores),
+        treatment_prefix=_write_evals(tmp_path, "sag1", scores),
+        continuation_training=_write_training(tmp_path, "baseline"),
+        treatment_training=treatment_training,
+        treatment_prefix_trace_log=prefix_log,
+    )
+    receipt = report["treatment_trace_receipt"]
+    assert receipt["mode"] == "checkpoint_prefix_plus_resumed_report"
+    assert receipt["prefix_updates_used"][-1] == 192
+    assert receipt["suffix_updates_used"][0] == 200
+    assert report["comparison"]["router_commit_sample_count"] == 33
+
+
+def test_resumed_treatment_without_prefix_trace_fails_closed(tmp_path: Path) -> None:
+    scores = {task: min(30, TOTALS[task]) for task in TASKS}
+    treatment_training = _write_training(tmp_path, "diverge_sag1")
+    payload = json.loads(treatment_training.read_text(encoding="utf-8"))
+    payload["resume_update"] = 192
+    payload["trace"] = [row for row in payload["trace"] if row["update"] > 192]
+    treatment_training.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(SAG1AggregationError, match="requires the immutable prefix"):
+        aggregate_sag1(
+            original_prefix=_write_evals(tmp_path, "original", scores),
+            continuation_prefix=_write_evals(tmp_path, "continuation", scores),
+            treatment_prefix=_write_evals(tmp_path, "sag1", scores),
+            continuation_training=_write_training(tmp_path, "baseline"),
+            treatment_training=treatment_training,
         )
