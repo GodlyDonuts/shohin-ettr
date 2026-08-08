@@ -5,7 +5,6 @@ from __future__ import annotations
 import unittest
 
 from ttr1_revision import (
-    TTR1RevisionError,
     internal_draft_char_span,
     internal_revision_prompt,
     tokenize_with_draft_mask,
@@ -42,10 +41,10 @@ class TTR1RevisionTests(unittest.TestCase):
         start, end = internal_draft_char_span(prompt)
         self.assertEqual(prompt[start:end], "def add(): pass")
 
-    def test_rejects_ambiguous_marker(self) -> None:
+    def test_nested_marker_inside_draft_remains_masked(self) -> None:
         prompt = internal_revision_prompt("q", "Internal draft:\nbad", "math500")
-        with self.assertRaises(TTR1RevisionError):
-            internal_draft_char_span(prompt)
+        start, end = internal_draft_char_span(prompt)
+        self.assertEqual(prompt[start:end], "Internal draft:\nbad")
 
 
 if __name__ == "__main__":

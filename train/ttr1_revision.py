@@ -34,8 +34,8 @@ def internal_draft_char_span(rendered_prompt: str) -> tuple[int, int]:
     """Locate the sole informative draft span in a rendered chat prompt."""
 
     marker_start = rendered_prompt.find(DRAFT_MARKER)
-    if marker_start < 0 or rendered_prompt.find(DRAFT_MARKER, marker_start + 1) >= 0:
-        raise TTR1RevisionError("rendered prompt has no unique internal-draft marker")
+    if marker_start < 0:
+        raise TTR1RevisionError("rendered prompt has no internal-draft marker")
     draft_start = marker_start + len(DRAFT_MARKER)
     final_problem = rendered_prompt.rfind(FINAL_PROBLEM_MARKER)
     if final_problem <= draft_start:
