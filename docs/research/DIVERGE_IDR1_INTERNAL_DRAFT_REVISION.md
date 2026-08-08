@@ -38,9 +38,12 @@ per identity, and unchanged source scoring. No draft score is a gate by itself;
 drafts become model-visible training inputs only after the complete receipt
 passes.
 
-Projected draft-generation charge is `3--6` H100-hours. The later revision fit
-and source-disjoint evaluation are separately expected to consume `2--4`
-H100-hours. These estimates are reported before launch.
+The prelaunch draft-generation estimate was `3--6` H100-hours. At 05:19 EDT,
+early measured progress from 16 concurrent shards corrected that estimate to
+`16--21` H100-hours. The jobs remain scientifically valid and already hold the
+allocations, so they continue unchanged. The later revision fit and
+source-disjoint evaluation are separately expected to consume `2--4`
+H100-hours. Both the original estimate and correction are preserved.
 
 ## Conditional Revision Gate
 

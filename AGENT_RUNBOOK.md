@@ -1,13 +1,26 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **IDR1 DRAFTS LIVE / COST ESTIMATE CORRECTED — 2026-08-08 05:19 EDT:**
+> Jobs `745628--745643` hold 16 independent H100s; code shard `745644` is
+> pending resources and hash-bound CPU build `745645` is dependency-held
+> behind all 17. Every live shard is healthy. Early measured progress implies
+> `16--21` aggregate H100-hours for draft collection, not the preregistered
+> `3--6` estimate; preserve this correction rather than hiding the miss. The
+> frozen generation geometry and scientific gate are unchanged. Immutable
+> draft runtime `runtime/idr1_drafts_e7b5be3_r2` has manifest SHA-256
+> `6ea69e21...fe6c`; build/train/eval runtime `runtime/idr1_ad790b0_r1` has
+> manifest SHA-256 `ee3ce973...6897`.
+
 > **IDR1 DRAFT GENERATION FROZEN — 2026-08-08 05:12 EDT:** SDR1 proves that
 > candidate trajectories, not verified targets alone, cause most of VCR1's
 > gain. The sole successor is IDR1: exact pinned 9B B1 first generates one
 > complete source-only draft; a later revision owner on the same 9B host sees
 > source plus that internal draft. No 4B proposal remains at inference. Draft
 > collection is 17 independent one-H100 shards over the exact 8,392-row bank,
-> greedy batch4/no-thinking/max768/seed2026080818. Projected charge is `3--6`
-> H100-hours for drafts plus `2--4` for conditional fit/evaluation. Require a
+> greedy batch4/no-thinking/max768/seed2026080818. The initial projected charge
+> was `3--6` H100-hours for drafts plus `2--4` for conditional fit/evaluation;
+> measured draft progress later corrected the first estimate to `16--21`.
+> Require a
 > complete 8,392-identity receipt before building revision data. Contract:
 > `docs/research/DIVERGE_IDR1_INTERNAL_DRAFT_REVISION.md`.
 
