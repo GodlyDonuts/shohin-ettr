@@ -1,6 +1,7 @@
 # Shohin IDR4 Scale Transfer
 
-Status: draft generation live; no revision or evaluation score exists.
+Status: draft custody and revision training complete; matched source-disjoint
+evaluations live. No capability score exists yet.
 
 ## Capability Hypothesis
 
@@ -33,6 +34,30 @@ Jobs `745767--745783` are isolated single-H100 draft shards. No downstream fit
 may start until their merger proves all 8,392 identities exactly once and
 binds the pinned model revision, B1 checkpoint, bank hashes, decoding fields,
 and every candidate/report hash.
+
+## Draft And Training Result
+
+All 17 draft shards completed cleanly for `16.952` H100-hours. The 4B B1
+first pass solves `2,276/8,392 = 27.12%`:
+
+| Domain | Correct | Exhausted at 768 tokens |
+|---|---:|---:|
+| MATH | `657/4,096` | `2,931/4,096` |
+| Logic/science | `1,500/4,096` | `1,897/4,096` |
+| Execution-verified code | `119/200` | `7/200` |
+
+Merged draft SHA-256 is
+`7d7e833de5b646ff18e08780c8d6760fb0d4a5ea8d6b3fd43c61c6d6e4a7c5e4`;
+receipt SHA-256 is
+`d91138a34a294f5edbc472272946e43f46ff11c296fc21028e04d9171f19f7ce`.
+Train/development/holdout data SHA-256 values are `a40d209a...ee7b`,
+`f7444eef...afa1`, and `ec99bc35...7a70`.
+
+Revision fit `745819` completed all 256 updates in 16m32s, charging 365,028
+target tokens at 382.4 target tok/s. Checkpoint SHA-256 is
+`ae3847fe0728b1debcc13049822ea7499f744836b62d6d1c5bcb7c1000d8560b`.
+Four exact evaluation shards per split now run for both trained revision and
+unchanged-B1 control; complete identity coverage is required before scoring.
 
 ## Matched Gate
 

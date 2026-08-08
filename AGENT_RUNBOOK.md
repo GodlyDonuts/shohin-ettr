@@ -1,8 +1,8 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **IDR4 SCALE-TRANSFER DRAFTS LIVE — 2026-08-08 11:28 EDT:** The 9B
+> **IDR4 SCALE-TRANSFER EVALUATIONS LIVE — 2026-08-08 12:54 EDT:** The 9B
 > same-family draft/revise/commit result is now being compressed before any
-> scratch Shohin commitment. Jobs `745767--745783` run 17 independent
+> scratch Shohin commitment. Jobs `745767--745783` ran 17 independent
 > single-H100 shards over the exact 8,392-row source-disjoint IDR1 bank using
 > pinned `Qwen3.5-4B@851bf6e...cd0a`, its existing B1 adapter, greedy
 > batch-4 decoding, no thinking mode, and 768 generated tokens. All shards
@@ -11,12 +11,28 @@
 > Outputs are isolated at `artifacts/product_reasoning/idr1_4b_drafts_r1`.
 > Draft-dependent builder `745788` and matched train/evaluation dispatcher
 > `745791` are fail-closed behind all shards. Immutable downstream runtime
-> `runtime/idr4_687a91a_r1` has SHA256SUMS SHA-256
-> `fb1c67dcc81df8bf407e02f379eaefba1fbb9a3811e15e8520647607d00cc8cf`.
+> Active downstream runtime `runtime/idr4_d681daa_r1` has SHA256SUMS SHA-256
+> `bda0e0ce37da5d69e2b8c1f64ea291b859e52fb5d742ddfb885c532b62eedb3f`.
 > It launches four exact batch-aligned evaluation shards per split for both
 > trained revision and unchanged-B1 control, then scores once after complete
 > identity coverage. Superseded monolithic dispatchers `745789/745790` were
 > canceled at zero runtime.
+>
+> All 17 shards completed cleanly for `16.952` H100-hours. The 4B first pass
+> solves `2,276/8,392 = 27.12%`: MATH `657/4,096`, logic `1,500/4,096`, and
+> code `119/200`, with `4,835` token exhaustions. It exceeds 9B's aggregate
+> draft score through logic while remaining weaker on math/code. Merged draft
+> and receipt SHA-256 values are `7d7e833d...c5e4` and `d91138a3...f7ce`.
+> Two CPU packaging attempts `745788/745815` failed before model/data mutation
+> on an old system Python and one omitted sparse-runtime import. Valid
+> data-only recovery `745817` completed: train/development/holdout hashes are
+> `a40d209a...ee7b`, `f7444eef...afa1`, and `ec99bc35...7a70`.
+> Revision fit `745819` completed all 256 updates in `16m32s`, 365,028 target
+> tokens at `382.4` tok/s; checkpoint/report hashes are `ae3847fe...60b` and
+> `45db2b96...822`. Four-shard trained and unchanged-B1 evaluations are now
+> live. Trained development shards `745835/745836` failed before model load on
+> full `evc38` scratch and have exact replacements `745843/745844`; corrected
+> merge is `745845`. No evaluation score exists yet.
 > Merge must prove exact identity coverage and bind the 4B model revision and
 > adapter hash. The causal gate is trained 4B revision versus the same 4B B1
 > second pass on identical internal drafts; product access requires a
