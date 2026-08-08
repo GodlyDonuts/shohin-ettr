@@ -1,6 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **IDR08 CLOSED / SCRATCH SCALE = `shohin_920m` — 2026-08-08 18:03 EDT:**
+> **MISSION REDIRECT / TTR1 FROZEN — 2026-08-08:** the primary objective is
+> now a transferable temporal reasoning architecture for existing pretrained
+> models, not scratch Shohin pretraining. Preserve Qwen3.5-0.8B/4B/9B as the
+> within-family scale curve. The next host is pinned SmolLM3-3B under frozen
+> TTR1: model-owned draft, trained same-family revision, coherent commitment,
+> and matched unchanged-second-pass, self-refinement, long-generation,
+> best-of-two, and independent-commitment controls. Scratch 390M/920M, its 5B
+> canary, and long scratch runs are not authorized. peS2O `768277` and FineWeb
+> `768278` were already running and may finish into quarantined reusable
+> artifacts; pending near-audit `768282` was canceled before allocation.
+> Stale Newton dependencies `746030/746032` were also canceled. Read
+> `docs/research/SHOHIN_TRANSFERABLE_TEMPORAL_REVISION_CONTRACT.md` before new
+> architecture compute.
+
+> **IDR08 CLOSED / FORMER SCRATCH CONTINGENCY = `shohin_920m` — 2026-08-08 18:03 EDT:**
 > all eight trained and eight unchanged-B1 evaluation shards completed, both
 > split merges passed, and immutable comparison `746062` closed with report
 > SHA-256 `6f42de42...347f`. Development improves

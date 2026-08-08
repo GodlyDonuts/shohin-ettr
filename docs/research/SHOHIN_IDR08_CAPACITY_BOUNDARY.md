@@ -1,7 +1,7 @@
 # Shohin IDR08 Capacity Boundary
 
-Status: live. The 4B protected product comparison closed as a mixed
-conjunctive failure, and the exact frozen 0.8B campaign launched on 2026-08-08.
+Status: complete. The frozen 0.8B comparison closed on 2026-08-08 and is now
+the lower point in the transferable temporal-revision scale curve.
 
 ## Question
 
@@ -58,9 +58,21 @@ evaluation. Record actual aggregate and critical-path GPU time. Draft shards
 may run concurrently, but data construction requires complete unique identity
 coverage and all downstream jobs remain dependency-gated.
 
-The result chooses a plausible scratch capacity. It does not authorize the
-large scratch run until the fresh-corpus contract, multi-H100 transport canary,
-checkpoint/resume test, and 5B-token capability canary also pass.
+The result no longer selects an active scratch program. It constrains the
+capacity boundary of temporal revision and motivates the cross-family TTR1
+gate. No scratch capability canary or large scratch run is authorized.
+
+## Result
+
+Development improves `236 -> 323 / 1,289` (`+87`, `+6.749` points), with
+MATH `44->64`, logic/science `190->257`, and code `2->2`. Holdout improves
+`242 -> 328 / 1,279` (`+86`, `+6.724` points), with MATH `39->74` and
+logic/science `194->246`, but code moves `9->8`. The frozen conjunctive gate
+therefore fails only holdout code retention. Comparison report SHA-256 is
+`6f42de42dfb78ef77042238308e11d82f1fb748f624ba5babae3216c5c53347f`.
+
+This is positive aggregate causal evidence at 0.8B and an honest retention
+failure. There is no nearby 0.8B retry.
 
 ## Launch Receipt
 

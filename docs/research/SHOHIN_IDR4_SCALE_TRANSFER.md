@@ -99,11 +99,11 @@ at least 27 additional correct main-board answers, at least `+0.05` five-domain
 macro accuracy, and nonnegative correct-answer deltas in every one of the five
 main domains. AIME is reported separately rather than used as a 30-item gate.
 
-## Relation To Shohin
+## Transfer Role
 
-IDR4 is not the final Shohin model. It determines whether the proven reasoning
-recipe remains useful at a materially smaller host and therefore constrains
-the minimum viable scratch Shohin scale. The smallest host that preserves a
-causal revision gain becomes the architectural and posttraining target; the
-protected 125M checkpoint remains a baseline unless it independently clears
-the same end-to-end capability gate.
+IDR4 is the strongest clean within-Qwen source-disjoint transfer point and a
+control for the transferable architecture campaign. Together with 0.8B and 9B
+it defines a scale curve, but it does not select a scratch Shohin trunk. The
+next missing intervention is model-family transfer under TTR1; the protected
+125M checkpoint and former 390M/920M candidates are optional efficiency
+baselines rather than the primary deployment target.

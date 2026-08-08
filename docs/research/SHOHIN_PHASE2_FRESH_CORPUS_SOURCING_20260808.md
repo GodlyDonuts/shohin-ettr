@@ -1,7 +1,8 @@
 # Shohin Phase 2 Fresh Corpus Sourcing
 
-Status: sourcing and admission graph live, 2026-08-08. This document does not
-admit any quarantined corpus or authorize a large scratch run.
+Status: reusable corpus conversions may finish, but scratch-corpus admission
+is no longer the project critical path as of 2026-08-08. This document does
+not admit any quarantined corpus or authorize a scratch run.
 
 ## Objective
 
@@ -142,10 +143,12 @@ frozen source priority: peS2O, Essential-Web, FinePDF, then FineWeb. It is
 dependency-gated on all conversions and uses the existing exact-confirmed
 five-token-shingle algorithm and thresholds without alteration. Immutable
 runtime SHA256SUMS SHA-256 is `22d958d8...c947`, specification SHA-256 is
-`8fd3a734...0344`, and dependency-held job `768282` will release only after
-all three conversions succeed. Formal Logic remains zero weight and is absent
-from that specification because its source has no domain provenance and
-cannot satisfy the domain-holdout gate.
+`8fd3a734...0344`. Dependency-held job `768282` was canceled before allocation
+after the mission redirected to pretrained-host architecture transfer. Its
+runtime and specification remain reproducible but do not release
+automatically. Formal Logic remains zero weight and is absent from that
+specification because its source has no domain provenance and cannot satisfy
+the domain-holdout gate.
 
 FinePDF conversion `768276` completed in `3m42s`, retaining all `31,702`
 documents and independently verifying `97,196,851` target tokens versus

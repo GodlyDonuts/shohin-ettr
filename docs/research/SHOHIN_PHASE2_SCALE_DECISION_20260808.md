@@ -2,8 +2,10 @@
 
 Status: capacity-boundary decision complete, 2026-08-08. The protected 4B
 product aggregate and frozen 0.8B transfer both closed under their original
-conjunctive gates. The selected scratch trunk is `shohin_920m`. This document
-does not authorize a large pretraining launch by itself.
+conjunctive gates. Under the former scratch contingency the selected trunk
+would be `shohin_920m`. The project has since redirected to transferable
+reasoning on pretrained hosts; this result does not authorize a scratch
+canary or large pretraining launch.
 
 ## Evidence Boundary
 

@@ -1,5 +1,21 @@
 # Shohin Native Reasoning Master Ledger
 
+## Mission Redirect — 2026-08-08
+
+Shohin is now primarily a **transferable temporal reasoning architecture**, not
+a plan to pretrain another small scratch model. The practical mechanism is one
+model-owned complete draft followed by a trained same-family revision state
+and one coherent whole-trajectory commitment. The publication question is
+whether this changed factor improves capable pretrained models across scale,
+model family, and eventually MoE routing under matched inference compute.
+
+Qwen3.5-0.8B/4B/9B provide the first within-family scale curve. The next
+frozen gate is TTR1 on pinned SmolLM3-3B, followed only on pass by a larger
+dense non-Qwen family and then a small/medium open MoE. Scratch 390M/920M
+pretraining, the 5B scratch canary, and long corpus construction are not the
+critical path and are not authorized. See
+`docs/research/SHOHIN_TRANSFERABLE_TEMPORAL_REVISION_CONTRACT.md`.
+
 ## Latest Practical Reasoning Campaign — 2026-08-08
 
 **The learned same-family draft/revision mechanism now transfers from 9B to
