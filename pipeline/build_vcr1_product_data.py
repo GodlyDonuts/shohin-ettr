@@ -10,8 +10,8 @@ import os
 from pathlib import Path
 from typing import Any
 
-from build_vcr1_revision_data import revision_prompt, sha256_file, source_task_prompt
-from hf_product_reasoning_eval import _question, select_rows
+from build_vcr1_revision_data import revision_prompt, sha256_file
+from hf_product_reasoning_eval import _question, _task_prompt, select_rows
 
 PAIR_SCHEMA = "shohin-cvg1-evaluation-pairs-v1"
 OUTPUT_SCHEMA = "shohin-vcr1-product-eval-v1"
@@ -130,7 +130,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
                 "identity_sha256": identity,
                 "task": row["task"],
                 "question": revision_prompt(
-                    source_task_prompt(source),
+                    _task_prompt(str(row["task"]), source),
                     str(candidates["base"]["completion"]),
                     str(candidates["expert"]["completion"]),
                 ),
