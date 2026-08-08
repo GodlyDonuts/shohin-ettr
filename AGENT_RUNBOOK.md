@@ -1,5 +1,31 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **TTR1 SMOLLM3-3B DEVELOPMENT GATE LIVE — 2026-08-08 19:22 EDT:** all
+> `8,392` pinned source-only drafts are complete. The corrected immutable merge
+> job `746173` passed after preserving, rather than rerunning or selecting away,
+> the two exact one-token-EOS empty completions. The merged draft artifact has
+> SHA-256 `70e49d58...b6ab`; receipt SHA-256 is `91fdf17b...3cfe`. Frozen data
+> contain `9,655/1,289/1,279` train/development/holdout rows with SHA-256 values
+> `1a69e78f...e705`, `8e5292fc...8543`, and `ae2d60ee...547c`. Holdout remains
+> sealed.
+>
+> Dispatcher `746174` released the complete frozen development comparison on
+> six H100s. Treatment fit `746175` and matched independent-commitment fit
+> `746176` are healthy beyond update `128/256` at approximately
+> `2.6--2.8k` charged tok/s. Unchanged-second-pass `746177`, generic
+> self-refinement `746178`, long-single-generation `746179`, and best-of-two
+> `746180` are running concurrently. Dependency-held releases `746181/746182`
+> will evaluate the two trained arms only after their exact fits complete.
+> Runtime r6 SHA256SUMS SHA-256 is `eceffbec...956b`. Promotion requires the
+> frozen conjunctive development gate: at least `+5` points over unchanged,
+> nonnegative math/logic/code correct-count deltas, and at least `+3` points
+> over the strongest matched control across all `1,289` identities. Do not
+> open holdout unless every condition passes.
+>
+> On Stokes, allowed quarantined conversion `768277` completed in `1:13:16`;
+> `768278` remains live. These corpus artifacts are reusable but are not the
+> critical path and authorize no scratch training.
+
 > **TTR1 CROSS-FAMILY CAMPAIGN LIVE — 2026-08-08 18:34 EDT:** pinned
 > SmolLM3-3B mechanics job `746132` passed in `32s` on `evc27` after CPU
 > metadata migration `746131`. It restored causal adapter update `1000`, ran
