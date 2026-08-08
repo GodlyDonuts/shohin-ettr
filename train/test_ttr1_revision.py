@@ -46,6 +46,11 @@ class TTR1RevisionTests(unittest.TestCase):
         start, end = internal_draft_char_span(prompt)
         self.assertEqual(prompt[start:end], "Internal draft:\nbad")
 
+    def test_empty_draft_has_explicit_answer_free_state(self) -> None:
+        prompt = internal_revision_prompt("q", "", "math500")
+        start, end = internal_draft_char_span(prompt)
+        self.assertEqual(prompt[start:end], "<EMPTY_DRAFT>")
+
 
 if __name__ == "__main__":
     unittest.main()

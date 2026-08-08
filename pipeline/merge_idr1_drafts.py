@@ -174,8 +174,8 @@ def merge(
             if candidate.get("question") != _question(source):
                 raise IDR1DraftError("candidate/source question differs")
             completion = candidate.get("completion")
-            if not isinstance(completion, str) or not completion.strip():
-                raise IDR1DraftError("internal draft is empty")
+            if not isinstance(completion, str):
+                raise IDR1DraftError("internal draft is not text")
             if candidate.get("sample_index") != 0:
                 raise IDR1DraftError("internal draft sample index differs")
             if identity in merged_by_id:
@@ -197,6 +197,7 @@ def merge(
             counters["max_token_exhausted"] += int(
                 bool(candidate.get("max_token_exhausted"))
             )
+            counters["empty_drafts"] += int(not completion.strip())
             counters[str(source["task"])] += 1
         input_receipts.append(
             {

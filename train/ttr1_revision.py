@@ -17,6 +17,7 @@ class TTR1RevisionError(ValueError):
 def internal_revision_prompt(task_prompt: str, draft: str, task: str) -> str:
     """Build the frozen source-plus-draft revision prompt."""
 
+    serialized_draft = draft if draft.strip() else "<EMPTY_DRAFT>"
     format_instruction = (
         "Return only executable Python code, without Markdown fences."
         if task == "mbpp"
@@ -25,7 +26,7 @@ def internal_revision_prompt(task_prompt: str, draft: str, task: str) -> str:
     return (
         "Solve the original problem by checking and revising the model's earlier draft. "
         "The draft may contain useful steps or errors; do not merely critique it.\n\n"
-        f"Original problem:\n{task_prompt}\n\nInternal draft:\n{draft}\n\n"
+        f"Original problem:\n{task_prompt}\n\nInternal draft:\n{serialized_draft}\n\n"
         f"{format_instruction}\n\nOriginal problem:\n{task_prompt}"
     )
 
