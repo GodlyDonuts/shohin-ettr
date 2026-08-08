@@ -130,7 +130,7 @@ def load_bound(
 
 
 def merge(args: argparse.Namespace) -> dict[str, Any]:
-    sources = load_bound(args.source, args.source_report, "source")
+    sources = load_bound(args.source, args.source_report, args.input_stage)
     expected_ids = [row["identity_sha256"] for row in sources]
     candidates: dict[str, dict[str, Any]] = {}
     intervals: list[tuple[int, int]] = []
@@ -270,6 +270,9 @@ def main() -> int:
     merge_parser = subparsers.add_parser("merge", parents=[common])
     merge_parser.add_argument("--source", type=Path, required=True)
     merge_parser.add_argument("--source-report", type=Path, required=True)
+    merge_parser.add_argument(
+        "--input-stage", choices=("source", "revision"), default="source"
+    )
     merge_parser.add_argument("--candidate", type=Path, action="append", required=True)
     merge_parser.add_argument(
         "--candidate-report", type=Path, action="append", required=True
