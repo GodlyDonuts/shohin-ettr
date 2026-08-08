@@ -1,5 +1,19 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **SDR1 FROZEN / READY — 2026-08-08 04:42 EDT:** The next bounded gate tests
+> whether VCR1's verified-repair gain can become a standalone reasoner. SDR1
+> matches the exact 9B warm start, 9,655 targets/order, 256-update schedule,
+> optimizer, LoRA geometry, split, and seeds, but removes both 4B candidate
+> solutions from every model input. Independent audit proves exact target and
+> presentation parity and zero candidate markers; prompt bytes fall from
+> `40.82M` to `6.06M`. Train/development/holdout hashes are
+> `a97344d...71d6`, `aa0e7000...f5f0`, and `3e623da7...96ce`; report hash is
+> `62c4eb5d...d97b`. Holdout must retain VCR1 within two points
+> (`>=618/1,279`) plus fixed domain/both-wrong floors. Only concordant
+> development and holdout passes may open the unchanged product board.
+> Projected charge is `2--4` H100-hours. Contract:
+> `docs/research/DIVERGE_SDR1_SOURCE_ONLY_DISTILLATION.md`.
+
 > **VCR1 LARGE PRODUCT GAIN / EXACT GATE CLOSED — 2026-08-08 04:23 EDT:**
 > Qwen3.5-9B counterexample-revision VCR1 completes once. Development and
 > holdout both pass every source-disjoint gate: VCR1 solves `575/1,289` and

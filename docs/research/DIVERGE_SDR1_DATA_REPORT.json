@@ -1,0 +1,81 @@
+{
+  "assessor_fields_visible_to_model": false,
+  "banks": [
+    {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/router_outcomes/cvg1_disjoint_5e63a06/math_disjoint4096_2026080709_r2.jsonl",
+      "sha256": "e0ede83257e441050a019f59fb13d9c85bd6cba1d6a755ab86fb7129966ddbe5"
+    },
+    {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/router_outcomes/cvg1_disjoint_5e63a06/science_disjoint4096_2026080709_r2.jsonl",
+      "sha256": "5a96859fd9088cde598b61da60dd2c6cb7281323ee06c034742a1b4e0e237017"
+    },
+    {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/router_outcomes/cvg1_code_disjoint_1b49ca7/mbpp_disjoint200_2026080715_r1.jsonl",
+      "sha256": "0b6d068b4d71f407cb234579b9278dc640df09139ea906dd0f52a6ab71e05398"
+    }
+  ],
+  "candidate_text_visible": false,
+  "counts": {
+    "development": {
+      "base_only": 69,
+      "bbh_logic": 637,
+      "both_correct": 271,
+      "both_wrong": 767,
+      "expert_only": 182,
+      "math500": 623,
+      "mbpp": 29,
+      "pairs": 1289
+    },
+    "holdout": {
+      "base_only": 81,
+      "bbh_logic": 625,
+      "both_correct": 263,
+      "both_wrong": 727,
+      "expert_only": 208,
+      "math500": 621,
+      "mbpp": 33,
+      "pairs": 1279
+    },
+    "train": {
+      "base_only": 339,
+      "bbh_logic": 2834,
+      "both_correct": 1253,
+      "both_wrong": 3294,
+      "expert_only": 938,
+      "math500": 2852,
+      "mbpp": 138,
+      "pairs": 5824
+    }
+  },
+  "matched_vcr1_order_seed": 2026080813,
+  "outputs": {
+    "development": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/sdr1_data_d11b231_r1/development.jsonl",
+      "rows": 1289,
+      "sha256": "aa0e700069a4f066cc16514d7db4f53d95ebaf6911cd4118f55cd8a09fecf5f0"
+    },
+    "holdout": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/sdr1_data_d11b231_r1/holdout.jsonl",
+      "rows": 1279,
+      "sha256": "3e623da7b11a0bc36adbbfd0be845e3310b0125744eae09d37e8575ba2f696ce"
+    },
+    "train": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/sdr1_data_d11b231_r1/train.jsonl",
+      "rows": 9655,
+      "sha256": "a97344d4339d2687b6ed861844294efd14c575962811811ee74b97f70a7771d6"
+    }
+  },
+  "pairs": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/cvg1_pairs_a960206_r1/pairs.jsonl",
+  "pairs_sha256": "45f1d66ce5e87dc2a1f4c3594bdde2bae26e9417e879d16eb4eddb228b696afe",
+  "runtime_fields": [
+    "question"
+  ],
+  "schema": "shohin-sdr1-source-only-data-report-v1",
+  "split_seed": 2026080811,
+  "status": "complete",
+  "target_counts": {
+    "shortest_verified_candidate": 1253,
+    "source_verified_repair": 3294,
+    "verified_candidate": 5108
+  }
+}
