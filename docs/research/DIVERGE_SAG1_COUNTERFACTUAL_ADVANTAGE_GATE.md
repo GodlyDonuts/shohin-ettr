@@ -68,7 +68,9 @@ once with identical prompts, generation settings, and scoring. SAG1 must:
   macro points and 15 solved answers, improve at least three domains, and
   regress no domain by more than two percentage points;
 - leave the frozen B1 parameter hash unchanged;
-- show nontrivial but non-universal expert commitment (`5%--95%`).
+- show nontrivial but non-universal expert commitment (`5%--95%`), measured
+  as the mean over all fixed-interval training-trace samples. Batch size is
+  one, so a single final row is necessarily binary and is not a valid rate.
 
 A development pass authorizes one source-disjoint larger-board confirmation
 and a transplant to exact pinned Qwen3.5-9B. A miss closes exact SAG1 without

@@ -210,8 +210,18 @@ def aggregate_sag1(
     arms = {arm: _summarize(reports) for arm, reports in eval_reports.items()}
     versus_original = _comparison(arms["SAG1"], arms["B1_original"])
     versus_continuation = _comparison(arms["SAG1"], arms["B1_continuation"])
-    final_trace = training["SAG1"].get("trace", [])[-1]
-    final_router_commit_rate = final_trace.get("router_commit_rate")
+    router_commit_samples = [
+        float(row["router_commit_rate"])
+        for row in training["SAG1"].get("trace", [])
+        if isinstance(row, dict)
+        and isinstance(row.get("router_commit_rate"), (int, float))
+        and math.isfinite(float(row["router_commit_rate"]))
+    ]
+    mean_router_commit_rate = (
+        sum(router_commit_samples) / len(router_commit_samples)
+        if router_commit_samples
+        else None
+    )
 
     training_gates = {
         "both_finite": all(_finite_training(report) for report in training.values()),
@@ -244,9 +254,9 @@ def aggregate_sag1(
         == MODEL_REVISION
         and training["SAG1"].get("data_sha256") == DATA_SHA256,
         "nontrivial_nonuniversal_router": isinstance(
-            final_router_commit_rate, (int, float)
+            mean_router_commit_rate, (int, float)
         )
-        and 0.05 <= float(final_router_commit_rate) <= 0.95,
+        and 0.05 <= float(mean_router_commit_rate) <= 0.95,
     }
     numeric_gates = {
         "retains_original_b1_code_30_of_40": arms["SAG1"]["domains"]["code"][
@@ -286,8 +296,9 @@ def aggregate_sag1(
         "arms": arms,
         "comparison": {
             "development_gate_pass": development_pass,
-            "final_router_commit_rate": final_router_commit_rate,
+            "mean_logged_router_commit_rate": mean_router_commit_rate,
             "numeric_gates": numeric_gates,
+            "router_commit_sample_count": len(router_commit_samples),
             "training_gates": training_gates,
             "versus_b1_continuation": versus_continuation,
             "versus_b1_original": versus_original,

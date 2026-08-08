@@ -51,7 +51,9 @@ def _write_evals(
     return prefix
 
 
-def _write_training(root: Path, arm: str, *, router_rate: float = 0.4) -> Path:
+def _write_training(
+    root: Path, arm: str, *, router_rates: tuple[float, ...] = (0.0, 1.0, 0.0)
+) -> Path:
     path = root / f"{arm}_training.json"
     payload = {
         "arm": arm,
@@ -78,6 +80,7 @@ def _write_training(root: Path, arm: str, *, router_rate: float = 0.4) -> Path:
                 "loss": 0.6,
                 "router_commit_rate": router_rate,
             }
+            for router_rate in router_rates
         ],
         "updates": 256,
         "warm_start_sha256": BASE_CHECKPOINT_SHA256 if arm == "baseline" else None,
@@ -96,7 +99,7 @@ def _run(
     continuation: dict[str, int],
     treatment: dict[str, int],
     *,
-    router_rate: float = 0.4,
+    router_rates: tuple[float, ...] = (0.0, 1.0, 0.0),
 ):
     return aggregate_sag1(
         original_prefix=_write_evals(root, "original", original),
@@ -104,7 +107,7 @@ def _run(
         treatment_prefix=_write_evals(root, "sag1", treatment),
         continuation_training=_write_training(root, "baseline"),
         treatment_training=_write_training(
-            root, "diverge_sag1", router_rate=router_rate
+            root, "diverge_sag1", router_rates=router_rates
         ),
     )
 
@@ -141,7 +144,9 @@ def test_code_loss_or_collapsed_router_closes_sag1(tmp_path: Path) -> None:
     treatment = {task: min(60, TOTALS[task]) for task in TASKS}
     treatment["humaneval"] = 14
     treatment["mbpp"] = 15
-    report = _run(tmp_path, original, continuation, treatment, router_rate=1.0)
+    report = _run(
+        tmp_path, original, continuation, treatment, router_rates=(1.0, 1.0)
+    )
     assert report["comparison"]["numeric_gates"][
         "retains_original_b1_code_30_of_40"
     ] is False
