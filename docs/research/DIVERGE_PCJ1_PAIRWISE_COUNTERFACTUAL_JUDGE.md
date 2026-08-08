@@ -44,16 +44,23 @@ PCJ1 uses a newly frozen identity partition with seed `2026080811`:
 
 | Split | Rows | Identity-list SHA-256 |
 |---|---:|---|
-| Train | 5,869 | `22ba82442717368f8bc7c2c60d2651f24f6ed5e5b1ce4f94dae47e6a4056f6ef` |
-| Development | 1,265 | `184659902f1dbd106dd80f9b3ea1aeccf2ed91d0c5aefc3d3d1a787dec7d87fb` |
-| Holdout | 1,258 | `d722aed3c24531109d290e1b9d7e82bd2946a93aa2a63ef3bcc62d441a59d52b` |
+| Train | 5,824 | `c1aaa7f6372ad34cd41e36984dd715d899b877645422d639ce2a3b4118c46495` |
+| Development | 1,289 | `dc634881ce38a9c3f37b37794e07dbfe3710ed19ea0ded07dd014c232334ce18` |
+| Holdout | 1,279 | `51534f07ba70d8ffc0f42b6fab0d83770c0f7490cb3e535ebdc966cade921d35` |
 
 Rule: `sha256(seed + NUL + identity)[:8] mod 10000`; buckets
 `[0,7000)`, `[7000,8500)`, and `[8500,10000)` are train, development,
 and holdout. All splits contain every task and outcome class.
 
-The holdout has `86` B1-only, `219` QPT1-only, `287` both-correct, and
-`666` both-wrong rows. Thus B1/QPT1/oracle solve `373/506/592` of `1,258`.
+The holdout has `81` B1-only, `208` QPT1-only, `263` both-correct, and
+`727` both-wrong rows. Thus B1/QPT1/oracle solve `344/471/552` of `1,279`.
+
+Receipt correction: the prelaunch audit command that printed the first table
+escaped the delimiter as two literal characters (`\\0`) while the frozen rule,
+implementation, and jobs used one NUL byte (`\0`). The wrong printed counts
+were discovered only after immutable reports closed. The corrected table above
+is reproduced independently by both reports. This is a custody-report error,
+not a data, seed, model, threshold, or score change.
 
 ## Predeclared Arms
 
@@ -81,8 +88,8 @@ An arm passes only if all conditions hold on the new holdout:
 - disagreement selection accuracy `>= 80%`;
 - selected exact accuracy at least `2` percentage points above QPT1.
 
-The last condition requires at least `532/1,258` correct, compared with QPT1
-at `506/1,258`. Failure closes that host arm without threshold, seed, width,
+The last condition requires at least `497/1,279` correct, compared with QPT1
+at `471/1,279`. Failure closes that host arm without threshold, seed, width,
 duration, renderer, or loss variants.
 
 Only a passing holdout arm may score the already-preserved 568-example
@@ -97,3 +104,32 @@ Expected charge before launch is `2--4` H100-hours total for both fits and
 their conditional applications. If both comparators fail, PCJ1 closes and the
 next structural mechanism is verifier-grounded counterexample revision of one
 whole lineage, not another classifier or threshold sweep.
+
+## Result
+
+Both arms complete all `256` updates with zero train/development/holdout
+truncations and unchanged protected hosts. The conditional applications fail
+closed before scoring the 568-row product board.
+
+| Holdout metric | 4B judge | 9B judge |
+|---|---:|---:|
+| QPT1 | 471/1,279 (36.826%) | 471/1,279 (36.826%) |
+| PCJ1 selected | 489/1,279 (38.233%) | 495/1,279 (38.702%) |
+| Net answers | +18 | +24 |
+| Disagreement selection | 78.201% | 80.277% |
+| A/B consistency | 60.751% | 59.030% |
+| B1 commit rate | 4.848% | 5.473% |
+| Gate | FAIL | FAIL |
+
+The 9B arm is a meaningful near-miss but remains below the fixed `497`
+correct threshold by two answers and far below the 90% order-consistency
+requirement. Development agrees: 4B/9B select `465/472` versus QPT1 `453`.
+No public score is assigned.
+
+Exact 4B/9B report SHA-256 values are
+`5a02855ff52c70246e08d7cd5a100b510c1b34b2f11fd60e041058f5a13018eb`
+and `6773fb0387c113e7e6a410d93381f1565ff3e1e612163b981c969096abea960e`.
+Judge SHA-256 values are
+`2c55960b769ab92f6013cfb33ad4b3d55bc1245b97a22e2846c17d64eaf6ad55`
+and `28fa4728b4a141d3af28fb8648d9c84163e27c1337791a19a85a872fc102651c`.
+Total charged wall time is `0.8717` H100-hours.

@@ -57605,3 +57605,27 @@ Exact critic/verifier report SHA-256 values are `10c022b3...9f15` and
 `891b2d41...6886`. This closes independent per-completion outcome scoring in
 the exact CVG1 form. It does not erase the lineage complementarity ceiling,
 but no threshold, width, duration, seed, renderer, or loss rescue is permitted.
+
+### PCJ1 joint comparison: useful near-miss, exact gate closed
+
+PCJ1 replaces CVG1's independent correctness scores with one joint view of the
+problem and both complete solutions. It trains exact 4B and 9B host arms on a
+new identity-derived source-disjoint split and evaluates both A/B orders. The
+conservative commit selects B1 only when both orders agree; otherwise it keeps
+QPT1.
+
+On the 1,279-row holdout, QPT1 solves 471 and the coherent oracle solves 552.
+The 4B judge selects 489 (+18) and the 9B judge selects 495 (+24). The 9B arm
+reaches 80.277% on the 289 disagreement rows, showing that stronger joint
+comparison recovers real complementary capability. Neither arm passes: the
+fixed accuracy threshold is 497, and semantic A/B consistency is only
+60.751%/59.030% rather than 90%. Conditional product scoring therefore remains
+sealed. Exact 4B/9B report hashes are `5a02855f...18eb` and
+`6773fb03...60e`.
+
+The first preregistration table mistakenly reported split counts from a local
+audit command that hashed literal `\\0`; the frozen code and jobs correctly
+used NUL. Immutable reports agree on `5,824/1,289/1,279`. This reporting error
+is preserved and corrected; it did not change any score. PCJ1 is closed without
+variants. The next structural test is verifier-supervised generation of a
+revised whole solution rather than another selector.

@@ -1,12 +1,27 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **PCJ1 CLOSED / VCR1 NEXT — 2026-08-08 03:23 EDT:** PCJ1 jobs
+> `745612/745615` complete all 256 updates. On the actual NUL-delimited
+> `5,824/1,289/1,279` split, 4B selection improves QPT1 from `471` to `489`
+> holdout answers and 9B improves it to `495`; 9B disagreement selection is
+> `80.277%`. Both exact arms fail: selected accuracy remains below the fixed
+> `497/1,279` threshold and A/B consistency is only `60.751%/59.030%` versus
+> the required 90%. Conditional applications `745613/745616` fail closed
+> before the product board. A prelaunch receipt script printed wrong split
+> counts because it hashed literal `\\0`; the frozen rule, implementation,
+> jobs, and both immutable reports used NUL. Preserve this correction
+> explicitly. Total charge is `0.8717` H100-hours. PCJ1 receives no variants.
+> The predeclared structurally different successor is VCR1: a 9B model-owned
+> verifier-supervised whole-solution reviser, not another classifier.
+
 > **PCJ1 FROZEN / NEWTON IDLE — 2026-08-08 03:15 EDT:** Direct Newton
 > inspection proves the stale report that SAG1 `745346` was consuming an H100
 > is false: that job timed out, recovery completed, CVG1 closed, and `squeue`
 > is empty. Current monthly usage is `407.9/2000.0` GPU-hours and
 > `1538.8/10000.0` CPU-hours. The sole bounded successor is PCJ1, a direct
 > order-symmetric pairwise judge over the two frozen complete B1/QPT1
-> solutions. A new pre-score hash split contains `5,869/1,265/1,258`
+> solutions. A pre-score audit initially reported `5,869/1,265/1,258`, later
+> corrected above without changing the frozen NUL-delimited implementation.
 > train/development/holdout rows. Two predeclared one-H100 arms use exact
 > Qwen3.5-4B B1 and Qwen3.5-9B B1 hosts with identical 256-update settings.
 > Both orders must agree before selecting B1; otherwise the system defaults to
