@@ -3,7 +3,9 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import sys
 
+import merge_idr1_drafts
 from merge_idr1_drafts import (
     ADAPTER_SHA256,
     MODEL_REVISION,
@@ -105,3 +107,30 @@ def test_merge_accepts_exact_8392_row_geometry(tmp_path: Path) -> None:
     assert receipt["exact_bank_coverage"]
     assert receipt["counters"]["rows"] == 8392
     assert len(output.read_text(encoding="utf-8").splitlines()) == 8392
+
+
+def test_main_forwards_receipt_path(monkeypatch, tmp_path: Path) -> None:
+    captured = {}
+
+    def fake_merge(reports, banks, output, receipt):
+        captured.update(reports=reports, banks=banks, output=output, receipt=receipt)
+        return {"unique_identities": 8392, "output_sha256": "0" * 64}
+
+    monkeypatch.setattr(merge_idr1_drafts, "merge", fake_merge)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "merge_idr1_drafts.py",
+            "--report",
+            str(tmp_path / "report.json"),
+            "--bank",
+            str(tmp_path / "bank.jsonl"),
+            "--output",
+            str(tmp_path / "output.jsonl"),
+            "--receipt",
+            str(tmp_path / "receipt.json"),
+        ],
+    )
+    assert merge_idr1_drafts.main() == 0
+    assert captured["receipt"] == tmp_path / "receipt.json"

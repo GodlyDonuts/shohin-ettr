@@ -253,7 +253,8 @@ def main() -> int:
     )
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--receipt", type=Path, required=True)
-    report = merge(**vars(parser.parse_args()))
+    args = parser.parse_args()
+    report = merge(args.reports, args.banks, args.output, args.receipt)
     print(
         json.dumps(
             {"rows": report["unique_identities"], "sha256": report["output_sha256"]},
