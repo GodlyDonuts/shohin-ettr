@@ -1,0 +1,27 @@
+{
+  "always_idr1_score": 625,
+  "control": {
+    "capability_gate_pass": true,
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/aqc1_38bc1f3_r1/independent/report.json",
+    "selected_correct": 651,
+    "sha256": "fdf9ead0123001eb14f0f283eb4d4a3463dbddcd48831274213fc0825bb4326b"
+  },
+  "mechanism_gate": {
+    "treatment_beats_control_by_5": false,
+    "treatment_capability_gate_pass": true
+  },
+  "mechanism_gate_pass": false,
+  "metadata_control_score": 645,
+  "oracle_score": 671,
+  "practical_winner": "antisymmetric",
+  "practical_winner_score": 652,
+  "product_remains_sealed": true,
+  "schema": "shohin-aqc1-aggregate-v1",
+  "status": "complete",
+  "treatment": {
+    "capability_gate_pass": true,
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/aqc1_38bc1f3_r1/antisymmetric/report.json",
+    "selected_correct": 652,
+    "sha256": "9f72644cd39c4880788d5a58b09753bd57f3346810cad3f01226923d6eda5563"
+  }
+}

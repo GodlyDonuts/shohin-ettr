@@ -57717,3 +57717,32 @@ successor must preserve temporal separation: first create a model-owned draft
 or hypothesis trajectory, then expose that trajectory to a later revision
 owner. The next test should internalize proposal generation in the same host,
 not discard the intermediate computation.
+
+### IDR1 and AQC1: a qualified same-family multistage reasoner
+
+IDR1 internalizes the proposal. One pinned Qwen3.5-9B B1 model emits the first
+draft; a separately trained adapter on the same exact model family reads the
+problem and draft and emits a revised whole solution. On untouched holdout,
+the trained reviser solves `625/1,279`, versus `495` for the same second pass
+using the original untrained B1 adapter. The causal training gain is `+130`
+answers across MATH (`+83`), logic (`+46`), and code (`+1`). This establishes
+learned model-owned revision rather than merely paying for a second decode.
+
+AQC1 then learns to commit between the trained IDR1 revision and that matched
+same-family control. Its shared 9B encoder and antisymmetric relational head
+select exactly one complete trajectory and achieve exact A/B invariance. On
+the same source-disjoint holdout it solves `652/1,279`: MATH `272/621`, logic
+`354/625`, and code `26/33`. This is `+27` over IDR1 and seven answers over a
+fixed development-trained metadata selector. The matched independent-score
+control solves `651/1,279`, so coherent learned commitment is useful but the
+specific antisymmetric relation does not earn a separate causal claim.
+
+The strongest currently qualified same-family architecture is therefore:
+
+`source -> 9B internal draft -> trained 9B revision -> learned whole-trajectory commit`.
+
+It uses no external proposal model, correctness bit, verifier result, task
+router, or tool at inference, but it is still a Qwen-hosted multistage system,
+not native reasoning in the 125M Shohin checkpoint. Exact AQC1 treatment,
+control, and aggregate hashes are `9f72644c...5563`, `fdf9ead0...26b`, and
+`c56b0401...e74`.

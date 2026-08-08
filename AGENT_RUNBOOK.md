@@ -33929,3 +33929,32 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_exact_sdr1;_candidate_trajectories_are_causally_necessary;_build_a_model_owned_internal_draft_then_revision_successor`.
+
+- **2026-08-08 09:53--10:13 EDT** -- **AQC1 establishes a qualified
+  same-family draft/revise/commit architecture; its distinctive relational
+  claim fails the matched-control margin.**
+
+  A two-update integration canary exposed an order-dependent zero-margin tie
+  rule while independently proving exact numerical antisymmetry. Commit
+  `38bc1f3` changes only exact-tie selection to a candidate-owned canonical
+  rule; five focused tests pass. Immutable runtime
+  `runtime/aqc1_38bc1f3_r1` has manifest SHA-256
+  `c06a6e27edf9f9ec385b4d049b0b30962e8664e9592edfebd7d512c0ab880e02`.
+
+  Full one-H100 jobs `745677/745678` complete concurrently in
+  `00:19:59/00:19:58`, each with 128 updates and 1,024 pair presentations.
+  Both leave protected B1 adapter SHA-256 `854a7cc4...2971` unchanged, train
+  with zero prompt truncation, and report exact zero maximum swap error and
+  100% order consistency. Antisymmetric treatment solves `652/1,279` holdout
+  (`272/621` MATH, `354/625` logic, `26/33` code); independent-score control
+  solves `651/1,279` (`271/354/26`). Both pass all frozen capability floors
+  against IDR1 `625`, metadata control `645`, and oracle `671`.
+
+  The practical treatment gains 27 answers over IDR1, but its one-answer lead
+  over the matched control misses the required five-answer causal margin.
+  Treatment/control/aggregate report SHA-256 values are
+  `9f72644c...5563`, `fdf9ead0...26b`, and `c56b0401...e74`. Full jobs cost
+  `0.666` H100-hours; integration canaries cost `0.368`.
+
+  Decision:
+  `promote_652_as_the_qualified_same_family_whole_trajectory_commit;_reject_distinct_aqc1_relational_novelty;_no_nearby_aqc1_variants`.
