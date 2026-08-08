@@ -93,15 +93,28 @@ control_exports+=",SHARD_COUNT=$SHARD_COUNT,EXCLUDE_NODES=$EXCLUDE_NODES"
 control_dispatch=$(sbatch --parsable --export="$control_exports" \
   "$RUNTIME/train/jobs/dispatch_idr_scale_evals.sbatch")
 
+compare_dispatch=""
+if [[ -n "${COMPARISON_OUTPUT:-}" ]]; then
+  compare_exports="ALL,RUNTIME=$RUNTIME,RUNTIME_MANIFEST_SHA256=$RUNTIME_MANIFEST_SHA256"
+  compare_exports+=",TRAINED_DISPATCH_RECEIPT=$DISPATCH_ROOT/trained_eval_dispatch.json"
+  compare_exports+=",CONTROL_DISPATCH_RECEIPT=$DISPATCH_ROOT/control_eval_dispatch.json"
+  compare_exports+=",TRAINED_EVAL_ROOT=$TRAINED_EVAL_ROOT,CONTROL_EVAL_ROOT=$CONTROL_EVAL_ROOT"
+  compare_exports+=",COMPARISON_OUTPUT=$COMPARISON_OUTPUT"
+  compare_exports+=",DISPATCH_RECEIPT=$DISPATCH_ROOT/compare_dispatch.json"
+  compare_dispatch=$(sbatch --parsable \
+    --dependency=afterok:"$trained_dispatch":"$control_dispatch" \
+    --export="$compare_exports" "$RUNTIME/train/jobs/dispatch_idr_scale_compare.sbatch")
+fi
+
 receipt=$DISPATCH_ROOT/train_dispatch.json
 temporary=$receipt.partial.$$
 "$PYTHON" - "$temporary" "$train_job" "$trained_dispatch" "$control_dispatch" \
-  "$DATA_SHA256" "$DATA_REPORT_SHA256" <<'PY'
+  "$compare_dispatch" "$DATA_SHA256" "$DATA_REPORT_SHA256" <<'PY'
 import json
 from pathlib import Path
 import sys
 
-path, train, trained, control, data_sha, report_sha = sys.argv[1:]
+path, train, trained, control, compare, data_sha, report_sha = sys.argv[1:]
 Path(path).write_text(
     json.dumps(
         {
@@ -109,6 +122,7 @@ Path(path).write_text(
             "train_job": train,
             "trained_eval_dispatch_job": trained,
             "control_eval_dispatch_job": control,
+            "compare_dispatch_job": compare or None,
             "data_sha256": data_sha,
             "data_report_sha256": report_sha,
         },
@@ -120,5 +134,5 @@ Path(path).write_text(
 PY
 mv "$temporary" "$receipt"
 chmod a-w "$receipt"
-printf 'train_job=%s trained_eval_dispatch=%s control_eval_dispatch=%s\n' \
-  "$train_job" "$trained_dispatch" "$control_dispatch"
+printf 'train_job=%s trained_eval_dispatch=%s control_eval_dispatch=%s compare_dispatch=%s\n' \
+  "$train_job" "$trained_dispatch" "$control_dispatch" "$compare_dispatch"
