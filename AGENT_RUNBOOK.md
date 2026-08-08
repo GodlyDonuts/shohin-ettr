@@ -1,5 +1,17 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **FINAL-49K RETOKENIZATION CANARY PASS — 2026-08-08 17:43 EDT:** r4
+> Essential-Web canary `768275` completed in `8m23s`, preserving all `108,115`
+> documents and independently verifying every shard/ledger/external input. It
+> emitted `295,999,956` SmolLM2-49K tokens from `308,147,626` Shohin32 tokens,
+> a reduction of `12,147,670` (`3.942%`). Manifest/report payload SHA-256
+> values are `f2ce81ed...c93e` and `9a30a5fd...78c7`; physical file SHA-256
+> values are `66f1bc49...a6da` and `fdc02c9b...3398`. No document was edited
+> or dropped. Dependency release started FinePDF `768276`, peS2O `768277`,
+> and FineWeb `768278` concurrently on three 48-core Stokes nodes. These
+> outputs remain quarantined; this is a retokenization mechanics pass, not
+> corpus admission.
+
 > **IDR08 FIT COMPLETE / FINAL-49K RETOKENIZATION R4 LIVE — 2026-08-08
 > 17:33 EDT:** exact 0.8B capacity-boundary fit `746046` completed all 256
 > updates in `13m38s`, charging `365,028` tokens at `455.0 tok/s`. The final

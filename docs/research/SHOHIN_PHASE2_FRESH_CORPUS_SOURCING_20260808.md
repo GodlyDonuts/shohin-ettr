@@ -132,9 +132,14 @@ runtime `phase2_retokenize_a481bc4_r4` has SHA256SUMS SHA-256
 `3fa5141b20404c7632369e9f1f52a715c8874f02d0e2026e0b3a83deadcea81d`.
 Essential-Web canary `768275` is live against the exact-residual corpus;
 FinePDF, peS2O, and FineWeb jobs `768276--768278` are dependency-held behind
-it. Exact and near deduplication will both rerun on final 49K outputs. Formal
-Logic remains zero weight because its source has no domain provenance and
-cannot satisfy the domain-holdout gate.
+it. The canary subsequently completed in `8m23s`, preserving all `108,115`
+documents and independently verifying the complete output. It emitted
+`295,999,956` target tokens from `308,147,626` source tokens, a `3.942%`
+reduction, with manifest/report payload SHA-256 values `f2ce81ed...c93e` and
+`9a30a5fd...78c7`. Its pass released `768276--768278` concurrently on three
+48-core Stokes nodes. Exact and near deduplication will both rerun on final
+49K outputs. Formal Logic remains zero weight because its source has no domain
+provenance and cannot satisfy the domain-holdout gate.
 
 Essential-Web job `768237` separately exercises the complete historical-32K
 holdout creator and independent verifier as a transport-mechanics canary; its
