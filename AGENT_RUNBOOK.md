@@ -1,5 +1,23 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **NATIVE IDR PATH COMPLETE / IDR08 DECISION AUTOMATED — 2026-08-08
+> 16:30 EDT:** Private commits `995809c`, `96abeaf`, and `03d791f` implement
+> Shohin's shared-trunk draft/revision role states, one-role hash-bound SFT,
+> and coherent draft-then-revision inference. The base trunk and inactive role
+> stay frozen; zero-initialized role states preserve the trunk exactly. Four
+> final rank-8 layers add `581,632` parameters per role to `shohin_390m` or
+> `892,928` per role to `shohin_920m`. Real tiny-model train and two-pass
+> inference smokes pass. Commits `d9d8ca8` and `5916a52` freeze the matched
+> Qwen3.5-0.8B capacity boundary and automate all four merged-report
+> dependencies plus the conjunctive scale decision. The focused combined
+> suite is `38/38`, Ruff and shell syntax are clean. Do not launch IDR08 until
+> the pending 4B product comparison is retrieved and recorded. Transport is
+> still locally broken: Cisco UI appears connected but `utun5` has no `inet`
+> address and direct Newton SSH fails before authentication with `Can't assign
+> requested address`; the privileged Cisco service restart requires a valid
+> Mac administrator credential or reboot. The completed Newton product jobs
+> must not be rerun.
+
 > **IDR4 PRODUCT RESULTS PENDING TRANSPORT / RELEASE PATH PRESTAGED —
 > 2026-08-08 15:45 EDT:** All 16 protected product evaluation workers and
 > aggregate job `745923` were already released before the local Cisco tunnel
