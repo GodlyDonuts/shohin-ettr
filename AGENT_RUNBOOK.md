@@ -21,9 +21,20 @@
 > Exact current Apache-2.0 `Qwen/Qwen3.5-9B@c202236...337b9a` passes preflight
 > `745328` at 9,409,813,744 parameters, 18.929 GB peak, and successful native
 > thinking generation. Two-update B1 canary `745343` passes at 394.164 target
-> tok/s and 23.580 GB peak. Full B1 `745345` is live on `evc23`; identical
-> seven-board evaluations `745374--745380` are held after it. No 9B SAG1
+> tok/s and 23.580 GB peak. Full B1 `745345` completes 256 updates in 19m49s
+> at 537.132 target tok/s and 23.874 GB peak. Its identical seven-board suite
+> scores `61.330%` macro and `269/538` solved: GSM8K `90/100`, MATH-500
+> `49/100`, code `35/40`, GPQA `30/198`, BBH `65/100`, AIME `3/30`.
+> Hash-bound summary SHA-256 is `70f49783...549cc`. No 9B SAG1
 > transplant is authorized unless the frozen 4B SAG1 development gate passes.
+>
+> Static whole-lineage analysis on the already-opened 4B B1/QPT1 board finds
+> real arbitration headroom: an oracle union reaches `73.798%` macro and
+> `366/538` solved, including code `34/40`, versus QPT1 `62.588% / 317`.
+> This is not a model score. Receipt SHA-256 is `837364fe...67e98`. If SAG1
+> closes, the frozen structurally different successor is CVG1: generate both
+> complete lineages and use a model-owned prompt-plus-completion critic to
+> commit to one whole answer. Do not tune SAG1 to imitate this successor.
 
 > **OPB1 CONFIRMED / QST1 CLOSED / QPT1 CLOSED — 2026-08-07 19:33 EDT:**
 > OPB1 development and all five source-disjoint confirmations pass. Aggregate
@@ -33249,3 +33260,47 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finish_the_frozen_three_arm_4b_gate;_measure_the_9b_baseline_in_parallel;_transplant_sag1_to_9b_only_on_a_4b_development_pass`.
+
+- **2026-08-07 20:13--20:51 EDT** -- **The current 9B host is benchmarked;
+  B1/QPT1 complementarity identifies post-trajectory arbitration as the next
+  structural target if SAG1 closes.**
+
+  Qwen3.5-9B B1 `745345` completes all 256 updates in 19m49s with 619,734
+  charged targets at 537.132 target tok/s, 23,874,224,128 peak CUDA bytes,
+  and 2,704,896 trainable parameters. Checkpoint/report SHA-256 values are
+  `854a7cc4...22971` / `f82df8af...7bc6f`. Seven identical evaluations
+  `745374--745380` plus receipt `745395` complete: GSM8K `90/100`, MATH-500
+  `49/100`, HumanEval `20/20`, MBPP `15/20`, GPQA `30/198`, BBH logic
+  `65/100`, and AIME `3/30`. Five-domain macro is `61.3303%` and solved count
+  is `269/538`. Receipt SHA-256 is `70f49783...549cc`.
+
+  The equal-exposure 4B B1 continuation `745356` also completes 256 updates
+  and exactly 619,734 targets in 19m46s at 535.574 target tok/s. Its first
+  completed scores already show the ordinary-continuation trade: GSM8K
+  `85 -> 88`, MATH `50 -> 58`, but code `30/40 -> 28/40`. This validates the
+  need to compare SAG1 against both the original and continued B1.
+
+  A hash-bound identity-matched union analysis of the already-opened QPT1/B1
+  reports finds 49 answers of headroom beyond QPT1. Static whole-lineage
+  selection reaches `73.798%` macro and `366/538` solved: GSM8K `96`, MATH
+  `64`, code `34/40`, GPQA `97/198`, BBH `75`, and AIME `5/30`. Per-task
+  B1-only/QPT1-only counts prove both lineages contribute. This is an oracle
+  diagnostic, not a model result; receipt SHA-256 is
+  `837364fef6b25bbf4ee2ff8f3fb26510152b63fcc0e51339dd848a6e8e067e98`.
+
+  Conditional contract `DIVERGE_CVG1_COMPLETION_VERIFIER_GATE.md` is frozen:
+  if prompt-only SAG1 closes, generate complete B1/expert candidates and train
+  a model-owned prompt-plus-completion outcome critic on source-disjoint
+  verified rollouts, then hard-select one coherent lineage. No evaluator task
+  label, external answer at inference, or logit/field averaging is permitted.
+  This is structurally different from SAG1 and attacks the measured
+  arbitration bottleneck.
+
+  The SAG1 receipt also corrects one pre-score measurement error: batch size
+  one makes a single final commit-rate row necessarily binary. The unchanged
+  5--95% router gate now uses the mean across every fixed-interval training
+  trace sample. Commit `e5b38e9`; replacement aggregate jobs are
+  `745397/745398`. No capability score or model setting was changed.
+
+  Decision:
+  `finish_exact_sag1_once;_on_pass_confirm_then_transplant_to_the_qualified_9b_host;_on_fail_launch_exactly_one_cvg1_outcome_arbitration_gate`.

@@ -57510,3 +57510,73 @@ decision `745198` closes exact QPT1; aggregate SHA-256 is
 Controls remain unopened. Preserve QPT1 as a math/science/logic specialist
 baseline and require a structurally distinct successor to protect code rather
 than tuning this closed formulation.
+
+### SAG1 protected-base arbitration and equal-exposure control
+
+SAG1 is the sole frozen 4B successor to QPT1. It loads qualified B1 checkpoint
+SHA-256 `f7354e6a...81feb`, freezes the host and LoRA bit-identically, and
+trains a separate pointer-transaction expert plus a prompt-only hard router.
+The router target is detached per-example base-versus-expert teacher-forced
+loss advantage. Inference commits to one complete lineage; abstention is
+exactly B1 and no logits or incompatible state fields are averaged.
+
+The two-update CUDA canary passes with 4,072 charged targets, 27.380 GB peak,
+finite dual-path losses, and the frozen B1 hash unchanged. Full SAG1 runs once
+for 256 updates. A newly added equal-exposure control starts from the same B1
+checkpoint and performs another 256 standard LoRA updates on identical V10
+data, order, context, seed, and cosine schedule. This control completes
+619,734 targets in 19m46s at 535.574 target tok/s. Its early completed scores
+show math gains and code loss: GSM8K `88/100`, MATH `58/100`, and code
+`28/40`, versus original B1 `85`, `50`, and `30/40`. The final SAG1 gate
+therefore requires improvement over both original and continued B1 while
+retaining at least `30/40` code.
+
+Newton denied extending the live SAG1 allocation beyond two hours. Tested
+checkpoint-exact recovery restores trainable tensors, fused AdamW state,
+absolute data position, and the original cosine schedule from the latest
+atomic checkpoint. Qwen3.5-4B has zero attention dropout and SAG1 adds no
+dropout, so no stochastic layer state is omitted. Normal and recovery
+evaluation paths are mutually exclusive.
+
+### Qwen3.5-9B current-model baseline
+
+Exact pinned Apache-2.0 `Qwen/Qwen3.5-9B` revision
+`c202236235762e1c871ad0ccb60c8ee5ba337b9a` provides a current stronger host
+with 9,409,813,744 parameters. Preflight and two-update canary pass. The full
+256-update B1 stage consumes 619,734 targets in 19m49s at 537.132 target tok/s,
+peaks at 23.874 GB, and trains 2,704,896 LoRA parameters.
+
+On the identical development suite it scores:
+
+| Domain | Qwen3.5-9B B1 |
+|---|---:|
+| GSM8K | 90/100 |
+| MATH-500 | 49/100 |
+| Executable code | 35/40 |
+| GPQA-Diamond | 30/198 |
+| BBH logic | 65/100 |
+| Five-domain macro | 61.330% |
+| Solved | 269/538 |
+| AIME-2024, separate | 3/30 |
+
+The hash-bound receipt SHA-256 is `70f49783...549cc`. This is a real stronger
+baseline, not an architecture result. A 9B SAG1 transplant remains conditional
+on the 4B mechanism gate so capacity cannot rescue a failed interface.
+
+### Measured lineage complementarity and conditional CVG1
+
+Identity-matched analysis of the already-opened 4B B1 and QPT1 reports proves
+that the two complete lineages are complementary. A static oracle union reaches
+`73.798%` macro and `366/538` solved, versus QPT1 `62.588% / 317` and B1
+`55.630% / 248`. It scores GSM8K `96/100`, MATH `64/100`, code `34/40`, GPQA
+`97/198`, BBH `75/100`, and AIME `5/30`. The exact receipt SHA-256 is
+`837364fe...67e98`. This is a ceiling, not achieved model capability.
+
+The result localizes a high-value bottleneck: selecting the right completed
+trajectory. If SAG1's prompt-only arbitration closes, the one frozen
+structurally different successor is CVG1. It generates one complete B1 and
+expert candidate, scores `prompt + completion` with a model-owned critic
+trained on source-disjoint verified rollouts, and hard-selects one whole
+lineage. It may not receive benchmark identity, evaluator labels, gold answers,
+or external solver output at inference. Its purpose is to recover the measured
+49-answer headroom without reviving QPT1's global code regression.
