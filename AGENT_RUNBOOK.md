@@ -1,5 +1,22 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **IDR1 DRAFT/DATA CUSTODY COMPLETE / REVISION TRAINING LIVE — 2026-08-08
+> 06:36 EDT:** All 17 draft jobs `745628--745644` completed over 8,392 unique
+> identities for exactly `17.837` H100-hours. First-pass 9B B1 drafts solve
+> math `728/4,096`, science/logic `919/4,096`, and code `137/200`: total
+> `1,784/8,392 = 21.26%`. Broad max-token exhaustion is high at
+> `2,992/4,096` math and `2,949/4,096` science; code is `4/200`. Complete
+> merged-draft and receipt SHA-256 values are `509b114e...05d73` and
+> `2154a498...a852`. Build `745645` exposed a CLI receipt-name defect before
+> output; exact replay `745648` merged successfully then exposed one omitted
+> transitive runtime import before data output. Both are infrastructure-only.
+> Bounded data-only recovery `745650` completed and dispatcher `745651`
+> released exact revision training `745652` on `evc22`; eval dispatcher
+> `745653` is dependency-held. Train/development/holdout contain
+> `9,655/1,289/1,279` rows with SHA-256 `6df32045...ac6c`,
+> `0c52dd35...4224`, and `df347d59...36f2`; report SHA-256 is
+> `8e4b2817...c80e`. Product remains sealed.
+
 > **IDR1 DRAFTS LIVE / COST ESTIMATE CORRECTED — 2026-08-08 05:19 EDT:**
 > Jobs `745628--745643` hold 16 independent H100s; code shard `745644` is
 > pending resources and hash-bound CPU build `745645` is dependency-held

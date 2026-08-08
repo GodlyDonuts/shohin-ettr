@@ -1,7 +1,7 @@
 # DIVERGE-IDR1: Internal Draft Revision
 
-Status: draft-generation stage frozen before any IDR1 draft or score on
-2026-08-08.
+Status: draft collection and revision data complete; matched revision training
+is live as job `745652` on 2026-08-08. Product remains sealed.
 
 ## Hypothesis
 
@@ -44,6 +44,32 @@ early measured progress from 16 concurrent shards corrected that estimate to
 allocations, so they continue unchanged. The later revision fit and
 source-disjoint evaluation are separately expected to consume `2--4`
 H100-hours. Both the original estimate and correction are preserved.
+
+## Draft And Data Result
+
+All 17 jobs `745628--745644` completed for an exact charge of `17.837`
+H100-hours. The complete source-owned first pass scored:
+
+| Domain | Correct | Exhausted at 768 tokens |
+|---|---:|---:|
+| MATH | `728/4,096 = 17.77%` | `2,992/4,096` |
+| Science/logic | `919/4,096 = 22.44%` | `2,949/4,096` |
+| Execution-verified code | `137/200 = 68.50%` | `4/200` |
+| Total | `1,784/8,392 = 21.26%` | `5,945/8,392` |
+
+Merged drafts SHA-256 is
+`509b114e42773dbe8d14536ff5ce7e5a2f92b45b3acd57a37a035fce43505d73`;
+the complete receipt is
+`2154a49811dece70f25ccb309c8ef1fdc08d4513880477b500a4cbfba156a852`.
+The frozen revision data contain `9,655/1,289/1,279` train/development/holdout
+rows. Their SHA-256 values are `6df32045...ac6c`, `0c52dd35...4224`, and
+`df347d59...36f2`; report SHA-256 is `8e4b2817...c80e`.
+
+CPU build `745645` failed before output on a CLI receipt keyword mismatch.
+Replay `745648` completed and preserved the valid merge, then failed before
+revision data on an omitted transitive runtime import. Data-only recovery
+`745650` reused the hash-bound merge and completed. These were packaging
+failures only: no scientific input or setting changed.
 
 ## Conditional Revision Gate
 

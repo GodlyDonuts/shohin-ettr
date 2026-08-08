@@ -1,5 +1,29 @@
 # Shohin Native Reasoning Master Ledger
 
+## Latest Practical Reasoning Campaign — 2026-08-08
+
+**IDR1 is testing whether one model family can generate and revise its own
+intermediate solution without external proposal models.** VCR1 established a
+strong practical ceiling: a 9B reviser over two external 4B attempts reached
+`643/1,279` source-disjoint holdout and `72.302%` five-domain product macro.
+SDR1 source-only distillation fell to `490/1,279`, proving that candidate
+trajectories, rather than verified targets alone, caused most of VCR1's gain.
+
+IDR1 replaces both external candidates with one greedy first-pass draft from
+the exact pinned 9B B1 owner, then trains a later small LoRA state on the same
+9B host to revise `source + internal draft`. All 8,392 drafts are now complete:
+math `728/4,096`, science/logic `919/4,096`, and code `137/200`, for
+`1,784/8,392 = 21.26%` before revision. Merged-draft/receipt SHA-256 values are
+`509b114e...05d73` and `2154a498...a852`. Matched revision data contain
+`9,655/1,289/1,279` train/development/holdout rows. Exact 256-update training
+job `745652` is live; development and holdout will run concurrently after it.
+The frozen holdout gate is conjunctive: at least `618/1,279`, MATH `255`,
+logic `327`, code `24`, and 100 both-wrong repairs. Product remains sealed.
+
+This is a practical same-family two-pass reasoning architecture, not yet a
+claim that the 125M Shohin backbone reasons natively. See
+`docs/research/DIVERGE_IDR1_INTERNAL_DRAFT_REVISION.md`.
+
 ## Latest Result — 2026-08-07
 
 **DIVERGE-EAL2 confirms episode-local law induction and deep source-deleted
