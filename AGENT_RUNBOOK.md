@@ -1,5 +1,21 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **PCJ1 FROZEN / NEWTON IDLE — 2026-08-08 03:15 EDT:** Direct Newton
+> inspection proves the stale report that SAG1 `745346` was consuming an H100
+> is false: that job timed out, recovery completed, CVG1 closed, and `squeue`
+> is empty. Current monthly usage is `407.9/2000.0` GPU-hours and
+> `1538.8/10000.0` CPU-hours. The sole bounded successor is PCJ1, a direct
+> order-symmetric pairwise judge over the two frozen complete B1/QPT1
+> solutions. A new pre-score hash split contains `5,869/1,265/1,258`
+> train/development/holdout rows. Two predeclared one-H100 arms use exact
+> Qwen3.5-4B B1 and Qwen3.5-9B B1 hosts with identical 256-update settings.
+> Both orders must agree before selecting B1; otherwise the system defaults to
+> QPT1. Holdout requires >=90% order consistency, 2--50% B1 commits, >=80%
+> disagreement accuracy, and >=2 points over QPT1. Only a passing arm may
+> touch the preserved 568-row development board. Projected total charge is
+> `2--4` H100-hours. Contract:
+> `docs/research/DIVERGE_PCJ1_PAIRWISE_COUNTERFACTUAL_JUDGE.md`.
+
 > **SAG1 CLOSED BY MATH / CVG1 ROLLOUT LIVE — 2026-08-07 22:49 EDT:** The frozen SAG1
 > two-update canary `745344` passes on exact Qwen3.5-4B: 4,072 charged targets,
 > 62.921 target tok/s, 27.380 GB peak, finite dual-path losses, and a
