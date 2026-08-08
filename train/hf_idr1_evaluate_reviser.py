@@ -85,6 +85,22 @@ def load_rows(path: Path, split: str) -> list[dict[str, Any]]:
     return rows
 
 
+def shard_bounds(total: int, shard_index: int, shard_count: int, batch_size: int) -> tuple[int, int]:
+    """Partition rows without changing any full-evaluation batch pair."""
+    if total <= 0 or shard_count <= 0 or not 0 <= shard_index < shard_count:
+        raise IDR1EvaluationError("IDR1 shard geometry is invalid")
+    if batch_size <= 0:
+        raise IDR1EvaluationError("IDR1 batch size is invalid")
+    batch_count = (total + batch_size - 1) // batch_size
+    batch_start = batch_count * shard_index // shard_count
+    batch_end = batch_count * (shard_index + 1) // shard_count
+    start = min(total, batch_start * batch_size)
+    end = min(total, batch_end * batch_size)
+    if start >= end:
+        raise IDR1EvaluationError("IDR1 shard is empty")
+    return start, end
+
+
 def summarize(
     rows: list[dict[str, Any]], results: list[dict[str, Any]], split: str
 ) -> dict[str, Any]:
@@ -134,7 +150,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise IDR1EvaluationError("IDR1 evaluation data path differs")
     if expected.get("sha256") != sha256_file(args.data):
         raise IDR1EvaluationError("IDR1 evaluation data hash differs")
-    rows = load_rows(args.data, args.split)
+    all_rows = load_rows(args.data, args.split)
+    row_start, row_end = shard_bounds(
+        len(all_rows), args.shard_index, args.shard_count, args.batch_size
+    )
+    rows = all_rows[row_start:row_end]
 
     tokenizer = AutoTokenizer.from_pretrained(args.model_root, trust_remote_code=True)
     tokenizer.padding_side = "left"
@@ -190,7 +210,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     torch.cuda.synchronize()
     elapsed = time.monotonic() - started
     candidate_sha256 = _atomic_lines(args.candidates_output, results)
-    summary = summarize(rows, results, args.split)
+    summary = (
+        summarize(rows, results, args.split)
+        if args.shard_count == 1
+        else {"gate": None, "gate_pass": False, "frozen_floors": None, "metrics": None}
+    )
     report = {
         "schema": REPORT_SCHEMA,
         "status": "complete",
@@ -214,6 +238,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "max_new_tokens": args.max_new_tokens,
         "batch_size": args.batch_size,
         "seed": args.seed,
+        "shard_index": args.shard_index,
+        "shard_count": args.shard_count,
+        "full_row_count": len(all_rows),
+        "row_start": row_start,
+        "row_end": row_end,
         "elapsed_seconds": elapsed,
         "generated_tokens": generated_tokens,
         "generated_tokens_per_second": generated_tokens / elapsed,
@@ -242,6 +271,8 @@ def main() -> int:
     parser.add_argument("--max-new-tokens", type=int, default=768)
     parser.add_argument("--code-timeout", type=float, default=3.0)
     parser.add_argument("--seed", type=int, default=2026080816)
+    parser.add_argument("--shard-index", type=int, default=0)
+    parser.add_argument("--shard-count", type=int, default=1)
     args = parser.parse_args()
     report = run(args)
     print(json.dumps({"gate": report["gate"], "metrics": report["metrics"]}, indent=2))

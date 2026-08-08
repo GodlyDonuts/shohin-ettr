@@ -1,7 +1,8 @@
 # DIVERGE-IDR1: Internal Draft Revision
 
-Status: draft collection and revision data complete; matched revision training
-is live as job `745652` on 2026-08-08. Product remains sealed.
+Status: exact training and both source-disjoint evaluations complete. The
+conjunctive gate failed narrowly; product remains sealed. A frozen no-revision
+two-pass control is running to attribute the gain.
 
 ## Hypothesis
 
@@ -71,7 +72,45 @@ revision data on an omitted transitive runtime import. Data-only recovery
 `745650` reused the hash-bound merge and completed. These were packaging
 failures only: no scientific input or setting changed.
 
-## Conditional Revision Gate
+## Revision Training Result
+
+Job `745652` completed all 256 frozen updates in 19m50s. It charged 365,028
+target tokens at 320.55 target tokens/s. Checkpoint SHA-256 is
+`df3c264d426941fef8ba9c10a90fe9fab304ec2864738209a4d79f9f81e0c473`.
+
+## Source-Disjoint Gate Result
+
+| Split | Overall | MATH | Logic | Code | Both-wrong repairs | Gate |
+|---|---:|---:|---:|---:|---:|---|
+| Development | `589/1,289` | `223/623` | `349/637` | `17/29` | `178/767` | FAIL |
+| Holdout | `625/1,279` | `248/621` | `351/625` | `26/33` | `183/727` | FAIL |
+
+Development missed the frozen MATH and code floors by one and two answers.
+Holdout passed overall, logic, code, and both-wrong floors but missed the MATH
+floor by seven. The exact gate is therefore closed and the product board
+remains sealed. Development and holdout report SHA-256 values are
+`0880e59c03460f3ab0f5c8da87136fd9f60961f3fa16a762225188ac998b7a40`
+and `74834cad3ee4c32e1e263d968bbb2f5b1f4dfeb6eca91b124e1a4f5a03148b53`.
+
+The result is nevertheless a large, independently reproduced capability gain.
+On holdout, revision improves the internal first pass from `265` to `625`
+correct, exceeds one-pass source-only SDR1 (`490`) and the 9B QPT1 expert
+(`471`), and finishes 18 answers below externally proposed VCR1 (`643`). Of
+363 cases repaired after an incorrect draft, 356 drafts had exhausted the
+768-token budget and 327 contained no explicit candidate answer; only three
+initially correct drafts were lost. This identifies a major learned
+continuation/finalization effect, especially for long truncated trajectories.
+
+## Matched Attribution Control
+
+Jobs `745657/745658` run the same frozen internal drafts, source-plus-draft
+prompt, evaluator, generation budget, and split using the original exact 9B B1
+adapter rather than the trained IDR1 revision state. This is the required
+matched control for separating learned revision from the benefit of a second
+inference pass. Its outcome cannot reopen the exact IDR1 gate or authorize the
+sealed product board.
+
+## Frozen Revision Gate
 
 After complete draft custody, IDR1 will use the exact SDR1/VCR1 verified
 targets and split. The only new input is the frozen model-owned 9B draft.
@@ -81,6 +120,5 @@ fixed MATH/logic/code and both-wrong floors, and reproduce on development
 before the product board opens.
 
 Failure closes exact IDR1 without draft sampling, prompt, seed, LR, duration,
-rank, layer, context, decoding, or threshold variants. Success establishes
-that the decisive intermediate trajectory can be generated internally by one
-host family.
+rank, layer, context, decoding, or threshold variants. The measured failure is
+now final. The matched no-revision control is attribution, not a rescue.

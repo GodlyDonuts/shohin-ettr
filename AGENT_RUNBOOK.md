@@ -1,5 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **IDR1 SOURCE GATE CLOSED / ATTRIBUTION CONTROL LIVE — 2026-08-08
+> 07:16 EDT:** Exact 256-update training `745652` completed in 19m50s with
+> checkpoint SHA-256 `df3c264d...c473`. Development/holdout score
+> `589/1,289` and `625/1,279`; holdout exceeds internal drafts `265`, SDR1
+> `490`, and 9B QPT1 `471`, and is 18 behind external-proposal VCR1 `643`.
+> The strict gate nevertheless fails: development MATH/code miss by `1/2`
+> answers and holdout MATH is `248/621` versus floor `255`; product remains
+> sealed and exact IDR1 gets no variant. Of 363 holdout repairs after a wrong
+> draft, 356 began from token-exhausted drafts and only three initially correct
+> drafts were lost. Matched jobs `745657/745658` now evaluate the same
+> source-plus-draft second pass with the original 9B B1 adapter to distinguish
+> learned revision from mere finalization. Expected added charge is about
+> `0.7` H100-hours. Current Newton usage before this control is
+> `429.3/2,000.0` GPU-hours.
+
 > **IDR1 DRAFT/DATA CUSTODY COMPLETE / REVISION TRAINING LIVE — 2026-08-08
 > 06:36 EDT:** All 17 draft jobs `745628--745644` completed over 8,392 unique
 > identities for exactly `17.837` H100-hours. First-pass 9B B1 drafts solve

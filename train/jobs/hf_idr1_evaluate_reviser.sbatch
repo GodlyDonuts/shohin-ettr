@@ -26,6 +26,8 @@ set -euo pipefail
 : "${SPLIT:?SPLIT is required}"
 : "${CANDIDATES_OUTPUT:?CANDIDATES_OUTPUT is required}"
 : "${REPORT:?REPORT is required}"
+SHARD_INDEX=${SHARD_INDEX:-0}
+SHARD_COUNT=${SHARD_COUNT:-1}
 
 BASE=/lustre/fs1/home/sa305415/shohin
 PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
@@ -80,7 +82,9 @@ nvidia-smi
   --report "$REPORT" \
   --batch-size 2 \
   --max-new-tokens 768 \
-  --seed 2026080816
+  --seed 2026080816 \
+  --shard-index "$SHARD_INDEX" \
+  --shard-count "$SHARD_COUNT"
 
 sha256sum "$CANDIDATES_OUTPUT" "$REPORT"
 chmod a-w "$CANDIDATES_OUTPUT" "$REPORT"

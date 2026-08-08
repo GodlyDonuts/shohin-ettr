@@ -2,8 +2,8 @@
 
 ## Latest Practical Reasoning Campaign — 2026-08-08
 
-**IDR1 is testing whether one model family can generate and revise its own
-intermediate solution without external proposal models.** VCR1 established a
+**IDR1 demonstrates a strong same-family two-pass capability gain, but its
+frozen conjunctive gate failed.** VCR1 established a
 strong practical ceiling: a 9B reviser over two external 4B attempts reached
 `643/1,279` source-disjoint holdout and `72.302%` five-domain product macro.
 SDR1 source-only distillation fell to `490/1,279`, proving that candidate
@@ -16,9 +16,13 @@ math `728/4,096`, science/logic `919/4,096`, and code `137/200`, for
 `1,784/8,392 = 21.26%` before revision. Merged-draft/receipt SHA-256 values are
 `509b114e...05d73` and `2154a498...a852`. Matched revision data contain
 `9,655/1,289/1,279` train/development/holdout rows. Exact 256-update training
-job `745652` is live; development and holdout will run concurrently after it.
-The frozen holdout gate is conjunctive: at least `618/1,279`, MATH `255`,
-logic `327`, code `24`, and 100 both-wrong repairs. Product remains sealed.
+completed in 19m50s. Development reached `589/1,289`; holdout reached
+`625/1,279`, compared with internal drafts `265`, source-only SDR1 `490`, 9B
+QPT1 `471`, and external-proposal VCR1 `643` on holdout. Holdout passed
+overall, logic, code, and both-wrong floors, but MATH was `248/621` versus the
+required `255`; exact IDR1 is closed and product remains sealed. A matched
+no-revision two-pass control is running to isolate learned revision from
+inference finalization.
 
 This is a practical same-family two-pass reasoning architecture, not yet a
 claim that the 125M Shohin backbone reasons natively. See
