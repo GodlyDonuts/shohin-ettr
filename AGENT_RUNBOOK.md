@@ -1,6 +1,6 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **SAG1 RECOVERY LIVE / QWEN3.5-9B BASELINED — 2026-08-07 22:08 EDT:** The frozen SAG1
+> **SAG1 CLOSED BY MATH / CVG1 ROLLOUT LIVE — 2026-08-07 22:49 EDT:** The frozen SAG1
 > two-update canary `745344` passes on exact Qwen3.5-4B: 4,072 charged targets,
 > 62.921 target tok/s, 27.380 GB peak, finite dual-path losses, and a
 > bit-identical protected B1 hash. Primary `745346` remained finite through
@@ -20,6 +20,13 @@
 > hash-bind and merge the immutable primary trace through checkpoint 192 with
 > the resumed report through update 256. It must observe the exact 33 frozen
 > log points; replacement affects only accounting, not model/evaluator/gates.
+> Completed scores so far are GSM8K `91/100`, MATH-500 `46/100`, HumanEval
+> `18/20`, and MBPP `12/20`. Code therefore retains the frozen `30/40` floor,
+> but MATH regresses 12 points from equal-exposure continuation `58/100` and
+> irreversibly closes the conjunctive gate. Remaining GPQA/BBH/AIME jobs still
+> finish for a complete record. The sole frozen successor CVG1 has launched
+> exact rollout jobs `745462--745495`; projected total campaign charge was
+> reported before launch as 31--38 GPU-hours.
 >
 > An equal-exposure 4B B1 continuation `745356` starts from the same protected
 > checkpoint for another 256 updates with identical V10 data/order, context,
@@ -33438,3 +33445,27 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `wait_for_all_seven_unchanged_scores;_apply_the_conjunctive_gate_once`.
+
+- **2026-08-07 22:40--22:50 EDT** -- **SAG1's capability gate becomes an
+  irreversible FAIL; exact CVG1 rollout collection launches.**
+
+  Four complete SAG1 domains arrive under the unchanged evaluator. GSM8K is
+  `91/100` versus original/continuation `85/88`; HumanEval is `18/20` and MBPP
+  `12/20`, retaining the required combined code floor `30/40` and beating the
+  continuation's `28/40`. MATH-500 is only `46/100` versus original B1 `50`
+  and continuation `58`. The 12-point continuation regression exceeds the
+  frozen two-point maximum, so no possible remaining score can make the
+  conjunctive development gate pass. GPQA, BBH, and AIME continue solely to
+  preserve the complete score vector and final hash-bound receipt.
+
+  Before launch, the user-facing projected charge is recorded as 31--38
+  GPU-hours: 27--34 for rollouts and 2--4 for critic fit/evaluation. The exact
+  one-shot CVG1 launcher then submits 34 independent single-H100 jobs
+  `745462--745495`: 32 shards spanning two 4,096-row source-disjoint
+  math/science banks and two 200-row independently execution-verified code
+  shards, each generated once by frozen B1 and QPT1 lineages. All runtime,
+  model, checkpoint, bank, and output identities are unchanged from the dry
+  run. Job `745462` starts immediately; the rest are scheduler-admitted.
+
+  Decision:
+  `close_exact_sag1_after_complete_receipt;_collect_the_single_frozen_cvg1_whole_lineage_corpus_without_sag1_rescue_variants`.
