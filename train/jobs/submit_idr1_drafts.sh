@@ -21,7 +21,7 @@ CODE_BANK_SHA256=${CODE_BANK_SHA256:-0b6d068b4d71f407cb234579b9278dc640df09139ea
 OUTPUT_ROOT=${OUTPUT_ROOT:?set fresh IDR1 draft output root}
 SHARD_SIZE=${SHARD_SIZE:-512}
 DRY_RUN=${DRY_RUN:-true}
-EXCLUDE=${EXCLUDE:-evc33}
+EXCLUDE=${EXCLUDE:-evc33,evc38}
 
 test "$SHARD_SIZE" -eq 512
 test "$DRY_RUN" = true || test "$DRY_RUN" = false

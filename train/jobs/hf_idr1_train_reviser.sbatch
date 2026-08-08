@@ -25,6 +25,7 @@ set -euo pipefail
 : "${DATA_REPORT_SHA256:?DATA_REPORT_SHA256 is required}"
 : "${OUTPUT:?OUTPUT is required}"
 MODEL_LOADER=${MODEL_LOADER:-auto}
+MASK_INTERNAL_DRAFT=${MASK_INTERNAL_DRAFT:-false}
 
 BASE=/lustre/fs1/home/sa305415/shohin
 PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
@@ -82,6 +83,13 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
 
 nvidia-smi
+MASK_ARGS=()
+if [[ "$MASK_INTERNAL_DRAFT" == "true" ]]; then
+  MASK_ARGS+=(--mask-internal-draft)
+elif [[ "$MASK_INTERNAL_DRAFT" != "false" ]]; then
+  echo "MASK_INTERNAL_DRAFT must be true or false" >&2
+  exit 4
+fi
 "$PYTHON" "$RUNTIME/train/hf_product_reasoning_train.py" \
   --model-root "$EFFECTIVE_MODEL_ROOT" \
   --model-source-root "$SOURCE_MODEL_ROOT" \
@@ -103,7 +111,8 @@ nvidia-smi
   --seed 2026080815 \
   --data-seed 2026080814 \
   --log-interval 8 \
-  --checkpoint-interval 256
+  --checkpoint-interval 256 \
+  "${MASK_ARGS[@]}"
 
 test -f "$OUTPUT/checkpoint_0000256.pt"
 test -f "$OUTPUT/report.json"
