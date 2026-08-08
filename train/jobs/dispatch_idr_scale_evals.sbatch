@@ -24,7 +24,8 @@ PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
 : "${EVAL_ROOT:?EVAL_ROOT is required}"
 : "${DISPATCH_RECEIPT:?DISPATCH_RECEIPT is required}"
 SHARD_COUNT=${SHARD_COUNT:-4}
-EXCLUDE=${EXCLUDE:-evc33,evc38}
+EXCLUDE_NODES=${EXCLUDE_NODES:-evc33:evc38}
+EXCLUDE=${EXCLUDE_NODES//:/,}
 
 test "$SHARD_COUNT" -ge 2
 test -x "$PYTHON"

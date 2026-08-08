@@ -27,7 +27,8 @@ PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
 : "${CONTROL_EVAL_ROOT:?CONTROL_EVAL_ROOT is required}"
 : "${DISPATCH_ROOT:?DISPATCH_ROOT is required}"
 SHARD_COUNT=${SHARD_COUNT:-4}
-EXCLUDE=${EXCLUDE:-evc33,evc38}
+EXCLUDE_NODES=${EXCLUDE_NODES:-evc33:evc38}
+EXCLUDE=${EXCLUDE_NODES//:/,}
 
 test ! -e "$DISPATCH_ROOT"
 test ! -e "$TRAIN_OUTPUT"
@@ -78,7 +79,7 @@ trained_exports+=",MODEL_CONFIG_SHA256=$MODEL_CONFIG_SHA256"
 trained_exports+=",ADAPTER_CHECKPOINT=$trained_checkpoint,DATA_ROOT=$DATA_ROOT"
 trained_exports+=",EVAL_ROOT=$TRAINED_EVAL_ROOT"
 trained_exports+=",DISPATCH_RECEIPT=$DISPATCH_ROOT/trained_eval_dispatch.json"
-trained_exports+=",SHARD_COUNT=$SHARD_COUNT,EXCLUDE=$EXCLUDE"
+trained_exports+=",SHARD_COUNT=$SHARD_COUNT,EXCLUDE_NODES=$EXCLUDE_NODES"
 trained_dispatch=$(sbatch --parsable --dependency=afterok:"$train_job" \
   --export="$trained_exports" "$RUNTIME/train/jobs/dispatch_idr_scale_evals.sbatch")
 
@@ -88,7 +89,7 @@ control_exports+=",MODEL_CONFIG_SHA256=$MODEL_CONFIG_SHA256"
 control_exports+=",ADAPTER_CHECKPOINT=$WARM_START,ADAPTER_CHECKPOINT_SHA256=$WARM_START_SHA256"
 control_exports+=",DATA_ROOT=$DATA_ROOT,EVAL_ROOT=$CONTROL_EVAL_ROOT"
 control_exports+=",DISPATCH_RECEIPT=$DISPATCH_ROOT/control_eval_dispatch.json"
-control_exports+=",SHARD_COUNT=$SHARD_COUNT,EXCLUDE=$EXCLUDE"
+control_exports+=",SHARD_COUNT=$SHARD_COUNT,EXCLUDE_NODES=$EXCLUDE_NODES"
 control_dispatch=$(sbatch --parsable --export="$control_exports" \
   "$RUNTIME/train/jobs/dispatch_idr_scale_evals.sbatch")
 
