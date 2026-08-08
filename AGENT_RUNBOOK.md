@@ -7,13 +7,15 @@
 > update 224 and then hit its immutable two-hour Slurm limit exactly as
 > forecast. Durable checkpoint 192 has SHA-256 `86ba2260...3758`. Recovery
 > `745365` immediately acquired the same H100 on `evc26`, restored checkpoint,
-> AdamW, absolute data position, and cosine schedule, and is finite through
-> update 232 after reproducing update 200 at the exact cumulative `489,299`
-> charged targets. Mutually exclusive
-> recovery evaluations `745366--745372` remain held; this is scheduler fault
-> tolerance, not a scientific variant. Private commit `d901582` implements
-> and tests the fail-closed resume path. Expected recovery completion is about
-> 22:40 EDT, followed by the seven-board score and decision near 23:00 EDT.
+> AdamW, absolute data position, and cosine schedule, and completed update 256
+> with exact cumulative `619,734` charged targets. Final checkpoint SHA-256 is
+> `9ccd0285...7955`; report SHA-256 is `494b37bf...e868`; the protected B1 hash
+> remains bit-identical. Recovery evaluations `745366--745372` are released;
+> GSM8K and MATH are live while five one-H100 jobs await priority/resources.
+> This is scheduler fault tolerance, not a scientific variant. Private commit
+> `d901582` implements and tests the fail-closed resume path. The remaining
+> pending evaluator time limits were reduced using measured identical-job
+> runtimes to improve Slurm backfill, without changing evaluation content.
 > Receipt commit `97def6c` additionally requires aggregate job `745459` to
 > hash-bind and merge the immutable primary trace through checkpoint 192 with
 > the resumed report through update 256. It must observe the exact 33 frozen
@@ -33410,3 +33412,29 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finish_recovery_then_run_the_seven_parallel_scores_and_one_hash_bound_full_lineage_aggregate`.
+
+- **2026-08-07 22:37--22:40 EDT** -- **The exact SAG1 fit closes cleanly and
+  the seven-board evaluation releases.**
+
+  Recovery `745365` completes update 256 in 1,994.16 segment seconds. The
+  complete lineage charges exactly `619,734` logical targets; its recovery
+  segment charges `147,493` at 73.96 target tok/s and peaks at
+  28,510,821,376 allocated CUDA bytes. Final checkpoint
+  `checkpoint_0000256.pt` SHA-256 is
+  `9ccd028563877351e937e20712d889ee713756db9833f07f518f643bb4437955`;
+  training report SHA-256 is
+  `494b37bf0e0a9d400e2d409d239d30fbdaf9063fcbead81ce4125c7501a3e868`.
+  Both are read-only. Frozen before/after parameter hashes are identical at
+  `bc543f20...b960`.
+
+  The full prefix-plus-recovery trace has all 33 required rows, finite
+  loss/language-loss/gradient-norm values, strictly increasing logical-token
+  accounting, and mean router commit `0.6666667`. Thus every training-side
+  gate is positioned to pass; capability remains unknown until scores close.
+  Jobs `745366/745367` begin GSM8K/MATH immediately. Pending code, GPQA, BBH,
+  and AIME jobs retain identical inputs but receive evidence-based shorter
+  wall reservations (20/20/45/30/30 minutes) so Slurm can backfill them more
+  readily. Aggregate `745459` remains held behind all seven.
+
+  Decision:
+  `wait_for_all_seven_unchanged_scores;_apply_the_conjunctive_gate_once`.
