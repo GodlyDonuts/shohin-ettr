@@ -20,9 +20,13 @@ completed in 19m50s. Development reached `589/1,289`; holdout reached
 `625/1,279`, compared with internal drafts `265`, source-only SDR1 `490`, 9B
 QPT1 `471`, and external-proposal VCR1 `643` on holdout. Holdout passed
 overall, logic, code, and both-wrong floors, but MATH was `248/621` versus the
-required `255`; exact IDR1 is closed and product remains sealed. A matched
-no-revision two-pass control is running to isolate learned revision from
-inference finalization.
+required `255`; exact IDR1 is closed and product remains sealed. The matched
+no-revision two-pass control scores `464/1,289` development and `495/1,279`
+holdout. Trained revision therefore causes `+125/+130` answers. On holdout,
+MATH/logic/code improve `165->248`, `305->351`, and `25->26`. This is a real
+learned revision and termination policy, not only a second-pass formatting
+effect. Complete IDR1 cost is `30.124` H100-hours; report hashes and detailed
+transition accounting are in the IDR1 contract.
 
 This is a practical same-family two-pass reasoning architecture, not yet a
 claim that the 125M Shohin backbone reasons natively. See

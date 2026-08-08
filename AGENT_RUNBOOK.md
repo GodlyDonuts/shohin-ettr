@@ -1,5 +1,24 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **IDR1 TRAINED REVISION CAUSALLY POSITIVE / EXACT GATE CLOSED — 2026-08-08
+> 09:18 EDT:** The complete matched no-revision control proves that IDR1's
+> gain is learned revision, not merely a second inference pass. On exact
+> source-disjoint development, original 9B B1 over `source + internal draft`
+> scores `464/1,289`; trained IDR1 scores `589` (`+125`). On holdout the
+> control scores `495/1,279`; IDR1 scores `625` (`+130`). Holdout deltas are
+> MATH `165->248`, logic `305->351`, and code `25->26`; development moves
+> `150->223`, `299->349`, and `15->17`. Against the control, IDR1 gains/loses
+> `176/46` holdout answers. On the 914 token-exhausted drafts it moves
+> `286->402`; on 365 non-exhausted drafts it moves `209->223`. Reports hash to
+> `08f5e12f...0d1a` and `37bb0c53...ccb9a`. This establishes a real
+> same-family model-owned draft/revise architecture, but exact promotion stays
+> closed because holdout MATH misses the frozen floor by seven and development
+> MATH/code miss by one/two. Product remains sealed; no IDR1 local variant.
+> Valid sharded control work cost `10.220` H100-hours; superseded monoliths
+> plus failed/canceled `evc33` allocations cost `1.104`, for `11.324` total.
+> The complete IDR1 campaign including drafts, training, and source gates cost
+> `30.124` H100-hours. Current Newton usage is `440.7/2,000.0` GPU-hours.
+
 > **IDR1 ATTRIBUTION CONTROL SHARDED — 2026-08-08 07:45 EDT:** The exact
 > untrained-B1 second pass emits long continuations and measured too slowly to
 > finish jobs `745657/745658` inside their three-hour limits. After `27m17s`

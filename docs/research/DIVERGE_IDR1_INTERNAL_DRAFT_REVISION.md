@@ -1,8 +1,9 @@
 # DIVERGE-IDR1: Internal Draft Revision
 
-Status: exact training and both source-disjoint evaluations complete. The
-conjunctive gate failed narrowly; product remains sealed. A frozen no-revision
-two-pass control is running to attribute the gain.
+Status: exact training, source-disjoint evaluations, and the matched
+no-revision attribution control are complete. Trained revision is causally
+positive, the conjunctive promotion gate failed narrowly, and product remains
+sealed.
 
 ## Hypothesis
 
@@ -101,19 +102,41 @@ correct, exceeds one-pass source-only SDR1 (`490`) and the 9B QPT1 expert
 initially correct drafts were lost. This identifies a major learned
 continuation/finalization effect, especially for long truncated trajectories.
 
-## Matched Attribution Control
+## Matched Attribution Control Result
 
-The matched control runs the same frozen internal drafts, source-plus-draft
+The matched control ran the same frozen internal drafts, source-plus-draft
 prompt, evaluator, generation budget, and split using the original exact 9B B1
 adapter rather than the trained IDR1 revision state. Slow long-form generation
 made monolithic jobs `745657/745658` unable to fit their scheduler windows.
 They were replaced by four contiguous batch-aligned shards per split,
 `745659--745667`, with no model, prompt, ordering, batching, decoding, seed, or
 scoring change. One failed CUDA-invisible allocation is replaced exactly.
-Complete identity coverage is mandatory before merge and scoring. This is the
-required matched control for separating learned revision from the benefit of a
-second inference pass. Its outcome cannot reopen the exact IDR1 gate or
-authorize the sealed product board.
+Complete identity coverage was proven before merge and scoring. The result is:
+
+| Split | Original 9B B1 second pass | Trained IDR1 | Delta |
+|---|---:|---:|---:|
+| Development | `464/1,289` | `589/1,289` | `+125` |
+| Holdout | `495/1,279` | `625/1,279` | `+130` |
+
+Holdout gains are MATH `+83` (`165->248`), logic `+46` (`305->351`), and
+code `+1` (`25->26`). Development gains are `+73/+50/+2`. Trained IDR1 fixes
+176 control errors while losing 46 control-correct answers on holdout. On the
+914 token-exhausted drafts, control/trained score `286/402`; on the 365
+non-exhausted drafts they score `209/223`. The result therefore proves a
+learned revision and termination policy, not just the generic benefit of
+providing a draft to an additional inference pass.
+
+Development and holdout control reports hash to
+`08f5e12f006426df2d9a9a71dc3a69a9a0825a508121309e1fa386054be60d1a`
+and `37bb0c5300d5b8dec45a6e8b3a07b20b708a17cdff2ce5b22481c002702ccb9a`.
+Valid sharded evaluation cost `10.220` H100-hours. Superseded monolithic and
+failed/canceled `evc33` allocations add `1.104`, making the exact attribution
+control cost `11.324` H100-hours. Including draft collection, training, and
+the primary source gates, complete IDR1 cost is `30.124` H100-hours.
+
+The attribution result cannot reopen the exact IDR1 gate or authorize the
+sealed product board. It does establish IDR1 as the strongest measured
+model-owned same-family architecture in this campaign.
 
 ## Frozen Revision Gate
 

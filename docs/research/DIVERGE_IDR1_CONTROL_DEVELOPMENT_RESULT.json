@@ -1,0 +1,115 @@
+{
+  "adapter_checkpoint_sha256": "854a7cc44fbc2b54418f4e5bd09b7efeed0da44fc9ce217b0bb6b1997b722971",
+  "aggregate_gpu_seconds": 17861.944171715993,
+  "batch_size": 2,
+  "candidates_output": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/idr1_b1_no_revision_control_sharded_r1/development/candidates.jsonl",
+  "candidates_sha256": "bece284b470c4a7628398e14ed9affb2184d52195c470c290d25469d3c2071ae",
+  "critical_path_seconds": 4514.408841786906,
+  "data_report_sha256": "8e4b2817d2c96036ff8c2d1606b7a9a37e08fc7176ae7ffe42344041b03ac80e",
+  "data_sha256": "0c52dd35fa6013d88befe5ee627894fe74fe62072b358e19890a71455d844224",
+  "frozen_floors": {
+    "bbh_logic": 294,
+    "both_wrong": 75,
+    "math500": 224,
+    "mbpp": 19,
+    "overall": 550
+  },
+  "full_row_count": 1289,
+  "gate": {
+    "code_within_one_answer_of_vcr1": false,
+    "math_within_frozen_floor": false,
+    "science_within_frozen_floor": true,
+    "solves_frozen_both_wrong_floor": true,
+    "within_0_02_of_vcr1_overall": false
+  },
+  "gate_pass": false,
+  "generated_tokens": 716771,
+  "generation_mode": "greedy",
+  "max_new_tokens": 768,
+  "max_token_exhausted": 608,
+  "merged_from_shards": true,
+  "metrics": {
+    "bbh_logic": {
+      "base_accuracy": 0.35478806907378335,
+      "base_correct": 226,
+      "both_wrong": 305,
+      "both_wrong_repair_rate": 0.16393442622950818,
+      "both_wrong_repaired": 50,
+      "expert_accuracy": 0.4725274725274725,
+      "expert_correct": 301,
+      "generated_accuracy": 0.46938775510204084,
+      "generated_correct": 299,
+      "oracle_accuracy": 0.521193092621664,
+      "oracle_correct": 332,
+      "total": 637
+    },
+    "math500": {
+      "base_accuracy": 0.15730337078651685,
+      "base_correct": 98,
+      "both_wrong": 451,
+      "both_wrong_repair_rate": 0.12195121951219512,
+      "both_wrong_repaired": 55,
+      "expert_accuracy": 0.21508828250401285,
+      "expert_correct": 134,
+      "generated_accuracy": 0.24077046548956663,
+      "generated_correct": 150,
+      "oracle_accuracy": 0.27608346709470305,
+      "oracle_correct": 172,
+      "total": 623
+    },
+    "mbpp": {
+      "base_accuracy": 0.5517241379310345,
+      "base_correct": 16,
+      "both_wrong": 11,
+      "both_wrong_repair_rate": 0.18181818181818182,
+      "both_wrong_repaired": 2,
+      "expert_accuracy": 0.6206896551724138,
+      "expert_correct": 18,
+      "generated_accuracy": 0.5172413793103449,
+      "generated_correct": 15,
+      "oracle_accuracy": 0.6206896551724138,
+      "oracle_correct": 18,
+      "total": 29
+    },
+    "overall": {
+      "base_accuracy": 0.2637703646237393,
+      "base_correct": 340,
+      "both_wrong": 767,
+      "both_wrong_repair_rate": 0.1395045632333768,
+      "both_wrong_repaired": 107,
+      "expert_accuracy": 0.35143522110162917,
+      "expert_correct": 453,
+      "generated_accuracy": 0.3599689681923972,
+      "generated_correct": 464,
+      "oracle_accuracy": 0.40496508921644686,
+      "oracle_correct": 522,
+      "total": 1289
+    }
+  },
+  "model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+  "model_root": "/lustre/fs1/home/sa305415/shohin/artifacts/external/qwen3.5-9b-c202236",
+  "peak_gpu_memory_bytes": 20269495808,
+  "schema": "shohin-idr1-revision-evaluation-v1",
+  "seed": 2026080816,
+  "shard_count": 4,
+  "shard_reports": [
+    {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/idr1_b1_no_revision_control_sharded_r1/development/shard_0/report.json",
+      "sha256": "a7d7ea34f4c21de45641fbfdc796c428fd2a1563065f72cd1574dcbe5c79ba1d"
+    },
+    {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/idr1_b1_no_revision_control_sharded_r1/development/shard_1/report.json",
+      "sha256": "fcbe975f4b37d4f9a99fe89bea3853e0b293d2a7d49be8022af9818d18a28cb0"
+    },
+    {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/idr1_b1_no_revision_control_sharded_r1/development/shard_2/report.json",
+      "sha256": "e3cc4f55898d71b2591a6d569398bc9300f5af2c89b632d375e6f09c73c9176a"
+    },
+    {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/idr1_b1_no_revision_control_sharded_r1/development/shard_3/report.json",
+      "sha256": "7bddc607c12219383819df208acbd2f8788efa10c6070ad842cbb379a713390a"
+    }
+  ],
+  "split": "development",
+  "status": "complete"
+}
