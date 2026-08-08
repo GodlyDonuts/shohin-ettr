@@ -7,12 +7,17 @@
 > update 224 and then hit its immutable two-hour Slurm limit exactly as
 > forecast. Durable checkpoint 192 has SHA-256 `86ba2260...3758`. Recovery
 > `745365` immediately acquired the same H100 on `evc26`, restored checkpoint,
-> AdamW, absolute data position, and cosine schedule, and reproduced update
-> 200 at the exact cumulative `489,299` charged targets. Mutually exclusive
+> AdamW, absolute data position, and cosine schedule, and is finite through
+> update 232 after reproducing update 200 at the exact cumulative `489,299`
+> charged targets. Mutually exclusive
 > recovery evaluations `745366--745372` remain held; this is scheduler fault
 > tolerance, not a scientific variant. Private commit `d901582` implements
 > and tests the fail-closed resume path. Expected recovery completion is about
 > 22:40 EDT, followed by the seven-board score and decision near 23:00 EDT.
+> Receipt commit `97def6c` additionally requires aggregate job `745459` to
+> hash-bind and merge the immutable primary trace through checkpoint 192 with
+> the resumed report through update 256. It must observe the exact 33 frozen
+> log points; replacement affects only accounting, not model/evaluator/gates.
 >
 > An equal-exposure 4B B1 continuation `745356` starts from the same protected
 > checkpoint for another 256 updates with identical V10 data/order, context,
@@ -33376,3 +33381,32 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `finish_sag1_recovery_and_score_once;_pass_confirms_before_9b;_fail_reports_31_to_38_total_projected_gpu_hours_then_launches_exact_cvg1`.
+
+- **2026-08-07 22:20--22:27 EDT** -- **SAG1 recovery accounting is made
+  complete before the score dependency can unlock.**
+
+  Read-only inspection found that a resumed SAG1 `report.json` intentionally
+  contains only its post-resume trace segment, whereas the frozen router gate
+  requires the mean across every scheduled trace point of the complete
+  optimization lineage. Primary log `diverge_sag1_745346.out` contains 29
+  valid JSON trace rows through update 224; the durable resumed lineage is the
+  primary prefix through checkpoint 192 plus recovery updates 200--256.
+
+  Private commit `97def6c` adds a fail-closed v2 aggregator and two recovery
+  tests. A resumed report now requires an immutable prefix log, uses only
+  prefix rows at or before `resume_update`, uses only report rows after it,
+  rejects duplicates/nonfinite metrics/non-monotonic token accounting, and
+  requires exactly updates `1, 8, ..., 256` (33 samples). Five focused tests,
+  Ruff, Black, and an independent parse of the real primary log pass. The
+  immutable Newton runtime is
+  `scratchpad/sag1_gate_97def6c_r1`; its `SHA256SUMS` hash is
+  `f126e97269f9026f22c8462de097aa8a8ffa01d1cbf0b94f77b0d191e86c37b5`.
+
+  Old held aggregate `745398` was canceled before it could run. Replacement
+  `745459` is held after the unchanged recovery evaluations `745366--745372`
+  and writes a new isolated receipt. Recovery `745365` is finite through
+  update 232. This is a custody correction only: weights, data, prompts,
+  evaluator, score thresholds, and confirmation state are unchanged.
+
+  Decision:
+  `finish_recovery_then_run_the_seven_parallel_scores_and_one_hash_bound_full_lineage_aggregate`.
