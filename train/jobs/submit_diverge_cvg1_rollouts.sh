@@ -23,6 +23,7 @@ CODE_BANK_SHA256=${CODE_BANK_SHA256:-0b6d068b4d71f407cb234579b9278dc640df09139ea
 OUTPUT_ROOT=${OUTPUT_ROOT:-$BASE/artifacts/product_reasoning/cvg1_rollouts_dd4ef87_r1}
 SHARD_SIZE=${SHARD_SIZE:-512}
 DRY_RUN=${DRY_RUN:-true}
+EXCLUDE=${EXCLUDE:-evc33}
 
 test "$SHARD_SIZE" -eq 512
 test "$DRY_RUN" = true || test "$DRY_RUN" = false
@@ -63,10 +64,10 @@ submit_shard() {
   exports+=",STAGE_MODEL=true,FINALIZE_EXHAUSTED=false,ENABLE_THINKING=false"
   exports+=",BARE_PROMPT_STYLE=reasoning"
   if [[ "$DRY_RUN" == true ]]; then
-    printf 'sbatch --parsable --export=%q %q\n' \
-      "$exports" "$RUNTIME/train/jobs/hf_product_reasoning_rollouts.sbatch"
+    printf 'sbatch --parsable --exclude=%q --export=%q %q\n' \
+      "$EXCLUDE" "$exports" "$RUNTIME/train/jobs/hf_product_reasoning_rollouts.sbatch"
   else
-    sbatch --parsable --export="$exports" \
+    sbatch --parsable --exclude="$EXCLUDE" --export="$exports" \
       "$RUNTIME/train/jobs/hf_product_reasoning_rollouts.sbatch"
   fi
 }
