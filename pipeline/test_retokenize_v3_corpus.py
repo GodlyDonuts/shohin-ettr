@@ -1,6 +1,7 @@
 import hashlib
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 from tokenizers import Tokenizer
@@ -8,7 +9,7 @@ from tokenizers.models import WordLevel
 from tokenizers.pre_tokenizers import Whitespace
 import zstandard as zstd
 
-from pipeline.retokenize_v3_corpus import retokenize_corpus
+from pipeline.retokenize_v3_corpus import _retokenize_batch, retokenize_corpus
 from pipeline.tokenize_shards import (
     DOCUMENT_LEDGER_NAME,
     DOCUMENT_LEDGER_SCHEMA,
@@ -151,3 +152,39 @@ def test_retokenization_preserves_documents_and_verifies_output(tmp_path: Path):
         require_external_inputs=True,
     )
     assert verification["document_rows"] == 2
+
+
+def test_target_decoder_is_not_part_of_retokenization_contract():
+    text = "alpha\x13 beta"
+    row = {
+        "chars": len(text),
+        "document_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+    }
+
+    class SourceTokenizer:
+        @staticmethod
+        def decode_batch(_ids, *, skip_special_tokens):
+            assert skip_special_tokens is False
+            return [text]
+
+        @staticmethod
+        def encode_batch(_texts, *, add_special_tokens):
+            assert add_special_tokens is False
+            return [SimpleNamespace(ids=[7, 8])]
+
+    class NonInvertibleTargetTokenizer:
+        @staticmethod
+        def encode_batch(_texts, *, add_special_tokens):
+            assert add_special_tokens is False
+            return [SimpleNamespace(ids=[11, 12])]
+
+        @staticmethod
+        def decode_batch(*_args, **_kwargs):
+            raise AssertionError("target decoder must not be called")
+
+    assert _retokenize_batch(
+        rows_and_ids=[(row, [7, 8])],
+        source_tokenizer=SourceTokenizer(),
+        target_tokenizer=NonInvertibleTargetTokenizer(),
+        target_eos_id=0,
+    ) == [(row, [11, 12, 0])]
