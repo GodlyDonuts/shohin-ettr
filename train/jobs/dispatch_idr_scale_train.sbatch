@@ -11,6 +11,9 @@
 
 set -euo pipefail
 
+BASE=/lustre/fs1/home/sa305415/shohin
+PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
+
 : "${RUNTIME:?RUNTIME is required}"
 : "${RUNTIME_MANIFEST_SHA256:?RUNTIME_MANIFEST_SHA256 is required}"
 : "${MODEL_ROOT:?MODEL_ROOT is required}"
@@ -28,6 +31,7 @@ EXCLUDE=${EXCLUDE:-evc33,evc38}
 
 test ! -e "$DISPATCH_ROOT"
 test ! -e "$TRAIN_OUTPUT"
+test -x "$PYTHON"
 test "$(sha256sum "$RUNTIME/SHA256SUMS" | cut -d' ' -f1)" = "$RUNTIME_MANIFEST_SHA256"
 (cd "$RUNTIME" && sha256sum -c SHA256SUMS >/dev/null)
 test "$(sha256sum "$MODEL_ROOT/config.json" | cut -d' ' -f1)" = "$MODEL_CONFIG_SHA256"
@@ -37,7 +41,7 @@ DATA=$DATA_ROOT/train.jsonl
 DATA_SHA256=$(sha256sum "$DATA" | cut -d' ' -f1)
 DATA_REPORT=$DATA_ROOT/report.json
 DATA_REPORT_SHA256=$(sha256sum "$DATA_REPORT" | cut -d' ' -f1)
-python3 - "$DATA" "$DATA_REPORT" <<'PY'
+"$PYTHON" - "$DATA" "$DATA_REPORT" <<'PY'
 import hashlib
 import json
 from pathlib import Path
@@ -90,7 +94,7 @@ control_dispatch=$(sbatch --parsable --export="$control_exports" \
 
 receipt=$DISPATCH_ROOT/train_dispatch.json
 temporary=$receipt.partial.$$
-python3 - "$temporary" "$train_job" "$trained_dispatch" "$control_dispatch" \
+"$PYTHON" - "$temporary" "$train_job" "$trained_dispatch" "$control_dispatch" \
   "$DATA_SHA256" "$DATA_REPORT_SHA256" <<'PY'
 import json
 from pathlib import Path

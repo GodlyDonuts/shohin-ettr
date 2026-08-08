@@ -11,6 +11,9 @@
 
 set -euo pipefail
 
+BASE=/lustre/fs1/home/sa305415/shohin
+PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
+
 : "${RUNTIME:?RUNTIME is required}"
 : "${RUNTIME_MANIFEST_SHA256:?RUNTIME_MANIFEST_SHA256 is required}"
 : "${DATA:?DATA is required}"
@@ -22,6 +25,7 @@ set -euo pipefail
 : "${REPORT:?REPORT is required}"
 
 test "$SHARD_COUNT" -ge 2
+test -x "$PYTHON"
 test "$(sha256sum "$RUNTIME/SHA256SUMS" | cut -d' ' -f1)" = "$RUNTIME_MANIFEST_SHA256"
 (cd "$RUNTIME" && sha256sum -c SHA256SUMS >/dev/null)
 test "$(sha256sum "$DATA" | cut -d' ' -f1)" = "$DATA_SHA256"
@@ -38,7 +42,7 @@ test "${#reports[@]}" -eq $((SHARD_COUNT * 2))
 
 mkdir -p "$(dirname "$REPORT")"
 export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
-python3 "$RUNTIME/pipeline/merge_idr1_evaluation_shards.py" \
+"$PYTHON" "$RUNTIME/pipeline/merge_idr1_evaluation_shards.py" \
   --data "$DATA" \
   --split "$SPLIT" \
   "${reports[@]}" \

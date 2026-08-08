@@ -11,6 +11,9 @@
 
 set -euo pipefail
 
+BASE=/lustre/fs1/home/sa305415/shohin
+PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
+
 : "${RUNTIME:?RUNTIME is required}"
 : "${RUNTIME_MANIFEST_SHA256:?RUNTIME_MANIFEST_SHA256 is required}"
 : "${MODEL_REVISION:?MODEL_REVISION is required}"
@@ -25,6 +28,7 @@ set -euo pipefail
 
 test ! -e "$MERGED_ROOT"
 test ! -e "$DATA_ROOT"
+test -x "$PYTHON"
 test "$(sha256sum "$RUNTIME/SHA256SUMS" | cut -d' ' -f1)" = "$RUNTIME_MANIFEST_SHA256"
 (cd "$RUNTIME" && sha256sum -c SHA256SUMS >/dev/null)
 
@@ -50,7 +54,7 @@ test "${#report_args[@]}" -eq 34
 
 mkdir -p "$MERGED_ROOT"
 export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
-python3 "$RUNTIME/pipeline/merge_idr1_drafts.py" \
+"$PYTHON" "$RUNTIME/pipeline/merge_idr1_drafts.py" \
   "${report_args[@]}" \
   --bank "$MATH_BANK" \
   --bank "$SCIENCE_BANK" \
@@ -60,7 +64,7 @@ python3 "$RUNTIME/pipeline/merge_idr1_drafts.py" \
   --model-revision "$MODEL_REVISION" \
   --adapter-sha256 "$DRAFT_CHECKPOINT_SHA256"
 
-python3 "$RUNTIME/pipeline/build_idr1_revision_data.py" \
+"$PYTHON" "$RUNTIME/pipeline/build_idr1_revision_data.py" \
   --pairs "$PAIRS" \
   --drafts "$MERGED_ROOT/merged_drafts.jsonl" \
   --draft-receipt "$MERGED_ROOT/receipt.json" \

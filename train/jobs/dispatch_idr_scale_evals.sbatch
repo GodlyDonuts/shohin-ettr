@@ -11,6 +11,9 @@
 
 set -euo pipefail
 
+BASE=/lustre/fs1/home/sa305415/shohin
+PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
+
 : "${RUNTIME:?RUNTIME is required}"
 : "${RUNTIME_MANIFEST_SHA256:?RUNTIME_MANIFEST_SHA256 is required}"
 : "${MODEL_ROOT:?MODEL_ROOT is required}"
@@ -24,6 +27,7 @@ SHARD_COUNT=${SHARD_COUNT:-4}
 EXCLUDE=${EXCLUDE:-evc33,evc38}
 
 test "$SHARD_COUNT" -ge 2
+test -x "$PYTHON"
 test ! -e "$DISPATCH_RECEIPT"
 test "$(sha256sum "$RUNTIME/SHA256SUMS" | cut -d' ' -f1)" = "$RUNTIME_MANIFEST_SHA256"
 (cd "$RUNTIME" && sha256sum -c SHA256SUMS >/dev/null)
@@ -74,7 +78,7 @@ for split in development holdout; do
 done
 
 temporary=$DISPATCH_RECEIPT.partial.$$
-python3 - "$temporary" "$SHARD_COUNT" "${all_jobs[*]}" "${merge_jobs[*]}" <<'PY'
+"$PYTHON" - "$temporary" "$SHARD_COUNT" "${all_jobs[*]}" "${merge_jobs[*]}" <<'PY'
 import json
 from pathlib import Path
 import sys
