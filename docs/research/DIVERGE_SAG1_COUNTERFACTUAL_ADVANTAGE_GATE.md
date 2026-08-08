@@ -1,6 +1,7 @@
 # DIVERGE-SAG1: Counterfactual Advantage-Gated Reasoning
 
-Status: frozen before any SAG1 CUDA score.
+Status: frozen before any SAG1 capability score. The two-update CUDA canary
+passed on 2026-08-07 without opening an evaluation board.
 
 ## Hypothesis
 
@@ -40,6 +41,15 @@ advantage rather than exposing the expert residual to every prompt.
 - router/risk/sparsity weights `0.20 / 0.50 / 0.01`;
 - B1 host and LoRA are frozen; only the expert workspace and router train.
 
+The original qualified B1 is a protected no-harm reference. A separate
+equal-exposure control starts from the same protected B1 checkpoint and runs
+another 256 ordinary B1 LoRA updates on the same V10 stream, data order,
+learning-rate schedule, context, and seed as SAG1. This control is not a new
+architecture candidate. It exists to prevent the second 256-update stage from
+being mistaken for a SAG1 gain. It is matched for examples and target-token
+exposure, but not parameter count or FLOPs; any development pass is therefore
+a product gate rather than a parameter-matched causal architecture claim.
+
 One two-update canary may verify exact B1 identity, finite dual-path loss,
 checkpoint reload, and memory. It is not a capability score. A canary miss
 closes this implementation before the development run.
@@ -47,12 +57,16 @@ closes this implementation before the development run.
 ## Development Gate
 
 The existing 538-example board is now a development board because QPT1 used
-it. SAG1 must, on one unchanged evaluation:
+it. The original B1, equal-exposure B1 continuation, and SAG1 are evaluated
+once with identical prompts, generation settings, and scoring. SAG1 must:
 
 - retain at least `30/40` executable code answers; on this 40-task board even
   one lost answer exceeds the frozen two-percentage-point regression limit;
-- exceed B1 by at least three five-domain macro points and 15 solved answers;
-- improve at least three domains;
+- exceed the original B1 by at least three five-domain macro points and 15
+  solved answers, while improving at least three domains;
+- exceed the equal-exposure B1 continuation by at least three five-domain
+  macro points and 15 solved answers, improve at least three domains, and
+  regress no domain by more than two percentage points;
 - leave the frozen B1 parameter hash unchanged;
 - show nontrivial but non-universal expert commitment (`5%--95%`).
 
