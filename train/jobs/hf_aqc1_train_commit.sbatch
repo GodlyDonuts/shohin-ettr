@@ -26,6 +26,7 @@ set -euo pipefail
 : "${ARM:?ARM is required}"
 : "${SEED:?SEED is required}"
 : "${OUTPUT:?OUTPUT is required}"
+UPDATES=${UPDATES:-128}
 
 BASE=/lustre/fs1/home/sa305415/shohin
 PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
@@ -96,7 +97,7 @@ nvidia-smi
   --adapter-checkpoint "$ADAPTER_CHECKPOINT" \
   --pairs "$PAIRS" \
   --output "$OUTPUT" \
-  --updates 128 \
+  --updates "$UPDATES" \
   --gradient-accumulation 8 \
   --head-width 512 \
   --projection-width 256 \
