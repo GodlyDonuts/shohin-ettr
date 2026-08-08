@@ -120,11 +120,16 @@ new hash-bound v3 ledgers without text. Essential-Web conversion `768261`
 failed safely when SmolLM2 ignored one embedded `U+0013` control character.
 The repaired policy drops the entire document only when the sole discrepancy
 is removal of non-tab/newline/carriage-return Unicode controls, records every
-drop, and still fails on any printable-content change. Immutable r2 canary
-`768267` is live against the exact-residual corpus. Exact and near
-deduplication will both rerun on final 49K outputs. Formal Logic remains zero
-weight because its source has no domain provenance and cannot satisfy the
-domain-holdout gate.
+drop, and still fails on any printable-content change. An r2 predicate bug
+incorrectly required deletion of all control characters; codepoint/category
+attribution proved SmolLM2 preserved 17 controls and removed only `U+0013`.
+The corrected predicate permits deletion of any subset of those controls while
+requiring all other characters and order exact. Immutable r3 canary `768271`
+is live against the exact-residual corpus; FinePDF, peS2O, and FineWeb jobs
+`768272--768274` are dependency-held behind it. Exact and near deduplication
+will both rerun on final 49K outputs. Formal Logic remains zero weight because
+its source has no domain provenance and cannot satisfy the domain-holdout
+gate.
 
 Essential-Web job `768237` separately exercises the complete historical-32K
 holdout creator and independent verifier as a transport-mechanics canary; its

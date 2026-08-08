@@ -38,6 +38,25 @@ class RetokenizationError(ValueError):
     """A source corpus cannot be retokenized without changing its documents."""
 
 
+def _differs_only_by_control_deletions(source: str, target: str) -> bool:
+    source_index = target_index = 0
+    while source_index < len(source) and target_index < len(target):
+        if source[source_index] == target[target_index]:
+            source_index += 1
+            target_index += 1
+            continue
+        character = source[source_index]
+        if unicodedata.category(character) != "Cc" or character in "\n\r\t":
+            return False
+        source_index += 1
+    if target_index != len(target):
+        return False
+    return all(
+        unicodedata.category(character) == "Cc" and character not in "\n\r\t"
+        for character in source[source_index:]
+    )
+
+
 def _iter_document_ledger(path: Path) -> Iterable[dict[str, Any]]:
     try:
         with path.open("rb") as source:
@@ -179,15 +198,10 @@ def _retokenize_batch(
         if not target_ids or max(target_ids) > np.iinfo(np.uint16).max:
             raise RetokenizationError("target document token IDs exceed uint16")
         if target_texts[index] != text:
-            control_stripped = "".join(
-                character
-                for character in text
-                if not (
-                    unicodedata.category(character) == "Cc"
-                    and character not in "\n\r\t"
-                )
-            )
-            if target_texts[index] != control_stripped:
+            if not _differs_only_by_control_deletions(
+                text,
+                target_texts[index],
+            ):
                 raise RetokenizationError(
                     "target tokenizer changes printable document content"
                 )

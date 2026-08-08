@@ -1,5 +1,17 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **CONTROL-DELETION CLASSIFIER CORRECTED — 2026-08-08 17:25 EDT:** r2
+> canary `768267` correctly found the same affected document but its policy
+> checker falsely required SmolLM2 to delete all 18 embedded controls when it
+> actually preserves 17 and deletes only `U+0013`. Read-only codepoint/category
+> attribution proved no printable drift. The final predicate allows deletion
+> of any subset of non-tab/newline/carriage-return Unicode controls while
+> requiring every other character and order to remain exact. Focused suite is
+> `4/4`; Ruff is clean. Immutable r3 runtime
+> `phase2_retokenize_4abf367_r3` has SHA256SUMS SHA-256
+> `c135fc9f...88c7`. Essential canary `768271` is live; FinePDF, peS2O, and
+> FineWeb conversions `768272--768274` are fail-closed behind it.
+
 > **IDR08 TRAINING LIVE / FINAL-TOKENIZER CANARY REPAIRED — 2026-08-08
 > 17:19 EDT:** all seventeen IDR08 draft jobs completed. Original build
 > `745978` merged all `8,392` identities, then failed before data output because
