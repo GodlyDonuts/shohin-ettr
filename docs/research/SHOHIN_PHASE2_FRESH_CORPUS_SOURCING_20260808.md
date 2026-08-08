@@ -116,8 +116,13 @@ the selected corpora are converted to the final 49K tokenizer. The converter
 verifies every source token span, removes only the bound source EOS, requires
 decoded text length and SHA-256 to match the document ledger, verifies source
 and target round trips, preserves document identities and metadata, and emits
-new hash-bound v3 ledgers without text. Essential-Web conversion canary
-`768261` is live against the exact-residual corpus. Formal Logic remains zero
+new hash-bound v3 ledgers without text. Essential-Web conversion `768261`
+failed safely when SmolLM2 ignored one embedded `U+0013` control character.
+The repaired policy drops the entire document only when the sole discrepancy
+is removal of non-tab/newline/carriage-return Unicode controls, records every
+drop, and still fails on any printable-content change. Immutable r2 canary
+`768267` is live against the exact-residual corpus. Exact and near
+deduplication will both rerun on final 49K outputs. Formal Logic remains zero
 weight because its source has no domain provenance and cannot satisfy the
 domain-holdout gate.
 

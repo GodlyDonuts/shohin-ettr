@@ -78,11 +78,14 @@ The decision is capability-driven rather than parameter-count-driven.
 4. Otherwise select `shohin_920m`. Do not spend the remaining compute on a
    scratch scale already contradicted by the capacity-boundary result.
 
-The frozen 0.8B campaign is live as jobs `745961--745979`. Seventeen
-single-H100 source-only draft shards feed one hash-bound data build and an
-automatic train/evaluate/compare dispatcher. The comparison is conjunctive
-across development and holdout and writes the scale decision once; there is no
-nearby 0.8B retry family.
+All seventeen frozen 0.8B source-only draft shards completed. Complete runtime
+r2 replay `746027` reproduced the 8,392-row merged draft bank and built
+9,655/1,289/1,279 train/development/holdout rows. The legacy B1 checkpoint
+encoded a frozen trunk as `unfreeze_layers=null`; metadata-only migration
+`746045` normalized this to numeric zero while proving all 62 LoRA tensors and
+optimizer/state bitwise equal. Training `746046` is live from that normalized
+copy, with matched trained/control evaluations and one conjunctive comparison
+dependency-gated behind it. There is no nearby 0.8B retry family.
 
 This test determines the smallest plausible scratch trunk. It is not a nearby
 variant of the failed QST1 workspace: the changed factor is the already

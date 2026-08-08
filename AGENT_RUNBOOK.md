@@ -1,5 +1,40 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **IDR08 TRAINING LIVE / FINAL-TOKENIZER CANARY REPAIRED — 2026-08-08
+> 17:19 EDT:** all seventeen IDR08 draft jobs completed. Original build
+> `745978` merged all `8,392` identities, then failed before data output because
+> immutable runtime r1 omitted standalone transitive verifier
+> `hf_cvg1_completion_verifier.py`. Complete r2 runtime SHA256SUMS SHA-256 is
+> `200b8f64...5cd4`; exact replay `746027` completed in ten seconds and
+> reproduced merged SHA-256 `b0e11d8b...3c5f6`, then wrote
+> `9,655/1,289/1,279` train/development/holdout rows. Data hashes are
+> `aad2394d...fd23`, `919f2394...8611`, and `23d5e467...14c8`.
+>
+> First training `746029` loaded the pinned checkpoint and failed before an
+> optimizer update because legacy metadata encoded frozen trunk as
+> `unfreeze_layers=null`, while the current strict runtime expected numeric
+> zero. The source contains exactly 62 LoRA tensors and no trunk tensors.
+> Metadata migration `746045` changed only that field to zero and reloaded all
+> non-metadata state bitwise equal; source/output checkpoint hashes are
+> `14d1a2e3...0e28` and `77f53bfd...b290`, receipt payload SHA-256
+> `7003fafe...ccdf`. Exact training `746046` is live; update 1 has loss
+> `0.394253`, gradient norm `7.9764`, and `413.1` charged tok/s. Trained eval
+> dispatcher `746047` and comparison dispatcher `746049` are dependency-held.
+> Eight unchanged-B1 control evals `746033--746041` remain live and are reused,
+> not duplicated.
+>
+> Retokenization `768261` failed before publication on retained row 5,845:
+> SmolLM2 ignored one embedded `U+0013` control character while preserving all
+> printable content and a stable target encode/decode/re-encode token sequence.
+> The repaired policy drops the whole document only when the sole discrepancy
+> is removal of non-tab/newline/carriage-return Unicode controls; any printable
+> change remains fatal. Source text length/SHA and source round trip stay
+> mandatory, drops are counted, and final exact/near dedup will rerun on 49K
+> outputs. Focused tests are `3/3`; Ruff is clean. Immutable r2 SHA256SUMS
+> SHA-256 is `7618e38a...34b8`; Stokes canary `768267` is admitted.
+> Historical-32K holdout mechanics canary `768237` completed cleanly in
+> `28m24s`.
+
 > **FINAL 49K TOKENIZER SELECTED / RETOKENIZATION CANARY LIVE — 2026-08-08
 > 17:05 EDT:** a hash-bound 500-document comparison across FineWeb-Edu,
 > peS2o, Essential-Web, bounded FinePDF, and code selects the Apache-2.0

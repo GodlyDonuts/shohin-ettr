@@ -138,6 +138,7 @@ def test_retokenization_preserves_documents_and_verifies_output(tmp_path: Path):
         batch_size=2,
     )
     assert report["documents"] == 2
+    assert report["dropped_documents"] == 0
     assert report["source_tokens"] == report["target_tokens"] == 6
     manifest = json.loads((output_dir / "manifest.json").read_text())
     assert manifest["retokenization"]["all_source_text_sha256_verified"] is True

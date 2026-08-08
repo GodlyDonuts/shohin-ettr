@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import hashlib
 import io
 import json
@@ -13,6 +14,7 @@ import shutil
 import sys
 import tempfile
 from typing import Any, Iterable
+import unicodedata
 
 import numpy as np
 from tokenizers import Tokenizer
@@ -134,7 +136,10 @@ def _retokenize_batch(
     source_tokenizer: Tokenizer,
     target_tokenizer: Tokenizer,
     target_eos_id: int,
-) -> list[tuple[dict[str, Any], list[int]]]:
+) -> tuple[
+    list[tuple[dict[str, Any], list[int]]],
+    list[tuple[dict[str, Any], int]],
+]:
     source_id_batches = [ids for _row, ids in rows_and_ids]
     texts = source_tokenizer.decode_batch(
         source_id_batches,
@@ -158,13 +163,13 @@ def _retokenize_batch(
         add_special_tokens=False,
     )
     output: list[tuple[dict[str, Any], list[int]]] = []
+    dropped: list[tuple[dict[str, Any], int]] = []
     for index, ((row, source_ids), text) in enumerate(zip(rows_and_ids, texts)):
         if (
             source_reencodings[index].ids != source_ids
             or len(text) != row["chars"]
             or hashlib.sha256(text.encode("utf-8")).hexdigest()
             != row["document_sha256"]
-            or target_texts[index] != text
             or target_reencodings[index].ids != target_id_batches[index]
         ):
             raise RetokenizationError(
@@ -173,8 +178,23 @@ def _retokenize_batch(
         target_ids = [*target_id_batches[index], target_eos_id]
         if not target_ids or max(target_ids) > np.iinfo(np.uint16).max:
             raise RetokenizationError("target document token IDs exceed uint16")
+        if target_texts[index] != text:
+            control_stripped = "".join(
+                character
+                for character in text
+                if not (
+                    unicodedata.category(character) == "Cc"
+                    and character not in "\n\r\t"
+                )
+            )
+            if target_texts[index] != control_stripped:
+                raise RetokenizationError(
+                    "target tokenizer changes printable document content"
+                )
+            dropped.append((row, len(target_ids)))
+            continue
         output.append((row, target_ids))
-    return output
+    return output, dropped
 
 
 def retokenize_corpus(
@@ -252,6 +272,11 @@ def retokenize_corpus(
         documents = 0
         target_tokens = 0
         next_progress = 100_000
+        dropped_documents = 0
+        dropped_source_tokens = 0
+        dropped_target_candidate_tokens = 0
+        retained_domains: set[str] = set()
+        retained_policy_tiers: Counter[str] = Counter()
 
         def flush_shard() -> None:
             nonlocal output_ids, output_shard_index
@@ -268,13 +293,18 @@ def retokenize_corpus(
             output_shard_index += 1
 
         def commit_pending() -> None:
-            nonlocal documents, next_progress, target_tokens
-            for source_row, target_ids in _retokenize_batch(
+            nonlocal documents, dropped_documents, dropped_source_tokens
+            nonlocal dropped_target_candidate_tokens, next_progress, target_tokens
+            converted, dropped = _retokenize_batch(
                 rows_and_ids=pending,
                 source_tokenizer=source_tokenizer,
                 target_tokenizer=target_tokenizer,
                 target_eos_id=target_eos_id,
-            ):
+            )
+            dropped_documents += len(dropped)
+            dropped_source_tokens += sum(int(row["tokens"]) for row, _ in dropped)
+            dropped_target_candidate_tokens += sum(tokens for _row, tokens in dropped)
+            for source_row, target_ids in converted:
                 token_start = len(output_ids)
                 token_payload = np.asarray(target_ids, dtype="<u2").tobytes()
                 output_row = dict(source_row)
@@ -291,6 +321,12 @@ def retokenize_corpus(
                 ledger.write(output_row)
                 documents += 1
                 target_tokens += len(target_ids)
+                domain = source_row.get("domain")
+                if isinstance(domain, str):
+                    retained_domains.add(domain)
+                tier = source_row.get("document_policy_tier")
+                if isinstance(tier, str):
+                    retained_policy_tiers[tier] += 1
                 if len(output_ids) >= shard_tokens:
                     flush_shard()
             if documents >= next_progress:
@@ -331,7 +367,8 @@ def retokenize_corpus(
         flush_shard()
         ledger_receipt = ledger.close()
         if (
-            documents != source_manifest["kept"]
+            documents + dropped_documents != source_manifest["kept"]
+            or documents < 1
             or ledger_receipt["rows"] != documents
             or ledger_receipt["tokens"] != target_tokens
             or sum(record["tokens"] for record in shard_records) != target_tokens
@@ -341,7 +378,7 @@ def retokenize_corpus(
         target_receipt = file_receipt(target_tokenizer_path)
         manifest = {
             key: value
-            for key, value in source_manifest.items()
+            for key, value in json.loads(json.dumps(source_manifest)).items()
             if key
             not in {
                 "payload_sha256",
@@ -368,6 +405,11 @@ def retokenize_corpus(
                 "shards": len(shard_records),
                 "shard_files": shard_records,
                 "document_ledger": ledger_receipt,
+                "kept": documents,
+                "dropped_retokenization_nonroundtrip": dropped_documents,
+                "dropped_retokenization_nonroundtrip_source_tokens": (
+                    dropped_source_tokens
+                ),
                 "retokenization": {
                     "schema": RETOKENIZATION_SCHEMA,
                     "source_path": str(source_dir.resolve()),
@@ -384,6 +426,16 @@ def retokenize_corpus(
                     "source_tokens": source_manifest["tokens"],
                     "target_tokens": target_tokens,
                     "documents": documents,
+                    "dropped_documents": dropped_documents,
+                    "dropped_source_tokens": dropped_source_tokens,
+                    "dropped_target_candidate_tokens": (
+                        dropped_target_candidate_tokens
+                    ),
+                    "drop_policy": (
+                        "drop_whole_document_only_when_target_decode_differs_"
+                        "solely_by_removed_non_tab_newline_carriage_return_"
+                        "unicode_control_characters"
+                    ),
                     "all_source_text_sha256_verified": True,
                     "all_source_roundtrips_verified": True,
                     "all_target_roundtrips_verified": True,
@@ -391,6 +443,13 @@ def retokenize_corpus(
                 },
             }
         )
+        filters = manifest.get("filters")
+        if isinstance(filters, dict):
+            if "retained_domains" in filters:
+                filters["retained_domains"] = len(retained_domains)
+            policy = filters.get("document_policy")
+            if isinstance(policy, dict):
+                policy["retained_tiers"] = dict(sorted(retained_policy_tiers.items()))
         manifest["payload_sha256"] = canonical_payload_sha256(manifest)
         manifest_path = staging / "manifest.json"
         with manifest_path.open("x", encoding="ascii") as destination:
@@ -415,6 +474,8 @@ def retokenize_corpus(
             "source_manifest_payload_sha256": source_manifest["payload_sha256"],
             "manifest_payload_sha256": manifest["payload_sha256"],
             "documents": documents,
+            "dropped_documents": dropped_documents,
+            "dropped_source_tokens": dropped_source_tokens,
             "source_tokens": source_manifest["tokens"],
             "target_tokens": target_tokens,
             "token_reduction": source_manifest["tokens"] - target_tokens,
