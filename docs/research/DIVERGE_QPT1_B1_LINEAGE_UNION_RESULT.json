@@ -1,0 +1,212 @@
+{
+  "arms": {
+    "left": "B1",
+    "right": "QPT1"
+  },
+  "files": {
+    "aime": {
+      "left": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e_eval_aime.json",
+        "sha256": "bcfbd4c5bd5b8f5d06a99dd34d5b7d433a2f892c7a474d739fffb3e2ecb5a4da"
+      },
+      "right": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_qpt1_u256_402fa8e_eval_aime.json",
+        "sha256": "6f93d87052b6a83a05ed6d75a5baaf8dbe311ecce510df5cf757f6137061e3fd"
+      }
+    },
+    "bbh_logic": {
+      "left": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e_eval_bbh_logic.json",
+        "sha256": "3b32f4686113d1ef52678d6e61c1e90f83e45edfa9355360c4b7a5c51fe8dcf8"
+      },
+      "right": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_qpt1_u256_402fa8e_eval_bbh_logic.json",
+        "sha256": "4c521333540068d8668fc03c73763521aadb5828496c5717c1a71ae927ec4017"
+      }
+    },
+    "gpqa": {
+      "left": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e_eval_gpqa.json",
+        "sha256": "62269d2ac86bc0cf04bb98cc3dd1055e52faed9dfeef0969bc8e7c6e23892183"
+      },
+      "right": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_qpt1_u256_402fa8e_eval_gpqa.json",
+        "sha256": "a5484a584cac38b399dbd4e8db8ae5487ef7d8cf7832431104c359e56081c7f9"
+      }
+    },
+    "gsm8k": {
+      "left": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e_eval_gsm8k.json",
+        "sha256": "5ad2189708ce58c7705555ba238e4cb0228d12f7f4e388c0001188ca078c667b"
+      },
+      "right": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_qpt1_u256_402fa8e_eval_gsm8k.json",
+        "sha256": "80e19ffc881f658bc72e27f049d7d73a53fb80324cc798d9e44fc0603ed86f9b"
+      }
+    },
+    "humaneval": {
+      "left": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e_eval_humaneval.json",
+        "sha256": "350761bb28c73c612028bb9dd4c4e21e2692cc8f850ded285d0346d30cda330d"
+      },
+      "right": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_qpt1_u256_402fa8e_eval_humaneval.json",
+        "sha256": "6bc5104759bbbc6c30d760e81317760e9cc827c63855c6187ef069d3df984f7c"
+      }
+    },
+    "math500": {
+      "left": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e_eval_math500.json",
+        "sha256": "c13252c86d30a07fc0dd1064396ba4f202fb9bb84ab092d62edf8a2a34a6563f"
+      },
+      "right": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_qpt1_u256_402fa8e_eval_math500.json",
+        "sha256": "dc3f7a779146f0061f71b284577303163a00d490934b259c7ee6d9a5f84965a5"
+      }
+    },
+    "mbpp": {
+      "left": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_b1_u256_402fa8e_eval_mbpp.json",
+        "sha256": "63e2c6e847bf87d684f79d4069072f84e6629c9fb87736f08cb5fd1428827253"
+      },
+      "right": {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e/qpt1_qpt1_u256_402fa8e_eval_mbpp.json",
+        "sha256": "4ef6e71f2c61c49be8a78a8253791ef4cde0ec68dee2f411d9606ad49c4725a2"
+      }
+    }
+  },
+  "schema": "shohin-product-lineage-union-v1",
+  "status": "complete",
+  "tasks": {
+    "aime": {
+      "both_correct": 0,
+      "left_correct": 4,
+      "left_only": 4,
+      "neither_correct": 25,
+      "right_correct": 1,
+      "right_only": 1,
+      "total": 30,
+      "union_accuracy": 0.16666666666666666,
+      "union_correct": 5
+    },
+    "bbh_logic": {
+      "both_correct": 35,
+      "left_correct": 53,
+      "left_only": 18,
+      "neither_correct": 25,
+      "right_correct": 57,
+      "right_only": 22,
+      "total": 100,
+      "union_accuracy": 0.75,
+      "union_correct": 75
+    },
+    "gpqa": {
+      "both_correct": 20,
+      "left_correct": 30,
+      "left_only": 10,
+      "neither_correct": 101,
+      "right_correct": 87,
+      "right_only": 67,
+      "total": 198,
+      "union_accuracy": 0.4898989898989899,
+      "union_correct": 97
+    },
+    "gsm8k": {
+      "both_correct": 82,
+      "left_correct": 85,
+      "left_only": 3,
+      "neither_correct": 4,
+      "right_correct": 93,
+      "right_only": 11,
+      "total": 100,
+      "union_accuracy": 0.96,
+      "union_correct": 96
+    },
+    "humaneval": {
+      "both_correct": 12,
+      "left_correct": 18,
+      "left_only": 6,
+      "neither_correct": 0,
+      "right_correct": 14,
+      "right_only": 2,
+      "total": 20,
+      "union_accuracy": 1.0,
+      "union_correct": 20
+    },
+    "math500": {
+      "both_correct": 40,
+      "left_correct": 50,
+      "left_only": 10,
+      "neither_correct": 36,
+      "right_correct": 54,
+      "right_only": 14,
+      "total": 100,
+      "union_accuracy": 0.64,
+      "union_correct": 64
+    },
+    "mbpp": {
+      "both_correct": 10,
+      "left_correct": 12,
+      "left_only": 2,
+      "neither_correct": 6,
+      "right_correct": 12,
+      "right_only": 2,
+      "total": 20,
+      "union_accuracy": 0.7,
+      "union_correct": 14
+    }
+  },
+  "union": {
+    "aime": {
+      "accuracy": 0.16666666666666666,
+      "correct": 5,
+      "total": 30
+    },
+    "domains": {
+      "code": {
+        "accuracy": 0.85,
+        "correct": 34,
+        "tasks": [
+          "humaneval",
+          "mbpp"
+        ],
+        "total": 40
+      },
+      "competition_math": {
+        "accuracy": 0.64,
+        "correct": 64,
+        "tasks": [
+          "math500"
+        ],
+        "total": 100
+      },
+      "grade_school_math": {
+        "accuracy": 0.96,
+        "correct": 96,
+        "tasks": [
+          "gsm8k"
+        ],
+        "total": 100
+      },
+      "logic": {
+        "accuracy": 0.75,
+        "correct": 75,
+        "tasks": [
+          "bbh_logic"
+        ],
+        "total": 100
+      },
+      "science": {
+        "accuracy": 0.4898989898989899,
+        "correct": 97,
+        "tasks": [
+          "gpqa"
+        ],
+        "total": 198
+      }
+    },
+    "macro_accuracy": 0.737979797979798,
+    "solved": 366,
+    "total": 538
+  }
+}
