@@ -101,18 +101,32 @@ reported separately from unique base-pretraining tokens.
 
 The frozen five-source exact cross-source audit covers 13,620,050,554 tokens
 in peS2o, Essential-Web, bounded FinePDF, Formal Logic, and FineWeb-Edu and
-found zero exact cross-source duplicate documents. Stokes job `768241` is now
-running the independently exact-confirmed near-duplicate audit over that
-priority order. Jobs `768243--768247` are fail-closed behind it and will
-materialize one physical near residual per source; jobs `768248--768251` then
-create and independently verify train/document/domain partitions for peS2o,
-Essential-Web, FinePDF core, and FineWeb-Edu. Formal Logic remains zero weight:
-its source has no domain provenance and cannot satisfy the domain-holdout gate.
+found zero exact cross-source duplicate documents. Those physical corpora use
+Shohin's historical 32K tokenizer, while both scratch presets bind a 49,152
+vocabulary. A hash-bound 500-document comparison selected the mature SmolLM2
+49K tokenizer: it uses 3.744% fewer tokens overall and 7.19% fewer on code,
+improves every sampled domain, and has zero round-trip mismatch. The exact
+report SHA-256 is
+`777d0fd6a28153be73bf55370e95a784582edc37a6a7173021d4d2bc6e15ea2e`.
 
-Essential-Web job `768237` separately exercises the complete holdout creator
-and independent verifier as a small transport canary. None of these jobs marks
-a source admitted; privacy, license, retained-review, and canary utility
-evidence remain required by the physical training contract.
+The obsolete 32K near-audit `768241` and dependency-held residual/holdout jobs
+`768243--768251` were canceled before scientific output. Near deduplication
+must operate on final token identities, so it will be relaunched only after
+the selected corpora are converted to the final 49K tokenizer. The converter
+verifies every source token span, removes only the bound source EOS, requires
+decoded text length and SHA-256 to match the document ledger, verifies source
+and target round trips, preserves document identities and metadata, and emits
+new hash-bound v3 ledgers without text. Essential-Web conversion canary
+`768261` is live against the exact-residual corpus. Formal Logic remains zero
+weight because its source has no domain provenance and cannot satisfy the
+domain-holdout gate.
+
+Essential-Web job `768237` separately exercises the complete historical-32K
+holdout creator and independent verifier as a transport-mechanics canary; its
+partitions are not the final 49K training contract. None of these jobs marks a
+source admitted. Final-tokenizer near deduplication, privacy, license,
+retained-review, and canary utility evidence remain required by the physical
+training contract.
 
 The 5B canary is not evidence that 5B tokens are enough to train a competitive
 model. It is the smallest economical gate for optimization, data-mix, and

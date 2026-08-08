@@ -41,8 +41,17 @@ vocabulary. Parameter counts are exact and exclude no trainable tensor.
 | `shohin_390m` | 30 | 1,024 | 16/4 | 2,816 | 388,563,712 |
 | `shohin_920m` | 32 | 1,536 | 24/8 | 4,352 | 918,656,512 |
 
-The training CLI requires `--vocab-size 49152`; tokenizer selection remains an
-explicit launch field rather than being hidden in the size preset.
+The training CLI requires `--vocab-size 49152`. The selected vocabulary is the
+Apache-2.0 SmolLM2 49,152-token tokenizer, physical SHA-256
+`9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c`;
+it is not a Qwen tokenizer. A hash-bound 500-document comparison across
+FineWeb-Edu, peS2o, Essential-Web, bounded FinePDF, and code measured 759,779
+tokens versus 789,331 for Shohin's historical 32K tokenizer, a 3.744% token
+reduction overall and 7.19% on code, with zero encode/decode/re-encode
+mismatches in either arm. The report SHA-256 is
+`777d0fd6a28153be73bf55370e95a784582edc37a6a7173021d4d2bc6e15ea2e`.
+Tokenizer identity remains an explicit physical launch field rather than being
+hidden in the size preset.
 
 The deployed reasoning architecture is a shared trunk with two model-owned
 temporal roles:

@@ -1,5 +1,36 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **FINAL 49K TOKENIZER SELECTED / RETOKENIZATION CANARY LIVE — 2026-08-08
+> 17:05 EDT:** a hash-bound 500-document comparison across FineWeb-Edu,
+> peS2o, Essential-Web, bounded FinePDF, and code selects the Apache-2.0
+> SmolLM2 49,152-token tokenizer at SHA-256 `9ca9acdd...e47c`. It emits
+> `759,779` tokens versus Shohin32's `789,331`, a `3.744%` overall reduction
+> and `7.19%` on code, improves every sampled domain, and has zero round-trip
+> mismatches. Report SHA-256 is `777d0fd6...ea2e`. Scratch parameter counts
+> therefore remain `388,563,712` and `918,656,512`; prior language calling
+> this vocabulary Qwen-compatible was incorrect.
+>
+> Obsolete 32K near audit `768241` and all dependency-held jobs
+> `768243--768251` were canceled; final near dedup must run on final token
+> identities. Historical-32K Essential holdout canary `768237` has produced
+> exact partitions and is finishing independent verification. Private
+> `pipeline/retokenize_v3_corpus.py` verifies every source token span,
+> document text hash/length, source round trip, target round trip, and complete
+> v3 accounting without storing text. Its focused tests are `2/2`, Ruff and
+> shell syntax are clean. Immutable runtime
+> `phase2_retokenize_0f167fa_r1` has SHA256SUMS SHA-256
+> `3e65532b...3efc`; 48-core Stokes canary `768261` is converting exact
+> Essential-Web to final 49K tokens. On pass, release independent peS2O,
+> FinePDF-core, and FineWeb conversions, then rerun near residualization and
+> holdouts on those final payloads. No corpus is training-admitted yet.
+>
+> Newton access is restored under an authenticated 8-hour multiplexed session.
+> All sixteen IDR08 math/science draft shards `745961--745976` remain healthy
+> near completion; code `745977` is complete, and build/fit/evaluation jobs
+> `745978/745979` remain correctly dependency-gated. Preserve the frozen
+> decision: all split/domain conditions pass selects `shohin_390m`; any miss
+> selects `shohin_920m` with no nearby 0.8B retry.
+
 > **IDR08 AND PHASE-2 DATA LANES SATURATED — 2026-08-08 16:49 EDT:**
 > authenticated Newton and Stokes multiplexed access is healthy. IDR08 code
 > draft job `745977` completed `200/200` in `13m42s` with `38` correct drafts;
