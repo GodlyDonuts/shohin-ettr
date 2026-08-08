@@ -33534,3 +33534,35 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `close_sag1_without_variants;_continue_exact_cvg1_completion_verification`.
+
+- **2026-08-07 23:11--23:25 EDT** -- **CVG1 rollout replay is healthy and
+  its conditional capability scorer is frozen before critic outcomes exist.**
+
+  Exact replay jobs `745509/745510` start on `evc37/evc26`, both with measured
+  bad node `evc33` excluded. Their first math shards load the immutable B1
+  lineage successfully and progress through `64/512` and `40/512` rows with
+  no CUDA, checkpoint, or evaluator failure. The remaining 32 one-H100 shards
+  are already scheduler-admitted; no other valid H100 is currently exposed to
+  this account. The previously reported full CVG1 budget remains `31--38`
+  GPU-hours against a remaining monthly balance of `1,624.5` GPU-hours.
+
+  To remove avoidable post-fit latency without changing generation, the
+  conditional development evaluator now reuses the 14 preserved, matched
+  B1/QPT1 QPT1-gate reports rather than regenerating their 1,076 completions.
+  `pipeline/build_cvg1_evaluation_pairs.py` fail-closes on any task, prompt,
+  identity, gold, decoding, data, selection, or order mismatch. The GPU
+  application receives only `question + one complete candidate`, loads the
+  source-disjoint critic only if every frozen holdout condition passed, and
+  commits to one whole lineage using the already-frozen threshold. Task,
+  benchmark, gold, correctness, execution, and evaluator fields never enter
+  the critic. Its unchanged development conjunction is code `>=30/40`, at
+  least `+3` macro points and `+15` solved over the strongest single lineage,
+  at least three improved domains, and no domain regression over two points.
+  Twelve focused merger/critic/application tests plus Ruff, Black, shell
+  syntax, and bytecode checks pass. The conditional application consumes no
+  regeneration GPU-hours and at most one H100 for two hours, already inside
+  the reported critic/evaluation allowance; it must remain unopened if the
+  source-disjoint holdout gate fails.
+
+  Decision:
+  `finish_all_exact_rollouts;_fit_one_fixed_critic;_on_holdout_pass_only_apply_it_to_the_preserved_matched_development_completions`.
