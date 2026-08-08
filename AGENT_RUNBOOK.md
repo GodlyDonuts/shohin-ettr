@@ -1,5 +1,30 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **SAG1 / QWEN3.5-9B LIVE — 2026-08-07 20:13 EDT:** The frozen SAG1
+> two-update canary `745344` passes on exact Qwen3.5-4B: 4,072 charged targets,
+> 62.921 target tok/s, 27.380 GB peak, finite dual-path losses, and a
+> bit-identical protected B1 hash. Full SAG1 `745346` is live on `evc26` with
+> unchanged 256-update settings; score jobs `745348--745354` remain held.
+> Newton denied increasing its two-hour wall limit. Exact checkpoint/AdamW/
+> data-position recovery is therefore staged as `745365` after-any, with
+> mutually exclusive recovery evaluations `745366--745372`; this is
+> scheduler fault tolerance, not a scientific variant. Private commit
+> `d901582` implements and tests the fail-closed resume path.
+>
+> An equal-exposure 4B B1 continuation `745356` starts from the same protected
+> checkpoint for another 256 updates with identical V10 data/order, context,
+> seed, and LR schedule. Its score jobs are `745357--745363`. Frozen aggregate
+> jobs `745364/745373` are mutually exclusive normal/recovery paths. SAG1 must
+> beat both original B1 and this continuation; exact gate commit is `eb2600c`.
+> This removes token exposure as a confound but is not parameter/FLOP matched.
+>
+> Exact current Apache-2.0 `Qwen/Qwen3.5-9B@c202236...337b9a` passes preflight
+> `745328` at 9,409,813,744 parameters, 18.929 GB peak, and successful native
+> thinking generation. Two-update B1 canary `745343` passes at 394.164 target
+> tok/s and 23.580 GB peak. Full B1 `745345` is live on `evc23`; identical
+> seven-board evaluations `745374--745380` are held after it. No 9B SAG1
+> transplant is authorized unless the frozen 4B SAG1 development gate passes.
+
 > **OPB1 CONFIRMED / QST1 CLOSED / QPT1 CLOSED — 2026-08-07 19:33 EDT:**
 > OPB1 development and all five source-disjoint confirmations pass. Aggregate
 > SHA-256 is `79ce10ae...1a6d6`: treatment/full rename/coherent reindex are
@@ -33187,3 +33212,40 @@ STATE) and any step that changed. A future agent — maybe you after a context r
 
   Decision:
   `pass_one_two_update_sag1_identity_canary;_then_run_one_frozen_4b_development_fit;_transplant_to_9b_only_after_development_pass_and_9b_preflight`.
+
+- **2026-08-07 19:58--20:13 EDT** -- **SAG1 passes its integration canary;
+  the fair exposure control and current 9B baseline are live.**
+
+  Exact 4B canary `745344` completes 2/2 updates on `evc26`, charges 4,072
+  targets at 62.921 target tok/s, peaks at 27,379,717,632 CUDA bytes, and
+  preserves the complete frozen B1 parameter hash. Full frozen SAG1 `745346`
+  releases immediately. At update 16 it is finite at 77.295 target tok/s;
+  router commitment remains zero this early while detached advantage targets
+  have begun appearing. This is training telemetry, not a score.
+
+  Before any SAG1 evaluation opens, private commit `eb2600c` adds the missing
+  equal-exposure control and a fail-closed three-arm decision script. B1
+  continuation `745356` starts from protected checkpoint SHA-256
+  `f7354e6a...81feb` for 256 further updates on the same V10 stream, order,
+  seed, context, and schedule. Its evaluations are `745357--745363`; normal
+  SAG1 evaluations remain `745348--745354`; aggregate `745364` sees no score
+  until all inputs are complete. The gate requires SAG1 to retain original B1
+  code `30/40` and materially beat both original B1 and the continuation.
+
+  Slurm denies increasing the live SAG1 wall limit from two to three hours.
+  Commit `d901582` therefore adds tested checkpoint-exact recovery: restore
+  the latest atomic trainable state and fused AdamW state, resume the absolute
+  update/data position and original cosine schedule, and reconstruct charged
+  target accounting. Fallback `745365` is held after-any and exits without
+  touching a complete primary run. Recovery evaluations `745366--745372` and
+  aggregate `745373` require primary failure plus successful recovery, so they
+  cannot race the normal path.
+
+  Current official Qwen3.5-9B preflight `745328` and B1 canary `745343` both
+  pass. Full 9B B1 `745345` is live at update 130 near 542 target tok/s;
+  identical evaluations `745374--745380` are held. This supplies a real
+  stronger-model benchmark baseline without allowing 9B results to rescue a
+  failed 4B SAG1 mechanism.
+
+  Decision:
+  `finish_the_frozen_three_arm_4b_gate;_measure_the_9b_baseline_in_parallel;_transplant_sag1_to_9b_only_on_a_4b_development_pass`.
