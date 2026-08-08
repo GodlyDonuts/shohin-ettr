@@ -1,5 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **AQC1 FROZEN / IMPLEMENTED — 2026-08-08 09:35 EDT:** IDR1 plus its exact
+> untrained same-family continuation has a `671/1,279` coherent oracle ceiling.
+> A fixed development-trained metadata selector reaches `645`, proving 20
+> answers of deployable headroom over IDR1 `625` without holdout fitting. The
+> sole bounded successor is AQC1: a shared 9B candidate encoder plus an exactly
+> antisymmetric relational margin `phi(a,b)-phi(b,a)`, compared against a
+> stronger-parameter independent scalar scorer on identical data/compute.
+> Frozen holdout requires overall `>=646`, MATH `>=255`, logic `>=349`, code
+> `>=24`, exact order consistency, and net lift; the relational mechanism also
+> must beat its matched control by five. Development is partitioned 80/20 by
+> seed `2026080820`; original holdout remains untouched. Both arms use 128
+> updates and estimated aggregate charge `2--4` H100-hours. CPU tests are 4/4.
+> Product remains sealed. Contract:
+> `docs/research/DIVERGE_AQC1_ANTISYMMETRIC_QUOTIENT_COMMIT.md`.
+
 > **IDR1 TRAINED REVISION CAUSALLY POSITIVE / EXACT GATE CLOSED — 2026-08-08
 > 09:18 EDT:** The complete matched no-revision control proves that IDR1's
 > gain is learned revision, not merely a second inference pass. On exact
