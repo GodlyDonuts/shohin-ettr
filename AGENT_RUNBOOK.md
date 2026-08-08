@@ -1,15 +1,18 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **SAG1 / QWEN3.5-9B LIVE — 2026-08-07 20:13 EDT:** The frozen SAG1
+> **SAG1 RECOVERY LIVE / QWEN3.5-9B BASELINED — 2026-08-07 22:08 EDT:** The frozen SAG1
 > two-update canary `745344` passes on exact Qwen3.5-4B: 4,072 charged targets,
 > 62.921 target tok/s, 27.380 GB peak, finite dual-path losses, and a
-> bit-identical protected B1 hash. Full SAG1 `745346` is live on `evc26` with
-> unchanged 256-update settings; score jobs `745348--745354` remain held.
-> Newton denied increasing its two-hour wall limit. Exact checkpoint/AdamW/
-> data-position recovery is therefore staged as `745365` after-any, with
-> mutually exclusive recovery evaluations `745366--745372`; this is
-> scheduler fault tolerance, not a scientific variant. Private commit
-> `d901582` implements and tests the fail-closed resume path.
+> bit-identical protected B1 hash. Primary `745346` remained finite through
+> update 224 and then hit its immutable two-hour Slurm limit exactly as
+> forecast. Durable checkpoint 192 has SHA-256 `86ba2260...3758`. Recovery
+> `745365` immediately acquired the same H100 on `evc26`, restored checkpoint,
+> AdamW, absolute data position, and cosine schedule, and reproduced update
+> 200 at the exact cumulative `489,299` charged targets. Mutually exclusive
+> recovery evaluations `745366--745372` remain held; this is scheduler fault
+> tolerance, not a scientific variant. Private commit `d901582` implements
+> and tests the fail-closed resume path. Expected recovery completion is about
+> 22:40 EDT, followed by the seven-board score and decision near 23:00 EDT.
 >
 > An equal-exposure 4B B1 continuation `745356` starts from the same protected
 > checkpoint for another 256 updates with identical V10 data/order, context,
@@ -33337,3 +33340,39 @@ STATE) and any step that changed. A future agent — maybe you after a context r
   `SHA256SUMS` SHA-256 is `5e9184a6...1a37e`. They are conditional inputs only:
   no SAG1 confirmation, CVG1 fit, or 9B transplant is authorized until the
   exact SAG1 development decision closes.
+
+- **2026-08-07 21:50--22:13 EDT** -- **CVG1's conditional rollout path is
+  executable and now includes direct code evidence.**
+
+  Private commit `8d7d40c` adds a fail-closed dry-run-first launcher for the
+  source-disjoint B1/QPT1 whole-lineage rollouts. The initial 32-job
+  math/science fanout validates every immutable runtime, model, checkpoint,
+  and bank hash and creates no output during dry run. It remains conditional
+  on a SAG1 development failure.
+
+  Audit then finds that math/science-only rollouts would not satisfy CVG1's
+  code-protection requirement. Commit `1b49ca7` adds a deterministic MBPP
+  train/validation bank builder. From 446 execution-verified anchors it drops
+  207 normalized V10 overlaps and two informative 13-gram overlaps, leaving
+  237 eligible prompts and selecting 200. The selected bank has zero overlap
+  with V10 or any opened evaluation, zero duplicates, and all 200 reference
+  programs pass an independent bounded re-execution. Bank, build, overlap,
+  and execution SHA-256 values are respectively `0b6d068b...5398`,
+  `ecf24a9c...f163`, `911283e4...2560`, and `648ed561...ea9`; Newton's
+  read-only manifest SHA-256 is `ce58d510...e93e` under
+  `artifacts/product_reasoning/router_outcomes/cvg1_code_disjoint_1b49ca7`.
+
+  The updated conditional fanout contains exactly 34 independent single-H100
+  jobs: 8 shards x 2 lineages x 2 broad banks, plus one 200-row code shard per
+  lineage. Its projected rollout charge is 27--34 GPU-hours; critic fit and
+  evaluation are separately projected at 2--4 GPU-hours. Do not submit it
+  unless SAG1 fails, and report this charge before submission.
+
+  In parallel, SAG1 primary `745346` reaches finite update 224 before its
+  expected two-hour timeout. Recovery `745365` immediately starts on `evc26`
+  from checkpoint 192 SHA-256 `86ba2260...3758`; its first update-200 trace
+  has the exact cumulative `489,299` charged targets and unchanged LR. This
+  validates the recovery geometry while the final 64 updates continue.
+
+  Decision:
+  `finish_sag1_recovery_and_score_once;_pass_confirms_before_9b;_fail_reports_31_to_38_total_projected_gpu_hours_then_launches_exact_cvg1`.
