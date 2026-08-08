@@ -83,9 +83,13 @@ r2 replay `746027` reproduced the 8,392-row merged draft bank and built
 9,655/1,289/1,279 train/development/holdout rows. The legacy B1 checkpoint
 encoded a frozen trunk as `unfreeze_layers=null`; metadata-only migration
 `746045` normalized this to numeric zero while proving all 62 LoRA tensors and
-optimizer/state bitwise equal. Training `746046` is live from that normalized
-copy, with matched trained/control evaluations and one conjunctive comparison
-dependency-gated behind it. There is no nearby 0.8B retry family.
+optimizer/state bitwise equal. Training `746046` completed all 256 updates in
+`13m38s`, charging `365,028` tokens at `455.0 tok/s`; checkpoint/report
+SHA-256 values are `540771a3cd6c446c6fb90e225b1b1dc69050152669152761b129d58e1a41b357`
+and `8a756b50de52545f552754e169914c320df85119f52afc6e5896b9c7e79b466a`.
+Eight trained and eight unchanged-B1 evaluation shards are now running under
+the same evaluator, with deterministic split merges and one conjunctive scale
+comparison dependency-gated behind them. There is no nearby 0.8B retry family.
 
 This test determines the smallest plausible scratch trunk. It is not a nearby
 variant of the failed QST1 workspace: the changed factor is the already

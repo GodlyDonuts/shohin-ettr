@@ -113,23 +113,28 @@ The obsolete 32K near-audit `768241` and dependency-held residual/holdout jobs
 `768243--768251` were canceled before scientific output. Near deduplication
 must operate on final token identities, so it will be relaunched only after
 the selected corpora are converted to the final 49K tokenizer. The converter
-verifies every source token span, removes only the bound source EOS, requires
-decoded text length and SHA-256 to match the document ledger, verifies source
-and target round trips, preserves document identities and metadata, and emits
-new hash-bound v3 ledgers without text. Essential-Web conversion `768261`
-failed safely when SmolLM2 ignored one embedded `U+0013` control character.
-The repaired policy drops the entire document only when the sole discrepancy
-is removal of non-tab/newline/carriage-return Unicode controls, records every
-drop, and still fails on any printable-content change. An r2 predicate bug
-incorrectly required deletion of all control characters; codepoint/category
-attribution proved SmolLM2 preserved 17 controls and removed only `U+0013`.
-The corrected predicate permits deletion of any subset of those controls while
-requiring all other characters and order exact. Immutable r3 canary `768271`
-is live against the exact-residual corpus; FinePDF, peS2O, and FineWeb jobs
-`768272--768274` are dependency-held behind it. Exact and near deduplication
-will both rerun on final 49K outputs. Formal Logic remains zero weight because
-its source has no domain provenance and cannot satisfy the domain-holdout
-gate.
+verifies every source token span, removes only the bound source EOS, and
+requires the decoded source text length and SHA-256 to match the document
+ledger plus exact source encode/decode inversion. It then encodes that exact
+text twice with the target tokenizer and requires identical target IDs. Target
+decoder inversion is deliberately not required: standard tokenizer
+normalization can make arbitrary raw Unicode controls non-invertible even
+though replaying the original text deterministically yields the same training
+tokens. The converter never reconstructs or edits a document from target
+tokens, drops no rows, preserves document identities and metadata, and emits
+new hash-bound v3 ledgers without text.
+
+Three canaries established that boundary without publishing a corpus:
+`768261` found SmolLM2's non-inversion of one embedded `U+0013`; `768267`
+exposed an incorrect all-control-deletion classifier; and `768271` showed that
+even a subset-deletion decoder rule was the wrong abstraction. Immutable r4
+runtime `phase2_retokenize_a481bc4_r4` has SHA256SUMS SHA-256
+`3fa5141b20404c7632369e9f1f52a715c8874f02d0e2026e0b3a83deadcea81d`.
+Essential-Web canary `768275` is live against the exact-residual corpus;
+FinePDF, peS2O, and FineWeb jobs `768276--768278` are dependency-held behind
+it. Exact and near deduplication will both rerun on final 49K outputs. Formal
+Logic remains zero weight because its source has no domain provenance and
+cannot satisfy the domain-holdout gate.
 
 Essential-Web job `768237` separately exercises the complete historical-32K
 holdout creator and independent verifier as a transport-mechanics canary; its

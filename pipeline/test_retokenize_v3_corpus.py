@@ -8,10 +8,7 @@ from tokenizers.models import WordLevel
 from tokenizers.pre_tokenizers import Whitespace
 import zstandard as zstd
 
-from pipeline.retokenize_v3_corpus import (
-    _differs_only_by_control_deletions,
-    retokenize_corpus,
-)
+from pipeline.retokenize_v3_corpus import retokenize_corpus
 from pipeline.tokenize_shards import (
     DOCUMENT_LEDGER_NAME,
     DOCUMENT_LEDGER_SCHEMA,
@@ -141,11 +138,11 @@ def test_retokenization_preserves_documents_and_verifies_output(tmp_path: Path):
         batch_size=2,
     )
     assert report["documents"] == 2
-    assert report["dropped_documents"] == 0
     assert report["source_tokens"] == report["target_tokens"] == 6
     manifest = json.loads((output_dir / "manifest.json").read_text())
     assert manifest["retokenization"]["all_source_text_sha256_verified"] is True
-    assert manifest["retokenization"]["all_target_roundtrips_verified"] is True
+    assert manifest["retokenization"]["all_target_double_encodings_verified"] is True
+    assert manifest["retokenization"]["target_decoder_inversion_required"] is False
     assert manifest["retokenization"]["contains_document_text"] is False
     assert manifest["tokenizer"]["sha256"] == sha256_file(target_tokenizer)
     verification = verify_manifest(
@@ -154,12 +151,3 @@ def test_retokenization_preserves_documents_and_verifies_output(tmp_path: Path):
         require_external_inputs=True,
     )
     assert verification["document_rows"] == 2
-
-
-def test_control_deletion_classifier_preserves_all_other_content():
-    assert _differs_only_by_control_deletions(
-        "alpha\x13 beta\x02 gamma",
-        "alpha beta\x02 gamma",
-    )
-    assert not _differs_only_by_control_deletions("alpha beta", "alpha eta")
-    assert not _differs_only_by_control_deletions("alpha\n beta", "alpha beta")

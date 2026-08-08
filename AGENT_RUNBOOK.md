@@ -1,5 +1,31 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **IDR08 FIT COMPLETE / FINAL-49K RETOKENIZATION R4 LIVE — 2026-08-08
+> 17:33 EDT:** exact 0.8B capacity-boundary fit `746046` completed all 256
+> updates in `13m38s`, charging `365,028` tokens at `455.0 tok/s`. The final
+> checkpoint/report SHA-256 values are `540771a3...b357` and
+> `8a756b50...466a`. Eight trained evaluation shards
+> `746052--746060` and the eight unchanged-B1 control shards
+> `746033--746041` are live concurrently; merge jobs
+> `746056/746061/746037/746042` and final comparison `746062` are
+> dependency-gated. Preserve the frozen decision: every split/domain condition
+> passes selects `shohin_390m`; any miss selects `shohin_920m`.
+>
+> Retokenization r3 `768271` failed before publication because requiring a
+> target tokenizer decoder to invert arbitrary raw Unicode controls is not a
+> valid preprocessing contract. Replaying the exact source document through
+> SmolLM2 deterministically produces the same target IDs even when its decoder
+> does not reconstruct `U+0013`. R4 therefore keeps exact source token
+> reconstruction, text length/SHA-256, and source encode/decode inversion
+> mandatory, then performs two independent target encodings and requires
+> identical IDs. It never reconstructs or edits documents, drops no rows, and
+> explicitly records that target decoder inversion is not required. Focused
+> tests, Ruff, and bytecode compilation pass. Immutable runtime
+> `phase2_retokenize_a481bc4_r4` has SHA256SUMS SHA-256
+> `3fa5141b...a81d`; Essential canary `768275` is live, with fresh FinePDF,
+> peS2O, and FineWeb jobs `768276--768278` fail-closed behind it. Dead r3
+> dependents `768272--768274` were canceled.
+
 > **CONTROL-DELETION CLASSIFIER CORRECTED — 2026-08-08 17:25 EDT:** r2
 > canary `768267` correctly found the same affected document but its policy
 > checker falsely required SmolLM2 to delete all 18 embedded controls when it
