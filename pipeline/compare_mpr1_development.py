@@ -120,7 +120,7 @@ def compare(args: argparse.Namespace) -> dict[str, Any]:
         raise MPR1ComparisonError("MPR1 aligned fit differs")
     if not complete_fit(fits["shuffled"], "normal", shuffled_sha):
         raise MPR1ComparisonError("MPR1 shuffled fit differs")
-    if not complete_fit(fits["hidden"], "zero_attention", aligned_sha):
+    if not complete_fit(fits["hidden"], "draft_unavailable", aligned_sha):
         raise MPR1ComparisonError("MPR1 hidden fit differs")
     for key in (
         "model_root", "model_revision", "updates", "charged_tokens",
@@ -203,4 +203,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

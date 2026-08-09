@@ -50,7 +50,7 @@ shuffled_fit=$(submit --exclude="$EXCLUDE" --dependency=afterok:"$mechanics" \
   --export="$common,DATA=$SHUFFLED,DATA_SHA256=$SHUFFLED_SHA,OUTPUT=$OUTPUT_ROOT/shuffled_fit,ARM=shuffled,DRAFT_CONTROL=normal" \
   "$RUNTIME/train/jobs/train_mpr1_shared_residual.sbatch")
 hidden_fit=$(submit --exclude="$EXCLUDE" --dependency=afterok:"$mechanics" \
-  --export="$common,DATA=$ALIGNED,DATA_SHA256=$ALIGNED_SHA,OUTPUT=$OUTPUT_ROOT/hidden_fit,ARM=hidden,DRAFT_CONTROL=zero_attention" \
+  --export="$common,DATA=$ALIGNED,DATA_SHA256=$ALIGNED_SHA,OUTPUT=$OUTPUT_ROOT/hidden_fit,ARM=hidden,DRAFT_CONTROL=draft_unavailable" \
   "$RUNTIME/train/jobs/train_mpr1_shared_residual.sbatch")
 
 eval_common="ALL,RUNTIME=$RUNTIME,RUNTIME_MANIFEST_SHA256=$RUNTIME_MANIFEST_SHA256"

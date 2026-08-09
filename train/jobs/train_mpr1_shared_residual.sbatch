@@ -17,7 +17,7 @@ for variable in RUNTIME RUNTIME_MANIFEST_SHA256 MODEL_ROOT MODEL_REVISION \
   test -n "${!variable:-}" || { echo "$variable is required" >&2; exit 2; }
 done
 case "$ARM:$DRAFT_CONTROL" in
-  aligned:normal|shuffled:normal|hidden:zero_attention) ;;
+  aligned:normal|shuffled:normal|hidden:draft_unavailable) ;;
   *) echo "invalid MPR1 arm/draft control" >&2; exit 3 ;;
 esac
 BASE=/lustre/fs1/home/sa305415/shohin
@@ -67,4 +67,3 @@ nvidia-smi
 test -f "$OUTPUT/checkpoint_$(printf '%07d' "$UPDATES").pt"
 test -f "$OUTPUT/report.json"
 chmod -R a-w "$OUTPUT"
-

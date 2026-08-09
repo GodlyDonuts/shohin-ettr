@@ -73,7 +73,7 @@ def args(tmp_path: Path, aligned_correct: int = 240):
         "unchanged_report": write(tmp_path / "unchanged_report.json", evaluation(191, 40, 145, 5)),
         "aligned_fit": write(tmp_path / "aligned_fit.json", fit(aligned_sha, "normal")),
         "shuffled_fit": write(tmp_path / "shuffled_fit.json", fit(shuffled_sha, "normal")),
-        "hidden_fit": write(tmp_path / "hidden_fit.json", fit(aligned_sha, "zero_attention")),
+        "hidden_fit": write(tmp_path / "hidden_fit.json", fit(aligned_sha, "draft_unavailable")),
         "data_report": write(
             tmp_path / "data_report.json",
             {
@@ -120,4 +120,3 @@ def test_mpr1_gate_closes_when_absolute_margin_fails(tmp_path):
     result = compare(args(tmp_path, aligned_correct=229))
     assert result["gate_pass"] is False
     assert result["holdout_authorized"] is False
-
