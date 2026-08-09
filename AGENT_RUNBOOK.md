@@ -2,18 +2,25 @@
 
 > **CFR1 VERIFIED COUNTERFACTUAL REVISION ACTIVE — 2026-08-09:** After VFR1
 > proved the current 9B teacher cannot reliably author new full correction
-> traces, CFR1 removes online teacher generation. A Qwen-tokenizer-specific
-> 16M-target-token verified mix is building in CPU job `747606`; dependent CPU
-> job `747612` constructs two exactly target-matched 4,096-context revision
-> curricula. Each admitted verified source contributes one clean draft and one
+> traces, CFR1 removes online teacher generation. CPU job `747606` completed a
+> Qwen-tokenizer-specific mix with `52,255` unique rows and `16,003,197`
+> charged target tokens at math/code/science/procedural/teacher fractions
+> `42/16/27/13/2`, zero retained truncation, and data SHA-256
+> `76842f86...db58`. CPU job `747612` then admitted `43,372` verified sources
+> into two exactly target-matched 4,096-context curricula: `86,744` rows and
+> `11,496,702` charged target tokens per arm, zero source/donor identity
+> matches, aligned SHA-256 `7d082c2c...caf7`, shuffled SHA-256
+> `eb861f29...e13f`, and report SHA-256 `e10cd496...fe0`. Each admitted
+> verified source contributes one clean draft and one
 > decisively faulted draft; the control receives another source's same-domain,
 > near-length draft. Unverified teacher, code, and procedural rows are
-> excluded; any truncating source is rejected from both arms. Dispatcher
-> `747625` is held after data admission and will launch exactly one one-update
-> mechanics job, then matched 512-update aligned/shuffled fits only on success.
-> Evaluation armer `747637` is held after `747625`; it recovers the dynamically
-> created fit IDs and dependency-gates eight development shards per arm, two
-> merges, and the frozen comparator. Its immutable runtime is
+> excluded; any truncating source is rejected from both arms. One-update
+> mechanics job `747642` passed with finite loss/gradient, exact
+> `2,704,896` trainables, and `25,380,846,080` peak GPU bytes. Matched 512-update
+> aligned/shuffled fits `747643/747644` now run concurrently. Evaluation
+> dispatcher `747645` is held after both fits and will dependency-gate eight
+> development shards per arm, two merges, and the frozen comparator. Its
+> immutable runtime is
 > `cfr1_79b5272_r1` with manifest SHA-256
 > `e619de606c894f2c77631af3d41f83e9331146da909eb50c08bf86279be83bda`.
 > Frozen promotion is aligned `>=603/1,289`, `>=+10` over shuffled, and domains
