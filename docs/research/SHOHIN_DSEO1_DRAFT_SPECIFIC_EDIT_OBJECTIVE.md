@@ -173,6 +173,13 @@ KEEP must reduce fault repair, and forced fault actions must reduce exact clean
 copying. If final trajectories are invariant, the action is decorative and
 DSEO1 fails regardless of action classification accuracy.
 
+Before output, the operational intervention is frozen on the
+lexicographically first 128 diagnostic pair identities. Each wrong-action
+condition must reduce verifier-correct answers by at least 5 absolute points
+and change at least 50% of normalized downstream trajectories. These are
+conjunctive with the ordinary Stage 0 gates; the preliminary comparator cannot
+authorize capability while the intervention remains pending.
+
 ## Conditional capability gate
 
 Only a Stage 0 pass opens one full development fit. Before any DSEO1
