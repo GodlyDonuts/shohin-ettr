@@ -120,7 +120,6 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
     task_by_source = {
         str(row["identity_sha256"]): str(row["task"])
         for row in pair_rows
-        if row.get("split") == "train"
     }
     source_rows = load_lines(args.source)
 
