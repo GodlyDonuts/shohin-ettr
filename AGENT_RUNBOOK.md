@@ -1,5 +1,36 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **TTR1 SMOLLM3-3B CLOSED: STRONG AGGREGATE TRANSFER / CODE-RETENTION FAIL
+> — 2026-08-08 20:43 EDT:** the complete frozen development comparison closed
+> on all `1,289` identities. Trained same-family draft revision scores
+> `469/1,289 = 36.3848%`, versus unchanged second pass `358 = 27.7735%`
+> (`+111`, `+8.6113` points), generic self-refinement `398 = 30.8766%`,
+> long single generation `420 = 32.5834%`, best-of-two `339 = 26.2995%`,
+> and equal-update independent commitment `371 = 28.7820%`. Long generation
+> is the strongest matched control; treatment beats it by `49` answers and
+> `3.8014` points. This establishes a large model-owned trajectory-conditioned
+> revision effect in a non-Qwen family.
+>
+> The conjunctive gate nevertheless **FAILS**: versus unchanged, MATH improves
+> `+62` correct and logic/science `+54`, but executable MBPP falls `9 -> 4`
+> (`-5`). Overall-margin, strongest-control-margin, and complete-coverage gates
+> pass; only all-domain nonregression fails. Holdout was never opened and no
+> nearby seed/rank/layer/duration/prompt/threshold rescue is authorized. Exact
+> comparison SHA-256 is `a20cdd75...9cd7`. Complete TTR1 charged `27.793`
+> H100-hours: `26.590` completed work, `1.179` canceled slow-unsharded work,
+> and `0.024` node/infrastructure failures. Current Newton monthly use is
+> `528.9/2,000` GPU-hours. All Newton TTR1 jobs are released.
+>
+> Execution was accelerated from four projected four-hour unsharded controls
+> to 32 exact batch-aligned shards. `evc46` exposed no usable CUDA device;
+> failed jobs `746210/746212/746224--746228` were replaced once as
+> `746231--746237` with the node excluded. Immutable merged control report
+> SHA-256 values are unchanged `fc4a6fd8...058b`, self-refinement
+> `429b22e8...b14`, long-generation `1fcad824...d839`, and best-of-two
+> `046792ae...cd2d`; treatment and independent report SHA-256 values are
+> `98d4a4b4...c5475` and `a6974226...f4dc7`. Final merge runtime r11
+> SHA256SUMS SHA-256 is `bbd62fee...7c60`.
+
 > **TTR1 SMOLLM3-3B DEVELOPMENT GATE LIVE — 2026-08-08 19:22 EDT:** all
 > `8,392` pinned source-only drafts are complete. The corrected immutable merge
 > job `746173` passed after preserving, rather than rerunning or selecting away,

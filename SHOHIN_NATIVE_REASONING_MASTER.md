@@ -9,14 +9,35 @@ and one coherent whole-trajectory commitment. The publication question is
 whether this changed factor improves capable pretrained models across scale,
 model family, and eventually MoE routing under matched inference compute.
 
-Qwen3.5-0.8B/4B/9B provide the first within-family scale curve. The next
-frozen gate is TTR1 on pinned SmolLM3-3B, followed only on pass by a larger
-dense non-Qwen family and then a small/medium open MoE. Scratch 390M/920M
-pretraining, the 5B scratch canary, and long corpus construction are not the
-critical path and are not authorized. See
+Qwen3.5-0.8B/4B/9B provide the first within-family scale curve. TTR1 on pinned
+SmolLM3-3B now establishes strong cross-family aggregate transfer but fails
+executable-code retention, so exact TTR1 is closed without holdout or local
+rescue. The next mechanism/host must address capability preservation before a
+larger dense non-Qwen family and then a small/medium open MoE can qualify.
+Scratch 390M/920M pretraining, the 5B scratch canary, and long corpus
+construction are not the critical path and are not authorized. See
 `docs/research/SHOHIN_TRANSFERABLE_TEMPORAL_REVISION_CONTRACT.md`.
 
 ## Latest Practical Reasoning Campaign — 2026-08-08
+
+**TTR1 transfers the learned draft/revision effect to SmolLM3-3B, but exact
+promotion closes on code regression.** On all 1,289 source-disjoint
+development identities, the trained same-family reviser reaches `469 =
+36.38%`, versus unchanged second pass `358 = 27.77%`, self-refinement `398 =
+30.88%`, long single generation `420 = 32.58%`, best-of-two `339 = 26.30%`,
+and equal-update independent commitment `371 = 28.78%`. The treatment margin
+is `+8.61` points over unchanged and `+3.80` over the strongest matched
+control. This is the first measured non-Qwen aggregate transfer and directly
+shows that access to the model's own draft matters beyond merely training a
+second commitment adapter.
+
+The effect is not reliability-safe: versus unchanged, MATH gains `+62`
+correct and logic/science `+54`, while executable MBPP drops `9 -> 4`. The
+frozen all-domain-nonregression condition therefore fails; holdout stayed
+sealed and exact TTR1 receives no nearby rescue. Complete cost was `27.793`
+H100-hours. The qualified claim is cross-family aggregate
+trajectory-conditioned revision, not universally transferable reasoning.
+Comparison SHA-256 is `a20cdd75...9cd7`.
 
 **The learned same-family draft/revision mechanism now transfers from 9B to
 4B with a larger matched causal margin.** On pinned Qwen3.5-4B, 256-update

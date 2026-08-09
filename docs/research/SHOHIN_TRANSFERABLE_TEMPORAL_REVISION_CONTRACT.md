@@ -1,8 +1,10 @@
 # Shohin Transferable Temporal Revision Contract
 
-Status: TTR1 frozen for implementation, 2026-08-08. This contract supersedes
-scratch pretraining as the primary project path. It does not authorize a
-390M/920M scratch run.
+Status: exact TTR1 closed on development, 2026-08-08. Strong aggregate
+cross-family transfer passed both overall margins; executable-code retention
+failed, so holdout remained sealed. This contract supersedes scratch
+pretraining as the primary project path and does not authorize a 390M/920M
+scratch run.
 
 ## Mission
 
@@ -24,10 +26,11 @@ use independently verified targets. Evaluation never exposes those targets.
 | Qwen3.5-0.8B | `323/236` (+6.749 points) | `328/242` (+6.724 points) | aggregate transfer; holdout code `8/9` fails conjunctive retention |
 | Qwen3.5-4B | `529/371` (+12.26 points) | `554/380` (+13.61 points) | every source-disjoint domain positive; protected product mixed fail |
 | Qwen3.5-9B | `589/464` (+9.70 points) | `625/495` (+10.16 points) | every attribution domain positive; original promotion floor missed |
+| SmolLM3-3B | `469/358` (+8.61 points) | sealed | aggregate cross-family transfer; code `4/9` fails conjunctive retention |
 
-These results establish a real learned revision effect within one Qwen family.
-They do not establish family transfer, superiority to every standard
-test-time-compute baseline, or a MoE mechanism.
+These results establish a real learned revision effect across Qwen and
+SmolLM families at aggregate level. They do not establish reliable
+all-domain family transfer, protected-product promotion, or a MoE mechanism.
 
 ## TTR1 Host And Inputs
 
@@ -118,15 +121,45 @@ accuracy over the strongest matched control and nonnegative correct-count
 deltas in every main domain. A miss closes exact TTR1 without seed, rank,
 layer, duration, prompt, decoding, or threshold rescue variants.
 
+## Frozen Result
+
+TTR1 development completed all matched arms on all `1,289` identities:
+
+| Arm | Correct | Accuracy |
+|---|---:|---:|
+| trained draft revision | `469` | `36.3848%` |
+| unchanged second pass | `358` | `27.7735%` |
+| self-refinement | `398` | `30.8766%` |
+| long single generation | `420` | `32.5834%` |
+| best-of-two | `339` | `26.2995%` |
+| independent commitment | `371` | `28.7820%` |
+
+Treatment exceeds unchanged by `+111` answers / `+8.6113` points and the
+strongest matched control, long single generation, by `+49` answers /
+`+3.8014` points. Domain correct-count deltas against unchanged are MATH
+`+62`, logic/science `+54`, and executable MBPP `-5` (`9 -> 4`). The first,
+third, and coverage conditions pass; the all-domain condition fails. Holdout
+was not opened.
+
+Comparison SHA-256 is
+`a20cdd7567aa2502a62ad5591748bc9241371b3f7fe4620c29a1de71e90c9cd7`.
+Treatment and independent-report SHA-256 values are
+`98d4a4b4f7b37f9369fe7c81ec3a43f60531c804a4d8b055c27a3b51772c5475`
+and `a6974226297da951eca5abf98bd513cd5b04e451b2ff5158dfa8b522847f4dc7`.
+Complete execution charged `27.793` H100-hours, including canceled unsharded
+work and node failures. Exact TTR1 is closed without a nearby retry.
+
 ## Advancement
 
-A SmolLM3 pass establishes the first cross-family dense transfer. The next
-test is one larger dense non-Qwen family with the same contract, followed by
-one small/medium open MoE. The MoE starts with frozen router and experts and
-role-specific shared-layer adapters. It must additionally report router and
-expert utilization, active versus total parameters, latency, memory, total
-FLOPs, and accuracy per compute. Large-MoE work is prohibited until both the
-cross-family dense and smaller-MoE gates pass.
+SmolLM3 established aggregate cross-family transfer but exposed a capability
+preservation failure. The next candidate must make preservation a
+mechanism-level property rather than a benchmark router or post-hoc fallback,
+then test one larger dense non-Qwen family under the same causal controls.
+Only a pass advances to one small/medium open MoE. The MoE starts with frozen
+router and experts and role-specific shared-layer intervention, and must
+report router/expert utilization, active versus total parameters, latency,
+memory, total FLOPs, and accuracy per compute. Large-MoE work remains
+prohibited until cross-family dense and smaller-MoE gates pass.
 
 Scratch Shohin training is optional later efficiency evidence. It is not the
 critical path and is not authorized by TTR1.
