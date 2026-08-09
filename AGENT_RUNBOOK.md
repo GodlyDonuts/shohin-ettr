@@ -18,8 +18,24 @@
 > approximately 1B-active MoE with 64 experts and 8 active/token. CPU snapshot
 > job `746736` is live. Frozen MTR1 trains only rank-8 adapters in the shared
 > attention mixers of the final four layers; router and expert parameters must
-> remain absent from the trainable state. Full source-only draft sharding is
-> blocked on mechanics and pinned hashes. Exact contract:
+> remain absent from the trainable state. The pinned snapshot completed as job
+> `746736`; config SHA-256 is `272998dd...d6ce` and its complete-manifest
+> SHA-256 is `bc079924...d8ad`. Mechanics job `746738` passed one finite
+> backward update with 524,288 trainable parameters, no router/expert names,
+> final loss `0.85563`, and `16.288 GB` peak. Rollout mechanics `746743`
+> produced 8/8 nonempty same-model drafts at `130.61` generated tok/s.
+>
+> Full source-only drafts are now live as seventeen independent one-H100 jobs
+> `746745--746761`; the 200-row code shard completed in `00:13:57`, scores
+> `60/200`, emits 58,293 tokens at `74.57` tok/s, and exhausts only 2 rows.
+> The remaining sixteen 512-row MATH/science shards are healthy and concurrent.
+> Exact merge/data build `746762`, matched-fit dispatcher `746763`, development
+> release `746797`, and router-accounting release `746799` are dependency-held.
+> Runtime `mtr1_32bc0df_r3` has manifest SHA-256 `0a1dbe22...336e` for
+> capability evaluation; accounting runtime `mtr1_6ee8506_r4` has manifest
+> SHA-256 `2a3a6797...2c25`. The read-only accounting path reports expert load,
+> router entropy, active/total parameters, latency/memory, and fails if the
+> adapter contains any router/expert/MLP tensor. Exact contract:
 > `docs/research/SHOHIN_MTR1_SMALL_MOE_TRANSFER.md`.
 >
 > The larger `Qwen3.6-35B-A3B@995ad96e...` lane is mechanics-only until MTR1
