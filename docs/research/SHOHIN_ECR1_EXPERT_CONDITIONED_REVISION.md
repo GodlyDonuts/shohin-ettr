@@ -95,8 +95,12 @@ nonnegative domain deltas, and the same causal/semantic conditions.
 One follow-up is predeclared now: only when both final-four ECR1 and shared
 residual improve unchanged by at least 13 answers but miss promotion, test all
 16 layers at rank 8. The receipts are fixed at 532,480 ECR trainables and
-524,288 shared trainables. Otherwise it is unauthorized. If both depths fail,
-ECR1 closes on OLMoE and does not scale to 35B.
+524,288 shared trainables. Stage 1 contains only these two fits and their exact
+development evaluations. It must score at least 256/1,289, beat shared by at
+least 39 answers, and preserve the frozen 40/145/5 math/logic-code floors.
+Only a conjunctive Stage-1 pass may spend compute on draft-removal and
+expert-code interventions; it never directly opens holdout. Otherwise it is
+unauthorized. If Stage 1 fails, ECR1 closes on OLMoE and does not scale to 35B.
 
 Interpretation is fixed: shared passing without an ECR margin supports generic
 MLP-side correction and rejects expert identity; ECR passing with its matched

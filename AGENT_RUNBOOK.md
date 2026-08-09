@@ -1,5 +1,30 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **ECR1 FINAL-FOUR CLOSED / CONDITIONAL DEPTH AUTHORIZED — 2026-08-09:**
+> All 48 exact development shards and comparison job `747154` completed.
+> Expert-conditioned ECR scores `221/1,289 = 17.1451%`, versus matched shared
+> residual `223 = 17.3002%`, true draft-unavailable `224 = 17.3778%`, unchanged
+> `191`, and prior MTR1 `204`. Domains are math `46`, logic/science `171`, code
+> `4`; the code floor fails. Zeroing, averaging, or within-layer permuting all
+> learned expert codes leaves the score exactly `221`, so expert identity is
+> causally decorative at this depth. Semantic attribution records 40 strict
+> repairs, 10 breaks, 12 certified serialization-only repairs, and at most 28
+> possible semantic repairs. The frozen comparison SHA-256 is
+> `0b10336326f87b0e1b07114b98a6dde6cd02c0a06140d43502199f408a92ab72`;
+> holdout remains sealed. Read-only route attribution `747082` also finds no
+> useful outcome separation: corrected and persistent-wrong final-four route
+> probability L1 are approximately `0.01056/0.00973`, with top-8 set overlap
+> `0.98985/0.99130`; report SHA-256 is
+> `5b4865e8c474f1253903446a8bcc1e6793e27038b0bf42dadb357e759f89ed3e`.
+>
+> The sole predeclared depth follow-up is now authorized because both ECR and
+> shared improved unchanged by at least 13 answers while missing promotion.
+> Stage 1 trains only all-16-layer rank-8 ECR (`532,480` parameters) and shared
+> (`524,288`) for the same 256 updates / 338,620 charged target tokens. It must
+> reach `>=256`, beat shared by `>=39`, and retain `40/145/5` domain floors.
+> Only a conjunctive pass can run draft/code causal controls; failure closes
+> ECR1 on OLMoE without holdout or 35B scaling.
+
 > **ECR1 FROZEN / DREM1 DEMOTED — 2026-08-09:** DREM1 is preserved only as
 > an unmatched upper-bound diagnostic. Its pending mechanics job `747085` was
 > canceled before allocation and charged zero H100 time. The decisive MoE lane
