@@ -93,6 +93,16 @@ closed without variants and holdout remains sealed. A successor must train on
 actual model-owned errors with verified targets and a bounded output contract;
 it must not reuse appended counterfactual faults as a proxy for natural errors.
 
+That successor is NDR1, Natural Draft Revision. A fresh short verified source
+mix is admitted at 1,536 tokens, then immutable B1 produces one deterministic
+natural draft per source. Aligned revision sees the exact model-owned draft;
+the control sees another source's same-domain nearest-length draft. Both emit
+the same untouched verified solution, with no synthetic fault and no
+clean-copy presentation. Source build `747795`, sixteen-way draft dispatcher
+`747796`, and fit armer `747801` are dependency-gated. The capability gate is
+the existing `603/+10/223/349/17` conjunction plus an explicit exhaustion
+guard (`<=400` and within 25 of shuffled). Holdout remains sealed.
+
 ### Current blocker: dense-to-MoE transfer
 
 The first sparse host is pinned `OLMoE-1B-7B-0125-Instruct`: 7B total,

@@ -1,5 +1,24 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **NDR1 NATURAL DRAFT REVISION ACTIVE — 2026-08-09:** CFR1 established that
+> appended synthetic faults and clean-copy presentations cause draft over-trust
+> and severe verbosity. NDR1 is structurally different: B1 generates one
+> deterministic natural draft per fresh short verified source; aligned
+> revision maps source plus that exact model-owned draft to the untouched
+> verified solution, while the matched control receives a same-domain,
+> nearest-length draft from another source. There are no synthetic faults or
+> clean-copy rows. CPU source build `747795` targets 4M charged tokens at
+> 40/10/40/10 math/code/science/procedural with 1,536-token source admission.
+> Dispatcher `747796` will launch exactly sixteen single-H100 draft shards and
+> one exact CPU merge; fit armer `747801` will dependency-gate one mechanics
+> update and exactly one aligned/shuffled 512-update pair. Runtime
+> `ndr1_64dd134_r1` has manifest SHA-256
+> `416b421de17b28d290d539f30e82b0bdf6226c66f23a55e0b2a1de56a2324ea9`.
+> Frozen promotion is `603/1,289`, `+10` over shuffled, domains `223/349/17`,
+> aligned exhaustion `<=400` and within 25 of shuffled. Any miss closes exact
+> NDR1 without variants; holdout remains sealed. Contract:
+> `docs/research/SHOHIN_NDR1_NATURAL_DRAFT_REVISION.md`.
+
 > **CFR1 VERIFIED COUNTERFACTUAL REVISION CLOSED NEGATIVE — 2026-08-09:** After VFR1
 > proved the current 9B teacher cannot reliably author new full correction
 > traces, CFR1 removes online teacher generation. CPU job `747606` completed a
