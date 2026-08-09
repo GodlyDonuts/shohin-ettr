@@ -1,5 +1,23 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **KR2 STAGE-OWNER GATE LIVE — 2026-08-09:** Reusing the qualified 9B IDR1
+> reviser recursively was closed negative at `539/1,289` because it repaired
+> 15 errors while breaking 65 correct answers. KR2 tests a distinct later
+> owner: on the exact 9,655 train presentations, it emits the exact sentinel
+> `<KEEP_PREVIOUS>` for 5,508 verified-correct predecessor cases and a full
+> verified repair for 4,147 errors. The matched direct-rewrite control sees
+> the same actual model-owned predecessors, rows, initialization, and update
+> budget but always emits a full rewrite. The predecessor bank contains 5,824
+> unique train-only sources and scored `2,880/5,824 = 49.45%`; candidate SHA-256
+> is `42e2665a...734`, with no development or holdout scoring used to build it.
+> Runtime `kr2_abdf2ac_r1` verifies at SHA256SUMS SHA-256
+> `367a609d...ae7`. Treatment `747491` and replacement direct control `747514`
+> are healthy H100 fits for exactly 256 additional updates from immutable IDR1
+> checkpoint SHA-256 `df3c264d...473`; their dependency-gated development
+> evaluation and frozen comparison end at job `747525`. Preserve failed
+> pre-update jobs `747455/747478` (legacy default metadata rejection) and
+> `747466/747502` (node-local disk exhaustion). Holdout remains sealed.
+
 > **RIDR1 RECURRENT DEPTH CLOSED NEGATIVE — 2026-08-09:** Applying the exact
 > qualified Qwen3.5-9B IDR1 reviser a second time to its own complete first
 > revision scores `539/1,289`, down 50 from depth one's immutable `589`.

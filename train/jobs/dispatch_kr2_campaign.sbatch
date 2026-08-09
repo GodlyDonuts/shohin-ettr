@@ -12,6 +12,8 @@
 set -euo pipefail
 
 EXCLUDE_NODES=${EXCLUDE_NODES:-evc33,evc38}
+# Colon-separated values survive Slurm's comma-delimited --export syntax.
+EXCLUDE_NODES=${EXCLUDE_NODES//:/,}
 
 for variable in RUNTIME RUNTIME_MANIFEST_SHA256 MODEL_ROOT MODEL_REVISION \
   MODEL_CONFIG_SHA256 MODEL_MANIFEST_SHA256 WARM_START WARM_START_SHA256 \

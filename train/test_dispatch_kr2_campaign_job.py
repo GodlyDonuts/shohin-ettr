@@ -18,4 +18,5 @@ def test_kr2_campaign_preserves_frozen_geometry() -> None:
     assert "hf_kr2_evaluate.sbatch" in SOURCE
     assert "compare_kr2_stage_owner.py" in SOURCE
     assert "EXCLUDE_NODES=${EXCLUDE_NODES:-evc33,evc38}" in SOURCE
+    assert 'EXCLUDE_NODES=${EXCLUDE_NODES//:/,}' in SOURCE
     assert SOURCE.count('--exclude="$EXCLUDE_NODES"') == 2
