@@ -24,7 +24,10 @@ for path in "$DEVELOPMENT_COMPARISON" "$TREATMENT_REPORT" "$UNCHANGED_REPORT" \
   test -f "$path"
 done
 test ! -e "$OUTPUT"
-python3 "$RUNTIME/pipeline/compare_ttr1_holdout.py" \
+BASE=/lustre/fs1/home/sa305415/shohin
+PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
+test -x "$PYTHON"
+"$PYTHON" "$RUNTIME/pipeline/compare_ttr1_holdout.py" \
   --development-comparison "$DEVELOPMENT_COMPARISON" \
   --treatment "$TREATMENT_REPORT" \
   --control-report "$UNCHANGED_REPORT" \

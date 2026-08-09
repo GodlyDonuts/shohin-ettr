@@ -23,7 +23,10 @@ for path in "$TREATMENT_REPORT" "$UNCHANGED_REPORT" "$SELF_REFINEMENT_REPORT" \
   test -f "$path"
 done
 test ! -e "$OUTPUT"
-python3 "$RUNTIME/pipeline/compare_ttr1_development.py" \
+BASE=/lustre/fs1/home/sa305415/shohin
+PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
+test -x "$PYTHON"
+"$PYTHON" "$RUNTIME/pipeline/compare_ttr1_development.py" \
   --treatment "$TREATMENT_REPORT" \
   --control-report "$UNCHANGED_REPORT" \
   --control-report "$SELF_REFINEMENT_REPORT" \

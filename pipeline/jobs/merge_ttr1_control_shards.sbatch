@@ -21,6 +21,10 @@ test "$(sha256sum "$DATA" | cut -d' ' -f1)" = "$DATA_SHA256"
 test ! -e "$CANDIDATES_OUTPUT"
 test ! -e "$REPORT"
 
+BASE=/lustre/fs1/home/sa305415/shohin
+PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
+test -x "$PYTHON"
+
 IFS=, read -r -a reports <<<"$SHARD_REPORTS"
 arguments=()
 for path in "${reports[@]}"; do
@@ -28,7 +32,7 @@ for path in "${reports[@]}"; do
   arguments+=(--shard-report "$path")
 done
 export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
-python3 "$RUNTIME/pipeline/merge_ttr1_control_shards.py" \
+"$PYTHON" "$RUNTIME/pipeline/merge_ttr1_control_shards.py" \
   --data "$DATA" \
   --split "$SPLIT" \
   "${arguments[@]}" \
