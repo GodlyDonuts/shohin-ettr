@@ -18,7 +18,7 @@ PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
 test ! -e "$OUTPUT"
 test "$(sha256sum "$RUNTIME/SHA256SUMS" | cut -d' ' -f1)" = "$RUNTIME_MANIFEST_SHA256"
 (cd "$RUNTIME" && sha256sum -c SHA256SUMS >/dev/null)
-IFS=',' read -r -a paths <<< "$INPUTS"
+IFS='|' read -r -a paths <<< "$INPUTS"
 test "${#paths[@]}" -gt 0
 export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
 "$PYTHON" "$RUNTIME/pipeline/merge_dseo1_evaluation_shards.py" \
