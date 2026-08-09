@@ -14,7 +14,6 @@ from merge_dset1_evaluation_shards import MERGED_SCHEMA
 
 
 SCHEMA = "shohin-dset1-stage0-comparison-v1"
-DSEO_SCHEMA = "shohin-dseo1-paired-evaluation-merged-v1"
 
 
 class DSET1CompareError(RuntimeError):
@@ -54,14 +53,6 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     fixed = ("row_count", "pair_count", "data_sha256", "data_report_sha256")
     if any(any(report.get(key) != aligned.get(key) for key in fixed) for report in arms.values()):
         raise DSET1CompareError("DSET1 matched-arm geometry differs")
-    final = json.loads(args.final_only.read_text())
-    if final.get("schema") != DSEO_SCHEMA or final.get("status") != "complete" or final.get("arm") != "final_only":
-        raise DSET1CompareError("DSEO1 final-only reference differs")
-    final_by_id = {str(row["identity_sha256"]): row for row in final["results"]}
-    source_ids = [str(row["source_dseo1_identity_sha256"]) for row in aligned["results"]]
-    if len(source_ids) != len(set(source_ids)) or any(identity not in final_by_id for identity in source_ids):
-        raise DSET1CompareError("DSET1/DSEO1 reference identity geometry differs")
-    final_subset_correct = sum(bool(final_by_id[identity]["answer_correct"]) for identity in source_ids)
     aligned_correct = int(aligned["execution_correct"])
     script_accuracy = accuracy(aligned, "script_exact")
     execution_accuracy = accuracy(aligned, "execution_correct")
@@ -75,7 +66,6 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "aligned_execution_accuracy_ge_0_95": execution_accuracy >= 0.95,
         "aligned_clean_copy_ge_0_99": float(clean["execution_correct_accuracy"]) >= 0.99,
         "aligned_fault_repair_ge_0_90": float(fault["execution_correct_accuracy"]) >= 0.90,
-        "aligned_beats_final_only_by_13": aligned_correct - final_subset_correct >= 13,
         "aligned_beats_swapped_by_13": aligned_correct - int(arms["swapped"]["execution_correct"]) >= 13,
         "aligned_beats_hidden_by_13": aligned_correct - int(arms["hidden"]["execution_correct"]) >= 13,
         "swapped_script_accuracy_le_0_60": accuracy(arms["swapped"], "script_exact") <= 0.60,
@@ -91,7 +81,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "holdout_used": False,
         "inputs": {
             name: {"path": str(path.resolve()), "sha256": sha256_file(path)}
-            for name, path in (("aligned", args.aligned), ("swapped", args.swapped), ("hidden", args.hidden), ("final_only", args.final_only))
+            for name, path in (("aligned", args.aligned), ("swapped", args.swapped), ("hidden", args.hidden))
         },
         "metrics": {
             name: {
@@ -105,9 +95,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             }
             for name, value in arms.items()
         },
-        "final_only_subset_correct": final_subset_correct,
         "margins": {
-            "aligned_minus_final_only": aligned_correct - final_subset_correct,
             "aligned_minus_swapped": aligned_correct - int(arms["swapped"]["execution_correct"]),
             "aligned_minus_hidden": aligned_correct - int(arms["hidden"]["execution_correct"]),
         },
@@ -126,7 +114,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--aligned", type=Path, required=True)
     parser.add_argument("--swapped", type=Path, required=True)
     parser.add_argument("--hidden", type=Path, required=True)
-    parser.add_argument("--final-only", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     return parser.parse_args()
 

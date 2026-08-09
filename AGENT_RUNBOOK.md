@@ -10,13 +10,19 @@
 > The same all-16-layer rank-18 residual is trained in aligned, within-pair
 > swapped, and draft-hidden arms for 512 updates. Frozen Stage-0 requires 90%
 > exact scripts overall/per family, 90% pair consistency, 95% exact executed
-> trajectories, 99% clean copy, 90% fault repair, +13 answers over final-only
-> and both controls, control script collapse, and zero malformed execution.
+> trajectories, 99% clean copy, 90% fault repair, +13 answers over both
+> matched controls, control script collapse, and zero malformed execution.
 > The first corrected corpus attempts failed closed while exposing two data
 > defects: LaTeX command-letter mutations and ambiguity from broad answer
 > extraction. Runtime `dset1_data_r5` instead validates structurally final
 > spans and exact trajectory restoration, enforces the frozen 32-token script
-> budget, and CPU job `748718` is building the final source-disjoint corpus.
+> budget. Fresh-pool CPU job `748728` completed the final source-disjoint
+> corpus: 8,192 train and 1,024 diagnostic identities, zero overlap, 16,384/
+> 2,048 paired rows, maximum script 32 and complete sequence 4,092/4,096.
+> Train/diagnostic/report SHA-256 values are `55ce2c1b...3a3e`,
+> `0bc80e20...d8fe`, and `87b54ccd...2198`. The historical DSEO1 final-only
+> result remains context only because it used different identities and broad
+> answer extraction; DSET1's matched source-only control is draft-hidden.
 > No DSET1 model output exists. Contract:
 > `docs/research/SHOHIN_DSET1_DRAFT_SPAN_EDIT_TRANSDUCER.md`.
 

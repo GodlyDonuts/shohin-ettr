@@ -10,7 +10,7 @@
 #SBATCH --error=/lustre/fs1/home/sa305415/shohin/logs/dset1_compare_%j.err
 
 set -euo pipefail
-for variable in RUNTIME RUNTIME_MANIFEST_SHA256 ALIGNED SWAPPED HIDDEN FINAL_ONLY OUTPUT; do
+for variable in RUNTIME RUNTIME_MANIFEST_SHA256 ALIGNED SWAPPED HIDDEN OUTPUT; do
   test -n "${!variable:-}" || { echo "$variable is required" >&2; exit 2; }
 done
 BASE=/lustre/fs1/home/sa305415/shohin
@@ -21,4 +21,4 @@ test "$(sha256sum "$RUNTIME/SHA256SUMS" | cut -d' ' -f1)" = "$RUNTIME_MANIFEST_S
 export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
 "$PYTHON" "$RUNTIME/pipeline/compare_dset1_stage0.py" \
   --aligned "$ALIGNED" --swapped "$SWAPPED" --hidden "$HIDDEN" \
-  --final-only "$FINAL_ONLY" --output "$OUTPUT"
+  --output "$OUTPUT"

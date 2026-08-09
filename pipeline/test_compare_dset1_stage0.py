@@ -48,24 +48,9 @@ def test_compare_passes_conjunctive_fixture(tmp_path) -> None:
         path = tmp_path / f"{name}.json"
         path.write_text(json.dumps(_arm(name, ids, correct, scripts)))
         paths[name] = path
-    final = tmp_path / "final.json"
-    final.write_text(
-        json.dumps(
-            {
-                "schema": "shohin-dseo1-paired-evaluation-merged-v1",
-                "status": "complete",
-                "arm": "final_only",
-                "results": [
-                    {"identity_sha256": identity, "answer_correct": index < 180}
-                    for index, identity in enumerate(ids)
-                ],
-            }
-        )
-    )
     args = Args()
     args.aligned, args.swapped, args.hidden = paths["aligned"], paths["swapped"], paths["hidden"]
-    args.final_only = final
     args.output = tmp_path / "comparison.json"
     report = run(args)
     assert report["passed"]
-    assert report["margins"]["aligned_minus_final_only"] == 15
+    assert report["margins"]["aligned_minus_swapped"] == 95

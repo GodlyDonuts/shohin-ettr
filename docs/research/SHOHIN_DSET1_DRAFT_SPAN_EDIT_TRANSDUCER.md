@@ -59,9 +59,9 @@ cannot emit the exact script without observing the faulted draft.
 
 ## Data repair and custody
 
-DSET1 derives from the immutable DSEO1 train/diagnostic identities but does
-not trust DSEO1's `clean_verifier_passed` flag. A new CPU builder independently
-requires:
+DSET1 derives a fresh deterministic split from DSEO1's immutable, already
+decontaminated 28,997-candidate source pool; it does not trust DSEO1's selected
+pairs or `clean_verifier_passed` flag. A new CPU builder independently requires:
 
 1. clean and fault trajectories differ only at the registered span;
 2. the span is the final occurrence of the clean/fault surface;
@@ -103,8 +103,11 @@ count, optimizer, context, and update count.
 3. **Draft hidden:** correct script target with the complete draft span causally
    hidden through every model layer.
 
-The immutable DSEO1 final-only score (`1,860/2,048`) is the practical answer
-reference, not a trained DSET1 arm.
+The immutable DSEO1 final-only score (`1,860/2,048`) remains historical context,
+not a DSET1 gate input. DSET1 uses a fresh diagnostic split and exact complete-
+trajectory scoring, whereas DSEO1 used different identities and broad answer
+extraction. Comparing those rows as if they were matched would be invalid. The
+draft-hidden DSET1 arm is the equal-geometry source-only causal control.
 
 ## Frozen gate
 
@@ -114,12 +117,11 @@ All conditions are conjunctive on the source-disjoint paired diagnostic:
 2. aligned counterfactual pair consistency `>=90%`;
 3. aligned executed answer accuracy `>=95%` overall;
 4. aligned clean-copy accuracy `>=99%` and fault-repair accuracy `>=90%`;
-5. aligned exceeds DSEO1 final-only by at least 13 answers;
-6. aligned exceeds swapped and hidden execution by at least 13 answers each;
-7. swapped and hidden exact script accuracy are each `<=60%`;
-8. zero accepted malformed edits, missing old surfaces, or non-final
+5. aligned exceeds swapped and hidden execution by at least 13 answers each;
+6. swapped and hidden exact script accuracy are each `<=60%`;
+7. zero accepted malformed edits, missing old surfaces, or non-final
    replacements; and
-9. complete data, checkpoint, parameter, token, memory, latency, and hash
+8. complete data, checkpoint, parameter, token, memory, latency, and hash
    receipts.
 
 A one-update mechanics pass is required before the three fits. Any gate miss
