@@ -1,5 +1,27 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **PSET1-V0 CLOSED: POINTER LOCALIZATION WORKS, VALUE SYNTHESIS FAILS — 2026-08-09:**
+> After DSET1's frozen miss, PSET1 tested a structurally different two-stream
+> sequence transducer: separate frozen source/draft encodings, a 4,148,997-
+> parameter cross-stream head, character pointers, bounded UTF-8 replacement,
+> and deterministic byte-preserving execution. The first token-boundary build
+> `748815` failed before output because only 697 numeric pairs aligned to whole
+> BPE tokens; prospective character/byte repair `748821` produced 4,096 train
+> and 256 diagnostic identities with zero overlap. Mechanics `748828`, aligned/
+> permuted fits `748831/748832`, 32 intervention shards `748840--748872`, merges
+> `748875--748878`, and comparator `748879` completed. Each fit ran 512 updates
+> in 65--72 seconds with 15.02 GB peak and a fully frozen host. Aligned execution
+> is only `263/512 = 51.37%`, but remains causally above hidden `222`, permuted
+> `36`, and shuffled `1`. Clean/fault are `230/256 = 89.84%` and `33/256 =
+> 12.89%`. Attribution localizes the bottleneck: action `83.98%`, exact span
+> `65.23%`, replacement bytes only `12.89%`. The frozen DSET LM scores
+> `489/512 = 95.51%` on this filtered subset; PSET contributes only five
+> complementary solves. Thus explicit pointer localization is useful but the
+> isolated byte value synthesizer is not. Exact PSET1 closes without nearby
+> variants; no holdout opened. Comparison SHA-256 `05a18520...631`; result:
+> `docs/research/SHOHIN_PSET1_RESULT.json`. DSET1 remains the best current
+> causal revision architecture despite its full-board reliability miss.
+
 > **DSET1-V0 CLOSED: STRONG CAUSAL NEAR-MISS, RELIABILITY GATE FAIL — 2026-08-09:**
 > Fresh-pool data job `748728`, mechanics `748747`, matched fits
 > `748749/748750/748751`, 24 evaluation shards `748774--748797`, merges

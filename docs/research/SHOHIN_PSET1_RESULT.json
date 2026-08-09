@@ -1,0 +1,84 @@
+{
+  "schema": "shohin-pset1-result-v1",
+  "status": "complete",
+  "date": "2026-08-09",
+  "decision": "close_exact_pset1_v0",
+  "holdout_used": false,
+  "jobs": {
+    "token_boundary_data_negative": 748815,
+    "character_byte_data": 748821,
+    "mechanics": 748828,
+    "fits": {
+      "aligned": 748831,
+      "permuted": 748832
+    },
+    "evaluation_shards": "748840-748872",
+    "merges": [748875, 748876, 748877, 748878],
+    "comparison": 748879
+  },
+  "data": {
+    "train_sources": 4096,
+    "diagnostic_sources": 256,
+    "train_sha256": "35f60b4d208801447fa95b931c35584ca9f93f35fc95df6e0a97588375fafca4",
+    "diagnostic_sha256": "e40d83526fba3563d3be11720f6f4aff2c0691eec9bbc56fb5785506858f4aad",
+    "report_sha256": "edeec84ab97f327eed6f62c1640c75bb4f40d1e4a6d6f0607b1c92f177427679",
+    "maximum_source_tokens": 579,
+    "maximum_draft_tokens": 3671,
+    "maximum_replacement_bytes": 16,
+    "split_overlap": 0
+  },
+  "training": {
+    "updates_per_arm": 512,
+    "trainable_parameters": 4148997,
+    "host_trainable_parameters": 0,
+    "aligned_elapsed_seconds": 64.61512331478298,
+    "permuted_elapsed_seconds": 71.94411895889789,
+    "peak_gpu_memory_bytes": 15016576000,
+    "checkpoint_sha256": {
+      "aligned": "ab38e9a8bf15f0febd0d7340fbdbb7d2c7cef2bfe62c64698f31a83bdc29217c",
+      "permuted": "0e0fcc74c6a82743d315677461d79e04d472f7101ec66adf0ba56bff17285e7b"
+    }
+  },
+  "metrics": {
+    "aligned": {
+      "program_exact": 259,
+      "program_accuracy": 0.505859375,
+      "execution_correct": 263,
+      "execution_accuracy": 0.513671875,
+      "clean_copy_accuracy": 0.8984375,
+      "fault_repair_accuracy": 0.12890625,
+      "counterfactual_consistency": 0.078125,
+      "execution_errors": 1
+    },
+    "hidden": {
+      "execution_correct": 222,
+      "execution_accuracy": 0.43359375
+    },
+    "shuffled": {
+      "execution_correct": 1,
+      "execution_accuracy": 0.001953125
+    },
+    "permuted": {
+      "execution_correct": 36,
+      "execution_accuracy": 0.0703125
+    },
+    "margins": {
+      "aligned_minus_hidden": 41,
+      "aligned_minus_shuffled": 262,
+      "aligned_minus_permuted": 227
+    }
+  },
+  "read_only_attribution": {
+    "action_accuracy": 0.83984375,
+    "fault_action_accuracy": 0.79296875,
+    "start_pointer_accuracy": 0.70703125,
+    "end_pointer_accuracy": 0.71484375,
+    "span_accuracy": 0.65234375,
+    "replacement_byte_exact_accuracy": 0.12890625,
+    "span_and_replacement_accuracy": 0.125,
+    "dset_exact_on_same_subset": 0.955078125,
+    "either_dset_or_pset_oracle": 0.96484375
+  },
+  "comparison_sha256": "05a1852030be22063e03946097f1a882ea83d9d8bc229a1b041df170d1b0e631",
+  "claim": "Separate-stream character pointers carry causal draft information and localize many registered faults, but the bounded byte decoder cannot synthesize corrected values reliably. Exact PSET1-v0 is closed."
+}

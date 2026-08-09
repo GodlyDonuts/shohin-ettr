@@ -88,6 +88,29 @@ next interface must couple the emitted decision to a distinct execution path;
 more parameters or duration on this prefix-only formulation are not justified.
 Result: `docs/research/SHOHIN_DSEO1_RESULT.json`.
 
+DSET1 then made the edit program executable rather than decorative. The model
+emitted `KEEP` or an exact old/new final-span script, and a generic deterministic
+transducer materialized the complete trajectory. On 1,024 fresh source-
+disjoint pairs, aligned exact execution reached `1,940/2,048 = 94.73%`, versus
+hidden `1,024 = 50.0%` and within-pair swapped `94 = 4.59%`; fault repair was
+`91.11%` and counterfactual pair consistency `90.33%`. This is the strongest
+current evidence that a model-owned draft decision can causally control a
+complete MoE revision. It narrowly missed the frozen reliability gate: clean
+copy `98.34% < 99%`, overall exact `94.73% < 95%`, choice scripts `71.48% <
+90%`, and five fail-closed malformed/absent-surface executions. Exact v0 is
+closed without nearby retries. Result: `docs/research/SHOHIN_DSET1_RESULT.json`.
+
+PSET1 tested the structurally different explicit-transduction alternative:
+separate frozen source/draft streams, character pointers, bounded UTF-8 value
+generation, and byte-preserving execution. Its causal controls worked, but the
+mechanism did not: aligned execution was `263/512 = 51.37%`, versus hidden
+`222`, label-permuted `36`, and shuffled draft `1`. Read-only attribution is
+action `83.98%`, exact span `65.23%`, but corrected-value bytes only `12.89%`.
+The frozen DSET LM scores `489/512 = 95.51%` on the same filtered identities.
+Therefore explicit localization is not the primary remaining bottleneck; an
+isolated small replacement decoder discards the host LM's value-synthesis
+ability. PSET1-v0 is closed. Result: `docs/research/SHOHIN_PSET1_RESULT.json`.
+
 This changed factor is strongly supported on dense models. Matched trained
 revision versus unchanged second-pass gains are:
 
