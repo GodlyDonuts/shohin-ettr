@@ -17,6 +17,7 @@ from hf_product_reasoning_train import (
     ProductReasoningTrainError,
     error_syndrome_residual_loss,
     install_lora,
+    install_scoped_lora,
     load_trainable_checkpoint,
     pack_training_embeddings,
     product_generation_embeddings,
@@ -116,6 +117,16 @@ class ProductReasoningTrainTests(unittest.TestCase):
         self.assertEqual(install_lora(module, rank=2, alpha=2.0), 2)
         self.assertIsInstance(module[0], LoRALinear)
         self.assertIsInstance(module[1][0], LoRALinear)
+
+    def test_token_mixer_scope_leaves_moe_path_frozen(self) -> None:
+        layer = nn.Module()
+        layer.self_attn = nn.Sequential(nn.Linear(4, 4))
+        layer.mlp = nn.Sequential(nn.Linear(4, 4))
+        self.assertEqual(
+            install_scoped_lora(layer, "token_mixer", rank=2, alpha=2.0), 1
+        )
+        self.assertIsInstance(layer.self_attn[0], LoRALinear)
+        self.assertIsInstance(layer.mlp[0], nn.Linear)
 
     def test_last_layer_unfreeze_is_explicit_and_local(self) -> None:
         frozen = ProductReasoningModel(
@@ -280,6 +291,8 @@ class ProductReasoningTrainTests(unittest.TestCase):
             lora_rank=8,
             lora_alpha=16.0,
             unfreeze_layers=2,
+            lora_scope="all",
+            quantization="none",
         )
         metadata = {
             "arm": "baseline",
@@ -289,6 +302,8 @@ class ProductReasoningTrainTests(unittest.TestCase):
             "lora_rank": 8,
             "lora_alpha": 16.0,
             "unfreeze_layers": 2,
+            "lora_scope": "all",
+            "quantization": "none",
         }
         validate_warm_start_metadata(metadata, args)
         metadata["unfreeze_layers"] = 1

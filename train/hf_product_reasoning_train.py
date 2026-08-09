@@ -74,6 +74,11 @@ class LoRALinear(nn.Module):
         self.lora_b = nn.Linear(rank, base.out_features, bias=False)
         nn.init.kaiming_uniform_(self.lora_a.weight, a=math.sqrt(5))
         nn.init.zeros_(self.lora_b.weight)
+        adapter_dtype = getattr(base, "compute_dtype", None) or base.weight.dtype
+        if not adapter_dtype.is_floating_point:
+            adapter_dtype = torch.bfloat16
+        self.lora_a.to(device=base.weight.device, dtype=adapter_dtype)
+        self.lora_b.to(device=base.weight.device, dtype=adapter_dtype)
 
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         return self.base(inputs) + self.lora_b(self.lora_a(inputs)) * self.scale
@@ -90,6 +95,24 @@ def install_lora(module: nn.Module, rank: int, alpha: float) -> int:
         else:
             replaced += install_lora(child, rank, alpha)
     return replaced
+
+
+def install_scoped_lora(
+    layer: nn.Module,
+    scope: str,
+    rank: int,
+    alpha: float,
+) -> int:
+    """Install adapters globally or only in the shared token mixer."""
+
+    if scope == "all":
+        return install_lora(layer, rank, alpha)
+    if scope != "token_mixer":
+        raise ProductReasoningTrainError("LoRA scope differs")
+    mixer = getattr(layer, "self_attn", None) or getattr(layer, "linear_attn", None)
+    if mixer is None:
+        raise ProductReasoningTrainError("decoder layer exposes no token mixer")
+    return install_lora(mixer, rank, alpha)
 
 
 def resolve_product_backbone_layout(backbone: nn.Module) -> tuple[nn.Module, nn.Module, int, str]:
@@ -137,7 +160,8 @@ def load_product_backbone(
     requested_loader: str,
     *,
     dtype: torch.dtype,
-    device_map: dict[str, int],
+    device_map: dict[str, int] | str,
+    quantization: str = "none",
 ) -> tuple[nn.Module, str]:
     """Load either a multimodal wrapper or an ordinary causal LM."""
 
@@ -150,10 +174,23 @@ def load_product_backbone(
         from transformers import AutoModelForCausalLM
 
         auto_class = AutoModelForCausalLM
+    if quantization not in {"none", "nf4"}:
+        raise ProductReasoningTrainError("backbone quantization differs")
+    quantization_config = None
+    if quantization == "nf4":
+        from transformers import BitsAndBytesConfig
+
+        quantization_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_compute_dtype=torch.bfloat16,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_use_double_quant=True,
+        )
     backbone = auto_class.from_pretrained(
         model_root,
         dtype=dtype,
         device_map=device_map,
+        quantization_config=quantization_config,
         low_cpu_mem_usage=True,
         trust_remote_code=True,
     )
@@ -337,6 +374,7 @@ class ProductReasoningModel(nn.Module):
         recurrent_steps: int,
         dense_width: int = 192,
         unfreeze_layers: int = 0,
+        lora_scope: str = "all",
     ) -> None:
         super().__init__()
         if arm not in {
@@ -362,15 +400,34 @@ class ProductReasoningModel(nn.Module):
             raise ProductReasoningTrainError("LoRA layer count differs")
         if not 0 <= unfreeze_layers <= len(layers):
             raise ProductReasoningTrainError("unfrozen layer count differs")
+        if lora_scope == "token_mixer" and unfreeze_layers:
+            raise ProductReasoningTrainError(
+                "token-mixer scope cannot unfreeze complete decoder layers"
+            )
         self.unfreeze_layers = unfreeze_layers
+        self.lora_scope = lora_scope
         self.lora_projection_count = 0
         for layer in layers[-lora_layers:]:
-            self.lora_projection_count += install_lora(layer, lora_rank, lora_alpha)
+            self.lora_projection_count += install_scoped_lora(
+                layer, lora_scope, lora_rank, lora_alpha
+            )
         if self.lora_projection_count == 0:
             raise ProductReasoningTrainError("no text projections received LoRA")
         if unfreeze_layers:
             for layer in layers[-unfreeze_layers:]:
                 layer.requires_grad_(True)
+        if lora_scope == "token_mixer":
+            invalid = [
+                name
+                for name, parameter in self.backbone.named_parameters()
+                if parameter.requires_grad
+                and ".self_attn." not in name
+                and ".linear_attn." not in name
+            ]
+            if invalid:
+                raise ProductReasoningTrainError(
+                    f"token-mixer scope exposed protected parameters: {invalid[:4]}"
+                )
 
         self.workspace_config: IntegratedWorkspaceConfig | None = None
         self.workspace: IntegratedReasoningWorkspace | DenseReasoningWorkspace | None = None
@@ -396,6 +453,14 @@ class ProductReasoningModel(nn.Module):
                 self.workspace = DenseReasoningWorkspace(self.workspace_config)
             if self.workspace_injection == "prompt_residual":
                 self.residual_gate = nn.Parameter(torch.tensor(-4.0))
+            self.workspace.to(
+                device=self.text_model.embed_tokens.weight.device,
+                dtype=self.text_model.embed_tokens.weight.dtype,
+            )
+            if self.residual_gate is not None:
+                self.residual_gate.data = self.residual_gate.data.to(
+                    self.text_model.embed_tokens.weight.device
+                )
 
     def sequence_workspace_slots(self) -> int:
         if self.workspace_config is None or self.workspace_injection != "soft_prefix":
@@ -404,6 +469,12 @@ class ProductReasoningModel(nn.Module):
 
     def trainable_parameter_count(self) -> int:
         return sum(parameter.numel() for parameter in self.parameters() if parameter.requires_grad)
+
+    def trainable_parameter_name_sha256(self) -> str:
+        names = sorted(
+            name for name, parameter in self.named_parameters() if parameter.requires_grad
+        )
+        return hashlib.sha256("\n".join(names).encode()).hexdigest()
 
     def forward_batch(
         self,
@@ -765,6 +836,8 @@ def validate_warm_start_metadata(metadata: dict[str, Any], args: argparse.Namesp
         "lora_rank": args.lora_rank,
         "lora_alpha": args.lora_alpha,
         "unfreeze_layers": args.unfreeze_layers,
+        "lora_scope": args.lora_scope,
+        "quantization": args.quantization,
     }
     mismatches = {
         key: {"expected": value, "actual": metadata.get(key)}
@@ -853,6 +926,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         args.model_loader,
         dtype=torch.bfloat16,
         device_map={"": 0},
+        quantization=args.quantization,
     )
     model = ProductReasoningModel(
         backbone,
@@ -865,7 +939,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         args.recurrent_steps,
         args.dense_width,
         args.unfreeze_layers,
-    ).to("cuda:0")
+        args.lora_scope,
+    )
+    if args.quantization == "none":
+        model.to("cuda:0")
     warm_start_update = None
     warm_start_metadata = None
     warm_start_sha256 = None
@@ -911,6 +988,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "lora_rank": args.lora_rank,
         "lora_alpha": args.lora_alpha,
         "lora_projection_count": model.lora_projection_count,
+        "lora_scope": model.lora_scope,
+        "quantization": args.quantization,
         "unfreeze_layers": model.unfreeze_layers,
         "mask_internal_draft": args.mask_internal_draft,
         "syndrome_weight": SYNDROME_WEIGHT if args.arm == "syndrome" else 0.0,
@@ -920,6 +999,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             else "shohin-product-reasoning-v1"
         ),
         "trainable_parameters": model.trainable_parameter_count(),
+        "trainable_parameter_name_sha256": model.trainable_parameter_name_sha256(),
         "workspace_config": (
             asdict(model.workspace_config) if model.workspace_config else None
         ),
@@ -1096,6 +1176,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lora-layers", type=int, default=4)
     parser.add_argument("--lora-rank", type=int, default=8)
     parser.add_argument("--lora-alpha", type=float, default=16.0)
+    parser.add_argument("--lora-scope", choices=("all", "token_mixer"), default="all")
+    parser.add_argument("--quantization", choices=("none", "nf4"), default="none")
     parser.add_argument("--workspace-width", type=int, default=512)
     parser.add_argument("--dense-width", type=int, default=192)
     parser.add_argument("--workspace-slots", type=int, default=16)

@@ -580,6 +580,11 @@ def _load_model(
         model_loader,
         dtype=torch.bfloat16,
         device_map={"": 0},
+        quantization=(
+            str(metadata.get("quantization", "none"))
+            if metadata is not None
+            else "none"
+        ),
     )
     if adapter_checkpoint is None:
         return backbone.eval(), None, resolved_model_loader
@@ -689,7 +694,10 @@ def _load_model(
                 else 192
             ),
             unfreeze_layers=int(metadata.get("unfreeze_layers", 0)),
-        ).to("cuda:0")
+            lora_scope=str(metadata.get("lora_scope", "all")),
+        )
+        if metadata.get("quantization", "none") == "none":
+            model.to("cuda:0")
     update, restored_metadata = load_trainable_checkpoint(adapter_checkpoint, model)
     model.eval()
     return (
