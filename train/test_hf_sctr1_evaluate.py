@@ -1,6 +1,13 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from hf_sctr1_evaluate import summarize
+
+
+SOURCE = (Path(__file__).resolve().parent / "hf_sctr1_evaluate.py").read_text(
+    encoding="utf-8"
+)
 
 
 def _row(index: int, task: str, expected: str) -> dict:
@@ -30,3 +37,9 @@ def test_summary_reports_task_scores_and_commit_decisions() -> None:
     assert report["metrics"]["overall"]["generated_correct"] == 2
     assert report["commitment"]["command_correct"] == 2
     assert report["commitment"]["malformed"] == 1
+
+
+def test_independent_evaluation_masks_only_when_checkpoint_contract_matches() -> None:
+    assert "checkpoint_masks_draft != args.mask_internal_draft" in SOURCE
+    assert "tokenize_with_draft_mask" in SOURCE
+    assert '"masked_draft_tokens": masked_draft_tokens' in SOURCE

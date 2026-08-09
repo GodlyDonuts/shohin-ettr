@@ -25,6 +25,7 @@ def test_selective_evaluator_is_hash_bound_and_fail_closed() -> None:
     assert "RUNTIME_MANIFEST_SHA256" in EVAL
     assert "ADAPTER_CHECKPOINT_SHA256" in EVAL
     assert "test ! -e \"$REPORT\"" in EVAL
+    assert "MASK_INTERNAL_DRAFT" in EVAL
 
 
 def test_base_drafts_are_parallel_and_adapter_free() -> None:

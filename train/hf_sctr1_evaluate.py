@@ -12,7 +12,10 @@ from typing import Any
 
 from hf_idr1_evaluate_reviser import shard_bounds
 from hf_product_reasoning_eval import (
+    _completion_usage,
+    _generate_adapter,
     _generate_completions,
+    _generation_arguments,
     _generation_stop_token_ids,
     _load_model,
     _render_prompt,
@@ -25,6 +28,7 @@ from hf_vcr1_evaluate_reviser import (
     summarize as source_summary,
 )
 from sctr1_commit import selective_commit
+from ttr1_revision import tokenize_with_draft_mask
 
 
 EVAL_SCHEMA = "shohin-sctr1-selective-commit-eval-v1"
@@ -113,6 +117,56 @@ def summarize(rows: list[dict[str, Any]], results: list[dict[str, Any]]) -> dict
     }
 
 
+def masked_completions(
+    model: Any,
+    tokenizer: Any,
+    rendered: list[str],
+    max_new_tokens: int,
+    stop_token_ids: list[int],
+) -> tuple[list[str], list[tuple[int, bool]], int]:
+    """Generate at identical prompt geometry with only draft keys hidden."""
+
+    import torch
+
+    token_rows: list[list[int]] = []
+    mask_rows: list[list[int]] = []
+    masked_tokens = 0
+    for prompt in rendered:
+        tokens, attention, _ = tokenize_with_draft_mask(tokenizer, prompt)
+        token_rows.append(tokens)
+        mask_rows.append(attention)
+        masked_tokens += attention.count(0)
+    width = max(map(len, token_rows))
+    pad_id = int(tokenizer.pad_token_id)
+    input_ids = torch.full(
+        (len(token_rows), width), pad_id, device="cuda:0", dtype=torch.long
+    )
+    attention_mask = torch.zeros_like(input_ids)
+    for index, (tokens, attention) in enumerate(
+        zip(token_rows, mask_rows, strict=True)
+    ):
+        offset = width - len(tokens)
+        input_ids[index, offset:] = torch.tensor(tokens, device="cuda:0")
+        attention_mask[index, offset:] = torch.tensor(attention, device="cuda:0")
+    arguments = _generation_arguments("greedy", max_new_tokens)
+    arguments["eos_token_id"] = (
+        stop_token_ids[0] if len(stop_token_ids) == 1 else stop_token_ids
+    )
+    with torch.inference_mode():
+        output = _generate_adapter(
+            model,
+            {"input_ids": input_ids, "attention_mask": attention_mask},
+            arguments,
+            pad_id,
+        )
+    completions = tokenizer.batch_decode(output, skip_special_tokens=True)
+    usage = [
+        _completion_usage(tokens.tolist(), stop_token_ids, max_new_tokens)
+        for tokens in output
+    ]
+    return completions, usage, masked_tokens
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     import torch
     from transformers import AutoTokenizer
@@ -142,13 +196,18 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     model, adapter_metadata, model_loader = _load_model(
         args.model_root, args.adapter_checkpoint, args.model_loader
     )
+    checkpoint_masks_draft = bool(
+        adapter_metadata and adapter_metadata.get("mask_internal_draft")
+    )
+    if checkpoint_masks_draft != args.mask_internal_draft:
+        raise SCTR1EvaluationError("SCTR1 draft-mask checkpoint contract differs")
     stop_ids = _generation_stop_token_ids(tokenizer)
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
     torch.cuda.reset_peak_memory_stats()
 
     results: list[dict[str, Any]] = []
-    generated_tokens = exhausted_count = 0
+    generated_tokens = exhausted_count = masked_draft_tokens = 0
     started = time.monotonic()
     for start in range(0, len(rows), args.batch_size):
         batch = rows[start : start + args.batch_size]
@@ -156,15 +215,21 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             _render_prompt(tokenizer, str(row["question"]), True, False)
             for row in batch
         ]
-        outputs, usage = _generate_completions(
-            model,
-            tokenizer,
-            rendered,
-            True,
-            "greedy",
-            args.max_new_tokens,
-            stop_ids,
-        )
+        if args.mask_internal_draft:
+            outputs, usage, masked = masked_completions(
+                model, tokenizer, rendered, args.max_new_tokens, stop_ids
+            )
+            masked_draft_tokens += masked
+        else:
+            outputs, usage = _generate_completions(
+                model,
+                tokenizer,
+                rendered,
+                True,
+                "greedy",
+                args.max_new_tokens,
+                stop_ids,
+            )
         for row, output, (token_count, exhausted) in zip(
             batch, outputs, usage, strict=True
         ):
@@ -220,6 +285,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "assessor_fields_visible_to_model": False,
         "commitment": "whole_draft_or_whole_revision",
         "generation_mode": "greedy",
+        "mask_internal_draft": args.mask_internal_draft,
+        "masked_draft_tokens": masked_draft_tokens,
         "max_new_tokens": args.max_new_tokens,
         "batch_size": args.batch_size,
         "seed": args.seed,
@@ -258,6 +325,7 @@ def main() -> int:
     parser.add_argument("--batch-size", type=int, default=2)
     parser.add_argument("--max-new-tokens", type=int, default=770)
     parser.add_argument("--code-timeout", type=float, default=3.0)
+    parser.add_argument("--mask-internal-draft", action="store_true")
     parser.add_argument("--seed", type=int, default=2026080823)
     parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--shard-count", type=int, default=1)

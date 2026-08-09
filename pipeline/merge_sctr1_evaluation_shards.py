@@ -55,6 +55,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "data_report_sha256",
         "model_loader",
         "generation_mode",
+        "mask_internal_draft",
         "max_new_tokens",
         "batch_size",
         "seed",
@@ -108,6 +109,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         ],
         "full_row_count": len(rows),
         "generated_tokens": sum(int(report["generated_tokens"]) for report in reports),
+        "masked_draft_tokens": sum(
+            int(report["masked_draft_tokens"]) for report in reports
+        ),
         "max_token_exhausted": sum(
             int(report["max_token_exhausted"]) for report in reports
         ),

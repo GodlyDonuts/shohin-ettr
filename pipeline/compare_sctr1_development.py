@@ -116,7 +116,13 @@ def compare(args: argparse.Namespace) -> dict[str, Any]:
         raise SCTR1ComparisonError("shuffled report schema differs")
     if reports["always_revise"].get("schema") != "shohin-idr1-revision-evaluation-v1":
         raise SCTR1ComparisonError("always-revise report schema differs")
-    for name in ("unchanged_second_pass", "long_single_generation", "independent_commitment"):
+    independent = reports["independent_commitment"]
+    if (
+        independent.get("schema") != selective.get("schema")
+        or independent.get("mask_internal_draft") is not True
+    ):
+        raise SCTR1ComparisonError("independent selective report differs")
+    for name in ("unchanged_second_pass", "long_single_generation"):
         report = reports[name]
         if (
             report.get("schema") != "shohin-ttr1-control-evaluation-v1"

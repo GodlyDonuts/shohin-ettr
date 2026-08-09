@@ -30,6 +30,7 @@ MODEL_LOADER=${MODEL_LOADER:-auto}
 SHARD_INDEX=${SHARD_INDEX:-0}
 SHARD_COUNT=${SHARD_COUNT:-1}
 BATCH_SIZE=${BATCH_SIZE:-2}
+MASK_INTERNAL_DRAFT=${MASK_INTERNAL_DRAFT:-false}
 
 BASE=/lustre/fs1/home/sa305415/shohin
 PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
@@ -72,6 +73,13 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
 
 nvidia-smi
+MASK_ARGS=()
+if [[ "$MASK_INTERNAL_DRAFT" == "true" ]]; then
+  MASK_ARGS+=(--mask-internal-draft)
+elif [[ "$MASK_INTERNAL_DRAFT" != "false" ]]; then
+  echo "MASK_INTERNAL_DRAFT must be true or false" >&2
+  exit 4
+fi
 "$PYTHON" "$RUNTIME/train/hf_sctr1_evaluate.py" \
   --model-root "$EFFECTIVE_MODEL_ROOT" \
   --model-source-root "$SOURCE_MODEL_ROOT" \
@@ -87,7 +95,8 @@ nvidia-smi
   --max-new-tokens 770 \
   --seed 2026080823 \
   --shard-index "$SHARD_INDEX" \
-  --shard-count "$SHARD_COUNT"
+  --shard-count "$SHARD_COUNT" \
+  "${MASK_ARGS[@]}"
 
 sha256sum "$CANDIDATES_OUTPUT" "$REPORT"
 chmod a-w "$CANDIDATES_OUTPUT" "$REPORT"

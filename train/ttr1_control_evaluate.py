@@ -128,13 +128,23 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     data_report = json.loads(args.data_report.read_text(encoding="utf-8"))
     expected = data_report.get("outputs", {}).get(args.split, {})
+    data_schema = data_report.get("schema")
     if (
-        data_report.get("schema") != "shohin-idr1-revision-data-report-v1"
+        data_schema
+        not in (
+            "shohin-idr1-revision-data-report-v1",
+            "shohin-sctr1-selective-commit-data-report-v1",
+        )
         or Path(expected.get("path", "")).resolve() != args.data.resolve()
         or expected.get("sha256") != sha256_file(args.data)
     ):
         raise TTR1ControlError("TTR1 control data receipt differs")
-    all_rows = load_rows(args.data, args.split)
+    if data_schema == "shohin-sctr1-selective-commit-data-report-v1":
+        from hf_sctr1_evaluate import load_rows as load_sctr1_rows
+
+        all_rows = load_sctr1_rows(args.data, args.split)
+    else:
+        all_rows = load_rows(args.data, args.split)
     row_start, row_end = shard_bounds(
         len(all_rows), args.shard_index, args.shard_count, args.batch_size
     )
@@ -146,6 +156,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     model, adapter_metadata, model_loader = _load_model(
         args.model_root, args.adapter_checkpoint, args.model_loader
     )
+    using_adapter = args.adapter_checkpoint is not None
     if args.control == "independent_commitment" and not bool(
         adapter_metadata and adapter_metadata.get("mask_internal_draft")
     ):
@@ -191,7 +202,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 model,
                 tokenizer,
                 repeated,
-                True,
+                using_adapter,
                 "qwen-thinking",
                 max_new_tokens,
                 stop_ids,
@@ -211,7 +222,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 model,
                 tokenizer,
                 rendered,
-                True,
+                using_adapter,
                 "greedy",
                 max_new_tokens,
                 stop_ids,
@@ -262,6 +273,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "data": str(args.data.resolve()),
         "data_sha256": sha256_file(args.data),
         "data_report_sha256": sha256_file(args.data_report),
+        "data_schema": data_schema,
         "shard_index": args.shard_index,
         "shard_count": args.shard_count,
         "row_start": row_start,

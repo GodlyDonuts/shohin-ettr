@@ -15,4 +15,5 @@ def test_gate_is_conjunctive_and_identity_matched() -> None:
     assert "all_domain_deltas_nonnegative" in SOURCE
     assert "zero_malformed_commitments" in SOURCE
     assert "identities(report) != reference_ids" in SOURCE
+    assert 'independent.get("mask_internal_draft") is not True' in SOURCE
     assert "holdout_authorized" in SOURCE

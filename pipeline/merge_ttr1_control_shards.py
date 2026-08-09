@@ -36,7 +36,6 @@ def _load_candidates(path: Path) -> list[dict[str, Any]]:
 def run(args: argparse.Namespace) -> dict[str, Any]:
     if args.report.exists() or args.candidates_output.exists():
         raise TTR1ControlError("TTR1 merged output already exists")
-    rows = load_rows(args.data, args.split)
     reports = [_load_json(path) for path in args.shard_report]
     shard_count = len(reports)
     if shard_count < 2:
@@ -50,6 +49,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "adapter_checkpoint_sha256",
         "data_sha256",
         "data_report_sha256",
+        "data_schema",
         "model_loader",
         "max_new_tokens_per_attempt",
         "attempts_per_identity",
@@ -57,6 +57,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "seed",
     )
     reference = reports[0]
+    if reference.get("data_schema") == "shohin-sctr1-selective-commit-data-report-v1":
+        from hf_sctr1_evaluate import load_rows as load_sctr1_rows
+
+        rows = load_sctr1_rows(args.data, args.split)
+    else:
+        rows = load_rows(args.data, args.split)
     results_by_identity: dict[str, dict[str, Any]] = {}
     counters: Counter[str] = Counter()
     for report_path, report in zip(args.shard_report, reports, strict=True):

@@ -14,3 +14,5 @@ def test_merger_checks_exact_shard_identity_and_commit_accounting() -> None:
     assert "results_by_identity" in SOURCE
     assert '"commitment"' in SOURCE
     assert "merged_from_shards" in SOURCE
+    assert '"mask_internal_draft"' in SOURCE
+    assert '"masked_draft_tokens"' in SOURCE

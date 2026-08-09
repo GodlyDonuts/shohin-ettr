@@ -65,11 +65,11 @@ expected = report.get("outputs", {}).get(data_key, {})
 schemas = {
     "selective_commit": "shohin-sctr1-selective-commit-data-report-v1",
     "always_revise": "shohin-idr1-revision-data-report-v1",
-    "independent_commitment": "shohin-idr1-revision-data-report-v1",
+    "independent_commitment": "shohin-sctr1-selective-commit-data-report-v1",
 }
 if train_kind not in schemas or report.get("schema") != schemas[train_kind]:
     raise SystemExit("temporal-role data report schema differs")
-if train_kind == "selective_commit" and (
+if train_kind in ("selective_commit", "independent_commitment") and (
     report.get("commitment") != "whole_draft_or_whole_revision"
 ):
     raise SystemExit("SCTR1 commitment differs")
