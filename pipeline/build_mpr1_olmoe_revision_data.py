@@ -16,9 +16,11 @@ SCHEMA = "shohin-mpr1-revision-train-v1"
 REPORT_SCHEMA = "shohin-mpr1-revision-data-report-v1"
 SOURCE_SCHEMA = "shohin-idr1-revision-data-report-v1"
 DRAFT_MARKER = "\n\nInternal draft:\n"
-TAIL_MARKER = (
+TAIL_MARKERS = (
     "\n\nReturn a complete corrected solution with the exact final answer in "
-    "\\boxed{}.\n\nOriginal problem:\n"
+    "\\boxed{}.\n\nOriginal problem:\n",
+    "\n\nReturn only executable Python code, without Markdown fences."
+    "\n\nOriginal problem:\n",
 )
 
 
@@ -42,13 +44,15 @@ def load_lines(path: Path) -> list[dict[str, Any]]:
 
 
 def split_draft(prompt: str) -> tuple[str, str, str]:
-    if prompt.count(DRAFT_MARKER) != 1 or prompt.count(TAIL_MARKER) != 1:
+    matches = [marker for marker in TAIL_MARKERS if prompt.count(marker) == 1]
+    if prompt.count(DRAFT_MARKER) != 1 or len(matches) != 1:
         raise MPR1DataError("MPR1 revision prompt markers differ")
     prefix, remainder = prompt.split(DRAFT_MARKER, 1)
-    draft, suffix = remainder.split(TAIL_MARKER, 1)
+    marker = matches[0]
+    draft, suffix = remainder.split(marker, 1)
     if not prefix.strip() or not draft.strip() or not suffix.strip():
         raise MPR1DataError("MPR1 source, draft, or repeated source is empty")
-    return prefix + DRAFT_MARKER, draft, TAIL_MARKER + suffix
+    return prefix + DRAFT_MARKER, draft, marker + suffix
 
 
 def donor_map(rows: list[dict[str, Any]]) -> dict[str, str]:

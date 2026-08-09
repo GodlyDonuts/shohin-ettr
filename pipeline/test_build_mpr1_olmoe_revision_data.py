@@ -20,6 +20,16 @@ def test_split_draft_rejects_ambiguous_marker():
         raise AssertionError("missing markers accepted")
 
 
+def test_split_draft_accepts_code_tail():
+    prompt = (
+        "prefix\n\nInternal draft:\ndef f(): pass\n\nReturn only executable Python code, "
+        "without Markdown fences.\n\nOriginal problem:\nsource"
+    )
+    prefix, draft, suffix = split_draft(prompt)
+    assert prefix + draft + suffix == prompt
+    assert draft == "def f(): pass"
+
+
 def test_donor_map_is_same_task_and_nonself_nearest():
     rows = [
         {"task": "math500", "source_id": "a", "draft_tokens": 10},
