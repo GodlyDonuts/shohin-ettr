@@ -1,6 +1,6 @@
 # TCS1: Trajectory Candidate Selection
 
-Status: frozen before candidate-set construction or selection results.
+Status: CPU control complete; one semantic scorer frozen before CUDA results.
 
 ## Hypothesis
 
@@ -42,3 +42,28 @@ A pass opens one source-disjoint holdout selection. A failure closes this exact
 candidate-commit route without prompt, width, seed, threshold, pool, or
 duration rescue. The claim is practical coherent trajectory commitment, not a
 new reasoning primitive.
+
+## CPU control result and semantic owner
+
+The immutable candidate set contains 17,472 train candidates over 5,824
+identities and 3,867 development candidates over 1,289 identities. Train and
+development SHA-256 values are `622aa19e...9022` and `a216928d...5048`.
+Shape-only job `747538` scores `579/1,289`: it repairs one depth-one error and
+breaks eleven successes. Domains are math `214`, logic/science `348`, and code
+`17`. It therefore fails every promotion condition and rules out superficial
+completion-shape selection as the source of the oracle gap.
+
+Exactly one semantic scorer is now frozen. The pinned Qwen3.5-9B IDR1 adapter
+reads the raw source question and each complete candidate independently using
+the fixed correctness-assessment instruction. A 512-wide scalar head and the
+existing LoRA tensors train for 256 updates, eight groups per update, LR
+`2e-6/2e-4`, seed `2026080903`, and maximum context 2,048. Training uses only
+the 5,824 train identities and balances task/outcome-pattern strata. Loss is
+balanced binary correctness plus within-group positive-over-negative ranking.
+Inference takes an argmax over three complete trajectories; scores or fields
+are never averaged. The source checkpoint remains immutable.
+
+One one-update mechanics job may run first. If finite, non-OOM, hash-safe, and
+fully receipted, it unlocks the single 256-update fit above. There is no
+shuffled-label, width, prompt, layer, seed, or duration family. Development is
+read once after training; holdout remains sealed behind the frozen gate.
