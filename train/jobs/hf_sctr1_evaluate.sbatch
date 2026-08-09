@@ -60,10 +60,19 @@ test ! -e "$CANDIDATES_OUTPUT"
 test ! -e "$REPORT"
 
 SOURCE_MODEL_ROOT=$MODEL_ROOT
-LOCAL_PARENT=${SLURM_TMPDIR:-/tmp/$USER/$SLURM_JOB_ID}
-EFFECTIVE_MODEL_ROOT=$LOCAL_PARENT/model
-mkdir -p "$EFFECTIVE_MODEL_ROOT" logs "$(dirname "$REPORT")"
-cp -a "$SOURCE_MODEL_ROOT"/. "$EFFECTIVE_MODEL_ROOT"/
+if [[ -n "${SLURM_TMPDIR:-}" ]]; then
+  EFFECTIVE_MODEL_ROOT=$SLURM_TMPDIR/model
+  mkdir -p "$EFFECTIVE_MODEL_ROOT"
+  cp -a "$SOURCE_MODEL_ROOT"/. "$EFFECTIVE_MODEL_ROOT"/
+  export TMPDIR=$SLURM_TMPDIR/tmp
+else
+  # Node /tmp is shared and has repeatedly filled under parallel 7B staging.
+  # Read immutable weights from Lustre and isolate executable-code sandboxes.
+  EFFECTIVE_MODEL_ROOT=$SOURCE_MODEL_ROOT
+  export TMPDIR=$BASE/tmp/$SLURM_JOB_ID
+  trap 'rm -rf "$TMPDIR"' EXIT
+fi
+mkdir -p "$TMPDIR" logs "$(dirname "$REPORT")"
 
 export OMP_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
