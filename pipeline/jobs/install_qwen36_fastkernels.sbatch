@@ -17,9 +17,11 @@ PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
 PARTIAL=$OUTPUT.partial.$SLURM_JOB_ID
 test -x "$PYTHON"; test ! -e "$OUTPUT"; test ! -e "$PARTIAL"
 mkdir -p "$PARTIAL" logs
+module load cuda/cuda-12.4.0
+command -v nvcc
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 export MAX_JOBS=$SLURM_CPUS_PER_TASK TORCH_CUDA_ARCH_LIST=9.0
-export CAUSAL_CONV1D_SKIP_CUDA_BUILD=TRUE
+export CAUSAL_CONV1D_FORCE_BUILD=TRUE
 
 "$PYTHON" -m pip install --no-deps --target "$PARTIAL" \
   einops==0.8.1 ninja==1.13.0 fla-core==0.4.2 flash-linear-attention==0.4.2
