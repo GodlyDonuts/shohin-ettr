@@ -38,10 +38,19 @@ assert Path(e.get("path","")).resolve()==data.resolve()
 assert e.get("sha256")==hashlib.sha256(data.read_bytes()).hexdigest()
 PY
 
-LOCAL_PARENT=${SLURM_TMPDIR:-/tmp/$USER/$SLURM_JOB_ID}
-EFFECTIVE_MODEL_ROOT=$LOCAL_PARENT/model
-mkdir -p "$EFFECTIVE_MODEL_ROOT" logs
-cp -a "$MODEL_ROOT"/. "$EFFECTIVE_MODEL_ROOT"/
+STAGE_MODEL=${STAGE_MODEL:-false}
+if [[ "$STAGE_MODEL" == "true" ]]; then
+  LOCAL_PARENT=${SLURM_TMPDIR:-/tmp/$USER/$SLURM_JOB_ID}
+  EFFECTIVE_MODEL_ROOT=$LOCAL_PARENT/model
+  mkdir -p "$EFFECTIVE_MODEL_ROOT"
+  cp -a "$MODEL_ROOT"/. "$EFFECTIVE_MODEL_ROOT"/
+elif [[ "$STAGE_MODEL" == "false" ]]; then
+  EFFECTIVE_MODEL_ROOT=$MODEL_ROOT
+else
+  echo "STAGE_MODEL must be true or false" >&2
+  exit 2
+fi
+mkdir -p logs
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 export TOKENIZERS_PARALLELISM=false PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"

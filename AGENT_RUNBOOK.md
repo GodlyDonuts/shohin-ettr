@@ -22,6 +22,15 @@
 > matches and development-unique 13-grams, still removing 55 exact and 282
 > content collisions while retaining 51,839 rows including 1,613 science
 > rows. No capability output was generated or inspected.
+> Corrected data job `748013` passed with 51,574 admitted rows and 13,624,770
+> charged OLMoE target tokens; retained token fractions are 43.52% math,
+> 19.88% code, 21.73% science, 12.62% procedural, and 2.25% teacher. It
+> removed 55 exact, 282 unique-13-gram, 79 duplicate, and 265 OLMoE-overflow
+> rows. Dispatcher `748014` submitted the gate, but mechanics `748018` failed
+> before Python/model execution while redundantly copying the immutable model
+> to a full `evc32` local disk. Untouched dependent jobs `748019--748029` were
+> canceled. The wrapper now defaults to direct read-only Lustre model loading;
+> no model, data, optimizer, update, or evaluation setting changed.
 
 > **DPR1 K=8 MODEL-OWNED DRAFT-PANEL CEILING CLOSED — 2026-08-09:** MPR2's
 > owner+aligned oracle is only `265/1,289`, so no selector over that pair can
