@@ -86,12 +86,14 @@ done
 SOURCE_MODEL_ROOT=$MODEL_ROOT
 EFFECTIVE_MODEL_ROOT=$MODEL_ROOT
 if [[ "$STAGE_MODEL" == "true" ]]; then
-  LOCAL_PARENT=${SLURM_TMPDIR:-/tmp/$USER/$SLURM_JOB_ID}
-  EFFECTIVE_MODEL_ROOT=$LOCAL_PARENT/model
-  mkdir -p "$EFFECTIVE_MODEL_ROOT"
-  cp -a "$SOURCE_MODEL_ROOT"/. "$EFFECTIVE_MODEL_ROOT"/
-  test -f "$EFFECTIVE_MODEL_ROOT/config.json"
-  test -f "$EFFECTIVE_MODEL_ROOT/model.safetensors.index.json"
+  if [[ -n "${SLURM_TMPDIR:-}" ]]; then
+    EFFECTIVE_MODEL_ROOT=$SLURM_TMPDIR/model
+    mkdir -p "$EFFECTIVE_MODEL_ROOT"
+    cp -a "$SOURCE_MODEL_ROOT"/. "$EFFECTIVE_MODEL_ROOT"/
+    test -f "$EFFECTIVE_MODEL_ROOT/config.json"
+  else
+    echo "[product-rollout] Slurm scratch absent; reading immutable model from Lustre"
+  fi
 elif [[ "$STAGE_MODEL" != "false" ]]; then
   echo "STAGE_MODEL must be true or false" >&2
   exit 4
