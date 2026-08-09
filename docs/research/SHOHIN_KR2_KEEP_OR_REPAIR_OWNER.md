@@ -1,6 +1,6 @@
 # KR2: Keep-or-Repair Stage Owner
 
-Status: frozen before predecessor generation or training.
+Status: closed negative on development; holdout sealed.
 
 ## Capability hypothesis
 
@@ -42,3 +42,24 @@ All conditions are conjunctive:
 A pass unlocks one holdout run. Failure closes KR2 without prompt, rank,
 duration, seed, or threshold rescue. The claim is bounded to a model-owned
 stage-specific keep/repair policy, not generic recurrence or novelty.
+
+## Result
+
+The frozen comparison completed as Newton job `747536`. Treatment scores
+`588/1,289`, direct rewrite scores `534`, and the immutable depth-one owner
+scores `589`. Treatment retains `588/589 = 99.83%` of depth-one-correct
+answers and beats the direct control by 54, but repairs zero prior errors and
+breaks one prior correct answer. Domains are math `222`, logic/science `349`,
+and code `17`.
+
+The owner emits 1,218 exact keep actions, but only 47.13% are correct. Thus the
+large keep count is not calibrated self-knowledge: it preserves almost all
+known successes while also accepting many wrong predecessors. Absolute
+capability, keep precision, math nonregression, and the per-domain matched
+margin all fail. No holdout or nearby rescue is authorized.
+
+The exact result is `SHOHIN_KR2_DEVELOPMENT_RESULT.json`, SHA-256
+`7dfa875b169574d8d2f9d2ddacd5fbf3eae4a2b29a9d9c053bd27fad1e8775d8`.
+Training jobs were `747491/747514`; failed pre-update infrastructure attempts
+`747455/747478/747466/747502` and failed evaluation staging/device jobs
+`747493/747494/747496/747497` are preserved.

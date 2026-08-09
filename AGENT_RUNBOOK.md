@@ -1,6 +1,6 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **KR2 STAGE-OWNER GATE LIVE — 2026-08-09:** Reusing the qualified 9B IDR1
+> **KR2 STAGE-OWNER GATE CLOSED NEGATIVE — 2026-08-09:** Reusing the qualified 9B IDR1
 > reviser recursively was closed negative at `539/1,289` because it repaired
 > 15 errors while breaking 65 correct answers. KR2 tests a distinct later
 > owner: on the exact 9,655 train presentations, it emits the exact sentinel
@@ -12,11 +12,17 @@
 > is `42e2665a...734`, with no development or holdout scoring used to build it.
 > Runtime `kr2_abdf2ac_r1` verifies at SHA256SUMS SHA-256
 > `367a609d...ae7`. Treatment `747491` and replacement direct control `747514`
-> are healthy H100 fits for exactly 256 additional updates from immutable IDR1
-> checkpoint SHA-256 `df3c264d...473`; their dependency-gated development
-> evaluation and frozen comparison end at job `747525`. Preserve failed
+> completed exactly 256 additional updates from immutable IDR1 checkpoint
+> SHA-256 `df3c264d...473`. Frozen comparison `747536` scores treatment
+> `588/1,289`, direct rewrite `534`, and immutable depth one `589`. Treatment
+> retains `588/589 = 99.83%`, emits 1,218 keep actions, but keep precision is
+> only `47.13%`, repairs zero prior errors, and breaks one. Math is `222`,
+> logic/science `349`, and code `17`; absolute, precision, math, and per-domain
+> matched gates fail. Comparison SHA-256 is `7dfa875b...75d8`. Close KR2
+> without rescue and keep holdout sealed. Preserve failed
 > pre-update jobs `747455/747478` (legacy default metadata rejection) and
-> `747466/747502` (node-local disk exhaustion). Holdout remains sealed.
+> `747466/747502` (node-local disk exhaustion), plus replacement-only shard
+> failures `747493/747494/747496/747497`.
 
 > **RIDR1 RECURRENT DEPTH CLOSED NEGATIVE — 2026-08-09:** Applying the exact
 > qualified Qwen3.5-9B IDR1 reviser a second time to its own complete first

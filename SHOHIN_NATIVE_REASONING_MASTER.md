@@ -38,6 +38,14 @@ The result rules out blind extra inference depth for this owner; a later stage
 must be trained on predecessor outputs and earn conservative retention.
 Holdout was not opened.
 
+A separately trained later-stage keep-or-repair owner also fails. It reaches
+`588/1,289` versus depth one's `589` and a matched direct-rewrite control's
+`534`. It retains `588/589` prior successes but repairs zero prior errors.
+Although it emits 1,218 exact keep actions, their precision is only 47.13%.
+This closes whole-trajectory generative self-diagnosis as an immediate path:
+the model can learn conservative copying, but it cannot reliably recognize
+when its own predecessor is wrong. KR2 holdout remains sealed.
+
 ### Current blocker: dense-to-MoE transfer
 
 The first sparse host is pinned `OLMoE-1B-7B-0125-Instruct`: 7B total,

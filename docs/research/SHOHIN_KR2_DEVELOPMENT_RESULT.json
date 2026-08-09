@@ -1,0 +1,88 @@
+{
+  "depth_one_candidates": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/idr1_55b6476_r1/eval/development/candidates.jsonl",
+    "sha256": "f21cdf8356561ad4e06876c2322669ef25cfb33e4097e092c07c7b327df5efb6"
+  },
+  "direct_report": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/kr2_abdf2ac_r1/direct_rewrite/development/selected_report.json",
+    "sha256": "e8edc781c105eb81a8b239a1864d20b39c48219cec5bc4e102f4c7974d60ea19"
+  },
+  "failure_policy": "close KR2 without prompt, rank, update, seed, or threshold rescue",
+  "frozen_thresholds": {
+    "absolute_correct": 615,
+    "domain_delta_floor": 0,
+    "keep_count": 64,
+    "keep_precision": 0.95,
+    "matched_control_margin": 26,
+    "retention": 0.98
+  },
+  "gate_pass": false,
+  "gates": {
+    "absolute_capability": false,
+    "all_domains_nonnegative": false,
+    "conservative_retention": true,
+    "depth_one_receipt_matches": true,
+    "keep_action_nontrivial": true,
+    "keep_precision": false,
+    "matched_control_margin": true
+  },
+  "keep_count": 1218,
+  "keep_precision": 0.47126436781609193,
+  "metrics": {
+    "bbh_logic": {
+      "broken_correct": 0,
+      "depth_one_correct": 349,
+      "depth_one_correct_retention": 1.0,
+      "direct_correct": 328,
+      "direct_delta_from_depth_one": -21,
+      "preserved_correct": 349,
+      "repaired_error": 0,
+      "treatment_correct": 349,
+      "treatment_delta_from_depth_one": 0,
+      "treatment_margin_over_direct": 21
+    },
+    "math500": {
+      "broken_correct": 1,
+      "depth_one_correct": 223,
+      "depth_one_correct_retention": 0.9955156950672646,
+      "direct_correct": 188,
+      "direct_delta_from_depth_one": -35,
+      "preserved_correct": 222,
+      "repaired_error": 0,
+      "treatment_correct": 222,
+      "treatment_delta_from_depth_one": -1,
+      "treatment_margin_over_direct": 34
+    },
+    "mbpp": {
+      "broken_correct": 0,
+      "depth_one_correct": 17,
+      "depth_one_correct_retention": 1.0,
+      "direct_correct": 18,
+      "direct_delta_from_depth_one": 1,
+      "preserved_correct": 17,
+      "repaired_error": 0,
+      "treatment_correct": 17,
+      "treatment_delta_from_depth_one": 0,
+      "treatment_margin_over_direct": -1
+    },
+    "overall": {
+      "broken_correct": 1,
+      "depth_one_correct": 589,
+      "depth_one_correct_retention": 0.99830220713073,
+      "direct_correct": 534,
+      "direct_delta_from_depth_one": -55,
+      "preserved_correct": 588,
+      "repaired_error": 0,
+      "treatment_correct": 588,
+      "treatment_delta_from_depth_one": -1,
+      "treatment_margin_over_direct": 54
+    }
+  },
+  "schema": "shohin-kr2-stage-owner-comparison-v1",
+  "status": "complete",
+  "success_policy": "unlock exactly one source-disjoint holdout evaluation",
+  "treatment_report": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/kr2_abdf2ac_r1/keep_or_repair/development/selected_report.json",
+    "sha256": "2a9f53a44a80a781655bdde2b35762d620a7f7aa47273fbebcacabb4576029d3"
+  }
+}
