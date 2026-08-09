@@ -1,5 +1,19 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **DSEO1 DRAFT-SPECIFIC EDIT OBJECTIVE FROZEN — 2026-08-09:** MPR1/MPR2
+> expose an identifiability defect: final-answer CE admits the source-only
+> optimum `p(y|x,d)=p(y|x)`. DSEO1 holds source `x` and verified final
+> trajectory `y` fixed while paired clean/fault drafts require different
+> autoregressive action prefixes. Its normalized objective gives action and
+> final spans equal aggregate weight; no auxiliary head exists. Stage 0 uses
+> 8,192 train and 1,024 source-disjoint diagnostic identities and requires
+> aligned action accuracy `>=95%` overall/per-family, counterfactual
+> consistency `>=90%`, hidden/swapped controls `<=60%`, clean nonregression,
+> fault repair `>=90%`, and a causal forced-action intervention. Only that
+> pass opens capability, which requires `+13` over owner and every trained
+> control with nonnegative domains. OBR1/MPR3 remain untouched. Contract:
+> `docs/research/SHOHIN_DSEO1_DRAFT_SPECIFIC_EDIT_OBJECTIVE.md`.
+
 > **OBR1 / CONDITIONAL MPR3 FROZEN — 2026-08-09:** CFR1, MPR1, MPR2, and
 > DPR1 are closed negatives; Newton is currently idle. The practical MoE
 > critical path now first qualifies a stronger source-only owner rather than

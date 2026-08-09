@@ -67,6 +67,17 @@ domain deltas and semantic net at least 13. Only a development plus sealed
 holdout pass authorizes larger-MoE transfer. Exact prospective contract:
 `docs/research/SHOHIN_OBR1_BROAD_OWNER_AND_MPR3_GATE.md`.
 
+The next independent objective-level successor is DSEO1. Its diagnosis is
+that ordinary final-answer CE never forces draft use when the verified target
+is identical across drafts. DSEO1 creates same-source clean/fault pairs with
+the same final trajectory but different autoregressive edit actions, and gives
+the action span half the normalized loss. A 1,024-source held-out paired
+canary must achieve 95% action accuracy, 90% counterfactual consistency,
+collapse under hidden/swapped controls, and causal downstream change when the
+action prefix is forced. No benchmark fit is authorized before that gate.
+Exact prospective contract:
+`docs/research/SHOHIN_DSEO1_DRAFT_SPECIFIC_EDIT_OBJECTIVE.md`.
+
 This changed factor is strongly supported on dense models. Matched trained
 revision versus unchanged second-pass gains are:
 
