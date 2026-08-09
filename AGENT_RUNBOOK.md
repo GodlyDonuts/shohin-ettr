@@ -1,6 +1,6 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **CFR1 VERIFIED COUNTERFACTUAL REVISION ACTIVE — 2026-08-09:** After VFR1
+> **CFR1 VERIFIED COUNTERFACTUAL REVISION CLOSED NEGATIVE — 2026-08-09:** After VFR1
 > proved the current 9B teacher cannot reliably author new full correction
 > traces, CFR1 removes online teacher generation. CPU job `747606` completed a
 > Qwen-tokenizer-specific mix with `52,255` unique rows and `16,003,197`
@@ -14,19 +14,25 @@
 > verified source contributes one clean draft and one
 > decisively faulted draft; the control receives another source's same-domain,
 > near-length draft. Unverified teacher, code, and procedural rows are
-> excluded; any truncating source is rejected from both arms. One-update
+> excluded; any truncating source was rejected from both arms. One-update
 > mechanics job `747642` passed with finite loss/gradient, exact
-> `2,704,896` trainables, and `25,380,846,080` peak GPU bytes. Matched 512-update
-> aligned/shuffled fits `747643/747644` now run concurrently. Evaluation
-> dispatcher `747645` is held after both fits and will dependency-gate eight
-> development shards per arm, two merges, and the frozen comparator. Its
-> immutable runtime is
+> `2,704,896` trainables, and `25,380,846,080` peak GPU bytes. Matched
+> 512-update aligned/shuffled fits `747643/747644` each consumed `516,852`
+> charged target tokens and completed in about 24.5 minutes. Sixteen
+> development shards completed after exact aligned shard-3 replacements
+> `747683` and `747688` for two no-device allocations; replacement merge
+> `747689` and comparator `747690` then closed the gate. The immutable runtime is
 > `cfr1_79b5272_r1` with manifest SHA-256
 > `e619de606c894f2c77631af3d41f83e9331146da909eb50c08bf86279be83bda`.
-> Frozen promotion is aligned `>=603/1,289`, `>=+10` over shuffled, and domains
-> `223/349/17`; any miss closes exact CFR1 without variants. Runtime
-> `cfr1_fe80947_r2` manifest SHA is `a9249af1...92c2`. Holdout remains sealed.
-> Contract: `docs/research/SHOHIN_CFR1_VERIFIED_COUNTERFACTUAL_REVISION.md`.
+> Frozen promotion was aligned `>=603/1,289`, `>=+10` over shuffled, and
+> domains `223/349/17`. Aligned scored only `345`, versus shuffled `489`, with
+> domains `92/236/17`. It exhausted 768 generated tokens on `852/1,289` cases
+> versus shuffled's `327`, won only 43 pairwise cases, and lost 187. Artificial
+> aligned faults taught draft over-trust and verbosity, not natural repair.
+> Comparison SHA-256 is `e45637ba...c642`. Holdout remains sealed; close exact
+> CFR1 without variants. Contract and result:
+> `docs/research/SHOHIN_CFR1_VERIFIED_COUNTERFACTUAL_REVISION.md` and
+> `docs/research/SHOHIN_CFR1_RESULT.json`.
 
 > **VFR1 CLOSED BEFORE FULL GENERATION — 2026-08-09:** The sole frozen
 > 128-row train-only teacher pilot `747591` completed in 1,966.17 seconds but

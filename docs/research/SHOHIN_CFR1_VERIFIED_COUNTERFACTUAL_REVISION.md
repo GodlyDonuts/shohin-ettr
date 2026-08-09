@@ -65,3 +65,19 @@ development board. Promotion requires all of:
 
 Any miss closes exact CFR1 without corruption, ratio, update, rank, layer,
 seed, or threshold rescue. Holdout remains sealed until a conjunctive pass.
+
+## Result
+
+CFR1 closed negative on 2026-08-09. The aligned and shuffled fits each ran
+512 updates, consumed exactly 516,852 charged target tokens, and trained
+2,704,896 parameters. Aligned scored `345/1,289`; shuffled scored
+`489/1,289`. Aligned domains were math `92`, logic/science `236`, and code
+`17`, so only the code floor passed. Holdout remained sealed.
+
+The frozen read-only attribution identifies the failure mode. Aligned
+generation exhausted the 768-token evaluation budget on `852/1,289` cases,
+versus `327` for shuffled; mean generated length was 608 versus 345 tokens.
+Aligned won only 43 pairwise cases and lost 187. The mechanically aligned
+curriculum taught overlong draft completion and draft over-trust rather than
+transferable repair of natural model-owned errors. Exact receipts are in
+`SHOHIN_CFR1_RESULT.json`.

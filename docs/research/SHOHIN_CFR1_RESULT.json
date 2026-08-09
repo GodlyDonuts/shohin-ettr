@@ -1,0 +1,52 @@
+{
+  "schema": "shohin-cfr1-result-v1",
+  "status": "complete",
+  "decision": "close_exact_cfr1_without_rescue",
+  "holdout_opened": false,
+  "fits": {
+    "aligned": {
+      "job": "747643",
+      "updates": 512,
+      "charged_tokens": 516852,
+      "elapsed_seconds": 1470.7455821100157,
+      "checkpoint_sha256": "ada7c01faa93ff327877e9c83c500fc8555c0795599704ebbf6b633135648202",
+      "report_sha256": "e6abd382388ad9a66f5a2e63682efd80c7c45e9e91117a3df5f839ca1222e112"
+    },
+    "shuffled": {
+      "job": "747644",
+      "updates": 512,
+      "charged_tokens": 516852,
+      "elapsed_seconds": 1463.284599119972,
+      "checkpoint_sha256": "a8171fd396023df5f4f898a8839a1b3ee9738b7ca5179f573a9ca41176222ff0",
+      "report_sha256": "ce656ec31a3aaecc75e5f8ce55ed0634f75087a66cd24a8136d8d2d8412301a8"
+    },
+    "trainable_parameters_per_arm": 2704896
+  },
+  "development": {
+    "total": 1289,
+    "aligned_correct": 345,
+    "shuffled_correct": 489,
+    "aligned_minus_shuffled": -144,
+    "aligned_domains": {
+      "math500": 92,
+      "bbh_logic": 236,
+      "mbpp": 17
+    },
+    "aligned_report_sha256": "5352e8c3af5bddfdacfa395f203a90d44fd3b5b39513a35c42de8573dd14fde9",
+    "shuffled_report_sha256": "e8329da7047d6cda8b393a2343f276c55e6036ecc908f1bfb0548fe287a1be32",
+    "comparison_sha256": "e45637bad8f72d5fd5df04d9d48a8b05e7096b953f538bc6fb1a0723f820c642"
+  },
+  "read_only_attribution": {
+    "aligned_exhausted_768_tokens": 852,
+    "shuffled_exhausted_768_tokens": 327,
+    "aligned_mean_generated_tokens": 608.2296353762607,
+    "shuffled_mean_generated_tokens": 345.3653995345229,
+    "aligned_median_generated_tokens": 768,
+    "shuffled_median_generated_tokens": 280,
+    "aligned_only_correct": 43,
+    "shuffled_only_correct": 187,
+    "both_correct": 302,
+    "both_wrong": 757
+  },
+  "interpretation": "Aligned clean/fault supervision caused draft over-trust and overlong generation; artificial appended faults did not transfer to natural model-owned draft errors. Exact CFR1 is closed without a decoding, corruption, ratio, update, rank, layer, or seed rescue."
+}

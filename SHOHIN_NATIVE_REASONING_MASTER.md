@@ -69,7 +69,7 @@ offline teacher is too unreliable for the proposed corpus. Full generation
 and capability fitting were never authorized, and exact VFR1 is closed
 without format, decoding, context, seed, or threshold rescue.
 
-The active successor is CFR1, Verified Counterfactual Revision. Its fresh
+The latest closed successor is CFR1, Verified Counterfactual Revision. Its fresh
 Qwen-tokenizer-specific source contains 52,255 unique rows and 16,003,197
 charged target tokens at an exact 42/16/27/13/2
 math/code/science/procedural/teacher mix, with zero retained 4,096-token
@@ -83,9 +83,15 @@ generic source-to-solution SFT without depending on a teacher to invent new
 reasoning. Unverified rows and every 4,096-token overflow are rejected before
 training. A one-update mechanics gate passed with finite loss/gradient, exact
 2,704,896 trainables, and 25.38 GB peak allocation. The sole capability pair,
-jobs `747643/747644`, now runs 512 matched updates from the immutable 9B B1
-adapter, gated at `603/1,289`, `+10` over shuffled, and domain floors
-`223/349/17`; holdout remains sealed.
+jobs `747643/747644`, then ran 512 matched updates from the immutable 9B B1
+adapter. Aligned scored `345/1,289`, versus shuffled `489`, with aligned
+domains `92/236/17`. Aligned exhausted 768 generated tokens on 852 cases,
+versus 327 for shuffled, and lost 187 pairwise cases while winning 43. The
+artificial-fault curriculum taught draft over-trust and excessive completion
+length rather than robust repair of natural model-owned errors. Exact CFR1 is
+closed without variants and holdout remains sealed. A successor must train on
+actual model-owned errors with verified targets and a bounded output contract;
+it must not reuse appended counterfactual faults as a proxy for natural errors.
 
 ### Current blocker: dense-to-MoE transfer
 
