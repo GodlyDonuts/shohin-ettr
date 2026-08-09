@@ -12,6 +12,12 @@
 set -euo pipefail
 for variable in RUNTIME RUNTIME_MANIFEST_SHA256 MODEL_ROOT MODEL_REVISION MODEL_CONFIG_SHA256 MODEL_MANIFEST_SHA256 DATA_ROOT OUTPUT_ROOT OWNER_CANDIDATES OWNER_REPORT RECEIPT; do test -n "${!variable:-}" || exit 2; done
 EXCLUDE=${EXCLUDE:-evc29,evc33,evc38,evc46}; SHARDS=8
+COMPARISON=${COMPARISON:-mpr2}
+case "$COMPARISON" in
+  mpr2) COMPARE_JOB=$RUNTIME/pipeline/jobs/compare_mpr2_development.sbatch ;;
+  mpr3) COMPARE_JOB=$RUNTIME/pipeline/jobs/compare_mpr3_development.sbatch ;;
+  *) echo "unknown MPR comparison: $COMPARISON" >&2; exit 3 ;;
+esac
 test ! -e "$OUTPUT_ROOT" && test ! -e "$RECEIPT"; test "$(sha256sum "$RUNTIME/SHA256SUMS" | cut -d' ' -f1)" = "$RUNTIME_MANIFEST_SHA256"; (cd "$RUNTIME" && sha256sum -c SHA256SUMS >/dev/null)
 mkdir -p "$OUTPUT_ROOT" "$(dirname "$RECEIPT")"
 DATA_REPORT=$DATA_ROOT/report.json; DATA_REPORT_SHA=$(sha256sum "$DATA_REPORT"|cut -d' ' -f1)
@@ -41,10 +47,9 @@ done
 semantic=$OUTPUT_ROOT/development/semantic_attribution.json
 semantic_job=$(submit --dependency=afterok:"${merges[0]}" --export="ALL,RUNTIME=$RUNTIME,RUNTIME_MANIFEST_SHA256=$RUNTIME_MANIFEST_SHA256,UNCHANGED=$OWNER_CANDIDATES,TREATMENT=$OUTPUT_ROOT/development/aligned/candidates.jsonl,DEVELOPMENT_DATA=$DATA_ROOT/development_aligned.jsonl,OUTPUT=$semantic" "$RUNTIME/pipeline/jobs/analyze_ecr1_semantic_repairs.sbatch")
 merge_dependency=$(IFS=:; echo "${merges[*]}"); comparison=$OUTPUT_ROOT/development/comparison.json
-compare_job=$(submit --dependency=afterok:"$merge_dependency":"$semantic_job" --export="ALL,RUNTIME=$RUNTIME,RUNTIME_MANIFEST_SHA256=$RUNTIME_MANIFEST_SHA256,ALIGNED_REPORT=$OUTPUT_ROOT/development/aligned/report.json,SHUFFLED_REPORT=$OUTPUT_ROOT/development/shuffled/report.json,HIDDEN_REPORT=$OUTPUT_ROOT/development/hidden/report.json,OWNER_REPORT=$OWNER_REPORT,ALIGNED_FIT=$OUTPUT_ROOT/aligned_fit/report.json,SHUFFLED_FIT=$OUTPUT_ROOT/shuffled_fit/report.json,HIDDEN_FIT=$OUTPUT_ROOT/hidden_fit/report.json,DATA_REPORT=$DATA_REPORT,SEMANTIC_ATTRIBUTION=$semantic,OUTPUT=$comparison" "$RUNTIME/pipeline/jobs/compare_mpr2_development.sbatch")
+compare_job=$(submit --dependency=afterok:"$merge_dependency":"$semantic_job" --export="ALL,RUNTIME=$RUNTIME,RUNTIME_MANIFEST_SHA256=$RUNTIME_MANIFEST_SHA256,ALIGNED_REPORT=$OUTPUT_ROOT/development/aligned/report.json,SHUFFLED_REPORT=$OUTPUT_ROOT/development/shuffled/report.json,HIDDEN_REPORT=$OUTPUT_ROOT/development/hidden/report.json,OWNER_REPORT=$OWNER_REPORT,ALIGNED_FIT=$OUTPUT_ROOT/aligned_fit/report.json,SHUFFLED_FIT=$OUTPUT_ROOT/shuffled_fit/report.json,HIDDEN_FIT=$OUTPUT_ROOT/hidden_fit/report.json,DATA_REPORT=$DATA_REPORT,SEMANTIC_ATTRIBUTION=$semantic,OUTPUT=$comparison" "$COMPARE_JOB")
 python3 - "$RECEIPT" "$mechanics" "$aligned_fit" "$shuffled_fit" "$hidden_fit" "$semantic_job" "$compare_job" "${shard_jobs[*]}" "${merges[*]}" <<'PY'
 import json,os,sys
-path,*v=sys.argv[1:]; p={"status":"submitted","mechanics_job":v[0],"aligned_fit_job":v[1],"shuffled_fit_job":v[2],"hidden_fit_job":v[3],"semantic_job":v[4],"comparison_job":v[5],"shard_jobs":v[6].split(),"merge_jobs":v[7].split()}; t=f"{path}.partial.{os.getpid()}"; open(t,"x").write(json.dumps(p,sort_keys=True)+"\n"); os.replace(t,path)
+path,*v=sys.argv[1:]; p={"status":"submitted","mechanics_job":v[0],"aligned_fit_job":v[1],"shuffled_fit_job":v[2],"hidden_fit_job":v[3],"semantic_job":v[4],"comparison_job":v[5],"shard_jobs":v[6].split(),"merge_jobs":v[7].split(),"comparison":os.environ.get("COMPARISON","mpr2")}; t=f"{path}.partial.{os.getpid()}"; open(t,"x").write(json.dumps(p,sort_keys=True)+"\n"); os.replace(t,path)
 PY
 chmod a-w "$RECEIPT"; cat "$RECEIPT"
-

@@ -31,6 +31,13 @@
 > to a full `evc32` local disk. Untouched dependent jobs `748019--748029` were
 > canceled. The wrapper now defaults to direct read-only Lustre model loading;
 > no model, data, optimizer, update, or evaluation setting changed.
+> Replacement dispatcher `748033` submitted mechanics `748034`, fit `748035`,
+> evaluation shards `748036--748043`, merge `748044`, and comparison `748045`.
+> Mechanics passed in 1m51s at loss 3.5203, gradient norm 66.5, with 442
+> charged tokens and a finite update; the full 2,048-update fit is running on
+> `evc32`. A separate fail-closed MPR3 release dispatcher is pre-staged: only
+> an OBR1 comparison PASS can release its eight owner-draft shards and matched
+> temporal campaign.
 
 > **DPR1 K=8 MODEL-OWNED DRAFT-PANEL CEILING CLOSED — 2026-08-09:** MPR2's
 > owner+aligned oracle is only `265/1,289`, so no selector over that pair can
