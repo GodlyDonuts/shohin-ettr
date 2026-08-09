@@ -19,6 +19,7 @@ test -x "$PYTHON"; test ! -e "$OUTPUT"; test ! -e "$PARTIAL"
 mkdir -p "$PARTIAL" logs
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 export MAX_JOBS=$SLURM_CPUS_PER_TASK TORCH_CUDA_ARCH_LIST=9.0
+export CAUSAL_CONV1D_SKIP_CUDA_BUILD=TRUE
 
 "$PYTHON" -m pip install --no-deps --target "$PARTIAL" \
   einops==0.8.1 ninja==1.13.0 fla-core==0.4.2 flash-linear-attention==0.4.2
