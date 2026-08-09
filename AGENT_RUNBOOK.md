@@ -13,9 +13,20 @@
 > pass opens capability, which requires `+13` over owner and every trained
 > control with nonnegative domains. OBR1/MPR3 remain untouched. Contract:
 > `docs/research/SHOHIN_DSEO1_DRAFT_SPECIFIC_EDIT_OBJECTIVE.md`.
+> Immutable paired-data job `748399` completed in 2m37s: 8,192 train and
+> 1,024 source-disjoint diagnostic identities, exactly two presentations per
+> source, zero split overlap, 28,997 verifier-backed candidates, and maximum
+> complete sequence 4,092/4,096. Train/diagnostic data SHA-256 values are
+> `0727b709...0c4` and `df186046...393`. Initial job `748376` failed before a
+> report when a post-action presentation overflowed; the corrected builder
+> filters complete pairs before deterministic split selection. One-update
+> mechanics `748425` passed in 65s with action CE 1.0010, final CE 0.3446,
+> total 0.6728, gradient norm 57.0, and a finite update from the frozen
+> MPR1-hidden owner. Full matched fits `748426--748429` and owner-reference
+> diagnostic shards `748433--748440` are running; merge `748441` is held.
 
-> **OBR1 / CONDITIONAL MPR3 FROZEN — 2026-08-09:** CFR1, MPR1, MPR2, and
-> DPR1 are closed negatives; Newton is currently idle. The practical MoE
+> **OBR1 / CONDITIONAL MPR3 CLOSED NEGATIVE — 2026-08-09:** CFR1, MPR1, MPR2,
+> and DPR1 are closed negatives. The practical MoE
 > critical path now first qualifies a stronger source-only owner rather than
 > repeating temporal revision with a weak draft. OBR1 retokenizes the existing
 > verified 16M-target-token broad mix with pinned OLMoE, hard-removes exact and
@@ -48,10 +59,14 @@
 > Replacement dispatcher `748033` submitted mechanics `748034`, fit `748035`,
 > evaluation shards `748036--748043`, merge `748044`, and comparison `748045`.
 > Mechanics passed in 1m51s at loss 3.5203, gradient norm 66.5, with 442
-> charged tokens and a finite update; the full 2,048-update fit is running on
-> `evc32`. A separate fail-closed MPR3 release dispatcher is pre-staged: only
-> an OBR1 comparison PASS can release its eight owner-draft shards and matched
-> temporal campaign.
+> charged tokens and a finite update. Fit `748035` completed all 2,048 updates
+> in 57m44s with 4,268,735 charged target tokens. Evaluation shards
+> `748036--748043`, merge `748044`, and comparator `748045` closed OBR1 at
+> only `87/1,289`, with domains MATH `13`, logic/science `68`, and code `6`.
+> Every frozen owner gate failed (`300`, `75/215/10`). Comparison SHA-256 is
+> `1eedf48a...522`; conditional MPR3 never released and `748073` was canceled
+> dependency-unsatisfied. DSEO1 therefore uses the prospectively frozen
+> MPR1-hidden fallback checkpoint (`6cbe9fdc...610d`).
 
 > **DPR1 K=8 MODEL-OWNED DRAFT-PANEL CEILING CLOSED — 2026-08-09:** MPR2's
 > owner+aligned oracle is only `265/1,289`, so no selector over that pair can

@@ -51,20 +51,11 @@ sample scores only 136--162, below greedy owner 247. This exposes substantial
 latent math/logic diversity alongside a hard code and trajectory-selection
 floor. No panel fit was launched; holdout remains sealed.
 
-The active prospective route is now OBR1 followed conditionally by MPR3.
-Rather than repeat temporal fitting against another weak short-run owner,
-OBR1 preserves the strongest simple OLMoE architecture (all-16-layer rank-18
-shared post-MoE residual) but trains it for 2,048 updates on the existing
-verified 16M-target-token broad mix, freshly tokenized by OLMoE and hard
-filtered against development by normalized exact match and word 13-grams.
-Repeated cross-question benchmark-format 13-grams are excluded from the
-content-collision set; development-unique 13-grams remain hard filters.
-The owner must reach `300/1,289` with domain floors `75/215/10` before any new
-draft corpus is generated. Only that pass opens MPR3, whose aligned exact
-model-owned draft arm must beat the direct owner by 39 answers and matched
-shuffled and full-model hidden-draft controls by 13 each, with nonnegative
-domain deltas and semantic net at least 13. Only a development plus sealed
-holdout pass authorizes larger-MoE transfer. Exact prospective contract:
+OBR1 and conditional MPR3 are now closed. OBR1 trained the simple OLMoE
+residual for 2,048 updates on 13.62M decontaminated broad target tokens, but
+scored only `87/1,289` with domains `13/68/6`, missing every frozen owner gate
+(`300`, `75/215/10`). MPR3 never released. This is a large negative: long
+broad adaptation damaged the useful 256-update source-only owner. Contract:
 `docs/research/SHOHIN_OBR1_BROAD_OWNER_AND_MPR3_GATE.md`.
 
 The next independent objective-level successor is DSEO1. Its diagnosis is
@@ -77,6 +68,13 @@ collapse under hidden/swapped controls, and causal downstream change when the
 action prefix is forced. No benchmark fit is authorized before that gate.
 Exact prospective contract:
 `docs/research/SHOHIN_DSEO1_DRAFT_SPECIFIC_EDIT_OBJECTIVE.md`.
+The paired corpus is complete: 8,192 train and 1,024 source-disjoint
+diagnostic identities, 16,384/2,048 presentations, zero split overlap, and
+maximum complete sequence 4,092/4,096. One-update mechanics passed from the
+prospectively selected MPR1-hidden owner with finite gradients and separated
+action/final losses. Four matched fits and eight owner-reference diagnostic
+shards are running. Capability remains unopened until action,
+counterfactual, repair, controls, and forced-action gates all pass.
 
 This changed factor is strongly supported on dense models. Matched trained
 revision versus unchanged second-pass gains are:
