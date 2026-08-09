@@ -1,0 +1,67 @@
+{
+  "schema": "shohin-tcs1-development-result-v1",
+  "date": "2026-08-09",
+  "status": "closed_negative",
+  "jobs": {
+    "cpu_shape": "747538",
+    "semantic_mechanics": "747585",
+    "semantic_fit_and_development_eval": "747589"
+  },
+  "inputs": {
+    "model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+    "idr1_adapter_sha256": "df3c264d426941fef8ba9c10a90fe9fab304ec2864738209a4d79f9f81e0c473",
+    "train_sha256": "622aa19e4ae55190183609f4ddd6b07e46a2b2b73ce94c83cf4fb085a87b9022",
+    "development_sha256": "a216928df4c63b4d32a1ef58aaee7a2aa567cbcd93ba1339e629440da0465048",
+    "shape_report_sha256": "a0a87de9d0946122c4e6a074a51e5d7b19640173d6f3d400e1be529d288c5026",
+    "runtime_sha256s_sha256": "ac62af9da81ddc5eb2cc549a9d77b9be84d39a2df6f6dbc0094981eae644bf94"
+  },
+  "training": {
+    "updates": 256,
+    "group_presentations": 2048,
+    "charged_tokens": 2214631,
+    "training_truncated": 1,
+    "model_trainable_parameters": 2704896,
+    "head_parameters": 2237441,
+    "total_trainable_parameters": 4942337,
+    "peak_gpu_memory_bytes": 33433896960,
+    "elapsed_seconds": 960.3129888470285,
+    "protected_adapter_unchanged": true
+  },
+  "development": {
+    "total": 1289,
+    "depth1_correct": 589,
+    "shape_correct": 579,
+    "oracle_correct": 615,
+    "semantic_selected_correct": 565,
+    "repairs": 14,
+    "breaks": 38,
+    "domains": {
+      "math500": 205,
+      "bbh_logic": 342,
+      "mbpp": 18
+    },
+    "selected_lineages": {
+      "depth1": 1080,
+      "depth2": 127,
+      "direct": 82
+    },
+    "content_permutation_correct": 559,
+    "content_permutation_drop": 6,
+    "evaluation_tokens": 765424,
+    "evaluation_truncated": 0
+  },
+  "gates": {
+    "absolute_603": false,
+    "beats_shape_by_10": false,
+    "math_at_least_223": false,
+    "logic_at_least_349": false,
+    "code_at_least_17": true,
+    "content_permutation_drop_at_least_8": false,
+    "conjunctive_pass": false
+  },
+  "outputs": {
+    "selector_checkpoint_sha256": "f9055f87c8e9a9c41b3bf8a40e71acccfdb60c1ec6c9a8acc29893f14d9d375d",
+    "report_sha256": "324d59228b96aa9ffc2cbed94467a4156ec46455d0c07a7b907e9664c5ea88ac"
+  },
+  "decision": "Close exact TCS1 without prompt, width, seed, threshold, pool, or duration rescue. Keep holdout sealed. Candidate generation and revision quality, not another post-hoc selector, remain the bottleneck."
+}

@@ -46,6 +46,17 @@ This closes whole-trajectory generative self-diagnosis as an immediate path:
 the model can learn conservative copying, but it cannot reliably recognize
 when its own predecessor is wrong. KR2 holdout remains sealed.
 
+The fixed depth-one/depth-two/direct candidate pool nevertheless contains a
+small but real coherent oracle of `615/1,289`. TCS1 tested whether this gap
+could be recovered by selecting one complete trajectory. A shape-only selector
+scores `579`; the sole trained 9B semantic selector scores only `565`, versus
+depth one's `589`. It repairs 14 errors but breaks 38 correct answers, misses
+the math and logic floors, and loses only six answers under candidate-content
+permutation. TCS1 is therefore closed with holdout sealed. Complementary
+solutions exist, but post-hoc self-evaluation remains weaker than preserving
+the qualified first revision. The practical next step must improve the
+proposal/revision computation itself rather than stack another selector.
+
 ### Current blocker: dense-to-MoE transfer
 
 The first sparse host is pinned `OLMoE-1B-7B-0125-Instruct`: 7B total,

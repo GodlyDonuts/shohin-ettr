@@ -1,6 +1,6 @@
 # TCS1: Trajectory Candidate Selection
 
-Status: CPU control complete; one semantic scorer frozen before CUDA results.
+Status: closed negative on development; holdout sealed.
 
 ## Hypothesis
 
@@ -67,3 +67,36 @@ One one-update mechanics job may run first. If finite, non-OOM, hash-safe, and
 fully receipted, it unlocks the single 256-update fit above. There is no
 shuffled-label, width, prompt, layer, seed, or duration family. Development is
 read once after training; holdout remains sealed behind the frozen gate.
+
+## Development result
+
+Mechanics job `747585` passed. The sole semantic fit/evaluation job `747589`
+then completed all 256 updates and 2,048 group presentations in 960.31 seconds
+on one H100. It charged 2,214,631 training tokens, used 4,942,337 trainable
+parameters (2,704,896 existing adapter tensors plus a 2,237,441-parameter
+head), peaked at 33,433,896,960 GPU bytes, and preserved the protected IDR1
+adapter bit-identically. One training presentation truncated; no development
+candidate truncated.
+
+The semantic owner selects `565/1,289`, below both depth one (`589`) and the
+shape-only control (`579`). It repairs 14 depth-one errors but breaks 38 prior
+successes. Domains are math `205`, logic/science `342`, and code `18`; only the
+code floor passes. Deterministically permuting candidate contents reduces the
+score by only six answers (`565 -> 559`), below the frozen eight-answer causal
+margin. The selector chooses depth one 1,080 times, depth two 127 times, and
+direct rewrite 82 times.
+
+Every conjunctive promotion gate except code fails. Report SHA-256 is
+`324d59228b96aa9ffc2cbed94467a4156ec46455d0c07a7b907e9664c5ea88ac`;
+selector checkpoint SHA-256 is
+`f9055f87c8e9a9c41b3bf8a40e71acccfdb60c1ec6c9a8acc29893f14d9d375d`.
+The exact result receipt is
+`docs/research/SHOHIN_TCS1_DEVELOPMENT_RESULT.json`.
+
+Decision: close exact TCS1 without prompt, width, seed, threshold, candidate
+pool, or duration rescue. Holdout remains sealed. The three-way oracle proves
+that complementary trajectories exist, but neither superficial shape nor the
+trained hidden-state scorer can identify them without destroying too many
+correct first revisions. The next useful intervention must improve proposal or
+revision generation, or train a genuinely joint correction process; another
+post-hoc candidate selector is not authorized.

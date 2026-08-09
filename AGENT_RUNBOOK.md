@@ -1,5 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **TCS1 TRAJECTORY SELECTOR CLOSED NEGATIVE — 2026-08-09:** The fixed
+> depth-one/depth-two/direct candidate pool has a real development oracle of
+> `615/1,289`, versus depth one `589`. CPU shape selection job `747538` scores
+> only `579`. The sole frozen 9B semantic scorer passed mechanics in `747585`;
+> full job `747589` completed 256 updates / 2,048 groups / 2,214,631 charged
+> tokens in 960.31 seconds with 4,942,337 trainables, 33,433,896,960 peak GPU
+> bytes, one training truncation, zero evaluation truncations, and an unchanged
+> protected IDR1 adapter. It scores `565/1,289`, repairing 14 depth-one errors
+> while breaking 38. Domains are `205/342/18` for math/logic-code, and content
+> permutation drops only six answers (`565->559`). Absolute, shape-margin,
+> math, logic, and causal gates fail. Report SHA-256 is `324d5922...8ac`;
+> selector SHA-256 is `f9055f87...75d`. Close TCS1 without variants and keep
+> holdout sealed. Candidate complementarity is real, but post-hoc correctness
+> selection is not reliable enough; improve generation/revision itself.
+
 > **KR2 STAGE-OWNER GATE CLOSED NEGATIVE — 2026-08-09:** Reusing the qualified 9B IDR1
 > reviser recursively was closed negative at `539/1,289` because it repaired
 > 15 errors while breaking 65 correct answers. KR2 tests a distinct later
