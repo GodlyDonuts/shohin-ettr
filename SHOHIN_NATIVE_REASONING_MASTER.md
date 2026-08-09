@@ -34,7 +34,7 @@ answers; the strict all-domain gate correctly fails.
 ### Current blocker: dense-to-MoE transfer
 
 The first sparse host is pinned `OLMoE-1B-7B-0125-Instruct`: 7B total,
-approximately 1B active, 64 experts, eight active per token. Five exact
+approximately 1B active, 64 experts, eight active per token. Six exact
 development gates are closed:
 
 1. **MTR1 shared-attention revision:** rank-8 LoRA in the final four shared
@@ -63,6 +63,12 @@ development gates are closed:
    parameter-matched shared rank-34 reaches `244`. All routes remain active
    with minimum load entropy `0.99735`; specialization hurts without route
    collapse. RME1 and its holdout are closed.
+6. **CTSR1 causal temporal state routing:** a shared token-causal GRU persists
+   separate layer states from prompt prefill through cached generation and
+   modulates native routes plus a shared residual. Treatment reaches
+   `249/1,289`, temporal shared control `245`, and static shared `248`.
+   Domains `59/185/5` pass, but top-1 routes change only `0.0248%`; every
+   capability and causal margin fails. CTSR1 and its holdout are closed.
 
 These results do not show that temporal revision is incompatible with MoE.
 They show that shared correction capacity produces a modest effect, while
@@ -86,14 +92,11 @@ work returns exclusively to the MoE architecture problem:
 4. permit small expert-side revision adapters only if evidence indicates that
    routing among frozen experts lacks the needed computation.
 
-Static expert identity is now exhausted: token-local rerouting, code
-modulation, whole native-expert residual banks, and a separately routed
-revision-only expert bank all fail against shared correction. The final
-small-host MoE-native direction must be genuinely temporal: persistent causal
-revision state must update across generated tokens and alter later expert
-computation. It must beat the rank-18 shared residual and a parameter-matched
-temporal shared-state control before any holdout or large-MoE run; otherwise
-retire the small-OLMoE architecture-transfer lane.
+Static expert identity and the predeclared temporal successor are exhausted:
+token-local rerouting, code modulation, whole native-expert residual banks, a
+separately routed revision bank, and persistent causal token state all fail
+against or barely tie shared correction. The small-OLMoE architecture-transfer
+lane is retired. Its sealed holdout and 35B scale-up remain unauthorized.
 
 The small OLMoE development board remains the proving ground. Its sealed
 holdout and the larger `Qwen3.6-35B-A3B` campaign remain prohibited until a

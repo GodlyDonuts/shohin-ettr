@@ -1,7 +1,7 @@
 # CTSR1: Causal Temporal State Routing
 
-Status: frozen pre-implementation contract, 2026-08-09. Development only.
-Holdout and large-MoE transfer remain sealed.
+Status: closed negative, 2026-08-09. Development only. Holdout and large-MoE
+transfer remain sealed.
 
 ## Hypothesis
 
@@ -82,3 +82,25 @@ state transplant, and true draft-unavailable controls. Normal must beat each
 by at least 13 answers before one holdout. Failure closes CTSR1 and the
 small-OLMoE MoE-native route without width/depth/rank/duration/seed variants.
 
+## Result
+
+Mechanics job `747342` passed exact base-parity, parameter, compute, memory,
+sequence, and protected-weight receipts. Treatment `747343` and the valid
+temporal-control retry `747345` each completed the exact 256 updates and
+338,620 target tokens. The initial control allocation `747344` failed before
+training because `evc31` lacked node-local disk and is retained as an
+infrastructure failure.
+
+Autonomous comparison `747420` scores treatment `249/1,289 = 19.3173%`,
+temporal shared `245 = 19.0070%`, and immutable static shared rank-18 `248 =
+19.2397%`. Treatment domains are math `59`, logic/science `185`, and code `5`.
+Domain floors and load entropy pass, but treatment misses `280`, beats the
+temporal control by only four, and beats static shared by only one. Mean
+top-1 route change is `0.0002485`, far below the frozen `0.01` causal gate.
+Comparison SHA-256 is
+`34af28ab62ebb5214dbadca144f1ef81df8403a8807b489ca464affbfac1c203`.
+
+Persistent token-causal state therefore does not establish control over
+expert computation in this host and budget. CTSR1, its controls, holdout, and
+large-MoE scale-up are closed. The small-OLMoE MoE-native lane is retired
+without width, depth, scale, rank, duration, or seed rescue.

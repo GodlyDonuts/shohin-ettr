@@ -29,8 +29,11 @@ by native expert codes all provide at most modest gains. Giving each native
 expert its own residual transform or routing among a new revision-only expert
 bank performs worse than shared correction. The best current OLMoE arm is an
 all-layer shared rank-18 post-MoE residual at `248/1,289`, versus unchanged
-`191`; it is useful evidence but still below the frozen capability threshold.
-Solving that dense-to-MoE boundary is the current critical path.
+`191`; a token-causal persistent-state router reaches only `249`, with expert
+top-1 routes changing on `0.0248%` of traced token/layer events. These are
+useful modest effects but remain below the frozen capability threshold. The
+small-OLMoE native-transfer lane is closed; larger-MoE scaling is not
+authorized from this evidence.
 
 Historical ETTR graph-reactor and synthetic compiled-state experiments remain
 valuable research history, but they are not the current deployable Shohin

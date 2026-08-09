@@ -1,6 +1,6 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **CTSR1 FROZEN PRE-MECHANICS — 2026-08-09:** The final small-OLMoE
+> **CTSR1 / SMALL-OLMOE NATIVE LANE CLOSED — 2026-08-09:** The final small-OLMoE
 > MoE-native lane is Causal Temporal State Routing. A 64-wide GRU shared over
 > all 16 sparse layers consumes the actual causal token stream, keeps a
 > separate layer state, and persists it from prompt prefill through every
@@ -9,11 +9,19 @@
 > temporal control uses both heads for residual modulation and leaves routing
 > unchanged. Both have exactly `1,594,752` trainables and `488,576` adapter
 > MAC/token/layer, with zero-initialized heads/up-projections preserving base
-> parity. Mechanics must prove padding and streamed/one-shot recurrence
-> equivalence before two exact 256-update fits. Promotion requires `>=280`,
-> `>=26` over the temporal control, `>=13` over the immutable static rank-18
-> score `248`, domain floors `55/180/5`, and noncollapsed route change. Failure
-> closes CTSR1 and the small-OLMoE native route without geometry variants.
+> parity. Mechanics `747342` passed exact receipts at `14.927 GiB`. Treatment
+> `747343` and temporal control retry `747345` each completed 256 updates and
+> 338,620 charged target tokens in `2:09:30/2:08:21`, at `43.92/44.33` tok/s
+> and `20.610/20.605 GiB`. The first control allocation `747344` failed before
+> training on exhausted node-local disk and is preserved. Sixteen autonomous
+> shards `747402--747418`, merges `747410/747419`, and comparison `747420`
+> score treatment `249/1,289 = 19.3173%`, temporal shared `245 = 19.0070%`,
+> and immutable static shared `248 = 19.2397%`. Treatment domains `59/185/5`
+> pass, but absolute and both margin gates fail. Mean top-1 route change is
+> only `0.0002485` with load entropy `0.97756`. Comparison SHA-256 is
+> `34af28ab62ebb5214dbadca144f1ef81df8403a8807b489ca464affbfac1c203`.
+> Causal controls and holdout are unauthorized. Close CTSR1 and retire the
+> small-OLMoE MoE-native lane without geometry variants or 35B scaling.
 
 > **RME1 CLOSED NEGATIVE — 2026-08-09:** Routed Revision Micro-Experts
 > replace the failed use of pretrained native expert identity with four new
