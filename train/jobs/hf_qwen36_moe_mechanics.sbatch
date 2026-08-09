@@ -53,6 +53,6 @@ if report.get("quantization") != "nf4" or report.get("lora_scope") != "token_mix
     raise SystemExit("Qwen3.6 mechanics metadata differs")
 if report.get("updates") != 1 or report.get("peak_gpu_memory_bytes", 0) <= 0:
     raise SystemExit("Qwen3.6 mechanics did not execute")
-print(json.dumps({k:report[k] for k in ("trainable_parameters","peak_gpu_memory_bytes","charged_tokens_per_second","trainable_parameter_name_sha256")},sort_keys=True))
+print(json.dumps({k:report[k] for k in ("trainable_parameters","current_gpu_memory_bytes","current_gpu_reserved_bytes","peak_gpu_memory_bytes","charged_tokens_per_second","trainable_parameter_name_sha256")},sort_keys=True))
 PY
 chmod -R a-w "$OUTPUT"

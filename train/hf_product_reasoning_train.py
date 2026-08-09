@@ -1135,6 +1135,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "charged_tokens": total_charged,
         "elapsed_seconds": elapsed,
         "charged_tokens_per_second": total_charged / elapsed,
+        "current_gpu_memory_bytes": int(torch.cuda.memory_allocated()),
+        "current_gpu_reserved_bytes": int(torch.cuda.memory_reserved()),
         "peak_gpu_memory_bytes": int(torch.cuda.max_memory_allocated()),
         "trace": trace,
     }
