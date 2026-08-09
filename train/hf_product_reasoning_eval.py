@@ -556,6 +556,7 @@ def _load_model(
     model_root: Path,
     adapter_checkpoint: Path | None,
     model_loader: str,
+    quantization: str = "none",
 ):
     import torch
 
@@ -575,16 +576,21 @@ def _load_model(
         if model_loader != "auto" and checkpoint_loader != model_loader:
             raise ProductEvalError("adapter checkpoint model loader differs")
         model_loader = checkpoint_loader
+    checkpoint_quantization = (
+        str(metadata.get("quantization", "none"))
+        if metadata is not None
+        else quantization
+    )
+    if metadata is not None and quantization != "none" and (
+        quantization != checkpoint_quantization
+    ):
+        raise ProductEvalError("adapter checkpoint quantization differs")
     backbone, resolved_model_loader = load_product_backbone(
         model_root,
         model_loader,
         dtype=torch.bfloat16,
         device_map={"": 0},
-        quantization=(
-            str(metadata.get("quantization", "none"))
-            if metadata is not None
-            else "none"
-        ),
+        quantization=checkpoint_quantization,
     )
     if adapter_checkpoint is None:
         return backbone.eval(), None, resolved_model_loader

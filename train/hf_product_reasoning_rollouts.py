@@ -194,7 +194,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
     model, adapter_metadata, model_loader = _load_model(
-        args.model_root, args.adapter_checkpoint, args.model_loader
+        args.model_root,
+        args.adapter_checkpoint,
+        args.model_loader,
+        quantization=args.quantization,
     )
     adapter = args.adapter_checkpoint is not None
     stop_token_ids = _generation_stop_token_ids(tokenizer)
@@ -410,6 +413,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "loaded_model_root": str(args.model_root.resolve()),
         "model_revision": args.model_revision,
         "model_loader": model_loader,
+        "quantization": (
+            str(adapter_metadata.get("quantization", "none"))
+            if adapter_metadata is not None
+            else args.quantization
+        ),
         "adapter_checkpoint": (
             str(args.adapter_checkpoint.resolve())
             if args.adapter_checkpoint is not None
@@ -459,6 +467,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--model-loader", choices=("auto", "causal", "multimodal"), default="auto"
     )
+    parser.add_argument("--quantization", choices=("none", "nf4"), default="none")
     parser.add_argument("--adapter-checkpoint", type=Path)
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--candidates-output", type=Path, required=True)

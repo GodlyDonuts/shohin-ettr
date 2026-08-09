@@ -33,11 +33,45 @@ FINALIZE_BATCH_SIZE=${FINALIZE_BATCH_SIZE:-32}
 ENABLE_THINKING=${ENABLE_THINKING:-true}
 BARE_PROMPT_STYLE=${BARE_PROMPT_STYLE:-reasoning}
 CODE_TIMEOUT=${CODE_TIMEOUT:-3}
+QUANTIZATION=${QUANTIZATION:-none}
+BNB_ROOT=${BNB_ROOT:-}
+BNB_MANIFEST_SHA256=${BNB_MANIFEST_SHA256:-}
+FAST_KERNEL_ROOT=${FAST_KERNEL_ROOT:-}
+FAST_KERNEL_MANIFEST_SHA256=${FAST_KERNEL_MANIFEST_SHA256:-}
+MODEL_CONFIG_SHA256=${MODEL_CONFIG_SHA256:-}
+MODEL_MANIFEST_SHA256=${MODEL_MANIFEST_SHA256:-}
 
 test -x "$PYTHON"
 for path in "$RUNTIME/train/hf_product_reasoning_rollouts.py" "$DATA"; do
   [ -f "$path" ] || { echo "[product-rollout] missing input: $path" >&2; exit 2; }
 done
+if [[ -n "$MODEL_CONFIG_SHA256" ]]; then
+  test "$(sha256sum "$MODEL_ROOT/config.json" | cut -d' ' -f1)" = \
+    "$MODEL_CONFIG_SHA256"
+fi
+if [[ -n "$MODEL_MANIFEST_SHA256" ]]; then
+  test "$(sha256sum "$MODEL_ROOT/SHA256SUMS" | cut -d' ' -f1)" = \
+    "$MODEL_MANIFEST_SHA256"
+  (cd "$MODEL_ROOT" && sha256sum -c SHA256SUMS >/dev/null)
+fi
+if [[ "$QUANTIZATION" == "nf4" ]]; then
+  test -n "$BNB_ROOT"; test -n "$BNB_MANIFEST_SHA256"
+  test "$(sha256sum "$BNB_ROOT/SHA256SUMS" | cut -d' ' -f1)" = \
+    "$BNB_MANIFEST_SHA256"
+  (cd "$BNB_ROOT" && sha256sum -c SHA256SUMS >/dev/null)
+elif [[ "$QUANTIZATION" != "none" ]]; then
+  echo "QUANTIZATION must be none or nf4" >&2
+  exit 7
+fi
+if [[ -n "$FAST_KERNEL_ROOT" ]]; then
+  test -n "$FAST_KERNEL_MANIFEST_SHA256"
+  test "$(sha256sum "$FAST_KERNEL_ROOT/SHA256SUMS" | cut -d' ' -f1)" = \
+    "$FAST_KERNEL_MANIFEST_SHA256"
+  (cd "$FAST_KERNEL_ROOT" && sha256sum -c SHA256SUMS >/dev/null)
+elif [[ -n "$FAST_KERNEL_MANIFEST_SHA256" ]]; then
+  echo "FAST_KERNEL_ROOT is required with its manifest" >&2
+  exit 8
+fi
 if [[ -n "$ADAPTER_CHECKPOINT" ]]; then
   [ -f "$ADAPTER_CHECKPOINT" ] || {
     echo "[product-rollout] missing adapter: $ADAPTER_CHECKPOINT" >&2
@@ -68,7 +102,12 @@ export OPENBLAS_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export TOKENIZERS_PARALLELISM=false
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
-export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
+PYTHON_PATHS=("$RUNTIME/train" "$RUNTIME/pipeline")
+if [[ -n "$BNB_ROOT" ]]; then PYTHON_PATHS=("$BNB_ROOT" "${PYTHON_PATHS[@]}"); fi
+if [[ -n "$FAST_KERNEL_ROOT" ]]; then
+  PYTHON_PATHS=("$FAST_KERNEL_ROOT" "${PYTHON_PATHS[@]}")
+fi
+export PYTHONPATH="$(IFS=:; echo "${PYTHON_PATHS[*]}")"
 EXTRA_ARGS=()
 if [[ -n "$ADAPTER_CHECKPOINT" ]]; then
   EXTRA_ARGS+=(--adapter-checkpoint "$ADAPTER_CHECKPOINT")
@@ -90,6 +129,7 @@ cd "$RUNTIME/train"
   --model-root "$EFFECTIVE_MODEL_ROOT" \
   --model-source-root "$SOURCE_MODEL_ROOT" \
   --model-revision "$MODEL_REVISION" \
+  --quantization "$QUANTIZATION" \
   --data "$DATA" \
   --candidates-output "$CANDIDATES_OUTPUT" \
   --positives-output "$POSITIVES_OUTPUT" \

@@ -137,6 +137,12 @@ def test_rollout_generation_uses_resolved_adapter_mode() -> None:
     assert "_render_prompt(\n                        tokenizer" not in source
 
 
+def test_rollout_forwards_and_records_backbone_quantization() -> None:
+    source = inspect.getsource(run)
+    assert "quantization=args.quantization" in source
+    assert 'else args.quantization' in source
+
+
 def test_rollout_generation_geometry_separates_deployment_and_sampling() -> None:
     validate_generation_geometry("greedy", 1)
     validate_generation_geometry("qwen-thinking", 2)
