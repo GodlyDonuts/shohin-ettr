@@ -1,7 +1,7 @@
 # MPR1: Practical MoE Temporal Revision
 
-Status: frozen prospectively, 2026-08-09. Development is authorized; holdout
-remains sealed.
+Status: closed negative on development, 2026-08-09. Holdout and larger-MoE
+transfer remain sealed.
 
 ## Objective
 
@@ -67,3 +67,24 @@ threshold, or decoding rescue. A development-plus-holdout pass establishes
 Shohin temporal revision as operational on small OLMoE and authorizes staged
 larger-MoE transfer.
 
+## Result
+
+The OLMoE-tokenized corpus contains 9,651 matched rows and 1,575,873 target
+tokens per arm, with 5,824 unique source identities, zero source/donor identity
+matches, same-task donors, donor token-length delta p95 one, and maximum total
+length 2,616. The known four overlength presentations were excluded from every
+arm. Mechanics passed, and each fit completed exactly 256 updates and 338,931
+charged tokens with 1,179,648 trainables.
+
+Aligned scores `233/1,289`, shuffled `247`, hidden/source-only `247`, and
+unchanged `191`. Aligned therefore gains 42 answers over unchanged but loses 14
+to each causal control. Its domains are MATH `52`, logic/science `177`, and code
+`4`, so code also misses the unchanged floor of five. Conservative attribution
+finds 107 strict repairs, 13 certified serialization-only repairs, 94 remaining
+possible-semantic repairs, and 65 strict breaks, for semantic net `+29`.
+
+The exact conclusion is that all-layer shared post-MoE SFT is useful, but the
+current weak OLMoE draft is not a useful causal input: an unrelated draft and a
+fully hidden draft both do better. MPR1 is closed without geometry, duration,
+seed, or threshold rescue. Result:
+`docs/research/SHOHIN_MPR1_RESULT.json`.

@@ -1,6 +1,6 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **MPR1 PRACTICAL SMALL-MOE REVISION FROZEN — 2026-08-09:** The mission is
+> **MPR1 PRACTICAL SMALL-MOE REVISION CLOSED NEGATIVE — 2026-08-09:** The mission is
 > now a meaningful causal model-owned draft-to-revision gain on pinned OLMoE,
 > not dense parity or router novelty. Dense NDR1 GPU dispatchers
 > `747796/747801` were canceled before allocation; CPU source build `747795`
@@ -30,6 +30,14 @@
 > `747893` are dependency-armed. Dispatcher `747859` submitted the complete
 > graph, then its receipt writer hit Newton's Python-2 default; the exact
 > receipt was reconstructed atomically and the graph was not altered.
+> Final development is aligned `233`, shuffled `247`, hidden/source-only
+> `247`, and unchanged `191`. Aligned gains 42 over unchanged but loses 14 to
+> each causal control. Domains are `52/177/4`; code regresses by one. Semantic
+> attribution is 107 repairs, 13 certified serialization-only, 94 remaining
+> possible-semantic, and 65 breaks, for net `+29`. Thus useful generic
+> post-MoE SFT is real, but the current weak draft is not causally useful.
+> Exact input hashes are in `docs/research/SHOHIN_MPR1_RESULT.json`. Close
+> exact MPR1; holdout and larger-MoE scaling remain sealed.
 
 > **NDR1 NATURAL DRAFT REVISION STOPPED BY MISSION REDIRECT — 2026-08-09:** CFR1 established that
 > appended synthetic faults and clean-copy presentations cause draft over-trust

@@ -11,16 +11,16 @@ policy selects one complete trajectory. At inference there is no external
 proposal model, verifier, correctness bit, benchmark router, solver, tool, or
 teacher.
 
-The immediate prospective gate is MPR1 on pinned small OLMoE. It uses the
-strongest observed simple sparse-host intervention, a rank-18 shared residual
-after all 16 MoE blocks, and asks whether aligned exact OLMoE-owned drafts beat
-both same-task nearest-length shuffled drafts and a full-model causally
-hidden-draft/source-only arm under identical parameters, updates, and FLOPs.
-Promotion is `>=230/1,289`, `>=13` answers over each trained control,
-nonnegative `40/145/5` domain floors, and at least 13 conservative net semantic
-repairs. Only a development-plus-one-sealed-holdout pass authorizes larger-MoE
-transfer. Dense NDR1 GPU work was canceled before allocation; its CPU source
-artifact may complete, but it is no longer the critical path.
+The latest prospective gate was MPR1 on pinned small OLMoE, using a rank-18
+shared residual after all 16 MoE blocks. MPR1 closed negative: aligned exact
+OLMoE-owned drafts score `233/1,289`, while same-task nearest-length shuffled
+drafts and the full-model hidden-draft/source-only arm each score `247`; the
+unchanged second pass scores `191`. Aligned's `+42` over unchanged and semantic
+net `+29` prove useful generic revision SFT, but aligned loses 14 answers to
+both causal controls and code falls from five to four. The current weak OLMoE
+draft is not an information-bearing revision input. Holdout and larger-MoE
+transfer remain sealed. Dense NDR1 GPU work was canceled before allocation;
+its CPU source artifact completed but is no longer the critical path.
 
 This changed factor is strongly supported on dense models. Matched trained
 revision versus unchanged second-pass gains are:

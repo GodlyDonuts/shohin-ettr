@@ -1,0 +1,23 @@
+{
+  "schema": "shohin-mpr1-development-comparison-v1",
+  "status": "complete",
+  "split": "development",
+  "scores": {"aligned": 233, "shuffled": 247, "hidden": 247, "unchanged": 191},
+  "margins": {"aligned_minus_unchanged": 42, "aligned_minus_shuffled": -14, "aligned_minus_hidden": -14},
+  "domain_correct": {"math500": 52, "bbh_logic": 177, "mbpp": 4},
+  "semantic_counts": {"strict_repairs": 107, "certified_serialization_repairs": 13, "remaining_possible_semantic_repairs": 94, "strict_breaks": 65},
+  "semantic_net": 29,
+  "charged_target_tokens_per_fit": 338931,
+  "trainable_parameters_per_fit": 1179648,
+  "gate_pass": false,
+  "holdout_authorized": false,
+  "decision": "close_exact_mpr1",
+  "inputs": {
+    "aligned_report_sha256": "c4796cf12011c54b6a4e6caf9d45e74c23851f07a1f85057c453014c6adc300c",
+    "shuffled_report_sha256": "bcc2233e1579e61a2d3f5cd8cd25ed5227f63c6568b3943edb84832535d09db1",
+    "hidden_report_sha256": "f759ea78a448062fb533082407bb388204e7c767342b70260ac0fc8e93eb9923",
+    "unchanged_report_sha256": "b495571e4e9b11df654fb962fdcc71dc3ca7b23d11f9f38d1fa7ad5eabb30cee",
+    "data_report_sha256": "1616a176abeea0d9969ef52f09501679854cf8b3e4f76ec7865bba5423d70d6c",
+    "semantic_attribution_sha256": "528b23af78afbbabb4f4ae0417d27e366e363745a37a250826b20bce398768eb"
+  }
+}
