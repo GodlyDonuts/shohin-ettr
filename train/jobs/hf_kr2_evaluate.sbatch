@@ -49,7 +49,7 @@ checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
 metadata = checkpoint.get("metadata", {})
 if report.get("status") != "complete" or report.get("update") != 256:
     raise SystemExit("KR2 train report is incomplete")
-if metadata.get("update") != 256:
+if checkpoint.get("update") != 256:
     raise SystemExit("KR2 checkpoint update differs")
 if metadata.get("warm_start_sha256") != sys.argv[3]:
     raise SystemExit("KR2 warm-start lineage differs")
