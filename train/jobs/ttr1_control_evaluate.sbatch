@@ -13,8 +13,8 @@
 set -euo pipefail
 
 for variable in RUNTIME RUNTIME_MANIFEST_SHA256 CONTROL MODEL_ROOT MODEL_REVISION \
-  MODEL_CONFIG_SHA256 ADAPTER_CHECKPOINT ADAPTER_CHECKPOINT_SHA256 DATA \
-  DATA_SHA256 DATA_REPORT DATA_REPORT_SHA256 SPLIT CANDIDATES_OUTPUT REPORT; do
+  MODEL_CONFIG_SHA256 DATA DATA_SHA256 DATA_REPORT DATA_REPORT_SHA256 SPLIT \
+  CANDIDATES_OUTPUT REPORT; do
   test -n "${!variable:-}" || { echo "$variable is required" >&2; exit 2; }
 done
 SHARD_INDEX=${SHARD_INDEX:-0}
@@ -26,7 +26,14 @@ test -x "$PYTHON"
 test "$(sha256sum "$RUNTIME/SHA256SUMS" | cut -d' ' -f1)" = "$RUNTIME_MANIFEST_SHA256"
 (cd "$RUNTIME" && sha256sum -c SHA256SUMS >/dev/null)
 test "$(sha256sum "$MODEL_ROOT/config.json" | cut -d' ' -f1)" = "$MODEL_CONFIG_SHA256"
-test "$(sha256sum "$ADAPTER_CHECKPOINT" | cut -d' ' -f1)" = "$ADAPTER_CHECKPOINT_SHA256"
+if [[ "$CONTROL" == "independent_commitment" ]]; then
+  : "${ADAPTER_CHECKPOINT:?independent checkpoint is required}"
+  : "${ADAPTER_CHECKPOINT_SHA256:?independent checkpoint hash is required}"
+fi
+if [[ -n "${ADAPTER_CHECKPOINT:-}" ]]; then
+  test "$(sha256sum "$ADAPTER_CHECKPOINT" | cut -d' ' -f1)" = \
+    "$ADAPTER_CHECKPOINT_SHA256"
+fi
 test "$(sha256sum "$DATA" | cut -d' ' -f1)" = "$DATA_SHA256"
 test "$(sha256sum "$DATA_REPORT" | cut -d' ' -f1)" = "$DATA_REPORT_SHA256"
 test ! -e "$CANDIDATES_OUTPUT"
@@ -43,13 +50,16 @@ export TOKENIZERS_PARALLELISM=false
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
 nvidia-smi
+ADAPTER_ARGS=()
+if [[ -n "${ADAPTER_CHECKPOINT:-}" ]]; then
+  ADAPTER_ARGS+=(--adapter-checkpoint "$ADAPTER_CHECKPOINT")
+fi
 "$PYTHON" "$RUNTIME/train/ttr1_control_evaluate.py" \
   --control "$CONTROL" \
   --model-root "$EFFECTIVE_MODEL_ROOT" \
   --model-source-root "$SOURCE_MODEL_ROOT" \
   --model-revision "$MODEL_REVISION" \
   --model-loader auto \
-  --adapter-checkpoint "$ADAPTER_CHECKPOINT" \
   --data "$DATA" \
   --data-report "$DATA_REPORT" \
   --split "$SPLIT" \
@@ -57,6 +67,7 @@ nvidia-smi
   --report "$REPORT" \
   --batch-size 2 \
   --shard-index "$SHARD_INDEX" \
-  --shard-count "$SHARD_COUNT"
+  --shard-count "$SHARD_COUNT" \
+  "${ADAPTER_ARGS[@]}"
 chmod a-w "$CANDIDATES_OUTPUT" "$REPORT"
 sha256sum "$CANDIDATES_OUTPUT" "$REPORT"

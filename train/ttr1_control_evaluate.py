@@ -252,8 +252,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "loaded_model_root": str(args.model_root.resolve()),
         "model_revision": args.model_revision,
         "model_loader": model_loader,
-        "adapter_checkpoint": str(args.adapter_checkpoint.resolve()),
-        "adapter_checkpoint_sha256": sha256_file(args.adapter_checkpoint),
+        "adapter_checkpoint": (
+            str(args.adapter_checkpoint.resolve()) if args.adapter_checkpoint else None
+        ),
+        "adapter_checkpoint_sha256": (
+            sha256_file(args.adapter_checkpoint) if args.adapter_checkpoint else None
+        ),
         "adapter_metadata": adapter_metadata,
         "data": str(args.data.resolve()),
         "data_sha256": sha256_file(args.data),
@@ -286,7 +290,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-source-root", type=Path, required=True)
     parser.add_argument("--model-revision", required=True)
     parser.add_argument("--model-loader", choices=("auto", "causal"), default="auto")
-    parser.add_argument("--adapter-checkpoint", type=Path, required=True)
+    parser.add_argument("--adapter-checkpoint", type=Path)
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--data-report", type=Path, required=True)
     parser.add_argument("--split", choices=("development", "holdout"), required=True)
@@ -299,6 +303,8 @@ def parse_args() -> argparse.Namespace:
     args = parser.parse_args()
     if args.batch_size <= 0:
         parser.error("batch size must be positive")
+    if args.control == "independent_commitment" and args.adapter_checkpoint is None:
+        parser.error("independent commitment requires an adapter checkpoint")
     return args
 
 

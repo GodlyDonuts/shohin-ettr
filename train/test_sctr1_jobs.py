@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parent
 TRAIN = (ROOT / "jobs" / "hf_sctr1_train.sbatch").read_text(encoding="utf-8")
 EVAL = (ROOT / "jobs" / "hf_sctr1_evaluate.sbatch").read_text(encoding="utf-8")
 DRAFTS = (ROOT / "jobs" / "submit_sctr1_base_drafts.sh").read_text(encoding="utf-8")
+CONTROL = (ROOT / "jobs" / "ttr1_control_evaluate.sbatch").read_text(encoding="utf-8")
 
 
 def test_temporal_role_fit_supports_only_predeclared_arms() -> None:
@@ -28,3 +29,8 @@ def test_base_drafts_are_parallel_and_adapter_free() -> None:
     assert "jobs=17" in DRAFTS
     assert "ADAPTER_CHECKPOINT" not in DRAFTS
     assert "MODEL_MANIFEST_SHA256" in DRAFTS
+
+
+def test_standard_controls_allow_base_owner_but_bind_independent_adapter() -> None:
+    assert 'if [[ "$CONTROL" == "independent_commitment" ]]' in CONTROL
+    assert 'ADAPTER_ARGS+=(--adapter-checkpoint "$ADAPTER_CHECKPOINT")' in CONTROL
