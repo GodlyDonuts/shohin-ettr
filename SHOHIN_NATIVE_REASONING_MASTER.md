@@ -34,7 +34,7 @@ answers; the strict all-domain gate correctly fails.
 ### Current blocker: dense-to-MoE transfer
 
 The first sparse host is pinned `OLMoE-1B-7B-0125-Instruct`: 7B total,
-approximately 1B active, 64 experts, eight active per token. Two exact
+approximately 1B active, 64 experts, eight active per token. Three exact
 development gates are closed:
 
 1. **MTR1 shared-attention revision:** rank-8 LoRA in the final four shared
@@ -47,13 +47,19 @@ development gates are closed:
    versus `191` for matched rank-1 attention and unchanged, and remains below
    MTR1. Static token-local late routing does not create a useful correction
    operator.
+3. **ECR1 expert-conditioned post-MoE residual:** final-four ECR scores
+   `221/1,289` versus parameter-matched shared `223`, and true
+   draft-unavailable `224`. Zero/mean/permutation interventions leave ECR
+   exactly unchanged. The sole all-16-layer follow-up raises ECR to `240`, but
+   matched shared reaches `239`; the one-answer margin fails the frozen
+   39-answer gate. ECR1, its holdout, and 35B scaling are closed.
 
 These results do not show that temporal revision is incompatible with MoE.
-They show that neither shared late capacity with nearly fixed routes nor
-static rerouting among frozen experts is sufficient. The unresolved causes
-are expert-side capacity, temporal credit assignment, lack of persistent
-draft diagnosis, late intervention depth, discontinuous top-k geometry, and
-the approximately-1B active-capacity boundary.
+They show that shared correction capacity produces a modest effect, while
+static rerouting and low-rank modulation by expert identity do not explain it.
+The unresolved causes are expert-side revision capacity, temporal credit
+assignment, lack of persistent draft diagnosis, discontinuous top-k geometry,
+and the approximately-1B active-capacity boundary.
 
 ### Immediate critical path
 
@@ -70,14 +76,13 @@ work returns exclusively to the MoE architecture problem:
 4. permit small expert-side revision adapters only if evidence indicates that
    routing among frozen experts lacks the needed computation.
 
-The leading candidate maintains a persistent source/draft discrepancy state
-across revision tokens, uses it to produce bounded router deltas, and controls
-a shared low-rank basis inside selected expert paths. Required controls are
-router-only recurrence, expert-adapter-only, equal-active-parameter shared
-attention, and shuffled/draft-masked control. Accuracy must be accompanied by
-active-parameter, FLOP, latency, memory, route-divergence, entropy, and expert-
-load receipts. This is a hypothesis awaiting attribution and a frozen gate,
-not a claimed result.
+The next admissible mechanism must remove ECR's shared-transform/code-collapse
+failure. The leading bounded candidate gives each frozen native expert a
+complete tiny revision residual selected by the untouched router, then compares
+it against both active-FLOP-matched and total-parameter-matched shared residuals.
+This is a hypothesis awaiting a frozen contract and mechanics gate, not a
+claimed result. It must causally depend on expert assignment and materially
+beat generic correction before any holdout or large-MoE run.
 
 The small OLMoE development board remains the proving ground. Its sealed
 holdout and the larger `Qwen3.6-35B-A3B` campaign remain prohibited until a

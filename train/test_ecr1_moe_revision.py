@@ -197,3 +197,43 @@ def test_parser_rejects_unfrozen_geometry(monkeypatch):
     )
     with pytest.raises(SystemExit):
         parse_args()
+
+
+@pytest.mark.parametrize(
+    ("mode", "rank"),
+    (("selected_expert", 1), ("shared", 8), ("shared", 64)),
+)
+def test_parser_accepts_frozen_ser1_geometry(monkeypatch, mode, rank):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "train_ecr1_product.py",
+            "--model-root",
+            "model",
+            "--model-revision",
+            "revision",
+            "--data",
+            "data.jsonl",
+            "--output",
+            "output",
+            "--architecture",
+            "ser1",
+            "--mode",
+            mode,
+            "--controlled-layers",
+            "16",
+            "--rank",
+            str(rank),
+            "--alpha",
+            str(rank),
+        ],
+    )
+    args = parse_args()
+    assert args.architecture == "ser1"
+    assert (args.mode, args.controlled_layers, args.rank, args.alpha) == (
+        mode,
+        16,
+        rank,
+        float(rank),
+    )

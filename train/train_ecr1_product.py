@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Train the frozen ECR1 treatment or its matched shared residual."""
+"""Train a frozen ECR1/SER1 MoE residual or its matched shared control."""
 
 from __future__ import annotations
 
@@ -135,7 +135,7 @@ def run(args: argparse.Namespace) -> dict:
     from transformers import AutoTokenizer
 
     if args.output.exists() or args.quantization != "none":
-        raise ProductReasoningTrainError("ECR1 output exists or quantization differs")
+        raise ProductReasoningTrainError("MoE residual output exists or quantization differs")
     args.output.mkdir(parents=True)
     random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -150,29 +150,49 @@ def run(args: argparse.Namespace) -> dict:
         device_map={"": 0},
         quantization=args.quantization,
     )
-    config = ECR1Config(
-        hidden_size=int(backbone.config.hidden_size),
-        num_experts=int(backbone.config.num_experts),
-        experts_per_token=int(backbone.config.num_experts_per_tok),
-        controlled_layers=args.controlled_layers,
-        rank=args.rank,
-        alpha=args.alpha,
-        mode=args.mode,
-    )
-    model = ECR1ProductModel(
-        backbone,
-        config,
-        draft_control=args.draft_control,
-    ).to("cuda:0")
+    config_kwargs = {
+        "hidden_size": int(backbone.config.hidden_size),
+        "num_experts": int(backbone.config.num_experts),
+        "experts_per_token": int(backbone.config.num_experts_per_tok),
+        "controlled_layers": args.controlled_layers,
+        "rank": args.rank,
+        "alpha": args.alpha,
+        "mode": args.mode,
+    }
+    if args.architecture == "ecr1":
+        config = ECR1Config(**config_kwargs)
+        model = ECR1ProductModel(
+            backbone, config, draft_control=args.draft_control
+        ).to("cuda:0")
+        architecture_name = "shohin-ecr1-moe-revision-v1"
+        config_key = "ecr1_config"
+        draft_key = "ecr1_draft_control"
+    else:
+        from ser1_moe_revision import SER1Config, SER1ProductModel
+
+        config = SER1Config(**config_kwargs)
+        model = SER1ProductModel(
+            backbone, config, draft_control=args.draft_control
+        ).to("cuda:0")
+        architecture_name = "shohin-ser1-moe-revision-v1"
+        config_key = "ser1_config"
+        draft_key = "ser1_draft_control"
     trainable_names = sorted(
         name for name, parameter in model.named_parameters() if parameter.requires_grad
     )
     if not trainable_names or any(".base." in name for name in trainable_names):
-        raise ProductReasoningTrainError("ECR1 exposed a protected base parameter")
-    expected = 515_840 if args.mode == "expert_conditioned" else 524_288
-    if args.controlled_layers == 4 and args.rank in {31, 32}:
-        if model.trainable_parameter_count() != expected:
-            raise ProductReasoningTrainError("ECR1 parameter receipt differs")
+        raise ProductReasoningTrainError("MoE residual exposed a protected base parameter")
+    expected_parameters = {
+        ("ecr1", "expert_conditioned", 4, 31): 515_840,
+        ("ecr1", "shared", 4, 32): 524_288,
+        ("ecr1", "expert_conditioned", 16, 8): 532_480,
+        ("ecr1", "shared", 16, 8): 524_288,
+        ("ser1", "selected_expert", 16, 1): 4_194_304,
+        ("ser1", "shared", 16, 8): 524_288,
+        ("ser1", "shared", 16, 64): 4_194_304,
+    }[(args.architecture, args.mode, args.controlled_layers, args.rank)]
+    if model.trainable_parameter_count() != expected_parameters:
+        raise ProductReasoningTrainError("MoE residual parameter receipt differs")
     rows, data_sha256 = reservoir_rows_with_sha256(args.data, args.max_rows, args.data_seed)
     prompt_rows, response_rows, attention_rows, sequence_custody = (
         tokenize_complete_revision_rows(tokenizer, rows, args.max_sequence_length)
@@ -186,12 +206,16 @@ def run(args: argparse.Namespace) -> dict:
         weight_decay=0.01,
         fused=True,
     )
-    adapter_macs_per_token_per_layer = (
-        2 * config.hidden_size * config.rank
-        + (config.experts_per_token * config.rank if config.mode == "expert_conditioned" else 0)
-    )
+    if args.architecture == "ser1" and config.mode == "selected_expert":
+        adapter_macs_per_token_per_layer = (
+            config.experts_per_token * 2 * config.hidden_size * config.rank
+        )
+    else:
+        adapter_macs_per_token_per_layer = 2 * config.hidden_size * config.rank
+        if args.architecture == "ecr1" and config.mode == "expert_conditioned":
+            adapter_macs_per_token_per_layer += config.experts_per_token * config.rank
     metadata = {
-        "architecture": "shohin-ecr1-moe-revision-v1",
+        "architecture": architecture_name,
         "arm": "baseline",
         "model_root": str((args.model_source_root or args.model_root).resolve()),
         "loaded_model_root": str(args.model_root.resolve()),
@@ -204,8 +228,8 @@ def run(args: argparse.Namespace) -> dict:
         "selected_rows": len(rows),
         "seed": args.seed,
         "data_seed": args.data_seed,
-        "ecr1_config": asdict(config),
-        "ecr1_draft_control": args.draft_control,
+        config_key: asdict(config),
+        draft_key: args.draft_control,
         "trainable_parameters": model.trainable_parameter_count(),
         "trainable_parameter_name_sha256": model.trainable_parameter_name_sha256(),
         "protected_router_expert_trainables": 0,
@@ -275,7 +299,11 @@ def run(args: argparse.Namespace) -> dict:
     torch.cuda.synchronize()
     elapsed = time.monotonic() - started
     report = {
-        "schema": "shohin-ecr1-product-training-v1",
+        "schema": (
+            "shohin-ecr1-product-training-v1"
+            if args.architecture == "ecr1"
+            else "shohin-ser1-product-training-v1"
+        ),
         "status": "complete",
         **metadata,
         "updates": update,
@@ -303,7 +331,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--quantization", choices=("none",), default="none")
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--mode", choices=("expert_conditioned", "shared"), required=True)
+    parser.add_argument("--architecture", choices=("ecr1", "ser1"), default="ecr1")
+    parser.add_argument(
+        "--mode", choices=("expert_conditioned", "selected_expert", "shared"), required=True
+    )
     parser.add_argument("--draft-control", choices=("normal", "draft_unavailable"), default="normal")
     parser.add_argument("--updates", type=int, default=256)
     parser.add_argument("--batch-size", type=int, default=1)
@@ -333,12 +364,14 @@ def parse_args() -> argparse.Namespace:
     if any(value <= 0 for value in positive) or args.alpha <= 0 or args.learning_rate <= 0:
         parser.error("ECR1 training dimensions differ")
     allowed_geometry = {
-        "expert_conditioned": {(4, 31, 31.0), (16, 8, 8.0)},
-        "shared": {(4, 32, 32.0), (16, 8, 8.0)},
+        ("ecr1", "expert_conditioned"): {(4, 31, 31.0), (16, 8, 8.0)},
+        ("ecr1", "shared"): {(4, 32, 32.0), (16, 8, 8.0)},
+        ("ser1", "selected_expert"): {(16, 1, 1.0)},
+        ("ser1", "shared"): {(16, 8, 8.0), (16, 64, 64.0)},
     }
     geometry = (args.controlled_layers, args.rank, args.alpha)
-    if geometry not in allowed_geometry[args.mode]:
-        parser.error("ECR1 geometry is not frozen")
+    if geometry not in allowed_geometry.get((args.architecture, args.mode), set()):
+        parser.error("MoE residual geometry is not frozen")
     return args
 
 

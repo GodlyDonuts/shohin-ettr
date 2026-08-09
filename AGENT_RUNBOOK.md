@@ -1,5 +1,22 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **ECR1 CLOSED ON OLMOE — 2026-08-09:** The sole predeclared all-layer
+> follow-up completed. Rank-8 all-16-layer ECR job `747159` used exactly
+> `532,480` trainables, 256 updates, 338,620 charged target tokens, `748.36`
+> tok/s, and 21.919 GB peak; matched shared job `747160` used `524,288`, the
+> same updates/tokens, `767.16` tok/s, and 21.911 GB peak. Sixteen autonomous
+> evaluation shards and comparison `747269` score ECR `240/1,289 = 18.6191%`
+> versus shared `239 = 18.5415%`, unchanged `191`, and MTR1 `204`. ECR domains
+> are math `55`, logic/science `180`, code `5`. Domain floors pass, but the
+> absolute `256` gate and `+39` matched-control margin fail (`+1` observed).
+> Comparison SHA-256 is
+> `320076637af912e194b315ab6e7589240602126b8ab505184bdf2f499c602166`.
+> Stage-2 code/draft controls, holdout, and 35B scaling are unauthorized.
+> Combined with final-four zero/mean/permutation invariance, ECR1 establishes
+> that more generic post-MoE correction depth helps, but provides no causal
+> evidence that its expert codes contribute. Close this exact family; do not
+> run rank/layer/seed/duration rescues.
+
 > **ECR1 FINAL-FOUR CLOSED / CONDITIONAL DEPTH AUTHORIZED — 2026-08-09:**
 > All 48 exact development shards and comparison job `747154` completed.
 > Expert-conditioned ECR scores `221/1,289 = 17.1451%`, versus matched shared

@@ -22,10 +22,11 @@ model family.
 
 The architecture has produced large, source-disjoint gains on dense Qwen
 models from 0.8B through 9B and a strong aggregate gain on dense SmolLM3-3B.
-It has **not yet transferred successfully to a sparse Mixture-of-Experts
-(MoE) host**. Small-OLMoE experiments show that neither late shared-attention
-adaptation nor a small static router-logit residual is sufficient. Solving
-that dense-to-MoE boundary is the current critical path.
+It has **not yet transferred strongly to a sparse Mixture-of-Experts (MoE)
+host**. Small-OLMoE experiments show that late shared-attention adaptation,
+static router-logit residuals, and shared post-MoE residuals weakly modulated
+by native expert codes all provide at most modest gains. Solving that
+dense-to-MoE boundary is the current critical path.
 
 Historical ETTR graph-reactor and synthetic compiled-state experiments remain
 valuable research history, but they are not the current deployable Shohin

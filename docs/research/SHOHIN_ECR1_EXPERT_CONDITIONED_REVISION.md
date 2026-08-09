@@ -1,8 +1,7 @@
 # ECR1: Expert-Conditioned Revision Residual
 
-Status: frozen implementation and one-update mechanics contract, 2026-08-09.
-No 256-update fit or holdout access is authorized until the mechanics receipt
-passes unchanged.
+Status: closed negative on OLMoE, 2026-08-09. Holdout and larger-MoE scaling
+remain unauthorized.
 
 ## Why DREM1 is not decisive
 
@@ -113,3 +112,25 @@ Core: `train/ecr1_moe_revision.py`. Trainer:
 `train/train_ecr1_product.py`. Slurm entry point:
 `train/jobs/train_ecr1_product.sbatch`. Autonomous loading and exact draft-key
 masking are integrated into `train/hf_product_reasoning_eval.py`.
+
+## Results and decision
+
+Final-four development scores are ECR `221/1,289`, shared `223`, and true
+draft-unavailable `224`, versus unchanged `191` and MTR1 `204`. Zeroing,
+averaging, or permuting the learned expert codes leaves ECR exactly unchanged
+at `221`; expert identity is decorative in this parameterization. The exact
+comparison SHA-256 is
+`0b10336326f87b0e1b07114b98a6dde6cd02c0a06140d43502199f408a92ab72`.
+
+The predeclared all-layer follow-up was eligible and completed. Rank-8 ECR
+uses exactly `532,480` trainables and scores `240/1,289 = 18.6191%`; rank-8
+shared uses `524,288` and scores `239 = 18.5415%`. ECR domain counts are
+math `55`, logic/science `180`, and code `5`. Domain floors pass, but ECR
+misses the `256` floor and beats shared by one answer rather than 39. Exact
+comparison SHA-256 is
+`320076637af912e194b315ab6e7589240602126b8ab505184bdf2f499c602166`.
+
+Therefore Stage 2, holdout, and 35B scaling are blocked. ECR1 is closed on
+OLMoE without rank, layer, seed, duration, or loss rescue. The supported
+boundary is generic post-MoE correction capacity, not expert-conditioned
+sparse correction.

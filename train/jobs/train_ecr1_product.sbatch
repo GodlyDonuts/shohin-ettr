@@ -36,7 +36,8 @@ nvidia-smi
 "$PYTHON" "$RUNTIME/train/train_ecr1_product.py" \
   --model-root "$EFFECTIVE_MODEL_ROOT" --model-source-root "$MODEL_ROOT" \
   --model-revision "$MODEL_REVISION" --model-loader causal --data "$DATA" \
-  --output "$OUTPUT" --mode "$MODE" --draft-control "$DRAFT_CONTROL" \
+  --output "$OUTPUT" --architecture "${ARCHITECTURE:-ecr1}" \
+  --mode "$MODE" --draft-control "$DRAFT_CONTROL" \
   --updates "$UPDATES" --rank "$RANK" --alpha "$ALPHA" \
   --batch-size "${BATCH_SIZE:-1}" --gradient-accumulation "${ACCUMULATION:-1}" \
   --max-rows "${MAX_ROWS:-8}" --max-sequence-length "${MAX_LENGTH:-4096}" \

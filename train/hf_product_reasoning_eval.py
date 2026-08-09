@@ -708,6 +708,17 @@ def _load_model(
             ECR1Config(**ecr),
             draft_control=str(metadata.get("ecr1_draft_control", "normal")),
         ).to("cuda:0")
+    elif metadata.get("architecture") == "shohin-ser1-moe-revision-v1":
+        from ser1_moe_revision import SER1Config, SER1ProductModel
+
+        ser = metadata.get("ser1_config")
+        if not isinstance(ser, dict):
+            raise ProductEvalError("SER1 checkpoint config is missing")
+        model = SER1ProductModel(
+            backbone,
+            SER1Config(**ser),
+            draft_control=str(metadata.get("ser1_draft_control", "normal")),
+        ).to("cuda:0")
     else:
         model = ProductReasoningModel(
             backbone=backbone,
