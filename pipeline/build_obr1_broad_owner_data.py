@@ -48,6 +48,16 @@ def grams(text: str, width: int) -> set[str]:
     }
 
 
+def unique_development_grams(
+    questions: list[str], width: int
+) -> tuple[set[str], int]:
+    frequencies: Counter[str] = Counter()
+    for question in questions:
+        frequencies.update(grams(question, width))
+    unique = {gram for gram, count in frequencies.items() if count == 1}
+    return unique, len(frequencies) - len(unique)
+
+
 def development_question(row: dict[str, Any]) -> str:
     internal = row.get("internal_draft")
     assessor = row.get("assessor")
@@ -139,10 +149,11 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
     development_rows = [
         json.loads(line) for line in args.development.read_text().splitlines() if line
     ]
-    exact = {normalized_question(development_question(row)) for row in development_rows}
-    ngrams: set[str] = set()
-    for row in development_rows:
-        ngrams.update(grams(development_question(row), args.ngram))
+    development_questions = [development_question(row) for row in development_rows]
+    exact = {normalized_question(question) for question in development_questions}
+    ngrams, repeated_ngram_count = unique_development_grams(
+        development_questions, args.ngram
+    )
     if not exact or not ngrams:
         raise OBR1DataError("development overlap boundary is empty")
 
@@ -246,6 +257,8 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         "development_report_sha256": sha256_file(args.development_report),
         "holdout_used": False,
         "ngram": args.ngram,
+        "development_unique_ngram_count": len(ngrams),
+        "development_repeated_boilerplate_ngram_count": repeated_ngram_count,
         "max_sequence_length": args.max_sequence_length,
         "complete_retention": True,
         "source_rows": int(source_report["selected_rows"]),

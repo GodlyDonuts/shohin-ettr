@@ -57,6 +57,8 @@ OBR1 preserves the strongest simple OLMoE architecture (all-16-layer rank-18
 shared post-MoE residual) but trains it for 2,048 updates on the existing
 verified 16M-target-token broad mix, freshly tokenized by OLMoE and hard
 filtered against development by normalized exact match and word 13-grams.
+Repeated cross-question benchmark-format 13-grams are excluded from the
+content-collision set; development-unique 13-grams remain hard filters.
 The owner must reach `300/1,289` with domain floors `75/215/10` before any new
 draft corpus is generated. Only that pass opens MPR3, whose aligned exact
 model-owned draft arm must beat the direct owner by 39 answers and matched

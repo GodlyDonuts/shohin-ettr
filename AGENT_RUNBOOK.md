@@ -14,6 +14,14 @@
 > net `>=13`. Only development plus one sealed holdout pass authorizes larger
 > MoE transfer. Contract:
 > `docs/research/SHOHIN_OBR1_BROAD_OWNER_AND_MPR3_GATE.md`.
+> Initial CPU build `748004` failed before output because a naive all-13-gram
+> filter removed every science row through shared multiple-choice boilerplate,
+> dropping the corpus just below the frozen 12M-token floor; dispatcher
+> `748005` was canceled dependency-held. Read-only calibration found 449
+> repeated boilerplate n-grams. The corrected prospective filter keeps exact
+> matches and development-unique 13-grams, still removing 55 exact and 282
+> content collisions while retaining 51,839 rows including 1,613 science
+> rows. No capability output was generated or inspected.
 
 > **DPR1 K=8 MODEL-OWNED DRAFT-PANEL CEILING CLOSED — 2026-08-09:** MPR2's
 > owner+aligned oracle is only `265/1,289`, so no selector over that pair can

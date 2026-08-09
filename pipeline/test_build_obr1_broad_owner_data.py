@@ -3,6 +3,7 @@ from build_obr1_broad_owner_data import (
     grams,
     normalized_question,
     overlap_kind,
+    unique_development_grams,
 )
 
 
@@ -26,3 +27,12 @@ def test_development_question_prefers_model_owned_source():
         "assessor": {"question": "assessor source"},
     }
     assert development_question(row) == "owned source"
+
+
+def test_repeated_development_boilerplate_is_not_a_content_collision():
+    common = "one two three four five six seven eight nine ten eleven twelve thirteen"
+    unique, repeated = unique_development_grams(
+        [f"{common} alpha", f"{common} beta"], 13
+    )
+    assert common not in unique
+    assert repeated > 0

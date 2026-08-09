@@ -42,7 +42,10 @@ owner rather than a temporal-revision treatment.
 Before training, the builder must:
 
 1. remove exact normalized collisions with all 1,289 development sources;
-2. remove any shared normalized word 13-gram with a development source;
+2. remove any shared development-unique normalized word 13-gram with a
+   development source; n-grams repeated across development sources are
+   benchmark-format boilerplate and are counted but excluded from the
+   content-collision set;
 3. deduplicate source questions;
 4. reject any row whose complete OLMoE-tokenized source, envelope, and target
    exceed 4,096 tokens;
