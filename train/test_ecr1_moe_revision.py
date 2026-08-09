@@ -1,3 +1,6 @@
+import sys
+
+import pytest
 import torch
 import torch.nn as nn
 
@@ -7,6 +10,7 @@ from ecr1_moe_revision import (
     ExpertConditionedResidualMoE,
     expert_code_diagnostics,
 )
+from train_ecr1_product import parse_args
 
 
 class FakeGate(nn.Module):
@@ -101,6 +105,13 @@ def test_olmoe_parameter_receipts_are_exact():
     assert shared == 524_288
 
 
+def test_olmoe_depth_followup_parameter_receipts_are_exact():
+    ecr = 16 * (8 * 2048 + 2048 * 8 + 64 * 8)
+    shared = 16 * (8 * 2048 + 2048 * 8)
+    assert ecr == 532_480
+    assert shared == 524_288
+
+
 def test_receipt_separates_load_and_per_token_entropy():
     wrapped = ExpertConditionedResidualMoE(FakeBlock(), config())
     wrapped(torch.randn(2, 4, 8))
@@ -115,3 +126,74 @@ def test_code_diagnostics_report_rank_and_cosine():
     diagnostics = expert_code_diagnostics(torch.eye(4))
     assert diagnostics["effective_rank"] == 4
     assert diagnostics["pairwise_cosine_abs_mean"] == 0
+
+
+@pytest.mark.parametrize(
+    ("mode", "layers", "rank", "alpha"),
+    (
+        ("expert_conditioned", 4, 31, 31),
+        ("shared", 4, 32, 32),
+        ("expert_conditioned", 16, 8, 8),
+        ("shared", 16, 8, 8),
+    ),
+)
+def test_parser_accepts_only_frozen_geometry(
+    monkeypatch, mode, layers, rank, alpha
+):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "train_ecr1_product.py",
+            "--model-root",
+            "model",
+            "--model-revision",
+            "revision",
+            "--data",
+            "data.jsonl",
+            "--output",
+            "output",
+            "--mode",
+            mode,
+            "--controlled-layers",
+            str(layers),
+            "--rank",
+            str(rank),
+            "--alpha",
+            str(alpha),
+        ],
+    )
+    args = parse_args()
+    assert (args.controlled_layers, args.rank, args.alpha) == (
+        layers,
+        rank,
+        float(alpha),
+    )
+
+
+def test_parser_rejects_unfrozen_geometry(monkeypatch):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "train_ecr1_product.py",
+            "--model-root",
+            "model",
+            "--model-revision",
+            "revision",
+            "--data",
+            "data.jsonl",
+            "--output",
+            "output",
+            "--mode",
+            "expert_conditioned",
+            "--controlled-layers",
+            "16",
+            "--rank",
+            "9",
+            "--alpha",
+            "9",
+        ],
+    )
+    with pytest.raises(SystemExit):
+        parse_args()

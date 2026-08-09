@@ -332,10 +332,13 @@ def parse_args() -> argparse.Namespace:
     )
     if any(value <= 0 for value in positive) or args.alpha <= 0 or args.learning_rate <= 0:
         parser.error("ECR1 training dimensions differ")
-    if args.mode == "expert_conditioned" and (args.rank, args.alpha) != (31, 31):
-        parser.error("final-four ECR1 geometry differs")
-    if args.mode == "shared" and (args.rank, args.alpha) != (32, 32):
-        parser.error("final-four shared geometry differs")
+    allowed_geometry = {
+        "expert_conditioned": {(4, 31, 31.0), (16, 8, 8.0)},
+        "shared": {(4, 32, 32.0), (16, 8, 8.0)},
+    }
+    geometry = (args.controlled_layers, args.rank, args.alpha)
+    if geometry not in allowed_geometry[args.mode]:
+        parser.error("ECR1 geometry is not frozen")
     return args
 
 
