@@ -902,10 +902,14 @@ def _generate_adapter(
                 encoded["input_ids"],
                 encoded["attention_mask"],
             )
+        extra_arguments = {}
+        if hasattr(model, "generation_position_ids"):
+            extra_arguments["position_ids"] = model.generation_position_ids()
         return model.backbone.generate(
             inputs_embeds=embeddings,
             attention_mask=attention,
             pad_token_id=pad_token_id,
+            **extra_arguments,
             **generation_arguments,
         )
 

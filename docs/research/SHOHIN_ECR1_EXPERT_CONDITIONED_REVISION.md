@@ -50,6 +50,8 @@ Only A/B/C train. Total trainables are exactly `515,840`. Additional work is
 3. **Draft-unavailable ECR1:** identical ECR parameters, input IDs, positions,
    and training rows; draft-token keys receive zero attention in the complete
    second pass. This is a full-model causal key mask, not pooled-vector zeroing.
+   Generation passes explicit original prompt position IDs so internal zero
+   attention entries cannot compress positions.
 
 Every arm receives 256 AdamW updates, LR `2e-5`, seed `2026080901`, data seed
 `2026080814`, and the exact MTR1/RCR1 9,655-row training population. Context is

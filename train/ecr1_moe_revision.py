@@ -250,6 +250,7 @@ class ECR1ProductModel(nn.Module):
         self.draft_control = draft_control
         self.blocks = nn.ModuleList(install_ecr1_blocks(self.text_model.layers, config))
         self._generation_prompt_attention: torch.Tensor | None = None
+        self._generation_position_ids: torch.Tensor | None = None
 
     def sequence_workspace_slots(self) -> int:
         return 0
@@ -313,6 +314,9 @@ class ECR1ProductModel(nn.Module):
         input_ids: torch.Tensor,
         attention_mask: torch.Tensor,
     ) -> None:
+        position_ids = attention_mask.long().cumsum(dim=-1) - 1
+        position_ids.masked_fill_(~attention_mask.bool(), 0)
+        self._generation_position_ids = position_ids
         if self.draft_control == "normal":
             self._generation_prompt_attention = attention_mask
             return
@@ -328,6 +332,11 @@ class ECR1ProductModel(nn.Module):
                 draft_attention, device=masked.device, dtype=masked.dtype
             )
         self._generation_prompt_attention = masked
+
+    def generation_position_ids(self) -> torch.Tensor:
+        if self._generation_position_ids is None:
+            raise ECR1Error("generation positions are absent")
+        return self._generation_position_ids
 
     def generation_embeddings(
         self,
