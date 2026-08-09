@@ -146,11 +146,17 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
                 "draft_tokens": len(tokenizer.encode(draft, add_special_tokens=False)),
             }
         )
-    if len({row["source_id"] for row in parsed}) != len(parsed):
-        raise MPR1DataError("MPR1 source identity is duplicated")
-
-    donors = donor_map(parsed)
-    by_source = {row["source_id"]: row for row in parsed}
+    by_source: dict[str, dict[str, Any]] = {}
+    for row in parsed:
+        existing = by_source.setdefault(row["source_id"], row)
+        if (
+            existing["task"] != row["task"]
+            or existing["draft"] != row["draft"]
+            or existing["prefix"] != row["prefix"]
+            or existing["suffix"] != row["suffix"]
+        ):
+            raise MPR1DataError("MPR1 repeated source binding differs")
+    donors = donor_map(list(by_source.values()))
     aligned_rows, shuffled_rows = [], []
     counters: Counter[str] = Counter()
     token_maxima = Counter()
@@ -190,11 +196,14 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
                 "complete_target_retained": True,
             }
         )
+        presentation_id = str(row.get("identity_sha256", ""))
+        if not presentation_id:
+            raise MPR1DataError("MPR1 presentation identity is absent")
         aligned_rows.append(
             {
                 **common,
                 "identity_sha256": hashlib.sha256(
-                    f"mpr1-aligned\0{parsed_row['source_id']}".encode()
+                    f"mpr1-aligned\0{presentation_id}".encode()
                 ).hexdigest(),
                 "question": aligned_prompt,
                 "draft_control": "aligned_exact_olmoe",
@@ -204,7 +213,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
             {
                 **common,
                 "identity_sha256": hashlib.sha256(
-                    f"mpr1-shuffled\0{parsed_row['source_id']}".encode()
+                    f"mpr1-shuffled\0{presentation_id}".encode()
                 ).hexdigest(),
                 "question": shuffled_prompt,
                 "draft_control": "same_task_nearest_token_length",
@@ -251,6 +260,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         "pairs": str(args.pairs.resolve()),
         "pairs_sha256": sha256_file(args.pairs),
         "source_rows": len(source_rows),
+        "unique_source_identities": len(by_source),
         "admitted_rows_per_arm": len(aligned_rows),
         "rejected_rows": len(source_rows) - len(aligned_rows),
         "charged_target_tokens_per_arm": target_tokens,
@@ -284,4 +294,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

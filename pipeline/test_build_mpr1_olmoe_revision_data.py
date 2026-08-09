@@ -34,3 +34,10 @@ def test_donor_map_is_same_task_and_nonself_nearest():
     assert donors["c"] == "b"
     assert donors["d"] == "e" and donors["e"] == "d"
 
+
+def test_donor_map_uses_canonical_sources_not_presentations():
+    rows = [
+        {"task": "math500", "source_id": "a", "draft_tokens": 10},
+        {"task": "math500", "source_id": "b", "draft_tokens": 11},
+    ]
+    assert donor_map(rows) == {"a": "b", "b": "a"}
