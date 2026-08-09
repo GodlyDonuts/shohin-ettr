@@ -57,6 +57,14 @@ solutions exist, but post-hoc self-evaluation remains weaker than preserving
 the qualified first revision. The practical next step must improve the
 proposal/revision computation itself rather than stack another selector.
 
+The active bounded successor attacks a concrete supervision defect. Of 9,655
+IDR1 presentations, 3,294 source-verified repairs have median target length 11
+characters and 3,245 are boxed-answer-only. VFR1 first generates a train-only
+fault diagnosis followed by a complete verified revision, so the replacement
+tokens can causally attend to a model-owned error representation. A 128-row
+teacher-quality pilot precedes any full corpus or capability fit. This is a
+data-and-computation intervention, not yet a capability result.
+
 ### Current blocker: dense-to-MoE transfer
 
 The first sparse host is pinned `OLMoE-1B-7B-0125-Instruct`: 7B total,

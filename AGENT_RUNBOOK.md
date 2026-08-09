@@ -1,5 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **VFR1 TRAIN-ONLY QUALITY PILOT FROZEN — 2026-08-09:** A direct audit of
+> immutable IDR1 training data finds 3,294 source-verified-repair presentations
+> with median target length 11 characters; 3,245 are boxed-answer-only and
+> 3,214 are under 80 characters. This is 34.1% of training teaching answer
+> emission rather than fault localization and correction. VFR1 generates one
+> structured `<FAULT> -> <REVISION>` trace per 5,824 unique train identity
+> using pinned Qwen3.5-9B+B1 with the verified target visible only to the
+> offline teacher. The first and only immediate gate is 128 deterministic
+> train-only identities: >=95% strict parses, >=90% verifier-correct extracted
+> revisions, <=2% reference-language leakage, <=10% exhaustion, complete
+> hashes. A pass allows eight disjoint full-corpus shards; failure closes this
+> exact teacher format. No capability fit or development read is authorized by
+> the pilot. Contract:
+> `docs/research/SHOHIN_VFR1_VERIFIED_FAULT_FIRST_REVISION.md`.
+
 > **TCS1 TRAJECTORY SELECTOR CLOSED NEGATIVE — 2026-08-09:** The fixed
 > depth-one/depth-two/direct candidate pool has a real development oracle of
 > `615/1,289`, versus depth one `589`. CPU shape selection job `747538` scores
