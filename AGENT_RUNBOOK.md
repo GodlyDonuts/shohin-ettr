@@ -1,5 +1,21 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **CFR1 VERIFIED COUNTERFACTUAL REVISION ACTIVE — 2026-08-09:** After VFR1
+> proved the current 9B teacher cannot reliably author new full correction
+> traces, CFR1 removes online teacher generation. A Qwen-tokenizer-specific
+> 16M-target-token verified mix is building in CPU job `747606`; dependent CPU
+> job `747612` constructs two exactly target-matched 4,096-context revision
+> curricula. Each admitted verified source contributes one clean draft and one
+> decisively faulted draft; the control receives another source's same-domain,
+> near-length draft. Unverified teacher, code, and procedural rows are
+> excluded; any truncating source is rejected from both arms. Dispatcher
+> `747625` is held after data admission and will launch exactly one one-update
+> mechanics job, then matched 512-update aligned/shuffled fits only on success.
+> Frozen promotion is aligned `>=603/1,289`, `>=+10` over shuffled, and domains
+> `223/349/17`; any miss closes exact CFR1 without variants. Runtime
+> `cfr1_fe80947_r2` manifest SHA is `a9249af1...92c2`. Holdout remains sealed.
+> Contract: `docs/research/SHOHIN_CFR1_VERIFIED_COUNTERFACTUAL_REVISION.md`.
+
 > **VFR1 CLOSED BEFORE FULL GENERATION — 2026-08-09:** The sole frozen
 > 128-row train-only teacher pilot `747591` completed in 1,966.17 seconds but
 > produced only `7/128 = 5.47%` strict FAULT/REVISION parses and verified

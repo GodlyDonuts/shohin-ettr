@@ -69,6 +69,18 @@ offline teacher is too unreliable for the proposed corpus. Full generation
 and capability fitting were never authorized, and exact VFR1 is closed
 without format, decoding, context, seed, or threshold rescue.
 
+The active successor is CFR1, Verified Counterfactual Revision. It consumes a
+fresh Qwen-tokenizer-specific 16M-token verified corpus and mechanically turns
+each admitted full solution into one clean draft and one decisively faulted
+draft, while preserving the untouched verified solution as the target. The
+matched control receives another source's same-domain, near-length draft with
+the identical target-token stream. This tests aligned correction state against
+generic source-to-solution SFT without depending on a teacher to invent new
+reasoning. Unverified rows and every 4,096-token overflow are rejected before
+training. The sole planned capability pair is 512 matched updates from the
+immutable 9B B1 adapter, gated at `603/1,289`, `+10` over shuffled, and domain
+floors `223/349/17`; holdout remains sealed.
+
 ### Current blocker: dense-to-MoE transfer
 
 The first sparse host is pinned `OLMoE-1B-7B-0125-Instruct`: 7B total,
