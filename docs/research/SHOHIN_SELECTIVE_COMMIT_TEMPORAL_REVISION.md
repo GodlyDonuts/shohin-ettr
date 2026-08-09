@@ -79,6 +79,30 @@ The source-disjoint holdout remains sealed until every development condition
 passes. A failure closes exact SCTR1 without seed, rank, layer, duration,
 prompt, parser, or threshold rescue.
 
+### Frozen OLMo execution graph
+
+Source-only drafting uses 17 independent single-H100 shards over all 8,392
+training-bank identities. The resulting draft corpus is merged once, then the
+same identities and partitions produce selective and always-revise datasets.
+Four 256-update LoRA fits run at identical rank, layer count, learning rate,
+batching, and data budget:
+
+- selective commitment on the real command labels;
+- selective commitment on a deterministic within-task/count-stratum command
+  permutation;
+- independent selective commitment on the real labels while attention to the
+  complete internal-draft token span is zeroed without changing input IDs or
+  positions;
+- standard always-revise temporal training.
+
+The independent arm intentionally retains the exact selective prompt and
+`<KEEP>/<REVISE>` target space. Training it on a different always-revise
+prompt would confound draft access with task format. Unchanged-second-pass and
+long-single-generation controls use the unmodified OLMo backbone. Each of the
+six arms is evaluated over eight batch-aligned shards and merged only after
+exact identity/hash checks. Runtime `sctr1_1260cce_r6` and dispatcher `746411`
+encode this graph; holdout is not part of the dispatcher.
+
 ## Evidence Boundary
 
 A pass would show that model-owned temporal revision can preserve a complete

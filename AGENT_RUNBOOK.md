@@ -1,5 +1,29 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **SCTR1 OLMO2-7B FULL CAMPAIGN PRESTAGED — 2026-08-08 22:25 EDT:**
+> pinned OLMo download `746379`, loader mechanics `746381`, and complete data
+> mechanics `746382` passed. The source model is
+> `allenai/OLMo-2-1124-7B-Instruct@470b1fba...f4c84`; config SHA-256 is
+> `ff8cc870...664e` and the model manifest receipt SHA-256 is
+> `423f47f7...ba8f`. Sixteen math/logic source-draft shards
+> `746386--746401` are healthy around `168--248/512`; code shard `746402`
+> completed. Exact CPU merge/build `746405` is dependency-held behind them.
+>
+> The independent control was corrected before capability compute: it now
+> trains and evaluates on the identical selective `<KEEP>/<REVISE>` prompt and
+> targets, with only internal-draft attention keys masked at unchanged token
+> IDs/positions. Base controls now correctly use the unmodified causal model.
+> Focused tests are `15/15`; Ruff, bytecode, shell syntax, and diff checks pass.
+> Private main commit is `1260cce`. Immutable runtime
+> `sctr1_1260cce_r6` has SHA256SUMS SHA-256 `7fd65938...df79`.
+>
+> Dispatcher `746411` is dependency-held after build `746405`. It will launch
+> exactly four equal-256-update fits (selective, shuffled-command, masked
+> independent, always-revise), 48 eight-way development evaluation shards,
+> six exact merges, and one frozen comparison. Promotion requires every
+> condition in `SHOHIN_SELECTIVE_COMMIT_TEMPORAL_REVISION.md`; holdout remains
+> sealed. Do not alter or duplicate this graph.
+
 > **SCTR1 SUCCESSOR FROZEN / OLMO2-7B STAGING — 2026-08-08:** exact TTR1
 > remains closed. Read-only MBPP attribution found that the trained reviser
 > often generated semantically useful Python but corrupted its executable-only
@@ -16,7 +40,7 @@
 > `allenai/OLMo-2-1124-7B-Instruct@470b1fba1ae01581f270116362ee4aa1b97f4c84`.
 > Gemma 3 12B metadata was visible, but actual download returned the provider's
 > gated-access denial locally and on Newton; this is not a science result.
-> OLMo download job `746379` is live. SmolLM3 may be used only for mechanics,
+> OLMo download job `746379` completed. SmolLM3 may be used only for mechanics,
 > never to rescue or reinterpret its closed development gate. Existing
 > holdout remains sealed.
 

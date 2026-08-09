@@ -26,6 +26,16 @@ verifier. Its first capability gate is pinned OLMo2-7B-Instruct, a larger
 non-Qwen family. See
 `docs/research/SHOHIN_SELECTIVE_COMMIT_TEMPORAL_REVISION.md`.
 
+The first OLMo2-7B capability campaign is now fully dependency-gated. Pinned
+model download and causal-loader mechanics passed; 17 source-only draft shards
+were launched, with the code shard complete and all 16 math/logic shards
+healthy. After their exact merge, dispatcher `746411` launches four matched
+256-update fits and 48 evaluation shards. The causal independent control uses
+the same selective task but masks only the internal draft span. This isolates
+whether learned commitment uses the model-owned trajectory rather than merely
+benefiting from an equal-update adapter. Holdout remains unopened until the
+complete development conjunction passes.
+
 ## Latest Practical Reasoning Campaign — 2026-08-08
 
 **TTR1 transfers the learned draft/revision effect to SmolLM3-3B, but exact
