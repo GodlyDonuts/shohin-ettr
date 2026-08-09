@@ -68,6 +68,7 @@ export PYTHONPATH="$RUNTIME/pipeline:$RUNTIME/train"
 
 sha256sum \
   "$OUTPUT/train.jsonl" \
+  "$OUTPUT/train_shuffled.jsonl" \
   "$OUTPUT/development.jsonl" \
   "$OUTPUT/holdout.jsonl" \
   "$OUTPUT/report.json"

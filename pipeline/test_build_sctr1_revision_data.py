@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from build_sctr1_revision_data import selective_target
+from build_sctr1_revision_data import selective_target, shuffled_source_commands
 
 
 def _pair() -> dict:
@@ -30,3 +30,19 @@ def test_incorrect_draft_receives_complete_verified_revision() -> None:
     )
     assert target == "<REVISE>\nverified"
     assert kind == "revise_verified_candidate"
+
+
+def test_shuffled_commands_preserve_stratum_counts_and_change_assignments() -> None:
+    sources = {
+        f"{index:064x}": {
+            "task": "math500",
+            "presentations": 1,
+            "command": "keep" if index < 2 else "revise",
+        }
+        for index in range(6)
+    }
+    assigned = shuffled_source_commands(sources)
+    assert sorted(assigned.values()) == sorted(
+        source["command"] for source in sources.values()
+    )
+    assert any(assigned[key] != sources[key]["command"] for key in sources)

@@ -25,6 +25,7 @@ set -euo pipefail
 MODEL_LOADER=${MODEL_LOADER:-auto}
 UPDATES=${UPDATES:-256}
 TRAIN_KIND=${TRAIN_KIND:-selective_commit}
+DATA_KEY=${DATA_KEY:-train}
 
 BASE=/lustre/fs1/home/sa305415/shohin
 PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
@@ -46,7 +47,7 @@ printf '%s  %s\n' "$DATA_REPORT_SHA256" "$DATA_REPORT" \
   | sha256sum -c - >/dev/null
 test ! -e "$OUTPUT"
 
-"$PYTHON" - "$DATA" "$DATA_REPORT" "$TRAIN_KIND" <<'PY'
+"$PYTHON" - "$DATA" "$DATA_REPORT" "$TRAIN_KIND" "$DATA_KEY" <<'PY'
 import hashlib
 import json
 from pathlib import Path
@@ -54,8 +55,13 @@ import sys
 
 data, report_path = map(Path, sys.argv[1:3])
 train_kind = sys.argv[3]
+data_key = sys.argv[4]
 report = json.loads(report_path.read_text(encoding="utf-8"))
-expected = report.get("outputs", {}).get("train", {})
+if data_key not in ("train", "train_shuffled"):
+    raise SystemExit("temporal-role data key differs")
+if data_key == "train_shuffled" and train_kind != "selective_commit":
+    raise SystemExit("only selective commitment has shuffled supervision")
+expected = report.get("outputs", {}).get(data_key, {})
 schemas = {
     "selective_commit": "shohin-sctr1-selective-commit-data-report-v1",
     "always_revise": "shohin-idr1-revision-data-report-v1",

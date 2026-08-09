@@ -38,6 +38,7 @@ from sctr1_commit import (
 TRAIN_SCHEMA = "shohin-sctr1-selective-commit-train-v1"
 EVAL_SCHEMA = "shohin-sctr1-selective-commit-eval-v1"
 REPORT_SCHEMA = "shohin-sctr1-selective-commit-data-report-v1"
+SHUFFLE_SEED = 2026080825
 
 
 class SCTR1DataError(IDR1DataError):
@@ -53,6 +54,31 @@ def selective_target(
         return KEEP_COMMAND, "keep_verified_draft"
     revision, kind = training_target(pair, source)
     return f"{REVISE_COMMAND}\n{revision}", f"revise_{kind}"
+
+
+def shuffled_source_commands(
+    sources: dict[str, dict[str, Any]],
+) -> dict[str, str]:
+    """Permute commit labels within task and presentation-count strata."""
+
+    groups: dict[tuple[str, int], list[str]] = {}
+    for identity, source in sources.items():
+        key = (str(source["task"]), int(source["presentations"]))
+        groups.setdefault(key, []).append(identity)
+    assigned: dict[str, str] = {}
+    for identities in groups.values():
+        ordered = sorted(
+            identities,
+            key=lambda identity: hashlib.sha256(
+                f"{SHUFFLE_SEED}\0{identity}".encode()
+            ).digest(),
+        )
+        labels = [str(sources[identity]["command"]) for identity in ordered]
+        shifted = labels[1:] + labels[:1] if len(labels) > 1 else labels
+        assigned.update(zip(ordered, shifted, strict=True))
+    if set(assigned) != set(sources):
+        raise SCTR1DataError("SCTR1 shuffled command coverage differs")
+    return assigned
 
 
 def build(args: argparse.Namespace) -> dict[str, Any]:
@@ -83,6 +109,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
 
     args.output.mkdir(parents=True)
     train_rows: list[dict[str, Any]] = []
+    train_sources: dict[str, dict[str, Any]] = {}
     evaluation: dict[str, list[dict[str, Any]]] = {"development": [], "holdout": []}
     counts: dict[str, Counter[str]] = {split: Counter() for split in SPLITS}
     target_counts: Counter[str] = Counter()
@@ -110,6 +137,14 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         response, target_kind = selective_target(pair, source, draft)
         if split == "train":
             presentations = 4 if pair["outcome_class"] in ("base_only", "expert_only") else 1
+            revision, revision_kind = training_target(pair, source)
+            train_sources[identity] = {
+                "task": pair["task"],
+                "presentations": presentations,
+                "command": command,
+                "revision": revision,
+                "revision_kind": revision_kind,
+            }
             for presentation in range(presentations):
                 train_rows.append(
                     {
@@ -148,8 +183,40 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
             }
         )
 
+    shuffled_commands = shuffled_source_commands(train_sources)
+    shuffled_train_rows: list[dict[str, Any]] = []
+    changed_sources = sum(
+        shuffled_commands[identity] != source["command"]
+        for identity, source in train_sources.items()
+    )
+    if changed_sources == 0:
+        raise SCTR1DataError("SCTR1 shuffled commands did not change")
+    for row in train_rows:
+        identity = str(row["source_identity_sha256"])
+        command = shuffled_commands[identity]
+        source = train_sources[identity]
+        response = (
+            KEEP_COMMAND
+            if command == "keep"
+            else f"{REVISE_COMMAND}\n{source['revision']}"
+        )
+        shuffled_train_rows.append(
+            {
+                **row,
+                "schema": TRAIN_SCHEMA,
+                "identity_sha256": hashlib.sha256(
+                    f"sctr1-shuffled\0{identity}\0{row['presentation']}".encode()
+                ).hexdigest(),
+                "response": response,
+                "target_kind": f"shuffled_{command}",
+                "commit_command": command,
+                "command_supervision_shuffled": True,
+            }
+        )
+
     if (
         len(train_rows) != 9655
+        or len(shuffled_train_rows) != 9655
         or len(evaluation["development"]) != 1289
         or len(evaluation["holdout"]) != 1279
     ):
@@ -158,8 +225,12 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         split: args.output / f"{split}.jsonl"
         for split in ("train", "development", "holdout")
     }
+    paths["train_shuffled"] = args.output / "train_shuffled.jsonl"
     hashes = {
         "train": _atomic_lines(paths["train"], train_rows),
+        "train_shuffled": _atomic_lines(
+            paths["train_shuffled"], shuffled_train_rows
+        ),
         "development": _atomic_lines(paths["development"], evaluation["development"]),
         "holdout": _atomic_lines(paths["holdout"], evaluation["holdout"]),
     }
@@ -177,13 +248,22 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
             for path in args.banks
         ],
         "split_seed": args.split_seed,
+        "shuffle_seed": SHUFFLE_SEED,
+        "shuffled_changed_sources": changed_sources,
         "counts": {split: dict(counts[split]) for split in SPLITS},
         "target_counts": dict(target_counts),
+        "shuffled_target_counts": dict(
+            sorted(Counter(row["target_kind"] for row in shuffled_train_rows).items())
+        ),
         "outputs": {
             split: {
                 "path": str(paths[split].resolve()),
                 "sha256": hashes[split],
-                "rows": len(train_rows) if split == "train" else len(evaluation[split]),
+                "rows": (
+                    len(train_rows)
+                    if split in ("train", "train_shuffled")
+                    else len(evaluation[split])
+                ),
             }
             for split in paths
         },

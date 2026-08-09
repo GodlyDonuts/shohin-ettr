@@ -96,6 +96,7 @@ COMMON_ARGS=(
 sha256sum \
   "$MERGED_DRAFTS" "$DRAFT_RECEIPT" \
   "$SCTR_OUTPUT/train.jsonl" "$SCTR_OUTPUT/development.jsonl" \
+  "$SCTR_OUTPUT/train_shuffled.jsonl" \
   "$SCTR_OUTPUT/holdout.jsonl" "$SCTR_OUTPUT/report.json" \
   "$STANDARD_OUTPUT/train.jsonl" "$STANDARD_OUTPUT/development.jsonl" \
   "$STANDARD_OUTPUT/holdout.jsonl" "$STANDARD_OUTPUT/report.json"

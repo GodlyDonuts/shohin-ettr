@@ -69,6 +69,8 @@ mechanism permits. Development passes only if SCTR1:
 - is at least as accurate as standard always-revise TTR1 overall;
 - exceeds the strongest fully matched nontrained control by at least three
   absolute points overall;
+- exceeds the deterministic shuffled-command control by at least three
+  absolute points overall;
 - has nonnegative MATH, logic/science, and executable-code correct-count
   deltas versus unchanged second pass;
 - has complete coverage and no malformed commitment.

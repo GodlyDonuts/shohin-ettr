@@ -16,6 +16,8 @@ def test_temporal_role_fit_supports_only_predeclared_arms() -> None:
     assert '"always_revise"' in TRAIN
     assert '"independent_commitment"' in TRAIN
     assert "--mask-internal-draft" in TRAIN
+    assert 'DATA_KEY=${DATA_KEY:-train}' in TRAIN
+    assert 'data_key not in ("train", "train_shuffled")' in TRAIN
 
 
 def test_selective_evaluator_is_hash_bound_and_fail_closed() -> None:
