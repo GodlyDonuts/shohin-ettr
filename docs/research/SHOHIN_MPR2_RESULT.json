@@ -1,0 +1,41 @@
+{
+  "schema": "shohin-mpr2-development-comparison-v1",
+  "status": "complete",
+  "split": "development",
+  "scores": {
+    "aligned": 243,
+    "hidden": 248,
+    "owner": 247,
+    "shuffled": 235
+  },
+  "margins": {
+    "aligned_minus_owner": -4,
+    "aligned_minus_shuffled": 8,
+    "aligned_minus_hidden": -5
+  },
+  "aligned_domains": {
+    "math500": 54,
+    "bbh_logic": 181,
+    "mbpp": 8
+  },
+  "owner_domains": {
+    "math500": 57,
+    "bbh_logic": 182,
+    "mbpp": 8
+  },
+  "semantic_counts": {
+    "strict_repairs": 18,
+    "certified_serialization_repairs": 0,
+    "remaining_possible_semantic_repairs": 18,
+    "strict_breaks": 22
+  },
+  "semantic_net": -4,
+  "gate_pass": false,
+  "holdout_authorized": false,
+  "decision": "close_exact_mpr2",
+  "artifact_sha256": {
+    "comparison": "b8400331787c6315e7611ce7962b8f94bdd2530095f671eeba0f0269249304bc",
+    "data_report": "c1dac5cd4b6e9dc03c2654a4f03672307f93f60fd176e8d214fa21845d5395c2",
+    "draft_report": "6f7e17964479a9794de545f06f169f54574f13fdc361c1a855f89530f297397a"
+  }
+}

@@ -1,6 +1,6 @@
 # MPR2: Bootstrap Draft-Owner Revision
 
-Status: frozen prospective development gate, 2026-08-09. Holdout and larger-MoE
+Status: closed negative on development, 2026-08-09. Holdout and larger-MoE
 transfer remain sealed.
 
 ## Hypothesis
@@ -82,3 +82,22 @@ variants.
   adaptation remains useful, but temporal draft use is not established.
 - **Failure:** close this bootstrap-owner route and do not scale it.
 
+## Result
+
+Eight draft shards generated 5,823 unique trained-owner drafts and 61,263
+tokens. Median length was 7 tokens, p95 10, p99 76, with 8/5,823 exhaustion.
+The matched corpus retained all 9,651 training presentations and all 1,289
+development rows, rejected zero, had a maximum complete train sequence of
+2,417/4,096, and matched 1,575,873 target tokens per arm. Each fresh fit
+completed exactly 256 updates and 338,931 charged tokens.
+
+Development scores are aligned `243`, shuffled `235`, hidden/source-only
+`248`, and direct owner `247`. Aligned therefore gains eight over the unrelated
+draft but loses four to the owner and five to source-only. Domains are
+`54/181/8` versus owner `57/182/8`. There are 18 strict repairs and 22 breaks,
+for semantic net `-4`. Every material and causal gate fails except code
+retention.
+
+The trained draft carries a small source-correlated signal, but a fresh
+reviser does not convert it into a net capability gain. Exact MPR2 is closed
+without nearby variants. Result: `SHOHIN_MPR2_RESULT.json`.

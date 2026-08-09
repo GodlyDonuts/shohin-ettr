@@ -22,7 +22,7 @@ draft is not an information-bearing revision input. Holdout and larger-MoE
 transfer remain sealed. Dense NDR1 GPU work was canceled before allocation;
 its CPU source artifact completed but is no longer the critical path.
 
-The active bounded successor is MPR2, Bootstrap Draft-Owner Revision. It uses
+The latest bounded successor was MPR2, Bootstrap Draft-Owner Revision. It uses
 MPR1's successful source-only arm as a trained first-pass owner rather than
 retrying adapter geometry. That owner scores `247/1,289` with domains
 `57/182/8` and zero token exhaustion. MPR2 generates one immutable owner draft
@@ -30,8 +30,13 @@ per unique training source, then trains fresh identical residuals on aligned,
 same-task nearest-length shuffled, and full-model draft-hidden curricula. Its
 prospective gate is aligned `>=286`, `>=+39` over the owner, `>=+13` over both
 trained controls, domains `>=57/182/8`, and semantic net `>=13`. Holdout and
-larger-MoE transfer remain sealed until every condition passes. Exact contract:
-`docs/research/SHOHIN_MPR2_BOOTSTRAP_DRAFT_REVISION.md`.
+larger-MoE transfer remain sealed until every condition passes. MPR2 closed
+negative: aligned scored `243`, versus owner `247`, hidden `248`, and shuffled
+`235`; domains were `54/181/8` versus owner `57/182/8`, and semantic net was
+`-4`. The trained draft contains a small source-correlated signal (+8 over
+shuffled) but no net value over source-only computation. Exact contract and
+result: `docs/research/SHOHIN_MPR2_BOOTSTRAP_DRAFT_REVISION.md` and
+`docs/research/SHOHIN_MPR2_RESULT.json`.
 
 This changed factor is strongly supported on dense models. Matched trained
 revision versus unchanged second-pass gains are:

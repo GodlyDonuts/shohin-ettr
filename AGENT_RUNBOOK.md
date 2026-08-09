@@ -1,6 +1,6 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **MPR2 BOOTSTRAP DRAFT-OWNER REVISION FROZEN — 2026-08-09:** MPR1 proved
+> **MPR2 BOOTSTRAP DRAFT-OWNER REVISION CLOSED NEGATIVE — 2026-08-09:** MPR1 proved
 > generic all-layer post-MoE SFT useful but its weak original draft harmful.
 > MPR2 changes only draft quality. The exact MPR1 hidden/source-only checkpoint
 > at update 256 (SHA-256 `6cbe9fdc...610d`) becomes a trained first-pass owner;
@@ -26,8 +26,16 @@
 > kept max train sequence 2,417/4,096, matched 1,575,873 target tokens/arm,
 > and achieved p95 shuffled-draft length delta zero. Mechanics `747941`
 > passed in 43 seconds at loss `0.7006`, gnorm `39.75`, and 725 tok/s. Fits
-> `747942/747943/747944` (aligned/shuffled/hidden) are live; evaluation jobs
-> `747945--747973` are dependency-armed.
+> `747942/747943/747944` (aligned/shuffled/hidden) and evaluation graph
+> `747945--747973` completed.
+> All fits completed in 7.4--7.6 minutes with exactly 338,931 charged tokens.
+> Development is aligned `243`, shuffled `235`, hidden `248`, owner `247`;
+> aligned margins are `-4/+8/-5` against owner/shuffled/hidden. Domains are
+> `54/181/8` versus owner `57/182/8`; semantic repairs/breaks are `18/22`, net
+> `-4`. The draft carries weak source-correlated information but does not yield
+> net temporal improvement. Comparator `747973` exited 3 as designed; result
+> SHA-256 is `b8400331...04bc`. Close exact MPR2 and keep holdout/larger MoE
+> sealed. Result: `docs/research/SHOHIN_MPR2_RESULT.json`.
 
 > **MPR1 PRACTICAL SMALL-MOE REVISION CLOSED NEGATIVE — 2026-08-09:** The mission is
 > now a meaningful causal model-owned draft-to-revision gain on pinned OLMoE,
