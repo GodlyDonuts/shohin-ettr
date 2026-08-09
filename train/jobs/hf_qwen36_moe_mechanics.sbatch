@@ -15,16 +15,22 @@ for variable in RUNTIME RUNTIME_MANIFEST_SHA256 MODEL_ROOT MODEL_REVISION \
   MODEL_CONFIG_SHA256 BNB_ROOT BNB_MANIFEST_SHA256 DATA DATA_SHA256 OUTPUT; do
   test -n "${!variable:-}" || { echo "$variable is required" >&2; exit 2; }
 done
+: "${FAST_KERNEL_ROOT:?FAST_KERNEL_ROOT is required}"
+: "${FAST_KERNEL_MANIFEST_SHA256:?FAST_KERNEL_MANIFEST_SHA256 is required}"
 BASE=/lustre/fs1/home/sa305415/shohin
 PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
 for path in "$RUNTIME/train/hf_product_reasoning_train.py" \
   "$RUNTIME/train/integrated_reasoning_workspace.py" "$RUNTIME/train/ttr1_revision.py" \
   "$MODEL_ROOT/config.json" "$BNB_ROOT/SHA256SUMS" "$DATA"; do test -f "$path"; done
+test -f "$FAST_KERNEL_ROOT/SHA256SUMS"
 test "$(sha256sum "$RUNTIME/SHA256SUMS" | cut -d' ' -f1)" = "$RUNTIME_MANIFEST_SHA256"
 (cd "$RUNTIME" && sha256sum -c SHA256SUMS >/dev/null)
 test "$(sha256sum "$MODEL_ROOT/config.json" | cut -d' ' -f1)" = "$MODEL_CONFIG_SHA256"
 test "$(sha256sum "$BNB_ROOT/SHA256SUMS" | cut -d' ' -f1)" = "$BNB_MANIFEST_SHA256"
 (cd "$BNB_ROOT" && sha256sum -c SHA256SUMS >/dev/null)
+test "$(sha256sum "$FAST_KERNEL_ROOT/SHA256SUMS" | cut -d' ' -f1)" = \
+  "$FAST_KERNEL_MANIFEST_SHA256"
+(cd "$FAST_KERNEL_ROOT" && sha256sum -c SHA256SUMS >/dev/null)
 test "$(sha256sum "$DATA" | cut -d' ' -f1)" = "$DATA_SHA256"
 test ! -e "$OUTPUT"
 
@@ -33,7 +39,7 @@ trap 'rm -rf "$TMPDIR"' EXIT
 mkdir -p "$TMPDIR" logs "$(dirname "$OUTPUT")"
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 export TOKENIZERS_PARALLELISM=false PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
-export PYTHONPATH="$BNB_ROOT:$RUNTIME/train:$RUNTIME/pipeline"
+export PYTHONPATH="$FAST_KERNEL_ROOT:$BNB_ROOT:$RUNTIME/train:$RUNTIME/pipeline"
 nvidia-smi
 "$PYTHON" "$RUNTIME/train/hf_product_reasoning_train.py" \
   --model-root "$MODEL_ROOT" --model-source-root "$MODEL_ROOT" \
