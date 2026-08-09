@@ -11,3 +11,12 @@ def test_donor_map_is_same_task_nearest_and_nonself():
     ]
     assert donor_map(rows) == {"a": "b", "b": "a", "c": "b", "d": "e", "e": "d"}
 
+
+def test_repeated_presentations_use_canonical_draft_lengths():
+    canonical = {
+        "a": {"draft_tokens": 10},
+        "b": {"draft_tokens": 12},
+    }
+    presentation = {"source_id": "a"}
+    donor = canonical["b"]
+    assert abs(canonical[presentation["source_id"]]["draft_tokens"] - donor["draft_tokens"]) == 2

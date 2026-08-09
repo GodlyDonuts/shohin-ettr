@@ -174,7 +174,9 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         maximum["prompt"] = max(maximum["prompt"], *prompt_lengths)
         maximum["target"] = max(maximum["target"], target_tokens)
         maximum["total"] = max(maximum["total"], max(prompt_lengths) + target_tokens)
-        donor_deltas.append(abs(item["draft_tokens"] - donor["draft_tokens"]))
+        donor_deltas.append(
+            abs(by_train[item["source_id"]]["draft_tokens"] - donor["draft_tokens"])
+        )
     if len(train_aligned) < int(0.95 * len(train_source)) or len(train_aligned) != len(train_shuffled):
         raise MPR2DataError("MPR2 matched training admission differs")
 
@@ -255,4 +257,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
