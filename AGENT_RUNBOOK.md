@@ -1,6 +1,23 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **NDR1 NATURAL DRAFT REVISION ACTIVE — 2026-08-09:** CFR1 established that
+> **MPR1 PRACTICAL SMALL-MOE REVISION FROZEN — 2026-08-09:** The mission is
+> now a meaningful causal model-owned draft-to-revision gain on pinned OLMoE,
+> not dense parity or router novelty. Dense NDR1 GPU dispatchers
+> `747796/747801` were canceled before allocation; CPU source build `747795`
+> may finish as a preserved reusable artifact, but no dense successor follows.
+> MPR1 rebuilds OLMoE's exact source-disjoint model-owned draft bank through
+> the pinned OLMoE tokenizer at 4,096. Treatment is the strongest simple
+> all-16-layer rank-18 shared post-MoE residual: exactly 1,179,648 trainables
+> and 73,728 MAC/token/layer. Trained controls are same-task nearest-token-
+> length shuffled drafts and an equal-compute full-model draft-key-hidden/
+> source-only arm; unchanged OLMoE is `191/1,289`. Frozen promotion is aligned
+> `>=230`, `>=+13` over each trained control, domains `>=40/145/5`, and
+> conservative possible-semantic repairs minus strict breaks `>=13`, with
+> complete hashes/compute/retention. Only a conjunctive development pass opens
+> one sealed holdout and then staged larger-MoE transfer. Contract:
+> `docs/research/SHOHIN_MPR1_PRACTICAL_MOE_REVISION.md`.
+
+> **NDR1 NATURAL DRAFT REVISION STOPPED BY MISSION REDIRECT — 2026-08-09:** CFR1 established that
 > appended synthetic faults and clean-copy presentations cause draft over-trust
 > and severe verbosity. NDR1 is structurally different: B1 generates one
 > deterministic natural draft per fresh short verified source; aligned
@@ -9,12 +26,11 @@
 > nearest-length draft from another source. There are no synthetic faults or
 > clean-copy rows. CPU source build `747795` targets 4M charged tokens at
 > 40/10/40/10 math/code/science/procedural with 1,536-token source admission.
-> Dispatcher `747796` will launch exactly sixteen single-H100 draft shards and
-> one exact CPU merge; fit armer `747801` will dependency-gate one mechanics
-> update and exactly one aligned/shuffled 512-update pair. Runtime
+> Dispatchers `747796/747801` were canceled before any H100 allocation. CPU
+> source build `747795` may finish for artifact preservation only. Runtime
 > `ndr1_64dd134_r1` has manifest SHA-256
 > `416b421de17b28d290d539f30e82b0bdf6226c66f23a55e0b2a1de56a2324ea9`.
-> Frozen promotion is `603/1,289`, `+10` over shuffled, domains `223/349/17`,
+> Its dormant promotion is `603/1,289`, `+10` over shuffled, domains `223/349/17`,
 > aligned exhaustion `<=400` and within 25 of shuffled. Any miss closes exact
 > NDR1 without variants; holdout remains sealed. Contract:
 > `docs/research/SHOHIN_NDR1_NATURAL_DRAFT_REVISION.md`.

@@ -11,6 +11,17 @@ policy selects one complete trajectory. At inference there is no external
 proposal model, verifier, correctness bit, benchmark router, solver, tool, or
 teacher.
 
+The immediate prospective gate is MPR1 on pinned small OLMoE. It uses the
+strongest observed simple sparse-host intervention, a rank-18 shared residual
+after all 16 MoE blocks, and asks whether aligned exact OLMoE-owned drafts beat
+both same-task nearest-length shuffled drafts and a full-model causally
+hidden-draft/source-only arm under identical parameters, updates, and FLOPs.
+Promotion is `>=230/1,289`, `>=13` answers over each trained control,
+nonnegative `40/145/5` domain floors, and at least 13 conservative net semantic
+repairs. Only a development-plus-one-sealed-holdout pass authorizes larger-MoE
+transfer. Dense NDR1 GPU work was canceled before allocation; its CPU source
+artifact may complete, but it is no longer the critical path.
+
 This changed factor is strongly supported on dense models. Matched trained
 revision versus unchanged second-pass gains are:
 
@@ -93,15 +104,17 @@ closed without variants and holdout remains sealed. A successor must train on
 actual model-owned errors with verified targets and a bounded output contract;
 it must not reuse appended counterfactual faults as a proxy for natural errors.
 
-That successor is NDR1, Natural Draft Revision. A fresh short verified source
+The dense successor was NDR1, Natural Draft Revision. A fresh short verified source
 mix is admitted at 1,536 tokens, then immutable B1 produces one deterministic
 natural draft per source. Aligned revision sees the exact model-owned draft;
 the control sees another source's same-domain nearest-length draft. Both emit
 the same untouched verified solution, with no synthetic fault and no
-clean-copy presentation. Source build `747795`, sixteen-way draft dispatcher
-`747796`, and fit armer `747801` are dependency-gated. The capability gate is
+clean-copy presentation. Source build `747795` may finish for artifact
+preservation; H100 draft dispatcher `747796` and fit armer `747801` were
+canceled before allocation by the MoE mission redirect. Its dormant gate is
 the existing `603/+10/223/349/17` conjunction plus an explicit exhaustion
-guard (`<=400` and within 25 of shuffled). Holdout remains sealed.
+guard (`<=400` and within 25 of shuffled). No dense capability run is active;
+holdout remains sealed.
 
 ### Current blocker: dense-to-MoE transfer
 
