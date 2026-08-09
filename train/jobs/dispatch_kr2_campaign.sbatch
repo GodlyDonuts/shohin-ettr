@@ -11,6 +11,8 @@
 
 set -euo pipefail
 
+EXCLUDE_NODES=${EXCLUDE_NODES:-evc33,evc38}
+
 for variable in RUNTIME RUNTIME_MANIFEST_SHA256 MODEL_ROOT MODEL_REVISION \
   MODEL_CONFIG_SHA256 MODEL_MANIFEST_SHA256 WARM_START WARM_START_SHA256 \
   DATA_ROOT OUTPUT_ROOT DEPTH_ONE_ROOT RECEIPT; do
@@ -42,7 +44,7 @@ for arm in keep_or_repair direct_rewrite; do
   train_exports+=",DATA=$data,DATA_SHA256=$data_sha"
   train_exports+=",DATA_REPORT=$data_report,DATA_REPORT_SHA256=$data_report_sha"
   train_exports+=",OUTPUT=$train_output"
-  train_jobs[$arm]=$(sbatch --parsable --exclude=evc33,evc38 \
+  train_jobs[$arm]=$(sbatch --parsable --exclude="$EXCLUDE_NODES" \
     --export="$train_exports" "$RUNTIME/train/jobs/hf_idr1_train_reviser.sbatch")
 
   eval_root=$OUTPUT_ROOT/$arm/development
@@ -64,7 +66,7 @@ for arm in keep_or_repair direct_rewrite; do
     eval_exports+=",SHARD_INDEX=$shard,SHARD_COUNT=8,STAGE_MODEL=true"
     eval_exports+=",CANDIDATES_OUTPUT=$shard_root/candidates.jsonl"
     eval_exports+=",REPORT=$shard_root/report.json"
-    shard_job=$(sbatch --parsable --exclude=evc33,evc38 \
+    shard_job=$(sbatch --parsable --exclude="$EXCLUDE_NODES" \
       --dependency=afterok:${train_jobs[$arm]} --export="$eval_exports" \
       "$RUNTIME/train/jobs/hf_kr2_evaluate.sbatch")
     shard_jobs+=("$shard_job")
@@ -92,7 +94,7 @@ comparison_job=$(sbatch --parsable --dependency=$compare_dependency \
 
 temporary=$RECEIPT.partial.$$
 cat >"$temporary" <<EOF
-{"comparison_job":"$comparison_job","direct_merge_job":"${merge_jobs[direct_rewrite]}","direct_rescore_job":"${rescore_jobs[direct_rewrite]}","direct_train_job":"${train_jobs[direct_rewrite]}","keep_merge_job":"${merge_jobs[keep_or_repair]}","keep_rescore_job":"${rescore_jobs[keep_or_repair]}","keep_train_job":"${train_jobs[keep_or_repair]}","runtime_manifest_sha256":"$RUNTIME_MANIFEST_SHA256","status":"submitted"}
+{"comparison_job":"$comparison_job","direct_merge_job":"${merge_jobs[direct_rewrite]}","direct_rescore_job":"${rescore_jobs[direct_rewrite]}","direct_train_job":"${train_jobs[direct_rewrite]}","exclude_nodes":"$EXCLUDE_NODES","keep_merge_job":"${merge_jobs[keep_or_repair]}","keep_rescore_job":"${rescore_jobs[keep_or_repair]}","keep_train_job":"${train_jobs[keep_or_repair]}","runtime_manifest_sha256":"$RUNTIME_MANIFEST_SHA256","status":"submitted"}
 EOF
 mv "$temporary" "$RECEIPT"
 chmod a-w "$RECEIPT"
