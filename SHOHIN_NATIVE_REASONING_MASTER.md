@@ -38,6 +38,24 @@ complete development conjunction passes.
 
 ## Latest Practical Reasoning Campaign — 2026-08-08
 
+**ESR1 is the active bounded successor.** Read-only SCTR1 attribution shows
+that perfect draft/revision selection could add only one correct answer in
+1,289 cases; revision capability, not commitment, is the measured bottleneck.
+Error-Syndrome Revision therefore adds a recurrent model-owned correction
+state supervised during training toward the frozen verified-answer-minus-draft
+embedding residual. It emits that state as a soft prefix and then generates
+one complete correction without a verifier, teacher, or external tool at
+inference. The causal control has the identical recurrent workspace, LoRA,
+data, seed, updates, token budget, and evaluator but no syndrome objective.
+
+OLMo2-7B jobs `746561/746562` are live for 256 matched updates; release
+`746563` will automatically launch eight evaluation shards per arm and one
+exact comparison. Promotion requires at least +5 points over always-revise,
++3 over the same-workspace control, no math/logic/code regression, and full
+1,289-row coverage. Holdout stays sealed unless all conditions pass. This is
+a direct capability test, not a claim that embedding residuals are novel.
+See `docs/research/SHOHIN_ERROR_SYNDROME_REVISION.md`.
+
 **SCTR1 fails on OLMo2-7B and is closed without holdout.** Selective
 whole-draft commitment reaches `229/1,289 = 17.77%`, below unchanged selective
 second pass (`231 = 17.92%`) and standard always-revise (`259 = 20.09%`). It

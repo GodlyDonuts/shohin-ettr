@@ -1,5 +1,28 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **ESR1 OLMO2-7B DEVELOPMENT GATE LIVE — 2026-08-08 22:52 EDT:** SCTR1
+> attribution proved selector headroom is only `1/1,289`, so the next bounded
+> mechanism targets revision capability directly. Error-Syndrome Revision
+> trains the existing eight-step recurrent workspace to align its 16-state
+> soft prefix with the frozen verified-response-minus-internal-draft embedding
+> residual, while preserving ordinary causal answer loss. At inference the
+> target is absent; only source plus model-owned draft are visible. Exact
+> contract: `docs/research/SHOHIN_ERROR_SYNDROME_REVISION.md`.
+>
+> Private main `9253961`; immutable Newton runtime
+> `esr1_9253961_r8`, SHA256SUMS SHA-256
+> `a235e7ca81e0a77b86cd62f540b64b7b4db36507b157460654fa790c699b636b`.
+> Dispatcher `746560` completed. Fits `746561` (syndrome, evc29) and `746562`
+> (identical workspace without syndrome loss, evc34) are live for exactly 256
+> updates each. Evaluation release `746563` is dependency-held; after both
+> checkpoints exist it resolves their hashes, launches eight development
+> shards per arm, merges exactly, and compares against frozen always-revise
+> `259/1,289`. First treatment syndrome loss fell `0.998 -> 0.939` by update
+> 8; control reached update 24. Pass requires `>=+5` points versus always,
+> `>=+3` versus matched workspace, nonnegative math/logic/code deltas, and
+> complete 1,289-identity coverage. Holdout remains sealed. A failure closes
+> this exact weight/width/duration/seed family.
+
 > **SCTR1 OLMO2-7B CLOSED NEGATIVE — 2026-08-08 22:25 EDT:** complete
 > development comparison `746537` closed across all `1,289` identities;
 > holdout remains sealed. Selective commit scores `229 = 17.7657%`, versus
