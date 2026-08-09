@@ -1,5 +1,31 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **MOE ARCHITECTURE CRITICAL PATH / DENSE DETOUR CANCELED — 2026-08-09:**
+> The current directive supersedes the Mistral-next language immediately below.
+> Do not launch a Ministral H100 capability campaign. Preserve any completed
+> CPU snapshot as a reusable immutable artifact, then stop that lane.
+>
+> Shohin's measured dense temporal-revision effect is already strong enough to
+> make sparse transfer the highest-impact unresolved question. Small-OLMoE
+> MTR1 shared-attention revision reaches `204/1,289` versus unchanged `191`,
+> but mean all-layer route-count L1 drift is only `0.002018`. RCR1 direct late
+> router steering reaches only `194/1,289` versus matched attention and
+> unchanged at `191`, and remains below MTR1. Both gates are closed and both
+> holdouts remain sealed.
+>
+> Immediate work is read-only attribution over completed MTR1/RCR1 artifacts:
+> partition corrected, broken, persistent-wrong, and preserved-correct
+> identities; correlate them with per-layer expert-set overlap, route margin,
+> entropy, load, and divergence. Then freeze exactly one draft-conditioned
+> multi-token MoE successor. The leading hypothesis is a persistent recurrent
+> diagnosis state that controls bounded router deltas and, only if attribution
+> supports a capacity failure, small revision-specific expert-side low-rank
+> adapters. Required controls are router-only recurrence, expert-only adapter,
+> equal-active-parameter shared attention, and shuffled/draft-masked state.
+> No larger-MoE capability campaign may start before a small-host development
+> and sealed-holdout pass. External-review brief:
+> `docs/research/SHOHIN_MOE_FRONTIER_CONSULTATION_BRIEF_20260809.md`.
+
 > **RCR1 CLOSED / CURRENT MISTRAL DENSE TRANSFER NEXT — 2026-08-09 02:13
 > EDT:** Revision-conditioned router treatment `746982` and its parameter-
 > matched rank-1 shared-attention control `746983` completed 256 updates over

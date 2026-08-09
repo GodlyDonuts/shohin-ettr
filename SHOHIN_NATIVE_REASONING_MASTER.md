@@ -1,50 +1,95 @@
 # Shohin Native Reasoning Master Ledger
 
-## Mission Redirect — 2026-08-08
+## Current Mission and Status — Read First — 2026-08-09
 
-Shohin is now primarily a **transferable temporal reasoning architecture**, not
-a plan to pretrain another small scratch model. The practical mechanism is one
-model-owned complete draft followed by a trained same-family revision state
-and one coherent whole-trajectory commitment. The publication question is
-whether this changed factor improves capable pretrained models across scale,
-model family, and eventually MoE routing under matched inference compute.
+Shohin is now a **transferable model-owned temporal-revision architecture**,
+not primarily a plan to pretrain another small scratch decoder. One role state
+of a pretrained backbone writes a complete source-only draft. A separately
+trained role state of the same backbone reads the source plus that exact draft
+and emits one coherent replacement trajectory. An optional learned commit
+policy selects one complete trajectory. At inference there is no external
+proposal model, verifier, correctness bit, benchmark router, solver, tool, or
+teacher.
 
-Qwen3.5-0.8B/4B/9B provide the first within-family scale curve. TTR1 on pinned
-SmolLM3-3B establishes strong cross-family aggregate transfer but fails
-executable-code retention. OLMo2-7B then closes negative under direct revision,
-selective commitment, and error-syndrome revision. The next host is therefore
-the small open `OLMoE-1B-7B-0125-Instruct`, with frozen router/experts and
-role-specific intervention only in shared attention layers.
-Scratch 390M/920M pretraining, the 5B scratch canary, and long corpus
-construction are not the critical path and are not authorized. See
-`docs/research/SHOHIN_TRANSFERABLE_TEMPORAL_REVISION_CONTRACT.md`.
+This changed factor is strongly supported on dense models. Matched trained
+revision versus unchanged second-pass gains are:
 
-Small-MoE transfer is now a measured failure boundary. MTR1 shared-attention
-revision scores `204/1,289`, only `+13` answers and `+1.01` points over the
-unchanged OLMoE second pass. Router accounting then showed only `0.002018`
-mean all-layer route-count L1 drift. RCR1 directly trained a bounded low-rank
-residual on the final four router logits, but reached only `194/1,289`, versus
-`191` for both matched rank-1 attention and unchanged, and remained below the
-prior rank-8 attention arm. Both gates are closed without holdout. This rules
-out frozen-expert router steering as a sufficient revision mechanism at the
-small-MoE boundary; it does not erase the strong dense Qwen/SmolLM evidence.
-See `docs/research/SHOHIN_MTR1_SMALL_MOE_TRANSFER.md` and
-`docs/research/SHOHIN_RCR1_REVISION_CONDITIONED_ROUTING.md`.
+| Host | Development | Source-disjoint holdout | Boundary |
+|---|---:|---:|---|
+| Qwen3.5-0.8B | `323/1,289` vs `236` (`+6.75 pp`) | `328/1,279` vs `242` (`+6.72 pp`) | aggregate gain; code retention fails by one |
+| Qwen3.5-4B | `529` vs `371` (`+12.26 pp`) | `554` vs `380` (`+13.61 pp`) | every attribution domain positive |
+| Qwen3.5-9B | `589` vs `464` (`+9.70 pp`) | `625` vs `495` (`+10.16 pp`) | every attribution domain positive; original MATH floor missed |
+| SmolLM3-3B | `469` vs `358` (`+8.61 pp`) | sealed | aggregate cross-family gain; code `4` vs `9` |
+| OLMo2-7B | `259` vs `231` (`+2.17 pp`) | sealed | positive but too weak to promote |
 
-The next cross-family point is pinned
-`mistralai/Ministral-3-8B-Reasoning-2512@81eaece...d894`. Unlike OLMoE, this is
-a current dense reasoning-tuned model and tests whether complete model-owned
-draft followed by trained same-family revision improves an already capable
-reasoner. The full campaign remains gated behind exact loader, tokenizer,
-prompt, and one-update backward mechanics.
+On the protected 9B seven-task product, unchanged second pass scores
+`316/538` at `67.263%` five-domain macro, trained revision scores `374/538` at
+`75.005%`, and learned whole-trajectory commitment scores `383/538` at
+`75.815%`. A matched independent scorer reaches `382/538`, so coherent learned
+commitment is useful but antisymmetry is not supported as a distinct causal
+mechanism. On the 4B product, revision rises from `272/538` to `320/538` and
+macro from `51.05%` to `61.39%`, but regresses GSM8K/MATH/logic by `2/1/2`
+answers; the strict all-domain gate correctly fails.
 
-`Qwen3.6-35B-A3B` is preserved only as the larger-MoE mechanics ceiling until
-MTR1 passes. NF4 backward mechanics fit one H100; a steady four-update canary
-measures `20.686` charged target tok/s. Batch-4 source generation measures
-`31.183 tok/s` at `68.081 GB` peak, versus `10.761 tok/s` at batch 1. All
-eight observed traces hit a deliberately small 128-token cap, so their `0/8`
-score is truncation rather than a capability result. No full Qwen3.6 campaign
-is authorized yet.
+### Current blocker: dense-to-MoE transfer
+
+The first sparse host is pinned `OLMoE-1B-7B-0125-Instruct`: 7B total,
+approximately 1B active, 64 experts, eight active per token. Two exact
+development gates are closed:
+
+1. **MTR1 shared-attention revision:** rank-8 LoRA in the final four shared
+   attention layers, routers and experts frozen, reaches `204/1,289` versus
+   unchanged `191`. The `+13` / `+1.0085 pp` gain is real but far below the
+   frozen margins. Across 74,935 traced tokens, mean all-layer route-count L1
+   drift is only `0.002018`; layers 0--11 are exactly unchanged.
+2. **RCR1 direct router residual:** a bounded rank-8 residual on final-four
+   router logits, all base routers and experts frozen, reaches `194/1,289`
+   versus `191` for matched rank-1 attention and unchanged, and remains below
+   MTR1. Static token-local late routing does not create a useful correction
+   operator.
+
+These results do not show that temporal revision is incompatible with MoE.
+They show that neither shared late capacity with nearly fixed routes nor
+static rerouting among frozen experts is sufficient. The unresolved causes
+are expert-side capacity, temporal credit assignment, lack of persistent
+draft diagnosis, late intervention depth, discontinuous top-k geometry, and
+the approximately-1B active-capacity boundary.
+
+### Immediate critical path
+
+The dense Ministral detour is canceled before any H100 capability run. Its
+CPU snapshot, if completed, is only a reusable immutable artifact. Current
+work returns exclusively to the MoE architecture problem:
+
+1. partition completed OLMoE identities into corrected, broken,
+   persistent-wrong, and preserved-correct outcomes;
+2. correlate those outcomes with per-layer expert-set overlap, route margins,
+   entropy, load, and route divergence;
+3. use that attribution to freeze exactly one structurally different
+   draft-conditioned multi-token controller; and
+4. permit small expert-side revision adapters only if evidence indicates that
+   routing among frozen experts lacks the needed computation.
+
+The leading candidate maintains a persistent source/draft discrepancy state
+across revision tokens, uses it to produce bounded router deltas, and controls
+a shared low-rank basis inside selected expert paths. Required controls are
+router-only recurrence, expert-adapter-only, equal-active-parameter shared
+attention, and shuffled/draft-masked control. Accuracy must be accompanied by
+active-parameter, FLOP, latency, memory, route-divergence, entropy, and expert-
+load receipts. This is a hypothesis awaiting attribution and a frozen gate,
+not a claimed result.
+
+The small OLMoE development board remains the proving ground. Its sealed
+holdout and the larger `Qwen3.6-35B-A3B` campaign remain prohibited until a
+new mechanism passes the preregistered small-host development conjunction.
+Qwen3.6 mechanics alone are already known to fit one H100 under NF4 at
+`20.686` charged target tok/s; that is a systems receipt, not capability
+evidence. Scratch 390M/920M pretraining and long corpus construction are not
+on the critical path.
+
+For a self-contained external architecture review, read
+`docs/research/SHOHIN_MOE_FRONTIER_CONSULTATION_BRIEF_20260809.md`. For the
+current architecture without the historical ledger, read `SHOHIN.md`.
 
 ## Latest Practical Reasoning Campaign — 2026-08-08
 

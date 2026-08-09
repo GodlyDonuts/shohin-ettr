@@ -1,102 +1,104 @@
-# Shohin — the best sub-200M reasoning model of 2026
+# Shohin
 
-**Goal:** build a ~130M-param dense model that is the **best small model at verifiable reasoning** —
-grade-school & competition **math, code, and logic** — decisively beating **MobileLLM-R1-140M** (the current
-≤200M reasoning SoTA), using 2026 methods: **short-CoT reasoning distillation + rejection sampling** from a
-close ~1–2B reasoning teacher, on a reasoning-tilted data diet. **English-only.** Trained in **PyTorch**.
+Shohin is a research program for **model-owned temporal revision**: a
+pretrained language model first writes a complete solution draft, then a
+separately trained role state of the same backbone reads the problem and that
+exact draft and emits one coherent revised trajectory.
 
-> **🟢 LIVE RUN — operators start at [AGENT_RUNBOOK.md](AGENT_RUNBOOK.md).** Pretraining is currently
-> running on a single GPU (UCF Newton) under an autonomous custody loop. The runbook is the operational
-> plan of record: live job state, the custody loop, the 60k feedback+extend transition, cluster access,
-> and the failure/recovery playbook. Read it before touching the run.
+The project is no longer primarily a plan to pretrain another small model from
+scratch. Its central question is whether a learned draft/revision/commit
+computation can improve existing models across scale, family, and sparse
+Mixture-of-Experts architectures under matched controls.
 
-This repo is the "raw capability" track. Its sibling — the **Psi** custom C++/CUDA stack — is the
-"capability-per-bit craft" track (from-scratch, no-PyTorch, eventually-ternary; the TinyStories record is its
-crown jewel). **Deliberately separate:** PyTorch here for capability, the custom stack there for novelty. The
-hybrid endgame: win here, then **ternary-QAT the winner on the Psi kernel**.
+## Current status
 
-> **📋 Execution plan of record: [MASTER_PLAN.md](MASTER_PLAN.md)** — the full 72h / 8×H100 build (Muon
-> speedrun stack, Reasoning-Gym procedural corpus, verifier + best-of-N, tiered win conditions). This README is
-> the thesis/identity front-door; where specific numbers differ (token budget, target tiers), **the master
-> plan wins.**
+The dense-model effect is established at aggregate level:
 
----
+| Host | Trained revision | Matched unchanged pass | Gain |
+|---|---:|---:|---:|
+| Qwen3.5-0.8B holdout | `328/1279` | `242/1279` | `+6.72 pp` |
+| Qwen3.5-4B holdout | `554/1279` | `380/1279` | `+13.61 pp` |
+| Qwen3.5-9B holdout | `625/1279` | `495/1279` | `+10.16 pp` |
+| SmolLM3-3B development | `469/1289` | `358/1289` | `+8.61 pp` |
 
-## The thesis (why a 100M model should reason, not memorize)
+The strongest 9B protected product system moves from `316/538` for the
+unchanged same-family second pass to `374/538` with trained revision and
+`383/538` with learned whole-trajectory commitment. Five-domain macro accuracy
+moves from `67.263%` to `75.815%`.
 
-**Knowledge is storage; reasoning is an algorithm.** LMs store ~2 bits/param (Allen-Zhu 2404.05405), so
-~130M holds ~30 MB of facts — MMLU/TriviaQA are *physically* capped and we don't chase them. But **reasoning
-is a learned procedure, not a lookup table.** A 130M model can't *store* the world, yet it can *execute*
-multi-step arithmetic, symbolic manipulation, and deduction. **Verifiable reasoning** (checkable answers) is
-the one axis where a tiny model can genuinely be pushed — so it's the axis we specialize on.
+Capability preservation is not universal. The 0.8B and SmolLM3 experiments
+regress executable code, and the 4B protected product gains 48 answers overall
+while regressing several small domain counts. Shohin therefore claims a real
+learned temporal-revision effect, not universal reliability or frontier
+reasoning.
 
-## The opening (why now)
+## Current blocker: MoE transfer
 
-The sub-200M reasoning niche is **essentially a one-horse race.** As of mid-2026 the only serious, documented
-≤200M reasoner is **MobileLLM-R1-140M** (Meta, Sept 2025) — and nothing verified has beaten or even joined it
-since. Its scores are *low in absolute terms* (GSM8K 16.3, MATH-500 4.6, HumanEval 15.9, MBPP 5.4) — it wins
-by being ~9× SmolLM2, not by being good. That is the opportunity: an uncrowded lane, a beatable bar, and
-obvious headroom (Meta did **not** optimize for the small-model learnability gap, short-CoT, or vocab budget).
+The first sparse host is `OLMoE-1B-7B-0125-Instruct` with 64 experts and eight
+active per token.
 
-## The one-paragraph plan
+- **MTR1:** final-four-layer shared-attention LoRA, with router and experts
+  frozen, reaches `204/1289` versus unchanged `191/1289`. Mean all-layer route
+  drift is only `0.002018`.
+- **RCR1:** a direct bounded residual on the final four router logits reaches
+  `194/1289`, versus `191/1289` for both matched attention and unchanged, and
+  remains below MTR1.
 
-Train a **~130M dense** reasoner (deep-and-thin, GQA, SwiGLU/RMSNorm/RoPE, tied embeddings, a **compact ~32k
-English+code+math tokenizer with single-digit numbers**) on a **reasoning-tilted pretrain** (web for a
-language floor + heavy math/code), then the decisive phase: **short-CoT reasoning distillation** —
-rejection-sampled, correct-only, short/curriculum-ordered traces from a **close ~1–2B reasoning teacher**
-(Qwen3-1.7B / DeepSeek-R1-Distill-1.5B) — plus a reasoning SFT. **RL (GRPO) is optional polish, not the
-engine.** Grade only on the **verifiable axes**; keep commonsense at no-catastrophic-regression. De-risk with
-the single A/B that matters: **short-CoT vs long-CoT distillation at 140M.**
+These experiments reject two narrow ports of the dense mechanism. They do not
+show that temporal revision is incompatible with MoE. The current work is
+attributing corrected, broken, persistent-wrong, and preserved-correct cases
+to routing behavior before freezing one draft-conditioned multi-token sparse
+controller with matched router-only, expert-only, attention, and draft-masked
+controls.
 
-## Two findings that shape everything (both from grounding the plan)
+No larger-MoE capability campaign is authorized until a mechanism passes the
+small host's development and sealed-holdout gates.
 
-1. **Short CoT > long CoT for tiny students.** The "small-model learnability gap" (2502.12143): models ≤3B
-   learn *better* from short, simple reasoning than from long teacher traces; long-CoT distillation
-   *underperforms*. A 130M model physically can't represent 10k-token R1 traces — so short-CoT isn't a
-   compromise, it's the recommended regime. **This is our central lever.**
-2. **RL is not the reasoning engine at this scale.** Meta's own 950M comparison: SFT/distillation **74.0**
-   GSM8K vs RL **57.0**. The verified RLVR floor is ~0.5B, and even there SFT usually wins; a 130M base rarely
-   samples a correct trace to reward. **RL demotes to an optional A/B — gains come from distillation + data.**
-   *(This reverses the RL-first hunch we started with.)*
+## Architecture in one diagram
 
-## The bar to beat (grounded, mid-2026)
+```mermaid
+flowchart LR
+    X["Problem"] --> D["Shared backbone + draft role"]
+    D --> T["Complete internal draft"]
+    X --> R["Shared backbone + trained revision role"]
+    T --> R
+    R --> Y["Complete revised trajectory"]
+    T --> C["Optional learned whole-trajectory commit"]
+    Y --> C
+    C --> O["One final response"]
+```
 
-| benchmark | MobileLLM-R1-140M | Shohin target | verdict |
-|---|---:|---:|---|
-| GSM8K | 16.3 | 22–30 | **headline win** |
-| MATH-500 | 4.6 | 10–15 | win (low base → most room) |
-| HumanEval (pass@1) | 15.9 | 18–22 | win |
-| MBPP (pass@1) | 5.4 | 10–15 | win |
-| logic / deduction (BBH / ProntoQA / Reasoning-Gym) | *unreported* | establish & lead | **cleanest uncontested SoTA** |
-| commonsense suite (HellaSwag, PIQA, …) | — | no catastrophic regression | report only |
-| MMLU / TriviaQA | — | don't chase | capacity-capped |
+At inference the system receives no verifier output, correctness bit,
+benchmark label, external proposal, symbolic solver, or task-specific route.
+Matched experiments distinguish learned use of the model's own draft from an
+unchanged second pass, generic self-refinement, longer generation,
+best-of-two, and draft-masked training.
 
-**Stretch (paper-worthy, not plan-of-record):** GSM8K >40 or MATH-500 >25 at 130M would be a genuine research
-result. See [TARGETS.md](TARGETS.md).
+## Read in this order
 
-## Docs
+1. **[SHOHIN.md](SHOHIN.md)** — current architecture, evidence, limitations,
+   and leading MoE direction without the historical archive.
+2. **[MoE frontier consultation brief](docs/research/SHOHIN_MOE_FRONTIER_CONSULTATION_BRIEF_20260809.md)** —
+   self-contained technical problem statement for external architecture
+   review.
+3. **[Transferable temporal revision contract](docs/research/SHOHIN_TRANSFERABLE_TEMPORAL_REVISION_CONTRACT.md)** —
+   exact changed factor, controls, data boundaries, and promotion rules.
+4. **[MTR1](docs/research/SHOHIN_MTR1_SMALL_MOE_TRANSFER.md)** and
+   **[RCR1](docs/research/SHOHIN_RCR1_REVISION_CONDITIONED_ROUTING.md)** — the
+   two completed small-MoE failure boundaries.
+5. **[Native reasoning master ledger](SHOHIN_NATIVE_REASONING_MASTER.md)** —
+   complete research history, including negative experiments.
+6. **[Agent runbook](AGENT_RUNBOOK.md)** — current operational state and
+   immutable experiment receipts.
 
-| file | what |
-|---|---|
-| **[MASTER_PLAN.md](MASTER_PLAN.md)** | **the plan of record** — 72h/8×H100 schedule, budget math, arch, tokenizer, Muon config, data mix, verifier, RLVR, eval, pre-window program, risks, release |
-| [STRATEGY.md](STRATEGY.md) | two-track split; why reasoning-specialist; the pivot history — *context the master plan doesn't repeat* |
-| [COMPUTE.md](COMPUTE.md) | hardware reality (the 8×H100-access blocker) + FLOP budget — *context the master plan doesn't repeat* |
-| [PLAN.md](PLAN.md) · [DATA.md](DATA.md) · [TARGETS.md](TARGETS.md) | *(background, subsumed by the master plan)* the earlier grounded recipe / data / targets |
-| [docs/research/README.md](docs/research/README.md) | indexed archive of frontier proposals, mechanism research, and qualitative baselines |
-| [build-plan.html](build-plan.html) | visual one-page version (⚠ stale — regenerate against the master plan) |
+## Evidence policy
 
-## First moves (de-risk before the full spend)
+Shohin separates architecture ideas, mechanics receipts, development results,
+sealed holdouts, and publication claims. A mechanism does not advance because
+it is elegant, trains successfully, or fits in memory. It advances only when
+it beats matched controls on source-disjoint data under frozen gates, preserves
+required domains, and records exact model/data/runtime provenance.
 
-1. **Pin a reasoning eval harness** (GSM8K, MATH-500, HumanEval, MBPP, a logic set; + commonsense/MMLU for
-   no-regression). Re-run **MobileLLM-R1-140M ourselves** — that's the scoreboard.
-2. **Reasoning-tilted base** (~130M, compact vocab, ~100–150B tok, web + heavy math/code). Prove the substrate.
-3. **The decisive A/B — short-CoT vs long-CoT distillation** from the ~1–2B teacher on identical bases. Answers
-   the single biggest question (does short-CoT distillation clear MobileLLM-R1 at 140M?) cheaply.
-
-## The single biggest uncertainty
-
-**The capacity wall.** 140M→600M is 16→60 on GSM8K — capacity is the binding constraint and we sit on the low
-side. Our headroom is real but bounded: beating MobileLLM-R1 by optimizing for short-CoT + a compact vocab
-(more params for reasoning, fewer for embeddings) is plausible; a *category* jump is not. If short-CoT
-distillation can't clear 140M's bar, the honest fallback is "the best open, reproducible sub-200M reasoning
-recipe" — still a real contribution.
+Historical ETTR compiled-state, synthetic law-induction, and scratch-model
+work remain in the ledger because negative and bounded results matter. They
+are not presented as the current Shohin architecture.

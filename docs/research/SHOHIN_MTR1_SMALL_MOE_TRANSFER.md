@@ -1,6 +1,8 @@
 # Shohin MTR1 Small-MoE Transfer Gate
 
-Status: frozen before model-owned draft generation, 2026-08-09.
+Status: **closed negative on development**, 2026-08-09. Holdout remains
+sealed. The result motivates direct route attribution and an MoE-native
+successor rather than a nearby shared-attention retry.
 
 ## Question
 
@@ -89,3 +91,32 @@ prompt, threshold, or decoding rescue. A pass opens the one sealed holdout
 evaluation. Only a development-plus-holdout pass can authorize the larger
 Qwen3.6 MoE campaign.
 
+## Frozen result
+
+All six arms completed the 1,289-identity development board:
+
+| Arm | Correct | Accuracy |
+|---|---:|---:|
+| trained shared-attention revision | `204` | `15.8262%` |
+| unchanged second pass | `191` | `14.8177%` |
+| generic self-refinement | `169` | `13.111%` |
+| long single generation | `167` | `12.956%` |
+| best-of-two | `134` | `10.396%` |
+| draft-masked independent training | `189` | `14.6625%` |
+
+Treatment gains `+13` answers / `+1.0085` points over unchanged and `+15`
+answers / `+1.1637` points over the strongest other trained control. Both
+required magnitude gates fail. Broad-domain deltas versus unchanged are math
+`+1`, logic/science `+12`, and executable code `0`, so retention passes but is
+not enough to promote the mechanism.
+
+Router accounting over 87 rows and 74,935 tokens uses all 64 experts in every
+layer with normalized entropy near `0.932`. Trained-versus-base route-count L1
+drift is zero in layers 0--11 and `0.00184`, `0.00381`, `0.00709`, and
+`0.01955` in layers 12--15, for an all-layer mean of `0.002018`. The adapter
+therefore changes a small number of answers while leaving the sparse expert
+program almost unchanged.
+
+Exact MTR1 is closed. This result rejects final-four-layer shared-attention
+adaptation as a sufficient MoE revision mechanism; it does not reject
+temporal revision on MoE in general.

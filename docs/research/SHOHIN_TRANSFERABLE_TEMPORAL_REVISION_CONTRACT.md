@@ -1,10 +1,11 @@
 # Shohin Transferable Temporal Revision Contract
 
-Status: exact TTR1 closed on development, 2026-08-08. Strong aggregate
-cross-family transfer passed both overall margins; executable-code retention
-failed, so holdout remained sealed. This contract supersedes scratch
-pretraining as the primary project path and does not authorize a 390M/920M
-scratch run.
+Status: current evidence contract, updated 2026-08-09. TTR1 established strong
+aggregate dense cross-family transfer but failed executable-code retention.
+MTR1 shared-attention and RCR1 static-router transfer both failed on small
+OLMoE development. The current critical path is MoE route/error attribution
+followed by one genuinely MoE-native successor; scratch pretraining and a
+larger-MoE campaign remain unauthorized.
 
 ## Mission
 
@@ -157,12 +158,26 @@ direct revision reached only `259/1,289`, while selective commitment and
 error-syndrome revision both failed their frozen gates. More local OLMo
 variants are not authorized.
 
-The next gate is MTR1 on small open `OLMoE-1B-7B-0125-Instruct`. Router and
-experts remain frozen while role-specific intervention is limited to shared
-attention layers. MTR1 must report router/expert utilization, active versus
-total parameters, latency, memory, total FLOPs, and accuracy per compute.
-Larger-MoE capability work, including the already-qualified Qwen3.6-35B-A3B
-mechanics path, remains prohibited until MTR1 passes development and holdout.
+MTR1 on small open `OLMoE-1B-7B-0125-Instruct` is complete and closed.
+Final-four-layer rank-8 shared-attention revision reaches `204/1,289`, only
+`+13` answers / `+1.0085` points over unchanged, while mean all-layer
+route-count L1 drift is only `0.002018`. RCR1 then directly trains a bounded
+low-rank residual on the final four router logits and reaches `194/1,289`,
+only three answers over matched rank-1 attention and unchanged and below
+MTR1's 204. Both holdouts remain sealed.
+
+The next operation is read-only attribution of corrected, broken,
+persistent-wrong, and preserved-correct cases against per-layer route changes.
+Only then may one draft-conditioned multi-token MoE controller be frozen. The
+leading candidate jointly controls bounded routing deltas and small
+revision-specific expert-side low-rank capacity, with router-only,
+expert-only, equal-budget attention, and draft-shuffled/masked controls.
+`docs/research/SHOHIN_MOE_FRONTIER_CONSULTATION_BRIEF_20260809.md` contains the
+self-contained problem statement.
+
+Larger-MoE capability work, including the mechanics-qualified
+Qwen3.6-35B-A3B path, remains prohibited until a small-MoE development and
+sealed-holdout pass.
 
 Scratch Shohin training is optional later efficiency evidence. It is not the
 critical path and is not authorized by TTR1.

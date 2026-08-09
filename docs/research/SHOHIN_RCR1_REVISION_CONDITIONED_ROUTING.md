@@ -1,5 +1,8 @@
 # Shohin RCR1 Revision-Conditioned Routing Gate
 
+Status: **closed negative on development**, 2026-08-09. Holdout remains
+sealed. A static final-four-layer router residual is not sufficient.
+
 ## Decision boundary
 
 MTR1 is closed on development at `204/1,289`, only `+13` answers over the
@@ -48,3 +51,26 @@ A miss closes this exact router intervention. No seed, rank, layer, alpha,
 duration, prompt, or threshold rescue is authorized. Only a pass may open the
 existing holdout and authorize transfer to a larger MoE.
 
+## Frozen result
+
+| Arm | Correct / 1,289 | Accuracy |
+|---|---:|---:|
+| revision-conditioned router residual | `194` | `15.0504%` |
+| matched rank-1 shared-attention control | `191` | `14.8177%` |
+| unchanged second pass | `191` | `14.8177%` |
+| prior rank-8 shared-attention MTR1 | `204` | `15.8262%` |
+
+The router treatment adds only three answers / `0.2327` points over both the
+matched control and unchanged pass, and remains ten answers below MTR1. Broad
+domain deltas versus unchanged are math `+2`, logic/science `+1`, and code
+`0`; retention passes while both magnitude gates fail.
+
+RCR1 rules out this narrow mechanism: a small, token-local residual on late
+router logits cannot by itself create a useful revision operator when all
+experts remain frozen. It does not distinguish whether the missing factor is
+persistent draft-level state, earlier routing, expert-side revision capacity,
+or the active-capacity boundary. That attribution is the next read-only step.
+
+Comparison SHA-256 is
+`eb1b304adbf634e141bd497c5cf4b3d60d8616655ec1a674b7c556e399ae4c35`.
+No full larger-MoE campaign is authorized from this result.
