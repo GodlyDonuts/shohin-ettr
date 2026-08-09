@@ -51,5 +51,5 @@ nvidia-smi
   --arm "$ARM" --model-root "$EFFECTIVE_MODEL_ROOT" \
   --model-source-root "$SOURCE_MODEL_ROOT" --model-revision "$MODEL_REVISION" \
   --data "$DATA" --data-report "$DATA_REPORT" --split development \
-  --rows-per-task 64 --batch-size 1 --output "$OUTPUT" "${args[@]}"
+  --rows-per-task 29 --batch-size 1 --output "$OUTPUT" "${args[@]}"
 sha256sum "$OUTPUT"; chmod a-w "$OUTPUT"
