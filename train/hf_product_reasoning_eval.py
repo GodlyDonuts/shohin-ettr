@@ -684,6 +684,18 @@ def _load_model(
             risk_weight=float(metadata["risk_weight"]),
             sparsity_weight=float(metadata["sparsity_weight"]),
         ).to("cuda:0")
+    elif metadata.get("architecture") == "shohin-drem1-moe-revision-v1":
+        from drem1_moe_revision import DREM1Config, DREM1ProductModel
+
+        drem = metadata.get("drem1_config")
+        if not isinstance(drem, dict):
+            raise ProductEvalError("DREM1 checkpoint config is missing")
+        model = DREM1ProductModel(
+            backbone,
+            DREM1Config(**drem),
+            mode=str(metadata["drem1_mode"]),
+            collapse_weight=float(metadata["collapse_weight"]),
+        ).to("cuda:0")
     else:
         model = ProductReasoningModel(
             backbone=backbone,
@@ -899,6 +911,13 @@ def _generate_completions(
 
     encoded = tokenizer(rendered, padding=True, return_tensors="pt")
     encoded = {key: value.to("cuda:0") for key, value in encoded.items()}
+    if adapter and hasattr(model, "prepare_generation_draft_indicator"):
+        model.prepare_generation_draft_indicator(
+            tokenizer,
+            rendered,
+            encoded["input_ids"],
+            encoded["attention_mask"],
+        )
     prompt_width = int(encoded["input_ids"].shape[1])
     with torch.inference_mode():
         generation_arguments = _generation_arguments(generation_mode, max_new_tokens)
