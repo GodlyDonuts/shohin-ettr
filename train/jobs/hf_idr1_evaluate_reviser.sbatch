@@ -31,6 +31,7 @@ SHARD_INDEX=${SHARD_INDEX:-0}
 SHARD_COUNT=${SHARD_COUNT:-1}
 MODEL_LOADER=${MODEL_LOADER:-auto}
 ECR_CODE_INTERVENTION=${ECR_CODE_INTERVENTION:-normal}
+STAGE_MODEL=${STAGE_MODEL:-true}
 
 BASE=/lustre/fs1/home/sa305415/shohin
 PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
@@ -63,15 +64,18 @@ test ! -e "$CANDIDATES_OUTPUT"
 test ! -e "$REPORT"
 
 SOURCE_MODEL_ROOT=$MODEL_ROOT
-if [[ -n "${SLURM_TMPDIR:-}" ]]; then
+if [[ "$STAGE_MODEL" == "true" && -n "${SLURM_TMPDIR:-}" ]]; then
   EFFECTIVE_MODEL_ROOT=$SLURM_TMPDIR/model
   mkdir -p "$EFFECTIVE_MODEL_ROOT"
   cp -a "$SOURCE_MODEL_ROOT"/. "$EFFECTIVE_MODEL_ROOT"/
   export TMPDIR=$SLURM_TMPDIR/tmp
-else
+elif [[ "$STAGE_MODEL" == "false" || -z "${SLURM_TMPDIR:-}" ]]; then
   EFFECTIVE_MODEL_ROOT=$SOURCE_MODEL_ROOT
   export TMPDIR=$BASE/tmp/$SLURM_JOB_ID
   trap 'rm -rf "$TMPDIR"' EXIT
+else
+  echo "STAGE_MODEL must be true or false" >&2
+  exit 2
 fi
 mkdir -p "$TMPDIR" logs "$(dirname "$REPORT")"
 

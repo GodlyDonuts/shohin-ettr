@@ -30,7 +30,7 @@ common="ALL,RUNTIME=$RUNTIME,RUNTIME_MANIFEST_SHA256=$RUNTIME_MANIFEST_SHA256"
 common+=",MODEL_ROOT=$MODEL_ROOT,MODEL_REVISION=$MODEL_REVISION,MODEL_LOADER=causal"
 common+=",MODEL_CONFIG_SHA256=$MODEL_CONFIG_SHA256,MODEL_MANIFEST_SHA256=$MODEL_MANIFEST_SHA256"
 common+=",DATA=$DATA,DATA_SHA256=$DATA_SHA256,DATA_REPORT=$DATA_REPORT"
-common+=",DATA_REPORT_SHA256=$DATA_REPORT_SHA256,SPLIT=development"
+common+=",DATA_REPORT_SHA256=$DATA_REPORT_SHA256,SPLIT=development,STAGE_MODEL=false"
 merges=(); shards=(); treatment_merge=""
 for arm in treatment shared draft_unavailable code_zero code_mean code_permutation; do
   case "$arm" in
