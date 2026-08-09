@@ -78,24 +78,23 @@ def tokenize_with_offsets(tokenizer: Any, text: str) -> tuple[list[int], list[li
     return [int(value) for value in ids], [list(map(int, value)) for value in offsets]
 
 
-def token_span(offsets: list[list[int]], start: int, end: int) -> tuple[int, int] | None:
-    selected = [
-        index for index, (left, right) in enumerate(offsets) if right > start and left < end
-    ]
-    if (
-        not selected
-        or offsets[selected[0]][0] != start
-        or offsets[selected[-1]][1] != end
-        or selected != list(range(selected[0], selected[-1] + 1))
-    ):
+def character_coverage(offsets: list[list[int]], length: int) -> bool:
+    covered = [0] * length
+    for left, right in offsets:
+        if not 0 <= left <= right <= length:
+            return False
+        for index in range(left, right):
+            covered[index] += 1
+    return bool(covered) and all(value == 1 for value in covered)
+
+
+def exact_surface_bytes(surface: str, maximum: int) -> list[int] | None:
+    payload = list(surface.encode("utf-8"))
+    try:
+        decoded = bytes(payload).decode("utf-8")
+    except UnicodeDecodeError:
         return None
-    return selected[0], selected[-1]
-
-
-def exact_surface_tokens(tokenizer: Any, surface: str, maximum: int) -> list[int] | None:
-    ids = [int(value) for value in tokenizer.encode(surface, add_special_tokens=False)]
-    decoded = tokenizer.decode(ids, skip_special_tokens=False, clean_up_tokenization_spaces=False)
-    return ids if ids and len(ids) <= maximum and decoded == surface else None
+    return payload if payload and len(payload) <= maximum and decoded == surface else None
 
 
 def convert_pair(tokenizer: Any, pair: list[dict[str, Any]], maximum_replacement: int):
@@ -113,23 +112,22 @@ def convert_pair(tokenizer: Any, pair: list[dict[str, Any]], maximum_replacement
     new = str(fault["new_surface"])
     if clean["draft"][start:end] != new or fault["draft"][start:end] != old:
         return None, "registered_character_span_differs"
-    old_ids = exact_surface_tokens(tokenizer, old, maximum_replacement)
-    new_ids = exact_surface_tokens(tokenizer, new, maximum_replacement)
+    old_ids = exact_surface_bytes(old, maximum_replacement)
+    new_ids = exact_surface_bytes(new, maximum_replacement)
     if old_ids is None or new_ids is None:
         return None, "replacement_not_exact_or_over_budget"
     source_ids = [int(value) for value in tokenizer.encode(source, add_special_tokens=False)]
     encoded = {}
     for name, row in members.items():
         draft_ids, offsets = tokenize_with_offsets(tokenizer, str(row["draft"]))
-        span = token_span(offsets, start, end)
-        if span is None:
-            return None, "edit_not_token_aligned"
+        if not character_coverage(offsets, len(str(row["draft"]))):
+            return None, "draft_character_coverage_differs"
         encoded[name] = {
             "draft": row["draft"],
             "draft_sha256": row["draft_sha256"],
             "draft_token_count": len(draft_ids),
-            "pointer_start": span[0],
-            "pointer_end": span[1],
+            "pointer_start": start,
+            "pointer_end": end - 1,
         }
     output = {
         "schema": SCHEMA,
@@ -144,24 +142,24 @@ def convert_pair(tokenizer: Any, pair: list[dict[str, Any]], maximum_replacement
         "source_token_count": len(source_ids),
         "final_response": clean["final_response"],
         "old_surface": old,
-        "old_token_ids": old_ids,
+        "old_byte_ids": old_ids,
         "new_surface": new,
-        "new_token_ids": new_ids,
+        "new_byte_ids": new_ids,
         "changed_character_span": [start, end],
         "members": {
             "clean": {
                 **encoded["clean"],
                 "action": "KEEP",
-                "replacement_token_ids": [],
+                "replacement_byte_ids": [],
                 "permuted_action": "REPLACE",
-                "permuted_replacement_token_ids": old_ids,
+                "permuted_replacement_byte_ids": old_ids,
             },
             "fault": {
                 **encoded["fault"],
                 "action": "REPLACE",
-                "replacement_token_ids": new_ids,
+                "replacement_byte_ids": new_ids,
                 "permuted_action": "KEEP",
-                "permuted_replacement_token_ids": [],
+                "permuted_replacement_byte_ids": [],
             },
         },
     }
@@ -228,7 +226,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
             maxima["draft"] = max(
                 maxima["draft"], *(member["draft_token_count"] for member in row["members"].values())
             )
-            maxima["replacement"] = max(maxima["replacement"], len(row["new_token_ids"]), len(row["old_token_ids"]))
+            maxima["replacement"] = max(maxima["replacement"], len(row["new_byte_ids"]), len(row["old_byte_ids"]))
             rows.append(row)
         converted[split] = rows
         drops[split] = dict(counts)
@@ -278,7 +276,7 @@ def main() -> int:
     parser.add_argument("--train-sources", type=int, default=4096)
     parser.add_argument("--diagnostic-sources", type=int, default=256)
     parser.add_argument("--max-sequence-length", type=int, default=4096)
-    parser.add_argument("--max-replacement-tokens", type=int, default=8)
+    parser.add_argument("--max-replacement-tokens", type=int, default=16)
     args = parser.parse_args()
     print(json.dumps(build(args), indent=2, sort_keys=True))
     return 0

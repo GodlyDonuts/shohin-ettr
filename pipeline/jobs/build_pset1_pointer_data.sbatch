@@ -30,6 +30,6 @@ export TOKENIZERS_PARALLELISM=false PYTHONPATH="$RUNTIME/pipeline:$RUNTIME/train
   --dset-train "$DSET_TRAIN" --dset-diagnostic "$DSET_DIAGNOSTIC" \
   --dset-report "$DSET_REPORT" --model-root "$MODEL_ROOT" --output "$OUTPUT" \
   --train-sources 4096 --diagnostic-sources 256 \
-  --max-sequence-length 4096 --max-replacement-tokens 8
+  --max-sequence-length 4096 --max-replacement-tokens 16
 test -f "$OUTPUT/report.json"
 chmod -R a-w "$OUTPUT"

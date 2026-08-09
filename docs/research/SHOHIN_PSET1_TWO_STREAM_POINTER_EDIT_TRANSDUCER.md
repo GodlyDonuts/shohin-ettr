@@ -8,20 +8,19 @@ No PSET1 model output exists at freeze time. Holdout remains unopened.
 DSET1 proves causal draft use but loses reliability while autoregressively
 serializing an old surface and a replacement surface. PSET1 instead treats
 revision as sequence transduction. The source and draft have separate causal
-streams. A model-owned policy emits an operation, draft-token pointers, and at
-most eight replacement tokens. A generic deterministic executor copies every
+streams. A model-owned policy emits an operation, draft-character pointers,
+and at most sixteen UTF-8 replacement bytes. A generic deterministic executor copies every
 untouched draft byte and applies the predicted splice. It has no semantic
 knowledge, verifier, solver, answer label, task route, or repair rule.
 
-For a draft tokenization with character offsets
-`D = ((t_0,o_0),...,(t_n,o_n))`, PSET1 predicts
+For a Unicode draft `D=(c_0,...,c_n)`, PSET1 predicts
 
 \[
- a\in\{KEEP,REPLACE\},\quad i,j\in[0,n),\quad r_{1:m},\ m\le 8.
+ a\in\{KEEP,REPLACE\},\quad i,j\in[0,n),\quad r_{1:m},\ m\le 16.
 \]
 
-`KEEP` returns the exact draft bytes. `REPLACE` requires valid token-boundary
-offsets and returns `draft[:o_i.start] + decode(r) + draft[o_j.end:]`.
+`KEEP` returns the exact draft bytes. `REPLACE` requires valid character
+boundaries and returns `draft[:i] + utf8_decode(r) + draft[j+1:]`.
 Malformed pointers, absent offsets, overlong replacement, or decode mismatch
 fail closed. The final trajectory is therefore causally impossible without the
 draft: all but the bounded edit are copied through model-owned pointers.
@@ -33,11 +32,13 @@ draft: all but the bounded edit are copied through model-owned pointers.
 - source problem and draft encoded in separate frozen forward passes;
 - shared 256-wide projections followed by one draft-query/source-key
   cross-attention block and feed-forward block;
-- action and start/end pointer heads over fused draft states;
+- action and start/end pointer heads over character states obtained by
+  broadcasting each contextual draft-token state to its tokenizer-reported
+  character span and adding a learned hashed-character embedding;
 - a two-layer 256-wide autoregressive replacement decoder cross-attending to
   source states and the selected draft state;
-- replacement input/output uses the frozen host token embedding and LM head,
-  with trainable projections only;
+- replacement input/output is a compact 257-symbol byte alphabet (256 bytes
+  plus EOS), avoiding BPE-boundary ambiguity;
 - no full-response autoregressive decoder.
 
 The aligned and label-permuted heads have identical initialization, parameter
@@ -53,9 +54,9 @@ Stage 0 reuses only the already-opened DSET1 development lineage:
 - 4,096 DSET1 train identities and 256 DSET1 diagnostic identities, selected
   deterministically at the frozen 7:1 numeric/choice ratio;
 - exact train/diagnostic source disjointness inherited and rechecked;
-- token spans must align exactly to tokenizer offsets;
-- replacement tokenization must decode byte-for-byte to the registered new
-  surface and contain at most eight tokens;
+- tokenizer offsets must cover every draft character exactly once;
+- replacement UTF-8 bytes must decode byte-for-byte to the registered new
+  surface and contain at most sixteen bytes;
 - source and complete draft each fit 4,096 tokens independently;
 - all selection, drop, span, offset, and hash receipts are stored.
 
@@ -69,7 +70,7 @@ No public benchmark or sealed holdout is part of Stage 0.
 - equal aggregate action, start-pointer, end-pointer, and replacement-token
   losses on fault examples; clean examples contribute action loss only;
 - gradient norm clipping at 1.0;
-- maximum replacement generation eight tokens plus EOS.
+- maximum replacement generation sixteen bytes plus EOS.
 
 ## Frozen Stage-0 gate
 
