@@ -1,5 +1,25 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **RME1 DEVELOPMENT ACTIVE — 2026-08-09:** Routed Revision Micro-Experts
+> replace the failed use of pretrained native expert identity with four new
+> revision-specific rank-8 experts, top two active, across all 16 sparse
+> layers. One-update mechanics job `747303` passed: exact `2,228,224`
+> trainables, `73,728` adapter MAC/token/layer, `15.996 GiB` peak allocation,
+> zero protected trainables, full source/draft/target retention, all four
+> routes active in every layer, and minimum load entropy `0.99536`. Exact
+> 256-update fits `747304--747306` completed cleanly with 338,620 charged
+> target tokens each; treatment throughput was `615.9` tok/s versus `782.2`
+> active-FLOP shared and `787.7` parameter-matched shared. Evaluations remain
+> unopened. Dispatcher `747307` failed before submissions on a stale data
+> path; retry `747308` also launched nothing because an escaped node list was
+> invalid and the dispatcher accepted empty job IDs. Preserve both failures.
+> The dispatcher is now fail-closed, and the next retry must use the verified
+> MTR1 development board SHA-256 `c936e950...37bc`, a fresh output root, and
+> no escaped node-list value. Stage 1 requires treatment `>=280`, `>=26` over
+> the stronger shared control, domain counts `>=55/180/5`, and noncollapsed
+> routing. Failure closes RME1 without variants; success alone opens causal
+> controls, never holdout directly.
+
 > **SER1 CLOSED NEGATIVE — 2026-08-09:** SER1 replaced ECR's shared
 > transform/code modulation with complete rank-1 residual transforms owned by
 > each frozen native expert across all 16 layers. Mechanics `747270` passed

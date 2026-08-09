@@ -25,7 +25,16 @@ DATA_REPORT=$DATA_ROOT/report.json
 DATA_SHA256=$(sha256sum "$DATA" | cut -d' ' -f1)
 DATA_REPORT_SHA256=$(sha256sum "$DATA_REPORT" | cut -d' ' -f1)
 mkdir -p "$OUTPUT_ROOT" "$(dirname "$DISPATCH_RECEIPT")"
-submit() { local raw; raw=$(sbatch --parsable "$@"); printf '%s\n' "${raw%%;*}"; }
+submit() {
+  local raw job
+  raw=$(sbatch --parsable "$@") || return 1
+  job=${raw%%;*}
+  [[ $job =~ ^[0-9]+$ ]] || {
+    echo "sbatch returned an invalid job id: $raw" >&2
+    return 1
+  }
+  printf '%s\n' "$job"
+}
 common="ALL,RUNTIME=$RUNTIME,RUNTIME_MANIFEST_SHA256=$RUNTIME_MANIFEST_SHA256"
 common+=",MODEL_ROOT=$MODEL_ROOT,MODEL_REVISION=$MODEL_REVISION,MODEL_LOADER=causal"
 common+=",MODEL_CONFIG_SHA256=$MODEL_CONFIG_SHA256,MODEL_MANIFEST_SHA256=$MODEL_MANIFEST_SHA256"

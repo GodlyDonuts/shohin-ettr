@@ -3,6 +3,12 @@
 Status: frozen pre-mechanics contract, 2026-08-09. Development only; holdout
 and larger-MoE transfer remain sealed.
 
+The one-update mechanics job `747303` completed cleanly before capability
+evaluation: exact `2,228,224` trainables, `73,728` adapter MAC/token/layer,
+`15.996 GiB` peak allocation, zero protected trainables, complete sequence
+retention, all four revision routes active in all 16 layers, and minimum load
+entropy `0.99536`.
+
 ## Why this is structurally different
 
 OLMoE's pretrained native routes do not separate corrected from persistent
