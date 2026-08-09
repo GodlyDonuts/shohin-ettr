@@ -333,6 +333,31 @@ def presentations(item: dict[str, Any]) -> list[dict[str, Any]]:
     return rows
 
 
+def presentation_fits(
+    tokenizer: Any,
+    render_reasoning_messages: Any,
+    product_system_prompt: str,
+    item: dict[str, Any],
+    maximum: int,
+) -> bool:
+    """Require both complete pair members to fit before split selection."""
+
+    for row in presentations(item):
+        rendered = render_reasoning_messages(
+            tokenizer,
+            [
+                {"role": "system", "content": product_system_prompt},
+                {"role": "user", "content": row["question"]},
+            ],
+            enable_thinking=False,
+        )
+        prompt_ids = tokenizer.encode(rendered, add_special_tokens=False)
+        response_ids = tokenizer.encode(row["response"], add_special_tokens=False)
+        if len(prompt_ids) + len(response_ids) + 1 > maximum:
+            return False
+    return True
+
+
 def build(args: argparse.Namespace) -> dict[str, Any]:
     if args.output.exists() or args.output.is_symlink():
         raise DSEO1DataError(f"refusing existing output root: {args.output}")
@@ -381,22 +406,30 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
             family,
             gold_answer,
         ) = fault
-        candidates[family].append(
-            {
-                "source_identity_sha256": str(obr["identity_sha256"]),
-                "source_line": source_line,
-                "training_group": str(obr["training_group"]),
-                "task": str(obr["task"]),
-                "raw_question": str(raw["question"]).strip(),
-                "clean_response": str(raw["response"]).strip(),
-                "fault_response": fault_response,
-                "fault_action": fault_action,
-                "corruption_family": family,
-                "changed_character_span": list(character_span),
-                "changed_token_span": token_span,
-                "gold_answer": gold_answer,
-            }
-        )
+        candidate = {
+            "source_identity_sha256": str(obr["identity_sha256"]),
+            "source_line": source_line,
+            "training_group": str(obr["training_group"]),
+            "task": str(obr["task"]),
+            "raw_question": str(raw["question"]).strip(),
+            "clean_response": str(raw["response"]).strip(),
+            "fault_response": fault_response,
+            "fault_action": fault_action,
+            "corruption_family": family,
+            "changed_character_span": list(character_span),
+            "changed_token_span": token_span,
+            "gold_answer": gold_answer,
+        }
+        if not presentation_fits(
+            tokenizer,
+            render_reasoning_messages,
+            PRODUCT_SYSTEM_PROMPT,
+            candidate,
+            args.max_sequence_length,
+        ):
+            drops[f"dseo1_overflow_{obr['training_group']}"] += 1
+            continue
+        candidates[family].append(candidate)
 
     train_sources, diagnostic_sources, quotas = split_members(
         candidates, args.train_sources, args.diagnostic_sources

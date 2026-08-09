@@ -2,6 +2,7 @@ from build_dseo1_paired_data import (
     boxed_inner_span,
     final_answer_span,
     mutate_surface,
+    presentation_fits,
     presentations,
     split_members,
 )
@@ -71,3 +72,20 @@ def test_presentations_hold_source_and_final_fixed() -> None:
     assert rows[0]["action"] == "<KEEP>"
     assert rows[1]["action"] == "<FIX_FINAL>"
     assert rows[0]["draft_sha256"] != rows[1]["draft_sha256"]
+
+
+class _Tokenizer:
+    def encode(self, text: str, add_special_tokens: bool = False) -> list[int]:
+        assert not add_special_tokens
+        return list(range(len(text.split())))
+
+
+def _render(_tokenizer, messages, *, enable_thinking):
+    assert not enable_thinking
+    return " ".join(message["content"] for message in messages)
+
+
+def test_presentation_fits_checks_both_pair_members() -> None:
+    item = _candidate("source", "numeric_final")
+    assert presentation_fits(_Tokenizer(), _render, "system", item, 200)
+    assert not presentation_fits(_Tokenizer(), _render, "system", item, 5)
