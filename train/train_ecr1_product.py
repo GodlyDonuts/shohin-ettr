@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import asdict
+import hashlib
 import json
 import math
 import os
@@ -43,6 +44,7 @@ def tokenize_complete_revision_rows(tokenizer, rows, maximum: int):
     prompt_rows, response_rows, draft_attention_rows = [], [], []
     source_tokens = draft_tokens = target_tokens = 0
     maximum_observed = 0
+    row_receipts = []
     for index, row in enumerate(rows):
         rendered = render_reasoning_messages(
             tokenizer,
@@ -71,6 +73,20 @@ def tokenize_complete_revision_rows(tokenizer, rows, maximum: int):
         draft_tokens += draft_count
         target_tokens += len(response)
         maximum_observed = max(maximum_observed, total)
+        row_receipts.append(
+            {
+                "identity_sha256": hashlib.sha256(
+                    row["question"].encode("utf-8")
+                ).hexdigest(),
+                "original_source_tokens": source_count,
+                "retained_source_tokens": source_count,
+                "original_draft_tokens": draft_count,
+                "retained_draft_tokens": draft_count,
+                "original_target_tokens": len(response),
+                "retained_target_tokens": len(response),
+                "total_tokens": total,
+            }
+        )
     custody = {
         "rows": len(prompt_rows),
         "max_sequence_length": maximum,
@@ -84,6 +100,7 @@ def tokenize_complete_revision_rows(tokenizer, rows, maximum: int):
         "source_retention": 1.0,
         "draft_retention": 1.0,
         "target_retention": 1.0,
+        "row_receipts": row_receipts,
     }
     return prompt_rows, response_rows, draft_attention_rows, custody
 
