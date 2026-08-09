@@ -70,6 +70,7 @@ def run(args: argparse.Namespace) -> dict:
         config,
         mode=args.mode,
         collapse_weight=args.collapse_weight,
+        context_control=args.context_control,
     ).to("cuda:0")
     trainable_names = sorted(
         name for name, parameter in model.named_parameters() if parameter.requires_grad
@@ -105,6 +106,7 @@ def run(args: argparse.Namespace) -> dict:
         "data_seed": args.data_seed,
         "drem1_config": asdict(config),
         "drem1_mode": args.mode,
+        "drem1_context_control": args.context_control,
         "collapse_weight": args.collapse_weight,
         "trainable_parameters": model.trainable_parameter_count(),
         "trainable_parameter_name_sha256": model.trainable_parameter_name_sha256(),
@@ -206,6 +208,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--mode", choices=("full", "router_only", "expert_only"), required=True)
+    parser.add_argument(
+        "--context-control", choices=("normal", "draft_masked"), default="normal"
+    )
     parser.add_argument("--updates", type=int, default=256)
     parser.add_argument("--batch-size", type=int, default=1)
     parser.add_argument("--gradient-accumulation", type=int, default=8)

@@ -115,6 +115,8 @@ def test_controller_emits_tied_recurrent_layer_states() -> None:
     assert len(states) == 2
     assert all(state.shape == (2, 6) for state in states)
     assert not torch.equal(states[0], states[1])
+    masked = controller(features, attention, draft, context_control="draft_masked")
+    assert not torch.equal(states[-1], masked[-1])
 
 
 def test_zero_initialized_intervention_preserves_base_exactly() -> None:

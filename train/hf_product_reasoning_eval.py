@@ -695,6 +695,7 @@ def _load_model(
             DREM1Config(**drem),
             mode=str(metadata["drem1_mode"]),
             collapse_weight=float(metadata["collapse_weight"]),
+            context_control=str(metadata.get("drem1_context_control", "normal")),
         ).to("cuda:0")
     else:
         model = ProductReasoningModel(

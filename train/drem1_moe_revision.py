@@ -126,10 +126,15 @@ class DraftStateController(nn.Module):
         features: torch.Tensor,
         attention_mask: torch.Tensor,
         draft_indicator: torch.Tensor,
+        context_control: str = "normal",
     ) -> list[torch.Tensor]:
+        if context_control not in {"normal", "draft_masked"}:
+            raise DREM1Error("DREM1 context control differs")
         source, draft = pool_source_and_draft(
             features, attention_mask, draft_indicator
         )
+        if context_control == "draft_masked":
+            draft = torch.zeros_like(draft)
         state = self.input_projection(
             torch.cat((source, draft, draft - source, draft * source), dim=-1)
         )
@@ -298,9 +303,14 @@ class DREM1ProductModel(nn.Module):
         config: DREM1Config,
         mode: str = "full",
         collapse_weight: float = 0.01,
+        context_control: str = "normal",
     ) -> None:
         super().__init__()
-        if mode not in DraftConditionedMoEBlock.MODES or collapse_weight < 0:
+        if (
+            mode not in DraftConditionedMoEBlock.MODES
+            or collapse_weight < 0
+            or context_control not in {"normal", "draft_masked"}
+        ):
             raise DREM1Error("DREM1 mode or collapse weight differs")
         from hf_product_reasoning_train import resolve_product_backbone_layout
 
@@ -314,6 +324,7 @@ class DREM1ProductModel(nn.Module):
         self.config = config
         self.mode = mode
         self.collapse_weight = collapse_weight
+        self.context_control = context_control
         self.controller = DraftStateController(config)
         self.blocks = nn.ModuleList(install_drem1_blocks(self.text_model.layers, config))
         device = self.text_model.embed_tokens.weight.device
@@ -354,7 +365,12 @@ class DREM1ProductModel(nn.Module):
                 attention_mask=prompt_attention,
                 use_cache=False,
             ).last_hidden_state
-        states = self.controller(features, prompt_attention, draft_indicator)
+        states = self.controller(
+            features,
+            prompt_attention,
+            draft_indicator,
+            context_control=self.context_control,
+        )
         for block, state in zip(self.blocks, states, strict=True):
             block.set_controller_state(state, self.mode)
 
