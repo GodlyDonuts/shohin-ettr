@@ -16,6 +16,20 @@
 > complete hashes/compute/retention. Only a conjunctive development pass opens
 > one sealed holdout and then staged larger-MoE transfer. Contract:
 > `docs/research/SHOHIN_MPR1_PRACTICAL_MOE_REVISION.md`.
+> Data job `747858` completed in 67 seconds: 9,651 rows and 1,575,873 charged
+> target tokens per arm, 5,824 unique source identities, task counts
+> `4,667/4,789/195` math/logic-code, exact target matching, zero source/donor
+> identity matches, same-task donors, donor token-length delta p95 `1`, and
+> maximum admitted total length 2,616. The same four known overflow
+> presentations were rejected. Data hashes are aligned
+> `07404b12...d5bb` and shuffled `de0af8e6...fad3`. Mechanics `747861`
+> passed with loss `1.1984`, gradient norm `48.25`, and a finite update. Fits
+> aligned `747862`, shuffled `747863`, and hidden `747864` are running; 24
+> evaluation shards `747865--747890` (excluding merge IDs `747873/747882`),
+> merges `747873/747882/747891`, semantic attribution `747892`, and comparison
+> `747893` are dependency-armed. Dispatcher `747859` submitted the complete
+> graph, then its receipt writer hit Newton's Python-2 default; the exact
+> receipt was reconstructed atomically and the graph was not altered.
 
 > **NDR1 NATURAL DRAFT REVISION STOPPED BY MISSION REDIRECT — 2026-08-09:** CFR1 established that
 > appended synthetic faults and clean-copy presentations cause draft over-trust

@@ -92,7 +92,7 @@ comparison=$OUTPUT_ROOT/development/comparison.json
 compare_job=$(submit --dependency=afterok:"$merge_dependency":"$semantic_job" \
   --export="ALL,RUNTIME=$RUNTIME,RUNTIME_MANIFEST_SHA256=$RUNTIME_MANIFEST_SHA256,ALIGNED_REPORT=$OUTPUT_ROOT/development/aligned/report.json,SHUFFLED_REPORT=$OUTPUT_ROOT/development/shuffled/report.json,HIDDEN_REPORT=$OUTPUT_ROOT/development/hidden/report.json,UNCHANGED_REPORT=$unchanged_report,ALIGNED_FIT=$OUTPUT_ROOT/aligned_fit/report.json,SHUFFLED_FIT=$OUTPUT_ROOT/shuffled_fit/report.json,HIDDEN_FIT=$OUTPUT_ROOT/hidden_fit/report.json,DATA_REPORT=$DATA_REPORT,SEMANTIC_ATTRIBUTION=$semantic,OUTPUT=$comparison" \
   "$RUNTIME/pipeline/jobs/compare_mpr1_development.sbatch")
-python - "$RECEIPT" "$mechanics" "$aligned_fit" "$shuffled_fit" "$hidden_fit" \
+python3 - "$RECEIPT" "$mechanics" "$aligned_fit" "$shuffled_fit" "$hidden_fit" \
   "$semantic_job" "$compare_job" "${shard_jobs[*]}" "${merges[*]}" <<'PY'
 import json,os,sys
 path,*values=sys.argv[1:]
