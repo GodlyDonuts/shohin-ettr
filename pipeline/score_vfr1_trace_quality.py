@@ -154,7 +154,7 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     report = score(parser.parse_args())
     print(json.dumps(report, indent=2, sort_keys=True))
-    return 0
+    return 0 if report["gate_pass"] else 3
 
 
 if __name__ == "__main__":
