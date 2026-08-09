@@ -18,6 +18,14 @@ Scratch 390M/920M pretraining, the 5B scratch canary, and long corpus
 construction are not the critical path and are not authorized. See
 `docs/research/SHOHIN_TRANSFERABLE_TEMPORAL_REVISION_CONTRACT.md`.
 
+The frozen successor is **Selective Commit Temporal Revision (SCTR1)**. It
+turns capability preservation into a model-owned commitment operation: emit
+`<KEEP>` to preserve the complete draft byte-for-byte, or `<REVISE>` plus one
+complete replacement. This is not a benchmark router and uses no inference
+verifier. Its first capability gate is pinned OLMo2-7B-Instruct, a larger
+non-Qwen family. See
+`docs/research/SHOHIN_SELECTIVE_COMMIT_TEMPORAL_REVISION.md`.
+
 ## Latest Practical Reasoning Campaign — 2026-08-08
 
 **TTR1 transfers the learned draft/revision effect to SmolLM3-3B, but exact

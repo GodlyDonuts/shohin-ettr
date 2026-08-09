@@ -1,5 +1,25 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **SCTR1 SUCCESSOR FROZEN / OLMO2-7B STAGING — 2026-08-08:** exact TTR1
+> remains closed. Read-only MBPP attribution found that the trained reviser
+> often generated semantically useful Python but corrupted its executable-only
+> contract with prose, Markdown, boxing, duplication, or truncation. The next
+> structurally different mechanism is Selective Commit Temporal Revision:
+> the same-family controller emits exactly `<KEEP>` to commit the complete
+> model-owned draft byte-for-byte, or `<REVISE>` followed by one complete
+> replacement trajectory; malformed decisions fail closed. Focused data,
+> parser, commitment, evaluator, lint, and bytecode tests pass (`14/14`).
+> Exact contract is
+> `docs/research/SHOHIN_SELECTIVE_COMMIT_TEMPORAL_REVISION.md`.
+>
+> The first capability host is pinned
+> `allenai/OLMo-2-1124-7B-Instruct@470b1fba1ae01581f270116362ee4aa1b97f4c84`.
+> Gemma 3 12B metadata was visible, but actual download returned the provider's
+> gated-access denial locally and on Newton; this is not a science result.
+> OLMo download job `746379` is live. SmolLM3 may be used only for mechanics,
+> never to rescue or reinterpret its closed development gate. Existing
+> holdout remains sealed.
+
 > **TTR1 SMOLLM3-3B CLOSED: STRONG AGGREGATE TRANSFER / CODE-RETENTION FAIL
 > — 2026-08-08 20:43 EDT:** the complete frozen development comparison closed
 > on all `1,289` identities. Trained same-family draft revision scores
