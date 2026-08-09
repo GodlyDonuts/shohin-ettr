@@ -57940,3 +57940,16 @@ This is the strongest practical reasoning result in the Shohin program as of
 in practice, but its parameter and multi-pass costs are those of Qwen3.5-9B.
 Transferring the recipe into a smaller scratch Shohin remains a separate
 training problem; the result must not be relabeled as sub-200M capability.
+
+On 2026-08-09 this complete path became a deployable, immutable delta release
+rather than only a collection of evaluation scripts. The release runs the
+exact internal draft, trained revision, unchanged same-family continuation,
+and learned whole-trajectory commit, verifies every artifact hash, and emits
+an atomic per-stage receipt. Five original non-benchmark prompts completed on
+one H100 in 3m26s with exact commit order consistency and no commit-input
+truncation. Manual inspection was correct on four math/logic/science prompts;
+the code answer understood the needed one-pass stable partition but violated
+the requested standalone-function format. AQC selected the unchanged lineage
+on all five, so the smoke validates deployment, not a new generalization gain.
+Exact custody and boundary are in
+`docs/research/SHOHIN_IDR_AQC_DEPLOYABLE_RELEASE.md`.

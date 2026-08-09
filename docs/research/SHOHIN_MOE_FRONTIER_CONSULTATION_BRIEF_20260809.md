@@ -1,10 +1,10 @@
 # Shohin MoE Frontier Consultation Brief
 
-Status: current, self-contained problem statement for external architecture
-review, 2026-08-09. Measured results are separated from hypotheses. No result
-in this document comes from benchmark-label exposure at inference.
+Status: resolved historical consultation, updated 2026-08-09. Measured results
+are separated from hypotheses. No result in this document comes from
+benchmark-label exposure at inference.
 
-## The decision we need
+## The decision originally posed
 
 Design the smallest falsifiable architectural change that makes Shohin's
 model-owned temporal revision transfer to a sparse Mixture-of-Experts model.
@@ -17,6 +17,32 @@ The first proving ground must remain pinned
 `allenai/OLMoE-1B-7B-0125-Instruct` so that a new mechanism can be compared
 against completed controls cheaply and exactly. A larger MoE is a later scale
 test, not a substitute for mechanism identification.
+
+## Resolution
+
+The requested attribution and successor ladder were completed after this brief
+was drafted. The small-OLMoE lane is now closed rather than awaiting another
+proposal:
+
+| Mechanism | Treatment | Strongest matched control | Decision |
+|---|---:|---:|---|
+| MTR1 shared attention | `204/1289` | unchanged `191` | positive but weak |
+| RCR1 router residual | `194` | attention/unchanged `191` | closed |
+| ECR1 final-four expert code | `221` | shared `223` | expert codes causally decorative |
+| ECR1 all-16-layer | `240` | shared `239` | misses `256` and `+39` gates |
+| SER1 selected-expert residual | `201` | shared `241` | closed |
+| RME1 revision micro-experts | `232` | shared `248` | closed |
+| CTSR1 causal temporal routing | `249` | temporal shared `245`; static shared `248` | route-change gate fails |
+
+ECR zero/mean/permuted expert-code interventions all score exactly `221`.
+CTSR1 changes the top-1 expert on only `0.0248%` of measured decisions. Generic
+all-layer post-MoE correction is useful, but static expert identity, dedicated
+revision experts, and the tested recurrent router do not earn causal inclusion.
+No small-OLMoE holdout or 35B MoE scaling is authorized. Exact later contracts
+and receipts are in `SHOHIN_ECR1_EXPERT_CONDITIONED_REVISION.md`,
+`SHOHIN_SER1_SELECTED_EXPERT_REVISION.md`,
+`SHOHIN_RME1_REVISION_MICRO_EXPERTS.md`, and
+`SHOHIN_CTSR1_CAUSAL_TEMPORAL_STATE_ROUTING.md`.
 
 ## The working dense architecture
 
@@ -220,7 +246,7 @@ amplify that problem by moving tokens away from experts that already encode a
 working procedure. A good controller must learn both repair and preservation,
 not simply maximize route change.
 
-## Attribution now in progress
+## Attribution protocol used
 
 Before another fit, completed MTR1/RCR1 traces should partition each identity
 into four outcome transitions relative to the unchanged second pass:
@@ -253,11 +279,11 @@ Discriminating interpretation:
 - persistent-wrong cases with stable high-margin routes suggest a frozen
   expert-capacity or early-representation bottleneck.
 
-## Leading successor: draft-conditioned sparse revision control
+## Successor hypothesis evaluated
 
-Subject to that attribution, the most plausible successor is a persistent
-controller that jointly owns routing and a small amount of expert-side
-revision capacity.
+The proposed persistent-controller direction was tested in bounded pieces.
+The equations below preserve the pre-result hypothesis; they are not an active
+launch recommendation after the negative ladder above.
 
 ### Candidate state
 
@@ -384,6 +410,10 @@ This brief is self-contained. Exact contracts and receipts are retained in:
 - `docs/research/SHOHIN_TRANSFERABLE_TEMPORAL_REVISION_CONTRACT.md`;
 - `docs/research/SHOHIN_MTR1_SMALL_MOE_TRANSFER.md`;
 - `docs/research/SHOHIN_RCR1_REVISION_CONDITIONED_ROUTING.md`;
+- `docs/research/SHOHIN_ECR1_EXPERT_CONDITIONED_REVISION.md`;
+- `docs/research/SHOHIN_SER1_SELECTED_EXPERT_REVISION.md`;
+- `docs/research/SHOHIN_RME1_REVISION_MICRO_EXPERTS.md`;
+- `docs/research/SHOHIN_CTSR1_CAUSAL_TEMPORAL_STATE_ROUTING.md`;
 - `docs/research/DIVERGE_IDR1_INTERNAL_DRAFT_REVISION.md`;
 - `docs/research/DIVERGE_AQC1_ANTISYMMETRIC_QUOTIENT_COMMIT.md`; and
 - `SHOHIN_NATIVE_REASONING_MASTER.md`.

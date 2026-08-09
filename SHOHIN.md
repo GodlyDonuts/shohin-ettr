@@ -140,6 +140,13 @@ This is the strongest practical Shohin result. It establishes useful
 same-family draft/revision/commit computation on a dense 9B host. It is not a
 claim that the original 125M scratch checkpoint is a frontier reasoner.
 
+The complete system is now packaged as an immutable delta and has passed a
+five-prompt end-to-end H100 smoke test. The package verifies the pinned base,
+draft adapter, trained revision adapter, learned commit state, reports, and
+product qualification before inference, then records all candidates and the
+selected whole trajectory. See
+[`docs/research/SHOHIN_IDR_AQC_DEPLOYABLE_RELEASE.md`](docs/research/SHOHIN_IDR_AQC_DEPLOYABLE_RELEASE.md).
+
 ## What did not work on dense hosts
 
 Several negative results constrain the design:

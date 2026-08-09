@@ -1,5 +1,31 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **QUALIFIED 9B DRAFT/REVISE/COMMIT RELEASE — 2026-08-09:** The strongest
+> surviving Shohin system is now packaged as one immutable, hash-bound delta
+> over pinned Qwen3.5-9B. Source commit `8f0bd8d` adds the complete runner and
+> packager. Release `idr_aqc_release_8f0bd8d_r1` has manifest SHA-256
+> `554e841f71edd3a19063411348340e337532db2db05dd5e1e2adc25a3d347e7b`
+> and `SHA256SUMS` SHA-256
+> `0dad031312dec0859e35bb7e9daea8aef688ef350b9053f587fba5acdc9c58c5`.
+> It binds the exact model config, B1 draft/control adapter, trained IDR1
+> revision adapter, qualified AQC1 commit, all reports, and the established
+> protected product result `383/538` versus revision `374` and unchanged
+> continuation `316`. No external model, verifier, correctness bit, task
+> label, router, or tool exists at inference.
+>
+> End-to-end job `747423` completed five original non-benchmark interactions
+> in `3m26s`; report SHA-256 is
+> `47e1bd3ab2bd81132de5f40e038f553eebcd210c436fb01c12acfeb9b2f7171b`.
+> Commit swap error is exactly zero and no commit input truncates. Manual
+> inspection finds correct substance on four math/logic/science prompts; the
+> code output understands the algorithmic defect but violates the requested
+> standalone-function/output format. The commit chose the unchanged lineage
+> on all five, so this is a deployment-mechanics pass, not a new accuracy or
+> commit-generalization result. Preserve failures `747421` (incomplete runtime,
+> pre-model) and `747422` (all stages ran, report targeted immutable release).
+> Exact release record:
+> `docs/research/SHOHIN_IDR_AQC_DEPLOYABLE_RELEASE.md`.
+
 > **CTSR1 / SMALL-OLMOE NATIVE LANE CLOSED — 2026-08-09:** The final small-OLMoE
 > MoE-native lane is Causal Temporal State Routing. A 64-wide GRU shared over
 > all 16 sparse layers consumes the actual causal token stream, keeps a
