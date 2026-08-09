@@ -44,3 +44,16 @@ def test_collect_requests_rejects_disagreeing_presentations() -> None:
     rows = [_row(identity, 0), _row(identity, 1, "\\boxed{3}")]
     with pytest.raises(VFR1RequestError, match="presentations disagree"):
         collect_unique_requests(rows, {identity: _source(identity)})
+
+
+def test_collect_requests_accepts_train_subset_of_full_source_bank() -> None:
+    train_identity = "c" * 64
+    heldout_identity = "d" * 64
+    requests = collect_unique_requests(
+        [_row(train_identity)],
+        {
+            train_identity: _source(train_identity),
+            heldout_identity: _source(heldout_identity),
+        },
+    )
+    assert [row["identity_sha256"] for row in requests] == [train_identity]

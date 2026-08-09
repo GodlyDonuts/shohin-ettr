@@ -118,8 +118,8 @@ def collect_unique_requests(
         if previous is not None and previous != candidate:
             raise VFR1RequestError("duplicate IDR1 presentations disagree")
         grouped[identity] = candidate
-    if set(grouped) != set(sources):
-        raise VFR1RequestError("VFR1 source coverage differs")
+    if not set(grouped).issubset(sources):
+        raise VFR1RequestError("VFR1 train identities escape the source banks")
     return [grouped[identity] for identity in sorted(grouped)]
 
 
