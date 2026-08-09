@@ -53,10 +53,16 @@ Only A/B/C train. Total trainables are exactly `515,840`. Additional work is
    Generation passes explicit original prompt position IDs so internal zero
    attention entries cannot compress positions.
 
-Every arm receives 256 AdamW updates, LR `2e-5`, seed `2026080901`, data seed
-`2026080814`, and the exact MTR1/RCR1 9,655-row training population. Context is
-4,096. Tokenization must fail closed if any complete source, exact draft, or
-target would be truncated. Original and retained counts must match exactly.
+Every arm receives 256 AdamW updates, LR `2e-5`, seed `2026080901`, and data
+seed `2026080814`. Exhaustive pre-output custody found four copies of one
+duplicate source identity require 4,332 tokens, beyond pinned OLMoE's hard
+4,096 context. Those four occurrences are deterministically excluded from all
+new arms before training; the remaining 9,651-row population is otherwise
+unchanged and its longest row is 2,616 tokens. No source, exact draft, or target
+token may be truncated. The admitted corpus and exclusion report are immutable
+and hash-bound before fits. This four-row difference from historical MTR1 is a
+declared limitation; the decisive ECR-versus-shared and draft-causality arms
+use identical admitted rows.
 
 ## Frozen gates
 
