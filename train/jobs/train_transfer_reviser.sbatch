@@ -18,6 +18,7 @@ for variable in RUNTIME RUNTIME_MANIFEST_SHA256 MODEL_ROOT MODEL_REVISION \
   test -n "${!variable:-}" || { echo "$variable is required" >&2; exit 2; }
 done
 MASK_INTERNAL_DRAFT=${MASK_INTERNAL_DRAFT:-false}
+MODEL_LOADER=${MODEL_LOADER:-causal}
 UPDATES=${UPDATES:-256}
 CHECKPOINT_INTERVAL=${CHECKPOINT_INTERVAL:-256}
 
@@ -49,10 +50,14 @@ if expected.get("rows") != 9655 or expected.get("sha256") != hashlib.sha256(data
 PY
 
 SOURCE_MODEL_ROOT=$MODEL_ROOT
-LOCAL_PARENT=${SLURM_TMPDIR:-/tmp/$USER/$SLURM_JOB_ID}
-EFFECTIVE_MODEL_ROOT=$LOCAL_PARENT/model
-mkdir -p "$EFFECTIVE_MODEL_ROOT" logs
-cp -a "$SOURCE_MODEL_ROOT"/. "$EFFECTIVE_MODEL_ROOT"/
+if [[ -n "${SLURM_TMPDIR:-}" ]]; then
+  EFFECTIVE_MODEL_ROOT=$SLURM_TMPDIR/model
+  mkdir -p "$EFFECTIVE_MODEL_ROOT"
+  cp -a "$SOURCE_MODEL_ROOT"/. "$EFFECTIVE_MODEL_ROOT"/
+else
+  EFFECTIVE_MODEL_ROOT=$SOURCE_MODEL_ROOT
+fi
+mkdir -p logs
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 export TOKENIZERS_PARALLELISM=false PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
@@ -65,7 +70,7 @@ elif [[ "$MASK_INTERNAL_DRAFT" != false ]]; then
 fi
 "$PYTHON" "$RUNTIME/train/hf_product_reasoning_train.py" \
   --model-root "$EFFECTIVE_MODEL_ROOT" --model-source-root "$SOURCE_MODEL_ROOT" \
-  --model-revision "$MODEL_REVISION" --model-loader causal --data "$DATA" \
+  --model-revision "$MODEL_REVISION" --model-loader "$MODEL_LOADER" --data "$DATA" \
   --output "$OUTPUT" --arm baseline --updates "$UPDATES" --batch-size 1 \
   --gradient-accumulation 8 --max-rows 10000 --max-sequence-length 4096 \
   --learning-rate 2e-5 --lora-layers 4 --lora-rank 8 --lora-alpha 16 \
