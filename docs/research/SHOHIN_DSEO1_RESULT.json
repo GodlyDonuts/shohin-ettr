@@ -1,0 +1,86 @@
+{
+  "schema": "shohin-dseo1-stage0-result-v1",
+  "status": "complete",
+  "decision": "close_exact_dseo1_v0",
+  "split": "source_disjoint_paired_diagnostic",
+  "train_sources": 8192,
+  "diagnostic_sources": 1024,
+  "diagnostic_presentations": 2048,
+  "updates_per_trained_arm": 256,
+  "charged_tokens_per_trained_arm": 499970,
+  "trainable_parameters_per_arm": 1179648,
+  "peak_gpu_memory_bytes": 43311114240,
+  "metrics": {
+    "aligned": {
+      "action_accuracy": 0.947265625,
+      "counterfactual_consistency": 0.90625,
+      "answer_accuracy": 0.89208984375,
+      "clean_answer_accuracy": 0.9384765625,
+      "fault_answer_accuracy": 0.845703125,
+      "choice_action_accuracy": 0.68359375,
+      "numeric_action_accuracy": 0.9849330357142857
+    },
+    "swapped": {
+      "action_accuracy": 0.05908203125,
+      "counterfactual_consistency": 0.0126953125,
+      "answer_accuracy": 0.89013671875
+    },
+    "hidden": {
+      "action_accuracy": 0.5,
+      "counterfactual_consistency": 0.0,
+      "answer_accuracy": 0.2900390625
+    },
+    "final_only": {
+      "action_accuracy": 0.0,
+      "counterfactual_consistency": 0.0,
+      "answer_accuracy": 0.908203125
+    },
+    "owner": {
+      "action_accuracy": 0.00048828125,
+      "counterfactual_consistency": 0.0,
+      "answer_accuracy": 0.13232421875
+    }
+  },
+  "paired_attribution": {
+    "both_correct": 865,
+    "clean_correct_fault_wrong": 96,
+    "both_wrong": 62,
+    "clean_wrong_fault_correct": 1,
+    "identical_downstream_trajectories": 870,
+    "total_pairs": 1024
+  },
+  "gates": {
+    "aligned_action_accuracy_ge_0_95": false,
+    "aligned_each_family_action_accuracy_ge_0_95": false,
+    "counterfactual_consistency_ge_0_90": true,
+    "swapped_action_accuracy_le_0_60": true,
+    "hidden_action_accuracy_le_0_60": true,
+    "clean_answer_nonregression": true,
+    "fault_repair_accuracy_ge_0_90": false,
+    "all_stage0_gates_passed": false
+  },
+  "interpretation": {
+    "action_identifiability_supported": true,
+    "action_to_execution_coupling_supported": false,
+    "capability_authorized": false,
+    "holdout_authorized": false,
+    "action_intervention_run": false
+  },
+  "jobs": {
+    "mechanics": 748425,
+    "aligned_fit": 748426,
+    "swapped_fit": 748427,
+    "hidden_fit": 748459,
+    "final_only_fit": 748498,
+    "comparator": 748561
+  },
+  "artifact_sha256": {
+    "paired_data_report": "6a5f0bbe3a9919cc189a89244bbf990513df138b568e23f30dd87e27181e6a0e",
+    "aligned_evaluation": "57ab9ba083a152a5090211eeb6247264a1076c53a5f755f46c552b346b041177",
+    "swapped_evaluation": "c0647ceaa8c798681329651cf7d2f11636fb25c59e653c03d4eefc2f75d495db",
+    "hidden_evaluation": "c8caee0465a617e8f02ba8a991d1f37fce84194ca28a4384752e63b03222ed2b",
+    "final_only_evaluation": "256ada143f3bd8b7615fe96871f9977c0f63a07502872ad6666a6edc55d1c784",
+    "owner_evaluation": "67f3951e51af0f6e8758c8bc425ab4c43179a51461bb4d3c210e85e724e4b206",
+    "comparison": "39cf043579a0d625b05073339c23dfc83e6e339afd5507443c526f462ea1dc07"
+  }
+}

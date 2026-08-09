@@ -1,7 +1,9 @@
 # DSEO1: Draft-Specific Edit Objective
 
-Status: frozen prospective successor, 2026-08-09. OBR1 and its conditional
-MPR3 campaign remain unchanged. No DSEO1 capability output has been produced.
+Status: exact v0 closed negative, 2026-08-09. OBR1 and its conditional MPR3
+campaign remained unchanged. Stage 0 failed prospectively frozen gates, so no
+DSEO1 capability or holdout output was produced. Exact results are in
+`docs/research/SHOHIN_DSEO1_RESULT.json`.
 
 ## Identifiability defect
 

@@ -1,6 +1,6 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **DSEO1 DRAFT-SPECIFIC EDIT OBJECTIVE FROZEN — 2026-08-09:** MPR1/MPR2
+> **DSEO1-V0 CLOSED: ACTION IDENTIFIABLE, EXECUTION UNCOUPLED — 2026-08-09:** MPR1/MPR2
 > expose an identifiability defect: final-answer CE admits the source-only
 > optimum `p(y|x,d)=p(y|x)`. DSEO1 holds source `x` and verified final
 > trajectory `y` fixed while paired clean/fault drafts require different
@@ -22,8 +22,25 @@
 > filters complete pairs before deterministic split selection. One-update
 > mechanics `748425` passed in 65s with action CE 1.0010, final CE 0.3446,
 > total 0.6728, gradient norm 57.0, and a finite update from the frozen
-> MPR1-hidden owner. Full matched fits `748426--748429` and owner-reference
-> diagnostic shards `748433--748440` are running; merge `748441` is held.
+> MPR1-hidden owner. Matched 256-update fits closed through jobs
+> `748426/748427/748459/748498`; each charged 499,970 tokens, used exactly
+> 1,179,648 trainables, peaked at about 43.31 GB, and completed in 7.3--7.4
+> training minutes (8.0--8.3 Slurm minutes). The 1,024-pair diagnostic is:
+> aligned action `94.7266%`, consistency `90.625%`, answers `89.209%`;
+> swapped action `5.908%`, consistency `1.270%`, answers `89.014%`; hidden
+> action `50.0%`, consistency `0%`, answers `29.004%`; final-only action `0%`,
+> answers `90.820%`; owner answers `13.232%`. Aligned numeric action is
+> `98.493%`, but choice action is only `68.359%`; clean/fault answer accuracy
+> is `93.848/84.570%`. Paired read-only attribution finds 865 both-correct,
+> 96 clean-correct/fault-wrong, 62 both-wrong, and only one clean-wrong/
+> fault-correct pair; 870/1,024 aligned downstream trajectories are identical.
+> Thus draft-specific action recognition is real, but the answer path ignores
+> or over-trusts the draft: final-only beats aligned by 32/2,048 answers, and
+> swapped labels barely change answer accuracy. The frozen overall/per-family
+> action and 90% fault-repair gates fail, so comparator `748561` exited 3 as
+> designed, action intervention/capability/holdout remain unopened, and exact
+> DSEO1-v0 is closed without width/loss/duration variants. Comparison SHA-256
+> is `39cf0435...c07`; result: `docs/research/SHOHIN_DSEO1_RESULT.json`.
 
 > **OBR1 / CONDITIONAL MPR3 CLOSED NEGATIVE — 2026-08-09:** CFR1, MPR1, MPR2,
 > and DPR1 are closed negatives. The practical MoE

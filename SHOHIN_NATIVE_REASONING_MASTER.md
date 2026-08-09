@@ -58,7 +58,7 @@ scored only `87/1,289` with domains `13/68/6`, missing every frozen owner gate
 broad adaptation damaged the useful 256-update source-only owner. Contract:
 `docs/research/SHOHIN_OBR1_BROAD_OWNER_AND_MPR3_GATE.md`.
 
-The next independent objective-level successor is DSEO1. Its diagnosis is
+The latest independent objective-level successor was DSEO1. Its diagnosis is
 that ordinary final-answer CE never forces draft use when the verified target
 is identical across drafts. DSEO1 creates same-source clean/fault pairs with
 the same final trajectory but different autoregressive edit actions, and gives
@@ -68,13 +68,25 @@ collapse under hidden/swapped controls, and causal downstream change when the
 action prefix is forced. No benchmark fit is authorized before that gate.
 Exact prospective contract:
 `docs/research/SHOHIN_DSEO1_DRAFT_SPECIFIC_EDIT_OBJECTIVE.md`.
-The paired corpus is complete: 8,192 train and 1,024 source-disjoint
+The paired corpus contains 8,192 train and 1,024 source-disjoint
 diagnostic identities, 16,384/2,048 presentations, zero split overlap, and
 maximum complete sequence 4,092/4,096. One-update mechanics passed from the
 prospectively selected MPR1-hidden owner with finite gradients and separated
-action/final losses. Four matched fits and eight owner-reference diagnostic
-shards are running. Capability remains unopened until action,
-counterfactual, repair, controls, and forced-action gates all pass.
+action/final losses. Four matched 256-update fits then established a precise
+boundary. Aligned action accuracy is `94.73%` with `90.63%` counterfactual
+consistency, versus `5.91%/1.27%` for swapped labels and `50%/0%` when the
+draft is causally hidden. The objective therefore makes draft-conditioned
+action recognition identifiable. It does not make the action control the
+answer computation: aligned answers are `1,827/2,048` (`89.21%`), swapped
+labels retain `1,823` (`89.01%`), and final-only improves to `1,860`
+(`90.82%`). Aligned choice action is only `68.36%`, fault answers are only
+`84.57%`, 870/1,024 clean/fault trajectories are identical, and faults break
+96 clean-correct pairs while repairing only one clean-wrong pair. Exact
+DSEO1-v0 therefore fails its frozen overall/per-family action and fault-repair
+gates. No intervention, capability benchmark, or holdout was opened. The
+next interface must couple the emitted decision to a distinct execution path;
+more parameters or duration on this prefix-only formulation are not justified.
+Result: `docs/research/SHOHIN_DSEO1_RESULT.json`.
 
 This changed factor is strongly supported on dense models. Matched trained
 revision versus unchanged second-pass gains are:
