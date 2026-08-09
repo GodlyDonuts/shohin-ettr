@@ -31,7 +31,7 @@ def _make_exact_fixture(
     tmp_path: Path,
     *,
     model_revision: str = MODEL_REVISION,
-    adapter_sha256: str = ADAPTER_SHA256,
+    adapter_sha256: str | None = ADAPTER_SHA256,
 ) -> tuple[list[Path], list[Path]]:
     banks: list[Path] = []
     reports: list[Path] = []
@@ -137,6 +137,25 @@ def test_merge_binds_an_alternate_same_family_checkpoint(tmp_path: Path) -> None
     )
     assert receipt["model_revision"] == model_revision
     assert receipt["adapter_checkpoint_sha256"] == adapter_sha256
+
+
+def test_merge_accepts_pinned_base_model_drafts(tmp_path: Path) -> None:
+    model_revision = "470b1fba1ae01581f270116362ee4aa1b97f4c84"
+    reports, banks = _make_exact_fixture(
+        tmp_path,
+        model_revision=model_revision,
+        adapter_sha256=None,
+    )
+    receipt = merge(
+        reports,
+        banks,
+        tmp_path / "merged.jsonl",
+        tmp_path / "receipt.json",
+        model_revision=model_revision,
+        adapter_sha256=None,
+    )
+    assert receipt["model_revision"] == model_revision
+    assert receipt["adapter_checkpoint_sha256"] is None
 
 
 def test_main_forwards_receipt_path(monkeypatch, tmp_path: Path) -> None:

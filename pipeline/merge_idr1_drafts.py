@@ -89,9 +89,11 @@ def merge(
     receipt_path: Path,
     *,
     model_revision: str = MODEL_REVISION,
-    adapter_sha256: str = ADAPTER_SHA256,
+    adapter_sha256: str | None = ADAPTER_SHA256,
 ) -> dict[str, Any]:
-    if not model_revision or len(adapter_sha256) != 64:
+    if not model_revision or (
+        adapter_sha256 is not None and len(adapter_sha256) != 64
+    ):
         raise IDR1DraftError("IDR1 model provenance is invalid")
     if len(reports) != 17 or len(banks) != 3:
         raise IDR1DraftError("IDR1 requires exactly 17 reports and three banks")
@@ -264,6 +266,11 @@ def main() -> int:
     parser.add_argument("--receipt", type=Path, required=True)
     parser.add_argument("--model-revision", default=MODEL_REVISION)
     parser.add_argument("--adapter-sha256", default=ADAPTER_SHA256)
+    parser.add_argument(
+        "--base-model-draft",
+        action="store_true",
+        help="Require source reports generated without an adapter checkpoint.",
+    )
     args = parser.parse_args()
     report = merge(
         args.reports,
@@ -271,7 +278,7 @@ def main() -> int:
         args.output,
         args.receipt,
         model_revision=args.model_revision,
-        adapter_sha256=args.adapter_sha256,
+        adapter_sha256=None if args.base_model_draft else args.adapter_sha256,
     )
     print(
         json.dumps(
