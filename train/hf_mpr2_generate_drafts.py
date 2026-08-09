@@ -111,7 +111,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if (
         metadata.get("architecture") != OWNER_ARCHITECTURE
         or metadata.get("rme1_draft_control") != "draft_unavailable"
-        or int(metadata.get("update", -1)) != 256
+        or int(metadata.get("update", -1)) != args.expected_owner_update
     ):
         raise MPR2DraftError("MPR2 trained draft owner differs")
     stop_ids = _generation_stop_token_ids(tokenizer)
@@ -159,6 +159,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "owner_checkpoint_sha256": sha256_file(args.owner_checkpoint),
         "owner_architecture": metadata["architecture"],
         "owner_update": metadata["update"],
+        "expected_owner_update": args.expected_owner_update,
         "owner_draft_control": metadata["rme1_draft_control"],
         "model_root": str(args.model_source_root.resolve()),
         "model_revision": args.model_revision,
@@ -191,6 +192,7 @@ def main() -> int:
     parser.add_argument("--model-revision", required=True)
     parser.add_argument("--model-loader", default="causal")
     parser.add_argument("--owner-checkpoint", type=Path, required=True)
+    parser.add_argument("--expected-owner-update", type=int, default=256)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
     parser.add_argument("--shard-index", type=int, required=True)
@@ -198,10 +200,12 @@ def main() -> int:
     parser.add_argument("--batch-size", type=int, default=4)
     parser.add_argument("--max-new-tokens", type=int, default=768)
     parser.add_argument("--seed", type=int, default=2026080921)
-    print(json.dumps(run(parser.parse_args()), sort_keys=True))
+    args = parser.parse_args()
+    if args.expected_owner_update <= 0:
+        parser.error("expected owner update must be positive")
+    print(json.dumps(run(args), sort_keys=True))
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

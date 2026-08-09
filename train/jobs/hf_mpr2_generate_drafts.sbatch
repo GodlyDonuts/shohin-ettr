@@ -16,6 +16,7 @@ for variable in RUNTIME RUNTIME_MANIFEST_SHA256 MODEL_ROOT MODEL_REVISION MODEL_
 done
 BASE=/lustre/fs1/home/sa305415/shohin
 PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
+EXPECTED_OWNER_UPDATE=${EXPECTED_OWNER_UPDATE:-256}
 test ! -e "$OUTPUT" && test ! -e "$REPORT"
 test "$(sha256sum "$RUNTIME/SHA256SUMS" | cut -d' ' -f1)" = "$RUNTIME_MANIFEST_SHA256"
 (cd "$RUNTIME" && sha256sum -c SHA256SUMS >/dev/null)
@@ -29,6 +30,5 @@ mkdir -p "$EFFECTIVE_MODEL_ROOT" "$(dirname "$OUTPUT")" logs
 cp -a "$MODEL_ROOT"/. "$EFFECTIVE_MODEL_ROOT"/
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 TOKENIZERS_PARALLELISM=false PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
 nvidia-smi
-"$PYTHON" "$RUNTIME/train/hf_mpr2_generate_drafts.py" --source "$SOURCE" --source-report "$SOURCE_REPORT" --model-root "$EFFECTIVE_MODEL_ROOT" --model-source-root "$MODEL_ROOT" --model-revision "$MODEL_REVISION" --model-loader causal --owner-checkpoint "$OWNER_CHECKPOINT" --output "$OUTPUT" --report "$REPORT" --shard-index "$SHARD_INDEX" --shard-count "$SHARD_COUNT" --batch-size 4 --max-new-tokens 768 --seed 2026080921
+"$PYTHON" "$RUNTIME/train/hf_mpr2_generate_drafts.py" --source "$SOURCE" --source-report "$SOURCE_REPORT" --model-root "$EFFECTIVE_MODEL_ROOT" --model-source-root "$MODEL_ROOT" --model-revision "$MODEL_REVISION" --model-loader causal --owner-checkpoint "$OWNER_CHECKPOINT" --expected-owner-update "$EXPECTED_OWNER_UPDATE" --output "$OUTPUT" --report "$REPORT" --shard-index "$SHARD_INDEX" --shard-count "$SHARD_COUNT" --batch-size 4 --max-new-tokens 768 --seed 2026080921
 chmod a-w "$OUTPUT" "$REPORT"
-
