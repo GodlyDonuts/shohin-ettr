@@ -17,7 +17,8 @@ done
 test "$(sha256sum "$RUNTIME/SHA256SUMS" | cut -d' ' -f1)" = "$RUNTIME_MANIFEST_SHA256"
 (cd "$RUNTIME" && sha256sum -c SHA256SUMS >/dev/null)
 export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
-python3 "$RUNTIME/pipeline/compare_ecr1_depth_development.py" \
+PYTHON=${PYTHON:-/lustre/fs1/home/sa305415/shohin/envs/product-reasoning-b3a3603-r2/bin/python}
+"$PYTHON" "$RUNTIME/pipeline/compare_ecr1_depth_development.py" \
   --treatment-report "$TREATMENT_REPORT" --shared-report "$SHARED_REPORT" \
   --treatment-fit "$TREATMENT_FIT" --shared-fit "$SHARED_FIT" \
   --final-four-comparison "$FINAL_FOUR_COMPARISON" \
