@@ -15,8 +15,10 @@ embeddings, attention, and language head remain frozen.
 - host: pinned Qwen3.6-35B-A3B, loaded in NF4 with BF16 compute;
 - adapter: rank 18 after each of the final 16 MLP/MoE blocks, alpha 18,
   exactly 1,179,648 trainables;
-- data: immutable DSET1 `dset1_r6` training and diagnostic corpora, retokenized
-  by the Qwen tokenizer with fail-closed 4,096-token complete retention;
+- data: a deterministic unchanged-text view of immutable DSET1 `dset1_r6`;
+  complete pairs that exceed 4,096 Qwen tokens or the frozen 32-token script
+  budget are dropped and receipted before any model output; no truncation,
+  shortening, replacement, or source migration is allowed;
 - optimization: 256 updates, four paired identities/update, LR `5e-5` cosine,
   identical seeds and token presentation in both arms;
 - aligned arm sees exact model-owned drafts;
@@ -36,4 +38,3 @@ paired consistency, at least 13 more correct trajectories than hidden, and
 zero malformed execution or decode exhaustion. A pass opens one separately
 frozen source-disjoint confirmation. A miss closes this exact transfer without
 rank, seed, duration, prompt, threshold, or quantization rescue.
-

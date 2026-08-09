@@ -1,5 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **DSET-Q35 ZERO-SHOT CEILING CLOSED; TRAINED TRANSFER IN MECHANICS — 2026-08-09:**
+> Eight pinned Qwen3.6-35B-A3B shards `748895--748902` and merge `748903`
+> completed against the exact 256 already-opened PSET diagnostic identities.
+> The untrained host executed only `69/512 = 13.48%`, produced only `26/512`
+> exact scripts, `343` malformed scripts, and `167` decode-limit exhaustions;
+> BF16 inference peaked at 70.29 GB. This closes only the frozen zero-shot
+> prompt, not DSET trainability. A prospective modern-host transfer is frozen:
+> Qwen3.6 NF4/BF16 compute, final-16 rank-18 post-MLP residuals, exactly
+> 1,179,648 trainables, aligned versus causally hidden drafts, 256 updates.
+> One-update mechanics job `748909` is the active gate. Result SHA-256
+> `4cf9616f...d12`; contracts/results:
+> `docs/research/SHOHIN_DSET_Q35_MOE_CEILING.md`,
+> `docs/research/SHOHIN_DSET_Q35_CEILING_RESULT.json`, and
+> `docs/research/SHOHIN_DSET_Q35_TRAINED_TRANSFER.md`.
+
 > **PSET1-V0 CLOSED: POINTER LOCALIZATION WORKS, VALUE SYNTHESIS FAILS — 2026-08-09:**
 > After DSET1's frozen miss, PSET1 tested a structurally different two-stream
 > sequence transducer: separate frozen source/draft encodings, a 4,148,997-

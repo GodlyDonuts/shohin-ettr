@@ -1,0 +1,32 @@
+{
+  "schema": "shohin-dset-q35-ceiling-result-v1",
+  "status": "complete",
+  "date": "2026-08-09",
+  "decision": "close_untrained_dset_q35_ceiling",
+  "holdout_used": false,
+  "jobs": {
+    "evaluation_shards": "748895-748902",
+    "merge": 748903
+  },
+  "metrics": {
+    "rows": 512,
+    "script_exact": 26,
+    "script_accuracy": 0.05078125,
+    "execution_correct": 69,
+    "execution_accuracy": 0.134765625,
+    "clean_execution_correct": 33,
+    "clean_execution_accuracy": 0.12890625,
+    "fault_execution_correct": 36,
+    "fault_execution_accuracy": 0.140625,
+    "numeric_script_exact": 26,
+    "numeric_rows": 448,
+    "choice_script_exact": 0,
+    "choice_rows": 64,
+    "malformed_scripts": 343,
+    "max_token_exhausted": 167,
+    "generated_tokens": 13965,
+    "peak_gpu_memory_bytes": 70294293504
+  },
+  "aggregate_report_sha256": "4cf9616f2afd1e6d3ffc20bef51e3df870a27c635aa1a4818554f3788ee3fd12",
+  "claim": "Pinned Qwen3.6-35B-A3B does not know the DSET edit language zero-shot. This closes the exact untrained prompt but does not test whether a small trained residual can transfer the interface."
+}
