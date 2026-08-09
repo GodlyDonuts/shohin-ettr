@@ -1,7 +1,7 @@
 # SER1: Selected-Expert Revision Residual
 
-Status: frozen pre-mechanics contract, 2026-08-09. Development only; holdout
-and larger-MoE transfer are sealed.
+Status: closed negative on OLMoE, 2026-08-09. Holdout and larger-MoE transfer
+remain sealed.
 
 ## Causal hypothesis
 
@@ -64,3 +64,21 @@ parameter-matched control means sparse storage has not earned a capability
 claim. Beating both controls and collapsing under expert-bank permutation
 supports useful expert-specific revision computation. Failing either score
 gate closes the mechanism.
+
+## Result and decision
+
+Mechanics passed exactly. Treatment has `4,194,304` trainables and `32,768`
+MAC/token/layer with zero trainable native router/expert tensors. All three
+fits completed the same 256 updates and 338,620 charged target tokens.
+
+Full development scores are selected-expert treatment `201/1,289 = 15.5935%`,
+active-FLOP shared control `236 = 18.3088%`, and total-parameter shared control
+`241 = 18.6967%`. Treatment domain counts are math `56`, logic/science `139`,
+and code `6`; logic fails its floor. Exact comparison SHA-256 is
+`a44fc09f3e46db195afc0bf32f58e05db0a5e7e030510678c4dbe80bcb7d1fb6`.
+
+SER1 is therefore closed without Stage 2, holdout, or nearby rescue. Native
+expert assignment fragments revision learning and is substantially worse than
+both shared controls. This rejects post-MoE expert-owned residual banks; it
+does not test new dedicated revision experts or adapters inside native expert
+nonlinearities.

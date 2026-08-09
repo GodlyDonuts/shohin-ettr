@@ -34,7 +34,7 @@ answers; the strict all-domain gate correctly fails.
 ### Current blocker: dense-to-MoE transfer
 
 The first sparse host is pinned `OLMoE-1B-7B-0125-Instruct`: 7B total,
-approximately 1B active, 64 experts, eight active per token. Three exact
+approximately 1B active, 64 experts, eight active per token. Four exact
 development gates are closed:
 
 1. **MTR1 shared-attention revision:** rank-8 LoRA in the final four shared
@@ -53,6 +53,10 @@ development gates are closed:
    exactly unchanged. The sole all-16-layer follow-up raises ECR to `240`, but
    matched shared reaches `239`; the one-answer margin fails the frozen
    39-answer gate. ECR1, its holdout, and 35B scaling are closed.
+4. **SER1 selected-expert residual:** all 16 frozen-router layers choose
+   complete expert-owned rank-1 transforms. Treatment scores `201/1,289`,
+   versus active-FLOP shared `236` and total-parameter shared `241`; its
+   logic/science count collapses to `139`. SER1 and its holdout are closed.
 
 These results do not show that temporal revision is incompatible with MoE.
 They show that shared correction capacity produces a modest effect, while
@@ -76,13 +80,13 @@ work returns exclusively to the MoE architecture problem:
 4. permit small expert-side revision adapters only if evidence indicates that
    routing among frozen experts lacks the needed computation.
 
-The next admissible mechanism must remove ECR's shared-transform/code-collapse
-failure. The leading bounded candidate gives each frozen native expert a
-complete tiny revision residual selected by the untouched router, then compares
-it against both active-FLOP-matched and total-parameter-matched shared residuals.
-This is a hypothesis awaiting a frozen contract and mechanics gate, not a
-claimed result. It must causally depend on expert assignment and materially
-beat generic correction before any holdout or large-MoE run.
+Post-MoE native-expert conditioning is now exhausted: static rerouting, code
+modulation, and whole expert-owned residual banks all fail against shared
+correction. Any final small-host MoE-native attempt must instead change where
+specialization is learned, such as a small bank of dedicated revision experts
+with its own balanced router or adapters inside native expert nonlinearities.
+It must beat active-FLOP and total-parameter shared controls before any holdout
+or large-MoE run; otherwise retire the small-OLMoE architecture-transfer lane.
 
 The small OLMoE development board remains the proving ground. Its sealed
 holdout and the larger `Qwen3.6-35B-A3B` campaign remain prohibited until a

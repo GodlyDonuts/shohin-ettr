@@ -1,5 +1,22 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **SER1 CLOSED NEGATIVE — 2026-08-09:** SER1 replaced ECR's shared
+> transform/code modulation with complete rank-1 residual transforms owned by
+> each frozen native expert across all 16 layers. Mechanics `747270` passed
+> exact receipts: `4,194,304` trainables, `32,768` MAC/token/layer, zero
+> trainable native router/expert tensors, finite update, and 16.513 GB peak.
+> Exact 256-update jobs `747271--747273` each charged 338,620 target tokens.
+> Treatment used `627.47` tok/s and 24.412 GB; active-FLOP shared used `774.83`
+> tok/s; total-parameter shared used `771.17` tok/s. Complete comparison
+> `747302` scores treatment `201/1,289 = 15.5935%`, active-FLOP shared `236 =
+> 18.3088%`, and parameter-matched shared `241 = 18.6967%`. Treatment domains
+> are math `56`, logic/science `139`, code `6`; logic collapses below its
+> floor. Comparison SHA-256 is
+> `a44fc09f3e46db195afc0bf32f58e05db0a5e7e030510678c4dbe80bcb7d1fb6`.
+> Stage 2 and holdout are unauthorized. Native-router assignment of separate
+> residual banks hurts revision; close SER1 without rank/depth/duration/seed
+> rescue.
+
 > **ECR1 CLOSED ON OLMOE — 2026-08-09:** The sole predeclared all-layer
 > follow-up completed. Rank-8 all-16-layer ECR job `747159` used exactly
 > `532,480` trainables, 256 updates, 338,620 charged target tokens, `748.36`
