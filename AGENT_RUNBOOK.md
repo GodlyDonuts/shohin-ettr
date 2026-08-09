@@ -1,5 +1,18 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **DPR1 K=8 MODEL-OWNED DRAFT-PANEL CEILING FROZEN — 2026-08-09:** MPR2's
+> owner+aligned oracle is only `265/1,289`, so no selector over that pair can
+> reach the required 286. DPR1 tests one structurally different source of
+> information before fitting: eight exchangeable complete stochastic
+> trajectories from the exact trained OLMoE owner, temperature 1/top-p .95/
+> top-k 20, seed `2026080924`, old prompt draft fully hidden. The development-
+> only ceiling must reach overall oracle `>=350`, domains `>=90/245/15`, at
+> least 25% rows with multiple normalized trajectories, and <=80/10,312
+> exhaustion. A pass freezes one panel-conditioned reviser with shuffled and
+> hidden controls; a miss closes exact DPR1 without sampling/K variants.
+> Holdout remains sealed. Contract:
+> `docs/research/SHOHIN_DPR1_DRAFT_PANEL_REVISION.md`.
+
 > **MPR2 BOOTSTRAP DRAFT-OWNER REVISION CLOSED NEGATIVE — 2026-08-09:** MPR1 proved
 > generic all-layer post-MoE SFT useful but its weak original draft harmful.
 > MPR2 changes only draft quality. The exact MPR1 hidden/source-only checkpoint
