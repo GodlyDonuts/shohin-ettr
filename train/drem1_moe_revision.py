@@ -203,6 +203,17 @@ class DraftConditionedMoEBlock(nn.Module):
         self._controller_state = None
         self.last_metrics = {}
 
+    def configure_trainable_mode(self, mode: str) -> None:
+        if mode not in self.MODES:
+            raise DREM1Error("DREM1 trainable mode differs")
+        route_modules = (self.route_token, self.route_state, self.route_out)
+        expert_modules = (self.expert_down, self.expert_state)
+        for module in route_modules:
+            module.requires_grad_(mode != "expert_only")
+        for module in expert_modules:
+            module.requires_grad_(mode != "router_only")
+        self.expert_up.requires_grad_(mode != "router_only")
+
     def _expert_residual(
         self,
         hidden_states: torch.Tensor,
@@ -327,6 +338,8 @@ class DREM1ProductModel(nn.Module):
         self.context_control = context_control
         self.controller = DraftStateController(config)
         self.blocks = nn.ModuleList(install_drem1_blocks(self.text_model.layers, config))
+        for block in self.blocks:
+            block.configure_trainable_mode(mode)
         device = self.text_model.embed_tokens.weight.device
         dtype = self.text_model.embed_tokens.weight.dtype
         self.controller.to(device=device, dtype=dtype)

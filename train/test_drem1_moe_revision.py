@@ -131,6 +131,17 @@ def test_zero_initialized_intervention_preserves_base_exactly() -> None:
     assert all(not parameter.requires_grad for parameter in base.parameters())
 
 
+def test_ablation_modes_freeze_inactive_intervention_parameters() -> None:
+    router = DraftConditionedMoEBlock(FakeBlock(8, 4, 2), config())
+    router.configure_trainable_mode("router_only")
+    assert router.route_out.weight.requires_grad
+    assert not router.expert_up.requires_grad
+    expert = DraftConditionedMoEBlock(FakeBlock(8, 4, 2), config())
+    expert.configure_trainable_mode("expert_only")
+    assert expert.expert_up.requires_grad
+    assert not expert.route_out.weight.requires_grad
+
+
 def test_full_intervention_changes_router_and_selected_expert_output() -> None:
     torch.manual_seed(5)
     wrapped = DraftConditionedMoEBlock(FakeBlock(8, 4, 2), config())
