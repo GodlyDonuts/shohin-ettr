@@ -1,5 +1,28 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **MTR1 CLOSED / RCR1 ROUTER GATE FROZEN — 2026-08-09 01:20
+> EDT:** Complete development comparison `746879` scores trained shared-attention
+> revision `204/1,289 = 15.8262%`, versus unchanged second pass `191 =
+> 14.8177%`, self-refinement `169`, long generation `167`, best-of-two `134`,
+> and independent commitment `189`. The `+13` answer / `+1.0085` point gain
+> is real and all domains are nonregressive (`+1/+12/0`), but both frozen
+> magnitude gates fail. MTR1 is closed; holdout dispatcher `746880` failed
+> closed without writing holdout output. Comparison SHA-256 is
+> `22e10465...f641`.
+>
+> Exact common-support router accounting `746882/746883` completed over 87
+> rows / 74,935 tokens. All 64 experts remain used per layer and normalized
+> route entropy is approximately `0.932`, but trained-vs-base route-count L1
+> drift is zero in layers 0--11 and only `0.00184/0.00381/0.00709/0.01955`
+> in layers 12--15 (`0.002018` mean over all layers). Protected router/expert
+> trainables are zero. This localizes the next intervention: RCR1 trains only
+> a bounded rank-8 residual on the last four frozen router logits (67,584
+> parameters), against a rank-1 shared-attention LoRA control (65,536), with
+> all MTR1 data/prompts/evaluator/update budgets unchanged. Exact contract:
+> `docs/research/SHOHIN_RCR1_REVISION_CONDITIONED_ROUTING.md`. No holdout may
+> open unless RCR1 clears +5 points vs unchanged, +3 vs matched attention,
+> and nonnegative deltas in all domains.
+>
 > **MISSION REAFFIRMED / MTR1 SMALL-MOE GATE FROZEN — 2026-08-09 00:10
 > EDT:** Shohin's primary deliverable is a transferable temporal reasoning
 > architecture for pretrained models across scale and family, not another

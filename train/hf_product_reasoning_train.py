@@ -84,6 +84,46 @@ class LoRALinear(nn.Module):
         return self.base(inputs) + self.lora_b(self.lora_a(inputs)) * self.scale
 
 
+class BoundedLoRATopKRouter(nn.Module):
+    """A frozen top-k router plus a bounded revision-owned logit residual."""
+
+    def __init__(self, base: nn.Module, rank: int, alpha: float) -> None:
+        super().__init__()
+        required = ("hidden_dim", "num_experts", "top_k", "norm_topk_prob")
+        if rank <= 0 or alpha <= 0 or any(not hasattr(base, name) for name in required):
+            raise ProductReasoningTrainError("MoE router interface differs")
+        self.base = base
+        self.base.requires_grad_(False)
+        self.hidden_dim = int(base.hidden_dim)
+        self.num_experts = int(base.num_experts)
+        self.top_k = int(base.top_k)
+        self.norm_topk_prob = bool(base.norm_topk_prob)
+        self.scale = alpha / rank
+        device = next(base.parameters()).device
+        dtype = next(base.parameters()).dtype
+        self.lora_a = nn.Linear(self.hidden_dim, rank, bias=False).to(
+            device=device, dtype=dtype
+        )
+        self.lora_b = nn.Linear(rank, self.num_experts, bias=False).to(
+            device=device, dtype=dtype
+        )
+        nn.init.kaiming_uniform_(self.lora_a.weight, a=math.sqrt(5))
+        nn.init.zeros_(self.lora_b.weight)
+
+    def forward(self, hidden_states: torch.Tensor):
+        flattened = hidden_states.reshape(-1, self.hidden_dim)
+        base_logits, _, _ = self.base(flattened)
+        residual = torch.tanh(self.lora_b(self.lora_a(flattened))) * self.scale
+        router_logits = base_logits + residual
+        router_probs = F.softmax(router_logits, dtype=torch.float, dim=-1)
+        router_scores, router_indices = torch.topk(
+            router_probs, self.top_k, dim=-1
+        )
+        if self.norm_topk_prob:
+            router_scores = router_scores / router_scores.sum(dim=-1, keepdim=True)
+        return router_logits, router_scores.to(router_logits.dtype), router_indices
+
+
 def install_lora(module: nn.Module, rank: int, alpha: float) -> int:
     """Replace every descendant linear projection and return the count."""
 
@@ -107,6 +147,13 @@ def install_scoped_lora(
 
     if scope == "all":
         return install_lora(layer, rank, alpha)
+    if scope == "router":
+        mlp = getattr(layer, "mlp", None)
+        gate = getattr(mlp, "gate", None)
+        if gate is None:
+            raise ProductReasoningTrainError("decoder layer exposes no MoE router")
+        mlp.gate = BoundedLoRATopKRouter(gate, rank, alpha)
+        return 1
     if scope != "token_mixer":
         raise ProductReasoningTrainError("LoRA scope differs")
     mixer = getattr(layer, "self_attn", None) or getattr(layer, "linear_attn", None)
@@ -400,9 +447,9 @@ class ProductReasoningModel(nn.Module):
             raise ProductReasoningTrainError("LoRA layer count differs")
         if not 0 <= unfreeze_layers <= len(layers):
             raise ProductReasoningTrainError("unfrozen layer count differs")
-        if lora_scope == "token_mixer" and unfreeze_layers:
+        if lora_scope in {"token_mixer", "router"} and unfreeze_layers:
             raise ProductReasoningTrainError(
-                "token-mixer scope cannot unfreeze complete decoder layers"
+                "scoped LoRA cannot unfreeze complete decoder layers"
             )
         self.unfreeze_layers = unfreeze_layers
         self.lora_scope = lora_scope
@@ -427,6 +474,16 @@ class ProductReasoningModel(nn.Module):
             if invalid:
                 raise ProductReasoningTrainError(
                     f"token-mixer scope exposed protected parameters: {invalid[:4]}"
+                )
+        elif lora_scope == "router":
+            invalid = [
+                name
+                for name, parameter in self.backbone.named_parameters()
+                if parameter.requires_grad and ".mlp.gate.lora_" not in name
+            ]
+            if invalid:
+                raise ProductReasoningTrainError(
+                    f"router scope exposed protected parameters: {invalid[:4]}"
                 )
 
         self.workspace_config: IntegratedWorkspaceConfig | None = None
@@ -1178,7 +1235,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lora-layers", type=int, default=4)
     parser.add_argument("--lora-rank", type=int, default=8)
     parser.add_argument("--lora-alpha", type=float, default=16.0)
-    parser.add_argument("--lora-scope", choices=("all", "token_mixer"), default="all")
+    parser.add_argument(
+        "--lora-scope", choices=("all", "token_mixer", "router"), default="all"
+    )
     parser.add_argument("--quantization", choices=("none", "nf4"), default="none")
     parser.add_argument("--workspace-width", type=int, default=512)
     parser.add_argument("--dense-width", type=int, default=192)

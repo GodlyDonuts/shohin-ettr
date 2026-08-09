@@ -1,0 +1,85 @@
+#!/bin/bash
+#SBATCH --job-name=rcr1-fit
+#SBATCH --partition=normal
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=128G
+#SBATCH --gres=gpu:nvidia_h100_pcie:1
+#SBATCH --time=01:00:00
+#SBATCH --output=/lustre/fs1/home/sa305415/shohin/logs/rcr1_fit_%j.out
+#SBATCH --error=/lustre/fs1/home/sa305415/shohin/logs/rcr1_fit_%j.err
+
+set -euo pipefail
+
+for variable in RUNTIME RUNTIME_MANIFEST_SHA256 MODEL_ROOT MODEL_REVISION \
+  MODEL_CONFIG_SHA256 MODEL_MANIFEST_SHA256 DATA DATA_SHA256 DATA_REPORT \
+  DATA_REPORT_SHA256 OUTPUT ARM; do
+  test -n "${!variable:-}" || { echo "$variable is required" >&2; exit 2; }
+done
+case "$ARM" in
+  router) SCOPE=router; RANK=8; ALPHA=16 ;;
+  attention) SCOPE=token_mixer; RANK=1; ALPHA=2 ;;
+  *) echo "ARM must be router or attention" >&2; exit 2 ;;
+esac
+UPDATES=${UPDATES:-256}
+CHECKPOINT_INTERVAL=${CHECKPOINT_INTERVAL:-256}
+
+BASE=/lustre/fs1/home/sa305415/shohin
+PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
+test -x "$PYTHON"
+for path in "$RUNTIME/train/hf_product_reasoning_train.py" \
+  "$RUNTIME/train/integrated_reasoning_workspace.py" "$MODEL_ROOT/config.json" \
+  "$MODEL_ROOT/SHA256SUMS" "$DATA" "$DATA_REPORT"; do test -f "$path"; done
+test "$(sha256sum "$RUNTIME/SHA256SUMS" | cut -d' ' -f1)" = "$RUNTIME_MANIFEST_SHA256"
+(cd "$RUNTIME" && sha256sum -c SHA256SUMS >/dev/null)
+test "$(sha256sum "$MODEL_ROOT/config.json" | cut -d' ' -f1)" = "$MODEL_CONFIG_SHA256"
+test "$(sha256sum "$MODEL_ROOT/SHA256SUMS" | cut -d' ' -f1)" = "$MODEL_MANIFEST_SHA256"
+(cd "$MODEL_ROOT" && sha256sum -c SHA256SUMS >/dev/null)
+test "$(sha256sum "$DATA" | cut -d' ' -f1)" = "$DATA_SHA256"
+test "$(sha256sum "$DATA_REPORT" | cut -d' ' -f1)" = "$DATA_REPORT_SHA256"
+test ! -e "$OUTPUT"
+
+SOURCE_MODEL_ROOT=$MODEL_ROOT
+LOCAL_PARENT=${SLURM_TMPDIR:-/tmp/$USER/$SLURM_JOB_ID}
+EFFECTIVE_MODEL_ROOT=$LOCAL_PARENT/model
+mkdir -p "$EFFECTIVE_MODEL_ROOT" logs
+cp -a "$SOURCE_MODEL_ROOT"/. "$EFFECTIVE_MODEL_ROOT"/
+export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
+export TOKENIZERS_PARALLELISM=false PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
+nvidia-smi
+"$PYTHON" "$RUNTIME/train/hf_product_reasoning_train.py" \
+  --model-root "$EFFECTIVE_MODEL_ROOT" --model-source-root "$SOURCE_MODEL_ROOT" \
+  --model-revision "$MODEL_REVISION" --model-loader causal --data "$DATA" \
+  --output "$OUTPUT" --arm baseline --updates "$UPDATES" --batch-size 1 \
+  --gradient-accumulation 8 --max-rows 10000 --max-sequence-length 4096 \
+  --learning-rate 2e-5 --lora-layers 4 --lora-rank "$RANK" \
+  --lora-alpha "$ALPHA" --lora-scope "$SCOPE" --seed 2026080815 \
+  --data-seed 2026080814 --log-interval 8 \
+  --checkpoint-interval "$CHECKPOINT_INTERVAL"
+
+CHECKPOINT="$OUTPUT/checkpoint_$(printf '%07d' "$UPDATES").pt"
+test -f "$CHECKPOINT"; test -f "$OUTPUT/report.json"
+"$PYTHON" - "$OUTPUT/report.json" "$CHECKPOINT" "$ARM" <<'PY'
+import json, sys, torch
+from pathlib import Path
+report=json.loads(Path(sys.argv[1]).read_text())
+payload=torch.load(sys.argv[2], map_location="cpu", weights_only=False)
+arm=sys.argv[3]
+names=sorted(payload.get("trainable_state", {}))
+if not names or report.get("lora_scope") != ("router" if arm == "router" else "token_mixer"):
+    raise SystemExit("RCR1 scope differs")
+if arm == "router":
+    if any(".mlp.gate.lora_" not in name for name in names):
+        raise SystemExit("RCR1 router checkpoint exposes a protected tensor")
+    expected=67584
+else:
+    if any(("self_attn" not in name and "linear_attn" not in name) or ".mlp." in name for name in names):
+        raise SystemExit("RCR1 attention checkpoint exposes a protected tensor")
+    expected=65536
+if report.get("trainable_parameters") != expected:
+    raise SystemExit(f"RCR1 parameter count differs: {report.get('trainable_parameters')} != {expected}")
+print(json.dumps({"arm": arm, "trainable_parameters": expected, "trainable_tensors": len(names)}, sort_keys=True))
+PY
+chmod -R a-w "$OUTPUT"

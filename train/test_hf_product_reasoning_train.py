@@ -12,6 +12,7 @@ import torch
 import torch.nn as nn
 
 from hf_product_reasoning_train import (
+    BoundedLoRATopKRouter,
     LoRALinear,
     ProductReasoningModel,
     ProductReasoningTrainError,
@@ -30,6 +31,28 @@ from hf_product_reasoning_train import (
 
 
 class ProductReasoningTrainTests(unittest.TestCase):
+    @staticmethod
+    def _topk_router() -> nn.Module:
+        class Router(nn.Module):
+            hidden_dim = 4
+            num_experts = 3
+            top_k = 2
+            norm_topk_prob = True
+
+            def __init__(self) -> None:
+                super().__init__()
+                self.weight = nn.Parameter(torch.randn(3, 4))
+
+            def forward(self, hidden_states: torch.Tensor):
+                flattened = hidden_states.reshape(-1, self.hidden_dim)
+                logits = torch.nn.functional.linear(flattened, self.weight)
+                probabilities = torch.softmax(logits.float(), dim=-1)
+                scores, indices = torch.topk(probabilities, self.top_k, dim=-1)
+                scores = scores / scores.sum(dim=-1, keepdim=True)
+                return logits, scores.to(logits.dtype), indices
+
+        return Router()
+
     def test_plain_reasoning_envelope_supports_base_tokenizer(self) -> None:
         tokenizer = SimpleNamespace(chat_template=None)
         rendered = render_reasoning_messages(
@@ -127,6 +150,50 @@ class ProductReasoningTrainTests(unittest.TestCase):
         )
         self.assertIsInstance(layer.self_attn[0], LoRALinear)
         self.assertIsInstance(layer.mlp[0], nn.Linear)
+
+    def test_router_lora_starts_as_exact_frozen_router(self) -> None:
+        torch.manual_seed(41)
+        base = self._topk_router()
+        inputs = torch.randn(2, 3, 4)
+        expected = base(inputs)
+        router = BoundedLoRATopKRouter(base, rank=2, alpha=4.0)
+        observed = router(inputs)
+        for actual, reference in zip(observed, expected, strict=True):
+            self.assertTrue(torch.equal(actual, reference))
+
+        observed[1].sum().backward()
+        self.assertIsNone(router.base.weight.grad)
+        self.assertIsNotNone(router.lora_b.weight.grad)
+        self.assertEqual(
+            [name for name, parameter in router.named_parameters() if parameter.requires_grad],
+            ["lora_a.weight", "lora_b.weight"],
+        )
+
+    def test_router_lora_residual_is_bounded(self) -> None:
+        base = self._topk_router()
+        router = BoundedLoRATopKRouter(base, rank=2, alpha=4.0)
+        with torch.no_grad():
+            router.lora_a.weight.fill_(100.0)
+            router.lora_b.weight.fill_(100.0)
+        inputs = torch.ones(5, 4)
+        base_logits = base(inputs)[0]
+        router_logits = router(inputs)[0]
+        self.assertLessEqual(
+            float((router_logits - base_logits).abs().max().detach()),
+            router.scale + 1e-6,
+        )
+
+    def test_router_scope_leaves_experts_and_attention_frozen(self) -> None:
+        layer = nn.Module()
+        layer.self_attn = nn.Sequential(nn.Linear(4, 4))
+        layer.mlp = nn.Module()
+        layer.mlp.gate = self._topk_router()
+        layer.mlp.experts = nn.Sequential(nn.Linear(4, 4))
+        layer.requires_grad_(False)
+        self.assertEqual(install_scoped_lora(layer, "router", 2, 4.0), 1)
+        self.assertIsInstance(layer.mlp.gate, BoundedLoRATopKRouter)
+        self.assertFalse(layer.self_attn[0].weight.requires_grad)
+        self.assertFalse(layer.mlp.experts[0].weight.requires_grad)
 
     def test_last_layer_unfreeze_is_explicit_and_local(self) -> None:
         frozen = ProductReasoningModel(
