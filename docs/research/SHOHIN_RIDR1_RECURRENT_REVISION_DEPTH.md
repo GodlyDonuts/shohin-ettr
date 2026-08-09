@@ -1,6 +1,6 @@
 # RIDR1: Recurrent Revision Depth
 
-Status: frozen development gate; no capability output opened.
+Status: closed negative on development; holdout remains sealed.
 
 ## Hypothesis
 
@@ -26,3 +26,36 @@ The comparison reports repaired errors, newly broken correct answers, persistent
 ## Interpretation
 
 A pass supports useful model-owned recurrent inference depth for this trained reviser. It does not establish indefinite convergence or architectural novelty. A failure means the learned rewrite is not a stable iterative operator under this exact contract.
+
+## Result
+
+Eight single-H100 shards (`747426--747432`, `747442`) completed the exact
+development pass. The first shard-7 allocation (`747433`) had no visible GPU;
+two replacement submissions (`747436`, `747440`) failed before model execution
+because the manually supplied model-manifest hash had one extra character.
+Debug allocation `747441` identified that custody typo. These failures produced
+no candidates and did not alter the scientific settings. Merge `747443` and
+comparison `747444` completed cleanly.
+
+Depth two scored `539/1,289`, down 50 answers from depth one's `589`. It repaired
+15 depth-one errors but broke 65 depth-one-correct answers, retaining only
+`524/589 = 88.96%` of correct answers. Every domain regressed:
+
+| Domain | Depth one | Depth two | Delta |
+|---|---:|---:|---:|
+| Math | 223 | 192 | -31 |
+| Logic/science | 349 | 331 | -18 |
+| Code | 17 | 16 | -1 |
+| Overall | 589 | 539 | -50 |
+
+All capability gates fail. The merged evaluation used 17,035 generated tokens,
+625.83 aggregate GPU-seconds, a 106.17-second generation critical path, two
+token-exhausted outputs, and 19.877 GB peak allocated memory. Comparison
+SHA-256 is
+`cccc45c0c517df597c24fb64dc1cfc8aa41b0721806fde61987d013e00989ca1`;
+merged report SHA-256 is
+`755322624182f0b307f7f21b2bfeb44eb9461a8b99804708cba7d5080554e045`.
+
+RIDR1 is closed without depth-three, prompt, seed, budget, or threshold rescue.
+A future multi-stage design must train each later owner on the distribution of
+completed earlier revisions and must earn conservative answer retention.

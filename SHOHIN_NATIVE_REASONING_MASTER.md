@@ -31,6 +31,13 @@ mechanism. On the 4B product, revision rises from `272/538` to `320/538` and
 macro from `51.05%` to `61.39%`, but regresses GSM8K/MATH/logic by `2/1/2`
 answers; the strict all-domain gate correctly fails.
 
+Untrained recursive reuse is closed. Applying the exact 9B reviser to its own
+completed first revision scores `539/1,289`, versus `589` after one revision.
+It repairs 15 errors but breaks 65 correct answers, and every domain regresses.
+The result rules out blind extra inference depth for this owner; a later stage
+must be trained on predecessor outputs and earn conservative retention.
+Holdout was not opened.
+
 ### Current blocker: dense-to-MoE transfer
 
 The first sparse host is pinned `OLMoE-1B-7B-0125-Instruct`: 7B total,

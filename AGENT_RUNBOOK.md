@@ -1,5 +1,17 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **RIDR1 RECURRENT DEPTH CLOSED NEGATIVE — 2026-08-09:** Applying the exact
+> qualified Qwen3.5-9B IDR1 reviser a second time to its own complete first
+> revision scores `539/1,289`, down 50 from depth one's immutable `589`.
+> Depth two repairs 15 prior errors but breaks 65 prior correct answers;
+> retention is `524/589 = 88.96%`. Math falls `223->192`, logic/science
+> `349->331`, and code `17->16`. All frozen gates fail. Eight H100 shards,
+> merge `747443`, and comparison `747444` used development only; holdout stays
+> sealed. Comparison SHA-256 is
+> `cccc45c0c517df597c24fb64dc1cfc8aa41b0721806fde61987d013e00989ca1`.
+> Close exact-owner recursion with no depth-three or prompt/seed/budget rescue.
+> Exact record: `docs/research/SHOHIN_RIDR1_RECURRENT_REVISION_DEPTH.md`.
+
 > **QUALIFIED 9B DRAFT/REVISE/COMMIT RELEASE — 2026-08-09:** The strongest
 > surviving Shohin system is now packaged as one immutable, hash-bound delta
 > over pinned Qwen3.5-9B. Source commit `8f0bd8d` adds the complete runner and

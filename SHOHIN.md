@@ -98,6 +98,13 @@ the behavioral level: trained revision repeatedly beats an unchanged second
 pass, generic self-refinement, longer generation, and draft-masked training.
 It does not yet prove a unique internal algorithm or universal reliability.
 
+The revision operator is deliberately one-shot in the qualified release. A
+development-only test that applied the same 9B reviser twice fell from
+`589/1,289` to `539/1,289`: 15 errors were repaired, but 65 correct answers were
+broken. Recursive inference depth therefore requires a separately trained
+later owner plus an earned retention mechanism; blindly repeating the current
+reviser is closed.
+
 ### Whole-trajectory commitment
 
 At 9B, a learned model-owned commit stage compares two complete same-family

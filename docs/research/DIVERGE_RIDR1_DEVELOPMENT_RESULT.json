@@ -1,0 +1,77 @@
+{
+  "depth_one": {
+    "candidates": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/idr1_55b6476_r1/eval/development/candidates.jsonl",
+    "candidates_sha256": "f21cdf8356561ad4e06876c2322669ef25cfb33e4097e092c07c7b327df5efb6",
+    "report": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/idr1_55b6476_r1/eval/development/report.json",
+    "report_sha256": "0880e59c03460f3ab0f5c8da87136fd9f60961f3fa16a762225188ac998b7a40"
+  },
+  "depth_two": {
+    "candidates": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ridr1_7cc2292_r1/development/candidates.jsonl",
+    "candidates_sha256": "acab6bef066e0db2025d06ddb555360bdbf8df31bdd0c0b75a97e2834dd4be67",
+    "report": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ridr1_7cc2292_r1/development/report.json",
+    "report_sha256": "755322624182f0b307f7f21b2bfeb44eb9461a8b99804708cba7d5080554e045"
+  },
+  "failure_policy": "close recurrent depth for this reviser; no depth-three, prompt, seed, or threshold rescue",
+  "frozen_thresholds": {
+    "depth_one_correct": {
+      "bbh_logic": 349,
+      "math500": 223,
+      "mbpp": 17,
+      "overall": 589
+    },
+    "depth_two_overall_correct": 615,
+    "domain_delta_floor": 0,
+    "minimum_depth_one_correct_retention": 0.98
+  },
+  "gate_pass": false,
+  "gates": {
+    "all_domains_nonnegative": false,
+    "depth_one_correct_retention": false,
+    "depth_one_receipt_matches": true,
+    "material_overall_gain": false
+  },
+  "metrics": {
+    "bbh_logic": {
+      "broken_correct": 28,
+      "depth_one_correct": 349,
+      "depth_one_correct_retention": 0.9197707736389685,
+      "depth_two_correct": 331,
+      "net_delta": -18,
+      "persistent_error": 278,
+      "preserved_correct": 321,
+      "repaired_error": 10
+    },
+    "math500": {
+      "broken_correct": 36,
+      "depth_one_correct": 223,
+      "depth_one_correct_retention": 0.8385650224215246,
+      "depth_two_correct": 192,
+      "net_delta": -31,
+      "persistent_error": 395,
+      "preserved_correct": 187,
+      "repaired_error": 5
+    },
+    "mbpp": {
+      "broken_correct": 1,
+      "depth_one_correct": 17,
+      "depth_one_correct_retention": 0.9411764705882353,
+      "depth_two_correct": 16,
+      "net_delta": -1,
+      "persistent_error": 12,
+      "preserved_correct": 16
+    },
+    "overall": {
+      "broken_correct": 65,
+      "depth_one_correct": 589,
+      "depth_one_correct_retention": 0.8896434634974533,
+      "depth_two_correct": 539,
+      "net_delta": -50,
+      "persistent_error": 685,
+      "preserved_correct": 524,
+      "repaired_error": 15
+    }
+  },
+  "schema": "shohin-ridr1-recurrent-depth-comparison-v1",
+  "status": "complete",
+  "success_policy": "unlock exactly one sealed holdout depth-two evaluation"
+}
