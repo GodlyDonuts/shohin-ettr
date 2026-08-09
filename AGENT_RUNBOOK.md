@@ -1,5 +1,25 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **DSET1 MODEL-OWNED SPAN EDIT TRANSDUCER FROZEN — 2026-08-09:** Read-only
+> DSEC0 proved that binary KEEP/FIX gating cannot rescue DSEO1: deterministic
+> observed gating scores `1,870/2,048`, only +10 over final-only, with 83.40%
+> fault repair; even oracle actions reach only 84.57% repair. DSET1 therefore
+> replaces full-response regeneration with a model-emitted `<KEEP>` or strict
+> `<REPLACE_LAST> / old / new` script and a deterministic copy/edit decoder.
+> Complete executed trajectories, not broad answer extraction, are scored.
+> The same all-16-layer rank-18 residual is trained in aligned, within-pair
+> swapped, and draft-hidden arms for 512 updates. Frozen Stage-0 requires 90%
+> exact scripts overall/per family, 90% pair consistency, 95% exact executed
+> trajectories, 99% clean copy, 90% fault repair, +13 answers over final-only
+> and both controls, control script collapse, and zero malformed execution.
+> The first corrected corpus attempts failed closed while exposing two data
+> defects: LaTeX command-letter mutations and ambiguity from broad answer
+> extraction. Runtime `dset1_data_r5` instead validates structurally final
+> spans and exact trajectory restoration, enforces the frozen 32-token script
+> budget, and CPU job `748718` is building the final source-disjoint corpus.
+> No DSET1 model output exists. Contract:
+> `docs/research/SHOHIN_DSET1_DRAFT_SPAN_EDIT_TRANSDUCER.md`.
+
 > **DSEO1-V0 CLOSED: ACTION IDENTIFIABLE, EXECUTION UNCOUPLED — 2026-08-09:** MPR1/MPR2
 > expose an identifiability defect: final-answer CE admits the source-only
 > optimum `p(y|x,d)=p(y|x)`. DSEO1 holds source `x` and verified final
