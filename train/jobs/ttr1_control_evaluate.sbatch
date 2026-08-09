@@ -13,7 +13,7 @@
 set -euo pipefail
 
 for variable in RUNTIME RUNTIME_MANIFEST_SHA256 CONTROL MODEL_ROOT MODEL_REVISION \
-  MODEL_CONFIG_SHA256 DATA DATA_SHA256 DATA_REPORT DATA_REPORT_SHA256 SPLIT \
+  MODEL_CONFIG_SHA256 MODEL_MANIFEST_SHA256 DATA DATA_SHA256 DATA_REPORT DATA_REPORT_SHA256 SPLIT \
   CANDIDATES_OUTPUT REPORT; do
   test -n "${!variable:-}" || { echo "$variable is required" >&2; exit 2; }
 done
@@ -26,6 +26,9 @@ test -x "$PYTHON"
 test "$(sha256sum "$RUNTIME/SHA256SUMS" | cut -d' ' -f1)" = "$RUNTIME_MANIFEST_SHA256"
 (cd "$RUNTIME" && sha256sum -c SHA256SUMS >/dev/null)
 test "$(sha256sum "$MODEL_ROOT/config.json" | cut -d' ' -f1)" = "$MODEL_CONFIG_SHA256"
+test "$(sha256sum "$MODEL_ROOT/SHA256SUMS" | cut -d' ' -f1)" = \
+  "$MODEL_MANIFEST_SHA256"
+(cd "$MODEL_ROOT" && sha256sum -c SHA256SUMS >/dev/null)
 if [[ "$CONTROL" == "independent_commitment" ]]; then
   : "${ADAPTER_CHECKPOINT:?independent checkpoint is required}"
   : "${ADAPTER_CHECKPOINT_SHA256:?independent checkpoint hash is required}"

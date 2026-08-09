@@ -17,6 +17,7 @@ set -euo pipefail
 : "${MODEL_ROOT:?MODEL_ROOT is required}"
 : "${MODEL_REVISION:?MODEL_REVISION is required}"
 : "${MODEL_CONFIG_SHA256:?MODEL_CONFIG_SHA256 is required}"
+: "${MODEL_MANIFEST_SHA256:?MODEL_MANIFEST_SHA256 is required}"
 : "${ADAPTER_CHECKPOINT:?ADAPTER_CHECKPOINT is required}"
 : "${ADAPTER_CHECKPOINT_SHA256:?ADAPTER_CHECKPOINT_SHA256 is required}"
 : "${DATA:?DATA is required}"
@@ -51,6 +52,9 @@ done
 test "$(sha256sum "$RUNTIME/SHA256SUMS" | cut -d' ' -f1)" = "$RUNTIME_MANIFEST_SHA256"
 (cd "$RUNTIME" && sha256sum -c SHA256SUMS >/dev/null)
 test "$(sha256sum "$MODEL_ROOT/config.json" | cut -d' ' -f1)" = "$MODEL_CONFIG_SHA256"
+test "$(sha256sum "$MODEL_ROOT/SHA256SUMS" | cut -d' ' -f1)" = \
+  "$MODEL_MANIFEST_SHA256"
+(cd "$MODEL_ROOT" && sha256sum -c SHA256SUMS >/dev/null)
 test "$(sha256sum "$ADAPTER_CHECKPOINT" | cut -d' ' -f1)" = "$ADAPTER_CHECKPOINT_SHA256"
 test "$(sha256sum "$DATA" | cut -d' ' -f1)" = "$DATA_SHA256"
 test "$(sha256sum "$DATA_REPORT" | cut -d' ' -f1)" = "$DATA_REPORT_SHA256"
