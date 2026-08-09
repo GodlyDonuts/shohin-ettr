@@ -167,7 +167,7 @@ def run(args: argparse.Namespace) -> dict:
         architecture_name = "shohin-ecr1-moe-revision-v1"
         config_key = "ecr1_config"
         draft_key = "ecr1_draft_control"
-    else:
+    elif args.architecture == "ser1":
         from ser1_moe_revision import SER1Config, SER1ProductModel
 
         config = SER1Config(**config_kwargs)
@@ -177,6 +177,21 @@ def run(args: argparse.Namespace) -> dict:
         architecture_name = "shohin-ser1-moe-revision-v1"
         config_key = "ser1_config"
         draft_key = "ser1_draft_control"
+    else:
+        from rme1_moe_revision import RME1Config, RME1ProductModel
+
+        config = RME1Config(
+            **config_kwargs,
+            revision_experts=args.revision_experts,
+            revision_top_k=args.revision_top_k,
+            balance_weight=args.balance_weight,
+        )
+        model = RME1ProductModel(
+            backbone, config, draft_control=args.draft_control
+        ).to("cuda:0")
+        architecture_name = "shohin-rme1-moe-revision-v1"
+        config_key = "rme1_config"
+        draft_key = "rme1_draft_control"
     trainable_names = sorted(
         name for name, parameter in model.named_parameters() if parameter.requires_grad
     )
@@ -190,6 +205,9 @@ def run(args: argparse.Namespace) -> dict:
         ("ser1", "selected_expert", 16, 1): 4_194_304,
         ("ser1", "shared", 16, 8): 524_288,
         ("ser1", "shared", 16, 64): 4_194_304,
+        ("rme1", "routed", 16, 8): 2_228_224,
+        ("rme1", "shared", 16, 18): 1_179_648,
+        ("rme1", "shared", 16, 34): 2_228_224,
     }[(args.architecture, args.mode, args.controlled_layers, args.rank)]
     if model.trainable_parameter_count() != expected_parameters:
         raise ProductReasoningTrainError("MoE residual parameter receipt differs")
@@ -209,6 +227,11 @@ def run(args: argparse.Namespace) -> dict:
     if args.architecture == "ser1" and config.mode == "selected_expert":
         adapter_macs_per_token_per_layer = (
             config.experts_per_token * 2 * config.hidden_size * config.rank
+        )
+    elif args.architecture == "rme1" and config.mode == "routed":
+        adapter_macs_per_token_per_layer = (
+            config.revision_experts * config.hidden_size
+            + config.revision_top_k * 2 * config.hidden_size * config.rank
         )
     else:
         adapter_macs_per_token_per_layer = 2 * config.hidden_size * config.rank
@@ -302,7 +325,11 @@ def run(args: argparse.Namespace) -> dict:
         "schema": (
             "shohin-ecr1-product-training-v1"
             if args.architecture == "ecr1"
-            else "shohin-ser1-product-training-v1"
+            else (
+                "shohin-ser1-product-training-v1"
+                if args.architecture == "ser1"
+                else "shohin-rme1-product-training-v1"
+            )
         ),
         "status": "complete",
         **metadata,
@@ -331,9 +358,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--quantization", choices=("none",), default="none")
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--architecture", choices=("ecr1", "ser1"), default="ecr1")
     parser.add_argument(
-        "--mode", choices=("expert_conditioned", "selected_expert", "shared"), required=True
+        "--architecture", choices=("ecr1", "ser1", "rme1"), default="ecr1"
+    )
+    parser.add_argument(
+        "--mode",
+        choices=("expert_conditioned", "selected_expert", "routed", "shared"),
+        required=True,
     )
     parser.add_argument("--draft-control", choices=("normal", "draft_unavailable"), default="normal")
     parser.add_argument("--updates", type=int, default=256)
@@ -345,6 +376,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--controlled-layers", type=int, default=4)
     parser.add_argument("--rank", type=int, required=True)
     parser.add_argument("--alpha", type=float, required=True)
+    parser.add_argument("--revision-experts", type=int, default=4)
+    parser.add_argument("--revision-top-k", type=int, default=2)
+    parser.add_argument("--balance-weight", type=float, default=0.01)
     parser.add_argument("--seed", type=int, default=2026080901)
     parser.add_argument("--data-seed", type=int, default=2026080814)
     parser.add_argument("--log-interval", type=int, default=10)
@@ -358,20 +392,35 @@ def parse_args() -> argparse.Namespace:
         args.max_sequence_length,
         args.controlled_layers,
         args.rank,
+        args.revision_experts,
+        args.revision_top_k,
         args.log_interval,
         args.checkpoint_interval,
     )
-    if any(value <= 0 for value in positive) or args.alpha <= 0 or args.learning_rate <= 0:
+    if (
+        any(value <= 0 for value in positive)
+        or args.alpha <= 0
+        or args.learning_rate <= 0
+        or args.balance_weight < 0
+    ):
         parser.error("ECR1 training dimensions differ")
     allowed_geometry = {
         ("ecr1", "expert_conditioned"): {(4, 31, 31.0), (16, 8, 8.0)},
         ("ecr1", "shared"): {(4, 32, 32.0), (16, 8, 8.0)},
         ("ser1", "selected_expert"): {(16, 1, 1.0)},
         ("ser1", "shared"): {(16, 8, 8.0), (16, 64, 64.0)},
+        ("rme1", "routed"): {(16, 8, 8.0)},
+        ("rme1", "shared"): {(16, 18, 18.0), (16, 34, 34.0)},
     }
     geometry = (args.controlled_layers, args.rank, args.alpha)
     if geometry not in allowed_geometry.get((args.architecture, args.mode), set()):
         parser.error("MoE residual geometry is not frozen")
+    if args.architecture == "rme1" and (
+        args.revision_experts != 4
+        or args.revision_top_k != 2
+        or args.balance_weight != 0.01
+    ):
+        parser.error("RME1 routing geometry differs")
     return args
 
 

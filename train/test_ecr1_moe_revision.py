@@ -237,3 +237,42 @@ def test_parser_accepts_frozen_ser1_geometry(monkeypatch, mode, rank):
         rank,
         float(rank),
     )
+
+
+@pytest.mark.parametrize(
+    ("mode", "rank"), (("routed", 8), ("shared", 18), ("shared", 34))
+)
+def test_parser_accepts_frozen_rme1_geometry(monkeypatch, mode, rank):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "train_ecr1_product.py",
+            "--model-root",
+            "model",
+            "--model-revision",
+            "revision",
+            "--data",
+            "data.jsonl",
+            "--output",
+            "output",
+            "--architecture",
+            "rme1",
+            "--mode",
+            mode,
+            "--controlled-layers",
+            "16",
+            "--rank",
+            str(rank),
+            "--alpha",
+            str(rank),
+        ],
+    )
+    args = parse_args()
+    assert args.architecture == "rme1"
+    assert (args.mode, args.rank, args.revision_experts, args.revision_top_k) == (
+        mode,
+        rank,
+        4,
+        2,
+    )

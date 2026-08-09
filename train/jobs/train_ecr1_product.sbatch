@@ -43,6 +43,9 @@ nvidia-smi
   --max-rows "${MAX_ROWS:-8}" --max-sequence-length "${MAX_LENGTH:-4096}" \
   --learning-rate "${LEARNING_RATE:-2e-5}" \
   --controlled-layers "${CONTROLLED_LAYERS:-4}" \
+  --revision-experts "${REVISION_EXPERTS:-4}" \
+  --revision-top-k "${REVISION_TOP_K:-2}" \
+  --balance-weight "${BALANCE_WEIGHT:-0.01}" \
   --seed "${SEED:-2026080901}" --data-seed "${DATA_SEED:-2026080814}" \
   --log-interval "${LOG_INTERVAL:-1}" --checkpoint-interval "$UPDATES"
 sha256sum "$OUTPUT/report.json" "$OUTPUT/checkpoint_$(printf '%07d' "$UPDATES").pt"
