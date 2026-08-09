@@ -1,5 +1,25 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **DSET1-V0 CLOSED: STRONG CAUSAL NEAR-MISS, RELIABILITY GATE FAIL — 2026-08-09:**
+> Fresh-pool data job `748728`, mechanics `748747`, matched fits
+> `748749/748750/748751`, 24 evaluation shards `748774--748797`, merges
+> `748799--748801`, and comparator `748802` completed. Every arm trained for
+> exactly 512 updates / 87,517 charged script tokens with 1,179,648 trainables,
+> zero router/expert trainables, about 43.49 GB peak, and 926--929 seconds.
+> Aligned executes `1,940/2,048 = 94.7266%` exact complete trajectories,
+> versus hidden `1,024 = 50.0%` and within-pair swapped `94 = 4.5898%`.
+> Counterfactual consistency is `90.332%`; fault repair passes at `91.113%`.
+> The exact frozen gate nevertheless fails: clean copy is `98.340% < 99%`,
+> overall exact is `94.727% < 95%`, choice scripts are `71.484% < 90%`, and
+> five aligned generations fail closed (two malformed, three absent old
+> surfaces). Numeric scripts are strong at `98.047%`. This is real causal
+> draft use, but not reliable enough for promotion. Exact v0 closes without
+> rank/seed/duration/script-budget variants; no holdout opened. Comparison
+> SHA-256 is `4633502c...e42`; result:
+> `docs/research/SHOHIN_DSET1_RESULT.json`. The next lane must be structurally
+> different: a two-stream token-pointer edit transducer that copies most draft
+> tokens by construction rather than autoregressively serializing surfaces.
+
 > **DSET1 MODEL-OWNED SPAN EDIT TRANSDUCER FROZEN — 2026-08-09:** Read-only
 > DSEC0 proved that binary KEEP/FIX gating cannot rescue DSEO1: deterministic
 > observed gating scores `1,870/2,048`, only +10 over final-only, with 83.40%
