@@ -19,6 +19,8 @@ done
 : "${FAST_KERNEL_MANIFEST_SHA256:?FAST_KERNEL_MANIFEST_SHA256 is required}"
 BASE=/lustre/fs1/home/sa305415/shohin
 PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
+UPDATES=${UPDATES:-1}
+MAX_ROWS=${MAX_ROWS:-24}
 for path in "$RUNTIME/train/hf_product_reasoning_train.py" \
   "$RUNTIME/train/integrated_reasoning_workspace.py" "$RUNTIME/train/ttr1_revision.py" \
   "$MODEL_ROOT/config.json" "$BNB_ROOT/SHA256SUMS" "$DATA"; do test -f "$path"; done
@@ -44,20 +46,20 @@ nvidia-smi
 "$PYTHON" "$RUNTIME/train/hf_product_reasoning_train.py" \
   --model-root "$MODEL_ROOT" --model-source-root "$MODEL_ROOT" \
   --model-revision "$MODEL_REVISION" --model-loader auto --quantization nf4 \
-  --data "$DATA" --output "$OUTPUT" --arm ettr --updates 1 --batch-size 1 \
-  --gradient-accumulation 1 --max-rows 24 --max-sequence-length 1024 \
+  --data "$DATA" --output "$OUTPUT" --arm ettr --updates "$UPDATES" --batch-size 1 \
+  --gradient-accumulation 1 --max-rows "$MAX_ROWS" --max-sequence-length 1024 \
   --learning-rate 2e-5 --lora-layers 1 --lora-rank 8 --lora-alpha 16 \
   --lora-scope token_mixer --workspace-width 256 --workspace-slots 8 \
   --recurrent-steps 2 --seed 2026080825 --data-seed 2026080824 \
   --log-interval 1 --checkpoint-interval 1
 test -f "$OUTPUT/checkpoint_0000001.pt"; test -f "$OUTPUT/report.json"
-"$PYTHON" - "$OUTPUT/report.json" <<'PY'
+"$PYTHON" - "$OUTPUT/report.json" "$UPDATES" <<'PY'
 import json, sys
 from pathlib import Path
 report=json.loads(Path(sys.argv[1]).read_text())
 if report.get("quantization") != "nf4" or report.get("lora_scope") != "token_mixer":
     raise SystemExit("Qwen3.6 mechanics metadata differs")
-if report.get("updates") != 1 or report.get("peak_gpu_memory_bytes", 0) <= 0:
+if report.get("updates") != int(sys.argv[2]) or report.get("peak_gpu_memory_bytes", 0) <= 0:
     raise SystemExit("Qwen3.6 mechanics did not execute")
 print(json.dumps({k:report[k] for k in ("trainable_parameters","current_gpu_memory_bytes","current_gpu_reserved_bytes","peak_gpu_memory_bytes","charged_tokens_per_second","trainable_parameter_name_sha256")},sort_keys=True))
 PY
