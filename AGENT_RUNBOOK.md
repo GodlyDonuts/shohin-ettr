@@ -1,5 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **DREM1 FROZEN / ROUTE ATTRIBUTION LIVE — 2026-08-09:** Read-only semantic
+> attribution proves MTR1's strict `+13` is mostly serialization: at least
+> `11/16` repairs are certified formatting-only, at most five are possible
+> semantic repairs, and all three breaks are semantic. Immutable report SHA-256
+> is `4cea4a85...43f1`. Per-row exact route job `747082` is CPU-only on `evc6`
+> and must finish before H100 mechanics. The structurally different successor
+> is frozen DREM1: one exact source/draft recurrent state controls both bounded
+> router deltas and selected-expert low-rank output adapters across the final
+> four sparse layers while pretrained routers/experts stay frozen. Full,
+> router-only, expert-only, draft-masked-state, and equal-parameter-attention
+> controls plus exact promotion gates are in
+> `docs/research/SHOHIN_DREM1_MOE_NATIVE_REVISION.md`. Core/evaluator tests pass
+> `32/32`; next action after `747082` is exactly one one-update H100 mechanics
+> job, then freeze its parameter/FLOP receipt before any 256-update fits.
+
 > **MOE ARCHITECTURE CRITICAL PATH / DENSE DETOUR CANCELED — 2026-08-09:**
 > The current directive supersedes the Mistral-next language immediately below.
 > Do not launch a Ministral H100 capability campaign. Preserve any completed
