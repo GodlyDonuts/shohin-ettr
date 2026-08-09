@@ -111,13 +111,10 @@ def summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
 def build(args: argparse.Namespace) -> dict[str, Any]:
     if args.output.exists():
         raise TCS1DataError("refusing existing TCS1 output")
-    pair_rows = load_jsonl(args.pairs)
-    train_pairs = keyed([row for row in pair_rows if row.get("split") == "train"])
-    development_pairs = keyed(
-        [row for row in pair_rows if row.get("split") == "development"]
-    )
+    train_pairs = keyed(load_jsonl(args.train_context))
+    development_pairs = keyed(load_jsonl(args.development_context))
     if len(train_pairs) != 5824 or len(development_pairs) != 1289:
-        raise TCS1DataError("pair split geometry differs")
+        raise TCS1DataError("context split geometry differs")
 
     train_depth_one = keyed(load_jsonl(args.train_depth_one))
     dev_sources = {
@@ -137,7 +134,10 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         candidates = pair.get("candidates")
         if not isinstance(candidates, list) or len(candidates) != 2:
             raise TCS1DataError("train source pair differs")
-        task, question = str(pair.get("task")), str(pair.get("question"))
+        assessor = pair.get("assessor")
+        if not isinstance(assessor, dict):
+            raise TCS1DataError("train assessor context differs")
+        task, question = str(pair.get("task")), str(assessor.get("question"))
         if train_depth_one[identity].get("task") != task:
             raise TCS1DataError("train task binding differs")
         for index, (lineage, candidate) in enumerate(
@@ -168,7 +168,10 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
 
     development_rows: list[dict[str, Any]] = []
     for identity, pair in development_pairs.items():
-        task, question = str(pair.get("task")), str(pair.get("question"))
+        assessor = pair.get("assessor")
+        if not isinstance(assessor, dict):
+            raise TCS1DataError("development assessor context differs")
+        task, question = str(pair.get("task")), str(assessor.get("question"))
         for index, lineage in enumerate(("depth1", "depth2", "direct")):
             candidate = dev_sources[lineage][identity]
             if candidate.get("task") != task:
@@ -196,9 +199,13 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         "source_disjoint": True,
         "holdout_used": False,
         "sources": {
-            "pairs": {
-                "path": str(args.pairs.resolve()),
-                "sha256": sha256_file(args.pairs),
+            "train_context": {
+                "path": str(args.train_context.resolve()),
+                "sha256": sha256_file(args.train_context),
+            },
+            "development_context": {
+                "path": str(args.development_context.resolve()),
+                "sha256": sha256_file(args.development_context),
             },
             "train_depth_one": {
                 "path": str(args.train_depth_one.resolve()),
@@ -236,7 +243,8 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--pairs", type=Path, required=True)
+    parser.add_argument("--train-context", type=Path, required=True)
+    parser.add_argument("--development-context", type=Path, required=True)
     parser.add_argument("--train-depth-one", type=Path, required=True)
     parser.add_argument("--development-depth-one", type=Path, required=True)
     parser.add_argument("--development-depth-two", type=Path, required=True)

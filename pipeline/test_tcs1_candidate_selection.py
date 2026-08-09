@@ -24,15 +24,16 @@ def _write(path: Path, rows: list[dict]) -> None:
 def test_builder_preserves_disjoint_three_candidate_geometry(tmp_path: Path) -> None:
     train_ids = [f"{index:064x}" for index in range(5824)]
     dev_ids = [f"{index + 10000:064x}" for index in range(1289)]
-    pairs = []
+    train_context = []
+    development_context = []
     train_depth = []
     for identity in train_ids:
-        pairs.append(
+        train_context.append(
             {
                 "identity_sha256": identity,
                 "split": "train",
                 "task": "math500",
-                "question": "What is 1+1?",
+                "assessor": {"question": "What is 1+1?"},
                 "candidates": [_candidate("2", True), _candidate("3", False)],
             }
         )
@@ -41,12 +42,12 @@ def test_builder_preserves_disjoint_three_candidate_geometry(tmp_path: Path) -> 
         )
     dev_sources = {name: [] for name in ("depth1", "depth2", "direct")}
     for identity in dev_ids:
-        pairs.append(
+        development_context.append(
             {
                 "identity_sha256": identity,
                 "split": "development",
                 "task": "bbh_logic",
-                "question": "Choose A or B.",
+                "assessor": {"question": "Choose A or B."},
                 "candidates": [_candidate("A", True), _candidate("B", False)],
             }
         )
@@ -58,8 +59,10 @@ def test_builder_preserves_disjoint_three_candidate_geometry(tmp_path: Path) -> 
                     **_candidate(str(index), index == 0),
                 }
             )
-    pair_path = tmp_path / "pairs.jsonl"
-    _write(pair_path, pairs)
+    train_context_path = tmp_path / "train_context.jsonl"
+    _write(train_context_path, train_context)
+    development_context_path = tmp_path / "development_context.jsonl"
+    _write(development_context_path, development_context)
     train_path = tmp_path / "train_depth.jsonl"
     _write(train_path, train_depth)
     dev_paths = {}
@@ -69,7 +72,8 @@ def test_builder_preserves_disjoint_three_candidate_geometry(tmp_path: Path) -> 
     output = tmp_path / "out"
     report = build(
         SimpleNamespace(
-            pairs=pair_path,
+            train_context=train_context_path,
+            development_context=development_context_path,
             train_depth_one=train_path,
             development_depth_one=dev_paths["depth1"],
             development_depth_two=dev_paths["depth2"],
