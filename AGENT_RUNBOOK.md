@@ -1,5 +1,38 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **MISSION REAFFIRMED / MTR1 SMALL-MOE GATE FROZEN — 2026-08-09 00:10
+> EDT:** Shohin's primary deliverable is a transferable temporal reasoning
+> architecture for pretrained models across scale and family, not another
+> scratch-pretrained checkpoint. IDR08 is already closed at the lower boundary:
+> Qwen3.5-0.8B improves development `236 -> 323/1,289` (`+6.749` points)
+> and holdout `242 -> 328/1,279` (`+6.724`), but holdout MBPP regresses
+> `9 -> 8`; scratch 390M/920M and the 5B canary remain unauthorized. Completed
+> peS2O/FineWeb retokenizations are quarantined reusable artifacts, not a
+> launch graph.
+>
+> Dense cross-family evidence is complete enough to advance: SmolLM3-3B
+> produced `+8.611` aggregate development points but lost five MBPP answers;
+> OLMo2-7B direct revision produced only `259/1,289` and its selective and
+> syndrome successors failed. The next shortest falsifiable host is therefore
+> pinned `allenai/OLMoE-1B-7B-0125-Instruct@b89a7c4...c4650e`, a 7B-total /
+> approximately 1B-active MoE with 64 experts and 8 active/token. CPU snapshot
+> job `746736` is live. Frozen MTR1 trains only rank-8 adapters in the shared
+> attention mixers of the final four layers; router and expert parameters must
+> remain absent from the trainable state. Full source-only draft sharding is
+> blocked on mechanics and pinned hashes. Exact contract:
+> `docs/research/SHOHIN_MTR1_SMALL_MOE_TRANSFER.md`.
+>
+> The larger `Qwen3.6-35B-A3B@995ad96e...` lane is mechanics-only until MTR1
+> passes. Native FLA `0.4.2` / causal-conv1d `1.6.2.post1` installation job
+> `746709` passed after rejecting incompatible wheel/cache/GCC paths. One real
+> NF4 backward update fits at `73.15 GB` peak; a four-update steady canary
+> reaches `20.686` charged target tok/s with `2,408,705` trainable shared-mixer
+> and workspace parameters and frozen router/experts. Base rollout batch-4
+> canary `746734` completes at `31.183` generated tok/s and `68.081 GB` peak,
+> versus `10.761` tok/s at batch 1. All eight 128-token samples were truncated;
+> `0/8` is not a capability score. Batch-4 report SHA-256 is
+> `c48b6676...45c9`; do not launch its full campaign before MTR1 promotion.
+
 > **ESR1 OLMO2-7B CLOSED NEGATIVE — 2026-08-08 23:07 EDT:** SCTR1
 > attribution proved selector headroom is only `1/1,289`, so the next bounded
 > mechanism targets revision capability directly. Error-Syndrome Revision

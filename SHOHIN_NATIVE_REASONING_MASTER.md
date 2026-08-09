@@ -10,31 +10,30 @@ whether this changed factor improves capable pretrained models across scale,
 model family, and eventually MoE routing under matched inference compute.
 
 Qwen3.5-0.8B/4B/9B provide the first within-family scale curve. TTR1 on pinned
-SmolLM3-3B now establishes strong cross-family aggregate transfer but fails
-executable-code retention, so exact TTR1 is closed without holdout or local
-rescue. The next mechanism/host must address capability preservation before a
-larger dense non-Qwen family and then a small/medium open MoE can qualify.
+SmolLM3-3B establishes strong cross-family aggregate transfer but fails
+executable-code retention. OLMo2-7B then closes negative under direct revision,
+selective commitment, and error-syndrome revision. The next host is therefore
+the small open `OLMoE-1B-7B-0125-Instruct`, with frozen router/experts and
+role-specific intervention only in shared attention layers.
 Scratch 390M/920M pretraining, the 5B scratch canary, and long corpus
 construction are not the critical path and are not authorized. See
 `docs/research/SHOHIN_TRANSFERABLE_TEMPORAL_REVISION_CONTRACT.md`.
 
-The frozen successor is **Selective Commit Temporal Revision (SCTR1)**. It
-turns capability preservation into a model-owned commitment operation: emit
-`<KEEP>` to preserve the complete draft byte-for-byte, or `<REVISE>` plus one
-complete replacement. This is not a benchmark router and uses no inference
-verifier. Its first capability gate is pinned OLMo2-7B-Instruct, a larger
-non-Qwen family. See
-`docs/research/SHOHIN_SELECTIVE_COMMIT_TEMPORAL_REVISION.md`.
+The active frozen gate is **MTR1 Small-MoE Transfer**. The unchanged OLMoE
+owner writes one complete draft; a separately trained same-model state reads
+the same source and exact draft. Only final-four-layer shared-attention rank-8
+adapters are trainable. Checkpoint inspection must reject every router or
+expert parameter. The matched development comparison retains unchanged second
+pass, self-refinement, long generation, best-of-two, and independent
+commitment. See `docs/research/SHOHIN_MTR1_SMALL_MOE_TRANSFER.md`.
 
-The first OLMo2-7B capability campaign is now fully dependency-gated. Pinned
-model download and causal-loader mechanics passed; 17 source-only draft shards
-were launched, with the code shard complete and all 16 math/logic shards
-healthy. After their exact merge, dispatcher `746411` launches four matched
-256-update fits and 48 evaluation shards. The causal independent control uses
-the same selective task but masks only the internal draft span. This isolates
-whether learned commitment uses the model-owned trajectory rather than merely
-benefiting from an equal-update adapter. Holdout remains unopened until the
-complete development conjunction passes.
+`Qwen3.6-35B-A3B` is preserved only as the larger-MoE mechanics ceiling until
+MTR1 passes. NF4 backward mechanics fit one H100; a steady four-update canary
+measures `20.686` charged target tok/s. Batch-4 source generation measures
+`31.183 tok/s` at `68.081 GB` peak, versus `10.761 tok/s` at batch 1. All
+eight observed traces hit a deliberately small 128-token cap, so their `0/8`
+score is truncation rather than a capability result. No full Qwen3.6 campaign
+is authorized yet.
 
 ## Latest Practical Reasoning Campaign — 2026-08-08
 

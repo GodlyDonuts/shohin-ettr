@@ -152,14 +152,17 @@ work and node failures. Exact TTR1 is closed without a nearby retry.
 ## Advancement
 
 SmolLM3 established aggregate cross-family transfer but exposed a capability
-preservation failure. The next candidate must make preservation a
-mechanism-level property rather than a benchmark router or post-hoc fallback,
-then test one larger dense non-Qwen family under the same causal controls.
-Only a pass advances to one small/medium open MoE. The MoE starts with frozen
-router and experts and role-specific shared-layer intervention, and must
-report router/expert utilization, active versus total parameters, latency,
-memory, total FLOPs, and accuracy per compute. Large-MoE work remains
-prohibited until cross-family dense and smaller-MoE gates pass.
+preservation failure. OLMo2-7B then supplied the larger dense non-Qwen test:
+direct revision reached only `259/1,289`, while selective commitment and
+error-syndrome revision both failed their frozen gates. More local OLMo
+variants are not authorized.
+
+The next gate is MTR1 on small open `OLMoE-1B-7B-0125-Instruct`. Router and
+experts remain frozen while role-specific intervention is limited to shared
+attention layers. MTR1 must report router/expert utilization, active versus
+total parameters, latency, memory, total FLOPs, and accuracy per compute.
+Larger-MoE capability work, including the already-qualified Qwen3.6-35B-A3B
+mechanics path, remains prohibited until MTR1 passes development and holdout.
 
 Scratch Shohin training is optional later efficiency evidence. It is not the
 critical path and is not authorized by TTR1.
