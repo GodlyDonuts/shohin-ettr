@@ -19,6 +19,10 @@ done
 case "$ARM" in aligned|swapped|hidden|final_only) ;; *) exit 3 ;; esac
 BASE=/lustre/fs1/home/sa305415/shohin
 PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
+UPDATES=${UPDATES:-256}
+CHECKPOINT_INTERVAL=${CHECKPOINT_INTERVAL:-$UPDATES}
+test "$UPDATES" -ge 1
+test "$CHECKPOINT_INTERVAL" -ge 1
 test -x "$PYTHON"
 test ! -e "$OUTPUT"
 test "$(sha256sum "$RUNTIME/SHA256SUMS" | cut -d' ' -f1)" = "$RUNTIME_MANIFEST_SHA256"
@@ -36,9 +40,9 @@ nvidia-smi
   --model-root "$MODEL_ROOT" --model-source-root "$MODEL_ROOT" \
   --model-revision "$MODEL_REVISION" --owner-checkpoint "$OWNER_CHECKPOINT" \
   --data "$DATA" --data-report "$DATA_REPORT" --output "$OUTPUT" --arm "$ARM" \
-  --updates 256 --gradient-accumulation 8 --max-sequence-length 4096 \
+  --updates "$UPDATES" --gradient-accumulation 8 --max-sequence-length 4096 \
   --learning-rate 2e-5 --seed 2026080915 --data-seed 2026080915 \
-  --log-interval 8 --checkpoint-interval 256
-test -f "$OUTPUT/checkpoint_0000256.pt"
+  --log-interval 8 --checkpoint-interval "$CHECKPOINT_INTERVAL"
+test -f "$OUTPUT/checkpoint_$(printf '%07d' "$UPDATES").pt"
 test -f "$OUTPUT/report.json"
 chmod -R a-w "$OUTPUT"
