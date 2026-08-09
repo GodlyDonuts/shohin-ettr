@@ -377,6 +377,39 @@ class ProductReasoningTrainTests(unittest.TestCase):
         with self.assertRaises(ProductReasoningTrainError):
             validate_warm_start_metadata(metadata, args)
 
+    def test_warm_start_metadata_accepts_only_legacy_defaults(self) -> None:
+        args = SimpleNamespace(
+            arm="baseline",
+            model_root=Path("/model"),
+            model_source_root=Path("/canonical-model"),
+            model_revision="revision",
+            lora_layers=4,
+            lora_rank=8,
+            lora_alpha=16.0,
+            unfreeze_layers=2,
+            lora_scope="all",
+            quantization="none",
+        )
+        legacy_metadata = {
+            "arm": "baseline",
+            "model_root": "/canonical-model",
+            "model_revision": "revision",
+            "lora_layers": 4,
+            "lora_rank": 8,
+            "lora_alpha": 16.0,
+            "unfreeze_layers": 2,
+        }
+        validate_warm_start_metadata(legacy_metadata, args)
+
+        args.lora_scope = "router"
+        with self.assertRaises(ProductReasoningTrainError):
+            validate_warm_start_metadata(legacy_metadata, args)
+
+        args.lora_scope = "all"
+        args.quantization = "int4"
+        with self.assertRaises(ProductReasoningTrainError):
+            validate_warm_start_metadata(legacy_metadata, args)
+
 
 if __name__ == "__main__":
     unittest.main()

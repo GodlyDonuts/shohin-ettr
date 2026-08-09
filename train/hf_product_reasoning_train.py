@@ -885,6 +885,14 @@ def load_trainable_checkpoint(
 def validate_warm_start_metadata(metadata: dict[str, Any], args: argparse.Namespace) -> None:
     """Require the source checkpoint to describe the model being constructed."""
 
+    # Checkpoints written before these fields were introduced used these exact
+    # behaviors. Normalize only the historical defaults so old qualified
+    # checkpoints remain usable without weakening geometry validation.
+    actual = {
+        **metadata,
+        "lora_scope": metadata.get("lora_scope", "all"),
+        "quantization": metadata.get("quantization", "none"),
+    }
     expected = {
         "arm": args.arm,
         "model_root": str((args.model_source_root or args.model_root).resolve()),
@@ -897,9 +905,9 @@ def validate_warm_start_metadata(metadata: dict[str, Any], args: argparse.Namesp
         "quantization": args.quantization,
     }
     mismatches = {
-        key: {"expected": value, "actual": metadata.get(key)}
+        key: {"expected": value, "actual": actual.get(key)}
         for key, value in expected.items()
-        if metadata.get(key) != value
+        if actual.get(key) != value
     }
     if mismatches:
         raise ProductReasoningTrainError(
