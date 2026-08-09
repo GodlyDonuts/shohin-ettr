@@ -13,6 +13,7 @@ from typing import Any
 
 SCHEMA = "shohin-mpr1-development-comparison-v1"
 EVAL_SCHEMA = "shohin-idr1-revision-evaluation-v1"
+UNCHANGED_SCHEMA = "shohin-ttr1-control-evaluation-v1"
 FIT_SCHEMA = "shohin-rme1-product-training-v1"
 
 
@@ -38,9 +39,9 @@ def score(report: dict[str, Any], domain: str = "overall") -> tuple[int, int]:
     return int(value["generated_correct"]), int(value["total"])
 
 
-def complete_eval(report: dict[str, Any]) -> bool:
+def complete_eval(report: dict[str, Any], *, unchanged: bool = False) -> bool:
     return (
-        report.get("schema") == EVAL_SCHEMA
+        report.get("schema") == (UNCHANGED_SCHEMA if unchanged else EVAL_SCHEMA)
         and report.get("split") == "development"
         and report.get("full_row_count") == 1289
         and report.get("merged_from_shards") is True
@@ -94,7 +95,10 @@ def compare(args: argparse.Namespace) -> dict[str, Any]:
             ("unchanged", args.unchanged_report),
         )
     }
-    if any(not complete_eval(report) for report in reports.values()):
+    if any(
+        not complete_eval(report, unchanged=name == "unchanged")
+        for name, report in reports.items()
+    ):
         raise MPR1ComparisonError("MPR1 evaluation coverage differs")
     for key in ("model_root", "model_revision", "data_sha256", "data_report_sha256"):
         values = {report.get(key) for report in reports.values()}

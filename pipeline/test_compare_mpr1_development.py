@@ -30,6 +30,12 @@ def evaluation(correct: int, math: int, logic: int, code: int) -> dict:
     }
 
 
+def unchanged_evaluation() -> dict:
+    value = evaluation(191, 40, 145, 5)
+    value["schema"] = "shohin-ttr1-control-evaluation-v1"
+    return value
+
+
 def fit(data_sha: str, control: str) -> dict:
     return {
         "schema": "shohin-rme1-product-training-v1",
@@ -70,7 +76,7 @@ def args(tmp_path: Path, aligned_correct: int = 240):
         "aligned_report": write(tmp_path / "aligned_report.json", evaluation(aligned_correct, 50, 180, 10)),
         "shuffled_report": write(tmp_path / "shuffled_report.json", evaluation(220, 45, 168, 7)),
         "hidden_report": write(tmp_path / "hidden_report.json", evaluation(221, 45, 169, 7)),
-        "unchanged_report": write(tmp_path / "unchanged_report.json", evaluation(191, 40, 145, 5)),
+        "unchanged_report": write(tmp_path / "unchanged_report.json", unchanged_evaluation()),
         "aligned_fit": write(tmp_path / "aligned_fit.json", fit(aligned_sha, "normal")),
         "shuffled_fit": write(tmp_path / "shuffled_fit.json", fit(shuffled_sha, "normal")),
         "hidden_fit": write(tmp_path / "hidden_fit.json", fit(aligned_sha, "draft_unavailable")),
