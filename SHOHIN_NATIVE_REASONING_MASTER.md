@@ -38,13 +38,18 @@ shuffled) but no net value over source-only computation. Exact contract and
 result: `docs/research/SHOHIN_MPR2_BOOTSTRAP_DRAFT_REVISION.md` and
 `docs/research/SHOHIN_MPR2_RESULT.json`.
 
-The active information-ceiling probe is DPR1. It replaces one premature draft
+The latest information-ceiling probe was DPR1. It replaces one premature draft
 commitment with eight complete, exchangeable stochastic trajectories from the
 same trained OLMoE owner. Before any fit, the frozen development-only probe
 requires oracle `>=350`, domain oracle `>=90/245/15`, real trajectory
 diversity, and bounded exhaustion. A miss closes the panel without K or
 sampling variants; a pass only authorizes a separately frozen panel-conditioned
-reviser with matched shuffled and hidden controls. Holdout remains sealed.
+reviser with matched shuffled and hidden controls. DPR1 closed on that
+conjunction: K=8 oracle is a large `542/1,289`, with MATH 149 and logic 384,
+but executable code oracle is only 9/29 versus the required 15. Every fixed
+sample scores only 136--162, below greedy owner 247. This exposes substantial
+latent math/logic diversity alongside a hard code and trajectory-selection
+floor. No panel fit was launched; holdout remains sealed.
 
 This changed factor is strongly supported on dense models. Matched trained
 revision versus unchanged second-pass gains are:

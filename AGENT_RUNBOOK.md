@@ -1,6 +1,6 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **DPR1 K=8 MODEL-OWNED DRAFT-PANEL CEILING FROZEN — 2026-08-09:** MPR2's
+> **DPR1 K=8 MODEL-OWNED DRAFT-PANEL CEILING CLOSED — 2026-08-09:** MPR2's
 > owner+aligned oracle is only `265/1,289`, so no selector over that pair can
 > reach the required 286. DPR1 tests one structurally different source of
 > information before fitting: eight exchangeable complete stochastic
@@ -12,6 +12,13 @@
 > hidden controls; a miss closes exact DPR1 without sampling/K variants.
 > Holdout remains sealed. Contract:
 > `docs/research/SHOHIN_DPR1_DRAFT_PANEL_REVISION.md`.
+> Jobs `747975--747982` generated all 10,312 trajectories in 12.3--17.9
+> minutes; merge `747983` exited 3 as designed. Fixed indices score only
+> `136--162`, versus greedy owner 247. Whole-panel oracle is `542`, domains
+> `149/384/9`, all 1,289 rows are diverse, and 15 trajectories exhaust. The
+> exact gate fails only the code oracle floor (`9 < 15`); no panel fit is
+> authorized and pre-staged train-panel code remains inactive. Result SHA-256
+> `cc7abc71...15e4`; record: `docs/research/SHOHIN_DPR1_RESULT.json`.
 
 > **MPR2 BOOTSTRAP DRAFT-OWNER REVISION CLOSED NEGATIVE — 2026-08-09:** MPR1 proved
 > generic all-layer post-MoE SFT useful but its weak original draft harmful.

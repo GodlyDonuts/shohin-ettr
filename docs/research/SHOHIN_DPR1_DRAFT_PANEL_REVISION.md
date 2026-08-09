@@ -1,7 +1,7 @@
 # DPR1: Model-Owned Draft Panel Revision
 
-Status: frozen information-ceiling gate, 2026-08-09. No capability fit,
-holdout read, or larger-MoE work is authorized yet.
+Status: closed negative on the conjunctive information-ceiling gate,
+2026-08-09. No capability fit, holdout read, or larger-MoE work is authorized.
 
 ## Rationale
 
@@ -51,3 +51,19 @@ panel and hidden-panel controls before scores. If it fails, close DPR1 without
 K, temperature, top-p, prompt, seed, or decoding variants. Holdout remains
 sealed in either case until a later trained development gate passes.
 
+## Result
+
+Eight H100 shards generated all 10,312 requested trajectories in 12.3--17.9
+minutes. Fixed candidate indices score only 136--162/1,289, all below the
+trained greedy owner's 247. Whole-panel oracle is nevertheless 542, with
+MATH 149, logic/science 384, and executable code 9. Every row has at least two
+distinct normalized completions; 15/10,312 generations exhaust 768 tokens.
+
+Overall, math, logic, diversity, and exhaustion gates pass by wide margins.
+The code oracle misses its required 15/29, so the conjunctive gate fails and
+no panel-conditioned fit is authorized. The exact conclusion is that sampled
+OLMoE computation contains abundant diverse math/logic answers but does not
+solve the code-capability floor, while selecting a random/fixed trajectory is
+substantially worse than greedy. Close exact DPR1 without K/sampling variants.
+Preserve the pre-staged train-panel generator as inactive code. Result:
+`SHOHIN_DPR1_RESULT.json`.

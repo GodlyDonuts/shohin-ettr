@@ -1,0 +1,26 @@
+{
+  "schema": "shohin-dpr1-panel-ceiling-v1",
+  "status": "complete",
+  "split": "development",
+  "rows": 1289,
+  "panel_size": 8,
+  "fixed_index_correct": [153, 139, 146, 143, 136, 154, 162, 142],
+  "oracle_correct": 542,
+  "domain_oracle": {"math500": 149, "bbh_logic": 384, "mbpp": 9},
+  "diverse_rows": 1289,
+  "diverse_fraction": 1.0,
+  "generated_tokens": 240681,
+  "max_token_exhausted": 15,
+  "gates": {
+    "oracle_at_least_350": true,
+    "math_oracle_at_least_90": true,
+    "logic_oracle_at_least_245": true,
+    "code_oracle_at_least_15": false,
+    "diverse_rows_at_least_25_percent": true,
+    "exhaustion_at_most_80": true
+  },
+  "gate_pass": false,
+  "training_authorized": false,
+  "decision": "close_exact_dpr1",
+  "result_sha256": "cc7abc7194914807d063371039dea53916f40d64ba3289c949a49b7fac1115e4"
+}
