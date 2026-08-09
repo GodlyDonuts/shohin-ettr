@@ -19,13 +19,24 @@ Scratch 390M/920M pretraining, the 5B scratch canary, and long corpus
 construction are not the critical path and are not authorized. See
 `docs/research/SHOHIN_TRANSFERABLE_TEMPORAL_REVISION_CONTRACT.md`.
 
-The active frozen gate is **MTR1 Small-MoE Transfer**. The unchanged OLMoE
-owner writes one complete draft; a separately trained same-model state reads
-the same source and exact draft. Only final-four-layer shared-attention rank-8
-adapters are trainable. Checkpoint inspection must reject every router or
-expert parameter. The matched development comparison retains unchanged second
-pass, self-refinement, long generation, best-of-two, and independent
-commitment. See `docs/research/SHOHIN_MTR1_SMALL_MOE_TRANSFER.md`.
+Small-MoE transfer is now a measured failure boundary. MTR1 shared-attention
+revision scores `204/1,289`, only `+13` answers and `+1.01` points over the
+unchanged OLMoE second pass. Router accounting then showed only `0.002018`
+mean all-layer route-count L1 drift. RCR1 directly trained a bounded low-rank
+residual on the final four router logits, but reached only `194/1,289`, versus
+`191` for both matched rank-1 attention and unchanged, and remained below the
+prior rank-8 attention arm. Both gates are closed without holdout. This rules
+out frozen-expert router steering as a sufficient revision mechanism at the
+small-MoE boundary; it does not erase the strong dense Qwen/SmolLM evidence.
+See `docs/research/SHOHIN_MTR1_SMALL_MOE_TRANSFER.md` and
+`docs/research/SHOHIN_RCR1_REVISION_CONDITIONED_ROUTING.md`.
+
+The next cross-family point is pinned
+`mistralai/Ministral-3-8B-Reasoning-2512@81eaece...d894`. Unlike OLMoE, this is
+a current dense reasoning-tuned model and tests whether complete model-owned
+draft followed by trained same-family revision improves an already capable
+reasoner. The full campaign remains gated behind exact loader, tokenizer,
+prompt, and one-update backward mechanics.
 
 `Qwen3.6-35B-A3B` is preserved only as the larger-MoE mechanics ceiling until
 MTR1 passes. NF4 backward mechanics fit one H100; a steady four-update canary

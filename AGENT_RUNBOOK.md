@@ -1,5 +1,28 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **RCR1 CLOSED / CURRENT MISTRAL DENSE TRANSFER NEXT — 2026-08-09 02:13
+> EDT:** Revision-conditioned router treatment `746982` and its parameter-
+> matched rank-1 shared-attention control `746983` completed 256 updates over
+> the exact same 342,896 target tokens. Router used 67,584 trainables at
+> `1,647.17 tok/s`; attention used 65,536 at `1,499.57 tok/s`. Sixteen exact
+> development shards and comparison `747009` completed all 1,289 identities.
+> Router scores `194 = 15.0504%`, versus matched attention `191`, unchanged
+> second pass `191`, and prior rank-8 attention `204`. Domain deltas versus
+> unchanged are math `+2`, logic/science `+1`, code `0`. Its `+0.2327` point
+> effect fails the frozen +5/+3 magnitude gates; holdout is unauthorized and
+> unopened. Exact RCR1 is closed without rank/layer/alpha/duration/seed rescue.
+> Comparison SHA-256 is `eb1b304adbf634e141bd497c5cf4b3d60d8616655ec1a674b7c556e399ae4c35`.
+>
+> Small-MoE evidence therefore blocks scaling the same router intervention to
+> Qwen3.6-35B-A3B. The next structurally informative host is current dense
+> `mistralai/Ministral-3-8B-Reasoning-2512@81eaece...d894`: it tests whether
+> the already-qualified complete-draft/trained-revision architecture improves
+> an independently pretrained reasoning model, not whether another OLMo
+> adapter variant helps. Pinned snapshot job `747023` is live on CPU. Require
+> one exact loader/tokenizer/backward mechanics pass before estimating and
+> releasing the source-only draft campaign. Expected full charge is 25--35
+> H100-hours; no H100 launch is authorized by download alone.
+>
 > **MTR1 CLOSED / RCR1 ROUTER GATE FROZEN — 2026-08-09 01:20
 > EDT:** Complete development comparison `746879` scores trained shared-attention
 > revision `204/1,289 = 15.8262%`, versus unchanged second pass `191 =
