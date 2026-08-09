@@ -95,7 +95,7 @@ for control in "${standard_controls[@]}"; do
     shard_reports+=("$report")
   done
   dependency=$(IFS=:; echo "${shard_jobs[*]}")
-  reports_csv=$(IFS=,; echo "${shard_reports[*]}")
+  reports_csv=$(IFS=:; echo "${shard_reports[*]}")
   merge=$(sbatch --parsable --dependency=afterok:"$dependency" \
     --export=ALL,RUNTIME=$RUNTIME,RUNTIME_MANIFEST_SHA256=$RUNTIME_MANIFEST_SHA256,DATA=$DATA,DATA_SHA256=$DATA_SHA256,SPLIT=holdout,SHARD_REPORTS=$reports_csv,CANDIDATES_OUTPUT=$root/candidates.jsonl,REPORT=$root/report.json \
     "$RUNTIME/pipeline/jobs/merge_ttr1_control_shards.sbatch")

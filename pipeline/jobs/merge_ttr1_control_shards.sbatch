@@ -25,7 +25,7 @@ BASE=/lustre/fs1/home/sa305415/shohin
 PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
 test -x "$PYTHON"
 
-IFS=, read -r -a reports <<<"$SHARD_REPORTS"
+IFS=: read -r -a reports <<<"$SHARD_REPORTS"
 arguments=()
 for path in "${reports[@]}"; do
   test -f "$path"
