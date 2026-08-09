@@ -730,6 +730,20 @@ def _load_model(
             RME1Config(**rme),
             draft_control=str(metadata.get("rme1_draft_control", "normal")),
         ).to("cuda:0")
+    elif metadata.get("architecture") == "shohin-shared-post-mlp-revision-v1":
+        from shared_post_mlp_revision import (
+            SharedPostMLPConfig,
+            SharedPostMLPProductModel,
+        )
+
+        shared = metadata.get("shared_post_mlp_config")
+        if not isinstance(shared, dict):
+            raise ProductEvalError("shared post-MLP checkpoint config is missing")
+        model = SharedPostMLPProductModel(
+            backbone,
+            SharedPostMLPConfig(**shared),
+            draft_control=str(metadata.get("draft_control", "normal")),
+        )
     elif metadata.get("architecture") == "shohin-ctsr1-moe-revision-v1":
         from ctsr1_moe_revision import CTSR1Config, CTSR1ProductModel
 

@@ -109,8 +109,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     tokenizer.padding_side = "left"
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
-    model, metadata, resolved_loader = _load_model(args.model_root, args.adapter_checkpoint, "causal")
-    if metadata.get("architecture") != "shohin-rme1-moe-revision-v1" or metadata.get("dset1_arm") != args.arm:
+    model, metadata, resolved_loader = _load_model(
+        args.model_root, args.adapter_checkpoint, args.model_loader
+    )
+    if metadata.get("architecture") != args.architecture or metadata.get("dset1_arm") != args.arm:
         raise DSET1EvalError("DSET1 checkpoint metadata differs")
     if hasattr(model, "reset_routing_receipt"):
         model.reset_routing_receipt()
@@ -208,6 +210,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-root", type=Path, required=True)
     parser.add_argument("--model-source-root", type=Path)
     parser.add_argument("--model-revision", required=True)
+    parser.add_argument("--model-loader", choices=["auto", "causal", "multimodal"], default="causal")
+    parser.add_argument(
+        "--architecture",
+        choices=["shohin-rme1-moe-revision-v1", "shohin-shared-post-mlp-revision-v1"],
+        default="shohin-rme1-moe-revision-v1",
+    )
     parser.add_argument("--adapter-checkpoint", type=Path, required=True)
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--data-report", type=Path, required=True)
