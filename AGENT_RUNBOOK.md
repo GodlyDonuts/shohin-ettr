@@ -25,15 +25,38 @@
 > final loss `0.85563`, and `16.288 GB` peak. Rollout mechanics `746743`
 > produced 8/8 nonempty same-model drafts at `130.61` generated tok/s.
 >
-> Full source-only drafts are now live as seventeen independent one-H100 jobs
-> `746745--746761`; the 200-row code shard completed in `00:13:57`, scores
+> Full source-only drafts completed as seventeen independent one-H100 jobs
+> `746745--746761`; all 8,392 identities are present with 1,195 correct
+> (`14.24%`), zero empty drafts, and 3,097 trajectories exhausting the
+> 768-token ceiling. The 200-row code shard completed in `00:13:57`, scores
 > `60/200`, emits 58,293 tokens at `74.57` tok/s, and exhausts only 2 rows.
-> The remaining sixteen 512-row MATH/science shards are healthy and concurrent.
-> Exact merge/data build `746762`, matched-fit dispatcher `746763`, development
-> release `746797`, and router-accounting release `746799` are dependency-held.
+> The sixteen MATH/science shards complete in 44--49 minutes. Merged drafts
+> SHA-256 is `3ba9762a...787e`; receipt SHA-256 is `5cad55a9...36a0`.
+>
+> Exact merge/data build `746762` completed in 15 seconds and emits 9,655 / 1,289
+> / 1,279 train/development/holdout rows. Development has 158 correct first
+> drafts. Treatment `746811` and draft-masked independent control `746812`
+> complete all 256 updates in `4m37s/4m40s`, each charging 342,896 target tokens
+> with the same 524,288 trainable parameters and trainable-name SHA-256
+> `aa431321...b3d3`. Treatment/control throughput is `1,478.15/1,454.43`
+> target tok/s; checkpoint SHA-256 values are `3ce1ad73...0f8a` and
+> `05451354...9535`. Development dispatcher `746813` launched 48 exact shards
+> `746825--746877`, six merges, and comparison `746879`; the first 26 H100s
+> were granted concurrently. Holdout dispatcher `746880` remains fail-closed
+> behind the comparison.
+>
+> Accounting-only releases `746805/746806` failed before output because two
+> newly copied runtimes accidentally self-included `SHA256SUMS`; no capability
+> job or gate changed. Corrected immutable runtime `mtr1_14275aa_r7` verifies
+> every file with manifest SHA-256 `3a1534cd...f8d0`. Router probes
+> `746822/746823` then failed before model load because a 64/domain accounting
+> sample exceeded development's 29 code rows. Exact common-support repair is
+> frozen at 29/domain in verified runtime `mtr1_277e1ca_r8`, manifest SHA-256
+> `8208b37c...395c`; replacements `746882/746883` are pending. These failures
+> did not access holdout or produce a score.
+>
 > Runtime `mtr1_32bc0df_r3` has manifest SHA-256 `0a1dbe22...336e` for
-> capability evaluation; accounting runtime `mtr1_6ee8506_r4` has manifest
-> SHA-256 `2a3a6797...2c25`. The read-only accounting path reports expert load,
+> capability evaluation. The read-only accounting path reports expert load,
 > router entropy, active/total parameters, latency/memory, and fails if the
 > adapter contains any router/expert/MLP tensor. Exact contract:
 > `docs/research/SHOHIN_MTR1_SMALL_MOE_TRANSFER.md`.
