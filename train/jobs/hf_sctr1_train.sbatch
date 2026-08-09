@@ -24,6 +24,7 @@ set -euo pipefail
 : "${OUTPUT:?OUTPUT is required}"
 MODEL_LOADER=${MODEL_LOADER:-auto}
 UPDATES=${UPDATES:-256}
+TRAIN_KIND=${TRAIN_KIND:-selective_commit}
 
 BASE=/lustre/fs1/home/sa305415/shohin
 PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
@@ -45,18 +46,26 @@ printf '%s  %s\n' "$DATA_REPORT_SHA256" "$DATA_REPORT" \
   | sha256sum -c - >/dev/null
 test ! -e "$OUTPUT"
 
-"$PYTHON" - "$DATA" "$DATA_REPORT" <<'PY'
+"$PYTHON" - "$DATA" "$DATA_REPORT" "$TRAIN_KIND" <<'PY'
 import hashlib
 import json
 from pathlib import Path
 import sys
 
-data, report_path = map(Path, sys.argv[1:])
+data, report_path = map(Path, sys.argv[1:3])
+train_kind = sys.argv[3]
 report = json.loads(report_path.read_text(encoding="utf-8"))
 expected = report.get("outputs", {}).get("train", {})
-if report.get("schema") != "shohin-sctr1-selective-commit-data-report-v1":
-    raise SystemExit("SCTR1 data report schema differs")
-if report.get("commitment") != "whole_draft_or_whole_revision":
+schemas = {
+    "selective_commit": "shohin-sctr1-selective-commit-data-report-v1",
+    "always_revise": "shohin-idr1-revision-data-report-v1",
+    "independent_commitment": "shohin-idr1-revision-data-report-v1",
+}
+if train_kind not in schemas or report.get("schema") != schemas[train_kind]:
+    raise SystemExit("temporal-role data report schema differs")
+if train_kind == "selective_commit" and (
+    report.get("commitment") != "whole_draft_or_whole_revision"
+):
     raise SystemExit("SCTR1 commitment differs")
 if expected.get("rows") != 9655:
     raise SystemExit("SCTR1 train cardinality differs")
@@ -80,6 +89,13 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
 
 nvidia-smi
+MASK_ARGS=()
+if [[ "$TRAIN_KIND" == "independent_commitment" ]]; then
+  MASK_ARGS+=(--mask-internal-draft)
+elif [[ "$TRAIN_KIND" != "selective_commit" && "$TRAIN_KIND" != "always_revise" ]]; then
+  echo "TRAIN_KIND differs" >&2
+  exit 4
+fi
 "$PYTHON" "$RUNTIME/train/hf_product_reasoning_train.py" \
   --model-root "$EFFECTIVE_MODEL_ROOT" \
   --model-source-root "$SOURCE_MODEL_ROOT" \
@@ -100,7 +116,8 @@ nvidia-smi
   --seed 2026080822 \
   --data-seed 2026080821 \
   --log-interval 8 \
-  --checkpoint-interval "$UPDATES"
+  --checkpoint-interval "$UPDATES" \
+  "${MASK_ARGS[@]}"
 
 printf -v checkpoint '%s/checkpoint_%07d.pt' "$OUTPUT" "$UPDATES"
 test -f "$checkpoint"
