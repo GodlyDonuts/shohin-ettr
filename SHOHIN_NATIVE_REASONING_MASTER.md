@@ -51,6 +51,20 @@ sample scores only 136--162, below greedy owner 247. This exposes substantial
 latent math/logic diversity alongside a hard code and trajectory-selection
 floor. No panel fit was launched; holdout remains sealed.
 
+The active prospective route is now OBR1 followed conditionally by MPR3.
+Rather than repeat temporal fitting against another weak short-run owner,
+OBR1 preserves the strongest simple OLMoE architecture (all-16-layer rank-18
+shared post-MoE residual) but trains it for 2,048 updates on the existing
+verified 16M-target-token broad mix, freshly tokenized by OLMoE and hard
+filtered against development by normalized exact match and word 13-grams.
+The owner must reach `300/1,289` with domain floors `75/215/10` before any new
+draft corpus is generated. Only that pass opens MPR3, whose aligned exact
+model-owned draft arm must beat the direct owner by 39 answers and matched
+shuffled and full-model hidden-draft controls by 13 each, with nonnegative
+domain deltas and semantic net at least 13. Only a development plus sealed
+holdout pass authorizes larger-MoE transfer. Exact prospective contract:
+`docs/research/SHOHIN_OBR1_BROAD_OWNER_AND_MPR3_GATE.md`.
+
 This changed factor is strongly supported on dense models. Matched trained
 revision versus unchanged second-pass gains are:
 

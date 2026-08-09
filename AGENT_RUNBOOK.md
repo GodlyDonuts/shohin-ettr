@@ -1,5 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **OBR1 / CONDITIONAL MPR3 FROZEN — 2026-08-09:** CFR1, MPR1, MPR2, and
+> DPR1 are closed negatives; Newton is currently idle. The practical MoE
+> critical path now first qualifies a stronger source-only owner rather than
+> repeating temporal revision with a weak draft. OBR1 retokenizes the existing
+> verified 16M-target-token broad mix with pinned OLMoE, hard-removes exact and
+> word-13-gram development overlap, preserves complete 4,096-token sequences,
+> and trains the unchanged all-16-layer rank-18 shared post-MoE residual for
+> 2,048 updates. Frozen qualification is overall `>=300`, domains
+> `>=75/215/10`, and complete custody. Only a pass generates OBR1-owned drafts
+> and opens MPR3: aligned must beat the direct owner by 39 and matched
+> shuffled/hidden controls by 13 each, with nonnegative domains and semantic
+> net `>=13`. Only development plus one sealed holdout pass authorizes larger
+> MoE transfer. Contract:
+> `docs/research/SHOHIN_OBR1_BROAD_OWNER_AND_MPR3_GATE.md`.
+
 > **DPR1 K=8 MODEL-OWNED DRAFT-PANEL CEILING CLOSED — 2026-08-09:** MPR2's
 > owner+aligned oracle is only `265/1,289`, so no selector over that pair can
 > reach the required 286. DPR1 tests one structurally different source of
