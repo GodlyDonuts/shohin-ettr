@@ -1,5 +1,29 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **SCTR1 OLMO2-7B CLOSED NEGATIVE — 2026-08-08 22:25 EDT:** complete
+> development comparison `746537` closed across all `1,289` identities;
+> holdout remains sealed. Selective commit scores `229 = 17.7657%`, versus
+> unchanged selective second pass `231 = 17.9209%`, standard always-revise
+> `259 = 20.0931%`, long single generation `190 = 14.7401%`, masked
+> independent selective `215 = 16.6796%`, and shuffled-command selective
+> `221 = 17.1451%`. Selective is `-0.1552` points versus unchanged,
+> `-2.3274` versus always-revise, and only `+0.6206` versus shuffled. It emits
+> 8 malformed commands and loses nine logic answers versus unchanged while
+> gaining three math and four code answers. Every substantive gate fails;
+> exact SCTR1 is closed without holdout or nearby rescue. Comparison SHA-256
+> is `ee9e2c55...65cf`.
+>
+> Read-only whole-candidate attribution rejects a learned selector successor:
+> always-revise preserves `221/222` correct internal drafts and repairs
+> `38/1,067` incorrect drafts. Its union with the original draft is only
+> `260`, one answer above its observed `259`; selection has a measured ceiling
+> of `1/1,289 = 0.0776` points. The actionable bottleneck is revision
+> capability, not commitment. Four initial shards failed only from `evc26`
+> node-local `/tmp` exhaustion and were replayed exactly as `746530--746533`;
+> all replacement/merge jobs passed. Runtime staging was hardened in private
+> main `f6f7f55`; immutable r7 SHA256SUMS SHA-256 is
+> `2c001268...45c0`. No Newton jobs remain live.
+
 > **SCTR1 OLMO2-7B FULL CAMPAIGN PRESTAGED — 2026-08-08 22:25 EDT:**
 > pinned OLMo download `746379`, loader mechanics `746381`, and complete data
 > mechanics `746382` passed. The source model is

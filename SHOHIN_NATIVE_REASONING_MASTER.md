@@ -38,6 +38,20 @@ complete development conjunction passes.
 
 ## Latest Practical Reasoning Campaign — 2026-08-08
 
+**SCTR1 fails on OLMo2-7B and is closed without holdout.** Selective
+whole-draft commitment reaches `229/1,289 = 17.77%`, below unchanged selective
+second pass (`231 = 17.92%`) and standard always-revise (`259 = 20.09%`). It
+also fails to separate from shuffled command supervision (`221 = 17.15%`),
+emits eight malformed commands, and loses nine logic answers versus unchanged.
+The exact comparison SHA-256 is `ee9e2c55...65cf`.
+
+This is not a reason to build a larger selector. Always-revise preserves
+`221/222` correct internal drafts and repairs 38 incorrect ones; a perfect
+draft-versus-revision selector could improve its 259 correct answers to only
+260. The measured bottleneck is revision capability. Standard trained
+revision still causes a modest `+28` answers over the unchanged second pass,
+but this OLMo route is not promoted.
+
 **TTR1 transfers the learned draft/revision effect to SmolLM3-3B, but exact
 promotion closes on code regression.** On all 1,289 source-disjoint
 development identities, the trained same-family reviser reaches `469 =

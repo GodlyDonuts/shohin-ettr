@@ -1,7 +1,36 @@
 # Selective Commit Temporal Revision (SCTR1)
 
-Status: frozen successor contract, 2026-08-08. Exact TTR1 is closed and is
-not reopened by this mechanism.
+Status: **closed negative**, 2026-08-08. Exact TTR1 is closed and is not
+reopened by this mechanism. Holdout was not opened.
+
+## Result
+
+The full OLMo2-7B development gate completed over all 1,289 identities:
+
+| Arm | Correct | Accuracy |
+|---|---:|---:|
+| Selective commit | 229 | 17.7657% |
+| Unchanged selective second pass | 231 | 17.9209% |
+| Standard always revise | 259 | 20.0931% |
+| Long single generation | 190 | 14.7401% |
+| Draft-masked independent selective | 215 | 16.6796% |
+| Shuffled-command selective | 221 | 17.1451% |
+
+Selective commit is `-0.1552` points versus unchanged, `-2.3274` points
+versus always revise, and only `+0.6206` points versus shuffled supervision.
+It emits eight malformed commands. Domain deltas versus unchanged are `+3`
+MATH, `-9` logic/science, and `+4` MBPP, so all-domain nonregression also
+fails. Comparison SHA-256 is
+`ee9e2c551921d71971fbcb3d9d4660f11656710d3a13593aac1fdf556ba765cf`.
+
+A read-only candidate contingency closes the obvious binary-selector followup.
+Always-revise preserves 221 of 222 correct internal drafts and repairs 38
+incorrect drafts; the exact union of original draft and always-revise output
+contains 260 correct answers, only one above always-revise's 259. A perfect
+selector can therefore add at most `1/1,289 = 0.0776` absolute points on this
+board. The bottleneck is stronger revision/execution, not deciding whether to
+keep the draft. Exact SCTR1 receives no command-token, classifier-head, seed,
+rank, duration, or prompt rescue.
 
 ## Capability Hypothesis
 
@@ -105,8 +134,8 @@ encode this graph; holdout is not part of the dispatcher.
 
 ## Evidence Boundary
 
-A pass would show that model-owned temporal revision can preserve a complete
-correct trajectory while selectively replacing an incorrect one across a
-new model family. It would not prove general reasoning, optimality, or
-architecture transfer to MoE systems. Only after dense-family development and
-holdout pass may the same contract advance to one small/medium open MoE.
+The negative result shows that explicit generated KEEP/REVISE commitment is
+not a reliable transferable improvement on this host. It does not negate the
+standard trained-revision effect: always-revise still exceeds the unchanged
+second pass by 28 answers. That effect is too small to promote this OLMo route,
+and the SCTR1 holdout remains sealed.
