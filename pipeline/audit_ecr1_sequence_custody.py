@@ -33,11 +33,14 @@ def main() -> int:
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
     _, _, _, custody = tokenize_complete_revision_rows(
-        tokenizer, rows, args.max_sequence_length
+        tokenizer,
+        rows,
+        args.max_sequence_length,
+        fail_on_overflow=False,
     )
     report = {
         "schema": "shohin-ecr1-sequence-custody-v1",
-        "status": "complete",
+        "status": "complete" if custody["overflow_rows"] == 0 else "incompatible",
         "model_root": str(args.model_root.resolve()),
         "data": str(args.data.resolve()),
         "data_sha256": observed_sha256,

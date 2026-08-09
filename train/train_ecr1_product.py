@@ -38,13 +38,21 @@ def _atomic_json(path: Path, payload: dict) -> None:
     os.replace(temporary, path)
 
 
-def tokenize_complete_revision_rows(tokenizer, rows, maximum: int):
+def tokenize_complete_revision_rows(
+    tokenizer,
+    rows,
+    maximum: int,
+    *,
+    fail_on_overflow: bool = True,
+):
     """Tokenize without truncation and prove complete draft/source retention."""
 
     prompt_rows, response_rows, draft_attention_rows = [], [], []
     source_tokens = draft_tokens = target_tokens = 0
     maximum_observed = 0
+    maximum_required = 0
     row_receipts = []
+    overflow_receipts = []
     for index, row in enumerate(rows):
         rendered = render_reasoning_messages(
             tokenizer,
@@ -58,10 +66,25 @@ def tokenize_complete_revision_rows(tokenizer, rows, maximum: int):
         response = tokenizer.encode(row["response"], add_special_tokens=False)
         response.append(tokenizer.eos_token_id)
         total = len(prompt) + len(response)
+        maximum_required = max(maximum_required, total)
         if total > maximum:
-            raise ProductReasoningTrainError(
-                f"complete row {index} requires {total} tokens, exceeds {maximum}"
+            overflow_receipts.append(
+                {
+                    "row_index": index,
+                    "identity_sha256": hashlib.sha256(
+                        row["question"].encode("utf-8")
+                    ).hexdigest(),
+                    "source_tokens": sum(draft_attention),
+                    "draft_tokens": sum(1 - value for value in draft_attention),
+                    "target_tokens": len(response),
+                    "total_tokens": total,
+                }
             )
+            if fail_on_overflow:
+                raise ProductReasoningTrainError(
+                    f"complete row {index} requires {total} tokens, exceeds {maximum}"
+                )
+            continue
         draft_count = sum(1 - value for value in draft_attention)
         source_count = sum(draft_attention)
         if draft_count == 0 or source_count == 0:
@@ -91,15 +114,18 @@ def tokenize_complete_revision_rows(tokenizer, rows, maximum: int):
         "rows": len(prompt_rows),
         "max_sequence_length": maximum,
         "maximum_observed_tokens": maximum_observed,
+        "maximum_required_tokens": maximum_required,
+        "overflow_rows": len(overflow_receipts),
+        "overflow_receipts": overflow_receipts,
         "original_source_tokens": source_tokens,
         "retained_source_tokens": source_tokens,
         "original_draft_tokens": draft_tokens,
         "retained_draft_tokens": draft_tokens,
         "original_target_tokens": target_tokens,
         "retained_target_tokens": target_tokens,
-        "source_retention": 1.0,
-        "draft_retention": 1.0,
-        "target_retention": 1.0,
+        "source_retention": 1.0 if not overflow_receipts else None,
+        "draft_retention": 1.0 if not overflow_receipts else None,
+        "target_retention": 1.0 if not overflow_receipts else None,
         "row_receipts": row_receipts,
     }
     return prompt_rows, response_rows, draft_attention_rows, custody
