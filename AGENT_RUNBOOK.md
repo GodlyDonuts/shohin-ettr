@@ -1,5 +1,21 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **MPR2 BOOTSTRAP DRAFT-OWNER REVISION FROZEN — 2026-08-09:** MPR1 proved
+> generic all-layer post-MoE SFT useful but its weak original draft harmful.
+> MPR2 changes only draft quality. The exact MPR1 hidden/source-only checkpoint
+> at update 256 (SHA-256 `6cbe9fdc...610d`) becomes a trained first-pass owner;
+> it scored `247/1,289` with domains `57/182/8` and zero token exhaustion.
+> Eight independent H100 shards will generate one deterministic owner draft per
+> 5,824 unique training source. A fresh, unchanged all-16-layer rank-18 shared
+> residual then trains for 256 updates on aligned drafts, same-task nearest-
+> length shuffled drafts, and a full-model draft-hidden/source-only control.
+> Frozen development requires aligned `>=286`, `>=+39` over the direct owner,
+> `>=+13` over both trained controls, domains `>=57/182/8`, and semantic net
+> `>=13`, with complete hashes and 4,096-token custody. A miss closes exact
+> MPR2 without nearby variants; only a conjunctive pass opens one sealed
+> holdout and then staged larger-MoE transfer. Contract:
+> `docs/research/SHOHIN_MPR2_BOOTSTRAP_DRAFT_REVISION.md`.
+
 > **MPR1 PRACTICAL SMALL-MOE REVISION CLOSED NEGATIVE — 2026-08-09:** The mission is
 > now a meaningful causal model-owned draft-to-revision gain on pinned OLMoE,
 > not dense parity or router novelty. Dense NDR1 GPU dispatchers

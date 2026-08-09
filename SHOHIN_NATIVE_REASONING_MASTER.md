@@ -11,7 +11,7 @@ policy selects one complete trajectory. At inference there is no external
 proposal model, verifier, correctness bit, benchmark router, solver, tool, or
 teacher.
 
-The latest prospective gate was MPR1 on pinned small OLMoE, using a rank-18
+The latest completed gate was MPR1 on pinned small OLMoE, using a rank-18
 shared residual after all 16 MoE blocks. MPR1 closed negative: aligned exact
 OLMoE-owned drafts score `233/1,289`, while same-task nearest-length shuffled
 drafts and the full-model hidden-draft/source-only arm each score `247`; the
@@ -21,6 +21,17 @@ both causal controls and code falls from five to four. The current weak OLMoE
 draft is not an information-bearing revision input. Holdout and larger-MoE
 transfer remain sealed. Dense NDR1 GPU work was canceled before allocation;
 its CPU source artifact completed but is no longer the critical path.
+
+The active bounded successor is MPR2, Bootstrap Draft-Owner Revision. It uses
+MPR1's successful source-only arm as a trained first-pass owner rather than
+retrying adapter geometry. That owner scores `247/1,289` with domains
+`57/182/8` and zero token exhaustion. MPR2 generates one immutable owner draft
+per unique training source, then trains fresh identical residuals on aligned,
+same-task nearest-length shuffled, and full-model draft-hidden curricula. Its
+prospective gate is aligned `>=286`, `>=+39` over the owner, `>=+13` over both
+trained controls, domains `>=57/182/8`, and semantic net `>=13`. Holdout and
+larger-MoE transfer remain sealed until every condition passes. Exact contract:
+`docs/research/SHOHIN_MPR2_BOOTSTRAP_DRAFT_REVISION.md`.
 
 This changed factor is strongly supported on dense models. Matched trained
 revision versus unchanged second-pass gains are:
