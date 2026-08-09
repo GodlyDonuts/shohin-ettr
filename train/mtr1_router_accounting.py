@@ -39,7 +39,10 @@ def _tensor_name_sha256(names: list[str]) -> str:
 
 
 def summarize_router_logits(
-    router_logits: tuple[Any, ...], attention_mask: Any, top_k: int
+    router_logits: tuple[Any, ...],
+    attention_mask: Any,
+    top_k: int,
+    normalize_topk: bool = False,
 ) -> list[dict[str, Any]]:
     """Return exact selected-expert accounting for each MoE layer."""
 
@@ -58,7 +61,8 @@ def summarize_router_logits(
         selected_logits = logits[valid].float()
         probabilities = selected_logits.softmax(dim=-1)
         top_values, top_indices = probabilities.topk(top_k, dim=-1)
-        top_values = top_values / top_values.sum(dim=-1, keepdim=True)
+        if normalize_topk:
+            top_values = top_values / top_values.sum(dim=-1, keepdim=True)
         counts = torch.bincount(top_indices.reshape(-1), minlength=num_experts)
         weights = torch.zeros(num_experts, device=logits.device, dtype=torch.float32)
         weights.scatter_add_(0, top_indices.reshape(-1), top_values.reshape(-1))
@@ -144,6 +148,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     config = backbone.config
     top_k = int(config.num_experts_per_tok)
     num_experts = int(config.num_experts)
+    normalize_topk = bool(config.norm_topk_prob)
     trainable_state_names: list[str] = []
     if args.adapter_checkpoint is not None:
         payload = torch.load(args.adapter_checkpoint, map_location="cpu", weights_only=False)
@@ -181,7 +186,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 logits_to_keep=1,
             )
         summaries = summarize_router_logits(
-            output.router_logits, encoded["attention_mask"], top_k
+            output.router_logits,
+            encoded["attention_mask"],
+            top_k,
+            normalize_topk,
         )
         for summary in summaries:
             layer = int(summary["layer"])
@@ -247,6 +255,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "peak_gpu_memory_bytes": int(torch.cuda.max_memory_allocated()),
         "num_experts": num_experts,
         "experts_per_token": top_k,
+        "normalize_topk_prob": normalize_topk,
         "parameter_accounting": _parameter_accounting(backbone, top_k, num_experts),
         "layers": layers,
     }

@@ -28,3 +28,13 @@ def test_router_summary_rejects_empty_mask() -> None:
         assert "empty" in str(error)
     else:
         raise AssertionError("empty accounting must fail")
+
+
+def test_router_summary_respects_unnormalized_topk_weights() -> None:
+    logits = torch.tensor([[10.0, 9.0, -10.0], [0.0, 1.0, 0.0]])
+    mask = torch.ones(1, 2)
+    raw = summarize_router_logits((logits,), mask, top_k=1, normalize_topk=False)[0]
+    normalized = summarize_router_logits(
+        (logits,), mask, top_k=1, normalize_topk=True
+    )[0]
+    assert raw["expert_weight_share"][0] != normalized["expert_weight_share"][0]
