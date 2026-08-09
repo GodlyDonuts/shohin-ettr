@@ -1,0 +1,56 @@
+{
+  "decision": "close_exact_vfr1_teacher_format_before_full_generation",
+  "gate_pass": false,
+  "gates": {
+    "all_scores_structured": true,
+    "exhaustion_at_most_0_10": false,
+    "parse_at_least_0_95": false,
+    "reference_leak_at_most_0_02": true,
+    "verified_at_least_0_90": false,
+    "zero_boxed_answers_in_fault": true
+  },
+  "job_id": 747591,
+  "metrics": {
+    "elapsed_seconds": 1966.1685768868774,
+    "exhaustion_fraction": 0.4140625,
+    "fault_blocks_with_boxed_answer": 0,
+    "generated_tokens": 67076,
+    "generated_tokens_per_second": 34.11508086768655,
+    "malformed_scores": 0,
+    "max_token_exhausted": 53,
+    "parse_fraction": 0.0546875,
+    "parsed": 7,
+    "peak_gpu_memory_bytes": 20040122880,
+    "raw_completion_correct": 67,
+    "raw_completion_correct_fraction": 0.5234375,
+    "reference_leak_fraction": 0.0,
+    "reference_leaks": 0,
+    "rows": 128,
+    "strict_revision_verified": 7,
+    "strict_revision_verified_fraction": 0.0546875
+  },
+  "provenance": {
+    "adapter_checkpoint_sha256": "854a7cc44fbc2b54418f4e5bd09b7efeed0da44fc9ce217b0bb6b1997b722971",
+    "model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+    "quality_report_sha256": "96244f9ae23e64113e8d9f7ea2711347e9ca153e605e96c29987ad7a0b7338b9",
+    "request_report_sha256": "96b24a45f7ce530ea0f3330292c7f57d878c898796e6999699e48729d9557af0",
+    "requests_sha256": "9c312d93ba823da3158c96a49462fc3233cda0389169c7deb02ad262c4f11f9e",
+    "trace_report_sha256": "5d9286c0db15d5f3d506e19c5c4d5302149359605a6f1b37a8cc7b62c750cbd5",
+    "traces_sha256": "9e0d78126e8bc8cb349f9f431b497f43d2f3231db753b803d2102b67b9308c5d"
+  },
+  "raw_completion_attribution": {
+    "correct_by_target_kind": {
+      "shortest_verified_candidate": 21,
+      "source_verified_repair": 27,
+      "verified_candidate": 19
+    },
+    "correct_by_task": {
+      "bbh_logic": 40,
+      "math500": 27,
+      "mbpp": 0
+    },
+    "method": "read-only scoring of complete raw teacher output with the original per-row assessor; not a parser rescue or capability score"
+  },
+  "schema": "shohin-vfr1-pilot-result-v1",
+  "status": "complete"
+}

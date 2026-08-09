@@ -1,6 +1,27 @@
 # VFR1: Verified Fault-First Revision
 
-Status: train-only trace-quality pilot frozen before CUDA output.
+Status: closed negative after the sole frozen train-only quality pilot.
+
+## Result
+
+Job `747591` completed all 128 deterministic rows in 1,966.17 seconds. Only
+`7/128 = 5.47%` outputs satisfied the strict two-block parser and all seven
+extracted revisions verified. There were no reference leaks or boxed answers
+inside parsed FAULT blocks, but `53/128 = 41.41%` outputs exhausted the 1,024
+token budget. The other 121 outputs failed tag cardinality.
+
+A single read-only attribution scored the unparsed raw completions directly
+with the original per-row assessors. Only `67/128 = 52.34%` were correct:
+math `27/67`, logic/science `40/55`, and code `0/6`. Thus the failure is not
+merely strict-format compliance; the teacher outputs also miss the frozen
+90% correctness floor by a large margin. The full generation, capability
+data, matched fits, and development evaluation were not authorized. Jobs
+`747593--747600`, `747602`, and `747603` were canceled before allocation.
+
+Trace SHA-256 is `9e0d7812...8c5d`, trace-report SHA-256 is
+`5d9286c0...cbd5`, and quality-report SHA-256 is `96244f9a...38b9`. The
+machine-readable summary is `SHOHIN_VFR1_PILOT_RESULT.json`. Close exact VFR1
+without a teacher-prompt, decoding, context, parser, seed, or threshold rescue.
 
 ## Measured bottleneck
 

@@ -57,13 +57,17 @@ solutions exist, but post-hoc self-evaluation remains weaker than preserving
 the qualified first revision. The practical next step must improve the
 proposal/revision computation itself rather than stack another selector.
 
-The active bounded successor attacks a concrete supervision defect. Of 9,655
-IDR1 presentations, 3,294 source-verified repairs have median target length 11
-characters and 3,245 are boxed-answer-only. VFR1 first generates a train-only
-fault diagnosis followed by a complete verified revision, so the replacement
-tokens can causally attend to a model-owned error representation. A 128-row
-teacher-quality pilot precedes any full corpus or capability fit. This is a
-data-and-computation intervention, not yet a capability result.
+The concrete IDR1 supervision defect remains real: of 9,655 presentations,
+3,294 source-verified repairs have median target length 11 characters and
+3,245 are boxed-answer-only. VFR1 tested whether pinned Qwen3.5-9B+B1 could
+replace those targets with train-only fault diagnoses plus complete verified
+revisions. Its sole 128-row quality pilot closed decisively: only `7/128`
+strict traces parsed and verified, while `53/128` exhausted 1,024 tokens.
+Scoring the complete raw outputs directly recovered only `67/128`, including
+zero of six code rows. Therefore this is not just a tag/parser issue; the
+offline teacher is too unreliable for the proposed corpus. Full generation
+and capability fitting were never authorized, and exact VFR1 is closed
+without format, decoding, context, seed, or threshold rescue.
 
 ### Current blocker: dense-to-MoE transfer
 

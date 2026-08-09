@@ -1,5 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **VFR1 CLOSED BEFORE FULL GENERATION — 2026-08-09:** The sole frozen
+> 128-row train-only teacher pilot `747591` completed in 1,966.17 seconds but
+> produced only `7/128 = 5.47%` strict FAULT/REVISION parses and verified
+> revisions. `53/128 = 41.41%` exhausted 1,024 tokens; 121 failed tag
+> cardinality. Reference leakage and boxed answers inside parsed FAULT blocks
+> were both zero. A single read-only attribution scored complete raw teacher
+> outputs directly: only `67/128 = 52.34%` were correct, with math `27`,
+> logic/science `40`, and code `0`. This is a content failure as well as a
+> format failure. Trace SHA is `9e0d7812...8c5d`; report SHA is
+> `5d9286c0...cbd5`; quality SHA is `96244f9a...38b9`. Fail-closed scorer
+> `747592` exited 3 as designed. Full jobs `747593--747600` and dependent
+> merge/data jobs `747602/747603` were canceled before allocation. Close exact
+> VFR1 with no prompt/decoding/context/parser/seed rescue. Result:
+> `docs/research/SHOHIN_VFR1_PILOT_RESULT.json`.
+
 > **VFR1 TRAIN-ONLY QUALITY PILOT FROZEN — 2026-08-09:** A direct audit of
 > immutable IDR1 training data finds 3,294 source-verified-repair presentations
 > with median target length 11 characters; 3,245 are boxed-answer-only and
