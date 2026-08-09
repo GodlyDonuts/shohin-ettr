@@ -1,5 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **ECR1 FROZEN / DREM1 DEMOTED — 2026-08-09:** DREM1 is preserved only as
+> an unmatched upper-bound diagnostic. Its pending mechanics job `747085` was
+> canceled before allocation and charged zero H100 time. The decisive MoE lane
+> is ECR1: the final four frozen OLMoE sparse blocks receive a same-pass
+> post-MoE residual keyed by the native frozen top-8 expert identities. ECR1
+> has exactly `515,840` trainables and no prepass or router/expert trainables;
+> its same-location shared rank-32 control has exactly `524,288`. A third arm
+> makes the complete draft causally unavailable through geometry-preserving
+> draft-key attention masks at 4,096 context. Exact development, semantic,
+> draft-causality, expert-code intervention, domain, and accounting gates are
+> frozen in `docs/research/SHOHIN_ECR1_EXPERT_CONDITIONED_REVISION.md`.
+> Implementation and focused tests are complete locally. Finish read-only
+> route attribution `747082`, then run exactly one one-update ECR mechanics
+> receipt before any 256-update fit. Holdout remains sealed.
+
 > **DREM1 FROZEN / ROUTE ATTRIBUTION LIVE — 2026-08-09:** Read-only semantic
 > attribution proves MTR1's strict `+13` is mostly serialization: at least
 > `11/16` repairs are certified formatting-only, at most five are possible

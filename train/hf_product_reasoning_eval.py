@@ -697,6 +697,17 @@ def _load_model(
             collapse_weight=float(metadata["collapse_weight"]),
             context_control=str(metadata.get("drem1_context_control", "normal")),
         ).to("cuda:0")
+    elif metadata.get("architecture") == "shohin-ecr1-moe-revision-v1":
+        from ecr1_moe_revision import ECR1Config, ECR1ProductModel
+
+        ecr = metadata.get("ecr1_config")
+        if not isinstance(ecr, dict):
+            raise ProductEvalError("ECR1 checkpoint config is missing")
+        model = ECR1ProductModel(
+            backbone,
+            ECR1Config(**ecr),
+            draft_control=str(metadata.get("ecr1_draft_control", "normal")),
+        ).to("cuda:0")
     else:
         model = ProductReasoningModel(
             backbone=backbone,
@@ -919,6 +930,13 @@ def _generate_completions(
             encoded["input_ids"],
             encoded["attention_mask"],
         )
+    if adapter and hasattr(model, "prepare_generation_draft_attention"):
+        model.prepare_generation_draft_attention(
+            tokenizer,
+            rendered,
+            encoded["input_ids"],
+            encoded["attention_mask"],
+        )
     prompt_width = int(encoded["input_ids"].shape[1])
     with torch.inference_mode():
         generation_arguments = _generation_arguments(generation_mode, max_new_tokens)
@@ -967,6 +985,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     )
     if hasattr(model, "set_selection_strategy"):
         model.set_selection_strategy(args.ltm_selection)
+    if hasattr(model, "set_code_intervention"):
+        model.set_code_intervention(args.ecr_code_intervention)
     _set_inference_control(model, adapter_metadata, args.qpt_control)
     if hasattr(model, "reset_routing_receipt"):
         model.reset_routing_receipt()
@@ -1131,6 +1151,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "enable_thinking": args.enable_thinking,
         "ltm_selection": args.ltm_selection,
         "qpt_control": args.qpt_control,
+        "ecr_code_intervention": args.ecr_code_intervention,
         "effective_enable_thinking": (
             args.enable_thinking if args.adapter_checkpoint is None else False
         ),
@@ -1197,6 +1218,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--qpt-control",
         choices=("normal", "packet_swap", "state_reset", "release_off"),
+        default="normal",
+    )
+    parser.add_argument(
+        "--ecr-code-intervention",
+        choices=("normal", "zero", "mean", "permutation"),
         default="normal",
     )
     args = parser.parse_args()

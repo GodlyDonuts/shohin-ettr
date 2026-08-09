@@ -1,7 +1,14 @@
 # DREM1: Draft-Conditioned Recurrent Expert Modulation
 
-Status: frozen small-MoE development contract, 2026-08-09. No capability
-training or holdout access is authorized by this document alone.
+Status: preserved unmatched upper-bound diagnostic, superseded by ECR1 on
+2026-08-09. No DREM1 capability training or holdout access is authorized.
+
+Independent review found decisive confounds: the controller is static across
+generated tokens, draft masking only zeroed pooled draft state, the controller
+requires an extra frozen-backbone pass, its approximately 6.84M trainables are
+unmatched to MTR1, and the 1,024-token default risks truncation. Pending job
+`747085` was canceled before allocation. The identifying successor is
+`SHOHIN_ECR1_EXPERT_CONDITIONED_REVISION.md`.
 
 ## Evidence boundary
 
