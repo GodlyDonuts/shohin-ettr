@@ -11,6 +11,11 @@
 > excluded; any truncating source is rejected from both arms. Dispatcher
 > `747625` is held after data admission and will launch exactly one one-update
 > mechanics job, then matched 512-update aligned/shuffled fits only on success.
+> Evaluation armer `747637` is held after `747625`; it recovers the dynamically
+> created fit IDs and dependency-gates eight development shards per arm, two
+> merges, and the frozen comparator. Its immutable runtime is
+> `cfr1_79b5272_r1` with manifest SHA-256
+> `e619de606c894f2c77631af3d41f83e9331146da909eb50c08bf86279be83bda`.
 > Frozen promotion is aligned `>=603/1,289`, `>=+10` over shuffled, and domains
 > `223/349/17`; any miss closes exact CFR1 without variants. Runtime
 > `cfr1_fe80947_r2` manifest SHA is `a9249af1...92c2`. Holdout remains sealed.
