@@ -15,6 +15,19 @@
 > MPR2 without nearby variants; only a conjunctive pass opens one sealed
 > holdout and then staged larger-MoE transfer. Contract:
 > `docs/research/SHOHIN_MPR2_BOOTSTRAP_DRAFT_REVISION.md`.
+> Runtime `mpr2_378a10a_r1` verifies with SHA256SUMS SHA-256
+> `cb0a3c42...dfa`. Draft jobs `747921--747928` completed in 2.4--4.2
+> minutes and produced 5,823 unique owner drafts / 61,263 tokens, median 7,
+> p95 10, p99 76, with 8/5,823 exhaustion. Merged draft SHA-256 is
+> `0399dbba...d68`. The first CPU builder `747930` failed before output on
+> repeated-presentation draft-length bookkeeping; exact patch `378a10a`
+> fixed it without regenerating drafts. Replacement `747938` then admitted all
+> 9,651 train presentations and all 1,289 development rows, rejected zero,
+> kept max train sequence 2,417/4,096, matched 1,575,873 target tokens/arm,
+> and achieved p95 shuffled-draft length delta zero. Mechanics `747941`
+> passed in 43 seconds at loss `0.7006`, gnorm `39.75`, and 725 tok/s. Fits
+> `747942/747943/747944` (aligned/shuffled/hidden) are live; evaluation jobs
+> `747945--747973` are dependency-armed.
 
 > **MPR1 PRACTICAL SMALL-MOE REVISION CLOSED NEGATIVE — 2026-08-09:** The mission is
 > now a meaningful causal model-owned draft-to-revision gain on pinned OLMoE,
