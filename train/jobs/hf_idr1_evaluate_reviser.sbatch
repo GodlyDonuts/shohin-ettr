@@ -30,6 +30,7 @@ set -euo pipefail
 SHARD_INDEX=${SHARD_INDEX:-0}
 SHARD_COUNT=${SHARD_COUNT:-1}
 MODEL_LOADER=${MODEL_LOADER:-auto}
+ECR_CODE_INTERVENTION=${ECR_CODE_INTERVENTION:-normal}
 
 BASE=/lustre/fs1/home/sa305415/shohin
 PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
@@ -96,6 +97,7 @@ nvidia-smi
   --batch-size 2 \
   --max-new-tokens 768 \
   --seed 2026080816 \
+  --ecr-code-intervention "$ECR_CODE_INTERVENTION" \
   --shard-index "$SHARD_INDEX" \
   --shard-count "$SHARD_COUNT"
 

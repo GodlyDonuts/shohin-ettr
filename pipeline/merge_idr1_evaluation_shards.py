@@ -55,6 +55,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "max_new_tokens",
         "batch_size",
         "seed",
+        "ecr_code_intervention",
     )
     reference = reports[0]
     for report_path, report in zip(args.shard_report, reports, strict=True):
@@ -108,6 +109,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "peak_gpu_memory_bytes": max(
             report["peak_gpu_memory_bytes"] for report in reports
         ),
+        "routing_receipts": [report.get("routing_receipt") for report in reports],
         "candidates_output": str(args.candidates_output.resolve()),
         "candidates_sha256": candidate_sha256,
         **summary,

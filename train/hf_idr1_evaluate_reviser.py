@@ -163,6 +163,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     model, adapter_metadata, model_loader = _load_model(
         args.model_root, args.adapter_checkpoint, args.model_loader
     )
+    if hasattr(model, "set_code_intervention"):
+        model.set_code_intervention(args.ecr_code_intervention)
+    if hasattr(model, "reset_routing_receipt"):
+        model.reset_routing_receipt()
     stop_token_ids = _generation_stop_token_ids(tokenizer)
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
@@ -226,6 +230,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "adapter_checkpoint": str(args.adapter_checkpoint.resolve()),
         "adapter_checkpoint_sha256": sha256_file(args.adapter_checkpoint),
         "adapter_metadata": adapter_metadata,
+        "ecr_code_intervention": args.ecr_code_intervention,
+        "routing_receipt": (
+            model.routing_receipt() if hasattr(model, "routing_receipt") else None
+        ),
         "data": str(args.data.resolve()),
         "data_sha256": sha256_file(args.data),
         "data_report": str(args.data_report.resolve()),
@@ -278,6 +286,11 @@ def main() -> int:
     parser.add_argument("--seed", type=int, default=2026080816)
     parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--shard-count", type=int, default=1)
+    parser.add_argument(
+        "--ecr-code-intervention",
+        choices=("normal", "zero", "mean", "permutation"),
+        default="normal",
+    )
     args = parser.parse_args()
     report = run(args)
     print(json.dumps({"gate": report["gate"], "metrics": report["metrics"]}, indent=2))
