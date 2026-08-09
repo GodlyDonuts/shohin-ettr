@@ -47,7 +47,7 @@ report_path, checkpoint_path = map(Path, sys.argv[1:3])
 report = json.loads(report_path.read_text())
 checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
 metadata = checkpoint.get("metadata", {})
-if report.get("status") != "complete" or report.get("update") != 256:
+if report.get("status") != "complete" or report.get("updates") != 256:
     raise SystemExit("KR2 train report is incomplete")
 if checkpoint.get("update") != 256:
     raise SystemExit("KR2 checkpoint update differs")
