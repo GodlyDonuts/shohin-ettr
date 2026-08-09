@@ -159,3 +159,7 @@ def test_full_intervention_changes_router_and_selected_expert_output() -> None:
     expert_only = wrapped(hidden)
     assert not torch.equal(full, router_only)
     assert not torch.equal(full, expert_only)
+    receipt = wrapped.routing_receipt()
+    assert receipt["forwards"] == 3
+    assert receipt["tokens"] == 18
+    assert receipt["active_experts"] > 0

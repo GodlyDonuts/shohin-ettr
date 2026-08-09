@@ -968,6 +968,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if hasattr(model, "set_selection_strategy"):
         model.set_selection_strategy(args.ltm_selection)
     _set_inference_control(model, adapter_metadata, args.qpt_control)
+    if hasattr(model, "reset_routing_receipt"):
+        model.reset_routing_receipt()
     stop_token_ids = _generation_stop_token_ids(tokenizer)
 
     random.seed(args.generation_seed)
@@ -1117,6 +1119,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             str(args.adapter_checkpoint.resolve()) if args.adapter_checkpoint else None
         ),
         "adapter_metadata": adapter_metadata,
+        "routing_receipt": (
+            model.routing_receipt() if hasattr(model, "routing_receipt") else None
+        ),
         "task": args.task,
         "data": str(args.data.resolve()),
         "data_sha256": hashlib.sha256(data_bytes).hexdigest(),

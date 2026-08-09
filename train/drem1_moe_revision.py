@@ -190,6 +190,7 @@ class DraftConditionedMoEBlock(nn.Module):
         self._controller_state: torch.Tensor | None = None
         self._mode = "full"
         self.last_metrics: dict[str, torch.Tensor] = {}
+        self.reset_routing_receipt()
 
     def set_controller_state(self, state: torch.Tensor, mode: str = "full") -> None:
         if mode not in self.MODES:
@@ -202,6 +203,42 @@ class DraftConditionedMoEBlock(nn.Module):
     def clear_controller_state(self) -> None:
         self._controller_state = None
         self.last_metrics = {}
+
+    def reset_routing_receipt(self) -> None:
+        self._receipt_forwards = 0
+        self._receipt_tokens = 0
+        self._receipt_route_l1: torch.Tensor | None = None
+        self._receipt_top1_changes: torch.Tensor | None = None
+        self._receipt_entropy: torch.Tensor | None = None
+        self._receipt_expert_counts: torch.Tensor | None = None
+
+    def routing_receipt(self) -> dict[str, Any]:
+        if not self._receipt_forwards or self._receipt_route_l1 is None:
+            return {"forwards": 0, "tokens": 0}
+        assert self._receipt_top1_changes is not None
+        assert self._receipt_entropy is not None
+        assert self._receipt_expert_counts is not None
+        counts = self._receipt_expert_counts.float().cpu()
+        shares = counts / counts.sum().clamp_min(1)
+        nonzero = shares[shares > 0]
+        return {
+            "forwards": self._receipt_forwards,
+            "tokens": self._receipt_tokens,
+            "route_probability_l1_mean": float(
+                self._receipt_route_l1.cpu() / self._receipt_forwards
+            ),
+            "top1_change_rate": float(
+                self._receipt_top1_changes.cpu() / self._receipt_tokens
+            ),
+            "route_entropy_normalized_mean": float(
+                self._receipt_entropy.cpu() / self._receipt_forwards
+            ),
+            "active_experts": int((counts > 0).sum()),
+            "selected_expert_entropy_normalized": float(
+                -(nonzero * nonzero.log()).sum() / math.log(self.config.num_experts)
+            ),
+            "expert_counts": counts.to(torch.int64).tolist(),
+        }
 
     def configure_trainable_mode(self, mode: str) -> None:
         if mode not in self.MODES:
@@ -250,7 +287,7 @@ class DraftConditionedMoEBlock(nn.Module):
         expanded_state = (
             state[:, None, :].expand(batch, sequence, -1).reshape(-1, state.shape[-1])
         )
-        base_logits, _, _ = self.base.gate(flattened)
+        base_logits, _, base_top_k_index = self.base.gate(flattened)
         if self._mode == "expert_only":
             router_logits = base_logits
         else:
@@ -288,6 +325,34 @@ class DraftConditionedMoEBlock(nn.Module):
                 - normalized_entropy
             ).square(),
         }
+        detached_l1 = self.last_metrics["route_probability_l1"].detach()
+        detached_entropy = normalized_entropy.detach()
+        detached_changes = (top_k_index[:, 0] != base_top_k_index[:, 0]).sum().detach()
+        detached_counts = torch.bincount(
+            top_k_index.reshape(-1), minlength=self.config.num_experts
+        ).detach()
+        self._receipt_forwards += 1
+        self._receipt_tokens += int(flattened.shape[0])
+        self._receipt_route_l1 = (
+            detached_l1
+            if self._receipt_route_l1 is None
+            else self._receipt_route_l1 + detached_l1
+        )
+        self._receipt_top1_changes = (
+            detached_changes
+            if self._receipt_top1_changes is None
+            else self._receipt_top1_changes + detached_changes
+        )
+        self._receipt_entropy = (
+            detached_entropy
+            if self._receipt_entropy is None
+            else self._receipt_entropy + detached_entropy
+        )
+        self._receipt_expert_counts = (
+            detached_counts
+            if self._receipt_expert_counts is None
+            else self._receipt_expert_counts + detached_counts
+        )
         return output.reshape(batch, sequence, hidden)
 
 
@@ -390,6 +455,16 @@ class DREM1ProductModel(nn.Module):
     def clear_context(self) -> None:
         for block in self.blocks:
             block.clear_controller_state()
+
+    def reset_routing_receipt(self) -> None:
+        for block in self.blocks:
+            block.reset_routing_receipt()
+
+    def routing_receipt(self) -> dict[str, Any]:
+        return {
+            "controlled_layers": len(self.blocks),
+            "layers": [block.routing_receipt() for block in self.blocks],
+        }
 
     def forward_batch(
         self,
