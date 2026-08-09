@@ -1,6 +1,6 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **ESR1 OLMO2-7B DEVELOPMENT GATE LIVE — 2026-08-08 22:52 EDT:** SCTR1
+> **ESR1 OLMO2-7B CLOSED NEGATIVE — 2026-08-08 23:07 EDT:** SCTR1
 > attribution proved selector headroom is only `1/1,289`, so the next bounded
 > mechanism targets revision capability directly. Error-Syndrome Revision
 > trains the existing eight-step recurrent workspace to align its 16-state
@@ -12,16 +12,21 @@
 > Private main `9253961`; immutable Newton runtime
 > `esr1_9253961_r8`, SHA256SUMS SHA-256
 > `a235e7ca81e0a77b86cd62f540b64b7b4db36507b157460654fa790c699b636b`.
-> Dispatcher `746560` completed. Fits `746561` (syndrome, evc29) and `746562`
-> (identical workspace without syndrome loss, evc34) are live for exactly 256
-> updates each. Evaluation release `746563` is dependency-held; after both
-> checkpoints exist it resolves their hashes, launches eight development
-> shards per arm, merges exactly, and compares against frozen always-revise
-> `259/1,289`. First treatment syndrome loss fell `0.998 -> 0.939` by update
-> 8; control reached update 24. Pass requires `>=+5` points versus always,
-> `>=+3` versus matched workspace, nonnegative math/logic/code deltas, and
-> complete 1,289-identity coverage. Holdout remains sealed. A failure closes
-> this exact weight/width/duration/seed family.
+> Fits `746561/746562` completed all 256 updates. Exact development comparison
+> `746600` scores syndrome `255/1,289 = 19.7828%`, identical workspace
+> `239 = 18.5415%`, and always-revise `259 = 20.0931%`. Syndrome adds 16
+> answers (`+1.2413` points) over its causal workspace control but remains
+> four below the simpler reviser (`-0.3103` points); deltas versus always are
+> math `-9`, logic/science `+9`, and code `-4`. Every substantive gate fails;
+> holdout remains sealed and this exact family is closed. Final syndrome loss
+> was `0.95396`. Comparison SHA-256 is `de34596b...10ab4`.
+>
+> Evaluation jobs `746587/746588` failed only because `evc46` exposed no CUDA
+> device. Exact shard replacements `746597/746598` completed on `evc49`; the
+> poisoned merge/comparison were replaced by `746599/746600`. Repair receipt
+> SHA-256 is `e9e86746...59d5`. Dispatcher source is corrected so comma-valued
+> excludes are not truncated by Slurm `--export` in future runs. No Newton
+> jobs remain live.
 
 > **SCTR1 OLMO2-7B CLOSED NEGATIVE — 2026-08-08 22:25 EDT:** complete
 > development comparison `746537` closed across all `1,289` identities;

@@ -38,7 +38,7 @@ complete development conjunction passes.
 
 ## Latest Practical Reasoning Campaign — 2026-08-08
 
-**ESR1 is the active bounded successor.** Read-only SCTR1 attribution shows
+**ESR1 is closed negative.** Read-only SCTR1 attribution showed
 that perfect draft/revision selection could add only one correct answer in
 1,289 cases; revision capability, not commitment, is the measured bottleneck.
 Error-Syndrome Revision therefore adds a recurrent model-owned correction
@@ -48,12 +48,15 @@ one complete correction without a verifier, teacher, or external tool at
 inference. The causal control has the identical recurrent workspace, LoRA,
 data, seed, updates, token budget, and evaluator but no syndrome objective.
 
-OLMo2-7B jobs `746561/746562` are live for 256 matched updates; release
-`746563` will automatically launch eight evaluation shards per arm and one
-exact comparison. Promotion requires at least +5 points over always-revise,
-+3 over the same-workspace control, no math/logic/code regression, and full
-1,289-row coverage. Holdout stays sealed unless all conditions pass. This is
-a direct capability test, not a claim that embedding residuals are novel.
+On OLMo2-7B, syndrome supervision reaches `255/1,289 = 19.78%`, compared with
+`239 = 18.54%` for the identical workspace and `259 = 20.09%` for direct
+always-revise. The auxiliary objective therefore causes a real but small
+`+1.24`-point effect over the workspace control while failing to recover the
+simpler model. Math and code regress by 9 and 4 answers versus always-revise;
+only logic/science gains 9. All gates fail, holdout remains sealed, and no
+nearby objective-weight/width/duration/seed variant is authorized. This closes
+embedding-residual workspace alignment as the immediate repair mechanism and
+leaves direct trained temporal revision as the strongest transferable route.
 See `docs/research/SHOHIN_ERROR_SYNDROME_REVISION.md`.
 
 **SCTR1 fails on OLMo2-7B and is closed without holdout.** Selective

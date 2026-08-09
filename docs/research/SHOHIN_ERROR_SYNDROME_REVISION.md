@@ -1,6 +1,6 @@
 # Error-Syndrome Revision (ESR1)
 
-Status: frozen development gate; sealed holdout remains unopened.
+Status: closed negative on development; sealed holdout remains unopened.
 
 ## Motivation
 
@@ -61,3 +61,32 @@ ESR1 passes only if all conditions hold:
 Only a conjunctive pass authorizes the sealed holdout. A failure closes this
 exact objective without weight, width, duration, seed, prompt, or threshold
 variants.
+
+## Result
+
+Jobs `746561/746562` completed all 256 matched updates. Sixteen development
+shards completed after exact replacements `746597/746598` for two jobs that
+landed on `evc46`, where no CUDA device was exposed. The replacements changed
+no scientific setting. Exact comparison `746600` produced:
+
+| Arm | Correct | Accuracy |
+|---|---:|---:|
+| ESR1 syndrome | 255/1,289 | 19.7828% |
+| Same-workspace control | 239/1,289 | 18.5415% |
+| Standard always-revise | 259/1,289 | 20.0931% |
+
+The syndrome objective adds 16 answers, or 1.2413 points, over the identical
+workspace. It nevertheless trails the simpler always-revise model by four
+answers, or 0.3103 points. Versus always-revise, domain correct-count deltas
+are math `-9`, logic/science `+9`, and executable code `-4`. All substantive
+promotion gates fail. Final syndrome loss is `0.95396`; the correction target
+did not become a sharply aligned latent direction.
+
+The qualified finding is narrow: embedding-residual supervision causes a
+small improvement over an otherwise identical recurrent workspace, but the
+workspace itself is inferior to direct trained revision and ESR1 is not a
+transferable reasoning architecture. Holdout was not opened. Comparison
+SHA-256 is
+`de34596bf5efe0c76674a2c44fa9bcbd4e5d42911a45f8d5559dc6332a710ab4`.
+The two fits, sixteen successful shards, and two four/21-second infrastructure
+failures charged `0.763` aggregate H100-hours.
