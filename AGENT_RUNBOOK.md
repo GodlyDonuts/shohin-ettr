@@ -1,6 +1,6 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **RME1 DEVELOPMENT ACTIVE — 2026-08-09:** Routed Revision Micro-Experts
+> **RME1 CLOSED NEGATIVE — 2026-08-09:** Routed Revision Micro-Experts
 > replace the failed use of pretrained native expert identity with four new
 > revision-specific rank-8 experts, top two active, across all 16 sparse
 > layers. One-update mechanics job `747303` passed: exact `2,228,224`
@@ -9,16 +9,24 @@
 > routes active in every layer, and minimum load entropy `0.99536`. Exact
 > 256-update fits `747304--747306` completed cleanly with 338,620 charged
 > target tokens each; treatment throughput was `615.9` tok/s versus `782.2`
-> active-FLOP shared and `787.7` parameter-matched shared. Evaluations remain
-> unopened. Dispatcher `747307` failed before submissions on a stale data
+> active-FLOP shared and `787.7` parameter-matched shared. Dispatcher `747307`
+> failed before submissions on a stale data
 > path; retry `747308` also launched nothing because an escaped node list was
 > invalid and the dispatcher accepted empty job IDs. Preserve both failures.
-> The dispatcher is now fail-closed, and the next retry must use the verified
-> MTR1 development board SHA-256 `c936e950...37bc`, a fresh output root, and
-> no escaped node-list value. Stage 1 requires treatment `>=280`, `>=26` over
-> the stronger shared control, domain counts `>=55/180/5`, and noncollapsed
-> routing. Failure closes RME1 without variants; success alone opens causal
-> controls, never holdout directly.
+> Fail-closed retry `747313` then released 24 H100 shards `747314--747339`,
+> merges `747322/747331/747340`, and comparison `747341`. Treatment scores
+> `232/1,289 = 17.9984%`; equal-active-FLOP shared rank-18 scores `248 =
+> 19.2397%`; parameter-matched shared rank-34 scores `244 = 18.9294%`.
+> Treatment domains are math `53`, logic/science `172`, code `7`; minimum
+> evaluation load entropy is `0.99735`. Routing did not collapse, but the
+> treatment loses 16 answers to the stronger shared control and fails the
+> absolute, margin, and domain gates. Comparison SHA-256 is
+> `21a9309e1dc00f93037e06f8697713ec2874d5709e3c6deba9b826fc4ec37e8a`.
+> Stage 2 and holdout are unauthorized. Close RME1 without variants. The
+> active-FLOP shared residual is the strongest OLMoE development arm so far,
+> but still misses the capability gate; static expert identity is now closed
+> across router residual, expert code, native-expert ownership, and dedicated
+> revision-bank routing.
 
 > **SER1 CLOSED NEGATIVE — 2026-08-09:** SER1 replaced ECR's shared
 > transform/code modulation with complete rank-1 residual transforms owned by

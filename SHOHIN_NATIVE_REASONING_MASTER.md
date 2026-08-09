@@ -34,7 +34,7 @@ answers; the strict all-domain gate correctly fails.
 ### Current blocker: dense-to-MoE transfer
 
 The first sparse host is pinned `OLMoE-1B-7B-0125-Instruct`: 7B total,
-approximately 1B active, 64 experts, eight active per token. Four exact
+approximately 1B active, 64 experts, eight active per token. Five exact
 development gates are closed:
 
 1. **MTR1 shared-attention revision:** rank-8 LoRA in the final four shared
@@ -57,6 +57,12 @@ development gates are closed:
    complete expert-owned rank-1 transforms. Treatment scores `201/1,289`,
    versus active-FLOP shared `236` and total-parameter shared `241`; its
    logic/science count collapses to `139`. SER1 and its holdout are closed.
+5. **RME1 dedicated revision micro-experts:** four new rank-8 experts with a
+   separately trained balanced top-2 router at all 16 layers score
+   `232/1,289`, while equal-active-FLOP shared rank-18 reaches `248` and
+   parameter-matched shared rank-34 reaches `244`. All routes remain active
+   with minimum load entropy `0.99735`; specialization hurts without route
+   collapse. RME1 and its holdout are closed.
 
 These results do not show that temporal revision is incompatible with MoE.
 They show that shared correction capacity produces a modest effect, while
@@ -80,13 +86,14 @@ work returns exclusively to the MoE architecture problem:
 4. permit small expert-side revision adapters only if evidence indicates that
    routing among frozen experts lacks the needed computation.
 
-Post-MoE native-expert conditioning is now exhausted: static rerouting, code
-modulation, and whole expert-owned residual banks all fail against shared
-correction. Any final small-host MoE-native attempt must instead change where
-specialization is learned, such as a small bank of dedicated revision experts
-with its own balanced router or adapters inside native expert nonlinearities.
-It must beat active-FLOP and total-parameter shared controls before any holdout
-or large-MoE run; otherwise retire the small-OLMoE architecture-transfer lane.
+Static expert identity is now exhausted: token-local rerouting, code
+modulation, whole native-expert residual banks, and a separately routed
+revision-only expert bank all fail against shared correction. The final
+small-host MoE-native direction must be genuinely temporal: persistent causal
+revision state must update across generated tokens and alter later expert
+computation. It must beat the rank-18 shared residual and a parameter-matched
+temporal shared-state control before any holdout or large-MoE run; otherwise
+retire the small-OLMoE architecture-transfer lane.
 
 The small OLMoE development board remains the proving ground. Its sealed
 holdout and the larger `Qwen3.6-35B-A3B` campaign remain prohibited until a

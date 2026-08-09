@@ -26,7 +26,10 @@ It has **not yet transferred strongly to a sparse Mixture-of-Experts (MoE)
 host**. Small-OLMoE experiments show that late shared-attention adaptation,
 static router-logit residuals, and shared post-MoE residuals weakly modulated
 by native expert codes all provide at most modest gains. Giving each native
-expert its own residual transform performs worse than shared correction.
+expert its own residual transform or routing among a new revision-only expert
+bank performs worse than shared correction. The best current OLMoE arm is an
+all-layer shared rank-18 post-MoE residual at `248/1,289`, versus unchanged
+`191`; it is useful evidence but still below the frozen capability threshold.
 Solving that dense-to-MoE boundary is the current critical path.
 
 Historical ETTR graph-reactor and synthetic compiled-state experiments remain

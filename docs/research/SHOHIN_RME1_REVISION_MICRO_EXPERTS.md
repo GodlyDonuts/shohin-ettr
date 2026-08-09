@@ -1,7 +1,7 @@
 # RME1: Routed Revision Micro-Experts
 
-Status: frozen pre-mechanics contract, 2026-08-09. Development only; holdout
-and larger-MoE transfer remain sealed.
+Status: closed negative, 2026-08-09. Development only; holdout and larger-MoE
+transfer remain sealed.
 
 The one-update mechanics job `747303` completed cleanly before capability
 evaluation: exact `2,228,224` trainables, `73,728` adapter MAC/token/layer,
@@ -75,3 +75,20 @@ Interpretation is fixed. Beating active-FLOP but not parameter-matched shared
 means sparse conditional computation has not earned inclusion. Beating both,
 using all experts, and collapsing under route/expert interventions supports a
 revision-specific conditional-compute effect. Otherwise retire RME1.
+
+## Result
+
+All fits and 24 autonomous development shards completed exactly once.
+Treatment scores `232/1,289 = 17.9984%`, equal-active-FLOP shared rank-18
+scores `248 = 19.2397%`, and parameter-matched shared rank-34 scores `244 =
+18.9294%`. Treatment domains are math `53`, logic/science `172`, and code `7`.
+Every layer used all four revision experts and minimum normalized load entropy
+was `0.99735`, so this is not a load-collapse result. Treatment misses the
+absolute gate, loses 16 answers to its strongest shared control, and misses
+the math and logic/science floors. Comparison SHA-256 is
+`21a9309e1dc00f93037e06f8697713ec2874d5709e3c6deba9b826fc4ec37e8a`.
+
+RME1 is closed without Stage 2, holdout, or geometry variants. Its strongest
+matched control is the best OLMoE development arm observed so far, indicating
+that broad shared post-MoE correction remains useful while static learned
+expert specialization does not.
