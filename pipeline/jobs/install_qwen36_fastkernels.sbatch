@@ -26,7 +26,8 @@ export CAUSAL_CONV1D_FORCE_BUILD=TRUE
 "$PYTHON" -m pip install --no-deps --target "$PARTIAL" \
   einops==0.8.1 ninja==1.13.0 fla-core==0.4.2 flash-linear-attention==0.4.2
 PYTHONPATH="$PARTIAL" "$PYTHON" -m pip install --no-deps \
-  --no-build-isolation --target "$PARTIAL" causal-conv1d==1.6.2.post1
+  --no-build-isolation --no-cache-dir --no-binary causal-conv1d \
+  --target "$PARTIAL" causal-conv1d==1.6.2.post1
 
 PYTHONPATH="$PARTIAL" "$PYTHON" - <<'PY'
 import causal_conv1d
