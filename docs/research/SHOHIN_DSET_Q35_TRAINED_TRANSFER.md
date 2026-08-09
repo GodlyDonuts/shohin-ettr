@@ -13,6 +13,7 @@ embeddings, attention, and language head remain frozen.
 ## Frozen treatment and control
 
 - host: pinned Qwen3.6-35B-A3B, loaded in NF4 with BF16 compute;
+- quantizer: isolated `bitsandbytes==0.50.0`, manifest-bound in every job;
 - adapter: rank 18 after each of the final 16 MLP/MoE blocks, alpha 18,
   exactly 1,179,648 trainables;
 - data: a deterministic unchanged-text view of immutable DSET1 `dset1_r6`;
