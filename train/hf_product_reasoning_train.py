@@ -35,6 +35,7 @@ PRODUCT_SYSTEM_PROMPT = (
     "You are a careful reasoning assistant. Give concise, verifiable reasoning "
     "and a clearly marked final answer."
 )
+SYNDROME_WEIGHT = 0.25
 
 
 def render_reasoning_messages(
@@ -341,6 +342,7 @@ class ProductReasoningModel(nn.Module):
         if arm not in {
             "baseline",
             "ettr",
+            "syndrome",
             "dense",
             "ettr_residual",
             "dense_residual",
@@ -377,7 +379,9 @@ class ProductReasoningModel(nn.Module):
         )
         self.residual_gate: nn.Parameter | None = None
         if arm != "baseline":
-            effective_width = workspace_width if arm.startswith("ettr") else dense_width
+            effective_width = (
+                workspace_width if arm in {"ettr", "syndrome"} else dense_width
+            )
             self.workspace_config = IntegratedWorkspaceConfig(
                 backbone_width=hidden_size,
                 workspace_width=effective_width,
@@ -386,7 +390,7 @@ class ProductReasoningModel(nn.Module):
                 attention_heads=8,
                 ff_multiplier=4,
             )
-            if arm.startswith("ettr"):
+            if arm in {"ettr", "syndrome"}:
                 self.workspace = IntegratedReasoningWorkspace(self.workspace_config)
             else:
                 self.workspace = DenseReasoningWorkspace(self.workspace_config)
@@ -407,6 +411,7 @@ class ProductReasoningModel(nn.Module):
         response_rows: list[list[int]],
         pad_token_id: int,
         prompt_attention_rows: list[list[int]] | None = None,
+        draft_indicator_rows: list[list[int]] | None = None,
     ) -> tuple[torch.Tensor, dict[str, float]]:
         embedding = self.text_model.embed_tokens
         prefix = None
@@ -414,6 +419,8 @@ class ProductReasoningModel(nn.Module):
         halting_loss = torch.zeros((), device=embedding.weight.device)
         stop_probability = 0.0
         delta_norm = 0.0
+        syndrome_loss = torch.zeros((), device=embedding.weight.device)
+        workspace_states = None
         if self.workspace is not None:
             prompt_ids, prompt_mask = _pad_token_rows(prompt_rows, pad_token_id)
             if prompt_attention_rows is not None:
@@ -458,6 +465,23 @@ class ProductReasoningModel(nn.Module):
             )
             delta_norm = float(workspace_output.step_deltas.detach().mean())
 
+        if self.arm == "syndrome":
+            if workspace_states is None or draft_indicator_rows is None:
+                raise ProductReasoningTrainError(
+                    "syndrome arm requires workspace states and draft indicators"
+                )
+            syndrome_loss = error_syndrome_residual_loss(
+                embedding,
+                prompt_rows,
+                response_rows,
+                draft_indicator_rows,
+                workspace_states,
+            )
+        elif draft_indicator_rows is not None:
+            raise ProductReasoningTrainError(
+                "draft indicators are reserved for the syndrome arm"
+            )
+
         inputs, attention, labels, charged = pack_training_embeddings(
             embedding,
             prompt_rows,
@@ -478,10 +502,15 @@ class ProductReasoningModel(nn.Module):
             labels[:, 1:].reshape(-1),
             ignore_index=-100,
         )
-        loss = language_loss + 0.01 * halting_loss
+        loss = (
+            language_loss
+            + 0.01 * halting_loss
+            + SYNDROME_WEIGHT * syndrome_loss
+        )
         return loss, {
             "language_loss": float(language_loss.detach()),
             "halting_loss": float(halting_loss.detach()),
+            "syndrome_loss": float(syndrome_loss.detach()),
             "final_stop_probability": stop_probability,
             "mean_step_delta": delta_norm,
             "residual_gate": (
@@ -491,6 +520,47 @@ class ProductReasoningModel(nn.Module):
             ),
             "charged_tokens": float(charged),
         }
+
+
+def error_syndrome_residual_loss(
+    embedding: nn.Module,
+    prompt_rows: list[list[int]],
+    response_rows: list[list[int]],
+    draft_indicator_rows: list[list[int]],
+    workspace_states: torch.Tensor,
+) -> torch.Tensor:
+    """Align the recurrent prefix with the verified answer-minus-draft residual."""
+
+    if (
+        not prompt_rows
+        or len(prompt_rows) != len(response_rows)
+        or len(prompt_rows) != len(draft_indicator_rows)
+        or workspace_states.ndim != 3
+        or workspace_states.shape[0] != len(prompt_rows)
+    ):
+        raise ProductReasoningTrainError("syndrome batch geometry differs")
+    targets: list[torch.Tensor] = []
+    device = workspace_states.device
+    for prompt, response, indicator in zip(
+        prompt_rows, response_rows, draft_indicator_rows, strict=True
+    ):
+        if len(prompt) != len(indicator) or any(value not in (0, 1) for value in indicator):
+            raise ProductReasoningTrainError("syndrome draft geometry differs")
+        draft_ids = [token for token, selected in zip(prompt, indicator, strict=True) if selected]
+        response_ids = response[:-1]
+        if not draft_ids or not response_ids:
+            raise ProductReasoningTrainError("syndrome target is empty")
+        with torch.no_grad():
+            draft_mean = embedding(
+                torch.tensor(draft_ids, device=device, dtype=torch.long)
+            ).float().mean(dim=0)
+            response_mean = embedding(
+                torch.tensor(response_ids, device=device, dtype=torch.long)
+            ).float().mean(dim=0)
+            targets.append(response_mean - draft_mean)
+    target = torch.stack(targets)
+    prediction = workspace_states.float().mean(dim=1)
+    return (1.0 - F.cosine_similarity(prediction, target, dim=-1, eps=1e-6)).mean()
 
 
 def _tokenize_rows_with_attention(
@@ -563,6 +633,54 @@ def _tokenize_rows(
         mask_internal_draft=False,
     )
     return prompt_rows, response_rows
+
+
+def _tokenize_rows_with_syndrome(
+    tokenizer: Any,
+    rows: list[dict[str, str]],
+    max_sequence_length: int,
+    workspace_slots: int,
+) -> tuple[list[list[int]], list[list[int]], list[list[int]]]:
+    """Tokenize revision rows and retain an exact indicator for draft tokens."""
+
+    prompt_rows: list[list[int]] = []
+    response_rows: list[list[int]] = []
+    draft_indicator_rows: list[list[int]] = []
+    response_budget_floor = min(256, max_sequence_length // 2)
+    from ttr1_revision import tokenize_with_draft_mask
+
+    for row in rows:
+        rendered = render_reasoning_messages(
+            tokenizer,
+            [
+                {"role": "system", "content": PRODUCT_SYSTEM_PROMPT},
+                {"role": "user", "content": row["question"]},
+            ],
+            enable_thinking=False,
+        )
+        prompt, draft_mask, _ = tokenize_with_draft_mask(tokenizer, rendered)
+        response = tokenizer.encode(row["response"], add_special_tokens=False)
+        target_budget = max_sequence_length - workspace_slots
+        if len(response) > target_budget - 9:
+            response = response[: target_budget - 9]
+        prompt_budget = target_budget - len(response)
+        if prompt_budget < 8:
+            response = response[:response_budget_floor]
+            prompt_budget = target_budget - len(response)
+        prompt = prompt[-prompt_budget:]
+        draft_indicator = [1 - value for value in draft_mask[-prompt_budget:]]
+        response.append(tokenizer.eos_token_id)
+        if prompt and response:
+            if not any(draft_indicator):
+                raise ProductReasoningTrainError(
+                    "truncation removed the syndrome draft span"
+                )
+            prompt_rows.append(prompt)
+            response_rows.append(response)
+            draft_indicator_rows.append(draft_indicator)
+    if not prompt_rows:
+        raise ProductReasoningTrainError("tokenization removed every syndrome row")
+    return prompt_rows, response_rows, draft_indicator_rows
 
 
 def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
@@ -795,6 +913,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "lora_projection_count": model.lora_projection_count,
         "unfreeze_layers": model.unfreeze_layers,
         "mask_internal_draft": args.mask_internal_draft,
+        "syndrome_weight": SYNDROME_WEIGHT if args.arm == "syndrome" else 0.0,
+        "architecture": (
+            "shohin-error-syndrome-revision-v1"
+            if args.arm == "syndrome"
+            else "shohin-product-reasoning-v1"
+        ),
         "trainable_parameters": model.trainable_parameter_count(),
         "workspace_config": (
             asdict(model.workspace_config) if model.workspace_config else None
@@ -821,7 +945,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     dense=args.arm.startswith("dense"),
                 )
             )
-        elif args.arm == "ettr":
+        elif args.arm in {"ettr", "syndrome"}:
             metadata["workspace_architecture_sha256"] = workspace_architecture_sha256(
                 model.workspace_config
             )
@@ -841,7 +965,18 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     while update < args.updates:
         raw_batch = batch_stream[microstep % len(batch_stream)]
         workspace_slots = model.sequence_workspace_slots()
-        if args.mask_internal_draft:
+        draft_indicator_rows = None
+        if args.arm == "syndrome":
+            prompt_rows, response_rows, draft_indicator_rows = (
+                _tokenize_rows_with_syndrome(
+                    tokenizer,
+                    raw_batch,
+                    args.max_sequence_length,
+                    workspace_slots,
+                )
+            )
+            prompt_attention_rows = None
+        elif args.mask_internal_draft:
             prompt_rows, response_rows, prompt_attention_rows = (
                 _tokenize_rows_with_attention(
                     tokenizer,
@@ -862,6 +997,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 response_rows,
                 tokenizer.pad_token_id,
                 prompt_attention_rows,
+                draft_indicator_rows,
             )
             scaled_loss = loss / args.gradient_accumulation
         scaled_loss.backward()
@@ -885,6 +1021,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "loss": float(loss.detach()),
                 "language_loss": metrics["language_loss"],
                 "halting_loss": metrics["halting_loss"],
+                "syndrome_loss": metrics["syndrome_loss"],
                 "final_stop_probability": metrics["final_stop_probability"],
                 "mean_step_delta": metrics["mean_step_delta"],
                 "residual_gate": metrics["residual_gate"],
@@ -940,7 +1077,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--warm-start-checkpoint", type=Path)
     parser.add_argument(
         "--arm",
-        choices=("baseline", "ettr", "dense", "ettr_residual", "dense_residual"),
+        choices=(
+            "baseline",
+            "ettr",
+            "syndrome",
+            "dense",
+            "ettr_residual",
+            "dense_residual",
+        ),
         required=True,
     )
     parser.add_argument("--updates", type=int, default=200)
@@ -984,7 +1128,9 @@ def parse_args() -> argparse.Namespace:
         or args.unfreeze_layers < 0
     ):
         parser.error("training dimensions and learning rate must be positive")
-    reserved_slots = args.workspace_slots if args.arm in {"ettr", "dense"} else 0
+    reserved_slots = (
+        args.workspace_slots if args.arm in {"ettr", "syndrome", "dense"} else 0
+    )
     if args.max_sequence_length <= reserved_slots + 16:
         parser.error("maximum sequence length leaves no prompt/target budget")
     return args

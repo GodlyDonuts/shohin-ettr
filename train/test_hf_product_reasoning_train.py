@@ -15,6 +15,7 @@ from hf_product_reasoning_train import (
     LoRALinear,
     ProductReasoningModel,
     ProductReasoningTrainError,
+    error_syndrome_residual_loss,
     install_lora,
     load_trainable_checkpoint,
     pack_training_embeddings,
@@ -196,6 +197,32 @@ class ProductReasoningTrainTests(unittest.TestCase):
         self.assertEqual(attention.tolist(), [[1, 0, 0, 1, 1, 1]])
         self.assertEqual(labels.tolist(), [[-100, -100, -100, -100, 5, 6]])
         self.assertEqual(charged, 2)
+
+    def test_syndrome_loss_accepts_exact_verified_residual_direction(self) -> None:
+        embedding = nn.Embedding(4, 2)
+        with torch.no_grad():
+            embedding.weight.zero_()
+            embedding.weight[1] = torch.tensor([1.0, 0.0])
+            embedding.weight[2] = torch.tensor([0.0, 1.0])
+        workspace = torch.tensor([[[-1.0, 1.0], [-1.0, 1.0]]])
+        loss = error_syndrome_residual_loss(
+            embedding,
+            [[0, 1]],
+            [[2, 3]],
+            [[0, 1]],
+            workspace,
+        )
+        self.assertAlmostEqual(float(loss), 0.0, places=6)
+
+    def test_syndrome_loss_rejects_missing_draft(self) -> None:
+        with self.assertRaises(ProductReasoningTrainError):
+            error_syndrome_residual_loss(
+                nn.Embedding(4, 2),
+                [[0, 1]],
+                [[2, 3]],
+                [[0, 0]],
+                torch.zeros(1, 2, 2),
+            )
 
     def test_reservoir_is_deterministic(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
