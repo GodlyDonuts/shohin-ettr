@@ -1,5 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **CTSR1 FROZEN PRE-MECHANICS — 2026-08-09:** The final small-OLMoE
+> MoE-native lane is Causal Temporal State Routing. A 64-wide GRU shared over
+> all 16 sparse layers consumes the actual causal token stream, keeps a
+> separate layer state, and persists it from prompt prefill through every
+> cached generated token. Treatment uses one tied state head for native-router
+> logits and one for rank-18 shared-residual modulation; the exact-parameter
+> temporal control uses both heads for residual modulation and leaves routing
+> unchanged. Both have exactly `1,594,752` trainables and `488,576` adapter
+> MAC/token/layer, with zero-initialized heads/up-projections preserving base
+> parity. Mechanics must prove padding and streamed/one-shot recurrence
+> equivalence before two exact 256-update fits. Promotion requires `>=280`,
+> `>=26` over the temporal control, `>=13` over the immutable static rank-18
+> score `248`, domain floors `55/180/5`, and noncollapsed route change. Failure
+> closes CTSR1 and the small-OLMoE native route without geometry variants.
+
 > **RME1 CLOSED NEGATIVE — 2026-08-09:** Routed Revision Micro-Experts
 > replace the failed use of pretrained native expert identity with four new
 > revision-specific rank-8 experts, top two active, across all 16 sparse

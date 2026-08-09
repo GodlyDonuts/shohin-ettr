@@ -730,6 +730,13 @@ def _load_model(
             RME1Config(**rme),
             draft_control=str(metadata.get("rme1_draft_control", "normal")),
         ).to("cuda:0")
+    elif metadata.get("architecture") == "shohin-ctsr1-moe-revision-v1":
+        from ctsr1_moe_revision import CTSR1Config, CTSR1ProductModel
+
+        ctsr = metadata.get("ctsr1_config")
+        if not isinstance(ctsr, dict):
+            raise ProductEvalError("CTSR1 checkpoint config is missing")
+        model = CTSR1ProductModel(backbone, CTSR1Config(**ctsr)).to("cuda:0")
     else:
         model = ProductReasoningModel(
             backbone=backbone,

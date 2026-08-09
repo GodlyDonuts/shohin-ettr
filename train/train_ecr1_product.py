@@ -177,7 +177,7 @@ def run(args: argparse.Namespace) -> dict:
         architecture_name = "shohin-ser1-moe-revision-v1"
         config_key = "ser1_config"
         draft_key = "ser1_draft_control"
-    else:
+    elif args.architecture == "rme1":
         from rme1_moe_revision import RME1Config, RME1ProductModel
 
         config = RME1Config(
@@ -192,6 +192,27 @@ def run(args: argparse.Namespace) -> dict:
         architecture_name = "shohin-rme1-moe-revision-v1"
         config_key = "rme1_config"
         draft_key = "rme1_draft_control"
+    else:
+        from ctsr1_moe_revision import CTSR1Config, CTSR1ProductModel
+
+        config = CTSR1Config(
+            hidden_size=config_kwargs["hidden_size"],
+            num_experts=config_kwargs["num_experts"],
+            experts_per_token=config_kwargs["experts_per_token"],
+            controlled_layers=args.controlled_layers,
+            state_width=args.state_width,
+            head_width=args.head_width,
+            residual_rank=args.rank,
+            residual_alpha=args.alpha,
+            mode=args.mode,
+            router_scale=args.router_scale,
+            entropy_floor=args.entropy_floor,
+            collapse_weight=args.collapse_weight,
+        )
+        model = CTSR1ProductModel(backbone, config).to("cuda:0")
+        architecture_name = "shohin-ctsr1-moe-revision-v1"
+        config_key = "ctsr1_config"
+        draft_key = "ctsr1_draft_control"
     trainable_names = sorted(
         name for name, parameter in model.named_parameters() if parameter.requires_grad
     )
@@ -208,6 +229,8 @@ def run(args: argparse.Namespace) -> dict:
         ("rme1", "routed", 16, 8): 2_228_224,
         ("rme1", "shared", 16, 18): 1_179_648,
         ("rme1", "shared", 16, 34): 2_228_224,
+        ("ctsr1", "temporal_router", 16, 18): 1_594_752,
+        ("ctsr1", "temporal_shared", 16, 18): 1_594_752,
     }[(args.architecture, args.mode, args.controlled_layers, args.rank)]
     if model.trainable_parameter_count() != expected_parameters:
         raise ProductReasoningTrainError("MoE residual parameter receipt differs")
@@ -232,6 +255,18 @@ def run(args: argparse.Namespace) -> dict:
         adapter_macs_per_token_per_layer = (
             config.revision_experts * config.hidden_size
             + config.revision_top_k * 2 * config.hidden_size * config.rank
+        )
+    elif args.architecture == "ctsr1":
+        adapter_macs_per_token_per_layer = (
+            3 * config.state_width * config.hidden_size
+            + 3 * config.state_width * config.state_width
+            + 2
+            * (
+                config.state_width * config.head_width
+                + config.head_width * config.num_experts
+            )
+            + config.num_experts * config.residual_rank
+            + 2 * config.hidden_size * config.residual_rank
         )
     else:
         adapter_macs_per_token_per_layer = 2 * config.hidden_size * config.rank
@@ -328,7 +363,11 @@ def run(args: argparse.Namespace) -> dict:
             else (
                 "shohin-ser1-product-training-v1"
                 if args.architecture == "ser1"
-                else "shohin-rme1-product-training-v1"
+                else (
+                    "shohin-rme1-product-training-v1"
+                    if args.architecture == "rme1"
+                    else "shohin-ctsr1-product-training-v1"
+                )
             )
         ),
         "status": "complete",
@@ -359,11 +398,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument(
-        "--architecture", choices=("ecr1", "ser1", "rme1"), default="ecr1"
+        "--architecture", choices=("ecr1", "ser1", "rme1", "ctsr1"), default="ecr1"
     )
     parser.add_argument(
         "--mode",
-        choices=("expert_conditioned", "selected_expert", "routed", "shared"),
+        choices=(
+            "expert_conditioned",
+            "selected_expert",
+            "routed",
+            "shared",
+            "temporal_router",
+            "temporal_shared",
+        ),
         required=True,
     )
     parser.add_argument("--draft-control", choices=("normal", "draft_unavailable"), default="normal")
@@ -379,6 +425,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--revision-experts", type=int, default=4)
     parser.add_argument("--revision-top-k", type=int, default=2)
     parser.add_argument("--balance-weight", type=float, default=0.01)
+    parser.add_argument("--state-width", type=int, default=64)
+    parser.add_argument("--head-width", type=int, default=32)
+    parser.add_argument("--router-scale", type=float, default=1.0)
+    parser.add_argument("--entropy-floor", type=float, default=0.80)
+    parser.add_argument("--collapse-weight", type=float, default=0.01)
     parser.add_argument("--seed", type=int, default=2026080901)
     parser.add_argument("--data-seed", type=int, default=2026080814)
     parser.add_argument("--log-interval", type=int, default=10)
@@ -394,6 +445,8 @@ def parse_args() -> argparse.Namespace:
         args.rank,
         args.revision_experts,
         args.revision_top_k,
+        args.state_width,
+        args.head_width,
         args.log_interval,
         args.checkpoint_interval,
     )
@@ -402,6 +455,9 @@ def parse_args() -> argparse.Namespace:
         or args.alpha <= 0
         or args.learning_rate <= 0
         or args.balance_weight < 0
+        or args.router_scale <= 0
+        or not 0 < args.entropy_floor < 1
+        or args.collapse_weight < 0
     ):
         parser.error("ECR1 training dimensions differ")
     allowed_geometry = {
@@ -411,6 +467,8 @@ def parse_args() -> argparse.Namespace:
         ("ser1", "shared"): {(16, 8, 8.0), (16, 64, 64.0)},
         ("rme1", "routed"): {(16, 8, 8.0)},
         ("rme1", "shared"): {(16, 18, 18.0), (16, 34, 34.0)},
+        ("ctsr1", "temporal_router"): {(16, 18, 18.0)},
+        ("ctsr1", "temporal_shared"): {(16, 18, 18.0)},
     }
     geometry = (args.controlled_layers, args.rank, args.alpha)
     if geometry not in allowed_geometry.get((args.architecture, args.mode), set()):
@@ -421,6 +479,15 @@ def parse_args() -> argparse.Namespace:
         or args.balance_weight != 0.01
     ):
         parser.error("RME1 routing geometry differs")
+    if args.architecture == "ctsr1" and (
+        args.state_width != 64
+        or args.head_width != 32
+        or args.router_scale != 1.0
+        or args.entropy_floor != 0.80
+        or args.collapse_weight != 0.01
+        or args.draft_control != "normal"
+    ):
+        parser.error("CTSR1 temporal geometry differs")
     return args
 
 

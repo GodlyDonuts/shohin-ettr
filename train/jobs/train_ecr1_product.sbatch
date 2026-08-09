@@ -46,6 +46,10 @@ nvidia-smi
   --revision-experts "${REVISION_EXPERTS:-4}" \
   --revision-top-k "${REVISION_TOP_K:-2}" \
   --balance-weight "${BALANCE_WEIGHT:-0.01}" \
+  --state-width "${STATE_WIDTH:-64}" --head-width "${HEAD_WIDTH:-32}" \
+  --router-scale "${ROUTER_SCALE:-1.0}" \
+  --entropy-floor "${ENTROPY_FLOOR:-0.80}" \
+  --collapse-weight "${COLLAPSE_WEIGHT:-0.01}" \
   --seed "${SEED:-2026080901}" --data-seed "${DATA_SEED:-2026080814}" \
   --log-interval "${LOG_INTERVAL:-1}" --checkpoint-interval "$UPDATES"
 sha256sum "$OUTPUT/report.json" "$OUTPUT/checkpoint_$(printf '%07d' "$UPDATES").pt"

@@ -276,3 +276,35 @@ def test_parser_accepts_frozen_rme1_geometry(monkeypatch, mode, rank):
         4,
         2,
     )
+
+
+@pytest.mark.parametrize("mode", ("temporal_router", "temporal_shared"))
+def test_parser_accepts_frozen_ctsr1_geometry(monkeypatch, mode):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "train_ecr1_product.py",
+            "--model-root",
+            "model",
+            "--model-revision",
+            "revision",
+            "--data",
+            "data.jsonl",
+            "--output",
+            "output",
+            "--architecture",
+            "ctsr1",
+            "--mode",
+            mode,
+            "--controlled-layers",
+            "16",
+            "--rank",
+            "18",
+            "--alpha",
+            "18",
+        ],
+    )
+    args = parse_args()
+    assert args.architecture == "ctsr1"
+    assert (args.mode, args.state_width, args.head_width) == (mode, 64, 32)
