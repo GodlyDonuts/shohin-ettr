@@ -15,7 +15,6 @@ import torch
 
 from build_mltc1_lexical_supervision import compile_selected
 from byte_tape_compiler import ROLES, ByteProgram, ByteTapeCompiler, byte_batch
-from eval_mltc1_lexical import flat_compile_selected
 from train_btt1_byte import load_programs, sha256_file
 
 
@@ -82,6 +81,35 @@ def selected_lexemes(question: str, roles: list[str]) -> tuple[list[dict[str, An
         lexemes.append({"role": role, "source_index": -1})
         cursor += 1
     return lexemes, True
+
+
+def flat_compile_selected(candidates: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], bool]:
+    output: list[dict[str, Any]] = []
+    operators: list[str] = []
+    for candidate_index, candidate in enumerate(candidates):
+        role = candidate["role"]
+        if role in {"IGNORE", "LPAREN", "RPAREN"}:
+            continue
+        if role == "NUMBER":
+            output.append({"action": "PUSH", "candidate_index": candidate_index})
+            while operators and operators[-1] == "NEGATE":
+                operators.pop()
+                output.append({"action": "NEGATE"})
+            continue
+        if role == "NEGATE":
+            operators.append(role)
+            continue
+        if role not in {"ADD", "SUB", "MUL", "DIV"}:
+            return output + [{"action": "STOP"}], False
+        while operators:
+            operator = operators.pop()
+            output.append({"action": "NEGATE" if operator == "NEGATE" else f"APPLY_{operator}"})
+        operators.append(role)
+    while operators:
+        operator = operators.pop()
+        output.append({"action": "NEGATE" if operator == "NEGATE" else f"APPLY_{operator}"})
+    output.append({"action": "STOP"})
+    return output, True
 
 
 def compile_roles(question: str, roles: list[str], *, flat: bool) -> tuple[list[dict[str, Any]], bool]:
