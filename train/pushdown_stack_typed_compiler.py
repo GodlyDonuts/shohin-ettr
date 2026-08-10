@@ -295,7 +295,7 @@ class PushdownStackCompiler(nn.Module):
                 written = self.push_writer(
                     torch.cat((selected, state[push_rows]), dim=-1)
                 )
-                stack[push_rows, depth[push_rows]] = written
+                stack[push_rows, depth[push_rows]] = written.to(stack.dtype)
                 depth[push_rows] += 1
             negate_rows = rows[active & (chosen_action == NEGATE) & (depth >= 1)]
             if len(negate_rows):
@@ -303,7 +303,7 @@ class PushdownStackCompiler(nn.Module):
                 current = stack[negate_rows, positions]
                 stack[negate_rows, positions] = self.negate_writer(
                     torch.cat((current, self.action_embedding(chosen_action[negate_rows])), dim=-1)
-                )
+                ).to(stack.dtype)
             apply_rows = rows[
                 active
                 & (chosen_action >= APPLY_BEGIN)
@@ -326,7 +326,7 @@ class PushdownStackCompiler(nn.Module):
                         dim=-1,
                     )
                 )
-                stack[apply_rows, left_position] = result
+                stack[apply_rows, left_position] = result.to(stack.dtype)
                 stack[apply_rows, right_position] = 0
                 depth[apply_rows] -= 1
             stopped |= active & (chosen_action == STOP) & (depth == 1)
