@@ -122,6 +122,14 @@ repairs 15 direct errors but breaks 26. The receipt perturbs revision, but it
 does not add useful capability; exact ECTR0 is closed without training or
 public-test access.
 
+Paired read-only attribution sharpens that boundary. Direct and learned-
+executor answers differ on 137 rows; the aligned reviser follows direct on
+109, follows the executor on only one, and emits a third answer on 27. The
+direct/executor oracle is only `498/666`. Better receipt phrasing or a hard
+selector therefore cannot provide a large bridge; the open capability path is
+broad model-owned temporal-revision training, not another microcode-interface
+retry.
+
 Historical ETTR graph-reactor and synthetic compiled-state experiments remain
 valuable research history, but they are not the current deployable Shohin
 architecture. The complete historical ledger is

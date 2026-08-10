@@ -1,0 +1,206 @@
+{
+  "correct": {
+    "aligned": 476,
+    "direct": 487,
+    "direct_or_executor_oracle": 498,
+    "executor": 419,
+    "receipt_absent": 479,
+    "receipt_shuffled": 468
+  },
+  "holdout_used": false,
+  "inputs": {
+    "arm_report_sha256": {
+      "aligned": [
+        "ba6c73716bb3137307cb7c48a55b7c3b6034abd74f243fe09829e81d6c2c6b72",
+        "34c05cc83e3b6a5450797145f87a62c9a853becc05e29813a306e4a30a08c39b"
+      ],
+      "receipt_absent": [
+        "89a7b60c2c142a787b9d196b1a785387a35d7eaba6837b2a6bfa8b39191b58cb",
+        "8170cbd2021aba5939783d2666141c938a1cae2bdb855601b3ece0c4944f1222"
+      ],
+      "receipt_shuffled": [
+        "a21c7cbd279512e8db99b43597483402ad7727f8bdbf3e89aa2f6d0b33f3e376",
+        "51342de663aeb27d8b5de6c125f420c7cef4040662450c99e397a5ca4eec8e9c"
+      ]
+    },
+    "ctf_report": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ctf1/eval_80c11a0_r2/normal.json",
+    "ctf_report_sha256": "dc4e939b8186393ad6827f6cecbeacaaf86231d2abf2682ce093d43364b905f0",
+    "data": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/cte1/data_70d6a76_r4/development.jsonl",
+    "data_sha256": "aff466172c74dd7d13a183d117e32ec10d5da2048d10253189e4e3b3a599eb04"
+  },
+  "interpretation_boundary": "Read-only attribution only. It may localize copying and arbitration behavior, but cannot rescue or reinterpret the closed ECTR0 capability gate.",
+  "outcome_matrix": [
+    {
+      "absent_correct": true,
+      "aligned_correct": true,
+      "direct_correct": true,
+      "executor_correct": true,
+      "rows": 369,
+      "shuffled_correct": true
+    },
+    {
+      "absent_correct": false,
+      "aligned_correct": false,
+      "direct_correct": false,
+      "executor_correct": false,
+      "rows": 150,
+      "shuffled_correct": false
+    },
+    {
+      "absent_correct": true,
+      "aligned_correct": true,
+      "direct_correct": true,
+      "executor_correct": false,
+      "rows": 78,
+      "shuffled_correct": true
+    },
+    {
+      "absent_correct": false,
+      "aligned_correct": false,
+      "direct_correct": true,
+      "executor_correct": true,
+      "rows": 18,
+      "shuffled_correct": false
+    },
+    {
+      "absent_correct": true,
+      "aligned_correct": true,
+      "direct_correct": false,
+      "executor_correct": false,
+      "rows": 12,
+      "shuffled_correct": true
+    },
+    {
+      "absent_correct": true,
+      "aligned_correct": true,
+      "direct_correct": true,
+      "executor_correct": true,
+      "rows": 10,
+      "shuffled_correct": false
+    },
+    {
+      "absent_correct": false,
+      "aligned_correct": false,
+      "direct_correct": false,
+      "executor_correct": true,
+      "rows": 9,
+      "shuffled_correct": false
+    },
+    {
+      "absent_correct": true,
+      "aligned_correct": false,
+      "direct_correct": true,
+      "executor_correct": true,
+      "rows": 4,
+      "shuffled_correct": false
+    },
+    {
+      "absent_correct": false,
+      "aligned_correct": false,
+      "direct_correct": false,
+      "executor_correct": false,
+      "rows": 3,
+      "shuffled_correct": true
+    },
+    {
+      "absent_correct": true,
+      "aligned_correct": false,
+      "direct_correct": false,
+      "executor_correct": false,
+      "rows": 2,
+      "shuffled_correct": false
+    },
+    {
+      "absent_correct": true,
+      "aligned_correct": false,
+      "direct_correct": true,
+      "executor_correct": true,
+      "rows": 2,
+      "shuffled_correct": true
+    },
+    {
+      "absent_correct": false,
+      "aligned_correct": true,
+      "direct_correct": true,
+      "executor_correct": true,
+      "rows": 2,
+      "shuffled_correct": false
+    },
+    {
+      "absent_correct": false,
+      "aligned_correct": true,
+      "direct_correct": true,
+      "executor_correct": true,
+      "rows": 2,
+      "shuffled_correct": true
+    },
+    {
+      "absent_correct": true,
+      "aligned_correct": true,
+      "direct_correct": false,
+      "executor_correct": false,
+      "rows": 1,
+      "shuffled_correct": false
+    },
+    {
+      "absent_correct": false,
+      "aligned_correct": true,
+      "direct_correct": false,
+      "executor_correct": true,
+      "rows": 1,
+      "shuffled_correct": false
+    },
+    {
+      "absent_correct": true,
+      "aligned_correct": true,
+      "direct_correct": false,
+      "executor_correct": true,
+      "rows": 1,
+      "shuffled_correct": true
+    },
+    {
+      "absent_correct": false,
+      "aligned_correct": false,
+      "direct_correct": true,
+      "executor_correct": false,
+      "rows": 1,
+      "shuffled_correct": false
+    },
+    {
+      "absent_correct": false,
+      "aligned_correct": false,
+      "direct_correct": true,
+      "executor_correct": true,
+      "rows": 1,
+      "shuffled_correct": true
+    }
+  ],
+  "paired": {
+    "aligned_vs_absent": {
+      "both_correct": 471,
+      "both_wrong": 182,
+      "first_only_correct": 5,
+      "second_only_correct": 8
+    },
+    "aligned_vs_shuffled": {
+      "both_correct": 462,
+      "both_wrong": 184,
+      "first_only_correct": 14,
+      "second_only_correct": 6
+    }
+  },
+  "prediction_behavior": {
+    "absent_matches_direct": 566,
+    "aligned_chooses_direct_when_disagree": 109,
+    "aligned_chooses_executor_when_disagree": 1,
+    "aligned_chooses_other_when_disagree": 27,
+    "aligned_matches_direct": 563,
+    "aligned_matches_executor": 455,
+    "direct_executor_disagree": 137,
+    "shuffled_matches_direct": 543
+  },
+  "public_test_opened": false,
+  "rows": 666,
+  "schema": "shohin-ectr0-attribution-v1",
+  "status": "complete"
+}

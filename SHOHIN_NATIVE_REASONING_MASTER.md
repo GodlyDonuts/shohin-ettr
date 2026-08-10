@@ -116,6 +116,14 @@ receipt or preserving the direct owner. Exact ECTR0 closes without a nearby
 retry, training, holdout, or public-test access. Result:
 `docs/research/SHOHIN_ECTR0_RESULT.json`.
 
+Read-only paired attribution further closes this bridge. Direct and executor
+predictions differ numerically on 137/666 identities; aligned revision keeps
+the direct prediction on 109 of those, adopts the executor prediction on one,
+and emits a third result on 27. Against receipt absence, aligned evidence helps
+five rows and hurts eight. The direct/executor oracle is only 498/666. Exact
+attribution SHA-256 is `63083040...3cbe`; it does not authorize another
+receipt-format, selector, checkpoint, or decoding variant.
+
 The current evidence therefore has two distinct boundaries. Dense
 model-owned temporal revision remains the strongest practical broad-task
 Shohin system. LAM1 is the strongest complete controlled source-to-terminal

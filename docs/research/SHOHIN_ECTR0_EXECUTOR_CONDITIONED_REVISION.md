@@ -102,3 +102,21 @@ The current qualified reviser therefore does not turn this learned-executor
 receipt into useful incremental capability. Exact ECTR0 closes without a
 prompt, checkpoint, decoding, or threshold retry. Aggregate SHA-256 is
 `869ed7412ec30f7f4095b65fd9370413cdc7633e9ca09c41a94106fc148f0cac`.
+
+## Read-Only Attribution
+
+A hash-bound paired attribution over the same six reports confirms that the
+receipt changes behavior without supplying a reliable arbitration rule.
+Aligned versus receipt-absent helps five rows and hurts eight; aligned versus
+shuffled helps fourteen and hurts six. Direct and executor predictions differ
+numerically on 137 rows. On those rows, aligned revision emits the direct
+prediction 109 times, the executor prediction once, and a third prediction 27
+times. Across all rows, aligned emits the direct prediction on 563/666.
+
+The direct/executor oracle is only `498/666`, eleven above direct alone. This
+both localizes the interface failure and bounds the value of a hard selector:
+the qualified reviser mostly preserves the direct claim, and the few receipt-
+induced deviations are not reliably beneficial. The attribution cannot rescue
+the closed gate. Its report SHA-256 is
+`630830408e051c095a77f216b422dcce2564185d04a7566cec33fbc616fa3cbe`;
+see `SHOHIN_ECTR0_ATTRIBUTION_RESULT.json`.

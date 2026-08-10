@@ -1,5 +1,17 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **ECTR0 READ-ONLY ATTRIBUTION COMPLETE; NATURAL MICROCODE BRIDGE RETIRED —
+> 2026-08-10:** A hash-bound join of all six immutable reports reconstructs
+> all 666 identities. Aligned versus receipt-absent helps 5 rows and hurts 8;
+> aligned versus shuffled helps 14 and hurts 6. Direct and learned-executor
+> predictions differ numerically on 137 rows; aligned emits direct on 109,
+> executor on only 1, and another answer on 27. Across the board aligned
+> matches direct on 563/666. The direct/executor oracle is only 498/666.
+> This is attribution only and leaves ECTR0's FAIL unchanged. Do not launch a
+> receipt-format, selector, checkpoint, or decoding retry. Attribution SHA-256
+> is `630830408e051c095a77f216b422dcce2564185d04a7566cec33fbc616fa3cbe`;
+> result: `docs/research/SHOHIN_ECTR0_ATTRIBUTION_RESULT.json`.
+
 > **ECTR0 CLOSED: EXECUTOR RECEIPTS DO NOT IMPROVE THE QUALIFIED REVISER —
 > 2026-08-10:** Exact no-training jobs `750163--750168` completed all three
 > 666-row arms in `0.2631` valid H100-hours. The qualified IDR4 reviser scores
