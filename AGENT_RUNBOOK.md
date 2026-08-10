@@ -1,5 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **DTC1 DRAFT TRANSACTION COMPILER FROZEN — 2026-08-10:** DTMC1 showed that
+> owner-draft information is causal but fixed-slot graph decoding is not
+> competitive. The next single-pass falsifier trains no weights: it scans the
+> exact immutable 666 direct-owner drafts for explicit `<<expression=result>>`
+> transactions, lowers only a frozen safe arithmetic AST into causal typed
+> instructions, uses claimed results solely to link later operands to prior
+> computed states, and lets frozen learned LAM1 recompute all values. Aligned,
+> depth-matched draft shuffle, source-plus-draft shuffle, state-reset, and
+> opcode-permutation views are fixed before any aggregate is inspected.
+> Interface qualification requires at least direct-owner parity (`267/666`)
+> plus causal/coverage gates; capability improvement requires `>=280/666`.
+> Exact DTC1 gets one development pass, no parser or threshold retries, and
+> public GSM8K test remains sealed. Contract:
+> `docs/research/SHOHIN_DTC1_DRAFT_TRANSACTION_COMPILER.md`.
+
 > **DTMC1 CLOSED: DRAFT SIGNAL IS CAUSAL BUT FIXED-SLOT COMPILATION DOES NOT
 > IMPROVE CAPABILITY — 2026-08-10:** Frozen fit `749998` completed all 4,096
 > updates in 2,741.95s with final loss 0.8280; checkpoint SHA-256 is
