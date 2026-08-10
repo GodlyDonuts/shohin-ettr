@@ -25,3 +25,10 @@ def test_ndr1_development_armer_binds_fit_jobs_and_keeps_holdout_closed() -> Non
     assert '"holdout_opened": False' in script
     assert "DEVELOPMENT_REPORT_SHA256" in script
     assert "HOLDOUT" not in script
+
+
+def test_ndr1_draft_job_has_isolated_local_stage_fallback() -> None:
+    script = Path("train/jobs/hf_ndr1_generate_drafts.sbatch").read_text()
+    assert 'LOCAL_PARENT=${SLURM_TMPDIR:-/tmp/$USER/$SLURM_JOB_ID}' in script
+    assert "SLURM_TMPDIR:?" not in script
+    assert 'EFFECTIVE_MODEL_ROOT=$LOCAL_PARENT/model' in script
