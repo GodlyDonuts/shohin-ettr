@@ -1,5 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **NMC1 NATURAL MICROCODE COMPILER FROZEN — 2026-08-10:** LAM1's unresolved
+> boundary is semantic planning over natural language, not arithmetic
+> execution. NMC1 uses pinned Qwen3.5-0.8B final-four rank-8 LoRA to emit a
+> compact register program from GSM8K word problems; every stated intermediate
+> result and final answer is deleted from the program target. Frozen LAM1
+> executes it. Standard GSM8K train is hash-split 9:1 after exact equation
+> admission and checked against all 1,319 public-test identities. One matched
+> direct chain-of-thought SFT arm uses the same identities, model, parameters,
+> updates, optimizer, and decoding budget. Both require zero 1,024-token
+> truncation. Development gates require >=90% syntax, >=85% validity, >=60%
+> answer accuracy, >=3 points over direct, <=10% source-shuffle, and causal
+> carry/opcode losses. A miss closes exact NMC1; only a pass opens one public
+> test evaluation. Contract:
+> `docs/research/SHOHIN_NMC1_NATURAL_MICROCODE_COMPILER.md`.
+
 > **LAM1 COMPLETE DEVELOPMENT ARCHITECTURE PASSES — 2026-08-10:** Frozen H100
 > composition job `749784` completed in 192.24 scientific seconds. Immutable
 > BTT raw-byte compilation + width-64 WGP + learned LAM1 microcode reaches
