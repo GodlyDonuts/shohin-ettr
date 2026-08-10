@@ -45,10 +45,72 @@ closes that explicit edit cascade without holdout or nearby retries. It does
 not displace the qualified dense draft/revision/whole-trajectory architecture
 described below.
 
+Shohin also now has a separate **learned-microcode architecture lane**. Its
+qualified development composition is:
+
+```text
+raw source bytes
+    -> learned 4.94M byte compiler
+    -> width-64 grammar-constrained program search
+    -> learned 108K-logit recurrent digit microcode
+    -> exact terminal state
+```
+
+LAM1 executes learned local add/subtract/multiply digit transitions
+recurrently instead of asking a language model to regenerate complete
+arithmetic values. The frozen composition is exact on `3,917/3,917`
+source-disjoint development rows, with source shuffle `7/3,917`, source
+removal `14/3,917`, carry reset `367/3,917`, opcode permutation `5/3,917`,
+and zero normal invalid or exhausted executions. This is the strongest
+complete controlled source-to-terminal Shohin result. It remains a
+development result with explicit grammar, stack, and rational-state
+scaffolding; WGP1's confirmation source failed admission before model scoring,
+so no LAM1 holdout claim exists.
+
+The current natural-language successor is **DTMC1**. A question-only typed
+compiler (TMC1) was causal but solved only `44/666 = 6.61%`, showing that one
+static source representation did not expose a sufficient semantic plan.
+DTMC1 therefore reads the frozen model's own autoregressive draft and emits a
+result-free typed computation graph whose numeric pointers remain restricted
+to the original problem. Its frozen corpus contains all `6,333` training
+identities, including `1,904` exhausted drafts; every source-plus-draft input
+passes the 1,024-token custody audit with zero truncation or pointer leakage.
+The 24.86M-parameter DTMC1 fit is in progress. **There is no DTMC1 capability
+score yet**, so it is an active hypothesis rather than a demonstrated part of
+the release architecture.
+
 Historical ETTR graph-reactor and synthetic compiled-state experiments remain
 valuable research history, but they are not the current deployable Shohin
 architecture. The complete historical ledger is
 `SHOHIN_NATIVE_REASONING_MASTER.md`.
+
+## Current architecture map
+
+Shohin currently contains two evidence-backed architectural paths and one
+open bridge between them:
+
+```mermaid
+flowchart TB
+    X["Natural-language problem"]
+    X --> D["Shared backbone + draft role"]
+    D --> R["Shared backbone + revision role"]
+    R --> C["Whole-trajectory commit"]
+    C --> B["Best practical broad-task system"]
+
+    S["Controlled arithmetic source bytes"] --> BC["Learned byte compiler"]
+    BC --> GP["Grammar-constrained complete program"]
+    GP --> LM["Learned recurrent digit microcode"]
+    LM --> T["Exact terminal state"]
+
+    D -. "DTMC1: active, unscored" .-> TG["Typed result-free graph"]
+    X -.-> TG
+    TG -.-> LM
+```
+
+The solid upper path is the qualified deployable temporal-revision system.
+The solid lower path is the qualified controlled LAM1 development system. The
+dotted bridge is DTMC1 and must not be described as working until its frozen
+development and causal-control gates complete.
 
 ## The architecture
 

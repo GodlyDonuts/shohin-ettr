@@ -1,6 +1,6 @@
 # Shohin Native Reasoning Master Ledger
 
-## Current Mission and Status — Read First — 2026-08-09
+## Current Mission and Status — Read First — 2026-08-10
 
 Shohin is now a **transferable model-owned temporal-revision architecture**,
 not primarily a plan to pretrain another small scratch decoder. One role state
@@ -27,7 +27,41 @@ Contract and result:
 `docs/research/SHOHIN_LAM1_LEARNED_ARITHMETIC_MICROCODE.md` and
 `docs/research/SHOHIN_LAM1_COMPOSITION_RESULT.json`.
 
-The latest completed gate was MPR1 on pinned small OLMoE, using a rank-18
+The natural-language frontier is now **DTMC1, Draft-Conditioned Typed
+Microcode Compilation**. The intervening question-only typed compiler, TMC1,
+proved source and executor causality but failed semantic planning: it reached
+only `44/666 = 6.61%` exact answers and `26/666 = 3.90%` exact graphs, versus
+the frozen direct owner's `267/666 = 40.09%`. Operation accuracy was `45.46%`
+and operand ownership `32.83%`; source shuffle fell to `5/666`. This closes
+question-only TMC1 and localizes the missing information to the model's
+autoregressive planning trajectory rather than graph syntax or learned
+arithmetic execution.
+
+DTMC1 keeps the same 24,864,055-parameter typed compiler, result-free graph
+target, source-only numeric pointers, 4,096-update schedule, and frozen LAM1
+executor. Its only structural change is to condition compilation on the exact
+model-owned draft in addition to the source. The immutable corpus contains
+`6,333/6,333` unique training drafts; `2,359/6,333 = 37.2493%` are answer
+correct, and all `1,904` exhausted generations are retained. Input custody
+passes on every row with maxima `756/1024` train tokens and at most `729/1024`
+development tokens, zero truncation, and no pointer access to draft-only
+numbers. Frozen fit `749998` is currently in progress; the last verified
+checkpoint was update `960/4096`, with finite gradients and loss decreasing
+from `9.88` to `4.84`. **No DTMC1 development score or public-test result
+exists yet.** A development pass must reach at least `301/666`, exceed both
+the direct owner and causal controls, achieve at least 80% operation and
+operand-owner accuracy, and preserve carry/opcode causality. Contract:
+`docs/research/SHOHIN_DTMC1_DRAFT_CONDITIONED_MICROCODE.md`.
+
+The current evidence therefore has two distinct boundaries. Dense
+model-owned temporal revision remains the strongest practical broad-task
+Shohin system. LAM1 is the strongest complete controlled source-to-terminal
+architecture. DTMC1 is the active attempt to connect model-owned natural-
+language planning to typed learned execution. None of these facts authorizes
+a claim of unrestricted reasoning, a DTMC1 result before evaluation, or a
+WGP/LAM holdout confirmation.
+
+An earlier completed gate was MPR1 on pinned small OLMoE, using a rank-18
 shared residual after all 16 MoE blocks. MPR1 closed negative: aligned exact
 OLMoE-owned drafts score `233/1,289`, while same-task nearest-length shuffled
 drafts and the full-model hidden-draft/source-only arm each score `247`; the
@@ -38,7 +72,7 @@ draft is not an information-bearing revision input. Holdout and larger-MoE
 transfer remain sealed. Dense NDR1 GPU work was canceled before allocation;
 its CPU source artifact completed but is no longer the critical path.
 
-The latest bounded successor was MPR2, Bootstrap Draft-Owner Revision. It uses
+The subsequent bounded successor was MPR2, Bootstrap Draft-Owner Revision. It uses
 MPR1's successful source-only arm as a trained first-pass owner rather than
 retrying adapter geometry. That owner scores `247/1,289` with domains
 `57/182/8` and zero token exhaustion. MPR2 generates one immutable owner draft
@@ -54,7 +88,7 @@ shuffled) but no net value over source-only computation. Exact contract and
 result: `docs/research/SHOHIN_MPR2_BOOTSTRAP_DRAFT_REVISION.md` and
 `docs/research/SHOHIN_MPR2_RESULT.json`.
 
-The latest information-ceiling probe was DPR1. It replaces one premature draft
+The subsequent information-ceiling probe was DPR1. It replaces one premature draft
 commitment with eight complete, exchangeable stochastic trajectories from the
 same trained OLMoE owner. Before any fit, the frozen development-only probe
 requires oracle `>=350`, domain oracle `>=90/245/15`, real trajectory
@@ -74,7 +108,7 @@ scored only `87/1,289` with domains `13/68/6`, missing every frozen owner gate
 broad adaptation damaged the useful 256-update source-only owner. Contract:
 `docs/research/SHOHIN_OBR1_BROAD_OWNER_AND_MPR3_GATE.md`.
 
-The latest independent objective-level successor was DSEO1. Its diagnosis is
+The later independent objective-level successor was DSEO1. Its diagnosis is
 that ordinary final-answer CE never forces draft use when the verified target
 is identical across drafts. DSEO1 creates same-source clean/fault pairs with
 the same final trajectory but different autoregressive edit actions, and gives

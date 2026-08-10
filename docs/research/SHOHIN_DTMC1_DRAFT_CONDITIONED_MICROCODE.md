@@ -1,6 +1,6 @@
 # DTMC1: Draft-Conditioned Typed Microcode Compiler
 
-Status: draft generation and prospective gate frozen; no DTMC1 fit exists
+Status: corpus and input-custody gates passed; frozen DTMC1 fit in progress
 
 Date: 2026-08-10
 
@@ -39,6 +39,26 @@ zero duplicates, immutable shard hashes, and no public-test access.
 
 Development uses the already generated direct report SHA-256
 `234a029a...a49`; drafts may not be regenerated or selected.
+
+## Current execution status
+
+All eight immutable generation shards completed after exact replacements for
+two tasks assigned to a node that exposed no CUDA device. The merged corpus
+contains `6,333/6,333` unique identities and 1,697,360 generated tokens.
+Draft answers are correct on `2,359/6,333 = 37.2493%`; all 1,904 exhausted
+drafts are retained. Corpus SHA-256 is `dfa3541f...0b1c`.
+
+The real-tokenizer audit passes every training row and all three 666-row
+development-control views. Maximum lengths are `756/1024` training tokens and
+at most `729/1024` development tokens. Numeric pointer custody is confined to
+the unique source prefix through the `MODEL-OWNED DRAFT` marker, with zero
+truncation and zero draft-number leakage.
+
+Frozen fit `749998` is running on one H100. At the last verified checkpoint it
+had reached update `960/4096`; total loss decreased from `9.8820` at update 1
+to `4.84`, with finite gradients. These are training-health observations only.
+No autonomous DTMC1 development score exists yet, and no public test has been
+opened.
 
 ## Frozen fit
 
