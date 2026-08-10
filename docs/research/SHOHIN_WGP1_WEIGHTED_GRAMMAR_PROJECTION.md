@@ -34,6 +34,11 @@ Run normal, same-family/depth source shuffle, zero-byte input, and flat
 execution under the same frozen checkpoint and width-64 projection. Compare
 row-wise against immutable BTT1 top-1 output.
 
+The zero-byte arm may memoize exact projection results by tape length and the
+per-position digit/dot/other mask. Under zeroed inputs, logits are identical
+for equal lengths and grammar transitions inspect raw bytes only through that
+mask, so this is exact execution reuse rather than an approximation.
+
 The conjunctive development gate requires:
 
 - complete and selected role exact `>=99.5%`;

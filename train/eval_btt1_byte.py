@@ -158,7 +158,14 @@ def signature(question: str, roles: list[str]):
     return [(item["role"], item.get("surface")) for item in lexemes]
 
 
-def evaluate_batch(output: Any, targets: list[ByteProgram], sources: list[ByteProgram], control: str, projection: str):
+def evaluate_batch(
+    output: Any,
+    targets: list[ByteProgram],
+    sources: list[ByteProgram],
+    control: str,
+    projection: str,
+    projection_cache: dict[tuple[Any, ...], list[int] | None],
+):
     chosen = output.chosen_roles.cpu().tolist()
     details = []
     for row_index, (predicted, target, source) in enumerate(zip(chosen, targets, sources, strict=True)):
@@ -167,11 +174,20 @@ def evaluate_batch(output: Any, targets: list[ByteProgram], sources: list[BytePr
         top1_tree, top1_execution_valid = execute(top1_actions)
         projected = None
         if projection == "grammar-v1":
-            projected = project_role_logits(
-                output.role_logits[row_index, : len(source.question)],
-                list(source.question.encode("ascii")),
-                beam_width=64,
-            )
+            source_bytes = list(source.question.encode("ascii"))
+            cache_key = None
+            if control == "zero_bytes":
+                byte_shape = tuple(2 if byte == 46 else 1 if 48 <= byte <= 57 else 0 for byte in source_bytes)
+                cache_key = (len(source_bytes), byte_shape)
+                projected = projection_cache.get(cache_key)
+            if cache_key is None or cache_key not in projection_cache:
+                projected = project_role_logits(
+                    output.role_logits[row_index, : len(source.question)],
+                    source_bytes,
+                    beam_width=64,
+                )
+                if cache_key is not None:
+                    projection_cache[cache_key] = projected
         predicted_names = top1_names if projection == "none" or projected is None else [ROLES[index] for index in projected]
         target_names = [ROLES[index] for index in target.byte_roles]
         actions, parse_valid = compile_roles(source.question, predicted_names, flat=control == "flat_executor")
@@ -215,6 +231,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     model.load_state_dict(payload["state_dict"], strict=True)
     model.eval()
     details = []
+    projection_cache: dict[tuple[Any, ...], list[int] | None] = {}
     started = time.time()
     with torch.inference_mode():
         for start in range(0, len(rows), args.batch_size):
@@ -223,7 +240,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             batch = byte_batch(sources, device)
             with torch.autocast("cuda", dtype=torch.bfloat16):
                 output = model(batch["byte_ids"], batch["mask"], zero_bytes=args.control == "zero_bytes")
-            details.extend(evaluate_batch(output, targets, sources, args.control, args.projection))
+            details.extend(
+                evaluate_batch(
+                    output, targets, sources, args.control, args.projection, projection_cache
+                )
+            )
     counts = Counter()
     groups: dict[str, Counter[str]] = defaultdict(Counter)
     for detail in details:
@@ -254,6 +275,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "groups": {key: {"rows": value["rows"], "exact_skeleton": value["exact_skeleton"], "exact_rate": value["exact_skeleton"] / value["rows"]} for key, value in sorted(groups.items())},
         "details": details, "elapsed_seconds": elapsed, "rows_per_second": len(details) / elapsed,
         "peak_gpu_bytes": torch.cuda.max_memory_allocated(),
+        "projection_cache_entries": len(projection_cache),
     }
     atomic_json(args.output, report)
     print(json.dumps({key: value for key, value in report.items() if key != "details"}, indent=2, sort_keys=True))
