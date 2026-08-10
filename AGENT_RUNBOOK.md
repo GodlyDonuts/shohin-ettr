@@ -1,5 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **WGP1 CONFIRMATION CLOSED BEFORE MODEL SCORING — 2026-08-10:** Frozen
+> replacement-source job `749728` produced exactly 2,500 unique,
+> protected-disjoint Reasoning-Gym 0.1.25 rows (source SHA-256
+> `fcc85798...6689`; report `3d3d8175...28a2`). Admission job `749730` then
+> failed in two seconds before creating output or loading the BTT checkpoint.
+> Counts are basic arithmetic `493/500`, chain sum `500/500`, decimal
+> arithmetic `226/500`, decimal chain sum `500/500`, and products `500/500`.
+> The miss is semantic: current Reasoning-Gym rounds nonintegral basic answers
+> and precision-rounds decimal arithmetic, while the frozen assessor requires
+> equality with an exact-rational terminal. This is not a model failure, but
+> the source gate was conjunctive; confirmation closes without another seed,
+> package, filter, or evaluator. WGP1's `3917/3917` development compiler pass
+> remains valid but unconfirmed. Result:
+> `docs/research/SHOHIN_WGP1_HOLDOUT_ADMISSION_RESULT.json`.
+
 > **WGP1 LEGACY HOLDOUT REJECTED BEFORE SCORING; REPLACEMENT SOURCE FROZEN —
 > 2026-08-10:** CPU job `749717` failed closed in three seconds and produced no
 > holdout artifact/model output because immutable `rg_v4/rg_eval.jsonl` is not

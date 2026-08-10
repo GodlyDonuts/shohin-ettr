@@ -1,0 +1,97 @@
+{
+  "decision": "close_wgp1_confirmation_on_frozen_source_admission;_preserve_development_pass_as_unconfirmed",
+  "jobs": {
+    "replacement_source": {
+      "elapsed": "00:00:05",
+      "id": 749728,
+      "state": "COMPLETED"
+    },
+    "source_admission": {
+      "elapsed": "00:00:02",
+      "exit_code": "1:0",
+      "id": 749730,
+      "state": "FAILED"
+    }
+  },
+  "legacy_source_job": {
+    "id": 749717,
+    "model_output_produced": false,
+    "reason": "protected source overlap and one internal duplicate",
+    "state": "FAILED"
+  },
+  "model_checkpoint_accessed": false,
+  "replacement_source": {
+    "family_selection": {
+      "basic_arithmetic": {
+        "duplicates_skipped": 1,
+        "pool_scanned": 504,
+        "protected_overlaps_skipped": 3,
+        "selected": 500
+      },
+      "chain_sum": {
+        "duplicates_skipped": 2,
+        "pool_scanned": 523,
+        "protected_overlaps_skipped": 21,
+        "selected": 500
+      },
+      "decimal_arithmetic": {
+        "duplicates_skipped": 0,
+        "pool_scanned": 500,
+        "protected_overlaps_skipped": 0,
+        "selected": 500
+      },
+      "decimal_chain_sum": {
+        "duplicates_skipped": 0,
+        "pool_scanned": 500,
+        "protected_overlaps_skipped": 0,
+        "selected": 500
+      },
+      "products": {
+        "duplicates_skipped": 1,
+        "pool_scanned": 741,
+        "protected_overlaps_skipped": 240,
+        "selected": 500
+      }
+    },
+    "package": "reasoning-gym==0.1.25",
+    "report_sha256": "3d3d817531b867074b3292a51d80938efc5d6e5aab134e8c3624d377e4ac28a2",
+    "rows": 2500,
+    "seed": 20260810,
+    "source_sha256": "fcc8579857138be82ecfc149b9c268bcd4a0c38c3419f1313a7d4b64f4246689",
+    "wheel_sha256": "7f17a3eddb13c015d7d4a755ed576a061df889faf9468bcc2cca334ebe9e0435",
+    "zero_internal_duplicates": true,
+    "zero_protected_overlap": true
+  },
+  "schema": "shohin-wgp1-holdout-admission-result-v1",
+  "source_admission": {
+    "basic_arithmetic": {
+      "admitted": 493,
+      "excluded": 7,
+      "rate": 0.986,
+      "reason": "generated integer answers use rounding while exact rational execution is nonintegral"
+    },
+    "chain_sum": {
+      "admitted": 500,
+      "excluded": 0,
+      "rate": 1.0
+    },
+    "decimal_arithmetic": {
+      "admitted": 226,
+      "excluded": 274,
+      "rate": 0.452,
+      "reason": "generated answers are precision-rounded while compiler execution is exact rational"
+    },
+    "decimal_chain_sum": {
+      "admitted": 500,
+      "excluded": 0,
+      "rate": 1.0
+    },
+    "products": {
+      "admitted": 500,
+      "excluded": 0,
+      "rate": 1.0
+    }
+  },
+  "status": "complete",
+  "wgp1_development_result_sha256": "113dffc54e30ef90d7c36662c8f4cef445d5afc6d16e422719bdc13d8553f060"
+}

@@ -1,6 +1,6 @@
 # WGP1: Weighted Grammar Projection
 
-Status: development PASS; legacy holdout rejected before scoring; one replacement confirmation source frozen
+Status: development PASS; confirmation CLOSED on source admission before model scoring
 
 Date: 2026-08-10
 
@@ -104,3 +104,31 @@ unchanged. The generated source must contain exactly 2,500 unique,
 source-disjoint rows; independent exact-program admission must still retain at
 least 495/500 per family before any model evaluation. Failure at either stage
 closes confirmation without another seed, package, pool, or filtering retry.
+
+## Confirmation result
+
+Replacement-source job `749728` completed in five seconds with exactly 2,500
+unique, protected-disjoint rows. Source/report SHA-256 values are
+`fcc8579857138be82ecfc149b9c268bcd4a0c38c3419f1313a7d4b64f4246689`
+and `3d3d817531b867074b3292a51d80938efc5d6e5aab134e8c3624d377e4ac28a2`.
+
+Admission job `749730` then failed closed in two seconds before creating an
+output directory or accessing the BTT checkpoint. Exact admitted counts are:
+
+| Family | Admitted | Rate |
+|---|---:|---:|
+| basic arithmetic | 493/500 | 98.6% |
+| chain sum | 500/500 | 100% |
+| decimal arithmetic | 226/500 | 45.2% |
+| decimal chain sum | 500/500 | 100% |
+| products | 500/500 | 100% |
+
+The seven basic-arithmetic exclusions are generated integer answers rounded
+from nonintegral division results, while all 274 decimal-arithmetic exclusions
+are precision-rounded answers that intentionally differ from exact-rational
+execution. This is a semantic incompatibility between the frozen admission
+assessor and Reasoning-Gym 0.1.25, not a model score. Nevertheless the
+prospective gate is conjunctive, so exact WGP1 confirmation closes without a
+different seed, package, source filter, or evaluator. The 100% development
+compiler remains a valid development result but is not holdout-qualified.
+Receipt: `SHOHIN_WGP1_HOLDOUT_ADMISSION_RESULT.json`.
