@@ -1,8 +1,11 @@
 # FSTC1: Fixed-Slot Typed Compiler
 
-Status: frozen architecture contract; component implementation in progress  
-Date: 2026-08-10  
-Predecessor: SLC1 closed (`1.2765%` terminal, `0/613` depth-five)  
+Status: closed development failure with strong causal signal; holdout sealed
+
+Date: 2026-08-10
+
+Predecessor: SLC1 closed (`1.2765%` terminal, `0/613` depth-five)
+
 Holdout: sealed
 
 ## Capability hypothesis
@@ -158,3 +161,34 @@ one H100 for at most 15 minutes. Skeleton development: one H100, estimated two
 to four hours. Arithmetic transition can run independently on a second H100,
 estimated two to four hours. Joint release is not allocated until both pass.
 Expected pre-joint charge is below eight H100-hours.
+
+## Frozen result
+
+Mechanics job `749647` passed both gold and hard recurrent feedback with finite
+loss and gradients. Full fit `749648` completed 1,024 updates over 32,768
+examples in 174.21 seconds (`188.09` examples/s), using 2.38 GB peak H100
+allocation. The sidecar has exactly 21,816,330 trainable parameters; checkpoint
+SHA-256 is
+`13777429b2c01047e7514f201d325566c44d2df113f68dd54286da6fac5f759a`.
+
+Parallel evaluations `749649--749651` closed the gate. Normal complete
+skeleton accuracy is `3348/3917 = 85.4736%`; source-shuffled is `0/3917`, and
+resetting recurrence removes `70.98` points on depth-three-or-greater rows.
+Thus source and recurrent state are both causal, but the absolute gate fails.
+Depth, operation sequence, reference kind, operand value, and polarity are
+`95.7365%`, `90.6051%`, `93.6176%`, `89.4817%`, and `92.8772%`.
+Depth-five complete accuracy is `66.0685%`; weakest-family complete accuracy is
+`56.4677%`. No holdout opened and arithmetic transition/joint gates remain
+closed.
+
+The read-only attribution localizes the miss to syntax requiring hierarchical
+scope. Products are `100%`, chain sums `97.88%`, and decimal chains `91.94%`.
+Non-mixed expressions score `95.20%`, but mixed precedence scores `46.96%`.
+Zero-parenthesis examples score `92.52%`, one-to-two parentheses `56.68%`, and
+three-plus parentheses `14.14%`; unary-group expressions score `25.59%`.
+This closes fixed-slot recurrence without nearby variants. The successor must
+introduce an explicit model-owned parse stack/tree and scope transitions.
+Comparison, training, and attribution SHA-256 are
+`74035d8175145533b5a6d985c67e46564e73ced565fdca152cb7bcea17149cee`,
+`bd9751bb1b32fb2164178d706653152314431f9a4c85e20bd1e950ae164f8b24`,
+and `5b7f8d2c162950d8ddfb405ed56733630b0781bbb626ae588eea51b87faa62ea`.

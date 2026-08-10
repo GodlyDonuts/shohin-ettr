@@ -1,0 +1,119 @@
+{
+  "data": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/structured_ledger_rg_v4_r1/development.jsonl",
+  "data_sha256": "f5d4a7150c384da046b3e86c76f9b73e1fdc15d4b56add29c3cf0fa83450bdee",
+  "diagnosis_boundary": "FSTC1 strongly solves linear/product structure but misses nested scope, unary-group binding, and mixed-precedence composition; any successor must add an explicit model-owned parse stack/tree rather than widen or extend the fixed-slot recurrence.",
+  "evaluation": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/fstc1/eval_4b724c2_r1/normal.json",
+  "evaluation_sha256": "cc76d6697505a219f4b190912f18d315eb9a2d71a21272b82a0f699f94bed6a8",
+  "failure_intersections": {
+    "depth+operation_sequence": 103,
+    "depth+operation_sequence+operand_value": 29,
+    "depth+operation_sequence+operand_value+polarity": 34,
+    "depth+operation_sequence+polarity": 1,
+    "operand_value": 48,
+    "operand_value+polarity": 153,
+    "operation_sequence": 53,
+    "operation_sequence+operand_value": 61,
+    "operation_sequence+operand_value+polarity": 87
+  },
+  "groups": {
+    "family:basic_arithmetic": {
+      "complete": 454,
+      "complete_rate": 0.5646766169154229,
+      "depth_error": 56,
+      "operand_error": 309,
+      "operation_error": 181,
+      "rows": 804
+    },
+    "family:chain_sum": {
+      "complete": 877,
+      "complete_rate": 0.9787946428571429,
+      "depth_error": 16,
+      "operand_error": 3,
+      "operation_error": 17,
+      "rows": 896
+    },
+    "family:decimal_arithmetic": {
+      "complete": 319,
+      "complete_rate": 0.7266514806378133,
+      "depth_error": 35,
+      "operand_error": 89,
+      "operation_error": 93,
+      "rows": 439
+    },
+    "family:decimal_chain_sum": {
+      "complete": 913,
+      "complete_rate": 0.919436052366566,
+      "depth_error": 60,
+      "operand_error": 11,
+      "operation_error": 77,
+      "rows": 993
+    },
+    "family:products": {
+      "complete": 785,
+      "complete_rate": 1.0,
+      "depth_error": 0,
+      "operand_error": 0,
+      "operation_error": 0,
+      "rows": 785
+    },
+    "mixed_precedence:false": {
+      "complete": 2977,
+      "complete_rate": 0.9520307003517748,
+      "depth_error": 85,
+      "operand_error": 49,
+      "operation_error": 124,
+      "rows": 3127
+    },
+    "mixed_precedence:true": {
+      "complete": 371,
+      "complete_rate": 0.46962025316455697,
+      "depth_error": 82,
+      "operand_error": 363,
+      "operation_error": 244,
+      "rows": 790
+    },
+    "parentheses:0": {
+      "complete": 3020,
+      "complete_rate": 0.9252450980392157,
+      "depth_error": 97,
+      "operand_error": 125,
+      "operation_error": 178,
+      "rows": 3264
+    },
+    "parentheses:1-2": {
+      "complete": 314,
+      "complete_rate": 0.5667870036101083,
+      "depth_error": 52,
+      "operand_error": 206,
+      "operation_error": 134,
+      "rows": 554
+    },
+    "parentheses:3+": {
+      "complete": 14,
+      "complete_rate": 0.1414141414141414,
+      "depth_error": 18,
+      "operand_error": 81,
+      "operation_error": 56,
+      "rows": 99
+    },
+    "unary_group:false": {
+      "complete": 3283,
+      "complete_rate": 0.8962598962598962,
+      "depth_error": 136,
+      "operand_error": 230,
+      "operation_error": 270,
+      "rows": 3663
+    },
+    "unary_group:true": {
+      "complete": 65,
+      "complete_rate": 0.2559055118110236,
+      "depth_error": 31,
+      "operand_error": 182,
+      "operation_error": 98,
+      "rows": 254
+    }
+  },
+  "holdout_used": false,
+  "schema": "shohin-fstc1-skeleton-attribution-v1",
+  "status": "complete"
+}

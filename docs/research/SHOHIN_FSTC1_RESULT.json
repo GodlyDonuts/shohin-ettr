@@ -1,0 +1,42 @@
+{
+  "checkpoint_sha256": "13777429b2c01047e7514f201d325566c44d2df113f68dd54286da6fac5f759a",
+  "data_sha256": "f5d4a7150c384da046b3e86c76f9b73e1fdc15d4b56add29c3cf0fa83450bdee",
+  "depth_five_complete": 0.6606851549755302,
+  "every_family_complete_minimum": 0.5646766169154229,
+  "gates": {
+    "complete_at_least_0p90": false,
+    "depth_at_least_0p99": false,
+    "depth_five_complete_at_least_0p80": false,
+    "every_family_complete_at_least_0p85": false,
+    "operand_kind_at_least_0p97": false,
+    "operand_value_at_least_0p97": false,
+    "operation_sequence_at_least_0p97": false,
+    "polarity_at_least_0p97": false,
+    "recurrence_reset_deep_loss_at_least_0p20": true,
+    "source_causal_margin_at_least_0p65": true,
+    "source_shuffled_complete_at_most_0p25": true,
+    "zero_invalid_references": true
+  },
+  "holdout_used": false,
+  "normal_complete": 0.8547357671687515,
+  "overall_pass": false,
+  "recurrence_reset_deep_loss": 0.7097996751488901,
+  "reports": {
+    "normal": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/fstc1/eval_4b724c2_r1/normal.json",
+      "sha256": "cc76d6697505a219f4b190912f18d315eb9a2d71a21272b82a0f699f94bed6a8"
+    },
+    "recurrence_reset": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/fstc1/eval_4b724c2_r1/recurrence_reset.json",
+      "sha256": "83a41fe4c17e77985b6a186399d04f1461e9fd10cf11226386338baa0b004d3b"
+    },
+    "source_shuffled": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/fstc1/eval_4b724c2_r1/source_shuffled.json",
+      "sha256": "57992afee751153610686e8ecdec52e60ef3f124b4202bc559cd6571d4f39854"
+    }
+  },
+  "schema": "shohin-fstc1-skeleton-comparison-v1",
+  "source_causal_margin": 0.8547357671687515,
+  "source_shuffled_complete": 0.0,
+  "status": "complete"
+}

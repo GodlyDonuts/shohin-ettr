@@ -1,5 +1,26 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **FSTC1 CLOSED WITH STRONG STRUCTURAL SIGNAL — 2026-08-10:** The first
+> structurally different successor to SLC1 completed jobs `749647--749651`.
+> Its 21,816,330-parameter fixed-slot recurrent sidecar trained for 1,024
+> updates / 32,768 examples in 174.21 seconds on one H100 at 188.09 examples/s
+> and only 2.38 GB peak allocation. On all 3,917 source-disjoint development
+> rows it emits `3348/3917 = 85.4736%` exact complete skeletons, versus zero
+> under same-family/depth/candidate-count source shuffle. Recurrence reset
+> removes 70.98 points on depth >=3, proving the tied state is causal. Products
+> are `785/785 = 100%`, chain sums `877/896 = 97.88%`, decimal chains
+> `913/993 = 91.94%`; nested basic arithmetic is `454/804 = 56.47%` and
+> decimal arithmetic `319/439 = 72.67%`. The frozen conjunctive gate still
+> fails: depth `95.74%`, operation sequence `90.61%`, operand value `89.48%`,
+> complete `85.47%`, depth-five `66.07%`, and weakest family `56.47%` miss
+> their floors. Holdout remains sealed and FSTC1 closes without width/rank/
+> duration/seed variants. Attribution is sharp: non-mixed expressions score
+> `95.20%` versus mixed precedence `46.96%`; zero-parenthesis `92.52%`, one-to-
+> two `56.68%`, three-plus `14.14%`; unary-group cases `25.59%`. The next
+> admissible compiler must add a model-owned parse stack/tree and scope state,
+> not enlarge fixed-slot recurrence. Result/training/attribution SHA-256 are
+> `74035d81...9cee`, `bd9751bb...8b24`, and `5b7f8d2c...2ea`.
+
 > **SLC1 CLOSED; FIXED-SLOT SUCCESSOR REQUIRED — 2026-08-10:** The frozen
 > 1,024-update Qwen3.5-0.8B ledger compiler and all 3,917 source-disjoint
 > development rows completed. Normal syntax is `626/3917 = 15.9816%`, record

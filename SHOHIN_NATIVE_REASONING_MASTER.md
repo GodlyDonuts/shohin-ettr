@@ -58235,3 +58235,34 @@ may not infer operations, execute arithmetic, repair values, or see answers.
 Exact SLC1 comparison and attribution hashes are
 `3b1a839ead6480b8c727177c3161da2f2be8f9c57cd74705a3a7fd02c1e0d77b`
 and `021ff2354f7456a3f19d2ec16b3bad43165895b133a453c5de99b83c90684df0`.
+
+### FSTC1: typed recurrence nearly solves the compiler, but hierarchy remains
+
+FSTC1 removes free-form output entirely. A 21.82M-parameter sidecar reads one
+frozen Qwen3.5-0.8B source encoding and recurrently fills five typed slots with
+STOP, operation, source-or-state references, and polarity. A CPU audit first
+proved that all 79,852 admitted rows are exactly representable: 3,390 operands
+previously mislabeled as literals are precisely negations of earlier state and
+become causal with one polarity bit.
+
+This single structural change moves complete program compilation from SLC1's
+`48/3917 = 1.23%` to `3348/3917 = 85.47%`. Source shuffle scores zero, and
+resetting recurrence destroys 70.98 points on deeper rows. The gain is real and
+causal. Products reach `100%`, chain sums `97.88%`, and decimal chains `91.94%`.
+The fit is also operationally cheap: 1,024 updates complete in 174.21 seconds
+on one H100 at 188.09 examples/s and 2.38 GB peak allocation.
+
+It nevertheless fails the prospective absolute gate and does not open
+holdout. The error is hierarchical, not a general capacity shortage. Mixed-
+precedence programs score `46.96%` versus `95.20%` without mixed precedence.
+Programs with zero, one-to-two, and three-plus parentheses score `92.52%`,
+`56.68%`, and `14.14%`; unary-group cases score `25.59%`. Depth-five reaches
+only `66.07%`, and basic arithmetic is the weakest family at `56.47%`.
+
+FSTC1 therefore closes without width, duration, layer, seed, or loss variants.
+The next compiler must represent hierarchical scope directly through a
+model-owned stack or tree, while preserving FSTC1's typed source/state
+references and hard causal recurrence. Exact contract and evidence are in
+`docs/research/SHOHIN_FSTC1_FIXED_SLOT_TYPED_COMPILER.md`,
+`docs/research/SHOHIN_FSTC1_RESULT.json`, and
+`docs/research/SHOHIN_FSTC1_ATTRIBUTION_RESULT.json`.
