@@ -1,0 +1,272 @@
+{
+  "aligned": {
+    "commit_actions": {
+      "<KEEP>": 1512,
+      "<REPLACE_LAST>": 395,
+      "None": 1
+    },
+    "commit_errors": 1,
+    "commit_valid": 1907,
+    "commit_valid_accuracy": 0.999475890985325,
+    "family": {
+      "choice_final": {
+        "commit_valid": 256,
+        "final_correct": 92,
+        "proposal_correct": 52,
+        "rows": 256
+      },
+      "numeric_final": {
+        "commit_valid": 1651,
+        "final_correct": 1598,
+        "proposal_correct": 1252,
+        "rows": 1652
+      }
+    },
+    "final_accuracy": 0.8857442348008385,
+    "final_correct": 1690,
+    "max_token_exhausted": 0,
+    "member": {
+      "clean": {
+        "commit_valid": 954,
+        "final_correct": 826,
+        "proposal_correct": 443,
+        "rows": 954
+      },
+      "fault": {
+        "commit_valid": 953,
+        "final_correct": 864,
+        "proposal_correct": 861,
+        "rows": 954
+      }
+    },
+    "proposal_correct": 1304,
+    "rows": 1908
+  },
+  "aligned_minus_hidden": 1067,
+  "aligned_minus_iset": -148,
+  "aligned_minus_swapped": 750,
+  "gate": {
+    "aligned_final_ge_1874": false,
+    "aligned_minus_hidden_ge_13": true,
+    "aligned_minus_iset_ge_13": false,
+    "aligned_minus_swapped_ge_13": true,
+    "choice_final_ge_220": false,
+    "clean_final_ge_945": false,
+    "commit_valid_ge_0_95": true,
+    "fault_final_ge_859": true,
+    "zero_exhaustion": true
+  },
+  "hidden": {
+    "commit_actions": {
+      "<KEEP>": 1908
+    },
+    "commit_errors": 0,
+    "commit_valid": 1908,
+    "commit_valid_accuracy": 1.0,
+    "family": {
+      "choice_final": {
+        "commit_valid": 256,
+        "final_correct": 71,
+        "proposal_correct": 71,
+        "rows": 256
+      },
+      "numeric_final": {
+        "commit_valid": 1652,
+        "final_correct": 552,
+        "proposal_correct": 552,
+        "rows": 1652
+      }
+    },
+    "final_accuracy": 0.32651991614255765,
+    "final_correct": 623,
+    "max_token_exhausted": 0,
+    "member": {
+      "clean": {
+        "commit_valid": 954,
+        "final_correct": 573,
+        "proposal_correct": 573,
+        "rows": 954
+      },
+      "fault": {
+        "commit_valid": 954,
+        "final_correct": 50,
+        "proposal_correct": 50,
+        "rows": 954
+      }
+    },
+    "proposal_correct": 623,
+    "rows": 1908
+  },
+  "holdout_authorized": false,
+  "holdout_used": false,
+  "iset_correct": 1838,
+  "receipts": {
+    "aligned": {
+      "inputs": [
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/aligned/commits/shard_00.json",
+          "sha256": "c8b32dc3a5b291f039229fc90703e55a0b1f4bfac8f420cee4ddbc46eee206cd"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/aligned/commits/shard_01.json",
+          "sha256": "b88bcdf9b31420ad955d289817eb456548e4e6f5ce12de16e84dc0f82e4acba2"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/aligned/commits/shard_02.json",
+          "sha256": "ebf5218ec8b4d25f1337cb7862aef2e6a8bb1d23d70121ee3bc0d540cb0d54c8"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/aligned/commits/shard_03.json",
+          "sha256": "f58bdd0e441c20d0cc95954e3b1904806fa7aa5502bc6406538ed3d3c7596724"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/aligned/commits/shard_04.json",
+          "sha256": "bcd6cdd69d295d01fd1edb8ce108ec745f74fe4f848195fae393bdc91046b73c"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/aligned/commits/shard_05.json",
+          "sha256": "51f7b4593f2792f9b5cab16e2975ab6cdbcf9df8030366a798a3509584883c49"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/aligned/commits/shard_06.json",
+          "sha256": "635cc4b6ba77192c85f7394b79298f4d7d958f830458c47ba9931d5d09bdbdd2"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/aligned/commits/shard_07.json",
+          "sha256": "4af84a353c3cb5f5fa98231050671e583103994f3923e099120839d0d1e2aed7"
+        }
+      ],
+      "receipt": [
+        "29e642b77265272633aa72c478cda4c540c8bd65d824006059db7a6784be9a5b",
+        "62f9d3c52427d91913ee69a0f87ca2d9230e314b8fe795fcc11773f4fe06c445",
+        "f371d65fa9d973bf5c03083338803f348533b7e3e5122905b0c6b5dda92fe9f1"
+      ]
+    },
+    "hidden": {
+      "inputs": [
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/hidden/commits/shard_00.json",
+          "sha256": "5a700dfcd24eff2f67cedd4e725b7508561b11bd1ade4e1f5b21362908773cf7"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/hidden/commits/shard_01.json",
+          "sha256": "36e2307cddf3dfabc88ccc3b3119ec15c8651dfd904216e98819c3b59ffadf03"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/hidden/commits/shard_02.json",
+          "sha256": "1bd8cb5cc0c4b149456a928fe9a0e6a77743833a95050fbb03eb814dbd49029f"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/hidden/commits/shard_03.json",
+          "sha256": "5b3407b5a6ab1d8be575030792faed33eb58a5e8cc7b12630ba50a6826f8ef29"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/hidden/commits/shard_04.json",
+          "sha256": "d0e73c1a5acd6745f73e8d7cfebf6e1cd6502e615e7cfbb55b45edb4ad97c2c5"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/hidden/commits/shard_05.json",
+          "sha256": "e0723160ddc3fa655e35f9fda668a76338f9c904404ca9f3ab74ba42de14ee4b"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/hidden/commits/shard_06.json",
+          "sha256": "72b42e65284f08d5cadfd4afad85ec464a739b9f3e0c50e295bd835feecc217a"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/hidden/commits/shard_07.json",
+          "sha256": "04cf5c52b1fb81a5519085a844979c9a9bc90117c8a477b9b154746eb477c4a7"
+        }
+      ],
+      "receipt": [
+        "05135963b0033f594dfbe9b61cd6ef10313fa6c6753ab74947690f08bd7d5c30",
+        "62f9d3c52427d91913ee69a0f87ca2d9230e314b8fe795fcc11773f4fe06c445",
+        "f371d65fa9d973bf5c03083338803f348533b7e3e5122905b0c6b5dda92fe9f1"
+      ]
+    },
+    "swapped": {
+      "inputs": [
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/swapped/commits/shard_00.json",
+          "sha256": "e2f158bc13f939ded04a21199a261d7fa319064425a99e8df8b659e6daa8db51"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/swapped/commits/shard_01.json",
+          "sha256": "03bfb1c778a1d16ef1f97bfb489899ad144c59c2391e3bec3fefc606c6ad4edd"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/swapped/commits/shard_02.json",
+          "sha256": "08835842c4188fa4822f80028c73d8cdfdec01377475d3c6a32cdcad3453c06b"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/swapped/commits/shard_03.json",
+          "sha256": "9acd331b56f8a0a0423b739cbd42a7302bbb7c116ba483430a7f8bd64aa2d163"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/swapped/commits/shard_04.json",
+          "sha256": "c271246380750aadb15b260ebc4acb7bddb58e75736bb61c26bf029ee42fb166"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/swapped/commits/shard_05.json",
+          "sha256": "845e7e54c6d207c54e23369f2b95c12c45bfaf493220b3745a8c3f7a5516a1fb"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/swapped/commits/shard_06.json",
+          "sha256": "abd3f9e6a2e553f4852cdf7d6aa53a4155e7c4a2ad15746209188cf75082ff80"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/eval_tied/swapped/commits/shard_07.json",
+          "sha256": "588ae492d74bfbd2f149eb8ac9e689d259dc4fc8c665adc3f1094f085ca02897"
+        }
+      ],
+      "receipt": [
+        "221c1edf6c7e52c2fedc0fd972bc134d9a06f9b8603b9ce4e23791df60230e87",
+        "62f9d3c52427d91913ee69a0f87ca2d9230e314b8fe795fcc11773f4fe06c445",
+        "f371d65fa9d973bf5c03083338803f348533b7e3e5122905b0c6b5dda92fe9f1"
+      ]
+    }
+  },
+  "schema": "shohin-ocet1-comparison-v1",
+  "status": "fail",
+  "swapped": {
+    "commit_actions": {
+      "<KEEP>": 1865,
+      "None": 43
+    },
+    "commit_errors": 43,
+    "commit_valid": 1865,
+    "commit_valid_accuracy": 0.9774633123689728,
+    "family": {
+      "choice_final": {
+        "commit_valid": 256,
+        "final_correct": 70,
+        "proposal_correct": 70,
+        "rows": 256
+      },
+      "numeric_final": {
+        "commit_valid": 1609,
+        "final_correct": 870,
+        "proposal_correct": 870,
+        "rows": 1652
+      }
+    },
+    "final_accuracy": 0.49266247379454925,
+    "final_correct": 940,
+    "max_token_exhausted": 0,
+    "member": {
+      "clean": {
+        "commit_valid": 928,
+        "final_correct": 741,
+        "proposal_correct": 741,
+        "rows": 954
+      },
+      "fault": {
+        "commit_valid": 937,
+        "final_correct": 199,
+        "proposal_correct": 199,
+        "rows": 954
+      }
+    },
+    "proposal_correct": 940,
+    "rows": 1908
+  }
+}

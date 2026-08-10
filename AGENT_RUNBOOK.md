@@ -1,5 +1,24 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **OCET1 CLOSED; ROLE INTERFERENCE IDENTIFIED; RSOT1 FROZEN — 2026-08-10:**
+> Warm-start fits `749369/749370/749371` completed 256 aligned/permuted/hidden
+> updates in 2h13m/1h54m/1h53m. The tied aligned system is `1,690/1,908`,
+> versus permuted `940` and hidden `623`; choice is `92/256`, numeric `1,598/
+> 1,652`, clean `826/954`, fault `864/954`, commit validity `1,907/1,908`,
+> and exhaustion zero. It fails overall, ISET margin, choice, and clean gates;
+> no holdout opens. The causal result is nevertheless sharp: the trained
+> aligned owner generates only 1,304 correct proposals and then repairs them
+> to 1,690 (`+386`), while controls change zero correctness outcomes. Thus
+> on-policy repair learned, but tying its parameters to the proposal role
+> destroys proposal quality. Comparison SHA-256 is `2fd367b1...ea3a`.
+> `evc33` caused three pre-model “No devices were found” failures
+> (`749407/749408/749431`); exact off-node replacements completed. RSOT1 is
+> prospectively frozen as the one structural attribution/successor: reuse the
+> immutable qualified DSET proposal owner, assign OCET weights only to commit,
+> and compare aligned/permuted/hidden commit owners on byte-identical proposals.
+> Contract/result: `docs/research/SHOHIN_RSOT1_ROLE_SEPARATED_ON_POLICY_TRANSDUCER.md`
+> and `docs/research/SHOHIN_OCET1_RESULT.json`.
+
 > **OCET1 DATA ADMITTED; THREE FITS LIVE — 2026-08-10:** CPU job `749364`
 > completed the immutable on-policy materialization in 31 seconds. The admitted
 > corpus contains 15,240 presentations / 7,620 complete same-source pairs,
