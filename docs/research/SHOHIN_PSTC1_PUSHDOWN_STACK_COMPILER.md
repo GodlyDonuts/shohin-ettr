@@ -71,7 +71,7 @@ principal intervention.
 
 ## Controls
 
-1. same-family/depth/action-length source shuffle;
+1. same-family/binary-depth source shuffle, paired by nearest action length;
 2. stack reset before every action while retaining identical weights;
 3. stack-top permutation at evaluation;
 4. parameter/FLOP-matched recurrent decoder whose action state cannot read the

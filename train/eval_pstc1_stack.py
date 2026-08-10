@@ -9,7 +9,6 @@ from fractions import Fraction
 import json
 import os
 from pathlib import Path
-import random
 import time
 from typing import Any
 
@@ -62,14 +61,16 @@ def load_rows(path: Path, expected_sha256: str) -> list[StackProgram]:
 def source_shuffle_indices(rows: list[StackProgram], seed: int) -> list[int]:
     groups: dict[tuple[str, int], list[int]] = defaultdict(list)
     for index, row in enumerate(rows):
-        groups[(row.family, len(row.actions))].append(index)
+        binary_depth = sum(ACTIONS[action.action].startswith("APPLY_") for action in row.actions)
+        groups[(row.family, binary_depth)].append(index)
     mapping = list(range(len(rows)))
-    generator = random.Random(seed)
     for key, members in sorted(groups.items()):
         if len(members) < 2:
             raise PSTC1EvaluationError(f"source-shuffle singleton bucket: {key}")
-        shift = generator.randrange(1, len(members))
-        rotated = members[shift:] + members[:shift]
+        members = sorted(members, key=lambda index: (len(rows[index].actions), rows[index].identity_sha256))
+        # One-position rotation is the deterministic nearest-action-length
+        # derangement within the exact family/depth bucket.
+        rotated = members[1:] + members[:1]
         for target, source in zip(members, rotated, strict=True):
             mapping[target] = source
     if any(index == source for index, source in enumerate(mapping)):
