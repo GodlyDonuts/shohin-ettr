@@ -1,0 +1,55 @@
+{
+  "candidate_state_permutation_loss": 0.14807250446770492,
+  "checkpoint_sha256": "62eafc90b81c62c5834a9d139307a805c33c75ba080c52b70b10fe6625fe8f60",
+  "data_sha256": "8e867e7cdcc47015096979314450790cd86c804fd841b34d3df411a236b33679",
+  "family_minimum": 1.0,
+  "flat_hierarchical_loss": 0.6222444889779559,
+  "gates": {
+    "candidate_state_permutation_loss_at_least_0p35": false,
+    "every_family_at_least_0p95": true,
+    "exact_skeleton_at_least_0p97": true,
+    "flat_hierarchical_loss_at_least_0p35": true,
+    "lexical_role_sequence_at_least_0p99": true,
+    "mixed_precedence_at_least_0p90": true,
+    "parentheses_three_plus_at_least_0p90": true,
+    "selected_lexical_sequence_at_least_0p99": true,
+    "source_margin_at_least_0p70": true,
+    "source_shuffled_at_most_0p25": true,
+    "unary_group_at_least_0p90": true,
+    "valid_program_at_least_0p995": true
+  },
+  "holdout_used": false,
+  "mixed_precedence_exact": 1.0,
+  "normal_rates": {
+    "action_sequence_exact": 1.0,
+    "exact_skeleton": 1.0,
+    "lexical_role_sequence_exact": 1.0,
+    "selected_lexical_sequence_exact": 1.0,
+    "valid_program": 1.0
+  },
+  "overall_pass": false,
+  "parentheses_three_plus_exact": 1.0,
+  "reports": {
+    "candidate_state_permuted": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/mltc1/eval_0050882_r1/candidate_state_permuted.json",
+      "sha256": "6be12d034a6aeeaa239c688db02e5219121e95ddaa5e783830d6c1411a9d7f64"
+    },
+    "flat_executor": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/mltc1/eval_0050882_r1/flat_executor.json",
+      "sha256": "b3303812d2239a4f9ce4b29daf8c276dc3ce6393464951dfcce4f63e00b8af63"
+    },
+    "normal": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/mltc1/eval_0050882_r1/normal.json",
+      "sha256": "9591b6e0d59fb88e05977db860d4233e1cb1d095a1711dc8746c0cb3b24bb704"
+    },
+    "source_shuffled": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/mltc1/eval_0050882_r1/source_shuffled.json",
+      "sha256": "b83c08b2f51abef8bbf74e6eb200cee6e0462661a5b7f3fc1bfd7cef6a701380"
+    }
+  },
+  "schema": "shohin-mltc1-comparison-v1",
+  "source_causal_margin": 1.0,
+  "source_shuffled_exact": 0.0,
+  "status": "complete",
+  "unary_group_exact": 1.0
+}

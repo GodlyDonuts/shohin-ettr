@@ -1,6 +1,6 @@
 # MLTC1: Monotonic Lexical Transduction Compiler
 
-Status: frozen successor contract; CPU extensional audit pending
+Status: closed development failure; holdout sealed
 
 Date: 2026-08-10
 
@@ -93,3 +93,33 @@ with exact extensional parity to PSTC1. Maximum candidate counts are `36` and
 and `8e867e7cdcc47015096979314450790cd86c804fd841b34d3df411a236b33679`;
 report SHA-256 is
 `8bcb025f376a2d3d481cbe8b00e878c09baa850e5f71683d424bae4e8a0d7e0f`.
+
+## Development result
+
+Mechanics job `749678`, full fit `749679`, and evaluations `749680--749683`
+completed cleanly. The compiler has `7,522,569` trainable parameters and
+trained for `1,024` updates / `32,768` examples in `156.0398` seconds
+(`209.9978` examples/s), with `2,267,000,832` peak GPU bytes. Loss fell from
+`1.03134` to `5.07e-9`. Checkpoint SHA-256 is
+`62eafc90b81c62c5834a9d139307a805c33c75ba080c52b70b10fe6625fe8f60`.
+
+Normal development is `3,917/3,917 = 100%` for lexical-role sequence,
+selected-lexeme sequence, action sequence, executor validity, and exact
+skeleton. Every family and every frozen difficult group is `100%`. Source
+shuffle is zero. Flat execution loses `62.2244` points on hierarchical rows,
+showing that the precedence stack is essential.
+
+The conjunctive gate nevertheless fails. Permuting contextual candidate states
+while retaining surface-type and monotonic-position embeddings leaves
+`3,337/3,917 = 85.19%` exact, only a `14.8073`-point loss rather than the
+frozen `35`-point minimum. Thus the candidate extractor and surface metadata
+carry most of the program. The perfect capability score is an engineered
+compiler upper bound, not evidence for a sufficiently model-owned source
+compiler. Holdout remains sealed and MLTC1 closes without nearby variants.
+
+Result and training-report SHA-256 are
+`c3a8b4bce23989802213572ef18d18322442c5ca4513bdd178851e4c5d52bebc`
+and `a5ca9639d4deafb932bb3257a319ded453381a1e675213f25b566862fd36e82d`.
+The next admissible compiler must consume the complete raw byte tape and emit
+per-byte lexical ownership directly, without pre-extracted candidates or
+surface-type metadata.

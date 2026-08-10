@@ -1,5 +1,26 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **MLTC1 PERFECT CAPABILITY BUT CLOSED ON MODEL-OWNERSHIP CONTROL —
+> 2026-08-10:** CPU job `749675`, mechanics `749678`, fit `749679`, and four
+> evaluations `749680--749683` completed. The 7,522,569-parameter monotonic
+> lexical transducer trained for 1,024 updates / 32,768 examples in 156.04
+> seconds at 210.00 examples/s and 2.27 GB peak allocation. Normal development
+> is exactly `3917/3917 = 100%` for lexical roles, selected lexemes, action
+> sequence, executor validity, and complete skeleton across every family,
+> mixed precedence, unary groups, and three-plus-parenthesis rows. Source
+> shuffle is zero and removing precedence/parenthesis execution loses 62.22
+> points on hierarchical rows. The frozen conjunctive gate nevertheless
+> fails: permuting contextual candidate states while preserving surface-type
+> and position metadata retains `3337/3917 = 85.19%`, only a 14.81-point loss
+> versus the required 35. The generic candidate extractor and surface metadata
+> therefore encode most of the parse; MLTC1 is an engineered compiler upper
+> bound, not a sufficiently model-owned source compiler. Holdout remains
+> sealed. MLTC1 closes without metadata/loss/width/depth/duration/seed variants.
+> Its structurally different successor must classify the complete raw byte
+> tape directly, with no pre-extracted number/operator candidates or surface
+> labels. Result/training SHA-256 are `c3a8b4bc...ebc` and
+> `a5ca9639...82d`; checkpoint SHA-256 is `62eafc90...f60`.
+
 > **PSTC1 CLOSED WITH A CAUSAL BUT INSUFFICIENT PARSE STACK — 2026-08-10:**
 > Jobs `749654--749672` completed the bounded pushdown compiler and all four
 > development interventions. The 21,026,311-parameter sidecar trained for
