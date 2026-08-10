@@ -1,0 +1,21 @@
+{
+  "batch_size": 64,
+  "charged_bytes": 5549064,
+  "charged_examples": 65536,
+  "checkpoint": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/btt1/full_0d5b75e_r1/compiler.pt",
+  "checkpoint_sha256": "2283c86b1a640c9d5c02ffbc70b4646a0a1ad3538c4e1d4ab4ea3b164363e278",
+  "data": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/btt1_byte_supervision_cf4f9cb_r1/train.jsonl",
+  "data_sha256": "8deabd1ad1cdd93466cf9a53bde3012886fd63ff327914897bd70cbd9e13bc6e",
+  "elapsed_seconds": 17.982736587524414,
+  "examples_per_second": 3644.384139256415,
+  "holdout_used": false,
+  "learning_rate": 0.0003,
+  "loss_first": 2.5170915126800537,
+  "loss_last": 0.0008289182442240417,
+  "maximum_bytes": 174,
+  "peak_gpu_bytes": 832687616,
+  "schema": "shohin-btt1-training-v1",
+  "status": "complete",
+  "trainable_parameters": 4938506,
+  "updates": 1024
+}

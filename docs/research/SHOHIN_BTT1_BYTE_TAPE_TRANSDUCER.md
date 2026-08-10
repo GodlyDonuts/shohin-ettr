@@ -1,6 +1,6 @@
 # BTT1: Raw Byte-Tape Transduction Compiler
 
-Status: frozen successor contract; CPU extensional audit pending
+Status: closed development failure; holdout sealed
 
 Date: 2026-08-10
 
@@ -78,3 +78,33 @@ length is `174` training bytes / `172` development bytes, below the frozen
 and `de16d5dc8dd3676f4c3f4a69c306ec19a0ea8a42e9750bf93a2aaf16f4be0bf8`;
 report SHA-256 is
 `a69c5dd401fb91bf6da057cd38c4c1834c834de79da9f51594fbf27bbf80993d`.
+
+## Development result
+
+Mechanics `749700`, fit `749701`, and evaluations `749702--749705` completed.
+The `4,938,506`-parameter compiler trained for `1,024` updates / `65,536`
+examples in `17.9827` seconds (`3,644.3841` examples/s) and peaked at
+`832,687,616` GPU bytes. Checkpoint SHA-256 is
+`2283c86b1a640c9d5c02ffbc70b4646a0a1ad3538c4e1d4ab4ea3b164363e278`.
+
+Normal development is `3,872/3,917 = 98.8512%` exact for complete byte roles,
+selected lexemes, action sequence, validity, and operation skeleton. Source
+shuffle and zero-byte controls both score zero exact skeletons. Removing
+precedence and parentheses loses `59.5190` points on hierarchical rows. The
+compiler is therefore strongly source-causal and no longer depends on MLTC1's
+candidate metadata.
+
+The frozen conjunctive gate fails. Byte-role/selected sequence miss the 99%
+floors, validity misses 99.5%, and three-plus-parenthesis exact is `81.8182%`.
+Every one of the 45 failures is an invalid parse rather than a valid but wrong
+program. Thirty-nine occur at binary depth five; exact by depths one through
+five is `100%`, `99.85%`, `100%`, `99.21%`, and `93.64%`. This identifies a
+sequence-consistency defect at deep nesting, not source ownership or semantic
+operation selection.
+
+BTT1 closes without nearby model, role, loss, duration, seed, or threshold
+variants; holdout remains sealed. Result and training-report SHA-256 are
+`eeaff62f41d4240ede25292d7f9bb718afe58fec1c96a2c8fa6863b1247175cf`
+and `ee34845f85b9d811ca9716de3df3603a5bb9a910b65069ce06c71b373e0a8957`.
+The admissible successor is a single weighted grammar-constrained projection
+over frozen BTT1 role logits, not another fit.

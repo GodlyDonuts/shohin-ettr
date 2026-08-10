@@ -1,0 +1,23 @@
+{
+  "closed": true,
+  "diagnosis": "All 45 raw-byte compiler failures are invalid role sequences, concentrated at depth five and nested parentheses. Frozen logits should next be tested with one weighted grammar-constrained complete-path projection; no nearby neural fit is admissible.",
+  "exact_failures": 45,
+  "failure_intersections": {
+    "binary_depth_five": 39,
+    "mixed_precedence": 25,
+    "parentheses_three_plus": 18,
+    "unary_group": 21
+  },
+  "holdout_used": false,
+  "normal_report_sha256": "d47a64d7cfcc07bbe5009984102208dea2f94e39b027bc46f54a73162a6b8362",
+  "rates_by_binary_depth": {
+    "1": {"exact": 1.0, "rows": 1417},
+    "2": {"exact": 0.998468606431853, "rows": 653},
+    "3": {"exact": 1.0, "rows": 604},
+    "4": {"exact": 0.9920634920634921, "rows": 630},
+    "5": {"exact": 0.9363784665579119, "rows": 613}
+  },
+  "result_sha256": "eeaff62f41d4240ede25292d7f9bb718afe58fec1c96a2c8fa6863b1247175cf",
+  "schema": "shohin-btt1-read-only-attribution-v1",
+  "status": "complete"
+}

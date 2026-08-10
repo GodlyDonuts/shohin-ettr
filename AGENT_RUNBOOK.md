@@ -1,5 +1,25 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **BTT1 CLOSES 45 RAW-BYTE FAILURES FROM A SOURCE-CAUSAL COMPILER —
+> 2026-08-10:** CPU job `749685`, mechanics `749700`, fit `749701`, and
+> evaluations `749702--749705` completed. The standalone 4,938,506-parameter
+> byte-tape Transformer trained for 1,024 updates / 65,536 examples in 17.98
+> seconds at 3,644.38 examples/s and 0.83 GB peak allocation. With no
+> pretrained backbone, candidate extractor, or symbol-type metadata, it emits
+> `3872/3917 = 98.8512%` exact byte roles, selected lexemes, action programs,
+> and skeletons. Full-source shuffle and zero-byte controls both score zero;
+> flat execution removes 59.52 points on hierarchical rows. This is the first
+> strongly source-causal raw-language compiler in the lineage. It still fails
+> the frozen 99% role, 99.5% validity, and 90% deep-parenthesis floors:
+> three-plus-parenthesis exact is `81.82%`. All 45 errors are invalid parses,
+> not valid-but-wrong programs; 39 occur at binary depth five. Holdout remains
+> sealed and BTT1 closes without nearby model/loss/budget variants. The next
+> structurally different successor is a weighted grammar projection over the
+> frozen model logits: use one exact grammar-constrained sequence search to
+> select a valid complete byte-role path, with unchanged weights and causal
+> controls. Result/training SHA-256 are `eeaff62f...5cf` and
+> `ee34845f...957`; checkpoint SHA-256 is `2283c86b...278`.
+
 > **MLTC1 PERFECT CAPABILITY BUT CLOSED ON MODEL-OWNERSHIP CONTROL —
 > 2026-08-10:** CPU job `749675`, mechanics `749678`, fit `749679`, and four
 > evaluations `749680--749683` completed. The 7,522,569-parameter monotonic
