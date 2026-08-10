@@ -136,38 +136,72 @@ def run(args: argparse.Namespace) -> dict:
     proposals, proposal_receipts = load_proposals(args.proposals)
     if {str(row["identity_sha256"]) for row in original} != set(proposals):
         raise RuntimeError("OCET1 source/proposal identities differ")
-    rows, modes = [], Counter()
+    modes = Counter()
     grouped = defaultdict(list)
     for row in original:
         converted, mode = derive_row(row, proposals[str(row["identity_sha256"])])
         grouped[str(converted["pair_identity_sha256"])].append(converted)
         modes[mode] += 1
+    tokenizer = AutoTokenizer.from_pretrained(args.model_root, trust_remote_code=True)
+    rows = []
+    maxima = Counter()
+    action_counts = Counter()
+    retained_modes = Counter()
+    drops = Counter()
+    dropped_pairs = []
     for pair_id in sorted(grouped):
         pair = sorted(grouped[pair_id], key=lambda item: item["pair_member"])
         if len(pair) != 2 or {item["pair_member"] for item in pair} != {"clean", "fault"}:
             raise RuntimeError("OCET1 pair geometry differs")
         pair[0]["swapped_script"], pair[1]["swapped_script"] = pair[1]["script"], pair[0]["script"]
+        lengths = []
+        overflow = None
+        for row in pair:
+            rendered = render_reasoning_messages(
+                tokenizer,
+                [{"role": "system", "content": PRODUCT_SYSTEM_PROMPT}, {"role": "user", "content": row["question"]}],
+                enable_thinking=False,
+            )
+            prompt = tokenizer.encode(rendered, add_special_tokens=False)
+            own = tokenizer.encode(row["script"], add_special_tokens=False) + [tokenizer.eos_token_id]
+            swapped = tokenizer.encode(row["swapped_script"], add_special_tokens=False) + [tokenizer.eos_token_id]
+            longest = max(len(own), len(swapped))
+            if longest > 32:
+                overflow = "script_overflow"
+            elif len(prompt) + longest > 4096:
+                overflow = "complete_sequence_overflow"
+            lengths.append((len(prompt), longest))
+        if overflow:
+            drops[overflow] += 1
+            dropped_pairs.append(
+                {
+                    "pair_identity_sha256": pair_id,
+                    "reason": overflow,
+                    "members": [
+                        {
+                            "identity_sha256": row["identity_sha256"],
+                            "pair_member": row["pair_member"],
+                            "prompt_tokens": prompt_length,
+                            "longest_script_tokens": script_length,
+                            "complete_tokens": prompt_length + script_length,
+                        }
+                        for row, (prompt_length, script_length) in zip(pair, lengths, strict=True)
+                    ],
+                }
+            )
+            continue
         rows.extend(pair)
-    tokenizer = AutoTokenizer.from_pretrained(args.model_root, trust_remote_code=True)
-    maxima = Counter()
-    action_counts = Counter()
-    for row in rows:
-        rendered = render_reasoning_messages(
-            tokenizer,
-            [{"role": "system", "content": PRODUCT_SYSTEM_PROMPT}, {"role": "user", "content": row["question"]}],
-            enable_thinking=False,
-        )
-        prompt = tokenizer.encode(rendered, add_special_tokens=False)
-        script = tokenizer.encode(row["script"], add_special_tokens=False) + [tokenizer.eos_token_id]
-        if len(script) > 32 or len(prompt) + len(script) > 4096:
-            raise RuntimeError("OCET1 complete retention differs")
-        maxima["prompt"] = max(maxima["prompt"], len(prompt))
-        maxima["script"] = max(maxima["script"], len(script))
-        maxima["complete"] = max(maxima["complete"], len(prompt) + len(script))
-        action_counts[row["action"]] += 1
+        for row, (prompt_length, script_length) in zip(pair, lengths, strict=True):
+            maxima["prompt"] = max(maxima["prompt"], prompt_length)
+            maxima["script"] = max(maxima["script"], script_length)
+            maxima["complete"] = max(maxima["complete"], prompt_length + script_length)
+            action_counts[row["action"]] += 1
+            retained_modes[row["on_policy_mode"]] += 1
     args.output.mkdir(parents=True)
     data = args.output / "train.jsonl"
+    exclusions = args.output / "excluded_pairs.jsonl"
     atomic_jsonl(data, rows)
+    atomic_jsonl(exclusions, dropped_pairs)
     report = {
         "schema": DATA_REPORT_SCHEMA,
         "status": "complete",
@@ -181,9 +215,26 @@ def run(args: argparse.Namespace) -> dict:
         "model_config_sha256": sha256_file(args.model_root / "config.json"),
         "proposal_receipts": proposal_receipts,
         "modes": dict(modes),
+        "retained_modes": dict(retained_modes),
+        "input_sources": len(grouped),
+        "retained_sources": len(rows) // 2,
+        "excluded_sources": len(dropped_pairs),
+        "drop_reasons": dict(drops),
         "actions": dict(action_counts),
         "maximum_tokens": dict(maxima),
-        "outputs": {"train": {"path": str(data.resolve()), "sha256": sha256_file(data), "rows": len(rows), "sources": len(grouped)}},
+        "outputs": {
+            "train": {
+                "path": str(data.resolve()),
+                "sha256": sha256_file(data),
+                "rows": len(rows),
+                "sources": len(rows) // 2,
+            },
+            "excluded_pairs": {
+                "path": str(exclusions.resolve()),
+                "sha256": sha256_file(exclusions),
+                "rows": len(dropped_pairs),
+            },
+        },
     }
     atomic_json(args.output / "report.json", report)
     return report
