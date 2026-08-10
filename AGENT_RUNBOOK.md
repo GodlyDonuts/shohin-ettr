@@ -1,5 +1,18 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **CTE1 DATA/TOKEN GATES PASS; FROZEN FIT LIVE — 2026-08-10:** CPU job
+> `750045` round-trips all `6333/6333` train and `666/666` development
+> canonical traces through the DTC parser and exact typed executor. The corpus
+> has 20,678/2,168 transactions and 15,654/1,629 cross-record loads;
+> train/development SHA-256 values are `8fb68943...6625` / `aff46617...eb04`.
+> Token audit `750050` proves zero truncation with maximum complete lengths
+> 393/335 under 1,024 and 276,777 charged train response tokens. Frozen
+> 1,024-update fit `750074` is running on one H100 from immutable runtime
+> `1e21f38` (manifest `9216c99e...48c1`). The earlier three CPU attempts
+> `750042--750044` failed before output while mechanics exposed state-edge and
+> rational-parenthesization accounting defects; no model score existed and
+> exact corrections are covered by tests. Public test remains sealed.
+
 > **CTE1 CANONICAL TRANSACTION EXTERNALIZATION FROZEN — 2026-08-10:** DTC1
 > proves explicit owner transactions execute causally but finds them on only
 > 257/666 rows. The next intervention changes the missing training target,

@@ -1,6 +1,6 @@
 # CTE1: Canonical Transaction Externalization
 
-Status: prospective data/mechanics gate; no CTE1 model output exists
+Status: data/mechanics pass; frozen fit running; no capability output yet
 
 Date: 2026-08-10
 
@@ -119,3 +119,20 @@ source-disjoint arithmetic reasoning. It would not prove unrestricted general
 reasoning, architecture novelty for transaction notation, or a LAM1 holdout
 claim outside this separately defined GSM pathway.
 
+## Data And Mechanics Result
+
+CPU job `750045` admits all `6,333` train and `666` development identities.
+The exact canonical corpus contains `20,678 / 2,168` transactions and
+`15,654 / 1,629` cross-record register loads. Every target parses and executes
+to the immutable terminal answer with no train/development overlap and no
+public-test access. Train/development SHA-256 values are
+`8fb68943...6625` and `aff46617...eb04`; report SHA-256 is
+`abb12785...d556`.
+
+Tokenizer audit `750050` passes with zero truncation. Maximum complete lengths
+are `393/1024` train and `335/1024` development tokens. The train target
+contains 276,777 charged response tokens; development contains 29,215. Audit
+SHA-256 is `6f999a91...43b8`.
+
+Immutable runtime `1e21f38` has manifest SHA-256 `9216c99e...48c1`. Frozen
+fit `750074` is running on one H100. No CTE1 capability output exists yet.
