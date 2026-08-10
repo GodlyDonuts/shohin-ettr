@@ -11,11 +11,37 @@ import os
 from pathlib import Path
 
 from dset1_edit_transducer import KEEP, REPLACE_LAST, execute_script, parse_script, render_script
-from hf_product_reasoning_train import PRODUCT_SYSTEM_PROMPT, render_reasoning_messages
-from train_dset1_span_edit import DATA_REPORT_SCHEMA, DATA_SCHEMA, sha256_file
 
 
 FRET_SCHEMA = "shohin-fret1-always-rewrite-evaluation-v1"
+DATA_SCHEMA = "shohin-dset1-span-edit-presentation-v1"
+DATA_REPORT_SCHEMA = "shohin-dset1-span-edit-data-report-v1"
+PRODUCT_SYSTEM_PROMPT = (
+    "You are a careful reasoning assistant. Give concise, verifiable reasoning "
+    "and a clearly marked final answer."
+)
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def render_reasoning_messages(tokenizer, messages: list[dict[str, str]]) -> str:
+    if getattr(tokenizer, "chat_template", None):
+        return tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+            enable_thinking=False,
+        )
+    rendered = "\n\n".join(
+        f"{message['role'].capitalize()}: {message['content']}" for message in messages
+    )
+    return f"{rendered}\n\nAssistant:"
 
 
 def digest_text(value: str) -> str:
@@ -160,7 +186,6 @@ def run(args: argparse.Namespace) -> dict:
             rendered = render_reasoning_messages(
                 tokenizer,
                 [{"role": "system", "content": PRODUCT_SYSTEM_PROMPT}, {"role": "user", "content": row["question"]}],
-                enable_thinking=False,
             )
             prompt = tokenizer.encode(rendered, add_special_tokens=False)
             own = tokenizer.encode(row["script"], add_special_tokens=False) + [tokenizer.eos_token_id]

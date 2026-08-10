@@ -25,7 +25,7 @@ test "$(sha256sum "$SOURCE_REPORT" | cut -d' ' -f1)" = "$SOURCE_REPORT_SHA256"
 mapfile -t proposals < <(find "$PROPOSAL_ROOT" -maxdepth 1 -type f -name 'shard_*.json' | sort)
 test "${#proposals[@]}" -eq 16
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
-export TOKENIZERS_PARALLELISM=false PYTHONPATH="$BASE/train:$BASE/pipeline"
+export TOKENIZERS_PARALLELISM=false PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
 "$PYTHON" "$RUNTIME/pipeline/build_ocet1_on_policy_data.py" \
   --model-root "$MODEL_ROOT" --source "$SOURCE" --source-report "$SOURCE_REPORT" \
   --proposals "${proposals[@]}" --output "$OUTPUT"

@@ -18,6 +18,7 @@ from dset1_edit_transducer import normalized_script_loss
 from hf_product_reasoning_train import (
     _save_checkpoint,
     load_product_backbone,
+    load_trainable_checkpoint,
     pack_training_embeddings,
 )
 from shared_post_mlp_revision import SharedPostMLPConfig, SharedPostMLPProductModel
@@ -29,6 +30,37 @@ SCHEMA = "shohin-dset-modern-transfer-training-v1"
 
 class DSETTransferError(RuntimeError):
     """The frozen DSET transfer contract differs."""
+
+
+def validate_warm_start_metadata(
+    metadata: dict,
+    *,
+    arm: str,
+    model_revision: str,
+    quantization: str,
+    config: SharedPostMLPConfig,
+    trainable_parameters: int,
+    trainable_name_sha256: str,
+) -> None:
+    """Bind a warm start to the exact qualified owner for this causal arm."""
+
+    expected_control = "draft_unavailable" if arm == "hidden" else "normal"
+    expected_owner_arm = "hidden" if arm == "hidden" else "aligned"
+    expected = {
+        "architecture": "shohin-shared-post-mlp-revision-v1",
+        "model_revision": model_revision,
+        "quantization": quantization,
+        "shared_post_mlp_config": asdict(config),
+        "draft_control": expected_control,
+        "dset1_arm": expected_owner_arm,
+        "trainable_parameters": trainable_parameters,
+        "trainable_parameter_name_sha256": trainable_name_sha256,
+    }
+    observed = {key: metadata.get(key) for key in expected}
+    if observed != expected:
+        raise DSETTransferError(
+            f"DSET transfer warm-start metadata differs: expected={expected} observed={observed}"
+        )
 
 
 def run(args: argparse.Namespace) -> dict:
@@ -75,6 +107,22 @@ def run(args: argparse.Namespace) -> dict:
     )
     if protected_trainables:
         raise DSETTransferError("DSET transfer exposes protected trainables")
+    warm_start_update = None
+    warm_start_sha256 = None
+    if args.warm_start_checkpoint is not None:
+        warm_start_update, warm_start_metadata = load_trainable_checkpoint(
+            args.warm_start_checkpoint, model
+        )
+        validate_warm_start_metadata(
+            warm_start_metadata,
+            arm=args.arm,
+            model_revision=args.model_revision,
+            quantization=args.quantization,
+            config=config,
+            trainable_parameters=model.trainable_parameter_count(),
+            trainable_name_sha256=model.trainable_parameter_name_sha256(),
+        )
+        warm_start_sha256 = sha256_file(args.warm_start_checkpoint)
     if hasattr(backbone, "gradient_checkpointing_enable"):
         backbone.gradient_checkpointing_enable(
             gradient_checkpointing_kwargs={"use_reentrant": False}
@@ -107,6 +155,14 @@ def run(args: argparse.Namespace) -> dict:
         "trainable_parameter_name_sha256": model.trainable_parameter_name_sha256(),
         "protected_router_expert_trainables": protected_trainables,
         "adapter_flops_per_token_per_layer": 4 * config.hidden_size * config.rank,
+        "warm_start_checkpoint": (
+            str(args.warm_start_checkpoint.resolve())
+            if args.warm_start_checkpoint is not None
+            else None
+        ),
+        "warm_start_checkpoint_sha256": warm_start_sha256,
+        "warm_start_update": warm_start_update,
+        "optimizer_restored": False,
         "dset1_pairs": len(pairs),
         "dset1_pairs_per_update": args.gradient_accumulation,
         "dset1_script_loss": "mean_per_presentation_then_mean_pair",
@@ -197,6 +253,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-revision", required=True)
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--data-report", type=Path, required=True)
+    parser.add_argument("--warm-start-checkpoint", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--arm", choices=["aligned", "swapped", "hidden"], required=True)
     parser.add_argument("--updates", type=int, default=256)
