@@ -1,5 +1,17 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **OCET1 ON-POLICY COUNTEREXAMPLE TRANSDUCTION FROZEN — 2026-08-10:** RIFT1
+> identifies an off-policy semantic-commit defect: the tied host recognizes
+> deterministic synthetic faults but emits KEEP on wrong self-generated
+> proposals. OCET1 therefore changes the learning distribution, not model
+> width/rank/layers/LR/seed/duration. The immutable DSET-Q35 owner first
+> generates mandatory rewrites for all 15,278 training rows; exact proposals
+> become KEEP examples and wrong local proposals become verified repair
+> transactions after the original draft is removed. One warm-started 256-
+> update residual fit and matched label-permuted/hidden controls are allowed
+> only after proposal-corpus audit. Holdout remains sealed. Contract:
+> `docs/research/SHOHIN_OCET1_ON_POLICY_COUNTEREXAMPLE_TRANSDUCTION.md`.
+
 > **RIFT1 CLOSED; ON-POLICY ERROR GAP IDENTIFIED — 2026-08-10:** All aligned
 > jobs `749330--749337` and hidden controls `749338--749345` complete. The
 > tied second edit is `1,905/1,908 = 99.84%` syntactically valid and raises
