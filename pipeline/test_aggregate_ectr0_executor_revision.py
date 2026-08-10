@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
@@ -7,8 +8,8 @@ from aggregate_ectr0_executor_revision import run
 
 def _write(path: Path, control: str, start: int, end: int, correct: int) -> None:
     details = []
-    for index in range(start, end):
-        details.append({"identity_sha256": f"{index:064x}"})
+    for offset, index in enumerate(range(start, end)):
+        details.append({"identity_sha256": f"{index:064x}", "correct": offset < correct})
     counts = {
         "rows": end - start,
         "correct": correct,
@@ -62,11 +63,39 @@ def test_aggregate_pass(tmp_path: Path) -> None:
             arm.append(path)
         paths[control] = arm
     output = tmp_path / "aggregate.json"
+    data = tmp_path / "data.jsonl"
+    ctf = tmp_path / "ctf.json"
+    data.write_text(
+        "".join(
+            json.dumps({"identity_sha256": f"{index:064x}", "gold_answer": "1"}) + "\n"
+            for index in range(666)
+        ),
+        encoding="utf-8",
+    )
+    ctf.write_text(
+        json.dumps(
+            {
+                "details": [
+                    {
+                        "identity_sha256": f"{index:064x}",
+                        "completion": "#### 1" if index < 487 else "#### 0",
+                    }
+                    for index in range(666)
+                ]
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     result = run(
         argparse.Namespace(
             aligned_report=paths["aligned"],
             absent_report=paths["receipt_absent"],
             shuffled_report=paths["receipt_shuffled"],
+            data=data,
+            expected_data_sha256=hashlib.sha256(data.read_bytes()).hexdigest(),
+            ctf_report=ctf,
+            expected_ctf_sha256=hashlib.sha256(ctf.read_bytes()).hexdigest(),
             output=output,
         )
     )

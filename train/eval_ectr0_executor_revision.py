@@ -9,6 +9,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import time
 from typing import Any
 
@@ -32,6 +33,12 @@ CONTROLS = ("aligned", "receipt_absent", "receipt_shuffled")
 
 class ECTR0Error(RuntimeError):
     """The frozen ECTR0 contract was violated."""
+
+
+def extract_ctf_claimed_final(completion: str) -> str | None:
+    """Use CTF1's strict claimed-final marker, never a trailing-number fallback."""
+    matches = re.findall(r"####\s*(-?[\d,]+(?:\.\d+)?)", completion)
+    return matches[-1].replace(",", "") if matches else None
 
 
 def sha256_file(path: Path) -> str:
@@ -231,7 +238,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             gold = str(row["gold_answer"])
             prediction = extract_gsm8k(completion)
             correct = match_gsm8k(prediction, gold)
-            direct_prediction = extract_gsm8k(str(detail["completion"]))
+            direct_prediction = extract_ctf_claimed_final(str(detail["completion"]))
             direct_correct = match_gsm8k(direct_prediction, gold)
             explicit = has_explicit_final_answer(completion)
             token_count, exhausted = usage_row

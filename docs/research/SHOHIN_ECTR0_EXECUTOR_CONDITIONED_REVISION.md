@@ -68,6 +68,9 @@ or justify a nearby prompt/threshold/checkpoint retry. Receipt-specific
 training may be considered only as a separately frozen mechanism with a
 same-source counterfactual objective that makes the receipt identifiable.
 
+The direct-owner reference uses CTF1's exact last `####` numeric claim. A
+trailing number without that marker is not a completed direct answer.
+
 ## Claim Boundary
 
 A pass would show that model-owned trajectory plus learned execution can

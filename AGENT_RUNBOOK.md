@@ -12,6 +12,15 @@
 > finals, and complete 4,096-token/hash custody. Public test remains sealed;
 > no nearby prompt/checkpoint/threshold retry is permitted. Contract:
 > `docs/research/SHOHIN_ECTR0_EXECUTOR_CONDITIONED_REVISION.md`.
+> Initial allocations `750157--750162` failed closed in one to two seconds
+> before model load because an abbreviated historical development hash had
+> been expanded incorrectly; commit `db9fb90` binds the actual CTE1 report
+> hash and exact replays `750163--750168` completed. The first aggregate
+> correctly failed closed before output because its permissive generic GSM
+> parser counted two unfinished direct drafts lacking CTF1's required `####`
+> claimed-final marker. Their six revision outputs remain immutable; the
+> reducer now rejoins the original CTF report and recomputes only the frozen
+> direct baseline with the exact marker parser before scoring repairs/breaks.
 
 > **CTF1 CLOSED: SCALE RESTORES SEMANTIC PROGRAMS, BUT LEDGER EXECUTION DOES
 > NOT IMPROVE THE CAPABLE OWNER — 2026-08-10:** After pre-output mechanics

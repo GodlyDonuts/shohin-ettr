@@ -1,4 +1,13 @@
-from eval_ectr0_executor_revision import receipt_text, shuffled_donors
+from eval_ectr0_executor_revision import (
+    extract_ctf_claimed_final,
+    receipt_text,
+    shuffled_donors,
+)
+
+
+def test_ctf_claimed_final_requires_hash_marker() -> None:
+    assert extract_ctf_claimed_final("work <<2+3=5>>") is None
+    assert extract_ctf_claimed_final("work\n#### 1,234") == "1234"
 
 
 def test_receipt_excludes_assessor_fields() -> None:

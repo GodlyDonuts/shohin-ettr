@@ -5,10 +5,13 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter
+from decimal import Decimal, InvalidOperation
+from fractions import Fraction
 import hashlib
 import json
 import os
 from pathlib import Path
+import re
 from typing import Any
 
 
@@ -26,6 +29,44 @@ def sha256_file(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def exact_direct_correct(
+    data: Path,
+    expected_data_sha256: str,
+    ctf_report: Path,
+    expected_ctf_sha256: str,
+) -> dict[str, bool]:
+    if sha256_file(data) != expected_data_sha256 or sha256_file(ctf_report) != expected_ctf_sha256:
+        raise ECTR0AggregateError("direct-attribution input hash differs")
+    rows = {
+        str(row["identity_sha256"]): row
+        for row in (
+            json.loads(line)
+            for line in data.read_text(encoding="utf-8").splitlines()
+            if line
+        )
+    }
+    report = json.loads(ctf_report.read_text(encoding="utf-8"))
+    details = report.get("details", ())
+    if len(rows) != 666 or len(details) != 666:
+        raise ECTR0AggregateError("direct-attribution coverage differs")
+    output: dict[str, bool] = {}
+    for detail in details:
+        identity = str(detail["identity_sha256"])
+        matches = re.findall(r"####\s*(-?[\d,]+(?:\.\d+)?)", str(detail["completion"]))
+        correct = False
+        if matches:
+            try:
+                prediction = Fraction(Decimal(matches[-1].replace(",", "")))
+                expected = Fraction(str(rows[identity]["gold_answer"]))
+                correct = prediction == expected
+            except (InvalidOperation, ValueError, ZeroDivisionError):
+                correct = False
+        output[identity] = correct
+    if set(output) != set(rows) or sum(output.values()) != 487:
+        raise ECTR0AggregateError("frozen direct-owner baseline differs")
+    return output
 
 
 def load_arm(paths: list[Path], control: str) -> dict[str, Any]:
@@ -104,6 +145,27 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     identity_sets = [set(arm["details"]) for arm in arms.values()]
     if any(identity_set != identity_sets[0] for identity_set in identity_sets[1:]):
         raise ECTR0AggregateError("cross-arm identity coverage differs")
+    direct_correct_by_identity = exact_direct_correct(
+        args.data,
+        args.expected_data_sha256,
+        args.ctf_report,
+        args.expected_ctf_sha256,
+    )
+    for arm in arms.values():
+        raw_counts = dict(arm["counts"])
+        details = arm["details"]
+        repairs = sum(
+            bool(detail["correct"]) and not direct_correct_by_identity[identity]
+            for identity, detail in details.items()
+        )
+        breaks = sum(
+            not bool(detail["correct"]) and direct_correct_by_identity[identity]
+            for identity, detail in details.items()
+        )
+        arm["raw_evaluator_counts"] = raw_counts
+        arm["counts"]["direct_correct"] = sum(direct_correct_by_identity.values())
+        arm["counts"]["repairs"] = repairs
+        arm["counts"]["breaks"] = breaks
     aligned = arms["aligned"]["counts"]
     absent = arms["receipt_absent"]["counts"]
     shuffled = arms["receipt_shuffled"]["counts"]
@@ -136,6 +198,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "aligned_repairs_minus_breaks": int(aligned["repairs"]) - int(aligned["breaks"]),
         },
         "arms": compact_arms,
+        "direct_attribution": {
+            "parser": "last #### numeric claim; no trailing-number fallback",
+            "data": str(args.data.resolve()),
+            "data_sha256": sha256_file(args.data),
+            "ctf_report": str(args.ctf_report.resolve()),
+            "ctf_report_sha256": sha256_file(args.ctf_report),
+        },
     }
     atomic_json(args.output, report)
     print(json.dumps(report, indent=2, sort_keys=True))
@@ -147,6 +216,10 @@ def main() -> int:
     parser.add_argument("--aligned-report", type=Path, action="append", required=True)
     parser.add_argument("--absent-report", type=Path, action="append", required=True)
     parser.add_argument("--shuffled-report", type=Path, action="append", required=True)
+    parser.add_argument("--data", type=Path, required=True)
+    parser.add_argument("--expected-data-sha256", required=True)
+    parser.add_argument("--ctf-report", type=Path, required=True)
+    parser.add_argument("--expected-ctf-sha256", required=True)
     parser.add_argument("--output", type=Path, required=True)
     run(parser.parse_args())
     return 0
