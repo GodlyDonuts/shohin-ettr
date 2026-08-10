@@ -28,7 +28,9 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def load_arm(paths: list[Path], arm: str) -> tuple[list[dict], dict]:
+def load_arm(
+    paths: list[Path], arm: str, required_proposal_arm: str | None = None
+) -> tuple[list[dict], dict]:
     if len(paths) != 8:
         raise OCET1ComparisonError(f"{arm} shard count differs")
     rows, inputs, shards = [], [], set()
@@ -40,6 +42,10 @@ def load_arm(paths: list[Path], arm: str) -> tuple[list[dict], dict]:
             or report.get("status") != "complete"
             or report.get("holdout_used") is not False
             or report.get("arm") != arm
+            or (
+                required_proposal_arm is not None
+                and report.get("proposal_arm") != required_proposal_arm
+            )
             or int(report.get("shard_count", -1)) != 8
         ):
             raise OCET1ComparisonError(f"{arm} report differs")
@@ -99,7 +105,9 @@ def run(args: argparse.Namespace) -> dict:
     loaded = {}
     receipts = {}
     for arm, paths in (("aligned", args.aligned), ("swapped", args.swapped), ("hidden", args.hidden)):
-        rows, receipts[arm] = load_arm(paths, arm)
+        rows, receipts[arm] = load_arm(
+            paths, arm, getattr(args, "required_proposal_arm", None)
+        )
         loaded[arm] = rows
     aligned_by_id = {str(row["identity_sha256"]): row for row in loaded["aligned"]}
     for arm in ("swapped", "hidden"):
@@ -139,7 +147,7 @@ def run(args: argparse.Namespace) -> dict:
     }
     passed = all(gate.values())
     payload = {
-        "schema": SCHEMA,
+        "schema": getattr(args, "schema", SCHEMA),
         "status": "pass" if passed else "fail",
         "holdout_used": False,
         "holdout_authorized": passed,
@@ -164,6 +172,8 @@ def main() -> int:
     parser.add_argument("--swapped", type=Path, nargs="+", required=True)
     parser.add_argument("--hidden", type=Path, nargs="+", required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--required-proposal-arm", choices=["aligned", "swapped", "hidden"])
+    parser.add_argument("--schema", default=SCHEMA)
     result = run(parser.parse_args())
     print(json.dumps(result, sort_keys=True))
     return 0 if result["status"] == "pass" else 3
