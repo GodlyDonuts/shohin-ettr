@@ -67,3 +67,14 @@ One development pass opens exactly one sealed holdout. Failure closes BTT1
 without width, depth, duration, seed, LR, role vocabulary, loss, or threshold
 variants. A pass opens arithmetic-state learning over the sealed compiled
 program but does not by itself establish arithmetic reasoning.
+
+## CPU admission
+
+Job `749685` admitted all `75,935` training and all `3,917` development rows
+with exact byte-role-to-program parity and no exclusions. The maximum raw tape
+length is `174` training bytes / `172` development bytes, below the frozen
+512-byte cap. Train/development SHA-256 are
+`8deabd1ad1cdd93466cf9a53bde3012886fd63ff327914897bd70cbd9e13bc6e`
+and `de16d5dc8dd3676f4c3f4a69c306ec19a0ea8a42e9750bf93a2aaf16f4be0bf8`;
+report SHA-256 is
+`a69c5dd401fb91bf6da057cd38c4c1834c834de79da9f51594fbf27bbf80993d`.

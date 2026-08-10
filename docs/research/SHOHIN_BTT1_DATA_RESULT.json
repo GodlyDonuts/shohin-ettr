@@ -1,0 +1,64 @@
+{
+  "extensional_parity": true,
+  "holdout_used": false,
+  "outputs": {
+    "development": {
+      "counts": {
+        "family:basic_arithmetic": 804,
+        "family:chain_sum": 896,
+        "family:decimal_arithmetic": 439,
+        "family:decimal_chain_sum": 993,
+        "family:products": 785,
+        "role:ADD": 4117,
+        "role:DIV": 310,
+        "role:IGNORE": 264623,
+        "role:LPAREN": 1052,
+        "role:MUL": 1769,
+        "role:NEGATE": 1755,
+        "role:NUM_BEGIN": 14037,
+        "role:NUM_CONT": 40485,
+        "role:RPAREN": 1052,
+        "role:SUB": 3924
+      },
+      "maximum_bytes": 172,
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/btt1_byte_supervision_cf4f9cb_r1/development.jsonl",
+      "rows": 3917,
+      "sha256": "de16d5dc8dd3676f4c3f4a69c306ec19a0ea8a42e9750bf93a2aaf16f4be0bf8"
+    },
+    "train": {
+      "counts": {
+        "family:basic_arithmetic": 16200,
+        "family:chain_sum": 17690,
+        "family:decimal_arithmetic": 8587,
+        "family:decimal_chain_sum": 19002,
+        "family:products": 14456,
+        "role:ADD": 79920,
+        "role:DIV": 6126,
+        "role:IGNORE": 5095441,
+        "role:LPAREN": 21381,
+        "role:MUL": 34975,
+        "role:NEGATE": 35308,
+        "role:NUM_BEGIN": 274270,
+        "role:NUM_CONT": 783412,
+        "role:RPAREN": 21381,
+        "role:SUB": 77314
+      },
+      "maximum_bytes": 174,
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/btt1_byte_supervision_cf4f9cb_r1/train.jsonl",
+      "rows": 75935,
+      "sha256": "8deabd1ad1cdd93466cf9a53bde3012886fd63ff327914897bd70cbd9e13bc6e"
+    }
+  },
+  "schema": "shohin-btt1-byte-supervision-report-v1",
+  "sources": {
+    "development": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/mltc1_lexical_supervision_2dabf32_r1/development.jsonl",
+      "sha256": "8e867e7cdcc47015096979314450790cd86c804fd841b34d3df411a236b33679"
+    },
+    "train": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/mltc1_lexical_supervision_2dabf32_r1/train.jsonl",
+      "sha256": "33b8eb7bf154f3e938de00f06aebd7adb720eb4a1b6bd3f81554f9eb0b11bf3f"
+    }
+  },
+  "status": "complete"
+}
