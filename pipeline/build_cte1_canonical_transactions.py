@@ -135,14 +135,12 @@ def convert_row(row: dict[str, Any], split: str) -> tuple[dict[str, Any], Counte
     if execute_fraction(program) != expected or final != expected:
         raise CTE1DataError("source program terminal differs")
     graph, receipt = compile_draft_transactions(row["original_question"], response)
+    # Alias-only LOAD records can commit an existing state without adding an
+    # instruction operand, so audit source LOADs separately from graph edges.
     if (
         execute_typed_fraction(graph) != expected
         or receipt.accepted != len(program.records)
         or receipt.rejected
-        # The typed graph also uses STATE edges inside a fully parenthesized
-        # record, so cross-record LOAD ownership is a lower bound rather than
-        # the complete state-read count.
-        or receipt.state_reads < load_count
     ):
         raise CTE1DataError("canonical transaction round trip differs")
     converted = {
@@ -161,6 +159,7 @@ def convert_row(row: dict[str, Any], split: str) -> tuple[dict[str, Any], Counte
         {
             "rows": 1,
             "transactions": receipt.accepted,
+            "cross_record_loads": load_count,
             "state_reads": receipt.state_reads,
             "source_reads": receipt.source_reads,
             "literal_reads": receipt.literal_reads,
