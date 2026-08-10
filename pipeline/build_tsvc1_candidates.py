@@ -84,7 +84,7 @@ def train_rows(path: Path, seed: int) -> list[dict[str, Any]]:
                     "pair_identity_sha256": pair_identity,
                     "pair_member": member,
                     "corruption_family": str(row["corruption_family"]),
-                    "task": "preformatted_short_answer",
+                    "task": "bbh_logic",
                     "original_task": str(row["task"]),
                     "question": question,
                     "completion": completion,
@@ -118,7 +118,7 @@ def diagnostic_rows(
         copied["schema"] = SCHEMA
         copied["split"] = "diagnostic_shuffled" if shuffled_source else "diagnostic_aligned"
         copied["original_task"] = str(copied["task"])
-        copied["task"] = "preformatted_short_answer"
+        copied["task"] = "bbh_logic"
         copied["question"] = original_problem(str(gold[key]["question"]))
         grouped[identity].append(copied)
 
