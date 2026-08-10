@@ -1,5 +1,23 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **OCET1 DATA ADMITTED; THREE FITS LIVE — 2026-08-10:** CPU job `749364`
+> completed the immutable on-policy materialization in 31 seconds. The admitted
+> corpus contains 15,240 presentations / 7,620 complete same-source pairs,
+> 13,618 KEEP targets, and 1,622 verified REPLACE_LAST targets. Nineteen whole
+> pairs were excluded fail-closed because a derived script exceeded 32 tokens;
+> no row was truncated. Data SHA-256 is `0a5966f1...52b9`, report SHA-256 is
+> `ed804f75...27df`, and the 19-row exclusion manifest SHA-256 is
+> `d4790ae2...bcb6`. The within-pair permutation changes 3,164 action labels
+> and 3,176 scripts with zero syntax-invalid targets. Warm-start mechanics job
+> `749368` completed one update in 2m36s with the exact aligned update-256
+> parent (`166d8cba...8bb`), optimizer state intentionally reset, finite loss
+> and gradient, 1,179,648 trainables, and 69.07 GB peak allocation. Jobs
+> `749369/749370/749371` now run the frozen aligned/permuted/hidden 256-update
+> fits concurrently. A scheduler race canceled `749366` after 18 seconds
+> during model loading and caused `749367` to fail closed on its empty output
+> directory; neither produced a checkpoint or scientific output, and the empty
+> directory is preserved as `mechanics_interrupted_749366`.
+
 > **OCET1 ON-POLICY PROPOSALS COMPLETE — 2026-08-10:** Sixteen independent
 > H100 jobs `749346--749361` complete in `6m44s--8m20s`, covering all 15,278
 > unique training presentations with zero decode exhaustion. Read-only
