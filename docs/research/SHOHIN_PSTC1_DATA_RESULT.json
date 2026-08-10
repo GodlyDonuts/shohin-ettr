@@ -1,0 +1,102 @@
+{
+  "admitted": true,
+  "development_admission_rate": 1.0,
+  "holdout_used": false,
+  "outputs": {
+    "development": {
+      "counts": {
+        "actions:10": 519,
+        "actions:11": 65,
+        "actions:12": 509,
+        "actions:13": 58,
+        "actions:14": 73,
+        "actions:15": 56,
+        "actions:16": 39,
+        "actions:17": 20,
+        "actions:18": 9,
+        "actions:19": 3,
+        "actions:20": 1,
+        "actions:4": 1314,
+        "actions:5": 72,
+        "actions:6": 520,
+        "actions:7": 68,
+        "actions:8": 534,
+        "actions:9": 57,
+        "admitted_rows": 3917,
+        "family:basic_arithmetic": 804,
+        "family:chain_sum": 896,
+        "family:decimal_arithmetic": 439,
+        "family:decimal_chain_sum": 993,
+        "family:products": 785,
+        "source_rows": 3917,
+        "stack:2": 3366,
+        "stack:3": 496,
+        "stack:4": 50,
+        "stack:5": 5
+      },
+      "exclusion_path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/pstc1_stack_supervision_ca5abd6_r1/development.exclusions.jsonl",
+      "exclusion_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exclusions": 0,
+      "maximum_action_count": 20,
+      "maximum_stack": 5,
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/pstc1_stack_supervision_ca5abd6_r1/development.jsonl",
+      "rows": 3917,
+      "sha256": "bf90044cd17e5e63cdeb7f91bffaae6e4bc59e992fb95cb8da9d2b29da00c914"
+    },
+    "train": {
+      "counts": {
+        "actions:10": 9970,
+        "actions:11": 1296,
+        "actions:12": 10001,
+        "actions:13": 1398,
+        "actions:14": 1375,
+        "actions:15": 1236,
+        "actions:16": 850,
+        "actions:17": 413,
+        "actions:18": 163,
+        "actions:19": 49,
+        "actions:20": 8,
+        "actions:21": 3,
+        "actions:22": 1,
+        "actions:4": 24973,
+        "actions:5": 1177,
+        "actions:6": 10413,
+        "actions:7": 1161,
+        "actions:8": 10229,
+        "actions:9": 1219,
+        "admitted_rows": 75935,
+        "family:basic_arithmetic": 16200,
+        "family:chain_sum": 17690,
+        "family:decimal_arithmetic": 8587,
+        "family:decimal_chain_sum": 19002,
+        "family:products": 14456,
+        "source_rows": 75935,
+        "stack:2": 64636,
+        "stack:3": 10073,
+        "stack:4": 1152,
+        "stack:5": 72,
+        "stack:6": 2
+      },
+      "exclusion_path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/pstc1_stack_supervision_ca5abd6_r1/train.exclusions.jsonl",
+      "exclusion_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exclusions": 0,
+      "maximum_action_count": 22,
+      "maximum_stack": 6,
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/pstc1_stack_supervision_ca5abd6_r1/train.jsonl",
+      "rows": 75935,
+      "sha256": "b522d58b3403064987a47d7b22657ef862945f18dfb352a78625fbcc27ebf008"
+    }
+  },
+  "schema": "shohin-pstc1-stack-supervision-report-v1",
+  "sources": {
+    "development": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/structured_ledger_rg_v4_r1/development.jsonl",
+      "sha256": "f5d4a7150c384da046b3e86c76f9b73e1fdc15d4b56add29c3cf0fa83450bdee"
+    },
+    "train": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/structured_ledger_rg_v4_r1/train.jsonl",
+      "sha256": "02bd92260538ed75c7b1e82aa7cdb0bed4029ed06c8e982ef1b059e5605699df"
+    }
+  },
+  "status": "complete"
+}

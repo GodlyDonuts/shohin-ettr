@@ -1,6 +1,6 @@
 # PSTC1: Pushdown-Stack Typed Compiler
 
-Status: frozen successor contract; CPU target admission in progress
+Status: frozen successor contract; CPU target admitted; mechanics pending
 
 Date: 2026-08-10
 
@@ -59,7 +59,7 @@ The gate may proceed only if at least 99% of every development family remains.
 - one tied width-512 controller with source cross-attention and top-two stack
   reads;
 - one shared stack-write cell and action/pointer heads;
-- at most 24 actions and stack depth 8, tightened only by the CPU receipt;
+- at most 22 actions and stack depth 6, fixed by the CPU receipt;
 - 1,024 updates, batch 32, first 128 updates gold-action feedback and all
   remaining updates hard autonomous feedback;
 - AdamW, LR `2e-4`, betas `(0.9,0.95)`, weight decay `0.01`, gradient clip 1;
@@ -107,3 +107,14 @@ closed until the compiler passes.
 A PSTC1 pass would establish learned hierarchical source-to-program
 compilation with a causal model-owned stack. It would not by itself establish
 broad reasoning, arithmetic execution, or a novel universal architecture.
+
+## Data admission result
+
+CPU job `749652` admitted all `75,935` train and all `3,917` development rows
+with zero exclusions. Every postorder action sequence reproduces the existing
+binary operation and result sequence exactly. Maximum action count is 22 and
+maximum stack depth is 6. Train/development SHA-256 are
+`b522d58b3403064987a47d7b22657ef862945f18dfb352a78625fbcc27ebf008`
+and `bf90044cd17e5e63cdeb7f91bffaae6e4bc59e992fb95cb8da9d2b29da00c914`;
+report SHA-256 is
+`31913bcd4fb83a7481221b56dc675ead4179e0f1bb8bec5eaa3d494e45f94b37`.
