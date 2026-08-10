@@ -24,7 +24,6 @@ from pushdown_stack_typed_compiler import (
     PushdownStackCompiler,
     StackProgram,
     load_stack_program,
-    stack_labels,
 )
 from train_pstc1_stack import sha256_file, tokenize_sources
 
@@ -61,9 +60,9 @@ def load_rows(path: Path, expected_sha256: str) -> list[StackProgram]:
 
 
 def source_shuffle_indices(rows: list[StackProgram], seed: int) -> list[int]:
-    groups: dict[tuple[str, int, int], list[int]] = defaultdict(list)
+    groups: dict[tuple[str, int], list[int]] = defaultdict(list)
     for index, row in enumerate(rows):
-        groups[(row.family, len(row.actions), len(row.number_spans))].append(index)
+        groups[(row.family, len(row.actions))].append(index)
     mapping = list(range(len(rows)))
     generator = random.Random(seed)
     for key, members in sorted(groups.items()):
@@ -214,7 +213,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             targets = rows[start : start + args.batch_size]
             sources = [rows[mapping[index]] for index in range(start, min(start + args.batch_size, len(rows)))]
             encoded, candidate_mask, _ = tokenize_sources(tokenizer, sources, device, args.max_source_tokens)
-            labels = stack_labels(targets, device)
+            candidate_count = torch.tensor(
+                [len(source.number_spans) for source in sources],
+                dtype=torch.long,
+                device=device,
+            )
             with torch.autocast("cuda", dtype=torch.bfloat16):
                 source_features = text_model(
                     input_ids=encoded["input_ids"], attention_mask=encoded["attention_mask"], use_cache=False, return_dict=True
@@ -223,7 +226,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     source_features,
                     encoded["attention_mask"].bool(),
                     candidate_mask,
-                    labels["candidate_count"],
+                    candidate_count,
                     feedback="hard",
                     reset_stack=args.control == "stack_reset",
                     permute_stack_top=args.control == "stack_top_permuted",
