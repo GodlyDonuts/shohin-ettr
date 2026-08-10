@@ -1,5 +1,21 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **DTC1 CLOSED: EXECUTION IS CAUSAL, OWNER TRACE COVERAGE IS THE BOTTLENECK —
+> 2026-08-10:** Immutable CPU job `750036` completed the one frozen pass in
+> 0.41s. Only `257/666` direct-owner drafts expose an accepted explicit
+> transaction; all 257 execute normally. Aligned scores `108/666`, versus
+> draft shuffle `1`, source-plus-draft shuffle `1`, and direct owner `267`.
+> The compiler accepts 887/946 annotations with 674 state reads across 195
+> linked rows. State reset retains only `1/98` linked aligned solves and
+> opcode permutation retains `4/108`, proving causal recurrence and learned
+> execution where a trace exists. But DTC1 repairs only seven direct errors,
+> breaks fourteen direct answers, misses coverage/direct-parity/opcode gates,
+> and fails both interface and capability qualification. The absent program
+> trace on 409 drafts is the dominant boundary. Exact DTC1 closes without
+> parser/normalization/threshold variants; public test remains sealed. Full
+> report SHA-256 is `04a64643...467ce`; result:
+> `docs/research/SHOHIN_DTC1_RESULT.json`.
+
 > **DTC1 DRAFT TRANSACTION COMPILER FROZEN — 2026-08-10:** DTMC1 showed that
 > owner-draft information is causal but fixed-slot graph decoding is not
 > competitive. The next single-pass falsifier trains no weights: it scans the

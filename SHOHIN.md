@@ -67,7 +67,7 @@ development result with explicit grammar, stack, and rational-state
 scaffolding; WGP1's confirmation source failed admission before model scoring,
 so no LAM1 holdout claim exists.
 
-The latest natural-language successor was **DTMC1**. A question-only typed
+The latest learned natural-language successor was **DTMC1**. A question-only typed
 compiler (TMC1) was causal but solved only `44/666 = 6.61%`, showing that one
 static source representation did not expose a sufficient semantic plan.
 DTMC1 therefore reads the frozen model's own autoregressive draft and emits a
@@ -81,6 +81,18 @@ The 24.86M-parameter fit closed negative: aligned source-plus-draft reaches
 Operation/operand accuracy is only `47.61% / 32.40%`. The draft is causally
 used, but this full-graph fixed-slot interface does not improve capability and
 is not part of the release architecture. Public test remained sealed.
+
+A final read-only bridge diagnostic, **DTC1**, then bypassed learned graph
+decoding entirely. It lowered explicit `<<expression=result>>` transactions
+from the same owner drafts into causal typed state references and let frozen
+LAM1 recompute every value. The mechanism is sharp when a trace exists:
+aligned scores `108/666`, draft shuffle and source-plus-draft shuffle each
+score `1/666`, state reset retains only `1/98` linked aligned solves, opcode
+permutation retains four, and normal execution has zero invalid rows. But
+only `257/666` owner drafts expose any accepted transaction. DTC1 repairs seven
+direct errors while breaking fourteen and remains far below the direct owner
+at `267/666`. This closes parser-level recovery: the current 0.8B owner often
+does not externalize a usable program at all.
 
 Historical ETTR graph-reactor and synthetic compiled-state experiments remain
 valuable research history, but they are not the current deployable Shohin
@@ -105,15 +117,16 @@ flowchart TB
     GP --> LM["Learned recurrent digit microcode"]
     LM --> T["Exact terminal state"]
 
-    D -. "DTMC1: closed negative" .-> TG["Typed result-free graph"]
+    D -. "DTMC1/DTC1: closed bridges" .-> TG["Typed result-free graph"]
     X -.-> TG
     TG -.-> LM
 ```
 
 The solid upper path is the qualified deployable temporal-revision system.
 The solid lower path is the qualified controlled LAM1 development system. The
-dotted bridge is the closed DTMC1 negative: it demonstrates causal draft
-signal, not a working natural-language-to-microcode bridge.
+dotted bridge represents the closed DTMC1/DTC1 negatives: they demonstrate
+causal draft signal and causal transaction execution, but not a working broad
+natural-language-to-microcode bridge.
 
 ## The architecture
 

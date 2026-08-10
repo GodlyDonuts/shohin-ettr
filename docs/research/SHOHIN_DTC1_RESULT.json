@@ -1,0 +1,45 @@
+{
+  "schema": "shohin-dtc1-result-v1",
+  "status": "fail",
+  "holdout_used": false,
+  "public_test_opened": false,
+  "job_id": 750036,
+  "runtime_commit": "a7fae74",
+  "runtime_manifest_sha256": "37a78599516d4fa525f3e122b750dab683e61f7a141b634933ac102fe28b00aa",
+  "full_report_sha256": "04a646439c86e463119b39db5ac978444d9f50f55b7f5eb743ae6c075be467ce",
+  "elapsed_seconds": 0.4086422920227051,
+  "scores": {
+    "aligned_correct": 108,
+    "draft_shuffled_correct": 1,
+    "source_draft_shuffled_correct": 1,
+    "direct_reference_correct": 267,
+    "compiled_rows": 257,
+    "executable_rows": 257,
+    "linked_rows": 195,
+    "linked_correct": 98,
+    "state_reset_linked_correct": 1,
+    "opcode_permuted_correct": 4,
+    "repairs": 7,
+    "breaks": 14
+  },
+  "mechanics": {
+    "annotations": 946,
+    "accepted_transactions": 887,
+    "rejected_transactions": 59,
+    "state_reads": 674,
+    "source_reads": 895,
+    "literal_reads": 363,
+    "normal_execution_invalid": 0
+  },
+  "gates": {
+    "compiled_and_executable_at_least_500": false,
+    "aligned_at_least_direct_267": false,
+    "aligned_beats_draft_shuffle_by_100": true,
+    "source_draft_shuffle_at_most_67": true,
+    "at_least_100_linked_rows": true,
+    "state_reset_loss_at_least_20_points": true,
+    "opcode_loss_at_least_30_points": false,
+    "zero_aligned_execution_invalid": true
+  },
+  "interpretation": "Explicit owner-draft transactions are source- and state-causal and execute without normal invalidity, but only 257 of 666 drafts expose any accepted transaction. Exact DTC1 fails interface qualification and capability improvement and closes without parser or threshold variants."
+}

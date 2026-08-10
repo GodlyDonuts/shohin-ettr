@@ -1,6 +1,6 @@
 # DTC1: Draft Transaction Compiler
 
-Status: prospective development contract; no DTC1 score inspected
+Status: development failed; exact DTC1 closed
 
 Date: 2026-08-10
 
@@ -125,3 +125,32 @@ an interface-only pass. A capability pass permits one separately frozen
 public evaluation and a trainable transaction-policy successor; it does not
 by itself establish general reasoning.
 
+## Development Result
+
+Immutable CPU job `750036` completed the single frozen pass in 0.41 seconds.
+The exact report SHA-256 is `04a64643...467ce`; runtime commit `a7fae74` has
+manifest SHA-256 `37a78599...0aa`.
+
+Only `257/666` aligned drafts contain an accepted transaction and all 257
+execute normally. The parser accepts 887 of 946 annotations, producing 674
+causal state reads, 895 source reads, and 363 literal reads across 195 linked
+rows. There are zero normal execution failures.
+
+| View | Correct | Accuracy |
+|---|---:|---:|
+| aligned transactions | 108/666 | 16.2162% |
+| depth-matched draft shuffle | 1/666 | 0.1502% |
+| source plus draft shuffle | 1/666 | 0.1502% |
+| immutable direct owner | 267/666 | 40.0901% |
+
+The aligned path repairs seven direct-owner errors but breaks fourteen direct
+answers. Of 98 aligned-correct linked rows, state reset retains only one, and
+opcode permutation retains only four of all 108 aligned solves. Thus source,
+transaction linkage, and learned arithmetic operations are strongly causal.
+
+The gate nevertheless fails decisively: coverage is `257 < 500`, aligned is
+`108 < 267`, and opcode loss is 15.62 points rather than the required 30.
+The draft owner simply does not externalize any accepted transaction on 409
+rows. This is not a parser-invalidity problem on admitted rows and cannot be
+rescued by parser variants. Exact DTC1 closes; public GSM8K test remains
+sealed. Compact result: `SHOHIN_DTC1_RESULT.json`.

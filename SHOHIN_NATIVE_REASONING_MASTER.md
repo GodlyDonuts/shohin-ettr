@@ -54,6 +54,21 @@ only one answer over TMC1; exact DTMC1 closes and public test remains sealed.
 Contract/result: `docs/research/SHOHIN_DTMC1_DRAFT_CONDITIONED_MICROCODE.md`
 and `docs/research/SHOHIN_DTMC1_RESULT.json`.
 
+DTC1 then removed the learned fixed-slot graph decoder and directly lowered
+only explicit arithmetic annotations from those same immutable owner drafts
+into typed causal transactions. It accepts 887/946 annotations and executes
+all 257 compiled rows without normal invalidity. Aligned answers are
+`108/666`, versus `1/666` under either draft shuffle or source-plus-draft
+shuffle. State reset retains only `1/98` linked aligned solves and opcode
+permutation retains four, so transaction linkage and learned execution are
+causal. The mechanism still fails: 409 drafts contain no accepted transaction,
+aligned remains far below the direct owner's `267`, and seven repairs are
+offset by fourteen breaks. This closes exact DTC1 and localizes the boundary
+to owner trace externalization rather than parser or arithmetic execution.
+Public test remains sealed. Contract/result:
+`docs/research/SHOHIN_DTC1_DRAFT_TRANSACTION_COMPILER.md` and
+`docs/research/SHOHIN_DTC1_RESULT.json`.
+
 The current evidence therefore has two distinct boundaries. Dense
 model-owned temporal revision remains the strongest practical broad-task
 Shohin system. LAM1 is the strongest complete controlled source-to-terminal
