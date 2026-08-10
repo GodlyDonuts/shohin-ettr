@@ -85,7 +85,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
             model,
             tokenizer,
             prompts,
-            True,
+            False,
             "greedy",
             args.max_new_tokens,
             stop_ids,
