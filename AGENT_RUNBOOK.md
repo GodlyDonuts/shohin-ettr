@@ -1,5 +1,47 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **SLC1 STRUCTURED LEDGER COMPILER FROZEN; MECHANICS LIVE — 2026-08-10:**
+> The raw-pointer negative is followed by one bounded compiler prerequisite,
+> not another prose-rewrite fit. SLC1 trains pinned Qwen3.5-0.8B final-four
+> rank-8 LoRA for exactly 1,024 updates to emit a canonical addressable ledger
+> from the source. The full 3,917-row source-disjoint development board and a
+> same-family/depth source-shuffled falsifier were frozen before capability
+> output. Conjunctive gates require `>=99%` syntax/record-count, `>=95%`
+> operation-sequence/terminal accuracy, `>=90%` exact complete records and
+> every-family terminal, `>=85%` depth-five terminal, a `>=65`-point causal
+> margin, shuffled terminal `<=25%`, and zero exhaustion. Job `749618` is a
+> two-update mechanics-only run; it cannot alter settings or count as science.
+> Contract: `docs/research/SHOHIN_SLC1_STRUCTURED_LEDGER_COMPILER.md`.
+
+> **EXACT STRUCTURED LEDGER DATA ADMITTED — 2026-08-10:** CPU jobs `749611`,
+> `749615`, and `749616` built and audited the first broad process-exact
+> operation ledger from RG-v4. The immutable view contains `75,935` train rows
+> / `198,335` exact operations and `3,917` development rows / `10,120`
+> operations across five arithmetic families. It rejected `10,977` rows with
+> false intermediate arithmetic and `1,262` whose terminal state differed from
+> the answer, proving the upstream answer-checked corpus was not process-exact.
+> Compact targets round-trip exactly; train/development SHA-256 are
+> `6a5876f2...f671` / `760044d9...ec87`. Pinned Qwen3.5-0.8B tokenization has
+> maximum complete lengths of only `380/355`, so SLC1 safely uses 384 tokens.
+> Holdout was not used. The earlier conversational total `202,335` was a
+> summation error; `198,335` is the verified train total.
+
+> **RAW NATURAL POINTER SUCCESSOR REJECTED BEFORE GPU USE — 2026-08-10:** A
+> holdout-blind model-free audit of immutable CVG1 natural trajectories scores
+> exactly-one-correct pairs on train (`1,449`) and development (`180`). One
+> prefix/suffix splice can preserve only `1.2346% / 1.0245%` of the correct
+> target on average; the median is zero and the median replacement is `706 /
+> 653.5` characters. Even an unrestricted ordered multi-span diff preserves
+> only `42.0460% / 44.9179%` and needs `53.12 / 56.97` copy runs on average.
+> Thus raw prose pointer editing degenerates into fragmented full regeneration
+> and is rejected without an H100 fit. Report SHA-256 is `c8b73a13...9f1a9`.
+> This reinforces the closed PSET1 value-decoder negative and does not reopen
+> DSET/GSET/ISET/FRET/RIFT/OCET/RSOT/BSOT. The next admissible explicit
+> transduction must create stable edit locality through a model-owned
+> structured operation/state ledger; CPU data admission precedes any GPU fit.
+> Files: `pipeline/audit_natural_edit_locality.py` and
+> `docs/research/SHOHIN_NATURAL_EDIT_LOCALITY.md`.
+
 > **BSOT1 CLOSED; EXPLICIT EDIT CASCADE RETIRED — 2026-08-10:** Exact jobs
 > `749585--749608` completed all 24 aligned/swapped/hidden commit shards in
 > `1m54s--2m32s` each. The immutable ISET proposal artifact starts at

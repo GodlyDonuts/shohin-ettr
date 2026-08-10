@@ -58151,3 +58151,58 @@ the requested standalone-function format. AQC selected the unchanged lineage
 on all five, so the smoke validates deployment, not a new generalization gain.
 Exact custody and boundary are in
 `docs/research/SHOHIN_IDR_AQC_DEPLOYABLE_RELEASE.md`.
+
+### Raw natural pointer editing is not an admissible successor
+
+After the explicit synthetic edit cascade closed, a model-free feasibility
+audit tested whether natural wrong/correct trajectories have enough shared
+surface structure for a pointer transducer to avoid full regeneration. The
+immutable CVG1 corpus supplies 1,449 train and 180 development pairs with
+exactly one independently correct natural candidate; holdout was not scored.
+
+The answer is no. An optimistic single prefix/suffix splice preserves only
+`1.2346%` of train targets and `1.0245%` of development targets on average;
+both medians are zero. An unrestricted ordered multi-span diff preserves only
+`42.0460% / 44.9179%` and requires `53.12 / 56.97` copy runs on average.
+Therefore a raw-text COPY/DELETE/REPLACE architecture would add a difficult
+alignment policy while still regenerating most semantic content. It is
+rejected before GPU use. The audit report SHA-256 is
+`c8b73a13d6c243accf34a6e770a8660e2ffb0330d9d6acf16586c5f0c799f1a9`.
+
+The implication is architectural: edit locality must be created, not assumed.
+The next admissible transduction uses a model-owned structured draft ledger
+with stable operation/value/dependency/state addresses, record-level revision,
+tied recurrent replay, and a model-owned final renderer. Existing controlled
+TOL3/NTA3/NVE1 passes provide reusable typed mechanics; their engineered
+grammar and executor remain explicit controls. No H100 fit opens until a CPU
+admission demonstrates broad, exact, source-disjoint ledger data and a real
+edit-locality advantage.
+
+### Exact structured ledger data and the SLC1 compiler gate
+
+That CPU admission is complete. An exact parser accepted only executable
+RG-v4 arithmetic traces whose every intermediate equality and terminal answer
+agree. It produced 75,935 train rows with 198,335 verified operations and
+3,917 source-disjoint development rows with 10,120 operations. It rejected
+10,977 false intermediate traces and 1,262 terminal mismatches. The five
+admitted families span one-to-five-record ADD, SUB, MUL, and DIV programs;
+holdout was not used. The immutable train/development compact-view hashes are
+`6a5876f2b8eed1387c31459062102b9bd007bff99d556ee6f63c75613310f671`
+and `760044d9b3851197988b361eba021ffbfe013600fab464731ab72de5e617ec87`.
+
+Each target is a canonical operation ledger with stable record addresses,
+explicit dependencies, exact rational values, and a commit record. Canonical
+materialization round-trips every admitted record. Pinned Qwen3.5-0.8B
+tokenization found maximum complete source-plus-target lengths of 380 train
+and 355 development tokens, so a 384-token context retains every row.
+
+SLC1 is prospectively frozen as the prerequisite model-owned compiler gate.
+It uses one 1,024-update final-four rank-8 fit and evaluates all development
+rows against a same-family/depth source-shuffled falsifier. Required floors are
+99% valid syntax and record count, 95% operation sequence and terminal value,
+90% complete records and every-family terminal, 85% depth-five terminal, a
+65-point aligned-over-shuffled causal margin, shuffled terminal at most 25%,
+and zero exhaustion. A pass qualifies only the compiler interface and opens a
+separately frozen record-level edit/replay transducer; it is not itself a
+general-reasoning claim. The exact contract is
+`docs/research/SHOHIN_SLC1_STRUCTURED_LEDGER_COMPILER.md`.

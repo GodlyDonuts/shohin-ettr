@@ -1,0 +1,48 @@
+{
+  "canonical_round_trip_verified": true,
+  "counters": {
+    "development": {
+      "family:basic_arithmetic": 804,
+      "family:chain_sum": 896,
+      "family:decimal_arithmetic": 439,
+      "family:decimal_chain_sum": 993,
+      "family:products": 785,
+      "records": 10120,
+      "rows": 3917
+    },
+    "train": {
+      "family:basic_arithmetic": 16200,
+      "family:chain_sum": 17690,
+      "family:decimal_arithmetic": 8587,
+      "family:decimal_chain_sum": 19002,
+      "family:products": 14456,
+      "records": 198335,
+      "rows": 75935
+    }
+  },
+  "holdout_used": false,
+  "outputs": {
+    "development": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/structured_ledger_sft_rg_v4_r1/development.jsonl",
+      "rows": 3917,
+      "sha256": "760044d9b3851197988b361eba021ffbfe013600fab464731ab72de5e617ec87"
+    },
+    "train": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/structured_ledger_sft_rg_v4_r1/train.jsonl",
+      "rows": 75935,
+      "sha256": "6a5876f2b8eed1387c31459062102b9bd007bff99d556ee6f63c75613310f671"
+    }
+  },
+  "schema": "shohin-structured-ledger-sft-report-v1",
+  "sources": {
+    "development": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/structured_ledger_rg_v4_r1/development.jsonl",
+      "sha256": "f5d4a7150c384da046b3e86c76f9b73e1fdc15d4b56add29c3cf0fa83450bdee"
+    },
+    "train": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/structured_ledger_rg_v4_r1/train.jsonl",
+      "sha256": "02bd92260538ed75c7b1e82aa7cdb0bed4029ed06c8e982ef1b059e5605699df"
+    }
+  },
+  "status": "complete"
+}

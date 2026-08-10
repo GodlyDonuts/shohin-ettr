@@ -1,0 +1,189 @@
+{
+  "allowed_splits": [
+    "train",
+    "development"
+  ],
+  "holdout_scored": false,
+  "ignored_scored_split_outcomes": {
+    "both_correct": 1604,
+    "both_wrong": 4307
+  },
+  "input": "artifacts/product_reasoning/cvg1_pairs_a960206_r1/pairs.jsonl",
+  "input_sha256": "45f1d66ce5e87dc2a1f4c3594bdde2bae26e9417e879d16eb4eddb228b696afe",
+  "interpretation_contract": {
+    "multi_span_copy_fraction": "optimistic target-character fraction retained by an unrestricted ordered multi-span diff; not a learned pointer score",
+    "single_splice_copy_fraction": "optimistic target-character fraction retained by one prefix/suffix edit"
+  },
+  "row_counts_metadata_only": {
+    "development": 832,
+    "holdout": 852,
+    "train": 6708
+  },
+  "schema": "shohin-natural-edit-locality-audit-v1",
+  "splits": {
+    "development": {
+      "domain_counts": {
+        "bbh_logic": 96,
+        "math500": 81,
+        "mbpp": 3
+      },
+      "metrics": {
+        "common_prefix_characters": {
+          "count": 180,
+          "max": 126.0,
+          "mean": 5.55,
+          "p50": 0.0,
+          "p90": 8.999999999999943,
+          "p99": 96.83000000000018
+        },
+        "common_suffix_characters": {
+          "count": 180,
+          "max": 4.0,
+          "mean": 0.28888888888888886,
+          "p50": 0.0,
+          "p90": 1.0,
+          "p99": 2.0
+        },
+        "correct_characters": {
+          "count": 180,
+          "max": 3410.0,
+          "mean": 800.9722222222222,
+          "p50": 656.0,
+          "p90": 1579.7999999999997,
+          "p99": 2260.280000000005
+        },
+        "multi_span_copy_characters": {
+          "count": 180,
+          "max": 1087.0,
+          "mean": 281.14444444444445,
+          "p50": 245.0,
+          "p90": 508.4,
+          "p99": 838.2100000000016
+        },
+        "multi_span_copy_fraction": {
+          "count": 180,
+          "max": 0.9375,
+          "mean": 0.4491793722510993,
+          "p50": 0.44638337055758004,
+          "p90": 0.7512626262626262,
+          "p99": 0.9263526445770736
+        },
+        "multi_span_copy_runs": {
+          "count": 180,
+          "max": 210.0,
+          "mean": 56.97222222222222,
+          "p50": 51.0,
+          "p90": 109.0,
+          "p99": 156.20000000000016
+        },
+        "single_splice_copy_fraction": {
+          "count": 180,
+          "max": 0.49356223175965663,
+          "mean": 0.010245174470556907,
+          "p50": 0.0,
+          "p90": 0.02062441789461348,
+          "p99": 0.1356921373200445
+        },
+        "single_splice_replacement_characters": {
+          "count": 180,
+          "max": 3410.0,
+          "mean": 795.1333333333333,
+          "p50": 653.5,
+          "p90": 1563.1999999999998,
+          "p99": 2232.8000000000056
+        },
+        "wrong_characters": {
+          "count": 180,
+          "max": 4156.0,
+          "mean": 1906.5666666666666,
+          "p50": 1832.5,
+          "p90": 3410.5,
+          "p99": 3726.13
+        }
+      },
+      "scored_exactly_one_correct_pairs": 180
+    },
+    "train": {
+      "domain_counts": {
+        "bbh_logic": 753,
+        "math500": 673,
+        "mbpp": 23
+      },
+      "metrics": {
+        "common_prefix_characters": {
+          "count": 1449,
+          "max": 149.0,
+          "mean": 4.733609385783299,
+          "p50": 0.0,
+          "p90": 12.0,
+          "p99": 65.0
+        },
+        "common_suffix_characters": {
+          "count": 1449,
+          "max": 320.0,
+          "mean": 0.7936507936507936,
+          "p50": 0.0,
+          "p90": 1.0,
+          "p99": 3.0
+        },
+        "correct_characters": {
+          "count": 1449,
+          "max": 3769.0,
+          "mean": 864.296066252588,
+          "p50": 709.0,
+          "p90": 1713.0,
+          "p99": 2817.4399999999996
+        },
+        "multi_span_copy_characters": {
+          "count": 1449,
+          "max": 1262.0,
+          "mean": 272.8681849551415,
+          "p50": 240.0,
+          "p90": 502.0,
+          "p99": 817.1599999999999
+        },
+        "multi_span_copy_fraction": {
+          "count": 1449,
+          "max": 1.0,
+          "mean": 0.42046002544425665,
+          "p50": 0.4107142857142857,
+          "p90": 0.75,
+          "p99": 0.9428571428571428
+        },
+        "multi_span_copy_runs": {
+          "count": 1449,
+          "max": 208.0,
+          "mean": 53.11801242236025,
+          "p50": 48.0,
+          "p90": 99.0,
+          "p99": 151.5999999999999
+        },
+        "single_splice_copy_fraction": {
+          "count": 1449,
+          "max": 0.8620689655172413,
+          "mean": 0.012346370471900736,
+          "p50": 0.0,
+          "p90": 0.022195293033773742,
+          "p99": 0.20532598416686895
+        },
+        "single_splice_replacement_characters": {
+          "count": 1449,
+          "max": 3768.0,
+          "mean": 858.7688060731539,
+          "p50": 706.0,
+          "p90": 1707.8000000000002,
+          "p99": 2800.08
+        },
+        "wrong_characters": {
+          "count": 1449,
+          "max": 4071.0,
+          "mean": 1746.9882677708765,
+          "p50": 1706.0,
+          "p90": 3343.3999999999996,
+          "p99": 3840.64
+        }
+      },
+      "scored_exactly_one_correct_pairs": 1449
+    }
+  }
+}

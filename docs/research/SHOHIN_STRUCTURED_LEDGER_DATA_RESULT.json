@@ -1,0 +1,67 @@
+{
+  "counters": {
+    "admitted_development": 3917,
+    "admitted_rows": 79852,
+    "admitted_train": 75935,
+    "rejected:clause arithmetic is false": 10977,
+    "rejected:terminal ledger value differs from answer": 1262,
+    "source_rows": 374659,
+    "unsupported_family": 282568
+  },
+  "development_modulus": 20,
+  "exact_arithmetic_verified": true,
+  "family_counts": {
+    "development": {
+      "basic_arithmetic": 804,
+      "chain_sum": 896,
+      "decimal_arithmetic": 439,
+      "decimal_chain_sum": 993,
+      "products": 785
+    },
+    "train": {
+      "basic_arithmetic": 16200,
+      "chain_sum": 17690,
+      "decimal_arithmetic": 8587,
+      "decimal_chain_sum": 19002,
+      "products": 14456
+    }
+  },
+  "holdout_used": false,
+  "operation_counts": {
+    "development": {
+      "ADD": 4117,
+      "DIV": 310,
+      "MUL": 1769,
+      "SUB": 3924
+    },
+    "train": {
+      "ADD": 79920,
+      "DIV": 6126,
+      "MUL": 34975,
+      "SUB": 77314
+    }
+  },
+  "outputs": {
+    "development": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/structured_ledger_rg_v4_r1/development.jsonl",
+      "rows": 3917,
+      "sha256": "f5d4a7150c384da046b3e86c76f9b73e1fdc15d4b56add29c3cf0fa83450bdee"
+    },
+    "train": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/structured_ledger_rg_v4_r1/train.jsonl",
+      "rows": 75935,
+      "sha256": "02bd92260538ed75c7b1e82aa7cdb0bed4029ed06c8e982ef1b059e5605699df"
+    }
+  },
+  "schema": "shohin-structured-reasoning-ledger-report-v1",
+  "source": "/lustre/fs1/home/sa305415/shohin/artifacts/rg_v4/rg_traces_sft.jsonl",
+  "source_sha256": "a87e7c8279048d9fbdf19b245aeff194305415ea06d28258902b397bbe96875f",
+  "status": "complete",
+  "supported_families": [
+    "basic_arithmetic",
+    "chain_sum",
+    "decimal_arithmetic",
+    "decimal_chain_sum",
+    "products"
+  ]
+}

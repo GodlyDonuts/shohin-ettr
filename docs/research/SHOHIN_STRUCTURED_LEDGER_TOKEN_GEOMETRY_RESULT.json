@@ -1,0 +1,110 @@
+{
+  "holdout_used": false,
+  "model_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+  "model_root": "/lustre/fs1/home/sa305415/shohin/artifacts/external/qwen3.5-0.8b-2fc0636",
+  "schema": "shohin-structured-ledger-token-geometry-v1",
+  "splits": {
+    "development": {
+      "max_sequence_length": 1024,
+      "maximum_identity_sha256": "0a3ab206badc9bf51625051465ceedb386edc1e4d489a40d602cb0ff8c44a490",
+      "overflow_by_depth": {},
+      "overflow_by_family": {},
+      "overflow_rows": 0,
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/structured_ledger_sft_rg_v4_r1/development.jsonl",
+      "prompt_tokens": {
+        "max": 127,
+        "p50": 84,
+        "p90": 108,
+        "p95": 114,
+        "p99": 122,
+        "p999": 125
+      },
+      "response_tokens_including_eos": {
+        "max": 229,
+        "p50": 76,
+        "p90": 160,
+        "p95": 182,
+        "p99": 209,
+        "p999": 222
+      },
+      "rows": 3917,
+      "rows_by_depth": {
+        "1": 1417,
+        "2": 653,
+        "3": 604,
+        "4": 630,
+        "5": 613
+      },
+      "rows_by_family": {
+        "basic_arithmetic": 804,
+        "chain_sum": 896,
+        "decimal_arithmetic": 439,
+        "decimal_chain_sum": 993,
+        "products": 785
+      },
+      "sha256": "760044d9b3851197988b361eba021ffbfe013600fab464731ab72de5e617ec87",
+      "total_tokens": {
+        "max": 355,
+        "p50": 160,
+        "p90": 266,
+        "p95": 295,
+        "p99": 330,
+        "p999": 347
+      }
+    },
+    "train": {
+      "max_sequence_length": 1024,
+      "maximum_identity_sha256": "9d947a6c526b7d6df151cdd43c4531511518ee78ace35d27bfc405594ef26371",
+      "overflow_by_depth": {},
+      "overflow_by_family": {},
+      "overflow_rows": 0,
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/structured_ledger_sft_rg_v4_r1/train.jsonl",
+      "prompt_tokens": {
+        "max": 130,
+        "p50": 84,
+        "p90": 108,
+        "p95": 114,
+        "p99": 122,
+        "p999": 126
+      },
+      "response_tokens_including_eos": {
+        "max": 258,
+        "p50": 77,
+        "p90": 157,
+        "p95": 182,
+        "p99": 212,
+        "p999": 228
+      },
+      "rows": 75935,
+      "rows_by_depth": {
+        "1": 26767,
+        "2": 12497,
+        "3": 12324,
+        "4": 12133,
+        "5": 12214
+      },
+      "rows_by_family": {
+        "basic_arithmetic": 16200,
+        "chain_sum": 17690,
+        "decimal_arithmetic": 8587,
+        "decimal_chain_sum": 19002,
+        "products": 14456
+      },
+      "sha256": "6a5876f2b8eed1387c31459062102b9bd007bff99d556ee6f63c75613310f671",
+      "total_tokens": {
+        "max": 380,
+        "p50": 161,
+        "p90": 262,
+        "p95": 294,
+        "p99": 333,
+        "p999": 352
+      }
+    }
+  },
+  "status": "complete",
+  "tokenizer_hashes": {
+    "tokenizer.json": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+    "tokenizer_config.json": "49e2b6e395f959f077f1e992b338919c0d4a9732fc6e613995e06557f843500c"
+  },
+  "zero_truncation": true
+}
