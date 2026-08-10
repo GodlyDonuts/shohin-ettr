@@ -27,7 +27,7 @@ Contract and result:
 `docs/research/SHOHIN_LAM1_LEARNED_ARITHMETIC_MICROCODE.md` and
 `docs/research/SHOHIN_LAM1_COMPOSITION_RESULT.json`.
 
-The natural-language frontier is now **DTMC1, Draft-Conditioned Typed
+The latest natural-language bridge test was **DTMC1, Draft-Conditioned Typed
 Microcode Compilation**. The intervening question-only typed compiler, TMC1,
 proved source and executor causality but failed semantic planning: it reached
 only `44/666 = 6.61%` exact answers and `26/666 = 3.90%` exact graphs, versus
@@ -37,7 +37,7 @@ question-only TMC1 and localizes the missing information to the model's
 autoregressive planning trajectory rather than graph syntax or learned
 arithmetic execution.
 
-DTMC1 keeps the same 24,864,055-parameter typed compiler, result-free graph
+DTMC1 kept the same 24,864,055-parameter typed compiler, result-free graph
 target, source-only numeric pointers, 4,096-update schedule, and frozen LAM1
 executor. Its only structural change is to condition compilation on the exact
 model-owned draft in addition to the source. The immutable corpus contains
@@ -45,21 +45,22 @@ model-owned draft in addition to the source. The immutable corpus contains
 correct, and all `1,904` exhausted generations are retained. Input custody
 passes on every row with maxima `756/1024` train tokens and at most `729/1024`
 development tokens, zero truncation, and no pointer access to draft-only
-numbers. Frozen fit `749998` is currently in progress; the last verified
-checkpoint was update `960/4096`, with finite gradients and loss decreasing
-from `9.88` to `4.84`. **No DTMC1 development score or public-test result
-exists yet.** A development pass must reach at least `301/666`, exceed both
-the direct owner and causal controls, achieve at least 80% operation and
-operand-owner accuracy, and preserve carry/opcode causality. Contract:
-`docs/research/SHOHIN_DTMC1_DRAFT_CONDITIONED_MICROCODE.md`.
+numbers. The fit completed all 4,096 updates, but aligned evaluation scored
+only `45/666 = 6.7568%`, versus draft shuffle `5/666`, shuffled source plus
+draft `4/666`, question-only TMC1 `44/666`, and direct owner `267/666`.
+Operation accuracy is 47.61%, operand ownership 32.40%, graph exactness
+`20/666`, and validity `664/666`. The draft is causal but the interface adds
+only one answer over TMC1; exact DTMC1 closes and public test remains sealed.
+Contract/result: `docs/research/SHOHIN_DTMC1_DRAFT_CONDITIONED_MICROCODE.md`
+and `docs/research/SHOHIN_DTMC1_RESULT.json`.
 
 The current evidence therefore has two distinct boundaries. Dense
 model-owned temporal revision remains the strongest practical broad-task
 Shohin system. LAM1 is the strongest complete controlled source-to-terminal
-architecture. DTMC1 is the active attempt to connect model-owned natural-
-language planning to typed learned execution. None of these facts authorizes
-a claim of unrestricted reasoning, a DTMC1 result before evaluation, or a
-WGP/LAM holdout confirmation.
+architecture. Connecting model-owned natural-language planning to typed
+learned execution remains unresolved after DTMC1. None of these facts
+authorizes a claim of unrestricted reasoning or a WGP/LAM holdout
+confirmation.
 
 An earlier completed gate was MPR1 on pinned small OLMoE, using a rank-18
 shared residual after all 16 MoE blocks. MPR1 closed negative: aligned exact

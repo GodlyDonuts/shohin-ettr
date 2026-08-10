@@ -1,6 +1,6 @@
 # DTMC1: Draft-Conditioned Typed Microcode Compiler
 
-Status: corpus and input-custody gates passed; frozen DTMC1 fit in progress
+Status: development gate failed; exact DTMC1 closed without public test
 
 Date: 2026-08-10
 
@@ -54,11 +54,30 @@ at most `729/1024` development tokens. Numeric pointer custody is confined to
 the unique source prefix through the `MODEL-OWNED DRAFT` marker, with zero
 truncation and zero draft-number leakage.
 
-Frozen fit `749998` is running on one H100. At the last verified checkpoint it
-had reached update `960/4096`; total loss decreased from `9.8820` at update 1
-to `4.84`, with finite gradients. These are training-health observations only.
-No autonomous DTMC1 development score exists yet, and no public test has been
-opened.
+Frozen fit `749998` completed all 4,096 updates in 2,741.95 seconds. It charged
+131,072 examples and 49,385,260 source-plus-draft tokens at 47.80 examples/s;
+peak GPU allocation was 4.31 GB. Final loss was 0.8280 and checkpoint SHA-256
+is `8d7ed14b...0da4`.
+
+Frozen evaluations `750031--750033` then closed the gate:
+
+| View | Correct | Accuracy |
+|---|---:|---:|
+| aligned source plus owner draft | 45/666 | 6.7568% |
+| same source plus depth-matched shuffled draft | 5/666 | 0.7508% |
+| shuffled source plus that donor's draft | 4/666 | 0.6006% |
+| question-only TMC1 reference | 44/666 | 6.6066% |
+| direct owner reference | 267/666 | 40.0901% |
+
+Aligned operation accuracy is `1312/2756 = 47.6052%`; operand-owner accuracy
+is `1784/5506 = 32.4010%`; exact graph is `20/666`; normal validity is
+`664/666`. Carry reset retains 14/36 normally solved multi-digit rows and
+opcode permutation scores 0/666. Thus both source and draft information are
+causal, but the draft-conditioned fixed-slot compiler adds only one answer
+over TMC1 and remains dramatically below its own direct owner. It fails every
+capability and structural floor plus zero-invalidity. Aggregate SHA-256 is
+`6e8ea75e...720f`; `SHOHIN_DTMC1_RESULT.json` stores the frozen reducer.
+Public GSM8K test was never opened.
 
 ## Frozen fit
 
@@ -104,7 +123,12 @@ GSM8K test evaluation of direct and DTMC1.
 
 ## Claim boundary
 
-DTMC1 is temporal program compilation, not proof of general reasoning or a
-novelty claim for draft-and-revise systems. A pass would specifically show
-that a model's own autoregressive trajectory provides causal semantic state
-that a typed learned-execution path can convert into improved exact answers.
+DTMC1 is a closed negative, not proof of general reasoning or a novelty claim
+for draft-and-revise systems. It shows that the model-owned draft carries
+causal information, because matched draft shuffling removes 40 of 45 solved
+rows, but the fixed-slot full-graph decoder cannot convert that information
+into useful capability. No rank, width, layer, duration, seed, loss, or prompt
+retry is authorized. A successor must make its supervised action explicitly
+draft-specific, such as pointer/edit sequence transduction with deterministic
+generic execution, rather than predict the same complete graph from every
+presentation of a source.

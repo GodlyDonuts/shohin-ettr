@@ -1,0 +1,49 @@
+{
+  "custody": {
+    "compiler_checkpoint_sha256": "8d7ed14b97b54255d981604e68844c5b2e83766f8de3f569bceafad8b2b50da4",
+    "compiler_training_data_sha256": "dfa3541fcd5744b5137726758b79bf7e06535983e7ce12acb27554785cce0b1c",
+    "compiler_updates": 4096,
+    "development_data_sha256": "981b83016d9a895af3016b3629c5852b868c80e364dbe97e3901a8d3e8ced4bd",
+    "draft_report_sha256": "234a029a7479fa056a3bdacd286dcc6e5a1d4cf7b472028b77fec7859ada2a49",
+    "lam_checkpoint_sha256": "baab62ec4a256e89950a257616d9f023b8f5e5c8c98b927052f7e722e815c7c4",
+    "model_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "owner_checkpoint_sha256": "8a2b6550f4083368eff2493f1b14d59a1d9dd2e4b39d4da58ff23cdd1b250b53"
+  },
+  "gates": {
+    "aligned_answers_at_least_301": false,
+    "aligned_beats_direct_by_5_points": false,
+    "carry_loss_at_least_10_points": true,
+    "draft_margin_at_least_10_points": false,
+    "opcode_loss_at_least_30_points": false,
+    "operand_accuracy_at_least_80pct": false,
+    "operation_accuracy_at_least_80pct": false,
+    "source_draft_shuffle_at_most_10pct": true,
+    "zero_normal_invalid": false
+  },
+  "holdout_used": false,
+  "public_test_opened": false,
+  "report_sha256": {
+    "draft_shuffled": "e46ed2cdc53ff0c2b105a675db6ed1ebad24f812ec7ba11676f26e7312b2a8fd",
+    "normal": "fc099c64738877f64f27c4e826f15048d5928a49f5b0645b83782c3e349cb818",
+    "source_draft_shuffled": "e0571fbcb0b16c78671b13e8b5e056cd5ee5faec32ca31fb7239948e4214e870"
+  },
+  "schema": "shohin-dtmc1-development-aggregate-v1",
+  "scores": {
+    "aligned_accuracy": 0.06756756756756757,
+    "aligned_correct": 45,
+    "carry_loss": 0.6111111111111112,
+    "carry_reset_retained": 14,
+    "direct_reference_correct": 267,
+    "draft_shuffled_accuracy": 0.0075075075075075074,
+    "draft_shuffled_correct": 5,
+    "multi_digit_normal_correct": 36,
+    "normal_invalid": 2,
+    "opcode_loss": 0.06756756756756757,
+    "operand_accuracy": 0.3240101707228478,
+    "operation_accuracy": 0.4760522496371553,
+    "source_draft_shuffled_accuracy": 0.006006006006006006,
+    "source_draft_shuffled_correct": 4,
+    "tmc1_reference_correct": 44
+  },
+  "status": "fail"
+}

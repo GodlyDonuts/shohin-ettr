@@ -1,5 +1,22 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **DTMC1 CLOSED: DRAFT SIGNAL IS CAUSAL BUT FIXED-SLOT COMPILATION DOES NOT
+> IMPROVE CAPABILITY — 2026-08-10:** Frozen fit `749998` completed all 4,096
+> updates in 2,741.95s with final loss 0.8280; checkpoint SHA-256 is
+> `8d7ed14b...0da4`. Concurrent evaluations `750031--750033` give aligned
+> `45/666 = 6.7568%`, draft-shuffled `5/666 = 0.7508%`, and shuffled
+> source-plus-draft `4/666 = 0.6006%`, versus question-only TMC1 `44/666` and
+> direct owner `267/666`. Aligned operation accuracy is 47.6052%, operand
+> ownership 32.4010%, graph exactness `20/666`, and normal validity `664/666`.
+> Carry reset retains 14/36 solved multi-digit rows; opcode permutation is
+> 0/666. Draft/source signals are causal, but the architecture adds only one
+> answer over TMC1 and misses every capability/structure/validity gate. Exact
+> DTMC1 closes without nearby variants; public test remains unopened. Result
+> SHA-256 is `6e8ea75e...720f`; see
+> `docs/research/SHOHIN_DTMC1_RESULT.json`. The next lane must use explicit
+> draft-specific sequence transduction/edit execution rather than another
+> fixed-slot source-to-full-graph decoder.
+
 > **DTMC1 CORPUS/AUDIT PASS; FROZEN FIT RUNNING — 2026-08-10:** All eight
 > immutable direct-owner draft shards completed after exact tasks 0/1 were
 > resubmitted away from broken-CUDA node `evc33`. The merged corpus contains
