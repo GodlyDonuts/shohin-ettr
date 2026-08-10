@@ -1,5 +1,19 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **LAM1 LEARNED ARITHMETIC MICROCODE FROZEN — 2026-08-10:** WGP1's
+> confirmation is closed, so the successor changes the unresolved component
+> rather than retrying its source/evaluator. LAM1 learns all 1,400 finite
+> base-10 add/subtract/multiply carry transitions in exactly 108,000 logits,
+> then composes those same learned tables through signed arbitrary-precision
+> rational operations and a postfix stack. Candidate execution uses digit
+> arrays and table argmax only; Python integer/Fraction arithmetic is confined
+> to the assessor. Frozen mechanics require 100% local transitions, 100% of
+> all 75,935 train and 3,917 development programs, zero invalid/overflow,
+> >=20-point multi-digit loss under carry reset, and >=50-point loss under
+> opcode permutation. A pass opens one unchanged BTT/WGP development
+> composition, not WGP confirmation or holdout. Contract:
+> `docs/research/SHOHIN_LAM1_LEARNED_ARITHMETIC_MICROCODE.md`.
+
 > **WGP1 CONFIRMATION CLOSED BEFORE MODEL SCORING — 2026-08-10:** Frozen
 > replacement-source job `749728` produced exactly 2,500 unique,
 > protected-disjoint Reasoning-Gym 0.1.25 rows (source SHA-256
