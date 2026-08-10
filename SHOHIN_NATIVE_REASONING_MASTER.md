@@ -69,11 +69,49 @@ Public test remains sealed. Contract/result:
 `docs/research/SHOHIN_DTC1_DRAFT_TRANSACTION_COMPILER.md` and
 `docs/research/SHOHIN_DTC1_RESULT.json`.
 
+CTE1 tested whether canonical transaction post-training could make the 0.8B
+owner externalize the missing ledger directly. The fit produced 599 compiled
+and 598 executable traces, but solved only `134/666`, versus source shuffle
+`4/666` and the direct owner `267/666`. State reset retained `1/131`
+linked-correct rows and opcode permutation retained `1/666`, so the generated
+program and learned execution were causal. Capability nevertheless collapsed
+with semantic depth: only 33 complete traces exactly matched the canonical
+target, answer accuracy fell from `76/212 = 35.85%` at gold depth two to zero
+on every depth 6--8 row, one normal execution was invalid, and 49 generations
+exhausted. Exact CTE1 closes without rescue variants; public test remains
+sealed. Contract/result:
+`docs/research/SHOHIN_CTE1_CANONICAL_TRANSACTION_EXTERNALIZATION.md` and
+`docs/research/SHOHIN_CTE1_RESULT.json`.
+
+LTR1 then falsified a local ledger-editor rescue before GPU use. Among 532
+wrong CTE1 proposals, mean gold-record copy is only 9.98%, median copy is
+zero, and just `143/532 = 26.88%` are within two record edits. A record editor
+would therefore regenerate most semantic content rather than repair a local
+mistake. LTR1 closes on its CPU locality gate. Result:
+`docs/research/SHOHIN_LTR1_RESULT.json`.
+
+Finally, CTF1 measured the same untouched canonical parser and frozen LAM1 on
+the stronger pinned Qwen3.5-4B owner. Scale restores substantial semantic
+program generation: aligned learned execution reaches `419/666 = 62.91%`,
+versus source shuffle `7/666`, state reset `0/419`, opcode permutation `3/666`,
+and zero normal execution invalidity. But only `562/666` traces compile,
+missing the frozen 600 gate, and the 4B owner's own direct answer claim is
+`487/666`. The overlap is 408 both correct, 79 direct-only, 11 ledger-only,
+and 168 neither; even the oracle union is only 498. Thus scale—not exact
+ledger execution—restores planning, while executing the extracted ledger
+breaks more capable answers than it repairs. CTF1 is conjunctively closed;
+holdout and public test remain sealed. Contract/result:
+`docs/research/SHOHIN_CTF1_CANONICAL_TRANSACTION_CAPABILITY_FLOOR.md` and
+`docs/research/SHOHIN_CTF1_RESULT.json`.
+
 The current evidence therefore has two distinct boundaries. Dense
 model-owned temporal revision remains the strongest practical broad-task
 Shohin system. LAM1 is the strongest complete controlled source-to-terminal
 architecture. Connecting model-owned natural-language planning to typed
-learned execution remains unresolved after DTMC1. None of these facts
+learned execution remains unresolved after DTMC1, DTC1, CTE1, and CTF1. The
+current evidence says execution is causal and model scale improves program
+quality, but canonical ledger execution does not improve the already-capable
+owner. None of these facts
 authorizes a claim of unrestricted reasoning or a WGP/LAM holdout
 confirmation.
 

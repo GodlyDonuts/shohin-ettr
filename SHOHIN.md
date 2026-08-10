@@ -94,6 +94,26 @@ direct errors while breaking fourteen and remains far below the direct owner
 at `267/666`. This closes parser-level recovery: the current 0.8B owner often
 does not externalize a usable program at all.
 
+Canonical transaction post-training did not solve that planning boundary.
+CTE1 produced 598 executable ledgers but only `134/666` exact answers, versus
+the direct 0.8B owner at `267/666`; accuracy falls from `35.85%` at depth two
+to zero at depths six through eight. The ledger and executor are causal—state
+reset retains `1/131` linked solves and opcode permutation `1/666`—but they
+faithfully execute semantically wrong plans. A CPU-only locality audit then
+closed ledger editing before training: wrong ledgers have only 9.98% mean and
+0% median gold-record copy, with just 26.88% within two record edits.
+
+The strongest capability-floor diagnostic uses untouched Qwen3.5-4B through
+the same canonical parser and learned LAM1 executor. It reaches `419/666`,
+with source shuffle `7`, state reset `0/419`, opcode permutation `3`, and zero
+normal execution invalidity. This shows that model scale restores substantial
+semantic program generation. It still fails the architecture gate: only
+`562/666` traces compile, and the capable 4B owner's direct answer claim is
+`487/666`. Exact ledger execution contributes 11 ledger-only solves but loses
+79 direct-only solves. Therefore the current natural-language microcode bridge
+is closed: learned execution is causal, but it does not improve the capable
+owner.
+
 Historical ETTR graph-reactor and synthetic compiled-state experiments remain
 valuable research history, but they are not the current deployable Shohin
 architecture. The complete historical ledger is
@@ -117,16 +137,17 @@ flowchart TB
     GP --> LM["Learned recurrent digit microcode"]
     LM --> T["Exact terminal state"]
 
-    D -. "DTMC1/DTC1: closed bridges" .-> TG["Typed result-free graph"]
+    D -. "DTMC1/DTC1/CTE1/CTF1: closed bridges" .-> TG["Typed result-free graph"]
     X -.-> TG
     TG -.-> LM
 ```
 
 The solid upper path is the qualified deployable temporal-revision system.
 The solid lower path is the qualified controlled LAM1 development system. The
-dotted bridge represents the closed DTMC1/DTC1 negatives: they demonstrate
-causal draft signal and causal transaction execution, but not a working broad
-natural-language-to-microcode bridge.
+dotted bridge represents the closed DTMC1/DTC1/CTE1/CTF1 negatives: they
+demonstrate causal draft signal, causal transaction execution, and improved
+program quality with scale, but not a natural-language-to-microcode path that
+beats the capable direct owner.
 
 ## The architecture
 
