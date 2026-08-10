@@ -1,5 +1,21 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **ISET1 CLOSED; WTV1 WHOLE-TRAJECTORY CANARY FROZEN — 2026-08-10:** ISET1
+> aligned execution is `1,838/1,908 = 96.3312%`, versus hidden `1,256` and
+> within-pair swapped `3`. Numeric execution is `1,650/1,652 = 99.8789%`,
+> fault repair `927/954 = 97.1698%`, but clean identity edits are only
+> `911/954 = 95.4927%`, choice execution `188/256 = 73.4375%`, and paired
+> consistency `93.7107%`; exact v0 closes without nearby variants and no
+> holdout opened. DSET/GSET/ISET complete trajectories disagree on only 125
+> rows. All 125 disagreements contain an exact candidate; 1,769 other rows are
+> unanimously correct and 14 unanimously wrong, giving a `1,894/1,908`
+> coherent-trajectory oracle. Majority voting scores only `1,830`, so WTV1 is
+> prospectively frozen as one counterbalanced same-host semantic verifier over
+> distinct complete lineages. Frozen canary gates are `>=105/125` disagreement
+> selections, `>=1,874/1,908` overall, `>=220/256` choice, and zero prompt
+> truncation. No training or holdout access is authorized by this canary.
+> Contract: `docs/research/SHOHIN_WTV1_WHOLE_TRAJECTORY_VERIFIER.md`.
+
 > **GSET1 CLOSED; ISET1 IDEMPOTENT TRANSACTIONS FROZEN — 2026-08-09:**
 > GSET1 mechanics `749072`, 16 feature jobs `749074--749089`, matched gate
 > fits `749090--749092`, 24 evaluation shards `749096--749121` plus unchanged
