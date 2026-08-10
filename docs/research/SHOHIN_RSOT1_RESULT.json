@@ -1,0 +1,272 @@
+{
+  "aligned": {
+    "commit_actions": {
+      "<KEEP>": 1798,
+      "<REPLACE_LAST>": 109,
+      "None": 1
+    },
+    "commit_errors": 1,
+    "commit_valid": 1907,
+    "commit_valid_accuracy": 0.999475890985325,
+    "family": {
+      "choice_final": {
+        "commit_valid": 256,
+        "final_correct": 172,
+        "proposal_correct": 155,
+        "rows": 256
+      },
+      "numeric_final": {
+        "commit_valid": 1651,
+        "final_correct": 1626,
+        "proposal_correct": 1545,
+        "rows": 1652
+      }
+    },
+    "final_accuracy": 0.9423480083857443,
+    "final_correct": 1798,
+    "max_token_exhausted": 0,
+    "member": {
+      "clean": {
+        "commit_valid": 954,
+        "final_correct": 850,
+        "proposal_correct": 751,
+        "rows": 954
+      },
+      "fault": {
+        "commit_valid": 953,
+        "final_correct": 948,
+        "proposal_correct": 949,
+        "rows": 954
+      }
+    },
+    "proposal_correct": 1700,
+    "rows": 1908
+  },
+  "aligned_minus_hidden": 98,
+  "aligned_minus_iset": -40,
+  "aligned_minus_swapped": 98,
+  "gate": {
+    "aligned_final_ge_1874": false,
+    "aligned_minus_hidden_ge_13": true,
+    "aligned_minus_iset_ge_13": false,
+    "aligned_minus_swapped_ge_13": true,
+    "choice_final_ge_220": false,
+    "clean_final_ge_945": false,
+    "commit_valid_ge_0_95": true,
+    "fault_final_ge_859": true,
+    "zero_exhaustion": true
+  },
+  "hidden": {
+    "commit_actions": {
+      "<KEEP>": 1908
+    },
+    "commit_errors": 0,
+    "commit_valid": 1908,
+    "commit_valid_accuracy": 1.0,
+    "family": {
+      "choice_final": {
+        "commit_valid": 256,
+        "final_correct": 155,
+        "proposal_correct": 155,
+        "rows": 256
+      },
+      "numeric_final": {
+        "commit_valid": 1652,
+        "final_correct": 1545,
+        "proposal_correct": 1545,
+        "rows": 1652
+      }
+    },
+    "final_accuracy": 0.8909853249475891,
+    "final_correct": 1700,
+    "max_token_exhausted": 0,
+    "member": {
+      "clean": {
+        "commit_valid": 954,
+        "final_correct": 751,
+        "proposal_correct": 751,
+        "rows": 954
+      },
+      "fault": {
+        "commit_valid": 954,
+        "final_correct": 949,
+        "proposal_correct": 949,
+        "rows": 954
+      }
+    },
+    "proposal_correct": 1700,
+    "rows": 1908
+  },
+  "holdout_authorized": false,
+  "holdout_used": false,
+  "iset_correct": 1838,
+  "receipts": {
+    "aligned": {
+      "inputs": [
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/aligned/commits/shard_00.json",
+          "sha256": "6916f19cd51c0e2fec528c989e0206574c77c762741e2d31ca2c4d0bdb494509"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/aligned/commits/shard_01.json",
+          "sha256": "10684a2c3da9d074734d911ab272b82a7cacf4edd77aea49eaf155225bf9c3a5"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/aligned/commits/shard_02.json",
+          "sha256": "772d413aabf8f8198be8e587950e0f2aefaa04db1b29ef68294d732df2d5401b"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/aligned/commits/shard_03.json",
+          "sha256": "7ba8b6f43f5e8ccea0f3ecf56559607147b8145a3ae5d6ba6c6175f1d17aff3c"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/aligned/commits/shard_04.json",
+          "sha256": "4c09f8c926bdb55c4bcddbb49b7d7c52abb96e9d97068c397edbbab3151d75e4"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/aligned/commits/shard_05.json",
+          "sha256": "b8addd256087e42a8acd82fb2520478bd1c2f60f58cdce0e8a616ecedf8e6b83"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/aligned/commits/shard_06.json",
+          "sha256": "c11f6230f3380df4093b25d0903bef24f1b645b1f569aa078f3230c9d2a7fc9c"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/aligned/commits/shard_07.json",
+          "sha256": "fbebe10c30448fbea2abb21cd5576d92f88a88fe1511d1252a582ce4db8b069a"
+        }
+      ],
+      "receipt": [
+        "29e642b77265272633aa72c478cda4c540c8bd65d824006059db7a6784be9a5b",
+        "62f9d3c52427d91913ee69a0f87ca2d9230e314b8fe795fcc11773f4fe06c445",
+        "f371d65fa9d973bf5c03083338803f348533b7e3e5122905b0c6b5dda92fe9f1"
+      ]
+    },
+    "hidden": {
+      "inputs": [
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/hidden/commits/shard_00.json",
+          "sha256": "7d110a01339ccd1bf540b586b7b1b833295392b28e3a0643721c2ab44a5107d2"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/hidden/commits/shard_01.json",
+          "sha256": "7a28f1478ba262742838474909d42b98a7fe5915fed200b3ab385d52c3317169"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/hidden/commits/shard_02.json",
+          "sha256": "8e5d62b5b98123d245d7e2c6163e838ee66fca9f73c693b8ed9baf9fb92dea45"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/hidden/commits/shard_03.json",
+          "sha256": "d5bdf2b5ea652fff66883a3a611ea21c00432de24228899b2c854c3eb76428b9"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/hidden/commits/shard_04.json",
+          "sha256": "856b0d6c4c305528c32dd9456f3070a2c72d8605a6718a8658a824eea055fe1b"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/hidden/commits/shard_05.json",
+          "sha256": "4088ca2e5961342417af45363c219459a109698275beb59445d524f86db9c2a5"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/hidden/commits/shard_06.json",
+          "sha256": "c2c2341c3ef5d1b904015260dba5251962d5d3f8194ea972110647ba7eb4a4bf"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/hidden/commits/shard_07.json",
+          "sha256": "e7369b3dac80c83f782129b1cc46044063943a4a86e8eead8c4fb48070cac99a"
+        }
+      ],
+      "receipt": [
+        "05135963b0033f594dfbe9b61cd6ef10313fa6c6753ab74947690f08bd7d5c30",
+        "62f9d3c52427d91913ee69a0f87ca2d9230e314b8fe795fcc11773f4fe06c445",
+        "f371d65fa9d973bf5c03083338803f348533b7e3e5122905b0c6b5dda92fe9f1"
+      ]
+    },
+    "swapped": {
+      "inputs": [
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/swapped/commits/shard_00.json",
+          "sha256": "caffc4111fdc4b318ee8f3ec940e081c6475d7f71732eb5d30b9345aa962a964"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/swapped/commits/shard_01.json",
+          "sha256": "793f07969143dd5505f993401652e0cabdedd9da6c0c59f38e0278503edc0ecd"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/swapped/commits/shard_02.json",
+          "sha256": "a13e43e84cf1ed46d18f9be6a488ae68781fc6f5b8b7f8e89b03437391568a07"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/swapped/commits/shard_03.json",
+          "sha256": "83f309c651ce05a1bbff37f01cfcd6a92b3f8c916c00f1a55b4b2d65e0e4141b"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/swapped/commits/shard_04.json",
+          "sha256": "5dc7a9c0fbd710dce775b2d8f0f3b0273b9f986ece0f823036afd31f64b4f20d"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/swapped/commits/shard_05.json",
+          "sha256": "8175c8fcd0de30db06ff434e679a3ace5110bf3197b51e622756c2f087245d41"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/swapped/commits/shard_06.json",
+          "sha256": "64711efd2d590b0a4e89d8c399956bfc3cffa657371f19d283f982d73bd324bf"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/ocet1_q35_r1/rsot1/swapped/commits/shard_07.json",
+          "sha256": "b6fcab935f8edf8eeff9588c6c19c1c29c6fa0993d76185007970427592ae27f"
+        }
+      ],
+      "receipt": [
+        "221c1edf6c7e52c2fedc0fd972bc134d9a06f9b8603b9ce4e23791df60230e87",
+        "62f9d3c52427d91913ee69a0f87ca2d9230e314b8fe795fcc11773f4fe06c445",
+        "f371d65fa9d973bf5c03083338803f348533b7e3e5122905b0c6b5dda92fe9f1"
+      ]
+    }
+  },
+  "schema": "shohin-rsot1-comparison-v1",
+  "status": "fail",
+  "swapped": {
+    "commit_actions": {
+      "<KEEP>": 1882,
+      "None": 26
+    },
+    "commit_errors": 26,
+    "commit_valid": 1882,
+    "commit_valid_accuracy": 0.9863731656184487,
+    "family": {
+      "choice_final": {
+        "commit_valid": 256,
+        "final_correct": 155,
+        "proposal_correct": 155,
+        "rows": 256
+      },
+      "numeric_final": {
+        "commit_valid": 1626,
+        "final_correct": 1545,
+        "proposal_correct": 1545,
+        "rows": 1652
+      }
+    },
+    "final_accuracy": 0.8909853249475891,
+    "final_correct": 1700,
+    "max_token_exhausted": 0,
+    "member": {
+      "clean": {
+        "commit_valid": 951,
+        "final_correct": 751,
+        "proposal_correct": 751,
+        "rows": 954
+      },
+      "fault": {
+        "commit_valid": 931,
+        "final_correct": 949,
+        "proposal_correct": 949,
+        "rows": 954
+      }
+    },
+    "proposal_correct": 1700,
+    "rows": 1908
+  }
+}

@@ -1,6 +1,10 @@
+import hashlib
+import json
+from pathlib import Path
+import tempfile
 import unittest
 
-from eval_rift1_fixed_point import execute_commit, replace_draft
+from eval_rift1_fixed_point import ISET_SCHEMA, execute_commit, load_iset, replace_draft
 
 
 class RIFT1MechanicsTest(unittest.TestCase):
@@ -27,6 +31,44 @@ class RIFT1MechanicsTest(unittest.TestCase):
         self.assertEqual(final, "answer C")
         self.assertIsNone(action)
         self.assertIsNotNone(error)
+
+    def test_iset_loader_binds_data_and_unique_trajectories(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            data = root / "data.jsonl"
+            data_report = root / "report.json"
+            data.write_text("data\n")
+            data_report.write_text("{}\n")
+            sha = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+            results = [
+                {"identity_sha256": f"{index:064x}", "executed_trajectory": "answer"}
+                for index in range(1908)
+            ]
+            merged = root / "merged.json"
+            merged.write_text(
+                json.dumps(
+                    {
+                        "schema": ISET_SCHEMA,
+                        "status": "complete",
+                        "holdout_used": False,
+                        "arm": "aligned",
+                        "shard_count": 8,
+                        "row_count": 1908,
+                        "data_sha256": sha(data),
+                        "data_report_sha256": sha(data_report),
+                        "results": results,
+                    }
+                )
+            )
+            rows, receipts = load_iset(merged, data, data_report)
+            self.assertEqual(len(rows), 1908)
+            self.assertEqual(receipts[0]["sha256"], sha(merged))
+
+            payload = json.loads(merged.read_text())
+            payload["data_sha256"] = "0" * 64
+            merged.write_text(json.dumps(payload))
+            with self.assertRaisesRegex(RuntimeError, "ISET report differs"):
+                load_iset(merged, data, data_report)
 
 
 if __name__ == "__main__":

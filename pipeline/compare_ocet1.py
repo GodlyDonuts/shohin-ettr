@@ -29,7 +29,8 @@ def sha256_file(path: Path) -> str:
 
 
 def load_arm(
-    paths: list[Path], arm: str, required_proposal_arm: str | None = None
+    paths: list[Path], arm: str, required_proposal_arm: str | None = None,
+    required_proposal_kind: str | None = None,
 ) -> tuple[list[dict], dict]:
     if len(paths) != 8:
         raise OCET1ComparisonError(f"{arm} shard count differs")
@@ -45,6 +46,10 @@ def load_arm(
             or (
                 required_proposal_arm is not None
                 and report.get("proposal_arm") != required_proposal_arm
+            )
+            or (
+                required_proposal_kind is not None
+                and report.get("proposal_kind") != required_proposal_kind
             )
             or int(report.get("shard_count", -1)) != 8
         ):
@@ -106,7 +111,10 @@ def run(args: argparse.Namespace) -> dict:
     receipts = {}
     for arm, paths in (("aligned", args.aligned), ("swapped", args.swapped), ("hidden", args.hidden)):
         rows, receipts[arm] = load_arm(
-            paths, arm, getattr(args, "required_proposal_arm", None)
+            paths,
+            arm,
+            getattr(args, "required_proposal_arm", None),
+            getattr(args, "required_proposal_kind", None),
         )
         loaded[arm] = rows
     aligned_by_id = {str(row["identity_sha256"]): row for row in loaded["aligned"]}
@@ -173,6 +181,7 @@ def main() -> int:
     parser.add_argument("--hidden", type=Path, nargs="+", required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--required-proposal-arm", choices=["aligned", "swapped", "hidden"])
+    parser.add_argument("--required-proposal-kind", choices=["fret", "iset"])
     parser.add_argument("--schema", default=SCHEMA)
     result = run(parser.parse_args())
     print(json.dumps(result, sort_keys=True))

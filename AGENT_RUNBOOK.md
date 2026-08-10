@@ -1,5 +1,22 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **RSOT1 CLOSED; BEST-STATE COMPOSITION FROZEN — 2026-08-10:** All 24
+> role-separated commit shards complete, including exact replacements for two
+> pre-model CUDA failures on `evc46`. The immutable qualified DSET proposal
+> owner scores `1700/1908`. The aligned OCET commit owner raises this to
+> `1798/1908` (`+98`), while swapped and hidden controls remain exactly
+> `1700`. Commit validity is `1907/1908`, choice `172/256`, numeric
+> `1626/1652`, clean `850/954`, fault `948/954`, and exhaustion zero. This is
+> causal on-policy repair, but it fails the `1874` total, `220` choice, `945`
+> clean, and `+13` over ISET1 gates; no holdout opens. Comparison SHA-256 is
+> `07a392f8...7829`. BSOT1 is prospectively frozen as one final no-training
+> composition: feed the immutable best ISET1 trajectories (`1838/1908`) to
+> aligned/swapped/hidden OCET commit owners under the unchanged gate. A miss
+> closes this proposal/commit cascade without nearby variants. Contracts and
+> result: `docs/research/SHOHIN_RSOT1_ROLE_SEPARATED_ON_POLICY_TRANSDUCER.md`,
+> `docs/research/SHOHIN_RSOT1_RESULT.json`, and
+> `docs/research/SHOHIN_BSOT1_BEST_STATE_ON_POLICY_TRANSDUCTION.md`.
+
 > **OCET1 CLOSED; ROLE INTERFERENCE IDENTIFIED; RSOT1 FROZEN — 2026-08-10:**
 > Warm-start fits `749369/749370/749371` completed 256 aligned/permuted/hidden
 > updates in 2h13m/1h54m/1h53m. The tied aligned system is `1,690/1,908`,

@@ -26,6 +26,7 @@ from train_dset1_span_edit import sha256_file
 
 SCHEMA = "shohin-rift1-fixed-point-evaluation-v1"
 FRET_SCHEMA = "shohin-fret1-always-rewrite-evaluation-v1"
+ISET_SCHEMA = "shohin-dset1-span-edit-evaluation-merged-v1"
 
 
 def atomic_json(path: Path, payload: dict) -> None:
@@ -69,6 +70,31 @@ def load_fret(paths: list[Path], arm: str) -> tuple[dict[str, dict], list[dict]]
     return rows, receipts
 
 
+def load_iset(path: Path, data: Path, data_report: Path) -> tuple[dict[str, dict], list[dict]]:
+    report = json.loads(path.read_text())
+    if (
+        report.get("schema") != ISET_SCHEMA
+        or report.get("status") != "complete"
+        or report.get("holdout_used") is not False
+        or report.get("arm") != "aligned"
+        or int(report.get("shard_count", -1)) != 8
+        or int(report.get("row_count", -1)) != 1908
+        or report.get("data_sha256") != sha256_file(data)
+        or report.get("data_report_sha256") != sha256_file(data_report)
+    ):
+        raise RuntimeError("BSOT1 ISET report differs")
+    results = report.get("results")
+    if not isinstance(results, list) or len(results) != 1908:
+        raise RuntimeError("BSOT1 ISET rows differ")
+    rows = {}
+    for row in results:
+        identity = str(row.get("identity_sha256", ""))
+        if not identity or identity in rows or not isinstance(row.get("executed_trajectory"), str):
+            raise RuntimeError("BSOT1 ISET identity or trajectory differs")
+        rows[identity] = row
+    return rows, [{"path": str(path.resolve()), "sha256": sha256_file(path)}]
+
+
 def replace_draft(question: str, old: str, new: str) -> str:
     if question.count(old) != 1:
         raise RuntimeError("RIFT1 source/draft boundary differs")
@@ -89,7 +115,14 @@ def run(args: argparse.Namespace) -> dict:
     if args.output.exists() or not 0 <= args.shard_index < args.shard_count:
         raise RuntimeError("RIFT1 output exists or shard differs")
     pairs = load_pairs(args.data, args.data_report)
-    fret, fret_receipts = load_fret(args.fret_shards, args.proposal_arm)
+    if bool(args.fret_shards) == bool(args.iset_merged):
+        raise RuntimeError("exactly one proposal source is required")
+    if args.iset_merged:
+        fret, fret_receipts = load_iset(args.iset_merged, args.data, args.data_report)
+        proposal_kind = "iset"
+    else:
+        fret, fret_receipts = load_fret(args.fret_shards, args.proposal_arm)
+        proposal_kind = "fret"
     selected_pairs = [
         pair for index, pair in enumerate(pairs) if index % args.shard_count == args.shard_index
     ]
@@ -172,6 +205,7 @@ def run(args: argparse.Namespace) -> dict:
         "holdout_used": False,
         "arm": args.arm,
         "proposal_arm": args.proposal_arm,
+        "proposal_kind": proposal_kind,
         "shard_index": args.shard_index,
         "shard_count": args.shard_count,
         "row_count": len(results),
@@ -205,7 +239,8 @@ def main() -> int:
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--data-report", type=Path, required=True)
-    parser.add_argument("--fret-shards", type=Path, nargs="+", required=True)
+    parser.add_argument("--fret-shards", type=Path, nargs="+")
+    parser.add_argument("--iset-merged", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--arm", choices=["aligned", "swapped", "hidden"], required=True)
     parser.add_argument(

@@ -78,6 +78,13 @@ class OCET1ComparisonTest(unittest.TestCase):
             with self.assertRaisesRegex(Exception, "hidden report differs"):
                 load_arm(paths["hidden"], "hidden", required_proposal_arm="aligned")
 
+            with self.assertRaisesRegex(Exception, "aligned report differs"):
+                load_arm(
+                    paths["aligned"],
+                    "aligned",
+                    required_proposal_kind="iset",
+                )
+
 
 if __name__ == "__main__":
     unittest.main()
