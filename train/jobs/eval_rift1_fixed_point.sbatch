@@ -13,7 +13,7 @@
 set -euo pipefail
 for variable in RUNTIME RUNTIME_MANIFEST_SHA256 BNB_ROOT BNB_MANIFEST_SHA256 \
   MODEL_ROOT MODEL_CONFIG_SHA256 CHECKPOINT CHECKPOINT_SHA256 DATA DATA_SHA256 \
-  DATA_REPORT DATA_REPORT_SHA256 FRET_ROOT OUTPUT ARM SHARD_INDEX SHARD_COUNT; do
+  DATA_REPORT DATA_REPORT_SHA256 FRET_ROOT OUTPUT ARM PROPOSAL_ARM SHARD_INDEX SHARD_COUNT; do
   test -n "${!variable:-}" || { echo "$variable is required" >&2; exit 2; }
 done
 BASE=/lustre/fs1/home/sa305415/shohin
@@ -37,6 +37,6 @@ nvidia-smi
   --model-root "$MODEL_ROOT" --checkpoint "$CHECKPOINT" \
   --data "$DATA" --data-report "$DATA_REPORT" --fret-shards "${FRET_SHARDS[@]}" \
   --output "$OUTPUT" --arm "$ARM" --shard-index "$SHARD_INDEX" \
-  --shard-count "$SHARD_COUNT" --seed 2026081011
+  --proposal-arm "$PROPOSAL_ARM" --shard-count "$SHARD_COUNT" --seed 2026081011
 test -f "$OUTPUT"
 chmod a-w "$OUTPUT"

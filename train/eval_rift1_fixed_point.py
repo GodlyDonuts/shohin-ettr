@@ -89,7 +89,7 @@ def run(args: argparse.Namespace) -> dict:
     if args.output.exists() or not 0 <= args.shard_index < args.shard_count:
         raise RuntimeError("RIFT1 output exists or shard differs")
     pairs = load_pairs(args.data, args.data_report)
-    fret, fret_receipts = load_fret(args.fret_shards, args.arm)
+    fret, fret_receipts = load_fret(args.fret_shards, args.proposal_arm)
     selected_pairs = [
         pair for index, pair in enumerate(pairs) if index % args.shard_count == args.shard_index
     ]
@@ -171,6 +171,7 @@ def run(args: argparse.Namespace) -> dict:
         "status": "complete",
         "holdout_used": False,
         "arm": args.arm,
+        "proposal_arm": args.proposal_arm,
         "shard_index": args.shard_index,
         "shard_count": args.shard_count,
         "row_count": len(results),
@@ -207,12 +208,18 @@ def main() -> int:
     parser.add_argument("--fret-shards", type=Path, nargs="+", required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--arm", choices=["aligned", "swapped", "hidden"], required=True)
+    parser.add_argument(
+        "--proposal-arm", choices=["aligned", "swapped", "hidden"], default=None
+    )
     parser.add_argument("--shard-index", type=int, required=True)
     parser.add_argument("--shard-count", type=int, default=8)
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--max-new-tokens", type=int, default=32)
     parser.add_argument("--seed", type=int, default=2026081011)
-    report = run(parser.parse_args())
+    args = parser.parse_args()
+    if args.proposal_arm is None:
+        args.proposal_arm = args.arm
+    report = run(args)
     print(json.dumps({"arm": report["arm"], "final_correct": report["final_correct"], "row_count": report["row_count"]}, sort_keys=True))
     return 0
 
