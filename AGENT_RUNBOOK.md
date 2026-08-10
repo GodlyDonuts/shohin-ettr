@@ -1,18 +1,25 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **NDR1 CORRECTED SOURCE CHAIN LIVE; DEVELOPMENT HANDOFF AUTOMATED —
-> 2026-08-10:** Exact rebuild job `750233` is running from immutable runtime
-> `ndr1_7a05ba5_r1` after the punctuation-equivalent deduplication correction.
-> Independent overlap audit `750234`, sixteen-shard draft dispatcher `750235`,
-> and fit armer `750236` are dependency-held in that order, so no H100 can
-> consume the source unless the independent audit reports zero protected
-> overlap and normalized duplicates. Development armer `750237` is separately
-> dependency-held and binds the eventual exact aligned/shuffled 512-update fit
-> jobs before submitting four evaluation shards per arm and the frozen
-> comparator. Its interface contains no holdout path. The armer is commit
-> `e481dc8`, immutable runtime `ndr1_e481dc8_r2`, SHA256SUMS SHA-256
+> **NDR1 EVALUATION-DISJOINT SOURCE PASS; SIXTEEN H100 DRAFT SHARDS LIVE —
+> 2026-08-10:** Exact corrected rebuild `750233` completed in `27:49`, and
+> independent audit `750234` passed in three seconds before any model job
+> opened. The source contains 11,220 unique normalized questions and
+> 4,000,845 charged target tokens at the frozen 40/10/40/10
+> math/code/science/procedural mix, with zero source/draft/target truncation,
+> zero exact development/holdout overlap, zero protected split-unique
+> word-13-gram overlap, and zero normalized duplicates. Source SHA-256 is
+> `1d23d4adddca1c9df5161041aa24bc24f661ae52869290010995ffab450f8766`;
+> independent audit SHA-256 is
+> `8b515528312fe25be72cac2b3a4aa79601cf8f643469a80f4209815f8d0594a3`.
+> Dispatcher `750235` released all sixteen single-H100 owner-draft jobs
+> `750293--750308`, concurrently running across eight healthy nodes. Merge,
+> mechanics, and aligned/shuffled fits remain dependency-gated. Development
+> armer `750237` binds the eventual exact 512-update fit jobs before submitting
+> four evaluation shards per arm and the frozen comparator; its interface has
+> no holdout path. The armer is commit `e481dc8`, immutable runtime
+> `ndr1_e481dc8_r2`, SHA256SUMS SHA-256
 > `0f5670264eeea69f6e588afa4b9f00d56009a035b8028c3d2cdd34ca3c304c5c`.
-> All NDR1 data, model, decoding, and capability gates remain unchanged.
+> All NDR1 model, decoding, and capability gates remain unchanged.
 
 > **NDR1 SOURCE CUSTODY DEFECT CAUGHT BEFORE MODEL OUTPUT — 2026-08-10:**
 > The previously prepared 4M-token source `e9965343...4389` did not actually
