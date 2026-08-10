@@ -74,6 +74,18 @@ def _transition(state: GrammarState, role: int, byte: int, score: float) -> Gram
     return None
 
 
+def _state_key(state: GrammarState) -> tuple[bool, bool, int, bool, bool, int]:
+    """Future grammar legality depends only on this state quotient."""
+    return (
+        state.started,
+        state.expecting_operand,
+        state.parenthesis_depth,
+        state.in_number,
+        state.number_digits > 0,
+        state.number_dots,
+    )
+
+
 def project_role_logits(logits: torch.Tensor, source_bytes: Sequence[int], *, beam_width: int = 64) -> list[int] | None:
     """Return the maximum-score complete grammatical role path."""
     if logits.ndim != 2 or logits.shape[0] != len(source_bytes) or logits.shape[1] != len(ROLES):
@@ -98,8 +110,13 @@ def project_role_logits(logits: torch.Tensor, source_bytes: Sequence[int], *, be
                 updated = _transition(state, role, int(byte), float(log_probs[position, role]))
                 if updated is not None and math.isfinite(updated.score):
                     candidates.append(updated)
-        candidates.sort(key=lambda state: state.score, reverse=True)
-        beam = candidates[:beam_width]
+        best_by_state: dict[tuple[bool, bool, int, bool, bool, int], GrammarState] = {}
+        for candidate in candidates:
+            key = _state_key(candidate)
+            incumbent = best_by_state.get(key)
+            if incumbent is None or candidate.score > incumbent.score:
+                best_by_state[key] = candidate
+        beam = sorted(best_by_state.values(), key=lambda state: state.score, reverse=True)[:beam_width]
         if not beam:
             return None
     valid = []
