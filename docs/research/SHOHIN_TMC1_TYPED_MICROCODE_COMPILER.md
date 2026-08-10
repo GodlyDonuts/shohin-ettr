@@ -1,6 +1,6 @@
 # TMC1: Typed Microcode Graph Compiler
 
-Status: CPU representation/mechanics gate frozen; no neural output exists
+Status: CPU representation/mechanics passed; neural canary frozen
 
 Date: 2026-08-10
 
@@ -39,14 +39,26 @@ A miss closes this representation before GPU training.
 
 ## Conditional neural canary
 
-Only a CPU pass may freeze the concrete tensor dimensions. The semantic owner
-is the immutable matched direct-CoT checkpoint from NMC1 (`8a2b6550...0b53`),
-which scored 267/666. Its Qwen3.5-0.8B weights and LoRA remain frozen. A
-separate recurrent typed decoder cross-attends its source token states and
-emits operation, operand-kind, source-pointer-set, causal state-pointer, and
-literal-digit heads. Hard masks make forward state references and invalid
-instruction shapes impossible. Teacher forcing is allowed only during
-training; development is fully autonomous. Frozen LAM1 executes the graph.
+Job `749894` passed in seven seconds. Exact Fraction and learned-LAM execution
+are `6333/6333` train and `666/666` development. Train maxima are 15 source
+spans, 15 instructions, ten numerator digits, and three denominator digits;
+development maxima are 11/12/5/3. Report SHA-256 is `f2b71afd...ab08`.
+
+The semantic owner is the immutable matched direct-CoT checkpoint from NMC1
+(`8a2b6550...0b53`), which scored 267/666. Its Qwen3.5-0.8B weights and LoRA
+remain frozen. A 24,864,055-parameter causal typed slot decoder uses width 512,
+two source-encoder layers, four causal decoder layers, and eight heads. It
+cross-attends the frozen source token states and emits instruction count,
+operation, source-equivalence/state/literal references, and literal digits.
+Hard masks make forward state references and invalid instruction shapes
+impossible. There is no teacher-forced instruction stream; development is
+fully autonomous. Frozen LAM1 executes the graph.
+
+The sole fit uses 4,096 updates, batch 32, AdamW (`betas=(0.9,0.95)`, weight
+decay 0.01), learning rate `2e-4`, maximum source prompt 512 tokens, seed
+`2026081061`, and data seed `2026081062`. Length, operation, left reference,
+right reference, and aggregate literal-digit losses each contribute one
+normalized component. No result/value/answer loss exists.
 
 The first fit is bounded to one architecture, seed, and schedule frozen after
 the CPU receipt and before neural output. Development must satisfy all of:

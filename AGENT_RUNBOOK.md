@@ -1,5 +1,16 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **TMC1 NEURAL CANARY FROZEN AFTER IMMUTABLE CPU PASS — 2026-08-10:** Newton
+> CPU job `749894` reproduced exact typed-graph and learned-LAM execution on
+> all `6333/6333` train and `666/666` development rows in seven seconds;
+> report SHA-256 is `f2b71afd...ab08`. The sole conditional fit is now fixed:
+> immutable NMC1 direct owner `8a2b6550...0b53`, 24,864,055-parameter causal
+> typed slot decoder, width 512, 2 source + 4 decoder layers, 8 heads, 4,096
+> updates, batch 32, LR `2e-4`, seeds `2026081061/62`. It contains no
+> intermediate-result or answer loss. Development must reach >=45% answers,
+> beat the 40.09% direct owner by >=5 points, and pass typed-owner/source/
+> carry/opcode controls. Public test remains sealed.
+
 > **TMC1 TYPED GRAPH CPU MECHANICS PASS LOCALLY — 2026-08-10:** The
 > structurally different successor to NMC1 lowers result-free register
 > programs into causal binary instructions with source equivalence pointers,

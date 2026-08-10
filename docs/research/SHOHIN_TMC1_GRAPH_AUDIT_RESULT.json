@@ -1,0 +1,46 @@
+{
+  "schema": "shohin-tmc1-graph-geometry-audit-v1",
+  "status": "complete",
+  "overall_pass": true,
+  "holdout_used": false,
+  "public_test_opened": false,
+  "job_id": 749894,
+  "report_sha256": "f2b71afda98e8f1e883af20575132e94e32bd02119f22830856800165658ab08",
+  "train": {
+    "rows": 6333,
+    "instructions": 23826,
+    "source_operands": 20362,
+    "state_operands": 18790,
+    "literal_operands": 8379,
+    "ambiguous_source_operands": 2009,
+    "final_is_state": 6333,
+    "max_source_spans": 15,
+    "max_instructions": 15,
+    "max_literal_numerator_digits": 10,
+    "max_literal_denominator_digits": 3
+  },
+  "development": {
+    "rows": 666,
+    "instructions": 2499,
+    "source_operands": 2227,
+    "state_operands": 1960,
+    "literal_operands": 798,
+    "ambiguous_source_operands": 201,
+    "final_is_state": 666,
+    "max_source_spans": 11,
+    "max_instructions": 12,
+    "max_literal_numerator_digits": 5,
+    "max_literal_denominator_digits": 3,
+    "normal_exact": 666,
+    "carry_reset_exact": 116,
+    "carry_reset_invalid": 24,
+    "opcode_permuted_exact": 13,
+    "opcode_permuted_invalid": 0
+  },
+  "gates": {
+    "train_exact_all": true,
+    "development_exact_all": true,
+    "development_admitted_by_train_geometry": true,
+    "all_final_owners_are_state": true
+  }
+}
