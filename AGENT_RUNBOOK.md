@@ -1,5 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **RIFT1 CLOSED; ON-POLICY ERROR GAP IDENTIFIED — 2026-08-10:** All aligned
+> jobs `749330--749337` and hidden controls `749338--749345` complete. The
+> tied second edit is `1,905/1,908 = 99.84%` syntactically valid and raises
+> mandatory-rewrite proposals from `1,700` to `1,781`, but remains 57 answers
+> below ISET1 and fails total, choice (`163/256`), and clean (`833/954`) gates.
+> Fault remains strong at `948/954`; hidden final is `845`, proving a `+936`
+> causal draft margin. The host emits KEEP on `1,806/1,908` second passes,
+> including many wrong model-generated proposals. Thus recurrent execution is
+> not the defect: deterministic synthetic-fault training does not transfer to
+> the host's own proposal-error distribution. Exact RIFT1 closes without
+> recurrence-count/prefix/checkpoint/prompt/decode/threshold/seed variants and
+> no holdout. Comparison SHA-256 is `ca2fe652...348`. Any successor must change
+> the learning distribution to immutable on-policy model errors, not retry
+> recurrence mechanics. Result: `docs/research/SHOHIN_RIFT1_RESULT.json`.
+
 > **RIFT1 RECURRENT FIXED-POINT TRANSDUCER FROZEN — 2026-08-10:** FRET1 proves
 > the frozen DSET host can localize and generate repairs, but a fixed rewrite
 > damages clean drafts. RIFT1 uses no new weights: the tied DSET host first

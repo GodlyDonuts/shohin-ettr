@@ -1,0 +1,189 @@
+{
+  "aligned": {
+    "commit_actions": {
+      "<KEEP>": 1806,
+      "<REPLACE_LAST>": 99,
+      "None": 3
+    },
+    "commit_errors": 3,
+    "commit_valid": 1905,
+    "commit_valid_accuracy": 0.9984276729559748,
+    "family": {
+      "choice_final": {
+        "commit_valid": 256,
+        "final_correct": 163,
+        "proposal_correct": 155,
+        "rows": 256
+      },
+      "numeric_final": {
+        "commit_valid": 1649,
+        "final_correct": 1618,
+        "proposal_correct": 1545,
+        "rows": 1652
+      }
+    },
+    "final_accuracy": 0.9334381551362684,
+    "final_correct": 1781,
+    "max_token_exhausted": 0,
+    "member": {
+      "clean": {
+        "commit_valid": 954,
+        "final_correct": 833,
+        "proposal_correct": 751,
+        "rows": 954
+      },
+      "fault": {
+        "commit_valid": 951,
+        "final_correct": 948,
+        "proposal_correct": 949,
+        "rows": 954
+      }
+    },
+    "proposal_correct": 1700,
+    "rows": 1908
+  },
+  "aligned_minus_hidden": 936,
+  "aligned_minus_iset": -57,
+  "gate": {
+    "aligned_final_ge_1874": false,
+    "aligned_minus_hidden_ge_13": true,
+    "aligned_minus_iset_ge_13": false,
+    "choice_final_ge_220": false,
+    "clean_final_ge_945": false,
+    "commit_valid_ge_0_95": true,
+    "fault_final_ge_859": true,
+    "zero_exhaustion": true
+  },
+  "hidden": {
+    "commit_actions": {
+      "<KEEP>": 1872,
+      "<REPLACE_LAST>": 10,
+      "None": 26
+    },
+    "commit_errors": 26,
+    "commit_valid": 1882,
+    "commit_valid_accuracy": 0.9863731656184487,
+    "family": {
+      "choice_final": {
+        "commit_valid": 248,
+        "final_correct": 76,
+        "proposal_correct": 77,
+        "rows": 256
+      },
+      "numeric_final": {
+        "commit_valid": 1634,
+        "final_correct": 769,
+        "proposal_correct": 771,
+        "rows": 1652
+      }
+    },
+    "final_accuracy": 0.44287211740041926,
+    "final_correct": 845,
+    "max_token_exhausted": 0,
+    "member": {
+      "clean": {
+        "commit_valid": 941,
+        "final_correct": 726,
+        "proposal_correct": 728,
+        "rows": 954
+      },
+      "fault": {
+        "commit_valid": 941,
+        "final_correct": 119,
+        "proposal_correct": 120,
+        "rows": 954
+      }
+    },
+    "proposal_correct": 848,
+    "rows": 1908
+  },
+  "holdout_authorized": false,
+  "holdout_used": false,
+  "iset_correct": 1838,
+  "receipts": {
+    "aligned": {
+      "inputs": [
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/rift1_q35_r1/aligned/shard_00.json",
+          "sha256": "42038ff19c56e938703c5f07b6341c765f2be18d623b5aa6b79cc702663cea49"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/rift1_q35_r1/aligned/shard_01.json",
+          "sha256": "0afc4cb90a90c591fdb2e0392294514a43b33cd087e84df0a52615e1111a78ed"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/rift1_q35_r1/aligned/shard_02.json",
+          "sha256": "000ac33ec5835293d40617200cd402dcb8b327f3650fd7db6e163f10525cc039"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/rift1_q35_r1/aligned/shard_03.json",
+          "sha256": "483a27ec0525e328cfdbb23e50aee0ab398eaf531c93cd682016e1e91edae639"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/rift1_q35_r1/aligned/shard_04.json",
+          "sha256": "b1d0f4562520344fea22d9d26f1a4ec606a0139a10dfac6bca38fefa6411d253"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/rift1_q35_r1/aligned/shard_05.json",
+          "sha256": "d45135cfa8b92ddd621e26fa31e49dfd82174aa867134522d1b6be46990d03b4"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/rift1_q35_r1/aligned/shard_06.json",
+          "sha256": "00edb52f013e50a72c631e64d97ef9a380e2584f24ad8a3ee08a12a7ec3f93e7"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/rift1_q35_r1/aligned/shard_07.json",
+          "sha256": "57ca9276707a324295b590d2d4ecd0999ed938bb247a4adcfa135f0afca92ab2"
+        }
+      ],
+      "receipt": [
+        "166d8cbafd5fa5aa842a42c8856294436ed2704db3d51396a3554576399ea8bb",
+        "62f9d3c52427d91913ee69a0f87ca2d9230e314b8fe795fcc11773f4fe06c445",
+        "f371d65fa9d973bf5c03083338803f348533b7e3e5122905b0c6b5dda92fe9f1"
+      ]
+    },
+    "hidden": {
+      "inputs": [
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/rift1_q35_r1/hidden/shard_00.json",
+          "sha256": "c02ebd1109a8e868af24edea83fcbea30311ebb0ede1a1b9c98ed7ef2129d893"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/rift1_q35_r1/hidden/shard_01.json",
+          "sha256": "9e96587786695efb7a900b297e82f30f1bb7509adeb7cb4e6e96cce0a21cd7db"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/rift1_q35_r1/hidden/shard_02.json",
+          "sha256": "d6195fd30dbed6d11e70bdab4a6dea4541a3000bd25a001c5bab3f221b59a5fd"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/rift1_q35_r1/hidden/shard_03.json",
+          "sha256": "8a853567abe3470b16c36ebbdcbf3e86a73bcbcf14c6d1605cf9159979cf151a"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/rift1_q35_r1/hidden/shard_04.json",
+          "sha256": "3d79599d9364cf72394720a991535b5a80b719b8b75be2320acd476b884cc61a"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/rift1_q35_r1/hidden/shard_05.json",
+          "sha256": "3a457ab4bc197a65776f6e44e4ad92f677ef4467f512ff1cee1880fbebc25ab5"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/rift1_q35_r1/hidden/shard_06.json",
+          "sha256": "fcab953c6eee743be6d41b341bd4c3c34e63ed7245110a71ecfdaaaedfe479fd"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/rift1_q35_r1/hidden/shard_07.json",
+          "sha256": "c44e401d4f12cb6a8ab9cdb3a294b8aa54ea69b65d5b2f5740ea32115a48033f"
+        }
+      ],
+      "receipt": [
+        "a2fe95d9700f54a5e2a430e973b08a422dc622807f6c6887b7d77139fe9faf0b",
+        "62f9d3c52427d91913ee69a0f87ca2d9230e314b8fe795fcc11773f4fe06c445",
+        "f371d65fa9d973bf5c03083338803f348533b7e3e5122905b0c6b5dda92fe9f1"
+      ]
+    }
+  },
+  "schema": "shohin-rift1-comparison-v1",
+  "status": "fail"
+}
