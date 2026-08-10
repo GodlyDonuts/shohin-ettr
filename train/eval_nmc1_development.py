@@ -139,9 +139,15 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         tokenizer.pad_token_id = tokenizer.eos_token_id
     checkpoint_update, checkpoint_metadata = load_checkpoint_receipt(args.checkpoint)
     model, metadata, loader = _load_model(args.model_root, args.checkpoint, "auto")
+    restored_metadata = (
+        {key: value for key, value in metadata.items() if key != "update"}
+        if metadata is not None
+        else None
+    )
     if (
         metadata is None
-        or metadata != checkpoint_metadata
+        or restored_metadata != checkpoint_metadata
+        or metadata.get("update") != checkpoint_update
         or checkpoint_update != 1024
         or metadata.get("model_revision") != args.model_revision
         or metadata.get("data_sha256") != args.expected_train_sha256
