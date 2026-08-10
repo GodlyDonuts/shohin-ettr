@@ -16,6 +16,7 @@ import torch
 from build_mltc1_lexical_supervision import compile_selected
 from byte_tape_compiler import ROLES, ByteProgram, ByteTapeCompiler, byte_batch
 from train_btt1_byte import load_programs, sha256_file
+from weighted_grammar_projection import project_role_logits
 
 
 SCHEMA = "shohin-btt1-evaluation-v1"
@@ -157,11 +158,21 @@ def signature(question: str, roles: list[str]):
     return [(item["role"], item.get("surface")) for item in lexemes]
 
 
-def evaluate_batch(output: Any, targets: list[ByteProgram], sources: list[ByteProgram], control: str):
+def evaluate_batch(output: Any, targets: list[ByteProgram], sources: list[ByteProgram], control: str, projection: str):
     chosen = output.chosen_roles.cpu().tolist()
     details = []
-    for predicted, target, source in zip(chosen, targets, sources, strict=True):
-        predicted_names = [ROLES[index] for index in predicted[: len(source.question)]]
+    for row_index, (predicted, target, source) in enumerate(zip(chosen, targets, sources, strict=True)):
+        top1_names = [ROLES[index] for index in predicted[: len(source.question)]]
+        top1_actions, top1_parse_valid = compile_roles(source.question, top1_names, flat=False)
+        top1_tree, top1_execution_valid = execute(top1_actions)
+        projected = None
+        if projection == "grammar-v1":
+            projected = project_role_logits(
+                output.role_logits[row_index, : len(source.question)],
+                list(source.question.encode("ascii")),
+                beam_width=64,
+            )
+        predicted_names = top1_names if projection == "none" or projected is None else [ROLES[index] for index in projected]
         target_names = [ROLES[index] for index in target.byte_roles]
         actions, parse_valid = compile_roles(source.question, predicted_names, flat=control == "flat_executor")
         predicted_tree, execution_valid = execute(actions)
@@ -180,6 +191,8 @@ def evaluate_batch(output: Any, targets: list[ByteProgram], sources: list[BytePr
                 "action_sequence_exact": [item["action"] for item in actions] == [item["action"] for item in target.gold_actions],
                 "valid_program": parse_valid and execution_valid,
                 "exact_skeleton": parse_valid and execution_valid and predicted_tree == gold_tree,
+                "top1_exact_skeleton": top1_parse_valid and top1_execution_valid and top1_tree == gold_tree,
+                "search_exhausted": projection == "grammar-v1" and projected is None,
                 "mixed_precedence": ("*" in question or "/" in question) and ("+" in question or "-" in question),
                 "unary_group": "-(" in question.replace(" ", ""),
                 "parenthesis_count": question.count("("),
@@ -210,12 +223,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             batch = byte_batch(sources, device)
             with torch.autocast("cuda", dtype=torch.bfloat16):
                 output = model(batch["byte_ids"], batch["mask"], zero_bytes=args.control == "zero_bytes")
-            details.extend(evaluate_batch(output, targets, sources, args.control))
+            details.extend(evaluate_batch(output, targets, sources, args.control, args.projection))
     counts = Counter()
     groups: dict[str, Counter[str]] = defaultdict(Counter)
     for detail in details:
         for metric in ("byte_role_sequence_exact", "selected_byte_sequence_exact", "action_sequence_exact", "valid_program", "exact_skeleton"):
             counts[metric] += int(detail[metric])
+        counts["top1_exact_skeleton"] += int(detail["top1_exact_skeleton"])
+        counts["repairs"] += int(detail["exact_skeleton"] and not detail["top1_exact_skeleton"])
+        counts["breaks"] += int(detail["top1_exact_skeleton"] and not detail["exact_skeleton"])
+        counts["search_exhausted"] += int(detail["search_exhausted"])
         counts["rows"] += 1
         buckets = [
             f"family:{detail['family']}", f"mixed:{str(detail['mixed_precedence']).lower()}",
@@ -229,6 +246,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     elapsed = time.time() - started
     report = {
         "schema": SCHEMA, "status": "complete", "holdout_used": False, "control": args.control,
+        "projection": args.projection,
         "checkpoint": str(args.checkpoint.resolve()), "checkpoint_sha256": sha256_file(args.checkpoint),
         "data": str(args.data.resolve()), "data_sha256": args.expected_data_sha256,
         "counts": dict(counts),
@@ -251,6 +269,7 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--control", choices=sorted(CONTROLS), required=True)
     parser.add_argument("--batch-size", type=int, default=128)
+    parser.add_argument("--projection", choices=("none", "grammar-v1"), default="none")
     run(parser.parse_args())
     return 0
 

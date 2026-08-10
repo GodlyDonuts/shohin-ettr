@@ -13,6 +13,7 @@ CODE_ROOT=${CODE_ROOT:?set immutable CODE_ROOT}
 CHECKPOINT=${CHECKPOINT:?set BTT1 checkpoint}
 OUT=${OUT:?set isolated output report}
 CONTROL=${CONTROL:?set normal, source_shuffled, zero_bytes, or flat_executor}
+PROJECTION=${PROJECTION:-none}
 PYTHON=${PYTHON:-$BASE/envs/product-reasoning-b3a3603-r2/bin/python}
 TRAIN=$BASE/artifacts/product_reasoning/btt1_byte_supervision_cf4f9cb_r1/train.jsonl
 DATA=$BASE/artifacts/product_reasoning/btt1_byte_supervision_cf4f9cb_r1/development.jsonl
@@ -29,5 +30,5 @@ nvidia-smi -L
   --expected-train-sha256 8deabd1ad1cdd93466cf9a53bde3012886fd63ff327914897bd70cbd9e13bc6e \
   --data "$DATA" \
   --expected-data-sha256 de16d5dc8dd3676f4c3f4a69c306ec19a0ea8a42e9750bf93a2aaf16f4be0bf8 \
-  --output "$OUT" --control "$CONTROL" --batch-size 128
+  --output "$OUT" --control "$CONTROL" --batch-size 128 --projection "$PROJECTION"
 chmod a-w "$OUT"
