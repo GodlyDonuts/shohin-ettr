@@ -1,5 +1,24 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **ETV1 CLOSED; NO HOLDOUT — 2026-08-10:** End-to-end verifier fit `749290`
+> completed 300 updates in 10,182.70 seconds with zero truncation, 1,179,648
+> trainable backbone parameters, and a 1,221,825-parameter verifier head.
+> Internal source-disjoint final accuracy is strong (`729/758 = 96.17%`), but
+> the exact model-generated trajectory test fails: aligned source selects only
+> `64/125`, source-shuffled selects `67/125`, and the frozen shape baseline
+> selects `61/125`. The resulting coherent system is `1,833/1,908` overall,
+> `184/256` choice, `1,649/1,652` numeric, `921/954` clean, and `912/954`
+> fault. Only zero-truncation and internal-fit gates pass; causal margins are
+> `-3` over shuffled and `+3` over shape. Comparison SHA-256 is
+> `1b062da9...db4`; holdout remains sealed. This closes the frozen-feature and
+> end-to-end semantic-verifier family without head/scope/LR/duration/seed
+> variants. PSET1 already executed the requested separate-stream pointer/edit
+> fallback and closed because its standalone byte value decoder achieved only
+> `12.89%` exact replacement. Do not rerun PSET1. Any further edit-transduction
+> lane must use a structurally different model-owned value path and retain
+> explicit matched draft-hidden/permuted controls. Exact result:
+> `docs/research/SHOHIN_ETV1_RESULT.json`.
+
 > **TSVC1 CLOSED; ETV1 END-TO-END VERIFIER FROZEN — 2026-08-10:** Ten H100
 > feature jobs `749262--749271`, head fit `749272`, and aligned/shuffled
 > selections `749273/749274` completed. TSVC1's 3.21M-parameter frozen-feature
