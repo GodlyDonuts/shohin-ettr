@@ -1,0 +1,54 @@
+{
+  "schema": "shohin-ectr0-result-v1",
+  "status": "fail",
+  "holdout_used": false,
+  "public_test_opened": false,
+  "pre_output_mechanics_failures": [750157, 750158, 750159, 750160, 750161, 750162],
+  "evaluation_job_ids": [750163, 750164, 750165, 750166, 750167, 750168],
+  "valid_h100_seconds": 947,
+  "valid_h100_hours": 0.26305555555555554,
+  "runtime_commit": "0cf5a29",
+  "aggregate_runtime_commit": "5cef761",
+  "runtime_manifest_sha256": "66655ba87833912f1328d8617011f881853ffea88db14b9566da0059392529ce",
+  "aggregate_runtime_manifest_sha256": "117195b733c456b49cf62eb1becac94e0366f59de0964c00c7d3c358cb2fdf71",
+  "aggregate_report_sha256": "869ed7412ec30f7f4095b65fd9370413cdc7633e9ca09c41a94106fc148f0cac",
+  "arm_report_sha256": {
+    "aligned": [
+      "ba6c73716bb3137307cb7c48a55b7c3b6034abd74f243fe09829e81d6c2c6b72",
+      "34c05cc83e3b6a5450797145f87a62c9a853becc05e29813a306e4a30a08c39b"
+    ],
+    "receipt_absent": [
+      "89a7b60c2c142a787b9d196b1a785387a35d7eaba6837b2a6bfa8b39191b58cb",
+      "8170cbd2021aba5939783d2666141c938a1cae2bdb855601b3ece0c4944f1222"
+    ],
+    "receipt_shuffled": [
+      "a21c7cbd279512e8db99b43597483402ad7727f8bdbf3e89aa2f6d0b33f3e376",
+      "51342de663aeb27d8b5de6c125f420c7cef4040662450c99e397a5ca4eec8e9c"
+    ]
+  },
+  "scores": {
+    "direct_claimed_final": 487,
+    "aligned": 476,
+    "receipt_absent": 479,
+    "receipt_shuffled": 468,
+    "aligned_repairs": 15,
+    "aligned_breaks": 26,
+    "aligned_explicit_final": 666,
+    "aligned_exhausted": 0,
+    "max_input_tokens": 946
+  },
+  "deltas": {
+    "aligned_minus_direct": -11,
+    "aligned_minus_absent": -3,
+    "aligned_minus_shuffled": 8,
+    "aligned_repairs_minus_breaks": -11
+  },
+  "gates": {
+    "aligned_at_least_500": false,
+    "aligned_minus_absent_at_least_13": false,
+    "aligned_minus_shuffled_at_least_13": false,
+    "repair_minus_break_at_least_13": false,
+    "explicit_final_at_least_650": true
+  },
+  "interpretation": "The qualified 4B temporal reviser does not already convert canonical learned-executor receipts into incremental capability. Aligned evidence is better than shuffled evidence but worse than no receipt and the direct owner, so exact ECTR0 closes without retry."
+}

@@ -114,6 +114,14 @@ semantic program generation. It still fails the architecture gate: only
 is closed: learned execution is causal, but it does not improve the capable
 owner.
 
+Executor-conditioned temporal revision does not rescue that bridge. With the
+qualified IDR4 4B reviser frozen, ECTR0 scores `476/666` when given the aligned
+canonical trace and learned-executor receipt, versus `479` with no receipt,
+`468` with a matched shuffled receipt, and the direct owner's `487`. Aligned
+repairs 15 direct errors but breaks 26. The receipt perturbs revision, but it
+does not add useful capability; exact ECTR0 is closed without training or
+public-test access.
+
 Historical ETTR graph-reactor and synthetic compiled-state experiments remain
 valuable research history, but they are not the current deployable Shohin
 architecture. The complete historical ledger is
@@ -137,14 +145,14 @@ flowchart TB
     GP --> LM["Learned recurrent digit microcode"]
     LM --> T["Exact terminal state"]
 
-    D -. "DTMC1/DTC1/CTE1/CTF1: closed bridges" .-> TG["Typed result-free graph"]
+    D -. "DTMC1/DTC1/CTE1/CTF1/ECTR0: closed bridges" .-> TG["Typed result-free graph"]
     X -.-> TG
     TG -.-> LM
 ```
 
 The solid upper path is the qualified deployable temporal-revision system.
 The solid lower path is the qualified controlled LAM1 development system. The
-dotted bridge represents the closed DTMC1/DTC1/CTE1/CTF1 negatives: they
+dotted bridge represents the closed DTMC1/DTC1/CTE1/CTF1/ECTR0 negatives: they
 demonstrate causal draft signal, causal transaction execution, and improved
 program quality with scale, but not a natural-language-to-microcode path that
 beats the capable direct owner.

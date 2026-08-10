@@ -104,11 +104,24 @@ holdout and public test remain sealed. Contract/result:
 `docs/research/SHOHIN_CTF1_CANONICAL_TRANSACTION_CAPABILITY_FLOOR.md` and
 `docs/research/SHOHIN_CTF1_RESULT.json`.
 
+ECTR0 then tested a different composition without training: preserve the 4B
+owner's complete trajectory and learned execution as advisory evidence for
+the already-qualified IDR4 temporal reviser, instead of committing only the
+ledger answer. Aligned scores `476/666`, versus receipt-absent `479`, matched
+receipt-shuffled `468`, and the direct claimed-final baseline `487`. Aligned
+repairs 15 direct errors but breaks 26; every revision has an explicit final,
+none exhausts, and all prompts fit below 946/4096 tokens. Thus the executor
+receipt changes behavior but does not improve capability over omitting the
+receipt or preserving the direct owner. Exact ECTR0 closes without a nearby
+retry, training, holdout, or public-test access. Result:
+`docs/research/SHOHIN_ECTR0_RESULT.json`.
+
 The current evidence therefore has two distinct boundaries. Dense
 model-owned temporal revision remains the strongest practical broad-task
 Shohin system. LAM1 is the strongest complete controlled source-to-terminal
 architecture. Connecting model-owned natural-language planning to typed
-learned execution remains unresolved after DTMC1, DTC1, CTE1, and CTF1. The
+learned execution remains unresolved after DTMC1, DTC1, CTE1, CTF1, and
+ECTR0. The
 current evidence says execution is causal and model scale improves program
 quality, but canonical ledger execution does not improve the already-capable
 owner. None of these facts

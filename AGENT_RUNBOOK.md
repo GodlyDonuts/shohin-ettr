@@ -1,5 +1,18 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **ECTR0 CLOSED: EXECUTOR RECEIPTS DO NOT IMPROVE THE QUALIFIED REVISER —
+> 2026-08-10:** Exact no-training jobs `750163--750168` completed all three
+> 666-row arms in `0.2631` valid H100-hours. The qualified IDR4 reviser scores
+> aligned `476`, receipt-absent `479`, and compile-status/depth-matched
+> receipt-shuffled `468`, versus the CTF1 direct claimed-final baseline `487`.
+> Aligned repairs 15 direct errors but breaks 26; all 666 outputs have explicit
+> finals, zero exhaust, and maximum prompt length 946/4096. Thus executor
+> evidence changes behavior relative to shuffled evidence but provides no
+> useful margin over omitting it and reduces capability versus direct. ECTR0
+> misses four of five frozen gates and closes without prompt/checkpoint/
+> decoding/threshold retry. Aggregate SHA-256 is `869ed741...0cac`; result:
+> `docs/research/SHOHIN_ECTR0_RESULT.json`.
+
 > **ECTR0 FROZEN BEFORE OUTPUT — 2026-08-10:** CTF1 shows that untouched
 > Qwen3.5-4B supplies both a strong direct answer (`487/666`) and a causal
 > learned-executor path (`419/666`), but committing only the latter is harmful.

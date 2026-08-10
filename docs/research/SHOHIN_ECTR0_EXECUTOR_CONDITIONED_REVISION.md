@@ -1,6 +1,7 @@
 # Shohin ECTR0 Executor-Conditioned Temporal Revision
 
-Status: frozen zero-training development screen; no output has been opened.
+Status: closed negative on development; no training, holdout, or public output
+was opened.
 
 ## Question
 
@@ -78,3 +79,26 @@ causally improve a trained same-family temporal reviser without changing any
 weights. It would not prove that canonical transactions alone outperform
 direct generation, nor that the executor is infallible, nor that the result
 transfers beyond this source-disjoint development board.
+
+## Frozen Result
+
+Exact replay jobs `750163--750168` completed all three arms in two shards each.
+The six valid allocations used 947 H100-seconds (`0.2631` H100-hours), including
+model staging and load. Every row emitted an explicit final answer, no output
+exhausted 512 tokens, and the largest prompt was 946 tokens under the 4,096
+ceiling.
+
+| Arm | Correct | Repairs | Breaks | Net versus direct |
+|---|---:|---:|---:|---:|
+| direct CTF1 claimed final | `487/666` | - | - | - |
+| receipt absent | `479/666` | 16 | 24 | `-8` |
+| aligned executor receipt | `476/666` | 15 | 26 | `-11` |
+| shuffled executor receipt | `468/666` | 16 | 35 | `-19` |
+
+Aligned is eight answers above shuffled, but three below receipt-absent and
+eleven below the direct owner. It fails the `>=500`, both `+13` causal-margin,
+and positive repair-minus-break gates; only explicit-final/custody passes.
+The current qualified reviser therefore does not turn this learned-executor
+receipt into useful incremental capability. Exact ECTR0 closes without a
+prompt, checkpoint, decoding, or threshold retry. Aggregate SHA-256 is
+`869ed7412ec30f7f4095b65fd9370413cdc7633e9ca09c41a94106fc148f0cac`.
