@@ -29,6 +29,7 @@ except ModuleNotFoundError:  # Direct execution with pipeline/ on PYTHONPATH.
 
 
 SCHEMA = "shohin-token-balanced-reasoning-mix-v1"
+WORD = re.compile(r"\w+")
 
 
 class TokenBalancedMixError(RuntimeError):
@@ -44,6 +45,14 @@ class Candidate:
     source_index: int
     priority: str
     quality_rank: int
+
+
+@dataclass(frozen=True)
+class EvalOverlapFilter:
+    exact_questions: frozenset[str]
+    unique_ngrams: frozenset[tuple[str, ...]]
+    ngram_size: int
+    references: tuple[dict[str, Any], ...]
 
 
 def parse_weights(value: str) -> dict[str, float]:
@@ -76,6 +85,93 @@ def _normalized_question(question: str) -> str:
     if not normalized:
         raise TokenBalancedMixError("row has an empty normalized question")
     return normalized
+
+
+def _normalized_overlap_question(question: str) -> str:
+    normalized = " ".join(WORD.findall(question.casefold()))
+    if not normalized:
+        raise TokenBalancedMixError("row has an empty normalized question")
+    return normalized
+
+
+def _reference_question(row: dict[str, Any]) -> str:
+    for key in ("assessor", "internal_draft"):
+        payload = row.get(key)
+        if isinstance(payload, dict) and str(payload.get("question", "")).strip():
+            return str(payload["question"]).strip()
+    question = str(row.get("question", "")).strip()
+    if question:
+        return question
+    raise TokenBalancedMixError("evaluation reference row has no source question")
+
+
+def _word_ngrams(question: str, size: int) -> set[tuple[str, ...]]:
+    words = WORD.findall(question.casefold())
+    return {
+        tuple(words[index : index + size])
+        for index in range(len(words) - size + 1)
+    }
+
+
+def _build_eval_overlap_filter(
+    paths: Iterable[Path], ngram_size: int
+) -> EvalOverlapFilter | None:
+    paths = list(paths)
+    if not paths:
+        return None
+    if ngram_size <= 0:
+        raise TokenBalancedMixError("evaluation n-gram size must be positive")
+    exact_questions: set[str] = set()
+    unique_ngrams: set[tuple[str, ...]] = set()
+    references: list[dict[str, Any]] = []
+    for path in paths:
+        if not path.is_file():
+            raise TokenBalancedMixError(
+                f"evaluation reference does not exist: {path}"
+            )
+        frequencies: Counter[tuple[str, ...]] = Counter()
+        normalized_questions: set[str] = set()
+        rows = 0
+        duplicate_questions = 0
+        with path.open("r", encoding="utf-8") as handle:
+            for raw_line in handle:
+                if not raw_line.strip():
+                    continue
+                rows += 1
+                try:
+                    row = json.loads(raw_line)
+                except json.JSONDecodeError as exc:
+                    raise TokenBalancedMixError(
+                        f"malformed evaluation reference JSONL in {path}"
+                    ) from exc
+                question = _reference_question(row)
+                normalized = _normalized_overlap_question(question)
+                if normalized in normalized_questions:
+                    duplicate_questions += 1
+                normalized_questions.add(normalized)
+                frequencies.update(_word_ngrams(question, ngram_size))
+        if not rows:
+            raise TokenBalancedMixError(f"evaluation reference is empty: {path}")
+        split_unique = {gram for gram, count in frequencies.items() if count == 1}
+        exact_questions.update(normalized_questions)
+        unique_ngrams.update(split_unique)
+        references.append(
+            {
+                "path": str(path.resolve()),
+                "sha256": _source_sha256(path),
+                "rows": rows,
+                "normalized_questions": len(normalized_questions),
+                "duplicate_normalized_questions": duplicate_questions,
+                "all_word_ngrams": len(frequencies),
+                "unique_word_ngrams": len(split_unique),
+            }
+        )
+    return EvalOverlapFilter(
+        exact_questions=frozenset(exact_questions),
+        unique_ngrams=frozenset(unique_ngrams),
+        ngram_size=ngram_size,
+        references=tuple(references),
+    )
 
 
 def _quality_rank(row: dict[str, Any]) -> int:
@@ -117,6 +213,7 @@ def _read_candidates(
     max_sequence_length: int,
     workspace_slots: int,
     seed: int,
+    eval_overlap_filter: EvalOverlapFilter | None,
 ) -> tuple[dict[str, list[Candidate]], dict[str, Any]]:
     counters: Counter[str] = Counter()
     source_reports: list[dict[str, Any]] = []
@@ -144,6 +241,23 @@ def _read_candidates(
                     counters["unrequested_group"] += 1
                     source_counter["unrequested_group"] += 1
                     continue
+                normalized = _normalized_question(question)
+                if (
+                    eval_overlap_filter is not None
+                    and _normalized_overlap_question(question)
+                    in eval_overlap_filter.exact_questions
+                ):
+                    counters["eval_exact_overlap_rejected"] += 1
+                    source_counter["eval_exact_overlap_rejected"] += 1
+                    continue
+                if (
+                    eval_overlap_filter is not None
+                    and _word_ngrams(question, eval_overlap_filter.ngram_size)
+                    & eval_overlap_filter.unique_ngrams
+                ):
+                    counters["eval_unique_ngram_overlap_rejected"] += 1
+                    source_counter["eval_unique_ngram_overlap_rejected"] += 1
+                    continue
                 prompt_length, response_length = _token_lengths(
                     tokenizer, question, response
                 )
@@ -161,7 +275,6 @@ def _read_candidates(
                     counters["prompt_truncated_rejected"] += 1
                     source_counter["prompt_truncated_rejected"] += 1
                     continue
-                normalized = _normalized_question(question)
                 identity = hashlib.sha256(normalized.encode()).hexdigest()
                 priority = hashlib.sha256(
                     f"{seed}\0{group}\0{identity}".encode()
@@ -245,6 +358,8 @@ def build_token_balanced_mix(
     max_sequence_length: int,
     workspace_slots: int,
     seed: int,
+    eval_references: list[Path] | None = None,
+    eval_ngram_size: int = 13,
 ) -> dict[str, Any]:
     if not sources:
         raise TokenBalancedMixError("at least one source is required")
@@ -252,6 +367,9 @@ def build_token_balanced_mix(
         raise TokenBalancedMixError("total target tokens must be positive")
     if output.exists() or report_path.exists():
         raise TokenBalancedMixError("refusing to replace an existing output")
+    eval_overlap_filter = _build_eval_overlap_filter(
+        eval_references or [], eval_ngram_size
+    )
     grouped, scan = _read_candidates(
         sources,
         tokenizer=tokenizer,
@@ -260,6 +378,7 @@ def build_token_balanced_mix(
         max_sequence_length=max_sequence_length,
         workspace_slots=workspace_slots,
         seed=seed,
+        eval_overlap_filter=eval_overlap_filter,
     )
     selected: list[Candidate] = []
     selected_metrics = {}
@@ -327,6 +446,17 @@ def build_token_balanced_mix(
         "output": str(output.resolve()),
         "output_sha256": digest.hexdigest(),
     }
+    if eval_overlap_filter is not None:
+        report["eval_overlap_filter"] = {
+            "algorithm": (
+                "exact normalized source question plus union of word n-grams "
+                "that occur in exactly one row within each reference split"
+            ),
+            "ngram_size": eval_overlap_filter.ngram_size,
+            "exact_normalized_questions": len(eval_overlap_filter.exact_questions),
+            "unique_word_ngrams": len(eval_overlap_filter.unique_ngrams),
+            "references": list(eval_overlap_filter.references),
+        }
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_tmp = report_path.with_name(f".{report_path.name}.tmp.{os.getpid()}")
     report_tmp.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
@@ -346,6 +476,8 @@ def main() -> None:
     parser.add_argument("--max-sequence-length", type=int, default=1024)
     parser.add_argument("--workspace-slots", type=int, default=0)
     parser.add_argument("--seed", type=int, default=20260803)
+    parser.add_argument("--eval-reference", action="append", type=Path, default=[])
+    parser.add_argument("--eval-ngram-size", type=int, default=13)
     args = parser.parse_args()
 
     from transformers import AutoTokenizer
@@ -366,6 +498,8 @@ def main() -> None:
         max_sequence_length=args.max_sequence_length,
         workspace_slots=args.workspace_slots,
         seed=args.seed,
+        eval_references=args.eval_reference,
+        eval_ngram_size=args.eval_ngram_size,
     )
     print(json.dumps(report, sort_keys=True))
 

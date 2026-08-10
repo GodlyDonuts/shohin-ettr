@@ -1,5 +1,18 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **NDR1 SOURCE CUSTODY DEFECT CAUGHT BEFORE MODEL OUTPUT — 2026-08-10:**
+> The previously prepared 4M-token source `e9965343...4389` did not actually
+> enforce its stated IDR1 development/holdout boundary. Read-only audit finds
+> 34 exact development and 26 exact holdout source collisions plus protected
+> split-unique word-13-gram collisions. No NDR1 draft or fit ever consumed this
+> source. Filtering the selected file would retain 10,918/11,276 rows but
+> distort science coverage, so it is rejected. The mix builder now supports
+> hash-bound exact plus per-split unique-13-gram exclusion before deterministic
+> quota selection, allowing backfill from the raw corpora while preserving the
+> frozen 4M-token 40/10/40/10 mix. Rebuild and independently audit zero overlap
+> before opening the sixteen draft shards; all NDR1 capability gates remain
+> unchanged.
+
 > **ECTR0 READ-ONLY ATTRIBUTION COMPLETE; NATURAL MICROCODE BRIDGE RETIRED —
 > 2026-08-10:** A hash-bound join of all six immutable reports reconstructs
 > all 666 identities. Aligned versus receipt-absent helps 5 rows and hurts 8;

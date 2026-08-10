@@ -1,6 +1,28 @@
 # NDR1: Natural Draft Revision
 
-Status: mechanism and gates frozen before draft generation.
+Status: mechanism and gates frozen before draft generation; source rebuild
+required after a pre-output overlap audit found that the first prepared mix did
+not enforce the stated evaluation boundary.
+
+## Pre-Output Custody Correction
+
+The first prepared source (`e9965343...4389`) was never consumed by a draft
+owner or fit. A read-only comparison against the original IDR1 source questions
+found 34 exact development overlaps, 26 exact holdout overlaps, and additional
+split-unique word-13-gram collisions. Filtering that already-selected file
+would retain 10,918/11,276 rows but disproportionately remove science rows, so
+it is not an admissible training source.
+
+The corrected source must be rebuilt from the same raw corpora, tokenizer,
+seed, token budget, and domain weights. Before tokenization and deterministic
+selection, it removes exact word-normalized source questions and every word
+13-gram occurring in exactly one row within either bound evaluation split.
+Repeated split boilerplate is not an exclusion gram. Selection then backfills
+from remaining candidates until every original group token quota is met. The
+report must bind both reference paths and SHA-256 values, exclusion-set sizes,
+global and per-source drop counters, and the final output hash. Draft generation
+remains closed until an independent audit reports zero exact and zero protected
+13-gram overlap.
 
 ## Hypothesis
 
@@ -24,7 +46,8 @@ actual draft from generic verified source-to-solution training.
 
 The source is a fresh Qwen-tokenizer-exact 4M-target-token mix with 1,536-token
 source-plus-target admission and 40/10/40/10 math/code/science/procedural
-weights. Sixteen deterministic B1 shards generate at most 768 tokens per
+weights, rebuilt prospectively under the corrected overlap boundary above.
+Sixteen deterministic B1 shards generate at most 768 tokens per
 source. The merged curricula must retain at least 90% of source rows at 4,096
 tokens, have exact target multisets, zero source/donor identity matches, exact
 source/draft/checkpoint hashes, and no holdout use. Failed or missing shards

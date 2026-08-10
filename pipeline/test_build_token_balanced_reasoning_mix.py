@@ -85,6 +85,7 @@ def test_token_balanced_mix_is_reproducible_and_near_exact(tmp_path: Path) -> No
     assert first["duplicate_questions"] == 0
     assert first["response_truncated_rows"] == 0
     assert first["prompt_truncated_rows"] == 0
+    assert "eval_overlap_filter" not in first
     for metrics in first["selected_groups"].values():
         assert metrics["charged_target_tokens"] >= metrics["target_charged_tokens"]
 
@@ -221,3 +222,126 @@ def test_token_balanced_mix_supports_tokenizer_without_chat_template(
         seed=31,
     )
     assert report["selected_groups"]["math"]["charged_target_tokens"] >= 8
+
+
+def _reference_row(question: str, *, assessor: bool = True) -> dict:
+    if assessor:
+        return {"assessor": {"question": question}}
+    return {"internal_draft": {"question": question}}
+
+
+def test_eval_filter_removes_exact_and_unique_ngram_and_backfills(
+    tmp_path: Path,
+) -> None:
+    exact = "An exact held-out source question!"
+    gram = "one two three four five six seven eight nine ten eleven twelve thirteen"
+    source = tmp_path / "source.jsonl"
+    source.write_text(
+        "\n".join(
+            json.dumps(row)
+            for row in [
+                {
+                    "question": exact,
+                    "response": "math math math math",
+                    "training_group": "math",
+                },
+                {
+                    "question": f"prefix {gram} suffix",
+                    "response": "math math math math",
+                    "training_group": "math",
+                },
+                {
+                    "question": "distinct backfill question one",
+                    "response": "math math math math",
+                    "training_group": "math",
+                },
+                {
+                    "question": "distinct backfill question two",
+                    "response": "math math math math",
+                    "training_group": "math",
+                },
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    reference = tmp_path / "development.jsonl"
+    reference.write_text(
+        "\n".join(
+            [
+                json.dumps(_reference_row("AN EXACT HELD OUT SOURCE QUESTION")),
+                json.dumps(_reference_row(gram, assessor=False)),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    output = tmp_path / "output.jsonl"
+    report = build_token_balanced_mix(
+        [source],
+        output,
+        tmp_path / "report.json",
+        tokenizer=FakeTokenizer(),
+        model_revision="test",
+        weights=parse_weights("math=1"),
+        total_target_tokens=8,
+        max_sequence_length=64,
+        workspace_slots=0,
+        seed=31,
+        eval_references=[reference],
+    )
+    rows = [json.loads(line) for line in output.read_text().splitlines()]
+    assert {row["question"] for row in rows} == {
+        "distinct backfill question one",
+        "distinct backfill question two",
+    }
+    assert report["scan_counters"]["eval_exact_overlap_rejected"] == 1
+    assert report["scan_counters"]["eval_unique_ngram_overlap_rejected"] == 1
+    overlap = report["eval_overlap_filter"]
+    assert overlap["ngram_size"] == 13
+    assert overlap["references"][0]["sha256"]
+    assert overlap["references"][0]["rows"] == 2
+    assert report["selected_groups"]["math"]["charged_target_tokens"] >= 8
+
+
+def test_repeated_eval_boilerplate_ngram_is_not_removed(tmp_path: Path) -> None:
+    common = "one two three four five six seven eight nine ten eleven twelve thirteen"
+    reference = tmp_path / "development.jsonl"
+    reference.write_text(
+        "\n".join(
+            [
+                json.dumps(_reference_row(f"{common} alpha")),
+                json.dumps(_reference_row(f"{common} beta")),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    source = tmp_path / "source.jsonl"
+    source.write_text(
+        json.dumps(
+            {
+                "question": f"prefix {common}",
+                "response": "math math math math",
+                "training_group": "math",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    output = tmp_path / "output.jsonl"
+    report = build_token_balanced_mix(
+        [source],
+        output,
+        tmp_path / "report.json",
+        tokenizer=FakeTokenizer(),
+        model_revision="test",
+        weights=parse_weights("math=1"),
+        total_target_tokens=4,
+        max_sequence_length=64,
+        workspace_slots=0,
+        seed=31,
+        eval_references=[reference],
+    )
+    assert report["scan_counters"].get("eval_unique_ngram_overlap_rejected", 0) == 0
+    assert report["selected_rows"] == 1
