@@ -49,6 +49,14 @@ pointer masks over source only. Initialization seed, 4,096 updates, batch 32,
 LR `2e-4`, optimizer, loss components, data order, and LAM executor remain
 identical to TMC1.
 
+The immutable input envelope is `PROBLEM:\n{source}\n\nMODEL-OWNED
+DRAFT:\n{draft}` under the same system prompt and no-thinking chat template.
+The context ceiling is 1,024 tokens and truncation is forbidden. This is the
+smallest increase from TMC1's 512-token question-only ceiling that can retain
+the frozen 512-token drafts. Token offsets for candidate numeric owners must
+intersect the `PROBLEM` source bytes only; numeric strings in the draft are
+never pointer candidates.
+
 ## Development controls and gate
 
 Evaluate exactly once on all 666 existing source-disjoint identities:

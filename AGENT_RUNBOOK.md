@@ -1,5 +1,17 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **DTMC1 END-TO-END RUNTIME FROZEN WHILE DRAFTS GENERATE — 2026-08-10:**
+> Eight immutable training-draft shards launched as array `749933`; `evc33`
+> exposed no CUDA device to tasks 0/1, so only those untouched shards were
+> resubmitted as `749977` with `evc33` excluded. The complete downstream path
+> is frozen before draft statistics are inspected: exact 6,333-identity merge,
+> 1,024-token zero-truncation source-plus-draft input, source-segment-only
+> numeric pointer masks, unchanged 24,864,055-parameter compiler and 4,096-
+> update schedule, aligned/draft-shuffled/source-plus-draft-shuffled controls,
+> learned-LAM carry/opcode interventions, and one conjunctive reducer. Local
+> unit, formatting, lint, bytecode, shell, and diff checks pass. No fit or
+> development score exists yet; public test remains sealed.
+
 > **DTMC1 MODEL-OWNED DRAFT CORPUS FROZEN — 2026-08-10:** TMC1's static
 > source representation is closed at `44/666`, so the next and only open
 > structural lane conditions the unchanged typed graph compiler on the exact
