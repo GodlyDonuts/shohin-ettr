@@ -1,5 +1,19 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **CTE1 CANONICAL TRANSACTION EXTERNALIZATION FROZEN — 2026-08-10:** DTC1
+> proves explicit owner transactions execute causally but finds them on only
+> 257/666 rows. The next intervention changes the missing training target,
+> not the parser: same pinned Qwen3.5-0.8B, same 6,333 identities, final-four
+> rank-8 LoRA, 1,024 updates, optimizer, seeds, and frozen LAM1, but targets
+> are compact canonical `<<expression=result>>` traces deterministically
+> rendered from the immutable gold register program. An independent CPU gate
+> must round-trip all 6,999 train/development targets and prove zero
+> truncation before one fit. Development requires >=600 executable traces,
+> >=300 answers, +33 over direct, causal source/state/opcode controls, and
+> zero normal invalidity. Exact CTE1 receives one pass and no format/prompt/
+> budget/parser rescue; public test remains sealed. Contract:
+> `docs/research/SHOHIN_CTE1_CANONICAL_TRANSACTION_EXTERNALIZATION.md`.
+
 > **DTC1 CLOSED: EXECUTION IS CAUSAL, OWNER TRACE COVERAGE IS THE BOTTLENECK —
 > 2026-08-10:** Immutable CPU job `750036` completed the one frozen pass in
 > 0.41s. Only `257/666` direct-owner drafts expose an accepted explicit
