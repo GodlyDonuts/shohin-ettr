@@ -242,10 +242,14 @@ def _read_candidates(
                     source_counter["unrequested_group"] += 1
                     continue
                 normalized = _normalized_question(question)
+                overlap_normalized = (
+                    _normalized_overlap_question(question)
+                    if eval_overlap_filter is not None
+                    else None
+                )
                 if (
                     eval_overlap_filter is not None
-                    and _normalized_overlap_question(question)
-                    in eval_overlap_filter.exact_questions
+                    and overlap_normalized in eval_overlap_filter.exact_questions
                 ):
                     counters["eval_exact_overlap_rejected"] += 1
                     source_counter["eval_exact_overlap_rejected"] += 1
@@ -275,7 +279,9 @@ def _read_candidates(
                     counters["prompt_truncated_rejected"] += 1
                     source_counter["prompt_truncated_rejected"] += 1
                     continue
-                identity = hashlib.sha256(normalized.encode()).hexdigest()
+                identity = hashlib.sha256(
+                    (overlap_normalized or normalized).encode()
+                ).hexdigest()
                 priority = hashlib.sha256(
                     f"{seed}\0{group}\0{identity}".encode()
                 ).hexdigest()

@@ -24,6 +24,14 @@ global and per-source drop counters, and the final output hash. Draft generation
 remains closed until an independent audit reports zero exact and zero protected
 13-gram overlap.
 
+The first hash-bound rebuild (`750210`) met every domain token quota, but its
+independent audit (`750214`) failed before GPU release because punctuation-
+equivalent source questions remained duplicated under the builder's legacy
+whitespace-only identity. The corrected filtered path uses the same word-
+normalized identity for exact-overlap filtering and source deduplication. This
+is an input-custody repair with unchanged corpora, tokenizer, seed, quotas, and
+capability gate; the rejected build is not admissible training data.
+
 ## Hypothesis
 
 CFR1 failed because appended synthetic faults and clean-copy presentations did

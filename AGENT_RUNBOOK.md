@@ -11,7 +11,12 @@
 > quota selection, allowing backfill from the raw corpora while preserving the
 > frozen 4M-token 40/10/40/10 mix. Rebuild and independently audit zero overlap
 > before opening the sixteen draft shards; all NDR1 capability gates remain
-> unchanged.
+> unchanged. First corrected build job `750210` filled every quota, but the
+> independent audit `750214` rejected it because punctuation-equivalent source
+> questions survived the legacy whitespace-only identity hash. No model job
+> opened. The filtered path now uses the stricter word-normalized identity for
+> both overlap and deduplication; exact rebuild only, not a data/seed/quota
+> variant.
 
 > **ECTR0 READ-ONLY ATTRIBUTION COMPLETE; NATURAL MICROCODE BRIDGE RETIRED —
 > 2026-08-10:** A hash-bound join of all six immutable reports reconstructs

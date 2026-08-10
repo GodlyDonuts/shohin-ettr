@@ -345,3 +345,57 @@ def test_repeated_eval_boilerplate_ngram_is_not_removed(tmp_path: Path) -> None:
     )
     assert report["scan_counters"].get("eval_unique_ngram_overlap_rejected", 0) == 0
     assert report["selected_rows"] == 1
+
+
+def test_eval_filtered_mix_deduplicates_punctuation_variants(tmp_path: Path) -> None:
+    reference = tmp_path / "development.jsonl"
+    reference.write_text(
+        json.dumps(_reference_row("unrelated evaluation source")) + "\n",
+        encoding="utf-8",
+    )
+    source = tmp_path / "source.jsonl"
+    source.write_text(
+        "\n".join(
+            [
+                json.dumps(
+                    {
+                        "question": "Same source, with punctuation!",
+                        "response": "math math math math",
+                        "training_group": "math",
+                    }
+                ),
+                json.dumps(
+                    {
+                        "question": "same source with punctuation",
+                        "response": "math math math math",
+                        "training_group": "math",
+                    }
+                ),
+                json.dumps(
+                    {
+                        "question": "a separate backfill source",
+                        "response": "math math math math",
+                        "training_group": "math",
+                    }
+                ),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    output = tmp_path / "output.jsonl"
+    report = build_token_balanced_mix(
+        [source],
+        output,
+        tmp_path / "report.json",
+        tokenizer=FakeTokenizer(),
+        model_revision="test",
+        weights=parse_weights("math=1"),
+        total_target_tokens=8,
+        max_sequence_length=64,
+        workspace_slots=0,
+        seed=31,
+        eval_references=[reference],
+    )
+    assert report["scan_counters"]["duplicate_questions"] == 1
+    assert report["selected_rows"] == 2
