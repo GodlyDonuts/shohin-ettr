@@ -29,7 +29,9 @@ late-state correctness head is trained.
 - Development: the exact 125 DSET/GSET/ISET disagreement groups from WTV1,
   with duplicate complete trajectories removed.
 - Causal control: the identical development candidates with sources rotated
-  within corruption-family and clean/fault buckets.
+  within corruption-family and clean/fault buckets. A singleton bucket rotates
+  within the same corruption family across pair member so every source is
+  genuinely replaced.
 - Baseline: the existing label-blind completion-shape reranker at matched
   candidate geometry.
 - Frozen host features: final, tail-mean, and completion-mean pools from layers

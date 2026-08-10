@@ -124,10 +124,21 @@ def diagnostic_rows(
         for identity, source in source_by_identity.items():
             buckets[(str(source["corruption_family"]), str(source["pair_member"]))].append(identity)
         replacement: dict[str, str] = {}
+        family_members: dict[str, list[str]] = defaultdict(list)
+        for identity, source in source_by_identity.items():
+            family_members[str(source["corruption_family"])].append(identity)
         for bucket, identities in sorted(buckets.items()):
             ordered = sorted(identities)
             if len(ordered) < 2:
-                raise TSVC1Error(f"shuffled-source bucket is singleton: {bucket}")
+                alternatives = sorted(
+                    identity
+                    for identity in family_members[bucket[0]]
+                    if identity != ordered[0]
+                )
+                if not alternatives:
+                    raise TSVC1Error(f"shuffled-source family is singleton: {bucket[0]}")
+                replacement[ordered[0]] = alternatives[seed % len(alternatives)]
+                continue
             shift = 1 + seed % (len(ordered) - 1)
             for index, identity in enumerate(ordered):
                 replacement[identity] = ordered[(index + shift) % len(ordered)]
