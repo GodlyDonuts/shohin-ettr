@@ -1,5 +1,18 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **LAM1 MECHANICS PASSES; ONE COMPOSITION FROZEN — 2026-08-10:** CPU job
+> `749769` learned all `1400/1400` finite digit transitions and executed all
+> `75935/75935` train and `3917/3917` development gold programs exactly, with
+> zero invalid states. Carry reset falls to `367/3917 = 9.3694%`; opcode
+> permutation falls to `5/3917 = 0.12765%`. Checkpoint SHA-256 is
+> `baab62ec...5c7c4`; report SHA-256 is `b9a82f97...e63c8`. Exactly one
+> development composition is now frozen: immutable BTT checkpoint plus
+> width-64 WGP plus LAM1, with normal, source-shuffled, zero-byte, carry-reset,
+> and opcode-permuted controls. It requires `3917/3917` normal exactness, zero
+> normal invalid/exhausted rows, source-shuffle and zero-byte each `<=25%`,
+> and causal losses of `>=20` / `>=50` points for carry reset / opcode
+> permutation. This does not reopen WGP confirmation or holdout.
+
 > **LAM1 LEARNED ARITHMETIC MICROCODE FROZEN — 2026-08-10:** WGP1's
 > confirmation is closed, so the successor changes the unresolved component
 > rather than retrying its source/evaluator. LAM1 learns all 1,400 finite
