@@ -1,0 +1,208 @@
+{
+  "decision": "close_exact_iset1_v0",
+  "gates": {
+    "aligned_beats_hidden_by_0_20": true,
+    "aligned_beats_swapped_by_0_20": true,
+    "clean_identity_edit_ge_0_99": false,
+    "each_family_script_accuracy_ge_0_95": false,
+    "execution_accuracy_ge_0_98": false,
+    "fault_repair_ge_0_97": true,
+    "pair_consistency_ge_0_95": false,
+    "zero_execution_errors": true,
+    "zero_exhaustion": true
+  },
+  "holdout_authorized": false,
+  "holdout_used": false,
+  "inputs": {
+    "aligned": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/iset1_q35_r1/evaluation/aligned/merged.json",
+      "sha256": "99623156d88d49265c6d9be363718c1c3c659f6da6f35f05c5e12c6e65c33e10"
+    },
+    "hidden": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/iset1_q35_r1/evaluation/hidden/merged.json",
+      "sha256": "b3683c98c3a23d7e928b5dd1710ff2664612eb8695fca8c612db8be62f338bff"
+    },
+    "swapped": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/iset1_q35_r1/evaluation/swapped/merged.json",
+      "sha256": "c3edd586e96ad901240df1a5c211d571b81139c629be5dda4106d3569b4f7d8c"
+    }
+  },
+  "margins": {
+    "aligned_minus_hidden": 582,
+    "aligned_minus_swapped": 1835
+  },
+  "metrics": {
+    "aligned": {
+      "counterfactual_consistency": 0.9371069182389937,
+      "execution_correct": 1838,
+      "execution_errors": {},
+      "family_metrics": {
+        "choice_final": {
+          "action_correct": 256,
+          "action_correct_accuracy": 1.0,
+          "execution_correct": 188,
+          "execution_correct_accuracy": 0.734375,
+          "rows": 256,
+          "script_exact": 188,
+          "script_exact_accuracy": 0.734375,
+          "trajectory_exact": 188,
+          "trajectory_exact_accuracy": 0.734375
+        },
+        "numeric_final": {
+          "action_correct": 1652,
+          "action_correct_accuracy": 1.0,
+          "execution_correct": 1650,
+          "execution_correct_accuracy": 0.9987893462469734,
+          "rows": 1652,
+          "script_exact": 1648,
+          "script_exact_accuracy": 0.9975786924939467,
+          "trajectory_exact": 1650,
+          "trajectory_exact_accuracy": 0.9987893462469734
+        }
+      },
+      "member_metrics": {
+        "clean": {
+          "action_correct": 954,
+          "action_correct_accuracy": 1.0,
+          "execution_correct": 911,
+          "execution_correct_accuracy": 0.9549266247379455,
+          "rows": 954,
+          "script_exact": 910,
+          "script_exact_accuracy": 0.9538784067085954,
+          "trajectory_exact": 911,
+          "trajectory_exact_accuracy": 0.9549266247379455
+        },
+        "fault": {
+          "action_correct": 954,
+          "action_correct_accuracy": 1.0,
+          "execution_correct": 927,
+          "execution_correct_accuracy": 0.9716981132075472,
+          "rows": 954,
+          "script_exact": 926,
+          "script_exact_accuracy": 0.9706498951781971,
+          "trajectory_exact": 927,
+          "trajectory_exact_accuracy": 0.9716981132075472
+        }
+      },
+      "script_exact": 1836
+    },
+    "hidden": {
+      "counterfactual_consistency": 0.5073375262054507,
+      "execution_correct": 1256,
+      "execution_errors": {
+        "DSET1 generated script is malformed": 2,
+        "DSET1 old surface is absent": 317
+      },
+      "family_metrics": {
+        "choice_final": {
+          "action_correct": 256,
+          "action_correct_accuracy": 1.0,
+          "execution_correct": 170,
+          "execution_correct_accuracy": 0.6640625,
+          "rows": 256,
+          "script_exact": 170,
+          "script_exact_accuracy": 0.6640625,
+          "trajectory_exact": 170,
+          "trajectory_exact_accuracy": 0.6640625
+        },
+        "numeric_final": {
+          "action_correct": 1650,
+          "action_correct_accuracy": 0.9987893462469734,
+          "execution_correct": 1086,
+          "execution_correct_accuracy": 0.6573849878934624,
+          "rows": 1652,
+          "script_exact": 1073,
+          "script_exact_accuracy": 0.6495157384987893,
+          "trajectory_exact": 1086,
+          "trajectory_exact_accuracy": 0.6573849878934624
+        }
+      },
+      "member_metrics": {
+        "clean": {
+          "action_correct": 954,
+          "action_correct_accuracy": 1.0,
+          "execution_correct": 725,
+          "execution_correct_accuracy": 0.759958071278826,
+          "rows": 954,
+          "script_exact": 714,
+          "script_exact_accuracy": 0.7484276729559748,
+          "trajectory_exact": 725,
+          "trajectory_exact_accuracy": 0.759958071278826
+        },
+        "fault": {
+          "action_correct": 952,
+          "action_correct_accuracy": 0.9979035639412998,
+          "execution_correct": 531,
+          "execution_correct_accuracy": 0.5566037735849056,
+          "rows": 954,
+          "script_exact": 529,
+          "script_exact_accuracy": 0.5545073375262054,
+          "trajectory_exact": 531,
+          "trajectory_exact_accuracy": 0.5566037735849056
+        }
+      },
+      "script_exact": 1243
+    },
+    "swapped": {
+      "counterfactual_consistency": 0.0,
+      "execution_correct": 3,
+      "execution_errors": {
+        "DSET1 old surface is absent": 815
+      },
+      "family_metrics": {
+        "choice_final": {
+          "action_correct": 256,
+          "action_correct_accuracy": 1.0,
+          "execution_correct": 3,
+          "execution_correct_accuracy": 0.01171875,
+          "rows": 256,
+          "script_exact": 0,
+          "script_exact_accuracy": 0.0,
+          "trajectory_exact": 3,
+          "trajectory_exact_accuracy": 0.01171875
+        },
+        "numeric_final": {
+          "action_correct": 1652,
+          "action_correct_accuracy": 1.0,
+          "execution_correct": 0,
+          "execution_correct_accuracy": 0.0,
+          "rows": 1652,
+          "script_exact": 0,
+          "script_exact_accuracy": 0.0,
+          "trajectory_exact": 0,
+          "trajectory_exact_accuracy": 0.0
+        }
+      },
+      "member_metrics": {
+        "clean": {
+          "action_correct": 954,
+          "action_correct_accuracy": 1.0,
+          "execution_correct": 3,
+          "execution_correct_accuracy": 0.0031446540880503146,
+          "rows": 954,
+          "script_exact": 0,
+          "script_exact_accuracy": 0.0,
+          "trajectory_exact": 3,
+          "trajectory_exact_accuracy": 0.0031446540880503146
+        },
+        "fault": {
+          "action_correct": 954,
+          "action_correct_accuracy": 1.0,
+          "execution_correct": 0,
+          "execution_correct_accuracy": 0.0,
+          "rows": 954,
+          "script_exact": 0,
+          "script_exact_accuracy": 0.0,
+          "trajectory_exact": 0,
+          "trajectory_exact_accuracy": 0.0
+        }
+      },
+      "script_exact": 0
+    }
+  },
+  "passed": false,
+  "row_count": 1908,
+  "schema": "shohin-iset1-stage0-comparison-v1",
+  "status": "complete",
+  "thresholds_frozen_before_output": true
+}
