@@ -1,0 +1,109 @@
+{
+  "admitted": true,
+  "holdout_used": false,
+  "schema": "shohin-slc1-fixed-slot-geometry-audit-v3",
+  "splits": {
+    "development": {
+      "counts": {
+        "ambiguous_source_literal_operands": 699,
+        "dependency_operands": 6090,
+        "fully_pointer_supervisable_rows": 3917,
+        "negated_dependency_operands": 159,
+        "reused_pointer_targets": 17,
+        "rows": 3917,
+        "source_literal_operands": 14150
+      },
+      "failures": [],
+      "histograms": {
+        "candidate_count": {
+          "2": 1261,
+          "3": 703,
+          "4": 631,
+          "5": 661,
+          "6": 611,
+          "7": 50
+        },
+        "depth": {
+          "1": 1417,
+          "2": 653,
+          "3": 604,
+          "4": 630,
+          "5": 613
+        },
+        "source_literal_match_count": {
+          "0": 159,
+          "1": 13292,
+          "2": 620,
+          "3": 69,
+          "4": 10
+        }
+      },
+      "maxima": {
+        "candidate_count": 7,
+        "denominator_digits": 10,
+        "depth": 5,
+        "numerator_digits": 16,
+        "question_characters": 172
+      },
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/structured_ledger_rg_v4_r1/development.jsonl",
+      "rates": {
+        "ambiguous_source_literal_operand": 0.04939929328621908,
+        "fully_pointer_supervisable": 1.0,
+        "unmatched_source_literal_operand": 0.0
+      },
+      "sha256": "f5d4a7150c384da046b3e86c76f9b73e1fdc15d4b56add29c3cf0fa83450bdee"
+    },
+    "train": {
+      "counts": {
+        "ambiguous_source_literal_operands": 13243,
+        "dependency_operands": 120250,
+        "fully_pointer_supervisable_rows": 75935,
+        "negated_dependency_operands": 3231,
+        "reused_pointer_targets": 366,
+        "rows": 75935,
+        "source_literal_operands": 276420
+      },
+      "failures": [],
+      "histograms": {
+        "candidate_count": {
+          "2": 23793,
+          "3": 13327,
+          "4": 12908,
+          "5": 12634,
+          "6": 12423,
+          "7": 850
+        },
+        "depth": {
+          "1": 26767,
+          "2": 12497,
+          "3": 12324,
+          "4": 12133,
+          "5": 12214
+        },
+        "source_literal_match_count": {
+          "0": 3231,
+          "1": 259946,
+          "2": 11557,
+          "3": 1491,
+          "4": 190,
+          "5": 5
+        }
+      },
+      "maxima": {
+        "candidate_count": 7,
+        "denominator_digits": 11,
+        "depth": 5,
+        "numerator_digits": 23,
+        "question_characters": 174
+      },
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/structured_ledger_rg_v4_r1/train.jsonl",
+      "rates": {
+        "ambiguous_source_literal_operand": 0.0479089790897909,
+        "fully_pointer_supervisable": 1.0,
+        "unmatched_source_literal_operand": 0.0
+      },
+      "sha256": "02bd92260538ed75c7b1e82aa7cdb0bed4029ed06c8e982ef1b059e5605699df"
+    }
+  },
+  "status": "complete"
+}
