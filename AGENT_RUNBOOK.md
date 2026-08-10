@@ -1,5 +1,27 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **GSET1 CLOSED; ISET1 IDEMPOTENT TRANSACTIONS FROZEN — 2026-08-09:**
+> GSET1 mechanics `749072`, 16 feature jobs `749074--749089`, matched gate
+> fits `749090--749092`, 24 evaluation shards `749096--749121` plus unchanged
+> infrastructure replays `749129/749130`, merges `749104/749113/749131`, and
+> comparator `749132` completed. Two original hidden shards failed only because
+> `evc46` exposed no usable CUDA device; their off-node replays were exact.
+> The 529,154-parameter paired gate is strongly causal but not sufficient:
+> aligned action is `1,838/1,908 = 96.3312%` and execution `1,833/1,908 =
+> 96.0692%`, versus swapped execution `820` and hidden `515`. Choice action
+> remains only `188/256 = 73.4375%`, consistency `93.1866%`, clean execution
+> `95.8071%`, and fault execution `96.3312%`; the frozen family, consistency,
+> clean, fault, and overall gates fail. No holdout opened and exact GSET1 closes
+> without gate width/margin/seed/duration variants. Comparison SHA-256 is
+> `3e9230b...95e`. ISET1 is prospectively frozen as a structurally different
+> successor: remove binary KEEP classification entirely and require every
+> presentation to emit one complete replacement transaction, `old->old` for
+> clean and `old->corrected` for faults. Matched aligned, within-pair swapped-
+> transaction, and draft-hidden arms retain the Q35 DSET parameter/update
+> budget. Records/contracts:
+> `docs/research/SHOHIN_GSET1_RESULT.json` and
+> `docs/research/SHOHIN_ISET1_IDEMPOTENT_EDIT_TRANSDUCER.md`.
+
 > **DSET-Q35 TRAINED TRANSFER CAUSAL, EXACT GATE CLOSED; GSET1 FROZEN — 2026-08-09:**
 > A 1,179,648-parameter final-16 rank-18 shared post-MLP residual on pinned
 > Qwen3.6-35B-A3B completed 256 updates in aligned and causally hidden arms.

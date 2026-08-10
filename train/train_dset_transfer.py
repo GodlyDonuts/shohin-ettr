@@ -34,7 +34,7 @@ class DSETTransferError(RuntimeError):
 def run(args: argparse.Namespace) -> dict:
     from transformers import AutoTokenizer
 
-    if args.output.exists() or args.arm not in {"aligned", "hidden"}:
+    if args.output.exists() or args.arm not in {"aligned", "swapped", "hidden"}:
         raise DSETTransferError("DSET transfer output exists or arm differs")
     args.output.mkdir(parents=True)
     random.seed(args.seed)
@@ -198,7 +198,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--data-report", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--arm", choices=["aligned", "hidden"], required=True)
+    parser.add_argument("--arm", choices=["aligned", "swapped", "hidden"], required=True)
     parser.add_argument("--updates", type=int, default=256)
     parser.add_argument("--gradient-accumulation", type=int, default=4)
     parser.add_argument("--max-sequence-length", type=int, default=4096)

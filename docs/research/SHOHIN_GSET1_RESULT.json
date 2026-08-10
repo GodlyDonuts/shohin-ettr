@@ -1,0 +1,35 @@
+{
+  "schema": "shohin-gset1-result-v1",
+  "status": "complete",
+  "date": "2026-08-09",
+  "host": "Qwen3.6-35B-A3B",
+  "trainable_gate_parameters": 529154,
+  "updates_per_arm": 1024,
+  "development": {
+    "rows": 1908,
+    "pairs": 954,
+    "aligned_action_correct": 1838,
+    "aligned_action_accuracy": 0.9633123689727463,
+    "aligned_execution_correct": 1833,
+    "aligned_execution_accuracy": 0.960691823899371,
+    "aligned_choice_action_accuracy": 0.734375,
+    "aligned_numeric_action_accuracy": 0.9987893462469734,
+    "aligned_counterfactual_consistency": 0.9318658280922432,
+    "aligned_clean_execution_accuracy": 0.9580712788259959,
+    "aligned_fault_execution_accuracy": 0.9633123689727463,
+    "swapped_action_accuracy": 0.03563941299790356,
+    "swapped_execution_correct": 820,
+    "hidden_action_accuracy": 0.5,
+    "hidden_execution_correct": 515,
+    "aligned_minus_swapped": 1013,
+    "aligned_minus_hidden": 1318,
+    "aligned_execution_errors": {
+      "DSET1 old surface is absent": 3
+    },
+    "max_token_exhausted": 0
+  },
+  "comparison_sha256": "3e9230b55f852eac272ed467b9b8f4934ec0ab6460647ba5cf47e9f0ff5b795e",
+  "passed": false,
+  "holdout_authorized": false,
+  "decision": "Close exact GSET1-v0. Explicit final-state classification is causal but does not solve the choice-family fault-detection boundary. Proceed to the prospectively frozen ISET1 idempotent transaction objective without gate variants."
+}
