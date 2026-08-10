@@ -1,0 +1,48 @@
+{
+  "schema": "shohin-cte1-result-v1",
+  "status": "fail",
+  "holdout_used": false,
+  "public_test_opened": false,
+  "fit_job_id": 750074,
+  "evaluation_job_ids": [750083, 750084],
+  "runtime_commit": "1e21f38",
+  "runtime_manifest_sha256": "9216c99e7abb18b03606037c65c24dcf15d71bf6608b0fa6d4396113c95148c1",
+  "checkpoint_sha256": "fb0bae33f18fd929aae421fb6cc5d734505630c542973f29170bb1faeb1a1662",
+  "training_report_sha256": "76439357778d41bd61354cbee8fcc9cdc9faee9920ba9038edf82759c57e2755",
+  "normal_report_sha256": "8c75ca704cb26df4ca4ad084f6a4b9e9f5f5a1c1ac3c426326a11b4af0e12954",
+  "source_shuffled_report_sha256": "5eb863a4e11d9a095c698cfb7c7c0372fb141ac50a914b93f931e0a00c5a478c",
+  "aggregate_report_sha256": "8dbac6e1a8f8d02bc13ffe44f365e07824f73c353cf813a8cf37787f09b1010b",
+  "scores": {
+    "aligned_correct": 134,
+    "source_shuffled_correct": 4,
+    "direct_reference_correct": 267,
+    "compiled_rows": 599,
+    "executable_rows": 598,
+    "linked_rows": 570,
+    "linked_correct": 131,
+    "state_reset_linked_correct": 1,
+    "opcode_permuted_correct": 1,
+    "normal_execution_invalid": 1,
+    "normal_exhausted": 49,
+    "canonical_trace_exact": 33
+  },
+  "mechanics": {
+    "transactions": 3294,
+    "state_reads": 2548,
+    "source_reads": 2497,
+    "literal_reads": 1822,
+    "generated_tokens": 51422
+  },
+  "gates": {
+    "at_least_600_compiled_executable": false,
+    "aligned_at_least_300": false,
+    "aligned_beats_direct_by_33": false,
+    "source_shuffle_at_most_67": true,
+    "at_least_300_linked_rows": true,
+    "state_reset_loss_at_least_20_points": true,
+    "opcode_loss_at_least_30_points": false,
+    "zero_normal_execution_invalid": false,
+    "public_test_closed": true
+  },
+  "interpretation": "Canonical transaction supervision makes generated traces strongly source-, state-, and opcode-causal, but the model often externalizes a valid wrong or incomplete semantic program. Exact CTE1 reduces capability relative to direct generation and closes without nearby rescue variants."
+}

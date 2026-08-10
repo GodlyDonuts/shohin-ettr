@@ -1,6 +1,6 @@
 # CTE1: Canonical Transaction Externalization
 
-Status: data/mechanics pass; frozen fit running; no capability output yet
+Status: closed negative on development; public test sealed
 
 Date: 2026-08-10
 
@@ -134,5 +134,35 @@ are `393/1024` train and `335/1024` development tokens. The train target
 contains 276,777 charged response tokens; development contains 29,215. Audit
 SHA-256 is `6f999a91...43b8`.
 
-Immutable runtime `1e21f38` has manifest SHA-256 `9216c99e...48c1`. Frozen
-fit `750074` is running on one H100. No CTE1 capability output exists yet.
+Immutable runtime `1e21f38` has manifest SHA-256 `9216c99e...48c1`.
+
+## Frozen Development Result
+
+Fit `750074` completed all 1,024 updates in 474 seconds. The checkpoint and
+training report SHA-256 values are `fb0bae33...a1662` and
+`76439357...e2755`. Concurrent immutable evaluations `750083/750084`
+completed in 653/658 seconds:
+
+- aligned exact answers: `134/666 = 20.12%`;
+- source-shuffled exact answers: `4/666 = 0.60%`;
+- immutable direct-owner reference: `267/666 = 40.09%`;
+- compiled/executable traces: `599/598`;
+- linked rows / linked-correct rows: `570/131`;
+- state-reset linked-correct: `1/131`;
+- opcode-permuted correct: `1/666`;
+- normal execution invalid: one;
+- exhausted generations: 49; and
+- generated transactions: 3,294, including 2,548 state reads.
+
+The traces are source-, state-, and opcode-causal. They are not an effective
+semantic planner: only 33 generated completions exactly match their canonical
+target, and answer accuracy decreases from `76/212 = 35.85%` at gold depth
+two to zero across all 39 depth 6--8 rows. The owner often emits a valid but
+semantically incomplete or wrong arithmetic program; learned execution then
+faithfully computes that wrong program.
+
+CTE1 fails the prospective capability, coverage, opcode-loss, and zero-
+invalidity conditions. It closes without target-format, prompt, parameter,
+duration, parser, or threshold variants. Public GSM8K test remains sealed.
+Normal/source-shuffled/aggregate report SHA-256 values are
+`8c75ca70...12954`, `5eb863a4...a478c`, and `8dbac6e1...1010b`.

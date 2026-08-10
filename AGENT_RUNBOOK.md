@@ -1,5 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **CTE1 CLOSED: CANONICAL TRACES ARE CAUSAL BUT REDUCE CAPABILITY —
+> 2026-08-10:** Frozen fit `750074` completed all 1,024 updates in 474s;
+> checkpoint SHA-256 is `fb0bae33...a1662`. Immutable evaluations
+> `750083/750084` score aligned `134/666` and source-shuffled `4/666`, versus
+> direct owner `267/666`. Aligned generation produces 599 compiled and 598
+> executable traces, 570 linked rows, 3,294 transactions, and only one normal
+> execution-invalid row. State reset retains `1/131` linked-correct solves and
+> opcode permutation retains `1/666`, proving that generated transactions and
+> learned execution are causal. But only 33 completions exactly match the
+> canonical trace; accuracy declines from `76/212` at gold depth two to zero
+> on all depth 6--8 rows, with 49 exhausted generations. CTE1 misses the
+> capability, coverage, opcode, and validity gates and is far below the direct
+> owner. Exact CTE1 closes without target/prompt/rank/duration/parser rescue;
+> public test remains sealed. Aggregate SHA-256 is `8dbac6e1...1010b`.
+
 > **CTE1 DATA/TOKEN GATES PASS; FROZEN FIT LIVE — 2026-08-10:** CPU job
 > `750045` round-trips all `6333/6333` train and `666/666` development
 > canonical traces through the DTC parser and exact typed executor. The corpus
