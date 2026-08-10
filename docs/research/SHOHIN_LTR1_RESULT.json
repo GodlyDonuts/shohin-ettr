@@ -1,0 +1,35 @@
+{
+  "schema": "shohin-ltr1-result-v1",
+  "status": "fail",
+  "holdout_used": false,
+  "public_test_opened": false,
+  "job_id": 750093,
+  "runtime_commit": "225205c",
+  "runtime_manifest_sha256": "78ab0ac9b61cee3bc8f2a4030f4d4b63e5c6dbc955c6ff831f3505ba6deebbcb",
+  "report_sha256": "e03509c6345b9725fe382779cc6fd93499f76b195df1abe15672d6d430135e0a",
+  "counts": {
+    "rows": 666,
+    "correct": 134,
+    "wrong_rows": 532,
+    "proposal_with_records": 649,
+    "wrong_with_records": 515,
+    "exact_ledger": 33,
+    "wrong_at_most_two_edits": 143
+  },
+  "metrics": {
+    "wrong_mean_gold_copy_fraction": 0.09978741496598639,
+    "wrong_median_gold_copy_fraction": 0.0,
+    "wrong_p90_gold_copy_fraction": 0.3333333333333333,
+    "wrong_median_record_edit_distance": 3.0,
+    "wrong_at_most_two_edits_fraction": 0.26879699248120303
+  },
+  "gates": {
+    "all_666_identities_join_once": true,
+    "at_least_500_wrong_with_records": true,
+    "wrong_mean_gold_copy_at_least_35_percent": false,
+    "wrong_median_gold_copy_at_least_25_percent": false,
+    "at_least_half_wrong_at_most_two_edits": false,
+    "public_test_and_holdout_closed": true
+  },
+  "interpretation": "Canonical records do not create enough edit locality on wrong CTE1 plans. Most semantic records would still need regeneration, so exact LTR1 closes before GPU use."
+}

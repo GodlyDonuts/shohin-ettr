@@ -1,6 +1,6 @@
 # LTR1: Ledger Transaction Revision
 
-Status: prospective CPU edit-locality admission frozen; no neural output
+Status: CPU admission failed; exact lane closed before GPU use
 
 Date: 2026-08-10
 
@@ -63,3 +63,22 @@ is authorized by this document alone.
 LTR1 would test structured model-owned draft revision. It is not a retry of
 raw PSET1 byte replacement, a claim that CTE1 is already capable, or permission
 to tune on public GSM8K.
+
+## Frozen Result
+
+Immutable CPU job `750093` completed in two seconds from runtime
+`225205c` (manifest `78ab0ac9...ebbcb`). All 666 identities join once.
+Among the 532 wrong CTE1 proposals:
+
+- 515 contain at least one complete transaction record;
+- mean gold-record LCS copy fraction is `9.9787%`;
+- median gold-record copy fraction is `0%`;
+- 90th-percentile copy fraction is `33.33%`;
+- median record edit distance is three; and
+- only `143/532 = 26.8797%` require at most two record edits.
+
+The minimum copy-fraction and two-edit gates fail. A ledger editor would still
+need to generate nearly the complete semantic program on most wrong rows, so
+the proposed structured revision does not create the required advantage.
+Exact LTR1 closes before training-data generation or GPU use. Report SHA-256
+is `e03509c6...e0a`; public test and holdout remain sealed.

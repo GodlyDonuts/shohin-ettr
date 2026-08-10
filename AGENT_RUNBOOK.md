@@ -1,5 +1,19 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **LTR1 CLOSED BEFORE GPU: WRONG LEDGERS LACK RECORD-LEVEL EDIT LOCALITY —
+> 2026-08-10:** Immutable CPU job `750093` joined all 666 CTE1 development
+> identities and compared complete generated/gold `<<...>>` records. Among
+> 532 wrong proposals, 515 contain at least one complete record, but the mean
+> gold-record LCS copy fraction is only 9.98%, the median is zero, and only
+> 143/532 = 26.88% are within two record edits; median distance is three.
+> Thus a record editor would still regenerate most semantic content. Exact
+> LTR1 fails three locality gates and closes before data generation or H100
+> use, without fuzzy matching, filtering, or threshold rescue. Report SHA-256
+> is `e03509c6...e0a`; holdout/public test remain sealed. The evidence now
+> localizes the 0.8B boundary to semantic planning capacity rather than trace
+> syntax, parser, execution, or edit locality; next test a stronger same-family
+> owner's untrained canonical-transaction interface before any new fit.
+
 > **CTE1 CLOSED: CANONICAL TRACES ARE CAUSAL BUT REDUCE CAPABILITY —
 > 2026-08-10:** Frozen fit `750074` completed all 1,024 updates in 474s;
 > checkpoint SHA-256 is `fb0bae33...a1662`. Immutable evaluations
