@@ -6,6 +6,7 @@ from typed_microcode_compiler import (
     MAX_STEPS,
     REFERENCE_CLASSES,
     TypedMicrocodeCompiler,
+    decode_digits,
     graph_labels,
     typed_compiler_loss,
 )
@@ -29,6 +30,10 @@ def test_graph_labels_preserve_typed_owners() -> None:
     assert labels["reference_targets"][0, 1, 0, MAX_SOURCE_SPANS]
     assert labels["reference_targets"][0, 1, 1, REFERENCE_CLASSES - 1]
     assert labels["literal_mask"][0, 1, 1]
+
+
+def test_digit_decoder_canonicalizes_leading_zeroes() -> None:
+    assert decode_digits([0, 5, 10, 8]) == 5
 
 
 def test_compiler_shapes_and_causal_reference_mask() -> None:

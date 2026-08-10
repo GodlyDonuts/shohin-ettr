@@ -62,7 +62,7 @@ def decode_digits(values: Sequence[int], *, denominator: bool = False) -> int:
         if not 0 <= value <= 9:
             raise TypedMicrocodeGraphError("literal digit differs")
         digits.append(str(value))
-    if not digits or (len(digits) > 1 and digits[0] == "0"):
+    if not digits:
         raise TypedMicrocodeGraphError("literal digit sequence is noncanonical")
     decoded = int("".join(digits))
     if denominator and decoded == 0:
