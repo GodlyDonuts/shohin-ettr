@@ -1,0 +1,55 @@
+{
+  "schema": "shohin-tmc1-development-aggregate-v1",
+  "status": "complete",
+  "decision": "reject_exact_question_only_tmc1",
+  "holdout_used": false,
+  "public_test_opened": false,
+  "rows": 666,
+  "jobs": {
+    "cpu_audit": 749894,
+    "fit": 749895,
+    "normal": 749923,
+    "source_shuffled": 749924
+  },
+  "checkpoint_sha256": "a8742fcacb9410a670ab8e1c992d7f3835b8ffb6a9d2c68ab918d60395891336",
+  "report_sha256": {
+    "training": "85b71fb32b0640a86d3f4eefc69a6873aecb58848322c43979eb9234b37d7dd8",
+    "normal": "a258cfc4b6d653d8a56a973ad88b29d8138b1cdd61ebfe7842d4fd930f346ef0",
+    "source_shuffled": "973b36242a11e8492c356025a624bf509203ed3449fd4673c16cd48741159bd2",
+    "aggregate": "20a8229168a8495c6e73ab40436791515e7140c557f0ab7fd1cf6cef3aab51cb"
+  },
+  "training": {
+    "updates": 4096,
+    "charged_examples": 131072,
+    "charged_source_tokens": 12651233,
+    "trainable_parameters": 24864055,
+    "elapsed_seconds": 859.3319256305695,
+    "examples_per_second": 152.52779059013852,
+    "peak_gpu_bytes": 2762886656,
+    "final_loss": 0.8835844993591309
+  },
+  "metrics": {
+    "answer_correct": "44/666",
+    "direct_answer_correct": "267/666",
+    "source_shuffled_answer_correct": "5/666",
+    "graph_exact": "26/666",
+    "instruction_count_exact": "290/666",
+    "operation_correct": "1203/2646",
+    "operand_owner_correct": "1735/5285",
+    "normal_valid": "665/666",
+    "opcode_permuted_answer_correct": "2/666",
+    "carry_reset_correct_on_normal_correct_multi_digit": "8/36"
+  },
+  "gates": {
+    "answer_at_least_0p45": false,
+    "beats_direct_by_0p05": false,
+    "operation_at_least_0p80": false,
+    "operand_owner_at_least_0p80": false,
+    "source_shuffled_at_most_0p10": true,
+    "carry_reset_loses_0p10": true,
+    "opcode_permutation_loses_0p30": false,
+    "zero_invalid": false,
+    "overall_pass": false
+  },
+  "boundary": "TMC1 removes free-text syntax and is source-causal, but a frozen question-only hidden representation does not expose a sufficiently accurate semantic plan. This closes exact TMC1 without nearby architecture or schedule variants."
+}

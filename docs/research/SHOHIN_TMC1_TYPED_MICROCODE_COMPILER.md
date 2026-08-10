@@ -1,6 +1,6 @@
 # TMC1: Typed Microcode Graph Compiler
 
-Status: CPU representation/mechanics passed; neural canary frozen
+Status: CPU mechanics passed; neural development gate failed; exact TMC1 closed
 
 Date: 2026-08-10
 
@@ -81,3 +81,25 @@ generic grammar mask and executor are explicit scaffolds. A pass would show
 that model-owned natural-language semantics can populate a result-free causal
 graph that learned arithmetic microcode executes. It would not make typed
 decoding, pointer networks, or program execution novel.
+
+## Neural result
+
+Fit `749895` completed all 4,096 updates in 859.33 seconds over 131,072
+presentations / 12,651,233 source tokens. Final aggregate loss was 0.8836;
+checkpoint SHA-256 is `a8742fca...1336`. Frozen evaluations `749923/749924`
+completed in 22/20 seconds.
+
+Normal development reaches `44/666 = 6.6066%` answers, `26/666 = 3.9039%`
+exact graphs, `290/666 = 43.5435%` instruction counts, `1203/2646 = 45.4649%`
+operations, and `1735/5285 = 32.8288%` operand owners. One graph produces an
+invalid normal execution. Same-geometry source shuffle falls to `5/666`,
+opcode permutation to `2/666`, and carry reset retains only `8/36` multi-digit
+normal-correct rows. Thus the typed compiler is source- and executor-causal,
+but remains far below the frozen direct owner at `267/666 = 40.0901%`.
+
+The public test remains unopened. Exact TMC1 closes without width, layer,
+duration, seed, loss, pointer, or schema variants. The evidence localizes the
+next change: grammar is no longer the bottleneck; a static question-only hidden
+state does not expose the autoregressive semantic plan. A successor may use an
+exact model-owned draft trajectory as a second source stream, with aligned,
+shuffled-draft, and source-shuffled controls.

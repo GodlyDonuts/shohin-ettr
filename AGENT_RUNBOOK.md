@@ -1,5 +1,19 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **TMC1 SOURCE-CAUSAL BUT CAPABILITY GATE CLOSED — 2026-08-10:** The
+> 24,864,055-parameter typed compiler fit `749895` completed 4,096 updates in
+> 859.33s; frozen evaluations `749923/749924` score `44/666 = 6.6066%`
+> answers, `26/666 = 3.9039%` exact graphs, `45.4649%` operations, and
+> `32.8288%` operand owners, versus direct owner `267/666 = 40.0901%`.
+> Source shuffle falls to `5/666`, opcode permutation to `2/666`, and carry
+> reset retains `8/36` multi-digit solved rows, proving source/executor
+> causality. Typed structure fixes NMC1's syntax collapse, but static
+> question-only hidden states do not expose a sufficient semantic plan. Exact
+> TMC1 closes without nearby variants; public test remains unopened. Aggregate
+> SHA-256 is `20a82291...51cb`. The next structurally different lane may
+> condition the same typed graph interface on an exact model-owned
+> autoregressive draft, with aligned/shuffled-draft/source-shuffled controls.
+
 > **TMC1 NEURAL CANARY FROZEN AFTER IMMUTABLE CPU PASS — 2026-08-10:** Newton
 > CPU job `749894` reproduced exact typed-graph and learned-LAM execution on
 > all `6333/6333` train and `666/666` development rows in seven seconds;
