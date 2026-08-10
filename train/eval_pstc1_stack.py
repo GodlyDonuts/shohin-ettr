@@ -159,6 +159,9 @@ def evaluate_batch(output: Any, targets: list[StackProgram], sources: list[Stack
                 "source_identity_sha256": source.identity_sha256,
                 "family": target.family,
                 "gold_action_count": len(target.actions),
+                "binary_depth": sum(
+                    ACTIONS[item.action].startswith("APPLY_") for item in target.actions
+                ),
                 "predicted_action_count": predicted_length,
                 "action_length_exact": action_length_exact,
                 "action_sequence_exact": action_sequence_exact,
