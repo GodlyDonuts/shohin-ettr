@@ -4,22 +4,23 @@
 from __future__ import annotations
 
 import argparse
-from collections import Counter
+from collections import Counter, defaultdict
 from fractions import Fraction
 import hashlib
 import json
 import os
 from pathlib import Path
 import time
+from typing import Sequence
+
+import torch
 
 from draft_transaction_compiler import (
     DraftTransactionError,
     compile_draft_transactions,
     reset_state_reads,
 )
-from eval_tmc1_development import load_microcode, load_rows, source_shuffle
-from learned_arithmetic_microcode import LearnedArithmeticError
-from train_lam1_microcode import candidate_fraction
+from learned_arithmetic_microcode import LearnedArithmeticError, LearnedDigitMicrocode
 from typed_microcode_graph import TypedMicrocodeGraphError, execute_learned
 
 
@@ -37,6 +38,51 @@ def sha256_file(path: Path) -> str:
         for block in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def load_rows(path: Path, expected_sha256: str) -> list[dict[str, object]]:
+    if sha256_file(path) != expected_sha256:
+        raise DTC1EvaluationError("development data SHA-256 differs")
+    with path.open(encoding="utf-8") as handle:
+        rows = [json.loads(line) for line in handle if line.strip()]
+    if len(rows) != 666 or len({row["identity_sha256"] for row in rows}) != 666:
+        raise DTC1EvaluationError("development population differs")
+    return rows
+
+
+def source_shuffle(
+    rows: Sequence[dict[str, object]],
+) -> dict[str, dict[str, object]]:
+    groups: dict[int, list[dict[str, object]]] = defaultdict(list)
+    for row in rows:
+        groups[int(row["register_depth"])].append(row)
+    mapping = {}
+    for depth, group in sorted(groups.items()):
+        ordered = sorted(group, key=lambda row: str(row["identity_sha256"]))
+        if len(ordered) < 2:
+            raise DTC1EvaluationError(f"source-shuffle singleton depth {depth}")
+        for target, donor in zip(ordered, ordered[1:] + ordered[:1], strict=True):
+            mapping[str(target["identity_sha256"])] = donor
+    return mapping
+
+
+def load_microcode(path: Path) -> LearnedDigitMicrocode:
+    payload = torch.load(path, map_location="cpu", weights_only=False)
+    if payload.get("schema") != "shohin-lam1-learned-arithmetic-microcode-v1":
+        raise DTC1EvaluationError("LAM checkpoint differs")
+    model = LearnedDigitMicrocode()
+    model.load_state_dict(payload["state_dict"], strict=True)
+    if model.transition_exact() != (1400, 1400):
+        raise DTC1EvaluationError("LAM transition receipt differs")
+    model.freeze_discrete()
+    return model
+
+
+def candidate_fraction(value) -> Fraction:
+    numerator = int("".join(str(digit) for digit in reversed(value.numerator)))
+    denominator = int("".join(str(digit) for digit in reversed(value.denominator)))
+    result = Fraction(numerator, denominator)
+    return -result if value.negative else result
 
 
 def load_direct_report(
