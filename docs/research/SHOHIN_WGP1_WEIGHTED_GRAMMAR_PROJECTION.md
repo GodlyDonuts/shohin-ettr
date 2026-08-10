@@ -1,6 +1,6 @@
 # WGP1: Weighted Grammar Projection
 
-Status: development PASS; one sealed held-out-seed confirmation open
+Status: development PASS; legacy holdout rejected before scoring; one replacement confirmation source frozen
 
 Date: 2026-08-10
 
@@ -82,3 +82,25 @@ each before fail-closed exact-program admission. Confirmation thresholds are
 frozen before construction: at least 99% admission per family, `>=99%` exact
 skeleton overall, every family `>=98%`, valid program `=100%`, source-shuffled
 and zero-byte exact each `<=25%`, and zero exhaustion. A miss closes WGP1.
+
+## Confirmation source admission correction
+
+CPU job `749717` failed closed in three seconds before producing a holdout
+artifact or accessing model output. A read-only audit found that the legacy
+`rg_eval.jsonl` is not source-disjoint from BTT1 train/development: it contains
+14 protected `chain_sum` questions, 138 protected `products` questions, and
+one internal `products` duplicate. This invalidates that file as a WGP1
+confirmation source; it is preserved as a data-custody failure and will never
+be scored.
+
+Before any replacement data or model output exists, the replacement source is
+frozen as follows: `reasoning-gym==0.1.25`, package wheel SHA-256
+`7f17a3eddb13c015d7d4a755ed576a061df889faf9468bcc2cca334ebe9e0435`,
+seed `20260810`, an ordered pool of 8,192 generated rows per family, and the
+first 500 nonempty-answer rows per family whose normalized question SHA-256 is
+unique and absent from immutable BTT1 train/development. The five families,
+compiler, checkpoint, projection, controls, and all numeric gates remain
+unchanged. The generated source must contain exactly 2,500 unique,
+source-disjoint rows; independent exact-program admission must still retain at
+least 495/500 per family before any model evaluation. Failure at either stage
+closes confirmation without another seed, package, pool, or filtering retry.

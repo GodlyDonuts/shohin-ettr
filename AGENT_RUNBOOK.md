@@ -1,5 +1,18 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **WGP1 LEGACY HOLDOUT REJECTED BEFORE SCORING; REPLACEMENT SOURCE FROZEN —
+> 2026-08-10:** CPU job `749717` failed closed in three seconds and produced no
+> holdout artifact/model output because immutable `rg_v4/rg_eval.jsonl` is not
+> source-disjoint: 14 `chain_sum` and 138 `products` questions overlap BTT1
+> train/development, with one additional internal `products` duplicate. The
+> file will not be scored. Before generating replacement data, the sole
+> replacement source is frozen to `reasoning-gym==0.1.25` (wheel SHA-256
+> `7f17a3ed...0435`), seed `20260810`, 8,192 candidates/family, and first 500
+> unique/protected-disjoint questions for each unchanged family. It must then
+> pass the original `>=495/500` exact compiler admission per family before the
+> unchanged WGP checkpoint/projection is evaluated once. No model output has
+> been accessed and no threshold, checkpoint, family, or decoder changed.
+
 > **WGP1 PASSES DEVELOPMENT; ONE SEALED HOLDOUT OPEN — 2026-08-10:** Frozen
 > BTT1 checkpoint evaluation jobs `749707/749708/749710` and exact memoized
 > zero-byte replacement `749711` completed. Width-64 weighted grammar
