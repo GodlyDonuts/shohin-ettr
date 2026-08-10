@@ -1,5 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **DTMC1 CORPUS/AUDIT PASS; FROZEN FIT RUNNING — 2026-08-10:** All eight
+> immutable direct-owner draft shards completed after exact tasks 0/1 were
+> resubmitted away from broken-CUDA node `evc33`. The merged corpus contains
+> `6333/6333` unique identities, `2359/6333 = 37.2493%` draft-correct rows,
+> 1,904 unfiltered exhausted drafts, and 1,697,360 generated tokens; corpus
+> SHA-256 is `dfa3541f...0b1c`. Initial audit jobs failed before data scoring
+> on a missing packaged import and an over-strict whole-envelope byte match;
+> no fit opened. Qwen's chat template trims trailing draft whitespace, so
+> commit `0b3c7be` correctly binds pointers to the unique complete source
+> prefix through the draft marker. Immutable audit job `749997` then passes
+> all 6,333 train rows and all three 666-row development controls: maxima are
+> 756 train tokens and 729 development tokens under the 1,024-token ceiling.
+> Frozen fit `749998` is running on `evc25`; update 1 loss is 9.8820 and update
+> 64 loss is 6.3210. Public test remains sealed.
+
 > **DTMC1 END-TO-END RUNTIME FROZEN WHILE DRAFTS GENERATE — 2026-08-10:**
 > Eight immutable training-draft shards launched as array `749933`; `evc33`
 > exposed no CUDA device to tasks 0/1, so only those untouched shards were
