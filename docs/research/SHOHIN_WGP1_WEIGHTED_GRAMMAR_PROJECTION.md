@@ -1,6 +1,6 @@
 # WGP1: Weighted Grammar Projection
 
-Status: frozen no-training successor; development evaluation pending
+Status: development PASS; one sealed held-out-seed confirmation open
 
 Date: 2026-08-10
 
@@ -56,3 +56,29 @@ One pass opens exactly one sealed holdout. Failure closes WGP1 without beam,
 grammar, score, checkpoint, seed, or threshold variants. A pass establishes a
 qualified source-to-program compiler, not learned arithmetic execution or a
 novel parsing algorithm.
+
+## Development result
+
+Jobs `749707`, `749708`, `749710`, and exact memoized zero-byte replacement
+`749711` completed. Normal projected output is `3,917/3,917 = 100%` for
+complete byte roles, selected lexemes, action sequence, validity, and exact
+skeleton. It repairs all 45 immutable BTT1 failures with zero breaks and zero
+search exhaustion. Every family and every frozen difficult slice is `100%`.
+Source-shuffled and zero-byte controls are both zero exact; flat execution
+loses `62.2244` points on hierarchical rows. Every conjunctive gate passes.
+
+The original zero-byte job `749709` was canceled after `4m23s` without a
+report when it became clear that repeated identical zero-input searches would
+consume its window. Replacement `749711` used the prospectively documented
+exact cache and completed all rows; no score, beam, grammar, or checkpoint
+changed. Result SHA-256 is
+`113dffc54e30ef90d7c36662c8f4cef445d5afc6d16e422719bdc13d8553f060`.
+
+Exactly one confirmation is now open on the immutable Reasoning-Gym held-out
+seed file `rg_v4/rg_eval.jsonl`, SHA-256
+`35a2625a44bd42161ac9ee562fb57a6f69ab9771747ef4166d0042d925b46435`.
+The five supported arithmetic families contribute 500 source-disjoint rows
+each before fail-closed exact-program admission. Confirmation thresholds are
+frozen before construction: at least 99% admission per family, `>=99%` exact
+skeleton overall, every family `>=98%`, valid program `=100%`, source-shuffled
+and zero-byte exact each `<=25%`, and zero exhaustion. A miss closes WGP1.

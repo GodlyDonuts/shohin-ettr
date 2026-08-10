@@ -1,5 +1,23 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **WGP1 PASSES DEVELOPMENT; ONE SEALED HOLDOUT OPEN — 2026-08-10:** Frozen
+> BTT1 checkpoint evaluation jobs `749707/749708/749710` and exact memoized
+> zero-byte replacement `749711` completed. Width-64 weighted grammar
+> projection raises immutable BTT1 top-1 from `3872/3917` to `3917/3917 =
+> 100%`, repairing all 45 invalid parses with zero breaks and zero exhaustion.
+> Every family, mixed-precedence, unary-group, and three-plus-parenthesis slice
+> is 100%. Source-shuffled and zero-byte controls are both zero; flat execution
+> removes 62.22 points on hierarchical rows. Every frozen gate passes. The
+> first zero-byte job `749709` was canceled after 4m23s with no report because
+> exact width-64 search on every row was needlessly slow; replacement `749711`
+> memoized mathematically identical zero-input searches by tape length and
+> digit/dot mask and produced the complete report. Result SHA-256 is
+> `113dffc5...060`. This qualifies the source-to-program compiler on
+> development and opens exactly one held-out-seed confirmation from immutable
+> `rg_v4/rg_eval.jsonl` SHA `35a2625a...435`; no tuning or second confirmation
+> is allowed. Arithmetic-state learning remains closed until that confirmation
+> resolves.
+
 > **BTT1 CLOSES 45 RAW-BYTE FAILURES FROM A SOURCE-CAUSAL COMPILER —
 > 2026-08-10:** CPU job `749685`, mechanics `749700`, fit `749701`, and
 > evaluations `749702--749705` completed. The standalone 4,938,506-parameter
