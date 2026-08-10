@@ -468,6 +468,13 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
         args.model_root, args.adapter_checkpoint, args.model_loader
     )
     trainable = configure_train_scope(model, args.train_scope)
+    backbone = getattr(model, "backbone", model)
+    if hasattr(backbone, "gradient_checkpointing_enable"):
+        backbone.gradient_checkpointing_enable(
+            gradient_checkpointing_kwargs={"use_reentrant": False}
+        )
+    if hasattr(backbone, "enable_input_require_grads"):
+        backbone.enable_input_require_grads()
     hidden_size = int(model.text_model.embed_tokens.embedding_dim)
     head = ProcessVerifierHead(hidden_size, len(FEATURE_NAMES), args.head_width).to(
         "cuda:0"
