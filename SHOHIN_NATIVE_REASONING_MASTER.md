@@ -11,6 +11,22 @@ policy selects one complete trajectory. At inference there is no external
 proposal model, verifier, correctness bit, benchmark router, solver, tool, or
 teacher.
 
+An independent architecture lane has now established a complete
+source-to-terminal arithmetic development system. A 4.94M-parameter raw-byte
+Transformer compiles source text, a fixed width-64 weighted grammar projection
+selects one coherent postfix program, and a 108,000-parameter learned decimal
+microcode executes that program recurrently. On all 3,917 source-disjoint
+development programs, the frozen composition is `3917/3917 = 100%` exact.
+Source shuffle is `7/3917`, zero-byte input `14/3917`, carry reset `367/3917`,
+and opcode permutation `5/3917`, so both source compilation and learned local
+transition laws are causal. This is a real compositional development result,
+but not yet a held-out reasoning claim: grammar search and stack/rational
+state are explicit architectural scaffolds, and the separately frozen WGP1
+confirmation source failed exact-assessor admission before model scoring.
+Contract and result:
+`docs/research/SHOHIN_LAM1_LEARNED_ARITHMETIC_MICROCODE.md` and
+`docs/research/SHOHIN_LAM1_COMPOSITION_RESULT.json`.
+
 The latest completed gate was MPR1 on pinned small OLMoE, using a rank-18
 shared residual after all 16 MoE blocks. MPR1 closed negative: aligned exact
 OLMoE-owned drafts score `233/1,289`, while same-task nearest-length shuffled

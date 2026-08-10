@@ -1,5 +1,18 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **LAM1 COMPLETE DEVELOPMENT ARCHITECTURE PASSES — 2026-08-10:** Frozen H100
+> composition job `749784` completed in 192.24 scientific seconds. Immutable
+> BTT raw-byte compilation + width-64 WGP + learned LAM1 microcode reaches
+> `3917/3917 = 100%` terminal exactness with zero normal invalid/exhausted
+> rows. Source shuffle falls to `7/3917`, zero bytes to `14/3917`, carry reset
+> to `367/3917`, and opcode permutation to `5/3917`; every prospective gate
+> passes. Result SHA-256 is `60698d0b...e4cf`. This is the strongest complete
+> source-to-terminal development architecture in the current lineage. Its
+> boundary is explicit: grammar projection and stack/rational execution remain
+> structured scaffolds, and no held-out confirmation exists because WGP1's
+> replacement source failed admission before model scoring. Do not reinterpret
+> this as WGP holdout evidence or retry the closed confirmation source.
+
 > **LAM1 MECHANICS PASSES; ONE COMPOSITION FROZEN — 2026-08-10:** CPU job
 > `749769` learned all `1400/1400` finite digit transitions and executed all
 > `75935/75935` train and `3917/3917` development gold programs exactly, with

@@ -1,6 +1,6 @@
 # LAM1: Learned Arithmetic Microcode
 
-Status: mechanics passed; frozen development composition pending
+Status: mechanics and frozen development composition passed
 
 Date: 2026-08-10
 
@@ -85,6 +85,25 @@ on development with zero invalid states. Carry reset scored `367/3917 =
 9.3694%`; opcode permutation scored `5/3917 = 0.12765%`. Scientific elapsed
 time was 55.42 seconds. Report SHA-256 is
 `b9a82f97065dce5750a02660a80fa71d4af2a4f14c45a39a5f35c5e0135e63c8`.
+
+## Composition result
+
+H100 job `749784` completed the only authorized composition in 192.24
+scientific seconds. The normal path was exact on `3917/3917` programs with
+zero compiler invalidity, execution invalidity, or grammar-search exhaustion.
+The controls scored:
+
+- source shuffled: `7/3917 = 0.1787%`;
+- zero bytes: `14/3917 = 0.3574%`;
+- carry reset: `367/3917 = 9.3694%`; and
+- opcode permutation: `5/3917 = 0.12765%`.
+
+Every frozen gate passed. The atomic result is
+`docs/research/SHOHIN_LAM1_COMPOSITION_RESULT.json`, SHA-256
+`60698d0b00bc0fc82d38c54173a956e5e3b74d191960e4f1b1de66c7a549e4cf`.
+This qualifies the complete raw-byte compiler, constrained program projection,
+and learned arithmetic executor on source-disjoint development data. It is not
+a held-out confirmation because WGP1 confirmation closed at source admission.
 
 ## Claim boundary
 

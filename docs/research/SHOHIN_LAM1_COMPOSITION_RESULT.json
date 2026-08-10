@@ -1,0 +1,115 @@
+{
+  "beam_width": 64,
+  "btt_checkpoint_sha256": "2283c86b1a640c9d5c02ffbc70b4646a0a1ad3538c4e1d4ab4ea3b164363e278",
+  "data_sha256": "de16d5dc8dd3676f4c3f4a69c306ec19a0ea8a42e9750bf93a2aaf16f4be0bf8",
+  "elapsed_seconds": 192.23567652702332,
+  "gates": {
+    "carry_reset_loses_20_points": true,
+    "normal_exact": true,
+    "opcode_permutation_loses_50_points": true,
+    "source_shuffled_at_most_0p25": true,
+    "zero_bytes_at_most_0p25": true,
+    "zero_normal_exhaustion": true,
+    "zero_normal_invalid": true
+  },
+  "holdout_used": false,
+  "lam_checkpoint_sha256": "baab62ec4a256e89950a257616d9f023b8f5e5c8c98b927052f7e722e815c7c4",
+  "metrics": {
+    "carry_reset": {
+      "counts": {
+        "correct": 367,
+        "execution_invalid": 2,
+        "family:basic_arithmetic:correct": 100,
+        "family:basic_arithmetic:rows": 804,
+        "family:chain_sum:correct": 184,
+        "family:chain_sum:rows": 896,
+        "family:decimal_arithmetic:correct": 18,
+        "family:decimal_arithmetic:rows": 439,
+        "family:decimal_chain_sum:correct": 57,
+        "family:decimal_chain_sum:rows": 993,
+        "family:products:correct": 8,
+        "family:products:rows": 785,
+        "rows": 3917
+      },
+      "exact_rate": 0.09369415368904774
+    },
+    "normal": {
+      "counts": {
+        "correct": 3917,
+        "execution_invalid": 0,
+        "family:basic_arithmetic:correct": 804,
+        "family:basic_arithmetic:rows": 804,
+        "family:chain_sum:correct": 896,
+        "family:chain_sum:rows": 896,
+        "family:decimal_arithmetic:correct": 439,
+        "family:decimal_arithmetic:rows": 439,
+        "family:decimal_chain_sum:correct": 993,
+        "family:decimal_chain_sum:rows": 993,
+        "family:products:correct": 785,
+        "family:products:rows": 785,
+        "rows": 3917
+      },
+      "exact_rate": 1.0
+    },
+    "opcode_permuted": {
+      "counts": {
+        "correct": 5,
+        "execution_invalid": 0,
+        "family:basic_arithmetic:correct": 4,
+        "family:basic_arithmetic:rows": 804,
+        "family:chain_sum:correct": 1,
+        "family:chain_sum:rows": 896,
+        "family:decimal_arithmetic:correct": 0,
+        "family:decimal_arithmetic:rows": 439,
+        "family:decimal_chain_sum:correct": 0,
+        "family:decimal_chain_sum:rows": 993,
+        "family:products:correct": 0,
+        "family:products:rows": 785,
+        "rows": 3917
+      },
+      "exact_rate": 0.0012764871074802144
+    },
+    "source_shuffled": {
+      "counts": {
+        "correct": 7,
+        "execution_invalid": 0,
+        "family:basic_arithmetic:correct": 2,
+        "family:basic_arithmetic:rows": 804,
+        "family:chain_sum:correct": 5,
+        "family:chain_sum:rows": 896,
+        "family:decimal_arithmetic:correct": 0,
+        "family:decimal_arithmetic:rows": 439,
+        "family:decimal_chain_sum:correct": 0,
+        "family:decimal_chain_sum:rows": 993,
+        "family:products:correct": 0,
+        "family:products:rows": 785,
+        "rows": 3917
+      },
+      "exact_rate": 0.0017870819504723003
+    },
+    "zero_bytes": {
+      "counts": {
+        "correct": 14,
+        "execution_invalid": 74,
+        "family:basic_arithmetic:correct": 9,
+        "family:basic_arithmetic:rows": 804,
+        "family:chain_sum:correct": 5,
+        "family:chain_sum:rows": 896,
+        "family:decimal_arithmetic:correct": 0,
+        "family:decimal_arithmetic:rows": 439,
+        "family:decimal_chain_sum:correct": 0,
+        "family:decimal_chain_sum:rows": 993,
+        "family:products:correct": 0,
+        "family:products:rows": 785,
+        "rows": 3917
+      },
+      "exact_rate": 0.0035741639009446006
+    }
+  },
+  "overall_pass": true,
+  "peak_gpu_bytes": 193302016,
+  "rows": 3917,
+  "schema": "shohin-lam1-btt-wgp-composition-v1",
+  "status": "complete",
+  "train_data_sha256": "8deabd1ad1cdd93466cf9a53bde3012886fd63ff327914897bd70cbd9e13bc6e"
+}
