@@ -31,6 +31,7 @@ test "$(sha256sum "$DATA_REPORT" | cut -d' ' -f1)" = "$DATA_REPORT_SHA256"
 test "$(sha256sum "$ISET_MERGED" | cut -d' ' -f1)" = "$ISET_MERGED_SHA256"
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 export TOKENIZERS_PARALLELISM=false PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+export PYTHONPATH="$BNB_ROOT:$RUNTIME/train:$RUNTIME/pipeline"
 nvidia-smi
 "$PYTHON" "$RUNTIME/train/eval_rift1_fixed_point.py" \
   --model-root "$MODEL_ROOT" --checkpoint "$CHECKPOINT" \
