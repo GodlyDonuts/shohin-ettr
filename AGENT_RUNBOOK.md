@@ -1,5 +1,18 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **FRET1 ALWAYS-REWRITE CEILING FROZEN — 2026-08-10:** PSET1 already tested
+> and closed the separate-stream pointer architecture requested as a fallback;
+> its span head reached `65.23%`, but its standalone byte replacement decoder
+> reached only `12.89%`. FRET1 therefore runs one read-only, structurally
+> informative ceiling: force the frozen DSET-Q35 host into its already-
+> qualified `REPLACE_LAST` mode on every clean/fault presentation and require
+> exact model-owned content pointers plus replacement values. The aligned and
+> exact draft-hidden DSET checkpoints run identically over all 1,908 opened
+> development rows. This does not count as a learned policy; it decides whether
+> the next explicit transducer may reuse the native Qwen value path instead of
+> rebuilding PSET's failed byte decoder. Contract:
+> `docs/research/SHOHIN_FRET1_ALWAYS_REWRITE_CEILING.md`.
+
 > **ETV1 CLOSED; NO HOLDOUT — 2026-08-10:** End-to-end verifier fit `749290`
 > completed 300 updates in 10,182.70 seconds with zero truncation, 1,179,648
 > trainable backbone parameters, and a 1,221,825-parameter verifier head.
