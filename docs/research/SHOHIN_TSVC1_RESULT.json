@@ -1,0 +1,62 @@
+{
+  "aligned_minus_shape": 8,
+  "aligned_minus_shuffled": 0,
+  "aligned_selected_correct": 69,
+  "choice_correct": 189,
+  "choice_total": 256,
+  "clean_correct": 901,
+  "clean_total": 954,
+  "disagreement_groups": 125,
+  "fault_correct": 937,
+  "fault_total": 954,
+  "feature_prompt_truncation": 0,
+  "gate": {
+    "aligned_disagreement_ge_105": false,
+    "aligned_minus_shape_ge_13": false,
+    "aligned_minus_shuffled_ge_13": false,
+    "choice_ge_220": false,
+    "overall_ge_1874": false,
+    "train_validation_ge_0_90": true,
+    "zero_feature_truncation": true
+  },
+  "holdout_authorized": false,
+  "holdout_used": false,
+  "inputs": {
+    "aligned": "c2144e1313e156271e3c8a9ad3c21cc5cab0a76e997da490338fea0a58800d25",
+    "candidates": "63ca258425dd4df7fef735ef66fb39c714f881c5f9ac931abf89aed19c904092",
+    "feature_reports": [
+      "341cef5efcef97eb1dcb5a4f2fbaee2460ed1df5ab308321c4518fc796f47c3a",
+      "f548044946623a67d80fd5d4565cb898f040f22c0def87cf522838ae1521eb32",
+      "15881216eee228b239824254e904de42d253ec18008001309819298edd373f76",
+      "5f8c98cf27473fa9d865fcf6e9c223539b09012d7da9b1e7cd39e5163c6020cc",
+      "cef51be49c704158fd0fe663caf3c876ac434a169e2d925ba9012904a5a8e40c",
+      "ba1c9fcabf1902dbf22eae4ff78df4af3f287433404a4d0ff14992acc77d566f",
+      "8f3b065c4de9f7b6c53b1766889272e7347aa691e0f171daebea35d177cd50dc",
+      "9a138d35a3b6815c65e6902766668a9fc91543211348c1a14f172a38204b025c",
+      "f41ce201c62c5847e6d3a472cf9d7da155e153f81f9c07402737dbec8f5c62ac",
+      "d890dd6e4dec0b48234ed639ee46ccc7cbcdbd6a942835cee9be3402ac6c0619"
+    ],
+    "model": "d33bb31c5e22c5538eace4660b69fb86fb4a5d16748062a8ada2ef791ad52fbd",
+    "shape": "fbbb16db5504aedc924bbe9e7cb3e46ea557a2048dbdc4dba58f3dbbaa45998a",
+    "shuffled": "665c94986241882b877051e8bcb89a99dd988304361b8ede3067281bb1f9c24f"
+  },
+  "numeric_correct": 1649,
+  "numeric_total": 1652,
+  "overall_correct": 1838,
+  "overall_total": 1908,
+  "schema": "shohin-tsvc1-comparison-v1",
+  "shape_selected_correct": 61,
+  "shuffled_selected_correct": 69,
+  "status": "fail",
+  "train_validation": {
+    "first_accuracy": 0.5401554404145078,
+    "first_correct": 417,
+    "modal_accuracy": 0.5401554404145078,
+    "modal_correct": 417,
+    "oracle_accuracy": 1.0,
+    "oracle_correct": 772,
+    "selected_accuracy": 0.9961139896373057,
+    "selected_correct": 769,
+    "total": 772
+  }
+}

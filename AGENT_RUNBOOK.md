@@ -1,5 +1,23 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **TSVC1 CLOSED; ETV1 END-TO-END VERIFIER FROZEN — 2026-08-10:** Ten H100
+> feature jobs `749262--749271`, head fit `749272`, and aligned/shuffled
+> selections `749273/749274` completed. TSVC1's 3.21M-parameter frozen-feature
+> head learns deterministic clean/fault discrimination (`769/772 = 99.61%`
+> hash validation) but does not transfer: aligned and source-shuffled each
+> select only `69/125`, shape selects `61/125`, yielding `1,838/1,908` overall
+> and `189/256` choice. Zero feature truncation occurred, but every capability
+> and causal-margin gate fails; comparison SHA-256 is `a2a01c5a...273` and no
+> holdout opened. This localizes the defect to a frozen representation that
+> encodes corruption style without source-conditioned semantic correctness.
+> ETV1 is prospectively frozen as one structurally different end-to-end
+> verifier pass: frozen Qwen base/router/experts, but the existing 1,179,648-
+> parameter revision residual and process-verifier head train jointly for 300
+> updates on exact same-source trajectory pairs. Aligned versus genuinely
+> source-shuffled model-candidate evaluation remains causal; no candidate can
+> be edited or repaired. Contract:
+> `docs/research/SHOHIN_ETV1_END_TO_END_TRAJECTORY_VERIFIER.md`.
+
 > **WTV1 CLOSED; TSVC1 TRAINED SEMANTIC COMMIT FROZEN — 2026-08-10:** WTV1
 > replay jobs `749258--749261` completed after jobs `749254--749257` failed
 > before model execution from a missing pinned bitsandbytes import path. The
