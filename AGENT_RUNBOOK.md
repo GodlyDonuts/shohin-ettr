@@ -1,5 +1,18 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **TMC1 TYPED GRAPH CPU MECHANICS PASS LOCALLY — 2026-08-10:** The
+> structurally different successor to NMC1 lowers result-free register
+> programs into causal binary instructions with source equivalence pointers,
+> prior-state pointers, literal digit fields, and a generic executor. An
+> explicit `COPY` materializes 109 train / 11 development identity finals as
+> state without semantic repair. Exact Fraction and frozen learned-LAM1
+> execution pass all `6333/6333` train and `666/666` development rows. The
+> train-derived maxima are 15 source spans, 15 instructions, ten numerator
+> digits, and three denominator digits; development maxima are 11/12/5/3 and
+> require no widening. The immutable scheduler replication is the next gate;
+> no neural TMC1 output exists yet. Contract:
+> `docs/research/SHOHIN_TMC1_TYPED_MICROCODE_COMPILER.md`.
+
 > **NMC1 FREE-TEXT NATURAL COMPILER CLOSED — 2026-08-10:** Matched 1,024-update
 > fits `749816/749817` and frozen development evaluations `749838--749840`
 > completed. NMC1 emits only `40/666 = 6.006%` parsable programs, `19/666 =
