@@ -1,0 +1,194 @@
+{
+  "aligned": {
+    "copy_characters": 1913805,
+    "copy_rate": 0.9857768909116944,
+    "draft_characters": 1941418,
+    "execution_accuracy": 0.889412997903564,
+    "execution_correct": 1697,
+    "execution_errors": 6,
+    "family": {
+      "choice_final": {
+        "execution_correct": 154,
+        "pointer_exact": 255,
+        "program_exact": 154,
+        "replacement_exact": 154,
+        "rows": 256
+      },
+      "numeric_final": {
+        "execution_correct": 1543,
+        "pointer_exact": 1639,
+        "program_exact": 1536,
+        "replacement_exact": 1536,
+        "rows": 1652
+      }
+    },
+    "max_token_exhausted": 0,
+    "member": {
+      "clean": {
+        "execution_correct": 748,
+        "pointer_exact": 945,
+        "program_exact": 743,
+        "replacement_exact": 743,
+        "rows": 954
+      },
+      "fault": {
+        "execution_correct": 949,
+        "pointer_exact": 949,
+        "program_exact": 947,
+        "replacement_exact": 947,
+        "rows": 954
+      }
+    },
+    "pointer_exact": 1894,
+    "program_accuracy": 0.8857442348008385,
+    "program_exact": 1690,
+    "replacement_exact": 1690,
+    "rows": 1908
+  },
+  "aligned_minus_hidden_execution": 1542,
+  "gate": {
+    "aligned_execution_ge_0_95": false,
+    "aligned_minus_hidden_ge_13": true,
+    "aligned_program_ge_0_95": false,
+    "clean_execution_ge_0_99": false,
+    "copy_rate_ge_0_95": true,
+    "each_family_program_ge_0_95": false,
+    "fault_execution_ge_0_90": true,
+    "zero_errors": false,
+    "zero_exhaustion": true
+  },
+  "hidden": {
+    "copy_characters": 1123025,
+    "copy_rate": 0.5784560563464437,
+    "draft_characters": 1941418,
+    "execution_accuracy": 0.08123689727463312,
+    "execution_correct": 155,
+    "execution_errors": 1274,
+    "family": {
+      "choice_final": {
+        "execution_correct": 13,
+        "pointer_exact": 27,
+        "program_exact": 9,
+        "replacement_exact": 32,
+        "rows": 256
+      },
+      "numeric_final": {
+        "execution_correct": 142,
+        "pointer_exact": 210,
+        "program_exact": 138,
+        "replacement_exact": 344,
+        "rows": 1652
+      }
+    },
+    "max_token_exhausted": 40,
+    "member": {
+      "clean": {
+        "execution_correct": 35,
+        "pointer_exact": 89,
+        "program_exact": 27,
+        "replacement_exact": 188,
+        "rows": 954
+      },
+      "fault": {
+        "execution_correct": 120,
+        "pointer_exact": 148,
+        "program_exact": 120,
+        "replacement_exact": 188,
+        "rows": 954
+      }
+    },
+    "pointer_exact": 237,
+    "program_accuracy": 0.0770440251572327,
+    "program_exact": 147,
+    "replacement_exact": 376,
+    "rows": 1908
+  },
+  "holdout_authorized": false,
+  "holdout_used": false,
+  "receipts": {
+    "aligned": {
+      "inputs": [
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/fret1_q35_r1/aligned/shard_00.json",
+          "sha256": "b030929e42916e323f3a2d5d33c48b807ecc27a5b6c70ae8bee13f1c31d87b3e"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/fret1_q35_r1/aligned/shard_01.json",
+          "sha256": "c7f60f73dbda4167b2e2fa6454a9f298a4daf9f98f36656822e3283d7a3ade93"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/fret1_q35_r1/aligned/shard_02.json",
+          "sha256": "76d1f790039b739d2c31010c81892a23af5d9e1beebd31bc9fc2fc144abc5b37"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/fret1_q35_r1/aligned/shard_03.json",
+          "sha256": "989d39e5032da6e880cb60c6596022e6212cf74448e8db5e4040409638b6a997"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/fret1_q35_r1/aligned/shard_04.json",
+          "sha256": "f218e82b30046773d903ad785d17c3d4c0b3bab472e39e0bc3beafef0afd82c3"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/fret1_q35_r1/aligned/shard_05.json",
+          "sha256": "4c77675f618e7f890c10450870a1f3821daf9e27215e64118ed4050d37dce134"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/fret1_q35_r1/aligned/shard_06.json",
+          "sha256": "85caa609e7c72bca96104e3933f0aeea5f7ae1903705bec2dffa6363c0e47127"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/fret1_q35_r1/aligned/shard_07.json",
+          "sha256": "a4f05179e43eb6ef37d3a8980bcf1982f3484245d22d2772ca19a983dc32b134"
+        }
+      ],
+      "receipt": [
+        "166d8cbafd5fa5aa842a42c8856294436ed2704db3d51396a3554576399ea8bb",
+        "62f9d3c52427d91913ee69a0f87ca2d9230e314b8fe795fcc11773f4fe06c445",
+        "f371d65fa9d973bf5c03083338803f348533b7e3e5122905b0c6b5dda92fe9f1"
+      ]
+    },
+    "hidden": {
+      "inputs": [
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/fret1_q35_r1/hidden/shard_00.json",
+          "sha256": "06a32084d5b48b720a1dd24004ba95dc712fde9eaa61e9eabb761bf5ee3602cf"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/fret1_q35_r1/hidden/shard_01.json",
+          "sha256": "6e0626342effc6843aaa495c0e74ade878b02f30d62e9e31c9518f96c5567358"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/fret1_q35_r1/hidden/shard_02.json",
+          "sha256": "39431b7d714c87e2dfb33aa0f94aeca3016a70fe252718e647b266c8e7299722"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/fret1_q35_r1/hidden/shard_03.json",
+          "sha256": "b1640cd71222c2755767fb6afc9c90f82a46d0342c6c7e2606d828163e048b6c"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/fret1_q35_r1/hidden/shard_04.json",
+          "sha256": "c9be7de991c0581c689b558b56c2e475aee5712b7e7ca35ed0c7df98c091d231"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/fret1_q35_r1/hidden/shard_05.json",
+          "sha256": "8042cdc49bbe771bc92078537f9c6b350fbe0d05bb3e3d8c3ec436bc544ca0bf"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/fret1_q35_r1/hidden/shard_06.json",
+          "sha256": "a0f4937484a3b98cfd21fe81fa4c8d55bfc8d1195c35f3b3fdd68dc5f64a4501"
+        },
+        {
+          "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/fret1_q35_r1/hidden/shard_07.json",
+          "sha256": "588ea5e552418452b440cac775a3433031448bad9f5085c738f2bc44ba60947d"
+        }
+      ],
+      "receipt": [
+        "a2fe95d9700f54a5e2a430e973b08a422dc622807f6c6887b7d77139fe9faf0b",
+        "62f9d3c52427d91913ee69a0f87ca2d9230e314b8fe795fcc11773f4fe06c445",
+        "f371d65fa9d973bf5c03083338803f348533b7e3e5122905b0c6b5dda92fe9f1"
+      ]
+    }
+  },
+  "schema": "shohin-fret1-comparison-v1",
+  "status": "fail"
+}

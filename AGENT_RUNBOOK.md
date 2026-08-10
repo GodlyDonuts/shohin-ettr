@@ -1,5 +1,23 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **FRET1 CLOSED; POINTER/VALUE CEILING LOCALIZED — 2026-08-10:** Sixteen
+> aligned/hidden H100 shards plus four infrastructure-only replacements close
+> the frozen read-only ceiling. Jobs `749309--749314`, `749317--749324`, and
+> `749328/749329` complete; `749315/749316` on `evc33` and `749326/749327` on
+> `evc46` fail before usable model execution because those nodes expose no CUDA
+> device. Aligned content pointers are exact on `1,894/1,908 = 99.27%`, fault
+> repair is `949/954 = 99.48%`, and copied-character rate is `98.58%`. Fixed
+> always-rewrite nevertheless fails: clean idempotent execution is only
+> `748/954 = 78.41%`, choice program/execution is `154/256 = 60.16%`, and
+> total execution is `1,697/1,908 = 88.94%`, with six execution errors.
+> Draft-hidden execution is only `155/1,908`, a causal margin of `+1,542`.
+> The result rules out both a weak pointer and a generally weak native value
+> path as the primary defect; the unresolved owner is semantic commit timing:
+> preserve correct drafts while applying the qualified rewrite to faults.
+> Exact FRET1 closes without prefix/checkpoint/prompt/decode/threshold variants.
+> Comparison SHA-256 is `ff614eb2...8f87`; no holdout opened. Result:
+> `docs/research/SHOHIN_FRET1_RESULT.json`.
+
 > **FRET1 ALWAYS-REWRITE CEILING FROZEN — 2026-08-10:** PSET1 already tested
 > and closed the separate-stream pointer architecture requested as a fallback;
 > its span head reached `65.23%`, but its standalone byte replacement decoder
