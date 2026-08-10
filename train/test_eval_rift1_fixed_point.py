@@ -41,7 +41,11 @@ class RIFT1MechanicsTest(unittest.TestCase):
             data_report.write_text("{}\n")
             sha = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
             results = [
-                {"identity_sha256": f"{index:064x}", "executed_trajectory": "answer"}
+                {
+                    "identity_sha256": f"{index + 2000:064x}",
+                    "source_dseo1_identity_sha256": f"{index:064x}",
+                    "executed_trajectory": "answer",
+                }
                 for index in range(1908)
             ]
             merged = root / "merged.json"
@@ -60,7 +64,7 @@ class RIFT1MechanicsTest(unittest.TestCase):
                     }
                 )
             )
-            rows, receipts = load_iset(merged, data, data_report)
+            rows, receipts = load_iset(merged, sha(data), sha(data_report))
             self.assertEqual(len(rows), 1908)
             self.assertEqual(receipts[0]["sha256"], sha(merged))
 
@@ -68,7 +72,7 @@ class RIFT1MechanicsTest(unittest.TestCase):
             payload["data_sha256"] = "0" * 64
             merged.write_text(json.dumps(payload))
             with self.assertRaisesRegex(RuntimeError, "ISET report differs"):
-                load_iset(merged, data, data_report)
+                load_iset(merged, sha(data), sha(data_report))
 
 
 if __name__ == "__main__":

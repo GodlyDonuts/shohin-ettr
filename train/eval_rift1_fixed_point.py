@@ -27,6 +27,8 @@ from train_dset1_span_edit import sha256_file
 SCHEMA = "shohin-rift1-fixed-point-evaluation-v1"
 FRET_SCHEMA = "shohin-fret1-always-rewrite-evaluation-v1"
 ISET_SCHEMA = "shohin-dset1-span-edit-evaluation-merged-v1"
+ISET_DATA_SHA256 = "493e11b12e4d57c88a5d3ee716114eada28e9649da84fe397ac6307015619d62"
+ISET_DATA_REPORT_SHA256 = "f9db293c3aac26406c5bcc4f71fff29d3846de19e10781fa1fe7e938868ed81c"
 
 
 def atomic_json(path: Path, payload: dict) -> None:
@@ -70,7 +72,11 @@ def load_fret(paths: list[Path], arm: str) -> tuple[dict[str, dict], list[dict]]
     return rows, receipts
 
 
-def load_iset(path: Path, data: Path, data_report: Path) -> tuple[dict[str, dict], list[dict]]:
+def load_iset(
+    path: Path,
+    expected_data_sha256: str = ISET_DATA_SHA256,
+    expected_data_report_sha256: str = ISET_DATA_REPORT_SHA256,
+) -> tuple[dict[str, dict], list[dict]]:
     report = json.loads(path.read_text())
     if (
         report.get("schema") != ISET_SCHEMA
@@ -79,8 +85,8 @@ def load_iset(path: Path, data: Path, data_report: Path) -> tuple[dict[str, dict
         or report.get("arm") != "aligned"
         or int(report.get("shard_count", -1)) != 8
         or int(report.get("row_count", -1)) != 1908
-        or report.get("data_sha256") != sha256_file(data)
-        or report.get("data_report_sha256") != sha256_file(data_report)
+        or report.get("data_sha256") != expected_data_sha256
+        or report.get("data_report_sha256") != expected_data_report_sha256
     ):
         raise RuntimeError("BSOT1 ISET report differs")
     results = report.get("results")
@@ -88,8 +94,12 @@ def load_iset(path: Path, data: Path, data_report: Path) -> tuple[dict[str, dict
         raise RuntimeError("BSOT1 ISET rows differ")
     rows = {}
     for row in results:
-        identity = str(row.get("identity_sha256", ""))
-        if not identity or identity in rows or not isinstance(row.get("executed_trajectory"), str):
+        identity = str(row.get("source_dseo1_identity_sha256", ""))
+        if (
+            not identity
+            or identity in rows
+            or not isinstance(row.get("executed_trajectory"), str)
+        ):
             raise RuntimeError("BSOT1 ISET identity or trajectory differs")
         rows[identity] = row
     return rows, [{"path": str(path.resolve()), "sha256": sha256_file(path)}]
@@ -118,7 +128,7 @@ def run(args: argparse.Namespace) -> dict:
     if bool(args.fret_shards) == bool(args.iset_merged):
         raise RuntimeError("exactly one proposal source is required")
     if args.iset_merged:
-        fret, fret_receipts = load_iset(args.iset_merged, args.data, args.data_report)
+        fret, fret_receipts = load_iset(args.iset_merged)
         proposal_kind = "iset"
     else:
         fret, fret_receipts = load_fret(args.fret_shards, args.proposal_arm)
@@ -129,8 +139,22 @@ def run(args: argparse.Namespace) -> dict:
     if not selected_pairs:
         raise RuntimeError("RIFT1 shard is empty")
     rows = [row for pair in selected_pairs for row in pair]
-    if any(str(row["identity_sha256"]) not in fret for row in rows):
+    proposal_keys = [
+        str(row["source_dseo1_identity_sha256"])
+        if proposal_kind == "iset"
+        else str(row["identity_sha256"])
+        for row in rows
+    ]
+    if any(key not in fret for key in proposal_keys):
         raise RuntimeError("RIFT1 proposal identity is missing")
+    if proposal_kind == "iset":
+        for row, key in zip(rows, proposal_keys, strict=True):
+            proposal = fret[key]
+            if any(
+                proposal.get(field) != row.get(field)
+                for field in ("pair_identity_sha256", "pair_member", "corruption_family")
+            ):
+                raise RuntimeError("BSOT1 proposal metadata differs")
     tokenizer = AutoTokenizer.from_pretrained(args.model_root, trust_remote_code=True)
     tokenizer.padding_side = "left"
     if tokenizer.pad_token_id is None:
@@ -153,7 +177,12 @@ def run(args: argparse.Namespace) -> dict:
         candidates = []
         rendered = []
         for row in batch:
-            proposal = fret[str(row["identity_sha256"])]
+            proposal_key = (
+                str(row["source_dseo1_identity_sha256"])
+                if proposal_kind == "iset"
+                else str(row["identity_sha256"])
+            )
+            proposal = fret[proposal_key]
             candidate = str(proposal.get("executed_trajectory") or row["draft"])
             candidates.append(candidate)
             question = replace_draft(str(row["question"]), str(row["draft"]), candidate)
@@ -165,7 +194,12 @@ def run(args: argparse.Namespace) -> dict:
             batch, candidates, completions, usages, strict=True
         ):
             final, action, error = execute_commit(candidate, completion)
-            proposal = fret[str(row["identity_sha256"])]
+            proposal_key = (
+                str(row["source_dseo1_identity_sha256"])
+                if proposal_kind == "iset"
+                else str(row["identity_sha256"])
+            )
+            proposal = fret[proposal_key]
             results.append(
                 {
                     "identity_sha256": row["identity_sha256"],

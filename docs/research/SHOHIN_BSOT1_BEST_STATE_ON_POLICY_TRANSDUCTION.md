@@ -33,8 +33,10 @@ an adapter, prompt, checkpoint, seed, duration, or decoding retry.
 
 ## Frozen execution
 
-1. Validate exact ISET schema, development-only status, data/report hashes,
-   1,908 unique identities, and a complete executed trajectory per identity.
+1. Validate exact ISET schema, development-only status, its own data/report
+   hashes, 1,908 unique source identities, and a complete executed trajectory
+   per identity. Join to DSET only through the preserved
+   `source_dseo1_identity_sha256`, then require exact pair/member/family parity.
 2. Run aligned, swapped, and hidden OCET commit owners over byte-identical
    ISET trajectories, eight shards per arm.
 3. Preserve the same prompt, generic edit executor, greedy decode, 32-token
