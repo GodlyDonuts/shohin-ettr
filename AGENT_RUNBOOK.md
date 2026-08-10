@@ -1,5 +1,19 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **NDR1 CORRECTED SOURCE CHAIN LIVE; DEVELOPMENT HANDOFF AUTOMATED —
+> 2026-08-10:** Exact rebuild job `750233` is running from immutable runtime
+> `ndr1_7a05ba5_r1` after the punctuation-equivalent deduplication correction.
+> Independent overlap audit `750234`, sixteen-shard draft dispatcher `750235`,
+> and fit armer `750236` are dependency-held in that order, so no H100 can
+> consume the source unless the independent audit reports zero protected
+> overlap and normalized duplicates. Development armer `750237` is separately
+> dependency-held and binds the eventual exact aligned/shuffled 512-update fit
+> jobs before submitting four evaluation shards per arm and the frozen
+> comparator. Its interface contains no holdout path. The armer is commit
+> `e481dc8`, immutable runtime `ndr1_e481dc8_r2`, SHA256SUMS SHA-256
+> `0f5670264eeea69f6e588afa4b9f00d56009a035b8028c3d2cdd34ca3c304c5c`.
+> All NDR1 data, model, decoding, and capability gates remain unchanged.
+
 > **NDR1 SOURCE CUSTODY DEFECT CAUGHT BEFORE MODEL OUTPUT — 2026-08-10:**
 > The previously prepared 4M-token source `e9965343...4389` did not actually
 > enforce its stated IDR1 development/holdout boundary. Read-only audit finds
