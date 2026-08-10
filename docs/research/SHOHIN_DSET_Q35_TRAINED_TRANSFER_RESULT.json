@@ -1,0 +1,60 @@
+{
+  "schema": "shohin-dset-q35-trained-transfer-result-v1",
+  "status": "complete",
+  "date": "2026-08-09",
+  "host": "Qwen3.6-35B-A3B",
+  "host_config_sha256": "93a4693fa9d8392fbfccd4b3c9873f4bfdcb14fdede978b123d07d19675efe99",
+  "adapter": {
+    "architecture": "shared post-MLP low-rank residual",
+    "controlled_layers": 16,
+    "rank": 18,
+    "trainable_parameters": 1179648,
+    "updates": 256,
+    "aligned_checkpoint_sha256": "166d8cbafd5fa5aa842a42c8856294436ed2704db3d51396a3554576399ea8bb",
+    "hidden_checkpoint_sha256": "a2fe95d9700f54a5e2a430e973b08a422dc622807f6c6887b7d77139fe9faf0b"
+  },
+  "development": {
+    "rows": 1908,
+    "pairs": 954,
+    "aligned_execution_correct": 1822,
+    "aligned_execution_accuracy": 0.9549266247379455,
+    "hidden_execution_correct": 1174,
+    "aligned_minus_hidden": 648,
+    "clean_execution_correct": 953,
+    "clean_rows": 954,
+    "fault_execution_correct": 869,
+    "fault_rows": 954,
+    "counterfactual_consistency": 0.9077568134171907,
+    "numeric_script_exact": 1643,
+    "numeric_rows": 1652,
+    "choice_script_exact": 177,
+    "choice_rows": 256,
+    "execution_errors": {
+      "DSET1 old surface is absent": 3
+    },
+    "max_token_exhausted": 0
+  },
+  "forced_action_attribution": {
+    "scope": "all 128 faulted choice rows",
+    "forced_prefix": "<REPLACE_LAST>",
+    "script_exact": 128,
+    "execution_correct": 128,
+    "execution_errors": 0,
+    "max_token_exhausted": 0,
+    "interpretation": "The frozen value generator repairs every choice fault when the model-owned action gate is externally fixed; fault detection is the isolated bottleneck.",
+    "shard_sha256": [
+      "a1d86549c81ff143824760ca6a9027a2da1f06a07798f0bed596268e5ae180b6",
+      "005236e434eeb2823733aa130e3b3d75d99090c1841cf89d1249ee8b7cf46713",
+      "3c79826a02fd20381cf8900da0b4dfe3a6e75495e8660bf36212d0ac32dd1a99",
+      "2344cad8ce41ee930e667568c5c5e292adf8524bd02aee00bb951a9d085866b2",
+      "e0aa7fa981aad32e066b15452401bf9ffd2b9415612455b39010c05297dc2bee",
+      "2acb21344f8dbe9512f0f51e0622b786b76fe1289a0bb6c7a2d4ef295e58e5d7",
+      "37af75662cfa6123c5a65cad443b48856638b09eaa1ecad33bf966d7f8322d52",
+      "e9bd96adfd4cdd22beae2ca0af3b963992f1e3f973fe99408fb5b5ffd4426166"
+    ]
+  },
+  "comparison_sha256": "781bc458cca493fc838c79ede15846f55c6a45f1b4ed98dfea8fa01314ec3fcd",
+  "exact_gate_passed": false,
+  "confirmation_authorized": false,
+  "decision": "Preserve the strong causal transfer result, close exact DSET-Q35T, and test GSET1 as a structurally distinct explicit fault-gate successor."
+}

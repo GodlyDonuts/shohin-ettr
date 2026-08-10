@@ -1,5 +1,24 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **DSET-Q35 TRAINED TRANSFER CAUSAL, EXACT GATE CLOSED; GSET1 FROZEN — 2026-08-09:**
+> A 1,179,648-parameter final-16 rank-18 shared post-MLP residual on pinned
+> Qwen3.6-35B-A3B completed 256 updates in aligned and causally hidden arms.
+> Source-disjoint development is aligned `1,822/1,908 = 95.4927%` versus
+> hidden `1,174/1,908 = 61.5304%`, a `+648` trajectory causal margin. Clean is
+> `953/954 = 99.8952%`, fault repair `869/954 = 91.0901%`, consistency
+> `90.7757%`, numeric scripts `1,643/1,652 = 99.4552%`, and choice scripts only
+> `177/256 = 69.1406%`; three literal old-surface errors remain. Exact Q35T
+> closes and no confirmation is authorized. Attribution then isolated the
+> choice failure: forcing `<REPLACE_LAST>` on all 128 faulted choice rows gives
+> `128/128` exact scripts and execution, zero errors/exhaustion. GSET1 is now
+> prospectively frozen as a structurally different successor: the qualified
+> DSET generator stays immutable while a 529,154-parameter paired contrastive
+> model-owned gate causally selects KEEP versus REPLACE. Aligned, within-pair
+> swapped-label, and draft-hidden arms are matched; no nearby DSET variant is
+> allowed. Result and contract:
+> `docs/research/SHOHIN_DSET_Q35_TRAINED_TRANSFER_RESULT.json` and
+> `docs/research/SHOHIN_GSET1_PAIRED_CAUSAL_FAULT_GATE.md`.
+
 > **DSET-Q35 ZERO-SHOT CEILING CLOSED; TRAINED TRANSFER IN MECHANICS — 2026-08-09:**
 > Eight pinned Qwen3.6-35B-A3B shards `748895--748902` and merge `748903`
 > completed against the exact 256 already-opened PSET diagnostic identities.
