@@ -223,7 +223,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     payload = torch.load(args.checkpoint, map_location="cpu", weights_only=False)
     if payload.get("schema") != "shohin-btt1-training-v1" or payload.get("data_sha256") != args.expected_train_sha256:
         raise BTT1EvaluationError("checkpoint custody differs")
-    rows = load_programs(args.data, args.expected_data_sha256, 3917)
+    rows = load_programs(args.data, args.expected_data_sha256, args.expected_rows)
     mapping = source_shuffle_indices(rows) if args.control == "source_shuffled" else list(range(len(rows)))
     device = torch.device("cuda")
     config = payload["config"]
@@ -266,7 +266,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             groups[bucket]["exact_skeleton"] += int(detail["exact_skeleton"])
     elapsed = time.time() - started
     report = {
-        "schema": SCHEMA, "status": "complete", "holdout_used": False, "control": args.control,
+        "schema": SCHEMA, "status": "complete", "holdout_used": args.holdout, "control": args.control,
         "projection": args.projection,
         "checkpoint": str(args.checkpoint.resolve()), "checkpoint_sha256": sha256_file(args.checkpoint),
         "data": str(args.data.resolve()), "data_sha256": args.expected_data_sha256,
@@ -292,6 +292,8 @@ def main() -> int:
     parser.add_argument("--control", choices=sorted(CONTROLS), required=True)
     parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--projection", choices=("none", "grammar-v1"), default="none")
+    parser.add_argument("--expected-rows", type=int, default=3917)
+    parser.add_argument("--holdout", action="store_true")
     run(parser.parse_args())
     return 0
 
