@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -J lam1-compose
 #SBATCH -p normal
-#SBATCH --gres=gpu:h100:1
+#SBATCH --gres=gpu:nvidia_h100_pcie:1
 #SBATCH -c 4
 #SBATCH --mem=48G
 #SBATCH -t 00:30:00
