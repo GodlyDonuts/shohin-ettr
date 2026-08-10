@@ -39,6 +39,8 @@ by the generic precedence stack over model-selected lexical roles.
 - no recurrent action decoder and no learned arithmetic executor;
 - exactly 1,024 updates, batch 32, AdamW LR `2e-4`, betas `(0.9,0.95)`, weight
   decay `0.01`, gradient clip 1, one seed;
+- candidate-role cross entropy with `IGNORE` weighted `0.25` and every
+  selected role weighted `1.0`;
 - 32,768 charged examples, identical to FSTC1/PSTC1;
 - fewer than 20M trainable parameters.
 
@@ -81,3 +83,13 @@ compiler gate passes.
 A pass establishes accurate model-owned lexical selection plus deterministic
 hierarchical program materialization. It does not establish learned arithmetic
 execution, broad language reasoning, or novelty of shunting-yard parsing.
+
+## CPU admission
+
+Job `749675` admitted all `75,935` training and all `3,917` development rows
+with exact extensional parity to PSTC1. Maximum candidate counts are `36` and
+`30`, below the frozen 64-slot bound. Train/development SHA-256 are
+`33b8eb7bf154f3e938de00f06aebd7adb720eb4a1b6bd3f81554f9eb0b11bf3f`
+and `8e867e7cdcc47015096979314450790cd86c804fd841b34d3df411a236b33679`;
+report SHA-256 is
+`8bcb025f376a2d3d481cbe8b00e878c09baa850e5f71683d424bae4e8a0d7e0f`.
