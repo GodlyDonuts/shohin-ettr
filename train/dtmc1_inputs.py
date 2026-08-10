@@ -79,10 +79,14 @@ def render_draft_source(tokenizer: Any, source: str, draft: str) -> tuple[str, i
         ],
         enable_thinking=False,
     )
-    content_start = rendered.find(content)
-    if content_start < 0 or rendered.find(content, content_start + 1) >= 0:
-        raise DTMC1InputError("input envelope is absent or ambiguous")
-    source_start = content_start + len(ENVELOPE_PREFIX)
+    # Qwen's chat template trims trailing whitespace from message content.
+    # Bind the immutable source boundary to the complete prefix through the
+    # draft marker; candidate custody never depends on the rendered draft tail.
+    source_anchor = ENVELOPE_PREFIX + source + ENVELOPE_MIDDLE
+    anchor_start = rendered.find(source_anchor)
+    if anchor_start < 0 or rendered.find(source_anchor, anchor_start + 1) >= 0:
+        raise DTMC1InputError("source envelope is absent or ambiguous")
+    source_start = anchor_start + len(ENVELOPE_PREFIX)
     if rendered[source_start : source_start + len(source)] != source:
         raise DTMC1InputError("source segment boundary differs")
     return rendered, source_start

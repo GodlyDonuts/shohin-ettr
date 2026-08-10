@@ -50,3 +50,19 @@ def test_source_pointer_mask_excludes_draft_numbers() -> None:
     assert selected_offsets
     assert all(source_start <= offset < source_end for offset in selected_offsets)
     assert receipt["maximum_tokens"] == len(rendered)
+
+
+def test_source_boundary_survives_chat_template_trailing_trim() -> None:
+    class TrimmingTokenizer(TinyTokenizer):
+        chat_template = "present"
+
+        def apply_chat_template(self, messages, **_kwargs):
+            return "HEADER\n" + messages[-1]["content"].rstrip() + "\nASSISTANT"
+
+    example = _example()
+    rendered, source_start = render_draft_source(
+        TrimmingTokenizer(), example.graph.source, example.draft + " "
+    )
+    assert rendered[source_start : source_start + len(example.graph.source)] == (
+        example.graph.source
+    )
