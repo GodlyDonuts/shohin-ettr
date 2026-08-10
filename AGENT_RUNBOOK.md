@@ -1,5 +1,25 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **SLC1 CLOSED; FIXED-SLOT SUCCESSOR REQUIRED — 2026-08-10:** The frozen
+> 1,024-update Qwen3.5-0.8B ledger compiler and all 3,917 source-disjoint
+> development rows completed. Normal syntax is `626/3917 = 15.9816%`, record
+> count `608/3917 = 15.5221%`, operation sequence `376/3917 = 9.5992%`, exact
+> complete records `48/3917 = 1.2254%`, and terminal value `50/3917 =
+> 1.2765%`; depth-five terminal is `0/613` and 1,131 generations exhausted.
+> Source-shuffled terminal is zero, leaving only a `1.2765`-point causal
+> margin. Every capability gate failed and holdout remained sealed. Read-only
+> attribution finds only `130/3917 = 3.3189%` arithmetically consistent
+> ledgers, first operation/operands/result exact on `389/532/54` rows, and a
+> rough one-record collapse on 2,552 rows. The final-four autoregressive LoRA
+> owner learned envelope markers but neither reliable program unfolding nor
+> arithmetic state transition. Exact SLC1 closes without rank/layer/seed/
+> duration/prompt/decode variants. Next admissible lane is a fixed-slot tied
+> recurrent compiler with explicit STOP/depth, operation, operand pointer, and
+> signed-rational state heads, factorized into skeleton, transition, and joint
+> autonomous gates. Comparison/attribution SHA-256 are `3b1a839e...d77b` and
+> `021ff235...df0`; files: `docs/research/SHOHIN_SLC1_RESULT.json` and
+> `docs/research/SHOHIN_SLC1_ATTRIBUTION_RESULT.json`.
+
 > **CONDITIONAL RECORD-EDIT DATA PRESTAGED — 2026-08-10:** CPU job `749638`
 > built an exact synthetic mechanics board while SLC1 trains; it does not open
 > a fit before the compiler gate passes. Depth-one ledgers are excluded because

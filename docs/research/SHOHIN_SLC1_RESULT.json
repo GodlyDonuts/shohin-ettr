@@ -1,0 +1,381 @@
+{
+  "gates": {
+    "all_records_at_least_0p90": false,
+    "depth_five_terminal_at_least_0p85": false,
+    "every_family_terminal_at_least_0p90": false,
+    "operation_sequence_at_least_0p95": false,
+    "record_count_at_least_0p99": false,
+    "shuffled_terminal_at_most_0p25": true,
+    "source_causal_margin_at_least_0p65": false,
+    "syntax_at_least_0p99": false,
+    "terminal_at_least_0p95": false,
+    "zero_exhaustion": false
+  },
+  "holdout_used": false,
+  "normal": {
+    "by_depth": {
+      "1": {
+        "counts": {
+          "all_records_exact": 47,
+          "canonical_exact": 47,
+          "operation_sequence_exact": 306,
+          "record_count_exact": 526,
+          "rows": 1417,
+          "syntax_valid": 531,
+          "terminal_exact": 47
+        },
+        "terminal_rate": 0.033168666196189134
+      },
+      "2": {
+        "counts": {
+          "all_records_exact": 0,
+          "canonical_exact": 0,
+          "operation_sequence_exact": 14,
+          "record_count_exact": 15,
+          "rows": 653,
+          "syntax_valid": 19,
+          "terminal_exact": 1
+        },
+        "terminal_rate": 0.0015313935681470138
+      },
+      "3": {
+        "counts": {
+          "all_records_exact": 0,
+          "canonical_exact": 0,
+          "operation_sequence_exact": 19,
+          "record_count_exact": 24,
+          "rows": 604,
+          "syntax_valid": 28,
+          "terminal_exact": 1
+        },
+        "terminal_rate": 0.0016556291390728477
+      },
+      "4": {
+        "counts": {
+          "all_records_exact": 1,
+          "canonical_exact": 1,
+          "operation_sequence_exact": 20,
+          "record_count_exact": 24,
+          "rows": 630,
+          "syntax_valid": 27,
+          "terminal_exact": 1
+        },
+        "terminal_rate": 0.0015873015873015873
+      },
+      "5": {
+        "counts": {
+          "all_records_exact": 0,
+          "canonical_exact": 0,
+          "operation_sequence_exact": 17,
+          "record_count_exact": 19,
+          "rows": 613,
+          "syntax_valid": 21,
+          "terminal_exact": 0
+        },
+        "terminal_rate": 0.0
+      }
+    },
+    "by_family": {
+      "basic_arithmetic": {
+        "counts": {
+          "all_records_exact": 8,
+          "canonical_exact": 8,
+          "operation_sequence_exact": 21,
+          "record_count_exact": 38,
+          "rows": 804,
+          "syntax_valid": 45,
+          "terminal_exact": 9
+        },
+        "terminal_rate": 0.011194029850746268
+      },
+      "chain_sum": {
+        "counts": {
+          "all_records_exact": 39,
+          "canonical_exact": 39,
+          "operation_sequence_exact": 158,
+          "record_count_exact": 160,
+          "rows": 896,
+          "syntax_valid": 164,
+          "terminal_exact": 40
+        },
+        "terminal_rate": 0.044642857142857144
+      },
+      "decimal_arithmetic": {
+        "counts": {
+          "all_records_exact": 0,
+          "canonical_exact": 0,
+          "operation_sequence_exact": 31,
+          "record_count_exact": 48,
+          "rows": 439,
+          "syntax_valid": 50,
+          "terminal_exact": 0
+        },
+        "terminal_rate": 0.0
+      },
+      "decimal_chain_sum": {
+        "counts": {
+          "all_records_exact": 0,
+          "canonical_exact": 0,
+          "operation_sequence_exact": 25,
+          "record_count_exact": 25,
+          "rows": 993,
+          "syntax_valid": 26,
+          "terminal_exact": 0
+        },
+        "terminal_rate": 0.0
+      },
+      "products": {
+        "counts": {
+          "all_records_exact": 1,
+          "canonical_exact": 1,
+          "operation_sequence_exact": 141,
+          "record_count_exact": 337,
+          "rows": 785,
+          "syntax_valid": 341,
+          "terminal_exact": 1
+        },
+        "terminal_rate": 0.0012738853503184713
+      }
+    },
+    "checkpoint_sha256": "ecff8d6903ed476389156199d52b80c4263fe282ff83ecc932cbe7a922857381",
+    "counts": {
+      "all_records_exact": 48,
+      "canonical_exact": 48,
+      "operation_sequence_exact": 376,
+      "record_count_exact": 608,
+      "rows": 3917,
+      "syntax_valid": 626,
+      "terminal_exact": 50
+    },
+    "data_sha256": "760044d9b3851197988b361eba021ffbfe013600fab464731ab72de5e617ec87",
+    "exhausted": 1131,
+    "generated_tokens": 580362,
+    "rates": {
+      "all_records_exact": 0.012254276231810059,
+      "canonical_exact": 0.012254276231810059,
+      "operation_sequence_exact": 0.09599183048251213,
+      "record_count_exact": 0.15522083226959407,
+      "syntax_valid": 0.15981618585652285,
+      "terminal_exact": 0.012764871074802144
+    },
+    "receipts": [
+      {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/slc1_e1ad7bb9_r1/eval/normal/shard_00.json",
+        "sha256": "8adced98878b57384b1e0b4196c744955ad5c5a0895f9720fce79395d6034b46"
+      },
+      {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/slc1_e1ad7bb9_r1/eval/normal/shard_01.json",
+        "sha256": "88e7e53f4e7e43408b024c5747622e2955820bb978dede6d895b3b3a6e34e7fe"
+      },
+      {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/slc1_e1ad7bb9_r1/eval/normal/shard_02.json",
+        "sha256": "1be4b7d48bee95a965340fc77ed0a147f14cbe48841ca69d85b7a15e99dccb8f"
+      },
+      {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/slc1_e1ad7bb9_r1/eval/normal/shard_03.json",
+        "sha256": "fcd8eeb659b06d7c80a0e01226e837ee71edab575e1930670d2c6a0b377f2569"
+      },
+      {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/slc1_e1ad7bb9_r1/eval/normal/shard_04.json",
+        "sha256": "d6c943f024d1db90c3e12ffba04b440df45667fdebec30ecfefa484f71f8f39b"
+      },
+      {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/slc1_e1ad7bb9_r1/eval/normal/shard_05.json",
+        "sha256": "c1e41844a136183f9fc4edc0ae65d14110a057fc4370102e6a825948695c52bd"
+      },
+      {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/slc1_e1ad7bb9_r1/eval/normal/shard_06.json",
+        "sha256": "890d610858d1a7a22fb4c1158ff1309c49d06e895ff08b180069afc300dc8cd8"
+      },
+      {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/slc1_e1ad7bb9_r1/eval/normal/shard_07.json",
+        "sha256": "cfe879a37f9987d43263d1294e71d5d06cb5ed55859409a1339ca8c968b87480"
+      }
+    ]
+  },
+  "overall_pass": false,
+  "schema": "shohin-slc1-comparison-v1",
+  "source_shuffled": {
+    "by_depth": {
+      "1": {
+        "counts": {
+          "all_records_exact": 0,
+          "canonical_exact": 0,
+          "operation_sequence_exact": 216,
+          "record_count_exact": 520,
+          "rows": 1417,
+          "syntax_valid": 526,
+          "terminal_exact": 0
+        },
+        "terminal_rate": 0.0
+      },
+      "2": {
+        "counts": {
+          "all_records_exact": 0,
+          "canonical_exact": 0,
+          "operation_sequence_exact": 3,
+          "record_count_exact": 17,
+          "rows": 653,
+          "syntax_valid": 21,
+          "terminal_exact": 0
+        },
+        "terminal_rate": 0.0
+      },
+      "3": {
+        "counts": {
+          "all_records_exact": 0,
+          "canonical_exact": 0,
+          "operation_sequence_exact": 3,
+          "record_count_exact": 25,
+          "rows": 604,
+          "syntax_valid": 28,
+          "terminal_exact": 0
+        },
+        "terminal_rate": 0.0
+      },
+      "4": {
+        "counts": {
+          "all_records_exact": 0,
+          "canonical_exact": 0,
+          "operation_sequence_exact": 1,
+          "record_count_exact": 21,
+          "rows": 630,
+          "syntax_valid": 25,
+          "terminal_exact": 0
+        },
+        "terminal_rate": 0.0
+      },
+      "5": {
+        "counts": {
+          "all_records_exact": 0,
+          "canonical_exact": 0,
+          "operation_sequence_exact": 0,
+          "record_count_exact": 22,
+          "rows": 613,
+          "syntax_valid": 24,
+          "terminal_exact": 0
+        },
+        "terminal_rate": 0.0
+      }
+    },
+    "by_family": {
+      "basic_arithmetic": {
+        "counts": {
+          "all_records_exact": 0,
+          "canonical_exact": 0,
+          "operation_sequence_exact": 8,
+          "record_count_exact": 39,
+          "rows": 804,
+          "syntax_valid": 46,
+          "terminal_exact": 0
+        },
+        "terminal_rate": 0.0
+      },
+      "chain_sum": {
+        "counts": {
+          "all_records_exact": 0,
+          "canonical_exact": 0,
+          "operation_sequence_exact": 53,
+          "record_count_exact": 162,
+          "rows": 896,
+          "syntax_valid": 166,
+          "terminal_exact": 0
+        },
+        "terminal_rate": 0.0
+      },
+      "decimal_arithmetic": {
+        "counts": {
+          "all_records_exact": 0,
+          "canonical_exact": 0,
+          "operation_sequence_exact": 15,
+          "record_count_exact": 50,
+          "rows": 439,
+          "syntax_valid": 52,
+          "terminal_exact": 0
+        },
+        "terminal_rate": 0.0
+      },
+      "decimal_chain_sum": {
+        "counts": {
+          "all_records_exact": 0,
+          "canonical_exact": 0,
+          "operation_sequence_exact": 14,
+          "record_count_exact": 27,
+          "rows": 993,
+          "syntax_valid": 29,
+          "terminal_exact": 0
+        },
+        "terminal_rate": 0.0
+      },
+      "products": {
+        "counts": {
+          "all_records_exact": 0,
+          "canonical_exact": 0,
+          "operation_sequence_exact": 133,
+          "record_count_exact": 327,
+          "rows": 785,
+          "syntax_valid": 331,
+          "terminal_exact": 0
+        },
+        "terminal_rate": 0.0
+      }
+    },
+    "checkpoint_sha256": "ecff8d6903ed476389156199d52b80c4263fe282ff83ecc932cbe7a922857381",
+    "counts": {
+      "all_records_exact": 0,
+      "canonical_exact": 0,
+      "operation_sequence_exact": 223,
+      "record_count_exact": 605,
+      "rows": 3917,
+      "syntax_valid": 624,
+      "terminal_exact": 0
+    },
+    "data_sha256": "760044d9b3851197988b361eba021ffbfe013600fab464731ab72de5e617ec87",
+    "exhausted": 1125,
+    "generated_tokens": 580207,
+    "rates": {
+      "all_records_exact": 0.0,
+      "canonical_exact": 0.0,
+      "operation_sequence_exact": 0.05693132499361756,
+      "record_count_exact": 0.15445494000510596,
+      "syntax_valid": 0.15930559101353076,
+      "terminal_exact": 0.0
+    },
+    "receipts": [
+      {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/slc1_e1ad7bb9_r1/eval/source_shuffled/shard_00.json",
+        "sha256": "09c60171539d9a8cadf92fefea66b57a0fa28dfb7a94165749ea29f6d79bf440"
+      },
+      {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/slc1_e1ad7bb9_r1/eval/source_shuffled/shard_01.json",
+        "sha256": "daea2dbbf94ffd21b0bdef7a44c15dc5cd21e5805f9ead950e3ce51c25e5b518"
+      },
+      {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/slc1_e1ad7bb9_r1/eval/source_shuffled/shard_02.json",
+        "sha256": "692ec90a3a755e68ef5b6f10a538e2991f36ce49352b4c16bafc02215ff49d75"
+      },
+      {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/slc1_e1ad7bb9_r1/eval/source_shuffled/shard_03.json",
+        "sha256": "3f86520e9452cbc02410704da6defb7747412a6f7be4788fe76efd8a4733d715"
+      },
+      {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/slc1_e1ad7bb9_r1/eval/source_shuffled/shard_04.json",
+        "sha256": "d15e251ae5046c776990fea57c174a41214130ee296f506902ed44ded8786122"
+      },
+      {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/slc1_e1ad7bb9_r1/eval/source_shuffled/shard_05.json",
+        "sha256": "019b5a69907865bc65e0f0886b7e2f293cc053568b7126187b5d9a640c3eaf94"
+      },
+      {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/slc1_e1ad7bb9_r1/eval/source_shuffled/shard_06.json",
+        "sha256": "77ef827300d689baed407c1c9d3e2c2808bc3a043378a7bc15cff5f0cde6bfc9"
+      },
+      {
+        "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/slc1_e1ad7bb9_r1/eval/source_shuffled/shard_07.json",
+        "sha256": "f3db9248ed17af77e162195869f4da0286d1f8d4501f7b3fadaaeb517922949c"
+      }
+    ]
+  },
+  "status": "complete",
+  "terminal_causal_margin": 0.012764871074802144
+}

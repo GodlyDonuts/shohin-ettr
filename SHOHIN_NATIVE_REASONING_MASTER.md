@@ -58206,3 +58206,32 @@ and zero exhaustion. A pass qualifies only the compiler interface and opens a
 separately frozen record-level edit/replay transducer; it is not itself a
 general-reasoning claim. The exact contract is
 `docs/research/SHOHIN_SLC1_STRUCTURED_LEDGER_COMPILER.md`.
+
+SLC1 completed and failed decisively. On all 3,917 source-disjoint development
+rows, syntax was valid on 626 (`15.9816%`), record count was exact on 608
+(`15.5221%`), operation sequence on 376 (`9.5992%`), all records on 48
+(`1.2254%`), and terminal value on 50 (`1.2765%`). Depth-five terminal was
+`0/613`; 1,131 generations exhausted. The matched source-shuffled terminal
+score was zero, so aligned source supplied only a `1.2765`-point causal margin.
+Every capability condition failed and holdout remained sealed.
+
+Read-only failure attribution rules out treating this as a superficial output
+grammar defect. Only 130 predictions (`3.3189%`) are arithmetically
+self-consistent. First operation, operands, and result are exact on 389, 532,
+and 54 rows, respectively. A rough parser identifies 2,552 outputs as only one
+record regardless of gold depth. Typical failures compress a multi-step chain
+into one malformed record or place unevaluated expressions and wrong signs in
+result fields. The final-four autoregressive owner learned the ledger envelope
+but did not learn reliable program unfolding or arithmetic state transition.
+
+This closes SLC1 without rank, layer, seed, duration, prompt, or decoding
+variants. The next architecture must remove free-form sequence layout as a
+confound: a tied recurrent compiler writes at most five typed operation slots
+through explicit STOP/depth, operation, source/dependency pointer, and exact
+signed-rational state heads. Its evidence is factorized into a skeleton gate,
+a model-owned state-transition gate, and only then autonomous joint
+compilation. A deterministic renderer may serialize predicted typed state but
+may not infer operations, execute arithmetic, repair values, or see answers.
+Exact SLC1 comparison and attribution hashes are
+`3b1a839ead6480b8c727177c3161da2f2be8f9c57cd74705a3a7fd02c1e0d77b`
+and `021ff2354f7456a3f19d2ec16b3bad43165895b133a453c5de99b83c90684df0`.
