@@ -1,5 +1,18 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **CONDITIONAL RECORD-EDIT DATA PRESTAGED — 2026-08-10:** CPU job `749638`
+> built an exact synthetic mechanics board while SLC1 trains; it does not open
+> a fit before the compiler gate passes. Depth-one ledgers are excluded because
+> they have no nonterminal repair site. The artifact has `49,168` train pairs /
+> `98,336` presentations and `2,500` development pairs / `5,000`
+> presentations. Each source appears once with a clean draft and `KEEP`, and
+> once with one deterministic nonterminal result fault plus one addressed
+> `REPLACE`. A generic executor with zero semantic repair calls reproduces the
+> gold ledger exactly and copies `85.6710% / 85.6371%` of train/development
+> records. Train/development SHA-256 are `2f84bf64...5b58` / `85772173...c2c2`;
+> report SHA-256 is `bf6d74b8...57b5`. This is mechanics/data only. SLC1 PASS is
+> still required before freezing or launching the neural record editor.
+
 > **SLC1 STRUCTURED LEDGER COMPILER FROZEN; MECHANICS LIVE — 2026-08-10:**
 > The raw-pointer negative is followed by one bounded compiler prerequisite,
 > not another prose-rewrite fit. SLC1 trains pinned Qwen3.5-0.8B final-four

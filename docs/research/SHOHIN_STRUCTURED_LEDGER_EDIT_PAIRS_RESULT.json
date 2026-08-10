@@ -1,0 +1,63 @@
+{
+  "counters": {
+    "development": {
+      "copied_records": 14906,
+      "draft_records": 17406,
+      "excluded_depth_one": 1417,
+      "family:basic_arithmetic": 1342,
+      "family:chain_sum": 1510,
+      "family:decimal_arithmetic": 566,
+      "family:decimal_chain_sum": 1582,
+      "pairs": 2500,
+      "presentation:clean": 2500,
+      "presentation:fault": 2500,
+      "presentations": 5000
+    },
+    "train": {
+      "copied_records": 293968,
+      "draft_records": 343136,
+      "excluded_depth_one": 26767,
+      "family:basic_arithmetic": 27330,
+      "family:chain_sum": 29522,
+      "family:decimal_arithmetic": 11226,
+      "family:decimal_chain_sum": 30258,
+      "pairs": 49168,
+      "presentation:clean": 49168,
+      "presentation:fault": 49168,
+      "presentations": 98336
+    }
+  },
+  "exact_clean_identity_verified": true,
+  "exact_fault_repair_verified": true,
+  "holdout_used": false,
+  "maximum_edit_actions": 1,
+  "outputs": {
+    "development": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/structured_ledger_edit_pairs_r1/development.jsonl",
+      "rows": 5000,
+      "sha256": "8577217391c146b75a186159efa02971cab877f528374619766409eeefb3c2c2"
+    },
+    "train": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/structured_ledger_edit_pairs_r1/train.jsonl",
+      "rows": 98336,
+      "sha256": "2f84bf6460cacdae496b26bc486c6a87248bc801bc87169233e89e331c4a5b58"
+    }
+  },
+  "record_copy_fraction": {
+    "development": 0.8563713661955648,
+    "train": 0.8567098759675464
+  },
+  "schema": "shohin-structured-ledger-edit-pair-report-v1",
+  "semantic_host_repair_calls": 0,
+  "sources": {
+    "development": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/structured_ledger_sft_rg_v4_r1/development.jsonl",
+      "sha256": "760044d9b3851197988b361eba021ffbfe013600fab464731ab72de5e617ec87"
+    },
+    "train": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/structured_ledger_sft_rg_v4_r1/train.jsonl",
+      "sha256": "6a5876f2b8eed1387c31459062102b9bd007bff99d556ee6f63c75613310f671"
+    }
+  },
+  "status": "complete"
+}
