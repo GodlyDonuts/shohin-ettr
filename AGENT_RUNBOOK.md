@@ -1,5 +1,16 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **NMC1 DATA/MECHANICS PASS; MATCHED FITS OPEN — 2026-08-10:** CPU job
+> `749812` admitted 6,333 train and 666 source-disjoint development GSM8K
+> identities into result-free register programs (22,846 records / 75,242
+> actions), with zero public-test overlap. Token job `749813` proves zero
+> 1,024-token truncation: maxima are 363 program and 574 direct-CoT tokens.
+> Mechanics job `749814` gives Fraction/LAM parity on all `6333/6333` train
+> and `666/666` development programs, zero normal invalidity, carry-reset
+> `116/666`, and opcode-permuted `13/666`. This opens exactly the frozen
+> concurrent 1,024-update Qwen3.5-0.8B NMC1 and matched direct fits; no public
+> test is open until the conjunctive development gate passes.
+
 > **NMC1 NATURAL MICROCODE COMPILER FROZEN — 2026-08-10:** LAM1's unresolved
 > boundary is semantic planning over natural language, not arithmetic
 > execution. NMC1 uses pinned Qwen3.5-0.8B final-four rank-8 LoRA to emit a

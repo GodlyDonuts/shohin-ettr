@@ -63,6 +63,25 @@ Actual non-padding training tokens, elapsed time, peak memory, trainable
 parameters, and generated tokens are reported. The direct arm is allowed to
 consume more target tokens; NMC1 receives no compute credit for being shorter.
 
+## Data and mechanics admission
+
+CPU job `749812` admitted 6,333 matched training identities and 666
+source-disjoint development identities. They contain 22,846 computation
+records and 75,242 actions. Rejections were 95 rows without a complete
+equation program, two unsupported floor-division rows, and 377 rows whose
+annotation did not end in the final answer. Program/direct train SHA-256 are
+`71010bac117d9fbca2a28e7f9a63f24456b519a7b4bc172ddd772ff27e851512` /
+`b78fa53081114f1b5c08f34c0f26df641dfd975a4975130a6b0c8098a0944757`;
+development SHA-256 is
+`981b83016d9a895af3016b3629c5852b868c80e364dbe97e3901a8d3e8ced4bd`.
+
+Token audit job `749813` retained every row under the frozen 1,024-token
+limit. Maximum complete sequence is 363 tokens for NMC1 and 574 for direct
+CoT. Mechanics job `749814` obtains exact Fraction/LAM parity on all
+`6333/6333` train and `666/666` development programs with zero normal
+invalidity. On gold development programs, carry reset scores `116/666` and
+opcode permutation `13/666`. Both prerequisite gates pass.
+
 ## Development gate
 
 Before any public-test score is opened, all conditions are conjunctive on the
