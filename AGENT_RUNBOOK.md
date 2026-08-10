@@ -1,5 +1,18 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **OCET1 ON-POLICY PROPOSALS COMPLETE — 2026-08-10:** Sixteen independent
+> H100 jobs `749346--749361` complete in `6m44s--8m20s`, covering all 15,278
+> unique training presentations with zero decode exhaustion. Read-only
+> aggregation finds `15,219/15,278` exact content pointers and `13,618`
+> already-correct executed proposals, leaving 1,660 genuine model-generated
+> counterexamples. The corpus contains 862 choice-family errors and 1,633
+> clean-presentation rewrite errors, directly covering the distribution that
+> defeated RIFT1; fault proposals are already correct on `7,612/7,639`.
+> Do not launch a fit until CPU materialization verifies every shard hash,
+> exact identity coverage, local edit derivability, pair balance, complete
+> token retention, and zero holdout use. Then run only the frozen warm-started
+> aligned fit and its matched permuted/hidden controls.
+
 > **OCET1 ON-POLICY COUNTEREXAMPLE TRANSDUCTION FROZEN — 2026-08-10:** RIFT1
 > identifies an off-policy semantic-commit defect: the tied host recognizes
 > deterministic synthetic faults but emits KEEP on wrong self-generated
