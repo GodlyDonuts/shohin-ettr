@@ -1,0 +1,25 @@
+{
+  "closed": true,
+  "diagnosis": "The hard stack is causal and always executes validly, but the free-running global decoder loses source position and scope as action length grows. Replace global action emission with monotonic source-token transduction plus a generic precedence executor.",
+  "exact_failures": 320,
+  "failure_intersections": {
+    "action_length": 184,
+    "action_sequence": 318,
+    "mixed_precedence": 280,
+    "parentheses_three_plus": 81,
+    "pointer_value": 209,
+    "unary_group": 164
+  },
+  "holdout_used": false,
+  "normal_report_sha256": "8cca931e3d2df4848d4fa4e92612bf8b9b6ca574f212c1942b5cbfa48b583a80",
+  "rates_by_binary_depth": {
+    "1": {"exact": 0.9992942836979535, "rows": 1417},
+    "2": {"exact": 0.9862174578866769, "rows": 653},
+    "3": {"exact": 0.9205298013245033, "rows": 604},
+    "4": {"exact": 0.846031746031746, "rows": 630},
+    "5": {"exact": 0.7308319738988581, "rows": 613}
+  },
+  "result_sha256": "eeff01124c17fcc8e74c52abc57f80367c0f457002fdee6652df1f2f258cc744",
+  "schema": "shohin-pstc1-read-only-attribution-v1",
+  "status": "complete"
+}

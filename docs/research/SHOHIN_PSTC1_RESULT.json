@@ -1,0 +1,51 @@
+{
+  "checkpoint_sha256": "412e948b3744a2a719cf646775103909db317fdbf8b65dc6aca1e04595afce06",
+  "data_sha256": "bf90044cd17e5e63cdeb7f91bffaae6e4bc59e992fb95cb8da9d2b29da00c914",
+  "every_family_minimum": 0.7176616915422885,
+  "gates": {
+    "action_length_at_least_0p99": false,
+    "action_sequence_at_least_0p97": false,
+    "every_family_at_least_0p88": false,
+    "exact_skeleton_at_least_0p92": false,
+    "mixed_precedence_at_least_0p85": false,
+    "parentheses_three_plus_at_least_0p80": false,
+    "pointer_value_at_least_0p97": false,
+    "source_margin_at_least_0p65": true,
+    "source_shuffled_at_most_0p25": true,
+    "stack_reset_loss_at_least_0p30": true,
+    "stack_top_permutation_loss_at_least_0p20": true,
+    "unary_group_at_least_0p80": false,
+    "valid_program_at_least_0p99": true,
+    "zero_invalid_transitions": true
+  },
+  "holdout_used": false,
+  "mixed_precedence_exact": 0.6455696202531646,
+  "normal_exact": 0.9183048251212663,
+  "overall_pass": false,
+  "parentheses_three_plus_exact": 0.18181818181818182,
+  "reports": {
+    "normal": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/pstc1/eval_5b9f059_r1/normal.json",
+      "sha256": "8cca931e3d2df4848d4fa4e92612bf8b9b6ca574f212c1942b5cbfa48b583a80"
+    },
+    "source_shuffled": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/pstc1/eval_5b9f059_r1/source_shuffled.json",
+      "sha256": "9ddea9d34f0731a490150d84a68230b5e7fab57912ff3f568161a47de59fb3aa"
+    },
+    "stack_reset": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/pstc1/eval_5b9f059_r1/stack_reset.json",
+      "sha256": "b6282fba60f11b1d97182aca70573466522ae6ef84b0d82146b7c14e475ba257"
+    },
+    "stack_top_permuted": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/pstc1/eval_5b9f059_r1/stack_top_permuted.json",
+      "sha256": "5172b7b9bdc2eaa1f1b75869f6bfca2c83995a8be9eecf1f112678023be7b220"
+    }
+  },
+  "schema": "shohin-pstc1-stack-comparison-v1",
+  "source_causal_margin": 0.9183048251212663,
+  "source_shuffled_exact": 0.0,
+  "stack_reset_hierarchical_loss": 0.687374749498998,
+  "stack_top_permutation_deep_loss": 0.750406063887385,
+  "status": "complete",
+  "unary_group_exact": 0.3543307086614173
+}

@@ -1,5 +1,27 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **PSTC1 CLOSED WITH A CAUSAL BUT INSUFFICIENT PARSE STACK — 2026-08-10:**
+> Jobs `749654--749672` completed the bounded pushdown compiler and all four
+> development interventions. The 21,026,311-parameter sidecar trained for
+> 1,024 updates / 32,768 examples in 252.46 seconds at 129.80 examples/s and
+> 2.37 GB peak allocation. Normal exact skeleton is `3597/3917 = 91.8305%`,
+> up 6.36 points over FSTC1, but below the frozen 92% floor. Action length is
+> `95.30%`, action sequence `91.88%`, source-pointer value `94.66%`, and
+> executor validity `100%`. Source shuffle scores zero; stack reset removes
+> 68.74 points on hierarchical rows and stack-top permutation removes 75.04
+> points at depth >=3, proving both source and stack causality. The remaining
+> failure is sharply length/scope dependent: depth 1/2 exact is `99.93% /
+> 98.62%`, depth 5 is `73.08%`; mixed precedence is `64.56%`, unary groups
+> `35.43%`, and three-plus-parenthesis rows `18.18%`. Of 320 exact failures,
+> 318 contain an action-sequence error and 280 are mixed-precedence cases.
+> PSTC1 and its holdout close without action-vocabulary, width, depth,
+> duration, seed, LR, prompt, tokenizer, or threshold variants. The next
+> compiler must eliminate free-running global source-position tracking via a
+> model-owned monotonic lexical transduction whose predicted token roles feed
+> a generic precedence/stack executor. Result/training SHA-256 are
+> `eeff0112...c744` and `b6989edd...a02`; checkpoint SHA-256 is
+> `412e948b...e06`.
+
 > **FSTC1 CLOSED WITH STRONG STRUCTURAL SIGNAL — 2026-08-10:** The first
 > structurally different successor to SLC1 completed jobs `749647--749651`.
 > Its 21,816,330-parameter fixed-slot recurrent sidecar trained for 1,024
