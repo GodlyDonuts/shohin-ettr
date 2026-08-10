@@ -40,6 +40,22 @@ def stable_order(identity: str, rows: list[dict[str, Any]], seed: int) -> None:
         row["sample_index"] = index
 
 
+def original_problem(question: str) -> str:
+    marker = "Original problem:\n"
+    end_marker = "\n\nEmit exactly one edit script."
+    start = question.rfind(marker)
+    if start < 0:
+        raise TSVC1Error("original-problem marker is missing")
+    start += len(marker)
+    end = question.find(end_marker, start)
+    if end < 0:
+        raise TSVC1Error("edit-script boundary is missing")
+    source = question[start:end].strip()
+    if not source:
+        raise TSVC1Error("extracted original problem is empty")
+    return source
+
+
 def train_rows(path: Path, seed: int) -> list[dict[str, Any]]:
     grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in load_jsonl(path):
@@ -48,9 +64,13 @@ def train_rows(path: Path, seed: int) -> list[dict[str, Any]]:
     for pair_identity, rows in sorted(grouped.items()):
         if len(rows) != 2 or {str(row["pair_member"]) for row in rows} != {"clean", "fault"}:
             raise TSVC1Error("training pair is not one clean/one fault presentation")
-        question = str(rows[0]["question"])
+        question = original_problem(str(rows[0]["question"]))
         final = str(rows[0]["final_response"])
-        if any(str(row["question"]) != question or str(row["final_response"]) != final for row in rows):
+        if any(
+            original_problem(str(row["question"])) != question
+            or str(row["final_response"]) != final
+            for row in rows
+        ):
             raise TSVC1Error("source or target differs within training pair")
         candidates = []
         for row in rows:
@@ -96,7 +116,7 @@ def diagnostic_rows(
         copied = dict(row)
         copied["schema"] = SCHEMA
         copied["split"] = "diagnostic_shuffled" if shuffled_source else "diagnostic_aligned"
-        copied["question"] = str(gold[key]["question"])
+        copied["question"] = original_problem(str(gold[key]["question"]))
         grouped[identity].append(copied)
 
     if shuffled_source:
@@ -114,7 +134,7 @@ def diagnostic_rows(
         for identity, rows in grouped.items():
             other = source_by_identity[replacement[identity]]
             for row in rows:
-                row["question"] = str(other["question"])
+                row["question"] = original_problem(str(other["question"]))
                 row["source_shuffled_from"] = replacement[identity]
 
     output: list[dict[str, Any]] = []
