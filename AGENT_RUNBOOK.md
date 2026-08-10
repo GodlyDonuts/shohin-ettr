@@ -1,5 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **DTMC1 MODEL-OWNED DRAFT CORPUS FROZEN — 2026-08-10:** TMC1's static
+> source representation is closed at `44/666`, so the next and only open
+> structural lane conditions the unchanged typed graph compiler on the exact
+> immutable direct owner's autoregressive draft. Generate one greedy,
+> no-thinking, 512-token-maximum draft for each of the 6,333 training
+> identities from direct checkpoint SHA-256 `8a2b6550...0b53`, retaining every
+> wrong or exhausted draft, in eight identity-modulo shards. Development must
+> reuse direct report SHA-256 `234a029a...a49`; it may not regenerate or
+> select drafts. The later fit keeps TMC1's 24,864,055 parameters, 4,096
+> updates, batch 32, LR `2e-4`, initialization/data seeds, typed target, and
+> learned LAM executor unchanged. Only the source representation changes to
+> source plus model-owned draft, while numeric pointer owners remain confined
+> to the source segment. Public GSM8K test remains sealed. Contract:
+> `docs/research/SHOHIN_DTMC1_DRAFT_CONDITIONED_MICROCODE.md`.
+
 > **TMC1 SOURCE-CAUSAL BUT CAPABILITY GATE CLOSED — 2026-08-10:** The
 > 24,864,055-parameter typed compiler fit `749895` completed 4,096 updates in
 > 859.33s; frozen evaluations `749923/749924` score `44/666 = 6.6066%`
