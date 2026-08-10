@@ -206,7 +206,7 @@ def main() -> int:
     parser.add_argument("--data-report", type=Path, required=True)
     parser.add_argument("--fret-shards", type=Path, nargs="+", required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--arm", choices=["aligned", "hidden"], required=True)
+    parser.add_argument("--arm", choices=["aligned", "swapped", "hidden"], required=True)
     parser.add_argument("--shard-index", type=int, required=True)
     parser.add_argument("--shard-count", type=int, default=8)
     parser.add_argument("--batch-size", type=int, default=16)
