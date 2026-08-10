@@ -11,15 +11,20 @@
 > `1d23d4adddca1c9df5161041aa24bc24f661ae52869290010995ffab450f8766`;
 > independent audit SHA-256 is
 > `8b515528312fe25be72cac2b3a4aa79601cf8f643469a80f4209815f8d0594a3`.
-> Dispatcher `750235` released all sixteen single-H100 owner-draft jobs
-> `750293--750308`, concurrently running across eight healthy nodes. Merge,
-> mechanics, and aligned/shuffled fits remain dependency-gated. Development
-> armer `750237` binds the eventual exact 512-update fit jobs before submitting
-> four evaluation shards per arm and the frozen comparator; its interface has
-> no holdout path. The armer is commit `e481dc8`, immutable runtime
-> `ndr1_e481dc8_r2`, SHA256SUMS SHA-256
-> `0f5670264eeea69f6e588afa4b9f00d56009a035b8028c3d2cdd34ca3c304c5c`.
-> All NDR1 model, decoding, and capability gates remain unchanged.
+> Dispatcher `750235` first released jobs `750293--750308`, but every shard
+> failed in three seconds before model load because Newton does not define
+> `SLURM_TMPDIR`; no draft or model output existed, and impossible dependents
+> were canceled. Commit `87c5c9d` supplies the same established isolated
+> `/tmp/$USER/$SLURM_JOB_ID` staging fallback without changing model, data,
+> prompts, decoding, seeds, or shard ownership. Exact replacement jobs
+> `750314--750329` are now concurrently running across the same eight healthy
+> nodes from immutable runtime `ndr1_87c5c9d_r1`, SHA256SUMS SHA-256
+> `1411510fab772a3e73c3f9d4f889f6b0d038d9aec6967b681259c5ee9381b2e8`;
+> representative jobs have passed model staging and CUDA visibility. Merge
+> `750330`, fit dispatcher `750331`, and development armer `750313` remain
+> fail-closed. The development interface submits four evaluation shards per
+> arm and contains no holdout path. All NDR1 model, decoding, and capability
+> gates remain unchanged.
 
 > **NDR1 SOURCE CUSTODY DEFECT CAUGHT BEFORE MODEL OUTPUT — 2026-08-10:**
 > The previously prepared 4M-token source `e9965343...4389` did not actually
