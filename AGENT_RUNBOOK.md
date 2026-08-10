@@ -1,5 +1,18 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **RIFT1 RECURRENT FIXED-POINT TRANSDUCER FROZEN — 2026-08-10:** FRET1 proves
+> the frozen DSET host can localize and generate repairs, but a fixed rewrite
+> damages clean drafts. RIFT1 uses no new weights: the tied DSET host first
+> proposes a mandatory rewrite, the generic executor materializes it, and the
+> same host re-reads that proposal and emits KEEP or one repair before commit.
+> Aligned and exact draft-hidden arms run the same two transitions over all
+> 1,908 opened development rows. Frozen gates require `>=1,874` final,
+> `>=220/256` choice, `>=99%` clean, `>=90%` fault, `>=95%` valid commit,
+> `+13` over both ISET and hidden, and zero exhaustion. No holdout, recurrence-
+> count, prompt, checkpoint, decode, seed, or fallback variant is authorized
+> before this exact gate closes. Contract:
+> `docs/research/SHOHIN_RIFT1_RECURRENT_FIXED_POINT_TRANSDUCER.md`.
+
 > **FRET1 CLOSED; POINTER/VALUE CEILING LOCALIZED — 2026-08-10:** Sixteen
 > aligned/hidden H100 shards plus four infrastructure-only replacements close
 > the frozen read-only ceiling. Jobs `749309--749314`, `749317--749324`, and
