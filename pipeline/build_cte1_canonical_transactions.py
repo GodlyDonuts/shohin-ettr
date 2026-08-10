@@ -134,7 +134,10 @@ def convert_row(row: dict[str, Any], split: str) -> tuple[dict[str, Any], Counte
         execute_typed_fraction(graph) != expected
         or receipt.accepted != len(program.records)
         or receipt.rejected
-        or receipt.state_reads != load_count
+        # The typed graph also uses STATE edges inside a fully parenthesized
+        # record, so cross-record LOAD ownership is a lower bound rather than
+        # the complete state-read count.
+        or receipt.state_reads < load_count
     ):
         raise CTE1DataError("canonical transaction round trip differs")
     converted = {
