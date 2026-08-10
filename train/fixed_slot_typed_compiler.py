@@ -338,6 +338,7 @@ class FixedSlotSkeletonCompiler(nn.Module):
         *,
         gold: dict[str, torch.Tensor] | None = None,
         feedback: str = "hard",
+        reset_recurrence: bool = False,
     ) -> SkeletonOutput:
         if feedback not in {"hard", "gold"} or (feedback == "gold" and gold is None):
             raise FixedSlotCompilerError("feedback mode differs")
@@ -357,6 +358,8 @@ class FixedSlotSkeletonCompiler(nn.Module):
         batch = source_features.shape[0]
 
         for slot_index in range(MAX_SLOTS):
+            if reset_recurrence and slot_index:
+                state = torch.tanh(self.initial_state(global_state))
             context, _ = self.cross_attention(
                 state.unsqueeze(1),
                 memory,
