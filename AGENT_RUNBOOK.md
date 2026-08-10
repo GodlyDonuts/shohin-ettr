@@ -1,5 +1,21 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **CTF1 CLOSED: SCALE RESTORES SEMANTIC PROGRAMS, BUT LEDGER EXECUTION DOES
+> NOT IMPROVE THE CAPABLE OWNER — 2026-08-10:** After pre-output mechanics
+> failures `750098/750099` exposed one raw-generation dispatch boolean, exact
+> immutable replays `750111/750112` completed on pinned untouched
+> Qwen3.5-4B. Aligned learned execution scores `419/666 = 62.91%`, versus
+> source shuffle `7`, trained 0.8B CTE1 `134`, and 0.8B direct `267`; state
+> reset retains `0/419`, opcode permutation retains three, and normal execution
+> has zero invalid rows. However only 562 traces compile/execute, below the
+> frozen 600 gate, so CTF1 is conjunctively FAIL. Read-only attribution finds
+> the 4B owner's own claimed final correct on `487/666`: 408 both paths
+> correct, 79 direct-only, 11 ledger-only, and 168 neither (oracle union 498).
+> Thus model scale restores planning, but exact ledger execution breaks more
+> capable answers than it repairs and does not earn a post-training rescue.
+> Public test/holdout remain sealed. Aggregate SHA-256 is
+> `8bccbe9a...5b77`.
+
 > **LTR1 CLOSED BEFORE GPU: WRONG LEDGERS LACK RECORD-LEVEL EDIT LOCALITY —
 > 2026-08-10:** Immutable CPU job `750093` joined all 666 CTE1 development
 > identities and compared complete generated/gold `<<...>>` records. Among

@@ -1,0 +1,47 @@
+{
+  "schema": "shohin-ctf1-result-v1",
+  "status": "fail",
+  "holdout_used": false,
+  "public_test_opened": false,
+  "pre_output_mechanics_failures": [750098, 750099],
+  "evaluation_job_ids": [750111, 750112],
+  "runtime_commit": "80c11a0",
+  "runtime_manifest_sha256": "36ec677f4600779bd8324d5880dc9c8baf34c17415b3692d9aad3d0a1fb5fb97",
+  "normal_report_sha256": "dc4e939b8186393ad6827f6cecbeacaaf86231d2abf2682ce093d43364b905f0",
+  "source_shuffled_report_sha256": "9ce8dae6769a96632e96920146898e4f3271adb6a252ee5e269564824a7e2c63",
+  "aggregate_report_sha256": "8bccbe9ae5cb807bda7c0476013b15ae98212d3d455f23b3f95fefa190445b77",
+  "scores": {
+    "aligned_correct": 419,
+    "source_shuffled_correct": 7,
+    "trained_cte1_reference_correct": 134,
+    "direct_08b_reference_correct": 267,
+    "compiled_rows": 562,
+    "executable_rows": 562,
+    "linked_rows": 544,
+    "state_reset_linked_correct": 0,
+    "opcode_permuted_correct": 3,
+    "normal_execution_invalid": 0,
+    "normal_exhausted": 7
+  },
+  "read_only_attribution": {
+    "direct_claimed_final_correct": 487,
+    "both_direct_and_ledger_correct": 408,
+    "direct_only_correct": 79,
+    "ledger_only_correct": 11,
+    "neither_correct": 168,
+    "oracle_union_correct": 498,
+    "compile_invalid_with_correct_direct_claim": 75
+  },
+  "gates": {
+    "at_least_600_compiled_executable": false,
+    "aligned_at_least_300": true,
+    "aligned_beats_cte1_by_100": true,
+    "source_shuffle_at_most_67": true,
+    "at_least_300_linked_rows": true,
+    "state_reset_loss_at_least_20_points": true,
+    "opcode_loss_at_least_30_points": true,
+    "zero_normal_execution_invalid": true,
+    "public_test_closed": true
+  },
+  "interpretation": "Untouched Qwen3.5-4B can produce strongly source- and execution-causal semantic ledgers, establishing a capacity floor above 0.8B. Exact ledger execution nevertheless loses more direct-correct answers than it repairs and misses coverage, so it does not improve the capable owner and closes without rescue."
+}
