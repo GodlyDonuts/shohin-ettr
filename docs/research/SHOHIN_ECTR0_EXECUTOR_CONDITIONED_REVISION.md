@@ -23,7 +23,7 @@ path.
 - Draft/transaction owner: exact immutable CTF1 normal report SHA-256
   `dc4e939b8186393ad6827f6cecbeacaaf86231d2abf2682ce093d43364b905f0`.
 - Source board: exact CTE1 development SHA-256
-  `aff466177d8d8ab863c2199bc6c59ff5afee92dfe94870edfe75475ce9eaeb04`.
+  `aff466172c74dd7d13a183d117e32ec10d5da2048d10253189e4e3b3a599eb04`.
 - Revision owner: qualified IDR4 Qwen3.5-4B checkpoint SHA-256
   `ae3847fe0728b1debcc13049822ea7499f744836b62d6d1c5bcb7c1000d8560b`.
 - Backbone: `Qwen/Qwen3.5-4B@851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a`.
