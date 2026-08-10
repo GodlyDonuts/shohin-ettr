@@ -1,5 +1,23 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **BSOT1 CLOSED; EXPLICIT EDIT CASCADE RETIRED — 2026-08-10:** Exact jobs
+> `749585--749608` completed all 24 aligned/swapped/hidden commit shards in
+> `1m54s--2m32s` each. The immutable ISET proposal artifact starts at
+> `1838/1908`. Aligned OCET commit falls to `1835`, while swapped and hidden
+> preserve `1838`; aligned emits only three rewrites and they are net harmful.
+> Aligned choice is `186/256`, numeric `1649/1652`, clean `911/954`, fault
+> `924/954`, validity `1908/1908`, and exhaustion zero. Every capability and
+> causal-margin gate fails; no holdout opens. Comparison SHA-256 is
+> `61a2c6fe...3acf`. The first 24 attempts `749561--749584` failed uniformly
+> before weight load because the new wrapper omitted the pinned bitsandbytes
+> `PYTHONPATH`; they wrote zero reports. Commit `c365beb` restored the exact
+> path, and one replacement mechanics shard was required before the other 23
+> were released. Total successful plus failed infrastructure charge was
+> `1.0325` H100-hours. This closes the DSET/GSET/ISET/FRET/RIFT/OCET/RSOT/BSOT
+> explicit proposal/commit cascade without nearby rank, owner, prompt, decode,
+> duration, seed, threshold, or proposal variants. Result:
+> `docs/research/SHOHIN_BSOT1_RESULT.json`.
+
 > **RSOT1 CLOSED; BEST-STATE COMPOSITION FROZEN — 2026-08-10:** All 24
 > role-separated commit shards complete, including exact replacements for two
 > pre-model CUDA failures on `evc46`. The immutable qualified DSET proposal

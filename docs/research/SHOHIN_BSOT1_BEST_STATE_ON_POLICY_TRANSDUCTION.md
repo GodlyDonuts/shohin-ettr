@@ -1,6 +1,6 @@
 # BSOT1: Best-State On-Policy Transduction
 
-**Status:** prospectively frozen after RSOT1 development failure, before BSOT1 output, 2026-08-10  
+**Status:** closed negative after one frozen development pass, 2026-08-10
 **Scope:** opened source-disjoint development board; holdout sealed
 
 ## Evidence and hypothesis
@@ -65,3 +65,16 @@ variants.
 A pass would establish a practical model-owned multi-owner transducer, not a
 novel edit primitive. A failure means the OCET commit owner does not add enough
 reliable value even when handed the strongest existing model-owned proposal.
+
+## Result
+
+Exact jobs `749585--749608` completed the 24 aligned/swapped/hidden shards.
+The aligned owner scores `1835/1908`, versus `1838` for the immutable proposal,
+swapped control, and hidden control. It emits three REPLACE transactions; the
+net effect is three broken answers and zero net repairs. Aligned choice is
+`186/256`, numeric `1649/1652`, clean `911/954`, fault `924/954`, commit
+validity `1908/1908`, and exhaustion zero. Every capability and causal-margin
+condition fails, so holdout remains sealed and the cascade is closed.
+
+Canonical result: `docs/research/SHOHIN_BSOT1_RESULT.json`, SHA-256
+`61a2c6feb3c390ce5c4160932fc54dcab90166fc799b8586965052e152a63acf`.

@@ -111,6 +111,30 @@ Therefore explicit localization is not the primary remaining bottleneck; an
 isolated small replacement decoder discards the host LM's value-synthesis
 ability. PSET1-v0 is closed. Result: `docs/research/SHOHIN_PSET1_RESULT.json`.
 
+The subsequent Qwen3.6-35B-A3B edit campaign qualified individual mechanics
+but closed the complete cascade. DSET transfer learned causal draft-specific
+scripts (`1822/1908` aligned versus `1174` hidden), yet choice scripts remained
+only `177/256`. GSET's separate KEEP/REPLACE gate, ISET's idempotent always-
+rewrite transaction, FRET's forced native-value ceiling, and RIFT's tied
+fixed-point pass localized the remaining defect to semantic commit rather than
+pointer localization or native value synthesis. OCET then trained on 1,660
+actual model-generated errors. Its tied owner repaired its own proposals by
+386 answers but damaged proposal generation, finishing at `1690/1908`.
+Role-separated RSOT preserved the qualified proposer and obtained a causal
+`1700 -> 1798` repair, still below ISET's `1838`.
+
+BSOT1 was the final prospectively frozen composition. It fed all three commit
+owners the identical immutable best ISET trajectories (`1838/1908`). The
+aligned owner changed only three trajectories and reduced accuracy to `1835`;
+swapped and hidden controls both preserved `1838`. Choice was `186/256`, clean
+`911/954`, fault `924/954`, validity `1908/1908`, and exhaustion zero. Thus
+the on-policy editor's earlier gain was distribution-specific and does not
+generalize into a reliable semantic commit policy above a stronger proposal
+floor. No holdout opened. The entire explicit edit cascade is closed without
+nearby variants. Exact final result:
+`docs/research/SHOHIN_BSOT1_RESULT.json` (SHA-256
+`61a2c6feb3c390ce5c4160932fc54dcab90166fc799b8586965052e152a63acf`).
+
 This changed factor is strongly supported on dense models. Matched trained
 revision versus unchanged second-pass gains are:
 

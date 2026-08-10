@@ -1,6 +1,6 @@
 # Shohin: Model-Owned Temporal Revision
 
-> Current architecture and evidence boundary — 2026-08-09
+> Current architecture and evidence boundary — 2026-08-10
 
 ## Read this first
 
@@ -34,6 +34,16 @@ top-1 routes changing on `0.0248%` of traced token/layer events. These are
 useful modest effects but remain below the frozen capability threshold. The
 small-OLMoE native-transfer lane is closed; larger-MoE scaling is not
 authorized from this evidence.
+
+A later Qwen3.6-35B-A3B program made draft editing explicitly causal with
+model-emitted KEEP/REPLACE transactions and deterministic execution. It
+qualified script mechanics but did not produce a reliable general semantic
+commit policy. The final frozen composition started from the strongest
+model-owned proposals (`1838/1908`), then the aligned trained editor reduced
+them to `1835`; swapped and draft-hidden controls preserved `1838`. This
+closes that explicit edit cascade without holdout or nearby retries. It does
+not displace the qualified dense draft/revision/whole-trajectory architecture
+described below.
 
 Historical ETTR graph-reactor and synthetic compiled-state experiments remain
 valuable research history, but they are not the current deployable Shohin
