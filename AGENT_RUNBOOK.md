@@ -1,5 +1,19 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **NMC1 FREE-TEXT NATURAL COMPILER CLOSED — 2026-08-10:** Matched 1,024-update
+> fits `749816/749817` and frozen development evaluations `749838--749840`
+> completed. NMC1 emits only `40/666 = 6.006%` parsable programs, `19/666 =
+> 2.853%` executable programs, and `0/666` exact programs or answers; matched
+> direct CoT reaches `267/666 = 40.090%`. Source shuffle is zero. Read-only
+> attribution finds 335 noncausal register loads, 155 wrong commits, 78
+> incomplete envelopes, and stack failures in 21 of the 40 parsable programs.
+> This rejects free-text program serialization before learned LAM1 execution;
+> it does not reject typed program compilation or LAM1. Public GSM8K test was
+> never opened. Exact NMC1 closes without nearby retries. Result SHA-256 is
+> `4a4379f6...0cab`; see `docs/research/SHOHIN_NMC1_RESULT.json`. The next
+> structurally different lane must use grammar-masked typed actions and causal
+> source/register pointers with a generic executor.
+
 > **NMC1 DATA/MECHANICS PASS; MATCHED FITS OPEN — 2026-08-10:** CPU job
 > `749812` admitted 6,333 train and 666 source-disjoint development GSM8K
 > identities into result-free register programs (22,846 records / 75,242

@@ -1,6 +1,6 @@
 # NMC1: Natural-Language Microcode Compiler
 
-Status: frozen prospective data and development gate
+Status: development gate failed; exact NMC1 closed
 
 Date: 2026-08-10
 
@@ -110,3 +110,29 @@ It would not establish broad mathematical reasoning, novelty of program-aided
 language models, or generalization beyond the admitted arithmetic language.
 The changed factor is the result-free register interface plus learned local
 execution, measured against ordinary matched SFT.
+
+## Result
+
+Matched fits `749816/749817` completed all 1,024 updates with 901,888
+trainable parameters each. Program/direct checkpoints have SHA-256
+`eef6cbe6...0ae1` / `8a2b6550...0b53`. The first evaluation launch
+`749835--749837` failed closed before generation because its receipt validator
+looked for the top-level checkpoint update inside metadata. Commit `f24a237`
+corrected only that custody check; it did not alter weights, data, prompts,
+decoding, thresholds, or the public-test state.
+
+Frozen evaluations `749838--749840` reject NMC1. Program syntax is `40/666 =
+6.006%`, execution validity `19/666 = 2.853%`, exact programs and final answers
+are both `0/666`; source shuffle is also zero. The matched direct arm scores
+`267/666 = 40.090%`. Program generation exhausts on 78 rows. Read-only parse
+attribution finds 335 noncausal register loads, 155 wrong final commits, 78
+missing complete envelopes, and 58 other structural failures. Among 40
+parsable programs, 18 have a wrong terminal stack and three underflow.
+
+Every capability gate except the source-shuffle ceiling fails. Public GSM8K
+test remains unopened. Exact NMC1 closes without prompt, rank, layer, duration,
+seed, split, parser, decoding, or threshold variants. The result isolates the
+failure before arithmetic execution: free-text autoregression did not maintain
+typed register causality. The next admissible successor must replace text
+serialization with a grammar-masked typed instruction policy and generic
+executor, not merely train NMC1 longer.

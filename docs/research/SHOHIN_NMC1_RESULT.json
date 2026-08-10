@@ -1,0 +1,61 @@
+{
+  "schema": "shohin-nmc1-development-aggregate-v1",
+  "status": "complete",
+  "decision": "reject_exact_nmc1_free_text_compiler",
+  "holdout_used": false,
+  "public_test_opened": false,
+  "rows": 666,
+  "jobs": {
+    "program_fit": 749816,
+    "direct_fit": 749817,
+    "program_normal": 749838,
+    "program_source_shuffled": 749839,
+    "direct_normal": 749840
+  },
+  "checkpoint_sha256": {
+    "program": "eef6cbe63f9c40a0a0951e648a91f36c68c593a9be202aacf081cbfa946b0ae1",
+    "direct": "8a2b6550f4083368eff2493f1b14d59a1d9dd2e4b39d4da58ff23cdd1b250b53"
+  },
+  "report_sha256": {
+    "program_normal": "fc3da6d5e0dae17cff214013c0104cae15c5d1ea5fbd59f1a0af42a0784d3ce5",
+    "program_source_shuffled": "7dcad90d78384f61aa570ffeeddddf5343b72aff478e988fd01b69c168b814de",
+    "direct_normal": "234a029a7479fa056a3bdacd286dcc6e5a1d4cf7b472028b77fec7859ada2a49",
+    "aggregate": "4a4379f6bfe5c827c549e5cd8bfb6283230a9f957b57134222d2808464520cab"
+  },
+  "metrics": {
+    "program_syntax": "40/666",
+    "program_execution_valid": "19/666",
+    "program_exact": "0/666",
+    "program_answer": "0/666",
+    "direct_answer": "267/666",
+    "source_shuffled_answer": "0/666",
+    "program_exhausted": "78/666",
+    "direct_exhausted": "167/666"
+  },
+  "program_parse_failures": {
+    "noncausal_load": 335,
+    "commit_not_final_register": 155,
+    "missing_complete_envelope": 78,
+    "record_token_differs": 38,
+    "program_envelope_differs": 10,
+    "commit_differs": 5,
+    "record_address_differs": 3,
+    "numeric_surface_differs": 2
+  },
+  "parsable_execution_failures": {
+    "record_stack_differs": 18,
+    "apply_underflow": 3
+  },
+  "gate": {
+    "syntax_at_least_0p90": false,
+    "execution_valid_at_least_0p85": false,
+    "answer_at_least_0p60": false,
+    "beats_direct_by_0p03": false,
+    "source_shuffled_at_most_0p10": true,
+    "carry_reset_loses_0p10_multi_digit": false,
+    "opcode_permutation_loses_0p30": false,
+    "zero_exhaustion": false,
+    "overall_pass": false
+  },
+  "boundary": "The learned LAM1 executor was not reached reliably. This rejects the exact free-text NMC1 compiler, not typed program compilation or learned arithmetic microcode. No public GSM8K test score was opened."
+}
