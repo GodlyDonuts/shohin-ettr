@@ -1,5 +1,18 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **ECTR0 FROZEN BEFORE OUTPUT — 2026-08-10:** CTF1 shows that untouched
+> Qwen3.5-4B supplies both a strong direct answer (`487/666`) and a causal
+> learned-executor path (`419/666`), but committing only the latter is harmful.
+> The next bounded screen preserves both as evidence for the already-qualified
+> IDR4 temporal reviser instead of training another compiler. With all weights
+> frozen, aligned exact executor receipts are compared against receipt-absent
+> and deterministic compile-status/depth-matched shuffled receipts on the same
+> 666 source-disjoint identities. Qualification requires aligned `>=500`, at
+> least 13 answers over each control, net repairs `>=13`, at least 650 explicit
+> finals, and complete 4,096-token/hash custody. Public test remains sealed;
+> no nearby prompt/checkpoint/threshold retry is permitted. Contract:
+> `docs/research/SHOHIN_ECTR0_EXECUTOR_CONDITIONED_REVISION.md`.
+
 > **CTF1 CLOSED: SCALE RESTORES SEMANTIC PROGRAMS, BUT LEDGER EXECUTION DOES
 > NOT IMPROVE THE CAPABLE OWNER — 2026-08-10:** After pre-output mechanics
 > failures `750098/750099` exposed one raw-generation dispatch boolean, exact
