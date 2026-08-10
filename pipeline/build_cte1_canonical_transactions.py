@@ -42,6 +42,11 @@ class CTE1DataError(ValueError):
     """Canonical transaction data violates the frozen CTE1 contract."""
 
 
+def expression_atom(value: Fraction) -> str:
+    surface = canonical_fraction(value)
+    return surface if value.denominator == 1 else f"({surface})"
+
+
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -74,13 +79,13 @@ def render_transaction_trace(program: RegisterProgram) -> tuple[str, Fraction, i
             name = action.get("action")
             if name == "PUSH":
                 value = parse_fraction(str(action.get("surface")))
-                stack.append((canonical_fraction(value), value))
+                stack.append((expression_atom(value), value))
             elif name == "LOAD":
                 register = action.get("register")
                 if type(register) is not int or not 0 <= register < len(register_values):
                     raise CTE1DataError("LOAD is not causal")
                 value = register_values[register]
-                stack.append((canonical_fraction(value), value))
+                stack.append((expression_atom(value), value))
                 load_count += 1
             elif name == "NEGATE":
                 if not stack:
