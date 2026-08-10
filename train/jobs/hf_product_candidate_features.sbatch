@@ -24,11 +24,20 @@ COUNT=${COUNT:?set identity count}
 BATCH_SIZE=${BATCH_SIZE:-2}
 MAX_SEQUENCE_LENGTH=${MAX_SEQUENCE_LENGTH:-4096}
 STAGE_MODEL=${STAGE_MODEL:-true}
+BNB_ROOT=${BNB_ROOT:-}
+BNB_MANIFEST_SHA256=${BNB_MANIFEST_SHA256:-}
 
 test -x "$PYTHON"
 for path in "$RUNTIME/train/hf_product_candidate_features.py" "$ADAPTER_CHECKPOINT" "$CANDIDATES"; do
   [ -f "$path" ] || { echo "[candidate-features] missing input: $path" >&2; exit 2; }
 done
+if [[ -n "$BNB_ROOT" ]]; then
+  test -n "$BNB_MANIFEST_SHA256"
+  test -f "$BNB_ROOT/SHA256SUMS"
+  test "$(sha256sum "$BNB_ROOT/SHA256SUMS" | cut -d' ' -f1)" = \
+    "$BNB_MANIFEST_SHA256"
+  (cd "$BNB_ROOT" && sha256sum -c SHA256SUMS >/dev/null)
+fi
 for path in "$OUTPUT" "$REPORT"; do
   [ ! -e "$path" ] || { echo "[candidate-features] refusing existing output: $path" >&2; exit 3; }
   mkdir -p "$(dirname "$path")"
@@ -51,7 +60,9 @@ export OPENBLAS_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export TOKENIZERS_PARALLELISM=false
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
-export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
+PYTHON_PATHS=("$RUNTIME/train" "$RUNTIME/pipeline")
+if [[ -n "$BNB_ROOT" ]]; then PYTHON_PATHS=("$BNB_ROOT" "${PYTHON_PATHS[@]}"); fi
+export PYTHONPATH="$(IFS=:; echo "${PYTHON_PATHS[*]}")"
 cd "$RUNTIME/train"
 "$PYTHON" hf_product_candidate_features.py \
   --model-root "$EFFECTIVE_MODEL_ROOT" \

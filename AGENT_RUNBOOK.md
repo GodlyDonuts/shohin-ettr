@@ -1,5 +1,23 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **WTV1 CLOSED; TSVC1 TRAINED SEMANTIC COMMIT FROZEN — 2026-08-10:** WTV1
+> replay jobs `749258--749261` completed after jobs `749254--749257` failed
+> before model execution from a missing pinned bitsandbytes import path. The
+> exact counterbalanced zero-shot verifier selects only `56/125` disagreement
+> winners, yielding `1,825/1,908` overall and `176/256` choice, with five
+> prompt truncations. Every frozen gate fails; no prompt/checkpoint/score rescue
+> and no holdout. Comparison SHA-256 is `fd0d8a03...e47b`. Read-only inversion
+> selects only `69/125`, so the score is not simply reversed. TSVC1 is frozen
+> as a structurally different trained semantic commit: the frozen same Qwen
+> host embeds each source and whole candidate, while a small correctness head
+> learns on 7,639 same-source clean/fault trajectory pairs with randomized
+> order. Exact aligned and source-shuffled diagnostic candidates plus a
+> label-blind shape control test causality. Frozen gates require zero
+> truncation, `>=105/125` disagreement selections, `>=1,874/1,908` overall,
+> `>=220/256` choice, `+13` over both shuffled and shape controls, and `>=90%`
+> hash-validation selection. Contract:
+> `docs/research/SHOHIN_TSVC1_TRAINED_SEMANTIC_COMMIT.md`.
+
 > **ISET1 CLOSED; WTV1 WHOLE-TRAJECTORY CANARY FROZEN — 2026-08-10:** ISET1
 > aligned execution is `1,838/1,908 = 96.3312%`, versus hidden `1,256` and
 > within-pair swapped `3`. Numeric execution is `1,650/1,652 = 99.8789%`,
