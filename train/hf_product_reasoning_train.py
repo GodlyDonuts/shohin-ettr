@@ -924,12 +924,16 @@ def _tokenize_kcr1_rows(
             marker = "DRAFT:\n"
             marker_start = rendered.rfind(marker)
             draft_text = row["question"].rpartition(marker)[2]
+            # Native chat templates may strip trailing user whitespace before
+            # adding the assistant envelope. Mask the exact draft bytes that
+            # survive rendering; substantive bytes must still match exactly.
+            rendered_draft = draft_text.rstrip()
             draft_start = marker_start + len(marker)
-            draft_end = draft_start + len(draft_text)
+            draft_end = draft_start + len(rendered_draft)
             if (
                 marker_start < 0
-                or not draft_text
-                or rendered[draft_start:draft_end] != draft_text
+                or not rendered_draft
+                or rendered[draft_start:draft_end] != rendered_draft
             ):
                 raise ProductReasoningTrainError("KCR1 rendered draft span differs")
             encoded = tokenizer(

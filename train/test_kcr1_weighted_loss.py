@@ -95,7 +95,10 @@ def test_kcr1_loader_rejects_mismatched_prefix(tmp_path: Path) -> None:
 
 
 def test_kcr1_hidden_control_masks_only_final_draft_span() -> None:
-    prompt = "SOURCE:\nproblem with DRAFT:\ninside source\n\nDRAFT_STATUS: CUTOFF\nDRAFT:\nsecret"
+    prompt = (
+        "SOURCE:\nproblem with DRAFT:\ninside source\n\n"
+        "DRAFT_STATUS: CUTOFF\nDRAFT:\nsecret\n\n"
+    )
     prompts, responses, actions, attention = _tokenize_kcr1_rows(
         OffsetTokenizer(),
         [{"question": prompt, "response": "<RESTART>\nanswer", "action": "<RESTART>"}],
