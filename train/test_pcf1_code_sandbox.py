@@ -211,7 +211,7 @@ def test_command_runs_anonymous_candidate_directly_as_pid_one() -> None:
         sandbox.BOOTSTRAP_SOURCE.index("exec(tests_code")
     )
     assert sandbox.BOOTSTRAP_SOURCE.index("exec(tests_code") < (
-        sandbox.BOOTSTRAP_SOURCE.index("os._exit(73)")
+        sandbox.BOOTSTRAP_SOURCE.rindex("os._exit(73)")
     )
     assert sandbox.BOOTSTRAP_SOURCE.index("os.dup2(null_output_fd, 1)") < (
         sandbox.BOOTSTRAP_SOURCE.index("exec(candidate_code")
@@ -574,6 +574,16 @@ def test_qualification_contains_every_required_adversarial_probe(
             "returncode": sandbox.TRUSTED_COMPLETION_EXIT_CODE,
             "test_completion_attested": True,
             "termination_classification": "trusted_tests_completed",
+            "assessment_mode": (
+                "trusted_setup_compile"
+                if _kwargs.get("trusted_setup_compile")
+                else "candidate"
+            ),
+            "candidate_policy_failure": (
+                "not_applicable_trusted_setup_compile"
+                if _kwargs.get("trusted_setup_compile")
+                else "accepted"
+            ),
             **runtime,
         }
 
@@ -916,6 +926,16 @@ def test_production_setup_qualification_registers_before_mbpp_scoring(
             "timed_out": False,
             "test_completion_attested": True,
             "termination_classification": "trusted_tests_completed",
+            "assessment_mode": (
+                "trusted_setup_compile"
+                if kwargs.get("trusted_setup_compile")
+                else "candidate"
+            ),
+            "candidate_policy_failure": (
+                "not_applicable_trusted_setup_compile"
+                if kwargs.get("trusted_setup_compile")
+                else "accepted"
+            ),
         }
 
     monkeypatch.setattr(sandbox, "_ALLOCATION_PROBE_SHA256", "c" * 64)
@@ -974,6 +994,7 @@ def test_frozen_reference_preflight_uses_trusted_mode_and_sandbox_pass(
         "candidate_policy_sha256": sandbox.CANDIDATE_POLICY_SHA256,
         "sandbox_config_sha256": sandbox.SANDBOX_CONFIG_SHA256,
         "allocation_probe_sha256": "b" * 64,
+        "setup_qualification_mode": "compile_only_before_candidate",
         "termination_classification": "trusted_tests_completed",
     }
     setup_qualification["receipt_sha256"] = sandbox.hashlib.sha256(
@@ -1013,6 +1034,25 @@ def test_trusted_reference_bypasses_candidate_grammar_inside_sandbox() -> None:
     assert assessor["assessment_mode"] == "trusted_reference"
     assert assessor["candidate_policy_passed"] is True
     assert assessor["candidate_policy_failure"] == "not_applicable_trusted_reference"
+
+
+def test_trusted_setup_compile_transport_never_treats_setup_as_candidate() -> None:
+    assessor = json.loads(
+        sandbox._assessor_transport_payload(
+            "pass\n",
+            "root = Node(1)\n",
+            "assert True",
+            trusted_probe=False,
+            trusted_setup_compile=True,
+        )
+    )
+    assert assessor["assessment_mode"] == "trusted_setup_compile"
+    assert assessor["candidate_policy_passed"] is True
+    assert (
+        assessor["candidate_policy_failure"] == "not_applicable_trusted_setup_compile"
+    )
+    assert assessor["setup_source"] == "root = Node(1)\n"
+    assert assessor["tests_source"] == "assert True"
 
 
 def test_policy_rejection_is_scientific_incorrect_not_infrastructure(

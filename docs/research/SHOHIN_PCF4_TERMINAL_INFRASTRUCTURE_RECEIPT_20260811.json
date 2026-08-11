@@ -1,0 +1,53 @@
+{
+  "schema": "shohin-pcf4-terminal-infrastructure-receipt-v1",
+  "status": "terminal_pre_admission_failure",
+  "date": "2026-08-11",
+  "source_commit": "f8d4d936ce0c637adee2259cd8805de261ca107b",
+  "runtime_manifest_sha256": "f91494b7b58ab52393ebc8611c1b8ac4e0c7b3b6b19321736b6c4a3d8ed7cbef",
+  "failed_job": {
+    "job_id": 751696,
+    "name": "pcf4-reference-canary",
+    "state": "FAILED",
+    "exit_code": "1:0",
+    "elapsed_seconds": 10,
+    "node": "evc21",
+    "alloc_tres": "billing=2,cpu=2,mem=16G,node=1",
+    "restarts": 0,
+    "cause": "standalone setup qualification executed a frozen MBPP setup that depends on the candidate-defined Node class",
+    "message": "pcf1_code_sandbox.PCF1SandboxError: PCF1 MBPP setup failed standalone qualification"
+  },
+  "files": [
+    {
+      "path": "sandbox_receipt.json",
+      "sha256": "3691420443d6ee764599885e04833ebe4080221f687efb82dc2b07937fe4c949"
+    },
+    {
+      "path": "751696.err",
+      "sha256": "fcce83b72d9f2a52a1a157d3174797697888ba3824dbeab47ad6b08f7f7c7a8c"
+    },
+    {
+      "path": "751696.out",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "job_id.txt",
+      "sha256": "0de33747dfd136fb1547e5e4b67daf63ea4bd1367dcb95c352b03840421a011c"
+    }
+  ],
+  "source_bank_opened": true,
+  "source_bank_sha256": "0b6d068b4d71f407cb234579b9278dc640df09139ea906dd0f52a6ab71e05398",
+  "holdout_reference_payload_accesses": 0,
+  "sandbox_started": true,
+  "sandbox_qualification_passed": true,
+  "sandbox_probe_count": 40,
+  "reference_executions_started": 0,
+  "model_opened": false,
+  "data_published": false,
+  "assessor_published": false,
+  "scientific_graph_submitted": false,
+  "scientific_score_emitted": false,
+  "formal_scientific_result": null,
+  "partial_output_root_frozen": true,
+  "queue_empty": true,
+  "retry_count": 0
+}

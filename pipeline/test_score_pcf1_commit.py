@@ -67,6 +67,7 @@ def _qualified_sandbox(monkeypatch: pytest.MonkeyPatch) -> None:
         "candidate_policy_sha256": CANDIDATE_POLICY_SHA256,
         "sandbox_config_sha256": scorer.SANDBOX_CONFIG_SHA256,
         "allocation_probe_sha256": "8" * 64,
+        "setup_qualification_mode": "compile_only_before_candidate",
         "termination_classification": "trusted_tests_completed",
     }
     setup_receipt["receipt_sha256"] = hashlib.sha256(

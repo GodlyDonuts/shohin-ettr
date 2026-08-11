@@ -61,6 +61,7 @@ def _setup_receipt(source: str, probe_sha256: str = "9" * 64) -> dict[str, Any]:
         "candidate_policy_sha256": CANDIDATE_POLICY_SHA256,
         "sandbox_config_sha256": SANDBOX_CONFIG_SHA256,
         "allocation_probe_sha256": probe_sha256,
+        "setup_qualification_mode": "compile_only_before_candidate",
         "termination_classification": "trusted_tests_completed",
     }
     receipt["receipt_sha256"] = hashlib.sha256(

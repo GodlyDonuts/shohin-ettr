@@ -32,6 +32,17 @@
 > receipt. PCF4 is frozen with only the already-established exact SHA-256
 > source-path exception for that CPU canary. Follow
 > `docs/research/SHOHIN_PCF4_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+> PCF4 canary `751696` passed all 40 sandbox probes, then failed before any
+> reference execution because its standalone setup preflight evaluated a
+> setup that requires the candidate-defined `Node` class. It ran no graph,
+> H100, model, published data, assessor, or score; its result remains `null`.
+> Preserve
+> `docs/research/SHOHIN_PCF4_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
+> PCF5 is prospectively frozen with only a setup-lifecycle correction:
+> trusted setup/tests compile before candidate execution, while setup evaluates
+> only after the candidate in the real assessment. Generated-candidate policy
+> and all scientific clauses are unchanged. Follow only
+> `docs/research/SHOHIN_PCF5_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
 
 > **PCF1 TERMINAL INFRASTRUCTURE FAILURE; NO REPLAY, RETRY, OR SUCCESSOR —

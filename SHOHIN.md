@@ -43,6 +43,19 @@ full-hash source-path exception already used by preparation. All science and
 generated-candidate security remain unchanged. See
 `SHOHIN_PCF4_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
+PCF4 also closed before scientific admission. CPU canary `751696` passed its
+fresh 40-probe sandbox qualification, then stopped before any reference
+execution because standalone setup qualification evaluated a frozen setup
+that depends on the candidate-defined `Node` class. No graph, H100, model,
+published data, assessor, or scientific score was reached; formal result is
+`null`. Preserve
+`SHOHIN_PCF4_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`. **PCF5 is now
+prospectively frozen** with one infrastructure-only repair: trusted setup and
+official-test sources are compiled before the candidate, but setup evaluation
+occurs only in its correct post-candidate context. Generated-candidate policy
+and all scientific clauses remain unchanged. Follow
+`SHOHIN_PCF5_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+
 The sole authorized publication experiment was **PCF1**, one prospective,
 source-disjoint confirmation of the surviving dense architecture on pinned
 `mistralai/Ministral-3-8B-Reasoning-2512@81eaece...d894`. The qualified

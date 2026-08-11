@@ -481,7 +481,12 @@ def main():
             or payload["seed"] != 2026080816
             or payload["candidate_policy_sha256"] != __CANDIDATE_POLICY_SHA256__
             or payload["assessment_mode"]
-            not in {"candidate", "trusted_probe", "trusted_reference"}
+            not in {
+                "candidate",
+                "trusted_probe",
+                "trusted_reference",
+                "trusted_setup_compile",
+            }
             or not isinstance(payload["candidate_policy_passed"], bool)
             or not isinstance(payload["candidate_policy_failure"], str)
             or not isinstance(payload["setup_source"], str)
@@ -500,6 +505,14 @@ def main():
                     payload["candidate_policy_passed"] is not True
                     or payload["candidate_policy_failure"]
                     != "not_applicable_trusted_reference"
+                )
+            )
+            or (
+                payload["assessment_mode"] == "trusted_setup_compile"
+                and (
+                    payload["candidate_policy_passed"] is not True
+                    or payload["candidate_policy_failure"]
+                    != "not_applicable_trusted_setup_compile"
                 )
             )
             or (
@@ -523,6 +536,7 @@ def main():
         setup_code = compile(payload["setup_source"], "/trusted-setup.py", "exec")
         tests_code = compile(payload["tests_source"], "/official-tests.py", "exec")
         policy_passed = payload["candidate_policy_passed"]
+        assessment_mode = payload["assessment_mode"]
         observed_runtime = runtime_descriptor()
         if observed_runtime != EXPECTED_RUNTIME_DESCRIPTOR:
             raise RuntimeError("Python runtime descriptor differs")
@@ -535,6 +549,8 @@ def main():
     os.write(status_fd, ("PCF1_RUNTIME_DESCRIPTOR " + runtime_line + "\n").encode())
     os.write(status_fd, b"PCF1_PYTHON_READY\n")
     os.close(status_fd)
+    if assessment_mode == "trusted_setup_compile":
+        os._exit(73)
     if not policy_passed:
         os._exit(78)
     try:
@@ -1025,13 +1041,14 @@ def _assessor_transport_payload(
     *,
     trusted_probe: bool,
     trusted_reference: bool = False,
+    trusted_setup_compile: bool = False,
 ) -> bytes:
     if not all(
         isinstance(value, str)
         for value in (candidate_source, setup_source, tests_source)
     ):
         raise PCF1SandboxError("PCF1 sandbox assessment source is not text")
-    if trusted_probe and trusted_reference:
+    if sum(map(int, (trusted_probe, trusted_reference, trusted_setup_compile))) > 1:
         raise PCF1SandboxError("PCF1 trusted assessment mode is ambiguous")
     if trusted_probe:
         policy_passed, policy_reason = True, "not_applicable_trusted_probe"
@@ -1039,6 +1056,10 @@ def _assessor_transport_payload(
     elif trusted_reference:
         policy_passed, policy_reason = True, "not_applicable_trusted_reference"
         assessment_mode = "trusted_reference"
+    elif trusted_setup_compile:
+        policy_passed = True
+        policy_reason = "not_applicable_trusted_setup_compile"
+        assessment_mode = "trusted_setup_compile"
     else:
         policy_passed, policy_reason = validate_mbpp_candidate(candidate_source)
         assessment_mode = "candidate"
@@ -1238,6 +1259,7 @@ def isolated_program_result(
     require_test_completion_attestation: bool = False,
     trusted_probe: bool = False,
     trusted_reference: bool = False,
+    trusted_setup_compile: bool = False,
 ) -> dict[str, Any]:
     if timeout_seconds <= 0 or not math.isfinite(timeout_seconds):
         raise PCF1SandboxError("PCF1 code timeout differs")
@@ -1254,8 +1276,9 @@ def isolated_program_result(
         tests_source,
         trusted_probe=trusted_probe,
         trusted_reference=trusted_reference,
+        trusted_setup_compile=trusted_setup_compile,
     )
-    if trusted_probe and trusted_reference:
+    if sum(map(int, (trusted_probe, trusted_reference, trusted_setup_compile))) > 1:
         raise PCF1SandboxError("PCF1 trusted assessment mode is ambiguous")
     if trusted_probe:
         policy_passed, policy_reason = True, "not_applicable_trusted_probe"
@@ -1263,6 +1286,10 @@ def isolated_program_result(
     elif trusted_reference:
         policy_passed, policy_reason = True, "not_applicable_trusted_reference"
         assessment_mode = "trusted_reference"
+    elif trusted_setup_compile:
+        policy_passed = True
+        policy_reason = "not_applicable_trusted_setup_compile"
+        assessment_mode = "trusted_setup_compile"
     else:
         policy_passed, policy_reason = validate_mbpp_candidate(candidate_source)
         assessment_mode = "candidate"
@@ -1422,7 +1449,7 @@ def score_completion(
 
 
 def preflight_mbpp_setup(setup_source: str) -> dict[str, Any]:
-    """Qualify one unique trusted setup alone on the current allocation."""
+    """Compile one unique trusted setup before any candidate is assessed."""
 
     if _ALLOCATION_PROBE_SHA256 is None:
         raise PCF1SandboxError("PCF1 sandbox allocation is not qualified")
@@ -1434,13 +1461,17 @@ def preflight_mbpp_setup(setup_source: str) -> dict[str, Any]:
         setup_source=setup_source,
         validate_host=False,
         require_test_completion_attestation=True,
+        trusted_setup_compile=True,
     )
     if (
         execution.get("passed") is not True
         or execution.get("termination_classification") != "trusted_tests_completed"
         or execution.get("test_completion_attested") is not True
+        or execution.get("assessment_mode") != "trusted_setup_compile"
+        or execution.get("candidate_policy_failure")
+        != "not_applicable_trusted_setup_compile"
     ):
-        raise PCF1SandboxError("PCF1 MBPP setup failed standalone qualification")
+        raise PCF1SandboxError("PCF1 MBPP setup failed compile qualification")
     receipt = {
         "schema": "shohin-pcf1-mbpp-setup-qualification-v1",
         "status": "pass",
@@ -1448,6 +1479,7 @@ def preflight_mbpp_setup(setup_source: str) -> dict[str, Any]:
         "candidate_policy_sha256": CANDIDATE_POLICY_SHA256,
         "sandbox_config_sha256": SANDBOX_CONFIG_SHA256,
         "allocation_probe_sha256": _ALLOCATION_PROBE_SHA256,
+        "setup_qualification_mode": "compile_only_before_candidate",
         "termination_classification": "trusted_tests_completed",
     }
     receipt["receipt_sha256"] = hashlib.sha256(
@@ -1517,6 +1549,7 @@ def validate_mbpp_setup_qualification_receipt(
         "candidate_policy_sha256",
         "sandbox_config_sha256",
         "allocation_probe_sha256",
+        "setup_qualification_mode",
         "termination_classification",
         "receipt_sha256",
     }
@@ -1537,6 +1570,7 @@ def validate_mbpp_setup_qualification_receipt(
         or receipt.get("candidate_policy_sha256") != CANDIDATE_POLICY_SHA256
         or receipt.get("sandbox_config_sha256") != SANDBOX_CONFIG_SHA256
         or receipt.get("allocation_probe_sha256") != allocation_probe_sha256
+        or receipt.get("setup_qualification_mode") != "compile_only_before_candidate"
         or receipt.get("termination_classification") != "trusted_tests_completed"
         or receipt_sha256 != canonical_sha256
     ):
