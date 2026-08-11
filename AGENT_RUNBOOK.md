@@ -1,5 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **KCR1 CPU ADMISSION PASSES; WEIGHTED-LOSS MECHANICS READY — 2026-08-10:**
+> CPU job `750637` completed in `00:01:24` and admits `11,218/11,220 =
+> 99.982%` evaluation-disjoint sources. The two rejected sources lack a safe
+> semantic continuation boundary. All `33,654` retained presentations execute
+> their transaction exactly, retain all three states per admitted source, and
+> fit the pinned Qwen tokenizer at 4,096 tokens with maxima 2,104 prompt and
+> 1,490 target tokens. The corpus charges 3,416,424 target tokens and contains
+> 16,396 KEEP, 11,218 CONTINUE, and 6,040 RESTART actions. Train/report SHA-256
+> values are `3e63c4e2...863b9` / `f6236490...9b8e`. Holdout is unopened and
+> runtime-visible fields remain only `question`. The trainer now has an
+> opt-in KCR-only loader that preserves action boundaries and gives action and
+> payload equal per-presentation loss mass; the generic historical CE path is
+> unchanged. Thirty-two focused tests, Ruff, shell syntax, bytecode, and diff
+> checks pass. One hash-bound update is the only authorized next GPU action.
+
 > **KCR1 STRUCTURALLY DISTINCT SUCCESSOR FROZEN; CPU ADMISSION NEXT —
 > 2026-08-10:** Read-only NDR1 state attribution binds all 1,289 immutable
 > identities and localizes 33/37 lost aligned answers to wrong exhausted

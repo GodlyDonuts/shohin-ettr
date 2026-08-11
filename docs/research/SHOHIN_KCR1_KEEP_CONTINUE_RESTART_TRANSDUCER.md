@@ -1,7 +1,33 @@
 # KCR1: Keep/Continue/Restart Causal Revision
 
 Status: prospective successor frozen after exact NDR1 closed and before KCR1
-data, training, or model output. NDR1 remains closed. Holdout remains sealed.
+model output. CPU data admission passed on 2026-08-10. NDR1 remains closed.
+Holdout remains sealed.
+
+## CPU admission result
+
+CPU job `750637` admitted `11,218/11,220 = 99.982%` source identities and
+rejected only two sources lacking a safe semantic continuation boundary. It
+created `33,654` rows with all three presentations retained per source and
+`33,654/33,654` exact transaction round-trips. The action distribution is
+16,396 KEEP, 11,218 CONTINUE, and 6,040 RESTART. The actual pinned Qwen
+tokenizer reports maximum 2,104 prompt tokens and 1,490 target tokens, zero
+4,096-token truncation, and 3,416,424 charged target tokens. Holdout was not
+used and the only runtime-visible field is `question`.
+
+- train SHA-256:
+  `3e63c4e248a32c9f4008a1c245ea6e18bcb2f8497058b6c0c237ca5a719863b9`
+- report SHA-256:
+  `f6236490f2e435c841267c849460183db6fbf90fa30f6d1a61b3bd4a64b79b8e`
+- local result: `SHOHIN_KCR1_DATA_RESULT.json`
+
+The implemented training path preserves the action field through reservoir
+selection, proves that each tokenized response begins with its declared action,
+and applies the frozen loss exactly: KEEP averages action plus terminal EOS;
+payload transactions assign one half of presentation loss to action-marker
+tokens and one half to newline, payload, and terminal EOS. This path is opt-in;
+ordinary historical language CE is unchanged. One hash-bound update must pass
+before any 512-update fit.
 
 ## Evidence that selects the changed mechanism
 

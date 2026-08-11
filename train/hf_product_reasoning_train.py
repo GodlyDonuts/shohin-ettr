@@ -36,6 +36,7 @@ PRODUCT_SYSTEM_PROMPT = (
     "and a clearly marked final answer."
 )
 SYNDROME_WEIGHT = 0.25
+KCR1_ACTIONS = ("<KEEP>", "<CONTINUE>", "<RESTART>")
 
 
 def render_reasoning_messages(
@@ -301,6 +302,51 @@ def reservoir_rows(path: Path, limit: int, seed: int) -> list[dict[str, str]]:
     return reservoir_rows_with_sha256(path, limit, seed)[0]
 
 
+def kcr1_rows_with_sha256(
+    path: Path,
+    limit: int,
+    seed: int,
+) -> tuple[list[dict[str, str]], str]:
+    """Select KCR1 rows without discarding the causal action boundary."""
+
+    if limit <= 0:
+        raise ProductReasoningTrainError("row limit must be positive")
+    generator = random.Random(seed)
+    digest = hashlib.sha256()
+    selected: list[dict[str, str]] = []
+    valid = 0
+    with path.open("rb") as handle:
+        for raw_line in handle:
+            digest.update(raw_line)
+            try:
+                row = json.loads(raw_line)
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                continue
+            pair = _question_response(row)
+            action = row.get("action")
+            if pair is None or action not in KCR1_ACTIONS:
+                continue
+            response = pair[1]
+            if response != action and not response.startswith(f"{action}\n"):
+                raise ProductReasoningTrainError("KCR1 response/action binding differs")
+            normalized = {
+                "question": pair[0],
+                "response": response,
+                "action": str(action),
+            }
+            valid += 1
+            if len(selected) < limit:
+                selected.append(normalized)
+            else:
+                position = generator.randrange(valid)
+                if position < limit:
+                    selected[position] = normalized
+    if not selected:
+        raise ProductReasoningTrainError("KCR1 training source has no valid rows")
+    generator.shuffle(selected)
+    return selected, digest.hexdigest()
+
+
 def _pad_token_rows(
     rows: list[list[int]],
     pad_token_id: int,
@@ -404,6 +450,62 @@ def pack_training_embeddings(
         attention[index, len(prompt) : length] = 1
         packed_labels[index, :length] = row_labels
     return packed, attention, packed_labels, charged_tokens
+
+
+def kcr1_action_payload_loss(
+    logits: torch.Tensor,
+    labels: torch.Tensor,
+    response_action_token_counts: list[int],
+) -> tuple[torch.Tensor, dict[str, float]]:
+    """Give KCR1 action and payload equal per-presentation loss mass."""
+
+    if logits.ndim != 3 or labels.shape != logits.shape[:2]:
+        raise ProductReasoningTrainError("KCR1 logits/labels geometry differs")
+    if len(response_action_token_counts) != logits.shape[0]:
+        raise ProductReasoningTrainError("KCR1 action-count batch differs")
+    shifted_labels = labels[:, 1:]
+    token_loss = F.cross_entropy(
+        logits[:, :-1].reshape(-1, logits.shape[-1]),
+        shifted_labels.reshape(-1),
+        ignore_index=-100,
+        reduction="none",
+    ).reshape_as(shifted_labels)
+    presentation_losses: list[torch.Tensor] = []
+    action_losses: list[torch.Tensor] = []
+    payload_losses: list[torch.Tensor] = []
+    action_tokens = payload_tokens = 0
+    for row_index, declared_action_tokens in enumerate(response_action_token_counts):
+        valid_positions = torch.nonzero(
+            shifted_labels[row_index].ne(-100), as_tuple=False
+        ).flatten()
+        valid_count = int(valid_positions.numel())
+        if not 0 < declared_action_tokens <= valid_count:
+            raise ProductReasoningTrainError("KCR1 action token boundary differs")
+        action_positions = valid_positions[:declared_action_tokens]
+        action_loss = token_loss[row_index, action_positions].mean()
+        action_losses.append(action_loss)
+        action_tokens += declared_action_tokens
+        if declared_action_tokens == valid_count:
+            presentation_losses.append(action_loss)
+            continue
+        payload_positions = valid_positions[declared_action_tokens:]
+        payload_loss = token_loss[row_index, payload_positions].mean()
+        payload_losses.append(payload_loss)
+        payload_tokens += int(payload_positions.numel())
+        presentation_losses.append(0.5 * action_loss + 0.5 * payload_loss)
+    if not presentation_losses:
+        raise ProductReasoningTrainError("KCR1 batch is empty")
+    loss = torch.stack(presentation_losses).mean()
+    return loss, {
+        "action_loss": float(torch.stack(action_losses).mean().detach()),
+        "payload_loss": (
+            float(torch.stack(payload_losses).mean().detach())
+            if payload_losses
+            else 0.0
+        ),
+        "action_tokens": float(action_tokens),
+        "payload_tokens": float(payload_tokens),
+    }
 
 
 class ProductReasoningModel(nn.Module):
@@ -540,6 +642,8 @@ class ProductReasoningModel(nn.Module):
         pad_token_id: int,
         prompt_attention_rows: list[list[int]] | None = None,
         draft_indicator_rows: list[list[int]] | None = None,
+        response_action_token_counts: list[int] | None = None,
+        loss_mode: str = "standard",
     ) -> tuple[torch.Tensor, dict[str, float]]:
         embedding = self.text_model.embed_tokens
         prefix = None
@@ -625,11 +729,32 @@ class ProductReasoningModel(nn.Module):
             use_cache=False,
         )
         logits = self.lm_head(outputs.last_hidden_state)
-        language_loss = F.cross_entropy(
-            logits[:, :-1].reshape(-1, logits.shape[-1]),
-            labels[:, 1:].reshape(-1),
-            ignore_index=-100,
-        )
+        kcr1_metrics = {
+            "action_loss": 0.0,
+            "payload_loss": 0.0,
+            "action_tokens": 0.0,
+            "payload_tokens": 0.0,
+        }
+        if loss_mode == "standard":
+            if response_action_token_counts is not None:
+                raise ProductReasoningTrainError(
+                    "standard loss received KCR1 action boundaries"
+                )
+            language_loss = F.cross_entropy(
+                logits[:, :-1].reshape(-1, logits.shape[-1]),
+                labels[:, 1:].reshape(-1),
+                ignore_index=-100,
+            )
+        elif loss_mode == "kcr1_action_payload":
+            if response_action_token_counts is None:
+                raise ProductReasoningTrainError(
+                    "KCR1 loss requires action-token boundaries"
+                )
+            language_loss, kcr1_metrics = kcr1_action_payload_loss(
+                logits, labels, response_action_token_counts
+            )
+        else:
+            raise ProductReasoningTrainError("training loss mode differs")
         loss = (
             language_loss
             + 0.01 * halting_loss
@@ -647,6 +772,7 @@ class ProductReasoningModel(nn.Module):
                 else 0.0
             ),
             "charged_tokens": float(charged),
+            **kcr1_metrics,
         }
 
 
@@ -761,6 +887,52 @@ def _tokenize_rows(
         mask_internal_draft=False,
     )
     return prompt_rows, response_rows
+
+
+def _tokenize_kcr1_rows(
+    tokenizer: Any,
+    rows: list[dict[str, str]],
+    max_sequence_length: int,
+    workspace_slots: int,
+) -> tuple[list[list[int]], list[list[int]], list[int]]:
+    """Tokenize complete KCR1 transactions and preserve action boundaries."""
+
+    if workspace_slots != 0:
+        raise ProductReasoningTrainError("KCR1 loss requires the baseline owner")
+    prompt_rows: list[list[int]] = []
+    response_rows: list[list[int]] = []
+    action_token_counts: list[int] = []
+    for row in rows:
+        action = row.get("action")
+        response_text = row.get("response", "")
+        if action not in KCR1_ACTIONS:
+            raise ProductReasoningTrainError("KCR1 action differs")
+        if response_text != action and not response_text.startswith(f"{action}\n"):
+            raise ProductReasoningTrainError("KCR1 transaction prefix differs")
+        rendered = render_reasoning_messages(
+            tokenizer,
+            [
+                {"role": "system", "content": PRODUCT_SYSTEM_PROMPT},
+                {"role": "user", "content": row["question"]},
+            ],
+            enable_thinking=False,
+        )
+        prompt = tokenizer.encode(rendered, add_special_tokens=False)
+        response = tokenizer.encode(response_text, add_special_tokens=False)
+        action_ids = tokenizer.encode(action, add_special_tokens=False)
+        if not action_ids or response[: len(action_ids)] != action_ids:
+            raise ProductReasoningTrainError("KCR1 tokenizer action prefix differs")
+        response.append(tokenizer.eos_token_id)
+        if len(prompt) + len(response) > max_sequence_length:
+            raise ProductReasoningTrainError("KCR1 admitted row would truncate")
+        prompt_rows.append(prompt)
+        response_rows.append(response)
+        action_token_counts.append(
+            len(response) if response_text == action else len(action_ids)
+        )
+    if not prompt_rows:
+        raise ProductReasoningTrainError("KCR1 tokenization removed every row")
+    return prompt_rows, response_rows, action_token_counts
 
 
 def _tokenize_rows_with_syndrome(
@@ -1031,9 +1203,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         fused=True,
     )
 
-    rows, data_hash = reservoir_rows_with_sha256(
-        args.data, args.max_rows, args.data_seed
-    )
+    if args.loss_mode == "kcr1_action_payload":
+        rows, data_hash = kcr1_rows_with_sha256(
+            args.data, args.max_rows, args.data_seed
+        )
+    else:
+        rows, data_hash = reservoir_rows_with_sha256(
+            args.data, args.max_rows, args.data_seed
+        )
     batch_stream = list(_batches(rows, args.batch_size))
     if not batch_stream:
         raise ProductReasoningTrainError("training population is smaller than a batch")
@@ -1057,6 +1234,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "quantization": args.quantization,
         "unfreeze_layers": model.unfreeze_layers,
         "mask_internal_draft": args.mask_internal_draft,
+        "loss_mode": args.loss_mode,
         "syndrome_weight": SYNDROME_WEIGHT if args.arm == "syndrome" else 0.0,
         "architecture": (
             "shohin-error-syndrome-revision-v1"
@@ -1111,9 +1289,20 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raw_batch = batch_stream[microstep % len(batch_stream)]
         workspace_slots = model.sequence_workspace_slots()
         draft_indicator_rows = None
+        response_action_token_counts = None
         if args.arm == "syndrome":
             prompt_rows, response_rows, draft_indicator_rows = (
                 _tokenize_rows_with_syndrome(
+                    tokenizer,
+                    raw_batch,
+                    args.max_sequence_length,
+                    workspace_slots,
+                )
+            )
+            prompt_attention_rows = None
+        elif args.loss_mode == "kcr1_action_payload":
+            prompt_rows, response_rows, response_action_token_counts = (
+                _tokenize_kcr1_rows(
                     tokenizer,
                     raw_batch,
                     args.max_sequence_length,
@@ -1143,6 +1332,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 tokenizer.pad_token_id,
                 prompt_attention_rows,
                 draft_indicator_rows,
+                response_action_token_counts,
+                args.loss_mode,
             )
             scaled_loss = loss / args.gradient_accumulation
         scaled_loss.backward()
@@ -1167,6 +1358,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "language_loss": metrics["language_loss"],
                 "halting_loss": metrics["halting_loss"],
                 "syndrome_loss": metrics["syndrome_loss"],
+                "action_loss": metrics["action_loss"],
+                "payload_loss": metrics["payload_loss"],
+                "action_tokens": metrics["action_tokens"],
+                "payload_tokens": metrics["payload_tokens"],
                 "final_stop_probability": metrics["final_stop_probability"],
                 "mean_step_delta": metrics["mean_step_delta"],
                 "residual_gate": metrics["residual_gate"],
@@ -1253,6 +1448,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--recurrent-steps", type=int, default=8)
     parser.add_argument("--unfreeze-layers", type=int, default=0)
     parser.add_argument("--mask-internal-draft", action="store_true")
+    parser.add_argument(
+        "--loss-mode",
+        choices=("standard", "kcr1_action_payload"),
+        default="standard",
+    )
     parser.add_argument("--seed", type=int, default=31)
     parser.add_argument("--data-seed", type=int, default=20260802)
     parser.add_argument("--log-interval", type=int, default=10)
@@ -1284,6 +1484,10 @@ def parse_args() -> argparse.Namespace:
     )
     if args.max_sequence_length <= reserved_slots + 16:
         parser.error("maximum sequence length leaves no prompt/target budget")
+    if args.loss_mode == "kcr1_action_payload" and (
+        args.arm != "baseline" or args.mask_internal_draft
+    ):
+        parser.error("KCR1 loss requires an unmasked baseline owner")
     return args
 
 
