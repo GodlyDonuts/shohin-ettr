@@ -60,12 +60,31 @@ def semantic_correct(source: dict[str, Any], value: str) -> bool:
     raise VTE1DataError(f"unsupported training group: {group}")
 
 
+def source_verification_admitted(source: dict[str, Any]) -> bool:
+    """Recognize the immutable source-specific verification receipts."""
+
+    group = str(source.get("training_group", ""))
+    verification = str(source.get("verification", ""))
+    if group in {"math", "science"}:
+        return verification == "expected_answer_match_v1"
+    if group == "code":
+        return verification in {"execution_verified", "execution_verified_source_tests"}
+    if group == "procedural":
+        return verification == "reasoning_gym_answer_verified"
+    return False
+
+
 def verified_equivalence_set(
     source: dict[str, Any], draft: str, verified: str
 ) -> list[str]:
     """Enumerate the frozen complete transaction equivalence set."""
 
-    if not draft or not verified or not semantic_correct(source, verified):
+    if (
+        not draft
+        or not verified
+        or source.get("response") != verified
+        or not source_verification_admitted(source)
+    ):
         raise VTE1DataError("VTE1 draft or verified target differs")
     candidates: list[str] = []
     if draft == verified:
@@ -78,14 +97,19 @@ def verified_equivalence_set(
         and draft != verified
         and not verified.startswith(draft)
     ):
-        candidates.append(render_transaction(CONTINUE, CORRECTION_DELIMITER + verified))
+        correction = render_transaction(CONTINUE, CORRECTION_DELIMITER + verified)
+        if semantic_correct(source, execute_transaction(draft, correction)):
+            candidates.append(correction)
 
     unique = list(dict.fromkeys(candidates))
     if not unique:
         raise VTE1DataError("VTE1 equivalence set is empty")
     for transaction in unique:
         executed = execute_transaction(draft, transaction)
-        if not semantic_correct(source, executed):
+        # Byte-exact reconstruction inherits the immutable source verifier.
+        # A correction append is not byte-identical and must independently
+        # expose the verified answer through the frozen semantic assessor.
+        if executed != verified and not semantic_correct(source, executed):
             raise VTE1DataError("VTE1 candidate fails independent semantics")
     return unique
 

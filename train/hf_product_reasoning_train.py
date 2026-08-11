@@ -117,9 +117,7 @@ class BoundedLoRATopKRouter(nn.Module):
         residual = torch.tanh(self.lora_b(self.lora_a(flattened))) * self.scale
         router_logits = base_logits + residual
         router_probs = F.softmax(router_logits, dtype=torch.float, dim=-1)
-        router_scores, router_indices = torch.topk(
-            router_probs, self.top_k, dim=-1
-        )
+        router_scores, router_indices = torch.topk(router_probs, self.top_k, dim=-1)
         if self.norm_topk_prob:
             router_scores = router_scores / router_scores.sum(dim=-1, keepdim=True)
         return router_logits, router_scores.to(router_logits.dtype), router_indices
@@ -163,7 +161,9 @@ def install_scoped_lora(
     return install_lora(mixer, rank, alpha)
 
 
-def resolve_product_backbone_layout(backbone: nn.Module) -> tuple[nn.Module, nn.Module, int, str]:
+def resolve_product_backbone_layout(
+    backbone: nn.Module,
+) -> tuple[nn.Module, nn.Module, int, str]:
     """Expose a common decoder-only text path for Qwen multimodal and causal LMs."""
 
     model = getattr(backbone, "model", None)
@@ -347,6 +347,64 @@ def kcr1_rows_with_sha256(
     return selected, digest.hexdigest()
 
 
+def vte1_rows_with_sha256(
+    path: Path,
+    limit: int,
+    seed: int,
+) -> tuple[list[dict[str, Any]], str]:
+    """Select complete VTE1 equivalence sets without flattening their groups."""
+
+    if limit <= 0:
+        raise ProductReasoningTrainError("row limit must be positive")
+    generator = random.Random(seed)
+    digest = hashlib.sha256()
+    selected: list[dict[str, Any]] = []
+    valid = 0
+    with path.open("rb") as handle:
+        for raw_line in handle:
+            digest.update(raw_line)
+            try:
+                row = json.loads(raw_line)
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                continue
+            question = row.get("question")
+            responses = row.get("responses")
+            if not question or not isinstance(responses, list) or not responses:
+                continue
+            normalized_responses: list[str] = []
+            for response in responses:
+                if not isinstance(response, str) or not response:
+                    raise ProductReasoningTrainError("VTE1 candidate differs")
+                action = response.partition("\n")[0]
+                if action not in KCR1_ACTIONS or (
+                    response != action and not response.startswith(f"{action}\n")
+                ):
+                    raise ProductReasoningTrainError("VTE1 transaction prefix differs")
+                normalized_responses.append(response)
+            if len(normalized_responses) != len(set(normalized_responses)):
+                raise ProductReasoningTrainError("VTE1 candidate set is duplicated")
+            declared_count = row.get("candidate_count")
+            if declared_count is not None and declared_count != len(
+                normalized_responses
+            ):
+                raise ProductReasoningTrainError("VTE1 candidate count differs")
+            normalized = {
+                "question": str(question),
+                "responses": normalized_responses,
+            }
+            valid += 1
+            if len(selected) < limit:
+                selected.append(normalized)
+            else:
+                position = generator.randrange(valid)
+                if position < limit:
+                    selected[position] = normalized
+    if not selected:
+        raise ProductReasoningTrainError("VTE1 training source has no valid rows")
+    generator.shuffle(selected)
+    return selected, digest.hexdigest()
+
+
 def _pad_token_rows(
     rows: list[list[int]],
     pad_token_id: int,
@@ -375,7 +433,9 @@ def pack_training_embeddings(
         raise ProductReasoningTrainError("prompt/response batch differs")
     prefix_slots = 0 if prefix_states is None else int(prefix_states.shape[1])
     if prefix_states is not None and prompt_residuals is not None:
-        raise ProductReasoningTrainError("workspace prefix and residual are mutually exclusive")
+        raise ProductReasoningTrainError(
+            "workspace prefix and residual are mutually exclusive"
+        )
     if prefix_states is not None and prefix_states.shape[0] != len(prompt_rows):
         raise ProductReasoningTrainError("workspace batch differs")
     if prompt_residuals is not None and prompt_residuals.shape[0] != len(prompt_rows):
@@ -452,12 +512,12 @@ def pack_training_embeddings(
     return packed, attention, packed_labels, charged_tokens
 
 
-def kcr1_action_payload_loss(
+def kcr1_action_payload_row_losses(
     logits: torch.Tensor,
     labels: torch.Tensor,
     response_action_token_counts: list[int],
 ) -> tuple[torch.Tensor, dict[str, float]]:
-    """Give KCR1 action and payload equal per-presentation loss mass."""
+    """Return normalized action/payload loss for each complete transaction."""
 
     if logits.ndim != 3 or labels.shape != logits.shape[:2]:
         raise ProductReasoningTrainError("KCR1 logits/labels geometry differs")
@@ -495,8 +555,7 @@ def kcr1_action_payload_loss(
         presentation_losses.append(0.5 * action_loss + 0.5 * payload_loss)
     if not presentation_losses:
         raise ProductReasoningTrainError("KCR1 batch is empty")
-    loss = torch.stack(presentation_losses).mean()
-    return loss, {
+    return torch.stack(presentation_losses), {
         "action_loss": float(torch.stack(action_losses).mean().detach()),
         "payload_loss": (
             float(torch.stack(payload_losses).mean().detach())
@@ -506,6 +565,60 @@ def kcr1_action_payload_loss(
         "action_tokens": float(action_tokens),
         "payload_tokens": float(payload_tokens),
     }
+
+
+def kcr1_action_payload_loss(
+    logits: torch.Tensor,
+    labels: torch.Tensor,
+    response_action_token_counts: list[int],
+) -> tuple[torch.Tensor, dict[str, float]]:
+    """Give KCR1 action and payload equal per-presentation loss mass."""
+
+    row_losses, metrics = kcr1_action_payload_row_losses(
+        logits, labels, response_action_token_counts
+    )
+    return row_losses.mean(), metrics
+
+
+def vte1_equivalence_loss(
+    logits: torch.Tensor,
+    labels: torch.Tensor,
+    response_action_token_counts: list[int],
+    response_group_sizes: list[int],
+    *,
+    temperature: float = 0.1,
+) -> tuple[torch.Tensor, dict[str, float]]:
+    """Optimize one verified transaction from each complete equivalence set."""
+
+    if (
+        temperature <= 0
+        or not response_group_sizes
+        or any(size <= 0 for size in response_group_sizes)
+    ):
+        raise ProductReasoningTrainError("VTE1 equivalence geometry differs")
+    row_losses, metrics = kcr1_action_payload_row_losses(
+        logits, labels, response_action_token_counts
+    )
+    if sum(response_group_sizes) != row_losses.numel():
+        raise ProductReasoningTrainError("VTE1 group cardinality differs")
+    group_losses: list[torch.Tensor] = []
+    offset = 0
+    for size in response_group_sizes:
+        candidates = row_losses[offset : offset + size]
+        group_losses.append(
+            -temperature
+            * (torch.logsumexp(-candidates / temperature, dim=0) - math.log(size))
+        )
+        offset += size
+    metrics.update(
+        {
+            "equivalence_candidates": float(row_losses.numel()),
+            "equivalence_groups": float(len(response_group_sizes)),
+            "mean_equivalence_size": float(row_losses.numel())
+            / len(response_group_sizes),
+        }
+    )
+    return torch.stack(group_losses).mean(), metrics
 
 
 class ProductReasoningModel(nn.Module):
@@ -589,7 +702,9 @@ class ProductReasoningModel(nn.Module):
                 )
 
         self.workspace_config: IntegratedWorkspaceConfig | None = None
-        self.workspace: IntegratedReasoningWorkspace | DenseReasoningWorkspace | None = None
+        self.workspace: (
+            IntegratedReasoningWorkspace | DenseReasoningWorkspace | None
+        ) = None
         self.workspace_injection = (
             "prompt_residual" if arm.endswith("_residual") else "soft_prefix"
         )
@@ -627,11 +742,17 @@ class ProductReasoningModel(nn.Module):
         return self.workspace_config.workspace_slots
 
     def trainable_parameter_count(self) -> int:
-        return sum(parameter.numel() for parameter in self.parameters() if parameter.requires_grad)
+        return sum(
+            parameter.numel()
+            for parameter in self.parameters()
+            if parameter.requires_grad
+        )
 
     def trainable_parameter_name_sha256(self) -> str:
         names = sorted(
-            name for name, parameter in self.named_parameters() if parameter.requires_grad
+            name
+            for name, parameter in self.named_parameters()
+            if parameter.requires_grad
         )
         return hashlib.sha256("\n".join(names).encode()).hexdigest()
 
@@ -644,6 +765,7 @@ class ProductReasoningModel(nn.Module):
         draft_indicator_rows: list[list[int]] | None = None,
         response_action_token_counts: list[int] | None = None,
         loss_mode: str = "standard",
+        response_group_sizes: list[int] | None = None,
     ) -> tuple[torch.Tensor, dict[str, float]]:
         embedding = self.text_model.embed_tokens
         prefix = None
@@ -734,9 +856,15 @@ class ProductReasoningModel(nn.Module):
             "payload_loss": 0.0,
             "action_tokens": 0.0,
             "payload_tokens": 0.0,
+            "equivalence_candidates": 0.0,
+            "equivalence_groups": 0.0,
+            "mean_equivalence_size": 0.0,
         }
         if loss_mode == "standard":
-            if response_action_token_counts is not None:
+            if (
+                response_action_token_counts is not None
+                or response_group_sizes is not None
+            ):
                 raise ProductReasoningTrainError(
                     "standard loss received KCR1 action boundaries"
                 )
@@ -746,20 +874,34 @@ class ProductReasoningModel(nn.Module):
                 ignore_index=-100,
             )
         elif loss_mode == "kcr1_action_payload":
-            if response_action_token_counts is None:
+            if response_action_token_counts is None or response_group_sizes is not None:
                 raise ProductReasoningTrainError(
                     "KCR1 loss requires action-token boundaries"
                 )
             language_loss, kcr1_metrics = kcr1_action_payload_loss(
                 logits, labels, response_action_token_counts
             )
+            kcr1_metrics.update(
+                {
+                    "equivalence_candidates": 0.0,
+                    "equivalence_groups": 0.0,
+                    "mean_equivalence_size": 0.0,
+                }
+            )
+        elif loss_mode == "vte1_equivalence":
+            if response_action_token_counts is None or response_group_sizes is None:
+                raise ProductReasoningTrainError(
+                    "VTE1 loss requires action boundaries and candidate groups"
+                )
+            language_loss, kcr1_metrics = vte1_equivalence_loss(
+                logits,
+                labels,
+                response_action_token_counts,
+                response_group_sizes,
+            )
         else:
             raise ProductReasoningTrainError("training loss mode differs")
-        loss = (
-            language_loss
-            + 0.01 * halting_loss
-            + SYNDROME_WEIGHT * syndrome_loss
-        )
+        loss = language_loss + 0.01 * halting_loss + SYNDROME_WEIGHT * syndrome_loss
         return loss, {
             "language_loss": float(language_loss.detach()),
             "halting_loss": float(halting_loss.detach()),
@@ -798,19 +940,27 @@ def error_syndrome_residual_loss(
     for prompt, response, indicator in zip(
         prompt_rows, response_rows, draft_indicator_rows, strict=True
     ):
-        if len(prompt) != len(indicator) or any(value not in (0, 1) for value in indicator):
+        if len(prompt) != len(indicator) or any(
+            value not in (0, 1) for value in indicator
+        ):
             raise ProductReasoningTrainError("syndrome draft geometry differs")
-        draft_ids = [token for token, selected in zip(prompt, indicator, strict=True) if selected]
+        draft_ids = [
+            token for token, selected in zip(prompt, indicator, strict=True) if selected
+        ]
         response_ids = response[:-1]
         if not draft_ids or not response_ids:
             raise ProductReasoningTrainError("syndrome target is empty")
         with torch.no_grad():
-            draft_mean = embedding(
-                torch.tensor(draft_ids, device=device, dtype=torch.long)
-            ).float().mean(dim=0)
-            response_mean = embedding(
-                torch.tensor(response_ids, device=device, dtype=torch.long)
-            ).float().mean(dim=0)
+            draft_mean = (
+                embedding(torch.tensor(draft_ids, device=device, dtype=torch.long))
+                .float()
+                .mean(dim=0)
+            )
+            response_mean = (
+                embedding(torch.tensor(response_ids, device=device, dtype=torch.long))
+                .float()
+                .mean(dim=0)
+            )
             targets.append(response_mean - draft_mean)
     target = torch.stack(targets)
     prediction = workspace_states.float().mean(dim=1)
@@ -843,9 +993,7 @@ def _tokenize_rows_with_attention(
         if mask_internal_draft:
             from ttr1_revision import tokenize_with_draft_mask
 
-            prompt, prompt_attention, _ = tokenize_with_draft_mask(
-                tokenizer, rendered
-            )
+            prompt, prompt_attention, _ = tokenize_with_draft_mask(tokenizer, rendered)
         else:
             prompt = tokenizer.encode(rendered, add_special_tokens=False)
             prompt_attention = [1] * len(prompt)
@@ -943,8 +1091,14 @@ def _tokenize_kcr1_rows(
             )
             prompt = [int(value) for value in encoded.get("input_ids", ())]
             offsets = encoded.get("offset_mapping")
-            if not prompt or not isinstance(offsets, list) or len(offsets) != len(prompt):
-                raise ProductReasoningTrainError("KCR1 tokenizer offset geometry differs")
+            if (
+                not prompt
+                or not isinstance(offsets, list)
+                or len(offsets) != len(prompt)
+            ):
+                raise ProductReasoningTrainError(
+                    "KCR1 tokenizer offset geometry differs"
+                )
             attention = [
                 0 if int(right) > draft_start and int(left) < draft_end else 1
                 for left, right in offsets
@@ -975,6 +1129,56 @@ def _tokenize_kcr1_rows(
         action_token_counts,
         attention_rows if mask_draft else None,
     )
+
+
+def _tokenize_vte1_rows(
+    tokenizer: Any,
+    rows: list[dict[str, Any]],
+    max_sequence_length: int,
+    workspace_slots: int,
+    *,
+    mask_draft: bool = False,
+) -> tuple[
+    list[list[int]],
+    list[list[int]],
+    list[int],
+    list[list[int]] | None,
+    list[int],
+]:
+    """Flatten VTE candidates only after preserving source-local group sizes."""
+
+    flattened: list[dict[str, str]] = []
+    group_sizes: list[int] = []
+    for row in rows:
+        question = row.get("question")
+        responses = row.get("responses")
+        if (
+            not isinstance(question, str)
+            or not isinstance(responses, list)
+            or not responses
+        ):
+            raise ProductReasoningTrainError("VTE1 tokenization group differs")
+        group_sizes.append(len(responses))
+        for response in responses:
+            if not isinstance(response, str):
+                raise ProductReasoningTrainError("VTE1 response differs")
+            flattened.append(
+                {
+                    "question": question,
+                    "response": response,
+                    "action": response.partition("\n")[0],
+                }
+            )
+    prompt_rows, response_rows, action_counts, attention_rows = _tokenize_kcr1_rows(
+        tokenizer,
+        flattened,
+        max_sequence_length,
+        workspace_slots,
+        mask_draft=mask_draft,
+    )
+    if sum(group_sizes) != len(response_rows):
+        raise ProductReasoningTrainError("VTE1 flattened group cardinality differs")
+    return prompt_rows, response_rows, action_counts, attention_rows, group_sizes
 
 
 def _tokenize_rows_with_syndrome(
@@ -1096,7 +1300,9 @@ def load_trainable_checkpoint(
     return int(payload["update"]), metadata
 
 
-def validate_warm_start_metadata(metadata: dict[str, Any], args: argparse.Namespace) -> None:
+def validate_warm_start_metadata(
+    metadata: dict[str, Any], args: argparse.Namespace
+) -> None:
     """Require the source checkpoint to describe the model being constructed."""
 
     # Checkpoints written before these fields were introduced used these exact
@@ -1180,7 +1386,9 @@ def product_generation_embeddings(
     )
 
 
-def _batches(rows: list[dict[str, str]], batch_size: int) -> Iterable[list[dict[str, str]]]:
+def _batches(
+    rows: list[dict[str, Any]], batch_size: int
+) -> Iterable[list[dict[str, Any]]]:
     for offset in range(0, len(rows), batch_size):
         batch = rows[offset : offset + batch_size]
         if len(batch) == batch_size:
@@ -1249,6 +1457,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         rows, data_hash = kcr1_rows_with_sha256(
             args.data, args.max_rows, args.data_seed
         )
+    elif args.loss_mode == "vte1_equivalence":
+        rows, data_hash = vte1_rows_with_sha256(
+            args.data, args.max_rows, args.data_seed
+        )
     else:
         rows, data_hash = reservoir_rows_with_sha256(
             args.data, args.max_rows, args.data_seed
@@ -1277,6 +1489,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "unfreeze_layers": model.unfreeze_layers,
         "mask_internal_draft": args.mask_internal_draft,
         "loss_mode": args.loss_mode,
+        "vte1_temperature": 0.1 if args.loss_mode == "vte1_equivalence" else None,
         "syndrome_weight": SYNDROME_WEIGHT if args.arm == "syndrome" else 0.0,
         "architecture": (
             "shohin-error-syndrome-revision-v1"
@@ -1332,6 +1545,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         workspace_slots = model.sequence_workspace_slots()
         draft_indicator_rows = None
         response_action_token_counts = None
+        response_group_sizes = None
         if args.arm == "syndrome":
             prompt_rows, response_rows, draft_indicator_rows = (
                 _tokenize_rows_with_syndrome(
@@ -1348,14 +1562,26 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 response_rows,
                 response_action_token_counts,
                 prompt_attention_rows,
-            ) = (
-                _tokenize_kcr1_rows(
-                    tokenizer,
-                    raw_batch,
-                    args.max_sequence_length,
-                    workspace_slots,
-                    mask_draft=args.mask_internal_draft,
-                )
+            ) = _tokenize_kcr1_rows(
+                tokenizer,
+                raw_batch,
+                args.max_sequence_length,
+                workspace_slots,
+                mask_draft=args.mask_internal_draft,
+            )
+        elif args.loss_mode == "vte1_equivalence":
+            (
+                prompt_rows,
+                response_rows,
+                response_action_token_counts,
+                prompt_attention_rows,
+                response_group_sizes,
+            ) = _tokenize_vte1_rows(
+                tokenizer,
+                raw_batch,
+                args.max_sequence_length,
+                workspace_slots,
+                mask_draft=args.mask_internal_draft,
             )
         elif args.mask_internal_draft:
             prompt_rows, response_rows, prompt_attention_rows = (
@@ -1374,13 +1600,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             prompt_attention_rows = None
         with torch.autocast("cuda", dtype=torch.bfloat16):
             loss, metrics = model.forward_batch(
-                prompt_rows,
-                response_rows,
-                tokenizer.pad_token_id,
-                prompt_attention_rows,
-                draft_indicator_rows,
-                response_action_token_counts,
-                args.loss_mode,
+                prompt_rows=prompt_rows,
+                response_rows=response_rows,
+                pad_token_id=tokenizer.pad_token_id,
+                prompt_attention_rows=prompt_attention_rows,
+                draft_indicator_rows=draft_indicator_rows,
+                response_action_token_counts=response_action_token_counts,
+                loss_mode=args.loss_mode,
+                response_group_sizes=response_group_sizes,
             )
             scaled_loss = loss / args.gradient_accumulation
         scaled_loss.backward()
@@ -1409,6 +1636,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "payload_loss": metrics["payload_loss"],
                 "action_tokens": metrics["action_tokens"],
                 "payload_tokens": metrics["payload_tokens"],
+                "equivalence_candidates": metrics["equivalence_candidates"],
+                "equivalence_groups": metrics["equivalence_groups"],
+                "mean_equivalence_size": metrics["mean_equivalence_size"],
                 "final_stop_probability": metrics["final_stop_probability"],
                 "mean_step_delta": metrics["mean_step_delta"],
                 "residual_gate": metrics["residual_gate"],
@@ -1497,7 +1727,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--mask-internal-draft", action="store_true")
     parser.add_argument(
         "--loss-mode",
-        choices=("standard", "kcr1_action_payload"),
+        choices=("standard", "kcr1_action_payload", "vte1_equivalence"),
         default="standard",
     )
     parser.add_argument("--seed", type=int, default=31)
@@ -1531,8 +1761,11 @@ def parse_args() -> argparse.Namespace:
     )
     if args.max_sequence_length <= reserved_slots + 16:
         parser.error("maximum sequence length leaves no prompt/target budget")
-    if args.loss_mode == "kcr1_action_payload" and args.arm != "baseline":
-        parser.error("KCR1 loss requires the baseline owner")
+    if (
+        args.loss_mode in {"kcr1_action_payload", "vte1_equivalence"}
+        and args.arm != "baseline"
+    ):
+        parser.error("transaction loss requires the baseline owner")
     return args
 
 
