@@ -14,7 +14,10 @@ source "${RUNTIME:?}/train/jobs/pcf1_common.sh"
 pcf1_require PYTHON
 pcf1_require SOURCE_BANK
 pcf1_require OUTPUT_ROOT
-pcf1_require_safe_input "$SOURCE_BANK"
+pcf1_require_file "$SOURCE_BANK"
+[[ "$(pcf1_sha256 "$SOURCE_BANK")" == \
+  0b6d068b4d71f407cb234579b9278dc640df09139ea906dd0f52a6ab71e05398 ]] || \
+  pcf1_die "PCF3 frozen MBPP source differs"
 pcf1_require_fresh "$OUTPUT_ROOT"
 pcf1_initialize_scratch
 freeze_reference_canary() {

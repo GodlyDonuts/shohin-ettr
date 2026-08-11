@@ -35,6 +35,14 @@ the unchanged restrictive policy SHA-256 `f27124db...f1e`. A full nonsealed
 reference canary and fresh sandbox receipt must pass before its sole graph.
 See `docs/research/SHOHIN_PCF3_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
+PCF3 closed before admission: CPU canary `751693` rejected the historical
+hash-pinned source path lexically before opening it. Formal result is `null`;
+see `SHOHIN_PCF3_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`. **PCF4 is
+prospectively frozen** with one change: the canary receives the same exact
+full-hash source-path exception already used by preparation. All science and
+generated-candidate security remain unchanged. See
+`SHOHIN_PCF4_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+
 The sole authorized publication experiment was **PCF1**, one prospective,
 source-disjoint confirmation of the surviving dense architecture on pinned
 `mistralai/Ministral-3-8B-Reasoning-2512@81eaece...d894`. The qualified

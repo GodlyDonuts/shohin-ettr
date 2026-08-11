@@ -27,6 +27,11 @@
 > retain policy SHA-256 `f27124db...f1e`. Require the full nonsealed reference
 > canary and fresh sandbox receipt before the one graph. Follow only
 > `docs/research/SHOHIN_PCF3_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+> PCF3 canary `751693` then failed before source open because the historical
+> hash-pinned path triggered the lexical firewall; preserve its terminal
+> receipt. PCF4 is frozen with only the already-established exact SHA-256
+> source-path exception for that CPU canary. Follow
+> `docs/research/SHOHIN_PCF4_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
 
 > **PCF1 TERMINAL INFRASTRUCTURE FAILURE; NO REPLAY, RETRY, OR SUCCESSOR —

@@ -77,3 +77,13 @@ def test_reference_canary_skips_holdout_and_emits_no_content(
     rendered = (output / "report.json").read_text(encoding="utf-8")
     assert "value =" not in rendered
     assert "test_list" not in rendered
+
+
+def test_reference_job_uses_only_the_exact_historical_hash_exception() -> None:
+    source = (Path(__file__).parent / "jobs/pcf3_reference_canary.sbatch").read_text(
+        encoding="utf-8"
+    )
+    assert "pcf1_require_safe_input" not in source
+    assert 'pcf1_require_file "$SOURCE_BANK"' in source
+    assert "0b6d068b4d71f407cb234579b9278dc640df09139ea906dd0f52a6ab71e05398" in source
+    assert 'pcf1_sha256 "$SOURCE_BANK"' in source
