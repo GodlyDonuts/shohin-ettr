@@ -2,6 +2,14 @@
 
 Status: prospectively frozen on 2026-08-11 before PCF8 admission or compute.
 
+Admission update: the required no-model H100 scratch qualification completed
+as job `751818` on `evc23` in four seconds. It reported 183,262,756,864 bytes
+and 357,942,594 inodes available, verified the H100 identity and the existing
+write/rename/fsync boundary, and completely deleted a nested read-only mock
+model tree. The exact scratch path is absent. Model, data, and assessor access
+were all false. Preserve `SHOHIN_PCF8_SCRATCH_QUALIFICATION_20260811.json`;
+its remote receipt SHA-256 is `2cb17ef5...cb17`.
+
 PCF1 through PCF7 remain closed with formal scientific result `null`. PCF7
 passed preparation and its complete no-score mechanics payload: the pinned
 model loaded, one ephemeral optimizer update completed, all 24 mechanics rows
