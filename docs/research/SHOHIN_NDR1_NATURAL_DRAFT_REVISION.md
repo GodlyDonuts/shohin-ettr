@@ -115,3 +115,20 @@ and holdout remains unopened. A successor must make draft-dependent state or
 execution causally necessary rather than repeat source-plus-draft full-answer
 regeneration. Machine-readable evidence:
 `docs/research/SHOHIN_NDR1_RESULT.json`.
+
+## Read-Only State Attribution
+
+An identity-exact post-closure attribution joined the immutable development
+data and both candidate files without model execution. Training contained only
+`1,405/11,220 = 12.52%` token-exhausted drafts, whereas development contained
+`910/1,289 = 70.60%`. On the 871 wrong exhausted drafts, aligned wins 11
+pairwise cases and shuffled wins 44: a `-33` delta that explains 89.19% of the
+total `-37` deficit. Aligned also generates 823,764 tokens versus shuffled
+747,960. Attribution SHA-256 is
+`5a7c5c6fc1e17c470e64a926d1b6df5c0c22840f45d94eb601424e211616e6e4`;
+result: `docs/research/SHOHIN_NDR1_STATE_FAILURE_ATTRIBUTION_RESULT.json`.
+
+This identifies a termination-state/interface mismatch but does not authorize
+an exhaustion-reweighted NDR1 retry. KCR1 is a structurally different
+successor in which model-owned cutoff state selects an executed KEEP,
+CONTINUE, or RESTART branch.

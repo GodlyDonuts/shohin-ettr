@@ -1,0 +1,94 @@
+{
+  "aligned_minus_shuffled_answers": -37,
+  "arms": {
+    "aligned": {
+      "correct": 306,
+      "exact_draft_completion": 79,
+      "exhausted": 879,
+      "generated_tokens": 823764,
+      "prediction_equals_draft_prediction": 321
+    },
+    "shuffled": {
+      "correct": 343,
+      "exact_draft_completion": 71,
+      "exhausted": 768,
+      "generated_tokens": 747960,
+      "prediction_equals_draft_prediction": 330
+    }
+  },
+  "by_draft_state": {
+    "draft_correct_complete": {
+      "aligned_only": 20,
+      "both_correct": 115,
+      "neither_correct": 61,
+      "rows": 218,
+      "shuffled_only": 22
+    },
+    "draft_correct_exhausted": {
+      "aligned_only": 1,
+      "both_correct": 33,
+      "neither_correct": 1,
+      "rows": 39,
+      "shuffled_only": 4
+    },
+    "draft_wrong_complete": {
+      "aligned_only": 3,
+      "neither_correct": 156,
+      "rows": 161,
+      "shuffled_only": 2
+    },
+    "draft_wrong_exhausted": {
+      "aligned_only": 11,
+      "both_correct": 123,
+      "neither_correct": 693,
+      "rows": 871,
+      "shuffled_only": 44
+    }
+  },
+  "by_task": {
+    "bbh_logic": {
+      "aligned_only": 17,
+      "both_correct": 206,
+      "neither_correct": 383,
+      "shuffled_only": 31
+    },
+    "math500": {
+      "aligned_only": 18,
+      "both_correct": 47,
+      "neither_correct": 517,
+      "shuffled_only": 41
+    },
+    "mbpp": {
+      "both_correct": 18,
+      "neither_correct": 11
+    }
+  },
+  "evaluation_draft_state": {
+    "exhausted": 910,
+    "exhausted_fraction": 0.7059736229635376,
+    "rows": 1289
+  },
+  "fraction_of_total_deficit_from_wrong_exhausted": 0.8918918918918919,
+  "inputs": {
+    "aligned_candidates_sha256": "62bb64cf10800a347767c9241222dad3741f9c4a2b6631fda715103a998ddab7",
+    "development_data_sha256": "0c52dd35fa6013d88befe5ee627894fe74fe62072b358e19890a71455d844224",
+    "shuffled_candidates_sha256": "d54e2a6e0e1f984fc8ebcb3432e9ff6c819d0552363798496273afc6354914ae",
+    "training_data_report_sha256": "99260864960229f92bc4596404c6f100e04fc886341500c23899085097b857aa"
+  },
+  "interpretation": "The matched training corpus underrepresents exhausted drafts relative to development, and most of the aligned deficit occurs on wrong exhausted drafts. This is read-only attribution and does not reopen exact NDR1.",
+  "pair_outcomes": {
+    "aligned_only": 35,
+    "both_correct": 271,
+    "neither_correct": 911,
+    "shuffled_only": 72
+  },
+  "rows": 1289,
+  "schema": "shohin-ndr1-state-failure-attribution-v1",
+  "status": "complete",
+  "training_draft_state": {
+    "exhausted": 1405,
+    "exhausted_fraction": 0.12522281639928698,
+    "rows": 11220
+  },
+  "wrong_exhausted_aligned_minus_shuffled_answers": -33
+}

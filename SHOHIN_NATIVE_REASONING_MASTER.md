@@ -359,6 +359,17 @@ the matched control and by 34 against unchanged while increasing output
 length. Exact NDR1 is decisively closed, with no rescue and no holdout access.
 Result: `docs/research/SHOHIN_NDR1_RESULT.json`.
 
+Read-only state attribution identifies why that failure is concentrated but
+does not reopen it. Only `12.52%` of NDR1 training drafts are token-exhausted,
+versus `70.60%` of development drafts; wrong exhausted drafts account for 33
+of the 37-answer aligned deficit. KCR1 is therefore frozen as a structurally
+different successor: the first owner's explicit STOPPED/CUTOFF state and exact
+draft condition a model-emitted KEEP, CONTINUE, or RESTART transaction whose
+generic executor respectively copies, appends, or replaces. Full-answer CE is
+no longer the sole output path. CPU token/execution admission must pass before
+any fit, and capability must reach `603/1,289` plus causal-control margins.
+Contract: `docs/research/SHOHIN_KCR1_KEEP_CONTINUE_RESTART_TRANSDUCER.md`.
+
 ### Current blocker: dense-to-MoE transfer
 
 The first sparse host is pinned `OLMoE-1B-7B-0125-Instruct`: 7B total,

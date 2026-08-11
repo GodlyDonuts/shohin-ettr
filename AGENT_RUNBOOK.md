@@ -1,5 +1,22 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **KCR1 STRUCTURALLY DISTINCT SUCCESSOR FROZEN; CPU ADMISSION NEXT —
+> 2026-08-10:** Read-only NDR1 state attribution binds all 1,289 immutable
+> identities and localizes 33/37 lost aligned answers to wrong exhausted
+> drafts. Training exhaustion is only `1405/11220 = 12.52%`, versus
+> `910/1289 = 70.60%` on development; aligned generates 823,764 tokens versus
+> shuffled 747,960. Attribution SHA-256 is `5a7c5c6f...6e6e4`. This does not
+> reopen NDR1. KCR1 instead makes the model emit one causally executed
+> `<KEEP>`, `<CONTINUE>`, or `<RESTART>` transaction using the first owner's
+> deterministic STOPPED/CUTOFF state. KEEP copies exactly, CONTINUE appends,
+> and RESTART replaces; malformed transactions fail closed. The prospective
+> contract requires a three-state source-local CPU corpus, 100% execution
+> round-trip, zero 4,096-token truncation, a source-disjoint transaction canary,
+> and then `>=603/1289` capability plus margins over constant-RESTART and
+> draft-hidden controls. Eleven focused NDR1/KCR1 tests and Ruff pass locally.
+> No GPU fit is authorized before real-tokenizer CPU admission. Contract:
+> `docs/research/SHOHIN_KCR1_KEEP_CONTINUE_RESTART_TRANSDUCER.md`.
+
 > **NDR1 CLOSED: ALIGNED NATURAL DRAFTS ARE ACTIVELY HARMFUL — 2026-08-10:**
 > The corrected evaluation-disjoint source contains 11,220 unique normalized
 > questions and 4,000,845 charged target tokens, with zero exact

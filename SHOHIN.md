@@ -142,6 +142,13 @@ remains sealed. This result reinforces the architectural requirement that a
 future reviser must make draft-dependent state or execution causally necessary
 rather than simply append a draft to source-to-solution training.
 
+The active bounded successor is KCR1. It exposes only the first owner's
+deterministic STOPPED/CUTOFF state and requires the later owner to emit one
+executed KEEP, CONTINUE, or RESTART transaction. This is not an NDR data or
+duration retry: the selected action now changes whether the final trajectory
+is copied, appended, or replaced. Its real-tokenizer CPU admission is required
+before any GPU training.
+
 Historical ETTR graph-reactor and synthetic compiled-state experiments remain
 valuable research history, but they are not the current deployable Shohin
 architecture. The complete historical ledger is
