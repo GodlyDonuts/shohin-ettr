@@ -30,6 +30,11 @@ sync "$probe"
 mv "$probe" "$renamed"
 sync "$scratch"
 rm -f "$renamed"
+immutable=$scratch/pcf8-read-only-model/nested
+mkdir -p "$immutable"
+printf weights > "$immutable/model.safetensors"
+chmod 400 "$immutable/model.safetensors"
+chmod 500 "$immutable" "$scratch/pcf8-read-only-model"
 
 gpu_name=none
 if [[ "$ROLE" == h100 ]]; then
@@ -73,6 +78,7 @@ payload = {
     "scratch_minimum_bytes": 128 * 1024 * 1024 * 1024,
     "scratch_minimum_inodes": 150000,
     "write_rename_fsync_delete_passed": True,
+    "read_only_tree_cleanup_passed": True,
     "cleanup_verified": True,
     "gpu_name": gpu_name,
 }

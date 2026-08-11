@@ -232,6 +232,10 @@ first=$SLURM_TMPDIR
 pcf1_initialize_scratch_to "$3" 1 1 "$4"
 test "$SLURM_TMPDIR" = "$first"
 printf payload > "$SLURM_TMPDIR/payload"
+mkdir -p "$SLURM_TMPDIR/immutable-model/nested"
+printf weights > "$SLURM_TMPDIR/immutable-model/nested/model.safetensors"
+chmod 400 "$SLURM_TMPDIR/immutable-model/nested/model.safetensors"
+chmod 500 "$SLURM_TMPDIR/immutable-model/nested" "$SLURM_TMPDIR/immutable-model"
 pcf1_cleanup_scratch
 test ! -e "$first"
 test ! -L "$first"
@@ -310,6 +314,8 @@ def test_scratch_canary_is_non_scientific_and_cleans_before_receipt() -> None:
     assert '"data_opened": False' in source
     assert '"assessor_opened": False' in source
     assert "pcf1_cleanup_scratch" in source
+    assert 'chmod 400 "$immutable/model.safetensors"' in source
+    assert '"read_only_tree_cleanup_passed": True' in source
     assert source.index("pcf1_cleanup_scratch") < source.index(
         '"cleanup_verified": True'
     )

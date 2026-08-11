@@ -70,6 +70,17 @@
 > H100 on `normal`, Slurm export metadata removed, all actual GPU variables
 > scanned, and no model or score opened. Bind the graph to
 > `docs/research/SHOHIN_PCF7_GPU_ENVIRONMENT_QUALIFICATION_20260811.json`.
+> PCF7 then closed after its no-score mechanics report passed: model load, one
+> ephemeral update, and 24/24 mechanics rows completed, but EXIT cleanup could
+> not unlink the read-only staged model. B1/capability work never started and
+> assessor semantic reads remain zero. Exact job `751816` permanently removed
+> only `/tmp/pcf1-751785-scalar`. Preserve
+> `docs/research/SHOHIN_PCF7_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
+> PCF8 is frozen with only bounded owner-permission restoration inside the
+> validated private scratch root. The tokenizer warning remains disclosed and
+> tokenizer semantics are unchanged. Require one no-model H100 read-only-tree
+> cleanup canary, then follow only
+> `docs/research/SHOHIN_PCF8_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
 
 > **PCF1 TERMINAL INFRASTRUCTURE FAILURE; NO REPLAY, RETRY, OR SUCCESSOR —

@@ -92,6 +92,18 @@ and the allocation was exactly one `NVIDIA H100 PCIe` on `normal`. It opened no
 model and emitted no score. Bind final admission to
 `SHOHIN_PCF7_GPU_ENVIRONMENT_QUALIFICATION_20260811.json`.
 
+PCF7 subsequently closed after successful no-score mechanics. Preparation
+`751784` passed; H100 job `751785` loaded the pinned model, completed its one
+ephemeral update, and passed all 24 mechanics rows, then failed only while
+deleting a read-only staged model tree. No B1/scientific training, candidates,
+or score ran; the assessor has zero semantic reads and formal result is `null`.
+Exact cleanup job `751816` permanently removed the node-local tree. Preserve
+`SHOHIN_PCF7_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`. **PCF8 is
+prospectively frozen** with only bounded owner-permission restoration inside
+the validated private scratch root. The tokenizer warning is disclosed but
+frozen semantics are unchanged. Follow
+`SHOHIN_PCF8_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+
 The sole authorized publication experiment was **PCF1**, one prospective,
 source-disjoint confirmation of the surviving dense architecture on pinned
 `mistralai/Ministral-3-8B-Reasoning-2512@81eaece...d894`. The qualified

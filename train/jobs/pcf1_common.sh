@@ -583,6 +583,20 @@ if (
     or status.st_dev != parent_status.st_dev
 ):
     raise SystemExit("PCF1 scratch cleanup boundary differs")
+# Model staging deliberately preserves immutable source modes. Restore only
+# owner write/search permission on directories inside the already-validated
+# private scratch root so rmtree can unlink their contents. Never follow links.
+for directory, subdirectories, _files in os.walk(path, topdown=True, followlinks=False):
+    current = Path(directory)
+    current_status = current.lstat()
+    if (
+        not stat.S_ISDIR(current_status.st_mode)
+        or stat.S_ISLNK(current_status.st_mode)
+        or current_status.st_uid != os.getuid()
+        or current_status.st_dev != status.st_dev
+    ):
+        raise SystemExit("PCF1 scratch cleanup member differs")
+    current.chmod(stat.S_IMODE(current_status.st_mode) | stat.S_IWUSR | stat.S_IXUSR)
 shutil.rmtree(path)
 if path.exists() or path.is_symlink():
     raise SystemExit("PCF1 scratch cleanup failed")
