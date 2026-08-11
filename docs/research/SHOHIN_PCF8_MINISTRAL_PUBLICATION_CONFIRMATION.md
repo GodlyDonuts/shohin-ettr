@@ -1,6 +1,14 @@
 # PCF8: Ministral Publication Confirmation Successor
 
-Status: prospectively frozen on 2026-08-11 before PCF8 admission or compute.
+Status: closed terminal-null on 2026-08-11.
+
+Terminal update: preparation, no-score mechanics, and B1 training completed.
+Draft task `751823_3` then failed on `evc33` before generator entry because
+`nvidia-smi` reported no devices despite one allocated H100 GRES. No draft
+file or partial was published. All downstream jobs were canceled, the
+confirmation board was not semantically read, and no score or scientific
+PASS/FAIL was emitted. Preserve
+`SHOHIN_PCF8_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
 
 Admission update: the required no-model H100 scratch qualification completed
 as job `751818` on `evc23` in four seconds. It reported 183,262,756,864 bytes

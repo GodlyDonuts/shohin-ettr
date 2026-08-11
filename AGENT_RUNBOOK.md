@@ -1,5 +1,18 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **PCF9 PROSPECTIVELY FROZEN — 2026-08-11:** PCF8 preparation, no-score
+> mechanics, and B1 completed. Draft task `751823_3` then failed before
+> generator entry on `evc33`: Slurm allocated an H100 GRES but `nvidia-smi`
+> reported no devices. Zero draft files exist; revision, confirmation,
+> assessor semantic-read, score, and final-gate stages did not run. PCF8 is
+> terminal-null; preserve
+> `docs/research/SHOHIN_PCF8_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
+> PCF9 changes only the scheduler exclusion set by adding `evc33`, starts at a
+> fresh root, replays every stage, and reuses no PCF8 checkpoint or partial.
+> All scientific bytes, settings, custody, thresholds, and the stop rule are
+> unchanged. Follow only
+> `docs/research/SHOHIN_PCF9_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+
 > **PCF2 PROSPECTIVELY FROZEN — 2026-08-11:** The user explicitly authorized
 > one separately named successor after PCF1's pre-science CPU-only terminal
 > failure was preserved. PCF2 changes only allocation-local scratch handling:

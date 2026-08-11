@@ -221,7 +221,9 @@ def test_all_jobs_pin_partition_and_exclusions() -> None:
     for job in jobs:
         source = job.read_text(encoding="utf-8")
         assert "#SBATCH --partition=normal" in source, job
-        assert "#SBATCH --exclude=evc26,evc29,evc31,evc32,evc38,evc46" in source, job
+        assert (
+            "#SBATCH --exclude=evc26,evc29,evc31,evc32,evc33,evc38,evc46" in source
+        ), job
 
 
 def test_runtime_allowlist_contains_the_complete_graph_and_security_modules() -> None:

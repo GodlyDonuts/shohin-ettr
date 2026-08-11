@@ -1,5 +1,25 @@
 # Shohin Native Reasoning Master Ledger
 
+## PCF9 current execution boundary — 2026-08-11
+
+PCF8 is terminal-null. Its preparation, no-score mechanics, and frozen B1
+training completed, then draft task `751823_3` failed on `evc33` before
+generator entry: Slurm allocated one H100 GRES but `nvidia-smi` reported
+`No devices were found`. Zero draft files or partials were published; all
+revision, confirmation, scoring, and final-gate stages remained unopened.
+The other draft tasks and every descendant were canceled, the queue is empty,
+and the 61-file remote evidence tree is nonwritable. Preserve
+`docs/research/SHOHIN_PCF8_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
+
+PCF9 is prospectively frozen with exactly one infrastructure change: add
+`evc33` to the scheduler exclusion set. It starts at a fresh root and replays
+the complete graph without reusing the PCF8 B1 checkpoint or partial state.
+The dense Ministral host revision, tokenizer behavior, sources, split,
+prompts, arms, seeds, training geometry, candidate policy, sandbox, custody,
+thresholds, and sole 1,289-row terminal gate remain unchanged. No automatic
+retry or successor is authorized. Follow
+`docs/research/SHOHIN_PCF9_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+
 ## Current Mission and Status — Read First — 2026-08-11
 
 The publication phase authorized exactly one experiment: **PCF1**, a

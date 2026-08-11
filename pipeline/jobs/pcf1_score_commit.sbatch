@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=pcf1-commit-score
 #SBATCH --partition=normal
-#SBATCH --exclude=evc26,evc29,evc31,evc32,evc38,evc46
+#SBATCH --exclude=evc26,evc29,evc31,evc32,evc33,evc38,evc46
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=2

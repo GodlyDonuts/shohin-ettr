@@ -4,7 +4,7 @@
 set -euo pipefail
 
 readonly PCF1_PARTITION=normal
-readonly PCF1_EXCLUDED_NODES=evc26,evc29,evc31,evc32,evc38,evc46
+readonly PCF1_EXCLUDED_NODES=evc26,evc29,evc31,evc32,evc33,evc38,evc46
 readonly PCF1_MODEL_ROOT=/lustre/fs1/home/sa305415/shohin/artifacts/external/ministral-3-8b-reasoning-2512-81eaece
 readonly PCF1_MODEL_MANIFEST_SHA256=46cc9203a18a414e08a53109662c3802b57c046896185ca9ab31875e8167cf1f
 readonly PCF1_MODEL_CONFIG_SHA256=5aae04beb9f2a9949eb1df870cf47ba292012a066bdcdcb115a9ac43425f8086

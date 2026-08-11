@@ -630,6 +630,13 @@ Shohin does not yet support these claims:
 
 ## Where to read next
 
+PCF8 is closed as a null infrastructure run. Its prepare, no-score mechanics,
+and B1 jobs completed, but draft task `751823_3` received an H100 allocation
+on `evc33` while `nvidia-smi` reported no devices; it failed before generation
+and zero draft files were published. PCF9 is prospectively frozen with the
+sole infrastructure change of excluding `evc33`; all scientific settings and
+the single publication gate remain unchanged.
+
 - `docs/research/SHOHIN_MOE_FRONTIER_CONSULTATION_BRIEF_20260809.md` —
   self-contained MoE problem statement and design request.
 - `docs/research/SHOHIN_TRANSFERABLE_TEMPORAL_REVISION_CONTRACT.md` — exact
