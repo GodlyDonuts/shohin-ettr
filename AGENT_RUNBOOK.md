@@ -1,5 +1,31 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **KCR1 ALIGNED FIT COMPLETE; SOURCE-DISJOINT TRANSACTION CANARY LIVE —
+> 2026-08-10:** Hash-bound job `750683` completed all 512 frozen updates in
+> `1,434.35s` (`24m28s`) at 293.49 charged target tokens/s. It consumed
+> 420,972 charged tokens, retained exactly 2,704,896 trainables, used the
+> KCR action/payload objective, peaked at 30.34 GB, and ended with finite loss
+> `0.05550` and gradient norm `2.421875`. Checkpoint/report SHA-256 values are
+> `07e08abe...2ebd` / `3352c5a6...3b5`. Dependency dispatcher `750688`
+> released four immutable source-disjoint development shards
+> `750695--750698`. Shard `750698` failed before model load because `evc29`
+> node-local `/tmp` was full; exact shard-3 replay `750701` excludes that node,
+> and replacement merge `750702` depends on the three original successful
+> shards plus that replay. Holdout is unopened and no score has been read.
+>
+> The corrected matched-control CPU build `750690` also passes: the
+> action-permuted arm preserves all 33,654 rows, branch counts, and exactly
+> 3,416,424 corpus target tokens; control report SHA-256 is `834faef5...44e`.
+> One-update action-permuted mechanics `750692` passes (report/checkpoint
+> `96039e5c...61d` / `c15e9175...761`). The first draft-hidden mechanics job
+> `750693` failed before any update because Qwen strips trailing user
+> whitespace before its assistant envelope. Commit `b7070c8` masks the exact
+> substantive draft bytes retained by native rendering and fails closed on
+> every other mismatch; replay `750700` then tokenized all 33,654 rows and
+> completed one finite update (report/checkpoint `9eec7de8...f74` /
+> `40f79dc0...154`). Full control fits remain gated on the aligned treatment
+> canary; no constant-RESTART budget or capability evaluation is open.
+
 > **KCR1 CPU ADMISSION PASSES; WEIGHTED-LOSS MECHANICS READY — 2026-08-10:**
 > CPU job `750637` completed in `00:01:24` and admits `11,218/11,220 =
 > 99.982%` evaluation-disjoint sources. The two rejected sources lack a safe
