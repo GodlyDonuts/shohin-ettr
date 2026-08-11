@@ -66,6 +66,10 @@
 > arbitrary `_` and every other actual variable remain fail-closed. Run one
 > fresh no-model H100 environment canary, then follow only
 > `docs/research/SHOHIN_PCF7_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+> PCF7 environment canary `751782` is PASS with zero restarts: one eligible
+> H100 on `normal`, Slurm export metadata removed, all actual GPU variables
+> scanned, and no model or score opened. Bind the graph to
+> `docs/research/SHOHIN_PCF7_GPU_ENVIRONMENT_QUALIFICATION_20260811.json`.
 
 
 > **PCF1 TERMINAL INFRASTRUCTURE FAILURE; NO REPLAY, RETRY, OR SUCCESSOR —

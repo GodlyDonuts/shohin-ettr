@@ -85,6 +85,13 @@ is prospectively frozen** with only an exact `_ == pinned Python` control-plane
 exception. All other actual variables and all scientific clauses are
 unchanged; follow `SHOHIN_PCF7_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
+PCF7's no-model H100 environment gate is now PASS. Job `751782` completed on
+`evc27` with zero restarts: duplicate Slurm export metadata was present before
+filtering and absent afterward, every actual GPU variable passed the firewall,
+and the allocation was exactly one `NVIDIA H100 PCIe` on `normal`. It opened no
+model and emitted no score. Bind final admission to
+`SHOHIN_PCF7_GPU_ENVIRONMENT_QUALIFICATION_20260811.json`.
+
 The sole authorized publication experiment was **PCF1**, one prospective,
 source-disjoint confirmation of the surviving dense architecture on pinned
 `mistralai/Ministral-3-8B-Reasoning-2512@81eaece...d894`. The qualified

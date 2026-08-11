@@ -1,0 +1,28 @@
+{
+  "schema": "shohin-pcf7-gpu-environment-qualification-v1",
+  "status": "pass",
+  "date": "2026-08-11",
+  "source_commit": "48d1337e2f0ad7d630c4fb67fed68bc784f44a89",
+  "runtime_manifest_sha256": "5744a9f06aab5388260f31d2639d4ada23d22411a12358aa90a3c55b7a55abdc",
+  "job": {
+    "job_id": 751782,
+    "state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed_seconds": 5,
+    "node": "evc27",
+    "partition": "normal",
+    "gpu_name": "NVIDIA H100 PCIe",
+    "restarts": 0
+  },
+  "report_sha256": "33ce130c1ebf149492fc334486aaa8f7c82083b63453b27283043c5885e3699a",
+  "slurm_export_env_present_before": true,
+  "slurm_export_env_sha256": "82441f6b8c158c7189bd0eda900b10fa4e101a7602571519696ed13270779bc1",
+  "slurm_export_env_present_after": false,
+  "actual_gpu_environment_scanned": true,
+  "model_opened": false,
+  "scientific_score_emitted": false,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "queue_empty_after": true,
+  "retry_count": 0
+}
