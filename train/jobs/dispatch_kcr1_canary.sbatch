@@ -13,7 +13,7 @@ set -euo pipefail
 
 for variable in RUNTIME RUNTIME_MANIFEST_SHA256 MODEL_ROOT MODEL_REVISION \
   MODEL_CONFIG_SHA256 MODEL_MANIFEST_SHA256 TRAIN_ROOT DATA_ROOT OUTPUT_ROOT \
-  RECEIPT; do
+  DATA_SHA256 DATA_REPORT_SHA256 RECEIPT; do
   test -n "${!variable:-}" || { echo "$variable is required" >&2; exit 2; }
 done
 SHARD_COUNT=${SHARD_COUNT:-4}
@@ -35,6 +35,8 @@ data_report=$DATA_ROOT/report.json
 for required_path in "$checkpoint" "$fit_report" "$data" "$data_report"; do
   test -f "$required_path"
 done
+test "$(sha256sum "$data" | cut -d' ' -f1)" = "$DATA_SHA256"
+test "$(sha256sum "$data_report" | cut -d' ' -f1)" = "$DATA_REPORT_SHA256"
 
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 "$PYTHON" - "$fit_report" "$data" "$data_report" <<'PY'

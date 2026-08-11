@@ -17,5 +17,6 @@ def test_kcr1_dispatcher_waits_for_fit_and_never_opens_holdout() -> None:
     assert 'r.get("loss_mode")!="kcr1_action_payload"' in script
     assert "hf_kcr1_evaluate.sbatch" in script
     assert "merge_kcr1_evaluation_shards.py" in script
+    assert "DATA_REPORT_SHA256" in script
     assert '"holdout_opened":False' in script
     assert "HOLDOUT" not in script
