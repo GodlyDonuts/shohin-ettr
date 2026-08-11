@@ -16,6 +16,12 @@
 > `751650` completed with zero restarts, and exact-node checks `751652--751653`
 > proved their private paths absent. Bind the successor to
 > `docs/research/SHOHIN_PCF2_SCRATCH_QUALIFICATION_20260811.json`.
+> PCF2 then stopped before science: CPU prepare job `751656` rejected a
+> hash-pinned nonsealed MBPP reference under the untrusted generated-candidate
+> capability policy. No source publication, H100/model/training/generation,
+> or assessor open occurred; jobs `751657--751684` never started and were
+> cancelled. Its formal result is `null`; preserve
+> `docs/research/SHOHIN_PCF2_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
 
 
 > **PCF1 TERMINAL INFRASTRUCTURE FAILURE; NO REPLAY, RETRY, OR SUCCESSOR —

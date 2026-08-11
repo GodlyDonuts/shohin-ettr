@@ -19,6 +19,15 @@ Those canaries now pass: CPU `751649` on `evc21` and H100 `751650` on
 qualification is
 `docs/research/SHOHIN_PCF2_SCRATCH_QUALIFICATION_20260811.json`.
 
+PCF2 was submitted once as `pcf2_ministral_a439f05_r1`. Its CPU preparation
+job `751656` stopped after 160 seconds because an exact nonsealed MBPP
+reference contained constructs forbidden to untrusted generated candidates.
+This occurred before atomic source publication, any H100/model/training/
+generation work, or any assessor open. Jobs `751657--751684` never started
+and were cancelled; all record zero restarts. Formal PCF2 result is `null`.
+The exact terminal receipt is
+`docs/research/SHOHIN_PCF2_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
+
 The sole authorized publication experiment was **PCF1**, one prospective,
 source-disjoint confirmation of the surviving dense architecture on pinned
 `mistralai/Ministral-3-8B-Reasoning-2512@81eaece...d894`. The qualified
