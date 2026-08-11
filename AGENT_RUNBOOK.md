@@ -1,30 +1,30 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **NDR1 EVALUATION-DISJOINT SOURCE PASS; SIXTEEN H100 DRAFT SHARDS LIVE —
-> 2026-08-10:** Exact corrected rebuild `750233` completed in `27:49`, and
-> independent audit `750234` passed in three seconds before any model job
-> opened. The source contains 11,220 unique normalized questions and
-> 4,000,845 charged target tokens at the frozen 40/10/40/10
-> math/code/science/procedural mix, with zero source/draft/target truncation,
-> zero exact development/holdout overlap, zero protected split-unique
-> word-13-gram overlap, and zero normalized duplicates. Source SHA-256 is
-> `1d23d4adddca1c9df5161041aa24bc24f661ae52869290010995ffab450f8766`;
-> independent audit SHA-256 is
-> `8b515528312fe25be72cac2b3a4aa79601cf8f643469a80f4209815f8d0594a3`.
-> Dispatcher `750235` first released jobs `750293--750308`, but every shard
-> failed in three seconds before model load because Newton does not define
-> `SLURM_TMPDIR`; no draft or model output existed, and impossible dependents
-> were canceled. Commit `87c5c9d` supplies the same established isolated
-> `/tmp/$USER/$SLURM_JOB_ID` staging fallback without changing model, data,
-> prompts, decoding, seeds, or shard ownership. Exact replacement jobs
-> `750314--750329` are now concurrently running across the same eight healthy
-> nodes from immutable runtime `ndr1_87c5c9d_r1`, SHA256SUMS SHA-256
-> `1411510fab772a3e73c3f9d4f889f6b0d038d9aec6967b681259c5ee9381b2e8`;
-> representative jobs have passed model staging and CUDA visibility. Merge
-> `750330`, fit dispatcher `750331`, and development armer `750313` remain
-> fail-closed. The development interface submits four evaluation shards per
-> arm and contains no holdout path. All NDR1 model, decoding, and capability
-> gates remain unchanged.
+> **NDR1 CLOSED: ALIGNED NATURAL DRAFTS ARE ACTIVELY HARMFUL — 2026-08-10:**
+> The corrected evaluation-disjoint source contains 11,220 unique normalized
+> questions and 4,000,845 charged target tokens, with zero exact
+> development/holdout overlap, zero protected split-unique word-13-gram
+> overlap, zero normalized duplicates, and zero admitted truncation. Source
+> SHA-256 is `1d23d4add...f8766`; independent audit SHA-256 is
+> `8b515528...59f4a3`. Exact draft jobs `750314--750329` produced all 11,220
+> natural B1 drafts: 2,267,260 generated tokens, 1,405 768-token exhaustions,
+> and 14.3791 aggregate H100-hours. The merged aligned/shuffled curricula each
+> contain all 11,220 rows with exact target multisets, zero source/donor
+> identity matches, aligned SHA-256 `bf70e573...a720c`, shuffled SHA-256
+> `eb9b4ed5...b15eb`, and report SHA-256 `99260864...57aa`.
+>
+> Matched fits `750498/750499` each completed 512 updates, 1,479,584 charged
+> target tokens, and exactly 2,704,896 trainables from B1 update 256.
+> Development jobs `750510--750513` and `750515--750518` score aligned
+> `306/1289` versus shuffled `343/1289` and unchanged/base `340/1289`.
+> Aligned domains are math `65`, logic/science `223`, code `18`; shuffled is
+> `88/237/18`. Aligned repairs 46/767 both-wrong rows versus shuffled 68, and
+> exhausts 879 generations versus shuffled 768. Thus aligned loses 37 answers
+> to its matched control, loses 34 to unchanged, emits 75,804 more tokens, and
+> misses six of eight frozen gates. Comparator `750520` exited 3 as designed;
+> comparison SHA-256 is `ae15a15b...9361`. Exact NDR1 closes without source,
+> rank, layer, duration, seed, decoding, parser, or threshold rescue. Holdout
+> remains unopened. Result: `docs/research/SHOHIN_NDR1_RESULT.json`.
 
 > **NDR1 SOURCE CUSTODY DEFECT CAUGHT BEFORE MODEL OUTPUT — 2026-08-10:**
 > The previously prepared 4M-token source `e9965343...4389` did not actually

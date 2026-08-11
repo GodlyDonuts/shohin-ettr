@@ -144,8 +144,10 @@ unchanged second pass scores `191`. Aligned's `+42` over unchanged and semantic
 net `+29` prove useful generic revision SFT, but aligned loses 14 answers to
 both causal controls and code falls from five to four. The current weak OLMoE
 draft is not an information-bearing revision input. Holdout and larger-MoE
-transfer remain sealed. Dense NDR1 GPU work was canceled before allocation;
-its CPU source artifact completed but is no longer the critical path.
+transfer remain sealed. A later dense NDR1 replay on Qwen3.5-9B independently
+reached the same stronger boundary: aligned natural drafts scored `306/1,289`,
+versus shuffled drafts `343` and unchanged `340`, so draft alignment was
+harmful rather than merely unused. Its holdout also remained sealed.
 
 The subsequent bounded successor was MPR2, Bootstrap Draft-Owner Revision. It uses
 MPR1's successful source-only arm as a trained first-pass owner rather than
@@ -342,17 +344,20 @@ closed without variants and holdout remains sealed. A successor must train on
 actual model-owned errors with verified targets and a bounded output contract;
 it must not reuse appended counterfactual faults as a proxy for natural errors.
 
-The dense successor was NDR1, Natural Draft Revision. A fresh short verified source
-mix is admitted at 1,536 tokens, then immutable B1 produces one deterministic
-natural draft per source. Aligned revision sees the exact model-owned draft;
-the control sees another source's same-domain nearest-length draft. Both emit
-the same untouched verified solution, with no synthetic fault and no
-clean-copy presentation. Source build `747795` may finish for artifact
-preservation; H100 draft dispatcher `747796` and fit armer `747801` were
-canceled before allocation by the MoE mission redirect. Its dormant gate is
-the existing `603/+10/223/349/17` conjunction plus an explicit exhaustion
-guard (`<=400` and within 25 of shuffled). No dense capability run is active;
-holdout remains sealed.
+The dense successor was NDR1, Natural Draft Revision. It eventually ran one
+exact replay after a corrected source-overlap audit, using immutable
+Qwen3.5-9B+B1 to generate one deterministic natural draft for each of 11,220
+fresh verified sources. Aligned revision saw the exact model-owned draft; the
+control saw another source's same-domain nearest-length draft. Both emitted
+the same untouched verified solution, with no synthetic faults or clean-copy
+presentations. Matched 512-update fits trained 2,704,896 parameters on
+1,479,584 charged target tokens each. Development scored aligned `306/1,289`,
+shuffled `343/1,289`, and unchanged `340/1,289`; aligned domains were
+`65/223/18` math/logic-code and aligned exhausted 879 generations, versus 768
+for shuffled. The exact draft therefore reduced accuracy by 37 answers against
+the matched control and by 34 against unchanged while increasing output
+length. Exact NDR1 is decisively closed, with no rescue and no holdout access.
+Result: `docs/research/SHOHIN_NDR1_RESULT.json`.
 
 ### Current blocker: dense-to-MoE transfer
 

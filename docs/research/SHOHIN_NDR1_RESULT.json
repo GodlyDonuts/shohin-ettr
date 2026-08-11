@@ -1,0 +1,122 @@
+{
+  "schema": "shohin-ndr1-result-v1",
+  "status": "complete",
+  "date": "2026-08-10",
+  "split": "development",
+  "decision": "close_exact_ndr1_without_rescue",
+  "gate_pass": false,
+  "holdout_authorized": false,
+  "model": {
+    "name": "Qwen3.5-9B",
+    "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+    "warm_start_update": 256,
+    "warm_start_sha256": "854a7cc44fbc2b54418f4e5bd09b7efeed0da44fc9ce217b0bb6b1997b722971"
+  },
+  "source": {
+    "rows": 11220,
+    "charged_target_tokens": 4000845,
+    "sha256": "1d23d4adddca1c9df5161041aa24bc24f661ae52869290010995ffab450f8766",
+    "report_sha256": "c184224b3ff6d5377f218cf6b9229a17c969a9219f900620d90dd8585153f679",
+    "independent_audit_sha256": "8b515528312fe25be72cac2b3a4aa79601cf8f643469a80f4209815f8d0594a3",
+    "exact_development_overlap": 0,
+    "exact_holdout_overlap": 0,
+    "protected_split_unique_word_13gram_overlap": 0,
+    "normalized_duplicates": 0
+  },
+  "drafts": {
+    "rows": 11220,
+    "generated_tokens": 2267260,
+    "max_new_tokens": 768,
+    "exhausted_rows": 1405,
+    "exhausted_fraction": 0.12522281639928698,
+    "natural_drafts_only": true,
+    "synthetic_faults_used": false,
+    "clean_copy_presentations_used": false,
+    "aggregate_h100_hours": 14.3791,
+    "jobs": [750314, 750315, 750316, 750317, 750318, 750319, 750320, 750321, 750322, 750323, 750324, 750325, 750326, 750327, 750328, 750329]
+  },
+  "data": {
+    "rows_per_arm": 11220,
+    "target_multiset_exactly_matched": true,
+    "zero_source_donor_identity_matches": true,
+    "donor_character_delta_p95": 6,
+    "max_prompt_tokens": 3293,
+    "max_target_tokens": 1485,
+    "aligned_sha256": "bf70e57384ca050936e553b0f39535def1af5b92f89f5a5836f88da9dd6a720c",
+    "shuffled_sha256": "eb9b4ed5f315a198c3a8d58f8db8b4dc2b13041c600905a38a8938e7948b15eb",
+    "report_sha256": "99260864960229f92bc4596404c6f100e04fc886341500c23899085097b857aa"
+  },
+  "training": {
+    "updates_per_arm": 512,
+    "charged_target_tokens_per_arm": 1479584,
+    "trainable_parameters_per_arm": 2704896,
+    "aligned": {
+      "job": 750498,
+      "checkpoint_sha256": "2c2b5d920eb896f4a798cee23a7c6f02074886a43255213ec91acabbe27303be",
+      "report_sha256": "dec6888e9900718d93c0ea90e0fb5816604e5f26d9e2012d1424f9b7a1a20d36",
+      "charged_tokens_per_second": 858.8006895265072,
+      "elapsed_seconds": 1722.8491057869978,
+      "peak_gpu_memory_bytes": 35326064128,
+      "final_loss": 0.5803059339523315,
+      "final_gradient_norm": 1.03125
+    },
+    "shuffled": {
+      "job": 750499,
+      "checkpoint_sha256": "68ba5712801dd782ba1ce7500c974f58d0daf2fa7e983f610a841bc5747296cd",
+      "report_sha256": "35ce53f146b81a15afdbeb8ede04753f69375e66e0ba25a0f90472443e511d0b",
+      "charged_tokens_per_second": 846.2062789165883,
+      "elapsed_seconds": 1748.4909257519757,
+      "peak_gpu_memory_bytes": 35470431744,
+      "final_loss": 0.5706398487091064,
+      "final_gradient_norm": 1.2578125
+    }
+  },
+  "evaluation": {
+    "rows": 1289,
+    "max_new_tokens": 768,
+    "comparison_sha256": "ae15a15b5cf8761cf9c12c5188ea06b85437f429f0553a29d4b31016f0379361",
+    "aligned": {
+      "correct": 306,
+      "accuracy": 0.2373933281613654,
+      "base_correct": 340,
+      "expert_correct": 453,
+      "oracle_correct": 522,
+      "both_wrong_repaired": 46,
+      "max_token_exhausted": 879,
+      "generated_tokens": 823764,
+      "aggregate_gpu_seconds": 18971.598972549662,
+      "critical_path_seconds": 4841.640418427065,
+      "report_sha256": "86a0c144b8b4356f25e3ce87315d2a5330faac320476014ba19cd1805ea77dd2",
+      "domain_correct": {"math500": 65, "bbh_logic": 223, "mbpp": 18},
+      "jobs": [750510, 750511, 750512, 750513]
+    },
+    "shuffled": {
+      "correct": 343,
+      "accuracy": 0.2660977501939488,
+      "base_correct": 340,
+      "expert_correct": 453,
+      "oracle_correct": 522,
+      "both_wrong_repaired": 68,
+      "max_token_exhausted": 768,
+      "generated_tokens": 747960,
+      "aggregate_gpu_seconds": 18395.998231695732,
+      "critical_path_seconds": 4648.971501834923,
+      "report_sha256": "8be83c7908cae5d12784b10a1d13b39dc641deae2d9d74ac7769bd428e816ddc",
+      "domain_correct": {"math500": 88, "bbh_logic": 237, "mbpp": 18},
+      "jobs": [750515, 750516, 750517, 750518]
+    },
+    "aligned_minus_shuffled_answers": -37,
+    "aligned_minus_base_answers": -34
+  },
+  "gates": {
+    "aligned_at_least_603": false,
+    "aligned_beats_shuffled_by_10": false,
+    "math_at_least_223": false,
+    "logic_at_least_349": false,
+    "code_at_least_17": true,
+    "aligned_exhaustion_at_most_400": false,
+    "aligned_exhaustion_within_25_of_shuffled": false,
+    "complete_matched_receipts": true
+  },
+  "claim_boundary": "Aligned natural drafts reduced accuracy by 37 answers relative to the matched shuffled-draft arm and by 34 answers relative to the unchanged reference while increasing token exhaustion. Exact NDR1 is closed. No holdout, nearby retry, or capability claim is authorized."
+}

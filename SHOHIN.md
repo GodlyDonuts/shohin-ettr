@@ -130,6 +130,18 @@ selector therefore cannot provide a large bridge; the open capability path is
 broad model-owned temporal-revision training, not another microcode-interface
 retry.
 
+Broad natural-draft revision has now also received a clean negative test.
+NDR1 generated one Qwen3.5-9B+B1 draft for each of 11,220 fresh verified,
+evaluation-disjoint sources and trained matched aligned and same-domain
+nearest-length shuffled revision arms. On the frozen 1,289-row development
+board, aligned scored `306`, shuffled `343`, and unchanged `340`; aligned
+exhausted its 768-token budget on 879 rows versus 768 for shuffled. The exact
+model-owned draft therefore reduced capability and completion efficiency under
+ordinary full-trajectory CE. NDR1 closes without a nearby retry, and holdout
+remains sealed. This result reinforces the architectural requirement that a
+future reviser must make draft-dependent state or execution causally necessary
+rather than simply append a draft to source-to-solution training.
+
 Historical ETTR graph-reactor and synthetic compiled-state experiments remain
 valuable research history, but they are not the current deployable Shohin
 architecture. The complete historical ledger is

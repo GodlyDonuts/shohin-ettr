@@ -1,8 +1,6 @@
 # NDR1: Natural Draft Revision
 
-Status: mechanism and gates frozen before draft generation; source rebuild
-required after a pre-output overlap audit found that the first prepared mix did
-not enforce the stated evaluation boundary.
+Status: complete and closed negative on development. Holdout remained sealed.
 
 ## Pre-Output Custody Correction
 
@@ -80,3 +78,40 @@ all of:
 Any miss closes exact NDR1 without source-size, generation, update, rank,
 layer, seed, decoding, parser, or threshold rescue. Holdout remains sealed
 until a conjunctive development pass.
+
+## Result
+
+The corrected source passed independent custody before model work: 11,220
+unique normalized questions, 4,000,845 charged target tokens, zero exact
+development/holdout overlap, zero protected split-unique word-13-gram overlap,
+zero normalized duplicates, and zero admitted truncation. Sixteen H100 shards
+generated one natural B1 draft per source. The merged curricula contain 11,220
+rows per arm, exact target multisets, no source/donor identity matches, and
+same-domain nearest-length shuffled donors with character-length delta p95 of
+six.
+
+The matched aligned and shuffled fits each completed 512 updates, consumed
+1,479,584 charged target tokens, and trained exactly 2,704,896 parameters from
+the same B1 update-256 checkpoint. On the frozen 1,289-row development board:
+
+| Arm | Overall | Math | Logic/science | Code | 768-token exhaustions |
+|---|---:|---:|---:|---:|---:|
+| aligned natural draft | 306 | 65 | 223 | 18 | 879 |
+| shuffled draft | 343 | 88 | 237 | 18 | 768 |
+| unchanged reference | 340 | 98 | 226 | 16 | n/a |
+
+Aligned loses 37 answers to the matched shuffled control and 34 answers to the
+unchanged reference. It repairs only 46 of 767 cases where the base and expert
+references are both wrong, versus 68 for shuffled, while generating 75,804
+more tokens and exhausting 111 more rows. Only the code floor and receipt gate
+pass. The exact comparison SHA-256 is
+`ae15a15b5cf8761cf9c12c5188ea06b85437f429f0553a29d4b31016f0379361`.
+
+This is a decisive negative, not an ambiguous near miss. Under ordinary
+full-trajectory CE, the revision owner can learn source-to-solution behavior
+without extracting useful information from its aligned natural draft; in this
+run the aligned draft is actively harmful. Exact NDR1 closes without a retry,
+and holdout remains unopened. A successor must make draft-dependent state or
+execution causally necessary rather than repeat source-plus-draft full-answer
+regeneration. Machine-readable evidence:
+`docs/research/SHOHIN_NDR1_RESULT.json`.
