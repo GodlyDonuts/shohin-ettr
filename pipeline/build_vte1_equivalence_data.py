@@ -70,7 +70,13 @@ def source_verification_admitted(source: dict[str, Any]) -> bool:
     if group == "code":
         return verification in {"execution_verified", "execution_verified_source_tests"}
     if group == "procedural":
-        return verification == "reasoning_gym_answer_verified"
+        if verification == "reasoning_gym_answer_verified":
+            return True
+        return (
+            source.get("verification") is None
+            and source.get("source") == "reasoning_gym_trace"
+            and semantic_correct(source, str(source.get("response", "")))
+        )
     return False
 
 

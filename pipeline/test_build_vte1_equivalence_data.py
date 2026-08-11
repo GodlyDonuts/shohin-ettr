@@ -83,3 +83,18 @@ def test_unverified_source_fails_closed() -> None:
     source["verification"] = "unverified"
     with pytest.raises(VTE1DataError, match="verified target differs"):
         verified_equivalence_set(source, source["response"], source["response"])
+
+
+def test_legacy_reasoning_gym_requires_exact_source_and_semantic_match() -> None:
+    verified = "Reasoning. The answer is 42."
+    source = {
+        "training_group": "procedural",
+        "source": "reasoning_gym_trace",
+        "verification": None,
+        "answer": "42",
+        "response": verified,
+    }
+    assert verified_equivalence_set(source, verified, verified)[0] == "<KEEP>"
+    source["source"] = "unknown"
+    with pytest.raises(VTE1DataError, match="verified target differs"):
+        verified_equivalence_set(source, verified, verified)
