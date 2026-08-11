@@ -1,8 +1,39 @@
 # KCR1: Keep/Continue/Restart Causal Revision
 
-Status: prospective successor frozen after exact NDR1 closed and before KCR1
-model output. CPU data admission passed on 2026-08-10. NDR1 remains closed.
-Holdout remains sealed.
+Status: **closed negative at the source-disjoint transaction canary** on
+2026-08-10. CPU admission and the complete 512-update fit passed, but all five
+frozen treatment conditions failed. No trained controls or broad capability
+evaluation opened, NDR1 remains closed, and holdout remains sealed.
+
+## Closed result
+
+The aligned model scores `1,144/1,566 = 73.0524%` canonical action accuracy,
+`1,294/1,566 = 82.6309%` executed semantic accuracy, `681/1,566 = 43.4866%`
+exact execution, `673/692 = 97.2543%` KEEP byte preservation, and
+`170/522 = 32.5670%` three-state counterfactual consistency. Branch action
+accuracy is KEEP `673/692`, CONTINUE `444/522`, and RESTART only `27/352`.
+There are 14 malformed transactions and 21 decode-limit exhaustions. Thus
+action overall/per-branch, semantic execution, KEEP preservation, and
+counterfactual consistency all miss their frozen floors. Exact KCR1 closes
+without controls, broad scoring, holdout, or syntax/rank/layer/update/seed/
+decoding/parser/threshold rescue.
+
+The single allowed read-only attribution identifies label nonidentifiability,
+not a silent executor failure. On canonical RESTART rows the model emits
+CONTINUE 269 times, KEEP 52 times, RESTART 27 times, and malformed output four
+times. Despite the wrong canonical action, 210 of those rows are semantically
+correct. Across all rows, 244 wrong-action transactions still execute to a
+correct answer, while 94 correct-action transactions are semantically wrong.
+This does not rescue KCR1, but it motivates a structurally different
+set-valued successor in which every verifier-correct coherent transaction is
+a valid training target instead of forcing one arbitrary branch label.
+
+- canary result SHA-256:
+  `198bc6985f7108553190afed9b3e17ce34e2f7a3d2b1424ec65cdcda7a4b81c7`
+- attribution result SHA-256:
+  `39ded1e7a841e43d525d50acb0326fd5d7031c045044b343f3a4cd2c9dc78220`
+- local files: `SHOHIN_KCR1_CANARY_RESULT.json` and
+  `SHOHIN_KCR1_CANARY_ATTRIBUTION_RESULT.json`
 
 ## CPU admission result
 

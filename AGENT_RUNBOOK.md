@@ -1,5 +1,23 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **KCR1 CLOSED: CANONICAL RESTART LABELS CONFLICT WITH SEMANTIC REPAIR —
+> 2026-08-10:** Four immutable canary shards plus exact no-output
+> infrastructure replay `750701` and merge `750702` close the source-disjoint
+> gate. Aligned action is `1144/1566 = 73.0524%`, semantic execution
+> `1294/1566 = 82.6309%`, exact execution `681/1566 = 43.4866%`, KEEP byte
+> preservation `673/692 = 97.2543%`, and three-state consistency `170/522 =
+> 32.5670%`. Branch action is KEEP `673/692`, CONTINUE `444/522`, and RESTART
+> only `27/352`; all five frozen treatment conditions fail. No controls,
+> broad evaluation, or holdout opened. Read-only attribution `750722` shows
+> the key boundary: on expected RESTART rows the model instead emits CONTINUE
+> 269 times, and 210 wrong-canonical-action rows still execute to semantically
+> correct answers. Overall 244 wrong-action outputs are semantically correct,
+> versus 94 correct-action semantic failures. This is action-label
+> nonidentifiability, not an exact KCR1 rescue. Exact KCR1 closes without
+> nearby variants. Canary/attribution SHA-256 values are `198bc698...1c7` /
+> `39ded1e7...220`; next freeze one set-valued verified-transaction successor
+> rather than forcing a unique KEEP/CONTINUE/RESTART label.
+
 > **KCR1 ALIGNED FIT COMPLETE; SOURCE-DISJOINT TRANSACTION CANARY LIVE —
 > 2026-08-10:** Hash-bound job `750683` completed all 512 frozen updates in
 > `1,434.35s` (`24m28s`) at 293.49 charged target tokens/s. It consumed

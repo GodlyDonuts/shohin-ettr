@@ -1,0 +1,158 @@
+{
+  "action_confusion": {
+    "<CONTINUE>": {
+      "<CONTINUE>": 444,
+      "<KEEP>": 57,
+      "<RESTART>": 17,
+      "None": 4
+    },
+    "<KEEP>": {
+      "<CONTINUE>": 6,
+      "<KEEP>": 673,
+      "<RESTART>": 7,
+      "None": 6
+    },
+    "<RESTART>": {
+      "<CONTINUE>": 269,
+      "<KEEP>": 52,
+      "<RESTART>": 27,
+      "None": 4
+    }
+  },
+  "by_expected_action": {
+    "<CONTINUE>": {
+      "action_correct": 444,
+      "action_correct_accuracy": 0.8505747126436781,
+      "action_correct_semantic_wrong": 82,
+      "action_correct_semantic_wrong_accuracy": 0.15708812260536398,
+      "action_wrong_semantic_correct": 27,
+      "action_wrong_semantic_correct_accuracy": 0.05172413793103448,
+      "execution_exact": 7,
+      "execution_exact_accuracy": 0.013409961685823755,
+      "max_token_exhausted": 7,
+      "mean_generated_tokens": 99.14750957854406,
+      "rows": 522,
+      "semantic_correct": 389,
+      "semantic_correct_accuracy": 0.7452107279693486,
+      "valid_transaction": 518,
+      "valid_transaction_accuracy": 0.9923371647509579
+    },
+    "<KEEP>": {
+      "action_correct": 673,
+      "action_correct_accuracy": 0.9725433526011561,
+      "action_correct_semantic_wrong": 0,
+      "action_correct_semantic_wrong_accuracy": 0.0,
+      "action_wrong_semantic_correct": 7,
+      "action_wrong_semantic_correct_accuracy": 0.010115606936416185,
+      "execution_exact": 673,
+      "execution_exact_accuracy": 0.9725433526011561,
+      "max_token_exhausted": 0,
+      "mean_generated_tokens": 5.615606936416185,
+      "rows": 692,
+      "semantic_correct": 680,
+      "semantic_correct_accuracy": 0.9826589595375722,
+      "valid_transaction": 686,
+      "valid_transaction_accuracy": 0.9913294797687862
+    },
+    "<RESTART>": {
+      "action_correct": 27,
+      "action_correct_accuracy": 0.07670454545454546,
+      "action_correct_semantic_wrong": 12,
+      "action_correct_semantic_wrong_accuracy": 0.03409090909090909,
+      "action_wrong_semantic_correct": 210,
+      "action_wrong_semantic_correct_accuracy": 0.5965909090909091,
+      "execution_exact": 1,
+      "execution_exact_accuracy": 0.002840909090909091,
+      "max_token_exhausted": 14,
+      "mean_generated_tokens": 97.45454545454545,
+      "rows": 352,
+      "semantic_correct": 225,
+      "semantic_correct_accuracy": 0.6392045454545454,
+      "valid_transaction": 348,
+      "valid_transaction_accuracy": 0.9886363636363636
+    }
+  },
+  "by_presentation": {
+    "natural_owner": {
+      "action_correct": 197,
+      "action_correct_accuracy": 0.3773946360153257,
+      "action_correct_semantic_wrong": 12,
+      "action_correct_semantic_wrong_accuracy": 0.022988505747126436,
+      "action_wrong_semantic_correct": 210,
+      "action_wrong_semantic_correct_accuracy": 0.40229885057471265,
+      "execution_exact": 171,
+      "execution_exact_accuracy": 0.3275862068965517,
+      "max_token_exhausted": 14,
+      "mean_generated_tokens": 67.01915708812261,
+      "rows": 522,
+      "semantic_correct": 395,
+      "semantic_correct_accuracy": 0.7567049808429118,
+      "valid_transaction": 518,
+      "valid_transaction_accuracy": 0.9923371647509579
+    },
+    "verified_continue": {
+      "action_correct": 444,
+      "action_correct_accuracy": 0.8505747126436781,
+      "action_correct_semantic_wrong": 82,
+      "action_correct_semantic_wrong_accuracy": 0.15708812260536398,
+      "action_wrong_semantic_correct": 27,
+      "action_wrong_semantic_correct_accuracy": 0.05172413793103448,
+      "execution_exact": 7,
+      "execution_exact_accuracy": 0.013409961685823755,
+      "max_token_exhausted": 7,
+      "mean_generated_tokens": 99.14750957854406,
+      "rows": 522,
+      "semantic_correct": 389,
+      "semantic_correct_accuracy": 0.7452107279693486,
+      "valid_transaction": 518,
+      "valid_transaction_accuracy": 0.9923371647509579
+    },
+    "verified_keep": {
+      "action_correct": 503,
+      "action_correct_accuracy": 0.9636015325670498,
+      "action_correct_semantic_wrong": 0,
+      "action_correct_semantic_wrong_accuracy": 0.0,
+      "action_wrong_semantic_correct": 7,
+      "action_wrong_semantic_correct_accuracy": 0.013409961685823755,
+      "execution_exact": 503,
+      "execution_exact_accuracy": 0.9636015325670498,
+      "max_token_exhausted": 0,
+      "mean_generated_tokens": 6.14176245210728,
+      "rows": 522,
+      "semantic_correct": 510,
+      "semantic_correct_accuracy": 0.9770114942528736,
+      "valid_transaction": 516,
+      "valid_transaction_accuracy": 0.9885057471264368
+    }
+  },
+  "candidates_sha256": "35541bf6c4cb2a31500965f0d1eac53d067be76fe6bfcd93acbfd158e61f40a4",
+  "claim_boundary": "Read-only localization of the frozen KCR1 development canary; it does not change its pass/fail result or open holdout.",
+  "data_sha256": "b9c97c28438b6a87e89c816c177f1a23818564bb16fed0c9551dd07c05d7e139",
+  "evaluation_report_sha256": "198bc6985f7108553190afed9b3e17ce34e2f7a3d2b1424ec65cdcda7a4b81c7",
+  "holdout_used": false,
+  "overall": {
+    "action_correct": 1144,
+    "action_correct_accuracy": 0.7305236270753512,
+    "action_correct_semantic_wrong": 94,
+    "action_correct_semantic_wrong_accuracy": 0.06002554278416347,
+    "action_wrong_semantic_correct": 244,
+    "action_wrong_semantic_correct_accuracy": 0.1558109833971903,
+    "execution_exact": 681,
+    "execution_exact_accuracy": 0.43486590038314177,
+    "max_token_exhausted": 21,
+    "mean_generated_tokens": 57.436143039591315,
+    "rows": 1566,
+    "semantic_correct": 1294,
+    "semantic_correct_accuracy": 0.8263090676883781,
+    "valid_transaction": 1552,
+    "valid_transaction_accuracy": 0.9910600255427842
+  },
+  "schema": "shohin-kcr1-canary-failure-attribution-v1",
+  "source_outcomes": {
+    "action_inconsistent": 352,
+    "all_actions_correct": 170,
+    "all_semantics_correct": 316,
+    "semantic_inconsistent": 206
+  },
+  "status": "complete"
+}

@@ -1,0 +1,80 @@
+{
+  "action_accuracy": 0.7305236270753512,
+  "action_correct": 1144,
+  "adapter_checkpoint_sha256": "07e08abe2480782afc77e35031d23bea71a737d019f307066af2bde786dd2ebd",
+  "aggregate_gpu_seconds": 3426.0280375983566,
+  "batch_size": 2,
+  "branch_accuracy": {
+    "<CONTINUE>": 0.8505747126436781,
+    "<KEEP>": 0.9725433526011561,
+    "<RESTART>": 0.07670454545454546
+  },
+  "branch_correct": {
+    "<CONTINUE>": 444,
+    "<KEEP>": 673,
+    "<RESTART>": 27
+  },
+  "branch_total": {
+    "<CONTINUE>": 522,
+    "<KEEP>": 692,
+    "<RESTART>": 352
+  },
+  "candidates_output": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/kcr1_4284e60_r1/development_canary/candidates.jsonl",
+  "candidates_sha256": "35541bf6c4cb2a31500965f0d1eac53d067be76fe6bfcd93acbfd158e61f40a4",
+  "control_gate_pending": true,
+  "counterfactual_consistency": 0.32567049808429116,
+  "counterfactual_sources_correct": 170,
+  "critical_path_seconds": 882.1709710936993,
+  "data_report_sha256": "78fef3045c75a8aa1c61afb172b6e1474f2a4b2888c7e8c2cec1f5fd4b8638a5",
+  "data_sha256": "b9c97c28438b6a87e89c816c177f1a23818564bb16fed0c9551dd07c05d7e139",
+  "exact_execution": 681,
+  "exact_execution_accuracy": 0.43486590038314177,
+  "full_row_count": 1566,
+  "generated_tokens": 89945,
+  "generation_mode": "greedy",
+  "keep_byte_preservation_accuracy": 0.9725433526011561,
+  "keep_byte_preserved": 673,
+  "keep_total": 692,
+  "malformed_transactions": 14,
+  "max_new_tokens": 768,
+  "max_token_exhausted": 21,
+  "merged_from_shards": true,
+  "model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+  "model_root": "/lustre/fs1/home/sa305415/shohin/artifacts/external/qwen3.5-9b-c202236",
+  "peak_gpu_memory_bytes": 19840412160,
+  "rows": 1566,
+  "schema": "shohin-kcr1-transaction-evaluation-v1",
+  "seed": 2026081011,
+  "semantic_accuracy": 0.8263090676883781,
+  "semantic_correct": 1294,
+  "shard_count": 4,
+  "shard_reports": [
+    {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/kcr1_4284e60_r1/development_canary/shards/shard_0/report.json",
+      "sha256": "49a4a71c5d41a35f9969a1939d8715ea5df80e4d9a8cdcf407626163041ecd43"
+    },
+    {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/kcr1_4284e60_r1/development_canary/shards/shard_1/report.json",
+      "sha256": "3a6a52062aa5dd0891b687d444a632e7e0ec8a8802605831291625a08f7ba2e1"
+    },
+    {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/kcr1_4284e60_r1/development_canary/shards/shard_2/report.json",
+      "sha256": "c23dc0ef4924deba1d6515cc1cc6dc73d94ecea78f51c30baf2d7097f7afb78e"
+    },
+    {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/kcr1_4284e60_r1/development_canary/shards/shard_3/report.json",
+      "sha256": "d74abe651a34adc4cc5f4c2a8bdf699cdfd88f8153ddc818c8c36901da7f18c0"
+    }
+  ],
+  "sources": 522,
+  "split": "development",
+  "status": "complete",
+  "treatment_mechanics_gate": {
+    "action_accuracy_at_least_0_95": false,
+    "counterfactual_consistency_at_least_0_90": false,
+    "each_branch_action_accuracy_at_least_0_95": false,
+    "executed_semantic_accuracy_at_least_0_95": false,
+    "keep_byte_preservation_at_least_0_99": false
+  },
+  "treatment_mechanics_pass": false
+}
