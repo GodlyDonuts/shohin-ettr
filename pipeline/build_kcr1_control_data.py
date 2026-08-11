@@ -111,7 +111,9 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
     maxima: dict[str, dict[str, int]] = {
         key: {"prompt": 0, "target": 0, "sequence": 0} for key in controls
     }
-    for source_identity in sorted(grouped):
+    # Dict insertion order preserves the exact aligned source/presentation order,
+    # so the fixed reservoir seed sees the same source sequence in every arm.
+    for source_identity in grouped:
         group = grouped[source_identity]
         continuation = group["verified_continue"]
         verified_target = execute_transaction(
