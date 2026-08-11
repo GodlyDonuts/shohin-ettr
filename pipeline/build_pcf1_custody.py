@@ -603,7 +603,7 @@ def _reference_preflight(
     train_sources: Mapping[str, Mapping[str, Any]],
     development_sources: Mapping[str, Mapping[str, Any]],
 ) -> tuple[str, str, Mapping[str, Any]]:
-    """Bind policy acceptance and isolated execution of every nonsealed MBPP reference."""
+    """Bind trusted isolated execution of every nonsealed MBPP reference."""
 
     receipt, receipt_sha = _load_report(
         args.reference_sandbox_receipt,
@@ -645,6 +645,8 @@ def _reference_preflight(
                 "candidate_policy_sha256",
                 "sandbox_config_sha256",
                 "allocation_probe_sha256",
+                "reference_assessment_mode",
+                "generated_candidate_policy_applied",
                 "termination_classification",
             }
             or source is None
@@ -664,6 +666,8 @@ def _reference_preflight(
             or row.get("sandbox_config_sha256") != SANDBOX_CONFIG_SHA256
             or row.get("allocation_probe_sha256") != receipt.get("probe_sha256")
             or row.get("termination_classification") != "trusted_tests_completed"
+            or row.get("reference_assessment_mode") != "trusted_reference"
+            or row.get("generated_candidate_policy_applied") is not False
         ):
             raise PCF1CustodyError("PCF1 MBPP reference-preflight row differs")
         identities.append(identity)
@@ -705,7 +709,9 @@ def _reference_preflight(
             "candidate_policy_sha256",
             "sandbox_config_sha256",
             "allocation_probe_sha256",
-            "all_policy_accepted",
+            "reference_assessment_mode",
+            "generated_candidate_policy_applied",
+            "all_references_passed",
             "all_sandbox_passed",
             "holdout_reference_content_accesses",
             "sandbox_receipt_sha256",
@@ -725,7 +731,9 @@ def _reference_preflight(
         or preflight.get("sandbox_config_sha256") != SANDBOX_CONFIG_SHA256
         or preflight.get("allocation_probe_sha256") != receipt.get("probe_sha256")
         or preflight.get("sandbox_receipt_sha256") != receipt_sha
-        or preflight.get("all_policy_accepted") is not True
+        or preflight.get("reference_assessment_mode") != "trusted_reference"
+        or preflight.get("generated_candidate_policy_applied") is not False
+        or preflight.get("all_references_passed") is not True
         or preflight.get("all_sandbox_passed") is not True
         or preflight.get("holdout_reference_content_accesses") != 0
     ):

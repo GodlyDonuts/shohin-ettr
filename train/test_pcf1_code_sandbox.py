@@ -946,24 +946,27 @@ def test_production_setup_qualification_registers_before_mbpp_scoring(
     assert executions[-1]["tests_source"] == "assert True"
 
 
-def test_frozen_reference_preflight_requires_policy_and_sandbox_pass(
+def test_frozen_reference_preflight_uses_trusted_mode_and_sandbox_pass(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     identity = "a" * 64
     monkeypatch.setattr(sandbox, "_ALLOCATION_PROBE_SHA256", "b" * 64)
-    monkeypatch.setattr(
-        sandbox,
-        "score_completion",
-        lambda *_args, **_kwargs: {
-            "correct": True,
-            "program": "def f():\n    return 1\nassert f() == 1\n",
-            "execution": {
-                "passed": True,
-                "test_completion_attested": True,
-                "termination_classification": "trusted_tests_completed",
-            },
-        },
-    )
+    calls: list[tuple[str, dict[str, Any]]] = []
+
+    def trusted_execution(
+        source: str, _timeout: float, **kwargs: Any
+    ) -> dict[str, Any]:
+        calls.append((source, kwargs))
+        return {
+            "passed": True,
+            "test_completion_attested": True,
+            "termination_classification": "trusted_tests_completed",
+            "assessment_mode": "trusted_reference",
+            "candidate_policy_passed": True,
+            "candidate_policy_failure": "not_applicable_trusted_reference",
+        }
+
+    monkeypatch.setattr(sandbox, "isolated_program_result", trusted_execution)
     setup_qualification = {
         "schema": "shohin-pcf1-mbpp-setup-qualification-v1",
         "status": "pass",
@@ -989,7 +992,27 @@ def test_frozen_reference_preflight_requires_policy_and_sandbox_pass(
     )
     assert receipt["identity_sha256"] == identity
     assert receipt["allocation_probe_sha256"] == "b" * 64
+    assert receipt["reference_assessment_mode"] == "trusted_reference"
+    assert receipt["generated_candidate_policy_applied"] is False
     assert receipt["termination_classification"] == "trusted_tests_completed"
+    assert calls[0][1]["trusted_reference"] is True
+
+
+def test_trusted_reference_bypasses_candidate_grammar_inside_sandbox() -> None:
+    candidate = "import sys\nassert sys.maxsize > 1\n"
+    assert sandbox.validate_mbpp_candidate(candidate) == (False, "import")
+    assessor = json.loads(
+        sandbox._assessor_transport_payload(
+            candidate,
+            "",
+            "assert True",
+            trusted_probe=False,
+            trusted_reference=True,
+        )
+    )
+    assert assessor["assessment_mode"] == "trusted_reference"
+    assert assessor["candidate_policy_passed"] is True
+    assert assessor["candidate_policy_failure"] == "not_applicable_trusted_reference"
 
 
 def test_policy_rejection_is_scientific_incorrect_not_infrastructure(

@@ -22,6 +22,11 @@
 > or assessor open occurred; jobs `751657--751684` never started and were
 > cancelled. Its formal result is `null`; preserve
 > `docs/research/SHOHIN_PCF2_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
+> **PCF3 is prospectively frozen:** exact supervisor reference solutions use
+> trusted-reference transport inside the same sandbox; generated candidates
+> retain policy SHA-256 `f27124db...f1e`. Require the full nonsealed reference
+> canary and fresh sandbox receipt before the one graph. Follow only
+> `docs/research/SHOHIN_PCF3_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
 
 > **PCF1 TERMINAL INFRASTRUCTURE FAILURE; NO REPLAY, RETRY, OR SUCCESSOR —

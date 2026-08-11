@@ -220,6 +220,8 @@ def test_freeze_binds_nonsealed_mbpp_reference_preflight_without_holdout_access(
             "candidate_policy_sha256": "a" * 64,
             "sandbox_config_sha256": "b" * 64,
             "allocation_probe_sha256": "c" * 64,
+            "reference_assessment_mode": "trusted_reference",
+            "generated_candidate_policy_applied": False,
             "termination_classification": "trusted_tests_completed",
         }
 
@@ -248,6 +250,9 @@ def test_freeze_binds_nonsealed_mbpp_reference_preflight_without_holdout_access(
     assert preflight["ordered_identity_sha256"] == ordered_identity_sha256(expected)
     assert preflight["holdout_reference_content_accesses"] == 0
     assert preflight["unique_setups"] == 1
+    assert preflight["reference_assessment_mode"] == "trusted_reference"
+    assert preflight["generated_candidate_policy_applied"] is False
+    assert preflight["all_references_passed"] is True
     assert preflight["sandbox_receipt_sha256"] == sha256_file(
         output / "reference_sandbox_receipt.json"
     )

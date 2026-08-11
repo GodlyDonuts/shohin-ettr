@@ -499,6 +499,8 @@ def freeze_sources(
                     "candidate_policy_sha256",
                     "sandbox_config_sha256",
                     "allocation_probe_sha256",
+                    "reference_assessment_mode",
+                    "generated_candidate_policy_applied",
                     "termination_classification",
                 }
                 if (
@@ -520,6 +522,8 @@ def freeze_sources(
                     )
                     or reference.get("termination_classification")
                     != "trusted_tests_completed"
+                    or reference.get("reference_assessment_mode") != "trusted_reference"
+                    or reference.get("generated_candidate_policy_applied") is not False
                 ):
                     raise PCF1DataError("PCF1 nonsealed MBPP reference receipt differs")
                 reference_preflight_rows.append(reference)
@@ -655,7 +659,9 @@ def freeze_sources(
             "candidate_policy_sha256": reference_policy,
             "sandbox_config_sha256": reference_config,
             "allocation_probe_sha256": reference_probe,
-            "all_policy_accepted": True,
+            "reference_assessment_mode": "trusted_reference",
+            "generated_candidate_policy_applied": False,
+            "all_references_passed": True,
             "all_sandbox_passed": True,
             "holdout_reference_content_accesses": 0,
         }

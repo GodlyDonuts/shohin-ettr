@@ -679,6 +679,8 @@ def _fixture(root: Path) -> dict[str, Any]:
                 "candidate_policy_sha256": CANDIDATE_POLICY_SHA256,
                 "sandbox_config_sha256": SANDBOX_CONFIG_SHA256,
                 "allocation_probe_sha256": _sandbox_payload()["probe_sha256"],
+                "reference_assessment_mode": "trusted_reference",
+                "generated_candidate_policy_applied": False,
                 "termination_classification": "trusted_tests_completed",
             }
             for identity in reference_identities
@@ -770,7 +772,9 @@ def _fixture(root: Path) -> dict[str, Any]:
                 "candidate_policy_sha256": CANDIDATE_POLICY_SHA256,
                 "sandbox_config_sha256": SANDBOX_CONFIG_SHA256,
                 "allocation_probe_sha256": _sandbox_payload()["probe_sha256"],
-                "all_policy_accepted": True,
+                "reference_assessment_mode": "trusted_reference",
+                "generated_candidate_policy_applied": False,
+                "all_references_passed": True,
                 "all_sandbox_passed": True,
                 "holdout_reference_content_accesses": 0,
                 "sandbox_receipt_sha256": sha256_file(reference_sandbox_receipt),

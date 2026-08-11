@@ -28,6 +28,13 @@ and were cancelled; all record zero restarts. Formal PCF2 result is `null`.
 The exact terminal receipt is
 `docs/research/SHOHIN_PCF2_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
 
+**PCF3 is now prospectively frozen.** It changes only the admission treatment
+of exact supervisor reference solutions: they execute as trusted references
+inside the same sealed Bubblewrap boundary, while generated candidates retain
+the unchanged restrictive policy SHA-256 `f27124db...f1e`. A full nonsealed
+reference canary and fresh sandbox receipt must pass before its sole graph.
+See `docs/research/SHOHIN_PCF3_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+
 The sole authorized publication experiment was **PCF1**, one prospective,
 source-disjoint confirmation of the surviving dense architecture on pinned
 `mistralai/Ministral-3-8B-Reasoning-2512@81eaece...d894`. The qualified
