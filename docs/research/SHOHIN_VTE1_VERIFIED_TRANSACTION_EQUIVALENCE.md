@@ -4,6 +4,14 @@ Status: prospectively frozen after exact KCR1 closed and its one read-only
 attribution completed, before VTE1 data, model, or evaluation output. KCR1,
 NDR1, and every earlier edit lane remain closed. Holdout remains sealed.
 
+Execution update (does not alter this contract): CPU job `750779` admitted
+11,218 sources, 33,654 presentations, and 65,206 verified candidate
+transactions with zero truncation (maximum 3,107/4,096 tokens). One-update
+mechanics replay `750781` passed with finite loss/gradient, exact candidate
+grouping, 2,704,896 trainables, and 35.74 GB peak memory. The frozen 256-update
+aligned fit is job `750791`; source-disjoint dispatcher `750814` is held on its
+exact successful completion. Broad development and holdout remain unopened.
+
 ## Capability hypothesis
 
 KCR1 imposed a unique latent program label even when several programs produce

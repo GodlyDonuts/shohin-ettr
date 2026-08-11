@@ -1,5 +1,21 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **VTE1 VERIFIED-TRANSACTION FIT LIVE — 2026-08-10:** KCR1's canonical
+> branch labels are now replaced by one frozen set-valued executable objective,
+> without reopening KCR1. CPU build `750779` admits `11,218/11,220` immutable
+> sources as 33,654 balanced presentations and 65,206 independently admitted
+> candidate transactions. Maximum complete sequence is 3,107/4,096 tokens;
+> data/report SHA-256 values are `cc312363...1c33` / `d1c828f4...05fb`.
+> One-update mechanics replay `750781` completed on `evc30` with finite loss
+> `0.09501`, gradient norm `2.78125`, exact 2-candidate/1-group accounting,
+> 2,704,896 trainables, and 35.74 GB peak memory; checkpoint/report SHA-256
+> values are `e74e929c...b370` / `b91f218f...12e0`. The first allocation
+> `750780` failed before model load on `evc29`'s full node-local `/tmp` and has
+> no scientific output. Frozen aligned fit `750791` runs 256 updates from KCR1
+> checkpoint `07e08abe...2ebd`; source-disjoint dispatcher `750814` is held
+> `afterok:750791` and will release four exact KCR canary shards only after
+> report/hash validation. Holdout and broad development remain unopened.
+
 > **KCR1 CLOSED: CANONICAL RESTART LABELS CONFLICT WITH SEMANTIC REPAIR —
 > 2026-08-10:** Four immutable canary shards plus exact no-output
 > infrastructure replay `750701` and merge `750702` close the source-disjoint
