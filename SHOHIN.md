@@ -1,8 +1,59 @@
 # Shohin: Model-Owned Temporal Revision
 
-> Current architecture and evidence boundary — 2026-08-10
+> Current architecture and evidence boundary — 2026-08-11
 
 ## Read this first
+
+The sole open publication experiment is now **PCF1**, one prospective,
+source-disjoint confirmation of the surviving dense architecture on pinned
+`mistralai/Ministral-3-8B-Reasoning-2512@81eaece...d894`. The qualified
+positive anchor remains Qwen3.5-9B at learned commit `383/538`, trained
+revision `374/538`, and unchanged `316/538`. PCF1 freezes the same mechanism:
+model-owned source-only draft, trained same-family revision, and learned
+whole-trajectory commit, with matched unchanged and self-refinement controls.
+Its 1,289-row confirmation is label-free on GPU and may be assessed exactly
+once by one authorized CPU process. Any missed conjunct is terminal; a pass
+also stops and does not automatically open holdout, product, public, another
+host, or a successor. See
+`docs/research/SHOHIN_PCF1_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+
+PCF1 has not executed scientifically: no model or H100 job has run and no
+protected data has been opened. The storage stop is resolved. Three settled
+Newton observations report `838,918,136 KiB / 768,478` in use, leaving
+`220,143,624 KiB / 241,522` of hard-limit headroom. The exact age-ordered
+ledger is `docs/research/SHOHIN_PCF1_STORAGE_RECLAMATION_20260811.md`; its
+authorized closed-lane deletions were permanent and are not locally
+recoverable, while all protected PCF1 and qualified-release anchors survived
+an independent read-only postcheck.
+
+The Newton code sandbox is independently qualified. Exact source SHA-256 is
+`7b1eb83fb5546fd3c782cccef9a3254b90657b36cc90c023184136a6ed196523`;
+qualification receipt SHA-256 is
+`f1423aaed0d4b764f81f48a0289d4122b755955f9d961db50b45f485130df070`,
+with all `40/40` adversarial probes true. Config, candidate-policy, and Python
+descriptor SHA-256 values are respectively
+`4e3aaf268e3d16ba900b467c543ac074c9c738f5dee05d0d8b22f0366ae99a33`,
+`f27124db3d134a1e3dbde06958ab03220cd5e9585abcc356baa6a49d9edd1f1e`,
+and `025190cde6346cdbebfc04a06650f4813e2e8ead5350eec55c0b460caabb362f`.
+Earlier fail-closed Newton admissions exposed a libc pin, the missing Python
+memfd ABI, a UTF-8 descriptor mismatch, a direct-PID-1 CPU-limit exit `137`,
+and then root-writability/safe-import probe failures. They are preserved as
+infrastructure evidence: none emitted a qualification receipt or ran a model,
+scientific score, or H100 job.
+
+The sole falsifiable gate remains unchanged: unchanged must reach at least
+`387/1289` with every domain nonzero; revision must beat unchanged by at least
+65 and self-refinement by at least 39 with no domain loss against either;
+commit must beat revision by at least 13, retain at least 95% of both the
+revision-correct and unchanged-correct sets, and lose no domain against
+revision; and custody must cover the exact `1289/1289` order with zero
+candidate-assessment truncation, zero malformed selections, complete hashes
+and accounting, and zero holdout/public/product access. The one formal PASS or
+FAIL is terminal. Infrastructure failure is never a wrong answer and
+authorizes no replay or retry; neither outcome automatically authorizes a
+successor or protected split. NDR1, KCR1, VTE1, the natural-language
+microcode bridge, the Q35 edit cascade, and small-OLMoE variants remain
+closed.
 
 Shohin is now a **transferable reasoning architecture for pretrained language
 models**, not primarily a plan to train another small decoder from scratch.

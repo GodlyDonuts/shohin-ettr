@@ -1,0 +1,178 @@
+{
+  "bwrap_path": "/usr/bin/bwrap",
+  "bwrap_sha256": "eb767688b8224d8d3dbe1f8cb30ac3dff9ae8b02ff0452eaec9f94874d4e0011",
+  "bwrap_version": "bubblewrap 0.4.0",
+  "candidate_direct_pid_1": true,
+  "candidate_failure_exit_code": 74,
+  "candidate_policy_sha256": "f27124db3d134a1e3dbde06958ab03220cd5e9585abcc356baa6a49d9edd1f1e",
+  "candidate_random_seed": 2026080816,
+  "candidate_read_only": true,
+  "clear_environment": true,
+  "elf_closure_audit_sha256": "fe17b4712f24bd29cede3183316fc2c4a3b61abd93ab8f46ba2f0620258dd67c",
+  "infrastructure_failure_exit_code": 75,
+  "memfd_abi": {
+    "backend": "libc.memfd_create",
+    "f_add_seals": 1033,
+    "f_get_seals": 1034,
+    "f_seal_grow": 4,
+    "f_seal_seal": 1,
+    "f_seal_shrink": 2,
+    "f_seal_write": 8,
+    "mfd_allow_sealing": 2,
+    "mfd_cloexec": 1,
+    "required_seals": 15
+  },
+  "network_namespace": "isolated",
+  "policy_rejection_exit_code": 78,
+  "probe_results": {
+    "address_space_bounded": true,
+    "aggregate_file_creation_policy_blocked": true,
+    "assessor_sentinel_hidden": true,
+    "assessor_transport_closed": true,
+    "candidate_is_pid_1": true,
+    "candidate_mount_excludes_assessor": true,
+    "candidate_policy_escape_blocked": true,
+    "candidate_status_fd_closed": true,
+    "cpu_bounded": true,
+    "elf_projection_exact": true,
+    "environment_exact": true,
+    "failed_official_assertion_blocked": true,
+    "filesystem_projection_exact": true,
+    "flood_bounded": true,
+    "fork_blocked": true,
+    "known_pass": true,
+    "network_unreachable": true,
+    "os_exit_bypass_blocked": true,
+    "outer_wall_timeout_is_infrastructure": true,
+    "parent_environment_hidden": true,
+    "parent_proc_hidden": true,
+    "policy_rejection_runs_in_sandbox": true,
+    "post_candidate_setup_failure_is_scientific": true,
+    "private_tmp_writable": true,
+    "python_hash_seed_effective": true,
+    "python_runtime_descriptor_cross_process": true,
+    "python_runtime_descriptor_exact": true,
+    "random_entropy_reentry_blocked": true,
+    "random_seed_deterministic": true,
+    "read_only_inputs_immutable": true,
+    "resource_limit_exit_code_forgery_blocked": true,
+    "root_filesystem_read_only": true,
+    "safe_import_namespace_reachability": true,
+    "setup_compile_failure_is_infrastructure": true,
+    "site_packages_mask_read_only": true,
+    "status_marker_forgery_blocked": true,
+    "subprocess_blocked": true,
+    "symlink_traversal_blocked": true,
+    "system_exit_bypass_blocked": true,
+    "trusted_completion_exit_attested": true
+  },
+  "probe_sha256": "4d7bd7f009c802aff22a4a7550212e0b481b78c5fd10a86e1f202f6a90d160b4",
+  "python_executable": "/lustre/fs1/home/sa305415/shohin/miniforge3/bin/python3.13",
+  "python_runtime_descriptor": {
+    "base_prefix": "/opt/python",
+    "executable": "/opt/python/bin/python3.13",
+    "flags": {
+      "bytes_warning": 0,
+      "debug": 0,
+      "dev_mode": false,
+      "dont_write_bytecode": 1,
+      "hash_randomization": 0,
+      "ignore_environment": 0,
+      "inspect": 0,
+      "interactive": 0,
+      "isolated": 0,
+      "no_site": 1,
+      "no_user_site": 1,
+      "optimize": 0,
+      "quiet": 0,
+      "safe_path": true,
+      "utf8_mode": 1,
+      "verbose": 0
+    },
+    "hash_probe": -1545367155142879260,
+    "prefix": "/opt/python",
+    "set_order": [
+      "pcf1-beta",
+      "pcf1-gamma",
+      "pcf1-alpha",
+      "pcf1-delta"
+    ],
+    "sys_path": [
+      "/opt/python/lib/python313.zip",
+      "/opt/python/lib/python3.13",
+      "/opt/python/lib/python3.13/lib-dynload"
+    ]
+  },
+  "python_runtime_descriptor_sha256": "025190cde6346cdbebfc04a06650f4813e2e8ead5350eec55c0b460caabb362f",
+  "python_sha256": "051a031d827eab9778e982571db754662809164c8a3ec01e9beea1e1088123e0",
+  "resource_limit_exit_code": 79,
+  "sandbox_config_sha256": "4e3aaf268e3d16ba900b467c543ac074c9c738f5dee05d0d8b22f0366ae99a33",
+  "sandbox_isolation_passed": true,
+  "sandbox_runtime_tree_bytes": 112224747,
+  "sandbox_runtime_tree_directories": 112,
+  "sandbox_runtime_tree_entries": 2454,
+  "sandbox_runtime_tree_files": 2342,
+  "sandbox_runtime_tree_sha256": "7c6ed935cd9585475e82c64d4e591837c0c4ccd9538ad2f41adcfd3c8b71ce0d",
+  "schema": "shohin-pcf1-code-sandbox-receipt-v1",
+  "setup_failure_exit_code": 77,
+  "site_packages_visible": false,
+  "status": "pass",
+  "system_library_members": [
+    {
+      "destination": "/lib64/ld-linux-x86-64.so.2",
+      "sha256": "f54e08528da407525c1bf95d06b4b6426cedb835f018d1c596880fda4e308740",
+      "size": 1104088,
+      "source": "/usr/lib64/ld-2.28.so"
+    },
+    {
+      "destination": "/lib64/libX11.so.6",
+      "sha256": "b5bd10236d0bb0c804d21501a78b790e63ae838983e67a42292220db854b52bf",
+      "size": 1344032,
+      "source": "/usr/lib64/libX11.so.6.3.0"
+    },
+    {
+      "destination": "/lib64/libXau.so.6",
+      "sha256": "e6d22245203e84096d1a5549e25d22ea111c2e03a85dc10597cee1d7276dc35d",
+      "size": 16360,
+      "source": "/usr/lib64/libXau.so.6.0.0"
+    },
+    {
+      "destination": "/lib64/libc.so.6",
+      "sha256": "7d3b8e8cf41b2d8a63841469400a64c247135f5210a95c81c6e4993e4c736ffa",
+      "size": 2164744,
+      "source": "/usr/lib64/libc-2.28.so"
+    },
+    {
+      "destination": "/lib64/libdl.so.2",
+      "sha256": "414cca30a2b3f41d64d1b67fc987552dc2cca649d73eac3a3a5099d76363834c",
+      "size": 19128,
+      "source": "/usr/lib64/libdl-2.28.so"
+    },
+    {
+      "destination": "/lib64/libm.so.6",
+      "sha256": "e27d5b1be7b305214bc91e78d41c55964365cb9d06cec814e6a0b61c79d8ddba",
+      "size": 1599096,
+      "source": "/usr/lib64/libm-2.28.so"
+    },
+    {
+      "destination": "/lib64/libpthread.so.0",
+      "sha256": "0239064fff600cd4c9fe5bc8faaddfeb23dfd8444c8882ed0c95aa2edca5b985",
+      "size": 149936,
+      "source": "/usr/lib64/libpthread-2.28.so"
+    },
+    {
+      "destination": "/lib64/libutil.so.1",
+      "sha256": "e3f9a9ad55b94be376da0b7e9360821045f0a9d0339d95e615ace176176e0fe4",
+      "size": 17032,
+      "source": "/usr/lib64/libutil-2.28.so"
+    },
+    {
+      "destination": "/lib64/libxcb.so.1",
+      "sha256": "fcb2fa42338d24f9f67ee55351cec2f57dcf34b63fe0bb9e709c66543db6c5da",
+      "size": 170216,
+      "source": "/usr/lib64/libxcb.so.1.1.0"
+    }
+  ],
+  "test_failure_exit_code": 76,
+  "trusted_completion_exit_code": 73
+}

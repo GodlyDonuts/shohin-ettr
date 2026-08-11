@@ -1,6 +1,69 @@
 # Shohin Native Reasoning Master Ledger
 
-## Current Mission and Status — Read First — 2026-08-10
+## Current Mission and Status — Read First — 2026-08-11
+
+The publication phase has exactly one open experiment: **PCF1**, a
+prospectively frozen, source-disjoint confirmation of the surviving dense
+Shohin architecture on pinned
+`mistralai/Ministral-3-8B-Reasoning-2512@81eaece...d894`. The claim under
+test is only
+`source -> model-owned draft -> trained same-family revision -> learned
+whole-trajectory commit`. Its positive release anchor remains dense
+Qwen3.5-9B at learned commit `383/538`, trained revision `374/538`, and
+unchanged `316/538`. PCF1 has one 1,289-row label-free confirmation board,
+matched unchanged and self-refinement controls, a single CPU-only assessor
+open, and one conjunctive pass/fail gate. Pass or fail ends PCF1; neither
+outcome authorizes an automatic holdout, product, public, alternate-host, or
+successor run. Contract and preflight:
+`docs/research/SHOHIN_PCF1_MINISTRAL_PUBLICATION_CONFIRMATION.md` and
+`docs/research/SHOHIN_PCF1_PREFLIGHT_20260811.md`.
+
+PCF1 has **not run scientifically**: there has been no model or H100 job, no
+score, and no protected-data open. The pre-compute audit found no queued or
+running user jobs and verified the immutable 35.7 GB Ministral snapshot and
+its 58-entry manifest read-only. Authorized age-ordered cleanup has now closed
+the storage blocker. Three settled observations agree on
+`838,918,136 KiB / 768,478` in use and
+`220,143,624 KiB / 241,522` of hard-limit headroom. The complete provenance
+and deletion ledger is
+`docs/research/SHOHIN_PCF1_STORAGE_RECLAMATION_20260811.md`. Historical
+closed-lane raw removals recorded there are permanent and not locally
+recoverable; an independent read-only postcheck reproduced quota, deletion
+transcript, empty scheduler state, and the presence of every protected
+anchor.
+
+The Newton sandbox is also independently qualified. Source SHA-256 is
+`7b1eb83fb5546fd3c782cccef9a3254b90657b36cc90c023184136a6ed196523`;
+receipt SHA-256 is
+`f1423aaed0d4b764f81f48a0289d4122b755955f9d961db50b45f485130df070`;
+and every one of its `40/40` filesystem, environment, `/proc`, network,
+subprocess/fork, symlink/path-traversal, resource, and fail-closed probes is
+true. Config, candidate-policy, and exact Python-runtime-descriptor SHA-256
+values are
+`4e3aaf268e3d16ba900b467c543ac074c9c738f5dee05d0d8b22f0366ae99a33`,
+`f27124db3d134a1e3dbde06958ab03220cd5e9585abcc356baa6a49d9edd1f1e`,
+and `025190cde6346cdbebfc04a06650f4813e2e8ead5350eec55c0b460caabb362f`.
+Earlier Newton admissions failed closed on a libc hash pin, the Python memfd
+ABI, a UTF-8 descriptor mismatch, a direct-PID-1 CPU-limit exit `137`, and
+root-writability/safe-import probes. Those attempts emitted no receipt and
+executed no model, scientific score, or H100 job; their infrastructure
+evidence is preserved.
+
+The one falsifiable gate remains unchanged. Unchanged must reach at least
+`387/1289` and solve every domain; revision must exceed unchanged by at least
+65 and self-refinement by at least 39 with no per-domain loss against either;
+commit must exceed revision by at least 13, retain at least 95% of both the
+revision-correct and unchanged-correct identity sets, and lose no domain
+against revision; complete custody must bind the exact `1289/1289` order with
+zero candidate-assessment truncation, zero malformed selections, complete
+hash/accounting verification, and zero holdout/public/product access. Exactly
+one formal PASS or FAIL is terminal. Infrastructure failure is never scored
+as a wrong answer and authorizes no replay or retry; neither result authorizes
+an automatic successor or protected split.
+
+Every prior closed lane remains immutable. In particular, do not reopen NDR1,
+KCR1, VTE1, the natural-language microcode bridge, the Qwen3.6-35B-A3B edit
+cascade, or any small-OLMoE variant.
 
 Shohin is now a **transferable model-owned temporal-revision architecture**,
 not primarily a plan to pretrain another small scratch decoder. One role state

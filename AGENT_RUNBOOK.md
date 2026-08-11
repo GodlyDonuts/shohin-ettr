@@ -1,5 +1,48 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **PCF1 IS THE SOLE OPEN PUBLICATION CONFIRMATION; STORAGE AND SANDBOX
+> QUALIFIED, SCIENTIFIC GRAPH NOT YET RUN — 2026-08-11:** The surviving
+> qualified claim is the dense
+> same-family source-only draft -> trained revision -> learned
+> whole-trajectory commit release: Qwen3.5-9B scores `383/538` versus
+> unchanged `316/538` (`374/538` revision). PCF1 freezes exactly one
+> source-disjoint confirmation on
+> `mistralai/Ministral-3-8B-Reasoning-2512@81eaece...d894`, with matched
+> unchanged/self-refinement controls and one atomic CPU assessor open over
+> all arms. Its exact 1,289-row conjunctive gate is in
+> `docs/research/SHOHIN_PCF1_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+> The storage blocker is closed: settled Lustre use is
+> `838,918,136 KiB / 768,478`, leaving
+> `220,143,624 KiB / 241,522` of hard-limit headroom. The exact ledger is
+> `docs/research/SHOHIN_PCF1_STORAGE_RECLAMATION_20260811.md`; its authorized
+> closed-lane removals are permanent and not locally recoverable, and an
+> independent postcheck found every protected anchor present. Newton sandbox
+> source `7b1eb83fb5546fd3c782cccef9a3254b90657b36cc90c023184136a6ed196523`
+> independently passes all `40/40` adversarial probes; receipt SHA-256 is
+> `f1423aaed0d4b764f81f48a0289d4122b755955f9d961db50b45f485130df070`.
+> Config/policy/Python-descriptor SHA-256 values are
+> `4e3aaf268e3d16ba900b467c543ac074c9c738f5dee05d0d8b22f0366ae99a33`,
+> `f27124db3d134a1e3dbde06958ab03220cd5e9585abcc356baa6a49d9edd1f1e`,
+> and `025190cde6346cdbebfc04a06650f4813e2e8ead5350eec55c0b460caabb362f`.
+> Prior libc-pin, memfd-ABI,
+> UTF-8-descriptor, direct-PID-1 CPU-exit-`137`, and
+> root-writability/safe-import admissions failed closed, emitted no receipt,
+> and ran no scientific/model/H100 work; their infrastructure evidence is
+> preserved. No scientific/model/H100 job or protected-data access has yet
+> occurred.
+>
+> The sole gate is immutable: unchanged >= `387/1289` with every domain
+> nonzero; revision >= unchanged + 65 and >= self-refinement + 39 with no
+> per-domain loss against either; commit >= revision + 13 with >=95% retention
+> of both revision-correct and unchanged-correct identities and no per-domain
+> loss against revision; and exact `1289/1289` custody/order, zero candidate
+> assessment truncation, zero malformed selections, complete hashes and
+> accounting, and zero holdout/public/product access. One formal PASS or FAIL
+> stops PCF1. Infrastructure failure is not a wrong answer and permits no
+> replay or retry; no outcome automatically opens a successor or protected
+> split. NDR1, KCR1, VTE1, the natural-language microcode bridge, Q35 edit
+> cascade, and small-OLMoE variants remain immutable closed lanes.
+
 > **PHASE CLOSED AFTER VTE1 CONJUNCTIVE FAIL — 2026-08-11:** Frozen fit
 > `750791`, source-disjoint shards `750841--750844`, and atomic merge `750845`
 > completed. VTE1 scores `1285/1566 = 82.0562%` semantic correctness versus
