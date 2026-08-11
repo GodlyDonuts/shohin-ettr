@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import Any
 
 from build_kcr1_branch_data import continuation_split, render_prompt, sha256_file
-from build_vcr1_revision_data import source_task_prompt
 from kcr1_branch_transducer import CONTINUE, KEEP, RESTART, execute_transaction, kcr1_prompt
 
 
@@ -24,6 +23,30 @@ IDR_REPORT_SCHEMA = "shohin-idr1-revision-data-report-v1"
 
 class KCR1CanaryError(RuntimeError):
     """The source-disjoint KCR1 canary contract differs."""
+
+
+def source_task_prompt(row: dict[str, Any]) -> str:
+    """Render the established product-board source without assessor fields."""
+
+    task = str(row.get("task"))
+    if task == "mbpp":
+        tests = "\n".join(str(item) for item in row.get("test_list", ()))
+        return (
+            "Write Python code that solves the task and passes every test. Return "
+            "only executable Python code, without Markdown fences.\n\nTask:\n"
+            f"{row['text']}\n\nTests:\n{tests}"
+        )
+    question = str(row.get("question", ""))
+    if not question:
+        raise KCR1CanaryError("KCR1 assessor source is empty")
+    if task == "bbh_logic":
+        return (
+            f"{question}\n\nReason carefully, then put only the exact requested "
+            "answer or option label inside \\boxed{}."
+        )
+    if task != "math500":
+        raise KCR1CanaryError("KCR1 assessor task differs")
+    return question
 
 
 def atomic_lines(path: Path, rows: list[dict[str, Any]]) -> str:
