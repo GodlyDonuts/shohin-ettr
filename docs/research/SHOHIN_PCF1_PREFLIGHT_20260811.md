@@ -2,11 +2,13 @@
 
 This receipt preserves the repository, host, scheduler, model, and baseline
 storage state observed before any PCF1 source materialization, model load, or
-job submission, followed by the authorized storage remediation and Newton
-CPU-only sandbox qualification. The frozen scientific contract is
+job submission, followed by the authorized storage remediation, Newton
+CPU-only sandbox qualification, and terminal deployment chronology. The
+frozen scientific contract is
 `SHOHIN_PCF1_MINISTRAL_PUBLICATION_CONFIRMATION.md`. No PCF1 scientific,
 model, or H100 job has run, and no confirmation, holdout, public, or product
-assessor has been opened.
+assessor has been opened. The one submitted graph ended as terminal
+infrastructure evidence before science.
 
 ## Repository and remotes
 
@@ -222,8 +224,33 @@ PCF1 result or retry. The dispatcher now exposes both immutable packaged
 roots for that verifier and directly regression-tests the exact path. The same
 narrow correction also raises the executable preflight minimum from the old
 96-GiB/100,000-inode floor to the frozen 128-GiB/150,000-inode admission
-target. A fresh runtime, checkout, and complete preflight are required before
-the sole graph may be submitted.
+target. The bounded correction was frozen and packaged before the sole graph
+submission; this admission failure produced no run root and is not itself a
+graph replay.
+
+The sole graph was then submitted exactly once with these immutable anchors:
+
+- run: `pcf1_ministral_8264817_r1`;
+- source commit: `8264817827d29795d107ff132e85950eb0c34163`;
+- runtime-manifest SHA-256:
+  `f6d5ebe59d7d889f8d804cec05ba8c1895f7ae1c180997a5069075ffb65f67cd`;
+- root job: `750976` on `evc21`.
+
+Root job `750976` entered Slurm once, ran for one second, and terminated
+`FAILED 2:0` with the exact fail-closed message
+`pcf1: SLURM_TMPDIR is required for offline caches`. It did not load the
+Ministral model, perform H100 work, materialize or score scientific data, open
+an assessor, or reach the scientific gate. The scheduler records zero
+restarts. All 28 downstream dependency jobs, the exact contiguous range
+`750977--751004`, were explicitly cancelled. The final user queue is empty.
+
+The graph's formal scientific result is `null`. Its remote terminal receipt
+SHA-256 is
+`366ebd73e13d1f944b1a233bf86c87440a23295ecdc4caa4b045462a8d3dbef0`.
+The already qualified storage and sandbox gates remain PASS; neither is the
+cause of this failure. The frozen contract classifies the root stop as
+terminal infrastructure evidence, never as a wrong answer, and forbids a
+replay, retry, requeue, alternate host, or successor.
 
 ## Sole scientific gate and stop
 
@@ -242,12 +269,12 @@ PCF1 gate:
    hash/runtime/checkpoint/result/accounting item verifies, and
    holdout/public/product access counters remain zero.
 
-Exactly one atomic assessor open returns formal PASS only if every conjunct
-is true; any false conjunct returns formal FAIL. Either result is terminal and
-does not authorize a changed host, data, arm, prompt, threshold, seed,
-schedule, selector, decoding setup, retry, protected split, or successor.
-Infrastructure failure is preserved as terminal infrastructure evidence, is
-never scored as a wrong answer, and authorizes no replay or retry.
+The sole graph stopped before the atomic assessor open, so this scientific
+gate emitted neither PASS nor FAIL and the formal result is `null`. The
+contract's separate terminal-infrastructure rule applies: the failure is
+preserved, is never scored as a wrong answer, and authorizes no changed host,
+data, arm, prompt, threshold, seed, schedule, selector, decoding setup,
+replay, retry, protected split, or successor.
 
 ## Authorization state
 
@@ -255,9 +282,12 @@ never scored as a wrong answer, and authorizes no replay or retry.
 - durable storage: independently qualified with substantial byte and inode
   headroom;
 - Newton code sandbox: independently qualified, receipt bound, `40/40` true;
-- remote data preparation: authorized only as the frozen PCF1 graph;
-- no-score mechanics: not submitted;
-- scientific dependency graph: not submitted;
-- scientific/model/H100 work: none executed;
+- sole frozen graph: submitted once as `pcf1_ministral_8264817_r1` and
+  terminal before science;
+- root job `750976`: `FAILED 2:0`, one second, zero restarts;
+- downstream jobs `750977--751004`: all 28 explicitly cancelled;
+- scheduler: empty after terminal preservation;
+- no-score mechanics: not executed;
+- scientific/model/H100 work: none executed; formal result `null`;
 - confirmation labels/product/public/holdout: not opened by PCF1;
 - retry, alternate host, and successor: not authorized.

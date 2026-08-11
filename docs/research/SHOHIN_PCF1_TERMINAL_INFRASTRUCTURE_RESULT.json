@@ -1,0 +1,80 @@
+{
+  "schema": "shohin-pcf1-publication-terminal-result-v1",
+  "run_id": "pcf1_ministral_8264817_r1",
+  "status": "terminal_infrastructure_failure",
+  "formal_scientific_result": null,
+  "scientific_gate_evaluated": false,
+  "stop_and_preserve": true,
+  "source_commit": "8264817827d29795d107ff132e85950eb0c34163",
+  "runtime_manifest_sha256": "f6d5ebe59d7d889f8d804cec05ba8c1895f7ae1c180997a5069075ffb65f67cd",
+  "model_revision": "81eaece1948f3875421d9a45bc55487d10e2d894",
+  "admission": {
+    "storage": {
+      "status": "pass",
+      "preflight_headroom_bytes": 223308472320,
+      "preflight_headroom_inodes": 229790,
+      "minimum_headroom_bytes": 137438953472,
+      "minimum_headroom_inodes": 150000
+    },
+    "sandbox": {
+      "status": "pass",
+      "receipt_sha256": "f1423aaed0d4b764f81f48a0289d4122b755955f9d961db50b45f485130df070",
+      "probe_count": 40,
+      "all_probes_passed": true
+    },
+    "live_preflight": {
+      "status": "safe",
+      "environment_receipt_sha256": "6903c40c5bed31386b6ab328d524e7d132ca97468d2a71b9ed19c1c5c33072e1"
+    }
+  },
+  "failure": {
+    "stage": "prepare_inputs",
+    "job_id": 750976,
+    "node": "evc21",
+    "state": "FAILED",
+    "exit_code": "2:0",
+    "elapsed_seconds": 1,
+    "restarts": 0,
+    "class": "missing_scheduler_scratch_contract",
+    "message": "pcf1: SLURM_TMPDIR is required for offline caches",
+    "model_loaded": false,
+    "h100_job_started": false,
+    "assessor_opened": false
+  },
+  "scheduler_terminal_state": {
+    "submitted_root_job_id": 750976,
+    "submitted_terminal_job_id": 751004,
+    "downstream_cancelled_first_job_id": 750977,
+    "downstream_cancelled_last_job_id": 751004,
+    "downstream_cancelled_count": 28,
+    "queue_empty_after_cancellation": true,
+    "all_restarts_zero": true
+  },
+  "remote_evidence": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/pcf1_ministral_8264817_r1",
+    "terminal_receipt": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/pcf1_ministral_8264817_r1/terminal_infrastructure_failure.json",
+      "sha256": "366ebd73e13d1f944b1a233bf86c87440a23295ecdc4caa4b045462a8d3dbef0"
+    },
+    "stderr": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/pcf1_ministral_8264817_r1/logs/pcf1_prepare_750976.err",
+      "sha256": "71855ec8be04999d20dcdc3a20a7194a5d4b58e2a5bfe0c2825bce8034539166",
+      "bytes": 50
+    },
+    "stdout": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/pcf1_ministral_8264817_r1/logs/pcf1_prepare_750976.out",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "prescore_dispatch_sha256": "6223601a7fcd4475b4a60234644553851d348912fc0e8b47843e42fe65242ce9",
+    "final_accounting_predecessor_dispatch_sha256": "cf2ce953de519fb7cce2b12ff2cb0105c93a594240014bf76a77ede3a02c1d9d",
+    "tree_frozen_nonwritable": true
+  },
+  "authorization": {
+    "retry_authorized": false,
+    "retry_submitted": false,
+    "successor_authorized": false,
+    "successor_submitted": false,
+    "protected_split_access_authorized": false
+  }
+}

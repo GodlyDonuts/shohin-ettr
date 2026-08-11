@@ -1,0 +1,264 @@
+{
+  "dispatch_receipts": {
+    "final_accounting_predecessors": {
+      "bytes": 10041,
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/pcf1_ministral_8264817_r1/dispatch/dispatch.json",
+      "sha256": "cf2ce953de519fb7cce2b12ff2cb0105c93a594240014bf76a77ede3a02c1d9d"
+    },
+    "prescore": {
+      "bytes": 9221,
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/pcf1_ministral_8264817_r1/dispatch/prescore_dispatch.json",
+      "sha256": "6223601a7fcd4475b4a60234644553851d348912fc0e8b47843e42fe65242ce9"
+    }
+  },
+  "downstream_cancelled_count": 28,
+  "failed_exit_code": "2:0",
+  "failed_job_id": 750976,
+  "failed_stage": "prepare_inputs",
+  "failed_state": "FAILED",
+  "failure_class": "missing_scheduler_scratch_contract",
+  "failure_message": "pcf1: SLURM_TMPDIR is required for offline caches",
+  "formal_result": null,
+  "h100_job_started": false,
+  "model_loaded": false,
+  "model_revision": "81eaece1948f3875421d9a45bc55487d10e2d894",
+  "queue_empty_after_cancellation": true,
+  "recorded_at_utc": "2026-08-11T11:20:44.648991+00:00",
+  "retry_authorized": false,
+  "retry_submitted": false,
+  "root_logs": {
+    "stderr": {
+      "bytes": 50,
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/pcf1_ministral_8264817_r1/logs/pcf1_prepare_750976.err",
+      "sha256": "71855ec8be04999d20dcdc3a20a7194a5d4b58e2a5bfe0c2825bce8034539166"
+    },
+    "stdout": {
+      "bytes": 0,
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/pcf1_ministral_8264817_r1/logs/pcf1_prepare_750976.out",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "run_id": "pcf1_ministral_8264817_r1",
+  "run_outputs_created": [
+    "dispatch/dispatch.json",
+    "dispatch/prescore_dispatch.json",
+    "logs/pcf1_prepare_750976.err",
+    "logs/pcf1_prepare_750976.out"
+  ],
+  "runtime_manifest_sha256": "f6d5ebe59d7d889f8d804cec05ba8c1895f7ae1c180997a5069075ffb65f67cd",
+  "scheduler_records": [
+    {
+      "exit_code": "2:0",
+      "job_id": 750976,
+      "job_name": "pcf1-prepare",
+      "restarts": 0,
+      "state": "FAILED"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750977,
+      "job_name": "pcf1-mechanics",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750978,
+      "job_name": "pcf1-b1",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750979,
+      "job_name": "pcf1-drafts",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750980,
+      "job_name": "pcf1-draft-merge",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750981,
+      "job_name": "pcf1-materialize",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750982,
+      "job_name": "pcf1-revision",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750984,
+      "job_name": "pcf1-eval-merge",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750986,
+      "job_name": "pcf1-eval-merge",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750987,
+      "job_name": "pcf1-calibration-pairs",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750988,
+      "job_name": "pcf1-commit-train",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750990,
+      "job_name": "pcf1-eval-merge",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750992,
+      "job_name": "pcf1-eval-merge",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750983,
+      "job_name": "pcf1-eval",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750985,
+      "job_name": "pcf1-eval",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750989,
+      "job_name": "pcf1-eval",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750991,
+      "job_name": "pcf1-eval",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750994,
+      "job_name": "pcf1-eval-merge",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750995,
+      "job_name": "pcf1-confirmation-pairs",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750996,
+      "job_name": "pcf1-commit-apply",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750997,
+      "job_name": "pcf1-precompute-custody",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750998,
+      "job_name": "pcf1-accounting",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750999,
+      "job_name": "pcf1-authorize-score",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 751000,
+      "job_name": "pcf1-commit-score",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 751001,
+      "job_name": "pcf1-normalize",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 751002,
+      "job_name": "pcf1-accounting",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 751003,
+      "job_name": "pcf1-compute-custody",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 751004,
+      "job_name": "pcf1-final-gate",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    },
+    {
+      "exit_code": "0:0",
+      "job_id": 750993,
+      "job_name": "pcf1-eval",
+      "restarts": 0,
+      "state": "CANCELLED by 1227834669"
+    }
+  ],
+  "schema": "shohin-pcf1-terminal-infrastructure-failure-v1",
+  "scientific_gate_evaluated": false,
+  "source_commit": "8264817827d29795d107ff132e85950eb0c34163",
+  "stage_elapsed_seconds": 1,
+  "stage_node": "evc21",
+  "stage_restarts": 0,
+  "status": "terminal_infrastructure_failure",
+  "stop_and_preserve": true,
+  "successor_authorized": false,
+  "successor_submitted": false
+}

@@ -4,7 +4,7 @@
 
 ## Read this first
 
-The sole open publication experiment is now **PCF1**, one prospective,
+The sole authorized publication experiment was **PCF1**, one prospective,
 source-disjoint confirmation of the surviving dense architecture on pinned
 `mistralai/Ministral-3-8B-Reasoning-2512@81eaece...d894`. The qualified
 positive anchor remains Qwen3.5-9B at learned commit `383/538`, trained
@@ -17,9 +17,22 @@ also stops and does not automatically open holdout, product, public, another
 host, or a successor. See
 `docs/research/SHOHIN_PCF1_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
-PCF1 has not executed scientifically: no model or H100 job has run and no
-protected data has been opened. The storage stop is resolved. Three settled
-Newton observations report `838,918,136 KiB / 768,478` in use, leaving
+The single frozen graph was submitted exactly once as
+`pcf1_ministral_8264817_r1`, from commit
+`8264817827d29795d107ff132e85950eb0c34163` with runtime-manifest SHA-256
+`f6d5ebe59d7d889f8d804cec05ba8c1895f7ae1c180997a5069075ffb65f67cd`.
+Root job `750976` was `FAILED 2:0` on `evc21` after one second with
+`pcf1: SLURM_TMPDIR is required for offline caches`. No model or H100 work,
+scientific gate, score, or protected-data open occurred. All 28 downstream
+jobs `750977--751004` were explicitly cancelled; the queue is empty and every
+job records zero restarts. Formal PCF1 result is `null`. The remote terminal
+receipt SHA-256 is
+`366ebd73e13d1f944b1a233bf86c87440a23295ecdc4caa4b045462a8d3dbef0`.
+This is the contract's terminal infrastructure outcome: it is not a wrong
+answer and cannot be replayed or retried; no successor is authorized.
+
+The storage and sandbox gates remain PASS. Three settled Newton observations
+report `838,918,136 KiB / 768,478` in use, leaving
 `220,143,624 KiB / 241,522` of hard-limit headroom. The exact age-ordered
 ledger is `docs/research/SHOHIN_PCF1_STORAGE_RECLAMATION_20260811.md`; its
 authorized closed-lane deletions were permanent and are not locally
@@ -41,17 +54,18 @@ and then root-writability/safe-import probe failures. They are preserved as
 infrastructure evidence: none emitted a qualification receipt or ran a model,
 scientific score, or H100 job.
 
-The sole falsifiable gate remains unchanged: unchanged must reach at least
+The sole falsifiable scientific gate remains unchanged but was never reached:
+unchanged must reach at least
 `387/1289` with every domain nonzero; revision must beat unchanged by at least
 65 and self-refinement by at least 39 with no domain loss against either;
 commit must beat revision by at least 13, retain at least 95% of both the
 revision-correct and unchanged-correct sets, and lose no domain against
 revision; and custody must cover the exact `1289/1289` order with zero
 candidate-assessment truncation, zero malformed selections, complete hashes
-and accounting, and zero holdout/public/product access. The one formal PASS or
-FAIL is terminal. Infrastructure failure is never a wrong answer and
-authorizes no replay or retry; neither outcome automatically authorizes a
-successor or protected split. NDR1, KCR1, VTE1, the natural-language
+and accounting, and zero holdout/public/product access. No formal PASS or FAIL
+was produced; the recorded result is `null`. The frozen contract nevertheless
+makes this infrastructure failure terminal and authorizes no replay, retry,
+successor, or protected split. NDR1, KCR1, VTE1, the natural-language
 microcode bridge, the Q35 edit cascade, and small-OLMoE variants remain
 closed.
 

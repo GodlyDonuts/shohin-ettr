@@ -2,7 +2,7 @@
 
 ## Current Mission and Status — Read First — 2026-08-11
 
-The publication phase has exactly one open experiment: **PCF1**, a
+The publication phase authorized exactly one experiment: **PCF1**, a
 prospectively frozen, source-disjoint confirmation of the surviving dense
 Shohin architecture on pinned
 `mistralai/Ministral-3-8B-Reasoning-2512@81eaece...d894`. The claim under
@@ -18,11 +18,25 @@ successor run. Contract and preflight:
 `docs/research/SHOHIN_PCF1_MINISTRAL_PUBLICATION_CONFIRMATION.md` and
 `docs/research/SHOHIN_PCF1_PREFLIGHT_20260811.md`.
 
-PCF1 has **not run scientifically**: there has been no model or H100 job, no
-score, and no protected-data open. The pre-compute audit found no queued or
-running user jobs and verified the immutable 35.7 GB Ministral snapshot and
-its 58-entry manifest read-only. Authorized age-ordered cleanup has now closed
-the storage blocker. Three settled observations agree on
+The frozen graph was submitted exactly once as
+`pcf1_ministral_8264817_r1`. Its source commit is
+`8264817827d29795d107ff132e85950eb0c34163`; runtime-manifest SHA-256 is
+`f6d5ebe59d7d889f8d804cec05ba8c1895f7ae1c180997a5069075ffb65f67cd`.
+Root job `750976` was `FAILED 2:0` on `evc21` after one second with the exact
+message `pcf1: SLURM_TMPDIR is required for offline caches`. It stopped before
+any model/H100 work, scientific gate, score, or protected-data open. The 28
+downstream jobs `750977--751004` were explicitly cancelled; the queue is
+empty and all jobs have zero restarts. The formal result is `null`, and the
+remote terminal receipt SHA-256 is
+`366ebd73e13d1f944b1a233bf86c87440a23295ecdc4caa4b045462a8d3dbef0`.
+This is terminal infrastructure evidence rather than a scientific wrong
+answer. The frozen contract forbids a replay or retry, and it authorizes no
+successor or protected split.
+
+The storage and sandbox gates remain PASS. The pre-compute audit found no
+queued or running user jobs and verified the immutable 35.7 GB Ministral
+snapshot and its 58-entry manifest read-only. Authorized age-ordered cleanup
+closed the storage blocker. Three settled observations agree on
 `838,918,136 KiB / 768,478` in use and
 `220,143,624 KiB / 241,522` of hard-limit headroom. The complete provenance
 and deletion ledger is
@@ -49,17 +63,18 @@ root-writability/safe-import probes. Those attempts emitted no receipt and
 executed no model, scientific score, or H100 job; their infrastructure
 evidence is preserved.
 
-The one falsifiable gate remains unchanged. Unchanged must reach at least
-`387/1289` and solve every domain; revision must exceed unchanged by at least
-65 and self-refinement by at least 39 with no per-domain loss against either;
+The one falsifiable scientific gate remains unchanged but was never reached.
+Unchanged must reach at least `387/1289` and solve every domain; revision must
+exceed unchanged by at least 65 and self-refinement by at least 39 with no
+per-domain loss against either;
 commit must exceed revision by at least 13, retain at least 95% of both the
 revision-correct and unchanged-correct identity sets, and lose no domain
 against revision; complete custody must bind the exact `1289/1289` order with
 zero candidate-assessment truncation, zero malformed selections, complete
-hash/accounting verification, and zero holdout/public/product access. Exactly
-one formal PASS or FAIL is terminal. Infrastructure failure is never scored
-as a wrong answer and authorizes no replay or retry; neither result authorizes
-an automatic successor or protected split.
+hash/accounting verification, and zero holdout/public/product access. It
+emitted no formal PASS or FAIL; the result is `null`. The observed
+infrastructure failure is itself terminal under the contract and authorizes
+no replay, retry, automatic successor, or protected split.
 
 Every prior closed lane remains immutable. In particular, do not reopen NDR1,
 KCR1, VTE1, the natural-language microcode bridge, the Qwen3.6-35B-A3B edit

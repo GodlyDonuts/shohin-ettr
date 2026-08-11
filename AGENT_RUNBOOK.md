@@ -1,8 +1,7 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **PCF1 IS THE SOLE OPEN PUBLICATION CONFIRMATION; STORAGE AND SANDBOX
-> QUALIFIED, SCIENTIFIC GRAPH NOT YET RUN — 2026-08-11:** The surviving
-> qualified claim is the dense
+> **PCF1 TERMINAL INFRASTRUCTURE FAILURE; NO REPLAY, RETRY, OR SUCCESSOR —
+> 2026-08-11:** The surviving qualified claim is the dense
 > same-family source-only draft -> trained revision -> learned
 > whole-trajectory commit release: Qwen3.5-9B scores `383/538` versus
 > unchanged `316/538` (`374/538` revision). PCF1 freezes exactly one
@@ -11,6 +10,20 @@
 > unchanged/self-refinement controls and one atomic CPU assessor open over
 > all arms. Its exact 1,289-row conjunctive gate is in
 > `docs/research/SHOHIN_PCF1_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+> The single graph was submitted exactly once as
+> `pcf1_ministral_8264817_r1`, from commit
+> `8264817827d29795d107ff132e85950eb0c34163` and runtime-manifest SHA-256
+> `f6d5ebe59d7d889f8d804cec05ba8c1895f7ae1c180997a5069075ffb65f67cd`.
+> Root job `750976` was `FAILED 2:0` on `evc21` after one second with
+> `pcf1: SLURM_TMPDIR is required for offline caches`. No model/H100 work,
+> scientific gate, score, or protected-data open occurred. All 28 downstream
+> jobs `750977--751004` were explicitly cancelled, the queue is empty, and
+> every job records zero restarts. Formal result is `null`; remote terminal
+> receipt SHA-256 is
+> `366ebd73e13d1f944b1a233bf86c87440a23295ecdc4caa4b045462a8d3dbef0`.
+> This is preserved terminal infrastructure evidence, not a wrong answer.
+> The frozen contract forbids replay or retry, and no successor is authorized.
+>
 > The storage blocker is closed: settled Lustre use is
 > `838,918,136 KiB / 768,478`, leaving
 > `220,143,624 KiB / 241,522` of hard-limit headroom. The exact ledger is
@@ -24,12 +37,10 @@
 > `4e3aaf268e3d16ba900b467c543ac074c9c738f5dee05d0d8b22f0366ae99a33`,
 > `f27124db3d134a1e3dbde06958ab03220cd5e9585abcc356baa6a49d9edd1f1e`,
 > and `025190cde6346cdbebfc04a06650f4813e2e8ead5350eec55c0b460caabb362f`.
-> Prior libc-pin, memfd-ABI,
-> UTF-8-descriptor, direct-PID-1 CPU-exit-`137`, and
+> Prior libc-pin, memfd-ABI, UTF-8-descriptor, direct-PID-1 CPU-exit-`137`, and
 > root-writability/safe-import admissions failed closed, emitted no receipt,
 > and ran no scientific/model/H100 work; their infrastructure evidence is
-> preserved. No scientific/model/H100 job or protected-data access has yet
-> occurred.
+> preserved. Both storage and sandbox gates remain PASS.
 >
 > The sole gate is immutable: unchanged >= `387/1289` with every domain
 > nonzero; revision >= unchanged + 65 and >= self-refinement + 39 with no
@@ -37,11 +48,11 @@
 > of both revision-correct and unchanged-correct identities and no per-domain
 > loss against revision; and exact `1289/1289` custody/order, zero candidate
 > assessment truncation, zero malformed selections, complete hashes and
-> accounting, and zero holdout/public/product access. One formal PASS or FAIL
-> stops PCF1. Infrastructure failure is not a wrong answer and permits no
-> replay or retry; no outcome automatically opens a successor or protected
-> split. NDR1, KCR1, VTE1, the natural-language microcode bridge, Q35 edit
-> cascade, and small-OLMoE variants remain immutable closed lanes.
+> accounting, and zero holdout/public/product access. This gate was never
+> reached and emitted no formal PASS or FAIL; its result is `null`. The
+> terminal infrastructure outcome permits no replay, retry, successor, or
+> protected split. NDR1, KCR1, VTE1, the natural-language microcode bridge,
+> Q35 edit cascade, and small-OLMoE variants remain immutable closed lanes.
 
 > **PHASE CLOSED AFTER VTE1 CONJUNCTIVE FAIL — 2026-08-11:** Frozen fit
 > `750791`, source-disjoint shards `750841--750844`, and atomic merge `750845`
