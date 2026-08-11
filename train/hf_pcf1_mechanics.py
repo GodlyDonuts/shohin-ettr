@@ -168,9 +168,10 @@ def validate_compute_host_receipt(path: Path, expected_sha256: str) -> dict[str,
         or receipt.get("partition") != "normal"
         or not isinstance(receipt.get("node"), str)
         or not receipt["node"]
-        or receipt.get("node") in {"evc26", "evc29", "evc31", "evc32", "evc38", "evc46"}
+        or receipt.get("node")
+        in {"evc26", "evc29", "evc31", "evc32", "evc33", "evc38", "evc46"}
         or receipt.get("excluded_nodes")
-        != ["evc26", "evc29", "evc31", "evc32", "evc38", "evc46"]
+        != ["evc26", "evc29", "evc31", "evc32", "evc33", "evc38", "evc46"]
         or not invoked.is_absolute()
         or not resolved.is_absolute()
         or invoked.resolve(strict=True) != resolved

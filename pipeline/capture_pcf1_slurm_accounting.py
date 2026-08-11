@@ -15,7 +15,7 @@ from typing import Any, Callable
 SCHEMA = "shohin-pcf1-slurm-accounting-v1"
 DISPATCH_SCHEMA = "shohin-pcf1-dispatch-v1"
 PARTITION = "normal"
-EXCLUDED = ("evc26", "evc29", "evc31", "evc32", "evc38", "evc46")
+EXCLUDED = ("evc26", "evc29", "evc31", "evc32", "evc33", "evc38", "evc46")
 FIELDS = (
     "JobIDRaw",
     "State",

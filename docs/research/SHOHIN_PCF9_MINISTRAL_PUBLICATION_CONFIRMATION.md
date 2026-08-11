@@ -1,6 +1,13 @@
 # PCF9: Ministral Publication Confirmation Successor
 
-Status: prospectively frozen on 2026-08-11 before PCF9 admission or compute.
+Status: closed terminal-null on 2026-08-11.
+
+Terminal update: preparation completed. Mechanics had one visible H100 and
+completed its ephemeral update, then rejected its valid seven-node
+compute-host receipt because a duplicated Python validator still required the
+former six-node exclusion list. This occurred before mechanics generation,
+B1, candidates, assessor read, or scoring. Preserve
+`SHOHIN_PCF9_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
 
 PCF8 is closed with formal scientific result `null`. Preparation, no-score
 mechanics, and the frozen B1 training completed. Draft task `751823_3`

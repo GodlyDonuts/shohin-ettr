@@ -1,0 +1,38 @@
+{
+  "schema": "shohin-pcf9-terminal-infrastructure-receipt-v1",
+  "status": "terminal_compute_host_exclusion_validator_mismatch",
+  "date": "2026-08-11",
+  "source_commit": "24121fc14f5f427e49de505de0d227a91b5974a8",
+  "runtime_manifest_sha256": "b6696f630249e0f07d5b9a63fd487db9f4ce68ad52280df87b41ed93c1dff30b",
+  "run_id": "pcf9_ministral_24121fc_r1",
+  "jobs": {
+    "prepare": {"job_id": 751875, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 139, "node": "evc21", "restarts": 0},
+    "mechanics": {"job_id": 751876, "state": "FAILED", "exit_code": "1:0", "elapsed_seconds": 166, "node": "evc27", "restarts": 0},
+    "downstream_root_jobs_cancelled": 27,
+    "downstream_started": 0,
+    "terminal_job_id": 751903
+  },
+  "failure_boundary": {
+    "cause": "compute-host receipt correctly included evc33 while a duplicated mechanics-validator constant still required the former exclusion list",
+    "message": "PCF1MechanicsError: PCF1 compute-host admission receipt differs",
+    "compute_host_receipt_sha256": "06fbe171f958925233d8d46b0c8b0ad6c2da6b70b07edf6a1763fac0fe35ebab",
+    "compute_host_receipt_excluded_nodes": ["evc26", "evc29", "evc31", "evc32", "evc33", "evc38", "evc46"],
+    "mechanics_validator_excluded_nodes": ["evc26", "evc29", "evc31", "evc32", "evc38", "evc46"]
+  },
+  "scientific_state": {
+    "ephemeral_mechanics_update_completed": true,
+    "mechanics_generation_started": false,
+    "b1_training_started": false,
+    "complete_draft_candidates_published": 0,
+    "confirmation_assessor_semantic_reads": 0,
+    "confirmation_score_emitted": false,
+    "formal_scientific_result": null
+  },
+  "files": {
+    "mechanics_stdout_sha256": "79686efca4b2e58078b7fb4425a4ae443b5168aa4c99a2c305805fa861dea500",
+    "mechanics_stderr_sha256": "15bf9e6629b639eee868996e4267836364a6b8bbac6476d5b700845b003d8c41"
+  },
+  "remote_evidence": {"files": 23, "directories": 8, "logical_bytes": 50039171, "all_members_nonwritable": true},
+  "queue_empty_after": true,
+  "retry_count": 0
+}

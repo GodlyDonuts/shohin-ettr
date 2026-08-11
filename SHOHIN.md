@@ -4,6 +4,16 @@
 
 ## Read this first
 
+**PCF10 is now prospectively frozen.** PCF9 preparation completed; mechanics
+had one visible H100 and completed its ephemeral update, then a duplicated
+Python constant rejected the valid seven-node compute-host receipt before
+mechanics generation. B1, candidates, assessor semantic reads, and scoring did
+not run, so PCF9's formal result is `null`. PCF10 only synchronizes that same
+exclusion set in mechanics and Slurm-accounting validation. It starts from a
+fresh root and changes no scientific byte, setting, threshold, custody clause,
+or terminal gate. See
+`docs/research/SHOHIN_PCF10_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+
 **PCF2 is now prospectively authorized and frozen.** PCF1 remains closed with
 formal result `null`; its CPU-only first job failed before model, data, H100,
 or assessor work because Newton did not set `SLURM_TMPDIR`. After preserving

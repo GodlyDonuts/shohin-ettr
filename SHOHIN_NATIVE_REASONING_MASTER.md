@@ -1,6 +1,22 @@
 # Shohin Native Reasoning Master Ledger
 
-## PCF9 current execution boundary — 2026-08-11
+## PCF10 current execution boundary — 2026-08-11
+
+PCF9 is terminal-null. Preparation completed, and mechanics had a visible
+H100 and completed its ephemeral update, but a duplicated Python validator
+still required the former six-node exclusion list and rejected the valid
+seven-node compute-host receipt before mechanics generation. B1 and all
+downstream stages never started. Preserve
+`docs/research/SHOHIN_PCF9_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
+
+PCF10 is prospectively frozen with exactly one infrastructure repair:
+synchronize the already-frozen seven-node exclusion set in mechanics and
+Slurm-accounting validation. It uses a fresh root and replays the complete
+graph. Every scientific byte, setting, threshold, custody boundary, and the
+sole terminal gate remain unchanged. Follow
+`docs/research/SHOHIN_PCF10_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+
+## PCF9 execution boundary — 2026-08-11
 
 PCF8 is terminal-null. Its preparation, no-score mechanics, and frozen B1
 training completed, then draft task `751823_3` failed on `evc33` before
