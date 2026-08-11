@@ -12,6 +12,10 @@
 > remains closed and `null`; do not rewrite or retry its receipt. PCF2 permits
 > exactly one fresh graph after both canaries and all admission gates pass,
 > then stops on infrastructure failure, formal `PASS`, or formal `FAIL`.
+> The scratch admission gate is now PASS: CPU canary `751649` and H100 canary
+> `751650` completed with zero restarts, and exact-node checks `751652--751653`
+> proved their private paths absent. Bind the successor to
+> `docs/research/SHOHIN_PCF2_SCRATCH_QUALIFICATION_20260811.json`.
 
 
 > **PCF1 TERMINAL INFRASTRUCTURE FAILURE; NO REPLAY, RETRY, OR SUCCESSOR —

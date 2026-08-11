@@ -13,6 +13,11 @@ PCF1 host, data, arms, prompts, seeds, thresholds, sealed board, and stop rule.
 It requires independent CPU and H100 scratch canaries before the one scientific
 graph. See
 `docs/research/SHOHIN_PCF2_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+Those canaries now pass: CPU `751649` on `evc21` and H100 `751650` on
+`evc23`, both `COMPLETED 0:0` with zero restarts; exact-node postchecks
+`751652--751653` found both private scratch paths absent. The immutable
+qualification is
+`docs/research/SHOHIN_PCF2_SCRATCH_QUALIFICATION_20260811.json`.
 
 The sole authorized publication experiment was **PCF1**, one prospective,
 source-disjoint confirmation of the surviving dense architecture on pinned
