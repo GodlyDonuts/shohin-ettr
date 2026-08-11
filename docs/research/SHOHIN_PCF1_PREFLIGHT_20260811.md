@@ -210,6 +210,21 @@ they are not locally recoverable, and only their compact git conclusions and
 hashes remain. No protected PCF1, pinned-host, qualified-release, credential,
 or unrelated-workspace anchor was removed.
 
+## Live deployment admission chronology
+
+The first packaged-runtime live preflight stopped before creating the run
+root. Its hash-only frozen-input verifier exposed only `pipeline/` on
+`PYTHONPATH`, while the hardened input module now imports the packaged
+code-sandbox module from `train/`. Python raised `ModuleNotFoundError` before
+any model load, H100 allocation, assessor open, data materialization, or
+scientific job submission. This is an infrastructure admission failure, not a
+PCF1 result or retry. The dispatcher now exposes both immutable packaged
+roots for that verifier and directly regression-tests the exact path. The same
+narrow correction also raises the executable preflight minimum from the old
+96-GiB/100,000-inode floor to the frozen 128-GiB/150,000-inode admission
+target. A fresh runtime, checkout, and complete preflight are required before
+the sole graph may be submitted.
+
 ## Sole scientific gate and stop
 
 The only score-bearing decision remains the frozen 1,289-row conjunctive

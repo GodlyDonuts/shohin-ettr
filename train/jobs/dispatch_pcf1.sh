@@ -12,8 +12,8 @@ readonly MODEL_ROOT_PIN=/lustre/fs1/home/sa305415/shohin/artifacts/external/mini
 readonly PYTHON_ENTRYPOINT_PIN=/lustre/fs1/home/sa305415/shohin/envs/product-reasoning-b3a3603-r2/bin/python
 readonly PYTHON_RESOLVED_PIN=/lustre/fs1/home/sa305415/shohin/miniforge3/bin/python3.13
 readonly PYTHON_SHA256_PIN=051a031d827eab9778e982571db754662809164c8a3ec01e9beea1e1088123e0
-readonly MIN_FREE_BYTES=$((96 * 1024 * 1024 * 1024))
-readonly MIN_FREE_INODES=100000
+readonly MIN_FREE_BYTES=$((128 * 1024 * 1024 * 1024))
+readonly MIN_FREE_INODES=150000
 readonly DRAFT_SHARDS=16
 readonly EVAL_SHARDS=4
 export PATH=$SUBMISSION_PATH
@@ -315,7 +315,7 @@ PY
   [[ "$(sha256sum "$MODEL_ROOT/SOURCE_REVISION" | cut -d' ' -f1)" == 3576c1bfaa0652940d12817ad3267ffe65645dc558ceb9a153ffb72f7211a982 ]] || \
     die "authoritative model revision receipt differs"
   pcf1_verify_model_tree "$MODEL_ROOT" "$MODEL_ROOT/SHA256SUMS" 58 35706515534
-  PYTHONPATH="$RUNTIME/pipeline" "$PYTHON" - "$PAIRS" "$MATH_BANK" "$SCIENCE_BANK" "$CODE_BANK" "$B1_DATA_LEGACY" <<'PY'
+  PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline" "$PYTHON" - "$PAIRS" "$MATH_BANK" "$SCIENCE_BANK" "$CODE_BANK" "$B1_DATA_LEGACY" <<'PY'
 import hashlib
 from pathlib import Path
 import sys

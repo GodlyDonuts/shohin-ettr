@@ -84,6 +84,13 @@ def test_dry_run_is_complete_acyclic_and_terminal() -> None:
 
 def test_submit_uses_allowlisted_exports_and_literal_one_open() -> None:
     source = _dispatcher().read_text(encoding="utf-8")
+    assert "MIN_FREE_BYTES=$((128 * 1024 * 1024 * 1024))" in source
+    assert "MIN_FREE_INODES=150000" in source
+    assert (
+        'PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline" "$PYTHON" - '
+        '"$PAIRS" "$MATH_BANK" "$SCIENCE_BANK" "$CODE_BANK" '
+        '"$B1_DATA_LEGACY"'
+    ) in source
     assert '--export="$exports"' in source
     assert '--export="NONE,' not in source
     assert "--no-requeue" in source
