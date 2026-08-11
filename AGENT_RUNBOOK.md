@@ -1,15 +1,16 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **PCF10 PROSPECTIVELY FROZEN — 2026-08-11:** PCF9 prepare completed, then
-> mechanics rejected its valid seven-node compute-host receipt because a
-> duplicated Python validator still required the former six-node exclusion
-> list. The allocation had one visible H100 and completed the ephemeral update,
-> but mechanics generation, B1, candidates, assessor read, and scoring did not
-> run. Preserve
-> `docs/research/SHOHIN_PCF9_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
-> PCF10 only synchronizes that exclusion constant in mechanics and accounting,
-> starts from a fresh root, and changes no scientific or custody clause. Follow
-> `docs/research/SHOHIN_PCF10_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+> **PCF11 PROSPECTIVELY FROZEN — 2026-08-11:** PCF10 prepare, mechanics, B1,
+> all 16 draft shards, and the ordered 7,113-row draft merge completed. CPU
+> materialization then rejected the valid trusted-reference receipt because its
+> validator still required the superseded generated-candidate schema. Revision,
+> confirmation generation, assessor semantic read, and scoring did not run.
+> Preserve
+> `docs/research/SHOHIN_PCF10_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
+> PCF11 only synchronizes that validator with the exact writer fields, starts
+> from a fresh root, replays every stage, and changes no scientific or custody
+> clause. Follow
+> `docs/research/SHOHIN_PCF11_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
 > **PCF9 PROSPECTIVELY FROZEN — 2026-08-11:** PCF8 preparation, no-score
 > mechanics, and B1 completed. Draft task `751823_3` then failed before

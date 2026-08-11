@@ -1191,6 +1191,8 @@ def materialize_drafts(
                     "candidate_policy_sha256",
                     "sandbox_config_sha256",
                     "allocation_probe_sha256",
+                    "reference_assessment_mode",
+                    "generated_candidate_policy_applied",
                     "termination_classification",
                 }
                 or row.get("split") not in NONSEALED_SPLITS
@@ -1208,6 +1210,8 @@ def materialize_drafts(
                 or row.get("sandbox_config_sha256") != SANDBOX_CONFIG_SHA256
                 or row.get("allocation_probe_sha256")
                 != reference_receipt.get("probe_sha256")
+                or row.get("reference_assessment_mode") != "trusted_reference"
+                or row.get("generated_candidate_policy_applied") is not False
                 or row.get("termination_classification") != "trusted_tests_completed"
                 for row in reference_rows
             )
@@ -1231,7 +1235,11 @@ def materialize_drafts(
             != reference_receipt.get("probe_sha256")
             or reference_preflight.get("sandbox_receipt_sha256")
             != sha256_file(reference_path)
-            or reference_preflight.get("all_policy_accepted") is not True
+            or reference_preflight.get("reference_assessment_mode")
+            != "trusted_reference"
+            or reference_preflight.get("generated_candidate_policy_applied")
+            is not False
+            or reference_preflight.get("all_references_passed") is not True
             or reference_preflight.get("all_sandbox_passed") is not True
             or reference_preflight.get("holdout_reference_content_accesses") != 0
         ):

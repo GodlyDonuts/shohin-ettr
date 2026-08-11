@@ -4,15 +4,15 @@
 
 ## Read this first
 
-**PCF10 is now prospectively frozen.** PCF9 preparation completed; mechanics
-had one visible H100 and completed its ephemeral update, then a duplicated
-Python constant rejected the valid seven-node compute-host receipt before
-mechanics generation. B1, candidates, assessor semantic reads, and scoring did
-not run, so PCF9's formal result is `null`. PCF10 only synchronizes that same
-exclusion set in mechanics and Slurm-accounting validation. It starts from a
-fresh root and changes no scientific byte, setting, threshold, custody clause,
-or terminal gate. See
-`docs/research/SHOHIN_PCF10_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+**PCF11 is now prospectively frozen.** PCF10 preparation, mechanics, B1, all
+16 draft shards, and the ordered 7,113-row draft merge completed. CPU
+materialization then rejected the valid trusted-reference preflight because a
+stale validator still required the superseded receipt schema. Revision,
+confirmation generation, assessor semantic reads, and scoring did not run, so
+PCF10's formal result is `null`. PCF11 only synchronizes that validator with
+the exact writer schema, starts from a fresh root, and changes no scientific
+byte, setting, threshold, custody clause, or terminal gate. See
+`docs/research/SHOHIN_PCF11_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
 **PCF2 is now prospectively authorized and frozen.** PCF1 remains closed with
 formal result `null`; its CPU-only first job failed before model, data, H100,

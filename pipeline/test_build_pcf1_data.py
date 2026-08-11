@@ -261,6 +261,59 @@ def test_freeze_binds_nonsealed_mbpp_reference_preflight_without_holdout_access(
     )
 
 
+def test_materialize_accepts_exact_trusted_reference_preflight_schema(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from pcf1_code_sandbox import CANDIDATE_POLICY_SHA256, SANDBOX_CONFIG_SHA256
+    import pcf1_code_sandbox
+
+    fixture = _fixture(tmp_path)
+    monkeypatch.setattr(pcf1_data, "FROZEN_CUSTODY", fixture["contract"])
+    monkeypatch.setattr(
+        pcf1_code_sandbox, "validate_sandbox_receipt_payload", lambda _receipt: None
+    )
+
+    def evaluate(source: dict[str, Any], split: str) -> dict[str, Any]:
+        candidate = source["code"]
+        program = candidate + "\n" + "\n".join(source["test_list"])
+        return {
+            "identity_sha256": source["identity_sha256"],
+            "split": split,
+            "candidate_source_sha256": hashlib.sha256(candidate.encode()).hexdigest(),
+            "program_sha256": hashlib.sha256(program.encode()).hexdigest(),
+            "setup_source_sha256": hashlib.sha256(b"").hexdigest(),
+            "setup_qualification_sha256": "e" * 64,
+            "candidate_policy_sha256": CANDIDATE_POLICY_SHA256,
+            "sandbox_config_sha256": SANDBOX_CONFIG_SHA256,
+            "allocation_probe_sha256": "c" * 64,
+            "reference_assessment_mode": "trusted_reference",
+            "generated_candidate_policy_applied": False,
+            "termination_classification": "trusted_tests_completed",
+        }
+
+    source_root = tmp_path / "frozen"
+    freeze_sources(
+        pairs_path=fixture["pairs"],
+        bank_paths=fixture["banks"],
+        output=source_root,
+        assessor_output=tmp_path / "confirmation_assessors.jsonl",
+        assessor_receipt_output=tmp_path / "confirmation_assessor_receipt.json",
+        reference_evaluator=evaluate,
+        reference_sandbox_receipt={"probe_sha256": "c" * 64},
+        contract=fixture["contract"],
+    )
+    report = materialize_drafts(
+        source_root=source_root,
+        drafts_path=_drafts(fixture, tmp_path / "drafts.jsonl"),
+        assessor_receipt_path=tmp_path / "confirmation_assessor_receipt.json",
+        output=tmp_path / "materialized",
+        contract=fixture["contract"],
+    )
+
+    assert report["status"] == "complete"
+    assert report["sealed_access"] == {"holdout": 0, "product": 0, "public": 0}
+
+
 def _drafts(fixture: dict[str, Any], path: Path, *, extra: str | None = None) -> Path:
     rows = []
     for split in ("train", "development"):
