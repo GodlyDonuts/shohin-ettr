@@ -1,5 +1,19 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **PCF2 PROSPECTIVELY FROZEN — 2026-08-11:** The user explicitly authorized
+> one separately named successor after PCF1's pre-science CPU-only terminal
+> failure was preserved. PCF2 changes only allocation-local scratch handling:
+> deterministic private `/tmp` per job/task, 128-GiB/150,000-inode capacity,
+> fail-closed lifecycle checks, exact cleanup, and independent CPU plus H100
+> canaries. The pinned host, sources, arms, prompts, seeds, training geometry,
+> thresholds, single assessor open, sealed-data counters, and stop rule are
+> unchanged. Execute only the contract in
+> `docs/research/SHOHIN_PCF2_MINISTRAL_PUBLICATION_CONFIRMATION.md`. PCF1
+> remains closed and `null`; do not rewrite or retry its receipt. PCF2 permits
+> exactly one fresh graph after both canaries and all admission gates pass,
+> then stops on infrastructure failure, formal `PASS`, or formal `FAIL`.
+
+
 > **PCF1 TERMINAL INFRASTRUCTURE FAILURE; NO REPLAY, RETRY, OR SUCCESSOR —
 > 2026-08-11:** The surviving qualified claim is the dense
 > same-family source-only draft -> trained revision -> learned

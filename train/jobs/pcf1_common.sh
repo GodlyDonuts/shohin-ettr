@@ -11,6 +11,9 @@ readonly PCF1_MODEL_CONFIG_SHA256=5aae04beb9f2a9949eb1df870cf47ba292012a066bdcdc
 readonly PCF1_MODEL_SOURCE_REVISION_SHA256=3576c1bfaa0652940d12817ad3267ffe65645dc558ceb9a153ffb72f7211a982
 # Sole exact historical-environment control-plane exception.
 readonly PCF1_PYTHON_ENTRYPOINT=/lustre/fs1/home/sa305415/shohin/envs/product-reasoning-b3a3603-r2/bin/python
+readonly PCF1_SCRATCH_PARENT=/tmp
+readonly PCF1_SCRATCH_MIN_BYTES=$((128 * 1024 * 1024 * 1024))
+readonly PCF1_SCRATCH_MIN_INODES=150000
 
 pcf1_die() {
   printf 'pcf1: %s\n' "$*" >&2
@@ -400,13 +403,14 @@ pcf1_stage_model_to() {
 
 pcf1_stage_model() {
   local destination
-  [[ -n "${SLURM_TMPDIR:-}" ]] || pcf1_die "SLURM_TMPDIR is required for model staging"
+  [[ "${PCF1_SCRATCH_OWNED:-0}" == 1 ]] || \
+    pcf1_die "model staging requires parent-owned scratch"
   destination=$SLURM_TMPDIR/pcf1-model
   pcf1_stage_model_to "$destination" 58 35706515534
 }
 
 pcf1_export_runtime() {
-  [[ -n "${SLURM_TMPDIR:-}" ]] || pcf1_die "SLURM_TMPDIR is required for offline caches"
+  pcf1_initialize_scratch
   local cache_root=$SLURM_TMPDIR/pcf1-cache
   mkdir -p "$cache_root/hf" "$cache_root/transformers" "$cache_root/datasets" \
     "$cache_root/xdg" "$cache_root/tmp"
@@ -426,6 +430,167 @@ pcf1_export_runtime() {
   export XDG_CACHE_HOME=$cache_root/xdg
   export TMPDIR=$cache_root/tmp
   export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
+}
+
+pcf1_initialize_scratch_to() {
+  local parent=$1
+  local minimum_bytes=$2
+  local minimum_inodes=$3
+  local expected_parent_uid=$4
+  pcf1_require PYTHON
+  [[ "$minimum_bytes" =~ ^[1-9][0-9]*$ ]] || pcf1_die "scratch byte floor differs"
+  [[ "$minimum_inodes" =~ ^[1-9][0-9]*$ ]] || pcf1_die "scratch inode floor differs"
+  [[ "$expected_parent_uid" =~ ^[0-9]+$ ]] || pcf1_die "scratch parent UID differs"
+  [[ "${SLURM_JOB_ID:-}" =~ ^[1-9][0-9]*$ ]] || pcf1_die "SLURM_JOB_ID is required for scratch"
+  local task=scalar
+  if [[ -n "${SLURM_ARRAY_TASK_ID:-}" ]]; then
+    [[ "$SLURM_ARRAY_TASK_ID" =~ ^[0-9]+$ ]] || pcf1_die "scratch array task differs"
+    task=$SLURM_ARRAY_TASK_ID
+  fi
+  local expected=$parent/pcf1-$SLURM_JOB_ID-$task
+  if [[ "${PCF1_SCRATCH_OWNED:-0}" == 1 ]]; then
+    [[ "${SLURM_TMPDIR:-}" == "$expected" ]] || pcf1_die "owned scratch path differs"
+    [[ -d "$SLURM_TMPDIR" && ! -L "$SLURM_TMPDIR" ]] || pcf1_die "owned scratch disappeared"
+    [[ "$(realpath "$SLURM_TMPDIR")" == "$expected" ]] || pcf1_die "owned scratch resolution differs"
+    return
+  fi
+  [[ -z "${SLURM_TMPDIR:-}" ]] || pcf1_die "ambient SLURM_TMPDIR is not admissible"
+  local scratch_record
+  scratch_record=$("$PYTHON" - "$parent" "$SLURM_JOB_ID" "$task" \
+    "$minimum_bytes" "$minimum_inodes" "$expected_parent_uid" <<'PY'
+import os
+from pathlib import Path
+import stat
+import sys
+
+parent = Path(sys.argv[1])
+job_id, task = sys.argv[2:4]
+minimum_bytes, minimum_inodes, expected_parent_uid = map(int, sys.argv[4:])
+parent_status = parent.lstat()
+if (
+    not stat.S_ISDIR(parent_status.st_mode)
+    or stat.S_ISLNK(parent_status.st_mode)
+    or parent.resolve(strict=True) != parent
+    or parent_status.st_uid != expected_parent_uid
+    or stat.S_IMODE(parent_status.st_mode) != 0o1777
+):
+    raise SystemExit("PCF1 scratch parent differs")
+name = f"pcf1-{job_id}-{task}"
+if not name.replace("-", "").isalnum() or "/" in name:
+    raise SystemExit("PCF1 scratch name differs")
+path = parent / name
+if path.exists() or path.is_symlink():
+    raise SystemExit("PCF1 scratch path already exists")
+path.mkdir(mode=0o700)
+try:
+    status = path.lstat()
+    if (
+        not stat.S_ISDIR(status.st_mode)
+        or stat.S_ISLNK(status.st_mode)
+        or status.st_uid != os.getuid()
+        or stat.S_IMODE(status.st_mode) != 0o700
+        or status.st_dev != parent_status.st_dev
+        or path.resolve(strict=True) != path
+        or any(path.iterdir())
+    ):
+        raise SystemExit("PCF1 created scratch geometry differs")
+    filesystem = os.statvfs(path)
+    available_bytes = filesystem.f_bavail * filesystem.f_frsize
+    available_inodes = filesystem.f_favail
+    if available_bytes < minimum_bytes or available_inodes < minimum_inodes:
+        raise SystemExit("PCF1 allocation-local scratch capacity is unsafe")
+    probe = path / ".pcf1-write-probe"
+    renamed = path / ".pcf1-write-probe-renamed"
+    descriptor = os.open(
+        probe,
+        os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0),
+        0o600,
+    )
+    try:
+        os.write(descriptor, b"PCF1 allocation scratch probe\n")
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+    probe.rename(renamed)
+    directory = os.open(path, os.O_RDONLY)
+    try:
+        os.fsync(directory)
+    finally:
+        os.close(directory)
+    renamed.unlink()
+    print(
+        "\t".join(
+            map(
+                str,
+                (path, available_bytes, available_inodes, status.st_dev),
+            )
+        )
+    )
+except BaseException:
+    try:
+        for child in path.iterdir():
+            child.unlink(missing_ok=True)
+        path.rmdir()
+    finally:
+        raise
+PY
+  )
+  IFS=$'\t' read -r SLURM_TMPDIR PCF1_SCRATCH_AVAILABLE_BYTES \
+    PCF1_SCRATCH_AVAILABLE_INODES PCF1_SCRATCH_DEVICE <<<"$scratch_record"
+  [[ "$SLURM_TMPDIR" == "$expected" ]] || pcf1_die "created scratch path differs"
+  PCF1_SCRATCH_PARENT_ACTIVE=$parent
+  PCF1_SCRATCH_OWNED=1
+  export SLURM_TMPDIR PCF1_SCRATCH_PARENT_ACTIVE PCF1_SCRATCH_OWNED
+  export PCF1_SCRATCH_AVAILABLE_BYTES PCF1_SCRATCH_AVAILABLE_INODES PCF1_SCRATCH_DEVICE
+  trap pcf1_cleanup_scratch EXIT
+  trap 'exit 130' INT
+  trap 'exit 143' TERM
+}
+
+pcf1_initialize_scratch() {
+  pcf1_initialize_scratch_to "$PCF1_SCRATCH_PARENT" \
+    "$PCF1_SCRATCH_MIN_BYTES" "$PCF1_SCRATCH_MIN_INODES" 0
+}
+
+pcf1_cleanup_scratch() {
+  [[ "${PCF1_SCRATCH_OWNED:-0}" == 1 ]] || return 0
+  local task=scalar
+  [[ -z "${SLURM_ARRAY_TASK_ID:-}" ]] || task=$SLURM_ARRAY_TASK_ID
+  local expected=${PCF1_SCRATCH_PARENT_ACTIVE:?}/pcf1-${SLURM_JOB_ID:?}-$task
+  [[ "${SLURM_TMPDIR:-}" == "$expected" ]] || pcf1_die "scratch cleanup target differs"
+  "$PYTHON" - "$PCF1_SCRATCH_PARENT_ACTIVE" "$SLURM_TMPDIR" <<'PY'
+from pathlib import Path
+import os
+import shutil
+import stat
+import sys
+
+parent, path = map(Path, sys.argv[1:])
+parent_status = parent.lstat()
+status = path.lstat()
+if (
+    path.parent != parent
+    or path.resolve(strict=True) != path
+    or not path.name.startswith("pcf1-")
+    or not stat.S_ISDIR(status.st_mode)
+    or stat.S_ISLNK(status.st_mode)
+    or status.st_uid != os.getuid()
+    or status.st_dev != parent_status.st_dev
+):
+    raise SystemExit("PCF1 scratch cleanup boundary differs")
+shutil.rmtree(path)
+if path.exists() or path.is_symlink():
+    raise SystemExit("PCF1 scratch cleanup failed")
+directory = os.open(parent, os.O_RDONLY)
+try:
+    os.fsync(directory)
+finally:
+    os.close(directory)
+PY
+  PCF1_SCRATCH_OWNED=0
+  unset SLURM_TMPDIR TMPDIR HF_HOME HUGGINGFACE_HUB_CACHE TRANSFORMERS_CACHE
+  unset HF_DATASETS_CACHE XDG_CACHE_HOME
+  export PCF1_SCRATCH_OWNED
 }
 
 pcf1_validate_json() {

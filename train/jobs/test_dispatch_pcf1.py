@@ -206,7 +206,11 @@ def test_submit_uses_allowlisted_exports_and_literal_one_open() -> None:
         "pcf1_apply_commit.sbatch",
     }:
         job = repository / "train/jobs" / job_name
-        assert "pcf1_assert_gpu_environment" in job.read_text(encoding="utf-8")
+        job_source = job.read_text(encoding="utf-8")
+        assert "pcf1_assert_gpu_environment" in job_source
+        assert job_source.index("pcf1_initialize_scratch") < job_source.index(
+            "model=$(pcf1_stage_model)"
+        )
 
 
 def test_all_jobs_pin_partition_and_exclusions() -> None:

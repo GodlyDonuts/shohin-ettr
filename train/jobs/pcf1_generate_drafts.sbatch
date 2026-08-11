@@ -55,6 +55,7 @@ PY
 shard_root=$DRAFT_ROOT/shards/$SLURM_ARRAY_TASK_ID
 pcf1_require_fresh "$shard_root/candidates.jsonl"
 pcf1_require_fresh "$shard_root/report.json"
+pcf1_initialize_scratch
 model=$(pcf1_stage_model)
 pcf1_export_runtime
 nvidia-smi

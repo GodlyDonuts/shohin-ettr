@@ -40,8 +40,15 @@ shard_root=$OUTPUT_ROOT/shards/$SLURM_ARRAY_TASK_ID
 pcf1_require_fresh "$shard_root/candidates.jsonl"
 pcf1_require_fresh "$shard_root/report.json"
 sandbox_probe=
+pcf1_initialize_scratch
 freeze_sandbox_probe() {
+  local status=$?
+  trap - EXIT
   [[ -z "$sandbox_probe" || ! -f "$sandbox_probe" ]] || chmod a-w "$sandbox_probe"
+  if ! pcf1_cleanup_scratch; then
+    [[ "$status" -ne 0 ]] || status=1
+  fi
+  exit "$status"
 }
 trap freeze_sandbox_probe EXIT
 extra_arguments=()
@@ -75,6 +82,7 @@ elif [[ -n "${MECHANICS_REPORT:-}" || -n "${SANDBOX_RECEIPT:-}" ]]; then
   pcf1_die "confirmation generation must not receive sandbox admission paths"
 fi
 python=$(pcf1_python)
+pcf1_initialize_scratch
 model=$(pcf1_stage_model)
 pcf1_export_runtime
 nvidia-smi
@@ -99,4 +107,5 @@ nvidia-smi
   --seed 2026080816
 pcf1_validate_json "$shard_root/report.json" shohin-pcf1-evaluation-v1
 pcf1_freeze_tree "$shard_root"
+pcf1_cleanup_scratch
 trap - EXIT

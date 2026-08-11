@@ -34,6 +34,7 @@ pcf1_validate_json "$PAIRS_REPORT" shohin-pcf1-confirmation-pair-report-v1
 pcf1_require_fresh "$SELECTIONS"
 pcf1_require_fresh "$REPORT"
 python=$(pcf1_python)
+pcf1_initialize_scratch
 model=$(pcf1_stage_model)
 pcf1_export_runtime
 nvidia-smi

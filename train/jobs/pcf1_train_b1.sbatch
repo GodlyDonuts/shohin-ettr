@@ -72,6 +72,7 @@ if (
 ):
     raise SystemExit("PCF1 mechanics gate differs")
 PY
+pcf1_initialize_scratch
 model=$(pcf1_stage_model)
 pcf1_export_runtime
 nvidia-smi

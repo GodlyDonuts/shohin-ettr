@@ -51,11 +51,18 @@ if (
 ):
     raise SystemExit("PCF1 score sandbox admission differs")
 PY
+pcf1_initialize_scratch
 freeze_score_claims() {
+  local status=$?
+  trap - EXIT
   [[ ! -d "$OUTPUT_ROOT" || -L "$OUTPUT_ROOT" ]] || pcf1_freeze_tree "$OUTPUT_ROOT"
   [[ ! -f "$sandbox_probe" ]] || chmod a-w "$sandbox_probe"
   [[ ! -f "$score_consumption" ]] || chmod a-w "$score_consumption"
   [[ ! -f "$terminal_failure" ]] || chmod a-w "$terminal_failure"
+  if ! pcf1_cleanup_scratch; then
+    [[ "$status" -ne 0 ]] || status=1
+  fi
+  exit "$status"
 }
 trap freeze_score_claims EXIT
 pcf1_export_runtime
@@ -113,4 +120,5 @@ PY
 pcf1_freeze_tree "$OUTPUT_ROOT"
 chmod a-w "$score_consumption"
 chmod a-w "$sandbox_probe"
+pcf1_cleanup_scratch
 trap - EXIT

@@ -192,6 +192,119 @@ test ! -L "$staged/model.safetensors"
     )
 
 
+def test_explicit_allocation_scratch_is_isolated_idempotent_and_cleaned(
+    tmp_path: Path,
+) -> None:
+    parent = tmp_path / "node-tmp"
+    parent.mkdir(mode=0o777)
+    parent.chmod(0o1777)
+    common = Path(__file__).with_name("pcf1_common.sh")
+    python = subprocess.run(
+        ["bash", "-c", "command -v python3"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    command = r"""
+set -euo pipefail
+source "$1"
+PYTHON=$2
+SLURM_JOB_ID=812345
+SLURM_ARRAY_TASK_ID=7
+unset SLURM_TMPDIR
+pcf1_initialize_scratch_to "$3" 1 1 "$4"
+test "$SLURM_TMPDIR" = "$3/pcf1-812345-7"
+test "$(stat -f '%Lp' "$SLURM_TMPDIR" 2>/dev/null || stat -c '%a' "$SLURM_TMPDIR")" = 700
+test -z "$(find "$SLURM_TMPDIR" -mindepth 1 -print -quit)"
+first=$SLURM_TMPDIR
+pcf1_initialize_scratch_to "$3" 1 1 "$4"
+test "$SLURM_TMPDIR" = "$first"
+printf payload > "$SLURM_TMPDIR/payload"
+pcf1_cleanup_scratch
+test ! -e "$first"
+test ! -L "$first"
+trap - EXIT INT TERM
+"""
+    subprocess.run(
+        [
+            "bash",
+            "-c",
+            command,
+            "pcf1-test",
+            str(common),
+            python,
+            str(parent),
+            str(os.getuid()),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_explicit_scratch_rejects_ambient_and_existing_paths(tmp_path: Path) -> None:
+    parent = tmp_path / "node-tmp"
+    parent.mkdir(mode=0o777)
+    parent.chmod(0o1777)
+    common = Path(__file__).with_name("pcf1_common.sh")
+    python = subprocess.run(
+        ["bash", "-c", "command -v python3"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    base = [str(common), python, str(parent), str(os.getuid())]
+    ambient = subprocess.run(
+        [
+            "bash",
+            "-c",
+            'set -euo pipefail; source "$1"; PYTHON=$2; SLURM_JOB_ID=812346; '
+            'SLURM_TMPDIR=/tmp/ambient; pcf1_initialize_scratch_to "$3" 1 1 "$4"',
+            "pcf1-test",
+            *base,
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert ambient.returncode != 0
+    assert "ambient SLURM_TMPDIR is not admissible" in ambient.stderr
+    collision = parent / "pcf1-812347-scalar"
+    collision.mkdir()
+    existing = subprocess.run(
+        [
+            "bash",
+            "-c",
+            'set -euo pipefail; source "$1"; PYTHON=$2; SLURM_JOB_ID=812347; '
+            'unset SLURM_TMPDIR; pcf1_initialize_scratch_to "$3" 1 1 "$4"',
+            "pcf1-test",
+            *base,
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert existing.returncode != 0
+    assert "scratch path already exists" in existing.stderr
+
+
+def test_scratch_canary_is_non_scientific_and_cleans_before_receipt() -> None:
+    repository = Path(__file__).parents[2]
+    source = (repository / "pipeline/jobs/pcf2_scratch_canary.sbatch").read_text(
+        encoding="utf-8"
+    )
+    assert '"scientific_work": False' in source
+    assert '"model_opened": False' in source
+    assert '"data_opened": False' in source
+    assert '"assessor_opened": False' in source
+    assert "pcf1_cleanup_scratch" in source
+    assert source.index("pcf1_cleanup_scratch") < source.index(
+        '"cleanup_verified": True'
+    )
+    assert "128 * 1024 * 1024 * 1024" in source
+    assert '"scratch_minimum_inodes": 150000' in source
+
+
 def test_model_tree_rejects_extra_file(tmp_path: Path) -> None:
     model = tmp_path / "model"
     model.mkdir()

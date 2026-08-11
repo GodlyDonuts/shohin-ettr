@@ -4,6 +4,16 @@
 
 ## Read this first
 
+**PCF2 is now prospectively authorized and frozen.** PCF1 remains closed with
+formal result `null`; its CPU-only first job failed before model, data, H100,
+or assessor work because Newton did not set `SLURM_TMPDIR`. After preserving
+that evidence, the user explicitly authorized one separately named successor.
+PCF2 changes only allocation-local scratch orchestration and keeps the exact
+PCF1 host, data, arms, prompts, seeds, thresholds, sealed board, and stop rule.
+It requires independent CPU and H100 scratch canaries before the one scientific
+graph. See
+`docs/research/SHOHIN_PCF2_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+
 The sole authorized publication experiment was **PCF1**, one prospective,
 source-disjoint confirmation of the surviving dense architecture on pinned
 `mistralai/Ministral-3-8B-Reasoning-2512@81eaece...d894`. The qualified

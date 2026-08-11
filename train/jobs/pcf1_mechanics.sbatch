@@ -32,8 +32,15 @@ pcf1_verify_sha256 "$B1_DATA" "$B1_DATA_SHA256"
 pcf1_reject_protected_path "$SOURCE_ROOT"
 pcf1_require_file "$SOURCE_ROOT/report.json"
 pcf1_require_fresh "$MECHANICS_ROOT"
+pcf1_initialize_scratch
 freeze_mechanics_evidence() {
+  local status=$?
+  trap - EXIT
   [[ ! -e "$MECHANICS_ROOT" ]] || chmod -R a-w "$MECHANICS_ROOT"
+  if ! pcf1_cleanup_scratch; then
+    [[ "$status" -ne 0 ]] || status=1
+  fi
+  exit "$status"
 }
 trap freeze_mechanics_evidence EXIT
 python=$(pcf1_python)
@@ -121,6 +128,7 @@ sandbox_receipt=$MECHANICS_ROOT/sandbox_receipt.json
   --output "$sandbox_receipt"
 sandbox_receipt_sha256=$(pcf1_validate_sandbox_receipt "$sandbox_receipt")
 
+pcf1_initialize_scratch
 model=$(pcf1_stage_model)
 "$nvidia_smi"
 adapter_root=$MECHANICS_ROOT/ephemeral_adapter
@@ -173,4 +181,5 @@ checkpoint_sha256=$(pcf1_sha256 "$checkpoint")
   --report "$MECHANICS_ROOT/report.json"
 pcf1_validate_json "$MECHANICS_ROOT/report.json" shohin-pcf1-mechanics-v1 pass
 pcf1_freeze_tree "$MECHANICS_ROOT"
+pcf1_cleanup_scratch
 trap - EXIT
