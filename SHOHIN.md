@@ -76,6 +76,15 @@ the unchanged actual-variable firewall. It requires a no-model H100 environment
 canary before its one graph; follow
 `SHOHIN_PCF6_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
+PCF6 closed at its no-model H100 environment canary. Job `751779` removed the
+duplicate Slurm metadata, then stopped after two seconds because Bash's `_`
+control variable exactly aliased the pinned Python entrypoint. It did not reach
+`nvidia-smi`, CUDA, a model, or a scientific graph; formal result is `null`.
+Preserve `SHOHIN_PCF6_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`. **PCF7
+is prospectively frozen** with only an exact `_ == pinned Python` control-plane
+exception. All other actual variables and all scientific clauses are
+unchanged; follow `SHOHIN_PCF7_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+
 The sole authorized publication experiment was **PCF1**, one prospective,
 source-disjoint confirmation of the surviving dense architecture on pinned
 `mistralai/Ministral-3-8B-Reasoning-2512@81eaece...d894`. The qualified

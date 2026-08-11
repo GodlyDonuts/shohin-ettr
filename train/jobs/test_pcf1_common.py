@@ -46,7 +46,7 @@ def test_gpu_firewall_discards_only_slurm_export_metadata() -> None:
     )
     assert 'folded = f"{name}\\n{value}".casefold()' in function
     assert '("assessor", "holdout", "product", "public")' in function
-    assert 'name == "PYTHON" and value == entrypoint' in function
+    assert 'name in {"PYTHON", "_"} and value == entrypoint' in function
 
 
 def test_sandbox_receipt_validator_imports_and_checks_frozen_contract(

@@ -42,7 +42,7 @@ entrypoint = sys.argv[1]
 for name, value in os.environ.items():
     folded = f"{name}\n{value}".casefold()
     if any(term in folded for term in ("assessor", "holdout", "product", "public")):
-        if name == "PYTHON" and value == entrypoint:
+        if name in {"PYTHON", "_"} and value == entrypoint:
             continue
         raise SystemExit(f"protected GPU environment variable: {name}")
 PY

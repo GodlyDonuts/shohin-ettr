@@ -58,6 +58,14 @@
 > duplicate metadata before scanning every unchanged actual GPU variable. Run
 > one no-model H100 environment canary before its graph, then follow only
 > `docs/research/SHOHIN_PCF6_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+> PCF6 canary `751779` then failed after two seconds on Bash's `_` control
+> variable, whose value exactly aliases the pinned Python entrypoint. It did
+> not reach `nvidia-smi`, CUDA, model access, or graph submission. Preserve
+> `docs/research/SHOHIN_PCF6_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
+> PCF7 is frozen with only an exact `_ == pinned Python` control exception;
+> arbitrary `_` and every other actual variable remain fail-closed. Run one
+> fresh no-model H100 environment canary, then follow only
+> `docs/research/SHOHIN_PCF7_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
 
 > **PCF1 TERMINAL INFRASTRUCTURE FAILURE; NO REPLAY, RETRY, OR SUCCESSOR —
