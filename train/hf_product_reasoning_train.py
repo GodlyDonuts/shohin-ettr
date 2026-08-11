@@ -894,7 +894,9 @@ def _tokenize_kcr1_rows(
     rows: list[dict[str, str]],
     max_sequence_length: int,
     workspace_slots: int,
-) -> tuple[list[list[int]], list[list[int]], list[int]]:
+    *,
+    mask_draft: bool = False,
+) -> tuple[list[list[int]], list[list[int]], list[int], list[list[int]] | None]:
     """Tokenize complete KCR1 transactions and preserve action boundaries."""
 
     if workspace_slots != 0:
@@ -902,6 +904,7 @@ def _tokenize_kcr1_rows(
     prompt_rows: list[list[int]] = []
     response_rows: list[list[int]] = []
     action_token_counts: list[int] = []
+    attention_rows: list[list[int]] = []
     for row in rows:
         action = row.get("action")
         response_text = row.get("response", "")
@@ -917,7 +920,36 @@ def _tokenize_kcr1_rows(
             ],
             enable_thinking=False,
         )
-        prompt = tokenizer.encode(rendered, add_special_tokens=False)
+        if mask_draft:
+            marker = "DRAFT:\n"
+            marker_start = rendered.rfind(marker)
+            draft_text = row["question"].rpartition(marker)[2]
+            draft_start = marker_start + len(marker)
+            draft_end = draft_start + len(draft_text)
+            if (
+                marker_start < 0
+                or not draft_text
+                or rendered[draft_start:draft_end] != draft_text
+            ):
+                raise ProductReasoningTrainError("KCR1 rendered draft span differs")
+            encoded = tokenizer(
+                rendered,
+                add_special_tokens=False,
+                return_offsets_mapping=True,
+            )
+            prompt = [int(value) for value in encoded.get("input_ids", ())]
+            offsets = encoded.get("offset_mapping")
+            if not prompt or not isinstance(offsets, list) or len(offsets) != len(prompt):
+                raise ProductReasoningTrainError("KCR1 tokenizer offset geometry differs")
+            attention = [
+                0 if int(right) > draft_start and int(left) < draft_end else 1
+                for left, right in offsets
+            ]
+            if all(attention) or not any(attention):
+                raise ProductReasoningTrainError("KCR1 draft mask differs")
+        else:
+            prompt = tokenizer.encode(rendered, add_special_tokens=False)
+            attention = [1] * len(prompt)
         response = tokenizer.encode(response_text, add_special_tokens=False)
         action_ids = tokenizer.encode(action, add_special_tokens=False)
         if not action_ids or response[: len(action_ids)] != action_ids:
@@ -927,12 +959,18 @@ def _tokenize_kcr1_rows(
             raise ProductReasoningTrainError("KCR1 admitted row would truncate")
         prompt_rows.append(prompt)
         response_rows.append(response)
+        attention_rows.append(attention)
         action_token_counts.append(
             len(response) if response_text == action else len(action_ids)
         )
     if not prompt_rows:
         raise ProductReasoningTrainError("KCR1 tokenization removed every row")
-    return prompt_rows, response_rows, action_token_counts
+    return (
+        prompt_rows,
+        response_rows,
+        action_token_counts,
+        attention_rows if mask_draft else None,
+    )
 
 
 def _tokenize_rows_with_syndrome(
@@ -1301,15 +1339,20 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             )
             prompt_attention_rows = None
         elif args.loss_mode == "kcr1_action_payload":
-            prompt_rows, response_rows, response_action_token_counts = (
+            (
+                prompt_rows,
+                response_rows,
+                response_action_token_counts,
+                prompt_attention_rows,
+            ) = (
                 _tokenize_kcr1_rows(
                     tokenizer,
                     raw_batch,
                     args.max_sequence_length,
                     workspace_slots,
+                    mask_draft=args.mask_internal_draft,
                 )
             )
-            prompt_attention_rows = None
         elif args.mask_internal_draft:
             prompt_rows, response_rows, prompt_attention_rows = (
                 _tokenize_rows_with_attention(
@@ -1484,10 +1527,8 @@ def parse_args() -> argparse.Namespace:
     )
     if args.max_sequence_length <= reserved_slots + 16:
         parser.error("maximum sequence length leaves no prompt/target budget")
-    if args.loss_mode == "kcr1_action_payload" and (
-        args.arm != "baseline" or args.mask_internal_draft
-    ):
-        parser.error("KCR1 loss requires an unmasked baseline owner")
+    if args.loss_mode == "kcr1_action_payload" and args.arm != "baseline":
+        parser.error("KCR1 loss requires the baseline owner")
     return args
 
 

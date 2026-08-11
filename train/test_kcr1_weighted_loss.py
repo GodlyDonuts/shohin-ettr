@@ -10,10 +10,27 @@ import pytest
 import torch
 
 from hf_product_reasoning_train import (
+    _tokenize_kcr1_rows,
     ProductReasoningTrainError,
     kcr1_action_payload_loss,
     kcr1_rows_with_sha256,
 )
+
+
+class OffsetTokenizer:
+    eos_token_id = 9
+    chat_template = None
+
+    def encode(self, text, add_special_tokens=False):
+        del add_special_tokens
+        return [ord(character) % 251 for character in text]
+
+    def __call__(self, text, **kwargs):
+        del kwargs
+        return {
+            "input_ids": self.encode(text),
+            "offset_mapping": [(index, index + 1) for index in range(len(text))],
+        }
 
 
 def test_action_and_payload_receive_equal_presentation_mass() -> None:
@@ -75,3 +92,18 @@ def test_kcr1_loader_rejects_mismatched_prefix(tmp_path: Path) -> None:
     )
     with pytest.raises(ProductReasoningTrainError):
         kcr1_rows_with_sha256(path, limit=10, seed=7)
+
+
+def test_kcr1_hidden_control_masks_only_final_draft_span() -> None:
+    prompt = "SOURCE:\nproblem with DRAFT:\ninside source\n\nDRAFT_STATUS: CUTOFF\nDRAFT:\nsecret"
+    prompts, responses, actions, attention = _tokenize_kcr1_rows(
+        OffsetTokenizer(),
+        [{"question": prompt, "response": "<RESTART>\nanswer", "action": "<RESTART>"}],
+        4096,
+        0,
+        mask_draft=True,
+    )
+    assert attention is not None
+    assert len(prompts[0]) == len(attention[0])
+    assert sum(value == 0 for value in attention[0]) == len("secret")
+    assert len(responses[0]) > actions[0] > 0
