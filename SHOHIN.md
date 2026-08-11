@@ -56,6 +56,14 @@ occurs only in its correct post-candidate context. Generated-candidate policy
 and all scientific clauses remain unchanged. Follow
 `SHOHIN_PCF5_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
+PCF5's required infrastructure-only reference gate is now PASS. CPU job
+`751699` completed on `evc21` in 32 seconds with zero restarts: all `167/167`
+nonsealed frozen references passed, both unique setups compiled, all 40
+sandbox probes passed, and holdout-reference payload access was zero. Exact
+node postcheck `751701` proved `/tmp/pcf1-751699-scalar` absent. Bind final
+admission to `SHOHIN_PCF5_REFERENCE_QUALIFICATION_20260811.json`; no
+scientific graph had been submitted when this evidence was sealed.
+
 The sole authorized publication experiment was **PCF1**, one prospective,
 source-disjoint confirmation of the surviving dense architecture on pinned
 `mistralai/Ministral-3-8B-Reasoning-2512@81eaece...d894`. The qualified

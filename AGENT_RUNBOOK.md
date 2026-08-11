@@ -43,6 +43,12 @@
 > only after the candidate in the real assessment. Generated-candidate policy
 > and all scientific clauses are unchanged. Follow only
 > `docs/research/SHOHIN_PCF5_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+> The required PCF5 reference gate is PASS: CPU job `751699` completed with
+> zero restarts, all `167/167` nonsealed references and both unique setup
+> compilations passed, all 40 sandbox probes passed, and holdout-reference
+> payload access was zero. Exact-node postcheck `751701` proved the private
+> scratch path absent. Bind the one scientific graph to
+> `docs/research/SHOHIN_PCF5_REFERENCE_QUALIFICATION_20260811.json`.
 
 
 > **PCF1 TERMINAL INFRASTRUCTURE FAILURE; NO REPLAY, RETRY, OR SUCCESSOR —
