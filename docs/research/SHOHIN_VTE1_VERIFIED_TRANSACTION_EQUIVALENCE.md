@@ -1,16 +1,33 @@
 # VTE1: Verified Transaction Equivalence Learning
 
-Status: prospectively frozen after exact KCR1 closed and its one read-only
-attribution completed, before VTE1 data, model, or evaluation output. KCR1,
-NDR1, and every earlier edit lane remain closed. Holdout remains sealed.
+Status: **closed negative** after the one frozen source-disjoint evaluation.
+KCR1, NDR1, and every earlier edit lane remain closed. Broad development,
+the draft-hidden control, and holdout were not opened.
 
-Execution update (does not alter this contract): CPU job `750779` admitted
+Execution receipt: CPU job `750779` admitted
 11,218 sources, 33,654 presentations, and 65,206 verified candidate
 transactions with zero truncation (maximum 3,107/4,096 tokens). One-update
 mechanics replay `750781` passed with finite loss/gradient, exact candidate
-grouping, 2,704,896 trainables, and 35.74 GB peak memory. The frozen 256-update
-aligned fit is job `750791`; source-disjoint dispatcher `750814` is held on its
-exact successful completion. Broad development and holdout remain unopened.
+grouping, 2,704,896 trainables, and 35.74 GB peak memory. Fit `750791`
+completed all 256 updates; dispatcher `750814`, shards `750841--750844`, and
+merge `750845` completed the one immutable source-disjoint canary.
+
+## Final result
+
+Aligned VTE1 scores `1285/1566 = 82.0562%` semantically, below the immutable
+KCR1 parent at `1294/1566 = 82.6309%`. Presentation scores are natural-owner
+`379/522`, verified-CONTINUE `414/522`, and verified-KEEP `492/522`; only
+`324/522` sources are correct in all three states. All 1,566 outputs are valid
+transactions, but the model emits RESTART on every row. Exact execution falls
+to `69/1566`, KEEP byte preservation is `0/692`, counterfactual action
+consistency is zero, and 197 generations exhaust the 768-token budget.
+
+The set-valued objective therefore removed canonical-label punishment but
+collapsed to universal regeneration. It misses the semantic, per-state,
+parent-margin, all-three, KEEP-preservation, and exhaustion gates. Exact VTE1
+closes without any temperature, candidate-family, delimiter, rank, layer,
+duration, seed, decoding, parser, or threshold retry. Exact hashes and gate
+receipts are preserved in `SHOHIN_VTE1_RESULT.json`.
 
 ## Capability hypothesis
 

@@ -1,5 +1,20 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **PHASE CLOSED AFTER VTE1 CONJUNCTIVE FAIL — 2026-08-11:** Frozen fit
+> `750791`, source-disjoint shards `750841--750844`, and atomic merge `750845`
+> completed. VTE1 scores `1285/1566 = 82.0562%` semantic correctness versus
+> KCR1 parent `1294/1566 = 82.6309%` (`-9`). Per-state scores are natural
+> `379/522`, continue `414/522`, and keep `492/522`; all-three consistency is
+> `324/522`. Every transaction is valid, but the model emits RESTART on all
+> 1,566 rows, giving zero KEEP preservation, zero action consistency, only
+> `69/1566` exact executions, and 197 decode-limit exhaustions. The aligned
+> arm fails before controls; draft-hidden, broad development, and holdout were
+> not opened. Exact VTE1 closes without nearby retries. Exact result is
+> `docs/research/SHOHIN_VTE1_RESULT.json`; merged report SHA-256 is
+> `e47a5f0e8cfcbdad920e02fab1aeabda49e5e12b8ac4103a278b524132070189`.
+> Phase handoff is `docs/research/SHOHIN_PHASE_HANDOFF_20260811.md`. Do not
+> submit successor research without a new phase authorization.
+
 > **VTE1 VERIFIED-TRANSACTION FIT LIVE — 2026-08-10:** KCR1's canonical
 > branch labels are now replaced by one frozen set-valued executable objective,
 > without reopening KCR1. CPU build `750779` admits `11,218/11,220` immutable

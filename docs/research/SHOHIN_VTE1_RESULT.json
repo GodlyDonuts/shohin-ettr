@@ -1,0 +1,89 @@
+{
+  "schema": "shohin-vte1-result-v1",
+  "status": "complete",
+  "overall_pass": false,
+  "split": "source_disjoint_development_canary",
+  "model": {
+    "name": "Qwen/Qwen3.5-9B",
+    "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+    "trainable_parameters": 2704896,
+    "parent_checkpoint_sha256": "07e08abe2480782afc77e35031d23bea71a737d019f307066af2bde786dd2ebd",
+    "vte_checkpoint_sha256": "8d8f813341aa8eeab3b78cd010908e80fac75ec8d8ad690a18818deb5543381a"
+  },
+  "training": {
+    "updates": 256,
+    "charged_candidate_tokens": 1037145,
+    "charged_tokens_per_second": 1053.3,
+    "final_loss": 0.087478,
+    "final_gradient_norm": 0.125,
+    "slurm_elapsed_seconds": 1017,
+    "report_sha256": "efc78413c319160cdbd942c69a07b65243504a1340772bdbdfa0273a9c03b846"
+  },
+  "evaluation": {
+    "sources": 522,
+    "presentations": 1566,
+    "semantic_correct": 1285,
+    "semantic_accuracy": 0.8205619412515964,
+    "parent_semantic_correct": 1294,
+    "parent_semantic_accuracy": 0.8263090676883781,
+    "semantic_delta_answers": -9,
+    "semantic_delta_absolute": -0.0057471264367817,
+    "per_presentation": {
+      "natural_owner": {"correct": 379, "total": 522, "accuracy": 0.7260536398467433},
+      "verified_continue": {"correct": 414, "total": 522, "accuracy": 0.7931034482758621},
+      "verified_keep": {"correct": 492, "total": 522, "accuracy": 0.9425287356321839}
+    },
+    "all_three_semantically_correct": {"correct": 324, "total": 522, "accuracy": 0.6206896551724138},
+    "valid_transactions": {"correct": 1566, "total": 1566, "accuracy": 1.0},
+    "action_correct": 352,
+    "action_accuracy": 0.2247765006385696,
+    "emitted_action_counts": {"KEEP": 0, "CONTINUE": 0, "RESTART": 1566},
+    "counterfactual_sources_correct": 0,
+    "counterfactual_consistency": 0.0,
+    "exact_execution": 69,
+    "exact_execution_accuracy": 0.044061302681992334,
+    "keep_byte_preserved": 0,
+    "keep_total": 692,
+    "keep_byte_preservation_accuracy": 0.0,
+    "malformed_transactions": 0,
+    "max_token_exhausted": 197,
+    "generated_tokens": 359269,
+    "aggregate_gpu_seconds": 10652.982303708326,
+    "critical_path_seconds": 2933.463486244902,
+    "peak_gpu_memory_bytes": 19840412160
+  },
+  "frozen_gate": {
+    "semantic_at_least_1410": false,
+    "each_presentation_semantic_at_least_0_85": false,
+    "valid_transactions_at_least_0_99": true,
+    "keep_byte_preservation_at_least_0_99": false,
+    "all_three_sources_at_least_418": false,
+    "at_least_78_answers_over_parent": false,
+    "max_token_exhausted_at_most_10": false,
+    "complete_receipts": true
+  },
+  "controls": {
+    "draft_hidden": "not_opened_due_to_aligned_failure_and_phase_cutoff",
+    "broad_development": "not_opened",
+    "holdout": "not_opened"
+  },
+  "interpretation": "The set-valued objective removed arbitrary canonical-label penalties but converged to universal RESTART. It reduced semantic accuracy by nine answers relative to KCR1, destroyed KEEP preservation and counterfactual action consistency, and multiplied generated-token cost. Exact VTE1 is closed without nearby retries.",
+  "artifacts": {
+    "training_data_path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/vte1_3b64035_r1/data/train.jsonl",
+    "training_data_sha256": "cc312363f880e9048622b57cb0cb609acaf92a1ab9ed0552ec8383ea20da1c33",
+    "training_data_report_sha256": "d1c828f4645a15175535d7712805b489019948bf11e0ab2c3899881c4c2705fb",
+    "mechanics_checkpoint_sha256": "e74e929cb17ffc8825e538996aba9b06b36ce5dee633d4384e3c9b65e308b370",
+    "mechanics_report_sha256": "b91f218f0e9dd4f75522cf9c705cad3aa5f1cbf1b23ea3c1c0891b61996d12e0",
+    "fit_checkpoint_path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/vte1_3b64035_r1/train_aligned_u256/checkpoint_0000256.pt",
+    "evaluation_data_sha256": "b9c97c28438b6a87e89c816c177f1a23818564bb16fed0c9551dd07c05d7e139",
+    "evaluation_data_report_sha256": "78fef3045c75a8aa1c61afb172b6e1474f2a4b2888c7e8c2cec1f5fd4b8638a5",
+    "evaluation_candidates_sha256": "45efcefded3d6a06633c478bf6b265ebd8fd2a44d313cf9db780ca33374d03d3",
+    "evaluation_report_sha256": "e47a5f0e8cfcbdad920e02fab1aeabda49e5e12b8ac4103a278b524132070189",
+    "shard_report_sha256": [
+      "de74e78f762d0758a124733c0a05d13b9b24f57f722e260fac7b39309d03bb4a",
+      "8997a05bd43043da937523cd69ab3a27897e062fa357399c626ba5d332169806",
+      "7faf2801833144edb8030307300edbb3576f86cefdb1f5391a3f6f2a24c04a4c",
+      "7687a806b8dffd6256a373ee29f5419e49a041833c4e212067b50da8f1df7002"
+    ]
+  }
+}

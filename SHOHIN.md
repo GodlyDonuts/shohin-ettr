@@ -142,12 +142,15 @@ remains sealed. This result reinforces the architectural requirement that a
 future reviser must make draft-dependent state or execution causally necessary
 rather than simply append a draft to source-to-solution training.
 
-The active bounded successor is KCR1. It exposes only the first owner's
-deterministic STOPPED/CUTOFF state and requires the later owner to emit one
-executed KEEP, CONTINUE, or RESTART transaction. This is not an NDR data or
-duration retry: the selected action now changes whether the final trajectory
-is copied, appended, or replaced. Its real-tokenizer CPU admission is required
-before any GPU training.
+The final bounded transaction family is closed. KCR1's unique canonical
+KEEP/CONTINUE/RESTART labels reached `1294/1566` semantic correctness despite
+only `1144/1566` canonical actions, exposing label nonidentifiability. VTE1
+then trained over complete independently verified transaction-equivalence
+sets. It scored `1285/1566`, nine answers below KCR1, while emitting RESTART
+on every row, preserving zero KEEP drafts, and exhausting 197 generations.
+Set-valued supervision removed the arbitrary-label penalty but induced
+universal regeneration. KCR1 and VTE1 are closed without nearby retries;
+their controls, broad development, and holdout remain unopened.
 
 Historical ETTR graph-reactor and synthetic compiled-state experiments remain
 valuable research history, but they are not the current deployable Shohin

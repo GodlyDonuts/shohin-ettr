@@ -11,6 +11,18 @@ policy selects one complete trajectory. At inference there is no external
 proposal model, verifier, correctness bit, benchmark router, solver, tool, or
 teacher.
 
+The final bounded transaction successor, VTE1, is now closed negative. It
+replaced KCR1's arbitrary canonical action label with a set-valued objective
+over independently verified KEEP/CONTINUE/RESTART transactions. On the frozen
+1,566-row source-disjoint canary it scored `1285/1566 = 82.0562%`, below the
+KCR1 parent at `1294/1566 = 82.6309%`. The model emitted RESTART on all 1,566
+rows, preserved zero of 692 KEEP drafts, achieved zero action consistency,
+and exhausted 197 generations. Thus equivalence supervision removed the
+label-conflict objection but converged to universal regeneration rather than
+reliable semantic repair. Exact VTE1 closes; controls, broad development, and
+holdout were not opened. The phase handoff is
+`docs/research/SHOHIN_PHASE_HANDOFF_20260811.md`.
+
 An independent architecture lane has now established a complete
 source-to-terminal arithmetic development system. A 4.94M-parameter raw-byte
 Transformer compiles source text, a fixed width-64 weighted grammar projection
