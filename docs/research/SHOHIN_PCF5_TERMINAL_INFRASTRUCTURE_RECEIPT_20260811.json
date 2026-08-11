@@ -1,0 +1,67 @@
+{
+  "schema": "shohin-pcf5-terminal-infrastructure-receipt-v1",
+  "status": "terminal_pre_mechanics_failure",
+  "date": "2026-08-11",
+  "source_commit": "0563b2c6e9ea426c2d0030a2c1517889f89fd4c8",
+  "runtime_manifest_sha256": "e8cd9540cb0125bc0bac78a54c63f2d46b5a7781b6323e1ba5c8280564b36ef4",
+  "run_id": "pcf5_ministral_0563b2c_r1",
+  "jobs": {
+    "prepare": {
+      "job_id": 751745,
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed_seconds": 153,
+      "node": "evc21",
+      "restarts": 0
+    },
+    "mechanics": {
+      "job_id": 751746,
+      "state": "FAILED",
+      "exit_code": "1:0",
+      "elapsed_seconds": 1,
+      "node": "evc27",
+      "alloc_tres": "billing=6,cpu=4,gres/gpu=1,mem=128G,node=1",
+      "restarts": 0,
+      "cause": "Slurm-generated SLURM_EXPORT_ENV duplicated the export payload, including the pinned historical Python path, and was rejected as protected GPU environment metadata",
+      "message": "protected GPU environment variable: SLURM_EXPORT_ENV"
+    },
+    "downstream_root_jobs_cancelled": 27,
+    "downstream_started": 0,
+    "terminal_job_id": 751773
+  },
+  "files": {
+    "dispatch_sha256": "c54ccdedaeb89adcf6df57df931857a4851401a9331bc4249588d7ede2a8eced",
+    "prescore_dispatch_sha256": "248be788f8f2d7a34e3e8d737405be4af6738df509373114805ce3d996d25827",
+    "prepare_stdout_sha256": "dcbce7a5393ba33835d860d6f25567d1bcdcb34384dd5909f13d452c20b80a29",
+    "prepare_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "mechanics_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "mechanics_stderr_sha256": "3e22f8d12f4965d06f679990d6f70d5050e96c37ffd9f726de34245c3d905cb2",
+    "accounting_transcript_sha256": "7ecd49fa98c7e931ff2cd6710a9b344e00c72c7a68a9b584ce400b3a46121927"
+  },
+  "prepared_source_report_sha256": "2261a5e98f67183e767579bf8597e2a8e67c76a13d3e101ab4f53f8a1f3f3d0b",
+  "confirmation_assessor_sha256": "a824ae4c071c0e1309268da40c4f644d778d50c01ced9fb9b8591a923efa82e8",
+  "confirmation_assessor_receipt_sha256": "9752ac3c25981764d4b8ae325cb1969d666c46496032f32313092be5a8fb1b77",
+  "confirmation_assessor_semantic_reads": 0,
+  "model_opened": false,
+  "model_staged": false,
+  "cuda_program_started": false,
+  "mechanics_output_created": false,
+  "scientific_score_emitted": false,
+  "formal_scientific_result": null,
+  "scratch_postcheck": {
+    "job_id": 751776,
+    "node": "evc27",
+    "state": "COMPLETED",
+    "exit_code": "0:0",
+    "path": "/tmp/pcf1-751746-scalar",
+    "path_absent": true
+  },
+  "remote_evidence": {
+    "files": 22,
+    "directories": 6,
+    "logical_bytes": 44893943,
+    "all_members_nonwritable": true
+  },
+  "queue_empty": true,
+  "retry_count": 0
+}

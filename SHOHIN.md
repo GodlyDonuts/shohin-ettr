@@ -64,6 +64,18 @@ node postcheck `751701` proved `/tmp/pcf1-751699-scalar` absent. Bind final
 admission to `SHOHIN_PCF5_REFERENCE_QUALIFICATION_20260811.json`; no
 scientific graph had been submitted when this evidence was sealed.
 
+PCF5 subsequently closed before mechanics. Preparation job `751745` passed;
+H100 mechanics job `751746` then stopped after one second because Slurm's
+automatic `SLURM_EXPORT_ENV` metadata duplicated the export string containing
+the pinned historical Python path. It failed before model verification,
+staging, CUDA, or load. All 27 descendants were cancelled and the prepared
+assessor has zero semantic reads. Formal result is `null`; preserve
+`SHOHIN_PCF5_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`. **PCF6 is now
+prospectively frozen** with only duplicate Slurm export-metadata removal before
+the unchanged actual-variable firewall. It requires a no-model H100 environment
+canary before its one graph; follow
+`SHOHIN_PCF6_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+
 The sole authorized publication experiment was **PCF1**, one prospective,
 source-disjoint confirmation of the surviving dense architecture on pinned
 `mistralai/Ministral-3-8B-Reasoning-2512@81eaece...d894`. The qualified

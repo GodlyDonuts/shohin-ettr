@@ -49,6 +49,15 @@
 > payload access was zero. Exact-node postcheck `751701` proved the private
 > scratch path absent. Bind the one scientific graph to
 > `docs/research/SHOHIN_PCF5_REFERENCE_QUALIFICATION_20260811.json`.
+> PCF5 then closed before mechanics: preparation `751745` passed, while H100
+> job `751746` rejected Slurm's duplicate `SLURM_EXPORT_ENV` metadata after one
+> second, before model verification/staging/load or CUDA. Cancelled descendants
+> never started; the assessor has zero semantic reads. Preserve
+> `docs/research/SHOHIN_PCF5_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
+> PCF6 is prospectively frozen with one correction: remove that Slurm-generated
+> duplicate metadata before scanning every unchanged actual GPU variable. Run
+> one no-model H100 environment canary before its graph, then follow only
+> `docs/research/SHOHIN_PCF6_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
 
 > **PCF1 TERMINAL INFRASTRUCTURE FAILURE; NO REPLAY, RETRY, OR SUCCESSOR —

@@ -29,6 +29,11 @@ pcf1_assert_gpu_environment() {
   pcf1_require PYTHON
   [[ "$PYTHON" == "$PCF1_PYTHON_ENTRYPOINT" ]] || \
     pcf1_die "GPU Python venv entrypoint differs"
+  # Slurm duplicates the complete --export payload into this control-plane
+  # variable. Its value contains the pinned historical Python path and must
+  # not be inherited by model processes. Actual exported variables remain and
+  # are independently scanned below.
+  unset SLURM_EXPORT_ENV
   "$PYTHON" - "$PCF1_PYTHON_ENTRYPOINT" <<'PY'
 import os
 import sys

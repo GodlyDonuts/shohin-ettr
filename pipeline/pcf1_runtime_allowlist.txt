@@ -21,6 +21,7 @@ pipeline/jobs/pcf1_prepare_inputs.sbatch
 pipeline/jobs/pcf1_score_commit.sbatch
 pipeline/jobs/pcf2_scratch_canary.sbatch
 pipeline/jobs/pcf3_reference_canary.sbatch
+pipeline/jobs/pcf6_gpu_env_canary.sbatch
 pipeline/merge_pcf1_draft_shards.py
 pipeline/merge_pcf1_evaluation_shards.py
 pipeline/normalize_pcf1_reports.py

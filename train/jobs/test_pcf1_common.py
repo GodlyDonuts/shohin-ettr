@@ -37,6 +37,18 @@ from pcf1_code_sandbox import (
 )
 
 
+def test_gpu_firewall_discards_only_slurm_export_metadata() -> None:
+    source = Path(__file__).with_name("pcf1_common.sh").read_text(encoding="utf-8")
+    function = source.split("pcf1_assert_gpu_environment() {", 1)[1].split("\n}", 1)[0]
+    assert "unset SLURM_EXPORT_ENV" in function
+    assert function.index("unset SLURM_EXPORT_ENV") < function.index(
+        "for name, value in os.environ.items()"
+    )
+    assert 'folded = f"{name}\\n{value}".casefold()' in function
+    assert '("assessor", "holdout", "product", "public")' in function
+    assert 'name == "PYTHON" and value == entrypoint' in function
+
+
 def test_sandbox_receipt_validator_imports_and_checks_frozen_contract(
     tmp_path: Path,
 ) -> None:
