@@ -39,10 +39,31 @@ from kcr1_branch_transducer import (
 
 SCHEMA = "shohin-kcr1-branch-train-v1"
 REPORT_SCHEMA = "shohin-kcr1-branch-data-report-v1"
+PRODUCT_SYSTEM_PROMPT = (
+    "You are a careful reasoning assistant. Give concise, verifiable reasoning "
+    "and a clearly marked final answer."
+)
 
 
 class KCR1DataError(RuntimeError):
     """KCR1 source, draft, transaction, or token custody differs."""
+
+
+def render_prompt(tokenizer: Any, prompt: str) -> str:
+    messages = [
+        {"role": "system", "content": PRODUCT_SYSTEM_PROMPT},
+        {"role": "user", "content": prompt},
+    ]
+    if getattr(tokenizer, "chat_template", None):
+        return tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+            enable_thinking=False,
+        )
+    return "\n\n".join(
+        f"{message['role'].capitalize()}: {message['content']}" for message in messages
+    ) + "\n\nAssistant:"
 
 
 def atomic_lines(path: Path, rows: list[dict[str, Any]]) -> str:
@@ -181,7 +202,6 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
     sources, drafts = load_merged(args)
 
     from transformers import AutoTokenizer
-    from hf_product_reasoning_train import PRODUCT_SYSTEM_PROMPT, render_reasoning_messages
 
     tokenizer = AutoTokenizer.from_pretrained(args.model_root, trust_remote_code=True)
     rows: list[dict[str, Any]] = []
@@ -229,14 +249,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
                 exhausted=exhausted,
                 task=str(source["training_group"]),
             )
-            rendered = render_reasoning_messages(
-                tokenizer,
-                [
-                    {"role": "system", "content": PRODUCT_SYSTEM_PROMPT},
-                    {"role": "user", "content": prompt},
-                ],
-                enable_thinking=False,
-            )
+            rendered = render_prompt(tokenizer, prompt)
             prompt_tokens = len(tokenizer.encode(rendered, add_special_tokens=False))
             target_tokens = len(tokenizer.encode(transaction, add_special_tokens=False)) + 1
             if prompt_tokens + target_tokens > args.max_sequence_length:
