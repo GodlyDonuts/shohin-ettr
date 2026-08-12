@@ -2,6 +2,11 @@
 
 Status: prospectively frozen on 2026-08-11 before PCF12 admission or compute.
 
+The required fresh Newton sandbox qualification now passes all 40 probes on
+the exact repaired source bytes. Its receipt SHA-256 is
+`a65304035c0898d2e40d76ca3acdd66ca7239b98103bdb1a8f0813f8455cd100`;
+preserve `SHOHIN_PCF12_SANDBOX_QUALIFICATION_20260811.json`.
+
 PCF11 is closed with formal scientific result `null`. Preparation, mechanics,
 B1, all 16 draft shards, ordered draft merge, repaired materialization, and
 revision training completed with zero restarts. The two matched calibration
