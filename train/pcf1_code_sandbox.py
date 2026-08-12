@@ -28,6 +28,7 @@ BWRAP = Path("/usr/bin/bwrap")
 BWRAP_SHA256 = "eb767688b8224d8d3dbe1f8cb30ac3dff9ae8b02ff0452eaec9f94874d4e0011"
 PRLIMIT = Path("/usr/bin/prlimit")
 PRLIMIT_SHA256 = "2c1c7948498f2cb755d8c93ecf72c0651f5a5db23f79cc39cfa6727693d241d5"
+OUTER_LAUNCHER_WALL_GRACE_SECONDS = 30.0
 POSIX_SPAWN_RESET_SIGNAL_NAMES = tuple(
     name for name in ("SIGPIPE", "SIGXFZ", "SIGXFSZ") if hasattr(signal, name)
 )
@@ -629,6 +630,7 @@ SANDBOX_CONFIG = {
         "empty_signal_mask": True,
         "reset_signal_names": list(POSIX_SPAWN_RESET_SIGNAL_NAMES),
         "poll_seconds": 0.01,
+        "outer_launcher_wall_grace_seconds": OUTER_LAUNCHER_WALL_GRACE_SECONDS,
     },
     "python_root": str(PYTHON_ROOT),
     "python_executable": str(PYTHON_EXECUTABLE),
@@ -1462,7 +1464,9 @@ def isolated_program_result(
                         stderr_fd=stderr_file.fileno(),
                         info_fd=info_file.fileno(),
                         candidate_timeout_seconds=timeout_seconds,
-                        wall_timeout_seconds=timeout_seconds + 2.0,
+                        wall_timeout_seconds=(
+                            timeout_seconds + OUTER_LAUNCHER_WALL_GRACE_SECONDS
+                        ),
                     )
                 else:
                     result = runner(
@@ -1474,7 +1478,7 @@ def isolated_program_result(
                         stdin=assessor_fd,
                         stdout=stdout_file,
                         stderr=stderr_file,
-                        timeout=timeout_seconds + 2.0,
+                        timeout=(timeout_seconds + OUTER_LAUNCHER_WALL_GRACE_SECONDS),
                         pass_fds=(candidate_fd, info_file.fileno()),
                         check=False,
                     )

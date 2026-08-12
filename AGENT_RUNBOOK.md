@@ -1,21 +1,18 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **PCF16 PROSPECTIVELY FROZEN — 2026-08-12:** PCF15 completed through the
-> frozen revision checkpoint, and all eight calibration shards passed PCF14's
-> earlier failure point. Revision-calibration shard 3 then stopped after
-> `768/1456` rows on `evc28` because isolated Python did not emit trusted READY.
-> Job `752757_3` was `FAILED 1:0` with zero restarts. All seven peer allocations
-> and all descendants were cancelled; commit and confirmation generation never
-> started, the prepared assessor has zero semantic reads, and no score or final
-> gate exists. Preserve
-> `docs/research/SHOHIN_PCF15_TERMINAL_INFRASTRUCTURE_RECEIPT_20260812.json`;
-> do not replay or continue PCF15. Its `pass_fds` subprocess call still forced
-> a fork/exec path from the resident multithreaded 9B CUDA process. PCF16 changes
-> only that process boundary to explicit `os.posix_spawn` FD actions for the
-> unchanged `prlimit -> Bubblewrap` chain. Require the fresh CPU qualification
-> and simultaneous co-located two-H100 loaded-model generation stress in
-> `docs/research/SHOHIN_PCF16_MINISTRAL_PUBLICATION_CONFIRMATION.md` before one
-> fresh graph. Every scientific clause and the sole terminal gate are unchanged.
+> **PCF17 PROSPECTIVELY FROZEN — 2026-08-12:** PCF16 submitted no scientific
+> graph. Its explicit `os.posix_spawn` path passed all 41 CPU probes; two
+> co-located H100 workers then loaded the exact host/adapter and each completed
+> 27 worst-case generation-plus-sandbox cycles. Both expired the separate
+> five-second outer launcher watchdog on cycle 28, jobs `752844/752845`, with
+> zero restarts and zero protected access. Preserve
+> `docs/research/SHOHIN_PCF16_TERMINAL_QUALIFICATION_RECEIPT_20260812.json`.
+> PCF17 changes only parent-side namespace-launch grace from 2 to 30 seconds.
+> Candidate CPU remains exactly `3:4` seconds, and watchdog expiry remains
+> infrastructure. Require a fresh 41-probe CPU pass and simultaneous two-H100
+> 1,000-cycle pass under
+> `docs/research/SHOHIN_PCF17_MINISTRAL_PUBLICATION_CONFIRMATION.md` before one
+> fresh graph. Every scientific clause and the sole gate remain unchanged.
 
 > **PCF9 PROSPECTIVELY FROZEN — 2026-08-11:** PCF8 preparation, no-score
 > mechanics, and B1 completed. Draft task `751823_3` then failed before

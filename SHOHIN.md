@@ -4,22 +4,19 @@
 
 ## Read this first
 
-**PCF16 is now prospectively frozen.** PCF15 completed preparation, mechanics,
-B1, all 16 source-only draft shards, exact merge, materialization, and
-256-update revision training with zero retries. All eight calibration shards
-passed PCF14's earlier failure point, but revision shard 3 then stopped after
-`768/1456` rows because isolated Python again failed before trusted READY.
-Every peer and descendant was cancelled; commit and confirmation generation
-never began, the sealed assessor has zero semantic reads, and no score or
-formal gate result exists. The run is frozen nonwritable; preserve
-`docs/research/SHOHIN_PCF15_TERMINAL_INFRASTRUCTURE_RECEIPT_20260812.json`.
-The remaining cause is the `pass_fds` subprocess path, which still forks the
-resident multithreaded 9B CUDA process. PCF16 changes only that boundary to
-explicit `os.posix_spawn` FD actions for the unchanged
-`prlimit -> Bubblewrap` chain. All scientific constants remain frozen. Require
-the full CPU qualification and simultaneous two-H100 loaded-model generation
-stress before any graph, then follow only
-`docs/research/SHOHIN_PCF16_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+**PCF17 is now prospectively frozen.** PCF16 submitted no publication graph.
+Its new `os.posix_spawn` path passed all 41 unmocked probes and two co-located
+H100 workers each completed 27 worst-case generation-plus-sandbox cycles.
+Both then expired the separate five-second outer launcher watchdog in
+lockstep. Candidate CPU limits were not reached or changed, protected access
+was zero, and no formal result exists. Preserve
+`docs/research/SHOHIN_PCF16_TERMINAL_QUALIFICATION_RECEIPT_20260812.json`.
+PCF17 changes only parent-side infrastructure grace from 2 to 30 seconds;
+candidate CPU remains exactly `3:4` seconds and every expiry remains
+infrastructure. Require the fresh 41-probe CPU gate and two simultaneous
+1,000-cycle loaded-generation H100 workers before any graph. All scientific
+constants remain frozen. Follow only
+`docs/research/SHOHIN_PCF17_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
 **PCF2 is now prospectively authorized and frozen.** PCF1 remains closed with
 formal result `null`; its CPU-only first job failed before model, data, H100,

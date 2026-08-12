@@ -1,6 +1,27 @@
 # Shohin Native Reasoning Master Ledger
 
-## PCF16 current execution boundary — 2026-08-12
+## PCF17 current execution boundary — 2026-08-12
+
+PCF16 closed before scientific admission. Its explicit `os.posix_spawn` path
+passed all 41 unmocked CPU sandbox probes. Two simultaneous H100 workers on
+`evc28` then loaded the exact dense host and PCF15 revision adapter and each
+completed 27 worst-case generation-plus-sandbox cycles. Both stopped in
+lockstep on cycle 28 because the separate parent-side five-second launcher
+watchdog expired. Jobs `752844` and `752845` failed `1:0` with zero restarts;
+scratch teardown passed, the queue is empty, protected access is zero, and no
+publication graph or formal result exists. Preserve
+`docs/research/SHOHIN_PCF16_TERMINAL_QUALIFICATION_RECEIPT_20260812.json`.
+
+PCF17 changes only the outer infrastructure grace from 2 to 30 seconds.
+Candidate CPU soft/hard limits remain exactly `3:4` seconds; address, file,
+namespace, model, prompt, generation, policy, custody, threshold, and gate
+semantics remain unchanged. Watchdog expiry is still infrastructure, never a
+wrong answer. Require a fresh 41-probe CPU qualification plus two simultaneous
+co-located H100 workers completing 1,000 exact late-context
+generation-plus-sandbox cycles before any graph. Follow only
+`docs/research/SHOHIN_PCF17_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+
+## PCF16 predecessor boundary — 2026-08-12
 
 PCF15 is terminal-null. It completed preparation, qualified mechanics, B1,
 all 16 source-only draft shards, exact draft merge, materialization, and the

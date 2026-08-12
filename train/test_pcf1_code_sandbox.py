@@ -223,6 +223,7 @@ def test_launcher_applies_exact_limits_after_exec_without_preexec_callback() -> 
         "empty_signal_mask": True,
         "reset_signal_names": list(sandbox.POSIX_SPAWN_RESET_SIGNAL_NAMES),
         "poll_seconds": 0.01,
+        "outer_launcher_wall_grace_seconds": 30.0,
     }
     assert sandbox.SANDBOX_CONFIG["prlimit_sha256"] == (
         "2c1c7948498f2cb755d8c93ecf72c0651f5a5db23f79cc39cfa6727693d241d5"
@@ -376,6 +377,54 @@ def test_posix_spawn_os_error_is_infrastructure(
             candidate_timeout_seconds=3.0,
             wall_timeout_seconds=5.0,
         )
+
+
+def test_production_spawn_keeps_candidate_limit_and_adds_only_outer_grace(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    created = 0
+    observed: dict[str, float] = {}
+
+    def fake_memfd(name: str, content: bytes) -> int:
+        nonlocal created
+        created += 1
+        path = tmp_path / f"{created}-{name}"
+        fd = os.open(path, os.O_CREAT | os.O_RDWR, 0o600)
+        os.write(fd, content)
+        os.lseek(fd, 0, os.SEEK_SET)
+        return fd
+
+    def fake_spawn(**kwargs: Any) -> subprocess.CompletedProcess[str]:
+        observed["candidate"] = kwargs["candidate_timeout_seconds"]
+        observed["outer"] = kwargs["wall_timeout_seconds"]
+        descriptor = json.dumps(
+            sandbox.EXPECTED_SANDBOX_RUNTIME_DESCRIPTOR,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        os.write(
+            kwargs["stdout_fd"],
+            f"PCF1_RUNTIME_DESCRIPTOR {descriptor}\nPCF1_PYTHON_READY\n".encode(),
+        )
+        os.write(kwargs["info_fd"], b"{}")
+        return subprocess.CompletedProcess([], sandbox.TRUSTED_COMPLETION_EXIT_CODE)
+
+    monkeypatch.setattr(sandbox, "validate_sandbox_host", lambda: None)
+    monkeypatch.setattr(sandbox, "_trusted_tmpdir", lambda: tmp_path)
+    monkeypatch.setattr(sandbox, "_sealed_read_only_memfd", fake_memfd)
+    monkeypatch.setattr(sandbox, "_run_sandbox_posix_spawn", fake_spawn)
+
+    result = sandbox.isolated_program_result("pass\n", 3.0, validate_host=False)
+
+    assert result["passed"] is True
+    assert observed == {"candidate": 3.0, "outer": 33.0}
+    assert sandbox.sandbox_launch_command(17, 19, 3.0)[:5] == [
+        "/usr/bin/prlimit",
+        "--cpu=3:4",
+        "--as=1073741824:1073741824",
+        "--fsize=1048576:1048576",
+        "--",
+    ]
 
 
 def test_filesystem_probe_requires_read_only_root_and_site_mask() -> None:

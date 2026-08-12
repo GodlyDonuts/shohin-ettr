@@ -1,0 +1,66 @@
+{
+  "schema": "shohin-pcf16-terminal-qualification-receipt-v1",
+  "recorded_at_utc": "2026-08-12T08:44:30Z",
+  "source_commit": "bc068470212ccb4b6110a62300cd1758079aa681",
+  "runtime_manifest_sha256": "5d0f33cd4fc2e832581b66398c8f484de9e25cbb6e308c165963047b5f3e9f6e",
+  "qualification_root": "/lustre/fs1/home/sa305415/shohin/artifacts/pcf16_qualification_bc06847_r1",
+  "status": "failed_infrastructure_qualification",
+  "scientific_graph_submitted": false,
+  "formal_result": null,
+  "cpu_qualification": {
+    "job_id": 752812,
+    "node": "evc1",
+    "state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed_seconds": 77,
+    "restarts": 0,
+    "sandbox_receipt_sha256": "c478357e38076faf98e36722a172e157e5c4a50cb2858d16b07d39279feeb184",
+    "sandbox_config_sha256": "d8f2060ad7fcb5db3aefdf9d005e3164115614b914026b9475252216655c3733",
+    "probe_count": 41,
+    "all_probes_passed": true
+  },
+  "preliminary_sizing_array": {
+    "array_job_id": 752826,
+    "allocation_job_ids": [752826, 752827],
+    "node": "evc28",
+    "requested_time_limit": "02:00:00",
+    "terminal_states": [
+      "CANCELLED by 1227834669",
+      "CANCELLED by 1227834669"
+    ],
+    "reason_excluded": "The requested limit could not contain the prospectively frozen 1000-cycle worst-case stress. It was cancelled after sizing and is not qualification evidence."
+  },
+  "final_loaded_stress": {
+    "array_job_id": 752844,
+    "allocation_job_ids": [752844, 752845],
+    "node": "evc28",
+    "time_limit": "06:00:00",
+    "states": ["FAILED", "FAILED"],
+    "exit_codes": ["1:0", "1:0"],
+    "elapsed_seconds": [681, 682],
+    "restarts": [0, 0],
+    "gpu_allocations": 2,
+    "co_located": true,
+    "identity_sha256": "e23c78d9f5be9763c0cac42c03b717be26f464e9be83019cf29e5b22b6f2a8dc",
+    "completed_iterations_per_allocation": 27,
+    "failed_iteration": 28,
+    "exception": "PCF1SandboxError: PCF1 sandbox exceeded the outer wall timeout",
+    "failure_elapsed_seconds": [25.12717105122283, 24.38707744097337],
+    "worker_0_stdout_sha256": "5e17296e469356d518dd033892507d19205f0c9f3c7105ca48881bfcef5e0aa9",
+    "worker_0_stderr_sha256": "c2d9e45af91df1b33e12544cebd7e29825fb2c25ccd16939603a3f78e0efd447",
+    "worker_1_stdout_sha256": "b80455cf101d716d417873da034bd95885f0858202a507615c0738bd34707f70",
+    "worker_1_stderr_sha256": "ba4afd9ac8f5a6a0b892fbcd5ea973d8022ef66fc984b4efc2d887dfed23914b"
+  },
+  "containment": {
+    "queue_empty": true,
+    "scratch_paths_absent": true,
+    "confirmation_access_count": 0,
+    "public_access_count": 0,
+    "holdout_access_count": 0,
+    "product_access_count": 0,
+    "qualification_model_generation": true,
+    "publication_graph_model_generation": false,
+    "publication_scoring": false
+  },
+  "interpretation": "PCF16 closed before scientific admission. The explicit posix_spawn path passed the complete sandbox probe and 27 simultaneous loaded generation-plus-sandbox cycles, but the separate five-second outer infrastructure watchdog expired in lockstep on cycle 28. Candidate CPU limits and the publication gate were not changed or consumed."
+}
