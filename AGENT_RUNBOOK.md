@@ -1,17 +1,18 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **PCF14 PROSPECTIVELY FROZEN — 2026-08-11:** PCF13 completed drafts, exact
-> merge, materialization, revision training, and revision calibration. One
-> unchanged-calibration MBPP candidate then exceeded the outer sandbox wall
-> watchdog; the sandbox classified it as infrastructure, no unchanged shard
-> was published, descendants were cancelled, and confirmation assessors were
-> never opened. Preserve
-> `docs/research/SHOHIN_PCF13_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
-> PCF14 changes only how the existing three-second candidate resource limit is
-> attested: trusted `ITIMER_REAL/SIGALRM` is armed after READY and policy
-> acceptance, while outer timeout stays infrastructure-only. It starts fresh
-> and changes no scientific behavior or gate. Follow
-> `docs/research/SHOHIN_PCF14_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+> **PCF14 TERMINAL-NULL — 2026-08-12:** all 16 draft shards, their exact
+> merge, materialization, and the frozen 256-update revision training passed.
+> Revision-calibration shard 2 then failed on MBPP identity
+> `8d17a4...eb7f7` before the isolated Python bootstrap emitted trusted READY.
+> Job `752644` was `FAILED 1:0` on `evc27` with zero restarts. All seven peer
+> calibration allocations and all descendants were cancelled; no complete
+> calibration shard, commit training, confirmation candidate, score
+> authorization, assessor semantic read, or final gate exists. The remote run
+> is frozen nonwritable. Preserve
+> `docs/research/SHOHIN_PCF14_TERMINAL_INFRASTRUCTURE_RECEIPT_20260812.json`.
+> Do not replay PCF14 or infer a scientific result. A successor requires an
+> independently reproduced, narrowly qualified infrastructure correction and
+> must leave every frozen scientific clause unchanged.
 
 > **PCF9 PROSPECTIVELY FROZEN — 2026-08-11:** PCF8 preparation, no-score
 > mechanics, and B1 completed. Draft task `751823_3` then failed before

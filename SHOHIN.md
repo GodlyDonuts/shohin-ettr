@@ -4,16 +4,19 @@
 
 ## Read this first
 
-**PCF14 is now prospectively frozen.** PCF13 completed source-only drafts,
-their exact merge, materialization, revision training, and revision
-calibration. An unchanged-calibration MBPP candidate then exceeded the outer
-sandbox wall watchdog. The sandbox correctly classified the ambiguity as
-infrastructure, the other shards and descendants were cancelled, confirmation
-assessors remained unopened, and PCF13's formal result is `null`. PCF14's sole
-repair arms the already-frozen three-second candidate wall limit inside the
-trusted post-READY bootstrap; outer timeout remains infrastructure-only. No
-model, data, prompt, arm, seed, training, threshold, or gate changes. See
-`docs/research/SHOHIN_PCF14_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+**PCF14 is terminal-null.** Its 16 source-only draft shards, exact merge,
+materialization, and 256-update revision training completed with zero retries.
+During revision calibration, shard 2 reached the frozen MBPP identity
+`8d17a4...eb7f7`; its Bubblewrap namespace started, but pinned Python failed
+before the trusted `PCF1_PYTHON_READY` attestation. That event is
+infrastructure by construction and was not counted as a wrong answer. Every
+other calibration allocation and descendant was cancelled, the confirmation
+board remained unopened, and no commit, score, or formal gate result exists.
+The run is frozen nonwritable; preserve
+`docs/research/SHOHIN_PCF14_TERMINAL_INFRASTRUCTURE_RECEIPT_20260812.json`.
+No successor is authorized until the pre-READY failure is independently
+reproduced, narrowly corrected, and qualified without changing any scientific
+constant.
 
 **PCF2 is now prospectively authorized and frozen.** PCF1 remains closed with
 formal result `null`; its CPU-only first job failed before model, data, H100,

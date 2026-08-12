@@ -1,24 +1,27 @@
 # Shohin Native Reasoning Master Ledger
 
-## PCF14 current execution boundary — 2026-08-11
+## PCF14 terminal execution boundary — 2026-08-12
 
-PCF13 is terminal-null after the sandbox's outer wall watchdog stopped one
-unchanged-calibration MBPP assessment. The complete source-only draft corpus,
-merge, materialization, revision adapter, and revision calibration are valid,
-but no unchanged-calibration shard was published; commit training,
-confirmation generation, sole assessor open, score, and final gate never ran.
-Preserve
-`docs/research/SHOHIN_PCF13_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
+PCF14 is terminal-null. Preparation, qualified mechanics, B1, all 16
+source-only draft shards, their exact 7,113-identity merge, materialization,
+and frozen 256-update revision training completed with zero restarts. During
+revision calibration, shard 2 generated the batch containing global row 3210,
+MBPP identity `8d17a4...eb7f7`, then the Bubblewrap child stopped before its
+pinned Python bootstrap emitted trusted READY. The sandbox correctly raised
+infrastructure rather than turning the event into a wrong answer.
 
-PCF14 is prospectively frozen with one infrastructure repair: the existing
-three-second candidate resource limit is now armed as trusted
-`ITIMER_REAL/SIGALRM` after runtime attestation, READY, and policy acceptance.
-That distinguishes candidate/test wall exhaustion (scientific resource-limit
-failure) from pre-launch/host outer timeout (infrastructure). PCF14 starts from
-a fresh root and replays the complete graph. Every model, source, split,
-prompt, arm, seed, training setting, threshold, custody boundary, and the sole
-terminal gate remain unchanged. Follow
-`docs/research/SHOHIN_PCF14_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+Job `752644` failed `1:0` on `evc27`; all seven peer calibration allocations
+and every descendant were cancelled. No complete calibration shard was
+published. Commit training and confirmation generation never started; the
+confirmation assessor has zero semantic reads; no score authorization,
+normalized report, compute custody, or `final_comparison.json` exists. The
+remote run root is frozen nonwritable and the exact formal result remains
+`null`. Preserve
+`docs/research/SHOHIN_PCF14_TERMINAL_INFRASTRUCTURE_RECEIPT_20260812.json`.
+PCF14 may not be replayed. No successor is authorized until a bounded
+infrastructure diagnosis reproduces the pre-READY failure and qualifies a
+narrow correction without changing the model, data, prompts, arms, seeds,
+training, candidate policy, thresholds, custody, or sole terminal gate.
 
 ## PCF9 execution boundary — 2026-08-11
 

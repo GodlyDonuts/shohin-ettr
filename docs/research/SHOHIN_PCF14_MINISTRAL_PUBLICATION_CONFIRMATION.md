@@ -1,6 +1,16 @@
 # PCF14: Ministral Publication Confirmation Successor
 
-Status: prospectively frozen on 2026-08-11 before PCF14 admission or compute.
+Status: terminal-null on 2026-08-12; no formal scientific gate was reached.
+
+PCF14 completed preparation, mechanics, B1, all 16 draft shards, the exact
+draft merge, materialization, and revision training. Revision-calibration
+shard 2 then stopped on MBPP identity `8d17a4...eb7f7` because the isolated
+pinned Python process failed before trusted READY. All peer allocations and
+descendants were cancelled. No complete calibration shard, commit training,
+confirmation candidate, assessor semantic read, score, or final comparison
+exists. Preserve the immutable receipt
+`SHOHIN_PCF14_TERMINAL_INFRASTRUCTURE_RECEIPT_20260812.json`; do not replay
+this run or report it as a scientific FAIL.
 
 PCF13 is closed with formal scientific result `null`. Preparation, qualified
 mechanics, B1, all 16 source-only draft shards, the exact draft merge,
