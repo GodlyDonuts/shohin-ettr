@@ -236,7 +236,7 @@ validate_gpu_exports() {
 live_preflight() {
   reject_ambient_scheduler_controls
   local command
-  for command in git lfs squeue sinfo sbatch scontrol scancel sacct sha256sum realpath bwrap; do
+  for command in git lfs squeue sinfo sbatch scontrol scancel sacct sha256sum realpath bwrap prlimit; do
     command -v "$command" >/dev/null || die "missing preflight command: $command"
   done
   for variable in REPOSITORY_ROOT RUNTIME RUNTIME_MANIFEST_SHA256 PYTHON MODEL_ROOT MODEL_REVISION PAIRS MATH_BANK SCIENCE_BANK CODE_BANK B1_DATA_LEGACY RUN_ROOT RUN_ID; do
@@ -259,6 +259,9 @@ live_preflight() {
   [[ "$(command -v bwrap)" == /usr/bin/bwrap ]] || die "bubblewrap path differs"
   [[ "$(sha256sum /usr/bin/bwrap | cut -d' ' -f1)" == eb767688b8224d8d3dbe1f8cb30ac3dff9ae8b02ff0452eaec9f94874d4e0011 ]] || \
     die "bubblewrap hash differs"
+  [[ "$(command -v prlimit)" == /usr/bin/prlimit ]] || die "prlimit path differs"
+  [[ "$(sha256sum /usr/bin/prlimit | cut -d' ' -f1)" == 2c1c7948498f2cb755d8c93ecf72c0651f5a5db23f79cc39cfa6727693d241d5 ]] || \
+    die "prlimit hash differs"
   [[ -d "$REPOSITORY_ROOT/.git" || -f "$REPOSITORY_ROOT/.git" ]] || \
     die "repository root differs"
   [[ -z "$(git -C "$REPOSITORY_ROOT" status --porcelain=v1 --untracked-files=all)" ]] || \

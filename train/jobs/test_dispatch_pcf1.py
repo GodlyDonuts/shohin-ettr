@@ -101,6 +101,9 @@ def test_submit_uses_allowlisted_exports_and_literal_one_open() -> None:
     assert "SBATCH_*|SLURM_*" in source
     assert '--partition="$PARTITION"' in source
     assert '--exclude="$EXCLUDED_NODES"' in source
+    assert "realpath bwrap prlimit" in source
+    assert '"$(command -v prlimit)" == /usr/bin/prlimit' in source
+    assert "2c1c7948498f2cb755d8c93ecf72c0651f5a5db23f79cc39cfa6727693d241d5" in source
     calls = {}
     for line in source.splitlines():
         stripped = line.strip()
