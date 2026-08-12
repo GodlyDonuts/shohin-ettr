@@ -1,22 +1,21 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **PCF15 PROSPECTIVELY FROZEN — 2026-08-12:** PCF14's 16 draft shards, their exact
-> merge, materialization, and the frozen 256-update revision training passed.
-> Revision-calibration shard 2 then failed on MBPP identity
-> `8d17a4...eb7f7` before the isolated Python bootstrap emitted trusted READY.
-> Job `752644` was `FAILED 1:0` on `evc27` with zero restarts. All seven peer
-> calibration allocations and all descendants were cancelled; no complete
-> calibration shard, commit training, confirmation candidate, score
-> authorization, assessor semantic read, or final gate exists. The remote run
-> is frozen nonwritable. Preserve
-> `docs/research/SHOHIN_PCF14_TERMINAL_INFRASTRUCTURE_RECEIPT_20260812.json`.
-> Do not replay PCF14 or infer a scientific result. PCF15 changes only the
-> thread-unsafe outer resource-limit launcher: exact `/usr/bin/prlimit` now
-> applies the unchanged CPU/AS/file limits and execs Bubblewrap with no Python
-> callback between fork and exec. Newton jobs `752701` and `752702` passed all
-> 41 probes and 2,000 loaded-model executions of the failed context. Follow
-> only `docs/research/SHOHIN_PCF15_MINISTRAL_PUBLICATION_CONFIRMATION.md`;
-> every scientific clause and the one terminal gate remain unchanged.
+> **PCF16 PROSPECTIVELY FROZEN — 2026-08-12:** PCF15 completed through the
+> frozen revision checkpoint, and all eight calibration shards passed PCF14's
+> earlier failure point. Revision-calibration shard 3 then stopped after
+> `768/1456` rows on `evc28` because isolated Python did not emit trusted READY.
+> Job `752757_3` was `FAILED 1:0` with zero restarts. All seven peer allocations
+> and all descendants were cancelled; commit and confirmation generation never
+> started, the prepared assessor has zero semantic reads, and no score or final
+> gate exists. Preserve
+> `docs/research/SHOHIN_PCF15_TERMINAL_INFRASTRUCTURE_RECEIPT_20260812.json`;
+> do not replay or continue PCF15. Its `pass_fds` subprocess call still forced
+> a fork/exec path from the resident multithreaded 9B CUDA process. PCF16 changes
+> only that process boundary to explicit `os.posix_spawn` FD actions for the
+> unchanged `prlimit -> Bubblewrap` chain. Require the fresh CPU qualification
+> and simultaneous co-located two-H100 loaded-model generation stress in
+> `docs/research/SHOHIN_PCF16_MINISTRAL_PUBLICATION_CONFIRMATION.md` before one
+> fresh graph. Every scientific clause and the sole terminal gate are unchanged.
 
 > **PCF9 PROSPECTIVELY FROZEN — 2026-08-11:** PCF8 preparation, no-score
 > mechanics, and B1 completed. Draft task `751823_3` then failed before

@@ -212,8 +212,18 @@ def test_launcher_applies_exact_limits_after_exec_without_preexec_callback() -> 
     ]
     assert command[5:] == sandbox.sandbox_command(17, 19)
     assert sandbox.SANDBOX_CONFIG["resource_limit_launcher"] == (
-        "exec-prlimit-before-bwrap-no-preexec-fn"
+        "posix-spawn-prlimit-before-bwrap-no-forked-python-child"
     )
+    assert sandbox.SANDBOX_CONFIG["process_spawn_abi"] == {
+        "api": "os.posix_spawn",
+        "file_actions": "POSIX_SPAWN_DUP2",
+        "dup2_action": os.POSIX_SPAWN_DUP2,
+        "child_fd_range": [32, 63],
+        "empty_environment": True,
+        "empty_signal_mask": True,
+        "reset_signal_names": list(sandbox.POSIX_SPAWN_RESET_SIGNAL_NAMES),
+        "poll_seconds": 0.01,
+    }
     assert sandbox.SANDBOX_CONFIG["prlimit_sha256"] == (
         "2c1c7948498f2cb755d8c93ecf72c0651f5a5db23f79cc39cfa6727693d241d5"
     )
@@ -223,6 +233,70 @@ def test_launcher_applies_exact_limits_after_exec_without_preexec_callback() -> 
     assert sandbox.BOOTSTRAP_SOURCE.index("random.seed(2026080816)") < (
         sandbox.BOOTSTRAP_SOURCE.index("exec(candidate_code")
     )
+
+
+def test_posix_spawn_projects_only_explicit_anonymous_fds(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    observed: dict[str, Any] = {}
+
+    def fake_spawn(
+        path: str,
+        argv: list[str],
+        environment: dict[str, str],
+        *,
+        file_actions: list[tuple[int, int, int]],
+        setsigmask: tuple[()],
+        setsigdef: tuple[signal.Signals, ...],
+    ) -> int:
+        observed.update(
+            path=path,
+            argv=argv,
+            environment=environment,
+            file_actions=file_actions,
+            setsigmask=setsigmask,
+            setsigdef=setsigdef,
+        )
+        return 991
+
+    def fake_wait(
+        pid: int, command: list[str], timeout_seconds: float
+    ) -> subprocess.CompletedProcess[str]:
+        observed.update(pid=pid, command=command, timeout=timeout_seconds)
+        return subprocess.CompletedProcess(
+            command, sandbox.TRUSTED_COMPLETION_EXIT_CODE
+        )
+
+    monkeypatch.setattr(sandbox.os, "posix_spawn", fake_spawn)
+    monkeypatch.setattr(sandbox, "_wait_posix_spawn", fake_wait)
+    result = sandbox._run_sandbox_posix_spawn(
+        candidate_fd=3,
+        assessor_fd=4,
+        stdout_fd=5,
+        stderr_fd=6,
+        info_fd=7,
+        candidate_timeout_seconds=3.0,
+        wall_timeout_seconds=5.0,
+    )
+
+    child_candidate, child_info = sandbox._posix_spawn_child_fds((3, 4, 5, 6, 7))
+    assert (child_candidate, child_info) == (63, 62)
+    assert observed["path"] == str(sandbox.PRLIMIT)
+    assert observed["environment"] == {}
+    assert observed["setsigmask"] == ()
+    assert observed["setsigdef"] == sandbox.POSIX_SPAWN_RESET_SIGNALS
+    assert observed["argv"] == sandbox.sandbox_launch_command(63, 62, 3.0)
+    assert observed["file_actions"] == [
+        (os.POSIX_SPAWN_DUP2, 4, 0),
+        (os.POSIX_SPAWN_DUP2, 5, 1),
+        (os.POSIX_SPAWN_DUP2, 6, 2),
+        (os.POSIX_SPAWN_DUP2, 3, 63),
+        (os.POSIX_SPAWN_DUP2, 7, 62),
+    ]
+    assert observed["pid"] == 991
+    assert observed["timeout"] == 5.0
+    assert result.returncode == sandbox.TRUSTED_COMPLETION_EXIT_CODE
+    command = sandbox.sandbox_launch_command(17, 19, 3.0)
     assert sandbox.BOOTSTRAP_SOURCE.index("exec(candidate_code") < (
         sandbox.BOOTSTRAP_SOURCE.index("exec(setup_code")
     )
@@ -247,6 +321,61 @@ def test_launcher_applies_exact_limits_after_exec_without_preexec_callback() -> 
     for source, destination, _, _ in sandbox.SYSTEM_LIBRARY_BINDINGS:
         assert str(source) in command
         assert destination in command
+
+
+def test_posix_spawn_wait_decodes_the_exact_child_status(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    waits = iter(((0, 0), (77, sandbox.TRUSTED_COMPLETION_EXIT_CODE << 8)))
+    monkeypatch.setattr(sandbox.os, "waitpid", lambda _pid, _flags: next(waits))
+    monkeypatch.setattr(sandbox.time, "monotonic", lambda: 1.0)
+    monkeypatch.setattr(sandbox.time, "sleep", lambda _seconds: None)
+
+    result = sandbox._wait_posix_spawn(77, ["qualified"], 5.0)
+
+    assert result.args == ["qualified"]
+    assert result.returncode == sandbox.TRUSTED_COMPLETION_EXIT_CODE
+
+
+def test_posix_spawn_wall_timeout_kills_and_reaps_fail_closed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    clocks = iter((1.0, 3.0))
+    waits: list[tuple[int, int]] = []
+    kills: list[tuple[int, signal.Signals]] = []
+
+    def fake_wait(pid: int, flags: int) -> tuple[int, int]:
+        waits.append((pid, flags))
+        return (0, 0) if flags == os.WNOHANG else (pid, signal.SIGKILL)
+
+    monkeypatch.setattr(sandbox.os, "waitpid", fake_wait)
+    monkeypatch.setattr(sandbox.os, "kill", lambda pid, sig: kills.append((pid, sig)))
+    monkeypatch.setattr(sandbox.time, "monotonic", lambda: next(clocks))
+
+    with pytest.raises(subprocess.TimeoutExpired):
+        sandbox._wait_posix_spawn(88, ["qualified"], 1.0)
+
+    assert kills == [(88, signal.SIGKILL)]
+    assert waits == [(88, os.WNOHANG), (88, 0)]
+
+
+def test_posix_spawn_os_error_is_infrastructure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fail_spawn(*_args: object, **_kwargs: object) -> int:
+        raise OSError(11, "resource temporarily unavailable")
+
+    monkeypatch.setattr(sandbox.os, "posix_spawn", fail_spawn)
+    with pytest.raises(sandbox.PCF1SandboxError, match="errno 11"):
+        sandbox._run_sandbox_posix_spawn(
+            candidate_fd=3,
+            assessor_fd=4,
+            stdout_fd=5,
+            stderr_fd=6,
+            info_fd=7,
+            candidate_timeout_seconds=3.0,
+            wall_timeout_seconds=5.0,
+        )
 
 
 def test_filesystem_probe_requires_read_only_root_and_site_mask() -> None:

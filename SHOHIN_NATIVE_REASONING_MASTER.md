@@ -1,6 +1,35 @@
 # Shohin Native Reasoning Master Ledger
 
-## PCF15 current execution boundary — 2026-08-12
+## PCF16 current execution boundary — 2026-08-12
+
+PCF15 is terminal-null. It completed preparation, qualified mechanics, B1,
+all 16 source-only draft shards, exact draft merge, materialization, and the
+frozen 256-update revision training with zero restarts. All eight calibration
+allocations then ran past PCF14's earlier failure point. Revision-calibration
+shard 3 stopped after `768/1456` rows on `evc28` because the isolated Python
+bootstrap did not emit trusted READY. Job `752757_3` failed `1:0` with zero
+restarts; all seven peers and every descendant were cancelled immediately.
+Commit training and confirmation generation never started, the prepared
+confirmation assessor has zero semantic reads, and no score authorization,
+score, normalized report, compute custody, or `final_comparison.json` exists.
+The remote run is frozen nonwritable and its formal result remains `null`.
+Preserve
+`docs/research/SHOHIN_PCF15_TERMINAL_INFRASTRUCTURE_RECEIPT_20260812.json`.
+
+PCF15 removed `preexec_fn`, but anonymous candidate/assessor custody required
+`pass_fds`, which kept Python on a fork/exec subprocess path from the resident
+multithreaded 9B PyTorch/CUDA process. PCF16 removes that final boundary with
+explicit `os.posix_spawn` `POSIX_SPAWN_DUP2` actions, launching the same exact
+`prlimit -> Bubblewrap -> minimal Python` chain with the same CPU, address,
+file, wall, namespace, candidate-policy, and attestation semantics. No model,
+data, prompt, arm, seed, training, generation, threshold, custody, or gate
+constant changes. Before any graph, require one full unmocked CPU sandbox
+qualification plus simultaneous co-located two-H100 loaded-model runs that
+each complete 1,000 generation-plus-sandbox assessments at the exact late
+failure context. Follow only
+`docs/research/SHOHIN_PCF16_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+
+## PCF15 predecessor boundary — 2026-08-12
 
 PCF14 is terminal-null. Preparation, qualified mechanics, B1, all 16
 source-only draft shards, their exact 7,113-identity merge, materialization,

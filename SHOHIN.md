@@ -4,22 +4,22 @@
 
 ## Read this first
 
-**PCF15 is now prospectively frozen.** PCF14's 16 source-only draft shards, exact merge,
-materialization, and 256-update revision training completed with zero retries.
-During revision calibration, shard 2 reached the frozen MBPP identity
-`8d17a4...eb7f7`; its Bubblewrap namespace started, but pinned Python failed
-before the trusted `PCF1_PYTHON_READY` attestation. That event is
-infrastructure by construction and was not counted as a wrong answer. Every
-other calibration allocation and descendant was cancelled, the confirmation
-board remained unopened, and no commit, score, or formal gate result exists.
-The run is frozen nonwritable; preserve
-`docs/research/SHOHIN_PCF14_TERMINAL_INFRASTRUCTURE_RECEIPT_20260812.json`.
-Python's documented thread-unsafe `preexec_fn` boundary has now been removed:
-hash-pinned `/usr/bin/prlimit` applies the same limits and execs Bubblewrap.
-Fresh Newton qualification passed 41/41 probes, and a loaded-model H100 stress
-test completed 2,000 exact failed-context launches with zero infrastructure
-failures. No scientific constant changed. Follow only
-`docs/research/SHOHIN_PCF15_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+**PCF16 is now prospectively frozen.** PCF15 completed preparation, mechanics,
+B1, all 16 source-only draft shards, exact merge, materialization, and
+256-update revision training with zero retries. All eight calibration shards
+passed PCF14's earlier failure point, but revision shard 3 then stopped after
+`768/1456` rows because isolated Python again failed before trusted READY.
+Every peer and descendant was cancelled; commit and confirmation generation
+never began, the sealed assessor has zero semantic reads, and no score or
+formal gate result exists. The run is frozen nonwritable; preserve
+`docs/research/SHOHIN_PCF15_TERMINAL_INFRASTRUCTURE_RECEIPT_20260812.json`.
+The remaining cause is the `pass_fds` subprocess path, which still forks the
+resident multithreaded 9B CUDA process. PCF16 changes only that boundary to
+explicit `os.posix_spawn` FD actions for the unchanged
+`prlimit -> Bubblewrap` chain. All scientific constants remain frozen. Require
+the full CPU qualification and simultaneous two-H100 loaded-model generation
+stress before any graph, then follow only
+`docs/research/SHOHIN_PCF16_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
 **PCF2 is now prospectively authorized and frozen.** PCF1 remains closed with
 formal result `null`; its CPU-only first job failed before model, data, H100,

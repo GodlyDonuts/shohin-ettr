@@ -10,9 +10,11 @@ import json
 import math
 import os
 from pathlib import Path
+import signal
 import stat
 import subprocess
 import tempfile
+import time
 from typing import Any, Callable
 
 from hf_product_reasoning_eval import (
@@ -26,6 +28,12 @@ BWRAP = Path("/usr/bin/bwrap")
 BWRAP_SHA256 = "eb767688b8224d8d3dbe1f8cb30ac3dff9ae8b02ff0452eaec9f94874d4e0011"
 PRLIMIT = Path("/usr/bin/prlimit")
 PRLIMIT_SHA256 = "2c1c7948498f2cb755d8c93ecf72c0651f5a5db23f79cc39cfa6727693d241d5"
+POSIX_SPAWN_RESET_SIGNAL_NAMES = tuple(
+    name for name in ("SIGPIPE", "SIGXFZ", "SIGXFSZ") if hasattr(signal, name)
+)
+POSIX_SPAWN_RESET_SIGNALS = tuple(
+    getattr(signal, name) for name in POSIX_SPAWN_RESET_SIGNAL_NAMES
+)
 PYTHON_ROOT = Path("/lustre/fs1/home/sa305415/shohin/miniforge3")
 PYTHON_EXECUTABLE = PYTHON_ROOT / "bin/python3.13"
 PYTHON_SHA256 = "051a031d827eab9778e982571db754662809164c8a3ec01e9beea1e1088123e0"
@@ -609,7 +617,19 @@ SANDBOX_CONFIG = {
     "prlimit": str(PRLIMIT),
     "prlimit_sha256": PRLIMIT_SHA256,
     "prlimit_version": "prlimit from util-linux 2.32.1",
-    "resource_limit_launcher": "exec-prlimit-before-bwrap-no-preexec-fn",
+    "resource_limit_launcher": (
+        "posix-spawn-prlimit-before-bwrap-no-forked-python-child"
+    ),
+    "process_spawn_abi": {
+        "api": "os.posix_spawn",
+        "file_actions": "POSIX_SPAWN_DUP2",
+        "dup2_action": os.POSIX_SPAWN_DUP2,
+        "child_fd_range": [32, 63],
+        "empty_environment": True,
+        "empty_signal_mask": True,
+        "reset_signal_names": list(POSIX_SPAWN_RESET_SIGNAL_NAMES),
+        "poll_seconds": 0.01,
+    },
     "python_root": str(PYTHON_ROOT),
     "python_executable": str(PYTHON_EXECUTABLE),
     "python_sha256": PYTHON_SHA256,
@@ -819,7 +839,9 @@ def sha256_file(path: Path) -> str:
 
 def validate_sandbox_host() -> None:
     if (
-        BWRAP.is_symlink()
+        not callable(getattr(os, "posix_spawn", None))
+        or not isinstance(getattr(os, "POSIX_SPAWN_DUP2", None), int)
+        or BWRAP.is_symlink()
         or not BWRAP.is_file()
         or sha256_file(BWRAP) != BWRAP_SHA256
         or PRLIMIT.is_symlink()
@@ -1268,6 +1290,87 @@ def _file_tail(handle: Any, limit: int) -> str:
     return _diagnostic(handle.read(), limit)
 
 
+def _posix_spawn_child_fds(source_fds: tuple[int, ...]) -> tuple[int, int]:
+    """Choose deterministic inherited FDs below the bootstrap NOFILE limit."""
+
+    available = [fd for fd in range(63, 31, -1) if fd not in source_fds]
+    if len(available) < 2:
+        raise PCF1SandboxError("PCF1 posix-spawn FD projection is unavailable")
+    return available[0], available[1]
+
+
+def _wait_posix_spawn(
+    pid: int, command: list[str], timeout_seconds: float
+) -> subprocess.CompletedProcess[str]:
+    """Wait for one posix-spawned sandbox without a Python fork callback."""
+
+    deadline = time.monotonic() + timeout_seconds
+    while True:
+        try:
+            waited, status = os.waitpid(pid, os.WNOHANG)
+        except InterruptedError:
+            continue
+        if waited == pid:
+            return subprocess.CompletedProcess(
+                command, os.waitstatus_to_exitcode(status)
+            )
+        if time.monotonic() >= deadline:
+            try:
+                os.kill(pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            while True:
+                try:
+                    os.waitpid(pid, 0)
+                    break
+                except InterruptedError:
+                    continue
+                except ChildProcessError:
+                    break
+            raise subprocess.TimeoutExpired(command, timeout_seconds)
+        time.sleep(0.01)
+
+
+def _run_sandbox_posix_spawn(
+    *,
+    candidate_fd: int,
+    assessor_fd: int,
+    stdout_fd: int,
+    stderr_fd: int,
+    info_fd: int,
+    candidate_timeout_seconds: float,
+    wall_timeout_seconds: float,
+) -> subprocess.CompletedProcess[str]:
+    """Launch prlimit/bwrap through the qualified no-fork Python boundary."""
+
+    source_fds = (candidate_fd, assessor_fd, stdout_fd, stderr_fd, info_fd)
+    child_candidate_fd, child_info_fd = _posix_spawn_child_fds(source_fds)
+    command = sandbox_launch_command(
+        child_candidate_fd, child_info_fd, candidate_timeout_seconds
+    )
+    file_actions = [
+        (os.POSIX_SPAWN_DUP2, assessor_fd, 0),
+        (os.POSIX_SPAWN_DUP2, stdout_fd, 1),
+        (os.POSIX_SPAWN_DUP2, stderr_fd, 2),
+        (os.POSIX_SPAWN_DUP2, candidate_fd, child_candidate_fd),
+        (os.POSIX_SPAWN_DUP2, info_fd, child_info_fd),
+    ]
+    try:
+        pid = os.posix_spawn(
+            str(PRLIMIT),
+            command,
+            {},
+            file_actions=file_actions,
+            setsigmask=(),
+            setsigdef=POSIX_SPAWN_RESET_SIGNALS,
+        )
+    except OSError as error:
+        raise PCF1SandboxError(
+            f"PCF1 posix-spawn launcher failed with errno {error.errno}"
+        ) from error
+    return _wait_posix_spawn(pid, command, wall_timeout_seconds)
+
+
 def classify_sandbox_termination(
     returncode: int | None, timed_out: bool
 ) -> tuple[bool, str]:
@@ -1298,7 +1401,7 @@ def isolated_program_result(
     *,
     setup_source: str = "",
     tests_source: str = "",
-    runner: Callable[..., subprocess.CompletedProcess[str]] = subprocess.run,
+    runner: Callable[..., subprocess.CompletedProcess[str]] | None = None,
     validate_host: bool = True,
     require_test_completion_attestation: bool = False,
     trusted_probe: bool = False,
@@ -1351,19 +1454,30 @@ def isolated_program_result(
             timed_out = False
             result: subprocess.CompletedProcess[str] | None = None
             try:
-                result = runner(
-                    sandbox_launch_command(
-                        candidate_fd, info_file.fileno(), timeout_seconds
-                    ),
-                    cwd="/",
-                    env={},
-                    stdin=assessor_fd,
-                    stdout=stdout_file,
-                    stderr=stderr_file,
-                    timeout=timeout_seconds + 2.0,
-                    pass_fds=(candidate_fd, info_file.fileno()),
-                    check=False,
-                )
+                if runner is None:
+                    result = _run_sandbox_posix_spawn(
+                        candidate_fd=candidate_fd,
+                        assessor_fd=assessor_fd,
+                        stdout_fd=stdout_file.fileno(),
+                        stderr_fd=stderr_file.fileno(),
+                        info_fd=info_file.fileno(),
+                        candidate_timeout_seconds=timeout_seconds,
+                        wall_timeout_seconds=timeout_seconds + 2.0,
+                    )
+                else:
+                    result = runner(
+                        sandbox_launch_command(
+                            candidate_fd, info_file.fileno(), timeout_seconds
+                        ),
+                        cwd="/",
+                        env={},
+                        stdin=assessor_fd,
+                        stdout=stdout_file,
+                        stderr=stderr_file,
+                        timeout=timeout_seconds + 2.0,
+                        pass_fds=(candidate_fd, info_file.fileno()),
+                        check=False,
+                    )
             except subprocess.TimeoutExpired:
                 timed_out = True
             info_file.seek(0)
@@ -1375,7 +1489,13 @@ def isolated_program_result(
             lines = stdout_raw.splitlines()
             ready = any(line == "PCF1_PYTHON_READY" for line in lines)
             if not ready:
-                raise PCF1SandboxError("PCF1 sandbox Python launch failed")
+                returncode = result.returncode if result is not None else None
+                stderr_sha256 = hashlib.sha256(stderr.encode()).hexdigest()
+                raise PCF1SandboxError(
+                    "PCF1 sandbox Python launch failed "
+                    f"(returncode={returncode}, stderr_sha256={stderr_sha256}, "
+                    f"stderr_tail={stderr!r})"
+                )
             runtime_lines = [
                 line.removeprefix("PCF1_RUNTIME_DESCRIPTOR ")
                 for line in lines

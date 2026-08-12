@@ -26,6 +26,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--threads", type=int, default=0)
     parser.add_argument("--model-root", type=Path)
     parser.add_argument("--adapter-checkpoint", type=Path)
+    parser.add_argument("--generate-before-score", action="store_true")
     return parser.parse_args()
 
 
@@ -61,11 +62,30 @@ def main() -> int:
     model_receipt = None
     if (args.model_root is None) != (args.adapter_checkpoint is None):
         raise RuntimeError("model root and adapter checkpoint must be paired")
+    if args.generate_before_score and args.model_root is None:
+        raise RuntimeError("generation stress requires the model and adapter")
+    tokenizer = None
+    generation = None
     if args.model_root is not None:
         import torch
+        from transformers import AutoTokenizer
 
-        from hf_pcf1_evaluate import _load_model, validate_adapter_trainables
+        from hf_pcf1_evaluate import (
+            _generate_completions,
+            _generation_stop_token_ids,
+            _load_model,
+            _render_prompt,
+            validate_adapter_trainables,
+        )
 
+        tokenizer = AutoTokenizer.from_pretrained(
+            args.model_root,
+            local_files_only=True,
+            trust_remote_code=True,
+        )
+        tokenizer.padding_side = "left"
+        if tokenizer.pad_token_id is None:
+            tokenizer.pad_token_id = tokenizer.eos_token_id
         model, adapter_metadata, loader = _load_model(
             args.model_root, args.adapter_checkpoint, "multimodal"
         )
@@ -73,6 +93,22 @@ def main() -> int:
             raise RuntimeError("diagnostic model loader differs")
         model_receipt = validate_adapter_trainables(model, adapter_metadata)
         torch.cuda.synchronize()
+        if args.generate_before_score:
+            rendered = _render_prompt(tokenizer, str(selected["question"]), True, False)
+            stop_ids = _generation_stop_token_ids(tokenizer)
+
+            def generation() -> str:
+                completions, _ = _generate_completions(
+                    model,
+                    tokenizer,
+                    [rendered],
+                    True,
+                    "greedy",
+                    768,
+                    stop_ids,
+                )
+                return completions[0]
+
     print(
         json.dumps(
             {
@@ -84,6 +120,7 @@ def main() -> int:
                 "process_threads": process_threads(),
                 "setup_receipts": len(receipts),
                 "model_loaded": model is not None,
+                "generate_before_score": args.generate_before_score,
                 "model_receipt": model_receipt,
             },
             sort_keys=True,
@@ -95,8 +132,9 @@ def main() -> int:
     try:
         for iteration in range(1, args.iterations + 1):
             call_started = time.monotonic()
+            candidate = generation() if generation is not None else completion
             try:
-                result = score_completion(assessor, completion)
+                result = score_completion(assessor, candidate)
             except PCF1SandboxError as error:
                 print(
                     json.dumps(
@@ -112,7 +150,7 @@ def main() -> int:
                     flush=True,
                 )
                 raise
-            if result.get("correct") is not False:
+            if generation is None and result.get("correct") is not False:
                 raise RuntimeError("diagnostic placeholder unexpectedly passed")
             if iteration % 25 == 0:
                 print(
