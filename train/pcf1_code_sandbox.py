@@ -10,7 +10,6 @@ import json
 import math
 import os
 from pathlib import Path
-import resource
 import stat
 import subprocess
 import tempfile
@@ -25,6 +24,8 @@ from hf_product_reasoning_eval import (
 
 BWRAP = Path("/usr/bin/bwrap")
 BWRAP_SHA256 = "eb767688b8224d8d3dbe1f8cb30ac3dff9ae8b02ff0452eaec9f94874d4e0011"
+PRLIMIT = Path("/usr/bin/prlimit")
+PRLIMIT_SHA256 = "2c1c7948498f2cb755d8c93ecf72c0651f5a5db23f79cc39cfa6727693d241d5"
 PYTHON_ROOT = Path("/lustre/fs1/home/sa305415/shohin/miniforge3")
 PYTHON_EXECUTABLE = PYTHON_ROOT / "bin/python3.13"
 PYTHON_SHA256 = "051a031d827eab9778e982571db754662809164c8a3ec01e9beea1e1088123e0"
@@ -605,6 +606,10 @@ BOOTSTRAP_SHA256 = hashlib.sha256(BOOTSTRAP_SOURCE.encode()).hexdigest()
 SANDBOX_CONFIG = {
     "bwrap": str(BWRAP),
     "bwrap_sha256": BWRAP_SHA256,
+    "prlimit": str(PRLIMIT),
+    "prlimit_sha256": PRLIMIT_SHA256,
+    "prlimit_version": "prlimit from util-linux 2.32.1",
+    "resource_limit_launcher": "exec-prlimit-before-bwrap-no-preexec-fn",
     "python_root": str(PYTHON_ROOT),
     "python_executable": str(PYTHON_EXECUTABLE),
     "python_sha256": PYTHON_SHA256,
@@ -713,6 +718,9 @@ def validate_sandbox_receipt_payload(receipt: dict[str, Any]) -> None:
         "bwrap_path",
         "bwrap_sha256",
         "bwrap_version",
+        "prlimit_path",
+        "prlimit_sha256",
+        "prlimit_version",
         "python_executable",
         "python_sha256",
         "sandbox_config_sha256",
@@ -758,6 +766,9 @@ def validate_sandbox_receipt_payload(receipt: dict[str, Any]) -> None:
         or receipt.get("bwrap_path") != str(BWRAP)
         or receipt.get("bwrap_sha256") != BWRAP_SHA256
         or receipt.get("bwrap_version") != "bubblewrap 0.4.0"
+        or receipt.get("prlimit_path") != str(PRLIMIT)
+        or receipt.get("prlimit_sha256") != PRLIMIT_SHA256
+        or receipt.get("prlimit_version") != "prlimit from util-linux 2.32.1"
         or receipt.get("python_executable") != str(PYTHON_EXECUTABLE)
         or receipt.get("python_sha256") != PYTHON_SHA256
         or receipt.get("sandbox_config_sha256") != SANDBOX_CONFIG_SHA256
@@ -811,6 +822,9 @@ def validate_sandbox_host() -> None:
         BWRAP.is_symlink()
         or not BWRAP.is_file()
         or sha256_file(BWRAP) != BWRAP_SHA256
+        or PRLIMIT.is_symlink()
+        or not PRLIMIT.is_file()
+        or sha256_file(PRLIMIT) != PRLIMIT_SHA256
         or PYTHON_EXECUTABLE.is_symlink()
         or not PYTHON_EXECUTABLE.is_file()
         or sha256_file(PYTHON_EXECUTABLE) != PYTHON_SHA256
@@ -826,6 +840,19 @@ def validate_sandbox_host() -> None:
     )
     if version.returncode != 0 or version.stdout.strip() != "bubblewrap 0.4.0":
         raise PCF1SandboxError("PCF1 qualified bubblewrap version differs")
+    prlimit_version = subprocess.run(
+        [str(PRLIMIT), "--version"],
+        env={},
+        capture_output=True,
+        text=True,
+        timeout=5,
+        check=False,
+    )
+    if (
+        prlimit_version.returncode != 0
+        or prlimit_version.stdout.strip() != "prlimit from util-linux 2.32.1"
+    ):
+        raise PCF1SandboxError("PCF1 qualified prlimit version differs")
 
     _validate_minimal_runtime_tree()
     _validate_system_library_closure()
@@ -917,23 +944,20 @@ def _validate_minimal_runtime_tree() -> None:
         raise PCF1SandboxError("PCF1 minimal sandbox runtime tree differs")
 
 
-def _limits(timeout_seconds: float) -> Callable[[], None]:
-    def apply() -> None:
-        cpu = max(1, int(math.ceil(timeout_seconds)))
-        resource.setrlimit(resource.RLIMIT_CPU, (cpu, cpu + 1))
-        resource.setrlimit(
-            resource.RLIMIT_AS,
-            (SANDBOX_CONFIG["rlimit_as_bytes"], SANDBOX_CONFIG["rlimit_as_bytes"]),
-        )
-        resource.setrlimit(
-            resource.RLIMIT_FSIZE,
-            (
-                SANDBOX_CONFIG["rlimit_fsize_bytes"],
-                SANDBOX_CONFIG["rlimit_fsize_bytes"],
-            ),
-        )
+def sandbox_launch_command(
+    candidate_fd: int, info_fd: int | None, timeout_seconds: float
+) -> list[str]:
+    """Apply outer limits after exec, avoiding preexec_fn in threaded PyTorch."""
 
-    return apply
+    cpu = max(1, int(math.ceil(timeout_seconds)))
+    return [
+        str(PRLIMIT),
+        f"--cpu={cpu}:{cpu + 1}",
+        f"--as={SANDBOX_CONFIG['rlimit_as_bytes']}:{SANDBOX_CONFIG['rlimit_as_bytes']}",
+        f"--fsize={SANDBOX_CONFIG['rlimit_fsize_bytes']}:{SANDBOX_CONFIG['rlimit_fsize_bytes']}",
+        "--",
+        *sandbox_command(candidate_fd, info_fd),
+    ]
 
 
 def sandbox_command(
@@ -1328,14 +1352,15 @@ def isolated_program_result(
             result: subprocess.CompletedProcess[str] | None = None
             try:
                 result = runner(
-                    sandbox_command(candidate_fd, info_file.fileno()),
+                    sandbox_launch_command(
+                        candidate_fd, info_file.fileno(), timeout_seconds
+                    ),
                     cwd="/",
                     env={},
                     stdin=assessor_fd,
                     stdout=stdout_file,
                     stderr=stderr_file,
                     timeout=timeout_seconds + 2.0,
-                    preexec_fn=_limits(timeout_seconds),
                     pass_fds=(candidate_fd, info_file.fileno()),
                     check=False,
                 )
@@ -2070,6 +2095,9 @@ else:
         "bwrap_path": str(BWRAP),
         "bwrap_sha256": BWRAP_SHA256,
         "bwrap_version": "bubblewrap 0.4.0",
+        "prlimit_path": str(PRLIMIT),
+        "prlimit_sha256": PRLIMIT_SHA256,
+        "prlimit_version": "prlimit from util-linux 2.32.1",
         "python_executable": str(PYTHON_EXECUTABLE),
         "python_sha256": PYTHON_SHA256,
         "sandbox_config_sha256": SANDBOX_CONFIG_SHA256,

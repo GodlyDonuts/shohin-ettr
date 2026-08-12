@@ -1,0 +1,73 @@
+{
+  "schema": "shohin-pcf15-sandbox-launch-qualification-v1",
+  "status": "pass",
+  "date": "2026-08-12",
+  "diagnosis": {
+    "pcf14_failure": "A per-candidate child created its Bubblewrap namespace but pinned Python failed before trusted PCF1_PYTHON_READY while the multithreaded PyTorch/CUDA evaluator was resident.",
+    "unsafe_boundary_removed": "subprocess preexec_fn",
+    "authoritative_rationale": "Python documents that preexec_fn is unsafe in threaded applications because the child can deadlock before exec.",
+    "authoritative_reference": "https://docs.python.org/3/library/subprocess.html#subprocess.Popen",
+    "deterministic_row_failure_rejected": true,
+    "old_launcher_exact_row_low_pressure_passes": 500,
+    "old_launcher_exact_row_65_thread_parent_passes": 500,
+    "old_launcher_exact_row_loaded_model_passes": 500
+  },
+  "repair": {
+    "scope": "resource-limit launcher only",
+    "previous": "Python preexec_fn called setrlimit between fork and exec",
+    "current": "hash-pinned /usr/bin/prlimit execs Bubblewrap with the same limits",
+    "preexec_fn_present": false,
+    "prlimit_path": "/usr/bin/prlimit",
+    "prlimit_sha256": "2c1c7948498f2cb755d8c93ecf72c0651f5a5db23f79cc39cfa6727693d241d5",
+    "prlimit_version": "prlimit from util-linux 2.32.1",
+    "cpu_soft_hard_seconds": [3, 4],
+    "address_space_soft_hard_bytes": [1073741824, 1073741824],
+    "file_size_soft_hard_bytes": [1048576, 1048576],
+    "candidate_policy_changed": false,
+    "candidate_timeout_changed": false,
+    "bootstrap_changed": false,
+    "model_data_prompt_arm_seed_training_threshold_gate_changed": false
+  },
+  "sources": {
+    "pcf1_code_sandbox_sha256": "6dac4ab06c8591394c439cd52be18386e1249b8042513d0d018e7d51050aeaa9",
+    "hf_product_reasoning_eval_sha256": "69dac0e0509f13a500d906c7b102a092e5ea35bcb9ec0d8eacf9321a2749b3b8",
+    "diagnostic_sha256": "388be65d3d9a117745f133440bc5d81f936d30a432584cb439e60bcd578e2221",
+    "sandbox_config_sha256": "feec08509409fa47b8fa51ec235fe977e5a9345cc4badf57906a15afe5717824",
+    "bootstrap_sha256": "726af7a5152908b860a69e222a602fd64f782f49261707ddb1416b47abde3a60",
+    "candidate_policy_sha256": "f27124db3d134a1e3dbde06958ab03220cd5e9585abcc356baa6a49d9edd1f1e"
+  },
+  "fresh_allocation_qualification": {
+    "job_id": 752701,
+    "node": "evc27",
+    "state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed_seconds": 7,
+    "restarts": 0,
+    "receipt_sha256": "6c244b144f69a0ab26efadf4e77228e985d3eaf58e910a99edf1112f3bd23b6c",
+    "probe_sha256": "43da238ea874ad7b15ae68091482c948c5c9b5a48a8ec23d3bf7a7add86ced09",
+    "probe_count": 41,
+    "all_probes_passed": true
+  },
+  "loaded_model_stress": {
+    "job_id": 752702,
+    "node": "evc27",
+    "state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed_seconds": 307,
+    "restarts": 0,
+    "model_revision": "81eaece1948f3875421d9a45bc55487d10e2d894",
+    "adapter_checkpoint_sha256": "67ae85e4c67e27d5dacf95bcb694a0de02ee1f8e5bfe3e0be3a44c78f4e94737",
+    "identity_sha256": "8d17a46462a3e0859bee5711a5ac3be5ec498c7bc6f9319d7be6269c81aeb7f7",
+    "task": "mbpp",
+    "model_loaded": true,
+    "model_generation_performed": false,
+    "placeholder_candidate_only": true,
+    "consecutive_sandbox_executions": 2000,
+    "infrastructure_failures": 0,
+    "unexpected_correct_results": 0,
+    "confirmation_assessor_accesses": 0
+  },
+  "scientific_jobs_submitted": 0,
+  "confirmation_assessor_semantic_reads": 0,
+  "queue_empty_after": true
+}

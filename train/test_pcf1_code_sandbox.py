@@ -198,6 +198,25 @@ def test_command_runs_anonymous_candidate_directly_as_pid_one() -> None:
     assert sandbox.BOOTSTRAP_SOURCE.index("os.close(status_fd)") < (
         sandbox.BOOTSTRAP_SOURCE.index("exec(candidate_code")
     )
+
+
+def test_launcher_applies_exact_limits_after_exec_without_preexec_callback() -> None:
+    command = sandbox.sandbox_launch_command(17, 19, 3.0)
+
+    assert command[:5] == [
+        "/usr/bin/prlimit",
+        "--cpu=3:4",
+        "--as=1073741824:1073741824",
+        "--fsize=1048576:1048576",
+        "--",
+    ]
+    assert command[5:] == sandbox.sandbox_command(17, 19)
+    assert sandbox.SANDBOX_CONFIG["resource_limit_launcher"] == (
+        "exec-prlimit-before-bwrap-no-preexec-fn"
+    )
+    assert sandbox.SANDBOX_CONFIG["prlimit_sha256"] == (
+        "2c1c7948498f2cb755d8c93ecf72c0651f5a5db23f79cc39cfa6727693d241d5"
+    )
     assert sandbox.BOOTSTRAP_SOURCE.index("os.close(0)") < (
         sandbox.BOOTSTRAP_SOURCE.index("PCF1_PYTHON_READY")
     )
@@ -352,6 +371,7 @@ def test_isolated_transport_mounts_only_raw_candidate_and_hides_assessor(
     def fake_runner(
         command: list[str], **kwargs: Any
     ) -> subprocess.CompletedProcess[str]:
+        assert "preexec_fn" not in kwargs
         candidate_index = command.index("--ro-bind-data") + 1
         candidate_fd = int(command[candidate_index])
         assessor_fd = int(kwargs["stdin"])

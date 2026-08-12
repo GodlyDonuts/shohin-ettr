@@ -1,0 +1,15 @@
+{
+  "schema": "shohin-pcf14-terminal-receipt-amendment-v1",
+  "status": "clarification_only",
+  "date": "2026-08-12",
+  "amends_receipt_sha256": "06766e74105ed79da93adb4cebfd8cbb808f54e6f46cf13ea099c06989938c05",
+  "field": "confirmation_artifacts_absent",
+  "clarification": "The original field means confirmation candidate, scoring, authorization, normalization, and final-gate artifacts are absent. The prepare stage did create the sealed confirmation assessor board and its receipts, as required by the frozen graph; those files exist but had zero semantic reads.",
+  "prepared_confirmation_assessor_board_exists": true,
+  "confirmation_assessor_semantic_reads": 0,
+  "confirmation_candidate_generation_started": false,
+  "score_authorization_exists": false,
+  "confirmation_score_exists": false,
+  "final_comparison_exists": false,
+  "scientific_result": null
+}

@@ -4,7 +4,7 @@
 
 ## Read this first
 
-**PCF14 is terminal-null.** Its 16 source-only draft shards, exact merge,
+**PCF15 is now prospectively frozen.** PCF14's 16 source-only draft shards, exact merge,
 materialization, and 256-update revision training completed with zero retries.
 During revision calibration, shard 2 reached the frozen MBPP identity
 `8d17a4...eb7f7`; its Bubblewrap namespace started, but pinned Python failed
@@ -14,9 +14,12 @@ other calibration allocation and descendant was cancelled, the confirmation
 board remained unopened, and no commit, score, or formal gate result exists.
 The run is frozen nonwritable; preserve
 `docs/research/SHOHIN_PCF14_TERMINAL_INFRASTRUCTURE_RECEIPT_20260812.json`.
-No successor is authorized until the pre-READY failure is independently
-reproduced, narrowly corrected, and qualified without changing any scientific
-constant.
+Python's documented thread-unsafe `preexec_fn` boundary has now been removed:
+hash-pinned `/usr/bin/prlimit` applies the same limits and execs Bubblewrap.
+Fresh Newton qualification passed 41/41 probes, and a loaded-model H100 stress
+test completed 2,000 exact failed-context launches with zero infrastructure
+failures. No scientific constant changed. Follow only
+`docs/research/SHOHIN_PCF15_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
 **PCF2 is now prospectively authorized and frozen.** PCF1 remains closed with
 formal result `null`; its CPU-only first job failed before model, data, H100,

@@ -1,6 +1,6 @@
 # Shohin Native Reasoning Master Ledger
 
-## PCF14 terminal execution boundary — 2026-08-12
+## PCF15 current execution boundary — 2026-08-12
 
 PCF14 is terminal-null. Preparation, qualified mechanics, B1, all 16
 source-only draft shards, their exact 7,113-identity merge, materialization,
@@ -18,10 +18,22 @@ normalized report, compute custody, or `final_comparison.json` exists. The
 remote run root is frozen nonwritable and the exact formal result remains
 `null`. Preserve
 `docs/research/SHOHIN_PCF14_TERMINAL_INFRASTRUCTURE_RECEIPT_20260812.json`.
-PCF14 may not be replayed. No successor is authorized until a bounded
-infrastructure diagnosis reproduces the pre-READY failure and qualifies a
-narrow correction without changing the model, data, prompts, arms, seeds,
-training, candidate policy, thresholds, custody, or sole terminal gate.
+PCF14 may not be replayed. The bounded diagnosis rejected a deterministic bad
+row: the exact assessor context passed 1,500 old-launcher executions across
+low-pressure, 65-thread, and loaded-model processes. The remaining unsafe
+boundary was Python `preexec_fn`, which Python documents can deadlock before
+exec in a threaded application. PCF15 removes only that callback. Exact
+`/usr/bin/prlimit` applies the unchanged CPU `3:4` seconds, 1-GiB address-space,
+and 1-MiB file-size limits, then execs the unchanged Bubblewrap command.
+
+Fresh Newton job `752701` passed all 41 sandbox probes. H100 job `752702`
+loaded the pinned dense host and exact PCF14 revision adapter, then completed
+2,000 consecutive executions of the exact failed MBPP context with zero
+infrastructure failures, no model generation, and no confirmation access.
+PCF15 is therefore prospectively frozen at a fresh root under
+`docs/research/SHOHIN_PCF15_MINISTRAL_PUBLICATION_CONFIRMATION.md`. It changes
+no model, data, prompt, arm, seed, training, candidate policy, scientific
+resource limit, threshold, custody rule, or terminal gate.
 
 ## PCF9 execution boundary — 2026-08-11
 
