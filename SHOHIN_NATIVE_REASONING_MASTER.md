@@ -2,24 +2,27 @@
 
 ## PCF17 current execution boundary — 2026-08-12
 
-PCF16 closed before scientific admission. Its explicit `os.posix_spawn` path
-passed all 41 unmocked CPU sandbox probes. Two simultaneous H100 workers on
-`evc28` then loaded the exact dense host and PCF15 revision adapter and each
-completed 27 worst-case generation-plus-sandbox cycles. Both stopped in
-lockstep on cycle 28 because the separate parent-side five-second launcher
-watchdog expired. Jobs `752844` and `752845` failed `1:0` with zero restarts;
-scratch teardown passed, the queue is empty, protected access is zero, and no
-publication graph or formal result exists. Preserve
-`docs/research/SHOHIN_PCF16_TERMINAL_QUALIFICATION_RECEIPT_20260812.json`.
+PCF17 infrastructure admission is PASS. Fresh CPU job `752846` completed on
+`evc1` in eight seconds with zero restarts and all 41 sandbox probes true.
+Simultaneous H100 workers `752847/752848` on `evc28` loaded the exact pinned
+dense host and PCF15 revision adapter, generated before scoring, and each
+completed all 1,000 frozen late-context generation-plus-sandbox cycles. Both
+jobs completed `0:0` with zero restarts and no infrastructure failure.
+Exact-node postcheck `752952` confirmed both private scratch trees absent.
+The queue is empty and settled storage headroom is 208,628,368 KiB plus
+180,519 inodes, exceeding the frozen 128-GiB/150,000-inode admission gate.
+No scientific graph, assessor semantic read, public access, holdout access, or
+product access has occurred. Preserve and bind
+`docs/research/SHOHIN_PCF17_SANDBOX_QUALIFICATION_20260812.json`.
 
 PCF17 changes only the outer infrastructure grace from 2 to 30 seconds.
 Candidate CPU soft/hard limits remain exactly `3:4` seconds; address, file,
-namespace, model, prompt, generation, policy, custody, threshold, and gate
-semantics remain unchanged. Watchdog expiry is still infrastructure, never a
-wrong answer. Require a fresh 41-probe CPU qualification plus two simultaneous
-co-located H100 workers completing 1,000 exact late-context
-generation-plus-sandbox cycles before any graph. Follow only
-`docs/research/SHOHIN_PCF17_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+namespace, model, data, prompt, generation, policy, custody, threshold, and
+gate semantics remain unchanged. The passing qualification authorizes exactly
+one fresh graph under
+`docs/research/SHOHIN_PCF17_MINISTRAL_PUBLICATION_CONFIRMATION.md`. Stop and
+preserve evidence at the first infrastructure terminal state or the sole
+formal `PASS`/`FAIL`; no retry or successor is authorized.
 
 ## PCF16 predecessor boundary — 2026-08-12
 

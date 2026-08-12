@@ -4,19 +4,19 @@
 
 ## Read this first
 
-**PCF17 is now prospectively frozen.** PCF16 submitted no publication graph.
-Its new `os.posix_spawn` path passed all 41 unmocked probes and two co-located
-H100 workers each completed 27 worst-case generation-plus-sandbox cycles.
-Both then expired the separate five-second outer launcher watchdog in
-lockstep. Candidate CPU limits were not reached or changed, protected access
-was zero, and no formal result exists. Preserve
-`docs/research/SHOHIN_PCF16_TERMINAL_QUALIFICATION_RECEIPT_20260812.json`.
-PCF17 changes only parent-side infrastructure grace from 2 to 30 seconds;
-candidate CPU remains exactly `3:4` seconds and every expiry remains
-infrastructure. Require the fresh 41-probe CPU gate and two simultaneous
-1,000-cycle loaded-generation H100 workers before any graph. All scientific
-constants remain frozen. Follow only
-`docs/research/SHOHIN_PCF17_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+**PCF17 infrastructure admission is PASS.** Fresh CPU job `752846` passed all
+41 unmocked sandbox probes. Two simultaneous co-located H100 workers
+`752847/752848` then loaded the exact dense host and frozen revision adapter;
+each completed all 1,000 late-context generation-plus-sandbox cycles with zero
+restarts or infrastructure failures. Exact-node teardown job `752952` proved
+both private scratch paths absent. Storage retains 208,628,368 KiB and 180,519
+inodes of hard-limit headroom, above the frozen 128-GiB/150,000-inode gate.
+Protected access and scientific jobs remain zero. Bind the one fresh graph to
+`docs/research/SHOHIN_PCF17_SANDBOX_QUALIFICATION_20260812.json` and follow
+only `docs/research/SHOHIN_PCF17_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+PCF17 changes no scientific constant. Stop and preserve evidence at its first
+infrastructure terminal state or single formal `PASS`/`FAIL`; do not retry or
+invent a successor.
 
 **PCF2 is now prospectively authorized and frozen.** PCF1 remains closed with
 formal result `null`; its CPU-only first job failed before model, data, H100,

@@ -1,18 +1,17 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **PCF17 PROSPECTIVELY FROZEN — 2026-08-12:** PCF16 submitted no scientific
-> graph. Its explicit `os.posix_spawn` path passed all 41 CPU probes; two
-> co-located H100 workers then loaded the exact host/adapter and each completed
-> 27 worst-case generation-plus-sandbox cycles. Both expired the separate
-> five-second outer launcher watchdog on cycle 28, jobs `752844/752845`, with
-> zero restarts and zero protected access. Preserve
-> `docs/research/SHOHIN_PCF16_TERMINAL_QUALIFICATION_RECEIPT_20260812.json`.
-> PCF17 changes only parent-side namespace-launch grace from 2 to 30 seconds.
-> Candidate CPU remains exactly `3:4` seconds, and watchdog expiry remains
-> infrastructure. Require a fresh 41-probe CPU pass and simultaneous two-H100
-> 1,000-cycle pass under
-> `docs/research/SHOHIN_PCF17_MINISTRAL_PUBLICATION_CONFIRMATION.md` before one
-> fresh graph. Every scientific clause and the sole gate remain unchanged.
+> **PCF17 INFRASTRUCTURE ADMISSION PASS — 2026-08-12:** CPU job `752846`
+> passed all 41 unmocked sandbox probes. Simultaneous H100 workers
+> `752847/752848` on `evc28` loaded the exact host/adapter and each completed
+> 1,000 frozen generation-plus-sandbox cycles with zero restarts or
+> infrastructure failures. Postcheck `752952` proved both private scratch paths
+> absent. Settled hard-limit headroom is 208,628,368 KiB and 180,519 inodes,
+> above the frozen 128-GiB/150,000-inode gate. No scientific job or protected
+> access has occurred. Bind exactly one fresh graph to
+> `docs/research/SHOHIN_PCF17_SANDBOX_QUALIFICATION_20260812.json` and execute
+> only `docs/research/SHOHIN_PCF17_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+> Stop at the first infrastructure terminal state or formal `PASS`/`FAIL`;
+> never retry or authorize a successor automatically.
 
 > **PCF9 PROSPECTIVELY FROZEN — 2026-08-11:** PCF8 preparation, no-score
 > mechanics, and B1 completed. Draft task `751823_3` then failed before
