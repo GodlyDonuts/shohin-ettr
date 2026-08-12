@@ -4,7 +4,7 @@
 set -euo pipefail
 
 readonly PARTITION=normal
-readonly EXCLUDED_NODES=evc26,evc29,evc31,evc32,evc33,evc38,evc46
+readonly EXCLUDED_NODES=evc26,evc29,evc31,evc32,evc33,evc37,evc38,evc46
 readonly SUBMISSION_PATH=/apps/slurm/current/bin:/usr/bin:/bin
 readonly MODEL_REVISION_PIN=81eaece1948f3875421d9a45bc55487d10e2d894
 readonly MODEL_ROOT_PIN=/lustre/fs1/home/sa305415/shohin/artifacts/external/ministral-3-8b-reasoning-2512-81eaece
@@ -559,7 +559,7 @@ common = {
     "status": "submitted",
     "run_id": run_id,
     "partition": "normal",
-    "excluded_nodes": ["evc26", "evc29", "evc31", "evc32", "evc33", "evc38", "evc46"],
+    "excluded_nodes": ["evc26", "evc29", "evc31", "evc32", "evc33", "evc37", "evc38", "evc46"],
     "terminal_stage": "final_compare",
     "retry_authorized": False,
     "successor_authorized": False,

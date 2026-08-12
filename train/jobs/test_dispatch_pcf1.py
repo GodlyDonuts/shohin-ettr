@@ -222,7 +222,8 @@ def test_all_jobs_pin_partition_and_exclusions() -> None:
         source = job.read_text(encoding="utf-8")
         assert "#SBATCH --partition=normal" in source, job
         assert (
-            "#SBATCH --exclude=evc26,evc29,evc31,evc32,evc33,evc38,evc46" in source
+            "#SBATCH --exclude=evc26,evc29,evc31,evc32,evc33,evc37,evc38,evc46"
+            in source
         ), job
 
 

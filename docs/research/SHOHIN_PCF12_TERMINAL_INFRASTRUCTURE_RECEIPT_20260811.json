@@ -1,0 +1,42 @@
+{
+  "schema": "shohin-pcf12-terminal-infrastructure-receipt-v1",
+  "status": "terminal_draft_allocation_local_scratch_capacity_unsafe",
+  "date": "2026-08-11",
+  "source_commit": "6cbe2d5d19f921601d9341ca5c8ae8c60f6d4f90",
+  "runtime_manifest_sha256": "ea583899f25f97fabf7b4616ff27cfb6912897829b13a0f4a25e0073da48e2e4",
+  "run_id": "pcf12_ministral_6cbe2d5_r1",
+  "jobs": {
+    "prepare": {"job_id": 752300, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 140, "node": "evc21", "restarts": 0},
+    "mechanics": {"job_id": 752301, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 190, "node": "evc22", "restarts": 0},
+    "b1": {"job_id": 752302, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 316, "node": "evc22", "restarts": 0},
+    "draft_array": {"root_job_id": 752303, "tasks_started": 16, "tasks_failed": 2, "tasks_cancelled": 14, "restarts": 0},
+    "downstream_root_jobs_cancelled": 25,
+    "terminal_job_id": 752328
+  },
+  "failure_boundary": {
+    "cause": "draft tasks 4 and 5 were colocated on evc37, whose allocation-local scratch failed the frozen 128-GiB capacity gate",
+    "message": "PCF1 allocation-local scratch capacity is unsafe",
+    "failed_task_ids": [752333, 752334],
+    "failed_array_indices": [4, 5],
+    "failed_node": "evc37",
+    "failed_elapsed_seconds": 2,
+    "failed_task_restarts": 0,
+    "complete_draft_files_published": 0
+  },
+  "scientific_state": {
+    "mechanics_completed": true,
+    "b1_training_completed": true,
+    "draft_generation_completed": false,
+    "revision_training_started": false,
+    "calibration_evaluation_started": false,
+    "confirmation_candidate_generation_started": false,
+    "confirmation_assessor_semantic_reads": 0,
+    "confirmation_score_emitted": false,
+    "formal_scientific_result": null
+  },
+  "files": {
+    "failed_stderr_sha256": "b1bff8f72c703960ef5367db463bcec370e8330b8bd00ac6173061556f299acf"
+  },
+  "queue_empty_after": true,
+  "retry_count": 0
+}

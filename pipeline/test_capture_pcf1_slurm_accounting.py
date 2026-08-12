@@ -26,6 +26,7 @@ def _dispatch(path: Path) -> None:
                     "evc31",
                     "evc32",
                     "evc33",
+                    "evc37",
                     "evc38",
                     "evc46",
                 ],

@@ -4,16 +4,14 @@
 
 ## Read this first
 
-**PCF12 is now prospectively frozen.** PCF11 completed preparation, mechanics,
-B1, all 16 draft shards, repaired materialization, and revision training. Two
-calibration tasks colocated on `evc40` then exceeded the non-scientific sandbox
-CPU-limit probe's outer wall allowance before any calibration candidate was
-published. Confirmation generation, assessor semantic reads, and scoring did
-not run, so PCF11's formal result is `null`. PCF12 widens only that admission
-probe window, requires a fresh Newton qualification, and changes no model,
-data, prompt, arm, seed, candidate timeout, threshold, custody clause, or
-terminal gate. See
-`docs/research/SHOHIN_PCF12_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+**PCF13 is now prospectively frozen.** PCF12 preparation, the freshly qualified
+mechanics gate, and B1 completed. Two draft tasks then stopped immediately on
+`evc37` because its allocation-local scratch was below the frozen 128-GiB
+floor; no complete draft shard was published. Revision, calibration,
+confirmation, assessor semantic reads, and scoring did not run, so PCF12's
+formal result is `null`. PCF13 only adds `evc37` to the synchronized scheduler
+and custody exclusion set and changes no scientific setting or gate. See
+`docs/research/SHOHIN_PCF13_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
 **PCF2 is now prospectively authorized and frozen.** PCF1 remains closed with
 formal result `null`; its CPU-only first job failed before model, data, H100,

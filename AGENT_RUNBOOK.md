@@ -1,16 +1,14 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **PCF12 PROSPECTIVELY FROZEN — 2026-08-11:** PCF11 completed preparation,
-> mechanics, B1, all draft shards, repaired materialization, and revision
-> training. Two calibration tasks on `evc40` then exceeded the non-scientific
-> sandbox CPU-limit probe's outer wall allowance before publishing any
-> calibration candidate. Confirmation generation, assessor semantic read, and
-> scoring did not run. Preserve
-> `docs/research/SHOHIN_PCF11_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
-> PCF12 widens only that admission probe window, requires a fresh Newton
-> qualification, starts from a fresh root, and changes no scientific behavior
-> or custody clause. Follow
-> `docs/research/SHOHIN_PCF12_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+> **PCF13 PROSPECTIVELY FROZEN — 2026-08-11:** PCF12 preparation, freshly
+> qualified mechanics, and B1 completed. Two draft tasks then stopped after two
+> seconds on `evc37`, whose allocation-local scratch was below the frozen
+> 128-GiB floor. No complete draft shard was published; revision, calibration,
+> confirmation, assessor semantic read, and scoring did not run. Preserve
+> `docs/research/SHOHIN_PCF12_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
+> PCF13 only synchronizes `evc37` into every scheduler/custody exclusion set,
+> starts fresh, and changes no scientific behavior. Follow
+> `docs/research/SHOHIN_PCF13_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
 > **PCF9 PROSPECTIVELY FROZEN — 2026-08-11:** PCF8 preparation, no-score
 > mechanics, and B1 completed. Draft task `751823_3` then failed before

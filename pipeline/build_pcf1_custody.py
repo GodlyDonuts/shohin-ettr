@@ -111,7 +111,16 @@ NORMALIZED_ARMS = (
     "unchanged",
     "self_refinement",
 )
-EXCLUDED_NODES = ["evc26", "evc29", "evc31", "evc32", "evc33", "evc38", "evc46"]
+EXCLUDED_NODES = [
+    "evc26",
+    "evc29",
+    "evc31",
+    "evc32",
+    "evc33",
+    "evc37",
+    "evc38",
+    "evc46",
+]
 PRESCORE_ACCOUNTING_STAGES = (
     "prepare_inputs",
     "mechanics",

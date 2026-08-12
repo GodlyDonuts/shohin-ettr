@@ -164,6 +164,7 @@ def test_compute_host_receipt_binds_exact_h100_and_nvidia_binary(
             "evc31",
             "evc32",
             "evc33",
+            "evc37",
             "evc38",
             "evc46",
         ],
