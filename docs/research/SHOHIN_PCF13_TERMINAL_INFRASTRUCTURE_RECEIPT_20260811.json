@@ -1,0 +1,58 @@
+{
+  "schema": "shohin-pcf13-terminal-infrastructure-receipt-v1",
+  "status": "terminal_calibration_candidate_wall_timeout_unclassified",
+  "date": "2026-08-11",
+  "source_commit": "f2905314adf8cfc6e38b20e130be0f08abff2030",
+  "runtime_manifest_sha256": "26fa03c16f05e9ecc4f7182992248bb79fe9156996b79ae60676186587189046",
+  "run_id": "pcf13_ministral_f290531_r1",
+  "jobs": {
+    "prepare": {"job_id": 752345, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 138, "node": "evc21", "restarts": 0},
+    "mechanics": {"job_id": 752346, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 177, "node": "evc22", "restarts": 0},
+    "b1": {"job_id": 752347, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 304, "node": "evc22", "restarts": 0},
+    "draft_array": {"root_job_id": 752348, "tasks_completed": 16, "tasks_failed": 0, "tasks_cancelled": 0, "restarts": 0},
+    "draft_merge": {"job_id": 752349, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 180, "node": "evc21", "restarts": 0},
+    "materialize": {"job_id": 752350, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 18, "node": "evc21", "restarts": 0},
+    "revision_train": {"job_id": 752351, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 351, "node": "evc22", "restarts": 0},
+    "calibration_revision_array": {"root_job_id": 752352, "tasks_completed": 4, "tasks_failed": 0, "tasks_cancelled": 0, "restarts": 0},
+    "calibration_revision_merge": {"job_id": 752353, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 16, "node": "evc21", "restarts": 0},
+    "calibration_unchanged_array": {"root_job_id": 752354, "tasks_completed": 0, "tasks_failed": 1, "tasks_cancelled": 3, "restarts": 0},
+    "downstream_root_jobs_cancelled": 19,
+    "terminal_job_id": 752373
+  },
+  "failure_boundary": {
+    "cause": "calibration unchanged shard 1 reached a model-generated MBPP candidate whose sandbox process exceeded the outer wall timeout; the outer watchdog intentionally classified that ambiguity as infrastructure rather than a wrong answer",
+    "message": "PCF1 sandbox exceeded the outer wall timeout",
+    "failed_task_id": 752451,
+    "failed_array_index": 1,
+    "failed_node": "evc35",
+    "failed_elapsed_seconds": 2606,
+    "failed_task_restarts": 0,
+    "last_completed_local_rows": 416,
+    "failed_calibration_global_row": 1872,
+    "failed_identity_sha256": "51405a0723f326dbcd7f49d896a219d3b2cb091af202c74fb97f73cc658646f7",
+    "failed_task": "mbpp",
+    "complete_unchanged_calibration_shards_published": 0
+  },
+  "scientific_state": {
+    "draft_generation_completed": true,
+    "draft_merge_completed": true,
+    "materialization_completed": true,
+    "revision_training_completed": true,
+    "calibration_revision_completed": true,
+    "calibration_unchanged_completed": false,
+    "commit_training_started": false,
+    "confirmation_candidate_generation_started": false,
+    "confirmation_assessor_semantic_reads": 0,
+    "confirmation_score_emitted": false,
+    "formal_scientific_result": null
+  },
+  "files": {
+    "failed_stderr_sha256": "7d8dd9affdc47c360592298843171536ae56a9e5bd43afc01520b95dcae9e2b5",
+    "failed_stdout_sha256": "4f038486aa85042454359d51b7e4069b9ff6d47674a90e432b9e9bc3225a0ca2",
+    "draft_merge_report_sha256": "73a7e3d9f1a55304d14f67cbdda49776c8d9c02cd1334db51719a12c0fc70c03",
+    "materialization_report_sha256": "94fa3cef37124b07080def975d167c5843ce55b80d2f10b1732f653797f309da",
+    "revision_report_sha256": "2ee0da55cab4acd94b61d2bafa9cab59a7bcb0b04f229871439195d5c7ff1efa"
+  },
+  "queue_empty_after": true,
+  "retry_count": 0
+}

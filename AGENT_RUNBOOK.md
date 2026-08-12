@@ -1,14 +1,17 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **PCF13 PROSPECTIVELY FROZEN — 2026-08-11:** PCF12 preparation, freshly
-> qualified mechanics, and B1 completed. Two draft tasks then stopped after two
-> seconds on `evc37`, whose allocation-local scratch was below the frozen
-> 128-GiB floor. No complete draft shard was published; revision, calibration,
-> confirmation, assessor semantic read, and scoring did not run. Preserve
-> `docs/research/SHOHIN_PCF12_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
-> PCF13 only synchronizes `evc37` into every scheduler/custody exclusion set,
-> starts fresh, and changes no scientific behavior. Follow
-> `docs/research/SHOHIN_PCF13_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+> **PCF14 PROSPECTIVELY FROZEN — 2026-08-11:** PCF13 completed drafts, exact
+> merge, materialization, revision training, and revision calibration. One
+> unchanged-calibration MBPP candidate then exceeded the outer sandbox wall
+> watchdog; the sandbox classified it as infrastructure, no unchanged shard
+> was published, descendants were cancelled, and confirmation assessors were
+> never opened. Preserve
+> `docs/research/SHOHIN_PCF13_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
+> PCF14 changes only how the existing three-second candidate resource limit is
+> attested: trusted `ITIMER_REAL/SIGALRM` is armed after READY and policy
+> acceptance, while outer timeout stays infrastructure-only. It starts fresh
+> and changes no scientific behavior or gate. Follow
+> `docs/research/SHOHIN_PCF14_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
 > **PCF9 PROSPECTIVELY FROZEN — 2026-08-11:** PCF8 preparation, no-score
 > mechanics, and B1 completed. Draft task `751823_3` then failed before

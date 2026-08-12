@@ -285,6 +285,7 @@ SANDBOX_PROBES = frozenset(
         "candidate_mount_excludes_assessor",
         "candidate_policy_escape_blocked",
         "candidate_status_fd_closed",
+        "candidate_wall_time_bounded",
         "cpu_bounded",
         "elf_projection_exact",
         "environment_exact",
@@ -415,7 +416,7 @@ MAX_CANDIDATE_BYTES = 1048576
 MAX_ASSESSOR_BYTES = 1048576
 RESOURCE_LIMIT_EXIT_CODE = __RESOURCE_LIMIT_EXIT_CODE__
 
-def cpu_limit_handler(_signum, _frame):
+def resource_limit_handler(_signum, _frame):
     os._exit(RESOURCE_LIMIT_EXIT_CODE)
 
 def bounded_read(fd, limit):
@@ -470,6 +471,7 @@ def main():
             "candidate_policy_passed",
             "candidate_policy_sha256",
             "candidate_source_sha256",
+            "candidate_timeout_seconds",
             "schema",
             "seed",
             "setup_source",
@@ -493,6 +495,9 @@ def main():
             or not isinstance(payload["setup_source"], str)
             or not isinstance(payload["tests_source"], str)
             or payload["candidate_source_sha256"] != hashlib.sha256(candidate_raw).hexdigest()
+            or isinstance(payload["candidate_timeout_seconds"], bool)
+            or not isinstance(payload["candidate_timeout_seconds"], (int, float))
+            or not 0 < float(payload["candidate_timeout_seconds"]) <= 60
             or (
                 payload["assessment_mode"] == "trusted_probe"
                 and (
@@ -538,6 +543,7 @@ def main():
         tests_code = compile(payload["tests_source"], "/official-tests.py", "exec")
         policy_passed = payload["candidate_policy_passed"]
         assessment_mode = payload["assessment_mode"]
+        candidate_timeout_seconds = float(payload["candidate_timeout_seconds"])
         observed_runtime = runtime_descriptor()
         if observed_runtime != EXPECTED_RUNTIME_DESCRIPTOR:
             raise RuntimeError("Python runtime descriptor differs")
@@ -555,7 +561,9 @@ def main():
     if not policy_passed:
         os._exit(78)
     try:
-        signal.signal(signal.SIGXCPU, cpu_limit_handler)
+        signal.signal(signal.SIGXCPU, resource_limit_handler)
+        signal.signal(signal.SIGALRM, resource_limit_handler)
+        signal.setitimer(signal.ITIMER_REAL, candidate_timeout_seconds)
     except BaseException:
         os._exit(75)
     try:
@@ -618,6 +626,7 @@ SANDBOX_CONFIG = {
     "setup_failure_exit_code": SETUP_FAILURE_EXIT_CODE,
     "policy_rejection_exit_code": POLICY_REJECTION_EXIT_CODE,
     "resource_limit_exit_code": RESOURCE_LIMIT_EXIT_CODE,
+    "candidate_wall_timer": "ITIMER_REAL/SIGALRM after READY and policy acceptance",
     "resource_probe_timeout_seconds": RESOURCE_PROBE_TIMEOUT_SECONDS,
     "candidate_random_seed": CANDIDATE_RANDOM_SEED,
     "successful_code_assessment": "reserved_exit_after_official_tests",
@@ -1041,6 +1050,7 @@ def _assessor_transport_payload(
     setup_source: str,
     tests_source: str,
     *,
+    timeout_seconds: float = 3.0,
     trusted_probe: bool,
     trusted_reference: bool = False,
     trusted_setup_compile: bool = False,
@@ -1052,6 +1062,13 @@ def _assessor_transport_payload(
         raise PCF1SandboxError("PCF1 sandbox assessment source is not text")
     if sum(map(int, (trusted_probe, trusted_reference, trusted_setup_compile))) > 1:
         raise PCF1SandboxError("PCF1 trusted assessment mode is ambiguous")
+    if (
+        isinstance(timeout_seconds, bool)
+        or not isinstance(timeout_seconds, (int, float))
+        or not math.isfinite(timeout_seconds)
+        or not 0 < timeout_seconds <= 60
+    ):
+        raise PCF1SandboxError("PCF1 candidate wall timeout differs")
     if trusted_probe:
         policy_passed, policy_reason = True, "not_applicable_trusted_probe"
         assessment_mode = "trusted_probe"
@@ -1075,6 +1092,7 @@ def _assessor_transport_payload(
         "candidate_source_sha256": hashlib.sha256(
             candidate_source.encode()
         ).hexdigest(),
+        "candidate_timeout_seconds": float(timeout_seconds),
         "setup_source": setup_source,
         "tests_source": tests_source,
     }
@@ -1276,6 +1294,7 @@ def isolated_program_result(
         candidate_source,
         setup_source,
         tests_source,
+        timeout_seconds=timeout_seconds,
         trusted_probe=trusted_probe,
         trusted_reference=trusted_reference,
         trusted_setup_compile=trusted_setup_compile,
@@ -1380,6 +1399,7 @@ def isolated_program_result(
         ),
         "memfd_abi": MEMFD_ABI,
         "resource_limit_exit_code": RESOURCE_LIMIT_EXIT_CODE,
+        "candidate_timeout_seconds": float(timeout_seconds),
         "test_completion_attestation_required": require_test_completion_attestation,
         "test_completion_attested": test_completion_attested,
         "infrastructure_failure": False,
@@ -1884,8 +1904,9 @@ else:
             setup_compile_failure_is_infrastructure = True
         else:
             setup_compile_failure_is_infrastructure = False
+        candidate_wall_time = run("import time\ntime.sleep(10)\n", timeout=0.1)
         try:
-            run("import time\ntime.sleep(10)\n", timeout=0.1)
+            classify_sandbox_termination(None, True)
         except PCF1SandboxError:
             outer_wall_timeout_is_infrastructure = True
         else:
@@ -1989,6 +2010,13 @@ else:
         "cpu_bounded": cpu.get("passed") is False
         and cpu.get("returncode") == RESOURCE_LIMIT_EXIT_CODE
         and cpu.get("termination_classification") == "candidate_resource_limit",
+        "candidate_wall_time_bounded": (
+            candidate_wall_time.get("passed") is False
+            and candidate_wall_time.get("returncode") == RESOURCE_LIMIT_EXIT_CODE
+            and candidate_wall_time.get("timed_out") is False
+            and candidate_wall_time.get("termination_classification")
+            == "candidate_resource_limit"
+        ),
         "elf_projection_exact": filesystem.get("passed") is True,
         "candidate_status_fd_closed": process.get("passed") is True,
         "trusted_completion_exit_attested": (

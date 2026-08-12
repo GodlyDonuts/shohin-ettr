@@ -251,6 +251,7 @@ def test_assessor_transport_excludes_candidate_and_binds_frozen_contract() -> No
         "candidate_policy_passed": True,
         "candidate_policy_failure": "accepted",
         "candidate_source_sha256": sandbox.hashlib.sha256(b"candidate").hexdigest(),
+        "candidate_timeout_seconds": 3.0,
         "setup_source": "setup",
         "tests_source": "tests",
     }
@@ -525,7 +526,14 @@ def test_qualification_contains_every_required_adversarial_probe(
                 **runtime,
             }
         if "time.sleep(10)" in source:
-            raise sandbox.PCF1SandboxError("outer wall timeout")
+            return {
+                "passed": False,
+                "timed_out": False,
+                "returncode": sandbox.RESOURCE_LIMIT_EXIT_CODE,
+                "test_completion_attested": False,
+                "termination_classification": "candidate_resource_limit",
+                **runtime,
+            }
         if source == "while True: pass\n":
             return {
                 "passed": False,
@@ -841,7 +849,9 @@ def test_only_pinned_termination_states_are_scientific_outcomes() -> None:
         sandbox.classify_sandbox_termination(None, True)
 
 
-def test_bootstrap_reserves_sigxcpu_for_scientific_resource_limit() -> None:
+def test_bootstrap_reserves_cpu_and_wall_signals_for_scientific_resource_limit() -> (
+    None
+):
     source = sandbox.BOOTSTRAP_SOURCE
     tree = ast.parse(source)
     imported = {
@@ -853,18 +863,77 @@ def test_bootstrap_reserves_sigxcpu_for_scientific_resource_limit() -> None:
     assert "signal" in imported
     assert "RESOURCE_LIMIT_EXIT_CODE = 79" in source
     assert (
-        "def cpu_limit_handler(_signum, _frame):\n    os._exit(RESOURCE_LIMIT_EXIT_CODE)"
+        "def resource_limit_handler(_signum, _frame):\n    os._exit(RESOURCE_LIMIT_EXIT_CODE)"
         in source
     )
-    handler_install = source.index("signal.signal(signal.SIGXCPU, cpu_limit_handler)")
+    handler_install = source.index(
+        "signal.signal(signal.SIGXCPU, resource_limit_handler)"
+    )
+    wall_handler_install = source.index(
+        "signal.signal(signal.SIGALRM, resource_limit_handler)"
+    )
+    wall_timer_install = source.index(
+        "signal.setitimer(signal.ITIMER_REAL, candidate_timeout_seconds)"
+    )
     ready = source.index('os.write(status_fd, b"PCF1_PYTHON_READY\\n")')
     policy_rejection = source.index("if not policy_passed:")
     candidate_execution = source.index("exec(candidate_code, namespace)")
-    assert ready < policy_rejection < handler_install < candidate_execution
+    assert (
+        ready
+        < policy_rejection
+        < handler_install
+        < wall_handler_install
+        < wall_timer_install
+        < candidate_execution
+    )
     assert sandbox.RESOURCE_PROBE_TIMEOUT_SECONDS == 2.0
     assert 'run("while True: pass\\n", timeout=RESOURCE_PROBE_TIMEOUT_SECONDS)' in Path(
         sandbox.__file__
     ).read_text(encoding="utf-8")
+
+
+def test_assessor_transport_binds_candidate_wall_timeout() -> None:
+    payload = json.loads(
+        sandbox._assessor_transport_payload(
+            "pass\n", "", "", trusted_probe=False, timeout_seconds=4.25
+        )
+    )
+    assert payload["candidate_timeout_seconds"] == 4.25
+    for invalid in (True, 0, -1, float("inf"), 61):
+        with pytest.raises(sandbox.PCF1SandboxError, match="wall timeout"):
+            sandbox._assessor_transport_payload(
+                "pass\n", "", "", trusted_probe=False, timeout_seconds=invalid
+            )
+
+
+def test_execution_receipt_binds_candidate_wall_timeout(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(sandbox, "validate_sandbox_host", lambda: None)
+    monkeypatch.setattr(sandbox, "_trusted_tmpdir", lambda: tmp_path)
+    monkeypatch.setattr(
+        sandbox,
+        "_sealed_read_only_memfd",
+        lambda _name, _content: os.open(os.devnull, os.O_RDONLY),
+    )
+    descriptor = sandbox.EXPECTED_SANDBOX_RUNTIME_DESCRIPTOR
+    stdout = (
+        "PCF1_RUNTIME_DESCRIPTOR "
+        + json.dumps(descriptor, sort_keys=True, separators=(",", ":"))
+        + "\nPCF1_PYTHON_READY\n"
+    )
+
+    def runner(*_args: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+        os.write(kwargs["pass_fds"][1], b"{}")
+        kwargs["stdout"].write(stdout.encode())
+        kwargs["stdout"].flush()
+        return subprocess.CompletedProcess([], sandbox.RESOURCE_LIMIT_EXIT_CODE)
+
+    receipt = sandbox.isolated_program_result(
+        "pass\n", 4.25, runner=runner, validate_host=False
+    )
+    assert receipt["candidate_timeout_seconds"] == 4.25
+    assert receipt["termination_classification"] == "candidate_resource_limit"
 
 
 def test_candidate_cannot_forge_reserved_resource_limit_exit() -> None:

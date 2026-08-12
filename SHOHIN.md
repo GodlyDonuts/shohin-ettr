@@ -4,14 +4,16 @@
 
 ## Read this first
 
-**PCF13 is now prospectively frozen.** PCF12 preparation, the freshly qualified
-mechanics gate, and B1 completed. Two draft tasks then stopped immediately on
-`evc37` because its allocation-local scratch was below the frozen 128-GiB
-floor; no complete draft shard was published. Revision, calibration,
-confirmation, assessor semantic reads, and scoring did not run, so PCF12's
-formal result is `null`. PCF13 only adds `evc37` to the synchronized scheduler
-and custody exclusion set and changes no scientific setting or gate. See
-`docs/research/SHOHIN_PCF13_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+**PCF14 is now prospectively frozen.** PCF13 completed source-only drafts,
+their exact merge, materialization, revision training, and revision
+calibration. An unchanged-calibration MBPP candidate then exceeded the outer
+sandbox wall watchdog. The sandbox correctly classified the ambiguity as
+infrastructure, the other shards and descendants were cancelled, confirmation
+assessors remained unopened, and PCF13's formal result is `null`. PCF14's sole
+repair arms the already-frozen three-second candidate wall limit inside the
+trusted post-READY bootstrap; outer timeout remains infrastructure-only. No
+model, data, prompt, arm, seed, training, threshold, or gate changes. See
+`docs/research/SHOHIN_PCF14_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
 **PCF2 is now prospectively authorized and frozen.** PCF1 remains closed with
 formal result `null`; its CPU-only first job failed before model, data, H100,
