@@ -861,7 +861,8 @@ def test_bootstrap_reserves_sigxcpu_for_scientific_resource_limit() -> None:
     policy_rejection = source.index("if not policy_passed:")
     candidate_execution = source.index("exec(candidate_code, namespace)")
     assert ready < policy_rejection < handler_install < candidate_execution
-    assert 'run("while True: pass\\n", timeout=0.5)' in Path(
+    assert sandbox.RESOURCE_PROBE_TIMEOUT_SECONDS == 2.0
+    assert 'run("while True: pass\\n", timeout=RESOURCE_PROBE_TIMEOUT_SECONDS)' in Path(
         sandbox.__file__
     ).read_text(encoding="utf-8")
 

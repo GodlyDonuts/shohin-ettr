@@ -1,16 +1,16 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **PCF11 PROSPECTIVELY FROZEN — 2026-08-11:** PCF10 prepare, mechanics, B1,
-> all 16 draft shards, and the ordered 7,113-row draft merge completed. CPU
-> materialization then rejected the valid trusted-reference receipt because its
-> validator still required the superseded generated-candidate schema. Revision,
-> confirmation generation, assessor semantic read, and scoring did not run.
-> Preserve
-> `docs/research/SHOHIN_PCF10_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
-> PCF11 only synchronizes that validator with the exact writer fields, starts
-> from a fresh root, replays every stage, and changes no scientific or custody
-> clause. Follow
-> `docs/research/SHOHIN_PCF11_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+> **PCF12 PROSPECTIVELY FROZEN — 2026-08-11:** PCF11 completed preparation,
+> mechanics, B1, all draft shards, repaired materialization, and revision
+> training. Two calibration tasks on `evc40` then exceeded the non-scientific
+> sandbox CPU-limit probe's outer wall allowance before publishing any
+> calibration candidate. Confirmation generation, assessor semantic read, and
+> scoring did not run. Preserve
+> `docs/research/SHOHIN_PCF11_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
+> PCF12 widens only that admission probe window, requires a fresh Newton
+> qualification, starts from a fresh root, and changes no scientific behavior
+> or custody clause. Follow
+> `docs/research/SHOHIN_PCF12_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
 
 > **PCF9 PROSPECTIVELY FROZEN — 2026-08-11:** PCF8 preparation, no-score
 > mechanics, and B1 completed. Draft task `751823_3` then failed before

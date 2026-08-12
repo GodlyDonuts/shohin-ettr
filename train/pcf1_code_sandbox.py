@@ -217,6 +217,7 @@ TEST_FAILURE_EXIT_CODE = 76
 SETUP_FAILURE_EXIT_CODE = 77
 POLICY_REJECTION_EXIT_CODE = 78
 RESOURCE_LIMIT_EXIT_CODE = 79
+RESOURCE_PROBE_TIMEOUT_SECONDS = 2.0
 CANDIDATE_RANDOM_SEED = 2026080816
 MAX_CANDIDATE_BYTES = 1 << 20
 MAX_ASSESSOR_TRANSPORT_BYTES = 1 << 20
@@ -617,6 +618,7 @@ SANDBOX_CONFIG = {
     "setup_failure_exit_code": SETUP_FAILURE_EXIT_CODE,
     "policy_rejection_exit_code": POLICY_REJECTION_EXIT_CODE,
     "resource_limit_exit_code": RESOURCE_LIMIT_EXIT_CODE,
+    "resource_probe_timeout_seconds": RESOURCE_PROBE_TIMEOUT_SECONDS,
     "candidate_random_seed": CANDIDATE_RANDOM_SEED,
     "successful_code_assessment": "reserved_exit_after_official_tests",
     "sandbox_runtime_tree_sha256": SANDBOX_RUNTIME_TREE_SHA256,
@@ -1858,7 +1860,10 @@ except (MemoryError, OverflowError):
 else:
     raise AssertionError("address-space limit was bypassed")
 """)
-        cpu = run("while True: pass\n", timeout=0.5)
+        # Admission may share a busy host with another evaluation shard. Give
+        # the trusted SIGXCPU path enough wall time to observe its two-second
+        # CPU limit; this does not alter any candidate assessment timeout.
+        cpu = run("while True: pass\n", timeout=RESOURCE_PROBE_TIMEOUT_SECONDS)
         system_exit_zero = run("raise SystemExit(0)\n")
         resource_limit_exit_code_forgery = run(
             f"raise SystemExit({RESOURCE_LIMIT_EXIT_CODE})\n"
