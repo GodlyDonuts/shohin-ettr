@@ -40,6 +40,14 @@ def test_dry_run_plan_has_exact_single_h100_fanout() -> None:
     assert all(
         task["duplicate_submission_permitted"] is False for task in plan["gpu_tasks"]
     )
+    draft_partitions = [
+        task["identity_partition"]
+        for task in plan["gpu_tasks"]
+        if task["stage"] == "draft_generate"
+    ]
+    assert draft_partitions[0]["row_start"] == 0
+    assert draft_partitions[-1]["row_end"] == 7_113
+    assert sum(row["identity_count"] for row in draft_partitions) == 7_113
     assert {task["stage"]: task["entrypoint"] for task in plan["cpu_tasks"]}[
         "commit_apply"
     ] == "q36_mtr_validate_commit_application"
@@ -56,6 +64,11 @@ def test_dry_run_plan_has_exact_single_h100_fanout() -> None:
         lambda value: value["gpu_tasks"].pop(),
         lambda value: value["gpu_tasks"][0].__setitem__("h100s", 2),
         lambda value: value["gpu_tasks"][0].__setitem__("requeue", True),
+        lambda value: value["gpu_tasks"][0].__setitem__("dependencies", []),
+        lambda value: value["gpu_tasks"][3]["identity_partition"].__setitem__(
+            "row_start", 0
+        ),
+        lambda value: value["cpu_tasks"][-1].__setitem__("dependencies", []),
         lambda value: value.__setitem__("no_duplicate", False),
         lambda value: value.__setitem__("maximum_concurrent_single_h100_requests", 31),
     ],

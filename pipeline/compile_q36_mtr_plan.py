@@ -67,25 +67,25 @@ def sha256_file(path: Path) -> str:
 
 
 def _identity_partition(stage: str, index: int, count: int) -> dict[str, Any] | None:
+    population: int | None = None
     if stage == "draft_generate":
-        return {
-            "population": 7_113,
-            "row_start_formula": f"7113*{index}//{count}",
-            "row_end_formula": f"7113*{index + 1}//{count}",
-        }
-    if stage.startswith("calibration_"):
-        return {
-            "population": 5_824,
-            "row_start_formula": f"5824*{index}//{count}",
-            "row_end_formula": f"5824*{index + 1}//{count}",
-        }
-    if stage.startswith("development_") and not stage.endswith("_merge"):
-        return {
-            "population": 1_289,
-            "row_start_formula": f"1289*{index}//{count}",
-            "row_end_formula": f"1289*{index + 1}//{count}",
-        }
-    return None
+        population = 7_113
+    elif stage.startswith("calibration_"):
+        population = 5_824
+    elif stage.startswith("development_") and not stage.endswith("_merge"):
+        population = 1_289
+    if population is None:
+        return None
+    row_start = population * index // count
+    row_end = population * (index + 1) // count
+    return {
+        "population": population,
+        "row_start": row_start,
+        "row_end": row_end,
+        "identity_count": row_end - row_start,
+        "row_start_formula": f"{population}*{index}//{count}",
+        "row_end_formula": f"{population}*{index + 1}//{count}",
+    }
 
 
 def compile_plan(graph: dict[str, Any], graph_sha256: str) -> dict[str, Any]:
@@ -181,6 +181,29 @@ def validate_plan(payload: dict[str, Any]) -> None:
     keys = [task.get("request_key") for task in gpu_tasks]
     if len(keys) != len(set(keys)):
         raise Q36MTRPlanError("Q36-MTR plan duplicates a GPU request")
+    expected_gpu: dict[str, dict[str, Any]] = {}
+    for priority, stage in enumerate(STAGES, start=1):
+        if not stage.h100_per_task:
+            continue
+        for index in range(stage.tasks):
+            key = f"{stage.name}/{index:02d}"
+            expected_gpu[key] = {
+                "stage": stage.name,
+                "priority": priority,
+                "task_index": index,
+                "task_count": stage.tasks,
+                "entrypoint": GPU_ENTRYPOINTS[stage.name],
+                "dependencies": list(stage.dependencies),
+                "identity_partition": _identity_partition(
+                    stage.name, index, stage.tasks
+                ),
+            }
+    if set(keys) != set(expected_gpu):
+        raise Q36MTRPlanError("Q36-MTR GPU request identity differs")
+    for task in gpu_tasks:
+        expected = expected_gpu[task["request_key"]]
+        if {field: task.get(field) for field in expected} != expected:
+            raise Q36MTRPlanError("Q36-MTR GPU dependency or partition differs")
     if any(
         task.get("h100s") != 1
         or task.get("partition") != "normal"
@@ -207,6 +230,58 @@ def validate_plan(payload: dict[str, Any]) -> None:
         )
     ):
         raise Q36MTRPlanError("Q36-MTR CPU entrypoint plan differs")
+    for priority, (task, stage) in enumerate(
+        zip(cpu_tasks, expected_cpu, strict=True), start=1
+    ):
+        stage_priority = next(
+            index for index, value in enumerate(STAGES, start=1) if value == stage
+        )
+        if (
+            priority > len(expected_cpu)
+            or task.get("priority") != stage_priority
+            or task.get("dependencies") != list(stage.dependencies)
+        ):
+            raise Q36MTRPlanError("Q36-MTR CPU dependency plan differs")
+    partitioned = {
+        stage: sorted(
+            (
+                task["identity_partition"]
+                for task in gpu_tasks
+                if task["stage"] == stage
+            ),
+            key=lambda value: value["row_start"],
+        )
+        for stage in {
+            task["stage"]
+            for task in gpu_tasks
+            if task["identity_partition"] is not None
+        }
+    }
+    for partitions in partitioned.values():
+        if (
+            not partitions
+            or partitions[0]["row_start"] != 0
+            or partitions[-1]["row_end"] != partitions[0]["population"]
+            or any(
+                row["population"] != partitions[0]["population"]
+                or row["identity_count"] != row["row_end"] - row["row_start"]
+                or row["identity_count"] <= 0
+                or (index and partitions[index - 1]["row_end"] != row["row_start"])
+                for index, row in enumerate(partitions)
+            )
+        ):
+            raise Q36MTRPlanError("Q36-MTR identity coverage differs")
+    dependencies = {stage.name: set(stage.dependencies) for stage in STAGES}
+    reachable: set[str] = set()
+    pending = ["final_compare"]
+    while pending:
+        stage = pending.pop()
+        if stage in reachable:
+            continue
+        reachable.add(stage)
+        pending.extend(dependencies[stage])
+    if reachable != set(dependencies):
+        raise Q36MTRPlanError("Q36-MTR graph contains orphan work")
     expected_hours = sum(stage.expected_h100_hours for stage in STAGES)
     if abs(float(payload.get("expected_h100_hours", -1)) - expected_hours) > 1e-12:
         raise Q36MTRPlanError("Q36-MTR task-hour projection differs")
