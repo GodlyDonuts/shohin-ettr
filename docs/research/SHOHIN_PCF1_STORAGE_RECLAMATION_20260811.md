@@ -1400,3 +1400,33 @@ roots, and extracted exactly 402 unique deletion records with indices
 `001`--`402`. Rehashing those records with one terminating newline reproduced
 `a3a58a160206a0f676cf2faad18234ef7dbb448871651bb4a097cdd1c68b907a`.
 No write or deletion was made by the independent postcheck.
+
+### PCF17 terminal headroom maintenance — 2026-08-12
+
+After PCF17 stopped and the scheduler was empty, two explicitly bounded
+cleanup transactions restored the frozen 128-GiB/150,000-inode admission
+margin. Both transactions used literal absolute paths, verified ownership,
+nonsymlink roots, resolved-path containment, protected-anchor exclusion, and
+same-parent quarantine before one-filesystem permanent deletion.
+
+The first transaction removed only the regenerable Bazel cache
+`/lustre/fs1/home/sa305415/.cache/bazel`: 274,456 entries. The second removed
+eight old closed Shohin scratch runtimes, totaling 17,077 entries and
+2,137,333,760 allocated bytes:
+
+- `.invalid_shohin_ettr_smollm2_runtime_59734ed_r1`
+- `.shohin_ettr_native_disposition_runtime_3f9add1_r2_build`
+- `hsc1_rank_c7b8aed_r2`
+- `hsc1_rank_249ec7f_r1`
+- `shohin_finepdf_policy_runtime_bed4596_r1`
+- `shohin_finepdf_policy_runtime_bed4596_r2`
+- `shohin_finepdf_policy_runtime_e587807_r2`
+- `shohin_finepdf_policy_runtime_e587807_r1`
+
+All originals and quarantine names were confirmed absent, so these deletions
+are permanently nonrecoverable locally. The PCF17 evidence root, qualified 9B
+release, pinned Ministral host/runtime, repositories, credentials, and current
+research documents remained present. Settled quota after cleanup was
+`850,234,668 / 1,059,061,760 KiB` and `857,586 / 1,010,000` inodes, leaving
+`208,827,092 KiB` and `152,414` inodes of hard-limit headroom. Cleanup stopped
+at that target.

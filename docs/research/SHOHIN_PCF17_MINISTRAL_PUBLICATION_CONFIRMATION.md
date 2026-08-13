@@ -1,7 +1,10 @@
 # PCF17: Ministral Publication Confirmation Successor
 
-Status: prospectively frozen on 2026-08-12 before admission or scientific
-compute.
+Status: closed terminal-null on 2026-08-12. The sole graph completed every
+scientific generation stage, then precompute custody failed before score
+authorization or assessor open. Formal result is `null`; see
+`SHOHIN_PCF17_TERMINAL_INFRASTRUCTURE_RECEIPT_20260812.json`. This terminal
+status does not alter the frozen contract below.
 
 PCF16 closed during infrastructure qualification and never submitted a
 publication graph. Its unmocked CPU allocation passed all 41 sandbox probes.

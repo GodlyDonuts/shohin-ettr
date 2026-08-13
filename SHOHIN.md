@@ -4,19 +4,17 @@
 
 ## Read this first
 
-**PCF17 infrastructure admission is PASS.** Fresh CPU job `752846` passed all
-41 unmocked sandbox probes. Two simultaneous co-located H100 workers
-`752847/752848` then loaded the exact dense host and frozen revision adapter;
-each completed all 1,000 late-context generation-plus-sandbox cycles with zero
-restarts or infrastructure failures. Exact-node teardown job `752952` proved
-both private scratch paths absent. Storage retains 208,628,368 KiB and 180,519
-inodes of hard-limit headroom, above the frozen 128-GiB/150,000-inode gate.
-Protected access and scientific jobs remain zero. Bind the one fresh graph to
-`docs/research/SHOHIN_PCF17_SANDBOX_QUALIFICATION_20260812.json` and follow
-only `docs/research/SHOHIN_PCF17_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
-PCF17 changes no scientific constant. Stop and preserve evidence at its first
-infrastructure terminal state or single formal `PASS`/`FAIL`; do not retry or
-invent a successor.
+**PCF17 is terminal-null.** Its one frozen graph completed 41 H100
+allocations, including source-owned drafts, revision/commit training, all
+three 1,289-row confirmation arms, and the learned-commit application. CPU
+precompute custody job `752997` then failed closed because the externally
+pinned model manifest uses safe `./relative` spellings while custody required
+their canonical spellings. This happened before pre-score authorization or
+the sole assessor open: formal result `null`, assessor reads zero, no retry,
+and no successor submitted. Preserve
+`docs/research/SHOHIN_PCF17_TERMINAL_INFRASTRUCTURE_RECEIPT_20260812.json`.
+The generated evidence is scientifically unscored and must not be described
+as a `PASS` or `FAIL`.
 
 **PCF2 is now prospectively authorized and frozen.** PCF1 remains closed with
 formal result `null`; its CPU-only first job failed before model, data, H100,

@@ -1,17 +1,14 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **PCF17 INFRASTRUCTURE ADMISSION PASS — 2026-08-12:** CPU job `752846`
-> passed all 41 unmocked sandbox probes. Simultaneous H100 workers
-> `752847/752848` on `evc28` loaded the exact host/adapter and each completed
-> 1,000 frozen generation-plus-sandbox cycles with zero restarts or
-> infrastructure failures. Postcheck `752952` proved both private scratch paths
-> absent. Settled hard-limit headroom is 208,628,368 KiB and 180,519 inodes,
-> above the frozen 128-GiB/150,000-inode gate. No scientific job or protected
-> access has occurred. Bind exactly one fresh graph to
-> `docs/research/SHOHIN_PCF17_SANDBOX_QUALIFICATION_20260812.json` and execute
-> only `docs/research/SHOHIN_PCF17_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
-> Stop at the first infrastructure terminal state or formal `PASS`/`FAIL`;
-> never retry or authorize a successor automatically.
+> **PCF17 TERMINAL-NULL — 2026-08-12:** the sole frozen graph completed 41
+> H100 allocations and produced all confirmation candidates plus learned-commit
+> application. Precompute custody job `752997` then failed closed on the safe
+> but noncanonical `./relative` spelling in the externally pinned model
+> manifest. Pre-score authorization and the sole assessor open never occurred;
+> formal result is `null`, protected access is zero, all dead dependencies were
+> cancelled, and retry/successor count is zero. Preserve
+> `docs/research/SHOHIN_PCF17_TERMINAL_INFRASTRUCTURE_RECEIPT_20260812.json`.
+> Do not score, resume, reinterpret, or retry PCF17.
 
 > **PCF9 PROSPECTIVELY FROZEN — 2026-08-11:** PCF8 preparation, no-score
 > mechanics, and B1 completed. Draft task `751823_3` then failed before
