@@ -15,7 +15,12 @@ q36_verify_overlay "$Q36_FAST_KERNEL_ROOT" "$Q36_FAST_KERNEL_MANIFEST_SHA256"
 [[ "$PREPARE_ROOT" = /* && ! -e "$PREPARE_ROOT" && ! -L "$PREPARE_ROOT" ]] || q36_die "prepare root differs"
 [[ "$RUN_ROOT" = /* && ! -e "$RUN_ROOT" && ! -L "$RUN_ROOT" ]] || q36_die "run root differs"
 mkdir -m 700 "$PREPARE_ROOT"
+sandbox_tmp=$(mktemp -d /tmp/q36-mtr-admission.XXXXXX)
+[[ "$sandbox_tmp" =~ ^/tmp/q36-mtr-admission\.[A-Za-z0-9]{6}$ ]] || q36_die "sandbox temporary path differs"
+[[ -d "$sandbox_tmp" && ! -L "$sandbox_tmp" && "$(stat -c %U "$sandbox_tmp")" == "$USER_NAME" ]] || q36_die "sandbox temporary directory differs"
+chmod 700 "$sandbox_tmp"
 freeze_prepare() {
+  rmdir "$sandbox_tmp" 2>/dev/null || true
   chmod -R a-w "$PREPARE_ROOT" 2>/dev/null || true
 }
 trap freeze_prepare EXIT
@@ -24,6 +29,7 @@ sandbox="$PREPARE_ROOT/sandbox.json"
 cluster="$PREPARE_ROOT/cluster_preflight.json"
 authorization="$PREPARE_ROOT/phase_authorization.json"
 export PYTHONDONTWRITEBYTECODE=1
+export SLURM_TMPDIR="$sandbox_tmp" TMPDIR="$sandbox_tmp"
 q36_export_pythonpath
 "$PYTHON" -P -s -B "$RUNTIME/pipeline/capture_q36_mtr_environment.py" \
   --runtime-root "$RUNTIME" --runtime-manifest-sha256 "$RUNTIME_MANIFEST_SHA256" \
