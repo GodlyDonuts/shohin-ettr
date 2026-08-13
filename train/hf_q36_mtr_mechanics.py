@@ -1,0 +1,415 @@
+#!/usr/bin/env python3
+"""Run the no-score Q36-MTR load/train/mask/restore mechanics gate."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import time
+from typing import Any, Iterable
+
+import torch
+import torch.nn.functional as F
+
+from build_pcf1_data import revision_prompt
+from hf_product_reasoning_train import (
+    _save_checkpoint,
+    load_product_backbone,
+    load_trainable_checkpoint,
+    pack_training_embeddings,
+    reservoir_rows_with_sha256,
+)
+from hf_q36_mtr_train_role import (
+    full_sequence_position_ids,
+    sha256_file,
+    tokenize_role_rows,
+)
+from q36_mtr_roles import (
+    ALPHA,
+    CONTROLLED_LAYERS,
+    HIDDEN_SIZE,
+    MODEL_CONFIG_SHA256,
+    MODEL_REVISION,
+    Q36MTRRoleError,
+    RANK,
+    TRAINABLE_PARAMETERS,
+    role_contract,
+    validate_matched_revision_geometry,
+)
+from shared_post_mlp_revision import SharedPostMLPConfig, SharedPostMLPProductModel
+
+SCHEMA = "shohin-q36-mtr-mechanics-v1"
+ROWS = 24
+SEED = 2026080825
+DATA_SEED = 2026080824
+B1_SHA256 = "2461d6f70b44a142854d56c24e1fb42d600065e5788a2c4e055ba47b12696549"
+
+
+class Q36MTRMechanicsError(RuntimeError):
+    """The Q36-MTR no-score mechanics contract failed."""
+
+
+def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
+    if path.exists() or path.is_symlink():
+        raise Q36MTRMechanicsError(f"refusing existing mechanics report: {path}")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.tmp.{os.getpid()}")
+    with temporary.open("x", encoding="utf-8") as handle:
+        json.dump(payload, handle, indent=2, sort_keys=True)
+        handle.write("\n")
+        handle.flush()
+        os.fsync(handle.fileno())
+    os.replace(temporary, path)
+
+
+def _digest_rows(rows: Iterable[dict[str, Any]]) -> str:
+    encoded = b"".join(
+        (json.dumps(row, sort_keys=True, separators=(",", ":")) + "\n").encode()
+        for row in rows
+    )
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _tensor_sha256(tensor: torch.Tensor) -> str:
+    """Hash the exact stored tensor bytes without changing its dtype."""
+
+    value = tensor.detach().contiguous().cpu()
+    digest = hashlib.sha256()
+    digest.update(str(value.dtype).encode())
+    digest.update(json.dumps(list(value.shape), separators=(",", ":")).encode())
+    digest.update(value.view(torch.uint8).numpy().tobytes())
+    return digest.hexdigest()
+
+
+def protected_parameter_receipt(model: Any) -> dict[str, Any]:
+    """Bind every frozen parameter and specifically every MoE router/expert tensor."""
+
+    protected: list[dict[str, Any]] = []
+    moe: list[dict[str, Any]] = []
+    for name, parameter in model.named_parameters():
+        if parameter.requires_grad:
+            continue
+        row = {
+            "name": name,
+            "shape": list(parameter.shape),
+            "dtype": str(parameter.dtype),
+            "numel": int(parameter.numel()),
+            "version": int(parameter._version),
+            "data_ptr": int(parameter.data_ptr()),
+        }
+        protected.append(row)
+        lowered = name.casefold()
+        if any(token in lowered for token in ("expert", "router", ".gate.")):
+            moe.append({**row, "tensor_sha256": _tensor_sha256(parameter)})
+    if not protected or not moe:
+        raise Q36MTRMechanicsError("Q36-MTR protected MoE parameters are absent")
+    return {
+        "protected_parameter_count": len(protected),
+        "protected_numel": sum(row["numel"] for row in protected),
+        "protected_receipt_sha256": _digest_rows(protected),
+        "router_expert_parameter_count": len(moe),
+        "router_expert_numel": sum(row["numel"] for row in moe),
+        "router_expert_receipt_sha256": _digest_rows(moe),
+    }
+
+
+def _trainable_state(model: Any) -> dict[str, torch.Tensor]:
+    state = {
+        name: parameter.detach().cpu().clone()
+        for name, parameter in model.named_parameters()
+        if parameter.requires_grad
+    }
+    if not state:
+        raise Q36MTRMechanicsError("Q36-MTR trainable state is empty")
+    return state
+
+
+def _state_sha256(state: dict[str, torch.Tensor]) -> str:
+    digest = hashlib.sha256()
+    for name in sorted(state):
+        tensor = state[name].contiguous()
+        digest.update(name.encode())
+        digest.update(str(tensor.dtype).encode())
+        digest.update(json.dumps(list(tensor.shape)).encode())
+        digest.update(tensor.view(torch.uint8).numpy().tobytes())
+    return digest.hexdigest()
+
+
+def run(args: argparse.Namespace) -> dict[str, Any]:
+    from transformers import AutoTokenizer
+
+    if (
+        args.model_revision != MODEL_REVISION
+        or args.model_config_sha256 != MODEL_CONFIG_SHA256
+        or args.seed != SEED
+        or args.data_seed != DATA_SEED
+        or args.rows != ROWS
+        or args.quantization != "nf4"
+        or args.output.exists()
+        or args.output.is_symlink()
+    ):
+        raise Q36MTRMechanicsError("Q36-MTR mechanics settings differ")
+    if sha256_file(args.model_source_root / "config.json") != MODEL_CONFIG_SHA256:
+        raise Q36MTRMechanicsError("Q36-MTR mechanics host differs")
+    if sha256_file(args.environment_receipt) != args.environment_receipt_sha256:
+        raise Q36MTRMechanicsError("Q36-MTR mechanics environment differs")
+    environment = json.loads(args.environment_receipt.read_text(encoding="utf-8"))
+    if (
+        environment.get("schema") != "shohin-q36-mtr-environment-v1"
+        or environment.get("status") != "pass"
+        or environment.get("model_revision") != MODEL_REVISION
+        or environment.get("environment_tree_sha256") != args.environment_tree_sha256
+    ):
+        raise Q36MTRMechanicsError("Q36-MTR mechanics environment contract differs")
+    args.output.mkdir(parents=True)
+    rows, data_sha256 = reservoir_rows_with_sha256(args.data, args.rows, args.data_seed)
+    if len(rows) != ROWS or data_sha256 != B1_SHA256:
+        raise Q36MTRMechanicsError("Q36-MTR mechanics source rows differ")
+    tokenizer = AutoTokenizer.from_pretrained(args.model_root, trust_remote_code=True)
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+    prompts, responses, masks, owner_geometry = tokenize_role_rows(
+        tokenizer, rows, role="owner", max_sequence_length=1024
+    )
+    sample_source = rows[0]["question"]
+    sample_draft = rows[0]["response"]
+    revision_rows = [
+        {
+            "question": revision_prompt(sample_source, sample_draft),
+            "response": rows[0]["response"],
+        }
+    ]
+    aligned_tokens, aligned_responses, aligned_masks, aligned_geometry = (
+        tokenize_role_rows(
+            tokenizer, revision_rows, role="aligned", max_sequence_length=4096
+        )
+    )
+    hidden_tokens, hidden_responses, hidden_masks, hidden_geometry = tokenize_role_rows(
+        tokenizer, revision_rows, role="draft_hidden", max_sequence_length=4096
+    )
+    try:
+        validate_matched_revision_geometry(aligned_geometry, hidden_geometry)
+    except Q36MTRRoleError as error:
+        raise Q36MTRMechanicsError(str(error)) from error
+    if (
+        aligned_tokens != hidden_tokens
+        or aligned_responses != hidden_responses
+        or aligned_masks != hidden_masks
+    ):
+        raise Q36MTRMechanicsError("Q36-MTR aligned/hidden token preimages differ")
+
+    started = time.monotonic()
+    backbone, loader = load_product_backbone(
+        args.model_root,
+        "causal",
+        dtype=torch.bfloat16,
+        device_map={"": 0},
+        quantization="nf4",
+    )
+    text_config = getattr(backbone.config, "text_config", backbone.config)
+    if int(text_config.hidden_size) != HIDDEN_SIZE:
+        raise Q36MTRMechanicsError("Q36-MTR mechanics hidden size differs")
+    config = SharedPostMLPConfig(
+        hidden_size=HIDDEN_SIZE,
+        controlled_layers=CONTROLLED_LAYERS,
+        rank=RANK,
+        alpha=ALPHA,
+    )
+    # device_map already placed the NF4 backbone. Moving this wrapper would
+    # recursively invoke bitsandbytes' unsupported 4-bit `.to()` path.
+    model = SharedPostMLPProductModel(backbone, config, draft_control="normal")
+    controlled_indices = list(
+        range(
+            len(model.text_model.layers) - CONTROLLED_LAYERS,
+            len(model.text_model.layers),
+        )
+    )
+    trainable_names = sorted(
+        name for name, parameter in model.named_parameters() if parameter.requires_grad
+    )
+    if model.trainable_parameter_count() != TRAINABLE_PARAMETERS or any(
+        not (name.endswith("adapter_a.weight") or name.endswith("adapter_b.weight"))
+        for name in trainable_names
+    ):
+        raise Q36MTRMechanicsError("Q36-MTR mechanics trainable surface differs")
+    before = protected_parameter_receipt(model)
+    optimizer = torch.optim.AdamW(
+        [parameter for parameter in model.parameters() if parameter.requires_grad],
+        lr=2e-5,
+        betas=(0.9, 0.95),
+        weight_decay=0.01,
+        fused=True,
+    )
+    torch.manual_seed(args.seed)
+    torch.cuda.manual_seed_all(args.seed)
+    torch.cuda.reset_peak_memory_stats()
+    optimizer.zero_grad(set_to_none=True)
+    with torch.autocast("cuda", dtype=torch.bfloat16):
+        inputs, attention, labels, charged = pack_training_embeddings(
+            model.text_model.embed_tokens,
+            [prompts[0]],
+            [responses[0]],
+            None,
+            tokenizer.pad_token_id,
+        )
+        positions = full_sequence_position_ids(attention)
+        output = model.text_model(
+            inputs_embeds=inputs,
+            attention_mask=attention,
+            position_ids=positions,
+            use_cache=False,
+        )
+        logits = model.lm_head(output.last_hidden_state)
+        loss = F.cross_entropy(
+            logits[:, :-1].reshape(-1, logits.shape[-1]),
+            labels[:, 1:].reshape(-1),
+            ignore_index=-100,
+        )
+    if not torch.isfinite(loss):
+        raise Q36MTRMechanicsError("Q36-MTR mechanics loss is nonfinite")
+    loss.backward()
+    gradient_norm = torch.nn.utils.clip_grad_norm_(
+        [parameter for parameter in model.parameters() if parameter.requires_grad], 1.0
+    )
+    if not torch.isfinite(gradient_norm):
+        raise Q36MTRMechanicsError("Q36-MTR mechanics gradient is nonfinite")
+    optimizer.step()
+    after = protected_parameter_receipt(model)
+    if before != after:
+        raise Q36MTRMechanicsError("Q36-MTR mechanics changed a protected parameter")
+    trained_state = _trainable_state(model)
+    trained_sha256 = _state_sha256(trained_state)
+    metadata = {
+        **role_contract("owner"),
+        "shared_post_mlp_config": {
+            "hidden_size": HIDDEN_SIZE,
+            "controlled_layers": CONTROLLED_LAYERS,
+            "rank": RANK,
+            "alpha": ALPHA,
+        },
+        "draft_control": "normal",
+        "model_root": str(args.model_source_root.resolve()),
+        "loaded_model_root": str(args.model_root.resolve()),
+        "model_loader": loader,
+        "data_sha256": data_sha256,
+        "selected_rows": ROWS,
+        "trainable_parameter_name_sha256": model.trainable_parameter_name_sha256(),
+        "controlled_layer_indices": controlled_indices,
+        "source_only_model_visible": True,
+        "internal_draft_visible": False,
+    }
+    checkpoint = args.output / "checkpoint_0000001.pt"
+    _save_checkpoint(checkpoint, model, optimizer, 1, metadata)
+    with torch.no_grad():
+        for parameter in model.parameters():
+            if parameter.requires_grad:
+                parameter.zero_()
+    restored_update, restored_metadata = load_trainable_checkpoint(checkpoint, model)
+    restored_state = _trainable_state(model)
+    if (
+        restored_update != 1
+        or restored_metadata != metadata
+        or _state_sha256(restored_state) != trained_sha256
+        or any(
+            not torch.equal(trained_state[name], restored_state[name])
+            for name in trained_state
+        )
+    ):
+        raise Q36MTRMechanicsError("Q36-MTR mechanics checkpoint restore differs")
+    # The hidden arm uses identical token IDs and full-sequence positions; only
+    # the informative draft keys are zeroed in its attention mask.
+    aligned_attention = torch.ones(
+        (1, len(aligned_tokens[0]) + len(aligned_responses[0])),
+        dtype=torch.long,
+        device="cuda:0",
+    )
+    hidden_attention = aligned_attention.clone()
+    hidden_attention[0, : len(hidden_masks[0])] = torch.tensor(
+        hidden_masks[0], device="cuda:0", dtype=torch.long
+    )
+    aligned_positions = full_sequence_position_ids(aligned_attention)
+    hidden_positions = full_sequence_position_ids(hidden_attention)
+    if not torch.equal(aligned_positions, hidden_positions):
+        raise Q36MTRMechanicsError("Q36-MTR hidden intervention changed positions")
+    torch.cuda.synchronize()
+    elapsed = time.monotonic() - started
+    report = {
+        "schema": SCHEMA,
+        "status": "pass",
+        "capability_scored": False,
+        "model_revision": MODEL_REVISION,
+        "model_config_sha256": MODEL_CONFIG_SHA256,
+        "model_loader": loader,
+        "quantization": "nf4",
+        "compute_dtype": "bfloat16",
+        "rows": ROWS,
+        "data_sha256": data_sha256,
+        "controlled_layer_indices": controlled_indices,
+        "trainable_parameters": TRAINABLE_PARAMETERS,
+        "trainable_parameter_name_sha256": model.trainable_parameter_name_sha256(),
+        "protected_router_expert_trainables": 0,
+        "protected_parameter_receipt_before": before,
+        "protected_parameter_receipt_after": after,
+        "one_finite_update": True,
+        "loss": float(loss.detach()),
+        "gradient_norm": float(gradient_norm),
+        "charged_tokens": int(charged),
+        "checkpoint": str(checkpoint.resolve()),
+        "checkpoint_sha256": sha256_file(checkpoint),
+        "trained_state_sha256": trained_sha256,
+        "serialization_restore_exact": True,
+        "owner_sequence_geometry": owner_geometry,
+        "aligned_sequence_geometry": aligned_geometry,
+        "draft_hidden_sequence_geometry": hidden_geometry,
+        "aligned_hidden_token_geometry_exact": True,
+        "aligned_hidden_position_geometry_exact": True,
+        "draft_hidden_mask_nonempty": hidden_geometry["draft_masked_tokens"] > 0,
+        "draft_tokens_deleted": 0,
+        "environment_receipt_sha256": args.environment_receipt_sha256,
+        "environment_tree_sha256": args.environment_tree_sha256,
+        "elapsed_seconds": elapsed,
+        "peak_gpu_memory_bytes": int(torch.cuda.max_memory_allocated()),
+        "sealed_access": {"holdout": 0, "product": 0, "public": 0},
+    }
+    _atomic_json(args.output / "report.json", report)
+    return report
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--model-root", type=Path, required=True)
+    parser.add_argument("--model-source-root", type=Path, required=True)
+    parser.add_argument("--model-revision", default=MODEL_REVISION)
+    parser.add_argument("--model-config-sha256", default=MODEL_CONFIG_SHA256)
+    parser.add_argument("--quantization", default="nf4")
+    parser.add_argument("--data", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--environment-receipt", type=Path, required=True)
+    parser.add_argument("--environment-receipt-sha256", required=True)
+    parser.add_argument("--environment-tree-sha256", required=True)
+    parser.add_argument("--rows", type=int, default=ROWS)
+    parser.add_argument("--seed", type=int, default=SEED)
+    parser.add_argument("--data-seed", type=int, default=DATA_SEED)
+    return parser.parse_args()
+
+
+def main() -> int:
+    report = run(parse_args())
+    print(
+        json.dumps(
+            {
+                "status": report["status"],
+                "peak_gpu_memory_bytes": report["peak_gpu_memory_bytes"],
+                "checkpoint_sha256": report["checkpoint_sha256"],
+            },
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

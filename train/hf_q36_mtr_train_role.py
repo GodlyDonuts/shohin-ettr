@@ -224,9 +224,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         rank=args.rank,
         alpha=args.alpha,
     )
+    # device_map already placed the NF4 backbone. Newly created residuals
+    # inherit the base MLP device, so the quantized wrapper must not be moved.
     model = SharedPostMLPProductModel(
         backbone, config, draft_control=spec.draft_control
-    ).to("cuda:0")
+    )
     trainable_names = sorted(
         name for name, parameter in model.named_parameters() if parameter.requires_grad
     )

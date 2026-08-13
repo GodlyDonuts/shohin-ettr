@@ -42,6 +42,18 @@ excluded, authorization-gated jobs; the CPU materialize/merge wrappers have
 no GPU request and no dispatch capability. Runtime and model trees are checked
 for exact manifest membership before use.
 
+The no-score live admission gate is implemented in
+`train/hf_q36_mtr_mechanics.py` and
+`train/jobs/q36_mtr_mechanics.sbatch`. It admits only the exact Q36 host,
+NF4/BF16 role geometry, 24 deterministic source-only B1 rows, and one H100.
+It proves the final-16 rank-18 trainable surface (`1,179,648` parameters),
+hashes the exact stored bytes of every protected router/expert tensor before
+and after one finite update, checks aligned versus draft-hidden token and
+full-position equivalence, and requires byte-exact checkpoint restoration.
+It never scores a capability row or reads a development assessor. The
+mechanics checkpoint is deliberately tagged with only 24 selected rows, so it
+cannot satisfy the 100,000-row source-owner warm-start contract.
+
 The PCF17 infrastructure finding is also repaired prospectively: exact-tree
 custody accepts either canonical manifest members or the single conventional
 `./` prefix emitted by `find .`, canonicalizing before comparison. Interior
