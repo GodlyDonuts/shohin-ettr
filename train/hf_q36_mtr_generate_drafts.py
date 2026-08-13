@@ -166,6 +166,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         or not 0 <= args.shard_index < DRAFT_SHARDS
     ):
         raise Q36MTRDraftError("Q36-MTR draft settings differ")
+    if sha256_file(args.environment_receipt) != args.environment_receipt_sha256:
+        raise Q36MTRDraftError("Q36-MTR draft environment receipt differs")
+    environment = json.loads(args.environment_receipt.read_text(encoding="utf-8"))
+    if (
+        environment.get("schema") != "shohin-q36-mtr-environment-v1"
+        or environment.get("status") != "pass"
+        or environment.get("model_revision") != MODEL_REVISION
+        or environment.get("environment_tree_sha256") != args.environment_tree_sha256
+    ):
+        raise Q36MTRDraftError("Q36-MTR draft environment contract differs")
     rows, freeze_report = load_sources(
         args.train_source, args.development_source, args.freeze_report
     )
@@ -245,6 +255,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "owner_checkpoint_sha256": sha256_file(args.owner_checkpoint),
         "owner_update": metadata["update"],
         "owner_role": metadata["role"],
+        "environment_receipt_sha256": args.environment_receipt_sha256,
+        "environment_tree_sha256": args.environment_tree_sha256,
         "freeze_report_sha256": sha256_file(args.freeze_report),
         "freeze_identity_receipts": freeze_report["identity_receipts"],
         "train_source_sha256": sha256_file(args.train_source),
@@ -283,6 +295,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-root", type=Path, required=True)
     parser.add_argument("--model-revision", default=MODEL_REVISION)
     parser.add_argument("--owner-checkpoint", type=Path, required=True)
+    parser.add_argument("--environment-receipt", type=Path, required=True)
+    parser.add_argument("--environment-receipt-sha256", required=True)
+    parser.add_argument("--environment-tree-sha256", required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
     parser.add_argument("--shard-index", type=int, required=True)

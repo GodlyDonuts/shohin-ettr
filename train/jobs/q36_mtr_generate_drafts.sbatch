@@ -14,13 +14,14 @@
 
 set -euo pipefail
 
-for variable in RUNTIME RUNTIME_MANIFEST_SHA256 SOURCE_COMMIT PYTHON TRAIN_SOURCE TRAIN_SOURCE_SHA256 DEVELOPMENT_SOURCE DEVELOPMENT_SOURCE_SHA256 FREEZE_REPORT FREEZE_REPORT_SHA256 OWNER_CHECKPOINT OWNER_CHECKPOINT_SHA256 OUTPUT REPORT SHARD_INDEX SHARD_COUNT; do
+for variable in RUNTIME RUNTIME_MANIFEST_SHA256 SOURCE_COMMIT PYTHON TRAIN_SOURCE TRAIN_SOURCE_SHA256 DEVELOPMENT_SOURCE DEVELOPMENT_SOURCE_SHA256 FREEZE_REPORT FREEZE_REPORT_SHA256 OWNER_CHECKPOINT OWNER_CHECKPOINT_SHA256 OUTPUT REPORT SHARD_INDEX SHARD_COUNT ENVIRONMENT_RECEIPT ENVIRONMENT_RECEIPT_SHA256 ENVIRONMENT_TREE_SHA256; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
 source "$RUNTIME/train/jobs/q36_mtr_common.sh"
 q36_verify_runtime
 q36_require_authorization
 q36_verify_model
+q36_verify_environment
 q36_verify_sha256 "$TRAIN_SOURCE" "$TRAIN_SOURCE_SHA256"
 q36_verify_sha256 "$DEVELOPMENT_SOURCE" "$DEVELOPMENT_SOURCE_SHA256"
 q36_verify_sha256 "$FREEZE_REPORT" "$FREEZE_REPORT_SHA256"
@@ -33,7 +34,7 @@ model=$(q36_stage_model)
 mkdir -p "$(dirname "$OUTPUT")" "$(dirname "$REPORT")" logs
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 export TOKENIZERS_PARALLELISM=false PYTHONDONTWRITEBYTECODE=1
-export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
+q36_export_pythonpath
 nvidia-smi
 "$PYTHON" "$RUNTIME/train/hf_q36_mtr_generate_drafts.py" \
   --train-source "$TRAIN_SOURCE" \
@@ -42,6 +43,9 @@ nvidia-smi
   --model-root "$model" \
   --model-revision "$MODEL_REVISION" \
   --owner-checkpoint "$OWNER_CHECKPOINT" \
+  --environment-receipt "$ENVIRONMENT_RECEIPT" \
+  --environment-receipt-sha256 "$ENVIRONMENT_RECEIPT_SHA256" \
+  --environment-tree-sha256 "$ENVIRONMENT_TREE_SHA256" \
   --output "$OUTPUT" \
   --report "$REPORT" \
   --shard-index "$SHARD_INDEX" \

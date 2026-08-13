@@ -14,7 +14,7 @@
 
 set -euo pipefail
 
-for variable in RUNTIME RUNTIME_MANIFEST_SHA256 SOURCE_COMMIT PYTHON ROLE DATA DATA_SHA256 OUTPUT ENVIRONMENT_RECEIPT ENVIRONMENT_RECEIPT_SHA256; do
+for variable in RUNTIME RUNTIME_MANIFEST_SHA256 SOURCE_COMMIT PYTHON ROLE DATA DATA_SHA256 OUTPUT ENVIRONMENT_RECEIPT ENVIRONMENT_RECEIPT_SHA256 ENVIRONMENT_TREE_SHA256; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
 source "$RUNTIME/train/jobs/q36_mtr_common.sh"
@@ -22,7 +22,7 @@ q36_verify_runtime
 q36_require_authorization
 q36_verify_model
 q36_verify_sha256 "$DATA" "$DATA_SHA256"
-q36_verify_sha256 "$ENVIRONMENT_RECEIPT" "$ENVIRONMENT_RECEIPT_SHA256"
+q36_verify_environment
 [[ ! -e "$OUTPUT" && ! -L "$OUTPUT" ]] || q36_die "role output exists"
 case "$ROLE" in
   owner)
@@ -42,7 +42,7 @@ model=$(q36_stage_model)
 mkdir -p "$(dirname "$OUTPUT")" logs
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 export TOKENIZERS_PARALLELISM=false PYTHONDONTWRITEBYTECODE=1
-export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
+q36_export_pythonpath
 nvidia-smi
 "$PYTHON" "$RUNTIME/train/hf_q36_mtr_train_role.py" \
   --role "$ROLE" \
@@ -55,6 +55,7 @@ nvidia-smi
   --output "$OUTPUT" \
   --environment-receipt "$ENVIRONMENT_RECEIPT" \
   --environment-receipt-sha256 "$ENVIRONMENT_RECEIPT_SHA256" \
+  --environment-tree-sha256 "$ENVIRONMENT_TREE_SHA256" \
   "${warm[@]}"
 test -f "$OUTPUT/checkpoint_0000256.pt" && test -f "$OUTPUT/report.json"
 chmod -R a-w "$OUTPUT"

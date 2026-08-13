@@ -24,7 +24,7 @@ q36_verify_model
 q36_verify_sha256 "$CHECKPOINT" "$CHECKPOINT_SHA256"
 q36_verify_sha256 "$DATA" "$DATA_SHA256"
 q36_verify_sha256 "$DATA_REPORT" "$DATA_REPORT_SHA256"
-q36_verify_sha256 "$ENVIRONMENT_RECEIPT" "$ENVIRONMENT_RECEIPT_SHA256"
+q36_verify_environment
 case "$SPLIT:$ARM:$SHARD_COUNT" in
   calibration:revision:4|calibration:unchanged:4|development:revision:8|development:unchanged:8|development:self_refinement:8|development:draft_hidden:8) ;;
   *) q36_die "evaluation arm/split/shard geometry differs" ;;
@@ -46,7 +46,7 @@ model=$(q36_stage_model)
 mkdir -p "$(dirname "$OUTPUT")" "$(dirname "$REPORT")" logs
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 export TOKENIZERS_PARALLELISM=false PYTHONDONTWRITEBYTECODE=1
-export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
+q36_export_pythonpath
 nvidia-smi
 "$PYTHON" "$RUNTIME/train/hf_q36_mtr_evaluate.py" \
   --arm "$ARM" \

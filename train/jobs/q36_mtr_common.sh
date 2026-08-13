@@ -6,6 +6,11 @@ set -euo pipefail
 readonly Q36_MODEL_REVISION=995ad96eacd98c81ed38be0c5b274b04031597b0
 readonly Q36_MODEL_CONFIG_SHA256=93a4693fa9d8392fbfccd4b3c9873f4bfdcb14fdede978b123d07d19675efe99
 readonly Q36_EXCLUDED_NODES=evc26,evc29,evc31,evc32,evc33,evc37,evc38,evc46
+readonly Q36_PYTHON_ENTRYPOINT=/lustre/fs1/home/sa305415/shohin/envs/product-reasoning-b3a3603-r2/bin/python
+readonly Q36_BNB_ROOT=/lustre/fs1/home/sa305415/shohin/env_targets/bitsandbytes-0.50.0-r1
+readonly Q36_BNB_MANIFEST_SHA256=2201774754fb2e0fdd2208b78d34b803b910d8e34c79a43de49b29d7df3a8355
+readonly Q36_FAST_KERNEL_ROOT=/lustre/fs1/home/sa305415/shohin/env_targets/qwen36-fastkernels-0.4.2-r5
+readonly Q36_FAST_KERNEL_MANIFEST_SHA256=dde2adf539302a321afd7322ded3f2f729ac5f96368113a8af82f64efc0b9e8b
 
 q36_die() {
   printf 'q36-mtr: %s\n' "$*" >&2
@@ -64,6 +69,7 @@ q36_verify_runtime() {
   q36_require RUNTIME
   q36_require RUNTIME_MANIFEST_SHA256
   q36_require_dir "$RUNTIME"
+  [[ "$PYTHON" == "$Q36_PYTHON_ENTRYPOINT" ]] || q36_die "Python entrypoint differs"
   q36_verify_sha256 "$RUNTIME/SHA256SUMS" "$RUNTIME_MANIFEST_SHA256"
   "$PYTHON" - "$RUNTIME" <<'PY'
 from pathlib import Path, PurePosixPath
@@ -99,6 +105,101 @@ if actual != {*entries, "SHA256SUMS"}:
     raise SystemExit("Q36-MTR runtime exact membership differs")
 PY
   (cd "$RUNTIME" && sha256sum -c SHA256SUMS >/dev/null)
+}
+
+q36_verify_overlay() {
+  local root=$1 expected=$2
+  q36_require_dir "$root"
+  q36_verify_sha256 "$root/SHA256SUMS" "$expected"
+  "$PYTHON" -P -s -B - "$root" <<'PY'
+from pathlib import Path, PurePosixPath
+import hashlib
+import stat
+import sys
+
+root = Path(sys.argv[1]).resolve(strict=True)
+manifest = root / "SHA256SUMS"
+declared = []
+for line in manifest.read_text(encoding="utf-8").splitlines():
+    digest, separator, relative = line.partition("  ")
+    relative = relative[2:] if relative.startswith("./") else relative
+    pure = PurePosixPath(relative)
+    if (
+        not separator
+        or len(digest) != 64
+        or any(character not in "0123456789abcdef" for character in digest)
+        or not pure.parts
+        or pure.is_absolute()
+        or "." in pure.parts
+        or ".." in pure.parts
+        or pure.as_posix() != relative
+        or relative in declared
+    ):
+        raise SystemExit("Q36-MTR overlay manifest entry differs")
+    path = root / relative
+    if path.is_symlink() or not path.is_file():
+        raise SystemExit("Q36-MTR overlay member differs")
+    value = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1 << 20), b""):
+            value.update(block)
+    if value.hexdigest() != digest:
+        raise SystemExit("Q36-MTR overlay member hash differs")
+    declared.append(relative)
+if declared != sorted(declared):
+    raise SystemExit("Q36-MTR overlay manifest order differs")
+actual = set()
+for path in root.rglob("*"):
+    mode = path.lstat().st_mode
+    if stat.S_ISREG(mode):
+        actual.add(path.relative_to(root).as_posix())
+    elif not stat.S_ISDIR(mode):
+        raise SystemExit("Q36-MTR overlay has a link or special member")
+if actual != {*declared, "SHA256SUMS"}:
+    raise SystemExit("Q36-MTR overlay exact membership differs")
+PY
+}
+
+q36_verify_environment() {
+  q36_require ENVIRONMENT_RECEIPT
+  q36_require ENVIRONMENT_RECEIPT_SHA256
+  q36_require ENVIRONMENT_TREE_SHA256
+  q36_verify_sha256 "$ENVIRONMENT_RECEIPT" "$ENVIRONMENT_RECEIPT_SHA256"
+  q36_verify_overlay "$Q36_BNB_ROOT" "$Q36_BNB_MANIFEST_SHA256"
+  q36_verify_overlay "$Q36_FAST_KERNEL_ROOT" "$Q36_FAST_KERNEL_MANIFEST_SHA256"
+  "$PYTHON" -P -s -B - "$ENVIRONMENT_RECEIPT" "$ENVIRONMENT_TREE_SHA256" \
+    "$RUNTIME" "$RUNTIME_MANIFEST_SHA256" <<'PY'
+import json
+from pathlib import Path
+import sys
+
+receipt = json.load(open(sys.argv[1], encoding="utf-8"))
+runtime = Path(sys.argv[3]).resolve(strict=True)
+if (
+    receipt.get("schema") != "shohin-q36-mtr-environment-v1"
+    or receipt.get("status") != "pass"
+    or receipt.get("model_revision") != "995ad96eacd98c81ed38be0c5b274b04031597b0"
+    or receipt.get("model_config_sha256") != "93a4693fa9d8392fbfccd4b3c9873f4bfdcb14fdede978b123d07d19675efe99"
+    or receipt.get("environment_tree_sha256") != sys.argv[2]
+    or receipt.get("runtime_root") != str(runtime)
+    or receipt.get("runtime_manifest_sha256") != sys.argv[4]
+    or receipt.get("bitsandbytes_overlay", {}).get("manifest_sha256")
+       != "2201774754fb2e0fdd2208b78d34b803b910d8e34c79a43de49b29d7df3a8355"
+    or receipt.get("fast_kernel_overlay", {}).get("manifest_sha256")
+       != "dde2adf539302a321afd7322ded3f2f729ac5f96368113a8af82f64efc0b9e8b"
+    or receipt.get("packages", {}).get("bitsandbytes") != "0.50.0"
+    or receipt.get("packages", {}).get("flash-linear-attention") != "0.4.2"
+    or receipt.get("packages", {}).get("causal-conv1d") != "1.6.2.post1"
+    or receipt.get("offline_required") is not True
+    or receipt.get("bytecode_writes_permitted") is not False
+    or receipt.get("scientific_rows_read") != 0
+):
+    raise SystemExit("Q36-MTR environment receipt differs")
+PY
+}
+
+q36_export_pythonpath() {
+  export PYTHONPATH="$Q36_FAST_KERNEL_ROOT:$Q36_BNB_ROOT:$RUNTIME/train:$RUNTIME/pipeline"
 }
 
 q36_verify_model() {

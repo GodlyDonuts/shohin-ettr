@@ -23,13 +23,13 @@ q36_verify_model
 [[ "$DATA_SHA256" == 2461d6f70b44a142854d56c24e1fb42d600065e5788a2c4e055ba47b12696549 ]] || \
   q36_die "mechanics B1 source differs"
 q36_verify_sha256 "$DATA" "$DATA_SHA256"
-q36_verify_sha256 "$ENVIRONMENT_RECEIPT" "$ENVIRONMENT_RECEIPT_SHA256"
+q36_verify_environment
 [[ ! -e "$OUTPUT" && ! -L "$OUTPUT" ]] || q36_die "mechanics output exists"
 model=$(q36_stage_model)
 mkdir -p "$(dirname "$OUTPUT")" logs
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 export TOKENIZERS_PARALLELISM=false PYTHONDONTWRITEBYTECODE=1
-export PYTHONPATH="$RUNTIME/train:$RUNTIME/pipeline"
+q36_export_pythonpath
 nvidia-smi
 "$PYTHON" "$RUNTIME/train/hf_q36_mtr_mechanics.py" \
   --model-root "$model" \

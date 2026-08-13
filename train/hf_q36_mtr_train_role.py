@@ -188,6 +188,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise Q36MTRTrainingError("Q36-MTR host config differs")
     if sha256_file(args.environment_receipt) != args.environment_receipt_sha256:
         raise Q36MTRTrainingError("Q36-MTR environment receipt differs")
+    environment = json.loads(args.environment_receipt.read_text(encoding="utf-8"))
+    if (
+        environment.get("schema") != "shohin-q36-mtr-environment-v1"
+        or environment.get("status") != "pass"
+        or environment.get("model_revision") != MODEL_REVISION
+        or environment.get("environment_tree_sha256") != args.environment_tree_sha256
+    ):
+        raise Q36MTRTrainingError("Q36-MTR environment contract differs")
     args.output.mkdir(parents=True)
     random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -313,6 +321,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "optimizer_restored": False,
         "environment_receipt": str(args.environment_receipt.resolve()),
         "environment_receipt_sha256": args.environment_receipt_sha256,
+        "environment_tree_sha256": args.environment_tree_sha256,
     }
 
     model.train()
@@ -420,6 +429,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--warm-start-checkpoint", type=Path)
     parser.add_argument("--environment-receipt", type=Path, required=True)
     parser.add_argument("--environment-receipt-sha256", required=True)
+    parser.add_argument("--environment-tree-sha256", required=True)
     parser.add_argument("--updates", type=int)
     parser.add_argument("--batch-size", type=int, default=1)
     parser.add_argument("--gradient-accumulation", type=int)
