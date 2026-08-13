@@ -1430,3 +1430,63 @@ research documents remained present. Settled quota after cleanup was
 `850,234,668 / 1,059,061,760 KiB` and `857,586 / 1,010,000` inodes, leaving
 `208,827,092 KiB` and `152,414` inodes of hard-limit headroom. Cleanup stopped
 at that target.
+
+### Q36 corrected-phase admission maintenance — 2026-08-13
+
+Before mutation, Newton's scheduler was empty and settled quota usage was
+`850,458,184 / 1,059,061,760 KiB` and `858,298 / 1,010,000` inodes. The
+remaining inode headroom was only 1,702 above the frozen 150,000 admission
+floor. The following 20 literal direct-child runtime roots belong exclusively
+to the immutable closed NDR1, KCR1, and VTE1 lanes. Their conclusions and
+hashes remain in the pushed repository; none is part of PCF17, Q36, the
+qualified dense release, or a pinned model/environment/source/evidence root.
+
+Every root was resolved exactly, was a nonsymlink directory owned throughout
+by `sa305415`, and was on the same Lustre device. The table records nominal
+allocated bytes and path entries before mutation. Across the complete set,
+59 hardlinked inodes retain links outside the targets; the conservative quota
+projection therefore counts only fully contained inodes and is
+`1,278,619,648 bytes / 22,241 inodes`.
+
+```text
+211537920|3549|/lustre/fs1/home/sa305415/shohin/runtimes/ndr1_d2ab76f_r1
+211546112|3551|/lustre/fs1/home/sa305415/shohin/runtimes/ndr1_64dd134_r1
+213737472|3858|/lustre/fs1/home/sa305415/shohin/runtimes/ndr1_db08bd7_r1
+213749760|3860|/lustre/fs1/home/sa305415/shohin/runtimes/ndr1_111fb08_r1
+213766144|3862|/lustre/fs1/home/sa305415/shohin/runtimes/ndr1_15ce3c0_r1
+213770240|3862|/lustre/fs1/home/sa305415/shohin/runtimes/ndr1_7a05ba5_r1
+114688|14|/lustre/fs1/home/sa305415/shohin/runtimes/kcr1_5bb2691_r1
+94208|9|/lustre/fs1/home/sa305415/shohin/runtimes/kcr1_4284e60_r1
+126976|15|/lustre/fs1/home/sa305415/shohin/runtimes/kcr1_canary_a6a169d_r1
+225280|18|/lustre/fs1/home/sa305415/shohin/runtimes/kcr1_eval_2b5cb51_r1
+126976|15|/lustre/fs1/home/sa305415/shohin/runtimes/kcr1_controls_75bbfcd_r1
+126976|15|/lustre/fs1/home/sa305415/shohin/runtimes/kcr1_controls_c2e1999_r1
+98304|10|/lustre/fs1/home/sa305415/shohin/runtimes/kcr1_control_train_c2e1999_r1
+135168|18|/lustre/fs1/home/sa305415/shohin/runtimes/kcr1_control_train_b7070c8_r1
+237568|19|/lustre/fs1/home/sa305415/shohin/runtimes/kcr1_eval_cb7df9d_r1
+20480|5|/lustre/fs1/home/sa305415/shohin/runtimes/kcr1_attribution_edc0ea1_r1
+126976|15|/lustre/fs1/home/sa305415/shohin/runtimes/vte1_data_c17e187_r1
+303104|26|/lustre/fs1/home/sa305415/shohin/runtimes/vte1_3f5d17f_r1
+303104|26|/lustre/fs1/home/sa305415/shohin/runtimes/vte1_3b64035_r1
+237568|18|/lustre/fs1/home/sa305415/shohin/runtimes/vte1_eval_f68a5f3_r1
+```
+
+The first transaction attempt failed closed before inspecting or renaming a
+target because Newton's system Python 3.6 rejected the audit helper's
+`subprocess.run(text=True)` argument. The identical literal manifest was then
+replayed with the compatible `universal_newlines=True` spelling. All 20 rows
+matched their recorded geometry before row 1 was renamed. Each root was moved
+to the corresponding same-parent
+`.q36-admission-delete-C-NNN-<basename>-20260813` quarantine, made
+owner-traversable only inside that quarantine, and permanently deleted with a
+one-filesystem operation. Every original and quarantine was confirmed absent;
+all protected anchors remained present and the scheduler remained empty.
+These files are permanently nonrecoverable locally.
+
+Lustre accounting settled identically at `2026-08-13T06:36:16Z`,
+`06:36:21Z`, and `06:36:26Z`: `849,207,808 / 1,059,061,760 KiB` and
+`835,998 / 1,010,000` inodes, with an empty scheduler at every observation.
+Actual recovery from the pre-mutation baseline is `1,250,376 KiB / 22,300`
+inodes. Hard-limit headroom is now `209,853,952 KiB / 174,002` inodes, which
+exceeds the 150,000-inode Q36 admission floor by 24,002. No further target was
+selected or removed.
