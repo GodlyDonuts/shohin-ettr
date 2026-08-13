@@ -11,6 +11,7 @@ from dataclasses import asdict, dataclass
 import hashlib
 import json
 import math
+from pathlib import Path
 from typing import Any, Iterable, Mapping
 
 MODEL_ID = "Qwen/Qwen3.6-35B-A3B"
@@ -53,6 +54,46 @@ COMMIT_UPDATES = 128
 
 class Q36MTRRoleError(RuntimeError):
     """The prospective Q36-MTR role contract differs."""
+
+
+def load_role_checkpoint_payload(path: Path) -> dict[str, Any]:
+    """Load only the exact Q36 residual payload without executable pickle data."""
+
+    import torch
+
+    from shared_post_mlp_revision import trainable_state_sha256
+
+    if path.is_symlink() or not path.is_file():
+        raise Q36MTRRoleError("Q36-MTR role checkpoint is absent or symbolic")
+    payload = torch.load(path, map_location="cpu", weights_only=True)
+    saved = payload.get("trainable_state") if isinstance(payload, dict) else None
+    metadata = payload.get("metadata") if isinstance(payload, dict) else None
+    if (
+        not isinstance(payload, dict)
+        or set(payload) != {"schema", "update", "trainable_state", "metadata"}
+        or payload.get("schema") != ROLE_CHECKPOINT_SCHEMA
+        or payload.get("update") != OWNER_UPDATES
+        or not isinstance(saved, dict)
+        or len(saved) != CONTROLLED_LAYERS * 2
+        or sum(int(tensor.numel()) for tensor in saved.values()) != TRAINABLE_PARAMETERS
+        or any(
+            not isinstance(name, str)
+            or not (
+                name.endswith("adapter_a.weight") or name.endswith("adapter_b.weight")
+            )
+            or not isinstance(tensor, torch.Tensor)
+            or tensor.dtype != torch.float32
+            for name, tensor in saved.items()
+        )
+        or not isinstance(metadata, dict)
+        or metadata.get("optimizer_state_serialized") is not False
+        or metadata.get("checkpoint_trainable_only") is not True
+        or metadata.get("router_expert_checkpoint_tensors") != 0
+        or metadata.get("serialization_restore_exact") is not True
+        or metadata.get("final_trainable_state_sha256") != trainable_state_sha256(saved)
+    ):
+        raise Q36MTRRoleError("Q36-MTR role checkpoint payload differs")
+    return payload
 
 
 @dataclass(frozen=True)

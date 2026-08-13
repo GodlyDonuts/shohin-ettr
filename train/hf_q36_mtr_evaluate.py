@@ -38,9 +38,9 @@ from q36_mtr_roles import (
     MODEL_REVISION,
     Q36MTRRoleError,
     RANK,
-    ROLE_CHECKPOINT_SCHEMA,
     TRAINABLE_PARAMETERS,
     TRAINABLE_MASTER_DTYPE,
+    load_role_checkpoint_payload,
     role_spec,
     validate_contract,
 )
@@ -74,35 +74,10 @@ class Q36MTREvaluationError(RuntimeError):
 
 
 def load_q36_checkpoint_payload(path: Path) -> dict[str, Any]:
-    import torch
-
-    if path.is_symlink() or not path.is_file():
-        raise Q36MTREvaluationError("Q36-MTR role checkpoint is absent or symbolic")
-    payload = torch.load(path, map_location="cpu", weights_only=True)
-    saved = payload.get("trainable_state") if isinstance(payload, dict) else None
-    if (
-        not isinstance(payload, dict)
-        or set(payload) != {"schema", "update", "trainable_state", "metadata"}
-        or payload.get("schema") != ROLE_CHECKPOINT_SCHEMA
-        or payload.get("update") != 256
-        or not isinstance(saved, dict)
-        or len(saved) != CONTROLLED_LAYERS * 2
-        or sum(int(tensor.numel()) for tensor in saved.values()) != TRAINABLE_PARAMETERS
-        or any(
-            not (name.endswith("adapter_a.weight") or name.endswith("adapter_b.weight"))
-            for name in saved
-        )
-        or any(tensor.dtype != torch.float32 for tensor in saved.values())
-        or not isinstance(payload.get("metadata"), dict)
-        or payload["metadata"].get("optimizer_state_serialized") is not False
-        or payload["metadata"].get("checkpoint_trainable_only") is not True
-        or payload["metadata"].get("router_expert_checkpoint_tensors") != 0
-        or payload["metadata"].get("serialization_restore_exact") is not True
-        or payload["metadata"].get("final_trainable_state_sha256")
-        != trainable_state_sha256(saved)
-    ):
-        raise Q36MTREvaluationError("Q36-MTR role checkpoint payload differs")
-    return payload
+    try:
+        return load_role_checkpoint_payload(path)
+    except Q36MTRRoleError as error:
+        raise Q36MTREvaluationError(str(error)) from error
 
 
 def load_q36_adapter_model(model_root: Path, checkpoint: Path):

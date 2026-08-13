@@ -21,7 +21,6 @@ from hf_product_reasoning_train import (
     ProductReasoningTrainError,
     _batches,
     load_product_backbone,
-    load_trainable_checkpoint,
     pack_training_embeddings,
     render_reasoning_messages,
     reservoir_rows_with_sha256,
@@ -38,6 +37,7 @@ from q36_mtr_roles import (
     TRAINABLE_PARAMETERS,
     TRAINABLE_MASTER_DTYPE,
     Q36MTRRoleError,
+    load_role_checkpoint_payload,
     role_contract,
     role_spec,
     sequence_geometry_receipt,
@@ -100,6 +100,32 @@ def _save_role_checkpoint(
         temporary,
     )
     os.replace(temporary, path)
+
+
+def restore_role_checkpoint(
+    path: Path, model: SharedPostMLPProductModel
+) -> tuple[int, dict[str, Any]]:
+    """Restore the exact trainable-only Q36 role payload."""
+
+    try:
+        payload = load_role_checkpoint_payload(path)
+    except Q36MTRRoleError as error:
+        raise Q36MTRTrainingError(str(error)) from error
+    current = {
+        name: parameter
+        for name, parameter in model.named_parameters()
+        if parameter.requires_grad
+    }
+    saved = payload["trainable_state"]
+    if set(saved) != set(current):
+        raise Q36MTRTrainingError("Q36-MTR role restore names differ")
+    with torch.no_grad():
+        for name, parameter in current.items():
+            tensor = saved[name]
+            if tensor.shape != parameter.shape or tensor.dtype != parameter.dtype:
+                raise Q36MTRTrainingError("Q36-MTR role restore geometry differs")
+            parameter.copy_(tensor.to(device=parameter.device))
+    return int(payload["update"]), payload["metadata"]
 
 
 def tokenize_role_rows(
@@ -352,7 +378,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     warm_start_update = None
     warm_start_sha256 = None
     if args.warm_start_checkpoint is not None:
-        warm_start_update, owner_metadata = load_trainable_checkpoint(
+        warm_start_update, owner_metadata = restore_role_checkpoint(
             args.warm_start_checkpoint, model
         )
         loaded_trainable_state_sha256 = trainable_state_sha256(trainable_state(model))
@@ -510,7 +536,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     metadata["serialization_restore_exact"] = True
     checkpoint = args.output / f"checkpoint_{update:07d}.pt"
     _save_role_checkpoint(checkpoint, model, update, metadata)
-    saved = torch.load(checkpoint, map_location="cpu", weights_only=True)
+    try:
+        saved = load_role_checkpoint_payload(checkpoint)
+    except Q36MTRRoleError as error:
+        raise Q36MTRTrainingError(str(error)) from error
     if (
         saved.get("schema") != ROLE_CHECKPOINT_SCHEMA
         or saved.get("update") != update
@@ -527,7 +556,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         for parameter in model.parameters():
             if parameter.requires_grad:
                 parameter.zero_()
-    restored_update, restored_metadata = load_trainable_checkpoint(checkpoint, model)
+    restored_update, restored_metadata = restore_role_checkpoint(checkpoint, model)
     if (
         restored_update != update
         or restored_metadata != metadata
