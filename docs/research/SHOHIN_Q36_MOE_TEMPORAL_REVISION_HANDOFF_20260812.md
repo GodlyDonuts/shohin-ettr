@@ -148,6 +148,10 @@ an immutable warning that the two source-disjoint boards do not authorize a
 direct absolute-score comparison or a compute-scaling-law claim. This gives a
 publication scaling figure honest effect sizes immediately at the terminal
 gate without post-result analytic choice.
+`pipeline/render_q36_mtr_publication_figure.py` can subsequently render only
+that sealed terminal payload into a deterministic two-panel SVG, scaling-point
+CSV, paired-effect CSV, and SHA-256 manifest. It refuses absent or tampered MoE
+statistics and is not wired as a scientific successor, retry, or gate input.
 
 ## Claim carried forward
 
