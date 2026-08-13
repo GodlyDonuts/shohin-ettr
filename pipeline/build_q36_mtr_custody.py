@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 from pathlib import Path, PurePosixPath
 import stat
@@ -301,6 +302,68 @@ def evaluation_checkpoint_sha256(arm: str, hashes: dict[str, str]) -> str:
     return hashes[checkpoint_name]
 
 
+def validate_causal_intervention_receipt(mechanics: dict[str, Any]) -> None:
+    """Require measured state and native-router causality before custody."""
+
+    causal = mechanics.get("causal_draft_intervention")
+    native = causal.get("native_router") if isinstance(causal, dict) else None
+    aligned = native.get("aligned") if isinstance(native, dict) else None
+    hidden = native.get("draft_hidden") if isinstance(native, dict) else None
+
+    def finite(value: object) -> bool:
+        return (
+            isinstance(value, (int, float))
+            and not isinstance(value, bool)
+            and math.isfinite(float(value))
+        )
+
+    valid = (
+        isinstance(causal, dict)
+        and causal.get("token_count_exact") is True
+        and causal.get("position_geometry_exact") is True
+        and causal.get("draft_hidden_counterfactual_invariant") is True
+        and causal.get("aligned_counterfactual_sensitive") is True
+        and causal.get("draft_hidden_invariant_tolerance") == 2e-3
+        and causal.get("aligned_sensitivity_floor") == 1e-2
+        and finite(causal.get("aligned_response_max_abs_delta"))
+        and float(causal["aligned_response_max_abs_delta"]) >= 1e-2
+        and finite(causal.get("draft_hidden_response_max_abs_delta"))
+        and float(causal["draft_hidden_response_max_abs_delta"]) <= 2e-3
+        and isinstance(native, dict)
+        and native.get("invariant_tolerance") == 2e-3
+        and native.get("sensitivity_floor") == 1e-2
+        and native.get("draft_hidden_route_invariant") is True
+        and native.get("aligned_route_sensitive") is True
+        and isinstance(native.get("aligned_expert_selection_changed"), bool)
+        and isinstance(aligned, dict)
+        and isinstance(hidden, dict)
+        and isinstance(aligned.get("layers"), int)
+        and not isinstance(aligned.get("layers"), bool)
+        and aligned["layers"] > 0
+        and hidden.get("layers") == aligned["layers"]
+        and isinstance(aligned.get("top_k"), int)
+        and not isinstance(aligned.get("top_k"), bool)
+        and aligned["top_k"] > 0
+        and hidden.get("top_k") == aligned["top_k"]
+        and isinstance(aligned.get("topk_assignment_changes"), int)
+        and aligned["topk_assignment_changes"] >= 0
+        and hidden.get("topk_assignment_changes") == 0
+        and native["aligned_expert_selection_changed"]
+        is (aligned["topk_assignment_changes"] > 0)
+        and finite(aligned.get("router_max_abs_delta"))
+        and float(aligned["router_max_abs_delta"]) >= 1e-2
+        and finite(hidden.get("router_max_abs_delta"))
+        and float(hidden["router_max_abs_delta"]) <= 2e-3
+        and all(
+            isinstance(route.get("route_path_sha256"), str)
+            and len(route["route_path_sha256"]) == 64
+            for route in (aligned, hidden)
+        )
+    )
+    if not valid:
+        raise Q36MTRCustodyError("Q36 causal intervention custody differs")
+
+
 def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
     hashes = {name: sha256_file(path) for name, path in artifacts.items()}
     owner = _load(artifacts["owner_report"], ROLE_REPORT_SCHEMA)
@@ -525,7 +588,7 @@ def build_precompute(args: argparse.Namespace) -> dict[str, Any]:
     live_preflight = _load(
         artifacts["live_preflight"], "shohin-q36-mtr-live-preflight-v1"
     )
-    causal_intervention = mechanics.get("causal_draft_intervention")
+    validate_causal_intervention_receipt(mechanics)
     if (
         data_report.get("model_revision") != MODEL_REVISION
         or data_report.get("outputs", {}).get("development", {}).get("sha256")
@@ -541,11 +604,6 @@ def build_precompute(args: argparse.Namespace) -> dict[str, Any]:
         != mechanics.get("protected_parameter_receipt_after")
         or mechanics.get("one_finite_update") is not True
         or mechanics.get("serialization_restore_exact") is not True
-        or not isinstance(causal_intervention, dict)
-        or causal_intervention.get("token_count_exact") is not True
-        or causal_intervention.get("position_geometry_exact") is not True
-        or causal_intervention.get("draft_hidden_counterfactual_invariant") is not True
-        or causal_intervention.get("aligned_counterfactual_sensitive") is not True
         or environment.get("status") != "pass"
         or environment.get("model_revision") != MODEL_REVISION
         or environment.get("runtime_manifest_sha256") != runtime["manifest_sha256"]

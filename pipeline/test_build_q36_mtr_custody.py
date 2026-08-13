@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
 from pathlib import Path
@@ -18,6 +19,7 @@ from build_q36_mtr_custody import (
     build_final,
     evaluation_checkpoint_sha256,
     sha256_file,
+    validate_causal_intervention_receipt,
 )
 from q36_mtr_contract import graph_payload
 from q36_mtr_contract import STAGES
@@ -56,6 +58,79 @@ def test_matched_arm_checkpoint_lineage_is_role_isolated() -> None:
     assert evaluation_checkpoint_sha256("draft_hidden", hashes) == "3" * 64
     with pytest.raises(Q36MTRCustodyError):
         evaluation_checkpoint_sha256("forged", hashes)
+
+
+def _causal_mechanics_fixture() -> dict:
+    aligned_route = {
+        "layers": 64,
+        "top_k": 8,
+        "topk_assignment_changes": 3,
+        "router_max_abs_delta": 0.25,
+        "route_path_sha256": "a" * 64,
+    }
+    hidden_route = {
+        "layers": 64,
+        "top_k": 8,
+        "topk_assignment_changes": 0,
+        "router_max_abs_delta": 0.0,
+        "route_path_sha256": "b" * 64,
+    }
+    return {
+        "causal_draft_intervention": {
+            "token_count_exact": True,
+            "position_geometry_exact": True,
+            "aligned_response_max_abs_delta": 0.5,
+            "draft_hidden_response_max_abs_delta": 0.0,
+            "draft_hidden_invariant_tolerance": 2e-3,
+            "aligned_sensitivity_floor": 1e-2,
+            "draft_hidden_counterfactual_invariant": True,
+            "aligned_counterfactual_sensitive": True,
+            "native_router": {
+                "aligned": aligned_route,
+                "draft_hidden": hidden_route,
+                "invariant_tolerance": 2e-3,
+                "sensitivity_floor": 1e-2,
+                "draft_hidden_route_invariant": True,
+                "aligned_route_sensitive": True,
+                "aligned_expert_selection_changed": True,
+            },
+        }
+    }
+
+
+def test_causal_router_receipt_binds_sensitivity_and_hidden_invariance() -> None:
+    validate_causal_intervention_receipt(_causal_mechanics_fixture())
+    mutations = (
+        (
+            "hidden_route_change",
+            lambda value: value["causal_draft_intervention"]["native_router"][
+                "draft_hidden"
+            ].__setitem__("topk_assignment_changes", 1),
+        ),
+        (
+            "false_aligned_sensitivity",
+            lambda value: value["causal_draft_intervention"][
+                "native_router"
+            ].__setitem__("aligned_route_sensitive", False),
+        ),
+        (
+            "selection_claim_mismatch",
+            lambda value: value["causal_draft_intervention"][
+                "native_router"
+            ].__setitem__("aligned_expert_selection_changed", False),
+        ),
+        (
+            "nonfinite_router_delta",
+            lambda value: value["causal_draft_intervention"]["native_router"][
+                "aligned"
+            ].__setitem__("router_max_abs_delta", float("nan")),
+        ),
+    )
+    for _name, mutate in mutations:
+        forged = copy.deepcopy(_causal_mechanics_fixture())
+        mutate(forged)
+        with pytest.raises(Q36MTRCustodyError):
+            validate_causal_intervention_receipt(forged)
 
 
 def test_q36_authorization_binds_exact_score_inputs_without_board_open(

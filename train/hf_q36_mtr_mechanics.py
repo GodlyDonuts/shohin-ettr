@@ -169,8 +169,14 @@ def causal_draft_intervention_receipt(
                 raise Q36MTRMechanicsError("Q36-MTR draft perturbation is empty")
     prompt_rows = [prompt, counterfactual]
     response_rows = [response, response]
+    text_config = getattr(model.text_model, "config", None)
+    router_top_k = int(getattr(text_config, "num_experts_per_tok", 0))
+    if router_top_k <= 0:
+        raise Q36MTRMechanicsError("Q36-MTR native router geometry is absent")
 
-    def response_states(hidden: bool) -> tuple[torch.Tensor, torch.Tensor]:
+    def response_states(
+        hidden: bool,
+    ) -> tuple[torch.Tensor, torch.Tensor, tuple[torch.Tensor, ...]]:
         inputs, attention, labels, _ = pack_training_embeddings(
             embedding,
             prompt_rows,
@@ -185,6 +191,7 @@ def causal_draft_intervention_receipt(
             attention_mask=attention,
             position_ids=positions,
             use_cache=False,
+            output_router_logits=True,
         )
         # The last prompt state predicts the first response token; subsequent
         # response states predict the remainder.  This is the complete
@@ -194,13 +201,16 @@ def causal_draft_intervention_receipt(
         ]
         if states.shape[0] != 2 or states.shape[1] != len(response):
             raise Q36MTRMechanicsError("Q36-MTR causal state geometry differs")
-        return states, positions
+        router_logits = getattr(output, "router_logits", None)
+        if not isinstance(router_logits, (tuple, list)) or not router_logits:
+            raise Q36MTRMechanicsError("Q36-MTR native router logits are absent")
+        return states, positions, tuple(router_logits)
 
     was_training = model.training
     model.eval()
     with torch.no_grad():
-        aligned_states, aligned_positions = response_states(False)
-        hidden_states, hidden_positions = response_states(True)
+        aligned_states, aligned_positions, aligned_routes = response_states(False)
+        hidden_states, hidden_positions, hidden_routes = response_states(True)
     model.train(was_training)
     aligned_delta = float(
         (aligned_states[0].float() - aligned_states[1].float()).abs().max().cpu()
@@ -209,11 +219,78 @@ def causal_draft_intervention_receipt(
         (hidden_states[0].float() - hidden_states[1].float()).abs().max().cpu()
     )
     positions_exact = torch.equal(aligned_positions, hidden_positions)
+
+    def route_receipt(layers: tuple[torch.Tensor, ...], control: str) -> dict[str, Any]:
+        layer_rows: list[dict[str, Any]] = []
+        route_digest = hashlib.sha256()
+        for layer_index, raw in enumerate(layers):
+            if raw.ndim == 2:
+                if raw.shape[0] != 2 * (len(prompt) + len(response)):
+                    raise Q36MTRMechanicsError(
+                        "Q36-MTR flattened router geometry differs"
+                    )
+                logits = raw.reshape(2, len(prompt) + len(response), raw.shape[-1])
+            elif raw.ndim == 3 and tuple(raw.shape[:2]) == (
+                2,
+                len(prompt) + len(response),
+            ):
+                logits = raw
+            else:
+                raise Q36MTRMechanicsError("Q36-MTR router geometry differs")
+            if router_top_k > logits.shape[-1]:
+                raise Q36MTRMechanicsError("Q36-MTR router top-k differs")
+            target = logits[:, len(prompt) - 1 : len(prompt) + len(response) - 1]
+            indices = target.float().topk(router_top_k, dim=-1).indices
+            route_digest.update(indices.to(torch.int16).cpu().numpy().tobytes())
+            top1_changes = int((indices[0, :, 0] != indices[1, :, 0]).sum().cpu())
+            assignment_changes = int((indices[0] != indices[1]).sum().cpu())
+            layer_rows.append(
+                {
+                    "layer": layer_index,
+                    "target_positions": len(response),
+                    "experts": int(logits.shape[-1]),
+                    "top1_changes": top1_changes,
+                    "topk_assignment_changes": assignment_changes,
+                    "router_max_abs_delta": float(
+                        (target[0].float() - target[1].float()).abs().max().cpu()
+                    ),
+                }
+            )
+        return {
+            "control": control,
+            "layers": len(layer_rows),
+            "top_k": router_top_k,
+            "target_positions_per_layer": len(response),
+            "top1_changes": sum(row["top1_changes"] for row in layer_rows),
+            "topk_assignment_changes": sum(
+                row["topk_assignment_changes"] for row in layer_rows
+            ),
+            "sensitive_layers": sum(
+                row["topk_assignment_changes"] > 0 for row in layer_rows
+            ),
+            "router_max_abs_delta": max(
+                row["router_max_abs_delta"] for row in layer_rows
+            ),
+            "route_path_sha256": route_digest.hexdigest(),
+            "layer_receipts": layer_rows,
+        }
+
+    aligned_router = route_receipt(aligned_routes, "aligned")
+    hidden_router = route_receipt(hidden_routes, "draft_hidden")
     # BF16 MoE kernels can change low-order accumulation when masked tokens
     # route differently, so admit only a tiny numerical residue while requiring
     # a materially larger aligned response.
     invariant_tolerance = 2e-3
     sensitivity_floor = 1e-2
+    router_invariant_tolerance = 2e-3
+    router_sensitivity_floor = 1e-2
+    hidden_route_invariant = (
+        hidden_router["topk_assignment_changes"] == 0
+        and hidden_router["router_max_abs_delta"] <= router_invariant_tolerance
+    )
+    aligned_route_sensitive = (
+        aligned_router["router_max_abs_delta"] >= router_sensitivity_floor
+    )
     receipt = {
         "counterfactual_draft_tokens": sum(value == 0 for value in draft_mask),
         "token_count_exact": True,
@@ -224,11 +301,24 @@ def causal_draft_intervention_receipt(
         "aligned_sensitivity_floor": sensitivity_floor,
         "draft_hidden_counterfactual_invariant": hidden_delta <= invariant_tolerance,
         "aligned_counterfactual_sensitive": aligned_delta >= sensitivity_floor,
+        "native_router": {
+            "aligned": aligned_router,
+            "draft_hidden": hidden_router,
+            "invariant_tolerance": router_invariant_tolerance,
+            "sensitivity_floor": router_sensitivity_floor,
+            "draft_hidden_route_invariant": hidden_route_invariant,
+            "aligned_route_sensitive": aligned_route_sensitive,
+            "aligned_expert_selection_changed": (
+                aligned_router["topk_assignment_changes"] > 0
+            ),
+        },
     }
     if (
         not positions_exact
         or not receipt["draft_hidden_counterfactual_invariant"]
         or not receipt["aligned_counterfactual_sensitive"]
+        or not hidden_route_invariant
+        or not aligned_route_sensitive
     ):
         raise Q36MTRMechanicsError(
             f"Q36-MTR causal intervention failed: {json.dumps(receipt, sort_keys=True)}"

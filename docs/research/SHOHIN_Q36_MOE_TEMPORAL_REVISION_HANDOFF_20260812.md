@@ -69,6 +69,13 @@ only for revision, source owner only for unchanged/self-refinement, and the
 independently trained hidden checkpoint only for draft-hidden. This also fixes
 a prospective custody mismatch that previously expected the aligned checkpoint
 for the two owner controls and would have rejected an otherwise valid run.
+The same counterfactual now requests the pinned host's native router logits at
+every MoE layer. Aligned draft changes must produce a material target-facing
+router-logit change; hidden changes must remain within the frozen numerical
+tolerance and preserve every target-facing top-k assignment. Any aligned top-k
+expert change is recorded explicitly but is observational, not required or
+silently promoted into a stronger routing claim. Router/expert weights remain
+frozen and byte-receipted throughout.
 
 The environment/runtime closure is now executable but still no-submit.
 `pipeline/package_q36_mtr_runtime.py` packages a sorted, exact-membership

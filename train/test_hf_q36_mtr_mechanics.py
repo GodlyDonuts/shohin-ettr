@@ -30,6 +30,7 @@ class _ToyCausalTextModel(nn.Module):
         super().__init__()
         torch.manual_seed(7)
         self.embed_tokens = nn.Embedding(64, 8)
+        self.config = SimpleNamespace(num_experts_per_tok=2)
 
     def forward(
         self,
@@ -38,8 +39,10 @@ class _ToyCausalTextModel(nn.Module):
         attention_mask: torch.Tensor,
         position_ids: torch.Tensor,
         use_cache: bool,
+        output_router_logits: bool,
     ) -> SimpleNamespace:
         assert use_cache is False
+        assert output_router_logits is True
         assert position_ids.tolist() == [
             list(range(inputs_embeds.shape[1])) for _ in range(inputs_embeds.shape[0])
         ]
@@ -53,8 +56,19 @@ class _ToyCausalTextModel(nn.Module):
         causal = torch.ones_like(scores, dtype=torch.bool).tril()
         visible_keys = attention_mask[:, None, :].bool()
         weights = torch.softmax(scores.masked_fill(~(causal & visible_keys), -1e9), -1)
+        hidden = inputs_embeds + torch.matmul(weights, inputs_embeds)
+        router_logits = torch.stack(
+            (
+                hidden[..., 0],
+                -hidden[..., 0],
+                hidden[..., 1],
+                -hidden[..., 1],
+            ),
+            dim=-1,
+        ).reshape(-1, 4)
         return SimpleNamespace(
-            last_hidden_state=inputs_embeds + torch.matmul(weights, inputs_embeds)
+            last_hidden_state=hidden,
+            router_logits=(router_logits,),
         )
 
 
@@ -120,6 +134,10 @@ def test_causal_intervention_hides_only_draft_information() -> None:
     assert receipt["draft_hidden_counterfactual_invariant"] is True
     assert receipt["aligned_response_max_abs_delta"] > 0.01
     assert receipt["aligned_counterfactual_sensitive"] is True
+    assert receipt["native_router"]["aligned_route_sensitive"] is True
+    assert receipt["native_router"]["draft_hidden_route_invariant"] is True
+    assert receipt["native_router"]["aligned"]["router_max_abs_delta"] > 0.01
+    assert receipt["native_router"]["draft_hidden"]["topk_assignment_changes"] == 0
 
 
 def test_mechanics_wrapper_is_no_score_single_h100() -> None:
