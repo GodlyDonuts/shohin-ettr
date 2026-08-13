@@ -18,6 +18,7 @@ from hf_q36_mtr_train_commit import (
     _gradient_l2,
     adapter_update_receipt,
     commit_token_rows,
+    restore_commit_state,
 )
 
 
@@ -188,3 +189,23 @@ def test_adapter_task_gradient_receipt_is_distinct_from_weight_decay() -> None:
     parameter.grad = None
     with pytest.raises(Q36MTRCommitError):
         _gradient_l2([parameter])
+
+
+def test_commit_checkpoint_state_is_actually_restored_before_application() -> None:
+    parameter = torch.nn.Parameter(torch.tensor([0.0], dtype=torch.float32))
+    head = IndependentCommitHead(4, 4)
+    expected_head = {
+        name: torch.full_like(tensor, 0.25)
+        for name, tensor in head.state_dict().items()
+    }
+    restore_commit_state(
+        [("adapter", parameter)],
+        head,
+        {
+            "backbone_state": {"adapter": torch.tensor([0.5])},
+            "head_state": expected_head,
+        },
+    )
+    assert parameter.item() == 0.5
+    for name, tensor in head.state_dict().items():
+        assert torch.equal(tensor, expected_head[name])

@@ -105,6 +105,29 @@ def _snapshot(named: list[tuple[str, torch.Tensor]]) -> dict[str, torch.Tensor]:
     return {name: parameter.detach().cpu().clone() for name, parameter in named}
 
 
+def restore_commit_state(
+    trainable: list[tuple[str, torch.Tensor]],
+    head: IndependentCommitHead,
+    payload: dict[str, Any],
+) -> None:
+    backbone_state = payload.get("backbone_state")
+    head_state = payload.get("head_state")
+    if (
+        not isinstance(backbone_state, dict)
+        or set(backbone_state) != {name for name, _ in trainable}
+        or not isinstance(head_state, dict)
+        or set(head_state) != set(head.state_dict())
+    ):
+        raise Q36MTRCommitError("Q36 commit restore state names differ")
+    with torch.no_grad():
+        for name, parameter in trainable:
+            source = backbone_state[name]
+            if source.shape != parameter.shape or source.dtype != parameter.dtype:
+                raise Q36MTRCommitError("Q36 commit restore adapter geometry differs")
+            parameter.copy_(source.to(device=parameter.device))
+    head.load_state_dict(head_state, strict=True)
+
+
 def adapter_update_receipt(
     before: dict[str, torch.Tensor], after: dict[str, torch.Tensor]
 ) -> dict[str, Any]:
@@ -590,6 +613,23 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
         or _state_sha256(restored["head_state"]) != head_state_sha256
     ):
         raise Q36MTRCommitError("Q36 commit checkpoint restore differs")
+    with torch.no_grad():
+        for parameter in adapter_parameters:
+            parameter.zero_()
+        for parameter in head_parameters:
+            parameter.zero_()
+    restore_commit_state(trainable, head, restored)
+    if (
+        _state_sha256(_snapshot(trainable)) != adapter_update["final_state_sha256"]
+        or _state_sha256(
+            {
+                name: tensor.detach().cpu().clone()
+                for name, tensor in head.state_dict().items()
+            }
+        )
+        != head_state_sha256
+    ):
+        raise Q36MTRCommitError("Q36 commit live restore differs")
     selections: list[dict[str, Any]] = []
     application_truncated = 0
     maximum_application_swap_error = 0.0

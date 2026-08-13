@@ -109,7 +109,9 @@ generation-token counts, exhaustion flags, and assessor metadata are excluded.
 Its shared scalar scorer is antisymmetric by construction under A/B reversal.
 The checkpoint and downstream custody additionally require a nonzero finite
 FP32 adapter-state delta, exact final adapter/head state hashes, and immediate
-serialization restore. A separate receipt requires a finite nonzero task
+serialization restore. Before label-free development application, the live
+adapter and head are zeroed and restored from those written checkpoint bytes;
+the restored state hashes must match exactly. A separate receipt requires a finite nonzero task
 gradient on the residual surface at every one of the 128 commit updates, so
 AdamW weight decay alone cannot satisfy the learned-adaptation claim. The
 source aligned-checkpoint file remains byte-exact
