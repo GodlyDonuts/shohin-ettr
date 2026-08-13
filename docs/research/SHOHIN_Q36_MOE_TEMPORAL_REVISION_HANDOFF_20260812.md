@@ -279,6 +279,10 @@ load the exact owner's final residual-state digest, while each begins with an
 independently constructed empty AdamW state (`optimizer_restored=false`). After
 role fitting, the saved trainable state is hash-checked, the live residual is
 zeroed, and the checkpoint is restored before the role report can complete.
+Role checkpoints serialize only the 32 residual tensors and metadata: no
+optimizer state and zero router/expert tensors. This makes optimizer carryover
+and learned native-MoE checkpoint mutation structurally impossible; evaluation
+always reconstructs the hash-pinned frozen host and overlays only that residual.
 
 ## Data and visibility
 

@@ -20,7 +20,6 @@ from hf_product_reasoning_train import (
     PRODUCT_SYSTEM_PROMPT,
     ProductReasoningTrainError,
     _batches,
-    _save_checkpoint,
     load_product_backbone,
     load_trainable_checkpoint,
     pack_training_embeddings,
@@ -73,6 +72,32 @@ def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
         handle.write("\n")
         handle.flush()
         os.fsync(handle.fileno())
+    os.replace(temporary, path)
+
+
+def _save_role_checkpoint(
+    path: Path,
+    model: SharedPostMLPProductModel,
+    update: int,
+    metadata: dict[str, Any],
+) -> None:
+    """Publish only the role-owned residual state; optimizer carryover is forbidden."""
+
+    if path.exists() or path.is_symlink():
+        raise Q36MTRTrainingError("Q36-MTR role checkpoint already exists")
+    state = trainable_state(model)
+    temporary = path.with_name(f".{path.name}.tmp.{os.getpid()}")
+    if temporary.exists() or temporary.is_symlink():
+        raise Q36MTRTrainingError("Q36-MTR role checkpoint temporary exists")
+    torch.save(
+        {
+            "schema": "shohin-hf-product-reasoning-checkpoint-v1",
+            "update": update,
+            "trainable_state": state,
+            "metadata": metadata,
+        },
+        temporary,
+    )
     os.replace(temporary, path)
 
 
@@ -404,6 +429,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "optimizer_restored": False,
         "optimizer_initial_state_empty": True,
         "optimizer_state_entries_before_training": 0,
+        "optimizer_state_serialized": False,
+        "checkpoint_trainable_only": True,
+        "router_expert_checkpoint_tensors": 0,
         "initial_trainable_state_sha256": initial_trainable_state_sha256,
         "environment_receipt": str(args.environment_receipt.resolve()),
         "environment_receipt_sha256": args.environment_receipt_sha256,
@@ -480,8 +508,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     metadata["final_trainable_state_sha256"] = final_trainable_state_sha256
     metadata["serialization_restore_exact"] = True
     checkpoint = args.output / f"checkpoint_{update:07d}.pt"
-    _save_checkpoint(checkpoint, model, optimizer, update, metadata)
-    saved = torch.load(checkpoint, map_location="cpu", weights_only=False)
+    _save_role_checkpoint(checkpoint, model, update, metadata)
+    saved = torch.load(checkpoint, map_location="cpu", weights_only=True)
     if (
         saved.get("schema") != "shohin-hf-product-reasoning-checkpoint-v1"
         or saved.get("update") != update
@@ -489,8 +517,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         or not isinstance(saved.get("trainable_state"), dict)
         or trainable_state_sha256(saved["trainable_state"])
         != final_trainable_state_sha256
-        or not isinstance(saved.get("optimizer"), dict)
-        or not saved["optimizer"].get("state")
+        or "optimizer" in saved
+        or set(saved) != {"schema", "update", "trainable_state", "metadata"}
+        or set(saved["trainable_state"]) != set(trainable_names)
     ):
         raise Q36MTRTrainingError("Q36-MTR saved role state differs")
     with torch.no_grad():

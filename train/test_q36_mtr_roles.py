@@ -10,6 +10,7 @@ import torch
 
 from hf_q36_mtr_train_role import (
     Q36MTRTrainingError,
+    _save_role_checkpoint,
     _validate_arguments,
     full_sequence_position_ids,
     training_consumption_receipt,
@@ -64,6 +65,18 @@ def test_contract_pins_host_trainables_and_no_router() -> None:
     forged["role_spec"]["updates"] = 257
     with pytest.raises(Q36MTRRoleError):
         validate_contract(forged, "aligned")
+
+
+def test_role_checkpoint_contains_no_optimizer_or_native_moe_state(
+    tmp_path: Path,
+) -> None:
+    model = torch.nn.Linear(2, 2, bias=False)
+    checkpoint = tmp_path / "role.pt"
+    _save_role_checkpoint(checkpoint, model, 256, {"role": "owner"})
+    payload = torch.load(checkpoint, map_location="cpu", weights_only=True)
+    assert set(payload) == {"schema", "update", "trainable_state", "metadata"}
+    assert "optimizer" not in payload
+    assert set(payload["trainable_state"]) == {"weight"}
 
 
 def test_owner_warm_start_is_exact_source_only_state() -> None:

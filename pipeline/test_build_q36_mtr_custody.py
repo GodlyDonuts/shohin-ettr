@@ -92,6 +92,9 @@ def test_role_custody_requires_fresh_optimizer_and_restored_state(
         "optimizer_restored": False,
         "optimizer_initial_state_empty": True,
         "optimizer_state_entries_before_training": 0,
+        "optimizer_state_serialized": False,
+        "checkpoint_trainable_only": True,
+        "router_expert_checkpoint_tensors": 0,
         "serialization_restore_exact": True,
         "initial_trainable_state_sha256": "a" * 64,
         "final_trainable_state_sha256": "b" * 64,
@@ -116,6 +119,9 @@ def test_role_custody_requires_fresh_optimizer_and_restored_state(
     for field, forged in (
         ("optimizer_initial_state_empty", False),
         ("optimizer_state_entries_before_training", 1),
+        ("optimizer_state_serialized", True),
+        ("checkpoint_trainable_only", False),
+        ("router_expert_checkpoint_tensors", 1),
         ("serialization_restore_exact", False),
     ):
         changed = copy.deepcopy(report)

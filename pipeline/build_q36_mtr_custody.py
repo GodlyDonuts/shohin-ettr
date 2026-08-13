@@ -247,6 +247,9 @@ def _validate_role_report(
         or report.get("optimizer_restored") is not False
         or report.get("optimizer_initial_state_empty") is not True
         or report.get("optimizer_state_entries_before_training") != 0
+        or report.get("optimizer_state_serialized") is not False
+        or report.get("checkpoint_trainable_only") is not True
+        or report.get("router_expert_checkpoint_tensors") != 0
         or report.get("serialization_restore_exact") is not True
         or not isinstance(report.get("initial_trainable_state_sha256"), str)
         or len(report["initial_trainable_state_sha256"]) != 64
