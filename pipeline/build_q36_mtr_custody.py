@@ -26,7 +26,7 @@ from hf_q36_mtr_train_role import SCHEMA as ROLE_REPORT_SCHEMA
 from merge_q36_mtr_drafts import SCHEMA as DRAFT_REPORT_SCHEMA
 from merge_q36_mtr_evaluations import SCHEMA as EVALUATION_REPORT_SCHEMA
 from pcf1_code_sandbox import BWRAP_SHA256, SANDBOX_CONFIG_SHA256
-from q36_mtr_contract import MODEL_REVISION, TOTAL_ROWS, validate_graph
+from q36_mtr_contract import MODEL_REVISION, STAGES, TOTAL_ROWS, validate_graph
 from q36_mtr_roles import TRAINABLE_PARAMETERS, role_contract
 from score_q36_mtr import AUTHORIZATION_SCHEMA, CONSUMPTION_SCHEMA, SCORE_SCHEMA
 from hf_q36_mtr_train_commit import (
@@ -78,6 +78,14 @@ PRECOMPUTE_ARTIFACTS = {
     "unchanged_report",
     "train_sources",
 }
+EVIDENCE_PRECOMPUTE_ARTIFACTS = PRECOMPUTE_ARTIFACTS - {
+    "owner_data",
+    "train_sources",
+    "development_sources",
+    "revision_training_data",
+    "calibration_data",
+    "development_data",
+}
 SCORE_HASH_MAPPING = {
     "development_data_sha256": "development_data",
     "data_report_sha256": "data_report",
@@ -86,6 +94,7 @@ SCORE_HASH_MAPPING = {
     "selections_sha256": "selections",
     "commit_training_report_sha256": "commit_training_report",
     "environment_receipt_sha256": "environment_receipt",
+    "prescore_accounting_sha256": "prescore_accounting",
 }
 
 
@@ -502,6 +511,7 @@ def build_authorization(args: argparse.Namespace) -> dict[str, Any]:
         "draft_hidden_candidates",
         "draft_hidden_evaluation_report",
         "environment_receipt",
+        "prescore_accounting",
         "revision_candidates",
         "revision_report",
         "selections",
@@ -513,11 +523,36 @@ def build_authorization(args: argparse.Namespace) -> dict[str, Any]:
     if set(artifacts) != required:
         raise Q36MTRCustodyError("Q36 authorization artifact set differs")
     for name, path in artifacts.items():
+        if name == "prescore_accounting":
+            continue
         if precompute.get("artifact_sha256s", {}).get(name) != sha256_file(path):
             raise Q36MTRCustodyError("Q36 authorization/precompute hash differs")
     graph_sha256 = sha256_file(args.graph_contract)
     if precompute.get("graph_contract_sha256") != graph_sha256:
         raise Q36MTRCustodyError("Q36 authorization graph differs")
+    prescore = _load(artifacts["prescore_accounting"], ACCOUNTING_SCHEMA)
+    prescore_required = [stage.name for stage in STAGES]
+    prescore_required = prescore_required[
+        : prescore_required.index("precompute_custody") + 1
+    ]
+    if (
+        prescore.get("status") != "complete"
+        or prescore.get("phase") != "prescore"
+        or prescore.get("run_id") != precompute.get("run_id")
+        or prescore.get("source_commit") != precompute.get("source_commit")
+        or prescore.get("graph_contract_sha256") != graph_sha256
+        or prescore.get("required_stages") != prescore_required
+        or prescore.get("h100_request_count") != 61
+        or prescore.get("completed_h100_allocation_count") != 61
+        or prescore.get("retry_count") != 0
+        or prescore.get("requeue_count") != 0
+        or prescore.get("duplicate_shard_count") != 0
+        or prescore.get("orphaned_job_count") != 0
+        or prescore.get("successor_authorized") is not False
+        or prescore.get("successor_submitted") is not False
+        or prescore.get("sealed_access") != {"holdout": 0, "product": 0, "public": 0}
+    ):
+        raise Q36MTRCustodyError("Q36 prescore accounting differs")
     input_hashes = {
         name: sha256_file(artifacts[source])
         for name, source in SCORE_HASH_MAPPING.items()
@@ -607,7 +642,19 @@ def build_final(args: argparse.Namespace) -> dict[str, Any]:
         "score_report": score_sha256,
         "score_consumption": consumption_sha256,
         "scheduler_accounting": accounting_sha256,
+        "prescore_accounting": score["input_hashes"]["prescore_accounting_sha256"],
+        "score_authorization": score["score_authorization_sha256"],
+        "score_outcomes": score["outcomes_sha256"],
+        "score_sandbox_receipt": score["sandbox_receipt_sha256"],
+        "plan": accounting["plan_sha256"],
+        "dispatch_receipt": accounting["dispatch_receipt_sha256"],
+        "model_manifest": precompute["model_manifest_sha256"],
+        "runtime_manifest": precompute["runtime_manifest_sha256"],
         **{f"arm_{name}": digest for name, digest in arm_sha256s.items()},
+        **{
+            f"precompute_{name}": precompute["artifact_sha256s"][name]
+            for name in sorted(EVIDENCE_PRECOMPUTE_ARTIFACTS)
+        },
     }
     if (
         precompute.get("status") != "complete"
@@ -633,9 +680,14 @@ def build_final(args: argparse.Namespace) -> dict[str, Any]:
         or consumption.get("score_output_root")
         != str(args.score_report.resolve().parent)
         or accounting.get("status") != "complete"
+        or accounting.get("phase") != "final"
         or accounting.get("run_id") != precompute["run_id"]
         or accounting.get("source_commit") != graph.get("source_commit")
         or accounting.get("graph_contract_sha256") != graph_sha256
+        or accounting.get("required_stages")
+        != [stage.name for stage in STAGES][
+            : [stage.name for stage in STAGES].index("normalize") + 1
+        ]
         or accounting.get("h100_request_count") != 61
         or accounting.get("completed_h100_allocation_count") != 61
         or accounting.get("retry_count") != 0

@@ -154,7 +154,8 @@ STAGES = (
     Stage("score_once", 0, 1, 0.0, ("authorize_score",)),
     Stage("normalize", 0, 1, 0.0, ("score_once",)),
     Stage("final_accounting", 0, 1, 0.0, ("normalize",)),
-    Stage("compute_custody", 0, 1, 0.0, ("final_accounting",)),
+    Stage("evidence_mirror", 0, 1, 0.0, ("final_accounting",)),
+    Stage("compute_custody", 0, 1, 0.0, ("evidence_mirror",)),
     Stage("final_compare", 0, 1, 0.0, ("compute_custody",)),
 )
 

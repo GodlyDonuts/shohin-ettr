@@ -144,6 +144,7 @@ def _input_hashes(args: argparse.Namespace) -> dict[str, Any]:
         "selections_sha256": sha256_file(args.selections),
         "commit_training_report_sha256": sha256_file(args.commit_training_report),
         "precompute_custody_sha256": sha256_file(args.precompute_custody),
+        "prescore_accounting_sha256": sha256_file(args.prescore_accounting),
         "environment_receipt_sha256": sha256_file(args.environment_receipt),
         "graph_contract_sha256": sha256_file(args.graph_contract),
     }
@@ -598,6 +599,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--selections", type=Path, required=True)
     parser.add_argument("--commit-training-report", type=Path, required=True)
     parser.add_argument("--precompute-custody", type=Path, required=True)
+    parser.add_argument("--prescore-accounting", type=Path, required=True)
     parser.add_argument("--environment-receipt", type=Path, required=True)
     parser.add_argument("--graph-contract", type=Path, required=True)
     parser.add_argument("--score-authorization", type=Path, required=True)

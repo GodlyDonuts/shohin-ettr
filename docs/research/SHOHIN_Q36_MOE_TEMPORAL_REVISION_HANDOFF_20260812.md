@@ -89,6 +89,23 @@ no-requeue, authorization-gated, and contain no submission command. No
 development assessor was opened and no Q36 job was submitted while building
 or testing this code.
 
+Exact execution accounting and durable evidence preservation are now part of
+that prospective boundary. `pipeline/capture_q36_mtr_accounting.py` replays
+the frozen plan and dispatch receipt against `sacct`, requires every one of
+the 61 named single-H100 allocations (including every array cell), and rejects
+wrong partitions, GPUs, or nodes; failed exits; restarts; reused job IDs;
+missing cells; duplicates; and orphans. Prescore accounting is an explicit
+hash-bound input to score authorization. `pipeline/mirror_q36_mtr_evidence.py`
+copies and rehashes a fresh, nonwritable snapshot of every irreplaceable
+checkpoint, merged draft/candidate file, commit pair/selection, source/data
+report, environment/model/runtime manifest, score artifact, normalized arm,
+and accounting record without copying or opening the assessor board. The
+final comparison CPU job synchronously seals its own `PASS`/`FAIL`, final
+custody, graph, and preterminal mirror into the authorized evidence root; it
+does not submit an evidence successor. The CPU-only `evidence_mirror`
+dependency now sits between final accounting and compute custody, leaving the
+scientific 61-request/58.90-H100-hour contract unchanged.
+
 The PCF17 infrastructure finding is also repaired prospectively: exact-tree
 custody accepts either canonical manifest members or the single conventional
 `./` prefix emitted by `find .`, canonicalizing before comparison. Interior
