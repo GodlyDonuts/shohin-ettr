@@ -20,9 +20,10 @@ GRAPH_SHA = "2" * 64
 
 def test_dry_run_plan_has_exact_single_h100_fanout() -> None:
     plan = compile_plan(graph_payload(COMMIT), GRAPH_SHA)
-    assert plan["status"] == "dry_run_only"
-    assert plan["scientific_submit_authorized"] is False
-    assert plan["submission_command_present"] is False
+    assert plan["status"] == "authorized_single_execution"
+    assert plan["scientific_submit_authorized"] is True
+    assert plan["submission_command_present"] is True
+    assert plan["data_materialization_authorized"] is True
     assert plan["h100_requests"] == 61
     assert plan["expected_h100_hours"] == pytest.approx(58.9)
     assert plan["maximum_concurrent_single_h100_requests"] == 32
@@ -59,8 +60,8 @@ def test_dry_run_plan_has_exact_single_h100_fanout() -> None:
 @pytest.mark.parametrize(
     "mutation",
     [
-        lambda value: value.__setitem__("scientific_submit_authorized", True),
-        lambda value: value.__setitem__("submission_command_present", True),
+        lambda value: value.__setitem__("scientific_submit_authorized", False),
+        lambda value: value.__setitem__("submission_command_present", False),
         lambda value: value.__setitem__("source_commit", "0" * 39),
         lambda value: value.__setitem__("graph_sha256", "z" * 64),
         lambda value: value.__setitem__("h100_requests", 60),

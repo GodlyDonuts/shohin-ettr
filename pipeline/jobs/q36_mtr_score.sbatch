@@ -16,6 +16,8 @@ for variable in "${required[@]}"; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
 source "$RUNTIME/train/jobs/q36_mtr_common.sh"
+q36_init_local_tmp
+trap q36_cleanup_local_tmp EXIT
 q36_verify_runtime
 q36_require_authorization
 [[ ! -e "$OUTPUT" && ! -L "$OUTPUT" && ! -e "$SANDBOX_RECEIPT_OUTPUT" && ! -L "$SANDBOX_RECEIPT_OUTPUT" ]] || q36_die "score output exists"
@@ -25,6 +27,7 @@ freeze_score_evidence() {
   for path in "$SANDBOX_RECEIPT_OUTPUT" "$consumption" "$terminal_failure" "$OUTPUT"; do
     [[ ! -e "$path" ]] || chmod -R a-w "$path" || true
   done
+  q36_cleanup_local_tmp
 }
 trap freeze_score_evidence EXIT
 mkdir -p "$(dirname "$OUTPUT")" "$(dirname "$SANDBOX_RECEIPT_OUTPUT")" logs

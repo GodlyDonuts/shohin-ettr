@@ -87,7 +87,7 @@ def validate(
         raise Q36MTRLivePreflightError("Q36 live preflight path differs")
     authorization = _load(args.phase_authorization, AUTHORIZATION_SCHEMA)
     graph = _load(args.graph_contract, "shohin-q36-mtr-graph-v1")
-    plan = _load(args.plan, "shohin-q36-mtr-dry-run-plan-v1")
+    plan = _load(args.plan, "shohin-q36-mtr-execution-plan-v1")
     environment = _load(args.environment_receipt, "shohin-q36-mtr-environment-v1")
     cluster = _load(args.cluster_preflight, CLUSTER_SCHEMA)
     sandbox = json.loads(args.sandbox_receipt.read_text(encoding="utf-8"))

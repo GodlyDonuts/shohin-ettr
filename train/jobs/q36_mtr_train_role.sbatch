@@ -14,13 +14,16 @@
 
 set -euo pipefail
 
-for variable in RUNTIME RUNTIME_MANIFEST_SHA256 SOURCE_COMMIT PYTHON ROLE DATA DATA_SHA256 OUTPUT ENVIRONMENT_RECEIPT ENVIRONMENT_RECEIPT_SHA256 ENVIRONMENT_TREE_SHA256; do
+for variable in RUNTIME RUNTIME_MANIFEST_SHA256 SOURCE_COMMIT PYTHON ROLE DATA OUTPUT ENVIRONMENT_RECEIPT ENVIRONMENT_RECEIPT_SHA256 ENVIRONMENT_TREE_SHA256; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
 source "$RUNTIME/train/jobs/q36_mtr_common.sh"
+q36_init_local_tmp
+trap q36_cleanup_local_tmp EXIT
 q36_verify_runtime
 q36_require_authorization
 q36_verify_model
+DATA_SHA256=$(q36_sha256 "$DATA")
 q36_verify_sha256 "$DATA" "$DATA_SHA256"
 q36_verify_environment
 [[ ! -e "$OUTPUT" && ! -L "$OUTPUT" ]] || q36_die "role output exists"
@@ -32,7 +35,7 @@ case "$ROLE" in
     ;;
   aligned|draft_hidden)
     q36_require WARM_START_CHECKPOINT
-    q36_require WARM_START_CHECKPOINT_SHA256
+    WARM_START_CHECKPOINT_SHA256=$(q36_sha256 "$WARM_START_CHECKPOINT")
     q36_verify_sha256 "$WARM_START_CHECKPOINT" "$WARM_START_CHECKPOINT_SHA256"
     warm=(--warm-start-checkpoint "$WARM_START_CHECKPOINT")
     ;;

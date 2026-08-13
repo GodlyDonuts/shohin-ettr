@@ -25,6 +25,7 @@ from q36_mtr_contract import (
     MIN_FREE_INODES,
     MODEL_REVISION,
     SOURCE_SHA256,
+    SOURCE_FREEZE_SHA256,
     validate_graph,
 )
 from q36_mtr_roles import MODEL_CONFIG_SHA256, MODEL_MANIFEST_SHA256
@@ -112,7 +113,7 @@ def authorize(
     else:
         raise Q36MTRPhaseAuthorizationError("Q36 authorization cannot create run root")
     graph = _load(args.graph_contract, "shohin-q36-mtr-graph-v1")
-    plan = _load(args.plan, "shohin-q36-mtr-dry-run-plan-v1")
+    plan = _load(args.plan, "shohin-q36-mtr-execution-plan-v1")
     validate_graph(graph)
     validate_plan(plan)
     source_commit = graph["source_commit"]
@@ -163,6 +164,41 @@ def authorize(
     if any(path.is_symlink() or not path.is_file() for path in source_paths.values()):
         raise Q36MTRPhaseAuthorizationError("Q36 source admission path differs")
     source_hashes = {name: sha256_file(path) for name, path in source_paths.items()}
+    source_freeze_paths = {
+        "train_sources": args.train_sources,
+        "development_sources": args.development_sources,
+        "freeze_report": args.freeze_report,
+        "assessor_receipt": args.assessor_receipt,
+    }
+    if any(
+        path.is_symlink() or not path.is_file() for path in source_freeze_paths.values()
+    ):
+        raise Q36MTRPhaseAuthorizationError("Q36 source-freeze path differs")
+    source_freeze_hashes = {
+        name: sha256_file(path) for name, path in source_freeze_paths.items()
+    }
+    assessor_receipt = _load(
+        args.assessor_receipt, "shohin-pcf1-confirmation-assessor-receipt-v1"
+    )
+    freeze_report = _load(args.freeze_report, "shohin-pcf1-data-freeze-report-v1")
+    if (
+        args.assessor_board.is_symlink()
+        or not args.assessor_board.is_file()
+        or source_freeze_hashes
+        != {name: SOURCE_FREEZE_SHA256[name] for name in source_freeze_paths}
+        or assessor_receipt.get("status") != "complete"
+        or assessor_receipt.get("rows") != 1289
+        or assessor_receipt.get("semantic_access") != "final_score_only"
+        or assessor_receipt.get("board_sha256")
+        != SOURCE_FREEZE_SHA256["assessor_board"]
+        or freeze_report.get("status") != "complete"
+        or freeze_report.get("source_disjoint") is not True
+        or freeze_report.get("sealed_content_materialized") is not False
+        or freeze_report.get("split_seed") != 2026080811
+        or freeze_report.get("counts")
+        != {"train": 5824, "development": 1289, "holdout": 1279}
+    ):
+        raise Q36MTRPhaseAuthorizationError("Q36 source-freeze custody differs")
     model_config = args.model_root / "config.json"
     model_revision = args.model_root / "SOURCE_REVISION"
     if (
@@ -179,6 +215,8 @@ def authorize(
         or model_revision.read_text(encoding="utf-8") != MODEL_REVISION + "\n"
         or runtime_receipt.get("status") != "complete"
         or runtime_receipt.get("source_commit") != source_commit
+        or runtime_receipt.get("scientific_submit_capability") is not True
+        or runtime_receipt.get("submission_count") != 1
         or environment.get("status") != "pass"
         or environment.get("model_revision") != MODEL_REVISION
         or environment.get("model_config_sha256") != MODEL_CONFIG_SHA256
@@ -224,6 +262,14 @@ def authorize(
         "sandbox_receipt_sha256": sha256_file(args.sandbox_receipt),
         "cluster_preflight_sha256": sha256_file(args.cluster_preflight),
         "source_sha256": source_hashes,
+        "source_freeze_sha256": {
+            **source_freeze_hashes,
+            "assessor_board": SOURCE_FREEZE_SHA256["assessor_board"],
+        },
+        "source_freeze_paths": {
+            **{name: str(path.resolve()) for name, path in source_freeze_paths.items()},
+            "assessor_board": str(args.assessor_board.resolve()),
+        },
         "run_root": str(resolved_run_root),
         "gate": "one_source_disjoint_development_gate",
         "scientific_submit_authorized": True,
@@ -261,6 +307,11 @@ def main() -> int:
     parser.add_argument("--logic-science", type=Path, required=True)
     parser.add_argument("--code", type=Path, required=True)
     parser.add_argument("--b1", type=Path, required=True)
+    parser.add_argument("--train-sources", type=Path, required=True)
+    parser.add_argument("--development-sources", type=Path, required=True)
+    parser.add_argument("--freeze-report", type=Path, required=True)
+    parser.add_argument("--assessor-receipt", type=Path, required=True)
+    parser.add_argument("--assessor-board", type=Path, required=True)
     parser.add_argument("--run-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     result = authorize(parser.parse_args())

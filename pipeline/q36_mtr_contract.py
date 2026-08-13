@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Emit and validate the frozen, no-submit Q36-MTR execution contract."""
+"""Emit and validate the frozen, exactly-once Q36-MTR execution contract."""
 
 from __future__ import annotations
 
@@ -42,6 +42,13 @@ SOURCE_SHA256 = {
     "code": "0b6d068b4d71f407cb234579b9278dc640df09139ea906dd0f52a6ab71e05398",
     "b1": "2461d6f70b44a142854d56c24e1fb42d600065e5788a2c4e055ba47b12696549",
 }
+SOURCE_FREEZE_SHA256 = {
+    "train_sources": "9696f064a8e2bb8c7e46e6a6a4a5ad8ade5edd0cb58a4f5ebf6171beb25d6fc0",
+    "development_sources": "2385a653cf7f1b7208d3c924efca2a8305250d2361f90f9fa1e49af6fd9bbe68",
+    "freeze_report": "a58a77d2849f9571416680dcbdae3d59340259fa5b3df111c35caa53fc1538a9",
+    "assessor_receipt": "9752ac3c25981764d4b8ae325cb1969d666c46496032f32313092be5a8fb1b77",
+    "assessor_board": "a824ae4c071c0e1309268da40c4f644d778d50c01ced9fb9b8591a923efa82e8",
+}
 PROHIBITED_RETRIES = (
     "ndr1",
     "kcr1",
@@ -63,7 +70,7 @@ MAXIMUM_CONCURRENT_SINGLE_H100_REQUESTS = 32
 
 
 class Q36MTRContractError(RuntimeError):
-    """The prospective graph differs from its frozen contract."""
+    """The single-execution graph differs from its frozen contract."""
 
 
 @dataclass(frozen=True)
@@ -180,12 +187,12 @@ def graph_payload(source_commit: str) -> dict[str, Any]:
         raise Q36MTRContractError("source commit must be one exact Git commit")
     payload: dict[str, Any] = {
         "schema": SCHEMA,
-        "status": "prospective_no_submit",
+        "status": "authorized_single_execution",
         "source_commit": source_commit,
         "model": {"id": MODEL_ID, "revision": MODEL_REVISION},
-        "scientific_submit_authorized": False,
+        "scientific_submit_authorized": True,
         "model_acquisition_authorized": False,
-        "data_materialization_authorized": False,
+        "data_materialization_authorized": True,
         "partition": "normal",
         "excluded_nodes": list(EXCLUDED_NODES),
         "requeue": False,
@@ -197,6 +204,7 @@ def graph_payload(source_commit: str) -> dict[str, Any]:
         },
         "data": {
             "source_sha256": dict(SOURCE_SHA256),
+            "source_freeze_sha256": dict(SOURCE_FREEZE_SHA256),
             "split_seed": SPLIT_SEED,
             "train_identities": TRAIN_IDENTITIES,
             "development_identities": TOTAL_ROWS,
@@ -239,6 +247,8 @@ def graph_payload(source_commit: str) -> dict[str, Any]:
         "automatic_retry": False,
         "automatic_confirmation": False,
         "automatic_successor": False,
+        "submission_count": 1,
+        "dispatch_receipt_required": True,
         "one_output_per_identity": True,
         "cancel_dead_dependencies_at_terminal": True,
         "temporary_shard_deletion_requires_verified_merge_and_mirror": True,
@@ -249,7 +259,7 @@ def graph_payload(source_commit: str) -> dict[str, Any]:
 
 def validate_graph(payload: dict[str, Any]) -> None:
     if payload.get("schema") != SCHEMA or payload.get("status") != (
-        "prospective_no_submit"
+        "authorized_single_execution"
     ):
         raise Q36MTRContractError("Q36-MTR graph schema/status differs")
     if payload.get("model") != {"id": MODEL_ID, "revision": MODEL_REVISION}:
@@ -257,9 +267,7 @@ def validate_graph(payload: dict[str, Any]) -> None:
     if not _hex_digest(payload.get("source_commit"), 40):
         raise Q36MTRContractError("Q36-MTR source commit differs")
     for field in (
-        "scientific_submit_authorized",
         "model_acquisition_authorized",
-        "data_materialization_authorized",
         "requeue",
         "automatic_retry",
         "automatic_confirmation",
@@ -267,6 +275,17 @@ def validate_graph(payload: dict[str, Any]) -> None:
     ):
         if payload.get(field) is not False:
             raise Q36MTRContractError(f"Q36-MTR unsafe authorization: {field}")
+    for field in (
+        "scientific_submit_authorized",
+        "data_materialization_authorized",
+        "dispatch_receipt_required",
+    ):
+        if payload.get(field) is not True:
+            raise Q36MTRContractError(
+                f"Q36-MTR execution authorization differs: {field}"
+            )
+    if payload.get("submission_count") != 1:
+        raise Q36MTRContractError("Q36-MTR submission count differs")
     stages = payload.get("stages")
     if stages != _stage_payloads():
         raise Q36MTRContractError("Q36-MTR stages differ")
@@ -307,6 +326,7 @@ def validate_graph(payload: dict[str, Any]) -> None:
         raise Q36MTRContractError("Q36-MTR prohibited retries differ")
     if payload.get("data") != {
         "source_sha256": SOURCE_SHA256,
+        "source_freeze_sha256": SOURCE_FREEZE_SHA256,
         "split_seed": SPLIT_SEED,
         "train_identities": TRAIN_IDENTITIES,
         "development_identities": TOTAL_ROWS,
@@ -343,7 +363,10 @@ def validate_graph(payload: dict[str, Any]) -> None:
     ):
         if payload.get(field) is not True:
             raise Q36MTRContractError(f"Q36-MTR required invariant differs: {field}")
-    if any(not _hex_digest(value) for value in SOURCE_SHA256.values()):
+    if any(
+        not _hex_digest(value)
+        for value in (*SOURCE_SHA256.values(), *SOURCE_FREEZE_SHA256.values())
+    ):
         raise Q36MTRContractError("Q36-MTR source hash is malformed")
 
 

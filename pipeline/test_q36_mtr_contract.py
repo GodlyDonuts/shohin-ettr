@@ -13,6 +13,7 @@ from q36_mtr_contract import (
     PROHIBITED_RETRIES,
     Q36MTRContractError,
     SOURCE_SHA256,
+    SOURCE_FREEZE_SHA256,
     STAGES,
     graph_payload,
     main,
@@ -22,7 +23,7 @@ from q36_mtr_contract import (
 COMMIT = "1" * 40
 
 
-def test_exact_no_submit_graph_is_acyclic_and_resource_complete() -> None:
+def test_exact_single_execution_graph_is_acyclic_and_resource_complete() -> None:
     payload = graph_payload(COMMIT)
     assert payload["model"]["revision"] == MODEL_REVISION
     assert payload["h100_requests"] == 61
@@ -32,9 +33,12 @@ def test_exact_no_submit_graph_is_acyclic_and_resource_complete() -> None:
     assert payload["excluded_nodes"] == list(EXCLUDED_NODES)
     assert payload["prohibited_retries"] == list(PROHIBITED_RETRIES)
     assert payload["data"]["source_sha256"] == SOURCE_SHA256
-    assert payload["scientific_submit_authorized"] is False
+    assert payload["data"]["source_freeze_sha256"] == SOURCE_FREEZE_SHA256
+    assert payload["scientific_submit_authorized"] is True
     assert payload["model_acquisition_authorized"] is False
-    assert payload["data_materialization_authorized"] is False
+    assert payload["data_materialization_authorized"] is True
+    assert payload["dispatch_receipt_required"] is True
+    assert payload["submission_count"] == 1
     assert payload["automatic_retry"] is False
     assert payload["automatic_confirmation"] is False
     assert payload["automatic_successor"] is False
@@ -52,7 +56,7 @@ def test_exact_no_submit_graph_is_acyclic_and_resource_complete() -> None:
 @pytest.mark.parametrize(
     "mutation",
     [
-        lambda value: value.__setitem__("scientific_submit_authorized", True),
+        lambda value: value.__setitem__("scientific_submit_authorized", False),
         lambda value: value.__setitem__("requeue", True),
         lambda value: value.__setitem__("h100_requests", 62),
         lambda value: value.__setitem__("expected_h100_hours", 58.91),
@@ -63,6 +67,9 @@ def test_exact_no_submit_graph_is_acyclic_and_resource_complete() -> None:
         lambda value: value["arms"].remove("draft_hidden"),
         lambda value: value["stages"][3].__setitem__("dependencies", ["final_compare"]),
         lambda value: value["data"]["source_sha256"].__setitem__("code", "0" * 64),
+        lambda value: value["data"]["source_freeze_sha256"].__setitem__(
+            "train_sources", "0" * 64
+        ),
         lambda value: value["data"].__setitem__("split_seed", 2026080812),
         lambda value: value["training"].__setitem__("revision_updates", 257),
         lambda value: value["minimum_storage"].__setitem__("free_inodes", 149999),

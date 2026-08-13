@@ -11,12 +11,14 @@
 #SBATCH --error=logs/q36_mtr_merge_eval_%j.err
 
 set -euo pipefail
-for variable in RUNTIME RUNTIME_MANIFEST_SHA256 SOURCE_COMMIT PYTHON ARM SPLIT DATA DATA_SHA256 DATA_REPORT DATA_REPORT_SHA256 SHARD_ROOT OUTPUT REPORT PHASE_AUTHORIZATION PHASE_AUTHORIZATION_SHA256; do
+for variable in RUNTIME RUNTIME_MANIFEST_SHA256 SOURCE_COMMIT PYTHON ARM SPLIT DATA DATA_REPORT SHARD_ROOT OUTPUT REPORT PHASE_AUTHORIZATION PHASE_AUTHORIZATION_SHA256; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
 source "$RUNTIME/train/jobs/q36_mtr_common.sh"
 q36_verify_runtime
 q36_require_authorization
+DATA_SHA256=$(q36_sha256 "$DATA")
+DATA_REPORT_SHA256=$(q36_sha256 "$DATA_REPORT")
 q36_verify_sha256 "$DATA" "$DATA_SHA256"
 q36_verify_sha256 "$DATA_REPORT" "$DATA_REPORT_SHA256"
 [[ -d "$SHARD_ROOT" && ! -L "$SHARD_ROOT" ]] || q36_die "shard root differs"

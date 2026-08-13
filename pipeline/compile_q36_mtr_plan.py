@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compile the frozen Q36-MTR graph into a dry-run-only task blueprint."""
+"""Compile the frozen Q36-MTR graph into its single-execution blueprint."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from q36_mtr_contract import (
     validate_graph,
 )
 
-SCHEMA = "shohin-q36-mtr-dry-run-plan-v1"
+SCHEMA = "shohin-q36-mtr-execution-plan-v1"
 GPU_ENTRYPOINTS = {
     "mechanics": "q36_mtr_mechanics",
     "owner_fit": "q36_mtr_train_role:owner",
@@ -59,7 +59,7 @@ CPU_ENTRYPOINTS = {
 
 
 class Q36MTRPlanError(RuntimeError):
-    """The Q36-MTR dry-run task plan differs."""
+    """The Q36-MTR single-execution task plan differs."""
 
 
 def _hex(value: object, length: int) -> bool:
@@ -150,13 +150,13 @@ def compile_plan(graph: dict[str, Any], graph_sha256: str) -> dict[str, Any]:
             )
     payload = {
         "schema": SCHEMA,
-        "status": "dry_run_only",
+        "status": "authorized_single_execution",
         "source_commit": graph["source_commit"],
         "graph_sha256": graph_sha256,
-        "scientific_submit_authorized": False,
-        "submission_command_present": False,
+        "scientific_submit_authorized": True,
+        "submission_command_present": True,
         "model_acquisition_authorized": False,
-        "data_materialization_authorized": False,
+        "data_materialization_authorized": True,
         "gpu_tasks": gpu_tasks,
         "cpu_tasks": cpu_tasks,
         "h100_requests": len(gpu_tasks),
@@ -175,19 +175,22 @@ def compile_plan(graph: dict[str, Any], graph_sha256: str) -> dict[str, Any]:
 
 
 def validate_plan(payload: dict[str, Any]) -> None:
-    if payload.get("schema") != SCHEMA or payload.get("status") != "dry_run_only":
+    if payload.get("schema") != SCHEMA or payload.get("status") != (
+        "authorized_single_execution"
+    ):
         raise Q36MTRPlanError("Q36-MTR plan schema/status differs")
     if not _hex(payload.get("source_commit"), 40) or not _hex(
         payload.get("graph_sha256"), 64
     ):
         raise Q36MTRPlanError("Q36-MTR plan source binding differs")
+    if payload.get("model_acquisition_authorized") is not False:
+        raise Q36MTRPlanError("Q36-MTR model acquisition authorization differs")
     for field in (
         "scientific_submit_authorized",
         "submission_command_present",
-        "model_acquisition_authorized",
         "data_materialization_authorized",
     ):
-        if payload.get(field) is not False:
+        if payload.get(field) is not True:
             raise Q36MTRPlanError(f"Q36-MTR plan authorization differs: {field}")
     gpu_tasks = payload.get("gpu_tasks")
     if not isinstance(gpu_tasks, list) or len(gpu_tasks) != 61:
@@ -361,7 +364,7 @@ def main() -> int:
         graph_sha256 = hashlib.sha256(encoded).hexdigest()
     payload = compile_plan(graph, graph_sha256)
     _atomic_json(args.output, payload)
-    print(json.dumps({"h100_requests": 61, "status": "dry_run_only"}))
+    print(json.dumps({"h100_requests": 61, "status": "authorized_single_execution"}))
     return 0
 
 

@@ -14,13 +14,23 @@
 
 set -euo pipefail
 
-for variable in RUNTIME RUNTIME_MANIFEST_SHA256 SOURCE_COMMIT PYTHON ARM SPLIT CHECKPOINT CHECKPOINT_SHA256 DATA DATA_SHA256 DATA_REPORT DATA_REPORT_SHA256 OUTPUT REPORT SHARD_INDEX SHARD_COUNT ENVIRONMENT_RECEIPT ENVIRONMENT_RECEIPT_SHA256 ENVIRONMENT_TREE_SHA256; do
+for variable in RUNTIME RUNTIME_MANIFEST_SHA256 SOURCE_COMMIT PYTHON ARM SPLIT CHECKPOINT DATA DATA_REPORT SHARD_ROOT SHARD_COUNT ENVIRONMENT_RECEIPT ENVIRONMENT_RECEIPT_SHA256 ENVIRONMENT_TREE_SHA256; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
+[[ "${SLURM_ARRAY_TASK_ID:-}" =~ ^[0-7]$ ]] || { printf 'SLURM_ARRAY_TASK_ID differs\n' >&2; exit 2; }
+SHARD_INDEX=$SLURM_ARRAY_TASK_ID
+OUTPUT=$SHARD_ROOT/$(printf 'shard_%02d/candidates.jsonl' "$SHARD_INDEX")
+REPORT=$SHARD_ROOT/$(printf 'shard_%02d/report.json' "$SHARD_INDEX")
+export OUTPUT
 source "$RUNTIME/train/jobs/q36_mtr_common.sh"
+q36_init_local_tmp
+trap q36_cleanup_local_tmp EXIT
 q36_verify_runtime
 q36_require_authorization
 q36_verify_model
+CHECKPOINT_SHA256=$(q36_sha256 "$CHECKPOINT")
+DATA_SHA256=$(q36_sha256 "$DATA")
+DATA_REPORT_SHA256=$(q36_sha256 "$DATA_REPORT")
 q36_verify_sha256 "$CHECKPOINT" "$CHECKPOINT_SHA256"
 q36_verify_sha256 "$DATA" "$DATA_SHA256"
 q36_verify_sha256 "$DATA_REPORT" "$DATA_REPORT_SHA256"
@@ -35,7 +45,7 @@ esac
   q36_die "evaluation output exists"
 sandbox=()
 if [[ "$SPLIT" == calibration ]]; then
-  q36_require SANDBOX_PROBE_OUTPUT
+  SANDBOX_PROBE_OUTPUT=$SHARD_ROOT/$(printf 'shard_%02d/sandbox.json' "$SHARD_INDEX")
   [[ ! -e "$SANDBOX_PROBE_OUTPUT" && ! -L "$SANDBOX_PROBE_OUTPUT" ]] || \
     q36_die "sandbox probe output exists"
   sandbox=(--sandbox-probe-output "$SANDBOX_PROBE_OUTPUT")

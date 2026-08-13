@@ -10,6 +10,7 @@ pipeline/capture_q36_mtr_cluster_preflight.py
 pipeline/capture_q36_mtr_environment.py
 pipeline/compare_q36_mtr.py
 pipeline/compile_q36_mtr_plan.py
+pipeline/dispatch_q36_mtr.py
 pipeline/jobs/q36_mtr_authorize_score.sbatch
 pipeline/jobs/q36_mtr_build_final_custody.sbatch
 pipeline/jobs/q36_mtr_build_precompute_custody.sbatch

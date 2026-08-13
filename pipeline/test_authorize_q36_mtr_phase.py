@@ -58,6 +58,8 @@ def _fixture(tmp_path: Path, monkeypatch) -> argparse.Namespace:
                     "schema": "shohin-q36-mtr-runtime-v1",
                     "status": "complete",
                     "source_commit": COMMIT,
+                    "scientific_submit_capability": True,
+                    "submission_count": 1,
                 }
             )
             + "\n"
@@ -134,6 +136,52 @@ def _fixture(tmp_path: Path, monkeypatch) -> argparse.Namespace:
         "SOURCE_SHA256",
         {name: sha256_file(path) for name, path in sources.items()},
     )
+    assessor_board = tmp_path / "confirmation_assessors.jsonl"
+    assessor_board.write_text("sealed\n", encoding="utf-8")
+    train_sources = tmp_path / "train_sources.jsonl"
+    train_sources.write_text("train\n", encoding="utf-8")
+    development_sources = tmp_path / "development_sources.jsonl"
+    development_sources.write_text("development\n", encoding="utf-8")
+    freeze_report = tmp_path / "freeze_report.json"
+    freeze_report.write_text(
+        json.dumps(
+            {
+                "schema": "shohin-pcf1-data-freeze-report-v1",
+                "status": "complete",
+                "source_disjoint": True,
+                "sealed_content_materialized": False,
+                "split_seed": 2026080811,
+                "counts": {"train": 5824, "development": 1289, "holdout": 1279},
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    assessor_receipt = tmp_path / "assessor_receipt.json"
+    assessor_receipt.write_text(
+        json.dumps(
+            {
+                "schema": "shohin-pcf1-confirmation-assessor-receipt-v1",
+                "status": "complete",
+                "rows": 1289,
+                "semantic_access": "final_score_only",
+                "board_sha256": sha256_file(assessor_board),
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        module,
+        "SOURCE_FREEZE_SHA256",
+        {
+            "train_sources": sha256_file(train_sources),
+            "development_sources": sha256_file(development_sources),
+            "freeze_report": sha256_file(freeze_report),
+            "assessor_receipt": sha256_file(assessor_receipt),
+            "assessor_board": sha256_file(assessor_board),
+        },
+    )
     repository = tmp_path / "repository"
     repository.mkdir()
     return argparse.Namespace(
@@ -153,6 +201,11 @@ def _fixture(tmp_path: Path, monkeypatch) -> argparse.Namespace:
         logic_science=sources["logic_science"],
         code=sources["code"],
         b1=sources["b1"],
+        train_sources=train_sources,
+        development_sources=development_sources,
+        freeze_report=freeze_report,
+        assessor_receipt=assessor_receipt,
+        assessor_board=assessor_board,
         run_root=tmp_path / "run",
         output=tmp_path / "authorization.json",
     )

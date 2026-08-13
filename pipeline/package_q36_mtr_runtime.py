@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Package the exact, no-dispatch Q36-MTR runtime from a clean commit."""
+"""Package the exact, single-dispatch Q36-MTR runtime from a clean commit."""
 
 from __future__ import annotations
 
@@ -33,6 +33,7 @@ REQUIRED = {
     "pipeline/capture_q36_mtr_environment.py",
     "pipeline/compare_q36_mtr.py",
     "pipeline/compile_q36_mtr_plan.py",
+    "pipeline/dispatch_q36_mtr.py",
     "pipeline/jobs/q36_mtr_live_preflight.sbatch",
     "pipeline/jobs/q36_mtr_prepare_phase.sh",
     "pipeline/merge_q36_mtr_drafts.py",
@@ -144,7 +145,8 @@ def package(source_root: Path, allowlist: Path, output: Path) -> str:
             "source_commit": source_commit,
             "allowlist_sha256": sha256_file(allowlist),
             "allowlisted_files": entries,
-            "scientific_submit_capability": False,
+            "scientific_submit_capability": True,
+            "submission_count": 1,
             "model_acquisition_capability": False,
             "extra_files_permitted": False,
         }

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Fail-closed helpers for the prospective Q36-MTR graph. No dispatcher exists.
+# Fail-closed helpers for the exactly-once Q36-MTR graph.
 
 set -euo pipefail
 
@@ -40,6 +40,30 @@ q36_verify_sha256() {
   q36_require_file "$path"
   [[ "$expected" =~ ^[0-9a-f]{64}$ ]] || q36_die "invalid SHA-256"
   [[ "$(q36_sha256 "$path")" == "$expected" ]] || q36_die "SHA-256 differs: $path"
+}
+
+q36_init_local_tmp() {
+  q36_require SLURM_JOB_ID
+  [[ "$SLURM_JOB_ID" =~ ^[0-9]+$ ]] || q36_die "Slurm job identity differs"
+  local suffix=$SLURM_JOB_ID
+  if [[ -n "${SLURM_ARRAY_TASK_ID:-}" ]]; then
+    [[ "$SLURM_ARRAY_TASK_ID" =~ ^[0-9]+$ ]] || q36_die "Slurm array identity differs"
+    suffix=${suffix}_${SLURM_ARRAY_TASK_ID}
+  fi
+  export SLURM_TMPDIR=/tmp/q36-mtr-$suffix
+  if [[ -e "$SLURM_TMPDIR" || -L "$SLURM_TMPDIR" ]]; then
+    [[ -d "$SLURM_TMPDIR" && ! -L "$SLURM_TMPDIR" ]] || q36_die "local temporary root differs"
+    [[ "$(stat -c %U "$SLURM_TMPDIR")" == "$(id -un)" ]] || q36_die "local temporary owner differs"
+    [[ -z "$(find "$SLURM_TMPDIR" -mindepth 1 -maxdepth 1 -print -quit)" ]] || q36_die "local temporary root is not empty"
+  else
+    mkdir -m 700 "$SLURM_TMPDIR"
+  fi
+}
+
+q36_cleanup_local_tmp() {
+  [[ "${SLURM_TMPDIR:-}" =~ ^/tmp/q36-mtr-[0-9]+(_[0-9]+)?$ ]] || return 0
+  [[ ! -e "$SLURM_TMPDIR" && ! -L "$SLURM_TMPDIR" ]] || \
+    /usr/bin/rm -rf --one-file-system -- "$SLURM_TMPDIR"
 }
 
 q36_require_authorization() {

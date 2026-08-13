@@ -2,7 +2,7 @@
 # Read-only Q36 admission plus receipt publication; it cannot submit work.
 
 set -euo pipefail
-required=(RUNTIME RUNTIME_MANIFEST_SHA256 SOURCE_COMMIT PYTHON REPOSITORY GRAPH_CONTRACT PLAN MODEL_ROOT MODEL_MANIFEST MODEL_MANIFEST_SHA256 MODEL_REVISION MODEL_CONFIG_SHA256 PAIRS MATH LOGIC_SCIENCE CODE B1 USER_NAME QUOTA_FILESYSTEM PREPARE_ROOT RUN_ROOT RUN_ID)
+required=(RUNTIME RUNTIME_MANIFEST_SHA256 SOURCE_COMMIT PYTHON REPOSITORY GRAPH_CONTRACT PLAN MODEL_ROOT MODEL_MANIFEST MODEL_MANIFEST_SHA256 MODEL_REVISION MODEL_CONFIG_SHA256 PAIRS MATH LOGIC_SCIENCE CODE B1 TRAIN_SOURCES DEVELOPMENT_SOURCES FREEZE_REPORT ASSESSOR_RECEIPT ASSESSOR_BOARD USER_NAME QUOTA_FILESYSTEM PREPARE_ROOT RUN_ROOT RUN_ID)
 for variable in "${required[@]}"; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
@@ -46,6 +46,9 @@ q36_export_pythonpath
   --environment-receipt "$environment" --sandbox-receipt "$sandbox" \
   --cluster-preflight "$cluster" --pairs "$PAIRS" --math "$MATH" \
   --logic-science "$LOGIC_SCIENCE" --code "$CODE" --b1 "$B1" \
+  --train-sources "$TRAIN_SOURCES" --development-sources "$DEVELOPMENT_SOURCES" \
+  --freeze-report "$FREEZE_REPORT" --assessor-receipt "$ASSESSOR_RECEIPT" \
+  --assessor-board "$ASSESSOR_BOARD" \
   --run-root "$RUN_ROOT" --output "$authorization"
 test -f "$authorization" && test ! -e "$RUN_ROOT"
 printf '%s\n' "$authorization"

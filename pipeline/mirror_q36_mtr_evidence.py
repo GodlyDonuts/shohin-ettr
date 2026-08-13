@@ -45,7 +45,8 @@ def _load(path: Path, schema: str) -> dict[str, Any]:
     if (
         not isinstance(value, dict)
         or value.get("schema") != schema
-        or value.get("status") not in {"complete", "consumed", "prospective_no_submit"}
+        or value.get("status")
+        not in {"complete", "consumed", "authorized_single_execution"}
     ):
         raise Q36MTREvidenceError(f"Q36 evidence schema/status differs: {path}")
     return value

@@ -7,12 +7,14 @@ import pytest
 from package_q36_mtr_runtime import Q36MTRRuntimeError, load_allowlist
 
 
-def test_production_q36_allowlist_is_sorted_closed_and_no_dispatch() -> None:
+def test_production_q36_allowlist_is_sorted_closed_and_exactly_one_dispatcher() -> None:
     root = Path(__file__).resolve().parents[1]
     entries = load_allowlist(root / "pipeline/q36_mtr_runtime_allowlist.txt")
     assert entries == sorted(entries)
     assert all((root / entry).is_file() for entry in entries)
-    assert not any("dispatch" in entry.casefold() for entry in entries)
+    assert [entry for entry in entries if "dispatch" in entry.casefold()] == [
+        "pipeline/dispatch_q36_mtr.py"
+    ]
     assert not any("q35" in entry.casefold() for entry in entries)
 
 

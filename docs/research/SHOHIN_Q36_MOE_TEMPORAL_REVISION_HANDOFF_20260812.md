@@ -1,17 +1,20 @@
 # Q36-MTR: MoE Temporal-Revision Handoff
 
-Status: documentation-only handoff after PCF17 terminal-null, 2026-08-12.
-No Q36-MTR model, data view, scheduler graph, or score is authorized by this
-document. A fresh phase may implement exactly one source-disjoint development
-gate after its own admission freeze. PCF17 remains closed and unscored.
+Status: exactly-once execution handoff after PCF17 terminal-null, 2026-08-13.
+The pinned Q36-MTR host, source-disjoint data view, and one scheduler graph are
+authorized for a single execution. The 61 single-H100 requests, 58.90 expected
+H100-hours, arms, prompts, seeds, thresholds, and terminal stop are immutable.
+No retry, confirmation, or successor is authorized. PCF17 remains closed and
+unscored.
 
 Local preparation now includes `pipeline/q36_mtr_contract.py`, which emits and
-revalidates the exact no-submit 61-request dependency graph, and
+revalidates the exact single-execution 61-request dependency graph, and
 `pipeline/compare_q36_mtr.py`, which implements the five-arm terminal reducer.
 The reducer hash-binds the graph, all arm reports, final custody, exact host,
 source/data/runtime identity, one assessor read, scheduler accounting, and the
 evidence mirror. It always stops after development and never authorizes an
-automatic confirmation. These modules are preparation, not a dispatcher.
+automatic confirmation. `pipeline/dispatch_q36_mtr.py` is the sole dispatcher;
+its literal acknowledgement is `ONE_FROZEN_DEVELOPMENT_GATE_ONLY`.
 
 The role-mechanics milestone is also implemented prospectively. The exact
 Q36 source owner, aligned reviser, and draft-hidden reviser contract lives in
@@ -21,13 +24,11 @@ full-sequence position IDs before the hidden arm masks draft attention.
 `train/hf_q36_mtr_generate_drafts.py` assigns all 7,113 nonsealed identities
 to 16 deterministic owner-draft shards. The matching Slurm wrappers request
 one H100, disable requeue, retain the exact exclusion set, and require a
-future hash-bound phase-authorization receipt. They contain no submission
-command. `pipeline/compile_q36_mtr_plan.py` expands the frozen graph into 61
-unique single-H100 request records, but is intentionally dry-run-only and
-rejects any submit or acquisition authorization. This milestone therefore
-closes the model-role ambiguity without launching the MoE experiment.
+hash-bound phase-authorization receipt. `pipeline/compile_q36_mtr_plan.py`
+expands the frozen graph into 61 unique single-H100 request records and permits
+exactly one dispatcher-bound execution while still rejecting model acquisition.
 
-The data/evaluation plumbing is likewise prospective and no-submit.
+The data/evaluation plumbing is executable only through that frozen graph.
 `pipeline/merge_q36_mtr_drafts.py` admits only the 16 exact contiguous owner
 shards; `pipeline/build_q36_mtr_data.py` creates 9,655 natural-trajectory
 revision presentations plus 5,824 train-only calibration and 1,289 label-free
@@ -105,9 +106,9 @@ expert change is recorded explicitly but is observational, not required or
 silently promoted into a stronger routing claim. Router/expert weights remain
 frozen and byte-receipted throughout.
 
-The environment/runtime closure is now executable but still no-submit.
+The environment/runtime closure is executable and exact-commit bound.
 `pipeline/package_q36_mtr_runtime.py` packages a sorted, exact-membership
-runtime with no dispatcher or model-acquisition capability;
+runtime with the sole dispatcher and no model-acquisition capability;
 `pipeline/capture_q36_mtr_environment.py` pins the qualified base environment,
 `bitsandbytes==0.50.0` manifest
 `2201774754fb2e0fdd2208b78d34b803b910d8e34c79a43de49b29d7df3a8355`,
@@ -142,9 +143,9 @@ even though its loaded residual state is deliberately updated.
 The graph's CPU `commit_apply` stage is an independent label-free validator,
 not a second model load: it replays the checkpoint, pair, selection,
 antisymmetry, truncation/malformed, visibility, and zero-assessor-access
-receipts before precompute custody can begin. The compiled dry-run plan now
-names an exact existing wrapper for every H100 and CPU stage, closing the
-handoff ambiguity without adding a submit path.
+receipts before precompute custody can begin. The compiled execution plan names
+an exact existing wrapper for every H100 and CPU stage, closing the handoff
+ambiguity without another submit path.
 
 The irreversible CPU boundary is now implemented prospectively as well.
 `pipeline/build_q36_mtr_custody.py` independently binds the exact model and
@@ -188,22 +189,23 @@ dot segments, traversal, absolute paths, duplicate canonical names, symlinks,
 extra/missing files, and hash drift remain rejected. This repair cannot be
 used to resume or reinterpret PCF17.
 
-The final phase-admission transaction is now implemented, still without a
-submission path. `pipeline/capture_q36_mtr_cluster_preflight.py` requires an
+The final phase-admission transaction and fail-closed submission path are now
+implemented. `pipeline/capture_q36_mtr_cluster_preflight.py` requires an
 empty user queue, at least 128 GiB and 150,000 inodes of durable Lustre
 headroom, at least one eligible non-excluded H100 node, and enough remaining
 H100-hour budget for the exact 58.90-hour plan. After exact repository,
 private-remote, runtime, model, environment, sandbox, and source-hash checks,
 `pipeline/authorize_q36_mtr_phase.py` can mint one write-once authorization
 for one fresh run root. `pipeline/jobs/q36_mtr_prepare_phase.sh` performs only
-this receipt publication and contains no scheduler submission operation. The
-graph's first CPU allocation then runs
+this receipt publication. The dispatcher holds the root, prestages all 33
+dependency roots, publishes one immutable dispatch receipt, and only then
+releases the root; any failure cancels every submitted dependency. The graph's
+first CPU allocation then runs
 `pipeline/validate_q36_mtr_live_preflight.py`, which rechecks live quota,
 eligible H100 capacity, and accounting before any scientific row can be read;
 that receipt is mandatory precompute custody and durable-mirror evidence.
-These programs have not been executed to authorize or launch Q36-MTR in this
-documentation/preparation phase. No Q36 run root or scientific job was
-created by this milestone.
+Preparation and authorization do not launch Q36-MTR. No scientific Q36 job was
+submitted while producing this execution handoff.
 
 Publication statistics are frozen before any Q36 outcome exists. The sole
 scorer now derives exact paired win/loss/tie tables for revision versus
