@@ -9,6 +9,7 @@ import torch.nn as nn
 
 from hf_q36_mtr_mechanics import (
     Q36MTRMechanicsError,
+    _generate_prepared_adapter,
     _state_sha256,
     causal_draft_intervention_receipt,
     protected_parameter_receipt,
@@ -87,6 +88,16 @@ class _ToyCausalModel(nn.Module):
         self.text_model = _ToyCausalTextModel()
 
 
+class _PreparationModel:
+    def __init__(self) -> None:
+        self.events: list[tuple] = []
+
+    def prepare_generation_draft_attention(
+        self, tokenizer, rendered, input_ids, attention_mask
+    ) -> None:
+        self.events.append(("prepare", tokenizer, rendered, input_ids, attention_mask))
+
+
 def test_protected_receipt_detects_any_router_or_expert_mutation() -> None:
     model = _TinyMoE()
     before = protected_parameter_receipt(model)
@@ -147,6 +158,56 @@ def test_causal_intervention_hides_only_draft_information() -> None:
     assert receipt["native_router"]["draft_hidden_route_invariant"] is True
     assert receipt["native_router"]["aligned"]["router_max_abs_delta"] > 0.01
     assert receipt["native_router"]["draft_hidden"]["topk_assignment_changes"] == 0
+
+
+def test_mechanics_prepares_generation_draft_attention_before_adapter(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    model = _PreparationModel()
+    tokenizer = SimpleNamespace(pad_token_id=9)
+    encoded = {
+        "input_ids": torch.tensor([[2, 3, 4]]),
+        "attention_mask": torch.tensor([[1, 1, 1]]),
+    }
+    expected = torch.tensor([[17]])
+
+    def fake_generate(model_argument, encoded_argument, arguments, pad_token_id):
+        assert model_argument is model
+        assert model.events == [
+            (
+                "prepare",
+                tokenizer,
+                ["rendered prompt"],
+                encoded["input_ids"],
+                encoded["attention_mask"],
+            )
+        ]
+        assert encoded_argument is encoded
+        assert arguments == {"max_new_tokens": 1}
+        assert pad_token_id == 9
+        return expected
+
+    monkeypatch.setattr("hf_q36_mtr_mechanics._generate_adapter", fake_generate)
+    observed = _generate_prepared_adapter(
+        model,
+        tokenizer,
+        ["rendered prompt"],
+        encoded,
+        {"max_new_tokens": 1},
+    )
+    assert observed is expected
+
+
+def test_mechanics_generation_fails_closed_without_preparation() -> None:
+    tokenizer = SimpleNamespace(pad_token_id=9)
+    encoded = {
+        "input_ids": torch.tensor([[2, 3, 4]]),
+        "attention_mask": torch.tensor([[1, 1, 1]]),
+    }
+    with pytest.raises(Q36MTRMechanicsError, match="preparation is absent"):
+        _generate_prepared_adapter(
+            object(), tokenizer, ["rendered prompt"], encoded, {"max_new_tokens": 1}
+        )
 
 
 def test_mechanics_wrapper_is_no_score_single_h100() -> None:

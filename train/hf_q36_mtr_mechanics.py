@@ -153,6 +153,34 @@ def _state_sha256(state: dict[str, torch.Tensor]) -> str:
     return digest.hexdigest()
 
 
+def _generate_prepared_adapter(
+    model: Any,
+    tokenizer: Any,
+    rendered: list[str],
+    encoded: dict[str, torch.Tensor],
+    generation_arguments: dict[str, Any],
+) -> torch.Tensor:
+    """Prepare the causal draft mask before entering adapter generation."""
+
+    prepare = getattr(model, "prepare_generation_draft_attention", None)
+    if not callable(prepare):
+        raise Q36MTRMechanicsError(
+            "Q36-MTR generation draft-attention preparation is absent"
+        )
+    prepare(
+        tokenizer,
+        rendered,
+        encoded["input_ids"],
+        encoded["attention_mask"],
+    )
+    return _generate_adapter(
+        model,
+        encoded,
+        generation_arguments,
+        tokenizer.pad_token_id,
+    )
+
+
 def causal_draft_intervention_receipt(
     model: Any,
     prompt: list[int],
@@ -468,11 +496,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     was_training = model.training
     model.eval()
     with torch.inference_mode():
-        generation_output = _generate_adapter(
+        generation_output = _generate_prepared_adapter(
             model,
+            tokenizer,
+            [rendered_generation_probe],
             generation_encoded,
             generation_arguments,
-            tokenizer.pad_token_id,
         )
     model.train(was_training)
     if generation_prompt_width <= 1 or tuple(generation_output.shape) != (1, 1):

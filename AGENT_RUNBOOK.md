@@ -1,5 +1,19 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **Q36-MTR CORRECTED EXECUTION TERMINAL-NULL — 2026-08-13:** the sole
+> corrected graph passed CPU live preflight and H100 mechanics job `754563`
+> loaded the exact 35B-A3B causal host plus shared post-MLP adapter. The
+> no-score one-token probe then failed before generation because mechanics had
+> not invoked `prepare_generation_draft_attention` before its low-level
+> adapter-generation helper. No optimizer update, draft, capability score, or
+> assessor open occurred. All 31 descendants were cancelled at zero elapsed;
+> `/tmp/q36-mtr-754563` was already absent after the EXIT trap. Formal result
+> remains `null`, retry/successor authorization remains false, and the queue is
+> empty. Preserve
+> `docs/research/Q36_MTR_CORRECTED_EXECUTION_TERMINAL_20260813.json` and
+> `docs/research/Q36_MTR_CORRECTED_TERMINAL_EVIDENCE_MANIFEST_20260813.json`.
+> The exact call-order repair is prospective only.
+
 > **PCF17 TERMINAL-NULL — 2026-08-12:** the sole frozen graph completed 41
 > H100 allocations and produced all confirmation candidates plus learned-commit
 > application. Precompute custody job `752997` then failed closed on the safe

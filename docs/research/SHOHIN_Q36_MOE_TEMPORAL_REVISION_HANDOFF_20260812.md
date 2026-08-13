@@ -1,11 +1,26 @@
 # Q36-MTR: MoE Temporal-Revision Handoff
 
-Status: exactly-once execution handoff after PCF17 terminal-null, 2026-08-13.
-The pinned Q36-MTR host, source-disjoint data view, and one scheduler graph are
-authorized for a single execution. The 61 single-H100 requests, 58.90 expected
-H100-hours, arms, prompts, seeds, thresholds, and terminal stop are immutable.
-No retry, confirmation, or successor is authorized. PCF17 remains closed and
-unscored.
+Status: second execution terminal-infrastructure failure, 2026-08-13. No
+scientific PASS/FAIL exists. The pinned Q36-MTR host, source-disjoint data
+view, 61 single-H100 requests, 58.90 expected H100-hours, arms, prompts,
+seeds, thresholds, and terminal stop remain immutable. No retry,
+confirmation, or successor is authorized. PCF17 remains closed and unscored.
+
+Corrected execution `q36-mtr-bf17823-r1` passed its CPU live preflight and
+crossed the prior causal-loader failure: H100 job `754563` loaded all 693
+weight tensors and attached the shared post-MLP residual. Its no-score
+generation probe then failed closed because the mechanics script called the
+low-level adapter generator without first invoking the wrapper's required
+`prepare_generation_draft_attention` boundary. This happened before the
+one-token probe completed, before the optimizer update, and before any draft,
+capability row, or development assessor. All 31 dependency-dead roots were
+cancelled with zero elapsed time; the exact job-local model staging tree had
+already been removed by the EXIT trap. Preserve
+`Q36_MTR_CORRECTED_EXECUTION_TERMINAL_20260813.json` and the durable evidence
+manifest `Q36_MTR_CORRECTED_TERMINAL_EVIDENCE_MANIFEST_20260813.json`.
+The prospective implementation now prepares and receipt-checks the exact
+prompt IDs and attention mask before low-level adapter generation. This is an
+infrastructure correction only, not a retry or a scientific result.
 
 Execution `q36-mtr-152e5b4-r1` stopped at its no-score mechanics admission on
 2026-08-13. The exact model fully loaded on one H100, but Transformers' causal

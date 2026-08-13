@@ -4,6 +4,18 @@
 
 ## Read this first
 
+**Q36-MTR is terminal-null after its corrected execution.** CPU live preflight
+passed and H100 mechanics `754563` loaded the exact 35B-A3B causal host and
+attached the shared post-MLP adapter. The no-score one-token generation probe
+then failed before generation or optimizer update because mechanics omitted
+the wrapper's required `prepare_generation_draft_attention` call. No draft,
+capability row, or assessor was opened; all 31 descendants were cancelled at
+zero elapsed and the job-local model tree was already cleaned. Formal result
+is `null`; no retry or successor is authorized. Preserve
+`docs/research/Q36_MTR_CORRECTED_EXECUTION_TERMINAL_20260813.json` and
+`docs/research/Q36_MTR_CORRECTED_TERMINAL_EVIDENCE_MANIFEST_20260813.json`.
+The exact call-order correction is prospective only.
+
 **PCF17 is terminal-null.** Its one frozen graph completed 41 H100
 allocations, including source-owned drafts, revision/commit training, all
 three 1,289-row confirmation arms, and the learned-commit application. CPU
@@ -16,7 +28,7 @@ and no successor submitted. Preserve
 The generated evidence is scientifically unscored and must not be described
 as a `PASS` or `FAIL`.
 
-**The post-PCF MoE transfer is prepared but not launched.** The handoff maps
+**The original post-PCF MoE transfer handoff is preserved.** It maps
 the qualified dense draft/revision/whole-trajectory-commit system onto pinned
 Qwen3.6-35B-A3B, adds the causally matched draft-hidden control demanded by
 DSET/ISET, and defines one 1,289-row source-disjoint development gate. It also
