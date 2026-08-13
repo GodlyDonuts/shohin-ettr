@@ -24,6 +24,7 @@ PROHIBITED = (
     "dispatch_pcf1",
 )
 REQUIRED = {
+    "pipeline/authorize_q36_mtr_mechanics_qualification.py",
     "pipeline/authorize_q36_mtr_phase.py",
     "pipeline/build_q36_mtr_commit_pairs.py",
     "pipeline/build_q36_mtr_custody.py",
@@ -52,6 +53,7 @@ REQUIRED = {
     "train/hf_q36_mtr_train_commit.py",
     "train/hf_q36_mtr_train_role.py",
     "train/jobs/q36_mtr_common.sh",
+    "train/jobs/q36_mtr_mechanics_qualification.sbatch",
     "train/pcf1_code_sandbox.py",
     "train/q36_mtr_roles.py",
     "train/shared_post_mlp_revision.py",

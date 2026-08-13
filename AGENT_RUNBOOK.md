@@ -12,7 +12,10 @@
 > empty. Preserve
 > `docs/research/Q36_MTR_CORRECTED_EXECUTION_TERMINAL_20260813.json` and
 > `docs/research/Q36_MTR_CORRECTED_TERMINAL_EVIDENCE_MANIFEST_20260813.json`.
-> The exact call-order repair is prospective only.
+> The exact call-order repair is prospective only. Before any future full
+> graph, require the separate one-H100, no-score, no-dispatch boundary in
+> `docs/research/SHOHIN_Q36_MECHANICS_QUALIFICATION.md`; its PASS or failure
+> still authorizes no scientific graph or successor.
 
 > **PCF17 TERMINAL-NULL — 2026-08-12:** the sole frozen graph completed 41
 > H100 allocations and produced all confirmation candidates plus learned-commit

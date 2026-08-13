@@ -21,6 +21,10 @@ manifest `Q36_MTR_CORRECTED_TERMINAL_EVIDENCE_MANIFEST_20260813.json`.
 The prospective implementation now prepares and receipt-checks the exact
 prompt IDs and attention mask before low-level adapter generation. This is an
 infrastructure correction only, not a retry or a scientific result.
+Any future phase must first pass the separately authorized one-H100 mechanics
+boundary in `SHOHIN_Q36_MECHANICS_QUALIFICATION.md`; that qualification has no
+dispatcher, scorer, assessor input, or authority to launch the scientific
+graph.
 
 Execution `q36-mtr-152e5b4-r1` stopped at its no-score mechanics admission on
 2026-08-13. The exact model fully loaded on one H100, but Transformers' causal
