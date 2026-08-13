@@ -119,6 +119,23 @@ dot segments, traversal, absolute paths, duplicate canonical names, symlinks,
 extra/missing files, and hash drift remain rejected. This repair cannot be
 used to resume or reinterpret PCF17.
 
+The final phase-admission transaction is now implemented, still without a
+submission path. `pipeline/capture_q36_mtr_cluster_preflight.py` requires an
+empty user queue, at least 128 GiB and 150,000 inodes of durable Lustre
+headroom, at least one eligible non-excluded H100 node, and enough remaining
+H100-hour budget for the exact 58.90-hour plan. After exact repository,
+private-remote, runtime, model, environment, sandbox, and source-hash checks,
+`pipeline/authorize_q36_mtr_phase.py` can mint one write-once authorization
+for one fresh run root. `pipeline/jobs/q36_mtr_prepare_phase.sh` performs only
+this receipt publication and contains no scheduler submission operation. The
+graph's first CPU allocation then runs
+`pipeline/validate_q36_mtr_live_preflight.py`, which rechecks live quota,
+eligible H100 capacity, and accounting before any scientific row can be read;
+that receipt is mandatory precompute custody and durable-mirror evidence.
+These programs have not been executed to authorize or launch Q36-MTR in this
+documentation/preparation phase. No Q36 run root or scientific job was
+created by this milestone.
+
 ## Claim carried forward
 
 The strongest surviving qualified Shohin system is the dense same-family

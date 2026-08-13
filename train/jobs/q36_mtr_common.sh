@@ -5,6 +5,7 @@ set -euo pipefail
 
 readonly Q36_MODEL_REVISION=995ad96eacd98c81ed38be0c5b274b04031597b0
 readonly Q36_MODEL_CONFIG_SHA256=93a4693fa9d8392fbfccd4b3c9873f4bfdcb14fdede978b123d07d19675efe99
+readonly Q36_MODEL_MANIFEST_SHA256=06c9d8d8419244f2d001cb351e164f356718d9d77138e898b13afee35856f56e
 readonly Q36_EXCLUDED_NODES=evc26,evc29,evc31,evc32,evc33,evc37,evc38,evc46
 readonly Q36_PYTHON_ENTRYPOINT=/lustre/fs1/home/sa305415/shohin/envs/product-reasoning-b3a3603-r2/bin/python
 readonly Q36_BNB_ROOT=/lustre/fs1/home/sa305415/shohin/env_targets/bitsandbytes-0.50.0-r1
@@ -45,11 +46,15 @@ q36_require_authorization() {
   q36_require PHASE_AUTHORIZATION
   q36_require PHASE_AUTHORIZATION_SHA256
   q36_verify_sha256 "$PHASE_AUTHORIZATION" "$PHASE_AUTHORIZATION_SHA256"
-  "$PYTHON" - "$PHASE_AUTHORIZATION" "$SOURCE_COMMIT" <<'PY'
+  "$PYTHON" - "$PHASE_AUTHORIZATION" "$SOURCE_COMMIT" \
+    "${RUN_ID:-}" "${OUTPUT:-}" <<'PY'
 import json
+from pathlib import Path
 import sys
 
 payload = json.load(open(sys.argv[1], encoding="utf-8"))
+run_id = sys.argv[3]
+output = sys.argv[4]
 if (
     payload.get("schema") != "shohin-q36-mtr-phase-authorization-v1"
     or payload.get("status") != "authorized"
@@ -60,8 +65,23 @@ if (
     or payload.get("gate") != "one_source_disjoint_development_gate"
     or payload.get("automatic_retry") is not False
     or payload.get("automatic_successor") is not False
+    or payload.get("automatic_confirmation") is not False
+    or payload.get("stop_after_gate") is not True
 ):
     raise SystemExit("Q36-MTR phase authorization differs")
+if run_id and payload.get("run_id") != run_id:
+    raise SystemExit("Q36-MTR phase run identity differs")
+if output:
+    root = Path(str(payload.get("run_root", ""))).resolve(strict=False)
+    target = Path(output).resolve(strict=False)
+    if not root.is_absolute() or root in {Path("/"), Path.home().resolve()}:
+        raise SystemExit("Q36-MTR authorized run root differs")
+    try:
+        relative = target.relative_to(root)
+    except ValueError as error:
+        raise SystemExit("Q36-MTR output escapes its authorized run root") from error
+    if not relative.parts:
+        raise SystemExit("Q36-MTR output equals its authorized run root")
 PY
 }
 
@@ -208,6 +228,7 @@ q36_verify_model() {
   done
   [[ "$MODEL_REVISION" == "$Q36_MODEL_REVISION" ]] || q36_die "model revision differs"
   [[ "$MODEL_CONFIG_SHA256" == "$Q36_MODEL_CONFIG_SHA256" ]] || q36_die "model config differs"
+  [[ "$MODEL_MANIFEST_SHA256" == "$Q36_MODEL_MANIFEST_SHA256" ]] || q36_die "model manifest differs"
   q36_require_dir "$MODEL_ROOT"
   [[ "$(realpath "$MODEL_MANIFEST")" == "$(realpath "$MODEL_ROOT/SHA256SUMS")" ]] || \
     q36_die "model manifest is not rooted in the exact host"

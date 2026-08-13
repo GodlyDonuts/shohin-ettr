@@ -27,7 +27,7 @@ from merge_q36_mtr_drafts import SCHEMA as DRAFT_REPORT_SCHEMA
 from merge_q36_mtr_evaluations import SCHEMA as EVALUATION_REPORT_SCHEMA
 from pcf1_code_sandbox import BWRAP_SHA256, SANDBOX_CONFIG_SHA256
 from q36_mtr_contract import MODEL_REVISION, STAGES, TOTAL_ROWS, validate_graph
-from q36_mtr_roles import TRAINABLE_PARAMETERS, role_contract
+from q36_mtr_roles import MODEL_MANIFEST_SHA256, TRAINABLE_PARAMETERS, role_contract
 from score_q36_mtr import AUTHORIZATION_SCHEMA, CONSUMPTION_SCHEMA, SCORE_SCHEMA
 from hf_q36_mtr_train_commit import (
     APPLICATION_SCHEMA,
@@ -65,6 +65,7 @@ PRECOMPUTE_ARTIFACTS = {
     "drafts",
     "environment_receipt",
     "freeze_report",
+    "live_preflight",
     "mechanics_report",
     "owner_checkpoint",
     "owner_data",
@@ -468,6 +469,9 @@ def build_precompute(args: argparse.Namespace) -> dict[str, Any]:
     environment = _load(
         artifacts["environment_receipt"], "shohin-q36-mtr-environment-v1"
     )
+    live_preflight = _load(
+        artifacts["live_preflight"], "shohin-q36-mtr-live-preflight-v1"
+    )
     if (
         data_report.get("model_revision") != MODEL_REVISION
         or data_report.get("outputs", {}).get("development", {}).get("sha256")
@@ -486,6 +490,22 @@ def build_precompute(args: argparse.Namespace) -> dict[str, Any]:
         or environment.get("status") != "pass"
         or environment.get("model_revision") != MODEL_REVISION
         or environment.get("runtime_manifest_sha256") != runtime["manifest_sha256"]
+        or live_preflight.get("status") != "pass"
+        or live_preflight.get("run_id") != args.run_id
+        or live_preflight.get("source_commit") != graph.get("source_commit")
+        or live_preflight.get("graph_contract_sha256")
+        != sha256_file(args.graph_contract)
+        or live_preflight.get("environment_receipt_sha256")
+        != sha256_file(artifacts["environment_receipt"])
+        or live_preflight.get("model_revision") != MODEL_REVISION
+        or live_preflight.get("scientific_rows_read") != 0
+        or live_preflight.get("capability_scored") is not False
+        or live_preflight.get("scientific_jobs_submitted_by_preflight") != 0
+        or live_preflight.get("automatic_retry") is not False
+        or live_preflight.get("automatic_successor") is not False
+        or live_preflight.get("sealed_access")
+        != {"holdout": 0, "product": 0, "public": 0}
+        or model.get("manifest_sha256") != MODEL_MANIFEST_SHA256
     ):
         raise Q36MTRCustodyError("Q36 precompute scientific custody differs")
     artifact_hashes = dict(sorted(_validate_checkpoint_hashes(artifacts).items()))
@@ -500,6 +520,7 @@ def build_precompute(args: argparse.Namespace) -> dict[str, Any]:
         "runtime_sha256": runtime["manifest_sha256"],
         "runtime_manifest_sha256": runtime["manifest_sha256"],
         "environment_receipt_sha256": artifact_hashes["environment_receipt"],
+        "live_preflight_sha256": artifact_hashes["live_preflight"],
         "sandbox_receipt_sha256": mechanics.get("sandbox_receipt_sha256"),
         "data_sha256": artifact_hashes["development_data"],
         "identity_order_sha256": identity_order_sha256,

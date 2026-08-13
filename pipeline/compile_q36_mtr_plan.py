@@ -34,7 +34,7 @@ GPU_ENTRYPOINTS = {
     "development_draft_hidden": "q36_mtr_evaluate:development_draft_hidden",
 }
 CPU_ENTRYPOINTS = {
-    "preflight_cpu": "q36_mtr_capture_environment",
+    "preflight_cpu": "q36_mtr_live_preflight",
     "draft_merge": "q36_mtr_merge_drafts",
     "materialize": "q36_mtr_materialize",
     "calibration_revision_merge": "q36_mtr_merge_evaluation:calibration_revision",
