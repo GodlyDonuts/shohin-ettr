@@ -16,6 +16,7 @@ from build_q36_mtr_custody import (
     _manifest_tree,
     build_authorization,
     build_final,
+    evaluation_checkpoint_sha256,
     sha256_file,
 )
 from q36_mtr_contract import graph_payload
@@ -41,6 +42,20 @@ def test_q36_manifest_tree_accepts_only_exact_hash_bound_members(
     (root / "extra").write_text("extra")
     with pytest.raises(Q36MTRCustodyError):
         _manifest_tree(root, manifest)
+
+
+def test_matched_arm_checkpoint_lineage_is_role_isolated() -> None:
+    hashes = {
+        "owner_checkpoint": "1" * 64,
+        "aligned_checkpoint": "2" * 64,
+        "draft_hidden_checkpoint": "3" * 64,
+    }
+    assert evaluation_checkpoint_sha256("revision", hashes) == "2" * 64
+    assert evaluation_checkpoint_sha256("unchanged", hashes) == "1" * 64
+    assert evaluation_checkpoint_sha256("self_refinement", hashes) == "1" * 64
+    assert evaluation_checkpoint_sha256("draft_hidden", hashes) == "3" * 64
+    with pytest.raises(Q36MTRCustodyError):
+        evaluation_checkpoint_sha256("forged", hashes)
 
 
 def test_q36_authorization_binds_exact_score_inputs_without_board_open(

@@ -54,6 +54,22 @@ It never scores a capability row or reads a development assessor. The
 mechanics checkpoint is deliberately tagged with only 24 selected rows, so it
 cannot satisfy the 100,000-row source-owner warm-start contract.
 
+The causal boundary is now executable rather than metadata-only. Role reports
+separately bind draft-token byte presence and draft-information availability:
+the aligned and draft-hidden fits retain identical prompt/response tokens and
+absolute positions, while only the aligned fit exposes draft keys to causal
+attention. The no-score mechanics allocation perturbs every draft token while
+holding weights, response targets, sequence length, and positions fixed; it
+requires a material change in aligned target-facing states and invariance in
+the hidden states within a frozen BF16 tolerance. Generation state is also
+bound to the exact prepared prompt IDs, preventing a same-shape prompt from
+reusing stale hidden-mask or position state. Precompute custody replays the
+matched sequence receipts and enforces exact checkpoint isolation: aligned
+only for revision, source owner only for unchanged/self-refinement, and the
+independently trained hidden checkpoint only for draft-hidden. This also fixes
+a prospective custody mismatch that previously expected the aligned checkpoint
+for the two owner controls and would have rejected an otherwise valid run.
+
 The environment/runtime closure is now executable but still no-submit.
 `pipeline/package_q36_mtr_runtime.py` packages a sorted, exact-membership
 runtime with no dispatcher or model-acquisition capability;

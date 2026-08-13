@@ -308,7 +308,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "trainable_parameter_name_sha256": trainable_name_digest,
         "controlled_layer_indices": controlled_indices,
         "source_only_model_visible": args.role == "owner",
-        "internal_draft_visible": args.role != "owner",
+        "internal_draft_visible": args.role == "aligned",
+        "draft_token_bytes_present": args.role != "owner",
+        "draft_information_available": args.role == "aligned",
         "draft_attention_applied": args.role == "draft_hidden",
         "sequence_custody": sequence_receipt,
         "warm_start_checkpoint": (

@@ -22,7 +22,10 @@ class SharedPostMLPConfig:
     alpha: float = 18.0
 
     def validate(self) -> None:
-        if min(self.hidden_size, self.controlled_layers, self.rank) <= 0 or self.alpha <= 0:
+        if (
+            min(self.hidden_size, self.controlled_layers, self.rank) <= 0
+            or self.alpha <= 0
+        ):
             raise SharedPostMLPError("shared post-MLP dimensions differ")
 
 
@@ -61,11 +64,16 @@ class SharedPostMLPResidual(nn.Module):
             "mean_native_output_norm": self._native_norm / self._tokens,
         }
 
-    def forward(self, hidden_states: torch.Tensor, *args: Any, **kwargs: Any) -> torch.Tensor:
+    def forward(
+        self, hidden_states: torch.Tensor, *args: Any, **kwargs: Any
+    ) -> torch.Tensor:
         native = self.base(hidden_states, *args, **kwargs)
         if not isinstance(native, torch.Tensor) or native.shape != hidden_states.shape:
             raise SharedPostMLPError("base MLP output geometry differs")
-        residual = self.adapter_b(self.adapter_a(hidden_states.to(torch.bfloat16))) * self.scale
+        residual = (
+            self.adapter_b(self.adapter_a(hidden_states.to(torch.bfloat16)))
+            * self.scale
+        )
         with torch.no_grad():
             tokens = int(native.numel() // native.shape[-1])
             self._tokens += tokens
@@ -94,7 +102,10 @@ class SharedPostMLPProductModel(nn.Module):
         self.text_model, self.lm_head, hidden, self.backbone_layout = (
             resolve_product_backbone_layout(backbone)
         )
-        if hidden != config.hidden_size or len(self.text_model.layers) < config.controlled_layers:
+        if (
+            hidden != config.hidden_size
+            or len(self.text_model.layers) < config.controlled_layers
+        ):
             raise SharedPostMLPError("backbone geometry differs")
         self.config = config
         self.draft_control = draft_control
@@ -106,6 +117,7 @@ class SharedPostMLPProductModel(nn.Module):
         self.blocks = nn.ModuleList(blocks)
         self._generation_prompt_attention: torch.Tensor | None = None
         self._generation_position_ids: torch.Tensor | None = None
+        self._generation_prompt_ids: torch.Tensor | None = None
 
     def sequence_workspace_slots(self) -> int:
         return 0
@@ -128,11 +140,16 @@ class SharedPostMLPProductModel(nn.Module):
         }
 
     def prepare_generation_draft_attention(
-        self, tokenizer: Any, rendered: list[str], input_ids: torch.Tensor, attention_mask: torch.Tensor
+        self,
+        tokenizer: Any,
+        rendered: list[str],
+        input_ids: torch.Tensor,
+        attention_mask: torch.Tensor,
     ) -> None:
         position_ids = attention_mask.long().cumsum(dim=-1) - 1
         position_ids.masked_fill_(~attention_mask.bool(), 0)
         self._generation_position_ids = position_ids
+        self._generation_prompt_ids = input_ids.detach().clone()
         if self.draft_control == "normal":
             self._generation_prompt_attention = attention_mask
             return
@@ -158,6 +175,13 @@ class SharedPostMLPProductModel(nn.Module):
         self, prompt_ids: torch.Tensor, prompt_attention: torch.Tensor
     ) -> tuple[torch.Tensor, torch.Tensor]:
         attention = self._generation_prompt_attention
-        if attention is None or attention.shape != prompt_attention.shape:
+        prompt_ids_receipt = self._generation_prompt_ids
+        if (
+            attention is None
+            or attention.shape != prompt_attention.shape
+            or prompt_ids_receipt is None
+            or prompt_ids_receipt.shape != prompt_ids.shape
+            or not torch.equal(prompt_ids_receipt, prompt_ids)
+        ):
             raise SharedPostMLPError("generation draft attention is absent")
         return self.text_model.embed_tokens(prompt_ids), attention

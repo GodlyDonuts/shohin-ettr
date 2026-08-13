@@ -138,6 +138,104 @@ def _state_sha256(state: dict[str, torch.Tensor]) -> str:
     return digest.hexdigest()
 
 
+def causal_draft_intervention_receipt(
+    model: Any,
+    prompt: list[int],
+    response: list[int],
+    draft_mask: list[int],
+    pad_token_id: int,
+) -> dict[str, Any]:
+    """Exercise the causal intervention on identical model-facing geometry."""
+
+    if (
+        not prompt
+        or not response
+        or len(prompt) != len(draft_mask)
+        or not any(value == 0 for value in draft_mask)
+        or any(value not in (0, 1) for value in draft_mask)
+    ):
+        raise Q36MTRMechanicsError("Q36-MTR causal counterfactual geometry differs")
+    embedding = model.text_model.embed_tokens
+    vocabulary = int(getattr(embedding, "num_embeddings", 0))
+    if vocabulary < 2:
+        raise Q36MTRMechanicsError("Q36-MTR embedding vocabulary differs")
+    counterfactual = list(prompt)
+    for index, visible in enumerate(draft_mask):
+        if not visible:
+            counterfactual[index] = (
+                counterfactual[index] + max(vocabulary // 2, 1)
+            ) % vocabulary
+            if counterfactual[index] == prompt[index]:
+                raise Q36MTRMechanicsError("Q36-MTR draft perturbation is empty")
+    prompt_rows = [prompt, counterfactual]
+    response_rows = [response, response]
+
+    def response_states(hidden: bool) -> tuple[torch.Tensor, torch.Tensor]:
+        inputs, attention, labels, _ = pack_training_embeddings(
+            embedding,
+            prompt_rows,
+            response_rows,
+            None,
+            pad_token_id,
+            prompt_attention_rows=([draft_mask, draft_mask] if hidden else None),
+        )
+        positions = full_sequence_position_ids(attention)
+        output = model.text_model(
+            inputs_embeds=inputs,
+            attention_mask=attention,
+            position_ids=positions,
+            use_cache=False,
+        )
+        # The last prompt state predicts the first response token; subsequent
+        # response states predict the remainder.  This is the complete
+        # teacher-forced target-facing trajectory.
+        states = output.last_hidden_state[
+            :, len(prompt) - 1 : len(prompt) + len(response) - 1
+        ]
+        if states.shape[0] != 2 or states.shape[1] != len(response):
+            raise Q36MTRMechanicsError("Q36-MTR causal state geometry differs")
+        return states, positions
+
+    was_training = model.training
+    model.eval()
+    with torch.no_grad():
+        aligned_states, aligned_positions = response_states(False)
+        hidden_states, hidden_positions = response_states(True)
+    model.train(was_training)
+    aligned_delta = float(
+        (aligned_states[0].float() - aligned_states[1].float()).abs().max().cpu()
+    )
+    hidden_delta = float(
+        (hidden_states[0].float() - hidden_states[1].float()).abs().max().cpu()
+    )
+    positions_exact = torch.equal(aligned_positions, hidden_positions)
+    # BF16 MoE kernels can change low-order accumulation when masked tokens
+    # route differently, so admit only a tiny numerical residue while requiring
+    # a materially larger aligned response.
+    invariant_tolerance = 2e-3
+    sensitivity_floor = 1e-2
+    receipt = {
+        "counterfactual_draft_tokens": sum(value == 0 for value in draft_mask),
+        "token_count_exact": True,
+        "position_geometry_exact": positions_exact,
+        "aligned_response_max_abs_delta": aligned_delta,
+        "draft_hidden_response_max_abs_delta": hidden_delta,
+        "draft_hidden_invariant_tolerance": invariant_tolerance,
+        "aligned_sensitivity_floor": sensitivity_floor,
+        "draft_hidden_counterfactual_invariant": hidden_delta <= invariant_tolerance,
+        "aligned_counterfactual_sensitive": aligned_delta >= sensitivity_floor,
+    }
+    if (
+        not positions_exact
+        or not receipt["draft_hidden_counterfactual_invariant"]
+        or not receipt["aligned_counterfactual_sensitive"]
+    ):
+        raise Q36MTRMechanicsError(
+            f"Q36-MTR causal intervention failed: {json.dumps(receipt, sort_keys=True)}"
+        )
+    return receipt
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     from transformers import AutoTokenizer
 
@@ -334,6 +432,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     hidden_positions = full_sequence_position_ids(hidden_attention)
     if not torch.equal(aligned_positions, hidden_positions):
         raise Q36MTRMechanicsError("Q36-MTR hidden intervention changed positions")
+    causal_intervention = causal_draft_intervention_receipt(
+        model,
+        aligned_tokens[0],
+        aligned_responses[0],
+        hidden_masks[0],
+        tokenizer.pad_token_id,
+    )
     torch.cuda.synchronize()
     elapsed = time.monotonic() - started
     report = {
@@ -368,6 +473,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "aligned_hidden_position_geometry_exact": True,
         "draft_hidden_mask_nonempty": hidden_geometry["draft_masked_tokens"] > 0,
         "draft_tokens_deleted": 0,
+        "causal_draft_intervention": causal_intervention,
         "environment_receipt_sha256": args.environment_receipt_sha256,
         "environment_tree_sha256": args.environment_tree_sha256,
         "elapsed_seconds": elapsed,

@@ -40,6 +40,10 @@ def _metadata(role: str, arm: str) -> dict:
         ).hexdigest(),
         "controlled_layer_indices": list(range(48, 64)),
         "draft_control": "draft_unavailable" if arm == "draft_hidden" else "normal",
+        "internal_draft_visible": role == "aligned",
+        "draft_token_bytes_present": role != "owner",
+        "draft_information_available": role == "aligned",
+        "draft_attention_applied": role == "draft_hidden",
     }
     return metadata
 
@@ -65,6 +69,13 @@ def test_arm_role_and_visibility_contract(
 def test_wrong_checkpoint_role_fails_closed() -> None:
     with pytest.raises(module.Q36MTREvaluationError):
         module.validate_adapter(_Model(), _metadata("owner", "revision"), "revision")
+
+
+def test_hidden_role_cannot_claim_draft_information_availability() -> None:
+    metadata = _metadata("draft_hidden", "draft_hidden")
+    metadata["draft_information_available"] = True
+    with pytest.raises(module.Q36MTREvaluationError):
+        module.validate_adapter(_Model(), metadata, "draft_hidden")
 
 
 def test_static_wrappers_are_single_h100_and_no_dispatch() -> None:

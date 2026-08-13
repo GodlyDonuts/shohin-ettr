@@ -23,6 +23,10 @@ from q36_mtr_roles import (
     validate_matched_revision_geometry,
     validate_owner_warm_start,
 )
+from shared_post_mlp_revision import (
+    SharedPostMLPError,
+    SharedPostMLPProductModel,
+)
 
 
 def test_exact_role_states_are_distinct_and_equal_budget() -> None:
@@ -39,6 +43,10 @@ def test_exact_role_states_are_distinct_and_equal_budget() -> None:
     assert aligned.data_seed == hidden.data_seed == 2026080814
     assert aligned.draft_control == "normal"
     assert hidden.draft_control == "draft_unavailable"
+    assert role_contract("aligned")["draft_token_bytes_present"] is True
+    assert role_contract("aligned")["draft_information_available"] is True
+    assert role_contract("draft_hidden")["draft_token_bytes_present"] is True
+    assert role_contract("draft_hidden")["draft_information_available"] is False
 
 
 def test_contract_pins_host_trainables_and_no_router() -> None:
@@ -91,6 +99,41 @@ def test_hidden_control_preserves_tokens_and_full_positions() -> None:
     attention = torch.tensor([[1, 0, 0, 1, 1, 1], [1, 0, 1, 1, 1, 0]])
     positions = full_sequence_position_ids(attention)
     assert positions.tolist() == [list(range(6)), list(range(6))]
+
+
+class _OffsetTokenizer:
+    def __call__(self, text: str, **_kwargs):
+        return {
+            "input_ids": [ord(character) % 127 for character in text],
+            "offset_mapping": [(index, index + 1) for index in range(len(text))],
+        }
+
+
+def test_generation_mask_is_bound_to_exact_prompt_ids() -> None:
+    model = SharedPostMLPProductModel.__new__(SharedPostMLPProductModel)
+    torch.nn.Module.__init__(model)
+    model.draft_control = "draft_unavailable"
+    model.text_model = SimpleNamespace(embed_tokens=torch.nn.Embedding(127, 4))
+    model._generation_prompt_attention = None
+    model._generation_position_ids = None
+    model._generation_prompt_ids = None
+    prompt = (
+        "Original problem:\nP\n\nInternal draft:\nDRAFT\n\nReturn answer"
+        "\n\nOriginal problem:\nP"
+    )
+    tokenizer = _OffsetTokenizer()
+    token_ids = tokenizer(prompt)["input_ids"]
+    input_ids = torch.tensor([token_ids])
+    attention = torch.ones_like(input_ids)
+    model.prepare_generation_draft_attention(tokenizer, [prompt], input_ids, attention)
+    _, hidden_attention = model.generation_embeddings(input_ids, attention)
+    assert hidden_attention.shape == attention.shape
+    assert int((hidden_attention == 0).sum()) == len("DRAFT")
+    assert model.generation_position_ids().tolist() == [list(range(len(token_ids)))]
+    substituted = input_ids.clone()
+    substituted[0, 0] = (substituted[0, 0] + 1) % 127
+    with pytest.raises(SharedPostMLPError):
+        model.generation_embeddings(substituted, attention)
 
 
 def test_matched_geometry_rejects_token_or_position_drift() -> None:

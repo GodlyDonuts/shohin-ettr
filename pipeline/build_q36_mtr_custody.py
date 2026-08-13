@@ -27,7 +27,13 @@ from merge_q36_mtr_drafts import SCHEMA as DRAFT_REPORT_SCHEMA
 from merge_q36_mtr_evaluations import SCHEMA as EVALUATION_REPORT_SCHEMA
 from pcf1_code_sandbox import BWRAP_SHA256, SANDBOX_CONFIG_SHA256
 from q36_mtr_contract import MODEL_REVISION, STAGES, TOTAL_ROWS, validate_graph
-from q36_mtr_roles import MODEL_MANIFEST_SHA256, TRAINABLE_PARAMETERS, role_contract
+from q36_mtr_roles import (
+    MODEL_MANIFEST_SHA256,
+    Q36MTRRoleError,
+    TRAINABLE_PARAMETERS,
+    role_contract,
+    validate_matched_revision_geometry,
+)
 from score_q36_mtr import AUTHORIZATION_SCHEMA, CONSUMPTION_SCHEMA, SCORE_SCHEMA
 from hf_q36_mtr_train_commit import (
     APPLICATION_SCHEMA,
@@ -208,6 +214,8 @@ def _validate_role_report(
 ) -> None:
     expected = role_contract(role)
     selected = 100_000 if role == "owner" else 9_655
+    draft_bytes = role != "owner"
+    draft_information = role == "aligned"
     if (
         report.get("schema") != ROLE_REPORT_SCHEMA
         or report.get("status") != "complete"
@@ -219,6 +227,12 @@ def _validate_role_report(
         or not _matches_file(report, "checkpoint", checkpoint)
         or report.get("warm_start_checkpoint_sha256")
         != (None if role == "owner" else owner_sha256)
+        or report.get("source_only_model_visible") is not (role == "owner")
+        or report.get("internal_draft_visible") is not draft_information
+        or report.get("draft_token_bytes_present") is not draft_bytes
+        or report.get("draft_information_available") is not draft_information
+        or report.get("draft_attention_applied") is not (role == "draft_hidden")
+        or not isinstance(report.get("sequence_custody"), dict)
         or report.get("sealed_access") != {"holdout": 0, "product": 0, "public": 0}
     ):
         raise Q36MTRCustodyError(f"Q36 {role} role custody differs")
@@ -252,6 +266,20 @@ def _validate_evaluation_report(
         raise Q36MTRCustodyError(f"Q36 {arm} {split} evaluation differs")
 
 
+def evaluation_checkpoint_sha256(arm: str, hashes: dict[str, str]) -> str:
+    """Return the sole checkpoint authorized for a matched capability arm."""
+
+    checkpoint_name = {
+        "revision": "aligned_checkpoint",
+        "unchanged": "owner_checkpoint",
+        "self_refinement": "owner_checkpoint",
+        "draft_hidden": "draft_hidden_checkpoint",
+    }.get(arm)
+    if checkpoint_name is None or checkpoint_name not in hashes:
+        raise Q36MTRCustodyError(f"Q36 {arm} checkpoint lineage differs")
+    return hashes[checkpoint_name]
+
+
 def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
     hashes = {name: sha256_file(path) for name, path in artifacts.items()}
     owner = _load(artifacts["owner_report"], ROLE_REPORT_SCHEMA)
@@ -265,6 +293,14 @@ def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
     _validate_role_report(
         hidden, "draft_hidden", artifacts["draft_hidden_checkpoint"], owner_sha256
     )
+    try:
+        validate_matched_revision_geometry(
+            aligned["sequence_custody"], hidden["sequence_custody"]
+        )
+    except (KeyError, Q36MTRRoleError) as error:
+        raise Q36MTRCustodyError(
+            "Q36 aligned/hidden causal geometry differs"
+        ) from error
     freeze = _load(artifacts["freeze_report"], FREEZE_REPORT_SCHEMA)
     draft = _load(artifacts["draft_report"], DRAFT_REPORT_SCHEMA)
     data = _load(artifacts["data_report"], DATA_REPORT_SCHEMA)
@@ -309,13 +345,7 @@ def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
             or Path(str(output.get("path", ""))).resolve() != artifacts[name].resolve()
         ):
             raise Q36MTRCustodyError(f"Q36 materialized {key} lineage differs")
-    checkpoint_for_arm = {
-        "revision": hashes["aligned_checkpoint"],
-        "unchanged": hashes["aligned_checkpoint"],
-        "self_refinement": hashes["aligned_checkpoint"],
-        "draft_hidden": hashes["draft_hidden_checkpoint"],
-    }
-    for arm in checkpoint_for_arm:
+    for arm in ("revision", "unchanged", "self_refinement", "draft_hidden"):
         report_name = (
             "draft_hidden_evaluation_report"
             if arm == "draft_hidden"
@@ -326,7 +356,7 @@ def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
             arm,
             "development",
             artifacts[f"{arm}_candidates"],
-            checkpoint_for_arm[arm],
+            evaluation_checkpoint_sha256(arm, hashes),
         )
     for arm in ("revision", "unchanged"):
         _validate_evaluation_report(
@@ -334,7 +364,7 @@ def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
             arm,
             "calibration",
             artifacts[f"calibration_{arm}_candidates"],
-            hashes["aligned_checkpoint"],
+            evaluation_checkpoint_sha256(arm, hashes),
         )
     for split, pair_name, report_name, rows in (
         ("calibration", "calibration_pairs", "calibration_pairs_report", 5_824),
@@ -472,6 +502,7 @@ def build_precompute(args: argparse.Namespace) -> dict[str, Any]:
     live_preflight = _load(
         artifacts["live_preflight"], "shohin-q36-mtr-live-preflight-v1"
     )
+    causal_intervention = mechanics.get("causal_draft_intervention")
     if (
         data_report.get("model_revision") != MODEL_REVISION
         or data_report.get("outputs", {}).get("development", {}).get("sha256")
@@ -487,6 +518,11 @@ def build_precompute(args: argparse.Namespace) -> dict[str, Any]:
         != mechanics.get("protected_parameter_receipt_after")
         or mechanics.get("one_finite_update") is not True
         or mechanics.get("serialization_restore_exact") is not True
+        or not isinstance(causal_intervention, dict)
+        or causal_intervention.get("token_count_exact") is not True
+        or causal_intervention.get("position_geometry_exact") is not True
+        or causal_intervention.get("draft_hidden_counterfactual_invariant") is not True
+        or causal_intervention.get("aligned_counterfactual_sensitive") is not True
         or environment.get("status") != "pass"
         or environment.get("model_revision") != MODEL_REVISION
         or environment.get("runtime_manifest_sha256") != runtime["manifest_sha256"]

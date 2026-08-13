@@ -142,6 +142,11 @@ def role_contract(role: str) -> dict[str, Any]:
         "token_geometry": "identical_aligned_and_draft_hidden",
         "position_geometry": "explicit_full_sequence_positions",
         "hidden_intervention": "draft_attention_only_masked_not_deleted",
+        # Prompt geometry and causal availability are separate claims.  The
+        # hidden arm retains the exact draft bytes and positions while making
+        # those tokens unavailable as attention keys.
+        "draft_token_bytes_present": role != "owner",
+        "draft_information_available": role == "aligned",
         "external_proposer": False,
         "task_router": False,
     }

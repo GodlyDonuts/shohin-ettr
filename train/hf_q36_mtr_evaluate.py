@@ -184,6 +184,8 @@ def validate_adapter(model: Any, metadata: Any, arm: str) -> dict[str, Any]:
     name_sha256 = hashlib.sha256("\n".join(names).encode()).hexdigest()
     layer_count = len(model.text_model.layers)
     expected_indices = list(range(layer_count - CONTROLLED_LAYERS, layer_count))
+    expected_draft_bytes = role != "owner"
+    expected_draft_information = role == "aligned"
     if (
         int(metadata.get("update", -1)) != 256
         or metadata.get("trainable_parameters") != TRAINABLE_PARAMETERS
@@ -193,6 +195,10 @@ def validate_adapter(model: Any, metadata: Any, arm: str) -> dict[str, Any]:
         or metadata.get("controlled_layer_indices") != expected_indices
         or metadata.get("draft_control")
         != ("draft_unavailable" if arm == "draft_hidden" else "normal")
+        or metadata.get("draft_token_bytes_present") is not expected_draft_bytes
+        or metadata.get("draft_information_available") is not expected_draft_information
+        or metadata.get("internal_draft_visible") is not expected_draft_information
+        or metadata.get("draft_attention_applied") is not (arm == "draft_hidden")
     ):
         raise Q36MTREvaluationError("Q36-MTR adapter trainables differ")
     return {
