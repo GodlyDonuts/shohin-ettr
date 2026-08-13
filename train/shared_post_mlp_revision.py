@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import hashlib
+import json
 from typing import Any
 
 import torch
@@ -12,6 +13,30 @@ import torch.nn as nn
 
 class SharedPostMLPError(RuntimeError):
     """The shared post-MLP revision contract was violated."""
+
+
+def trainable_state(model: nn.Module) -> dict[str, torch.Tensor]:
+    state = {
+        name: parameter.detach().cpu().clone()
+        for name, parameter in model.named_parameters()
+        if parameter.requires_grad
+    }
+    if not state:
+        raise SharedPostMLPError("trainable residual state is empty")
+    return state
+
+
+def trainable_state_sha256(state: dict[str, torch.Tensor]) -> str:
+    if not state:
+        raise SharedPostMLPError("trainable residual state is empty")
+    digest = hashlib.sha256()
+    for name in sorted(state):
+        tensor = state[name].detach().cpu().contiguous()
+        digest.update(name.encode())
+        digest.update(str(tensor.dtype).encode())
+        digest.update(json.dumps(list(tensor.shape)).encode())
+        digest.update(tensor.numpy().tobytes())
+    return digest.hexdigest()
 
 
 @dataclass(frozen=True)

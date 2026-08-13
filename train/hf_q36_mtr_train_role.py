@@ -43,7 +43,12 @@ from q36_mtr_roles import (
     sequence_geometry_receipt,
     validate_owner_warm_start,
 )
-from shared_post_mlp_revision import SharedPostMLPConfig, SharedPostMLPProductModel
+from shared_post_mlp_revision import (
+    SharedPostMLPConfig,
+    SharedPostMLPProductModel,
+    trainable_state,
+    trainable_state_sha256,
+)
 from ttr1_revision import DRAFT_MARKER, tokenize_with_draft_mask
 
 SCHEMA = "shohin-q36-mtr-role-training-v1"
@@ -324,16 +329,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         warm_start_update, owner_metadata = load_trainable_checkpoint(
             args.warm_start_checkpoint, model
         )
+        loaded_trainable_state_sha256 = trainable_state_sha256(trainable_state(model))
         try:
             validate_owner_warm_start(
                 owner_metadata,
                 checkpoint_update=warm_start_update,
                 trainable_parameters=model.trainable_parameter_count(),
                 trainable_parameter_name_sha256=trainable_name_digest,
+                loaded_trainable_state_sha256=loaded_trainable_state_sha256,
             )
         except Q36MTRRoleError as error:
             raise Q36MTRTrainingError(str(error)) from error
         warm_start_sha256 = sha256_file(args.warm_start_checkpoint)
+    initial_trainable_state_sha256 = trainable_state_sha256(trainable_state(model))
 
     if hasattr(backbone, "gradient_checkpointing_enable"):
         backbone.gradient_checkpointing_enable(
@@ -356,6 +364,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         weight_decay=0.01,
         fused=True,
     )
+    optimizer_state_entries_before_training = len(optimizer.state)
+    if optimizer_state_entries_before_training != 0:
+        raise Q36MTRTrainingError("Q36-MTR optimizer did not start empty")
     metadata = {
         **role_contract(args.role),
         "schema": SCHEMA,
@@ -391,6 +402,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "warm_start_checkpoint_sha256": warm_start_sha256,
         "warm_start_update": warm_start_update,
         "optimizer_restored": False,
+        "optimizer_initial_state_empty": True,
+        "optimizer_state_entries_before_training": 0,
+        "initial_trainable_state_sha256": initial_trainable_state_sha256,
         "environment_receipt": str(args.environment_receipt.resolve()),
         "environment_receipt_sha256": args.environment_receipt_sha256,
         "environment_tree_sha256": args.environment_tree_sha256,
@@ -462,8 +476,35 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             }
             trace.append(event)
             print(json.dumps(event, sort_keys=True), flush=True)
+    final_trainable_state_sha256 = trainable_state_sha256(trainable_state(model))
+    metadata["final_trainable_state_sha256"] = final_trainable_state_sha256
+    metadata["serialization_restore_exact"] = True
     checkpoint = args.output / f"checkpoint_{update:07d}.pt"
     _save_checkpoint(checkpoint, model, optimizer, update, metadata)
+    saved = torch.load(checkpoint, map_location="cpu", weights_only=False)
+    if (
+        saved.get("schema") != "shohin-hf-product-reasoning-checkpoint-v1"
+        or saved.get("update") != update
+        or saved.get("metadata") != metadata
+        or not isinstance(saved.get("trainable_state"), dict)
+        or trainable_state_sha256(saved["trainable_state"])
+        != final_trainable_state_sha256
+        or not isinstance(saved.get("optimizer"), dict)
+        or not saved["optimizer"].get("state")
+    ):
+        raise Q36MTRTrainingError("Q36-MTR saved role state differs")
+    with torch.no_grad():
+        for parameter in model.parameters():
+            if parameter.requires_grad:
+                parameter.zero_()
+    restored_update, restored_metadata = load_trainable_checkpoint(checkpoint, model)
+    if (
+        restored_update != update
+        or restored_metadata != metadata
+        or trainable_state_sha256(trainable_state(model))
+        != final_trainable_state_sha256
+    ):
+        raise Q36MTRTrainingError("Q36-MTR live role restore differs")
     torch.cuda.synchronize()
     elapsed = time.monotonic() - started
     report = {

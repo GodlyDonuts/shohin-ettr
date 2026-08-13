@@ -244,6 +244,14 @@ def _validate_role_report(
         or report.get("draft_token_bytes_present") is not draft_bytes
         or report.get("draft_information_available") is not draft_information
         or report.get("draft_attention_applied") is not (role == "draft_hidden")
+        or report.get("optimizer_restored") is not False
+        or report.get("optimizer_initial_state_empty") is not True
+        or report.get("optimizer_state_entries_before_training") != 0
+        or report.get("serialization_restore_exact") is not True
+        or not isinstance(report.get("initial_trainable_state_sha256"), str)
+        or len(report["initial_trainable_state_sha256"]) != 64
+        or not isinstance(report.get("final_trainable_state_sha256"), str)
+        or len(report["final_trainable_state_sha256"]) != 64
         or not isinstance(report.get("sequence_custody"), dict)
         or not isinstance(consumption, dict)
         or consumption.get("dataset_presentations") != selected
@@ -508,6 +516,15 @@ def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
         ) from error
     if aligned["training_consumption"] != hidden["training_consumption"]:
         raise Q36MTRCustodyError("Q36 aligned/hidden consumed prefix differs")
+    if (
+        aligned["initial_trainable_state_sha256"]
+        != owner["final_trainable_state_sha256"]
+        or hidden["initial_trainable_state_sha256"]
+        != owner["final_trainable_state_sha256"]
+        or aligned["initial_trainable_state_sha256"]
+        != hidden["initial_trainable_state_sha256"]
+    ):
+        raise Q36MTRCustodyError("Q36 reviser initial states differ from owner")
     freeze = _load(artifacts["freeze_report"], FREEZE_REPORT_SCHEMA)
     draft = _load(artifacts["draft_report"], DRAFT_REPORT_SCHEMA)
     data = _load(artifacts["data_report"], DATA_REPORT_SCHEMA)

@@ -273,6 +273,12 @@ declared joint adapter update into an exact no-op. The first live mechanics
 receipt must reprove exact master/compute dtypes as well as exact
 trainables, layer indices, frozen router/expert tensors, one finite update,
 serialization/restore, and peak memory below one H100.
+Each role checkpoint also binds the trainable residual names, dtypes, shapes,
+and bytes before and after fitting. Both aligned and draft-hidden revisers must
+load the exact owner's final residual-state digest, while each begins with an
+independently constructed empty AdamW state (`optimizer_restored=false`). After
+role fitting, the saved trainable state is hash-checked, the live residual is
+zeroed, and the checkpoint is restored before the role report can complete.
 
 ## Data and visibility
 

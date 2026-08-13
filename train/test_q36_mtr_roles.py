@@ -73,12 +73,15 @@ def test_owner_warm_start_is_exact_source_only_state() -> None:
         "source_only_model_visible": True,
         "internal_draft_visible": False,
         "trainable_parameter_name_sha256": "a" * 64,
+        "final_trainable_state_sha256": "b" * 64,
+        "serialization_restore_exact": True,
     }
     validate_owner_warm_start(
         metadata,
         checkpoint_update=256,
         trainable_parameters=TRAINABLE_PARAMETERS,
         trainable_parameter_name_sha256="a" * 64,
+        loaded_trainable_state_sha256="b" * 64,
     )
     metadata["internal_draft_visible"] = True
     with pytest.raises(Q36MTRRoleError):
@@ -87,6 +90,16 @@ def test_owner_warm_start_is_exact_source_only_state() -> None:
             checkpoint_update=256,
             trainable_parameters=TRAINABLE_PARAMETERS,
             trainable_parameter_name_sha256="a" * 64,
+            loaded_trainable_state_sha256="b" * 64,
+        )
+    metadata["internal_draft_visible"] = False
+    with pytest.raises(Q36MTRRoleError):
+        validate_owner_warm_start(
+            metadata,
+            checkpoint_update=256,
+            trainable_parameters=TRAINABLE_PARAMETERS,
+            trainable_parameter_name_sha256="a" * 64,
+            loaded_trainable_state_sha256="c" * 64,
         )
 
 

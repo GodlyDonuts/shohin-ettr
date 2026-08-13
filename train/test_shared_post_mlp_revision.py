@@ -6,6 +6,8 @@ import torch.nn as nn
 from shared_post_mlp_revision import (
     SharedPostMLPConfig,
     SharedPostMLPResidual,
+    trainable_state,
+    trainable_state_sha256,
 )
 
 
@@ -33,6 +35,18 @@ class SharedPostMLPResidualTest(unittest.TestCase):
         self.assertNotEqual(updated.item(), value.item())
         rounded = torch.tensor(0.1, dtype=torch.bfloat16)
         self.assertEqual((rounded - 2e-6).to(torch.bfloat16).item(), rounded.item())
+
+    def test_trainable_state_hash_binds_names_dtypes_shapes_and_bytes(self) -> None:
+        base = nn.Linear(8, 8, bias=False, dtype=torch.bfloat16)
+        block = SharedPostMLPResidual(
+            base,
+            SharedPostMLPConfig(hidden_size=8, controlled_layers=1, rank=2, alpha=2),
+        )
+        state = trainable_state(block)
+        digest = trainable_state_sha256(state)
+        changed = {name: value.clone() for name, value in state.items()}
+        changed["adapter_a.weight"][0, 0] += 1e-6
+        self.assertNotEqual(trainable_state_sha256(changed), digest)
 
 
 if __name__ == "__main__":

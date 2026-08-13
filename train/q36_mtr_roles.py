@@ -228,6 +228,7 @@ def validate_owner_warm_start(
     checkpoint_update: int,
     trainable_parameters: int,
     trainable_parameter_name_sha256: str,
+    loaded_trainable_state_sha256: str,
 ) -> None:
     """Require both revisers to start from the exact source-only owner state."""
 
@@ -239,6 +240,8 @@ def validate_owner_warm_start(
         "selected_rows": OWNER_MAX_ROWS,
         "source_only_model_visible": True,
         "internal_draft_visible": False,
+        "final_trainable_state_sha256": loaded_trainable_state_sha256,
+        "serialization_restore_exact": True,
     }
     observed = {
         "update": checkpoint_update,
@@ -249,6 +252,8 @@ def validate_owner_warm_start(
         "selected_rows": metadata.get("selected_rows"),
         "source_only_model_visible": metadata.get("source_only_model_visible"),
         "internal_draft_visible": metadata.get("internal_draft_visible"),
+        "final_trainable_state_sha256": metadata.get("final_trainable_state_sha256"),
+        "serialization_restore_exact": metadata.get("serialization_restore_exact"),
     }
     if observed != expected:
         raise Q36MTRRoleError(

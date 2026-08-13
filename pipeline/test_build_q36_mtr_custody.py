@@ -15,6 +15,7 @@ from build_q36_mtr_custody import (
     EVIDENCE_SCHEMA,
     PRECOMPUTE_SCHEMA,
     Q36MTRCustodyError,
+    _validate_role_report,
     _manifest_tree,
     build_authorization,
     build_final,
@@ -26,7 +27,7 @@ from build_q36_mtr_custody import (
 from build_pcf1_data import revision_prompt
 from q36_mtr_contract import graph_payload
 from q36_mtr_contract import STAGES
-from q36_mtr_roles import MODEL_REVISION
+from q36_mtr_roles import MODEL_REVISION, TRAINABLE_PARAMETERS, role_contract
 from score_q36_mtr import (
     AUTHORIZATION_SCHEMA,
     CONSUMPTION_SCHEMA,
@@ -62,6 +63,65 @@ def test_matched_arm_checkpoint_lineage_is_role_isolated() -> None:
     assert evaluation_checkpoint_sha256("draft_hidden", hashes) == "3" * 64
     with pytest.raises(Q36MTRCustodyError):
         evaluation_checkpoint_sha256("forged", hashes)
+
+
+def test_role_custody_requires_fresh_optimizer_and_restored_state(
+    tmp_path: Path,
+) -> None:
+    checkpoint = tmp_path / "owner.pt"
+    checkpoint.write_bytes(b"owner")
+    digest = sha256_file(checkpoint)
+    report = {
+        **role_contract("owner"),
+        "schema": custody_module.ROLE_REPORT_SCHEMA,
+        "status": "complete",
+        "update": 256,
+        "updates": 256,
+        "selected_rows": 100_000,
+        "trainable_parameters": TRAINABLE_PARAMETERS,
+        "trainable_master_dtype": "float32",
+        "trainable_compute_dtype": "bfloat16",
+        "checkpoint": str(checkpoint.resolve()),
+        "checkpoint_sha256": digest,
+        "warm_start_checkpoint_sha256": None,
+        "source_only_model_visible": True,
+        "internal_draft_visible": False,
+        "draft_token_bytes_present": False,
+        "draft_information_available": False,
+        "draft_attention_applied": False,
+        "optimizer_restored": False,
+        "optimizer_initial_state_empty": True,
+        "optimizer_state_entries_before_training": 0,
+        "serialization_restore_exact": True,
+        "initial_trainable_state_sha256": "a" * 64,
+        "final_trainable_state_sha256": "b" * 64,
+        "sequence_custody": {},
+        "training_consumption": {
+            "dataset_presentations": 100_000,
+            "optimizer_updates": 256,
+            "gradient_accumulation": 16,
+            "batch_size": 1,
+            "microsteps": 4_096,
+            "consumed_presentations": 4_096,
+            "unique_consumed_presentations": 4_096,
+            "complete_dataset_cycles": 0,
+            "partial_cycle_presentations": 4_096,
+            "presentation_index_sha256": "c" * 64,
+            "consumed_token_geometry_sha256": "d" * 64,
+            "consumed_draft_attention_sha256": "e" * 64,
+        },
+        "sealed_access": {"holdout": 0, "product": 0, "public": 0},
+    }
+    _validate_role_report(report, "owner", checkpoint, digest)
+    for field, forged in (
+        ("optimizer_initial_state_empty", False),
+        ("optimizer_state_entries_before_training", 1),
+        ("serialization_restore_exact", False),
+    ):
+        changed = copy.deepcopy(report)
+        changed[field] = forged
+        with pytest.raises(Q36MTRCustodyError):
+            _validate_role_report(changed, "owner", checkpoint, digest)
 
 
 def _causal_mechanics_fixture() -> dict:
