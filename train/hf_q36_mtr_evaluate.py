@@ -42,6 +42,8 @@ from q36_mtr_roles import (
     TRAINABLE_MASTER_DTYPE,
     load_role_checkpoint_payload,
     role_spec,
+    validate_backbone_geometry,
+    validate_controlled_layer_geometry,
     validate_contract,
 )
 from shared_post_mlp_revision import (
@@ -116,11 +118,23 @@ def load_q36_adapter_model(model_root: Path, checkpoint: Path):
     )
     if loader != "causal":
         raise Q36MTREvaluationError("Q36-MTR resolved model loader differs")
+    try:
+        controlled_indices = validate_backbone_geometry(backbone)
+    except Q36MTRRoleError as error:
+        raise Q36MTREvaluationError(str(error)) from error
     model = SharedPostMLPProductModel(
         backbone,
         SharedPostMLPConfig(**expected_config),
         draft_control=str(metadata.get("draft_control")),
     )
+    try:
+        if (
+            validate_controlled_layer_geometry(len(model.text_model.layers))
+            != controlled_indices
+        ):
+            raise Q36MTRRoleError("Q36-MTR controlled layer indices differ")
+    except Q36MTRRoleError as error:
+        raise Q36MTREvaluationError(str(error)) from error
     current = {
         name: parameter
         for name, parameter in model.named_parameters()
@@ -287,8 +301,12 @@ def validate_adapter(model: Any, metadata: Any, arm: str) -> dict[str, Any]:
     )
     names = [name for name, _ in trainables]
     name_sha256 = hashlib.sha256("\n".join(names).encode()).hexdigest()
-    layer_count = len(model.text_model.layers)
-    expected_indices = list(range(layer_count - CONTROLLED_LAYERS, layer_count))
+    try:
+        expected_indices = validate_controlled_layer_geometry(
+            len(model.text_model.layers)
+        )
+    except Q36MTRRoleError as error:
+        raise Q36MTREvaluationError(str(error)) from error
     expected_draft_bytes = role != "owner"
     expected_draft_information = role == "aligned"
     if (

@@ -17,6 +17,9 @@ from hf_q36_mtr_train_role import (
 )
 from build_pcf1_data import revision_prompt
 from q36_mtr_roles import (
+    CONTROLLED_LAYER_INDICES,
+    LAYER_TYPES,
+    MODEL_LAYERS,
     MODEL_REVISION,
     Q36MTRRoleError,
     ROLE_SPECS,
@@ -24,6 +27,7 @@ from q36_mtr_roles import (
     role_contract,
     sequence_geometry_receipt,
     validate_contract,
+    validate_backbone_geometry,
     validate_matched_revision_geometry,
     validate_owner_warm_start,
 )
@@ -59,6 +63,12 @@ def test_contract_pins_host_trainables_and_no_router() -> None:
     assert contract["model_revision"] == MODEL_REVISION
     assert contract["trainable_parameters"] == TRAINABLE_PARAMETERS
     assert contract["controlled_layers"] == 16
+    assert contract["model_layers"] == MODEL_LAYERS == 40
+    assert contract["controlled_layer_indices"] == list(CONTROLLED_LAYER_INDICES)
+    assert contract["num_experts"] == 256
+    assert contract["router_top_k"] == 8
+    assert contract["model_loader"] == "causal"
+    assert contract["causal_model_class"] == "Qwen3_5MoeForCausalLM"
     assert contract["rank"] == contract["alpha"] == 18
     assert contract["router_expert_trainables"] == 0
     assert contract["external_proposer"] is False
@@ -67,6 +77,39 @@ def test_contract_pins_host_trainables_and_no_router() -> None:
     forged["role_spec"]["updates"] = 257
     with pytest.raises(Q36MTRRoleError):
         validate_contract(forged, "aligned")
+
+
+def _exact_backbone():
+    text_config = SimpleNamespace(
+        model_type="qwen3_5_moe_text",
+        hidden_size=2048,
+        num_hidden_layers=40,
+        num_experts=256,
+        num_experts_per_tok=8,
+        moe_intermediate_size=512,
+        shared_expert_intermediate_size=512,
+        vocab_size=248_320,
+        layer_types=list(LAYER_TYPES),
+    )
+    model_type = type("Qwen3_5MoeForCausalLM", (), {})
+    model = model_type()
+    model.config = SimpleNamespace(model_type="qwen3_5_moe", text_config=text_config)
+    return model
+
+
+def test_exact_q36_host_geometry_is_admitted_and_mutations_fail() -> None:
+    exact = _exact_backbone()
+    assert validate_backbone_geometry(exact) == list(CONTROLLED_LAYER_INDICES)
+    for field, forged in (
+        ("num_hidden_layers", 64),
+        ("num_experts", 255),
+        ("num_experts_per_tok", 4),
+        ("moe_intermediate_size", 1024),
+    ):
+        changed = _exact_backbone()
+        setattr(changed.config.text_config, field, forged)
+        with pytest.raises(Q36MTRRoleError):
+            validate_backbone_geometry(changed)
 
 
 def test_role_checkpoint_contains_no_optimizer_or_native_moe_state(

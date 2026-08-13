@@ -30,7 +30,7 @@ class _ToyCausalTextModel(nn.Module):
         super().__init__()
         torch.manual_seed(7)
         self.embed_tokens = nn.Embedding(64, 8)
-        self.config = SimpleNamespace(num_experts_per_tok=2)
+        self.config = SimpleNamespace(num_experts_per_tok=8)
 
     def forward(
         self,
@@ -57,7 +57,7 @@ class _ToyCausalTextModel(nn.Module):
         visible_keys = attention_mask[:, None, :].bool()
         weights = torch.softmax(scores.masked_fill(~(causal & visible_keys), -1e9), -1)
         hidden = inputs_embeds + torch.matmul(weights, inputs_embeds)
-        router_logits = torch.stack(
+        leading_router_logits = torch.stack(
             (
                 hidden[..., 0],
                 -hidden[..., 0],
@@ -65,10 +65,19 @@ class _ToyCausalTextModel(nn.Module):
                 -hidden[..., 1],
             ),
             dim=-1,
-        ).reshape(-1, 4)
+        )
+        padding = torch.full(
+            (*leading_router_logits.shape[:-1], 252),
+            -100.0,
+            dtype=leading_router_logits.dtype,
+            device=leading_router_logits.device,
+        )
+        router_logits = torch.cat((leading_router_logits, padding), dim=-1).reshape(
+            -1, 256
+        )
         return SimpleNamespace(
             last_hidden_state=hidden,
-            router_logits=(router_logits,),
+            router_logits=tuple(router_logits for _ in range(40)),
         )
 
 

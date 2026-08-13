@@ -41,6 +41,8 @@ from q36_mtr_roles import (
     role_contract,
     role_spec,
     sequence_geometry_receipt,
+    validate_backbone_geometry,
+    validate_controlled_layer_geometry,
     validate_owner_warm_start,
 )
 from shared_post_mlp_revision import (
@@ -336,9 +338,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         device_map={"": 0},
         quantization=args.quantization,
     )
-    text_config = getattr(backbone.config, "text_config", backbone.config)
-    if int(text_config.hidden_size) != HIDDEN_SIZE:
-        raise Q36MTRTrainingError("Q36-MTR hidden size differs")
+    try:
+        controlled_indices = validate_backbone_geometry(backbone)
+    except Q36MTRRoleError as error:
+        raise Q36MTRTrainingError(str(error)) from error
     config = SharedPostMLPConfig(
         hidden_size=HIDDEN_SIZE,
         controlled_layers=args.controlled_layers,
@@ -368,12 +371,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     ):
         raise Q36MTRTrainingError("Q36-MTR trainable surface differs")
     trainable_name_digest = model.trainable_parameter_name_sha256()
-    controlled_indices = list(
-        range(
-            len(model.text_model.layers) - CONTROLLED_LAYERS,
-            len(model.text_model.layers),
-        )
-    )
+    try:
+        if (
+            validate_controlled_layer_geometry(len(model.text_model.layers))
+            != controlled_indices
+        ):
+            raise Q36MTRRoleError("Q36-MTR controlled layer indices differ")
+    except Q36MTRRoleError as error:
+        raise Q36MTRTrainingError(str(error)) from error
 
     warm_start_update = None
     warm_start_sha256 = None

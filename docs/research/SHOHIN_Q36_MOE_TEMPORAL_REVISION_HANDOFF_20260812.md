@@ -64,6 +64,19 @@ It never scores a capability row or reads a development assessor. The
 mechanics checkpoint is deliberately tagged with only 24 selected rows, so it
 cannot satisfy the 100,000-row source-owner warm-start contract.
 
+Host admission is exact rather than family-level. The pinned outer config is
+`qwen3_5_moe`; the nested causal text config is `qwen3_5_moe_text` with 40
+language layers, hidden size 2,048, 256 routed experts, top-8 selection,
+512-wide routed and shared experts, and vocabulary size 248,320. The layer
+schedule is exactly three linear-attention layers followed by one
+full-attention layer, repeated ten times. Transformers' pinned mapping resolves
+the outer config through the explicit causal loader to
+`Qwen3_5MoeForCausalLM`; the final-16 residuals therefore attach only to layers
+24 through 39. Mechanics, every role report, evaluation restore, native-router
+receipt, and independent custody all reject any different class, layer count,
+expert count, top-k, layer schedule, or controlled index. Synthetic 64-layer
+geometry is not an admissible stand-in for this host.
+
 The causal boundary is now executable rather than metadata-only. Role reports
 separately bind draft-token byte presence and draft-information availability:
 the aligned and draft-hidden fits retain identical prompt/response tokens and

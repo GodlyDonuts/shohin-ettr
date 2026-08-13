@@ -23,7 +23,21 @@ MODEL_MANIFEST_SHA256 = (
 ARCHITECTURE = "shohin-q36-mtr-shared-post-mlp-v1"
 ROLE_CHECKPOINT_SCHEMA = "shohin-hf-product-reasoning-checkpoint-v1"
 HIDDEN_SIZE = 2048
+MODEL_LAYERS = 40
+NUM_EXPERTS = 256
+ROUTER_TOP_K = 8
+MOE_INTERMEDIATE_SIZE = 512
+SHARED_EXPERT_INTERMEDIATE_SIZE = 512
+VOCAB_SIZE = 248_320
+MODEL_TYPE = "qwen3_5_moe"
+TEXT_MODEL_TYPE = "qwen3_5_moe_text"
+CAUSAL_MODEL_CLASS = "Qwen3_5MoeForCausalLM"
+LAYER_TYPES = tuple(
+    "full_attention" if (index + 1) % 4 == 0 else "linear_attention"
+    for index in range(MODEL_LAYERS)
+)
 CONTROLLED_LAYERS = 16
+CONTROLLED_LAYER_INDICES = tuple(range(MODEL_LAYERS - CONTROLLED_LAYERS, MODEL_LAYERS))
 RANK = 18
 ALPHA = 18.0
 TRAINABLE_PARAMETERS = 1_179_648
@@ -176,8 +190,20 @@ def role_contract(role: str) -> dict[str, Any]:
         "model_id": MODEL_ID,
         "model_revision": MODEL_REVISION,
         "model_config_sha256": MODEL_CONFIG_SHA256,
+        "model_loader": "causal",
+        "causal_model_class": CAUSAL_MODEL_CLASS,
+        "model_type": MODEL_TYPE,
+        "text_model_type": TEXT_MODEL_TYPE,
         "hidden_size": HIDDEN_SIZE,
+        "model_layers": MODEL_LAYERS,
+        "num_experts": NUM_EXPERTS,
+        "router_top_k": ROUTER_TOP_K,
+        "moe_intermediate_size": MOE_INTERMEDIATE_SIZE,
+        "shared_expert_intermediate_size": SHARED_EXPERT_INTERMEDIATE_SIZE,
+        "vocab_size": VOCAB_SIZE,
+        "layer_types": list(LAYER_TYPES),
         "controlled_layers": CONTROLLED_LAYERS,
+        "controlled_layer_indices": list(CONTROLLED_LAYER_INDICES),
         "rank": RANK,
         "alpha": ALPHA,
         "trainable_parameters": TRAINABLE_PARAMETERS,
@@ -197,6 +223,53 @@ def role_contract(role: str) -> dict[str, Any]:
         "external_proposer": False,
         "task_router": False,
     }
+
+
+def validate_backbone_geometry(backbone: Any) -> list[int]:
+    """Pin the exact cached Q36 causal host before any trainable is attached."""
+
+    config = getattr(backbone, "config", None)
+    text_config = getattr(config, "text_config", None)
+    observed = {
+        "model_class": type(backbone).__name__,
+        "model_type": getattr(config, "model_type", None),
+        "text_model_type": getattr(text_config, "model_type", None),
+        "hidden_size": getattr(text_config, "hidden_size", None),
+        "model_layers": getattr(text_config, "num_hidden_layers", None),
+        "num_experts": getattr(text_config, "num_experts", None),
+        "router_top_k": getattr(text_config, "num_experts_per_tok", None),
+        "moe_intermediate_size": getattr(text_config, "moe_intermediate_size", None),
+        "shared_expert_intermediate_size": getattr(
+            text_config, "shared_expert_intermediate_size", None
+        ),
+        "vocab_size": getattr(text_config, "vocab_size", None),
+        "layer_types": tuple(getattr(text_config, "layer_types", ())),
+    }
+    expected = {
+        "model_class": CAUSAL_MODEL_CLASS,
+        "model_type": MODEL_TYPE,
+        "text_model_type": TEXT_MODEL_TYPE,
+        "hidden_size": HIDDEN_SIZE,
+        "model_layers": MODEL_LAYERS,
+        "num_experts": NUM_EXPERTS,
+        "router_top_k": ROUTER_TOP_K,
+        "moe_intermediate_size": MOE_INTERMEDIATE_SIZE,
+        "shared_expert_intermediate_size": SHARED_EXPERT_INTERMEDIATE_SIZE,
+        "vocab_size": VOCAB_SIZE,
+        "layer_types": LAYER_TYPES,
+    }
+    if observed != expected:
+        raise Q36MTRRoleError(
+            "Q36-MTR exact causal host geometry differs: "
+            f"expected={expected!r} observed={observed!r}"
+        )
+    return list(CONTROLLED_LAYER_INDICES)
+
+
+def validate_controlled_layer_geometry(layer_count: int) -> list[int]:
+    if isinstance(layer_count, bool) or layer_count != MODEL_LAYERS:
+        raise Q36MTRRoleError("Q36-MTR loaded language-layer geometry differs")
+    return list(CONTROLLED_LAYER_INDICES)
 
 
 def validate_contract(payload: Mapping[str, Any], role: str) -> None:

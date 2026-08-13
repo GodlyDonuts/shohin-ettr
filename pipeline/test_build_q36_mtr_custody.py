@@ -131,19 +131,42 @@ def test_role_custody_requires_fresh_optimizer_and_restored_state(
 
 
 def _causal_mechanics_fixture() -> dict:
+    def route_rows(changes: int, delta: float) -> list[dict]:
+        return [
+            {
+                "layer": index,
+                "target_positions": 3,
+                "experts": 256,
+                "top1_changes": 1 if changes and index == 0 else 0,
+                "topk_assignment_changes": changes if index == 0 else 0,
+                "router_max_abs_delta": delta if index == 0 else 0.0,
+            }
+            for index in range(40)
+        ]
+
     aligned_route = {
-        "layers": 64,
+        "control": "aligned",
+        "layers": 40,
         "top_k": 8,
+        "target_positions_per_layer": 3,
+        "top1_changes": 1,
         "topk_assignment_changes": 3,
+        "sensitive_layers": 1,
         "router_max_abs_delta": 0.25,
         "route_path_sha256": "a" * 64,
+        "layer_receipts": route_rows(3, 0.25),
     }
     hidden_route = {
-        "layers": 64,
+        "control": "draft_hidden",
+        "layers": 40,
         "top_k": 8,
+        "target_positions_per_layer": 3,
+        "top1_changes": 0,
         "topk_assignment_changes": 0,
+        "sensitive_layers": 0,
         "router_max_abs_delta": 0.0,
         "route_path_sha256": "b" * 64,
+        "layer_receipts": route_rows(0, 0.0),
     }
     return {
         "causal_draft_intervention": {
@@ -194,6 +217,30 @@ def test_causal_router_receipt_binds_sensitivity_and_hidden_invariance() -> None
             lambda value: value["causal_draft_intervention"]["native_router"][
                 "aligned"
             ].__setitem__("router_max_abs_delta", float("nan")),
+        ),
+        (
+            "wrong_layer_count",
+            lambda value: value["causal_draft_intervention"]["native_router"][
+                "aligned"
+            ].__setitem__("layers", 64),
+        ),
+        (
+            "wrong_router_top_k",
+            lambda value: value["causal_draft_intervention"]["native_router"][
+                "aligned"
+            ].__setitem__("top_k", 4),
+        ),
+        (
+            "wrong_expert_count",
+            lambda value: value["causal_draft_intervention"]["native_router"][
+                "aligned"
+            ]["layer_receipts"][0].__setitem__("experts", 255),
+        ),
+        (
+            "wrong_layer_order",
+            lambda value: value["causal_draft_intervention"]["native_router"][
+                "aligned"
+            ]["layer_receipts"][0].__setitem__("layer", 1),
         ),
     )
     for _name, mutate in mutations:

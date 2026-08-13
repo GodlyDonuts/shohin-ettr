@@ -8,7 +8,13 @@ import pytest
 
 import hf_q36_mtr_evaluate as module
 import hf_product_reasoning_eval as shared_evaluation
-from q36_mtr_roles import ROLE_CHECKPOINT_SCHEMA, TRAINABLE_PARAMETERS, role_contract
+from q36_mtr_roles import (
+    CONTROLLED_LAYER_INDICES,
+    MODEL_LAYERS,
+    ROLE_CHECKPOINT_SCHEMA,
+    TRAINABLE_PARAMETERS,
+    role_contract,
+)
 from shared_post_mlp_revision import trainable_state_sha256
 
 
@@ -25,7 +31,9 @@ class _Parameter:
 
 class _Model:
     def __init__(self) -> None:
-        self.text_model = SimpleNamespace(layers=[object() for _ in range(64)])
+        self.text_model = SimpleNamespace(
+            layers=[object() for _ in range(MODEL_LAYERS)]
+        )
 
     def named_parameters(self):
         yield "blocks.0.adapter_a.weight", _Parameter(TRAINABLE_PARAMETERS // 2)
@@ -43,7 +51,7 @@ def _metadata(role: str, arm: str) -> dict:
         "trainable_parameter_name_sha256": hashlib.sha256(
             "\n".join(names).encode()
         ).hexdigest(),
-        "controlled_layer_indices": list(range(48, 64)),
+        "controlled_layer_indices": list(CONTROLLED_LAYER_INDICES),
         "draft_control": "draft_unavailable" if arm == "draft_hidden" else "normal",
         "internal_draft_visible": role == "aligned",
         "draft_token_bytes_present": role != "owner",
@@ -67,7 +75,7 @@ def test_arm_role_and_visibility_contract(
 ) -> None:
     receipt = module.validate_adapter(_Model(), _metadata(role, arm), arm)
     assert receipt["role"] == role
-    assert receipt["controlled_layer_indices"] == list(range(48, 64))
+    assert receipt["controlled_layer_indices"] == list(CONTROLLED_LAYER_INDICES)
     assert module.model_visible_runtime_fields(arm) == fields
 
 

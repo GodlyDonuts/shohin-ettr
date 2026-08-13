@@ -32,9 +32,15 @@ from merge_q36_mtr_evaluations import SCHEMA as EVALUATION_REPORT_SCHEMA
 from pcf1_code_sandbox import BWRAP_SHA256, SANDBOX_CONFIG_SHA256
 from q36_mtr_contract import MODEL_REVISION, STAGES, TOTAL_ROWS, validate_graph
 from q36_mtr_roles import (
+    CAUSAL_MODEL_CLASS,
+    CONTROLLED_LAYER_INDICES,
+    MODEL_CONFIG_SHA256,
+    MODEL_LAYERS,
     MODEL_MANIFEST_SHA256,
+    NUM_EXPERTS,
     Q36MTRRoleError,
     REVISION_PRESENTATIONS,
+    ROUTER_TOP_K,
     TRAINABLE_PARAMETERS,
     TRAINABLE_MASTER_DTYPE,
     role_contract,
@@ -346,6 +352,53 @@ def validate_causal_intervention_receipt(mechanics: dict[str, Any]) -> None:
             and math.isfinite(float(value))
         )
 
+    def valid_route(route: object, control: str) -> bool:
+        if not isinstance(route, dict):
+            return False
+        rows = route.get("layer_receipts")
+        return (
+            route.get("control") == control
+            and route.get("layers") == MODEL_LAYERS
+            and route.get("top_k") == ROUTER_TOP_K
+            and isinstance(route.get("target_positions_per_layer"), int)
+            and not isinstance(route.get("target_positions_per_layer"), bool)
+            and route["target_positions_per_layer"] > 0
+            and isinstance(rows, list)
+            and len(rows) == MODEL_LAYERS
+            and all(
+                isinstance(row, dict)
+                and row.get("layer") == index
+                and row.get("target_positions") == route["target_positions_per_layer"]
+                and row.get("experts") == NUM_EXPERTS
+                and isinstance(row.get("top1_changes"), int)
+                and not isinstance(row.get("top1_changes"), bool)
+                and 0 <= row["top1_changes"] <= row["target_positions"]
+                and isinstance(row.get("topk_assignment_changes"), int)
+                and not isinstance(row.get("topk_assignment_changes"), bool)
+                and 0
+                <= row["topk_assignment_changes"]
+                <= row["target_positions"] * ROUTER_TOP_K
+                and finite(row.get("router_max_abs_delta"))
+                and row["router_max_abs_delta"] >= 0
+                for index, row in enumerate(rows)
+            )
+            and isinstance(route.get("top1_changes"), int)
+            and not isinstance(route.get("top1_changes"), bool)
+            and route.get("top1_changes") == sum(row["top1_changes"] for row in rows)
+            and isinstance(route.get("topk_assignment_changes"), int)
+            and not isinstance(route.get("topk_assignment_changes"), bool)
+            and route.get("topk_assignment_changes")
+            == sum(row["topk_assignment_changes"] for row in rows)
+            and isinstance(route.get("sensitive_layers"), int)
+            and not isinstance(route.get("sensitive_layers"), bool)
+            and route.get("sensitive_layers")
+            == sum(row["topk_assignment_changes"] > 0 for row in rows)
+            and finite(route.get("router_max_abs_delta"))
+            and route["router_max_abs_delta"]
+            == max(row["router_max_abs_delta"] for row in rows)
+            and _hex(route.get("route_path_sha256"))
+        )
+
     valid = (
         isinstance(causal, dict)
         and causal.get("token_count_exact") is True
@@ -364,16 +417,8 @@ def validate_causal_intervention_receipt(mechanics: dict[str, Any]) -> None:
         and native.get("draft_hidden_route_invariant") is True
         and native.get("aligned_route_sensitive") is True
         and isinstance(native.get("aligned_expert_selection_changed"), bool)
-        and isinstance(aligned, dict)
-        and isinstance(hidden, dict)
-        and isinstance(aligned.get("layers"), int)
-        and not isinstance(aligned.get("layers"), bool)
-        and aligned["layers"] > 0
-        and hidden.get("layers") == aligned["layers"]
-        and isinstance(aligned.get("top_k"), int)
-        and not isinstance(aligned.get("top_k"), bool)
-        and aligned["top_k"] > 0
-        and hidden.get("top_k") == aligned["top_k"]
+        and valid_route(aligned, "aligned")
+        and valid_route(hidden, "draft_hidden")
         and isinstance(aligned.get("topk_assignment_changes"), int)
         and aligned["topk_assignment_changes"] >= 0
         and hidden.get("topk_assignment_changes") == 0
@@ -383,11 +428,6 @@ def validate_causal_intervention_receipt(mechanics: dict[str, Any]) -> None:
         and float(aligned["router_max_abs_delta"]) >= 1e-2
         and finite(hidden.get("router_max_abs_delta"))
         and float(hidden["router_max_abs_delta"]) <= 2e-3
-        and all(
-            isinstance(route.get("route_path_sha256"), str)
-            and len(route["route_path_sha256"]) == 64
-            for route in (aligned, hidden)
-        )
     )
     if not valid:
         raise Q36MTRCustodyError("Q36 causal intervention custody differs")
@@ -811,6 +851,10 @@ def build_precompute(args: argparse.Namespace) -> dict[str, Any]:
         or assessor.get("semantic_access") != "final_score_only"
         or mechanics.get("status") != "pass"
         or mechanics.get("capability_scored") is not False
+        or mechanics.get("model_config_sha256") != MODEL_CONFIG_SHA256
+        or mechanics.get("model_loader") != "causal"
+        or mechanics.get("causal_model_class") != CAUSAL_MODEL_CLASS
+        or mechanics.get("controlled_layer_indices") != list(CONTROLLED_LAYER_INDICES)
         or mechanics.get("trainable_parameters") != 1_179_648
         or mechanics.get("protected_router_expert_trainables") != 0
         or mechanics.get("protected_parameter_receipt_before")

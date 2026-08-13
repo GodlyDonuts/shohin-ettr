@@ -313,7 +313,7 @@ def test_development_merge_remains_label_free(tmp_path: Path, monkeypatch) -> No
                 "adapter_metadata_sha256": "b" * 64,
                 "trainable_parameters": TRAINABLE_PARAMETERS,
                 "trainable_parameter_name_sha256": "c" * 64,
-                "controlled_layer_indices": list(range(48)),
+                "controlled_layer_indices": list(range(24, 40)),
                 "role": "aligned",
                 "data_sha256": _sha(data),
                 "data_report_sha256": _sha(data_report),

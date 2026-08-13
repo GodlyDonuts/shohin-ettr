@@ -36,15 +36,21 @@ from hf_q36_mtr_train_role import (
 )
 from q36_mtr_roles import (
     ALPHA,
+    CAUSAL_MODEL_CLASS,
     CONTROLLED_LAYERS,
     HIDDEN_SIZE,
     MODEL_CONFIG_SHA256,
+    MODEL_LAYERS,
     MODEL_REVISION,
+    NUM_EXPERTS,
     Q36MTRRoleError,
     RANK,
+    ROUTER_TOP_K,
     TRAINABLE_PARAMETERS,
     TRAINABLE_MASTER_DTYPE,
     role_contract,
+    validate_backbone_geometry,
+    validate_controlled_layer_geometry,
     validate_matched_revision_geometry,
 )
 from shared_post_mlp_revision import SharedPostMLPConfig, SharedPostMLPProductModel
@@ -179,7 +185,7 @@ def causal_draft_intervention_receipt(
     response_rows = [response, response]
     text_config = getattr(model.text_model, "config", None)
     router_top_k = int(getattr(text_config, "num_experts_per_tok", 0))
-    if router_top_k <= 0:
+    if router_top_k != ROUTER_TOP_K:
         raise Q36MTRMechanicsError("Q36-MTR native router geometry is absent")
 
     def response_states(
@@ -229,6 +235,8 @@ def causal_draft_intervention_receipt(
     positions_exact = torch.equal(aligned_positions, hidden_positions)
 
     def route_receipt(layers: tuple[torch.Tensor, ...], control: str) -> dict[str, Any]:
+        if len(layers) != MODEL_LAYERS:
+            raise Q36MTRMechanicsError("Q36-MTR native router layer count differs")
         layer_rows: list[dict[str, Any]] = []
         route_digest = hashlib.sha256()
         for layer_index, raw in enumerate(layers):
@@ -245,8 +253,8 @@ def causal_draft_intervention_receipt(
                 logits = raw
             else:
                 raise Q36MTRMechanicsError("Q36-MTR router geometry differs")
-            if router_top_k > logits.shape[-1]:
-                raise Q36MTRMechanicsError("Q36-MTR router top-k differs")
+            if logits.shape[-1] != NUM_EXPERTS:
+                raise Q36MTRMechanicsError("Q36-MTR router expert count differs")
             target = logits[:, len(prompt) - 1 : len(prompt) + len(response) - 1]
             indices = target.float().topk(router_top_k, dim=-1).indices
             route_digest.update(indices.to(torch.int16).cpu().numpy().tobytes())
@@ -405,9 +413,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         device_map={"": 0},
         quantization="nf4",
     )
-    text_config = getattr(backbone.config, "text_config", backbone.config)
-    if int(text_config.hidden_size) != HIDDEN_SIZE:
-        raise Q36MTRMechanicsError("Q36-MTR mechanics hidden size differs")
+    try:
+        controlled_indices = validate_backbone_geometry(backbone)
+    except Q36MTRRoleError as error:
+        raise Q36MTRMechanicsError(str(error)) from error
     config = SharedPostMLPConfig(
         hidden_size=HIDDEN_SIZE,
         controlled_layers=CONTROLLED_LAYERS,
@@ -417,12 +426,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     # device_map already placed the NF4 backbone. Moving this wrapper would
     # recursively invoke bitsandbytes' unsupported 4-bit `.to()` path.
     model = SharedPostMLPProductModel(backbone, config, draft_control="normal")
-    controlled_indices = list(
-        range(
-            len(model.text_model.layers) - CONTROLLED_LAYERS,
-            len(model.text_model.layers),
-        )
-    )
+    try:
+        if (
+            validate_controlled_layer_geometry(len(model.text_model.layers))
+            != controlled_indices
+        ):
+            raise Q36MTRRoleError("Q36-MTR controlled layer indices differ")
+    except Q36MTRRoleError as error:
+        raise Q36MTRMechanicsError(str(error)) from error
     trainable_names = sorted(
         name for name, parameter in model.named_parameters() if parameter.requires_grad
     )
@@ -536,6 +547,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "model_root": str(args.model_source_root.resolve()),
         "loaded_model_root": str(args.model_root.resolve()),
         "model_loader": loader,
+        "causal_model_class": CAUSAL_MODEL_CLASS,
         "data_sha256": data_sha256,
         "selected_rows": ROWS,
         "trainable_parameter_name_sha256": model.trainable_parameter_name_sha256(),
