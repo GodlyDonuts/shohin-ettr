@@ -48,6 +48,12 @@ PUBLICATION_COMPARISONS = {
     "learned_commit_vs_revision": ("learned_commit", "revision"),
     "learned_commit_vs_unchanged": ("learned_commit", "unchanged"),
 }
+PUBLICATION_CLAIMS = {
+    "revision_over_unchanged": "revision_vs_unchanged",
+    "revision_over_self_refinement": "revision_vs_self_refinement",
+    "draft_visibility_causal": "revision_vs_draft_hidden",
+    "commit_over_revision": "learned_commit_vs_revision",
+}
 DENSE_REFERENCE = {
     "model": "Qwen/Qwen3.5-9B@c202236235762e1c871ad0ccb60c8ee5ba337b9a",
     "board": "qualified_product_538",
@@ -175,6 +181,7 @@ def build_publication_analysis(outcomes: list[dict[str, Any]]) -> dict[str, Any]
         "comparisons": comparisons,
         "dense_reference": DENSE_REFERENCE,
         "scaling_graph_data": _scaling_graph_data(comparisons),
+        "claim_evidence": _claim_evidence(comparisons),
         "scaling_interpretation": (
             "within_board_paired_effects_only; dense and MoE absolute scores use "
             "different source-disjoint boards"
@@ -196,6 +203,7 @@ def validate_publication_analysis(value: object) -> dict[str, Any]:
         "comparisons",
         "dense_reference",
         "scaling_graph_data",
+        "claim_evidence",
         "scaling_interpretation",
         "cross_board_absolute_score_comparison_authorized",
         "gate_fields_read",
@@ -267,6 +275,8 @@ def validate_publication_analysis(value: object) -> dict[str, Any]:
                 raise Q36MTRScoreError("Q36 publication domain sum differs")
     if value.get("scaling_graph_data") != _scaling_graph_data(comparisons):
         raise Q36MTRScoreError("Q36 publication scaling graph differs")
+    if value.get("claim_evidence") != _claim_evidence(comparisons):
+        raise Q36MTRScoreError("Q36 publication claim evidence differs")
     return value
 
 
@@ -303,6 +313,72 @@ def _scaling_graph_data(comparisons: dict[str, Any]) -> dict[str, Any]:
             },
         ],
         "cross_board_absolute_score_comparison_authorized": False,
+    }
+
+
+def _claim_evidence(comparisons: dict[str, Any]) -> dict[str, Any]:
+    probabilities = {}
+    for claim, comparison_name in PUBLICATION_CLAIMS.items():
+        probability = comparisons[comparison_name]["overall"]["mcnemar_exact_two_sided"]
+        probabilities[claim] = Fraction(
+            int(probability["numerator"]), int(probability["denominator"])
+        )
+    ordered = sorted(probabilities, key=lambda name: (probabilities[name], name))
+    holm_rejected = {name: False for name in probabilities}
+    holm_thresholds = {}
+    continuing = True
+    family_size = len(ordered)
+    for index, name in enumerate(ordered):
+        threshold = Fraction(1, 20 * (family_size - index))
+        holm_thresholds[name] = threshold
+        if continuing and probabilities[name] <= threshold:
+            holm_rejected[name] = True
+        else:
+            continuing = False
+    claims = {}
+    for rank, name in enumerate(ordered, 1):
+        comparison = comparisons[PUBLICATION_CLAIMS[name]]
+        overall = comparison["overall"]
+        probability = probabilities[name]
+        threshold = holm_thresholds[name]
+        directionally_consistent = all(
+            summary["net_correct"] >= 0 for summary in comparison["domains"].values()
+        )
+        positive = overall["net_correct"] > 0
+        interval_excludes_zero = overall["paired_wald_95_ci_percentage_points"][0] > 0.0
+        claims[name] = {
+            "comparison": PUBLICATION_CLAIMS[name],
+            "positive_paired_effect": positive,
+            "paired_wald_95_ci_excludes_zero": interval_excludes_zero,
+            "all_domain_net_directions_nonnegative": directionally_consistent,
+            "raw_exact_p_below_or_equal_0_05": probability <= Fraction(1, 20),
+            "holm_rank": rank,
+            "holm_threshold_numerator": str(threshold.numerator),
+            "holm_threshold_denominator": str(threshold.denominator),
+            "holm_rejected": holm_rejected[name],
+            "publication_claim_supported": (
+                positive
+                and interval_excludes_zero
+                and directionally_consistent
+                and holm_rejected[name]
+            ),
+        }
+    return {
+        "schema": "shohin-q36-mtr-publication-claim-evidence-v1",
+        "status": "descriptive_non_gating",
+        "familywise_alpha_numerator": "1",
+        "familywise_alpha_denominator": "20",
+        "multiple_comparison_method": "holm_bonferroni_exact_mcnemar_family",
+        "claims": claims,
+        "draft_visibility_causal_supported": claims["draft_visibility_causal"][
+            "publication_claim_supported"
+        ],
+        "dense_pattern_replication_supported": (
+            claims["revision_over_unchanged"]["publication_claim_supported"]
+            and claims["commit_over_revision"]["publication_claim_supported"]
+        ),
+        "gate_thresholds_modified": False,
+        "automatic_successor_authorized": False,
     }
 
 

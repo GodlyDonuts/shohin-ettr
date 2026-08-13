@@ -148,6 +148,14 @@ an immutable warning that the two source-disjoint boards do not authorize a
 direct absolute-score comparison or a compute-scaling-law claim. This gives a
 publication scaling figure honest effect sizes immediately at the terminal
 gate without post-result analytic choice.
+Four stronger publication labels are also preregistered independently of the
+gate: revision over unchanged, revision over self-refinement, causal draft
+visibility, and commit over revision. A label is supported only when its
+paired effect is positive, its paired 95% interval excludes zero, every domain
+has nonnegative direction, and its exact McNemar probability survives a
+familywise `0.05` Holm-Bonferroni correction across all four labels. A gate
+`PASS` without that evidence remains a mechanism result, not a significance or
+breakthrough claim.
 `pipeline/render_q36_mtr_publication_figure.py` can subsequently render only
 that sealed terminal payload into a deterministic two-panel SVG, scaling-point
 CSV, paired-effect CSV, and SHA-256 manifest. It refuses absent or tampered MoE

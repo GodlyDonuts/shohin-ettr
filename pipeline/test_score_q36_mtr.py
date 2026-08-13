@@ -56,6 +56,12 @@ def test_q36_publication_analysis_is_paired_exact_and_non_gating() -> None:
     assert report["gate_fields_read"] is False
     assert report["gate_thresholds_modified"] is False
     assert report["cross_board_absolute_score_comparison_authorized"] is False
+    claims = report["claim_evidence"]
+    assert claims["multiple_comparison_method"] == (
+        "holm_bonferroni_exact_mcnemar_family"
+    )
+    assert claims["gate_thresholds_modified"] is False
+    assert claims["draft_visibility_causal_supported"] is True
 
 
 def test_q36_publication_exact_probability_and_paired_interval_are_frozen() -> None:
@@ -71,6 +77,18 @@ def test_q36_publication_exact_probability_and_paired_interval_are_frozen() -> N
     assert summary["risk_difference_percentage_points"] == 30.0
     assert summary["paired_wald_95_ci_percentage_points"][0] < 30.0
     assert summary["paired_wald_95_ci_percentage_points"][1] > 30.0
+
+
+def test_q36_publication_claims_remain_unsupported_without_paired_effect() -> None:
+    outcomes = _publication_outcomes()
+    for row in outcomes:
+        row["correct"] = {arm: True for arm in row["correct"]}
+    claims = build_publication_analysis(outcomes)["claim_evidence"]
+    assert claims["draft_visibility_causal_supported"] is False
+    assert claims["dense_pattern_replication_supported"] is False
+    assert not any(
+        value["publication_claim_supported"] for value in claims["claims"].values()
+    )
 
 
 def _selections(path: Path) -> None:

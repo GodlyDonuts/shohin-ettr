@@ -79,6 +79,7 @@ def test_render_q36_publication_figure_is_atomic_manifested_and_deterministic(
         )
         outputs.append(output)
     assert manifests[0] == manifests[1]
+    assert manifests[0]["claim_evidence"]["draft_visibility_causal_supported"] is True
     for output in outputs:
         assert {path.name for path in output.iterdir()} == {
             SVG_NAME,
@@ -108,6 +109,19 @@ def test_render_q36_publication_figure_is_atomic_manifested_and_deterministic(
         assert all(
             row["cross_board_absolute_comparison_authorized"] == "false"
             for row in scaling
+        )
+        paired = list(
+            csv.DictReader(
+                io.StringIO((output / PAIRED_CSV_NAME).read_text(encoding="utf-8"))
+            )
+        )
+        assert len(paired) == 20
+        assert {
+            row["publication_claim"] for row in paired if row["scope"] == "overall"
+        } >= {"draft_visibility_causal", "commit_over_revision"}
+        assert all(
+            row["publication_claim_supported"] in {"true", "false", "not_applicable"}
+            for row in paired
         )
 
 

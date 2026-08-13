@@ -16,7 +16,7 @@ import shutil
 from typing import Any
 
 from compare_q36_mtr import OUTPUT_SCHEMA
-from score_q36_mtr import validate_publication_analysis
+from score_q36_mtr import PUBLICATION_CLAIMS, validate_publication_analysis
 
 SCHEMA = "shohin-q36-mtr-publication-figure-manifest-v1"
 SVG_NAME = "shohin-q36-architecture-transfer.svg"
@@ -101,8 +101,17 @@ def _scaling_rows(analysis: dict[str, Any]) -> list[dict[str, Any]]:
 
 def _paired_rows(analysis: dict[str, Any]) -> list[dict[str, Any]]:
     rows = []
+    claim_for_comparison = {
+        comparison: claim for claim, comparison in PUBLICATION_CLAIMS.items()
+    }
     for name in COMPARISON_LABELS:
         comparison = analysis["comparisons"][name]
+        claim_name = claim_for_comparison.get(name)
+        claim = (
+            analysis["claim_evidence"]["claims"][claim_name]
+            if claim_name is not None
+            else None
+        )
         for scope, summary in (
             ("overall", comparison["overall"]),
             *tuple((domain, value) for domain, value in comparison["domains"].items()),
@@ -127,6 +136,17 @@ def _paired_rows(analysis: dict[str, Any]) -> list[dict[str, Any]]:
                     "mcnemar_exact_p": f'{probability["value"]:.17g}',
                     "mcnemar_exact_numerator": probability["numerator"],
                     "mcnemar_exact_denominator": probability["denominator"],
+                    "publication_claim": claim_name or "none",
+                    "holm_rejected": (
+                        str(claim["holm_rejected"]).lower()
+                        if claim is not None
+                        else "not_applicable"
+                    ),
+                    "publication_claim_supported": (
+                        str(claim["publication_claim_supported"]).lower()
+                        if claim is not None
+                        else "not_applicable"
+                    ),
                 }
             )
     return rows
@@ -203,6 +223,11 @@ def _svg(analysis: dict[str, Any], formal_result: str) -> bytes:
         )
     panel2_left = 650
     effects = [analysis["comparisons"][name]["overall"] for name in COMPARISON_LABELS]
+    supported_comparisons = {
+        value["comparison"]
+        for value in analysis["claim_evidence"]["claims"].values()
+        if value["publication_claim_supported"]
+    }
     extrema = [0.0]
     for effect in effects:
         extrema.extend(effect["paired_wald_95_ci_percentage_points"])
@@ -244,13 +269,14 @@ def _svg(analysis: dict[str, Any], formal_result: str) -> bytes:
             effect_y(interval[0]),
             effect_y(interval[1]),
         )
+        marker = "*" if name in supported_comparisons else ""
         parts.extend(
             [
                 f'<line x1="{x}" y1="{y_high:.2f}" x2="{x}" y2="{y_low:.2f}" stroke="#2563eb" stroke-width="2"/>',
                 f'<line x1="{x - 6}" y1="{y_high:.2f}" x2="{x + 6}" y2="{y_high:.2f}" stroke="#2563eb" stroke-width="2"/>',
                 f'<line x1="{x - 6}" y1="{y_low:.2f}" x2="{x + 6}" y2="{y_low:.2f}" stroke="#2563eb" stroke-width="2"/>',
                 f'<circle cx="{x}" cy="{y_value:.2f}" r="5" fill="#2563eb"/>',
-                f'<text x="{x}" y="{y_value - 10:.2f}" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#0f172a">{value:+.1f} pp</text>',
+                f'<text x="{x}" y="{y_value - 10:.2f}" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#0f172a">{value:+.1f} pp{marker}</text>',
             ]
         )
         words = COMPARISON_LABELS[name].split(" ")
@@ -264,7 +290,8 @@ def _svg(analysis: dict[str, Any], formal_result: str) -> bytes:
         [
             '<text x="18" y="350" transform="rotate(-90 18 350)" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#334155">Correct answers (%)</text>',
             '<text x="600" y="350" transform="rotate(-90 600 350)" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#334155">Paired risk difference (percentage points)</text>',
-            '<text x="600" y="696" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">Boards are source-disjoint and differ in composition; panel A shows architecture transfer, not a direct compute-scaling law.</text>',
+            '<text x="600" y="678" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">* Preregistered claim supported after Holm-Bonferroni correction.</text>',
+            '<text x="600" y="700" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">Boards are source-disjoint and differ in composition; panel A shows architecture transfer, not a direct compute-scaling law.</text>',
             "</svg>\n",
         ]
     )
@@ -311,6 +338,9 @@ def render(args: argparse.Namespace) -> dict[str, Any]:
             "mcnemar_exact_p",
             "mcnemar_exact_numerator",
             "mcnemar_exact_denominator",
+            "publication_claim",
+            "holm_rejected",
+            "publication_claim_supported",
         ),
     )
     svg = _svg(analysis, result["formal_result"])
@@ -339,6 +369,18 @@ def render(args: argparse.Namespace) -> dict[str, Any]:
             "formal_result": result["formal_result"],
             "final_result_sha256": sha256_file(args.final_result),
             "records": records,
+            "claim_evidence": {
+                "draft_visibility_causal_supported": analysis["claim_evidence"][
+                    "draft_visibility_causal_supported"
+                ],
+                "dense_pattern_replication_supported": analysis["claim_evidence"][
+                    "dense_pattern_replication_supported"
+                ],
+                "publication_claim_supported": {
+                    name: value["publication_claim_supported"]
+                    for name, value in analysis["claim_evidence"]["claims"].items()
+                },
+            },
             "publication_analysis_non_gating": True,
             "cross_board_absolute_score_comparison_authorized": False,
             "automatic_retry_authorized": False,
