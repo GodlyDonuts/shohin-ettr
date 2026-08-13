@@ -638,6 +638,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "model_revision": MODEL_REVISION,
         "model_config_sha256": MODEL_CONFIG_SHA256,
         "model_loader": loader,
+        "causal_model_class": CAUSAL_MODEL_CLASS,
         "quantization": "nf4",
         "compute_dtype": "bfloat16",
         "rows": ROWS,

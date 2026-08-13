@@ -222,6 +222,12 @@ def test_mechanics_wrapper_is_no_score_single_h100() -> None:
     assert "sbatch " not in source
 
 
+def test_mechanics_report_emits_custody_required_model_class() -> None:
+    root = Path(__file__).resolve().parents[1]
+    source = (root / "train" / "hf_q36_mtr_mechanics.py").read_text()
+    assert '"causal_model_class": CAUSAL_MODEL_CLASS,' in source
+
+
 def test_nf4_role_and_mechanics_do_not_move_the_quantized_wrapper() -> None:
     root = Path(__file__).resolve().parents[1]
     for relative in (

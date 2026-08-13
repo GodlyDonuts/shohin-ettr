@@ -1,6 +1,16 @@
 # Q36 mechanics-only qualification
 
-Status: prepared prospectively; not submitted; no scientific graph authorized.
+Status: **PASS** on 2026-08-13; no scientific graph was launched.
+
+The sole authorized H100 allocation, Slurm job `754602` on eligible node
+`evc35`, completed in 497 seconds with exit `0:0` and zero restarts. The exact
+Qwen3.6-35B-A3B mechanics passed: all 693 weights loaded; the aligned causal
+draft intervention changed response state and native expert routing in all 40
+layers; the draft-hidden control was invariant in state and routing; one
+finite source-only update completed; every protected router/expert byte was
+unchanged; checkpoint restore was exact; and sealed holdout, product, and
+public access stayed zero. The immutable result is
+`Q36_MTR_MECHANICS_QUALIFICATION_RESULT_20260813.json`.
 
 Q36 reached two distinct no-score mechanics infrastructure failures before any
 draft, capability evaluation, or assessor access. A future full 61-request
@@ -36,7 +46,6 @@ match the authorization. Any missing, writable, substituted, or changed
 authorization—and any missing, substituted, or changed custody input—fails
 before model staging.
 
-This boundary exists to prove the repaired causal-generation mechanics on the
-real host without consuming or weakening the publication experiment. It does
-not change any arm, prompt, threshold, seed, source identity, training budget,
-or terminal rule.
+This boundary proved the repaired causal-generation mechanics on the real host
+without consuming or weakening the publication experiment. It changed no arm,
+prompt, threshold, seed, source identity, training budget, or terminal rule.
