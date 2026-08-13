@@ -65,6 +65,39 @@ q36_verify_runtime() {
   q36_require RUNTIME_MANIFEST_SHA256
   q36_require_dir "$RUNTIME"
   q36_verify_sha256 "$RUNTIME/SHA256SUMS" "$RUNTIME_MANIFEST_SHA256"
+  "$PYTHON" - "$RUNTIME" <<'PY'
+from pathlib import Path, PurePosixPath
+import stat
+import sys
+
+root = Path(sys.argv[1]).resolve(strict=True)
+entries = []
+for line in (root / "SHA256SUMS").read_text(encoding="utf-8").splitlines():
+    digest, separator, relative = line.partition("  ")
+    pure = PurePosixPath(relative)
+    if (
+        not separator
+        or len(digest) != 64
+        or any(character not in "0123456789abcdef" for character in digest)
+        or pure.is_absolute()
+        or ".." in pure.parts
+        or "." in pure.parts
+        or not relative
+    ):
+        raise SystemExit("Q36-MTR runtime manifest entry differs")
+    entries.append(pure.as_posix())
+if entries != sorted(entries) or len(entries) != len(set(entries)):
+    raise SystemExit("Q36-MTR runtime manifest order differs")
+actual = set()
+for path in root.rglob("*"):
+    mode = path.lstat().st_mode
+    if stat.S_ISREG(mode):
+        actual.add(path.relative_to(root).as_posix())
+    elif not stat.S_ISDIR(mode):
+        raise SystemExit("Q36-MTR runtime contains a link or special member")
+if actual != {*entries, "SHA256SUMS"}:
+    raise SystemExit("Q36-MTR runtime exact membership differs")
+PY
   (cd "$RUNTIME" && sha256sum -c SHA256SUMS >/dev/null)
 }
 
@@ -75,9 +108,44 @@ q36_verify_model() {
   [[ "$MODEL_REVISION" == "$Q36_MODEL_REVISION" ]] || q36_die "model revision differs"
   [[ "$MODEL_CONFIG_SHA256" == "$Q36_MODEL_CONFIG_SHA256" ]] || q36_die "model config differs"
   q36_require_dir "$MODEL_ROOT"
+  [[ "$(realpath "$MODEL_MANIFEST")" == "$(realpath "$MODEL_ROOT/SHA256SUMS")" ]] || \
+    q36_die "model manifest is not rooted in the exact host"
   q36_verify_sha256 "$MODEL_ROOT/config.json" "$MODEL_CONFIG_SHA256"
   q36_verify_sha256 "$MODEL_MANIFEST" "$MODEL_MANIFEST_SHA256"
-  (cd "$MODEL_ROOT" && sha256sum -c "$MODEL_MANIFEST" >/dev/null)
+  "$PYTHON" - "$MODEL_ROOT" <<'PY'
+from pathlib import Path, PurePosixPath
+import stat
+import sys
+
+root = Path(sys.argv[1]).resolve(strict=True)
+entries = []
+for line in (root / "SHA256SUMS").read_text(encoding="utf-8").splitlines():
+    digest, separator, relative = line.partition("  ")
+    pure = PurePosixPath(relative)
+    if (
+        not separator
+        or len(digest) != 64
+        or any(character not in "0123456789abcdef" for character in digest)
+        or pure.is_absolute()
+        or ".." in pure.parts
+        or "." in pure.parts
+        or not relative
+    ):
+        raise SystemExit("Q36-MTR model manifest entry differs")
+    entries.append(pure.as_posix())
+if entries != sorted(entries) or len(entries) != len(set(entries)):
+    raise SystemExit("Q36-MTR model manifest order differs")
+actual = set()
+for path in root.rglob("*"):
+    mode = path.lstat().st_mode
+    if stat.S_ISREG(mode):
+        actual.add(path.relative_to(root).as_posix())
+    elif not stat.S_ISDIR(mode):
+        raise SystemExit("Q36-MTR model contains a link or special member")
+if actual != {*entries, "SHA256SUMS"}:
+    raise SystemExit("Q36-MTR model exact membership differs")
+PY
+  (cd "$MODEL_ROOT" && sha256sum -c SHA256SUMS >/dev/null)
 }
 
 q36_stage_model() {

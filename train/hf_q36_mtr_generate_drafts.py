@@ -155,6 +155,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         _load_model,
         _render_prompt,
     )
+    from hf_pcf1_evaluate import nonpadding_prompt_tokens
 
     if (
         args.model_revision != MODEL_REVISION
@@ -185,7 +186,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     torch.cuda.manual_seed_all(args.seed)
     torch.cuda.reset_peak_memory_stats()
     outputs: list[dict[str, Any]] = []
-    generated_tokens = exhausted = 0
+    prompt_tokens = generated_tokens = exhausted = 0
     started = time.monotonic()
     for offset in range(0, len(shard_rows), args.batch_size):
         batch = shard_rows[offset : offset + args.batch_size]
@@ -193,6 +194,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             _render_prompt(tokenizer, str(row["source_prompt"]), True, False)
             for row in batch
         ]
+        prompt_tokens += nonpadding_prompt_tokens(tokenizer, rendered)
+        batch_started = time.monotonic()
         completions, usage = _generate_completions(
             model,
             tokenizer,
@@ -202,6 +205,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             args.max_new_tokens,
             stop_ids,
         )
+        batch_wall_seconds = (time.monotonic() - batch_started) / len(batch)
         for row, completion, (token_count, hit_limit) in zip(
             batch, completions, usage, strict=True
         ):
@@ -213,12 +217,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     "schema": SCHEMA,
                     "identity_sha256": row["identity_sha256"],
                     "split": row["split"],
-                    "source_prompt_sha256": hashlib.sha256(
+                    "task": row["task"],
+                    "prompt_sha256": hashlib.sha256(
                         str(row["source_prompt"]).encode()
                     ).hexdigest(),
+                    "owner_checkpoint_sha256": sha256_file(args.owner_checkpoint),
+                    "model_revision": MODEL_REVISION,
                     "completion": completion,
                     "generated_tokens": int(token_count),
                     "max_token_exhausted": bool(hit_limit),
+                    "finish_reason": "length" if hit_limit else "stop",
+                    "wall_seconds": batch_wall_seconds,
                 }
             )
             generated_tokens += int(token_count)
@@ -253,6 +262,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             ("\n".join(row["identity_sha256"] for row in outputs) + "\n").encode()
         ).hexdigest(),
         "generated_tokens": generated_tokens,
+        "prompt_tokens": prompt_tokens,
         "max_token_exhausted": exhausted,
         "elapsed_seconds": elapsed,
         "peak_gpu_memory_bytes": int(torch.cuda.max_memory_allocated()),

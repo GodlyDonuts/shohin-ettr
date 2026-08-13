@@ -27,6 +27,21 @@ unique single-H100 request records, but is intentionally dry-run-only and
 rejects any submit or acquisition authorization. This milestone therefore
 closes the model-role ambiguity without launching the MoE experiment.
 
+The data/evaluation plumbing is likewise prospective and no-submit.
+`pipeline/merge_q36_mtr_drafts.py` admits only the 16 exact contiguous owner
+shards; `pipeline/build_q36_mtr_data.py` creates 9,655 natural-trajectory
+revision presentations plus 5,824 train-only calibration and 1,289 label-free
+development rows. `train/hf_q36_mtr_evaluate.py` maps the aligned checkpoint
+only to revision, the source owner only to unchanged/self-refinement, and the
+hidden checkpoint only to draft-hidden. Calibration code scoring remains
+inside the qualified Bubblewrap boundary; development emits candidates with
+no assessment fields. `pipeline/merge_q36_mtr_evaluations.py` rejects shard
+gaps, overlaps, duplicates, reordered identities, hash drift, or labels in a
+development candidate. All GPU wrappers are one-H100, no-requeue, exact-node
+excluded, authorization-gated jobs; the CPU materialize/merge wrappers have
+no GPU request and no dispatch capability. Runtime and model trees are checked
+for exact manifest membership before use.
+
 The PCF17 infrastructure finding is also repaired prospectively: exact-tree
 custody accepts either canonical manifest members or the single conventional
 `./` prefix emitted by `find .`, canonicalizing before comparison. Interior
