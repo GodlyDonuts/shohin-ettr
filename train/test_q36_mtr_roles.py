@@ -385,3 +385,12 @@ def test_role_wrappers_are_single_h100_no_requeue_and_authorized_only() -> None:
             "--exclude=evc26,evc29,evc31,evc32,evc33,evc37,evc38,evc43,evc46" in source
         )
         assert "sbatch " not in source
+
+
+def test_draft_wrapper_allows_the_observed_long_tail_to_finish() -> None:
+    root = Path(__file__).resolve().parents[1]
+    source = (root / "train" / "jobs" / "q36_mtr_generate_drafts.sbatch").read_text(
+        encoding="utf-8"
+    )
+    assert "#SBATCH --time=04:00:00" in source
+    assert "#SBATCH --time=02:30:00" not in source
