@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+import build_q36_mtr_custody as custody_module
 from build_q36_mtr_custody import (
     ACCOUNTING_SCHEMA,
     EVIDENCE_PRECOMPUTE_ARTIFACTS,
@@ -20,9 +21,12 @@ from build_q36_mtr_custody import (
     evaluation_checkpoint_sha256,
     sha256_file,
     validate_causal_intervention_receipt,
+    validate_draft_byte_custody,
 )
+from build_pcf1_data import revision_prompt
 from q36_mtr_contract import graph_payload
 from q36_mtr_contract import STAGES
+from q36_mtr_roles import MODEL_REVISION
 from score_q36_mtr import (
     AUTHORIZATION_SCHEMA,
     CONSUMPTION_SCHEMA,
@@ -131,6 +135,132 @@ def test_causal_router_receipt_binds_sensitivity_and_hidden_invariance() -> None
         mutate(forged)
         with pytest.raises(Q36MTRCustodyError):
             validate_causal_intervention_receipt(forged)
+
+
+def test_draft_byte_custody_replays_raw_to_canonical_prompt(
+    tmp_path: Path, monkeypatch
+) -> None:
+    train_identity = "1" * 64
+    development_identity = "2" * 64
+    train_sources = {
+        train_identity: {
+            "source_prompt": "train problem",
+            "split": "train",
+            "task": "math500",
+        }
+    }
+    development_sources = {
+        development_identity: {
+            "source_prompt": "development problem",
+            "split": "development",
+            "task": "math500",
+        }
+    }
+    raw = {
+        train_identity: " \ntrain draft\t",
+        development_identity: "\ndevelopment draft \n",
+    }
+    drafts = tmp_path / "drafts.jsonl"
+    drafts.write_text(
+        "".join(
+            json.dumps(
+                {
+                    "schema": custody_module.DRAFT_SCHEMA,
+                    "identity_sha256": identity,
+                    "split": ("train" if identity == train_identity else "development"),
+                    "task": "math500",
+                    "prompt_sha256": hashlib.sha256(
+                        (
+                            "train problem"
+                            if identity == train_identity
+                            else "development problem"
+                        ).encode()
+                    ).hexdigest(),
+                    "owner_checkpoint_sha256": "c" * 64,
+                    "model_revision": MODEL_REVISION,
+                    "completion": raw[identity],
+                }
+            )
+            + "\n"
+            for identity in (development_identity, train_identity)
+        ),
+        encoding="utf-8",
+    )
+
+    def eval_row(identity: str, source: str) -> dict:
+        canonical = raw[identity].strip()
+        return {
+            "identity_sha256": identity,
+            "question": revision_prompt(source, canonical),
+            "internal_draft": {"completion": canonical},
+            "model_owned_draft_sha256": hashlib.sha256(canonical.encode()).hexdigest(),
+            "raw_model_owned_draft_sha256": hashlib.sha256(
+                raw[identity].encode()
+            ).hexdigest(),
+            "draft_canonicalization": "unicode_outer_whitespace_strip_v1",
+        }
+
+    calibration = eval_row(train_identity, "train problem")
+    development = eval_row(development_identity, "development problem")
+    monkeypatch.setattr(custody_module, "REVISION_PRESENTATIONS", 1)
+    monkeypatch.setattr(
+        custody_module,
+        "load_rows",
+        lambda _path, split: [calibration if split == "calibration" else development],
+    )
+    revision = tmp_path / "revision.jsonl"
+    revision.write_text(
+        json.dumps(
+            {
+                **{
+                    key: value
+                    for key, value in calibration.items()
+                    if key != "internal_draft"
+                },
+                "source_identity_sha256": train_identity,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    receipts = [
+        {
+            "identity_sha256": identity,
+            "raw_sha256": hashlib.sha256(raw[identity].encode()).hexdigest(),
+            "canonical_sha256": hashlib.sha256(
+                raw[identity].strip().encode()
+            ).hexdigest(),
+        }
+        for identity in sorted(raw)
+    ]
+    digest = hashlib.sha256(
+        b"".join(
+            (json.dumps(row, sort_keys=True, separators=(",", ":")) + "\n").encode()
+            for row in receipts
+        )
+    ).hexdigest()
+    report = {
+        "owner_checkpoint_sha256": "c" * 64,
+        "draft_byte_custody": {
+            "raw_decode_preserved_in_merged_drafts": True,
+            "canonicalization": "unicode_outer_whitespace_strip_v1",
+            "canonicalized_drafts": 2,
+            "identity_raw_canonical_sha256": digest,
+        },
+    }
+    artifacts = {
+        "drafts": drafts,
+        "calibration_data": tmp_path / "calibration.jsonl",
+        "development_data": tmp_path / "development.jsonl",
+        "revision_training_data": revision,
+    }
+    validate_draft_byte_custody(artifacts, report, train_sources, development_sources)
+    forged = copy.deepcopy(report)
+    forged["draft_byte_custody"]["identity_raw_canonical_sha256"] = "0" * 64
+    with pytest.raises(Q36MTRCustodyError):
+        validate_draft_byte_custody(
+            artifacts, forged, train_sources, development_sources
+        )
 
 
 def test_q36_authorization_binds_exact_score_inputs_without_board_open(

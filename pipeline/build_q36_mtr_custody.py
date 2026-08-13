@@ -18,11 +18,13 @@ from build_pcf1_data import (
     FREEZE_REPORT_SCHEMA,
     TRAIN_SOURCE_SCHEMA,
     _load_source_view,
+    revision_prompt,
 )
 from build_q36_mtr_commit_pairs import REPORT_SCHEMA as PAIR_REPORT_SCHEMA
 from build_q36_mtr_data import REPORT_SCHEMA as DATA_REPORT_SCHEMA
 from compare_q36_mtr import ARM_SCHEMA, CUSTODY_SCHEMA
 from hf_q36_mtr_evaluate import load_rows
+from hf_q36_mtr_generate_drafts import SCHEMA as DRAFT_SCHEMA
 from hf_q36_mtr_train_role import SCHEMA as ROLE_REPORT_SCHEMA
 from merge_q36_mtr_drafts import SCHEMA as DRAFT_REPORT_SCHEMA
 from merge_q36_mtr_evaluations import SCHEMA as EVALUATION_REPORT_SCHEMA
@@ -31,6 +33,7 @@ from q36_mtr_contract import MODEL_REVISION, STAGES, TOTAL_ROWS, validate_graph
 from q36_mtr_roles import (
     MODEL_MANIFEST_SHA256,
     Q36MTRRoleError,
+    REVISION_PRESENTATIONS,
     TRAINABLE_PARAMETERS,
     role_contract,
     validate_matched_revision_geometry,
@@ -364,6 +367,119 @@ def validate_causal_intervention_receipt(mechanics: dict[str, Any]) -> None:
         raise Q36MTRCustodyError("Q36 causal intervention custody differs")
 
 
+def validate_draft_byte_custody(
+    artifacts: dict[str, Path],
+    data_report: dict[str, Any],
+    train_sources: dict[str, dict[str, Any]],
+    development_sources: dict[str, dict[str, Any]],
+) -> None:
+    """Replay raw decode to canonical prompt bytes for every identity."""
+
+    drafts: dict[str, str] = {}
+    receipts: list[dict[str, str]] = []
+    canonicalized = 0
+    sources = {**train_sources, **development_sources}
+    for line in artifacts["drafts"].read_text(encoding="utf-8").splitlines():
+        if not line:
+            continue
+        row = json.loads(line)
+        identity = str(row.get("identity_sha256", ""))
+        raw = row.get("completion")
+        source = sources.get(identity)
+        if (
+            identity in drafts
+            or source is None
+            or row.get("schema") != DRAFT_SCHEMA
+            or row.get("split") != source["split"]
+            or row.get("task") != source["task"]
+            or row.get("prompt_sha256")
+            != hashlib.sha256(str(source["source_prompt"]).encode()).hexdigest()
+            or row.get("owner_checkpoint_sha256")
+            != data_report.get("owner_checkpoint_sha256")
+            or row.get("model_revision") != MODEL_REVISION
+            or not isinstance(raw, str)
+            or not raw.strip()
+        ):
+            raise Q36MTRCustodyError("Q36 raw draft byte custody differs")
+        canonical = raw.strip()
+        raw_sha256 = hashlib.sha256(raw.encode()).hexdigest()
+        canonical_sha256 = hashlib.sha256(canonical.encode()).hexdigest()
+        drafts[identity] = raw
+        canonicalized += int(raw != canonical)
+        receipts.append(
+            {
+                "identity_sha256": identity,
+                "raw_sha256": raw_sha256,
+                "canonical_sha256": canonical_sha256,
+            }
+        )
+    if set(drafts) != set(sources):
+        raise Q36MTRCustodyError("Q36 raw draft identity custody differs")
+
+    def validate_row(row: dict[str, Any], identity: str) -> None:
+        raw = drafts[identity]
+        canonical = raw.strip()
+        draft = row.get("internal_draft")
+        if (
+            row.get("model_owned_draft_sha256")
+            != hashlib.sha256(canonical.encode()).hexdigest()
+            or row.get("raw_model_owned_draft_sha256")
+            != hashlib.sha256(raw.encode()).hexdigest()
+            or row.get("draft_canonicalization") != "unicode_outer_whitespace_strip_v1"
+            or not isinstance(draft, dict)
+            or draft.get("completion") != canonical
+            or row.get("question")
+            != revision_prompt(str(sources[identity]["source_prompt"]), canonical)
+        ):
+            raise Q36MTRCustodyError("Q36 canonical draft prompt custody differs")
+
+    for split, name in (
+        ("calibration", "calibration_data"),
+        ("development", "development_data"),
+    ):
+        for row in load_rows(artifacts[name], split):
+            validate_row(row, str(row["identity_sha256"]))
+    revision_rows = 0
+    for line in (
+        artifacts["revision_training_data"].read_text(encoding="utf-8").splitlines()
+    ):
+        if not line:
+            continue
+        row = json.loads(line)
+        identity = str(row.get("source_identity_sha256", ""))
+        if identity not in train_sources:
+            raise Q36MTRCustodyError("Q36 revision draft identity differs")
+        raw = drafts[identity]
+        canonical = raw.strip()
+        if (
+            row.get("model_owned_draft_sha256")
+            != hashlib.sha256(canonical.encode()).hexdigest()
+            or row.get("raw_model_owned_draft_sha256")
+            != hashlib.sha256(raw.encode()).hexdigest()
+            or row.get("draft_canonicalization") != "unicode_outer_whitespace_strip_v1"
+            or row.get("question")
+            != revision_prompt(str(train_sources[identity]["source_prompt"]), canonical)
+        ):
+            raise Q36MTRCustodyError("Q36 revision canonical draft differs")
+        revision_rows += 1
+    byte_custody = data_report.get("draft_byte_custody")
+    digest = hashlib.sha256(
+        b"".join(
+            (json.dumps(row, sort_keys=True, separators=(",", ":")) + "\n").encode()
+            for row in sorted(receipts, key=lambda value: value["identity_sha256"])
+        )
+    ).hexdigest()
+    if (
+        revision_rows != REVISION_PRESENTATIONS
+        or not isinstance(byte_custody, dict)
+        or byte_custody.get("raw_decode_preserved_in_merged_drafts") is not True
+        or byte_custody.get("canonicalization") != "unicode_outer_whitespace_strip_v1"
+        or byte_custody.get("canonicalized_drafts") != canonicalized
+        or byte_custody.get("identity_raw_canonical_sha256") != digest
+    ):
+        raise Q36MTRCustodyError("Q36 draft byte receipt differs")
+
+
 def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
     hashes = {name: sha256_file(path) for name, path in artifacts.items()}
     owner = _load(artifacts["owner_report"], ROLE_REPORT_SCHEMA)
@@ -396,6 +512,7 @@ def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
     development_sources = _load_source_view(
         artifacts["development_sources"], DEVELOPMENT_SOURCE_SCHEMA, "development"
     )
+    validate_draft_byte_custody(artifacts, data, train_sources, development_sources)
     if (
         freeze.get("status") != "complete"
         or freeze.get("source_disjoint") is not True

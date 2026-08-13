@@ -42,6 +42,16 @@ excluded, authorization-gated jobs; the CPU materialize/merge wrappers have
 no GPU request and no dispatch capability. Runtime and model trees are checked
 for exact manifest membership before use.
 
+Owner-draft bytes now follow the exact dense lineage boundary. Generation and
+the 16-shard merge preserve the tokenizer's decoded completion verbatim,
+including outer whitespace and its generated-token accounting. Materialization
+alone derives the model-visible draft with the dense recipe's deterministic
+Unicode outer-whitespace strip. Every identity carries separate raw and
+canonical SHA-256 receipts; independent precompute custody replays the raw
+merged draft into all 9,655 revision presentations and both evaluation views,
+reconstructs the exact revision prompt, and rejects normalization drift. Raw
+draft text never becomes an additional model runtime field.
+
 The no-score live admission gate is implemented in
 `train/hf_q36_mtr_mechanics.py` and
 `train/jobs/q36_mtr_mechanics.sbatch`. It admits only the exact Q36 host,

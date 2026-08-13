@@ -38,6 +38,14 @@ class Q36MTRDraftError(RuntimeError):
     """The Q36-MTR source-owner draft contract differs."""
 
 
+def exact_model_owned_completion(completion: str) -> str:
+    """Preserve decoded model bytes; canonicalization belongs to materialization."""
+
+    if not isinstance(completion, str) or not completion.strip():
+        raise Q36MTRDraftError("Q36-MTR source owner emitted an empty draft")
+    return completion
+
+
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -219,9 +227,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         for row, completion, (token_count, hit_limit) in zip(
             batch, completions, usage, strict=True
         ):
-            completion = completion.strip()
-            if not completion:
-                raise Q36MTRDraftError("Q36-MTR source owner emitted an empty draft")
+            completion = exact_model_owned_completion(completion)
             outputs.append(
                 {
                     "schema": SCHEMA,

@@ -11,7 +11,10 @@ import build_q36_mtr_data as data_module
 import merge_q36_mtr_drafts as draft_merge_module
 import merge_q36_mtr_evaluations as eval_merge_module
 from hf_q36_mtr_evaluate import CANDIDATE_SCHEMA, REPORT_SCHEMA as EVAL_REPORT_SCHEMA
-from hf_q36_mtr_generate_drafts import REPORT_SCHEMA as DRAFT_SHARD_REPORT_SCHEMA
+from hf_q36_mtr_generate_drafts import (
+    REPORT_SCHEMA as DRAFT_SHARD_REPORT_SCHEMA,
+    exact_model_owned_completion,
+)
 from q36_mtr_roles import MODEL_REVISION, TRAINABLE_PARAMETERS
 
 
@@ -101,10 +104,11 @@ def test_materializer_emits_matched_revision_and_label_free_development(
         "_load_source_view",
         lambda _path, _schema, split: train if split == "train" else development,
     )
-    drafts = _jsonl(
-        tmp_path / "drafts.jsonl",
-        [_draft(train["1" * 64]), _draft(development["2" * 64])],
-    )
+    train_draft = _draft(train["1" * 64])
+    train_draft["completion"] = " \n draft reasoning\t"
+    development_draft = _draft(development["2" * 64])
+    development_draft["completion"] = "\n draft reasoning \n"
+    drafts = _jsonl(tmp_path / "drafts.jsonl", [train_draft, development_draft])
     draft_report = _json(
         tmp_path / "draft_report.json",
         {
@@ -146,12 +150,32 @@ def test_materializer_emits_matched_revision_and_label_free_development(
         "calibration_rows": 1,
         "development_rows": 1,
     }
+    assert report["draft_byte_custody"]["canonicalized_drafts"] == 2
+    assert report["draft_byte_custody"]["raw_decode_preserved_in_merged_drafts"] is True
     development_row = json.loads((output / "development_eval.jsonl").read_text())
     assert development_row["split"] == "development"
     assert development_row["runtime_fields"] == ["question", "source_prompt"]
     assert not ({"assessor", "answer", "response", "gold"} & set(development_row))
+    assert development_row["internal_draft"]["completion"] == "draft reasoning"
+    assert (
+        development_row["model_owned_draft_sha256"]
+        == hashlib.sha256(b"draft reasoning").hexdigest()
+    )
+    assert (
+        development_row["raw_model_owned_draft_sha256"]
+        == hashlib.sha256(b"\n draft reasoning \n").hexdigest()
+    )
+    assert (
+        development_row["draft_canonicalization"] == "unicode_outer_whitespace_strip_v1"
+    )
+    assert "Internal draft:\ndraft reasoning\n\n" in development_row["question"]
     revision_rows = (output / "revision_train.jsonl").read_text().splitlines()
     assert len(revision_rows) == 4
+
+
+def test_owner_decode_bytes_are_preserved_until_materialization() -> None:
+    decoded = " \nmodel-owned draft\t\n"
+    assert exact_model_owned_completion(decoded) == decoded
 
 
 def test_draft_merge_rejects_duplicate_or_missing_shard_ranges(

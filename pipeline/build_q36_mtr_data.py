@@ -152,20 +152,34 @@ def materialize(args: argparse.Namespace) -> dict[str, Any]:
     revision_rows: list[dict[str, Any]] = []
     calibration_rows: list[dict[str, Any]] = []
     development_rows: list[dict[str, Any]] = []
+    draft_receipts: list[dict[str, str]] = []
+    canonicalized_drafts = 0
     for identity in sorted(sources):
         source = sources[identity]
         draft = drafts[identity]
-        completion = str(draft["completion"]).strip()
+        raw_completion = str(draft["completion"])
+        completion = raw_completion.strip()
         question = revision_prompt(str(source["source_prompt"]), completion)
         draft_sha256 = hashlib.sha256(completion.encode()).hexdigest()
+        raw_draft_sha256 = hashlib.sha256(raw_completion.encode()).hexdigest()
+        canonicalized_drafts += int(raw_completion != completion)
+        draft_receipts.append(
+            {
+                "identity_sha256": identity,
+                "raw_sha256": raw_draft_sha256,
+                "canonical_sha256": draft_sha256,
+            }
+        )
         common = {
             "schema": EVAL_SCHEMA,
             "identity_sha256": identity,
             "task": source["task"],
             "question": question,
             "source_prompt": source["source_prompt"],
-            "internal_draft": draft,
+            "internal_draft": {**draft, "completion": completion},
             "model_owned_draft_sha256": draft_sha256,
+            "raw_model_owned_draft_sha256": raw_draft_sha256,
+            "draft_canonicalization": "unicode_outer_whitespace_strip_v1",
             "candidates": [],
             "runtime_fields": ["question", "source_prompt"],
             "internal_draft_visible": True,
@@ -192,6 +206,8 @@ def materialize(args: argparse.Namespace) -> dict[str, Any]:
                         "presentation": presentation,
                         "question": question,
                         "model_owned_draft_sha256": draft_sha256,
+                        "raw_model_owned_draft_sha256": raw_draft_sha256,
+                        "draft_canonicalization": "unicode_outer_whitespace_strip_v1",
                         "response": source["response"],
                         "target_kind": source["target_kind"],
                         "runtime_fields": ["question"],
@@ -280,6 +296,20 @@ def materialize(args: argparse.Namespace) -> dict[str, Any]:
             },
             "source_disjoint": True,
             "model_owned_drafts": True,
+            "draft_byte_custody": {
+                "raw_decode_preserved_in_merged_drafts": True,
+                "canonicalization": "unicode_outer_whitespace_strip_v1",
+                "canonicalized_drafts": canonicalized_drafts,
+                "identity_raw_canonical_sha256": hashlib.sha256(
+                    b"".join(
+                        (
+                            json.dumps(row, sort_keys=True, separators=(",", ":"))
+                            + "\n"
+                        ).encode()
+                        for row in draft_receipts
+                    )
+                ).hexdigest(),
+            },
             "sealed_content_materialized": False,
             "sealed_access": {"holdout": 0, "product": 0, "public": 0},
         }
