@@ -17,6 +17,7 @@ done
 source "$RUNTIME/train/jobs/q36_mtr_common.sh"
 q36_verify_runtime
 q36_require_authorization
+q36_export_pythonpath
 DATA_SHA256=$(q36_sha256 "$DATA")
 DATA_REPORT_SHA256=$(q36_sha256 "$DATA_REPORT")
 q36_verify_sha256 "$DATA" "$DATA_SHA256"

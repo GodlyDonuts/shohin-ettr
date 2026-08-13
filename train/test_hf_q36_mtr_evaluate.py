@@ -206,3 +206,4 @@ def test_static_wrappers_are_single_h100_and_no_dispatch() -> None:
         assert "--gres=" not in cpu
         assert "#SBATCH --no-requeue" in cpu
         assert "q36_require_authorization" in cpu
+        assert "q36_export_pythonpath" in cpu

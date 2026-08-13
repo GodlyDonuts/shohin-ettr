@@ -23,6 +23,7 @@ q36_verify_sha256 "$FREEZE_REPORT" "$FREEZE_REPORT_SHA256"
 [[ -d "$SHARD_ROOT" && ! -L "$SHARD_ROOT" ]] || q36_die "draft shard root differs"
 [[ ! -e "$OUTPUT" && ! -L "$OUTPUT" && ! -e "$REPORT" && ! -L "$REPORT" ]] || \
   q36_die "draft merge output exists"
+q36_export_pythonpath
 arguments=()
 for ((index=0; index<16; index++)); do
   root=$SHARD_ROOT/$(printf 'shard_%02d' "$index")
