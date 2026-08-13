@@ -54,6 +54,23 @@ It never scores a capability row or reads a development assessor. The
 mechanics checkpoint is deliberately tagged with only 24 selected rows, so it
 cannot satisfy the 100,000-row source-owner warm-start contract.
 
+The environment/runtime closure is now executable but still no-submit.
+`pipeline/package_q36_mtr_runtime.py` packages a sorted, exact-membership
+runtime with no dispatcher or model-acquisition capability;
+`pipeline/capture_q36_mtr_environment.py` pins the qualified base environment,
+`bitsandbytes==0.50.0` manifest
+`2201774754fb2e0fdd2208b78d34b803b910d8e34c79a43de49b29d7df3a8355`,
+and the Q36 fast-kernel manifest
+`dde2adf539302a321afd7322ded3f2f729ac5f96368113a8af82f64efc0b9e8b`
+(`flash-linear-attention==0.4.2`, `causal-conv1d==1.6.2.post1`). Every GPU
+wrapper replays exact overlay membership and imports only from those roots.
+The learned commit path is implemented by
+`pipeline/build_q36_mtr_commit_pairs.py` and
+`train/hf_q36_mtr_train_commit.py`: calibration pairs are labeled and
+development pairs are label-free; one H100 fits the 128-update commit and,
+without a second model load, applies it to the already sealed development
+pairs. This preserves the 61-request/58.90-H100-hour graph.
+
 The PCF17 infrastructure finding is also repaired prospectively: exact-tree
 custody accepts either canonical manifest members or the single conventional
 `./` prefix emitted by `find .`, canonicalizing before comparison. Interior
@@ -198,8 +215,8 @@ no allocation requests an idle GPU without a bound scientific operation.
 | 3 | ordered train+development draft generation | 16 | `29.50` |
 | 4 | aligned and draft-hidden 256-update fits | 2 | `4.50` |
 | 5 | train-only revision/unchanged calibration, four shards each | 8 | `15.60` |
-| 6 | 128-update whole-trajectory commit fit | 1 | `0.50` |
-| 7 | development revision/unchanged/self-refinement/hidden, eight shards each | 32 | `6.30` |
+| 6 | development revision/unchanged/self-refinement/hidden, eight shards each | 32 | `6.30` |
+| 7 | 128-update whole-trajectory commit fit plus label-free application | 1 | `0.50` |
 |  | **total** | **61** | **`58.90`** |
 
 Maximum queued/runnable concurrency is 32 independent single-H100 jobs; the
@@ -234,7 +251,8 @@ confirmation. Its compute blueprint is four generative arms x eight
 independent single-H100 shards (32 maximum concurrent singles, expected
 `6.30` H100-hours), followed by CPU commit application and one atomic scorer.
 That confirmation is not authorized here and cannot be submitted
-automatically.
+automatically. Its commit fit/application remains one single-H100 operation;
+the final assessment is CPU-only and opens the assessor once.
 
 ## Reuse, admission, and evidence durability
 
@@ -253,11 +271,14 @@ Reuse the immutable 9B release as the dense positive reference and the DSET/
 ISET result JSONs as causal priors. Do not reuse Ministral/Qwen9B candidates or
 adapters as Q36 model state.
 
-The Q36 cache was deliberately reclaimed during authorized historical cleanup.
-Admission must reacquire only the exact full revision above into a fresh
-immutable root, publish a complete exact-membership SHA-256 manifest, and
-requalify the pinned NF4/BF16/fast-kernel environment. A short `995ad96e`
-label is insufficient custody.
+The exact Q36 root remains present after the authorized historical cleanup at
+`/lustre/fs1/home/sa305415/shohin/artifacts/external/qwen3.6-35b-a3b-995ad96e`.
+The preparation audit reverified its mode-`555` root, exact config hash
+`93a4693fa9d8392fbfccd4b3c9873f4bfdcb14fdede978b123d07d19675efe99`,
+full revision text, and 124-entry manifest hash
+`06c9d8d8419244f2d001cb351e164f356718d9d77138e898b13afee35856f56e`.
+Formal admission must still replay complete membership and every member hash
+before mechanics. A short `995ad96e` label is insufficient custody.
 
 Before submission, the implementation commit must be clean and pushed to the
 private GitHub branch; the runtime must contain only bytes from that commit.

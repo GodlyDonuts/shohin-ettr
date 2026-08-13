@@ -257,5 +257,6 @@ q36_stage_model() {
   mkdir "$staged"
   cp -a "$MODEL_ROOT"/. "$staged"/
   q36_verify_sha256 "$staged/config.json" "$MODEL_CONFIG_SHA256"
+  (cd "$staged" && sha256sum -c SHA256SUMS >/dev/null)
   printf '%s\n' "$staged"
 }

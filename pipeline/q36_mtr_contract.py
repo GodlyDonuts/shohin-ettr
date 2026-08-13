@@ -95,7 +95,6 @@ STAGES = (
         0.0,
         ("calibration_revision_merge", "calibration_unchanged_merge"),
     ),
-    Stage("commit_fit", 1, 1, 0.50, ("commit_pairs",)),
     Stage("development_revision", 1, 8, 0.30, ("aligned_fit",)),
     Stage("development_unchanged", 1, 8, 3.24, ("materialize",)),
     Stage("development_self_refinement", 1, 8, 2.46, ("materialize",)),
@@ -117,11 +116,27 @@ STAGES = (
         ("development_draft_hidden",),
     ),
     Stage(
+        "development_commit_pairs",
+        0,
+        1,
+        0.0,
+        ("development_revision_merge", "development_unchanged_merge"),
+    ),
+    # One H100 loads the aligned state once, fits the commit on calibration,
+    # then applies it to the already-sealed label-free development pairs.
+    Stage(
+        "commit_fit",
+        1,
+        1,
+        0.50,
+        ("commit_pairs", "development_commit_pairs"),
+    ),
+    Stage(
         "commit_apply",
         0,
         1,
         0.0,
-        ("commit_fit", "development_revision_merge", "development_unchanged_merge"),
+        ("commit_fit",),
     ),
     Stage(
         "precompute_custody",
