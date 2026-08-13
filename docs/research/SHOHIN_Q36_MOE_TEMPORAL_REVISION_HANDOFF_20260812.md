@@ -73,7 +73,12 @@ holding weights, response targets, sequence length, and positions fixed; it
 requires a material change in aligned target-facing states and invariance in
 the hidden states within a frozen BF16 tolerance. Generation state is also
 bound to the exact prepared prompt IDs, preventing a same-shape prompt from
-reusing stale hidden-mask or position state. Precompute custody replays the
+reusing stale hidden-mask or position state. The span parser recognizes the
+frozen task-agnostic `Follow the original problem's requested output format.`
+boundary as well as the legacy task-specific `Return ...` boundary, and a
+regression proves that only the exact internal-draft bytes are masked. This
+prevents the Q36 aligned/hidden tokenizer from failing before training while
+leaving the frozen prompt text unchanged. Precompute custody replays the
 matched sequence receipts and enforces exact checkpoint isolation: aligned
 only for revision, source owner only for unchanged/self-refinement, and the
 independently trained hidden checkpoint only for draft-hidden. This also fixes

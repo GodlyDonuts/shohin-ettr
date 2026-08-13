@@ -15,6 +15,7 @@ from hf_q36_mtr_train_role import (
     full_sequence_position_ids,
     training_consumption_receipt,
 )
+from build_pcf1_data import revision_prompt
 from q36_mtr_roles import (
     MODEL_REVISION,
     Q36MTRRoleError,
@@ -30,6 +31,7 @@ from shared_post_mlp_revision import (
     SharedPostMLPError,
     SharedPostMLPProductModel,
 )
+from ttr1_revision import tokenize_with_draft_mask
 
 
 def test_exact_role_states_are_distinct_and_equal_budget() -> None:
@@ -162,6 +164,16 @@ def test_generation_mask_is_bound_to_exact_prompt_ids() -> None:
     substituted[0, 0] = (substituted[0, 0] + 1) % 127
     with pytest.raises(SharedPostMLPError):
         model.generation_embeddings(substituted, attention)
+
+
+def test_q36_task_agnostic_revision_prompt_has_exact_draft_mask() -> None:
+    tokenizer = _OffsetTokenizer()
+    prompt = revision_prompt("P", "DRAFT")
+    token_ids, attention, span = tokenize_with_draft_mask(tokenizer, prompt)
+    assert len(token_ids) == len(attention) == len(prompt)
+    assert prompt[slice(*span)] == "DRAFT"
+    assert int(attention.count(0)) == len("DRAFT")
+    assert all(attention[index] == 0 for index in range(*span))
 
 
 def test_matched_geometry_rejects_token_or_position_drift() -> None:
