@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter, defaultdict
+from fractions import Fraction
 import hashlib
 import json
 import math
@@ -37,12 +38,272 @@ COMMIT_REPORT_SCHEMA = "shohin-q36-mtr-commit-training-report-v1"
 SCORE_SCHEMA = "shohin-q36-mtr-score-result-v1"
 OUTCOME_SCHEMA = "shohin-q36-mtr-scored-outcome-v1"
 TERMINAL_FAILURE_SCHEMA = "shohin-q36-mtr-score-terminal-failure-v1"
+PUBLICATION_ANALYSIS_SCHEMA = "shohin-q36-mtr-publication-analysis-v1"
 ARMS = ("revision", "unchanged", "self_refinement", "draft_hidden")
 TOTAL_ROWS = 1_289
+PUBLICATION_COMPARISONS = {
+    "revision_vs_unchanged": ("revision", "unchanged"),
+    "revision_vs_self_refinement": ("revision", "self_refinement"),
+    "revision_vs_draft_hidden": ("revision", "draft_hidden"),
+    "learned_commit_vs_revision": ("learned_commit", "revision"),
+    "learned_commit_vs_unchanged": ("learned_commit", "unchanged"),
+}
+DENSE_REFERENCE = {
+    "model": "Qwen/Qwen3.5-9B@c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+    "board": "qualified_product_538",
+    "scores": {"unchanged": 316, "trained_revision": 374, "learned_commit": 383},
+    "total": 538,
+    "revision_minus_unchanged": 58,
+    "commit_minus_revision": 9,
+}
+Q36_REFERENCE = {
+    "model": "Qwen/Qwen3.6-35B-A3B@995ad96eacd98c81ed38be0c5b274b04031597b0",
+    "board": "source_disjoint_development_1289",
+    "total": TOTAL_ROWS,
+}
 
 
 class Q36MTRScoreError(RuntimeError):
     """The Q36 one-open score boundary or its inputs differ."""
+
+
+def _mcnemar_exact(wins: int, losses: int) -> dict[str, Any]:
+    discordant = wins + losses
+    if discordant == 0:
+        probability = Fraction(1, 1)
+    else:
+        tail = sum(
+            math.comb(discordant, index) for index in range(min(wins, losses) + 1)
+        )
+        probability = min(Fraction(1, 1), Fraction(2 * tail, 1 << discordant))
+    return {
+        "method": "exact_two_sided_mcnemar_binomial",
+        "numerator": str(probability.numerator),
+        "denominator": str(probability.denominator),
+        "value": float(probability),
+    }
+
+
+def _paired_summary_from_counts(
+    wins: int, losses: int, both_correct: int, both_incorrect: int
+) -> dict[str, Any]:
+    if any(
+        isinstance(value, bool) or not isinstance(value, int) or value < 0
+        for value in (wins, losses, both_correct, both_incorrect)
+    ):
+        raise Q36MTRScoreError("Q36 paired publication count differs")
+    total = wins + losses + both_correct + both_incorrect
+    if total <= 1:
+        raise Q36MTRScoreError("Q36 paired publication cardinality differs")
+    net = wins - losses
+    mean = net / total
+    sum_squares = wins + losses
+    variance = max(0.0, (sum_squares - total * mean * mean) / (total - 1))
+    standard_error = math.sqrt(variance / total)
+    critical = 1.959963984540054
+    lower = max(-1.0, mean - critical * standard_error)
+    upper = min(1.0, mean + critical * standard_error)
+    return {
+        "rows": total,
+        "treatment_correct": wins + both_correct,
+        "control_correct": losses + both_correct,
+        "treatment_only_correct": wins,
+        "control_only_correct": losses,
+        "both_correct": both_correct,
+        "both_incorrect": both_incorrect,
+        "discordant": wins + losses,
+        "net_correct": net,
+        "risk_difference": mean,
+        "risk_difference_percentage_points": mean * 100.0,
+        "paired_wald_95_ci_percentage_points": [lower * 100.0, upper * 100.0],
+        "paired_wald_standard_error": standard_error,
+        "mcnemar_exact_two_sided": _mcnemar_exact(wins, losses),
+    }
+
+
+def _paired_summary(
+    outcomes: list[dict[str, Any]], treatment: str, control: str
+) -> dict[str, Any]:
+    counts = Counter()
+    for row in outcomes:
+        correct = row.get("correct")
+        if not isinstance(correct, dict):
+            raise Q36MTRScoreError("Q36 publication correctness differs")
+        treatment_correct = correct.get(treatment)
+        control_correct = correct.get(control)
+        if not isinstance(treatment_correct, bool) or not isinstance(
+            control_correct, bool
+        ):
+            raise Q36MTRScoreError("Q36 publication Boolean differs")
+        counts[(treatment_correct, control_correct)] += 1
+    return _paired_summary_from_counts(
+        counts[(True, False)],
+        counts[(False, True)],
+        counts[(True, True)],
+        counts[(False, False)],
+    )
+
+
+def build_publication_analysis(outcomes: list[dict[str, Any]]) -> dict[str, Any]:
+    if len(outcomes) != TOTAL_ROWS:
+        raise Q36MTRScoreError("Q36 publication outcome count differs")
+    identities = [row.get("identity_sha256") for row in outcomes]
+    if (
+        len(set(identities)) != TOTAL_ROWS
+        or any(not isinstance(value, str) or len(value) != 64 for value in identities)
+        or any(row.get("task") not in TASKS for row in outcomes)
+    ):
+        raise Q36MTRScoreError("Q36 publication identity coverage differs")
+    comparisons = {}
+    for name, (treatment, control) in PUBLICATION_COMPARISONS.items():
+        domains = {
+            task: _paired_summary(
+                [row for row in outcomes if row["task"] == task], treatment, control
+            )
+            for task in TASKS
+        }
+        comparisons[name] = {
+            "treatment": treatment,
+            "control": control,
+            "overall": _paired_summary(outcomes, treatment, control),
+            "domains": domains,
+        }
+    payload = {
+        "schema": PUBLICATION_ANALYSIS_SCHEMA,
+        "status": "descriptive_non_gating",
+        "rows": TOTAL_ROWS,
+        "comparisons": comparisons,
+        "dense_reference": DENSE_REFERENCE,
+        "scaling_graph_data": _scaling_graph_data(comparisons),
+        "scaling_interpretation": (
+            "within_board_paired_effects_only; dense and MoE absolute scores use "
+            "different source-disjoint boards"
+        ),
+        "cross_board_absolute_score_comparison_authorized": False,
+        "gate_fields_read": False,
+        "gate_thresholds_modified": False,
+        "automatic_successor_authorized": False,
+    }
+    validate_publication_analysis(payload)
+    return payload
+
+
+def validate_publication_analysis(value: object) -> dict[str, Any]:
+    if not isinstance(value, dict) or set(value) != {
+        "schema",
+        "status",
+        "rows",
+        "comparisons",
+        "dense_reference",
+        "scaling_graph_data",
+        "scaling_interpretation",
+        "cross_board_absolute_score_comparison_authorized",
+        "gate_fields_read",
+        "gate_thresholds_modified",
+        "automatic_successor_authorized",
+    }:
+        raise Q36MTRScoreError("Q36 publication analysis shape differs")
+    comparisons = value.get("comparisons")
+    if (
+        value.get("schema") != PUBLICATION_ANALYSIS_SCHEMA
+        or value.get("status") != "descriptive_non_gating"
+        or value.get("rows") != TOTAL_ROWS
+        or value.get("dense_reference") != DENSE_REFERENCE
+        or value.get("scaling_interpretation")
+        != (
+            "within_board_paired_effects_only; dense and MoE absolute scores use "
+            "different source-disjoint boards"
+        )
+        or value.get("cross_board_absolute_score_comparison_authorized") is not False
+        or value.get("gate_fields_read") is not False
+        or value.get("gate_thresholds_modified") is not False
+        or value.get("automatic_successor_authorized") is not False
+        or not isinstance(comparisons, dict)
+        or set(comparisons) != set(PUBLICATION_COMPARISONS)
+    ):
+        raise Q36MTRScoreError("Q36 publication analysis contract differs")
+    for name, (treatment, control) in PUBLICATION_COMPARISONS.items():
+        comparison = comparisons[name]
+        if (
+            not isinstance(comparison, dict)
+            or comparison.get("treatment") != treatment
+            or comparison.get("control") != control
+            or set(comparison) != {"treatment", "control", "overall", "domains"}
+            or not isinstance(comparison.get("domains"), dict)
+            or set(comparison["domains"]) != set(TASKS)
+        ):
+            raise Q36MTRScoreError("Q36 publication comparison differs")
+        summaries = [comparison["overall"], *comparison["domains"].values()]
+        for summary in summaries:
+            if not isinstance(summary, dict):
+                raise Q36MTRScoreError("Q36 publication summary differs")
+            fields = (
+                "treatment_only_correct",
+                "control_only_correct",
+                "both_correct",
+                "both_incorrect",
+            )
+            counts = [summary.get(field) for field in fields]
+            if any(
+                isinstance(item, bool) or not isinstance(item, int) for item in counts
+            ):
+                raise Q36MTRScoreError("Q36 publication counts differ")
+            if summary != _paired_summary_from_counts(*counts):
+                raise Q36MTRScoreError("Q36 publication arithmetic differs")
+        for field in (
+            "rows",
+            "treatment_correct",
+            "control_correct",
+            "treatment_only_correct",
+            "control_only_correct",
+            "both_correct",
+            "both_incorrect",
+            "discordant",
+            "net_correct",
+        ):
+            if comparison["overall"][field] != sum(
+                comparison["domains"][task][field] for task in TASKS
+            ):
+                raise Q36MTRScoreError("Q36 publication domain sum differs")
+    if value.get("scaling_graph_data") != _scaling_graph_data(comparisons):
+        raise Q36MTRScoreError("Q36 publication scaling graph differs")
+    return value
+
+
+def _scaling_graph_data(comparisons: dict[str, Any]) -> dict[str, Any]:
+    revision_control = comparisons["revision_vs_unchanged"]["overall"]
+    commit_revision = comparisons["learned_commit_vs_revision"]["overall"]
+    revision_self = comparisons["revision_vs_self_refinement"]["overall"]
+    revision_hidden = comparisons["revision_vs_draft_hidden"]["overall"]
+    dense_scores = DENSE_REFERENCE["scores"]
+    q36_scores = {
+        "unchanged": revision_control["control_correct"],
+        "trained_revision": revision_control["treatment_correct"],
+        "learned_commit": commit_revision["treatment_correct"],
+        "self_refinement": revision_self["control_correct"],
+        "draft_hidden": revision_hidden["control_correct"],
+    }
+    return {
+        "schema": "shohin-architecture-transfer-scaling-graph-data-v1",
+        "interpretation": "two_board_architecture_transfer_not_compute_scaling_law",
+        "points": [
+            {
+                **DENSE_REFERENCE,
+                "arm_percentages": {
+                    arm: score * 100.0 / DENSE_REFERENCE["total"]
+                    for arm, score in dense_scores.items()
+                },
+            },
+            {
+                **Q36_REFERENCE,
+                "scores": q36_scores,
+                "arm_percentages": {
+                    arm: score * 100.0 / TOTAL_ROWS for arm, score in q36_scores.items()
+                },
+            },
+        ],
+        "cross_board_absolute_score_comparison_authorized": False,
+    }
 
 
 def _load_assessors_once(
@@ -488,6 +749,7 @@ def _score_impl(args: argparse.Namespace) -> dict[str, Any]:
             "consistent": sum(int(row["order_consistent"]) for row in outcomes),
             "total": TOTAL_ROWS,
         },
+        "publication_analysis": build_publication_analysis(outcomes),
         "empty_completion_counts": dict(malformed),
         "capability_policy_rejection_counts": dict(policy_rejections),
         "malformed_completion_counts": malformed_completions,

@@ -136,6 +136,19 @@ These programs have not been executed to authorize or launch Q36-MTR in this
 documentation/preparation phase. No Q36 run root or scientific job was
 created by this milestone.
 
+Publication statistics are frozen before any Q36 outcome exists. The sole
+scorer now derives exact paired win/loss/tie tables for revision versus
+unchanged, self-refinement, and draft-hidden, plus commit versus revision and
+unchanged, both overall and by domain. Each table carries the matched risk
+difference, paired Wald 95% interval, and exact two-sided McNemar probability.
+These fields are hash-bound through normalization and the terminal result but
+are explicitly non-gating: they cannot change any threshold or PASS/FAIL
+clause. The same report emits plot-ready dense-9B and Q36 arm percentages with
+an immutable warning that the two source-disjoint boards do not authorize a
+direct absolute-score comparison or a compute-scaling-law claim. This gives a
+publication scaling figure honest effect sizes immediately at the terminal
+gate without post-result analytic choice.
+
 ## Claim carried forward
 
 The strongest surviving qualified Shohin system is the dense same-family

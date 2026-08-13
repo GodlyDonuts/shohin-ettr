@@ -7,7 +7,7 @@ from pathlib import Path
 
 from normalize_q36_mtr_score import ARM_SCHEMA, normalize
 from q36_mtr_contract import MODEL_REVISION
-from score_q36_mtr import SCORE_SCHEMA
+from score_q36_mtr import SCORE_SCHEMA, build_publication_analysis
 
 
 def _sha(value: str) -> str:
@@ -47,6 +47,18 @@ def test_normalize_q36_score_emits_five_bound_arms(tmp_path: Path) -> None:
             "unchanged_correct": {"retained": 490, "total": 500},
         },
         "order_consistency": {"consistent": 1289, "total": 1289},
+        "publication_analysis": build_publication_analysis(
+            [
+                {
+                    "identity_sha256": hashlib.sha256(
+                        f"normalize-publication-{index}".encode()
+                    ).hexdigest(),
+                    "task": ("math500", "bbh_logic", "mbpp")[index % 3],
+                    "correct": {arm: index < 500 for arm in metrics},
+                }
+                for index in range(1_289)
+            ]
+        ),
         "empty_completion_counts": {arm: 0 for arm in metrics},
         "capability_policy_rejection_counts": {arm: 0 for arm in metrics},
         "malformed_completion_counts": {arm: 0 for arm in metrics},
@@ -92,3 +104,7 @@ def test_normalize_q36_score_emits_five_bound_arms(tmp_path: Path) -> None:
         assert report["schema"] == ARM_SCHEMA
         assert report["candidate_count"] == 1289
         assert report["malformed_count"] == 0
+        if report["arm"] == "learned_commit":
+            assert report["publication_analysis"]["status"] == (
+                "descriptive_non_gating"
+            )

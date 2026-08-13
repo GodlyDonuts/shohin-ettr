@@ -12,6 +12,11 @@ from pathlib import Path
 from typing import Any
 
 from q36_mtr_contract import ARMS, MODEL_REVISION, TOTAL_ROWS, validate_graph
+from score_q36_mtr import (
+    PUBLICATION_COMPARISONS,
+    Q36MTRScoreError,
+    validate_publication_analysis,
+)
 
 ARM_SCHEMA = "shohin-q36-mtr-arm-report-v1"
 CUSTODY_SCHEMA = "shohin-q36-mtr-final-custody-v1"
@@ -251,6 +256,47 @@ def compare(args: argparse.Namespace) -> dict[str, Any]:
         for control in ("trained_revision", "unchanged")
     }
 
+    try:
+        publication_analysis = validate_publication_analysis(
+            arms["learned_commit"].get("publication_analysis")
+        )
+    except Q36MTRScoreError as error:
+        raise Q36MTRComparisonError("Q36-MTR publication analysis differs") from error
+    publication_expected_margins = {
+        "revision_vs_unchanged": revision - unchanged,
+        "revision_vs_self_refinement": revision - self_refinement,
+        "revision_vs_draft_hidden": revision - draft_hidden,
+        "learned_commit_vs_revision": commit - revision,
+        "learned_commit_vs_unchanged": commit - unchanged,
+    }
+    publication_arm_names = {
+        "revision": "trained_revision",
+        "unchanged": "unchanged",
+        "self_refinement": "self_refinement",
+        "draft_hidden": "draft_hidden",
+        "learned_commit": "learned_commit",
+    }
+    for name, (treatment, control) in PUBLICATION_COMPARISONS.items():
+        comparison = publication_analysis["comparisons"][name]
+        if (
+            comparison["overall"]["net_correct"] != publication_expected_margins[name]
+            or comparison["overall"]["treatment_correct"]
+            != scores[publication_arm_names[treatment]]
+            or comparison["overall"]["control_correct"]
+            != scores[publication_arm_names[control]]
+        ):
+            raise Q36MTRComparisonError("Q36-MTR publication score binding differs")
+        for domain in DOMAINS:
+            if (
+                comparison["domains"][domain]["treatment_correct"]
+                != domain_scores[publication_arm_names[treatment]][domain]
+                or comparison["domains"][domain]["control_correct"]
+                != domain_scores[publication_arm_names[control]][domain]
+            ):
+                raise Q36MTRComparisonError(
+                    "Q36-MTR publication domain binding differs"
+                )
+
     retention = arms["learned_commit"].get("retention")
     order = arms["learned_commit"].get("order_consistency")
     if not isinstance(retention, dict) or not isinstance(order, dict):
@@ -428,6 +474,8 @@ def compare(args: argparse.Namespace) -> dict[str, Any]:
             "revision": revision_deltas,
             "commit": commit_deltas,
         },
+        "publication_analysis": publication_analysis,
+        "publication_analysis_non_gating": True,
         "retention": {
             "revision_correct": {
                 "retained": revision_retained,

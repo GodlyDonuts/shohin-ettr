@@ -11,9 +11,66 @@ from score_q36_mtr import (
     Q36MTRScoreError,
     SELECTION_SCHEMA,
     TERMINAL_FAILURE_SCHEMA,
+    build_publication_analysis,
     _load_selections,
+    _mcnemar_exact,
+    _paired_summary_from_counts,
     _preserve_post_consumption_failure,
 )
+
+
+def _publication_outcomes() -> list[dict]:
+    task_counts = {"math500": 600, "bbh_logic": 489, "mbpp": 200}
+    rows = []
+    index = 0
+    for task, count in task_counts.items():
+        for offset in range(count):
+            rows.append(
+                {
+                    "identity_sha256": hashlib.sha256(
+                        f"publication-{index}".encode()
+                    ).hexdigest(),
+                    "task": task,
+                    "correct": {
+                        "revision": offset % 5 != 0,
+                        "unchanged": offset % 3 == 0,
+                        "self_refinement": offset % 4 == 0,
+                        "draft_hidden": offset % 7 == 0,
+                        "learned_commit": offset % 6 != 0,
+                    },
+                }
+            )
+            index += 1
+    return rows
+
+
+def test_q36_publication_analysis_is_paired_exact_and_non_gating() -> None:
+    report = build_publication_analysis(_publication_outcomes())
+    comparison = report["comparisons"]["revision_vs_draft_hidden"]
+    assert comparison["overall"]["rows"] == 1_289
+    assert comparison["overall"]["net_correct"] == (
+        comparison["overall"]["treatment_correct"]
+        - comparison["overall"]["control_correct"]
+    )
+    assert set(comparison["domains"]) == {"math500", "bbh_logic", "mbpp"}
+    assert report["gate_fields_read"] is False
+    assert report["gate_thresholds_modified"] is False
+    assert report["cross_board_absolute_score_comparison_authorized"] is False
+
+
+def test_q36_publication_exact_probability_and_paired_interval_are_frozen() -> None:
+    assert _mcnemar_exact(3, 0) == {
+        "method": "exact_two_sided_mcnemar_binomial",
+        "numerator": "1",
+        "denominator": "4",
+        "value": 0.25,
+    }
+    summary = _paired_summary_from_counts(3, 0, 5, 2)
+    assert summary["rows"] == 10
+    assert summary["net_correct"] == 3
+    assert summary["risk_difference_percentage_points"] == 30.0
+    assert summary["paired_wald_95_ci_percentage_points"][0] < 30.0
+    assert summary["paired_wald_95_ci_percentage_points"][1] > 30.0
 
 
 def _selections(path: Path) -> None:

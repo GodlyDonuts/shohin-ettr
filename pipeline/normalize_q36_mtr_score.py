@@ -13,7 +13,7 @@ from typing import Any
 
 from compare_q36_mtr import ARM_SCHEMA
 from q36_mtr_contract import MODEL_REVISION, TOTAL_ROWS
-from score_q36_mtr import SCORE_SCHEMA
+from score_q36_mtr import SCORE_SCHEMA, validate_publication_analysis
 
 PRECOMPUTE_SCHEMA = "shohin-q36-mtr-precompute-custody-v1"
 SCORER_TO_COMPARATOR = {
@@ -77,6 +77,12 @@ def normalize(args: argparse.Namespace) -> dict[str, Any]:
         for value in (metrics, empty, policy, malformed_completions, truncation)
     ):
         raise Q36MTRNormalizeError("Q36 score arm counters are absent")
+    try:
+        publication_analysis = validate_publication_analysis(
+            score.get("publication_analysis")
+        )
+    except RuntimeError as error:
+        raise Q36MTRNormalizeError("Q36 publication analysis differs") from error
     temporary = args.output.with_name(f".{args.output.name}.tmp.{os.getpid()}")
     temporary.mkdir(parents=True)
     receipts = {}
@@ -133,6 +139,7 @@ def normalize(args: argparse.Namespace) -> dict[str, Any]:
             if source_arm == "learned_commit":
                 report["retention"] = score["retention"]
                 report["order_consistency"] = score["order_consistency"]
+                report["publication_analysis"] = publication_analysis
             path = temporary / f"{arm}.json"
             path.write_text(
                 json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"

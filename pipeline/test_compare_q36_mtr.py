@@ -9,6 +9,7 @@ import pytest
 
 from compare_q36_mtr import Q36MTRComparisonError, compare
 from q36_mtr_contract import ARMS, MODEL_REVISION, TOTAL_ROWS, graph_payload
+from score_q36_mtr import build_publication_analysis
 
 RUN_ID = "q36_mtr_test_r1"
 DATA_SHA256 = "1" * 64
@@ -31,6 +32,34 @@ DOMAIN_CORRECT = {
     "trained_revision": {"math500": 240, "bbh_logic": 170, "mbpp": 42},
     "learned_commit": {"math500": 248, "bbh_logic": 175, "mbpp": 42},
 }
+
+
+def _publication_analysis(arms: dict[str, dict]) -> dict:
+    rows = []
+    index = 0
+    score_names = {
+        "revision": "trained_revision",
+        "unchanged": "unchanged",
+        "self_refinement": "self_refinement",
+        "draft_hidden": "draft_hidden",
+        "learned_commit": "learned_commit",
+    }
+    for task, total in DOMAIN_TOTALS.items():
+        for offset in range(total):
+            rows.append(
+                {
+                    "identity_sha256": hashlib.sha256(
+                        f"comparison-publication-{index}".encode()
+                    ).hexdigest(),
+                    "task": task,
+                    "correct": {
+                        scorer: offset < arms[arm]["metrics"][task]["correct"]
+                        for scorer, arm in score_names.items()
+                    },
+                }
+            )
+            index += 1
+    return build_publication_analysis(rows)
 
 
 def _write(path: Path, payload: dict) -> Path:
@@ -88,6 +117,7 @@ def _fixture(
     custody_overrides: dict = {}
     if mutation is not None:
         mutation(arms, custody_overrides)
+    arms["learned_commit"]["publication_analysis"] = _publication_analysis(arms)
     paths = {arm: _write(root / f"{arm}.json", report) for arm, report in arms.items()}
     paths["graph_contract"] = _write(root / "graph.json", graph_payload(SOURCE_COMMIT))
     custody = {
@@ -295,6 +325,23 @@ def test_structural_mismatch_is_infrastructure_error_without_result(
     tmp_path: Path, mutation
 ) -> None:
     args, paths = _fixture(tmp_path, mutation)
+    with pytest.raises(Q36MTRComparisonError):
+        compare(args)
+    assert not paths["output"].exists()
+
+
+def test_publication_statistic_tamper_is_infrastructure_not_gate_result(
+    tmp_path: Path,
+) -> None:
+    args, paths = _fixture(tmp_path)
+    arm = json.loads(paths["learned_commit"].read_text(encoding="utf-8"))
+    arm["publication_analysis"]["comparisons"]["revision_vs_unchanged"]["overall"][
+        "net_correct"
+    ] += 1
+    _write(paths["learned_commit"], arm)
+    custody = json.loads(paths["final_custody"].read_text(encoding="utf-8"))
+    custody["arm_report_sha256s"]["learned_commit"] = _sha256(paths["learned_commit"])
+    _write(paths["final_custody"], custody)
     with pytest.raises(Q36MTRComparisonError):
         compare(args)
     assert not paths["output"].exists()
