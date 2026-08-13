@@ -70,6 +70,12 @@ The learned commit path is implemented by
 development pairs are label-free; one H100 fits the 128-update commit and,
 without a second model load, applies it to the already sealed development
 pairs. This preserves the 61-request/58.90-H100-hour graph.
+The graph's CPU `commit_apply` stage is an independent label-free validator,
+not a second model load: it replays the checkpoint, pair, selection,
+antisymmetry, truncation/malformed, visibility, and zero-assessor-access
+receipts before precompute custody can begin. The compiled dry-run plan now
+names an exact existing wrapper for every H100 and CPU stage, closing the
+handoff ambiguity without adding a submit path.
 
 The irreversible CPU boundary is now implemented prospectively as well.
 `pipeline/build_q36_mtr_custody.py` independently binds the exact model and

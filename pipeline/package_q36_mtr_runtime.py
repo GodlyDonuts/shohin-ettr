@@ -37,6 +37,7 @@ REQUIRED = {
     "pipeline/normalize_q36_mtr_score.py",
     "pipeline/score_q36_mtr.py",
     "pipeline/seal_q36_mtr_terminal_evidence.py",
+    "pipeline/validate_q36_mtr_commit_application.py",
     "train/hf_q36_mtr_evaluate.py",
     "train/hf_q36_mtr_generate_drafts.py",
     "train/hf_q36_mtr_mechanics.py",

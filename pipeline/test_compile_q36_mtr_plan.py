@@ -40,6 +40,12 @@ def test_dry_run_plan_has_exact_single_h100_fanout() -> None:
     assert all(
         task["duplicate_submission_permitted"] is False for task in plan["gpu_tasks"]
     )
+    assert {task["stage"]: task["entrypoint"] for task in plan["cpu_tasks"]}[
+        "commit_apply"
+    ] == "q36_mtr_validate_commit_application"
+    assert {task["stage"]: task["entrypoint"] for task in plan["cpu_tasks"]}[
+        "final_compare"
+    ] == "q36_mtr_compare_and_seal_terminal"
 
 
 @pytest.mark.parametrize(

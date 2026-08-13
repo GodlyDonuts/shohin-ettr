@@ -33,6 +33,29 @@ GPU_ENTRYPOINTS = {
     "development_self_refinement": "q36_mtr_evaluate:development_self_refinement",
     "development_draft_hidden": "q36_mtr_evaluate:development_draft_hidden",
 }
+CPU_ENTRYPOINTS = {
+    "preflight_cpu": "q36_mtr_capture_environment",
+    "draft_merge": "q36_mtr_merge_drafts",
+    "materialize": "q36_mtr_materialize",
+    "calibration_revision_merge": "q36_mtr_merge_evaluation:calibration_revision",
+    "calibration_unchanged_merge": "q36_mtr_merge_evaluation:calibration_unchanged",
+    "commit_pairs": "q36_mtr_commit_pairs:calibration",
+    "development_revision_merge": "q36_mtr_merge_evaluation:development_revision",
+    "development_unchanged_merge": "q36_mtr_merge_evaluation:development_unchanged",
+    "development_self_refinement_merge": "q36_mtr_merge_evaluation:development_self_refinement",
+    "development_draft_hidden_merge": "q36_mtr_merge_evaluation:development_draft_hidden",
+    "development_commit_pairs": "q36_mtr_commit_pairs:development",
+    "commit_apply": "q36_mtr_validate_commit_application",
+    "precompute_custody": "q36_mtr_build_precompute_custody",
+    "prescore_accounting": "q36_mtr_capture_accounting:prescore",
+    "authorize_score": "q36_mtr_authorize_score",
+    "score_once": "q36_mtr_score",
+    "normalize": "q36_mtr_normalize",
+    "final_accounting": "q36_mtr_capture_accounting:final",
+    "evidence_mirror": "q36_mtr_mirror_evidence",
+    "compute_custody": "q36_mtr_build_final_custody",
+    "final_compare": "q36_mtr_compare_and_seal_terminal",
+}
 
 
 class Q36MTRPlanError(RuntimeError):
@@ -100,11 +123,15 @@ def compile_plan(graph: dict[str, Any], graph_sha256: str) -> dict[str, Any]:
                     }
                 )
         else:
+            entrypoint = CPU_ENTRYPOINTS.get(stage.name)
+            if entrypoint is None:
+                raise Q36MTRPlanError(f"missing Q36-MTR CPU entrypoint: {stage.name}")
             cpu_tasks.append(
                 {
                     "request_key": stage.name,
                     "stage": stage.name,
                     "priority": priority,
+                    "entrypoint": entrypoint,
                     "dependencies": list(stage.dependencies),
                     "h100s": 0,
                     "requeue": False,
@@ -164,6 +191,22 @@ def validate_plan(payload: dict[str, Any]) -> None:
         for task in gpu_tasks
     ):
         raise Q36MTRPlanError("Q36-MTR single-H100 request differs")
+    cpu_tasks = payload.get("cpu_tasks")
+    expected_cpu = [stage for stage in STAGES if stage.h100_per_task == 0]
+    if (
+        not isinstance(cpu_tasks, list)
+        or len(cpu_tasks) != len(expected_cpu)
+        or [task.get("request_key") for task in cpu_tasks]
+        != [stage.name for stage in expected_cpu]
+        or any(
+            task.get("entrypoint") != CPU_ENTRYPOINTS.get(task.get("stage"))
+            or task.get("h100s") != 0
+            or task.get("requeue") is not False
+            or task.get("output_writers") != 1
+            for task in cpu_tasks
+        )
+    ):
+        raise Q36MTRPlanError("Q36-MTR CPU entrypoint plan differs")
     expected_hours = sum(stage.expected_h100_hours for stage in STAGES)
     if abs(float(payload.get("expected_h100_hours", -1)) - expected_hours) > 1e-12:
         raise Q36MTRPlanError("Q36-MTR task-hour projection differs")

@@ -21,6 +21,7 @@ pipeline/jobs/q36_mtr_merge_evaluation.sbatch
 pipeline/jobs/q36_mtr_mirror_evidence.sbatch
 pipeline/jobs/q36_mtr_normalize.sbatch
 pipeline/jobs/q36_mtr_score.sbatch
+pipeline/jobs/q36_mtr_validate_commit_application.sbatch
 pipeline/merge_q36_mtr_drafts.py
 pipeline/merge_q36_mtr_evaluations.py
 pipeline/mirror_q36_mtr_evidence.py
@@ -30,6 +31,7 @@ pipeline/q36_mtr_contract.py
 pipeline/q36_mtr_runtime_allowlist.txt
 pipeline/score_q36_mtr.py
 pipeline/seal_q36_mtr_terminal_evidence.py
+pipeline/validate_q36_mtr_commit_application.py
 train/hf_aqc1_train_commit.py
 train/hf_cvg1_completion_verifier.py
 train/hf_pcf1_evaluate.py

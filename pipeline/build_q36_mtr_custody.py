@@ -41,6 +41,7 @@ PRECOMPUTE_ARTIFACTS = {
     "aligned_checkpoint",
     "aligned_report",
     "application_report",
+    "application_validation",
     "assessor_receipt",
     "calibration_data",
     "calibration_pairs",
@@ -373,6 +374,10 @@ def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
         ):
             raise Q36MTRCustodyError(f"Q36 {split} commit-pair inputs differ")
     application = _load(artifacts["application_report"], APPLICATION_SCHEMA)
+    application_validation = _load(
+        artifacts["application_validation"],
+        "shohin-q36-mtr-commit-application-validation-v1",
+    )
     commit = _load(artifacts["commit_training_report"], COMMIT_REPORT_SCHEMA)
     if (
         commit.get("status") != "complete"
@@ -390,6 +395,21 @@ def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
         != artifacts["selections"].resolve()
         or application.get("assessor_board_access_count") != 0
         or application.get("sealed_access") != {"holdout": 0, "product": 0, "public": 0}
+        or application_validation.get("status") != "complete"
+        or application_validation.get("commit_checkpoint_sha256")
+        != hashes["commit_checkpoint"]
+        or application_validation.get("commit_training_report_sha256")
+        != hashes["commit_training_report"]
+        or application_validation.get("development_pairs_sha256")
+        != hashes["development_pairs"]
+        or application_validation.get("development_pairs_report_sha256")
+        != hashes["development_pairs_report"]
+        or application_validation.get("application_report_sha256")
+        != hashes["application_report"]
+        or application_validation.get("selections_sha256") != hashes["selections"]
+        or application_validation.get("assessor_board_access_count") != 0
+        or application_validation.get("sealed_access")
+        != {"holdout": 0, "product": 0, "public": 0}
     ):
         raise Q36MTRCustodyError("Q36 learned-commit lineage differs")
 
