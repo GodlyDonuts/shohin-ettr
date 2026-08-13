@@ -62,8 +62,13 @@ q36_init_local_tmp() {
 
 q36_cleanup_local_tmp() {
   [[ "${SLURM_TMPDIR:-}" =~ ^/tmp/q36-mtr-[0-9]+(_[0-9]+)?$ ]] || return 0
-  [[ ! -e "$SLURM_TMPDIR" && ! -L "$SLURM_TMPDIR" ]] || \
-    /usr/bin/rm -rf --one-file-system -- "$SLURM_TMPDIR"
+  if [[ -e "$SLURM_TMPDIR" || -L "$SLURM_TMPDIR" ]]; then
+    # Staged model/runtime trees are deliberately frozen read-only. Restore
+    # owner traversal on directories inside this exact job-owned /tmp root so
+    # cleanup cannot strand a full model copy or obscure the stage exit code.
+    /usr/bin/find "$SLURM_TMPDIR" -xdev -type d -exec /bin/chmod u+rwx {} +
+    /bin/rm -rf --one-file-system -- "$SLURM_TMPDIR"
+  fi
 }
 
 q36_require_authorization() {

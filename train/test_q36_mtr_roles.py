@@ -121,6 +121,9 @@ def _exact_backbone():
 def test_exact_q36_host_geometry_is_admitted_and_mutations_fail() -> None:
     exact = _exact_backbone()
     assert validate_backbone_geometry(exact) == list(CONTROLLED_LAYER_INDICES)
+    resolved_causal = _exact_backbone()
+    resolved_causal.config = resolved_causal.config.text_config
+    assert validate_backbone_geometry(resolved_causal) == list(CONTROLLED_LAYER_INDICES)
     surface = validate_backbone_moe_surface(exact)
     assert surface["layers"] == 40
     assert surface["controlled_layer_indices"] == list(CONTROLLED_LAYER_INDICES)
@@ -135,6 +138,16 @@ def test_exact_q36_host_geometry_is_admitted_and_mutations_fail() -> None:
         setattr(changed.config.text_config, field, forged)
         with pytest.raises(Q36MTRRoleError):
             validate_backbone_geometry(changed)
+
+    wrong_layout = _exact_backbone()
+    wrong_layout.config = SimpleNamespace(
+        **{
+            **vars(wrong_layout.config.text_config),
+            "model_type": "qwen3_5_moe_other",
+        }
+    )
+    with pytest.raises(Q36MTRRoleError):
+        validate_backbone_geometry(wrong_layout)
 
     for field, forged in (
         ("top_k", 4),

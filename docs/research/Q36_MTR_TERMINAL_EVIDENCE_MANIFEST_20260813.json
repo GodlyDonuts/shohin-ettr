@@ -1,0 +1,36 @@
+{
+  "files": [
+    {
+      "name": "dispatch.json",
+      "sha256": "d978bb2e8f13537a517bb9b9ff58f52189858bf691881c568a3dd0676db71b7c"
+    },
+    {
+      "name": "execution_terminal.json",
+      "sha256": "c8a46b44817c8d22ed0cc404f84161ef08795741cf07abb8963e4f841bd3636a"
+    },
+    {
+      "name": "live_preflight.json",
+      "sha256": "6acecb419201e50ca6a923b5b3fec7b7f73b809b9f670fba12fa1076582ab77c"
+    },
+    {
+      "name": "mechanics_754518.err",
+      "sha256": "eefb7626305b65c612d7f357ba946fa1e213529524dec4109d9aa3b1054d6ab9"
+    },
+    {
+      "name": "mechanics_754518.out",
+      "sha256": "7d2e0df1baf83434939aee96882fde7052d102fe3124911a1cbd2e01b30eab3e"
+    },
+    {
+      "name": "orphan_cleanup_754561.err",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "orphan_cleanup_754561.out",
+      "sha256": "bdd0b2f7b86aade77afa43244e425a806f3f4ca171c56944b4b3ebf3f7753513"
+    }
+  ],
+  "run_id": "q36-mtr-152e5b4-r1",
+  "schema": "shohin-q36-mtr-terminal-evidence-manifest-v1",
+  "source_commit": "152e5b4e1dcb7560238b47e52371b3456c1c5b5d",
+  "status": "terminal_infrastructure_failure"
+}

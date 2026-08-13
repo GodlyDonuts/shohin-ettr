@@ -2,8 +2,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 import subprocess
+import sys
+
+import pytest
 
 import dispatch_q36_mtr as module
 from dispatch_q36_mtr import ACK, SCRIPTS, _stage_exports, submit
@@ -81,6 +85,31 @@ def test_every_frozen_stage_has_one_packaged_script_and_bound_exports(
     assert _stage_exports("score_once", args, environment)["ASSESSOR_BOARD"] == str(
         args.assessor_board
     )
+
+
+def test_common_cleanup_removes_frozen_job_local_tree() -> None:
+    if sys.platform != "linux":
+        pytest.skip("Q36 Slurm cleanup uses GNU rm semantics")
+    target = Path(f"/tmp/q36-mtr-{os.getpid()}_987654")
+    assert not target.exists() and not target.is_symlink()
+    nested = target / "frozen" / "child"
+    nested.mkdir(parents=True, mode=0o700)
+    (nested / "member").write_text("staged\n", encoding="utf-8")
+    for directory in (nested, nested.parent):
+        directory.chmod(0o555)
+    common = Path("train/jobs/q36_mtr_common.sh").resolve()
+    subprocess.run(
+        [
+            "bash",
+            "-c",
+            'source "$1"; SLURM_TMPDIR="$2"; q36_cleanup_local_tmp',
+            "bash",
+            str(common),
+            str(target),
+        ],
+        check=True,
+    )
+    assert not target.exists() and not target.is_symlink()
 
 
 def test_submit_prestages_exact_graph_writes_receipt_then_releases_root(

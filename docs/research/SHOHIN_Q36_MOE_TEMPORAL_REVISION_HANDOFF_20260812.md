@@ -7,6 +7,19 @@ H100-hours, arms, prompts, seeds, thresholds, and terminal stop are immutable.
 No retry, confirmation, or successor is authorized. PCF17 remains closed and
 unscored.
 
+Execution `q36-mtr-152e5b4-r1` stopped at its no-score mechanics admission on
+2026-08-13. The exact model fully loaded on one H100, but Transformers' causal
+loader attached the pinned nested `qwen3_5_moe_text` config directly to
+`Qwen3_5MoeForCausalLM`; the prospective validator incorrectly looked for that
+text config beneath an outer wrapper and failed before attaching an adapter.
+All 31 dependent roots were canceled with zero elapsed time, no capability row
+or development assessor was read, and no scientific PASS/FAIL exists. The
+immutable terminal-infrastructure receipt is
+`Q36_MTR_EXECUTION_TERMINAL_20260813.json`. The implementation now admits both
+the exact outer-config view and the exact causal-loader projection while still
+requiring the pinned class and every frozen geometry value. This correction is
+prospective only; it does not retry or relabel the closed execution.
+
 Local preparation now includes `pipeline/q36_mtr_contract.py`, which emits and
 revalidates the exact single-execution 61-request dependency graph, and
 `pipeline/compare_q36_mtr.py`, which implements the five-arm terminal reducer.

@@ -259,10 +259,24 @@ def validate_backbone_geometry(backbone: Any) -> list[int]:
     """Pin the exact cached Q36 causal host before any trainable is attached."""
 
     config = getattr(backbone, "config", None)
-    text_config = getattr(config, "text_config", None)
+    loaded_model_type = getattr(config, "model_type", None)
+    if loaded_model_type == MODEL_TYPE:
+        text_config = getattr(config, "text_config", None)
+        config_layout = "outer-with-text-config"
+    elif loaded_model_type == TEXT_MODEL_TYPE:
+        # AutoModelForCausalLM resolves the pinned outer Qwen3.5 MoE config to
+        # the causal language model and attaches its nested text config
+        # directly to the loaded module.  The immutable source config hash is
+        # checked separately; admission must validate the geometry that HF
+        # actually attaches to this exact causal class.
+        text_config = config
+        config_layout = "resolved-causal-text-config"
+    else:
+        text_config = None
+        config_layout = None
     observed = {
         "model_class": type(backbone).__name__,
-        "model_type": getattr(config, "model_type", None),
+        "loaded_model_type": loaded_model_type,
         "text_model_type": getattr(text_config, "model_type", None),
         "hidden_size": getattr(text_config, "hidden_size", None),
         "model_layers": getattr(text_config, "num_hidden_layers", None),
@@ -277,7 +291,7 @@ def validate_backbone_geometry(backbone: Any) -> list[int]:
     }
     expected = {
         "model_class": CAUSAL_MODEL_CLASS,
-        "model_type": MODEL_TYPE,
+        "loaded_model_type": loaded_model_type,
         "text_model_type": TEXT_MODEL_TYPE,
         "hidden_size": HIDDEN_SIZE,
         "model_layers": MODEL_LAYERS,
@@ -288,7 +302,14 @@ def validate_backbone_geometry(backbone: Any) -> list[int]:
         "vocab_size": VOCAB_SIZE,
         "layer_types": LAYER_TYPES,
     }
-    if observed != expected:
+    if (
+        config_layout
+        not in {
+            "outer-with-text-config",
+            "resolved-causal-text-config",
+        }
+        or observed != expected
+    ):
         raise Q36MTRRoleError(
             "Q36-MTR exact causal host geometry differs: "
             f"expected={expected!r} observed={observed!r}"
