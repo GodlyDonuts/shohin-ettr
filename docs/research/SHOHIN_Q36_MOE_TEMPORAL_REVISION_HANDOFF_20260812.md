@@ -13,6 +13,20 @@ source/data/runtime identity, one assessor read, scheduler accounting, and the
 evidence mirror. It always stops after development and never authorizes an
 automatic confirmation. These modules are preparation, not a dispatcher.
 
+The role-mechanics milestone is also implemented prospectively. The exact
+Q36 source owner, aligned reviser, and draft-hidden reviser contract lives in
+`train/q36_mtr_roles.py`; `train/hf_q36_mtr_train_role.py` trains only the
+declared final-16 rank-18 shared post-MLP residual and explicitly supplies
+full-sequence position IDs before the hidden arm masks draft attention.
+`train/hf_q36_mtr_generate_drafts.py` assigns all 7,113 nonsealed identities
+to 16 deterministic owner-draft shards. The matching Slurm wrappers request
+one H100, disable requeue, retain the exact exclusion set, and require a
+future hash-bound phase-authorization receipt. They contain no submission
+command. `pipeline/compile_q36_mtr_plan.py` expands the frozen graph into 61
+unique single-H100 request records, but is intentionally dry-run-only and
+rejects any submit or acquisition authorization. This milestone therefore
+closes the model-role ambiguity without launching the MoE experiment.
+
 The PCF17 infrastructure finding is also repaired prospectively: exact-tree
 custody accepts either canonical manifest members or the single conventional
 `./` prefix emitted by `find .`, canonicalizing before comparison. Interior

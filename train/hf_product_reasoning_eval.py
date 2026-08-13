@@ -730,7 +730,10 @@ def _load_model(
             RME1Config(**rme),
             draft_control=str(metadata.get("rme1_draft_control", "normal")),
         ).to("cuda:0")
-    elif metadata.get("architecture") == "shohin-shared-post-mlp-revision-v1":
+    elif metadata.get("architecture") in {
+        "shohin-shared-post-mlp-revision-v1",
+        "shohin-q36-mtr-shared-post-mlp-v1",
+    }:
         from shared_post_mlp_revision import (
             SharedPostMLPConfig,
             SharedPostMLPProductModel,
