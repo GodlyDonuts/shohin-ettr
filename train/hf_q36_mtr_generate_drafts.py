@@ -160,9 +160,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     from hf_product_reasoning_eval import (
         _generate_completions,
         _generation_stop_token_ids,
-        _load_model,
         _render_prompt,
     )
+    from hf_q36_mtr_evaluate import load_q36_adapter_model
     from hf_pcf1_evaluate import nonpadding_prompt_tokens
 
     if (
@@ -195,8 +195,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     tokenizer.padding_side = "left"
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
-    model, metadata, loader = _load_model(
-        args.model_root, args.owner_checkpoint, "causal", quantization="nf4"
+    model, metadata, loader = load_q36_adapter_model(
+        args.model_root, args.owner_checkpoint
     )
     validate_owner_metadata(metadata)
     stop_ids = _generation_stop_token_ids(tokenizer)

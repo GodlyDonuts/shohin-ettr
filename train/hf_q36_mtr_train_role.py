@@ -34,6 +34,7 @@ from q36_mtr_roles import (
     MODEL_REVISION,
     QUANTIZATION,
     RANK,
+    ROLE_CHECKPOINT_SCHEMA,
     TRAINABLE_PARAMETERS,
     TRAINABLE_MASTER_DTYPE,
     Q36MTRRoleError,
@@ -91,7 +92,7 @@ def _save_role_checkpoint(
         raise Q36MTRTrainingError("Q36-MTR role checkpoint temporary exists")
     torch.save(
         {
-            "schema": "shohin-hf-product-reasoning-checkpoint-v1",
+            "schema": ROLE_CHECKPOINT_SCHEMA,
             "update": update,
             "trainable_state": state,
             "metadata": metadata,
@@ -511,7 +512,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     _save_role_checkpoint(checkpoint, model, update, metadata)
     saved = torch.load(checkpoint, map_location="cpu", weights_only=True)
     if (
-        saved.get("schema") != "shohin-hf-product-reasoning-checkpoint-v1"
+        saved.get("schema") != ROLE_CHECKPOINT_SCHEMA
         or saved.get("update") != update
         or saved.get("metadata") != metadata
         or not isinstance(saved.get("trainable_state"), dict)

@@ -20,6 +20,7 @@ MODEL_MANIFEST_SHA256 = (
     "06c9d8d8419244f2d001cb351e164f356718d9d77138e898b13afee35856f56e"
 )
 ARCHITECTURE = "shohin-q36-mtr-shared-post-mlp-v1"
+ROLE_CHECKPOINT_SCHEMA = "shohin-hf-product-reasoning-checkpoint-v1"
 HIDDEN_SIZE = 2048
 CONTROLLED_LAYERS = 16
 RANK = 18

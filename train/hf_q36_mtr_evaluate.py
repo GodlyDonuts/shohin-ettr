@@ -20,7 +20,6 @@ from hf_pcf1_evaluate import (
 from hf_product_reasoning_eval import (
     _generate_completions,
     _generation_stop_token_ids,
-    _load_model,
     _render_prompt,
 )
 from pcf1_code_sandbox import (
@@ -33,12 +32,23 @@ from pcf1_code_sandbox import (
     score_completion,
 )
 from q36_mtr_roles import (
+    ALPHA,
     CONTROLLED_LAYERS,
+    HIDDEN_SIZE,
     MODEL_REVISION,
     Q36MTRRoleError,
+    RANK,
+    ROLE_CHECKPOINT_SCHEMA,
     TRAINABLE_PARAMETERS,
     TRAINABLE_MASTER_DTYPE,
+    role_spec,
     validate_contract,
+)
+from shared_post_mlp_revision import (
+    SharedPostMLPConfig,
+    SharedPostMLPProductModel,
+    trainable_state,
+    trainable_state_sha256,
 )
 
 DATA_SCHEMA = "shohin-q36-mtr-eval-v1"
@@ -61,6 +71,103 @@ ROLE_BY_ARM = {
 
 class Q36MTREvaluationError(RuntimeError):
     """The Q36-MTR matched evaluation boundary differs."""
+
+
+def load_q36_checkpoint_payload(path: Path) -> dict[str, Any]:
+    import torch
+
+    if path.is_symlink() or not path.is_file():
+        raise Q36MTREvaluationError("Q36-MTR role checkpoint is absent or symbolic")
+    payload = torch.load(path, map_location="cpu", weights_only=True)
+    saved = payload.get("trainable_state") if isinstance(payload, dict) else None
+    if (
+        not isinstance(payload, dict)
+        or set(payload) != {"schema", "update", "trainable_state", "metadata"}
+        or payload.get("schema") != ROLE_CHECKPOINT_SCHEMA
+        or payload.get("update") != 256
+        or not isinstance(saved, dict)
+        or len(saved) != CONTROLLED_LAYERS * 2
+        or sum(int(tensor.numel()) for tensor in saved.values()) != TRAINABLE_PARAMETERS
+        or any(
+            not (name.endswith("adapter_a.weight") or name.endswith("adapter_b.weight"))
+            for name in saved
+        )
+        or any(tensor.dtype != torch.float32 for tensor in saved.values())
+        or not isinstance(payload.get("metadata"), dict)
+        or payload["metadata"].get("optimizer_state_serialized") is not False
+        or payload["metadata"].get("checkpoint_trainable_only") is not True
+        or payload["metadata"].get("router_expert_checkpoint_tensors") != 0
+        or payload["metadata"].get("serialization_restore_exact") is not True
+        or payload["metadata"].get("final_trainable_state_sha256")
+        != trainable_state_sha256(saved)
+    ):
+        raise Q36MTREvaluationError("Q36-MTR role checkpoint payload differs")
+    return payload
+
+
+def load_q36_adapter_model(model_root: Path, checkpoint: Path):
+    import torch
+
+    from hf_product_reasoning_train import load_product_backbone
+
+    payload = load_q36_checkpoint_payload(checkpoint)
+    metadata = payload["metadata"]
+    role = metadata.get("role")
+    if role not in {"owner", "aligned", "draft_hidden"}:
+        raise Q36MTREvaluationError("Q36-MTR checkpoint role differs")
+    try:
+        validate_contract(metadata, role)
+    except Q36MTRRoleError as error:
+        raise Q36MTREvaluationError(str(error)) from error
+    expected_config = {
+        "hidden_size": HIDDEN_SIZE,
+        "controlled_layers": CONTROLLED_LAYERS,
+        "rank": RANK,
+        "alpha": ALPHA,
+    }
+    if (
+        metadata.get("shared_post_mlp_config") != expected_config
+        or metadata.get("model_loader") != "causal"
+        or metadata.get("quantization") != "nf4"
+        or metadata.get("draft_control") != role_spec(role).draft_control
+    ):
+        raise Q36MTREvaluationError("Q36-MTR checkpoint model contract differs")
+    backbone, loader = load_product_backbone(
+        model_root,
+        "causal",
+        dtype=torch.bfloat16,
+        device_map={"": 0},
+        quantization="nf4",
+    )
+    if loader != "causal":
+        raise Q36MTREvaluationError("Q36-MTR resolved model loader differs")
+    model = SharedPostMLPProductModel(
+        backbone,
+        SharedPostMLPConfig(**expected_config),
+        draft_control=str(metadata.get("draft_control")),
+    )
+    current = {
+        name: parameter
+        for name, parameter in model.named_parameters()
+        if parameter.requires_grad
+    }
+    saved = payload["trainable_state"]
+    if set(saved) != set(current):
+        raise Q36MTREvaluationError("Q36-MTR restored residual names differ")
+    with torch.no_grad():
+        for name, parameter in current.items():
+            tensor = saved[name]
+            if tensor.shape != parameter.shape or tensor.dtype != parameter.dtype:
+                raise Q36MTREvaluationError(
+                    "Q36-MTR restored residual geometry differs"
+                )
+            parameter.copy_(tensor.to(device=parameter.device))
+    if trainable_state_sha256(trainable_state(model)) != metadata.get(
+        "final_trainable_state_sha256"
+    ):
+        raise Q36MTREvaluationError("Q36-MTR live residual restore differs")
+    model.eval()
+    return model, {"update": payload["update"], **metadata}, loader
 
 
 def reject_protected_path(path: Path) -> None:
@@ -290,8 +397,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     tokenizer.padding_side = "left"
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
-    model, metadata, loader = _load_model(
-        args.model_root, args.adapter_checkpoint, "causal", quantization="nf4"
+    model, metadata, loader = load_q36_adapter_model(
+        args.model_root, args.adapter_checkpoint
     )
     trainable_receipt = validate_adapter(model, metadata, args.arm)
     stop_ids = _generation_stop_token_ids(tokenizer)

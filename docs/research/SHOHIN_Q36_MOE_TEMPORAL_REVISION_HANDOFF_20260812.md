@@ -283,6 +283,11 @@ Role checkpoints serialize only the 32 residual tensors and metadata: no
 optimizer state and zero router/expert tensors. This makes optimizer carryover
 and learned native-MoE checkpoint mutation structurally impossible; evaluation
 always reconstructs the hash-pinned frozen host and overlays only that residual.
+Draft generation, matched evaluation, and learned-commit fitting share one
+Q36-only `weights_only` checkpoint loader. It rejects every payload except the
+exact 32 FP32 residual tensors and role metadata, revalidates the role/config,
+constructs the pinned causal NF4 host, copies those tensors with exact
+name/shape/dtype checks, and rehashes the resulting live residual state.
 
 ## Data and visibility
 

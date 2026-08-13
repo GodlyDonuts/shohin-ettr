@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from pathlib import Path
 
 import pytest
 
 import hf_q36_mtr_evaluate as module
-from q36_mtr_roles import TRAINABLE_PARAMETERS, role_contract
+from q36_mtr_roles import ROLE_CHECKPOINT_SCHEMA, TRAINABLE_PARAMETERS, role_contract
+from shared_post_mlp_revision import trainable_state_sha256
 
 
 class _Parameter:
@@ -70,6 +72,50 @@ def test_arm_role_and_visibility_contract(
 def test_wrong_checkpoint_role_fails_closed() -> None:
     with pytest.raises(module.Q36MTREvaluationError):
         module.validate_adapter(_Model(), _metadata("owner", "revision"), "revision")
+
+
+def _checkpoint(path: Path) -> None:
+    per_tensor = TRAINABLE_PARAMETERS // 32
+    state = {}
+    remaining = TRAINABLE_PARAMETERS
+    for index in range(32):
+        count = remaining if index == 31 else per_tensor
+        suffix = "adapter_a.weight" if index % 2 == 0 else "adapter_b.weight"
+        state[f"backbone.layers.{index // 2}.{suffix}"] = __import__("torch").zeros(
+            count, dtype=__import__("torch").float32
+        )
+        remaining -= count
+    metadata = {
+        **role_contract("owner"),
+        "optimizer_state_serialized": False,
+        "checkpoint_trainable_only": True,
+        "router_expert_checkpoint_tensors": 0,
+        "serialization_restore_exact": True,
+        "final_trainable_state_sha256": trainable_state_sha256(state),
+    }
+    __import__("torch").save(
+        {
+            "schema": ROLE_CHECKPOINT_SCHEMA,
+            "update": 256,
+            "trainable_state": state,
+            "metadata": metadata,
+        },
+        path,
+    )
+
+
+def test_q36_checkpoint_loader_is_weights_only_and_trainable_only(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "owner.pt"
+    _checkpoint(path)
+    payload = module.load_q36_checkpoint_payload(path)
+    assert "optimizer" not in payload
+    forged = __import__("torch").load(path, map_location="cpu", weights_only=True)
+    forged["optimizer"] = {"state": {}}
+    __import__("torch").save(forged, path)
+    with pytest.raises(module.Q36MTREvaluationError):
+        module.load_q36_checkpoint_payload(path)
 
 
 def test_hidden_role_cannot_claim_draft_information_availability() -> None:

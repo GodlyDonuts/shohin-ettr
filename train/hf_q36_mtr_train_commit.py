@@ -31,8 +31,7 @@ from hf_pcf1_train_commit import (
     hidden_states,
     margins_for_batch,
 )
-from hf_product_reasoning_eval import _load_model
-from hf_q36_mtr_evaluate import validate_adapter
+from hf_q36_mtr_evaluate import load_q36_adapter_model, validate_adapter
 from q36_mtr_roles import (
     ADAPTER_UPDATE_SCHEMA,
     MODEL_REVISION,
@@ -428,11 +427,8 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
     protected_before = sha256_file(args.adapter_checkpoint)
-    model, metadata, loader = _load_model(
-        args.model_root,
-        args.adapter_checkpoint,
-        args.model_loader,
-        quantization="nf4",
+    model, metadata, loader = load_q36_adapter_model(
+        args.model_root, args.adapter_checkpoint
     )
     if loader != "causal":
         raise Q36MTRCommitError("Q36 commit model loader differs")
