@@ -19,6 +19,7 @@ from build_q36_mtr_custody import (
 )
 from compare_q36_mtr import ARM_SCHEMA
 from q36_mtr_contract import MODEL_REVISION, validate_graph
+from q36_mtr_evidence import verify_evidence_snapshot
 from score_q36_mtr import AUTHORIZATION_SCHEMA, CONSUMPTION_SCHEMA, SCORE_SCHEMA
 
 SCHEMA = "shohin-q36-mtr-evidence-mirror-v1"
@@ -227,6 +228,16 @@ def mirror(args: argparse.Namespace) -> dict[str, Any]:
             "assessor_board_copied_or_opened": False,
             "sealed_access": {"holdout": 0, "product": 0, "public": 0},
         }
+        tree_rows = [
+            {"name": row["name"], "sha256": row["sha256"], "bytes": row["bytes"]}
+            for row in sorted(records, key=lambda value: value["name"])
+        ]
+        payload["artifact_tree_sha256"] = hashlib.sha256(
+            b"".join(
+                (json.dumps(row, sort_keys=True, separators=(",", ":")) + "\n").encode()
+                for row in tree_rows
+            )
+        ).hexdigest()
         manifest = temporary / "manifest.json"
         manifest.write_text(
             json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
@@ -251,6 +262,9 @@ def mirror(args: argparse.Namespace) -> dict[str, Any]:
     except BaseException:
         shutil.rmtree(temporary, ignore_errors=True)
         raise
+    verification = verify_evidence_snapshot(output / "manifest.json", payload)
+    if verification["artifact_tree_sha256"] != payload["artifact_tree_sha256"]:
+        raise Q36MTREvidenceError("Q36 durable mirror verification differs")
     return payload
 
 

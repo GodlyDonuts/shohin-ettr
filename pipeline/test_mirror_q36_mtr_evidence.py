@@ -15,6 +15,7 @@ from compare_q36_mtr import ARM_SCHEMA
 from compile_q36_mtr_plan import compile_plan
 from mirror_q36_mtr_evidence import Q36MTREvidenceError, mirror, sha256_file
 from q36_mtr_contract import MODEL_REVISION, graph_payload
+from q36_mtr_evidence import verify_evidence_snapshot
 from score_q36_mtr import AUTHORIZATION_SCHEMA, CONSUMPTION_SCHEMA, SCORE_SCHEMA
 
 COMMIT = "1" * 40
@@ -162,6 +163,12 @@ def test_q36_evidence_mirror_copies_and_rehashes_exact_snapshot(
     assert result["verified"] is True
     assert result["assessor_board_copied_or_opened"] is False
     assert result["artifact_count"] == len(result["artifact_sha256s"])
+    assert (
+        verify_evidence_snapshot(args.output_root / "manifest.json", result)[
+            "artifact_tree_sha256"
+        ]
+        == result["artifact_tree_sha256"]
+    )
     for record in result["records"]:
         assert sha256_file(Path(record["mirror"])) == record["sha256"]
 

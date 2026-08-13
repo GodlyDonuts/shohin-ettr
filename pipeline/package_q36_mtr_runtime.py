@@ -39,6 +39,7 @@ REQUIRED = {
     "pipeline/merge_q36_mtr_evaluations.py",
     "pipeline/mirror_q36_mtr_evidence.py",
     "pipeline/normalize_q36_mtr_score.py",
+    "pipeline/q36_mtr_evidence.py",
     "pipeline/render_q36_mtr_publication_figure.py",
     "pipeline/score_q36_mtr.py",
     "pipeline/seal_q36_mtr_terminal_evidence.py",

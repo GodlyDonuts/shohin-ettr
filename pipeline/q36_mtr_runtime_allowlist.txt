@@ -32,6 +32,7 @@ pipeline/mirror_q36_mtr_evidence.py
 pipeline/normalize_q36_mtr_score.py
 pipeline/package_q36_mtr_runtime.py
 pipeline/q36_mtr_contract.py
+pipeline/q36_mtr_evidence.py
 pipeline/q36_mtr_runtime_allowlist.txt
 pipeline/render_q36_mtr_publication_figure.py
 pipeline/score_q36_mtr.py

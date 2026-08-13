@@ -13,6 +13,10 @@ import shutil
 from build_q36_mtr_custody import EVIDENCE_SCHEMA
 from compare_q36_mtr import CUSTODY_SCHEMA, OUTPUT_SCHEMA
 from q36_mtr_contract import SCHEMA as GRAPH_SCHEMA, validate_graph
+from q36_mtr_evidence import (
+    Q36MTREvidenceVerificationError,
+    verify_evidence_snapshot,
+)
 
 SCHEMA = "shohin-q36-mtr-terminal-evidence-v1"
 
@@ -67,6 +71,12 @@ def seal(args: argparse.Namespace) -> dict:
     validate_graph(graph)
     custody = _load(args.final_custody, CUSTODY_SCHEMA)
     preterminal = _load(args.preterminal_evidence, EVIDENCE_SCHEMA)
+    try:
+        preterminal_verification = verify_evidence_snapshot(
+            args.preterminal_evidence, preterminal
+        )
+    except Q36MTREvidenceVerificationError as error:
+        raise Q36MTRTerminalEvidenceError(str(error)) from error
     result = _load(args.final_result, OUTPUT_SCHEMA)
     if (
         result.get("status") != "complete"
@@ -91,6 +101,10 @@ def seal(args: argparse.Namespace) -> dict:
         or preterminal.get("verified") is not True
         or preterminal.get("run_id") != result.get("run_id")
         or preterminal.get("source_commit") != graph.get("source_commit")
+        or preterminal.get("artifact_tree_sha256")
+        != preterminal_verification["artifact_tree_sha256"]
+        or custody.get("evidence_mirror_tree_sha256")
+        != preterminal_verification["artifact_tree_sha256"]
     ):
         raise Q36MTRTerminalEvidenceError("Q36 terminal result custody differs")
     inputs = {
@@ -131,6 +145,9 @@ def seal(args: argparse.Namespace) -> dict:
             "gate_pass": result["gate_pass"],
             "records": records,
             "preterminal_evidence_sha256": sha256_file(args.preterminal_evidence),
+            "preterminal_evidence_tree_sha256": preterminal_verification[
+                "artifact_tree_sha256"
+            ],
             "final_custody_sha256": sha256_file(args.final_custody),
             "final_result_sha256": sha256_file(args.final_result),
             "stop_after_gate": True,

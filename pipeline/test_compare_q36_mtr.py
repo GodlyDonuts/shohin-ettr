@@ -170,6 +170,7 @@ def _fixture(
         "charged_gpu_seconds": 212040.0,
         "evidence_mirror_verified": True,
         "evidence_mirror_manifest_sha256": MIRROR_MANIFEST_SHA256,
+        "evidence_mirror_tree_sha256": "2" * 64,
         **custody_overrides,
     }
     paths["final_custody"] = _write(root / "custody.json", custody)
@@ -265,6 +266,12 @@ def test_exact_boundary_pass_is_terminal_and_atomic(tmp_path: Path) -> None:
                 "evidence_mirror_verified", False
             ),
             "custody_evidence_mirror_verified",
+        ),
+        (
+            lambda _arms, custody: custody.__setitem__(
+                "evidence_mirror_tree_sha256", None
+            ),
+            "custody_evidence_mirror_tree_verified",
         ),
         (
             lambda _arms, custody: custody.__setitem__(

@@ -10,6 +10,7 @@ from build_q36_mtr_custody import EVIDENCE_SCHEMA
 from compare_q36_mtr import CUSTODY_SCHEMA, OUTPUT_SCHEMA
 from mirror_q36_mtr_evidence import sha256_file
 from q36_mtr_contract import graph_payload
+from q36_mtr_evidence import verify_evidence_snapshot
 from seal_q36_mtr_terminal_evidence import (
     Q36MTRTerminalEvidenceError,
     seal,
@@ -23,6 +24,48 @@ def _write(path: Path, value: dict) -> Path:
 
 def _fixture(tmp_path: Path) -> argparse.Namespace:
     graph = _write(tmp_path / "graph.json", graph_payload("a" * 40))
+    preterminal_root = tmp_path / "preterminal"
+    artifacts = preterminal_root / "artifacts"
+    artifacts.mkdir(parents=True)
+    mirrored = artifacts / "graph_contract.json"
+    mirrored.write_bytes(graph.read_bytes())
+    digest = sha256_file(mirrored)
+    record = {
+        "name": "graph_contract",
+        "primary": str(graph.resolve()),
+        "mirror": str(mirrored.resolve()),
+        "sha256": digest,
+        "bytes": mirrored.stat().st_size,
+    }
+    tree_row = {"name": "graph_contract", "sha256": digest, "bytes": record["bytes"]}
+    import hashlib
+
+    tree_digest = hashlib.sha256(
+        (json.dumps(tree_row, sort_keys=True, separators=(",", ":")) + "\n").encode()
+    ).hexdigest()
+    preterminal_payload = {
+        "schema": EVIDENCE_SCHEMA,
+        "status": "complete",
+        "verified": True,
+        "run_id": "run",
+        "source_commit": "a" * 40,
+        "artifact_sha256s": {"graph_contract": digest},
+        "artifact_count": 1,
+        "artifact_tree_sha256": tree_digest,
+        "records": [record],
+        "primary_mirror_hashes_exact": True,
+        "write_once_snapshot": True,
+    }
+    preterminal = _write(preterminal_root / "manifest.json", preterminal_payload)
+    mirrored.chmod(0o444)
+    artifacts.chmod(0o555)
+    preterminal_root.chmod(0o555)
+    assert (
+        verify_evidence_snapshot(preterminal, preterminal_payload)[
+            "artifact_tree_sha256"
+        ]
+        == tree_digest
+    )
     custody = _write(
         tmp_path / "custody.json",
         {
@@ -30,16 +73,7 @@ def _fixture(tmp_path: Path) -> argparse.Namespace:
             "status": "complete",
             "run_id": "run",
             "custody_verified": True,
-        },
-    )
-    preterminal = _write(
-        tmp_path / "preterminal.json",
-        {
-            "schema": EVIDENCE_SCHEMA,
-            "status": "complete",
-            "verified": True,
-            "run_id": "run",
-            "source_commit": "a" * 40,
+            "evidence_mirror_tree_sha256": tree_digest,
         },
     )
     result = _write(

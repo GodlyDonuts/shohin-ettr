@@ -486,7 +486,14 @@ runtime under a live graph.
 Every irreplaceable checkpoint, merged candidate file, source/data report,
 model/runtime/environment manifest, accounting receipt, score authorization,
 consumption marker, result, and terminal receipt is hash-manifested in the
-phase run root. After each immutable stage, mirror compact artifacts atomically
+phase run root and copied to the authorized durable evidence root. Durable
+custody does not trust the mirror
+manifest as a self-assertion: final custody and terminal sealing independently
+reopen the snapshot, require exact root/artifact membership, reject symlinks,
+extras, writable members, byte-count drift, or hash drift, and bind a canonical
+artifact-tree digest. A manifest that survives after any mirrored evidence was
+removed or changed cannot satisfy the publication gate. After each immutable
+stage, mirror compact artifacts atomically
 to a phase-specific read-only local evidence root. Temporary shards may be
 removed only after: the merged artifact independently replays exact row
 coverage; both primary and mirror SHA-256 manifests match; the downstream

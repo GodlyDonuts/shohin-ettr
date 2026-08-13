@@ -31,6 +31,10 @@ from merge_q36_mtr_drafts import SCHEMA as DRAFT_REPORT_SCHEMA
 from merge_q36_mtr_evaluations import SCHEMA as EVALUATION_REPORT_SCHEMA
 from pcf1_code_sandbox import BWRAP_SHA256, SANDBOX_CONFIG_SHA256
 from q36_mtr_contract import MODEL_REVISION, STAGES, TOTAL_ROWS, validate_graph
+from q36_mtr_evidence import (
+    Q36MTREvidenceVerificationError,
+    verify_evidence_snapshot,
+)
 from q36_mtr_roles import (
     CAUSAL_MODEL_CLASS,
     CONTROLLED_LAYER_INDICES,
@@ -1027,6 +1031,10 @@ def build_final(args: argparse.Namespace) -> dict[str, Any]:
     consumption = _load(args.score_consumption, CONSUMPTION_SCHEMA)
     accounting = _load(args.scheduler_accounting, ACCOUNTING_SCHEMA)
     evidence = _load(args.evidence_mirror, EVIDENCE_SCHEMA)
+    try:
+        evidence_verification = verify_evidence_snapshot(args.evidence_mirror, evidence)
+    except Q36MTREvidenceVerificationError as error:
+        raise Q36MTRCustodyError(str(error)) from error
     graph = _load(args.graph_contract)
     validate_graph(graph)
     arm_paths = _artifacts(args.arm_report)
@@ -1129,6 +1137,8 @@ def build_final(args: argparse.Namespace) -> dict[str, Any]:
         or accounting["charged_gpu_seconds"] <= 0
         or evidence.get("status") != "complete"
         or evidence.get("verified") is not True
+        or evidence.get("artifact_tree_sha256")
+        != evidence_verification["artifact_tree_sha256"]
         or evidence.get("run_id") != precompute["run_id"]
         or evidence.get("source_commit") != graph.get("source_commit")
         or evidence.get("graph_contract_sha256") != graph_sha256
@@ -1186,6 +1196,7 @@ def build_final(args: argparse.Namespace) -> dict[str, Any]:
         "charged_gpu_seconds": accounting["charged_gpu_seconds"],
         "evidence_mirror_verified": True,
         "evidence_mirror_manifest_sha256": sha256_file(args.evidence_mirror),
+        "evidence_mirror_tree_sha256": evidence_verification["artifact_tree_sha256"],
         "source_disjoint": True,
         "custody_verified": True,
     }

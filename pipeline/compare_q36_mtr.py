@@ -416,6 +416,9 @@ def compare(args: argparse.Namespace) -> dict[str, Any]:
         not in (None, 0.0),
         "evidence_mirror_verified": custody.get("evidence_mirror_verified") is True
         and _hex_digest(custody.get("evidence_mirror_manifest_sha256")),
+        "evidence_mirror_tree_verified": _hex_digest(
+            custody.get("evidence_mirror_tree_sha256")
+        ),
     }
     checks.update({f"custody_{name}": value for name, value in custody_checks.items()})
 

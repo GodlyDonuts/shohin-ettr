@@ -612,6 +612,7 @@ def _final_fixture(tmp_path: Path) -> argparse.Namespace:
             "source_commit": "a" * 40,
             "graph_contract_sha256": graph_sha256,
             "artifact_sha256s": evidence_hashes,
+            "artifact_tree_sha256": "1" * 64,
         },
     )
     return argparse.Namespace(
@@ -627,13 +628,24 @@ def _final_fixture(tmp_path: Path) -> argparse.Namespace:
 
 
 def test_q36_final_custody_replays_accounting_score_and_mirror(
-    tmp_path: Path,
+    tmp_path: Path, monkeypatch
 ) -> None:
     args = _final_fixture(tmp_path)
+    monkeypatch.setattr(
+        "build_q36_mtr_custody.verify_evidence_snapshot",
+        lambda *_args: {
+            "artifact_count": 1,
+            "artifact_tree_sha256": "1" * 64,
+            "exact_membership": True,
+            "all_hashes_verified": True,
+            "all_members_nonwritable": True,
+        },
+    )
     report = build_final(args)
     assert report["custody_verified"] is True
     assert report["checkpoint_hashes_verified"] is True
     assert report["evidence_mirror_verified"] is True
+    assert report["evidence_mirror_tree_sha256"] == "1" * 64
 
 
 def test_q36_final_custody_rejects_mirror_hash_drift(tmp_path: Path) -> None:
