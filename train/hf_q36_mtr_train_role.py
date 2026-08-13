@@ -149,6 +149,61 @@ def full_sequence_position_ids(attention: torch.Tensor) -> torch.Tensor:
     )
 
 
+def training_consumption_receipt(
+    examples: list[tuple[list[int], list[int], list[int]]],
+    *,
+    updates: int,
+    gradient_accumulation: int,
+    batch_size: int,
+) -> dict[str, Any]:
+    """Hash the exact deterministic presentation prefix consumed by training."""
+
+    if (
+        not examples
+        or min(updates, gradient_accumulation, batch_size) <= 0
+        or len(examples) % batch_size
+    ):
+        raise Q36MTRTrainingError("Q36-MTR consumption geometry differs")
+    batches = list(_batches(examples, batch_size))
+    microsteps = updates * gradient_accumulation
+    indices: list[int] = []
+    token_digest = hashlib.sha256()
+    mask_digest = hashlib.sha256()
+    for microstep in range(microsteps):
+        batch_index = microstep % len(batches)
+        first_index = batch_index * batch_size
+        for offset, (prompt, response, mask) in enumerate(batches[batch_index]):
+            index = first_index + offset
+            indices.append(index)
+            token_digest.update(
+                (
+                    json.dumps(
+                        {"prompt": prompt, "response": response},
+                        separators=(",", ":"),
+                    )
+                    + "\n"
+                ).encode()
+            )
+            mask_digest.update(
+                (json.dumps(mask, separators=(",", ":")) + "\n").encode()
+            )
+    index_preimage = ("\n".join(map(str, indices)) + "\n").encode()
+    return {
+        "dataset_presentations": len(examples),
+        "optimizer_updates": updates,
+        "gradient_accumulation": gradient_accumulation,
+        "batch_size": batch_size,
+        "microsteps": microsteps,
+        "consumed_presentations": len(indices),
+        "unique_consumed_presentations": len(set(indices)),
+        "complete_dataset_cycles": len(indices) // len(examples),
+        "partial_cycle_presentations": len(indices) % len(examples),
+        "presentation_index_sha256": hashlib.sha256(index_preimage).hexdigest(),
+        "consumed_token_geometry_sha256": token_digest.hexdigest(),
+        "consumed_draft_attention_sha256": mask_digest.hexdigest(),
+    }
+
+
 def _validate_arguments(args: argparse.Namespace) -> None:
     spec = role_spec(args.role)
     expected = {
@@ -282,6 +337,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         backbone.enable_input_require_grads()
     examples = list(zip(prompts, responses, draft_masks, strict=True))
     batches = list(_batches(examples, args.batch_size))
+    consumption_receipt = training_consumption_receipt(
+        examples,
+        updates=args.updates,
+        gradient_accumulation=args.gradient_accumulation,
+        batch_size=args.batch_size,
+    )
     optimizer = torch.optim.AdamW(
         [parameter for parameter in model.parameters() if parameter.requires_grad],
         lr=args.learning_rate,
@@ -313,6 +374,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "draft_information_available": args.role == "aligned",
         "draft_attention_applied": args.role == "draft_hidden",
         "sequence_custody": sequence_receipt,
+        "training_consumption": consumption_receipt,
         "warm_start_checkpoint": (
             str(args.warm_start_checkpoint.resolve())
             if args.warm_start_checkpoint is not None

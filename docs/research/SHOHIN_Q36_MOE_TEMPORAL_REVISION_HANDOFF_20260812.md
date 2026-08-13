@@ -255,9 +255,13 @@ Freeze with split seed `2026080811`: exactly `5,824` train identities and one
 source-disjoint `1,289`-identity broad development board. Generate one Q36
 owner draft for all `7,113` identities in 16 ordered shards using seed
 `2026080818`, greedy decoding, and 768 new-token maximum. The revision corpus
-has exactly `9,655` presentations under the existing 4x single-correct / 1x
-both-correct-or-wrong weighting. Both revisers train for exactly 256 updates,
-LR `2e-5`, seed `2026080815`, data seed `2026080814`, maximum sequence 4,096.
+has an exact `9,655`-presentation pool under the existing 4x single-correct /
+1x both-correct-or-wrong weighting. Matching the surviving dense recipe, each
+reviser consumes the first deterministic shuffled `2,048` presentations
+(`256` updates x accumulation `8` x batch `1`), rather than claiming that all
+`9,655` are traversed. Role custody hashes the exact consumed indices, token
+geometry, and draft-mask geometry. Both revisers use LR `2e-5`, seed
+`2026080815`, data seed `2026080814`, and maximum sequence 4,096.
 The hidden reviser receives the same token/position geometry and loss targets;
 only informative draft attention is masked.
 

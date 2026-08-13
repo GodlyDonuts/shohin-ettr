@@ -214,8 +214,11 @@ def _validate_role_report(
 ) -> None:
     expected = role_contract(role)
     selected = 100_000 if role == "owner" else 9_655
+    expected_accumulation = 16 if role == "owner" else 8
+    expected_consumed = 256 * expected_accumulation
     draft_bytes = role != "owner"
     draft_information = role == "aligned"
+    consumption = report.get("training_consumption")
     if (
         report.get("schema") != ROLE_REPORT_SCHEMA
         or report.get("status") != "complete"
@@ -233,6 +236,24 @@ def _validate_role_report(
         or report.get("draft_information_available") is not draft_information
         or report.get("draft_attention_applied") is not (role == "draft_hidden")
         or not isinstance(report.get("sequence_custody"), dict)
+        or not isinstance(consumption, dict)
+        or consumption.get("dataset_presentations") != selected
+        or consumption.get("optimizer_updates") != 256
+        or consumption.get("gradient_accumulation") != expected_accumulation
+        or consumption.get("batch_size") != 1
+        or consumption.get("microsteps") != expected_consumed
+        or consumption.get("consumed_presentations") != expected_consumed
+        or consumption.get("unique_consumed_presentations") != expected_consumed
+        or consumption.get("complete_dataset_cycles") != 0
+        or consumption.get("partial_cycle_presentations") != expected_consumed
+        or any(
+            not isinstance(consumption.get(field), str) or len(consumption[field]) != 64
+            for field in (
+                "presentation_index_sha256",
+                "consumed_token_geometry_sha256",
+                "consumed_draft_attention_sha256",
+            )
+        )
         or report.get("sealed_access") != {"holdout": 0, "product": 0, "public": 0}
     ):
         raise Q36MTRCustodyError(f"Q36 {role} role custody differs")
@@ -301,6 +322,8 @@ def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
         raise Q36MTRCustodyError(
             "Q36 aligned/hidden causal geometry differs"
         ) from error
+    if aligned["training_consumption"] != hidden["training_consumption"]:
+        raise Q36MTRCustodyError("Q36 aligned/hidden consumed prefix differs")
     freeze = _load(artifacts["freeze_report"], FREEZE_REPORT_SCHEMA)
     draft = _load(artifacts["draft_report"], DRAFT_REPORT_SCHEMA)
     data = _load(artifacts["data_report"], DATA_REPORT_SCHEMA)

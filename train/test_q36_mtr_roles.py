@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -11,6 +12,7 @@ from hf_q36_mtr_train_role import (
     Q36MTRTrainingError,
     _validate_arguments,
     full_sequence_position_ids,
+    training_consumption_receipt,
 )
 from q36_mtr_roles import (
     MODEL_REVISION,
@@ -145,6 +147,26 @@ def test_matched_geometry_rejects_token_or_position_drift() -> None:
     hidden["position_geometry_sha256"] = "0" * 64
     with pytest.raises(Q36MTRRoleError):
         validate_matched_revision_geometry(aligned, hidden)
+
+
+def test_training_consumption_binds_effective_prefix_not_loaded_pool() -> None:
+    examples = [([index], [index + 20], [1]) for index in range(5)]
+    receipt = training_consumption_receipt(
+        examples,
+        updates=2,
+        gradient_accumulation=2,
+        batch_size=1,
+    )
+    assert receipt["dataset_presentations"] == 5
+    assert receipt["microsteps"] == 4
+    assert receipt["consumed_presentations"] == 4
+    assert receipt["unique_consumed_presentations"] == 4
+    assert receipt["complete_dataset_cycles"] == 0
+    assert receipt["partial_cycle_presentations"] == 4
+    assert (
+        receipt["presentation_index_sha256"]
+        == hashlib.sha256(b"0\n1\n2\n3\n").hexdigest()
+    )
 
 
 def _arguments(role: str) -> SimpleNamespace:
