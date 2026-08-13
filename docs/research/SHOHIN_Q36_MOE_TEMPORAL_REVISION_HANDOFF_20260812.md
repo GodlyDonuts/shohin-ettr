@@ -1,6 +1,6 @@
 # Q36-MTR: MoE Temporal-Revision Handoff
 
-Status: third execution terminal-infrastructure failure, 2026-08-13. No
+Status: fourth execution terminal-infrastructure failure, 2026-08-13. No
 scientific PASS/FAIL exists. The pinned Q36-MTR host, source-disjoint data
 view, 61 single-H100 requests, 58.90 expected H100-hours, arms, prompts,
 seeds, thresholds, and terminal stop remain immutable. No retry,
@@ -20,6 +20,15 @@ roots were cancelled with zero elapsed time. Preserve
 prospective validator now separates the unchanged `100,000` selection ceiling
 from the exact `26,387` selected population, preserving the same seed, shuffle,
 256 updates, and 4,096-presentation consumption prefix.
+
+Execution `q36-mtr-82dd49b0-r1` exposed the corresponding historical token-budget
+convention before backbone load: the dense trainer applies `1,024` to prompt
+plus response and then appends one EOS token, so an exact final packed length
+of `1,025` is valid and untruncated. The Q36 validator had counted EOS against
+the pre-EOS ceiling. It now records an explicit one-token EOS allowance while
+leaving prompt bytes, response bytes, the `1,024` budget, selected population,
+shuffle, and consumed prefix unchanged. Preserve
+`Q36_MTR_OWNER_EOS_TERMINAL_20260813.json`.
 
 Corrected execution `q36-mtr-bf17823-r1` passed its CPU live preflight and
 crossed the prior causal-loader failure: H100 job `754563` loaded all 693

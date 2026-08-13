@@ -14,6 +14,7 @@ from hf_q36_mtr_train_role import (
     _save_role_checkpoint,
     _validate_arguments,
     full_sequence_position_ids,
+    tokenize_role_rows,
     training_consumption_receipt,
 )
 from build_pcf1_data import revision_prompt
@@ -180,7 +181,7 @@ def test_role_checkpoint_contains_no_optimizer_or_native_moe_state(
 def test_owner_warm_start_is_exact_source_only_state() -> None:
     metadata = {
         **role_contract("owner"),
-        "selected_rows": 100_000,
+        "selected_rows": 26_387,
         "source_only_model_visible": True,
         "internal_draft_visible": False,
         "trainable_parameter_name_sha256": "a" * 64,
@@ -212,6 +213,29 @@ def test_owner_warm_start_is_exact_source_only_state() -> None:
             trainable_parameter_name_sha256="a" * 64,
             loaded_trainable_state_sha256="c" * 64,
         )
+
+
+class _BudgetTokenizer:
+    chat_template = None
+    eos_token_id = 3
+
+    def encode(self, text: str, *, add_special_tokens: bool) -> list[int]:
+        assert add_special_tokens is False
+        return [1] * (3 if text == "answer" else 5)
+
+
+def test_owner_sequence_budget_is_pre_eos_like_surviving_dense_recipe() -> None:
+    prompts, responses, masks, receipt = tokenize_role_rows(
+        _BudgetTokenizer(),
+        [{"question": "problem", "response": "answer"}],
+        role="owner",
+        max_sequence_length=8,
+    )
+    assert len(prompts[0]) + len(responses[0]) == 9
+    assert masks == [[1] * 5]
+    assert receipt["maximum_observed_tokens"] == 9
+    assert receipt["maximum_sequence_length"] == 8
+    assert receipt["eos_token_allowance"] == 1
 
 
 def test_hidden_control_preserves_tokens_and_full_positions() -> None:

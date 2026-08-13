@@ -175,7 +175,10 @@ def tokenize_role_rows(
         response.append(int(tokenizer.eos_token_id))
         total = len(prompt) + len(response)
         maximum_observed = max(maximum_observed, total)
-        if not prompt or len(response) < 2 or total > max_sequence_length:
+        # The surviving dense recipe applies its max-sequence budget before
+        # appending EOS.  Preserve that exact convention: the packed causal-LM
+        # sequence may therefore be max_sequence_length + one EOS token.
+        if not prompt or len(response) < 2 or total > max_sequence_length + 1:
             raise Q36MTRTrainingError(
                 f"Q36-MTR row {index} is empty or requires {total} tokens"
             )
@@ -187,6 +190,7 @@ def tokenize_role_rows(
         {
             "maximum_observed_tokens": maximum_observed,
             "maximum_sequence_length": max_sequence_length,
+            "eos_token_allowance": 1,
             "truncated_rows": 0,
             "token_positions_deleted": 0,
             "source_only": spec.data_kind == "source_only",

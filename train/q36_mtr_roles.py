@@ -482,7 +482,7 @@ def validate_owner_warm_start(
         "update": OWNER_UPDATES,
         "trainable_parameters": TRAINABLE_PARAMETERS,
         "trainable_parameter_name_sha256": trainable_parameter_name_sha256,
-        "selected_rows": OWNER_MAX_ROWS,
+        "selected_rows": OWNER_SELECTED_ROWS,
         "source_only_model_visible": True,
         "internal_draft_visible": False,
         "final_trainable_state_sha256": loaded_trainable_state_sha256,
