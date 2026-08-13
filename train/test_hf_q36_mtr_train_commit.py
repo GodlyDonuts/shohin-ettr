@@ -5,14 +5,18 @@ import json
 from pathlib import Path
 
 import pytest
+import torch
 
 from build_q36_mtr_commit_pairs import OUTCOMES, PAIR_SCHEMA
 from hf_q36_mtr_train_commit import (
+    IndependentCommitHead,
     Q36MTRCommitError,
     SEED,
     _balanced_strata,
     _load_development_pairs,
     _load_pairs,
+    adapter_update_receipt,
+    commit_token_rows,
 )
 
 
@@ -112,3 +116,65 @@ def test_q36_commit_wrapper_is_one_h100_and_no_requeue() -> None:
     assert "--updates 128" in source
     assert "DEVELOPMENT_PAIRS" in source
     assert "sbatch " not in source
+
+
+class _Tokenizer:
+    def encode(self, text: str, add_special_tokens: bool) -> list[int]:
+        assert add_special_tokens is True
+        return list(text.encode())
+
+
+def test_commit_projection_excludes_labels_lineage_task_and_length_metadata() -> None:
+    base = {
+        "question": "same question",
+        "task": "math500",
+        "outcome_class": "revision_only",
+        "identity_sha256": "a" * 64,
+        "candidates": [
+            {
+                "lineage": "revision",
+                "completion": "complete A",
+                "correct": True,
+                "generated_tokens": 17,
+                "max_token_exhausted": False,
+            },
+            {
+                "lineage": "unchanged",
+                "completion": "complete B",
+                "correct": False,
+                "generated_tokens": 900,
+                "max_token_exhausted": True,
+            },
+        ],
+    }
+    forged = json.loads(json.dumps(base))
+    forged["task"] = "mbpp"
+    forged["outcome_class"] = "both_wrong"
+    forged["identity_sha256"] = "b" * 64
+    for candidate in forged["candidates"]:
+        candidate["lineage"] = "forged"
+        candidate["correct"] = not candidate["correct"]
+        candidate["generated_tokens"] += 10_000
+        candidate["max_token_exhausted"] = not candidate["max_token_exhausted"]
+    assert commit_token_rows(_Tokenizer(), base, 3_072) == commit_token_rows(
+        _Tokenizer(), forged, 3_072
+    )
+
+
+def test_independent_commit_margin_is_exactly_antisymmetric() -> None:
+    torch.manual_seed(7)
+    head = IndependentCommitHead(8, 8)
+    left = torch.randn(4, 8)
+    right = torch.randn(4, 8)
+    assert torch.equal(head.margin(left, right), -head.margin(right, left))
+
+
+def test_adapter_update_receipt_requires_nonzero_exact_state_delta() -> None:
+    before = {"adapter": torch.tensor([0.1, -0.2], dtype=torch.float32)}
+    after = {"adapter": torch.tensor([0.1 - 2e-6, -0.2], dtype=torch.float32)}
+    receipt = adapter_update_receipt(before, after)
+    assert receipt["nonzero_finite_update"] is True
+    assert receipt["changed_parameter_count"] == 1
+    assert receipt["initial_state_sha256"] != receipt["final_state_sha256"]
+    with pytest.raises(Q36MTRCommitError):
+        adapter_update_receipt(before, {"adapter": before["adapter"].clone()})

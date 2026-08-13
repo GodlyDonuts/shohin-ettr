@@ -9,7 +9,7 @@ import pytest
 
 from build_q36_mtr_commit_pairs import REPORT_SCHEMA as PAIR_REPORT_SCHEMA
 from q36_mtr_contract import MODEL_REVISION
-from q36_mtr_roles import TRAINABLE_MASTER_DTYPE
+from q36_mtr_roles import ADAPTER_UPDATE_SCHEMA, TRAINABLE_MASTER_DTYPE
 from score_q36_mtr import APPLICATION_SCHEMA, COMMIT_REPORT_SCHEMA, SELECTION_SCHEMA
 from validate_q36_mtr_commit_application import (
     Q36MTRApplicationValidationError,
@@ -22,6 +22,17 @@ def _sha(path: Path) -> str:
 
 
 def _fixture(tmp_path: Path) -> argparse.Namespace:
+    adapter_update = {
+        "schema": ADAPTER_UPDATE_SCHEMA,
+        "initial_state_sha256": "1" * 64,
+        "final_state_sha256": "2" * 64,
+        "changed_tensor_count": 1,
+        "changed_parameter_count": 1,
+        "l2_delta": 1e-6,
+        "relative_l2_delta": 1e-6,
+        "maximum_absolute_delta": 1e-6,
+        "nonzero_finite_update": True,
+    }
     checkpoint = tmp_path / "commit.pt"
     checkpoint.write_bytes(b"commit")
     pairs = tmp_path / "development_pairs.jsonl"
@@ -81,7 +92,15 @@ def _fixture(tmp_path: Path) -> argparse.Namespace:
                 "malformed": 0,
                 "order_consistent": 1_289,
                 "maximum_swap_error": 0.0,
-                "inference_fields": ["question", "candidate_a", "candidate_b"],
+                "inference_fields": [
+                    "question",
+                    "candidate_a.completion",
+                    "candidate_b.completion",
+                ],
+                "adapter_update": adapter_update,
+                "head_state_sha256": "3" * 64,
+                "serialization_restore_exact": True,
+                "aligned_checkpoint_file_unchanged": True,
                 "correctness_or_task_label_visible": False,
                 "assessor_board_access_count": 0,
                 "sealed_access": {"holdout": 0, "product": 0, "public": 0},
@@ -102,8 +121,12 @@ def _fixture(tmp_path: Path) -> argparse.Namespace:
                 "development_application_report": str(application.resolve()),
                 "development_selections_sha256": _sha(selections),
                 "protected_adapter_unchanged": True,
+                "aligned_checkpoint_file_unchanged": True,
+                "serialization_restore_exact": True,
                 "trainable_master_dtype": TRAINABLE_MASTER_DTYPE,
                 "trainable_compute_dtype": "bfloat16",
+                "adapter_update": adapter_update,
+                "head_state_sha256": "3" * 64,
                 "sealed_access": {"holdout": 0, "product": 0, "public": 0},
             }
         )

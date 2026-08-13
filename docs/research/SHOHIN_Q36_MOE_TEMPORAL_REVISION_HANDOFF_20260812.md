@@ -103,6 +103,14 @@ The learned commit path is implemented by
 development pairs are label-free; one H100 fits the 128-update commit and,
 without a second model load, applies it to the already sealed development
 pairs. This preserves the 61-request/58.90-H100-hour graph.
+The commit input projection contains exactly the problem text and the two
+complete candidate completions. Identity, task, lineage, correctness,
+generation-token counts, exhaustion flags, and assessor metadata are excluded.
+Its shared scalar scorer is antisymmetric by construction under A/B reversal.
+The checkpoint and downstream custody additionally require a nonzero finite
+FP32 adapter-state delta, exact final adapter/head state hashes, and immediate
+serialization restore. The source aligned-checkpoint file remains byte-exact
+even though its loaded residual state is deliberately updated.
 The graph's CPU `commit_apply` stage is an independent label-free validator,
 not a second model load: it replays the checkpoint, pair, selection,
 antisymmetry, truncation/malformed, visibility, and zero-assessor-access

@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 import hashlib
 import json
+import math
 from typing import Any, Iterable, Mapping
 
 MODEL_ID = "Qwen/Qwen3.6-35B-A3B"
@@ -27,6 +28,7 @@ TRAINABLE_PARAMETERS = 1_179_648
 QUANTIZATION = "nf4"
 COMPUTE_DTYPE = "bfloat16"
 TRAINABLE_MASTER_DTYPE = "float32"
+ADAPTER_UPDATE_SCHEMA = "shohin-q36-mtr-adapter-update-v1"
 OWNER_UPDATES = 256
 REVISION_UPDATES = 256
 OWNER_MAX_ROWS = 100_000
@@ -163,6 +165,43 @@ def validate_contract(payload: Mapping[str, Any], role: str) -> None:
             f"expected={json.dumps(expected, sort_keys=True)} "
             f"observed={json.dumps(observed, sort_keys=True)}"
         )
+
+
+def validate_adapter_update_receipt(payload: Any) -> None:
+    """Validate evidence that commit fitting changed the FP32 adapter state."""
+
+    if not isinstance(payload, Mapping):
+        raise Q36MTRRoleError("Q36-MTR adapter update receipt is absent")
+    initial = payload.get("initial_state_sha256")
+    final = payload.get("final_state_sha256")
+    numeric = (
+        payload.get("l2_delta"),
+        payload.get("relative_l2_delta"),
+        payload.get("maximum_absolute_delta"),
+    )
+    if (
+        payload.get("schema") != ADAPTER_UPDATE_SCHEMA
+        or not isinstance(initial, str)
+        or len(initial) != 64
+        or not isinstance(final, str)
+        or len(final) != 64
+        or initial == final
+        or isinstance(payload.get("changed_tensor_count"), bool)
+        or not isinstance(payload.get("changed_tensor_count"), int)
+        or payload["changed_tensor_count"] <= 0
+        or isinstance(payload.get("changed_parameter_count"), bool)
+        or not isinstance(payload.get("changed_parameter_count"), int)
+        or not 0 < payload["changed_parameter_count"] <= TRAINABLE_PARAMETERS
+        or any(
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(float(value))
+            or value <= 0
+            for value in numeric
+        )
+        or payload.get("nonzero_finite_update") is not True
+    ):
+        raise Q36MTRRoleError("Q36-MTR adapter update receipt differs")
 
 
 def validate_owner_warm_start(

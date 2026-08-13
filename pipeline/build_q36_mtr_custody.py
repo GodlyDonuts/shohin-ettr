@@ -37,6 +37,7 @@ from q36_mtr_roles import (
     TRAINABLE_PARAMETERS,
     TRAINABLE_MASTER_DTYPE,
     role_contract,
+    validate_adapter_update_receipt,
     validate_matched_revision_geometry,
 )
 from score_q36_mtr import AUTHORIZATION_SCHEMA, CONSUMPTION_SCHEMA, SCORE_SCHEMA
@@ -616,14 +617,25 @@ def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
         "shohin-q36-mtr-commit-application-validation-v1",
     )
     commit = _load(artifacts["commit_training_report"], COMMIT_REPORT_SCHEMA)
+    try:
+        validate_adapter_update_receipt(commit.get("adapter_update"))
+        validate_adapter_update_receipt(application.get("adapter_update"))
+    except Q36MTRRoleError as error:
+        raise Q36MTRCustodyError(str(error)) from error
     if (
         commit.get("status") != "complete"
         or commit.get("model_revision") != MODEL_REVISION
         or not _matches_file(commit, "checkpoint", artifacts["commit_checkpoint"])
         or commit.get("protected_adapter_sha256_after") != hashes["aligned_checkpoint"]
         or commit.get("protected_adapter_unchanged") is not True
+        or commit.get("aligned_checkpoint_file_unchanged") is not True
+        or commit.get("serialization_restore_exact") is not True
         or commit.get("trainable_master_dtype") != TRAINABLE_MASTER_DTYPE
         or commit.get("trainable_compute_dtype") != "bfloat16"
+        or application.get("adapter_update") != commit.get("adapter_update")
+        or application.get("head_state_sha256") != commit.get("head_state_sha256")
+        or application.get("serialization_restore_exact") is not True
+        or application.get("aligned_checkpoint_file_unchanged") is not True
         or Path(str(commit.get("development_application_report", ""))).resolve()
         != artifacts["application_report"].resolve()
         or commit.get("development_selections_sha256") != hashes["selections"]
@@ -646,6 +658,10 @@ def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
         or application_validation.get("application_report_sha256")
         != hashes["application_report"]
         or application_validation.get("selections_sha256") != hashes["selections"]
+        or application_validation.get("adapter_update") != commit.get("adapter_update")
+        or application_validation.get("head_state_sha256")
+        != commit.get("head_state_sha256")
+        or application_validation.get("serialization_restore_exact") is not True
         or application_validation.get("assessor_board_access_count") != 0
         or application_validation.get("sealed_access")
         != {"holdout": 0, "product": 0, "public": 0}

@@ -34,6 +34,7 @@ from hf_pcf1_train_commit import (
 from hf_product_reasoning_eval import _load_model
 from hf_q36_mtr_evaluate import validate_adapter
 from q36_mtr_roles import (
+    ADAPTER_UPDATE_SCHEMA,
     MODEL_REVISION,
     TRAINABLE_MASTER_DTYPE,
     TRAINABLE_PARAMETERS,
@@ -55,10 +56,95 @@ MAX_GRADIENT_NORM = 1.0
 SEED = 2026080822
 TASKS = ("math500", "bbh_logic", "mbpp")
 SPLITS = ("calibration_train", "calibration_development")
+MODEL_VISIBLE_FIELDS = ("question", "candidate_a.completion", "candidate_b.completion")
 
 
 class Q36MTRCommitError(RuntimeError):
     """The Q36 whole-trajectory commit contract differs."""
+
+
+def commit_token_rows(
+    tokenizer: Any, row: dict[str, Any], maximum: int
+) -> tuple[list[list[int]], int]:
+    """Project exactly the two complete trajectories into model-visible text."""
+
+    candidates = row.get("candidates")
+    if (
+        not isinstance(row.get("question"), str)
+        or not isinstance(candidates, list)
+        or len(candidates) != 2
+        or any(
+            not isinstance(candidate.get("completion"), str) for candidate in candidates
+        )
+    ):
+        raise Q36MTRCommitError("Q36 commit model-visible projection differs")
+    projected = {
+        "question": row["question"],
+        "candidates": [
+            {"completion": candidates[0]["completion"]},
+            {"completion": candidates[1]["completion"]},
+        ],
+    }
+    return token_rows(tokenizer, projected, maximum)
+
+
+def _state_sha256(state: dict[str, torch.Tensor]) -> str:
+    digest = hashlib.sha256()
+    if not state:
+        raise Q36MTRCommitError("Q36 commit state is empty")
+    for name in sorted(state):
+        tensor = state[name].detach().cpu().contiguous()
+        digest.update(name.encode())
+        digest.update(str(tensor.dtype).encode())
+        digest.update(json.dumps(list(tensor.shape)).encode())
+        digest.update(tensor.numpy().tobytes())
+    return digest.hexdigest()
+
+
+def _snapshot(named: list[tuple[str, torch.Tensor]]) -> dict[str, torch.Tensor]:
+    return {name: parameter.detach().cpu().clone() for name, parameter in named}
+
+
+def adapter_update_receipt(
+    before: dict[str, torch.Tensor], after: dict[str, torch.Tensor]
+) -> dict[str, Any]:
+    if set(before) != set(after) or not before:
+        raise Q36MTRCommitError("Q36 commit adapter state names differ")
+    changed_tensors = changed_parameters = 0
+    squared_delta = squared_initial = maximum = 0.0
+    for name in sorted(before):
+        initial = before[name]
+        final = after[name]
+        if initial.shape != final.shape or initial.dtype != final.dtype:
+            raise Q36MTRCommitError("Q36 commit adapter state geometry differs")
+        delta = final.double() - initial.double()
+        changed = int(torch.count_nonzero(delta).item())
+        changed_tensors += int(changed > 0)
+        changed_parameters += changed
+        squared_delta += float(torch.sum(delta * delta).item())
+        squared_initial += float(torch.sum(initial.double() ** 2).item())
+        maximum = max(maximum, float(delta.abs().max().item()))
+    l2 = math.sqrt(squared_delta)
+    relative = l2 / max(math.sqrt(squared_initial), torch.finfo(torch.float64).tiny)
+    if (
+        changed_tensors <= 0
+        or changed_parameters <= 0
+        or not all(math.isfinite(value) for value in (l2, relative, maximum))
+        or l2 <= 0
+        or maximum <= 0
+    ):
+        raise Q36MTRCommitError("Q36 commit adapter update is absent or nonfinite")
+    return {
+        "schema": ADAPTER_UPDATE_SCHEMA,
+        "initial_state_sha256": _state_sha256(before),
+        "final_state_sha256": _state_sha256(after),
+        "changed_tensor_count": changed_tensors,
+        "changed_parameter_count": changed_parameters,
+        "l2_delta": l2,
+        "relative_l2_delta": relative,
+        "maximum_absolute_delta": maximum,
+        "nonzero_finite_update": True,
+    }
 
 
 def _load_pairs(path: Path) -> list[dict[str, Any]]:
@@ -328,6 +414,7 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
     head = IndependentCommitHead(hidden_size, args.head_width).to("cuda:0")
     adapter_parameters = [parameter for _, parameter in trainable]
     head_parameters = list(head.parameters())
+    adapter_state_before = _snapshot(trainable)
     optimizer = torch.optim.AdamW(
         [
             {"params": adapter_parameters, "lr": args.backbone_learning_rate},
@@ -351,7 +438,9 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
         indices = strata[key]
         row = rows[indices[positions[key] % len(indices)]]
         positions[key] += 1
-        encoded, local_truncated = token_rows(tokenizer, row, args.max_sequence_length)
+        encoded, local_truncated = commit_token_rows(
+            tokenizer, row, args.max_sequence_length
+        )
         truncated += local_truncated
         left_correct = bool(row["candidates"][0]["correct"])
         right_correct = bool(row["candidates"][1]["correct"])
@@ -407,6 +496,13 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
     protected_after = sha256_file(args.adapter_checkpoint)
     if protected_after != protected_before:
         raise Q36MTRCommitError("Q36 aligned checkpoint changed during commit training")
+    adapter_state_after = _snapshot(trainable)
+    adapter_update = adapter_update_receipt(adapter_state_before, adapter_state_after)
+    head_state = {
+        name: tensor.detach().cpu().clone()
+        for name, tensor in head.state_dict().items()
+    }
+    head_state_sha256 = _state_sha256(head_state)
     args.output.mkdir(parents=True)
     checkpoint = args.output / "commit.pt"
     metadata_payload = {
@@ -426,25 +522,35 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
         "head_learning_rate": args.head_learning_rate,
         "updates": args.updates,
         "seed": args.seed,
-        "inference_fields": ["question", "candidate_a", "candidate_b"],
+        "inference_fields": list(MODEL_VISIBLE_FIELDS),
         "task_or_benchmark_label_at_inference": False,
         "trainable_master_dtype": TRAINABLE_MASTER_DTYPE,
         "trainable_compute_dtype": "bfloat16",
+        "adapter_update": adapter_update,
+        "head_state_sha256": head_state_sha256,
     }
     atomic_torch(
         checkpoint,
         {
             "schema": MODEL_SCHEMA,
             "metadata": metadata_payload,
-            "backbone_state": {
-                name: parameter.detach().cpu() for name, parameter in trainable
-            },
-            "head_state": {
-                name: tensor.detach().cpu()
-                for name, tensor in head.state_dict().items()
-            },
+            "backbone_state": adapter_state_after,
+            "head_state": head_state,
         },
     )
+    restored = torch.load(checkpoint, map_location="cpu", weights_only=True)
+    if (
+        not isinstance(restored, dict)
+        or restored.get("schema") != MODEL_SCHEMA
+        or not isinstance(restored.get("metadata"), dict)
+        or restored["metadata"].get("adapter_update") != adapter_update
+        or not isinstance(restored.get("backbone_state"), dict)
+        or _state_sha256(restored["backbone_state"])
+        != adapter_update["final_state_sha256"]
+        or not isinstance(restored.get("head_state"), dict)
+        or _state_sha256(restored["head_state"]) != head_state_sha256
+    ):
+        raise Q36MTRCommitError("Q36 commit checkpoint restore differs")
     selections: list[dict[str, Any]] = []
     application_truncated = 0
     maximum_application_swap_error = 0.0
@@ -455,7 +561,7 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
             batch = development_rows[start : start + args.evaluation_batch_pairs]
             encoded: list[list[int]] = []
             for row in batch:
-                pair, local_truncated = token_rows(
+                pair, local_truncated = commit_token_rows(
                     tokenizer, row, args.max_sequence_length
                 )
                 encoded.extend(pair)
@@ -509,11 +615,15 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
         "malformed": 0,
         "order_consistent": sum(int(row["order_consistent"]) for row in selections),
         "maximum_swap_error": maximum_application_swap_error,
-        "inference_fields": ["question", "candidate_a", "candidate_b"],
+        "inference_fields": list(MODEL_VISIBLE_FIELDS),
         "correctness_or_task_label_visible": False,
         "assessor_board_access_count": 0,
         "environment_receipt_sha256": args.environment_receipt_sha256,
         "environment_tree_sha256": args.environment_tree_sha256,
+        "adapter_update": adapter_update,
+        "head_state_sha256": head_state_sha256,
+        "serialization_restore_exact": True,
+        "aligned_checkpoint_file_unchanged": True,
         "sealed_access": {"holdout": 0, "product": 0, "public": 0},
     }
     atomic_json(args.output / "application_report.json", application)
@@ -537,7 +647,9 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
         "elapsed_seconds": time.monotonic() - started,
         "peak_gpu_memory_bytes": int(torch.cuda.max_memory_allocated()),
         "protected_adapter_sha256_after": protected_after,
+        "aligned_checkpoint_file_unchanged": True,
         "protected_adapter_unchanged": True,
+        "serialization_restore_exact": True,
         "strata_counts": {
             f"{task}:{outcome}": len(indices)
             for (task, outcome), indices in strata.items()

@@ -28,7 +28,12 @@ from pcf1_code_sandbox import (
     qualify_mbpp_assessor_setups,
     score_completion,
 )
-from q36_mtr_roles import MODEL_REVISION
+from q36_mtr_roles import (
+    MODEL_REVISION,
+    Q36MTRRoleError,
+    TRAINABLE_MASTER_DTYPE,
+    validate_adapter_update_receipt,
+)
 
 AUTHORIZATION_SCHEMA = "shohin-q36-mtr-score-authorization-v1"
 CONSUMPTION_SCHEMA = "shohin-q36-mtr-score-consumption-v1"
@@ -583,6 +588,11 @@ def _score_impl(args: argparse.Namespace) -> dict[str, Any]:
     commit_training = json.loads(
         args.commit_training_report.read_text(encoding="utf-8")
     )
+    try:
+        validate_adapter_update_receipt(commit_training.get("adapter_update"))
+        validate_adapter_update_receipt(application.get("adapter_update"))
+    except Q36MTRRoleError as error:
+        raise Q36MTRScoreError(str(error)) from error
     application_truncated = application.get("prompt_truncated")
     application_malformed = application.get("malformed")
     application_consistent = application.get("order_consistent")
@@ -606,7 +616,12 @@ def _score_impl(args: argparse.Namespace) -> dict[str, Any]:
         or application_consistent
         != sum(int(row["order_consistent"]) for row in selections.values())
         or application.get("inference_fields")
-        != ["question", "candidate_a", "candidate_b"]
+        != ["question", "candidate_a.completion", "candidate_b.completion"]
+        or application.get("adapter_update") != commit_training.get("adapter_update")
+        or application.get("head_state_sha256")
+        != commit_training.get("head_state_sha256")
+        or application.get("serialization_restore_exact") is not True
+        or application.get("aligned_checkpoint_file_unchanged") is not True
         or application.get("correctness_or_task_label_visible") is not False
         or application.get("assessor_board_access_count") != 0
         or application.get("sealed_access") != {"holdout": 0, "product": 0, "public": 0}
@@ -629,6 +644,10 @@ def _score_impl(args: argparse.Namespace) -> dict[str, Any]:
         or commit_training.get("development_selections_sha256")
         != sha256_file(args.selections)
         or commit_training.get("protected_adapter_unchanged") is not True
+        or commit_training.get("aligned_checkpoint_file_unchanged") is not True
+        or commit_training.get("serialization_restore_exact") is not True
+        or commit_training.get("trainable_master_dtype") != TRAINABLE_MASTER_DTYPE
+        or commit_training.get("trainable_compute_dtype") != "bfloat16"
         or isinstance(training_truncated, bool)
         or not isinstance(training_truncated, int)
         or training_truncated < 0
