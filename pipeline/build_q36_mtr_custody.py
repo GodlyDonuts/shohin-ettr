@@ -45,6 +45,7 @@ from q36_mtr_roles import (
 from score_q36_mtr import AUTHORIZATION_SCHEMA, CONSUMPTION_SCHEMA, SCORE_SCHEMA
 from hf_q36_mtr_train_commit import (
     APPLICATION_SCHEMA,
+    COMMIT_PROJECTION_CONTRACT,
     GRADIENT_ACCUMULATION as COMMIT_GRADIENT_ACCUMULATION,
     REPORT_SCHEMA as COMMIT_REPORT_SCHEMA,
     Q36MTRCommitError,
@@ -690,6 +691,13 @@ def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
         or commit.get("adapter_checkpoint_sha256") != hashes["aligned_checkpoint"]
         or commit.get("training_prompt_truncated") != 0
         or commit.get("calibration_development_prompt_truncated") != 0
+        or commit.get("inference_fields")
+        != ["question", "candidate_a.completion", "candidate_b.completion"]
+        or commit.get("commit_projection_contract") != COMMIT_PROJECTION_CONTRACT
+        or commit.get("task_or_benchmark_label_at_inference") is not False
+        or application.get("inference_fields") != commit.get("inference_fields")
+        or application.get("commit_projection_contract") != COMMIT_PROJECTION_CONTRACT
+        or application.get("correctness_or_task_label_visible") is not False
         or commit.get("trainable_master_dtype") != TRAINABLE_MASTER_DTYPE
         or commit.get("trainable_compute_dtype") != "bfloat16"
         or application.get("adapter_update") != commit.get("adapter_update")

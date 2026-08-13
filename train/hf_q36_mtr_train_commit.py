@@ -27,9 +27,9 @@ from hf_aqc1_train_commit import IndependentCommitHead, select_candidate, token_
 from hf_pcf1_train_commit import (
     atomic_json,
     atomic_torch,
-    evaluate,
     hidden_states,
     margins_for_batch,
+    summarize,
 )
 from hf_q36_mtr_evaluate import load_q36_adapter_model, validate_adapter
 from q36_mtr_roles import (
@@ -56,6 +56,7 @@ SEED = 2026080822
 TASKS = ("math500", "bbh_logic", "mbpp")
 SPLITS = ("calibration_train", "calibration_development")
 MODEL_VISIBLE_FIELDS = ("question", "candidate_a.completion", "candidate_b.completion")
+COMMIT_PROJECTION_CONTRACT = "question_plus_complete_candidate_only_v1"
 TRAINING_CONSUMPTION_SCHEMA = "shohin-q36-mtr-commit-consumption-v1"
 
 
@@ -333,6 +334,58 @@ def training_presentation_plan(
     }
 
 
+def evaluate_commit(
+    model: Any,
+    head: IndependentCommitHead,
+    tokenizer: Any,
+    rows: list[dict[str, Any]],
+    split: str,
+    maximum: int,
+    batch_pairs: int,
+) -> tuple[dict[str, Any], int, float]:
+    """Evaluate with the same metadata-free projection used for Q36 fitting."""
+
+    selected_rows = [row for row in rows if row["split"] == split]
+    selections: dict[str, tuple[int, bool, float]] = {}
+    truncated = 0
+    maximum_swap_error = 0.0
+    model.eval()
+    head.eval()
+    with torch.inference_mode():
+        for start in range(0, len(selected_rows), batch_pairs):
+            batch = selected_rows[start : start + batch_pairs]
+            encoded: list[list[int]] = []
+            for row in batch:
+                pair, local_truncated = commit_token_rows(tokenizer, row, maximum)
+                encoded.extend(pair)
+                truncated += local_truncated
+            with torch.autocast("cuda", dtype=torch.bfloat16):
+                hidden = hidden_states(model, encoded, tokenizer.pad_token_id)
+                paired = hidden.reshape(-1, 2, hidden.shape[-1])
+                direct = head.margin(paired[:, 0], paired[:, 1]).float()
+                reverse = head.margin(paired[:, 1], paired[:, 0]).float()
+            maximum_swap_error = max(
+                maximum_swap_error, float((direct + reverse).abs().max().cpu())
+            )
+            for row, margin, swapped_margin in zip(
+                batch, direct.tolist(), reverse.tolist(), strict=True
+            ):
+                chosen = select_candidate(margin, row["candidates"])
+                swapped = select_candidate(
+                    swapped_margin, list(reversed(row["candidates"]))
+                )
+                consistent = chosen == 1 - swapped or (
+                    row["candidates"][0]["completion"]
+                    == row["candidates"][1]["completion"]
+                )
+                selections[str(row["identity_sha256"])] = (
+                    chosen,
+                    consistent,
+                    margin,
+                )
+    return summarize(rows, selections, split), truncated, maximum_swap_error
+
+
 def _load_development_pairs(path: Path) -> list[dict[str, Any]]:
     if path.is_symlink() or not path.is_file():
         raise Q36MTRCommitError("Q36 development pairs are absent or symbolic")
@@ -581,7 +634,7 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
                     "prompt_truncated": truncated,
                 }
             )
-    development, development_truncated, maximum_swap_error = evaluate(
+    development, development_truncated, maximum_swap_error = evaluate_commit(
         model,
         head,
         tokenizer,
@@ -627,6 +680,7 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
         "updates": args.updates,
         "seed": args.seed,
         "inference_fields": list(MODEL_VISIBLE_FIELDS),
+        "commit_projection_contract": COMMIT_PROJECTION_CONTRACT,
         "task_or_benchmark_label_at_inference": False,
         "trainable_master_dtype": TRAINABLE_MASTER_DTYPE,
         "trainable_compute_dtype": "bfloat16",
@@ -740,6 +794,7 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
         "order_consistent": sum(int(row["order_consistent"]) for row in selections),
         "maximum_swap_error": maximum_application_swap_error,
         "inference_fields": list(MODEL_VISIBLE_FIELDS),
+        "commit_projection_contract": COMMIT_PROJECTION_CONTRACT,
         "correctness_or_task_label_visible": False,
         "assessor_board_access_count": 0,
         "environment_receipt_sha256": args.environment_receipt_sha256,

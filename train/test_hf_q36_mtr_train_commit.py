@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import inspect
 import json
 from pathlib import Path
 
@@ -18,6 +19,7 @@ from hf_q36_mtr_train_commit import (
     _gradient_l2,
     adapter_update_receipt,
     commit_token_rows,
+    evaluate_commit,
     restore_commit_state,
     training_presentation_plan,
 )
@@ -183,6 +185,14 @@ def test_commit_projection_excludes_labels_lineage_task_and_length_metadata() ->
         candidate["max_token_exhausted"] = not candidate["max_token_exhausted"]
     assert commit_token_rows(_Tokenizer(), base, 3_072) == commit_token_rows(
         _Tokenizer(), forged, 3_072
+    )
+
+
+def test_calibration_validation_uses_the_q36_projection() -> None:
+    source = inspect.getsource(evaluate_commit)
+    assert "commit_token_rows(tokenizer, row, maximum)" in source
+    assert "token_rows(tokenizer, row, maximum)" not in source.replace(
+        "commit_token_rows(tokenizer, row, maximum)", ""
     )
 
 
