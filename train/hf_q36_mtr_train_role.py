@@ -42,6 +42,7 @@ from q36_mtr_roles import (
     role_spec,
     sequence_geometry_receipt,
     validate_backbone_geometry,
+    validate_backbone_moe_surface,
     validate_controlled_layer_geometry,
     validate_owner_warm_start,
 )
@@ -340,6 +341,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     )
     try:
         controlled_indices = validate_backbone_geometry(backbone)
+        moe_surface = validate_backbone_moe_surface(backbone)
     except Q36MTRRoleError as error:
         raise Q36MTRTrainingError(str(error)) from error
     config = SharedPostMLPConfig(
@@ -444,6 +446,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "trainable_master_dtype": TRAINABLE_MASTER_DTYPE,
         "trainable_compute_dtype": "bfloat16",
         "controlled_layer_indices": controlled_indices,
+        "native_moe_surface": moe_surface,
         "source_only_model_visible": args.role == "owner",
         "internal_draft_visible": args.role == "aligned",
         "draft_token_bytes_present": args.role != "owner",

@@ -182,6 +182,35 @@ def trainable_name_sha256(names: Iterable[str]) -> str:
     return hashlib.sha256("\n".join(ordered).encode()).hexdigest()
 
 
+def native_moe_surface_contract() -> dict[str, Any]:
+    rows = [
+        {
+            "layer": index,
+            "layer_type": layer_type,
+            "router_top_k": ROUTER_TOP_K,
+            "router_experts": NUM_EXPERTS,
+            "router_hidden_size": HIDDEN_SIZE,
+            "expert_count": NUM_EXPERTS,
+            "expert_hidden_size": HIDDEN_SIZE,
+            "expert_intermediate_size": MOE_INTERMEDIATE_SIZE,
+            "shared_hidden_size": HIDDEN_SIZE,
+            "shared_intermediate_size": SHARED_EXPERT_INTERMEDIATE_SIZE,
+            "shared_gate_in_features": HIDDEN_SIZE,
+            "shared_gate_out_features": 1,
+        }
+        for index, layer_type in enumerate(LAYER_TYPES)
+    ]
+    encoded = b"".join(
+        (json.dumps(row, sort_keys=True, separators=(",", ":")) + "\n").encode()
+        for row in rows
+    )
+    return {
+        "layers": MODEL_LAYERS,
+        "controlled_layer_indices": list(CONTROLLED_LAYER_INDICES),
+        "native_router_expert_geometry_sha256": hashlib.sha256(encoded).hexdigest(),
+    }
+
+
 def role_contract(role: str) -> dict[str, Any]:
     spec = role_spec(role)
     return {
@@ -204,6 +233,7 @@ def role_contract(role: str) -> dict[str, Any]:
         "layer_types": list(LAYER_TYPES),
         "controlled_layers": CONTROLLED_LAYERS,
         "controlled_layer_indices": list(CONTROLLED_LAYER_INDICES),
+        "native_moe_surface": native_moe_surface_contract(),
         "rank": RANK,
         "alpha": ALPHA,
         "trainable_parameters": TRAINABLE_PARAMETERS,
@@ -264,6 +294,72 @@ def validate_backbone_geometry(backbone: Any) -> list[int]:
             f"expected={expected!r} observed={observed!r}"
         )
     return list(CONTROLLED_LAYER_INDICES)
+
+
+def validate_backbone_moe_surface(backbone: Any) -> dict[str, Any]:
+    """Replay the exact native router/expert structure of every loaded layer."""
+
+    text_model = getattr(backbone, "model", None)
+    layers = getattr(text_model, "layers", None)
+    if not isinstance(layers, (list, tuple)) and type(layers).__name__ != "ModuleList":
+        raise Q36MTRRoleError("Q36-MTR loaded text-layer surface is absent")
+    if len(layers) != MODEL_LAYERS:
+        raise Q36MTRRoleError("Q36-MTR loaded text-layer count differs")
+    rows: list[dict[str, Any]] = []
+    for index, (layer, expected_type) in enumerate(
+        zip(layers, LAYER_TYPES, strict=True)
+    ):
+        mlp = getattr(layer, "mlp", None)
+        gate = getattr(mlp, "gate", None)
+        experts = getattr(mlp, "experts", None)
+        shared = getattr(mlp, "shared_expert", None)
+        shared_gate = getattr(mlp, "shared_expert_gate", None)
+        row = {
+            "layer": index,
+            "layer_type": getattr(layer, "block_type", None),
+            "router_top_k": getattr(gate, "top_k", None),
+            "router_experts": getattr(gate, "num_experts", None),
+            "router_hidden_size": getattr(gate, "hidden_dim", None),
+            "expert_count": getattr(experts, "num_experts", None),
+            "expert_hidden_size": getattr(experts, "hidden_dim", None),
+            "expert_intermediate_size": getattr(experts, "intermediate_dim", None),
+            "shared_hidden_size": getattr(shared, "hidden_size", None),
+            "shared_intermediate_size": getattr(shared, "intermediate_size", None),
+            "shared_gate_in_features": getattr(shared_gate, "in_features", None),
+            "shared_gate_out_features": getattr(shared_gate, "out_features", None),
+        }
+        expected = {
+            "layer": index,
+            "layer_type": expected_type,
+            "router_top_k": ROUTER_TOP_K,
+            "router_experts": NUM_EXPERTS,
+            "router_hidden_size": HIDDEN_SIZE,
+            "expert_count": NUM_EXPERTS,
+            "expert_hidden_size": HIDDEN_SIZE,
+            "expert_intermediate_size": MOE_INTERMEDIATE_SIZE,
+            "shared_hidden_size": HIDDEN_SIZE,
+            "shared_intermediate_size": SHARED_EXPERT_INTERMEDIATE_SIZE,
+            "shared_gate_in_features": HIDDEN_SIZE,
+            "shared_gate_out_features": 1,
+        }
+        if row != expected:
+            raise Q36MTRRoleError(
+                f"Q36-MTR loaded native MoE layer differs: expected={expected!r} "
+                f"observed={row!r}"
+            )
+        rows.append(row)
+    encoded = b"".join(
+        (json.dumps(row, sort_keys=True, separators=(",", ":")) + "\n").encode()
+        for row in rows
+    )
+    receipt = {
+        "layers": MODEL_LAYERS,
+        "controlled_layer_indices": list(CONTROLLED_LAYER_INDICES),
+        "native_router_expert_geometry_sha256": hashlib.sha256(encoded).hexdigest(),
+    }
+    if receipt != native_moe_surface_contract():
+        raise Q36MTRRoleError("Q36-MTR loaded native MoE surface digest differs")
+    return receipt
 
 
 def validate_controlled_layer_geometry(layer_count: int) -> list[int]:

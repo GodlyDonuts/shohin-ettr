@@ -28,6 +28,7 @@ from q36_mtr_roles import (
     sequence_geometry_receipt,
     validate_contract,
     validate_backbone_geometry,
+    validate_backbone_moe_surface,
     validate_matched_revision_geometry,
     validate_owner_warm_start,
 )
@@ -94,12 +95,36 @@ def _exact_backbone():
     model_type = type("Qwen3_5MoeForCausalLM", (), {})
     model = model_type()
     model.config = SimpleNamespace(model_type="qwen3_5_moe", text_config=text_config)
+    model.model = SimpleNamespace(
+        layers=[
+            SimpleNamespace(
+                block_type=layer_type,
+                mlp=SimpleNamespace(
+                    gate=SimpleNamespace(top_k=8, num_experts=256, hidden_dim=2048),
+                    experts=SimpleNamespace(
+                        num_experts=256, hidden_dim=2048, intermediate_dim=512
+                    ),
+                    shared_expert=SimpleNamespace(
+                        hidden_size=2048, intermediate_size=512
+                    ),
+                    shared_expert_gate=SimpleNamespace(
+                        in_features=2048, out_features=1
+                    ),
+                ),
+            )
+            for layer_type in LAYER_TYPES
+        ]
+    )
     return model
 
 
 def test_exact_q36_host_geometry_is_admitted_and_mutations_fail() -> None:
     exact = _exact_backbone()
     assert validate_backbone_geometry(exact) == list(CONTROLLED_LAYER_INDICES)
+    surface = validate_backbone_moe_surface(exact)
+    assert surface["layers"] == 40
+    assert surface["controlled_layer_indices"] == list(CONTROLLED_LAYER_INDICES)
+    assert len(surface["native_router_expert_geometry_sha256"]) == 64
     for field, forged in (
         ("num_hidden_layers", 64),
         ("num_experts", 255),
@@ -110,6 +135,16 @@ def test_exact_q36_host_geometry_is_admitted_and_mutations_fail() -> None:
         setattr(changed.config.text_config, field, forged)
         with pytest.raises(Q36MTRRoleError):
             validate_backbone_geometry(changed)
+
+    for field, forged in (
+        ("top_k", 4),
+        ("num_experts", 255),
+        ("hidden_dim", 4096),
+    ):
+        changed = _exact_backbone()
+        setattr(changed.model.layers[24].mlp.gate, field, forged)
+        with pytest.raises(Q36MTRRoleError):
+            validate_backbone_moe_surface(changed)
 
 
 def test_role_checkpoint_contains_no_optimizer_or_native_moe_state(

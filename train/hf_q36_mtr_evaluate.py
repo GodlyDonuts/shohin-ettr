@@ -43,6 +43,7 @@ from q36_mtr_roles import (
     load_role_checkpoint_payload,
     role_spec,
     validate_backbone_geometry,
+    validate_backbone_moe_surface,
     validate_controlled_layer_geometry,
     validate_contract,
 )
@@ -120,6 +121,7 @@ def load_q36_adapter_model(model_root: Path, checkpoint: Path):
         raise Q36MTREvaluationError("Q36-MTR resolved model loader differs")
     try:
         controlled_indices = validate_backbone_geometry(backbone)
+        moe_surface = validate_backbone_moe_surface(backbone)
     except Q36MTRRoleError as error:
         raise Q36MTREvaluationError(str(error)) from error
     model = SharedPostMLPProductModel(
@@ -135,6 +137,8 @@ def load_q36_adapter_model(model_root: Path, checkpoint: Path):
             raise Q36MTRRoleError("Q36-MTR controlled layer indices differ")
     except Q36MTRRoleError as error:
         raise Q36MTREvaluationError(str(error)) from error
+    if metadata.get("native_moe_surface") != moe_surface:
+        raise Q36MTREvaluationError("Q36-MTR checkpoint native MoE surface differs")
     current = {
         name: parameter
         for name, parameter in model.named_parameters()

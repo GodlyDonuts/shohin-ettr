@@ -44,6 +44,7 @@ from q36_mtr_roles import (
     TRAINABLE_PARAMETERS,
     TRAINABLE_MASTER_DTYPE,
     role_contract,
+    native_moe_surface_contract,
     validate_adapter_update_receipt,
     validate_commit_gradient_receipt,
     validate_matched_revision_geometry,
@@ -855,6 +856,7 @@ def build_precompute(args: argparse.Namespace) -> dict[str, Any]:
         or mechanics.get("model_loader") != "causal"
         or mechanics.get("causal_model_class") != CAUSAL_MODEL_CLASS
         or mechanics.get("controlled_layer_indices") != list(CONTROLLED_LAYER_INDICES)
+        or mechanics.get("native_moe_surface") != native_moe_surface_contract()
         or mechanics.get("trainable_parameters") != 1_179_648
         or mechanics.get("protected_router_expert_trainables") != 0
         or mechanics.get("protected_parameter_receipt_before")
