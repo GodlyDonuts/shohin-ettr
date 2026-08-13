@@ -35,6 +35,7 @@ from q36_mtr_roles import (
     Q36MTRRoleError,
     REVISION_PRESENTATIONS,
     TRAINABLE_PARAMETERS,
+    TRAINABLE_MASTER_DTYPE,
     role_contract,
     validate_matched_revision_geometry,
 )
@@ -231,6 +232,8 @@ def _validate_role_report(
         or report.get("updates") != 256
         or report.get("selected_rows") != selected
         or report.get("trainable_parameters") != TRAINABLE_PARAMETERS
+        or report.get("trainable_master_dtype") != TRAINABLE_MASTER_DTYPE
+        or report.get("trainable_compute_dtype") != "bfloat16"
         or not _matches_file(report, "checkpoint", checkpoint)
         or report.get("warm_start_checkpoint_sha256")
         != (None if role == "owner" else owner_sha256)
@@ -619,6 +622,8 @@ def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
         or not _matches_file(commit, "checkpoint", artifacts["commit_checkpoint"])
         or commit.get("protected_adapter_sha256_after") != hashes["aligned_checkpoint"]
         or commit.get("protected_adapter_unchanged") is not True
+        or commit.get("trainable_master_dtype") != TRAINABLE_MASTER_DTYPE
+        or commit.get("trainable_compute_dtype") != "bfloat16"
         or Path(str(commit.get("development_application_report", ""))).resolve()
         != artifacts["application_report"].resolve()
         or commit.get("development_selections_sha256") != hashes["selections"]

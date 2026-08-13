@@ -37,6 +37,7 @@ from q36_mtr_roles import (
     MODEL_REVISION,
     Q36MTRRoleError,
     TRAINABLE_PARAMETERS,
+    TRAINABLE_MASTER_DTYPE,
     validate_contract,
 )
 
@@ -191,6 +192,10 @@ def validate_adapter(model: Any, metadata: Any, arm: str) -> dict[str, Any]:
         or metadata.get("trainable_parameters") != TRAINABLE_PARAMETERS
         or sum(int(parameter.numel()) for _, parameter in trainables)
         != TRAINABLE_PARAMETERS
+        or any(
+            str(parameter.dtype) != f"torch.{TRAINABLE_MASTER_DTYPE}"
+            for _, parameter in trainables
+        )
         or metadata.get("trainable_parameter_name_sha256") != name_sha256
         or metadata.get("controlled_layer_indices") != expected_indices
         or metadata.get("draft_control")
@@ -204,6 +209,8 @@ def validate_adapter(model: Any, metadata: Any, arm: str) -> dict[str, Any]:
     return {
         "trainable_parameters": TRAINABLE_PARAMETERS,
         "trainable_parameter_name_sha256": name_sha256,
+        "trainable_master_dtype": TRAINABLE_MASTER_DTYPE,
+        "trainable_compute_dtype": "bfloat16",
         "controlled_layer_indices": expected_indices,
         "role": role,
     }

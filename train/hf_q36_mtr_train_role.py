@@ -36,6 +36,7 @@ from q36_mtr_roles import (
     QUANTIZATION,
     RANK,
     TRAINABLE_PARAMETERS,
+    TRAINABLE_MASTER_DTYPE,
     Q36MTRRoleError,
     role_contract,
     role_spec,
@@ -299,6 +300,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         model.trainable_parameter_count() != TRAINABLE_PARAMETERS
         or not trainable_names
         or any(
+            parameter.dtype != torch.float32
+            for parameter in model.parameters()
+            if parameter.requires_grad
+        )
+        or any(
             not (name.endswith("adapter_a.weight") or name.endswith("adapter_b.weight"))
             for name in trainable_names
         )
@@ -367,6 +373,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "data_sha256": data_sha256,
         "selected_rows": len(rows),
         "trainable_parameter_name_sha256": trainable_name_digest,
+        "trainable_master_dtype": TRAINABLE_MASTER_DTYPE,
+        "trainable_compute_dtype": "bfloat16",
         "controlled_layer_indices": controlled_indices,
         "source_only_model_visible": args.role == "owner",
         "internal_draft_visible": args.role == "aligned",

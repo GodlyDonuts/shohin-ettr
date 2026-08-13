@@ -36,6 +36,7 @@ from q36_mtr_roles import (
     Q36MTRRoleError,
     RANK,
     TRAINABLE_PARAMETERS,
+    TRAINABLE_MASTER_DTYPE,
     role_contract,
     validate_matched_revision_geometry,
 )
@@ -418,9 +419,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     trainable_names = sorted(
         name for name, parameter in model.named_parameters() if parameter.requires_grad
     )
-    if model.trainable_parameter_count() != TRAINABLE_PARAMETERS or any(
-        not (name.endswith("adapter_a.weight") or name.endswith("adapter_b.weight"))
-        for name in trainable_names
+    if (
+        model.trainable_parameter_count() != TRAINABLE_PARAMETERS
+        or any(
+            not (name.endswith("adapter_a.weight") or name.endswith("adapter_b.weight"))
+            for name in trainable_names
+        )
+        or any(
+            parameter.dtype != torch.float32
+            for parameter in model.parameters()
+            if parameter.requires_grad
+        )
     ):
         raise Q36MTRMechanicsError("Q36-MTR mechanics trainable surface differs")
     before = protected_parameter_receipt(model)
@@ -485,6 +494,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "data_sha256": data_sha256,
         "selected_rows": ROWS,
         "trainable_parameter_name_sha256": model.trainable_parameter_name_sha256(),
+        "trainable_master_dtype": TRAINABLE_MASTER_DTYPE,
+        "trainable_compute_dtype": "bfloat16",
         "controlled_layer_indices": controlled_indices,
         "source_only_model_visible": True,
         "internal_draft_visible": False,

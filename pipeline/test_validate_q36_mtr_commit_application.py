@@ -9,6 +9,7 @@ import pytest
 
 from build_q36_mtr_commit_pairs import REPORT_SCHEMA as PAIR_REPORT_SCHEMA
 from q36_mtr_contract import MODEL_REVISION
+from q36_mtr_roles import TRAINABLE_MASTER_DTYPE
 from score_q36_mtr import APPLICATION_SCHEMA, COMMIT_REPORT_SCHEMA, SELECTION_SCHEMA
 from validate_q36_mtr_commit_application import (
     Q36MTRApplicationValidationError,
@@ -101,6 +102,8 @@ def _fixture(tmp_path: Path) -> argparse.Namespace:
                 "development_application_report": str(application.resolve()),
                 "development_selections_sha256": _sha(selections),
                 "protected_adapter_unchanged": True,
+                "trainable_master_dtype": TRAINABLE_MASTER_DTYPE,
+                "trainable_compute_dtype": "bfloat16",
                 "sealed_access": {"holdout": 0, "product": 0, "public": 0},
             }
         )

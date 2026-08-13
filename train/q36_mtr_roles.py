@@ -26,6 +26,7 @@ ALPHA = 18.0
 TRAINABLE_PARAMETERS = 1_179_648
 QUANTIZATION = "nf4"
 COMPUTE_DTYPE = "bfloat16"
+TRAINABLE_MASTER_DTYPE = "float32"
 OWNER_UPDATES = 256
 REVISION_UPDATES = 256
 OWNER_MAX_ROWS = 100_000
@@ -137,6 +138,7 @@ def role_contract(role: str) -> dict[str, Any]:
         "trainable_parameters": TRAINABLE_PARAMETERS,
         "quantization": QUANTIZATION,
         "compute_dtype": COMPUTE_DTYPE,
+        "trainable_master_dtype": TRAINABLE_MASTER_DTYPE,
         "role_spec": asdict(spec),
         "router_expert_trainables": 0,
         "token_geometry": "identical_aligned_and_draft_hidden",

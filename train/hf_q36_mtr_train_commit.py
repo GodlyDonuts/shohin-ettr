@@ -33,7 +33,11 @@ from hf_pcf1_train_commit import (
 )
 from hf_product_reasoning_eval import _load_model
 from hf_q36_mtr_evaluate import validate_adapter
-from q36_mtr_roles import MODEL_REVISION, TRAINABLE_PARAMETERS
+from q36_mtr_roles import (
+    MODEL_REVISION,
+    TRAINABLE_MASTER_DTYPE,
+    TRAINABLE_PARAMETERS,
+)
 
 MODEL_SCHEMA = "shohin-q36-mtr-commit-model-v1"
 REPORT_SCHEMA = "shohin-q36-mtr-commit-training-report-v1"
@@ -315,6 +319,7 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
     )
     if (
         sum(parameter.numel() for _, parameter in trainable) != TRAINABLE_PARAMETERS
+        or any(parameter.dtype != torch.float32 for _, parameter in trainable)
         or hashlib.sha256("\n".join(name for name, _ in trainable).encode()).hexdigest()
         != trainable_receipt["trainable_parameter_name_sha256"]
     ):
@@ -423,6 +428,8 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
         "seed": args.seed,
         "inference_fields": ["question", "candidate_a", "candidate_b"],
         "task_or_benchmark_label_at_inference": False,
+        "trainable_master_dtype": TRAINABLE_MASTER_DTYPE,
+        "trainable_compute_dtype": "bfloat16",
     }
     atomic_torch(
         checkpoint,

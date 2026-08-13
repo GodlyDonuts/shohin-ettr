@@ -39,11 +39,16 @@ class SharedPostMLPResidual(nn.Module):
         self.base.requires_grad_(False)
         self.config = config
         device = next(base.parameters()).device
+        # Keep the small trainable surface in FP32.  In particular, the frozen
+        # commit LR is 2e-6, far below BF16's ULP at ordinary initialized
+        # adapter magnitudes; BF16 master parameters can therefore turn valid
+        # optimizer steps into exact no-ops.  CUDA forwards remain BF16 under
+        # autocast while AdamW updates these FP32 masters.
         self.adapter_a = nn.Linear(config.hidden_size, config.rank, bias=False).to(
-            device=device, dtype=torch.bfloat16
+            device=device, dtype=torch.float32
         )
         self.adapter_b = nn.Linear(config.rank, config.hidden_size, bias=False).to(
-            device=device, dtype=torch.bfloat16
+            device=device, dtype=torch.float32
         )
         nn.init.kaiming_uniform_(self.adapter_a.weight, a=5**0.5)
         nn.init.zeros_(self.adapter_b.weight)
@@ -70,10 +75,14 @@ class SharedPostMLPResidual(nn.Module):
         native = self.base(hidden_states, *args, **kwargs)
         if not isinstance(native, torch.Tensor) or native.shape != hidden_states.shape:
             raise SharedPostMLPError("base MLP output geometry differs")
-        residual = (
-            self.adapter_b(self.adapter_a(hidden_states.to(torch.bfloat16)))
-            * self.scale
-        )
+        if hidden_states.device.type == "cuda":
+            with torch.autocast("cuda", dtype=torch.bfloat16):
+                residual = self.adapter_b(self.adapter_a(hidden_states)) * self.scale
+        else:
+            residual = (
+                self.adapter_b(self.adapter_a(hidden_states.to(torch.float32)))
+                * self.scale
+            )
         with torch.no_grad():
             tokens = int(native.numel() // native.shape[-1])
             self._tokens += tokens

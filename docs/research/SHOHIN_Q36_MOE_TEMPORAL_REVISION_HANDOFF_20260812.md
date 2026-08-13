@@ -252,7 +252,12 @@ The owner, aligned reviser, hidden reviser, and commit are distinct role
 states. Routers, native experts, embeddings, attention, and language head stay
 frozen except for the declared final-16 rank-18 residuals and the bounded
 whole-trajectory commit head. NF4 weights with BF16 compute are retained from
-qualified Q35 mechanics. The first live mechanics receipt must reprove exact
+qualified Q35 mechanics. The `1,179,648` residual parameters are held as FP32
+master weights and executed under BF16 autocast. This is required because the
+commit-stage `2e-6` learning rate is below one BF16 representable step at
+ordinary adapter magnitudes; BF16 master weights could otherwise turn the
+declared joint adapter update into an exact no-op. The first live mechanics
+receipt must reprove exact master/compute dtypes as well as exact
 trainables, layer indices, frozen router/expert tensors, one finite update,
 serialization/restore, and peak memory below one H100.
 

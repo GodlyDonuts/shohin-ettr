@@ -12,6 +12,7 @@ from pathlib import Path
 
 from build_q36_mtr_commit_pairs import REPORT_SCHEMA as PAIR_REPORT_SCHEMA
 from q36_mtr_contract import MODEL_REVISION, TOTAL_ROWS
+from q36_mtr_roles import TRAINABLE_MASTER_DTYPE
 from score_q36_mtr import APPLICATION_SCHEMA, COMMIT_REPORT_SCHEMA, _load_selections
 
 SCHEMA = "shohin-q36-mtr-commit-application-validation-v1"
@@ -66,6 +67,8 @@ def validate(args: argparse.Namespace) -> dict:
         != str(args.application_report.resolve())
         or report.get("development_selections_sha256") != sha256_file(args.selections)
         or report.get("protected_adapter_unchanged") is not True
+        or report.get("trainable_master_dtype") != TRAINABLE_MASTER_DTYPE
+        or report.get("trainable_compute_dtype") != "bfloat16"
         or report.get("sealed_access") != {"holdout": 0, "product": 0, "public": 0}
         or application.get("status") != "complete"
         or application.get("model_revision") != MODEL_REVISION

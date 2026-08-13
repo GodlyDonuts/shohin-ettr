@@ -10,6 +10,7 @@ from q36_mtr_roles import TRAINABLE_PARAMETERS, role_contract
 
 class _Parameter:
     requires_grad = True
+    dtype = __import__("torch").float32
 
     def __init__(self, count: int) -> None:
         self.count = count
