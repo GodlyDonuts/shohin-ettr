@@ -162,8 +162,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         _generation_stop_token_ids,
         _render_prompt,
     )
-    from hf_q36_mtr_evaluate import load_q36_adapter_model
-    from hf_pcf1_evaluate import nonpadding_prompt_tokens
+    from hf_q36_mtr_evaluate import (
+        load_q36_adapter_model,
+        q36_nonpadding_prompt_tokens,
+    )
 
     if (
         args.model_revision != MODEL_REVISION
@@ -212,7 +214,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             _render_prompt(tokenizer, str(row["source_prompt"]), True, False)
             for row in batch
         ]
-        prompt_tokens += nonpadding_prompt_tokens(tokenizer, rendered)
+        prompt_tokens += q36_nonpadding_prompt_tokens(tokenizer, rendered)
         batch_started = time.monotonic()
         completions, usage = _generate_completions(
             model,
@@ -222,6 +224,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "greedy",
             args.max_new_tokens,
             stop_ids,
+            add_special_tokens=False,
         )
         batch_wall_seconds = (time.monotonic() - batch_started) / len(batch)
         for row, completion, (token_count, hit_limit) in zip(
@@ -268,6 +271,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "train_source_sha256": sha256_file(args.train_source),
         "development_source_sha256": sha256_file(args.development_source),
         "generation_mode": "greedy",
+        "rendered_chat_tokenization": "add_special_tokens_false",
         "max_new_tokens": args.max_new_tokens,
         "seed": args.seed,
         "shard_index": args.shard_index,

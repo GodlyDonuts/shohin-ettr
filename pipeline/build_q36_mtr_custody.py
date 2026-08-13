@@ -293,6 +293,7 @@ def _validate_evaluation_report(
         or report.get("arm") != arm
         or report.get("split") != split
         or report.get("model_revision") != MODEL_REVISION
+        or report.get("rendered_chat_tokenization") != "add_special_tokens_false"
         or report.get("rows") != rows
         or (split == "development" and report.get("metrics") is not None)
         or (split == "calibration" and not isinstance(report.get("metrics"), dict))
@@ -547,6 +548,7 @@ def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
         or draft.get("status") != "complete"
         or draft.get("rows") != 7_113
         or draft.get("owner_checkpoint_sha256") != owner_sha256
+        or draft.get("rendered_chat_tokenization") != "add_special_tokens_false"
         or not _matches_file(draft, "output", artifacts["drafts"])
         or data.get("draft_report_sha256") != hashes["draft_report"]
         or data.get("drafts_sha256") != hashes["drafts"]

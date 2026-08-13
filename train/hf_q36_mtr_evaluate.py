@@ -13,7 +13,6 @@ import time
 from typing import Any
 
 from hf_pcf1_evaluate import (
-    nonpadding_prompt_tokens,
     self_refinement_prompt,
     shard_bounds,
 )
@@ -182,6 +181,28 @@ def sha256_file(path: Path) -> str:
         for block in iter(lambda: handle.read(1 << 20), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def q36_nonpadding_prompt_tokens(tokenizer: Any, rendered: list[str]) -> int:
+    """Count the exact special-token-free prompt geometry used by Q36 generation."""
+
+    encoded = tokenizer(
+        rendered,
+        padding=True,
+        return_attention_mask=True,
+        add_special_tokens=False,
+    )
+    attention = encoded.get("attention_mask")
+    if hasattr(attention, "tolist"):
+        attention = attention.tolist()
+    if (
+        not isinstance(attention, list)
+        or len(attention) != len(rendered)
+        or any(not isinstance(row, list) or not row for row in attention)
+        or any(value not in (0, 1) for row in attention for value in row)
+    ):
+        raise Q36MTREvaluationError("Q36-MTR prompt attention geometry differs")
+    return sum(sum(row) for row in attention)
 
 
 def _atomic_lines(path: Path, rows: list[dict[str, Any]]) -> str:
@@ -415,9 +436,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             else str(row["question"])
         )
         rendered = [_render_prompt(tokenizer, question, True, False)]
-        counters["prompt_tokens"] += nonpadding_prompt_tokens(tokenizer, rendered)
+        counters["prompt_tokens"] += q36_nonpadding_prompt_tokens(tokenizer, rendered)
         completions, usage = _generate_completions(
-            model, tokenizer, rendered, True, "greedy", 768, stop_ids
+            model,
+            tokenizer,
+            rendered,
+            True,
+            "greedy",
+            768,
+            stop_ids,
+            add_special_tokens=False,
         )
         completion = completions[0]
         token_count, exhausted = usage[0]
@@ -468,6 +496,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         ),
         "assessor_board_access_count": 0,
         "generation_mode": "greedy",
+        "rendered_chat_tokenization": "add_special_tokens_false",
         "max_new_tokens": 768,
         "seed": args.seed,
         "batch_size": args.batch_size,

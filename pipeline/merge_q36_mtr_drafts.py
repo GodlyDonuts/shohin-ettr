@@ -101,6 +101,7 @@ def merge(args: argparse.Namespace) -> dict[str, Any]:
             or report.get("sealed_access") != {"holdout": 0, "product": 0, "public": 0}
             or report.get("model_revision") != MODEL_REVISION
             or report.get("generation_mode") != "greedy"
+            or report.get("rendered_chat_tokenization") != "add_special_tokens_false"
             or report.get("max_new_tokens") != DRAFT_MAX_NEW_TOKENS
             or report.get("seed") != DRAFT_SEED
             or report.get("shard_count") != DRAFT_SHARDS
@@ -135,6 +136,7 @@ def merge(args: argparse.Namespace) -> dict[str, Any]:
                 "train_source_sha256",
                 "development_source_sha256",
                 "generation_mode",
+                "rendered_chat_tokenization",
                 "max_new_tokens",
                 "seed",
                 "shard_count",

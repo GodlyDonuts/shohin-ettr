@@ -118,6 +118,24 @@ def test_q36_checkpoint_loader_is_weights_only_and_trainable_only(
         module.load_q36_checkpoint_payload(path)
 
 
+def test_q36_prompt_accounting_never_adds_special_tokens() -> None:
+    observed = []
+
+    class Tokenizer:
+        def __call__(self, rendered, **kwargs):
+            observed.append(kwargs)
+            return {"attention_mask": [[1, 1] for _ in rendered]}
+
+    assert module.q36_nonpadding_prompt_tokens(Tokenizer(), ["rendered"]) == 2
+    assert observed == [
+        {
+            "padding": True,
+            "return_attention_mask": True,
+            "add_special_tokens": False,
+        }
+    ]
+
+
 def test_hidden_role_cannot_claim_draft_information_availability() -> None:
     metadata = _metadata("draft_hidden", "draft_hidden")
     metadata["draft_information_available"] = True

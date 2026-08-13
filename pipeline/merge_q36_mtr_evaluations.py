@@ -134,6 +134,7 @@ def merge(args: argparse.Namespace) -> dict[str, Any]:
             or report.get("split") != args.split
             or report.get("model_revision") != MODEL_REVISION
             or report.get("generation_mode") != "greedy"
+            or report.get("rendered_chat_tokenization") != "add_special_tokens_false"
             or report.get("max_new_tokens") != 768
             or report.get("seed") != EVALUATION_SEED
             or report.get("batch_size") != 1
@@ -177,6 +178,7 @@ def merge(args: argparse.Namespace) -> dict[str, Any]:
                 "data_report_sha256",
                 "runtime_fields",
                 "generation_mode",
+                "rendered_chat_tokenization",
                 "max_new_tokens",
                 "seed",
                 "batch_size",

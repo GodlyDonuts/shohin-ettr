@@ -288,6 +288,11 @@ Q36-only `weights_only` checkpoint loader. It rejects every payload except the
 exact 32 FP32 residual tensors and role metadata, revalidates the role/config,
 constructs the pinned causal NF4 host, copies those tensors with exact
 name/shape/dtype checks, and rehashes the resulting live residual state.
+All Q36 chat prompts are already native-template-rendered strings and are
+therefore tokenized with `add_special_tokens=false` in draft generation,
+matched evaluation, prompt accounting, merging, and custody. This exactly
+matches role training and prevents tokenizer-dependent BOS/control-token
+duplication from changing the aligned/hidden causal geometry.
 
 ## Data and visibility
 
