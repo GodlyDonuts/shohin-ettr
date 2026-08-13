@@ -5,6 +5,21 @@ No Q36-MTR model, data view, scheduler graph, or score is authorized by this
 document. A fresh phase may implement exactly one source-disjoint development
 gate after its own admission freeze. PCF17 remains closed and unscored.
 
+Local preparation now includes `pipeline/q36_mtr_contract.py`, which emits and
+revalidates the exact no-submit 61-request dependency graph, and
+`pipeline/compare_q36_mtr.py`, which implements the five-arm terminal reducer.
+The reducer hash-binds the graph, all arm reports, final custody, exact host,
+source/data/runtime identity, one assessor read, scheduler accounting, and the
+evidence mirror. It always stops after development and never authorizes an
+automatic confirmation. These modules are preparation, not a dispatcher.
+
+The PCF17 infrastructure finding is also repaired prospectively: exact-tree
+custody accepts either canonical manifest members or the single conventional
+`./` prefix emitted by `find .`, canonicalizing before comparison. Interior
+dot segments, traversal, absolute paths, duplicate canonical names, symlinks,
+extra/missing files, and hash drift remain rejected. This repair cannot be
+used to resume or reinterpret PCF17.
+
 ## Claim carried forward
 
 The strongest surviving qualified Shohin system is the dense same-family

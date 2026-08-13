@@ -402,17 +402,23 @@ def _exact_manifest(
         if match is None:
             raise PCF1CustodyError(f"{label} manifest line differs")
         digest, _, rendered = match.groups()
-        relative = PurePosixPath(rendered)
+        # sha256sum commonly renders members produced by ``find .`` with one
+        # leading ``./``. That spelling is semantically identical to the
+        # canonical relative name and was used by the externally pinned PCF17
+        # model manifest. Canonicalize exactly that one prefix while retaining
+        # strict traversal, alias, duplicate, and exact-membership checks.
+        canonical = rendered[2:] if rendered.startswith("./") else rendered
+        relative = PurePosixPath(canonical)
         if (
             relative.is_absolute()
-            or not rendered
-            or rendered != relative.as_posix()
+            or not canonical
+            or canonical != relative.as_posix()
             or any(part in ("", ".", "..") for part in relative.parts)
-            or any(term in rendered.casefold() for term in FORBIDDEN_PATH_TERMS)
-            or rendered in entries
+            or any(term in canonical.casefold() for term in FORBIDDEN_PATH_TERMS)
+            or canonical in entries
         ):
             raise PCF1CustodyError(f"{label} manifest entry is unsafe")
-        entries[rendered] = digest
+        entries[canonical] = digest
     if not entries or list(entries) != sorted(entries):
         raise PCF1CustodyError(f"{label} manifest is empty or unordered")
 
