@@ -62,6 +62,15 @@ class Q36MTRPlanError(RuntimeError):
     """The Q36-MTR dry-run task plan differs."""
 
 
+def _hex(value: object, length: int) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == length
+        and value == value.lower()
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
 def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -136,6 +145,7 @@ def compile_plan(graph: dict[str, Any], graph_sha256: str) -> dict[str, Any]:
                     "h100s": 0,
                     "requeue": False,
                     "output_writers": 1,
+                    "duplicate_submission_permitted": False,
                 }
             )
     payload = {
@@ -167,6 +177,10 @@ def compile_plan(graph: dict[str, Any], graph_sha256: str) -> dict[str, Any]:
 def validate_plan(payload: dict[str, Any]) -> None:
     if payload.get("schema") != SCHEMA or payload.get("status") != "dry_run_only":
         raise Q36MTRPlanError("Q36-MTR plan schema/status differs")
+    if not _hex(payload.get("source_commit"), 40) or not _hex(
+        payload.get("graph_sha256"), 64
+    ):
+        raise Q36MTRPlanError("Q36-MTR plan source binding differs")
     for field in (
         "scientific_submit_authorized",
         "submission_command_present",
@@ -197,6 +211,7 @@ def validate_plan(payload: dict[str, Any]) -> None:
                 "identity_partition": _identity_partition(
                     stage.name, index, stage.tasks
                 ),
+                "expected_h100_hours": stage.expected_h100_hours / stage.tasks,
             }
     if set(keys) != set(expected_gpu):
         raise Q36MTRPlanError("Q36-MTR GPU request identity differs")
@@ -226,20 +241,17 @@ def validate_plan(payload: dict[str, Any]) -> None:
             or task.get("h100s") != 0
             or task.get("requeue") is not False
             or task.get("output_writers") != 1
+            or task.get("duplicate_submission_permitted") is not False
             for task in cpu_tasks
         )
     ):
         raise Q36MTRPlanError("Q36-MTR CPU entrypoint plan differs")
-    for priority, (task, stage) in enumerate(
-        zip(cpu_tasks, expected_cpu, strict=True), start=1
-    ):
+    for task, stage in zip(cpu_tasks, expected_cpu, strict=True):
         stage_priority = next(
             index for index, value in enumerate(STAGES, start=1) if value == stage
         )
-        if (
-            priority > len(expected_cpu)
-            or task.get("priority") != stage_priority
-            or task.get("dependencies") != list(stage.dependencies)
+        if task.get("priority") != stage_priority or task.get("dependencies") != list(
+            stage.dependencies
         ):
             raise Q36MTRPlanError("Q36-MTR CPU dependency plan differs")
     partitioned = {
@@ -283,7 +295,12 @@ def validate_plan(payload: dict[str, Any]) -> None:
     if reachable != set(dependencies):
         raise Q36MTRPlanError("Q36-MTR graph contains orphan work")
     expected_hours = sum(stage.expected_h100_hours for stage in STAGES)
-    if abs(float(payload.get("expected_h100_hours", -1)) - expected_hours) > 1e-12:
+    if (
+        payload.get("h100_requests") != 61
+        or isinstance(payload.get("expected_h100_hours"), bool)
+        or not isinstance(payload.get("expected_h100_hours"), (int, float))
+        or abs(float(payload["expected_h100_hours"]) - expected_hours) > 1e-12
+    ):
         raise Q36MTRPlanError("Q36-MTR task-hour projection differs")
     if payload.get("maximum_concurrent_single_h100_requests") != 32:
         raise Q36MTRPlanError("Q36-MTR maximum concurrency differs")
@@ -303,12 +320,25 @@ def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
         raise Q36MTRPlanError(f"refusing existing Q36-MTR plan: {path}")
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(f".{path.name}.tmp.{os.getpid()}")
-    with temporary.open("x", encoding="utf-8") as handle:
-        json.dump(payload, handle, indent=2, sort_keys=True)
-        handle.write("\n")
-        handle.flush()
-        os.fsync(handle.fileno())
-    os.replace(temporary, path)
+    try:
+        with temporary.open("x", encoding="utf-8") as handle:
+            json.dump(payload, handle, indent=2, sort_keys=True)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.link(temporary, path)
+        directory_fd = os.open(path.parent, os.O_RDONLY)
+        try:
+            os.fsync(directory_fd)
+        finally:
+            os.close(directory_fd)
+    except FileExistsError as error:
+        raise Q36MTRPlanError(f"refusing existing Q36-MTR plan: {path}") from error
+    finally:
+        try:
+            temporary.unlink()
+        except FileNotFoundError:
+            pass
 
 
 def parse_args() -> argparse.Namespace:

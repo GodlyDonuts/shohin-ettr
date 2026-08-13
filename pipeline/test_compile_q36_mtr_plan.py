@@ -61,14 +61,21 @@ def test_dry_run_plan_has_exact_single_h100_fanout() -> None:
     [
         lambda value: value.__setitem__("scientific_submit_authorized", True),
         lambda value: value.__setitem__("submission_command_present", True),
+        lambda value: value.__setitem__("source_commit", "0" * 39),
+        lambda value: value.__setitem__("graph_sha256", "z" * 64),
+        lambda value: value.__setitem__("h100_requests", 60),
         lambda value: value["gpu_tasks"].pop(),
         lambda value: value["gpu_tasks"][0].__setitem__("h100s", 2),
+        lambda value: value["gpu_tasks"][0].__setitem__("expected_h100_hours", 0.5),
         lambda value: value["gpu_tasks"][0].__setitem__("requeue", True),
         lambda value: value["gpu_tasks"][0].__setitem__("dependencies", []),
         lambda value: value["gpu_tasks"][3]["identity_partition"].__setitem__(
             "row_start", 0
         ),
         lambda value: value["cpu_tasks"][-1].__setitem__("dependencies", []),
+        lambda value: value["cpu_tasks"][-1].__setitem__(
+            "duplicate_submission_permitted", True
+        ),
         lambda value: value.__setitem__("no_duplicate", False),
         lambda value: value.__setitem__("maximum_concurrent_single_h100_requests", 31),
     ],
