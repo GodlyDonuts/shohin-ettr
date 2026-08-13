@@ -8,6 +8,7 @@ from types import SimpleNamespace
 import pytest
 import torch
 
+from hf_product_reasoning_train import reservoir_rows_with_sha256
 from hf_q36_mtr_train_role import (
     Q36MTRTrainingError,
     _save_role_checkpoint,
@@ -24,6 +25,7 @@ from q36_mtr_roles import (
     Q36MTRRoleError,
     ROLE_SPECS,
     TRAINABLE_PARAMETERS,
+    expected_selected_rows,
     role_contract,
     sequence_geometry_receipt,
     validate_contract,
@@ -45,6 +47,9 @@ def test_exact_role_states_are_distinct_and_equal_budget() -> None:
     hidden = ROLE_SPECS["draft_hidden"]
     assert owner.data_kind == "source_only"
     assert owner.warm_start_role is None
+    assert owner.max_rows == 100_000
+    assert expected_selected_rows("owner") == 26_387
+    assert expected_selected_rows("aligned") == 9_655
     assert aligned.warm_start_role == hidden.warm_start_role == "owner"
     assert aligned.updates == hidden.updates == 256
     assert aligned.max_rows == hidden.max_rows == 9_655
@@ -296,6 +301,20 @@ def test_training_consumption_binds_effective_prefix_not_loaded_pool() -> None:
         receipt["presentation_index_sha256"]
         == hashlib.sha256(b"0\n1\n2\n3\n").hexdigest()
     )
+
+
+def test_owner_population_fix_preserves_reservoir_shuffle(tmp_path: Path) -> None:
+    data = tmp_path / "b1.jsonl"
+    data.write_text(
+        "".join(
+            f'{{"question":"q{index}","response":"r{index}"}}\n' for index in range(7)
+        ),
+        encoding="utf-8",
+    )
+    ceiling_rows, ceiling_sha = reservoir_rows_with_sha256(data, 100_000, 20260802)
+    exact_rows, exact_sha = reservoir_rows_with_sha256(data, 26_387, 20260802)
+    assert exact_rows == ceiling_rows
+    assert exact_sha == ceiling_sha
 
 
 def _arguments(role: str) -> SimpleNamespace:

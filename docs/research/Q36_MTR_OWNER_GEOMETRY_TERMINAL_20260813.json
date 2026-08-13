@@ -1,0 +1,53 @@
+{
+  "automatic_retry_authorized": false,
+  "automatic_successor_authorized": false,
+  "capability_rows_scored": 0,
+  "development_assessor_reads": 0,
+  "dispatch": {
+    "cancelled_dependency_roots": 30,
+    "cancelled_roots_elapsed_seconds": 0,
+    "dispatch_sha256": "bf0b1c0a29eb11f16e625ece68bd99975b2af23157d9ed2d284ec48305f53994",
+    "expected_h100_hours": 58.9,
+    "root_job_id": 754603,
+    "submission_count": 1,
+    "terminal_job_id": 754635
+  },
+  "failed_stage": {
+    "backbone_load_started": false,
+    "capability_scored": false,
+    "elapsed_seconds": 222,
+    "exit_code": "1:0",
+    "h100_allocations": 1,
+    "job_id": 754605,
+    "node": "evc35",
+    "optimizer_update_completed": false,
+    "restarts": 0,
+    "stage": "owner_fit",
+    "state": "FAILED",
+    "stderr_sha256": "ef70c97da548fe731e092ec9a2ab35161f5c739e630503144357e319abf750b0",
+    "stdout_sha256": "44fcc9a8dc8ac18465061c038f31b554d6be5292bd3d83423091aff1992d36d2"
+  },
+  "formal_scientific_result": null,
+  "infrastructure_diagnosis": {
+    "class": "owner_selected_population_ceiling_confusion",
+    "message": "The immutable B1 source has exactly 26,387 valid rows, while the prospective owner validator incorrectly treated its 100,000-row reservoir ceiling as an exact selected-row requirement. The failure occurred after source validation and before backbone load or any optimizer update. The fixed validator keeps the 100,000 selection ceiling and requires the exact 26,387-row immutable population, preserving the same deterministic shuffle and 4,096-presentation training prefix.",
+    "scientific_gate_entered": false
+  },
+  "live_preflight_sha256": "c35e56e4662bb3bdc0ff79e0c5de74760b50092d8cc561e44f91dffb2eeef18b",
+  "mechanics": {
+    "checkpoint_sha256": "4db27d556b9ab77547b45b7b84cc00612ae8bea67e064a1de05a4084a8358f2c",
+    "job_id": 754604,
+    "report_sha256": "c7279765e4e58cfd42136ad0171d06ba1a7ac307d7a05dd452e8606969e2e3bd",
+    "status": "pass"
+  },
+  "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+  "protected_product_accesses": 0,
+  "public_accesses": 0,
+  "run_id": "q36-mtr-f4afbb9-r1",
+  "run_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_f4afbb9_r1",
+  "schema": "shohin-q36-mtr-execution-terminal-infrastructure-v1",
+  "sealed_holdout_accesses": 0,
+  "source_commit": "f4afbb9d31c96ce53639039726d3d0d02a75b43a",
+  "status": "terminal_infrastructure_failure",
+  "stop_after_terminal": true
+}

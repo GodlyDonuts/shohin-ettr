@@ -1,0 +1,44 @@
+{
+  "files": [
+    {
+      "name": "accounting.txt",
+      "sha256": "52ad0e3b20b7257fdd4fff5ca5f1fb7769ce60577142e43bf256e0eaed309a3c"
+    },
+    {
+      "name": "dispatch.json",
+      "sha256": "bf0b1c0a29eb11f16e625ece68bd99975b2af23157d9ed2d284ec48305f53994"
+    },
+    {
+      "name": "execution_terminal.json",
+      "sha256": "f58a52c94a3795e135172f2cfe495c0cc5352cbda0469745718904259cf9938c"
+    },
+    {
+      "name": "live_preflight.json",
+      "sha256": "c35e56e4662bb3bdc0ff79e0c5de74760b50092d8cc561e44f91dffb2eeef18b"
+    },
+    {
+      "name": "mechanics_report.json",
+      "sha256": "c7279765e4e58cfd42136ad0171d06ba1a7ac307d7a05dd452e8606969e2e3bd"
+    },
+    {
+      "name": "owner_754605.err",
+      "sha256": "ef70c97da548fe731e092ec9a2ab35161f5c739e630503144357e319abf750b0"
+    },
+    {
+      "name": "owner_754605.out",
+      "sha256": "44fcc9a8dc8ac18465061c038f31b554d6be5292bd3d83423091aff1992d36d2"
+    },
+    {
+      "name": "queue.txt",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "name": "quota.txt",
+      "sha256": "1a79d908be3cd7253f16fb73d9f19182549d5fd52be22f6e1f149ff0a250a476"
+    }
+  ],
+  "run_id": "q36-mtr-f4afbb9-r1",
+  "schema": "shohin-q36-mtr-terminal-evidence-manifest-v1",
+  "source_commit": "f4afbb9d31c96ce53639039726d3d0d02a75b43a",
+  "status": "terminal_infrastructure_failure"
+}

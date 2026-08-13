@@ -40,6 +40,7 @@ from q36_mtr_roles import (
     load_role_checkpoint_payload,
     role_contract,
     role_spec,
+    expected_selected_rows,
     sequence_geometry_receipt,
     validate_backbone_geometry,
     validate_backbone_moe_surface,
@@ -323,7 +324,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     rows, data_sha256 = reservoir_rows_with_sha256(
         args.data, args.max_rows, args.data_seed
     )
-    if len(rows) != args.max_rows:
+    if len(rows) != expected_selected_rows(args.role):
         raise Q36MTRTrainingError("Q36-MTR selected-row geometry differs")
     prompts, responses, draft_masks, sequence_receipt = tokenize_role_rows(
         tokenizer,

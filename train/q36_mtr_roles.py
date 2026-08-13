@@ -48,6 +48,12 @@ ADAPTER_UPDATE_SCHEMA = "shohin-q36-mtr-adapter-update-v1"
 OWNER_UPDATES = 256
 REVISION_UPDATES = 256
 OWNER_MAX_ROWS = 100_000
+# The pinned B1 corpus contains exactly 26,387 valid source/response rows.  The
+# historical trainer's 100,000 value is a selection ceiling, not a claim that
+# the immutable file has 100,000 rows.  Keeping those two quantities separate
+# preserves the exact deterministic shuffle and 4,096-presentation update
+# prefix used by the surviving dense recipe.
+OWNER_SELECTED_ROWS = 26_387
 REVISION_PRESENTATIONS = 9_655
 OWNER_MAX_SEQUENCE_LENGTH = 1_024
 REVISION_MAX_SEQUENCE_LENGTH = 4_096
@@ -173,6 +179,13 @@ def role_spec(role: str) -> RoleSpec:
         return ROLE_SPECS[role]
     except KeyError as error:
         raise Q36MTRRoleError(f"unknown Q36-MTR role: {role}") from error
+
+
+def expected_selected_rows(role: str) -> int:
+    """Return the exact immutable population admitted for a trained role."""
+
+    role_spec(role)
+    return OWNER_SELECTED_ROWS if role == "owner" else REVISION_PRESENTATIONS
 
 
 def trainable_name_sha256(names: Iterable[str]) -> str:

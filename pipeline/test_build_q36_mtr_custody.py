@@ -27,7 +27,12 @@ from build_q36_mtr_custody import (
 from build_pcf1_data import revision_prompt
 from q36_mtr_contract import graph_payload
 from q36_mtr_contract import STAGES
-from q36_mtr_roles import MODEL_REVISION, TRAINABLE_PARAMETERS, role_contract
+from q36_mtr_roles import (
+    MODEL_REVISION,
+    OWNER_SELECTED_ROWS,
+    TRAINABLE_PARAMETERS,
+    role_contract,
+)
 from score_q36_mtr import (
     AUTHORIZATION_SCHEMA,
     CONSUMPTION_SCHEMA,
@@ -77,7 +82,7 @@ def test_role_custody_requires_fresh_optimizer_and_restored_state(
         "status": "complete",
         "update": 256,
         "updates": 256,
-        "selected_rows": 100_000,
+        "selected_rows": OWNER_SELECTED_ROWS,
         "trainable_parameters": TRAINABLE_PARAMETERS,
         "trainable_master_dtype": "float32",
         "trainable_compute_dtype": "bfloat16",
@@ -100,7 +105,7 @@ def test_role_custody_requires_fresh_optimizer_and_restored_state(
         "final_trainable_state_sha256": "b" * 64,
         "sequence_custody": {},
         "training_consumption": {
-            "dataset_presentations": 100_000,
+            "dataset_presentations": OWNER_SELECTED_ROWS,
             "optimizer_updates": 256,
             "gradient_accumulation": 16,
             "batch_size": 1,

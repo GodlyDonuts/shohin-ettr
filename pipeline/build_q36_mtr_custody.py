@@ -48,6 +48,7 @@ from q36_mtr_roles import (
     TRAINABLE_PARAMETERS,
     TRAINABLE_MASTER_DTYPE,
     role_contract,
+    expected_selected_rows,
     native_moe_surface_contract,
     validate_adapter_update_receipt,
     validate_commit_gradient_receipt,
@@ -238,7 +239,7 @@ def _validate_role_report(
     report: dict[str, Any], role: str, checkpoint: Path, owner_sha256: str
 ) -> None:
     expected = role_contract(role)
-    selected = 100_000 if role == "owner" else 9_655
+    selected = expected_selected_rows(role)
     expected_accumulation = 16 if role == "owner" else 8
     expected_consumed = 256 * expected_accumulation
     draft_bytes = role != "owner"

@@ -1,10 +1,25 @@
 # Q36-MTR: MoE Temporal-Revision Handoff
 
-Status: second execution terminal-infrastructure failure, 2026-08-13. No
+Status: third execution terminal-infrastructure failure, 2026-08-13. No
 scientific PASS/FAIL exists. The pinned Q36-MTR host, source-disjoint data
 view, 61 single-H100 requests, 58.90 expected H100-hours, arms, prompts,
 seeds, thresholds, and terminal stop remain immutable. No retry,
 confirmation, or successor is authorized. PCF17 remains closed and unscored.
+
+Execution `q36-mtr-f4afbb9-r1` passed CPU live preflight and the complete
+one-H100 mechanics gate. Mechanics job `754604` loaded the exact host, proved
+the aligned draft changes every native-router layer while the hidden draft is
+causally unavailable, completed one finite adapter update, and restored the
+trainable state exactly. The source-owner job then failed before backbone load
+or optimizer construction because the role validator treated the historical
+`100,000` reservoir ceiling as the selected cardinality of the immutable B1
+file, which has exactly `26,387` valid rows. The downstream 30 dependency-dead
+roots were cancelled with zero elapsed time. Preserve
+`Q36_MTR_OWNER_GEOMETRY_TERMINAL_20260813.json` and
+`Q36_MTR_OWNER_GEOMETRY_TERMINAL_EVIDENCE_MANIFEST_20260813.json`. The
+prospective validator now separates the unchanged `100,000` selection ceiling
+from the exact `26,387` selected population, preserving the same seed, shuffle,
+256 updates, and 4,096-presentation consumption prefix.
 
 Corrected execution `q36-mtr-bf17823-r1` passed its CPU live preflight and
 crossed the prior causal-loader failure: H100 job `754563` loaded all 693
@@ -95,7 +110,9 @@ and after one finite update, checks aligned versus draft-hidden token and
 full-position equivalence, and requires byte-exact checkpoint restoration.
 It never scores a capability row or reads a development assessor. The
 mechanics checkpoint is deliberately tagged with only 24 selected rows, so it
-cannot satisfy the 100,000-row source-owner warm-start contract.
+cannot satisfy the 26,387-row source-owner warm-start contract. The historical
+100,000 value is only the reservoir selection ceiling for the immutable B1
+file; it is not the file's selected-row cardinality.
 
 Host admission is exact rather than family-level. The pinned outer config is
 `qwen3_5_moe`; the nested causal text config is `qwen3_5_moe_text` with 40
