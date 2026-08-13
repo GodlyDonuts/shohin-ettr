@@ -485,7 +485,7 @@ prompt/generated tokens, wall time, peak CUDA memory, and trainable counts are
 mandatory outputs.
 
 The scheduler exclusion set is exactly
-`evc26,evc29,evc31,evc32,evc33,evc37,evc38,evc46` until a fresh no-science
+`evc26,evc29,evc31,evc32,evc33,evc37,evc38,evc43,evc46` until a fresh no-science
 qualification changes it prospectively. Use only `normal`, one
 `nvidia_h100_pcie` per request, and `--no-requeue`. As of handoff, August
 accounting is `846.141944` H100-hours against the documented 2,000-hour cap;
