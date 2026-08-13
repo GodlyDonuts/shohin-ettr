@@ -6,6 +6,7 @@ required=(RUNTIME RUNTIME_MANIFEST_SHA256 SOURCE_COMMIT PYTHON REPOSITORY GRAPH_
 for variable in "${required[@]}"; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
+export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 source "$RUNTIME/train/jobs/q36_mtr_common.sh"
 q36_verify_runtime
 q36_verify_model

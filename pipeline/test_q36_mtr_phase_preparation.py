@@ -16,6 +16,22 @@ def test_q36_phase_preparation_is_read_only_with_respect_to_scheduler() -> None:
     subprocess.run(["bash", "-n", str(script)], check=True)
 
 
+def test_q36_phase_preparation_pins_numerical_libraries_before_python() -> None:
+    root = Path(__file__).resolve().parents[1]
+    source = (root / "pipeline/jobs/q36_mtr_prepare_phase.sh").read_text(
+        encoding="utf-8"
+    )
+    pin = (
+        "export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 "
+        "MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1"
+    )
+    assert source.count(pin) == 1
+    assert source.index(pin) < source.index(
+        'source "$RUNTIME/train/jobs/q36_mtr_common.sh"'
+    )
+    assert source.index(pin) < source.index('"$PYTHON"')
+
+
 def test_q36_live_preflight_is_the_first_cpu_entrypoint() -> None:
     from compile_q36_mtr_plan import CPU_ENTRYPOINTS
 
