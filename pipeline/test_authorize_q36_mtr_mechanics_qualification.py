@@ -132,6 +132,21 @@ def _fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> argparse.Namesp
     )
 
 
+def _verify(args: argparse.Namespace, digest: str | None = None):
+    return verify_authorization(
+        args.output,
+        digest or sha256_file(args.output),
+        COMMIT,
+        args.run_id,
+        args.output_root,
+        args.runtime_manifest,
+        args.model_manifest,
+        args.environment_receipt,
+        args.b1,
+        args.prior_terminal,
+    )
+
+
 def test_authorization_is_mechanics_only_and_write_once(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -146,6 +161,7 @@ def test_authorization_is_mechanics_only_and_write_once(
     assert result["submission_capability"] is False
     assert len(result["prior_terminal_receipts"]) == 2
     assert json.loads(args.output.read_text()) == result
+    assert args.output.stat().st_mode & 0o222 == 0
     with pytest.raises(Q36MTRMechanicsQualificationError, match="exists"):
         authorize(args)
 
@@ -156,13 +172,21 @@ def test_runtime_verifier_binds_identity_and_fresh_output(
     args = _fixture(tmp_path, monkeypatch)
     authorize(args)
     digest = sha256_file(args.output)
-    result = verify_authorization(
-        args.output, digest, COMMIT, args.run_id, args.output_root
-    )
+    result = _verify(args, digest)
     assert result["one_shot"] is True
     args.output_root.mkdir()
     with pytest.raises(Q36MTRMechanicsQualificationError, match="output root"):
-        verify_authorization(args.output, digest, COMMIT, args.run_id, args.output_root)
+        _verify(args, digest)
+
+
+def test_verifier_rejects_writable_authorization(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    args = _fixture(tmp_path, monkeypatch)
+    authorize(args)
+    args.output.chmod(0o644)
+    with pytest.raises(Q36MTRMechanicsQualificationError):
+        _verify(args)
 
 
 def test_terminal_tamper_fails_closed(
@@ -196,7 +220,44 @@ def test_verifier_rejects_privilege_escalation(
     authorize(args)
     value = json.loads(args.output.read_text())
     value[field] = True
+    args.output.chmod(0o644)
     args.output.write_text(json.dumps(value) + "\n", encoding="utf-8")
+    with pytest.raises(Q36MTRMechanicsQualificationError):
+        _verify(args)
+
+
+def test_verifier_rejects_post_authorization_terminal_substitution(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    args = _fixture(tmp_path, monkeypatch)
+    authorize(args)
+    terminal = args.prior_terminal[0]
+    value = json.loads(terminal.read_text())
+    value["run_id"] = "substituted"
+    terminal.write_text(json.dumps(value) + "\n", encoding="utf-8")
+    with pytest.raises(Q36MTRMechanicsQualificationError):
+        _verify(args)
+
+
+@pytest.mark.parametrize(
+    "field",
+    ("runtime_manifest", "model_manifest", "environment_receipt", "b1"),
+)
+def test_verifier_rejects_custody_path_substitution(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, field: str
+) -> None:
+    args = _fixture(tmp_path, monkeypatch)
+    authorize(args)
+    original = getattr(args, field)
+    substitute = tmp_path / f"substitute-{original.name}"
+    substitute.write_bytes(original.read_bytes())
+    values = {
+        "runtime_manifest": args.runtime_manifest,
+        "model_manifest": args.model_manifest,
+        "environment_receipt": args.environment_receipt,
+        "b1": args.b1,
+    }
+    values[field] = substitute
     with pytest.raises(Q36MTRMechanicsQualificationError):
         verify_authorization(
             args.output,
@@ -204,6 +265,11 @@ def test_verifier_rejects_privilege_escalation(
             COMMIT,
             args.run_id,
             args.output_root,
+            values["runtime_manifest"],
+            values["model_manifest"],
+            values["environment_receipt"],
+            values["b1"],
+            args.prior_terminal,
         )
 
 
@@ -219,3 +285,6 @@ def test_wrapper_is_one_h100_no_score_no_dispatch() -> None:
     assert "ASSESSOR" not in source
     assert "score_completion" not in source
     assert "sbatch " not in source
+    assert source.index("export OMP_NUM_THREADS=1") < source.index(
+        'authorize_q36_mtr_mechanics_qualification.py" verify'
+    )

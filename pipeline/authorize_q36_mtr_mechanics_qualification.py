@@ -65,6 +65,7 @@ def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
             json.dump(payload, handle, indent=2, sort_keys=True)
             handle.write("\n")
             handle.flush()
+            os.fchmod(handle.fileno(), 0o444)
             os.fsync(handle.fileno())
         os.replace(temporary, path)
         directory_fd = os.open(path.parent, os.O_RDONLY)
@@ -234,11 +235,48 @@ def verify_authorization(
     source_commit: str,
     run_id: str,
     output_root: Path,
+    runtime_manifest: Path,
+    model_manifest: Path,
+    environment_receipt: Path,
+    b1: Path,
+    prior_terminals: list[Path],
 ) -> dict[str, Any]:
     value = _load(path, SCHEMA)
     expected_output = _safe_fresh_output(output_root)
+    custody_files = (
+        runtime_manifest,
+        model_manifest,
+        environment_receipt,
+        b1,
+        *prior_terminals,
+    )
+    if any(
+        candidate.is_symlink() or not candidate.is_file() for candidate in custody_files
+    ):
+        raise Q36MTRMechanicsQualificationError(
+            "Q36 mechanics qualification custody input differs"
+        )
+    terminal_receipts = []
+    for terminal in prior_terminals:
+        terminal_value = _load(terminal, TERMINAL_SCHEMA)
+        _validate_terminal(terminal_value)
+        terminal_receipts.append(
+            {
+                "path": str(terminal.resolve()),
+                "sha256": sha256_file(terminal),
+                "run_id": terminal_value.get("run_id"),
+                "source_commit": terminal_value.get("source_commit"),
+                "diagnosis": terminal_value.get("infrastructure_diagnosis", {}).get(
+                    "class"
+                ),
+            }
+        )
+    terminal_receipts.sort(key=lambda receipt: receipt["sha256"])
+    runtime_root = Path(str(value.get("runtime_root", "")))
+    model_root = Path(str(value.get("model_root", "")))
     if (
         sha256_file(path) != expected_sha256
+        or path.stat().st_mode & 0o222
         or value.get("status") != "authorized"
         or value.get("source_commit") != source_commit
         or value.get("run_id") != run_id
@@ -259,6 +297,19 @@ def verify_authorization(
         or value.get("automatic_retry_authorized") is not False
         or value.get("automatic_successor_authorized") is not False
         or value.get("submission_capability") is not False
+        or len(prior_terminals) != 2
+        or {receipt["sha256"] for receipt in terminal_receipts}
+        != PRIOR_TERMINAL_SHA256S
+        or terminal_receipts != value.get("prior_terminal_receipts")
+        or runtime_manifest.resolve() != (runtime_root / "SHA256SUMS").resolve()
+        or sha256_file(runtime_manifest) != value.get("runtime_manifest_sha256")
+        or model_manifest.resolve() != (model_root / "SHA256SUMS").resolve()
+        or sha256_file(model_manifest) != value.get("model_manifest_sha256")
+        or environment_receipt.resolve()
+        != Path(str(value.get("environment_receipt", ""))).resolve()
+        or sha256_file(environment_receipt) != value.get("environment_receipt_sha256")
+        or b1.resolve() != Path(str(value.get("b1", ""))).resolve()
+        or sha256_file(b1) != value.get("b1_sha256")
     ):
         raise Q36MTRMechanicsQualificationError(
             "Q36 mechanics qualification authorization differs"
@@ -287,6 +338,11 @@ def main() -> int:
     verify.add_argument("--source-commit", required=True)
     verify.add_argument("--run-id", required=True)
     verify.add_argument("--output-root", type=Path, required=True)
+    verify.add_argument("--runtime-manifest", type=Path, required=True)
+    verify.add_argument("--model-manifest", type=Path, required=True)
+    verify.add_argument("--environment-receipt", type=Path, required=True)
+    verify.add_argument("--b1", type=Path, required=True)
+    verify.add_argument("--prior-terminal", type=Path, action="append", required=True)
     args = parser.parse_args()
     if args.command == "build":
         result = authorize(args)
@@ -297,6 +353,11 @@ def main() -> int:
             args.source_commit,
             args.run_id,
             args.output_root,
+            args.runtime_manifest,
+            args.model_manifest,
+            args.environment_receipt,
+            args.b1,
+            args.prior_terminal,
         )
     print(json.dumps({"run_id": result["run_id"], "status": result["status"]}))
     return 0

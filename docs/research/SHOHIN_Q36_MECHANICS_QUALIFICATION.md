@@ -29,6 +29,13 @@ qualification wrapper. Its authorization explicitly records
 `scientific_graph_authorized=false`, `capability_scoring_authorized=false`,
 `assessor_access_authorized=false`, and `submission_capability=false`.
 
+The authorization is published mode `0444`. Allocation-time verification
+rehashes the exact runtime manifest, model manifest, environment receipt, B1
+source, and both terminal-null receipts, and requires their resolved paths to
+match the authorization. Any missing, writable, substituted, or changed
+authorization—and any missing, substituted, or changed custody input—fails
+before model staging.
+
 This boundary exists to prove the repaired causal-generation mechanics on the
 real host without consuming or weakening the publication experiment. It does
 not change any arm, prompt, threshold, seed, source identity, training budget,
