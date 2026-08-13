@@ -56,6 +56,7 @@ SEED = 2026080822
 TASKS = ("math500", "bbh_logic", "mbpp")
 SPLITS = ("calibration_train", "calibration_development")
 MODEL_VISIBLE_FIELDS = ("question", "candidate_a.completion", "candidate_b.completion")
+TRAINING_CONSUMPTION_SCHEMA = "shohin-q36-mtr-commit-consumption-v1"
 
 
 class Q36MTRCommitError(RuntimeError):
@@ -285,6 +286,53 @@ def _balanced_strata(
     return result
 
 
+def training_presentation_plan(
+    rows: list[dict[str, Any]],
+    *,
+    seed: int,
+    updates: int,
+    gradient_accumulation: int,
+) -> tuple[list[int], dict[str, Any]]:
+    """Freeze the exact balanced calibration prefix consumed by commit fitting."""
+
+    if updates <= 0 or gradient_accumulation <= 0:
+        raise Q36MTRCommitError("Q36 commit presentation geometry differs")
+    strata = _balanced_strata(rows, seed)
+    positions = dict.fromkeys(strata, 0)
+    keys = list(strata)
+    indices: list[int] = []
+    stratum_counts: Counter[str] = Counter()
+    digest = hashlib.sha256()
+    for presentation in range(updates * gradient_accumulation):
+        key = keys[presentation % len(keys)]
+        members = strata[key]
+        source_index = members[positions[key] % len(members)]
+        positions[key] += 1
+        row = rows[source_index]
+        receipt = {
+            "presentation": presentation,
+            "source_index": source_index,
+            "identity_sha256": row["identity_sha256"],
+            "task": row["task"],
+            "outcome_class": row["outcome_class"],
+        }
+        digest.update(
+            (json.dumps(receipt, sort_keys=True, separators=(",", ":")) + "\n").encode()
+        )
+        indices.append(source_index)
+        stratum_counts[f"{key[0]}:{key[1]}"] += 1
+    return indices, {
+        "schema": TRAINING_CONSUMPTION_SCHEMA,
+        "seed": seed,
+        "updates": updates,
+        "gradient_accumulation": gradient_accumulation,
+        "presentations": len(indices),
+        "unique_identities": len({rows[index]["identity_sha256"] for index in indices}),
+        "presentation_sha256": digest.hexdigest(),
+        "stratum_presentations": dict(sorted(stratum_counts.items())),
+    }
+
+
 def _load_development_pairs(path: Path) -> list[dict[str, Any]]:
     if path.is_symlink() or not path.is_file():
         raise Q36MTRCommitError("Q36 development pairs are absent or symbolic")
@@ -423,6 +471,12 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
     rows = _load_pairs(args.pairs)
     development_rows = _load_development_pairs(args.development_pairs)
     strata = _balanced_strata(rows, args.seed)
+    presentation_indices, training_consumption = training_presentation_plan(
+        rows,
+        seed=args.seed,
+        updates=args.updates,
+        gradient_accumulation=args.gradient_accumulation,
+    )
     tokenizer = AutoTokenizer.from_pretrained(args.model_root, trust_remote_code=True)
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
@@ -459,8 +513,6 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
         weight_decay=args.weight_decay,
         fused=True,
     )
-    positions = dict.fromkeys(strata, 0)
-    keys = list(strata)
     optimizer.zero_grad(set_to_none=True)
     model.train()
     head.train()
@@ -472,10 +524,7 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
     maximum_adapter_gradient_l2 = 0.0
     trace = []
     while update < args.updates:
-        key = keys[microstep % len(keys)]
-        indices = strata[key]
-        row = rows[indices[positions[key] % len(indices)]]
-        positions[key] += 1
+        row = rows[presentation_indices[microstep]]
         encoded, local_truncated = commit_token_rows(
             tokenizer, row, args.max_sequence_length
         )
@@ -722,6 +771,7 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
         "gradient_accumulation": args.gradient_accumulation,
         "head_parameters": sum(parameter.numel() for parameter in head_parameters),
         "pair_presentations": presentations,
+        "training_consumption": training_consumption,
         "elapsed_seconds": time.monotonic() - started,
         "peak_gpu_memory_bytes": int(torch.cuda.max_memory_allocated()),
         "protected_adapter_sha256_after": protected_after,

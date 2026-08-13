@@ -337,7 +337,13 @@ only informative draft attention is masked.
 
 Calibration is train-only. It may score revision and unchanged candidates to
 fit the 128-update whole-trajectory commit (seed `2026080822`, maximum sequence
-3,072). Development candidates remain label-free. One authorized CPU scorer
+3,072). Its 8-way gradient accumulation consumes exactly 1,024 deterministic
+calibration presentations. The report and precompute custodian independently
+replay the task/outcome-balanced index plan and bind every source index,
+identity, task, outcome, and presentation position into one SHA-256 receipt;
+both calibration-training and calibration-development projections must retain
+both complete trajectories without truncation. Development candidates remain
+label-free. One authorized CPU scorer
 opens the phase-owned assessor board once after every candidate, checkpoint,
 runtime, environment, sandbox, scheduler-accounting, and custody hash is
 sealed. It atomically scores learned commit, revision, unchanged,

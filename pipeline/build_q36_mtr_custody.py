@@ -45,7 +45,12 @@ from q36_mtr_roles import (
 from score_q36_mtr import AUTHORIZATION_SCHEMA, CONSUMPTION_SCHEMA, SCORE_SCHEMA
 from hf_q36_mtr_train_commit import (
     APPLICATION_SCHEMA,
+    GRADIENT_ACCUMULATION as COMMIT_GRADIENT_ACCUMULATION,
     REPORT_SCHEMA as COMMIT_REPORT_SCHEMA,
+    Q36MTRCommitError,
+    SEED as COMMIT_SEED,
+    UPDATES as COMMIT_UPDATES,
+    training_presentation_plan,
 )
 
 PRECOMPUTE_SCHEMA = "shohin-q36-mtr-precompute-custody-v1"
@@ -644,6 +649,22 @@ def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
         "shohin-q36-mtr-commit-application-validation-v1",
     )
     commit = _load(artifacts["commit_training_report"], COMMIT_REPORT_SCHEMA)
+    calibration_pair_rows = [
+        json.loads(line)
+        for line in artifacts["calibration_pairs"]
+        .read_text(encoding="utf-8")
+        .splitlines()
+        if line
+    ]
+    try:
+        _, expected_commit_consumption = training_presentation_plan(
+            calibration_pair_rows,
+            seed=COMMIT_SEED,
+            updates=COMMIT_UPDATES,
+            gradient_accumulation=COMMIT_GRADIENT_ACCUMULATION,
+        )
+    except (KeyError, Q36MTRCommitError) as error:
+        raise Q36MTRCustodyError("Q36 commit consumption differs") from error
     try:
         validate_adapter_update_receipt(commit.get("adapter_update"))
         validate_adapter_update_receipt(application.get("adapter_update"))
@@ -659,6 +680,16 @@ def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
         or commit.get("protected_adapter_unchanged") is not True
         or commit.get("aligned_checkpoint_file_unchanged") is not True
         or commit.get("serialization_restore_exact") is not True
+        or commit.get("updates") != COMMIT_UPDATES
+        or commit.get("gradient_accumulation") != COMMIT_GRADIENT_ACCUMULATION
+        or commit.get("seed") != COMMIT_SEED
+        or commit.get("pair_presentations")
+        != COMMIT_UPDATES * COMMIT_GRADIENT_ACCUMULATION
+        or commit.get("training_consumption") != expected_commit_consumption
+        or commit.get("pairs_sha256") != hashes["calibration_pairs"]
+        or commit.get("adapter_checkpoint_sha256") != hashes["aligned_checkpoint"]
+        or commit.get("training_prompt_truncated") != 0
+        or commit.get("calibration_development_prompt_truncated") != 0
         or commit.get("trainable_master_dtype") != TRAINABLE_MASTER_DTYPE
         or commit.get("trainable_compute_dtype") != "bfloat16"
         or application.get("adapter_update") != commit.get("adapter_update")

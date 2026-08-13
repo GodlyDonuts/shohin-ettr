@@ -19,6 +19,7 @@ from hf_q36_mtr_train_commit import (
     adapter_update_receipt,
     commit_token_rows,
     restore_commit_state,
+    training_presentation_plan,
 )
 
 
@@ -71,6 +72,28 @@ def test_q36_commit_pair_loader_and_strata_are_exact(tmp_path: Path) -> None:
     assert len(rows) == 5_824
     assert {outcome for _, outcome in strata} == set(OUTCOMES)
     assert {task for task, _ in strata} == {"math500", "bbh_logic", "mbpp"}
+
+
+def test_q36_commit_consumption_freezes_exact_balanced_prefix(tmp_path: Path) -> None:
+    path = tmp_path / "pairs.jsonl"
+    _pairs(path)
+    rows = _load_pairs(path)
+    indices, receipt = training_presentation_plan(
+        rows, seed=SEED, updates=128, gradient_accumulation=8
+    )
+    repeated_indices, repeated = training_presentation_plan(
+        rows, seed=SEED, updates=128, gradient_accumulation=8
+    )
+    assert indices == repeated_indices
+    assert receipt == repeated
+    assert receipt["presentations"] == 1_024
+    assert receipt["unique_identities"] == 1_024
+    assert sum(receipt["stratum_presentations"].values()) == 1_024
+    changed_indices, changed = training_presentation_plan(
+        rows, seed=SEED + 1, updates=128, gradient_accumulation=8
+    )
+    assert changed_indices != indices
+    assert changed["presentation_sha256"] != receipt["presentation_sha256"]
 
 
 def test_q36_commit_pair_loader_rejects_label_tampering(tmp_path: Path) -> None:
