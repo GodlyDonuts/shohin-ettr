@@ -293,6 +293,16 @@ therefore tokenized with `add_special_tokens=false` in draft generation,
 matched evaluation, prompt accounting, merging, and custody. This exactly
 matches role training and prevents tokenizer-dependent BOS/control-token
 duplication from changing the aligned/hidden causal geometry.
+Adapter decoding also uses an explicit generated-token-only sequence contract.
+Because the residual path supplies `inputs_embeds` without bookkeeping
+`input_ids`, the frozen Transformers runtime must return only newly generated
+token IDs. The no-score mechanics allocation proves this with a one-token
+generation whose rendered prompt is wider than one token; the shared generator
+then rejects any output with the wrong batch geometry, zero width, or width
+above `max_new_tokens`. Draft, evaluation, merge, and precompute-custody
+receipts all bind `inputs_embeds_generated_tokens_only_v1`, preventing prompt
+placeholders from being decoded as answers or generated answers from being
+silently sliced away.
 
 ## Data and visibility
 

@@ -25,6 +25,7 @@ from build_q36_mtr_data import REPORT_SCHEMA as DATA_REPORT_SCHEMA
 from compare_q36_mtr import ARM_SCHEMA, CUSTODY_SCHEMA
 from hf_q36_mtr_evaluate import load_rows
 from hf_q36_mtr_generate_drafts import SCHEMA as DRAFT_SCHEMA
+from hf_product_reasoning_eval import GENERATED_ONLY_SEQUENCE_CONTRACT
 from hf_q36_mtr_train_role import SCHEMA as ROLE_REPORT_SCHEMA
 from merge_q36_mtr_drafts import SCHEMA as DRAFT_REPORT_SCHEMA
 from merge_q36_mtr_evaluations import SCHEMA as EVALUATION_REPORT_SCHEMA
@@ -294,6 +295,8 @@ def _validate_evaluation_report(
         or report.get("split") != split
         or report.get("model_revision") != MODEL_REVISION
         or report.get("rendered_chat_tokenization") != "add_special_tokens_false"
+        or report.get("generation_sequence_contract")
+        != GENERATED_ONLY_SEQUENCE_CONTRACT
         or report.get("rows") != rows
         or (split == "development" and report.get("metrics") is not None)
         or (split == "calibration" and not isinstance(report.get("metrics"), dict))
@@ -549,6 +552,7 @@ def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
         or draft.get("rows") != 7_113
         or draft.get("owner_checkpoint_sha256") != owner_sha256
         or draft.get("rendered_chat_tokenization") != "add_special_tokens_false"
+        or draft.get("generation_sequence_contract") != GENERATED_ONLY_SEQUENCE_CONTRACT
         or not _matches_file(draft, "output", artifacts["drafts"])
         or data.get("draft_report_sha256") != hashes["draft_report"]
         or data.get("drafts_sha256") != hashes["drafts"]
@@ -758,6 +762,7 @@ def build_precompute(args: argparse.Namespace) -> dict[str, Any]:
         artifacts["live_preflight"], "shohin-q36-mtr-live-preflight-v1"
     )
     validate_causal_intervention_receipt(mechanics)
+    generation = mechanics.get("generation_sequence_receipt")
     if (
         data_report.get("model_revision") != MODEL_REVISION
         or data_report.get("outputs", {}).get("development", {}).get("sha256")
@@ -773,6 +778,18 @@ def build_precompute(args: argparse.Namespace) -> dict[str, Any]:
         != mechanics.get("protected_parameter_receipt_after")
         or mechanics.get("one_finite_update") is not True
         or mechanics.get("serialization_restore_exact") is not True
+        or not isinstance(generation, dict)
+        or generation.get("contract") != GENERATED_ONLY_SEQUENCE_CONTRACT
+        or generation.get("inputs_embeds_only") is not True
+        or generation.get("input_ids_supplied_to_backbone_generate") is not False
+        or generation.get("rendered_chat_tokenization") != "add_special_tokens_false"
+        or isinstance(generation.get("prompt_width"), bool)
+        or not isinstance(generation.get("prompt_width"), int)
+        or generation["prompt_width"] <= 1
+        or generation.get("max_new_tokens") != 1
+        or generation.get("output_width") != 1
+        or generation.get("prompt_tokens_returned") != 0
+        or generation.get("generated_tokens_returned") != 1
         or environment.get("status") != "pass"
         or environment.get("model_revision") != MODEL_REVISION
         or environment.get("runtime_manifest_sha256") != runtime["manifest_sha256"]

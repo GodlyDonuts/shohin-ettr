@@ -15,6 +15,13 @@ import torch
 import torch.nn.functional as F
 
 from build_pcf1_data import revision_prompt
+from hf_product_reasoning_eval import (
+    GENERATED_ONLY_SEQUENCE_CONTRACT,
+    _generate_adapter,
+    _generation_arguments,
+    _generation_stop_token_ids,
+    _render_prompt,
+)
 from hf_product_reasoning_train import (
     _save_checkpoint,
     load_product_backbone,
@@ -432,6 +439,44 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
     ):
         raise Q36MTRMechanicsError("Q36-MTR mechanics trainable surface differs")
+    rendered_generation_probe = _render_prompt(tokenizer, sample_source, True, False)
+    generation_encoded = tokenizer(
+        [rendered_generation_probe],
+        padding=True,
+        return_tensors="pt",
+        add_special_tokens=False,
+    )
+    generation_encoded = {
+        key: value.to("cuda:0") for key, value in generation_encoded.items()
+    }
+    generation_prompt_width = int(generation_encoded["input_ids"].shape[1])
+    generation_arguments = _generation_arguments("greedy", 1)
+    generation_arguments["eos_token_id"] = _generation_stop_token_ids(tokenizer)
+    was_training = model.training
+    model.eval()
+    with torch.inference_mode():
+        generation_output = _generate_adapter(
+            model,
+            generation_encoded,
+            generation_arguments,
+            tokenizer.pad_token_id,
+        )
+    model.train(was_training)
+    if generation_prompt_width <= 1 or tuple(generation_output.shape) != (1, 1):
+        raise Q36MTRMechanicsError(
+            "Q36-MTR adapter generation sequence semantics differ"
+        )
+    generation_sequence_receipt = {
+        "contract": GENERATED_ONLY_SEQUENCE_CONTRACT,
+        "inputs_embeds_only": True,
+        "input_ids_supplied_to_backbone_generate": False,
+        "rendered_chat_tokenization": "add_special_tokens_false",
+        "prompt_width": generation_prompt_width,
+        "max_new_tokens": 1,
+        "output_width": int(generation_output.shape[1]),
+        "prompt_tokens_returned": 0,
+        "generated_tokens_returned": int(generation_output.shape[1]),
+    }
     before = protected_parameter_receipt(model)
     optimizer = torch.optim.AdamW(
         [parameter for parameter in model.parameters() if parameter.requires_grad],
@@ -575,6 +620,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "draft_hidden_mask_nonempty": hidden_geometry["draft_masked_tokens"] > 0,
         "draft_tokens_deleted": 0,
         "causal_draft_intervention": causal_intervention,
+        "generation_sequence_receipt": generation_sequence_receipt,
         "environment_receipt_sha256": args.environment_receipt_sha256,
         "environment_tree_sha256": args.environment_tree_sha256,
         "elapsed_seconds": elapsed,

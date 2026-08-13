@@ -17,6 +17,7 @@ from hf_pcf1_evaluate import (
     shard_bounds,
 )
 from hf_product_reasoning_eval import (
+    GENERATED_ONLY_SEQUENCE_CONTRACT,
     _generate_completions,
     _generation_stop_token_ids,
     _render_prompt,
@@ -496,6 +497,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         ),
         "assessor_board_access_count": 0,
         "generation_mode": "greedy",
+        "generation_sequence_contract": GENERATED_ONLY_SEQUENCE_CONTRACT,
         "rendered_chat_tokenization": "add_special_tokens_false",
         "max_new_tokens": 768,
         "seed": args.seed,

@@ -926,6 +926,9 @@ def _completion_for_scoring(
     return None
 
 
+GENERATED_ONLY_SEQUENCE_CONTRACT = "inputs_embeds_generated_tokens_only_v1"
+
+
 def _generate_adapter(
     model: Any,
     encoded: dict[str, Any],
@@ -953,13 +956,28 @@ def _generate_adapter(
         extra_arguments = {}
         if hasattr(model, "generation_position_ids"):
             extra_arguments["position_ids"] = model.generation_position_ids()
-        return model.backbone.generate(
+        output = model.backbone.generate(
             inputs_embeds=embeddings,
             attention_mask=attention,
             pad_token_id=pad_token_id,
             **extra_arguments,
             **generation_arguments,
         )
+    maximum = generation_arguments.get("max_new_tokens")
+    if (
+        not isinstance(output, torch.Tensor)
+        or output.ndim != 2
+        or output.shape[0] != encoded["input_ids"].shape[0]
+        or isinstance(maximum, bool)
+        or not isinstance(maximum, int)
+        or maximum <= 0
+        or output.shape[1] <= 0
+        or output.shape[1] > maximum
+    ):
+        raise ProductEvalError(
+            "adapter generation did not return generated-token-only sequences"
+        )
+    return output
 
 
 def _generate_completions(

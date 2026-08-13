@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from contextlib import nullcontext
 from types import SimpleNamespace
 from pathlib import Path
 
 import pytest
 
 import hf_q36_mtr_evaluate as module
+import hf_product_reasoning_eval as shared_evaluation
 from q36_mtr_roles import ROLE_CHECKPOINT_SCHEMA, TRAINABLE_PARAMETERS, role_contract
 from shared_post_mlp_revision import trainable_state_sha256
 
@@ -134,6 +136,41 @@ def test_q36_prompt_accounting_never_adds_special_tokens() -> None:
             "add_special_tokens": False,
         }
     ]
+
+
+def test_adapter_generation_returns_generated_tokens_only(monkeypatch) -> None:
+    import torch
+
+    observed = {}
+
+    class Backbone:
+        def generate(self, **kwargs):
+            observed.update(kwargs)
+            return torch.tensor([[17]])
+
+    class Model:
+        backbone = Backbone()
+
+        @staticmethod
+        def generation_embeddings(input_ids, attention_mask):
+            return torch.zeros((1, 3, 2)), attention_mask
+
+    monkeypatch.setattr(torch, "autocast", lambda *args, **kwargs: nullcontext())
+    encoded = {
+        "input_ids": torch.tensor([[1, 2, 3]]),
+        "attention_mask": torch.ones((1, 3), dtype=torch.long),
+    }
+    output = shared_evaluation._generate_adapter(
+        Model(), encoded, {"max_new_tokens": 1}, 0
+    )
+    assert output.tolist() == [[17]]
+    assert "input_ids" not in observed
+    assert observed["inputs_embeds"].shape == (1, 3, 2)
+    assert observed["attention_mask"].tolist() == [[1, 1, 1]]
+
+    Model.backbone.generate = lambda **kwargs: torch.tensor([[1, 2]])
+    with pytest.raises(shared_evaluation.ProductEvalError):
+        shared_evaluation._generate_adapter(Model(), encoded, {"max_new_tokens": 1}, 0)
 
 
 def test_hidden_role_cannot_claim_draft_information_availability() -> None:

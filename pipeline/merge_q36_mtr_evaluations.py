@@ -26,6 +26,7 @@ from hf_q36_mtr_evaluate import (
     model_visible_runtime_fields,
     sha256_file,
 )
+from hf_product_reasoning_eval import GENERATED_ONLY_SEQUENCE_CONTRACT
 from pcf1_code_sandbox import (
     PCF1SandboxError,
     mbpp_allocation_setup_receipts_sha256,
@@ -134,6 +135,8 @@ def merge(args: argparse.Namespace) -> dict[str, Any]:
             or report.get("split") != args.split
             or report.get("model_revision") != MODEL_REVISION
             or report.get("generation_mode") != "greedy"
+            or report.get("generation_sequence_contract")
+            != GENERATED_ONLY_SEQUENCE_CONTRACT
             or report.get("rendered_chat_tokenization") != "add_special_tokens_false"
             or report.get("max_new_tokens") != 768
             or report.get("seed") != EVALUATION_SEED
@@ -178,6 +181,7 @@ def merge(args: argparse.Namespace) -> dict[str, Any]:
                 "data_report_sha256",
                 "runtime_fields",
                 "generation_mode",
+                "generation_sequence_contract",
                 "rendered_chat_tokenization",
                 "max_new_tokens",
                 "seed",

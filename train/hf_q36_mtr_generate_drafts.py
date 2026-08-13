@@ -158,6 +158,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     from transformers import AutoTokenizer
 
     from hf_product_reasoning_eval import (
+        GENERATED_ONLY_SEQUENCE_CONTRACT,
         _generate_completions,
         _generation_stop_token_ids,
         _render_prompt,
@@ -271,6 +272,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "train_source_sha256": sha256_file(args.train_source),
         "development_source_sha256": sha256_file(args.development_source),
         "generation_mode": "greedy",
+        "generation_sequence_contract": GENERATED_ONLY_SEQUENCE_CONTRACT,
         "rendered_chat_tokenization": "add_special_tokens_false",
         "max_new_tokens": args.max_new_tokens,
         "seed": args.seed,

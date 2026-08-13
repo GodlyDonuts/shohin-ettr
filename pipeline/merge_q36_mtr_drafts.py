@@ -22,6 +22,7 @@ from hf_q36_mtr_generate_drafts import (
     load_sources,
     sha256_file,
 )
+from hf_product_reasoning_eval import GENERATED_ONLY_SEQUENCE_CONTRACT
 
 SCHEMA = "shohin-q36-mtr-merged-drafts-v1"
 
@@ -101,6 +102,8 @@ def merge(args: argparse.Namespace) -> dict[str, Any]:
             or report.get("sealed_access") != {"holdout": 0, "product": 0, "public": 0}
             or report.get("model_revision") != MODEL_REVISION
             or report.get("generation_mode") != "greedy"
+            or report.get("generation_sequence_contract")
+            != GENERATED_ONLY_SEQUENCE_CONTRACT
             or report.get("rendered_chat_tokenization") != "add_special_tokens_false"
             or report.get("max_new_tokens") != DRAFT_MAX_NEW_TOKENS
             or report.get("seed") != DRAFT_SEED
@@ -136,6 +139,7 @@ def merge(args: argparse.Namespace) -> dict[str, Any]:
                 "train_source_sha256",
                 "development_source_sha256",
                 "generation_mode",
+                "generation_sequence_contract",
                 "rendered_chat_tokenization",
                 "max_new_tokens",
                 "seed",

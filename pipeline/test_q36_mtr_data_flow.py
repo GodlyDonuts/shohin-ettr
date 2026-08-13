@@ -216,6 +216,9 @@ def test_draft_merge_rejects_duplicate_or_missing_shard_ranges(
                 "train_source_sha256": "c" * 64,
                 "development_source_sha256": "d" * 64,
                 "generation_mode": "greedy",
+                "generation_sequence_contract": (
+                    "inputs_embeds_generated_tokens_only_v1"
+                ),
                 "rendered_chat_tokenization": "add_special_tokens_false",
                 "max_new_tokens": 768,
                 "seed": 2026080818,
@@ -319,6 +322,9 @@ def test_development_merge_remains_label_free(tmp_path: Path, monkeypatch) -> No
                 "assessment_mode": "development_deferred",
                 "assessor_board_access_count": 0,
                 "generation_mode": "greedy",
+                "generation_sequence_contract": (
+                    "inputs_embeds_generated_tokens_only_v1"
+                ),
                 "rendered_chat_tokenization": "add_special_tokens_false",
                 "max_new_tokens": 768,
                 "seed": eval_merge_module.EVALUATION_SEED,
