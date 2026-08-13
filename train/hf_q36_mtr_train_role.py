@@ -322,6 +322,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "environment_receipt": str(args.environment_receipt.resolve()),
         "environment_receipt_sha256": args.environment_receipt_sha256,
         "environment_tree_sha256": args.environment_tree_sha256,
+        "assessor_board_access_count": 0,
+        "sealed_access": {"holdout": 0, "product": 0, "public": 0},
     }
 
     model.train()

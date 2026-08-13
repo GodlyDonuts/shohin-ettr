@@ -320,15 +320,11 @@ def compare(args: argparse.Namespace) -> dict[str, Any]:
         "runtime_manifest_verified": custody.get("runtime_manifest_verified") is True
         and _hex_digest(custody.get("runtime_manifest_sha256"))
         and custody.get("runtime_source_commit") == graph.get("source_commit"),
-        "checkpoint_manifests_verified": custody.get("checkpoint_manifests_verified")
-        is True
-        and isinstance(custody.get("checkpoint_manifest_sha256s"), dict)
-        and set(custody["checkpoint_manifest_sha256s"])
+        "checkpoint_hashes_verified": custody.get("checkpoint_hashes_verified") is True
+        and isinstance(custody.get("checkpoint_sha256s"), dict)
+        and set(custody["checkpoint_sha256s"])
         == {"owner", "trained_revision", "draft_hidden", "learned_commit"}
-        and all(
-            _hex_digest(value)
-            for value in custody["checkpoint_manifest_sha256s"].values()
-        ),
+        and all(_hex_digest(value) for value in custody["checkpoint_sha256s"].values()),
         "environment_verified": custody.get("environment_verified") is True
         and _hex_digest(custody.get("environment_receipt_sha256")),
         "sandbox_verified": custody.get("sandbox_verified") is True

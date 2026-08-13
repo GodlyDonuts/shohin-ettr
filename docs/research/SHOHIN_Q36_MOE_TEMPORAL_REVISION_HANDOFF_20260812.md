@@ -71,6 +71,24 @@ development pairs are label-free; one H100 fits the 128-update commit and,
 without a second model load, applies it to the already sealed development
 pairs. This preserves the 61-request/58.90-H100-hour graph.
 
+The irreversible CPU boundary is now implemented prospectively as well.
+`pipeline/build_q36_mtr_custody.py` independently binds the exact model and
+runtime trees, source views, owner/aligned/hidden checkpoints and reports,
+model-owned drafts, materialized data, both calibration arms, all four
+label-free development arms, commit pairs, selections, application, and
+environment/mechanics receipts before it can emit a one-shot authorization.
+`pipeline/score_q36_mtr.py` qualifies the executable-code sandbox before it
+atomically consumes that authorization, then opens the development assessor
+board once and scores every generated arm plus the learned whole-trajectory
+selection in one process. A post-consumption exception writes a distinct
+non-retryable terminal-infrastructure receipt. The pure normalizer and final
+comparator turn structurally valid unfavorable observations into the formal
+terminal `FAIL`; they reserve infrastructure failure for unreadable,
+incomplete, or inconsistent custody. The associated CPU Slurm wrappers are
+no-requeue, authorization-gated, and contain no submission command. No
+development assessor was opened and no Q36 job was submitted while building
+or testing this code.
+
 The PCF17 infrastructure finding is also repaired prospectively: exact-tree
 custody accepts either canonical manifest members or the single conventional
 `./` prefix emitted by `find .`, canonicalizing before comparison. Interior

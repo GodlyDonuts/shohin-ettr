@@ -107,8 +107,8 @@ def _fixture(
         "runtime_manifest_verified": True,
         "runtime_manifest_sha256": RUNTIME_MANIFEST_SHA256,
         "runtime_source_commit": SOURCE_COMMIT,
-        "checkpoint_manifests_verified": True,
-        "checkpoint_manifest_sha256s": {
+        "checkpoint_hashes_verified": True,
+        "checkpoint_sha256s": {
             "owner": "e" * 64,
             "trained_revision": "f" * 64,
             "draft_hidden": "0" * 64,
