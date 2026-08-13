@@ -16,6 +16,7 @@ from q36_mtr_roles import (
     Q36MTRRoleError,
     TRAINABLE_MASTER_DTYPE,
     validate_adapter_update_receipt,
+    validate_commit_gradient_receipt,
 )
 from score_q36_mtr import APPLICATION_SCHEMA, COMMIT_REPORT_SCHEMA, _load_selections
 
@@ -64,6 +65,8 @@ def validate(args: argparse.Namespace) -> dict:
     try:
         validate_adapter_update_receipt(report.get("adapter_update"))
         validate_adapter_update_receipt(application.get("adapter_update"))
+        validate_commit_gradient_receipt(report)
+        validate_commit_gradient_receipt(application)
     except Q36MTRRoleError as error:
         raise Q36MTRApplicationValidationError(str(error)) from error
     if (
@@ -150,6 +153,9 @@ def validate(args: argparse.Namespace) -> dict:
         "adapter_update": report["adapter_update"],
         "head_state_sha256": report["head_state_sha256"],
         "serialization_restore_exact": True,
+        "adapter_gradient_nonzero_updates": report["adapter_gradient_nonzero_updates"],
+        "minimum_adapter_gradient_l2": report["minimum_adapter_gradient_l2"],
+        "maximum_adapter_gradient_l2": report["maximum_adapter_gradient_l2"],
         "assessor_board_access_count": 0,
         "sealed_access": {"holdout": 0, "product": 0, "public": 0},
     }

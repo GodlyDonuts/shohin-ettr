@@ -33,6 +33,7 @@ from q36_mtr_roles import (
     Q36MTRRoleError,
     TRAINABLE_MASTER_DTYPE,
     validate_adapter_update_receipt,
+    validate_commit_gradient_receipt,
 )
 
 AUTHORIZATION_SCHEMA = "shohin-q36-mtr-score-authorization-v1"
@@ -591,6 +592,8 @@ def _score_impl(args: argparse.Namespace) -> dict[str, Any]:
     try:
         validate_adapter_update_receipt(commit_training.get("adapter_update"))
         validate_adapter_update_receipt(application.get("adapter_update"))
+        validate_commit_gradient_receipt(commit_training)
+        validate_commit_gradient_receipt(application)
     except Q36MTRRoleError as error:
         raise Q36MTRScoreError(str(error)) from error
     application_truncated = application.get("prompt_truncated")

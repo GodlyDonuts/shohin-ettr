@@ -38,6 +38,7 @@ from q36_mtr_roles import (
     TRAINABLE_MASTER_DTYPE,
     role_contract,
     validate_adapter_update_receipt,
+    validate_commit_gradient_receipt,
     validate_matched_revision_geometry,
 )
 from score_q36_mtr import AUTHORIZATION_SCHEMA, CONSUMPTION_SCHEMA, SCORE_SCHEMA
@@ -620,6 +621,8 @@ def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
     try:
         validate_adapter_update_receipt(commit.get("adapter_update"))
         validate_adapter_update_receipt(application.get("adapter_update"))
+        validate_commit_gradient_receipt(commit)
+        validate_commit_gradient_receipt(application)
     except Q36MTRRoleError as error:
         raise Q36MTRCustodyError(str(error)) from error
     if (
@@ -662,6 +665,12 @@ def _validate_precompute_lineage(artifacts: dict[str, Path]) -> None:
         or application_validation.get("head_state_sha256")
         != commit.get("head_state_sha256")
         or application_validation.get("serialization_restore_exact") is not True
+        or application_validation.get("adapter_gradient_nonzero_updates")
+        != commit.get("adapter_gradient_nonzero_updates")
+        or application_validation.get("minimum_adapter_gradient_l2")
+        != commit.get("minimum_adapter_gradient_l2")
+        or application_validation.get("maximum_adapter_gradient_l2")
+        != commit.get("maximum_adapter_gradient_l2")
         or application_validation.get("assessor_board_access_count") != 0
         or application_validation.get("sealed_access")
         != {"holdout": 0, "product": 0, "public": 0}

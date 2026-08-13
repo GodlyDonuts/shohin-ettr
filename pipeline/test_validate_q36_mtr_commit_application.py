@@ -101,6 +101,9 @@ def _fixture(tmp_path: Path) -> argparse.Namespace:
                 "head_state_sha256": "3" * 64,
                 "serialization_restore_exact": True,
                 "aligned_checkpoint_file_unchanged": True,
+                "adapter_gradient_nonzero_updates": 128,
+                "minimum_adapter_gradient_l2": 1e-6,
+                "maximum_adapter_gradient_l2": 2e-6,
                 "correctness_or_task_label_visible": False,
                 "assessor_board_access_count": 0,
                 "sealed_access": {"holdout": 0, "product": 0, "public": 0},
@@ -127,6 +130,9 @@ def _fixture(tmp_path: Path) -> argparse.Namespace:
                 "trainable_compute_dtype": "bfloat16",
                 "adapter_update": adapter_update,
                 "head_state_sha256": "3" * 64,
+                "adapter_gradient_nonzero_updates": 128,
+                "minimum_adapter_gradient_l2": 1e-6,
+                "maximum_adapter_gradient_l2": 2e-6,
                 "sealed_access": {"holdout": 0, "product": 0, "public": 0},
             }
         )

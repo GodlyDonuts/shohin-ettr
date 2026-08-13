@@ -109,7 +109,10 @@ generation-token counts, exhaustion flags, and assessor metadata are excluded.
 Its shared scalar scorer is antisymmetric by construction under A/B reversal.
 The checkpoint and downstream custody additionally require a nonzero finite
 FP32 adapter-state delta, exact final adapter/head state hashes, and immediate
-serialization restore. The source aligned-checkpoint file remains byte-exact
+serialization restore. A separate receipt requires a finite nonzero task
+gradient on the residual surface at every one of the 128 commit updates, so
+AdamW weight decay alone cannot satisfy the learned-adaptation claim. The
+source aligned-checkpoint file remains byte-exact
 even though its loaded residual state is deliberately updated.
 The graph's CPU `commit_apply` stage is an independent label-free validator,
 not a second model load: it replays the checkpoint, pair, selection,

@@ -47,6 +47,7 @@ DRAFT_SEED = 2026080818
 DRAFT_SHARDS = 16
 DRAFT_IDENTITIES = 7_113
 DRAFT_MAX_NEW_TOKENS = 768
+COMMIT_UPDATES = 128
 
 
 class Q36MTRRoleError(RuntimeError):
@@ -202,6 +203,23 @@ def validate_adapter_update_receipt(payload: Any) -> None:
         or payload.get("nonzero_finite_update") is not True
     ):
         raise Q36MTRRoleError("Q36-MTR adapter update receipt differs")
+
+
+def validate_commit_gradient_receipt(payload: Mapping[str, Any]) -> None:
+    minimum = payload.get("minimum_adapter_gradient_l2")
+    maximum = payload.get("maximum_adapter_gradient_l2")
+    if (
+        payload.get("adapter_gradient_nonzero_updates") != COMMIT_UPDATES
+        or isinstance(minimum, bool)
+        or not isinstance(minimum, (int, float))
+        or not math.isfinite(float(minimum))
+        or minimum <= 0
+        or isinstance(maximum, bool)
+        or not isinstance(maximum, (int, float))
+        or not math.isfinite(float(maximum))
+        or maximum < minimum
+    ):
+        raise Q36MTRRoleError("Q36-MTR commit task-gradient receipt differs")
 
 
 def validate_owner_warm_start(

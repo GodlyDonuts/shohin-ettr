@@ -147,6 +147,22 @@ def adapter_update_receipt(
     }
 
 
+def _gradient_l2(parameters: list[torch.Tensor]) -> float:
+    if not parameters:
+        raise Q36MTRCommitError("Q36 commit gradient surface is empty")
+    squared = torch.zeros((), device=parameters[0].device, dtype=torch.float32)
+    observed = 0
+    for parameter in parameters:
+        if parameter.grad is None:
+            continue
+        observed += 1
+        squared = squared + parameter.grad.detach().float().square().sum()
+    value = math.sqrt(float(squared.detach().cpu()))
+    if observed <= 0 or not math.isfinite(value):
+        raise Q36MTRCommitError("Q36 commit adapter gradient is absent or nonfinite")
+    return value
+
+
 def _load_pairs(path: Path) -> list[dict[str, Any]]:
     if path.is_symlink() or not path.is_file():
         raise Q36MTRCommitError("Q36 commit pairs are absent or symbolic")
@@ -432,6 +448,9 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
     torch.cuda.reset_peak_memory_stats()
     started = time.monotonic()
     update = microstep = presentations = truncated = 0
+    adapter_gradient_nonzero_updates = 0
+    minimum_adapter_gradient_l2 = math.inf
+    maximum_adapter_gradient_l2 = 0.0
     trace = []
     while update < args.updates:
         key = keys[microstep % len(keys)]
@@ -463,6 +482,15 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
         presentations += 1
         if microstep % args.gradient_accumulation:
             continue
+        adapter_gradient_l2 = _gradient_l2(adapter_parameters)
+        if adapter_gradient_l2 > 0:
+            adapter_gradient_nonzero_updates += 1
+        minimum_adapter_gradient_l2 = min(
+            minimum_adapter_gradient_l2, adapter_gradient_l2
+        )
+        maximum_adapter_gradient_l2 = max(
+            maximum_adapter_gradient_l2, adapter_gradient_l2
+        )
         gradient_norm = torch.nn.utils.clip_grad_norm_(
             adapter_parameters + head_parameters, args.max_gradient_norm
         )
@@ -481,6 +509,7 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
                     "update": update,
                     "presentations": presentations,
                     "gradient_norm": float(gradient_norm),
+                    "adapter_gradient_l2": adapter_gradient_l2,
                     "prompt_truncated": truncated,
                 }
             )
@@ -497,6 +526,13 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
     if protected_after != protected_before:
         raise Q36MTRCommitError("Q36 aligned checkpoint changed during commit training")
     adapter_state_after = _snapshot(trainable)
+    if (
+        adapter_gradient_nonzero_updates != args.updates
+        or not math.isfinite(minimum_adapter_gradient_l2)
+        or minimum_adapter_gradient_l2 <= 0
+        or maximum_adapter_gradient_l2 < minimum_adapter_gradient_l2
+    ):
+        raise Q36MTRCommitError("Q36 commit adapter task-gradient coverage differs")
     adapter_update = adapter_update_receipt(adapter_state_before, adapter_state_after)
     head_state = {
         name: tensor.detach().cpu().clone()
@@ -528,6 +564,9 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
         "trainable_compute_dtype": "bfloat16",
         "adapter_update": adapter_update,
         "head_state_sha256": head_state_sha256,
+        "adapter_gradient_nonzero_updates": adapter_gradient_nonzero_updates,
+        "minimum_adapter_gradient_l2": minimum_adapter_gradient_l2,
+        "maximum_adapter_gradient_l2": maximum_adapter_gradient_l2,
     }
     atomic_torch(
         checkpoint,
@@ -624,6 +663,9 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
         "head_state_sha256": head_state_sha256,
         "serialization_restore_exact": True,
         "aligned_checkpoint_file_unchanged": True,
+        "adapter_gradient_nonzero_updates": adapter_gradient_nonzero_updates,
+        "minimum_adapter_gradient_l2": minimum_adapter_gradient_l2,
+        "maximum_adapter_gradient_l2": maximum_adapter_gradient_l2,
         "sealed_access": {"holdout": 0, "product": 0, "public": 0},
     }
     atomic_json(args.output / "application_report.json", application)

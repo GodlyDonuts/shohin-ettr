@@ -15,6 +15,7 @@ from hf_q36_mtr_train_commit import (
     _balanced_strata,
     _load_development_pairs,
     _load_pairs,
+    _gradient_l2,
     adapter_update_receipt,
     commit_token_rows,
 )
@@ -178,3 +179,12 @@ def test_adapter_update_receipt_requires_nonzero_exact_state_delta() -> None:
     assert receipt["initial_state_sha256"] != receipt["final_state_sha256"]
     with pytest.raises(Q36MTRCommitError):
         adapter_update_receipt(before, {"adapter": before["adapter"].clone()})
+
+
+def test_adapter_task_gradient_receipt_is_distinct_from_weight_decay() -> None:
+    parameter = torch.nn.Parameter(torch.tensor([0.1], dtype=torch.float32))
+    parameter.grad = torch.tensor([2e-5], dtype=torch.float32)
+    assert _gradient_l2([parameter]) == pytest.approx(2e-5)
+    parameter.grad = None
+    with pytest.raises(Q36MTRCommitError):
+        _gradient_l2([parameter])
