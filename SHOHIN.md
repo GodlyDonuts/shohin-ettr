@@ -16,6 +16,15 @@ and no successor submitted. Preserve
 The generated evidence is scientifically unscored and must not be described
 as a `PASS` or `FAIL`.
 
+**The post-PCF MoE transfer is prepared but not launched.** The handoff maps
+the qualified dense draft/revision/whole-trajectory-commit system onto pinned
+Qwen3.6-35B-A3B, adds the causally matched draft-hidden control demanded by
+DSET/ISET, and defines one 1,289-row source-disjoint development gate. It also
+freezes a 61-job, `58.90`-H100-hour single-GPU graph and forbids every closed
+edit-selector/KCR/VTE/small-OLMoE retry. See
+`docs/research/SHOHIN_Q36_MOE_TEMPORAL_REVISION_HANDOFF_20260812.md`. This is
+preparation only; it authorizes no model/data/scheduler action.
+
 **PCF2 is now prospectively authorized and frozen.** PCF1 remains closed with
 formal result `null`; its CPU-only first job failed before model, data, H100,
 or assessor work because Newton did not set `SLURM_TMPDIR`. After preserving

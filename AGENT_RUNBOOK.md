@@ -10,6 +10,18 @@
 > `docs/research/SHOHIN_PCF17_TERMINAL_INFRASTRUCTURE_RECEIPT_20260812.json`.
 > Do not score, resume, reinterpret, or retry PCF17.
 
+> **POST-PCF MoE HANDOFF ONLY — 2026-08-12:** no MoE job is authorized in this
+> phase. The prepared Q36-MTR document maps the surviving dense
+> draft/revision/whole-trajectory-commit recipe to exact
+> `Qwen3.6-35B-A3B@995ad96eacd98c81ed38be0c5b274b04031597b0`, with aligned,
+> unchanged, self-refinement, draft-hidden, and learned-commit arms on one
+> source-disjoint 1,289-row development gate. Its prospective graph is 61
+> independent single-H100 requests / `58.90` expected H100-hours, maximum 32
+> concurrent. Follow only
+> `docs/research/SHOHIN_Q36_MOE_TEMPORAL_REVISION_HANDOFF_20260812.md`; do not
+> launch, reacquire the host, or create phase data until a fresh phase freezes
+> its implementation and admission.
+
 > **PCF9 PROSPECTIVELY FROZEN — 2026-08-11:** PCF8 preparation, no-score
 > mechanics, and B1 completed. Draft task `751823_3` then failed before
 > generator entry on `evc33`: Slurm allocated an H100 GRES but `nvidia-smi`
