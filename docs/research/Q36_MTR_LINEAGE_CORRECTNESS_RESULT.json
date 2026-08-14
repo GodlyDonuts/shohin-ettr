@@ -5,7 +5,7 @@
   "model": "Qwen3.6-35B-A3B",
   "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
   "source_commit": "468b30c13edb80f6a5a4f31649581b5b3fa03293",
-  "conclusion": "Hierarchical model-owned synthesis is the strongest demonstrated Qwen3.6-35B-A3B result: 664/1289 (51.51%). It verifies the 656/1289 three-trajectory synthesis champion against independently derived stacked and self-refinement alternatives, repairs 50 synthesis errors while losing 42 correct cases, and adds a net 8 answers. The incremental paired edge over direct synthesis is not individually significant (p=0.466), but the hierarchy remains decisively above stacked correctness at 563/1289 (144 hierarchy-only wins versus 43 losses, p=6.17e-14) and the production commit at 539/1289 (178 versus 53, p=5.51e-17). It improves BBH from 345 to 348 and math from 292 to 297 while retaining MBPP at 19/29. Every generation stage read zero development labels; independent scoring occurred only after each output shard was complete.",
+  "conclusion": "Hierarchical model-owned synthesis is the strongest demonstrated Qwen3.6-35B-A3B result: 664/1289 (51.51%). It verifies the 656/1289 three-trajectory synthesis champion against independently derived stacked and self-refinement alternatives, repairs 50 synthesis errors while losing 42 correct cases, and adds a net 8 answers. The incremental paired edge over direct synthesis is not individually significant (p=0.466), but the hierarchy remains decisively above stacked correctness at 563/1289 (144 hierarchy-only wins versus 43 losses, p=6.17e-14) and the production commit at 539/1289 (178 versus 53, p=5.51e-17). It improves BBH from 345 to 348 and math from 292 to 297 while retaining MBPP at 19/29. Cyclic-order synthesis variants reached 651 and 645, while recursively synthesizing those variants degraded to 614; none replaces the 664 champion. Their diversity remains mechanistically useful: the incumbent plus direct, both cyclic variants, and level-2 synthesis has a 750/1289 oracle. Every generation stage read zero development labels; independent scoring occurred only after each output shard was complete.",
   "matched_reproduction_commit": "a217f29ee4026c07212aba39fa03a1ba8190afc8",
   "architecture": {
     "owner_trajectories": ["current", "owner_71", "owner_8"],
@@ -219,6 +219,58 @@
     }
   },
   "engineering_ablations": {
+    "cyclic_trajectory_synthesis_scaling": {
+      "status": "complete_no_standalone_gain_over_direct_or_hierarchical_champion",
+      "source_commit": "5d6a47d1",
+      "rows": 1289,
+      "variants": {
+        "direct_synthesis": {
+          "correct": 656,
+          "accuracy": 0.5089216446858029
+        },
+        "cyclic_offset_one": {
+          "correct": 651,
+          "accuracy": 0.5050426687354539
+        },
+        "cyclic_offset_two": {
+          "correct": 645,
+          "accuracy": 0.5003878975950349
+        },
+        "recursive_level_two": {
+          "correct": 614,
+          "accuracy": 0.47633824670287045
+        }
+      },
+      "domains_level_two": {
+        "bbh_logic": {"correct": 337, "rows": 637},
+        "math500": {"correct": 258, "rows": 623},
+        "mbpp": {"correct": 19, "rows": 29}
+      },
+      "oracle_direct_and_three_scaled_variants": 727,
+      "oracle_hierarchical_direct_and_three_scaled_variants": 750,
+      "level_two_vs_hierarchical": {
+        "both_correct": 568,
+        "level_two_only_correct": 46,
+        "hierarchical_only_correct": 96,
+        "both_wrong": 579,
+        "gain_count": -50,
+        "oracle_correct": 710
+      },
+      "interpretation": "Order perturbation exposes complementary correct trajectories, but naive recursive synthesis compounds revision errors. Retain the hierarchical incumbent and use cyclic outputs only as evidence for conservative repair.",
+      "artifacts": {
+        "remote_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/trajectory_synthesis_5d6a47d1_level2",
+        "comparison_sha256": "1c8e0f59d2c2e896c4d4f7217fd8d7bb4e0fa30314c5de385d306af667cfce06",
+        "durable_evidence_mirror": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/q36-engineering-cyclic-synthesis-5d6a47d1-r1",
+        "durable_evidence_manifest_sha256": "6aa7001a776b735c498a169e4222ebe7d8f0358233f648e3ce15d8d7633e8021",
+        "evidence_receipt_sha256": "e049844e01967d04de85fe0cdd0d2a6e4bca8d7e7c45ef4021d70c309992c5c2"
+      },
+      "jobs": {
+        "offset_one_generation_array": 759103,
+        "offset_two_generation_array": 759104,
+        "level_two_generation_array": 759213,
+        "scaling_comparison": 759252
+      }
+    },
     "setwise_semantic_commit": {
       "status": "complete_no_gain_over_stacked",
       "correct": 562,
