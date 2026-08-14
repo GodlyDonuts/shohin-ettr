@@ -14,6 +14,9 @@
 > 53, yielding oracle `716`. The next bounded composition uses hierarchy as
 > incumbent, interpolation as independent challenger, and direct synthesis as
 > recomputation evidence. Its fixed-shard screen is jobs `759572--759578`.
+> The label-free retention diagnostic is the current engineering best at
+> `666/1289` (hierarchy `664`), but its paired `p=0.860` is not significant;
+> retain it as a transparent control and continue model-owned composition.
 
 > **Q36-MTR ENGINEERING RECOVERY LIVE — 2026-08-14:** explicit user
 > authorization supersedes the prior no-successor rule for architecture

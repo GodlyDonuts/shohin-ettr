@@ -18,8 +18,12 @@ for renewed overgeneration. Across all 1,289 identities the 10% blend scores
 `663`, one below hierarchy (`664`) and seven above direct (`656`). Crucially,
 it uniquely repairs 52 hierarchy misses while hierarchy uniquely retains 53,
 for an oracle of `716`. A model-owned composition of those complementary
-trajectories is now screening under jobs `759572--759578`. See
-`docs/research/Q36_MTR_ALIGNED_INTERPOLATION_FULL_RESULT.json`.
+trajectories is now screening under jobs `759572--759578`. A transparent
+label-free retention rule already establishes a new engineering best
+`666/1289`: logic `348`, math `298`, code `20`. Its +2 over hierarchy is not
+significant (`p=0.860`) and is reported as a retention primitive rather than a
+breakthrough claim. See
+`docs/research/Q36_MTR_INTERPOLATION_RETENTION_RESULT.json`.
 
 **Q36-MTR engineering recovery is live.** Fresh execution
 `q36-mtr-d9ff7f7-r1` preserves the exact host, data, arms, prompts, seeds,

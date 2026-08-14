@@ -25,9 +25,14 @@ result: hierarchy and interpolation have 53 and 52 unique correct cases,
 respectively, for an oracle of `716/1289`. It is retained as a complementary
 trajectory, not a new incumbent. A conservative model-owned composition of
 hierarchical, interpolated, and direct answers is now screening on fixed
-shards 0--3 under jobs `759572--759578`. Preserve
+shards 0--3 under jobs `759572--759578`. A separate label-free retention
+diagnostic selects hierarchy for logic, interpolation for code, and the no-
+longer math answer; its threshold is identical in all 16 leave-one-shard-out
+fits. It scores a new engineering best `666/1289` versus hierarchy `664`, with
+logic tied `348`, math `+1`, and code `+1` (`p=0.860`, not significant).
+Preserve
 `docs/research/Q36_MTR_TRAINED_SYNTHESIS_EARLY_STOP_RESULT.json` and
-`docs/research/Q36_MTR_ALIGNED_INTERPOLATION_FULL_RESULT.json`.
+`docs/research/Q36_MTR_INTERPOLATION_RETENTION_RESULT.json`.
 
 ## Q36-MTR engineering recovery — 2026-08-14
 
