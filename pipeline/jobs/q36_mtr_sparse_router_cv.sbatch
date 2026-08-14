@@ -29,5 +29,6 @@ for owner in current owner71 owner8; do
   for path in "${scores[@]}"; do args+=(--"$owner"-scores "$path"); done
 done
 
+export PYTHONPATH="$(dirname "$CV_SCRIPT")"
 "$PYTHON" -P -s -B "$CV_SCRIPT" "${args[@]}"
 chmod a-w "$OUTPUT"
