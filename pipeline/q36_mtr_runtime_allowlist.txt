@@ -26,6 +26,7 @@ pipeline/jobs/q36_mtr_build_multi_owner_commit_pairs.sbatch
 pipeline/jobs/q36_mtr_build_owner_commit_pairs.sbatch
 pipeline/jobs/q36_mtr_build_precompute_custody.sbatch
 pipeline/jobs/q36_mtr_build_synthesis_training.sbatch
+pipeline/jobs/q36_mtr_calibration_correctness.sbatch
 pipeline/jobs/q36_mtr_calibration_direct_commit.sbatch
 pipeline/jobs/q36_mtr_calibration_stack.sbatch
 pipeline/jobs/q36_mtr_capture_accounting.sbatch
@@ -63,6 +64,7 @@ pipeline/seal_q36_mtr_terminal_evidence.py
 pipeline/select_q36_mtr_candidate_groups.py
 pipeline/select_q36_mtr_owner_trajectories.py
 pipeline/stack_q36_mtr_sparse_commit.py
+pipeline/train_apply_q36_mtr_calibration_correctness.py
 pipeline/train_apply_q36_mtr_calibration_direct_commit.py
 pipeline/train_apply_q36_mtr_calibration_stack.py
 pipeline/train_apply_q36_mtr_sparse_router.py

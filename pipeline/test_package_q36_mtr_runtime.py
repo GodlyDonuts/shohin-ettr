@@ -40,6 +40,7 @@ def test_q36_allowlist_rejects_escape_retry_and_dispatch(
 def test_calibration_wrappers_expose_complete_runtime_import_closure() -> None:
     root = Path(__file__).resolve().parents[1]
     for name in (
+        "q36_mtr_calibration_correctness.sbatch",
         "q36_mtr_calibration_stack.sbatch",
         "q36_mtr_calibration_direct_commit.sbatch",
     ):
