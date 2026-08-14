@@ -56,6 +56,7 @@ from shared_post_mlp_revision import (
 from ttr1_revision import DRAFT_MARKER, tokenize_with_draft_mask
 
 SCHEMA = "shohin-q36-mtr-role-training-v1"
+ENGINEERING_REVISION_MAX_SEQUENCE_LENGTH = 4_224
 
 
 class Q36MTRTrainingError(RuntimeError):
@@ -278,7 +279,6 @@ def _validate_arguments(args: argparse.Namespace) -> None:
         "quantization": QUANTIZATION,
         "updates": spec.updates,
         "max_rows": spec.max_rows,
-        "max_sequence_length": spec.max_sequence_length,
         "learning_rate": spec.learning_rate,
         "gradient_accumulation": spec.gradient_accumulation,
         "seed": spec.seed,
@@ -292,6 +292,15 @@ def _validate_arguments(args: argparse.Namespace) -> None:
         raise Q36MTRTrainingError(
             f"Q36-MTR role settings differ: expected={expected} observed={observed}"
         )
+    extension = bool(getattr(args, "engineering_sequence_extension", False))
+    if args.max_sequence_length != spec.max_sequence_length and not (
+        extension
+        and args.role == "aligned"
+        and args.max_sequence_length == ENGINEERING_REVISION_MAX_SEQUENCE_LENGTH
+    ):
+        raise Q36MTRTrainingError("Q36-MTR sequence settings differ")
+    if extension and args.max_sequence_length == spec.max_sequence_length:
+        raise Q36MTRTrainingError("Q36-MTR sequence extension is redundant")
     if (args.warm_start_checkpoint is None) != (spec.warm_start_role is None):
         raise Q36MTRTrainingError("Q36-MTR warm-start role differs")
     if args.batch_size != 1 or args.checkpoint_interval != spec.updates:
@@ -587,6 +596,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "batch_size": args.batch_size,
         "gradient_accumulation": args.gradient_accumulation,
         "max_sequence_length": args.max_sequence_length,
+        "engineering_sequence_extension": bool(args.engineering_sequence_extension),
         "learning_rate": args.learning_rate,
         "seed": args.seed,
         "data_seed": args.data_seed,
@@ -622,6 +632,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--gradient-accumulation", type=int)
     parser.add_argument("--max-rows", type=int)
     parser.add_argument("--max-sequence-length", type=int)
+    parser.add_argument("--engineering-sequence-extension", action="store_true")
     parser.add_argument("--learning-rate", type=float)
     parser.add_argument("--controlled-layers", type=int, default=CONTROLLED_LAYERS)
     parser.add_argument("--rank", type=int, default=RANK)

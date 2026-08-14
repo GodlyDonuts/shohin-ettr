@@ -361,6 +361,7 @@ def _arguments(role: str) -> SimpleNamespace:
         warm_start_checkpoint=(None if role == "owner" else Path("owner.pt")),
         batch_size=1,
         checkpoint_interval=spec.updates,
+        engineering_sequence_extension=False,
     )
 
 
@@ -370,6 +371,16 @@ def test_cli_role_settings_are_frozen(role: str) -> None:
     _validate_arguments(args)
     args.updates += 1
     with pytest.raises(Q36MTRTrainingError):
+        _validate_arguments(args)
+
+
+def test_aligned_role_allows_only_exact_engineering_sequence_extension() -> None:
+    args = _arguments("aligned")
+    args.max_sequence_length = 4_224
+    args.engineering_sequence_extension = True
+    _validate_arguments(args)
+    args.max_sequence_length = 4_225
+    with pytest.raises(Q36MTRTrainingError, match="sequence"):
         _validate_arguments(args)
 
 
@@ -395,3 +406,13 @@ def test_draft_wrapper_allows_the_observed_long_tail_to_finish() -> None:
     )
     assert "#SBATCH --time=04:00:00" in source
     assert "#SBATCH --time=02:30:00" not in source
+
+
+def test_role_wrapper_binds_the_exact_engineering_sequence_extension() -> None:
+    root = Path(__file__).resolve().parents[1]
+    source = (root / "train" / "jobs" / "q36_mtr_train_role.sbatch").read_text(
+        encoding="utf-8"
+    )
+    assert '"$MAX_SEQUENCE_LENGTH" == "4224"' in source
+    assert "--engineering-sequence-extension" in source
+    assert "TRAIN_SCRIPT_SHA256" in source

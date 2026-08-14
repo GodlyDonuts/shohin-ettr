@@ -27,6 +27,18 @@ DATA_SHA256=$(q36_sha256 "$DATA")
 q36_verify_sha256 "$DATA" "$DATA_SHA256"
 q36_verify_environment
 [[ ! -e "$OUTPUT" && ! -L "$OUTPUT" ]] || q36_die "role output exists"
+trainer=${TRAIN_SCRIPT:-$RUNTIME/train/hf_q36_mtr_train_role.py}
+[[ -f "$trainer" && ! -L "$trainer" ]] || q36_die "role trainer differs"
+if [[ -n "${TRAIN_SCRIPT:-}" ]]; then
+  q36_require TRAIN_SCRIPT_SHA256
+  q36_verify_sha256 "$trainer" "$TRAIN_SCRIPT_SHA256"
+fi
+sequence=()
+if [[ -n "${MAX_SEQUENCE_LENGTH:-}" ]]; then
+  [[ "$MAX_SEQUENCE_LENGTH" == "4224" && "$ROLE" == "aligned" ]] || \
+    q36_die "engineering sequence extension differs"
+  sequence=(--max-sequence-length "$MAX_SEQUENCE_LENGTH" --engineering-sequence-extension)
+fi
 case "$ROLE" in
   owner)
     [[ -z "${WARM_START_CHECKPOINT:-}" && -z "${WARM_START_CHECKPOINT_SHA256:-}" ]] || \
@@ -47,7 +59,7 @@ export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 export TOKENIZERS_PARALLELISM=false PYTHONDONTWRITEBYTECODE=1
 q36_export_pythonpath
 nvidia-smi
-"$PYTHON" "$RUNTIME/train/hf_q36_mtr_train_role.py" \
+"$PYTHON" "$trainer" \
   --role "$ROLE" \
   --model-root "$model" \
   --model-source-root "$MODEL_ROOT" \
@@ -59,6 +71,7 @@ nvidia-smi
   --environment-receipt "$ENVIRONMENT_RECEIPT" \
   --environment-receipt-sha256 "$ENVIRONMENT_RECEIPT_SHA256" \
   --environment-tree-sha256 "$ENVIRONMENT_TREE_SHA256" \
+  "${sequence[@]}" \
   "${warm[@]}"
 test -f "$OUTPUT/checkpoint_0000256.pt" && test -f "$OUTPUT/report.json"
 chmod -R a-w "$OUTPUT"
