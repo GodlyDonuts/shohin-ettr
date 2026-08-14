@@ -37,6 +37,7 @@ pipeline/jobs/q36_mtr_mirror_evidence.sbatch
 pipeline/jobs/q36_mtr_normalize.sbatch
 pipeline/jobs/q36_mtr_prepare_phase.sh
 pipeline/jobs/q36_mtr_score.sbatch
+pipeline/jobs/q36_mtr_score_draft_preview.sbatch
 pipeline/jobs/q36_mtr_select_candidate_groups.sbatch
 pipeline/jobs/q36_mtr_select_owner_trajectories.sbatch
 pipeline/jobs/q36_mtr_sparse_router.sbatch
