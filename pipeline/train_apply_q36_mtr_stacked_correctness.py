@@ -17,7 +17,7 @@ from typing import Any
 import joblib
 import numpy as np
 import sklearn
-from sklearn.ensemble import HistGradientBoostingClassifier
+from sklearn.ensemble import ExtraTreesClassifier, HistGradientBoostingClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import FeatureUnion
@@ -26,17 +26,19 @@ from hf_product_reasoning_eval import extract_short_answer, _normalize_short_ans
 import train_apply_q36_mtr_calibration_correctness as correctness
 import train_apply_q36_mtr_sparse_router as sparse
 
-MODEL_SCHEMA = "shohin-q36-mtr-stacked-correctness-model-v1"
-REPORT_SCHEMA = "shohin-q36-mtr-stacked-correctness-report-v1"
-SELECTION_SCHEMA = "shohin-q36-mtr-stacked-correctness-selection-v1"
+MODEL_SCHEMA = "shohin-q36-mtr-stacked-correctness-model-v2"
+REPORT_SCHEMA = "shohin-q36-mtr-stacked-correctness-report-v2"
+SELECTION_SCHEMA = "shohin-q36-mtr-stacked-correctness-selection-v2"
 FOLDS = 5
 STACKED_SEED = 2026080816
 LOGISTIC_C = 3.0
 META_LEAF_NODES = (4, 8, 16)
+META_TREE_DEPTHS = (2, 3, 4, 6)
 META_MIN_SAMPLES = (20, 50, 100)
 META_ITERATIONS = 150
 META_LEARNING_RATE = 0.05
 META_L2 = 1.0
+META_FOREST_ESTIMATORS = 500
 
 
 class Q36MTRStackedCorrectnessError(RuntimeError):
@@ -146,16 +148,27 @@ def _logistic_model() -> LogisticRegression:
 
 
 def _meta_model(
-    leaf_nodes: int, minimum_samples: int
-) -> HistGradientBoostingClassifier:
-    return HistGradientBoostingClassifier(
-        max_iter=META_ITERATIONS,
-        learning_rate=META_LEARNING_RATE,
-        max_leaf_nodes=leaf_nodes,
-        min_samples_leaf=minimum_samples,
-        l2_regularization=META_L2,
-        random_state=STACKED_SEED,
-    )
+    family: str, complexity: int, minimum_samples: int
+) -> HistGradientBoostingClassifier | ExtraTreesClassifier:
+    if family == "hist_gradient_boosting":
+        return HistGradientBoostingClassifier(
+            max_iter=META_ITERATIONS,
+            learning_rate=META_LEARNING_RATE,
+            max_leaf_nodes=complexity,
+            min_samples_leaf=minimum_samples,
+            l2_regularization=META_L2,
+            random_state=STACKED_SEED,
+        )
+    if family == "extra_trees":
+        return ExtraTreesClassifier(
+            n_estimators=META_FOREST_ESTIMATORS,
+            max_depth=complexity,
+            min_samples_leaf=minimum_samples,
+            max_features=None,
+            n_jobs=-1,
+            random_state=STACKED_SEED,
+        )
+    raise Q36MTRStackedCorrectnessError("stacked meta family differs")
 
 
 def _atomic_joblib(path: Path, payload: dict[str, Any]) -> str:
@@ -250,37 +263,54 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         [len(sparse.LINEAGES) * meta_training_rows + owner for owner in range(3)]
     )
     search = []
-    best: tuple[tuple[int, int, int], int, int] | None = None
-    for leaf_nodes in META_LEAF_NODES:
-        for minimum_samples in META_MIN_SAMPLES:
-            model = _meta_model(leaf_nodes, minimum_samples)
-            model.fit(
-                meta_matrix[meta_training_indices], flat_labels[meta_training_indices]
-            )
-            probabilities = np.column_stack(
-                [
-                    model.predict_proba(
-                        meta_matrix[len(sparse.LINEAGES) * meta_validation_rows + owner]
-                    )[:, 1]
-                    for owner in range(len(sparse.LINEAGES))
-                ]
-            )
-            selected = probabilities.argmax(axis=1)
-            correct = int(labels[meta_validation_rows, selected].sum())
-            trial = {
-                "leaf_nodes": leaf_nodes,
-                "minimum_samples": minimum_samples,
-                "correct": correct,
-                "rows": len(meta_validation_rows),
-            }
-            search.append(trial)
-            key = (correct, -leaf_nodes, -minimum_samples)
-            if best is None or key > best[0]:
-                best = (key, leaf_nodes, minimum_samples)
+    best: tuple[tuple[int, int, int, int], str, int, int] | None = None
+    grids = (
+        ("hist_gradient_boosting", META_LEAF_NODES),
+        ("extra_trees", META_TREE_DEPTHS),
+    )
+    for family, complexities in grids:
+        for complexity in complexities:
+            for minimum_samples in META_MIN_SAMPLES:
+                model = _meta_model(family, complexity, minimum_samples)
+                model.fit(
+                    meta_matrix[meta_training_indices],
+                    flat_labels[meta_training_indices],
+                )
+                probabilities = np.column_stack(
+                    [
+                        model.predict_proba(
+                            meta_matrix[
+                                len(sparse.LINEAGES) * meta_validation_rows + owner
+                            ]
+                        )[:, 1]
+                        for owner in range(len(sparse.LINEAGES))
+                    ]
+                )
+                selected = probabilities.argmax(axis=1)
+                correct = int(labels[meta_validation_rows, selected].sum())
+                trial = {
+                    "family": family,
+                    "complexity": complexity,
+                    "minimum_samples": minimum_samples,
+                    "correct": correct,
+                    "rows": len(meta_validation_rows),
+                }
+                search.append(trial)
+                family_preference = int(family == "hist_gradient_boosting")
+                key = (
+                    correct,
+                    -complexity,
+                    -minimum_samples,
+                    family_preference,
+                )
+                if best is None or key > best[0]:
+                    best = (key, family, complexity, minimum_samples)
     if best is None:
         raise Q36MTRStackedCorrectnessError("stacked model search differs")
-    _, selected_leaf_nodes, selected_minimum_samples = best
-    meta_model = _meta_model(selected_leaf_nodes, selected_minimum_samples)
+    _, selected_family, selected_complexity, selected_minimum_samples = best
+    meta_model = _meta_model(
+        selected_family, selected_complexity, selected_minimum_samples
+    )
     meta_model.fit(meta_matrix, flat_labels)
     selected_probabilities = np.column_stack(
         [
@@ -300,7 +330,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "vectorizer": vectorizer,
             "logistic_models": logistic_models,
             "meta_model": meta_model,
-            "selected_leaf_nodes": selected_leaf_nodes,
+            "selected_family": selected_family,
+            "selected_complexity": selected_complexity,
             "selected_minimum_samples": selected_minimum_samples,
             "sklearn_version": sklearn.__version__,
         },
@@ -338,7 +369,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     report = {
         "schema": REPORT_SCHEMA,
         "status": "complete",
-        "interpretation": "calibration_only_oof_text_nonlinear_stacked_correctness",
+        "interpretation": "calibration_only_oof_text_nonlinear_stacked_correctness_forest_search",
         "rows": len(candidates),
         "development_labels_read": 0,
         "training_rows_sha256": sparse.sha256_file(args.training_rows),
@@ -350,7 +381,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "logistic_c": LOGISTIC_C,
         "folds": FOLDS,
         "search": search,
-        "selected_leaf_nodes": selected_leaf_nodes,
+        "selected_family": selected_family,
+        "selected_complexity": selected_complexity,
         "selected_minimum_samples": selected_minimum_samples,
         "sklearn_version": sklearn.__version__,
     }

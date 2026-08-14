@@ -51,3 +51,11 @@ def test_document_binds_task_owner_question_and_candidate() -> None:
     assert "TASK=math500 OWNER=owner_71" in document
     assert "What is seven?" in document
     assert "Check carefully" in document
+
+
+def test_meta_search_supports_boosting_and_forest_families() -> None:
+    boosting = module._meta_model("hist_gradient_boosting", 4, 20)
+    forest = module._meta_model("extra_trees", 3, 20)
+    assert boosting.max_leaf_nodes == 4
+    assert forest.max_depth == 3
+    assert forest.n_estimators == module.META_FOREST_ESTIMATORS
