@@ -4,22 +4,31 @@
   "interpretation": "engineering_source_disjoint_development_benchmark",
   "model": "Qwen3.6-35B-A3B",
   "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
-  "source_commit": "8ca1b86671a48a6ddc46977e166706b95af4a80d",
-  "conclusion": "Model-owned synthesis of three independently learned revision trajectories produces the strongest demonstrated Qwen3.6-35B-A3B result: 656/1289 (50.89%), versus 563/1289 (43.68%) for the prior stacked selector and 539/1289 (41.82%) for the exact tournament production commit. The architecture adds 93 correct answers over the prior champion, with 138 synthesis-only wins versus 45 losses and exact paired p=3.51e-12. It improves BBH, math, and MBPP simultaneously. Development labels were read only by the independent scorer after all 16 label-free synthesis shards were immutable; generation read zero development labels.",
+  "source_commit": "468b30c13edb80f6a5a4f31649581b5b3fa03293",
+  "conclusion": "Hierarchical model-owned synthesis is the strongest demonstrated Qwen3.6-35B-A3B result: 664/1289 (51.51%). It verifies the 656/1289 three-trajectory synthesis champion against independently derived stacked and self-refinement alternatives, repairs 50 synthesis errors while losing 42 correct cases, and adds a net 8 answers. The incremental paired edge over direct synthesis is not individually significant (p=0.466), but the hierarchy remains decisively above stacked correctness at 563/1289 (144 hierarchy-only wins versus 43 losses, p=6.17e-14) and the production commit at 539/1289 (178 versus 53, p=5.51e-17). It improves BBH from 345 to 348 and math from 292 to 297 while retaining MBPP at 19/29. Every generation stage read zero development labels; independent scoring occurred only after each output shard was complete.",
   "matched_reproduction_commit": "a217f29ee4026c07212aba39fa03a1ba8190afc8",
   "architecture": {
     "owner_trajectories": ["current", "owner_71", "owner_8"],
-    "head": "aligned_model_owned_joint_revision_synthesis",
-    "input": "original_problem_plus_three_independently_learned_revision_trajectories",
-    "output": "one_new_coherent_solution_trajectory",
+    "head": "hierarchical_aligned_model_owned_solution_verification",
+    "input": "original_problem_plus_integrated_three_trajectory_synthesis_plus_stacked_preserved_alternative_plus_independent_self_refinement",
+    "output": "one_conservatively_retained_or_repaired_solution_trajectory",
     "checkpoint": "owner_71ac37c1_salvage_aligned_update_256",
     "generation": "greedy_768_tokens",
     "shards": 16,
-    "seed": 2026081421,
+    "seed": 2026081423,
     "development_labels_read": 0,
     "capability_scored_during_generation": false
   },
   "results": {
+    "hierarchical_trajectory_synthesis": {
+      "correct": 664,
+      "accuracy": 0.5151280062063616,
+      "domains": {
+        "bbh_logic": {"correct": 348, "rows": 637},
+        "math500": {"correct": 297, "rows": 623},
+        "mbpp": {"correct": 19, "rows": 29}
+      }
+    },
     "three_owner_trajectory_synthesis": {
       "correct": 656,
       "accuracy": 0.5089216446858029,
@@ -54,7 +63,7 @@
     "best_individual_owner": {"label": "owner_8", "correct": 494}
   },
   "trajectory_synthesis": {
-    "status": "complete_new_engineering_champion",
+    "status": "complete_previous_engineering_champion",
     "source_commit": "8ca1b86671a48a6ddc46977e166706b95af4a80d",
     "architecture": "aligned_model_owned_greedy_synthesis_of_current_owner71_owner8_revision_trajectories",
     "rows": 1289,
@@ -133,6 +142,102 @@
       "generation_array": 758841,
       "independent_scores": [758846, 758847, 758848, 758849, 758850, 758851, 758852, 758853, 758854, 758855, 758856, 758857, 758858, 758859, 758860, 758861],
       "paired_comparison": 758862
+    }
+  },
+  "hierarchical_synthesis": {
+    "status": "complete_new_engineering_champion",
+    "source_commit": "468b30c13edb80f6a5a4f31649581b5b3fa03293",
+    "architecture": "aligned_model_owned_conservative_verification_of_integrated_synthesis_stacked_preserved_and_self_refinement_trajectories",
+    "rows": 1289,
+    "shards": 16,
+    "seed": 2026081423,
+    "generation": "greedy",
+    "max_new_tokens": 768,
+    "development_labels_read_during_generation": 0,
+    "result": {
+      "correct": 664,
+      "accuracy": 0.5151280062063616,
+      "domains": {
+        "bbh_logic": {"correct": 348, "rows": 637},
+        "math500": {"correct": 297, "rows": 623},
+        "mbpp": {"correct": 19, "rows": 29}
+      }
+    },
+    "paired_vs_direct_trajectory_synthesis": {
+      "both_correct": 614,
+      "hierarchical_only_correct": 50,
+      "direct_only_correct": 42,
+      "both_wrong": 583,
+      "gain_count": 8,
+      "gain_points": 0.6206361520558573,
+      "mcnemar_exact_two_sided_p": 0.4657074457730625,
+      "oracle_correct": 706
+    },
+    "paired_vs_stacked_correctness": {
+      "both_correct": 520,
+      "hierarchical_only_correct": 144,
+      "stacked_only_correct": 43,
+      "both_wrong": 582,
+      "gain_count": 101,
+      "gain_points": 7.835531419705197,
+      "mcnemar_exact_two_sided_p": 6.166319657350048e-14,
+      "oracle_correct": 707
+    },
+    "paired_vs_production_commit": {
+      "both_correct": 486,
+      "hierarchical_only_correct": 178,
+      "production_only_correct": 53,
+      "both_wrong": 572,
+      "gain_count": 125,
+      "gain_points": 9.69743987587277,
+      "mcnemar_exact_two_sided_p": 5.5131803195434953e-17,
+      "oracle_correct": 717
+    },
+    "comparison_oracle": {
+      "variants": ["hierarchical_synthesis", "trajectory_synthesis", "stacked_correctness", "self_refinement", "production_commit"],
+      "correct": 754,
+      "gain_over_hierarchical_count": 90,
+      "gain_over_hierarchical_points": 6.982156710628394
+    },
+    "artifacts": {
+      "remote_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/hierarchical_synthesis_468b30c1_r2",
+      "ordered_candidates_sha256": "76f76f55bb233df45511b386132868e17fd36ed07ba955904ab81a87ab74ab78",
+      "ordered_generation_reports_sha256": "7232d0b7180c933519c22f2691a3fab14e5b15f4c224855137904b6543b5ea81",
+      "ordered_scores_sha256": "f73838bc8334137e0800f3a8e4eb9aeed220651578291cac50ed4d1b3a58e0a5",
+      "comparison_sha256": "0e00a6e968c77b3064a39c1c7ee55fe091ded896321327f950e977069e53bf8f",
+      "runtime_manifest_sha256": "f64862b92feb52770caf90b2392aa64abc4fdaa9b4fa1a2525897f137b3e6e1d",
+      "environment_receipt_sha256": "376b90bef8ccdee8807ad6257167f74478eb8713260227511b45aca076f19653",
+      "aligned_checkpoint_sha256": "cdb5ae7ac37e632a5a5c8f11682efc5f03a3ff8288c6dc2d46e7859d2e827c4f",
+      "generation_script_sha256": "3159da434e3bc941f1f14a59f0cdd76d3c3308ecd0458eaf3e2a675119659c02",
+      "durable_evidence_mirror": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/q36-engineering-hierarchical-synthesis-468b30c1-r2",
+      "durable_evidence_manifest_sha256": "b83f458e3c910c972230ea89754a8586a23ce99cf0fcbf15b31a54780e894ba5"
+    },
+    "jobs": {
+      "generation_array": 758994,
+      "independent_scores": [758995, 758996, 758997, 758998, 758999, 759000, 759001, 759002, 759003, 759004, 759005, 759006, 759007, 759008, 759009, 759010],
+      "paired_comparison": 759175
+    }
+  },
+  "engineering_ablations": {
+    "setwise_semantic_commit": {
+      "status": "complete_no_gain_over_stacked",
+      "correct": 562,
+      "accuracy": 0.4359968968192397,
+      "domains": {
+        "bbh_logic": {"correct": 312, "rows": 637},
+        "math500": {"correct": 232, "rows": 623},
+        "mbpp": {"correct": 18, "rows": 29}
+      },
+      "paired_vs_stacked": {
+        "both_correct": 536,
+        "setwise_only_correct": 26,
+        "stacked_only_correct": 27,
+        "both_wrong": 700,
+        "mcnemar_exact_two_sided_p": 1.0
+      },
+      "durable_evidence_mirror": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/q36-engineering-setwise-semantic-commit-r2",
+      "durable_evidence_manifest_sha256": "b421430b8c60abe46af047570fb016f7b88a8612b9787a75a4e4ac50c3528353",
+      "comparison_sha256": "d2c99c89a2bcb935eb8ba925f80a15223d5dff4daf256198ed8a2851a0c922b8"
     }
   },
   "stacked_correctness": {
@@ -360,6 +465,9 @@
     "stacked_gain_over_lineage_champion_not_significant": true,
     "trajectory_synthesis_gain_over_stacked_champion_significant": true,
     "trajectory_synthesis_gain_over_self_refinement_significant": true,
-    "trajectory_synthesis_is_current_engineering_champion": true
+    "trajectory_synthesis_is_current_engineering_champion": false,
+    "hierarchical_synthesis_is_current_engineering_champion": true,
+    "hierarchical_gain_over_direct_synthesis_not_individually_significant": true,
+    "hierarchical_gain_over_stacked_champion_significant": true
   }
 }
