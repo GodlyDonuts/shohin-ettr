@@ -32,19 +32,22 @@ class Q36MTRSynthesisError(RuntimeError):
     """Trajectory-synthesis model, inputs, or outputs differ."""
 
 
-def _rotation(identity: str) -> int:
+def _rotation(identity: str, offset: int = 0) -> int:
+    if offset not in {0, 1, 2}:
+        raise Q36MTRSynthesisError("synthesis rotation offset differs")
     digest = hashlib.sha256(f"q36-synthesis\0{identity}".encode()).digest()
-    return int.from_bytes(digest[:4], "big") % len(sparse.LINEAGES)
+    return (int.from_bytes(digest[:4], "big") + offset) % len(sparse.LINEAGES)
 
 
 def synthesis_prompt(
     source_prompt: str,
     identity: str,
     candidates: list[dict[str, Any]],
+    rotation_offset: int = 0,
 ) -> tuple[str, list[str]]:
     if len(candidates) != len(sparse.LINEAGES):
         raise Q36MTRSynthesisError("synthesis candidate geometry differs")
-    rotation = _rotation(identity)
+    rotation = _rotation(identity, rotation_offset)
     order = [
         (rotation + offset) % len(sparse.LINEAGES)
         for offset in range(len(sparse.LINEAGES))
@@ -108,6 +111,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         or args.shard_count != SHARDS
         or args.max_new_tokens != MAX_NEW_TOKENS
         or args.batch_size != 2
+        or args.rotation_offset not in {0, 1, 2}
         or not 0 <= args.shard_index < SHARDS
     ):
         raise Q36MTRSynthesisError("synthesis settings differ")
@@ -168,7 +172,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         for identity in identities:
             candidates = [owner[identity] for owner in owners]
             prompt, order = synthesis_prompt(
-                sources[identity]["source_prompt"], identity, candidates
+                sources[identity]["source_prompt"],
+                identity,
+                candidates,
+                args.rotation_offset,
             )
             prompts.append(prompt)
             permutations.append(order)
@@ -211,6 +218,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     "trajectory_synthesis": {
                         "schema": SYNTHESIS_SCHEMA,
                         "attempt_order": order,
+                        "rotation_offset": args.rotation_offset,
                         "development_labels_read": 0,
                     },
                 }
@@ -252,6 +260,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "rendered_chat_tokenization": "add_special_tokens_false",
         "max_new_tokens": args.max_new_tokens,
         "seed": args.seed,
+        "rotation_offset": args.rotation_offset,
         "shard_index": args.shard_index,
         "shard_count": args.shard_count,
         "full_rows": ROWS,
@@ -297,6 +306,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, default=2)
     parser.add_argument("--max-new-tokens", type=int, default=MAX_NEW_TOKENS)
     parser.add_argument("--seed", type=int, default=SEED)
+    parser.add_argument("--rotation-offset", type=int, default=0)
     return parser.parse_args()
 
 

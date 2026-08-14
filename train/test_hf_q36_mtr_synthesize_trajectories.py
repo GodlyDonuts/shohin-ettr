@@ -36,3 +36,19 @@ def test_synthesis_rotation_is_deterministic_and_balanced() -> None:
 def test_synthesis_rejects_missing_candidate() -> None:
     with pytest.raises(module.Q36MTRSynthesisError):
         module.synthesis_prompt("Question", "0" * 64, [_candidate("A")])
+
+
+def test_synthesis_offsets_cover_all_cyclic_orders() -> None:
+    identity = hashlib.sha256(b"offset-identity").hexdigest()
+    candidates = [_candidate("A"), _candidate("B"), _candidate("C")]
+    orders = [
+        module.synthesis_prompt("Question", identity, candidates, offset)[1]
+        for offset in range(3)
+    ]
+    assert len({tuple(order) for order in orders}) == 3
+    assert all(set(order) == set(module.sparse.LINEAGES) for order in orders)
+
+
+def test_synthesis_rejects_rotation_outside_three_cycles() -> None:
+    with pytest.raises(module.Q36MTRSynthesisError, match="rotation"):
+        module._rotation("0" * 64, 3)

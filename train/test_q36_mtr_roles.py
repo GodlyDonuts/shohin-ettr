@@ -418,3 +418,13 @@ def test_role_wrapper_binds_the_exact_engineering_sequence_extension() -> None:
     assert "TRAIN_SCRIPT_SHA256" in source
     assert "PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True" in source
     assert "#SBATCH --time=04:00:00" in source
+
+
+def test_synthesis_wrapper_supports_exact_cyclic_scaling_offsets() -> None:
+    root = Path(__file__).resolve().parents[1]
+    source = (
+        root / "train" / "jobs" / "q36_mtr_synthesize_trajectories.sbatch"
+    ).read_text(encoding="utf-8")
+    assert '[[ "$rotation" =~ ^[012]$ ]]' in source
+    assert "SYNTHESIS_SCRIPT_SHA256" in source
+    assert '--rotation-offset "$rotation"' in source

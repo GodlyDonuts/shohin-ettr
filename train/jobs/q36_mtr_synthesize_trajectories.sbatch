@@ -31,6 +31,14 @@ q36_verify_environment
 q36_verify_sha256 "$TRAIN_SOURCE" "$TRAIN_SOURCE_SHA256"
 q36_verify_sha256 "$DEVELOPMENT_SOURCE" "$DEVELOPMENT_SOURCE_SHA256"
 q36_verify_sha256 "$FREEZE_REPORT" "$FREEZE_REPORT_SHA256"
+trainer=${SYNTHESIS_SCRIPT:-$RUNTIME/train/hf_q36_mtr_synthesize_trajectories.py}
+[[ -f "$trainer" && ! -L "$trainer" ]] || q36_die "synthesis script differs"
+if [[ -n "${SYNTHESIS_SCRIPT:-}" ]]; then
+  q36_require SYNTHESIS_SCRIPT_SHA256
+  q36_verify_sha256 "$trainer" "$SYNTHESIS_SCRIPT_SHA256"
+fi
+rotation=${SYNTHESIS_ROTATION_OFFSET:-0}
+[[ "$rotation" =~ ^[012]$ ]] || q36_die "synthesis rotation offset differs"
 [[ -f "$ALIGNED_CHECKPOINT" && ! -L "$ALIGNED_CHECKPOINT" ]] || q36_die "aligned checkpoint differs"
 for owner in CURRENT OWNER71 OWNER8; do
   name="${owner}_CANDIDATES"; IFS=: read -r -a paths <<< "${!name}"
@@ -48,7 +56,7 @@ for owner in current owner71 owner8; do
   for path in "${paths[@]}"; do args+=(--"$owner"-candidates "$path"); done
 done
 nvidia-smi
-"$PYTHON" "$RUNTIME/train/hf_q36_mtr_synthesize_trajectories.py" \
+"$PYTHON" "$trainer" \
   --train-source "$TRAIN_SOURCE" --development-source "$DEVELOPMENT_SOURCE" \
   --freeze-report "$FREEZE_REPORT" --model-root "$model" \
   --model-revision "$MODEL_REVISION" --aligned-checkpoint "$ALIGNED_CHECKPOINT" \
@@ -57,6 +65,6 @@ nvidia-smi
   --environment-tree-sha256 "$ENVIRONMENT_TREE_SHA256" \
   "${args[@]}" --output "$OUTPUT" --report "$REPORT" \
   --shard-index "$SHARD_INDEX" --shard-count 16 --batch-size 2 \
-  --max-new-tokens 768 --seed 2026081421
+  --max-new-tokens 768 --seed 2026081421 --rotation-offset "$rotation"
 test -f "$OUTPUT" && test -f "$REPORT"
 chmod a-w "$OUTPUT" "$REPORT"
