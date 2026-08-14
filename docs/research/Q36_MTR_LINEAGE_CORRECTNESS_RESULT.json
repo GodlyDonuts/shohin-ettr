@@ -5,7 +5,7 @@
   "model": "Qwen3.6-35B-A3B",
   "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
   "source_commit": "468b30c13edb80f6a5a4f31649581b5b3fa03293",
-  "conclusion": "Hierarchical model-owned synthesis is the strongest demonstrated Qwen3.6-35B-A3B result: 664/1289 (51.51%). It verifies the 656/1289 three-trajectory synthesis champion against independently derived stacked and self-refinement alternatives, repairs 50 synthesis errors while losing 42 correct cases, and adds a net 8 answers. The incremental paired edge over direct synthesis is not individually significant (p=0.466), but the hierarchy remains decisively above stacked correctness at 563/1289 (144 hierarchy-only wins versus 43 losses, p=6.17e-14) and the production commit at 539/1289 (178 versus 53, p=5.51e-17). It improves BBH from 345 to 348 and math from 292 to 297 while retaining MBPP at 19/29. Cyclic-order synthesis variants reached 651 and 645, recursively synthesizing those variants degraded to 614, and a direct incumbent-versus-cyclic verifier reached 650; none replaces the 664 champion. The verifier repaired 18 incumbent errors but regressed 32 incumbent-correct cases, showing that prompt-only retention is insufficient. Their diversity remains mechanistically useful: the incumbent plus direct, both cyclic variants, and level-2 synthesis has a 750/1289 oracle. Every generation stage read zero development labels; independent scoring occurred only after each output shard was complete.",
+  "conclusion": "Hierarchical model-owned synthesis is the strongest demonstrated Qwen3.6-35B-A3B result: 664/1289 (51.51%). It verifies the 656/1289 three-trajectory synthesis champion against independently derived stacked and self-refinement alternatives, repairs 50 synthesis errors while losing 42 correct cases, and adds a net 8 answers. The incremental paired edge over direct synthesis is not individually significant (p=0.466), but the hierarchy remains decisively above stacked correctness at 563/1289 (144 hierarchy-only wins versus 43 losses, p=6.17e-14) and the production commit at 539/1289 (178 versus 53, p=5.51e-17). It improves BBH from 345 to 348 and math from 292 to 297 while retaining MBPP at 19/29. Cyclic-order synthesis variants reached 651 and 645, recursively synthesizing those variants degraded to 614, a direct incumbent-versus-cyclic verifier reached 650, and a direct incumbent-versus-level-two verifier reached 653; none replaces the 664 champion. The two conservative verifiers repaired 18 and 25 incumbent errors but regressed 32 and 36 incumbent-correct cases, showing that prompt-only retention is insufficient. Their diversity remains mechanistically useful: the incumbent plus direct, both cyclic variants, and level-2 synthesis has a 750/1289 oracle. Every generation stage read zero development labels; independent scoring occurred only after each output shard was complete.",
   "matched_reproduction_commit": "a217f29ee4026c07212aba39fa03a1ba8190afc8",
   "architecture": {
     "owner_trajectories": ["current", "owner_71", "owner_8"],
@@ -219,6 +219,72 @@
     }
   },
   "engineering_ablations": {
+    "incumbent_level_two_verification": {
+      "status": "complete_rejected_below_hierarchical_champion",
+      "source_commit": "d66fc88e",
+      "architecture": "aligned_model_owned_conservative_verification_of_hierarchical_incumbent_against_recursive_level_two_and_direct_synthesis",
+      "rows": 1289,
+      "shards": 16,
+      "seed": 2026081424,
+      "development_labels_read_during_generation": 0,
+      "result": {
+        "correct": 653,
+        "accuracy": 0.5065942591155935,
+        "domains": {
+          "bbh_logic": {
+            "correct": 348,
+            "rows": 637
+          },
+          "math500": {
+            "correct": 286,
+            "rows": 623
+          },
+          "mbpp": {
+            "correct": 19,
+            "rows": 29
+          }
+        }
+      },
+      "paired_vs_hierarchical_champion": {
+        "both_correct": 628,
+        "challenger_only_correct": 25,
+        "hierarchical_only_correct": 36,
+        "both_wrong": 600,
+        "gain_count": -11,
+        "mcnemar_exact_two_sided_p": 0.20003136851310316,
+        "oracle_correct": 689
+      },
+      "interpretation": "The verifier preserves the incumbent exactly on BBH and MBPP but loses eleven math answers. The level-two trajectory contains useful repairs, yet prompt-only verification remains too permissive for conservative retention.",
+      "artifacts": {
+        "remote_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/incumbent_challenger_d66fc88e_r1",
+        "comparison_sha256": "b94681266f0d949eee556d60ed4f35af6caba6d9c70055881dc467ddaed32d54",
+        "durable_evidence_mirror": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/q36-engineering-incumbent-challenger-d66fc88e-r1",
+        "durable_evidence_manifest_sha256": "f678e31f09e5cddd2058ac9d0b05cd06f60b0145199ca6144ac79024a9044344"
+      },
+      "jobs": {
+        "initial_generation_array": 759286,
+        "resumed_generation_array": 759411,
+        "independent_scores": [
+          759287,
+          759288,
+          759289,
+          759290,
+          759291,
+          759415,
+          759416,
+          759417,
+          759418,
+          759419,
+          759420,
+          759421,
+          759422,
+          759423,
+          759424,
+          759425
+        ],
+        "paired_comparison": 759437
+      }
+    },
     "incumbent_cyclic_verification": {
       "status": "complete_rejected_below_hierarchical_champion",
       "source_commit": "1b4ad1d5",
