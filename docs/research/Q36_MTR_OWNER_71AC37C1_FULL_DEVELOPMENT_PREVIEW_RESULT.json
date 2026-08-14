@@ -1,0 +1,142 @@
+{
+  "accuracy": 0.382467028704422,
+  "completion_status": {
+    "exhausted_accuracy": 0.05813953488372093,
+    "exhausted_correct": 25,
+    "exhausted_rows": 430,
+    "nonexhausted_accuracy": 0.5448195576251456,
+    "nonexhausted_correct": 468,
+    "nonexhausted_rows": 859
+  },
+  "correct": 493,
+  "domains": {
+    "bbh_logic": {
+      "accuracy": 0.4521193092621664,
+      "correct": 288,
+      "explicit_final_answers": 543,
+      "max_token_exhausted": 148,
+      "rows": 637
+    },
+    "math500": {
+      "accuracy": 0.3017656500802568,
+      "correct": 188,
+      "explicit_final_answers": 357,
+      "max_token_exhausted": 282,
+      "rows": 623
+    },
+    "mbpp": {
+      "accuracy": 0.5862068965517241,
+      "correct": 17,
+      "explicit_final_answers": 29,
+      "max_token_exhausted": 0,
+      "rows": 29
+    }
+  },
+  "explicit_final_answers": 929,
+  "inputs": [
+    {
+      "candidates_sha256": "86f63f69403807ebaf5c449f8678c0428f41e5df4d77b5ebc3e00dd7d6f12e84",
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/owner_71ac37c1_all_shards/shard_00_development_score.json",
+      "rows": 85,
+      "sha256": "2fa5244dfdc061aa8c70d47706feb7db98e81b157771b6781cb5929122aadf60"
+    },
+    {
+      "candidates_sha256": "91e65e744c7d877711935e57663516a5c9cc6a7734042edfea99c8db94ed4379",
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/owner_71ac37c1_all_shards/shard_01_development_score.json",
+      "rows": 80,
+      "sha256": "5347db052d6f48443851c977a440b6554de876fe976e6f276bef319a9cc989d9"
+    },
+    {
+      "candidates_sha256": "d8ce570740299ebfd64c9ff9d012ab5004b2960d10c395fda0d58db498298e24",
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/owner_71ac37c1_all_shards/shard_02_development_score.json",
+      "rows": 65,
+      "sha256": "8fd11858d418f2174ec6439fd907915c51552ea00afe8cec7474512912922248"
+    },
+    {
+      "candidates_sha256": "49690507c7942a60e4ef0f2b7949be404ebdbcbc5ba59a72209180db0e090b55",
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/owner_71ac37c1_all_shards/shard_03_development_score.json",
+      "rows": 78,
+      "sha256": "a8c0cc09b2c64d83312d332efd9ae29402cda3d47f1f0cc7f5f6f65ab80f73a3"
+    },
+    {
+      "candidates_sha256": "40344862fc626eb0e6987e6ec0f0f4c04a2f43d8ff170cef3719e9cf0a6a7dbe",
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/owner_71ac37c1_all_shards/shard_04_development_score.json",
+      "rows": 80,
+      "sha256": "25583b7dc1997176465d35f2b599bb550536d14a372153f9d05d70016775efd3"
+    },
+    {
+      "candidates_sha256": "da42804049e11e46ccc9473bd63d1c5309d0cc5d8293c9079a1ad73d02fff3c8",
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/owner_71ac37c1_all_shards/shard_05_development_score.json",
+      "rows": 86,
+      "sha256": "5f10e975fb7467f713e80f83484d58aba66bd52b9a4ddbbe7ca98b78c6ca2e6d"
+    },
+    {
+      "candidates_sha256": "57f181c9fbb44b1ab194e017c2bae7b53f842ecb491a69bf8a9f57b0c0ed0a3a",
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/owner_71ac37c1_all_shards/shard_06_development_score.json",
+      "rows": 80,
+      "sha256": "a0bdac89a93211988cfe6eea3175e7b3222590ab6b1a0af1bf7b6ad903d19c78"
+    },
+    {
+      "candidates_sha256": "320e9822a7617228958e72bccb07d56e412dd4e6d6b484d975b711305d954a3f",
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/owner_71ac37c1_all_shards/shard_07_development_score.json",
+      "rows": 94,
+      "sha256": "58b4b856b1a482f74f0b2dfddd47a29ff17540ef2a8768951b43d3d4fd1d1bf1"
+    },
+    {
+      "candidates_sha256": "815bc71438c0abc1115dd904eeb7ce6bc5993b77621ff18cee117f6af320948a",
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/owner_71ac37c1_all_shards/shard_08_development_score.json",
+      "rows": 91,
+      "sha256": "36c772217ce140af52aec565b5dd96f9728239e553457a2810e371f0397b690e"
+    },
+    {
+      "candidates_sha256": "d79226bab80b7b85d6abf71a0fca7cfed32b4e3ff8dcfee47bef0933037e1303",
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/owner_71ac37c1_all_shards/shard_09_development_score.json",
+      "rows": 73,
+      "sha256": "85c119a9e28c06dcd8dc350e924b83a9644c2bd986763904472c4bba410f9762"
+    },
+    {
+      "candidates_sha256": "6dfbc63cb8dff99d9a67e0799f6b9b083bc0c07fd63865158c5eefb8e6815e37",
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/owner_71ac37c1_all_shards/shard_10_development_score.json",
+      "rows": 88,
+      "sha256": "5a513e67c1f03fe2f202d95f69d1fb5ae432f8e354418faa12830be14b51dbde"
+    },
+    {
+      "candidates_sha256": "55f9ce5ff007b9701cc661e70d1b544b781bc0823df8578b4c21845147ceb4b4",
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/owner_71ac37c1_all_shards/shard_11_development_score.json",
+      "rows": 89,
+      "sha256": "5c6962b2871b10eee74bc2452163e5efc8f8530508f2e37f143ef0209dc1ddb3"
+    },
+    {
+      "candidates_sha256": "eaf6dd8d344305d19e852f6467af4fb08cf8aa2f212c69973d2d12b4366e79d3",
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/owner_71ac37c1_all_shards/shard_12_development_score.json",
+      "rows": 84,
+      "sha256": "7470c9e5831ac8975719d1fb6ef32561ed15449c85aa45b56efa9cf69e0ad23a"
+    },
+    {
+      "candidates_sha256": "976def95630d11a6444c72cf8e4353f70cae4b7bee1b56bb2bf2694e78ef06f9",
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/owner_71ac37c1_all_shards/shard_13_development_score.json",
+      "rows": 61,
+      "sha256": "c258c69d294b431bfa7e6b68036baa47627bea14a775d9e4ff28c4c5d5015fee"
+    },
+    {
+      "candidates_sha256": "3258fa152cafd8491a572179ee371016d87e5934598b499c0898a9e4079c54c8",
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/owner_71ac37c1_all_shards/shard_14_development_score.json",
+      "rows": 79,
+      "sha256": "dcb911318a301f43ef0417354aaf7b221efbbaadb5d3d4761c4f7df55b074fbd"
+    },
+    {
+      "candidates_sha256": "0d6c665b3558c5824289fbaac6576f2a6f83676a1e2c0b8353a631c5b6ca05b8",
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/owner_71ac37c1_all_shards/shard_15_development_score.json",
+      "rows": 76,
+      "sha256": "ed7850a8e42b3e1334e8e75572cc4695839f7f4523bca844adc3e08083fb31ae"
+    }
+  ],
+  "interpretation": "engineering_owner_draft_preview_not_matched_gate",
+  "label": "q36-owner-71ac37c1-full-development",
+  "max_token_exhausted": 430,
+  "report_count": 16,
+  "rows": 1289,
+  "schema": "shohin-q36-mtr-draft-preview-aggregate-v1",
+  "status": "complete",
+  "unique_identities": 1289
+}
