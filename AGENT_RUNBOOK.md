@@ -8,9 +8,12 @@
 > hierarchy `167/322` and direct synthesis `170/322`, with 15 repairs / 8
 > regressions against hierarchy and nonnegative domain deltas. Weight `0.25`
 > is slightly weaker at `173/322`; `0.50` was early-stopped for renewed slow
-> overgeneration. The `0.10` expansion is live as array `759537`, scores
-> `759538--759549`, comparisons `759550--759551`. Do not duplicate those
-> identities. Promote only from the exact full 1,289-row comparison.
+> overgeneration. The `0.10` expansion completed at `663/1289`, versus
+> hierarchy `664` and direct `656`; do not replace the incumbent. Retain the
+> interpolation because it has 52 unique correct cases against hierarchy's
+> 53, yielding oracle `716`. The next bounded composition uses hierarchy as
+> incumbent, interpolation as independent challenger, and direct synthesis as
+> recomputation evidence. Its fixed-shard screen is jobs `759572--759578`.
 
 > **Q36-MTR ENGINEERING RECOVERY LIVE — 2026-08-14:** explicit user
 > authorization supersedes the prior no-successor rule for architecture

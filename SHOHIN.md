@@ -14,9 +14,12 @@ checkpoint interpolation converts that weak learned delta into a favorable
 fixed-slice result: `174/322`, versus direct synthesis `170/322` and
 hierarchical synthesis `167/322`, with 15 repairs and 8 regressions against
 the champion. The 25% scale is slightly weaker (`173/322`); 50% was stopped
-for renewed overgeneration. The 10% scale is now expanding across all 1,289
-development identities under jobs `759537--759551`. See
-`docs/research/Q36_MTR_ALIGNED_INTERPOLATION_SCREEN_RESULT.json`.
+for renewed overgeneration. Across all 1,289 identities the 10% blend scores
+`663`, one below hierarchy (`664`) and seven above direct (`656`). Crucially,
+it uniquely repairs 52 hierarchy misses while hierarchy uniquely retains 53,
+for an oracle of `716`. A model-owned composition of those complementary
+trajectories is now screening under jobs `759572--759578`. See
+`docs/research/Q36_MTR_ALIGNED_INTERPOLATION_FULL_RESULT.json`.
 
 **Q36-MTR engineering recovery is live.** Fresh execution
 `q36-mtr-d9ff7f7-r1` preserves the exact host, data, arms, prompts, seeds,

@@ -17,11 +17,17 @@ learned-delta integration. On fixed shards 0--3, trained weight `0.10` scores
 and retains code `9/12`. Against hierarchy it records 15 repairs and 8
 regressions. Weight `0.25` is slightly weaker at `173/322`; weight `0.50` was
 stopped after materially slower, overgeneration-dominated execution. The
-promoted `0.10` scale is expanding over shards 4--15 via array `759537`, with
-scores `759538--759549` and exact full comparisons `759550--759551` already
-dependency-staged. Preserve both
+promoted `0.10` scale completed all 1,289 identities at `663/1289`, one below
+hierarchical synthesis (`664`) and seven above direct synthesis (`656`). It
+ties hierarchy on logic (`348`), trails by two on math (`295` versus `297`),
+and leads by one on code (`20` versus `19`). The paired geometry is the main
+result: hierarchy and interpolation have 53 and 52 unique correct cases,
+respectively, for an oracle of `716/1289`. It is retained as a complementary
+trajectory, not a new incumbent. A conservative model-owned composition of
+hierarchical, interpolated, and direct answers is now screening on fixed
+shards 0--3 under jobs `759572--759578`. Preserve
 `docs/research/Q36_MTR_TRAINED_SYNTHESIS_EARLY_STOP_RESULT.json` and
-`docs/research/Q36_MTR_ALIGNED_INTERPOLATION_SCREEN_RESULT.json`.
+`docs/research/Q36_MTR_ALIGNED_INTERPOLATION_FULL_RESULT.json`.
 
 ## Q36-MTR engineering recovery — 2026-08-14
 
