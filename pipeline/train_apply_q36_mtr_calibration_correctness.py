@@ -22,6 +22,8 @@ LEARNING_RATES = (0.03, 0.07, 0.15)
 EPOCHS = (4, 8, 12)
 BALANCED = (False, True)
 THRESHOLDS = (0.0, 0.01, 0.02, 0.04, 0.06, 0.1, 0.15, 0.25, 1.1)
+THRESHOLD_MODES = ("task", "task_head", "task_head_production")
+MINIMUM_THRESHOLD_GROUP = 20
 
 
 class Q36MTRCalibrationCorrectnessError(RuntimeError):
@@ -167,6 +169,75 @@ def _choose_threshold(
     return float(best["threshold"]), trials
 
 
+def _threshold_group(row: dict[str, Any], mode: str) -> str:
+    if mode == "task":
+        return row["task"]
+    if mode == "task_head":
+        return f"{row['task']}:{row['head_index']}"
+    if mode == "task_head_production":
+        return f"{row['task']}:{row['head_index']}:{row['production_index']}"
+    raise Q36MTRCalibrationCorrectnessError("correctness threshold mode differs")
+
+
+def _threshold_map(
+    predictions: list[dict[str, Any]], mode: str
+) -> tuple[dict[str, float], dict[str, list[dict[str, Any]]]]:
+    thresholds: dict[str, float] = {}
+    trials: dict[str, list[dict[str, Any]]] = {}
+    groups = sorted({_threshold_group(row, mode) for row in predictions})
+    for group in groups:
+        rows = [row for row in predictions if _threshold_group(row, mode) == group]
+        if mode != "task" and len(rows) < MINIMUM_THRESHOLD_GROUP:
+            continue
+        threshold, group_trials = _choose_threshold(rows)
+        thresholds[group] = threshold
+        trials[group] = group_trials
+    return thresholds, trials
+
+
+def _threshold_for(
+    row: dict[str, Any], mode: str, thresholds: dict[str, float]
+) -> float:
+    key = _threshold_group(row, mode)
+    if key in thresholds:
+        return thresholds[key]
+    return thresholds[row["task"]]
+
+
+def _mapped_threshold_metrics(
+    predictions: list[dict[str, Any]],
+    mode: str,
+    thresholds: dict[str, float],
+) -> dict[str, Any]:
+    selected = []
+    for row in predictions:
+        item = dict(row)
+        item["mapped_threshold"] = _threshold_for(row, mode, thresholds)
+        selected.append(item)
+    correct = production_correct = retained = regressions = interventions = 0
+    for row in selected:
+        use_head = (
+            row["head_index"] != row["production_index"]
+            and row["estimated_gain"] >= row["mapped_threshold"]
+        )
+        selected_index = row["head_index"] if use_head else row["production_index"]
+        selected_correct = bool(row["correctness"][selected_index])
+        baseline_correct = bool(row["correctness"][row["production_index"]])
+        correct += int(selected_correct)
+        production_correct += int(baseline_correct)
+        retained += int(selected_correct and baseline_correct)
+        regressions += int(baseline_correct and not selected_correct)
+        interventions += int(use_head)
+    return {
+        "mode": mode,
+        "correct": correct,
+        "production_correct": production_correct,
+        "retained": retained,
+        "regressions": regressions,
+        "interventions": interventions,
+    }
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     training_rows = sparse.load_training_rows(args.training_rows)
     development_rows = sparse.load_development_rows(args.development_rows)
@@ -223,14 +294,31 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 ],
             }
         )
-    thresholds: dict[str, float] = {}
-    threshold_trials: dict[str, list[dict[str, Any]]] = {}
-    for task in sparse.TASKS:
-        threshold, task_trials = _choose_threshold(
-            [row for row in validation_predictions if row["task"] == task]
+    task_thresholds, task_trials = _threshold_map(validation_predictions, "task")
+    threshold_candidates: list[dict[str, Any]] = []
+    threshold_trials: dict[str, dict[str, list[dict[str, Any]]]] = {"task": task_trials}
+    for mode in THRESHOLD_MODES:
+        if mode == "task":
+            thresholds = dict(task_thresholds)
+        else:
+            grouped, grouped_trials = _threshold_map(validation_predictions, mode)
+            thresholds = {**task_thresholds, **grouped}
+            threshold_trials[mode] = grouped_trials
+        metrics = _mapped_threshold_metrics(validation_predictions, mode, thresholds)
+        threshold_candidates.append(
+            {**metrics, "thresholds": dict(sorted(thresholds.items()))}
         )
-        thresholds[task] = threshold
-        threshold_trials[task] = task_trials
+    selected_thresholds = max(
+        threshold_candidates,
+        key=lambda row: (
+            row["correct"],
+            -row["regressions"],
+            -row["interventions"],
+            -THRESHOLD_MODES.index(row["mode"]),
+        ),
+    )
+    threshold_mode = selected_thresholds["mode"]
+    thresholds = selected_thresholds["thresholds"]
 
     final_weights, final_fit = _fit(
         training_rows,
@@ -245,6 +333,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "training_rows_sha256": sparse.sha256_file(args.training_rows),
         "model_selection_trials": trials,
         "selected_model": selected,
+        "threshold_mode": threshold_mode,
+        "threshold_mode_trials": threshold_candidates,
         "thresholds": thresholds,
         "threshold_trials": threshold_trials,
         "final_fit": final_fit,
@@ -282,7 +372,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
         production_index = _production_index(row)
         estimated_gain = probabilities[head_index] - probabilities[production_index]
-        threshold = thresholds[source["task"]]
+        threshold_row = {
+            "task": source["task"],
+            "head_index": head_index,
+            "production_index": production_index,
+        }
+        threshold = _threshold_for(threshold_row, threshold_mode, thresholds)
         use_head = head_index != production_index and estimated_gain >= threshold
         selected_index = head_index if use_head else production_index
         selected_source = "correctness_head" if use_head else "production_commit"
@@ -314,6 +409,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "rows": len(selected_rows),
         "development_labels_read": 0,
         "thresholds": thresholds,
+        "threshold_mode": threshold_mode,
         "selection_counts": dict(sorted(counts.items())),
         "model": str(args.model_output.resolve()),
         "model_sha256": model_sha,

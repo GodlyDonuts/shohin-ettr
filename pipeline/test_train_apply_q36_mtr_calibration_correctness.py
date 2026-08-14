@@ -50,3 +50,43 @@ def test_threshold_selection_prefers_conservative_retention_on_tie() -> None:
 def test_sigmoid_is_finite_at_extremes() -> None:
     assert 0.0 < module._sigmoid(-1e9) < 0.5
     assert 0.5 < module._sigmoid(1e9) < 1.0
+
+
+def test_lineage_thresholds_fall_back_when_support_is_small() -> None:
+    rows = [
+        {
+            "task": "math500",
+            "head_index": index % 2,
+            "production_index": 2,
+            "estimated_gain": 0.05,
+            "correctness": [True, False, False],
+        }
+        for index in range(10)
+    ]
+    task_thresholds, _ = module._threshold_map(rows, "task")
+    grouped, _ = module._threshold_map(rows, "task_head")
+    thresholds = {**task_thresholds, **grouped}
+    assert grouped == {}
+    assert (
+        module._threshold_for(rows[0], "task_head", thresholds)
+        == task_thresholds["math500"]
+    )
+
+
+def test_supported_lineage_thresholds_override_task_threshold() -> None:
+    rows = [
+        {
+            "task": "bbh_logic",
+            "head_index": 1,
+            "production_index": 0,
+            "estimated_gain": 0.05,
+            "correctness": [index % 2 == 0, index % 2 == 1, False],
+        }
+        for index in range(module.MINIMUM_THRESHOLD_GROUP)
+    ]
+    task_thresholds, _ = module._threshold_map(rows, "task")
+    grouped, _ = module._threshold_map(rows, "task_head")
+    thresholds = {**task_thresholds, **grouped}
+    key = "bbh_logic:1"
+    assert key in grouped
+    assert module._threshold_for(rows[0], "task_head", thresholds) == thresholds[key]
