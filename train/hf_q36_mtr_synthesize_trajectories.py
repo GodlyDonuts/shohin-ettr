@@ -65,8 +65,10 @@ def synthesis_prompt(
         "mention the attempts, and return one best solution in the original problem's "
         "requested output format.\n\n"
         f"Original problem:\n{source_prompt}\n\n"
+        "Internal draft:\n"
         + "\n\n".join(attempts)
-        + f"\n\nOriginal problem:\n{source_prompt}"
+        + "\n\nFollow the original problem's requested output format."
+        f"\n\nOriginal problem:\n{source_prompt}"
     )
     return prompt, ordered_lineages
 
