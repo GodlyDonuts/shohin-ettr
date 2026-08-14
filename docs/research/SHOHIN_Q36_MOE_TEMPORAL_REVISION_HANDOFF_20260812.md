@@ -1,5 +1,17 @@
 # Q36-MTR: MoE Temporal-Revision Handoff
 
+Status: engineering recovery `q36-mtr-d9ff7f7-r1` is live, 2026-08-14. User
+authorization supersedes the earlier no-successor rule for architecture
+development. The recovered graph preserves the exact Qwen3.6-35B-A3B host,
+source-disjoint data, five arms, prompts, seeds, identity partitions,
+training budgets, and thresholds. Commit `d9ff7f7d79b953179bf90510731c0bcd2f02e722`
+adds only `evc50` to the scheduler exclusion set. CPU live preflight job
+`756996` passed `0:0` in 177 seconds; mechanics job `756997` is the active
+critical path and the complete 61-request graph is dependency-prestaged
+through terminal job `757028`. Results from this execution are recovery
+benchmark evidence and must not be misrepresented as one-shot publication
+evidence.
+
 Status: execution `q36-mtr-03955353-r2` is terminal-infrastructure, 2026-08-14.
 It passed CPU live preflight, the complete mechanics gate, and the frozen
 256-update source-owner fit. Three of 16 owner-draft shards then completed
@@ -11,7 +23,7 @@ never-admitted draft tasks, the array root, and all 29 dependency-dead
 downstream roots were cancelled. No calibration, development arm, assessor,
 score, or formal scientific gate ran. Preserve
 `Q36_MTR_DRAFT_CUDA_TERMINAL_20260814.json`. The formal result remains null;
-no retry, confirmation, or successor is authorized.
+that archived execution remains immutable and unmodified.
 
 The earlier four terminal-infrastructure executions remain historical
 evidence. The pinned Q36-MTR host, source-disjoint data view, 61 single-H100

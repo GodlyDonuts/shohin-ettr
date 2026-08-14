@@ -1,5 +1,16 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **Q36-MTR ENGINEERING RECOVERY LIVE — 2026-08-14:** explicit user
+> authorization supersedes the prior no-successor rule for architecture
+> development. Execution `q36-mtr-d9ff7f7-r1` preserves the exact model,
+> source-disjoint data, arms, prompts, seeds, budgets, identity partitions,
+> and thresholds; commit `d9ff7f7d79b953179bf90510731c0bcd2f02e722`
+> adds only `evc50` to the scheduler exclusions. CPU live preflight job
+> `756996` passed in 177 seconds. Mechanics job `756997` is pending for H100
+> capacity and all 61 bound requests are dependency-prestaged through terminal
+> job `757028`. Supervise this graph to a scored recovery benchmark. Do not
+> modify or reinterpret the archived `03955353` evidence.
+
 > **Q36-MTR EXECUTION TERMINAL-NULL — 2026-08-14:** execution
 > `q36-mtr-03955353-r2` passed CPU live preflight, the full mechanics gate,
 > and the frozen 256-update source-owner fit. Draft shards 0–2 published

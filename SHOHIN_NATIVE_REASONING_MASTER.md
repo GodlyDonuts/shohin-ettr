@@ -1,5 +1,18 @@
 # Shohin Native Reasoning Master Ledger
 
+## Q36-MTR engineering recovery — 2026-08-14
+
+Execution `q36-mtr-d9ff7f7-r1` is live under explicit user authorization to
+continue architecture development beyond the archived one-shot boundary. It
+preserves the exact Qwen3.6-35B-A3B host, data, arms, prompts, seeds, budgets,
+identity partitions, and thresholds. Private commit
+`d9ff7f7d79b953179bf90510731c0bcd2f02e722` changes only the scheduler
+exclusion set by adding `evc50`. CPU live preflight job `756996` completed
+`0:0` in 177 seconds. Mechanics job `756997` is the active H100 critical path;
+the full 61-request graph is dependency-prestaged through final comparison
+job `757028`. Treat its eventual output as recovery benchmark evidence, not
+one-shot publication evidence.
+
 ## Q36-MTR terminal execution boundary — 2026-08-14
 
 Execution `q36-mtr-03955353-r2` passed live preflight, full mechanics, and the
@@ -12,8 +25,8 @@ report files do not exist. Ten in-flight draft tasks, two never-admitted
 tasks, the array root, and 29 dependency-dead descendants were cancelled.
 No calibration or development arm, assessor semantic read, score, or formal
 gate ran. The queue is empty and the formal result is `null`. Preserve
-`docs/research/Q36_MTR_DRAFT_CUDA_TERMINAL_20260814.json`; retry and successor
-authorization are false.
+`docs/research/Q36_MTR_DRAFT_CUDA_TERMINAL_20260814.json`; that archived run
+remains immutable.
 
 ## PCF17 current execution boundary — 2026-08-12
 

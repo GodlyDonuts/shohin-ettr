@@ -4,7 +4,17 @@
 
 ## Read this first
 
-**Q36-MTR is terminal-null after execution `q36-mtr-03955353-r2`.** CPU live
+**Q36-MTR engineering recovery is live.** Fresh execution
+`q36-mtr-d9ff7f7-r1` preserves the exact host, data, arms, prompts, seeds,
+budgets, identity partitions, and gate while excluding `evc50`, the node that
+reported the prior late CUDA failure. Private commit
+`d9ff7f7d79b953179bf90510731c0bcd2f02e722` is pushed. CPU live preflight job
+`756996` passed `0:0` in 177 seconds; mechanics job `756997` is waiting for an
+H100 and all 61 bound requests are dependency-prestaged through terminal job
+`757028`. This is an engineering recovery benchmark, not a one-shot
+publication confirmation.
+
+**The archived Q36-MTR execution `q36-mtr-03955353-r2` is terminal-null.** CPU live
 preflight, full H100 mechanics, and the frozen 256-update source-owner fit
 passed. Draft shards 0–2 published 1,333 unique model-owned trajectories with
 immutable hashes and zero protected access. Draft task 3, job `756445` on
@@ -13,7 +23,8 @@ fallback with `CUDA error: unknown error`; it published no candidate or
 report. All ten in-flight peers, the two never-admitted draft tasks, the array
 root, and 29 dependency-dead downstream roots were cancelled. Calibration,
 development controls, assessor access, scoring, and the formal gate never
-ran. Formal result is `null`; retry and successor authorization remain false.
+ran. Formal result for that execution is `null`; its evidence remains
+immutable.
 Preserve
 `docs/research/Q36_MTR_DRAFT_CUDA_TERMINAL_20260814.json`.
 
