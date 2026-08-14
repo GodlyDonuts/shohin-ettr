@@ -1,0 +1,73 @@
+{
+  "schema": "shohin-q36-mtr-trained-role-milestone-v1",
+  "status": "training_complete_evaluation_pending",
+  "recorded_utc": "2026-08-14T12:41:49Z",
+  "model": {
+    "name": "Qwen3.6-35B-A3B",
+    "revision": "995ad96eacd98c81ed38be0c5b274b04031597b0"
+  },
+  "warm_start_owner_checkpoint_sha256": "5da79d81b55cb8867e7645449c4af214fbf8f5e425613574197eed54ca6fd4ae",
+  "shared_training": {
+    "data_sha256": "ccf8b5c356570fe95e3fe792f7e077e50ec00ac54ba8484ecc7c3d3c04a70308",
+    "seed": 2026080815,
+    "updates": 256,
+    "gradient_accumulation": 8,
+    "consumed_presentations": 2048,
+    "unique_consumed_presentations": 2048,
+    "dataset_presentations": 9655,
+    "presentation_index_sha256": "3f79374c0bc8fc27e6ac6b2442a16b98c7def7ec5547f45e7130f2a64d1e4af5",
+    "consumed_token_geometry_sha256": "3081b010c09565eff57ecdad5354f2c7230aecc59727a6bba77ac62faff1b8b2",
+    "rank": 18,
+    "alpha": 18.0,
+    "learning_rate": 0.00002,
+    "controlled_layer_indices": [
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39
+    ],
+    "trainable_parameters": 1179648,
+    "initial_trainable_state_sha256": "4bbde0609b58d1449bd9cb33a90405521bd4cbf5b0163a87335bfcfaf7dd1ba0"
+  },
+  "roles": {
+    "aligned": {
+      "job_id": 758204,
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed_seconds": 4196,
+      "charged_tokens": 365022,
+      "checkpoint_sha256": "cdb5ae7ac37e632a5a5c8f11682efc5f03a3ff8288c6dc2d46e7859d2e827c4f",
+      "report_sha256": "37f55c396910e350a01247f385b93304a73eb5f5580a27e30525247cd28d9bb1",
+      "final_trainable_state_sha256": "befd14863161883fe63a808c27baabdf3aa505283b0e3a9359fa66f6c41dc5de",
+      "internal_draft_visible": true,
+      "draft_information_available": true,
+      "serialization_restore_exact": true
+    },
+    "draft_hidden": {
+      "job_id": 758205,
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed_seconds": 4159,
+      "charged_tokens": 365022,
+      "checkpoint_sha256": "480b2421a699de9b3eabb0c94a6c7217d94b9d7826f1342baf8d89d279e644c9",
+      "report_sha256": "41c40bcbb6798a5c66b2503c2699b8d187fe4203d2bf626cfc5018ebf9223fc2",
+      "final_trainable_state_sha256": "84f1d3049e2486e08bc31b2fc7e4db3cfbf608591843d2f8e279eeb894c88145",
+      "internal_draft_visible": false,
+      "draft_information_available": false,
+      "serialization_restore_exact": true
+    }
+  },
+  "interpretation": "The aligned and draft-hidden roles completed the same optimizer schedule from the same owner checkpoint, data, seed, presentation order, initial trainable state, and LoRA surface. They differ only in the intended internal-draft visibility intervention and reached distinct final trainable states. Capability claims remain pending matched development scoring."
+}
