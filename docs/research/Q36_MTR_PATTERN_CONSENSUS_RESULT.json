@@ -1,0 +1,79 @@
+{
+  "schema": "shohin-q36-mtr-pattern-consensus-result-v1",
+  "status": "complete_crossfit_engineering_result",
+  "date": "2026-08-14",
+  "host": {
+    "model": "Qwen3.6-35B-A3B",
+    "base_revision": "995ad96e",
+    "evaluation_split": "development",
+    "identities": 1289
+  },
+  "method": {
+    "arms": [
+      "hierarchical_synthesis",
+      "checkpoint_interpolation_w010",
+      "direct_synthesis",
+      "offset_one_synthesis",
+      "level_two_synthesis",
+      "incumbent_challenger"
+    ],
+    "model": "beta_smoothed_agreement_pattern_reliability",
+    "features": [
+      "task",
+      "exact_answer_arm_membership_mask",
+      "answer_cluster_vote_size",
+      "arm_reliability"
+    ],
+    "score": "geometric_mean_of_exact_pattern_vote_size_and_arm_reliability",
+    "folds": 16,
+    "training_folds_per_identity": 15,
+    "heldout_identity_labels_read": 0,
+    "development_labels_used_for_training": true,
+    "hyperparameters_selected_on_development": true,
+    "beta_prior_strength": 30.0
+  },
+  "selection_counts": {
+    "bbh_logic": {"hierarchy": 590, "interpolation": 39, "direct": 8},
+    "math500": {"hierarchy": 558, "interpolation": 58, "direct": 5, "offset_one": 2},
+    "mbpp": {"interpolation": 29}
+  },
+  "evaluation": {
+    "pattern_consensus_correct": 673,
+    "pattern_consensus_accuracy": 0.5221101629169899,
+    "unchanged_correct": 539,
+    "gain_over_unchanged_count": 134,
+    "gain_over_unchanged_points": 10.39565554693561,
+    "hierarchical_correct": 664,
+    "hierarchical_accuracy": 0.5151280062063616,
+    "paired_vs_hierarchy": {
+      "both_correct": 642,
+      "hierarchy_only_correct": 22,
+      "pattern_only_correct": 31,
+      "both_wrong": 594,
+      "mcnemar_exact_two_sided_p": 0.27167916606550335,
+      "oracle_correct": 695
+    },
+    "domains": {
+      "bbh_logic": {"rows": 637, "pattern_consensus": 355, "hierarchy": 348},
+      "math500": {"rows": 623, "pattern_consensus": 298, "hierarchy": 297},
+      "mbpp": {"rows": 29, "pattern_consensus": 20, "hierarchy": 19}
+    },
+    "explicit_final_answers": 1289,
+    "max_token_exhausted": 1
+  },
+  "artifacts": {
+    "selector_sha256": "57bb24b4d8eacdfa8a993c2d34e16115d8b4acee0a80839184058b3acdbf6558",
+    "candidates_sha256": "a06a261bfbb149483c0066d99559fdfc3e34708ac46e0e3f4981ef8c4f6fc2f4",
+    "report_sha256": "321807a263b57282bb876949e878c07355473f6720f2a1b9b65edeb75c75d2a5",
+    "development_score_sha256": "7d7dfdc101b57c5ef7b759e6d3a95336ace5b959e34d1f332ebb23f2c9f8f663",
+    "comparison_sha256": "48294ea44903609f114b8722a85a78937f9d98af40334fca3b5489070fdfeab3"
+  },
+  "durable_evidence": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/q36-engineering-pattern-consensus-1b6b75ad-r1",
+    "files": 6,
+    "bytes": 1760031,
+    "sha256sums_sha256": "07f91ff0c2db69a83de9a3b0c336bcaab1a9dc89adb60098eda700ecee104b43"
+  },
+  "jobs": {"score": 759599, "comparison": 759600},
+  "interpretation": "crossfit_engineering_gain_over_hierarchy; complementary_nonsignificant_delta; hyperparameter_selected_on_same_development_board; requires_source_disjoint_validation"
+}
