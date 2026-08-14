@@ -136,6 +136,42 @@ def _embedded_development_owners(
     return owners
 
 
+def _load_reused_development_decisions(
+    path: Path,
+) -> dict[str, dict[str, Any]]:
+    decisions: dict[str, dict[str, Any]] = {}
+    for row in sparse._jsonl(path):
+        identity = row.get("identity_sha256")
+        probabilities = row.get("probabilities")
+        if (
+            row.get("schema") != SELECTION_SCHEMA
+            or not isinstance(identity, str)
+            or len(identity) != 64
+            or identity in decisions
+            or row.get("task") not in sparse.TASKS
+            or row.get("head_lineage") not in sparse.LINEAGES
+            or row.get("production_commit_lineage") not in sparse.LINEAGES
+            or not isinstance(probabilities, list)
+            or len(probabilities) != len(sparse.LINEAGES)
+            or any(
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not math.isfinite(value)
+                or not 0.0 <= value <= 1.0
+                for value in probabilities
+            )
+        ):
+            raise Q36MTRCalibrationCorrectnessError(
+                "reused development decision differs"
+            )
+        decisions[identity] = row
+    if len(decisions) != sparse.DEVELOPMENT_ROWS:
+        raise Q36MTRCalibrationCorrectnessError(
+            "reused development decision coverage differs"
+        )
+    return decisions
+
+
 def _validation_correct(weights: list[array], rows: list[dict[str, Any]]) -> int:
     return sum(
         bool(
@@ -393,6 +429,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         ]
     if any(set(owner) != set(development_rows) for owner in owners):
         raise Q36MTRCalibrationCorrectnessError("correctness-head coverage differs")
+    reused_decisions = (
+        _load_reused_development_decisions(args.reuse_development_decisions)
+        if args.reuse_development_decisions
+        else None
+    )
+    if reused_decisions is not None and set(reused_decisions) != set(development_rows):
+        raise Q36MTRCalibrationCorrectnessError(
+            "reused development decision identities differ"
+        )
     selected_rows: list[dict[str, Any]] = []
     production_rows: list[dict[str, Any]] = []
     decisions: list[dict[str, Any]] = []
@@ -406,11 +451,24 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "candidates": candidates,
         }
         _attach_features([row])
-        probabilities = _probabilities(final_weights, row)
-        head_index = max(
-            range(len(probabilities)), key=lambda index: (probabilities[index], -index)
-        )
-        production_index = _production_index(row)
+        if reused_decisions is None:
+            probabilities = _probabilities(final_weights, row)
+            head_index = max(
+                range(len(probabilities)),
+                key=lambda index: (probabilities[index], -index),
+            )
+            production_index = _production_index(row)
+        else:
+            reused = reused_decisions[identity]
+            if reused["task"] != source["task"]:
+                raise Q36MTRCalibrationCorrectnessError(
+                    "reused development decision task differs"
+                )
+            probabilities = [float(value) for value in reused["probabilities"]]
+            head_index = sparse.LINEAGES.index(reused["head_lineage"])
+            production_index = sparse.LINEAGES.index(
+                reused["production_commit_lineage"]
+            )
         estimated_gain = probabilities[head_index] - probabilities[production_index]
         threshold_row = {
             "task": source["task"],
@@ -471,6 +529,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             if args.embedded_development_candidates
             else "original_candidate_artifacts"
         ),
+        "reused_development_decisions_sha256": (
+            sparse.sha256_file(args.reuse_development_decisions)
+            if args.reuse_development_decisions
+            else None
+        ),
     }
     sparse._atomic_json(args.report, report)
     return report
@@ -485,6 +548,7 @@ def parse_args() -> argparse.Namespace:
             f"--{owner}-candidates", type=Path, action="append", default=[]
         )
     parser.add_argument("--embedded-development-candidates", action="store_true")
+    parser.add_argument("--reuse-development-decisions", type=Path)
     parser.add_argument("--model-output", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--production-output", type=Path, required=True)

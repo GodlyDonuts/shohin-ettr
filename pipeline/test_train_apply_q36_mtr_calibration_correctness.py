@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import train_apply_q36_mtr_calibration_correctness as module
@@ -166,6 +167,26 @@ def test_embedded_development_projection_is_deterministic() -> None:
     assert all(
         owner[identity]["schema"] == module.sparse.CANDIDATE_SCHEMA for owner in owners
     )
+
+
+def test_reused_decisions_preserve_exact_probabilities(
+    tmp_path: Path, monkeypatch
+) -> None:
+    identity = "b" * 64
+    path = tmp_path / "decisions.jsonl"
+    row = {
+        "schema": module.SELECTION_SCHEMA,
+        "identity_sha256": identity,
+        "task": "math500",
+        "head_lineage": "owner_8",
+        "production_commit_lineage": "current",
+        "probabilities": [0.7, 0.2, 0.9],
+    }
+    path.write_text(json.dumps(row) + "\n", encoding="utf-8")
+    monkeypatch.setattr(module.sparse, "DEVELOPMENT_ROWS", 1)
+    loaded = module._load_reused_development_decisions(path)
+    assert loaded[identity]["probabilities"] == [0.7, 0.2, 0.9]
+    assert loaded[identity]["production_commit_lineage"] == "current"
 
 
 def test_job_emits_matched_production_baseline() -> None:
