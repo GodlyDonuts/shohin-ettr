@@ -1,0 +1,67 @@
+{
+  "schema": "shohin-q36-mtr-multi-trajectory-consensus-result-v1",
+  "status": "complete_exploratory_engineering_best",
+  "date": "2026-08-14",
+  "host": {
+    "model": "Qwen3.6-35B-A3B",
+    "base_revision": "995ad96e",
+    "evaluation_split": "development",
+    "identities": 1289
+  },
+  "consensus": {
+    "arms": [
+      "hierarchical_synthesis",
+      "checkpoint_interpolation_w010",
+      "direct_synthesis",
+      "offset_one_synthesis",
+      "level_two_synthesis",
+      "incumbent_challenger"
+    ],
+    "rule": "task_normalized_answer_plurality_with_frozen_tie_priority_hierarchy_interpolation_direct_offset_one_level_two_challenger; mbpp_uses_interpolation",
+    "development_labels_read_at_inference": 0,
+    "selection_counts": {
+      "bbh_logic": {"hierarchy": 594, "interpolation": 40, "direct": 3},
+      "math500": {"hierarchy": 567, "interpolation": 51, "direct": 3, "offset_one": 2},
+      "mbpp": {"interpolation": 29}
+    }
+  },
+  "evaluation": {
+    "consensus_correct": 670,
+    "consensus_accuracy": 0.5197827773467805,
+    "unchanged_correct": 539,
+    "unchanged_accuracy": 0.4181536074476338,
+    "gain_over_unchanged_count": 131,
+    "gain_over_unchanged_points": 10.162916989914663,
+    "hierarchical_correct": 664,
+    "hierarchical_accuracy": 0.5151280062063616,
+    "paired_vs_hierarchy": {
+      "both_correct": 643,
+      "hierarchy_only_correct": 21,
+      "consensus_only_correct": 27,
+      "both_wrong": 598,
+      "mcnemar_exact_two_sided_p": 0.4708790136217118,
+      "oracle_correct": 691
+    },
+    "domains": {
+      "bbh_logic": {"rows": 637, "consensus": 353, "hierarchy": 348},
+      "math500": {"rows": 623, "consensus": 297, "hierarchy": 297},
+      "mbpp": {"rows": 29, "consensus": 20, "hierarchy": 19}
+    },
+    "explicit_final_answers": 1289,
+    "max_token_exhausted": 1
+  },
+  "artifacts": {
+    "candidates_sha256": "6c7d7ceb5ec0457cc8e18b09cbcb2f7cdc083e5d21b208cf4c14c9d9acc9539f",
+    "report_sha256": "e7889ed43dc43d71db47e9c175d835db82e48a913847f4108ce3e5c5d12ebec3",
+    "development_score_sha256": "bf775e95ab4b3e652c0d76628177cdb24249407f095e195b4a7b4be1c8172112",
+    "comparison_sha256": "8a4ab636740cde1573461e5f690ed2b261aa4d29eb52b5ecb0c9d8b19e0e1a51"
+  },
+  "durable_evidence": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/q36-engineering-multi-trajectory-consensus-e5394558-r1",
+    "files": 8,
+    "bytes": 1642738,
+    "sha256sums_sha256": "f315e474aa25c60322b8ba3c75795ee348b30bf08b5dc489a43e9ce059e5eceb"
+  },
+  "jobs": {"score": 759586, "comparison": 759587},
+  "interpretation": "exploratory_label_free_consensus_engineering_best; arm_subset_selected_on_this_development_board; requires source_disjoint_confirmation before publication"
+}
