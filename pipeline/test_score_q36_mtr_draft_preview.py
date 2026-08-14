@@ -104,3 +104,13 @@ def test_preview_wrapper_is_cpu_only_and_nonrequeue() -> None:
     assert "#SBATCH --no-requeue" in source
     assert "PREVIEW_SCRIPT_SHA256" in source
     assert "--split development" in source
+
+
+def test_split_wrapper_supports_training_without_gpu() -> None:
+    source = Path("pipeline/jobs/q36_mtr_score_draft_split.sbatch").read_text(
+        encoding="utf-8"
+    )
+    assert "#SBATCH --gres" not in source
+    assert "#SBATCH --no-requeue" in source
+    assert 'case "$SPLIT" in train|development)' in source
+    assert '--split "$SPLIT"' in source
