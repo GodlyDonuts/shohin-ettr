@@ -35,6 +35,7 @@ EXCLUDED_NODES = (
     "evc38",
     "evc43",
     "evc46",
+    "evc50",
 )
 SOURCE_SHA256 = {
     "pairs": "45f1d66ce5e87dc2a1f4c3594bdde2bae26e9417e879d16eb4eddb228b696afe",
