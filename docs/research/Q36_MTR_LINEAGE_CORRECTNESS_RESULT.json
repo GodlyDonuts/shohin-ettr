@@ -5,7 +5,7 @@
   "model": "Qwen3.6-35B-A3B",
   "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
   "source_commit": "468b30c13edb80f6a5a4f31649581b5b3fa03293",
-  "conclusion": "Hierarchical model-owned synthesis is the strongest demonstrated Qwen3.6-35B-A3B result: 664/1289 (51.51%). It verifies the 656/1289 three-trajectory synthesis champion against independently derived stacked and self-refinement alternatives, repairs 50 synthesis errors while losing 42 correct cases, and adds a net 8 answers. The incremental paired edge over direct synthesis is not individually significant (p=0.466), but the hierarchy remains decisively above stacked correctness at 563/1289 (144 hierarchy-only wins versus 43 losses, p=6.17e-14) and the production commit at 539/1289 (178 versus 53, p=5.51e-17). It improves BBH from 345 to 348 and math from 292 to 297 while retaining MBPP at 19/29. Cyclic-order synthesis variants reached 651 and 645, while recursively synthesizing those variants degraded to 614; none replaces the 664 champion. Their diversity remains mechanistically useful: the incumbent plus direct, both cyclic variants, and level-2 synthesis has a 750/1289 oracle. Every generation stage read zero development labels; independent scoring occurred only after each output shard was complete.",
+  "conclusion": "Hierarchical model-owned synthesis is the strongest demonstrated Qwen3.6-35B-A3B result: 664/1289 (51.51%). It verifies the 656/1289 three-trajectory synthesis champion against independently derived stacked and self-refinement alternatives, repairs 50 synthesis errors while losing 42 correct cases, and adds a net 8 answers. The incremental paired edge over direct synthesis is not individually significant (p=0.466), but the hierarchy remains decisively above stacked correctness at 563/1289 (144 hierarchy-only wins versus 43 losses, p=6.17e-14) and the production commit at 539/1289 (178 versus 53, p=5.51e-17). It improves BBH from 345 to 348 and math from 292 to 297 while retaining MBPP at 19/29. Cyclic-order synthesis variants reached 651 and 645, recursively synthesizing those variants degraded to 614, and a direct incumbent-versus-cyclic verifier reached 650; none replaces the 664 champion. The verifier repaired 18 incumbent errors but regressed 32 incumbent-correct cases, showing that prompt-only retention is insufficient. Their diversity remains mechanistically useful: the incumbent plus direct, both cyclic variants, and level-2 synthesis has a 750/1289 oracle. Every generation stage read zero development labels; independent scoring occurred only after each output shard was complete.",
   "matched_reproduction_commit": "a217f29ee4026c07212aba39fa03a1ba8190afc8",
   "architecture": {
     "owner_trajectories": ["current", "owner_71", "owner_8"],
@@ -219,6 +219,71 @@
     }
   },
   "engineering_ablations": {
+    "incumbent_cyclic_verification": {
+      "status": "complete_rejected_below_hierarchical_champion",
+      "source_commit": "1b4ad1d5",
+      "architecture": "aligned_model_owned_conservative_verification_of_hierarchical_incumbent_against_two_cyclic_order_syntheses",
+      "rows": 1289,
+      "shards": 16,
+      "seed": 2026081425,
+      "development_labels_read_during_generation": 0,
+      "result": {
+        "correct": 650,
+        "accuracy": 0.504266873545384,
+        "domains": {
+          "bbh_logic": {
+            "correct": 343,
+            "rows": 637
+          },
+          "math500": {
+            "correct": 289,
+            "rows": 623
+          },
+          "mbpp": {
+            "correct": 18,
+            "rows": 29
+          }
+        }
+      },
+      "paired_vs_hierarchical_champion": {
+        "both_correct": 632,
+        "challenger_only_correct": 18,
+        "hierarchical_only_correct": 32,
+        "both_wrong": 607,
+        "gain_count": -14,
+        "mcnemar_exact_two_sided_p": 0.06490864707227217,
+        "oracle_correct": 682
+      },
+      "interpretation": "The cyclic alternatives expose real repairs, but a prompt-only verifier does not retain the incumbent conservatively enough. Learned trajectory-level retention is the remaining high-value mechanism.",
+      "artifacts": {
+        "remote_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/incumbent_cyclic_1b4ad1d5_r1",
+        "comparison_sha256": "20dc650a35cccbf068ac11076ed5763621c1898abdd8916fbb1a899d7b3e4537",
+        "durable_evidence_mirror": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/q36-engineering-incumbent-cyclic-1b4ad1d5-r1",
+        "durable_evidence_manifest_sha256": "970915eb0ae0e96401c6eab9d18846f814094f2023fbb04b54427c7b96b25d66"
+      },
+      "jobs": {
+        "generation_array": 759341,
+        "independent_scores": [
+          759344,
+          759345,
+          759346,
+          759347,
+          759348,
+          759349,
+          759350,
+          759351,
+          759352,
+          759353,
+          759354,
+          759355,
+          759356,
+          759357,
+          759358,
+          759359
+        ],
+        "paired_comparison": 759361
+      }
+    },
     "cyclic_trajectory_synthesis_scaling": {
       "status": "complete_no_standalone_gain_over_direct_or_hierarchical_champion",
       "source_commit": "5d6a47d1",
