@@ -18,6 +18,7 @@ from pcf1_code_sandbox import (
 )
 
 TASKS = ("math500", "bbh_logic", "mbpp")
+EVALUATION_ARMS = ("unchanged", "self_refinement", "draft_hidden", "revision")
 
 
 class Q36MTRDraftPreviewError(RuntimeError):
@@ -62,10 +63,17 @@ def score_preview(
     assessor_board_path: Path,
     *,
     split: str = "development",
+    evaluation_arm: str | None = None,
 ) -> dict[str, Any]:
-    candidates = [
-        row for row in load_jsonl(candidates_path) if row.get("split") == split
-    ]
+    input_rows = load_jsonl(candidates_path)
+    if evaluation_arm is None:
+        candidates = [row for row in input_rows if row.get("split") == split]
+        expected_schema = "shohin-q36-mtr-model-draft-v1"
+    else:
+        if evaluation_arm not in EVALUATION_ARMS or split != "development":
+            raise Q36MTRDraftPreviewError("preview evaluation arm differs")
+        candidates = [row for row in input_rows if row.get("arm") == evaluation_arm]
+        expected_schema = "shohin-q36-mtr-candidate-v1"
     if not candidates:
         raise Q36MTRDraftPreviewError("preview candidate split is empty")
     candidate_ids = [str(row.get("identity_sha256", "")) for row in candidates]
@@ -73,7 +81,7 @@ def score_preview(
         len(candidate_ids) != len(set(candidate_ids))
         or any(len(identity) != 64 for identity in candidate_ids)
         or any(
-            row.get("schema") != "shohin-q36-mtr-model-draft-v1"
+            row.get("schema") != expected_schema
             or row.get("task") not in TASKS
             or not isinstance(row.get("completion"), str)
             or not row["completion"].strip()
@@ -139,7 +147,12 @@ def score_preview(
     return {
         "schema": "shohin-q36-mtr-draft-preview-v1",
         "status": "complete",
-        "interpretation": "exploratory_model_owned_draft_only_not_matched_gate",
+        "interpretation": (
+            "exploratory_model_owned_draft_only_not_matched_gate"
+            if evaluation_arm is None
+            else "engineering_label_free_evaluation_arm"
+        ),
+        "evaluation_arm": evaluation_arm,
         "split": split,
         "rows": len(outcomes),
         "correct": correct,
@@ -164,12 +177,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--assessor-board", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--split", default="development")
+    parser.add_argument("--evaluation-arm", choices=EVALUATION_ARMS)
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    payload = score_preview(args.candidates, args.assessor_board, split=args.split)
+    payload = score_preview(
+        args.candidates,
+        args.assessor_board,
+        split=args.split,
+        evaluation_arm=args.evaluation_arm,
+    )
     _atomic_json(args.output, payload)
     print(json.dumps(payload, sort_keys=True))
     return 0

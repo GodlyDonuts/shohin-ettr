@@ -29,10 +29,15 @@ trap cleanup EXIT
 export SLURM_TMPDIR=$tmp TMPDIR=$tmp
 export PATH=/usr/bin:/bin LANG=C.UTF-8 PYTHONDONTWRITEBYTECODE=1 PYTHONHASHSEED=0
 export PYTHONPATH=$RUNTIME/train:$RUNTIME/pipeline
-"$PYTHON" "$PREVIEW_SCRIPT" \
-  --candidates "$CANDIDATES" \
-  --assessor-board "$ASSESSOR_BOARD" \
-  --output "$OUTPUT" \
+args=(
+  --candidates "$CANDIDATES"
+  --assessor-board "$ASSESSOR_BOARD"
+  --output "$OUTPUT"
   --split development
+)
+if [[ -n "${EVALUATION_ARM:-}" ]]; then
+  args+=(--evaluation-arm "$EVALUATION_ARM")
+fi
+"$PYTHON" "$PREVIEW_SCRIPT" "${args[@]}"
 test -f "$OUTPUT"
 chmod a-w "$OUTPUT"
