@@ -1,5 +1,20 @@
 # Shohin Native Reasoning Master Ledger
 
+## Q36-MTR terminal execution boundary — 2026-08-14
+
+Execution `q36-mtr-03955353-r2` passed live preflight, full mechanics, and the
+frozen 256-update Qwen3.6-35B-A3B source-owner fit. Draft shards 0–2 completed
+1,333 unique nonsealed identities with immutable candidates/reports and zero
+protected access. Draft task 3, job `756445` on `evc50`, then failed after
+5,600 seconds in Transformers' MoE grouped-matrix fallback with an
+asynchronously reported `CUDA error: unknown error`; its atomic candidate and
+report files do not exist. Ten in-flight draft tasks, two never-admitted
+tasks, the array root, and 29 dependency-dead descendants were cancelled.
+No calibration or development arm, assessor semantic read, score, or formal
+gate ran. The queue is empty and the formal result is `null`. Preserve
+`docs/research/Q36_MTR_DRAFT_CUDA_TERMINAL_20260814.json`; retry and successor
+authorization are false.
+
 ## PCF17 current execution boundary — 2026-08-12
 
 PCF17 infrastructure admission is PASS. Fresh CPU job `752846` completed on

@@ -1,21 +1,18 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **Q36-MTR CORRECTED EXECUTION TERMINAL-NULL — 2026-08-13:** the sole
-> corrected graph passed CPU live preflight and H100 mechanics job `754563`
-> loaded the exact 35B-A3B causal host plus shared post-MLP adapter. The
-> no-score one-token probe then failed before generation because mechanics had
-> not invoked `prepare_generation_draft_attention` before its low-level
-> adapter-generation helper. No optimizer update, draft, capability score, or
-> assessor open occurred. All 31 descendants were cancelled at zero elapsed;
-> `/tmp/q36-mtr-754563` was already absent after the EXIT trap. Formal result
-> remains `null`, retry/successor authorization remains false, and the queue is
-> empty. Preserve
-> `docs/research/Q36_MTR_CORRECTED_EXECUTION_TERMINAL_20260813.json` and
-> `docs/research/Q36_MTR_CORRECTED_TERMINAL_EVIDENCE_MANIFEST_20260813.json`.
-> The exact call-order repair is prospective only. Before any future full
-> graph, require the separate one-H100, no-score, no-dispatch boundary in
-> `docs/research/SHOHIN_Q36_MECHANICS_QUALIFICATION.md`; its PASS or failure
-> still authorizes no scientific graph or successor.
+> **Q36-MTR EXECUTION TERMINAL-NULL — 2026-08-14:** execution
+> `q36-mtr-03955353-r2` passed CPU live preflight, the full mechanics gate,
+> and the frozen 256-update source-owner fit. Draft shards 0–2 published
+> 1,333 unique trajectories with immutable reports. Draft task 3, job
+> `756445` on `evc50`, then failed after 5,600 seconds inside the Qwen MoE
+> grouped-matrix fallback with `CUDA error: unknown error`; no task-3 output
+> or report exists. Ten in-flight draft tasks, two never-admitted tasks, the
+> array root, and all 29 dependency-dead roots were cancelled. The queue is
+> empty, all allocation-local staging roots were cleaned, protected access is
+> zero, and no benchmark, assessor, score, or formal gate ran. Preserve
+> `docs/research/Q36_MTR_DRAFT_CUDA_TERMINAL_20260814.json`. Formal result is
+> `null`; do not resume, score, repair, retry, or submit a successor from this
+> execution.
 
 > **PCF17 TERMINAL-NULL — 2026-08-12:** the sole frozen graph completed 41
 > H100 allocations and produced all confirmation candidates plus learned-commit

@@ -1,10 +1,23 @@
 # Q36-MTR: MoE Temporal-Revision Handoff
 
-Status: fourth execution terminal-infrastructure failure, 2026-08-13. No
-scientific PASS/FAIL exists. The pinned Q36-MTR host, source-disjoint data
-view, 61 single-H100 requests, 58.90 expected H100-hours, arms, prompts,
-seeds, thresholds, and terminal stop remain immutable. No retry,
-confirmation, or successor is authorized. PCF17 remains closed and unscored.
+Status: execution `q36-mtr-03955353-r2` is terminal-infrastructure, 2026-08-14.
+It passed CPU live preflight, the complete mechanics gate, and the frozen
+256-update source-owner fit. Three of 16 owner-draft shards then completed
+1,333 unique rows with immutable reports and zero protected access. Draft
+task 3, job `756445` on `evc50`, stopped after 5,600 seconds inside the
+Transformers MoE grouped-matrix fallback with `CUDA error: unknown error`; no
+task-3 candidate or report was published. Ten in-flight draft tasks, two
+never-admitted draft tasks, the array root, and all 29 dependency-dead
+downstream roots were cancelled. No calibration, development arm, assessor,
+score, or formal scientific gate ran. Preserve
+`Q36_MTR_DRAFT_CUDA_TERMINAL_20260814.json`. The formal result remains null;
+no retry, confirmation, or successor is authorized.
+
+The earlier four terminal-infrastructure executions remain historical
+evidence. The pinned Q36-MTR host, source-disjoint data view, 61 single-H100
+requests, 58.90 expected H100-hours, arms, prompts, seeds, thresholds, and
+terminal stop were unchanged in the closed `03955353` execution. PCF17 also
+remains closed and unscored.
 
 Execution `q36-mtr-f4afbb9-r1` passed CPU live preflight and the complete
 one-H100 mechanics gate. Mechanics job `754604` loaded the exact host, proved

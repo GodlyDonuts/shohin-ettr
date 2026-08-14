@@ -4,17 +4,18 @@
 
 ## Read this first
 
-**Q36-MTR is terminal-null after its corrected execution.** CPU live preflight
-passed and H100 mechanics `754563` loaded the exact 35B-A3B causal host and
-attached the shared post-MLP adapter. The no-score one-token generation probe
-then failed before generation or optimizer update because mechanics omitted
-the wrapper's required `prepare_generation_draft_attention` call. No draft,
-capability row, or assessor was opened; all 31 descendants were cancelled at
-zero elapsed and the job-local model tree was already cleaned. Formal result
-is `null`; no retry or successor is authorized. Preserve
-`docs/research/Q36_MTR_CORRECTED_EXECUTION_TERMINAL_20260813.json` and
-`docs/research/Q36_MTR_CORRECTED_TERMINAL_EVIDENCE_MANIFEST_20260813.json`.
-The exact call-order correction is prospective only.
+**Q36-MTR is terminal-null after execution `q36-mtr-03955353-r2`.** CPU live
+preflight, full H100 mechanics, and the frozen 256-update source-owner fit
+passed. Draft shards 0–2 published 1,333 unique model-owned trajectories with
+immutable hashes and zero protected access. Draft task 3, job `756445` on
+`evc50`, then stopped after 5,600 seconds inside the MoE grouped-matrix
+fallback with `CUDA error: unknown error`; it published no candidate or
+report. All ten in-flight peers, the two never-admitted draft tasks, the array
+root, and 29 dependency-dead downstream roots were cancelled. Calibration,
+development controls, assessor access, scoring, and the formal gate never
+ran. Formal result is `null`; retry and successor authorization remain false.
+Preserve
+`docs/research/Q36_MTR_DRAFT_CUDA_TERMINAL_20260814.json`.
 
 **PCF17 is terminal-null.** Its one frozen graph completed 41 H100
 allocations, including source-owned drafts, revision/commit training, all
