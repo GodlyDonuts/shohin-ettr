@@ -1,5 +1,6 @@
 # Deterministic Q36-MTR preparation/runtime closure. Sorted, one path per line.
 pipeline/apply_q36_mtr_owner_commit.py
+pipeline/apply_q36_mtr_synthesis_consensus.py
 pipeline/authorize_q36_mtr_mechanics_qualification.py
 pipeline/authorize_q36_mtr_phase.py
 pipeline/build_pcf1_data.py
@@ -46,6 +47,7 @@ pipeline/jobs/q36_mtr_select_owner_trajectories.sbatch
 pipeline/jobs/q36_mtr_sparse_router.sbatch
 pipeline/jobs/q36_mtr_sparse_router_cv.sbatch
 pipeline/jobs/q36_mtr_stack_sparse_commit.sbatch
+pipeline/jobs/q36_mtr_synthesis_consensus.sbatch
 pipeline/jobs/q36_mtr_validate_commit_application.sbatch
 pipeline/merge_q36_mtr_drafts.py
 pipeline/merge_q36_mtr_evaluations.py
