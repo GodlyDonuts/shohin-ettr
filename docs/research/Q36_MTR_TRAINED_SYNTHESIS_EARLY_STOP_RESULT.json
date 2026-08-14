@@ -1,0 +1,47 @@
+{
+  "schema": "shohin-q36-mtr-trained-synthesis-early-stop-result-v1",
+  "status": "complete_rejected_engineering_ablation",
+  "date": "2026-08-14",
+  "host": "Qwen/Qwen3.6-35B-A3B@995ad96eacd98c81ed38be0c5b274b04031597b0",
+  "checkpoint": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/trained_trajectory_synthesis_9496e6b_r6/model/checkpoint_0000256.pt",
+    "sha256": "bc4db4c53d84f3b15ef4ba35797811eb7ffbe6934cefe3bf33bf8e328d2ba72b",
+    "updates": 256,
+    "trainable_parameters": 1179648,
+    "final_trainable_state_sha256": "3bf4ac4a31a47b20c0e20a09b318cb2e394180cc68f44ad252c29a41e9a40c05"
+  },
+  "evaluation": {
+    "identities": 322,
+    "shards": [0, 1, 2, 3],
+    "hierarchical_synthesis_correct": 167,
+    "trained_synthesis_correct": 135,
+    "net_correct_delta": -32,
+    "hierarchical_only_correct": 46,
+    "trained_only_correct": 14,
+    "both_correct": 121,
+    "both_wrong": 141,
+    "mcnemar_exact_two_sided_p": 0.00004223704562267977,
+    "oracle_correct": 181,
+    "domains": {
+      "bbh_logic": {"rows": 167, "hierarchical": 89, "trained": 76},
+      "math500": {"rows": 143, "hierarchical": 69, "trained": 51},
+      "mbpp": {"rows": 12, "hierarchical": 9, "trained": 8}
+    }
+  },
+  "decision": {
+    "standalone_trained_checkpoint": "reject",
+    "remaining_generation_shards": "cancelled_after_statistically_clear_loss",
+    "next_test": "bounded_checkpoint_interpolation_with_the_proven_aligned_reviser"
+  },
+  "remote_comparison": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/trained_trajectory_synthesis_9496e6b_r6/early_stop_comparison.json",
+    "sha256": "ef51d21b42e83f6331ab039087ecace69fe5e54546d223cbf993661398b7b810"
+  },
+  "jobs": {
+    "training": 759189,
+    "generation_array": 759190,
+    "completed_generation_tasks": [0, 1, 2, 3],
+    "cancelled_generation_tasks": [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+    "completed_score_jobs": [759191, 759192, 759193, 759194]
+  }
+}

@@ -4,6 +4,17 @@
 
 ## Read this first
 
+**Q36-MTR has demonstrated a material MoE improvement and is actively scaling
+it.** Hierarchical synthesis scores `664/1289` (`51.5128%`) versus the matched
+production baseline's `539/1289` (`41.8154%`), a gain of `125` answers /
+`9.697` points. A newly trained aligned reviser was a clear standalone loss on
+the first four fixed shards (`135/322` versus `167/322`, paired exact
+`p=4.2237e-5`) and was stopped, but it contributed 14 unique repairs. Three
+checkpoint interpolations now test trained-delta weights `0.10`, `0.25`, and
+`0.50` on the same four shards; their 12 single-H100 generation jobs and 12
+dependency-bound CPU scores are live/pending under jobs `759508--759523`.
+See `docs/research/Q36_MTR_TRAINED_SYNTHESIS_EARLY_STOP_RESULT.json`.
+
 **Q36-MTR engineering recovery is live.** Fresh execution
 `q36-mtr-d9ff7f7-r1` preserves the exact host, data, arms, prompts, seeds,
 budgets, identity partitions, and gate while excluding `evc50`, the node that

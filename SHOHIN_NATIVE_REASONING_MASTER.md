@@ -1,5 +1,24 @@
 # Shohin Native Reasoning Master Ledger
 
+## Q36-MTR trained synthesis and interpolation — 2026-08-14
+
+The strongest demonstrated MoE result remains hierarchical synthesis at
+`664/1289` (`51.5128%`) versus the matched production baseline's `539/1289`
+(`41.8154%`), a gain of `125` answers / `9.697` points. A new 256-update
+aligned-reviser checkpoint completed successfully, but direct use was rejected
+after four fixed shards: `135/322` versus hierarchical synthesis `167/322`,
+net `-32`, paired exact `p=4.2237e-5`. It nevertheless repaired 14 cases that
+the incumbent missed. Jobs for the redundant remaining shards were cancelled.
+
+The active bounded successor tests whether that useful learned delta can be
+retained without replacing the strong reviser. Exact aligned-checkpoint blends
+at trained weights `0.10`, `0.25`, and `0.50` have been materialized and four
+fixed development shards per scale are dependency-prestaged as independent
+single-H100 jobs (`759508`, `759514`, `759519`) with CPU scores
+`759509--759512`, `759515--759518`, and `759520--759523`. Expand only a scale
+that improves the fixed slice with conservative repair/regression geometry.
+Preserve `docs/research/Q36_MTR_TRAINED_SYNTHESIS_EARLY_STOP_RESULT.json`.
+
 ## Q36-MTR engineering recovery — 2026-08-14
 
 Execution `q36-mtr-d9ff7f7-r1` is live under explicit user authorization to
