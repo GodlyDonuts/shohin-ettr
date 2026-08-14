@@ -5,7 +5,8 @@
   "model": "Qwen3.6-35B-A3B",
   "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
   "source_commit": "be30ae03548f33eb222b0f71297e02d62ce24ebd",
-  "conclusion": "Calibration-only lineage-conditioned correctness thresholds improve the strongest demonstrated Qwen3.6 MoE trajectory system from 555/1289 to 561/1289. The learned system is 22 correct above the production commit and 67 above the strongest individual owner. Development labels were not read during model selection or application.",
+  "conclusion": "Calibration-only lineage-conditioned correctness thresholds improve the strongest demonstrated Qwen3.6 MoE trajectory system from 555/1289 to 561/1289. Against the exact tournament production baseline built from the same three candidate trajectories, the architecture improves 547/1289 to 561/1289, with 27 architecture-only wins versus 13 regressions and exact paired p=0.03848. Development labels were not read during model selection or application.",
+  "matched_reproduction_commit": "a217f29ee4026c07212aba39fa03a1ba8190afc8",
   "architecture": {
     "owner_trajectories": ["current", "owner_71", "owner_8"],
     "head": "independent_sparse_binary_correctness_probability_per_owner",
@@ -37,9 +38,22 @@
       }
     },
     "correctness_v1": {"correct": 555},
+    "matched_same_candidate_production": {"correct": 547},
     "exploratory_nested_oof_logistic": {"correct": 554},
     "production_commit": {"correct": 539},
     "best_individual_owner": {"label": "owner_8", "correct": 494}
+  },
+  "matched_same_candidate_proof": {
+    "lineage_correct": 561,
+    "matched_production_correct": 547,
+    "both_correct": 534,
+    "lineage_only_correct": 27,
+    "production_only_correct": 13,
+    "both_wrong": 715,
+    "gain_count": 14,
+    "gain_points": 1.0861132660977502,
+    "mcnemar_exact_two_sided_p": 0.03847730828420026,
+    "oracle_correct": 574
   },
   "paired_vs_correctness_v1": {
     "both_correct": 550,
@@ -84,17 +98,30 @@
     "decisions_sha256": "a69e240b4980baf61b3ef34ba96a1ec4f7d6ea4b67da4f9e75da6e7845d22335",
     "report_sha256": "66a4cf75cadf782e92fedab35afe67691ae0528e1bddaa5433ab3a8ff662dc35",
     "development_score_sha256": "1ad91f470eaafef6f33398170942b4de31d342a6b977a392c8688fd97bf74bb4",
-    "comparison_sha256": "f3618f8cffa499863990d26e169c524bd9c75409b11a7ad14170c653cfb5d4a3"
+    "comparison_sha256": "f3618f8cffa499863990d26e169c524bd9c75409b11a7ad14170c653cfb5d4a3",
+    "matched_remote_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/calibration_correctness_matched_a217f29",
+    "matched_runtime": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_a217f29_r1",
+    "matched_runtime_manifest_sha256": "9b49ed1e9919bf8aa215bfbb4a8919e991912ec6a7954eee262c4f84fa6d34cf",
+    "matched_production_candidates_sha256": "e4e99cc5739246f1829b2d887f01a6db2a672f4a9cdd6fd193968ab491be797a",
+    "matched_production_score_sha256": "62c48f4742a33a060bd75b6102467bf522ee76343d3fa85e65f577f718c56ccb",
+    "matched_comparison_sha256": "97f91220db2190e3b3f1ac7d120f7ba8ffe4c7eed6a8356c0144f1479e665d2a",
+    "matched_evidence_mirror": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/q36-engineering-lineage-matched-a217f29-r1",
+    "matched_evidence_manifest_sha256": "dc51adca3f4af22a318a8655103df98b1e0cd8e15eaf0212dd3aea74c397415f"
   },
   "jobs": {
     "train_and_apply": 758727,
     "independent_score": 758728,
-    "semantic_comparison": 758729
+    "semantic_comparison": 758729,
+    "matched_train_and_apply": 758735,
+    "matched_lineage_score": 758736,
+    "matched_production_score": 758737,
+    "matched_paired_comparison": 758738
   },
   "limitations": {
     "engineering_board_reused_for_architecture_iteration": true,
     "fresh_external_board_required_for_unbiased_generalization_claim": true,
     "paired_gain_over_correctness_v1_not_individually_significant": true,
-    "paired_gain_over_production_commit_significant_at_0_05": true
+    "paired_gain_over_production_commit_significant_at_0_05": true,
+    "matched_same_candidate_gain_significant_at_0_05": true
   }
 }
