@@ -1,10 +1,7 @@
 #!/bin/bash
-""":"
-Submit the contextual three-owner Q36 selector behind existing exact score jobs.
-
-This is an engineering benchmark fan-out. It does not modify or duplicate any
-running trajectory generation or matched-control evaluation.
-":"""
+# Submit the contextual three-owner Q36 selector behind existing exact score jobs.
+# This engineering fan-out does not modify or duplicate any running trajectory
+# generation or matched-control evaluation.
 
 set -euo pipefail
 
