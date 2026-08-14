@@ -47,3 +47,10 @@ def test_calibration_wrappers_expose_complete_runtime_import_closure() -> None:
         wrapper = (root / "pipeline" / "jobs" / name).read_text(encoding="utf-8")
         assert "PYTHON RUNTIME" in wrapper
         assert 'PYTHONPATH="$RUNTIME/pipeline:$RUNTIME/train"' in wrapper
+
+
+def test_preview_scorer_is_packaged_with_preview_job() -> None:
+    root = Path(__file__).resolve().parents[1]
+    entries = load_allowlist(root / "pipeline/q36_mtr_runtime_allowlist.txt")
+    assert "pipeline/jobs/q36_mtr_score_draft_preview.sbatch" in entries
+    assert "pipeline/score_q36_mtr_draft_preview.py" in entries

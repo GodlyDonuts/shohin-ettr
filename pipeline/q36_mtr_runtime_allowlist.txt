@@ -60,6 +60,7 @@ pipeline/q36_mtr_evidence.py
 pipeline/q36_mtr_runtime_allowlist.txt
 pipeline/render_q36_mtr_publication_figure.py
 pipeline/score_q36_mtr.py
+pipeline/score_q36_mtr_draft_preview.py
 pipeline/seal_q36_mtr_terminal_evidence.py
 pipeline/select_q36_mtr_candidate_groups.py
 pipeline/select_q36_mtr_owner_trajectories.py
