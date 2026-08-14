@@ -35,3 +35,14 @@ def test_q36_allowlist_rejects_escape_retry_and_dispatch(
     path.write_text(entry + "\n", encoding="utf-8")
     with pytest.raises(Q36MTRRuntimeError):
         load_allowlist(path)
+
+
+def test_calibration_wrappers_expose_complete_runtime_import_closure() -> None:
+    root = Path(__file__).resolve().parents[1]
+    for name in (
+        "q36_mtr_calibration_stack.sbatch",
+        "q36_mtr_calibration_direct_commit.sbatch",
+    ):
+        wrapper = (root / "pipeline" / "jobs" / name).read_text(encoding="utf-8")
+        assert "PYTHON RUNTIME" in wrapper
+        assert 'PYTHONPATH="$RUNTIME/pipeline:$RUNTIME/train"' in wrapper
