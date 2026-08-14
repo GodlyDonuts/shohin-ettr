@@ -59,6 +59,33 @@ def test_vote_uses_only_matching_discordant_rows() -> None:
     assert module._vote(training, lambda item: (item["task"],), row, 1) is True
 
 
+def test_logistic_stacker_excludes_each_selected_fold(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(module, "FOLDS", 2)
+    monkeypatch.setattr(module, "LOGISTIC_STEPS", 5)
+    rows = []
+    for index in range(8):
+        rows.append(
+            {
+                "identity_sha256": _identity(f"logistic-{index}"),
+                "fold": index % 2,
+                "task": "mbpp" if index == 0 else "math500",
+                "selected_lineage": module.router.LINEAGES[index % 3],
+                "production_commit_lineage": module.router.LINEAGES[(index + 1) % 3],
+                "margin_bin": index % 4,
+                "scores": [0.1 * index, 0.2, -0.1],
+                "correct": index % 3 == 0,
+                "production_commit_correct": index % 3 == 1,
+            }
+        )
+    decisions, receipt = module.logistic_decisions(rows)
+    assert len(decisions) == len(rows)
+    assert decisions[rows[0]["identity_sha256"]] is False
+    assert len(receipt["folds"]) == 2
+    assert all(item["training_discordant_rows"] > 0 for item in receipt["folds"])
+
+
 def test_stack_emits_complete_selected_candidates(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

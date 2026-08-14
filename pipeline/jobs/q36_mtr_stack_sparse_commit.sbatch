@@ -20,7 +20,7 @@ for path in "$OUTPUT" "$DECISIONS" "$REPORT"; do
   [[ ! -e "$path" && ! -L "$path" ]] || { printf 'q36 sparse stack output exists: %s\n' "$path" >&2; exit 2; }
 done
 
-args=(--cross-validation-report "$CROSS_VALIDATION_REPORT" --output "$OUTPUT" --decisions "$DECISIONS" --report "$REPORT")
+args=(--cross-validation-report "$CROSS_VALIDATION_REPORT" --stacker "${STACKER:-hierarchical}" --output "$OUTPUT" --decisions "$DECISIONS" --report "$REPORT")
 for specification in production:PRODUCTION current:CURRENT owner71:OWNER71 owner8:OWNER8; do
   owner=${specification%%:*}; prefix=${specification##*:}; candidates_name="${prefix}_CANDIDATES"
   IFS=: read -r -a candidates <<< "${!candidates_name}"
@@ -32,5 +32,6 @@ IFS=: read -r -a scores <<< "$PRODUCTION_SCORES"
 for path in "${scores[@]}"; do args+=(--production-scores "$path"); done
 
 export PYTHONPATH="$(dirname "$STACK_SCRIPT")"
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
 "$PYTHON" -P -s -B "$STACK_SCRIPT" "${args[@]}"
 chmod a-w "$OUTPUT" "$DECISIONS" "$REPORT"

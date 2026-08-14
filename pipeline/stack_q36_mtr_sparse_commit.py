@@ -11,6 +11,8 @@ import os
 from pathlib import Path
 from typing import Any, Callable
 
+import numpy as np
+
 import cross_validate_q36_mtr_sparse_router as cross_validation
 import train_apply_q36_mtr_sparse_router as router
 
@@ -18,6 +20,9 @@ REPORT_SCHEMA = "shohin-q36-mtr-stacked-router-report-v1"
 SELECTION_SCHEMA = "shohin-q36-mtr-stacked-router-selection-v1"
 CV_SCHEMA = "shohin-q36-mtr-sparse-router-cross-validation-v1"
 FOLDS = 16
+LOGISTIC_REGULARIZATION = 0.1
+LOGISTIC_LEARNING_RATE = 0.2
+LOGISTIC_STEPS = 800
 
 
 class Q36MTRStackedRouterError(RuntimeError):
@@ -114,6 +119,120 @@ def choose_sparse(
         item["production_commit_correct"] and not item["correct"] for item in training
     )
     return sparse >= production, "global_discordant_prior"
+
+
+def _logistic_features(
+    rows: list[dict[str, Any]],
+) -> tuple[np.ndarray, dict[str, int]]:
+    names: set[str] = set()
+    for row in rows:
+        names.update(
+            {
+                f"task={row['task']}",
+                f"sparse={row['selected_lineage']}",
+                f"production={row['production_commit_lineage']}",
+                f"pair={row['task']}:{row['selected_lineage']}:{row['production_commit_lineage']}",
+                f"margin_bin={row['margin_bin']}",
+                f"task_margin={row['task']}:{row['margin_bin']}",
+            }
+        )
+    vocabulary = {name: index for index, name in enumerate(sorted(names))}
+    matrix = np.zeros((len(rows), len(vocabulary) + 5), dtype=np.float64)
+    for row_index, row in enumerate(rows):
+        categorical = {
+            f"task={row['task']}",
+            f"sparse={row['selected_lineage']}",
+            f"production={row['production_commit_lineage']}",
+            f"pair={row['task']}:{row['selected_lineage']}:{row['production_commit_lineage']}",
+            f"margin_bin={row['margin_bin']}",
+            f"task_margin={row['task']}:{row['margin_bin']}",
+        }
+        for name in categorical:
+            matrix[row_index, vocabulary[name]] = 1.0
+        scores = row["scores"]
+        offset = len(vocabulary)
+        matrix[row_index, offset:] = (
+            1.0,
+            sorted(scores, reverse=True)[0] - sorted(scores, reverse=True)[1],
+            max(scores),
+            min(scores),
+            float(np.std(scores)),
+        )
+    return matrix, vocabulary
+
+
+def logistic_decisions(
+    rows: list[dict[str, Any]],
+) -> tuple[dict[str, bool], dict[str, Any]]:
+    """Fit a disagreement router on other-fold OOF outcomes for every identity."""
+
+    matrix, vocabulary = _logistic_features(rows)
+    decisions: dict[str, bool] = {}
+    fold_receipts: list[dict[str, Any]] = []
+    for fold in range(FOLDS):
+        training_indices = [
+            index
+            for index, row in enumerate(rows)
+            if row["fold"] != fold
+            and row["correct"] != row["production_commit_correct"]
+        ]
+        held_indices = [index for index, row in enumerate(rows) if row["fold"] == fold]
+        if not training_indices or not held_indices:
+            raise Q36MTRStackedRouterError("stacked logistic fold geometry differs")
+        features = matrix[training_indices]
+        targets = np.asarray(
+            [
+                float(
+                    rows[index]["correct"]
+                    and not rows[index]["production_commit_correct"]
+                )
+                for index in training_indices
+            ],
+            dtype=np.float64,
+        )
+        weights = np.zeros(matrix.shape[1], dtype=np.float64)
+        for _ in range(LOGISTIC_STEPS):
+            logits = np.clip(features @ weights, -20.0, 20.0)
+            probabilities = 1.0 / (1.0 + np.exp(-logits))
+            gradient = features.T @ (probabilities - targets) / len(
+                training_indices
+            ) + LOGISTIC_REGULARIZATION * weights / len(training_indices)
+            weights -= LOGISTIC_LEARNING_RATE * gradient
+        if not np.isfinite(weights).all():
+            raise Q36MTRStackedRouterError("stacked logistic weights differ")
+        for index in held_indices:
+            row = rows[index]
+            decisions[row["identity_sha256"]] = (
+                False
+                if row["task"] == "mbpp"
+                else bool(float(matrix[index] @ weights) >= 0.0)
+            )
+        fold_receipts.append(
+            {
+                "fold": fold,
+                "training_discordant_rows": len(training_indices),
+                "held_out_rows": len(held_indices),
+                "weight_l2": float(np.linalg.norm(weights)),
+            }
+        )
+    if len(decisions) != len(rows):
+        raise Q36MTRStackedRouterError("stacked logistic decision coverage differs")
+    return decisions, {
+        "schema": "shohin-q36-mtr-nested-logistic-stacker-v1",
+        "regularization": LOGISTIC_REGULARIZATION,
+        "learning_rate": LOGISTIC_LEARNING_RATE,
+        "steps": LOGISTIC_STEPS,
+        "features": sorted(vocabulary),
+        "numeric_features": [
+            "bias",
+            "sparse_margin",
+            "maximum_score",
+            "minimum_score",
+            "score_standard_deviation",
+        ],
+        "folds": fold_receipts,
+        "conservative_executable_code_retention": True,
+    }
 
 
 def _atomic_lines(path: Path, rows: list[dict[str, Any]]) -> str:
@@ -219,12 +338,33 @@ def stack(args: argparse.Namespace) -> dict[str, Any]:
     if seen != expected:
         raise Q36MTRStackedRouterError("stacked-router outcome coverage differs")
 
+    stacker = getattr(args, "stacker", "hierarchical")
+    if stacker not in {"hierarchical", "logistic"}:
+        raise Q36MTRStackedRouterError("stacked-router method differs")
+    logistic: dict[str, bool] | None = None
+    stacker_receipt: dict[str, Any]
+    if stacker == "logistic":
+        logistic, stacker_receipt = logistic_decisions(enriched)
+    else:
+        stacker_receipt = {
+            "schema": "shohin-q36-mtr-hierarchical-stacker-v1",
+            "training_excludes_selected_fold": True,
+        }
+
     selected_rows: list[dict[str, Any]] = []
     decisions: list[dict[str, Any]] = []
     reasons: Counter[str] = Counter()
     for row in enriched:
         training = [item for item in enriched if item["fold"] != row["fold"]]
-        use_sparse, reason = choose_sparse(row, training)
+        if logistic is not None:
+            use_sparse = logistic[row["identity_sha256"]]
+            reason = (
+                "conservative_executable_code_retention"
+                if row["task"] == "mbpp"
+                else "nested_logistic_disagreement_router"
+            )
+        else:
+            use_sparse, reason = choose_sparse(row, training)
         identity = row["identity_sha256"]
         if use_sparse:
             selected_index = router.LINEAGES.index(row["selected_lineage"])
@@ -276,6 +416,8 @@ def stack(args: argparse.Namespace) -> dict[str, Any]:
         "schema": REPORT_SCHEMA,
         "status": "complete",
         "interpretation": "engineering_nested_out_of_fold_stacked_trajectory_commit",
+        "stacker": stacker,
+        "stacker_receipt": stacker_receipt,
         "rows": len(decisions),
         "correct": correct,
         "accuracy": correct / len(decisions),
@@ -335,6 +477,9 @@ def stack(args: argparse.Namespace) -> dict[str, Any]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cross-validation-report", type=Path, required=True)
+    parser.add_argument(
+        "--stacker", choices=("hierarchical", "logistic"), default="hierarchical"
+    )
     parser.add_argument(
         "--production-candidates", type=Path, action="append", required=True
     )
