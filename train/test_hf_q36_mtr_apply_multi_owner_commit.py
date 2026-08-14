@@ -4,7 +4,9 @@ import json
 from pathlib import Path
 
 import pytest
+import torch
 
+import hf_q36_mtr_apply_multi_owner_commit as module
 from hf_q36_mtr_apply_multi_owner_commit import (
     CANDIDATE_SCHEMA,
     DEVELOPMENT_ROWS,
@@ -13,6 +15,7 @@ from hf_q36_mtr_apply_multi_owner_commit import (
     choose_owner,
     load_development_candidates,
     load_development_source,
+    make_commit_head,
 )
 
 
@@ -83,3 +86,38 @@ def test_load_development_source_is_label_free_and_exact(tmp_path: Path) -> None
     _write(tmp_path / "leaked.jsonl", rows)
     with pytest.raises(Q36MTRMultiOwnerError):
         load_development_source(tmp_path / "leaked.jsonl")
+
+
+def test_restores_setwise_head_with_exact_adapter_binding(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(torch.nn.Module, "to", lambda self, *_args, **_kwargs: self)
+    expected = module.SetwiseCommitHead(8, module.HEAD_WIDTH, module.SETWISE_PROJECTION)
+    payload = {
+        "schema": module.SETWISE_MODEL_SCHEMA,
+        "metadata": {
+            "model_revision": module.MODEL_REVISION,
+            "head_width": module.HEAD_WIDTH,
+            "projection": module.SETWISE_PROJECTION,
+            "projection_contract": module.SETWISE_PROJECTION_CONTRACT,
+            "permutation_equivariant": True,
+            "backbone_frozen": True,
+            "adapter_checkpoint_sha256": "a" * 64,
+        },
+        "head_state": expected.state_dict(),
+    }
+    restored, contract = make_commit_head(
+        payload,
+        head_type="setwise",
+        hidden_size=8,
+        adapter_checkpoint_sha256="a" * 64,
+    )
+    assert isinstance(restored, module.SetwiseCommitHead)
+    assert contract == module.SETWISE_PROJECTION_CONTRACT
+    with pytest.raises(Q36MTRMultiOwnerError, match="setwise head"):
+        make_commit_head(
+            payload,
+            head_type="setwise",
+            hidden_size=8,
+            adapter_checkpoint_sha256="b" * 64,
+        )

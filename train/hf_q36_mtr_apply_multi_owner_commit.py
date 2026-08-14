@@ -25,7 +25,13 @@ from hf_q36_mtr_train_commit import (
     Q36MTRCommitError,
     restore_commit_state,
 )
+from hf_q36_mtr_train_setwise_commit import (
+    MODEL_SCHEMA as SETWISE_MODEL_SCHEMA,
+    PROJECTION as SETWISE_PROJECTION,
+    PROJECTION_CONTRACT as SETWISE_PROJECTION_CONTRACT,
+)
 from q36_mtr_roles import MODEL_REVISION, TRAINABLE_PARAMETERS
+from q36_mtr_setwise_head import SetwiseCommitHead
 
 CANDIDATE_SCHEMA = "shohin-q36-mtr-model-draft-v1"
 SELECTION_SCHEMA = "shohin-q36-mtr-multi-owner-selection-v1"
@@ -129,6 +135,54 @@ def choose_owner(scores: list[float]) -> int:
     return max(range(len(scores)), key=lambda index: (scores[index], -index))
 
 
+def make_commit_head(
+    payload: dict[str, Any],
+    *,
+    head_type: str,
+    hidden_size: int,
+    adapter_checkpoint_sha256: str,
+) -> tuple[torch.nn.Module, str]:
+    """Restore either the independent baseline or contextual setwise head."""
+
+    metadata = payload.get("metadata") if isinstance(payload, dict) else None
+    if (
+        not isinstance(metadata, dict)
+        or metadata.get("model_revision") != MODEL_REVISION
+    ):
+        raise Q36MTRMultiOwnerError("multi-owner commit metadata differs")
+    if head_type == "independent":
+        if (
+            payload.get("schema") != MODEL_SCHEMA
+            or metadata.get("head_width") != HEAD_WIDTH
+            or metadata.get("commit_projection_contract") != COMMIT_PROJECTION_CONTRACT
+        ):
+            raise Q36MTRMultiOwnerError("multi-owner independent head differs")
+        return (
+            IndependentCommitHead(hidden_size, HEAD_WIDTH).to("cuda:0"),
+            COMMIT_PROJECTION_CONTRACT,
+        )
+    if head_type == "setwise":
+        if (
+            payload.get("schema") != SETWISE_MODEL_SCHEMA
+            or metadata.get("head_width") != HEAD_WIDTH
+            or metadata.get("projection") != SETWISE_PROJECTION
+            or metadata.get("projection_contract") != SETWISE_PROJECTION_CONTRACT
+            or metadata.get("permutation_equivariant") is not True
+            or metadata.get("backbone_frozen") is not True
+            or metadata.get("adapter_checkpoint_sha256") != adapter_checkpoint_sha256
+        ):
+            raise Q36MTRMultiOwnerError("multi-owner setwise head differs")
+        head = SetwiseCommitHead(hidden_size, HEAD_WIDTH, SETWISE_PROJECTION).to(
+            "cuda:0"
+        )
+        state = payload.get("head_state")
+        if not isinstance(state, dict) or set(state) != set(head.state_dict()):
+            raise Q36MTRMultiOwnerError("multi-owner setwise state differs")
+        head.load_state_dict(state, strict=True)
+        return head, SETWISE_PROJECTION_CONTRACT
+    raise Q36MTRMultiOwnerError("multi-owner head type differs")
+
+
 def _atomic_lines(path: Path, rows: list[dict[str, Any]]) -> str:
     if path.exists() or path.is_symlink():
         raise Q36MTRMultiOwnerError(f"refusing existing output: {path}")
@@ -173,6 +227,7 @@ def _environment(args: argparse.Namespace) -> None:
 
 
 def apply(args: argparse.Namespace) -> dict[str, Any]:
+    head_type = getattr(args, "head_type", "independent")
     if (
         args.model_revision != MODEL_REVISION
         or args.model_loader != "causal"
@@ -206,15 +261,7 @@ def apply(args: argparse.Namespace) -> dict[str, Any]:
             raise Q36MTRMultiOwnerError("multi-owner task binding differs")
 
     payload = torch.load(args.commit_checkpoint, map_location="cpu", weights_only=True)
-    metadata = payload.get("metadata") if isinstance(payload, dict) else None
-    if (
-        not isinstance(payload, dict)
-        or payload.get("schema") != MODEL_SCHEMA
-        or not isinstance(metadata, dict)
-        or metadata.get("model_revision") != MODEL_REVISION
-        or metadata.get("head_width") != HEAD_WIDTH
-        or metadata.get("commit_projection_contract") != COMMIT_PROJECTION_CONTRACT
-    ):
+    if not isinstance(payload, dict):
         raise Q36MTRMultiOwnerError("multi-owner commit checkpoint differs")
 
     from transformers import AutoTokenizer
@@ -236,11 +283,18 @@ def apply(args: argparse.Namespace) -> dict[str, Any]:
     if sum(parameter.numel() for _, parameter in trainable) != TRAINABLE_PARAMETERS:
         raise Q36MTRMultiOwnerError("multi-owner adapter geometry differs")
     hidden_size = int(model.text_model.embed_tokens.embedding_dim)
-    head = IndependentCommitHead(hidden_size, HEAD_WIDTH).to("cuda:0")
-    try:
-        restore_commit_state(trainable, head, payload)
-    except Q36MTRCommitError as error:
-        raise Q36MTRMultiOwnerError("multi-owner commit restore differs") from error
+    adapter_checkpoint_sha256 = sha256_file(args.adapter_checkpoint)
+    head, projection_contract = make_commit_head(
+        payload,
+        head_type=head_type,
+        hidden_size=hidden_size,
+        adapter_checkpoint_sha256=adapter_checkpoint_sha256,
+    )
+    if head_type == "independent":
+        try:
+            restore_commit_state(trainable, head, payload)
+        except Q36MTRCommitError as error:
+            raise Q36MTRMultiOwnerError("multi-owner commit restore differs") from error
     model.eval()
     head.eval()
     selected_rows: list[dict[str, Any]] = []
@@ -270,10 +324,14 @@ def apply(args: argparse.Namespace) -> dict[str, Any]:
             with torch.autocast("cuda", dtype=torch.bfloat16):
                 hidden = hidden_states(model, encoded, tokenizer.pad_token_id)
                 grouped = hidden.reshape(-1, len(LINEAGES), hidden.shape[-1])
-                direct = head.score(grouped.float()).squeeze(-1).float()
-                reversed_scores = (
-                    head.score(grouped.flip(1).float()).squeeze(-1).float()
-                )
+                if head_type == "independent":
+                    direct = head.score(grouped.float()).squeeze(-1).float()
+                    reversed_scores = (
+                        head.score(grouped.flip(1).float()).squeeze(-1).float()
+                    )
+                else:
+                    direct = head(grouped).float()
+                    reversed_scores = head(grouped.flip(1)).float()
             maximum_permutation_error = max(
                 maximum_permutation_error,
                 float((direct - reversed_scores.flip(1)).abs().max().cpu()),
@@ -312,11 +370,12 @@ def apply(args: argparse.Namespace) -> dict[str, Any]:
         "selections": str(args.selections.resolve()),
         "selections_sha256": selections_sha256,
         "commit_checkpoint_sha256": sha256_file(args.commit_checkpoint),
-        "adapter_checkpoint_sha256": sha256_file(args.adapter_checkpoint),
+        "adapter_checkpoint_sha256": adapter_checkpoint_sha256,
+        "head_type": head_type,
         "prompt_truncated": prompt_truncated,
         "maximum_permutation_error": maximum_permutation_error,
         "permutation_consistent": maximum_permutation_error == 0.0,
-        "commit_projection_contract": COMMIT_PROJECTION_CONTRACT,
+        "commit_projection_contract": projection_contract,
         "task_or_correctness_visible": False,
         "environment_receipt_sha256": args.environment_receipt_sha256,
         "environment_tree_sha256": args.environment_tree_sha256,
@@ -335,6 +394,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-loader", choices=("causal",), default="causal")
     parser.add_argument("--adapter-checkpoint", type=Path, required=True)
     parser.add_argument("--commit-checkpoint", type=Path, required=True)
+    parser.add_argument(
+        "--head-type", choices=("independent", "setwise"), default="independent"
+    )
     parser.add_argument("--development-source", type=Path, required=True)
     parser.add_argument(
         "--current-candidates", type=Path, action="append", required=True

@@ -16,6 +16,8 @@ set -euo pipefail
 for variable in RUNTIME RUNTIME_MANIFEST_SHA256 SOURCE_COMMIT PYTHON APPLY_SCRIPT APPLY_SCRIPT_SHA256 ALIGNED_CHECKPOINT COMMIT_CHECKPOINT DEVELOPMENT_SOURCE CURRENT_CANDIDATES OWNER71_CANDIDATES OWNER8_CANDIDATES OUTPUT SELECTIONS REPORT ENVIRONMENT_RECEIPT ENVIRONMENT_RECEIPT_SHA256 ENVIRONMENT_TREE_SHA256; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
+HEAD_TYPE=${HEAD_TYPE:-independent}
+[[ "$HEAD_TYPE" == independent || "$HEAD_TYPE" == setwise ]] || { printf 'invalid commit head type\n' >&2; exit 2; }
 source "$RUNTIME/train/jobs/q36_mtr_common.sh"
 q36_init_local_tmp
 trap q36_cleanup_local_tmp EXIT
@@ -53,6 +55,7 @@ nvidia-smi
   --model-loader causal \
   --adapter-checkpoint "$ALIGNED_CHECKPOINT" \
   --commit-checkpoint "$COMMIT_CHECKPOINT" \
+  --head-type "$HEAD_TYPE" \
   --development-source "$DEVELOPMENT_SOURCE" \
   "${arguments[@]}" \
   --output "$OUTPUT" \
