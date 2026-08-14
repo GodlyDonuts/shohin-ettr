@@ -121,6 +121,56 @@ def test_multi_trajectory_adjudication_preserves_executable_control() -> None:
     assert plan["decision"] == "preserve_executable_control"
 
 
+def _guidance(selected: str, completion: str, labels_read: int = 0) -> dict:
+    return {
+        "schema": module.SCHEMA,
+        "identity_sha256": "0" * 64,
+        "task": "math500",
+        "completion": completion,
+        "nested_pattern_consensus": {
+            "schema": "shohin-q36-mtr-nested-pattern-consensus-v1",
+            "selected": selected,
+            "estimated_reliability": -0.7,
+            "heldout_identity_labels_read": labels_read,
+        },
+    }
+
+
+def test_guided_adjudication_puts_crossfit_incumbent_first() -> None:
+    rows = _adjudication_rows(
+        "math500",
+        (
+            r"hierarchy \boxed{1}",
+            r"interpolation \boxed{2}",
+            r"direct \boxed{2}",
+            r"offset \boxed{3}",
+            r"level \boxed{2}",
+            r"challenger \boxed{1}",
+        ),
+    )
+    selected, prompt, plan = module.guided_multi_trajectory_adjudication_plan(
+        "Original question", rows, _guidance("interpolation", r"\boxed{2}")
+    )
+    assert selected is None
+    assert prompt is not None
+    assert "Proposal 1 — cross-fitted incumbent" in prompt
+    assert prompt.index("interpolation") < prompt.index("hierarchy")
+    assert "useful prior, not proof" in prompt
+    assert "trained without this identity or its shard" in prompt
+    assert plan["guidance_selected"] == "interpolation"
+    assert plan["guidance_heldout_identity_labels_read"] == 0
+
+
+def test_guided_adjudication_rejects_heldout_label_access() -> None:
+    rows = _adjudication_rows("math500", (r"\boxed{1}", r"\boxed{2}") * 3)
+    with pytest.raises(module.Q36MTRHierarchicalSynthesisError):
+        module.guided_multi_trajectory_adjudication_plan(
+            "Original question",
+            rows,
+            _guidance("interpolation", r"\boxed{2}", labels_read=1),
+        )
+
+
 def test_mode_contract_freezes_geometry_and_seed() -> None:
     assert module.mode_contract("retention_controls")["path_counts"] == (16, 1, 8)
     challenger = module.mode_contract("incumbent_challenger")
@@ -135,6 +185,9 @@ def test_mode_contract_freezes_geometry_and_seed() -> None:
     adjudication = module.mode_contract("multi_trajectory_adjudication")
     assert adjudication["path_counts"] == (16, 16, 16, 16, 16, 16)
     assert adjudication["seed"] == module.MULTI_TRAJECTORY_ADJUDICATION_SEED
+    guided = module.mode_contract("guided_multi_trajectory_adjudication")
+    assert guided["path_counts"] == (16, 16, 16, 16, 16, 16)
+    assert guided["seed"] == module.GUIDED_MULTI_TRAJECTORY_ADJUDICATION_SEED
     with pytest.raises(module.Q36MTRHierarchicalSynthesisError):
         module.mode_contract("unknown")
 

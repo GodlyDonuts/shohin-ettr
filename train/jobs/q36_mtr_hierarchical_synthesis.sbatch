@@ -30,6 +30,13 @@ case "$HIERARCHICAL_MODE" in
       [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
     done
     ;;
+  guided_multi_trajectory_adjudication)
+    expected_geometry='16 16 16 16 16 16'
+    hierarchical_seed=2026081428
+    for variable in OFFSET_ONE_CANDIDATES LEVEL_TWO_CANDIDATES CHALLENGER_CANDIDATES GUIDANCE_CANDIDATES; do
+      [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
+    done
+    ;;
   *) printf 'hierarchical mode differs\n' >&2; exit 2 ;;
 esac
 [[ "${SLURM_ARRAY_TASK_ID:-}" =~ ^([0-9]|1[0-5])$ ]] || { printf 'SLURM_ARRAY_TASK_ID differs\n' >&2; exit 2; }
@@ -51,7 +58,7 @@ q36_verify_sha256 "$HIERARCHICAL_SCRIPT" "$HIERARCHICAL_SCRIPT_SHA256"
 read -r -a expected_counts <<< "$expected_geometry"
 candidate_names=(SYNTHESIS_CANDIDATES STACKED_CANDIDATES SELF_REFINEMENT_CANDIDATES)
 candidate_options=(synthesis stacked self-refinement)
-if [[ "$HIERARCHICAL_MODE" == multi_trajectory_adjudication ]]; then
+if [[ "$HIERARCHICAL_MODE" == multi_trajectory_adjudication || "$HIERARCHICAL_MODE" == guided_multi_trajectory_adjudication ]]; then
   candidate_names+=(OFFSET_ONE_CANDIDATES LEVEL_TWO_CANDIDATES CHALLENGER_CANDIDATES)
   candidate_options+=(offset-one level-two challenger)
 fi
@@ -62,6 +69,13 @@ for index in "${!candidate_names[@]}"; do
   [[ ${#paths[@]} -eq $expected ]] || q36_die "hierarchical candidate geometry differs"
   for path in "${paths[@]}"; do [[ -f "$path" && ! -L "$path" ]] || q36_die "hierarchical candidate differs"; done
 done
+guidance_args=()
+if [[ "$HIERARCHICAL_MODE" == guided_multi_trajectory_adjudication ]]; then
+  IFS=: read -r -a guidance_paths <<< "$GUIDANCE_CANDIDATES"
+  [[ ${#guidance_paths[@]} -eq 1 ]] || q36_die "guidance candidate geometry differs"
+  [[ -f "${guidance_paths[0]}" && ! -L "${guidance_paths[0]}" ]] || q36_die "guidance candidates differ"
+  guidance_args=(--guidance-candidates "${guidance_paths[0]}")
+fi
 [[ ! -e "$OUTPUT" && ! -L "$OUTPUT" && ! -e "$REPORT" && ! -L "$REPORT" ]] || q36_die "hierarchical output exists"
 model=$(q36_stage_model)
 mkdir -p "$(dirname "$OUTPUT")" logs
@@ -83,7 +97,7 @@ nvidia-smi
   --environment-receipt "$ENVIRONMENT_RECEIPT" \
   --environment-receipt-sha256 "$ENVIRONMENT_RECEIPT_SHA256" \
   --environment-tree-sha256 "$ENVIRONMENT_TREE_SHA256" \
-  "${args[@]}" --output "$OUTPUT" --report "$REPORT" \
+  "${args[@]}" "${guidance_args[@]}" --output "$OUTPUT" --report "$REPORT" \
   --shard-index "$SHARD_INDEX" --shard-count 16 --batch-size 2 \
   --max-new-tokens 768 --seed "$hierarchical_seed"
 test -f "$OUTPUT" && test -f "$REPORT"

@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 from pathlib import Path
 import time
 from typing import Any
@@ -29,6 +30,7 @@ INCUMBENT_CHALLENGER_SEED = 2026081424
 INCUMBENT_CYCLIC_SEED = 2026081425
 INCUMBENT_INTERPOLATION_SEED = 2026081426
 MULTI_TRAJECTORY_ADJUDICATION_SEED = 2026081427
+GUIDED_MULTI_TRAJECTORY_ADJUDICATION_SEED = 2026081428
 MAX_NEW_TOKENS = 768
 TASKS = {"bbh_logic", "math500", "mbpp"}
 ADJUDICATION_ARMS = (
@@ -264,6 +266,121 @@ def multi_trajectory_adjudication_plan(
     )
 
 
+def guided_multi_trajectory_adjudication_plan(
+    source_prompt: str,
+    candidates: dict[str, dict[str, Any]],
+    guidance: dict[str, Any],
+) -> tuple[str | None, str | None, dict[str, Any]]:
+    if tuple(candidates) != ADJUDICATION_ARMS:
+        raise Q36MTRHierarchicalSynthesisError("guided adjudication arm order differs")
+    identities = {row.get("identity_sha256") for row in candidates.values()}
+    tasks = {row.get("task") for row in candidates.values()}
+    if len(identities) != 1 or guidance.get("identity_sha256") not in identities:
+        raise Q36MTRHierarchicalSynthesisError("guided adjudication identity differs")
+    metadata = guidance.get("nested_pattern_consensus")
+    if (
+        guidance.get("schema") != SCHEMA
+        or not isinstance(metadata, dict)
+        or metadata.get("schema") != "shohin-q36-mtr-nested-pattern-consensus-v1"
+        or metadata.get("heldout_identity_labels_read") != 0
+        or metadata.get("selected") not in ADJUDICATION_ARMS
+        or isinstance(metadata.get("estimated_reliability"), bool)
+        or not isinstance(metadata.get("estimated_reliability"), (int, float))
+        or not math.isfinite(metadata["estimated_reliability"])
+        or not isinstance(guidance.get("completion"), str)
+        or not guidance["completion"].strip()
+        or not isinstance(source_prompt, str)
+        or not source_prompt.strip()
+    ):
+        raise Q36MTRHierarchicalSynthesisError("guided adjudication prior differs")
+    task = guidance.get("task")
+    if tasks != {task}:
+        raise Q36MTRHierarchicalSynthesisError("guided adjudication task differs")
+    if task == "mbpp":
+        return (
+            "interpolation",
+            None,
+            {
+                "decision": "preserve_executable_control",
+                "unique_answers": None,
+                "maximum_support": None,
+                "guidance_selected": metadata["selected"],
+            },
+        )
+    if task not in {"bbh_logic", "math500"}:
+        raise Q36MTRHierarchicalSynthesisError("guided adjudication task differs")
+    grouped: dict[str, list[str]] = {}
+    unparsed = []
+    for arm, row in candidates.items():
+        answer = normalized_candidate_answer(task, row["completion"])
+        if answer is None:
+            unparsed.append(arm)
+        else:
+            grouped.setdefault(answer, []).append(arm)
+    if len(grouped) == 1 and not unparsed:
+        return (
+            "hierarchy",
+            None,
+            {
+                "decision": "preserve_unanimous_answer",
+                "unique_answers": 1,
+                "maximum_support": 6,
+                "guidance_selected": metadata["selected"],
+            },
+        )
+    guided_answer = normalized_candidate_answer(task, guidance["completion"])
+    guided_arm = metadata["selected"]
+    if guided_answer is None or guided_arm not in grouped.get(guided_answer, []):
+        raise Q36MTRHierarchicalSynthesisError("guided adjudication answer differs")
+    ordered = sorted(
+        grouped.items(),
+        key=lambda item: (
+            item[0] != guided_answer,
+            -len(item[1]),
+            min(ADJUDICATION_ARMS.index(arm) for arm in item[1]),
+        ),
+    )
+    proposals = []
+    for index, (answer, arms) in enumerate(ordered, start=1):
+        representative = guided_arm if answer == guided_answer else arms[0]
+        label = "cross-fitted incumbent" if answer == guided_answer else "alternative"
+        proposals.append(
+            f"Proposal {index} — {label}, supported by {len(arms)} of 6 independent "
+            f"trajectories ({', '.join(arms)}):\n"
+            f"{candidates[representative]['completion']}"
+        )
+    for arm in unparsed:
+        proposals.append(
+            f"Proposal {len(proposals) + 1} — unparsed alternative trajectory "
+            f"({arm}):\n{candidates[arm]['completion']}"
+        )
+    prompt = (
+        "Independently solve the original problem, then adjudicate the proposed "
+        "solutions. Proposal 1 is an incumbent selected by a reliability model trained "
+        "without this identity or its shard; that is a useful prior, not proof. Verify "
+        "the decisive reasoning yourself. Preserve Proposal 1 unless recomputation "
+        "establishes a concrete error, and then repair the error using the strongest "
+        "alternative evidence. Support counts are evidence, not truth. Do not mention "
+        "the proposals, reliability prior, support counts, or review process. Return "
+        "one final solution in the original problem's requested output format.\n\n"
+        f"Original problem:\n{source_prompt}\n\n"
+        + "\n\n".join(proposals)
+        + "\n\nReturn the independently verified final solution."
+    )
+    return (
+        None,
+        prompt,
+        {
+            "decision": "model_owned_guided_disagreement_adjudication",
+            "unique_answers": len(grouped) + len(unparsed),
+            "maximum_support": max((len(arms) for arms in grouped.values()), default=0),
+            "guidance_selected": guided_arm,
+            "guidance_estimated_reliability": metadata["estimated_reliability"],
+            "guidance_heldout_identity_labels_read": 0,
+        },
+    )
+
+
 def mode_contract(mode: str) -> dict[str, Any]:
     if mode == "retention_controls":
         return {
@@ -322,6 +439,13 @@ def mode_contract(mode: str) -> dict[str, Any]:
                 "challenger",
             ),
             "interpretation": "selective_model_owned_multi_trajectory_adjudication",
+        }
+    if mode == "guided_multi_trajectory_adjudication":
+        return {
+            "seed": GUIDED_MULTI_TRAJECTORY_ADJUDICATION_SEED,
+            "path_counts": (16, 16, 16, 16, 16, 16),
+            "roles": ADJUDICATION_ARMS,
+            "interpretation": "crossfit_guided_model_owned_trajectory_adjudication",
         }
     raise Q36MTRHierarchicalSynthesisError("hierarchical mode differs")
 
@@ -382,7 +506,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         args.level_two_candidates,
         args.challenger_candidates,
     )
-    if args.mode == "multi_trajectory_adjudication":
+    adjudication_modes = {
+        "multi_trajectory_adjudication",
+        "guided_multi_trajectory_adjudication",
+    }
+    if args.mode in adjudication_modes:
         if any(group is None for group in additional_groups):
             raise Q36MTRHierarchicalSynthesisError(
                 "adjudication candidate groups are missing"
@@ -428,7 +556,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             args.level_two_candidates,
             args.challenger_candidates,
         )
-        if args.mode == "multi_trajectory_adjudication"
+        if args.mode in adjudication_modes
         else (
             args.synthesis_candidates,
             args.stacked_candidates,
@@ -444,10 +572,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             strict=True,
         )
     }
+    guidance = None
+    if args.mode == "guided_multi_trajectory_adjudication":
+        if args.guidance_candidates is None:
+            raise Q36MTRHierarchicalSynthesisError("guidance candidates are missing")
+        guidance = load_candidate_group(args.guidance_candidates, expected_paths=1)
+    elif args.guidance_candidates is not None:
+        raise Q36MTRHierarchicalSynthesisError("unexpected guidance candidates")
     if len(sources) != ROWS or any(
         set(group) != set(sources) for group in groups.values()
     ):
         raise Q36MTRHierarchicalSynthesisError("identity coverage differs")
+    if guidance is not None and set(guidance) != set(sources):
+        raise Q36MTRHierarchicalSynthesisError("guidance identity coverage differs")
     ordered_identities = sorted(sources)
     row_start = ROWS * args.shard_index // args.shard_count
     row_end = ROWS * (args.shard_index + 1) // args.shard_count
@@ -472,12 +609,20 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     started = time.monotonic()
     prompts_by_identity: dict[str, str] = {}
     plans: dict[str, dict[str, Any]] = {}
-    if args.mode == "multi_trajectory_adjudication":
+    if args.mode in adjudication_modes:
         for identity in shard_identities:
             candidates = {role: groups[role][identity] for role in contract["roles"]}
-            preserve, prompt, plan = multi_trajectory_adjudication_plan(
-                sources[identity]["source_prompt"], candidates
-            )
+            if args.mode == "guided_multi_trajectory_adjudication":
+                assert guidance is not None
+                preserve, prompt, plan = guided_multi_trajectory_adjudication_plan(
+                    sources[identity]["source_prompt"],
+                    candidates,
+                    guidance[identity],
+                )
+            else:
+                preserve, prompt, plan = multi_trajectory_adjudication_plan(
+                    sources[identity]["source_prompt"], candidates
+                )
             plans[identity] = plan
             if preserve is None:
                 if prompt is None:
@@ -569,7 +714,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "input_roles": list(groups),
                 "development_labels_read": 0,
             }
-            if args.mode == "multi_trajectory_adjudication":
+            if args.mode in adjudication_modes:
                 synthesis["adjudication"] = {**plans[identity], "selected": "model"}
                 adjudicated_rows += 1
             output_by_identity[identity] = {
@@ -616,6 +761,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             name: [sha256_file(path) for path in paths]
             for name, paths in candidate_paths.items()
         },
+        "guidance_sha256": (
+            [sha256_file(path) for path in args.guidance_candidates]
+            if args.guidance_candidates is not None
+            else None
+        ),
         "generation_mode": "greedy",
         "generation_sequence_contract": GENERATED_ONLY_SEQUENCE_CONTRACT,
         "rendered_chat_tokenization": "add_special_tokens_false",
@@ -660,6 +810,7 @@ def parse_args() -> argparse.Namespace:
             "incumbent_cyclic",
             "incumbent_interpolation",
             "multi_trajectory_adjudication",
+            "guided_multi_trajectory_adjudication",
         ),
         default="retention_controls",
     )
@@ -680,6 +831,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--offset-one-candidates", type=Path, action="append")
     parser.add_argument("--level-two-candidates", type=Path, action="append")
     parser.add_argument("--challenger-candidates", type=Path, action="append")
+    parser.add_argument("--guidance-candidates", type=Path, action="append")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
     parser.add_argument("--shard-index", type=int, required=True)
