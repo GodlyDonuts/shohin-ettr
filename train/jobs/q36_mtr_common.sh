@@ -303,10 +303,18 @@ q36_stage_model() {
   q36_require SLURM_TMPDIR
   [[ -d "$SLURM_TMPDIR" && ! -L "$SLURM_TMPDIR" ]] || q36_die "SLURM_TMPDIR differs"
   local staged=$SLURM_TMPDIR/q36-model
+  local required_kib available_kib
   [[ ! -e "$staged" ]] || q36_die "staged model already exists"
+  required_kib=$(du -sk "$MODEL_ROOT" | awk '{print $1}')
+  available_kib=$(df -Pk "$SLURM_TMPDIR" | awk 'NR == 2 {print $4}')
+  [[ "$required_kib" =~ ^[0-9]+$ && "$available_kib" =~ ^[0-9]+$ ]] || \
+    q36_die "local model staging capacity is unreadable"
+  (( available_kib >= required_kib + 2097152 )) || \
+    q36_die "local model staging capacity is insufficient"
   mkdir "$staged"
-  cp -a "$MODEL_ROOT"/. "$staged"/
+  cp -a "$MODEL_ROOT"/. "$staged"/ || q36_die "model staging copy failed"
   q36_verify_sha256 "$staged/config.json" "$MODEL_CONFIG_SHA256"
-  (cd "$staged" && sha256sum -c SHA256SUMS >/dev/null)
+  (cd "$staged" && sha256sum -c SHA256SUMS >/dev/null) || \
+    q36_die "staged model manifest differs"
   printf '%s\n' "$staged"
 }

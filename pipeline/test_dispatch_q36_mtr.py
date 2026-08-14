@@ -112,6 +112,13 @@ def test_common_cleanup_removes_frozen_job_local_tree() -> None:
     assert not target.exists() and not target.is_symlink()
 
 
+def test_model_staging_fails_closed_on_capacity_copy_or_manifest_error() -> None:
+    common = Path("train/jobs/q36_mtr_common.sh").read_text(encoding="utf-8")
+    assert 'available_kib >= required_kib + 2097152' in common
+    assert 'cp -a "$MODEL_ROOT"/. "$staged"/ || q36_die' in common
+    assert 'q36_die "staged model manifest differs"' in common
+
+
 def test_submit_prestages_exact_graph_writes_receipt_then_releases_root(
     tmp_path: Path, monkeypatch
 ) -> None:
