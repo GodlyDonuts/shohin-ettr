@@ -1,0 +1,78 @@
+{
+  "schema": "shohin-q36-mtr-nested-pattern-consensus-result-v1",
+  "status": "complete_nested_crossfit_engineering_result",
+  "date": "2026-08-14",
+  "host": {
+    "model": "Qwen3.6-35B-A3B",
+    "base_revision": "995ad96e",
+    "evaluation_split": "development",
+    "identities": 1289
+  },
+  "method": {
+    "arms": [
+      "hierarchical_synthesis",
+      "checkpoint_interpolation_w010",
+      "direct_synthesis",
+      "offset_one_synthesis",
+      "level_two_synthesis",
+      "incumbent_challenger"
+    ],
+    "model": "nested_beta_smoothed_agreement_pattern_reliability",
+    "score": "weighted_geometric_mean_of_exact_pattern_vote_size_and_arm_reliability",
+    "outer_folds": 16,
+    "outer_training_folds": 15,
+    "inner_training_folds_per_validation": 14,
+    "heldout_identity_labels_read": 0,
+    "development_labels_used_for_training": true,
+    "hyperparameters_selected_inside_each_outer_training_fold": true,
+    "config_grid": {
+      "alphas": [10.0, 30.0, 100.0, 300.0],
+      "weight_values": [0.25, 1.0, 4.0],
+      "configurations": 108
+    }
+  },
+  "selection_counts": {
+    "bbh_logic": {"hierarchy": 590, "interpolation": 39, "direct": 8},
+    "math500": {"hierarchy": 557, "interpolation": 59, "direct": 5, "offset_one": 2},
+    "mbpp": {"interpolation": 29}
+  },
+  "evaluation": {
+    "nested_pattern_consensus_correct": 674,
+    "nested_pattern_consensus_accuracy": 0.5228859581070597,
+    "unchanged_correct": 539,
+    "gain_over_unchanged_count": 135,
+    "gain_over_unchanged_points": 10.473235065942593,
+    "hierarchical_correct": 664,
+    "hierarchical_accuracy": 0.5151280062063616,
+    "paired_vs_hierarchy": {
+      "both_correct": 642,
+      "hierarchy_only_correct": 22,
+      "nested_pattern_only_correct": 32,
+      "both_wrong": 593,
+      "mcnemar_exact_two_sided_p": 0.22032849417661104,
+      "oracle_correct": 696
+    },
+    "domains": {
+      "bbh_logic": {"rows": 637, "nested_pattern": 355, "hierarchy": 348},
+      "math500": {"rows": 623, "nested_pattern": 299, "hierarchy": 297},
+      "mbpp": {"rows": 29, "nested_pattern": 20, "hierarchy": 19}
+    },
+    "explicit_final_answers": 1289,
+    "max_token_exhausted": 1
+  },
+  "artifacts": {
+    "selector_sha256": "08ee7574c7d2f6a24d9bacd7697b34cadaaf8a0d16db4d038fb9197e0308ccfd",
+    "candidates_sha256": "12ae1acb30588170018572d074340a4758c5298f7081cd8d0e7c2243f33aba6a",
+    "report_sha256": "a4d7e042bd7963d1e6af1bcfd2bb4af8ee3134ae45d68b66e6753be757963952",
+    "development_score_sha256": "7273bed74a62b700e5ce0a48f5eee445a85b1328765a7f4b03f2866478e3c529",
+    "comparison_sha256": "91ffd6cf1e9b60f6e571f3d6194abadb1f9dfe721ba2af9d916469c4a957c26b"
+  },
+  "durable_evidence": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/q36-engineering-nested-pattern-consensus-8e4301d9-r1",
+    "files": 6,
+    "bytes": 1841203,
+    "sha256sums_sha256": "c674d56fb43fd74a2e174aebd42e6fc71d3aff424e535ad194c230c949e9635c"
+  },
+  "jobs": {"score": 759603, "comparison": 759604},
+  "interpretation": "strongest_crossfit_engineering_composer; hyperparameter_selection_is_nested_inside_outer_training_folds; complementary_nonsignificant_delta; requires_source_disjoint_validation"
+}
