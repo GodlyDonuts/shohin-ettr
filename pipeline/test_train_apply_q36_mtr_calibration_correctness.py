@@ -94,6 +94,80 @@ def test_supported_lineage_thresholds_override_task_threshold() -> None:
     assert module._threshold_for(rows[0], "task_head", thresholds) == thresholds[key]
 
 
+def test_production_confidence_bins_are_fixed_and_distinct() -> None:
+    base = {
+        "task": "math500",
+        "head_index": 1,
+        "production_index": 2,
+    }
+    groups = [
+        module._threshold_group(
+            {**base, "production_probability": probability},
+            "task_head_production_confidence",
+        )
+        for probability in (0.1, 0.25, 0.5, 0.75, 0.99)
+    ]
+    assert groups == [
+        "math500:1:2:production_confidence_0",
+        "math500:1:2:production_confidence_1",
+        "math500:1:2:production_confidence_2",
+        "math500:1:2:production_confidence_3",
+        "math500:1:2:production_confidence_3",
+    ]
+
+
+def test_high_confidence_production_can_learn_stricter_retention() -> None:
+    rows = []
+    for index in range(module.MINIMUM_THRESHOLD_GROUP):
+        rows.append(
+            {
+                "task": "bbh_logic",
+                "head_index": 1,
+                "production_index": 0,
+                "production_probability": 0.9,
+                "estimated_gain": 0.05,
+                "correctness": [True, index == 0, False],
+            }
+        )
+    for index in range(module.MINIMUM_THRESHOLD_GROUP):
+        rows.append(
+            {
+                "task": "bbh_logic",
+                "head_index": 1,
+                "production_index": 0,
+                "production_probability": 0.1,
+                "estimated_gain": 0.05,
+                "correctness": [False, index != 0, False],
+            }
+        )
+    grouped, _ = module._threshold_map(rows, "task_head_production_confidence")
+    low = "bbh_logic:1:0:production_confidence_0"
+    high = "bbh_logic:1:0:production_confidence_3"
+    assert grouped[low] == 0.04
+    assert grouped[high] == 1.1
+
+
+def test_embedded_development_projection_is_deterministic() -> None:
+    identity = "a" * 64
+    rows = {
+        identity: {
+            "task": "math500",
+            "candidates": [
+                {"lineage": lineage, "completion": f"answer {index}"}
+                for index, lineage in enumerate(module.sparse.LINEAGES)
+            ],
+        }
+    }
+    owners = module._embedded_development_owners(rows)
+    assert [owner[identity]["lineage"] for owner in owners] == list(
+        module.sparse.LINEAGES
+    )
+    assert all(owner[identity]["generated_tokens"] == 2 for owner in owners)
+    assert all(
+        owner[identity]["schema"] == module.sparse.CANDIDATE_SCHEMA for owner in owners
+    )
+
+
 def test_job_emits_matched_production_baseline() -> None:
     job = (
         Path(__file__).resolve().parent

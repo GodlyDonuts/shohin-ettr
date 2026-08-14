@@ -22,8 +22,14 @@ LEARNING_RATES = (0.03, 0.07, 0.15)
 EPOCHS = (4, 8, 12)
 BALANCED = (False, True)
 THRESHOLDS = (0.0, 0.01, 0.02, 0.04, 0.06, 0.1, 0.15, 0.25, 1.1)
-THRESHOLD_MODES = ("task", "task_head", "task_head_production")
+THRESHOLD_MODES = (
+    "task",
+    "task_head",
+    "task_head_production",
+    "task_head_production_confidence",
+)
 MINIMUM_THRESHOLD_GROUP = 20
+PRODUCTION_CONFIDENCE_BOUNDS = (0.25, 0.5, 0.75)
 
 
 class Q36MTRCalibrationCorrectnessError(RuntimeError):
@@ -110,6 +116,26 @@ def _production_index(row: dict[str, Any]) -> int:
     return stack._production_index(row["candidates"], row["task"])
 
 
+def _embedded_development_owners(
+    development_rows: dict[str, dict[str, Any]],
+) -> list[dict[str, dict[str, Any]]]:
+    owners: list[dict[str, dict[str, Any]]] = [{} for _ in sparse.LINEAGES]
+    for identity, source in development_rows.items():
+        for owner_index, candidate in enumerate(source["candidates"]):
+            completion = candidate["completion"]
+            owners[owner_index][identity] = {
+                "schema": sparse.CANDIDATE_SCHEMA,
+                "split": "development",
+                "identity_sha256": identity,
+                "task": source["task"],
+                "completion": completion,
+                "generated_tokens": max(1, len(sparse.TOKEN_RE.findall(completion))),
+                "max_token_exhausted": False,
+                "lineage": sparse.LINEAGES[owner_index],
+            }
+    return owners
+
+
 def _validation_correct(weights: list[array], rows: list[dict[str, Any]]) -> int:
     return sum(
         bool(
@@ -176,6 +202,15 @@ def _threshold_group(row: dict[str, Any], mode: str) -> str:
         return f"{row['task']}:{row['head_index']}"
     if mode == "task_head_production":
         return f"{row['task']}:{row['head_index']}:{row['production_index']}"
+    if mode == "task_head_production_confidence":
+        confidence = float(row["production_probability"])
+        confidence_bin = sum(
+            confidence >= bound for bound in PRODUCTION_CONFIDENCE_BOUNDS
+        )
+        return (
+            f"{row['task']}:{row['head_index']}:{row['production_index']}"
+            f":production_confidence_{confidence_bin}"
+        )
     raise Q36MTRCalibrationCorrectnessError("correctness threshold mode differs")
 
 
@@ -289,6 +324,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "production_index": production_index,
                 "estimated_gain": probabilities[head_index]
                 - probabilities[production_index],
+                "production_probability": probabilities[production_index],
                 "correctness": [
                     bool(candidate["correct"]) for candidate in row["candidates"]
                 ],
@@ -344,14 +380,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         ],
     }
     model_sha = sparse._atomic_json(args.model_output, model)
-    owners = [
-        sparse.load_development_candidates(paths)
-        for paths in (
-            args.current_candidates,
-            args.owner71_candidates,
-            args.owner8_candidates,
-        )
-    ]
+    if args.embedded_development_candidates:
+        owners = _embedded_development_owners(development_rows)
+    else:
+        owners = [
+            sparse.load_development_candidates(paths)
+            for paths in (
+                args.current_candidates,
+                args.owner71_candidates,
+                args.owner8_candidates,
+            )
+        ]
     if any(set(owner) != set(development_rows) for owner in owners):
         raise Q36MTRCalibrationCorrectnessError("correctness-head coverage differs")
     selected_rows: list[dict[str, Any]] = []
@@ -377,6 +416,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "task": source["task"],
             "head_index": head_index,
             "production_index": production_index,
+            "production_probability": probabilities[production_index],
         }
         threshold = _threshold_for(threshold_row, threshold_mode, thresholds)
         use_head = head_index != production_index and estimated_gain >= threshold
@@ -426,6 +466,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "decisions_sha256": decisions_sha,
         "training_rows_sha256": sparse.sha256_file(args.training_rows),
         "development_rows_sha256": sparse.sha256_file(args.development_rows),
+        "development_candidate_projection": (
+            "embedded_completion_with_deterministic_token_count"
+            if args.embedded_development_candidates
+            else "original_candidate_artifacts"
+        ),
     }
     sparse._atomic_json(args.report, report)
     return report
@@ -437,8 +482,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--development-rows", type=Path, required=True)
     for owner in ("current", "owner71", "owner8"):
         parser.add_argument(
-            f"--{owner}-candidates", type=Path, action="append", required=True
+            f"--{owner}-candidates", type=Path, action="append", default=[]
         )
+    parser.add_argument("--embedded-development-candidates", action="store_true")
     parser.add_argument("--model-output", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--production-output", type=Path, required=True)
