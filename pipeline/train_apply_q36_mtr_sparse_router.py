@@ -112,8 +112,10 @@ def load_training_rows(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
-def load_development_candidates(paths: list[Path]) -> dict[str, dict[str, Any]]:
-    if len(paths) != 16:
+def load_development_candidates(
+    paths: list[Path], *, expected_shards: int = 16
+) -> dict[str, dict[str, Any]]:
+    if len(paths) != expected_shards:
         raise Q36MTRSparseRouterError("sparse-router candidate shard count differs")
     result: dict[str, dict[str, Any]] = {}
     for path in paths:
