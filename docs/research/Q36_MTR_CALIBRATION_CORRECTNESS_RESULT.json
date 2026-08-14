@@ -89,6 +89,8 @@
     "remote_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/calibration_correctness_82250ae",
     "runtime": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_82250ae_r1",
     "runtime_manifest_sha256": "6f21ac31f2e94b3dd61d02e2651404aaef3d6f860603a71342fa44a6cbd12531",
+    "durable_evidence_mirror": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/q36-engineering-calibration-correctness-82250ae-r1",
+    "durable_evidence_manifest_sha256": "ef2a2990843ea270390ad65be49bf0ea29c2d93d163fa6433477134bb75e21f4",
     "model_sha256": "42bd81e1c88b593939cb641a5f953e9ee3c6912921cbdd1dbe5c857f521f2a7b",
     "candidates_sha256": "784f1217d8a3aca549abda5121cbea7c71d182b20e78dbdf28ace5ef3e8509b3",
     "decisions_sha256": "c03f900d9c1268c6803bf563b782480daecf90dbeeb3f18a635c38e8fae45602",
