@@ -6,10 +6,16 @@
 > source-disjoint data, arms, prompts, seeds, budgets, identity partitions,
 > and thresholds; commit `d9ff7f7d79b953179bf90510731c0bcd2f02e722`
 > adds only `evc50` to the scheduler exclusions. CPU live preflight job
-> `756996` passed in 177 seconds. Mechanics job `756997` is pending for H100
-> capacity and all 61 bound requests are dependency-prestaged through terminal
-> job `757028`. Supervise this graph to a scored recovery benchmark. Do not
-> modify or reinterpret the archived `03955353` evidence.
+> `756996` passed in 177 seconds and mechanics job `756997` passed on `evc22`
+> (`0fa67fc9...f83ac`). Source-owner job `756998` completed `0:0` with zero
+> restarts: 256 updates, 619,734 charged tokens, 26,387 selected rows,
+> 1,179,648 trainables, report `3cc4efe5...5217`, checkpoint
+> `8d22a8b8...a4b2c`. Exact final-16 shared-post-MLP ownership, source-only
+> visibility, restore, and zero-assessor checks pass. Sixteen draft jobs are
+> now active/pending for resources; task 0 entered `evc22` immediately. All 61
+> requests remain dependency-prestaged through terminal job `757028`.
+> Supervise this graph to a scored recovery benchmark. Do not modify or
+> reinterpret the archived `03955353` evidence.
 
 > **Q36-MTR EXECUTION TERMINAL-NULL — 2026-08-14:** execution
 > `q36-mtr-03955353-r2` passed CPU live preflight, the full mechanics gate,

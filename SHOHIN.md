@@ -9,10 +9,16 @@
 budgets, identity partitions, and gate while excluding `evc50`, the node that
 reported the prior late CUDA failure. Private commit
 `d9ff7f7d79b953179bf90510731c0bcd2f02e722` is pushed. CPU live preflight job
-`756996` passed `0:0` in 177 seconds; mechanics job `756997` is waiting for an
-H100 and all 61 bound requests are dependency-prestaged through terminal job
-`757028`. This is an engineering recovery benchmark, not a one-shot
-publication confirmation.
+`756996` passed `0:0` in 177 seconds. Mechanics job `756997` passed on `evc22`
+with report SHA-256 `0fa67fc9...f83ac`. The exact 256-update source-owner fit
+job `756998` then completed `0:0` on `evc22` with zero restarts, `619,734`
+charged tokens, `26,387` selected rows, `1,179,648` trainables, report SHA-256
+`3cc4efe5...5217`, and checkpoint SHA-256 `8d22a8b8...a4b2c`. All geometry,
+source-only visibility, final-16 layer ownership, serialization-restore, and
+zero-assessor checks pass. Sixteen dependency-prestaged draft jobs are now the
+active phase; task 0 started on `evc22` immediately after owner completion.
+The full graph remains bound through terminal job `757028`. This is an
+engineering recovery benchmark, not a one-shot publication confirmation.
 
 **The archived Q36-MTR execution `q36-mtr-03955353-r2` is terminal-null.** CPU live
 preflight, full H100 mechanics, and the frozen 256-update source-owner fit

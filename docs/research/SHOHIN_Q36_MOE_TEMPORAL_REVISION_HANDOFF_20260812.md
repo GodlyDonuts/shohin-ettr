@@ -6,11 +6,17 @@ development. The recovered graph preserves the exact Qwen3.6-35B-A3B host,
 source-disjoint data, five arms, prompts, seeds, identity partitions,
 training budgets, and thresholds. Commit `d9ff7f7d79b953179bf90510731c0bcd2f02e722`
 adds only `evc50` to the scheduler exclusion set. CPU live preflight job
-`756996` passed `0:0` in 177 seconds; mechanics job `756997` is the active
-critical path and the complete 61-request graph is dependency-prestaged
-through terminal job `757028`. Results from this execution are recovery
-benchmark evidence and must not be misrepresented as one-shot publication
-evidence.
+`756996` passed `0:0` in 177 seconds. Mechanics job `756997` passed on `evc22`
+with report `0fa67fc9...f83ac`. Source-owner job `756998` completed `0:0` on
+`evc22` with zero restarts: 256 updates, 619,734 charged tokens, 26,387 rows,
+1,179,648 trainables, report `3cc4efe5...5217`, and checkpoint
+`8d22a8b8...a4b2c`. Independent replay validates the exact checkpoint hash,
+final-16 controlled layers, source-only visibility, no router/expert tensors,
+serialization restore, and zero assessor access. The 16-shard owner-draft
+array is now active; task 0 started immediately on `evc22` and tasks 1--15
+are resource-pending. The complete graph remains dependency-prestaged through
+terminal job `757028`. Results from this execution are recovery benchmark
+evidence and must not be misrepresented as one-shot publication evidence.
 
 Status: execution `q36-mtr-03955353-r2` is terminal-infrastructure, 2026-08-14.
 It passed CPU live preflight, the complete mechanics gate, and the frozen
