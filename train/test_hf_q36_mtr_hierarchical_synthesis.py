@@ -57,6 +57,17 @@ def test_incumbent_cyclic_prompt_preserves_incumbent_without_voting() -> None:
     assert "cyclic one" in prompt and "cyclic two" in prompt
 
 
+def test_incumbent_interpolation_prompt_is_conservative_and_task_agnostic() -> None:
+    prompt = module.incumbent_interpolation_prompt(
+        "Original question", "incumbent", "interpolated synthesis", "direct synthesis"
+    )
+    assert "should be preserved unless a concrete" in prompt
+    assert "do not vote" in prompt
+    assert "interpolated synthesis" in prompt
+    assert "math500" not in prompt
+    assert "development" not in prompt
+
+
 def test_mode_contract_freezes_geometry_and_seed() -> None:
     assert module.mode_contract("retention_controls")["path_counts"] == (16, 1, 8)
     challenger = module.mode_contract("incumbent_challenger")
@@ -65,6 +76,9 @@ def test_mode_contract_freezes_geometry_and_seed() -> None:
     cyclic = module.mode_contract("incumbent_cyclic")
     assert cyclic["path_counts"] == (16, 16, 16)
     assert cyclic["seed"] == module.INCUMBENT_CYCLIC_SEED
+    interpolation = module.mode_contract("incumbent_interpolation")
+    assert interpolation["path_counts"] == (16, 16, 16)
+    assert interpolation["seed"] == module.INCUMBENT_INTERPOLATION_SEED
     with pytest.raises(module.Q36MTRHierarchicalSynthesisError):
         module.mode_contract("unknown")
 

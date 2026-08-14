@@ -27,6 +27,7 @@ ROWS = 1_289
 SEED = 2026081423
 INCUMBENT_CHALLENGER_SEED = 2026081424
 INCUMBENT_CYCLIC_SEED = 2026081425
+INCUMBENT_INTERPOLATION_SEED = 2026081426
 MAX_NEW_TOKENS = 768
 TASKS = {"bbh_logic", "math500", "mbpp"}
 
@@ -121,6 +122,36 @@ def incumbent_cyclic_prompt(
     )
 
 
+def incumbent_interpolation_prompt(
+    source_prompt: str,
+    incumbent: str,
+    interpolated_synthesis: str,
+    direct_synthesis: str,
+) -> str:
+    values = (source_prompt, incumbent, interpolated_synthesis, direct_synthesis)
+    if any(not isinstance(value, str) or not value.strip() for value in values):
+        raise Q36MTRHierarchicalSynthesisError(
+            "incumbent-interpolation prompt input differs"
+        )
+    return (
+        "Produce the single most reliable answer to the original problem. Candidate A "
+        "is the incumbent verified solution and should be preserved unless a concrete, "
+        "recomputed error is established. Candidate B is an independently synthesized "
+        "solution from a conservatively interpolated reviser, and Candidate C is the "
+        "original direct synthesis. Use B and C only as evidence for a specific error "
+        "in A; do not vote or replace A for stylistic differences. Recompute the "
+        "disputed reasoning from the original problem and repair only what is necessary. "
+        "Do not mention the candidates or this review process, and return one final "
+        "solution in the original problem's requested output format.\n\n"
+        f"Original problem:\n{source_prompt}\n\n"
+        f"Candidate A — incumbent verified solution:\n{incumbent}\n\n"
+        f"Candidate B — interpolated-reviser synthesis:\n{interpolated_synthesis}\n\n"
+        f"Candidate C — direct synthesis:\n{direct_synthesis}\n\n"
+        "Return the verified final solution in the original problem's requested output "
+        "format."
+    )
+
+
 def mode_contract(mode: str) -> dict[str, Any]:
     if mode == "retention_controls":
         return {
@@ -154,6 +185,17 @@ def mode_contract(mode: str) -> dict[str, Any]:
                 "cyclic_offset_two",
             ),
             "interpretation": "incumbent_cyclic_conservative_verification",
+        }
+    if mode == "incumbent_interpolation":
+        return {
+            "seed": INCUMBENT_INTERPOLATION_SEED,
+            "path_counts": (16, 16, 16),
+            "roles": (
+                "incumbent_verified",
+                "interpolated_synthesis",
+                "direct_synthesis",
+            ),
+            "interpretation": "incumbent_interpolation_conservative_verification",
         }
     raise Q36MTRHierarchicalSynthesisError("hierarchical mode differs")
 
@@ -282,6 +324,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "retention_controls": hierarchical_prompt,
             "incumbent_challenger": incumbent_challenger_prompt,
             "incumbent_cyclic": incumbent_cyclic_prompt,
+            "incumbent_interpolation": incumbent_interpolation_prompt,
         }[args.mode]
         prompts = [
             prompt_builder(
@@ -397,7 +440,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-root", type=Path, required=True)
     parser.add_argument(
         "--mode",
-        choices=("retention_controls", "incumbent_challenger", "incumbent_cyclic"),
+        choices=(
+            "retention_controls",
+            "incumbent_challenger",
+            "incumbent_cyclic",
+            "incumbent_interpolation",
+        ),
         default="retention_controls",
     )
     parser.add_argument("--model-revision", default=MODEL_REVISION)
