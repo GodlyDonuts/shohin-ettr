@@ -1,0 +1,109 @@
+{
+  "schema": "shohin-q36-mtr-engineering-result-v1",
+  "status": "complete",
+  "result": "direct_three_owner_commit_is_best_deployable_calibration_only_variant",
+  "interpretation": "Both calibration-only mechanisms improve the deployable production semantic commit without reading development labels; the direct three-owner commit is strongest, while the nested OOF logistic analysis remains the exploratory ceiling.",
+  "board": {
+    "rows": 1289,
+    "development_labels_read_during_selection": 0
+  },
+  "variants": {
+    "production": {
+      "correct": 539,
+      "accuracy": 0.4181536074476338,
+      "domains": {
+        "bbh_logic": {"correct": 311, "rows": 637},
+        "math500": {"correct": 211, "rows": 623},
+        "mbpp": {"correct": 17, "rows": 29}
+      }
+    },
+    "calibration_stack": {
+      "correct": 547,
+      "accuracy": 0.4243599689681924,
+      "gain_over_production_count": 8,
+      "gain_over_production_points": 0.6206361520558572,
+      "domains": {
+        "bbh_logic": {"correct": 311, "rows": 637},
+        "math500": {"correct": 220, "rows": 623},
+        "mbpp": {"correct": 16, "rows": 29}
+      }
+    },
+    "calibration_direct": {
+      "correct": 550,
+      "accuracy": 0.42668735453840184,
+      "gain_over_production_count": 11,
+      "gain_over_production_points": 0.8533747090768037,
+      "domains": {
+        "bbh_logic": {"correct": 312, "rows": 637},
+        "math500": {"correct": 222, "rows": 623},
+        "mbpp": {"correct": 16, "rows": 29}
+      }
+    },
+    "nested_oof_logistic_exploratory": {
+      "correct": 554,
+      "accuracy": 0.42979053529868116,
+      "domains": {
+        "bbh_logic": {"correct": 315, "rows": 637},
+        "math500": {"correct": 222, "rows": 623},
+        "mbpp": {"correct": 17, "rows": 29}
+      }
+    }
+  },
+  "paired_direct_vs_production": {
+    "both_correct": 495,
+    "direct_only_correct": 55,
+    "production_only_correct": 44,
+    "both_wrong": 695,
+    "direct_minus_production_correct": 11,
+    "mcnemar_exact_two_sided_p": 0.31487989103762243
+  },
+  "paired_stack_vs_production": {
+    "both_correct": 499,
+    "stack_only_correct": 48,
+    "production_only_correct": 40,
+    "both_wrong": 702,
+    "stack_minus_production_correct": 8,
+    "mcnemar_exact_two_sided_p": 0.45574127943791326
+  },
+  "oracle": {
+    "production_direct_nested_logistic_correct": 595,
+    "production_stack_nested_logistic_correct": 590
+  },
+  "selection_counts": {
+    "calibration_stack": {
+      "production_commit": 796,
+      "sparse_router": 493
+    },
+    "calibration_direct": {
+      "production_commit": 1041,
+      "direct_commit": 248,
+      "lineage_current": 847,
+      "lineage_owner_71": 156,
+      "lineage_owner_8": 286
+    }
+  },
+  "runtime": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_81fd49f_r1",
+    "manifest_sha256": "703b551392e0e5d0f5dcbadd6ee15a2bf0f32544239d71caeb0b319571cc0d80"
+  },
+  "artifacts": {
+    "calibration_stack": {
+      "remote_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/calibration_stacked_router_81fd49f",
+      "model_sha256": "de20fb0614bab32684e1490c38b1052325dfacd644d02cf1ae916fff064f995d",
+      "candidates_sha256": "491f944a497c23afafcfa9af19e378cf7fba6283d614c49778490c91a0bbd6fc",
+      "decisions_sha256": "8178b55a97d5d53d3fabb645da8c0a96c3495d823d54a5851f6b67cb4e2a0a49",
+      "report_sha256": "eae639d23fa0511e3f2c004a128b11d30df40a4269ce3d0fbedc50a0c251772f",
+      "development_score_sha256": "eed064e46172535635fe5e54b6ddef2af693d8e432ae983328a897c6c77395d6",
+      "comparison_sha256": "7fb36109b948dfabc7536428d116f482d4b0f98205d7df78a51b415d5da7611f"
+    },
+    "calibration_direct": {
+      "remote_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/calibration_direct_commit_81fd49f",
+      "model_sha256": "dca5b15a52a39fac4696c2b30bfa2e103b2d0aeeed9336537a3ac569bb4aead6",
+      "candidates_sha256": "012e98e156569912971e8902007cde25aec4361beab4bf6884e0142f9d35148c",
+      "decisions_sha256": "93e42dc8ce4a3ba7b980ab8a4853df9c33a065f2ec73befd9e416f40d065d0c3",
+      "report_sha256": "9e198f854782ba117b39997053d792cc6915f88237a50044b2dd2235f386f344",
+      "development_score_sha256": "e2d5bbdfe1cec07ed4bf95623448a05dd921e447b1601d72a92858e4d863ae43",
+      "comparison_sha256": "9273d50cf1be64e4306b83d0faf4fdc1d8f633dbb1e5b72b7bc5d5f1bce41b22"
+    }
+  }
+}
