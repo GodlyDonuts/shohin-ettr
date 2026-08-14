@@ -10,14 +10,18 @@ after four fixed shards: `135/322` versus hierarchical synthesis `167/322`,
 net `-32`, paired exact `p=4.2237e-5`. It nevertheless repaired 14 cases that
 the incumbent missed. Jobs for the redundant remaining shards were cancelled.
 
-The active bounded successor tests whether that useful learned delta can be
-retained without replacing the strong reviser. Exact aligned-checkpoint blends
-at trained weights `0.10`, `0.25`, and `0.50` have been materialized and four
-fixed development shards per scale are dependency-prestaged as independent
-single-H100 jobs (`759508`, `759514`, `759519`) with CPU scores
-`759509--759512`, `759515--759518`, and `759520--759523`. Expand only a scale
-that improves the fixed slice with conservative repair/regression geometry.
-Preserve `docs/research/Q36_MTR_TRAINED_SYNTHESIS_EARLY_STOP_RESULT.json`.
+The bounded aligned-checkpoint interpolation screen found the first favorable
+learned-delta integration. On fixed shards 0--3, trained weight `0.10` scores
+`174/322` versus direct synthesis `170/322` and hierarchical synthesis
+`167/322`; it improves logic `92/167` versus `89`, math `73/143` versus `69`,
+and retains code `9/12`. Against hierarchy it records 15 repairs and 8
+regressions. Weight `0.25` is slightly weaker at `173/322`; weight `0.50` was
+stopped after materially slower, overgeneration-dominated execution. The
+promoted `0.10` scale is expanding over shards 4--15 via array `759537`, with
+scores `759538--759549` and exact full comparisons `759550--759551` already
+dependency-staged. Preserve both
+`docs/research/Q36_MTR_TRAINED_SYNTHESIS_EARLY_STOP_RESULT.json` and
+`docs/research/Q36_MTR_ALIGNED_INTERPOLATION_SCREEN_RESULT.json`.
 
 ## Q36-MTR engineering recovery — 2026-08-14
 

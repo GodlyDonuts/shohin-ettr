@@ -3,13 +3,14 @@
 > **Q36-MTR INTERPOLATION SWEEP LIVE — 2026-08-14:** The current champion is
 > hierarchical synthesis at `664/1289`, versus matched production baseline
 > `539/1289`. Direct use of the new 256-update trained aligned reviser lost
-> `135/322` to `167/322` on four fixed shards (`p=4.2237e-5`) and is rejected;
-> preserve its 14 unique repairs and exact early-stop result. Blends at trained
-> weights `0.10`, `0.25`, and `0.50` are now running on fixed shards 0--3 via
-> arrays `759508`, `759514`, and `759519`; their CPU scores are already staged
-> as `759509--759512`, `759515--759518`, and `759520--759523`. Do not duplicate
-> those identities. Compare every completed scale directly with hierarchical
-> synthesis on the same identities; expand only a conservative improvement.
+> `135/322` to `167/322` on four fixed shards (`p=4.2237e-5`) and is rejected.
+> Interpolation at trained weight `0.10` reverses that loss: `174/322` versus
+> hierarchy `167/322` and direct synthesis `170/322`, with 15 repairs / 8
+> regressions against hierarchy and nonnegative domain deltas. Weight `0.25`
+> is slightly weaker at `173/322`; `0.50` was early-stopped for renewed slow
+> overgeneration. The `0.10` expansion is live as array `759537`, scores
+> `759538--759549`, comparisons `759550--759551`. Do not duplicate those
+> identities. Promote only from the exact full 1,289-row comparison.
 
 > **Q36-MTR ENGINEERING RECOVERY LIVE — 2026-08-14:** explicit user
 > authorization supersedes the prior no-successor rule for architecture

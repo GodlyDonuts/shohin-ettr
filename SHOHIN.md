@@ -9,11 +9,14 @@ it.** Hierarchical synthesis scores `664/1289` (`51.5128%`) versus the matched
 production baseline's `539/1289` (`41.8154%`), a gain of `125` answers /
 `9.697` points. A newly trained aligned reviser was a clear standalone loss on
 the first four fixed shards (`135/322` versus `167/322`, paired exact
-`p=4.2237e-5`) and was stopped, but it contributed 14 unique repairs. Three
-checkpoint interpolations now test trained-delta weights `0.10`, `0.25`, and
-`0.50` on the same four shards; their 12 single-H100 generation jobs and 12
-dependency-bound CPU scores are live/pending under jobs `759508--759523`.
-See `docs/research/Q36_MTR_TRAINED_SYNTHESIS_EARLY_STOP_RESULT.json`.
+`p=4.2237e-5`) and was stopped, but it contributed 14 unique repairs. A 10%
+checkpoint interpolation converts that weak learned delta into a favorable
+fixed-slice result: `174/322`, versus direct synthesis `170/322` and
+hierarchical synthesis `167/322`, with 15 repairs and 8 regressions against
+the champion. The 25% scale is slightly weaker (`173/322`); 50% was stopped
+for renewed overgeneration. The 10% scale is now expanding across all 1,289
+development identities under jobs `759537--759551`. See
+`docs/research/Q36_MTR_ALIGNED_INTERPOLATION_SCREEN_RESULT.json`.
 
 **Q36-MTR engineering recovery is live.** Fresh execution
 `q36-mtr-d9ff7f7-r1` preserves the exact host, data, arms, prompts, seeds,
