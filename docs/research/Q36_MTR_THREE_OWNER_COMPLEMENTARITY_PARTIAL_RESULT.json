@@ -1,0 +1,145 @@
+{
+  "schema": "shohin-q36-mtr-three-owner-complementarity-v1",
+  "status": "engineering_partial_complete",
+  "recorded_utc": "2026-08-14T12:26:00Z",
+  "model": {
+    "name": "Qwen3.6-35B-A3B",
+    "revision": "995ad96eacd98c81ed38be0c5b274b04031597b0"
+  },
+  "owners": {
+    "current": {
+      "checkpoint_sha256": "8d22a8b882a12cdd64a42d3159a187dcfa2d74d6537fc5cf6a94d49e929a4b2c"
+    },
+    "owner_71": {
+      "checkpoint_sha256": "5da79d81b55cb8867e7645449c4af214fbf8f5e425613574197eed54ca6fd4ae"
+    },
+    "owner_8": {
+      "checkpoint_sha256": "aeeb5f04369a51eaa20fbbba7aef53395214defe6007a41adafe9ac57210b641"
+    }
+  },
+  "shared_shards": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    15
+  ],
+  "development": {
+    "rows": 1064,
+    "correct": {
+      "current": 406,
+      "owner_71": 402,
+      "owner_8": 402,
+      "three_owner_oracle": 506
+    },
+    "accuracy": {
+      "current": 0.3815789473684211,
+      "owner_71": 0.37781954887218044,
+      "owner_8": 0.37781954887218044,
+      "three_owner_oracle": 0.4755639097744361
+    },
+    "oracle_gain_over_best_count": 100,
+    "oracle_gain_over_best_points": 9.398496240601503,
+    "correctness_patterns_current_owner71_owner8": {
+      "000": 558,
+      "001": 37,
+      "010": 32,
+      "011": 31,
+      "100": 39,
+      "101": 28,
+      "110": 33,
+      "111": 306
+    },
+    "domains": {
+      "bbh_logic": {
+        "rows": 516,
+        "current": 233,
+        "owner_71": 232,
+        "owner_8": 228,
+        "oracle": 276
+      },
+      "math500": {
+        "rows": 522,
+        "current": 159,
+        "owner_71": 155,
+        "owner_8": 159,
+        "oracle": 213
+      },
+      "mbpp": {
+        "rows": 26,
+        "current": 14,
+        "owner_71": 15,
+        "owner_8": 15,
+        "oracle": 17
+      }
+    }
+  },
+  "train": {
+    "rows": 4716,
+    "correct": {
+      "current": 1936,
+      "owner_71": 1965,
+      "owner_8": 2015,
+      "three_owner_oracle": 2466
+    },
+    "accuracy": {
+      "current": 0.41051738761662426,
+      "owner_71": 0.4166666666666667,
+      "owner_8": 0.4272688719253605,
+      "three_owner_oracle": 0.5229007633587787
+    },
+    "oracle_gain_over_best_count": 451,
+    "oracle_gain_over_best_points": 9.563189143341814,
+    "correctness_patterns_current_owner71_owner8": {
+      "000": 2250,
+      "001": 222,
+      "010": 165,
+      "011": 143,
+      "100": 146,
+      "101": 133,
+      "110": 140,
+      "111": 1517
+    },
+    "domains": {
+      "bbh_logic": {
+        "rows": 2297,
+        "current": 1126,
+        "owner_71": 1140,
+        "owner_8": 1154,
+        "oracle": 1352
+      },
+      "math500": {
+        "rows": 2311,
+        "current": 734,
+        "owner_71": 752,
+        "owner_8": 787,
+        "oracle": 1036
+      },
+      "mbpp": {
+        "rows": 108,
+        "current": 76,
+        "owner_71": 73,
+        "owner_8": 74,
+        "oracle": 78
+      }
+    }
+  },
+  "report_manifest_sha256": {
+    "current_development": "2a88857320092dd5d8f82fe59369a7c96b01c763e6f86747105bf98bccd92c7a",
+    "owner71_development": "e5eacc511632d8de0de633eb24a215edd06a3539886900ae0c4f96288d2a677e",
+    "owner8_development": "1342cb251643cc60d5defe3fdef3ee1340bbe3ac6d51a254a483d52d8269f143",
+    "current_train": "9ece462e77c7c35087db36a435d0986901d575470f7ec771279ab07b913be6d2",
+    "owner71_train": "0951bf4aedfa2a6e8daea263f66a79056f177ec19c66566065cdb0baedd6366b",
+    "owner8_train": "7342a0de226210bbff21661bcb81b35008f69cc9f35c2033f3e26fe2ccbebe37"
+  },
+  "interpretation": "The three independently trained MoE owner adapters are nearly tied individually but expose approximately 9.4 to 9.6 percentage points of complementary correct trajectories on both source-disjoint development and training identities. All eight three-owner correctness patterns occur. This directly motivates a learned, permutation-consistent semantic trajectory scorer trained across diversified owner pairs; it is not itself the achieved learned-commit accuracy.",
+  "next_measurement": "Score the pair-trained and diversified-pair-trained semantic commit heads over all three owners and compare their achieved accuracy with each endpoint and the 47.56 percent development oracle ceiling."
+}
