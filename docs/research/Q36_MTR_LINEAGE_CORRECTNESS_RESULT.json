@@ -99,6 +99,34 @@
     "durable_evidence_manifest_sha256": "3576c7df6af18b3ee6c14c056b764f9367f62fd232ea9fec26f495325b42ec50",
     "conclusion": "The original task/head/production threshold geometry remains the demonstrated optimum. Fixed production-confidence bins overfit the calibration holdout, and five-fold OOF smoothing became too conservative."
   },
+  "pairwise_guard_ablation": {
+    "status": "complete_rejected_below_champion",
+    "source_commit": "62a7c831417ceafb8295f90fce4df747413d3a06",
+    "architecture": "text_aware_pairwise_owner_guard",
+    "correct": 554,
+    "accuracy": 0.42979053529868116,
+    "matched_production_correct": 547,
+    "champion_correct": 561,
+    "gain_over_matched_production_count": 7,
+    "champion_minus_ablation_correct": 7,
+    "mcnemar_exact_two_sided_p_vs_matched_production": 0.3240086000878364,
+    "domains": {
+      "bbh_logic": {"correct": 308, "rows": 637},
+      "math500": {"correct": 230, "rows": 623},
+      "mbpp": {"correct": 16, "rows": 29}
+    },
+    "oracle_with_matched_production_correct": 569,
+    "remote_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/pairwise_guard_62a7c83",
+    "runtime_manifest_sha256": "a1e07de26255a51619e18b6d8cf600ea8b26d8c630e09527db10fcfa85b6635d",
+    "report_sha256": "3ad40266686a69260623b45ff1f6a9a9053328aa60ec64f5e6b28e19e9bc1b8a",
+    "development_score_sha256": "7f724263c99e3fa227c295ba81e0abdd9b21b242c5f3a32069b14845ffbdabfe",
+    "production_score_sha256": "5719d7e2343169ac36b31ff4821a65f2e2076c08f4fea71fa26c54bdb9a5ae54",
+    "comparison_sha256": "45742def86185fbb39a9dc85f75d708e40151060f62112573dc2147c63bd7d21",
+    "durable_evidence_mirror": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/q36-engineering-pairwise-guard-62a7c83-r1",
+    "durable_evidence_manifest_sha256": "db63f77b6fa5ece9e8cad7fdc469c46f20dcd81f53ba88bc78acfa3b98990aec",
+    "jobs": [758789, 758790, 758791, 758792],
+    "conclusion": "The text-aware pairwise guard recovers seven answers over the matched production baseline, including eleven additional math answers, but loses four BBH answers and remains seven answers below the lineage-correctness champion."
+  },
   "paired_vs_correctness_v1": {
     "both_correct": 550,
     "lineage_only_correct": 11,
