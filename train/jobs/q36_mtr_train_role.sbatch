@@ -37,7 +37,11 @@ sequence=()
 if [[ -n "${MAX_SEQUENCE_LENGTH:-}" ]]; then
   [[ "$MAX_SEQUENCE_LENGTH" == "4224" && "$ROLE" == "aligned" ]] || \
     q36_die "engineering sequence extension differs"
-  sequence=(--max-sequence-length "$MAX_SEQUENCE_LENGTH" --engineering-sequence-extension)
+  sequence=(
+    --max-sequence-length "$MAX_SEQUENCE_LENGTH"
+    --engineering-sequence-extension
+    --engineering-loss-chunk-size 512
+  )
 fi
 case "$ROLE" in
   owner)

@@ -15,6 +15,7 @@ from typing import Any
 
 import torch
 import torch.nn.functional as F
+from torch.utils.checkpoint import checkpoint
 
 from hf_product_reasoning_train import (
     PRODUCT_SYSTEM_PROMPT,
@@ -57,6 +58,7 @@ from ttr1_revision import DRAFT_MARKER, tokenize_with_draft_mask
 
 SCHEMA = "shohin-q36-mtr-role-training-v1"
 ENGINEERING_REVISION_MAX_SEQUENCE_LENGTH = 4_224
+ENGINEERING_LOSS_CHUNK_SIZE = 512
 
 
 class Q36MTRTrainingError(RuntimeError):
@@ -216,6 +218,52 @@ def full_sequence_position_ids(attention: torch.Tensor) -> torch.Tensor:
     )
 
 
+def chunked_causal_cross_entropy(
+    hidden_states: torch.Tensor,
+    labels: torch.Tensor,
+    lm_head: torch.nn.Module,
+    chunk_size: int,
+) -> torch.Tensor:
+    """Compute token-mean causal loss without retaining full-sequence logits."""
+
+    if (
+        hidden_states.ndim != 3
+        or labels.ndim != 2
+        or hidden_states.shape[:2] != labels.shape
+        or chunk_size <= 0
+    ):
+        raise Q36MTRTrainingError("Q36-MTR chunked loss geometry differs")
+    shifted_hidden = hidden_states[:, :-1]
+    shifted_labels = labels[:, 1:]
+    valid_tokens = (shifted_labels != -100).sum()
+    if int(valid_tokens) <= 0:
+        raise Q36MTRTrainingError("Q36-MTR chunked loss has no target tokens")
+
+    losses: list[torch.Tensor] = []
+    for start in range(0, shifted_hidden.shape[1], chunk_size):
+        hidden_chunk = shifted_hidden[:, start : start + chunk_size]
+        label_chunk = shifted_labels[:, start : start + chunk_size]
+
+        def chunk_loss(hidden: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+            logits = lm_head(hidden)
+            return F.cross_entropy(
+                logits.reshape(-1, logits.shape[-1]),
+                targets.reshape(-1),
+                ignore_index=-100,
+                reduction="sum",
+            )
+
+        losses.append(
+            checkpoint(
+                chunk_loss,
+                hidden_chunk,
+                label_chunk,
+                use_reentrant=False,
+            )
+        )
+    return torch.stack(losses).sum() / valid_tokens
+
+
 def training_consumption_receipt(
     examples: list[tuple[list[int], list[int], list[int]]],
     *,
@@ -293,6 +341,7 @@ def _validate_arguments(args: argparse.Namespace) -> None:
             f"Q36-MTR role settings differ: expected={expected} observed={observed}"
         )
     extension = bool(getattr(args, "engineering_sequence_extension", False))
+    loss_chunk_size = getattr(args, "engineering_loss_chunk_size", None)
     if args.max_sequence_length != spec.max_sequence_length and not (
         extension
         and args.role == "aligned"
@@ -301,6 +350,11 @@ def _validate_arguments(args: argparse.Namespace) -> None:
         raise Q36MTRTrainingError("Q36-MTR sequence settings differ")
     if extension and args.max_sequence_length == spec.max_sequence_length:
         raise Q36MTRTrainingError("Q36-MTR sequence extension is redundant")
+    if extension:
+        if loss_chunk_size != ENGINEERING_LOSS_CHUNK_SIZE:
+            raise Q36MTRTrainingError("Q36-MTR engineering loss chunk differs")
+    elif loss_chunk_size is not None:
+        raise Q36MTRTrainingError("Q36-MTR loss chunk requires sequence extension")
     if (args.warm_start_checkpoint is None) != (spec.warm_start_role is None):
         raise Q36MTRTrainingError("Q36-MTR warm-start role differs")
     if args.batch_size != 1 or args.checkpoint_interval != spec.updates:
@@ -468,6 +522,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "draft_attention_applied": args.role == "draft_hidden",
         "sequence_custody": sequence_receipt,
         "training_consumption": consumption_receipt,
+        "engineering_loss_chunk_size": args.engineering_loss_chunk_size,
         "warm_start_checkpoint": (
             str(args.warm_start_checkpoint.resolve())
             if args.warm_start_checkpoint is not None
@@ -518,12 +573,20 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 position_ids=positions,
                 use_cache=False,
             )
-            logits = model.lm_head(outputs.last_hidden_state)
-            loss = F.cross_entropy(
-                logits[:, :-1].reshape(-1, logits.shape[-1]),
-                labels[:, 1:].reshape(-1),
-                ignore_index=-100,
-            )
+            if args.engineering_loss_chunk_size is None:
+                logits = model.lm_head(outputs.last_hidden_state)
+                loss = F.cross_entropy(
+                    logits[:, :-1].reshape(-1, logits.shape[-1]),
+                    labels[:, 1:].reshape(-1),
+                    ignore_index=-100,
+                )
+            else:
+                loss = chunked_causal_cross_entropy(
+                    outputs.last_hidden_state,
+                    labels,
+                    model.lm_head,
+                    args.engineering_loss_chunk_size,
+                )
             scaled_loss = loss / args.gradient_accumulation
         scaled_loss.backward()
         charged_tokens += int(charged)
@@ -633,6 +696,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-rows", type=int)
     parser.add_argument("--max-sequence-length", type=int)
     parser.add_argument("--engineering-sequence-extension", action="store_true")
+    parser.add_argument("--engineering-loss-chunk-size", type=int)
     parser.add_argument("--learning-rate", type=float)
     parser.add_argument("--controlled-layers", type=int, default=CONTROLLED_LAYERS)
     parser.add_argument("--rank", type=int, default=RANK)

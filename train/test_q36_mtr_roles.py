@@ -13,6 +13,7 @@ from hf_q36_mtr_train_role import (
     Q36MTRTrainingError,
     _save_role_checkpoint,
     _validate_arguments,
+    chunked_causal_cross_entropy,
     full_sequence_position_ids,
     tokenize_role_rows,
     training_consumption_receipt,
@@ -362,6 +363,7 @@ def _arguments(role: str) -> SimpleNamespace:
         batch_size=1,
         checkpoint_interval=spec.updates,
         engineering_sequence_extension=False,
+        engineering_loss_chunk_size=None,
     )
 
 
@@ -378,6 +380,7 @@ def test_aligned_role_allows_only_exact_engineering_sequence_extension() -> None
     args = _arguments("aligned")
     args.max_sequence_length = 4_224
     args.engineering_sequence_extension = True
+    args.engineering_loss_chunk_size = 512
     _validate_arguments(args)
     args.max_sequence_length = 4_225
     with pytest.raises(Q36MTRTrainingError, match="sequence"):
@@ -415,9 +418,37 @@ def test_role_wrapper_binds_the_exact_engineering_sequence_extension() -> None:
     )
     assert '"$MAX_SEQUENCE_LENGTH" == "4224"' in source
     assert "--engineering-sequence-extension" in source
+    assert "--engineering-loss-chunk-size 512" in source
     assert "TRAIN_SCRIPT_SHA256" in source
     assert "PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True" in source
     assert "#SBATCH --time=04:00:00" in source
+
+
+def test_chunked_causal_loss_matches_full_loss_and_gradients() -> None:
+    torch.manual_seed(17)
+    hidden_full = torch.randn(2, 11, 7, requires_grad=True)
+    hidden_chunked = hidden_full.detach().clone().requires_grad_(True)
+    head_full = torch.nn.Linear(7, 13, bias=False)
+    head_chunked = copy.deepcopy(head_full)
+    labels = torch.randint(0, 13, (2, 11))
+    labels[0, :3] = -100
+
+    logits = head_full(hidden_full)
+    full_loss = torch.nn.functional.cross_entropy(
+        logits[:, :-1].reshape(-1, 13),
+        labels[:, 1:].reshape(-1),
+        ignore_index=-100,
+    )
+    chunked_loss = chunked_causal_cross_entropy(
+        hidden_chunked, labels, head_chunked, chunk_size=3
+    )
+    assert torch.allclose(full_loss, chunked_loss, atol=1e-6, rtol=1e-6)
+    full_loss.backward()
+    chunked_loss.backward()
+    assert torch.allclose(hidden_full.grad, hidden_chunked.grad, atol=2e-6, rtol=2e-6)
+    assert torch.allclose(
+        head_full.weight.grad, head_chunked.weight.grad, atol=2e-6, rtol=2e-6
+    )
 
 
 def test_synthesis_wrapper_supports_exact_cyclic_scaling_offsets() -> None:
