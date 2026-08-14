@@ -15,10 +15,29 @@ job `756998` then completed `0:0` on `evc22` with zero restarts, `619,734`
 charged tokens, `26,387` selected rows, `1,179,648` trainables, report SHA-256
 `3cc4efe5...5217`, and checkpoint SHA-256 `8d22a8b8...a4b2c`. All geometry,
 source-only visibility, final-16 layer ownership, serialization-restore, and
-zero-assessor checks pass. Sixteen dependency-prestaged draft jobs are now the
-active phase; task 0 started on `evc22` immediately after owner completion.
-The full graph remains bound through terminal job `757028`. This is an
-engineering recovery benchmark, not a one-shot publication confirmation.
+zero-assessor checks pass. The 16-way draft fanout is active. Shard 0 completed
+`0:0` in 7,034 seconds and independently matches all 444 ordered identities,
+the exact owner checkpoint, and its immutable candidate hash; 13 peers remain
+healthy and generating. The original shards 13--14 stopped before model load
+when two simultaneous copies exhausted `evc34` local storage. They emitted no
+candidates. Exact singleton replacements `757696` and `757697` are queued,
+the merge dependency is rebound to only the valid original elements plus those
+replacements, and every remaining stage excludes `evc34`. Model staging now
+fails before load when capacity, copy, or manifest verification differs;
+private engineering commit `50720e83d54b079f017044b0a0f3c1d0392ec421`
+is pushed on both Q36 branches.
+
+An explicitly exploratory score of shard 0's 85 development identities gives
+the first live Q36 capability diagnostic: the model-owned source-owner drafts
+score 28/85 (`32.94%`), with math 13/40, logic 14/43, and code 1/2. Length is
+the dominant observed failure: non-exhausted drafts score 27/60 (`45.0%`),
+whereas drafts reaching the 768-token limit score 1/25 (`4.0%`). This
+identity-sorted partial slice is not the matched architecture gate, but it
+supports the trained revision's intended role: preserve the already-capable
+trajectories while learning to finish and commit them more concisely. Preserve
+`docs/research/Q36_MTR_DRAFT_SHARD00_PREVIEW_RESULT.json` (SHA-256
+`8504d918...f100a`). The full graph remains bound through terminal job
+`757028`.
 
 **The archived Q36-MTR execution `q36-mtr-03955353-r2` is terminal-null.** CPU live
 preflight, full H100 mechanics, and the frozen 256-update source-owner fit
