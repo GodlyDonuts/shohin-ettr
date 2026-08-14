@@ -57,6 +57,23 @@
     "direct_minus_production_correct": 11,
     "mcnemar_exact_two_sided_p": 0.31487989103762243
   },
+  "paired_direct_vs_best_owner_8": {
+    "both_correct": 457,
+    "direct_only_correct": 93,
+    "owner_8_only_correct": 37,
+    "both_wrong": 702,
+    "direct_minus_owner_8_correct": 56,
+    "direct_gain_points": 4.344453064391001,
+    "mcnemar_exact_two_sided_p": 9.701935109114771e-07
+  },
+  "paired_direct_vs_current_owner": {
+    "both_correct": 476,
+    "direct_only_correct": 74,
+    "current_only_correct": 16,
+    "both_wrong": 723,
+    "direct_minus_current_correct": 58,
+    "mcnemar_exact_two_sided_p": 4.3857845641773173e-10
+  },
   "paired_stack_vs_production": {
     "both_correct": 499,
     "stack_only_correct": 48,
@@ -103,7 +120,8 @@
       "decisions_sha256": "93e42dc8ce4a3ba7b980ab8a4853df9c33a065f2ec73befd9e416f40d065d0c3",
       "report_sha256": "9e198f854782ba117b39997053d792cc6915f88237a50044b2dd2235f386f344",
       "development_score_sha256": "e2d5bbdfe1cec07ed4bf95623448a05dd921e447b1601d72a92858e4d863ae43",
-      "comparison_sha256": "9273d50cf1be64e4306b83d0faf4fdc1d8f633dbb1e5b72b7bc5d5f1bce41b22"
+      "comparison_sha256": "9273d50cf1be64e4306b83d0faf4fdc1d8f633dbb1e5b72b7bc5d5f1bce41b22",
+      "owner_comparison_sha256": "31c84bc60ac6e07bfa016633a22f421ea885cad248ff1da696ba62d5bb704d1b"
     }
   }
 }
