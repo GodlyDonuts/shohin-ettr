@@ -88,7 +88,11 @@ def select(first_path: Path, second_path: Path) -> tuple[list[dict], dict[str, A
         raise Q36MTROwnerTrajectorySelectionError("owner candidate counts differ")
     selected = []
     reasons = {"explicit_final_answer": 0, "nonexhausted": 0, "retained_first": 0}
+    adaptive_second_generation = 0
     for left, right in zip(first, second, strict=True):
+        adaptive_second_generation += int(
+            left["max_token_exhausted"] or not _explicit(left)
+        )
         for field in (
             "identity_sha256",
             "task",
@@ -132,6 +136,18 @@ def select(first_path: Path, second_path: Path) -> tuple[list[dict], dict[str, A
             ),
         },
         "reason_counts": reasons,
+        "adaptive_generation": {
+            "policy": "generate_second_only_if_first_exhausted_or_lacks_explicit_final_v1",
+            "first_trajectory_calls": len(selected),
+            "second_trajectory_calls": adaptive_second_generation,
+            "trajectory_calls": len(selected) + adaptive_second_generation,
+            "trajectory_calls_per_identity": (
+                (len(selected) + adaptive_second_generation) / len(selected)
+            ),
+            "second_generation_fraction": adaptive_second_generation / len(selected),
+            "second_generation_saved_vs_two_full": 1.0
+            - adaptive_second_generation / len(selected),
+        },
         "answer_labels_read": 0,
         "assessor_fields_read": 0,
     }

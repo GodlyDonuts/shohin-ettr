@@ -53,6 +53,10 @@ def test_candidate_only_selection_rule(tmp_path: Path) -> None:
         "first",
     ]
     assert report["selection_counts"] == {"first": 1, "second": 2}
+    assert report["adaptive_generation"]["second_trajectory_calls"] == 2
+    assert report["adaptive_generation"][
+        "trajectory_calls_per_identity"
+    ] == pytest.approx(5 / 3)
     assert report["answer_labels_read"] == 0
     assert report["assessor_fields_read"] == 0
 
